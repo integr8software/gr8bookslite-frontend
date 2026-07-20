@@ -37,6 +37,7 @@ export function usePartyManagementAccountOptions() {
 		accountOptions: query.data?.accountOptions ?? EmptyPartyAccountingAccountOptions,
 		defaultAccounts: query.data?.defaultAccounts ?? EmptyPartyAccountingAccountIds,
 		isLoading: query.isLoading,
+		refetch: query.refetch,
 	};
 }
 

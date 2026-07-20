@@ -91,6 +91,7 @@ export type ApiDefaultAccount = {
 	defaultAccountName: string;
 	description: string;
 	status: ApiDefaultAccountStatus;
+	expenseParentCoaId?: string | null;
 	generatedAccounts: GeneratedDefaultAccount[];
 	createdBy: string | null;
 	createdAt: string;

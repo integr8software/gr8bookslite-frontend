@@ -11,14 +11,17 @@ import type {
 	BankMasterfileFieldsProps,
 	BankMasterfileFormFieldProps,
 } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
+import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 
 export function BankMasterfileFields({
 	accountCode,
+	currencyOptions,
 	errors,
 	isAccountCodeLoading,
 	isReadonly,
 	mode,
 	values,
+	onCurrencyChange,
 	onInputChange,
 }: BankMasterfileFieldsProps) {
 	const accountName = buildBankMasterfileAccountName(values);
@@ -123,15 +126,22 @@ export function BankMasterfileFields({
 					</select>
 				</FormField>
 				<FormField label="Currency" error={errors.currencyCode} required>
-					<input
-						id="bank-masterfile-currency-code"
-						name="currencyCode"
+					<AppAdvancedDropdown
+						disabled={isReadonly}
+						emptyMessage="No active currencies found."
+						options={currencyOptions.map((currency) => ({
+							description: currency.country,
+							label: currency.code,
+							name: currency.name,
+							value: currency.code,
+						}))}
+						placeholder="--Select Currency--"
+						searchPlaceholder="Search currency"
+						showSelectedDetails
 						value={values.currencyCode}
-						onChange={onInputChange}
-						readOnly={isReadonly}
-						className={BankMasterfileFieldClassName}
-						placeholder="PHP"
-						maxLength={10}
+						onChange={(value) =>
+							onCurrencyChange(Array.isArray(value) ? (value[0] ?? "") : value)
+						}
 					/>
 				</FormField>
 				<FormField label="Exchange Rate" error={errors.currencyExchangeRate}>

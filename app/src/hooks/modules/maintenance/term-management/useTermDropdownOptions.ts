@@ -5,6 +5,15 @@ import { useQuery } from "@tanstack/react-query";
 import { formatTermDuration } from "@/app/src/data/modules/maintenance/term-management/TermManagementDisplay";
 import { fetchTerms } from "@/app/src/services/modules/maintenance/term-management/TermManagementApi";
 import { TermManagementQueryKeys } from "@/app/src/services/modules/maintenance/term-management/TermManagementQueryKeys";
+import type { TermManagementPermissions } from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
+
+const EmptyTermPermissions: TermManagementPermissions = {
+	canCreate: false,
+	canExport: false,
+	canImport: false,
+	canUpdate: false,
+	canView: false,
+};
 
 export function useTermDropdownOptions() {
 	const termsQuery = useQuery({
@@ -29,6 +38,7 @@ export function useTermDropdownOptions() {
 	return {
 		...termsQuery,
 		options,
+		permissions: termsQuery.data?.permissions ?? EmptyTermPermissions,
 		terms: termsQuery.data?.terms ?? [],
 	};
 }

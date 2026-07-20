@@ -166,11 +166,17 @@ export type BankMasterfileDrawerProps = {
 
 export type BankMasterfileFieldsProps = {
 	accountCode: string;
+	currencyOptions: Array<{
+		code: string;
+		country: string;
+		name: string;
+	}>;
 	errors: BankMasterfileFormErrors;
 	isAccountCodeLoading: boolean;
 	isReadonly: boolean;
 	mode: BankMasterfileActionMode;
 	values: BankMasterfileFormValues;
+	onCurrencyChange: (value: string) => void;
 	onInputChange: ChangeEventHandler<HTMLInputElement | HTMLSelectElement>;
 };
 

@@ -5,7 +5,12 @@ import {
 	BankMasterfileDrawerFormId,
 	BankMasterfileTitle,
 } from "@/app/src/constants/modules/maintenance/bank-masterfile/BankMasterfileConstants";
+import {
+	DefaultPreferredBaseCurrencyCode,
+	findCurrencyByCode,
+} from "@/app/src/data/modules/system-administration/multi-currency-setup/MultiCurrencySetupData";
 import { useBankMasterfileFormPage } from "@/app/src/hooks/modules/maintenance/bank-masterfile/useBankMasterfileFormPage";
+import { useMultiCurrencySetupStore } from "@/app/src/hooks/modules/system-administration/multi-currency-setup/useMultiCurrencySetup";
 import type {
 	BankMasterfile,
 	BankMasterfileDrawerProps,
@@ -47,8 +52,10 @@ function BankMasterfileDrawerPanel({
 		mode,
 		onSaved: onClose,
 	});
+	const currencySetupRecords = useMultiCurrencySetupStore((state) => state.records);
 	const copy = BankMasterfileActionCopy[mode];
 	const accountCode = mode === "add" ? page.nextAccountCode : (bank?.accountCode ?? "");
+	const currencyOptions = createBankCurrencyOptions(currencySetupRecords);
 
 	return (
 		<ModuleDrawer
@@ -67,16 +74,47 @@ function BankMasterfileDrawerPanel({
 			<form id={BankMasterfileDrawerFormId} onSubmit={page.handleSubmit} className="px-6 py-5">
 				<BankMasterfileFields
 					accountCode={accountCode}
+					currencyOptions={currencyOptions}
 					errors={page.errors}
 					isAccountCodeLoading={page.isNextAccountCodeLoading}
 					isReadonly={page.isReadonly}
 					mode={mode}
 					values={page.values}
+					onCurrencyChange={(value) =>
+						page.handleFieldChange("currencyCode", value)
+					}
 					onInputChange={page.handleInputChange}
 				/>
 			</form>
 		</ModuleDrawer>
 	);
+}
+
+function createBankCurrencyOptions(
+	records: Array<{
+		baseCurrencyCode: string;
+		status: string;
+		targetCurrencyCode: string;
+	}>,
+) {
+	const currencyCodes = new Set<string>([DefaultPreferredBaseCurrencyCode]);
+
+	records
+		.filter((record) => record.status === "Active")
+		.forEach((record) => {
+			currencyCodes.add(record.baseCurrencyCode);
+			currencyCodes.add(record.targetCurrencyCode);
+		});
+
+	return [...currencyCodes].sort().map((code) => {
+		const currency = findCurrencyByCode(code);
+
+		return {
+			code,
+			country: currency?.country ?? "",
+			name: currency?.name ?? code,
+		};
+	});
 }
 
 

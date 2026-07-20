@@ -22,6 +22,7 @@ import {
 } from "@/app/src/data/shared/contact/ContactData";
 import type {
 	PartyAccountingAccountOptions,
+	PartyAccountingAccountField,
 	PartyInformationFormErrors,
 	PartyInformationDetailsFieldsProps,
 	PartyInformationFieldUpdateHandler,
@@ -50,6 +51,12 @@ export function PartyInformationDetailsFields({
 	termOptions,
 	values,
 	syncedAddressSources,
+	canAddAccountTitle,
+	canAddTaxRegistrationType,
+	canAddTerm,
+	onAddAccountTitle,
+	onAddTaxRegistrationType,
+	onAddTerm,
 	onAddressInputChange,
 	onCopyAddress,
 	onInputChange,
@@ -139,7 +146,6 @@ export function PartyInformationDetailsFields({
 					badge: basicErrorCount,
 					content: (
 						<div className="grid gap-5">
-							<SectionHeading title="Basic Information" />
 							<div className="grid gap-4 lg:grid-cols-3">
 								<Field label="Party Code" error={errors.partyCodeNo} required>
 									<input
@@ -376,7 +382,6 @@ export function PartyInformationDetailsFields({
 					badge: contactErrorCount,
 					content: (
 						<div className="grid gap-5">
-							<SectionHeading title="Contact Information" />
 							<div className="grid gap-4 lg:grid-cols-3">
 								<Field label="Email Address" error={errors.email}>
 									<input
@@ -451,7 +456,6 @@ export function PartyInformationDetailsFields({
 					badge: taxErrorCount,
 					content: (
 						<div className="grid gap-5">
-							<SectionHeading title="Tax Information" />
 							<div className="grid gap-4 lg:grid-cols-2">
 								<Field
 									label="Tax Identification Number (TIN)"
@@ -471,6 +475,15 @@ export function PartyInformationDetailsFields({
 								</Field>
 								<Field label="VAT Registration Type">
 									<AppAdvancedDropdown
+										addAction={
+											canAddTaxRegistrationType && onAddTaxRegistrationType
+												? {
+														disabled: isDetailsDisabled,
+														label: "Add Tax Registration Type",
+														onClick: onAddTaxRegistrationType,
+													}
+												: undefined
+										}
 										disabled={isDetailsDisabled}
 										emptyMessage="No active tax maintenance records found."
 										options={taxMaintenanceOptions}
@@ -485,6 +498,7 @@ export function PartyInformationDetailsFields({
 									<AppAdvancedDropdown
 										disabled={isDetailsDisabled}
 										emptyMessage="No ATC codes match the selected classification."
+										optionViewToggle
 										options={atcSelectOptions}
 										placeholder="--Select BIR ATC Code--"
 										searchPlaceholder="Search ATC code, label, or description"
@@ -502,13 +516,16 @@ export function PartyInformationDetailsFields({
 					badge: accountingErrorCount,
 					content: (
 						<div className="grid gap-5">
-							<SectionHeading title="Accounting Information" />
 							<AccountFields
 								accountOptions={accountOptions}
+								canAddAccountTitle={canAddAccountTitle}
+								canAddTerm={canAddTerm}
 								disabled={isDetailsDisabled}
 								errors={errors}
 								termOptions={termOptions}
 								values={values}
+								onAddAccountTitle={onAddAccountTitle}
+								onAddTerm={onAddTerm}
 								onSelectTerm={onSelectTerm}
 								onUpdateField={onUpdateField}
 							/>
@@ -535,18 +552,26 @@ export function PartyInformationDetailsFields({
 
 function AccountFields({
 	accountOptions,
+	canAddAccountTitle,
+	canAddTerm,
 	disabled,
 	errors,
 	termOptions,
 	values,
+	onAddAccountTitle,
+	onAddTerm,
 	onSelectTerm,
 	onUpdateField,
 }: {
 	accountOptions: PartyAccountingAccountOptions;
+	canAddAccountTitle?: boolean;
+	canAddTerm?: boolean;
 	disabled: boolean;
 	errors: PartyInformationFormErrors;
 	termOptions: PartyInformationDetailsFieldsProps["termOptions"];
 	values: PartyInformationFormValues;
+	onAddAccountTitle?: PartyInformationDetailsFieldsProps["onAddAccountTitle"];
+	onAddTerm?: PartyInformationDetailsFieldsProps["onAddTerm"];
 	onSelectTerm: PartyInformationDetailsFieldsProps["onSelectTerm"];
 	onUpdateField: PartyInformationFieldUpdateHandler;
 }) {
@@ -565,6 +590,12 @@ function AccountFields({
 					required
 				>
 					<ChartAccountDropdown
+						addAction={createAccountAddAction(
+							"defaultReceivableAccount",
+							canAddAccountTitle,
+							isAccountingDisabled,
+							onAddAccountTitle,
+						)}
 						accounts={accountOptions.defaultReceivableAccount}
 						disabled={isAccountingDisabled}
 						valueField="id"
@@ -582,6 +613,12 @@ function AccountFields({
 					required
 				>
 					<ChartAccountDropdown
+						addAction={createAccountAddAction(
+							"customerAdvanceAccount",
+							canAddAccountTitle,
+							isAccountingDisabled,
+							onAddAccountTitle,
+						)}
 						accounts={accountOptions.customerAdvanceAccount}
 						disabled={isAccountingDisabled}
 						valueField="id"
@@ -599,6 +636,12 @@ function AccountFields({
 					required
 				>
 					<ChartAccountDropdown
+						addAction={createAccountAddAction(
+							"defaultPayableAccount",
+							canAddAccountTitle,
+							isAccountingDisabled,
+							onAddAccountTitle,
+						)}
 						accounts={accountOptions.defaultPayableAccount}
 						disabled={isAccountingDisabled}
 						valueField="id"
@@ -616,6 +659,12 @@ function AccountFields({
 					required
 				>
 					<ChartAccountDropdown
+						addAction={createAccountAddAction(
+							"vendorAdvanceAccount",
+							canAddAccountTitle,
+							isAccountingDisabled,
+							onAddAccountTitle,
+						)}
 						accounts={accountOptions.vendorAdvanceAccount}
 						disabled={isAccountingDisabled}
 						valueField="id"
@@ -631,6 +680,12 @@ function AccountFields({
 					required
 				>
 					<ChartAccountDropdown
+						addAction={createAccountAddAction(
+							"employeeAdvanceAccount",
+							canAddAccountTitle,
+							isAccountingDisabled,
+							onAddAccountTitle,
+						)}
 						accounts={accountOptions.employeeAdvanceAccount}
 						disabled={isAccountingDisabled}
 						valueField="id"
@@ -648,6 +703,12 @@ function AccountFields({
 					required
 				>
 					<ChartAccountDropdown
+						addAction={createAccountAddAction(
+							"employeePayableAccount",
+							canAddAccountTitle,
+							isAccountingDisabled,
+							onAddAccountTitle,
+						)}
 						accounts={accountOptions.employeePayableAccount}
 						disabled={isAccountingDisabled}
 						valueField="id"
@@ -660,6 +721,15 @@ function AccountFields({
 			) : null}
 			<Field label="Default Terms" error={errors.termId}>
 				<AppAdvancedDropdown
+					addAction={
+						canAddTerm && onAddTerm
+							? {
+									disabled,
+									label: "Add Terms",
+									onClick: onAddTerm,
+								}
+							: undefined
+					}
 					disabled={disabled}
 					emptyMessage="No Active Terms Found."
 					options={termOptions}
@@ -671,6 +741,21 @@ function AccountFields({
 			</Field>
 		</div>
 	);
+}
+
+function createAccountAddAction(
+	field: PartyAccountingAccountField,
+	canAddAccountTitle?: boolean,
+	disabled?: boolean,
+	onAddAccountTitle?: PartyInformationDetailsFieldsProps["onAddAccountTitle"],
+) {
+	return canAddAccountTitle && onAddAccountTitle
+		? {
+				disabled,
+				label: "Add Account Title",
+				onClick: () => onAddAccountTitle(field),
+			}
+		: undefined;
 }
 
 function countErrors(
@@ -711,28 +796,6 @@ function StatusField({
 				))}
 			</select>
 		</Field>
-	);
-}
-
-function SectionHeading({
-	description,
-	title,
-}: {
-	description?: string;
-	title: string;
-}) {
-	return (
-		<div>
-			<div className="flex items-center gap-3">
-				<h2 className="shrink-0 text-base font-semibold text-darknavy">
-					{title}
-				</h2>
-				<div className="h-px flex-1 bg-darknavy/10" aria-hidden="true" />
-			</div>
-			{description ? (
-				<p className="mt-1 text-sm text-darknavy/55">{description}</p>
-			) : null}
-		</div>
 	);
 }
 

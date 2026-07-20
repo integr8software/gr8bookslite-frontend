@@ -101,6 +101,35 @@ function PaymentTypeDrawerPanel({
 				</label>
 
 				<label className="grid gap-2">
+					<span className="text-sm font-semibold text-darknavy">
+						Category <span className="text-coralpink">*</span>
+					</span>
+					<select
+						value={page.values.type}
+						disabled={page.isReadonly}
+						onChange={(event) =>
+							page.handleInputChange(
+								"type",
+								event.target.value as PaymentTypeClassification,
+							)
+						}
+						className={PaymentTypeFieldClassName}
+					>
+						<option value="">--Select Category--</option>
+						{PaymentTypeOptions.map((typeOption) => (
+							<option key={typeOption} value={typeOption}>
+								{typeOption}
+							</option>
+						))}
+					</select>
+					{page.errors.type ? (
+						<span className="text-xs font-semibold text-coralpink">
+							{page.errors.type}
+						</span>
+					) : null}
+				</label>
+
+				<label className="grid gap-2">
 					<span className="text-sm font-semibold text-darknavy">Description</span>
 					<AppLimitedTextarea
 						value={page.values.description}
@@ -118,61 +147,30 @@ function PaymentTypeDrawerPanel({
 					) : null}
 				</label>
 
-				<div className="grid gap-4 sm:grid-cols-2">
-					<label className="grid gap-2">
-						<span className="text-sm font-semibold text-darknavy">
-							Category <span className="text-coralpink">*</span>
+				<label className="grid max-w-xs gap-2">
+					<span className="text-sm font-semibold text-darknavy">
+						Status <span className="text-coralpink">*</span>
+					</span>
+					<select
+						value={page.values.status}
+						disabled={page.isReadonly}
+						onChange={(event) =>
+							page.handleInputChange(
+								"status",
+								event.target.value as PaymentTypeStatus,
+							)
+						}
+						className={PaymentTypeFieldClassName}
+					>
+						<option value="Active">Active</option>
+						<option value="Inactive">Inactive</option>
+					</select>
+					{page.errors.status ? (
+						<span className="text-xs font-semibold text-coralpink">
+							{page.errors.status}
 						</span>
-						<select
-							value={page.values.type}
-							disabled={page.isReadonly}
-							onChange={(event) =>
-								page.handleInputChange(
-									"type",
-									event.target.value as PaymentTypeClassification,
-								)
-							}
-							className={PaymentTypeFieldClassName}
-						>
-							<option value="">--Select Category--</option>
-							{PaymentTypeOptions.map((typeOption) => (
-								<option key={typeOption} value={typeOption}>
-									{typeOption}
-								</option>
-							))}
-						</select>
-						{page.errors.type ? (
-							<span className="text-xs font-semibold text-coralpink">
-								{page.errors.type}
-							</span>
-						) : null}
-					</label>
-
-					<label className="grid gap-2">
-						<span className="text-sm font-semibold text-darknavy">
-							Status <span className="text-coralpink">*</span>
-						</span>
-						<select
-							value={page.values.status}
-							disabled={page.isReadonly}
-							onChange={(event) =>
-								page.handleInputChange(
-									"status",
-									event.target.value as PaymentTypeStatus,
-								)
-							}
-							className={PaymentTypeFieldClassName}
-						>
-							<option value="Active">Active</option>
-							<option value="Inactive">Inactive</option>
-						</select>
-						{page.errors.status ? (
-							<span className="text-xs font-semibold text-coralpink">
-								{page.errors.status}
-							</span>
-						) : null}
-					</label>
-				</div>
+					) : null}
+				</label>
 			</form>
 		</ModuleDrawer>
 	);

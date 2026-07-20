@@ -136,6 +136,7 @@ export type TaxMaintenanceDrawerProps = {
   mode: TaxMaintenanceDrawerMode;
   tax?: TaxMaintenance;
   onClose: () => void;
+  onAccountOptionsChanged?: () => void;
   onSave: (values: TaxMaintenance | TaxMaintenanceFormValues) => Promise<void>;
 };
 
@@ -144,10 +145,12 @@ export type TaxMaintenanceFieldsProps = {
   errors: Partial<Record<keyof TaxMaintenanceFormValues, string>>;
   isReadonly: boolean;
   values: TaxMaintenanceFormValues;
+  canAddTaxAccountTitle?: boolean;
   onAccountChange: (
     field: TaxMaintenanceAccountField,
     value: string,
   ) => void;
+  onAddTaxAccountTitle?: (field: TaxMaintenanceAccountField) => void;
   onInputChange: ChangeEventHandler<
     HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
   >;

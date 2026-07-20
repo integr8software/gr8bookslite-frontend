@@ -138,6 +138,7 @@ export function useDefaultAccountFormPage({
 		isLoadingExpenseParentOptions: expenseParentOptionsQuery.isLoading,
 		isReadonly,
 		isSubmitting: isMutating,
+		refreshExpenseParentOptions: expenseParentOptionsQuery.refetch,
 		validateBeforeSubmit,
 		values,
 	};

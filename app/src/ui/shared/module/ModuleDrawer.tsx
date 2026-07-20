@@ -177,7 +177,7 @@ export function ModuleDrawer({
 		}
 
 		function handleKeyDown(event: KeyboardEvent) {
-			if (event.key === "Escape") {
+			if (event.key === "Escape" && !isModalDialogOpen()) {
 				handleClose();
 			}
 		}
@@ -273,6 +273,14 @@ export function ModuleDrawer({
 				/>
 			) : null}
 		</>
+	);
+}
+
+function isModalDialogOpen() {
+	return Boolean(
+		document.querySelector(
+			'[role="dialog"][aria-modal="true"]:not([data-module-drawer="true"]), [role="alertdialog"][aria-modal="true"]',
+		),
 	);
 }
 

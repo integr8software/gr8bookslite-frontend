@@ -42,6 +42,7 @@ import type {
   PartyInformationStatus,
   PartyProvinceOption,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
+import type { TaxMaintenance } from "@/app/src/types/modules/maintenance/tax-maintenance/TaxMaintenanceTypes";
 import { validatePartyInformationForm } from "@/app/src/validations/modules/maintenance/party-management/PartyManagementValidation";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagement";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
@@ -362,6 +363,13 @@ export function usePartyManagementAction() {
     const tax = taxMaintenanceDropdown.taxes.find(
       (currentTax) => currentTax.id === taxId,
     );
+    updateVatRegistrationType(taxId, tax ?? null);
+  }
+
+  function updateVatRegistrationType(
+    taxId: string,
+    tax: TaxMaintenance | null,
+  ) {
     const legacyVatRegistrationType =
       VatRegistrationTypeOptions.find((option) => option === tax?.name) ?? "";
 
@@ -676,12 +684,16 @@ export function usePartyManagementAction() {
     const termId = getSingleSelectedValue(value);
     const term = termDropdown.terms.find((currentTerm) => currentTerm.id === termId);
 
+    updateTermSelection(termId, term?.name ?? "");
+    setErrors((current) => ({ ...current, termId: undefined }));
+  }
+
+  function updateTermSelection(termId: string, termName: string) {
     setValues((current) => ({
       ...current,
       termId,
-      termName: term?.name ?? "",
+      termName,
     }));
-    setErrors((current) => ({ ...current, termId: undefined }));
   }
 
   function handleConfirmStatusChange() {
@@ -701,6 +713,7 @@ export function usePartyManagementAction() {
   return {
     addressOptions,
     accountOptions: partyAccountOptions.accountOptions,
+    accountOptionsRefetch: partyAccountOptions.refetch,
     atcOptions: atcDropdown.options,
     cancelHref,
     editHref,
@@ -721,6 +734,8 @@ export function usePartyManagementAction() {
     needsRecord: mode === "edit" || mode === "view",
     nextStatus,
     partyTypeOptions: PartyTypeOptions,
+    refreshTaxMaintenanceOptions: taxMaintenanceDropdown.refetch,
+    refreshTermOptions: termDropdown.refetch,
     copyAddress,
     selectBarangay,
     selectAutocompleteAddress,
@@ -731,10 +746,15 @@ export function usePartyManagementAction() {
     selectAtcCode,
     selectVatRegistrationType,
     selectTerm,
+    setSelectedTaxRegistrationType: updateVatRegistrationType,
+    setSelectedTerm: updateTermSelection,
     setIsStatusDialogOpen,
     syncedAddressSources,
+    taxMaintenanceDefaultAccountIds: taxMaintenanceDropdown.defaultAccountIds,
     taxMaintenanceOptions: taxMaintenanceDropdown.options,
+    taxMaintenancePermissions: taxMaintenanceDropdown.permissions,
     termOptions: termDropdown.options,
+    termPermissions: termDropdown.permissions,
     updateAddressMeta,
     updateField,
     validateBeforeSubmit,

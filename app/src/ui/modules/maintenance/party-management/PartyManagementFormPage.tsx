@@ -1,14 +1,25 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
+import toast from "react-hot-toast";
 import { getPartyDisplayName } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
+import { useChartsOfAccounts } from "@/app/src/hooks/modules/maintenance/charts-of-accounts/useChartsOfAccounts";
 import { usePartyManagementAction } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagementAction";
+import type { ChartAccount } from "@/app/src/types/modules/maintenance/charts-of-accounts/ChartsOfAccountsTypes";
+import type { PartyAccountingAccountField } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { useAppDialogFormSubmit } from "@/app/src/hooks/shared/app/useAppDialogFormSubmit";
 import { getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { PartyInformationActionHeader } from "@/app/src/ui/modules/maintenance/party-management/PartyInformationActionHeader";
 import { PartyInformationDetailsFields } from "@/app/src/ui/modules/maintenance/party-management/PartyInformationDetailsFields";
 import { PartyInformationNotFound } from "@/app/src/ui/modules/maintenance/party-management/PartyInformationNotFound";
+import {
+	PartyAccountTitleDialog,
+} from "@/app/src/ui/modules/maintenance/party-management/PartyManagementDrawer";
+import {
+	TaxRegistrationTypeDialog,
+	TermDialog,
+} from "@/app/src/ui/modules/maintenance/party-management/PartyManagementQuickAddDialogs";
 
 const PartyManagementFormId = "party-management-form";
 
@@ -22,7 +33,13 @@ export function PartyManagementFormPage() {
 
 function PartyManagementFormPageInner() {
 	const page = usePartyManagementAction();
+	const chartAccounts = useChartsOfAccounts();
 	const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
+	const [accountTitleDialog, setAccountTitleDialog] =
+		useState<PartyAccountTitleDialogState>(null);
+	const [isTaxRegistrationDialogOpen, setIsTaxRegistrationDialogOpen] =
+		useState(false);
+	const [isTermDialogOpen, setIsTermDialogOpen] = useState(false);
 	const {
 		closeDialog: closeSaveDialog,
 		isConfirmSubmitPending,
@@ -33,6 +50,13 @@ function PartyManagementFormPageInner() {
 		isSubmitting: page.isMutating,
 		onDialogOpenChange: setIsSaveDialogOpen,
 	});
+	const chartAccountById = useMemo(
+		() =>
+			new Map(
+				chartAccounts.flatAccounts.map(({ account }) => [account.id, account]),
+			),
+		[chartAccounts.flatAccounts],
+	);
 
 	if (page.needsRecord && !page.existingRecord) {
 		return <PartyInformationNotFound />;
@@ -41,6 +65,22 @@ function PartyManagementFormPageInner() {
 	const partyName = page.existingRecord
 		? getPartyDisplayName(page.existingRecord)
 		: undefined;
+
+	function openAccountTitleDialog(field: PartyAccountingAccountField) {
+		const selectedAccountId =
+			page.values[field] || page.accountOptions[field][0]?.id || "";
+		const selectedAccount = chartAccountById.get(selectedAccountId);
+		const parentAccount = selectedAccount?.parentId
+			? chartAccountById.get(selectedAccount.parentId)
+			: null;
+
+		if (!selectedAccount || !parentAccount) {
+			toast.error("Select an account first.");
+			return;
+		}
+
+		setAccountTitleDialog({ field, parentAccount });
+	}
 
 	return (
 		<>
@@ -80,6 +120,12 @@ function PartyManagementFormPageInner() {
 					termOptions={page.termOptions}
 					values={page.values}
 					syncedAddressSources={page.syncedAddressSources}
+					canAddAccountTitle={chartAccounts.permissions.canCreate}
+					canAddTaxRegistrationType={page.taxMaintenancePermissions.canCreate}
+					canAddTerm={page.termPermissions.canCreate}
+					onAddAccountTitle={openAccountTitleDialog}
+					onAddTaxRegistrationType={() => setIsTaxRegistrationDialogOpen(true)}
+					onAddTerm={() => setIsTermDialogOpen(true)}
 					onAddressInputChange={page.handleAddressInputChange}
 					onCopyAddress={page.copyAddress}
 					onInputChange={page.handleInputChange}
@@ -125,8 +171,46 @@ function PartyManagementFormPageInner() {
 				onCancel={() => page.setIsStatusDialogOpen(false)}
 				onConfirm={page.handleConfirmStatusChange}
 			/>
+
+			<PartyAccountTitleDialog
+				isOpen={Boolean(accountTitleDialog)}
+				parentAccount={accountTitleDialog?.parentAccount ?? null}
+				onClose={() => setAccountTitleDialog(null)}
+				onSaved={(accountId) => {
+					if (accountTitleDialog) {
+						page.updateField(accountTitleDialog.field, accountId);
+					}
+					chartAccounts.refreshAccounts();
+					void page.accountOptionsRefetch();
+					setAccountTitleDialog(null);
+				}}
+			/>
+			<TaxRegistrationTypeDialog
+				defaultAccountIds={page.taxMaintenanceDefaultAccountIds}
+				isOpen={isTaxRegistrationDialogOpen}
+				onClose={() => setIsTaxRegistrationDialogOpen(false)}
+				onSaved={(tax) => {
+					page.setSelectedTaxRegistrationType(tax.id, tax);
+					void page.refreshTaxMaintenanceOptions();
+					setIsTaxRegistrationDialogOpen(false);
+				}}
+			/>
+			<TermDialog
+				isOpen={isTermDialogOpen}
+				onClose={() => setIsTermDialogOpen(false)}
+				onSaved={(term) => {
+					page.setSelectedTerm(term.id, term.name);
+					void page.refreshTermOptions();
+					setIsTermDialogOpen(false);
+				}}
+			/>
 		</>
 	);
 }
+
+type PartyAccountTitleDialogState = {
+	field: PartyAccountingAccountField;
+	parentAccount: ChartAccount;
+} | null;
 
 

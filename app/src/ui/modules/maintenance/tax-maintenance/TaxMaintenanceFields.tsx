@@ -38,10 +38,12 @@ const accountFields: Array<{
 
 export function TaxMaintenanceFields({
   accountOptions,
+  canAddTaxAccountTitle,
   errors,
   isReadonly,
   values,
   onAccountChange,
+  onAddTaxAccountTitle,
   onInputChange,
 }: TaxMaintenanceFieldsProps) {
   const [activeTab, setActiveTab] = useState<TaxMaintenanceTab>("tax");
@@ -133,6 +135,15 @@ export function TaxMaintenanceFields({
               required
             >
               <ChartAccountDropdown
+                addAction={
+                  canAddTaxAccountTitle && onAddTaxAccountTitle
+                    ? {
+                        disabled: isReadonly,
+                        label: "Add Tax Account Title",
+                        onClick: () => onAddTaxAccountTitle(accountField.field),
+                      }
+                    : undefined
+                }
                 accounts={accountOptions}
                 disabled={isReadonly}
                 emptyMessage="No active Taxes Payables accounts found."

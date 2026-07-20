@@ -300,6 +300,12 @@ export type PartyInformationDetailsFieldsProps = {
   termOptions: PartyAddressDropdownOption[];
   values: PartyInformationFormValues;
   syncedAddressSources?: Record<string, string>;
+  canAddAccountTitle?: boolean;
+  canAddTaxRegistrationType?: boolean;
+  canAddTerm?: boolean;
+  onAddAccountTitle?: (field: PartyAccountingAccountField) => void;
+  onAddTaxRegistrationType?: () => void;
+  onAddTerm?: () => void;
   onAddressInputChange: ChangeEventHandler<HTMLInputElement>;
   onCopyAddress: (sourceAddressId: string, targetAddressId: string) => void;
   onInputChange: ChangeEventHandler<HTMLInputElement | HTMLSelectElement>;

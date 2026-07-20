@@ -71,6 +71,7 @@ export function TaxMaintenanceListPage() {
         isSaving={page.isMutating}
         mode={drawerState?.mode ?? "add"}
         tax={drawerState?.tax}
+        onAccountOptionsChanged={page.refresh}
         onClose={closeDrawer}
         onSave={handleSave}
       />

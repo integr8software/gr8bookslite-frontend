@@ -5,6 +5,8 @@ import {
 	Check,
 	ChevronDown,
 	ExternalLink,
+	LayoutGrid,
+	List,
 	Plus,
 	Search,
 	X,
@@ -37,6 +39,8 @@ export type AppAdvancedDropdownAddAction = {
 	onClick: () => void;
 };
 
+export type AppAdvancedDropdownOptionView = "grid" | "list";
+
 export type AppAdvancedDropdownProps = {
 	addAction?: AppAdvancedDropdownAddAction;
 	"aria-describedby"?: string;
@@ -53,6 +57,7 @@ export type AppAdvancedDropdownProps = {
 	isSearchable?: boolean;
 	name?: string;
 	menuPortal?: boolean;
+	optionViewToggle?: boolean;
 	options: AppAdvancedDropdownOption[];
 	placeholder?: string;
 	readOnly?: boolean;
@@ -89,6 +94,7 @@ export function AppAdvancedDropdown({
 	isSearchable = true,
 	menuPortal = true,
 	name,
+	optionViewToggle = false,
 	options,
 	placeholder = "--Select Option--",
 	readOnly = false,
@@ -106,6 +112,8 @@ export function AppAdvancedDropdown({
 	const controlId = id ?? generatedId;
 	const listboxId = `${controlId}-listbox`;
 	const [isOpen, setIsOpen] = useState(false);
+	const [optionView, setOptionView] =
+		useState<AppAdvancedDropdownOptionView>("list");
 	const [query, setQuery] = useState("");
 	const [activeOptionValue, setActiveOptionValue] = useState("");
 	const [portalStyle, setPortalStyle] = useState<CSSProperties>({});
@@ -535,6 +543,37 @@ export function AppAdvancedDropdown({
 				"app-advanced-dropdown-menu flex max-h-80 flex-col overflow-hidden overscroll-contain rounded-lg border border-darknavy/10 bg-white shadow-[0_18px_60px_rgba(33,39,56,0.14)]",
 			)}
 		>
+			{isSearchable || optionViewToggle ? (
+				<div className="border-b border-darknavy/10 p-2">
+					<div className="flex items-center gap-2">
+						{isSearchable ? (
+							<div className="app-advanced-dropdown-search-control flex h-10 min-w-0 flex-1 items-center gap-2 rounded-md border border-darknavy/10 px-2.5">
+								<Search
+									className="h-4 w-4 text-darknavy/35"
+									aria-hidden="true"
+								/>
+								<input
+									autoCapitalize="none"
+									autoComplete="off"
+									autoCorrect="off"
+									spellCheck={false}
+									value={query}
+									onChange={(event) => setQuery(event.target.value)}
+									onKeyDown={handleComboboxKeyDown}
+									aria-controls={listboxId}
+									aria-activedescendant={activeOptionId}
+									className="app-advanced-dropdown-search-input h-full min-w-0 flex-1 bg-transparent text-sm text-darknavy outline-none placeholder:text-darknavy/35"
+									placeholder={searchPlaceholder}
+									autoFocus
+								/>
+							</div>
+						) : null}
+						{optionViewToggle ? (
+							<ViewToggle value={optionView} onChange={setOptionView} />
+						) : null}
+					</div>
+				</div>
+			) : null}
 			{addAction ? (
 				<button
 					type="button"
@@ -549,31 +588,14 @@ export function AppAdvancedDropdown({
 					{addAction.label}
 				</button>
 			) : null}
-			{isSearchable ? (
-				<div className="border-b border-darknavy/10 p-2">
-					<div className="app-advanced-dropdown-search-control flex h-10 items-center gap-2 rounded-md border border-darknavy/10 px-2.5">
-						<Search
-							className="h-4 w-4 text-darknavy/35"
-							aria-hidden="true"
-						/>
-						<input
-							autoCapitalize="none"
-							autoComplete="off"
-							autoCorrect="off"
-							spellCheck={false}
-							value={query}
-							onChange={(event) => setQuery(event.target.value)}
-							onKeyDown={handleComboboxKeyDown}
-							aria-controls={listboxId}
-							aria-activedescendant={activeOptionId}
-							className="app-advanced-dropdown-search-input h-full min-w-0 flex-1 bg-transparent text-sm text-darknavy outline-none placeholder:text-darknavy/35"
-							placeholder={searchPlaceholder}
-							autoFocus
-						/>
-					</div>
-				</div>
-			) : null}
-			<div className="grid min-h-0 gap-1 overflow-y-auto overscroll-contain p-2">
+			<div
+				className={joinClasses(
+					"min-h-0 overflow-y-auto overscroll-contain p-2",
+					optionViewToggle && optionView === "grid"
+						? "grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-4"
+						: "grid gap-1",
+				)}
+			>
 				{hasOptions ? (
 					filteredOptions.map((option) => (
 						<OptionRow
@@ -584,6 +606,7 @@ export function AppAdvancedDropdown({
 							}
 							level={0}
 							option={option}
+							view={optionViewToggle ? optionView : "list"}
 							selectedValues={selectedValueSet}
 							showSelectionIndicator={showSelectionIndicator}
 							onActive={setActiveOptionValue}
@@ -715,11 +738,49 @@ export function AppAdvancedDropdown({
 	);
 }
 
+function ViewToggle({
+	value,
+	onChange,
+}: {
+	value: AppAdvancedDropdownOptionView;
+	onChange: (value: AppAdvancedDropdownOptionView) => void;
+}) {
+	return (
+		<div className="flex h-10 shrink-0 overflow-hidden rounded-md border border-darknavy/10 bg-white">
+			<button
+				type="button"
+				aria-label="List view"
+				aria-pressed={value === "list"}
+				onClick={() => onChange("list")}
+				className={joinClasses(
+					"flex h-full w-10 items-center justify-center text-darknavy/55 transition hover:bg-skyblue/10 hover:text-darknavy",
+					value === "list" && "bg-skyblue/15 text-skyblue",
+				)}
+			>
+				<List className="h-4 w-4" aria-hidden="true" />
+			</button>
+			<button
+				type="button"
+				aria-label="Grid view"
+				aria-pressed={value === "grid"}
+				onClick={() => onChange("grid")}
+				className={joinClasses(
+					"flex h-full w-10 items-center justify-center border-l border-darknavy/10 text-darknavy/55 transition hover:bg-skyblue/10 hover:text-darknavy",
+					value === "grid" && "bg-skyblue/15 text-skyblue",
+				)}
+			>
+				<LayoutGrid className="h-4 w-4" aria-hidden="true" />
+			</button>
+		</div>
+	);
+}
+
 function OptionRow({
 	activeValue,
 	getOptionId,
 	level,
 	option,
+	view,
 	selectedValues,
 	showSelectionIndicator,
 	onActive,
@@ -729,6 +790,7 @@ function OptionRow({
 	getOptionId: (option: AppAdvancedDropdownOption) => string | undefined;
 	level: number;
 	option: AppAdvancedDropdownOption;
+	view: AppAdvancedDropdownOptionView;
 	selectedValues: Set<string>;
 	showSelectionIndicator: boolean;
 	onActive: (value: string) => void;
@@ -738,6 +800,10 @@ function OptionRow({
 	const isActive = activeValue === option.value;
 	const hasChildren = Boolean(option.children?.length);
 	const optionId = getOptionId(option);
+	const optionClassName =
+		view === "grid"
+			? getGridOptionClassName(isSelected, option.disabled, isActive)
+			: getOptionClassName(isSelected, option.disabled, isActive);
 	const content = (
 		<>
 			{showSelectionIndicator ? (
@@ -767,7 +833,7 @@ function OptionRow({
 	);
 
 	return (
-		<div className="grid gap-1">
+		<div className={view === "grid" ? "grid min-w-0" : "grid gap-1"}>
 			{option.href ? (
 				<Link
 					href={option.href}
@@ -777,11 +843,7 @@ function OptionRow({
 					aria-disabled={option.disabled}
 					data-active={isActive ? "true" : undefined}
 					data-selected={isSelected ? "true" : undefined}
-					className={getOptionClassName(
-						isSelected,
-						option.disabled,
-						isActive,
-					)}
+					className={optionClassName}
 					onMouseEnter={() => {
 						if (!option.disabled) {
 							onActive(option.value);
@@ -793,7 +855,7 @@ function OptionRow({
 							event.preventDefault();
 						}
 					}}
-					style={{ paddingLeft: `${0.75 + level * 0.9}rem` }}
+					style={view === "list" ? { paddingLeft: `${0.75 + level * 0.9}rem` } : undefined}
 				>
 					{content}
 				</Link>
@@ -816,12 +878,8 @@ function OptionRow({
 							onActive(option.value);
 						}
 					}}
-					className={getOptionClassName(
-						isSelected,
-						option.disabled,
-						isActive,
-					)}
-					style={{ paddingLeft: `${0.75 + level * 0.9}rem` }}
+					className={optionClassName}
+					style={view === "list" ? { paddingLeft: `${0.75 + level * 0.9}rem` } : undefined}
 				>
 					{content}
 				</button>
@@ -834,6 +892,7 @@ function OptionRow({
 						getOptionId={getOptionId}
 						level={level + 1}
 						option={child}
+						view={view}
 						selectedValues={selectedValues}
 						showSelectionIndicator={showSelectionIndicator}
 						onActive={onActive}
@@ -1074,6 +1133,21 @@ function getOptionClassName(
 		isSelected && "bg-skyblue/10 text-darknavy",
 		!isSelected && "text-darknavy hover:bg-skyblue/10",
 		isActive && !isDisabled && "bg-skyblue/15 ring-1 ring-inset ring-skyblue/25",
+		isDisabled && "cursor-not-allowed opacity-45",
+	);
+}
+
+function getGridOptionClassName(
+	isSelected: boolean,
+	isDisabled?: boolean,
+	isActive?: boolean,
+) {
+	return joinClasses(
+		"app-advanced-dropdown-option flex min-h-20 w-full items-start gap-2 rounded-md border p-2 text-left transition",
+		isSelected
+			? "border-skyblue/35 bg-skyblue/10 text-darknavy"
+			: "border-darknavy/10 text-darknavy hover:border-skyblue/25 hover:bg-skyblue/10",
+		isActive && !isDisabled && "ring-2 ring-inset ring-skyblue/25",
 		isDisabled && "cursor-not-allowed opacity-45",
 	);
 }

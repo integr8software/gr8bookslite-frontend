@@ -101,6 +101,7 @@ function mapApiDefaultAccount(account: ApiDefaultAccount): DefaultAccount {
 		defaultAccountName: account.defaultAccountName,
 		description: account.description ?? "",
 		status: mapStatusFromApi(account.status),
+		expenseParentCoaId: account.expenseParentCoaId ?? undefined,
 		generatedAccounts: account.generatedAccounts,
 		createdBy: account.createdBy,
 		createdAt: account.createdAt,

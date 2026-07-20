@@ -145,6 +145,7 @@ export function useBankMasterfileFormPage(
 
 	return {
 		errors,
+		handleFieldChange: updateField,
 		existingBank,
 		handleInputChange,
 		handleSubmit,

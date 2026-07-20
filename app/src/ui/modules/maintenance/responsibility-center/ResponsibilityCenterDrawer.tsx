@@ -207,22 +207,6 @@ function ResponsibilityCenterDrawerFields({
 				/>
 			</DrawerField>
 
-			<DrawerField label="Status" required>
-				<select
-					name="status"
-					value={values.status}
-					onChange={onInputChange}
-					disabled={isReadonly}
-					className={ResponsibilityCenterFieldClassName}
-				>
-					{ResponsibilityCenterStatusOptions.map((status) => (
-						<option key={status} value={status}>
-							{status}
-						</option>
-					))}
-				</select>
-			</DrawerField>
-
 			<DrawerField
 				label="Description"
 				error={errors.description}
@@ -239,6 +223,22 @@ function ResponsibilityCenterDrawerFields({
 					)}
 					placeholder="How this center is used in transactions and reports"
 				/>
+			</DrawerField>
+
+			<DrawerField label="Status" required>
+				<select
+					name="status"
+					value={values.status}
+					onChange={onInputChange}
+					disabled={isReadonly}
+					className={ResponsibilityCenterFieldClassName}
+				>
+					{ResponsibilityCenterStatusOptions.map((status) => (
+						<option key={status} value={status}>
+							{status}
+						</option>
+					))}
+				</select>
 			</DrawerField>
 		</div>
 	);

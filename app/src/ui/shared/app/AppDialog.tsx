@@ -24,6 +24,8 @@ export type AppDialogIconTone =
 export type AppDialogProps = {
   animateIcon?: boolean;
   cancelLabel?: string;
+  closeOnBackdrop?: boolean;
+  closeOnEscape?: boolean;
   confirmIcon?: ReactNode;
   confirmLabel?: string;
   confirmationLabel?: string;
@@ -43,6 +45,8 @@ export type AppDialogProps = {
 export function AppDialog({
   animateIcon = true,
   cancelLabel = "Cancel",
+  closeOnBackdrop = true,
+  closeOnEscape = true,
   confirmIcon,
   confirmLabel = "Confirm",
   confirmationLabel = "Confirmation",
@@ -98,7 +102,7 @@ export function AppDialog({
     }
 
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape" && !isConfirmPending) {
+      if (event.key === "Escape" && closeOnEscape && !isConfirmPending) {
         handleCancel();
       }
     }
@@ -108,7 +112,7 @@ export function AppDialog({
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isOpen, isConfirmPending, handleCancel]);
+  }, [closeOnEscape, isOpen, isConfirmPending, handleCancel]);
 
   if (!isOpen) {
     return null;
@@ -119,7 +123,7 @@ export function AppDialog({
       role="presentation"
       className="app-dialog-backdrop fixed inset-0 z-140 flex items-center justify-center bg-slate-950/20 px-4 py-6 backdrop-blur-[1px]"
       onMouseDown={(event) => {
-        if (event.target === event.currentTarget && !isConfirmPending) {
+        if (event.target === event.currentTarget && closeOnBackdrop && !isConfirmPending) {
           handleCancel();
         }
       }}

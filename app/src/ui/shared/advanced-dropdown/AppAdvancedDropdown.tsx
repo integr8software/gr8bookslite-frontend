@@ -22,6 +22,7 @@ import {
 	type MouseEvent as ReactMouseEvent,
 } from "react";
 import { createPortal } from "react-dom";
+import { ModuleTooltip } from "@/app/src/ui/shared/module/ModuleTooltip";
 
 export type AppAdvancedDropdownOption = {
 	children?: AppAdvancedDropdownOption[];
@@ -845,9 +846,23 @@ function OptionRow({
 					</span>
 				) : null}
 				{option.description ? (
-					<span className="line-clamp-2 text-xs leading-4 text-darknavy/45">
-						{option.description}
-					</span>
+					view === "grid" ? (
+						<ModuleTooltip
+							className="min-w-0 w-full"
+							contentClassName="max-w-80"
+							description={option.description}
+							position="top"
+							title={option.name}
+						>
+							<span className="line-clamp-2 w-full text-xs leading-4 text-darknavy/45">
+								{option.description}
+							</span>
+						</ModuleTooltip>
+					) : (
+						<span className="line-clamp-2 text-xs leading-4 text-darknavy/45">
+							{option.description}
+						</span>
+					)
 				) : null}
 			</span>
 			{option.href ? (

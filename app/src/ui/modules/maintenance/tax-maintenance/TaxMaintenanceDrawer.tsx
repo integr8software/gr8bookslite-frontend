@@ -318,14 +318,6 @@ function TaxAccountTitleDialog({
         </h2>
         <div className="mt-5 grid gap-4">
           <label className="grid gap-2">
-            <span className="text-sm font-semibold text-darknavy">Code - generated code</span>
-            <input
-              value={isCodeLoading ? "Generating code..." : accountCode}
-              disabled
-              className="h-11 rounded-md border border-darknavy/10 bg-darknavy/5 px-3 text-sm font-medium text-darknavy outline-none"
-            />
-          </label>
-          <label className="grid gap-2">
             <span className="text-sm font-semibold text-darknavy">
               Tax Account Title <span className="text-coralpink">*</span>
             </span>

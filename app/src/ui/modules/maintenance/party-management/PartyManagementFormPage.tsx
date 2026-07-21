@@ -171,6 +171,7 @@ function PartyManagementFormPageInner() {
 			/>
 
 			<PartyAccountTitleDialog
+				field={accountTitleDialog?.field ?? null}
 				isOpen={Boolean(accountTitleDialog)}
 				parentAccount={accountTitleDialog?.parentAccount ?? null}
 				onClose={() => setAccountTitleDialog(null)}

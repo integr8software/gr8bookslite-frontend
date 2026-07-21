@@ -11,6 +11,7 @@ import {
 	PartyDefaultNationality,
 	PartyGenderOptions,
 	PartyHonorificOptions,
+	PartyAccountingAccountFieldLabels,
 	PartyManagementFieldClassName,
 	PartyManagementFieldControlSelector,
 	PartyManagementSelectClassName,
@@ -753,7 +754,7 @@ function createAccountAddAction(
 	return canAddAccountTitle && onAddAccountTitle
 		? {
 				disabled,
-				label: "Add Account Title",
+				label: `Add ${PartyAccountingAccountFieldLabels[field]} Title`,
 				onClick: () => onAddAccountTitle(field),
 			}
 		: undefined;

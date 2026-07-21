@@ -14,6 +14,7 @@ import {
 	PartyManagementDrawerPrimaryActionClassName,
 	PartyManagementDrawerFormId,
 	PartyManagementDrawerSecondaryActionClassName,
+	PartyAccountingAccountFieldLabels,
 	PartyDefaultNationality,
 	PartyTypeOptions,
 	VatRegistrationTypeOptions,
@@ -746,6 +747,7 @@ export function PartyManagementDrawer({
 				/>
 			</div>
 			<PartyAccountTitleDialog
+				field={accountTitleDialog?.field ?? null}
 				isOpen={Boolean(accountTitleDialog)}
 				parentAccount={accountTitleDialog?.parentAccount ?? null}
 				onClose={() => setAccountTitleDialog(null)}
@@ -787,11 +789,13 @@ type PartyAccountTitleDialogState = {
 } | null;
 
 export function PartyAccountTitleDialog({
+	field,
 	isOpen,
 	parentAccount,
 	onClose,
 	onSaved,
 }: {
+	field: PartyAccountingAccountField | null;
 	isOpen: boolean;
 	parentAccount: ChartAccount | null;
 	onClose: () => void;
@@ -888,29 +892,22 @@ export function PartyAccountTitleDialog({
 	if (!isOpen || !parentAccount) {
 		return null;
 	}
+	const accountFieldLabel = field
+		? PartyAccountingAccountFieldLabels[field]
+		: "Account";
 
 	return (
 		<QuickAddDialogShell
 			error={error}
 			isPending={isPending}
 			saveDisabled={!accountCode}
-			title="Add Account Title"
+			title={`Add ${accountFieldLabel} Title`}
 			onClose={onClose}
 			onSave={handleSave}
 		>
 			<label className="grid gap-2">
 				<span className="text-sm font-semibold text-darknavy">
-					Code - generated code
-				</span>
-				<input
-					value={isCodeLoading ? "Generating code..." : accountCode}
-					disabled
-					className="h-11 rounded-md border border-darknavy/10 bg-darknavy/5 px-3 text-sm font-medium text-darknavy outline-none"
-				/>
-			</label>
-			<label className="grid gap-2">
-				<span className="text-sm font-semibold text-darknavy">
-					Account Title <span className="text-coralpink">*</span>
+					{accountFieldLabel} Title <span className="text-coralpink">*</span>
 				</span>
 				<input
 					value={accountName}

@@ -270,13 +270,13 @@ function formatPercentField(value: number) {
   return `${value.toFixed(2)}%`;
 }
 
-function getVatPercentFromRate(taxRate: string) {
+export function getVatPercentFromRate(taxRate: string) {
   const seededTaxDetails = createTaxDetails(0, taxRate);
 
   return seededTaxDetails.vatPercent;
 }
 
-function getEwtPercentFromCode(value: string, taxCodes: AlphanumericTaxCode[]) {
+export function getEwtPercentFromCode(value: string, taxCodes: AlphanumericTaxCode[]) {
   const matchedTaxRow = taxCodes.find(
     (row) => row.taxType === "EWT" && row.taxCode === value,
   );
@@ -290,7 +290,7 @@ function getEwtPercentFromCode(value: string, taxCodes: AlphanumericTaxCode[]) {
   return matchedPercent ? Number.parseFloat(matchedPercent[1]) : 0;
 }
 
-function getVatRateFromCode(vatCode: string, taxCodes: AlphanumericTaxCode[]) {
+export function getVatRateFromCode(vatCode: string, taxCodes: AlphanumericTaxCode[]) {
   if (!vatCode) {
     return "0%";
   }
@@ -317,7 +317,7 @@ function getVatRateFromCode(vatCode: string, taxCodes: AlphanumericTaxCode[]) {
   return "0%";
 }
 
-function normalizeVatDropdownValue(
+export function normalizeVatDropdownValue(
   taxDetails: DisbursementTaxDetails,
   taxCodes: AlphanumericTaxCode[],
 ) {
@@ -339,7 +339,7 @@ function normalizeVatDropdownValue(
   return matchedTaxRow?.taxCode ?? "";
 }
 
-function createVatOptions(taxCodes: AlphanumericTaxCode[]): AppAdvancedDropdownOption[] {
+export function createVatOptions(taxCodes: AlphanumericTaxCode[]): AppAdvancedDropdownOption[] {
   const uniqueOptions = new Map<string, AppAdvancedDropdownOption>();
 
   taxCodes.filter(
@@ -360,7 +360,7 @@ function createVatOptions(taxCodes: AlphanumericTaxCode[]): AppAdvancedDropdownO
   return Array.from(uniqueOptions.values());
 }
 
-function createEwtOptions(taxCodes: AlphanumericTaxCode[]): AppAdvancedDropdownOption[] {
+export function createEwtOptions(taxCodes: AlphanumericTaxCode[]): AppAdvancedDropdownOption[] {
   return taxCodes.filter(
     (row) => row.transactionType === "Purchases" && row.taxType === "EWT",
   ).map((row) => ({

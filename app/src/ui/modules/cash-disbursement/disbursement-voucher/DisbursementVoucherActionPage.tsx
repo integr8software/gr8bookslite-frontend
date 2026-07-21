@@ -72,15 +72,19 @@ import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/Char
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { ModuleTextareaDialog } from "@/app/src/ui/shared/module/ModuleTextareaDialog";
 import {
-  AppTaxRateDialog,
-  type AppTaxRateDialogValue,
+  createEwtOptions,
+  createVatOptions,
+  getEwtPercentFromCode,
+  getVatPercentFromRate,
+  getVatRateFromCode,
+  normalizeVatDropdownValue,
 } from "@/app/src/ui/shared/transaction-setup/AppTaxRateDialog";
+import { useAlphanumericTaxCodes } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/maintenance/party-management/PartyManagementDrawer";
 import type { AppDisbursementTypeRecord } from "@/app/src/ui/shared/transaction-setup/AppDisbursementTypeDialog";
 import type {
   DisbursementVoucherBankAccount,
   DisbursementLineEntry,
-  DisbursementTaxDetails,
   DisbursementTransactionRecord,
   DisbursementVoucherActionMode,
   DisbursementVoucherFormErrors,
@@ -95,7 +99,6 @@ import type { PartyInformationRecord } from "@/app/src/types/modules/maintenance
 import { DisbursementVoucherActionHeader } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherActionHeader";
 import { DisbursementVoucherReportPreview } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherReportPreview";
 import { openDisbursementVoucherPdf } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherPdf";
-import { DisbursementEntryImportDialog } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/DisbursementEntryImportDialog";
 import {
   clearAccountingGridSession,
   readAccountingGridSession,
@@ -138,11 +141,6 @@ export function DisbursementVoucherActionPage() {
     </Suspense>
   );
 }
-
-type TaxEditorTarget =
-  { kind: "entry"; entryId: string }
-  | { kind: "voucher" }
-  | null;
 
 const InitialDisbursementTypeRecords: AppDisbursementTypeRecord[] = [
   {
@@ -232,9 +230,6 @@ function DisbursementVoucherActionInner() {
   const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
   const [isDisbursementTypeDrawerOpen, setIsDisbursementTypeDrawerOpen] =
     useState(false);
-  const [taxEditorTarget, setTaxEditorTarget] = useState<TaxEditorTarget>(null);
-  const [taxEditorValues, setTaxEditorValues] =
-    useState<AppTaxRateDialogValue | null>(null);
 
   useEffect(() => {
     clearAccountingGridSession();
@@ -425,35 +420,6 @@ function DisbursementVoucherActionInner() {
     setErrors((current) => ({ ...current, lineEntries: undefined }));
   }
 
-  function handleImportEntries(importedEntries: DisbursementLineEntry[]) {
-    if (isReadonly || importedEntries.length === 0) {
-      return;
-    }
-
-    const nextImportedEntries = importedEntries.map((entry) =>
-      syncDisbursementLineEntryTaxDetails(
-        normalizeDisbursementLineEntryFields({
-          ...entry,
-          id: `line-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        }),
-      ),
-    );
-    const populatedEntries = values.lineEntries.filter(disbursementEntryHasData);
-
-    updateField(
-      "lineEntries",
-      populatedEntries.length > 0
-        ? [...populatedEntries, ...nextImportedEntries]
-        : nextImportedEntries,
-    );
-    setErrors((current) => ({
-      ...current,
-      entryDraft: undefined,
-      lineEntries: undefined,
-    }));
-    toast.success(`${importedEntries.length} accounting entries imported.`);
-  }
-
   function handleReplaceLineEntries(nextEntries: DisbursementLineEntry[]) {
     const amount = nextEntries
       .filter((entry) => !isPaymentCreditEntry(entry))
@@ -465,57 +431,6 @@ function DisbursementVoucherActionInner() {
       "taxDetails",
       syncTaxDetailsAmount(values.taxDetails, amount, values.taxRate),
     );
-  }
-
-  function handleOpenEntryTaxEditor(entryId: string) {
-    const lineEntry = values.lineEntries.find((entry) => entry.id === entryId);
-
-    if (!lineEntry) {
-      return;
-    }
-
-    const normalizedEntry = syncDisbursementLineEntryTaxDetails(
-      normalizeDisbursementLineEntryFields(lineEntry),
-    );
-
-    setTaxEditorTarget({ kind: "entry", entryId });
-    setTaxEditorValues(
-      createTaxEditorValue(normalizedEntry.taxDetails, normalizedEntry.taxRate),
-    );
-  }
-
-  function handleSaveTaxDetails(nextTaxValue: AppTaxRateDialogValue) {
-    if (!taxEditorTarget) {
-      return;
-    }
-
-    if (taxEditorTarget.kind === "voucher") {
-      updateField("taxRate", nextTaxValue.taxRate);
-      updateField("taxDetails", nextTaxValue.taxDetails);
-      setTaxEditorTarget(null);
-      setTaxEditorValues(null);
-      return;
-    }
-
-    updateField(
-      "lineEntries",
-      values.lineEntries.map((entry) =>
-        entry.id === taxEditorTarget.entryId
-          ? {
-            ...entry,
-            atcCode: nextTaxValue.taxDetails.atcCode,
-            refId: nextTaxValue.taxDetails.refId,
-            responsibilityCenter: nextTaxValue.taxDetails.responsibilityCenter,
-            taxRate: nextTaxValue.taxRate,
-            taxDetails: nextTaxValue.taxDetails,
-            vatType: nextTaxValue.taxDetails.vatType,
-          }
-          : entry,
-      ),
-    );
-
-    setTaxEditorTarget(null);
-    setTaxEditorValues(null);
   }
 
   function handleSubmit(event?: FormEvent<HTMLFormElement>) {
@@ -660,9 +575,7 @@ function DisbursementVoucherActionInner() {
         onClearEntries={handleClearEntries}
         onDuplicateEntry={handleDuplicateEntry}
         onInsertEntry={handleInsertEntry}
-        onImportEntries={handleImportEntries}
         onMoveEntry={handleMoveEntry}
-        onOpenEntryTaxEditor={handleOpenEntryTaxEditor}
         onReplaceEntries={handleReplaceLineEntries}
         onUpdateEntry={handleUpdateEntry}
         onUpdateEntryFields={handleUpdateEntryFields}
@@ -690,16 +603,6 @@ function DisbursementVoucherActionInner() {
         onGeneratePdf={() => openDisbursementVoucherPdf(values)}
       />
 
-      <AppTaxRateDialog
-        isOpen={Boolean(taxEditorTarget && taxEditorValues)}
-        title="Tax"
-        value={taxEditorValues}
-        onClose={() => {
-          setTaxEditorTarget(null);
-          setTaxEditorValues(null);
-        }}
-        onSave={handleSaveTaxDetails}
-      />
       {!isReadonly && isPaymentTypeDialogOpen ? (
         <AppPaymentTypeDialog
           isOpen
@@ -959,31 +862,6 @@ function findPartyRecordByName(
   return partyRecords.find(
     (party) => getPartyDisplayName(party).trim().toLowerCase() === normalizedName,
   );
-}
-
-function createTaxEditorValue(
-  taxDetails: DisbursementTaxDetails,
-  taxRate: string,
-): AppTaxRateDialogValue {
-  return {
-    taxDetails,
-    taxRate: getVatTaxRateValue(taxDetails, taxRate),
-  };
-}
-
-function getVatTaxRateValue(
-  taxDetails: DisbursementTaxDetails,
-  fallbackTaxRate: string,
-) {
-  if (/^\d+(?:\.\d+)?%$/.test(fallbackTaxRate)) {
-    return fallbackTaxRate;
-  }
-
-  if (taxDetails.vatPercent > 0) {
-    return `${Number.isInteger(taxDetails.vatPercent) ? taxDetails.vatPercent : taxDetails.vatPercent.toFixed(2)}%`;
-  }
-
-  return "0%";
 }
 
 function createAccountingChartAccountOptions(
@@ -1843,6 +1721,79 @@ type DisbursementEntryColumnId =
 
 type DisbursementEntryView = "accounting" | "expense";
 
+type ExpenseEntryColumnId =
+  | "expenseType"
+  | "amount"
+  | "netAmount"
+  | "vatCode"
+  | "vatPercent"
+  | "vatAmount"
+  | "ewtCode"
+  | "ewtPercent"
+  | "ewtAmount"
+  | "partyCode"
+  | "partyName"
+  | "particulars"
+  | "refId";
+
+const DefaultExpenseEntryColumnOrder: ExpenseEntryColumnId[] = [
+  "expenseType",
+  "amount",
+  "netAmount",
+  "vatCode",
+  "vatPercent",
+  "vatAmount",
+  "ewtCode",
+  "ewtPercent",
+  "ewtAmount",
+  "partyCode",
+  "partyName",
+  "particulars",
+  "refId",
+];
+
+const DefaultVisibleExpenseEntryColumnOrder =
+  DefaultExpenseEntryColumnOrder.filter(
+    (columnId): columnId is ExpenseEntryColumnId => columnId !== "partyCode",
+  );
+
+const ProtectedExpenseEntryColumnIds = new Set<ExpenseEntryColumnId>([
+  "expenseType",
+  "amount",
+]);
+
+const ExpenseEntryColumnLabels: Record<ExpenseEntryColumnId, string> = {
+  expenseType: "Expense Type",
+  amount: "Amount",
+  netAmount: "Net Amount",
+  vatCode: "VAT",
+  vatPercent: "VAT %",
+  vatAmount: "VAT Amount",
+  ewtCode: "EWT",
+  ewtPercent: "EWT %",
+  ewtAmount: "EWT Amount",
+  partyCode: "Party Code",
+  partyName: "Party Name",
+  particulars: "Particulars",
+  refId: "Reference No.",
+};
+
+const DefaultExpenseEntryColumnWidths: Record<ExpenseEntryColumnId, number> = {
+  expenseType: 235,
+  amount: 155,
+  netAmount: 145,
+  vatCode: 190,
+  vatPercent: 105,
+  vatAmount: 135,
+  ewtCode: 210,
+  ewtPercent: 105,
+  ewtAmount: 135,
+  partyCode: 150,
+  partyName: 260,
+  particulars: 320,
+  refId: 180,
+};
+
 const DefaultDisbursementEntryColumnOrder: DisbursementEntryColumnId[] = [
   "accountCode",
   "accountName",
@@ -1923,6 +1874,10 @@ function isDisbursementEntryColumnId(
   return DefaultDisbursementEntryColumnOrder.includes(
     columnId as DisbursementEntryColumnId,
   );
+}
+
+function isExpenseEntryColumnId(columnId: string): columnId is ExpenseEntryColumnId {
+  return DefaultExpenseEntryColumnOrder.includes(columnId as ExpenseEntryColumnId);
 }
 
 function isCashInHandEntry(entry: DisbursementLineEntry) {
@@ -2026,10 +1981,8 @@ function VoucherDataEntry({
   onAddDisbursementType,
   onClearEntries,
   onDuplicateEntry,
-  onImportEntries,
   onInsertEntry,
   onMoveEntry,
-  onOpenEntryTaxEditor,
   onReplaceEntries,
   onUpdateEntry,
   onUpdateEntryFields,
@@ -2047,10 +2000,8 @@ function VoucherDataEntry({
   onAddDisbursementType: () => void;
   onClearEntries: (action: ModuleDataEntryClearAction) => void;
   onDuplicateEntry: (entryId: string) => void;
-  onImportEntries: (entries: DisbursementLineEntry[]) => void;
   onInsertEntry: (entryId: string, position: "above" | "below") => void;
   onMoveEntry: (fromEntryId: string, toEntryId: string) => void;
-  onOpenEntryTaxEditor: (entryId: string) => void;
   onReplaceEntries: (entries: DisbursementLineEntry[]) => void;
   onUpdateEntry: (
     entryId: string,
@@ -2077,7 +2028,10 @@ function VoucherDataEntry({
   >(null);
   const [entryView, setEntryView] =
     useState<DisbursementEntryView>("expense");
-  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const taxCodesQuery = useAlphanumericTaxCodes();
+  const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
+  const vatOptions = useMemo(() => createVatOptions(taxCodes), [taxCodes]);
+  const ewtOptions = useMemo(() => createEwtOptions(taxCodes), [taxCodes]);
   const [columnOrder, setColumnOrder] = useState<DisbursementEntryColumnId[]>(
     DefaultDisbursementEntryColumnOrder,
   );
@@ -2088,8 +2042,23 @@ function VoucherDataEntry({
     DefaultDisbursementEntryColumnWidths,
   );
   const [columnLabels, setColumnLabels] = useState(DisbursementEntryColumnLabels);
+  const [expenseColumnOrder, setExpenseColumnOrder] = useState<
+    ExpenseEntryColumnId[]
+  >(DefaultExpenseEntryColumnOrder);
+  const [visibleExpenseColumnIds, setVisibleExpenseColumnIds] = useState<
+    ExpenseEntryColumnId[]
+  >(DefaultVisibleExpenseEntryColumnOrder);
+  const [expenseColumnWidths, setExpenseColumnWidths] = useState(
+    DefaultExpenseEntryColumnWidths,
+  );
+  const [expenseColumnLabels, setExpenseColumnLabels] = useState(
+    ExpenseEntryColumnLabels,
+  );
   const visibleColumnOrder = columnOrder.filter((columnId) =>
     visibleColumnIds.includes(columnId),
+  );
+  const visibleExpenseColumnOrder = expenseColumnOrder.filter((columnId) =>
+    visibleExpenseColumnIds.includes(columnId),
   );
   const chartAccounts = useMemo(
     () => createAccountingChartAccountOptions(entries),
@@ -2274,20 +2243,15 @@ function VoucherDataEntry({
         width: columnWidths.taxRate,
         widthClassName: "w-[11rem]",
         renderCell: (entry) => (
-          <button
-            type="button"
-            onClick={() => onOpenEntryTaxEditor(entry.id)}
-            disabled={isReadonly}
-            className={joinClasses(
-              accountingCellControlClassName(),
-              "flex items-center justify-between gap-2 text-left",
-            )}
-          >
-            <span className="truncate">
-              {formatTaxRateSummary(entry.taxDetails)}
-            </span>
+          <div className={joinClasses(
+            accountingCellControlClassName(),
+            "flex items-center gap-2 bg-offwhite/45 text-darknavy/70",
+          )}>
             <Percent className="h-4 w-4 shrink-0 text-darknavy/45" />
-          </button>
+            <span className="truncate">
+              {formatTaxRateSummary(entry.taxDetails) || "No tax"}
+            </span>
+          </div>
         ),
       },
       particulars: {
@@ -2416,7 +2380,6 @@ function VoucherDataEntry({
       columnLabels,
       columnWidths,
       isReadonly,
-      onOpenEntryTaxEditor,
       onUpdateEntry,
       onUpdateEntryFields,
       partyOptions,
@@ -2428,17 +2391,21 @@ function VoucherDataEntry({
     () => visibleColumnOrder.map((columnId) => allColumns[columnId]),
     [allColumns, visibleColumnOrder],
   );
-  const expenseColumns = useMemo<
-    ModuleDataEntryColumn<DisbursementLineEntry>[]
+  const allExpenseColumns = useMemo<
+    Record<ExpenseEntryColumnId, ModuleDataEntryColumn<DisbursementLineEntry>>
   >(
-    () => [
-      {
-        header: "Expense Type",
+    () => ({
+      expenseType: {
+        header: expenseColumnLabels.expenseType,
         id: "expenseType",
-        width: 235,
+        width: expenseColumnWidths.expenseType,
         widthClassName: "w-[15rem]",
         renderCell: (entry) => (
           <ChartAccountDropdown
+            addAction={{
+              label: "Add Disbursement Type",
+              onClick: onAddDisbursementType,
+            }}
             accounts={expenseAccounts}
             value={entry.accountName}
             valueField="accountName"
@@ -2457,10 +2424,10 @@ function VoucherDataEntry({
           />
         ),
       },
-      {
-        header: "Gross Receipt Amt",
-        id: "grossReceiptAmount",
-        width: 155,
+      amount: {
+        header: expenseColumnLabels.amount,
+        id: "amount",
+        width: expenseColumnWidths.amount,
         widthClassName: "w-[10rem]",
         renderCell: (entry) => (
           <EntryNumberInput
@@ -2480,85 +2447,160 @@ function VoucherDataEntry({
           />
         ),
       },
-      {
-        header: "VAT Ex Amt",
-        id: "vatExclusiveAmount",
-        width: 130,
+      netAmount: {
+        header: expenseColumnLabels.netAmount,
+        id: "netAmount",
+        width: expenseColumnWidths.netAmount,
         widthClassName: "w-[9rem]",
         renderCell: (entry) => (
-          <ExpenseAmountCell
-            value={Math.max(
-              0,
-              entry.taxDetails.grossAmount - entry.taxDetails.vatAmount,
-            )}
-            fractionDigits={4}
+          <ExpenseDetailValue value={entry.taxDetails.netAmount} />
+        ),
+      },
+      vatCode: {
+        header: expenseColumnLabels.vatCode,
+        id: "vatCode",
+        width: expenseColumnWidths.vatCode,
+        widthClassName: "w-[12rem]",
+        renderCell: (entry) => (
+          <AppAdvancedDropdown
+            value={normalizeVatDropdownValue(entry.taxDetails, taxCodes)}
+            readOnly={isReadonly}
+            isClearable
+            options={vatOptions}
+            placeholder="Select VAT"
+            searchPlaceholder="Search VAT rate or description"
+            className={AccountingDropdownClassName}
+            onChange={(value) => {
+              const vatCode = String(value);
+              const taxRate = getVatRateFromCode(vatCode, taxCodes);
+
+              updateExpenseEntryFields(entry.id, {
+                taxRate,
+                taxDetails: syncTaxDetailsAmount(
+                  {
+                    ...entry.taxDetails,
+                    vatCode,
+                    vatPercent: getVatPercentFromRate(taxRate),
+                  },
+                  entry.taxDetails.grossAmount,
+                  taxRate,
+                ),
+              });
+            }}
           />
         ),
       },
-      {
-        header: "VAT",
+      vatPercent: {
+        header: expenseColumnLabels.vatPercent,
+        id: "vatPercent",
+        width: expenseColumnWidths.vatPercent,
+        widthClassName: "w-[7rem]",
+        renderCell: (entry) => (
+          <ExpenseDetailValue value={entry.taxDetails.vatPercent} suffix="%" />
+        ),
+      },
+      vatAmount: {
+        header: expenseColumnLabels.vatAmount,
         id: "vatAmount",
-        width: 115,
-        widthClassName: "w-[8rem]",
-        renderCell: (entry) => (
-          <ExpenseTaxAmountButton
-            value={entry.taxDetails.vatAmount}
-            disabled={isReadonly}
-            onClick={() => onOpenEntryTaxEditor(entry.id)}
-          />
-        ),
-      },
-      {
-        header: "EWT",
-        id: "ewtAmount",
-        width: 115,
-        widthClassName: "w-[8rem]",
-        renderCell: (entry) => (
-          <ExpenseTaxAmountButton
-            value={entry.taxDetails.ewtAmount}
-            disabled={isReadonly}
-            onClick={() => onOpenEntryTaxEditor(entry.id)}
-          />
-        ),
-      },
-      {
-        header: "For Payment",
-        id: "forPayment",
-        width: 145,
+        width: expenseColumnWidths.vatAmount,
         widthClassName: "w-[9rem]",
         renderCell: (entry) => (
-          <ExpenseAmountCell value={entry.taxDetails.netAmount} />
+          <ExpenseDetailValue value={entry.taxDetails.vatAmount} />
         ),
       },
-      {
+      ewtCode: {
+        header: expenseColumnLabels.ewtCode,
+        id: "ewtCode",
+        width: expenseColumnWidths.ewtCode,
+        widthClassName: "w-[13rem]",
+        renderCell: (entry) => (
+          <AppAdvancedDropdown
+            value={entry.taxDetails.ewtCode}
+            readOnly={isReadonly}
+            isClearable
+            options={ewtOptions}
+            placeholder="Select EWT"
+            searchPlaceholder="Search EWT code, rate, or description"
+            className={AccountingDropdownClassName}
+            onChange={(value) => {
+              const ewtCode = String(value);
+
+              updateExpenseEntryFields(entry.id, {
+                taxDetails: syncTaxDetailsAmount(
+                  {
+                    ...entry.taxDetails,
+                    ewtCode,
+                    ewtPercent: getEwtPercentFromCode(ewtCode, taxCodes),
+                  },
+                  entry.taxDetails.grossAmount,
+                  entry.taxRate,
+                ),
+              });
+            }}
+          />
+        ),
+      },
+      ewtPercent: {
+        header: expenseColumnLabels.ewtPercent,
+        id: "ewtPercent",
+        width: expenseColumnWidths.ewtPercent,
+        widthClassName: "w-[7rem]",
+        renderCell: (entry) => (
+          <ExpenseDetailValue value={entry.taxDetails.ewtPercent} suffix="%" />
+        ),
+      },
+      ewtAmount: {
+        header: expenseColumnLabels.ewtAmount,
+        id: "ewtAmount",
+        width: expenseColumnWidths.ewtAmount,
+        widthClassName: "w-[9rem]",
+        renderCell: (entry) => (
+          <ExpenseDetailValue value={entry.taxDetails.ewtAmount} />
+        ),
+      },
+      partyName: {
         ...allColumns.partyName,
-        header: "VCE Name",
-        id: "vceName",
+        header: expenseColumnLabels.partyName,
+        id: "partyName",
+        width: expenseColumnWidths.partyName,
       },
-      {
+      partyCode: {
+        ...allColumns.partyCode,
+        header: expenseColumnLabels.partyCode,
+        id: "partyCode",
+        width: expenseColumnWidths.partyCode,
+      },
+      particulars: {
         ...allColumns.particulars,
-        header: "Particulars",
+        header: expenseColumnLabels.particulars,
+        id: "particulars",
+        width: expenseColumnWidths.particulars,
       },
-      {
-        ...allColumns.vatType,
-        header: "VAT Type",
-      },
-      {
-        ...allColumns.atcCode,
-        header: "ATC Code",
-      },
-      {
+      refId: {
         ...allColumns.refId,
-        header: "Ref No.",
+        header: expenseColumnLabels.refId,
+        id: "refId",
+        width: expenseColumnWidths.refId,
       },
-    ],
+    }),
     [
       allColumns,
+      ewtOptions,
+      expenseColumnLabels,
+      expenseColumnWidths,
       expenseAccounts,
       isReadonly,
-      onOpenEntryTaxEditor,
+      onAddDisbursementType,
+      taxCodes,
       updateExpenseEntryFields,
+      vatOptions,
     ],
+  );
+  const expenseColumns = useMemo<
+    ModuleDataEntryColumn<DisbursementLineEntry>[]
+  >(
+    () => visibleExpenseColumnOrder.map((columnId) => allExpenseColumns[columnId]),
+    [allExpenseColumns, visibleExpenseColumnOrder],
   );
   const activeColumns =
     entryView === "expense" ? expenseColumns : columns;
@@ -2575,8 +2617,33 @@ function VoucherDataEntry({
       })),
     [columnLabels, columnOrder, columnWidths, visibleColumnIds],
   );
+  const expenseColumnOptions = useMemo<ModuleDataEntryColumnOption[]>(
+    () =>
+      expenseColumnOrder.map((columnId) => ({
+        id: columnId,
+        isHideable: !ProtectedExpenseEntryColumnIds.has(columnId),
+        isVisible: visibleExpenseColumnIds.includes(columnId),
+        label: expenseColumnLabels[columnId],
+        width: expenseColumnWidths[columnId],
+        widthMode: "fixed",
+      })),
+    [
+      expenseColumnLabels,
+      expenseColumnOrder,
+      expenseColumnWidths,
+      visibleExpenseColumnIds,
+    ],
+  );
 
   function updateColumnHeader(columnId: string, header: string) {
+    if (entryView === "expense" && isExpenseEntryColumnId(columnId)) {
+      setExpenseColumnLabels((currentLabels) => ({
+        ...currentLabels,
+        [columnId]: header,
+      }));
+      return;
+    }
+
     if (!isDisbursementEntryColumnId(columnId)) {
       return;
     }
@@ -2588,6 +2655,14 @@ function VoucherDataEntry({
   }
 
   function updateColumnWidth(columnId: string, width: number) {
+    if (entryView === "expense" && isExpenseEntryColumnId(columnId)) {
+      setExpenseColumnWidths((currentWidths) => ({
+        ...currentWidths,
+        [columnId]: clampColumnWidth(width),
+      }));
+      return;
+    }
+
     if (!isDisbursementEntryColumnId(columnId)) {
       return;
     }
@@ -2599,6 +2674,14 @@ function VoucherDataEntry({
   }
 
   function fitColumnWidth(columnId: string) {
+    if (entryView === "expense" && isExpenseEntryColumnId(columnId)) {
+      updateColumnWidth(
+        columnId,
+        estimateDisbursementEntryTextWidth(expenseColumnLabels[columnId], 76),
+      );
+      return;
+    }
+
     if (!isDisbursementEntryColumnId(columnId)) {
       return;
     }
@@ -2614,27 +2697,43 @@ function VoucherDataEntry({
   }
 
   function moveColumn(fromColumnId: string, toColumnId: string) {
+    if (
+      entryView === "expense" &&
+      isExpenseEntryColumnId(fromColumnId) &&
+      isExpenseEntryColumnId(toColumnId)
+    ) {
+      setExpenseColumnOrder((currentOrder) =>
+        moveEntryColumn(currentOrder, fromColumnId, toColumnId),
+      );
+      return;
+    }
+
     if (!isDisbursementEntryColumnId(fromColumnId) || !isDisbursementEntryColumnId(toColumnId)) {
       return;
     }
 
-    setColumnOrder((currentOrder) => {
-      const fromIndex = currentOrder.indexOf(fromColumnId);
-      const toIndex = currentOrder.indexOf(toColumnId);
-
-      if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) {
-        return currentOrder;
-      }
-
-      const nextOrder = [...currentOrder];
-      const [movedColumn] = nextOrder.splice(fromIndex, 1);
-
-      nextOrder.splice(toIndex, 0, movedColumn);
-      return nextOrder;
-    });
+    setColumnOrder((currentOrder) =>
+      moveEntryColumn(currentOrder, fromColumnId, toColumnId),
+    );
   }
 
   function toggleColumnVisibility(columnId: string, isVisible: boolean) {
+    if (entryView === "expense" && isExpenseEntryColumnId(columnId)) {
+      if (!isVisible && ProtectedExpenseEntryColumnIds.has(columnId)) {
+        return;
+      }
+
+      setVisibleExpenseColumnIds((currentVisibleIds) =>
+        updateVisibleEntryColumns(
+          currentVisibleIds,
+          expenseColumnOrder,
+          columnId,
+          isVisible,
+        ),
+      );
+      return;
+    }
+
     if (!isDisbursementEntryColumnId(columnId)) {
       return;
     }
@@ -2643,74 +2742,13 @@ function VoucherDataEntry({
       return;
     }
 
-    setVisibleColumnIds((currentVisibleIds) => {
-      if (isVisible) {
-        const nextVisibleIds = new Set([...currentVisibleIds, columnId]);
-
-        return columnOrder.filter((currentColumnId) =>
-          nextVisibleIds.has(currentColumnId),
-        );
-      }
-
-      if (currentVisibleIds.length <= 1) {
-        return currentVisibleIds;
-      }
-
-      return currentVisibleIds.filter(
-        (currentColumnId) => currentColumnId !== columnId,
-      );
-    });
-  }
-
-  function createExportRows() {
-    return [
-      visibleColumnOrder.map((columnId) => columnLabels[columnId]),
-      ...entries.map((entry) =>
-        visibleColumnOrder.map((columnId) =>
-          getDisbursementEntryExportCell(entry, columnId),
-        ),
+    setVisibleColumnIds((currentVisibleIds) =>
+      updateVisibleEntryColumns(
+        currentVisibleIds,
+        columnOrder,
+        columnId,
+        isVisible,
       ),
-    ];
-  }
-
-  function handleExportEntriesCsv() {
-    const csv = createExportRows()
-      .map((row) =>
-        row
-          .map((cell) => `"${String(cell).replaceAll('"', '""')}"`)
-          .join(","),
-      )
-      .join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-
-    link.href = url;
-    link.download = "disbursement-voucher-entries.csv";
-    link.click();
-    URL.revokeObjectURL(url);
-  }
-
-  function handleExportEntriesExcel() {
-    const htmlRows = createExportRows()
-      .map(
-        (row) =>
-          `<tr>${row
-            .map((cell) => `<td>${escapeHtml(String(cell))}</td>`)
-            .join("")}</tr>`,
-      )
-      .join("");
-    const html = `<!doctype html><html><head><meta charset="utf-8" /></head><body><table>${htmlRows}</table></body></html>`;
-    downloadBlob(
-      new Blob([html], { type: "application/vnd.ms-excel;charset=utf-8" }),
-      "disbursement-voucher-entries.xls",
-    );
-  }
-
-  function handleExportEntriesPdf() {
-    downloadBlob(
-      createSimplePdfBlob("Disbursement Voucher Entries", createExportRows()),
-      "disbursement-voucher-entries.pdf",
     );
   }
 
@@ -2722,7 +2760,9 @@ function VoucherDataEntry({
           description=""
           emptyRowLabel="entry"
           error={errors.lineEntries}
-          columnOptions={entryView === "accounting" ? columnOptions : []}
+          columnOptions={
+            entryView === "expense" ? expenseColumnOptions : columnOptions
+          }
           summaryCells={
             entryView === "accounting"
               ? {
@@ -2741,34 +2781,9 @@ function VoucherDataEntry({
               Variance: {formatAccountingAmount(variance)}
             </span>
           }
-          exportOptions={[
-            {
-              id: "csv",
-              label: "CSV",
-              onSelect: handleExportEntriesCsv,
-            },
-            {
-              id: "excel",
-              label: "Excel",
-              onSelect: handleExportEntriesExcel,
-            },
-            {
-              id: "pdf",
-              label: "PDF",
-              onSelect: handleExportEntriesPdf,
-            },
-          ]}
           isDraggable
           isReadonly={isReadonly}
           rows={activeRows}
-          toolbarActions={[
-            {
-              id: "add-disbursement-type",
-              icon: Plus,
-              label: "Add Disbursement Type",
-              onSelect: onAddDisbursementType,
-            },
-          ]}
           title={
             <div
               role="tablist"
@@ -2806,7 +2821,6 @@ function VoucherDataEntry({
           onClearRows={onClearEntries}
           onDuplicateRow={onDuplicateEntry}
           onFitColumnWidth={fitColumnWidth}
-          onImport={() => setIsImportDialogOpen(true)}
           onInsertRow={onInsertEntry}
           onMoveColumn={moveColumn}
           onMoveRow={onMoveEntry}
@@ -2829,14 +2843,6 @@ function VoucherDataEntry({
 
           onUpdateEntry(particularsEditorEntry.id, "particulars", value);
           setParticularsEditorEntryId(null);
-        }}
-      />
-      <DisbursementEntryImportDialog
-        isOpen={isImportDialogOpen}
-        onClose={() => setIsImportDialogOpen(false)}
-        onImportEntries={(importedEntries) => {
-          onImportEntries(importedEntries);
-          setIsImportDialogOpen(false);
         }}
       />
     </section>
@@ -2869,48 +2875,21 @@ function EntryInput({
   );
 }
 
-function ExpenseAmountCell({
-  fractionDigits = 2,
+function ExpenseDetailValue({
+  suffix = "",
   value,
 }: {
-  fractionDigits?: number;
+  suffix?: string;
   value: number;
 }) {
   return (
     <div className="flex h-10 w-full items-center justify-end bg-offwhite/45 px-3 text-sm font-medium tabular-nums text-darknavy/70">
       {value.toLocaleString("en-US", {
-        minimumFractionDigits: fractionDigits,
-        maximumFractionDigits: fractionDigits,
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
       })}
+      {suffix}
     </div>
-  );
-}
-
-function ExpenseTaxAmountButton({
-  disabled,
-  onClick,
-  value,
-}: {
-  disabled: boolean;
-  onClick: () => void;
-  value: number;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className={joinClasses(
-        accountingCellControlClassName("text-right tabular-nums"),
-        "hover:bg-skyblue/10 disabled:bg-offwhite/45",
-      )}
-      title="Edit tax details"
-    >
-      {value.toLocaleString("en-US", {
-        minimumFractionDigits: 4,
-        maximumFractionDigits: 4,
-      })}
-    </button>
   );
 }
 
@@ -3003,6 +2982,48 @@ function getDisbursementEntryExportCell(
   }
 }
 
+function moveEntryColumn<TColumnId extends string>(
+  currentOrder: TColumnId[],
+  fromColumnId: TColumnId,
+  toColumnId: TColumnId,
+) {
+  const fromIndex = currentOrder.indexOf(fromColumnId);
+  const toIndex = currentOrder.indexOf(toColumnId);
+
+  if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) {
+    return currentOrder;
+  }
+
+  const nextOrder = [...currentOrder];
+  const [movedColumn] = nextOrder.splice(fromIndex, 1);
+
+  nextOrder.splice(toIndex, 0, movedColumn);
+  return nextOrder;
+}
+
+function updateVisibleEntryColumns<TColumnId extends string>(
+  currentVisibleIds: TColumnId[],
+  columnOrder: TColumnId[],
+  columnId: TColumnId,
+  isVisible: boolean,
+) {
+  if (isVisible) {
+    const nextVisibleIds = new Set([...currentVisibleIds, columnId]);
+
+    return columnOrder.filter((currentColumnId) =>
+      nextVisibleIds.has(currentColumnId),
+    );
+  }
+
+  if (currentVisibleIds.length <= 1) {
+    return currentVisibleIds;
+  }
+
+  return currentVisibleIds.filter(
+    (currentColumnId) => currentColumnId !== columnId,
+  );
+}
+
 function calculateDisbursementEntryColumnFitWidth({
   columnId,
   columnLabels,
@@ -3033,70 +3054,6 @@ function calculateDisbursementEntryColumnFitWidth({
 
 function estimateDisbursementEntryTextWidth(value: string, padding: number) {
   return clampColumnWidth(value.trim().length * 7.5 + padding);
-}
-
-function downloadBlob(blob: Blob, filename: string) {
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-
-  link.href = url;
-  link.download = filename;
-  link.click();
-  URL.revokeObjectURL(url);
-}
-
-function escapeHtml(value: string) {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;");
-}
-
-function createSimplePdfBlob(title: string, rows: string[][]) {
-  const lines = [title, "", ...rows.map((row) => row.join(" | "))];
-  const content = [
-    "BT",
-    "/F1 10 Tf",
-    "40 790 Td",
-    ...lines.flatMap((line, index) => [
-      index === 0 ? "/F1 14 Tf" : "/F1 9 Tf",
-      `(${escapePdfText(line.slice(0, 110))}) Tj`,
-      "0 -16 Td",
-    ]),
-    "ET",
-  ].join("\n");
-  const objects = [
-    "<< /Type /Catalog /Pages 2 0 R >>",
-    "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
-    "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
-    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
-    `<< /Length ${content.length} >>\nstream\n${content}\nendstream`,
-  ];
-  let pdf = "%PDF-1.4\n";
-  const offsets = [0];
-
-  objects.forEach((object, index) => {
-    offsets.push(pdf.length);
-    pdf += `${index + 1} 0 obj\n${object}\nendobj\n`;
-  });
-
-  const xrefOffset = pdf.length;
-  pdf += `xref\n0 ${objects.length + 1}\n`;
-  pdf += "0000000000 65535 f \n";
-  offsets.slice(1).forEach((offset) => {
-    pdf += `${String(offset).padStart(10, "0")} 00000 n \n`;
-  });
-  pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
-
-  return new Blob([pdf], { type: "application/pdf" });
-}
-
-function escapePdfText(value: string) {
-  return value
-    .replaceAll("\\", "\\\\")
-    .replaceAll("(", "\\(")
-    .replaceAll(")", "\\)");
 }
 
 function EntryNumberInput({

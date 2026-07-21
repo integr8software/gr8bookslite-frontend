@@ -3,6 +3,7 @@ import type {
   PartyImportColumnHeader,
   PartyImportColumnId,
   PartyImportColumnWidths,
+  PartyAccountingAccountField,
   PartyClassification,
   PartyInformationStatus,
   PartyInformationTableRecord,
@@ -23,6 +24,18 @@ export const PartyManagementParentLabel = "Party management";
 export const PartyInformationTitle = "Party Information";
 
 export const PartyInformationDescription = "Maintain people and organizations used across sales, purchasing, payroll, and tax reporting.";
+
+export const PartyAccountingAccountFieldLabels: Record<
+  PartyAccountingAccountField,
+  string
+> = {
+  customerAdvanceAccount: "Default Customer Advance Account",
+  defaultPayableAccount: "Default Payable Account",
+  defaultReceivableAccount: "Default Receivable Account",
+  employeeAdvanceAccount: "Default Employee Advance Account",
+  employeePayableAccount: "Default Employee Payable Account",
+  vendorAdvanceAccount: "Default Vendor Advance Account",
+};
 
 export const PartyManagementTablePaginationStorageKey = "maintenance-party-management-party-information";
 

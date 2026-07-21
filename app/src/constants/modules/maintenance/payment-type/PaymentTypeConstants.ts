@@ -1,5 +1,6 @@
 import type { SortingState, VisibilityState } from "@tanstack/react-table";
 import { AppMaxFileUploadSizeBytes } from "@/app/src/constants/shared/app/AppConstants";
+import { ModuleImportFixedColumnsWidth } from "@/app/src/constants/shared/module/ModuleImportConstants";
 import type {
 	PaymentTypeClassification,
 	PaymentTypeImportColumnHeader,
@@ -102,7 +103,8 @@ export const PaymentTypeImportFieldOrder: PaymentTypeImportColumnId[] = [
 	"type",
 ];
 
-export const PaymentTypeImportSelectionColumnWidth = 64;
+export const PaymentTypeImportSelectionColumnWidth =
+	ModuleImportFixedColumnsWidth;
 
 export const PaymentTypeImportDefaultColumnWidths: PaymentTypeImportColumnWidths =
 	{

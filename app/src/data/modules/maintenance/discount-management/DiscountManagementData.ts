@@ -21,6 +21,7 @@ import type {
 } from "@/app/src/types/modules/maintenance/discount-management/DiscountManagementTypes";
 import { downloadBlob } from "@/app/src/ui/shared/module/module-table/ModuleTableExportDownload";
 import { formatFileSize } from "@/app/src/utils/file.util";
+import { isModuleImportOptionValue } from "@/app/src/utils/module-import-validation.util";
 
 export const DiscountManagementInitialFormValues: DiscountManagementFormValues =
 	{
@@ -443,8 +444,10 @@ export function validateDiscountImportRows(
 			];
 		}
 
-		if (!DiscountManagementTypeOptions.includes(row.discount.type)) {
-			cellErrors.type = ["Type must be Purchase or Sales."];
+		if (!row.discount.type.trim()) {
+			cellErrors.type = ["Type is required. Choose a value from the list."];
+		} else if (!isModuleImportOptionValue(row.discount.type, DiscountManagementTypeOptions)) {
+			cellErrors.type = ["Choose Purchase or Sales from the list."];
 		}
 
 		if (!row.discount.description.trim()) {
@@ -453,8 +456,10 @@ export function validateDiscountImportRows(
 			cellErrors.description = ["Description must be 500 characters or fewer."];
 		}
 
-		if (!DiscountManagementValueTypeOptions.includes(row.discount.discountType)) {
-			cellErrors.discountType = ["Discount Type must be Percentage or Fixed."];
+		if (!row.discount.discountType.trim()) {
+			cellErrors.discountType = ["Discount type is required. Choose a value from the list."];
+		} else if (!isModuleImportOptionValue(row.discount.discountType, DiscountManagementValueTypeOptions)) {
+			cellErrors.discountType = ["Choose Percentage or Fixed from the list."];
 		}
 
 		if (!Number.isFinite(row.discount.amount) || row.discount.amount < 0) {
@@ -466,8 +471,8 @@ export function validateDiscountImportRows(
 			cellErrors.amount = ["Percentage discounts must be 0 to 100."];
 		}
 
-		if (!DiscountManagementStatusOptions.includes(row.discount.status)) {
-			cellErrors.status = ["Status must be Active or Inactive."];
+		if (!isModuleImportOptionValue(row.discount.status, DiscountManagementStatusOptions)) {
+			cellErrors.status = ["Choose Active or Inactive from the list."];
 		}
 
 		if (normalizedName && (importedNameCounts.get(normalizedName) ?? 0) > 1) {

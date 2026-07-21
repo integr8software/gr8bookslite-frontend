@@ -5,9 +5,7 @@ import type {
 	TermImportColumnId,
 	TermImportPreviewRow,
 } from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
-import {
-	rowHasErrors,
-} from "@/app/src/data/modules/maintenance/term-management/TermManagementData";
+import { rowHasErrors } from "@/app/src/data/modules/maintenance/term-management/TermManagementData";
 import {
 	ModuleImportEditableCell,
 	ModuleImportEditableSelect,
@@ -30,9 +28,17 @@ export function TermImportPreviewTableRow({
 		field: TermImportColumnId,
 		value: string,
 	) => void;
-	onPasteCell: (rowId: string, field: TermImportColumnId, text: string) => void;
+	onPasteCell: (
+		rowId: string,
+		field: TermImportColumnId,
+		text: string,
+	) => void;
 	onToggleSelected: (rowId: string, isSelected: boolean) => void;
-	onMoveRow: (sourceRowId: string, targetRowId: string, position: "before" | "after") => void;
+	onMoveRow: (
+		sourceRowId: string,
+		targetRowId: string,
+		position: "before" | "after",
+	) => void;
 }) {
 	const stickyCellBackground = isSelected
 		? "bg-skyblue/10"
@@ -51,7 +57,12 @@ export function TermImportPreviewTableRow({
 							: undefined
 				}
 			>
-				<td className={joinClasses("sticky left-0 z-20 w-11 text-center", stickyCellBackground)}>
+				<td
+					className={joinClasses(
+						"module-import-selection-column sticky left-0 z-20 text-center",
+						stickyCellBackground,
+					)}
+				>
 					<div className="flex items-center justify-center">
 						<input
 							type="checkbox"
@@ -65,10 +76,14 @@ export function TermImportPreviewTableRow({
 						/>
 					</div>
 				</td>
-				<ModuleImportRowNumberCell rowId={row.id} rowNumber={row.rowNumber} onMoveRow={onMoveRow} />
+				<ModuleImportRowNumberCell
+					rowId={row.id}
+					rowNumber={row.rowNumber}
+					onMoveRow={onMoveRow}
+				/>
 				<td
 					className={joinClasses(
-						"sticky left-[5.75rem] z-10 px-3 py-2 align-middle",
+						"module-import-first-data-column sticky z-10 px-3 py-2 align-middle",
 						stickyCellBackground,
 					)}
 				>
@@ -76,7 +91,9 @@ export function TermImportPreviewTableRow({
 						value={row.term.name}
 						errors={row.cellErrors.name}
 						warnings={row.cellWarnings.name}
-						onChange={(value) => onUpdateCell(row.id, "name", value)}
+						onChange={(value) =>
+							onUpdateCell(row.id, "name", value)
+						}
 						onPaste={(text) => onPasteCell(row.id, "name", text)}
 					/>
 				</td>
@@ -86,8 +103,12 @@ export function TermImportPreviewTableRow({
 						errors={row.cellErrors.datemode}
 						warnings={row.cellWarnings.datemode}
 						options={TermManagementDatemodeOptions}
-						onChange={(value) => onUpdateCell(row.id, "datemode", value)}
-						onPaste={(text) => onPasteCell(row.id, "datemode", text)}
+						onChange={(value) =>
+							onUpdateCell(row.id, "datemode", value)
+						}
+						onPaste={(text) =>
+							onPasteCell(row.id, "datemode", text)
+						}
 					/>
 				</td>
 				<td className="px-3 py-2 align-middle">
@@ -96,13 +117,19 @@ export function TermImportPreviewTableRow({
 						value={row.term.period}
 						errors={row.cellErrors.period}
 						warnings={row.cellWarnings.period}
-						onChange={(value) => onUpdateCell(row.id, "period", value)}
+						onChange={(value) =>
+							onUpdateCell(row.id, "period", value)
+						}
 						onPaste={(text) => onPasteCell(row.id, "period", text)}
 					/>
 				</td>
 			</tr>
 			{row.rowErrors.length > 0 ? (
-				<tr className={isSelected ? "bg-skyblue/10" : "bg-coralpink/[0.025]"}>
+				<tr
+					className={
+						isSelected ? "bg-skyblue/10" : "bg-coralpink/[0.025]"
+					}
+				>
 					<td />
 					<td />
 					<td
@@ -116,5 +143,3 @@ export function TermImportPreviewTableRow({
 		</>
 	);
 }
-
-

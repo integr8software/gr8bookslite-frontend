@@ -3,6 +3,12 @@
 import { AlertCircle } from "lucide-react";
 import { AppMaxFileUploadSizeLabel } from "@/app/src/constants/shared/app/AppConstants";
 import {
+	getModuleImportDataColumnWidth,
+	ModuleImportFixedColumnsWidth,
+	ModuleImportRowNumberColumnWidth,
+	ModuleImportSelectionColumnWidth,
+} from "@/app/src/constants/shared/module/ModuleImportConstants";
+import {
 	UnitOfMeasurementImportAcceptedFileExtensions,
 	UnitOfMeasurementImportAcceptedFileLabel,
 	UnitOfMeasurementImportColumnHeaders,
@@ -49,10 +55,24 @@ export function UnitOfMeasurementImportDialog({
 			titleId="unit-of-measurement-import-title"
 			description="Upload, validate, edit, and import units of measurement in queued batches."
 			onClose={onClose}
-			actions={<ModuleImportHeaderActions accept={UnitOfMeasurementImportAcceptedFileExtensions} disabled={Boolean(importDialog.progress)} isParsing={importDialog.isParsing} onDownloadTemplate={() => void downloadUnitOfMeasurementImportTemplate()} onFileSelect={(file) => void importDialog.handleFileUpload(file)} />}
+			actions={
+				<ModuleImportHeaderActions
+					accept={UnitOfMeasurementImportAcceptedFileExtensions}
+					disabled={Boolean(importDialog.progress)}
+					isParsing={importDialog.isParsing}
+					onDownloadTemplate={() =>
+						void downloadUnitOfMeasurementImportTemplate()
+					}
+					onFileSelect={(file) =>
+						void importDialog.handleFileUpload(file)
+					}
+				/>
+			}
 			progress={
 				importDialog.progress ? (
-					<ModuleImportProgressPanel progress={importDialog.progress} />
+					<ModuleImportProgressPanel
+						progress={importDialog.progress}
+					/>
 				) : null
 			}
 			footer={
@@ -64,7 +84,9 @@ export function UnitOfMeasurementImportDialog({
 					importMode={importDialog.importMode}
 					isBusy={Boolean(importDialog.progress)}
 					isImportMenuOpen={importDialog.isImportMenuOpen}
-					selectedValidRowsCount={importDialog.validSelectedRows.length}
+					selectedValidRowsCount={
+						importDialog.validSelectedRows.length
+					}
 					totalRowsCount={importDialog.validatedRows.length}
 					validRowsCount={importDialog.validRows.length}
 					onCancel={onClose}
@@ -90,10 +112,22 @@ export function UnitOfMeasurementImportDialog({
 
 				<div
 					tabIndex={0}
-					onDragOver={(event) => { if (!importDialog.progress) event.preventDefault(); }}
-					onDrop={(event) => { event.preventDefault(); if (!importDialog.progress) void importDialog.handleFileUpload(event.dataTransfer.files[0]); }}
+					onDragOver={(event) => {
+						if (!importDialog.progress) event.preventDefault();
+					}}
+					onDrop={(event) => {
+						event.preventDefault();
+						if (!importDialog.progress)
+							void importDialog.handleFileUpload(
+								event.dataTransfer.files[0],
+							);
+					}}
 					onPaste={(event) => {
-						if (!isUnitOfMeasurementImportGridPasteTarget(event.target)) {
+						if (
+							!isUnitOfMeasurementImportGridPasteTarget(
+								event.target,
+							)
+						) {
 							return;
 						}
 
@@ -110,30 +144,58 @@ export function UnitOfMeasurementImportDialog({
 					<div className="min-h-36 flex-1 overflow-auto">
 						<table
 							className="module-import-preview-table table-fixed text-left text-sm text-darknavy"
-							style={{ width: `max(100%, ${importDialog.importTableWidth + 48}px)` }}
+							style={{
+								width: `max(100%, ${importDialog.importTableWidth}px)`,
+							}}
 						>
 							<colgroup>
-								<col style={{ width: 44 }} />
-								<col style={{ width: 48 }} />
-								{UnitOfMeasurementImportFieldOrder.map((field) => (
-									<col
-										key={field}
-										style={{ width: importDialog.columnWidths[field] }}
-									/>
-								))}
+								<col
+									style={{
+										width: ModuleImportSelectionColumnWidth,
+									}}
+								/>
+								<col
+									style={{
+										width: ModuleImportRowNumberColumnWidth,
+									}}
+								/>
+								{UnitOfMeasurementImportFieldOrder.map(
+									(field) => (
+										<col
+											key={field}
+											style={{
+												width: getModuleImportDataColumnWidth(
+													importDialog.columnWidths[field],
+													Object.values(importDialog.columnWidths).reduce((total, width) => total + width, 0),
+												),
+											}}
+										/>
+									),
+								)}
 							</colgroup>
 							<thead className="text-xs uppercase text-darknavy/55">
 								<tr>
 									<ModuleImportSelectionHeader
-										checked={importDialog.selectedRowIds.size > 0}
+										checked={
+											importDialog.selectedRowIds.size > 0
+										}
 										disabled={
-											importDialog.visibleRows.length === 0 ||
+											importDialog.visibleRows.length ===
+												0 ||
 											Boolean(importDialog.progress)
 										}
-										isOpen={importDialog.isSelectionMenuOpen}
-										onClearSelection={importDialog.clearRowSelection}
-										onSelectAll={() => importDialog.selectRows("all")}
-										onSelectPage={() => importDialog.selectRows("page")}
+										isOpen={
+											importDialog.isSelectionMenuOpen
+										}
+										onClearSelection={
+											importDialog.clearRowSelection
+										}
+										onSelectAll={() =>
+											importDialog.selectRows("all")
+										}
+										onSelectPage={() =>
+											importDialog.selectRows("page")
+										}
 										onToggleOpen={() =>
 											importDialog.setIsSelectionMenuOpen(
 												(isOpen) => !isOpen,
@@ -141,19 +203,33 @@ export function UnitOfMeasurementImportDialog({
 										}
 									/>
 									<ModuleImportRowNumberHeader />
-									{UnitOfMeasurementImportColumnHeaders.map((column) => (
-										<ModuleImportResizableColumnHeader
-											key={column.id}
-											className={column.className}
-											left={column.stickyLeft === undefined ? undefined : 92}
-											width={importDialog.columnWidths[column.id]}
-											onResize={(width) =>
-												importDialog.updateColumnWidth(column.id, width)
-											}
-										>
-											{column.label}
-										</ModuleImportResizableColumnHeader>
-									))}
+									{UnitOfMeasurementImportColumnHeaders.map(
+										(column) => (
+											<ModuleImportResizableColumnHeader
+												key={column.id}
+												className={column.className}
+												left={
+													column.stickyLeft ===
+													undefined
+														? undefined
+														: ModuleImportFixedColumnsWidth
+												}
+												width={
+													importDialog.columnWidths[
+														column.id
+													]
+												}
+												onResize={(width) =>
+													importDialog.updateColumnWidth(
+														column.id,
+														width,
+													)
+												}
+											>
+												{column.label}
+											</ModuleImportResizableColumnHeader>
+										),
+									)}
 								</tr>
 							</thead>
 							<tbody className="divide-y divide-darknavy/8 bg-white">
@@ -162,20 +238,54 @@ export function UnitOfMeasurementImportDialog({
 										<UnitOfMeasurementImportPreviewTableRow
 											key={row.id}
 											row={row}
-											isSelected={importDialog.selectedRowIds.has(row.id)}
-											onUpdateCell={importDialog.updatePreviewCell}
-											onPasteCell={importDialog.pasteIntoPreviewCell}
-											onMoveRow={importDialog.movePreviewRow}
-											onToggleSelected={importDialog.toggleRowSelection}
+											isSelected={importDialog.selectedRowIds.has(
+												row.id,
+											)}
+											onUpdateCell={
+												importDialog.updatePreviewCell
+											}
+											onPasteCell={
+												importDialog.pasteIntoPreviewCell
+											}
+											onMoveRow={
+												importDialog.movePreviewRow
+											}
+											onToggleSelected={
+												importDialog.toggleRowSelection
+											}
 										/>
 									))
 								) : (
 									<tr>
 										<td
-											colSpan={UnitOfMeasurementImportPreviewColumnCount + 1}
+											colSpan={
+												UnitOfMeasurementImportPreviewColumnCount +
+												1
+											}
 											className="module-import-empty-cell px-3 py-10 text-center text-sm font-medium text-darknavy/45"
 										>
-											<ModuleImportEmptyDropzone accept={UnitOfMeasurementImportAcceptedFileExtensions} acceptedFileLabel={UnitOfMeasurementImportAcceptedFileLabel} disabled={Boolean(importDialog.progress)} isParsing={importDialog.isParsing} maxFileSizeLabel={AppMaxFileUploadSizeLabel} onFileSelect={(file) => void importDialog.handleFileUpload(file)} />
+											<ModuleImportEmptyDropzone
+												accept={
+													UnitOfMeasurementImportAcceptedFileExtensions
+												}
+												acceptedFileLabel={
+													UnitOfMeasurementImportAcceptedFileLabel
+												}
+												disabled={Boolean(
+													importDialog.progress,
+												)}
+												isParsing={
+													importDialog.isParsing
+												}
+												maxFileSizeLabel={
+													AppMaxFileUploadSizeLabel
+												}
+												onFileSelect={(file) =>
+													void importDialog.handleFileUpload(
+														file,
+													)
+												}
+											/>
 										</td>
 									</tr>
 								)}
@@ -187,7 +297,9 @@ export function UnitOfMeasurementImportDialog({
 						invalidCount={importDialog.invalidRows.length}
 						isBusy={Boolean(importDialog.progress)}
 						selectedCount={
-							importDialog.progress ? 0 : importDialog.selectedRowIds.size
+							importDialog.progress
+								? 0
+								: importDialog.selectedRowIds.size
 						}
 						totalRowsCount={importDialog.validatedRows.length}
 						totalPages={importDialog.totalPages}
@@ -199,7 +311,9 @@ export function UnitOfMeasurementImportDialog({
 							)
 						}
 						onPreviousPage={() =>
-							importDialog.setPreviewPage((page) => Math.max(1, page - 1))
+							importDialog.setPreviewPage((page) =>
+								Math.max(1, page - 1),
+							)
 						}
 						onRemoveSelected={importDialog.removeSelectedRows}
 					/>

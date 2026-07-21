@@ -14,8 +14,16 @@ import {
 	Trash2,
 	Upload,
 } from "lucide-react";
+import {
+	ModuleImportRowNumberColumnWidth,
+	ModuleImportSelectionColumnWidth,
+} from "@/app/src/constants/shared/module/ModuleImportConstants";
 import { ClickOrDragDropFile } from "@/app/src/ui/shared/module/ClickOrDragDropFile";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import {
+	getModuleImportOptionValue,
+	isModuleImportOptionValue,
+} from "@/app/src/utils/module-import-validation.util";
 
 export type ModuleImportMode = "all-rows" | "all-valid" | "selected-valid";
 
@@ -79,7 +87,7 @@ export function ModuleImportEmptyDropzone({
 	return (
 		<ClickOrDragDropFile
 			accept={accept}
-			acceptedFileLabel={`${acceptedFileLabel} - Maximum size: ${maxFileSizeLabel}`}
+			acceptedFileLabel={`${acceptedFileLabel} · Up to ${maxFileSizeLabel}`}
 			disabled={disabled}
 			isBusy={isParsing}
 			label="Upload or Drag and Drop Files"
@@ -147,7 +155,13 @@ export function ModuleImportSelectionHeader({
 	return (
 		<th
 			ref={menuRef}
-			className="module-import-preview-header sticky left-0 top-0 z-40 h-10 w-11 px-0 text-center"
+			className="module-import-preview-header module-import-selection-column sticky left-0 top-0 z-40 h-10 px-0 text-center"
+			style={{
+				boxSizing: "border-box",
+				minWidth: ModuleImportSelectionColumnWidth,
+				width: ModuleImportSelectionColumnWidth,
+				maxWidth: ModuleImportSelectionColumnWidth,
+			}}
 		>
 			<input
 				type="checkbox"
@@ -201,7 +215,16 @@ export function ModuleImportSelectionHeader({
 
 export function ModuleImportRowNumberHeader() {
 	return (
-		<th className="module-import-preview-header sticky left-11 top-0 z-40 h-10 w-12 px-1 text-center">
+		<th
+			className="module-import-preview-header sticky top-0 z-40 h-10 px-0 text-center"
+			style={{
+				boxSizing: "border-box",
+				left: ModuleImportSelectionColumnWidth,
+				minWidth: ModuleImportRowNumberColumnWidth,
+				width: ModuleImportRowNumberColumnWidth,
+				maxWidth: ModuleImportRowNumberColumnWidth,
+			}}
+		>
 			No.
 		</th>
 	);
@@ -234,24 +257,55 @@ export function ModuleImportRowNumberCell({
 					event.preventDefault();
 					event.dataTransfer.dropEffect = "move";
 					event.currentTarget.dataset.dropPosition =
-					event.clientY < event.currentTarget.getBoundingClientRect().top + event.currentTarget.offsetHeight / 2
-						? "before"
-						: "after";
+						event.clientY <
+						event.currentTarget.getBoundingClientRect().top +
+							event.currentTarget.offsetHeight / 2
+							? "before"
+							: "after";
 				}
 			}}
-			onDragLeave={(event) => delete event.currentTarget.dataset.dropPosition}
+			onDragLeave={(event) =>
+				delete event.currentTarget.dataset.dropPosition
+			}
 			onDrop={(event) => {
 				event.preventDefault();
-				const sourceRowId = event.dataTransfer.getData("text/x-module-import-row");
-				const position = event.currentTarget.dataset.dropPosition === "after" ? "after" : "before";
+				const sourceRowId = event.dataTransfer.getData(
+					"text/x-module-import-row",
+				);
+				const position =
+					event.currentTarget.dataset.dropPosition === "after"
+						? "after"
+						: "before";
 				delete event.currentTarget.dataset.dropPosition;
 				if (sourceRowId && sourceRowId !== rowId) {
 					onMoveRow?.(sourceRowId, rowId, position);
 				}
 			}}
-			className="module-import-row-number sticky left-11 z-20 w-12 px-1 text-center font-semibold text-darknavy/70"
+			className="module-import-row-number sticky z-20 px-0 text-center font-semibold tabular-nums text-darknavy/70"
+			style={{
+				boxSizing: "border-box",
+				left: ModuleImportSelectionColumnWidth,
+				minWidth: ModuleImportRowNumberColumnWidth,
+				width: ModuleImportRowNumberColumnWidth,
+				maxWidth: ModuleImportRowNumberColumnWidth,
+			}}
 		>
-			<span className={joinClasses("inline-flex items-center justify-center", onMoveRow && "cursor-grab active:cursor-grabbing")} title={onMoveRow ? `Drag row ${rowNumber} to reorder` : undefined}>
+			<span
+				className={joinClasses(
+					"inline-flex items-center justify-center",
+					rowNumber >= 10000
+						? "text-[10px]"
+						: rowNumber >= 1000
+							? "text-[11px]"
+							: rowNumber >= 100
+								? "text-xs"
+								: "text-sm",
+					onMoveRow && "cursor-grab active:cursor-grabbing",
+				)}
+				title={
+					onMoveRow ? `Drag row ${rowNumber} to reorder` : undefined
+				}
+			>
 				{rowNumber}
 			</span>
 		</td>
@@ -332,7 +386,10 @@ export function ModuleImportFooter({
 					className="inline-flex h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-l-md bg-skyblue px-4 text-sm font-semibold text-white transition hover:bg-skyblue/85 disabled:cursor-not-allowed disabled:opacity-55 lg:h-10 lg:w-auto"
 				>
 					{isBusy ? (
-						<LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
+						<LoaderCircle
+							className="h-4 w-4 animate-spin"
+							aria-hidden="true"
+						/>
 					) : (
 						<Upload className="h-4 w-4" aria-hidden="true" />
 					)}
@@ -341,7 +398,11 @@ export function ModuleImportFooter({
 				<button
 					type="button"
 					onClick={onToggleImportMenu}
-					disabled={!canImportAllRows && !canImportAllValid && !canImportSelectedValid}
+					disabled={
+						!canImportAllRows &&
+						!canImportAllValid &&
+						!canImportSelectedValid
+					}
 					className="inline-flex h-11 w-11 items-center justify-center rounded-r-md border-l border-white/25 bg-skyblue text-white transition hover:bg-skyblue/85 disabled:cursor-not-allowed disabled:opacity-55 lg:h-10"
 					aria-label="Choose import type"
 					aria-expanded={isImportMenuOpen}
@@ -434,22 +495,56 @@ export function ModuleImportPaginationBar({
 	return (
 		<div className="grid items-center gap-2 border-t border-darknavy/10 bg-white px-2 py-1.5 lg:grid-cols-[1fr_auto_1fr]">
 			<div className="flex min-w-0 items-center gap-1">
-				<button type="button" disabled={currentPage <= 1} onClick={onPreviousPage} className="module-import-page-button" aria-label="Previous page">
+				<button
+					type="button"
+					disabled={currentPage <= 1}
+					onClick={onPreviousPage}
+					className="module-import-page-button"
+					aria-label="Previous page"
+				>
 					<ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" />
 				</button>
 				{visiblePages.map((page) => (
-					<button key={page} type="button" onClick={() => onGoToPage(page)} className={joinClasses("module-import-page-button", page === currentPage && "bg-purple-500 text-white") } aria-current={page === currentPage ? "page" : undefined}>
+					<button
+						key={page}
+						type="button"
+						onClick={() => onGoToPage(page)}
+						className={joinClasses(
+							"module-import-page-button",
+							page === currentPage && "bg-purple-500 text-white",
+						)}
+						aria-current={page === currentPage ? "page" : undefined}
+					>
 						{page}
 					</button>
 				))}
-				<button type="button" disabled={currentPage >= totalPages} onClick={onNextPage} className="module-import-page-button" aria-label="Next page">
+				<button
+					type="button"
+					disabled={currentPage >= totalPages}
+					onClick={onNextPage}
+					className="module-import-page-button"
+					aria-label="Next page"
+				>
 					<ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
 				</button>
 			</div>
 			<div className="flex items-center justify-center gap-3 text-xs font-semibold text-darknavy/55">
-				<ImportCount icon={<Rows3 className="h-4 w-4" />} label="Total Rows" value={totalRowsCount} />
-				<ImportCount icon={<CheckSquare2 className="h-4 w-4" />} label="Selected" value={selectedCount} />
-				<ImportCount icon={<AlertTriangle className="h-4 w-4" />} label="Invalid Rows" value={invalidCount} tone="danger" />
+				<ImportCount
+					icon={<Rows3 className="h-4 w-4" />}
+					label="Total Rows"
+					value={totalRowsCount}
+				/>
+				<ImportCount
+					icon={<CheckSquare2 className="h-4 w-4" />}
+					label="Selected"
+					value={selectedCount}
+				/>
+				<ImportCount
+					icon={<AlertTriangle className="h-4 w-4" />}
+					label="Invalid Rows"
+					value={invalidCount}
+					tone="danger"
+				/>
 			</div>
 			<div className="flex flex-wrap justify-self-end gap-1.5">
 				<button
@@ -478,9 +573,25 @@ export function ModuleImportPaginationBar({
 	);
 }
 
-function ImportCount({ icon, label, tone, value }: { icon: ReactNode; label: string; tone?: "danger"; value: number }) {
+function ImportCount({
+	icon,
+	label,
+	tone,
+	value,
+}: {
+	icon: ReactNode;
+	label: string;
+	tone?: "danger";
+	value: number;
+}) {
 	return (
-		<span className={joinClasses("inline-flex items-center gap-1", tone === "danger" && value > 0 ? "text-coralpink" : "")} title={`${label}: ${value}`}>
+		<span
+			className={joinClasses(
+				"inline-flex items-center gap-1",
+				tone === "danger" && value > 0 ? "text-coralpink" : "",
+			)}
+			title={`${label}: ${value}`}
+		>
 			{icon}
 			<span className="hidden xl:inline">{label}:</span>
 			<span>{value}</span>
@@ -490,7 +601,10 @@ function ImportCount({ icon, label, tone, value }: { icon: ReactNode; label: str
 
 function getVisibleImportPages(currentPage: number, totalPages: number) {
 	const count = Math.min(5, totalPages);
-	const start = Math.max(1, Math.min(currentPage - 2, totalPages - count + 1));
+	const start = Math.max(
+		1,
+		Math.min(currentPage - 2, totalPages - count + 1),
+	);
 	return Array.from({ length: count }, (_, index) => start + index);
 }
 
@@ -508,7 +622,7 @@ export function ModuleImportEditableCell({
 	value: string;
 	onChange: (value: string) => void;
 	onPaste?: (text: string) => void;
-}) {
+	}) {
 	const messages = [...(errors ?? []), ...(warnings ?? [])];
 
 	return (
@@ -517,10 +631,18 @@ export function ModuleImportEditableCell({
 				type={type}
 				min={type === "number" ? 0 : undefined}
 				value={value}
+				onCopy={(event) => {
+					event.preventDefault();
+					event.clipboardData.setData("text/plain", value);
+				}}
 				onChange={(event) => {
 					const nextValue = event.target.value;
 
-					if (type === "number" && nextValue.trim() && Number(nextValue) < 0) {
+					if (
+						type === "number" &&
+						nextValue.trim() &&
+						Number(nextValue) < 0
+					) {
 						return;
 					}
 
@@ -588,11 +710,19 @@ export function ModuleImportEditableSelect<TOption extends string>({
 	onPaste?: (text: string) => void;
 }) {
 	const messages = [...(errors ?? []), ...(warnings ?? [])];
+	const canonicalValue = getModuleImportOptionValue(value, options) ?? value;
+	const hasInvalidValue =
+		value.trim() !== "" && !isModuleImportOptionValue(value, options);
 
 	return (
 		<label className="relative block">
 			<select
-				value={value}
+				value={canonicalValue}
+				aria-invalid={hasInvalidValue || Boolean(errors?.length)}
+				onCopy={(event) => {
+					event.preventDefault();
+					event.clipboardData.setData("text/plain", canonicalValue);
+				}}
 				onChange={(event) => onChange(event.target.value as TOption)}
 				onPaste={(event) => {
 					const text = event.clipboardData.getData("text");
@@ -613,6 +743,9 @@ export function ModuleImportEditableSelect<TOption extends string>({
 							: "border-darknavy/12 focus:border-skyblue focus:ring-skyblue/15",
 				)}
 			>
+				{hasInvalidValue ? (
+					<option value={value}>Invalid selection: {value}</option>
+				) : null}
 				{options.map((option) => (
 					<option key={option} value={option}>
 						{option}

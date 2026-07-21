@@ -5,9 +5,7 @@ import {
 	DiscountManagementTypeOptions,
 	DiscountManagementValueTypeOptions,
 } from "@/app/src/constants/modules/maintenance/discount-management/DiscountManagementConstants";
-import {
-	rowHasErrors,
-} from "@/app/src/data/modules/maintenance/discount-management/DiscountManagementData";
+import { rowHasErrors } from "@/app/src/data/modules/maintenance/discount-management/DiscountManagementData";
 import type {
 	DiscountImportColumnId,
 	DiscountImportPreviewRow,
@@ -35,7 +33,11 @@ export function DiscountManagementImportPreviewTableRow({
 		text: string,
 	) => void;
 	onToggleSelected: (rowId: string, isSelected: boolean) => void;
-	onMoveRow: (sourceRowId: string, targetRowId: string, position: "before" | "after") => void;
+	onMoveRow: (
+		sourceRowId: string,
+		targetRowId: string,
+		position: "before" | "after",
+	) => void;
 	onUpdateCell: (
 		rowId: string,
 		field: DiscountImportColumnId,
@@ -59,7 +61,12 @@ export function DiscountManagementImportPreviewTableRow({
 							: undefined
 				}
 			>
-				<td className={joinClasses("sticky left-0 z-20 w-11 text-center", stickyCellBackground)}>
+				<td
+					className={joinClasses(
+						"module-import-selection-column sticky left-0 z-20 text-center",
+						stickyCellBackground,
+					)}
+				>
 					<div className="flex items-center justify-center">
 						<input
 							type="checkbox"
@@ -73,10 +80,14 @@ export function DiscountManagementImportPreviewTableRow({
 						/>
 					</div>
 				</td>
-				<ModuleImportRowNumberCell rowId={row.id} rowNumber={row.rowNumber} onMoveRow={onMoveRow} />
+				<ModuleImportRowNumberCell
+					rowId={row.id}
+					rowNumber={row.rowNumber}
+					onMoveRow={onMoveRow}
+				/>
 				<td
 					className={joinClasses(
-						"sticky left-[5.75rem] z-10 px-3 py-2 align-middle",
+						"module-import-first-data-column sticky z-10 px-3 py-2 align-middle",
 						stickyCellBackground,
 					)}
 				>
@@ -84,7 +95,9 @@ export function DiscountManagementImportPreviewTableRow({
 						value={row.discount.name}
 						errors={row.cellErrors.name}
 						warnings={row.cellWarnings.name}
-						onChange={(value) => onUpdateCell(row.id, "name", value)}
+						onChange={(value) =>
+							onUpdateCell(row.id, "name", value)
+						}
 						onPaste={(text) => onPasteCell(row.id, "name", text)}
 					/>
 				</td>
@@ -94,7 +107,9 @@ export function DiscountManagementImportPreviewTableRow({
 						errors={row.cellErrors.type}
 						warnings={row.cellWarnings.type}
 						options={DiscountManagementTypeOptions}
-						onChange={(value) => onUpdateCell(row.id, "type", value)}
+						onChange={(value) =>
+							onUpdateCell(row.id, "type", value)
+						}
 						onPaste={(text) => onPasteCell(row.id, "type", text)}
 					/>
 				</td>
@@ -103,8 +118,12 @@ export function DiscountManagementImportPreviewTableRow({
 						value={row.discount.description}
 						errors={row.cellErrors.description}
 						warnings={row.cellWarnings.description}
-						onChange={(value) => onUpdateCell(row.id, "description", value)}
-						onPaste={(text) => onPasteCell(row.id, "description", text)}
+						onChange={(value) =>
+							onUpdateCell(row.id, "description", value)
+						}
+						onPaste={(text) =>
+							onPasteCell(row.id, "description", text)
+						}
 					/>
 				</td>
 				<td className="px-3 py-2 align-middle">
@@ -113,8 +132,12 @@ export function DiscountManagementImportPreviewTableRow({
 						errors={row.cellErrors.discountType}
 						warnings={row.cellWarnings.discountType}
 						options={DiscountManagementValueTypeOptions}
-						onChange={(value) => onUpdateCell(row.id, "discountType", value)}
-						onPaste={(text) => onPasteCell(row.id, "discountType", text)}
+						onChange={(value) =>
+							onUpdateCell(row.id, "discountType", value)
+						}
+						onPaste={(text) =>
+							onPasteCell(row.id, "discountType", text)
+						}
 					/>
 				</td>
 				<td className="px-3 py-2 align-middle">
@@ -123,7 +146,9 @@ export function DiscountManagementImportPreviewTableRow({
 						value={String(row.discount.amount)}
 						errors={row.cellErrors.amount}
 						warnings={row.cellWarnings.amount}
-						onChange={(value) => onUpdateCell(row.id, "amount", value)}
+						onChange={(value) =>
+							onUpdateCell(row.id, "amount", value)
+						}
 						onPaste={(text) => onPasteCell(row.id, "amount", text)}
 					/>
 				</td>
@@ -133,13 +158,19 @@ export function DiscountManagementImportPreviewTableRow({
 						errors={row.cellErrors.status}
 						warnings={row.cellWarnings.status}
 						options={DiscountManagementStatusOptions}
-						onChange={(value) => onUpdateCell(row.id, "status", value)}
+						onChange={(value) =>
+							onUpdateCell(row.id, "status", value)
+						}
 						onPaste={(text) => onPasteCell(row.id, "status", text)}
 					/>
 				</td>
 			</tr>
 			{row.rowErrors.length > 0 ? (
-				<tr className={isSelected ? "bg-skyblue/10" : "bg-coralpink/[0.025]"}>
+				<tr
+					className={
+						isSelected ? "bg-skyblue/10" : "bg-coralpink/[0.025]"
+					}
+				>
 					<td />
 					<td />
 					<td
@@ -153,5 +184,3 @@ export function DiscountManagementImportPreviewTableRow({
 		</>
 	);
 }
-
-

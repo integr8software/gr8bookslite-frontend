@@ -1,9 +1,12 @@
 "use client";
 
-import {
-	AlertCircle,
-} from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { AppMaxFileUploadSizeLabel } from "@/app/src/constants/shared/app/AppConstants";
+import {
+	getModuleImportDataColumnWidth,
+	ModuleImportRowNumberColumnWidth,
+	ModuleImportSelectionColumnWidth,
+} from "@/app/src/constants/shared/module/ModuleImportConstants";
 import { useBankMasterfileImportDialog } from "@/app/src/hooks/modules/maintenance/bank-masterfile/useBankMasterfileImportDialog";
 import { ModuleImportDialog } from "@/app/src/ui/shared/module/ModuleImportDialog";
 import {
@@ -15,20 +18,12 @@ import {
 	ModuleImportRowNumberHeader,
 	ModuleImportSelectionHeader,
 } from "@/app/src/ui/shared/module/ModuleImportControls";
-import {
-	ModuleImportResizableColumnHeader,
-} from "@/app/src/ui/shared/module/ModuleImportResizableColumnHeader";
+import { ModuleImportResizableColumnHeader } from "@/app/src/ui/shared/module/ModuleImportResizableColumnHeader";
 
-import {
-	TemplateHeaders,
-} from "@/app/src/constants/modules/maintenance/bank-masterfile/BankMasterfileConstants";
-import type {
-	BankMasterfileImportDialogProps,
-} from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
+import { TemplateHeaders } from "@/app/src/constants/modules/maintenance/bank-masterfile/BankMasterfileConstants";
+import type { BankMasterfileImportDialogProps } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
 import { BankImportRow } from "@/app/src/ui/modules/maintenance/bank-masterfile/BankMasterfileImportPreviewTableRow";
-import {
-	downloadBankImportTemplate,
-} from "@/app/src/data/modules/maintenance/bank-masterfile/BankMasterfileData";
+import { downloadBankImportTemplate } from "@/app/src/data/modules/maintenance/bank-masterfile/BankMasterfileData";
 
 export function BankMasterfileImportDialog({
 	existingBanks,
@@ -51,11 +46,21 @@ export function BankMasterfileImportDialog({
 			description="Upload, validate, edit, and import bank accounts in queued batches."
 			onClose={onClose}
 			actions={
-				<ModuleImportHeaderActions accept=".xlsx,.csv,.tsv,.txt" disabled={Boolean(importDialog.progress)} isParsing={importDialog.isParsing} onDownloadTemplate={() => void downloadBankImportTemplate()} onFileSelect={(file) => void importDialog.handleFileUpload(file)} />
+				<ModuleImportHeaderActions
+					accept=".xlsx,.csv,.tsv,.txt"
+					disabled={Boolean(importDialog.progress)}
+					isParsing={importDialog.isParsing}
+					onDownloadTemplate={() => void downloadBankImportTemplate()}
+					onFileSelect={(file) =>
+						void importDialog.handleFileUpload(file)
+					}
+				/>
 			}
 			progress={
 				importDialog.progress ? (
-					<ModuleImportProgressPanel progress={importDialog.progress} />
+					<ModuleImportProgressPanel
+						progress={importDialog.progress}
+					/>
 				) : null
 			}
 			footer={
@@ -67,7 +72,9 @@ export function BankMasterfileImportDialog({
 					importMode={importDialog.importMode}
 					isBusy={Boolean(importDialog.progress)}
 					isImportMenuOpen={importDialog.isImportMenuOpen}
-					selectedValidRowsCount={importDialog.validSelectedRows.length}
+					selectedValidRowsCount={
+						importDialog.validSelectedRows.length
+					}
 					totalRowsCount={importDialog.validatedRows.length}
 					validRowsCount={importDialog.validRows.length}
 					onCancel={onClose}
@@ -92,8 +99,16 @@ export function BankMasterfileImportDialog({
 				) : null}
 				<div
 					tabIndex={0}
-					onDragOver={(event) => { if (!importDialog.progress) event.preventDefault(); }}
-					onDrop={(event) => { event.preventDefault(); if (!importDialog.progress) void importDialog.handleFileUpload(event.dataTransfer.files[0]); }}
+					onDragOver={(event) => {
+						if (!importDialog.progress) event.preventDefault();
+					}}
+					onDrop={(event) => {
+						event.preventDefault();
+						if (!importDialog.progress)
+							void importDialog.handleFileUpload(
+								event.dataTransfer.files[0],
+							);
+					}}
 					onPaste={(event) => {
 						if (
 							event.target instanceof HTMLInputElement ||
@@ -114,30 +129,58 @@ export function BankMasterfileImportDialog({
 					<div className="min-h-36 flex-1 overflow-auto">
 						<table
 							className="module-import-preview-table table-fixed text-left text-sm text-darknavy"
-							style={{ width: `max(100%, ${importDialog.importTableWidth + 48}px)` }}
+							style={{
+								width: `max(100%, ${importDialog.importTableWidth}px)`,
+							}}
 						>
 							<colgroup>
-								<col style={{ width: 44 }} />
-								<col style={{ width: 48 }} />
-								{importDialog.columnWidths.map((width, index) => (
-									<col
-										key={`${TemplateHeaders[index]}-${index}`}
-										style={{ width }}
-									/>
-								))}
+								<col
+									style={{
+										width: ModuleImportSelectionColumnWidth,
+									}}
+								/>
+								<col
+									style={{
+										width: ModuleImportRowNumberColumnWidth,
+									}}
+								/>
+								{importDialog.columnWidths.map(
+									(width, index) => (
+										<col
+											key={`${TemplateHeaders[index]}-${index}`}
+										style={{
+											width: getModuleImportDataColumnWidth(
+												width,
+												importDialog.columnWidths.reduce((total, current) => total + current, 0),
+											),
+										}}
+										/>
+									),
+								)}
 							</colgroup>
 							<thead className="text-xs uppercase text-darknavy/55">
 								<tr>
 									<ModuleImportSelectionHeader
-										checked={importDialog.selectedRowIds.size > 0}
+										checked={
+											importDialog.selectedRowIds.size > 0
+										}
 										disabled={
-											importDialog.visibleRows.length === 0 ||
+											importDialog.visibleRows.length ===
+												0 ||
 											Boolean(importDialog.progress)
 										}
-										isOpen={importDialog.isSelectionMenuOpen}
-										onClearSelection={importDialog.clearRowSelection}
-										onSelectAll={() => importDialog.selectRows("all")}
-										onSelectPage={() => importDialog.selectRows("page")}
+										isOpen={
+											importDialog.isSelectionMenuOpen
+										}
+										onClearSelection={
+											importDialog.clearRowSelection
+										}
+										onSelectAll={() =>
+											importDialog.selectRows("all")
+										}
+										onSelectPage={() =>
+											importDialog.selectRows("page")
+										}
 										onToggleOpen={() =>
 											importDialog.setIsSelectionMenuOpen(
 												(isOpen) => !isOpen,
@@ -148,9 +191,16 @@ export function BankMasterfileImportDialog({
 									{TemplateHeaders.map((header, index) => (
 										<ModuleImportResizableColumnHeader
 											key={header}
-											width={importDialog.columnWidths[index] ?? 160}
+											width={
+												importDialog.columnWidths[
+													index
+												] ?? 160
+											}
 											onResize={(width) =>
-												importDialog.updateColumnWidth(index, width)
+												importDialog.updateColumnWidth(
+													index,
+													width,
+												)
 											}
 										>
 											{header}
@@ -164,10 +214,18 @@ export function BankMasterfileImportDialog({
 										<BankImportRow
 											key={row.id}
 											row={row}
-											selected={importDialog.selectedRowIds.has(row.id)}
-											disabled={Boolean(importDialog.progress)}
-											onMoveRow={importDialog.movePreviewRow}
-											onPasteCell={importDialog.pasteIntoPreviewCell}
+											selected={importDialog.selectedRowIds.has(
+												row.id,
+											)}
+											disabled={Boolean(
+												importDialog.progress,
+											)}
+											onMoveRow={
+												importDialog.movePreviewRow
+											}
+											onPasteCell={
+												importDialog.pasteIntoPreviewCell
+											}
 											onToggle={importDialog.toggleRow}
 											onUpdate={importDialog.updateCell}
 										/>
@@ -178,7 +236,24 @@ export function BankMasterfileImportDialog({
 											colSpan={11}
 											className="module-import-empty-cell px-3 py-10 text-center font-medium text-darknavy/45"
 										>
-											<ModuleImportEmptyDropzone accept=".xlsx,.csv,.tsv,.txt" acceptedFileLabel=".xlsx, .csv, .tsv, .txt" disabled={Boolean(importDialog.progress)} isParsing={importDialog.isParsing} maxFileSizeLabel={AppMaxFileUploadSizeLabel} onFileSelect={(file) => void importDialog.handleFileUpload(file)} />
+											<ModuleImportEmptyDropzone
+												accept=".xlsx,.csv,.tsv,.txt"
+												acceptedFileLabel=".xlsx, .csv, .tsv, .txt"
+												disabled={Boolean(
+													importDialog.progress,
+												)}
+												isParsing={
+													importDialog.isParsing
+												}
+												maxFileSizeLabel={
+													AppMaxFileUploadSizeLabel
+												}
+												onFileSelect={(file) =>
+													void importDialog.handleFileUpload(
+														file,
+													)
+												}
+											/>
 										</td>
 									</tr>
 								)}
@@ -190,7 +265,9 @@ export function BankMasterfileImportDialog({
 						invalidCount={importDialog.invalidRows.length}
 						isBusy={Boolean(importDialog.progress)}
 						selectedCount={
-							importDialog.progress ? 0 : importDialog.selectedRowIds.size
+							importDialog.progress
+								? 0
+								: importDialog.selectedRowIds.size
 						}
 						totalRowsCount={importDialog.validatedRows.length}
 						totalPages={importDialog.totalPages}
@@ -202,7 +279,9 @@ export function BankMasterfileImportDialog({
 							)
 						}
 						onPreviousPage={() =>
-							importDialog.setPreviewPage((page) => Math.max(1, page - 1))
+							importDialog.setPreviewPage((page) =>
+								Math.max(1, page - 1),
+							)
 						}
 						onRemoveSelected={importDialog.removeSelectedRows}
 					/>

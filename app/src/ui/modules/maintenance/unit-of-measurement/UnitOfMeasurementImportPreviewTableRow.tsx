@@ -1,9 +1,7 @@
 "use client";
 
 import { UnitOfMeasurementQuantityModeOptions } from "@/app/src/constants/modules/maintenance/unit-of-measurement/UnitOfMeasurementConstants";
-import {
-	unitOfMeasurementImportRowHasErrors,
-} from "@/app/src/data/modules/maintenance/unit-of-measurement/UnitOfMeasurementData";
+import { unitOfMeasurementImportRowHasErrors } from "@/app/src/data/modules/maintenance/unit-of-measurement/UnitOfMeasurementData";
 import type {
 	UnitOfMeasurementImportColumnId,
 	UnitOfMeasurementImportPreviewRow,
@@ -36,7 +34,11 @@ export function UnitOfMeasurementImportPreviewTableRow({
 		text: string,
 	) => void;
 	onToggleSelected: (rowId: string, isSelected: boolean) => void;
-	onMoveRow: (sourceRowId: string, targetRowId: string, position: "before" | "after") => void;
+	onMoveRow: (
+		sourceRowId: string,
+		targetRowId: string,
+		position: "before" | "after",
+	) => void;
 }) {
 	const stickyCellBackground = isSelected
 		? "bg-skyblue/10"
@@ -55,7 +57,12 @@ export function UnitOfMeasurementImportPreviewTableRow({
 							: undefined
 				}
 			>
-				<td className={joinClasses("sticky left-0 z-20 w-11 text-center", stickyCellBackground)}>
+				<td
+					className={joinClasses(
+						"module-import-selection-column sticky left-0 z-20 text-center",
+						stickyCellBackground,
+					)}
+				>
 					<div className="flex items-center justify-center">
 						<input
 							type="checkbox"
@@ -69,10 +76,14 @@ export function UnitOfMeasurementImportPreviewTableRow({
 						/>
 					</div>
 				</td>
-				<ModuleImportRowNumberCell rowId={row.id} rowNumber={row.rowNumber} onMoveRow={onMoveRow} />
+				<ModuleImportRowNumberCell
+					rowId={row.id}
+					rowNumber={row.rowNumber}
+					onMoveRow={onMoveRow}
+				/>
 				<td
 					className={joinClasses(
-						"sticky left-[5.75rem] z-10 px-3 py-2 align-middle",
+						"module-import-first-data-column sticky z-10 px-3 py-2 align-middle",
 						stickyCellBackground,
 					)}
 				>
@@ -80,7 +91,9 @@ export function UnitOfMeasurementImportPreviewTableRow({
 						value={row.record.name}
 						errors={row.cellErrors.name}
 						warnings={row.cellWarnings.name}
-						onChange={(value) => onUpdateCell(row.id, "name", value)}
+						onChange={(value) =>
+							onUpdateCell(row.id, "name", value)
+						}
 						onPaste={(text) => onPasteCell(row.id, "name", text)}
 					/>
 				</td>
@@ -89,7 +102,9 @@ export function UnitOfMeasurementImportPreviewTableRow({
 						value={row.record.symbol}
 						errors={row.cellErrors.symbol}
 						warnings={row.cellWarnings.symbol}
-						onChange={(value) => onUpdateCell(row.id, "symbol", value)}
+						onChange={(value) =>
+							onUpdateCell(row.id, "symbol", value)
+						}
 						onPaste={(text) => onPasteCell(row.id, "symbol", text)}
 					/>
 				</td>
@@ -101,13 +116,21 @@ export function UnitOfMeasurementImportPreviewTableRow({
 						options={UnitOfMeasurementQuantityModeOptions.map(
 							(option) => option.value,
 						)}
-						onChange={(value) => onUpdateCell(row.id, "quantityMode", value)}
-						onPaste={(text) => onPasteCell(row.id, "quantityMode", text)}
+						onChange={(value) =>
+							onUpdateCell(row.id, "quantityMode", value)
+						}
+						onPaste={(text) =>
+							onPasteCell(row.id, "quantityMode", text)
+						}
 					/>
 				</td>
 			</tr>
 			{row.rowErrors.length > 0 ? (
-				<tr className={isSelected ? "bg-skyblue/10" : "bg-coralpink/[0.025]"}>
+				<tr
+					className={
+						isSelected ? "bg-skyblue/10" : "bg-coralpink/[0.025]"
+					}
+				>
 					<td />
 					<td />
 					<td

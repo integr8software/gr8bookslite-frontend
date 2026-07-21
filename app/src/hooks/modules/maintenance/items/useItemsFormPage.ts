@@ -38,6 +38,7 @@ import { ItemManagementQueryKeys } from "@/app/src/services/modules/maintenance/
 import { fetchPartyOptions } from "@/app/src/services/modules/maintenance/party-management/PartyManagementApi";
 import { fetchUnitsOfMeasurement } from "@/app/src/services/modules/maintenance/unit-of-measurement/UnitOfMeasurementApi";
 import { UnitOfMeasurementQueryKeys } from "@/app/src/services/modules/maintenance/unit-of-measurement/UnitOfMeasurementQueryKeys";
+import { useTaxMaintenanceOptions } from "@/app/src/hooks/modules/maintenance/tax-maintenance/useTaxMaintenanceOptions";
 
 const NumberItemFormFields = new Set<keyof ItemFormValues>(["costPrice", "maximumStock", "minimumStock", "reorderLevel", "sellingPrice"]);
 
@@ -49,6 +50,7 @@ export function useItemsFormPage() {
   const responsibilityCenters = useResponsibilityCenterStore((state) => state.centers);
   const { warehouses } = useWarehousesStore();
   const { addItem, isMutating, items, updateItem } = store;
+  const taxMaintenance = useTaxMaintenanceOptions();
   const itemAttributeOptionsQuery = useQuery({
     queryKey: ItemManagementQueryKeys.itemAttributeOptions(),
     queryFn: fetchItemAttributeOptions,
@@ -99,6 +101,16 @@ export function useItemsFormPage() {
           value: unit.symbol,
         })),
     [unitsOfMeasurementQuery.data?.records, values.uom],
+  );
+  const taxTreatmentOptions = useMemo(
+    () => taxMaintenance.taxes
+      .filter((tax) => tax.status === "Active")
+      .map((tax) => ({
+        label: `${tax.name} (${tax.percentage}%)`,
+        value: tax.name,
+        percentage: Number(tax.percentage),
+      })),
+    [taxMaintenance.taxes],
   );
 
   function updateField<TKey extends keyof ItemFormValues>(field: TKey, value: ItemFormValues[TKey]) {
@@ -405,6 +417,7 @@ export function useItemsFormPage() {
     responsibilityCenterOptions: createResponsibilityCenterOptions(responsibilityCenters),
     setIsStatusDialogOpen,
     statusOptions: createSimpleOptions(["Active", "Inactive"]),
+    taxTreatmentOptions,
     supplierOptions: createSimpleOptions(vendorOptionsQuery.data.filter((supplier) => supplier.status === "Active").map((supplier) => supplier.name)),
     uomOptions,
     updateField,

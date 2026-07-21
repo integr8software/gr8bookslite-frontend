@@ -6,18 +6,9 @@ import {
   PartyClassificationOptions,
   VatRegistrationTypeOptions,
 } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
-import {
-  partyImportRowHasErrors,
-} from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
-import type {
-  PartyImportColumnId,
-  PartyImportPreviewRow,
-} from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
-import {
-  ModuleImportEditableCell,
-  ModuleImportEditableSelect,
-  ModuleImportRowNumberCell,
-} from "@/app/src/ui/shared/module/ModuleImportControls";
+import { partyImportRowHasErrors } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
+import type { PartyImportColumnId, PartyImportPreviewRow } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
+import { ModuleImportEditableCell, ModuleImportEditableSelect, ModuleImportRowNumberCell } from "@/app/src/ui/shared/module/ModuleImportControls";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 export function PartyManagementImportPreviewTableRow({
@@ -30,45 +21,23 @@ export function PartyManagementImportPreviewTableRow({
 }: {
   row: PartyImportPreviewRow;
   isSelected: boolean;
-  onUpdateCell: (
-    rowId: string,
-    field: PartyImportColumnId,
-    value: string,
-  ) => void;
-  onPasteCell: (
-    rowId: string,
-    field: PartyImportColumnId,
-    text: string,
-  ) => void;
+  onUpdateCell: (rowId: string, field: PartyImportColumnId, value: string) => void;
+  onPasteCell: (rowId: string, field: PartyImportColumnId, text: string) => void;
   onToggleSelected: (rowId: string, isSelected: boolean) => void;
   onMoveRow: (sourceRowId: string, targetRowId: string, position: "before" | "after") => void;
 }) {
-  const stickyCellBackground = isSelected
-    ? "bg-skyblue/10"
-    : partyImportRowHasErrors(row)
-      ? "bg-coralpink/[0.025]"
-      : "bg-white";
+  const stickyCellBackground = isSelected ? "bg-skyblue/10" : partyImportRowHasErrors(row) ? "bg-coralpink/[0.025]" : "bg-white";
 
   return (
     <>
-      <tr
-        className={
-          isSelected
-            ? "bg-skyblue/10"
-            : partyImportRowHasErrors(row)
-              ? "bg-coralpink/[0.025]"
-              : undefined
-        }
-      >
-        <td className={joinClasses("sticky left-0 z-20 w-11 text-center", stickyCellBackground)}>
+      <tr className={isSelected ? "bg-skyblue/10" : partyImportRowHasErrors(row) ? "bg-coralpink/[0.025]" : undefined}>
+        <td className={joinClasses("module-import-selection-column sticky left-0 z-20 text-center", stickyCellBackground)}>
           <div className="flex items-center justify-center">
             <input
               type="checkbox"
               checked={isSelected}
               onClick={(event) => event.stopPropagation()}
-              onChange={(event) =>
-                onToggleSelected(row.id, event.target.checked)
-              }
+              onChange={(event) => onToggleSelected(row.id, event.target.checked)}
               aria-label={`Select row ${row.rowNumber}`}
               className="h-4 w-4 rounded border-darknavy/20 text-skyblue focus:ring-skyblue/20"
             />
@@ -83,9 +52,7 @@ export function PartyManagementImportPreviewTableRow({
                 errors={row.cellErrors.classification}
                 warnings={row.cellWarnings.classification}
                 options={PartyClassificationOptions}
-                onChange={(value) =>
-                  onUpdateCell(row.id, "classification", value)
-                }
+                onChange={(value) => onUpdateCell(row.id, "classification", value)}
                 onPaste={(text) => onPasteCell(row.id, "classification", text)}
               />
             ) : field === "vatRegistrationType" ? (
@@ -94,32 +61,20 @@ export function PartyManagementImportPreviewTableRow({
                 errors={row.cellErrors.vatRegistrationType}
                 warnings={row.cellWarnings.vatRegistrationType}
                 options={["", ...VatRegistrationTypeOptions]}
-                onChange={(value) =>
-                  onUpdateCell(row.id, "vatRegistrationType", value)
-                }
-                onPaste={(text) =>
-                  onPasteCell(row.id, "vatRegistrationType", text)
-                }
+                onChange={(value) => onUpdateCell(row.id, "vatRegistrationType", value)}
+                onPaste={(text) => onPasteCell(row.id, "vatRegistrationType", text)}
               />
             ) : (
-              <ImportCell
-                row={row}
-                field={field}
-                onUpdateCell={onUpdateCell}
-                onPasteCell={onPasteCell}
-              />
+              <ImportCell row={row} field={field} onUpdateCell={onUpdateCell} onPasteCell={onPasteCell} />
             )}
           </td>
         ))}
       </tr>
       {row.rowErrors.length > 0 ? (
-      <tr className={isSelected ? "bg-skyblue/10" : "bg-coralpink/[0.025]"}>
-        <td />
-        <td />
-          <td
-            colSpan={PartyImportPreviewColumnCount - 1}
-            className="px-3 pb-3 text-xs font-semibold text-coralpink"
-          >
+        <tr className={isSelected ? "bg-skyblue/10" : "bg-coralpink/[0.025]"}>
+          <td />
+          <td />
+          <td colSpan={PartyImportPreviewColumnCount - 1} className="px-3 pb-3 text-xs font-semibold text-coralpink">
             {row.rowErrors.join(" ")}
           </td>
         </tr>
@@ -136,16 +91,8 @@ function ImportCell({
 }: {
   row: PartyImportPreviewRow;
   field: PartyImportColumnId;
-  onUpdateCell: (
-    rowId: string,
-    field: PartyImportColumnId,
-    value: string,
-  ) => void;
-  onPasteCell: (
-    rowId: string,
-    field: PartyImportColumnId,
-    text: string,
-  ) => void;
+  onUpdateCell: (rowId: string, field: PartyImportColumnId, value: string) => void;
+  onPasteCell: (rowId: string, field: PartyImportColumnId, text: string) => void;
 }) {
   return (
     <ModuleImportEditableCell
@@ -158,42 +105,26 @@ function ImportCell({
   );
 }
 
-function getPartyImportCellValue(
-  row: PartyImportPreviewRow,
-  field: PartyImportColumnId,
-) {
+function getPartyImportCellValue(row: PartyImportPreviewRow, field: PartyImportColumnId) {
   if (field === "partyTypes") {
     return row.party.partyTypes.join(", ");
   }
 
-  if (
-    isPartyImportAddressColumn(field)
-  ) {
+  if (isPartyImportAddressColumn(field)) {
     return getPartyImportAddressValue(row, field);
   }
 
   return String(row.party[field] ?? "");
 }
 
-function getPartyImportAddressValue(
-  row: PartyImportPreviewRow,
-  field: PartyImportAddressColumnId,
-) {
+function getPartyImportAddressValue(row: PartyImportPreviewRow, field: PartyImportAddressColumnId) {
   const { property, role } = PartyImportAddressColumnMap[field];
-  const address =
-    role === "default"
-      ? row.party.address
-      : row.party.addresses.find((candidate) =>
-          partyImportAddressHasRole(candidate, role),
-        );
+  const address = role === "default" ? row.party.address : row.party.addresses.find((candidate) => partyImportAddressHasRole(candidate, role));
 
   return String(address?.[property] ?? "");
 }
 
-function partyImportAddressHasRole(
-  address: PartyImportPreviewRow["party"]["address"],
-  role: PartyImportAddressRole,
-) {
+function partyImportAddressHasRole(address: PartyImportPreviewRow["party"]["address"], role: PartyImportAddressRole) {
   if (role === "billing") return address.isBilling;
   if (role === "delivery") return address.isDelivery;
   if (role === "home") return address.isHome;
@@ -201,9 +132,7 @@ function partyImportAddressHasRole(
   return address.isDefault;
 }
 
-function isPartyImportAddressColumn(
-  field: PartyImportColumnId,
-): field is PartyImportAddressColumnId {
+function isPartyImportAddressColumn(field: PartyImportColumnId): field is PartyImportAddressColumnId {
   return field in PartyImportAddressColumnMap;
 }
 

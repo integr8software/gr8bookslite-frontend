@@ -232,6 +232,15 @@ function getBankMasterfileIssueMessage(
 	field: BankImportColumnId,
 	message: string,
 ) {
+	if (
+		(field === "accountType" || field === "status") &&
+		(message === "Invalid input" || message.toLowerCase().includes("invalid"))
+	) {
+		return field === "accountType"
+			? "Choose a valid account type from the list."
+			: "Choose a valid status from the list.";
+	}
+
 	if (message !== "Invalid input") {
 		return message;
 	}
@@ -240,7 +249,7 @@ function getBankMasterfileIssueMessage(
 		case "bankName":
 			return "Bank is required.";
 		case "accountType":
-			return "Select a valid account type.";
+			return "Choose a valid account type from the list.";
 		case "currencyCode":
 			return "Currency is required.";
 		case "seriesStart":
@@ -250,7 +259,7 @@ function getBankMasterfileIssueMessage(
 		case "seriesDigits":
 			return "Series digits are required.";
 		case "status":
-			return "Select a valid status.";
+			return "Choose a valid status from the list.";
 		default:
 			return message;
 	}

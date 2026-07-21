@@ -16,6 +16,7 @@ import type {
 } from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
 import { downloadBlob } from "@/app/src/ui/shared/module/module-table/ModuleTableExportDownload";
 import { formatFileSize } from "@/app/src/utils/file.util";
+import { isModuleImportOptionValue } from "@/app/src/utils/module-import-validation.util";
 
 export const TermManagementInitialFormValues: TermManagementFormValues = {
 	name: "",
@@ -316,8 +317,10 @@ export function validateTermImportRows(
 			];
 		}
 
-		if (!TermManagementDatemodeOptions.includes(row.term.datemode)) {
-			cellErrors.datemode = ["Datemode must be Day, Month, or Year."];
+		if (!row.term.datemode.trim()) {
+			cellErrors.datemode = ["Datemode is required. Choose a value from the list."];
+		} else if (!isModuleImportOptionValue(row.term.datemode, TermManagementDatemodeOptions)) {
+			cellErrors.datemode = ["Choose Day, Month, or Year from the list."];
 		}
 
 		if (

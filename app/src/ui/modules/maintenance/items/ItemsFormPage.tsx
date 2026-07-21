@@ -68,6 +68,7 @@ export function ItemsFormPage() {
 		isReadonly: page.isReadonly,
 		responsibilityCenterOptions: page.responsibilityCenterOptions,
 		statusOptions: page.statusOptions,
+		taxTreatmentOptions: page.taxTreatmentOptions,
 		uomOptions: page.uomOptions,
 		values: page.values,
 		warehouseItemsHref: page.warehouseItemsHref,

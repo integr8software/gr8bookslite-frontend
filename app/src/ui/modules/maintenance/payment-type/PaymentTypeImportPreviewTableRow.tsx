@@ -1,6 +1,4 @@
-import {
-	PaymentTypeClassificationOptions,
-} from "@/app/src/constants/modules/maintenance/payment-type/PaymentTypeConstants";
+import { PaymentTypeClassificationOptions } from "@/app/src/constants/modules/maintenance/payment-type/PaymentTypeConstants";
 import type {
 	PaymentTypeImportColumnId,
 	PaymentTypeImportPreviewRow,
@@ -28,7 +26,11 @@ export function PaymentTypeImportPreviewTableRow({
 		text: string,
 	) => void;
 	onToggleSelected: (rowId: string, isSelected: boolean) => void;
-	onMoveRow: (sourceRowId: string, targetRowId: string, position: "before" | "after") => void;
+	onMoveRow: (
+		sourceRowId: string,
+		targetRowId: string,
+		position: "before" | "after",
+	) => void;
 	onUpdateCell: (
 		rowId: string,
 		field: PaymentTypeImportColumnId,
@@ -54,7 +56,12 @@ export function PaymentTypeImportPreviewTableRow({
 							: undefined
 				}
 			>
-				<td className={joinClasses("sticky left-0 z-20 w-11 text-center", stickyCellBackground)}>
+				<td
+					className={joinClasses(
+						"module-import-selection-column sticky left-0 z-20 text-center",
+						stickyCellBackground,
+					)}
+				>
 					<div className="flex items-center justify-center">
 						<input
 							type="checkbox"
@@ -68,10 +75,14 @@ export function PaymentTypeImportPreviewTableRow({
 						/>
 					</div>
 				</td>
-				<ModuleImportRowNumberCell rowId={row.id} rowNumber={row.rowNumber} onMoveRow={onMoveRow} />
+				<ModuleImportRowNumberCell
+					rowId={row.id}
+					rowNumber={row.rowNumber}
+					onMoveRow={onMoveRow}
+				/>
 				<td
 					className={joinClasses(
-						"sticky left-[5.75rem] z-10 px-3 py-2 align-middle",
+						"module-import-first-data-column sticky z-10 px-3 py-2 align-middle",
 						stickyCellBackground,
 					)}
 				>
@@ -79,8 +90,12 @@ export function PaymentTypeImportPreviewTableRow({
 						value={row.paymentType.paymentType}
 						errors={row.cellErrors.paymentType}
 						warnings={row.cellWarnings.paymentType}
-						onChange={(value) => onUpdateCell(row.id, "paymentType", value)}
-						onPaste={(text) => onPasteCell(row.id, "paymentType", text)}
+						onChange={(value) =>
+							onUpdateCell(row.id, "paymentType", value)
+						}
+						onPaste={(text) =>
+							onPasteCell(row.id, "paymentType", text)
+						}
 					/>
 				</td>
 				<td className="px-3 py-2 align-middle">
@@ -88,8 +103,12 @@ export function PaymentTypeImportPreviewTableRow({
 						value={row.paymentType.description}
 						errors={row.cellErrors.description}
 						warnings={row.cellWarnings.description}
-						onChange={(value) => onUpdateCell(row.id, "description", value)}
-						onPaste={(text) => onPasteCell(row.id, "description", text)}
+						onChange={(value) =>
+							onUpdateCell(row.id, "description", value)
+						}
+						onPaste={(text) =>
+							onPasteCell(row.id, "description", text)
+						}
 					/>
 				</td>
 				<td className="px-3 py-2 align-middle">
@@ -98,13 +117,19 @@ export function PaymentTypeImportPreviewTableRow({
 						errors={row.cellErrors.type}
 						warnings={row.cellWarnings.type}
 						options={PaymentTypeClassificationOptions}
-						onChange={(value) => onUpdateCell(row.id, "type", value)}
+						onChange={(value) =>
+							onUpdateCell(row.id, "type", value)
+						}
 						onPaste={(text) => onPasteCell(row.id, "type", text)}
 					/>
 				</td>
 			</tr>
 			{row.rowErrors.length > 0 ? (
-				<tr className={isSelected ? "bg-skyblue/10" : "bg-coralpink/[0.025]"}>
+				<tr
+					className={
+						isSelected ? "bg-skyblue/10" : "bg-coralpink/[0.025]"
+					}
+				>
 					<td />
 					<td />
 					<td
@@ -118,5 +143,3 @@ export function PaymentTypeImportPreviewTableRow({
 		</>
 	);
 }
-
-

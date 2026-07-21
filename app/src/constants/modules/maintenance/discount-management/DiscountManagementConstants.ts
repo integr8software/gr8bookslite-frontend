@@ -9,6 +9,7 @@ import type {
 	DiscountType,
 } from "@/app/src/types/modules/maintenance/discount-management/DiscountManagementTypes";
 import { AppMaxFileUploadSizeBytes } from "@/app/src/constants/shared/app/AppConstants";
+import { ModuleImportFixedColumnsWidth } from "@/app/src/constants/shared/module/ModuleImportConstants";
 import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
@@ -23,8 +24,7 @@ export const DiscountManagementTitle = "Discount Management";
 export const DiscountManagementDescription =
 	"Maintain purchase and sales discount definitions with their generated chart account mapping.";
 
-export const DiscountManagementDrawerFormId =
-	"discount-management-drawer-form";
+export const DiscountManagementDrawerFormId = "discount-management-drawer-form";
 
 export const DiscountManagementFieldClassName =
 	"min-h-11 w-full rounded-md border border-darknavy/15 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20 disabled:cursor-not-allowed disabled:bg-darknavy/5 read-only:bg-darknavy/[0.03]";
@@ -139,15 +139,18 @@ export const DiscountManagementStatusOptions = [
 export const DiscountManagementActionCopy = {
 	add: {
 		title: "Add Discount",
-		description: "Create a purchase or sales discount with its chart account.",
+		description:
+			"Create a purchase or sales discount with its chart account.",
 	},
 	edit: {
 		title: "Edit Discount",
-		description: "Update the discount value, type, status, and account mapping.",
+		description:
+			"Update the discount value, type, status, and account mapping.",
 	},
 	view: {
 		title: "View Discount",
-		description: "Review the configured discount details before making changes.",
+		description:
+			"Review the configured discount details before making changes.",
 	},
 } as const;
 
@@ -184,7 +187,7 @@ export const DiscountImportFieldOrder: DiscountImportColumnId[] = [
 	"status",
 ];
 
-export const DiscountImportSelectionColumnWidth = 64;
+export const DiscountImportSelectionColumnWidth = ModuleImportFixedColumnsWidth;
 
 export const DiscountImportDefaultColumnWidths: DiscountImportColumnWidths = {
 	name: 224,

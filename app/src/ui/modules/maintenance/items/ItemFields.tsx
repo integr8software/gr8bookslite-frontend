@@ -8,10 +8,6 @@ import {
 import { formatCurrency } from "@/app/src/utils/currency.util";
 import Link from "next/link";
 import { Check, ExternalLink } from "lucide-react";
-import {
-	ItemTaxTreatmentSelectOptions,
-	VatExclusiveTaxMultiplier,
-} from "@/app/src/constants/modules/maintenance/items/ItemManagementConstants";
 import type {
 	ItemBehavior,
 	ItemFormErrors,
@@ -26,6 +22,7 @@ import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
 import { ItemTagsInput } from "@/app/src/ui/modules/maintenance/items/ItemTagsInput";
 
 export type ItemFieldsProps = {
+	taxTreatmentOptions: Array<{ label: string; value: string; percentage: number }>;
 	categoryOptions: AppAdvancedDropdownOption[];
 	errors: ItemFormErrors;
 	isReadonly: boolean;
@@ -294,9 +291,14 @@ export function ItemPricingTaxFields({
 	isReadonly,
 	onFieldChange,
 	onInputChange,
+	taxTreatmentOptions,
 	values,
 }: ItemFieldsProps) {
-	const suggestedSellingPrice = createSuggestedSellingPrice(values);
+	const selectedTax = taxTreatmentOptions.find((option) => option.value === values.taxTreatment);
+	const suggestedSellingPrice = createSuggestedSellingPrice(values, selectedTax?.percentage);
+	const options = taxTreatmentOptions.length > 0
+		? taxTreatmentOptions
+		: [{ label: values.taxTreatment || "Select tax type", value: values.taxTreatment, percentage: 0 }];
 
 	return (
 		<FieldPanel title="Pricing and Tax">
@@ -329,7 +331,7 @@ export function ItemPricingTaxFields({
 					disabled={isReadonly}
 					className={fieldClassName}
 				>
-					{ItemTaxTreatmentSelectOptions.map((taxTreatment) => (
+					{options.map((taxTreatment) => (
 						<option key={taxTreatment.value} value={taxTreatment.value}>
 							{taxTreatment.label}
 						</option>
@@ -468,12 +470,12 @@ export function ItemInventoryFields({
 	);
 }
 
-function createSuggestedSellingPrice(values: ItemFormValues) {
-	if (values.taxTreatment !== "VAT Exclusive") {
+function createSuggestedSellingPrice(values: ItemFormValues, taxPercentage?: number) {
+	if (taxPercentage === undefined || taxPercentage <= 0) {
 		return values.costPrice;
 	}
 
-	return values.costPrice * VatExclusiveTaxMultiplier;
+	return values.costPrice * (1 + taxPercentage / 100);
 }
 
 function toggleItemBehavior(

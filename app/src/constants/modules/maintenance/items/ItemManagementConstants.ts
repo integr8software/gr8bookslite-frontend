@@ -6,7 +6,6 @@ import type {
 	ItemRecord,
 	ItemStatus,
 	ItemTableColumnKey,
-	ItemTaxTreatment,
 } from "@/app/src/types/modules/maintenance/items/ItemManagementTypes";
 import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-table/ModuleTableExportButton";
@@ -35,27 +34,6 @@ export const ItemBehaviorOptions = [
 	"Asset",
 	"Consumable Item",
 ] as const satisfies readonly ItemBehavior[];
-
-export const ItemTaxTreatmentOptions = [
-	"VAT Exclusive",
-	"VAT Inclusive",
-	"VAT Exempt",
-	"Zero Rated",
-	"Non-VAT",
-] as const satisfies readonly ItemTaxTreatment[];
-
-export const ItemTaxTreatmentSelectOptions = [
-	{ label: "VAT Exclusive (12%)", value: "VAT Exclusive" },
-	{ label: "VAT Inclusive (12%)", value: "VAT Inclusive" },
-	{ label: "VAT Exempt (0%)", value: "VAT Exempt" },
-	{ label: "Zero Rated (0%)", value: "Zero Rated" },
-	{ label: "Non-VAT (0%)", value: "Non-VAT" },
-] as const satisfies ReadonlyArray<{
-	label: string;
-	value: ItemTaxTreatment;
-}>;
-
-export const VatExclusiveTaxMultiplier = 1.12;
 
 export const ItemCategoryPaginationStorageKey =
 	"maintenance.items.item-category.classification";

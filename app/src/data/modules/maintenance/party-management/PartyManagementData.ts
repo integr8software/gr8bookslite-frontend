@@ -41,6 +41,7 @@ import type {
 import { downloadBlob } from "@/app/src/ui/shared/module/module-table/ModuleTableExportDownload";
 import { todayDateValue } from "@/app/src/utils/date.util";
 import { formatFileSize } from "@/app/src/utils/file.util";
+import { isModuleImportOptionValue } from "@/app/src/utils/module-import-validation.util";
 
 export const PartyAtcCodeSource = {
   label:
@@ -873,9 +874,13 @@ export function validatePartyImportRows(
       ];
     }
 
-    if (!PartyClassificationOptions.includes(row.party.classification)) {
+    if (!row.party.classification.trim()) {
       cellErrors.classification = [
-        "Classification must be Individual or Non-Individual.",
+        "Classification is required. Choose a value from the list.",
+      ];
+    } else if (!isModuleImportOptionValue(row.party.classification, PartyClassificationOptions)) {
+      cellErrors.classification = [
+        "Choose Individual or Non-Individual from the list.",
       ];
     }
 
@@ -931,9 +936,9 @@ export function validatePartyImportRows(
 
     if (
       row.party.vatRegistrationType &&
-      !VatRegistrationTypeOptions.includes(row.party.vatRegistrationType)
+      !isModuleImportOptionValue(row.party.vatRegistrationType, VatRegistrationTypeOptions)
     ) {
-      cellErrors.vatRegistrationType = ["Choose a valid VAT registration type."];
+      cellErrors.vatRegistrationType = ["Choose a valid VAT registration type from the list."];
     }
     if (row.party.atcCode && !isAtcCodeLike(row.party.atcCode)) {
       cellErrors.atcCode = ["Enter a valid BIR ATC code."];

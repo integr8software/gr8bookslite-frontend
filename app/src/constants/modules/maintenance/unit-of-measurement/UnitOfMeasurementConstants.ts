@@ -7,6 +7,7 @@ import type {
 	UnitOfMeasurementTableColumnKey,
 } from "@/app/src/types/modules/maintenance/unit-of-measurement/UnitOfMeasurementTypes";
 import { AppMaxFileUploadSizeBytes } from "@/app/src/constants/shared/app/AppConstants";
+import { ModuleImportFixedColumnsWidth } from "@/app/src/constants/shared/module/ModuleImportConstants";
 import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
 export const UnitOfMeasurementTitle = "Unit of Measurement";
@@ -40,15 +41,18 @@ export const UnitOfMeasurementStatusOptions = [
 export const UnitOfMeasurementActionCopy = {
 	add: {
 		title: "Add Unit of Measurement",
-		description: "Create a new unit used in inventory and transaction quantities.",
+		description:
+			"Create a new unit used in inventory and transaction quantities.",
 	},
 	edit: {
 		title: "Edit Unit of Measurement",
-		description: "Update the unit setup details used across item quantities.",
+		description:
+			"Update the unit setup details used across item quantities.",
 	},
 	view: {
 		title: "View Unit of Measurement",
-		description: "Review the configured unit details before making changes.",
+		description:
+			"Review the configured unit details before making changes.",
 	},
 } as const;
 
@@ -150,7 +154,8 @@ export const UnitOfMeasurementImportDefaultColumnIndexes: Record<
 export const UnitOfMeasurementImportFieldOrder: UnitOfMeasurementImportColumnId[] =
 	["name", "symbol", "quantityMode"];
 
-export const UnitOfMeasurementImportSelectionColumnWidth = 64;
+export const UnitOfMeasurementImportSelectionColumnWidth =
+	ModuleImportFixedColumnsWidth;
 
 export const UnitOfMeasurementImportDefaultColumnWidths: UnitOfMeasurementImportColumnWidths =
 	{

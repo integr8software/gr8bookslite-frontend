@@ -17,12 +17,7 @@ export type ItemBehavior =
 
 export type ItemSetupKind = "category" | "subcategory" | "type" | "subtype";
 
-export type ItemTaxTreatment =
-	| "VAT Exclusive"
-	| "VAT Inclusive"
-	| "VAT Exempt"
-	| "Zero Rated"
-	| "Non-VAT";
+export type ItemTaxTreatment = string;
 
 export type ItemPerishability = "Perishable" | "Non Perishable";
 

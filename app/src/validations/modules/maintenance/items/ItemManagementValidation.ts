@@ -3,7 +3,6 @@ import {
 	ItemBehaviorOptions,
 	ItemPerishabilityOptions,
 	ItemStatusOptions,
-	ItemTaxTreatmentOptions,
 } from "@/app/src/constants/modules/maintenance/items/ItemManagementConstants";
 import type {
 	ItemFormErrors,
@@ -55,7 +54,7 @@ export const ItemFormValidationSchema = z
 		responsibilityCenter: z.string().trim().optional(),
 		costPrice: z.number().nonnegative("Cost must not be negative."),
 		sellingPrice: z.number().nonnegative("Selling price must not be negative."),
-		taxTreatment: z.enum(ItemTaxTreatmentOptions),
+		taxTreatment: z.string().trim().min(1, "Select a tax type."),
 		status: z.enum(ItemStatusOptions),
 		defaultWarehouse: z.string().trim().optional(),
 		defaultLocation: z.string().trim().optional(),

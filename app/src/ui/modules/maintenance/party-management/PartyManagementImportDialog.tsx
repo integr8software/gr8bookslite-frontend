@@ -2,6 +2,7 @@
 
 import { AlertCircle } from "lucide-react";
 import { AppMaxFileUploadSizeLabel } from "@/app/src/constants/shared/app/AppConstants";
+import { getModuleImportDataColumnWidth, ModuleImportRowNumberColumnWidth, ModuleImportSelectionColumnWidth } from "@/app/src/constants/shared/module/ModuleImportConstants";
 import {
   PartyImportAcceptedFileExtensions,
   PartyImportAcceptedFileLabel,
@@ -10,14 +11,9 @@ import {
   PartyImportPreviewColumnCount,
   PartyImportPreviewGridLabel,
 } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
-import {
-  downloadPartyImportTemplate,
-  isPartyImportGridPasteTarget,
-} from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
+import { downloadPartyImportTemplate, isPartyImportGridPasteTarget } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
 import { usePartyManagementImportDialog } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagementImportDialog";
-import type {
-  PartyManagementImportDialogProps,
-} from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
+import type { PartyManagementImportDialogProps } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import {
   ModuleImportFooter,
   ModuleImportEmptyDropzone,
@@ -28,17 +24,10 @@ import {
   ModuleImportSelectionHeader,
 } from "@/app/src/ui/shared/module/ModuleImportControls";
 import { ModuleImportDialog } from "@/app/src/ui/shared/module/ModuleImportDialog";
-import {
-  ModuleImportResizableColumnHeader,
-} from "@/app/src/ui/shared/module/ModuleImportResizableColumnHeader";
+import { ModuleImportResizableColumnHeader } from "@/app/src/ui/shared/module/ModuleImportResizableColumnHeader";
 import { PartyManagementImportPreviewTableRow } from "@/app/src/ui/modules/maintenance/party-management/PartyManagementImportPreviewTableRow";
 
-export function PartyManagementImportDialog({
-  existingParties,
-  isOpen,
-  onClose,
-  onImportParties,
-}: PartyManagementImportDialogProps) {
+export function PartyManagementImportDialog({ existingParties, isOpen, onClose, onImportParties }: PartyManagementImportDialogProps) {
   const importDialog = usePartyManagementImportDialog({
     existingParties,
     onClose,
@@ -53,12 +42,16 @@ export function PartyManagementImportDialog({
       titleId="party-management-import-title"
       description="Upload, validate, edit, and import party records in queued batches."
       onClose={onClose}
-      actions={<ModuleImportHeaderActions accept={PartyImportAcceptedFileExtensions} disabled={Boolean(importDialog.progress)} isParsing={importDialog.isParsing} onDownloadTemplate={() => void downloadPartyImportTemplate()} onFileSelect={(file) => void importDialog.handleFileUpload(file)} />}
-      progress={
-        importDialog.progress ? (
-          <ModuleImportProgressPanel progress={importDialog.progress} />
-        ) : null
+      actions={
+        <ModuleImportHeaderActions
+          accept={PartyImportAcceptedFileExtensions}
+          disabled={Boolean(importDialog.progress)}
+          isParsing={importDialog.isParsing}
+          onDownloadTemplate={() => void downloadPartyImportTemplate()}
+          onFileSelect={(file) => void importDialog.handleFileUpload(file)}
+        />
       }
+      progress={importDialog.progress ? <ModuleImportProgressPanel progress={importDialog.progress} /> : null}
       footer={
         <ModuleImportFooter
           canImportAllRows={importDialog.canImportAllRows}
@@ -75,27 +68,27 @@ export function PartyManagementImportDialog({
           onImport={(mode) => void importDialog.handleImport(mode)}
           onReset={importDialog.resetImportState}
           onSetImportMode={importDialog.setImportSelection}
-          onToggleImportMenu={() =>
-            importDialog.setIsImportMenuOpen((isOpen) => !isOpen)
-          }
+          onToggleImportMenu={() => importDialog.setIsImportMenuOpen((isOpen) => !isOpen)}
         />
       }
     >
       <div className="flex h-full min-h-0 flex-col gap-3">
         {importDialog.importError ? (
           <div className="flex gap-2 rounded-md border border-coralpink/25 bg-coralpink/8 px-3 py-2 text-sm font-medium text-coralpink">
-            <AlertCircle
-              className="mt-0.5 h-4 w-4 shrink-0"
-              aria-hidden="true"
-            />
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
             <span>{importDialog.importError}</span>
           </div>
         ) : null}
 
         <div
           tabIndex={0}
-          onDragOver={(event) => { if (!importDialog.progress) event.preventDefault(); }}
-          onDrop={(event) => { event.preventDefault(); if (!importDialog.progress) void importDialog.handleFileUpload(event.dataTransfer.files[0]); }}
+          onDragOver={(event) => {
+            if (!importDialog.progress) event.preventDefault();
+          }}
+          onDrop={(event) => {
+            event.preventDefault();
+            if (!importDialog.progress) void importDialog.handleFileUpload(event.dataTransfer.files[0]);
+          }}
           onPaste={(event) => {
             if (!isPartyImportGridPasteTarget(event.target)) {
               return;
@@ -114,15 +107,20 @@ export function PartyManagementImportDialog({
           <div className="min-h-36 flex-1 overflow-auto">
             <table
               className="module-import-preview-table table-fixed text-left text-sm text-darknavy"
-              style={{ width: `max(100%, ${importDialog.importTableWidth + 48}px)` }}
+              style={{ width: `max(100%, ${importDialog.importTableWidth}px)` }}
             >
               <colgroup>
-                <col style={{ width: 44 }} />
-                <col style={{ width: 48 }} />
+                <col style={{ width: ModuleImportSelectionColumnWidth }} />
+                <col style={{ width: ModuleImportRowNumberColumnWidth }} />
                 {PartyImportFieldOrder.map((field) => (
                   <col
                     key={field}
-                    style={{ width: importDialog.columnWidths[field] }}
+                    style={{
+                      width: getModuleImportDataColumnWidth(
+                        importDialog.columnWidths[field],
+                        Object.values(importDialog.columnWidths).reduce((total, width) => total + width, 0),
+                      ),
+                    }}
                   />
                 ))}
               </colgroup>
@@ -130,19 +128,12 @@ export function PartyManagementImportDialog({
                 <tr>
                   <ModuleImportSelectionHeader
                     checked={importDialog.selectedRowIds.size > 0}
-                    disabled={
-                      importDialog.visibleRows.length === 0 ||
-                      Boolean(importDialog.progress)
-                    }
+                    disabled={importDialog.visibleRows.length === 0 || Boolean(importDialog.progress)}
                     isOpen={importDialog.isSelectionMenuOpen}
                     onClearSelection={importDialog.clearRowSelection}
                     onSelectAll={() => importDialog.selectRows("all")}
                     onSelectPage={() => importDialog.selectRows("page")}
-                    onToggleOpen={() =>
-                      importDialog.setIsSelectionMenuOpen(
-                        (isOpen) => !isOpen,
-                      )
-                    }
+                    onToggleOpen={() => importDialog.setIsSelectionMenuOpen((isOpen) => !isOpen)}
                   />
                   <ModuleImportRowNumberHeader />
                   {PartyImportColumnHeaders.map((column) => (
@@ -150,9 +141,7 @@ export function PartyManagementImportDialog({
                       key={column.id}
                       className={column.className}
                       width={importDialog.columnWidths[column.id]}
-                      onResize={(width) =>
-                        importDialog.updateColumnWidth(column.id, width)
-                      }
+                      onResize={(width) => importDialog.updateColumnWidth(column.id, width)}
                     >
                       {column.label}
                     </ModuleImportResizableColumnHeader>
@@ -178,7 +167,14 @@ export function PartyManagementImportDialog({
                       colSpan={PartyImportPreviewColumnCount + 1}
                       className="module-import-empty-cell px-3 py-10 text-center text-sm font-medium text-darknavy/45"
                     >
-                      <ModuleImportEmptyDropzone accept={PartyImportAcceptedFileExtensions} acceptedFileLabel={PartyImportAcceptedFileLabel} disabled={Boolean(importDialog.progress)} isParsing={importDialog.isParsing} maxFileSizeLabel={AppMaxFileUploadSizeLabel} onFileSelect={(file) => void importDialog.handleFileUpload(file)} />
+                      <ModuleImportEmptyDropzone
+                        accept={PartyImportAcceptedFileExtensions}
+                        acceptedFileLabel={PartyImportAcceptedFileLabel}
+                        disabled={Boolean(importDialog.progress)}
+                        isParsing={importDialog.isParsing}
+                        maxFileSizeLabel={AppMaxFileUploadSizeLabel}
+                        onFileSelect={(file) => void importDialog.handleFileUpload(file)}
+                      />
                     </td>
                   </tr>
                 )}
@@ -189,21 +185,13 @@ export function PartyManagementImportDialog({
             currentPage={importDialog.safePreviewPage}
             invalidCount={importDialog.invalidRows.length}
             isBusy={Boolean(importDialog.progress)}
-            selectedCount={
-              importDialog.progress ? 0 : importDialog.selectedRowIds.size
-            }
+            selectedCount={importDialog.progress ? 0 : importDialog.selectedRowIds.size}
             totalRowsCount={importDialog.validatedRows.length}
             totalPages={importDialog.totalPages}
             onAddRow={importDialog.addBlankRow}
             onGoToPage={importDialog.setPreviewPage}
-            onNextPage={() =>
-              importDialog.setPreviewPage((page) =>
-                Math.min(importDialog.totalPages, page + 1),
-              )
-            }
-            onPreviousPage={() =>
-              importDialog.setPreviewPage((page) => Math.max(1, page - 1))
-            }
+            onNextPage={() => importDialog.setPreviewPage((page) => Math.min(importDialog.totalPages, page + 1))}
+            onPreviousPage={() => importDialog.setPreviewPage((page) => Math.max(1, page - 1))}
             onRemoveSelected={importDialog.removeSelectedRows}
           />
         </div>

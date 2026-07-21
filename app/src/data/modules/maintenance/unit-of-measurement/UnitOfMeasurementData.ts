@@ -17,6 +17,7 @@ import {
 import { downloadBlob } from "@/app/src/ui/shared/module/module-table/ModuleTableExportDownload";
 import { formatFileSize } from "@/app/src/utils/file.util";
 import { normalizeLowercaseWhitespace } from "@/app/src/utils/string.util";
+import { isModuleImportOptionValue } from "@/app/src/utils/module-import-validation.util";
 
 export function createUnitOfMeasurementFormValues(
 	record?: UnitOfMeasurementRecord,
@@ -342,7 +343,10 @@ export function validateUnitOfMeasurementImportRows(
 			];
 		}
 
-		if (!["Integer", "Float"].includes(row.record.quantityMode)) {
+		if (!isModuleImportOptionValue(
+			row.record.quantityMode,
+			UnitOfMeasurementQuantityModeOptions.map((option) => option.value),
+		)) {
 			cellErrors.quantityMode = [
 				"Quantity type must be Integer or Float.",
 			];

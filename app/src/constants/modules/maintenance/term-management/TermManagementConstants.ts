@@ -8,6 +8,7 @@ import type {
 	TermManagementStatus,
 } from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
 import { AppMaxFileUploadSizeBytes } from "@/app/src/constants/shared/app/AppConstants";
+import { ModuleImportFixedColumnsWidth } from "@/app/src/constants/shared/module/ModuleImportConstants";
 import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
@@ -152,7 +153,10 @@ export const TermImportAcceptedFileExtensions = ".xlsx,.csv,.tsv,.txt";
 
 export const TermImportAcceptedFileLabel = ".xlsx, .csv, .tsv, .txt";
 
-export const TermImportDefaultColumnIndexes: Record<TermImportColumnId, number> = {
+export const TermImportDefaultColumnIndexes: Record<
+	TermImportColumnId,
+	number
+> = {
 	name: 0,
 	datemode: 1,
 	period: 2,
@@ -164,7 +168,7 @@ export const TermImportFieldOrder: TermImportColumnId[] = [
 	"period",
 ];
 
-export const TermImportSelectionColumnWidth = 64;
+export const TermImportSelectionColumnWidth = ModuleImportFixedColumnsWidth;
 
 export const TermImportDefaultColumnWidths: TermImportColumnWidths = {
 	name: 224,
@@ -191,8 +195,7 @@ export const TermImportColumnHeaders: TermImportColumnHeader[] = [
 	},
 ];
 
-export const TermImportPreviewColumnCount =
-	TermImportFieldOrder.length + 1;
+export const TermImportPreviewColumnCount = TermImportFieldOrder.length + 1;
 
 export const TermImportPreviewGridLabel =
 	"Import preview grid. Paste copied Excel rows here.";

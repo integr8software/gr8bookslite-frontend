@@ -17,6 +17,7 @@ import {
 } from "@/app/src/constants/modules/maintenance/payment-type/PaymentTypeConstants";
 import { downloadBlob } from "@/app/src/ui/shared/module/module-table/ModuleTableExportDownload";
 import { formatFileSize } from "@/app/src/utils/file.util";
+import { isModuleImportOptionValue } from "@/app/src/utils/module-import-validation.util";
 
 export const PaymentTypeOptions: PaymentTypeClassification[] = [
 	"Cash",
@@ -324,8 +325,10 @@ export function validatePaymentTypeImportRows(
 			];
 		}
 
-		if (!PaymentTypeClassificationOptions.includes(row.paymentType.type)) {
-			cellErrors.type = ["Category is required."];
+		if (!row.paymentType.type.trim()) {
+			cellErrors.type = ["Category is required. Choose a category from the list."];
+		} else if (!isModuleImportOptionValue(row.paymentType.type, PaymentTypeClassificationOptions)) {
+			cellErrors.type = ["Choose a valid category from the list."];
 		}
 
 		if (row.paymentType.description.trim().length > 500) {

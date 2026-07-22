@@ -1,10 +1,4 @@
-export type MainAccessAction =
-  | "view"
-  | "add"
-  | "edit"
-  | "delete"
-  | "cancel"
-  | "uncancel";
+export type MainAccessAction = "view" | "add" | "edit" | "delete" | "cancel" | "uncancel";
 
 export type MainAccessKey =
   | "workspace.overview"
@@ -57,6 +51,7 @@ export type MainAccessKey =
   | "maintenance.item"
   | "maintenance.warehouse.access"
   | "maintenance.warehouse"
+  | "maintenance.deliveryVehicle"
   | "maintenance.approval"
   | "maintenance.workflow"
   | "maintenance.audit"
@@ -79,15 +74,9 @@ export type ModuleSubscriptionPlanId =
   | "INVENTORY"
   | "ACCOUNTING_INVENTORY";
 
-export type MainNavigationScope =
-  | "master"
-  | "workspace"
-  | "company"
-  | "account";
+export type MainNavigationScope = "master" | "workspace" | "company" | "account";
 
-export type MainPermissionMap = Partial<
-  Record<string, Partial<Record<MainAccessAction, boolean>>>
->;
+export type MainPermissionMap = Partial<Record<string, Partial<Record<MainAccessAction, boolean>>>>;
 
 export type MainIconName =
   | "approval"
@@ -123,7 +112,7 @@ export type MainNavigationItem = {
   productKey?: MainProductKey;
   productKeys?: MainProductKey[];
   requiredActions?: MainAccessAction[];
-	iconName?: string | null;
+  iconName?: string | null;
   module?: {
     actions: Extract<MainAccessAction, "view" | "add" | "edit">[];
     recordIds?: string[];

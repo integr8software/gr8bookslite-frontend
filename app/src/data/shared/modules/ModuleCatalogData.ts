@@ -44,6 +44,16 @@ export const MODULE_ROUTE_MAP = {
   WSC: "/maintenance/warehouse-operations/stock-count",
   WSA: "/maintenance/warehouse-operations/stock-adjustment",
   WSI: "/maintenance/warehouse-inventory/item-availability",
+  DVT: "/maintenance/delivery-vehicle-management/vehicle-types",
+  DVE: "/maintenance/delivery-vehicle-management/delivery-vehicles",
+  DVA: "/maintenance/delivery-vehicle-management/vehicle-operations/vehicle-availability",
+  DVLP: "/maintenance/delivery-vehicle-management/vehicle-operations/load-planning",
+  DVAS: "/maintenance/delivery-vehicle-management/vehicle-operations/vehicle-assignment",
+  DVD: "/maintenance/delivery-vehicle-management/vehicle-operations/delivery-trips-and-dispatch",
+  DVTK: "/maintenance/delivery-vehicle-management/vehicle-operations/trip-tracking",
+  DVIN: "/maintenance/delivery-vehicle-management/vehicle-operations/vehicle-inspections",
+  DVFI: "/maintenance/delivery-vehicle-management/vehicle-operations/fuel-and-incidents",
+  DVMR: "/maintenance/delivery-vehicle-management/maintenance-and-repairs",
   DSM: "/maintenance/discount-management",
   TM: "/maintenance/term-management",
   PT: "/maintenance/payment-type",
@@ -160,6 +170,30 @@ export const MainModuleCatalogHelperText: Record<string, string> = {
   "maintenance-stock-count": "Count stock by warehouse and location.",
   "maintenance-stock-adjustment": "Adjust warehouse or location stock balances.",
   "maintenance-warehouse-stock-inquiry": "View warehouse stock availability.",
+  "maintenance-delivery-vehicle-management":
+    "Manage delivery vehicle setup, operations, availability, dispatch, tracking, and repairs.",
+  "maintenance-delivery-vehicle-management-vehicle-types":
+    "Maintain delivery vehicle classifications and default specifications.",
+  "maintenance-delivery-vehicle-management-delivery-vehicles":
+    "Maintain registered delivery vehicle master records.",
+  "maintenance-delivery-vehicle-management-vehicle-operations":
+    "Plan, assign, dispatch, track, inspect, and monitor delivery vehicles.",
+  "maintenance-delivery-vehicle-management-vehicle-availability":
+    "Review vehicle availability and assignment eligibility.",
+  "maintenance-delivery-vehicle-management-load-planning":
+    "Allocate delivery-order items to an eligible vehicle load.",
+  "maintenance-delivery-vehicle-management-vehicle-assignment":
+    "Reserve vehicles, drivers, and crew for delivery work.",
+  "maintenance-delivery-vehicle-management-delivery-trips-and-dispatch":
+    "Dispatch vehicle trips and manage delivery stop progress.",
+  "maintenance-delivery-vehicle-management-trip-tracking":
+    "Monitor dispatched vehicle locations and trip progress.",
+  "maintenance-delivery-vehicle-management-vehicle-inspections":
+    "Record pre-trip, post-trip, safety, and return-to-service inspections.",
+  "maintenance-delivery-vehicle-management-fuel-and-incidents":
+    "Record fuel usage, mileage, breakdowns, accidents, and incidents.",
+  "maintenance-delivery-vehicle-management-maintenance-and-repairs":
+    "Schedule maintenance and record repair work, cost, components, and downtime.",
   "maintenance-items": "Maintain item master records.",
   "maintenance-warehouse": "Maintain warehouse records and warehouse storage.",
   "maintenance-item": "Maintain item master records.",
@@ -448,6 +482,82 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
                 "maintenance.warehouse",
               ),
             ],
+          ),
+        ],
+      ),
+      group(
+        "maintenance-delivery-vehicle-management",
+        "Delivery Vehicle Management",
+        MODULE_ROUTE_MAP.DVT,
+        "maintenance.deliveryVehicle",
+        [
+          moduleItem(
+            "maintenance-delivery-vehicle-management-vehicle-types",
+            "Vehicle Types",
+            "DVT",
+            "maintenance.deliveryVehicle",
+          ),
+          moduleItem(
+            "maintenance-delivery-vehicle-management-delivery-vehicles",
+            "Delivery Vehicles",
+            "DVE",
+            "maintenance.deliveryVehicle",
+          ),
+          group(
+            "maintenance-delivery-vehicle-management-vehicle-operations",
+            "Vehicle Operations",
+            MODULE_ROUTE_MAP.DVA,
+            "maintenance.deliveryVehicle",
+            [
+              moduleItem(
+                "maintenance-delivery-vehicle-management-vehicle-availability",
+                "Vehicle Availability",
+                "DVA",
+                "maintenance.deliveryVehicle",
+              ),
+              moduleItem(
+                "maintenance-delivery-vehicle-management-load-planning",
+                "Load Planning",
+                "DVLP",
+                "maintenance.deliveryVehicle",
+              ),
+              moduleItem(
+                "maintenance-delivery-vehicle-management-vehicle-assignment",
+                "Vehicle Assignment",
+                "DVAS",
+                "maintenance.deliveryVehicle",
+              ),
+              moduleItem(
+                "maintenance-delivery-vehicle-management-delivery-trips-and-dispatch",
+                "Delivery Trips and Dispatch",
+                "DVD",
+                "maintenance.deliveryVehicle",
+              ),
+              moduleItem(
+                "maintenance-delivery-vehicle-management-trip-tracking",
+                "Trip Tracking",
+                "DVTK",
+                "maintenance.deliveryVehicle",
+              ),
+              moduleItem(
+                "maintenance-delivery-vehicle-management-vehicle-inspections",
+                "Vehicle Inspections",
+                "DVIN",
+                "maintenance.deliveryVehicle",
+              ),
+              moduleItem(
+                "maintenance-delivery-vehicle-management-fuel-and-incidents",
+                "Fuel and Incidents",
+                "DVFI",
+                "maintenance.deliveryVehicle",
+              ),
+            ],
+          ),
+          moduleItem(
+            "maintenance-delivery-vehicle-management-maintenance-and-repairs",
+            "Maintenance and Repairs",
+            "DVMR",
+            "maintenance.deliveryVehicle",
           ),
         ],
       ),

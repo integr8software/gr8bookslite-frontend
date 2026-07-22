@@ -298,7 +298,7 @@ export type PartyInformationDetailsFieldsProps = {
   partyTypeOptions: readonly PartyType[];
   taxMaintenanceOptions: PartyAddressDropdownOption[];
   termOptions: PartyAddressDropdownOption[];
-  values: PartyInformationFormValues;
+    values: PartyInformationFormValues;
   syncedAddressSources?: Record<string, string>;
   canAddAccountTitle?: boolean;
   canAddTaxRegistrationType?: boolean;

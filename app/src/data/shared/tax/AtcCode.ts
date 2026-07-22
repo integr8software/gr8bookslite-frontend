@@ -8,6 +8,12 @@ export function normalizeAtcCode(value: string) {
 	return compactCode.replace(/^([A-Z]{2})(\d{3})$/, "$1 $2");
 }
 
+export function formatAtcDisplayCode(value: string) {
+	const compactCode = normalizeAtcCode(value).replace(/\s+/g, "");
+
+	return compactCode.replace(/^([A-Z]{2})0+(\d+)$/, "$1$2");
+}
+
 export function isAtcCodeLike(value: string) {
 	const compactCode = value.trim().toUpperCase().replace(/\s+/g, "");
 

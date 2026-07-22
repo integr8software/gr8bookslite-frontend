@@ -269,6 +269,7 @@ export function useChartsOfAccounts() {
   const table = useReactTable({
     data: visibleAccounts,
     columns,
+    autoResetPageIndex: false,
     initialState: {
       columnOrder: ChartsOfAccountsDefaultColumnOrder,
       columnVisibility: ChartsOfAccountsDefaultColumnVisibility,

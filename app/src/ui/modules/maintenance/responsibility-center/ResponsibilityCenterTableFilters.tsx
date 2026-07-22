@@ -48,10 +48,17 @@ export function ResponsibilityCenterTableFilters({
 	return (
 		<div>
 			<div
-				className="grid gap-2 border-b border-darknavy/10 px-3 py-3 xl:flex xl:items-end xl:justify-end xl:pb-2 xl:pt-2"
+				className="grid gap-2 border-b border-darknavy/10 px-3 py-3 xl:flex xl:items-end xl:justify-between xl:pb-0 xl:pt-2"
 				data-spotlight-id="responsibility-center-view-switch"
 			>
 				<div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:hidden">
+					<ResponsiveFilterSelect
+						label="Classification"
+						value={financialTypeFilter}
+						options={["All", ...ResponsibilityCenterFinancialTypeOptions]}
+						getOptionLabel={getClassificationLabel}
+						onChange={onFinancialTypeFilterChange}
+					/>
 					<ResponsiveFilterSelect
 						label="View"
 						value={viewMode}
@@ -63,7 +70,14 @@ export function ResponsibilityCenterTableFilters({
 					/>
 				</div>
 
-				<div className="hidden gap-2 overflow-x-auto xl:flex">
+				<div className="hidden xl:block">
+					<ClassificationTabs
+						value={financialTypeFilter}
+						onChange={onFinancialTypeFilterChange}
+					/>
+				</div>
+
+				<div className="hidden gap-2 overflow-x-auto pb-2 xl:flex">
 					<ViewModeButton
 						active={viewMode === "tree"}
 						icon={<ListTree className="h-4 w-4" aria-hidden="true" />}
@@ -85,9 +99,9 @@ export function ResponsibilityCenterTableFilters({
 			>
 				<div
 					data-spotlight-id="maintenance-table-filters"
-					className="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:grid-cols-[minmax(13rem,1.35fr)_minmax(8rem,0.85fr)_minmax(9rem,0.85fr)_minmax(7rem,0.7fr)]"
+					className="grid min-w-0 grid-cols-2 gap-2 lg:grid-cols-[minmax(13rem,1.35fr)_minmax(8rem,0.85fr)_minmax(7rem,0.7fr)]"
 				>
-					<div className="col-span-2 sm:col-span-3 lg:col-span-1">
+					<div className="col-span-2 lg:col-span-1">
 						<ModuleTableSearch
 							label="Search responsibility centers"
 							value={query}
@@ -106,18 +120,6 @@ export function ResponsibilityCenterTableFilters({
 							})),
 						]}
 						onChange={onCategoryFilterChange}
-					/>
-					<ModuleTableFilterSelect
-						label="Classification"
-						value={financialTypeFilter}
-						options={[
-							{ label: "All", value: "All" },
-							...ResponsibilityCenterFinancialTypeOptions.map((type) => ({
-								label: type,
-								value: type,
-							})),
-						]}
-						onChange={onFinancialTypeFilterChange}
 					/>
 					<ModuleTableFilterSelect
 						label="Status"
@@ -163,6 +165,37 @@ export function ResponsibilityCenterTableFilters({
 					</ModuleTableResetButton>
 				</div>
 			</ModuleTableToolbar>
+		</div>
+	);
+}
+
+function ClassificationTabs({
+	onChange,
+	value,
+}: {
+	onChange: (value: string) => void;
+	value: string;
+}) {
+	const options = ["All", ...ResponsibilityCenterFinancialTypeOptions];
+
+	return (
+		<div className="flex gap-0 overflow-x-auto" aria-label="Classification filter">
+			{options.map((option) => (
+				<button
+					key={option}
+					type="button"
+					onClick={() => onChange(option)}
+					aria-pressed={value === option}
+					className={joinClasses(
+						"relative h-12 whitespace-nowrap border-b-2 px-4 text-sm font-semibold transition",
+						value === option
+							? "border-skyblue text-skyblue"
+							: "border-transparent text-darknavy/65 hover:text-darknavy",
+					)}
+				>
+					{getClassificationLabel(option)}
+				</button>
+			))}
 		</div>
 	);
 }
@@ -233,3 +266,6 @@ function getViewModeLabel(value: ResponsibilityCenterViewMode) {
 	return value === "tree" ? "Tree View" : "List View";
 }
 
+function getClassificationLabel(value: string) {
+	return value === "All" ? "All Responsibility Center" : value;
+}

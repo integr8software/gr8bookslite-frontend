@@ -202,6 +202,8 @@ export function useWarehouseFormPage(options: WarehouseFormPageOptions = {}) {
     existingWarehouse,
     handleConfirmDelete,
     handleInputChange,
+		handleStatusChange: (status: WarehouseFormValues["status"]) =>
+			updateField("status", status),
     handleSubmit,
     isDeleteDialogOpen,
     isMutating,

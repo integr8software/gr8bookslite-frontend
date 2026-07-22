@@ -5,7 +5,6 @@ import {
 	ResponsibilityCenterActionCopy,
 	ResponsibilityCenterDrawerFormId,
 	ResponsibilityCenterFieldClassName,
-	ResponsibilityCenterStatusOptions,
 	ResponsibilityCenterTitle,
 } from "@/app/src/constants/modules/maintenance/responsibility-center/ResponsibilityCenterConstants";
 import { useResponsibilityCenterFormPage } from "@/app/src/hooks/modules/maintenance/responsibility-center/useResponsibilityCenterFormPage";
@@ -24,6 +23,8 @@ import {
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
+import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/constants/modules/maintenance/MaintenanceStatusConstants";
 
 export function ResponsibilityCenterDrawer(props: ResponsibilityCenterDrawerProps) {
 	return (
@@ -226,19 +227,13 @@ function ResponsibilityCenterDrawerFields({
 			</DrawerField>
 
 			<DrawerField label="Status" required>
-				<select
-					name="status"
+				<AppSwitch
+					falseOption={MaintenanceInactiveStatusSwitchOption}
 					value={values.status}
-					onChange={onInputChange}
-					disabled={isReadonly}
-					className={ResponsibilityCenterFieldClassName}
-				>
-					{ResponsibilityCenterStatusOptions.map((status) => (
-						<option key={status} value={status}>
-							{status}
-						</option>
-					))}
-				</select>
+					onChange={(status) => onFieldChange("status", status)}
+					readOnly={isReadonly}
+					trueOption={MaintenanceActiveStatusSwitchOption}
+				/>
 			</DrawerField>
 		</div>
 	);

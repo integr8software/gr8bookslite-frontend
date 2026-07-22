@@ -18,6 +18,7 @@ import type {
 	PartyAtcCodeOption,
 	PartyClassification,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
+import { formatPercentage } from "@/app/src/utils/percentage.util";
 
 const AtcDropdownLimit = 1000;
 
@@ -97,9 +98,7 @@ function createPartyAtcCodeOption(taxCode: AlphanumericTaxCode) {
 		classifications: getPartyAtcClassifications(officialAtcCode),
 		code: officialAtcCode,
 		description: getPartyAtcDescription(taxCode),
-		label: `${taxCode.transactionType} ${taxCode.taxType} ${formatPartyAtcRate(
-			taxCode.taxRate,
-		)}`,
+		label: formatPercentage(taxCode.taxRate),
 	};
 }
 
@@ -154,10 +153,4 @@ function getPartyAtcRowPriority(taxCode: AlphanumericTaxCode) {
 	return (
 		(isDirectAtcRow ? 1_000_000 : 0) + getPartyAtcDescription(taxCode).length
 	);
-}
-
-function formatPartyAtcRate(rate: string) {
-	const numericRate = Number(rate);
-
-	return Number.isFinite(numericRate) ? `${numericRate.toFixed(2)}%` : `${rate}%`;
 }

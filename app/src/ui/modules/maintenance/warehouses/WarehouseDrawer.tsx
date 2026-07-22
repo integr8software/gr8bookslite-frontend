@@ -63,6 +63,7 @@ function WarehouseDrawerPanel({
           onAvailabilityModeChange={page.updateAvailabilityMode}
           onInputChange={page.handleInputChange}
           onSetBranchSelection={page.setBranchSelection}
+		  onStatusChange={page.handleStatusChange}
           onToggleBranch={page.toggleBranch}
         />
       </form>

@@ -51,6 +51,15 @@ export function useUnitOfMeasurementFormPage({
 		setErrors((current) => ({ ...current, [field]: undefined }));
 	}
 
+	function handleStatusChange(status: UnitOfMeasurementFormValues["status"]) {
+		if (isReadonly) {
+			return;
+		}
+
+		setValues((current) => ({ ...current, status }));
+		setErrors((current) => ({ ...current, status: undefined }));
+	}
+
 	function validateBeforeSubmit() {
 		const nextErrors = validateUnitOfMeasurementForm(values);
 
@@ -109,6 +118,7 @@ export function useUnitOfMeasurementFormPage({
 	return {
 		errors,
 		handleInputChange,
+		handleStatusChange,
 		handleSubmit,
 		isReadonly,
 		isSubmitting,

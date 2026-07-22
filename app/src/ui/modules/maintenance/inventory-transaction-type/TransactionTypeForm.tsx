@@ -1,6 +1,5 @@
 import type { ChangeEventHandler, ReactNode } from "react";
 import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
-import { TransactionTypeStatusOptions } from "@/app/src/constants/modules/maintenance/inventory-transaction-type/TransactionTypeConstants";
 import type {
 	TransactionTypeFormErrors,
 	TransactionTypeFormValues,
@@ -9,6 +8,8 @@ import type { ModuleOption } from "@/app/src/data/shared/modules/ModuleOptionsDa
 import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
+import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
+import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/constants/modules/maintenance/MaintenanceStatusConstants";
 
 type TransactionTypeFormProps = {
 	accountOptions: ModuleChartAccount[];
@@ -21,6 +22,7 @@ type TransactionTypeFormProps = {
 		HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
 	>;
 	onModuleChange: (value: string | string[]) => void;
+	onStatusChange: (value: TransactionTypeFormValues["status"]) => void;
 };
 
 export function TransactionTypeForm({
@@ -32,6 +34,7 @@ export function TransactionTypeForm({
 	onAccountChange,
 	onInputChange,
 	onModuleChange,
+	onStatusChange,
 }: TransactionTypeFormProps) {
 	const moduleDropdownOptions = moduleOptions.map((option) => ({
 		name: option.label,
@@ -53,19 +56,13 @@ export function TransactionTypeForm({
 				</FormField>
 
 				<FormField label="Status" error={errors.status} required>
-					<select
-						name="status"
+					<AppSwitch
+						falseOption={MaintenanceInactiveStatusSwitchOption}
 						value={values.status}
-						onChange={onInputChange}
-						disabled={isReadonly}
-						className={selectClassName}
-					>
-						{TransactionTypeStatusOptions.map((statusOption) => (
-							<option key={statusOption} value={statusOption}>
-								{statusOption}
-							</option>
-						))}
-					</select>
+						onChange={onStatusChange}
+						readOnly={isReadonly}
+						trueOption={MaintenanceActiveStatusSwitchOption}
+					/>
 				</FormField>
 
 				<FormField
@@ -141,5 +138,3 @@ function FormField({
 
 const fieldClassName =
 	"min-h-11 w-full rounded-md border border-darknavy/15 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20 disabled:cursor-not-allowed disabled:bg-darknavy/5 read-only:bg-darknavy/[0.03]";
-
-const selectClassName = `app-select-control ${fieldClassName}`;

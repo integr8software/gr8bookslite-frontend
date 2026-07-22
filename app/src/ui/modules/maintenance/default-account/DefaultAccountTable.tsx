@@ -46,7 +46,7 @@ export function DefaultAccountTable({
 				minWidthClassName={`${tableMinWidthClassName} table-fixed`}
 				paginationStorageKey={DefaultAccountTablePaginationStorageKey}
 				table={table}
-				tableTitle="Default account templates"
+				tableTitle="Default Account Templates"
 				toolbar={
 					<DefaultAccountTableFilters
 						exportAllRows={defaultAccounts}

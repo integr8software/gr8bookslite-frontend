@@ -16,7 +16,7 @@ const TenantScopedQueryPrefixes = [
   "discount-management",
   "inventory",
   "inventory-transaction-type",
-  "item-attributes",
+  "item-variations",
   "item-bundles",
   "item-category",
   "item-promotions",

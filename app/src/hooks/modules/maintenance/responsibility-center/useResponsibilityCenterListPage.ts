@@ -117,6 +117,7 @@ export function useResponsibilityCenterListPage() {
   const treeTable = useReactTable({
     data: flattenedTreeCenters,
     columns: treeColumns,
+    autoResetPageIndex: false,
     initialState: {
       columnOrder: ResponsibilityCenterDefaultColumnOrder,
       columnVisibility: ResponsibilityCenterDefaultColumnVisibility,

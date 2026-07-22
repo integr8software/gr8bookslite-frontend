@@ -1,12 +1,12 @@
-import type { ItemAttributeFormValues, ItemAttributeRecord, ItemAttributeValue } from "@/app/src/types/modules/maintenance/item-attributes/ItemAttributesTypes";
+import type { ItemVariationFormValues, ItemVariationRecord, ItemVariationValue } from "@/app/src/types/modules/maintenance/item-variations/ItemVariationsTypes";
 
-export const MockItemAttributes: ItemAttributeRecord[] = [
+export const MockItemVariations: ItemVariationRecord[] = [
   {
-    id: "item-attribute-color",
+    id: "item-variation-color",
     code: "ATT-001",
     name: "Color",
     usage: "Variant",
-    values: createUsedAttributeValues("color", [
+    values: createUsedVariationValues("color", [
       "Black",
       "White",
       "Red",
@@ -25,58 +25,58 @@ export const MockItemAttributes: ItemAttributeRecord[] = [
     status: "Active",
   },
   {
-    id: "item-attribute-size",
+    id: "item-variation-size",
     code: "ATT-002",
     name: "Size",
     usage: "Variant",
-    values: createUsedAttributeValues("size", ["XS", "Small", "Medium", "Large", "XL", "XXL"]),
+    values: createUsedVariationValues("size", ["XS", "Small", "Medium", "Large", "XL", "XXL"]),
     requiredOnItem: false,
     affectsStock: true,
     status: "Active",
   },
   {
-    id: "item-attribute-material",
+    id: "item-variation-material",
     code: "ATT-003",
     name: "Material",
     usage: "Item Detail",
-    values: createUsedAttributeValues("material", ["Cotton", "Plastic", "Steel", "Wood", "Glass", "Paper", "Leather"]),
+    values: createUsedVariationValues("material", ["Cotton", "Plastic", "Steel", "Wood", "Glass", "Paper", "Leather"]),
     requiredOnItem: false,
     affectsStock: false,
     status: "Active",
   },
   {
-    id: "item-attribute-grade",
+    id: "item-variation-grade",
     code: "ATT-004",
     name: "Grade",
     usage: "Stock Classification",
-    values: createUsedAttributeValues("grade", ["A", "B", "C"]),
+    values: createUsedVariationValues("grade", ["A", "B", "C"]),
     requiredOnItem: false,
     affectsStock: true,
     status: "Active",
   },
   {
-    id: "item-attribute-serving-temperature",
+    id: "item-variation-serving-temperature",
     code: "ATT-005",
     name: "Serving Temperature",
     usage: "Item Detail",
-    values: createUsedAttributeValues("serving-temperature", ["Hot", "Cold", "Mild"]),
+    values: createUsedVariationValues("serving-temperature", ["Hot", "Cold", "Mild"]),
     requiredOnItem: false,
     affectsStock: false,
     status: "Active",
   },
 ];
 
-export function createItemAttributeFormValues(record?: ItemAttributeRecord): ItemAttributeFormValues {
+export function createItemVariationFormValues(record?: ItemVariationRecord): ItemVariationFormValues {
   return {
     name: record?.name ?? "",
-    values: record?.values ?? [createAttributeValue("")],
+    values: record?.values ?? [createVariationValue("")],
     status: record?.status ?? "Active",
   };
 }
 
-export function createItemAttributeRecord(values: ItemAttributeFormValues, record?: ItemAttributeRecord): ItemAttributeRecord {
+export function createItemVariationRecord(values: ItemVariationFormValues, record?: ItemVariationRecord): ItemVariationRecord {
   return {
-    id: record?.id ?? `item-attribute-${Date.now()}`,
+    id: record?.id ?? `item-variation-${Date.now()}`,
     code: record?.code ?? `ATT-${Date.now()}`,
     name: values.name.trim(),
     usage: record?.usage ?? "Item Detail",
@@ -87,18 +87,18 @@ export function createItemAttributeRecord(values: ItemAttributeFormValues, recor
   };
 }
 
-export function createAttributeValue(label: string): ItemAttributeValue {
+export function createVariationValue(label: string): ItemVariationValue {
   return {
-    id: `attribute-value-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    id: `variation-value-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     label,
     isUsed: false,
     status: "Active",
   };
 }
 
-function createUsedAttributeValues(attributeKey: string, values: string[]): ItemAttributeValue[] {
+function createUsedVariationValues(variationKey: string, values: string[]): ItemVariationValue[] {
   return values.map((value) => ({
-    id: `attribute-value-${attributeKey}-${value.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+    id: `variation-value-${variationKey}-${value.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
     label: value,
     isUsed: true,
     status: "Active",

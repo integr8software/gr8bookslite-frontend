@@ -34,7 +34,7 @@ export function TransactionTypeTable({
 				minWidthClassName={`${tableMinWidthClassName} table-fixed`}
 				paginationStorageKey={TransactionTypePaginationStorageKey}
 				table={table}
-				tableTitle="Inventory transaction types"
+				tableTitle="Inventory Transaction Types"
 				toolbar={toolbar}
 				renderRow={({ id, original }) => (
 					<TransactionTypeTableRow

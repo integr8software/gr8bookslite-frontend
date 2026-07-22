@@ -84,6 +84,7 @@ function UnitOfMeasurementDrawerPanel({
 					isReadonly={page.isReadonly}
 					values={page.values}
 					onInputChange={page.handleInputChange}
+					onStatusChange={page.handleStatusChange}
 				/>
 			</form>
 		</ModuleDrawer>

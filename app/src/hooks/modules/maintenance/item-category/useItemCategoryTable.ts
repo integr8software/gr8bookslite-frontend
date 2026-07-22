@@ -68,6 +68,7 @@ export function useItemCategoryTable(rows: ItemCategoryTableRowData[]) {
 	return useReactTable({
 		data: rows,
 		columns,
+		autoResetPageIndex: false,
 		initialState: {
 			columnOrder: ItemCategoryDefaultColumnOrder,
 			columnVisibility: ItemCategoryDefaultColumnVisibility,

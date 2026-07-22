@@ -20,6 +20,8 @@ import type {
 	ItemCategoryAccountingSetupStatusFilter,
 	ItemCategoryFormErrors,
 	ItemCategoryFormValues,
+	ItemBehavior,
+	ItemStatus,
 	ItemCategoryStatusFilter,
 	ItemCategoryTableRowData,
 	ItemSetupKind,
@@ -310,6 +312,40 @@ export function useItemCategoryFormPage({
 		updateField(name as keyof ItemCategoryFormValues, value as never);
 	}
 
+	function handleBehaviorChange(behavior: ItemBehavior) {
+		const behaviors = values.behaviors.includes(behavior)
+			? values.behaviors.filter((currentBehavior) => currentBehavior !== behavior)
+			: [...values.behaviors, behavior];
+
+		updateField("behaviors", behaviors);
+	}
+
+	function handleStatusChange(status: ItemStatus) {
+		updateField("status", status);
+	}
+
+	function handleAllowSubCategoryChange(allowSubCategory: boolean) {
+		updateField("allowSubCategory", allowSubCategory);
+	}
+
+	function handleAccountRequirementChange(
+		field:
+			| "requiresInventoryAccount"
+			| "requiresSalesAccount"
+			| "requiresCostOfSalesAccount"
+			| "requiresExpenseAccount",
+		required: boolean,
+	) {
+		updateField(field, required);
+		setErrors((current) => ({
+			...current,
+			requiresInventoryAccount: undefined,
+			requiresSalesAccount: undefined,
+			requiresCostOfSalesAccount: undefined,
+			requiresExpenseAccount: undefined,
+		}));
+	}
+
 	function handleAccountingModeChange(
 		accountingSetupMode: ItemCategoryAccountingSetupMode,
 	) {
@@ -421,8 +457,12 @@ export function useItemCategoryFormPage({
 		errors,
 		existingRecord: existingRef?.record,
 		handleAccountingModeChange,
+		handleAccountRequirementChange,
+		handleAllowSubCategoryChange,
+		handleBehaviorChange,
 		handleInputChange,
 		handleParentChange,
+		handleStatusChange,
 		handleSubmit,
 		isMutating: store.isMutating,
 		isReadonly,

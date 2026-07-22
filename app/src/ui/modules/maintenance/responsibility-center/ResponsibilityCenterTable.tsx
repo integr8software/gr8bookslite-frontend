@@ -143,7 +143,7 @@ function ResponsibilityCenterListModeTable({
 			minWidthClassName={`${tableMinWidthClassName} table-fixed`}
 			paginationStorageKey={ResponsibilityCenterTablePaginationStorageKey}
 			table={table}
-			tableTitle="Responsibility centers"
+			tableTitle="Responsibility Centers"
 			toolbar={toolbar}
 			renderRow={(row) => (
 				<ResponsibilityCenterTableRow

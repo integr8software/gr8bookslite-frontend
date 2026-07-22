@@ -3,27 +3,27 @@
 import { useMemo, useState } from "react";
 import { type ColumnDef, type PaginationState, getCoreRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table";
 import {
-  ItemAttributesDefaultSorting,
-  ItemAttributesDefaultColumnOrder,
-  ItemAttributesDefaultColumnVisibility,
-  ItemAttributesTableColumns,
-  ItemAttributesTablePreferencesModuleKey,
-  ItemAttributesTablePreferencesStorageKey,
-} from "@/app/src/constants/modules/maintenance/item-attributes/ItemAttributesConstants";
-import { createItemAttributeRecord } from "@/app/src/data/modules/maintenance/item-attributes/ItemAttributesData";
-import { useItemAttributesStore } from "@/app/src/hooks/modules/maintenance/item-attributes/useItemAttributes";
+  ItemVariationsDefaultSorting,
+  ItemVariationsDefaultColumnOrder,
+  ItemVariationsDefaultColumnVisibility,
+  ItemVariationsTableColumns,
+  ItemVariationsTablePreferencesModuleKey,
+  ItemVariationsTablePreferencesStorageKey,
+} from "@/app/src/constants/modules/maintenance/item-variations/ItemVariationsConstants";
+import { createItemVariationRecord } from "@/app/src/data/modules/maintenance/item-variations/ItemVariationsData";
+import { useItemVariationsStore } from "@/app/src/hooks/modules/maintenance/item-variations/useItemVariations";
 import type {
-  ItemAttributeFormValues,
-  ItemAttributeRecord,
-  ItemAttributesListPageState,
-} from "@/app/src/types/modules/maintenance/item-attributes/ItemAttributesTypes";
+  ItemVariationFormValues,
+  ItemVariationRecord,
+  ItemVariationsListPageState,
+} from "@/app/src/types/modules/maintenance/item-variations/ItemVariationsTypes";
 import { useTablePreferences } from "@/app/src/hooks/shared/table-preferences/useTablePreferences";
 import { normalizeLowercaseText } from "@/app/src/utils/string.util";
 
-export function useItemAttributesListPage(): ItemAttributesListPageState {
+export function useItemVariationsListPage(): ItemVariationsListPageState {
   const {
-    addAttribute,
-    attributes,
+    addVariation,
+    variations,
     isLoadError,
     isLoading,
     isMutating,
@@ -31,12 +31,12 @@ export function useItemAttributesListPage(): ItemAttributesListPageState {
     lastSyncedAt,
     loadErrorMessage,
     permissions,
-    refreshAttributes,
+    refreshVariations,
     statistics,
-    updateAttribute,
-  } = useItemAttributesStore();
-  const [drawer, setDrawer] = useState<ItemAttributesListPageState["drawer"]>(null);
-  const [pendingStatusRecord, setPendingStatusRecord] = useState<ItemAttributeRecord | null>(null);
+    updateVariation,
+  } = useItemVariationsStore();
+  const [drawer, setDrawer] = useState<ItemVariationsListPageState["drawer"]>(null);
+  const [pendingStatusRecord, setPendingStatusRecord] = useState<ItemVariationRecord | null>(null);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("Active");
   const [pagination, setPagination] = useState<PaginationState>({
@@ -44,16 +44,16 @@ export function useItemAttributesListPage(): ItemAttributesListPageState {
     pageSize: 10,
   });
   const { columnOrder, columnVisibility, sorting, setColumnOrder, setColumnVisibility, setSorting } = useTablePreferences({
-    defaultColumnOrder: ItemAttributesDefaultColumnOrder,
-    defaultColumnVisibility: ItemAttributesDefaultColumnVisibility,
-    defaultSorting: ItemAttributesDefaultSorting,
-    moduleKey: ItemAttributesTablePreferencesModuleKey,
-    storageKey: ItemAttributesTablePreferencesStorageKey,
+    defaultColumnOrder: ItemVariationsDefaultColumnOrder,
+    defaultColumnVisibility: ItemVariationsDefaultColumnVisibility,
+    defaultSorting: ItemVariationsDefaultSorting,
+    moduleKey: ItemVariationsTablePreferencesModuleKey,
+    storageKey: ItemVariationsTablePreferencesStorageKey,
   });
   const filteredRecords = useMemo(() => {
     const normalizedQuery = normalizeLowercaseText(query);
 
-    return attributes.filter(
+    return variations.filter(
       (record) =>
         (statusFilter === "All" || record.status === statusFilter) &&
         (!normalizedQuery ||
@@ -62,10 +62,10 @@ export function useItemAttributesListPage(): ItemAttributesListPageState {
             .toLowerCase()
             .includes(normalizedQuery)),
     );
-  }, [attributes, query, statusFilter]);
-  const tableColumns = useMemo<ColumnDef<ItemAttributeRecord>[]>(
+  }, [variations, query, statusFilter]);
+  const tableColumns = useMemo<ColumnDef<ItemVariationRecord>[]>(
     () =>
-      ItemAttributesTableColumns.map((column) => {
+      ItemVariationsTableColumns.map((column) => {
         if (!("key" in column)) {
           return {
             id: "actions",
@@ -90,9 +90,9 @@ export function useItemAttributesListPage(): ItemAttributesListPageState {
     data: filteredRecords,
     columns: tableColumns,
     initialState: {
-      columnOrder: ItemAttributesDefaultColumnOrder,
-      columnVisibility: ItemAttributesDefaultColumnVisibility,
-      sorting: ItemAttributesDefaultSorting,
+      columnOrder: ItemVariationsDefaultColumnOrder,
+      columnVisibility: ItemVariationsDefaultColumnVisibility,
+      sorting: ItemVariationsDefaultSorting,
     },
     state: {
       columnOrder,
@@ -109,18 +109,18 @@ export function useItemAttributesListPage(): ItemAttributesListPageState {
     getSortedRowModel: getSortedRowModel(),
   });
 
-  async function saveRecord(values: ItemAttributeFormValues) {
+  async function saveRecord(values: ItemVariationFormValues) {
     if (drawer?.mode === "edit" && drawer.record) {
-      await updateAttribute(createItemAttributeRecord(values, drawer.record));
+      await updateVariation(createItemVariationRecord(values, drawer.record));
     } else {
-      await addAttribute(values);
+      await addVariation(values);
     }
 
     setDrawer(null);
   }
 
-  function toggleStatus(record: ItemAttributeRecord) {
-    return updateAttribute({
+  function toggleStatus(record: ItemVariationRecord) {
+    return updateVariation({
       ...record,
       status: record.status === "Active" ? "Inactive" : "Active",
     });
@@ -136,10 +136,10 @@ export function useItemAttributesListPage(): ItemAttributesListPageState {
   }
 
   return {
-    activeCount: statistics.activeAttributes,
+    activeCount: statistics.activeVariations,
     drawer,
     filteredRecords,
-    inactiveCount: statistics.inactiveAttributes,
+    inactiveCount: statistics.inactiveVariations,
     isLoading,
     isLoadError,
     isMutating,
@@ -149,7 +149,7 @@ export function useItemAttributesListPage(): ItemAttributesListPageState {
     pendingStatusRecord,
     permissions,
     query,
-    records: attributes,
+    records: variations,
     statistics,
     statusFilter,
     table,
@@ -159,7 +159,7 @@ export function useItemAttributesListPage(): ItemAttributesListPageState {
     openEditDrawer: (record) => setDrawer({ mode: "edit", record }),
     openViewDrawer: (record) => setDrawer({ mode: "view", record }),
     confirmStatusChange,
-    refreshRecords: refreshAttributes,
+    refreshRecords: refreshVariations,
     saveRecord,
     setQuery: (value) => {
       setQuery(value);

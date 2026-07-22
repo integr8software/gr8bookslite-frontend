@@ -8,9 +8,6 @@ import {
 	useState,
 } from "react";
 import {
-	WarehouseStorageStatusOptions,
-} from "@/app/src/constants/modules/maintenance/warehouse-storage/WarehouseStorageConstants";
-import {
 	createBlankWarehouseStorageForm,
 	createStorageCodeFromForm,
 	createWarehouseStorageFormFromRow,
@@ -20,6 +17,8 @@ import type { WarehouseStorageActionMode, WarehouseStorageListRecord } from "@/a
 import type { WarehouseModuleFormValues } from "@/app/src/types/modules/maintenance/warehouses/WarehouseModuleTypes";
 import type { WarehouseRecord } from "@/app/src/types/modules/maintenance/warehouses/WarehouseTypes";
 import { ModuleDrawer, getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
+import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
+import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/constants/modules/maintenance/MaintenanceStatusConstants";
 
 const WarehouseStorageDrawerFormId = "storage-location-drawer-form";
 
@@ -143,13 +142,13 @@ export function WarehouseStorageDrawer({
 						</>
 					) : null}
 					<FormField label="Status" required>
-						<select name="status" value={form.status} onChange={handleInputChange} disabled={isReadonly} className={fieldClassName}>
-							{WarehouseStorageStatusOptions.map((status) => (
-								<option key={status} value={status}>
-									{status}
-								</option>
-							))}
-						</select>
+						<AppSwitch
+							falseOption={MaintenanceInactiveStatusSwitchOption}
+							value={form.status}
+							onChange={(status) => setForm((current) => ({ ...current, status }))}
+							readOnly={isReadonly}
+							trueOption={MaintenanceActiveStatusSwitchOption}
+						/>
 					</FormField>
 					<FormField label="Purpose" helper="Optional. Use only when it helps operations." >
 						<input name="locationType" value={form.locationType} onChange={handleInputChange} readOnly={isReadonly} className={fieldClassName} placeholder="Picking, receiving, cold storage" />

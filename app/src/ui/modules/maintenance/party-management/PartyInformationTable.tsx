@@ -29,7 +29,7 @@ export function PartyInformationTable({
 				paginationStorageKey={PartyManagementTablePaginationStorageKey}
 				paginationTotalRows={partyTable.totalRows}
 				table={partyTable.table}
-				tableTitle="Party records"
+				tableTitle="Party Records"
 				toolbar={
 					<PartyInformationTableFilters
 						exportAllRows={partyTable.exportAllRows}

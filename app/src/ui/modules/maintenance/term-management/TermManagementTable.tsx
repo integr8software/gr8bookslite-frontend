@@ -48,7 +48,7 @@ export function TermManagementTable({
 				minWidthClassName={`${tableMinWidthClassName} table-fixed`}
 				paginationStorageKey={TermManagementTablePaginationStorageKey}
 				table={table}
-				tableTitle="Term definitions"
+				tableTitle="Term Definitions"
 				toolbar={
 					<TermManagementTableFilters
 						datemodeFilter={datemodeFilter}

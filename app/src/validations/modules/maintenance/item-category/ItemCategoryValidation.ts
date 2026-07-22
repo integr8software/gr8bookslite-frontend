@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ItemBehaviorOptions } from "@/app/src/constants/modules/maintenance/items/ItemManagementConstants";
 import type {
 	ItemCategoryFormErrors,
 	ItemCategoryFormValues,
@@ -22,27 +23,33 @@ const ItemCategoryAccountingSetupInputSchema = z.object({
 	expenseAccount: z.string(),
 });
 
-const ItemCategoryBaseFormValidationSchema = z
-	.object({
-		name: z
-			.string()
-			.trim()
-			.min(1, "Enter a category name.")
-			.max(120, "Category name must be 120 characters or fewer."),
-		parentId: z.string().trim(),
-		description: z
-			.string()
-			.trim()
-			.max(500, "Description must be 500 characters or fewer."),
-		accountingSetupMode: z.enum(["inherit", "own"], {
-			message: "Choose how accounting accounts are assigned.",
-		}),
-		accountingSetup: ItemCategoryAccountingSetupInputSchema,
-		allowSubCategory: z.boolean(),
-		status: z.enum(["Active", "Inactive"], {
-			message: "Select a status.",
-		}),
-	});
+const ItemCategoryBaseFormValidationSchema = z.object({
+	name: z
+		.string()
+		.trim()
+		.min(1, "Enter a category name.")
+		.max(120, "Category name must be 120 characters or fewer."),
+	parentId: z.string().trim(),
+	description: z
+		.string()
+		.trim()
+		.max(500, "Description must be 500 characters or fewer."),
+	behaviors: z
+		.array(z.enum(ItemBehaviorOptions))
+		.min(1, "Select at least one item behavior."),
+	accountingSetupMode: z.enum(["inherit", "own"], {
+		message: "Choose how accounting accounts are assigned.",
+	}),
+	accountingSetup: ItemCategoryAccountingSetupInputSchema,
+	requiresInventoryAccount: z.boolean(),
+	requiresSalesAccount: z.boolean(),
+	requiresCostOfSalesAccount: z.boolean(),
+	requiresExpenseAccount: z.boolean(),
+	allowSubCategory: z.boolean(),
+	status: z.enum(["Active", "Inactive"], {
+		message: "Select a status.",
+	}),
+});
 
 export function createItemCategoryFormValidationSchema({
 	recordId,
@@ -52,6 +59,19 @@ export function createItemCategoryFormValidationSchema({
 	records: ItemSetupRecord[];
 }) {
 	return ItemCategoryBaseFormValidationSchema.superRefine((values, context) => {
+		if (
+			!values.requiresInventoryAccount &&
+			!values.requiresSalesAccount &&
+			!values.requiresCostOfSalesAccount &&
+			!values.requiresExpenseAccount
+		) {
+			context.addIssue({
+				code: "custom",
+				message: "Select at least one required account.",
+				path: ["requiresInventoryAccount"],
+			});
+		}
+
 		const currentRecord = recordId
 			? records.find((record) => record.id === recordId)
 			: undefined;
@@ -67,7 +87,9 @@ export function createItemCategoryFormValidationSchema({
 		}
 
 		if (values.parentId) {
-			const parentRecord = records.find((record) => record.id === values.parentId);
+			const parentRecord = records.find(
+				(record) => record.id === values.parentId,
+			);
 
 			if (recordId === values.parentId) {
 				context.addIssue({
@@ -131,20 +153,29 @@ export function createItemCategoryFormValidationSchema({
 			return;
 		}
 
-		const result = ItemCategoryAccountingSetupValidationSchema.safeParse(
-			values.accountingSetup,
-		);
+		const requiredAccounts = [
+			[
+				values.requiresInventoryAccount,
+				"inventoryAccount",
+				"Select an inventory account.",
+			],
+			[values.requiresSalesAccount, "salesAccount", "Select a sales account."],
+			[
+				values.requiresCostOfSalesAccount,
+				"costOfSalesAccount",
+				"Select a cost of sales account.",
+			],
+			[
+				values.requiresExpenseAccount,
+				"expenseAccount",
+				"Select an expense account.",
+			],
+		] as const;
 
-		if (result.success) {
-			return;
-		}
-
-		result.error.issues.forEach((issue) => {
-			context.addIssue({
-				code: "custom",
-				message: issue.message,
-				path: issue.path,
-			});
+		requiredAccounts.forEach(([isRequired, field, message]) => {
+			if (isRequired && !values.accountingSetup[field].trim()) {
+				context.addIssue({ code: "custom", message, path: [field] });
+			}
 		});
 	});
 }
@@ -156,9 +187,8 @@ export function validateItemCategoryForm(
 		records: ItemSetupRecord[];
 	} = { records: [] },
 ) {
-	const result = createItemCategoryFormValidationSchema(options).safeParse(
-		values,
-	);
+	const result =
+		createItemCategoryFormValidationSchema(options).safeParse(values);
 	const errors: ItemCategoryFormErrors = {};
 
 	if (!result.success) {

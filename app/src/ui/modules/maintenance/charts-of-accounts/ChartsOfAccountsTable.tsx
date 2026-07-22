@@ -149,7 +149,7 @@ export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
         paginationStorageKey="maintenance:chart-of-accounts"
         pageSizeOptions={[25, 50, 100, 150, 200]}
         table={props.table}
-        tableTitle="Ledger accounts"
+        tableTitle="Ledger Accounts"
         toolbar={props.toolbar}
         useColumnSizing
         variant="embedded"

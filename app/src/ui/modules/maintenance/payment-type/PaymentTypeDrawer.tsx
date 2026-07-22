@@ -10,11 +10,12 @@ import type {
 	PaymentTypeActionMode,
 	PaymentTypeClassification,
 	PaymentTypeDrawerProps,
-	PaymentTypeStatus,
 } from "@/app/src/types/modules/maintenance/payment-type/PaymentTypeTypes";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
+import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
+import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/constants/modules/maintenance/MaintenanceStatusConstants";
 
 const PaymentTypeActionCopy = {
 	add: {
@@ -151,20 +152,15 @@ function PaymentTypeDrawerPanel({
 					<span className="text-sm font-semibold text-darknavy">
 						Status <span className="text-coralpink">*</span>
 					</span>
-					<select
+					<AppSwitch
+						falseOption={MaintenanceInactiveStatusSwitchOption}
 						value={page.values.status}
-						disabled={page.isReadonly}
-						onChange={(event) =>
-							page.handleInputChange(
-								"status",
-								event.target.value as PaymentTypeStatus,
-							)
+						readOnly={page.isReadonly}
+						onChange={(status) =>
+							page.handleInputChange("status", status)
 						}
-						className={PaymentTypeFieldClassName}
-					>
-						<option value="Active">Active</option>
-						<option value="Inactive">Inactive</option>
-					</select>
+						trueOption={MaintenanceActiveStatusSwitchOption}
+					/>
 					{page.errors.status ? (
 						<span className="text-xs font-semibold text-coralpink">
 							{page.errors.status}

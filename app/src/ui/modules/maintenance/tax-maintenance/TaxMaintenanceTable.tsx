@@ -44,7 +44,7 @@ export function TaxMaintenanceTable({
         minWidthClassName={`${tableMinWidthClassName} table-fixed`}
         paginationStorageKey={TaxMaintenanceTablePaginationStorageKey}
         table={table}
-        tableTitle="Tax definitions"
+        tableTitle="Tax Definitions"
         toolbar={
           <TaxMaintenanceTableFilters
             exportAllRows={taxes}

@@ -3,7 +3,6 @@
 import { useId } from "react";
 import {
   AccountLevelLabels,
-  AccountStatuses,
   AccountTypeLabels,
   AccountTypes,
   NormalBalanceLabels,
@@ -27,6 +26,8 @@ import {
   AppAdvancedDropdown,
   type AppAdvancedDropdownOption,
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
+import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/constants/modules/maintenance/MaintenanceStatusConstants";
 
 export function ChartsOfAccountsAccountFields({
   account,
@@ -210,17 +211,15 @@ export function ChartsOfAccountsAccountFields({
           onChange={(value) => onFieldChange("reportAlias", value)}
         />
       ) : null}
-      <SelectField
-        error={isInvalid && !values.status ? "Required" : undefined}
-        label="Status"
-        value={values.status}
-        options={AccountStatuses}
-        includePlaceholder={false}
-        readOnly={isReadOnly}
-        reserveMessageSpace={submitted}
-        required
-        onChange={(value) => onFieldChange("status", value as never)}
-      />
+	  <Field label="Status" error={isInvalid && !values.status ? "Required" : undefined} required>
+		<AppSwitch
+		  falseOption={MaintenanceInactiveStatusSwitchOption}
+		  value={values.status}
+		  onChange={(status) => onFieldChange("status", status)}
+		  readOnly={isReadOnly}
+		  trueOption={MaintenanceActiveStatusSwitchOption}
+		/>
+	  </Field>
     </div>
   );
 }

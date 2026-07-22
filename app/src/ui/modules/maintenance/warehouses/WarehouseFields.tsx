@@ -2,9 +2,11 @@
 
 import { useState, type ChangeEventHandler, type ReactNode } from "react";
 import { Building2, Check } from "lucide-react";
-import { WarehouseBranchAvailabilityOptions, WarehouseStatusOptions } from "@/app/src/constants/modules/maintenance/warehouses/WarehouseConstants";
+import { WarehouseBranchAvailabilityOptions } from "@/app/src/constants/modules/maintenance/warehouses/WarehouseConstants";
 import type { WarehouseFormErrors, WarehouseFormValues } from "@/app/src/types/modules/maintenance/warehouses/WarehouseTypes";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
+import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
+import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/constants/modules/maintenance/MaintenanceStatusConstants";
 
 type WarehouseFieldsProps = {
   branchOptions: Array<{ code: string; id: string; name: string }>;
@@ -14,6 +16,7 @@ type WarehouseFieldsProps = {
   onAvailabilityModeChange: (mode: WarehouseFormValues["branchAvailabilityMode"]) => void;
   onInputChange: ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>;
   onSetBranchSelection: (branchUnitIds: string[]) => void;
+	 onStatusChange: (value: WarehouseFormValues["status"]) => void;
   onToggleBranch: (branchId: string) => void;
 };
 
@@ -28,6 +31,7 @@ export function WarehouseFields({
   onAvailabilityModeChange,
   onInputChange,
   onSetBranchSelection,
+	 onStatusChange,
   onToggleBranch,
   values,
 }: WarehouseFieldsProps) {
@@ -122,13 +126,12 @@ export function WarehouseFields({
                 ) : null}
               </FormField>
               <FormField label="Status" error={errors.status} required>
-                <select name="status" value={values.status} onChange={onInputChange} className={fieldClassName}>
-                  {WarehouseStatusOptions.map((status) => (
-                    <option key={status} value={status}>
-                      {status}
-                    </option>
-                  ))}
-                </select>
+                <AppSwitch
+                  falseOption={MaintenanceInactiveStatusSwitchOption}
+                  value={values.status}
+                  onChange={onStatusChange}
+                  trueOption={MaintenanceActiveStatusSwitchOption}
+                />
               </FormField>
             </div>
           </div>

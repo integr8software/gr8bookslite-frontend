@@ -1,13 +1,14 @@
 import type { ReactNode } from "react";
 import {
 	DiscountManagementFieldClassName,
-	DiscountManagementStatusOptions,
 	DiscountManagementSelectClassName,
 	DiscountManagementTypeOptions,
 	DiscountManagementValueTypeOptions,
 } from "@/app/src/constants/modules/maintenance/discount-management/DiscountManagementConstants";
 import type { DiscountManagementFieldsProps } from "@/app/src/types/modules/maintenance/discount-management/DiscountManagementTypes";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
+import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
+import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/constants/modules/maintenance/MaintenanceStatusConstants";
 
 export function DiscountManagementFields({
 	errors,
@@ -15,6 +16,7 @@ export function DiscountManagementFields({
 	isReadonly,
 	values,
 	onInputChange,
+	onStatusChange,
 }: DiscountManagementFieldsProps) {
 	return (
 		<div className="grid gap-4">
@@ -109,19 +111,13 @@ export function DiscountManagementFields({
 			) : null}
 
 			<FormField label="Status" error={errors.status} required>
-				<select
-					name="status"
+				<AppSwitch
+					falseOption={MaintenanceInactiveStatusSwitchOption}
 					value={values.status}
-					onChange={onInputChange}
-					disabled={isReadonly}
-					className={DiscountManagementSelectClassName}
-				>
-					{DiscountManagementStatusOptions.map((status) => (
-						<option key={status} value={status}>
-							{status}
-						</option>
-					))}
-				</select>
+					onChange={onStatusChange}
+					readOnly={isReadonly}
+					trueOption={MaintenanceActiveStatusSwitchOption}
+				/>
 			</FormField>
 		</div>
 	);

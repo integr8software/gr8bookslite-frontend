@@ -15,12 +15,12 @@ import {
 	PartyManagementFieldClassName,
 	PartyManagementFieldControlSelector,
 	PartyManagementSelectClassName,
-	PartyInformationStatusOptions,
 } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
 import {
 	DefaultPhilippineContactNumber,
 	PhilippineContactNumberPlaceholder,
 } from "@/app/src/data/shared/contact/ContactData";
+import { formatAtcDisplayCode } from "@/app/src/data/shared/tax/AtcCode";
 import type {
 	PartyAccountingAccountOptions,
 	PartyAccountingAccountField,
@@ -39,6 +39,8 @@ import {
 import {
 	ModuleTabs,
 } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
+import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
+import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/constants/modules/maintenance/MaintenanceStatusConstants";
 
 export function PartyInformationDetailsFields({
 	atcOptions,
@@ -100,8 +102,7 @@ export function PartyInformationDetailsFields({
 	}));
 	const atcSelectOptions = atcOptions.map((option) => ({
 		description: `${option.category}. ${option.description}`,
-		label: option.label,
-		name: option.code,
+		name: `${formatAtcDisplayCode(option.code)} (${option.label})`,
 		value: option.code,
 	}));
 	const basicErrorCount = countErrors(errors, [
@@ -359,7 +360,7 @@ export function PartyInformationDetailsFields({
 										error={errors.status}
 										isReadonly={isReadonly}
 										value={values.status}
-										onChange={onInputChange}
+										onValueChange={(status) => onUpdateField("status", status)}
 									/>
 								</div>
 							) : null}
@@ -370,7 +371,7 @@ export function PartyInformationDetailsFields({
 										error={errors.status}
 										isReadonly={isReadonly}
 										value={values.status}
-										onChange={onInputChange}
+										onValueChange={(status) => onUpdateField("status", status)}
 									/>
 								</div>
 							)}
@@ -775,28 +776,22 @@ function StatusField({
 	error,
 	isReadonly,
 	value,
-	onChange,
+	onValueChange,
 }: {
 	error?: string;
 	isReadonly: boolean;
 	value: PartyInformationFormValues["status"];
-	onChange: PartyInformationDetailsFieldsProps["onInputChange"];
+	onValueChange: (value: PartyInformationFormValues["status"]) => void;
 }) {
 	return (
 		<Field label="Status" error={error} required>
-			<select
-				name="status"
-				disabled={isReadonly}
+			<AppSwitch
+				falseOption={MaintenanceInactiveStatusSwitchOption}
 				value={value}
-				onChange={onChange}
-				className={PartyManagementSelectClassName}
-			>
-				{PartyInformationStatusOptions.map((status) => (
-					<option key={status} value={status}>
-						{status}
-					</option>
-				))}
-			</select>
+				onChange={onValueChange}
+				readOnly={isReadonly}
+				trueOption={MaintenanceActiveStatusSwitchOption}
+			/>
 		</Field>
 	);
 }

@@ -1,28 +1,29 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState, type ChangeEvent, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { ItemsHref } from "@/app/src/constants/modules/maintenance/items/ItemManagementConstants";
 import { createWarehouseItemsHref } from "@/app/src/constants/modules/maintenance/warehouses/WarehouseConstants";
 import {
-	ItemInitialFormValues,
-	MockItemAttributes,
-	MockItemSuppliers,
-	MockItemSetupRecords,
-	createItemFormValues,
-	createItemRecord,
-	updateItemRecord,
+  ItemInitialFormValues,
+  MockItemVariations,
+  MockItemSuppliers,
+  MockItemSetupRecords,
+  createItemFormValues,
+  createItemRecord,
+  updateItemRecord,
 } from "@/app/src/data/modules/maintenance/items/ItemManagementData";
 import type {
   ItemActionMode,
+  ItemBehavior,
   ItemFormErrors,
   ItemFormValues,
   ItemSetupKind,
   ItemSetupRecord,
   ItemStatus,
-  ItemAttributeAssignment,
+  ItemVariationAssignment,
   ItemPriceListAssignment,
   ItemSupplierAssignment,
 } from "@/app/src/types/modules/maintenance/items/ItemManagementTypes";
@@ -32,7 +33,7 @@ import { validateItemForm } from "@/app/src/validations/modules/maintenance/item
 import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/maintenance/responsibility-center/useResponsibilityCenter";
 import { useWarehousesStore } from "@/app/src/hooks/modules/maintenance/warehouses/useWarehouses";
 import { useItemManagementStore } from "@/app/src/hooks/modules/maintenance/items/useItemManagement";
-import { fetchItemAttributeOptions } from "@/app/src/services/modules/maintenance/item-attributes/ItemAttributesApi";
+import { fetchItemVariationOptions } from "@/app/src/services/modules/maintenance/item-variations/ItemVariationsApi";
 import { fetchItemCategoryOptions } from "@/app/src/services/modules/maintenance/item-category/ItemCategoryApi";
 import { ItemManagementQueryKeys } from "@/app/src/services/modules/maintenance/items/ItemManagementQueryKeys";
 import { fetchPartyOptions } from "@/app/src/services/modules/maintenance/party-management/PartyManagementApi";
@@ -40,7 +41,13 @@ import { fetchUnitsOfMeasurement } from "@/app/src/services/modules/maintenance/
 import { UnitOfMeasurementQueryKeys } from "@/app/src/services/modules/maintenance/unit-of-measurement/UnitOfMeasurementQueryKeys";
 import { useTaxMaintenanceOptions } from "@/app/src/hooks/modules/maintenance/tax-maintenance/useTaxMaintenanceOptions";
 
-const NumberItemFormFields = new Set<keyof ItemFormValues>(["costPrice", "maximumStock", "minimumStock", "reorderLevel", "sellingPrice"]);
+const NumberItemFormFields = new Set<keyof ItemFormValues>([
+  "costPrice",
+  "maximumStock",
+  "minimumStock",
+  "reorderLevel",
+  "sellingPrice",
+]);
 
 export function useItemsFormPage() {
   const params = useParams<{ recordId?: string }>();
@@ -51,10 +58,10 @@ export function useItemsFormPage() {
   const { warehouses } = useWarehousesStore();
   const { addItem, isMutating, items, updateItem } = store;
   const taxMaintenance = useTaxMaintenanceOptions();
-  const itemAttributeOptionsQuery = useQuery({
-    queryKey: ItemManagementQueryKeys.itemAttributeOptions(),
-    queryFn: fetchItemAttributeOptions,
-    initialData: MockItemAttributes,
+  const itemVariationOptionsQuery = useQuery({
+    queryKey: ItemManagementQueryKeys.itemVariationOptions(),
+    queryFn: fetchItemVariationOptions,
+    initialData: MockItemVariations,
     retry: false,
   });
   const itemCategoryOptionsQuery = useQuery({
@@ -82,7 +89,9 @@ export function useItemsFormPage() {
   const mode = getActionMode(pathname);
   const existingItem = items.find((item) => item.id === params.recordId);
   const isReadonly = mode === "view";
-  const [values, setValues] = useState<ItemFormValues>(() => (existingItem ? createInitialItemFormValues(existingItem) : ItemInitialFormValues));
+  const [values, setValues] = useState<ItemFormValues>(() =>
+    existingItem ? createInitialItemFormValues(existingItem) : ItemInitialFormValues,
+  );
   const [errors, setErrors] = useState<ItemFormErrors>({});
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
   const unitsOfMeasurementQuery = useQuery({
@@ -94,7 +103,11 @@ export function useItemsFormPage() {
   const uomOptions = useMemo(
     () =>
       (unitsOfMeasurementQuery.data?.records ?? [])
-        .filter((unit) => unit.status === "Active" || (values.uom.trim().length > 0 && unit.symbol === values.uom))
+        .filter(
+          (unit) =>
+            unit.status === "Active" ||
+            (values.uom.trim().length > 0 && unit.symbol === values.uom),
+        )
         .map((unit) => ({
           description: `${unit.symbol} | ${unit.quantityMode}`,
           name: unit.name,
@@ -103,17 +116,32 @@ export function useItemsFormPage() {
     [unitsOfMeasurementQuery.data?.records, values.uom],
   );
   const taxTreatmentOptions = useMemo(
-    () => taxMaintenance.taxes
-      .filter((tax) => tax.status === "Active")
-      .map((tax) => ({
-        label: `${tax.name} (${tax.percentage}%)`,
-        value: tax.name,
-        percentage: Number(tax.percentage),
-      })),
+    () =>
+      taxMaintenance.taxes
+        .filter((tax) => tax.status === "Active")
+        .map((tax) => ({
+          label: `${tax.name} (${tax.percentage}%)`,
+          value: tax.name,
+          percentage: Number(tax.percentage),
+        })),
     [taxMaintenance.taxes],
   );
 
-  function updateField<TKey extends keyof ItemFormValues>(field: TKey, value: ItemFormValues[TKey]) {
+  useEffect(() => {
+    const category = categoryRecords.find((record) => record.id === values.primaryCategory);
+
+    if (!category?.behaviors?.length) {
+      return;
+    }
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Category behavior is loaded asynchronously and is the source of truth for item behavior flags.
+    setValues((current) => applyCategoryBehavior(current, category.behaviors ?? []));
+  }, [categoryRecords, values.primaryCategory]);
+
+  function updateField<TKey extends keyof ItemFormValues>(
+    field: TKey,
+    value: ItemFormValues[TKey],
+  ) {
     if (isReadonly) {
       return;
     }
@@ -132,7 +160,9 @@ export function useItemsFormPage() {
     }));
   }
 
-  function handleInputChange(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
+  function handleInputChange(
+    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+  ) {
     const { name, type, value } = event.target;
 
     if (type === "checkbox" && "checked" in event.target) {
@@ -170,7 +200,11 @@ export function useItemsFormPage() {
     setErrors((current) => ({ ...current, suppliers: undefined }));
   }
 
-  function updateSupplier(supplierId: string, field: keyof ItemSupplierAssignment, value: string | boolean) {
+  function updateSupplier(
+    supplierId: string,
+    field: keyof ItemSupplierAssignment,
+    value: string | boolean,
+  ) {
     if (isReadonly) {
       return;
     }
@@ -180,7 +214,9 @@ export function useItemsFormPage() {
       suppliers: moveDefaultSupplierFirst(
         current.suppliers.map((supplier) => {
           if (supplier.id !== supplierId) {
-            return field === "isDefault" && value === true ? { ...supplier, isDefault: false } : supplier;
+            return field === "isDefault" && value === true
+              ? { ...supplier, isDefault: false }
+              : supplier;
           }
 
           if (field === "isDefault") {
@@ -204,7 +240,9 @@ export function useItemsFormPage() {
 
     setValues((current) => ({
       ...current,
-      suppliers: moveDefaultSupplierFirst(ensureDefaultSupplier(current.suppliers.filter((supplier) => supplier.id !== supplierId))),
+      suppliers: moveDefaultSupplierFirst(
+        ensureDefaultSupplier(current.suppliers.filter((supplier) => supplier.id !== supplierId)),
+      ),
     }));
     setErrors((current) => ({ ...current, suppliers: undefined }));
   }
@@ -247,50 +285,57 @@ export function useItemsFormPage() {
     }));
   }
 
-  function addAttributeAssignment() {
+  function addVariationAssignment() {
     if (isReadonly) {
       return;
     }
 
-    if (values.attributeAssignments.length >= 5) {
-      toast.error("You can add up to 5 item attributes.");
+    if (values.variationAssignments.length >= 5) {
+      toast.error("You can add up to 5 item variations.");
       return;
     }
 
-    if (values.attributeAssignments.some((assignment) => !assignment.attributeId)) {
-      toast.error("Select an attribute before adding another row.");
+    if (values.variationAssignments.some((assignment) => !assignment.variationId)) {
+      toast.error("Select a variation before adding another row.");
       return;
     }
 
     setValues((current) => ({
       ...current,
-      attributeAssignments: [...current.attributeAssignments, createEmptyAttributeAssignment()],
+      variationAssignments: [...current.variationAssignments, createEmptyVariationAssignment()],
     }));
   }
 
-  function updateAttributeAssignment(assignmentId: string, field: keyof ItemAttributeAssignment, value: string) {
+  function updateVariationAssignment(
+    assignmentId: string,
+    field: keyof ItemVariationAssignment,
+    value: string,
+  ) {
     if (isReadonly) {
       return;
     }
 
     setValues((current) => ({
       ...current,
-      attributeAssignments: current.attributeAssignments.map((assignment) => {
+      variationAssignments: current.variationAssignments.map((assignment) => {
         if (assignment.id !== assignmentId) {
           return assignment;
         }
 
-        if (field === "attributeId") {
+        if (field === "variationId") {
           if (
             value &&
-            current.attributeAssignments.some((currentAssignment) => currentAssignment.id !== assignmentId && currentAssignment.attributeId === value)
+            current.variationAssignments.some(
+              (currentAssignment) =>
+                currentAssignment.id !== assignmentId && currentAssignment.variationId === value,
+            )
           ) {
             return assignment;
           }
 
           return {
             ...assignment,
-            attributeId: value,
+            variationId: value,
             value: "",
           };
         }
@@ -300,25 +345,36 @@ export function useItemsFormPage() {
     }));
   }
 
-  function removeAttributeAssignment(assignmentId: string) {
+  function removeVariationAssignment(assignmentId: string) {
     if (isReadonly) {
       return;
     }
 
     setValues((current) => ({
       ...current,
-      attributeAssignments: current.attributeAssignments.filter((assignment) => assignment.id !== assignmentId),
+      variationAssignments: current.variationAssignments.filter(
+        (assignment) => assignment.id !== assignmentId,
+      ),
     }));
   }
 
-  function reorderAttributeAssignment(assignmentId: string, overAssignmentId: string, position: "after" | "before" = "before") {
+  function reorderVariationAssignment(
+    assignmentId: string,
+    overAssignmentId: string,
+    position: "after" | "before" = "before",
+  ) {
     if (isReadonly) {
       return;
     }
 
     setValues((current) => ({
       ...current,
-      attributeAssignments: reorderItemAttributeAssignments(current.attributeAssignments, assignmentId, overAssignmentId, position),
+      variationAssignments: reorderItemVariationAssignments(
+        current.variationAssignments,
+        assignmentId,
+        overAssignmentId,
+        position,
+      ),
     }));
   }
 
@@ -328,7 +384,9 @@ export function useItemsFormPage() {
     }
 
     setValues((current) => {
-      const existingPrice = current.priceListPrices.find((priceListPrice) => priceListPrice.priceListId === priceListId);
+      const existingPrice = current.priceListPrices.find(
+        (priceListPrice) => priceListPrice.priceListId === priceListId,
+      );
       const nextPrice: ItemPriceListAssignment = {
         id: existingPrice?.id ?? `item-price-list-${Date.now()}-${priceListId}`,
         priceListId,
@@ -338,14 +396,18 @@ export function useItemsFormPage() {
       return {
         ...current,
         priceListPrices: existingPrice
-          ? current.priceListPrices.map((priceListPrice) => (priceListPrice.priceListId === priceListId ? nextPrice : priceListPrice))
+          ? current.priceListPrices.map((priceListPrice) =>
+              priceListPrice.priceListId === priceListId ? nextPrice : priceListPrice,
+            )
           : [...current.priceListPrices, nextPrice],
       };
     });
   }
 
   function validateBeforeSubmit() {
-    const nextErrors = validateItemForm(values);
+    const nextErrors = validateItemForm(values, {
+      variations: itemVariationOptionsQuery.data,
+    });
 
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
@@ -393,10 +455,10 @@ export function useItemsFormPage() {
   }
 
   return {
-    addAttributeAssignment,
+    addVariationAssignment,
     addTag,
     addSupplier,
-    attributeRecords: itemAttributeOptionsQuery.data,
+    variationRecords: itemVariationOptionsQuery.data,
     categoryOptions: createCategorySetupOptions(setupRecords.category),
     errors,
     existingItem,
@@ -410,18 +472,21 @@ export function useItemsFormPage() {
     needsRecord: mode === "edit" || mode === "view",
     nextStatus,
     priceLists: store.priceLists,
-    removeAttributeAssignment,
+    removeVariationAssignment,
     removeTag,
     removeSupplier,
-    reorderAttributeAssignment,
+    reorderVariationAssignment,
     responsibilityCenterOptions: createResponsibilityCenterOptions(responsibilityCenters),
     setIsStatusDialogOpen,
-    statusOptions: createSimpleOptions(["Active", "Inactive"]),
     taxTreatmentOptions,
-    supplierOptions: createSimpleOptions(vendorOptionsQuery.data.filter((supplier) => supplier.status === "Active").map((supplier) => supplier.name)),
+    supplierOptions: createSimpleOptions(
+      vendorOptionsQuery.data
+        .filter((supplier) => supplier.status === "Active")
+        .map((supplier) => supplier.name),
+    ),
     uomOptions,
     updateField,
-    updateAttributeAssignment,
+    updateVariationAssignment,
     updatePriceListPrice,
     updateSupplier,
     validateBeforeSubmit,
@@ -432,10 +497,123 @@ export function useItemsFormPage() {
   };
 }
 
-function createEmptyAttributeAssignment(): ItemAttributeAssignment {
+function applyCategoryBehavior(values: ItemFormValues, behaviors: ItemBehavior[]): ItemFormValues {
+  if (behaviors.length === 0) {
+    return values;
+  }
+
+  const flags = createItemBehaviorFlags(behaviors);
+  const isUnchanged =
+    values.behaviors.length === behaviors.length &&
+    values.behaviors.every((behavior, index) => behavior === behaviors[index]) &&
+    values.behavior === behaviors[0] &&
+    values.asset === flags.asset &&
+    values.purchasable === flags.purchasable &&
+    values.sellable === flags.sellable &&
+    values.service === flags.service &&
+    values.trackInventory === flags.trackInventory;
+
+  return isUnchanged
+    ? values
+    : {
+        ...values,
+        behavior: behaviors[0],
+        behaviors,
+        ...flags,
+      };
+}
+
+function createItemBehaviorFlags(behaviors: ItemBehavior[]) {
+  return behaviors.reduce(
+    (flags, behavior) => {
+      const behaviorFlags = ItemBehaviorFlagMap[behavior];
+
+      return {
+        asset: flags.asset || behaviorFlags.asset,
+        purchasable: flags.purchasable || behaviorFlags.purchasable,
+        sellable: flags.sellable || behaviorFlags.sellable,
+        service: flags.service || behaviorFlags.service,
+        trackInventory: flags.trackInventory || behaviorFlags.trackInventory,
+      };
+    },
+    { asset: false, purchasable: false, sellable: false, service: false, trackInventory: false },
+  );
+}
+
+const ItemBehaviorFlagMap = {
+  "Sellable Item": {
+    asset: false,
+    purchasable: false,
+    sellable: true,
+    service: false,
+    trackInventory: false,
+  },
+  "Purchasable Item": {
+    asset: false,
+    purchasable: true,
+    sellable: false,
+    service: false,
+    trackInventory: false,
+  },
+  "Issuable Item": {
+    asset: false,
+    purchasable: false,
+    sellable: false,
+    service: false,
+    trackInventory: true,
+  },
+  "Returnable Item": {
+    asset: false,
+    purchasable: false,
+    sellable: false,
+    service: false,
+    trackInventory: true,
+  },
+  "Non-Inventory Item": {
+    asset: false,
+    purchasable: true,
+    sellable: true,
+    service: false,
+    trackInventory: false,
+  },
+  "Raw Material": {
+    asset: false,
+    purchasable: true,
+    sellable: false,
+    service: false,
+    trackInventory: true,
+  },
+  "Semi-Finished Goods/WIP": {
+    asset: false,
+    purchasable: false,
+    sellable: false,
+    service: false,
+    trackInventory: true,
+  },
+  "Finished Goods": {
+    asset: false,
+    purchasable: false,
+    sellable: true,
+    service: false,
+    trackInventory: true,
+  },
+  "Asset Item": { asset: true, purchasable: true, sellable: false, service: false, trackInventory: false },
+  "Consumable Item": {
+    asset: false,
+    purchasable: true,
+    sellable: false,
+    service: false,
+    trackInventory: true,
+  },
+} as const satisfies Record<
+  ItemBehavior,
+  Pick<ItemFormValues, "asset" | "purchasable" | "sellable" | "service" | "trackInventory">
+>;
+
+function createEmptyVariationAssignment(): ItemVariationAssignment {
   return {
-    id: `item-attribute-${Date.now()}`,
-    attributeId: "",
+    id: `item-variation-${Date.now()}`,
+    variationId: "",
     value: "",
   };
 }
@@ -446,8 +624,8 @@ function createItemSupplierId() {
     : `item-supplier-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-function reorderItemAttributeAssignments(
-  assignments: ItemAttributeAssignment[],
+function reorderItemVariationAssignments(
+  assignments: ItemVariationAssignment[],
   recordId: string,
   overRecordId: string,
   position: "after" | "before" = "before",
@@ -455,13 +633,21 @@ function reorderItemAttributeAssignments(
   const currentIndex = assignments.findIndex((record) => record.id === recordId);
   const nextIndex = assignments.findIndex((record) => record.id === overRecordId);
 
-  if (currentIndex === -1 || nextIndex === -1 || currentIndex === nextIndex || nextIndex < 0 || nextIndex >= assignments.length) {
+  if (
+    currentIndex === -1 ||
+    nextIndex === -1 ||
+    currentIndex === nextIndex ||
+    nextIndex < 0 ||
+    nextIndex >= assignments.length
+  ) {
     return assignments;
   }
 
   const nextRecords = [...assignments];
   const [record] = nextRecords.splice(currentIndex, 1);
-  const adjustedOverIndex = nextRecords.findIndex((currentRecord) => currentRecord.id === overRecordId);
+  const adjustedOverIndex = nextRecords.findIndex(
+    (currentRecord) => currentRecord.id === overRecordId,
+  );
 
   if (adjustedOverIndex === -1) {
     return assignments;
@@ -472,12 +658,23 @@ function reorderItemAttributeAssignments(
   return nextRecords;
 }
 
-function reorderSuppliers(suppliers: ItemSupplierAssignment[], recordId: string, overRecordId: string) {
+function reorderSuppliers(
+  suppliers: ItemSupplierAssignment[],
+  recordId: string,
+  overRecordId: string,
+) {
   const currentIndex = suppliers.findIndex((record) => record.id === recordId);
   const nextIndex = suppliers.findIndex((record) => record.id === overRecordId);
   const movedSupplier = suppliers[currentIndex];
 
-  if (currentIndex === -1 || nextIndex === -1 || currentIndex === nextIndex || nextIndex < 0 || nextIndex >= suppliers.length || movedSupplier?.isDefault) {
+  if (
+    currentIndex === -1 ||
+    nextIndex === -1 ||
+    currentIndex === nextIndex ||
+    nextIndex < 0 ||
+    nextIndex >= suppliers.length ||
+    movedSupplier?.isDefault
+  ) {
     return suppliers;
   }
 
@@ -560,23 +757,32 @@ function createCategorySetupOptions(records: ItemSetupRecord[]): ItemSetupOption
     .filter((record) => {
       const parentIds = record.parentIds ?? [];
 
-      return parentIds.length === 0 || parentIds.every((parentId) => !activeRecordIds.has(parentId));
+      return (
+        parentIds.length === 0 || parentIds.every((parentId) => !activeRecordIds.has(parentId))
+      );
     })
     .map((record) => createCategorySetupOption(record, recordsByParentId, new Set()));
 }
 
-function createCategorySetupOption(record: ItemSetupRecord, recordsByParentId: Map<string, ItemSetupRecord[]>, visitedIds: Set<string>): ItemSetupOption {
+function createCategorySetupOption(
+  record: ItemSetupRecord,
+  recordsByParentId: Map<string, ItemSetupRecord[]>,
+  visitedIds: Set<string>,
+): ItemSetupOption {
   const nextVisitedIds = new Set(visitedIds);
 
   nextVisitedIds.add(record.id);
 
   const children = (recordsByParentId.get(record.id) ?? [])
     .filter((childRecord) => !nextVisitedIds.has(childRecord.id))
-    .map((childRecord) => createCategorySetupOption(childRecord, recordsByParentId, nextVisitedIds));
+    .map((childRecord) =>
+      createCategorySetupOption(childRecord, recordsByParentId, nextVisitedIds),
+    );
 
   return createSetupOption(record, {
     children,
-    description: children.length > 0 ? `${record.description} Includes child categories.` : record.description,
+    description:
+      children.length > 0 ? `${record.description} Includes child categories.` : record.description,
   });
 }
 
@@ -634,11 +840,15 @@ function createWarehouseDescription(warehouse: WarehouseRecord) {
   }
 
   if (warehouse.branchAvailabilityMode === "Except Branches") {
-    return warehouse.availableBranches.length > 0 ? `Available to all branches except ${warehouse.availableBranches.join(", ")}` : "Available to all branches";
+    return warehouse.availableBranches.length > 0
+      ? `Available to all branches except ${warehouse.availableBranches.join(", ")}`
+      : "Available to all branches";
   }
 
   if (warehouse.branchAvailabilityMode === "Specific Branches") {
-    return warehouse.availableBranches.length > 0 ? `Available to ${warehouse.availableBranches.join(", ")}` : "No branch access selected";
+    return warehouse.availableBranches.length > 0
+      ? `Available to ${warehouse.availableBranches.join(", ")}`
+      : "No branch access selected";
   }
 
   return `Available to ${warehouse.branchName}`;

@@ -1,11 +1,13 @@
 export type {
 	ItemActionMode,
 	ItemCategoryAccountingSetup,
+	ItemCategoryAccountingRequirements,
 	ItemCategoryAccountingSetupMode,
 	ItemCategoryAccountingSetupStatus,
 	ItemCategoryAccountingSetupStatusFilter,
 	ItemCategoryFormErrors,
 	ItemCategoryFormValues,
+	ItemBehavior,
 	ItemCategoryPermissions,
 	ItemCategoryStatusFilter,
 	ItemCategoryTableColumnKey,
@@ -19,6 +21,7 @@ export type {
 } from "@/app/src/types/modules/maintenance/items/ItemManagementTypes";
 
 import type {
+	ItemBehavior,
 	ItemCategoryAccountingSetup,
 	ItemCategoryAccountingSetupMode,
 	ItemCategoryPermissions,
@@ -40,6 +43,11 @@ export type ApiItemCategory = {
 	accountingSetupMode: ApiItemCategoryAccountingSetupMode;
 	accountingSetup: Partial<ItemCategoryAccountingSetup> | null;
 	effectiveAccountingSetup: ItemCategoryAccountingSetup;
+	requiresInventoryAccount: boolean;
+	requiresSalesAccount: boolean;
+	requiresCostOfSalesAccount: boolean;
+	requiresExpenseAccount: boolean;
+	behaviors: ItemBehavior[];
 	inheritedAccountingSourceName: string | null;
 	allowSubCategory: boolean;
 	status: ApiItemCategoryStatus;
@@ -82,6 +90,7 @@ export type ApiItemCategoryOption = {
 	name: string;
 	description: string | null;
 	parentId: string | null;
+	behaviors: ItemBehavior[];
 	allowSubCategory: boolean;
 	status: ApiItemCategoryStatus;
 };
@@ -99,6 +108,11 @@ export type ItemCategorySavePayload = {
 		description: string;
 		accountingSetupMode: ItemCategoryAccountingSetupMode;
 		accountingSetup: ItemCategoryAccountingSetup;
+		requiresInventoryAccount: boolean;
+		requiresSalesAccount: boolean;
+		requiresCostOfSalesAccount: boolean;
+		requiresExpenseAccount: boolean;
+		behaviors: ItemBehavior[];
 		allowSubCategory: boolean;
 		status: ItemStatus;
 	};

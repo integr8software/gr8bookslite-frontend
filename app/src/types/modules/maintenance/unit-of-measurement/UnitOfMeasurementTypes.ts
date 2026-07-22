@@ -141,6 +141,7 @@ export type UnitOfMeasurementFieldsProps = {
 	isReadonly: boolean;
 	values: UnitOfMeasurementFormValues;
 	onInputChange: ChangeEventHandler<HTMLInputElement | HTMLSelectElement>;
+	onStatusChange: (value: UnitOfMeasurementFormValues["status"]) => void;
 };
 
 export type UnitOfMeasurementStatisticCardsProps = {

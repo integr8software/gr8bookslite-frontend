@@ -60,6 +60,7 @@ function TransactionTypeDrawerPanel({
 					onAccountChange={page.handleAccountChange}
 					onInputChange={page.handleInputChange}
 					onModuleChange={page.handleModuleChange}
+					onStatusChange={page.handleStatusChange}
 				/>
 			</form>
 		</ModuleDrawer>

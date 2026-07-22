@@ -4,7 +4,6 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 import {
   TaxMaintenanceFieldClassName,
-  TaxMaintenanceStatusOptions,
 } from "@/app/src/constants/modules/maintenance/tax-maintenance/TaxMaintenanceConstants";
 import type {
   TaxMaintenanceAccountField,
@@ -13,6 +12,8 @@ import type {
 } from "@/app/src/types/modules/maintenance/tax-maintenance/TaxMaintenanceTypes";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
+import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
+import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/constants/modules/maintenance/MaintenanceStatusConstants";
 
 const accountFields: Array<{
   field: TaxMaintenanceAccountField;
@@ -45,6 +46,7 @@ export function TaxMaintenanceFields({
   onAccountChange,
   onAddTaxAccountTitle,
   onInputChange,
+	onStatusChange,
 }: TaxMaintenanceFieldsProps) {
   const [activeTab, setActiveTab] = useState<TaxMaintenanceTab>("tax");
   const errorTab = getErrorTab(errors);
@@ -110,19 +112,13 @@ export function TaxMaintenanceFields({
             />
           </Field>
           <Field label="Status" error={errors.status} required>
-            <select
-              name="status"
+            <AppSwitch
+              falseOption={MaintenanceInactiveStatusSwitchOption}
               value={values.status}
-              onChange={onInputChange}
-              disabled={isReadonly}
-              className={TaxMaintenanceFieldClassName}
-            >
-              {TaxMaintenanceStatusOptions.map((status) => (
-                <option key={status} value={status}>
-                  {status}
-                </option>
-              ))}
-            </select>
+              onChange={onStatusChange}
+              readOnly={isReadonly}
+              trueOption={MaintenanceActiveStatusSwitchOption}
+            />
           </Field>
         </div>
       ) : (

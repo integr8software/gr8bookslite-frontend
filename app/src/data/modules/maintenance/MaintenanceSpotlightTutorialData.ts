@@ -76,9 +76,9 @@ export const MaintenanceSpotlightTutorialConfigs: readonly MaintenanceSpotlightT
     label: "Warehouse management",
   },
   {
-    href: "/maintenance/item-attributes",
+    href: "/maintenance/item-variations",
     addMode: "none",
-    label: "Item attributes",
+    label: "Item variations",
   },
   {
     href: "/maintenance/unit-of-measurement",

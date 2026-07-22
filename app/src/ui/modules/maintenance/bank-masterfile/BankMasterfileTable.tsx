@@ -44,7 +44,7 @@ export function BankMasterfileTable({
 				minWidthClassName={`${tableMinWidthClassName} table-fixed`}
 				paginationStorageKey={BankMasterfileTablePaginationStorageKey}
 				table={table}
-				tableTitle="Bank accounts"
+				tableTitle="Bank Accounts"
 				toolbar={
 					<BankMasterfileTableFilters
 						exportAllRows={banks}

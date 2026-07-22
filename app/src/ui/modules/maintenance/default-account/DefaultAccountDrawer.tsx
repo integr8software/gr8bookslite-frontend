@@ -5,7 +5,6 @@ import toast from "react-hot-toast";
 import {
 	DefaultAccountActionCopy,
 	DefaultAccountDrawerFormId,
-	DefaultAccountStatusOptions,
 	DefaultAccountTitle,
 	DefaultAccountTypeOptions,
 } from "@/app/src/constants/modules/maintenance/default-account/DefaultAccountConstants";
@@ -30,6 +29,8 @@ import {
 	AppAdvancedDropdown,
 	type AppAdvancedDropdownOption,
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
+import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/constants/modules/maintenance/MaintenanceStatusConstants";
 
 export function DefaultAccountDrawer({
 	defaultAccount,
@@ -183,19 +184,13 @@ function DefaultAccountDrawerPanel({
 				) : null}
 				<label className="grid gap-2">
 					<span className="text-sm font-semibold text-darknavy">Status</span>
-					<select
-						name="status"
+					<AppSwitch
+						falseOption={MaintenanceInactiveStatusSwitchOption}
 						value={page.values.status}
-						disabled={page.isReadonly}
-						onChange={page.handleInputChange}
-						className="h-11 rounded-md border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition focus:border-skyblue focus:ring-4 focus:ring-skyblue/15 disabled:cursor-not-allowed disabled:bg-darknavy/5"
-					>
-						{DefaultAccountStatusOptions.map((status) => (
-							<option key={status} value={status}>
-								{status}
-							</option>
-						))}
-					</select>
+						readOnly={page.isReadonly}
+						onChange={page.handleStatusChange}
+						trueOption={MaintenanceActiveStatusSwitchOption}
+					/>
 				</label>
 				{defaultAccount?.generatedAccounts.length ? (
 					<div className="grid gap-3 border-t border-darknavy/10 pt-5">

@@ -7,15 +7,17 @@ import {
 	TermManagementDatemodeOptions,
 	TermManagementFieldClassName,
 	TermManagementSelectClassName,
-	TermManagementStatusOptions,
 } from "@/app/src/constants/modules/maintenance/term-management/TermManagementConstants";
 import type { TermManagementFieldsProps } from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
+import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
+import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/constants/modules/maintenance/MaintenanceStatusConstants";
 
 export function TermManagementFields({
 	errors,
 	isReadonly,
 	values,
 	onInputChange,
+	onStatusChange,
 }: TermManagementFieldsProps) {
 	return (
 		<div className="grid gap-4 lg:grid-cols-2">
@@ -89,19 +91,13 @@ export function TermManagementFields({
 			</FormField>
 
 			<FormField label="Status" error={errors.status} required>
-				<select
-					name="status"
+				<AppSwitch
+					falseOption={MaintenanceInactiveStatusSwitchOption}
 					value={values.status}
-					onChange={onInputChange}
-					disabled={isReadonly}
-					className={TermManagementSelectClassName}
-				>
-					{TermManagementStatusOptions.map((statusOption) => (
-						<option key={statusOption} value={statusOption}>
-							{statusOption}
-						</option>
-					))}
-				</select>
+					onChange={onStatusChange}
+					readOnly={isReadonly}
+					trueOption={MaintenanceActiveStatusSwitchOption}
+				/>
 			</FormField>
 		</div>
 	);

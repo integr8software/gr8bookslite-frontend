@@ -10,10 +10,11 @@ import { createPriceListFormValues } from "@/app/src/data/modules/maintenance/pr
 import type {
 	PriceListDrawerState,
 	PriceListFormValues,
-	PriceListStatus,
 } from "@/app/src/types/modules/maintenance/price-lists/PriceListsTypes";
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
+import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
+import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/constants/modules/maintenance/MaintenanceStatusConstants";
 
 type PriceListsDrawerProps = {
 	drawer: PriceListDrawerState;
@@ -133,20 +134,18 @@ export function PriceListsDrawer({
 					/>
 				</Field>
 				<Field label="Status" required>
-					<select
+					<AppSwitch
+						falseOption={MaintenanceInactiveStatusSwitchOption}
 						value={values.status}
-						disabled={isReadonly}
-						onChange={(event) =>
+						readOnly={isReadonly}
+						onChange={(status) =>
 							setValues((current) => ({
 								...current,
-								status: event.target.value as PriceListStatus,
+								status,
 							}))
 						}
-						className={PriceListsFieldClassName}
-					>
-						<option>Active</option>
-						<option>Inactive</option>
-					</select>
+						trueOption={MaintenanceActiveStatusSwitchOption}
+					/>
 				</Field>
 			</form>
 		</ModuleDrawer>

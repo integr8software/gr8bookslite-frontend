@@ -126,6 +126,8 @@ export function useDiscountManagementFormPage(
 		existingDiscount,
 		generatedAccount,
 		handleInputChange,
+		handleStatusChange: (status: DiscountManagementFormValues["status"]) =>
+			updateField("status", status),
 		handleSubmit,
 		isMutating,
 		isReadonly,

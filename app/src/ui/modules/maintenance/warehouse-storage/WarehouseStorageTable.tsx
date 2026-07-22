@@ -41,7 +41,7 @@ export function WarehouseStorageTable({
 				minWidthClassName="min-w-[86rem] table-fixed"
 				paginationStorageKey={WarehouseStoragePaginationStorageKey}
 				table={page.table}
-				tableTitle="Storage locations"
+				tableTitle="Storage Locations"
 				toolbar={
 					<ModuleTableToolbar>
 						<ModuleTableSearch

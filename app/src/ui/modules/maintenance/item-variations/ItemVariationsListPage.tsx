@@ -2,13 +2,16 @@
 
 import { CheckCircle2, CirclePause, ListChecks, Plus, Tags } from "lucide-react";
 import {
-  ItemAttributesExportColumns,
-  ItemAttributesDescription,
-  ItemAttributesTitle,
-} from "@/app/src/constants/modules/maintenance/item-attributes/ItemAttributesConstants";
-import { useItemAttributesListPage } from "@/app/src/hooks/modules/maintenance/item-attributes/useItemAttributesListPage";
+  ItemVariationsExportColumns,
+  ItemVariationsDescription,
+  ItemVariationsTitle,
+} from "@/app/src/constants/modules/maintenance/item-variations/ItemVariationsConstants";
+import { useItemVariationsListPage } from "@/app/src/hooks/modules/maintenance/item-variations/useItemVariationsListPage";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
+import {
+  ModuleHeader,
+  moduleHeaderActionClassNames,
+} from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import {
   ModuleTableColumnVisibilityButton,
@@ -18,11 +21,11 @@ import {
   ModuleTableSearch,
   ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
-import { ItemAttributesDrawer } from "@/app/src/ui/modules/maintenance/item-attributes/ItemAttributesDrawer";
-import { ItemAttributesTable } from "@/app/src/ui/modules/maintenance/item-attributes/ItemAttributesTable";
+import { ItemVariationsDrawer } from "@/app/src/ui/modules/maintenance/item-variations/ItemVariationsDrawer";
+import { ItemVariationsTable } from "@/app/src/ui/modules/maintenance/item-variations/ItemVariationsTable";
 
-export function ItemAttributesListPage() {
-  const page = useItemAttributesListPage();
+export function ItemVariationsListPage() {
+  const page = useItemVariationsListPage();
   const hasActiveFilters = page.query.trim().length > 0 || page.statusFilter !== "Active";
 
   return (
@@ -30,8 +33,8 @@ export function ItemAttributesListPage() {
       <ModuleHeader
         variant="panel"
         titleAs="h1"
-        title={ItemAttributesTitle}
-        description={ItemAttributesDescription}
+        title={ItemVariationsTitle}
+        description={ItemVariationsDescription}
         eyebrow={
           <>
             <ListChecks className="h-3.5 w-3.5" aria-hidden="true" />
@@ -40,9 +43,13 @@ export function ItemAttributesListPage() {
         }
         actions={
           page.permissions.canCreate ? (
-            <button type="button" className={moduleHeaderActionClassNames.primary} onClick={page.openAddDrawer}>
+            <button
+              type="button"
+              className={moduleHeaderActionClassNames.primary}
+              onClick={page.openAddDrawer}
+            >
               <Plus className="h-4 w-4" aria-hidden="true" />
-              Add Attribute
+              Add Variation
             </button>
           ) : null
         }
@@ -53,7 +60,7 @@ export function ItemAttributesListPage() {
             helper: "Setup records",
             icon: ListChecks,
             label: "Total Records",
-            value: page.statistics.totalAttributes,
+            value: page.statistics.totalVariations,
           },
           {
             helper: "Available for selection",
@@ -79,13 +86,14 @@ export function ItemAttributesListPage() {
         ]}
         className="xl:grid-cols-4"
       />
-      <ItemAttributesTable
+      <ItemVariationsTable
         emptyDescription={
           page.isLoadError
-            ? (page.loadErrorMessage ?? "The item attributes service is not responding. Try refreshing the table.")
+            ? (page.loadErrorMessage ??
+              "The item variations service is not responding. Try refreshing the table.")
             : undefined
         }
-        emptyTitle={page.isLoadError ? "Could not load item attributes" : undefined}
+        emptyTitle={page.isLoadError ? "Could not load item variations" : undefined}
         isLoading={page.isLoading}
         isRefreshing={page.isRefreshing}
         lastSyncedAt={page.lastSyncedAt}
@@ -93,7 +101,12 @@ export function ItemAttributesListPage() {
         toolbar={
           <ModuleTableToolbar className="!grid-cols-1 !gap-2 rounded-none border-x-0 border-t-0 !p-3 shadow-none sm:!gap-2 sm:!p-3 md:!grid-cols-[minmax(0,1fr)_auto]">
             <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(14rem,16rem)]">
-              <ModuleTableSearch label="Search Item Attributes" placeholder="Search item attributes" value={page.query} onChange={page.setQuery} />
+              <ModuleTableSearch
+                label="Search Item Variations"
+                placeholder="Search variations"
+                value={page.query}
+                onChange={page.setQuery}
+              />
               <ModuleTableFilterSelect
                 label="Status"
                 value={page.statusFilter}
@@ -110,12 +123,12 @@ export function ItemAttributesListPage() {
               {page.permissions.canExport ? (
                 <ModuleTableExportButton
                   allRows={page.records}
-                  columns={ItemAttributesExportColumns}
-                  fileName="item-attributes"
+                  columns={ItemVariationsExportColumns}
+                  fileName="item-variations"
                   filteredRows={page.filteredRecords}
                   isFiltered={hasActiveFilters}
                   table={page.table}
-                  title="Item Attributes"
+                  title="Item Variations"
                 />
               ) : (
                 <span aria-hidden="true" />
@@ -137,7 +150,7 @@ export function ItemAttributesListPage() {
         onToggleStatus={page.setPendingStatusRecord}
         onView={page.openViewDrawer}
       />
-      <ItemAttributesDrawer
+      <ItemVariationsDrawer
         key={`${page.drawer?.mode ?? "closed"}-${page.drawer?.record?.id ?? "new"}`}
         drawer={page.drawer}
         records={page.records}
@@ -146,11 +159,15 @@ export function ItemAttributesListPage() {
       />
       <AppDialog
         isOpen={Boolean(page.pendingStatusRecord)}
-        title={page.pendingStatusRecord?.status === "Active" ? "Deactivate item attribute?" : "Activate item attribute?"}
+        title={
+          page.pendingStatusRecord?.status === "Active"
+            ? "Deactivate item variation?"
+            : "Activate item variation?"
+        }
         description={
           page.pendingStatusRecord?.status === "Active"
             ? `${page.pendingStatusRecord.name} will remain in history and references, but will no longer be active for normal selection.`
-            : `${page.pendingStatusRecord?.name ?? "This item attribute"} will be available for normal selection again.`
+            : `${page.pendingStatusRecord?.name ?? "This item variation"} will be available for normal selection again.`
         }
         confirmLabel={page.pendingStatusRecord?.status === "Active" ? "Deactivate" : "Activate"}
         isPending={page.isMutating}

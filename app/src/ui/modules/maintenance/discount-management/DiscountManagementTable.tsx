@@ -57,7 +57,7 @@ export function DiscountManagementTable({
 				paginationStorageKey={DiscountManagementTablePaginationStorageKey}
 				lastSyncedAt={lastSyncedAt}
 				table={table}
-				tableTitle="Discount definitions"
+				tableTitle="Discount Definitions"
 				toolbar={
 					<DiscountManagementTableFilters
 						discountTypeFilter={discountTypeFilter}

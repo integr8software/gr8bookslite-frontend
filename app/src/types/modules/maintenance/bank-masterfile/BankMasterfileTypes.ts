@@ -177,7 +177,9 @@ export type BankMasterfileFieldsProps = {
 	mode: BankMasterfileActionMode;
 	values: BankMasterfileFormValues;
 	onCurrencyChange: (value: string) => void;
+	onDefaultChange: (value: boolean) => void;
 	onInputChange: ChangeEventHandler<HTMLInputElement | HTMLSelectElement>;
+	onStatusChange: (value: BankMasterfileFormValues["status"]) => void;
 };
 
 export type BankMasterfileFormFieldProps = {

@@ -75,6 +75,16 @@ export const BankMasterfileStatusOptions = [
 	"Inactive",
 ] as const satisfies readonly BankMasterfileStatus[];
 
+export const BankMasterfileDefaultBankSwitchOption = {
+	label: "Yes",
+	value: true,
+} as const;
+
+export const BankMasterfileNotDefaultBankSwitchOption = {
+	label: "No",
+	value: false,
+} as const;
+
 export const BankMasterfileAccountTypeOptions = [
 	"Checking",
 	"Savings",

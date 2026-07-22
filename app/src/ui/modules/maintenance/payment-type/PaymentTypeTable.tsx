@@ -49,7 +49,7 @@ export function PaymentTypeTable({
 				minWidthClassName={`${tableMinWidthClassName} table-fixed`}
 				paginationStorageKey={PaymentTypeTablePaginationStorageKey}
 				table={table}
-				tableTitle="Payment types"
+				tableTitle="Payment Types"
 				toolbar={
 					<PaymentTypeFilters
 						exportAllRows={paymentTypes}

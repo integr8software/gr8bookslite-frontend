@@ -1,9 +1,9 @@
-export type AppSwitchOption<TValue extends string> = {
+export type AppSwitchOption<TValue extends string | boolean> = {
 	label: string;
 	value: TValue;
 };
 
-export type AppSwitchProps<TValue extends string> = {
+export type AppSwitchProps<TValue extends string | boolean> = {
 	className?: string;
 	disabled?: boolean;
 	falseOption: AppSwitchOption<TValue>;
@@ -13,7 +13,7 @@ export type AppSwitchProps<TValue extends string> = {
 	onChange: (value: TValue) => void;
 };
 
-export function AppSwitch<TValue extends string>({
+export function AppSwitch<TValue extends string | boolean>({
 	className,
 	disabled = false,
 	falseOption,
@@ -41,7 +41,7 @@ export function AppSwitch<TValue extends string>({
 			disabled={disabled}
 			onClick={handleToggle}
 			className={[
-				"inline-flex min-h-11 w-full items-center justify-between gap-3 rounded-md border px-3 py-2.5 text-left text-sm font-semibold transition sm:w-auto sm:min-w-64",
+				"inline-flex min-h-11 w-full items-center justify-between gap-3 rounded-md border px-3 py-2.5 text-left text-sm font-semibold transition",
 				isChecked
 					? "border-[var(--skyblue)] bg-[rgb(var(--skyblue-rgb)/0.05)] text-darknavy ring-2 ring-[rgb(var(--skyblue-rgb)/0.15)]"
 					: "border-darknavy/15 bg-white text-darknavy hover:border-[rgb(var(--skyblue-rgb)/0.55)] hover:bg-[rgb(var(--skyblue-rgb)/0.05)]",

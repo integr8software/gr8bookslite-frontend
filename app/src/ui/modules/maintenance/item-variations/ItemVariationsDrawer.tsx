@@ -2,24 +2,25 @@
 
 import { useRef, useState, type ReactNode } from "react";
 import { ArrowDownAZ, ArrowUpAZ, CheckCircle2, CirclePause, GripVertical, Plus, Save, Trash2 } from "lucide-react";
-import { ItemAttributesDrawerFormId, ItemAttributesFieldClassName } from "@/app/src/constants/modules/maintenance/item-attributes/ItemAttributesConstants";
-import { createAttributeValue, createItemAttributeFormValues } from "@/app/src/data/modules/maintenance/item-attributes/ItemAttributesData";
+import { ItemVariationsDrawerFormId, ItemVariationsFieldClassName } from "@/app/src/constants/modules/maintenance/item-variations/ItemVariationsConstants";
+import { createVariationValue, createItemVariationFormValues } from "@/app/src/data/modules/maintenance/item-variations/ItemVariationsData";
 import type {
-  ItemAttributeFormErrors,
-  ItemAttributeFormValues,
-  ItemAttributeRecord,
-  ItemAttributeStatus,
-  ItemAttributesListPageState,
-} from "@/app/src/types/modules/maintenance/item-attributes/ItemAttributesTypes";
+  ItemVariationFormErrors,
+  ItemVariationFormValues,
+  ItemVariationRecord,
+  ItemVariationsListPageState,
+} from "@/app/src/types/modules/maintenance/item-variations/ItemVariationsTypes";
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
-import { validateItemAttributesForm } from "@/app/src/validations/modules/maintenance/item-attributes/ItemAttributesValidation";
+import { validateItemVariationsForm } from "@/app/src/validations/modules/maintenance/item-variations/ItemVariationsValidation";
+import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
+import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/constants/modules/maintenance/MaintenanceStatusConstants";
 
-type ItemAttributesDrawerProps = {
-  drawer: ItemAttributesListPageState["drawer"];
-  records: ItemAttributeRecord[];
+type ItemVariationsDrawerProps = {
+  drawer: ItemVariationsListPageState["drawer"];
+  records: ItemVariationRecord[];
   onClose: () => void;
-  onSave: (values: ItemAttributeFormValues) => Promise<void> | void;
+  onSave: (values: ItemVariationFormValues) => Promise<void> | void;
 };
 
 type DropIndicator = {
@@ -27,9 +28,9 @@ type DropIndicator = {
   position: "after" | "before";
 };
 
-export function ItemAttributesDrawer({ drawer, records, onClose, onSave }: ItemAttributesDrawerProps) {
-  const [values, setValues] = useState(() => createItemAttributeFormValues(drawer?.record));
-  const [errors, setErrors] = useState<ItemAttributeFormErrors>({});
+export function ItemVariationsDrawer({ drawer, records, onClose, onSave }: ItemVariationsDrawerProps) {
+  const [values, setValues] = useState(() => createItemVariationFormValues(drawer?.record));
+  const [errors, setErrors] = useState<ItemVariationFormErrors>({});
   const [draggedValueIndex, setDraggedValueIndex] = useState<number | null>(null);
   const [dropIndicator, setDropIndicator] = useState<DropIndicator | null>(null);
   const valuesListRef = useRef<HTMLDivElement | null>(null);
@@ -41,10 +42,10 @@ export function ItemAttributesDrawer({ drawer, records, onClose, onSave }: ItemA
   const isReadonly = drawer.mode === "view";
   const title =
     drawer.mode === "add"
-      ? "Add Item Attribute"
+      ? "Add Item Variation"
       : drawer.mode === "edit"
-        ? `Edit ${drawer.record?.name ?? "Item Attribute"}`
-        : (drawer.record?.name ?? "Item Attribute");
+        ? `Edit ${drawer.record?.name ?? "Item Variation"}`
+        : (drawer.record?.name ?? "Item Variation");
 
   function updateValue(index: number, value: string) {
     setValues((current) => ({
@@ -105,7 +106,7 @@ export function ItemAttributesDrawer({ drawer, records, onClose, onSave }: ItemA
   function addValue() {
     setValues((current) => ({
       ...current,
-      values: [...current.values, createAttributeValue("")],
+      values: [...current.values, createVariationValue("")],
     }));
     setErrors((current) => ({ ...current, values: undefined }));
     requestAnimationFrame(() => {
@@ -117,7 +118,7 @@ export function ItemAttributesDrawer({ drawer, records, onClose, onSave }: ItemA
   }
 
   async function handleSubmit() {
-    const nextErrors = validateItemAttributesForm(values, {
+    const nextErrors = validateItemVariationsForm(values, {
       currentRecordId: drawer?.record?.id,
       records,
     });
@@ -135,7 +136,7 @@ export function ItemAttributesDrawer({ drawer, records, onClose, onSave }: ItemA
     <ModuleDrawer
       isOpen
       title={title}
-      description="Maintain the attribute name and reusable values."
+      description="Maintain the variation name and reusable values."
       position="right"
       maxWidthClassName="max-w-xl"
       contentClassName="overflow-hidden"
@@ -146,7 +147,7 @@ export function ItemAttributesDrawer({ drawer, records, onClose, onSave }: ItemA
             {isReadonly ? "Close" : "Cancel"}
           </button>
           {!isReadonly ? (
-            <button type="submit" form={ItemAttributesDrawerFormId} className={moduleHeaderActionClassNames.primary}>
+            <button type="submit" form={ItemVariationsDrawerFormId} className={moduleHeaderActionClassNames.primary}>
               <Save className="h-4 w-4" aria-hidden="true" />
               Save
             </button>
@@ -155,14 +156,14 @@ export function ItemAttributesDrawer({ drawer, records, onClose, onSave }: ItemA
       }
     >
       <form
-        id={ItemAttributesDrawerFormId}
+        id={ItemVariationsDrawerFormId}
         className="flex h-full min-h-0 flex-col gap-4 px-6 py-5"
         onSubmit={(event) => {
           event.preventDefault();
           void handleSubmit();
         }}
       >
-        <FormField label="Attribute Name" error={errors.name} required>
+        <FormField label="Variation Name" error={errors.name} required>
           <input
             value={values.name}
             readOnly={isReadonly}
@@ -173,7 +174,7 @@ export function ItemAttributesDrawer({ drawer, records, onClose, onSave }: ItemA
               }))
             }
             onInput={() => setErrors((current) => ({ ...current, name: undefined }))}
-            className={ItemAttributesFieldClassName}
+            className={ItemVariationsFieldClassName}
           />
         </FormField>
         <div className="flex min-h-0 flex-1 flex-col">
@@ -261,7 +262,7 @@ export function ItemAttributesDrawer({ drawer, records, onClose, onSave }: ItemA
                   value={value.label}
                   readOnly={isReadonly}
                   onChange={(event) => updateValue(index, event.target.value)}
-                  className={`${ItemAttributesFieldClassName} ${value.status === "Inactive" ? "text-darknavy/45 line-through" : ""}`}
+                  className={`${ItemVariationsFieldClassName} ${value.status === "Inactive" ? "text-darknavy/45 line-through" : ""}`}
                 />
                 {!isReadonly ? (
                   <>
@@ -290,7 +291,7 @@ export function ItemAttributesDrawer({ drawer, records, onClose, onSave }: ItemA
                         onClick={() =>
                           setValues((current) => ({
                             ...current,
-                            values: current.values.length > 1 ? current.values.filter((_, currentIndex) => currentIndex !== index) : [createAttributeValue("")],
+                            values: current.values.length > 1 ? current.values.filter((_, currentIndex) => currentIndex !== index) : [createVariationValue("")],
                           }))
                         }
                       >
@@ -311,21 +312,19 @@ export function ItemAttributesDrawer({ drawer, records, onClose, onSave }: ItemA
           {errors.values ? <span className="mt-1 block text-xs font-medium text-coralpink">{errors.values}</span> : null}
         </div>
         <FormField className="mt-auto" label="Status" error={errors.status} required>
-          <select
+		  <AppSwitch
+			falseOption={MaintenanceInactiveStatusSwitchOption}
             value={values.status}
-            disabled={isReadonly}
-            onChange={(event) =>
+			readOnly={isReadonly}
+            onChange={(status) => {
               setValues((current) => ({
                 ...current,
-                status: event.target.value as ItemAttributeStatus,
-              }))
-            }
-            onInput={() => setErrors((current) => ({ ...current, status: undefined }))}
-            className={ItemAttributesFieldClassName}
-          >
-            <option>Active</option>
-            <option>Inactive</option>
-          </select>
+                status,
+              }));
+			  setErrors((current) => ({ ...current, status: undefined }));
+			}}
+			trueOption={MaintenanceActiveStatusSwitchOption}
+		  />
         </FormField>
       </form>
     </ModuleDrawer>

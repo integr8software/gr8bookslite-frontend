@@ -95,9 +95,13 @@ function ItemCategoryDrawerPanel({
 						isReadonly={page.isReadonly}
 						parentOptions={page.parentOptions}
 						values={page.values}
+						onAccountRequirementChange={page.handleAccountRequirementChange}
 						onAccountingModeChange={page.handleAccountingModeChange}
+						onAllowSubCategoryChange={page.handleAllowSubCategoryChange}
+						onBehaviorChange={page.handleBehaviorChange}
 						onInputChange={page.handleInputChange}
 						onParentChange={page.handleParentChange}
+						onStatusChange={page.handleStatusChange}
 					/>
 				</form>
 			</ModuleDrawer>

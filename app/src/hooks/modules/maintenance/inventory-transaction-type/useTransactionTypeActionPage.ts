@@ -161,6 +161,8 @@ export function useTransactionTypeActionPage(
 		handleAccountChange,
 		handleInputChange,
 		handleModuleChange,
+		handleStatusChange: (status: TransactionTypeFormValues["status"]) =>
+			updateField("status", status),
 		handleSubmit,
 		isMutating,
 		isReadonly,

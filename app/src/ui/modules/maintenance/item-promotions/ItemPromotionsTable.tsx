@@ -30,7 +30,7 @@ export function ItemPromotionsTable({
 			minWidthClassName="min-w-[116rem]"
 			paginationStorageKey={ItemPromotionsTablePaginationStorageKey}
 			table={page.table}
-			tableTitle="Item promotions"
+			tableTitle="Item Promotions"
 			toolbar={
 				<ModuleTableToolbar>
 					<ModuleTableSearch

@@ -49,7 +49,7 @@ function TermManagementDrawerPanel({
 	});
 	const copy = TermManagementActionCopy[mode];
 	return <ModuleDrawer description={copy.description} eyebrow={TermManagementTitle} formId={TermManagementDrawerFormId} isOpen={isOpen} isReadonly={page.isReadonly} isSaving={page.isSubmitting} onBeforeSaveConfirm={page.validateBeforeSubmit} onClose={onClose} savingLabel={getModuleSavePendingLabel(mode)} submitLabel={mode === "edit" ? "Update Term" : "Save Term"} title={copy.title}>
-		<form id={TermManagementDrawerFormId} onSubmit={page.handleSubmit} className="px-6 py-5"><TermManagementFields errors={page.errors} isReadonly={page.isReadonly} values={page.values} onInputChange={page.handleInputChange} /></form>
+		<form id={TermManagementDrawerFormId} onSubmit={page.handleSubmit} className="px-6 py-5"><TermManagementFields errors={page.errors} isReadonly={page.isReadonly} values={page.values} onInputChange={page.handleInputChange} onStatusChange={page.handleStatusChange} /></form>
 	</ModuleDrawer>;
 }
 

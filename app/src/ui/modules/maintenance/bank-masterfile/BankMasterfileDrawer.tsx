@@ -83,7 +83,9 @@ function BankMasterfileDrawerPanel({
 					onCurrencyChange={(value) =>
 						page.handleFieldChange("currencyCode", value)
 					}
+					onDefaultChange={(value) => page.handleFieldChange("isDefault", value)}
 					onInputChange={page.handleInputChange}
+					onStatusChange={(value) => page.handleFieldChange("status", value)}
 				/>
 			</form>
 		</ModuleDrawer>
@@ -116,6 +118,3 @@ function createBankCurrencyOptions(
 		};
 	});
 }
-
-
-

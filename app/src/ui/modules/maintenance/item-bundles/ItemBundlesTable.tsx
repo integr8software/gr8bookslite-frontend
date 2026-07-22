@@ -23,7 +23,7 @@ export function ItemBundlesTable({ page }: { page: ItemBundlesListPageState }) {
 			minWidthClassName="min-w-[96rem]"
 			paginationStorageKey={ItemBundlesTablePaginationStorageKey}
 			table={page.table}
-			tableTitle="Item bundles"
+			tableTitle="Item Bundles"
 			toolbar={
 				<ModuleTableToolbar>
 					<ModuleTableSearch

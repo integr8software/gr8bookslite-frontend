@@ -54,7 +54,7 @@ export function ResponsibilityCenterTree({
 			paginationLabel="centers"
 			paginationStorageKey={ResponsibilityCenterTablePaginationStorageKey}
 			table={table}
-			tableTitle="Responsibility centers"
+			tableTitle="Responsibility Centers"
 			toolbar={toolbar}
 			variant="embedded"
 			renderRow={(row) => (

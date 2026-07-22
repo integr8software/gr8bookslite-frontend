@@ -1,34 +1,34 @@
 import type { Row } from "@tanstack/react-table";
 import type { ReactNode } from "react";
-import type { ItemAttributeRecord } from "@/app/src/types/modules/maintenance/item-attributes/ItemAttributesTypes";
+import type { ItemVariationRecord } from "@/app/src/types/modules/maintenance/item-variations/ItemVariationsTypes";
 import { ModuleTableActionButton, ModuleTableActions } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import { getColumnMetaClassName } from "@/app/src/ui/shared/module/module-table/utils";
 
-const MaxVisibleAttributeValues = 6;
+const MaxVisibleVariationValues = 6;
 
-type ItemAttributesTableRowProps = {
-  row: Row<ItemAttributeRecord>;
-  onEdit: (record: ItemAttributeRecord) => void;
-  onToggleStatus: (record: ItemAttributeRecord) => void;
-  onView: (record: ItemAttributeRecord) => void;
+type ItemVariationsTableRowProps = {
+  row: Row<ItemVariationRecord>;
+  onEdit: (record: ItemVariationRecord) => void;
+  onToggleStatus: (record: ItemVariationRecord) => void;
+  onView: (record: ItemVariationRecord) => void;
 };
 
-export function ItemAttributesTableRow({ row, onEdit, onToggleStatus, onView }: ItemAttributesTableRowProps) {
+export function ItemVariationsTableRow({ row, onEdit, onToggleStatus, onView }: ItemVariationsTableRowProps) {
   const record = row.original;
 
   return (
     <tr className="module-table-row border-b border-darknavy/8 last:border-b-0">
       {row.getVisibleCells().map((cell) => (
-        <ItemAttributesTableCell key={cell.id} className={getColumnMetaClassName(cell.column.columnDef.meta)}>
-          <ItemAttributesCellContent columnId={cell.column.id} record={record} onEdit={onEdit} onToggleStatus={onToggleStatus} onView={onView} />
-        </ItemAttributesTableCell>
+        <ItemVariationsTableCell key={cell.id} className={getColumnMetaClassName(cell.column.columnDef.meta)}>
+          <ItemVariationsCellContent columnId={cell.column.id} record={record} onEdit={onEdit} onToggleStatus={onToggleStatus} onView={onView} />
+        </ItemVariationsTableCell>
       ))}
     </tr>
   );
 }
 
-function ItemAttributesCellContent({
+function ItemVariationsCellContent({
   columnId,
   record,
   onEdit,
@@ -36,16 +36,16 @@ function ItemAttributesCellContent({
   onView,
 }: {
   columnId: string;
-  record: ItemAttributeRecord;
-  onEdit: (record: ItemAttributeRecord) => void;
-  onToggleStatus: (record: ItemAttributeRecord) => void;
-  onView: (record: ItemAttributeRecord) => void;
+  record: ItemVariationRecord;
+  onEdit: (record: ItemVariationRecord) => void;
+  onToggleStatus: (record: ItemVariationRecord) => void;
+  onView: (record: ItemVariationRecord) => void;
 }) {
   switch (columnId) {
     case "name":
       return <span className="font-semibold">{record.name}</span>;
     case "values":
-      const visibleValues = record.values.slice(0, MaxVisibleAttributeValues);
+      const visibleValues = record.values.slice(0, MaxVisibleVariationValues);
       const hiddenValueCount = record.values.length - visibleValues.length;
 
       return (
@@ -92,6 +92,6 @@ function ItemAttributesCellContent({
   }
 }
 
-function ItemAttributesTableCell({ className = "text-left", children }: { className?: string; children: ReactNode }) {
+function ItemVariationsTableCell({ className = "text-left", children }: { className?: string; children: ReactNode }) {
   return <td className={`px-4 py-4 align-middle text-sm text-darknavy ${className}`}>{children}</td>;
 }

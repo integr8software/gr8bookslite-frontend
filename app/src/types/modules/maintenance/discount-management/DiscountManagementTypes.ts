@@ -173,6 +173,7 @@ export type DiscountManagementFieldsProps = {
 	onInputChange: ChangeEventHandler<
 		HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
 	>;
+	onStatusChange: (value: DiscountManagementFormValues["status"]) => void;
 };
 
 export type DiscountManagementTableRowProps = {

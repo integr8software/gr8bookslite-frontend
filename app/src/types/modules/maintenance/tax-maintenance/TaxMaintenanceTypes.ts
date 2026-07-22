@@ -154,6 +154,7 @@ export type TaxMaintenanceFieldsProps = {
   onInputChange: ChangeEventHandler<
     HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
   >;
+	onStatusChange: (value: TaxMaintenanceFormValues["status"]) => void;
 };
 
 export type TaxMaintenanceAccountField =

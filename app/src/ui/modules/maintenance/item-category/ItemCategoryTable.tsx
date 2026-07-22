@@ -53,7 +53,7 @@ export function ItemCategoryTable({
 				minWidthClassName={`${tableMinWidthClassName} table-fixed`}
 				paginationStorageKey={ItemCategoryPaginationStorageKey}
 				table={table}
-				tableTitle="Item categories"
+				tableTitle="Item Categories"
 				toolbar={
 					<ItemCategoryTableFilters
 						accountingFilter={accountingFilter}

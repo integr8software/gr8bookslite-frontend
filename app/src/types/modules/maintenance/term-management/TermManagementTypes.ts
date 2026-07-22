@@ -75,6 +75,7 @@ export type TermManagementFieldsProps = {
 	onInputChange: ChangeEventHandler<
 		HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
 	>;
+	onStatusChange: (value: TermManagementFormValues["status"]) => void;
 };
 
 export type TermManagementTableColumnKey =

@@ -1,10 +1,11 @@
 import { isValidElement, useId } from "react";
 import {
 	BankMasterfileAccountTypeOptions,
+	BankMasterfileDefaultBankSwitchOption,
 	BankMasterfileFieldClassName,
+	BankMasterfileNotDefaultBankSwitchOption,
 	BankMasterfileReadOnlyFieldClassName,
 	BankMasterfileSelectClassName,
-	BankMasterfileStatusOptions,
 } from "@/app/src/constants/modules/maintenance/bank-masterfile/BankMasterfileConstants";
 import { buildBankMasterfileAccountName } from "@/app/src/data/modules/maintenance/bank-masterfile/BankMasterfileData";
 import type {
@@ -12,6 +13,11 @@ import type {
 	BankMasterfileFormFieldProps,
 } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
+import {
+	MaintenanceActiveStatusSwitchOption,
+	MaintenanceInactiveStatusSwitchOption,
+} from "@/app/src/constants/modules/maintenance/MaintenanceStatusConstants";
 
 export function BankMasterfileFields({
 	accountCode,
@@ -22,7 +28,9 @@ export function BankMasterfileFields({
 	mode,
 	values,
 	onCurrencyChange,
+	onDefaultChange,
 	onInputChange,
+	onStatusChange,
 }: BankMasterfileFieldsProps) {
 	const accountName = buildBankMasterfileAccountName(values);
 
@@ -109,22 +117,9 @@ export function BankMasterfileFields({
 						className={BankMasterfileReadOnlyFieldClassName}
 					/>
 				</FormField>
-				<FormField label="Status" error={errors.status} required>
-					<select
-						id="bank-masterfile-status"
-						name="status"
-						value={values.status}
-						onChange={onInputChange}
-						disabled={isReadonly}
-						className={BankMasterfileSelectClassName}
-					>
-						{BankMasterfileStatusOptions.map((status) => (
-							<option key={status} value={status}>
-								{status}
-							</option>
-						))}
-					</select>
-				</FormField>
+			</div>
+
+			<div className="grid gap-4 lg:grid-cols-2">
 				<FormField label="Currency" error={errors.currencyCode} required>
 					<AppAdvancedDropdown
 						disabled={isReadonly}
@@ -158,21 +153,6 @@ export function BankMasterfileFields({
 						placeholder="Required for non-PHP"
 					/>
 				</FormField>
-				<label
-					htmlFor="bank-masterfile-is-default"
-					className="flex h-11 self-end items-center justify-between rounded-lg border border-darknavy/10 px-3 text-sm font-semibold text-darknavy"
-				>
-					Default Bank
-					<input
-						id="bank-masterfile-is-default"
-						name="isDefault"
-						type="checkbox"
-						checked={values.isDefault}
-						onChange={onInputChange}
-						disabled={isReadonly}
-						className="h-5 w-5 rounded border-darknavy/20 text-skyblue focus:ring-2 focus:ring-skyblue/20"
-					/>
-				</label>
 			</div>
 
 			<div className="grid gap-4 lg:grid-cols-3">
@@ -209,6 +189,27 @@ export function BankMasterfileFields({
 						readOnly={isReadonly}
 						className={BankMasterfileFieldClassName}
 						placeholder="6"
+					/>
+				</FormField>
+			</div>
+
+			<div className="grid gap-4 lg:grid-cols-2">
+				<FormField label="Default Bank">
+					<AppSwitch
+						falseOption={BankMasterfileNotDefaultBankSwitchOption}
+						value={values.isDefault}
+						onChange={onDefaultChange}
+						readOnly={isReadonly}
+						trueOption={BankMasterfileDefaultBankSwitchOption}
+					/>
+				</FormField>
+				<FormField label="Status" error={errors.status} required>
+					<AppSwitch
+						falseOption={MaintenanceInactiveStatusSwitchOption}
+						value={values.status}
+						onChange={onStatusChange}
+						readOnly={isReadonly}
+						trueOption={MaintenanceActiveStatusSwitchOption}
 					/>
 				</FormField>
 			</div>
@@ -251,6 +252,3 @@ function FormField({
 		</div>
 	);
 }
-
-
-

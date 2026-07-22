@@ -151,6 +151,10 @@ export function TaxMaintenanceDrawer({
           onAccountChange={handleAccountChange}
           onAddTaxAccountTitle={handleAddTaxAccountTitle}
           onInputChange={handleInputChange}
+		  onStatusChange={(status) => {
+			setValues((current) => ({ ...current, status }));
+			setErrors((current) => ({ ...current, status: undefined }));
+		  }}
         />
       </form>
       <TaxAccountTitleDialog

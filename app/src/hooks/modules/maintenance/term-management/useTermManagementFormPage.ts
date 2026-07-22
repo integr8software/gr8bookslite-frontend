@@ -148,6 +148,8 @@ export function useTermManagementFormPage(
 		existingTerm,
 		handleConfirmStatusChange,
 		handleInputChange,
+		handleStatusChange: (status: TermManagementFormValues["status"]) =>
+			updateField("status", status),
 		handleSubmit,
 		isStatusDialogOpen,
 		isSubmitting,

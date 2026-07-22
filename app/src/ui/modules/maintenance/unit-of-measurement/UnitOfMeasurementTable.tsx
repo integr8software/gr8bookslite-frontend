@@ -46,7 +46,7 @@ export function UnitOfMeasurementTable({
 				minWidthClassName={`${tableMinWidthClassName} table-fixed`}
 				paginationStorageKey={UnitOfMeasurementPaginationStorageKey}
 				table={table}
-				tableTitle="Unit of measurement"
+				tableTitle="Unit Of Measurement"
 				toolbar={
 					<UnitOfMeasurementTableFilters
 						exportAllRows={records}

@@ -3,17 +3,19 @@ import {
 	UnitOfMeasurementFieldClassName,
 	UnitOfMeasurementQuantityModeOptions,
 	UnitOfMeasurementSelectClassName,
-	UnitOfMeasurementStatusOptions,
 } from "@/app/src/constants/modules/maintenance/unit-of-measurement/UnitOfMeasurementConstants";
 import type {
 	UnitOfMeasurementFieldsProps,
 } from "@/app/src/types/modules/maintenance/unit-of-measurement/UnitOfMeasurementTypes";
+import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
+import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/constants/modules/maintenance/MaintenanceStatusConstants";
 
 export function UnitOfMeasurementFields({
 	errors,
 	isReadonly,
 	values,
 	onInputChange,
+	onStatusChange,
 }: UnitOfMeasurementFieldsProps) {
 	return (
 		<div className="grid gap-4 lg:grid-cols-2">
@@ -58,19 +60,13 @@ export function UnitOfMeasurementFields({
 				</select>
 			</FormField>
 			<FormField label="Status" error={errors.status} className="lg:col-span-2" required>
-				<select
-					name="status"
+				<AppSwitch
+					falseOption={MaintenanceInactiveStatusSwitchOption}
 					value={values.status}
-					disabled={isReadonly}
-					onChange={onInputChange}
-					className={UnitOfMeasurementSelectClassName}
-				>
-					{UnitOfMeasurementStatusOptions.map((statusOption) => (
-						<option key={statusOption} value={statusOption}>
-							{statusOption}
-						</option>
-					))}
-				</select>
+					onChange={onStatusChange}
+					readOnly={isReadonly}
+					trueOption={MaintenanceActiveStatusSwitchOption}
+				/>
 			</FormField>
 		</div>
 	);

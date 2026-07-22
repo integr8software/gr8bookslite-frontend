@@ -12,5 +12,3 @@ export const metadata: Metadata = {
 export default function ItemsAddPage() {
   return <ItemsFormPage />;
 }
-
-

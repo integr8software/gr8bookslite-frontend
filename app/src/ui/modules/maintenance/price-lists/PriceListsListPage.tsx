@@ -94,7 +94,7 @@ export function PriceListsListPage() {
 				minWidthClassName="min-w-[76rem]"
 				paginationStorageKey={PriceListsPaginationStorageKey}
 				table={page.table}
-				tableTitle="Price lists"
+				tableTitle="Price Lists"
 				toolbar={
 					<ModuleTableToolbar>
 						<ModuleTableSearch

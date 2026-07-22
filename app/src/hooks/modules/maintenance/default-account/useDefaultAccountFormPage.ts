@@ -80,6 +80,15 @@ export function useDefaultAccountFormPage({
 		setErrors((current) => ({ ...current, expenseParentCoaId: undefined }));
 	}
 
+	function handleStatusChange(status: DefaultAccountFormValues["status"]) {
+		if (isReadonly) {
+			return;
+		}
+
+		setValues((current) => ({ ...current, status }));
+		setErrors((current) => ({ ...current, status: undefined }));
+	}
+
 	function validate() {
 		const nextErrors = validateDefaultAccountForm(values);
 
@@ -133,6 +142,7 @@ export function useDefaultAccountFormPage({
 		errors,
 		expenseParentOptions: expenseParentOptionsQuery.data ?? [],
 		handleInputChange,
+		handleStatusChange,
 		handleExpenseParentChange,
 		handleSubmit,
 		isLoadingExpenseParentOptions: expenseParentOptionsQuery.isLoading,

@@ -12,7 +12,7 @@ export function ModuleDataEntryHeader({
 	title: ReactNode;
 }) {
 	return (
-		<div className="relative z-50 flex shrink-0 flex-col gap-3 rounded-t-lg border-b border-darknavy/10 bg-white px-5 py-4 xl:flex-row xl:items-center xl:justify-between">
+		<div className="relative z-50 flex shrink-0 flex-col gap-2 rounded-t-lg border-b border-darknavy/10 bg-white px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
 			<div>
 				<div className="flex flex-wrap items-center gap-2">
 					<div className="text-base font-semibold text-darknavy">
@@ -29,7 +29,7 @@ export function ModuleDataEntryHeader({
 				) : null}
 			</div>
 			{actions ? (
-				<div className="flex w-full flex-wrap items-center gap-1.5 xl:w-auto xl:justify-end">
+				<div className="flex w-full flex-wrap items-center gap-1.5 lg:w-auto lg:justify-end">
 					{actions}
 				</div>
 			) : null}

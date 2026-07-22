@@ -1,5 +1,6 @@
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import type {
+	ServiceInvoiceAccountingEntry,
 	ServiceInvoiceFormValues,
 	ServiceInvoiceLineEntry,
 	ServiceInvoiceRecord,
@@ -138,8 +139,9 @@ export function createBlankServiceInvoiceLineEntry(
 
 export function createServiceInvoiceFormValues(): ServiceInvoiceFormValues {
 	const today = new Date().toISOString().slice(0, 10);
+	const lineEntries = [createBlankServiceInvoiceLineEntry()];
 
-	return {
+	const values = {
 		code: "",
 		name: "",
 		currency: "PHP",
@@ -177,7 +179,12 @@ export function createServiceInvoiceFormValues(): ServiceInvoiceFormValues {
 		status: "Draft",
 		projectRef: "",
 		projectName: "",
-		lineEntries: [createBlankServiceInvoiceLineEntry()],
+		lineEntries,
+	};
+
+	return {
+		...values,
+		accountingEntries: createServiceInvoiceAccountingEntries(values),
 	};
 }
 
@@ -185,13 +192,20 @@ export function createServiceInvoiceFormValuesFromRecord(
 	record: ServiceInvoiceRecord,
 ): ServiceInvoiceFormValues {
 	if (record.formValues) {
-		return {
+		const formValues = {
 			...record.formValues,
 			lineEntries: record.formValues.lineEntries.map((entry) => ({ ...entry })),
 		};
+
+		return {
+			...formValues,
+			accountingEntries:
+				record.formValues.accountingEntries?.map((entry) => ({ ...entry })) ??
+				createServiceInvoiceAccountingEntries(formValues),
+		};
 	}
 
-	return {
+	const values = {
 		...createServiceInvoiceFormValues(),
 		code: record.customerCode,
 		name: record.customerName,
@@ -210,6 +224,11 @@ export function createServiceInvoiceFormValuesFromRecord(
 				particulars: record.referenceNo,
 			}),
 		],
+	};
+
+	return {
+		...values,
+		accountingEntries: createServiceInvoiceAccountingEntries(values),
 	};
 }
 
@@ -260,6 +279,51 @@ export function calculateServiceInvoiceTotals(
 			wvatAmount: 0,
 		},
 	);
+}
+
+export function createServiceInvoiceAccountingEntries({
+	defaultAccount,
+	lineEntries,
+}: Pick<
+	ServiceInvoiceFormValues,
+	"defaultAccount" | "lineEntries"
+>): ServiceInvoiceAccountingEntry[] {
+	const totals = calculateServiceInvoiceTotals(lineEntries);
+	const receivableAmount = Math.max(0, totals.grossAmount);
+	const discountAmount = Math.max(0, totals.discountAmount);
+	const vatAmount = Math.max(0, totals.vatAmount);
+	const serviceAmount = Math.max(0, totals.netAmount);
+
+	return [
+		{
+			id: "accounts-receivable",
+			accountCode: "AR-TRADE",
+			accountTitle: defaultAccount || "Accounts Receivable - Trade",
+			debit: receivableAmount,
+			credit: 0,
+		},
+		{
+			id: "sales-discount",
+			accountCode: "SALES-DISC",
+			accountTitle: "Sales Discount",
+			debit: discountAmount,
+			credit: 0,
+		},
+		{
+			id: "output-tax",
+			accountCode: "VAT-OUT",
+			accountTitle: "Output Tax",
+			debit: 0,
+			credit: vatAmount,
+		},
+		{
+			id: "service-fees",
+			accountCode: "SRV-FEE",
+			accountTitle: "Service Fees",
+			debit: 0,
+			credit: serviceAmount,
+		},
+	];
 }
 
 export function getInitialServiceInvoices() {

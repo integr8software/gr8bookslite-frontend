@@ -1,40 +1,38 @@
 import {
-	ServiceInvoiceBooleanOptions,
 	ServiceInvoiceDescriptionOptions,
-	ServiceInvoiceResponsibilityCenterOptions,
-	ServiceInvoiceTaxTypeOptions,
-	ServiceInvoiceVatTypeOptions,
 } from "@/app/src/data/modules/sales/service-invoice/ServiceInvoiceData";
 import type { ServiceInvoiceLineEntry } from "@/app/src/types/modules/sales/service-invoice/ServiceInvoiceTypes";
 import {
 	AppAdvancedDropdown,
 	type AppAdvancedDropdownOption,
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
-import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
-import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import {
+	ServiceInvoiceEntryAmountInput,
+	ServiceInvoiceEntryTextInput,
+} from "@/app/src/ui/modules/sales/service-invoice/entries/ServiceInvoiceEntryCellControls";
 
-type ServiceInvoiceEntryColumnKind = "amount" | "dropdown" | "text";
+type ServiceInvoiceServiceDetailColumnKind = "amount" | "dropdown" | "text";
 
-type ServiceInvoiceEntryColumnConfig = {
+type ServiceInvoiceServiceDetailColumnConfig = {
 	header: string;
 	id: keyof ServiceInvoiceLineEntry;
-	kind: ServiceInvoiceEntryColumnKind;
+	kind: ServiceInvoiceServiceDetailColumnKind;
 	options?: AppAdvancedDropdownOption[];
 	width: number;
 	widthClassName: string;
 };
 
-type ServiceInvoiceEntryUpdater = (
+type ServiceInvoiceServiceDetailUpdater = (
 	rowId: string,
 	updates: Partial<ServiceInvoiceLineEntry>,
 ) => void;
 
-export function createServiceInvoiceEntryColumns(
+export function createServiceInvoiceServiceDetailColumns(
 	isReadonly: boolean,
-	onUpdateEntry: ServiceInvoiceEntryUpdater,
+	onUpdateEntry: ServiceInvoiceServiceDetailUpdater,
 ): ModuleDataEntryColumn<ServiceInvoiceLineEntry>[] {
-	return ServiceInvoiceEntryColumnConfigs.map((column) => ({
+	return ServiceInvoiceServiceDetailColumnConfigs.map((column) => ({
 		header: column.header,
 		id: column.id,
 		width: column.width,
@@ -60,11 +58,11 @@ function ServiceInvoiceEntryCell({
 	onUpdateEntry,
 	row,
 }: {
-	column: ServiceInvoiceEntryColumnConfig;
+	column: ServiceInvoiceServiceDetailColumnConfig;
 	fieldId: string;
 	fieldName: string;
 	isReadonly: boolean;
-	onUpdateEntry: ServiceInvoiceEntryUpdater;
+	onUpdateEntry: ServiceInvoiceServiceDetailUpdater;
 	row: ServiceInvoiceLineEntry;
 }) {
 	const value = String(row[column.id]);
@@ -99,7 +97,7 @@ function ServiceInvoiceEntryCell({
 	}
 
 	return (
-		<EntryInput
+		<ServiceInvoiceEntryTextInput
 			id={fieldId}
 			name={fieldName}
 			value={value}
@@ -138,32 +136,6 @@ function EntryDropdown({
 	);
 }
 
-function EntryInput({
-	id,
-	name,
-	onChange,
-	readOnly,
-	value,
-}: {
-	id: string;
-	name: string;
-	onChange: (value: string) => void;
-	readOnly: boolean;
-	value: string;
-}) {
-	return (
-		<input
-			id={id}
-			name={name}
-			type="text"
-			value={value}
-			readOnly={readOnly}
-			onChange={(event) => onChange(event.target.value)}
-			className={entryCellControlClassName()}
-		/>
-	);
-}
-
 function EntryAmountInput({
 	id,
 	name,
@@ -178,117 +150,42 @@ function EntryAmountInput({
 	value: string;
 }) {
 	return (
-		<MoneyNumberField
+		<ServiceInvoiceEntryAmountInput
 			id={id}
 			name={name}
 			value={value}
 			readOnly={readOnly}
 			onValueChange={onValueChange}
-			className={entryCellControlClassName("text-right tabular-nums")}
 		/>
 	);
 }
 
-function entryCellControlClassName(extraClassName?: string) {
-	return joinClasses(
-		"h-10 w-full rounded-none border-0 bg-transparent px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:bg-skyblue/10 focus:ring-2 focus:ring-inset focus:ring-skyblue/35 disabled:cursor-not-allowed disabled:bg-offwhite/45 disabled:text-darknavy/35",
-		extraClassName,
-	);
-}
-
-const ServiceInvoiceEntryColumnConfigs = [
+const ServiceInvoiceServiceDetailColumnConfigs = [
 	column(
-		"Description",
+		"Professional Service Type",
 		"description",
 		"dropdown",
-		300,
-		"w-[19rem]",
+		260,
+		"w-[16.25rem]",
 		ServiceInvoiceDescriptionOptions,
 	),
-	column("Particulars", "particulars", "text", 280, "w-[17.5rem]"),
-	column("Amount", "amount", "amount", 130, "w-[8rem]"),
-	column("Qty", "quantity", "amount", 120, "w-[7.5rem]"),
-	column("Net Amount", "netAmount", "amount", 130, "w-[8rem]"),
-	column("VAT Amount", "vatAmount", "amount", 130, "w-[8rem]"),
-	column("WVAT Amount", "wvatAmount", "amount", 130, "w-[8rem]"),
-	column("EWT Amount", "ewtAmount", "amount", 130, "w-[8rem]"),
-	column("Discount %", "discountPercent", "text", 120, "w-[7.5rem]"),
-	column("Discount Amount", "discountAmount", "amount", 140, "w-[8.75rem]"),
-	column("Gross Amount", "grossAmount", "amount", 140, "w-[8.75rem]"),
-	column(
-		"VAT Type",
-		"vatType",
-		"dropdown",
-		130,
-		"w-[8rem]",
-		ServiceInvoiceVatTypeOptions,
-	),
-	column(
-		"VATable",
-		"vatable",
-		"dropdown",
-		110,
-		"w-[7rem]",
-		ServiceInvoiceBooleanOptions,
-	),
-	column(
-		"VAT Inc.",
-		"vatInclusive",
-		"dropdown",
-		110,
-		"w-[7rem]",
-		ServiceInvoiceBooleanOptions,
-	),
-	column(
-		"With WVAT",
-		"withWvat",
-		"dropdown",
-		110,
-		"w-[7rem]",
-		ServiceInvoiceBooleanOptions,
-	),
-	column(
-		"WVAT Type",
-		"wvatType",
-		"dropdown",
-		120,
-		"w-[7.5rem]",
-		ServiceInvoiceTaxTypeOptions,
-	),
-	column(
-		"With EWT",
-		"withEwt",
-		"dropdown",
-		110,
-		"w-[7rem]",
-		ServiceInvoiceBooleanOptions,
-	),
-	column(
-		"EWT Type",
-		"ewtType",
-		"dropdown",
-		110,
-		"w-[7rem]",
-		ServiceInvoiceTaxTypeOptions,
-	),
-	column(
-		"Res. Center",
-		"responsibilityCenter",
-		"dropdown",
-		210,
-		"w-[13rem]",
-		ServiceInvoiceResponsibilityCenterOptions,
-	),
+	column("Rate", "amount", "amount", 120, "w-[7.5rem]"),
+	column("Qty", "quantity", "amount", 100, "w-[6.25rem]"),
+	column("Amount", "netAmount", "amount", 130, "w-[8rem]"),
+	column("VAT", "vatAmount", "amount", 120, "w-[7.5rem]"),
+	column("VAT Inc.", "wvatAmount", "amount", 130, "w-[8rem]"),
+	column("Disct", "discountAmount", "amount", 120, "w-[7.5rem]"),
+	column("Net Amt", "grossAmount", "amount", 130, "w-[8rem]"),
 ];
 
 function column(
 	header: string,
 	id: keyof ServiceInvoiceLineEntry,
-	kind: ServiceInvoiceEntryColumnKind,
+	kind: ServiceInvoiceServiceDetailColumnKind,
 	width: number,
 	widthClassName: string,
 	options?: AppAdvancedDropdownOption[],
-): ServiceInvoiceEntryColumnConfig {
+): ServiceInvoiceServiceDetailColumnConfig {
 	return {
 		header,
 		id,

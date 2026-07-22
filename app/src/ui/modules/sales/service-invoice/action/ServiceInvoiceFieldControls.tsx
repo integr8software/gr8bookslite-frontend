@@ -107,12 +107,14 @@ export function AttachedDropdown({
 }
 
 export function SelectField({
+	id,
 	onChange,
 	options,
 	placeholder,
 	readOnly,
 	value,
 }: {
+	id?: string;
 	onChange: (value: string) => void;
 	options: AppAdvancedDropdownOption[];
 	placeholder: string;
@@ -121,6 +123,7 @@ export function SelectField({
 }) {
 	return (
 		<AppAdvancedDropdown
+			id={id}
 			value={value}
 			readOnly={readOnly}
 			options={options}

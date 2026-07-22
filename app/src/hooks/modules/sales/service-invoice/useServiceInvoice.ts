@@ -14,6 +14,7 @@ import toast from "react-hot-toast";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import {
 	createBlankServiceInvoiceLineEntry,
+	createServiceInvoiceAccountingEntries,
 	createServiceInvoiceFormValues,
 	createServiceInvoiceFormValuesFromRecord,
 	createServiceInvoiceRecordFromForm,
@@ -23,6 +24,7 @@ import {
 import { ServiceInvoiceStatusFilters } from "@/app/src/constants/modules/sales/service-invoice/ServiceInvoiceConstants";
 import type {
 	ServiceInvoiceActionMode,
+	ServiceInvoiceAccountingEntry,
 	ServiceInvoiceFormValues,
 	ServiceInvoiceLineEntry,
 	ServiceInvoiceRecord,
@@ -114,7 +116,20 @@ export function useServiceInvoiceActionForm(
 		setValues((current) => ({
 			...current,
 			...calculateHeaderAmounts(lineEntries),
+			accountingEntries: createServiceInvoiceAccountingEntries({
+				defaultAccount: current.defaultAccount,
+				lineEntries,
+			}),
 			lineEntries,
+		}));
+	}
+
+	function updateAccountingEntries(
+		accountingEntries: ServiceInvoiceAccountingEntry[],
+	) {
+		setValues((current) => ({
+			...current,
+			accountingEntries,
 		}));
 	}
 
@@ -143,6 +158,7 @@ export function useServiceInvoiceActionForm(
 	return {
 		isRecordMissing: mode !== "add" && !initialRecord,
 		submitInvoice,
+		updateAccountingEntries,
 		updateField,
 		updateLineEntries,
 		values,

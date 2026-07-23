@@ -5,6 +5,7 @@ import { useState } from "react";
 import { SalesInvoiceHref } from "@/app/src/constants/modules/sales/sales-invoice/SalesInvoiceConstants";
 import { useSalesInvoiceActionForm } from "@/app/src/hooks/modules/sales/sales-invoice/useSalesInvoice";
 import type {
+	SalesInvoiceAccountEntry,
 	SalesInvoiceActionMode,
 	SalesInvoiceLineItem,
 } from "@/app/src/types/modules/sales/sales-invoice/SalesInvoiceTypes";
@@ -13,7 +14,7 @@ import { SalesInvoiceDetailsForm } from "@/app/src/ui/modules/sales/sales-invoic
 import { SalesInvoiceEntries } from "@/app/src/ui/modules/sales/sales-invoice/SalesInvoiceEntries";
 import { SalesInvoiceReportPreview } from "@/app/src/ui/modules/sales/sales-invoice/SalesInvoiceReportPreview";
 
-export function SalesInvoiceAction() {
+export function SalesInvoiceFormPage() {
 	const params = useParams<{ recordId?: string }>();
 	const pathname = usePathname();
 	const router = useRouter();
@@ -28,6 +29,10 @@ export function SalesInvoiceAction() {
 
 	function updateLineItems(lineItems: SalesInvoiceLineItem[]) {
 		invoiceForm.updateField("lineItems", lineItems);
+	}
+
+	function updateAccountEntries(accountEntries: SalesInvoiceAccountEntry[]) {
+		invoiceForm.updateField("accountEntries", accountEntries);
 	}
 
 	return (
@@ -45,8 +50,10 @@ export function SalesInvoiceAction() {
 					onUpdateField={invoiceForm.updateField}
 				/>
 				<SalesInvoiceEntries
+					accountRows={invoiceForm.values.accountEntries}
 					isReadonly={isReadonly}
 					rows={invoiceForm.values.lineItems}
+					onAccountRowsChange={updateAccountEntries}
 					onRowsChange={updateLineItems}
 				/>
 			</section>

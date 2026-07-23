@@ -2,8 +2,8 @@
 
 import {
   calculateSalesInvoiceTotals,
-  formatSalesInvoiceCurrency,
 } from "@/app/src/data/modules/sales/sales-invoice/SalesInvoiceData";
+import { formatSalesInvoiceCurrency } from "@/app/src/data/modules/sales/sales-invoice/SalesInvoiceFormatters";
 import type { SalesInvoiceFormValues } from "@/app/src/types/modules/sales/sales-invoice/SalesInvoiceTypes";
 import { ReportPreviewDrawer } from "@/app/src/ui/shared/reports/Reports";
 

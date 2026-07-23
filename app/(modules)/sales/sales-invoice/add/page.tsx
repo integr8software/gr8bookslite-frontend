@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { SalesInvoiceAction } from "@/app/src/ui/modules/sales/sales-invoice/Action";
+import { SalesInvoiceFormPage } from "@/app/src/ui/modules/sales/sales-invoice/SalesInvoiceFormPage";
 
 const PageTitle = "Add Sales Invoice";
 
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default function SalesSalesInvoiceAddPage() {
-  return <SalesInvoiceAction />;
+  return <SalesInvoiceFormPage />;
 }
 
 

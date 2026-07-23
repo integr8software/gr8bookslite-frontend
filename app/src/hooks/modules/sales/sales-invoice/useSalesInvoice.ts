@@ -15,9 +15,11 @@ import {
   createSalesInvoiceFormValues,
   createSalesInvoiceFormValuesFromRecord,
   createSalesInvoiceRecordFromForm,
+} from "@/app/src/data/modules/sales/sales-invoice/SalesInvoiceFactories";
+import {
   getInitialSalesInvoices,
   writeStoredSalesInvoices,
-} from "@/app/src/data/modules/sales/sales-invoice/SalesInvoiceData";
+} from "@/app/src/data/modules/sales/sales-invoice/SalesInvoiceStorage";
 import { SalesInvoiceStatusFilters } from "@/app/src/constants/modules/sales/sales-invoice/SalesInvoiceConstants";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import type {

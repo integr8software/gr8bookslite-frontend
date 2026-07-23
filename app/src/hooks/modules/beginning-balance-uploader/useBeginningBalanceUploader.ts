@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { MockBeginningBalanceUploaderRecords } from "@/app/src/data/modules/beginning-balance-uploader/BeginningBalanceUploaderData";
+import { MockBeginningBalanceUploaderRecords } from "@/app/src/data/modules/others/beginning-balance-uploader/BeginningBalanceUploaderData";
 import { BeginningBalanceUploaderQueryKeys } from "@/app/src/services/modules/beginning-balance-uploader/BeginningBalanceUploaderQueryKeys";
 import type { BeginningBalanceUploaderRecord } from "@/app/src/types/modules/beginning-balance-uploader/BeginningBalanceUploaderTypes";
 

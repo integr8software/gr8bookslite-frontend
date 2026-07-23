@@ -11,7 +11,7 @@ import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import {
   PartyDefaultNationality,
   VatRegistrationTypeOptions,
-} from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
+} from "@/app/src/constants/modules/party-management/PartyManagementConstants";
 import {
   PartyInformationInitialFormValues,
   applyPartyDefaultAccountingAccounts,
@@ -20,14 +20,14 @@ import {
   getPartyDisplayName,
   isKnownPartyType,
   normalizePartyTypesForClassification,
-} from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
-import { usePartyManagementStore } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagement";
+} from "@/app/src/data/modules/party-management/PartyManagementData";
+import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
 import {
   type PartyDefaultAccountingAccountIds,
   usePartyManagementAccountOptions,
-} from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagementAccountOptions";
-import { useTermDropdownOptions } from "@/app/src/hooks/modules/maintenance/term-management/useTermDropdownOptions";
-import { useTaxMaintenanceOptions } from "@/app/src/hooks/modules/maintenance/tax-maintenance/useTaxMaintenanceOptions";
+} from "@/app/src/hooks/modules/party-management/usePartyManagementAccountOptions";
+import { useTermDropdownOptions } from "@/app/src/hooks/modules/financial-maintenance/term-management/useTermDropdownOptions";
+import { useTaxMaintenanceOptions } from "@/app/src/hooks/modules/financial-maintenance/tax-maintenance/useTaxMaintenanceOptions";
 import { usePartyAtcCodeOptions } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
 import type {
   PartyAddress,
@@ -35,12 +35,12 @@ import type {
   PartyInformationFormValues,
   PartyInformationRecord,
   PartyType,
-} from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
-import { PartyInformationDetailsFields } from "@/app/src/ui/modules/maintenance/party-management/PartyInformationDetailsFields";
+} from "@/app/src/types/modules/party-management/PartyManagementTypes";
+import { PartyInformationDetailsFields } from "@/app/src/ui/modules/party-management/PartyInformationDetailsFields";
 import {
   PartyInformationRequiredFieldsToastMessage,
   validatePartyInformationForm,
-} from "@/app/src/validations/modules/maintenance/party-management/PartyManagementValidation";
+} from "@/app/src/validations/modules/party-management/PartyManagementValidation";
 import type {
   AddressAutocompleteDetails,
   AddressAutocompleteItem,

@@ -1,12 +1,12 @@
-import { BranchManagementHref } from "@/app/src/constants/modules/branch-manager/BranchManagementConstants";
-import { ChartsOfAccountsHref } from "@/app/src/constants/modules/maintenance/charts-of-accounts/ChartsOfAccountsConstants";
+import { BranchManagementHref } from "@/app/src/constants/modules/system-administration/branch-manager/BranchManagementConstants";
+import { ChartsOfAccountsHref } from "@/app/src/constants/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsConstants";
 import {
   UserListHref,
   UserRoleHref,
 } from "@/app/src/constants/modules/user-management/UserManagementConstants";
 import { BranchDashboardSpotlightTutorialOpenEvent } from "@/app/src/data/modules/dashboard/BranchDashboardSpotlightTutorialData";
 import { WorkspaceSpotlightTutorialOpenEvent } from "@/app/src/data/modules/dashboard/WorkspaceSpotlightTutorialData";
-import { ChartsOfAccountsSpotlightTutorialOpenEvent } from "@/app/src/data/modules/maintenance/charts-of-accounts/ChartsOfAccountsSpotlightTutorialData";
+import { ChartsOfAccountsSpotlightTutorialOpenEvent } from "@/app/src/data/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsSpotlightTutorialData";
 import { BranchManagementSpotlightTutorialOpenEvent } from "@/app/src/data/modules/system-administration/branch-management/BranchManagementSpotlightTutorialData";
 import { UserRoleSpotlightTutorialOpenEvent } from "@/app/src/data/modules/system-administration/user-management/user-role/UserRoleSpotlightTutorialData";
 import { UserListSpotlightTutorialOpenEvent } from "@/app/src/data/modules/system-administration/user-management/users/UserListSpotlightTutorialData";
@@ -28,7 +28,7 @@ import {
   MaintenanceAddSpotlightTutorialConfigs,
   MaintenanceSpotlightTutorialConfigs,
   MaintenanceSpotlightTutorialOpenEvent,
-} from "@/app/src/data/modules/maintenance/MaintenanceSpotlightTutorialData";
+} from "@/app/src/data/shared/tour/SpotlightTutorialData";
 
 const SpotlightTutorialEventsByHref: Readonly<Record<string, string>> = {
   ...Object.fromEntries(

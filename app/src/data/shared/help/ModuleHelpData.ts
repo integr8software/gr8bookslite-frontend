@@ -105,17 +105,13 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
   article(
     "help-maintenance",
     "Maintenance",
-    "/maintenance",
+    "/financial-maintenance/charts-of-accounts",
     "Maintain reusable company setup records used by transactions and reports.",
     [
       "Maintenance stores master files such as accounts, banks, discounts, terms, items, warehouses, parties, approvals, users, and mail setup.",
       "Accurate maintenance data keeps transaction entry faster and makes reports more consistent.",
     ],
-    [
-      "help-maintenance-financial",
-      "help-maintenance-inventory",
-      "help-maintenance-party",
-    ],
+    ["help-maintenance-financial", "help-maintenance-inventory", "help-maintenance-party"],
   ),
   article(
     "help-maintenance-financial",
@@ -126,16 +122,12 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
       "Financial Management groups setup records such as charts of accounts, discounts, payment terms, payment types, and responsibility centers.",
       "These records support accounting documents, ledgers, receivables, payables, and financial reports.",
     ],
-    [
-      "help-charts-of-accounts",
-      "help-responsibility-center",
-      "help-general-journal",
-    ],
+    ["help-charts-of-accounts", "help-responsibility-center", "help-general-journal"],
   ),
   article(
     "help-charts-of-accounts",
     "Charts of Accounts",
-    "/maintenance/charts-of-accounts",
+    "/financial-maintenance/charts-of-accounts",
     "Maintain the account structure used for posting and reporting.",
     [
       "Charts of Accounts defines the account codes and classifications used by journal entries, vouchers, sales, purchases, and reports.",
@@ -157,7 +149,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
   article(
     "help-discount",
     "Discount Management",
-    "/maintenance/discount-management",
+    "/financial-maintenance/discount-management",
     "Maintain reusable discounts for sales, purchases, and inventory-related documents.",
     [
       "Discount Management defines discount labels and rules users can apply during transaction entry.",
@@ -168,7 +160,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
   article(
     "help-term",
     "Term Management",
-    "/maintenance/term-management",
+    "/financial-maintenance/term-management",
     "Maintain payment and billing terms.",
     [
       "Term Management stores due-date and payment-term definitions used in receivables, payables, sales, and purchasing documents.",
@@ -179,7 +171,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
   article(
     "help-transaction-type",
     "Inventory Transaction Type",
-    "/maintenance/inventory-transaction-type",
+    "/item-management/inventory-transaction-type",
     "Classify goods receipt and goods issue inventory movements.",
     [
       "Inventory Transaction Type stores reusable movement reasons such as sales return, transfer, purchase return, spoilage, damaged item, freebies, and gifts.",
@@ -190,7 +182,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
   article(
     "help-payment-type",
     "Payment Type",
-    "/maintenance/payment-type",
+    "/financial-maintenance/payment-type",
     "Classify payment methods used by cash disbursement vouchers.",
     [
       "Payment Type stores the payment method name, payment classification, and active status.",
@@ -201,7 +193,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
   article(
     "help-responsibility-center",
     "Responsibility Center",
-    "/maintenance/responsibility-center",
+    "/financial-maintenance/responsibility-center",
     "Maintain responsibility centers used for accountability and reporting.",
     [
       "Responsibility Center stores cost, profit, revenue, and investment centers used to assign accountability across financial records.",
@@ -212,7 +204,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
   article(
     "help-maintenance-inventory",
     "Inventory Maintenance",
-    "/maintenance/items",
+    "/item-management/items",
     "Configure item and warehouse master files used by inventory documents.",
     [
       "Items setup defines item records, bundle components, inventory transaction types, and the single Item Category classification tree used during document entry.",
@@ -223,7 +215,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
   article(
     "help-warehouse-management",
     "Warehouse Management",
-    "/maintenance/warehouses",
+    "/warehouse-management/warehouses",
     "Maintain warehouse locations, access assignments, and item counts used by inventory transactions.",
     [
       "Warehouse Management stores the locations where stock can be received, issued, transferred, counted, or valued.",
@@ -234,7 +226,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
   article(
     "help-items",
     "Items",
-    "/maintenance/items",
+    "/item-management/items",
     "Maintain item records and bundle definitions used by sales, purchasing, and inventory documents.",
     [
       "Items stores item names, codes, categories, classifications, predefined units, and other item details used during document entry.",
@@ -246,7 +238,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
   article(
     "help-item-category",
     "Item Classifications",
-    "/maintenance/item-category",
+    "/item-management/item-category",
     "Organize items in one parent-child Item Category hierarchy.",
     [
       "The Item Category page shows every parent and child classification in expandable rows, including migrated legacy records.",
@@ -257,7 +249,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
   article(
     "help-maintenance-party",
     "Party Management",
-    "/maintenance/party-management",
+    "/party-management",
     "Maintain customers, suppliers, and other business parties.",
     [
       "Party Management stores the people and organizations used by sales, purchasing, receivables, payables, and reporting workflows.",
@@ -274,11 +266,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
       "Cash Receipt modules capture incoming payments and collection documents tied to customers, invoices, payment references, or other records.",
       "Receipt records support cash monitoring, reconciliation, audit review, and accounting reports.",
     ],
-    [
-      "help-system-transaction-numbering",
-      "help-sales",
-      "help-general-journal",
-    ],
+    ["help-system-transaction-numbering", "help-sales", "help-general-journal"],
   ),
   article(
     "help-cash-disbursement",
@@ -289,11 +277,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
       "Cash Disbursement modules manage payment documents such as disbursement vouchers, request for payment, petty cash, replenishments, and advances.",
       "Use disbursement records to control cash-out activity and keep payment approvals, references, and postings traceable.",
     ],
-    [
-      "help-system-transaction-numbering",
-      "help-accounts-payable",
-      "help-accounts-payable",
-    ],
+    ["help-system-transaction-numbering", "help-accounts-payable", "help-accounts-payable"],
   ),
   article(
     "help-accounts-payable",

@@ -9,9 +9,9 @@ import {
 } from "@/app/src/ui/shared/transaction-setup/AppDisbursementTypeDialog";
 import { useAcknowledgementReceiptActionForm } from "@/app/src/hooks/modules/cash-receipt/acknowledgement-receipt/useAcknowledgementReceipt";
 import { AcknowledgementReceiptHref } from "@/app/src/constants/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptConstants";
-import { getPartyDisplayName } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
-import { usePartyManagementStore } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagement";
-import { usePaymentTypeStore } from "@/app/src/hooks/modules/maintenance/payment-type/usePaymentType";
+import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
+import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
+import { usePaymentTypeStore } from "@/app/src/hooks/modules/financial-maintenance/payment-type/usePaymentType";
 import type { AcknowledgementReceiptActionMode } from "@/app/src/types/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptTypes";
 import type { DisbursementPaymentMethod, DisbursementType } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import { AcknowledgementReceiptActionHeader } from "@/app/src/ui/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptActionHeader";
@@ -19,7 +19,7 @@ import { AcknowledgementReceiptDetailsForm } from "@/app/src/ui/modules/cash-rec
 import { AcknowledgementReceiptEntries } from "@/app/src/ui/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptEntries";
 import { openAcknowledgementReceiptPdf } from "@/app/src/ui/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptPdf";
 import { AcknowledgementReceiptReportPreview } from "@/app/src/ui/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptReportPreview";
-import { PartyManagementDrawer } from "@/app/src/ui/modules/maintenance/party-management/PartyManagementDrawer";
+import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
 
 const AppPaymentTypeDialog = dynamic(
   () =>

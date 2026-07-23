@@ -10,7 +10,7 @@ import {
   type PaginationState,
   type SortingState,
 } from "@tanstack/react-table";
-import { getBeginningBalanceUploaderTotals } from "@/app/src/data/modules/beginning-balance-uploader/BeginningBalanceUploaderData";
+import { getBeginningBalanceUploaderTotals } from "@/app/src/data/modules/others/beginning-balance-uploader/BeginningBalanceUploaderData";
 import { useBeginningBalanceUploaderStore } from "@/app/src/hooks/modules/beginning-balance-uploader/useBeginningBalanceUploader";
 import type { BeginningBalanceUploaderRecord } from "@/app/src/types/modules/beginning-balance-uploader/BeginningBalanceUploaderTypes";
 

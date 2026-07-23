@@ -7,7 +7,7 @@ import {
   BeginningBalanceUploaderColumns,
   BeginningBalanceUploaderHref,
   getBeginningBalanceUploaderColumnIndex,
-} from "@/app/src/constants/modules/beginning-balance-uploader/BeginningBalanceUploaderConstants";
+} from "@/app/src/constants/modules/others/beginning-balance-uploader/BeginningBalanceUploaderConstants";
 import {
   BeginningBalanceUploaderInitialFormValues,
   createBeginningBalanceUploaderFormValues,
@@ -18,7 +18,7 @@ import {
   isBeginningBalanceHeaderRow,
   normalizeBeginningBalancePastedCell,
   updateBeginningBalanceUploaderRecord,
-} from "@/app/src/data/modules/beginning-balance-uploader/BeginningBalanceUploaderData";
+} from "@/app/src/data/modules/others/beginning-balance-uploader/BeginningBalanceUploaderData";
 import { useBeginningBalanceUploaderStore } from "@/app/src/hooks/modules/beginning-balance-uploader/useBeginningBalanceUploader";
 import type {
   BeginningBalanceUploaderActionMode,

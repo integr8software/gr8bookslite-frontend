@@ -5,7 +5,7 @@ import {
 	formatInventoryReportNumber,
 } from "@/app/src/ui/modules/inventory/shared/report/InventoryReportLayout";
 import { openInventoryReportPdf } from "@/app/src/ui/modules/inventory/shared/report/InventoryReportPdf";
-import { DeliveryReceiptReportColumns } from "@/app/src/ui/modules/inventory/delivery-receipt/DeliveryReceiptReportPreview";
+import { DeliveryReceiptReportColumns } from "@/app/src/ui/modules/inventory/delivery-receipt/reports/DeliveryReceiptReportPreview";
 
 export function openDeliveryReceiptPdf(values: DeliveryReceiptFormValues) {
 	openInventoryReportPdf({

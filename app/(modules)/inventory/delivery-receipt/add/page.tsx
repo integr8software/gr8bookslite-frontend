@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { DeliveryReceiptActionPage } from "@/app/src/ui/modules/inventory/delivery-receipt/DeliveryReceiptActionPage";
+import { DeliveryReceiptActionPage } from "@/app/src/ui/modules/inventory/delivery-receipt/action/DeliveryReceiptActionPage";
 
 const PageTitle = "Add Delivery Receipt";
 

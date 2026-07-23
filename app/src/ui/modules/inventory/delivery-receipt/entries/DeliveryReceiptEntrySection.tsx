@@ -1,31 +1,35 @@
 import { useCallback, useMemo } from "react";
 import {
 	calculateDeliveryReceiptTotalQuantity,
-	createBlankDeliveryReceiptLineEntry,
-	deliveryReceiptEntryHasData,
-	deliveryReceiptEntryIsComplete,
 	formatDeliveryReceiptQuantity,
 } from "@/app/src/data/modules/inventory/delivery-receipt/DeliveryReceiptData";
 import type { DeliveryReceiptLineEntry } from "@/app/src/types/modules/inventory/delivery-receipt/DeliveryReceiptTypes";
 import {
 	ModuleDataEntry,
-	type ModuleDataEntryClearAction,
 	type ModuleDataEntryColumn,
 	type ModuleDataEntryColumnOption,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
-import { createDeliveryReceiptEntryColumns } from "@/app/src/ui/modules/inventory/delivery-receipt/DeliveryReceiptEntryColumns";
+import { createDeliveryReceiptLineColumns } from "@/app/src/ui/modules/inventory/delivery-receipt/entries/DeliveryReceiptLineColumns";
+import {
+	clearDeliveryReceiptLines,
+	createDeliveryReceiptLineEntries,
+	duplicateDeliveryReceiptLine,
+	insertDeliveryReceiptLine,
+	moveDeliveryReceiptLine,
+	removeDeliveryReceiptLine,
+} from "@/app/src/ui/modules/inventory/delivery-receipt/entries/utils/DeliveryReceiptEntryRowUtils";
 
-type DeliveryReceiptEntriesProps = {
+type DeliveryReceiptEntrySectionProps = {
 	isReadonly: boolean;
 	rows: DeliveryReceiptLineEntry[];
 	onRowsChange: (rows: DeliveryReceiptLineEntry[]) => void;
 };
 
-export function DeliveryReceiptEntries({
+export function DeliveryReceiptEntrySection({
 	isReadonly,
 	onRowsChange,
 	rows,
-}: DeliveryReceiptEntriesProps) {
+}: DeliveryReceiptEntrySectionProps) {
 	const updateEntry = useCallback(
 		(rowId: string, updates: Partial<DeliveryReceiptLineEntry>) => {
 			onRowsChange(
@@ -39,7 +43,7 @@ export function DeliveryReceiptEntries({
 		[rows],
 	);
 	const columns = useMemo<ModuleDataEntryColumn<DeliveryReceiptLineEntry>[]>(
-		() => createDeliveryReceiptEntryColumns(isReadonly, updateEntry),
+		() => createDeliveryReceiptLineColumns(isReadonly, updateEntry),
 		[isReadonly, updateEntry],
 	);
 	const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
@@ -56,82 +60,23 @@ export function DeliveryReceiptEntries({
 	);
 
 	function addRows(count: number) {
-		onRowsChange([
-			...rows,
-			...Array.from({ length: count }, () =>
-				createBlankDeliveryReceiptLineEntry(),
-			),
-		]);
-	}
-
-	function clearRows(action: ModuleDataEntryClearAction) {
-		if (action === "all") {
-			onRowsChange([createBlankDeliveryReceiptLineEntry()]);
-			return;
-		}
-
-		const nextRows = rows.filter((row) => !shouldClearEntry(row, action));
-		onRowsChange(
-			nextRows.length > 0 ? nextRows : [createBlankDeliveryReceiptLineEntry()],
-		);
+		onRowsChange([...rows, ...createDeliveryReceiptLineEntries(count)]);
 	}
 
 	function duplicateRow(rowId: string) {
-		const rowIndex = rows.findIndex((row) => row.id === rowId);
-		const row = rows[rowIndex];
-
-		if (!row) {
-			return;
-		}
-
-		const nextRows = [...rows];
-		nextRows.splice(rowIndex + 1, 0, {
-			...row,
-			id: createBlankDeliveryReceiptLineEntry().id,
-		});
-		onRowsChange(nextRows);
+		onRowsChange(duplicateDeliveryReceiptLine(rows, rowId));
 	}
 
 	function insertRow(rowId: string, position: "above" | "below") {
-		const rowIndex = rows.findIndex((row) => row.id === rowId);
-
-		if (rowIndex < 0) {
-			return;
-		}
-
-		const nextRows = [...rows];
-		nextRows.splice(
-			position === "above" ? rowIndex : rowIndex + 1,
-			0,
-			createBlankDeliveryReceiptLineEntry(),
-		);
-		onRowsChange(nextRows);
+		onRowsChange(insertDeliveryReceiptLine(rows, rowId, position));
 	}
 
 	function moveRow(fromRowId: string, toRowId: string) {
-		const fromIndex = rows.findIndex((row) => row.id === fromRowId);
-		const toIndex = rows.findIndex((row) => row.id === toRowId);
-
-		if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) {
-			return;
-		}
-
-		const nextRows = [...rows];
-		const [movedRow] = nextRows.splice(fromIndex, 1);
-
-		if (!movedRow) {
-			return;
-		}
-
-		nextRows.splice(toIndex, 0, movedRow);
-		onRowsChange(nextRows);
+		onRowsChange(moveDeliveryReceiptLine(rows, fromRowId, toRowId));
 	}
 
 	function removeRow(rowId: string) {
-		const nextRows = rows.filter((row) => row.id !== rowId);
-		onRowsChange(
-			nextRows.length > 0 ? nextRows : [createBlankDeliveryReceiptLineEntry()],
-		);
+		onRowsChange(removeDeliveryReceiptLine(rows, rowId));
 	}
 
 	return (
@@ -159,7 +104,9 @@ export function DeliveryReceiptEntries({
 			title="Delivery Receipt Details"
 			onAddRows={addRows}
 			onAutoColumnWidth={() => undefined}
-			onClearRows={clearRows}
+			onClearRows={(action) =>
+				onRowsChange(clearDeliveryReceiptLines(rows, action))
+			}
 			onDuplicateRow={duplicateRow}
 			onFitColumnWidth={() => undefined}
 			onImport={() => undefined}
@@ -171,22 +118,4 @@ export function DeliveryReceiptEntries({
 			onUpdateColumnWidth={() => undefined}
 		/>
 	);
-}
-
-function shouldClearEntry(
-	entry: DeliveryReceiptLineEntry,
-	action: Exclude<ModuleDataEntryClearAction, "all">,
-) {
-	if (action === "with-data") {
-		return deliveryReceiptEntryHasData(entry);
-	}
-
-	if (action === "incomplete") {
-		return (
-			deliveryReceiptEntryHasData(entry) &&
-			!deliveryReceiptEntryIsComplete(entry)
-		);
-	}
-
-	return !deliveryReceiptEntryHasData(entry);
 }

@@ -3,7 +3,7 @@ import {
 	DateField,
 	TextField,
 	type DeliveryReceiptFieldUpdater,
-} from "@/app/src/ui/modules/inventory/delivery-receipt/DeliveryReceiptFieldControls";
+} from "@/app/src/ui/modules/inventory/delivery-receipt/action/DeliveryReceiptFieldControls";
 
 type DeliveryReceiptReferenceFieldsProps = {
 	isReadonly: boolean;

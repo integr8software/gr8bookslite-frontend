@@ -14,16 +14,24 @@ import {
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
+import {
+	AppCopyFromDropdown,
+	type AppCopyFromRecord,
+} from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
 
 type DeliveryReceiptFormHeaderProps = {
+	copyFromRecords: AppCopyFromRecord[];
 	mode: DeliveryReceiptActionMode;
+	onCopyFromPickList: (recordIds: string[]) => void;
 	onPreview: () => void;
 	values: DeliveryReceiptFormValues;
 	onSubmit: () => void;
 };
 
 export function DeliveryReceiptFormHeader({
+	copyFromRecords,
 	mode,
+	onCopyFromPickList,
 	onPreview,
 	onSubmit,
 	values,
@@ -43,13 +51,15 @@ export function DeliveryReceiptFormHeader({
 			title={title}
 			description={
 				mode === "view"
-					? "Review delivery details, customer references, vehicle information, and item entries."
-					: "Complete Party Code details, delivery references, vehicle information, and item entries before saving."
+					? "Review delivery details, customer billing, vehicle information, and item entries."
+					: "Complete Party Code details, delivery information, vehicle information, and item entries before saving."
 			}
 			actionsClassName="items-center justify-start gap-2 sm:shrink-0 sm:justify-end [&>a]:shrink-0 [&>button]:shrink-0"
 			actions={
 				<DeliveryReceiptHeaderActions
+					copyFromRecords={copyFromRecords}
 					mode={mode}
+					onCopyFromPickList={onCopyFromPickList}
 					onPreview={onPreview}
 					onSubmit={onSubmit}
 				/>
@@ -59,11 +69,15 @@ export function DeliveryReceiptFormHeader({
 }
 
 function DeliveryReceiptHeaderActions({
+	copyFromRecords,
 	mode,
+	onCopyFromPickList,
 	onPreview,
 	onSubmit,
 }: {
+	copyFromRecords: AppCopyFromRecord[];
 	mode: DeliveryReceiptActionMode;
+	onCopyFromPickList: (recordIds: string[]) => void;
 	onPreview: () => void;
 	onSubmit: () => void;
 }) {
@@ -81,6 +95,11 @@ function DeliveryReceiptHeaderActions({
 			<ReportPreviewAction onPreview={onPreview} />
 			{mode === "view" ? null : (
 				<>
+					<AppCopyFromDropdown
+						records={copyFromRecords}
+						sources={["Pick List"]}
+						onApply={onCopyFromPickList}
+					/>
 					<div className="flex lg:hidden">
 						<ModuleActionMenu
 							className="[&>button]:h-10 [&>button]:w-10"

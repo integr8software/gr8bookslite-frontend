@@ -16,6 +16,18 @@ export type AiAssistantPurchaseRequestPrefill = {
 	}>;
 };
 
+export type AiAssistantSalesQuotationPrefill = {
+	partyName?: string;
+	department?: string;
+	remarks?: string;
+	items?: Array<{
+		description?: string;
+		quantity?: number;
+		uom?: string;
+		itemPrice?: number;
+	}>;
+};
+
 export type AiAssistantTermManagementPrefill = {
 	name?: string;
 	description?: string;

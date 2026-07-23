@@ -1,6 +1,6 @@
 import type { PickListLineEntry } from "@/app/src/types/modules/inventory/pick-list/PickListTypes";
 import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
-import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import { PickListEntryTextInput } from "@/app/src/ui/modules/inventory/pick-list/entries/PickListEntryCellControls";
 
 type PickListEntryColumnConfig = {
 	header: string;
@@ -14,7 +14,7 @@ type PickListEntryUpdater = (
 	updates: Partial<PickListLineEntry>,
 ) => void;
 
-export function createPickListEntryColumns(
+export function createPickListLineColumns(
 	isReadonly: boolean,
 	onUpdateEntry: PickListEntryUpdater,
 ): ModuleDataEntryColumn<PickListLineEntry>[] {
@@ -24,7 +24,7 @@ export function createPickListEntryColumns(
 		width: column.width,
 		widthClassName: column.widthClassName,
 		renderCell: (row, _index, context) => (
-			<EntryInput
+			<PickListEntryTextInput
 				id={context.fieldId}
 				name={context.fieldName}
 				value={String(row[column.id])}
@@ -33,38 +33,6 @@ export function createPickListEntryColumns(
 			/>
 		),
 	}));
-}
-
-function EntryInput({
-	id,
-	name,
-	onChange,
-	readOnly,
-	value,
-}: {
-	id: string;
-	name: string;
-	onChange: (value: string) => void;
-	readOnly: boolean;
-	value: string;
-}) {
-	return (
-		<input
-			id={id}
-			name={name}
-			type="text"
-			value={value}
-			readOnly={readOnly}
-			onChange={(event) => onChange(event.target.value)}
-			className={entryCellControlClassName()}
-		/>
-	);
-}
-
-function entryCellControlClassName() {
-	return joinClasses(
-		"h-10 w-full rounded-none border-0 bg-transparent px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:bg-skyblue/10 focus:ring-2 focus:ring-inset focus:ring-skyblue/35 disabled:cursor-not-allowed disabled:bg-offwhite/45 disabled:text-darknavy/35",
-	);
 }
 
 const PickListEntryColumnConfigs = [

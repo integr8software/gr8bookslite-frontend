@@ -4,6 +4,7 @@ export const PickListHref = getModuleRoute("PL");
 
 export const PickListStatusFilterOptions = [
 	{ label: "All statuses", value: "all" },
+	{ label: "Draft", value: "Draft" },
 	{ label: "Active", value: "Active" },
 	{ label: "Pending", value: "Pending" },
 	{ label: "Approved", value: "Approved" },
@@ -14,6 +15,7 @@ export const PickListStatusFilterOptions = [
 
 export const PickListStatusFilters = [
 	"all",
+	"Draft",
 	"Active",
 	"Pending",
 	"Approved",

@@ -12,13 +12,16 @@ pdfMake.addVirtualFileSystem(pdfFonts);
 
 type InventoryReportPdfInput = {
 	afterTitle?: string[];
+	beforeTitle?: string[];
 	codeLabel?: string;
 	codeValue?: string;
+	infoLabelWidth?: "compact" | "default";
 	infoRows?: InventoryReportInfoRow[];
 	signatures?: InventoryReportSignature[];
 	tableColumns: InventoryReportTableColumn[];
 	tableRows: InventoryReportTableRow[];
 	title: string;
+	titleLayout?: "center" | "centerWithInfo" | "default";
 };
 
 type PdfTableLayoutNode = {
@@ -35,6 +38,9 @@ export function openInventoryReportPdf(input: InventoryReportPdfInput) {
 function createInventoryReportPdfDefinition(
 	input: InventoryReportPdfInput,
 ): TDocumentDefinitions {
+	const usesCenteredTitle =
+		input.titleLayout === "center" || input.titleLayout === "centerWithInfo";
+
 	return {
 		pageSize: "A4",
 		pageOrientation: "landscape",
@@ -49,9 +55,11 @@ function createInventoryReportPdfDefinition(
 				table: {
 					widths: ["*"],
 					body: [
-						[createHeaderTable()],
+						[createHeaderTable(usesCenteredTitle)],
 						[createTitleTable(input)],
-						...(input.infoRows?.length ? [[createInfoTable(input.infoRows)]] : []),
+						...(input.infoRows?.length
+							? [[createInfoTable(input.infoRows, input.infoLabelWidth)]]
+							: []),
 						[createRowsTable(input.tableColumns, input.tableRows)],
 						[createFooterTable(input)],
 					],
@@ -66,7 +74,7 @@ function createInventoryReportPdfDefinition(
 	};
 }
 
-function createHeaderTable(): TableCell {
+function createHeaderTable(isCompact = false): TableCell {
 	return toTableCell({
 		table: {
 			widths: [120, "*", 120],
@@ -77,7 +85,7 @@ function createHeaderTable(): TableCell {
 						bold: true,
 						color: "#174ea6",
 						fontSize: 24,
-						margin: [12, 14, 0, 8],
+						margin: [24, 24, 0, 24],
 					},
 					{
 						stack: [
@@ -86,9 +94,13 @@ function createHeaderTable(): TableCell {
 							centerText(
 								"ABC, 123, Sample, Malamig, City Of Mandaluyong, NCR, Second District",
 							),
-							centerText("Telephone No: 0967-237-4514", 8, [0, 10, 0, 0]),
+							centerText(
+								"Telephone No: 0967-237-4514",
+								8,
+								isCompact ? [0, 2, 0, 0] : [0, 10, 0, 0],
+							),
 						],
-						margin: [0, 8, 0, 8],
+						margin: [0, 24, 0, 24],
 					},
 					{ text: "" },
 				],
@@ -99,6 +111,47 @@ function createHeaderTable(): TableCell {
 }
 
 function createTitleTable(input: InventoryReportPdfInput): TableCell {
+	if (input.titleLayout === "center" || input.titleLayout === "centerWithInfo") {
+		return toTableCell({
+			table: {
+				widths: ["*", "*", "*"],
+				body: [
+					[
+						{
+							stack:
+								input.titleLayout === "centerWithInfo"
+									? input.beforeTitle?.map((text) => ({
+											text,
+											bold: true,
+											alignment: "left",
+										})) ?? []
+									: [],
+							margin: [4, 3, 0, 2],
+						},
+						{
+							text: input.title.toUpperCase(),
+							bold: true,
+							alignment: "center",
+							margin: [0, 3, 0, 2],
+						},
+						{
+							stack: input.afterTitle?.map((text) => ({
+								text,
+								bold: true,
+								alignment: "right",
+							})) ?? [],
+							margin: [0, 3, 4, 2],
+						},
+					],
+				],
+			},
+			layout:
+				input.titleLayout === "centerWithInfo"
+					? topAndBottomLayout
+					: bottomOnlyLayout,
+		});
+	}
+
 	return toTableCell({
 		table: {
 			widths: ["*", 180],
@@ -121,10 +174,13 @@ function createTitleTable(input: InventoryReportPdfInput): TableCell {
 	});
 }
 
-function createInfoTable(rows: InventoryReportInfoRow[]): TableCell {
+function createInfoTable(
+	rows: InventoryReportInfoRow[],
+	labelWidth: "compact" | "default" = "default",
+): TableCell {
 	return toTableCell({
 		table: {
-			widths: [110, "*"],
+			widths: [labelWidth === "compact" ? 34 : 110, "*"],
 			body: rows.map((row) => [
 				{ text: `${row.label}:`, bold: true, margin: [4, 2, 4, 2] },
 				{ text: row.value || " ", margin: [4, 2, 4, 2] },
@@ -253,6 +309,17 @@ const outerLayout = {
 const bottomOnlyLayout = {
 	hLineWidth: (index: number, node: PdfTableLayoutNode) =>
 		index === getRowCount(node) ? 1 : 0,
+	vLineWidth: () => 0,
+	hLineColor: () => "#000000",
+	paddingLeft: () => 0,
+	paddingRight: () => 0,
+	paddingTop: () => 0,
+	paddingBottom: () => 0,
+};
+
+const topAndBottomLayout = {
+	hLineWidth: (index: number, node: PdfTableLayoutNode) =>
+		index === 0 || index === getRowCount(node) ? 1 : 0,
 	vLineWidth: () => 0,
 	hLineColor: () => "#000000",
 	paddingLeft: () => 0,

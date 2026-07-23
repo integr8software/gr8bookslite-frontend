@@ -12,10 +12,12 @@ import {
 } from "@tanstack/react-table";
 import toast from "react-hot-toast";
 import {
+	createBlankPickListLineEntry,
 	createPickListFormValues,
 	createPickListFormValuesFromRecord,
 	createPickListRecordFromForm,
 	getInitialPickLists,
+	PickListSalesOrderCopyRecords,
 	writeStoredPickLists,
 } from "@/app/src/data/modules/inventory/pick-list/PickListData";
 import { PickListStatusFilters } from "@/app/src/constants/modules/inventory/pick-list/PickListConstants";
@@ -111,6 +113,33 @@ export function usePickListActionForm(
 		setValues((current) => ({ ...current, lineEntries }));
 	}
 
+	function copyFromSalesOrders(recordIds: string[]) {
+		const selectedOrders = PickListSalesOrderCopyRecords.filter((record) =>
+			recordIds.includes(record.id),
+		);
+
+		if (selectedOrders.length === 0) {
+			toast.error("Select at least one sales order to copy.");
+			return;
+		}
+
+		const firstOrder = selectedOrders[0];
+
+		setValues((current) => ({
+			...current,
+			documentDate: firstOrder.documentDate || current.documentDate,
+			lineEntries: selectedOrders.map((order) =>
+				createBlankPickListLineEntry({
+					vceCode: order.customerCode,
+					vceName: order.customerName,
+					remarks: order.remarks,
+					referenceNo: order.referenceNo,
+				}),
+			),
+		}));
+		toast.success("Sales order copied to pick list.");
+	}
+
 	function submitPickList() {
 		const validation = validatePickListForm(values);
 
@@ -132,6 +161,7 @@ export function usePickListActionForm(
 	}
 
 	return {
+		copyFromSalesOrders,
 		isRecordMissing: mode !== "add" && !initialRecord,
 		submitPickList,
 		updateField,

@@ -50,9 +50,9 @@ import {
 	ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
-import { PickListRecordActions } from "@/app/src/ui/modules/inventory/pick-list/PickListRecordActions";
+import { PickListRecordActions } from "@/app/src/ui/modules/inventory/pick-list/overview/PickListRecordActions";
 
-export function PickListListPage() {
+export function PickListOverviewPage() {
 	const { pickLists, lastSyncedAt, updatePickListStatus } = usePickListStore();
 	const tableState = usePickListTable(pickLists);
 

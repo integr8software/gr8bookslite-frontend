@@ -40,3 +40,13 @@ export type PickListFormValues = {
 	status: string;
 	lineEntries: PickListLineEntry[];
 };
+
+export type PickListSalesOrderCopyRecord = {
+	id: string;
+	customerCode: string;
+	customerName: string;
+	documentDate: string;
+	referenceNo: string;
+	remarks: string;
+	sourceNo: string;
+};

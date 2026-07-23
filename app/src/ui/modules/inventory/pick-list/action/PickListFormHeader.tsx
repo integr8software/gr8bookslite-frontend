@@ -14,16 +14,24 @@ import {
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
+import {
+	AppCopyFromDropdown,
+	type AppCopyFromRecord,
+} from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
 
 type PickListFormHeaderProps = {
+	copyFromRecords: AppCopyFromRecord[];
 	mode: PickListActionMode;
+	onCopyFromSalesOrder: (recordIds: string[]) => void;
 	onPreview: () => void;
 	values: PickListFormValues;
 	onSubmit: () => void;
 };
 
 export function PickListFormHeader({
+	copyFromRecords,
 	mode,
+	onCopyFromSalesOrder,
 	onPreview,
 	onSubmit,
 	values,
@@ -49,7 +57,9 @@ export function PickListFormHeader({
 			actionsClassName="items-center justify-start gap-2 sm:shrink-0 sm:justify-end [&>a]:shrink-0 [&>button]:shrink-0"
 			actions={
 				<PickListHeaderActions
+					copyFromRecords={copyFromRecords}
 					mode={mode}
+					onCopyFromSalesOrder={onCopyFromSalesOrder}
 					onPreview={onPreview}
 					onSubmit={onSubmit}
 				/>
@@ -59,11 +69,15 @@ export function PickListFormHeader({
 }
 
 function PickListHeaderActions({
+	copyFromRecords,
 	mode,
+	onCopyFromSalesOrder,
 	onPreview,
 	onSubmit,
 }: {
+	copyFromRecords: AppCopyFromRecord[];
 	mode: PickListActionMode;
+	onCopyFromSalesOrder: (recordIds: string[]) => void;
 	onPreview: () => void;
 	onSubmit: () => void;
 }) {
@@ -78,6 +92,11 @@ function PickListHeaderActions({
 			<ReportPreviewAction onPreview={onPreview} />
 			{mode === "view" ? null : (
 				<>
+					<AppCopyFromDropdown
+						records={copyFromRecords}
+						sources={["Sales Order"]}
+						onApply={onCopyFromSalesOrder}
+					/>
 					<div className="flex lg:hidden">
 						<ModuleActionMenu
 							className="[&>button]:h-10 [&>button]:w-10"

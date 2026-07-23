@@ -15,6 +15,10 @@ import { DeliveryReceiptEntrySection } from "@/app/src/ui/modules/inventory/deli
 import { DeliveryReceiptNotFound } from "@/app/src/ui/modules/inventory/delivery-receipt/overview/DeliveryReceiptNotFound";
 import { openDeliveryReceiptPdf } from "@/app/src/ui/modules/inventory/delivery-receipt/reports/DeliveryReceiptPdf";
 import { DeliveryReceiptReportPreview } from "@/app/src/ui/modules/inventory/delivery-receipt/reports/DeliveryReceiptReportPreview";
+import {
+	ModuleTabs,
+	type ModuleTabItem,
+} from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 import type { AppCopyFromRecord } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
 
 export function DeliveryReceiptActionPage() {
@@ -62,11 +66,16 @@ export function DeliveryReceiptActionPage() {
 					values={receiptForm.values}
 					onSubmit={receiptForm.submitReceipt}
 				/>
+				<ModuleTabs
+					activeTab={activeTab}
+					ariaLabel="Delivery receipt sections"
+					tabs={DeliveryReceiptTabs}
+					onTabChange={setActiveTab}
+				/>
 				<DeliveryReceiptDetailsForm
 					isReadonly={isReadonly}
 					section={activeTab}
 					values={receiptForm.values}
-					onSectionChange={setActiveTab}
 					onUpdateField={receiptForm.updateField}
 				/>
 				<DeliveryReceiptEntrySection
@@ -84,6 +93,11 @@ export function DeliveryReceiptActionPage() {
 		</>
 	);
 }
+
+const DeliveryReceiptTabs = [
+	{ id: "customer", label: "Customer / Billing" },
+	{ id: "delivery", label: "Delivery / Vehicle" },
+] satisfies ModuleTabItem<DeliveryReceiptDetailsSection>[];
 
 function getModeFromPathname(pathname: string): DeliveryReceiptActionMode {
 	if (pathname.includes("/view/")) {

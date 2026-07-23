@@ -1,9 +1,4 @@
 import { useCallback, useMemo } from "react";
-import {
-	createBlankPickListLineEntry,
-	pickListEntryHasData,
-	pickListEntryIsComplete,
-} from "@/app/src/data/modules/inventory/pick-list/PickListData";
 import type { PickListLineEntry } from "@/app/src/types/modules/inventory/pick-list/PickListTypes";
 import {
 	ModuleDataEntry,
@@ -11,19 +6,27 @@ import {
 	type ModuleDataEntryColumn,
 	type ModuleDataEntryColumnOption,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
-import { createPickListEntryColumns } from "@/app/src/ui/modules/inventory/pick-list/PickListEntryColumns";
+import { createPickListLineColumns } from "@/app/src/ui/modules/inventory/pick-list/entries/PickListLineColumns";
+import {
+	clearPickListLines,
+	createPickListLineEntries,
+	duplicatePickListLine,
+	insertPickListLine,
+	movePickListLine,
+	removePickListLine,
+} from "@/app/src/ui/modules/inventory/pick-list/entries/utils/PickListEntryRowUtils";
 
-type PickListEntriesProps = {
+type PickListEntrySectionProps = {
 	isReadonly: boolean;
 	rows: PickListLineEntry[];
 	onRowsChange: (rows: PickListLineEntry[]) => void;
 };
 
-export function PickListEntries({
+export function PickListEntrySection({
 	isReadonly,
 	onRowsChange,
 	rows,
-}: PickListEntriesProps) {
+}: PickListEntrySectionProps) {
 	const updateEntry = useCallback(
 		(rowId: string, updates: Partial<PickListLineEntry>) => {
 			onRowsChange(
@@ -33,7 +36,7 @@ export function PickListEntries({
 		[onRowsChange, rows],
 	);
 	const columns = useMemo<ModuleDataEntryColumn<PickListLineEntry>[]>(
-		() => createPickListEntryColumns(isReadonly, updateEntry),
+		() => createPickListLineColumns(isReadonly, updateEntry),
 		[isReadonly, updateEntry],
 	);
 	const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
@@ -50,76 +53,27 @@ export function PickListEntries({
 	);
 
 	function addRows(count: number) {
-		onRowsChange([
-			...rows,
-			...Array.from({ length: count }, () => createBlankPickListLineEntry()),
-		]);
+		onRowsChange([...rows, ...createPickListLineEntries(count)]);
 	}
 
 	function clearRows(action: ModuleDataEntryClearAction) {
-		if (action === "all") {
-			onRowsChange([createBlankPickListLineEntry()]);
-			return;
-		}
-
-		const nextRows = rows.filter((row) => !shouldClearEntry(row, action));
-		onRowsChange(nextRows.length > 0 ? nextRows : [createBlankPickListLineEntry()]);
+		onRowsChange(clearPickListLines(rows, action));
 	}
 
 	function duplicateRow(rowId: string) {
-		const rowIndex = rows.findIndex((row) => row.id === rowId);
-		const row = rows[rowIndex];
-
-		if (!row) {
-			return;
-		}
-
-		const nextRows = [...rows];
-		nextRows.splice(rowIndex + 1, 0, {
-			...row,
-			id: createBlankPickListLineEntry().id,
-		});
-		onRowsChange(nextRows);
+		onRowsChange(duplicatePickListLine(rows, rowId));
 	}
 
 	function insertRow(rowId: string, position: "above" | "below") {
-		const rowIndex = rows.findIndex((row) => row.id === rowId);
-
-		if (rowIndex < 0) {
-			return;
-		}
-
-		const nextRows = [...rows];
-		nextRows.splice(
-			position === "above" ? rowIndex : rowIndex + 1,
-			0,
-			createBlankPickListLineEntry(),
-		);
-		onRowsChange(nextRows);
+		onRowsChange(insertPickListLine(rows, rowId, position));
 	}
 
 	function moveRow(fromRowId: string, toRowId: string) {
-		const fromIndex = rows.findIndex((row) => row.id === fromRowId);
-		const toIndex = rows.findIndex((row) => row.id === toRowId);
-
-		if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) {
-			return;
-		}
-
-		const nextRows = [...rows];
-		const [movedRow] = nextRows.splice(fromIndex, 1);
-
-		if (!movedRow) {
-			return;
-		}
-
-		nextRows.splice(toIndex, 0, movedRow);
-		onRowsChange(nextRows);
+		onRowsChange(movePickListLine(rows, fromRowId, toRowId));
 	}
 
 	function removeRow(rowId: string) {
-		const nextRows = rows.filter((row) => row.id !== rowId);
-		onRowsChange(nextRows.length > 0 ? nextRows : [createBlankPickListLineEntry()]);
+		onRowsChange(removePickListLine(rows, rowId));
 	}
 
 	return (
@@ -156,19 +110,4 @@ export function PickListEntries({
 			onUpdateColumnWidth={() => undefined}
 		/>
 	);
-}
-
-function shouldClearEntry(
-	entry: PickListLineEntry,
-	action: Exclude<ModuleDataEntryClearAction, "all">,
-) {
-	if (action === "with-data") {
-		return pickListEntryHasData(entry);
-	}
-
-	if (action === "incomplete") {
-		return pickListEntryHasData(entry) && !pickListEntryIsComplete(entry);
-	}
-
-	return !pickListEntryHasData(entry);
 }

@@ -11,7 +11,6 @@ export type ModuleTabItem<TabId extends string> = {
 type ModuleTabsProps<TabId extends string> = {
 	activeTab: TabId;
 	ariaLabel: string;
-	containerClassName?: string;
 	onTabChange: (tab: TabId) => void;
 	tabClassName?: string;
 	tabs: readonly ModuleTabItem<TabId>[];
@@ -20,18 +19,12 @@ type ModuleTabsProps<TabId extends string> = {
 export function ModuleTabs<TabId extends string>({
 	activeTab,
 	ariaLabel,
-	containerClassName,
 	onTabChange,
 	tabClassName,
 	tabs,
 }: ModuleTabsProps<TabId>) {
 	return (
-		<div
-			className={joinClasses(
-				"overflow-x-auto rounded-lg border border-darknavy/10 bg-white p-1 shadow-sm shadow-darknavy/5 [scrollbar-color:rgb(var(--skyblue-rgb)_/_0.45)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-skyblue/45 hover:[&::-webkit-scrollbar-thumb]:bg-skyblue/70",
-				containerClassName,
-			)}
-		>
+		<div className="overflow-x-auto rounded-lg border border-darknavy/10 bg-white p-1 shadow-sm shadow-darknavy/5 [scrollbar-color:rgb(var(--skyblue-rgb)_/_0.45)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-skyblue/45 hover:[&::-webkit-scrollbar-thumb]:bg-skyblue/70">
 			<div role="tablist" aria-label={ariaLabel} className="flex min-w-max gap-1">
 				{tabs.map((tab) => {
 					const isActive = activeTab === tab.id;

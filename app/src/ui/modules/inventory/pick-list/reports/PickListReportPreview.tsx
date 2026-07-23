@@ -32,10 +32,19 @@ export function PickListReportPreview({
 			onGeneratePdf={onGeneratePdf}
 		>
 			<InventoryReportDocument
-				title=""
+				title="TRUCKLOAD"
+				titleLayout="centerWithInfo"
+				beforeTitle={
+					<div className="text-[11px] font-bold">
+						Date:{" "}
+						<span className="font-normal">
+							{formatInventoryReportDate(values.documentDate)}
+						</span>
+					</div>
+				}
 				afterTitle={
 					<div className="text-[11px] font-bold">
-						Date: {formatInventoryReportDate(values.documentDate)}
+						{values.cluster || "Cluster"}
 					</div>
 				}
 				signatures={[
@@ -44,7 +53,6 @@ export function PickListReportPreview({
 					{ label: "RELEASED BY" },
 					{ label: "RECEIVED BY" },
 				]}
-				infoRows={[{ label: values.cluster || "Cluster", value: "" }]}
 				tableColumns={PickListReportColumns}
 				tableRows={values.lineEntries
 					.filter((entry) => entry.vceCode || entry.vceName)

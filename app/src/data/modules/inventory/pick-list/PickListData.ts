@@ -2,6 +2,7 @@ import type {
 	PickListFormValues,
 	PickListLineEntry,
 	PickListRecord,
+	PickListSalesOrderCopyRecord,
 	PickListStatus,
 } from "@/app/src/types/modules/inventory/pick-list/PickListTypes";
 
@@ -12,6 +13,27 @@ export const PickListClusterOptions = [
 	{ name: "North Route", value: "North Route" },
 	{ name: "South Route", value: "South Route" },
 	{ name: "Central Dispatch", value: "Central Dispatch" },
+];
+
+export const PickListSalesOrderCopyRecords: PickListSalesOrderCopyRecord[] = [
+	{
+		id: "so-001",
+		customerCode: "VCE-001",
+		customerName: "North Harbor Office Depot",
+		documentDate: "2026-07-16",
+		referenceNo: "SO-2026-0101",
+		remarks: "Sales order for delivery pick list.",
+		sourceNo: "SO-2026-0101",
+	},
+	{
+		id: "so-002",
+		customerCode: "VCE-002",
+		customerName: "Aster Foods Corporation",
+		documentDate: "2026-07-14",
+		referenceNo: "SO-2026-0098",
+		remarks: "North route sales order.",
+		sourceNo: "SO-2026-0098",
+	},
 ];
 
 export const MockPickLists: PickListRecord[] = [

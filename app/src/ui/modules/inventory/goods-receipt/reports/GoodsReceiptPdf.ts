@@ -5,7 +5,7 @@ import {
 	formatInventoryReportNumber,
 } from "@/app/src/ui/modules/inventory/shared/report/InventoryReportLayout";
 import { openInventoryReportPdf } from "@/app/src/ui/modules/inventory/shared/report/InventoryReportPdf";
-import { GoodsReceiptReportColumns } from "@/app/src/ui/modules/inventory/goods-receipt/GoodsReceiptReportPreview";
+import { GoodsReceiptReportColumns } from "@/app/src/ui/modules/inventory/goods-receipt/reports/GoodsReceiptReportPreview";
 
 export function openGoodsReceiptPdf(values: GoodsReceiptFormValues) {
 	openInventoryReportPdf({
@@ -15,7 +15,10 @@ export function openGoodsReceiptPdf(values: GoodsReceiptFormValues) {
 		codeValue: formatInventoryReportCode(values.transactionNo, "000000"),
 		infoRows: [
 			{ label: "Source", value: values.sourceWarehouse },
-			{ label: "Issue To", value: values.projectRef || values.vceCode },
+			{
+				label: "Issue To",
+				value: values.receivingWarehouse || values.projectRef || values.vceCode,
+			},
 			{ label: "Name", value: values.vceName },
 			{ label: "Remarks", value: values.remarks },
 		],

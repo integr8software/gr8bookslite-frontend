@@ -54,7 +54,10 @@ export function GoodsReceiptReportDocument({
 			footerCodeValue={formatInventoryReportCode(values.transactionNo, "000000")}
 			infoRows={[
 				{ label: "Source", value: values.sourceWarehouse },
-				{ label: "Issue To", value: values.projectRef || values.vceCode },
+				{
+					label: "Issue To",
+					value: values.receivingWarehouse || values.projectRef || values.vceCode,
+				},
 				{ label: "Name", value: values.vceName },
 				{ label: "Remarks", value: values.remarks },
 			]}

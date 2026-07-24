@@ -4,6 +4,7 @@ export const GoodsReceiptHref = getModuleRoute("GR");
 
 export const GoodsReceiptStatusFilterOptions = [
 	{ label: "All statuses", value: "all" },
+	{ label: "Draft", value: "Draft" },
 	{ label: "Active", value: "Active" },
 	{ label: "Pending", value: "Pending" },
 	{ label: "Approved", value: "Approved" },
@@ -14,6 +15,7 @@ export const GoodsReceiptStatusFilterOptions = [
 
 export const GoodsReceiptStatusFilters = [
 	"all",
+	"Draft",
 	"Active",
 	"Pending",
 	"Approved",

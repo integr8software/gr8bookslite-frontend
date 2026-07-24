@@ -14,19 +14,19 @@ import {
 	type ModuleDataEntryColumnOption,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { parseMoneyNumberInput } from "@/app/src/ui/shared/money/MoneyNumberField";
-import { createGoodsReceiptEntryColumns } from "@/app/src/ui/modules/inventory/goods-receipt/GoodsReceiptEntryColumns";
+import { createGoodsReceiptLineColumns } from "@/app/src/ui/modules/inventory/goods-receipt/entries/GoodsReceiptLineColumns";
 
-type GoodsReceiptEntriesProps = {
+type GoodsReceiptEntrySectionProps = {
 	isReadonly: boolean;
 	rows: GoodsReceiptLineEntry[];
 	onRowsChange: (rows: GoodsReceiptLineEntry[]) => void;
 };
 
-export function GoodsReceiptEntries({
+export function GoodsReceiptEntrySection({
 	isReadonly,
 	onRowsChange,
 	rows,
-}: GoodsReceiptEntriesProps) {
+}: GoodsReceiptEntrySectionProps) {
 	const updateEntry = useCallback(
 		(rowId: string, updates: Partial<GoodsReceiptLineEntry>) => {
 			onRowsChange(
@@ -39,7 +39,7 @@ export function GoodsReceiptEntries({
 	);
 	const totals = useMemo(() => calculateGoodsReceiptTotals(rows), [rows]);
 	const columns = useMemo<ModuleDataEntryColumn<GoodsReceiptLineEntry>[]>(
-		() => createGoodsReceiptEntryColumns(isReadonly, updateEntry),
+		() => createGoodsReceiptLineColumns(isReadonly, updateEntry),
 		[isReadonly, updateEntry],
 	);
 	const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(

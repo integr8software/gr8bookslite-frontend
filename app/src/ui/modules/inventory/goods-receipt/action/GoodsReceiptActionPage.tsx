@@ -5,19 +5,12 @@ import { useState } from "react";
 import { GoodsReceiptHref } from "@/app/src/constants/modules/inventory/goods-receipt/GoodsReceiptConstants";
 import { useGoodsReceiptActionForm } from "@/app/src/hooks/modules/inventory/goods-receipt/useGoodsReceipt";
 import type { GoodsReceiptActionMode } from "@/app/src/types/modules/inventory/goods-receipt/GoodsReceiptTypes";
-import {
-	GoodsReceiptDetailsForm,
-	type GoodsReceiptDetailsSection,
-} from "@/app/src/ui/modules/inventory/goods-receipt/GoodsReceiptDetailsForm";
-import { GoodsReceiptEntries } from "@/app/src/ui/modules/inventory/goods-receipt/GoodsReceiptEntries";
-import { GoodsReceiptFormHeader } from "@/app/src/ui/modules/inventory/goods-receipt/GoodsReceiptFormHeader";
-import { GoodsReceiptNotFound } from "@/app/src/ui/modules/inventory/goods-receipt/GoodsReceiptNotFound";
-import { openGoodsReceiptPdf } from "@/app/src/ui/modules/inventory/goods-receipt/GoodsReceiptPdf";
-import { GoodsReceiptReportPreview } from "@/app/src/ui/modules/inventory/goods-receipt/GoodsReceiptReportPreview";
-import {
-	ModuleTabs,
-	type ModuleTabItem,
-} from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
+import { GoodsReceiptDetailsForm } from "@/app/src/ui/modules/inventory/goods-receipt/action/GoodsReceiptDetailsForm";
+import { GoodsReceiptFormHeader } from "@/app/src/ui/modules/inventory/goods-receipt/action/GoodsReceiptFormHeader";
+import { GoodsReceiptEntrySection } from "@/app/src/ui/modules/inventory/goods-receipt/entries/GoodsReceiptEntrySection";
+import { GoodsReceiptNotFound } from "@/app/src/ui/modules/inventory/goods-receipt/overview/GoodsReceiptNotFound";
+import { openGoodsReceiptPdf } from "@/app/src/ui/modules/inventory/goods-receipt/reports/GoodsReceiptPdf";
+import { GoodsReceiptReportPreview } from "@/app/src/ui/modules/inventory/goods-receipt/reports/GoodsReceiptReportPreview";
 
 export function GoodsReceiptActionPage() {
 	const params = useParams<{ recordId?: string }>();
@@ -27,8 +20,6 @@ export function GoodsReceiptActionPage() {
 	const isReadonly = mode === "view";
 	const recordId =
 		typeof params.recordId === "string" ? params.recordId : undefined;
-	const [activeTab, setActiveTab] =
-		useState<GoodsReceiptDetailsSection>("receipt");
 	const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
 	const receiptForm = useGoodsReceiptActionForm(mode, recordId, () => {
 		router.push(GoodsReceiptHref);
@@ -47,19 +38,12 @@ export function GoodsReceiptActionPage() {
 				values={receiptForm.values}
 				onSubmit={receiptForm.submitReceipt}
 			/>
-			<ModuleTabs
-				activeTab={activeTab}
-				ariaLabel="Goods receipt sections"
-				tabs={GoodsReceiptTabs}
-				onTabChange={setActiveTab}
-			/>
 			<GoodsReceiptDetailsForm
 				isReadonly={isReadonly}
-				section={activeTab}
 				values={receiptForm.values}
 				onUpdateField={receiptForm.updateField}
 			/>
-			<GoodsReceiptEntries
+			<GoodsReceiptEntrySection
 				isReadonly={isReadonly}
 				rows={receiptForm.values.lineEntries}
 				onRowsChange={receiptForm.updateLineEntries}
@@ -74,11 +58,6 @@ export function GoodsReceiptActionPage() {
 		</>
 	);
 }
-
-const GoodsReceiptTabs = [
-	{ id: "receipt", label: "Receipt / Warehouse" },
-	{ id: "references", label: "References / Project" },
-] satisfies ModuleTabItem<GoodsReceiptDetailsSection>[];
 
 function getModeFromPathname(pathname: string): GoodsReceiptActionMode {
 	if (pathname.includes("/view/")) return "view";

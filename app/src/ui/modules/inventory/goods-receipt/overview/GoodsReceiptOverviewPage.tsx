@@ -52,9 +52,9 @@ import {
 	ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
-import { GoodsReceiptRecordActions } from "@/app/src/ui/modules/inventory/goods-receipt/GoodsReceiptRecordActions";
+import { GoodsReceiptRecordActions } from "@/app/src/ui/modules/inventory/goods-receipt/overview/GoodsReceiptRecordActions";
 
-export function GoodsReceiptListPage() {
+export function GoodsReceiptOverviewPage() {
 	const { receipts, lastSyncedAt, updateReceiptStatus } =
 		useGoodsReceiptStore();
 	const tableState = useGoodsReceiptTable(receipts);

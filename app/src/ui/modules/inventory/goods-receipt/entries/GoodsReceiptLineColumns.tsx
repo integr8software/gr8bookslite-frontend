@@ -27,7 +27,7 @@ type GoodsReceiptEntryUpdater = (
 	updates: Partial<GoodsReceiptLineEntry>,
 ) => void;
 
-export function createGoodsReceiptEntryColumns(
+export function createGoodsReceiptLineColumns(
 	isReadonly: boolean,
 	onUpdateEntry: GoodsReceiptEntryUpdater,
 ): ModuleDataEntryColumn<GoodsReceiptLineEntry>[] {

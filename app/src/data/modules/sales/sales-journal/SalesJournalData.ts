@@ -1,36 +1,67 @@
 import type {
 	SalesJournalFormValues,
+	SalesJournalItemEntry,
 	SalesJournalLine,
 	SalesJournalRecord,
 } from "@/app/src/types/modules/sales/sales-journal/SalesJournalTypes";
 
 export const SalesJournalInitialFormValues: SalesJournalFormValues = {
+	address: "",
+	contactNo: "",
+	contactPerson: "",
 	partyCode: "",
 	partyName: "",
+	poNo: "",
+	projectName: "",
 	remarks: "",
+	resCenter: "",
 	documentDate: new Date().toISOString().slice(0, 10),
 	currency: "PHP",
 	exchangeRate: 1,
 	terms: "",
 	dueDate: "",
 	documentNo: "",
+	salesPersonnel: "",
+	siNo: "",
+	soNo: "",
 	status: "Draft",
+	itemEntries: [createSalesJournalItemEntry()],
 	lines: [createSalesJournalLine(1), createSalesJournalLine(2)],
 };
 
 export const MockSalesJournals: SalesJournalRecord[] = [
 	{
 		id: "sj-1",
+		address: "",
+		contactNo: "",
+		contactPerson: "",
 		partyCode: "CUS-1001",
 		partyName: "North Harbor Trading",
+		poNo: "",
+		projectName: "",
 		remarks: "Monthly billing accrual",
+		resCenter: "",
 		documentDate: "2026-05-30",
 		currency: "PHP",
 		exchangeRate: 1,
 		terms: "Net 30",
 		dueDate: "2026-06-29",
 		documentNo: "SJ-2026-0001",
+		salesPersonnel: "",
+		siNo: "SI-2026-0420",
+		soNo: "",
 		status: "Draft",
+		itemEntries: [
+			createSalesJournalItemEntry({
+				professionalServiceType: "Professional services",
+				rate: "10,000.00",
+				quantity: "1",
+				amount: "10,000.00",
+				vatAmount: "1,200.00",
+				discountAmount: "0.00",
+				netAmount: "11,200.00",
+			}),
+		],
 		lines: [
 			{
 				...createSalesJournalLine(1),
@@ -67,6 +98,22 @@ export const MockSalesJournals: SalesJournalRecord[] = [
 	},
 ];
 
+export function createSalesJournalItemEntry(
+	overrides: Partial<SalesJournalItemEntry> = {},
+): SalesJournalItemEntry {
+	return {
+		id: `sj-item-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+		professionalServiceType: "",
+		rate: "0.00",
+		quantity: "0.00",
+		amount: "0.00",
+		vatAmount: "0.00",
+		discountAmount: "0.00",
+		netAmount: "0.00",
+		...overrides,
+	};
+}
+
 export function createSalesJournalLine(lineNumber: number): SalesJournalLine {
 	return {
 		id: `sj-line-${Date.now()}-${lineNumber}-${Math.random()
@@ -98,16 +145,30 @@ export function createSalesJournalFormValues(
 	record: SalesJournalRecord,
 ): SalesJournalFormValues {
 	return {
+		address: record.address ?? "",
+		contactNo: record.contactNo ?? "",
+		contactPerson: record.contactPerson ?? "",
 		partyCode: record.partyCode,
 		partyName: record.partyName,
+		poNo: record.poNo ?? "",
+		projectName: record.projectName ?? "",
 		remarks: record.remarks,
+		resCenter: record.resCenter ?? "",
 		documentDate: record.documentDate,
 		currency: record.currency,
 		exchangeRate: record.exchangeRate,
 		terms: record.terms,
 		dueDate: record.dueDate,
 		documentNo: record.documentNo,
+		salesPersonnel: record.salesPersonnel ?? "",
+		siNo: record.siNo ?? "",
+		soNo: record.soNo ?? "",
 		status: record.status,
+		itemEntries:
+			record.itemEntries?.map((entry) => ({
+				...createSalesJournalItemEntry(),
+				...entry,
+			})) ?? [createSalesJournalItemEntry()],
 		lines: record.lines.map((line) => ({ ...line })),
 	};
 }

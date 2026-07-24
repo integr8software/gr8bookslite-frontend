@@ -1,23 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { useSalesJournalFormPage } from "@/app/src/hooks/modules/sales/sales-journal/useSalesJournalFormPage";
-import {
-	SalesJournalDetailsPage,
-	type SalesJournalDetailsSection,
-} from "@/app/src/ui/modules/sales/sales-journal/SalesJournalDetailsPage";
+import { SalesJournalDetailsPage } from "@/app/src/ui/modules/sales/sales-journal/SalesJournalDetailsPage";
 import { SalesJournalHeaderPage } from "@/app/src/ui/modules/sales/sales-journal/SalesJournalHeaderPage";
 import { SalesJournalNotFound } from "@/app/src/ui/modules/sales/sales-journal/SalesJournalNotFound";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import {
-	ModuleTabs,
-	type ModuleTabItem,
-} from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 
 export function SalesJournalFormPage() {
 	const page = useSalesJournalFormPage();
-	const [activeTab, setActiveTab] =
-		useState<SalesJournalDetailsSection>("customer");
 
 	if (page.needsRecord && !page.existingRecord) {
 		return <SalesJournalNotFound />;
@@ -27,13 +17,7 @@ export function SalesJournalFormPage() {
 		<>
 			<form onSubmit={page.handleSubmit} className="grid gap-5">
 				<SalesJournalHeaderPage page={page} />
-				<ModuleTabs
-					activeTab={activeTab}
-					ariaLabel="Sales journal sections"
-					tabs={SalesJournalTabs}
-					onTabChange={setActiveTab}
-				/>
-				<SalesJournalDetailsPage page={page} section={activeTab} />
+				<SalesJournalDetailsPage page={page} />
 			</form>
 
 			<AppDialog
@@ -49,9 +33,3 @@ export function SalesJournalFormPage() {
 		</>
 	);
 }
-
-const SalesJournalTabs = [
-	{ id: "customer", label: "Customer / Billing" },
-	{ id: "amounts", label: "Amounts / Partners" },
-	{ id: "references", label: "References / Project" },
-] satisfies ModuleTabItem<SalesJournalDetailsSection>[];

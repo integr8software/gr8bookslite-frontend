@@ -6,10 +6,14 @@ import {
 	CheckCircle2,
 	Clock3,
 	Download,
+	Edit3,
+	Eye,
 	FileText,
 	PackageCheck,
 	Plus,
 	Search,
+	Trash2,
+	Undo2,
 	Upload,
 } from "lucide-react";
 import {
@@ -39,7 +43,11 @@ import {
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
-import { ModuleTableActions } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
+import {
+	ModuleTableActionButton,
+	ModuleTableActionLink,
+	ModuleTableActions,
+} from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 import {
 	ModuleTableFilterSelect,
 	ModuleTableResetButton,
@@ -302,26 +310,11 @@ function SalesJournalRecordActions({
 }) {
 	const isApproved = record.status === "Approved";
 	const isCancelled = record.status === "Cancelled";
+	const canEdit = canEditSalesJournalStatus(record.status);
 	const items: ModuleActionMenuItem[] = [
 		{
-			href: `${SalesJournalHref}/view/${record.id}`,
-			icon: Search,
-			label: "View",
-			type: "link",
-		},
-		...(canEditSalesJournalStatus(record.status)
-			? [
-					{
-						href: `${SalesJournalHref}/edit/${record.id}`,
-						icon: FileText,
-						label: "Edit",
-						type: "link",
-					} satisfies ModuleActionMenuItem,
-				]
-			: []),
-		{
 			disabled: !canApproveSalesJournalStatus(record.status),
-			icon: CheckCircle2,
+			icon: isApproved ? Undo2 : CheckCircle2,
 			label: isApproved ? "Undo Approved" : "Approve",
 			onSelect: () => onUpdateStatus(record, isApproved ? "Open" : "Approved"),
 			type: "button",
@@ -335,7 +328,7 @@ function SalesJournalRecordActions({
 			type: "button",
 		},
 		{
-			icon: Ban,
+			icon: Trash2,
 			label: "Delete",
 			onSelect: () => onDeleteRecord(record),
 			tone: "danger",
@@ -345,9 +338,34 @@ function SalesJournalRecordActions({
 
 	return (
 		<ModuleTableActions className="!justify-center">
+			<ModuleTableActionLink
+				href={`${SalesJournalHref}/view/${record.id}`}
+				icon={Eye}
+				label={`View sales journal ${record.documentNo}`}
+				title="View"
+				variant="view"
+			/>
+			{canEdit ? (
+				<ModuleTableActionLink
+					href={`${SalesJournalHref}/edit/${record.id}`}
+					icon={Edit3}
+					label={`Edit sales journal ${record.documentNo}`}
+					title="Edit"
+					variant="edit"
+				/>
+			) : (
+				<ModuleTableActionButton
+					disabled
+					icon={Edit3}
+					label={`Edit sales journal ${record.documentNo}`}
+					title="Edit"
+					variant="edit"
+				/>
+			)}
 			<ModuleActionMenu
+				className="[&>button]:h-9 [&>button]:w-9"
 				items={items}
-				label={`Actions for sales journal ${record.documentNo}`}
+				label={`More actions for sales journal ${record.documentNo}`}
 			/>
 		</ModuleTableActions>
 	);

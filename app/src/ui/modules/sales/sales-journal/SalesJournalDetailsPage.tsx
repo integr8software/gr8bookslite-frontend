@@ -1,22 +1,24 @@
-import { useCallback, useMemo, type ChangeEventHandler } from "react";
 import {
-	SalesJournalCurrencyOptions,
-	SalesJournalStatusOptions,
-	SalesJournalVatTypeOptions,
-} from "@/app/src/constants/modules/sales/sales-journal/SalesJournalConstants";
+	useCallback,
+	useMemo,
+	useState,
+	type ChangeEventHandler,
+	type ReactNode,
+} from "react";
+import { SalesJournalCurrencyOptions } from "@/app/src/constants/modules/sales/sales-journal/SalesJournalConstants";
 import {
+	createSalesJournalItemEntry,
 	createSalesJournalLine,
 	formatSalesJournalAmount,
 } from "@/app/src/data/modules/sales/sales-journal/SalesJournalData";
+import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import type { useSalesJournalFormPage } from "@/app/src/hooks/modules/sales/sales-journal/useSalesJournalFormPage";
 import type {
+	SalesJournalItemEntry,
+	SalesJournalItemEntryField,
 	SalesJournalLine,
 	SalesJournalLineField,
 } from "@/app/src/types/modules/sales/sales-journal/SalesJournalTypes";
-import {
-	AppAdvancedDropdown,
-	type AppAdvancedDropdownOption,
-} from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 import {
 	ModuleDataEntry,
@@ -32,23 +34,13 @@ const errorClassName = "mt-1 text-xs font-medium text-red-600";
 
 type SalesJournalDetailsPageProps = {
 	page: ReturnType<typeof useSalesJournalFormPage>;
-	section: SalesJournalDetailsSection;
 };
 
-export type SalesJournalDetailsSection = "amounts" | "customer" | "references";
-
-export function SalesJournalDetailsPage({
-	page,
-	section,
-}: SalesJournalDetailsPageProps) {
+export function SalesJournalDetailsPage({ page }: SalesJournalDetailsPageProps) {
 	return (
 		<>
 			<section className="grid gap-4 rounded-md border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5">
-				{section === "customer" ? <SalesJournalCustomerSection page={page} /> : null}
-				{section === "amounts" ? <SalesJournalAmountsSection page={page} /> : null}
-				{section === "references" ? (
-					<SalesJournalReferencesSection page={page} />
-				) : null}
+				<SalesJournalHeaderFields page={page} />
 			</section>
 
 			<SalesJournalEntries page={page} />
@@ -56,29 +48,52 @@ export function SalesJournalDetailsPage({
 	);
 }
 
-function SalesJournalCustomerSection({
+function SalesJournalHeaderFields({
 	page,
 }: {
 	page: ReturnType<typeof useSalesJournalFormPage>;
 }) {
 	return (
-		<div className="grid gap-6 md:grid-cols-2">
-			<div className="grid gap-4">
+		<div className="grid gap-x-8 gap-y-4 xl:grid-cols-3">
+			<div className="grid content-start gap-4">
 				<TextField
-					label="Code"
-					name="partyCode"
-					value={page.values.partyCode}
-					error={page.errors.partyCode}
+					label="Party Name"
+					name="partyName"
+					value={page.values.partyName}
+					error={page.errors.partyName}
 					disabled={page.isReadonly}
 					onChange={page.handleInputChange}
 				/>
-				<SelectField
-					label="Currency"
-					name="currency"
-					value={page.values.currency}
-					error={page.errors.currency}
+				<TextField
+					label="Address"
+					name="address"
+					value={page.values.address}
+					error={page.errors.address}
 					disabled={page.isReadonly}
-					options={SalesJournalCurrencyOptions}
+					onChange={page.handleInputChange}
+				/>
+				<TextField
+					label="Contact Person"
+					name="contactPerson"
+					value={page.values.contactPerson}
+					error={page.errors.contactPerson}
+					disabled={page.isReadonly}
+					onChange={page.handleInputChange}
+				/>
+				<TextField
+					label="Contact No"
+					name="contactNo"
+					value={page.values.contactNo}
+					error={page.errors.contactNo}
+					disabled={page.isReadonly}
+					onChange={page.handleInputChange}
+				/>
+				<TextField
+					label="Project Name"
+					name="projectName"
+					value={page.values.projectName}
+					error={page.errors.projectName}
+					disabled={page.isReadonly}
 					onChange={page.handleInputChange}
 				/>
 				<TextAreaField
@@ -86,6 +101,24 @@ function SalesJournalCustomerSection({
 					name="remarks"
 					value={page.values.remarks}
 					error={page.errors.remarks}
+					disabled={page.isReadonly}
+					onChange={page.handleInputChange}
+				/>
+			</div>
+			<div className="grid content-start gap-4">
+				<TextField
+					label="Party Code"
+					name="partyCode"
+					value={page.values.partyCode}
+					error={page.errors.partyCode}
+					disabled={page.isReadonly}
+					onChange={page.handleInputChange}
+				/>
+				<TextField
+					label="Terms of Pyt"
+					name="terms"
+					value={page.values.terms}
+					error={page.errors.terms}
 					disabled={page.isReadonly}
 					onChange={page.handleInputChange}
 				/>
@@ -98,18 +131,17 @@ function SalesJournalCustomerSection({
 					disabled={page.isReadonly}
 					onChange={page.handleInputChange}
 				/>
-			</div>
-			<div className="grid content-start gap-4">
-				<TextField
-					label="Name"
-					name="partyName"
-					value={page.values.partyName}
-					error={page.errors.partyName}
+				<SelectField
+					label="Currency"
+					name="currency"
+					value={page.values.currency}
+					error={page.errors.currency}
 					disabled={page.isReadonly}
+					options={SalesJournalCurrencyOptions}
 					onChange={page.handleInputChange}
 				/>
 				<TextField
-					label="FX Rate"
+					label="ER"
 					name="exchangeRate"
 					type="number"
 					min="0"
@@ -120,78 +152,25 @@ function SalesJournalCustomerSection({
 					onChange={page.handleInputChange}
 				/>
 				<TextField
-					label="Terms"
-					name="terms"
-					value={page.values.terms}
-					error={page.errors.terms}
+					label="Res Center"
+					name="resCenter"
+					value={page.values.resCenter}
+					error={page.errors.resCenter}
 					disabled={page.isReadonly}
 					onChange={page.handleInputChange}
 				/>
 			</div>
-		</div>
-	);
-}
-
-function SalesJournalAmountsSection({
-	page,
-}: {
-	page: ReturnType<typeof useSalesJournalFormPage>;
-}) {
-	return (
-		<div className="grid gap-6 md:grid-cols-2">
-			<div className="grid content-start gap-4">
-				<ReadOnlyField
-					label="Total Debit"
-					value={formatSalesJournalAmount(page.totals.totalDebit)}
-				/>
-				<ReadOnlyField
-					label="Total Credit"
-					value={formatSalesJournalAmount(page.totals.totalCredit)}
-				/>
-				<ReadOnlyField
-					label="Variance"
-					value={formatSalesJournalAmount(Math.abs(page.totals.variance))}
-				/>
-			</div>
-			<div className="grid content-start gap-4">
-				<SelectField
-					label="Status"
-					name="status"
-					value={page.values.status}
-					error={page.errors.status}
-					disabled={page.isReadonly}
-					options={SalesJournalStatusOptions}
-					onChange={page.handleInputChange}
-				/>
-				<ReadOnlyField
-					label="Balance"
-					value={page.totals.isBalanced ? "Balanced" : "Needs balancing"}
-				/>
-			</div>
-		</div>
-	);
-}
-
-function SalesJournalReferencesSection({
-	page,
-}: {
-	page: ReturnType<typeof useSalesJournalFormPage>;
-}) {
-	const firstLine = page.values.lines[0];
-
-	return (
-		<div className="grid gap-6 md:grid-cols-2">
 			<div className="grid content-start gap-4">
 				<TextField
-					label="Trans No."
-					name="documentNo"
-					value={page.values.documentNo}
-					error={page.errors.documentNo}
+					label="SI No"
+					name="siNo"
+					value={page.values.siNo}
+					error={page.errors.siNo}
 					disabled={page.isReadonly}
 					onChange={page.handleInputChange}
 				/>
 				<TextField
-					label="Document Date"
+					label="SI Date"
 					name="documentDate"
 					type="date"
 					value={page.values.documentDate}
@@ -199,24 +178,30 @@ function SalesJournalReferencesSection({
 					disabled={page.isReadonly}
 					onChange={page.handleInputChange}
 				/>
-			</div>
-			<div className="grid content-start gap-4">
-				<label className="block">
-					<span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-darknavy/60">
-						Ref No.
-					</span>
-					<input
-						className={fieldClassName}
-						disabled={page.isReadonly || !firstLine}
-						onChange={(event) => {
-							if (firstLine) {
-								page.updateLine(firstLine.id, "refNo", event.target.value);
-							}
-						}}
-						value={firstLine?.refNo ?? ""}
-					/>
-				</label>
-				<ReadOnlyField label="ProjectRef." value="" />
+				<TextField
+					label="SO No"
+					name="soNo"
+					value={page.values.soNo}
+					error={page.errors.soNo}
+					disabled={page.isReadonly}
+					onChange={page.handleInputChange}
+				/>
+				<TextField
+					label="PO No."
+					name="poNo"
+					value={page.values.poNo}
+					error={page.errors.poNo}
+					disabled={page.isReadonly}
+					onChange={page.handleInputChange}
+				/>
+				<TextField
+					label="Sales Personnel"
+					name="salesPersonnel"
+					value={page.values.salesPersonnel}
+					error={page.errors.salesPersonnel}
+					disabled={page.isReadonly}
+					onChange={page.handleInputChange}
+				/>
 			</div>
 		</div>
 	);
@@ -227,6 +212,143 @@ function SalesJournalEntries({
 }: {
 	page: ReturnType<typeof useSalesJournalFormPage>;
 }) {
+	const [activeTab, setActiveTab] =
+		useState<SalesJournalEntryTab>("items");
+	const tabs = (
+		<SalesJournalEntryTabs activeTab={activeTab} onTabChange={setActiveTab} />
+	);
+
+	if (activeTab === "accounts") {
+		return <SalesJournalAccountEntries page={page} title={tabs} />;
+	}
+
+	return <SalesJournalItemEntries page={page} title={tabs} />;
+}
+
+function SalesJournalEntryTabs({
+	activeTab,
+	onTabChange,
+}: {
+	activeTab: SalesJournalEntryTab;
+	onTabChange: (tab: SalesJournalEntryTab) => void;
+}) {
+	return (
+		<div
+			role="tablist"
+			aria-label="Sales journal row entry sections"
+			className="inline-flex items-center gap-1 rounded-lg border border-darknavy/10 bg-offwhite/70 p-1"
+		>
+			{SalesJournalEntryTabsList.map((tab) => {
+				const isActive = activeTab === tab.id;
+
+				return (
+					<button
+						key={tab.id}
+						type="button"
+						role="tab"
+						aria-selected={isActive}
+						className={joinClasses(
+							"h-7 rounded-md px-3 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coralpink/25",
+							isActive
+								? "bg-white text-coralpink shadow-sm ring-1 ring-darknavy/10"
+								: "text-darknavy/55 hover:bg-white/70 hover:text-darknavy",
+						)}
+						onClick={() => onTabChange(tab.id)}
+					>
+						{tab.label}
+					</button>
+				);
+			})}
+		</div>
+	);
+}
+
+function SalesJournalItemEntries({
+	page,
+	title,
+}: {
+	page: ReturnType<typeof useSalesJournalFormPage>;
+	title: ReactNode;
+}) {
+	const rows = page.values.itemEntries;
+	const updateEntry = useCallback(
+		(rowId: string, updates: Partial<SalesJournalItemEntry>) => {
+			page.updateItemEntries(
+				rows.map((row) =>
+					row.id === rowId
+						? recalculateSalesJournalItemEntry({ ...row, ...updates })
+						: row,
+				),
+			);
+		},
+		[page, rows],
+	);
+	const columns = useMemo<ModuleDataEntryColumn<SalesJournalItemEntry>[]>(
+		() => createSalesJournalItemColumns(page.isReadonly, updateEntry),
+		[page.isReadonly, updateEntry],
+	);
+	const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
+		() => createColumnOptions(columns),
+		[columns],
+	);
+	const totals = useMemo(() => calculateSalesJournalItemTotals(rows), [rows]);
+
+	return (
+		<ModuleDataEntry
+			columns={columns}
+			columnOptions={columnOptions}
+			description=""
+			emptyRowLabel="item"
+			exportOptions={EntryExportOptions}
+			isDraggable
+			isReadonly={page.isReadonly}
+			rows={rows}
+			summaryCells={{
+				amount: formatSalesJournalAmount(totals.amount),
+				discountAmount: formatSalesJournalAmount(totals.discountAmount),
+				netAmount: formatSalesJournalAmount(totals.netAmount),
+				vatAmount: formatSalesJournalAmount(totals.vatAmount),
+				vatInclusiveAmount: formatSalesJournalAmount(totals.vatInclusiveAmount),
+			}}
+			summaryRowHeader="Total"
+			title={title}
+			onAddRows={(count) =>
+				page.updateItemEntries([
+					...rows,
+					...Array.from({ length: count }, () =>
+						createSalesJournalItemEntry(),
+					),
+				])
+			}
+			onAutoColumnWidth={() => undefined}
+			onClearRows={(action) => clearItemRows(action, rows, page.updateItemEntries)}
+			onDuplicateRow={(rowId) =>
+				duplicateItemRow(rowId, rows, page.updateItemEntries)
+			}
+			onFitColumnWidth={() => undefined}
+			onImport={() => undefined}
+			onInsertRow={(rowId, position) =>
+				insertItemRow(rowId, position, rows, page.updateItemEntries)
+			}
+			onMoveRow={(fromRowId, toRowId) =>
+				moveRow(fromRowId, toRowId, rows, page.updateItemEntries)
+			}
+			onRemoveRow={(rowId) => removeItemRow(rowId, rows, page.updateItemEntries)}
+			onToggleColumnVisibility={() => undefined}
+			onUpdateColumnHeader={() => undefined}
+			onUpdateColumnWidth={() => undefined}
+		/>
+	);
+}
+
+function SalesJournalAccountEntries({
+	page,
+	title,
+}: {
+	page: ReturnType<typeof useSalesJournalFormPage>;
+	title: ReactNode;
+}) {
+	const rows = page.values.lines;
 	const updateEntry = useCallback(
 		(rowId: string, field: SalesJournalLineField, value: string) => {
 			page.updateLine(rowId, field, value);
@@ -238,25 +360,15 @@ function SalesJournalEntries({
 		[page.isReadonly, updateEntry],
 	);
 	const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
-		() =>
-			columns.map((column) => ({
-				id: column.id,
-				isHideable: !["accountCode", "accountTitle", "debit", "credit"].includes(
-					column.id,
-				),
-				isVisible: true,
-				label: column.header,
-				width: column.width,
-				widthMode: column.widthMode,
-			})),
+		() => createColumnOptions(columns),
 		[columns],
 	);
 
 	function addRows(count: number) {
 		page.updateLines([
-			...page.values.lines,
+			...rows,
 			...Array.from({ length: count }, (_, index) =>
-				createSalesJournalLine(page.values.lines.length + index + 1),
+				createSalesJournalLine(rows.length + index + 1),
 			),
 		]);
 	}
@@ -267,21 +379,21 @@ function SalesJournalEntries({
 			return;
 		}
 
-		const nextRows = page.values.lines.filter(
+		const nextRows = rows.filter(
 			(row) => !shouldClearSalesJournalEntry(row, action),
 		);
 		page.updateLines(nextRows.length > 0 ? nextRows : [createSalesJournalLine(1)]);
 	}
 
 	function duplicateRow(rowId: string) {
-		const rowIndex = page.values.lines.findIndex((row) => row.id === rowId);
-		const row = page.values.lines[rowIndex];
+		const rowIndex = rows.findIndex((row) => row.id === rowId);
+		const row = rows[rowIndex];
 
 		if (!row) {
 			return;
 		}
 
-		const nextRows = [...page.values.lines];
+		const nextRows = [...rows];
 		nextRows.splice(rowIndex + 1, 0, {
 			...row,
 			id: createSalesJournalLine(row.lineNumber + 1).id,
@@ -290,13 +402,13 @@ function SalesJournalEntries({
 	}
 
 	function insertRow(rowId: string, position: "above" | "below") {
-		const rowIndex = page.values.lines.findIndex((row) => row.id === rowId);
+		const rowIndex = rows.findIndex((row) => row.id === rowId);
 
 		if (rowIndex < 0) {
 			return;
 		}
 
-		const nextRows = [...page.values.lines];
+		const nextRows = [...rows];
 		nextRows.splice(
 			position === "above" ? rowIndex : rowIndex + 1,
 			0,
@@ -306,14 +418,14 @@ function SalesJournalEntries({
 	}
 
 	function moveRow(fromRowId: string, toRowId: string) {
-		const fromIndex = page.values.lines.findIndex((row) => row.id === fromRowId);
-		const toIndex = page.values.lines.findIndex((row) => row.id === toRowId);
+		const fromIndex = rows.findIndex((row) => row.id === fromRowId);
+		const toIndex = rows.findIndex((row) => row.id === toRowId);
 
 		if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) {
 			return;
 		}
 
-		const nextRows = [...page.values.lines];
+		const nextRows = [...rows];
 		const [movedRow] = nextRows.splice(fromIndex, 1);
 
 		if (!movedRow) {
@@ -325,7 +437,7 @@ function SalesJournalEntries({
 	}
 
 	function removeRow(rowId: string) {
-		const nextRows = page.values.lines.filter((row) => row.id !== rowId);
+		const nextRows = rows.filter((row) => row.id !== rowId);
 		page.updateLines(nextRows.length > 0 ? nextRows : [createSalesJournalLine(1)]);
 	}
 
@@ -355,12 +467,13 @@ function SalesJournalEntries({
 			}
 			isDraggable
 			isReadonly={page.isReadonly}
-			rows={page.values.lines}
+			rows={rows}
 			summaryCells={{
 				credit: formatSalesJournalAmount(page.totals.totalCredit),
 				debit: formatSalesJournalAmount(page.totals.totalDebit),
 			}}
-			title="Details"
+			summaryRowHeader="Totals"
+			title={title}
 			onAddRows={addRows}
 			onAutoColumnWidth={() => undefined}
 			onClearRows={clearRows}
@@ -377,22 +490,79 @@ function SalesJournalEntries({
 	);
 }
 
-type SalesJournalColumnKind = "amount" | "dropdown" | "text";
+type SalesJournalEntryTab = "accounts" | "items";
+
+type SalesJournalItemColumnKind = "amount" | "readonlyAmount" | "text";
+
+type SalesJournalItemColumnConfig = {
+	header: string;
+	id: SalesJournalItemEntryField | "vatInclusiveAmount";
+	kind: SalesJournalItemColumnKind;
+	width: number;
+	widthClassName: string;
+};
+
+type SalesJournalColumnKind = "amount" | "text";
 
 type SalesJournalColumnConfig = {
 	header: string;
 	id: SalesJournalLineField;
 	kind: SalesJournalColumnKind;
-	options?: AppAdvancedDropdownOption[];
 	width: number;
 	widthClassName: string;
 };
+
+type SalesJournalItemEntryUpdater = (
+	rowId: string,
+	updates: Partial<SalesJournalItemEntry>,
+) => void;
 
 type SalesJournalEntryUpdater = (
 	rowId: string,
 	field: SalesJournalLineField,
 	value: string,
 ) => void;
+
+function createSalesJournalItemColumns(
+	isReadonly: boolean,
+	onUpdateEntry: SalesJournalItemEntryUpdater,
+): ModuleDataEntryColumn<SalesJournalItemEntry>[] {
+	return SalesJournalItemColumnConfigs.map((column) => ({
+		header: column.header,
+		id: column.id,
+		width: column.width,
+		widthClassName: column.widthClassName,
+		renderCell: (row) => {
+			if (column.id === "vatInclusiveAmount") {
+				return (
+					<EntryAmountInput
+						value={formatSalesJournalAmount(getItemVatInclusiveAmount(row))}
+						readOnly
+						onValueChange={() => undefined}
+					/>
+				);
+			}
+
+			if (column.kind === "amount" || column.kind === "readonlyAmount") {
+				return (
+					<EntryAmountInput
+						value={String(row[column.id])}
+						readOnly={isReadonly || column.kind === "readonlyAmount"}
+						onValueChange={(value) => onUpdateEntry(row.id, { [column.id]: value })}
+					/>
+				);
+			}
+
+			return (
+				<EntryInput
+					value={String(row[column.id])}
+					readOnly={isReadonly}
+					onChange={(value) => onUpdateEntry(row.id, { [column.id]: value })}
+				/>
+			);
+		},
+	}));
+}
 
 function createSalesJournalColumns(
 	isReadonly: boolean,
@@ -427,17 +597,6 @@ function SalesJournalEntryCell({
 }) {
 	const value = String(row[column.id]);
 
-	if (column.kind === "dropdown") {
-		return (
-			<EntryDropdown
-				options={column.options ?? []}
-				readOnly={isReadonly}
-				value={value}
-				onChange={(nextValue) => onUpdateEntry(row.id, column.id, nextValue)}
-			/>
-		);
-	}
-
 	if (column.kind === "amount") {
 		return (
 			<EntryAmountInput
@@ -453,29 +612,6 @@ function SalesJournalEntryCell({
 			value={value}
 			readOnly={isReadonly}
 			onChange={(nextValue) => onUpdateEntry(row.id, column.id, nextValue)}
-		/>
-	);
-}
-
-function EntryDropdown({
-	onChange,
-	options,
-	readOnly,
-	value,
-}: {
-	onChange: (value: string) => void;
-	options: AppAdvancedDropdownOption[];
-	readOnly: boolean;
-	value: string;
-}) {
-	return (
-		<AppAdvancedDropdown
-			className={EntryDropdownClassName}
-			value={value}
-			options={options}
-			placeholder=""
-			readOnly={readOnly}
-			onChange={(nextValue) => onChange(String(nextValue))}
 		/>
 	);
 }
@@ -526,32 +662,231 @@ function entryCellControlClassName(extraClassName?: string) {
 	);
 }
 
-function salesJournalDropdownOptions(
-	options: readonly string[],
-): AppAdvancedDropdownOption[] {
-	return options.map((option) => ({
-		label: option,
-		name: option,
-		value: option,
-	}));
-}
-
 function salesJournalColumn(
 	header: string,
 	id: SalesJournalLineField,
 	kind: SalesJournalColumnKind,
 	width: number,
 	widthClassName: string,
-	options?: AppAdvancedDropdownOption[],
 ): SalesJournalColumnConfig {
 	return {
 		header,
 		id,
 		kind,
-		options,
 		width,
 		widthClassName,
 	};
+}
+
+function salesJournalItemColumn(
+	header: string,
+	id: SalesJournalItemColumnConfig["id"],
+	kind: SalesJournalItemColumnKind,
+	width: number,
+	widthClassName: string,
+): SalesJournalItemColumnConfig {
+	return {
+		header,
+		id,
+		kind,
+		width,
+		widthClassName,
+	};
+}
+
+function createColumnOptions<TRow>(
+	columns: ModuleDataEntryColumn<TRow>[],
+): ModuleDataEntryColumnOption[] {
+	return columns.map((column) => ({
+		id: column.id,
+		isHideable: false,
+		isVisible: true,
+		label: column.header,
+		width: column.width,
+		widthMode: column.widthMode,
+	}));
+}
+
+function recalculateSalesJournalItemEntry(
+	entry: SalesJournalItemEntry,
+): SalesJournalItemEntry {
+	const rate = parseMoneyNumberInput(entry.rate);
+	const quantity = parseMoneyNumberInput(entry.quantity);
+	const amount = rate * quantity;
+	const nextAmount = amount > 0 ? amount : parseMoneyNumberInput(entry.amount);
+	const vatAmount =
+		nextAmount > 0
+			? nextAmount * 0.12
+			: parseMoneyNumberInput(entry.vatAmount);
+	const discountAmount = parseMoneyNumberInput(entry.discountAmount);
+	const netAmount = Math.max(nextAmount + vatAmount - discountAmount, 0);
+
+	return {
+		...entry,
+		amount: nextAmount.toFixed(2),
+		vatAmount: vatAmount.toFixed(2),
+		netAmount: netAmount.toFixed(2),
+	};
+}
+
+function calculateSalesJournalItemTotals(rows: SalesJournalItemEntry[]) {
+	return rows.reduce(
+		(totals, row) => {
+			const amount = parseMoneyNumberInput(row.amount);
+			const vatAmount = parseMoneyNumberInput(row.vatAmount);
+
+			return {
+				amount: totals.amount + amount,
+				discountAmount:
+					totals.discountAmount + parseMoneyNumberInput(row.discountAmount),
+				netAmount: totals.netAmount + parseMoneyNumberInput(row.netAmount),
+				vatAmount: totals.vatAmount + vatAmount,
+				vatInclusiveAmount: totals.vatInclusiveAmount + amount + vatAmount,
+			};
+		},
+		{
+			amount: 0,
+			discountAmount: 0,
+			netAmount: 0,
+			vatAmount: 0,
+			vatInclusiveAmount: 0,
+		},
+	);
+}
+
+function getItemVatInclusiveAmount(row: SalesJournalItemEntry) {
+	return parseMoneyNumberInput(row.amount) + parseMoneyNumberInput(row.vatAmount);
+}
+
+function salesJournalItemEntryHasData(entry: SalesJournalItemEntry) {
+	return (
+		entry.professionalServiceType.trim().length > 0 ||
+		parseMoneyNumberInput(entry.rate) > 0 ||
+		parseMoneyNumberInput(entry.quantity) > 0 ||
+		parseMoneyNumberInput(entry.amount) > 0 ||
+		parseMoneyNumberInput(entry.vatAmount) > 0 ||
+		parseMoneyNumberInput(entry.discountAmount) > 0 ||
+		parseMoneyNumberInput(entry.netAmount) > 0
+	);
+}
+
+function salesJournalItemEntryIsComplete(entry: SalesJournalItemEntry) {
+	return (
+		entry.professionalServiceType.trim().length > 0 &&
+		parseMoneyNumberInput(entry.amount) > 0
+	);
+}
+
+function shouldClearSalesJournalItemEntry(
+	entry: SalesJournalItemEntry,
+	action: Exclude<ModuleDataEntryClearAction, "all">,
+) {
+	if (action === "with-data") {
+		return salesJournalItemEntryHasData(entry);
+	}
+
+	if (action === "incomplete") {
+		return (
+			salesJournalItemEntryHasData(entry) &&
+			!salesJournalItemEntryIsComplete(entry)
+		);
+	}
+
+	return !salesJournalItemEntryHasData(entry);
+}
+
+function clearItemRows(
+	action: ModuleDataEntryClearAction,
+	rows: SalesJournalItemEntry[],
+	onRowsChange: (rows: SalesJournalItemEntry[]) => void,
+) {
+	if (action === "all") {
+		onRowsChange([createSalesJournalItemEntry()]);
+		return;
+	}
+
+	const nextRows = rows.filter(
+		(row) => !shouldClearSalesJournalItemEntry(row, action),
+	);
+	onRowsChange(
+		nextRows.length > 0 ? nextRows : [createSalesJournalItemEntry()],
+	);
+}
+
+function duplicateItemRow(
+	rowId: string,
+	rows: SalesJournalItemEntry[],
+	onRowsChange: (rows: SalesJournalItemEntry[]) => void,
+) {
+	const rowIndex = rows.findIndex((row) => row.id === rowId);
+	const row = rows[rowIndex];
+
+	if (!row) {
+		return;
+	}
+
+	const nextRows = [...rows];
+	nextRows.splice(rowIndex + 1, 0, {
+		...row,
+		id: createSalesJournalItemEntry().id,
+	});
+	onRowsChange(nextRows);
+}
+
+function insertItemRow(
+	rowId: string,
+	position: "above" | "below",
+	rows: SalesJournalItemEntry[],
+	onRowsChange: (rows: SalesJournalItemEntry[]) => void,
+) {
+	const rowIndex = rows.findIndex((row) => row.id === rowId);
+
+	if (rowIndex < 0) {
+		return;
+	}
+
+	const nextRows = [...rows];
+	nextRows.splice(
+		position === "above" ? rowIndex : rowIndex + 1,
+		0,
+		createSalesJournalItemEntry(),
+	);
+	onRowsChange(nextRows);
+}
+
+function removeItemRow(
+	rowId: string,
+	rows: SalesJournalItemEntry[],
+	onRowsChange: (rows: SalesJournalItemEntry[]) => void,
+) {
+	const nextRows = rows.filter((row) => row.id !== rowId);
+	onRowsChange(
+		nextRows.length > 0 ? nextRows : [createSalesJournalItemEntry()],
+	);
+}
+
+function moveRow<TRow extends { id: string }>(
+	fromRowId: string,
+	toRowId: string,
+	rows: TRow[],
+	onRowsChange: (rows: TRow[]) => void,
+) {
+	const fromIndex = rows.findIndex((row) => row.id === fromRowId);
+	const toIndex = rows.findIndex((row) => row.id === toRowId);
+
+	if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) {
+		return;
+	}
+
+	const nextRows = [...rows];
+	const [movedRow] = nextRows.splice(fromIndex, 1);
+
+	if (!movedRow) {
+		return;
+	}
+
+	nextRows.splice(toIndex, 0, movedRow);
+	onRowsChange(nextRows);
 }
 
 function salesJournalEntryHasData(entry: SalesJournalLine) {
@@ -593,34 +928,54 @@ function shouldClearSalesJournalEntry(
 }
 
 const SalesJournalColumnConfigs = [
-	salesJournalColumn("Account Code", "accountCode", "text", 150, "w-[9.5rem]"),
-	salesJournalColumn("Account Title", "accountTitle", "text", 260, "w-[16rem]"),
+	salesJournalColumn("Acct Code", "accountCode", "text", 150, "w-[9.5rem]"),
+	salesJournalColumn("Acct Title", "accountTitle", "text", 260, "w-[16rem]"),
 	salesJournalColumn("Debit", "debit", "amount", 140, "w-[8.75rem]"),
 	salesJournalColumn("Credit", "credit", "amount", 140, "w-[8.75rem]"),
-	salesJournalColumn("Particulars", "particulars", "text", 260, "w-[16rem]"),
-	salesJournalColumn("Party Code", "partyCode", "text", 150, "w-[9.5rem]"),
-	salesJournalColumn("Party Name", "partyName", "text", 220, "w-[13.75rem]"),
-	salesJournalColumn(
-		"Responsibility Center",
-		"responsibilityCenter",
-		"text",
-		190,
-		"w-[12rem]",
-	),
-	salesJournalColumn("Ref No", "refNo", "text", 150, "w-[9.5rem]"),
-	salesJournalColumn(
-		"VAT Type",
-		"vatType",
-		"dropdown",
-		150,
-		"w-[9.5rem]",
-		salesJournalDropdownOptions(SalesJournalVatTypeOptions),
-	),
-	salesJournalColumn("ATC Code", "atcCode", "text", 150, "w-[9.5rem]"),
 ];
 
-const EntryDropdownClassName =
-	"[&_.app-advanced-dropdown-control]:h-10 [&_.app-advanced-dropdown-control]:rounded-none [&_.app-advanced-dropdown-control]:border-0 [&_.app-advanced-dropdown-control]:bg-transparent [&_.app-advanced-dropdown-control]:px-3 [&_.app-advanced-dropdown-control]:shadow-none [&_.app-advanced-dropdown-control]:focus:ring-2 [&_.app-advanced-dropdown-control]:focus:ring-inset [&_.app-advanced-dropdown-control]:focus:ring-skyblue/35";
+const SalesJournalItemColumnConfigs = [
+	salesJournalItemColumn(
+		"Professional Service Type",
+		"professionalServiceType",
+		"text",
+		260,
+		"w-[16rem]",
+	),
+	salesJournalItemColumn("Rate", "rate", "amount", 140, "w-[8.75rem]"),
+	salesJournalItemColumn("Qty", "quantity", "amount", 100, "w-[6.25rem]"),
+	salesJournalItemColumn("Amount", "amount", "readonlyAmount", 140, "w-[8.75rem]"),
+	salesJournalItemColumn("VAT", "vatAmount", "amount", 130, "w-[8.125rem]"),
+	salesJournalItemColumn(
+		"VAT Inc.",
+		"vatInclusiveAmount",
+		"readonlyAmount",
+		140,
+		"w-[8.75rem]",
+	),
+	salesJournalItemColumn(
+		"Disct",
+		"discountAmount",
+		"amount",
+		130,
+		"w-[8.125rem]",
+	),
+	salesJournalItemColumn("Net Amt", "netAmount", "readonlyAmount", 150, "w-[9.375rem]"),
+];
+
+const EntryExportOptions = [
+	{ id: "csv", label: "CSV", onSelect: () => undefined },
+	{ id: "excel", label: "Excel", onSelect: () => undefined },
+	{ id: "pdf", label: "PDF", onSelect: () => undefined },
+];
+
+const SalesJournalEntryTabsList = [
+	{ id: "items", label: "Item Entry" },
+	{ id: "accounts", label: "Account Entry" },
+] satisfies Array<{
+	id: SalesJournalEntryTab;
+	label: string;
+}>;
 
 type FieldProps = {
 	disabled: boolean;
@@ -691,21 +1046,6 @@ function TextAreaField({
 			<span className="mt-1 block text-xs font-medium text-darknavy/45">
 				Characters remaining: {Math.max(250 - value.length, 0)}
 			</span>
-		</label>
-	);
-}
-
-function ReadOnlyField({ label, value }: { label: string; value: string }) {
-	return (
-		<label className="block">
-			<span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-darknavy/60">
-				{label}
-			</span>
-			<input
-				className={`${fieldClassName} bg-offwhite text-darknavy/70`}
-				readOnly
-				value={value}
-			/>
 		</label>
 	);
 }

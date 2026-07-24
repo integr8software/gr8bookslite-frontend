@@ -17,16 +17,16 @@ export const CanvassFormStatusOptions: CanvassFormStatus[] = [
 
 export const CanvassFormPageCopy = {
 	add: {
-		title: "Add Canvass Form",
+		title: "Add Canvass Order",
 		description:
 			"Compare supplier quotations, requested details, and selected costs before saving.",
 	},
 	edit: {
-		title: "Edit Canvass Form",
+		title: "Edit Canvass Order",
 		description: "Update request details, supplier quotations, and selected supplier costs.",
 	},
 	view: {
-		title: "View Canvass Form",
+		title: "View Canvass Order",
 		description: "Review canvass details, supplier comparisons, and printable report.",
 	},
 } as const;

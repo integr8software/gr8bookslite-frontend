@@ -14,7 +14,7 @@ import {
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 
-type CanvassFormHeaderProps = {
+type CanvassFormFormHeaderProps = {
 	isSubmitting?: boolean;
 	mode: CanvassFormMode;
 	recordId?: string;
@@ -23,14 +23,14 @@ type CanvassFormHeaderProps = {
 	onSubmit: () => void;
 };
 
-export function CanvassFormHeader({
+export function CanvassFormFormHeader({
 	isSubmitting = false,
 	mode,
 	onPreview,
 	onSubmit,
 	recordId,
 	values,
-}: CanvassFormHeaderProps) {
+}: CanvassFormFormHeaderProps) {
 	return (
 		<ModuleHeader
 			variant="panel"

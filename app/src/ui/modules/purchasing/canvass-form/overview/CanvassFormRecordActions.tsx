@@ -7,12 +7,15 @@ import {
 	ModuleTableActions,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
-type CanvassFormTableRowProps = {
+type CanvassFormRecordActionsProps = {
 	form: CanvassFormRecord;
 	onDeleteForm: (form: CanvassFormRecord) => void;
 };
 
-export function CanvassFormTableRow({ form, onDeleteForm }: CanvassFormTableRowProps) {
+export function CanvassFormRecordActions({
+	form,
+	onDeleteForm,
+}: CanvassFormRecordActionsProps) {
 	return (
 		<tr className="module-table-row border-b border-darknavy/8 last:border-b-0">
 			<td className="px-4 py-4 font-semibold">{form.transNo}</td>

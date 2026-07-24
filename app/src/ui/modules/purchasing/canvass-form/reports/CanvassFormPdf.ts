@@ -64,8 +64,8 @@ function info(record: CanvassFormRecord): TableCell {
 		table: {
 			widths: ["*", "*", "*"],
 			body: [
-				[label("Requested By", record.requestedBy), label("Required Before", formatCanvassFormDate(record.requiredBefore)), label("Purchase Type", record.purchaseType)],
-				[label("Responsibility Center", record.responsibilityCenter), label("Currency", record.currency), label("Status", record.status)],
+				[label("Requested By", record.requestedBy), label("Required Before", formatCanvassFormDate(record.requiredBefore)), label("Terms of Payment", record.termsOfPayment)],
+				[label("Currency", record.currency), label("Status", record.status), label("Trans No.", record.transNo)],
 			],
 		},
 		layout: gridLayout,
@@ -78,14 +78,17 @@ function remarks(record: CanvassFormRecord): TableCell {
 
 function items(record: CanvassFormRecord): TableCell {
 	const body: TableCell[][] = [
-		["Item Code", "Description", "UOM", "Qty", "Supplier 1", "Cost 1", "Supplier 2", "Cost 2", "Supplier 3", "Cost 3", "Supplier 4", "Cost 4", "Selected", "Total"].map((text) => ({ text, bold: true })),
+		["PR No.", "Item Code", "Description", "UOM", "Qty", "VAT Inc.", "VAT Ex.", "Supplier 1", "Cost 1", "Supplier 2", "Cost 2", "Supplier 3", "Cost 3", "Supplier 4", "Cost 4", "Selected", "Total"].map((text) => ({ text, bold: true })),
 		...record.items.map((item) => {
 			const normalized = normalizeCanvassFormItem(item);
 			return [
+				item.prNo,
 				item.itemCode,
 				item.description,
 				item.uom,
 				amount(item.quantity),
+				item.vatInclusive,
+				item.vatExclusive,
 				item.supplierName1,
 				amount(item.unitCost1),
 				item.supplierName2,
@@ -99,12 +102,12 @@ function items(record: CanvassFormRecord): TableCell {
 			] as TableCell[];
 		}),
 		[
-			{ text: "Total:", bold: true, alignment: "right", colSpan: 13 },
-			{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+			{ text: "Total:", bold: true, alignment: "right", colSpan: 16 },
+			{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
 			amount(getCanvassFormTotal(record), true),
 		],
 	];
-	return { table: { headerRows: 1, widths: [50, "*", 36, 42, 70, 50, 70, 50, 70, 50, 70, 50, 70, 60], body }, layout: gridLayout };
+	return { table: { headerRows: 1, widths: [48, 50, "*", 34, 38, 42, 42, 60, 44, 60, 44, 60, 44, 60, 44, 60, 54], body }, layout: gridLayout };
 }
 
 function signatures(): TableCell {

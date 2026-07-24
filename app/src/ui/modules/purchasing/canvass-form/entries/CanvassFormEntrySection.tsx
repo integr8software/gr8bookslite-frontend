@@ -13,21 +13,21 @@ import {
 	type ModuleDataEntryColumn,
 	type ModuleDataEntryColumnOption,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
-import { createCanvassFormEntryColumns } from "@/app/src/ui/modules/purchasing/canvass-form/CanvassFormEntryColumns";
+import { createCanvassFormLineColumns } from "@/app/src/ui/modules/purchasing/canvass-form/entries/CanvassFormLineColumns";
 
-type CanvassFormEntriesProps = {
+type CanvassFormEntrySectionProps = {
 	error?: string;
 	isReadonly: boolean;
 	rows: CanvassFormItem[];
 	onRowsChange: (rows: CanvassFormItem[]) => void;
 };
 
-export function CanvassFormEntries({
+export function CanvassFormEntrySection({
 	error,
 	isReadonly,
 	onRowsChange,
 	rows,
-}: CanvassFormEntriesProps) {
+}: CanvassFormEntrySectionProps) {
 	const updateEntry = useCallback(
 		(rowId: string, updates: Partial<CanvassFormItem>) => {
 			onRowsChange(
@@ -42,7 +42,7 @@ export function CanvassFormEntries({
 	);
 	const total = useMemo(() => getCanvassFormTotal({ items: rows }), [rows]);
 	const columns = useMemo<ModuleDataEntryColumn<CanvassFormItem>[]>(
-		() => createCanvassFormEntryColumns(isReadonly, updateEntry),
+		() => createCanvassFormLineColumns(isReadonly, updateEntry),
 		[isReadonly, updateEntry],
 	);
 	const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
@@ -155,12 +155,15 @@ function shouldClearEntry(
 ) {
 	const hasData = Boolean(
 		entry.itemCode.trim() ||
+			entry.prNo.trim() ||
 			entry.barcode.trim() ||
 			entry.description.trim() ||
 			entry.supplierName1.trim() ||
 			entry.supplierName2.trim() ||
 			entry.supplierName3.trim() ||
 			entry.supplierName4.trim() ||
+			entry.vatExclusive.trim() ||
+			entry.vatInclusive.trim() ||
 			Number(entry.quantity),
 	);
 	const isComplete = Boolean(

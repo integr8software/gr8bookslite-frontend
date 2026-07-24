@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { CanvassFormMain } from "@/app/src/ui/modules/purchasing/canvass-form/Main";
+import { CanvassFormOverviewPage } from "@/app/src/ui/modules/purchasing/canvass-form/overview/CanvassFormOverviewPage";
 
-const PageTitle = "Canvass Form";
+const PageTitle = "Canvass Order";
 
 export const metadata: Metadata = {
   title: `${PageTitle} | ${AppName}`,
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default function PurchasingCanvassFormPage() {
-  return <CanvassFormMain />;
+  return <CanvassFormOverviewPage />;
 }
 
 

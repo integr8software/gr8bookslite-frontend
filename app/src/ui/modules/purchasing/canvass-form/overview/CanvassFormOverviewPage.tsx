@@ -6,7 +6,7 @@ import {
 	CanvassFormHref,
 	CanvassFormTablePaginationStorageKey,
 } from "@/app/src/constants/modules/purchasing/canvass-form/CanvassFormConstants";
-import { useCanvassFormListPage } from "@/app/src/hooks/modules/purchasing/canvass-form/useCanvassFormPage";
+import { useCanvassFormOverviewPage } from "@/app/src/hooks/modules/purchasing/canvass-form/useCanvassFormPage";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import {
 	ModuleHeader,
@@ -17,9 +17,9 @@ import {
 	ModuleTableSearch,
 	ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
-import { CanvassFormTableRow } from "@/app/src/ui/modules/purchasing/canvass-form/CanvassFormTableRow";
+import { CanvassFormRecordActions } from "@/app/src/ui/modules/purchasing/canvass-form/overview/CanvassFormRecordActions";
 
-export function CanvassFormListPage() {
+export function CanvassFormOverviewPage() {
 	const {
 		handleConfirmDelete,
 		handleQueryChange,
@@ -29,14 +29,14 @@ export function CanvassFormListPage() {
 		query,
 		setPendingDeleteForm,
 		table,
-	} = useCanvassFormListPage();
+	} = useCanvassFormOverviewPage();
 
 	return (
 		<section className="grid gap-5">
 			<ModuleHeader
 				variant="panel"
 				titleAs="h1"
-				title="Canvass Form"
+				title="Canvass Order"
 				description="Compare supplier quotations and select the best supplier cost."
 				eyebrow={
 					<>
@@ -47,7 +47,7 @@ export function CanvassFormListPage() {
 				actions={
 					<Link href={`${CanvassFormHref}/add`} className={moduleHeaderActionClassNames.primary}>
 						<Plus className="h-4 w-4" aria-hidden="true" />
-						New Canvass Form
+						New Canvass Order
 					</Link>
 				}
 			/>
@@ -56,12 +56,12 @@ export function CanvassFormListPage() {
 					variant="embedded"
 					emptyDescription="Try another trans no., requester, type, or status."
 					emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
-					emptyTitle="No canvass forms found"
+					emptyTitle="No canvass orders found"
 					lastSyncedAt={lastSyncedAt}
 					minWidthClassName="min-w-[64rem]"
 					paginationStorageKey={CanvassFormTablePaginationStorageKey}
 					table={table}
-					tableTitle="Canvass forms"
+					tableTitle="Canvass orders"
 					toolbar={
 						<ModuleTableToolbar className="lg:grid-cols-[minmax(18rem,1fr)]">
 							<ModuleTableSearch
@@ -73,7 +73,7 @@ export function CanvassFormListPage() {
 						</ModuleTableToolbar>
 					}
 					renderRow={({ id, original }) => (
-						<CanvassFormTableRow
+						<CanvassFormRecordActions
 							key={id}
 							form={original}
 							onDeleteForm={setPendingDeleteForm}

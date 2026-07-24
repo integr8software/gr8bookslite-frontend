@@ -8,7 +8,7 @@ import {
 } from "@/app/src/data/modules/purchasing/canvass-form/CanvassFormData";
 import type { CanvassFormRecord } from "@/app/src/types/modules/purchasing/canvass-form/CanvassFormTypes";
 import { ReportPreviewDrawer } from "@/app/src/ui/shared/reports/Reports";
-import { openCanvassFormPdf } from "@/app/src/ui/modules/purchasing/canvass-form/CanvassFormPdf";
+import { openCanvassFormPdf } from "@/app/src/ui/modules/purchasing/canvass-form/reports/CanvassFormPdf";
 
 type CanvassFormReportPreviewProps = {
 	isOpen: boolean;
@@ -54,8 +54,7 @@ export function CanvassFormReportDocument({ record }: { record: CanvassFormRecor
 					<div className="grid grid-cols-2 border-t border-black">
 						<InfoCell label="Requested By" value={record.requestedBy} />
 						<InfoCell label="Required Before" value={formatCanvassFormDate(record.requiredBefore)} />
-						<InfoCell label="Purchase Type" value={record.purchaseType} />
-						<InfoCell label="Responsibility Center" value={record.responsibilityCenter} />
+						<InfoCell label="Terms of Payment" value={record.termsOfPayment} />
 						<InfoCell label="Currency" value={record.currency} />
 						<InfoCell label="Status" value={record.status} />
 					</div>
@@ -66,10 +65,13 @@ export function CanvassFormReportDocument({ record }: { record: CanvassFormRecor
 						<thead>
 							<tr>
 								{[
+									"PR No.",
 									"Item Code",
 									"Description",
 									"UOM",
 									"Qty",
+									"VAT Inc.",
+									"VAT Ex.",
 									"Supplier 1",
 									"Cost 1",
 									"Supplier 2",
@@ -92,10 +94,13 @@ export function CanvassFormReportDocument({ record }: { record: CanvassFormRecor
 								const normalized = normalizeCanvassFormItem(item);
 								return (
 									<tr key={item.id}>
+										<td className="border border-black px-1 py-1">{item.prNo}</td>
 										<td className="border border-black px-1 py-1">{item.itemCode}</td>
 										<td className="border border-black px-1 py-1">{item.description}</td>
 										<td className="border border-black px-1 py-1">{item.uom}</td>
 										<td className="border border-black px-1 py-1 text-right">{formatCanvassFormAmount(item.quantity)}</td>
+										<td className="border border-black px-1 py-1">{item.vatInclusive}</td>
+										<td className="border border-black px-1 py-1">{item.vatExclusive}</td>
 										<td className="border border-black px-1 py-1">{item.supplierName1}</td>
 										<td className="border border-black px-1 py-1 text-right">{formatCanvassFormAmount(item.unitCost1)}</td>
 										<td className="border border-black px-1 py-1">{item.supplierName2}</td>
@@ -112,7 +117,7 @@ export function CanvassFormReportDocument({ record }: { record: CanvassFormRecor
 						</tbody>
 						<tfoot>
 							<tr>
-								<td colSpan={13} className="border border-black px-1 py-1 text-right font-bold">
+								<td colSpan={16} className="border border-black px-1 py-1 text-right font-bold">
 									Total:
 								</td>
 								<td className="border border-black px-1 py-1 text-right font-bold">

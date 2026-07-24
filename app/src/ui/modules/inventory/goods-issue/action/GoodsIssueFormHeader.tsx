@@ -14,16 +14,24 @@ import {
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
+import {
+	AppCopyFromDropdown,
+	type AppCopyFromRecord,
+} from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
 
 type GoodsIssueFormHeaderProps = {
+	copyFromRecords: AppCopyFromRecord[];
 	mode: GoodsIssueActionMode;
+	onCopyFromMaterialRequest: (recordIds: string[]) => void;
 	onPreview: () => void;
 	values: GoodsIssueFormValues;
 	onSubmit: () => void;
 };
 
 export function GoodsIssueFormHeader({
+	copyFromRecords,
 	mode,
+	onCopyFromMaterialRequest,
 	onPreview,
 	onSubmit,
 	values,
@@ -49,7 +57,9 @@ export function GoodsIssueFormHeader({
 			actionsClassName="items-center justify-start gap-2 sm:shrink-0 sm:justify-end [&>a]:shrink-0 [&>button]:shrink-0"
 			actions={
 				<GoodsIssueHeaderActions
+					copyFromRecords={copyFromRecords}
 					mode={mode}
+					onCopyFromMaterialRequest={onCopyFromMaterialRequest}
 					onPreview={onPreview}
 					onSubmit={onSubmit}
 				/>
@@ -59,11 +69,15 @@ export function GoodsIssueFormHeader({
 }
 
 function GoodsIssueHeaderActions({
+	copyFromRecords,
 	mode,
+	onCopyFromMaterialRequest,
 	onPreview,
 	onSubmit,
 }: {
+	copyFromRecords: AppCopyFromRecord[];
 	mode: GoodsIssueActionMode;
+	onCopyFromMaterialRequest: (recordIds: string[]) => void;
 	onPreview: () => void;
 	onSubmit: () => void;
 }) {
@@ -78,6 +92,11 @@ function GoodsIssueHeaderActions({
 			<ReportPreviewAction onPreview={onPreview} />
 			{mode === "view" ? null : (
 				<>
+					<AppCopyFromDropdown
+						records={copyFromRecords}
+						sources={["Material Request"]}
+						onApply={onCopyFromMaterialRequest}
+					/>
 					<div className="flex lg:hidden">
 						<ModuleActionMenu
 							className="[&>button]:h-10 [&>button]:w-10"

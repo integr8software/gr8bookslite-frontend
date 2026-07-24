@@ -14,19 +14,19 @@ import {
 	type ModuleDataEntryColumnOption,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { parseMoneyNumberInput } from "@/app/src/ui/shared/money/MoneyNumberField";
-import { createGoodsIssueEntryColumns } from "@/app/src/ui/modules/inventory/goods-issue/GoodsIssueEntryColumns";
+import { createGoodsIssueLineColumns } from "@/app/src/ui/modules/inventory/goods-issue/entries/GoodsIssueLineColumns";
 
-type GoodsIssueEntriesProps = {
+type GoodsIssueEntrySectionProps = {
 	isReadonly: boolean;
 	rows: GoodsIssueLineEntry[];
 	onRowsChange: (rows: GoodsIssueLineEntry[]) => void;
 };
 
-export function GoodsIssueEntries({
+export function GoodsIssueEntrySection({
 	isReadonly,
 	onRowsChange,
 	rows,
-}: GoodsIssueEntriesProps) {
+}: GoodsIssueEntrySectionProps) {
 	const updateEntry = useCallback(
 		(rowId: string, updates: Partial<GoodsIssueLineEntry>) => {
 			onRowsChange(
@@ -39,7 +39,7 @@ export function GoodsIssueEntries({
 	);
 	const totals = useMemo(() => calculateGoodsIssueTotals(rows), [rows]);
 	const columns = useMemo<ModuleDataEntryColumn<GoodsIssueLineEntry>[]>(
-		() => createGoodsIssueEntryColumns(isReadonly, updateEntry),
+		() => createGoodsIssueLineColumns(isReadonly, updateEntry),
 		[isReadonly, updateEntry],
 	);
 	const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(

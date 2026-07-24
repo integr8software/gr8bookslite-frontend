@@ -52,9 +52,9 @@ import {
 	ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
-import { GoodsIssueRecordActions } from "@/app/src/ui/modules/inventory/goods-issue/GoodsIssueRecordActions";
+import { GoodsIssueRecordActions } from "@/app/src/ui/modules/inventory/goods-issue/overview/GoodsIssueRecordActions";
 
-export function GoodsIssueListPage() {
+export function GoodsIssueOverviewPage() {
 	const { issues, lastSyncedAt, updateIssueStatus } = useGoodsIssueStore();
 	const tableState = useGoodsIssueTable(issues);
 

@@ -5,7 +5,7 @@ import {
 	formatInventoryReportNumber,
 } from "@/app/src/ui/modules/inventory/shared/report/InventoryReportLayout";
 import { openInventoryReportPdf } from "@/app/src/ui/modules/inventory/shared/report/InventoryReportPdf";
-import { GoodsIssueReportColumns } from "@/app/src/ui/modules/inventory/goods-issue/GoodsIssueReportPreview";
+import { GoodsIssueReportColumns } from "@/app/src/ui/modules/inventory/goods-issue/reports/GoodsIssueReportPreview";
 
 export function openGoodsIssuePdf(values: GoodsIssueFormValues) {
 	openInventoryReportPdf({

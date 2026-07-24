@@ -1,23 +1,18 @@
 "use client";
 
 import { useParams, usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { GoodsIssueHref } from "@/app/src/constants/modules/inventory/goods-issue/GoodsIssueConstants";
+import { GoodsIssueMaterialRequestCopyRecords } from "@/app/src/data/modules/inventory/goods-issue/GoodsIssueData";
 import { useGoodsIssueActionForm } from "@/app/src/hooks/modules/inventory/goods-issue/useGoodsIssue";
 import type { GoodsIssueActionMode } from "@/app/src/types/modules/inventory/goods-issue/GoodsIssueTypes";
-import {
-	GoodsIssueDetailsForm,
-	type GoodsIssueDetailsSection,
-} from "@/app/src/ui/modules/inventory/goods-issue/GoodsIssueDetailsForm";
-import { GoodsIssueEntries } from "@/app/src/ui/modules/inventory/goods-issue/GoodsIssueEntries";
-import { GoodsIssueFormHeader } from "@/app/src/ui/modules/inventory/goods-issue/GoodsIssueFormHeader";
-import { GoodsIssueNotFound } from "@/app/src/ui/modules/inventory/goods-issue/GoodsIssueNotFound";
-import { openGoodsIssuePdf } from "@/app/src/ui/modules/inventory/goods-issue/GoodsIssuePdf";
-import { GoodsIssueReportPreview } from "@/app/src/ui/modules/inventory/goods-issue/GoodsIssueReportPreview";
-import {
-	ModuleTabs,
-	type ModuleTabItem,
-} from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
+import { GoodsIssueDetailsForm } from "@/app/src/ui/modules/inventory/goods-issue/action/GoodsIssueDetailsForm";
+import { GoodsIssueFormHeader } from "@/app/src/ui/modules/inventory/goods-issue/action/GoodsIssueFormHeader";
+import { GoodsIssueEntrySection } from "@/app/src/ui/modules/inventory/goods-issue/entries/GoodsIssueEntrySection";
+import { GoodsIssueNotFound } from "@/app/src/ui/modules/inventory/goods-issue/overview/GoodsIssueNotFound";
+import { openGoodsIssuePdf } from "@/app/src/ui/modules/inventory/goods-issue/reports/GoodsIssuePdf";
+import { GoodsIssueReportPreview } from "@/app/src/ui/modules/inventory/goods-issue/reports/GoodsIssueReportPreview";
+import type { AppCopyFromRecord } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
 
 export function GoodsIssueActionPage() {
 	const params = useParams<{ recordId?: string }>();
@@ -27,12 +22,22 @@ export function GoodsIssueActionPage() {
 	const isReadonly = mode === "view";
 	const recordId =
 		typeof params.recordId === "string" ? params.recordId : undefined;
-	const [activeTab, setActiveTab] =
-		useState<GoodsIssueDetailsSection>("issue");
 	const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
 	const issueForm = useGoodsIssueActionForm(mode, recordId, () => {
 		router.push(GoodsIssueHref);
 	});
+	const materialRequestCopyRecords = useMemo<AppCopyFromRecord[]>(
+		() =>
+			GoodsIssueMaterialRequestCopyRecords.map((record) => ({
+				documentDate: record.documentDate,
+				id: record.id,
+				partyName: record.partyName,
+				remarks: record.remarks,
+				source: "Material Request",
+				sourceNo: record.sourceNo,
+			})),
+		[],
+	);
 
 	if (issueForm.isRecordMissing) {
 		return <GoodsIssueNotFound />;
@@ -42,24 +47,19 @@ export function GoodsIssueActionPage() {
 		<>
 		<section className="grid gap-5">
 			<GoodsIssueFormHeader
+				copyFromRecords={materialRequestCopyRecords}
 				mode={mode}
+				onCopyFromMaterialRequest={issueForm.copyFromMaterialRequests}
 				onPreview={() => setIsReportPreviewOpen(true)}
 				values={issueForm.values}
 				onSubmit={issueForm.submitIssue}
 			/>
-			<ModuleTabs
-				activeTab={activeTab}
-				ariaLabel="Goods issue sections"
-				tabs={GoodsIssueTabs}
-				onTabChange={setActiveTab}
-			/>
 			<GoodsIssueDetailsForm
 				isReadonly={isReadonly}
-				section={activeTab}
 				values={issueForm.values}
 				onUpdateField={issueForm.updateField}
 			/>
-			<GoodsIssueEntries
+			<GoodsIssueEntrySection
 				isReadonly={isReadonly}
 				rows={issueForm.values.lineEntries}
 				onRowsChange={issueForm.updateLineEntries}
@@ -74,11 +74,6 @@ export function GoodsIssueActionPage() {
 		</>
 	);
 }
-
-const GoodsIssueTabs = [
-	{ id: "issue", label: "Issue / Warehouse" },
-	{ id: "references", label: "References / Project" },
-] satisfies ModuleTabItem<GoodsIssueDetailsSection>[];
 
 function getModeFromPathname(pathname: string): GoodsIssueActionMode {
 	if (pathname.includes("/view/")) return "view";

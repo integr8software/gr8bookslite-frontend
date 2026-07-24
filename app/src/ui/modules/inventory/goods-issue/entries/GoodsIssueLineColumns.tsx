@@ -27,7 +27,7 @@ type GoodsIssueEntryUpdater = (
 	updates: Partial<GoodsIssueLineEntry>,
 ) => void;
 
-export function createGoodsIssueEntryColumns(
+export function createGoodsIssueLineColumns(
 	isReadonly: boolean,
 	onUpdateEntry: GoodsIssueEntryUpdater,
 ): ModuleDataEntryColumn<GoodsIssueLineEntry>[] {

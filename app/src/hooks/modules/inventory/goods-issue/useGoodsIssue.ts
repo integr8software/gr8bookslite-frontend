@@ -13,9 +13,11 @@ import {
 import toast from "react-hot-toast";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import {
+	createBlankGoodsIssueLineEntry,
 	createGoodsIssueFormValues,
 	createGoodsIssueFormValuesFromRecord,
 	createGoodsIssueRecordFromForm,
+	GoodsIssueMaterialRequestCopyRecords,
 	getInitialGoodsIssues,
 	writeStoredGoodsIssues,
 } from "@/app/src/data/modules/inventory/goods-issue/GoodsIssueData";
@@ -104,6 +106,45 @@ export function useGoodsIssueActionForm(
 		setValues((current) => ({ ...current, lineEntries }));
 	}
 
+	function copyFromMaterialRequests(recordIds: string[]) {
+		const selectedRequests = GoodsIssueMaterialRequestCopyRecords.filter(
+			(record) => recordIds.includes(record.id),
+		);
+
+		if (selectedRequests.length === 0) {
+			toast.error("Select at least one material request to copy.");
+			return;
+		}
+
+		const firstRequest = selectedRequests[0];
+
+		if (!firstRequest) {
+			toast.error("Select at least one material request to copy.");
+			return;
+		}
+
+		setValues((current) => ({
+			...current,
+			documentDate: firstRequest.documentDate || current.documentDate,
+			mrNo: firstRequest.mrNo,
+			sourceWarehouse: firstRequest.warehouse || current.sourceWarehouse,
+			transactionType: "Material Request Issue",
+			vceCode: firstRequest.partyCode,
+			vceName: firstRequest.partyName,
+			lineEntries: selectedRequests.map((request) =>
+				createBlankGoodsIssueLineEntry({
+					description: request.remarks,
+					itemCategory: request.itemCategory,
+					itemCode: request.itemCode,
+					issueQuantity: request.requestedQuantity,
+					referenceNo: request.mrNo,
+					uom: request.uom,
+				}),
+			),
+		}));
+		toast.success("Material request copied to goods issue.");
+	}
+
 	function submitIssue() {
 		const validation = validateGoodsIssueForm(values);
 
@@ -125,6 +166,7 @@ export function useGoodsIssueActionForm(
 	}
 
 	return {
+		copyFromMaterialRequests,
 		isRecordMissing: mode !== "add" && !initialRecord,
 		submitIssue,
 		updateField,

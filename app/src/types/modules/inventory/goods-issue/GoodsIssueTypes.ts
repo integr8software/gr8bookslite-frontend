@@ -37,6 +37,21 @@ export type GoodsIssueLineEntry = {
 	responsibilityCenter: string;
 };
 
+export type GoodsIssueMaterialRequestCopyRecord = {
+	id: string;
+	documentDate: string;
+	itemCode: string;
+	itemCategory: string;
+	mrNo: string;
+	partyCode: string;
+	partyName: string;
+	remarks: string;
+	requestedQuantity: string;
+	sourceNo: string;
+	uom: string;
+	warehouse: string;
+};
+
 export type GoodsIssueFormValues = {
 	transactionType: string;
 	sourceWarehouse: string;

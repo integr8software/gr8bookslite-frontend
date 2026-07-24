@@ -24,6 +24,8 @@ export type BillingInvoiceRecord = {
 
 export type BillingInvoiceLineEntry = {
 	id: string;
+	itemNo: string;
+	itemName: string;
 	description: string;
 	particulars: string;
 	amount: string;
@@ -45,15 +47,30 @@ export type BillingInvoiceLineEntry = {
 	responsibilityCenter: string;
 };
 
+export type BillingInvoiceAccountEntry = {
+	id: string;
+	accountCode: string;
+	accountTitle: string;
+	debit: string;
+	credit: string;
+};
+
 export type BillingInvoiceFormValues = {
+	accountEntries: BillingInvoiceAccountEntry[];
 	code: string;
 	name: string;
+	address: string;
+	billToCode: string;
+	billToName: string;
 	currency: string;
 	exchangeRate: string;
+	contactNo: string;
 	contactPerson: string;
 	remarks: string;
 	terms: string;
 	dueDate: string;
+	drNo: string;
+	resCenter: string;
 	description: string;
 	defaultAccount: string;
 	teamAssigned: string;

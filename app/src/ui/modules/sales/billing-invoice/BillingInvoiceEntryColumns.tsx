@@ -1,141 +1,192 @@
-import {
-	BillingInvoiceBooleanOptions,
-	BillingInvoiceDescriptionOptions,
-	BillingInvoiceResponsibilityCenterOptions,
-	BillingInvoiceTaxTypeOptions,
-	BillingInvoiceVatTypeOptions,
-} from "@/app/src/data/modules/sales/billing-invoice/BillingInvoiceData";
-import type { BillingInvoiceLineEntry } from "@/app/src/types/modules/sales/billing-invoice/BillingInvoiceTypes";
-import {
-	AppAdvancedDropdown,
-	type AppAdvancedDropdownOption,
-} from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
+import type {
+	BillingInvoiceAccountEntry,
+	BillingInvoiceLineEntry,
+} from "@/app/src/types/modules/sales/billing-invoice/BillingInvoiceTypes";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
-type BillingInvoiceEntryColumnKind = "amount" | "dropdown" | "text";
-
-type BillingInvoiceEntryColumnConfig = {
-	header: string;
-	id: keyof BillingInvoiceLineEntry;
-	kind: BillingInvoiceEntryColumnKind;
-	options?: AppAdvancedDropdownOption[];
-	width: number;
-	widthClassName: string;
-};
-
-type BillingInvoiceEntryUpdater = (
+type BillingInvoiceLineEntryUpdater = (
 	rowId: string,
 	updates: Partial<BillingInvoiceLineEntry>,
 ) => void;
 
-export function createBillingInvoiceEntryColumns(
+type BillingInvoiceAccountEntryUpdater = (
+	rowId: string,
+	updates: Partial<BillingInvoiceAccountEntry>,
+) => void;
+
+export function createBillingInvoiceItemEntryColumns(
 	isReadonly: boolean,
-	onUpdateEntry: BillingInvoiceEntryUpdater,
+	onUpdateEntry: BillingInvoiceLineEntryUpdater,
 ): ModuleDataEntryColumn<BillingInvoiceLineEntry>[] {
-	return BillingInvoiceEntryColumnConfigs.map((column) => ({
-		header: column.header,
-		id: column.id,
-		width: column.width,
-		widthClassName: column.widthClassName,
+	return [
+		lineTextColumn("itemNo", "Item No", 140, isReadonly, onUpdateEntry),
+		lineTextColumn("itemName", "Item Name", 220, isReadonly, onUpdateEntry),
+		lineAmountColumn("amount", "Unit Price", 140, isReadonly, onUpdateEntry),
+		lineAmountColumn("quantity", "Qty", 110, isReadonly, onUpdateEntry),
+		lineAmountColumn("netAmount", "Amount", 140, isReadonly, onUpdateEntry),
+		lineAmountColumn("vatAmount", "VAT", 140, isReadonly, onUpdateEntry),
+		readOnlyLineAmountColumn(
+			"vatInclusiveAmount",
+			"VAT Inc.",
+			140,
+			(row) =>
+				parseMoneyNumberInput(row.netAmount) +
+				parseMoneyNumberInput(row.vatAmount),
+		),
+		lineAmountColumn(
+			"discountAmount",
+			"Disct",
+			130,
+			isReadonly,
+			onUpdateEntry,
+		),
+		readOnlyLineAmountColumn(
+			"grossAmount",
+			"Net Amount",
+			150,
+			(row) => parseMoneyNumberInput(row.grossAmount),
+		),
+	];
+}
+
+export function createBillingInvoiceAccountEntryColumns(
+	isReadonly: boolean,
+	onUpdateEntry: BillingInvoiceAccountEntryUpdater,
+): ModuleDataEntryColumn<BillingInvoiceAccountEntry>[] {
+	return [
+		accountTextColumn("accountCode", "Acct Code", 180, isReadonly, onUpdateEntry),
+		accountTextColumn(
+			"accountTitle",
+			"Acct Title",
+			320,
+			isReadonly,
+			onUpdateEntry,
+		),
+		accountAmountColumn("debit", "Debit", 150, isReadonly, onUpdateEntry),
+		accountAmountColumn("credit", "Credit", 150, isReadonly, onUpdateEntry),
+	];
+}
+
+function lineTextColumn(
+	id: keyof BillingInvoiceLineEntry,
+	header: string,
+	width: number,
+	isReadonly: boolean,
+	onUpdateEntry: BillingInvoiceLineEntryUpdater,
+): ModuleDataEntryColumn<BillingInvoiceLineEntry> {
+	return {
+		header,
+		id,
+		width,
+		widthClassName: `w-[${width / 16}rem]`,
 		renderCell: (row, _index, context) => (
-			<BillingInvoiceEntryCell
-				column={column}
-				fieldId={context.fieldId}
-				fieldName={context.fieldName}
-				isReadonly={isReadonly}
-				row={row}
-				onUpdateEntry={onUpdateEntry}
+			<EntryInput
+				id={context.fieldId}
+				name={context.fieldName}
+				readOnly={isReadonly}
+				value={String(row[id])}
+				onChange={(value) => onUpdateEntry(row.id, { [id]: value })}
 			/>
 		),
-	}));
+	};
 }
 
-function BillingInvoiceEntryCell({
-	column,
-	fieldId,
-	fieldName,
-	isReadonly,
-	onUpdateEntry,
-	row,
-}: {
-	column: BillingInvoiceEntryColumnConfig;
-	fieldId: string;
-	fieldName: string;
-	isReadonly: boolean;
-	onUpdateEntry: BillingInvoiceEntryUpdater;
-	row: BillingInvoiceLineEntry;
-}) {
-	const value = String(row[column.id]);
-
-	if (column.kind === "dropdown") {
-		return (
-			<EntryDropdown
-				id={fieldId}
-				name={fieldName}
-				options={column.options ?? []}
-				readOnly={isReadonly}
-				value={value}
-				onChange={(nextValue) =>
-					onUpdateEntry(row.id, { [column.id]: nextValue })
-				}
-			/>
-		);
-	}
-
-	if (column.kind === "amount") {
-		return (
+function lineAmountColumn(
+	id: keyof BillingInvoiceLineEntry,
+	header: string,
+	width: number,
+	isReadonly: boolean,
+	onUpdateEntry: BillingInvoiceLineEntryUpdater,
+): ModuleDataEntryColumn<BillingInvoiceLineEntry> {
+	return {
+		header,
+		id,
+		width,
+		widthClassName: `w-[${width / 16}rem]`,
+		renderCell: (row, _index, context) => (
 			<EntryAmountInput
-				id={fieldId}
-				name={fieldName}
-				value={value}
+				id={context.fieldId}
+				name={context.fieldName}
 				readOnly={isReadonly}
-				onValueChange={(nextValue) =>
-					onUpdateEntry(row.id, { [column.id]: nextValue })
-				}
+				value={String(row[id])}
+				onValueChange={(value) => onUpdateEntry(row.id, { [id]: value })}
 			/>
-		);
-	}
-
-	return (
-		<EntryInput
-			id={fieldId}
-			name={fieldName}
-			value={value}
-			readOnly={isReadonly}
-			onChange={(nextValue) => onUpdateEntry(row.id, { [column.id]: nextValue })}
-		/>
-	);
+		),
+	};
 }
 
-function EntryDropdown({
-	id,
-	name,
-	onChange,
-	options,
-	readOnly,
-	value,
-}: {
-	id: string;
-	name: string;
-	onChange: (value: string) => void;
-	options: AppAdvancedDropdownOption[];
-	readOnly: boolean;
-	value: string;
-}) {
-	return (
-		<AppAdvancedDropdown
-			id={id}
-			name={name}
-			className={EntryDropdownClassName}
-			value={value}
-			options={options}
-			placeholder=""
-			readOnly={readOnly}
-			onChange={(nextValue) => onChange(String(nextValue))}
-		/>
-	);
+function readOnlyLineAmountColumn(
+	id: string,
+	header: string,
+	width: number,
+	getValue: (row: BillingInvoiceLineEntry) => number,
+): ModuleDataEntryColumn<BillingInvoiceLineEntry> {
+	return {
+		header,
+		id,
+		width,
+		widthClassName: `w-[${width / 16}rem]`,
+		renderCell: (row, _index, context) => (
+			<EntryAmountInput
+				id={context.fieldId}
+				name={context.fieldName}
+				readOnly
+				value={formatBillingInvoiceEntryAmount(getValue(row))}
+				onValueChange={() => undefined}
+			/>
+		),
+	};
+}
+
+function accountTextColumn(
+	id: keyof BillingInvoiceAccountEntry,
+	header: string,
+	width: number,
+	isReadonly: boolean,
+	onUpdateEntry: BillingInvoiceAccountEntryUpdater,
+): ModuleDataEntryColumn<BillingInvoiceAccountEntry> {
+	return {
+		header,
+		id,
+		width,
+		widthClassName: `w-[${width / 16}rem]`,
+		renderCell: (row, _index, context) => (
+			<EntryInput
+				id={context.fieldId}
+				name={context.fieldName}
+				readOnly={isReadonly}
+				value={String(row[id])}
+				onChange={(value) => onUpdateEntry(row.id, { [id]: value })}
+			/>
+		),
+	};
+}
+
+function accountAmountColumn(
+	id: keyof BillingInvoiceAccountEntry,
+	header: string,
+	width: number,
+	isReadonly: boolean,
+	onUpdateEntry: BillingInvoiceAccountEntryUpdater,
+): ModuleDataEntryColumn<BillingInvoiceAccountEntry> {
+	return {
+		header,
+		id,
+		width,
+		widthClassName: `w-[${width / 16}rem]`,
+		renderCell: (row, _index, context) => (
+			<EntryAmountInput
+				id={context.fieldId}
+				name={context.fieldName}
+				readOnly={isReadonly}
+				value={String(row[id])}
+				onValueChange={(value) => onUpdateEntry(row.id, { [id]: value })}
+			/>
+		),
+	};
 }
 
 function EntryInput({
@@ -196,109 +247,9 @@ function entryCellControlClassName(extraClassName?: string) {
 	);
 }
 
-const BillingInvoiceEntryColumnConfigs = [
-	column(
-		"Description",
-		"description",
-		"dropdown",
-		300,
-		"w-[19rem]",
-		BillingInvoiceDescriptionOptions,
-	),
-	column("Particulars", "particulars", "text", 280, "w-[17.5rem]"),
-	column("Amount", "amount", "amount", 130, "w-[8rem]"),
-	column("Qty", "quantity", "amount", 120, "w-[7.5rem]"),
-	column("Net Amount", "netAmount", "amount", 130, "w-[8rem]"),
-	column("VAT Amount", "vatAmount", "amount", 130, "w-[8rem]"),
-	column("WVAT Amount", "wvatAmount", "amount", 130, "w-[8rem]"),
-	column("EWT Amount", "ewtAmount", "amount", 130, "w-[8rem]"),
-	column("Discount %", "discountPercent", "text", 120, "w-[7.5rem]"),
-	column("Discount Amount", "discountAmount", "amount", 140, "w-[8.75rem]"),
-	column("Gross Amount", "grossAmount", "amount", 140, "w-[8.75rem]"),
-	column(
-		"VAT Type",
-		"vatType",
-		"dropdown",
-		130,
-		"w-[8rem]",
-		BillingInvoiceVatTypeOptions,
-	),
-	column(
-		"VATable",
-		"vatable",
-		"dropdown",
-		110,
-		"w-[7rem]",
-		BillingInvoiceBooleanOptions,
-	),
-	column(
-		"VAT Inc.",
-		"vatInclusive",
-		"dropdown",
-		110,
-		"w-[7rem]",
-		BillingInvoiceBooleanOptions,
-	),
-	column(
-		"With WVAT",
-		"withWvat",
-		"dropdown",
-		110,
-		"w-[7rem]",
-		BillingInvoiceBooleanOptions,
-	),
-	column(
-		"WVAT Type",
-		"wvatType",
-		"dropdown",
-		120,
-		"w-[7.5rem]",
-		BillingInvoiceTaxTypeOptions,
-	),
-	column(
-		"With EWT",
-		"withEwt",
-		"dropdown",
-		110,
-		"w-[7rem]",
-		BillingInvoiceBooleanOptions,
-	),
-	column(
-		"EWT Type",
-		"ewtType",
-		"dropdown",
-		110,
-		"w-[7rem]",
-		BillingInvoiceTaxTypeOptions,
-	),
-	column(
-		"Res. Center",
-		"responsibilityCenter",
-		"dropdown",
-		210,
-		"w-[13rem]",
-		BillingInvoiceResponsibilityCenterOptions,
-	),
-];
-
-function column(
-	header: string,
-	id: keyof BillingInvoiceLineEntry,
-	kind: BillingInvoiceEntryColumnKind,
-	width: number,
-	widthClassName: string,
-	options?: AppAdvancedDropdownOption[],
-): BillingInvoiceEntryColumnConfig {
-	return {
-		header,
-		id,
-		kind,
-		options,
-		width,
-		widthClassName,
-	};
+function formatBillingInvoiceEntryAmount(value: number) {
+	return new Intl.NumberFormat("en-PH", {
+		maximumFractionDigits: 2,
+		minimumFractionDigits: 2,
+	}).format(value);
 }
-
-const EntryDropdownClassName =
-	"[&_.app-advanced-dropdown-control]:h-10 [&_.app-advanced-dropdown-control]:rounded-none [&_.app-advanced-dropdown-control]:border-0 [&_.app-advanced-dropdown-control]:bg-transparent [&_.app-advanced-dropdown-control]:px-3 [&_.app-advanced-dropdown-control]:shadow-none [&_.app-advanced-dropdown-control]:focus:ring-2 [&_.app-advanced-dropdown-control]:focus:ring-inset [&_.app-advanced-dropdown-control]:focus:ring-skyblue/35";
-

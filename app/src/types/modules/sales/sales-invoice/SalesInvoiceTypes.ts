@@ -32,7 +32,16 @@ export type SalesInvoiceLineItem = {
   withEwt: string;
 };
 
+export type SalesInvoiceAccountEntry = {
+  id: string;
+  accountCode: string;
+  accountTitle: string;
+  debit: string;
+  credit: string;
+};
+
 export type SalesInvoiceFormValues = {
+  accountEntries: SalesInvoiceAccountEntry[];
   address: string;
   amountDue: string;
   billToCode: string;
@@ -41,6 +50,7 @@ export type SalesInvoiceFormValues = {
   commAmount: string;
   commRemarks: string;
   contactNo: string;
+  contactPerson: string;
   currency: string;
   defaultAccount: string;
   discount: string;
@@ -57,6 +67,7 @@ export type SalesInvoiceFormValues = {
   referenceNo: string;
   remarks: string;
   resCenter: string;
+  salesPersonnel: string;
   sjNo: string;
   soDate: string;
   soNo: string;

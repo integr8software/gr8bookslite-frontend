@@ -4,6 +4,7 @@ export const GoodsIssueHref = getModuleRoute("GI");
 
 export const GoodsIssueStatusFilterOptions = [
 	{ label: "All statuses", value: "all" },
+	{ label: "Draft", value: "Draft" },
 	{ label: "Active", value: "Active" },
 	{ label: "Pending", value: "Pending" },
 	{ label: "Approved", value: "Approved" },
@@ -14,6 +15,7 @@ export const GoodsIssueStatusFilterOptions = [
 
 export const GoodsIssueStatusFilters = [
 	"all",
+	"Draft",
 	"Active",
 	"Pending",
 	"Approved",

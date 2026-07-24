@@ -1,2 +1,2 @@
-export * from "@/app/src/ui/modules/sales/sales-quotation/Main";
-export * from "@/app/src/ui/modules/sales/sales-quotation/Action";
+export * from "@/app/src/ui/modules/sales/sales-quotation/SalesQuotationFormPage";
+export * from "@/app/src/ui/modules/sales/sales-quotation/SalesQuotationListPage";

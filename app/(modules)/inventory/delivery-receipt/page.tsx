@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { DeliveryReceiptListPage } from "@/app/src/ui/modules/inventory/delivery-receipt/DeliveryReceiptListPage";
+import { DeliveryReceiptOverviewPage } from "@/app/src/ui/modules/inventory/delivery-receipt/overview/DeliveryReceiptOverviewPage";
 
 const PageTitle = "Delivery Receipt";
 
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default function InventoryDeliveryReceiptPage() {
-  return <DeliveryReceiptListPage />;
+  return <DeliveryReceiptOverviewPage />;
 }
 
 

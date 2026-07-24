@@ -1,6 +1,9 @@
 export const AiAssistantPurchaseRequestPrefillStorageKey =
   "gr8books.aiAssistant.purchaseRequestPrefill";
 
+export const AiAssistantSalesQuotationPrefillStorageKey =
+  "gr8books.aiAssistant.salesQuotationPrefill";
+
 export const AiAssistantTermManagementPendingActionStorageKey =
 	"gr8books.aiAssistant.termManagementPendingAction";
 

@@ -21,18 +21,39 @@ export type SalesJournalLine = {
 	atcCode: string;
 };
 
+export type SalesJournalItemEntry = {
+	id: string;
+	professionalServiceType: string;
+	rate: string;
+	quantity: string;
+	amount: string;
+	vatAmount: string;
+	discountAmount: string;
+	netAmount: string;
+};
+
 export type SalesJournalRecord = {
 	id: string;
+	address: string;
+	contactNo: string;
+	contactPerson: string;
 	partyCode: string;
 	partyName: string;
+	poNo: string;
+	projectName: string;
 	remarks: string;
+	resCenter: string;
 	documentDate: string;
 	currency: string;
 	exchangeRate: number;
 	terms: string;
 	dueDate: string;
 	documentNo: string;
+	salesPersonnel: string;
+	siNo: string;
+	soNo: string;
 	status: SalesJournalStatus;
+	itemEntries: SalesJournalItemEntry[];
 	lines: SalesJournalLine[];
 	createdAt: string;
 	updatedAt: string;
@@ -44,6 +65,7 @@ export type SalesJournalFormValues = Omit<
 >;
 
 export type SalesJournalLineField = keyof SalesJournalLine;
+export type SalesJournalItemEntryField = keyof SalesJournalItemEntry;
 
 export type SalesJournalFormErrors = Partial<
 	Record<keyof SalesJournalFormValues | "balance", string>

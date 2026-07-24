@@ -2,6 +2,7 @@ import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberDa
 import type {
 	GoodsIssueFormValues,
 	GoodsIssueLineEntry,
+	GoodsIssueMaterialRequestCopyRecord,
 	GoodsIssueRecord,
 	GoodsIssueStatus,
 	GoodsIssueTotals,
@@ -14,6 +15,7 @@ export const GoodsIssueTransactionTypeOptions = [
 	{ name: "Inventory Issue", value: "Inventory Issue" },
 	{ name: "Material Request Issue", value: "Material Request Issue" },
 	{ name: "Fixed Asset Issue", value: "Fixed Asset Issue" },
+	{ name: "Variance", value: "Variance" },
 ];
 
 export const GoodsIssueWarehouseOptions = [
@@ -40,6 +42,38 @@ export const GoodsIssueResponsibilityCenterOptions = [
 	{ name: "CC-OPS-001", value: "CC-OPS-001" },
 	{ name: "CC-ADM-001", value: "CC-ADM-001" },
 ];
+
+export const GoodsIssueMaterialRequestCopyRecords: GoodsIssueMaterialRequestCopyRecord[] =
+	[
+		{
+			id: "mr-001",
+			documentDate: "2026-07-16",
+			itemCategory: "Supplies",
+			itemCode: "ITEM-001",
+			mrNo: "MR-2026-0031",
+			partyCode: "VCE-001",
+			partyName: "North Harbor Office Depot",
+			remarks: "Office supplies material request.",
+			requestedQuantity: "18.00",
+			sourceNo: "MR-2026-0031",
+			uom: "PCS",
+			warehouse: "Main Warehouse",
+		},
+		{
+			id: "mr-002",
+			documentDate: "2026-07-14",
+			itemCategory: "Consumables",
+			itemCode: "ITEM-002",
+			mrNo: "MR-2026-0028",
+			partyCode: "VCE-002",
+			partyName: "Aster Foods Corporation",
+			remarks: "Warehouse consumables request.",
+			requestedQuantity: "8.00",
+			sourceNo: "MR-2026-0028",
+			uom: "BOX",
+			warehouse: "Project Warehouse",
+		},
+	];
 
 export const MockGoodsIssues: GoodsIssueRecord[] = [
 	{

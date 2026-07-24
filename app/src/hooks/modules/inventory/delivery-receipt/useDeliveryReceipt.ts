@@ -19,6 +19,10 @@ import {
 	getInitialDeliveryReceipts,
 	writeStoredDeliveryReceipts,
 } from "@/app/src/data/modules/inventory/delivery-receipt/DeliveryReceiptData";
+import {
+	createPickListFormValuesFromRecord,
+	getInitialPickLists,
+} from "@/app/src/data/modules/inventory/pick-list/PickListData";
 import { DeliveryReceiptStatusFilters } from "@/app/src/constants/modules/inventory/delivery-receipt/DeliveryReceiptConstants";
 import type {
 	DeliveryReceiptActionMode,
@@ -112,6 +116,55 @@ export function useDeliveryReceiptActionForm(
 		setValues((current) => ({ ...current, lineEntries }));
 	}
 
+	function copyFromPickLists(recordIds: string[]) {
+		const selectedPickLists = getInitialPickLists().filter((pickList) =>
+			recordIds.includes(pickList.id),
+		);
+
+		if (selectedPickLists.length === 0) {
+			toast.error("Select at least one pick list to copy.");
+			return;
+		}
+
+		const pickListValues = selectedPickLists.map(createPickListFormValuesFromRecord);
+		const pickListLines = pickListValues.flatMap((pickList) =>
+			pickList.lineEntries.filter(
+				(lineEntry) =>
+					lineEntry.vceCode.trim() ||
+					lineEntry.vceName.trim() ||
+					lineEntry.remarks.trim() ||
+					lineEntry.referenceNo.trim(),
+			),
+		);
+		const firstPickList = pickListValues[0];
+		const firstLine = pickListLines[0];
+
+		setValues((current) => ({
+			...current,
+			deliveryDate: firstPickList.deliveryDate || current.deliveryDate,
+			documentDate: firstPickList.documentDate || current.documentDate,
+			driverName: firstPickList.driverName || current.driverName,
+			plateNo: firstPickList.plateNo || current.plateNo,
+			remarks: firstPickList.remarks || current.remarks,
+			soNo: firstLine?.referenceNo || current.soNo,
+			vceCode: firstLine?.vceCode || current.vceCode,
+			vceName: firstLine?.vceName || current.vceName,
+			billToCode: firstLine?.vceCode || current.billToCode,
+			billToName: firstLine?.vceName || current.billToName,
+			lineEntries:
+				pickListLines.length > 0
+					? pickListLines.map((lineEntry) =>
+							createBlankDeliveryReceiptLineEntry({
+								name: lineEntry.vceName,
+								description: lineEntry.referenceNo,
+								particulars: lineEntry.remarks,
+							}),
+						)
+					: current.lineEntries,
+		}));
+		toast.success("Pick list copied to delivery receipt.");
+	}
+
 	function submitReceipt() {
 		const validation = validateDeliveryReceiptForm(values);
 
@@ -137,6 +190,7 @@ export function useDeliveryReceiptActionForm(
 	}
 
 	return {
+		copyFromPickLists,
 		isRecordMissing: mode !== "add" && !initialRecord,
 		submitReceipt,
 		updateField,

@@ -12,7 +12,7 @@ import type {
 	PurchaseOrderItem,
 	PurchaseOrderRecord,
 } from "@/app/src/types/modules/purchasing/purchase-order/PurchaseOrderTypes";
-import { formatPurchaseOrderNumber } from "@/app/src/ui/modules/purchasing/purchase-order/PurchaseOrderReportPreview";
+import { formatPurchaseOrderNumber } from "@/app/src/ui/modules/purchasing/purchase-order/reports/PurchaseOrderReportPreview";
 
 pdfMake.addVirtualFileSystem(pdfFonts);
 
@@ -96,7 +96,7 @@ function createHeaderTable(): TableCell {
 function createTitleRow(record: PurchaseOrderRecord): TableCell {
 	return {
 		table: {
-			widths: ["*", 210],
+			widths: ["*", 180],
 			body: [
 				[
 					{
@@ -121,7 +121,7 @@ function createTitleRow(record: PurchaseOrderRecord): TableCell {
 function createSupplierRows(record: PurchaseOrderRecord): TableCell {
 	return {
 		table: {
-			widths: ["*", 210],
+			widths: ["*", 180],
 			body: [
 				[
 					labelCell("Supplier", record.vceName),
@@ -130,6 +130,10 @@ function createSupplierRows(record: PurchaseOrderRecord): TableCell {
 				[
 					labelCell("Address", record.address),
 					labelCell("Contact No", record.contactNo),
+				],
+				[
+					labelCell("Terms of Payment", record.termsOfPayment),
+					labelCell("Currency", record.currency),
 				],
 			],
 		},
@@ -199,10 +203,11 @@ function createItemRow(item: PurchaseOrderItem): TableCell[] {
 function createApprovalTable(record: PurchaseOrderRecord): TableCell {
 	return {
 		table: {
-			widths: ["*", "*", "*", 110],
+			widths: ["*", "*", "*", "*", 90],
 			body: [
 				[
 					approvalCell("Prepared by:"),
+					approvalCell("Verified by:"),
 					approvalCell("Approved by:"),
 					approvalCell("Conforme:"),
 					{

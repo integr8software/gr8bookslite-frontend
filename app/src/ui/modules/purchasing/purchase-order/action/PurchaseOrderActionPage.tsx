@@ -1,38 +1,29 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { PurchaseOrderHref } from "@/app/src/constants/modules/purchasing/purchase-order/PurchaseOrderConstants";
 import { usePurchaseOrderFormPage } from "@/app/src/hooks/modules/purchasing/purchase-order/usePurchaseOrderFormPage";
-import {
-	PurchaseOrderDetailsForm,
-	type PurchaseOrderDetailsSection,
-} from "@/app/src/ui/modules/purchasing/purchase-order/PurchaseOrderDetailsForm";
-import { PurchaseOrderEntries } from "@/app/src/ui/modules/purchasing/purchase-order/PurchaseOrderEntries";
-import { PurchaseOrderFormHeader } from "@/app/src/ui/modules/purchasing/purchase-order/PurchaseOrderFormHeader";
-import { PurchaseOrderReportPreview } from "@/app/src/ui/modules/purchasing/purchase-order/PurchaseOrderReportPreview";
+import { PurchaseOrderDetailsForm } from "@/app/src/ui/modules/purchasing/purchase-order/action/PurchaseOrderDetailsForm";
+import { PurchaseOrderFormHeader } from "@/app/src/ui/modules/purchasing/purchase-order/action/PurchaseOrderFormHeader";
+import { PurchaseOrderEntrySection } from "@/app/src/ui/modules/purchasing/purchase-order/entries/PurchaseOrderEntrySection";
+import { PurchaseOrderReportPreview } from "@/app/src/ui/modules/purchasing/purchase-order/reports/PurchaseOrderReportPreview";
 import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import {
-	ModuleTabs,
-	type ModuleTabItem,
-} from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 
-export function PurchaseOrderFormPage() {
+export function PurchaseOrderActionPage() {
 	return (
 		<Suspense fallback={<PurchaseOrderFormSkeleton />}>
-			<PurchaseOrderFormPageInner />
+			<PurchaseOrderActionPageInner />
 		</Suspense>
 	);
 }
 
-function PurchaseOrderFormPageInner() {
+function PurchaseOrderActionPageInner() {
 	const page = usePurchaseOrderFormPage();
-	const [activeTab, setActiveTab] =
-		useState<PurchaseOrderDetailsSection>("supplier");
 
 	if (page.needsRecord && !page.existingOrder) {
 		return <PurchaseOrderNotFound />;
@@ -48,19 +39,12 @@ function PurchaseOrderFormPageInner() {
 				onPreview={() => page.setShowPreview(true)}
 				onSubmit={page.handleSubmit}
 			/>
-			<ModuleTabs
-				activeTab={activeTab}
-				ariaLabel="Purchase order sections"
-				tabs={PurchaseOrderTabs}
-				onTabChange={setActiveTab}
-			/>
 			<PurchaseOrderDetailsForm
 				isReadonly={page.isReadonly}
-				section={activeTab}
 				values={page.values}
 				onUpdateField={page.updateField}
 			/>
-			<PurchaseOrderEntries
+			<PurchaseOrderEntrySection
 				error={page.errors.items}
 				isReadonly={page.isReadonly}
 				rows={page.values.items}
@@ -74,11 +58,6 @@ function PurchaseOrderFormPageInner() {
 		</section>
 	);
 }
-
-const PurchaseOrderTabs = [
-	{ id: "supplier", label: "Supplier / Amounts" },
-	{ id: "references", label: "References / Project" },
-] satisfies ModuleTabItem<PurchaseOrderDetailsSection>[];
 
 function PurchaseOrderNotFound() {
 	return (

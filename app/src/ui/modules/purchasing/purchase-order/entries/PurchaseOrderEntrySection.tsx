@@ -12,21 +12,21 @@ import {
 	type ModuleDataEntryColumn,
 	type ModuleDataEntryColumnOption,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
-import { createPurchaseOrderEntryColumns } from "@/app/src/ui/modules/purchasing/purchase-order/PurchaseOrderEntryColumns";
+import { createPurchaseOrderLineColumns } from "@/app/src/ui/modules/purchasing/purchase-order/entries/PurchaseOrderLineColumns";
 
-type PurchaseOrderEntriesProps = {
+type PurchaseOrderEntrySectionProps = {
 	error?: string;
 	isReadonly: boolean;
 	rows: PurchaseOrderItem[];
 	onRowsChange: (rows: PurchaseOrderItem[]) => void;
 };
 
-export function PurchaseOrderEntries({
+export function PurchaseOrderEntrySection({
 	error,
 	isReadonly,
 	onRowsChange,
 	rows,
-}: PurchaseOrderEntriesProps) {
+}: PurchaseOrderEntrySectionProps) {
 	const updateEntry = useCallback(
 		(rowId: string, updates: Partial<PurchaseOrderItem>) => {
 			onRowsChange(
@@ -42,7 +42,7 @@ export function PurchaseOrderEntries({
 		[rows],
 	);
 	const columns = useMemo<ModuleDataEntryColumn<PurchaseOrderItem>[]>(
-		() => createPurchaseOrderEntryColumns(isReadonly, updateEntry),
+		() => createPurchaseOrderLineColumns(isReadonly, updateEntry),
 		[isReadonly, updateEntry],
 	);
 	const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
@@ -179,6 +179,7 @@ function normalizeEntry(entry: PurchaseOrderItem): PurchaseOrderItem {
 		freightCost: Number(entry.freightCost) || 0,
 		prQuantity: Number(entry.prQuantity) || 0,
 		quantity: Number(entry.quantity) || 0,
+		rateDelivery: Number(entry.rateDelivery) || 0,
 		vatAmount: Number(entry.vatAmount) || 0,
 	};
 }
@@ -204,6 +205,7 @@ function purchaseOrderEntryHasData(entry: PurchaseOrderItem) {
 			entry.responsibilityCenter.trim() ||
 			entry.budgetCode.trim() ||
 			Number(entry.quantity) ||
+			Number(entry.rateDelivery) ||
 			Number(entry.cost),
 	);
 }

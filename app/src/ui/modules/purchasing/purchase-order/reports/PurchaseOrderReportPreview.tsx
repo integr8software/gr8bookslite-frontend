@@ -13,7 +13,7 @@ import type {
 	PurchaseOrderRecord,
 } from "@/app/src/types/modules/purchasing/purchase-order/PurchaseOrderTypes";
 import { ReportPreviewDrawer } from "@/app/src/ui/shared/reports/Reports";
-import { openPurchaseOrderPdf } from "@/app/src/ui/modules/purchasing/purchase-order/PurchaseOrderPdf";
+import { openPurchaseOrderPdf } from "@/app/src/ui/modules/purchasing/purchase-order/reports/PurchaseOrderPdf";
 
 type PurchaseOrderReportPreviewProps = {
 	isOpen: boolean;
@@ -83,16 +83,23 @@ export function PurchaseOrderReportDocument({
 							{formatPurchaseOrderDate(values.documentDate)}
 						</div>
 					</div>
-					<div className="grid grid-cols-[1fr_260px] border-t border-black">
+					<div className="grid grid-cols-[1fr_220px] border-t border-black">
 						<ReportInfoCell label="Supplier" value={values.vceName} />
 						<ReportInfoCell
 							label="Delivery Date"
 							value={formatPurchaseOrderDate(values.deliveryDate)}
 						/>
 					</div>
-					<div className="grid grid-cols-[1fr_260px] border-t border-black">
+					<div className="grid grid-cols-[1fr_220px] border-t border-black">
 						<ReportInfoCell label="Address" value={values.address} />
 						<ReportInfoCell label="Contact No" value={values.contactNo} />
+					</div>
+					<div className="grid grid-cols-[1fr_220px] border-t border-black">
+						<ReportInfoCell
+							label="Terms of Payment"
+							value={values.termsOfPayment}
+						/>
+						<ReportInfoCell label="Currency" value={values.currency} />
 					</div>
 					<div className="min-h-24 border-t border-black px-1 py-1">
 						<span className="font-bold">FOR:</span>
@@ -162,8 +169,9 @@ export function PurchaseOrderReportDocument({
 							</tr>
 						</tfoot>
 					</table>
-					<div className="grid grid-cols-[1fr_1fr_1fr_150px]">
+					<div className="grid grid-cols-[1fr_1fr_1fr_1fr_150px]">
 						<SignatureCell label="Prepared by" />
+						<SignatureCell label="Verified by" />
 						<SignatureCell label="Approved by" />
 						<SignatureCell label="Conforme" />
 						<div className="px-2 py-1">

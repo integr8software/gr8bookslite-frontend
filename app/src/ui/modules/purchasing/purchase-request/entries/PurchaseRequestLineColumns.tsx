@@ -1,39 +1,39 @@
 import { PurchaseRequestUomOptions } from "@/app/src/constants/modules/purchasing/purchase-request/PurchaseRequestConstants";
-import {
-	formatPurchaseRequestCurrency,
-	getPurchaseRequestItemAmount,
-} from "@/app/src/data/modules/purchasing/purchase-request/PurchaseRequestData";
 import type { PurchaseRequestItem } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
-import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
+import {
+	formatMoneyNumberInput,
+	MoneyNumberField,
+	parseMoneyNumberInput,
+} from "@/app/src/ui/shared/money/MoneyNumberField";
 import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
-type PurchaseRequestEntryColumnKind = "amount" | "date" | "select" | "text";
+type PurchaseRequestLineColumnKind = "amount" | "select" | "text";
 
-type PurchaseRequestEntryColumnConfig = {
+type PurchaseRequestLineColumnConfig = {
 	header: string;
-	id: keyof PurchaseRequestItem | "grossAmount";
-	kind: PurchaseRequestEntryColumnKind;
+	id: keyof PurchaseRequestItem;
+	kind: PurchaseRequestLineColumnKind;
 	width: number;
 	widthClassName: string;
 };
 
-type PurchaseRequestEntryUpdater = (
+type PurchaseRequestLineUpdater = (
 	rowId: string,
 	updates: Partial<PurchaseRequestItem>,
 ) => void;
 
-export function createPurchaseRequestEntryColumns(
+export function createPurchaseRequestLineColumns(
 	isReadonly: boolean,
-	onUpdateEntry: PurchaseRequestEntryUpdater,
+	onUpdateEntry: PurchaseRequestLineUpdater,
 ): ModuleDataEntryColumn<PurchaseRequestItem>[] {
-	return PurchaseRequestEntryColumnConfigs.map((column) => ({
+	return PurchaseRequestLineColumnConfigs.map((column) => ({
 		header: column.header,
 		id: column.id,
 		width: column.width,
 		widthClassName: column.widthClassName,
 		renderCell: (row, _index, context) => (
-			<PurchaseRequestEntryCell
+			<PurchaseRequestLineCell
 				column={column}
 				fieldId={context.fieldId}
 				fieldName={context.fieldName}
@@ -45,7 +45,7 @@ export function createPurchaseRequestEntryColumns(
 	}));
 }
 
-function PurchaseRequestEntryCell({
+function PurchaseRequestLineCell({
 	column,
 	fieldId,
 	fieldName,
@@ -53,21 +53,13 @@ function PurchaseRequestEntryCell({
 	onUpdateEntry,
 	row,
 }: {
-	column: PurchaseRequestEntryColumnConfig;
+	column: PurchaseRequestLineColumnConfig;
 	fieldId: string;
 	fieldName: string;
 	isReadonly: boolean;
-	onUpdateEntry: PurchaseRequestEntryUpdater;
+	onUpdateEntry: PurchaseRequestLineUpdater;
 	row: PurchaseRequestItem;
 }) {
-	if (column.id === "grossAmount") {
-		return (
-			<div className={entryCellDisplayClassName("text-right tabular-nums")}>
-				{formatPurchaseRequestCurrency(getPurchaseRequestItemAmount(row))}
-			</div>
-		);
-	}
-
 	const value = String(row[column.id] ?? "");
 
 	if (column.kind === "select") {
@@ -96,10 +88,12 @@ function PurchaseRequestEntryCell({
 			<MoneyNumberField
 				id={fieldId}
 				name={fieldName}
-				value={value}
+				value={formatMoneyNumberInput(value)}
 				readOnly={isReadonly}
 				onValueChange={(nextValue) =>
-					onUpdateEntry(row.id, { [column.id]: Number(nextValue) })
+					onUpdateEntry(row.id, {
+						[column.id]: parseMoneyNumberInput(nextValue),
+					})
 				}
 				className={entryCellControlClassName("text-right tabular-nums")}
 			/>
@@ -110,7 +104,7 @@ function PurchaseRequestEntryCell({
 		<input
 			id={fieldId}
 			name={fieldName}
-			type={column.kind === "date" ? "date" : "text"}
+			type="text"
 			value={value}
 			readOnly={isReadonly}
 			onChange={(event) =>
@@ -128,32 +122,23 @@ function entryCellControlClassName(extraClassName?: string) {
 	);
 }
 
-function entryCellDisplayClassName(extraClassName?: string) {
-	return joinClasses(
-		"flex h-10 w-full items-center px-3 text-sm font-semibold text-darknavy",
-		extraClassName,
-	);
-}
-
-const PurchaseRequestEntryColumnConfigs = [
+const PurchaseRequestLineColumnConfigs = [
 	column("Item Code", "itemCode", "text", 150, "w-[9.5rem]"),
 	column("Barcode", "barcode", "text", 150, "w-[9.5rem]"),
 	column("Description", "description", "text", 300, "w-[18.75rem]"),
 	column("UOM", "uom", "select", 120, "w-[7.5rem]"),
 	column("Qty", "quantity", "amount", 150, "w-[9.5rem]"),
 	column("LotNo", "lotNo", "text", 120, "w-[7.5rem]"),
-	column("DateExpiry Date", "expiryDate", "date", 150, "w-[9.5rem]"),
 	column("Cost", "cost", "amount", 160, "w-[10rem]"),
-	column("Gross Amount", "grossAmount", "amount", 160, "w-[10rem]"),
 	column("Res. Center", "responsibilityCenter", "text", 190, "w-[12rem]"),
 ];
 
 function column(
 	header: string,
-	id: keyof PurchaseRequestItem | "grossAmount",
-	kind: PurchaseRequestEntryColumnKind,
+	id: keyof PurchaseRequestItem,
+	kind: PurchaseRequestLineColumnKind,
 	width: number,
 	widthClassName: string,
-): PurchaseRequestEntryColumnConfig {
+): PurchaseRequestLineColumnConfig {
 	return { header, id, kind, width, widthClassName };
 }

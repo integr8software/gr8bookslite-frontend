@@ -1,9 +1,12 @@
 "use client";
 
 import {
+	useEffect,
 	useLayoutEffect,
 	useRef,
+	useState,
 	type ChangeEvent,
+	type FocusEvent,
 	type ComponentPropsWithoutRef,
 } from "react";
 import { formatMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
@@ -31,6 +34,17 @@ export function MoneyNumberField({
 }: MoneyNumberFieldProps) {
 	const inputRef = useRef<HTMLInputElement>(null);
 	const nextSelectionRef = useRef<number | null>(null);
+	const [displayValue, setDisplayValue] = useState(value);
+
+	useEffect(() => {
+		const input = inputRef.current;
+
+		if (input && document.activeElement === input) {
+			return;
+		}
+
+		setDisplayValue(value);
+	}, [value]);
 
 	useLayoutEffect(() => {
 		const input = inputRef.current;
@@ -57,7 +71,13 @@ export function MoneyNumberField({
 		);
 
 		nextSelectionRef.current = formattedBeforeCaret.length;
+		setDisplayValue(formattedValue);
 		onValueChange(formattedValue);
+	}
+
+	function handleBlur(event: FocusEvent<HTMLInputElement>) {
+		setDisplayValue(formatMoneyNumberInput(event.target.value, allowNegative));
+		props.onBlur?.(event);
 	}
 
 	return (
@@ -66,7 +86,8 @@ export function MoneyNumberField({
 			ref={inputRef}
 			type="text"
 			inputMode={inputMode}
-			value={value}
+			value={displayValue}
+			onBlur={handleBlur}
 			onChange={handleChange}
 		/>
 	);

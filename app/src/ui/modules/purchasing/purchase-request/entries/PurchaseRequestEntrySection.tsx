@@ -2,8 +2,6 @@ import { useCallback, useMemo } from "react";
 import {
 	createPurchaseRequestId,
 	emptyPurchaseRequestItem,
-	formatPurchaseRequestCurrency,
-	getPurchaseRequestItemAmount,
 } from "@/app/src/data/modules/purchasing/purchase-request/PurchaseRequestData";
 import type { PurchaseRequestItem } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
 import {
@@ -12,21 +10,21 @@ import {
 	type ModuleDataEntryColumn,
 	type ModuleDataEntryColumnOption,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
-import { createPurchaseRequestEntryColumns } from "@/app/src/ui/modules/purchasing/purchase-request/PurchaseRequestEntryColumns";
+import { createPurchaseRequestLineColumns } from "@/app/src/ui/modules/purchasing/purchase-request/entries/PurchaseRequestLineColumns";
 
-type PurchaseRequestEntriesProps = {
+type PurchaseRequestEntrySectionProps = {
 	error?: string;
 	isReadonly: boolean;
 	rows: PurchaseRequestItem[];
 	onRowsChange: (rows: PurchaseRequestItem[]) => void;
 };
 
-export function PurchaseRequestEntries({
+export function PurchaseRequestEntrySection({
 	error,
 	isReadonly,
 	onRowsChange,
 	rows,
-}: PurchaseRequestEntriesProps) {
+}: PurchaseRequestEntrySectionProps) {
 	const updateEntry = useCallback(
 		(rowId: string, updates: Partial<PurchaseRequestItem>) => {
 			onRowsChange(
@@ -37,16 +35,16 @@ export function PurchaseRequestEntries({
 		},
 		[onRowsChange, rows],
 	);
-	const total = useMemo(
+	const totalQuantity = useMemo(
 		() =>
 			rows.reduce(
-				(currentTotal, row) => currentTotal + getPurchaseRequestItemAmount(row),
+				(currentTotal, row) => currentTotal + (Number(row.quantity) || 0),
 				0,
 			),
 		[rows],
 	);
 	const columns = useMemo<ModuleDataEntryColumn<PurchaseRequestItem>[]>(
-		() => createPurchaseRequestEntryColumns(isReadonly, updateEntry),
+		() => createPurchaseRequestLineColumns(isReadonly, updateEntry),
 		[isReadonly, updateEntry],
 	);
 	const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
@@ -147,14 +145,14 @@ export function PurchaseRequestEntries({
 			]}
 			footerDetails={
 				<div className="text-sm font-semibold text-darknavy">
-					Gross Amount: {formatPurchaseRequestCurrency(total)}
+					Total Qty: {formatPurchaseRequestQuantity(totalQuantity)}
 				</div>
 			}
 			isDraggable
 			isReadonly={isReadonly}
 			rows={rows}
 			summaryCells={{
-				grossAmount: formatPurchaseRequestCurrency(total),
+				quantity: formatPurchaseRequestQuantity(totalQuantity),
 			}}
 			title="Items"
 			onAddRows={addRows}
@@ -171,6 +169,10 @@ export function PurchaseRequestEntries({
 			onUpdateColumnWidth={() => undefined}
 		/>
 	);
+}
+
+function formatPurchaseRequestQuantity(quantity: number) {
+	return Math.trunc(Number(quantity) || 0).toLocaleString("en-US");
 }
 
 function createBlankPurchaseRequestItem(): PurchaseRequestItem {

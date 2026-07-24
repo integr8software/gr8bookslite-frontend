@@ -44,7 +44,9 @@ function createPurchaseRequestPdfDefinition(
 					body: [
 						[createHeaderTable(record)],
 						[createTitleRow(record)],
-						[createSupplierRow(record)],
+						...(purchaseRequestReportHasSupplier(record)
+							? [[createSupplierRow(record)]]
+							: []),
 						[createForRow(record)],
 						[createItemsTable(record)],
 						[createApprovalTable(record)],
@@ -146,7 +148,7 @@ function createSupplierRow(record: PurchaseRequestRecord): TableCell {
 	return {
 		text: [
 			{ text: "Supplier: ", bold: true },
-			{ text: record.vceName, bold: true },
+			{ text: record.vceName || record.vceCode, bold: true },
 		],
 		margin: [3, 3, 3, 3],
 	};
@@ -167,17 +169,19 @@ function createForRow(record: PurchaseRequestRecord): TableCell {
 function createItemsTable(record: PurchaseRequestRecord): TableCell {
 	const totalCost = getPurchaseRequestCostTotal(record);
 	const totalQuantity = getPurchaseRequestQuantityTotal(record);
+	const hasCost = purchaseRequestReportHasCost(record);
 	const body: TableCell[][] = [
 		[
 			headerCell("ItemCode"),
 			headerCell("BarCode"),
 			headerCell("ItemName"),
 			headerCell("UOM"),
-			headerCell("Cost", "right"),
 			headerCell("Qty", "right"),
-			headerCell("Amount", "right"),
+			...(hasCost
+				? [headerCell("Cost", "right"), headerCell("Amount", "right")]
+				: []),
 		],
-		...record.items.map((item) => createItemRow(item)),
+		...record.items.map((item) => createItemRow(item, hasCost)),
 		[
 			{
 				text: "Total :",
@@ -189,52 +193,67 @@ function createItemsTable(record: PurchaseRequestRecord): TableCell {
 			{},
 			{},
 			{
-				text: formatPurchaseRequestCurrency(totalCost),
-				bold: true,
-				alignment: "right",
-			},
-			{
 				text: formatPurchaseRequestQuantity(totalQuantity),
 				bold: true,
 				alignment: "right",
 			},
-			{
-				text: formatPurchaseRequestCurrency(getPurchaseRequestTotal(record)),
-				bold: true,
-				alignment: "right",
-			},
+			...(hasCost
+				? [
+						{
+							text: formatPurchaseRequestCurrency(totalCost),
+							bold: true,
+							alignment: "right" as const,
+						},
+						{
+							text: formatPurchaseRequestCurrency(
+								getPurchaseRequestTotal(record),
+							),
+							bold: true,
+							alignment: "right" as const,
+						},
+					]
+				: []),
 		],
 	];
 
 	return {
 		table: {
 			headerRows: 1,
-			widths: [70, 70, "*", 44, 76, 48, 86],
+			widths: hasCost
+				? [70, 70, "*", 44, 48, 76, 86]
+				: [70, 70, "*", 44, 48],
 			body,
 		},
 		layout: thinGridLayout,
 	};
 }
 
-function createItemRow(item: PurchaseRequestItem): TableCell[] {
+function createItemRow(
+	item: PurchaseRequestItem,
+	hasCost: boolean,
+): TableCell[] {
 	return [
 		bodyCell(item.itemCode),
 		bodyCell(item.barcode),
 		bodyCell(item.description),
 		bodyCell(item.uom),
-		bodyCell(formatPurchaseRequestCurrency(item.cost), "right"),
 		bodyCell(formatPurchaseRequestQuantity(item.quantity), "right"),
-		bodyCell(
-			formatPurchaseRequestCurrency(getPurchaseRequestItemAmount(item)),
-			"right",
-		),
+		...(hasCost
+			? [
+					bodyCell(formatPurchaseRequestCurrency(item.cost), "right"),
+					bodyCell(
+						formatPurchaseRequestCurrency(getPurchaseRequestItemAmount(item)),
+						"right",
+					),
+				]
+			: []),
 	];
 }
 
 function createApprovalTable(record: PurchaseRequestRecord): TableCell {
 	return {
 		table: {
-			widths: ["*", "*", 110],
+			widths: ["*", "*", "*", 110],
 			body: [
 				[
 					approvalCell(
@@ -242,6 +261,7 @@ function createApprovalTable(record: PurchaseRequestRecord): TableCell {
 						record.preparedBy,
 						record.preparedBySignatureImageUrl,
 					),
+					approvalCell("Checked by:", ""),
 					approvalCell(
 						`${record.approvedByLabel || "Approved by"}:`,
 						record.approvedBy,
@@ -334,6 +354,21 @@ function getPurchaseRequestQuantityTotal(
 
 function formatPurchaseRequestQuantity(quantity: number) {
 	return Math.trunc(Number(quantity) || 0).toLocaleString("en-US");
+}
+
+function purchaseRequestReportHasCost(
+	record: Pick<PurchaseRequestRecord, "items">,
+) {
+	return record.items.some((item) => Number(item.cost) > 0);
+}
+
+function purchaseRequestReportHasSupplier(
+	record: Pick<PurchaseRequestRecord, "items" | "vceCode" | "vceName">,
+) {
+	return (
+		purchaseRequestReportHasCost(record) &&
+		Boolean(record.vceCode.trim() || record.vceName.trim())
+	);
 }
 
 function getPrNumberFontSize(value: string) {

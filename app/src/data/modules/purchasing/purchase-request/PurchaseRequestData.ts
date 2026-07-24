@@ -72,6 +72,29 @@ export const emptyPurchaseRequestItem: PurchaseRequestItem = {
 	responsibilityCenter: "",
 };
 
+export const PurchaseRequestMaterialPlanRecords = [
+	{
+		id: "mp-2026-0001",
+		source: "Material Plan",
+		sourceNo: "MP-2026-0001",
+		partyName: "Material Planning",
+		documentDate: "2026-07-18",
+		remarks: "Material plan request",
+		items: [
+			{
+				itemCode: "IM0020",
+				barcode: "",
+				description: "Topcoat Matte",
+				uom: "PC",
+				quantity: 10,
+				lotNo: "",
+				cost: 0,
+				responsibilityCenter: "",
+			},
+		],
+	},
+];
+
 export function createPurchaseRequestFormValues(
 	record?: PurchaseRequestRecord,
 ): PurchaseRequestFormValues {

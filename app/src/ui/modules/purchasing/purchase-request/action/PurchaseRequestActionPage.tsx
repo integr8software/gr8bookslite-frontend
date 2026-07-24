@@ -1,13 +1,13 @@
 "use client";
 
 import { Suspense } from "react";
-import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, FileText, Printer, Save } from "lucide-react";
 import {
 	PurchaseRequestFormPageCopy,
 	PurchaseRequestHref,
 } from "@/app/src/constants/modules/purchasing/purchase-request/PurchaseRequestConstants";
+import { PurchaseRequestMaterialPlanRecords } from "@/app/src/data/modules/purchasing/purchase-request/PurchaseRequestData";
 import { usePurchaseRequestFormPage } from "@/app/src/hooks/modules/purchasing/purchase-request/usePurchaseRequestFormPage";
 import {
 	ModuleHeader,
@@ -15,27 +15,23 @@ import {
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import {
 	PurchaseRequestDetailsForm,
-	type PurchaseRequestDetailsSection,
-} from "@/app/src/ui/modules/purchasing/purchase-request/PurchaseRequestDetailsForm";
-import { PurchaseRequestEntries } from "@/app/src/ui/modules/purchasing/purchase-request/PurchaseRequestEntries";
-import { PurchaseRequestPreviewDrawer } from "@/app/src/ui/modules/purchasing/purchase-request/PurchaseRequestPreviewDrawer";
+} from "@/app/src/ui/modules/purchasing/purchase-request/action/PurchaseRequestDetailsForm";
+import { PurchaseRequestEntrySection } from "@/app/src/ui/modules/purchasing/purchase-request/entries/PurchaseRequestEntrySection";
+import { PurchaseRequestPreviewDrawer } from "@/app/src/ui/modules/purchasing/purchase-request/reports/PurchaseRequestPreviewDrawer";
 import {
-	ModuleTabs,
-	type ModuleTabItem,
-} from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
+	AppCopyFromDropdown,
+} from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
 
-export function PurchaseRequestFormPage() {
+export function PurchaseRequestActionPage() {
 	return (
 		<Suspense fallback={<PurchaseRequestFormSkeleton />}>
-			<PurchaseRequestFormPageInner />
+			<PurchaseRequestActionPageInner />
 		</Suspense>
 	);
 }
 
-function PurchaseRequestFormPageInner() {
+function PurchaseRequestActionPageInner() {
 	const page = usePurchaseRequestFormPage();
-	const [activeTab, setActiveTab] =
-		useState<PurchaseRequestDetailsSection>("supplier");
 	const title = getPurchaseRequestTitle(
 		page.mode,
 		page.existingRequest?.transNo,
@@ -62,19 +58,12 @@ function PurchaseRequestFormPageInner() {
 			/>
 
 			<div className="grid min-w-0 gap-5">
-				<ModuleTabs
-					activeTab={activeTab}
-					ariaLabel="Purchase request sections"
-					tabs={PurchaseRequestTabs}
-					onTabChange={setActiveTab}
-				/>
 				<PurchaseRequestDetailsForm
 					isReadonly={page.isReadonly}
-					section={activeTab}
 					values={page.values}
 					onUpdateField={page.updateField}
 				/>
-				<PurchaseRequestEntries
+				<PurchaseRequestEntrySection
 					error={page.errors.items}
 					isReadonly={page.isReadonly}
 					rows={page.values.items}
@@ -90,11 +79,6 @@ function PurchaseRequestFormPageInner() {
 		</section>
 	);
 }
-
-const PurchaseRequestTabs = [
-	{ id: "supplier", label: "Supplier / Request" },
-	{ id: "references", label: "References / Project" },
-] satisfies ModuleTabItem<PurchaseRequestDetailsSection>[];
 
 type PurchaseRequestFormPageState = ReturnType<
 	typeof usePurchaseRequestFormPage
@@ -131,15 +115,22 @@ function PurchaseRequestHeaderActions({
 					Edit
 				</Link>
 			) : (
-				<button
-					type="button"
-					disabled={page.isSubmitting}
-					onClick={page.handleSubmit}
-					className={`${moduleHeaderActionClassNames.primary} disabled:cursor-not-allowed disabled:opacity-60`}
-				>
-					<Save className="h-4 w-4" aria-hidden="true" />
-					{page.isSubmitting ? "Saving..." : "Save"}
-				</button>
+				<>
+					<AppCopyFromDropdown
+						records={PurchaseRequestMaterialPlanRecords}
+						sources={["Material Plan"]}
+						onApply={page.copyFromMaterialPlan}
+					/>
+					<button
+						type="button"
+						disabled={page.isSubmitting}
+						onClick={page.handleSubmit}
+						className={`${moduleHeaderActionClassNames.primary} disabled:cursor-not-allowed disabled:opacity-60`}
+					>
+						<Save className="h-4 w-4" aria-hidden="true" />
+						{page.isSubmitting ? "Saving..." : "Save"}
+					</button>
+				</>
 			)}
 		</>
 	);

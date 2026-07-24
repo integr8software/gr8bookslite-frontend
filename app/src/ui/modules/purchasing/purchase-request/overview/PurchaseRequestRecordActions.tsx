@@ -12,15 +12,15 @@ import {
 	ModuleTableActions,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
-type PurchaseRequestTableRowProps = {
+type PurchaseRequestRecordActionsProps = {
 	request: PurchaseRequestRecord;
 	onDeleteRequest: (request: PurchaseRequestRecord) => void;
 };
 
-export function PurchaseRequestTableRow({
+export function PurchaseRequestRecordActions({
 	request,
 	onDeleteRequest,
-}: PurchaseRequestTableRowProps) {
+}: PurchaseRequestRecordActionsProps) {
 	return (
 		<tr className="module-table-row border-b border-darknavy/8 last:border-b-0">
 			<td className="px-4 py-4 font-semibold">{request.transNo}</td>

@@ -8,7 +8,7 @@ import {
 import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import type { PurchaseRequestRecord } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
 import { ReportGeneratePdfAction } from "@/app/src/ui/shared/reports/Reports";
-import { openPurchaseRequestPdf } from "@/app/src/ui/modules/purchasing/purchase-request/PurchaseRequestPdf";
+import { openPurchaseRequestPdf } from "@/app/src/ui/modules/purchasing/purchase-request/reports/PurchaseRequestPdf";
 
 export function PurchaseRequestPrintPreview({
 	record,
@@ -20,6 +20,8 @@ export function PurchaseRequestPrintPreview({
 	const total = getPurchaseRequestTotal(record);
 	const totalCost = getPurchaseRequestCostTotal(record);
 	const totalQuantity = getPurchaseRequestQuantityTotal(record);
+	const hasCost = purchaseRequestReportHasCost(record);
+	const hasSupplier = purchaseRequestReportHasSupplier(record);
 
 	return (
 		<div className="bg-white">
@@ -80,12 +82,14 @@ export function PurchaseRequestPrintPreview({
 								{formatPurchaseRequestDate(record.prDate)}
 							</div>
 						</div>
-						<div className="border-t border-black px-1 py-1">
-							<div>
-								<span className="font-bold">Supplier:</span>{" "}
-								{record.vceName}
+						{hasSupplier ? (
+							<div className="border-t border-black px-1 py-1">
+								<div>
+									<span className="font-bold">Supplier:</span>{" "}
+									{record.vceName || record.vceCode}
+								</div>
 							</div>
-						</div>
+						) : null}
 						<div className="min-h-24 border-t border-black px-1 py-1">
 							<span className="font-bold">FOR:</span>{" "}
 							{record.forDepartment}
@@ -98,11 +102,15 @@ export function PurchaseRequestPrintPreview({
 									<PreviewTh>BarCode</PreviewTh>
 									<PreviewTh>ItemName</PreviewTh>
 									<PreviewTh>UOM</PreviewTh>
-									<PreviewTh align="right">Cost</PreviewTh>
 									<PreviewTh align="right">Qty</PreviewTh>
-									<PreviewTh align="right" edge="right">
-										Amount
-									</PreviewTh>
+									{hasCost ? (
+										<>
+											<PreviewTh align="right">Cost</PreviewTh>
+											<PreviewTh align="right" edge="right">
+												Amount
+											</PreviewTh>
+										</>
+									) : null}
 								</tr>
 							</thead>
 							<tbody>
@@ -117,18 +125,22 @@ export function PurchaseRequestPrintPreview({
 										</PreviewTd>
 										<PreviewTd>{item.uom}</PreviewTd>
 										<PreviewTd align="right">
-											{formatPurchaseRequestCurrency(item.cost)}
-										</PreviewTd>
-										<PreviewTd align="right">
 											{formatPurchaseRequestQuantity(
 												item.quantity,
 											)}
 										</PreviewTd>
-										<PreviewTd align="right" edge="right">
-											{formatPurchaseRequestCurrency(
-												getPurchaseRequestItemAmount(item),
-											)}
-										</PreviewTd>
+										{hasCost ? (
+											<>
+												<PreviewTd align="right">
+													{formatPurchaseRequestCurrency(item.cost)}
+												</PreviewTd>
+												<PreviewTd align="right" edge="right">
+													{formatPurchaseRequestCurrency(
+														getPurchaseRequestItemAmount(item),
+													)}
+												</PreviewTd>
+											</>
+										) : null}
 									</tr>
 								))}
 							</tbody>
@@ -141,21 +153,25 @@ export function PurchaseRequestPrintPreview({
 										Total :
 									</td>
 									<td className="border-y border-r border-black px-1 text-right font-bold">
-										{formatPurchaseRequestCurrency(totalCost)}
-									</td>
-									<td className="border-y border-r border-black px-1 text-right font-bold">
 										{formatPurchaseRequestQuantity(
 											totalQuantity,
 										)}
 									</td>
-									<td className="border-y border-black px-1 text-right font-bold">
-										{formatPurchaseRequestCurrency(total)}
-									</td>
+									{hasCost ? (
+										<>
+											<td className="border-y border-r border-black px-1 text-right font-bold">
+												{formatPurchaseRequestCurrency(totalCost)}
+											</td>
+											<td className="border-y border-black px-1 text-right font-bold">
+												{formatPurchaseRequestCurrency(total)}
+											</td>
+										</>
+									) : null}
 								</tr>
 							</tfoot>
 						</table>
 
-						<div className="grid grid-cols-[1fr_1fr_150px]">
+						<div className="grid grid-cols-[1fr_1fr_1fr_150px]">
 							<div className="min-h-16 border-r border-black px-1 py-1">
 								{record.preparedByLabel || "Prepared by"}:
 								<SignatureNameBlock
@@ -164,6 +180,10 @@ export function PurchaseRequestPrintPreview({
 										record.preparedBySignatureImageUrl
 									}
 								/>
+							</div>
+							<div className="min-h-16 border-r border-black px-1 py-1">
+								Checked by:
+								<SignatureNameBlock name="" signatureImageUrl="" />
 							</div>
 							<div className="min-h-16 border-r border-black px-1 py-1">
 								{record.approvedByLabel || "Approved by"}:
@@ -251,6 +271,21 @@ function getPurchaseRequestQuantityTotal(
 
 function formatPurchaseRequestQuantity(quantity: number) {
 	return Math.trunc(Number(quantity) || 0).toLocaleString("en-US");
+}
+
+function purchaseRequestReportHasCost(
+	record: Pick<PurchaseRequestRecord, "items">,
+) {
+	return record.items.some((item) => Number(item.cost) > 0);
+}
+
+function purchaseRequestReportHasSupplier(
+	record: Pick<PurchaseRequestRecord, "items" | "vceCode" | "vceName">,
+) {
+	return (
+		purchaseRequestReportHasCost(record) &&
+		Boolean(record.vceCode.trim() || record.vceName.trim())
+	);
 }
 
 function PreviewTd({

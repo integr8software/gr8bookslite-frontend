@@ -2,8 +2,8 @@
 
 import type { PurchaseRequestRecord } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
 import { ReportPreviewDrawer } from "@/app/src/ui/shared/reports/Reports";
-import { openPurchaseRequestPdf } from "@/app/src/ui/modules/purchasing/purchase-request/PurchaseRequestPdf";
-import { PurchaseRequestPrintPreview } from "@/app/src/ui/modules/purchasing/purchase-request/PurchaseRequestPrintPreview";
+import { openPurchaseRequestPdf } from "@/app/src/ui/modules/purchasing/purchase-request/reports/PurchaseRequestPdf";
+import { PurchaseRequestPrintPreview } from "@/app/src/ui/modules/purchasing/purchase-request/reports/PurchaseRequestPrintPreview";
 
 type PurchaseRequestPreviewDrawerProps = {
 	isOpen: boolean;

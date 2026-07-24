@@ -10,6 +10,7 @@ import {
 	createPurchaseRequestId,
 	createPurchaseRequestRecord,
 	emptyPurchaseRequestItem,
+	PurchaseRequestMaterialPlanRecords,
 } from "@/app/src/data/modules/purchasing/purchase-request/PurchaseRequestData";
 import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import type {
@@ -157,6 +158,40 @@ export function usePurchaseRequestFormPage() {
 		setErrors((current) => ({ ...current, items: undefined }));
 	}
 
+	function copyFromMaterialPlan(recordIds: string[]) {
+		if (isReadonly) {
+			return;
+		}
+
+		const selectedRecords = PurchaseRequestMaterialPlanRecords.filter((record) =>
+			recordIds.includes(record.id),
+		);
+
+		if (selectedRecords.length === 0) {
+			return;
+		}
+
+		const copiedItems = selectedRecords.flatMap((record) =>
+			record.items.map((item) => ({
+				...emptyPurchaseRequestItem,
+				...item,
+				id: createPurchaseRequestId("item"),
+			})),
+		);
+
+		setValues((current) => ({
+			...current,
+			items: current.items.some(purchaseRequestEntryHasData)
+				? [...current.items, ...copiedItems]
+				: copiedItems,
+			remarks:
+				current.remarks ||
+				selectedRecords.map((record) => record.remarks).filter(Boolean).join("; "),
+		}));
+		setErrors((current) => ({ ...current, items: undefined }));
+		toast.success("Material plan copied.");
+	}
+
 	function handleSubmit() {
 		if (isReadonly || isSubmittingRef.current) {
 			return;
@@ -214,6 +249,7 @@ export function usePurchaseRequestFormPage() {
 
 	return {
 		addItem,
+		copyFromMaterialPlan,
 		errors,
 		existingRequest,
 		handleSubmit,
@@ -296,4 +332,16 @@ function applyAssistantPurchaseRequestPrefill(
 		remarks: prefill.remarks || values.remarks,
 		items,
 	};
+}
+
+function purchaseRequestEntryHasData(entry: PurchaseRequestItem) {
+	return Boolean(
+		entry.itemCode.trim() ||
+			entry.barcode.trim() ||
+			entry.description.trim() ||
+			entry.lotNo.trim() ||
+			entry.responsibilityCenter.trim() ||
+			Number(entry.quantity) ||
+			Number(entry.cost),
+	);
 }

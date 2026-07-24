@@ -14,7 +14,6 @@ import {
 	getVisibleCountToActiveItem,
 	itemMatchesActiveHref,
 	joinClasses,
-	pathMatches,
 	useIncrementalVisibleCount,
 } from "@/app/src/ui/shared/main-layout/sidebar/utils";
 
@@ -24,10 +23,6 @@ const DashboardInitialCount = 3;
 const DashboardBatchSize = 3;
 const NestedInitialCount = 5;
 const NestedBatchSize = 6;
-
-function shouldUseExactActiveMatch(item: MainNavigationItem) {
-	return item.key === "maintenance-warehouses";
-}
 
 type SidebarSectionProps = {
 	activeHref: string;
@@ -47,11 +42,30 @@ export function SidebarCategorySection({
 	onToggleExpandedKey,
 }: SidebarSectionProps) {
 	const Icon = MainIcons[section.icon];
+	const hasActiveItem = section.items.some((item) =>
+		itemMatchesActiveHref(item, activeHref),
+	);
 
 	return (
 		<section className="space-y-1.5">
-			<div className="flex min-h-8 items-center gap-2 px-3 text-xs font-semibold uppercase tracking-[0.16em] text-darknavy/42">
-				<Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+			<div
+				data-main-sidebar-active-ancestor={
+					hasActiveItem ? "true" : undefined
+				}
+				className={joinClasses(
+					"flex min-h-8 items-center gap-2 rounded-md px-3 text-xs font-semibold uppercase tracking-[0.16em]",
+					hasActiveItem
+						? "bg-skyblue/8 text-darknavy"
+						: "text-darknavy/42",
+				)}
+			>
+				<Icon
+					className={joinClasses(
+						"h-3.5 w-3.5 shrink-0",
+						hasActiveItem ? "text-skyblue" : "text-darknavy/42",
+					)}
+					aria-hidden="true"
+				/>
 				<span className="min-w-0 truncate">{section.title}</span>
 			</div>
 			<div className="space-y-1">
@@ -96,8 +110,11 @@ export function SidebarSection({
 				? SidebarAllowedIcons[section.iconName] ?? Icon
 				: Icon;
 	const isDirectActive = directItem
-		? pathMatches(directItem.href, activeHref)
+		? directItem.href === activeHref
 		: false;
+	const hasActiveItem =
+		!directItem &&
+		section.items.some((item) => itemMatchesActiveHref(item, activeHref));
 	const isExpanded = expandedKeys.includes(section.key);
 	const sectionInitialCount =
 		section.key === "dashboard"
@@ -160,16 +177,28 @@ export function SidebarSection({
 					onToggleExpandedKey(section.key);
 				}}
 				aria-expanded={isExpanded}
-				className="flex min-h-10 w-full items-center gap-2 rounded-md px-3 text-left text-sm font-semibold text-darknavy transition hover:bg-darknavy/5 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-darknavy/25"
+				data-main-sidebar-active-ancestor={
+					hasActiveItem ? "true" : undefined
+				}
+				className={joinClasses(
+					"flex min-h-10 w-full items-center gap-2 rounded-md px-3 text-left text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-darknavy/25",
+					hasActiveItem
+						? "bg-skyblue/10 text-darknavy hover:bg-skyblue/14"
+						: "text-darknavy hover:bg-darknavy/5 hover:text-darknavy",
+				)}
 			>
 				<SectionIcon
-					className="h-4 w-4 shrink-0 text-darknavy/65"
+					className={joinClasses(
+						"h-4 w-4 shrink-0",
+						hasActiveItem ? "text-skyblue" : "text-darknavy/65",
+					)}
 					aria-hidden="true"
 				/>
 				<span className="min-w-0 flex-1 truncate">{section.title}</span>
 				<ChevronRight
 					className={joinClasses(
-						"h-4 w-4 shrink-0 text-darknavy/45 transition",
+						"h-4 w-4 shrink-0 transition",
+						hasActiveItem ? "text-skyblue" : "text-darknavy/45",
 						isExpanded && "rotate-90",
 					)}
 					aria-hidden="true"
@@ -264,9 +293,7 @@ export function SidebarItem({
 		hasChildren && !isExactActive && (isDescendantActive || hasActiveChild);
 	const isActive = hasChildren
 		? isExactActive || isDescendantActive || hasActiveChild
-		: shouldUseExactActiveMatch(item)
-			? isExactActive
-			: pathMatches(item.href, activeHref);
+		: isExactActive;
 	const paddingClass =
 		depth < 0
 			? "px-3"
@@ -301,11 +328,16 @@ export function SidebarItem({
 					data-main-sidebar-active-item={
 						isExactActive ? "true" : undefined
 					}
+					data-main-sidebar-active-ancestor={
+						isAncestorActive ? "true" : undefined
+					}
 					className={joinClasses(
 						"group relative flex min-h-9 w-full items-center gap-2 rounded-md py-2 text-left text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35",
 						paddingClass,
 						isAncestorActive
-							? "font-semibold text-darknavy hover:bg-skyblue/10"
+							? depth <= 0
+								? "bg-skyblue/8 font-semibold text-darknavy hover:bg-skyblue/12"
+								: "bg-skyblue/5 font-semibold text-darknavy hover:bg-skyblue/10"
 							: isExactActive
 								? "bg-skyblue/14 font-semibold text-darknavy hover:bg-skyblue/18"
 								: "text-darknavy/70 hover:bg-skyblue/10 hover:text-darknavy",

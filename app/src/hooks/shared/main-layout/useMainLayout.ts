@@ -33,17 +33,13 @@ import {
 } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
 import {
   filterMainNavigationSections,
-  filterMainSearchItems,
   flattenSections,
   getAccessibleBranches,
 } from "@/app/src/data/shared/main-layout/sidebar/SidebarUtils";
 import {
-  MainAccountNavigationSections,
-  MainAccountSearchItems,
   MainMasterNavigationSections,
-  MainMasterSearchItems,
   MainWorkspaceNavigationSections,
-  MainWorkspaceSearchItems,
+  MainAccountNavigationSections,
 } from "@/app/src/data/shared/main-layout/sidebar/SidebarNavigationData";
 import {
   MainLayoutDefaultSubscription,
@@ -547,30 +543,31 @@ export function useMainLayout() {
     [activeExpandedKeys, manualExpandedKeys, shouldAutoRevealActiveRoute],
   );
 
-  const availableSearchItems = useMemo(() => {
-    const sourceItems =
-      activeNavigationScope === "account"
-        ? MainAccountSearchItems
-        : activeNavigationScope === "master"
-          ? MainMasterSearchItems
-          : activeNavigationScope === "workspace"
-            ? MainWorkspaceSearchItems
-            : flattenSections(companyNavigationSections);
-
-    if (activeNavigationScope === "company") return sourceItems;
-    return filterMainSearchItems(sourceItems, displayUser, subscription);
-  }, [activeNavigationScope, companyNavigationSections, displayUser, subscription]);
+  const availableSearchItems = useMemo(
+    () => flattenSections(navigationSections),
+    [navigationSections],
+  );
+  const activeSearchContext = useMemo(
+    () => getActiveSearchContext(availableSearchItems, pathname),
+    [availableSearchItems, pathname],
+  );
   const searchResults = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
+    const rankedItems = rankSearchItemsByActiveContext(
+      availableSearchItems,
+      activeSearchContext,
+      normalizedQuery,
+      pathname,
+    );
 
     if (!normalizedQuery) {
-      return availableSearchItems.slice(0, 8);
+      return rankedItems.slice(0, 8);
     }
 
-    return availableSearchItems
+    return rankedItems
       .filter((item) => matchesSearchQuery(item, normalizedQuery))
       .slice(0, 12);
-  }, [availableSearchItems, query]);
+  }, [activeSearchContext, availableSearchItems, pathname, query]);
   const companySearchItems = useMemo(
     () => flattenSections(companyNavigationSections),
     [companyNavigationSections],
@@ -1981,24 +1978,17 @@ function getActiveExpandedKeys(
   const activeKeys: string[] = [];
 
   for (const section of sections) {
-    const itemKeys = getActiveItemAncestorKeys(section.items, pathname);
+    const itemKeys = findActiveItemAncestorKeys(section.items, pathname);
 
     if (
-      itemKeys.length > 0 ||
+      itemKeys !== null ||
       (section.href && pathMatches(section.href, pathname))
     ) {
-      activeKeys.push(section.key, ...itemKeys);
+      activeKeys.push(section.key, ...(itemKeys ?? []));
     }
   }
 
   return activeKeys;
-}
-
-function getActiveItemAncestorKeys(
-  items: MainNavigationItem[],
-  pathname: string,
-): string[] {
-  return findActiveItemAncestorKeys(items, pathname) ?? [];
 }
 
 function findActiveItemAncestorKeys(
@@ -2209,4 +2199,93 @@ function matchesSearchQuery(item: MainSearchItem, query: string) {
     .join(" ")
     .toLowerCase()
     .includes(query);
+}
+
+type ActiveSearchContext = {
+  href: string;
+  section: string;
+  trail: string[];
+} | null;
+
+function getActiveSearchContext(
+  items: MainSearchItem[],
+  pathname: string,
+): ActiveSearchContext {
+  const activeItem = items
+    .filter((item) => pathMatches(item.href, pathname))
+    .sort((first, second) => second.href.length - first.href.length)[0];
+
+  if (!activeItem) {
+    return null;
+  }
+
+  return {
+    href: activeItem.href,
+    section: activeItem.section,
+    trail: activeItem.trail,
+  };
+}
+
+function rankSearchItemsByActiveContext(
+  items: MainSearchItem[],
+  context: ActiveSearchContext,
+  query: string,
+  pathname: string,
+) {
+  return [...items].sort((first, second) => {
+    const scoreDelta =
+      getSearchItemScore(second, context, query, pathname) -
+      getSearchItemScore(first, context, query, pathname);
+
+    if (scoreDelta !== 0) {
+      return scoreDelta;
+    }
+
+    return first.label.localeCompare(second.label);
+  });
+}
+
+function getSearchItemScore(
+  item: MainSearchItem,
+  context: ActiveSearchContext,
+  query: string,
+  pathname: string,
+) {
+  let score = 0;
+  const label = item.label.toLowerCase();
+  const trail = item.trail.join(" ").toLowerCase();
+
+  if (pathMatches(item.href, pathname)) {
+    score += 1000;
+  }
+
+  if (context) {
+    if (item.section === context.section) {
+      score += 220;
+    }
+
+    if (item.trail[1] && item.trail[1] === context.trail[1]) {
+      score += 120;
+    }
+
+    if (item.trail.join("/") === context.trail.join("/")) {
+      score += 80;
+    }
+  }
+
+  if (query) {
+    if (label === query) {
+      score += 80;
+    } else if (label.startsWith(query)) {
+      score += 50;
+    } else if (label.includes(query)) {
+      score += 25;
+    }
+
+    if (trail.includes(query)) {
+      score += 10;
+    }
+  }
+
+  return score;
 }

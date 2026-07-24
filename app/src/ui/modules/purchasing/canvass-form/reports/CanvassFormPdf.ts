@@ -8,6 +8,7 @@ import {
 	normalizeCanvassFormItem,
 } from "@/app/src/data/modules/purchasing/canvass-form/CanvassFormData";
 import type { CanvassFormRecord } from "@/app/src/types/modules/purchasing/canvass-form/CanvassFormTypes";
+import { createReportPdfCompanyHeader } from "@/app/src/ui/shared/reports/ReportPdfCompanyHeader";
 
 pdfMake.addVirtualFileSystem(pdfFonts);
 
@@ -42,18 +43,37 @@ function createCanvassFormPdfDefinition(record: CanvassFormRecord): TDocumentDef
 function header(record: CanvassFormRecord): TableCell {
 	return {
 		table: {
-			widths: [120, "*"],
-			body: [[
-				{ text: "gr8books", bold: true, color: "#0b56b3", fontSize: 16, alignment: "center", margin: [0, 18, 0, 0] },
-				{
-					stack: [
-						{ text: "Your Company Name Here", bold: true, fontSize: 11, alignment: "center" },
-						{ text: "CANVASS FORM", bold: true, fontSize: 14, alignment: "center", margin: [0, 6, 0, 0] },
-						{ text: `Document Date: ${formatCanvassFormDate(record.documentDate)}`, alignment: "center" },
-						{ text: `Trans No.: ${record.transNo}`, alignment: "center" },
-					],
-				},
-			]],
+			widths: ["*"],
+			body: [
+				[createReportPdfCompanyHeader()],
+				[
+					{
+						table: {
+							widths: ["*", 180],
+							body: [
+								[
+									{
+										text: "CANVASS FORM",
+										bold: true,
+										fontSize: 14,
+										margin: [4, 4, 0, 3],
+									},
+									{
+										stack: [
+											`Document Date: ${formatCanvassFormDate(record.documentDate)}`,
+											`Trans No.: ${record.transNo}`,
+										],
+										bold: true,
+										alignment: "right",
+										margin: [0, 4, 4, 3],
+									},
+								],
+							],
+						},
+						layout: noBordersLayout,
+					},
+				],
+			],
 		},
 		layout: noBordersLayout,
 	};

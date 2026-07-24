@@ -7,6 +7,7 @@ import {
 	normalizeCanvassFormItem,
 } from "@/app/src/data/modules/purchasing/canvass-form/CanvassFormData";
 import type { CanvassFormRecord } from "@/app/src/types/modules/purchasing/canvass-form/CanvassFormTypes";
+import { ReportCompanyHeader } from "@/app/src/ui/shared/reports/ReportCompanyHeader";
 import { ReportPreviewDrawer } from "@/app/src/ui/shared/reports/Reports";
 import { openCanvassFormPdf } from "@/app/src/ui/modules/purchasing/canvass-form/reports/CanvassFormPdf";
 
@@ -40,15 +41,14 @@ export function CanvassFormReportDocument({ record }: { record: CanvassFormRecor
 		<div className="overflow-x-auto bg-white p-4">
 			<div className="mx-auto w-230 bg-white p-4 text-[12px] text-black">
 				<div className="border border-black">
-					<div className="grid grid-cols-[170px_1fr] gap-3 p-4">
-						<div className="grid h-20 w-24 place-items-center text-[24px] font-bold leading-5 text-[#0b56b3]">
-							gr8books
+					<ReportCompanyHeader paddingClassName="p-4" />
+					<div className="grid grid-cols-[1fr_220px] items-end border-t border-black px-3 py-2">
+						<div className="text-2xl font-black uppercase leading-none">
+							CANVASS FORM
 						</div>
-						<div className="text-center leading-6">
-							<div className="text-base font-bold">Your Company Name Here</div>
-							<div className="font-bold">CANVASS FORM</div>
-							<div>Document Date: {formatCanvassFormDate(record.documentDate)}</div>
-							<div>Trans No.: {record.transNo}</div>
+						<div className="text-right font-bold">
+							<p>Document Date: {formatCanvassFormDate(record.documentDate)}</p>
+							<p>Trans No.: {record.transNo}</p>
 						</div>
 					</div>
 					<div className="grid grid-cols-2 border-t border-black">

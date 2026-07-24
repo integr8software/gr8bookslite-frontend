@@ -28,9 +28,9 @@ export function ServiceInvoiceEntryTabs({
 						aria-selected={isActive}
 						onClick={() => onTabChange(tab.id)}
 						className={joinClasses(
-							"h-7 rounded-md px-3 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coralpink/25",
+							"h-7 rounded-md px-3 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/25",
 							isActive
-								? "bg-white text-coralpink shadow-sm ring-1 ring-darknavy/10"
+								? "bg-white text-skyblue shadow-sm ring-1 ring-skyblue/25"
 								: "text-darknavy/55 hover:bg-white/70 hover:text-darknavy",
 						)}
 					>

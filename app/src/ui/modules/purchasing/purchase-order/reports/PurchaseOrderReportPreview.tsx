@@ -12,6 +12,7 @@ import type {
 	PurchaseOrderFormValues,
 	PurchaseOrderRecord,
 } from "@/app/src/types/modules/purchasing/purchase-order/PurchaseOrderTypes";
+import { ReportCompanyHeader } from "@/app/src/ui/shared/reports/ReportCompanyHeader";
 import { ReportPreviewDrawer } from "@/app/src/ui/shared/reports/Reports";
 import { openPurchaseOrderPdf } from "@/app/src/ui/modules/purchasing/purchase-order/reports/PurchaseOrderPdf";
 
@@ -52,28 +53,7 @@ export function PurchaseOrderReportDocument({
 		<div className="overflow-x-auto bg-white p-4">
 			<div className="mx-auto w-198.5 bg-white p-4 text-[12px] text-black">
 				<div className="border border-black">
-					<div className="grid grid-cols-[170px_1fr] gap-3 p-4">
-						<div className="flex items-center justify-center">
-							<div className="grid h-20 w-24 place-items-center text-left text-[24px] font-bold leading-5 text-[#0b56b3]">
-								gr8books
-							</div>
-						</div>
-						<div className="text-center leading-6">
-							<div className="text-base font-bold">
-								Your Company Name Here
-							</div>
-							<div className="font-bold">
-								VAT REG TIN :000-000-000
-							</div>
-							<div className="font-bold">
-								Abc, 123, Sample, Malamig, City Of Mandaluyong,
-								Ncr, Second District
-							</div>
-							<div className="font-bold">
-								Telephone No: 0967-237-4514
-							</div>
-						</div>
-					</div>
+					<ReportCompanyHeader paddingClassName="p-4" />
 					<div className="grid grid-cols-[1fr_260px] items-end border-t border-black">
 						<div className="px-3 py-2 text-2xl font-black tracking-tight">
 							PURCHASE ORDER

@@ -1,6 +1,6 @@
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
-import type { Content, TableCell, TDocumentDefinitions } from "pdfmake/interfaces";
+import type { TableCell, TDocumentDefinitions } from "pdfmake/interfaces";
 import {
 	formatPurchaseOrderAmount,
 	formatPurchaseOrderDate,
@@ -13,6 +13,7 @@ import type {
 	PurchaseOrderRecord,
 } from "@/app/src/types/modules/purchasing/purchase-order/PurchaseOrderTypes";
 import { formatPurchaseOrderNumber } from "@/app/src/ui/modules/purchasing/purchase-order/reports/PurchaseOrderReportPreview";
+import { createReportPdfCompanyHeader } from "@/app/src/ui/shared/reports/ReportPdfCompanyHeader";
 
 pdfMake.addVirtualFileSystem(pdfFonts);
 
@@ -60,37 +61,7 @@ function createPurchaseOrderPdfDefinition(
 }
 
 function createHeaderTable(): TableCell {
-	const logo: Content = {
-		text: "gr8books",
-		alignment: "center",
-		color: "#0b56b3",
-		bold: true,
-		fontSize: 16,
-		margin: [0, 20, 0, 0],
-	};
-
-	return {
-		table: {
-			widths: [120, "*"],
-			body: [
-				[
-					{ ...logo, margin: [0, 8, 0, 8] },
-					{
-						stack: [
-							centerText("Your Company Name Here", 10),
-							centerText("VAT REG TIN :000-000-000"),
-							centerText(
-								"Abc, 123, Sample, Malamig, City Of Mandaluyong, Ncr, Second District",
-							),
-							centerText("Telephone No: 0967-237-4514"),
-						],
-						margin: [0, 8, 0, 8],
-					},
-				],
-			],
-		},
-		layout: noBordersLayout,
-	};
+	return createReportPdfCompanyHeader();
 }
 
 function createTitleRow(record: PurchaseOrderRecord): TableCell {
@@ -227,16 +198,6 @@ function createApprovalTable(record: PurchaseOrderRecord): TableCell {
 			],
 		},
 		layout: approvalLayout,
-	};
-}
-
-function centerText(text: string, fontSize?: number): Content {
-	return {
-		text,
-		alignment: "center",
-		bold: true,
-		fontSize,
-		margin: [0, 3, 0, 0],
 	};
 }
 

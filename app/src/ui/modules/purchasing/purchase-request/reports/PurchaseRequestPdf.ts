@@ -16,6 +16,7 @@ import type {
 	PurchaseRequestItem,
 	PurchaseRequestRecord,
 } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
+import { createReportPdfCompanyHeader } from "@/app/src/ui/shared/reports/ReportPdfCompanyHeader";
 
 pdfMake.addVirtualFileSystem(pdfFonts);
 
@@ -59,64 +60,13 @@ function createPurchaseRequestPdfDefinition(
 }
 
 function createHeaderTable(record: PurchaseRequestRecord): TableCell {
-	const logo: Content = record.logoImageUrl
-		? {
-				image: record.logoImageUrl,
-				fit: [72, 58],
-				alignment: "center",
-			}
-		: {
-				text: "Logo",
-				alignment: "center",
-				color: "#1a6290",
-				bold: true,
-				fontSize: 7,
-				margin: [0, 24, 0, 0],
-			};
-
-	return {
-		table: {
-			widths: [120, "*"],
-			body: [
-				[
-					{
-						...logo,
-						margin: [0, 8, 0, 8],
-					},
-					{
-						stack: [
-							{
-								text: record.companyName,
-								bold: true,
-								fontSize: 10,
-								alignment: "center",
-							},
-							{
-								text: `VAT REG TIN :${FormatTinNumber(record.vatRegTin)}`,
-								alignment: "center",
-								bold: true,
-								margin: [0, 3, 0, 0],
-							},
-							{
-								text: record.companyAddress,
-								alignment: "center",
-								bold: true,
-								margin: [0, 3, 0, 0],
-							},
-							{
-								text: `Telephone No: ${record.telephoneNo}`,
-								alignment: "center",
-								bold: true,
-								margin: [0, 3, 0, 0],
-							},
-						],
-						margin: [0, 8, 0, 8],
-					},
-				],
-			],
-		},
-		layout: noBordersLayout,
-	};
+	return createReportPdfCompanyHeader({
+		address: record.companyAddress,
+		companyName: record.companyName,
+		logoImageSrc: record.logoImageUrl,
+		telephoneNo: record.telephoneNo,
+		vatRegTin: FormatTinNumber(record.vatRegTin),
+	});
 }
 
 function createTitleRow(record: PurchaseRequestRecord): TableCell {

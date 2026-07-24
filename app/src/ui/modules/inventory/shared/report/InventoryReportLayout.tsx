@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { ReportCompanyHeader } from "@/app/src/ui/shared/reports/ReportCompanyHeader";
 
 export type InventoryReportInfoRow = {
 	label: string;
@@ -55,7 +56,7 @@ export function InventoryReportDocument({
 	return (
 		<div className="mx-auto w-full max-w-[58rem] bg-white p-3 text-[11px] text-black shadow-sm print:p-0 print:shadow-none">
 			<div className="flex min-h-[32rem] flex-col border-2 border-black">
-				<InventoryReportHeader isCompact={usesCenteredTitle} />
+				<ReportCompanyHeader isCompact={usesCenteredTitle} />
 				<InventoryReportTitle
 					afterTitle={afterTitle}
 					beforeTitle={beforeTitle}
@@ -108,37 +109,6 @@ function InventoryReportTitle({
 		<div className="grid grid-cols-[1fr_auto] items-end border-b-2 border-black px-3 pb-2">
 			<h2 className="text-2xl font-black uppercase leading-none">{title}</h2>
 			{afterTitle}
-		</div>
-	);
-}
-
-function InventoryReportHeader({ isCompact = false }: { isCompact?: boolean }) {
-	return (
-		<div
-			className="grid grid-cols-[8.5rem_1fr_8.5rem] items-start p-6"
-		>
-			<div className="pt-1">
-				<img
-					src="/img/icons/gr8booksneo-logo-wide.png"
-					alt="Company logo"
-					className="h-16 w-24 object-contain"
-				/>
-			</div>
-			<div className="text-center">
-				<p className="text-sm font-bold">Your Company Name Here</p>
-				<p className="mt-1 text-[10px] font-semibold leading-tight">
-					VAT REG TIN : 000-000-000-000
-				</p>
-				<p className="mt-1 text-[10px] font-semibold uppercase leading-tight">
-					ABC, 123, Sample, Malamig, City Of Mandaluyong, NCR, Second District
-				</p>
-				<p
-					className={`text-[10px] font-semibold leading-tight ${isCompact ? "mt-1" : "mt-3"}`}
-				>
-					Telephone No: 0967-237-4514
-				</p>
-			</div>
-			<div />
 		</div>
 	);
 }

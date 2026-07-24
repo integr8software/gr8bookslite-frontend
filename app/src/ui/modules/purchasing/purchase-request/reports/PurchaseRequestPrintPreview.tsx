@@ -7,6 +7,7 @@ import {
 } from "@/app/src/data/modules/purchasing/purchase-request/PurchaseRequestData";
 import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import type { PurchaseRequestRecord } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
+import { ReportCompanyHeader } from "@/app/src/ui/shared/reports/ReportCompanyHeader";
 import { ReportGeneratePdfAction } from "@/app/src/ui/shared/reports/Reports";
 import { openPurchaseRequestPdf } from "@/app/src/ui/modules/purchasing/purchase-request/reports/PurchaseRequestPdf";
 
@@ -44,34 +45,14 @@ export function PurchaseRequestPrintPreview({
 			<div className="purchase-request-print-stage overflow-x-auto bg-white p-4">
 				<div className="purchase-request-print-document mx-auto min-h-auto w-198.5 bg-white p-4 text-[12px] text-black">
 					<div className="border border-black">
-						<div className="grid grid-cols-[170px_1fr] gap-3 p-4">
-							<div className="flex items-center justify-center">
-								{record.logoImageUrl ? (
-									// User-uploaded data URLs should use a plain img element.
-									// eslint-disable-next-line @next/next/no-img-element
-									<img
-										src={record.logoImageUrl}
-										alt="Company logo"
-										className="h-20 w-24 object-contain"
-									/>
-								) : (
-									<div className="grid h-20 w-24 place-items-center text-left text-[24px] font-bold leading-5 text-[#0b56b3]">
-										gr8books
-									</div>
-								)}
-							</div>
-							<div className="text-center leading-6">
-								<div className="text-base font-bold">
-									{record.companyName}
-								</div>
-								<div>
-									VAT REG TIN :
-									{FormatTinNumber(record.vatRegTin)}
-								</div>
-								<div>{record.companyAddress}</div>
-								<div>Telephone No: {record.telephoneNo}</div>
-							</div>
-						</div>
+						<ReportCompanyHeader
+							address={record.companyAddress}
+							companyName={record.companyName}
+							logoSrc={record.logoImageUrl || "/img/icons/gr8booksneo-logo-wide.png"}
+							paddingClassName="p-4"
+							telephoneNo={record.telephoneNo}
+							vatRegTin={FormatTinNumber(record.vatRegTin)}
+						/>
 
 						<div className="grid grid-cols-[1fr_260px] items-end border-t border-black">
 							<div className="px-3 py-2 text-2xl font-black tracking-tight">

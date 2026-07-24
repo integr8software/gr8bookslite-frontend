@@ -15,6 +15,14 @@ export const PurchaseOrderUomOptions = ["PC", "BOX", "LOT", "SET", "KG"] as cons
 
 export const PurchaseOrderBooleanOptions = ["False", "True"] as const;
 
+export const PurchaseOrderTermsOptions = [
+	"",
+	"COD",
+	"Net 15",
+	"Net 30",
+	"Net 60",
+] as const;
+
 export const PurchaseOrderStatusOptions: PurchaseOrderStatus[] = [
 	"Draft",
 	"Open",

@@ -20,6 +20,7 @@ const PurchaseOrderItemSchema = z.object({
 	itemName: requiredText("Enter an item name."),
 	prQuantity: z.coerce.number().min(0),
 	quantity: z.coerce.number().min(0),
+	rateDelivery: z.coerce.number().min(0),
 	responsibilityCenter: z.string(),
 	uom: requiredText("Select a UOM."),
 	vatAmount: z.coerce.number().min(0),
@@ -47,10 +48,11 @@ const PurchaseOrderFormSchema = z.object({
 	purchaseType: requiredText("Select a purchase type."),
 	remarks: z.string(),
 	status: z.enum(["Draft", "Open", "Approved", "Closed", "Cancelled"]),
+	termsOfPayment: z.string(),
 	transNo: requiredText("Enter a transaction number."),
 	vatAmount: z.coerce.number().min(0),
 	vceCode: z.string(),
-	vceName: requiredText("Enter a VCE name."),
+	vceName: requiredText("Enter a Party name."),
 });
 
 export function validatePurchaseOrderForm(

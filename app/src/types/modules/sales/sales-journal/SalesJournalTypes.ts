@@ -74,3 +74,9 @@ export type SalesJournalFormErrors = Partial<
 };
 
 export type SalesJournalActionMode = "add" | "edit" | "view";
+
+export type SalesJournalEntryClearAction =
+	| "all"
+	| "with-data"
+	| "incomplete"
+	| "no-data";

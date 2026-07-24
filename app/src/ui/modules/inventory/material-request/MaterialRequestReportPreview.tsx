@@ -44,11 +44,12 @@ function MaterialRequestReportDocument({
 	values: MaterialRequestFormValues;
 }) {
 	const rows = createMaterialRequestPreviewRows(values.items);
+	const shouldShowStockQuantity = hasStockQuantity(values.items);
 
 	return (
-		<div className="mx-auto w-full max-w-[58rem] bg-white p-3 text-[11px] font-semibold leading-tight text-black shadow-sm print:p-0 print:shadow-none">
+		<div className="mx-auto w-full max-w-[58rem] bg-white p-2 text-[10px] font-semibold leading-tight text-black shadow-sm print:p-0 print:shadow-none">
 			<div className="border-2 border-black">
-				<div className="grid grid-cols-[11rem_1fr_11rem] items-start px-8 pb-4 pt-5">
+				<div className="grid grid-cols-[11rem_1fr_11rem] items-start px-8 pb-2 pt-3">
 					<div>
 						<Image
 							src="/img/icons/gr8booksneo-logo-wide.png"
@@ -60,21 +61,24 @@ function MaterialRequestReportDocument({
 					</div>
 					<div className="text-center">
 						<p className="text-base font-bold">Your Company Name Here</p>
-						<p className="mt-3">VAT REG TIN : 000-000-000</p>
-						<p className="mt-3 uppercase">
+						<p className="mt-1">VAT REG TIN : 000-000-000</p>
+						<p className="mt-1 uppercase">
 							ABC, 123, Sample, Malamig, City Of Mandaluyong, NCR, Second District
 						</p>
-						<p className="mt-5">Telephone No: 0967-237-4514</p>
+						<p className="mt-2">Telephone No: 0967-237-4514</p>
 					</div>
 					<div />
 				</div>
 
-				<div className="grid grid-cols-[1fr_10rem] items-end px-5 pb-4">
-					<h2 className="text-center text-2xl font-black uppercase leading-none">
+				<div className="grid grid-cols-[1fr_7rem] items-end px-5 pb-2">
+					<h2 className="text-left text-xl font-black uppercase leading-none">
 						Material Request
 					</h2>
-					<div className="text-right text-lg font-black">
-						No. {formatRequestNo(values.requestNo)}
+					<div className="justify-self-end text-right leading-none">
+						<p className="text-[9px] font-bold">MR No.:</p>
+						<p className="mt-1 text-xl font-black tracking-wide">
+							{formatRequestNo(values.requestNo)}
+						</p>
 					</div>
 				</div>
 
@@ -97,7 +101,9 @@ function MaterialRequestReportDocument({
 							<ReportHeaderCell>Item Name</ReportHeaderCell>
 							<ReportHeaderCell className="w-[12%] text-center">UOM</ReportHeaderCell>
 							<ReportHeaderCell className="w-[14%] text-right">Req QTY</ReportHeaderCell>
-							<ReportHeaderCell className="w-[14%] text-right">Stock QTY</ReportHeaderCell>
+							{shouldShowStockQuantity ? (
+								<ReportHeaderCell className="w-[14%] text-right">Stock QTY</ReportHeaderCell>
+							) : null}
 						</tr>
 					</thead>
 					<tbody>
@@ -107,7 +113,9 @@ function MaterialRequestReportDocument({
 								<ReportCell>{item.itemName}</ReportCell>
 								<ReportCell className="text-center">{item.uom}</ReportCell>
 								<ReportCell className="text-right">{item.requestQuantity}</ReportCell>
-								<ReportCell className="text-right">{item.stockQuantity}</ReportCell>
+								{shouldShowStockQuantity ? (
+									<ReportCell className="text-right">{item.stockQuantity}</ReportCell>
+								) : null}
 							</tr>
 						))}
 					</tbody>
@@ -193,6 +201,10 @@ function createMaterialRequestPreviewRows(items: MaterialRequestItem[]) {
 					uom: "",
 				},
 			];
+}
+
+function hasStockQuantity(items: MaterialRequestItem[]) {
+	return items.some((item) => item.stockQuantity !== "" && Number(item.stockQuantity) > 0);
 }
 
 function formatQuantity(value: MaterialRequestNumberValue) {

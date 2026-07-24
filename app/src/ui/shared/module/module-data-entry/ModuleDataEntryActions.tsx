@@ -323,6 +323,7 @@ export function ModuleDataEntryClearButton({
 
 export function ModuleDataEntryAddButton({
 	align = "left",
+	actions = [],
 	isOpen,
 	label = "Add Item",
 	onAddRows,
@@ -339,7 +340,7 @@ export function ModuleDataEntryAddButton({
 
 		const rect = triggerRef.current.getBoundingClientRect();
 		const menuWidth = 152;
-		const menuHeight = 188;
+		const menuHeight = 188 + actions.length * 40;
 		const viewportPadding = 8;
 		const left =
 			align === "right"
@@ -358,7 +359,7 @@ export function ModuleDataEntryAddButton({
 				: Math.max(viewportPadding, rect.top - menuHeight - 6);
 
 		setMenuStyle({ left, top });
-	}, [align, isOpen]);
+	}, [actions.length, align, isOpen]);
 
 	useEffect(() => {
 		if (!isOpen) {
@@ -463,6 +464,26 @@ export function ModuleDataEntryAddButton({
 							<Plus className="h-4 w-4" aria-hidden="true" />
 							Add
 						</button>
+						{actions.map((action) => {
+							const Icon = action.icon;
+
+							return (
+								<button
+									key={action.id}
+									type="button"
+									role="menuitem"
+									disabled={action.disabled}
+									onClick={() => {
+										action.onSelect();
+										onOpenChange(false);
+									}}
+									className="flex min-h-9 w-full items-center gap-2 rounded-md px-3 text-sm font-semibold text-darknavy/72 transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/20 disabled:cursor-not-allowed disabled:opacity-45"
+								>
+									{Icon ? <Icon className="h-4 w-4" aria-hidden="true" /> : null}
+									{action.label}
+								</button>
+							);
+						})}
 					</div>,
 					document.body,
 				)

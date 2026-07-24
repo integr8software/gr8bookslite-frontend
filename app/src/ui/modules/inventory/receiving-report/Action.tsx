@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { useCallback, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
-import { Boxes, Save } from "lucide-react";
+import { Boxes, Gift, Save } from "lucide-react";
 import {
 	calculateReceivingReportTotals,
 	createReceivingReportFormValues,
@@ -27,7 +27,6 @@ import {
   type ModuleDataEntryColumn,
   type ModuleDataEntryColumnOption,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
-import { ModuleTabs, type ModuleTabItem } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 import { openReceivingReportPdf } from "@/app/src/ui/modules/inventory/receiving-report/ReceivingReportPdf";
@@ -36,7 +35,7 @@ import { ReceivingReportReportPreview } from "@/app/src/ui/modules/inventory/rec
 const ReceivingReportHref = "/inventory/receiving-report";
 
 type ReceivingReportActionMode = "add" | "edit" | "view";
-type ReceivingReportSection = "vendor" | "amounts" | "references";
+type ReceivingReportEntrySection = "details" | "items";
 type ReceivingReportLineField = keyof ReceivingReportLine;
 type ReceivingReportColumnKind = "amount" | "date" | "dropdown" | "text";
 
@@ -64,7 +63,6 @@ export function ReceivingReportAction() {
     mode === "add"
       ? null
       : getInitialReceivingReports().find((record) => record.id === recordId) ?? null;
-  const [activeTab, setActiveTab] = useState<ReceivingReportSection>("vendor");
   const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
   const [loadedRecord, setLoadedRecord] = useState<ReceivingReportRecord | null>(initialRecord);
   const [values, setValues] = useState<ReceivingReportFormValues>(() =>
@@ -127,7 +125,6 @@ export function ReceivingReportAction() {
 
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
-      setActiveTab(getFirstErrorTab(validationErrors));
       return;
     }
 
@@ -142,15 +139,10 @@ export function ReceivingReportAction() {
 
   return (
     <>
-      <form className="grid gap-5" onSubmit={handleSubmit}>
+      <form className="grid gap-3" onSubmit={handleSubmit}>
         <ReceivingReportHeader mode={mode} isReadonly={isReadonly} onPreview={() => setIsReportPreviewOpen(true)} />
-        <ModuleTabs activeTab={activeTab} ariaLabel="Receiving report sections" tabs={ReceivingReportTabs} onTabChange={setActiveTab} />
-        <section className="grid gap-4 rounded-md border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5">
-          {activeTab === "vendor" ? <ReceivingReportVendorSection errors={errors} isReadonly={isReadonly} values={values} onChange={handleInputChange} /> : null}
-          {activeTab === "amounts" ? (
-            <ReceivingReportAmountsSection errors={errors} isReadonly={isReadonly} totals={totals} values={values} onChange={handleInputChange} />
-          ) : null}
-          {activeTab === "references" ? <ReceivingReportReferencesSection errors={errors} isReadonly={isReadonly} values={values} onChange={handleInputChange} /> : null}
+        <section className="grid gap-2 rounded-md border border-darknavy/10 bg-white p-2 shadow-sm shadow-darknavy/5 sm:p-3">
+          <ReceivingReportVendorSection errors={errors} isReadonly={isReadonly} totals={totals} values={values} onChange={handleInputChange} />
         </section>
         <ReceivingReportEntries error={errors.lines} isReadonly={isReadonly} rows={values.lines} totals={totals} onRowsChange={updateLines} onUpdateLine={updateLine} />
       </form>
@@ -198,69 +190,57 @@ function ReceivingReportHeader({ isReadonly, mode, onPreview }: { isReadonly: bo
   );
 }
 
-function ReceivingReportVendorSection({ errors, isReadonly, onChange, values }: ReceivingReportSectionProps) {
+function ReceivingReportVendorSection({ errors, isReadonly, onChange, totals, values }: ReceivingReportSectionProps & { totals: ReceivingReportTotals }) {
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
-      <div className="grid content-start gap-4">
-        <TextField label="Party Code" name="vceCode" value={values.vceCode} disabled required error={errors.vceCode} onChange={onChange} />
-        <TextField label="Party Name" name="vceName" value={values.vceName} disabled={isReadonly} required error={errors.vceName} onChange={onChange} />
-        <div className="grid gap-4 sm:grid-cols-[1fr_10rem]">
-          <SelectField label="Currency" name="currency" value={values.currency} disabled={isReadonly} required error={errors.currency} options={CurrencyOptions} onChange={onChange} />
+    <div className="grid gap-x-4 gap-y-2 xl:grid-cols-[1.15fr_1fr_1.15fr]">
+      <div className="grid content-start gap-2">
+        <TextField label="Trans No." name="transNo" value={values.transNo} disabled required error={errors.transNo} onChange={onChange} />
+        <div className="grid gap-2 sm:grid-cols-[10rem_minmax(0,1fr)]">
+          <TextField label="Party Code" name="vceCode" value={values.vceCode} disabled required error={errors.vceCode} onChange={onChange} />
+          <TextField label="Party Name" name="vceName" value={values.vceName} disabled={isReadonly} required error={errors.vceName} onChange={onChange} />
+        </div>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <TextField label="Document Date" name="documentDate" type="date" value={values.documentDate} disabled={isReadonly} required error={errors.documentDate} onChange={onChange} />
+          <TextField label="Delivery Date" name="deliveryDate" type="date" value={values.deliveryDate} disabled={isReadonly} required error={errors.deliveryDate} onChange={onChange} />
+        </div>
+        <div className="grid gap-2 sm:grid-cols-3">
+          <TextField label="PO No." name="poNo" value={values.poNo} disabled={isReadonly} required error={errors.poNo} onChange={onChange} />
+          <TextField label="DR No." name="drNo" value={values.drNo} disabled={isReadonly} onChange={onChange} />
+          <TextField label="PR No." name="prNo" value={values.prNo} disabled={isReadonly} onChange={onChange} />
+        </div>
+      </div>
+      <div className="grid content-start gap-2">
+        <TextField label="Address" name="address" value={values.address} disabled={isReadonly} required error={errors.address} onChange={onChange} />
+        <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_8rem]">
+          <TextField label="Contact No." name="contactNo" value={values.contactNo} disabled={isReadonly} required error={errors.contactNo} onChange={onChange} />
           <TextField label="Exchange Rate" name="exchangeRate" value={values.exchangeRate} disabled={isReadonly} required error={errors.exchangeRate} onChange={onChange} />
         </div>
-        <TextField label="Address" name="address" value={values.address} disabled={isReadonly} required error={errors.address} onChange={onChange} />
-      </div>
-      <div className="grid content-start gap-4">
-        <TextField label="Contact No." name="contactNo" value={values.contactNo} disabled={isReadonly} required error={errors.contactNo} onChange={onChange} />
-        <TextField label="Delivery Date" name="deliveryDate" type="date" value={values.deliveryDate} disabled={isReadonly} required error={errors.deliveryDate} onChange={onChange} />
+        <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+          <SelectField label="Currency" name="currency" value={values.currency} disabled={isReadonly} required error={errors.currency} options={CurrencyOptions} onChange={onChange} />
+          <SelectField label="Default Account" name="defaultAccount" value={values.defaultAccount} disabled={isReadonly} required error={errors.defaultAccount} options={DefaultAccountOptions} onChange={onChange} />
+        </div>
         <TextAreaField label="Remarks" name="remarks" value={values.remarks} disabled={isReadonly} onChange={onChange} />
-        <SelectField
-          label="Default Account"
-          name="defaultAccount"
-          value={values.defaultAccount}
-          disabled={isReadonly}
-          required
-          error={errors.defaultAccount}
-          options={DefaultAccountOptions}
-          onChange={onChange}
-        />
       </div>
-    </div>
-  );
-}
-
-function ReceivingReportAmountsSection({ errors, isReadonly, onChange, totals, values }: ReceivingReportSectionProps & { totals: ReceivingReportTotals }) {
-  return (
-    <div className="grid gap-6 lg:grid-cols-2">
-      <div className="grid content-start gap-4">
-        <ReadOnlyField label="Gross Amount" value={formatAmount(totals.grossAmount)} />
-        <ReadOnlyField label="Discount Amount" value={formatAmount(totals.discountAmount)} />
-        <ReadOnlyField label="VAT Amount" value={formatAmount(totals.vatAmount)} />
-        <ReadOnlyField label="EWT Amount" value={formatAmount(totals.ewtAmount)} />
-        <ReadOnlyField label="Net Amount" value={formatAmount(totals.netAmount)} />
-      </div>
-      <div className="grid content-start gap-4">
-        <SelectField label="Warehouse" name="warehouse" value={values.warehouse} disabled={isReadonly} required error={errors.warehouse} options={WarehouseOptions} onChange={onChange} />
-        <SelectField label="Status" name="status" value={values.status} disabled={isReadonly} required error={errors.status} options={StatusOptions} onChange={onChange} />
-      </div>
-    </div>
-  );
-}
-
-function ReceivingReportReferencesSection({ errors, isReadonly, onChange, values }: ReceivingReportSectionProps) {
-  return (
-    <div className="grid gap-6 lg:grid-cols-2">
-      <div className="grid content-start gap-4">
-        <TextField label="Trans No." name="transNo" value={values.transNo} disabled required error={errors.transNo} onChange={onChange} />
-        <TextField label="Document Date" name="documentDate" type="date" value={values.documentDate} disabled={isReadonly} required error={errors.documentDate} onChange={onChange} />
-        <TextField label="PO No." name="poNo" value={values.poNo} disabled={isReadonly} required error={errors.poNo} onChange={onChange} />
-        <TextField label="SI No." name="siNo" value={values.siNo} disabled={isReadonly} onChange={onChange} />
-      </div>
-      <div className="grid content-start gap-4">
-        <TextField label="Importation Ref No." name="importationRefNo" value={values.importationRefNo} disabled={isReadonly} onChange={onChange} />
-        <TextField label="ProjectRef." name="projectRef" value={values.projectRef} disabled={isReadonly} onChange={onChange} />
-        <TextField label="Project Name" name="projectName" value={values.projectName} disabled={isReadonly} onChange={onChange} />
-        <TextField label="PJ No." name="pjNo" value={values.pjNo} disabled={isReadonly} onChange={onChange} />
+      <div className="grid content-start gap-2">
+        <div className="grid gap-2 sm:grid-cols-2">
+          <SelectField label="Warehouse" name="warehouse" value={values.warehouse} disabled={isReadonly} required error={errors.warehouse} options={WarehouseOptions} onChange={onChange} />
+          <SelectField label="Status" name="status" value={values.status} disabled={isReadonly} required error={errors.status} options={StatusOptions} onChange={onChange} />
+        </div>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <TextField label="SI No." name="siNo" value={values.siNo} disabled={isReadonly} onChange={onChange} />
+          <TextField label="Importation Ref No." name="importationRefNo" value={values.importationRefNo} disabled={isReadonly} onChange={onChange} />
+        </div>
+        <div className="grid gap-2 sm:grid-cols-[8rem_minmax(0,1fr)_8rem]">
+          <TextField label="ProjectRef." name="projectRef" value={values.projectRef} disabled={isReadonly} onChange={onChange} />
+          <TextField label="Project Name" name="projectName" value={values.projectName} disabled={isReadonly} onChange={onChange} />
+          <TextField label="PJ No." name="pjNo" value={values.pjNo} disabled={isReadonly} onChange={onChange} />
+        </div>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <ReadOnlyField label="Gross Amount" value={formatAmount(totals.grossAmount)} />
+          <ReadOnlyField label="Net Amount" value={formatAmount(totals.netAmount)} />
+          <ReadOnlyField label="VAT Amount" value={formatAmount(totals.vatAmount)} />
+          <ReadOnlyField label="Discount" value={formatAmount(totals.discountAmount)} />
+        </div>
       </div>
     </div>
   );
@@ -281,13 +261,18 @@ function ReceivingReportEntries({
   rows: ReceivingReportLine[];
   totals: ReceivingReportTotals;
 }) {
+  const [activeEntryTab, setActiveEntryTab] = useState<ReceivingReportEntrySection>("items");
   const updateEntry = useCallback(
     (rowId: string, field: ReceivingReportLineField, value: string) => {
       onUpdateLine(rowId, field, value);
     },
     [onUpdateLine],
   );
-  const columns = useMemo<ModuleDataEntryColumn<ReceivingReportLine>[]>(() => createReceivingReportColumns(isReadonly, updateEntry), [isReadonly, updateEntry]);
+  const activeColumns = activeEntryTab === "items" ? ReceivingReportItemColumnConfigs : ReceivingReportDetailColumnConfigs;
+  const columns = useMemo<ModuleDataEntryColumn<ReceivingReportLine>[]>(
+    () => createReceivingReportColumns(activeColumns, isReadonly, updateEntry),
+    [activeColumns, isReadonly, updateEntry],
+  );
   const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
     () =>
       columns.map((column) => ({
@@ -303,6 +288,20 @@ function ReceivingReportEntries({
 
   function addRows(count: number) {
     onRowsChange([...rows, ...Array.from({ length: count }, () => createReceivingReportLine())]);
+  }
+
+  function addFreebies() {
+    onRowsChange([
+      ...rows,
+      createReceivingReportLine({
+        description: "Freebie item",
+        itemCategory: "Freebies",
+        cost: "0.00",
+        grossAmount: "0.0000",
+        netAmount: "0.0000",
+        rrQty: "1.00",
+      }),
+    ]);
   }
 
   function clearRows(action: ModuleDataEntryClearAction) {
@@ -371,6 +370,15 @@ function ReceivingReportEntries({
     <div className="grid gap-2">
       {error ? <ErrorText message={error} /> : null}
     <ModuleDataEntry
+      addMenuActions={[
+        {
+          disabled: isReadonly,
+          icon: Gift,
+          id: "add-freebies",
+          label: "Add Freebies",
+          onSelect: addFreebies,
+        },
+      ]}
       columns={columns}
       columnOptions={columnOptions}
       description="Record received inventory quantities, costs, taxes, and warehouse details."
@@ -397,7 +405,7 @@ function ReceivingReportEntries({
         netAmount: formatAmount(totals.netAmount),
         vatAmount: formatAmount(totals.vatAmount),
       }}
-      title="Receiving Report Details"
+      title={<ReceivingReportEntryTabs activeTab={activeEntryTab} onTabChange={setActiveEntryTab} />}
       onAddRows={addRows}
       onAutoColumnWidth={() => undefined}
       onClearRows={clearRows}
@@ -415,8 +423,34 @@ function ReceivingReportEntries({
   );
 }
 
-function createReceivingReportColumns(isReadonly: boolean, onUpdateEntry: ReceivingReportEntryUpdater): ModuleDataEntryColumn<ReceivingReportLine>[] {
-  return ReceivingReportColumnConfigs.map((column) => ({
+function ReceivingReportEntryTabs({ activeTab, onTabChange }: { activeTab: ReceivingReportEntrySection; onTabChange: (tab: ReceivingReportEntrySection) => void }) {
+  return (
+    <div role="tablist" aria-label="Receiving report row entry sections" className="inline-flex items-center gap-1 rounded-lg border border-darknavy/10 bg-offwhite/70 p-1">
+      {ReceivingReportEntryTabsList.map((tab) => {
+        const isActive = activeTab === tab.id;
+
+        return (
+          <button
+            key={tab.id}
+            type="button"
+            role="tab"
+            aria-selected={isActive}
+            className={joinClasses(
+              "h-7 rounded-md px-3 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coralpink/25",
+              isActive ? "bg-white text-coralpink shadow-sm ring-1 ring-darknavy/10" : "text-darknavy/55 hover:bg-white/70 hover:text-darknavy",
+            )}
+            onClick={() => onTabChange(tab.id)}
+          >
+            {tab.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function createReceivingReportColumns(columnConfigs: ReceivingReportColumnConfig[], isReadonly: boolean, onUpdateEntry: ReceivingReportEntryUpdater): ModuleDataEntryColumn<ReceivingReportLine>[] {
+  return columnConfigs.map((column) => ({
     header: column.header,
     id: column.id,
     width: column.width,
@@ -521,7 +555,7 @@ function TextAreaField({ disabled, error, label, name, onChange, required, value
   return (
     <label className="block">
       <FieldLabel label={label} required={required} />
-      <textarea className={`${getFieldClassName(error)} min-h-28 py-3`} disabled={disabled} name={name} onChange={onChange} value={value} aria-invalid={Boolean(error)} />
+      <textarea className={`${getFieldClassName(error)} min-h-16 py-2`} disabled={disabled} name={name} onChange={onChange} value={value} aria-invalid={Boolean(error)} />
       {error ? <ErrorText message={error} /> : null}
       <span className="mt-1 block text-xs font-medium text-darknavy/45">Characters remaining: {Math.max(250 - value.length, 0)}</span>
     </label>
@@ -586,18 +620,6 @@ function validateReceivingReport(values: ReceivingReportFormValues): ReceivingRe
   }
 
   return errors;
-}
-
-function getFirstErrorTab(errors: ReceivingReportFormErrors): ReceivingReportSection {
-  if (VendorTabErrorFields.some((field) => errors[field])) {
-    return "vendor";
-  }
-
-  if (AmountTabErrorFields.some((field) => errors[field])) {
-    return "amounts";
-  }
-
-  return "references";
 }
 
 function receivingReportColumn(
@@ -682,11 +704,10 @@ function getActionMode(pathname: string): ReceivingReportActionMode {
   return "add";
 }
 
-const ReceivingReportTabs = [
-  { id: "vendor", label: "Vendor / Delivery" },
-  { id: "amounts", label: "Amounts / Warehouse" },
-  { id: "references", label: "References / Project" },
-] satisfies ModuleTabItem<ReceivingReportSection>[];
+const ReceivingReportEntryTabsList = [
+  { id: "items", label: "Item Entry" },
+  { id: "details", label: "Receiving Report Details" },
+] satisfies Array<{ id: ReceivingReportEntrySection; label: string }>;
 
 const ReceivingReportActionCopy = {
   add: {
@@ -729,10 +750,7 @@ const RequiredReceivingReportFields = [
   { field: "poNo", message: "PO number is required." },
 ] satisfies Array<{ field: ReceivingReportFormField; message: string }>;
 
-const VendorTabErrorFields = ["vceCode", "vceName", "currency", "exchangeRate", "address", "contactNo", "deliveryDate", "defaultAccount"] satisfies ReceivingReportFormField[];
-const AmountTabErrorFields = ["warehouse", "status"] satisfies ReceivingReportFormField[];
-
-const ReceivingReportColumnConfigs = [
+const ReceivingReportItemColumnConfigs = [
   receivingReportColumn("Item Code", "itemCode", "text", 150, "w-[9.5rem]"),
   receivingReportColumn("Barcode", "barcode", "text", 150, "w-[9.5rem]"),
   receivingReportColumn("Description", "description", "text", 300, "w-[18.75rem]"),
@@ -743,6 +761,9 @@ const ReceivingReportColumnConfigs = [
   receivingReportColumn("RR Qty", "rrQty", "amount", 120, "w-[7.5rem]"),
   receivingReportColumn("UOM", "uom", "dropdown", 120, "w-[7.5rem]", dropdownOptions(UomOptions)),
   receivingReportColumn("Expiry Date", "expiryDate", "date", 150, "w-[9.5rem]"),
+];
+
+const ReceivingReportDetailColumnConfigs = [
   receivingReportColumn("Freight Cost", "freightCost", "amount", 140, "w-[8.75rem]"),
   receivingReportColumn("Cost", "cost", "amount", 130, "w-[8rem]"),
   receivingReportColumn("Gross Amount", "grossAmount", "amount", 150, "w-[9.5rem]"),
@@ -758,7 +779,7 @@ const ReceivingReportColumnConfigs = [
 ];
 
 const fieldClassName =
-  "app-theme-field h-10 w-full rounded-md border border-darknavy/10 bg-white px-3 text-sm text-darknavy outline-none transition focus:border-skyblue disabled:bg-offwhite disabled:text-darknavy/55";
+  "app-theme-field h-9 w-full rounded-md border border-darknavy/10 bg-white px-2.5 text-sm text-darknavy outline-none transition focus:border-skyblue disabled:bg-offwhite disabled:text-darknavy/55";
 
 const EntryDropdownClassName =
   "[&_.app-advanced-dropdown-control]:h-10 [&_.app-advanced-dropdown-control]:rounded-none [&_.app-advanced-dropdown-control]:border-0 [&_.app-advanced-dropdown-control]:bg-transparent [&_.app-advanced-dropdown-control]:px-3 [&_.app-advanced-dropdown-control]:shadow-none [&_.app-advanced-dropdown-control]:focus:ring-2 [&_.app-advanced-dropdown-control]:focus:ring-inset [&_.app-advanced-dropdown-control]:focus:ring-skyblue/35";

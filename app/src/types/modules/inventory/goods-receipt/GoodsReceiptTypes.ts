@@ -40,6 +40,7 @@ export type GoodsReceiptLineEntry = {
 export type GoodsReceiptFormValues = {
 	transactionType: string;
 	sourceWarehouse: string;
+	receivingWarehouse: string;
 	vceCode: string;
 	vceName: string;
 	remarks: string;

@@ -51,6 +51,14 @@ export type ModuleDataEntryToolbarAction = {
 	onSelect: () => void;
 };
 
+export type ModuleDataEntryAddMenuAction = {
+	disabled?: boolean;
+	icon?: LucideIcon;
+	id: string;
+	label: string;
+	onSelect: () => void;
+};
+
 export type ModuleDataEntryClearAction =
 	| "all"
 	| "with-data"
@@ -71,6 +79,7 @@ export type ModuleDataEntrySelection =
 	| { type: "row"; rowId: string };
 
 export type ModuleDataEntryProps<TRow extends { id: string }> = {
+	addMenuActions?: ModuleDataEntryAddMenuAction[];
 	columns: ModuleDataEntryColumn<TRow>[];
 	description: string;
 	emptyRowLabel?: string;
@@ -115,6 +124,7 @@ export type ModuleDataEntryProps<TRow extends { id: string }> = {
 
 export type ModuleDataEntryAddButtonProps = {
 	align?: "left" | "right";
+	actions?: ModuleDataEntryAddMenuAction[];
 	isOpen: boolean;
 	label?: string;
 	onAddRows: (count: number) => void;

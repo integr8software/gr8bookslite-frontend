@@ -13,7 +13,7 @@ import {
 import { useCanvassFormStore } from "@/app/src/hooks/modules/purchasing/canvass-form/useCanvassForm";
 import type { CanvassFormRecord } from "@/app/src/types/modules/purchasing/canvass-form/CanvassFormTypes";
 
-export function useCanvassFormListPage() {
+export function useCanvassFormOverviewPage() {
 	const { deleteForm, forms, isMutating, lastSyncedAt } = useCanvassFormStore();
 	const [pagination, setPagination] = useState<PaginationState>({
 		pageIndex: 0,

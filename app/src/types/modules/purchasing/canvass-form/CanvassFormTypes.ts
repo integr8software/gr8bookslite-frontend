@@ -2,12 +2,16 @@ export type CanvassFormStatus = "Draft" | "Open" | "Approved" | "Closed" | "Canc
 
 export type CanvassFormItem = {
 	id: string;
+	prNo: string;
 	itemCode: string;
 	barcode: string;
 	description: string;
 	uom: string;
 	quantity: number;
 	responsibilityCenter: string;
+	supplierCount: number;
+	vatExclusive: string;
+	vatInclusive: string;
 	supplierCode1: string;
 	supplierName1: string;
 	unitCost1: number;
@@ -33,6 +37,7 @@ export type CanvassFormRecord = {
 	responsibilityCenter: string;
 	requiredBefore: string;
 	remarks: string;
+	termsOfPayment: string;
 	transNo: string;
 	documentDate: string;
 	status: CanvassFormStatus;

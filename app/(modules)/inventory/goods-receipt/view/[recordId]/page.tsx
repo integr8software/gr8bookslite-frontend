@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { GoodsReceiptActionPage } from "@/app/src/ui/modules/inventory/goods-receipt/GoodsReceiptActionPage";
+import { GoodsReceiptActionPage } from "@/app/src/ui/modules/inventory/goods-receipt/action/GoodsReceiptActionPage";
 
 const PageTitle = "View Goods Receipt";
 

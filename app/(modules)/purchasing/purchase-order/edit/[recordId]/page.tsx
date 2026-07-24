@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { PurchaseOrderAction } from "@/app/src/ui/modules/purchasing/purchase-order/Action";
+import { PurchaseOrderActionPage } from "@/app/src/ui/modules/purchasing/purchase-order/action/PurchaseOrderActionPage";
 
 const PageTitle = "Edit Purchase Order";
 
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default function PurchasingPurchaseOrderEditPage() {
-  return <PurchaseOrderAction />;
+  return <PurchaseOrderActionPage />;
 }
 
 

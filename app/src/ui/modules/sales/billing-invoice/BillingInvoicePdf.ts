@@ -3,6 +3,7 @@ import pdfFonts from "pdfmake/build/vfs_fonts";
 import type { TableCell, TDocumentDefinitions } from "pdfmake/interfaces";
 import { formatBillingInvoiceAmount } from "@/app/src/data/modules/sales/billing-invoice/BillingInvoiceData";
 import type { BillingInvoiceFormValues } from "@/app/src/types/modules/sales/billing-invoice/BillingInvoiceTypes";
+import { createReportPdfCompanyHeader } from "@/app/src/ui/shared/reports/ReportPdfCompanyHeader";
 
 pdfMake.addVirtualFileSystem(pdfFonts);
 
@@ -48,35 +49,7 @@ function createBillingInvoicePdfDefinition(
 }
 
 function createHeaderTable(): TableCell {
-	return toTableCell({
-		table: {
-			widths: [120, "*", 120],
-			body: [
-				[
-					{
-						text: "gr8books\nneo",
-						bold: true,
-						color: "#174ea6",
-						fontSize: 15,
-						margin: [8, 15, 0, 8],
-					},
-					{
-						stack: [
-							headerText("Your Company Name Here", 10),
-							headerText("VAT REG TIN : 000-000-000-000"),
-							headerText(
-								"ABC, 123, Sample, Malamig, City of Mandaluyong, NCR, Second District",
-							),
-							headerText("Telephone No: 0967-237-4514", 0, [0, 8, 0, 0]),
-						],
-						margin: [0, 10, 0, 8],
-					},
-					{ text: "" },
-				],
-			],
-		},
-		layout: noBordersLayout,
-	});
+	return createReportPdfCompanyHeader({ isCompact: true });
 }
 
 function createTitleRow(values: BillingInvoiceFormValues): TableCell {
@@ -223,10 +196,6 @@ function createInvoiceRows(values: BillingInvoiceFormValues) {
 		: [{ description: "", amount: formatAmount(values.grossAmount) }];
 }
 
-function headerText(text: string, fontSize = 7, margin: number[] = [0, 2, 0, 0]) {
-	return { text, alignment: "center", bold: true, fontSize, margin };
-}
-
 function infoLine(label: string, value: string) {
 	return { text: [{ text: `${label} : `, bold: true }, value || " "] };
 }
@@ -268,11 +237,6 @@ function formatReportDate(value: string) {
 		year: "numeric",
 	}).format(date);
 }
-
-const noBordersLayout = {
-	hLineWidth: () => 0,
-	vLineWidth: () => 0,
-};
 
 const outerLayout = {
 	hLineWidth: (i: number, node: PdfTableLayoutNode) =>

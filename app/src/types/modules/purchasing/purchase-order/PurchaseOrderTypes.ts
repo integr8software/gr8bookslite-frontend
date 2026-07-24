@@ -15,6 +15,7 @@ export type PurchaseOrderItem = {
 	uom: string;
 	expiryDate: string;
 	freightCost: number;
+	rateDelivery: number;
 	cost: number;
 	vatAmount: number;
 	ewt: string;
@@ -42,6 +43,7 @@ export type PurchaseOrderRecord = {
 	contactNo: string;
 	emailAddress: string;
 	deliveryDate: string;
+	termsOfPayment: string;
 	remarks: string;
 	discountAmount: number;
 	vatAmount: number;

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { PurchaseRequestListPage } from "@/app/src/ui/modules/purchasing/purchase-request/PurchaseRequestListPage";
+import { PurchaseRequestOverviewPage } from "@/app/src/ui/modules/purchasing/purchase-request/overview/PurchaseRequestOverviewPage";
 
 const PageTitle = "Purchase Request";
 
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default function PurchasingPurchaseRequestPage() {
-  return <PurchaseRequestListPage />;
+  return <PurchaseRequestOverviewPage />;
 }
 
 

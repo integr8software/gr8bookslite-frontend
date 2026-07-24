@@ -11,9 +11,10 @@ export const GoodsReceiptStorageKey = "gr8books.goods-receipt.records";
 
 export const GoodsReceiptTransactionTypeOptions = [
 	{ name: "--Select Transaction Type--", value: "" },
-	{ name: "Inventory Receipt", value: "Inventory Receipt" },
 	{ name: "Goods Issue Return", value: "Goods Issue Return" },
+	{ name: "Sales Return", value: "Sales Return" },
 	{ name: "Stock Adjustment Receipt", value: "Stock Adjustment Receipt" },
+	{ name: "Variance", value: "Variance" },
 ];
 
 export const GoodsReceiptWarehouseOptions = [
@@ -59,7 +60,7 @@ export const MockGoodsReceipts: GoodsReceiptRecord[] = [
 		status: "Pending",
 		totalAmount: 62500,
 		transactionNo: "GR-2026-0002",
-		transactionType: "Inventory Receipt",
+		transactionType: "Sales Return",
 		vceName: "Aster Foods Corporation",
 	},
 	{
@@ -101,6 +102,7 @@ export function createGoodsReceiptFormValues(): GoodsReceiptFormValues {
 	return {
 		transactionType: "",
 		sourceWarehouse: "",
+		receivingWarehouse: "",
 		vceCode: "",
 		vceName: "",
 		remarks: "",
@@ -122,6 +124,7 @@ export function createGoodsReceiptFormValuesFromRecord(
 	if (record.formValues) {
 		return {
 			...record.formValues,
+			receivingWarehouse: record.formValues.receivingWarehouse ?? "",
 			lineEntries: record.formValues.lineEntries.map((entry) => ({ ...entry })),
 		};
 	}

@@ -21,6 +21,7 @@ export const purchaseOrderSeedRecords: PurchaseOrderRecord[] = [
 		contactNo: "",
 		emailAddress: "",
 		deliveryDate: "2026-07-18",
+		termsOfPayment: "Net 30",
 		remarks: "",
 		discountAmount: 0,
 		vatAmount: 0,
@@ -40,6 +41,7 @@ export const purchaseOrderSeedRecords: PurchaseOrderRecord[] = [
 				uom: "PC",
 				expiryDate: "",
 				freightCost: 0,
+				rateDelivery: 0,
 				cost: 0,
 				vatAmount: 0,
 				ewt: "",
@@ -65,6 +67,7 @@ export const emptyPurchaseOrderItem: PurchaseOrderItem = {
 	uom: "PC",
 	expiryDate: "",
 	freightCost: 0,
+	rateDelivery: 0,
 	cost: 0,
 	vatAmount: 0,
 	ewt: "",
@@ -83,7 +86,11 @@ export function createPurchaseOrderFormValues(
 	if (record) {
 		return {
 			...record,
-			items: record.items.map((item) => ({ ...item })),
+			termsOfPayment: record.termsOfPayment ?? "",
+			items: record.items.map((item) => ({
+				...item,
+				rateDelivery: item.rateDelivery ?? 0,
+			})),
 		};
 	}
 
@@ -101,6 +108,7 @@ export function createPurchaseOrderFormValues(
 		contactNo: "",
 		emailAddress: "",
 		deliveryDate: new Date().toISOString().slice(0, 10),
+		termsOfPayment: "",
 		remarks: "",
 		discountAmount: 0,
 		vatAmount: 0,
@@ -125,6 +133,7 @@ export function createPurchaseOrderRecord(
 			id: item.id || createPurchaseOrderId("item"),
 			quantity: Number(item.quantity) || 0,
 			freightCost: Number(item.freightCost) || 0,
+			rateDelivery: Number(item.rateDelivery) || 0,
 			cost: Number(item.cost) || 0,
 			vatAmount: Number(item.vatAmount) || 0,
 			discountAmount: Number(item.discountAmount) || 0,
@@ -148,6 +157,7 @@ export function getPurchaseOrderItemNetAmount(item: PurchaseOrderItem) {
 	return (
 		getPurchaseOrderItemGrossAmount(item) +
 		(Number(item.freightCost) || 0) +
+		(Number(item.rateDelivery) || 0) +
 		(Number(item.vatAmount) || 0) -
 		(Number(item.discountAmount) || 0)
 	);

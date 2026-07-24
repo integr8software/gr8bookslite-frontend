@@ -7,6 +7,7 @@ import type {
 	InventoryReportTableColumn,
 	InventoryReportTableRow,
 } from "@/app/src/ui/modules/inventory/shared/report/InventoryReportLayout";
+import { createReportPdfCompanyHeader } from "@/app/src/ui/shared/reports/ReportPdfCompanyHeader";
 
 pdfMake.addVirtualFileSystem(pdfFonts);
 
@@ -75,39 +76,7 @@ function createInventoryReportPdfDefinition(
 }
 
 function createHeaderTable(isCompact = false): TableCell {
-	return toTableCell({
-		table: {
-			widths: [120, "*", 120],
-			body: [
-				[
-					{
-						text: "integr8",
-						bold: true,
-						color: "#174ea6",
-						fontSize: 24,
-						margin: [24, 24, 0, 24],
-					},
-					{
-						stack: [
-							centerText("Your Company Name Here", 12),
-							centerText("VAT REG TIN : 000-000-000"),
-							centerText(
-								"ABC, 123, Sample, Malamig, City Of Mandaluyong, NCR, Second District",
-							),
-							centerText(
-								"Telephone No: 0967-237-4514",
-								8,
-								isCompact ? [0, 2, 0, 0] : [0, 10, 0, 0],
-							),
-						],
-						margin: [0, 24, 0, 24],
-					},
-					{ text: "" },
-				],
-			],
-		},
-		layout: noBordersLayout,
-	});
+	return createReportPdfCompanyHeader({ isCompact });
 }
 
 function createTitleTable(input: InventoryReportPdfInput): TableCell {
@@ -270,10 +239,6 @@ function createFooterTable(input: InventoryReportPdfInput): TableCell {
 	});
 }
 
-function centerText(text: string, fontSize = 8, margin: number[] = [0, 2, 0, 0]) {
-	return { text, alignment: "center" as const, bold: true, fontSize, margin };
-}
-
 function toTableCell(value: unknown): TableCell {
 	return value as TableCell;
 }
@@ -287,11 +252,6 @@ function getColumnCount(node: PdfTableLayoutNode) {
 
 	return Array.isArray(widths) ? widths.length : 1;
 }
-
-const noBordersLayout = {
-	hLineWidth: () => 0,
-	vLineWidth: () => 0,
-};
 
 const outerLayout = {
 	hLineWidth: (index: number, node: PdfTableLayoutNode) =>

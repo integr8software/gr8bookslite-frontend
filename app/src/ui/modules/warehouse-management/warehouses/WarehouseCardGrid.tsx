@@ -6,7 +6,7 @@ import { WarehouseRecordActions } from "@/app/src/ui/modules/warehouse-managemen
 import { ModuleTablePagination } from "@/app/src/ui/shared/module/module-table/ModuleTablePagination";
 import { ModuleTooltip } from "@/app/src/ui/shared/module/ModuleTooltip";
 
-export function WarehouseCardGrid({ isLoading, setPendingDeleteWarehouse, table, onEditWarehouse, onViewWarehouse }: WarehouseTableProps) {
+export function WarehouseCardGrid({ isLoading, permissions, setPendingDeleteWarehouse, table, onEditWarehouse, onViewWarehouse }: WarehouseTableProps) {
   const rows = table.getRowModel().rows;
   const { pageIndex, pageSize } = table.getState().pagination;
   const totalRows = table.getFilteredRowModel().rows.length;
@@ -98,6 +98,7 @@ export function WarehouseCardGrid({ isLoading, setPendingDeleteWarehouse, table,
                 </div>
                 <div className="mt-auto flex items-center justify-center pt-4">
                   <WarehouseRecordActions
+                    permissions={permissions}
                     warehouse={warehouse}
                     onDeleteWarehouse={setPendingDeleteWarehouse}
                     onEditWarehouse={onEditWarehouse}

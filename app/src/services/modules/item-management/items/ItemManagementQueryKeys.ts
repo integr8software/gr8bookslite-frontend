@@ -5,7 +5,8 @@ export const ItemManagementQueryKeys = {
   itemBundles: () => ["maintenance", "item-bundles"] as const,
   itemSuppliers: () => ["maintenance", "item-suppliers"] as const,
   priceLists: () => ["maintenance", "price-lists"] as const,
-  items: () => ["maintenance", "items"] as const,
+  items: (companyId?: number | null) =>
+    ["maintenance", "items", companyId ?? "no-company"] as const,
   itemVariationOptions: () => ["maintenance", "items", "variation-options"] as const,
   itemCategoryOptions: () => ["maintenance", "items", "category-options"] as const,
   vendorOptions: () => ["maintenance", "items", "vendor-options"] as const,

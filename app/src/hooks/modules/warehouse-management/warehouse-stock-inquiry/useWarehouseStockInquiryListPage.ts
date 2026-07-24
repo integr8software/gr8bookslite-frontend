@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import {
 	type ColumnDef,
 	type PaginationState,
@@ -17,6 +18,8 @@ import { useWarehousesStore } from "@/app/src/hooks/modules/warehouse-management
 import type { WarehouseModuleRecord } from "@/app/src/types/modules/warehouse-management/warehouses/WarehouseModuleTypes";
 
 export function useWarehouseStockInquiryListPage() {
+	const searchParams = useSearchParams();
+	const warehouseId = searchParams.get("warehouseId")?.trim() ?? "";
 	const {
 		isLoading,
 		isRefreshing,
@@ -38,8 +41,8 @@ export function useWarehouseStockInquiryListPage() {
 		[warehouses],
 	);
 	const filteredRecords = useMemo(
-		() => filterWarehouseModuleRows(records, query, statusFilter),
-		[query, records, statusFilter],
+		() => filterWarehouseModuleRows(records, query, statusFilter, warehouseId),
+		[query, records, statusFilter, warehouseId],
 	);
 	const columns = useMemo(
 		() => createWarehouseModuleColumns(WarehouseStockInquiryTableColumns),
@@ -120,11 +123,13 @@ function filterWarehouseModuleRows(
 	rows: WarehouseModuleRecord[],
 	query: string,
 	statusFilter: string,
+	warehouseId: string,
 ) {
 	const normalizedQuery = normalizeLowercaseText(query);
 
 	return rows.filter(
 		(row) =>
+			(!warehouseId || row.warehouseId === warehouseId) &&
 			(statusFilter === "All" || row.status === statusFilter) &&
 			(!normalizedQuery ||
 				[row.status, ...row.values]

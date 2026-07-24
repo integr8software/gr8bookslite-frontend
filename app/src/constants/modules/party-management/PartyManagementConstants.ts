@@ -7,6 +7,7 @@ import type {
   PartyClassification,
   PartyInformationStatus,
   PartyInformationTableRecord,
+  PurchaseTaxClassification,
   PartyType,
   VatRegistrationType,
 } from "@/app/src/types/modules/party-management/PartyManagementTypes";
@@ -81,13 +82,15 @@ export const PartyInformationStatusOptions = ["Active", "Inactive"] as const sat
 
 export const VatRegistrationTypeOptions = [
   "VAT Registered",
-  "Zero Rated",
   "Non-VAT",
-  "Exempt",
+  "VAT Exempt",
+] as const satisfies readonly VatRegistrationType[];
+
+export const PurchaseTaxClassificationOptions = [
   "Capital Goods",
   "Other Than Capital Goods",
   "Services",
-] as const satisfies readonly VatRegistrationType[];
+] as const satisfies readonly PurchaseTaxClassification[];
 
 export const BIRAtcSourceUrl = "https://bir-cdn.bir.gov.ph/local/pdf/2307%20Jan%202018%20ENCS%20v3.pdf";
 

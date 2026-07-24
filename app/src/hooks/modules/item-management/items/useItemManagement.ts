@@ -3,13 +3,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
+  loadCompanyItemRecords,
   MockItemVariations,
   MockItemBundles,
   MockItemSuppliers,
   MockItems,
   MockItemSetupRecords,
   MockPriceLists,
+  saveCompanyItemRecords,
 } from "@/app/src/data/modules/item-management/items/ItemManagementData";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { ItemManagementQueryKeys } from "@/app/src/services/modules/item-management/items/ItemManagementQueryKeys";
 import type {
   ItemBundleRecord,
@@ -54,10 +57,12 @@ export function useItemManagementStore<TSelected = ItemManagementStoreState>(
   selector?: (state: ItemManagementStoreState) => TSelected,
 ) {
   const queryClient = useQueryClient();
+  const activeCompanyId = useAppStore((state) => state.activeCompanyId);
   const itemsQuery = useQuery({
-    queryKey: ItemManagementQueryKeys.items(),
-    queryFn: async () => MockItems,
-    initialData: MockItems,
+    queryKey: ItemManagementQueryKeys.items(activeCompanyId),
+    queryFn: async () => loadCompanyItemRecords(activeCompanyId),
+    enabled: activeCompanyId !== null,
+    placeholderData: MockItems,
     retry: false,
   });
   const itemVariationsQuery = useQuery({
@@ -112,10 +117,14 @@ export function useItemManagementStore<TSelected = ItemManagementStoreState>(
   };
 
   function updateCachedItems(updater: (items: ItemRecord[]) => ItemRecord[]) {
-    queryClient.setQueryData<ItemRecord[]>(
-      ItemManagementQueryKeys.items(),
-      (currentItems = MockItems) => updater(currentItems),
-    );
+    const queryKey = ItemManagementQueryKeys.items(activeCompanyId);
+    const currentItems =
+      queryClient.getQueryData<ItemRecord[]>(queryKey) ??
+      loadCompanyItemRecords(activeCompanyId);
+    const nextItems = updater(currentItems);
+
+    saveCompanyItemRecords(activeCompanyId, nextItems);
+    queryClient.setQueryData<ItemRecord[]>(queryKey, nextItems);
   }
 
   function updateCachedItemBundles(updater: (bundles: ItemBundleRecord[]) => ItemBundleRecord[]) {
@@ -338,7 +347,7 @@ export function useItemManagementStore<TSelected = ItemManagementStoreState>(
     itemVariations: itemVariationsQuery.data,
     itemBundles: itemBundlesQuery.data,
     itemSuppliers: itemSuppliersQuery.data,
-    items: itemsQuery.data,
+    items: itemsQuery.data ?? MockItems,
     priceLists: priceListsQuery.data,
     addItemVariation: (variation) => addItemVariationMutation.mutate(variation),
     addItemBundle: (bundle) => addItemBundleMutation.mutate(bundle),
@@ -401,7 +410,7 @@ export function useItemManagementStore<TSelected = ItemManagementStoreState>(
       deleteSetupMutation.isPending,
     refreshSetupRecords: () => {
       void queryClient.invalidateQueries({
-        queryKey: ItemManagementQueryKeys.items(),
+        queryKey: ItemManagementQueryKeys.items(activeCompanyId),
       });
       (["category", "subcategory", "type", "subtype"] as ItemSetupKind[]).forEach((kind) => {
         void queryClient.invalidateQueries({

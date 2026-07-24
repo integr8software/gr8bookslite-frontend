@@ -3,7 +3,7 @@ import { WarehouseRecordActions } from "@/app/src/ui/modules/warehouse-managemen
 import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import { formatDateTime } from "@/app/src/utils/date.util";
 
-export function WarehouseTableRow({ warehouse, visibleColumnIds, onDeleteWarehouse, onEditWarehouse, onViewWarehouse }: WarehouseTableRowProps) {
+export function WarehouseTableRow({ permissions, warehouse, visibleColumnIds, onDeleteWarehouse, onEditWarehouse, onViewWarehouse }: WarehouseTableRowProps) {
   return (
     <tr className="module-table-row border-b border-darknavy/8 last:border-b-0">
       {visibleColumnIds.includes("code") ? <td className="px-4 py-4 font-medium text-darknavy">{warehouse.code}</td> : null}
@@ -32,6 +32,7 @@ export function WarehouseTableRow({ warehouse, visibleColumnIds, onDeleteWarehou
       {visibleColumnIds.includes("actions") ? (
         <td className="px-4 py-4 text-center">
           <WarehouseRecordActions
+            permissions={permissions}
             warehouse={warehouse}
             onDeleteWarehouse={onDeleteWarehouse}
             onEditWarehouse={onEditWarehouse}

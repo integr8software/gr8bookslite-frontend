@@ -3,11 +3,10 @@ import {
   PartyClassificationOptions,
   PartyInformationStatusOptions,
   PartyTypeOptions,
+  PurchaseTaxClassificationOptions,
   VatRegistrationTypeOptions,
 } from "@/app/src/constants/modules/party-management/PartyManagementConstants";
-import {
-  DefaultPhilippineContactNumber,
-} from "@/app/src/data/shared/contact/ContactData";
+import { DefaultPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
 import { isAtcCodeLike } from "@/app/src/data/shared/tax/AtcCode";
 import type {
   PartyInformationFormErrors,
@@ -17,7 +16,8 @@ import type {
 const PhilippineContactNumberPattern = /^\+63 \d{3} \d{3} \d{4}$/;
 const PhilippineTinPattern = /^\d{3}-\d{3}-\d{3}-\d{3}$/;
 
-export const PartyInformationRequiredFieldsToastMessage = "Please fill up the required party fields.";
+export const PartyInformationRequiredFieldsToastMessage =
+  "Please fill up the required party fields.";
 
 const PartyInformationAddressSchema = z.object({
   id: z.string().trim().min(1),
@@ -46,9 +46,7 @@ export const PartyInformationFormSchema = z
     classification: z.enum(PartyClassificationOptions, {
       error: "Select a party classification first.",
     }),
-    partyTypes: z
-      .array(z.enum(PartyTypeOptions))
-      .min(1, "Select at least one party type."),
+    partyTypes: z.array(z.enum(PartyTypeOptions)).min(1, "Select at least one party type."),
     status: z.enum(PartyInformationStatusOptions, {
       error: "Select a status.",
     }),
@@ -88,12 +86,11 @@ export const PartyInformationFormSchema = z
       .refine((value) => !value || PhilippineTinPattern.test(value), {
         message: "Enter a valid TIN in the format 000-000-000-000.",
       }),
-    vatRegistrationType: z.union([
+    vatRegistrationType: z.union([z.literal(""), z.enum(VatRegistrationTypeOptions)]),
+    defaultPurchaseTaxClassification: z.union([
       z.literal(""),
-      z.enum(VatRegistrationTypeOptions),
+      z.enum(PurchaseTaxClassificationOptions),
     ]),
-    vatRegistrationTypeId: z.string().trim(),
-    vatRegistration: z.any().optional(),
     atcCode: z.string().trim(),
     email: z
       .string()
@@ -110,10 +107,7 @@ export const PartyInformationFormSchema = z
     landline: z.string().trim(),
   })
   .superRefine((values, ctx) => {
-    if (
-      values.classification === "Non-Individual" &&
-      !values.partyName.trim()
-    ) {
+    if (values.classification === "Non-Individual" && !values.partyName.trim()) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Party name is required.",
@@ -139,10 +133,7 @@ export const PartyInformationFormSchema = z
       }
     }
 
-    if (
-      values.atcCode &&
-      !isAtcCodeLike(values.atcCode)
-    ) {
+    if (values.atcCode && !isAtcCodeLike(values.atcCode)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Select a valid BIR ATC code from the list.",
@@ -150,9 +141,7 @@ export const PartyInformationFormSchema = z
       });
     }
 
-    const defaultAddressCount = values.addresses.filter(
-      (address) => address.isDefault,
-    ).length;
+    const defaultAddressCount = values.addresses.filter((address) => address.isDefault).length;
 
     if (defaultAddressCount !== 1) {
       ctx.addIssue({
@@ -164,8 +153,7 @@ export const PartyInformationFormSchema = z
 
     if (
       values.classification === "Non-Individual" &&
-      (values.partyTypes.includes("Employee") ||
-        values.partyTypes.includes("Member"))
+      (values.partyTypes.includes("Employee") || values.partyTypes.includes("Member"))
     ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -242,10 +230,7 @@ export const PartyInformationFormSchema = z
     ] as const;
 
     requiredAccountingFields.forEach((accountField) => {
-      if (
-        accountField.enabled &&
-        !values[accountField.field].trim()
-      ) {
+      if (accountField.enabled && !values[accountField.field].trim()) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: accountField.message,
@@ -256,9 +241,7 @@ export const PartyInformationFormSchema = z
 
     const addressRoleChecks = [
       {
-        enabled:
-          values.partyTypes.includes("Customer") ||
-          values.partyTypes.includes("Vendor"),
+        enabled: values.partyTypes.includes("Customer") || values.partyTypes.includes("Vendor"),
         field: "isBilling",
         label: "billing",
       },
@@ -268,9 +251,7 @@ export const PartyInformationFormSchema = z
         label: "delivery",
       },
       {
-        enabled:
-          values.partyTypes.includes("Employee") ||
-          values.partyTypes.includes("Member"),
+        enabled: values.partyTypes.includes("Employee") || values.partyTypes.includes("Member"),
         field: "isHome",
         label: "home",
       },
@@ -381,10 +362,7 @@ export function validatePartyInformationForm(
       errors.contactNo = issue.message;
     } else if (field === "landline" && !errors.landline) {
       errors.landline = issue.message;
-    } else if (
-      field === "memberRegistrationDate" &&
-      !errors.memberRegistrationDate
-    ) {
+    } else if (field === "memberRegistrationDate" && !errors.memberRegistrationDate) {
       errors.memberRegistrationDate = issue.message;
     } else if (field === "email" && !errors.email) {
       errors.email = issue.message;
@@ -410,44 +388,23 @@ export function validatePartyInformationForm(
       errors.regionCode = issue.message;
     } else if (field === "provinceCode" && !errors.provinceCode) {
       errors.provinceCode = issue.message;
-    } else if (
-      field === "cityMunicipalityCode" &&
-      !errors.cityMunicipalityCode
-    ) {
+    } else if (field === "cityMunicipalityCode" && !errors.cityMunicipalityCode) {
       errors.cityMunicipalityCode = issue.message;
     } else if (field === "barangayCode" && !errors.barangayCode) {
       errors.barangayCode = issue.message;
     } else if (field === "tin" && !errors.tin) {
       errors.tin = issue.message;
-    } else if (
-      field === "defaultReceivableAccount" &&
-      !errors.defaultReceivableAccount
-    ) {
+    } else if (field === "defaultReceivableAccount" && !errors.defaultReceivableAccount) {
       errors.defaultReceivableAccount = issue.message;
-    } else if (
-      field === "customerAdvanceAccount" &&
-      !errors.customerAdvanceAccount
-    ) {
+    } else if (field === "customerAdvanceAccount" && !errors.customerAdvanceAccount) {
       errors.customerAdvanceAccount = issue.message;
-    } else if (
-      field === "defaultPayableAccount" &&
-      !errors.defaultPayableAccount
-    ) {
+    } else if (field === "defaultPayableAccount" && !errors.defaultPayableAccount) {
       errors.defaultPayableAccount = issue.message;
-    } else if (
-      field === "vendorAdvanceAccount" &&
-      !errors.vendorAdvanceAccount
-    ) {
+    } else if (field === "vendorAdvanceAccount" && !errors.vendorAdvanceAccount) {
       errors.vendorAdvanceAccount = issue.message;
-    } else if (
-      field === "employeeAdvanceAccount" &&
-      !errors.employeeAdvanceAccount
-    ) {
+    } else if (field === "employeeAdvanceAccount" && !errors.employeeAdvanceAccount) {
       errors.employeeAdvanceAccount = issue.message;
-    } else if (
-      field === "employeePayableAccount" &&
-      !errors.employeePayableAccount
-    ) {
+    } else if (field === "employeePayableAccount" && !errors.employeePayableAccount) {
       errors.employeePayableAccount = issue.message;
     } else if (field === "termId" && !errors.termId) {
       errors.termId = issue.message;

@@ -36,6 +36,7 @@ const TenantScopedQueryPrefixes = [
   "system-administration",
   "term-management",
   "termManagement",
+  "taxDefinitions",
   "transaction-number-setup",
   "transaction-type",
   "transactionType",

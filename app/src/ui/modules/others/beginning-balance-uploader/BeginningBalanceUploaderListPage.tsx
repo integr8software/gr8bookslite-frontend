@@ -6,7 +6,7 @@ import {
   BeginningBalanceUploaderHref,
   BeginningBalanceUploaderTablePaginationStorageKey,
 } from "@/app/src/constants/modules/others/beginning-balance-uploader/BeginningBalanceUploaderConstants";
-import { useBeginningBalanceUploaderListPage } from "@/app/src/hooks/modules/beginning-balance-uploader/useBeginningBalanceUploaderListPage";
+import { useBeginningBalanceUploaderListPage } from "@/app/src/hooks/modules/others/beginning-balance-uploader/useBeginningBalanceUploaderListPage";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";

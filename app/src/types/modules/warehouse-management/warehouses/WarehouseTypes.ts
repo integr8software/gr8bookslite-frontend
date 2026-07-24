@@ -129,6 +129,7 @@ export type WarehouseActionMode = "add" | "edit" | "view";
 export type DrawerState = { mode: WarehouseActionMode; warehouse?: WarehouseRecord } | null;
 
 export type WarehouseRecordActionsProps = {
+  permissions: WarehousePermissions;
   warehouse: WarehouseRecord;
   onDeleteWarehouse: (warehouse: WarehouseRecord) => void;
   onEditWarehouse: (warehouse: WarehouseRecord) => void;
@@ -136,12 +137,14 @@ export type WarehouseRecordActionsProps = {
 };
 
 export type WarehouseTableProps = Pick<ReturnType<typeof useWarehouseListPage>, "isLoading" | "lastSyncedAt" | "setPendingDeleteWarehouse" | "table"> & {
+  permissions: WarehousePermissions;
   toolbar?: ReactNode;
   onEditWarehouse: (warehouse: ReturnType<typeof useWarehouseListPage>["warehouses"][number]) => void;
   onViewWarehouse: (warehouse: ReturnType<typeof useWarehouseListPage>["warehouses"][number]) => void;
 };
 
 export type WarehouseTableRowProps = {
+  permissions: WarehousePermissions;
   warehouse: WarehouseTableRecord;
   visibleColumnIds: string[];
   onDeleteWarehouse: (warehouse: WarehouseRecord) => void;

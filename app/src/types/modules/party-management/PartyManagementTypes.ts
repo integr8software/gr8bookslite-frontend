@@ -12,14 +12,9 @@ export type PartyInformationStatus = "Active" | "Inactive";
 
 export type PartyType = "Vendor" | "Customer" | "Employee" | "Member";
 
-export type VatRegistrationType =
-  | "VAT Registered"
-  | "Zero Rated"
-  | "Non-VAT"
-  | "Exempt"
-  | "Capital Goods"
-  | "Other Than Capital Goods"
-  | "Services";
+export type VatRegistrationType = "VAT Registered" | "Non-VAT" | "VAT Exempt";
+
+export type PurchaseTaxClassification = "Capital Goods" | "Other Than Capital Goods" | "Services";
 
 export type ApiPartyClassification = "INDIVIDUAL" | "NON_INDIVIDUAL";
 
@@ -27,14 +22,10 @@ export type ApiPartyStatus = "ACTIVE" | "INACTIVE";
 
 export type ApiPartyType = "VENDOR" | "CUSTOMER" | "EMPLOYEE" | "MEMBER";
 
-export type ApiPartyVatRegistrationType =
-  | "VAT_REGISTERED"
-  | "ZERO_RATED"
-  | "NON_VAT"
-  | "EXEMPT"
-  | "CAPITAL_GOODS"
-  | "OTHER_THAN_CAPITAL_GOODS"
-  | "SERVICES";
+export type ApiPartyVatRegistrationType = "VAT_REGISTERED" | "NON_VAT" | "VAT_EXEMPT";
+
+export type ApiPartyPurchaseTaxClassification =
+  "CAPITAL_GOODS" | "OTHER_THAN_CAPITAL_GOODS" | "SERVICES";
 
 export type PartyAddress = {
   id: string;
@@ -86,8 +77,7 @@ export type PartyInformationRecord = {
   termName: string;
   tin: string;
   vatRegistrationType: VatRegistrationType | "";
-  vatRegistrationTypeId?: string;
-  vatRegistration?: PartyVatRegistrationSummary | null;
+  defaultPurchaseTaxClassification: PurchaseTaxClassification | "";
   atcCode: string;
   email: string;
   contactNo: string;
@@ -127,8 +117,7 @@ export type PartyInformationFormValues = {
   termName: string;
   tin: string;
   vatRegistrationType: VatRegistrationType | "";
-  vatRegistrationTypeId: string;
-  vatRegistration?: PartyVatRegistrationSummary | null;
+  defaultPurchaseTaxClassification: PurchaseTaxClassification | "";
   atcCode: string;
   email: string;
   contactNo: string;
@@ -156,6 +145,8 @@ export type PartyInformationFormErrors = Partial<{
   cityMunicipalityCode: string;
   barangayCode: string;
   atcCode: string;
+  vatRegistrationType: string;
+  defaultPurchaseTaxClassification: string;
   defaultReceivableAccount: string;
   customerAdvanceAccount: string;
   defaultPayableAccount: string;
@@ -172,10 +163,7 @@ export type PartyInformationFormErrors = Partial<{
 export type PartyInformationActionMode = "add" | "edit" | "view";
 
 export type PartyInformationTabId =
-  | "accounting-information"
-  | "basic-information"
-  | "contact-information"
-  | "tax-information";
+  "accounting-information" | "basic-information" | "contact-information" | "tax-information";
 
 export type PartyInformationTab = ModuleTabItem<PartyInformationTabId> & {
   content: ReactNode;
@@ -281,9 +269,7 @@ export type PartyAddressDropdownOption = {
   value: string;
 };
 
-export type PartyInformationFieldUpdateHandler = <
-  TKey extends keyof PartyInformationFormValues,
->(
+export type PartyInformationFieldUpdateHandler = <TKey extends keyof PartyInformationFormValues>(
   field: TKey,
   value: PartyInformationFormValues[TKey],
 ) => void;
@@ -296,22 +282,18 @@ export type PartyInformationDetailsFieldsProps = {
   isPartyCodeReadonly?: boolean;
   isReadonly: boolean;
   partyTypeOptions: readonly PartyType[];
-  taxMaintenanceOptions: PartyAddressDropdownOption[];
   termOptions: PartyAddressDropdownOption[];
-    values: PartyInformationFormValues;
+  values: PartyInformationFormValues;
   syncedAddressSources?: Record<string, string>;
   canAddAccountTitle?: boolean;
-  canAddTaxRegistrationType?: boolean;
   canAddTerm?: boolean;
   onAddAccountTitle?: (field: PartyAccountingAccountField) => void;
-  onAddTaxRegistrationType?: () => void;
   onAddTerm?: () => void;
   onAddressInputChange: ChangeEventHandler<HTMLInputElement>;
   onCopyAddress: (sourceAddressId: string, targetAddressId: string) => void;
   onInputChange: ChangeEventHandler<HTMLInputElement | HTMLSelectElement>;
   onPartyTypesChange: (value: string | string[]) => void;
   onSelectAtcCode: (value: string | string[]) => void;
-  onSelectVatRegistrationType: (value: string | string[]) => void;
   onSelectAutocompleteAddress: (
     address: AddressAutocompleteItem,
     details?: AddressAutocompleteDetails,
@@ -487,7 +469,7 @@ export type ApiPartyPayload = {
   termId?: string | null;
   tin?: string | null;
   vatRegistrationType?: ApiPartyVatRegistrationType | null;
-  vatRegistrationTypeId?: string | null;
+  defaultPurchaseTaxClassification?: ApiPartyPurchaseTaxClassification | null;
   atcCode?: string | null;
   email?: string | null;
   contactNo?: string | null;
@@ -505,7 +487,6 @@ export type ApiParty = ApiPartyPayload & {
     employeePayableAccount: PartyAccountingAccountSummary | null;
     vendorAdvanceAccount: PartyAccountingAccountSummary | null;
   };
-  vatRegistration?: ApiPartyVatRegistrationSummary | null;
   termName?: string | null;
   createdBy?: string | null;
   createdAt: string;
@@ -527,14 +508,6 @@ export type ApiPartyOption = {
 export type ApiPartyOptionsResponse = {
   parties: ApiPartyOption[];
 };
-
-export type PartyVatRegistrationSummary = {
-  id: string;
-  name: string;
-  percentage: number;
-};
-
-export type ApiPartyVatRegistrationSummary = PartyVatRegistrationSummary;
 
 export type PartyAccountingAccountSummary = {
   id: string;
@@ -563,10 +536,7 @@ export type PartyAccountingAccountOption = {
   status: "Active" | "Inactive";
 };
 
-export type PartyAccountingAccountIds = Record<
-  PartyAccountingAccountField,
-  string
->;
+export type PartyAccountingAccountIds = Record<PartyAccountingAccountField, string>;
 
 export type PartyAccountingAccountOptions = Record<
   PartyAccountingAccountField,
@@ -650,13 +620,9 @@ export type PartyImportColumnHeader = {
 
 export type PartyImportColumnWidths = Record<PartyImportColumnId, number>;
 
-export type PartyImportCellErrors = Partial<
-  Record<PartyImportColumnId, string[]>
->;
+export type PartyImportCellErrors = Partial<Record<PartyImportColumnId, string[]>>;
 
-export type PartyImportCellWarnings = Partial<
-  Record<PartyImportColumnId, string[]>
->;
+export type PartyImportCellWarnings = Partial<Record<PartyImportColumnId, string[]>>;
 
 export type PartyImportPreviewRow = {
   cellErrors: PartyImportCellErrors;
@@ -678,7 +644,5 @@ export type PartyManagementImportDialogProps = {
   existingParties: PartyInformationRecord[];
   isOpen: boolean;
   onClose: () => void;
-  onImportParties: (
-    parties: PartyInformationRecord[],
-  ) => Promise<PartyInformationRecord[]>;
+  onImportParties: (parties: PartyInformationRecord[]) => Promise<PartyInformationRecord[]>;
 };

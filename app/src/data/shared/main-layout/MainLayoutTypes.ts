@@ -45,7 +45,6 @@ export type MainAccessKey =
   | "maintenance.transactionType"
   | "maintenance.paymentType"
   | "maintenance.responsibilityCenter"
-  | "maintenance.taxMaintenance"
   | "maintenance.term"
   | "maintenance.mail"
   | "maintenance.item"

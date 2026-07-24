@@ -113,7 +113,3 @@ export const WarehouseFormPageCopy = {
 export function createWarehouseAccessHref(warehouseId: string) {
   return `${WarehouseAccessHref}?warehouseId=${encodeURIComponent(warehouseId)}`;
 }
-
-export function createWarehouseItemsHref(warehouseId: string) {
-  return `${WarehouseHref}/view/${warehouseId}/items`;
-}

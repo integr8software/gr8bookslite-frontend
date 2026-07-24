@@ -6,8 +6,6 @@ import {
   type ReactNode,
 } from "react";
 import { formatCurrency } from "@/app/src/utils/currency.util";
-import Link from "next/link";
-import { ExternalLink } from "lucide-react";
 import type {
   ItemFormErrors,
   ItemFormValues,
@@ -28,7 +26,6 @@ export type ItemFieldsProps = {
   responsibilityCenterOptions: AppAdvancedDropdownOption[];
   uomOptions: AppAdvancedDropdownOption[];
   values: ItemFormValues;
-  warehouseItemsHref?: string;
   warehouseOptions: AppAdvancedDropdownOption[];
   onAddTag: (tag: string) => void;
   onFieldChange: <TKey extends keyof ItemFormValues>(
@@ -202,15 +199,7 @@ export function ItemPricingTaxFields({
   const selectedTax = taxTreatmentOptions.find((option) => option.value === values.taxTreatment);
   const suggestedSellingPrice = createSuggestedSellingPrice(values, selectedTax?.percentage);
   const options =
-    taxTreatmentOptions.length > 0
-      ? taxTreatmentOptions
-      : [
-          {
-            label: values.taxTreatment || "Select tax type",
-            value: values.taxTreatment,
-            percentage: 0,
-          },
-        ];
+    taxTreatmentOptions.length > 0 ? taxTreatmentOptions : [];
 
   return (
     <FieldPanel title="Pricing and Tax">
@@ -243,6 +232,11 @@ export function ItemPricingTaxFields({
           disabled={isReadonly}
           className={fieldClassName}
         >
+          <option value="" disabled>
+            {taxTreatmentOptions.length > 0
+              ? "Select tax type"
+              : "No active tax definitions"}
+          </option>
           {options.map((taxTreatment) => (
             <option key={taxTreatment.value} value={taxTreatment.value}>
               {taxTreatment.label}
@@ -260,7 +254,6 @@ export function ItemInventoryFields({
   onFieldChange,
   onInputChange,
   values,
-  warehouseItemsHref,
   warehouseOptions,
 }: ItemFieldsProps) {
   return (
@@ -274,15 +267,6 @@ export function ItemInventoryFields({
           value={values.defaultWarehouse}
           onChange={(value) => onFieldChange("defaultWarehouse", String(value))}
         />
-        {warehouseItemsHref ? (
-          <Link
-            href={warehouseItemsHref}
-            className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-skyblue transition hover:text-darknavy"
-          >
-            View warehouse items
-            <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
-          </Link>
-        ) : null}
       </FormField>
       <FormField label="Default Location" error={errors.defaultLocation}>
         <input

@@ -29,9 +29,13 @@ import type {
 } from "@/app/src/types/modules/warehouse-management/warehouses/WarehouseTypes";
 import { useWarehousesStore } from "@/app/src/hooks/modules/warehouse-management/warehouses/useWarehouses";
 import { getWarehouseAvailableBranchLabel } from "@/app/src/data/modules/warehouse-management/warehouses/WarehouseData";
+import { useTransactionNumberSetupStore } from "@/app/src/hooks/modules/system-administration/transaction-number-setup/useTransactionNumberSetup";
 
 export function useWarehouseListPage() {
-  const { setWarehouseStatus, isLoading, isMutating, isRefreshing, lastSyncedAt, refreshWarehouses, statistics, warehouses } = useWarehousesStore();
+  const { setWarehouseStatus, isLoading, isMutating, isRefreshing, lastSyncedAt, permissions, refreshWarehouses, statistics, warehouses } = useWarehousesStore();
+  const branchOptions = useTransactionNumberSetupStore(
+    (state) => state.branchOptions,
+  );
   const [query, setQuery] = useState("");
   const [branchFilter, setBranchFilterState] = useState("All");
   const [statusFilter, setStatusFilterState] = useState<WarehouseStatus | "All">("Active");
@@ -57,11 +61,8 @@ export function useWarehouseListPage() {
     [warehouses],
   );
   const branchFilterOptions = useMemo(
-    () =>
-      createUniqueSortedOptions([
-        ...tableWarehouses.flatMap((warehouse) => (warehouse.availableBranches.length > 0 ? warehouse.availableBranches : [warehouse.branchName])),
-      ]),
-    [tableWarehouses],
+    () => createUniqueSortedOptions(branchOptions.map((branch) => branch.name)),
+    [branchOptions],
   );
   const filteredWarehouses = useMemo(() => {
     const normalizedQuery = normalizeLowercaseText(query);
@@ -164,6 +165,7 @@ export function useWarehouseListPage() {
     isRefreshing,
     lastSyncedAt,
     pendingDeleteWarehouse,
+    permissions,
     query,
     refreshWarehouses,
     resetFilters,

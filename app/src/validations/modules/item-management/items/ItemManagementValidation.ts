@@ -124,7 +124,10 @@ export const ItemFormValidationSchema = z
 
 export function validateItemForm(
   values: ItemFormValues,
-  options: { variations?: ItemVariationRecord[] } = {},
+  options: {
+    taxDefinitionIds?: ReadonlySet<string>;
+    variations?: ItemVariationRecord[];
+  } = {},
 ) {
   const result = ItemFormValidationSchema.safeParse(values);
   const errors = result.success
@@ -141,6 +144,13 @@ export function validateItemForm(
   const assignedVariationIds = values.variationAssignments
     .map((assignment) => assignment.variationId.trim())
     .filter(Boolean);
+
+  if (
+    options.taxDefinitionIds &&
+    !options.taxDefinitionIds.has(values.taxTreatment)
+  ) {
+    errors.taxTreatment = "Select an active tax definition.";
+  }
 
   if (
     new Set(assignedVariationIds).size !== assignedVariationIds.length &&

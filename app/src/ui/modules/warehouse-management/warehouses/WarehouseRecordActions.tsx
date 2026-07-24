@@ -4,11 +4,13 @@ import { createWarehouseAccessHref } from "@/app/src/constants/modules/warehouse
 import type { WarehouseRecordActionsProps } from "@/app/src/types/modules/warehouse-management/warehouses/WarehouseTypes";
 import { ModuleTableActionButton, ModuleTableActionLink, ModuleTableActions } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
-export function WarehouseRecordActions({ warehouse, onDeleteWarehouse, onEditWarehouse, onViewWarehouse }: WarehouseRecordActionsProps) {
+export function WarehouseRecordActions({ permissions, warehouse, onDeleteWarehouse, onEditWarehouse, onViewWarehouse }: WarehouseRecordActionsProps) {
   return (
     <ModuleTableActions className="w-full !justify-center">
       <ModuleTableActionButton className="h-8 w-8" variant="view" onClick={() => onViewWarehouse(warehouse)} label={`View ${warehouse.name}`} />
-      <ModuleTableActionButton className="h-8 w-8" variant="edit" onClick={() => onEditWarehouse(warehouse)} label={`Edit ${warehouse.name}`} />
+      {permissions.canUpdate ? (
+        <ModuleTableActionButton className="h-8 w-8" variant="edit" onClick={() => onEditWarehouse(warehouse)} label={`Edit ${warehouse.name}`} />
+      ) : null}
       <ModuleTableActionLink
         className="h-8 w-8"
         icon={ShieldCheck}
@@ -21,12 +23,14 @@ export function WarehouseRecordActions({ warehouse, onDeleteWarehouse, onEditWar
         href={`${AuditTrailHref}?module=Warehouse&record=${encodeURIComponent(warehouse.code)}`}
         label={`View audit history for ${warehouse.name}`}
       />
-      <ModuleTableActionButton
-        className="h-8 w-8"
-        variant={warehouse.status === "Active" ? "inactive" : "active"}
-        onClick={() => onDeleteWarehouse(warehouse)}
-        label={`Set ${warehouse.name} ${warehouse.status === "Active" ? "inactive" : "active"}`}
-      />
+      {permissions.canUpdate ? (
+        <ModuleTableActionButton
+          className="h-8 w-8"
+          variant={warehouse.status === "Active" ? "inactive" : "active"}
+          onClick={() => onDeleteWarehouse(warehouse)}
+          label={`Set ${warehouse.name} ${warehouse.status === "Active" ? "inactive" : "active"}`}
+        />
+      ) : null}
     </ModuleTableActions>
   );
 }

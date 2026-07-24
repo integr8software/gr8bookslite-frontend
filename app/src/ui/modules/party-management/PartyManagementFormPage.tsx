@@ -14,7 +14,6 @@ import { PartyInformationActionHeader } from "@/app/src/ui/modules/party-managem
 import { PartyInformationDetailsFields } from "@/app/src/ui/modules/party-management/PartyInformationDetailsFields";
 import { PartyInformationNotFound } from "@/app/src/ui/modules/party-management/PartyInformationNotFound";
 import { ChartAccountQuickAddDialog } from "@/app/src/ui/modules/financial-maintenance/charts-of-accounts/ChartAccountQuickAddDialog";
-import { TaxMaintenanceQuickAddDialog } from "@/app/src/ui/modules/financial-maintenance/tax-maintenance/TaxMaintenanceQuickAddDialog";
 import { TermManagementQuickAddDialog } from "@/app/src/ui/modules/financial-maintenance/term-management/TermManagementQuickAddDialog";
 import { PartyAccountingAccountFieldLabels } from "@/app/src/constants/modules/party-management/PartyManagementConstants";
 
@@ -34,7 +33,6 @@ function PartyManagementFormPageInner() {
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
   const [accountTitleDialog, setAccountTitleDialog] =
     useState<ChartAccountQuickAddDialogState>(null);
-  const [isTaxRegistrationDialogOpen, setIsTaxRegistrationDialogOpen] = useState(false);
   const [isTermDialogOpen, setIsTermDialogOpen] = useState(false);
   const {
     closeDialog: closeSaveDialog,
@@ -102,15 +100,12 @@ function PartyManagementFormPageInner() {
           isPartyCodeReadonly={page.isPartyCodeReadonly}
           isReadonly={page.isReadonly}
           partyTypeOptions={page.partyTypeOptions}
-          taxMaintenanceOptions={page.taxMaintenanceOptions}
           termOptions={page.termOptions}
           values={page.values}
           syncedAddressSources={page.syncedAddressSources}
           canAddAccountTitle={chartAccounts.permissions.canCreate}
-          canAddTaxRegistrationType={page.taxMaintenancePermissions.canCreate}
           canAddTerm={page.termPermissions.canCreate}
           onAddAccountTitle={openAccountTitleDialog}
-          onAddTaxRegistrationType={() => setIsTaxRegistrationDialogOpen(true)}
           onAddTerm={() => setIsTermDialogOpen(true)}
           onAddressInputChange={page.handleAddressInputChange}
           onCopyAddress={page.copyAddress}
@@ -118,7 +113,6 @@ function PartyManagementFormPageInner() {
           onPartyTypesChange={page.handlePartyTypesChange}
           onSelectBarangay={page.selectBarangay}
           onSelectAtcCode={page.selectAtcCode}
-          onSelectVatRegistrationType={page.selectVatRegistrationType}
           onSelectAutocompleteAddress={page.selectAutocompleteAddress}
           onSyncAutocompleteAddressDetails={page.syncAutocompleteAddressDetails}
           onSelectCityMunicipality={page.selectCityMunicipality}
@@ -172,16 +166,6 @@ function PartyManagementFormPageInner() {
           chartAccounts.refreshAccounts();
           void page.accountOptionsRefetch();
           setAccountTitleDialog(null);
-        }}
-      />
-      <TaxMaintenanceQuickAddDialog
-        defaultAccountIds={page.taxMaintenanceDefaultAccountIds}
-        isOpen={isTaxRegistrationDialogOpen}
-        onClose={() => setIsTaxRegistrationDialogOpen(false)}
-        onSaved={(tax) => {
-          page.setSelectedTaxRegistrationType(tax.id, tax);
-          void page.refreshTaxMaintenanceOptions();
-          setIsTaxRegistrationDialogOpen(false);
         }}
       />
       <TermManagementQuickAddDialog

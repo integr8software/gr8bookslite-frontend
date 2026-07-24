@@ -9,7 +9,6 @@ import {
   PartyAccountingAccountFieldLabels,
   PartyDefaultNationality,
   PartyTypeOptions,
-  VatRegistrationTypeOptions,
 } from "@/app/src/constants/modules/party-management/PartyManagementConstants";
 import {
   PartyInformationInitialFormValues,
@@ -24,7 +23,6 @@ import { FormatPhilippineContactNumber } from "@/app/src/data/shared/contact/Con
 import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import { useAddressOptions } from "@/app/src/hooks/shared/address/useAddressOptions";
 import { useTermDropdownOptions } from "@/app/src/hooks/modules/financial-maintenance/term-management/useTermDropdownOptions";
-import { useTaxMaintenanceOptions } from "@/app/src/hooks/modules/financial-maintenance/tax-maintenance/useTaxMaintenanceOptions";
 import { usePartyManagementAccountOptions } from "@/app/src/hooks/modules/party-management/usePartyManagementAccountOptions";
 import { useChartsOfAccounts } from "@/app/src/hooks/modules/financial-maintenance/charts-of-accounts/useChartsOfAccounts";
 import { useTransactionNumberSetupStore } from "@/app/src/hooks/modules/system-administration/transaction-number-setup/useTransactionNumberSetup";
@@ -45,7 +43,6 @@ import type {
   PartyManagementDrawerProps,
   PartyProvinceOption,
 } from "@/app/src/types/modules/party-management/PartyManagementTypes";
-import type { TaxMaintenance } from "@/app/src/types/modules/financial-maintenance/tax-maintenance/TaxMaintenanceTypes";
 import {
   PartyInformationRequiredFieldsToastMessage,
   validatePartyInformationForm,
@@ -55,7 +52,6 @@ import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { ModuleSavingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { PartyInformationDetailsFields } from "@/app/src/ui/modules/party-management/PartyInformationDetailsFields";
 import { ChartAccountQuickAddDialog } from "@/app/src/ui/modules/financial-maintenance/charts-of-accounts/ChartAccountQuickAddDialog";
-import { TaxMaintenanceQuickAddDialog } from "@/app/src/ui/modules/financial-maintenance/tax-maintenance/TaxMaintenanceQuickAddDialog";
 import { TermManagementQuickAddDialog } from "@/app/src/ui/modules/financial-maintenance/term-management/TermManagementQuickAddDialog";
 import { todayDateValue } from "@/app/src/utils/date.util";
 import type {
@@ -82,14 +78,12 @@ export function PartyManagementDrawer({
   const partyAccountOptions = usePartyManagementAccountOptions();
   const chartAccounts = useChartsOfAccounts();
   const termDropdown = useTermDropdownOptions();
-  const taxMaintenanceDropdown = useTaxMaintenanceOptions();
   const transactionNumberSetup = useTransactionNumberSetupStore();
   const [errors, setErrors] = useState<PartyInformationFormErrors>({});
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
   const [isSaveConfirmPending, setIsSaveConfirmPending] = useState(false);
   const [accountTitleDialog, setAccountTitleDialog] =
     useState<ChartAccountQuickAddDialogState>(null);
-  const [isTaxRegistrationDialogOpen, setIsTaxRegistrationDialogOpen] = useState(false);
   const [isTermDialogOpen, setIsTermDialogOpen] = useState(false);
   const activeAddress =
     values.addresses.find((address) => address.id === values.activeAddressId) ??
@@ -316,34 +310,6 @@ export function PartyManagementDrawer({
       atcCode: getSingleSelectedValue(value),
     }));
     setErrors((current) => ({ ...current, atcCode: undefined }));
-  }
-
-  function selectVatRegistrationType(value: string | string[]) {
-    if (!isClassificationSelected) {
-      return;
-    }
-
-    const taxId = getSingleSelectedValue(value);
-    const tax = taxMaintenanceDropdown.taxes.find((currentTax) => currentTax.id === taxId);
-    updateVatRegistrationType(taxId, tax ?? null);
-  }
-
-  function updateVatRegistrationType(taxId: string, tax: TaxMaintenance | null) {
-    const legacyVatRegistrationType =
-      VatRegistrationTypeOptions.find((option) => option === tax?.name) ?? "";
-
-    setValues((current) => ({
-      ...current,
-      vatRegistrationTypeId: taxId,
-      vatRegistrationType: legacyVatRegistrationType,
-      vatRegistration: tax
-        ? {
-            id: tax.id,
-            name: tax.name,
-            percentage: Number(tax.percentage),
-          }
-        : null,
-    }));
   }
 
   function openAccountTitleDialog(field: PartyAccountingAccountField) {
@@ -657,15 +623,12 @@ export function PartyManagementDrawer({
           isPartyCodeReadonly={isAutoPartyCode}
           isReadonly={false}
           partyTypeOptions={PartyTypeOptions}
-          taxMaintenanceOptions={taxMaintenanceDropdown.options}
           termOptions={termDropdown.options}
           values={effectiveValues}
           syncedAddressSources={syncedAddressSources}
           canAddAccountTitle={chartAccounts.permissions.canCreate}
-          canAddTaxRegistrationType={taxMaintenanceDropdown.permissions.canCreate}
           canAddTerm={termDropdown.permissions.canCreate}
           onAddAccountTitle={openAccountTitleDialog}
-          onAddTaxRegistrationType={() => setIsTaxRegistrationDialogOpen(true)}
           onAddTerm={() => setIsTermDialogOpen(true)}
           onAddressInputChange={handleAddressInputChange}
           onCopyAddress={copyAddress}
@@ -673,7 +636,6 @@ export function PartyManagementDrawer({
           onPartyTypesChange={handlePartyTypesChange}
           onSelectBarangay={selectBarangay}
           onSelectAtcCode={selectAtcCode}
-          onSelectVatRegistrationType={selectVatRegistrationType}
           onSelectAutocompleteAddress={selectAutocompleteAddress}
           onSyncAutocompleteAddressDetails={syncAutocompleteAddressDetails}
           onSelectCityMunicipality={selectCityMunicipality}
@@ -698,16 +660,6 @@ export function PartyManagementDrawer({
           chartAccounts.refreshAccounts();
           void partyAccountOptions.refetch();
           setAccountTitleDialog(null);
-        }}
-      />
-      <TaxMaintenanceQuickAddDialog
-        defaultAccountIds={taxMaintenanceDropdown.defaultAccountIds}
-        isOpen={isTaxRegistrationDialogOpen}
-        onClose={() => setIsTaxRegistrationDialogOpen(false)}
-        onSaved={(tax) => {
-          updateVatRegistrationType(tax.id, tax);
-          void taxMaintenanceDropdown.refetch();
-          setIsTaxRegistrationDialogOpen(false);
         }}
       />
       <TermManagementQuickAddDialog

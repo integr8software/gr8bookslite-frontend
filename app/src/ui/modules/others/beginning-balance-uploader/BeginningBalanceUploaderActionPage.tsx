@@ -1,6 +1,6 @@
 "use client";
 
-import { useBeginningBalanceUploaderFormPage } from "@/app/src/hooks/modules/beginning-balance-uploader/useBeginningBalanceUploaderFormPage";
+import { useBeginningBalanceUploaderFormPage } from "@/app/src/hooks/modules/others/beginning-balance-uploader/useBeginningBalanceUploaderFormPage";
 import { BeginningBalanceUploaderActionHeader } from "./BeginningBalanceUploaderActionHeader";
 import { BeginningBalanceUploaderEntriesTable } from "./BeginningBalanceUploaderEntriesTable";
 import { BeginningBalanceUploaderHeaderPanel } from "./BeginningBalanceUploaderHeaderPanel";

@@ -9,10 +9,7 @@ import {
   PartyTypeOptions,
   VatRegistrationTypeOptions,
 } from "@/app/src/constants/modules/party-management/PartyManagementConstants";
-import {
-  isAtcCodeLike,
-  normalizeAtcCode,
-} from "@/app/src/data/shared/tax/AtcCode";
+import { isAtcCodeLike, normalizeAtcCode } from "@/app/src/data/shared/tax/AtcCode";
 import { DefaultPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
 import {
   createEmptyPartyAddress,
@@ -44,8 +41,7 @@ import { formatFileSize } from "@/app/src/utils/file.util";
 import { isModuleImportOptionValue } from "@/app/src/utils/module-import-validation.util";
 
 export const PartyAtcCodeSource = {
-  label:
-    "BIR Form 2307, January 2018 ENCS - Schedules of Alphanumeric Tax Codes",
+  label: "BIR Form 2307, January 2018 ENCS - Schedules of Alphanumeric Tax Codes",
   url: BIRAtcSourceUrl,
 };
 
@@ -96,8 +92,7 @@ export const PartyInformationInitialFormValues: PartyInformationFormValues = {
   termName: "",
   tin: "",
   vatRegistrationType: "",
-  vatRegistrationTypeId: "",
-  vatRegistration: null,
+  defaultPurchaseTaxClassification: "",
   atcCode: "",
   email: "",
   contactNo: "",
@@ -150,8 +145,7 @@ export function createPartyInformationFormValues(
     termName: record.termName ?? "",
     tin: record.tin,
     vatRegistrationType: record.vatRegistrationType,
-    vatRegistrationTypeId: record.vatRegistrationTypeId ?? "",
-    vatRegistration: record.vatRegistration ?? null,
+    defaultPurchaseTaxClassification: record.defaultPurchaseTaxClassification ?? "",
     atcCode: record.atcCode ? normalizeAtcCode(record.atcCode) : "",
     email: record.email,
     contactNo: record.contactNo,
@@ -160,31 +154,16 @@ export function createPartyInformationFormValues(
 }
 
 export function createPartySubmitPayload(values: PartyInformationFormValues) {
-  const partyTypes = normalizePartyTypesForClassification(
-    values.partyTypes,
-    values.classification,
-  );
-  const addresses = normalizePartyAddresses(
-    values.addresses,
-    partyTypes,
-    values.classification,
-  );
+  const partyTypes = normalizePartyTypesForClassification(values.partyTypes, values.classification);
+  const addresses = normalizePartyAddresses(values.addresses, partyTypes, values.classification);
   const name =
     values.classification === "Non-Individual"
       ? values.partyName.trim()
-      : [
-          values.firstName,
-          values.middleName,
-          values.lastName,
-          values.suffixName,
-        ]
+      : [values.firstName, values.middleName, values.lastName, values.suffixName]
           .map((part) => part.trim())
           .filter(Boolean)
           .join(" ");
-  const accountingAccounts = applyPartyDefaultAccountingAccounts(
-    values,
-    partyTypes,
-  );
+  const accountingAccounts = applyPartyDefaultAccountingAccounts(values, partyTypes);
 
   return {
     partyCodeNo: values.partyCodeNo.trim(),
@@ -192,17 +171,12 @@ export function createPartySubmitPayload(values: PartyInformationFormValues) {
     partyTypes,
     status: values.status,
     name,
-    tradeName:
-      values.classification === "Non-Individual"
-        ? values.tradeName.trim() || null
-        : null,
+    tradeName: values.classification === "Non-Individual" ? values.tradeName.trim() || null : null,
     honorific:
       values.classification === "Individual"
         ? normalizePartyHonorific(values.honorific) || null
         : null,
-    gender: hasPersonalInformationPartyType(partyTypes)
-      ? values.gender.trim() || null
-      : null,
+    gender: hasPersonalInformationPartyType(partyTypes) ? values.gender.trim() || null : null,
     civilStatus: hasPersonalInformationPartyType(partyTypes)
       ? values.civilStatus.trim() || null
       : null,
@@ -236,8 +210,7 @@ export function createPartySubmitPayload(values: PartyInformationFormValues) {
     termName: values.termName,
     tin: values.tin.trim(),
     vatRegistrationType: values.vatRegistrationType,
-    vatRegistrationTypeId: values.vatRegistrationTypeId,
-    vatRegistration: values.vatRegistration ?? null,
+    defaultPurchaseTaxClassification: values.defaultPurchaseTaxClassification,
     atcCode: values.atcCode ? normalizeAtcCode(values.atcCode) : "",
     email: values.email.trim() || null,
     contactNo: normalizePartyContactNo(values.contactNo) || null,
@@ -308,8 +281,7 @@ export function createPartyInformationRecordFromTableRecord(
     updatedAt: record.updatedAt,
     vendorAdvanceAccount: record.vendorAdvanceAccount,
     vatRegistrationType: record.vatRegistrationType,
-    vatRegistrationTypeId: record.vatRegistrationTypeId,
-    vatRegistration: record.vatRegistration,
+    defaultPurchaseTaxClassification: record.defaultPurchaseTaxClassification,
   };
 }
 
@@ -318,12 +290,7 @@ export function getPartyDisplayName(record: PartyInformationRecord) {
     return record.partyName;
   }
 
-  return [
-    record.firstName,
-    record.middleName,
-    record.lastName,
-    record.suffixName,
-  ]
+  return [record.firstName, record.middleName, record.lastName, record.suffixName]
     .filter(Boolean)
     .join(" ");
 }
@@ -338,9 +305,7 @@ export function isKnownAtcCode(value: string) {
   return isAtcCodeLike(normalizedCode);
 }
 
-export function createExistingPartyIdentityMap(
-  parties: PartyInformationRecord[],
-) {
+export function createExistingPartyIdentityMap(parties: PartyInformationRecord[]) {
   const codes = new Map<string, string>();
   const names = new Map<string, string>();
 
@@ -360,9 +325,7 @@ export function createExistingPartyIdentityMap(
   return { codes, names };
 }
 
-export function createBlankPartyImportRow(
-  rowNumber: number,
-): PartyImportPreviewRow {
+export function createBlankPartyImportRow(rowNumber: number): PartyImportPreviewRow {
   const address = createEmptyPartyAddress({
     id: `party-import-address-${rowNumber}`,
     isBilling: true,
@@ -401,8 +364,7 @@ export function createBlankPartyImportRow(
       termName: "",
       tin: "",
       vatRegistrationType: "",
-      vatRegistrationTypeId: "",
-      vatRegistration: null,
+      defaultPurchaseTaxClassification: "",
       atcCode: "",
       email: "",
       contactNo: "",
@@ -422,9 +384,7 @@ export function removeDuplicatePartyImportRows(
   baseRows: PartyImportPreviewRow[],
 ) {
   const seenCodes = new Set(
-    baseRows
-      .map((row) => normalizePartyIdentity(row.party.partyCodeNo))
-      .filter(Boolean),
+    baseRows.map((row) => normalizePartyIdentity(row.party.partyCodeNo)).filter(Boolean),
   );
   const seenNames = new Set(
     baseRows
@@ -436,9 +396,7 @@ export function removeDuplicatePartyImportRows(
 
   rows.forEach((row) => {
     const normalizedCode = normalizePartyIdentity(row.party.partyCodeNo);
-    const normalizedName = normalizePartyIdentity(
-      getImportPartyDisplayName(row.party),
-    );
+    const normalizedName = normalizePartyIdentity(getImportPartyDisplayName(row.party));
 
     if (
       (normalizedCode && seenCodes.has(normalizedCode)) ||
@@ -464,10 +422,7 @@ export function getNextPartyImportRowNumber(rows: PartyImportPreviewRow[]) {
   return Math.max(0, ...rows.map((row) => row.rowNumber)) + 1;
 }
 
-export function normalizeImportedPartyCellValue(
-  field: PartyImportColumnId,
-  value: string,
-) {
+export function normalizeImportedPartyCellValue(field: PartyImportColumnId, value: string) {
   if (field === "classification") {
     return normalizeImportedPartyClassification(value);
   }
@@ -548,9 +503,7 @@ export async function downloadPartyImportTemplate() {
 
 function createPartyImportTemplateCsv() {
   return [PartyImportTemplateHeaders]
-    .map((row) =>
-      row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(","),
-    )
+    .map((row) => row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(","))
     .join("\n");
 }
 
@@ -563,11 +516,7 @@ export async function readPartyImportFileText(file: File) {
     return formatPartyImportRowsAsText(rows);
   }
 
-  if (
-    fileName.endsWith(".csv") ||
-    fileName.endsWith(".tsv") ||
-    fileName.endsWith(".txt")
-  ) {
+  if (fileName.endsWith(".csv") || fileName.endsWith(".tsv") || fileName.endsWith(".txt")) {
     return (await file.text()).trim();
   }
 
@@ -592,10 +541,7 @@ async function readPartyImportXlsxRows(buffer: ArrayBuffer) {
     const cells: string[] = [];
 
     row.eachCell({ includeEmpty: true }, (cell, columnNumber) => {
-      cells[columnNumber - 1] = formatPartyImportExcelCellValue(
-        cell.value,
-        cell.text,
-      );
+      cells[columnNumber - 1] = formatPartyImportExcelCellValue(cell.value, cell.text);
     });
     rows.push(cells);
   });
@@ -603,10 +549,7 @@ async function readPartyImportXlsxRows(buffer: ArrayBuffer) {
   return rows;
 }
 
-export function parsePartyImportText(
-  text: string,
-  startRowNumber = 1,
-): PartyImportPreviewRow[] {
+export function parsePartyImportText(text: string, startRowNumber = 1): PartyImportPreviewRow[] {
   const rows = parsePartyImportTabularRows(text).filter((row) =>
     row.some((cell) => cell.trim() !== ""),
   );
@@ -639,39 +582,16 @@ function createPartyImportPreviewRow(
   const classification = normalizeImportedPartyClassification(
     getImportedPartyValue(row, indexes.classification),
   );
-  const partyTypes = normalizeImportedPartyTypes(
-    getImportedPartyValue(row, indexes.partyTypes),
-  );
-  const normalizedPartyTypes = normalizePartyTypesForClassification(
-    partyTypes,
-    classification,
-  );
+  const partyTypes = normalizeImportedPartyTypes(getImportedPartyValue(row, indexes.partyTypes));
+  const normalizedPartyTypes = normalizePartyTypesForClassification(partyTypes, classification);
   const accountingAccounts = applyPartyDefaultAccountingAccounts(
     {
-      customerAdvanceAccount: getImportedPartyValue(
-        row,
-        indexes.customerAdvanceAccount,
-      ),
-      defaultPayableAccount: getImportedPartyValue(
-        row,
-        indexes.defaultPayableAccount,
-      ),
-      defaultReceivableAccount: getImportedPartyValue(
-        row,
-        indexes.defaultReceivableAccount,
-      ),
-      employeeAdvanceAccount: getImportedPartyValue(
-        row,
-        indexes.employeeAdvanceAccount,
-      ),
-      employeePayableAccount: getImportedPartyValue(
-        row,
-        indexes.employeePayableAccount,
-      ),
-      vendorAdvanceAccount: getImportedPartyValue(
-        row,
-        indexes.vendorAdvanceAccount,
-      ),
+      customerAdvanceAccount: getImportedPartyValue(row, indexes.customerAdvanceAccount),
+      defaultPayableAccount: getImportedPartyValue(row, indexes.defaultPayableAccount),
+      defaultReceivableAccount: getImportedPartyValue(row, indexes.defaultReceivableAccount),
+      employeeAdvanceAccount: getImportedPartyValue(row, indexes.employeeAdvanceAccount),
+      employeePayableAccount: getImportedPartyValue(row, indexes.employeePayableAccount),
+      vendorAdvanceAccount: getImportedPartyValue(row, indexes.vendorAdvanceAccount),
     },
     normalizedPartyTypes,
   );
@@ -710,6 +630,7 @@ function createPartyImportPreviewRow(
     vatRegistrationType: normalizeImportedVatRegistrationType(
       getImportedPartyValue(row, indexes.vatRegistrationType),
     ),
+    defaultPurchaseTaxClassification: "",
     atcCode: normalizeAtcCode(getImportedPartyValue(row, indexes.atcCode)),
     email: getImportedPartyValue(row, indexes.email),
     contactNo: getImportedPartyValue(row, indexes.contactNo),
@@ -752,8 +673,7 @@ function createImportPartyAddresses(
       addressLine1: roleAddress.addressLine1 || fallbackAddress.addressLine1,
       addressLine2: roleAddress.addressLine2 || fallbackAddress.addressLine2,
       barangay: roleAddress.barangay || fallbackAddress.barangay,
-      cityMunicipality:
-        roleAddress.cityMunicipality || fallbackAddress.cityMunicipality,
+      cityMunicipality: roleAddress.cityMunicipality || fallbackAddress.cityMunicipality,
       province: roleAddress.province || fallbackAddress.province,
       isBilling: role === "billing",
       isDefault: index === 0,
@@ -796,10 +716,7 @@ function getImportedPartyAddressByRole(
       addressLine1: getImportedPartyValue(row, indexes.deliveryAddressLine1),
       addressLine2: getImportedPartyValue(row, indexes.deliveryAddressLine2),
       barangay: getImportedPartyValue(row, indexes.deliveryBarangay),
-      cityMunicipality: getImportedPartyValue(
-        row,
-        indexes.deliveryCityMunicipality,
-      ),
+      cityMunicipality: getImportedPartyValue(row, indexes.deliveryCityMunicipality),
       province: getImportedPartyValue(row, indexes.deliveryProvince),
     };
   }
@@ -808,10 +725,7 @@ function getImportedPartyAddressByRole(
     addressLine1: getImportedPartyValue(row, indexes.billingAddressLine1),
     addressLine2: getImportedPartyValue(row, indexes.billingAddressLine2),
     barangay: getImportedPartyValue(row, indexes.billingBarangay),
-    cityMunicipality: getImportedPartyValue(
-      row,
-      indexes.billingCityMunicipality,
-    ),
+    cityMunicipality: getImportedPartyValue(row, indexes.billingCityMunicipality),
     province: getImportedPartyValue(row, indexes.billingProvince),
   };
 }
@@ -825,21 +739,13 @@ export function validatePartyImportRows(
 
   rows.forEach((row) => {
     const normalizedCode = normalizePartyIdentity(row.party.partyCodeNo);
-    const normalizedName = normalizePartyIdentity(
-      getImportPartyDisplayName(row.party),
-    );
+    const normalizedName = normalizePartyIdentity(getImportPartyDisplayName(row.party));
 
     if (normalizedCode) {
-      importedCodeCounts.set(
-        normalizedCode,
-        (importedCodeCounts.get(normalizedCode) ?? 0) + 1,
-      );
+      importedCodeCounts.set(normalizedCode, (importedCodeCounts.get(normalizedCode) ?? 0) + 1);
     }
     if (normalizedName) {
-      importedNameCounts.set(
-        normalizedName,
-        (importedNameCounts.get(normalizedName) ?? 0) + 1,
-      );
+      importedNameCounts.set(normalizedName, (importedNameCounts.get(normalizedName) ?? 0) + 1);
     }
   });
 
@@ -848,26 +754,18 @@ export function validatePartyImportRows(
     const cellWarnings: PartyImportCellWarnings = {};
     const rowErrors: string[] = [];
     const normalizedCode = normalizePartyIdentity(row.party.partyCodeNo);
-    const normalizedName = normalizePartyIdentity(
-      getImportPartyDisplayName(row.party),
-    );
+    const normalizedName = normalizePartyIdentity(getImportPartyDisplayName(row.party));
 
     if (!row.party.partyCodeNo.trim()) {
       cellErrors.partyCodeNo = ["Party code is required."];
     }
-    if (
-      normalizedCode &&
-      existingPartyIdentities.codes.has(normalizedCode)
-    ) {
+    if (normalizedCode && existingPartyIdentities.codes.has(normalizedCode)) {
       cellErrors.partyCodeNo = [
         ...(cellErrors.partyCodeNo ?? []),
         `Party code already exists: ${existingPartyIdentities.codes.get(normalizedCode)}.`,
       ];
     }
-    if (
-      normalizedCode &&
-      (importedCodeCounts.get(normalizedCode) ?? 0) > 1
-    ) {
+    if (normalizedCode && (importedCodeCounts.get(normalizedCode) ?? 0) > 1) {
       cellErrors.partyCodeNo = [
         ...(cellErrors.partyCodeNo ?? []),
         "Duplicate party code in import.",
@@ -875,13 +773,9 @@ export function validatePartyImportRows(
     }
 
     if (!row.party.classification.trim()) {
-      cellErrors.classification = [
-        "Classification is required. Choose a value from the list.",
-      ];
+      cellErrors.classification = ["Classification is required. Choose a value from the list."];
     } else if (!isModuleImportOptionValue(row.party.classification, PartyClassificationOptions)) {
-      cellErrors.classification = [
-        "Choose Individual or Non-Individual from the list.",
-      ];
+      cellErrors.classification = ["Choose Individual or Non-Individual from the list."];
     }
 
     if (row.party.partyTypes.length === 0) {
@@ -889,8 +783,7 @@ export function validatePartyImportRows(
     }
     if (
       row.party.classification === "Non-Individual" &&
-      (row.party.partyTypes.includes("Employee") ||
-        row.party.partyTypes.includes("Member"))
+      (row.party.partyTypes.includes("Employee") || row.party.partyTypes.includes("Member"))
     ) {
       cellErrors.partyTypes = [
         ...(cellErrors.partyTypes ?? []),
@@ -911,27 +804,16 @@ export function validatePartyImportRows(
       }
     }
 
-    if (
-      normalizedName &&
-      existingPartyIdentities.names.has(normalizedName)
-    ) {
-      const field =
-        row.party.classification === "Individual" ? "lastName" : "partyName";
+    if (normalizedName && existingPartyIdentities.names.has(normalizedName)) {
+      const field = row.party.classification === "Individual" ? "lastName" : "partyName";
       cellErrors[field] = [
         ...(cellErrors[field] ?? []),
         `Party already exists: ${existingPartyIdentities.names.get(normalizedName)}.`,
       ];
     }
-    if (
-      normalizedName &&
-      (importedNameCounts.get(normalizedName) ?? 0) > 1
-    ) {
-      const field =
-        row.party.classification === "Individual" ? "lastName" : "partyName";
-      cellErrors[field] = [
-        ...(cellErrors[field] ?? []),
-        "Duplicate party name in import.",
-      ];
+    if (normalizedName && (importedNameCounts.get(normalizedName) ?? 0) > 1) {
+      const field = row.party.classification === "Individual" ? "lastName" : "partyName";
+      cellErrors[field] = [...(cellErrors[field] ?? []), "Duplicate party name in import."];
     }
 
     if (
@@ -949,13 +831,8 @@ export function validatePartyImportRows(
     if (row.party.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row.party.email)) {
       cellErrors.email = ["Enter a valid email address."];
     }
-    if (
-      row.party.contactNo &&
-      !/^\+63 \d{3} \d{3} \d{4}$/.test(row.party.contactNo)
-    ) {
-      cellErrors.contactNo = [
-        "Enter a valid contact number in the +63 000 000 0000 format.",
-      ];
+    if (row.party.contactNo && !/^\+63 \d{3} \d{3} \d{4}$/.test(row.party.contactNo)) {
+      cellErrors.contactNo = ["Enter a valid contact number in the +63 000 000 0000 format."];
     }
 
     if (row.party.partyTypes.includes("Member")) {
@@ -969,9 +846,7 @@ export function validatePartyImportRows(
         cellErrors.nationality = ["Nationality is required for members."];
       }
       if (!row.party.memberRegistrationDate?.trim()) {
-        cellErrors.memberRegistrationDate = [
-          "Member registration date is required.",
-        ];
+        cellErrors.memberRegistrationDate = ["Member registration date is required."];
       }
     }
 
@@ -979,9 +854,7 @@ export function validatePartyImportRows(
       row.party.memberRegistrationDate &&
       !/^\d{4}-\d{2}-\d{2}$/.test(row.party.memberRegistrationDate)
     ) {
-      cellErrors.memberRegistrationDate = [
-        "Member registration date must use YYYY-MM-DD.",
-      ];
+      cellErrors.memberRegistrationDate = ["Member registration date must use YYYY-MM-DD."];
     }
 
     validateImportedPartyAddresses(row.party, cellErrors, cellWarnings);
@@ -1002,8 +875,7 @@ function validateImportedPartyAddresses(
   cellErrors: PartyImportCellErrors,
   cellWarnings: PartyImportCellWarnings,
 ) {
-  const addresses =
-    party.addresses.length > 0 ? party.addresses : [party.address];
+  const addresses = party.addresses.length > 0 ? party.addresses : [party.address];
 
   addresses.forEach((address, index) => {
     const fieldMap = getPartyImportAddressFieldMap(address, index);
@@ -1017,9 +889,7 @@ function validateImportedPartyAddresses(
       cellErrors[fieldMap.barangay] = ["Barangay is required."];
     }
     if (!address.cityMunicipality.trim()) {
-      cellErrors[fieldMap.cityMunicipality] = [
-        "City/Municipality is required.",
-      ];
+      cellErrors[fieldMap.cityMunicipality] = ["City/Municipality is required."];
     }
     if (!address.province.trim()) {
       cellErrors[fieldMap.province] = ["Province is required."];
@@ -1068,8 +938,7 @@ function getPartyImportAddressFieldMap(
     addressLine1: index === 0 ? "addressLine1" : "billingAddressLine1",
     addressLine2: index === 0 ? "addressLine2" : "billingAddressLine2",
     barangay: index === 0 ? "barangay" : "billingBarangay",
-    cityMunicipality:
-      index === 0 ? "cityMunicipality" : "billingCityMunicipality",
+    cityMunicipality: index === 0 ? "cityMunicipality" : "billingCityMunicipality",
     province: index === 0 ? "province" : "billingProvince",
   };
 }
@@ -1148,14 +1017,8 @@ export function createPartyImportRecord(
   index: number,
 ): PartyInformationRecord {
   const now = new Date().toISOString();
-  const partyTypes = normalizePartyTypesForClassification(
-    party.partyTypes,
-    party.classification,
-  );
-  const accountingAccounts = applyPartyDefaultAccountingAccounts(
-    party,
-    partyTypes,
-  );
+  const partyTypes = normalizePartyTypesForClassification(party.partyTypes, party.classification);
+  const accountingAccounts = applyPartyDefaultAccountingAccounts(party, partyTypes);
   const addresses = normalizeImportedPartyAddressesForRecord(
     party.addresses.length > 0 ? party.addresses : [party.address],
     partyTypes,
@@ -1171,22 +1034,14 @@ export function createPartyImportRecord(
     classification: party.classification,
     partyTypes,
     status: "Active",
-    partyName:
-      party.classification === "Non-Individual" ? party.partyName.trim() : "",
-    tradeName:
-      party.classification === "Non-Individual" ? party.tradeName.trim() : "",
-    firstName:
-      party.classification === "Individual" ? party.firstName.trim() : "",
-    middleName:
-      party.classification === "Individual" ? party.middleName.trim() : "",
-    lastName:
-      party.classification === "Individual" ? party.lastName.trim() : "",
-    suffixName:
-      party.classification === "Individual" ? party.suffixName.trim() : "",
+    partyName: party.classification === "Non-Individual" ? party.partyName.trim() : "",
+    tradeName: party.classification === "Non-Individual" ? party.tradeName.trim() : "",
+    firstName: party.classification === "Individual" ? party.firstName.trim() : "",
+    middleName: party.classification === "Individual" ? party.middleName.trim() : "",
+    lastName: party.classification === "Individual" ? party.lastName.trim() : "",
+    suffixName: party.classification === "Individual" ? party.suffixName.trim() : "",
     honorific:
-      party.classification === "Individual"
-        ? normalizePartyHonorific(party.honorific ?? "")
-        : "",
+      party.classification === "Individual" ? normalizePartyHonorific(party.honorific ?? "") : "",
     gender: hasPersonalInformation ? (party.gender ?? "").trim() : "",
     civilStatus: hasPersonalInformation ? (party.civilStatus ?? "").trim() : "",
     nationality: hasPersonalInformation
@@ -1219,8 +1074,7 @@ export function createPartyImportRecord(
     termId: party.termId,
     termName: party.termName.trim(),
     vatRegistrationType: party.vatRegistrationType,
-    vatRegistrationTypeId: party.vatRegistrationTypeId,
-    vatRegistration: party.vatRegistration ?? null,
+    defaultPurchaseTaxClassification: party.defaultPurchaseTaxClassification,
     atcCode: party.atcCode ? normalizeAtcCode(party.atcCode) : "",
     email: party.email.trim(),
     contactNo: normalizePartyContactNo(party.contactNo),
@@ -1248,28 +1102,22 @@ export function applyPartyDefaultAccountingAccounts<
   return {
     ...values,
     defaultReceivableAccount: partyTypes.includes("Customer")
-      ? values.defaultReceivableAccount ||
-        defaults.defaultReceivableAccount
+      ? values.defaultReceivableAccount || defaults.defaultReceivableAccount
       : "",
     customerAdvanceAccount: partyTypes.includes("Customer")
-      ? values.customerAdvanceAccount ||
-        defaults.customerAdvanceAccount
+      ? values.customerAdvanceAccount || defaults.customerAdvanceAccount
       : "",
     defaultPayableAccount: partyTypes.includes("Vendor")
-      ? values.defaultPayableAccount ||
-        defaults.defaultPayableAccount
+      ? values.defaultPayableAccount || defaults.defaultPayableAccount
       : "",
     vendorAdvanceAccount: partyTypes.includes("Vendor")
-      ? values.vendorAdvanceAccount ||
-        defaults.vendorAdvanceAccount
+      ? values.vendorAdvanceAccount || defaults.vendorAdvanceAccount
       : "",
     employeeAdvanceAccount: partyTypes.includes("Employee")
-      ? values.employeeAdvanceAccount ||
-        defaults.employeeAdvanceAccount
+      ? values.employeeAdvanceAccount || defaults.employeeAdvanceAccount
       : "",
     employeePayableAccount: partyTypes.includes("Employee")
-      ? values.employeePayableAccount ||
-        defaults.employeePayableAccount
+      ? values.employeePayableAccount || defaults.employeePayableAccount
       : "",
   };
 }
@@ -1281,46 +1129,26 @@ function normalizePartyRecordValues(
     throw new Error("Party classification is required.");
   }
 
-  const partyTypes = normalizePartyTypesForClassification(
-    values.partyTypes,
-    values.classification,
-  );
-  const addresses = normalizePartyAddresses(
-    values.addresses,
-    partyTypes,
-    values.classification,
-  );
+  const partyTypes = normalizePartyTypesForClassification(values.partyTypes, values.classification);
+  const addresses = normalizePartyAddresses(values.addresses, partyTypes, values.classification);
   const defaultAddress = getDefaultPartyAddress(addresses);
-  const accountingAccounts = applyPartyDefaultAccountingAccounts(
-    values,
-    partyTypes,
-  );
+  const accountingAccounts = applyPartyDefaultAccountingAccounts(values, partyTypes);
 
   return {
     ...values,
     partyCodeNo: values.partyCodeNo.trim(),
     classification: values.classification,
-    partyName:
-      values.classification === "Non-Individual" ? values.partyName.trim() : "",
+    partyName: values.classification === "Non-Individual" ? values.partyName.trim() : "",
     status: values.status,
-    tradeName:
-      values.classification === "Non-Individual" ? values.tradeName.trim() : "",
-    firstName:
-      values.classification === "Individual" ? values.firstName.trim() : "",
-    middleName:
-      values.classification === "Individual" ? values.middleName.trim() : "",
-    lastName:
-      values.classification === "Individual" ? values.lastName.trim() : "",
-    suffixName:
-      values.classification === "Individual" ? values.suffixName.trim() : "",
+    tradeName: values.classification === "Non-Individual" ? values.tradeName.trim() : "",
+    firstName: values.classification === "Individual" ? values.firstName.trim() : "",
+    middleName: values.classification === "Individual" ? values.middleName.trim() : "",
+    lastName: values.classification === "Individual" ? values.lastName.trim() : "",
+    suffixName: values.classification === "Individual" ? values.suffixName.trim() : "",
     honorific:
-      values.classification === "Individual"
-        ? normalizePartyHonorific(values.honorific)
-        : "",
+      values.classification === "Individual" ? normalizePartyHonorific(values.honorific) : "",
     gender: hasPersonalInformationPartyType(partyTypes) ? values.gender.trim() : "",
-    civilStatus: hasPersonalInformationPartyType(partyTypes)
-      ? values.civilStatus.trim()
-      : "",
+    civilStatus: hasPersonalInformationPartyType(partyTypes) ? values.civilStatus.trim() : "",
     nationality: hasPersonalInformationPartyType(partyTypes)
       ? values.nationality.trim() || PartyDefaultNationality
       : "",
@@ -1352,8 +1180,7 @@ function normalizePartyRecordValues(
     termName: values.termName,
     tin: values.tin.trim(),
     vatRegistrationType: values.vatRegistrationType,
-    vatRegistrationTypeId: values.vatRegistrationTypeId,
-    vatRegistration: values.vatRegistration ?? null,
+    defaultPurchaseTaxClassification: values.defaultPurchaseTaxClassification,
     atcCode: values.atcCode ? normalizeAtcCode(values.atcCode) : "",
     email: values.email.trim(),
     contactNo: normalizePartyContactNo(values.contactNo),
@@ -1384,9 +1211,7 @@ export function parsePartyImportTabularRows(text: string) {
   const normalizedText = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
 
   return normalizedText.includes("\t")
-    ? normalizedText
-        .split("\n")
-        .map((line) => line.split("\t").map((cell) => cell.trim()))
+    ? normalizedText.split("\n").map((line) => line.split("\t").map((cell) => cell.trim()))
     : parsePartyImportCsvRows(normalizedText);
 }
 
@@ -1454,7 +1279,8 @@ function normalizePartyImportHeader(value: string): PartyImportColumnId | null {
   if (["partycode", "partycodeno", "code"].includes(normalized)) return "partyCodeNo";
   if (["classification", "partyclassification"].includes(normalized)) return "classification";
   if (["partytypes", "partytype", "type", "types"].includes(normalized)) return "partyTypes";
-  if (["partyname", "name", "companyname", "organizationname"].includes(normalized)) return "partyName";
+  if (["partyname", "name", "companyname", "organizationname"].includes(normalized))
+    return "partyName";
   if (["tradename"].includes(normalized)) return "tradeName";
   if (["honorific", "title", "salutation"].includes(normalized)) return "honorific";
   if (["firstname", "givenname"].includes(normalized)) return "firstName";
@@ -1465,18 +1291,18 @@ function normalizePartyImportHeader(value: string): PartyImportColumnId | null {
   if (["civilstatus", "maritalstatus"].includes(normalized)) return "civilStatus";
   if (["nationality", "citizenship"].includes(normalized)) return "nationality";
   if (
-    [
-      "memberregistrationdate",
-      "memberdate",
-      "registrationdate",
-      "membershipdate",
-    ].includes(normalized)
-  ) return "memberRegistrationDate";
+    ["memberregistrationdate", "memberdate", "registrationdate", "membershipdate"].includes(
+      normalized,
+    )
+  )
+    return "memberRegistrationDate";
   if (["tin", "tinno", "taxidentificationnumber"].includes(normalized)) return "tin";
-  if (["vatregistrationtype", "vatregistry", "vat", "vattype"].includes(normalized)) return "vatRegistrationType";
+  if (["vatregistrationtype", "vatregistry", "vat", "vattype"].includes(normalized))
+    return "vatRegistrationType";
   if (["atccode", "atc"].includes(normalized)) return "atcCode";
   if (["email", "emailaddress"].includes(normalized)) return "email";
-  if (["contactno", "contactnumber", "phone", "mobile", "mobilenumber"].includes(normalized)) return "contactNo";
+  if (["contactno", "contactnumber", "phone", "mobile", "mobilenumber"].includes(normalized))
+    return "contactNo";
   if (["landline", "landlinenumber", "telephone"].includes(normalized)) return "landline";
   if (["addressline1", "address1"].includes(normalized)) return "addressLine1";
   if (["addressline2", "address2"].includes(normalized)) return "addressLine2";
@@ -1486,25 +1312,78 @@ function normalizePartyImportHeader(value: string): PartyImportColumnId | null {
   if (["homeaddressline1", "homeaddress1"].includes(normalized)) return "homeAddressLine1";
   if (["homeaddressline2", "homeaddress2"].includes(normalized)) return "homeAddressLine2";
   if (["homebarangay", "homebrgy"].includes(normalized)) return "homeBarangay";
-  if (["homecitymunicipality", "homecity", "homemunicipality"].includes(normalized)) return "homeCityMunicipality";
+  if (["homecitymunicipality", "homecity", "homemunicipality"].includes(normalized))
+    return "homeCityMunicipality";
   if (["homeprovince"].includes(normalized)) return "homeProvince";
   if (["billingaddressline1", "billingaddress1"].includes(normalized)) return "billingAddressLine1";
   if (["billingaddressline2", "billingaddress2"].includes(normalized)) return "billingAddressLine2";
   if (["billingbarangay", "billingbrgy"].includes(normalized)) return "billingBarangay";
-  if (["billingcitymunicipality", "billingcity", "billingmunicipality"].includes(normalized)) return "billingCityMunicipality";
+  if (["billingcitymunicipality", "billingcity", "billingmunicipality"].includes(normalized))
+    return "billingCityMunicipality";
   if (["billingprovince"].includes(normalized)) return "billingProvince";
-  if (["deliveryaddressline1", "deliveryaddress1"].includes(normalized)) return "deliveryAddressLine1";
-  if (["deliveryaddressline2", "deliveryaddress2"].includes(normalized)) return "deliveryAddressLine2";
+  if (["deliveryaddressline1", "deliveryaddress1"].includes(normalized))
+    return "deliveryAddressLine1";
+  if (["deliveryaddressline2", "deliveryaddress2"].includes(normalized))
+    return "deliveryAddressLine2";
   if (["deliverybarangay", "deliverybrgy"].includes(normalized)) return "deliveryBarangay";
-  if (["deliverycitymunicipality", "deliverycity", "deliverymunicipality"].includes(normalized)) return "deliveryCityMunicipality";
+  if (["deliverycitymunicipality", "deliverycity", "deliverymunicipality"].includes(normalized))
+    return "deliveryCityMunicipality";
   if (["deliveryprovince"].includes(normalized)) return "deliveryProvince";
   if (["terms", "term", "termname", "defaultterms"].includes(normalized)) return "termName";
-  if (["defaultreceivableaccount", "defaultreceivableaccounttitle", "receivableaccount", "receivableaccounttitle"].includes(normalized)) return "defaultReceivableAccount";
-  if (["defaultcustomeradvanceaccount", "defaultcustomeradvanceaccounttitle", "customeradvanceaccount", "customeradvanceaccounttitle"].includes(normalized)) return "customerAdvanceAccount";
-  if (["defaultpayableaccount", "defaultpayableaccounttitle", "payableaccount", "payableaccounttitle"].includes(normalized)) return "defaultPayableAccount";
-  if (["defaultvendoradvanceaccount", "defaultvendoradvanceaccounttitle", "vendoradvanceaccount", "vendoradvanceaccounttitle"].includes(normalized)) return "vendorAdvanceAccount";
-  if (["defaultemployeeadvanceaccount", "defaultemployeeadvanceaccounttitle", "employeeadvanceaccount", "employeeadvanceaccounttitle"].includes(normalized)) return "employeeAdvanceAccount";
-  if (["defaultemployeepayableaccount", "defaultemployeepayableaccounttitle", "employeepayableaccount", "employeepayableaccounttitle"].includes(normalized)) return "employeePayableAccount";
+  if (
+    [
+      "defaultreceivableaccount",
+      "defaultreceivableaccounttitle",
+      "receivableaccount",
+      "receivableaccounttitle",
+    ].includes(normalized)
+  )
+    return "defaultReceivableAccount";
+  if (
+    [
+      "defaultcustomeradvanceaccount",
+      "defaultcustomeradvanceaccounttitle",
+      "customeradvanceaccount",
+      "customeradvanceaccounttitle",
+    ].includes(normalized)
+  )
+    return "customerAdvanceAccount";
+  if (
+    [
+      "defaultpayableaccount",
+      "defaultpayableaccounttitle",
+      "payableaccount",
+      "payableaccounttitle",
+    ].includes(normalized)
+  )
+    return "defaultPayableAccount";
+  if (
+    [
+      "defaultvendoradvanceaccount",
+      "defaultvendoradvanceaccounttitle",
+      "vendoradvanceaccount",
+      "vendoradvanceaccounttitle",
+    ].includes(normalized)
+  )
+    return "vendorAdvanceAccount";
+  if (
+    [
+      "defaultemployeeadvanceaccount",
+      "defaultemployeeadvanceaccounttitle",
+      "employeeadvanceaccount",
+      "employeeadvanceaccounttitle",
+    ].includes(normalized)
+  )
+    return "employeeAdvanceAccount";
+  if (
+    [
+      "defaultemployeepayableaccount",
+      "defaultemployeepayableaccounttitle",
+      "employeepayableaccount",
+      "employeepayableaccounttitle",
+    ].includes(normalized)
+  )
+    return "employeePayableAccount";
   return null;
 }
 
@@ -1512,19 +1391,18 @@ function getImportedPartyValue(row: string[], index?: number) {
   return typeof index === "number" ? String(row[index] ?? "").trim() : "";
 }
 
-export function normalizeImportedPartyClassification(
-  value: string,
-): PartyClassification {
-  const normalized = value.trim().toLowerCase().replace(/[^a-z]/g, "");
+export function normalizeImportedPartyClassification(value: string): PartyClassification {
+  const normalized = value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z]/g, "");
 
   if (["individual", "person"].includes(normalized)) {
     return "Individual";
   }
 
   if (
-    ["nonindividual", "nonindiv", "company", "organization", "corporation"].includes(
-      normalized,
-    )
+    ["nonindividual", "nonindiv", "company", "organization", "corporation"].includes(normalized)
   ) {
     return "Non-Individual";
   }
@@ -1540,28 +1418,40 @@ export function normalizeImportedPartyTypes(value: string): PartyType[] {
     .map((type) => {
       const normalized = type.toLowerCase();
 
-      return PartyTypeOptions.find(
-        (option) => option.toLowerCase() === normalized,
-      );
+      return PartyTypeOptions.find((option) => option.toLowerCase() === normalized);
     })
     .filter((type): type is PartyType => Boolean(type));
 
   return normalizedTypes.length > 0 ? normalizedTypes : ["Vendor"];
 }
 
-function normalizeImportedVatRegistrationType(
-  value: string,
-): VatRegistrationType | "" {
-  const normalized = value.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+function normalizeImportedVatRegistrationType(value: string): VatRegistrationType | "" {
+  const normalized = value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
 
   if (!normalized) {
     return "";
   }
 
+  if (normalized === "exempt" || normalized === "vatexempt") {
+    return "VAT Exempt";
+  }
+  if (normalized === "nonvat") {
+    return "Non-VAT";
+  }
+  if (
+    ["vatregistered", "zerorated", "capitalgoods", "otherthancapitalgoods", "services"].includes(
+      normalized,
+    )
+  ) {
+    return "VAT Registered";
+  }
+
   return (
     VatRegistrationTypeOptions.find(
-      (option) =>
-        option.toLowerCase().replace(/[^a-z0-9]/g, "") === normalized,
+      (option) => option.toLowerCase().replace(/[^a-z0-9]/g, "") === normalized,
     ) ?? (value as VatRegistrationType)
   );
 }
@@ -1595,24 +1485,14 @@ function formatImportedTin(value: string) {
 function getImportPartyDisplayName(
   party: Pick<
     PartyInformationRecord,
-    | "classification"
-    | "firstName"
-    | "middleName"
-    | "lastName"
-    | "partyName"
-    | "suffixName"
+    "classification" | "firstName" | "middleName" | "lastName" | "partyName" | "suffixName"
   >,
 ) {
   if (party.classification === "Non-Individual") {
     return party.partyName;
   }
 
-  return [
-    party.firstName,
-    party.middleName,
-    party.lastName,
-    party.suffixName,
-  ]
+  return [party.firstName, party.middleName, party.lastName, party.suffixName]
     .map((part) => part.trim())
     .filter(Boolean)
     .join(" ");

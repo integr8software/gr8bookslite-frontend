@@ -12,6 +12,12 @@ import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-
 
 export const ItemsHref = MODULE_ROUTE_MAP.I;
 export const ItemCategoryHref = MODULE_ROUTE_MAP.IC;
+export const ItemRecordsStorageKey = "gr8booksneo:item-management:items";
+
+export const LegacyItemTaxNameAliases: Readonly<Record<string, string>> = {
+  "VAT Exclusive": "VAT 12% Exclusive",
+  "VAT Inclusive": "VAT 12% Inclusive",
+};
 
 export const ItemStatusOptions = ["Active", "Inactive"] as const satisfies readonly ItemStatus[];
 

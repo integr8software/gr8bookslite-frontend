@@ -28,7 +28,11 @@ export function WarehouseListPage() {
   const [viewMode, setViewMode] = useState<WarehouseViewMode>("list");
   const hasActiveFilters = page.query.trim().length > 0 || page.branchFilter !== "All" || page.statusFilter !== "Active";
   useMaintenanceAddDrawerSpotlight(
-    () => setDrawerState({ mode: "add" }),
+    () => {
+      if (page.permissions.canCreate) {
+        setDrawerState({ mode: "add" });
+      }
+    },
     () => setDrawerState(null),
   );
   const toolbar = (
@@ -55,17 +59,19 @@ export function WarehouseListPage() {
         />
       </div>
       <div className="flex shrink-0 items-center justify-end gap-2">
-        <ModuleTableExportButton
-          className="w-12 min-w-12 shrink-0"
-          allRows={page.tableWarehouses}
-          columns={WarehouseExportColumns}
-          fileName="warehouses"
-          filteredRows={page.filteredWarehouses}
-          isFiltered={hasActiveFilters}
-          label="Export warehouses"
-          table={page.table}
-          title="Warehouses"
-        />
+        {page.permissions.canExport ? (
+          <ModuleTableExportButton
+            className="w-12 min-w-12 shrink-0"
+            allRows={page.tableWarehouses}
+            columns={WarehouseExportColumns}
+            fileName="warehouses"
+            filteredRows={page.filteredWarehouses}
+            isFiltered={hasActiveFilters}
+            label="Export warehouses"
+            table={page.table}
+            title="Warehouses"
+          />
+        ) : null}
         <ModuleTableColumnVisibilityButton className="w-12 min-w-12 shrink-0" table={page.table} />
         <div className="flex h-12 shrink-0 rounded-lg border border-darknavy/10 bg-white p-1" role="group" aria-label="Warehouse view">
           <button
@@ -113,12 +119,12 @@ export function WarehouseListPage() {
             Inventory maintenance
           </>
         }
-        actions={
+        actions={page.permissions.canCreate ? (
           <button type="button" onClick={() => setDrawerState({ mode: "add" })} className={moduleHeaderActionClassNames.primary}>
             <Plus className="h-4 w-4" aria-hidden="true" />
             Add Warehouse
           </button>
-        }
+        ) : undefined}
       />
 
       <ModuleStatisticCards
@@ -159,6 +165,7 @@ export function WarehouseListPage() {
         <WarehouseTable
           isLoading={page.isLoading}
           lastSyncedAt={page.lastSyncedAt}
+          permissions={page.permissions}
           setPendingDeleteWarehouse={page.setPendingDeleteWarehouse}
           onEditWarehouse={(warehouse) => setDrawerState({ mode: "edit", warehouse })}
           onViewWarehouse={(warehouse) => setDrawerState({ mode: "view", warehouse })}
@@ -173,6 +180,7 @@ export function WarehouseListPage() {
             <WarehouseCardGrid
               isLoading={page.isLoading}
               lastSyncedAt={page.lastSyncedAt}
+              permissions={page.permissions}
               setPendingDeleteWarehouse={page.setPendingDeleteWarehouse}
               onEditWarehouse={(warehouse) => setDrawerState({ mode: "edit", warehouse })}
               onViewWarehouse={(warehouse) => setDrawerState({ mode: "view", warehouse })}

@@ -6,7 +6,7 @@ import type { WarehouseTableProps } from "@/app/src/types/modules/warehouse-mana
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import { WarehouseTableRow } from "@/app/src/ui/modules/warehouse-management/warehouses/WarehouseTableRow";
 
-export function WarehouseTable({ isLoading, lastSyncedAt, setPendingDeleteWarehouse, table, toolbar, onEditWarehouse, onViewWarehouse }: WarehouseTableProps) {
+export function WarehouseTable({ isLoading, lastSyncedAt, permissions, setPendingDeleteWarehouse, table, toolbar, onEditWarehouse, onViewWarehouse }: WarehouseTableProps) {
   const tableMinWidthClassName = getWarehouseTableMinWidthClassName(table.getVisibleLeafColumns().length);
 
   return (
@@ -24,6 +24,7 @@ export function WarehouseTable({ isLoading, lastSyncedAt, setPendingDeleteWareho
       renderRow={({ id, original }) => (
         <WarehouseTableRow
           key={id}
+          permissions={permissions}
           warehouse={original}
           visibleColumnIds={table.getVisibleLeafColumns().map((column) => column.id)}
           onDeleteWarehouse={setPendingDeleteWarehouse}

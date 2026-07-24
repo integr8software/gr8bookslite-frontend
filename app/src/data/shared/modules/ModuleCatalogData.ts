@@ -58,7 +58,6 @@ export const MODULE_ROUTE_MAP = {
   TM: "/financial-maintenance/term-management",
   PT: "/financial-maintenance/payment-type",
   RC: "/financial-maintenance/responsibility-center",
-  TXM: "/financial-maintenance/tax-maintenance",
   OR: "/cash-receipt/official-receipt",
   CR: "/cash-receipt/collection-receipt",
   AR: "/cash-receipt/acknowledgement-receipt",
@@ -142,8 +141,6 @@ export const MainModuleCatalogHelperText: Record<string, string> = {
   "maintenance-payment-type":
     "Maintain payment methods and classifications used by disbursement vouchers.",
   "maintenance-responsibility-center": "Maintain accountability centers for financial reporting.",
-  "maintenance-tax-maintenance":
-    "Maintain VAT registration types and their related account titles.",
   "maintenance-warehouse-management":
     "Maintain warehouse records, storage setup, inventory visibility, and warehouse operations.",
   "maintenance-warehouses": "Maintain warehouse master records.",
@@ -324,12 +321,6 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
         "maintenance.discount",
       ),
       moduleItem("maintenance-term-management", "Term Management", "TM", "maintenance.term"),
-      moduleItem(
-        "maintenance-tax-maintenance",
-        "Tax Maintenance",
-        "TXM",
-        "maintenance.taxMaintenance",
-      ),
       moduleItem(
         "maintenance-responsibility-center",
         "Responsibility Center",

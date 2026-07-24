@@ -4,8 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { ItemsHref } from "@/app/src/constants/modules/item-management/items/ItemManagementConstants";
-import { createWarehouseItemsHref } from "@/app/src/constants/modules/warehouse-management/warehouses/WarehouseConstants";
+import {
+  ItemsHref,
+  LegacyItemTaxNameAliases,
+} from "@/app/src/constants/modules/item-management/items/ItemManagementConstants";
 import {
   ItemInitialFormValues,
   MockItemVariations,
@@ -39,7 +41,9 @@ import { ItemManagementQueryKeys } from "@/app/src/services/modules/item-managem
 import { fetchPartyOptions } from "@/app/src/services/modules/party-management/PartyManagementApi";
 import { fetchUnitsOfMeasurement } from "@/app/src/services/modules/item-management/unit-of-measurement/UnitOfMeasurementApi";
 import { UnitOfMeasurementQueryKeys } from "@/app/src/services/modules/item-management/unit-of-measurement/UnitOfMeasurementQueryKeys";
-import { useTaxMaintenanceOptions } from "@/app/src/hooks/modules/financial-maintenance/tax-maintenance/useTaxMaintenanceOptions";
+import { useTaxDefinitionOptions } from "@/app/src/hooks/shared/tax/useTaxDefinitionOptions";
+import { formatTaxDefinitionPercentage } from "@/app/src/data/shared/tax/TaxDefinitionData";
+import { normalizeLowercaseWhitespace } from "@/app/src/utils/string.util";
 
 const NumberItemFormFields = new Set<keyof ItemFormValues>([
   "costPrice",
@@ -57,7 +61,7 @@ export function useItemsFormPage() {
   const responsibilityCenters = useResponsibilityCenterStore((state) => state.centers);
   const { warehouses } = useWarehousesStore();
   const { addItem, isMutating, items, updateItem } = store;
-  const taxMaintenance = useTaxMaintenanceOptions();
+  const taxMaintenance = useTaxDefinitionOptions();
   const itemVariationOptionsQuery = useQuery({
     queryKey: ItemManagementQueryKeys.itemVariationOptions(),
     queryFn: fetchItemVariationOptions,
@@ -120,12 +124,44 @@ export function useItemsFormPage() {
       taxMaintenance.taxes
         .filter((tax) => tax.status === "Active")
         .map((tax) => ({
-          label: `${tax.name} (${tax.percentage}%)`,
-          value: tax.name,
+          label: `${tax.name} (${formatTaxDefinitionPercentage(tax.percentage, tax.treatment)})`,
+          value: tax.id,
           percentage: Number(tax.percentage),
         })),
     [taxMaintenance.taxes],
   );
+
+  useEffect(() => {
+    const activeTaxes = taxMaintenance.taxes.filter(
+      (tax) => tax.status === "Active",
+    );
+
+    if (activeTaxes.length === 0) {
+      return;
+    }
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Tax definitions load asynchronously and legacy item values must be migrated to stable tax ids.
+    setValues((current) => {
+      if (activeTaxes.some((tax) => tax.id === current.taxTreatment)) {
+        return current;
+      }
+
+      const matchingTax = activeTaxes.find(
+        (tax) =>
+          normalizeLowercaseWhitespace(tax.name) ===
+          normalizeLowercaseWhitespace(
+            LegacyItemTaxNameAliases[current.taxTreatment] ??
+              current.taxTreatment,
+          ),
+      );
+      const taxTreatment =
+        matchingTax?.id ?? (mode === "add" ? activeTaxes[0].id : "");
+
+      return taxTreatment === current.taxTreatment
+        ? current
+        : { ...current, taxTreatment };
+    });
+  }, [mode, taxMaintenance.taxes]);
 
   useEffect(() => {
     const category = categoryRecords.find((record) => record.id === values.primaryCategory);
@@ -406,6 +442,11 @@ export function useItemsFormPage() {
 
   function validateBeforeSubmit() {
     const nextErrors = validateItemForm(values, {
+      taxDefinitionIds: new Set(
+        taxMaintenance.taxes
+          .filter((tax) => tax.status === "Active")
+          .map((tax) => tax.id),
+      ),
       variations: itemVariationOptionsQuery.data,
     });
 
@@ -491,7 +532,6 @@ export function useItemsFormPage() {
     updateSupplier,
     validateBeforeSubmit,
     values,
-    warehouseItemsHref: createSelectedWarehouseItemsHref(warehouses, values.defaultWarehouse),
     warehouseOptions: createWarehouseOptions(warehouses),
     reorderSupplier,
   };
@@ -826,12 +866,6 @@ function createWarehouseOptions(warehouses: WarehouseRecord[]) {
       name: warehouse.name,
       value: warehouse.name,
     }));
-}
-
-function createSelectedWarehouseItemsHref(warehouses: WarehouseRecord[], warehouseName: string) {
-  const warehouse = warehouses.find((currentWarehouse) => currentWarehouse.name === warehouseName);
-
-  return warehouse ? createWarehouseItemsHref(warehouse.id) : undefined;
 }
 
 function createWarehouseDescription(warehouse: WarehouseRecord) {

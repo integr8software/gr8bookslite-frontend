@@ -12,6 +12,7 @@ import type {
   ItemSupplierAssignment,
   ItemSupplierRecord,
 } from "@/app/src/types/modules/item-management/items/ItemManagementTypes";
+import { ItemRecordsStorageKey } from "@/app/src/constants/modules/item-management/items/ItemManagementConstants";
 import { ItemCategorySystemDefaultAccountingSetup } from "@/app/src/constants/modules/item-management/items/ItemManagementConstants";
 
 type ItemCategoryTreeNode = {
@@ -590,6 +591,37 @@ export const MockItems: ItemRecord[] = [
   },
 ];
 
+export function loadCompanyItemRecords(companyId: number | null) {
+  if (typeof window === "undefined" || companyId === null) {
+    return MockItems;
+  }
+
+  try {
+    const storedItems = window.localStorage.getItem(
+      `${ItemRecordsStorageKey}:${companyId}`,
+    );
+    const parsedItems: unknown = storedItems ? JSON.parse(storedItems) : null;
+
+    return Array.isArray(parsedItems) ? (parsedItems as ItemRecord[]) : MockItems;
+  } catch {
+    return MockItems;
+  }
+}
+
+export function saveCompanyItemRecords(
+  companyId: number | null,
+  items: ItemRecord[],
+) {
+  if (typeof window === "undefined" || companyId === null) {
+    return;
+  }
+
+  window.localStorage.setItem(
+    `${ItemRecordsStorageKey}:${companyId}`,
+    JSON.stringify(items),
+  );
+}
+
 export const MockItemBundles: ItemBundleRecord[] = [
   {
     id: "bundle-office-starter",
@@ -760,7 +792,7 @@ export const ItemInitialFormValues: ItemFormValues = {
   responsibilityCenter: "",
   costPrice: 0,
   sellingPrice: 0,
-  taxTreatment: "VAT Exclusive",
+  taxTreatment: "",
   status: "Active",
   defaultWarehouse: "Main Warehouse",
   defaultLocation: "",

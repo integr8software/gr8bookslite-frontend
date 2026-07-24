@@ -8,10 +8,7 @@ import {
   FormatPhilippineContactNumber,
 } from "@/app/src/data/shared/contact/ContactData";
 import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
-import {
-  PartyDefaultNationality,
-  VatRegistrationTypeOptions,
-} from "@/app/src/constants/modules/party-management/PartyManagementConstants";
+import { PartyDefaultNationality } from "@/app/src/constants/modules/party-management/PartyManagementConstants";
 import {
   PartyInformationInitialFormValues,
   applyPartyDefaultAccountingAccounts,
@@ -27,7 +24,6 @@ import {
   usePartyManagementAccountOptions,
 } from "@/app/src/hooks/modules/party-management/usePartyManagementAccountOptions";
 import { useTermDropdownOptions } from "@/app/src/hooks/modules/financial-maintenance/term-management/useTermDropdownOptions";
-import { useTaxMaintenanceOptions } from "@/app/src/hooks/modules/financial-maintenance/tax-maintenance/useTaxMaintenanceOptions";
 import { usePartyAtcCodeOptions } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
 import type {
   PartyAddress,
@@ -59,14 +55,10 @@ type AppPartyDialogProps = {
   onSelect: (record: PartyInformationRecord) => void;
 };
 
-const PartyTypeCardCopy: Record<
-  PartyType,
-  { description: string; title: string }
-> = {
+const PartyTypeCardCopy: Record<PartyType, { description: string; title: string }> = {
   Vendor: {
     title: "Add Vendor",
-    description:
-      "Create a vendor party profile for supplier payments and purchasing workflows.",
+    description: "Create a vendor party profile for supplier payments and purchasing workflows.",
   },
   Customer: {
     title: "Add Customer",
@@ -80,8 +72,7 @@ const PartyTypeCardCopy: Record<
   },
   Member: {
     title: "Add Member",
-    description:
-      "Create a member party profile with home address, identity, and tax details.",
+    description: "Create a member party profile with home address, identity, and tax details.",
   },
 };
 
@@ -122,14 +113,9 @@ function AppPartyDialogContent({
   const addRecord = usePartyManagementStore((state) => state.addRecord);
   const partyAccountOptions = usePartyManagementAccountOptions();
   const termDropdown = useTermDropdownOptions();
-  const taxMaintenanceDropdown = useTaxMaintenanceOptions();
   const [partyType, setPartyType] = useState<PartyType>(suggestedPartyType);
   const [values, setValues] = useState<PartyInformationFormValues>(() =>
-    createDialogInitialValues(
-      records,
-      suggestedPartyType,
-      partyAccountOptions.defaultAccounts,
-    ),
+    createDialogInitialValues(records, suggestedPartyType, partyAccountOptions.defaultAccounts),
   );
   const [errors, setErrors] = useState<PartyInformationFormErrors>({});
   const atcDropdown = usePartyAtcCodeOptions(values.classification);
@@ -166,12 +152,8 @@ function AppPartyDialogContent({
   ) {
     setValues((current) => {
       if (field === "classification") {
-        const classification =
-          value as PartyInformationFormValues["classification"];
-        const partyTypes = normalizePartyTypesForClassification(
-          current.partyTypes,
-          classification,
-        );
+        const classification = value as PartyInformationFormValues["classification"];
+        const partyTypes = normalizePartyTypesForClassification(current.partyTypes, classification);
         const accountingAccounts = applyPartyDefaultAccountingAccounts(
           current,
           partyTypes,
@@ -193,11 +175,7 @@ function AppPartyDialogContent({
           civilStatus: "",
           nationality: "",
           atcCode: "",
-          addresses: clearAddressRolesForPartyTypes(
-            current.addresses,
-            partyTypes,
-            classification,
-          ),
+          addresses: clearAddressRolesForPartyTypes(current.addresses, partyTypes, classification),
           defaultReceivableAccount: accountingAccounts.defaultReceivableAccount,
           customerAdvanceAccount: accountingAccounts.customerAdvanceAccount,
           defaultPayableAccount: accountingAccounts.defaultPayableAccount,
@@ -215,11 +193,7 @@ function AppPartyDialogContent({
     setErrors((current) => ({ ...current, [field]: undefined }));
   }
 
-  function updateAddressField(
-    field: keyof PartyAddress,
-    value: string,
-    addressId?: string,
-  ) {
+  function updateAddressField(field: keyof PartyAddress, value: string, addressId?: string) {
     if (!isClassificationSelected) {
       return;
     }
@@ -234,9 +208,7 @@ function AppPartyDialogContent({
     }));
   }
 
-  function handleInputChange(
-    event: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ) {
+  function handleInputChange(event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     const field = event.target.name as keyof PartyInformationFormValues;
     const value =
       field === "tin"
@@ -263,11 +235,7 @@ function AppPartyDialogContent({
 
     setValues((current) => ({
       ...current,
-      addresses: copyAddressValues(
-        current.addresses,
-        sourceAddressId,
-        targetAddressId,
-      ),
+      addresses: copyAddressValues(current.addresses, sourceAddressId, targetAddressId),
     }));
     setErrors((current) => ({
       ...current,
@@ -328,28 +296,6 @@ function AppPartyDialogContent({
     setErrors((current) => ({ ...current, atcCode: undefined }));
   }
 
-  function selectVatRegistrationType(value: string | string[]) {
-    const taxId = getSingleSelectedValue(value);
-    const tax = taxMaintenanceDropdown.taxes.find(
-      (currentTax) => currentTax.id === taxId,
-    );
-    const legacyVatRegistrationType =
-      VatRegistrationTypeOptions.find((option) => option === tax?.name) ?? "";
-
-    setValues((current) => ({
-      ...current,
-      vatRegistrationTypeId: taxId,
-      vatRegistrationType: legacyVatRegistrationType,
-      vatRegistration: tax
-        ? {
-            id: tax.id,
-            name: tax.name,
-            percentage: Number(tax.percentage),
-          }
-        : null,
-    }));
-  }
-
   function selectProvince(
     value: string | string[],
     addressId?: string,
@@ -363,16 +309,16 @@ function AppPartyDialogContent({
       addresses: current.addresses.map((address) =>
         address.id === (addressId ?? current.activeAddressId)
           ? {
-            ...address,
-            barangay: "",
-            barangayCode: "",
-            cityMunicipality: "",
-            cityMunicipalityCode: "",
-            province: option?.name ?? "",
-            provinceCode: code,
-            region: option?.regionName ?? "",
-            regionCode: option?.regionCode ?? "",
-          }
+              ...address,
+              barangay: "",
+              barangayCode: "",
+              cityMunicipality: "",
+              cityMunicipalityCode: "",
+              province: option?.name ?? "",
+              provinceCode: code,
+              region: option?.regionName ?? "",
+              regionCode: option?.regionCode ?? "",
+            }
           : address,
       ),
     }));
@@ -395,20 +341,18 @@ function AppPartyDialogContent({
       addresses: current.addresses.map((currentAddress) =>
         currentAddress.id === (addressId ?? current.activeAddressId)
           ? {
-            ...currentAddress,
-            addressLine1:
-              details?.addressLine1 ?? currentAddress.addressLine1,
-            addressLine2:
-              details?.addressLine2 ?? currentAddress.addressLine2,
-            barangay: address.barangay.name,
-            barangayCode: address.barangay.code,
-            cityMunicipality: address.cityMunicipality.name,
-            cityMunicipalityCode: address.cityMunicipality.code,
-            province: address.province.name,
-            provinceCode: address.province.code,
-            region: address.region.name,
-            regionCode: address.region.code,
-          }
+              ...currentAddress,
+              addressLine1: details?.addressLine1 ?? currentAddress.addressLine1,
+              addressLine2: details?.addressLine2 ?? currentAddress.addressLine2,
+              barangay: address.barangay.name,
+              barangayCode: address.barangay.code,
+              cityMunicipality: address.cityMunicipality.name,
+              cityMunicipalityCode: address.cityMunicipality.code,
+              province: address.province.name,
+              provinceCode: address.province.code,
+              region: address.region.name,
+              regionCode: address.region.code,
+            }
           : currentAddress,
       ),
     }));
@@ -421,19 +365,16 @@ function AppPartyDialogContent({
     }));
   }
 
-  function syncAutocompleteAddressDetails(
-    details: AddressAutocompleteDetails,
-    addressId?: string,
-  ) {
+  function syncAutocompleteAddressDetails(details: AddressAutocompleteDetails, addressId?: string) {
     setValues((current) => ({
       ...current,
       addresses: current.addresses.map((currentAddress) =>
         currentAddress.id === (addressId ?? current.activeAddressId)
           ? {
-            ...currentAddress,
-            addressLine1: details.addressLine1 ?? currentAddress.addressLine1,
-            addressLine2: details.addressLine2 ?? currentAddress.addressLine2,
-          }
+              ...currentAddress,
+              addressLine1: details.addressLine1 ?? currentAddress.addressLine1,
+              addressLine2: details.addressLine2 ?? currentAddress.addressLine2,
+            }
           : currentAddress,
       ),
     }));
@@ -452,12 +393,12 @@ function AppPartyDialogContent({
       addresses: current.addresses.map((address) =>
         address.id === (addressId ?? current.activeAddressId)
           ? {
-            ...address,
-            barangay: "",
-            barangayCode: "",
-            cityMunicipality: option?.name ?? "",
-            cityMunicipalityCode: code,
-          }
+              ...address,
+              barangay: "",
+              barangayCode: "",
+              cityMunicipality: option?.name ?? "",
+              cityMunicipalityCode: code,
+            }
           : address,
       ),
     }));
@@ -481,10 +422,10 @@ function AppPartyDialogContent({
       addresses: current.addresses.map((address) =>
         address.id === (addressId ?? current.activeAddressId)
           ? {
-            ...address,
-            barangay: option?.name ?? "",
-            barangayCode: code,
-          }
+              ...address,
+              barangay: option?.name ?? "",
+              barangayCode: code,
+            }
           : address,
       ),
     }));
@@ -493,9 +434,7 @@ function AppPartyDialogContent({
 
   function handlePartyTypeChange(nextPartyType: PartyType) {
     const classification =
-      nextPartyType === "Employee" || nextPartyType === "Member"
-        ? "Individual"
-        : "Non-Individual";
+      nextPartyType === "Employee" || nextPartyType === "Member" ? "Individual" : "Non-Individual";
 
     setPartyType(nextPartyType);
     setValues((current) => {
@@ -519,8 +458,7 @@ function AppPartyDialogContent({
         honorific: "",
         gender: "",
         civilStatus: "",
-        nationality:
-          nextPartyType === "Member" ? PartyDefaultNationality : "",
+        nationality: nextPartyType === "Member" ? PartyDefaultNationality : "",
         addresses: clearAddressRolesForPartyTypes(
           current.addresses,
           nextPartyTypes,
@@ -585,15 +523,10 @@ function AppPartyDialogContent({
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-skyblue">
               Party Name Setup
             </p>
-            <h2
-              id="party-dialog-title"
-              className="mt-1 text-2xl font-semibold text-darknavy"
-            >
+            <h2 id="party-dialog-title" className="mt-1 text-2xl font-semibold text-darknavy">
               {dialogCopy.title}
             </h2>
-            <p className="mt-1 text-sm text-darknavy/55">
-              {dialogCopy.description}
-            </p>
+            <p className="mt-1 text-sm text-darknavy/55">{dialogCopy.description}</p>
           </div>
           <button
             type="button"
@@ -612,31 +545,27 @@ function AppPartyDialogContent({
                   <Users className="h-5 w-5" aria-hidden="true" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-darknavy">
-                    Party type
-                  </p>
+                  <p className="text-sm font-semibold text-darknavy">Party type</p>
                   <p className="text-sm text-darknavy/55">
-                    Pick the profile type first, then complete the information
-                    below.
+                    Pick the profile type first, then complete the information below.
                   </p>
                 </div>
               </div>
               <div className="mt-4 flex flex-wrap gap-3">
-                {(["Vendor", "Customer", "Employee", "Member"] as const).map(
-                  (currentType) => (
-                    <button
-                      key={currentType}
-                      type="button"
-                      onClick={() => handlePartyTypeChange(currentType)}
-                      className={`inline-flex items-center rounded-md border px-4 py-2 text-sm font-semibold transition ${partyType === currentType
-                          ? "theme-accent-contrast-text border-skyblue bg-skyblue"
-                          : "border-darknavy/12 bg-white text-darknavy hover:border-skyblue/40 hover:bg-skyblue/8"
-                        }`}
-                    >
-                      {currentType}
-                    </button>
-                  ),
-                )}
+                {(["Vendor", "Customer", "Employee", "Member"] as const).map((currentType) => (
+                  <button
+                    key={currentType}
+                    type="button"
+                    onClick={() => handlePartyTypeChange(currentType)}
+                    className={`inline-flex items-center rounded-md border px-4 py-2 text-sm font-semibold transition ${
+                      partyType === currentType
+                        ? "theme-accent-contrast-text border-skyblue bg-skyblue"
+                        : "border-darknavy/12 bg-white text-darknavy hover:border-skyblue/40 hover:bg-skyblue/8"
+                    }`}
+                  >
+                    {currentType}
+                  </button>
+                ))}
               </div>
             </section>
 
@@ -647,7 +576,6 @@ function AppPartyDialogContent({
               isClassificationSelected={isClassificationSelected}
               isReadonly={false}
               partyTypeOptions={[partyType]}
-              taxMaintenanceOptions={taxMaintenanceDropdown.options}
               termOptions={termDropdown.options}
               values={effectiveValues}
               onAddressInputChange={handleAddressInputChange}
@@ -661,7 +589,6 @@ function AppPartyDialogContent({
               onSelectCityMunicipality={selectCityMunicipality}
               onSelectProvince={selectProvince}
               onSelectTerm={selectTerm}
-              onSelectVatRegistrationType={selectVatRegistrationType}
               onUpdateField={updateField}
             />
           </div>

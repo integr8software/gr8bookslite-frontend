@@ -63,7 +63,6 @@ export function ItemsFormPage() {
     taxTreatmentOptions: page.taxTreatmentOptions,
     uomOptions: page.uomOptions,
     values: page.values,
-    warehouseItemsHref: page.warehouseItemsHref,
     warehouseOptions: page.warehouseOptions,
     onAddTag: page.addTag,
     onFieldChange: page.updateField,

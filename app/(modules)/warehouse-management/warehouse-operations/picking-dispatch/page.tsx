@@ -1,12 +1,14 @@
-import { WarehouseManagementModulePlanPage } from "@/app/src/ui/modules/warehouse-management/warehouse-management/WarehouseManagementModulePlanPage";
+import type { Metadata } from "next";
+import { AppName } from "@/app/src/constants/shared/app/AppConstants";
+import { WarehousePickingDispatchListPage } from "@/app/src/ui/modules/warehouse-management/warehouse-operations/picking-dispatch/WarehousePickingDispatchListPage";
 
-export default function PickingDispatchPage() {
-	return (
-		<WarehouseManagementModulePlanPage
-			group="Warehouse Operations"
-			title="Picking & Dispatch"
-			description="Pick stock from warehouse locations and prepare it for dispatch."
-			records={["Pick document", "Warehouse", "Picking location", "Dispatch area", "Items", "Status"]}
-		/>
-	);
+const PageTitle = "Picking & Dispatch";
+
+export const metadata: Metadata = {
+  title: `${PageTitle} | ${AppName}`,
+  description: `${PageTitle} page for ${AppName}.`,
+};
+
+export default function WarehouseOperationsPickingDispatchPage() {
+  return <WarehousePickingDispatchListPage />;
 }

@@ -1,12 +1,14 @@
-import { WarehouseManagementModulePlanPage } from "@/app/src/ui/modules/warehouse-management/warehouse-management/WarehouseManagementModulePlanPage";
+import type { Metadata } from "next";
+import { AppName } from "@/app/src/constants/shared/app/AppConstants";
+import { WarehouseStockByWarehouseListPage } from "@/app/src/ui/modules/warehouse-management/warehouse-inventory/stock-by-warehouse/WarehouseStockByWarehouseListPage";
 
-export default function StockByWarehousePage() {
-	return (
-		<WarehouseManagementModulePlanPage
-			group="Warehouse Inventory"
-			title="Stock by Warehouse"
-			description="View stock balances summarized by warehouse for accessible warehouses."
-			records={["Warehouse", "Item count", "Quantity on hand", "Reserved quantity", "Available quantity", "Inventory value"]}
-		/>
-	);
+const PageTitle = "Stock by Warehouse";
+
+export const metadata: Metadata = {
+  title: `${PageTitle} | ${AppName}`,
+  description: `${PageTitle} page for ${AppName}.`,
+};
+
+export default function WarehouseInventoryStockByWarehousePage() {
+  return <WarehouseStockByWarehouseListPage />;
 }

@@ -1,12 +1,14 @@
-import { WarehouseManagementModulePlanPage } from "@/app/src/ui/modules/warehouse-management/warehouse-management/WarehouseManagementModulePlanPage";
+import type { Metadata } from "next";
+import { AppName } from "@/app/src/constants/shared/app/AppConstants";
+import { WarehouseReceivingPutawayListPage } from "@/app/src/ui/modules/warehouse-management/warehouse-operations/receiving-putaway/WarehouseReceivingPutawayListPage";
 
-export default function ReceivingPutawayPage() {
-	return (
-		<WarehouseManagementModulePlanPage
-			group="Warehouse Operations"
-			title="Receiving & Putaway"
-			description="Receive stock into a warehouse and assign final putaway locations."
-			records={["Receiving document", "Warehouse", "Receiving location", "Putaway location", "Items", "Status"]}
-		/>
-	);
+const PageTitle = "Receiving & Putaway";
+
+export const metadata: Metadata = {
+  title: `${PageTitle} | ${AppName}`,
+  description: `${PageTitle} page for ${AppName}.`,
+};
+
+export default function WarehouseOperationsReceivingPutawayPage() {
+  return <WarehouseReceivingPutawayListPage />;
 }

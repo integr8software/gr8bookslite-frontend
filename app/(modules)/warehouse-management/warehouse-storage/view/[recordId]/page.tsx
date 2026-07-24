@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { WarehouseStorageFormPage } from "@/app/src/ui/modules/warehouse-management/warehouse-storage/WarehouseStorageFormPage";
+import { WarehouseStorageFormPage } from "@/app/src/ui/shared/warehouse-management/WarehouseStorageFormPage";
 
 const PageTitle = "View Warehouse Storage";
 

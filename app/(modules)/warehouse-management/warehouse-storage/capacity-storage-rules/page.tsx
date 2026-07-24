@@ -1,12 +1,14 @@
-import { WarehouseManagementModulePlanPage } from "@/app/src/ui/modules/warehouse-management/warehouse-management/WarehouseManagementModulePlanPage";
+import type { Metadata } from "next";
+import { AppName } from "@/app/src/constants/shared/app/AppConstants";
+import { WarehouseCapacityStorageRulesListPage } from "@/app/src/ui/modules/warehouse-management/warehouse-storage/capacity-storage-rules/WarehouseCapacityStorageRulesListPage";
 
-export default function CapacityStorageRulesPage() {
-	return (
-		<WarehouseManagementModulePlanPage
-			group="Warehouse Storage"
-			title="Capacity & Storage Rules"
-			description="Maintain capacity, restriction, and override rules from warehouse level down to bin level."
-			records={["Warehouse rules", "Zone overrides", "Rack overrides", "Bin overrides", "Capacity thresholds", "Mixed-item rules"]}
-		/>
-	);
+const PageTitle = "Capacity & Storage Rules";
+
+export const metadata: Metadata = {
+  title: `${PageTitle} | ${AppName}`,
+  description: `${PageTitle} page for ${AppName}.`,
+};
+
+export default function WarehouseStorageCapacityStorageRulesPage() {
+  return <WarehouseCapacityStorageRulesListPage />;
 }

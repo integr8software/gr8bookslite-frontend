@@ -1,12 +1,14 @@
-import { WarehouseManagementModulePlanPage } from "@/app/src/ui/modules/warehouse-management/warehouse-management/WarehouseManagementModulePlanPage";
+import type { Metadata } from "next";
+import { AppName } from "@/app/src/constants/shared/app/AppConstants";
+import { WarehouseLocationAvailabilityListPage } from "@/app/src/ui/modules/warehouse-management/warehouse-storage/location-availability/WarehouseLocationAvailabilityListPage";
 
-export default function LocationAvailabilityPage() {
-	return (
-		<WarehouseManagementModulePlanPage
-			group="Warehouse Storage"
-			title="Location Availability"
-			description="Manage operational location availability without changing the warehouse master status."
-			records={["Available", "Reserved", "Blocked", "Under maintenance", "Quality hold", "Inactive"]}
-		/>
-	);
+const PageTitle = "Location Availability";
+
+export const metadata: Metadata = {
+  title: `${PageTitle} | ${AppName}`,
+  description: `${PageTitle} page for ${AppName}.`,
+};
+
+export default function WarehouseStorageLocationAvailabilityPage() {
+  return <WarehouseLocationAvailabilityListPage />;
 }

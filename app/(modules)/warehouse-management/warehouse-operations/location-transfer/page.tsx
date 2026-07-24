@@ -1,12 +1,14 @@
-import { WarehouseManagementModulePlanPage } from "@/app/src/ui/modules/warehouse-management/warehouse-management/WarehouseManagementModulePlanPage";
+import type { Metadata } from "next";
+import { AppName } from "@/app/src/constants/shared/app/AppConstants";
+import { WarehouseLocationTransferListPage } from "@/app/src/ui/modules/warehouse-management/warehouse-operations/location-transfer/WarehouseLocationTransferListPage";
 
-export default function LocationTransferPage() {
-	return (
-		<WarehouseManagementModulePlanPage
-			group="Warehouse Operations"
-			title="Location Transfer"
-			description="Move stock between storage locations inside the same warehouse."
-			records={["Transfer number", "Warehouse", "From location", "To location", "Items", "Status"]}
-		/>
-	);
+const PageTitle = "Location Transfer";
+
+export const metadata: Metadata = {
+  title: `${PageTitle} | ${AppName}`,
+  description: `${PageTitle} page for ${AppName}.`,
+};
+
+export default function WarehouseOperationsLocationTransferPage() {
+  return <WarehouseLocationTransferListPage />;
 }

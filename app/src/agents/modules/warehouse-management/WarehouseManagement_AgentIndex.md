@@ -20,7 +20,6 @@ Warehouse Management
 │   ├── Item Location Setup
 │   ├── Capacity & Storage Rules
 │   ├── Location Availability
-│   └── Location Templates
 ├── Warehouse Inventory
 │   ├── Stock by Warehouse
 │   ├── Stock by Location

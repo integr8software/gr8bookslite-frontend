@@ -39,22 +39,22 @@ Warehouse Management is the stock-location authority. It is not the authority fo
 
 ## Core Terminology
 
-| Term | Definition |
-| --- | --- |
-| Warehouse | A company-controlled physical or logical inventory facility. |
-| Branch availability | The branches allowed to transact with a warehouse. This is not user permission. |
-| Warehouse access | A user's permission to view or perform specific actions in a warehouse. |
-| Storage location | A stock-bearing or operational place inside one warehouse, such as a zone, aisle, rack, shelf, bin, receiving area, or dispatch area. |
-| Location hierarchy | Parent-child structure used to organize locations inside one warehouse. |
-| On hand | Quantity physically recorded in inventory. |
-| Reserved | Quantity committed to a demand document and not available for another demand. |
-| Blocked | Quantity or location prevented from normal use. |
-| Quality hold | Quantity awaiting inspection or disposition. |
-| Available | Quantity that may be promised or picked. Proposed formula: `on hand - reserved - blocked - quality hold`. |
-| Putaway | Movement from a receiving area to a final storage location. |
-| Picking | Removal of stock from storage to satisfy an approved outbound demand. |
-| Dispatch staging | A warehouse location where picked stock waits for loading or release. |
-| Posting | Finalizing a transaction so it updates the inventory ledger and balances. |
+| Term                | Definition                                                                                                                            |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Warehouse           | A company-controlled physical or logical inventory facility.                                                                          |
+| Branch availability | The branches allowed to transact with a warehouse. This is not user permission.                                                       |
+| Warehouse access    | A user's permission to view or perform specific actions in a warehouse.                                                               |
+| Storage location    | A stock-bearing or operational place inside one warehouse, such as a zone, aisle, rack, shelf, bin, receiving area, or dispatch area. |
+| Location hierarchy  | Parent-child structure used to organize locations inside one warehouse.                                                               |
+| On hand             | Quantity physically recorded in inventory.                                                                                            |
+| Reserved            | Quantity committed to a demand document and not available for another demand.                                                         |
+| Blocked             | Quantity or location prevented from normal use.                                                                                       |
+| Quality hold        | Quantity awaiting inspection or disposition.                                                                                          |
+| Available           | Quantity that may be promised or picked. Proposed formula: `on hand - reserved - blocked - quality hold`.                             |
+| Putaway             | Movement from a receiving area to a final storage location.                                                                           |
+| Picking             | Removal of stock from storage to satisfy an approved outbound demand.                                                                 |
+| Dispatch staging    | A warehouse location where picked stock waits for loading or release.                                                                 |
+| Posting             | Finalizing a transaction so it updates the inventory ledger and balances.                                                             |
 
 ## Module Structure
 
@@ -67,8 +67,7 @@ Warehouse Management
 |   |-- Storage Layout
 |   |-- Item Location Setup
 |   |-- Capacity & Storage Rules
-|   |-- Location Availability
-|   `-- Location Templates
+|   `-- Location Availability
 |-- Warehouse Inventory
 |   |-- Stock by Warehouse
 |   |-- Stock by Location
@@ -87,14 +86,14 @@ Warehouse Management
 
 The status below records the state at the time this specification was written. It is not the desired final state.
 
-| Area | Current state | Intended state |
-| --- | --- | --- |
-| Warehouses | List and form UI are connected to a warehouse API. | Retain and align with this specification. |
-| Warehouse Access | List, directory, create, update, and revoke flows are connected to an API. | Retain and enforce access in every warehouse query and operation. |
-| Storage Locations | UI uses generated/demo warehouse storage data even though backend storage scaffolding exists. | Use persisted, warehouse-scoped locations. |
-| Warehouse Transfer | UI derives sample transfer data from warehouse records. | Use a persistent transfer document and movement posting. |
-| Warehouse Stock Inquiry | Derived/demo inquiry. | Consolidate its product purpose under Item Availability. |
-| Remaining Storage, Inventory, and Operations pages | Planning shells. | Implement in the sequence described below. |
+| Area                                               | Current state                                                                                 | Intended state                                                    |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Warehouses                                         | List and form UI are connected to a warehouse API.                                            | Retain and align with this specification.                         |
+| Warehouse Access                                   | List, directory, create, update, and revoke flows are connected to an API.                    | Retain and enforce access in every warehouse query and operation. |
+| Storage Locations                                  | UI uses generated/demo warehouse storage data even though backend storage scaffolding exists. | Use persisted, warehouse-scoped locations.                        |
+| Warehouse Transfer                                 | UI derives sample transfer data from warehouse records.                                       | Use a persistent transfer document and movement posting.          |
+| Warehouse Stock Inquiry                            | Derived/demo inquiry.                                                                         | Consolidate its product purpose under Item Availability.          |
+| Remaining Storage, Inventory, and Operations pages | Planning shells.                                                                              | Implement in the sequence described below.                        |
 
 ## Child Module Requirements
 
@@ -191,25 +190,6 @@ Rules:
 - Stock-bearing child locations cannot be removed when they contain quantity or are referenced by an open document.
 - Editable views must have one selected warehouse. `All Warehouses` is read-only.
 
-### 4. Storage Layout (`WLY`)
-
-**Use:** Visualize one warehouse's location hierarchy, capacity, occupancy, and availability.
-
-Required views:
-
-- Hierarchy/tree
-- Rack or grid
-- Location details
-
-Later enhancement:
-
-- Configurable warehouse map
-
-Rules:
-
-- Occupancy is calculated from inventory and capacity; it is not a manually selected status.
-- Availability and occupancy must be displayed as separate values.
-
 ### 5. Item Location Setup (`WILS`)
 
 **Use:** Define preferred locations for an item in each warehouse.
@@ -280,24 +260,6 @@ Rules:
 - Availability is an operational control, not an occupancy indicator.
 - Unavailable locations are excluded from normal receiving, putaway, transfer, and picking choices.
 - Existing stock in a blocked location remains visible and requires an authorized recovery workflow.
-
-### 8. Location Templates (`WLT`)
-
-**Use:** Create reusable location structures for new or existing warehouses.
-
-Actions:
-
-- Generate locations from a template.
-- Copy a warehouse structure.
-- Copy selected zones.
-- Auto-generate location codes.
-- Apply default capacity and storage rules.
-
-Rules:
-
-- Templates do not hold stock.
-- Generated locations must be previewed and validated before saving.
-- Generation creates real locations under only one selected warehouse.
 
 ### 9. Stock by Warehouse (`WSBW`)
 
@@ -515,15 +477,15 @@ Rules:
 
 ## Data Ownership and Relationships
 
-| Record | Owned by | Important relationships |
-| --- | --- | --- |
-| Warehouse | Warehouse Management | Company, branches, access, locations, inventory documents |
-| Warehouse access | Warehouse Management | Company, warehouse, user |
-| Storage location | Warehouse Management | Warehouse, parent location, capacity, availability |
-| Stock balance | Inventory ledger/query layer | Warehouse, location, item, lot/serial |
-| Warehouse operation | Warehouse Management | Source document, warehouses, locations, item lines, audit trail |
-| Load plan | Delivery Vehicle Management | Outbound demand, warehouse staging/pick records, vehicle type |
-| Delivery trip | Delivery Vehicle Management | Origin warehouse, load plan, vehicle, driver, delivery documents |
+| Record              | Owned by                     | Important relationships                                          |
+| ------------------- | ---------------------------- | ---------------------------------------------------------------- |
+| Warehouse           | Warehouse Management         | Company, branches, access, locations, inventory documents        |
+| Warehouse access    | Warehouse Management         | Company, warehouse, user                                         |
+| Storage location    | Warehouse Management         | Warehouse, parent location, capacity, availability               |
+| Stock balance       | Inventory ledger/query layer | Warehouse, location, item, lot/serial                            |
+| Warehouse operation | Warehouse Management         | Source document, warehouses, locations, item lines, audit trail  |
+| Load plan           | Delivery Vehicle Management  | Outbound demand, warehouse staging/pick records, vehicle type    |
+| Delivery trip       | Delivery Vehicle Management  | Origin warehouse, load plan, vehicle, driver, delivery documents |
 
 ## Connection to Delivery Vehicle Management
 
@@ -558,15 +520,15 @@ Warehouse Management and Delivery Vehicle Management meet at outbound staging an
 
 ## Connections to Other Modules
 
-| Module | Connection |
-| --- | --- |
-| Item Management | Supplies item, unit, dimensions, weight, lot/serial, and storage/handling attributes. |
-| Purchasing | Supplies inbound purchase and receiving demand. |
-| Sales | Supplies approved outbound demand, customer, delivery address, and requested date. |
-| Inventory | Supplies goods receipt, goods issue, material request, pick list, delivery receipt, count, and movement records. |
-| Party Management | Supplies vendors, customers, carriers, drivers when represented as parties, and delivery addresses. |
-| System Administration | Supplies users, roles, approvals, numbering, audit trail, and signatories. |
-| Accounting | Receives valuation and posting results from finalized inventory transactions. |
+| Module                | Connection                                                                                                       |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Item Management       | Supplies item, unit, dimensions, weight, lot/serial, and storage/handling attributes.                            |
+| Purchasing            | Supplies inbound purchase and receiving demand.                                                                  |
+| Sales                 | Supplies approved outbound demand, customer, delivery address, and requested date.                               |
+| Inventory             | Supplies goods receipt, goods issue, material request, pick list, delivery receipt, count, and movement records. |
+| Party Management      | Supplies vendors, customers, carriers, drivers when represented as parties, and delivery addresses.              |
+| System Administration | Supplies users, roles, approvals, numbering, audit trail, and signatories.                                       |
+| Accounting            | Receives valuation and posting results from finalized inventory transactions.                                    |
 
 ## UI Principles
 
@@ -618,5 +580,4 @@ Warehouse Management and Delivery Vehicle Management meet at outbound staging an
 2. Should warehouse transfers support partial issue and partial receipt? Recommended: yes.
 3. Should negative stock ever be allowed? Recommended: company policy, default off.
 4. Is lot, batch, serial, and expiry tracking required in the first UI version? Recommended: show when the item requires it.
-5. Should Storage Layout begin with hierarchy/tree only or include a rack/grid editor immediately? Recommended: hierarchy/tree first.
-6. Should the old Warehouse Stock Inquiry route redirect to Item Availability after consolidation? Recommended: yes.
+5. Should the old Warehouse Stock Inquiry route redirect to Item Availability after consolidation? Recommended: yes.

@@ -1,12 +1,14 @@
-import { WarehouseManagementModulePlanPage } from "@/app/src/ui/modules/warehouse-management/warehouse-management/WarehouseManagementModulePlanPage";
+import type { Metadata } from "next";
+import { AppName } from "@/app/src/constants/shared/app/AppConstants";
+import { WarehouseStockCountListPage } from "@/app/src/ui/modules/warehouse-management/warehouse-operations/stock-count/WarehouseStockCountListPage";
 
-export default function StockCountPage() {
-	return (
-		<WarehouseManagementModulePlanPage
-			group="Warehouse Operations"
-			title="Stock Count"
-			description="Count stock by warehouse and storage location."
-			records={["Count sheet", "Warehouse", "Location scope", "System quantity", "Counted quantity", "Variance"]}
-		/>
-	);
+const PageTitle = "Stock Count";
+
+export const metadata: Metadata = {
+  title: `${PageTitle} | ${AppName}`,
+  description: `${PageTitle} page for ${AppName}.`,
+};
+
+export default function WarehouseOperationsStockCountPage() {
+  return <WarehouseStockCountListPage />;
 }

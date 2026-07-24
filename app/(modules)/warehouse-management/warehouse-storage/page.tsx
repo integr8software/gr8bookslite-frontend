@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { WarehouseStorageListPage } from "@/app/src/ui/modules/warehouse-management/warehouse-storage/WarehouseStorageListPage";
+import { WarehouseStorageListPage } from "@/app/src/ui/shared/warehouse-management/WarehouseStorageListPage";
 
 const PageTitle = "Warehouse Storage";
 

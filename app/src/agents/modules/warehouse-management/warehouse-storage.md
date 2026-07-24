@@ -9,7 +9,6 @@ Warehouse Storage is the sidebar group for configuration modules that define whe
 - Item Location Setup
 - Capacity & Storage Rules
 - Location Availability
-- Location Templates
 
 ## Key Rules
 

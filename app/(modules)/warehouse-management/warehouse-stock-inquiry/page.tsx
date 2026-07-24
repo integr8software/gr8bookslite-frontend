@@ -1,14 +1,6 @@
-import type { Metadata } from "next";
-import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { WarehouseStockInquiryListPage } from "@/app/src/ui/modules/warehouse-management/warehouse-stock-inquiry/WarehouseStockInquiryListPage";
-
-const PageTitle = "Warehouse Stock Inquiry";
-
-export const metadata: Metadata = {
-	title: `${PageTitle} | ${AppName}`,
-	description: `${PageTitle} page for ${AppName}.`,
-};
+import { redirect } from "next/navigation";
+import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogData";
 
 export default function WarehouseStockInquiryPage() {
-	return <WarehouseStockInquiryListPage />;
+	redirect(MODULE_ROUTE_MAP.WIA);
 }

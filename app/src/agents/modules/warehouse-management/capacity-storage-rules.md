@@ -28,7 +28,7 @@ The route is a planning shell. Persistent rules and occupancy evaluation are not
 
 ## Connections
 
-Receiving, putaway, location transfers, picking returns, and load staging validate these rules. Storage Layout displays rule and occupancy results.
+Receiving, putaway, location transfers, picking returns, and load staging validate these rules. Storage Locations displays rule and occupancy results.
 
 ## UI Requirements
 

@@ -1,12 +1,14 @@
-import { WarehouseManagementModulePlanPage } from "@/app/src/ui/modules/warehouse-management/warehouse-management/WarehouseManagementModulePlanPage";
+import type { Metadata } from "next";
+import { AppName } from "@/app/src/constants/shared/app/AppConstants";
+import { WarehouseItemAvailabilityListPage } from "@/app/src/ui/modules/warehouse-management/warehouse-inventory/item-availability/WarehouseItemAvailabilityListPage";
 
-export default function ItemAvailabilityPage() {
-	return (
-		<WarehouseManagementModulePlanPage
-			group="Warehouse Inventory"
-			title="Item Availability"
-			description="View available, reserved, blocked, and quality-hold quantities across warehouses and locations."
-			records={["Item", "Warehouse", "Location", "On hand", "Reserved", "Available"]}
-		/>
-	);
+const PageTitle = "Item Availability";
+
+export const metadata: Metadata = {
+  title: `${PageTitle} | ${AppName}`,
+  description: `${PageTitle} page for ${AppName}.`,
+};
+
+export default function WarehouseInventoryItemAvailabilityPage() {
+  return <WarehouseItemAvailabilityListPage />;
 }

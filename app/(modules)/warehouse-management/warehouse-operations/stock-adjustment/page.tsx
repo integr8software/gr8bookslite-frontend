@@ -1,12 +1,14 @@
-import { WarehouseManagementModulePlanPage } from "@/app/src/ui/modules/warehouse-management/warehouse-management/WarehouseManagementModulePlanPage";
+import type { Metadata } from "next";
+import { AppName } from "@/app/src/constants/shared/app/AppConstants";
+import { WarehouseStockAdjustmentListPage } from "@/app/src/ui/modules/warehouse-management/warehouse-operations/stock-adjustment/WarehouseStockAdjustmentListPage";
 
-export default function StockAdjustmentPage() {
-	return (
-		<WarehouseManagementModulePlanPage
-			group="Warehouse Operations"
-			title="Stock Adjustment"
-			description="Adjust stock balances at warehouse or location level with reason and audit tracking."
-			records={["Adjustment number", "Warehouse", "Location", "Item", "Quantity change", "Reason"]}
-		/>
-	);
+const PageTitle = "Stock Adjustment";
+
+export const metadata: Metadata = {
+  title: `${PageTitle} | ${AppName}`,
+  description: `${PageTitle} page for ${AppName}.`,
+};
+
+export default function WarehouseOperationsStockAdjustmentPage() {
+  return <WarehouseStockAdjustmentListPage />;
 }

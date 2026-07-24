@@ -36,7 +36,7 @@ The route is a planning shell. Persistent availability changes and audit history
 
 ## Connections
 
-Storage Layout displays availability. Item Availability accounts for blocked/hold stock. All warehouse operations validate destination and source availability.
+Storage Locations displays availability. Item Availability accounts for blocked/hold stock. All warehouse operations validate destination and source availability.
 
 ## UI Requirements
 

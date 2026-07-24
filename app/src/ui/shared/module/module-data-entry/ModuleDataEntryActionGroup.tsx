@@ -11,6 +11,7 @@ import {
 import { ModuleDataEntryColumnSettingsButton } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryColumnSettings";
 import type {
 	ModuleDataEntryAddColumnOption,
+	ModuleDataEntryAddMenuAction,
 	ModuleDataEntryClearAction,
 	ModuleDataEntryColumnOption,
 	ModuleDataEntryExportOption,
@@ -19,6 +20,7 @@ import type {
 
 export function ModuleDataEntryActionGroup({
 	addColumnOptions,
+	addMenuActions,
 	align = "left",
 	canConfigureColumns,
 	canEditRows,
@@ -42,6 +44,7 @@ export function ModuleDataEntryActionGroup({
 	onUpdateColumnWidth,
 }: {
 	addColumnOptions: ModuleDataEntryAddColumnOption[];
+	addMenuActions: ModuleDataEntryAddMenuAction[];
 	align?: "left" | "right";
 	canConfigureColumns: boolean;
 	canEditRows: boolean;
@@ -119,6 +122,7 @@ export function ModuleDataEntryActionGroup({
 			) : null}
 			{canEditRows ? (
 				<ModuleDataEntryAddButton
+					actions={addMenuActions}
 					align={align}
 					isOpen={isAddOpen}
 					onAddRows={onAddRows}

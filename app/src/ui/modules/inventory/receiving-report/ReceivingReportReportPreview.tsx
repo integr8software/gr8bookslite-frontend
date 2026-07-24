@@ -22,8 +22,11 @@ export type ReceivingReportReportValues = {
 	address: string;
 	contactNo: string;
 	deliveryDate: string;
+	drNo: string;
 	documentDate: string;
 	lines: ReceivingReportReportLine[];
+	poNo: string;
+	prNo: string;
 	transNo: string;
 	vceCode: string;
 	vceName: string;
@@ -78,7 +81,7 @@ export function ReceivingReportReportDocument({
 	return (
 		<div className="mx-auto w-full max-w-[58rem] bg-white p-2 text-[10px] font-semibold leading-tight text-black shadow-sm print:p-0 print:shadow-none">
 			<div className="border-2 border-black">
-				<div className="grid grid-cols-[11rem_1fr_11rem] items-start px-8 pb-5 pt-4">
+				<div className="grid grid-cols-[11rem_1fr_11rem] items-start px-8 pb-2 pt-3">
 					<div>
 						<Image
 							src="/img/icons/gr8booksneo-logo-wide.png"
@@ -90,11 +93,11 @@ export function ReceivingReportReportDocument({
 					</div>
 					<div className="pt-1 text-center">
 						<p className="text-base font-bold">Your Company Name Here</p>
-						<p className="mt-3">VAT REG TIN : 000-000-000</p>
-						<p className="mt-3">
+						<p className="mt-1">VAT REG TIN : 000-000-000</p>
+						<p className="mt-1">
 							Abc, 123, Sample, Malamig, City Of Mandaluyong, Ncr, Second District
 						</p>
-						<p className="mt-5">Telephone No: 0967-237-4514</p>
+						<p className="mt-2">Telephone No: 0967-237-4514</p>
 					</div>
 					<div />
 				</div>
@@ -111,6 +114,9 @@ export function ReceivingReportReportDocument({
 				<div className="grid grid-cols-[2fr_1.08fr] border-b-2 border-black">
 					<ReportInfoCell label="Supplier" value={values.vceName || values.vceCode} />
 					<ReportInfoCell label="Delivery Date" value={formatReportDate(values.deliveryDate)} />
+					<ReportInfoCell label="DR No." value={values.drNo} />
+					<ReportInfoCell label="PR No." value={values.prNo} />
+					<ReportInfoCell label="PO No." value={values.poNo} />
 					<ReportInfoCell label="Address" value={values.address} />
 					<ReportInfoCell label="Contact No" value={values.contactNo} />
 				</div>

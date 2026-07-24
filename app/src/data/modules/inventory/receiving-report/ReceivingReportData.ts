@@ -55,7 +55,9 @@ export type ReceivingReportFormValues = {
 	status: string;
 	transNo: string;
 	documentDate: string;
+	drNo: string;
 	poNo: string;
+	prNo: string;
 	siNo: string;
 	importationRefNo: string;
 	projectRef: string;
@@ -175,7 +177,9 @@ export function createReceivingReportFormValues(): ReceivingReportFormValues {
 		status: "Draft",
 		transNo: "RR-000401",
 		documentDate: today,
+		drNo: "",
 		poNo: "",
+		prNo: "",
 		siNo: "",
 		importationRefNo: "",
 		projectRef: "",
@@ -190,6 +194,7 @@ export function createReceivingReportFormValuesFromRecord(
 ): ReceivingReportFormValues {
 	if (record.formValues) {
 		return {
+			...createReceivingReportFormValues(),
 			...record.formValues,
 			lines: record.formValues.lines.map((line) => ({ ...line })),
 		};
@@ -386,8 +391,10 @@ function createMockReceivingReportFormValues(): ReceivingReportFormValues {
 		siNo: "SI-000400",
 		status: "Approved",
 		transNo: "RR-000400",
+		drNo: "DR-000400",
 		vceCode: "SUP-00018",
 		vceName: "RMBT Corporation-yes",
+		prNo: "PR-000400",
 		warehouse: "Laguna",
 		lines: [
 			createReceivingReportLine({

@@ -10,6 +10,7 @@ import { formatEntryCountLabel } from "@/app/src/ui/shared/module/module-data-en
 import type { ModuleDataEntryProps } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 
 export type {
+	ModuleDataEntryAddMenuAction,
 	ModuleDataEntryAddColumnOption,
 	ModuleDataEntryCellContext,
 	ModuleDataEntryCellTarget,
@@ -21,6 +22,7 @@ export type {
 
 export function ModuleDataEntry<TRow extends { id: string }>({
 	addColumnOptions = [],
+	addMenuActions = [],
 	columnOptions = [],
 	columns,
 	description,
@@ -111,6 +113,7 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 		return (
 			<ModuleDataEntryActionGroup
 				addColumnOptions={addColumnOptions}
+				addMenuActions={addMenuActions}
 				align={placement === "footer" ? "right" : "left"}
 				canConfigureColumns={canConfigureColumns}
 				canEditRows={canEditRows}

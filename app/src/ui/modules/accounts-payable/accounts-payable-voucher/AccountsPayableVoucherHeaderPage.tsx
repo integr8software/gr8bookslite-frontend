@@ -1,35 +1,35 @@
 import Link from "next/link";
 import { ArrowLeft, Save, Trash2, X } from "lucide-react";
 import {
-  JournalVoucherActionCopy,
-  JournalVoucherHref,
-} from "@/app/src/constants/modules/general-journal/journal-voucher/JournalVoucherConstants";
-import type { useJournalVoucherFormPage } from "@/app/src/hooks/modules/general-journal/journal-voucher/useJournalVoucherFormPage";
+  AccountsPayableVoucherActionCopy,
+  AccountsPayableVoucherHref,
+} from "@/app/src/constants/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherConstants";
+import type { useAccountsPayableVoucherFormPage } from "@/app/src/hooks/modules/accounts-payable/accounts-payable-voucher/useAccountsPayableVoucherFormPage";
 import {
   ModuleHeader,
   moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 
-type JournalVoucherHeaderPageProps = {
-  page: ReturnType<typeof useJournalVoucherFormPage>;
+type AccountsPayableVoucherHeaderPageProps = {
+  page: ReturnType<typeof useAccountsPayableVoucherFormPage>;
 };
 
-export function JournalVoucherHeaderPage({
+export function AccountsPayableVoucherHeaderPage({
   page,
-}: JournalVoucherHeaderPageProps) {
-  const copy = JournalVoucherActionCopy[page.mode];
+}: AccountsPayableVoucherHeaderPageProps) {
+  const copy = AccountsPayableVoucherActionCopy[page.mode];
   const transactionLabel =
     page.existingRecord?.transactionNo ||
     page.values.transactionNo ||
-    "Journal voucher";
+    "Accounts payable voucher";
   const title =
     page.mode === "view"
       ? page.existingRecord?.transactionNo
-        ? `View Journal Voucher | ${page.existingRecord.transactionNo}`
+        ? `View Accounts Payable Voucher | ${page.existingRecord.transactionNo}`
         : copy.title
       : page.mode === "edit"
         ? page.existingRecord?.transactionNo
-          ? `Edit Journal Voucher | ${page.existingRecord.transactionNo}`
+          ? `Edit Accounts Payable Voucher | ${page.existingRecord.transactionNo}`
           : copy.title
         : copy.title;
 
@@ -44,7 +44,7 @@ export function JournalVoucherHeaderPage({
       actions={
         <>
           <Link
-            href={JournalVoucherHref}
+            href={AccountsPayableVoucherHref}
             className={moduleHeaderActionClassNames.secondary}
           >
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
@@ -52,7 +52,7 @@ export function JournalVoucherHeaderPage({
           </Link>
           {page.mode === "view" && page.existingRecord ? (
             <Link
-              href={`${JournalVoucherHref}/edit/${page.existingRecord.id}`}
+              href={`${AccountsPayableVoucherHref}/edit/${page.existingRecord.id}`}
               className={moduleHeaderActionClassNames.primary}
             >
               Edit
@@ -61,7 +61,7 @@ export function JournalVoucherHeaderPage({
           {!page.isReadonly && page.mode !== "view" ? (
             <>
               <Link
-                href={JournalVoucherHref}
+                href={AccountsPayableVoucherHref}
                 className={moduleHeaderActionClassNames.secondary}
               >
                 <X className="h-4 w-4" aria-hidden="true" />

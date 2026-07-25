@@ -84,7 +84,12 @@ export function SidebarCustomizationScreen({
 	});
 
 	useEffect(() => {
-		if (query.data && !dirty) setItems(query.data.items.map(normalize));
+		if (!query.data || dirty) return;
+
+		const nextItems = query.data.items.map(normalize);
+		setItems((current) =>
+			treeSignature(current) === treeSignature(nextItems) ? current : nextItems,
+		);
 	}, [query.data, dirty]);
 
 	useEffect(() => {
@@ -457,6 +462,10 @@ function serialize(item: TreeItem): UserSidebarApiItem {
 		iconName: item.iconName || undefined,
 		children: item.children.map(serialize),
 	} as UserSidebarApiItem;
+}
+
+function treeSignature(items: TreeItem[]) {
+	return JSON.stringify(items.map(serialize));
 }
 
 function locate(

@@ -2,7 +2,7 @@
 
 import { useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
-import { BranchManagementHref } from "@/app/src/constants/modules/branch-manager/BranchManagementConstants";
+import { BranchManagementHref } from "@/app/src/constants/modules/system-administration/branch-manager/BranchManagementConstants";
 import {
 	BranchManagementInitialFormValues,
 	createBranchFormValues,

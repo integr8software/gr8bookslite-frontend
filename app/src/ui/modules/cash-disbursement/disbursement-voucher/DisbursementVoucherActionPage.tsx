@@ -48,14 +48,14 @@ import {
   validateDisbursementVoucherDetails,
   validateDisbursementVoucherEntries,
 } from "@/app/src/validations/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherValidation";
-import { usePaymentTypeStore } from "@/app/src/hooks/modules/maintenance/payment-type/usePaymentType";
-import { useBankMasterfileStore } from "@/app/src/hooks/modules/maintenance/bank-masterfile/useBankMasterfile";
-import { useDefaultAccountStore } from "@/app/src/hooks/modules/maintenance/default-account/useDefaultAccount";
-import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/maintenance/responsibility-center/useResponsibilityCenter";
-import { usePartyManagementStore } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagement";
+import { usePaymentTypeStore } from "@/app/src/hooks/modules/financial-maintenance/payment-type/usePaymentType";
+import { useBankMasterfileStore } from "@/app/src/hooks/modules/financial-maintenance/bank-masterfile/useBankMasterfile";
+import { useDefaultAccountStore } from "@/app/src/hooks/modules/financial-maintenance/default-account/useDefaultAccount";
+import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenter";
+import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
 import {
   getPartyDisplayName,
-} from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
+} from "@/app/src/data/modules/party-management/PartyManagementData";
 import {
   getModuleChartAccounts,
   type ModuleChartAccount,
@@ -80,7 +80,7 @@ import {
   normalizeVatDropdownValue,
 } from "@/app/src/ui/shared/transaction-setup/AppTaxRateDialog";
 import { useAlphanumericTaxCodes } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
-import { PartyManagementDrawer } from "@/app/src/ui/modules/maintenance/party-management/PartyManagementDrawer";
+import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
 import type { AppDisbursementTypeRecord } from "@/app/src/ui/shared/transaction-setup/AppDisbursementTypeDialog";
 import type {
   DisbursementVoucherBankAccount,
@@ -92,10 +92,10 @@ import type {
   DisbursementVoucherRecord,
   DisbursementVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
-import type { PaymentTypeRecord as AppPaymentTypeRecord } from "@/app/src/types/modules/maintenance/payment-type/PaymentTypeTypes";
-import type { BankMasterfile } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
-import type { DefaultAccount } from "@/app/src/types/modules/maintenance/default-account/DefaultAccountTypes";
-import type { PartyInformationRecord } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
+import type { PaymentTypeRecord as AppPaymentTypeRecord } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
+import type { BankMasterfile } from "@/app/src/types/modules/financial-maintenance/bank-masterfile/BankMasterfileTypes";
+import type { DefaultAccount } from "@/app/src/types/modules/financial-maintenance/default-account/DefaultAccountTypes";
+import type { PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";
 import { DisbursementVoucherActionHeader } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherActionHeader";
 import { DisbursementVoucherReportPreview } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherReportPreview";
 import { openDisbursementVoucherPdf } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherPdf";

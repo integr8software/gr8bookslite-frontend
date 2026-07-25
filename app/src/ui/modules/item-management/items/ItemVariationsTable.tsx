@@ -1,0 +1,312 @@
+import { GripVertical, Plus } from "lucide-react";
+import { useState } from "react";
+import type {
+  ItemVariationAssignment,
+  ItemVariationRecord,
+} from "@/app/src/types/modules/item-management/items/ItemManagementTypes";
+import {
+  AppAdvancedDropdown,
+  type AppAdvancedDropdownOption,
+} from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
+import { ModuleTableActionButton } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
+
+const MaxItemVariationAssignments = 5;
+type DropIndicator = {
+  assignmentId: string;
+  position: "after" | "before";
+};
+
+type ItemVariationsTableProps = {
+  assignments: ItemVariationAssignment[];
+  variations: ItemVariationRecord[];
+  isReadonly: boolean;
+  onAddAssignment: () => void;
+  onRemoveAssignment: (assignmentId: string) => void;
+  onReorderAssignment: (
+    assignmentId: string,
+    overAssignmentId: string,
+    position: DropIndicator["position"],
+  ) => void;
+  onUpdateAssignment: (
+    assignmentId: string,
+    field: keyof ItemVariationAssignment,
+    value: string,
+  ) => void;
+};
+
+export function ItemVariationsTable({
+  assignments,
+  variations,
+  isReadonly,
+  onAddAssignment,
+  onRemoveAssignment,
+  onReorderAssignment,
+  onUpdateAssignment,
+}: ItemVariationsTableProps) {
+  const activeVariations = variations.filter((variation) => variation.status === "Active");
+  const isAtLimit = assignments.length >= MaxItemVariationAssignments;
+  const hasPendingVariation = assignments.some((assignment) => !assignment.variationId);
+  const [draggedAssignmentId, setDraggedAssignmentId] = useState<string | null>(null);
+  const [dropIndicator, setDropIndicator] = useState<DropIndicator | null>(null);
+  const hasAvailableVariation = activeVariations.some(
+    (variation) => !assignments.some((assignment) => assignment.variationId === variation.id),
+  );
+
+  function handleDrop(overAssignmentId: string) {
+    if (!draggedAssignmentId || draggedAssignmentId === overAssignmentId) {
+      setDropIndicator(null);
+      return;
+    }
+
+    onReorderAssignment(
+      draggedAssignmentId,
+      overAssignmentId,
+      dropIndicator?.assignmentId === overAssignmentId ? dropIndicator.position : "before",
+    );
+    setDraggedAssignmentId(null);
+    setDropIndicator(null);
+  }
+
+  return (
+    <section className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm sm:p-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="text-base font-semibold text-darknavy">Item Variations</h2>
+          <p className="mt-1 text-sm text-darknavy/55">
+            Attach up to {MaxItemVariationAssignments} searchable variations used by variants, stock
+            classification, and item filtering.
+          </p>
+        </div>
+        {!isReadonly ? (
+          <button
+            type="button"
+            onClick={onAddAssignment}
+            disabled={isAtLimit || hasPendingVariation || !hasAvailableVariation}
+            className={`${moduleHeaderActionClassNames.secondary} disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white disabled:hover:text-darknavy/75`}
+          >
+            <Plus className="h-4 w-4" aria-hidden="true" />
+            Add Variation ({assignments.length}/{MaxItemVariationAssignments})
+          </button>
+        ) : null}
+      </div>
+      <div className="mt-4 overflow-x-auto overflow-y-hidden rounded-lg border border-skyblue/15 bg-white shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+        <table className="w-full min-w-[46rem] table-fixed border-collapse text-left text-sm">
+          <colgroup>
+            <col className="w-8" />
+            <col className="w-8" />
+            <col className="w-[22rem]" />
+            <col className="w-[16rem]" />
+            <col className="w-[7rem]" />
+          </colgroup>
+          <thead className="border-b border-skyblue/15 bg-skyblue/[0.08] text-xs font-semibold uppercase tracking-wide text-darknavy/70">
+            <tr>
+              <th className="px-1 py-3.5">
+                <span className="sr-only">Order</span>
+              </th>
+              <th className="px-1 py-3.5">No.</th>
+              <th className="px-3 py-3.5">Variation</th>
+              <th className="px-3 py-3.5">Value</th>
+              <th className="px-3 py-3.5 text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-skyblue/10">
+            {assignments.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="px-3 py-6 text-center text-sm text-darknavy/55">
+                  No item variations added.
+                </td>
+              </tr>
+            ) : null}
+            {assignments.map((assignment, index) => (
+              <ItemVariationRow
+                key={assignment.id}
+                activeVariations={activeVariations}
+                assignment={assignment}
+                assignmentNumber={index + 1}
+                assignments={assignments}
+                variations={variations}
+                draggedAssignmentId={draggedAssignmentId}
+                dropIndicator={dropIndicator}
+                isReadonly={isReadonly}
+                onDragEnd={() => {
+                  setDraggedAssignmentId(null);
+                  setDropIndicator(null);
+                }}
+                onDragOver={(position) =>
+                  setDropIndicator({ assignmentId: assignment.id, position })
+                }
+                onDragStart={() => {
+                  setDraggedAssignmentId(assignment.id);
+                  setDropIndicator(null);
+                }}
+                onDrop={() => handleDrop(assignment.id)}
+                onRemoveAssignment={onRemoveAssignment}
+                onUpdateAssignment={onUpdateAssignment}
+              />
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+function ItemVariationRow({
+  activeVariations,
+  assignment,
+  assignmentNumber,
+  assignments,
+  variations,
+  draggedAssignmentId,
+  dropIndicator,
+  isReadonly,
+  onDragEnd,
+  onDragOver,
+  onDragStart,
+  onDrop,
+  onRemoveAssignment,
+  onUpdateAssignment,
+}: {
+  activeVariations: ItemVariationRecord[];
+  assignment: ItemVariationAssignment;
+  assignmentNumber: number;
+  assignments: ItemVariationAssignment[];
+  variations: ItemVariationRecord[];
+  draggedAssignmentId: string | null;
+  dropIndicator: DropIndicator | null;
+  isReadonly: boolean;
+  onDragEnd: () => void;
+  onDragOver: (position: DropIndicator["position"]) => void;
+  onDragStart: () => void;
+  onDrop: () => void;
+  onRemoveAssignment: (assignmentId: string) => void;
+  onUpdateAssignment: (
+    assignmentId: string,
+    field: keyof ItemVariationAssignment,
+    value: string,
+  ) => void;
+}) {
+  const variation = variations.find(
+    (currentVariation) => currentVariation.id === assignment.variationId,
+  );
+  const selectableVariations = getSelectableVariations(
+    activeVariations,
+    assignments,
+    assignment.id,
+  );
+  const variationOptions = createVariationDropdownOptions(selectableVariations);
+  const isDragging = draggedAssignmentId === assignment.id;
+  const indicatorPosition =
+    !isDragging && dropIndicator?.assignmentId === assignment.id ? dropIndicator.position : null;
+
+  return (
+    <tr
+      onDragOver={(event) => {
+        if (isReadonly || !draggedAssignmentId || isDragging) {
+          return;
+        }
+
+        event.preventDefault();
+
+        const rect = event.currentTarget.getBoundingClientRect();
+        const position = event.clientY - rect.top < rect.height / 2 ? "before" : "after";
+
+        onDragOver(position);
+      }}
+      onDrop={onDrop}
+      className={[
+        "relative transition-colors hover:bg-skyblue/[0.035]",
+        indicatorPosition
+          ? "before:pointer-events-none before:absolute before:left-2 before:right-2 before:z-20 before:h-0.5 before:rounded-full before:bg-skyblue before:shadow-[0_0_0_1px_rgba(55,167,226,0.18),0_0_10px_rgba(55,167,226,0.35)] before:content-['']"
+          : "",
+        indicatorPosition === "before" ? "before:top-0" : "",
+        indicatorPosition === "after" ? "before:bottom-0" : "",
+        isDragging ? "relative z-10 bg-skyblue/8 shadow-sm" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      <td className="px-1 py-3 text-center">
+        <button
+          type="button"
+          draggable={!isReadonly}
+          disabled={isReadonly}
+          aria-label={`Drag variation ${assignmentNumber} to reorder`}
+          onDragEnd={onDragEnd}
+          onDragStart={onDragStart}
+          className="inline-flex h-8 w-8 items-center justify-center rounded-md text-darknavy/45 transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/30 disabled:cursor-default disabled:opacity-30"
+        >
+          <GripVertical className="h-4 w-4" aria-hidden="true" />
+        </button>
+      </td>
+      <td className="px-1 py-3 font-semibold text-darknavy/70">{assignmentNumber}</td>
+      <td className="px-3 py-3">
+        <AppAdvancedDropdown
+          isClearable
+          menuPortal
+          options={variationOptions}
+          placeholder="--Select Variation--"
+          readOnly={isReadonly}
+          showSelectedDetails
+          value={assignment.variationId}
+          onChange={(value) => onUpdateAssignment(assignment.id, "variationId", String(value))}
+        />
+      </td>
+      <td className="px-3 py-3">
+        <AppAdvancedDropdown
+          isClearable
+          menuPortal
+          options={createVariationValueDropdownOptions(variation)}
+          placeholder="--Select Value--"
+          readOnly={isReadonly || !variation}
+          value={assignment.value}
+          onChange={(value) => onUpdateAssignment(assignment.id, "value", String(value))}
+        />
+      </td>
+      <td className="px-3 py-3 text-center">
+        {!isReadonly ? (
+          <ModuleTableActionButton
+            variant="delete"
+            label="Remove variation"
+            onClick={() => onRemoveAssignment(assignment.id)}
+          />
+        ) : null}
+      </td>
+    </tr>
+  );
+}
+
+function getSelectableVariations(
+  activeVariations: ItemVariationRecord[],
+  assignments: ItemVariationAssignment[],
+  assignmentId: string,
+) {
+  const selectedVariationIds = new Set(
+    assignments
+      .filter((assignment) => assignment.id !== assignmentId)
+      .map((assignment) => assignment.variationId)
+      .filter(Boolean),
+  );
+
+  return activeVariations.filter((variation) => !selectedVariationIds.has(variation.id));
+}
+
+function createVariationDropdownOptions(
+  variations: ItemVariationRecord[],
+): AppAdvancedDropdownOption[] {
+  return variations.map((variation) => ({
+    description: variation.usage,
+    name: variation.name,
+    value: variation.id,
+  }));
+}
+
+function createVariationValueDropdownOptions(
+  variation?: ItemVariationRecord,
+): AppAdvancedDropdownOption[] {
+  return (variation?.values ?? []).map((value) => ({
+    name: value,
+    value,
+  }));
+}

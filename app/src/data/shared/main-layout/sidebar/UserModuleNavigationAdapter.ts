@@ -13,6 +13,11 @@ import type { AuthUserModuleItem } from "@/app/src/services/auth/AuthApiTypes";
 const SectionAccess: Record<string, MainAccessKey> = {
   dashboard: "dashboard",
   maintenance: "maintenance.chartOfAccounts",
+  "financial-maintenance": "maintenance.chartOfAccounts",
+  "item-management": "maintenance.item",
+  "party-management": "maintenance.party",
+  "warehouse-management": "maintenance.warehouse",
+  "delivery-vehicle-management": "maintenance.deliveryVehicle",
   "cash-receipt": "cashReceipt",
   "cash-disbursement": "cashDisbursement",
   "accounts-payable": "accountsPayable",
@@ -116,8 +121,17 @@ function getAccessKey(item: AuthUserModuleItem): MainAccessKey {
   if (item.key.includes("user")) return "maintenance.users";
   if (item.key.includes("audit")) return "maintenance.audit";
   if (item.key.includes("approval")) return "maintenance.approval";
-  if (item.key.includes("tax-maintenance")) return "maintenance.taxMaintenance";
+  if (item.key.includes("charts-of-accounts")) return "maintenance.chartOfAccounts";
+  if (item.key.includes("bank-masterfile")) return "maintenance.bankMasterfile";
+  if (item.key.includes("default-account")) return "maintenance.defaultAccount";
+  if (item.key.includes("services-maintenance")) return "maintenance.servicesMaintenance";
+  if (item.key.includes("discount-management")) return "maintenance.discount";
+  if (item.key.includes("payment-type")) return "maintenance.paymentType";
+  if (item.key.includes("responsibility-center")) return "maintenance.responsibilityCenter";
+  if (item.key.includes("term-management")) return "maintenance.term";
+  if (item.key.includes("delivery-vehicle")) return "maintenance.deliveryVehicle";
   if (item.key.includes("warehouse")) return "maintenance.warehouse";
   if (item.key.includes("item")) return "maintenance.item";
+  if (item.key.includes("party-management")) return "maintenance.party";
   return SectionAccess[item.key] ?? SectionAccess[sectionKey] ?? "settings";
 }

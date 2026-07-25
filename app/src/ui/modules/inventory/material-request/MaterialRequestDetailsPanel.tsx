@@ -5,18 +5,18 @@ import {
 	useState,
 } from "react";
 import { Plus } from "lucide-react";
-import { useWarehousesStore } from "@/app/src/hooks/modules/maintenance/warehouses/useWarehouses";
+import { useWarehousesStore } from "@/app/src/hooks/modules/warehouse-management/warehouses/useWarehouses";
 import type {
 	MaterialRequestFormErrors,
 	MaterialRequestFormValues,
 } from "@/app/src/types/modules/inventory/material-request/MaterialRequestTypes";
-import type { WarehouseActionMode } from "@/app/src/types/modules/maintenance/warehouses/WarehouseTypes";
+import type { WarehouseActionMode } from "@/app/src/types/modules/warehouse-management/warehouses/WarehouseTypes";
 import {
 	AppAdvancedDropdown,
 	type AppAdvancedDropdownOption,
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
-import { WarehouseDrawer } from "@/app/src/ui/modules/maintenance/warehouses/WarehouseDrawer";
+import { WarehouseDrawer } from "@/app/src/ui/modules/warehouse-management/warehouses/WarehouseDrawer";
 
 type MaterialRequestDetailsPanelProps = {
 	errors: MaterialRequestFormErrors;

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BranchManagementHref } from "@/app/src/constants/modules/branch-manager/BranchManagementConstants";
+import { BranchManagementHref } from "@/app/src/constants/modules/system-administration/branch-manager/BranchManagementConstants";
 
 export function BranchNotFound() {
   return (

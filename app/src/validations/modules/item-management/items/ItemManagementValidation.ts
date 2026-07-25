@@ -1,0 +1,175 @@
+import { z } from "zod";
+import {
+  ItemBehaviorOptions,
+  ItemPerishabilityOptions,
+  ItemStatusOptions,
+} from "@/app/src/constants/modules/item-management/items/ItemManagementConstants";
+import type {
+  ItemFormErrors,
+  ItemFormValues,
+  ItemVariationRecord,
+} from "@/app/src/types/modules/item-management/items/ItemManagementTypes";
+
+export const ItemBundleComponentValidationSchema = z.object({
+  id: z.string(),
+  itemId: z.string().trim().min(1, "Select a component item."),
+  itemCode: z.string().trim().min(1, "Enter an item code."),
+  itemName: z.string().trim().min(1, "Enter an item name."),
+  quantity: z.number().positive("Quantity must be greater than zero."),
+  uom: z.string().trim().min(1, "Enter a UOM."),
+});
+
+export const ItemVariationAssignmentValidationSchema = z.object({
+  id: z.string(),
+  variationId: z.string().trim().min(1, "Select a variation."),
+  value: z.string().trim().min(1, "Select a variation value."),
+});
+
+export const ItemPriceListAssignmentValidationSchema = z.object({
+  id: z.string(),
+  priceListId: z.string().trim().min(1, "Select a price list."),
+  price: z.number().nonnegative("Price must not be negative."),
+});
+
+export const ItemSupplierAssignmentValidationSchema = z.object({
+  id: z.string(),
+  supplier: z.string().trim().min(1, "Select a supplier."),
+  supplierItemCode: z.string().trim().optional(),
+  leadTime: z.string().trim().optional(),
+  lastCost: z.number().nonnegative("Last cost must not be negative."),
+  isDefault: z.boolean(),
+});
+
+export const ItemFormValidationSchema = z
+  .object({
+    code: z.string().trim().min(1, "Enter an item code."),
+    skuCode: z.string().trim().optional(),
+    name: z.string().trim().min(1, "Enter an item name."),
+    model: z.string().trim().optional(),
+    externalReferenceCode: z.string().trim().optional(),
+    brand: z.string().trim().optional(),
+    suppliers: z.array(ItemSupplierAssignmentValidationSchema),
+    barcode: z.string().trim().optional(),
+    primaryCategory: z.string().trim().min(1, "Select a primary category."),
+    uom: z.string().trim().min(1, "Enter a UOM."),
+    responsibilityCenter: z.string().trim().optional(),
+    costPrice: z.number().nonnegative("Cost must not be negative."),
+    sellingPrice: z.number().nonnegative("Selling price must not be negative."),
+    taxTreatment: z.string().trim().min(1, "Select a tax type."),
+    status: z.enum(ItemStatusOptions),
+    defaultWarehouse: z.string().trim().optional(),
+    defaultLocation: z.string().trim().optional(),
+    defaultZone: z.string().trim().optional(),
+    defaultRack: z.string().trim().optional(),
+    defaultShelf: z.string().trim().optional(),
+    defaultBin: z.string().trim().optional(),
+    defaultLotNo: z.string().trim().optional(),
+    leadTime: z.string().trim().optional(),
+    reorderLevel: z.number().nonnegative("Reorder level must not be negative."),
+    minimumStock: z.number().nonnegative("Minimum stock must not be negative."),
+    maximumStock: z.number().nonnegative("Maximum stock must not be negative."),
+    perishability: z.enum(ItemPerishabilityOptions),
+    behavior: z.enum(ItemBehaviorOptions),
+    behaviors: z.array(z.enum(ItemBehaviorOptions)).min(1, "Select at least one item behavior."),
+    sellable: z.boolean(),
+    purchasable: z.boolean(),
+    trackInventory: z.boolean(),
+    service: z.boolean(),
+    asset: z.boolean(),
+    hasVariants: z.boolean(),
+    lotTracking: z.boolean(),
+    serialTracking: z.boolean(),
+    variationAssignments: z.array(ItemVariationAssignmentValidationSchema),
+    priceListPrices: z.array(ItemPriceListAssignmentValidationSchema),
+    description: z
+      .string()
+      .trim()
+      .max(500, "Description must be 500 characters or fewer.")
+      .optional(),
+    tags: z.array(z.string().trim().min(1)),
+  })
+  .superRefine((values, context) => {
+    if (
+      values.suppliers.length > 0 &&
+      values.suppliers.filter((supplier) => supplier.isDefault).length !== 1
+    ) {
+      context.addIssue({
+        code: "custom",
+        message: "Choose one default supplier.",
+        path: ["suppliers"],
+      });
+    }
+
+    const supplierNames = new Set<string>();
+
+    values.suppliers.forEach((supplier) => {
+      const normalizedSupplier = supplier.supplier.trim().toLowerCase();
+
+      if (!normalizedSupplier) {
+        return;
+      }
+
+      if (supplierNames.has(normalizedSupplier)) {
+        context.addIssue({
+          code: "custom",
+          message: "Remove duplicate suppliers.",
+          path: ["suppliers"],
+        });
+        return;
+      }
+
+      supplierNames.add(normalizedSupplier);
+    });
+  });
+
+export function validateItemForm(
+  values: ItemFormValues,
+  options: {
+    taxDefinitionIds?: ReadonlySet<string>;
+    variations?: ItemVariationRecord[];
+  } = {},
+) {
+  const result = ItemFormValidationSchema.safeParse(values);
+  const errors = result.success
+    ? {}
+    : result.error.issues.reduce<ItemFormErrors>((nextErrors, issue) => {
+        const field = issue.path[0] as keyof ItemFormErrors | undefined;
+
+        if (field) {
+          nextErrors[field] ??= issue.message;
+        }
+
+        return nextErrors;
+      }, {});
+  const assignedVariationIds = values.variationAssignments
+    .map((assignment) => assignment.variationId.trim())
+    .filter(Boolean);
+
+  if (
+    options.taxDefinitionIds &&
+    !options.taxDefinitionIds.has(values.taxTreatment)
+  ) {
+    errors.taxTreatment = "Select an active tax definition.";
+  }
+
+  if (
+    new Set(assignedVariationIds).size !== assignedVariationIds.length &&
+    !errors.variationAssignments
+  ) {
+    errors.variationAssignments = "Remove duplicate item variations.";
+  }
+
+  const assignedVariationIdSet = new Set(assignedVariationIds);
+  const missingRequiredVariations = (options.variations ?? []).filter(
+    (variation) =>
+      variation.status === "Active" &&
+      variation.requiredOnItem &&
+      !assignedVariationIdSet.has(variation.id),
+  );
+
+  if (missingRequiredVariations.length > 0 && !errors.variationAssignments) {
+    errors.variationAssignments = `Add the required item ${missingRequiredVariations.length === 1 ? "variation" : "variations"}: ${missingRequiredVariations.map((variation) => variation.name).join(", ")}.`;
+  }
+
+  return errors;
+}

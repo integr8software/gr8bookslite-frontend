@@ -9,9 +9,9 @@ import {
 } from "@/app/src/ui/shared/transaction-setup/AppDisbursementTypeDialog";
 import { useOfficialReceiptActionForm } from "@/app/src/hooks/modules/cash-receipt/official-receipt/useOfficialReceipt";
 import { OfficialReceiptHref } from "@/app/src/constants/modules/cash-receipt/official-receipt/OfficialReceiptConstants";
-import { getPartyDisplayName } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
-import { usePartyManagementStore } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagement";
-import { usePaymentTypeStore } from "@/app/src/hooks/modules/maintenance/payment-type/usePaymentType";
+import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
+import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
+import { usePaymentTypeStore } from "@/app/src/hooks/modules/financial-maintenance/payment-type/usePaymentType";
 import type { OfficialReceiptActionMode } from "@/app/src/types/modules/cash-receipt/official-receipt/OfficialReceiptTypes";
 import type { DisbursementPaymentMethod, DisbursementType } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import { OfficialReceiptActionHeader } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptActionHeader";
@@ -19,7 +19,7 @@ import { OfficialReceiptDetailsForm } from "@/app/src/ui/modules/cash-receipt/of
 import { OfficialReceiptEntries } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptEntries";
 import { openOfficialReceiptPdf } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptPdf";
 import { OfficialReceiptReportPreview } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptReportPreview";
-import { PartyManagementDrawer } from "@/app/src/ui/modules/maintenance/party-management/PartyManagementDrawer";
+import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
 
 const AppPaymentTypeDialog = dynamic(
   () =>

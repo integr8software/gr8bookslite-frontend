@@ -17,7 +17,7 @@ import {
 import type {
 	PartyAtcCodeOption,
 	PartyClassification,
-} from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
+} from "@/app/src/types/modules/party-management/PartyManagementTypes";
 import { formatPercentage } from "@/app/src/utils/percentage.util";
 
 const AtcDropdownLimit = 1000;

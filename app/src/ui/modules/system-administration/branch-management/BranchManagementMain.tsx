@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Building2, Plus } from "lucide-react";
-import { BranchManagementHref } from "@/app/src/constants/modules/branch-manager/BranchManagementConstants";
+import { BranchManagementHref } from "@/app/src/constants/modules/system-administration/branch-manager/BranchManagementConstants";
 import { useBranchManagementStore } from "@/app/src/hooks/modules/system-administration/branch-management/useBranchManagement";
 import {
 	ModuleHeader,

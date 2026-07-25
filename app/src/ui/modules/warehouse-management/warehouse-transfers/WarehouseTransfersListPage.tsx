@@ -14,8 +14,8 @@ import {
   ModuleHeader,
   moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { WarehouseScopeSwitcher } from "@/app/src/ui/shared/warehouse-management/WarehouseScopeSwitcher";
 import { WarehouseTransferTable } from "@/app/src/ui/modules/warehouse-management/warehouse-transfers/WarehouseTransferTable";
+import { WarehouseTransfersScopeSwitcher } from "@/app/src/ui/modules/warehouse-management/warehouse-transfers/WarehouseTransfersScopeSwitcher";
 
 export function WarehouseTransfersListPage() {
   const page = useWarehouseTransfersListPage();
@@ -45,7 +45,7 @@ export function WarehouseTransfersListPage() {
           </Link>
         }
       />
-      <WarehouseScopeSwitcher
+      <WarehouseTransfersScopeSwitcher
         value={page.warehouseFilter}
         warehouses={page.warehouses}
         onChange={page.setWarehouseFilter}

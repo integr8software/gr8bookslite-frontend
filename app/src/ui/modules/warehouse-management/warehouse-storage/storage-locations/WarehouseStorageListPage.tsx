@@ -10,12 +10,12 @@ import type {
 import type { WarehouseModuleRecord } from "@/app/src/types/modules/warehouse-management/warehouses/WarehouseModuleTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
-import { WarehouseStorageDetailsPanel } from "@/app/src/ui/shared/warehouse-management/WarehouseStorageDetailsPanel";
-import { WarehouseStorageDrawer } from "@/app/src/ui/shared/warehouse-management/WarehouseStorageDrawer";
-import { WarehouseStorageHeader } from "@/app/src/ui/shared/warehouse-management/WarehouseStorageHeader";
-import { WarehouseStorageMapView } from "@/app/src/ui/shared/warehouse-management/WarehouseStorageMapView";
-import { WarehouseStorageTable } from "@/app/src/ui/shared/warehouse-management/WarehouseStorageTable";
-import { WarehouseScopeSwitcher } from "@/app/src/ui/shared/warehouse-management/WarehouseScopeSwitcher";
+import { WarehouseStorageDetailsPanel } from "@/app/src/ui/modules/warehouse-management/warehouse-storage/storage-locations/WarehouseStorageDetailsPanel";
+import { WarehouseStorageDrawer } from "@/app/src/ui/modules/warehouse-management/warehouse-storage/storage-locations/WarehouseStorageDrawer";
+import { WarehouseStorageHeader } from "@/app/src/ui/modules/warehouse-management/warehouse-storage/storage-locations/WarehouseStorageHeader";
+import { WarehouseStorageMapView } from "@/app/src/ui/modules/warehouse-management/warehouse-storage/storage-locations/WarehouseStorageMapView";
+import { WarehouseStorageScopeSwitcher } from "@/app/src/ui/modules/warehouse-management/warehouse-storage/storage-locations/WarehouseStorageScopeSwitcher";
+import { WarehouseStorageTable } from "@/app/src/ui/modules/warehouse-management/warehouse-storage/storage-locations/WarehouseStorageTable";
 
 export function WarehouseStorageListPage() {
   const page = useWarehouseStorageListPage();
@@ -49,16 +49,16 @@ export function WarehouseStorageListPage() {
   );
 
   return (
-    <section className="grid gap-5">
+    <section className="grid gap-3">
       <WarehouseStorageHeader onAdd={() => setDrawerState({ mode: "add" })} />
-      <WarehouseScopeSwitcher
+      <WarehouseStorageScopeSwitcher
         value={page.warehouseFilter}
         warehouses={page.warehouses}
         onChange={page.setWarehouseFilter}
+        actions={<ViewModeToggle value={page.viewMode} onChange={page.setViewMode} />}
       />
-      <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
-        <div className="grid gap-4">
-          <ViewModeToggle value={page.viewMode} onChange={page.setViewMode} />
+      <section className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_22rem]">
+        <div className="min-w-0">
           {page.viewMode === "List" ? (
             <WarehouseStorageTable
               page={page}
@@ -117,27 +117,22 @@ function ViewModeToggle({
   value: "List" | "Map";
 }) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-darknavy/10 bg-white px-4 py-3 shadow-sm">
-      <div>
-        <h2 className="text-sm font-semibold text-darknavy">Location workspace</h2>
-        <p className="mt-1 text-xs text-darknavy/50">
-          List is for maintenance. Map groups storage codes and shows item counts.
-        </p>
-      </div>
-      <div className="inline-flex rounded-lg border border-darknavy/10 bg-offwhite p-1">
-        <ToggleButton
-          icon={List}
-          isActive={value === "List"}
-          label="List"
-          onClick={() => onChange("List")}
-        />
-        <ToggleButton
-          icon={LayoutGrid}
-          isActive={value === "Map"}
-          label="Map"
-          onClick={() => onChange("Map")}
-        />
-      </div>
+    <div
+      className="inline-flex shrink-0 rounded-lg border border-darknavy/10 bg-offwhite p-1"
+      aria-label="Location view"
+    >
+      <ToggleButton
+        icon={List}
+        isActive={value === "List"}
+        label="List"
+        onClick={() => onChange("List")}
+      />
+      <ToggleButton
+        icon={LayoutGrid}
+        isActive={value === "Map"}
+        label="Map"
+        onClick={() => onChange("Map")}
+      />
     </div>
   );
 }

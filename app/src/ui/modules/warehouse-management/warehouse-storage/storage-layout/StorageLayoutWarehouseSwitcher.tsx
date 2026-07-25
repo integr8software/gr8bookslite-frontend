@@ -16,38 +16,24 @@ type WarehouseScope = {
   name: string;
 };
 
-type WarehouseScopeSwitcherProps = {
-  allowAllWarehouses?: boolean;
+type StorageLayoutWarehouseSwitcherProps = {
   onChange: (warehouseId: string) => void;
   value: string;
   warehouses: ReadonlyArray<WarehouseScope>;
 };
 
-export function WarehouseScopeSwitcher({
-  allowAllWarehouses = true,
+export function StorageLayoutWarehouseSwitcher({
   onChange,
   value,
   warehouses,
-}: WarehouseScopeSwitcherProps) {
+}: StorageLayoutWarehouseSwitcherProps) {
   const [drawerState, setDrawerState] = useState<DrawerState>(null);
-  const options: AppAdvancedDropdownOption[] = [
-    ...(allowAllWarehouses
-      ? [
-          {
-            description: "Review records across all accessible warehouses.",
-            label: "ALL",
-            name: "All Warehouses",
-            value: "All",
-          },
-        ]
-      : []),
-    ...warehouses.map((warehouse) => ({
-      description: warehouse.branchName || warehouse.code || "",
-      label: warehouse.code || "",
-      name: warehouse.name,
-      value: warehouse.id,
-    })),
-  ];
+  const options: AppAdvancedDropdownOption[] = warehouses.map((warehouse) => ({
+    description: warehouse.branchName || warehouse.code || "",
+    label: warehouse.code || "",
+    name: warehouse.name,
+    value: warehouse.id,
+  }));
 
   return (
     <>

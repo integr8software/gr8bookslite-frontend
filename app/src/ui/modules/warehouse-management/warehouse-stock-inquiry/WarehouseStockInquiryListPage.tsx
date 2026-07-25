@@ -11,8 +11,8 @@ import {
   ModuleHeader,
   moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { WarehouseScopeSwitcher } from "@/app/src/ui/shared/warehouse-management/WarehouseScopeSwitcher";
 import { WarehouseStockInquiryTable } from "@/app/src/ui/modules/warehouse-management/warehouse-stock-inquiry/WarehouseStockInquiryTable";
+import { WarehouseStockInquiryScopeSwitcher } from "@/app/src/ui/modules/warehouse-management/warehouse-stock-inquiry/WarehouseStockInquiryScopeSwitcher";
 
 export function WarehouseStockInquiryListPage() {
   const page = useWarehouseStockInquiryListPage();
@@ -45,7 +45,7 @@ export function WarehouseStockInquiryListPage() {
           </button>
         }
       />
-      <WarehouseScopeSwitcher
+      <WarehouseStockInquiryScopeSwitcher
         value={page.warehouseFilter}
         warehouses={page.warehouses}
         onChange={page.setWarehouseFilter}

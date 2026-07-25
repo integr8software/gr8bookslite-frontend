@@ -14,7 +14,7 @@ import type {
   StorageLayoutRecord,
 } from "@/app/src/types/modules/warehouse-management/warehouse-storage/storage-layout/StorageLayoutTypes";
 import { validateStorageLayoutDraft } from "@/app/src/validations/modules/warehouse-management/warehouse-storage/storage-layout/StorageLayoutValidation";
-import { WarehouseScopeSwitcher } from "@/app/src/ui/shared/warehouse-management/WarehouseScopeSwitcher";
+import { StorageLayoutWarehouseSwitcher } from "@/app/src/ui/modules/warehouse-management/warehouse-storage/storage-layout/StorageLayoutWarehouseSwitcher";
 import {
   ModuleHeader,
   moduleHeaderActionClassNames,
@@ -44,8 +44,7 @@ export function StorageLayoutPage() {
           </button>
         }
       />
-      <WarehouseScopeSwitcher
-        allowAllWarehouses={false}
+      <StorageLayoutWarehouseSwitcher
         value={page.warehouseId}
         warehouses={page.warehouses}
         onChange={(warehouseId) => {

@@ -11,7 +11,7 @@ import {
   ModuleTableSearch,
   ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
-import { WarehouseStorageTableRow } from "@/app/src/ui/shared/warehouse-management/WarehouseStorageTableRow";
+import { WarehouseStorageTableRow } from "@/app/src/ui/modules/warehouse-management/warehouse-storage/storage-locations/WarehouseStorageTableRow";
 
 type WarehouseStorageTableProps = {
   hasActiveFilters: boolean;
@@ -36,12 +36,12 @@ export function WarehouseStorageTable({
         isLoading={page.isLoading}
         isSyncing={page.isRefreshing}
         lastSyncedAt={page.lastSyncedAt}
-        minWidthClassName="min-w-[86rem] table-fixed"
+        minWidthClassName="min-w-[70rem] table-fixed"
         paginationStorageKey={WarehouseStoragePaginationStorageKey}
         table={page.table}
         tableTitle="Storage Locations"
         toolbar={
-          <ModuleTableToolbar>
+          <ModuleTableToolbar className="lg:grid-cols-[minmax(24rem,2.5fr)_minmax(11rem,1fr)_3rem]">
             <ModuleTableSearch
               label="Search storage locations"
               placeholder="Search code, name, warehouse, path"
@@ -62,6 +62,7 @@ export function WarehouseStorageTable({
             />
             <ModuleTableResetButton
               aria-label={hasActiveFilters ? "Reset filters" : "Refresh records"}
+              className="lg:w-12"
               isRefreshing={page.isRefreshing}
               onClick={hasActiveFilters ? page.resetFilters : page.refreshRecords}
             />

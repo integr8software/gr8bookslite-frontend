@@ -32,6 +32,7 @@ const TenantScopedQueryPrefixes = [
   "purchase-request",
   "purchasing",
   "responsibility-center",
+  "services-maintenance",
   "sales-journal",
   "system-administration",
   "term-management",

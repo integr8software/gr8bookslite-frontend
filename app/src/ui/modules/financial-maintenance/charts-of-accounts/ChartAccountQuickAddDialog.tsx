@@ -14,6 +14,7 @@ import type {
 import { QuickAddDialog } from "@/app/src/ui/shared/module/QuickAddDialog";
 
 type ChartAccountQuickAddDialogProps = {
+  accountGroup?: string | string[];
   accountLabel?: string;
   isOpen: boolean;
   parentAccount: ChartAccount | null;
@@ -22,6 +23,7 @@ type ChartAccountQuickAddDialogProps = {
 };
 
 export function ChartAccountQuickAddDialog({
+  accountGroup,
   accountLabel = "Account",
   isOpen,
   parentAccount,
@@ -76,7 +78,12 @@ export function ChartAccountQuickAddDialog({
     setError("");
     try {
       const savedAccount = await SaveChartAccount(
-        createAccountTitleValues({ accountCode, accountName: trimmedName, parentAccount }),
+        createAccountTitleValues({
+          accountCode,
+          accountGroup,
+          accountName: trimmedName,
+          parentAccount,
+        }),
       );
       onSaved(savedAccount.id);
       toast.success("Account title saved.");
@@ -85,7 +92,7 @@ export function ChartAccountQuickAddDialog({
     } finally {
       setIsSaving(false);
     }
-  }, [accountCode, accountName, onSaved, parentAccount]);
+  }, [accountCode, accountGroup, accountName, onSaved, parentAccount]);
 
   return (
     <QuickAddDialog
@@ -119,11 +126,13 @@ function createAccountTitleValues({
   accountCode,
   accountName,
   parentAccount,
+  accountGroup,
 }: {
   accountCode: string;
   accountName: string;
   parentAccount: ChartAccount;
-}): ChartAccountFormValues {
+  accountGroup?: string | string[];
+}): ChartAccountFormValues & { accountGroup?: string | string[] } {
   return {
     accountNumber: accountCode,
     accountName,
@@ -136,6 +145,7 @@ function createAccountTitleValues({
     reportAlias: "",
     description: "",
     status: "Active",
+    accountGroup,
     showInReports: true,
     isPostingAccount: true,
     isBankLinked: false,

@@ -34,7 +34,7 @@ export type ChartAccount = {
   accountNumber: string;
   accountName: string;
   accountLevel: AccountLevel;
-  accountGroup: string;
+  accountGroup: string | string[];
   parentId: string | null;
   accountType: AccountType;
   statementGroup: StatementGroup;

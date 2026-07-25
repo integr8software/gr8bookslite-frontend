@@ -123,7 +123,8 @@ export function useDefaultAccountStore<TSelected = DefaultAccountStoreState>(
   });
   const state = useMemo<DefaultAccountStoreState>(() => {
     const effectiveRole = ResolveAuthProfileEffectiveRole(authProfileQuery.data);
-    const hasReservedRoleAccess = effectiveRole === "SUPER_ADMIN";
+    const hasReservedRoleAccess =
+      effectiveRole === "ADMIN" || effectiveRole === "SUPER_ADMIN";
 
     return {
       defaultAccounts: defaultAccountsQuery.data?.defaultAccounts ?? [],

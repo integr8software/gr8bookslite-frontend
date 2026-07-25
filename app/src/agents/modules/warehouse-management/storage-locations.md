@@ -2,7 +2,7 @@
 
 ## Definition and Use
 
-Storage Locations maintains the physical and operational places inside one warehouse. The current `warehouse-storage` route is the canonical Storage Locations module.
+Storage Locations maintains the physical and operational places inside one warehouse. The current `storage-locations` route is the canonical Storage Locations module.
 
 ## Current State
 

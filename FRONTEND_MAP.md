@@ -83,7 +83,9 @@ app/src/{ui,hooks,services,data,types,constants,validations}/modules/
   delivery-vehicle-management/
 ```
 
-Party Management is an independent module root. Vehicle Operations remains nested inside Delivery Vehicle Management. New feature paths must use the same business-module root across routes and every source concern.
+Party Management, Warehouse Management, and Delivery Vehicle Management are independent module roots. Warehouse storage, inventory, and operation features live directly under `warehouse-management`; delivery vehicle operation features live directly under `delivery-vehicle-management`. New feature paths must use the same business-module root across routes and every source concern.
+
+Financial Maintenance includes `services-maintenance` at `/financial-maintenance/services-maintenance`; it follows the drawer/list maintenance pattern and appears after Bank Masterfile in catalogs/navigation.
 
 Legacy browser paths under `/maintenance/...` redirect temporarily to the corresponding business-module route. Backend API endpoints containing `/maintenance/` are unchanged.
 

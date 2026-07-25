@@ -39,6 +39,7 @@ export type MainAccessKey =
   | "maintenance.chartOfAccounts"
   | "maintenance.bankMasterfile"
   | "maintenance.defaultAccount"
+  | "maintenance.servicesMaintenance"
   | "maintenance.currency"
   | "maintenance.party"
   | "maintenance.discount"

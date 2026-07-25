@@ -87,6 +87,7 @@ export const SidebarAllowedIcons: Record<string, LucideIcon> = {
 	coins: Coins,
 	creditCard: CreditCard,
 	fileCheck: FileCheck2,
+	fileCog: FileCog,
 	fileSignature: FileSignature,
 	folder: Folder,
 	gauge: Gauge,
@@ -158,6 +159,7 @@ const SidebarItemIcons: Record<string, LucideIcon> = {
 	"maintenance-charts-of-accounts": Scale,
 	"maintenance-bank-masterfile": Landmark,
 	"maintenance-default-account": FileCog,
+	"maintenance-services-maintenance": ReceiptText,
 	"system-administration-multi-currency-setup": Coins,
 	"transaction-number-setup": ReceiptText,
 	"maintenance-discount": BadgePercent,
@@ -272,6 +274,8 @@ function getSidebarItemIcon(item: MainNavigationItem) {
 			return Package;
 		case "maintenance.chartOfAccounts":
 			return Scale;
+		case "maintenance.servicesMaintenance":
+			return ReceiptText;
 		case "maintenance.party":
 			return Users;
 		case "maintenance.discount":

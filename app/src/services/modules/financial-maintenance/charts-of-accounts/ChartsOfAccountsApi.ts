@@ -35,7 +35,7 @@ type ApiChartAccount = {
   accountLevel: ApiChartAccountLevel;
   accountType: ApiChartAccountType | null;
   accountNature: ApiAccountNature | null;
-  accountGroup: string | null;
+  accountGroup: string | string[] | null;
   statementSection: string | null;
   reportAlias: string | null;
   description: string | null;
@@ -73,7 +73,7 @@ type SaveChartAccountPayload = {
   accountTitle: string;
   accountType?: ApiChartAccountType;
   accountNature?: ApiAccountNature;
-  accountGroup?: string;
+  accountGroup?: string | string[];
   statementSection?: string;
   reportAlias?: string;
   description?: string;
@@ -123,7 +123,7 @@ export async function FetchNextChartAccountCode({
 }
 
 export async function SaveChartAccount(
-  values: ChartAccountFormValues,
+  values: ChartAccountFormValues & { accountGroup?: string | string[] },
   account?: ChartAccount | null,
 ) {
   const payload = CreateSaveChartAccountPayload(values, account);
@@ -165,11 +165,11 @@ export async function UpdateChartAccountStatus(
 }
 
 function CreateSaveChartAccountPayload(
-  values: ChartAccountFormValues,
+  values: ChartAccountFormValues & { accountGroup?: string | string[] },
   account?: ChartAccount | null,
 ): SaveChartAccountPayload {
   const payload: SaveChartAccountPayload = {
-    accountGroup: "",
+    accountGroup: values.accountGroup ?? "",
     accountNature: values.normalBalance || undefined,
     accountTitle: values.accountName,
     accountType: values.accountType || undefined,

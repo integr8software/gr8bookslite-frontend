@@ -124,6 +124,7 @@ function getAccessKey(item: AuthUserModuleItem): MainAccessKey {
   if (item.key.includes("charts-of-accounts")) return "maintenance.chartOfAccounts";
   if (item.key.includes("bank-masterfile")) return "maintenance.bankMasterfile";
   if (item.key.includes("default-account")) return "maintenance.defaultAccount";
+  if (item.key.includes("services-maintenance")) return "maintenance.servicesMaintenance";
   if (item.key.includes("discount-management")) return "maintenance.discount";
   if (item.key.includes("payment-type")) return "maintenance.paymentType";
   if (item.key.includes("responsibility-center")) return "maintenance.responsibilityCenter";

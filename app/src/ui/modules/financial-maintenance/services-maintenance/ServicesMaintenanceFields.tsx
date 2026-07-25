@@ -19,7 +19,7 @@ export function ServicesMaintenanceFields({
 }: ServicesMaintenanceFieldsProps) {
 	return (
 		<div className="grid gap-4 lg:grid-cols-2">
-			<FormField label="Service Name" error={errors.serviceName} required className="lg:col-span-2">
+			<FormField label="Name" error={errors.serviceName} required className="lg:col-span-2">
 				<input
 					id="services-maintenance-service-name"
 					name="serviceName"
@@ -27,7 +27,7 @@ export function ServicesMaintenanceFields({
 					onChange={onInputChange}
 					readOnly={isReadonly}
 					className={ServicesMaintenanceFieldClassName}
-					placeholder="Enter service name"
+					placeholder="Enter name"
 				/>
 			</FormField>
 			<FormField label="Description" error={errors.description} className="lg:col-span-2">

@@ -37,7 +37,7 @@ Primary fields:
 
 | Field | Required | Notes |
 | --- | ---: | --- |
-| Service Name | Yes | Unique per active company, normalized for whitespace/case duplicate checks. |
+| Name | Yes | Unique per active company, normalized for whitespace/case duplicate checks. |
 | Description | No | Plain text, max length should match other maintenance drawers, recommended 500. |
 | Status | Yes | `Active` or `Inactive`, using the shared maintenance status switch. |
 
@@ -52,7 +52,7 @@ Accounting Setup tab:
 Automatic account title format:
 
 ```text
-Service - [Name]
+[Name]
 ```
 
 For configured services, this is still where the selected existing account title is shown.
@@ -65,10 +65,10 @@ Automatic setup:
 
 1. Find the active company system account group under `Service Revenues`.
 2. Generate the next child posting account under that group.
-3. Create a Chart of Accounts record with account title `Service - [Service Name]`.
+3. Create a Chart of Accounts record with account title matching the service name.
 4. Link the service record to the generated COA ID.
 5. Keep generated account status synchronized with service status.
-6. When the service name changes, rename the generated account to the same `Service - [Name]` format.
+6. When the service name changes, rename the generated account to the same name.
 
 Select existing setup:
 
@@ -157,7 +157,7 @@ Drawer:
 
 - Use add, edit, and view modes.
 - Use tabs for `Details` and `Accounting Setup`.
-- Details tab contains Service Name, Description, and Status.
+- Details tab contains Name, Description, and Status.
 - Accounting Setup tab contains the setup mode selector and account dropdown/preview.
 - Disable all inputs in view mode.
 - Lock generated account code/title fields as readonly display fields.
@@ -412,7 +412,7 @@ Rules for transaction modules:
 
 - Show active services only for normal selection.
 - Store the selected service ID and backend-resolved revenue COA ID on transaction lines when posting requires historical accuracy.
-- Do not rebuild `Service - [Name]` in transaction posting logic.
+- Do not rebuild generated account titles in transaction posting logic.
 - Do not recalculate posted revenue accounts if the service is renamed later.
 - If a selected service uses an existing configured account, post to that existing account.
 
@@ -447,7 +447,7 @@ Backend:
 
 Behavior:
 
-- Create active service with automatic account and confirm generated title is `Service - [Name]`.
+- Create active service with automatic account and confirm the generated title matches the service name.
 - Create active service with selected existing revenue account and confirm the service displays that account title.
 - Rename an automatic service and confirm generated COA title changes.
 - Rename a configured service and confirm selected existing COA title does not change.

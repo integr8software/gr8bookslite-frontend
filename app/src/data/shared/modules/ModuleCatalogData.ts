@@ -414,6 +414,12 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
             "maintenance.warehouse",
           ),
           moduleItem(
+            "maintenance-warehouse-stock-inquiry",
+            "Warehouse Stock Inquiry",
+            "WSI",
+            "maintenance.warehouse",
+          ),
+          moduleItem(
             "maintenance-warehouse-transfers",
             "Warehouse Transfer",
             "WT",

@@ -4,13 +4,20 @@ import {
 	ServicesMaintenanceStatusOptions,
 } from "@/app/src/constants/modules/financial-maintenance/services-maintenance/ServicesMaintenanceConstants";
 import type {
+	ServicesMaintenance,
 	ServicesMaintenanceFormErrors,
 	ServicesMaintenanceFormValues,
 } from "@/app/src/types/modules/financial-maintenance/services-maintenance/ServicesMaintenanceTypes";
+import { normalizeLowercaseWhitespace } from "@/app/src/utils/string.util";
+
+type ServicesMaintenanceValidationOptions = {
+	excludedServiceId?: string;
+	services?: ServicesMaintenance[];
+};
 
 const ServicesMaintenanceFormSchema = z
 	.object({
-		serviceName: z.string().trim().min(1, "Service name is required."),
+		serviceName: z.string().trim().min(1, "Name is required."),
 		description: z.string().max(500, "Description can only be up to 500 characters."),
 		status: z.enum(ServicesMaintenanceStatusOptions),
 		accountSetupMode: z.enum(ServicesMaintenanceAccountSetupModeOptions),
@@ -28,20 +35,44 @@ const ServicesMaintenanceFormSchema = z
 
 export function validateServicesMaintenanceForm(
 	values: ServicesMaintenanceFormValues,
+	options: ServicesMaintenanceValidationOptions = {},
 ): ServicesMaintenanceFormErrors {
 	const parsed = ServicesMaintenanceFormSchema.safeParse(values);
+	const errors: ServicesMaintenanceFormErrors = {};
 
 	if (parsed.success) {
-		return {};
-	}
+		const normalizedName = normalizeLowercaseWhitespace(values.serviceName);
+		const hasDuplicateName = options.services?.some(
+			(service) =>
+				service.id !== options.excludedServiceId &&
+				normalizeLowercaseWhitespace(service.serviceName) === normalizedName,
+		);
 
-	const errors: ServicesMaintenanceFormErrors = {};
+		if (hasDuplicateName) {
+			errors.serviceName = "A service with this name already exists.";
+		}
+
+		return errors;
+	}
 
 	for (const issue of parsed.error.issues) {
 		const field = issue.path[0];
 
 		if (isServicesMaintenanceField(field) && !errors[field]) {
 			errors[field] = issue.message;
+		}
+	}
+
+	if (!errors.serviceName) {
+		const normalizedName = normalizeLowercaseWhitespace(values.serviceName);
+		const hasDuplicateName = options.services?.some(
+			(service) =>
+				service.id !== options.excludedServiceId &&
+				normalizeLowercaseWhitespace(service.serviceName) === normalizedName,
+		);
+
+		if (hasDuplicateName) {
+			errors.serviceName = "A service with this name already exists.";
 		}
 	}
 

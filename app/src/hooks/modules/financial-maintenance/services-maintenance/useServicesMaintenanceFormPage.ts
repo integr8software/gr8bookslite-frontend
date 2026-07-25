@@ -34,6 +34,7 @@ export function useServicesMaintenanceFormPage(
 		isNextAccountCodeLoading,
 		nextAccountCode,
 		refreshSetup,
+		services,
 		updateService,
 	} = useServicesMaintenanceStore();
 	const mode = options.mode ?? "add";
@@ -72,7 +73,10 @@ export function useServicesMaintenanceFormPage(
 	}
 
 	function validateBeforeSubmit() {
-		const nextErrors = validateServicesMaintenanceForm(values);
+		const nextErrors = validateServicesMaintenanceForm(values, {
+			excludedServiceId: existingService?.id,
+			services,
+		});
 
 		if (Object.keys(nextErrors).length > 0) {
 			setErrors(nextErrors);

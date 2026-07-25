@@ -1,6 +1,3 @@
-import {
-	ServicesMaintenanceGeneratedAccountPrefix,
-} from "@/app/src/constants/modules/financial-maintenance/services-maintenance/ServicesMaintenanceConstants";
 import type {
 	ServicesMaintenance,
 	ServicesMaintenanceFormValues,
@@ -43,7 +40,7 @@ export function updateServicesMaintenanceFromForm(
 }
 
 export function buildGeneratedServiceRevenueAccountTitle(serviceName: string) {
-	return `${ServicesMaintenanceGeneratedAccountPrefix} - ${serviceName.trim()}`;
+	return `${serviceName.trim()}`;
 }
 
 export function getServicesMaintenanceTableMinWidthClassName(

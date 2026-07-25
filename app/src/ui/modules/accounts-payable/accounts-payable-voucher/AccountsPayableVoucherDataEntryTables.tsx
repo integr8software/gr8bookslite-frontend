@@ -4,6 +4,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import { MoreHorizontal } from "lucide-react";
 import {
   AccountsPayableVoucherAccountingColumnIds,
+  AccountsPayableVoucherAccountingDefaultVisibleColumnIds,
   AccountsPayableVoucherAccountingColumnLabels,
   AccountsPayableVoucherAccountingColumnWidths,
   AccountsPayableVoucherAccountingProtectedColumnIds,
@@ -16,20 +17,19 @@ import {
   type AccountsPayableVoucherExpenseColumnId,
 } from "@/app/src/constants/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherConstants";
 import { formatAccountsPayableVoucherAmount } from "@/app/src/data/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherData";
-import { getPartyDisplayName } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
+import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
 import { getModuleChartAccounts } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import type { useAccountsPayableVoucherFormPage } from "@/app/src/hooks/modules/accounts-payable/accounts-payable-voucher/useAccountsPayableVoucherFormPage";
-import { usePartyManagementStore } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagement";
-import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/maintenance/responsibility-center/useResponsibilityCenter";
+import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
+import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenter";
 import { useAlphanumericTaxCodes } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
 import type {
   AccountsPayableVoucherAccountingEntry,
-  AccountsPayableVoucherAccountingEntryField,
   AccountsPayableVoucherExpenseLine,
   AccountsPayableVoucherExpenseLineField,
 } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
-import type { PartyInformationRecord } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
-import type { ResponsibilityCenter } from "@/app/src/types/modules/maintenance/responsibility-center/ResponsibilityCenterTypes";
+import type { PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";
+import type { ResponsibilityCenter } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
 import {
   AppAdvancedDropdown,
   type AppAdvancedDropdownOption,
@@ -372,7 +372,7 @@ function AccountsPayableVoucherAccountingTable({
   >([...AccountsPayableVoucherAccountingColumnIds]);
   const [visibleColumnIds, setVisibleColumnIds] = useState<
     AccountsPayableVoucherAccountingColumnId[]
-  >([...AccountsPayableVoucherAccountingColumnIds]);
+  >([...AccountsPayableVoucherAccountingDefaultVisibleColumnIds]);
   const [columnLabels, setColumnLabels] = useState<
     Record<AccountsPayableVoucherAccountingColumnId, string>
   >({ ...AccountsPayableVoucherAccountingColumnLabels });
@@ -492,6 +492,7 @@ function AccountsPayableVoucherAccountingTable({
         description=""
         emptyRowLabel="entry"
         error={page.errors.accountingEntries ?? page.errors.balance}
+        canConfigureColumnsWhenReadonly
         footerDetails={
           <span
             className={joinClasses(
@@ -743,11 +744,9 @@ function renderAccountingCell(
     case "debit":
     case "credit":
       return (
-        <LineAmountInput
-          disabled={isReadonly}
+        <ReadOnlyAmountInput
           error={entryErrors[columnId]}
           value={entry[columnId]}
-          onChange={(value) => page.updateAccountingEntry(entry.id, columnId, value)}
         />
       );
     case "partyCode":
@@ -794,16 +793,10 @@ function renderAccountingCell(
     default:
       return (
         <LineInput
-          disabled={isReadonly}
           error={entryErrors[columnId as keyof typeof entryErrors]}
           value={String(entry[columnId] ?? "")}
-          onChange={(value) =>
-            page.updateAccountingEntry(
-              entry.id,
-              columnId as AccountsPayableVoucherAccountingEntryField,
-              value,
-            )
-          }
+          onChange={() => undefined}
+          readOnly
         />
       );
   }
@@ -943,8 +936,8 @@ function LineAmountInput({
   const [isEditing, setIsEditing] = useState(false);
   const displayValue = isEditing
     ? draftValue
-    : value > 0
-      ? formatMoneyNumberInput(value.toFixed(2))
+    : value !== 0
+      ? formatMoneyNumberInput(value.toFixed(2), true)
       : "";
 
   function handleValueChange(nextValue: string) {
@@ -954,6 +947,7 @@ function LineAmountInput({
 
   return (
     <MoneyNumberField
+      allowNegative
       value={displayValue}
       onValueChange={handleValueChange}
       onFocus={() => {
@@ -965,6 +959,30 @@ function LineAmountInput({
         setIsEditing(false);
       }}
       disabled={disabled}
+      title={error}
+      className={entryCellControlClassName(
+        joinClasses(
+          "text-right tabular-nums",
+          error ? "ring-2 ring-inset ring-red-500/45" : "",
+        ),
+      )}
+    />
+  );
+}
+
+function ReadOnlyAmountInput({
+  error,
+  value,
+}: {
+  error?: string;
+  value: number;
+}) {
+  return (
+    <input
+      type="text"
+      value={value > 0 ? formatAccountsPayableVoucherAmount(value) : ""}
+      onChange={() => undefined}
+      readOnly
       title={error}
       className={entryCellControlClassName(
         joinClasses(

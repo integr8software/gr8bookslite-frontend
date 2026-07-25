@@ -46,6 +46,7 @@ export type ModuleDataEntryTableProps<TRow extends { id: string }> = {
 	columns: ModuleDataEntryColumn<TRow>[];
 	emptyRowLabel: string;
 	getCellValue?: (row: TRow, columnId: string) => string;
+	canConfigureColumnsWhenReadonly: boolean;
 	isDraggable: boolean;
 	isReadonly: boolean;
 	isRowNumberColumnFixed: boolean;
@@ -77,6 +78,7 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 	columns,
 	emptyRowLabel,
 	getCellValue,
+	canConfigureColumnsWhenReadonly,
 	isDraggable,
 	isReadonly,
 	isRowNumberColumnFixed,
@@ -120,7 +122,7 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 	} | null>(null);
 	const canEditRows = !isReadonly;
 	const canEditColumns =
-		canEditRows &&
+		(canEditRows || canConfigureColumnsWhenReadonly) &&
 		Boolean(onMoveColumn || onHideColumn || onRemoveColumn || onUpdateColumnHeader);
 	const hasClearRowAction = Boolean(onClearRow);
 	const shouldEnableVerticalScroll = rows.length > 8;

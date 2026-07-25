@@ -198,7 +198,7 @@ export function createAccountsPayableVoucherAccountingEntry(
     particulars: "",
     debit: 0,
     credit: 0,
-    vatType: "VATable",
+    vatType: "",
     atcCode: "",
     partyCode: "",
     partyName: "",
@@ -314,12 +314,18 @@ export function syncAccountsPayableVoucherExpenseTaxAmounts(
   line: AccountsPayableVoucherExpenseLine,
 ): AccountsPayableVoucherExpenseLine {
   const amount = roundCurrency(Number(line.amount || 0));
+  const sign = amount < 0 ? -1 : 1;
+  const absoluteAmount = Math.abs(amount);
   const vatPercent = Number(line.vatPercent || 0);
   const ewtPercent = Number(line.ewtPercent || 0);
-  const vatAmount = roundCurrency((amount * vatPercent) / 100);
-  const ewtAmount = roundCurrency((amount * ewtPercent) / 100);
-  const netAmount = roundCurrency(Math.max(amount - vatAmount, 0));
-  const totalAmountDue = roundCurrency(Math.max(amount - ewtAmount, 0));
+  const vatAmount = roundCurrency(sign * ((absoluteAmount * vatPercent) / 100));
+  const ewtAmount = roundCurrency(sign * ((absoluteAmount * ewtPercent) / 100));
+  const netAmount = roundCurrency(
+    sign * Math.max(absoluteAmount - Math.abs(vatAmount), 0),
+  );
+  const totalAmountDue = roundCurrency(
+    sign * Math.max(absoluteAmount - Math.abs(ewtAmount), 0),
+  );
 
   return {
     ...line,

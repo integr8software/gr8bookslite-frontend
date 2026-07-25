@@ -89,6 +89,7 @@ export type ModuleDataEntryProps<TRow extends { id: string }> = {
 	summaryCells?: Record<string, ReactNode>;
 	summaryRowHeader?: ReactNode;
 	toolbarActions?: ModuleDataEntryToolbarAction[];
+	canConfigureColumnsWhenReadonly?: boolean;
 	isDraggable?: boolean;
 	isReadonly: boolean;
 	isRowNumberColumnFixed?: boolean;

@@ -23,7 +23,10 @@ import {
   syncAccountsPayableVoucherExpenseTaxAmounts,
   updateAccountsPayableVoucherFromForm,
 } from "@/app/src/data/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherData";
+import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import { useAccountsPayableVoucherStore } from "@/app/src/hooks/modules/accounts-payable/accounts-payable-voucher/useAccountsPayableVoucher";
+import { useAlphanumericTaxCodes } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
+import { useTaxDefinitionOptions } from "@/app/src/hooks/shared/tax/useTaxDefinitionOptions";
 import { FetchMultiCurrencyRates } from "@/app/src/services/modules/system-administration/multi-currency-setup/MultiCurrencySetupService";
 import type {
   AccountsPayableVoucherAccountingEntry,
@@ -35,7 +38,15 @@ import type {
   AccountsPayableVoucherFormValues,
 } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
 import type { ModuleDataEntryClearAction } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
+import type { AlphanumericTaxCode } from "@/app/src/types/shared/tax/AlphanumericTaxCodeTypes";
+import type { TaxDefinitionDefaultAccountIds } from "@/app/src/types/shared/tax/TaxDefinitionTypes";
 import { validateAccountsPayableVoucherForm } from "@/app/src/validations/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherValidation";
+
+type AccountsPayableVoucherTaxAccountingContext = {
+  accountOptions: ModuleChartAccount[];
+  defaultAccountIds: TaxDefinitionDefaultAccountIds;
+  taxCodes: AlphanumericTaxCode[];
+};
 
 export function useAccountsPayableVoucherFormPage() {
   const router = useRouter();
@@ -51,6 +62,22 @@ export function useAccountsPayableVoucherFormPage() {
   );
   const isMutating = useAccountsPayableVoucherStore(
     (state) => state.isMutating,
+  );
+  const taxDefinitionOptions = useTaxDefinitionOptions({
+    transactionScope: "PURCHASE",
+  });
+  const alphanumericTaxCodesQuery = useAlphanumericTaxCodes();
+  const taxAccountingContext = useMemo(
+    () => ({
+      accountOptions: taxDefinitionOptions.accountOptions,
+      defaultAccountIds: taxDefinitionOptions.defaultAccountIds,
+      taxCodes: alphanumericTaxCodesQuery.data ?? [],
+    }),
+    [
+      alphanumericTaxCodesQuery.data,
+      taxDefinitionOptions.accountOptions,
+      taxDefinitionOptions.defaultAccountIds,
+    ],
   );
   const mode = getActionMode(pathname);
   const existingRecord = records.find((record) => record.id === params.recordId);
@@ -103,13 +130,17 @@ export function useAccountsPayableVoucherFormPage() {
     }
 
     setValues((current) => {
-      const nextValues = {
-        ...current,
-        [field]: value,
-      } as AccountsPayableVoucherFormValues;
+      const nextValues = createHeaderUpdatedVoucherValues(
+        current,
+        field,
+        value,
+      );
 
       return shouldSyncGeneratedAccountingForHeaderField(field)
-        ? syncAccountsPayableVoucherWithGeneratedAccountingEntries(nextValues)
+        ? syncAccountsPayableVoucherWithGeneratedAccountingEntries(
+            nextValues,
+            taxAccountingContext,
+          )
         : nextValues;
     });
     setErrors((current) => ({ ...current, [field]: undefined }));
@@ -193,7 +224,7 @@ export function useAccountsPayableVoucherFormPage() {
             ? normalizeExpenseLineUpdate(line, field, value)
             : line,
         ),
-      }),
+      }, taxAccountingContext),
     );
     clearExpenseLineError(lineId, field);
   }
@@ -215,7 +246,7 @@ export function useAccountsPayableVoucherFormPage() {
             ),
           ),
         ],
-      }),
+      }, taxAccountingContext),
     );
     setErrors((current) => ({ ...current, expenseLines: undefined }));
   }
@@ -235,7 +266,7 @@ export function useAccountsPayableVoucherFormPage() {
             ? nextLines
             : [createAccountsPayableVoucherExpenseLine(1)],
         ),
-      });
+      }, taxAccountingContext);
     });
     setErrors((current) => ({ ...current, expenseLines: undefined }));
   }
@@ -267,7 +298,7 @@ export function useAccountsPayableVoucherFormPage() {
       return syncAccountsPayableVoucherWithGeneratedAccountingEntries({
         ...current,
         expenseLines: renumberAccountsPayableVoucherExpenseLines(nextLines),
-      });
+      }, taxAccountingContext);
     });
     setErrors((current) => ({ ...current, expenseLines: undefined }));
   }
@@ -299,7 +330,7 @@ export function useAccountsPayableVoucherFormPage() {
       return syncAccountsPayableVoucherWithGeneratedAccountingEntries({
         ...current,
         expenseLines: renumberAccountsPayableVoucherExpenseLines(nextLines),
-      });
+      }, taxAccountingContext);
     });
     setErrors((current) => ({ ...current, expenseLines: undefined }));
   }
@@ -329,7 +360,7 @@ export function useAccountsPayableVoucherFormPage() {
       return syncAccountsPayableVoucherWithGeneratedAccountingEntries({
         ...current,
         expenseLines: renumberAccountsPayableVoucherExpenseLines(nextLines),
-      });
+      }, taxAccountingContext);
     });
   }
 
@@ -353,7 +384,7 @@ export function useAccountsPayableVoucherFormPage() {
             ? nextLines
             : [createAccountsPayableVoucherExpenseLine(1)],
         ),
-      });
+      }, taxAccountingContext);
     });
     setErrors((current) => ({ ...current, expenseLines: undefined }));
   }
@@ -572,7 +603,10 @@ export function useAccountsPayableVoucherFormPage() {
     }
 
     const submitValues =
-      syncAccountsPayableVoucherWithGeneratedAccountingEntries(values);
+      syncAccountsPayableVoucherWithGeneratedAccountingEntries(
+        values,
+        taxAccountingContext,
+      );
     const nextErrors = validateAccountsPayableVoucherForm(submitValues);
 
     if (Object.keys(nextErrors).length > 0) {
@@ -740,6 +774,57 @@ function normalizeExchangeRate(value: number) {
   return Number(value.toFixed(6));
 }
 
+function createHeaderUpdatedVoucherValues<
+  TKey extends keyof AccountsPayableVoucherFormValues,
+>(
+  current: AccountsPayableVoucherFormValues,
+  field: TKey,
+  value: AccountsPayableVoucherFormValues[TKey],
+) {
+  const nextValues = {
+    ...current,
+    [field]: value,
+  } as AccountsPayableVoucherFormValues;
+
+  if (field !== "remarks") {
+    return nextValues;
+  }
+
+  return syncInheritedExpenseLineParticulars(
+    nextValues,
+    current.remarks,
+    String(value ?? ""),
+  );
+}
+
+function syncInheritedExpenseLineParticulars(
+  values: AccountsPayableVoucherFormValues,
+  previousRemarks: string,
+  nextRemarks: string,
+) {
+  return {
+    ...values,
+    expenseLines: values.expenseLines.map((line) =>
+      shouldExpenseLineParticularsFollowRemarks(line, previousRemarks)
+        ? { ...line, particulars: nextRemarks }
+        : line,
+    ),
+  };
+}
+
+function shouldExpenseLineParticularsFollowRemarks(
+  line: AccountsPayableVoucherExpenseLine,
+  previousRemarks: string,
+) {
+  const particulars = line.particulars.trim();
+  const inheritedParticulars = previousRemarks.trim();
+
+  return (
+    particulars === "" ||
+    (inheritedParticulars !== "" && particulars === inheritedParticulars)
+  );
+}
+
 function shouldSyncGeneratedAccountingForHeaderField(
   field: keyof AccountsPayableVoucherFormValues,
 ) {
@@ -748,77 +833,231 @@ function shouldSyncGeneratedAccountingForHeaderField(
     field === "creditAccountTitle" ||
     field === "partyCode" ||
     field === "partyName" ||
-    field === "referenceNo"
+    field === "referenceNo" ||
+    field === "remarks"
   );
 }
 
 function syncAccountsPayableVoucherWithGeneratedAccountingEntries(
   values: AccountsPayableVoucherFormValues,
+  taxAccountingContext: AccountsPayableVoucherTaxAccountingContext,
 ): AccountsPayableVoucherFormValues {
   const syncedValues = syncAccountsPayableVoucherExpenseLinesAndAmount(values);
 
   return {
     ...syncedValues,
     accountingEntries:
-      createAccountsPayableVoucherGeneratedAccountingEntries(syncedValues),
+      createAccountsPayableVoucherGeneratedAccountingEntries(
+        syncedValues,
+        taxAccountingContext,
+      ),
   };
 }
 
 function createAccountsPayableVoucherGeneratedAccountingEntries(
   values: AccountsPayableVoucherFormValues,
+  taxAccountingContext: AccountsPayableVoucherTaxAccountingContext,
 ) {
-  const debitEntries = values.expenseLines
-    .filter(shouldGenerateExpenseAccountingEntry)
-    .map((line, index) =>
-      createAccountsPayableVoucherAccountingEntry(index + 1, {
+  const lines = values.expenseLines.filter(shouldGenerateExpenseAccountingEntry);
+  const inputVatAccount = getTaxAccountingAccount(
+    "inputTaxAccountId",
+    taxAccountingContext,
+    {
+      accountCode: "2010002011",
+      accountTitle: "Input VAT",
+    },
+  );
+  const ewtAccount = getTaxAccountingAccount(
+    "expandedWithholdingTaxAccountId",
+    taxAccountingContext,
+    {
+      accountCode: "2010002002",
+      accountTitle: "Expanded Withholding Tax",
+    },
+  );
+  const debitEntries: AccountsPayableVoucherAccountingEntry[] = [];
+  const ewtEntries: AccountsPayableVoucherAccountingEntry[] = [];
+
+  lines.forEach((line) => {
+    const commonFields = createGeneratedAccountingCommonFields(values, line);
+    const netAmount = roundAccountingAmount(line.netAmount);
+    const vatAmount = roundAccountingAmount(line.vatAmount);
+    const ewtAmount = roundAccountingAmount(line.ewtAmount);
+    const netEntryAmounts = getSignedAccountingEntryAmounts(
+      netAmount,
+      "debit",
+    );
+
+    debitEntries.push(
+      createAccountsPayableVoucherAccountingEntry(debitEntries.length + 1, {
+        ...commonFields,
         id: `apv-entry-expense-${line.id}`,
         accountCode: line.expenseAccountCode,
         accountTitle: line.expenseType,
-        atcCode: line.ewt,
-        debit: roundAccountingAmount(line.totalAmountDue),
-        credit: 0,
-        particulars: line.particulars,
-        partyCode: line.partyCode || values.partyCode,
-        partyName: line.partyName || values.partyName,
-        refNo: line.referenceNo || values.referenceNo,
-        responsibilityCenter: line.responsibilityCenter,
+        atcCode: "",
+        credit: netEntryAmounts.credit,
+        debit: netEntryAmounts.debit,
+        vatType: getExpenseVatType(line, taxAccountingContext),
       }),
     );
-  const totalDebit = roundAccountingAmount(
-    debitEntries.reduce((sum, entry) => sum + Number(entry.debit || 0), 0),
+
+    if (line.vat.trim() && hasNonZeroAccountingAmount(vatAmount)) {
+      const vatEntryAmounts = getSignedAccountingEntryAmounts(
+        vatAmount,
+        "debit",
+      );
+
+      debitEntries.push(
+        createAccountsPayableVoucherAccountingEntry(debitEntries.length + 1, {
+          ...commonFields,
+          id: `apv-entry-input-vat-${line.id}`,
+          accountCode: inputVatAccount.accountCode,
+          accountTitle: inputVatAccount.accountTitle,
+          atcCode: "",
+          credit: vatEntryAmounts.credit,
+          debit: vatEntryAmounts.debit,
+          particulars: createGeneratedTaxParticulars("Input VAT", values, line),
+          vatType: "Input VAT",
+        }),
+      );
+    }
+
+    if (line.ewt.trim() && hasNonZeroAccountingAmount(ewtAmount)) {
+      const ewtEntryAmounts = getSignedAccountingEntryAmounts(
+        ewtAmount,
+        "credit",
+      );
+
+      ewtEntries.push(
+        createAccountsPayableVoucherAccountingEntry(ewtEntries.length + 1, {
+          ...commonFields,
+          id: `apv-entry-ewt-${line.id}`,
+          accountCode: ewtAccount.accountCode,
+          accountTitle: ewtAccount.accountTitle,
+          atcCode: line.ewt,
+          credit: ewtEntryAmounts.credit,
+          debit: ewtEntryAmounts.debit,
+          particulars: createGeneratedTaxParticulars("EWT", values, line),
+          vatType: "EWT",
+        }),
+      );
+    }
+  });
+
+  const totalAmountDue = roundAccountingAmount(
+    lines.reduce((sum, line) => sum + Number(line.totalAmountDue || 0), 0),
   );
   const hasCreditAccount =
     values.creditAccountCode.trim() !== "" ||
     values.creditAccountTitle.trim() !== "";
-  const shouldCreateCreditEntry = hasCreditAccount || totalDebit > 0;
+  const shouldCreateCreditEntry =
+    hasNonZeroAccountingAmount(totalAmountDue) ||
+    (hasCreditAccount && debitEntries.length > 0);
 
-  if (!shouldCreateCreditEntry) {
+  if (!shouldCreateCreditEntry && debitEntries.length === 0 && ewtEntries.length === 0) {
     return createBlankGeneratedAccountingEntries();
   }
 
-  const referenceEntry = debitEntries.find((entry) => entry.debit > 0) ??
+  const referenceEntry =
+    debitEntries.find((entry) => entry.debit > 0 || entry.credit > 0) ??
     debitEntries[0];
-  const creditEntry = createAccountsPayableVoucherAccountingEntry(
-    debitEntries.length + 1,
-    {
-      id: "apv-entry-default-credit",
-      accountCode: values.creditAccountCode,
-      accountTitle: values.creditAccountTitle,
-      credit: totalDebit,
-      debit: 0,
-      particulars: referenceEntry?.particulars || "Record supplier payable",
-      partyCode: values.partyCode || referenceEntry?.partyCode || "",
-      partyName: values.partyName || referenceEntry?.partyName || "",
-      refNo: referenceEntry?.refNo || values.referenceNo,
-      responsibilityCenter: referenceEntry?.responsibilityCenter || "",
-      vatType: "",
-    },
+  const payableEntryAmounts = getSignedAccountingEntryAmounts(
+    totalAmountDue,
+    "credit",
   );
+  const payableEntry = shouldCreateCreditEntry
+    ? createAccountsPayableVoucherAccountingEntry(
+        debitEntries.length + 1,
+        {
+          id: "apv-entry-default-payable",
+          accountCode: values.creditAccountCode,
+          accountTitle: values.creditAccountTitle,
+          credit: payableEntryAmounts.credit,
+          debit: payableEntryAmounts.debit,
+          particulars: referenceEntry?.particulars || "Record supplier payable",
+          partyCode: values.partyCode || referenceEntry?.partyCode || "",
+          partyName: values.partyName || referenceEntry?.partyName || "",
+          refNo: referenceEntry?.refNo || values.referenceNo,
+          responsibilityCenter: referenceEntry?.responsibilityCenter || "",
+          vatType: "",
+        },
+      )
+    : null;
 
   return renumberAccountsPayableVoucherAccountingEntries([
     ...debitEntries,
-    creditEntry,
+    ...ewtEntries,
+    ...(payableEntry ? [payableEntry] : []),
   ]);
+}
+
+function createGeneratedAccountingCommonFields(
+  values: AccountsPayableVoucherFormValues,
+  line: AccountsPayableVoucherExpenseLine,
+) {
+  return {
+    particulars: getGeneratedLineParticulars(values, line),
+    partyCode: line.partyCode || values.partyCode,
+    partyName: line.partyName || values.partyName,
+    refNo: line.referenceNo || values.referenceNo,
+    responsibilityCenter: line.responsibilityCenter,
+  };
+}
+
+function createGeneratedTaxParticulars(
+  taxLabel: "EWT" | "Input VAT",
+  values: AccountsPayableVoucherFormValues,
+  line: AccountsPayableVoucherExpenseLine,
+) {
+  return [taxLabel, getGeneratedLineParticulars(values, line) || line.expenseType]
+    .filter(Boolean)
+    .join(" - ");
+}
+
+function getGeneratedLineParticulars(
+  values: AccountsPayableVoucherFormValues,
+  line: AccountsPayableVoucherExpenseLine,
+) {
+  return line.particulars.trim() || values.remarks.trim();
+}
+
+function getExpenseVatType(
+  line: AccountsPayableVoucherExpenseLine,
+  context: AccountsPayableVoucherTaxAccountingContext,
+) {
+  const vatCode = line.vat.trim();
+
+  if (!vatCode) {
+    return "";
+  }
+
+  const taxCode = context.taxCodes.find(
+    (row) =>
+      row.transactionType === "Purchases" &&
+      row.taxType === "INPUT VAT" &&
+      row.taxCode === vatCode,
+  );
+
+  return taxCode?.taxDescription.trim() || vatCode;
+}
+
+function getTaxAccountingAccount(
+  field: keyof TaxDefinitionDefaultAccountIds,
+  context: AccountsPayableVoucherTaxAccountingContext,
+  fallback: { accountCode: string; accountTitle: string },
+) {
+  const accountId = context.defaultAccountIds[field];
+  const account = context.accountOptions.find(
+    (currentAccount) =>
+      currentAccount.id === accountId ||
+      currentAccount.accountNumber === accountId ||
+      currentAccount.accountName === accountId,
+  );
+
+  return {
+    accountCode: account?.accountNumber ?? fallback.accountCode,
+    accountTitle: account?.accountName ?? fallback.accountTitle,
+  };
 }
 
 function createBlankGeneratedAccountingEntries() {
@@ -839,7 +1078,11 @@ function shouldGenerateExpenseAccountingEntry(
     line.partyName.trim() !== "" ||
     line.referenceNo.trim() !== "" ||
     line.responsibilityCenter.trim() !== "" ||
-    Number(line.totalAmountDue || 0) > 0
+    hasNonZeroAmount(line.amount) ||
+    hasNonZeroAmount(line.netAmount) ||
+    hasNonZeroAmount(line.totalAmountDue) ||
+    hasNonZeroAmount(line.vatAmount) ||
+    hasNonZeroAmount(line.ewtAmount)
   );
 }
 
@@ -851,10 +1094,34 @@ function roundAccountingAmount(value: number) {
   return Math.round(value * 100) / 100;
 }
 
+function getSignedAccountingEntryAmounts(
+  value: number,
+  positiveSide: "credit" | "debit",
+) {
+  const roundedValue = roundAccountingAmount(value);
+  const amount = Math.abs(roundedValue);
+  const isDebitSide =
+    roundedValue >= 0 ? positiveSide === "debit" : positiveSide === "credit";
+
+  return {
+    credit: isDebitSide ? 0 : amount,
+    debit: isDebitSide ? amount : 0,
+  };
+}
+
+function hasNonZeroAccountingAmount(value: number) {
+  return Math.abs(roundAccountingAmount(value)) > 0;
+}
+
+function hasNonZeroAmount(value: number) {
+  return Math.abs(Number(value || 0)) > 0;
+}
+
 function createInheritedLineDefaults(
   values: AccountsPayableVoucherFormValues,
 ) {
   return {
+    particulars: values.remarks,
     partyCode: values.partyCode,
     partyName: values.partyName,
   };
@@ -901,11 +1168,11 @@ function expenseLineHasData(line: AccountsPayableVoucherExpenseLine) {
     line.responsibilityCenter.trim() !== "" ||
     line.vat.trim() !== "" ||
     line.ewt.trim() !== "" ||
-    Number(line.amount || 0) > 0 ||
-    Number(line.netAmount || 0) > 0 ||
-    Number(line.totalAmountDue || 0) > 0 ||
-    Number(line.vatAmount || 0) > 0 ||
-    Number(line.ewtAmount || 0) > 0
+    hasNonZeroAmount(line.amount) ||
+    hasNonZeroAmount(line.netAmount) ||
+    hasNonZeroAmount(line.totalAmountDue) ||
+    hasNonZeroAmount(line.vatAmount) ||
+    hasNonZeroAmount(line.ewtAmount)
   );
 }
 
@@ -929,7 +1196,7 @@ function expenseLineIsComplete(line: AccountsPayableVoucherExpenseLine) {
   return (
     line.expenseAccountCode.trim() !== "" &&
     line.expenseType.trim() !== "" &&
-    Number(line.amount || 0) > 0
+    hasNonZeroAmount(line.amount)
   );
 }
 

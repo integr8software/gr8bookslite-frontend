@@ -133,7 +133,7 @@ export const AccountsPayableVoucherExpenseColumnLabels: Record<
   totalAmountDue: "Total Amount Due",
   partyCode: "Party Code",
   partyName: "Party Name",
-  vat: "VAT Code",
+  vat: "VAT Type",
   vatPercent: "VAT %",
   ewt: "EWT Code",
   ewtPercent: "EWT %",
@@ -165,13 +165,13 @@ export const AccountsPayableVoucherExpenseColumnWidths: Record<
 export const AccountsPayableVoucherAccountingColumnIds = [
   "accountCode",
   "accountTitle",
-  "particulars",
   "debit",
   "credit",
-  "vatType",
-  "atcCode",
+  "particulars",
   "partyCode",
   "partyName",
+  "vatType",
+  "atcCode",
   "responsibilityCenter",
   "refNo",
 ] as const;
@@ -181,11 +181,17 @@ export type AccountsPayableVoucherAccountingColumnId =
 
 export const AccountsPayableVoucherAccountingProtectedColumnIds =
   new Set<AccountsPayableVoucherAccountingColumnId>([
-    "accountCode",
     "accountTitle",
     "debit",
     "credit",
   ]);
+
+export const AccountsPayableVoucherAccountingDefaultVisibleColumnIds = [
+  "accountCode",
+  "accountTitle",
+  "debit",
+  "credit",
+] as const satisfies readonly AccountsPayableVoucherAccountingColumnId[];
 
 export const AccountsPayableVoucherAccountingColumnLabels: Record<
   AccountsPayableVoucherAccountingColumnId,
@@ -197,11 +203,11 @@ export const AccountsPayableVoucherAccountingColumnLabels: Record<
   debit: "Debit",
   credit: "Credit",
   vatType: "VAT Type",
-  atcCode: "ATC Code",
+  atcCode: "EWT Code",
   partyCode: "Party Code",
   partyName: "Party Name",
   responsibilityCenter: "Responsibility Center",
-  refNo: "Ref No.",
+  refNo: "Reference No",
 };
 
 export const AccountsPayableVoucherAccountingColumnWidths: Record<

@@ -9,15 +9,19 @@ import {
 import {
   calculateAccountsPayableVoucherDueDate,
 } from "@/app/src/data/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherData";
-import { getPartyDisplayName } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
+import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
 import {
   findModuleChartAccount,
   getModuleChartAccounts,
 } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import { useAccountsPayableVoucherFormPage } from "@/app/src/hooks/modules/accounts-payable/accounts-payable-voucher/useAccountsPayableVoucherFormPage";
-import { usePartyManagementStore } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagement";
-import { useTermDropdownOptions } from "@/app/src/hooks/modules/maintenance/term-management/useTermDropdownOptions";
-import type { PartyInformationRecord } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
+import { usePartyManagementAccountOptions } from "@/app/src/hooks/modules/party-management/usePartyManagementAccountOptions";
+import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
+import { useTermDropdownOptions } from "@/app/src/hooks/modules/financial-maintenance/term-management/useTermDropdownOptions";
+import type {
+  PartyAccountingAccountOption,
+  PartyInformationRecord,
+} from "@/app/src/types/modules/party-management/PartyManagementTypes";
 import {
   AppAdvancedDropdown,
   type AppAdvancedDropdownOption,
@@ -26,7 +30,7 @@ import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/Char
 import { AccountsPayableVoucherDataEntryTables } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherDataEntryTables";
 import { AccountsPayableVoucherHeaderPage } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherHeaderPage";
 import { AccountsPayableVoucherNotFound } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherNotFound";
-import { PartyManagementDrawer } from "@/app/src/ui/modules/maintenance/party-management/PartyManagementDrawer";
+import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 
 const fieldClassName =
@@ -43,10 +47,13 @@ const AttachedAddButtonClassName =
 
 export function AccountsPayableVoucherFormPage() {
   const page = useAccountsPayableVoucherFormPage();
+  const partyAccountOptions = usePartyManagementAccountOptions();
   const partyStore = usePartyManagementStore();
   const termDropdown = useTermDropdownOptions();
   const [isPartyDrawerOpen, setIsPartyDrawerOpen] = useState(false);
   const chartAccounts = useMemo(() => getModuleChartAccounts(), []);
+  const defaultPayableAccounts =
+    partyAccountOptions.accountOptions.defaultPayableAccount;
   const partyOptions = useMemo<AppAdvancedDropdownOption[]>(
     () =>
       createPartyOptions(
@@ -82,10 +89,9 @@ export function AccountsPayableVoucherFormPage() {
     page.updateHeaderField("partyName", partyName);
 
     if (record?.defaultPayableAccount) {
-      const account = findModuleChartAccount(
-        record.defaultPayableAccount,
-        chartAccounts,
-      );
+      const account =
+        findPayableAccount(record.defaultPayableAccount, defaultPayableAccounts) ??
+        findModuleChartAccount(record.defaultPayableAccount, chartAccounts);
 
       if (account) {
         page.updateHeaderField("creditAccountCode", account.accountNumber);
@@ -274,7 +280,7 @@ export function AccountsPayableVoucherFormPage() {
 
               <FieldShell
                 controlId="accounts-payable-voucher-credit-account"
-                label="Default Credit Account"
+                label="Default Payable Account"
                 error={
                   page.errors.creditAccountTitle ||
                   page.errors.creditAccountCode
@@ -283,20 +289,21 @@ export function AccountsPayableVoucherFormPage() {
               >
                 <ChartAccountDropdown
                   id="accounts-payable-voucher-credit-account"
-                  accounts={chartAccounts}
+                  accounts={defaultPayableAccounts}
                   value={
                     page.values.creditAccountTitle ||
                     page.values.creditAccountCode
                   }
-                  valueField="accountName"
-                  readOnly={page.isReadonly}
+                  valueField="id"
+                  readOnly={page.isReadonly || partyAccountOptions.isLoading}
                   isClearable
                   ariaInvalid={Boolean(
                     page.errors.creditAccountTitle ||
                       page.errors.creditAccountCode,
                   )}
-                  placeholder="Select credit account"
-                  searchPlaceholder="Search credit account"
+                  emptyMessage="No default payable accounts found."
+                  placeholder="Select payable account"
+                  searchPlaceholder="Search payable account"
                   showSelectedDetails
                   onChange={() => undefined}
                   onSelectAccount={(account) => {
@@ -527,6 +534,18 @@ function createAccountsPayableVoucherCurrencyDropdownOptions(): AppAdvancedDropd
     name: currency.code,
     value: currency.code,
   }));
+}
+
+function findPayableAccount(
+  value: string,
+  accounts: PartyAccountingAccountOption[],
+) {
+  return accounts.find(
+    (account) =>
+      account.id === value ||
+      account.accountNumber === value ||
+      account.accountName === value,
+  );
 }
 
 function createPartyOptions(

@@ -11,6 +11,8 @@ import { useParams, usePathname, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { AccountsPayableVoucherHref } from "@/app/src/constants/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherConstants";
 import {
+  accountsPayableVoucherExpenseLineHasItem,
+  accountsPayableVoucherExpenseLinesHaveItems,
   createAccountsPayableVoucherAccountingEntry,
   createAccountsPayableVoucherExpenseLine,
   createAccountsPayableVoucherFormValues,
@@ -23,7 +25,11 @@ import {
   syncAccountsPayableVoucherExpenseTaxAmounts,
   updateAccountsPayableVoucherFromForm,
 } from "@/app/src/data/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherData";
-import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
+import {
+  findModuleChartAccount,
+  getModuleChartAccounts,
+  type ModuleChartAccount,
+} from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import { useAccountsPayableVoucherStore } from "@/app/src/hooks/modules/accounts-payable/accounts-payable-voucher/useAccountsPayableVoucher";
 import { useAlphanumericTaxCodes } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
 import { useTaxDefinitionOptions } from "@/app/src/hooks/shared/tax/useTaxDefinitionOptions";
@@ -89,14 +95,28 @@ export function useAccountsPayableVoucherFormPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isExchangeRateLoading, setIsExchangeRateLoading] = useState(false);
   const exchangeRateRequestIdRef = useRef(0);
+  const displayValues = useMemo(
+    () =>
+      syncAccountsPayableVoucherWithGeneratedAccountingEntries(
+        values,
+        taxAccountingContext,
+      ),
+    [taxAccountingContext, values],
+  );
   const expenseTotals = useMemo(
-    () => getAccountsPayableVoucherExpenseTotals(values.expenseLines),
-    [values.expenseLines],
+    () => getAccountsPayableVoucherExpenseTotals(displayValues.expenseLines),
+    [displayValues.expenseLines],
   );
   const accountingTotals = useMemo(
-    () => getAccountsPayableVoucherAccountingTotals(values.accountingEntries),
-    [values.accountingEntries],
+    () =>
+      getAccountsPayableVoucherAccountingTotals(displayValues.accountingEntries),
+    [displayValues.accountingEntries],
   );
+  const hasExpenseDetailItems = useMemo(
+    () => accountsPayableVoucherExpenseLinesHaveItems(displayValues.expenseLines),
+    [displayValues.expenseLines],
+  );
+  const isAccountingEntriesReadonly = isReadonly || hasExpenseDetailItems;
 
   function handleInputChange(
     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
@@ -394,7 +414,7 @@ export function useAccountsPayableVoucherFormPage() {
     field: AccountsPayableVoucherAccountingEntryField,
     value: string | number,
   ) {
-    if (isReadonly) {
+    if (isAccountingEntriesReadonly) {
       return;
     }
 
@@ -410,7 +430,7 @@ export function useAccountsPayableVoucherFormPage() {
   }
 
   function addAccountingEntries(count = 1) {
-    if (isReadonly) {
+    if (isAccountingEntriesReadonly) {
       return;
     }
 
@@ -434,7 +454,7 @@ export function useAccountsPayableVoucherFormPage() {
   }
 
   function removeAccountingEntry(entryId: string) {
-    if (isReadonly) {
+    if (isAccountingEntriesReadonly) {
       return;
     }
 
@@ -460,7 +480,7 @@ export function useAccountsPayableVoucherFormPage() {
   }
 
   function insertAccountingEntry(entryId: string, position: "above" | "below") {
-    if (isReadonly) {
+    if (isAccountingEntriesReadonly) {
       return;
     }
 
@@ -498,7 +518,7 @@ export function useAccountsPayableVoucherFormPage() {
   }
 
   function duplicateAccountingEntry(entryId: string) {
-    if (isReadonly) {
+    if (isAccountingEntriesReadonly) {
       return;
     }
 
@@ -536,7 +556,7 @@ export function useAccountsPayableVoucherFormPage() {
   }
 
   function moveAccountingEntry(fromEntryId: string, toEntryId: string) {
-    if (isReadonly || fromEntryId === toEntryId) {
+    if (isAccountingEntriesReadonly || fromEntryId === toEntryId) {
       return;
     }
 
@@ -567,7 +587,7 @@ export function useAccountsPayableVoucherFormPage() {
   }
 
   function clearAccountingEntries(action: ModuleDataEntryClearAction) {
-    if (isReadonly) {
+    if (isAccountingEntriesReadonly) {
       return;
     }
 
@@ -699,8 +719,10 @@ export function useAccountsPayableVoucherFormPage() {
     handleConfirmDelete,
     handleInputChange,
     handleSubmit,
+    hasExpenseDetailItems,
     insertAccountingEntry,
     insertExpenseLine,
+    isAccountingEntriesReadonly,
     isDeleteDialogOpen,
     isExchangeRateLoading,
     isMutating,
@@ -716,7 +738,7 @@ export function useAccountsPayableVoucherFormPage() {
     updateCurrency,
     updateExpenseLine,
     updateHeaderField,
-    values,
+    values: displayValues,
   };
 }
 
@@ -843,6 +865,10 @@ function syncAccountsPayableVoucherWithGeneratedAccountingEntries(
   taxAccountingContext: AccountsPayableVoucherTaxAccountingContext,
 ): AccountsPayableVoucherFormValues {
   const syncedValues = syncAccountsPayableVoucherExpenseLinesAndAmount(values);
+
+  if (!accountsPayableVoucherExpenseLinesHaveItems(syncedValues.expenseLines)) {
+    return syncedValues;
+  }
 
   return {
     ...syncedValues,
@@ -1047,17 +1073,42 @@ function getTaxAccountingAccount(
   fallback: { accountCode: string; accountTitle: string },
 ) {
   const accountId = context.defaultAccountIds[field];
-  const account = context.accountOptions.find(
-    (currentAccount) =>
-      currentAccount.id === accountId ||
-      currentAccount.accountNumber === accountId ||
-      currentAccount.accountName === accountId,
+  const accountOptions =
+    context.accountOptions.length > 0
+      ? context.accountOptions
+      : getModuleChartAccounts();
+  const account = findTaxAccountingAccount(
+    accountOptions,
+    accountId,
+    fallback.accountCode,
+    fallback.accountTitle,
   );
 
   return {
     accountCode: account?.accountNumber ?? fallback.accountCode,
     accountTitle: account?.accountName ?? fallback.accountTitle,
   };
+}
+
+function findTaxAccountingAccount(
+  accounts: ModuleChartAccount[],
+  ...candidates: string[]
+) {
+  for (const candidate of candidates) {
+    const cleanCandidate = candidate.trim();
+
+    if (!cleanCandidate) {
+      continue;
+    }
+
+    const account = findModuleChartAccount(cleanCandidate, accounts);
+
+    if (account) {
+      return account;
+    }
+  }
+
+  return undefined;
 }
 
 function createBlankGeneratedAccountingEntries() {
@@ -1070,20 +1121,7 @@ function createBlankGeneratedAccountingEntries() {
 function shouldGenerateExpenseAccountingEntry(
   line: AccountsPayableVoucherExpenseLine,
 ) {
-  return (
-    line.expenseAccountCode.trim() !== "" ||
-    line.expenseType.trim() !== "" ||
-    line.particulars.trim() !== "" ||
-    line.partyCode.trim() !== "" ||
-    line.partyName.trim() !== "" ||
-    line.referenceNo.trim() !== "" ||
-    line.responsibilityCenter.trim() !== "" ||
-    hasNonZeroAmount(line.amount) ||
-    hasNonZeroAmount(line.netAmount) ||
-    hasNonZeroAmount(line.totalAmountDue) ||
-    hasNonZeroAmount(line.vatAmount) ||
-    hasNonZeroAmount(line.ewtAmount)
-  );
+  return accountsPayableVoucherExpenseLineHasItem(line);
 }
 
 function roundAccountingAmount(value: number) {

@@ -346,10 +346,14 @@ export function syncAccountsPayableVoucherExpenseLinesAndAmount(
     syncAccountsPayableVoucherExpenseTaxAmounts,
   );
   const expenseTotals = getAccountsPayableVoucherExpenseTotals(expenseLines);
+  const amount = accountsPayableVoucherExpenseLinesHaveItems(expenseLines)
+    ? expenseTotals.totalAmountDue
+    : getAccountsPayableVoucherAccountingTotals(values.accountingEntries)
+        .totalCredit;
 
   return {
     ...values,
-    amount: expenseTotals.totalAmountDue,
+    amount,
     expenseLines,
   };
 }
@@ -384,6 +388,32 @@ export function formatAccountsPayableVoucherAmount(value: number) {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(value);
+}
+
+export function accountsPayableVoucherExpenseLinesHaveItems(
+  lines: AccountsPayableVoucherExpenseLine[],
+) {
+  return lines.some(accountsPayableVoucherExpenseLineHasItem);
+}
+
+export function accountsPayableVoucherExpenseLineHasItem(
+  line: AccountsPayableVoucherExpenseLine,
+) {
+  return (
+    line.expenseAccountCode.trim() !== "" ||
+    line.expenseType.trim() !== "" ||
+    line.referenceNo.trim() !== "" ||
+    line.responsibilityCenter.trim() !== "" ||
+    line.vat.trim() !== "" ||
+    line.ewt.trim() !== "" ||
+    Number(line.vatPercent || 0) > 0 ||
+    Number(line.ewtPercent || 0) > 0 ||
+    hasNonZeroAmount(line.amount) ||
+    hasNonZeroAmount(line.netAmount) ||
+    hasNonZeroAmount(line.totalAmountDue) ||
+    hasNonZeroAmount(line.vatAmount) ||
+    hasNonZeroAmount(line.ewtAmount)
+  );
 }
 
 function normalizeAccountsPayableVoucherFormValues(
@@ -491,6 +521,10 @@ function roundCurrency(value: number) {
   }
 
   return Math.round(value * 100) / 100;
+}
+
+function hasNonZeroAmount(value: number) {
+  return Math.abs(Number(value || 0)) > 0;
 }
 
 function createNextAccountsPayableVoucherNumber() {

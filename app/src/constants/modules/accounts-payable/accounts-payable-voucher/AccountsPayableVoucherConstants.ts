@@ -187,10 +187,10 @@ export const AccountsPayableVoucherAccountingProtectedColumnIds =
   ]);
 
 export const AccountsPayableVoucherAccountingDefaultVisibleColumnIds = [
-  "accountCode",
   "accountTitle",
   "debit",
   "credit",
+  "particulars",
 ] as const satisfies readonly AccountsPayableVoucherAccountingColumnId[];
 
 export const AccountsPayableVoucherAccountingColumnLabels: Record<

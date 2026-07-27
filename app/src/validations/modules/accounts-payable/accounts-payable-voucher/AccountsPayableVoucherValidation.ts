@@ -1,5 +1,7 @@
 import { z } from "zod";
 import {
+  accountsPayableVoucherExpenseLineHasItem,
+  accountsPayableVoucherExpenseLinesHaveItems,
   getAccountsPayableVoucherAccountingTotals,
   getAccountsPayableVoucherExpenseTotals,
 } from "@/app/src/data/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherData";
@@ -67,11 +69,19 @@ function validateExpenseLines(
   values: AccountsPayableVoucherFormValues,
   errors: AccountsPayableVoucherFormErrors,
 ) {
-  if (values.expenseLines.length === 0) {
-    errors.expenseLines = "Add at least one expense row.";
+  const hasExpenseItems = accountsPayableVoucherExpenseLinesHaveItems(
+    values.expenseLines,
+  );
+
+  if (!hasExpenseItems) {
+    return;
   }
 
   for (const line of values.expenseLines) {
+    if (!accountsPayableVoucherExpenseLineHasItem(line)) {
+      continue;
+    }
+
     const lineResult = accountsPayableVoucherExpenseLineSchema.safeParse(line);
 
     if (lineResult.success) {

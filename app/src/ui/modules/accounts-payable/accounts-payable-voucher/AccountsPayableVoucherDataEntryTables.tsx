@@ -25,6 +25,7 @@ import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/financial-
 import { useAlphanumericTaxCodes } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
 import type {
   AccountsPayableVoucherAccountingEntry,
+  AccountsPayableVoucherAccountingEntryField,
   AccountsPayableVoucherExpenseLine,
   AccountsPayableVoucherExpenseLineField,
 } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
@@ -379,6 +380,38 @@ function AccountsPayableVoucherAccountingTable({
   const [columnWidths, setColumnWidths] = useState<
     Record<AccountsPayableVoucherAccountingColumnId, number>
   >({ ...AccountsPayableVoucherAccountingColumnWidths });
+  const isReadonly = page.isAccountingEntriesReadonly;
+  const partyRecords = usePartyManagementStore((state) => state.records);
+  const responsibilityCenters = useResponsibilityCenterStore(
+    (state) => state.centers,
+  );
+  const chartAccounts = useMemo(() => getModuleChartAccounts(), []);
+  const partyOptions = useMemo<AppAdvancedDropdownOption[]>(
+    () =>
+      createPartyOptions(partyRecords, [
+        ...page.values.expenseLines,
+        ...page.values.accountingEntries,
+        {
+          partyCode: page.values.partyCode,
+          partyName: page.values.partyName,
+        },
+      ]),
+    [
+      page.values.accountingEntries,
+      page.values.expenseLines,
+      page.values.partyCode,
+      page.values.partyName,
+      partyRecords,
+    ],
+  );
+  const responsibilityCenterOptions = useMemo<AppAdvancedDropdownOption[]>(
+    () =>
+      createResponsibilityCenterOptions(responsibilityCenters, [
+        ...page.values.expenseLines,
+        ...page.values.accountingEntries,
+      ]),
+    [page.values.accountingEntries, page.values.expenseLines, responsibilityCenters],
+  );
   const visibleColumnOrder = columnOrder.filter((columnId) =>
     visibleColumnIds.includes(columnId),
   );
@@ -398,6 +431,9 @@ function AccountsPayableVoucherAccountingTable({
           page,
           entry,
           columnId,
+          chartAccounts,
+          partyOptions,
+          responsibilityCenterOptions,
           () => setParticularsEditorEntryId(entry.id),
         ),
       width: columnWidths[columnId],
@@ -509,7 +545,7 @@ function AccountsPayableVoucherAccountingTable({
           </span>
         }
         isDraggable
-        isReadonly
+        isReadonly={isReadonly}
         rows={page.values.accountingEntries}
         summaryCells={{
           credit: formatAccountsPayableVoucherAmount(
@@ -537,12 +573,20 @@ function AccountsPayableVoucherAccountingTable({
       <ParticularsEditorDialog
         key={particularsEditorEntry?.id ?? "closed"}
         isOpen={Boolean(particularsEditorEntry)}
-        isReadonly
+        isReadonly={isReadonly}
         subtitle={particularsEditorEntry?.accountTitle || "Accounting entry"}
         textareaId="accounts-payable-voucher-accounting-particulars-dialog-text"
         value={particularsEditorEntry?.particulars ?? ""}
         onClose={() => setParticularsEditorEntryId(null)}
-        onSave={() => setParticularsEditorEntryId(null)}
+        onSave={(value) => {
+          if (!particularsEditorEntry || isReadonly) {
+            setParticularsEditorEntryId(null);
+            return;
+          }
+
+          page.updateAccountingEntry(particularsEditorEntry.id, "particulars", value);
+          setParticularsEditorEntryId(null);
+        }}
       />
     </>
   );
@@ -717,10 +761,13 @@ function renderAccountingCell(
   page: ReturnType<typeof useAccountsPayableVoucherFormPage>,
   entry: AccountsPayableVoucherAccountingEntry,
   columnId: AccountsPayableVoucherAccountingColumnId,
+  chartAccounts: ReturnType<typeof getModuleChartAccounts>,
+  partyOptions: AppAdvancedDropdownOption[],
+  responsibilityCenterOptions: AppAdvancedDropdownOption[],
   onOpenParticulars: () => void,
 ) {
   const entryErrors = page.errors.accountingEntryErrors?.[entry.id] ?? {};
-  const isReadonly = true;
+  const isReadonly = page.isAccountingEntriesReadonly;
 
   switch (columnId) {
     case "accountCode":
@@ -734,19 +781,43 @@ function renderAccountingCell(
       );
     case "accountTitle":
       return (
-        <LineInput
-          error={entryErrors.accountTitle}
+        <ChartAccountDropdown
+          accounts={chartAccounts}
           value={entry.accountTitle}
+          valueField="accountName"
+          readOnly={isReadonly}
+          isClearable
+          className={entryDropdownClassName(entryErrors.accountTitle)}
+          ariaInvalid={Boolean(entryErrors.accountTitle)}
+          placeholder="Select account title"
+          searchPlaceholder="Search account title"
           onChange={() => undefined}
-          readOnly
+          onSelectAccount={(account) => {
+            page.updateAccountingEntry(
+              entry.id,
+              "accountCode",
+              account?.accountNumber ?? "",
+            );
+            page.updateAccountingEntry(
+              entry.id,
+              "accountTitle",
+              account?.accountName ?? "",
+            );
+          }}
         />
       );
     case "debit":
     case "credit":
       return (
-        <ReadOnlyAmountInput
+        <LineAmountInput
+          allowNegative={false}
+          disabled={
+            isReadonly ||
+            Number(entry[columnId === "debit" ? "credit" : "debit"] || 0) > 0
+          }
           error={entryErrors[columnId]}
           value={entry[columnId]}
+          onChange={(value) => page.updateAccountingEntry(entry.id, columnId, value)}
         />
       );
     case "partyCode":
@@ -759,10 +830,15 @@ function renderAccountingCell(
       );
     case "partyName":
       return (
-        <LineInput
-          value={entry.partyName}
-          onChange={() => undefined}
-          readOnly
+        <PartyDropdown
+          isReadonly={isReadonly}
+          options={partyOptions}
+          partyCode={entry.partyCode}
+          partyName={entry.partyName}
+          onSelect={(partyCode, partyName) => {
+            page.updateAccountingEntry(entry.id, "partyCode", partyCode);
+            page.updateAccountingEntry(entry.id, "partyName", partyName);
+          }}
         />
       );
     case "particulars":
@@ -771,32 +847,43 @@ function renderAccountingCell(
           isReadonly={isReadonly}
           value={entry.particulars}
           onOpen={onOpenParticulars}
-          onUpdate={() => undefined}
+          onUpdate={(value) =>
+            page.updateAccountingEntry(entry.id, "particulars", value)
+          }
         />
       );
     case "responsibilityCenter":
       return (
-        <LineInput
+        <ResponsibilityCenterDropdown
+          isReadonly={isReadonly}
+          options={responsibilityCenterOptions}
           value={entry.responsibilityCenter}
-          onChange={() => undefined}
-          readOnly
+          onChange={(value) =>
+            page.updateAccountingEntry(entry.id, "responsibilityCenter", value)
+          }
         />
       );
     case "vatType":
       return (
         <LineInput
+          disabled={isReadonly}
           value={entry.vatType}
-          onChange={() => undefined}
-          readOnly
+          onChange={(value) => page.updateAccountingEntry(entry.id, "vatType", value)}
         />
       );
     default:
       return (
         <LineInput
+          disabled={isReadonly}
           error={entryErrors[columnId as keyof typeof entryErrors]}
           value={String(entry[columnId] ?? "")}
-          onChange={() => undefined}
-          readOnly
+          onChange={(value) =>
+            page.updateAccountingEntry(
+              entry.id,
+              columnId as AccountsPayableVoucherAccountingEntryField,
+              value,
+            )
+          }
         />
       );
   }
@@ -922,11 +1009,13 @@ function LineInput({
 }
 
 function LineAmountInput({
+  allowNegative = true,
   disabled,
   error,
   onChange,
   value,
 }: {
+  allowNegative?: boolean;
   disabled: boolean;
   error?: string;
   onChange: (value: number) => void;
@@ -947,7 +1036,7 @@ function LineAmountInput({
 
   return (
     <MoneyNumberField
-      allowNegative
+      allowNegative={allowNegative}
       value={displayValue}
       onValueChange={handleValueChange}
       onFocus={() => {
@@ -959,30 +1048,6 @@ function LineAmountInput({
         setIsEditing(false);
       }}
       disabled={disabled}
-      title={error}
-      className={entryCellControlClassName(
-        joinClasses(
-          "text-right tabular-nums",
-          error ? "ring-2 ring-inset ring-red-500/45" : "",
-        ),
-      )}
-    />
-  );
-}
-
-function ReadOnlyAmountInput({
-  error,
-  value,
-}: {
-  error?: string;
-  value: number;
-}) {
-  return (
-    <input
-      type="text"
-      value={value > 0 ? formatAccountsPayableVoucherAmount(value) : ""}
-      onChange={() => undefined}
-      readOnly
       title={error}
       className={entryCellControlClassName(
         joinClasses(

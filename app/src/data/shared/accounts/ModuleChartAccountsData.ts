@@ -185,6 +185,22 @@ export const ModuleChartAccounts: ModuleChartAccount[] = [
 		"Credit",
 	),
 	createAccount(
+		"expanded-withholding-tax",
+		"2010002002",
+		"Expanded Withholding Tax",
+		"Liabilities",
+		"Taxes Payable",
+		"Credit",
+	),
+	createAccount(
+		"input-vat-tax-payable",
+		"2010002011",
+		"Input VAT",
+		"Liabilities",
+		"Taxes Payable",
+		"Credit",
+	),
+	createAccount(
 		"sss-contributions-payable",
 		"2010001003",
 		"SSS Contributions Payable",

@@ -1,9 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import {
-	createColumnHelper,
 	getCoreRowModel,
 	getPaginationRowModel,
 	useReactTable,
@@ -23,6 +21,18 @@ import {
 	Undo2,
 	Upload,
 } from "lucide-react";
+import { InventoryCountHref, InventoryCountTablePaginationStorageKey } from "@/app/src/constants/modules/inventory/inventory-count/InventoryCountConstants";
+import {
+	canApproveInventoryCountStatus,
+	canCancelInventoryCountStatus,
+	canDisapproveInventoryCountStatus,
+	canEditInventoryCountStatus,
+	useInventoryCountListPage,
+} from "@/app/src/hooks/modules/inventory/inventory-count/useInventoryCountListPage";
+import type {
+	InventoryCountRecord,
+	InventoryCountStatus,
+} from "@/app/src/types/modules/inventory/inventory-count/InventoryCountTypes";
 import {
 	ModuleActionMenu,
 	type ModuleActionMenuItem,
@@ -39,33 +49,13 @@ import {
 } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 
-const InventoryCountHref = "/inventory/inventory-count";
-
-type InventoryCountRecord = {
-	id: string;
-	countNo: string;
-	countDate: string;
-	warehouse: string;
-	category: string;
-	totalItems: number;
-	variance: string;
-	status: InventoryCountStatus;
-};
-
-type InventoryCountStatus =
-	| "Approved"
-	| "Cancelled"
-	| "Disapproved"
-	| "Draft"
-	| "In Progress";
-
-export function InventoryCountMain() {
-	const [records, setRecords] = useState(InventoryCountRecords);
+export function InventoryCountListPage() {
+	const page = useInventoryCountListPage();
 
 	// eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table owns the table state lifecycle.
 	const table = useReactTable({
-		data: records,
-		columns: InventoryCountColumns,
+		data: page.records,
+		columns: page.columns,
 		getCoreRowModel: getCoreRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
 		initialState: {
@@ -76,26 +66,13 @@ export function InventoryCountMain() {
 		},
 	});
 
-	function updateInventoryCountStatus(
-		record: InventoryCountRecord,
-		status: InventoryCountStatus,
-	) {
-		setRecords((currentRecords) =>
-			currentRecords.map((currentRecord) =>
-				currentRecord.id === record.id
-					? { ...currentRecord, status }
-					: currentRecord,
-			),
-		);
-	}
-
 	return (
 		<section className="grid gap-5">
 			<ModuleHeader
 				variant="panel"
 				titleAs="h1"
 				title="Inventory Count"
-				description="Record physical inventory counts, compare counted quantities, and review warehouse variances."
+				description="Record inventory counts, compare counted quantities, and review warehouse variances."
 				eyebrow={
 					<>
 						<ClipboardList className="h-3.5 w-3.5" aria-hidden="true" />
@@ -105,55 +82,16 @@ export function InventoryCountMain() {
 				actions={<InventoryCountHeaderActions />}
 			/>
 
-			<ModuleStatisticCards
-				className="2xl:grid-cols-4"
-				items={[
-					{
-						label: "Count Sheets",
-						value: records.length,
-						summary: "All time",
-						icon: ClipboardList,
-						iconClassName: "bg-skyblue/20 text-skyblue",
-					},
-					{
-						label: "In Progress",
-						value: records.filter(
-							(record) => record.status === "In Progress",
-						).length,
-						summary: "Open counts",
-						icon: Clock3,
-						iconClassName: "bg-offwhite text-darknavy",
-					},
-					{
-						label: "Approved",
-						value: records.filter(
-							(record) => record.status === "Approved",
-						).length,
-						summary: "Finalized",
-						icon: PackageCheck,
-						iconClassName: "bg-citron/25 text-darknavy",
-					},
-					{
-						label: "Items Counted",
-						value: records.reduce(
-							(total, record) => total + record.totalItems,
-							0,
-						),
-						summary: "Across sheets",
-						icon: PackageCheck,
-						iconClassName: "bg-skyblue/15 text-skyblue",
-					},
-				]}
-			/>
+			<InventoryCountStatisticCards records={page.records} />
 
 			<ModuleTable
 				emptyDescription="Start a new inventory count to capture warehouse stock quantities."
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No inventory counts yet"
-				minWidthClassName="min-w-[76rem]"
+				minWidthClassName="min-w-[72rem]"
 				pageSizeOptions={[5, 10, 15, 20, 25, 50]}
 				paginationLabel="records"
-				paginationStorageKey="inventory-inventory-count"
+				paginationStorageKey={InventoryCountTablePaginationStorageKey}
 				table={table}
 				tableTitle="Inventory count sheets"
 				renderRow={({ id, original }) => (
@@ -166,6 +104,7 @@ export function InventoryCountMain() {
 						</td>
 						<td className="px-4 py-4">{original.countDate}</td>
 						<td className="px-4 py-4">{original.warehouse}</td>
+						<td className="px-4 py-4">{original.uploader}</td>
 						<td className="px-4 py-4">{original.category}</td>
 						<td className="px-4 py-4">{original.totalItems}</td>
 						<td className="px-4 py-4 font-semibold text-darknavy">
@@ -175,13 +114,55 @@ export function InventoryCountMain() {
 						<td className="px-4 py-4 text-center">
 							<InventoryCountRecordActions
 								record={original}
-								onUpdateStatus={updateInventoryCountStatus}
+								onUpdateStatus={page.updateInventoryCountStatus}
 							/>
 						</td>
 					</tr>
 				)}
 			/>
 		</section>
+	);
+}
+
+function InventoryCountStatisticCards({
+	records,
+}: {
+	records: InventoryCountRecord[];
+}) {
+	return (
+		<ModuleStatisticCards
+			className="2xl:grid-cols-4"
+			items={[
+				{
+					label: "Count Sheets",
+					value: records.length,
+					summary: "All time",
+					icon: ClipboardList,
+					iconClassName: "bg-skyblue/20 text-skyblue",
+				},
+				{
+					label: "In Progress",
+					value: records.filter((record) => record.status === "In Progress").length,
+					summary: "Open counts",
+					icon: Clock3,
+					iconClassName: "bg-offwhite text-darknavy",
+				},
+				{
+					label: "Approved",
+					value: records.filter((record) => record.status === "Approved").length,
+					summary: "Finalized",
+					icon: PackageCheck,
+					iconClassName: "bg-citron/25 text-darknavy",
+				},
+				{
+					label: "Items Counted",
+					value: records.reduce((total, record) => total + record.totalItems, 0),
+					summary: "Across sheets",
+					icon: PackageCheck,
+					iconClassName: "bg-skyblue/15 text-skyblue",
+				},
+			]}
+		/>
 	);
 }
 
@@ -266,30 +247,6 @@ function InventoryCountRecordActions({
 	);
 }
 
-function canEditInventoryCountStatus(status: InventoryCountStatus) {
-	return status === "Draft" || status === "In Progress";
-}
-
-function canApproveInventoryCountStatus(status: InventoryCountStatus) {
-	return (
-		status === "Draft" ||
-		status === "In Progress" ||
-		status === "Approved"
-	);
-}
-
-function canDisapproveInventoryCountStatus(status: InventoryCountStatus) {
-	return (
-		status === "Draft" ||
-		status === "In Progress" ||
-		status === "Disapproved"
-	);
-}
-
-function canCancelInventoryCountStatus(status: InventoryCountStatus) {
-	return status !== "Approved";
-}
-
 function InventoryCountHeaderActions() {
 	return (
 		<>
@@ -308,79 +265,8 @@ function InventoryCountHeaderActions() {
 				className={moduleHeaderActionClassNames.primary}
 			>
 				<Plus className="h-4 w-4" aria-hidden="true" />
-				Start New Inventory Count
+				Add Inventory Count
 			</Link>
 		</>
 	);
 }
-
-const columnHelper = createColumnHelper<InventoryCountRecord>();
-
-const InventoryCountColumns = [
-	columnHelper.accessor("countNo", {
-		header: "Count No.",
-		meta: { className: "w-[12rem]" },
-	}),
-	columnHelper.accessor("countDate", {
-		header: "Count Date",
-		meta: { className: "w-[10rem]" },
-	}),
-	columnHelper.accessor("warehouse", {
-		header: "Warehouse",
-		meta: { className: "w-[14rem]" },
-	}),
-	columnHelper.accessor("category", {
-		header: "Item Category",
-		meta: { className: "w-[14rem]" },
-	}),
-	columnHelper.accessor("totalItems", {
-		header: "Items",
-		meta: { className: "w-[8rem]" },
-	}),
-	columnHelper.accessor("variance", {
-		header: "Variance",
-		meta: { className: "w-[10rem]" },
-	}),
-	columnHelper.accessor("status", {
-		header: "Status",
-		meta: { className: "w-[10rem]" },
-	}),
-	columnHelper.display({
-		id: "actions",
-		header: "Actions",
-		meta: { className: "w-[10rem] text-center" },
-	}),
-];
-
-const InventoryCountRecords: InventoryCountRecord[] = [
-	{
-		id: "inc-001",
-		countNo: "INC-2026-0001",
-		countDate: "2026-07-12",
-		warehouse: "Main Warehouse",
-		category: "Finished Goods",
-		totalItems: 128,
-		variance: "-3.00",
-		status: "Approved",
-	},
-	{
-		id: "inc-002",
-		countNo: "INC-2026-0002",
-		countDate: "2026-07-15",
-		warehouse: "Cebu Warehouse",
-		category: "Raw Materials",
-		totalItems: 86,
-		variance: "0.00",
-		status: "In Progress",
-	},
-	{
-		id: "inc-003",
-		countNo: "INC-2026-0003",
-		countDate: "2026-07-17",
-		warehouse: "Davao Warehouse",
-		category: "Packaging",
-		totalItems: 42,
-		variance: "5.00",
-		status: "Draft",
-	},
-];

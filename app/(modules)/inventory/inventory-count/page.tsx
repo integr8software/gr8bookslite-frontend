@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { InventoryCountMain } from "@/app/src/ui/modules/inventory/inventory-count/Main";
+import { InventoryCountListPage } from "@/app/src/ui/modules/inventory/inventory-count/InventoryCountListPage";
 
 const PageTitle = "Inventory Count";
 
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default function InventoryInventoryCountPage() {
-  return <InventoryCountMain />;
+  return <InventoryCountListPage />;
 }
 
 

@@ -134,6 +134,7 @@ function AccountsPayableVoucherExpenseTable({
   page,
   title,
 }: AccountsPayableVoucherDataEntryPanelProps) {
+  const isReadonly = page.isExpenseDetailsReadonly;
   const [particularsEditorLineId, setParticularsEditorLineId] = useState<
     string | null
   >(null);
@@ -306,7 +307,7 @@ function AccountsPayableVoucherExpenseTable({
           </span>
         }
         isDraggable
-        isReadonly={page.isReadonly}
+        isReadonly={isReadonly}
         rows={page.values.expenseLines}
         summaryCells={{
           amount: formatAccountsPayableVoucherAmount(
@@ -343,13 +344,14 @@ function AccountsPayableVoucherExpenseTable({
       <ParticularsEditorDialog
         key={particularsEditorLine?.id ?? "closed"}
         isOpen={Boolean(particularsEditorLine)}
-        isReadonly={page.isReadonly}
+        isReadonly={isReadonly}
         subtitle={particularsEditorLine?.expenseType || "Expense detail"}
         textareaId="accounts-payable-voucher-expense-particulars-dialog-text"
         value={particularsEditorLine?.particulars ?? ""}
         onClose={() => setParticularsEditorLineId(null)}
         onSave={(value) => {
-          if (!particularsEditorLine) {
+          if (!particularsEditorLine || isReadonly) {
+            setParticularsEditorLineId(null);
             return;
           }
 
@@ -605,7 +607,7 @@ function renderExpenseCell(
   onOpenParticulars: () => void,
 ) {
   const lineErrors = page.errors.expenseLineErrors?.[line.id] ?? {};
-  const isReadonly = page.isReadonly;
+  const isReadonly = page.isExpenseDetailsReadonly;
 
   switch (columnId) {
     case "expenseType":

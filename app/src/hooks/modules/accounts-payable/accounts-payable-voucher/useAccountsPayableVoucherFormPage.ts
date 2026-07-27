@@ -116,6 +116,12 @@ export function useAccountsPayableVoucherFormPage() {
     () => accountsPayableVoucherExpenseLinesHaveItems(displayValues.expenseLines),
     [displayValues.expenseLines],
   );
+  const hasAccountingEntryItems = useMemo(
+    () => values.accountingEntries.some(accountingEntryHasData),
+    [values.accountingEntries],
+  );
+  const isExpenseDetailsReadonly =
+    isReadonly || (!hasExpenseDetailItems && hasAccountingEntryItems);
   const isAccountingEntriesReadonly = isReadonly || hasExpenseDetailItems;
 
   function handleInputChange(
@@ -232,7 +238,7 @@ export function useAccountsPayableVoucherFormPage() {
     field: AccountsPayableVoucherExpenseLineField,
     value: string | number,
   ) {
-    if (isReadonly) {
+    if (isExpenseDetailsReadonly) {
       return;
     }
 
@@ -250,7 +256,7 @@ export function useAccountsPayableVoucherFormPage() {
   }
 
   function addExpenseLines(count = 1) {
-    if (isReadonly) {
+    if (isExpenseDetailsReadonly) {
       return;
     }
 
@@ -272,7 +278,7 @@ export function useAccountsPayableVoucherFormPage() {
   }
 
   function removeExpenseLine(lineId: string) {
-    if (isReadonly) {
+    if (isExpenseDetailsReadonly) {
       return;
     }
 
@@ -292,7 +298,7 @@ export function useAccountsPayableVoucherFormPage() {
   }
 
   function insertExpenseLine(lineId: string, position: "above" | "below") {
-    if (isReadonly) {
+    if (isExpenseDetailsReadonly) {
       return;
     }
 
@@ -324,7 +330,7 @@ export function useAccountsPayableVoucherFormPage() {
   }
 
   function duplicateExpenseLine(lineId: string) {
-    if (isReadonly) {
+    if (isExpenseDetailsReadonly) {
       return;
     }
 
@@ -356,7 +362,7 @@ export function useAccountsPayableVoucherFormPage() {
   }
 
   function moveExpenseLine(fromLineId: string, toLineId: string) {
-    if (isReadonly || fromLineId === toLineId) {
+    if (isExpenseDetailsReadonly || fromLineId === toLineId) {
       return;
     }
 
@@ -385,7 +391,7 @@ export function useAccountsPayableVoucherFormPage() {
   }
 
   function clearExpenseLines(action: ModuleDataEntryClearAction) {
-    if (isReadonly) {
+    if (isExpenseDetailsReadonly) {
       return;
     }
 
@@ -719,12 +725,14 @@ export function useAccountsPayableVoucherFormPage() {
     handleConfirmDelete,
     handleInputChange,
     handleSubmit,
+    hasAccountingEntryItems,
     hasExpenseDetailItems,
     insertAccountingEntry,
     insertExpenseLine,
     isAccountingEntriesReadonly,
     isDeleteDialogOpen,
     isExchangeRateLoading,
+    isExpenseDetailsReadonly,
     isMutating,
     isReadonly,
     mode,

@@ -124,7 +124,7 @@ export const AccountsPayableVoucherExpenseColumnLabels: Record<
   AccountsPayableVoucherExpenseColumnId,
   string
 > = {
-  expenseType: "Expense Type",
+  expenseType: "Payable Type",
   particulars: "Particulars",
   amount: "Gross Amount",
   vatAmount: "VAT Amount",
@@ -167,9 +167,9 @@ export const AccountsPayableVoucherAccountingColumnIds = [
   "accountTitle",
   "debit",
   "credit",
-  "particulars",
   "partyCode",
   "partyName",
+  "particulars",
   "vatType",
   "atcCode",
   "responsibilityCenter",

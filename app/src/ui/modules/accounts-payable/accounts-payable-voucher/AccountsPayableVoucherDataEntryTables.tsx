@@ -73,6 +73,11 @@ type PartyBearingRow = {
   partyName: string;
 };
 
+const ManualInputVatAccountingEntryIdPrefix = "apv-entry-manual-input-vat-";
+const ManualEwtAccountingEntryIdPrefix = "apv-entry-manual-ewt-";
+const ManualDefaultPayableAccountingEntryId =
+  "apv-entry-manual-default-payable";
+
 export function AccountsPayableVoucherDataEntryTables({
   page,
 }: AccountsPayableVoucherDataEntryTablesProps) {
@@ -103,7 +108,7 @@ function EntryViewTabs({
       className="inline-flex rounded-lg border border-darknavy/10 bg-offwhite/70 p-1"
     >
       {([
-        ["expense", "Expense Details"],
+        ["expense", "Payable Details"],
         ["accounting", "Accounting Entries"],
       ] as const).map(([view, label]) => {
         const isActive = entryView === view;
@@ -388,6 +393,10 @@ function AccountsPayableVoucherAccountingTable({
     (state) => state.centers,
   );
   const chartAccounts = useMemo(() => getModuleChartAccounts(), []);
+  const taxCodesQuery = useAlphanumericTaxCodes();
+  const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
+  const vatOptions = useMemo(() => createVatOptions(taxCodes), [taxCodes]);
+  const ewtOptions = useMemo(() => createEwtOptions(taxCodes), [taxCodes]);
   const partyOptions = useMemo<AppAdvancedDropdownOption[]>(
     () =>
       createPartyOptions(partyRecords, [
@@ -436,6 +445,8 @@ function AccountsPayableVoucherAccountingTable({
           chartAccounts,
           partyOptions,
           responsibilityCenterOptions,
+          vatOptions,
+          ewtOptions,
           () => setParticularsEditorEntryId(entry.id),
         ),
       width: columnWidths[columnId],
@@ -620,8 +631,8 @@ function renderExpenseCell(
           isClearable
           className={entryDropdownClassName(lineErrors.expenseType)}
           ariaInvalid={Boolean(lineErrors.expenseType)}
-          placeholder="Enter expense type"
-          searchPlaceholder="Search expense type"
+          placeholder="Enter payable type"
+          searchPlaceholder="Search payable type"
           onChange={() => undefined}
           onSelectAccount={(account) => {
             page.updateExpenseLine(
@@ -766,10 +777,13 @@ function renderAccountingCell(
   chartAccounts: ReturnType<typeof getModuleChartAccounts>,
   partyOptions: AppAdvancedDropdownOption[],
   responsibilityCenterOptions: AppAdvancedDropdownOption[],
+  vatOptions: AppAdvancedDropdownOption[],
+  ewtOptions: AppAdvancedDropdownOption[],
   onOpenParticulars: () => void,
 ) {
   const entryErrors = page.errors.accountingEntryErrors?.[entry.id] ?? {};
   const isReadonly = page.isAccountingEntriesReadonly;
+  const isGeneratedTaxEntry = isManualGeneratedTaxAccountingEntry(entry);
 
   switch (columnId) {
     case "accountCode":
@@ -787,7 +801,7 @@ function renderAccountingCell(
           accounts={chartAccounts}
           value={entry.accountTitle}
           valueField="accountName"
-          readOnly={isReadonly}
+          readOnly={isReadonly || isGeneratedTaxEntry}
           isClearable
           className={entryDropdownClassName(entryErrors.accountTitle)}
           ariaInvalid={Boolean(entryErrors.accountTitle)}
@@ -815,6 +829,7 @@ function renderAccountingCell(
           allowNegative={false}
           disabled={
             isReadonly ||
+            isGeneratedTaxEntry ||
             Number(entry[columnId === "debit" ? "credit" : "debit"] || 0) > 0
           }
           error={entryErrors[columnId]}
@@ -833,7 +848,7 @@ function renderAccountingCell(
     case "partyName":
       return (
         <PartyDropdown
-          isReadonly={isReadonly}
+          isReadonly={isReadonly || isGeneratedTaxEntry}
           options={partyOptions}
           partyCode={entry.partyCode}
           partyName={entry.partyName}
@@ -846,7 +861,7 @@ function renderAccountingCell(
     case "particulars":
       return (
         <ParticularsCell
-          isReadonly={isReadonly}
+          isReadonly={isReadonly || isGeneratedTaxEntry}
           value={entry.particulars}
           onOpen={onOpenParticulars}
           onUpdate={(value) =>
@@ -857,7 +872,7 @@ function renderAccountingCell(
     case "responsibilityCenter":
       return (
         <ResponsibilityCenterDropdown
-          isReadonly={isReadonly}
+          isReadonly={isReadonly || isGeneratedTaxEntry}
           options={responsibilityCenterOptions}
           value={entry.responsibilityCenter}
           onChange={(value) =>
@@ -866,17 +881,56 @@ function renderAccountingCell(
         />
       );
     case "vatType":
+      if (
+        entry.vatType &&
+        !vatOptions.some((option) => option.value === entry.vatType)
+      ) {
+        return (
+          <LineInput
+            disabled={isReadonly}
+            readOnly={isGeneratedTaxEntry}
+            value={entry.vatType}
+            onChange={(value) =>
+              page.updateAccountingEntry(entry.id, "vatType", value)
+            }
+          />
+        );
+      }
+
       return (
-        <LineInput
-          disabled={isReadonly}
+        <AppAdvancedDropdown
           value={entry.vatType}
-          onChange={(value) => page.updateAccountingEntry(entry.id, "vatType", value)}
+          readOnly={isReadonly || isGeneratedTaxEntry}
+          isClearable
+          options={vatOptions}
+          placeholder="Select VAT"
+          searchPlaceholder="Search VAT rate or description"
+          className={entryDropdownClassName()}
+          onChange={(value) =>
+            page.updateAccountingEntry(entry.id, "vatType", String(value))
+          }
+        />
+      );
+    case "atcCode":
+      return (
+        <AppAdvancedDropdown
+          value={entry.atcCode}
+          readOnly={isReadonly || isGeneratedTaxEntry}
+          isClearable
+          options={ewtOptions}
+          placeholder="Select EWT"
+          searchPlaceholder="Search EWT code, rate, or description"
+          className={entryDropdownClassName(entryErrors.atcCode)}
+          ariaInvalid={Boolean(entryErrors.atcCode)}
+          onChange={(value) =>
+            page.updateAccountingEntry(entry.id, "atcCode", String(value))
+          }
         />
       );
     default:
       return (
         <LineInput
-          disabled={isReadonly}
+          disabled={isReadonly || isGeneratedTaxEntry}
           error={entryErrors[columnId as keyof typeof entryErrors]}
           value={String(entry[columnId] ?? "")}
           onChange={(value) =>
@@ -889,6 +943,16 @@ function renderAccountingCell(
         />
       );
   }
+}
+
+function isManualGeneratedTaxAccountingEntry(
+  entry: AccountsPayableVoucherAccountingEntry,
+) {
+  return (
+    entry.id.startsWith(ManualInputVatAccountingEntryIdPrefix) ||
+    entry.id.startsWith(ManualEwtAccountingEntryIdPrefix) ||
+    entry.id === ManualDefaultPayableAccountingEntryId
+  );
 }
 
 function PartyDropdown({
@@ -919,7 +983,10 @@ function PartyDropdown({
           PartyFallbackValuePrefix,
         );
 
-        onSelect(isFallbackValue ? "" : selectedValue, party?.name ?? "");
+        onSelect(
+          isFallbackValue ? "" : party?.value ?? "",
+          party?.name ?? (isFallbackValue ? selectedValue : ""),
+        );
       }}
     />
   );

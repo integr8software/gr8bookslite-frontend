@@ -32,6 +32,7 @@ import { AccountsPayableVoucherHeaderPage } from "@/app/src/ui/modules/accounts-
 import { AccountsPayableVoucherNotFound } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherNotFound";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
+import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 
 const fieldClassName =
   "app-data-entry-field h-11 min-w-0 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15 disabled:cursor-not-allowed disabled:bg-white disabled:text-darknavy disabled:opacity-60";
@@ -44,6 +45,7 @@ const AttachedDropdownClassName =
   "sm:[&_.app-advanced-dropdown-control]:rounded-r-none";
 const AttachedAddButtonClassName =
   "inline-flex h-11 w-20 shrink-0 items-center justify-center gap-2 rounded-lg border border-darknavy/10 border-l-darknavy/20 bg-skyblue/8 px-3 text-sm font-semibold text-skyblue transition hover:border-skyblue/25 hover:bg-skyblue/12 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/15 disabled:cursor-not-allowed disabled:opacity-45 sm:rounded-l-none";
+const RemarksMaxLength = 500;
 
 export function AccountsPayableVoucherFormPage() {
   const page = useAccountsPayableVoucherFormPage();
@@ -325,6 +327,7 @@ export function AccountsPayableVoucherFormPage() {
                 value={page.values.remarks}
                 error={page.errors.remarks}
                 disabled={page.isReadonly}
+                maxLength={RemarksMaxLength}
                 onChange={page.handleInputChange}
               />
             </div>
@@ -366,14 +369,14 @@ export function AccountsPayableVoucherFormPage() {
       </form>
 
       <AppDialog
-        isOpen={page.isDeleteDialogOpen}
+        isOpen={page.isCancelDialogOpen}
         isPending={page.isMutating}
-        title="Delete accounts payable voucher?"
-        description={`This will remove ${page.existingRecord?.transactionNo ?? "the selected accounts payable voucher"}.`}
-        confirmLabel="Delete Accounts Payable Voucher"
+        title="Cancel accounts payable voucher?"
+        description={`This will change ${page.existingRecord?.transactionNo ?? "the selected accounts payable voucher"} status to Cancelled.`}
+        confirmLabel="Cancel Accounts Payable Voucher"
         tone="danger"
-        onCancel={() => page.setIsDeleteDialogOpen(false)}
-        onConfirm={page.handleConfirmDelete}
+        onCancel={() => page.setIsCancelDialogOpen(false)}
+        onConfirm={page.handleConfirmCancelVoucher}
       />
 
       <PartyManagementDrawer
@@ -401,6 +404,7 @@ type FieldProps = {
   value: string;
   type?: string;
   min?: string;
+  maxLength?: number;
   readOnly?: boolean;
   step?: string;
 };
@@ -447,6 +451,7 @@ function TextareaField({
   disabled,
   error,
   label,
+  maxLength,
   name,
   onChange,
   value,
@@ -457,10 +462,11 @@ function TextareaField({
 
   return (
     <FieldShell controlId={controlId} error={error} label={label}>
-      <textarea
+      <AppLimitedTextarea
         id={controlId}
         className={textareaClassName}
         disabled={disabled}
+        maxLength={maxLength}
         name={name}
         onChange={onChange}
         value={value}

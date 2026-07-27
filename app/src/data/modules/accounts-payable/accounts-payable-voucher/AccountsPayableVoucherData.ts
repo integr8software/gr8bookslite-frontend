@@ -4,7 +4,7 @@ import type {
   AccountsPayableVoucherFormValues,
   AccountsPayableVoucherRecord,
 } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
-import type { TermManagement } from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
+import type { TermManagement } from "@/app/src/types/modules/financial-maintenance/term-management/TermManagementTypes";
 
 export const MockAccountsPayableVouchers: AccountsPayableVoucherRecord[] = [
   {

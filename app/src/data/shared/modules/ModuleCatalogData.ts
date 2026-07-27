@@ -111,6 +111,7 @@ export const MODULE_ROUTE_MAP = {
   MCS: "/system-administration/multi-currency-setup",
   FS: "/system-administration/form-signatory",
   MM: "/system-administration/mail-maintenance",
+  CRPT: "/system-administration/customized-reports",
 } as const;
 
 export const MainModuleCatalogHelperText: Record<string, string> = {
@@ -197,6 +198,8 @@ export const MainModuleCatalogHelperText: Record<string, string> = {
   "maintenance-party-management": "Maintain customers, suppliers, vendors, members, and employees.",
   "maintenance-party": "Maintain customers, suppliers, vendors, members, and employees.",
   "system-administration-form-signatory": "Manage authorized signatories for official documents.",
+  "system-administration-customized-reports":
+    "Customize printable report templates, fields, headers, footers, and signatories.",
   "cash-receipt-official-receipt": "Record official customer payments.",
   "cash-receipt-collection-receipt": "Record collections received from customers.",
   "cash-receipt-acknowledgement-receipt": "Acknowledge received payments before official posting.",
@@ -684,6 +687,12 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
         "maintenance.currency",
       ),
       moduleItem("system-administration-form-signatory", "Form Signatory", "FS", "settings"),
+      moduleItem(
+        "system-administration-customized-reports",
+        "Customize Report",
+        "CRPT",
+        "settings",
+      ),
       moduleItem("maintenance-mail", "Mail Maintenance", "MM", "maintenance.mail"),
     ],
   ),

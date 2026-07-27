@@ -14,7 +14,7 @@ import {
 import { ItemPromotionsTableColumns } from "@/app/src/constants/modules/item-management/item-promotions/ItemPromotionsConstants";
 import { createItemPromotionListRecords } from "@/app/src/data/modules/item-management/item-promotions/ItemPromotionsData";
 import { MockItems } from "@/app/src/data/modules/item-management/items/ItemManagementData";
-import { useDiscountManagementStore } from "@/app/src/hooks/modules/financial-maintenance/discount-management/useDiscountManagement";
+import { useDiscountMaintenanceStore } from "@/app/src/hooks/modules/financial-maintenance/discount-maintenance/useDiscountMaintenance";
 import { useItemBundles } from "@/app/src/hooks/modules/item-management/item-bundles/useItemBundles";
 import { useItemPromotions } from "@/app/src/hooks/modules/item-management/item-promotions/useItemPromotions";
 import type {
@@ -24,7 +24,7 @@ import type {
 
 export function useItemPromotionsListPage() {
 	const { bundles } = useItemBundles();
-	const { discounts } = useDiscountManagementStore();
+	const { discounts } = useDiscountMaintenanceStore();
 	const {
 		isLoading,
 		isMutating,
@@ -70,7 +70,7 @@ export function useItemPromotionsListPage() {
 						row.code,
 						row.name,
 						row.type,
-						row.discountManagementRule,
+						row.discountMaintenanceRule,
 						row.item,
 						row.valueLabel,
 						row.validity,

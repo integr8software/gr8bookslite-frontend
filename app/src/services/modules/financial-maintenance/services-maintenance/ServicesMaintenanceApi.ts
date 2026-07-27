@@ -34,7 +34,10 @@ export async function fetchServicesMaintenance(): Promise<ServicesMaintenanceLis
 			canCreate: response.data.permissions?.canCreate ?? false,
 			canUpdate: response.data.permissions?.canUpdate ?? false,
 			canExport: response.data.permissions?.canExport ?? false,
-			canImport: response.data.permissions?.canImport ?? false,
+			canImport:
+				response.data.permissions?.canImport ??
+				response.data.permissions?.canCreate ??
+				false,
 		},
 	};
 }

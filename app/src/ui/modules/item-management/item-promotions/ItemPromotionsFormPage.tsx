@@ -142,7 +142,7 @@ export function ItemPromotionsFormPage() {
 							))}
 						</select>
 					</Field>
-					<Field label="Discount Management Rule">
+					<Field label="Discount Maintenance Rule">
 						<AppAdvancedDropdown
 							menuPortal
 							options={page.discountOptions}

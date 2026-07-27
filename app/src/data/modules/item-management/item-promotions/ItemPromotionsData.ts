@@ -1,5 +1,5 @@
 import { formatCurrency } from "@/app/src/utils/currency.util";
-import type { Discount } from "@/app/src/types/modules/financial-maintenance/discount-management/DiscountManagementTypes";
+import type { Discount } from "@/app/src/types/modules/financial-maintenance/discount-maintenance/DiscountMaintenanceTypes";
 import type { ItemBundleRecord } from "@/app/src/types/modules/item-management/item-bundles/ItemBundlesTypes";
 import type { ItemPromotionFormValues, ItemPromotionListRecord, ItemPromotionRecord } from "@/app/src/types/modules/item-management/item-promotions/ItemPromotionsTypes";
 import type { ItemRecord } from "@/app/src/types/modules/item-management/items/ItemManagementTypes";
@@ -85,7 +85,7 @@ export function createItemPromotionListRecords({
 
 		return {
 			...promotion,
-			discountManagementRule: discount
+			discountMaintenanceRule: discount
 				? `Linked: ${discount.name}`
 				: "No discount rule",
 			item: item?.name ?? bundle?.name ?? "No item selected",

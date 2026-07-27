@@ -4,11 +4,11 @@ export const AiAssistantPurchaseRequestPrefillStorageKey =
 export const AiAssistantSalesQuotationPrefillStorageKey =
   "gr8books.aiAssistant.salesQuotationPrefill";
 
-export const AiAssistantTermManagementPendingActionStorageKey =
-	"gr8books.aiAssistant.termManagementPendingAction";
+export const AiAssistantTermsMaintenancePendingActionStorageKey =
+	"gr8books.aiAssistant.TermsMaintenancePendingAction";
 
-export const AiAssistantTermManagementActionEvent =
-	"gr8books:ai-assistant:term-management-action";
+export const AiAssistantTermsMaintenanceActionEvent =
+	"gr8books:ai-assistant:terms-maintenance-action";
 
 export const AiAssistantChatMessagesStorageKey =
   "gr8books.aiAssistant.chatMessages";

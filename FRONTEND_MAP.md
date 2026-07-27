@@ -1,6 +1,6 @@
 # Gr8Books Neo Frontend Map
 
-Last updated: 2026-07-22
+Last updated: 2026-07-27
 
 Use this file as the first stop before changing the frontend. It is a compact graph of how the app is organized, where code belongs, and which files usually matter for common changes.
 
@@ -182,7 +182,7 @@ Main shell entry points:
 
 ## Feature Module Pattern
 
-Recommended module shape:
+Recommended module shape. Create only the route/source folders that the feature actually uses; do not keep empty folders just to match the pattern.
 
 ```txt
 app/(modules)/<domain>/<feature>/
@@ -207,6 +207,8 @@ app/src/types/modules/<domain>/<feature>/
 app/src/constants/modules/<domain>/<feature>/
 app/src/validations/modules/<domain>/<feature>/
 ```
+
+For read-only or display-only modules, it is normal to omit unused `add`, `edit`, `view`, `services`, or `validations` folders. The folder structure should stay clean and reflect real files.
 
 For new work, prefer specific names such as `PurchaseRequestListPage.tsx` and `PurchaseRequestFormPage.tsx`. Older modules may still use generic `Main.tsx`, `Action.tsx`, or `index.ts`; avoid extending that pattern for new modules.
 

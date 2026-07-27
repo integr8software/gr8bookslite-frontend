@@ -11,14 +11,12 @@ import {
   PartyManagementFieldClassName,
   PartyManagementFieldControlSelector,
   PartyManagementSelectClassName,
-  PurchaseTaxClassificationOptions,
   VatRegistrationTypeOptions,
 } from "@/app/src/constants/modules/party-management/PartyManagementConstants";
 import {
   DefaultPhilippineContactNumber,
   PhilippineContactNumberPlaceholder,
 } from "@/app/src/data/shared/contact/ContactData";
-import { formatAtcDisplayCode } from "@/app/src/data/shared/tax/AtcCode";
 import type {
   PartyAccountingAccountOptions,
   PartyAccountingAccountField,
@@ -29,6 +27,7 @@ import type {
   PartyInformationTabId,
   PartyInformationFormValues,
 } from "@/app/src/types/modules/party-management/PartyManagementTypes";
+import type { PartyTaxDefaultClassificationKey } from "@/app/src/types/shared/tax/TaxTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
 import { PartyAddressContainer } from "@/app/src/ui/modules/party-management/PartyAddressContainer";
@@ -40,13 +39,13 @@ import {
 } from "@/app/src/utils/status.util";
 
 export function PartyInformationDetailsFields({
-  atcOptions,
   accountOptions,
   errors,
   isClassificationSelected,
   isPartyCodeReadonly = false,
   isReadonly,
   partyTypeOptions,
+  taxDefaultOptions,
   termOptions,
   values,
   syncedAddressSources,
@@ -59,7 +58,6 @@ export function PartyInformationDetailsFields({
   onInputChange,
   onPartyTypesChange,
   onSelectBarangay,
-  onSelectAtcCode,
   onSelectAutocompleteAddress,
   onSyncAutocompleteAddressDetails,
   onSelectCityMunicipality,
@@ -87,13 +85,6 @@ export function PartyInformationDetailsFields({
     description: "description" in honorific ? honorific.description : undefined,
     name: honorific.name,
     value: honorific.name,
-  }));
-  const atcSelectOptions = atcOptions.map((option) => ({
-    description: `${option.category}. ${option.description}`,
-    label: "",
-    name: `${formatAtcDisplayCode(option.code)} (${option.label})`,
-    selectedDetails: `${option.category}. ${option.description}`,
-    value: option.code,
   }));
   const basicErrorCount = countErrors(errors, [
     "partyCodeNo",
@@ -123,8 +114,13 @@ export function PartyInformationDetailsFields({
   const taxErrorCount = countErrors(errors, [
     "tin",
     "vatRegistrationType",
-    "defaultPurchaseTaxClassification",
-    "atcCode",
+    "defaultPurchaseInputVatTaxSourceKey",
+    "defaultPurchaseEwtTaxSourceKey",
+    "defaultPurchaseFwtTaxSourceKey",
+    "defaultPurchaseWvatTaxSourceKey",
+    "defaultSalesOutputVatTaxSourceKey",
+    "defaultSalesCwtTaxSourceKey",
+    "defaultSalesWvatTaxSourceKey",
   ]);
   const accountingErrorCount = countErrors(errors, [
     "termId",
@@ -445,7 +441,7 @@ export function PartyInformationDetailsFields({
                 placeholder="000-000-000-000"
               />
             </Field>
-            <Field label="Tax Registration" error={errors.vatRegistrationType}>
+            <Field label="VAT Registration Type" error={errors.vatRegistrationType}>
               <select
                 name="vatRegistrationType"
                 value={values.vatRegistrationType}
@@ -453,7 +449,7 @@ export function PartyInformationDetailsFields({
                 disabled={isDetailsDisabled}
                 className={PartyManagementSelectClassName}
               >
-                <option value="">--Select Tax Registration--</option>
+                <option value="">--Select VAT Registration Type--</option>
                 {VatRegistrationTypeOptions.map((option) => (
                   <option key={option} value={option}>
                     {option}
@@ -461,39 +457,78 @@ export function PartyInformationDetailsFields({
                 ))}
               </select>
             </Field>
-            <Field
-              label="Default Purchase Classification"
-              error={errors.defaultPurchaseTaxClassification}
-            >
-              <select
-                name="defaultPurchaseTaxClassification"
-                value={values.defaultPurchaseTaxClassification}
-                onChange={onInputChange}
-                disabled={isDetailsDisabled}
-                className={PartyManagementSelectClassName}
-              >
-                <option value="">--Select Purchase Classification--</option>
-                {PurchaseTaxClassificationOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field label="BIR ATC Code" error={errors.atcCode}>
-              <AppAdvancedDropdown
-                disabled={isDetailsDisabled}
-                emptyMessage="No ATC codes match the selected classification."
-                optionViewToggle
-                options={atcSelectOptions}
-                placeholder="--Select BIR ATC Code--"
-                searchPlaceholder="Search ATC code, label, or description"
-                showSelectedDetails
-                value={values.atcCode}
-                onChange={onSelectAtcCode}
-              />
-            </Field>
           </div>
+          {values.partyTypes.includes("Vendor") ? (
+            <TaxDefaultGroup title="Purchase Tax Defaults">
+              <TaxDefaultField
+                disabled={isDetailsDisabled}
+                error={errors.defaultPurchaseInputVatTaxSourceKey}
+                field="defaultPurchaseInputVatTaxSourceKey"
+                label="Input VAT"
+                options={taxDefaultOptions.defaultPurchaseInputVatTaxSourceKey ?? []}
+                value={values.defaultPurchaseInputVatTaxSourceKey}
+                onUpdateField={onUpdateField}
+              />
+              <TaxDefaultField
+                disabled={isDetailsDisabled}
+                error={errors.defaultPurchaseEwtTaxSourceKey}
+                field="defaultPurchaseEwtTaxSourceKey"
+                label="Expanded Withholding Tax"
+                options={taxDefaultOptions.defaultPurchaseEwtTaxSourceKey ?? []}
+                value={values.defaultPurchaseEwtTaxSourceKey}
+                onUpdateField={onUpdateField}
+              />
+              <TaxDefaultField
+                disabled={isDetailsDisabled}
+                error={errors.defaultPurchaseFwtTaxSourceKey}
+                field="defaultPurchaseFwtTaxSourceKey"
+                label="Final Withholding Tax"
+                options={taxDefaultOptions.defaultPurchaseFwtTaxSourceKey ?? []}
+                value={values.defaultPurchaseFwtTaxSourceKey}
+                onUpdateField={onUpdateField}
+              />
+              <TaxDefaultField
+                disabled={isDetailsDisabled}
+                error={errors.defaultPurchaseWvatTaxSourceKey}
+                field="defaultPurchaseWvatTaxSourceKey"
+                label="VAT Withholding"
+                options={taxDefaultOptions.defaultPurchaseWvatTaxSourceKey ?? []}
+                value={values.defaultPurchaseWvatTaxSourceKey}
+                onUpdateField={onUpdateField}
+              />
+            </TaxDefaultGroup>
+          ) : null}
+          {values.partyTypes.includes("Customer") ? (
+            <TaxDefaultGroup title="Sales Tax Defaults">
+              <TaxDefaultField
+                disabled={isDetailsDisabled}
+                error={errors.defaultSalesOutputVatTaxSourceKey}
+                field="defaultSalesOutputVatTaxSourceKey"
+                label="Output VAT"
+                options={taxDefaultOptions.defaultSalesOutputVatTaxSourceKey ?? []}
+                value={values.defaultSalesOutputVatTaxSourceKey}
+                onUpdateField={onUpdateField}
+              />
+              <TaxDefaultField
+                disabled={isDetailsDisabled}
+                error={errors.defaultSalesCwtTaxSourceKey}
+                field="defaultSalesCwtTaxSourceKey"
+                label="Creditable Withholding Tax"
+                options={taxDefaultOptions.defaultSalesCwtTaxSourceKey ?? []}
+                value={values.defaultSalesCwtTaxSourceKey}
+                onUpdateField={onUpdateField}
+              />
+              <TaxDefaultField
+                disabled={isDetailsDisabled}
+                error={errors.defaultSalesWvatTaxSourceKey}
+                field="defaultSalesWvatTaxSourceKey"
+                label="VAT Withholding"
+                options={taxDefaultOptions.defaultSalesWvatTaxSourceKey ?? []}
+                value={values.defaultSalesWvatTaxSourceKey}
+                onUpdateField={onUpdateField}
+              />
+            </TaxDefaultGroup>
+          ) : null}
         </div>
       ),
     },
@@ -534,6 +569,55 @@ export function PartyInformationDetailsFields({
         {activeTabContent}
       </section>
     </div>
+  );
+}
+
+function TaxDefaultGroup({
+  children,
+  title,
+}: {
+  children: ReactNode;
+  title: string;
+}) {
+  return (
+    <div className="grid gap-3">
+      <h3 className="text-sm font-semibold text-darknavy">{title}</h3>
+      <div className="grid gap-4 lg:grid-cols-2">{children}</div>
+    </div>
+  );
+}
+
+function TaxDefaultField({
+  disabled,
+  error,
+  field,
+  label,
+  options,
+  value,
+  onUpdateField,
+}: {
+  disabled: boolean;
+  error?: string;
+  field: PartyTaxDefaultClassificationKey;
+  label: string;
+  options: PartyInformationDetailsFieldsProps["taxDefaultOptions"][PartyTaxDefaultClassificationKey];
+  value: string;
+  onUpdateField: PartyInformationFieldUpdateHandler;
+}) {
+  return (
+    <Field label={label} error={error}>
+      <AppAdvancedDropdown
+        disabled={disabled}
+        emptyMessage="No matching tax records found."
+        optionViewToggle
+        options={options}
+        placeholder={`--Select ${label}--`}
+        searchPlaceholder="Search tax name, code, rate, or description"
+        showSelectedDetails
+        value={value}
+        onChange={(nextValue) => onUpdateField(field, getSingleSelectedValue(nextValue))}
+      />
+    </Field>
   );
 }
 

@@ -251,6 +251,11 @@ export function ModuleImportRowNumberCell({
 			onDragStart={(event) => {
 				event.dataTransfer.effectAllowed = "move";
 				event.dataTransfer.setData("text/x-module-import-row", rowId);
+				event.currentTarget.dataset.dragging = "true";
+			}}
+			onDragEnd={(event) => {
+				delete event.currentTarget.dataset.dragging;
+				delete event.currentTarget.dataset.dropPosition;
 			}}
 			onDragOver={(event) => {
 				if (!disabled && onMoveRow) {
@@ -281,7 +286,10 @@ export function ModuleImportRowNumberCell({
 					onMoveRow?.(sourceRowId, rowId, position);
 				}
 			}}
-			className="module-import-row-number sticky z-20 px-0 text-center font-semibold tabular-nums text-darknavy/70"
+			className={joinClasses(
+				"module-import-row-number sticky z-20 px-0 text-center font-semibold tabular-nums text-darknavy/70",
+				onMoveRow && !disabled && "cursor-grab active:cursor-grabbing",
+			)}
 			style={{
 				boxSizing: "border-box",
 				left: ModuleImportSelectionColumnWidth,
@@ -292,7 +300,7 @@ export function ModuleImportRowNumberCell({
 		>
 			<span
 				className={joinClasses(
-					"inline-flex items-center justify-center",
+					"flex h-full min-h-10 w-full items-center justify-center",
 					rowNumber >= 10000
 						? "text-[10px]"
 						: rowNumber >= 1000
@@ -300,7 +308,8 @@ export function ModuleImportRowNumberCell({
 							: rowNumber >= 100
 								? "text-xs"
 								: "text-sm",
-					onMoveRow && "cursor-grab active:cursor-grabbing",
+					onMoveRow &&
+						"module-import-row-number-drag-handle transition active:cursor-grabbing",
 				)}
 				title={
 					onMoveRow ? `Drag row ${rowNumber} to reorder` : undefined
@@ -696,6 +705,7 @@ export function ModuleImportEditableCell({
 
 export function ModuleImportEditableSelect<TOption extends string>({
 	errors,
+	getOptionLabel,
 	warnings,
 	options,
 	value,
@@ -703,6 +713,7 @@ export function ModuleImportEditableSelect<TOption extends string>({
 	onPaste,
 }: {
 	errors?: string[];
+	getOptionLabel?: (option: TOption) => string;
 	warnings?: string[];
 	options: readonly TOption[];
 	value: string;
@@ -748,7 +759,7 @@ export function ModuleImportEditableSelect<TOption extends string>({
 				) : null}
 				{options.map((option) => (
 					<option key={option} value={option}>
-						{option}
+						{getOptionLabel?.(option) ?? option}
 					</option>
 				))}
 			</select>

@@ -42,8 +42,8 @@ export const ItemPromotionsTableColumns: Array<
 	{ key: "item", label: "Item", className: "w-[14rem]" },
 	{ key: "valueLabel", label: "Value", className: "w-[10rem]" },
 	{
-		key: "discountManagementRule",
-		label: "Discount Management",
+		key: "discountMaintenanceRule",
+		label: "Discount Maintenance",
 		className: "w-[18rem]",
 	},
 	{ key: "validity", label: "Validity", className: "w-[16rem]" },

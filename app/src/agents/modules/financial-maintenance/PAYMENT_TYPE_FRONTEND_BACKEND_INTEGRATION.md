@@ -1,14 +1,14 @@
 # Payment Type Frontend Backend Integration
 
-This document describes the `Maintenance > Financial Management > Payment Type` backend integration. The module follows the same process used by Term Management, with default payment type records owned by backend per-company seeding.
+This document describes the `Maintenance > Financial Management > Payment Type` backend integration. The module follows the same process used by Terms Maintenance, with default payment type records owned by backend per-company seeding.
 
 ## References
 
 - Frontend route: `gr8bookslite-frontend/app/(modules)/financial-maintenance/payment-type/page.tsx`
 - Frontend data: `gr8bookslite-frontend/app/src/data/modules/financial-maintenance/payment-type/PaymentTypeData.ts`
 - Frontend hook/service: `gr8bookslite-frontend/app/src/hooks/modules/financial-maintenance/payment-type/usePaymentType.ts`, `gr8bookslite-frontend/app/src/services/modules/financial-maintenance/payment-type/PaymentTypeService.ts`
-- Term Management frontend API pattern: `gr8bookslite-frontend/app/src/services/modules/financial-maintenance/term-management/TermManagementApi.ts`
-- Term Management backend pattern: `gr8bookslite-backend/src/modules/maintenance/term-management`
+- Terms Maintenance frontend API pattern: `gr8bookslite-frontend/app/src/services/modules/financial-maintenance/terms-maintenance/TermsMaintenanceApi.ts`
+- Terms Maintenance backend pattern: `gr8bookslite-backend/src/modules/maintenance/terms-maintenance`
 - Frontend rules: `gr8bookslite-frontend/AGENTS.md`, `gr8bookslite-frontend/FRONTEND_MAP.md`
 - Backend modularity rules: `gr8bookslite-backend/docs/agents/ARCHITECTURE_MODULARITY_GUIDE.md`
 
@@ -26,7 +26,7 @@ app/src/types/modules/financial-maintenance/payment-type/
 app/src/validations/modules/financial-maintenance/payment-type/
 ```
 
-`PaymentTypeService.ts` is API-backed through `ApiClient` like Term Management. The former frontend sample records now belong to backend company default seed data only.
+`PaymentTypeService.ts` is API-backed through `ApiClient` like Terms Maintenance. The former frontend sample records now belong to backend company default seed data only.
 
 Default payment types seeded per company:
 
@@ -44,7 +44,7 @@ Default payment types seeded per company:
 
 ## Backend Target
 
-Create a backend module parallel to `src/modules/maintenance/term-management`:
+Create a backend module parallel to `src/modules/maintenance/terms-maintenance`:
 
 ```txt
 gr8bookslite-backend/src/modules/maintenance/payment-types/
@@ -108,7 +108,7 @@ Use a migration for the model and enums. Do not edit applied migrations.
 
 Create `default-payment-types.ts` beside the payment-types service. Treat the former frontend sample rows as backend defaults seeded per company.
 
-Seeder behavior should match `seedCompanyTermManagementDefaults`:
+Seeder behavior should match `seedCompanyTermsMaintenanceDefaults`:
 
 - Accept a Prisma transaction client or `PrismaService`.
 - Count active, non-deleted payment types for the company.
@@ -116,7 +116,7 @@ Seeder behavior should match `seedCompanyTermManagementDefaults`:
 - If none exist, create the default rows with `createdByUserId: null`.
 - Use `skipDuplicates: true`.
 
-Call `seedDefaultPaymentTypesForCompany` anywhere Term Management seeding is called:
+Call `seedDefaultPaymentTypesForCompany` anywhere Terms Maintenance seeding is called:
 
 - `src/modules/workspace/companies/workspace-companies.service.ts`
 - `src/modules/onboarding/onboarding.service.ts`
@@ -133,7 +133,7 @@ PATCH /api/v1/maintenance/financial-management/payment-types/:id
 POST  /api/v1/maintenance/financial-management/payment-types/import
 ```
 
-The frontend follows the Term Management feature shape: list, create, update, view, activate/deactivate, refresh, column visibility, export, and import.
+The frontend follows the Terms Maintenance feature shape: list, create, update, view, activate/deactivate, refresh, column visibility, export, and import.
 
 ### Request DTOs
 
@@ -163,7 +163,7 @@ The frontend follows the Term Management feature shape: list, create, update, vi
 
 ### Service Rules
 
-Mirror `TermManagementService`:
+Mirror `TermsMaintenanceService`:
 
 - Resolve `companyId` from the current authenticated user.
 - Verify active company membership.
@@ -173,11 +173,11 @@ Mirror `TermManagementService`:
 - Map `createdByUserId: null` to `System Generated`.
 - Use soft-delete awareness through `deletedAt: null`.
 
-Use a payment-type permission code assigned for the module. If the module catalog already defines a code, use that exact code. If not, add one consistently with Term Management's `TM` pattern.
+Use a payment-type permission code assigned for the module. If the module catalog already defines a code, use that exact code. If not, add one consistently with Terms Maintenance's `TM` pattern.
 
 ## Frontend Target
 
-Replace `PaymentTypeService.ts` with an API-backed service or rename it to `PaymentTypeApi.ts` to match Term Management. Keep query keys beside it.
+Replace `PaymentTypeService.ts` with an API-backed service or rename it to `PaymentTypeApi.ts` to match Terms Maintenance. Keep query keys beside it.
 
 Recommended frontend service response types:
 
@@ -226,7 +226,7 @@ Expected frontend API enum mapping:
 
 ### Hook Changes
 
-`usePaymentType.ts` follows the `useTermManagement.ts` API-backed pattern:
+`usePaymentType.ts` follows the `useTermsMaintenance.ts` API-backed pattern:
 
 - Use `fetchPaymentTypes` from the API service.
 - Return `permissions`, `statistics`, `isRefreshing`, and `refreshPaymentTypes`.
@@ -340,7 +340,7 @@ Create/update response:
 7. Add frontend API mapping between backend enums and frontend labels.
 8. Update `usePaymentType.ts` to use backend query data, permissions, statistics, invalidation, and refresh state.
 9. Do not use frontend initial records for React Query.
-10. Apply the Term Management table format: column visibility, refresh, reset, export, import, persistent table preferences, and import template/preview flow.
+10. Apply the Terms Maintenance table format: column visibility, refresh, reset, export, import, persistent table preferences, and import template/preview flow.
 11. Run backend tests or targeted service tests, then frontend lint/build.
 
 ## Verification

@@ -54,8 +54,8 @@ export const MODULE_ROUTE_MAP = {
   DVIN: "/delivery-vehicle-management/vehicle-inspections",
   DVFI: "/delivery-vehicle-management/fuel-and-incidents",
   DVMR: "/delivery-vehicle-management/maintenance-and-repairs",
-  DSM: "/financial-maintenance/discount-management",
-  TM: "/financial-maintenance/term-management",
+  DSM: "/financial-maintenance/discount-maintenance",
+  TM: "/financial-maintenance/terms-maintenance",
   PT: "/financial-maintenance/payment-type",
   RC: "/financial-maintenance/responsibility-center",
   OR: "/cash-receipt/official-receipt",
@@ -137,8 +137,8 @@ export const MainModuleCatalogHelperText: Record<string, string> = {
     "Maintain reusable account templates and generated Chart of Accounts records.",
   "system-administration-multi-currency-setup":
     "Configure currencies, exchange rates, preferences, and rounding rules.",
-  "maintenance-discount-management": "Maintain discount rules for sales and purchasing.",
-  "maintenance-term-management": "Manage payment and collection terms.",
+  "maintenance-discount-maintenance": "Maintain discount rules for sales and purchasing.",
+  "maintenance-terms-maintenance": "Manage payment and collection terms.",
   "maintenance-transaction-type":
     "Configure inventory movement classifications for goods receipt and goods issue.",
   "maintenance-payment-type":
@@ -318,12 +318,12 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
       ),
       moduleItem("maintenance-payment-type", "Payment Type", "PT", "maintenance.paymentType"),
       moduleItem(
-        "maintenance-discount-management",
-        "Discount Management",
+        "maintenance-discount-maintenance",
+        "Discount Maintenance",
         "DSM",
         "maintenance.discount",
       ),
-      moduleItem("maintenance-term-management", "Term Management", "TM", "maintenance.term"),
+      moduleItem("maintenance-terms-maintenance", "Terms Maintenance", "TM", "maintenance.term"),
       moduleItem(
         "maintenance-responsibility-center",
         "Responsibility Center",

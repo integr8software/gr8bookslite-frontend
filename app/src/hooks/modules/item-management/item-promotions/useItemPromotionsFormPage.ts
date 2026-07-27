@@ -10,7 +10,7 @@ import {
 } from "@/app/src/data/modules/item-management/item-promotions/ItemPromotionsData";
 import { MockItems } from "@/app/src/data/modules/item-management/items/ItemManagementData";
 import { ItemPromotionsHref } from "@/app/src/constants/modules/item-management/item-promotions/ItemPromotionsConstants";
-import { useDiscountManagementStore } from "@/app/src/hooks/modules/financial-maintenance/discount-management/useDiscountManagement";
+import { useDiscountMaintenanceStore } from "@/app/src/hooks/modules/financial-maintenance/discount-maintenance/useDiscountMaintenance";
 import { useItemBundles } from "@/app/src/hooks/modules/item-management/item-bundles/useItemBundles";
 import { useItemPromotions } from "@/app/src/hooks/modules/item-management/item-promotions/useItemPromotions";
 import type {
@@ -28,7 +28,7 @@ export function useItemPromotionsFormPage() {
 	const pathname = usePathname();
 	const params = useParams<{ recordId?: string }>();
 	const { bundles } = useItemBundles();
-	const { discounts } = useDiscountManagementStore();
+	const { discounts } = useDiscountMaintenanceStore();
 	const { addPromotion, promotions, updatePromotion } = useItemPromotions();
 	const mode = getItemPromotionMode(pathname);
 	const isReadonly = mode === "view";

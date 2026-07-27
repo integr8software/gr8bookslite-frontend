@@ -23,9 +23,9 @@ type MaintenanceSpotlightTutorialConfig = {
 
 export const MaintenanceSpotlightTutorialConfigs: readonly MaintenanceSpotlightTutorialConfig[] = [
   {
-    href: "/financial-maintenance/discount-management",
+    href: "/financial-maintenance/discount-maintenance",
     addMode: "drawer",
-    label: "Discount management",
+    label: "Discount Maintenance",
   },
   {
     href: "/financial-maintenance/responsibility-center",
@@ -33,11 +33,11 @@ export const MaintenanceSpotlightTutorialConfigs: readonly MaintenanceSpotlightT
     label: "Responsibility center",
   },
   {
-    href: "/financial-maintenance/term-management",
+    href: "/financial-maintenance/terms-maintenance",
     addMode: "drawer",
     includeImportStep: true,
     includeRecordActionSteps: true,
-    label: "Term management",
+    label: "Terms Maintenance",
   },
   {
     href: "/item-management/inventory-transaction-type",

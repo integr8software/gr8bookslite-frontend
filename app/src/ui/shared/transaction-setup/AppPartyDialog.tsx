@@ -23,8 +23,8 @@ import {
   type PartyDefaultAccountingAccountIds,
   usePartyManagementAccountOptions,
 } from "@/app/src/hooks/modules/party-management/usePartyManagementAccountOptions";
-import { useTermDropdownOptions } from "@/app/src/hooks/modules/financial-maintenance/term-management/useTermDropdownOptions";
-import { usePartyAtcCodeOptions } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
+import { useTermDropdownOptions } from "@/app/src/hooks/modules/financial-maintenance/terms-maintenance/useTermDropdownOptions";
+import { usePartyTaxDefaultOptions } from "@/app/src/hooks/shared/tax/useTaxOptions";
 import type {
   PartyAddress,
   PartyInformationFormErrors,
@@ -118,7 +118,7 @@ function AppPartyDialogContent({
     createDialogInitialValues(records, suggestedPartyType, partyAccountOptions.defaultAccounts),
   );
   const [errors, setErrors] = useState<PartyInformationFormErrors>({});
-  const atcDropdown = usePartyAtcCodeOptions(values.classification);
+  const taxDefaults = usePartyTaxDefaultOptions();
   const isClassificationSelected = Boolean(values.classification);
   const canSave = isClassificationSelected && values.partyTypes.length > 0;
   const dialogCopy = PartyTypeCardCopy[partyType];
@@ -175,6 +175,13 @@ function AppPartyDialogContent({
           civilStatus: "",
           nationality: "",
           atcCode: "",
+          defaultPurchaseInputVatTaxSourceKey: "",
+          defaultPurchaseEwtTaxSourceKey: "",
+          defaultPurchaseFwtTaxSourceKey: "",
+          defaultPurchaseWvatTaxSourceKey: "",
+          defaultSalesOutputVatTaxSourceKey: "",
+          defaultSalesCwtTaxSourceKey: "",
+          defaultSalesWvatTaxSourceKey: "",
           addresses: clearAddressRolesForPartyTypes(current.addresses, partyTypes, classification),
           defaultReceivableAccount: accountingAccounts.defaultReceivableAccount,
           customerAdvanceAccount: accountingAccounts.customerAdvanceAccount,
@@ -284,16 +291,6 @@ function AppPartyDialogContent({
       };
     });
     setErrors((current) => ({ ...current, partyTypes: undefined }));
-  }
-
-  function selectAtcCode(value: string | string[]) {
-    const code = getSingleSelectedValue(value);
-
-    setValues((current) => ({
-      ...current,
-      atcCode: code,
-    }));
-    setErrors((current) => ({ ...current, atcCode: undefined }));
   }
 
   function selectProvince(
@@ -459,6 +456,14 @@ function AppPartyDialogContent({
         gender: "",
         civilStatus: "",
         nationality: nextPartyType === "Member" ? PartyDefaultNationality : "",
+        atcCode: "",
+        defaultPurchaseInputVatTaxSourceKey: "",
+        defaultPurchaseEwtTaxSourceKey: "",
+        defaultPurchaseFwtTaxSourceKey: "",
+        defaultPurchaseWvatTaxSourceKey: "",
+        defaultSalesOutputVatTaxSourceKey: "",
+        defaultSalesCwtTaxSourceKey: "",
+        defaultSalesWvatTaxSourceKey: "",
         addresses: clearAddressRolesForPartyTypes(
           current.addresses,
           nextPartyTypes,
@@ -571,18 +576,17 @@ function AppPartyDialogContent({
 
             <PartyInformationDetailsFields
               accountOptions={partyAccountOptions.accountOptions}
-              atcOptions={atcDropdown.options}
               errors={errors}
               isClassificationSelected={isClassificationSelected}
               isReadonly={false}
               partyTypeOptions={[partyType]}
+              taxDefaultOptions={taxDefaults.options}
               termOptions={termDropdown.options}
               values={effectiveValues}
               onAddressInputChange={handleAddressInputChange}
               onCopyAddress={copyAddress}
               onInputChange={handleInputChange}
               onPartyTypesChange={handlePartyTypesChange}
-              onSelectAtcCode={selectAtcCode}
               onSelectAutocompleteAddress={selectAutocompleteAddress}
               onSyncAutocompleteAddressDetails={syncAutocompleteAddressDetails}
               onSelectBarangay={selectBarangay}

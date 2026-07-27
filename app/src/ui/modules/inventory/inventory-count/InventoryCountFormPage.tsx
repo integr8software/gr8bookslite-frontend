@@ -59,13 +59,15 @@ export function InventoryCountFormPage() {
 								<History className="h-4 w-4" aria-hidden="true" />
 								Upload Count History
 							</button>
-							<button
-								type="submit"
-								className={moduleHeaderActionClassNames.primary}
-							>
-								<Save className="h-4 w-4" aria-hidden="true" />
-								Save
-							</button>
+							{!page.isReadonly ? (
+								<button
+									type="submit"
+									className={moduleHeaderActionClassNames.primary}
+								>
+									<Save className="h-4 w-4" aria-hidden="true" />
+									Save
+								</button>
+							) : null}
 						</div>
 					}
 				/>

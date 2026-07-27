@@ -70,16 +70,10 @@ function MaterialRequestReportDocument({
 					<div />
 				</div>
 
-				<div className="grid grid-cols-[1fr_7rem] items-end px-5 pb-2">
+				<div className="px-5 pb-2">
 					<h2 className="text-left text-xl font-black uppercase leading-none">
 						Material Request
 					</h2>
-					<div className="justify-self-end text-right leading-none">
-						<p className="text-[9px] font-bold">MR No.:</p>
-						<p className="mt-1 text-xl font-black tracking-wide">
-							{formatRequestNo(values.requestNo)}
-						</p>
-					</div>
 				</div>
 
 				<div className="grid grid-cols-[1.75fr_1fr] border-t-2 border-black">
@@ -121,10 +115,11 @@ function MaterialRequestReportDocument({
 					</tbody>
 				</table>
 
-				<div className="grid grid-cols-3 border-t-2 border-black">
+				<div className="grid grid-cols-[1fr_1fr_1fr_8rem] border-t-2 border-black">
 					<SignatureBlock label="Prepared by" />
 					<SignatureBlock label="Checked by" />
 					<SignatureBlock label="Approved by" />
+					<RequestNumberBlock requestNo={values.requestNo} />
 				</div>
 			</div>
 		</div>
@@ -175,6 +170,17 @@ function SignatureBlock({ label }: { label: string }) {
 	return (
 		<div className="min-h-16 border-r-2 border-black px-2 py-2 font-normal last:border-r-0">
 			{label}:
+		</div>
+	);
+}
+
+function RequestNumberBlock({ requestNo }: { requestNo: string }) {
+	return (
+		<div className="grid min-h-16 grid-rows-[auto_1fr] border-r-2 border-black px-2 py-2 text-right font-normal last:border-r-0">
+			<p className="text-left text-[9px] font-bold">MR No.:</p>
+			<p className="self-end text-xl font-black tracking-wide">
+				{formatRequestNo(requestNo)}
+			</p>
 		</div>
 	);
 }

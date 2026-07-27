@@ -39,11 +39,11 @@ function createMaterialRequestPdfDefinition(
 					widths: ["*"],
 					body: [
 						[createCompanyHeader()],
-						[createTitleRow(values)],
+						[createTitleRow()],
 						[createInfoTable(values)],
 						[createPurposeRow(values)],
 						[createItemsTable(values.items)],
-						[createFooterTable()],
+						[createFooterTable(values)],
 					],
 				},
 				layout: outerLayout,
@@ -84,10 +84,10 @@ function createCompanyHeader(): TableCell {
 	});
 }
 
-function createTitleRow(values: MaterialRequestFormValues): TableCell {
+function createTitleRow(): TableCell {
 	return toTableCell({
 		table: {
-			widths: ["*", 95],
+			widths: ["*"],
 			body: [
 				[
 					{
@@ -96,24 +96,6 @@ function createTitleRow(values: MaterialRequestFormValues): TableCell {
 						fontSize: 18,
 						alignment: "left",
 						margin: [4, 2, 0, 7],
-					},
-					{
-						stack: [
-							{
-								text: "MR No.:",
-								bold: true,
-								fontSize: 8,
-								alignment: "right",
-							},
-							{
-								text: formatRequestNo(values.requestNo),
-								bold: true,
-								fontSize: 16,
-								alignment: "right",
-								margin: [0, 2, 0, 0],
-							},
-						],
-						margin: [0, 0, 8, 2],
 					},
 				],
 			],
@@ -201,11 +183,18 @@ function createItemsTableRow(
 	return cells;
 }
 
-function createFooterTable(): TableCell {
+function createFooterTable(values: MaterialRequestFormValues): TableCell {
 	return toTableCell({
 		table: {
-			widths: ["*", "*", "*"],
-			body: [[footerCell("Prepared by:"), footerCell("Checked by:"), footerCell("Approved by:")]],
+			widths: ["*", "*", "*", 95],
+			body: [
+				[
+					footerCell("Prepared by:"),
+					footerCell("Checked by:"),
+					footerCell("Approved by:"),
+					requestNumberFooterCell(values.requestNo),
+				],
+			],
 		},
 		layout: innerGridLayout,
 	});
@@ -271,6 +260,27 @@ function footerCell(label: string): TableCell {
 	return toTableCell({
 		text: label,
 		margin: [4, 5, 4, 42],
+	});
+}
+
+function requestNumberFooterCell(requestNo: string): TableCell {
+	return toTableCell({
+		stack: [
+			{
+				text: "MR No.:",
+				bold: true,
+				fontSize: 8,
+				alignment: "left",
+			},
+			{
+				text: formatRequestNo(requestNo),
+				bold: true,
+				fontSize: 16,
+				alignment: "right",
+				margin: [0, 18, 4, 0],
+			},
+		],
+		margin: [4, 5, 4, 5],
 	});
 }
 

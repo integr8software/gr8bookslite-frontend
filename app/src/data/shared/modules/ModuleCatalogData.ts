@@ -540,7 +540,7 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
   ]),
   section("purchasing", "Purchasing", "/purchasing", "purchasing", "purchasing", [
     moduleItem("purchasing-purchase-request", "Purchase Request", "PR", "purchasing"),
-    moduleItem("purchasing-canvass-form", "Canvass Form", "CF", "canvass"),
+    moduleItem("purchasing-canvass-form", "Canvas Form", "CF", "canvass"),
     moduleItem("purchasing-purchase-order", "Purchase Order", "PO", "purchasing"),
     moduleItem("purchasing-purchase-journal", "Purchase Journal", "PJ", "purchasing"),
   ]),

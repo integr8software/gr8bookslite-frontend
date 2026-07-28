@@ -24,6 +24,7 @@ const accountsPayableVoucherHeaderSchema = z.object({
   creditAccountCode: z.string().trim().min(1, "Select a payable account."),
   creditAccountTitle: z.string().trim().min(1, "Select a payable account."),
   payableType: z.string().trim().min(1, "Select a payable type."),
+  remarks: z.string().max(500, "Remarks must be 500 characters or fewer."),
   status: z.string().trim().min(1, "Enter a status."),
 });
 

@@ -27,7 +27,7 @@ import type {
   WarehouseModuleRecord,
 } from "@/app/src/types/modules/warehouse-management/warehouses/WarehouseModuleTypes";
 
-export function useWarehouseStorageListPage() {
+export function useWarehouseStorageListPage(options: { initialWarehouseFilter?: string } = {}) {
   const {
     isLoading,
     isMutating,
@@ -39,7 +39,7 @@ export function useWarehouseStorageListPage() {
   } = useWarehousesStore();
   const [query, setQueryState] = useState("");
   const [statusFilter, setStatusFilterState] = useState("All");
-  const [warehouseFilter, setWarehouseFilterState] = useState("All");
+  const [warehouseFilter, setWarehouseFilterState] = useState(options.initialWarehouseFilter ?? "All");
   const [viewMode, setViewMode] = useState<"List" | "Map">("Map");
   const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
   const [draftWarehouses, setDraftWarehouses] = useState<typeof warehouses>([]);

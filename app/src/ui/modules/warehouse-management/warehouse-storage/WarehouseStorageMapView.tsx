@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import {
   Boxes,
   ChevronDown,
@@ -9,12 +10,14 @@ import {
   Folder,
   Grid3X3,
   MapPinned,
+  Maximize2,
   Minus,
   PackageSearch,
   Plus,
   Search,
   type LucideIcon,
 } from "lucide-react";
+import { WarehouseStorageHref } from "@/app/src/constants/modules/warehouse-management/warehouse-storage/WarehouseStorageConstants";
 import type {
   WarehouseStorageListRecord,
   WarehouseStorageStatus,
@@ -24,15 +27,18 @@ import { ModuleTableFilterSelect } from "@/app/src/ui/shared/module/module-table
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 type WarehouseStorageMapViewProps = {
+  isFullView?: boolean;
   isLoading: boolean;
   onQueryChange: (value: string) => void;
   onSelectRecord: (recordId: string) => void;
   onStatusFilterChange: (value: string) => void;
+  onWarehouseFilterChange: (value: string) => void;
   query: string;
   records: WarehouseStorageListRecord[];
   selectedRecordId: string | null;
   statusFilter: string;
   statuses: string[];
+  warehouseFilter: string;
   warehouses: WarehouseRecord[];
 };
 
@@ -56,20 +62,27 @@ const rackNumbers = ["01", "02", "03", "04", "05", "06"];
 const aisleNumbers = ["01", "02", "03"];
 const shelfNumbers = ["02", "01"];
 const MaxBinsPerShelf = 4;
+const MinZoom = 75;
+const MaxZoom = 150;
+const ZoomStep = 25;
 
 export function WarehouseStorageMapView({
+  isFullView = false,
   isLoading,
   onQueryChange,
   onSelectRecord,
   onStatusFilterChange,
+  onWarehouseFilterChange,
   query,
   records,
   selectedRecordId,
   statusFilter,
   statuses,
+  warehouseFilter,
   warehouses,
 }: WarehouseStorageMapViewProps) {
   const [typeFilter, setTypeFilter] = useState("All");
+  const [zoom, setZoom] = useState(100);
   const visibleRecords = useMemo(
     () =>
       typeFilter === "All"
@@ -80,6 +93,9 @@ export function WarehouseStorageMapView({
   const selectedRecord =
     visibleRecords.find((record) => record.id === selectedRecordId) ?? visibleRecords[0] ?? null;
   const selectedWarehouse = warehouses.find((warehouse) => warehouse.id === selectedRecord?.warehouseId);
+  const activeWarehouseRecords = selectedWarehouse
+    ? visibleRecords.filter((record) => record.warehouseId === selectedWarehouse.id)
+    : visibleRecords;
   const locationTypes = Array.from(
     new Set(records.map((record) => record.location.locationType || "Unassigned")),
   ).sort((first, second) => first.localeCompare(second));
@@ -92,26 +108,33 @@ export function WarehouseStorageMapView({
     ...locationTypes.map((type) => ({ label: type, value: type })),
   ];
   const zones = Array.from(
-    new Set(visibleRecords.map((record) => record.location.zone || "General")),
+    new Set(activeWarehouseRecords.map((record) => record.location.zone || "General")),
   ).sort((first, second) => first.localeCompare(second));
   const primaryZone = zones[0] ?? "A";
-  const layoutSlots = createLayoutSlots(visibleRecords, primaryZone);
+  const layoutSlots = createLayoutSlots(activeWarehouseRecords, primaryZone);
+  const navigatorKey = useMemo(
+    () => [
+      warehouses.map((warehouse) => warehouse.id).join(","),
+      visibleRecords.map((record) => record.id).join(","),
+    ].join("|"),
+    [visibleRecords, warehouses],
+  );
   const shortcutAreas: ShortcutArea[] = [
-    { icon: Boxes, label: "Zone B", targetRecord: getFirstRecordForZone(visibleRecords, "B") },
+    { icon: Boxes, label: "Zone B", targetRecord: getFirstRecordForZone(activeWarehouseRecords, "B") },
     {
       icon: PackageSearch,
       label: "Receiving Area",
-      targetRecord: getFirstRecordForType(visibleRecords, "Receiving"),
+      targetRecord: getFirstRecordForType(activeWarehouseRecords, "Receiving"),
     },
     {
       icon: Folder,
       label: "Quality Hold",
-      targetRecord: getFirstRecordForType(visibleRecords, "Quality Hold"),
+      targetRecord: getFirstRecordForType(activeWarehouseRecords, "Quality Hold"),
     },
     {
       icon: MapPinned,
       label: "Dispatch Area",
-      targetRecord: getFirstRecordForType(visibleRecords, "Dispatch"),
+      targetRecord: getFirstRecordForType(activeWarehouseRecords, "Dispatch"),
     },
   ];
 
@@ -146,14 +169,23 @@ export function WarehouseStorageMapView({
   }
 
   return (
-    <section className="grid min-h-[34rem] gap-3 lg:grid-cols-[18rem_minmax(0,1fr)]">
+    <section className={joinClasses("grid min-h-[34rem] gap-3", isFullView ? "xl:grid-cols-[20rem_minmax(0,1fr)]" : "lg:grid-cols-[18rem_minmax(0,1fr)]")}>
       <LocationNavigator
+        key={navigatorKey}
         query={query}
         records={visibleRecords}
         selectedRecordId={selectedRecord?.id ?? null}
         warehouses={warehouses}
         onQueryChange={onQueryChange}
         onSelectRecord={onSelectRecord}
+        onSelectWarehouse={(warehouseId) => {
+          onWarehouseFilterChange(warehouseId);
+          const firstRecord = visibleRecords.find((record) => record.warehouseId === warehouseId);
+
+          if (firstRecord) {
+            onSelectRecord(firstRecord.id);
+          }
+        }}
       />
       <div className="min-w-0 rounded-lg border border-darknavy/10 bg-white shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-darknavy/10 p-3">
@@ -182,25 +214,35 @@ export function WarehouseStorageMapView({
               onChange={setTypeFilter}
             />
           </div>
-          <div className="inline-flex h-10 items-center rounded-md border border-darknavy/10 bg-white text-sm font-semibold text-darknavy/65">
-            <button type="button" className="grid h-9 w-9 place-items-center border-r border-darknavy/10 hover:text-darknavy" aria-label="Fit layout">
+          <div className="inline-flex h-10 items-center overflow-hidden rounded-md border border-darknavy/10 bg-white text-sm font-semibold text-darknavy/65">
+            <button type="button" className="grid h-9 w-9 place-items-center border-r border-darknavy/10 hover:bg-offwhite hover:text-darknavy" aria-label="Fit layout" onClick={() => setZoom(100)}>
               <Expand className="h-4 w-4" aria-hidden="true" />
             </button>
-            <button type="button" className="grid h-9 w-9 place-items-center border-r border-darknavy/10 hover:text-darknavy" aria-label="Zoom out">
+            <button type="button" className="grid h-9 w-9 place-items-center border-r border-darknavy/10 hover:bg-offwhite hover:text-darknavy" aria-label="Zoom out" onClick={() => setZoom((value) => Math.max(MinZoom, value - ZoomStep))}>
               <Minus className="h-4 w-4" aria-hidden="true" />
             </button>
-            <span className="px-4">100%</span>
-            <button type="button" className="grid h-9 w-9 place-items-center border-l border-darknavy/10 hover:text-darknavy" aria-label="Zoom in">
+            <span className="min-w-16 px-4 text-center">{zoom}%</span>
+            <button type="button" className="grid h-9 w-9 place-items-center border-l border-darknavy/10 hover:bg-offwhite hover:text-darknavy" aria-label="Zoom in" onClick={() => setZoom((value) => Math.min(MaxZoom, value + ZoomStep))}>
               <Plus className="h-4 w-4" aria-hidden="true" />
             </button>
+            {isFullView ? null : (
+              <Link
+                href={`${WarehouseStorageHref}/map${warehouseFilter !== "All" ? `?warehouseId=${encodeURIComponent(warehouseFilter)}` : ""}`}
+                className="inline-flex h-9 items-center gap-1.5 border-l border-darknavy/10 px-3 hover:bg-offwhite hover:text-darknavy"
+                aria-label="View full map"
+              >
+                <Maximize2 className="h-4 w-4" aria-hidden="true" />
+                View Full
+              </Link>
+            )}
           </div>
         </div>
-        <div className="space-y-3 p-3">
-          <div className="rounded-lg border border-violet-400/35 bg-violet-50/20 p-3">
+        <div className="space-y-3 overflow-auto p-3">
+          <div className="origin-top-left rounded-lg border border-violet-400/35 bg-violet-50/20 p-3 transition-transform" style={{ transform: `scale(${zoom / 100})`, width: `${10000 / zoom}%` }}>
             <div className="mb-4 text-center text-xs font-bold uppercase tracking-normal text-violet-600">
-              Zone {primaryZone}
+              {selectedWarehouse ? `${selectedWarehouse.name} - ` : ""}Zone {primaryZone}
             </div>
-            {visibleRecords.length > 0 ? (
+            {activeWarehouseRecords.length > 0 ? (
               <div className="grid gap-3 xl:grid-cols-3">
                 {aisleNumbers.map((aisle) => (
                   <AisleBlock
@@ -252,6 +294,7 @@ export function WarehouseStorageMapView({
 function LocationNavigator({
   onQueryChange,
   onSelectRecord,
+  onSelectWarehouse,
   query,
   records,
   selectedRecordId,
@@ -259,6 +302,7 @@ function LocationNavigator({
 }: {
   onQueryChange: (value: string) => void;
   onSelectRecord: (recordId: string) => void;
+  onSelectWarehouse: (warehouseId: string) => void;
   query: string;
   records: WarehouseStorageListRecord[];
   selectedRecordId: string | null;
@@ -269,10 +313,6 @@ function LocationNavigator({
     [records, warehouses],
   );
   const [expandedKeys, setExpandedKeys] = useState<Set<string>>(() => defaultExpandedKeys);
-
-  useEffect(() => {
-    setExpandedKeys(defaultExpandedKeys);
-  }, [defaultExpandedKeys]);
 
   function toggleKey(key: string) {
     setExpandedKeys((current) => {
@@ -309,6 +349,22 @@ function LocationNavigator({
             className="h-9 w-full rounded-md border border-darknavy/10 bg-offwhite/40 px-3 pr-9 text-sm text-darknavy outline-none placeholder:text-darknavy/35"
           />
         </label>
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => setExpandedKeys(defaultExpandedKeys)}
+            className="h-8 rounded-md border border-darknavy/10 bg-white text-xs font-semibold text-darknavy/60 transition hover:border-skyblue/30 hover:text-darknavy"
+          >
+            Expand
+          </button>
+          <button
+            type="button"
+            onClick={() => setExpandedKeys(new Set())}
+            className="h-8 rounded-md border border-darknavy/10 bg-white text-xs font-semibold text-darknavy/60 transition hover:border-skyblue/30 hover:text-darknavy"
+          >
+            Collapse
+          </button>
+        </div>
         <div className="mt-3 max-h-[28rem] space-y-1 overflow-auto pr-1">
           {warehouses
             .filter((warehouse) => records.some((record) => record.warehouseId === warehouse.id))
@@ -328,6 +384,7 @@ function LocationNavigator({
                     icon="warehouse"
                     isOpen={isWarehouseOpen}
                     label={`${warehouse.name} (${warehouse.code})`}
+                    onClick={() => onSelectWarehouse(warehouse.id)}
                     onToggle={() => toggleKey(warehouseKey)}
                   />
                   {isWarehouseOpen && zones.map((zone) => {
@@ -348,6 +405,13 @@ function LocationNavigator({
                           icon="zone"
                           isOpen={isZoneOpen}
                           label={`Zone ${zone}`}
+                          onClick={() => {
+                            const firstRecord = zoneRecords[0];
+
+                            if (firstRecord) {
+                              onSelectRecord(firstRecord.id);
+                            }
+                          }}
                           onToggle={() => toggleKey(zoneKey)}
                         />
                         {isZoneOpen && aisles.map((aisle) => {
@@ -368,6 +432,13 @@ function LocationNavigator({
                                 icon="aisle"
                                 isOpen={isAisleOpen}
                                 label={`Aisle ${aisle}`}
+                                onClick={() => {
+                                  const firstRecord = aisleRecords[0];
+
+                                  if (firstRecord) {
+                                    onSelectRecord(firstRecord.id);
+                                  }
+                                }}
                                 onToggle={() => toggleKey(aisleKey)}
                               />
                               {isAisleOpen && racks.map((rack) => {
@@ -385,6 +456,13 @@ function LocationNavigator({
                                       icon="rack"
                                       isOpen={isRackOpen}
                                       label={`Rack ${rack}`}
+                                      onClick={() => {
+                                        const firstRecord = rackRecords[0];
+
+                                        if (firstRecord) {
+                                          onSelectRecord(firstRecord.id);
+                                        }
+                                      }}
                                       onToggle={() => toggleKey(rackKey)}
                                     />
                                     {isRackOpen && rackRecords.slice(0, 8).map((record) => (
@@ -428,6 +506,7 @@ function NavigatorRow({
   icon,
   isOpen,
   label,
+  onClick,
   onToggle,
 }: {
   count: number;
@@ -435,24 +514,36 @@ function NavigatorRow({
   icon: "warehouse" | "zone" | "aisle" | "rack";
   isOpen: boolean;
   label: string;
+  onClick: () => void;
   onToggle: () => void;
 }) {
   const Icon = icon === "warehouse" ? Boxes : Folder;
 
   return (
-    <button
-      type="button"
-      onClick={onToggle}
-      className="flex w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left text-xs font-semibold text-darknavy/70 transition hover:bg-offwhite"
+    <div
+      className="flex w-full items-center justify-between gap-2 rounded-md py-1 text-xs font-semibold text-darknavy/70 transition hover:bg-offwhite"
       style={{ paddingLeft: `${0.5 + depth * 1.05}rem` }}
     >
-      <span className="flex min-w-0 items-center gap-1.5">
-        {isOpen ? <ChevronDown className="h-3.5 w-3.5 shrink-0" /> : <ChevronRight className="h-3.5 w-3.5 shrink-0" />}
-        <Icon className="h-3.5 w-3.5 shrink-0 text-violet-500" aria-hidden="true" />
-        <span className="truncate">{label}</span>
+      <span className="flex min-w-0 flex-1 items-center gap-1">
+        <button
+          type="button"
+          onClick={onToggle}
+          className="grid h-6 w-6 shrink-0 place-items-center rounded text-darknavy/45 transition hover:bg-white hover:text-darknavy"
+          aria-label={`${isOpen ? "Collapse" : "Expand"} ${label}`}
+        >
+          {isOpen ? <ChevronDown className="h-3.5 w-3.5 shrink-0" /> : <ChevronRight className="h-3.5 w-3.5 shrink-0" />}
+        </button>
+        <button
+          type="button"
+          onClick={onClick}
+          className="flex min-w-0 flex-1 items-center gap-1.5 rounded px-1 py-1 text-left transition hover:text-darknavy"
+        >
+          <Icon className="h-3.5 w-3.5 shrink-0 text-violet-500" aria-hidden="true" />
+          <span className="truncate">{label}</span>
+        </button>
       </span>
       <span className="rounded-full bg-offwhite px-1.5 py-0.5 text-[10px] text-darknavy/45">{count}</span>
-    </button>
+    </div>
   );
 }
 

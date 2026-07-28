@@ -2,7 +2,7 @@ import type { WarehouseInventoryStockItem as WarehouseStockItem } from "@/app/sr
 import type { WarehouseStorageRecord, WarehouseStorageStatus } from "@/app/src/types/modules/warehouse-management/warehouse-storage/WarehouseStorageTypes";
 import type { WarehouseRecord } from "@/app/src/types/modules/warehouse-management/warehouses/WarehouseTypes";
 
-type LayoutKind = "ambient" | "cold" | "branch";
+type LayoutKind = "ambient" | "bulk" | "branch" | "cold" | "hazmat";
 
 type SlotPlan = {
   aisle: string;
@@ -31,6 +31,16 @@ const LayoutPlans: Record<LayoutKind, SlotPlan[]> = {
     { aisle: "01", binCount: 4, locationType: "General Storage", rackStart: 1, racks: 1, shelfCount: 2, zone: "STOCK" },
     { aisle: "02", binCount: 4, locationType: "Display", rackStart: 2, racks: 1, shelfCount: 2, zone: "DISPLAY" },
     { aisle: "03", binCount: 2, locationType: "Blocked", rackStart: 3, racks: 1, shelfCount: 1, zone: "HOLD" },
+  ],
+  bulk: [
+    { aisle: "01", binCount: 2, locationType: "Bulk Floor", rackStart: 1, racks: 3, shelfCount: 1, zone: "BULK" },
+    { aisle: "02", binCount: 2, locationType: "Pallet", rackStart: 4, racks: 3, shelfCount: 1, zone: "BULK" },
+    { aisle: "03", binCount: 2, locationType: "Dispatch", rackStart: 1, racks: 2, shelfCount: 1, zone: "STAGE" },
+  ],
+  hazmat: [
+    { aisle: "01", binCount: 2, locationType: "Controlled", rackStart: 1, racks: 2, shelfCount: 2, zone: "HAZ" },
+    { aisle: "02", binCount: 2, locationType: "Quarantine", rackStart: 3, racks: 1, shelfCount: 2, zone: "QA" },
+    { aisle: "03", binCount: 2, locationType: "Receiving", rackStart: 4, racks: 1, shelfCount: 1, zone: "RCV" },
   ],
 };
 
@@ -147,17 +157,28 @@ function createItem(
 }
 
 function getThreeWarehouseSources(warehouses: WarehouseRecord[]) {
-  if (warehouses.length > 0) {
-    return warehouses.slice(0, 3);
-  }
-
   const fallbackWarehouses = [
     createWarehouse("demo-wh-main", "WH-MAIN", "Main Warehouse", "Head Office"),
     createWarehouse("demo-wh-cold", "WH-COLD", "Cold Storage", "Head Office"),
     createWarehouse("demo-wh-branch", "WH-BRANCH", "Branch Stockroom", "Branch"),
+    createWarehouse("demo-wh-bulk", "WH-BULK", "Bulk Distribution", "Logistics"),
+    createWarehouse("demo-wh-hazmat", "WH-HAZ", "Controlled Materials", "Compliance"),
   ];
+  const sourceWarehouses = warehouses.slice(0, 5);
+  const sourceKeys = new Set(
+    sourceWarehouses.flatMap((warehouse) => [
+      normalizeWarehouseIdentity(warehouse.code),
+      normalizeWarehouseIdentity(warehouse.name),
+    ]),
+  );
+  const distinctFallbacks = fallbackWarehouses.filter((warehouse) => {
+    const codeKey = normalizeWarehouseIdentity(warehouse.code);
+    const nameKey = normalizeWarehouseIdentity(warehouse.name);
 
-  return fallbackWarehouses;
+    return !sourceKeys.has(codeKey) && !sourceKeys.has(nameKey);
+  });
+
+  return [...sourceWarehouses, ...distinctFallbacks].slice(0, 5);
 }
 
 function createWarehouse(id: string, code: string, name: string, branchName: string): WarehouseRecord {
@@ -188,7 +209,9 @@ function createWarehouse(id: string, code: string, name: string, branchName: str
 }
 
 function getLayoutKind(index: number): LayoutKind {
-  return index === 1 ? "cold" : index === 2 ? "branch" : "ambient";
+  const layoutKinds: LayoutKind[] = ["ambient", "cold", "branch", "bulk", "hazmat"];
+
+  return layoutKinds[index % layoutKinds.length] ?? "ambient";
 }
 
 function getStatusForSequence(sequence: number, locationType: string): WarehouseStorageStatus {
@@ -250,10 +273,16 @@ function getTemperatureZone(zone: string) {
 function getItemName(layoutKind: LayoutKind, index: number) {
   const itemNames: Record<LayoutKind, string[]> = {
     ambient: ["Premium Coffee", "Jasmine Rice", "Canned Tuna", "Pasta Case"],
+    bulk: ["Palletized Flour", "Drum Stock", "Carton Stack", "Outbound Load"],
     branch: ["Display Pack", "Shelf Refill", "Counter Stock", "Promo Bundle"],
     cold: ["Fresh Milk", "Frozen Meat", "Chilled Juice", "Ice Cream Case"],
+    hazmat: ["Cleaning Agent", "Controlled Chemical", "Safety Stock", "Inspection Lot"],
   };
   const names = itemNames[layoutKind];
 
   return `${names[index % names.length]} ${String(index + 1).padStart(2, "0")}`;
+}
+
+function normalizeWarehouseIdentity(value: string | undefined) {
+  return value?.trim().toLowerCase().replace(/[^a-z0-9]+/g, "") ?? "";
 }

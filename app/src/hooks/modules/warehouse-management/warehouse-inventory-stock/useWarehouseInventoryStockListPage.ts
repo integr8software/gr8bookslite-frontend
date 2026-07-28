@@ -30,6 +30,7 @@ export function useWarehouseInventoryStockListPage() {
   const [query, setQueryState] = useState("");
   const [statusFilter, setStatusFilterState] = useState("Active");
   const [warehouseFilter, setWarehouseFilterState] = useState(warehouseId || "All");
+  const [locationFilter, setLocationFilterState] = useState("All");
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
@@ -37,8 +38,8 @@ export function useWarehouseInventoryStockListPage() {
   const [sorting, setSorting] = useState<SortingState>([{ id: "warehouse", desc: false }]);
   const records = useMemo(() => createWarehouseInventoryStockRows(displayWarehouses), [displayWarehouses]);
   const filteredRecords = useMemo(
-    () => filterWarehouseModuleRows(records, query, statusFilter, warehouseFilter),
-    [query, records, statusFilter, warehouseFilter],
+    () => filterWarehouseModuleRows(records, query, statusFilter, warehouseFilter, locationFilter),
+    [locationFilter, query, records, statusFilter, warehouseFilter],
   );
   const columns = useMemo(
     () => createWarehouseModuleColumns(WarehouseInventoryStockTableColumns),
@@ -56,6 +57,7 @@ export function useWarehouseInventoryStockListPage() {
     getSortedRowModel: getSortedRowModel(),
   });
   const statuses = getWarehouseModuleStatuses(records);
+  const locationCodes = useMemo(() => getWarehouseInventoryLocationCodes(records, warehouseFilter), [records, warehouseFilter]);
 
   function setQuery(value: string) {
     setQueryState(value);
@@ -69,6 +71,12 @@ export function useWarehouseInventoryStockListPage() {
 
   function setWarehouseFilter(value: string) {
     setWarehouseFilterState(value);
+    setLocationFilterState("All");
+    table.setPageIndex(0);
+  }
+
+  function setLocationFilter(value: string) {
+    setLocationFilterState(value);
     table.setPageIndex(0);
   }
 
@@ -76,6 +84,7 @@ export function useWarehouseInventoryStockListPage() {
     setQueryState("");
     setStatusFilterState("Active");
     setWarehouseFilterState(warehouseId || "All");
+    setLocationFilterState("All");
     table.setPageIndex(0);
   }
 
@@ -84,11 +93,14 @@ export function useWarehouseInventoryStockListPage() {
     isLoading,
     isRefreshing,
     lastSyncedAt,
+    locationCodes,
+    locationFilter,
     query,
     records,
     refreshRecords: refreshWarehouses,
     resetFilters,
     setQuery,
+    setLocationFilter,
     setStatusFilter,
     setWarehouseFilter,
     statuses,
@@ -127,16 +139,29 @@ function filterWarehouseModuleRows(
   query: string,
   statusFilter: string,
   warehouseId: string,
+  locationCode: string,
 ) {
   const normalizedQuery = normalizeLowercaseText(query);
 
   return rows.filter(
     (row) =>
       (!warehouseId || warehouseId === "All" || row.warehouseId === warehouseId) &&
+      (locationCode === "All" || row.values[10] === locationCode) &&
       (statusFilter === "All" || row.status === statusFilter) &&
       (!normalizedQuery ||
         [row.status, ...row.values].join(" ").toLowerCase().includes(normalizedQuery)),
   );
+}
+
+function getWarehouseInventoryLocationCodes(rows: WarehouseModuleRecord[], warehouseId: string) {
+  return Array.from(
+    new Set(
+      rows
+        .filter((row) => !warehouseId || warehouseId === "All" || row.warehouseId === warehouseId)
+        .map((row) => row.values[10])
+        .filter((value): value is string => Boolean(value && value !== "-")),
+    ),
+  ).sort((first, second) => first.localeCompare(second));
 }
 
 function getWarehouseModuleStatuses(rows: WarehouseModuleRecord[]) {

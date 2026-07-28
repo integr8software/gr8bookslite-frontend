@@ -1,51 +1,20 @@
 "use client";
 
-import { Search } from "lucide-react";
-import { DeliveryPlanningDispatchTablePaginationStorageKey } from "@/app/src/constants/modules/delivery-vehicle-management/delivery-planning-dispatch/DeliveryPlanningDispatchConstants";
+import {
+	DeliveryPlanningDispatchHref,
+	DeliveryPlanningDispatchTablePaginationStorageKey,
+} from "@/app/src/constants/modules/delivery-vehicle-management/delivery-planning-dispatch/DeliveryPlanningDispatchConstants";
 import { useDeliveryPlanningDispatchListPage } from "@/app/src/hooks/modules/delivery-vehicle-management/delivery-planning-dispatch/useDeliveryPlanningDispatchListPage";
-import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
-import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
-import { getColumnMetaClassName } from "@/app/src/ui/shared/module/module-table/utils";
+import { DeliveryVehicleModuleListPage } from "@/app/src/ui/modules/delivery-vehicle-management/DeliveryVehicleModuleListPage";
 
 export function DeliveryPlanningDispatchListPage() {
-  const page = useDeliveryPlanningDispatchListPage();
+	const page = useDeliveryPlanningDispatchListPage();
 
-  return (
-    <section className="grid gap-5">
-      <ModuleHeader
-        titleAs="h1"
-        eyebrow={`${page.config.code} · Delivery Vehicle Management`}
-        title={page.config.title}
-        description={page.config.description}
-      />
-      <ModuleTable
-        emptyTitle={`No ${page.config.title.toLowerCase()} found`}
-        emptyDescription={`No ${page.config.noun} records are available yet.`}
-        emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
-        minWidthClassName="min-w-[82rem]"
-        paginationStorageKey={DeliveryPlanningDispatchTablePaginationStorageKey}
-        table={page.table}
-        tableTitle={page.config.title}
-        renderRow={(row) => (
-          <tr key={row.id} className="module-table-row">
-            {row.getVisibleCells().map((cell) => (
-              <td
-                key={cell.id}
-                className={`px-4 py-3.5 align-middle text-sm text-darknavy ${getColumnMetaClassName(cell.column.columnDef.meta)}`}
-              >
-                {cell.column.id === "status" ? (
-                  <ModuleStatusBadge status={row.original.status} />
-                ) : cell.column.id === "actions" ? (
-                  <span className="text-darknavy/35">—</span>
-                ) : (
-                  String(cell.getValue() || "—")
-                )}
-              </td>
-            ))}
-          </tr>
-        )}
-      />
-    </section>
-  );
+	return (
+		<DeliveryVehicleModuleListPage
+			href={DeliveryPlanningDispatchHref}
+			page={page}
+			paginationStorageKey={DeliveryPlanningDispatchTablePaginationStorageKey}
+		/>
+	);
 }

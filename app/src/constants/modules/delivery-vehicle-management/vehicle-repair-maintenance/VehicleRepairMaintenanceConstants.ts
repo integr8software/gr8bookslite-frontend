@@ -2,6 +2,7 @@ import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogDat
 import type { DeliveryVehicleModuleConfig } from "@/app/src/types/modules/delivery-vehicle-management/DeliveryVehicleModuleTypes";
 
 export const VehicleRepairMaintenanceHref = MODULE_ROUTE_MAP.DVMR;
+export const VehicleRepairMaintenanceApiPath = "/delivery-vehicle-management/vehicle-repair-maintenance";
 export const VehicleRepairMaintenanceTablePaginationStorageKey =
   "delivery-vehicle-management:vehicle-repair-maintenance";
 
@@ -16,7 +17,7 @@ export const VehicleRepairMaintenanceConfig: DeliveryVehicleModuleConfig = {
   statuses: ["Draft", "Scheduled", "In Progress", "Waiting for Parts", "Completed", "Released", "Cancelled"],
   categories: ["Inspection Schedule", "Inspection Results", "Reported Defects", "Maintenance Requests", "Repair Work Orders", "Service History", "Maintenance Schedule"],
   fields: [
-    { key: "vehicle", label: "Vehicle", required: true, type: "select", options: ["FLEET-014 · Isuzu N-Series", "FLEET-021 · Toyota HiAce", "FLEET-032 · Hino 500"] },
+    { key: "vehicle", label: "Vehicle", required: true, type: "select", options: ["FLEET-014 - Isuzu N-Series", "FLEET-021 - Toyota HiAce", "FLEET-032 - Hino 500"] },
     { key: "maintenanceType", label: "Maintenance type", required: true, type: "select", options: ["Preventive", "Corrective", "Emergency", "Inspection Repair", "Tire", "Registration/Compliance"] },
     { key: "priority", label: "Priority", required: true, type: "select", options: ["Low", "Normal", "High", "Critical"] },
     { key: "schedule", label: "Scheduled start", required: true, type: "datetime-local" },

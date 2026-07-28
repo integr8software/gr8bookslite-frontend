@@ -2,6 +2,7 @@ import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogDat
 import type { DeliveryVehicleModuleConfig } from "@/app/src/types/modules/delivery-vehicle-management/DeliveryVehicleModuleTypes";
 
 export const TripMonitoringHref = MODULE_ROUTE_MAP.DVTK;
+export const TripMonitoringApiPath = "/delivery-vehicle-management/trip-monitoring";
 export const TripMonitoringTablePaginationStorageKey =
   "delivery-vehicle-management:trip-monitoring";
 

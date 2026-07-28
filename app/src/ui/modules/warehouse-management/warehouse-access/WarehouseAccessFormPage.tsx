@@ -15,7 +15,7 @@ import {
 } from "@/app/src/constants/modules/warehouse-management/warehouse-access/WarehouseAccessConstants";
 import { useWarehouseAccessFormPage } from "@/app/src/hooks/modules/warehouse-management/warehouse-access/useWarehouseAccessFormPage";
 import type { WarehouseAccessUserFilter } from "@/app/src/types/modules/warehouse-management/warehouse-access/WarehouseAccessTypes";
-import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
+import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 
 export function WarehouseAccessFormPage() {
   const page = useWarehouseAccessFormPage();
@@ -37,20 +37,23 @@ export function WarehouseAccessFormPage() {
 
   return (
     <section className="grid gap-3 text-darknavy">
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-xl font-semibold leading-tight sm:text-2xl">Grant Warehouse Access</h1>
-          <p className="mt-1.5 text-sm leading-6 text-darknavy/65">Select warehouses, users, and permissions without leaving the same view.</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Link href={WarehouseAccessHref} className={moduleHeaderActionClassNames.secondary}>
+      <ModuleHeader
+        variant="panel"
+        titleAs="h1"
+        title="Grant Warehouse Access"
+        description="Select warehouses, users, and permissions without leaving the same view."
+        actionsClassName="w-full justify-start sm:ml-auto sm:w-auto sm:justify-end sm:self-start"
+        actions={
+          <>
+          <Link href={WarehouseAccessHref} className={`${moduleHeaderActionClassNames.secondary} order-2 lg:order-1`}>
             <ArrowLeft className="h-4 w-4" /> Back
           </Link>
-          <button type="button" disabled={!canGrant} className={moduleHeaderActionClassNames.primary} onClick={page.grantAccess}>
+          <button type="button" disabled={!canGrant} className={`${moduleHeaderActionClassNames.primary} order-1 lg:order-2`} onClick={page.grantAccess}>
             <ShieldCheck className="h-4 w-4" /> Grant Access
           </button>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       <section className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
         <div className="flex flex-wrap items-center gap-3 border-b border-darknavy/10 px-3 py-2.5">

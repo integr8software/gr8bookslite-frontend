@@ -2,6 +2,7 @@ import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogDat
 import type { DeliveryVehicleModuleConfig } from "@/app/src/types/modules/delivery-vehicle-management/DeliveryVehicleModuleTypes";
 
 export const DeliveryPlanningDispatchHref = MODULE_ROUTE_MAP.DVD;
+export const DeliveryPlanningDispatchApiPath = "/delivery-vehicle-management/delivery-planning-dispatch";
 export const DeliveryPlanningDispatchTablePaginationStorageKey =
   "delivery-vehicle-management:delivery-planning-dispatch";
 
@@ -18,7 +19,7 @@ export const DeliveryPlanningDispatchConfig: DeliveryVehicleModuleConfig = {
   fields: [
     { key: "originWarehouse", label: "Origin warehouse", required: true, type: "select", options: ["Pasig Distribution Hub", "Makati Fulfillment Center", "Cebu Central Warehouse"] },
     { key: "loadPlan", label: "Load plan", required: true },
-    { key: "vehicle", label: "Vehicle", required: true, type: "select", options: ["FLEET-014 · Isuzu N-Series", "FLEET-021 · Toyota HiAce", "FLEET-032 · Hino 500"] },
+    { key: "vehicle", label: "Vehicle", required: true, type: "select", options: ["FLEET-014 - Isuzu N-Series", "FLEET-021 - Toyota HiAce", "FLEET-032 - Hino 500"] },
     { key: "driver", label: "Driver", required: true },
     { key: "route", label: "Route", required: true },
     { key: "plannedDeparture", label: "Planned departure", required: true, type: "datetime-local" },

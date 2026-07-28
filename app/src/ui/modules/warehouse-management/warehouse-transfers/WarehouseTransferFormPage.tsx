@@ -36,7 +36,7 @@ export function WarehouseTransferFormPage() {
 		field: TKey,
 		value: WarehouseModuleFormValues[TKey],
 	) {
-		page.setForm({ ...page.form, [field]: value });
+		page.setForm((current) => ({ ...current, [field]: value }));
 	}
 
 	return (
@@ -44,6 +44,7 @@ export function WarehouseTransferFormPage() {
 			<ModuleHeader
 				variant="panel"
 				titleAs="h1"
+				actionsClassName="w-full justify-start sm:ml-auto sm:w-auto sm:justify-end sm:self-start"
 				title={title}
 				description={
 					isReadonly
@@ -60,7 +61,7 @@ export function WarehouseTransferFormPage() {
 					<>
 						<Link
 							href={WarehouseTransfersHref}
-							className={moduleHeaderActionClassNames.secondary}
+							className={`${moduleHeaderActionClassNames.secondary} order-2 lg:order-1`}
 						>
 							<ArrowLeft className="h-4 w-4" aria-hidden="true" />
 							Back
@@ -69,7 +70,7 @@ export function WarehouseTransferFormPage() {
 							<button
 								type="button"
 								disabled={page.isMutating}
-								className={moduleHeaderActionClassNames.primary}
+								className={`${moduleHeaderActionClassNames.primary} order-1 lg:order-2`}
 								onClick={() => setIsSaveDialogOpen(true)}
 							>
 								<Save className="h-4 w-4" aria-hidden="true" />
@@ -89,7 +90,13 @@ export function WarehouseTransferFormPage() {
 							value={page.form.warehouseId}
 							disabled={isReadonly}
 							className={fieldClassName}
-							onChange={(event) => updateField("warehouseId", event.target.value)}
+							onChange={(event) => {
+								const warehouse = page.warehouses.find((item) => item.id === event.target.value);
+								updateField("warehouseId", event.target.value);
+								if (page.form.transactionType === "Location Transfer") {
+									updateField("destinationWarehouse", warehouse?.name ?? "");
+								}
+							}}
 						>
 							{page.warehouses.map((warehouse) => (
 								<option key={warehouse.id} value={warehouse.id}>
@@ -98,9 +105,79 @@ export function WarehouseTransferFormPage() {
 							))}
 						</select>
 					</label>
+					<label className="grid gap-2">
+						<span className="text-sm font-semibold text-darknavy">Transfer Type</span>
+						<select
+							value={page.form.transactionType}
+							disabled={isReadonly}
+							className={fieldClassName}
+							onChange={(event) => {
+								const sourceWarehouse = page.warehouses.find((warehouse) => warehouse.id === page.form.warehouseId);
+								updateField("transactionType", event.target.value);
+								if (event.target.value === "Location Transfer") {
+									updateField("destinationWarehouse", sourceWarehouse?.name ?? page.form.sourceWarehouse);
+								}
+							}}
+						>
+							<option>Warehouse Transfer</option>
+							<option>Location Transfer</option>
+						</select>
+					</label>
 					<TextField label="Date" readOnly={isReadonly} type="date" value={page.form.date} onChange={(value) => updateField("date", value)} />
 					<TextField label="Transfer Number" readOnly={isReadonly} value={page.form.referenceNumber} onChange={(value) => updateField("referenceNumber", value)} />
-					<TextField label="Destination Warehouse" readOnly={isReadonly} value={page.form.destinationWarehouse} onChange={(value) => updateField("destinationWarehouse", value)} />
+					{page.form.transactionType === "Warehouse Transfer" ? (
+						<label className="grid gap-2">
+							<span className="text-sm font-semibold text-darknavy">Destination Warehouse</span>
+							<select
+								value={page.form.destinationWarehouse}
+								disabled={isReadonly}
+								className={fieldClassName}
+								onChange={(event) => updateField("destinationWarehouse", event.target.value)}
+							>
+								{page.warehouses.map((warehouse) => (
+									<option key={warehouse.id} value={warehouse.name}>
+										{warehouse.name}
+									</option>
+								))}
+							</select>
+						</label>
+					) : (
+						<TextField label="Destination Warehouse" readOnly value={page.form.destinationWarehouse} onChange={(value) => updateField("destinationWarehouse", value)} />
+					)}
+					<label className="grid gap-2">
+						<span className="text-sm font-semibold text-darknavy">Source Location</span>
+						<select
+							value={page.form.locationCode}
+							disabled={isReadonly}
+							className={fieldClassName}
+							onChange={(event) => updateField("locationCode", event.target.value)}
+						>
+							<option value="">Select source location</option>
+							{getWarehouseLocationOptions(page.warehouses, page.form.warehouseId).map((location) => (
+								<option key={location} value={location}>
+									{location}
+								</option>
+							))}
+						</select>
+					</label>
+					<label className="grid gap-2">
+						<span className="text-sm font-semibold text-darknavy">Destination Location</span>
+						<select
+							value={page.form.destinationLocation}
+							disabled={isReadonly}
+							className={fieldClassName}
+							onChange={(event) => updateField("destinationLocation", event.target.value)}
+						>
+							<option value="">Select destination location</option>
+							{getDestinationLocationOptions(page.warehouses, page.form).map((location) => (
+								<option key={location} value={location}>
+									{location}
+								</option>
+							))}
+						</select>
+					</label>
+					<TextField label="Item" readOnly={isReadonly} value={page.form.item} onChange={(value) => updateField("item", value)} />
+					<TextField label="Quantity" readOnly={isReadonly} value={page.form.quantityOut} onChange={(value) => updateField("quantityOut", value)} />
 					<TextField label="Requested By" readOnly={isReadonly} value={page.form.requestedBy} onChange={(value) => updateField("requestedBy", value)} />
 					<TextField label="Approved By" readOnly={isReadonly} value={page.form.approvedBy} onChange={(value) => updateField("approvedBy", value)} />
 					<label className="grid gap-2">
@@ -118,6 +195,9 @@ export function WarehouseTransferFormPage() {
 							))}
 						</select>
 					</label>
+					<div className="md:col-span-2">
+						<TextField label="Notes" readOnly={isReadonly} value={page.form.notes} onChange={(value) => updateField("notes", value)} />
+					</div>
 				</div>
 			</section>
 			<AppDialog
@@ -134,6 +214,35 @@ export function WarehouseTransferFormPage() {
 			/>
 		</form>
 	);
+}
+
+function getWarehouseLocationOptions(
+	warehouses: ReturnType<typeof useWarehouseTransferFormPage>["warehouses"],
+	warehouseId: string,
+) {
+	return (
+		warehouses
+			.find((warehouse) => warehouse.id === warehouseId)
+			?.locations.map((location) => location.locationCode)
+			.filter(Boolean) ?? []
+	);
+}
+
+function getDestinationLocationOptions(
+	warehouses: ReturnType<typeof useWarehouseTransferFormPage>["warehouses"],
+	form: WarehouseModuleFormValues,
+) {
+	if (form.transactionType === "Location Transfer") {
+		return getWarehouseLocationOptions(warehouses, form.warehouseId).filter(
+			(location) => location !== form.locationCode,
+		);
+	}
+
+	const destinationWarehouse = warehouses.find(
+		(warehouse) => warehouse.name === form.destinationWarehouse,
+	);
+
+	return destinationWarehouse?.locations.map((location) => location.locationCode) ?? [];
 }
 
 function WarehouseTransferNotFound() {

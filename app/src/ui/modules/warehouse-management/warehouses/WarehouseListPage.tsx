@@ -109,8 +109,9 @@ export function WarehouseListPage() {
   return (
     <section className="grid min-h-[calc(100vh-8rem)] content-start gap-5 pb-2">
       <ModuleHeader
-        variant="plain"
+        variant="panel"
         titleAs="h1"
+        actionsClassName="w-full justify-start sm:ml-auto sm:w-auto sm:justify-end sm:self-start"
         title="Warehouses"
         description="Manage warehouse locations, stock visibility, and operations."
         eyebrow={
@@ -120,7 +121,7 @@ export function WarehouseListPage() {
           </>
         }
         actions={page.permissions.canCreate ? (
-          <button type="button" onClick={() => setDrawerState({ mode: "add" })} className={moduleHeaderActionClassNames.primary}>
+          <button type="button" onClick={() => setDrawerState({ mode: "add" })} className={`${moduleHeaderActionClassNames.primary} order-1 lg:order-2`}>
             <Plus className="h-4 w-4" aria-hidden="true" />
             Add Warehouse
           </button>

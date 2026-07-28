@@ -19,6 +19,7 @@ export function WarehouseInventoryStockListPage() {
   const page = useWarehouseInventoryStockListPage();
   const hasActiveFilters =
     page.query.trim().length > 0 ||
+    page.locationFilter !== "All" ||
     page.statusFilter !== "Active" ||
     page.warehouseFilter !== "All";
 
@@ -29,6 +30,7 @@ export function WarehouseInventoryStockListPage() {
         titleAs="h1"
         title={WarehouseInventoryStockTitle}
         description={WarehouseInventoryStockDescription}
+        actionsClassName="w-full justify-start sm:ml-auto sm:w-auto sm:justify-end sm:self-start"
         eyebrow={
           <>
             <Search className="h-3.5 w-3.5" aria-hidden="true" />
@@ -38,7 +40,7 @@ export function WarehouseInventoryStockListPage() {
         actions={
           <button
             type="button"
-            className={moduleHeaderActionClassNames.primary}
+            className={`${moduleHeaderActionClassNames.primary} order-1 lg:order-2`}
             onClick={page.refreshRecords}
           >
             <Search className="h-4 w-4" aria-hidden="true" />

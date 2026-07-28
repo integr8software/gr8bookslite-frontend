@@ -2,9 +2,12 @@ import type {
   WarehousePickingDispatchConfig,
   WarehousePickingDispatchModule,
 } from "@/app/src/types/modules/warehouse-management/picking-dispatch/WarehousePickingDispatchTypes";
+import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogData";
 
 const actionColumn = { id: "actions", label: "Action", className: "w-28" };
 const statusColumn = { id: "status", label: "Status", className: "w-36" };
+
+export const WarehousePickingDispatchHref = MODULE_ROUTE_MAP.WPD;
 
 export const WarehousePickingDispatchConfigs: Record<
   WarehousePickingDispatchModule,
@@ -18,11 +21,18 @@ export const WarehousePickingDispatchConfigs: Record<
     columns: columns(
       "document:Pick Document",
       "source:Source Demand",
+      "customer:Customer / Destination",
       "requestedDate:Requested Date",
+      "shipBy:Ship By",
+      "carrier:Carrier",
+      "priority:Priority",
       "items:Items",
       "picked:Picked",
+      "allocatedLocations:Allocated Locations",
       "staging:Staging Location",
+      "wave:Wave",
       "readiness:Readiness",
+      "assignedPicker:Assigned Picker",
     ),
     searchPlaceholder: "Search pick document or source demand",
     warehouseMode: "one",

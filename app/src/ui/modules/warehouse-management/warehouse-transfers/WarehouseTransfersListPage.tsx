@@ -27,6 +27,7 @@ export function WarehouseTransfersListPage() {
       <ModuleHeader
         variant="panel"
         titleAs="h1"
+        actionsClassName="w-full justify-start sm:ml-auto sm:w-auto sm:justify-end sm:self-start"
         title={WarehouseTransfersTitle}
         description={WarehouseTransfersDescription}
         eyebrow={
@@ -38,7 +39,7 @@ export function WarehouseTransfersListPage() {
         actions={
           <Link
             href={`${WarehouseTransfersHref}/add`}
-            className={moduleHeaderActionClassNames.primary}
+            className={`${moduleHeaderActionClassNames.primary} order-1 lg:order-2`}
           >
             <Plus className="h-4 w-4" aria-hidden="true" />
             {WarehouseTransfersActionLabel}

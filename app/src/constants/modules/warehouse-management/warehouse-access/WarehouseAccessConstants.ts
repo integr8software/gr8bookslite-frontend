@@ -23,12 +23,6 @@ export const WarehouseAccessPermissionSkeletonCount = 7;
 
 export const WarehouseAccessRecordFieldSkeletonCount = 3;
 
-export const WarehouseAccessPrimaryButtonClassName =
-  "inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-skyblue px-4 text-sm font-semibold text-white shadow-sm transition hover:brightness-95 disabled:opacity-50";
-
-export const WarehouseAccessSecondaryButtonClassName =
-  "inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-darknavy/15 bg-white px-4 text-sm font-semibold transition hover:bg-offwhite disabled:opacity-40";
-
 export const WarehouseAccessFieldClassName =
   "min-h-11 w-full rounded-md border border-darknavy/15 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20 disabled:cursor-default disabled:bg-offwhite/65 disabled:text-darknavy read-only:bg-offwhite/65";
 

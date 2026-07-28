@@ -157,6 +157,7 @@ function createBlankForm(warehouseId: string): WarehouseModuleFormValues {
     capacity: "",
     capacityUom: "units",
     date: new Date().toISOString().slice(0, 10),
+    destinationLocation: "",
     destinationWarehouse: "",
     item: "",
     locationCode: "",

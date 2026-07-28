@@ -45,6 +45,7 @@ export function WarehouseStorageFormPage() {
 			<ModuleHeader
 				variant="panel"
 				titleAs="h1"
+				actionsClassName="w-full justify-start sm:ml-auto sm:w-auto sm:justify-end sm:self-start"
 				title={title}
 				description={
 					isReadonly
@@ -61,7 +62,7 @@ export function WarehouseStorageFormPage() {
 					<>
 						<Link
 							href={WarehouseStorageHref}
-							className={moduleHeaderActionClassNames.secondary}
+							className={`${moduleHeaderActionClassNames.secondary} order-2 lg:order-1`}
 						>
 							<ArrowLeft className="h-4 w-4" aria-hidden="true" />
 							Back
@@ -70,7 +71,7 @@ export function WarehouseStorageFormPage() {
 							<button
 								type="button"
 								disabled={page.isMutating}
-								className={moduleHeaderActionClassNames.primary}
+								className={`${moduleHeaderActionClassNames.primary} order-1 lg:order-2`}
 								onClick={() => setIsSaveDialogOpen(true)}
 							>
 								<Save className="h-4 w-4" aria-hidden="true" />

@@ -99,6 +99,7 @@ export function useDeliveryVehicleModuleListPage({
     return base;
   }, [config]);
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table owns table state handlers.
   const table = useReactTable({
     data: filteredRecords,
     columns,
@@ -176,6 +177,21 @@ export function useDeliveryVehicleModuleListPage({
     table.setPageIndex(0);
   }
 
+  function updateQuery(value: string) {
+    setQuery(value);
+    table.setPageIndex(0);
+  }
+
+  function updateStatusFilter(value: string) {
+    setStatusFilter(value);
+    table.setPageIndex(0);
+  }
+
+  function updateCategoryFilter(value: string) {
+    setCategoryFilter(value);
+    table.setPageIndex(0);
+  }
+
   function refreshRecords() {
     setIsRefreshing(true);
     window.setTimeout(() => {
@@ -202,10 +218,10 @@ export function useDeliveryVehicleModuleListPage({
     refreshRecords,
     resetFilters,
     saveRecord,
-    setCategoryFilter,
     setEditor,
     setPendingAdvance,
-    setQuery,
-    setStatusFilter,
+    setQuery: updateQuery,
+    setStatusFilter: updateStatusFilter,
+    setCategoryFilter: updateCategoryFilter,
   };
 }

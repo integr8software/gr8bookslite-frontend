@@ -2,9 +2,12 @@ import type {
   WarehouseReceivingPutawayConfig,
   WarehouseReceivingPutawayModule,
 } from "@/app/src/types/modules/warehouse-management/receiving-putaway/WarehouseReceivingPutawayTypes";
+import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogData";
 
 const actionColumn = { id: "actions", label: "Action", className: "w-28" };
 const statusColumn = { id: "status", label: "Status", className: "w-36" };
+
+export const WarehouseReceivingPutawayHref = MODULE_ROUTE_MAP.WRP;
 
 export const WarehouseReceivingPutawayConfigs: Record<
   WarehouseReceivingPutawayModule,
@@ -18,11 +21,18 @@ export const WarehouseReceivingPutawayConfigs: Record<
     columns: columns(
       "document:Receiving Document",
       "source:Source",
+      "supplier:Supplier / Origin",
       "expectedDate:Expected Date",
+      "dockDoor:Dock Door",
+      "receivingType:Type",
       "items:Items",
       "received:Received",
       "putaway:Putaway",
+      "stagingLocation:Staging",
+      "targetLocations:Target Locations",
+      "qcStatus:QC Status",
       "progress:Progress",
+      "handledBy:Handled By",
     ),
     searchPlaceholder: "Search receiving document or source",
     warehouseMode: "one",

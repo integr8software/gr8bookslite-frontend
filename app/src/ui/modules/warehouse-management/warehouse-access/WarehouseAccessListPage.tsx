@@ -8,8 +8,6 @@ import {
   WarehouseAccessPermissionDescriptions,
   WarehouseAccessPermissionOptions,
   WarehouseAccessPermissionSkeletonCount,
-  WarehouseAccessPrimaryButtonClassName,
-  WarehouseAccessSecondaryButtonClassName,
   WarehouseAccessUserSkeletonCount,
 } from "@/app/src/constants/modules/warehouse-management/warehouse-access/WarehouseAccessConstants";
 import { useWarehouseAccessWorkspace } from "@/app/src/hooks/modules/warehouse-management/warehouse-access/useWarehouseAccessWorkspace";
@@ -17,6 +15,7 @@ import type { WarehouseAccessPermission } from "@/app/src/types/modules/warehous
 import type { DrawerState } from "@/app/src/types/modules/warehouse-management/warehouses/WarehouseTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { AppAdvancedDropdown, type AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { WarehouseDrawer } from "@/app/src/ui/modules/warehouse-management/warehouses/WarehouseDrawer";
 
 export function WarehouseAccessListPage() {
@@ -69,7 +68,7 @@ export function WarehouseAccessListPage() {
               <SummaryPill label="Active" value={String(page.activeAccessCount)} />
             </div>
           </div>
-          <Link href={`${WarehouseAccessHref}/add`} className={WarehouseAccessPrimaryButtonClassName}>
+          <Link href={`${WarehouseAccessHref}/add`} className={`${moduleHeaderActionClassNames.primary} order-1 lg:order-2`}>
             <Plus className="h-4 w-4" /> Grant Access
           </Link>
         </div>
@@ -178,13 +177,13 @@ export function WarehouseAccessListPage() {
                   <Trash2 className="h-4 w-4" /> Revoke
                 </button>
                 <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-                  <button type="button" disabled={!page.isDirty} className={WarehouseAccessSecondaryButtonClassName} onClick={page.discardChanges}>
+                  <button type="button" disabled={!page.isDirty} className={moduleHeaderActionClassNames.secondary} onClick={page.discardChanges}>
                     Discard
                   </button>
                   <button
                     type="button"
                     disabled={page.isMutating || !page.isDirty || page.draft.permissions.length === 0}
-                    className={WarehouseAccessPrimaryButtonClassName}
+                    className={moduleHeaderActionClassNames.primary}
                     onClick={page.saveChanges}
                   >
                     <Check className="h-4 w-4" /> Save
@@ -244,7 +243,7 @@ function EmptyAccessState({ compact = false, query, warehouseName }: { compact?:
           {hasSearch ? "Try another search term or clear the search field." : `${warehouseName} does not have assigned users yet.`}
         </p>
         {hasSearch || compact ? null : (
-          <Link href={`${WarehouseAccessHref}/add`} className={`${WarehouseAccessPrimaryButtonClassName} mt-4`}>
+          <Link href={`${WarehouseAccessHref}/add`} className={`${moduleHeaderActionClassNames.primary} mt-4`}>
             <Plus className="h-4 w-4" /> Grant Access
           </Link>
         )}

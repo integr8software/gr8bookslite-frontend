@@ -22,6 +22,7 @@ export type WarehouseModuleFormValues = {
   balance: string;
   binNo: string;
   date: string;
+  destinationLocation: string;
   destinationWarehouse: string;
   item: string;
   capacity: string;

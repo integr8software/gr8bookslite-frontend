@@ -1,17 +1,18 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import {
-  ChevronDown,
-  Edit3,
-  Eye,
   Plus,
   Search,
   Warehouse,
   X,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import { WarehousePickingDispatchPaginationStorageKey } from "@/app/src/constants/modules/warehouse-management/picking-dispatch/WarehousePickingDispatchConstants";
+import {
+  WarehousePickingDispatchHref,
+  WarehousePickingDispatchPaginationStorageKey,
+} from "@/app/src/constants/modules/warehouse-management/picking-dispatch/WarehousePickingDispatchConstants";
 import { useWarehousePickingDispatchListPage } from "@/app/src/hooks/modules/warehouse-management/picking-dispatch/useWarehousePickingDispatchListPage";
 import type {
   WarehousePickingDispatchColumn,
@@ -26,6 +27,10 @@ import {
 import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import {
+  ModuleTableActionLink,
+  ModuleTableActions,
+} from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
+import {
   ModuleTableColumnVisibilityButton,
   ModuleTableExportButton,
   ModuleTableFilterSelect,
@@ -34,6 +39,10 @@ import {
   ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 import { getColumnMetaClassName, joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import {
+  AppAdvancedDropdown,
+  type AppAdvancedDropdownOption,
+} from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 
 type ComposerState = "new" | WarehousePickingDispatchRecord | null;
 
@@ -57,14 +66,13 @@ export function WarehousePickingDispatchListPage() {
         actions={
           <>
             {page.config.primaryAction && page.permissions.canCreate ? (
-              <button
-                type="button"
-                className={moduleHeaderActionClassNames.primary}
-                onClick={() => setComposerState("new")}
+              <Link
+                href={`${WarehousePickingDispatchHref}/add`}
+                className={`${moduleHeaderActionClassNames.primary} order-1 lg:order-2`}
               >
                 <Plus className="h-4 w-4" aria-hidden="true" />
                 {page.config.primaryAction}
-              </button>
+              </Link>
             ) : null}
           </>
         }
@@ -144,6 +152,25 @@ function WarehouseScopeNavigation({
   value: string;
   warehouses: ReadonlyArray<{ code: string; id: string; name: string }>;
 }) {
+  const options: AppAdvancedDropdownOption[] = [
+    ...(allowAllWarehouses
+      ? [
+          {
+            description: "Review picking and dispatch work across every accessible warehouse.",
+            label: "ALL",
+            name: "All Warehouses",
+            value: "All",
+          },
+        ]
+      : []),
+    ...warehouses.map((warehouse) => ({
+      description: "Allocation, picking, staging, and dispatch context.",
+      label: warehouse.code,
+      name: warehouse.name,
+      value: warehouse.id,
+    })),
+  ];
+
   return (
     <nav
       aria-label="Warehouse navigation"
@@ -162,25 +189,20 @@ function WarehouseScopeNavigation({
           </p>
         </div>
       </div>
-      <label className="relative min-w-64">
-        <span className="sr-only">Selected warehouse</span>
-        <select
+      <div className="min-w-0 flex-1 sm:max-w-md">
+        <AppAdvancedDropdown
+          emptyMessage="No warehouses found."
+          isClearable={false}
+          options={options}
+          placeholder="Select warehouse"
+          searchPlaceholder="Search warehouse"
+          showSelectedDetails
           value={value}
-          onChange={(event) => onChange(event.target.value)}
-          className="h-10 w-full appearance-none rounded-md border border-darknavy/15 bg-white pl-3 pr-9 text-sm font-semibold text-darknavy outline-none transition focus:border-skyblue focus:ring-4 focus:ring-skyblue/15"
-        >
-          {allowAllWarehouses ? <option value="All">All Warehouses</option> : null}
-          {warehouses.map((warehouse) => (
-            <option key={warehouse.id} value={warehouse.id}>
-              {warehouse.name} ({warehouse.code})
-            </option>
-          ))}
-        </select>
-        <ChevronDown
-          className="pointer-events-none absolute right-3 top-3 h-4 w-4 text-darknavy/45"
-          aria-hidden="true"
+          onChange={(nextValue) =>
+            onChange(Array.isArray(nextValue) ? (nextValue[0] ?? "") : nextValue)
+          }
         />
-      </label>
+      </div>
     </nav>
   );
 }
@@ -284,26 +306,20 @@ function WorkspaceTable({
                 {cell.column.id === "status" ? (
                   <ModuleStatusBadge status={row.original.status} />
                 ) : cell.column.id === "actions" ? (
-                  <div className="flex items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => page.setSelectedRecordId(row.original.id)}
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-skyblue hover:underline"
-                    >
-                      <Eye className="h-3.5 w-3.5" aria-hidden="true" />
-                      View
-                    </button>
+                  <ModuleTableActions className="w-full !justify-center">
+                    <ModuleTableActionLink
+                      href={`${WarehousePickingDispatchHref}/view/${row.original.id}`}
+                      variant="view"
+                      label={`View ${row.original.cells.document ?? page.config.title}`}
+                    />
                     {page.permissions.canUpdate && !page.config.readOnly ? (
-                      <button
-                        type="button"
-                        aria-label={`Edit ${page.config.title} record`}
-                        onClick={() => onEditRecord(row.original)}
-                        className="text-darknavy/45 hover:text-skyblue"
-                      >
-                        <Edit3 className="h-3.5 w-3.5" aria-hidden="true" />
-                      </button>
+                      <ModuleTableActionLink
+                        href={`${WarehousePickingDispatchHref}/edit/${row.original.id}`}
+                        variant="edit"
+                        label={`Edit ${row.original.cells.document ?? page.config.title}`}
+                      />
                     ) : null}
-                  </div>
+                  </ModuleTableActions>
                 ) : (
                   String(cell.getValue() || "â€”")
                 )}

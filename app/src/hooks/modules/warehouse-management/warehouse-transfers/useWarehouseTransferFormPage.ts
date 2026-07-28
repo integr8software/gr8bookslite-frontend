@@ -9,6 +9,7 @@ import {
 	createWarehouseTransferRows,
 	upsertWarehouseTransferRecord,
 } from "@/app/src/data/modules/warehouse-management/warehouse-transfers/WarehouseTransferData";
+import { createWarehouseStorageDemoWarehouses } from "@/app/src/data/modules/warehouse-management/warehouse-storage/WarehouseStorageMockData";
 import { useWarehousesStore } from "@/app/src/hooks/modules/warehouse-management/warehouses/useWarehouses";
 import type {
 	WarehouseModuleActionMode,
@@ -21,13 +22,14 @@ export function useWarehouseTransferFormPage() {
 	const params = useParams<{ recordId?: string }>();
 	const mode = getActionMode(pathname);
 	const { isMutating, updateWarehouse, warehouses } = useWarehousesStore();
-	const rows = useMemo(() => createWarehouseTransferRows(warehouses), [warehouses]);
+	const displayWarehouses = useMemo(() => createWarehouseStorageDemoWarehouses(warehouses), [warehouses]);
+	const rows = useMemo(() => createWarehouseTransferRows(displayWarehouses), [displayWarehouses]);
 	const row = rows.find((currentRow) => currentRow.id === params.recordId);
 	const needsRecord = mode !== "add";
 	const [form, setForm] = useState<WarehouseModuleFormValues>(() =>
 		needsRecord && row
-			? createWarehouseTransferFormFromRow(row, warehouses)
-			: createBlankWarehouseTransferForm(warehouses),
+			? createWarehouseTransferFormFromRow(row, displayWarehouses)
+			: createBlankWarehouseTransferForm(displayWarehouses),
 	);
 
 	function handleSave(nextForm: WarehouseModuleFormValues) {
@@ -35,14 +37,16 @@ export function useWarehouseTransferFormPage() {
 			form: nextForm,
 			mode,
 			row,
-			warehouses,
+			warehouses: displayWarehouses,
 		});
 		const changedWarehouses = nextWarehouses.filter(
-			(warehouse, index) => warehouse !== warehouses[index],
+			(warehouse, index) => warehouse !== displayWarehouses[index],
 		);
 
 		changedWarehouses.forEach((changedWarehouse) => {
-			updateWarehouse(changedWarehouse);
+			if (!changedWarehouse.id.startsWith("demo-")) {
+				updateWarehouse(changedWarehouse);
+			}
 		});
 
 		router.push(WarehouseTransfersHref);
@@ -56,7 +60,7 @@ export function useWarehouseTransferFormPage() {
 		row,
 		setForm,
 		warehouseHref: WarehouseTransfersHref,
-		warehouses,
+		warehouses: displayWarehouses,
 		handleSave,
 	};
 }

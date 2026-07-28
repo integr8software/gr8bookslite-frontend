@@ -146,10 +146,10 @@ function createItem(
     itemCode,
     itemId: id,
     itemName,
-    lotNumber: "",
+    lotNumber: `LOT-${itemCode}-${String(onHand).padStart(3, "0")}`,
     onHand,
     reserved,
-    serialNumber: "",
+    serialNumber: category === "Controlled" || category === "Quarantine" ? `SN-${itemCode}` : "",
     storageLocation,
     unitCost,
     uom,
@@ -272,11 +272,11 @@ function getTemperatureZone(zone: string) {
 
 function getItemName(layoutKind: LayoutKind, index: number) {
   const itemNames: Record<LayoutKind, string[]> = {
-    ambient: ["Premium Coffee", "Jasmine Rice", "Canned Tuna", "Pasta Case"],
-    bulk: ["Palletized Flour", "Drum Stock", "Carton Stack", "Outbound Load"],
-    branch: ["Display Pack", "Shelf Refill", "Counter Stock", "Promo Bundle"],
-    cold: ["Fresh Milk", "Frozen Meat", "Chilled Juice", "Ice Cream Case"],
-    hazmat: ["Cleaning Agent", "Controlled Chemical", "Safety Stock", "Inspection Lot"],
+    ambient: ["Great Taste White Coffee 30g x 10", "Doña Maria Jasmine Rice 5kg", "Century Tuna Flakes in Oil 180g", "Del Monte Spaghetti Pasta 900g"],
+    bulk: ["Magnolia All-Purpose Flour 25kg", "Cooking Oil Drum 200L", "Corrugated Carton Bundle", "Export Pallet Load"],
+    branch: ["Selecta Ice Cream Promo Pack", "Surf Powder Detergent 1kg", "Counter Display Candy Tray", "Store Replenishment Bundle"],
+    cold: ["Nestle Fresh Milk 1L", "Monterey Frozen Pork Kasim", "Zest-O Chilled Juice Case", "Magnolia Ice Cream 1.5L"],
+    hazmat: ["Zonrox Bleach 1L", "Food-Grade Sanitizer 20L", "Spill Kit Safety Stock", "Quarantine Inspection Lot"],
   };
   const names = itemNames[layoutKind];
 

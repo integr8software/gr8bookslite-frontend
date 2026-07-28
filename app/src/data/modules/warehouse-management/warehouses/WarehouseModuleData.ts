@@ -61,8 +61,13 @@ export function createWarehouseModuleRows(kind: WarehouseModulePageKind, warehou
       createWarehouseModuleRecord(kind, warehouse.id, transfer.id, [
         transfer.date,
         transfer.referenceNumber,
+        transfer.transferType ?? "Warehouse Transfer",
         transfer.sourceWarehouse,
         transfer.destinationWarehouse,
+        transfer.sourceLocation ?? "-",
+        transfer.destinationLocation ?? "-",
+        transfer.item ?? "-",
+        transfer.quantity ?? "-",
         transfer.requestedBy,
         transfer.approvedBy,
         transfer.status,
@@ -83,6 +88,7 @@ export function createBlankWarehouseModuleForm(kind: WarehouseEditableSupportKin
     capacity: "",
     capacityUom: "units",
     date: new Date().toISOString().slice(0, 10),
+    destinationLocation: "",
     destinationWarehouse: warehouses.find((warehouse) => warehouse.id !== firstWarehouse?.id)?.name ?? "",
     item: "",
     locationCode: "",
@@ -100,7 +106,7 @@ export function createBlankWarehouseModuleForm(kind: WarehouseEditableSupportKin
     sourceWarehouse: firstWarehouse?.name ?? "",
     status: kind === "transfers" ? "Draft" : "Active",
     temperatureZone: "",
-    transactionType: "",
+    transactionType: kind === "transfers" ? "Warehouse Transfer" : "",
     user: "",
     userEmail: "",
     userId: "",
@@ -168,11 +174,17 @@ export function createWarehouseModuleFormFromRow(row: WarehouseModuleRecord, war
           ...form,
           approvedBy: record.approvedBy,
           date: record.date,
+          destinationLocation: record.destinationLocation ?? "",
           destinationWarehouse: record.destinationWarehouse,
+          item: record.item ?? "",
+          locationCode: record.sourceLocation ?? "",
+          notes: record.notes ?? "",
+          quantityOut: record.quantity ?? "",
           referenceNumber: record.referenceNumber,
           requestedBy: record.requestedBy,
           sourceWarehouse: record.sourceWarehouse,
           status: record.status,
+          transactionType: record.transferType ?? "Warehouse Transfer",
           warehouseId: warehouse.id,
         }
       : form;
@@ -299,12 +311,24 @@ function upsertRecordIntoWarehouse(
   const record: WarehouseTransferRecord = {
     approvedBy: form.approvedBy.trim(),
     date: form.date,
-    destinationWarehouse: form.destinationWarehouse.trim(),
+    destinationLocation: form.destinationLocation.trim() || undefined,
+    destinationWarehouse:
+      form.transactionType === "Location Transfer"
+        ? warehouse.name
+        : form.destinationWarehouse.trim(),
     id: recordId ?? `transfer-${Date.now()}`,
+    item: form.item.trim() || undefined,
+    notes: form.notes.trim() || undefined,
+    quantity: form.quantityOut.trim() || undefined,
     referenceNumber: form.referenceNumber.trim(),
     requestedBy: form.requestedBy.trim(),
+    sourceLocation: form.locationCode.trim() || undefined,
     sourceWarehouse: warehouse.name,
     status: form.status as WarehouseTransferRecord["status"],
+    transferType:
+      form.transactionType === "Location Transfer"
+        ? "Location Transfer"
+        : "Warehouse Transfer",
   };
 
   return {

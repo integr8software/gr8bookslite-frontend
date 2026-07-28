@@ -16,6 +16,14 @@ export type DeliveryVehicleField = {
   type?: DeliveryVehicleFieldType;
 };
 
+export type DeliveryVehicleFormSection = {
+  key: string;
+  title: string;
+  description?: string;
+  fieldKeys: readonly string[];
+  includeStatus?: boolean;
+};
+
 export type DeliveryVehicleModuleRecord = {
   id: string;
   code: string;
@@ -40,6 +48,7 @@ export type DeliveryVehicleModuleConfig = {
   statuses: readonly string[];
   categories?: readonly string[];
   fields: readonly DeliveryVehicleField[];
+  formSections?: readonly DeliveryVehicleFormSection[];
   tableFieldKeys: readonly string[];
   insightLabel: string;
   insightStatuses: readonly string[];

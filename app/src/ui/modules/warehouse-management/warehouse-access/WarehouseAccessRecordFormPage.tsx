@@ -42,6 +42,7 @@ export function WarehouseAccessRecordFormPage() {
       <ModuleHeader
         variant="panel"
         titleAs="h1"
+        actionsClassName="w-full justify-start sm:ml-auto sm:w-auto sm:justify-end sm:self-start"
         title={title}
         description={isReadonly ? "Review the selected warehouse access assignment." : "Assign a user and permissions to a warehouse."}
         eyebrow={
@@ -52,12 +53,12 @@ export function WarehouseAccessRecordFormPage() {
         }
         actions={
           <>
-            <Link href={WarehouseAccessHref} className={moduleHeaderActionClassNames.secondary}>
+            <Link href={WarehouseAccessHref} className={`${moduleHeaderActionClassNames.secondary} order-2 lg:order-1`}>
               <ArrowLeft className="h-4 w-4" aria-hidden="true" />
               Back
             </Link>
             {!isReadonly ? (
-              <button type="button" disabled={page.isMutating} className={moduleHeaderActionClassNames.primary} onClick={() => setIsSaveDialogOpen(true)}>
+              <button type="button" disabled={page.isMutating} className={`${moduleHeaderActionClassNames.primary} order-1 lg:order-2`} onClick={() => setIsSaveDialogOpen(true)}>
                 <Save className="h-4 w-4" aria-hidden="true" />
                 Save
               </button>

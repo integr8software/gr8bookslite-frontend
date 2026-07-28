@@ -13,18 +13,18 @@ import type {
 	ServicesMaintenance,
 	ServicesMaintenanceDrawerProps,
 } from "@/app/src/types/modules/financial-maintenance/services-maintenance/ServicesMaintenanceTypes";
-import { ModuleDrawer, getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
-import { ModuleTabs, type ModuleTabItem } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 import { ChartAccountQuickAddDialog } from "@/app/src/ui/modules/financial-maintenance/charts-of-accounts/ChartAccountQuickAddDialog";
 import { ServicesMaintenanceAccountingSetupTab } from "@/app/src/ui/modules/financial-maintenance/services-maintenance/ServicesMaintenanceAccountingSetupTab";
-import { ServicesMaintenanceFields } from "@/app/src/ui/modules/financial-maintenance/services-maintenance/ServicesMaintenanceFields";
-
-type ServicesMaintenanceDrawerTab = "details" | "accounting";
-
-const ServicesMaintenanceDrawerTabs = [
-	{ id: "details", label: "Details" },
-	{ id: "accounting", label: "Accounting Setup" },
-] as const satisfies readonly ModuleTabItem<ServicesMaintenanceDrawerTab>[];
+import {
+	FormField,
+	ServicesMaintenanceFields,
+} from "@/app/src/ui/modules/financial-maintenance/services-maintenance/ServicesMaintenanceFields";
+import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
+import { ModuleDrawer, getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
+import {
+	MaintenanceActiveStatusSwitchOption,
+	MaintenanceInactiveStatusSwitchOption,
+} from "@/app/src/utils/status.util";
 
 export function ServicesMaintenanceDrawer({
 	isOpen,
@@ -54,8 +54,6 @@ function ServicesMaintenanceDrawerPanel({
 	onClose: () => void;
 	service?: ServicesMaintenance;
 }) {
-	const [activeTab, setActiveTab] =
-		useState<ServicesMaintenanceDrawerTab>("details");
 	const [isAccountTitleDialogOpen, setIsAccountTitleDialogOpen] =
 		useState(false);
 	const page = useServicesMaintenanceFormPage({
@@ -97,38 +95,42 @@ function ServicesMaintenanceDrawerPanel({
 					onSubmit={page.handleSubmit}
 					className="grid gap-5 px-6 py-5"
 				>
-					<ModuleTabs
-						activeTab={activeTab}
-						ariaLabel="Service maintenance sections"
-						tabs={ServicesMaintenanceDrawerTabs}
-						onTabChange={setActiveTab}
+					<ServicesMaintenanceFields
+						errors={page.errors}
+						isReadonly={page.isReadonly}
+						values={page.values}
+						onInputChange={page.handleInputChange}
 					/>
 
-					<section className="min-w-0 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
-						{activeTab === "details" ? (
-							<ServicesMaintenanceFields
-								errors={page.errors}
-								isReadonly={page.isReadonly}
-								values={page.values}
-								onInputChange={page.handleInputChange}
-								onStatusChange={page.setStatus}
+					<hr className="border-darknavy/10" />
+
+					<ServicesMaintenanceAccountingSetupTab
+						accountOptions={page.accountOptions}
+						errors={page.errors}
+						isAccountCodeLoading={page.isNextAccountCodeLoading}
+						isReadonly={page.isReadonly}
+						mode={mode}
+						nextAccountCode={page.nextAccountCode}
+						selectedService={service}
+						values={page.values}
+						onAccountSetupModeChange={page.setAccountSetupMode}
+						onAddAccountTitle={openAccountTitleDialog}
+						onRevenueAccountChange={page.setRevenueAccount}
+					/>
+
+					<hr className="border-darknavy/10" />
+
+					<div className="grid gap-4 lg:grid-cols-2">
+						<FormField label="Status" error={page.errors.status} required>
+							<AppSwitch
+								falseOption={MaintenanceInactiveStatusSwitchOption}
+								value={page.values.status}
+								onChange={page.setStatus}
+								readOnly={page.isReadonly}
+								trueOption={MaintenanceActiveStatusSwitchOption}
 							/>
-						) : (
-							<ServicesMaintenanceAccountingSetupTab
-								accountOptions={page.accountOptions}
-								errors={page.errors}
-								isAccountCodeLoading={page.isNextAccountCodeLoading}
-								isReadonly={page.isReadonly}
-								mode={mode}
-								nextAccountCode={page.nextAccountCode}
-								selectedService={service}
-								values={page.values}
-								onAccountSetupModeChange={page.setAccountSetupMode}
-								onAddAccountTitle={openAccountTitleDialog}
-								onRevenueAccountChange={page.setRevenueAccount}
-							/>
-						)}
-					</section>
+						</FormField>
+					</div>
 				</form>
 			</ModuleDrawer>
 			<ChartAccountQuickAddDialog

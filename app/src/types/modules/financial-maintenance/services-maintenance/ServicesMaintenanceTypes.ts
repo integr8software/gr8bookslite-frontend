@@ -140,7 +140,6 @@ export type ServicesMaintenanceFieldsProps = {
   isReadonly: boolean;
   values: ServicesMaintenanceFormValues;
   onInputChange: ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>;
-  onStatusChange: (value: ServicesMaintenanceStatus) => void;
 };
 
 export type ServicesMaintenanceAccountingSetupTabProps = {

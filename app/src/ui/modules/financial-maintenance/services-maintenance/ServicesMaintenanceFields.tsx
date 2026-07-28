@@ -4,18 +4,12 @@ import type {
 	ServicesMaintenanceFieldsProps,
 	ServicesMaintenanceFormFieldProps,
 } from "@/app/src/types/modules/financial-maintenance/services-maintenance/ServicesMaintenanceTypes";
-import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
-import {
-	MaintenanceActiveStatusSwitchOption,
-	MaintenanceInactiveStatusSwitchOption,
-} from "@/app/src/utils/status.util";
 
 export function ServicesMaintenanceFields({
 	errors,
 	isReadonly,
 	values,
 	onInputChange,
-	onStatusChange,
 }: ServicesMaintenanceFieldsProps) {
 	return (
 		<div className="grid gap-4 lg:grid-cols-2">
@@ -40,15 +34,6 @@ export function ServicesMaintenanceFields({
 					readOnly={isReadonly}
 					className={`${ServicesMaintenanceFieldClassName} min-h-28 resize-y py-3`}
 					placeholder={isReadonly ? "No description" : "Enter description"}
-				/>
-			</FormField>
-			<FormField label="Status" error={errors.status} required>
-				<AppSwitch
-					falseOption={MaintenanceInactiveStatusSwitchOption}
-					value={values.status}
-					onChange={onStatusChange}
-					readOnly={isReadonly}
-					trueOption={MaintenanceActiveStatusSwitchOption}
 				/>
 			</FormField>
 		</div>

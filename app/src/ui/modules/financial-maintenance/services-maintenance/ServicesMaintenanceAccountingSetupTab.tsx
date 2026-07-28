@@ -37,6 +37,8 @@ export function ServicesMaintenanceAccountingSetupTab({
 				: nextAccountCode?.accountCode || "Auto series"
 			: (selectedService?.revenueAccountCode ?? "")
 		: (selectedAccount?.accountNumber ?? selectedService?.revenueAccountCode ?? "");
+	const accountCodeLabel = isAuto ? "Possible Account Code" : "Account Code";
+	const accountNameLabel = isAuto ? "Possible Account Name" : "Account Name";
 
 	return (
 		<div className="grid gap-5">
@@ -68,7 +70,7 @@ export function ServicesMaintenanceAccountingSetupTab({
 			</div>
 
 			<div className="grid gap-4 lg:grid-cols-2">
-				<FormField label="Account Code">
+				<FormField label={accountCodeLabel}>
 					<input
 						id="services-maintenance-account-code"
 						value={displayedAccountCode}
@@ -76,7 +78,7 @@ export function ServicesMaintenanceAccountingSetupTab({
 						className={ServicesMaintenanceReadOnlyFieldClassName}
 					/>
 				</FormField>
-				<FormField label="Account Title" required>
+				<FormField label={accountNameLabel} required>
 					<input
 						id="services-maintenance-account-title"
 						value={displayedAccountTitle}

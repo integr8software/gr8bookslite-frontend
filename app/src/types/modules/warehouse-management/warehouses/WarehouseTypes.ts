@@ -1,9 +1,12 @@
 import type { ReactNode } from "react";
 import type { useWarehouseListPage } from "@/app/src/hooks/modules/warehouse-management/warehouses/useWarehouseListPage";
 import type { WarehouseAccessRecord } from "@/app/src/types/modules/warehouse-management/warehouse-access/WarehouseAccessTypes";
-import type { WarehouseStockItem, WarehouseStockMovement } from "@/app/src/types/modules/warehouse-management/warehouse-stock-inquiry/WarehouseStockInquiryTypes";
+import type {
+  WarehouseInventoryStockItem as WarehouseStockItem,
+  WarehouseInventoryStockMovement as WarehouseStockMovement,
+} from "@/app/src/types/modules/warehouse-management/warehouse-inventory-stock/WarehouseInventoryStockTypes";
 import type { WarehouseTransferRecord } from "@/app/src/types/modules/warehouse-management/warehouse-transfers/WarehouseTransferTypes";
-import type { WarehouseStorageRecord } from "@/app/src/types/modules/warehouse-management/storage-locations/WarehouseStorageTypes";
+import type { WarehouseStorageRecord } from "@/app/src/types/modules/warehouse-management/warehouse-storage/WarehouseStorageTypes";
 
 export type WarehouseStatus = "Active" | "Inactive";
 export type ApiWarehouseStatus = "ACTIVE" | "INACTIVE";

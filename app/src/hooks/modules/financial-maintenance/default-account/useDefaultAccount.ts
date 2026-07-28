@@ -23,6 +23,7 @@ import type {
 type DefaultAccountStoreState = {
   defaultAccounts: DefaultAccount[];
   addDefaultAccount: (account: DefaultAccountFormValues) => Promise<DefaultAccount>;
+  addDefaultAccounts: (accounts: DefaultAccountFormValues[]) => Promise<DefaultAccount[]>;
   updateDefaultAccount: (account: DefaultAccount) => Promise<DefaultAccount>;
   updateDefaultAccountStatus: (account: DefaultAccount) => Promise<DefaultAccount>;
   permissions: DefaultAccountPermissions;
@@ -40,6 +41,7 @@ const EmptyPermissions: DefaultAccountPermissions = {
   canUpdate: false,
   canDelete: false,
   canExport: false,
+  canImport: false,
 };
 
 const ReservedRolePermissions: DefaultAccountPermissions = {
@@ -48,6 +50,7 @@ const ReservedRolePermissions: DefaultAccountPermissions = {
   canUpdate: true,
   canDelete: false,
   canExport: true,
+  canImport: true,
 };
 
 const EmptyStatistics: DefaultAccountStatistics = {
@@ -123,8 +126,7 @@ export function useDefaultAccountStore<TSelected = DefaultAccountStoreState>(
   });
   const state = useMemo<DefaultAccountStoreState>(() => {
     const effectiveRole = ResolveAuthProfileEffectiveRole(authProfileQuery.data);
-    const hasReservedRoleAccess =
-      effectiveRole === "ADMIN" || effectiveRole === "SUPER_ADMIN";
+    const hasReservedRoleAccess = effectiveRole === "ADMIN" || effectiveRole === "SUPER_ADMIN";
 
     return {
       defaultAccounts: defaultAccountsQuery.data?.defaultAccounts ?? [],
@@ -133,6 +135,8 @@ export function useDefaultAccountStore<TSelected = DefaultAccountStoreState>(
         : (defaultAccountsQuery.data?.permissions ?? EmptyPermissions),
       statistics: defaultAccountsQuery.data?.statistics ?? EmptyStatistics,
       addDefaultAccount: (account) => addDefaultAccountMutation.mutateAsync(account),
+      addDefaultAccounts: (accounts) =>
+        Promise.all(accounts.map((account) => addDefaultAccountMutation.mutateAsync(account))),
       updateDefaultAccount: (account) => updateDefaultAccountMutation.mutateAsync(account),
       updateDefaultAccountStatus: (account) =>
         updateDefaultAccountStatusMutation.mutateAsync(account),

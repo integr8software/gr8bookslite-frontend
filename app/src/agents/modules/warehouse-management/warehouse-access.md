@@ -6,7 +6,7 @@ Warehouse Access controls which users can work with a warehouse and what actions
 
 - Backend-backed module.
 - Controls permissions at warehouse level.
-- Does not grant access to individual bins, racks, or storage locations directly.
+- Does not grant access to individual bins, racks, or warehouse storage directly.
 
 ## Key Rules
 

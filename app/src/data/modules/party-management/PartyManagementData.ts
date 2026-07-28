@@ -38,7 +38,7 @@ import type {
 import { downloadBlob } from "@/app/src/ui/shared/module/module-table/ModuleTableExportDownload";
 import { todayDateValue } from "@/app/src/utils/date.util";
 import { formatFileSize } from "@/app/src/utils/file.util";
-import { isModuleImportOptionValue } from "@/app/src/utils/module-import-validation.util";
+import { isModuleImportOptionValue } from "@/app/src/utils/module-import.util";
 
 export const PartyAtcCodeSource = {
   label: "BIR Form 2307, January 2018 ENCS - Schedules of Alphanumeric Tax Codes",
@@ -52,6 +52,16 @@ export const PartyDefaultAccountingAccounts = {
   employeeAdvanceAccount: "",
   employeePayableAccount: "",
   vendorAdvanceAccount: "",
+} as const;
+
+const PartyDefaultTaxSourceKeys = {
+  defaultPurchaseInputVatTaxSourceKey: "",
+  defaultPurchaseEwtTaxSourceKey: "",
+  defaultPurchaseFwtTaxSourceKey: "",
+  defaultPurchaseWvatTaxSourceKey: "",
+  defaultSalesOutputVatTaxSourceKey: "",
+  defaultSalesCwtTaxSourceKey: "",
+  defaultSalesWvatTaxSourceKey: "",
 } as const;
 
 type PartyDefaultAccountingAccountValues = {
@@ -92,8 +102,8 @@ export const PartyInformationInitialFormValues: PartyInformationFormValues = {
   termName: "",
   tin: "",
   vatRegistrationType: "",
-  defaultPurchaseTaxClassification: "",
   atcCode: "",
+  ...PartyDefaultTaxSourceKeys,
   email: "",
   contactNo: "",
   landline: "",
@@ -145,8 +155,14 @@ export function createPartyInformationFormValues(
     termName: record.termName ?? "",
     tin: record.tin,
     vatRegistrationType: record.vatRegistrationType,
-    defaultPurchaseTaxClassification: record.defaultPurchaseTaxClassification ?? "",
     atcCode: record.atcCode ? normalizeAtcCode(record.atcCode) : "",
+    defaultPurchaseInputVatTaxSourceKey: record.defaultPurchaseInputVatTaxSourceKey ?? "",
+    defaultPurchaseEwtTaxSourceKey: record.defaultPurchaseEwtTaxSourceKey ?? "",
+    defaultPurchaseFwtTaxSourceKey: record.defaultPurchaseFwtTaxSourceKey ?? "",
+    defaultPurchaseWvatTaxSourceKey: record.defaultPurchaseWvatTaxSourceKey ?? "",
+    defaultSalesOutputVatTaxSourceKey: record.defaultSalesOutputVatTaxSourceKey ?? "",
+    defaultSalesCwtTaxSourceKey: record.defaultSalesCwtTaxSourceKey ?? "",
+    defaultSalesWvatTaxSourceKey: record.defaultSalesWvatTaxSourceKey ?? "",
     email: record.email,
     contactNo: record.contactNo,
     landline: record.landline ?? "",
@@ -210,8 +226,14 @@ export function createPartySubmitPayload(values: PartyInformationFormValues) {
     termName: values.termName,
     tin: values.tin.trim(),
     vatRegistrationType: values.vatRegistrationType,
-    defaultPurchaseTaxClassification: values.defaultPurchaseTaxClassification,
     atcCode: values.atcCode ? normalizeAtcCode(values.atcCode) : "",
+    defaultPurchaseInputVatTaxSourceKey: values.defaultPurchaseInputVatTaxSourceKey,
+    defaultPurchaseEwtTaxSourceKey: values.defaultPurchaseEwtTaxSourceKey,
+    defaultPurchaseFwtTaxSourceKey: values.defaultPurchaseFwtTaxSourceKey,
+    defaultPurchaseWvatTaxSourceKey: values.defaultPurchaseWvatTaxSourceKey,
+    defaultSalesOutputVatTaxSourceKey: values.defaultSalesOutputVatTaxSourceKey,
+    defaultSalesCwtTaxSourceKey: values.defaultSalesCwtTaxSourceKey,
+    defaultSalesWvatTaxSourceKey: values.defaultSalesWvatTaxSourceKey,
     email: values.email.trim() || null,
     contactNo: normalizePartyContactNo(values.contactNo) || null,
     landline: values.landline.trim() || null,
@@ -249,6 +271,13 @@ export function createPartyInformationRecordFromTableRecord(
     address: record.address,
     addresses: record.addresses,
     atcCode: record.atcCode,
+    defaultPurchaseInputVatTaxSourceKey: record.defaultPurchaseInputVatTaxSourceKey,
+    defaultPurchaseEwtTaxSourceKey: record.defaultPurchaseEwtTaxSourceKey,
+    defaultPurchaseFwtTaxSourceKey: record.defaultPurchaseFwtTaxSourceKey,
+    defaultPurchaseWvatTaxSourceKey: record.defaultPurchaseWvatTaxSourceKey,
+    defaultSalesOutputVatTaxSourceKey: record.defaultSalesOutputVatTaxSourceKey,
+    defaultSalesCwtTaxSourceKey: record.defaultSalesCwtTaxSourceKey,
+    defaultSalesWvatTaxSourceKey: record.defaultSalesWvatTaxSourceKey,
     classification: record.classification,
     contactNo: record.contactNo,
     createdBy: record.createdBy,
@@ -281,7 +310,6 @@ export function createPartyInformationRecordFromTableRecord(
     updatedAt: record.updatedAt,
     vendorAdvanceAccount: record.vendorAdvanceAccount,
     vatRegistrationType: record.vatRegistrationType,
-    defaultPurchaseTaxClassification: record.defaultPurchaseTaxClassification,
   };
 }
 
@@ -364,8 +392,8 @@ export function createBlankPartyImportRow(rowNumber: number): PartyImportPreview
       termName: "",
       tin: "",
       vatRegistrationType: "",
-      defaultPurchaseTaxClassification: "",
       atcCode: "",
+      ...PartyDefaultTaxSourceKeys,
       email: "",
       contactNo: "",
       landline: "",
@@ -630,8 +658,8 @@ function createPartyImportPreviewRow(
     vatRegistrationType: normalizeImportedVatRegistrationType(
       getImportedPartyValue(row, indexes.vatRegistrationType),
     ),
-    defaultPurchaseTaxClassification: "",
     atcCode: normalizeAtcCode(getImportedPartyValue(row, indexes.atcCode)),
+    ...PartyDefaultTaxSourceKeys,
     email: getImportedPartyValue(row, indexes.email),
     contactNo: getImportedPartyValue(row, indexes.contactNo),
     landline: getImportedPartyValue(row, indexes.landline),
@@ -1074,8 +1102,14 @@ export function createPartyImportRecord(
     termId: party.termId,
     termName: party.termName.trim(),
     vatRegistrationType: party.vatRegistrationType,
-    defaultPurchaseTaxClassification: party.defaultPurchaseTaxClassification,
     atcCode: party.atcCode ? normalizeAtcCode(party.atcCode) : "",
+    defaultPurchaseInputVatTaxSourceKey: party.defaultPurchaseInputVatTaxSourceKey,
+    defaultPurchaseEwtTaxSourceKey: party.defaultPurchaseEwtTaxSourceKey,
+    defaultPurchaseFwtTaxSourceKey: party.defaultPurchaseFwtTaxSourceKey,
+    defaultPurchaseWvatTaxSourceKey: party.defaultPurchaseWvatTaxSourceKey,
+    defaultSalesOutputVatTaxSourceKey: party.defaultSalesOutputVatTaxSourceKey,
+    defaultSalesCwtTaxSourceKey: party.defaultSalesCwtTaxSourceKey,
+    defaultSalesWvatTaxSourceKey: party.defaultSalesWvatTaxSourceKey,
     email: party.email.trim(),
     contactNo: normalizePartyContactNo(party.contactNo),
     landline: party.landline?.trim() ?? "",
@@ -1180,8 +1214,14 @@ function normalizePartyRecordValues(
     termName: values.termName,
     tin: values.tin.trim(),
     vatRegistrationType: values.vatRegistrationType,
-    defaultPurchaseTaxClassification: values.defaultPurchaseTaxClassification,
     atcCode: values.atcCode ? normalizeAtcCode(values.atcCode) : "",
+    defaultPurchaseInputVatTaxSourceKey: values.defaultPurchaseInputVatTaxSourceKey,
+    defaultPurchaseEwtTaxSourceKey: values.defaultPurchaseEwtTaxSourceKey,
+    defaultPurchaseFwtTaxSourceKey: values.defaultPurchaseFwtTaxSourceKey,
+    defaultPurchaseWvatTaxSourceKey: values.defaultPurchaseWvatTaxSourceKey,
+    defaultSalesOutputVatTaxSourceKey: values.defaultSalesOutputVatTaxSourceKey,
+    defaultSalesCwtTaxSourceKey: values.defaultSalesCwtTaxSourceKey,
+    defaultSalesWvatTaxSourceKey: values.defaultSalesWvatTaxSourceKey,
     email: values.email.trim(),
     contactNo: normalizePartyContactNo(values.contactNo),
     landline: values.landline.trim(),
@@ -1439,14 +1479,22 @@ function normalizeImportedVatRegistrationType(value: string): VatRegistrationTyp
     return "VAT Exempt";
   }
   if (normalized === "nonvat") {
-    return "Non-VAT";
+    return "Non-VAT (0%)";
   }
-  if (
-    ["vatregistered", "zerorated", "capitalgoods", "otherthancapitalgoods", "services"].includes(
-      normalized,
-    )
-  ) {
-    return "VAT Registered";
+  if (normalized === "vatregistered") {
+    return "VAT Registered (12%)";
+  }
+  if (normalized === "zerorated") {
+    return "Zero Rated (0%)";
+  }
+  if (normalized === "capitalgoods") {
+    return "Capital Goods (12%)";
+  }
+  if (normalized === "otherthancapitalgoods") {
+    return "Other than Capital Goods (12%)";
+  }
+  if (normalized === "services") {
+    return "Services (12%)";
   }
 
   return (

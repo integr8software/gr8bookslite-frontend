@@ -58,7 +58,7 @@ export const WarehouseTableColumns: Array<
   { key: "updatedBy", label: "Updated By", className: "w-[12rem]" },
   { key: "updatedAt", label: "Date Modified", className: "w-[14rem]" },
   { key: "status", label: "Status", className: "w-[9rem] text-center" },
-  { id: "actions", label: "Action", className: "w-[10rem] text-center" },
+  { id: "actions", label: "Action", className: "w-[13rem] text-center" },
 ];
 
 export const WarehouseDefaultColumnOrder = WarehouseTableColumns.map((column) => ("key" in column ? column.key : "actions"));

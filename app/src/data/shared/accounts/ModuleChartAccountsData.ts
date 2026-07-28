@@ -18,7 +18,7 @@ export type ModuleChartAccountScope = {
 };
 
 const ModuleChartAccountAccess: Record<string, Record<string, string[]>> = {
-	"maintenance-discount-management": {
+	"maintenance-discount-maintenance": {
 		default: [
 			"accounts-receivable-trade",
 			"accounts-receivable-others",

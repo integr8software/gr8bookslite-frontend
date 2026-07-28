@@ -7,7 +7,6 @@ import type {
   PartyClassification,
   PartyInformationStatus,
   PartyInformationTableRecord,
-  PurchaseTaxClassification,
   PartyType,
   VatRegistrationType,
 } from "@/app/src/types/modules/party-management/PartyManagementTypes";
@@ -81,16 +80,14 @@ export const PartyDefaultNationality = "Filipino";
 export const PartyInformationStatusOptions = ["Active", "Inactive"] as const satisfies readonly PartyInformationStatus[];
 
 export const VatRegistrationTypeOptions = [
-  "VAT Registered",
-  "Non-VAT",
+  "VAT Registered (12%)",
+  "Non-VAT (0%)",
   "VAT Exempt",
+  "Zero Rated (0%)",
+  "Capital Goods (12%)",
+  "Other than Capital Goods (12%)",
+  "Services (12%)",
 ] as const satisfies readonly VatRegistrationType[];
-
-export const PurchaseTaxClassificationOptions = [
-  "Capital Goods",
-  "Other Than Capital Goods",
-  "Services",
-] as const satisfies readonly PurchaseTaxClassification[];
 
 export const BIRAtcSourceUrl = "https://bir-cdn.bir.gov.ph/local/pdf/2307%20Jan%202018%20ENCS%20v3.pdf";
 
@@ -135,7 +132,7 @@ export const PartyManagementTableColumns = [
   { key: "tin", label: "TIN", className: "w-[12rem]" },
   {
     key: "vatRegistrationType",
-    label: "VAT Registration",
+    label: "VAT Registration Type",
     className: "w-[14rem]",
   },
   { key: "gender", label: "Gender", className: "w-[12rem]" },
@@ -231,7 +228,7 @@ export const PartyImportTemplateHeaders = [
   "Nationality",
   "Member Registration Date",
   "TIN No",
-  "VAT Registry",
+  "VAT Registration Type",
   "ATC Code",
   "Email",
   "Mobile Number",

@@ -1,14 +1,10 @@
 export type DeliveryVehicleFeatureKey =
-  | "vehicle-types"
   | "delivery-vehicles"
-  | "vehicle-availability"
-  | "load-planning"
-  | "vehicle-assignment"
-  | "delivery-trips-and-dispatch"
-  | "trip-tracking"
-  | "vehicle-inspections"
-  | "fuel-and-incidents"
-  | "maintenance-and-repairs";
+  | "vehicle-types"
+  | "vehicle-scheduling-assignment"
+  | "delivery-planning-dispatch"
+  | "trip-monitoring"
+  | "vehicle-repair-maintenance";
 
 export type DeliveryVehicleFieldType = "text" | "number" | "date" | "datetime-local" | "select" | "textarea";
 

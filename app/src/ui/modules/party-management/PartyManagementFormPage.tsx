@@ -14,7 +14,7 @@ import { PartyInformationActionHeader } from "@/app/src/ui/modules/party-managem
 import { PartyInformationDetailsFields } from "@/app/src/ui/modules/party-management/PartyInformationDetailsFields";
 import { PartyInformationNotFound } from "@/app/src/ui/modules/party-management/PartyInformationNotFound";
 import { ChartAccountQuickAddDialog } from "@/app/src/ui/modules/financial-maintenance/charts-of-accounts/ChartAccountQuickAddDialog";
-import { TermManagementQuickAddDialog } from "@/app/src/ui/modules/financial-maintenance/term-management/TermManagementQuickAddDialog";
+import { TermsMaintenanceQuickAddDialog } from "@/app/src/ui/modules/financial-maintenance/terms-maintenance/TermsMaintenanceQuickAddDialog";
 import { PartyAccountingAccountFieldLabels } from "@/app/src/constants/modules/party-management/PartyManagementConstants";
 
 const PartyManagementFormId = "party-management-form";
@@ -94,12 +94,12 @@ function PartyManagementFormPageInner() {
         />
         <PartyInformationDetailsFields
           accountOptions={page.accountOptions}
-          atcOptions={page.atcOptions}
           errors={page.errors}
           isClassificationSelected={page.isClassificationSelected}
           isPartyCodeReadonly={page.isPartyCodeReadonly}
           isReadonly={page.isReadonly}
           partyTypeOptions={page.partyTypeOptions}
+          taxDefaultOptions={page.taxDefaultOptions}
           termOptions={page.termOptions}
           values={page.values}
           syncedAddressSources={page.syncedAddressSources}
@@ -112,7 +112,6 @@ function PartyManagementFormPageInner() {
           onInputChange={page.handleInputChange}
           onPartyTypesChange={page.handlePartyTypesChange}
           onSelectBarangay={page.selectBarangay}
-          onSelectAtcCode={page.selectAtcCode}
           onSelectAutocompleteAddress={page.selectAutocompleteAddress}
           onSyncAutocompleteAddressDetails={page.syncAutocompleteAddressDetails}
           onSelectCityMunicipality={page.selectCityMunicipality}
@@ -168,7 +167,7 @@ function PartyManagementFormPageInner() {
           setAccountTitleDialog(null);
         }}
       />
-      <TermManagementQuickAddDialog
+      <TermsMaintenanceQuickAddDialog
         isOpen={isTermDialogOpen}
         onClose={() => setIsTermDialogOpen(false)}
         onSaved={(term) => {

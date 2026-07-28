@@ -1,0 +1,772 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import {
+  Boxes,
+  ChevronDown,
+  ChevronRight,
+  Expand,
+  Folder,
+  Grid3X3,
+  MapPinned,
+  Maximize2,
+  Minus,
+  PackageSearch,
+  Plus,
+  Search,
+  type LucideIcon,
+} from "lucide-react";
+import { WarehouseStorageHref } from "@/app/src/constants/modules/warehouse-management/warehouse-storage/WarehouseStorageConstants";
+import type {
+  WarehouseStorageListRecord,
+  WarehouseStorageStatus,
+} from "@/app/src/types/modules/warehouse-management/warehouse-storage/WarehouseStorageTypes";
+import type { WarehouseRecord } from "@/app/src/types/modules/warehouse-management/warehouses/WarehouseTypes";
+import { ModuleTableFilterSelect } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
+import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+
+type WarehouseStorageMapViewProps = {
+  isFullView?: boolean;
+  isLoading: boolean;
+  onQueryChange: (value: string) => void;
+  onSelectRecord: (recordId: string) => void;
+  onStatusFilterChange: (value: string) => void;
+  onWarehouseFilterChange: (value: string) => void;
+  query: string;
+  records: WarehouseStorageListRecord[];
+  selectedRecordId: string | null;
+  statusFilter: string;
+  statuses: string[];
+  warehouseFilter: string;
+  warehouses: WarehouseRecord[];
+};
+
+type LayoutSlot = {
+  bin: string;
+  id: string;
+  label: string;
+  rack: string;
+  record?: WarehouseStorageListRecord;
+  shelf: string;
+  status: WarehouseStorageStatus | "Occupied" | "Full" | "Maintenance";
+};
+
+type ShortcutArea = {
+  icon: LucideIcon;
+  label: string;
+  targetRecord?: WarehouseStorageListRecord;
+};
+
+const rackNumbers = ["01", "02", "03", "04", "05", "06"];
+const aisleNumbers = ["01", "02", "03"];
+const shelfNumbers = ["02", "01"];
+const MaxBinsPerShelf = 4;
+const MinZoom = 75;
+const MaxZoom = 150;
+const ZoomStep = 25;
+
+export function WarehouseStorageMapView({
+  isFullView = false,
+  isLoading,
+  onQueryChange,
+  onSelectRecord,
+  onStatusFilterChange,
+  onWarehouseFilterChange,
+  query,
+  records,
+  selectedRecordId,
+  statusFilter,
+  statuses,
+  warehouseFilter,
+  warehouses,
+}: WarehouseStorageMapViewProps) {
+  const [typeFilter, setTypeFilter] = useState("All");
+  const [zoom, setZoom] = useState(100);
+  const visibleRecords = useMemo(
+    () =>
+      typeFilter === "All"
+        ? records
+        : records.filter((record) => (record.location.locationType || "Unassigned") === typeFilter),
+    [records, typeFilter],
+  );
+  const selectedRecord =
+    visibleRecords.find((record) => record.id === selectedRecordId) ?? visibleRecords[0] ?? null;
+  const selectedWarehouse = warehouses.find((warehouse) => warehouse.id === selectedRecord?.warehouseId);
+  const activeWarehouseRecords = selectedWarehouse
+    ? visibleRecords.filter((record) => record.warehouseId === selectedWarehouse.id)
+    : visibleRecords;
+  const locationTypes = Array.from(
+    new Set(records.map((record) => record.location.locationType || "Unassigned")),
+  ).sort((first, second) => first.localeCompare(second));
+  const statusOptions = [
+    { label: "All Statuses", value: "All" },
+    ...statuses.map((status) => ({ label: status, value: status })),
+  ];
+  const typeOptions = [
+    { label: "All Types", value: "All" },
+    ...locationTypes.map((type) => ({ label: type, value: type })),
+  ];
+  const zones = Array.from(
+    new Set(activeWarehouseRecords.map((record) => record.location.zone || "General")),
+  ).sort((first, second) => first.localeCompare(second));
+  const primaryZone = zones[0] ?? "A";
+  const layoutSlots = createLayoutSlots(activeWarehouseRecords, primaryZone);
+  const navigatorKey = useMemo(
+    () => [
+      warehouses.map((warehouse) => warehouse.id).join(","),
+      visibleRecords.map((record) => record.id).join(","),
+    ].join("|"),
+    [visibleRecords, warehouses],
+  );
+  const shortcutAreas: ShortcutArea[] = [
+    { icon: Boxes, label: "Zone B", targetRecord: getFirstRecordForZone(activeWarehouseRecords, "B") },
+    {
+      icon: PackageSearch,
+      label: "Receiving Area",
+      targetRecord: getFirstRecordForType(activeWarehouseRecords, "Receiving"),
+    },
+    {
+      icon: Folder,
+      label: "Quality Hold",
+      targetRecord: getFirstRecordForType(activeWarehouseRecords, "Quality Hold"),
+    },
+    {
+      icon: MapPinned,
+      label: "Dispatch Area",
+      targetRecord: getFirstRecordForType(activeWarehouseRecords, "Dispatch"),
+    },
+  ];
+
+  useEffect(() => {
+    if (selectedRecord && selectedRecord.id !== selectedRecordId) {
+      onSelectRecord(selectedRecord.id);
+    }
+  }, [onSelectRecord, selectedRecord, selectedRecordId]);
+
+  if (isLoading) {
+    return (
+      <section className="grid gap-3 lg:grid-cols-[18rem_minmax(0,1fr)]">
+        <div className="h-[34rem] animate-pulse rounded-lg bg-white shadow-sm" />
+        <div className="h-[34rem] animate-pulse rounded-lg bg-white shadow-sm" />
+      </section>
+    );
+  }
+
+  if (records.length === 0) {
+    return (
+      <section className="rounded-lg border border-dashed border-darknavy/15 bg-white p-8 text-center shadow-sm">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-offwhite text-darknavy/55">
+          <Grid3X3 className="h-5 w-5" aria-hidden="true" />
+        </div>
+        <h2 className="mt-4 text-lg font-semibold text-darknavy">No locations to map</h2>
+        <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-darknavy/55">
+          Add structured storage codes first. The visual layout will group locations by warehouse,
+          zone, aisle, rack, shelf, and bin.
+        </p>
+      </section>
+    );
+  }
+
+  return (
+    <section className={joinClasses("grid min-h-[34rem] gap-3", isFullView ? "xl:grid-cols-[20rem_minmax(0,1fr)]" : "lg:grid-cols-[18rem_minmax(0,1fr)]")}>
+      <LocationNavigator
+        key={navigatorKey}
+        query={query}
+        records={visibleRecords}
+        selectedRecordId={selectedRecord?.id ?? null}
+        warehouses={warehouses}
+        onQueryChange={onQueryChange}
+        onSelectRecord={onSelectRecord}
+        onSelectWarehouse={(warehouseId) => {
+          onWarehouseFilterChange(warehouseId);
+          const firstRecord = visibleRecords.find((record) => record.warehouseId === warehouseId);
+
+          if (firstRecord) {
+            onSelectRecord(firstRecord.id);
+          }
+        }}
+      />
+      <div className="min-w-0 rounded-lg border border-darknavy/10 bg-white shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-darknavy/10 p-3">
+          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+            <label className="relative min-w-[13rem] flex-1 sm:max-w-xs">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/35" aria-hidden="true" />
+              <input
+                value={query}
+                onChange={(event) => onQueryChange(event.target.value)}
+                placeholder="Search in layout..."
+                className="h-10 w-full rounded-md border border-darknavy/10 bg-white pl-9 pr-3 text-sm text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-4 focus:ring-skyblue/10"
+              />
+            </label>
+            <ModuleTableFilterSelect
+              className="min-w-[11rem]"
+              label="Status"
+              value={statusFilter}
+              options={statusOptions}
+              onChange={onStatusFilterChange}
+            />
+            <ModuleTableFilterSelect
+              className="min-w-[11rem]"
+              label="Types"
+              value={typeFilter}
+              options={typeOptions}
+              onChange={setTypeFilter}
+            />
+          </div>
+          <div className="inline-flex h-10 items-center overflow-hidden rounded-md border border-darknavy/10 bg-white text-sm font-semibold text-darknavy/65">
+            <button type="button" className="grid h-9 w-9 place-items-center border-r border-darknavy/10 hover:bg-offwhite hover:text-darknavy" aria-label="Fit layout" onClick={() => setZoom(100)}>
+              <Expand className="h-4 w-4" aria-hidden="true" />
+            </button>
+            <button type="button" className="grid h-9 w-9 place-items-center border-r border-darknavy/10 hover:bg-offwhite hover:text-darknavy" aria-label="Zoom out" onClick={() => setZoom((value) => Math.max(MinZoom, value - ZoomStep))}>
+              <Minus className="h-4 w-4" aria-hidden="true" />
+            </button>
+            <span className="min-w-16 px-4 text-center">{zoom}%</span>
+            <button type="button" className="grid h-9 w-9 place-items-center border-l border-darknavy/10 hover:bg-offwhite hover:text-darknavy" aria-label="Zoom in" onClick={() => setZoom((value) => Math.min(MaxZoom, value + ZoomStep))}>
+              <Plus className="h-4 w-4" aria-hidden="true" />
+            </button>
+            {isFullView ? null : (
+              <Link
+                href={`${WarehouseStorageHref}/map${warehouseFilter !== "All" ? `?warehouseId=${encodeURIComponent(warehouseFilter)}` : ""}`}
+                className="inline-flex h-9 items-center gap-1.5 border-l border-darknavy/10 px-3 hover:bg-offwhite hover:text-darknavy"
+                aria-label="View full map"
+              >
+                <Maximize2 className="h-4 w-4" aria-hidden="true" />
+                View Full
+              </Link>
+            )}
+          </div>
+        </div>
+        <div className="space-y-3 overflow-auto p-3">
+          <div className="origin-top-left rounded-lg border border-violet-400/35 bg-violet-50/20 p-3 transition-transform" style={{ transform: `scale(${zoom / 100})`, width: `${10000 / zoom}%` }}>
+            <div className="mb-4 text-center text-xs font-bold uppercase tracking-normal text-violet-600">
+              {selectedWarehouse ? `${selectedWarehouse.name} - ` : ""}Zone {primaryZone}
+            </div>
+            {activeWarehouseRecords.length > 0 ? (
+              <div className="grid gap-3 xl:grid-cols-3">
+                {aisleNumbers.map((aisle) => (
+                  <AisleBlock
+                    key={aisle}
+                    aisle={aisle}
+                    onSelectRecord={onSelectRecord}
+                    selectedRecordId={selectedRecord?.id ?? null}
+                    slots={layoutSlots.filter((slot) => slot.id.includes(`-a${aisle}-`))}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-lg border border-dashed border-violet-300 bg-white p-8 text-center text-sm font-semibold text-darknavy/55">
+                No locations match the current map filters.
+              </div>
+            )}
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+            {shortcutAreas.map(({ icon: Icon, label, targetRecord }) => (
+              <button
+                key={label}
+                type="button"
+                disabled={!targetRecord}
+                onClick={() => targetRecord && onSelectRecord(targetRecord.id)}
+                className="flex min-h-16 items-center justify-center gap-2 rounded-lg border border-dashed border-violet-400/45 bg-violet-50/20 px-3 text-xs font-bold uppercase tracking-normal text-violet-600 transition hover:bg-violet-50"
+              >
+                <Icon className="h-4 w-4" aria-hidden="true" />
+                {label}
+              </button>
+            ))}
+          </div>
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 rounded-lg border border-darknavy/10 bg-white px-4 py-3 text-xs font-semibold text-darknavy/55">
+            <LegendDot className="bg-emerald-500" label="Available" />
+            <LegendDot className="bg-blue-500" label="Occupied" />
+            <LegendDot className="bg-amber-500" label="Reserved" />
+            <LegendDot className="bg-slate-400" label="Blocked" />
+            <LegendDot className="bg-rose-500" label="Full" />
+            <LegendDot className="bg-violet-500" label="Under Maintenance" />
+            {selectedWarehouse ? (
+              <span className="ml-auto text-darknavy/45">{selectedWarehouse.name}</span>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function LocationNavigator({
+  onQueryChange,
+  onSelectRecord,
+  onSelectWarehouse,
+  query,
+  records,
+  selectedRecordId,
+  warehouses,
+}: {
+  onQueryChange: (value: string) => void;
+  onSelectRecord: (recordId: string) => void;
+  onSelectWarehouse: (warehouseId: string) => void;
+  query: string;
+  records: WarehouseStorageListRecord[];
+  selectedRecordId: string | null;
+  warehouses: WarehouseRecord[];
+}) {
+  const defaultExpandedKeys = useMemo(
+    () => createDefaultNavigatorKeys(records, warehouses),
+    [records, warehouses],
+  );
+  const [expandedKeys, setExpandedKeys] = useState<Set<string>>(() => defaultExpandedKeys);
+
+  function toggleKey(key: string) {
+    setExpandedKeys((current) => {
+      const nextKeys = new Set(current);
+
+      if (nextKeys.has(key)) {
+        nextKeys.delete(key);
+      } else {
+        nextKeys.add(key);
+      }
+
+      return nextKeys;
+    });
+  }
+
+  return (
+    <aside className="rounded-lg border border-darknavy/10 bg-white shadow-sm">
+      <div className="flex items-center justify-between border-b border-darknavy/10 px-4 py-3">
+        <div className="flex items-center gap-2 text-sm font-bold text-darknavy">
+          <MapPinned className="h-4 w-4 text-darknavy/45" aria-hidden="true" />
+          Location Navigator
+        </div>
+        <span className="rounded-full bg-offwhite px-2 py-0.5 text-[11px] font-bold text-darknavy/45">
+          {records.length}
+        </span>
+      </div>
+      <div className="p-3">
+        <label className="relative block">
+          <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/35" aria-hidden="true" />
+          <input
+            value={query}
+            onChange={(event) => onQueryChange(event.target.value)}
+            placeholder="Search locations..."
+            className="h-9 w-full rounded-md border border-darknavy/10 bg-offwhite/40 px-3 pr-9 text-sm text-darknavy outline-none placeholder:text-darknavy/35"
+          />
+        </label>
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => setExpandedKeys(defaultExpandedKeys)}
+            className="h-8 rounded-md border border-darknavy/10 bg-white text-xs font-semibold text-darknavy/60 transition hover:border-skyblue/30 hover:text-darknavy"
+          >
+            Expand
+          </button>
+          <button
+            type="button"
+            onClick={() => setExpandedKeys(new Set())}
+            className="h-8 rounded-md border border-darknavy/10 bg-white text-xs font-semibold text-darknavy/60 transition hover:border-skyblue/30 hover:text-darknavy"
+          >
+            Collapse
+          </button>
+        </div>
+        <div className="mt-3 max-h-[28rem] space-y-1 overflow-auto pr-1">
+          {warehouses
+            .filter((warehouse) => records.some((record) => record.warehouseId === warehouse.id))
+            .map((warehouse) => {
+              const warehouseRecords = records.filter((record) => record.warehouseId === warehouse.id);
+              const zones = Array.from(
+                new Set(warehouseRecords.map((record) => record.location.zone || "General")),
+              );
+              const warehouseKey = `warehouse-${warehouse.id}`;
+              const isWarehouseOpen = expandedKeys.has(warehouseKey);
+
+              return (
+                <div key={warehouse.id}>
+                  <NavigatorRow
+                    count={warehouseRecords.length}
+                    depth={0}
+                    icon="warehouse"
+                    isOpen={isWarehouseOpen}
+                    label={`${warehouse.name} (${warehouse.code})`}
+                    onClick={() => onSelectWarehouse(warehouse.id)}
+                    onToggle={() => toggleKey(warehouseKey)}
+                  />
+                  {isWarehouseOpen && zones.map((zone) => {
+                    const zoneRecords = warehouseRecords.filter(
+                      (record) => (record.location.zone || "General") === zone,
+                    );
+                    const aisles = Array.from(
+                      new Set(zoneRecords.map((record) => record.location.aisle || "Area")),
+                    );
+                    const zoneKey = `${warehouseKey}-zone-${zone}`;
+                    const isZoneOpen = expandedKeys.has(zoneKey);
+
+                    return (
+                      <div key={`${warehouse.id}-${zone}`}>
+                        <NavigatorRow
+                          count={zoneRecords.length}
+                          depth={1}
+                          icon="zone"
+                          isOpen={isZoneOpen}
+                          label={`Zone ${zone}`}
+                          onClick={() => {
+                            const firstRecord = zoneRecords[0];
+
+                            if (firstRecord) {
+                              onSelectRecord(firstRecord.id);
+                            }
+                          }}
+                          onToggle={() => toggleKey(zoneKey)}
+                        />
+                        {isZoneOpen && aisles.map((aisle) => {
+                          const aisleRecords = zoneRecords.filter(
+                            (record) => (record.location.aisle || "Area") === aisle,
+                          );
+                          const racks = Array.from(
+                            new Set(aisleRecords.map((record) => record.location.rackNo || "Open")),
+                          );
+                          const aisleKey = `${zoneKey}-aisle-${aisle}`;
+                          const isAisleOpen = expandedKeys.has(aisleKey);
+
+                          return (
+                            <div key={`${warehouse.id}-${zone}-${aisle}`}>
+                              <NavigatorRow
+                                count={aisleRecords.length}
+                                depth={2}
+                                icon="aisle"
+                                isOpen={isAisleOpen}
+                                label={`Aisle ${aisle}`}
+                                onClick={() => {
+                                  const firstRecord = aisleRecords[0];
+
+                                  if (firstRecord) {
+                                    onSelectRecord(firstRecord.id);
+                                  }
+                                }}
+                                onToggle={() => toggleKey(aisleKey)}
+                              />
+                              {isAisleOpen && racks.map((rack) => {
+                                const rackRecords = aisleRecords.filter(
+                                  (record) => (record.location.rackNo || "Open") === rack,
+                                );
+                                const rackKey = `${aisleKey}-rack-${rack}`;
+                                const isRackOpen = expandedKeys.has(rackKey);
+
+                                return (
+                                  <div key={`${warehouse.id}-${zone}-${aisle}-${rack}`}>
+                                    <NavigatorRow
+                                      count={rackRecords.length}
+                                      depth={3}
+                                      icon="rack"
+                                      isOpen={isRackOpen}
+                                      label={`Rack ${rack}`}
+                                      onClick={() => {
+                                        const firstRecord = rackRecords[0];
+
+                                        if (firstRecord) {
+                                          onSelectRecord(firstRecord.id);
+                                        }
+                                      }}
+                                      onToggle={() => toggleKey(rackKey)}
+                                    />
+                                    {isRackOpen && rackRecords.slice(0, 8).map((record) => (
+                                      <button
+                                        key={record.id}
+                                        type="button"
+                                        onClick={() => onSelectRecord(record.id)}
+                                        className={joinClasses(
+                                          "flex w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left text-xs font-semibold transition",
+                                          selectedRecordId === record.id
+                                            ? "bg-violet-100 text-violet-700"
+                                            : "text-darknavy/65 hover:bg-offwhite",
+                                        )}
+                                        style={{ paddingLeft: `${4.25}rem` }}
+                                      >
+                                        <span className="truncate">{record.location.locationName || record.location.locationCode}</span>
+                                        <span className="rounded-full bg-white px-1.5 text-[10px] text-darknavy/45">{record.itemCount}</span>
+                                      </button>
+                                    ))}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })}
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+function NavigatorRow({
+  count,
+  depth,
+  icon,
+  isOpen,
+  label,
+  onClick,
+  onToggle,
+}: {
+  count: number;
+  depth: number;
+  icon: "warehouse" | "zone" | "aisle" | "rack";
+  isOpen: boolean;
+  label: string;
+  onClick: () => void;
+  onToggle: () => void;
+}) {
+  const Icon = icon === "warehouse" ? Boxes : Folder;
+
+  return (
+    <div
+      className="flex w-full items-center justify-between gap-2 rounded-md py-1 text-xs font-semibold text-darknavy/70 transition hover:bg-offwhite"
+      style={{ paddingLeft: `${0.5 + depth * 1.05}rem` }}
+    >
+      <span className="flex min-w-0 flex-1 items-center gap-1">
+        <button
+          type="button"
+          onClick={onToggle}
+          className="grid h-6 w-6 shrink-0 place-items-center rounded text-darknavy/45 transition hover:bg-white hover:text-darknavy"
+          aria-label={`${isOpen ? "Collapse" : "Expand"} ${label}`}
+        >
+          {isOpen ? <ChevronDown className="h-3.5 w-3.5 shrink-0" /> : <ChevronRight className="h-3.5 w-3.5 shrink-0" />}
+        </button>
+        <button
+          type="button"
+          onClick={onClick}
+          className="flex min-w-0 flex-1 items-center gap-1.5 rounded px-1 py-1 text-left transition hover:text-darknavy"
+        >
+          <Icon className="h-3.5 w-3.5 shrink-0 text-violet-500" aria-hidden="true" />
+          <span className="truncate">{label}</span>
+        </button>
+      </span>
+      <span className="rounded-full bg-offwhite px-1.5 py-0.5 text-[10px] text-darknavy/45">{count}</span>
+    </div>
+  );
+}
+
+function createDefaultNavigatorKeys(
+  records: WarehouseStorageListRecord[],
+  warehouses: WarehouseRecord[],
+) {
+  const keys = new Set<string>();
+
+  warehouses
+    .filter((warehouse) => records.some((record) => record.warehouseId === warehouse.id))
+    .forEach((warehouse) => {
+      const warehouseRecords = records.filter((record) => record.warehouseId === warehouse.id);
+      const warehouseKey = `warehouse-${warehouse.id}`;
+
+      keys.add(warehouseKey);
+
+      Array.from(new Set(warehouseRecords.map((record) => record.location.zone || "General"))).forEach((zone) => {
+        const zoneRecords = warehouseRecords.filter(
+          (record) => (record.location.zone || "General") === zone,
+        );
+        const zoneKey = `${warehouseKey}-zone-${zone}`;
+
+        keys.add(zoneKey);
+
+        Array.from(new Set(zoneRecords.map((record) => record.location.aisle || "Area"))).forEach((aisle) => {
+          const aisleRecords = zoneRecords.filter(
+            (record) => (record.location.aisle || "Area") === aisle,
+          );
+          const aisleKey = `${zoneKey}-aisle-${aisle}`;
+
+          keys.add(aisleKey);
+
+          Array.from(new Set(aisleRecords.map((record) => record.location.rackNo || "Open"))).forEach((rack) => {
+            keys.add(`${aisleKey}-rack-${rack}`);
+          });
+        });
+      });
+    });
+
+  return keys;
+}
+
+function AisleBlock({
+  aisle,
+  onSelectRecord,
+  selectedRecordId,
+  slots,
+}: {
+  aisle: string;
+  onSelectRecord: (recordId: string) => void;
+  selectedRecordId: string | null;
+  slots: LayoutSlot[];
+}) {
+  const rackPairs = [
+    rackNumbers.slice(0, 2),
+    rackNumbers.slice(2, 4),
+    rackNumbers.slice(4, 6),
+  ][Number(aisle) - 1] ?? rackNumbers.slice(0, 2);
+
+  return (
+    <div className="rounded-lg border border-darknavy/10 bg-white p-2 shadow-sm shadow-darknavy/5">
+      <div className="mb-2 text-center text-xs font-bold text-darknavy/65">Aisle {aisle}</div>
+      <div className="grid grid-cols-2 gap-2">
+        {rackPairs.map((rack) => (
+          <div key={rack} className="rounded-md bg-offwhite/80 p-2">
+            <div className="mb-2 text-center text-[11px] font-bold text-darknavy/65">Rack {rack}</div>
+            <div className="space-y-2">
+              {shelfNumbers.map((shelf) => (
+                <div key={shelf} className="grid grid-cols-2 gap-1.5">
+                  {slots
+                    .filter((slot) => slot.rack === rack && slot.shelf === shelf)
+                    .map((slot) => (
+                      <SlotButton
+                        key={slot.id}
+                        isSelected={slot.record?.id === selectedRecordId}
+                        onSelectRecord={onSelectRecord}
+                        slot={slot}
+                      />
+                    ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SlotButton({
+  isSelected,
+  onSelectRecord,
+  slot,
+}: {
+  isSelected: boolean;
+  onSelectRecord: (recordId: string) => void;
+  slot: LayoutSlot;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={!slot.record}
+      onClick={() => slot.record && onSelectRecord(slot.record.id)}
+      className={joinClasses(
+        "grid h-9 place-items-center rounded-md border text-[11px] font-bold transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-violet-500/20",
+        getSlotClassName(slot.status),
+        isSelected ? "border-violet-500 bg-violet-100 text-violet-700 ring-2 ring-violet-500/25" : "",
+        !slot.record ? "cursor-default opacity-95" : "hover:-translate-y-0.5",
+      )}
+      title={slot.record?.path ?? slot.label}
+    >
+      {slot.label}
+    </button>
+  );
+}
+
+function LegendDot({ className, label }: { className: string; label: string }) {
+  return (
+    <span className="inline-flex items-center gap-2">
+      <span className={joinClasses("h-3 w-3 rounded-sm", className)} />
+      {label}
+    </span>
+  );
+}
+
+function getFirstRecordForZone(records: WarehouseStorageListRecord[], zone: string) {
+  return records.find((record) => (record.location.zone || "General") === zone);
+}
+
+function getFirstRecordForType(records: WarehouseStorageListRecord[], type: string) {
+  return records.find((record) => (record.location.locationType || "").includes(type));
+}
+
+function createLayoutSlots(records: WarehouseStorageListRecord[], zone: string) {
+  const slots: LayoutSlot[] = [];
+  const matchingRecords = records.filter((record) => (record.location.zone || "General") === zone);
+
+  aisleNumbers.forEach((aisle) => {
+    rackNumbers.forEach((rack) => {
+      shelfNumbers.forEach((shelf) => {
+        const shelfRecords = matchingRecords
+          .filter(
+            (record) =>
+              padCoordinate(record.location.aisle, "01") === aisle &&
+              padCoordinate(record.location.rackNo, "01") === rack &&
+              padCoordinate(record.location.shelfNo, "01") === shelf,
+          )
+          .sort((first, second) =>
+            Number(first.location.binNo || 0) - Number(second.location.binNo || 0),
+          );
+
+        Array.from({ length: MaxBinsPerShelf }).forEach((_, binIndex) => {
+          const record = shelfRecords[binIndex];
+          const slotNumber = slots.length + 1;
+          const bin = String(binIndex + 1).padStart(2, "0");
+
+          slots.push({
+            bin,
+            id: `slot-a${aisle}-r${rack}-s${shelf}-b${bin}`,
+            label: record?.location.binNo ? `B${record.location.binNo}` : `B${String(slotNumber).padStart(2, "0")}`,
+            rack,
+            record,
+            shelf,
+            status: getSlotStatus(record, slotNumber),
+          });
+        });
+      });
+    });
+  });
+
+  return slots;
+}
+
+function padCoordinate(value: string | undefined, fallback: string) {
+  if (!value || Number.isNaN(Number(value))) {
+    return fallback;
+  }
+
+  return value.padStart(2, "0");
+}
+
+function getSlotStatus(record: WarehouseStorageListRecord | undefined, slotNumber: number) {
+  if (record?.status === "Blocked") {
+    return "Blocked";
+  }
+
+  if (record?.status === "Reserved") {
+    return "Reserved";
+  }
+
+  if (record?.status === "Inactive") {
+    return "Maintenance";
+  }
+
+  if (record && record.itemsOnHand > 0) {
+    return "Occupied";
+  }
+
+  if (slotNumber % 17 === 0) {
+    return "Full";
+  }
+
+  if (slotNumber % 23 === 0) {
+    return "Maintenance";
+  }
+
+  return "Active";
+}
+
+function getSlotClassName(status: LayoutSlot["status"]) {
+  switch (status) {
+    case "Blocked":
+      return "border-slate-200 bg-slate-100 text-slate-500";
+    case "Reserved":
+      return "border-amber-200 bg-amber-100 text-amber-700";
+    case "Occupied":
+      return "border-blue-200 bg-blue-100 text-blue-700";
+    case "Full":
+      return "border-rose-200 bg-rose-100 text-rose-700";
+    case "Maintenance":
+      return "border-violet-200 bg-violet-100 text-violet-700";
+    default:
+      return "border-emerald-200 bg-emerald-100 text-emerald-700";
+  }
+}

@@ -4,13 +4,11 @@ The canonical UI specifications are the uniquely named `DeliveryVehicleManagemen
 
 ## Implementation Order
 
-1. Vehicle Types and Delivery Vehicles master data.
-2. Vehicle Availability derived from master status, assignments, trips, inspections, incidents, and maintenance.
-3. Load Planning from warehouse-ready demand and capacity rules.
-4. Vehicle Assignment with conflict and compatibility checks.
-5. Delivery Trips & Dispatch with loading and pre-trip inspection gates.
-6. Event-based Trip Tracking.
-7. Vehicle Inspections, Fuel & Incidents, and Maintenance & Repairs.
+1. Delivery Vehicles for vehicles, vehicle types, capacity, ownership, registration, and status.
+2. Vehicle Scheduling & Assignment for availability, reservations, driver assignments, history, and conflicts.
+3. Delivery Planning & Dispatch for load planning, trip scheduling, vehicle/driver assignment, sequence, and dispatch.
+4. Trip Monitoring for live trips, timeline, fuel logs, expenses, delays, incidents, and proof of delivery.
+5. Vehicle Repair and Maintenance for inspections, defects, maintenance requests, repair work orders, service history, and schedules.
 
 ## UI Source Rules
 
@@ -19,7 +17,7 @@ The canonical UI specifications are the uniquely named `DeliveryVehicleManagemen
 - Use shared module headers, statistics, tables, drawers/forms, dialogs, and data-entry components.
 - Keep vehicle status separate from operational availability.
 - Reference warehouse-staged loads; do not duplicate or post warehouse stock from a vehicle dispatch screen.
-- Preserve audit history for assignment, dispatch, event, inspection, incident, maintenance, and override actions.
+- Preserve audit history for assignment, dispatch, trip event, incident, inspection, maintenance, and override actions.
 
 ## Completion Gate
 

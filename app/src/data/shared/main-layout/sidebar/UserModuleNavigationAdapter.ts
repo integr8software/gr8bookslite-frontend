@@ -125,10 +125,10 @@ function getAccessKey(item: AuthUserModuleItem): MainAccessKey {
   if (item.key.includes("bank-masterfile")) return "maintenance.bankMasterfile";
   if (item.key.includes("default-account")) return "maintenance.defaultAccount";
   if (item.key.includes("services-maintenance")) return "maintenance.servicesMaintenance";
-  if (item.key.includes("discount-management")) return "maintenance.discount";
+  if (item.key.includes("discount-maintenance")) return "maintenance.discount";
   if (item.key.includes("payment-type")) return "maintenance.paymentType";
   if (item.key.includes("responsibility-center")) return "maintenance.responsibilityCenter";
-  if (item.key.includes("term-management")) return "maintenance.term";
+  if (item.key.includes("terms-maintenance")) return "maintenance.term";
   if (item.key.includes("delivery-vehicle")) return "maintenance.deliveryVehicle";
   if (item.key.includes("warehouse")) return "maintenance.warehouse";
   if (item.key.includes("item")) return "maintenance.item";

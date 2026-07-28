@@ -22,12 +22,12 @@ import {
 import { FormatPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
 import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import { useAddressOptions } from "@/app/src/hooks/shared/address/useAddressOptions";
-import { useTermDropdownOptions } from "@/app/src/hooks/modules/financial-maintenance/term-management/useTermDropdownOptions";
+import { useTermDropdownOptions } from "@/app/src/hooks/modules/financial-maintenance/terms-maintenance/useTermDropdownOptions";
 import { usePartyManagementAccountOptions } from "@/app/src/hooks/modules/party-management/usePartyManagementAccountOptions";
 import { useChartsOfAccounts } from "@/app/src/hooks/modules/financial-maintenance/charts-of-accounts/useChartsOfAccounts";
 import { useTransactionNumberSetupStore } from "@/app/src/hooks/modules/system-administration/transaction-number-setup/useTransactionNumberSetup";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
-import { usePartyAtcCodeOptions } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
+import { usePartyTaxDefaultOptions } from "@/app/src/hooks/shared/tax/useTaxOptions";
 import {
   getNextPartyCodePreview,
   getPartyManagementNumberSetup,
@@ -52,7 +52,7 @@ import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { ModuleSavingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { PartyInformationDetailsFields } from "@/app/src/ui/modules/party-management/PartyInformationDetailsFields";
 import { ChartAccountQuickAddDialog } from "@/app/src/ui/modules/financial-maintenance/charts-of-accounts/ChartAccountQuickAddDialog";
-import { TermManagementQuickAddDialog } from "@/app/src/ui/modules/financial-maintenance/term-management/TermManagementQuickAddDialog";
+import { TermsMaintenanceQuickAddDialog } from "@/app/src/ui/modules/financial-maintenance/terms-maintenance/TermsMaintenanceQuickAddDialog";
 import { todayDateValue } from "@/app/src/utils/date.util";
 import type {
   AddressAutocompleteDetails,
@@ -123,7 +123,7 @@ export function PartyManagementDrawer({
         : accountingValues,
     [accountingValues, isAutoPartyCode, partyCodePreview],
   );
-  const atcDropdown = usePartyAtcCodeOptions(values.classification);
+  const taxDefaults = usePartyTaxDefaultOptions();
   const chartAccountById = useMemo(
     () => new Map(chartAccounts.flatAccounts.map(({ account }) => [account.id, account])),
     [chartAccounts.flatAccounts],
@@ -158,6 +158,13 @@ export function PartyManagementDrawer({
           civilStatus: "",
           nationality: "",
           atcCode: "",
+          defaultPurchaseInputVatTaxSourceKey: "",
+          defaultPurchaseEwtTaxSourceKey: "",
+          defaultPurchaseFwtTaxSourceKey: "",
+          defaultPurchaseWvatTaxSourceKey: "",
+          defaultSalesOutputVatTaxSourceKey: "",
+          defaultSalesCwtTaxSourceKey: "",
+          defaultSalesWvatTaxSourceKey: "",
           addresses: clearAddressRolesForPartyTypes(current.addresses, partyTypes, classification),
           defaultReceivableAccount: accountingAccounts.defaultReceivableAccount,
           customerAdvanceAccount: accountingAccounts.customerAdvanceAccount,
@@ -298,18 +305,6 @@ export function PartyManagementDrawer({
       };
     });
     setErrors((current) => ({ ...current, partyTypes: undefined }));
-  }
-
-  function selectAtcCode(value: string | string[]) {
-    if (!isClassificationSelected) {
-      return;
-    }
-
-    setValues((current) => ({
-      ...current,
-      atcCode: getSingleSelectedValue(value),
-    }));
-    setErrors((current) => ({ ...current, atcCode: undefined }));
   }
 
   function openAccountTitleDialog(field: PartyAccountingAccountField) {
@@ -617,12 +612,12 @@ export function PartyManagementDrawer({
       <div id={PartyManagementDrawerFormId} className="px-6 py-5">
         <PartyInformationDetailsFields
           accountOptions={partyAccountOptions.accountOptions}
-          atcOptions={atcDropdown.options}
           errors={errors}
           isClassificationSelected={isClassificationSelected}
           isPartyCodeReadonly={isAutoPartyCode}
           isReadonly={false}
           partyTypeOptions={PartyTypeOptions}
+          taxDefaultOptions={taxDefaults.options}
           termOptions={termDropdown.options}
           values={effectiveValues}
           syncedAddressSources={syncedAddressSources}
@@ -635,7 +630,6 @@ export function PartyManagementDrawer({
           onInputChange={handleInputChange}
           onPartyTypesChange={handlePartyTypesChange}
           onSelectBarangay={selectBarangay}
-          onSelectAtcCode={selectAtcCode}
           onSelectAutocompleteAddress={selectAutocompleteAddress}
           onSyncAutocompleteAddressDetails={syncAutocompleteAddressDetails}
           onSelectCityMunicipality={selectCityMunicipality}
@@ -662,7 +656,7 @@ export function PartyManagementDrawer({
           setAccountTitleDialog(null);
         }}
       />
-      <TermManagementQuickAddDialog
+      <TermsMaintenanceQuickAddDialog
         isOpen={isTermDialogOpen}
         onClose={() => setIsTermDialogOpen(false)}
         onSaved={(term) => {

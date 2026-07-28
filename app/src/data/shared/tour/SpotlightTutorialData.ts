@@ -23,9 +23,9 @@ type MaintenanceSpotlightTutorialConfig = {
 
 export const MaintenanceSpotlightTutorialConfigs: readonly MaintenanceSpotlightTutorialConfig[] = [
   {
-    href: "/financial-maintenance/discount-management",
+    href: "/financial-maintenance/discount-maintenance",
     addMode: "drawer",
-    label: "Discount management",
+    label: "Discount Maintenance",
   },
   {
     href: "/financial-maintenance/responsibility-center",
@@ -33,11 +33,11 @@ export const MaintenanceSpotlightTutorialConfigs: readonly MaintenanceSpotlightT
     label: "Responsibility center",
   },
   {
-    href: "/financial-maintenance/term-management",
+    href: "/financial-maintenance/terms-maintenance",
     addMode: "drawer",
     includeImportStep: true,
     includeRecordActionSteps: true,
-    label: "Term management",
+    label: "Terms Maintenance",
   },
   {
     href: "/item-management/inventory-transaction-type",
@@ -100,7 +100,7 @@ export const MaintenanceSpotlightTutorialConfigs: readonly MaintenanceSpotlightT
     label: "Warehouse access",
   },
   {
-    href: "/warehouse-management/storage-locations",
+    href: "/warehouse-management/warehouse-storage",
     addMode: "none",
     label: "Warehouse storages",
   },
@@ -110,10 +110,10 @@ export const MaintenanceSpotlightTutorialConfigs: readonly MaintenanceSpotlightT
     label: "Warehouse transfers",
   },
   {
-    href: "/warehouse-management/warehouse-stock-inquiry",
+    href: "/warehouse-management/warehouse-inventory-stock",
     addMode: "none",
     includeCreateStep: false,
-    label: "Warehouse stock inquiry",
+    label: "Warehouse inventory stock",
   },
   {
     href: "/cash-disbursement/disbursement-voucher",

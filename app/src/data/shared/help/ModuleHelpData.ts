@@ -148,22 +148,22 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
   ),
   article(
     "help-discount",
-    "Discount Management",
-    "/financial-maintenance/discount-management",
+    "Discount Maintenance",
+    "/financial-maintenance/discount-maintenance",
     "Maintain reusable discounts for sales, purchases, and inventory-related documents.",
     [
-      "Discount Management defines discount labels and rules users can apply during transaction entry.",
+      "Discount Maintenance defines discount labels and rules users can apply during transaction entry.",
       "Reusable discounts improve consistency across sales quotations, sales invoices, purchasing, and related workflows.",
     ],
     ["help-sales", "help-purchasing"],
   ),
   article(
     "help-term",
-    "Term Management",
-    "/financial-maintenance/term-management",
+    "Terms Maintenance",
+    "/financial-maintenance/terms-maintenance",
     "Maintain payment and billing terms.",
     [
-      "Term Management stores due-date and payment-term definitions used in receivables, payables, sales, and purchasing documents.",
+      "Terms Maintenance stores due-date and payment-term definitions used in receivables, payables, sales, and purchasing documents.",
       "Terms help standardize credit periods and make aging reports more reliable.",
     ],
     ["help-accounts-payable", "help-sales"],

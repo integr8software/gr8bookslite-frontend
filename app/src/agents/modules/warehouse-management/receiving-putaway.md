@@ -2,7 +2,7 @@
 
 ## Definition and Use
 
-Receiving & Putaway records inbound arrival into a warehouse and placement into final storage locations.
+Receiving & Putaway records inbound arrival into a warehouse and placement into final warehouse storage.
 
 ## Current State
 

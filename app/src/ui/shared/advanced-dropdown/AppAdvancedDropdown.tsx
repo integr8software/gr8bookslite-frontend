@@ -572,7 +572,9 @@ export function AppAdvancedDropdown({
 						/>
 					))
 				) : (
-					<div className="px-3 py-6 text-center text-sm text-darknavy/45">{emptyMessage}</div>
+					<div className="col-span-full px-3 py-6 text-center text-sm text-darknavy/45">
+						{emptyMessage}
+					</div>
 				)}
 			</div>
 		</div>

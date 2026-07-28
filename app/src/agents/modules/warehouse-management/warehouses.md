@@ -6,7 +6,7 @@ Warehouses maintains the warehouse master records for a company.
 
 - Backend-backed module.
 - Owns warehouse code, name, address, manager, contact details, status, branch availability mode, and branch links.
-- Storage locations, stock balances, and bin-level rules do not belong directly in this module.
+- Warehouse storage, stock balances, and bin-level rules do not belong directly in this module.
 
 ## Key Rules
 

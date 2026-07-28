@@ -4,7 +4,7 @@ import type {
   AccountsPayableVoucherFormValues,
   AccountsPayableVoucherRecord,
 } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
-import type { TermManagement } from "@/app/src/types/modules/financial-maintenance/term-management/TermManagementTypes";
+import type { TermsMaintenance } from "@/app/src/types/modules/financial-maintenance/terms-maintenance/TermsMaintenanceTypes";
 
 export const MockAccountsPayableVouchers: AccountsPayableVoucherRecord[] = [
   {
@@ -454,7 +454,7 @@ function normalizeAccountsPayableVoucherFormValues(
 
 export function calculateAccountsPayableVoucherDueDate(
   documentDate: string,
-  term?: Pick<TermManagement, "datemode" | "period"> | null,
+  term?: Pick<TermsMaintenance, "datemode" | "period"> | null,
 ) {
   if (!documentDate) {
     return "";

@@ -14,6 +14,7 @@ export const DeliveryVehiclesConfig: DeliveryVehicleModuleConfig = {
   noun: "vehicle",
   searchPlaceholder: "Search fleet no., plate, make, or model",
   statuses: ["Active", "Inactive", "Retired"],
+  categories: ["Vehicles", "Capacity & Specifications", "Ownership & Assignment", "Registration Details", "Status"],
   fields: [
     { key: "plateNumber", label: "Plate number", required: true },
     { key: "vehicleType", label: "Vehicle type", required: true, type: "select", options: ["Light Truck", "Refrigerated Van", "Delivery Van", "Motorcycle"] },
@@ -27,5 +28,5 @@ export const DeliveryVehiclesConfig: DeliveryVehicleModuleConfig = {
   tableFieldKeys: ["plateNumber", "vehicleType", "baseWarehouse", "registrationExpiry"],
   insightLabel: "Compliance alerts",
   insightStatuses: ["Inactive", "Retired"],
-  operationalNote: "Vehicle master status is separate from live operational availability.",
+  operationalNote: "Vehicle records keep capacity, ownership, registration, and status together; type defaults are maintained under Vehicle Types.",
 };

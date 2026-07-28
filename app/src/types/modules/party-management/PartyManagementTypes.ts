@@ -5,6 +5,7 @@ import type {
   AddressAutocompleteItem,
 } from "@/app/src/types/shared/address/AddressTypes";
 import type { ModuleTabItem } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
+import type { PartyTaxDefaultOptions } from "@/app/src/types/shared/tax/TaxTypes";
 
 export type PartyClassification = "Individual" | "Non-Individual";
 
@@ -12,9 +13,14 @@ export type PartyInformationStatus = "Active" | "Inactive";
 
 export type PartyType = "Vendor" | "Customer" | "Employee" | "Member";
 
-export type VatRegistrationType = "VAT Registered" | "Non-VAT" | "VAT Exempt";
-
-export type PurchaseTaxClassification = "Capital Goods" | "Other Than Capital Goods" | "Services";
+export type VatRegistrationType =
+  | "VAT Registered (12%)"
+  | "Non-VAT (0%)"
+  | "VAT Exempt"
+  | "Zero Rated (0%)"
+  | "Capital Goods (12%)"
+  | "Other than Capital Goods (12%)"
+  | "Services (12%)";
 
 export type ApiPartyClassification = "INDIVIDUAL" | "NON_INDIVIDUAL";
 
@@ -22,10 +28,14 @@ export type ApiPartyStatus = "ACTIVE" | "INACTIVE";
 
 export type ApiPartyType = "VENDOR" | "CUSTOMER" | "EMPLOYEE" | "MEMBER";
 
-export type ApiPartyVatRegistrationType = "VAT_REGISTERED" | "NON_VAT" | "VAT_EXEMPT";
-
-export type ApiPartyPurchaseTaxClassification =
-  "CAPITAL_GOODS" | "OTHER_THAN_CAPITAL_GOODS" | "SERVICES";
+export type ApiPartyVatRegistrationType =
+  | "VAT_REGISTERED"
+  | "NON_VAT"
+  | "VAT_EXEMPT"
+  | "ZERO_RATED"
+  | "CAPITAL_GOODS"
+  | "OTHER_THAN_CAPITAL_GOODS"
+  | "SERVICES";
 
 export type PartyAddress = {
   id: string;
@@ -77,8 +87,14 @@ export type PartyInformationRecord = {
   termName: string;
   tin: string;
   vatRegistrationType: VatRegistrationType | "";
-  defaultPurchaseTaxClassification: PurchaseTaxClassification | "";
   atcCode: string;
+  defaultPurchaseInputVatTaxSourceKey: string;
+  defaultPurchaseEwtTaxSourceKey: string;
+  defaultPurchaseFwtTaxSourceKey: string;
+  defaultPurchaseWvatTaxSourceKey: string;
+  defaultSalesOutputVatTaxSourceKey: string;
+  defaultSalesCwtTaxSourceKey: string;
+  defaultSalesWvatTaxSourceKey: string;
   email: string;
   contactNo: string;
   landline?: string;
@@ -117,8 +133,14 @@ export type PartyInformationFormValues = {
   termName: string;
   tin: string;
   vatRegistrationType: VatRegistrationType | "";
-  defaultPurchaseTaxClassification: PurchaseTaxClassification | "";
   atcCode: string;
+  defaultPurchaseInputVatTaxSourceKey: string;
+  defaultPurchaseEwtTaxSourceKey: string;
+  defaultPurchaseFwtTaxSourceKey: string;
+  defaultPurchaseWvatTaxSourceKey: string;
+  defaultSalesOutputVatTaxSourceKey: string;
+  defaultSalesCwtTaxSourceKey: string;
+  defaultSalesWvatTaxSourceKey: string;
   email: string;
   contactNo: string;
   landline: string;
@@ -145,8 +167,14 @@ export type PartyInformationFormErrors = Partial<{
   cityMunicipalityCode: string;
   barangayCode: string;
   atcCode: string;
+  defaultPurchaseInputVatTaxSourceKey: string;
+  defaultPurchaseEwtTaxSourceKey: string;
+  defaultPurchaseFwtTaxSourceKey: string;
+  defaultPurchaseWvatTaxSourceKey: string;
+  defaultSalesOutputVatTaxSourceKey: string;
+  defaultSalesCwtTaxSourceKey: string;
+  defaultSalesWvatTaxSourceKey: string;
   vatRegistrationType: string;
-  defaultPurchaseTaxClassification: string;
   defaultReceivableAccount: string;
   customerAdvanceAccount: string;
   defaultPayableAccount: string;
@@ -276,12 +304,12 @@ export type PartyInformationFieldUpdateHandler = <TKey extends keyof PartyInform
 
 export type PartyInformationDetailsFieldsProps = {
   accountOptions: PartyAccountingAccountOptions;
-  atcOptions: PartyAtcCodeOption[];
   errors: PartyInformationFormErrors;
   isClassificationSelected: boolean;
   isPartyCodeReadonly?: boolean;
   isReadonly: boolean;
   partyTypeOptions: readonly PartyType[];
+  taxDefaultOptions: PartyTaxDefaultOptions;
   termOptions: PartyAddressDropdownOption[];
   values: PartyInformationFormValues;
   syncedAddressSources?: Record<string, string>;
@@ -293,7 +321,6 @@ export type PartyInformationDetailsFieldsProps = {
   onCopyAddress: (sourceAddressId: string, targetAddressId: string) => void;
   onInputChange: ChangeEventHandler<HTMLInputElement | HTMLSelectElement>;
   onPartyTypesChange: (value: string | string[]) => void;
-  onSelectAtcCode: (value: string | string[]) => void;
   onSelectAutocompleteAddress: (
     address: AddressAutocompleteItem,
     details?: AddressAutocompleteDetails,
@@ -469,8 +496,14 @@ export type ApiPartyPayload = {
   termId?: string | null;
   tin?: string | null;
   vatRegistrationType?: ApiPartyVatRegistrationType | null;
-  defaultPurchaseTaxClassification?: ApiPartyPurchaseTaxClassification | null;
   atcCode?: string | null;
+  defaultPurchaseInputVatTaxSourceKey?: string | null;
+  defaultPurchaseEwtTaxSourceKey?: string | null;
+  defaultPurchaseFwtTaxSourceKey?: string | null;
+  defaultPurchaseWvatTaxSourceKey?: string | null;
+  defaultSalesOutputVatTaxSourceKey?: string | null;
+  defaultSalesCwtTaxSourceKey?: string | null;
+  defaultSalesWvatTaxSourceKey?: string | null;
   email?: string | null;
   contactNo?: string | null;
   landline?: string | null;

@@ -22,7 +22,7 @@ export function ItemPromotionsTableRow({
 			<td className="px-4 py-4 text-darknavy/70">{row.item}</td>
 			<td className="px-4 py-4 font-semibold">{row.valueLabel}</td>
 			<td className="px-4 py-4 text-darknavy/70">
-				{row.discountManagementRule}
+				{row.discountMaintenanceRule}
 			</td>
 			<td className="px-4 py-4 text-darknavy/70">{row.validity}</td>
 			<td className="px-4 py-4 text-center">

@@ -23,7 +23,7 @@ export type ItemPromotionRecord = {
 };
 
 export type ItemPromotionListRecord = ItemPromotionRecord & {
-	discountManagementRule: string;
+	discountMaintenanceRule: string;
 	item: string;
 	validity: string;
 	valueLabel: string;
@@ -39,6 +39,6 @@ export type ItemPromotionTableColumnKey =
 	| "type"
 	| "item"
 	| "valueLabel"
-	| "discountManagementRule"
+	| "discountMaintenanceRule"
 	| "validity"
 	| "status";

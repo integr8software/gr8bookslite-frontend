@@ -32,7 +32,7 @@ The route is a planning shell and needs integration with approved demand, reserv
 
 ## Delivery Connection
 
-The staged load exposes origin, readiness, quantities, weight, volume, pallets, handling needs, and references to Load Planning.
+The staged load exposes origin, readiness, quantities, weight, volume, pallets, handling needs, and references to Delivery Planning & Dispatch.
 
 ## UI Requirements
 

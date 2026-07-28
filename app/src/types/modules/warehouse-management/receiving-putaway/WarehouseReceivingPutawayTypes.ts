@@ -1,19 +1,6 @@
-export type WarehouseReceivingPutawayModule =
-  | "capacity-storage-rules"
-  | "item-availability"
-  | "item-location-setup"
-  | "location-availability"
-  | "location-transfer"
-  | "picking-dispatch"
-  | "receiving-putaway"
-  | "stock-adjustment"
-  | "stock-by-location"
-  | "stock-by-warehouse"
-  | "stock-count"
-  | "stock-movement-history";
+export type WarehouseReceivingPutawayModule = "receiving-putaway";
 
-export type WarehouseReceivingPutawayGroup =
-  "Warehouse Storage" | "Warehouse Inventory" | "Warehouse Operations";
+export type WarehouseReceivingPutawayGroup = "Warehouse Operations";
 
 export type WarehouseReceivingPutawayColumn = {
   id: string;

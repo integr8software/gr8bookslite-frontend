@@ -10,7 +10,6 @@ import type {
   ApiPartyListResponse,
   ApiPartyOptionsResponse,
   ApiPartyPayload,
-  ApiPartyPurchaseTaxClassification,
   ApiPartySaveResponse,
   ApiPartyStatus,
   ApiPartyType,
@@ -23,7 +22,6 @@ import type {
   PartyManagementListResponse,
   PartyManagementPermissions,
   PartyManagementStatistics,
-  PurchaseTaxClassification,
   PartyType,
   VatRegistrationType,
 } from "@/app/src/types/modules/party-management/PartyManagementTypes";
@@ -215,10 +213,14 @@ function mapApiParty(party: ApiParty): PartyInformationRecord {
     vatRegistrationType: party.vatRegistrationType
       ? mapVatRegistrationTypeFromApi(party.vatRegistrationType)
       : "",
-    defaultPurchaseTaxClassification: party.defaultPurchaseTaxClassification
-      ? mapPurchaseTaxClassificationFromApi(party.defaultPurchaseTaxClassification)
-      : "",
     atcCode: party.atcCode ?? "",
+    defaultPurchaseInputVatTaxSourceKey: party.defaultPurchaseInputVatTaxSourceKey ?? "",
+    defaultPurchaseEwtTaxSourceKey: party.defaultPurchaseEwtTaxSourceKey ?? "",
+    defaultPurchaseFwtTaxSourceKey: party.defaultPurchaseFwtTaxSourceKey ?? "",
+    defaultPurchaseWvatTaxSourceKey: party.defaultPurchaseWvatTaxSourceKey ?? "",
+    defaultSalesOutputVatTaxSourceKey: party.defaultSalesOutputVatTaxSourceKey ?? "",
+    defaultSalesCwtTaxSourceKey: party.defaultSalesCwtTaxSourceKey ?? "",
+    defaultSalesWvatTaxSourceKey: party.defaultSalesWvatTaxSourceKey ?? "",
     email: party.email ?? "",
     contactNo: party.contactNo ?? "",
     landline: party.landline ?? "",
@@ -316,10 +318,28 @@ function toApiPartyPayload(
     vatRegistrationType: record.vatRegistrationType
       ? mapVatRegistrationTypeToApi(record.vatRegistrationType)
       : null,
-    defaultPurchaseTaxClassification: record.defaultPurchaseTaxClassification
-      ? mapPurchaseTaxClassificationToApi(record.defaultPurchaseTaxClassification)
-      : null,
     atcCode: normalizeOptionalText(record.atcCode),
+    defaultPurchaseInputVatTaxSourceKey: record.partyTypes.includes("Vendor")
+      ? normalizeOptionalText(record.defaultPurchaseInputVatTaxSourceKey)
+      : null,
+    defaultPurchaseEwtTaxSourceKey: record.partyTypes.includes("Vendor")
+      ? normalizeOptionalText(record.defaultPurchaseEwtTaxSourceKey)
+      : null,
+    defaultPurchaseFwtTaxSourceKey: record.partyTypes.includes("Vendor")
+      ? normalizeOptionalText(record.defaultPurchaseFwtTaxSourceKey)
+      : null,
+    defaultPurchaseWvatTaxSourceKey: record.partyTypes.includes("Vendor")
+      ? normalizeOptionalText(record.defaultPurchaseWvatTaxSourceKey)
+      : null,
+    defaultSalesOutputVatTaxSourceKey: record.partyTypes.includes("Customer")
+      ? normalizeOptionalText(record.defaultSalesOutputVatTaxSourceKey)
+      : null,
+    defaultSalesCwtTaxSourceKey: record.partyTypes.includes("Customer")
+      ? normalizeOptionalText(record.defaultSalesCwtTaxSourceKey)
+      : null,
+    defaultSalesWvatTaxSourceKey: record.partyTypes.includes("Customer")
+      ? normalizeOptionalText(record.defaultSalesWvatTaxSourceKey)
+      : null,
     email: normalizeOptionalText(record.email),
     contactNo: normalizeOptionalText(record.contactNo),
     landline: normalizeOptionalText(record.landline),
@@ -478,47 +498,37 @@ function mapStatusToApi(value: PartyInformationStatus): ApiPartyStatus {
 function mapVatRegistrationTypeFromApi(value: ApiPartyVatRegistrationType): VatRegistrationType {
   switch (value) {
     case "VAT_REGISTERED":
-      return "VAT Registered";
+      return "VAT Registered (12%)";
     case "NON_VAT":
-      return "Non-VAT";
+      return "Non-VAT (0%)";
     case "VAT_EXEMPT":
       return "VAT Exempt";
+    case "ZERO_RATED":
+      return "Zero Rated (0%)";
+    case "CAPITAL_GOODS":
+      return "Capital Goods (12%)";
+    case "OTHER_THAN_CAPITAL_GOODS":
+      return "Other than Capital Goods (12%)";
+    case "SERVICES":
+      return "Services (12%)";
   }
 }
 
 function mapVatRegistrationTypeToApi(value: VatRegistrationType): ApiPartyVatRegistrationType {
   switch (value) {
-    case "VAT Registered":
+    case "VAT Registered (12%)":
       return "VAT_REGISTERED";
-    case "Non-VAT":
+    case "Non-VAT (0%)":
       return "NON_VAT";
     case "VAT Exempt":
       return "VAT_EXEMPT";
-  }
-}
-
-function mapPurchaseTaxClassificationFromApi(
-  value: ApiPartyPurchaseTaxClassification,
-): PurchaseTaxClassification {
-  switch (value) {
-    case "CAPITAL_GOODS":
-      return "Capital Goods";
-    case "OTHER_THAN_CAPITAL_GOODS":
-      return "Other Than Capital Goods";
-    case "SERVICES":
-      return "Services";
-  }
-}
-
-function mapPurchaseTaxClassificationToApi(
-  value: PurchaseTaxClassification,
-): ApiPartyPurchaseTaxClassification {
-  switch (value) {
-    case "Capital Goods":
+    case "Zero Rated (0%)":
+      return "ZERO_RATED";
+    case "Capital Goods (12%)":
       return "CAPITAL_GOODS";
-    case "Other Than Capital Goods":
+    case "Other than Capital Goods (12%)":
       return "OTHER_THAN_CAPITAL_GOODS";
-    case "Services":
+    case "Services (12%)":
       return "SERVICES";
   }
 }

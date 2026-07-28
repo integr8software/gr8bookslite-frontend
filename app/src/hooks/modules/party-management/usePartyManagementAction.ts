@@ -24,9 +24,9 @@ import {
   normalizePartyTypesForClassification,
   updatePartyInformationRecord,
 } from "@/app/src/data/modules/party-management/PartyManagementData";
-import { useTermDropdownOptions } from "@/app/src/hooks/modules/financial-maintenance/term-management/useTermDropdownOptions";
+import { useTermDropdownOptions } from "@/app/src/hooks/modules/financial-maintenance/terms-maintenance/useTermDropdownOptions";
 import { usePartyManagementAccountOptions } from "@/app/src/hooks/modules/party-management/usePartyManagementAccountOptions";
-import { usePartyAtcCodeOptions } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
+import { usePartyTaxDefaultOptions } from "@/app/src/hooks/shared/tax/useTaxOptions";
 import { useAddressOptions } from "@/app/src/hooks/shared/address/useAddressOptions";
 import type {
   PartyAddress,
@@ -119,7 +119,7 @@ export function usePartyManagementAction() {
   const canSave = isClassificationSelected && values.partyTypes.length > 0;
   const nextStatus: PartyInformationStatus =
     existingRecord?.status === "Active" ? "Inactive" : "Active";
-  const atcDropdown = usePartyAtcCodeOptions(values.classification);
+  const taxDefaults = usePartyTaxDefaultOptions();
   const viewHref = existingRecord
     ? `${PartyManagementHref}/view/${existingRecord.id}`
     : PartyManagementHref;
@@ -161,6 +161,13 @@ export function usePartyManagementAction() {
           civilStatus: "",
           nationality: "",
           atcCode: "",
+          defaultPurchaseInputVatTaxSourceKey: "",
+          defaultPurchaseEwtTaxSourceKey: "",
+          defaultPurchaseFwtTaxSourceKey: "",
+          defaultPurchaseWvatTaxSourceKey: "",
+          defaultSalesOutputVatTaxSourceKey: "",
+          defaultSalesCwtTaxSourceKey: "",
+          defaultSalesWvatTaxSourceKey: "",
           addresses: clearAddressRolesForPartyTypes(current.addresses, partyTypes, classification),
           defaultReceivableAccount: accountingAccounts.defaultReceivableAccount,
           customerAdvanceAccount: accountingAccounts.customerAdvanceAccount,
@@ -302,20 +309,6 @@ export function usePartyManagementAction() {
       };
     });
     setErrors((current) => ({ ...current, partyTypes: undefined }));
-  }
-
-  function selectAtcCode(value: string | string[]) {
-    if (isReadonly || !isClassificationSelected) {
-      return;
-    }
-
-    const code = getSingleSelectedValue(value);
-
-    setValues((current) => ({
-      ...current,
-      atcCode: code,
-    }));
-    setErrors((current) => ({ ...current, atcCode: undefined }));
   }
 
   function selectRegion(value: string | string[]) {
@@ -630,7 +623,6 @@ export function usePartyManagementAction() {
     addressOptions,
     accountOptions: partyAccountOptions.accountOptions,
     accountOptionsRefetch: partyAccountOptions.refetch,
-    atcOptions: atcDropdown.options,
     cancelHref,
     editHref,
     errors,
@@ -650,6 +642,7 @@ export function usePartyManagementAction() {
     needsRecord: mode === "edit" || mode === "view",
     nextStatus,
     partyTypeOptions: PartyTypeOptions,
+    taxDefaultOptions: taxDefaults.options,
     refreshTermOptions: termDropdown.refetch,
     copyAddress,
     selectBarangay,
@@ -658,7 +651,6 @@ export function usePartyManagementAction() {
     selectCityMunicipality,
     selectProvince,
     selectRegion,
-    selectAtcCode,
     selectTerm,
     setSelectedTerm: updateTermSelection,
     setIsStatusDialogOpen,

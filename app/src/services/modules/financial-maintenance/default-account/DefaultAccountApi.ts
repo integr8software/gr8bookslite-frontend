@@ -46,6 +46,10 @@ export async function fetchDefaultAccounts(): Promise<DefaultAccountListResponse
 			canUpdate: response.data.permissions?.canUpdate ?? true,
 			canDelete: response.data.permissions?.canDelete ?? true,
 			canExport: response.data.permissions?.canExport ?? true,
+			canImport:
+				response.data.permissions?.canImport ??
+				response.data.permissions?.canCreate ??
+				true,
 		},
 	};
 }

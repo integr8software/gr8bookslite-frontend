@@ -5,8 +5,8 @@ Use this guide when implementing the Services Maintenance module as a new Financ
 - `gr8bookslite-frontend/AGENTS.md`
 - `gr8bookslite-frontend/FRONTEND_MAP.md`
 - `gr8bookslite-backend/docs/agents/ARCHITECTURE_MODULARITY_GUIDE.md`
-- `gr8bookslite-frontend/app/(modules)/financial-maintenance/term-management/`
-- `gr8bookslite-frontend/app/src/ui/modules/financial-maintenance/term-management/`
+- `gr8bookslite-frontend/app/(modules)/financial-maintenance/terms-maintenance/`
+- `gr8bookslite-frontend/app/src/ui/modules/financial-maintenance/terms-maintenance/`
 - `gr8bookslite-frontend/app/src/ui/modules/financial-maintenance/bank-masterfile/`
 
 ## Purpose
@@ -88,7 +88,7 @@ Validation:
 
 ## Frontend Files
 
-Follow the Term Management drawer/list structure, not route-heavy add/edit/view pages, unless the project has already moved Financial Maintenance modules to full-page forms by the time this is implemented.
+Follow the Terms Maintenance drawer/list structure, not route-heavy add/edit/view pages, unless the project has already moved Financial Maintenance modules to full-page forms by the time this is implemented.
 
 Routes:
 
@@ -147,7 +147,7 @@ export default function Page() {
 
 List page:
 
-- Use the same overall composition as `TermManagementListPage`.
+- Use the same overall composition as `TermsMaintenanceListPage`.
 - Include `ModuleHeader`-style actions through the existing maintenance header pattern.
 - Include statistic cards for total, active, inactive, automatically generated, and configured existing-account services.
 - Use shared module table chrome and TanStack table state from hooks.
@@ -400,7 +400,7 @@ Because this adds platform module metadata, wire it through provisioning:
 - `prisma/provisioning/provisioning.runner.ts`
   - Ensure module catalog/module system seeding already includes the updated catalogs.
 - Permission checks in backend service should use `SM:${PermissionAction.*}`.
-- Reserved company/admin roles should retain full access, matching Bank Masterfile and Term Management.
+- Reserved company/admin roles should retain full access, matching Bank Masterfile and Terms Maintenance.
 
 If the module creates company-owned defaults, wire them through `prisma/company-bootstrap/company-bootstrap.registry.ts`. If it only creates records on user action, no default service records are required.
 
@@ -418,7 +418,7 @@ Rules for transaction modules:
 
 ## Import Scope
 
-Initial implementation may skip import if not requested, but if import is added, match the Term Management and Bank Masterfile import dialog patterns:
+Initial implementation may skip import if not requested, but if import is added, match the Terms Maintenance and Bank Masterfile import dialog patterns:
 
 - Keep parsing/defaults in `data`.
 - Keep validation in `validations`.

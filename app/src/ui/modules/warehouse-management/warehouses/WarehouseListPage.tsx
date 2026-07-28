@@ -73,24 +73,24 @@ export function WarehouseListPage() {
           />
         ) : null}
         <ModuleTableColumnVisibilityButton className="w-12 min-w-12 shrink-0" table={page.table} />
-        <div className="flex h-12 shrink-0 rounded-lg border border-darknavy/10 bg-white p-1" role="group" aria-label="Warehouse view">
+        <div className="grid h-12 w-[5.5rem] shrink-0 grid-cols-2 items-center rounded-lg border border-darknavy/10 bg-white p-1" role="group" aria-label="Warehouse view">
           <button
             type="button"
             onClick={() => setViewMode("list")}
             aria-pressed={viewMode === "list"}
             aria-label="List view"
-            className={`grid h-10 w-10 place-items-center rounded-md transition ${viewMode === "list" ? "bg-skyblue text-[var(--skyblue-contrast)]" : "text-darknavy/55 hover:bg-skyblue/10 hover:text-darknavy"}`}
+            className={`inline-flex h-10 w-10 items-center justify-center rounded-md leading-none transition ${viewMode === "list" ? "bg-skyblue text-[var(--skyblue-contrast)]" : "text-darknavy/55 hover:bg-skyblue/10 hover:text-darknavy"}`}
           >
-            <List className="h-4 w-4" aria-hidden="true" />
+            <List className="block h-4 w-4" aria-hidden="true" />
           </button>
           <button
             type="button"
             onClick={() => setViewMode("grid")}
             aria-pressed={viewMode === "grid"}
             aria-label="Grid view"
-            className={`grid h-10 w-10 place-items-center rounded-md transition ${viewMode === "grid" ? "bg-skyblue text-[var(--skyblue-contrast)]" : "text-darknavy/55 hover:bg-skyblue/10 hover:text-darknavy"}`}
+            className={`inline-flex h-10 w-10 items-center justify-center rounded-md leading-none transition ${viewMode === "grid" ? "bg-skyblue text-[var(--skyblue-contrast)]" : "text-darknavy/55 hover:bg-skyblue/10 hover:text-darknavy"}`}
           >
-            <Grid2X2 className="h-4 w-4" aria-hidden="true" />
+            <Grid2X2 className="block h-4 w-4" aria-hidden="true" />
           </button>
         </div>
         <div className="w-12 min-w-12 shrink-0">

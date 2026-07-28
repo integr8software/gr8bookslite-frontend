@@ -289,7 +289,7 @@ function getEmail(name: string) {
 function PermissionOption({ checked, onToggle, permission }: { checked: boolean; onToggle: () => void; permission: WarehouseAccessPermission }) {
   return (
     <label
-      className={`flex cursor-pointer gap-3 rounded-lg border p-3 transition ${checked ? "border-skyblue/35 bg-skyblue/8" : "border-gray-300 bg-white hover:border-skyblue"}`}
+      className={`flex cursor-pointer gap-3 rounded-lg border p-3 transition ${checked ? "border-skyblue/35 bg-skyblue/8" : "border-gray-300 bg-white hover:border-skyblue/30"}`}
     >
       <input type="checkbox" checked={checked} className="peer sr-only" onChange={onToggle} />
       <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded border border-darknavy/25 peer-checked:border-skyblue peer-checked:bg-skyblue peer-checked:text-white">

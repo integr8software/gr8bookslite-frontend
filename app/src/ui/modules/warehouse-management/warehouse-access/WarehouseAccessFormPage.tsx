@@ -210,7 +210,7 @@ export function WarehouseAccessFormPage() {
                     <label
                       key={permission}
                       className={`flex cursor-pointer items-center gap-3 rounded-md border px-3 py-2.5 transition ${
-                        checked ? "border-skyblue bg-skyblue/10" : "border-gray-300 bg-white hover:border-skyblue"
+                        checked ? "border-skyblue/35 bg-skyblue/10" : "border-gray-300 bg-white hover:border-skyblue/30"
                       }`}
                     >
                       <input type="checkbox" checked={checked} className="h-4 w-4 accent-skyblue" onChange={() => page.togglePermissionForAll(permission)} />

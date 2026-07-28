@@ -40,7 +40,7 @@ export function useWarehouseStorageListPage() {
   const [query, setQueryState] = useState("");
   const [statusFilter, setStatusFilterState] = useState("All");
   const [warehouseFilter, setWarehouseFilterState] = useState("All");
-  const [viewMode, setViewMode] = useState<"List" | "Map">("List");
+  const [viewMode, setViewMode] = useState<"List" | "Map">("Map");
   const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
   const [draftWarehouses, setDraftWarehouses] = useState<typeof warehouses>([]);
   const [pendingDelete, setPendingDelete] = useState<WarehouseModuleRecord | null>(null);

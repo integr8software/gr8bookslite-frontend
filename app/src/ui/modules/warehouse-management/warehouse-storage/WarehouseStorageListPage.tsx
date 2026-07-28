@@ -69,10 +69,15 @@ export function WarehouseStorageListPage() {
           ) : (
             <WarehouseStorageMapView
               isLoading={page.isLoading}
+              query={page.query}
               records={page.filteredListRecords}
               selectedRecordId={page.selectedRecord?.id ?? null}
+              statusFilter={page.statusFilter}
+              statuses={page.statuses}
               warehouses={page.warehouses}
               onSelectRecord={page.setSelectedRecordId}
+              onStatusFilterChange={page.setStatusFilter}
+              onQueryChange={page.setQuery}
             />
           )}
         </div>

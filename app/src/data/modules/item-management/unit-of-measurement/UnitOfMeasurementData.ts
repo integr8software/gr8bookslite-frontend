@@ -17,7 +17,7 @@ import {
 import { downloadBlob } from "@/app/src/ui/shared/module/module-table/ModuleTableExportDownload";
 import { formatFileSize } from "@/app/src/utils/file.util";
 import { normalizeLowercaseWhitespace } from "@/app/src/utils/string.util";
-import { isModuleImportOptionValue } from "@/app/src/utils/module-import-validation.util";
+import { isModuleImportOptionValue } from "@/app/src/utils/module-import.util";
 
 export function createUnitOfMeasurementFormValues(
 	record?: UnitOfMeasurementRecord,

@@ -1,6 +1,6 @@
 import type { WarehouseAccessLevel, WarehouseAccessPermission } from "@/app/src/types/modules/warehouse-management/warehouse-access/WarehouseAccessTypes";
 
-export type WarehouseModulePageKind = "access" | "stock-inquiry" | "storage-locations" | "transfers";
+export type WarehouseModulePageKind = "access" | "stock-inquiry" | "warehouse-storage" | "transfers";
 
 export type WarehouseEditableSupportKind = Exclude<WarehouseModulePageKind, "stock-inquiry">;
 

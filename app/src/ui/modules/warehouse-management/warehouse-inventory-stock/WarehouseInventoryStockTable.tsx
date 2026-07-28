@@ -72,7 +72,7 @@ export function WarehouseInventoryStockTable({
 							<ModuleTableExportButton
 								allRows={page.records}
 								columns={WarehouseInventoryStockExportColumns}
-								fileName="item-availability"
+								fileName="warehouse-inventory-stock"
 								filteredRows={page.filteredRecords}
 								isFiltered={hasActiveFilters}
 								table={page.table}

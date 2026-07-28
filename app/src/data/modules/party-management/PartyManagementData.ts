@@ -38,7 +38,7 @@ import type {
 import { downloadBlob } from "@/app/src/ui/shared/module/module-table/ModuleTableExportDownload";
 import { todayDateValue } from "@/app/src/utils/date.util";
 import { formatFileSize } from "@/app/src/utils/file.util";
-import { isModuleImportOptionValue } from "@/app/src/utils/module-import-validation.util";
+import { isModuleImportOptionValue } from "@/app/src/utils/module-import.util";
 
 export const PartyAtcCodeSource = {
   label: "BIR Form 2307, January 2018 ENCS - Schedules of Alphanumeric Tax Codes",

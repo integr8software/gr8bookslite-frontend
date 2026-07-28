@@ -1,6 +1,6 @@
 import { formatCurrency } from "@/app/src/utils/currency.util";
 import type { WarehouseAccessRecord } from "@/app/src/types/modules/warehouse-management/warehouse-access/WarehouseAccessTypes";
-import type { WarehouseStorageRecord } from "@/app/src/types/modules/warehouse-management/storage-locations/WarehouseStorageTypes";
+import type { WarehouseStorageRecord } from "@/app/src/types/modules/warehouse-management/warehouse-storage/WarehouseStorageTypes";
 import type { WarehouseTransferRecord } from "@/app/src/types/modules/warehouse-management/warehouse-transfers/WarehouseTransferTypes";
 import type { WarehouseRecord, WarehouseStatus } from "@/app/src/types/modules/warehouse-management/warehouses/WarehouseTypes";
 import type {
@@ -20,7 +20,7 @@ export function createWarehouseModuleRows(kind: WarehouseModulePageKind, warehou
     );
   }
 
-  if (kind === "storage-locations") {
+  if (kind === "warehouse-storage") {
     return warehouses.flatMap((warehouse) =>
       warehouse.locations.map((location) =>
         createWarehouseModuleRecord(kind, warehouse.id, location.id, [
@@ -135,7 +135,7 @@ export function createWarehouseModuleFormFromRow(row: WarehouseModuleRecord, war
       : form;
   }
 
-  if (row.kind === "storage-locations") {
+  if (row.kind === "warehouse-storage") {
     const record = warehouse.locations.find((location) => location.id === row.recordId);
 
     return record
@@ -226,7 +226,7 @@ export function removeWarehouseModuleRecord(row: WarehouseModuleRecord, warehous
 
 export function toEditableWarehouseModuleKind(kind: WarehouseModulePageKind): WarehouseEditableSupportKind {
   if (kind === "stock-inquiry") {
-    return "storage-locations";
+    return "warehouse-storage";
   }
 
   return kind as WarehouseEditableSupportKind;
@@ -269,7 +269,7 @@ function upsertRecordIntoWarehouse(
     };
   }
 
-  if (kind === "storage-locations") {
+  if (kind === "warehouse-storage") {
     const record: WarehouseStorageRecord = {
       aisle: form.aisle.trim(),
       binNo: form.binNo.trim(),
@@ -321,7 +321,7 @@ function removeRecordFromWarehouse(warehouse: WarehouseRecord, kind: WarehouseEd
     };
   }
 
-  if (kind === "storage-locations") {
+  if (kind === "warehouse-storage") {
     return {
       ...warehouse,
       locations: warehouse.locations.filter((record) => record.id !== recordId),
@@ -386,7 +386,7 @@ function createPathPart(label: string, value?: string) {
 }
 
 function createWarehouseModuleReferenceNumber(kind: WarehouseEditableSupportKind) {
-  const prefix = kind === "transfers" ? "WT" : kind === "storage-locations" ? "LOC" : "ACC";
+  const prefix = kind === "transfers" ? "WT" : kind === "warehouse-storage" ? "LOC" : "ACC";
 
   return `${prefix}-${Date.now().toString().slice(-6)}`;
 }

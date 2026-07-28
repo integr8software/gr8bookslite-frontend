@@ -206,7 +206,7 @@ function WorkspaceTable({
       value: (record: WarehousePickingDispatchRecord) =>
         column.id === "status" ? record.status : (record.cells[column.id] ?? ""),
     }));
-  const showDetails = !["capacity-storage-rules"].includes(module);
+  const showDetails = true;
 
   return (
     <div
@@ -528,20 +528,8 @@ function WorkspaceComposer({
 
 
 function getComposerStatuses(module: WarehousePickingDispatchModule) {
-  if (module === "location-availability") {
-    return ["Available", "Reserved", "Blocked", "Under Maintenance", "Quality Hold", "Inactive"];
-  }
-  if (["location-transfer", "stock-count"].includes(module)) {
-    return ["Draft", "Submitted", "Posted", "Cancelled"];
-  }
-  if (module === "stock-adjustment") {
-    return ["Draft", "Submitted", "Approved", "Posted", "Rejected"];
-  }
-  if (module === "receiving-putaway") {
-    return ["Expected", "Receiving", "Received", "Putaway In Progress", "Completed"];
-  }
   if (module === "picking-dispatch") {
     return ["Open", "Allocated", "Picking", "Picked", "Staged", "Released"];
   }
-  return ["Draft", "Active", "Inactive"];
+  return ["Open", "Allocated", "Picking", "Picked", "Staged", "Released"];
 }

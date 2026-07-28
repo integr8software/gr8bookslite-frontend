@@ -17,7 +17,7 @@ import { formatFileSize } from "@/app/src/utils/file.util";
 import {
   getModuleImportOptionValue,
   isModuleImportOptionValue,
-} from "@/app/src/utils/module-import-validation.util";
+} from "@/app/src/utils/module-import.util";
 
 export function getDefaultAccountTableMinWidthClassName(visibleColumnCount: number) {
   if (visibleColumnCount >= 7) return "min-w-[104rem]";

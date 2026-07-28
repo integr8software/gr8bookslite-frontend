@@ -1,45 +1,41 @@
-# Receiving & Putaway (`WRP`)
+# Warehouse Storage (`WS`)
 
 ## Definition and Use
 
-Receiving & Putaway records inbound arrival into a warehouse and placement into final warehouse storage.
+Warehouse Storage maintains the physical and operational places inside one warehouse. The current `warehouse-storage` route is the canonical Warehouse Storage module.
 
 ## Current State
 
-The route is a planning shell and needs integration with inbound documents, locations, and the movement ledger.
+The UI currently derives generated/demo storage records from warehouse data. Persistent backend integration is still required for normal runtime use.
 
-## Sources
+## Main Data
 
-- Purchase receiving or Receiving Report
-- Goods Receipt
-- Warehouse Transfer receipt
-- Customer return
-- Authorized direct receipt
-
-## Workflow
-
-`Expected -> Receiving -> Received -> Putaway In Progress -> Completed`
+- Warehouse
+- Location code and name
+- Type: zone, aisle, rack, shelf, bin, floor, receiving, dispatch, returns, damage, or quality hold
+- Parent location
+- Purpose, barcode, sequence/pick priority, and status
 
 ## Rules
 
-- Receiving may first place stock in a designated receiving location.
-- Putaway may be a separate location movement.
-- Suggested destinations use Item Location Setup, availability, capacity, and restrictions.
-- Received and putaway quantities must never exceed the valid source quantity.
-- Lot, serial, batch, and expiry are required when the item requires them.
-- The commercial/source document remains the transaction reference.
+- A location belongs to exactly one warehouse.
+- Code is unique within its warehouse.
+- Parent and child must belong to the same warehouse.
+- A stock-bearing location cannot be removed while it contains stock or is referenced by an open document.
+- Editable screens use one selected warehouse; All Warehouses is read-only.
 
 ## Connections
 
-Purchasing/Inventory supplies inbound demand. Warehouse Storage supplies locations and rules. Stock Movement History records receipt and putaway.
+Locations are used by item-location defaults, capacity rules, availability, inventory balances, receiving, putaway, picking, transfers, counts, and adjustments.
 
 ## UI Requirements
 
-- Receiving queue, source-document lookup, scan/manual entry, discrepancy capture, suggested destinations, progress, and exception actions.
+- Warehouse selector, hierarchy-aware table, filters, add/edit/view form, status action, and audit details.
+- Clearly distinguish location status, operational availability, capacity, and calculated occupancy.
 
 ## Acceptance
 
-Received quantity becomes visible exactly once and completed putaway reconciles receiving-area and final-location balances.
+Saved locations persist, remain company/warehouse scoped, and are selectable only when valid for the requested operation.
 
 
 ## Detailed UI Implementation Contract

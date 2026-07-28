@@ -18,7 +18,7 @@ import { formatFileSize } from "@/app/src/utils/file.util";
 import {
   getModuleImportOptionValue,
   isModuleImportOptionValue,
-} from "@/app/src/utils/module-import-validation.util";
+} from "@/app/src/utils/module-import.util";
 
 export const ServicesMaintenanceInitialFormValues: ServicesMaintenanceFormValues = {
   serviceName: "",

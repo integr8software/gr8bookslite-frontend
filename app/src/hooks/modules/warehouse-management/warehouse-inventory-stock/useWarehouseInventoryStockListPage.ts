@@ -14,7 +14,7 @@ import {
 import { normalizeLowercaseText } from "@/app/src/utils/string.util";
 import { WarehouseInventoryStockTableColumns } from "@/app/src/constants/modules/warehouse-management/warehouse-inventory-stock/WarehouseInventoryStockConstants";
 import { createWarehouseInventoryStockRows } from "@/app/src/data/modules/warehouse-management/warehouse-inventory-stock/WarehouseInventoryStockData";
-import { createWarehouseStorageDemoWarehouses } from "@/app/src/data/modules/warehouse-management/storage-locations/WarehouseStorageMockData";
+import { createWarehouseStorageDemoWarehouses } from "@/app/src/data/modules/warehouse-management/warehouse-storage/WarehouseStorageMockData";
 import { useWarehousesStore } from "@/app/src/hooks/modules/warehouse-management/warehouses/useWarehouses";
 import type { WarehouseModuleRecord } from "@/app/src/types/modules/warehouse-management/warehouses/WarehouseModuleTypes";
 

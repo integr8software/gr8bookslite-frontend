@@ -34,7 +34,7 @@ Delivery Vehicle Management is the transport authority. It is not the stock ledg
 ## Out of Scope
 
 - Warehouse stock balances and inventory posting.
-- Picking, putaway, and storage locations.
+- Picking, putaway, and warehouse storage.
 - Sales order approval, invoicing, customer credit, and collection.
 - Payroll and complete employee scheduling.
 - Full route optimization or mandatory real-time GPS in the first version.

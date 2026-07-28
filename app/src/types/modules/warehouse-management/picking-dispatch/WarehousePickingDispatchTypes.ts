@@ -1,19 +1,6 @@
-export type WarehousePickingDispatchModule =
-  | "capacity-storage-rules"
-  | "item-availability"
-  | "item-location-setup"
-  | "location-availability"
-  | "location-transfer"
-  | "picking-dispatch"
-  | "receiving-putaway"
-  | "stock-adjustment"
-  | "stock-by-location"
-  | "stock-by-warehouse"
-  | "stock-count"
-  | "stock-movement-history";
+export type WarehousePickingDispatchModule = "picking-dispatch";
 
-export type WarehousePickingDispatchGroup =
-  "Warehouse Storage" | "Warehouse Inventory" | "Warehouse Operations";
+export type WarehousePickingDispatchGroup = "Warehouse Operations";
 
 export type WarehousePickingDispatchColumn = {
   id: string;

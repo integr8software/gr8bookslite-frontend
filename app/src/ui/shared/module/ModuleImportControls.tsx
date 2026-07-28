@@ -23,7 +23,7 @@ import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import {
 	getModuleImportOptionValue,
 	isModuleImportOptionValue,
-} from "@/app/src/utils/module-import-validation.util";
+} from "@/app/src/utils/module-import.util";
 
 export type ModuleImportMode = "all-rows" | "all-valid" | "selected-valid";
 

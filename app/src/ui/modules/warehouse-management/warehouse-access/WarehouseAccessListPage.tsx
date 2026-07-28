@@ -76,7 +76,7 @@ export function WarehouseAccessListPage() {
       </section>
 
       <div className="grid items-stretch gap-3 xl:grid-cols-[22rem_minmax(0,1fr)]">
-        <aside className="flex min-h-[30rem] flex-col overflow-hidden rounded-xl border border-darknavy/10 bg-white shadow-sm">
+        <aside className="flex h-[36rem] flex-col overflow-hidden rounded-xl border border-darknavy/10 bg-white shadow-sm">
           <div className="border-b border-darknavy/10 p-3">
             <div className="flex items-center justify-between">
               <div>
@@ -121,7 +121,7 @@ export function WarehouseAccessListPage() {
           </div>
         </aside>
 
-        <main className="min-h-[30rem] overflow-hidden rounded-xl border border-darknavy/10 bg-white shadow-sm">
+        <main className="flex h-[36rem] flex-col overflow-hidden rounded-xl border border-darknavy/10 bg-white shadow-sm">
           {isLoading ? (
             <WarehouseAccessDetailSkeleton />
           ) : page.draft && hasAccess ? (
@@ -143,7 +143,7 @@ export function WarehouseAccessListPage() {
                 </select>
               </div>
 
-              <div className="p-5">
+              <div className="min-h-0 flex-1 overflow-y-auto p-5">
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <h3 className="text-sm font-bold leading-tight">Permissions</h3>
@@ -169,15 +169,15 @@ export function WarehouseAccessListPage() {
                 </div>
               </div>
 
-              <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-darknavy/10 bg-offwhite/45 px-5 py-3">
+              <footer className="mt-auto flex flex-col gap-3 border-t border-darknavy/10 bg-white px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
                 <button
                   type="button"
-                  className="flex min-h-10 items-center gap-2 rounded-md px-2.5 text-sm font-semibold text-red-600 hover:bg-red-50"
+                  className="inline-flex min-h-9 items-center justify-center gap-2 rounded-md px-3 text-sm font-semibold text-red-600 transition hover:bg-red-50 sm:justify-start"
                   onClick={() => setIsRevokeOpen(true)}
                 >
                   <Trash2 className="h-4 w-4" /> Revoke
                 </button>
-                <div className="flex gap-2">
+                <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                   <button type="button" disabled={!page.isDirty} className={WarehouseAccessSecondaryButtonClassName} onClick={page.discardChanges}>
                     Discard
                   </button>
@@ -289,7 +289,7 @@ function getEmail(name: string) {
 function PermissionOption({ checked, onToggle, permission }: { checked: boolean; onToggle: () => void; permission: WarehouseAccessPermission }) {
   return (
     <label
-      className={`flex cursor-pointer gap-3 rounded-lg border p-3 transition ${checked ? "border-skyblue/35 bg-skyblue/8" : "border-transparent bg-white hover:border-darknavy/10"}`}
+      className={`flex cursor-pointer gap-3 rounded-lg border p-3 transition ${checked ? "border-skyblue/35 bg-skyblue/8" : "border-gray-300 bg-white hover:border-skyblue"}`}
     >
       <input type="checkbox" checked={checked} className="peer sr-only" onChange={onToggle} />
       <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded border border-darknavy/25 peer-checked:border-skyblue peer-checked:bg-skyblue peer-checked:text-white">

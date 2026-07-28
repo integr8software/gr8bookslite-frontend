@@ -1,46 +1,50 @@
-# Picking & Dispatch (`WPD`)
+# Vehicle Scheduling & Assignment (`DVAS`)
 
 ## Definition and Use
 
-Picking & Dispatch allocates stock, picks it from storage, stages it, and releases it for an outbound demand.
+Vehicle Scheduling & Assignment reserves a compatible vehicle and delivery team for a load plan or trip and schedule window.
 
 ## Current State
 
-The route is a planning shell and needs integration with approved demand, reservations, locations, and Delivery Vehicle Management.
+The route currently renders a heading-only shell. Resource selection, conflict detection, and persistence are not implemented.
 
-## Sources
+## Main Data
 
-- Pick List
-- Sales delivery demand
-- Goods Issue
-- Warehouse Transfer
-- Material Request
+- Assignment number
+- Load plan/trip and origin warehouse
+- Scheduled start/end
+- Vehicle
+- Driver, helpers/crew, and dispatcher
+- Status and notes
 
-## Workflow
+## Statuses
 
-`Open -> Allocated -> Picking -> Picked -> Staged -> Released`
-
-`Cancelled` applies before release; released errors follow the source document's reversal/return workflow.
+- Draft
+- Reserved
+- Confirmed
+- Released
+- Cancelled
 
 ## Rules
 
-- Allocation/picking uses available quantity and excludes blocked/quality-hold stock.
-- Primary picking and reserve locations may be suggested.
-- Picked items move to dispatch staging when location tracking is enabled.
-- Warehouse Release and Vehicle Dispatch are separate events.
-- The inventory issue posts once at the approved warehouse/source-document event; vehicle dispatch never posts it again.
+- Vehicle and driver schedules cannot overlap active work.
+- The vehicle must meet load capacity and handling requirements.
+- Vehicle master status, compliance, availability, inspection, and maintenance must allow the assignment.
+- Driver eligibility/license checks apply when maintained by the system.
+- Cancelling releases resources unless another active record holds them.
+- Reassignment preserves the former vehicle/team in audit history.
 
-## Delivery Connection
+## Connections
 
-The staged load exposes origin, readiness, quantities, weight, volume, pallets, handling needs, and references to Delivery Planning & Dispatch.
+Delivery Planning & Dispatch supplies the requirement. Vehicle Scheduling & Assignment supplies candidate status and consumes the confirmed assignment. User/Employee/Party data supplies the delivery team.
 
 ## UI Requirements
 
-- Work queue, item/location picking grid, scan/manual confirmation, shortage/substitution exception, staging choice, loading readiness, release confirmation, and trip link.
+- Compatible candidate list, conflict explanation, availability timeline, team selection, confirmation/reassignment action, and audit history.
 
 ## Acceptance
 
-Released loads are traceable to their demand, movements, staging location, and optional delivery trip without duplicate stock posting.
+The system prevents conflicting or incompatible reservations and creates an explainable resource commitment.
 
 
 ## Detailed UI Implementation Contract

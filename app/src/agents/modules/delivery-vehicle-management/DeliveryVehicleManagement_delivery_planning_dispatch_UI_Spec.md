@@ -1,46 +1,53 @@
-# Picking & Dispatch (`WPD`)
+# Delivery Planning & Dispatch (`DVD`)
 
 ## Definition and Use
 
-Picking & Dispatch allocates stock, picks it from storage, stages it, and releases it for an outbound demand.
+Delivery Planning & Dispatch controls the journey that carries assigned load plans and delivery/transfer documents from an origin through ordered stops.
 
 ## Current State
 
-The route is a planning shell and needs integration with approved demand, reservations, locations, and Delivery Vehicle Management.
+The route currently renders a heading-only shell. Trip, stop, checklist, status, and persistence flows are not implemented.
 
-## Sources
+## Main Data
 
-- Pick List
-- Sales delivery demand
-- Goods Issue
-- Warehouse Transfer
-- Material Request
+- Trip number/date and origin warehouse
+- Load plans and delivery/transfer documents
+- Vehicle, driver, and crew
+- Route and ordered stops
+- Planned/actual departure and return
+- Starting/ending odometer
+- Status and dispatch notes
 
-## Workflow
+## Statuses
 
-`Open -> Allocated -> Picking -> Picked -> Staged -> Released`
+`Draft -> Planned -> Assigned -> Loading -> Ready for Dispatch -> Dispatched -> In Transit -> Completed`
 
-`Cancelled` applies before release; released errors follow the source document's reversal/return workflow.
+`Partially Completed`, `Returned`, and `Cancelled` handle explicit exceptions.
+
+## Dispatch Requirements
+
+- Confirmed assignment
+- Available/compliant vehicle
+- Passed pre-trip inspection
+- Required documents and team
+- Load within capacity
+- Warehouse loading/release readiness
+- Starting odometer and dispatch time
 
 ## Rules
 
-- Allocation/picking uses available quantity and excludes blocked/quality-hold stock.
-- Primary picking and reserve locations may be suggested.
-- Picked items move to dispatch staging when location tracking is enabled.
-- Warehouse Release and Vehicle Dispatch are separate events.
-- The inventory issue posts once at the approved warehouse/source-document event; vehicle dispatch never posts it again.
-
-## Delivery Connection
-
-The staged load exposes origin, readiness, quantities, weight, volume, pallets, handling needs, and references to Delivery Planning & Dispatch.
+- Dispatch changes trip/vehicle state, not inventory.
+- Warehouse/source-document posting owns the stock issue.
+- Every stop needs a final result before normal completion.
+- Cancellation after loading/release requires return, reassignment, or reversal handling.
 
 ## UI Requirements
 
-- Work queue, item/location picking grid, scan/manual confirmation, shortage/substitution exception, staging choice, loading readiness, release confirmation, and trip link.
+- Trip list, dispatch board, form with stops, checklist, status actions, odometer capture, documents, tracking timeline, and exceptions.
 
 ## Acceptance
 
-Released loads are traceable to their demand, movements, staging location, and optional delivery trip without duplicate stock posting.
+A trip cannot dispatch until its safety, resource, capacity, document, and warehouse-readiness requirements pass.
 
 
 ## Detailed UI Implementation Contract

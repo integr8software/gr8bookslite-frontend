@@ -1,46 +1,49 @@
-# Picking & Dispatch (`WPD`)
+# Trip Monitoring (`DVTK`)
 
 ## Definition and Use
 
-Picking & Dispatch allocates stock, picks it from storage, stages it, and releases it for an outbound demand.
+Trip Monitoring provides the current trip state and append-only timeline of transport and stop events.
 
 ## Current State
 
-The route is a planning shell and needs integration with approved demand, reservations, locations, and Delivery Vehicle Management.
+The route currently renders a heading-only shell. The first version should be event-based and GPS-ready.
 
-## Sources
+## Minimum Events
 
-- Pick List
-- Sales delivery demand
-- Goods Issue
-- Warehouse Transfer
-- Material Request
+- Dispatched/departed origin
+- Arrived/departed stop
+- Delivery started/completed/failed
+- Delay, breakdown, or incident reported
+- Returned to origin
+- Trip completed
 
-## Workflow
+## Event Data
 
-`Open -> Allocated -> Picking -> Picked -> Staged -> Released`
-
-`Cancelled` applies before release; released errors follow the source document's reversal/return workflow.
+- Trip and optional stop
+- Event type and date/time
+- Location text and optional coordinates
+- Odometer
+- Source: manual, mobile, GPS, or system
+- Actor, notes, and proof/attachment reference
 
 ## Rules
 
-- Allocation/picking uses available quantity and excludes blocked/quality-hold stock.
-- Primary picking and reserve locations may be suggested.
-- Picked items move to dispatch staging when location tracking is enabled.
-- Warehouse Release and Vehicle Dispatch are separate events.
-- The inventory issue posts once at the approved warehouse/source-document event; vehicle dispatch never posts it again.
+- Events are append-only; corrections create an audited correction event.
+- Accepted events may advance trip status.
+- Users must see the latest-update time and stale-data state.
+- Events use unambiguous stored timestamps and user-timezone display.
 
-## Delivery Connection
+## Connections
 
-The staged load exposes origin, readiness, quantities, weight, volume, pallets, handling needs, and references to Delivery Planning & Dispatch.
+Trips supplies stops/status. Incidents may be raised from an event. Delivery result may update the linked delivery document through a controlled integration.
 
 ## UI Requirements
 
-- Work queue, item/location picking grid, scan/manual confirmation, shortage/substitution exception, staging choice, loading readiness, release confirmation, and trip link.
+- Active-trip list/map-ready view, selected-trip summary, ordered timeline, stop progress, add-event action, stale indicator, and proof link.
 
 ## Acceptance
 
-Released loads are traceable to their demand, movements, staging location, and optional delivery trip without duplicate stock posting.
+Users can determine the latest known trip/stop state and who or what supplied every update.
 
 
 ## Detailed UI Implementation Contract

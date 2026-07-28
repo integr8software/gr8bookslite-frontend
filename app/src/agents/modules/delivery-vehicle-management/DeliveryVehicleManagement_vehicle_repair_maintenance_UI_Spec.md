@@ -1,46 +1,56 @@
-# Picking & Dispatch (`WPD`)
+# Vehicle Repair and Maintenance (`DVMR`)
 
 ## Definition and Use
 
-Picking & Dispatch allocates stock, picks it from storage, stages it, and releases it for an outbound demand.
+Vehicle Repair and Maintenance plans preventive service and manages corrective or emergency work that affects vehicle readiness.
 
 ## Current State
 
-The route is a planning shell and needs integration with approved demand, reservations, locations, and Delivery Vehicle Management.
+The route currently renders a heading-only shell. Work orders, schedules, costs, availability effects, and persistence are not implemented.
 
-## Sources
+## Main Data
 
-- Pick List
-- Sales delivery demand
-- Goods Issue
-- Warehouse Transfer
-- Material Request
+- Work order number, vehicle, type, trigger, and priority
+- Description/diagnosis and service provider
+- Scheduled/actual start and end
+- Odometer
+- Parts, labor, estimated/actual cost
+- Warranty/reference, status, and release approval
 
-## Workflow
+## Types
 
-`Open -> Allocated -> Picking -> Picked -> Staged -> Released`
+- Preventive
+- Corrective
+- Emergency
+- Inspection Repair
+- Tire
+- Registration/Compliance
 
-`Cancelled` applies before release; released errors follow the source document's reversal/return workflow.
+## Statuses
+
+`Draft -> Scheduled -> In Progress -> Waiting for Parts -> Completed -> Released`
+
+`Cancelled` applies when work is not performed.
 
 ## Rules
 
-- Allocation/picking uses available quantity and excludes blocked/quality-hold stock.
-- Primary picking and reserve locations may be suggested.
-- Picked items move to dispatch staging when location tracking is enabled.
-- Warehouse Release and Vehicle Dispatch are separate events.
-- The inventory issue posts once at the approved warehouse/source-document event; vehicle dispatch never posts it again.
+- In-progress and safety-related work makes the vehicle unavailable.
+- Scheduled work blocks overlapping assignments according to policy.
+- Completed work does not restore dispatch eligibility until required release/inspection passes.
+- Preventive service can be triggered by date, odometer, or whichever occurs first.
+- Costs remain linked to the vehicle and work order.
 
-## Delivery Connection
+## Connections
 
-The staged load exposes origin, readiness, quantities, weight, volume, pallets, handling needs, and references to Delivery Planning & Dispatch.
+Failed inspections/incidents may create work orders. Availability consumes maintenance state. Purchasing/Payables may supply parts/services. Fixed Assets may receive vehicle cost history.
 
 ## UI Requirements
 
-- Work queue, item/location picking grid, scan/manual confirmation, shortage/substitution exception, staging choice, loading readiness, release confirmation, and trip link.
+- Due/scheduled work board, work-order list/form, parts/labor grid, attachments, cost summary, status actions, inspection/release link, and service history.
 
 ## Acceptance
 
-Released loads are traceable to their demand, movements, staging location, and optional delivery trip without duplicate stock posting.
+Maintenance restrictions affect availability predictably, and release is supported by completed work and required inspection evidence.
 
 
 ## Detailed UI Implementation Contract

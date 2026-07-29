@@ -23,7 +23,7 @@ Warehouse Management is the stock-location authority. It is not the authority fo
 - Restrict users to warehouses and warehouse actions they are allowed to use.
 - Model warehouse storage inside each warehouse with a usable layout UI.
 - Show stock balances and availability by warehouse and location.
-- Support receiving, putaway, transfers, picking, dispatch staging, counts, and adjustments.
+- Support transfers, counts, adjustments, and inventory visibility.
 - Provide an auditable history of inventory movement.
 - Hand prepared outbound loads to Delivery Vehicle Management without duplicating inventory records.
 
@@ -35,8 +35,6 @@ Warehouse Management
 |-- Warehouse Access
 |-- Warehouse Storage
 |-- Warehouse Inventory Stock
-|-- Receiving & Putaway
-|-- Picking & Dispatch
 `-- Warehouse Inventory Transfer
 ```
 
@@ -48,8 +46,6 @@ Warehouse Management
 | Warehouse Access | Keep existing warehouse user access behavior. |
 | Warehouse Storage | Consolidates warehouse storage, storage layout, item-location setup, capacity and storage rules, and location availability. |
 | Warehouse Inventory Stock | Consolidates stock by warehouse, stock by location, stock movement history, item availability, stock count, and warehouse stock adjustments. |
-| Receiving & Putaway | Remains a separate inbound operation module. |
-| Picking & Dispatch | Remains a separate outbound operation module. |
 | Warehouse Inventory Transfer | Consolidates warehouse transfer and location transfer. |
 
 Do not recreate route, UI, data, hook, type, service, validation, or constants folders for the merged child concepts.
@@ -105,26 +101,6 @@ Rules:
 - Stock count records physical count results and variances.
 - Warehouse Stock Adjustments are controlled increases or decreases with reason, approval, and audit data.
 - Posted adjustments are reversed by another document, not edited in place.
-
-### Receiving & Putaway (`WRP`)
-
-Receive inbound stock and place it into validated final warehouse storage. Putaway uses item defaults, location availability, capacity, and storage restrictions to suggest destinations.
-
-Suggested workflow:
-
-```text
-Expected -> Receiving -> Received -> Putaway In Progress -> Completed
-```
-
-### Picking & Dispatch (`WPD`)
-
-Allocate, pick, stage, and release stock for approved outbound demand. Picking excludes blocked or quality-hold quantity and can move picked items to dispatch staging.
-
-Suggested workflow:
-
-```text
-Open -> Allocated -> Picking -> Picked -> Staged -> Released -> Cancelled
-```
 
 ### Warehouse Inventory Transfer (`WT`)
 

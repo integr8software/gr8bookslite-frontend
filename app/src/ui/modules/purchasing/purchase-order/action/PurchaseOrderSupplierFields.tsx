@@ -122,13 +122,6 @@ export function PurchaseOrderSupplierFields({
           value={values.partialPayment ? "True" : "False"}
           onChange={(value) => onUpdateField("partialPayment", value === "True")}
         />
-        <BooleanSelectField
-          id="purchase-order-fixed-asset"
-          label="Fixed Asset"
-          readOnly={isReadonly}
-          value={values.fixedAsset ? "True" : "False"}
-          onChange={(value) => onUpdateField("fixedAsset", value === "True")}
-        />
       </div>
       <div className="grid min-w-0 content-start gap-4">
         <DateField

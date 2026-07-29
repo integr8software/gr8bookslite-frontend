@@ -36,9 +36,6 @@ export async function fetchDefaultAccounts(): Promise<DefaultAccountListResponse
 			collectionDefaultAccounts:
 				response.data.statistics?.collectionDefaultAccounts ??
 				defaultAccounts.filter((account) => account.type === "COLLECTION").length,
-			fixedAssetDefaultAccounts:
-				response.data.statistics?.fixedAssetDefaultAccounts ??
-				defaultAccounts.filter((account) => account.type === "FIXED_ASSET").length,
 		},
 		permissions: {
 			canView: response.data.permissions?.canView ?? true,

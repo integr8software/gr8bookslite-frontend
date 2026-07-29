@@ -1,11 +1,11 @@
 import type { Row, Table } from "@tanstack/react-table";
 
-export type DefaultAccountType = "EXPENSE" | "COLLECTION" | "FIXED_ASSET";
+export type DefaultAccountType = "EXPENSE" | "COLLECTION";
 export type DefaultAccountStatus = "Active" | "Inactive";
 export type ApiDefaultAccountStatus = "ACTIVE" | "INACTIVE";
 
 export type GeneratedDefaultAccountRole =
-  "EXPENSE" | "REVENUE" | "FIXED_ASSET" | "ACCUMULATED_DEPRECIATION" | "DEPRECIATION_EXPENSE";
+  "EXPENSE" | "REVENUE";
 
 export type GeneratedDefaultAccount = {
   role: GeneratedDefaultAccountRole;
@@ -77,7 +77,6 @@ export type DefaultAccountStatistics = {
   inactiveDefaultAccounts: number;
   expenseDefaultAccounts: number;
   collectionDefaultAccounts: number;
-  fixedAssetDefaultAccounts: number;
 };
 
 export type ApiDefaultAccount = {

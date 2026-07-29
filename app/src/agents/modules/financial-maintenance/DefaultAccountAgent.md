@@ -14,7 +14,6 @@ The frontend should treat these records as selectable business templates. Postin
 |---|---|---:|
 | `EXPENSE` | Expense Type | 1 expense account |
 | `COLLECTION` | Collection Type | 1 revenue account |
-| `FIXED_ASSET` | Fixed Asset Type | 1 asset account, 1 accumulated depreciation account, 1 depreciation expense account |
 
 ## Suggested Frontend Folders
 
@@ -80,7 +79,7 @@ Recommended create request:
 
 ```ts
 type CreateDefaultAccountRequest = {
-  type: 'EXPENSE' | 'COLLECTION' | 'FIXED_ASSET';
+  type: 'EXPENSE' | 'COLLECTION';
   description: string;
   status?: 'ACTIVE' | 'INACTIVE';
 };
@@ -91,11 +90,11 @@ Recommended response:
 ```ts
 type DefaultAccountResponse = {
   id: string;
-  type: 'EXPENSE' | 'COLLECTION' | 'FIXED_ASSET';
+  type: 'EXPENSE' | 'COLLECTION';
   description: string;
   status: 'ACTIVE' | 'INACTIVE';
   generatedAccounts: Array<{
-    role: 'EXPENSE' | 'REVENUE' | 'FIXED_ASSET' | 'ACCUMULATED_DEPRECIATION' | 'DEPRECIATION_EXPENSE';
+    role: 'EXPENSE' | 'REVENUE';
     chartAccountId: string;
     accountCode: string;
     accountTitle: string;
@@ -125,24 +124,6 @@ Revenue
 
 Use `revenue_coa_id` as the generated posting account.
 
-Fixed Asset Type:
-
-```text
-Assets
-  {description}
-    {description}
-    Accumulated Depreciation - {description}
-
-Depreciation Expense - Property, Plant and Equipment
-  Depreciation Expense - {description}
-```
-
-Use:
-
-- `asset_coa_id` for asset purchase debit lines.
-- `accumulated_depreciation_coa_id` for depreciation credit lines.
-- `expense_coa_id` for depreciation expense debit lines.
-
 ## Transaction Module Usage
 
 Transaction modules may use Default Account records as selectable templates for resolving posting accounts. The transaction module still decides whether the resolved account is used on the debit side, credit side, or as part of a multi-line accounting entry.
@@ -155,7 +136,6 @@ Recommended account resolution:
 |---|---|
 | `EXPENSE` | Expense debit lines, expense reversals, or configured transaction lines |
 | `COLLECTION` | Revenue credit lines, revenue reversals, or configured transaction lines |
-| `FIXED_ASSET` | Asset debit lines, accumulated depreciation credit lines, depreciation expense debit lines |
 
 For modules with different account setup rules, use the module's account setup first. Default Account should be a helper source, not the only source of truth.
 

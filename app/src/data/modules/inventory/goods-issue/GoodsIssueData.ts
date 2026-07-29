@@ -14,7 +14,6 @@ export const GoodsIssueTransactionTypeOptions = [
 	{ name: "--Select Transaction Type--", value: "" },
 	{ name: "Inventory Issue", value: "Inventory Issue" },
 	{ name: "Material Request Issue", value: "Material Request Issue" },
-	{ name: "Fixed Asset Issue", value: "Fixed Asset Issue" },
 	{ name: "Variance", value: "Variance" },
 ];
 
@@ -96,16 +95,6 @@ export const MockGoodsIssues: GoodsIssueRecord[] = [
 		transactionType: "Inventory Issue",
 		vceName: "Aster Foods Corporation",
 	},
-	{
-		id: "gi-003",
-		documentDate: "2026-07-08",
-		referenceNo: "FA-2026-0008",
-		status: "Approved",
-		totalAmount: 93800,
-		transactionNo: "GI-2026-0003",
-		transactionType: "Fixed Asset Issue",
-		vceName: "Harborview Logistics",
-	},
 ];
 
 export function createBlankGoodsIssueLineEntry(
@@ -144,7 +133,6 @@ export function createGoodsIssueFormValues(): GoodsIssueFormValues {
 		mrNo: "",
 		rrNo: "",
 		icNo: "",
-		faNo: "",
 		projectRef: "",
 		projectName: "",
 		lineEntries: [createBlankGoodsIssueLineEntry()],
@@ -170,7 +158,6 @@ export function createGoodsIssueFormValuesFromRecord(
 		vceName: record.vceName,
 		mrNo: record.referenceNo.startsWith("MR") ? record.referenceNo : "",
 		rrNo: record.referenceNo.startsWith("RR") ? record.referenceNo : "",
-		faNo: record.referenceNo.startsWith("FA") ? record.referenceNo : "",
 		lineEntries: [
 			createBlankGoodsIssueLineEntry({
 				itemCode: "ITEM-001",
@@ -198,7 +185,7 @@ export function createGoodsIssueRecordFromForm(
 			...values,
 			lineEntries: values.lineEntries.map((entry) => ({ ...entry })),
 		},
-		referenceNo: values.mrNo || values.rrNo || values.icNo || values.faNo,
+		referenceNo: values.mrNo || values.rrNo || values.icNo,
 		status: normalizeGoodsIssueStatus(values.status),
 		totalAmount: totals.amount,
 		transactionNo: values.transactionNo,

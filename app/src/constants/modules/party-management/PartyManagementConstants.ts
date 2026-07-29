@@ -8,7 +8,6 @@ import type {
   PartyInformationStatus,
   PartyInformationTableRecord,
   PartyType,
-  VatRegistrationType,
 } from "@/app/src/types/modules/party-management/PartyManagementTypes";
 import { AppMaxFileUploadSizeBytes } from "@/app/src/constants/shared/app/AppConstants";
 import { ModuleImportFixedColumnsWidth } from "@/app/src/constants/shared/module/ModuleImportConstants";
@@ -79,16 +78,6 @@ export const PartyDefaultNationality = "Filipino";
 
 export const PartyInformationStatusOptions = ["Active", "Inactive"] as const satisfies readonly PartyInformationStatus[];
 
-export const VatRegistrationTypeOptions = [
-  "VAT Registered (12%)",
-  "Non-VAT (0%)",
-  "VAT Exempt",
-  "Zero Rated (0%)",
-  "Capital Goods (12%)",
-  "Other than Capital Goods (12%)",
-  "Services (12%)",
-] as const satisfies readonly VatRegistrationType[];
-
 export const BIRAtcSourceUrl = "https://bir-cdn.bir.gov.ph/local/pdf/2307%20Jan%202018%20ENCS%20v3.pdf";
 
 export const PartyManagementActionCopy = {
@@ -130,11 +119,6 @@ export const PartyManagementTableColumns = [
     className: "w-[24rem]",
   },
   { key: "tin", label: "TIN", className: "w-[12rem]" },
-  {
-    key: "vatRegistrationType",
-    label: "VAT Registration Type",
-    className: "w-[14rem]",
-  },
   { key: "gender", label: "Gender", className: "w-[12rem]" },
   { key: "civilStatus", label: "Civil Status", className: "w-[12rem]" },
   { key: "nationality", label: "Nationality", className: "w-[12rem]" },
@@ -173,7 +157,6 @@ export const PartyManagementDefaultColumnVisibility: VisibilityState = {
   tin: false,
   updatedAt: false,
   updatedBy: false,
-  vatRegistrationType: false,
 };
 export const PartyManagementDefaultSorting: SortingState = [{ id: "name", desc: false }];
 
@@ -228,7 +211,6 @@ export const PartyImportTemplateHeaders = [
   "Nationality",
   "Member Registration Date",
   "TIN No",
-  "VAT Registration Type",
   "ATC Code",
   "Email",
   "Mobile Number",
@@ -277,33 +259,32 @@ export const PartyImportDefaultColumnIndexes: Partial<Record<PartyImportColumnId
   nationality: 12,
   memberRegistrationDate: 13,
   tin: 14,
-  vatRegistrationType: 15,
-  atcCode: 16,
-  email: 17,
-  contactNo: 18,
-  landline: 19,
-  homeAddressLine1: 20,
-  homeAddressLine2: 21,
-  homeBarangay: 22,
-  homeCityMunicipality: 23,
-  homeProvince: 24,
-  billingAddressLine1: 25,
-  billingAddressLine2: 26,
-  billingBarangay: 27,
-  billingCityMunicipality: 28,
-  billingProvince: 29,
-  deliveryAddressLine1: 30,
-  deliveryAddressLine2: 31,
-  deliveryBarangay: 32,
-  deliveryCityMunicipality: 33,
-  deliveryProvince: 34,
-  termName: 35,
-  defaultReceivableAccount: 36,
-  customerAdvanceAccount: 37,
-  defaultPayableAccount: 38,
-  vendorAdvanceAccount: 39,
-  employeeAdvanceAccount: 40,
-  employeePayableAccount: 41,
+  atcCode: 15,
+  email: 16,
+  contactNo: 17,
+  landline: 18,
+  homeAddressLine1: 19,
+  homeAddressLine2: 20,
+  homeBarangay: 21,
+  homeCityMunicipality: 22,
+  homeProvince: 23,
+  billingAddressLine1: 24,
+  billingAddressLine2: 25,
+  billingBarangay: 26,
+  billingCityMunicipality: 27,
+  billingProvince: 28,
+  deliveryAddressLine1: 29,
+  deliveryAddressLine2: 30,
+  deliveryBarangay: 31,
+  deliveryCityMunicipality: 32,
+  deliveryProvince: 33,
+  termName: 34,
+  defaultReceivableAccount: 35,
+  customerAdvanceAccount: 36,
+  defaultPayableAccount: 37,
+  vendorAdvanceAccount: 38,
+  employeeAdvanceAccount: 39,
+  employeePayableAccount: 40,
 };
 
 export const PartyImportFieldOrder: PartyImportColumnId[] = [
@@ -322,7 +303,6 @@ export const PartyImportFieldOrder: PartyImportColumnId[] = [
   "nationality",
   "memberRegistrationDate",
   "tin",
-  "vatRegistrationType",
   "atcCode",
   "email",
   "contactNo",
@@ -369,7 +349,6 @@ export const PartyImportDefaultColumnWidths: PartyImportColumnWidths = {
   nationality: 170,
   memberRegistrationDate: 190,
   tin: 170,
-  vatRegistrationType: 190,
   atcCode: 130,
   email: 220,
   contactNo: 170,

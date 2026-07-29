@@ -38,7 +38,6 @@ const PurchaseOrderFormSchema = z.object({
 	documentDate: requiredText("Select a document date."),
 	emailAddress: z.string(),
 	exchangeRate: z.coerce.number().positive("Enter a valid exchange rate."),
-	fixedAsset: z.boolean(),
 	importationNo: z.string(),
 	items: z.array(PurchaseOrderItemSchema).min(1, "Add at least one entry."),
 	partialPayment: z.boolean(),

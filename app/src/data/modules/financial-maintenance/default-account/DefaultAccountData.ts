@@ -249,7 +249,6 @@ function normalizeImportedDefaultAccountType(value: string): DefaultAccountType 
   const typeOptions = DefaultAccountTypeOptions.map((option) => option.value);
 
   if (["collection", "collectiontype"].includes(normalized)) return "COLLECTION";
-  if (["fixedasset", "fixedassettype"].includes(normalized)) return "FIXED_ASSET";
   if (["expense", "expensetype"].includes(normalized)) return "EXPENSE";
 
   return (getModuleImportOptionValue(value, typeOptions) ?? value) as DefaultAccountType;

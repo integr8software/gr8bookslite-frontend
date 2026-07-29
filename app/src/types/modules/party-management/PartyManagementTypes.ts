@@ -13,29 +13,11 @@ export type PartyInformationStatus = "Active" | "Inactive";
 
 export type PartyType = "Vendor" | "Customer" | "Employee" | "Member";
 
-export type VatRegistrationType =
-  | "VAT Registered (12%)"
-  | "Non-VAT (0%)"
-  | "VAT Exempt"
-  | "Zero Rated (0%)"
-  | "Capital Goods (12%)"
-  | "Other than Capital Goods (12%)"
-  | "Services (12%)";
-
 export type ApiPartyClassification = "INDIVIDUAL" | "NON_INDIVIDUAL";
 
 export type ApiPartyStatus = "ACTIVE" | "INACTIVE";
 
 export type ApiPartyType = "VENDOR" | "CUSTOMER" | "EMPLOYEE" | "MEMBER";
-
-export type ApiPartyVatRegistrationType =
-  | "VAT_REGISTERED"
-  | "NON_VAT"
-  | "VAT_EXEMPT"
-  | "ZERO_RATED"
-  | "CAPITAL_GOODS"
-  | "OTHER_THAN_CAPITAL_GOODS"
-  | "SERVICES";
 
 export type PartyAddress = {
   id: string;
@@ -86,7 +68,6 @@ export type PartyInformationRecord = {
   termId: string;
   termName: string;
   tin: string;
-  vatRegistrationType: VatRegistrationType | "";
   atcCode: string;
   defaultPurchaseInputVatTaxSourceKey: string;
   defaultPurchaseEwtTaxSourceKey: string;
@@ -132,7 +113,6 @@ export type PartyInformationFormValues = {
   termId: string;
   termName: string;
   tin: string;
-  vatRegistrationType: VatRegistrationType | "";
   atcCode: string;
   defaultPurchaseInputVatTaxSourceKey: string;
   defaultPurchaseEwtTaxSourceKey: string;
@@ -174,7 +154,6 @@ export type PartyInformationFormErrors = Partial<{
   defaultSalesOutputVatTaxSourceKey: string;
   defaultSalesCwtTaxSourceKey: string;
   defaultSalesWvatTaxSourceKey: string;
-  vatRegistrationType: string;
   defaultReceivableAccount: string;
   customerAdvanceAccount: string;
   defaultPayableAccount: string;
@@ -240,8 +219,7 @@ export type PartyInformationTableColumnKey =
   | "status"
   | "tin"
   | "updatedAt"
-  | "updatedBy"
-  | "vatRegistrationType";
+  | "updatedBy";
 
 export type PartyInformationTableRecord = PartyInformationRecord & {
   billingAddressLabel: string;
@@ -495,7 +473,6 @@ export type ApiPartyPayload = {
   employeePayableAccount?: string | null;
   termId?: string | null;
   tin?: string | null;
-  vatRegistrationType?: ApiPartyVatRegistrationType | null;
   atcCode?: string | null;
   defaultPurchaseInputVatTaxSourceKey?: string | null;
   defaultPurchaseEwtTaxSourceKey?: string | null;
@@ -612,7 +589,6 @@ export type PartyImportColumnId =
   | "nationality"
   | "memberRegistrationDate"
   | "tin"
-  | "vatRegistrationType"
   | "atcCode"
   | "email"
   | "contactNo"

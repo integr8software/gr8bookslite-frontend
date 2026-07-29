@@ -118,39 +118,6 @@ export function BankMasterfileFields({
           />
         </FormField>
       </div>
-      <div className="grid gap-4 lg:grid-cols-2">
-        <FormField label="Currency" error={errors.currencyCode} required>
-          <AppAdvancedDropdown
-            disabled={isReadonly}
-            emptyMessage="No active currencies found."
-            options={currencyOptions.map((currency) => ({
-              description: currency.country,
-              label: currency.code,
-              name: currency.name,
-              value: currency.code,
-            }))}
-            placeholder="--Select Currency--"
-            searchPlaceholder="Search currency"
-            showSelectedDetails
-            value={values.currencyCode}
-            onChange={(value) => onCurrencyChange(Array.isArray(value) ? (value[0] ?? "") : value)}
-          />
-        </FormField>
-        <FormField label="Exchange Rate" error={errors.currencyExchangeRate}>
-          <input
-            id="bank-masterfile-currency-exchange-rate"
-            name="currencyExchangeRate"
-            type="number"
-            min="0"
-            step="any"
-            value={values.currencyExchangeRate}
-            onChange={onInputChange}
-            readOnly={isReadonly}
-            className={BankMasterfileFieldClassName}
-            placeholder="Required for non-PHP"
-          />
-        </FormField>
-      </div>
       <div className="grid gap-4 lg:grid-cols-3">
         <FormField label="Series Start" error={errors.seriesStart} required>
           <input
@@ -188,7 +155,24 @@ export function BankMasterfileFields({
           />
         </FormField>
       </div>
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-3">
+        <FormField label="Currency" error={errors.currencyCode} required>
+          <AppAdvancedDropdown
+            disabled={isReadonly}
+            emptyMessage="No active currencies found."
+            options={currencyOptions.map((currency) => ({
+              description: `${currency.country} - ${currency.name}`,
+              name: currency.code,
+              selectedDetails: currency.name,
+              value: currency.code,
+            }))}
+            placeholder="--Select Currency--"
+            searchPlaceholder="Search currency"
+            showSelectedDetails
+            value={values.currencyCode}
+            onChange={(value) => onCurrencyChange(Array.isArray(value) ? (value[0] ?? "") : value)}
+          />
+        </FormField>
         <FormField label="Default Bank">
           <AppSwitch
             falseOption={BankMasterfileNotDefaultBankSwitchOption}

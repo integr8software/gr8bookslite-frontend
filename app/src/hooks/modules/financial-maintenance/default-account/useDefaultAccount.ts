@@ -59,7 +59,6 @@ const EmptyStatistics: DefaultAccountStatistics = {
   inactiveDefaultAccounts: 0,
   expenseDefaultAccounts: 0,
   collectionDefaultAccounts: 0,
-  fixedAssetDefaultAccounts: 0,
 };
 
 export function useDefaultAccountStore<TSelected = DefaultAccountStoreState>(

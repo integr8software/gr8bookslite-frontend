@@ -15,7 +15,6 @@ export type BankMasterfile = {
 	accountName: string;
 	accountType: string;
 	currencyCode: string;
-	currencyExchangeRate: string;
 	isDefault: boolean;
 	seriesStart: string;
 	seriesEnd: string;
@@ -33,7 +32,6 @@ export type BankMasterfileFormValues = {
 	accountNumber: string;
 	accountType: string;
 	currencyCode: string;
-	currencyExchangeRate: string;
 	isDefault: boolean;
 	seriesStart: string;
 	seriesEnd: string;
@@ -119,7 +117,6 @@ export type ApiBank = {
 	} | null;
 	accountType: string | null;
 	currencyCode: string | null;
-	currencyExchangeRate: string | null;
 	isDefault: boolean;
 	seriesStart: string | null;
 	seriesEnd: string | null;

@@ -1,6 +1,6 @@
 # Warehouse Management Agent Index
 
-Each visible module has one canonical lowercase Markdown file in this directory. The file name matches the current module slug, such as `warehouse-storage.md`, `warehouse-transfer.md`, `receiving-putaway.md`, or `picking-dispatch.md`. Keep module-specific product rules, UI requirements, data ownership, and implementation guidance together in that file instead of creating a second `WarehouseManagement_*_UI_Spec.md` document.
+Each visible module has one canonical lowercase Markdown file in this directory. The file name matches the current module slug, such as `warehouse-storage.md` or `warehouse-transfer.md`. Keep module-specific product rules, UI requirements, data ownership, and implementation guidance together in that file instead of creating a second `WarehouseManagement_*_UI_Spec.md` document.
 
 The consolidated cross-module specification is `WarehouseManagement_Overview_UI.md`. This index and the overview are cross-module references, not additional module specifications. When adding or changing a module, update its canonical lowercase file and revise the overview only when the change affects shared Warehouse Management behavior.
 
@@ -16,8 +16,6 @@ Warehouse Management
 |-- Warehouse Access
 |-- Warehouse Storage
 |-- Warehouse Inventory Stock
-|-- Receiving & Putaway
-|-- Picking & Dispatch
 `-- Warehouse Inventory Transfer
 ```
 
@@ -31,7 +29,6 @@ Warehouse Management
 - Warehouse Storage configures where inventory can be stored, including layout, item location setup, capacity rules, and location availability.
 - Warehouse Inventory Stock shows current stock by warehouse and location, item availability, movement history, stock count, and warehouse stock adjustments.
 - Warehouse Inventory Transfer moves inventory between warehouses and locations.
-- Receiving & Putaway and Picking & Dispatch remain separate operational modules.
 
 ## Architecture Rules
 
@@ -46,5 +43,5 @@ Warehouse Management
 ## Current State
 
 - Backend-backed: Warehouses, Warehouse Access.
-- UI shell / planned backend: Warehouse Storage, Warehouse Inventory Stock, Receiving & Putaway, Picking & Dispatch, and Warehouse Inventory Transfer.
+- UI shell / planned backend: Warehouse Storage, Warehouse Inventory Stock, and Warehouse Inventory Transfer.
 - Existing Warehouse Storage route is the consolidated storage experience.

@@ -131,7 +131,6 @@ export const BankImportTemplateHeaders = [
 	"Account Number",
 	"Account Type",
 	"Currency",
-	"Exchange Rate",
 	"Series Start",
 	"Series End",
 	"Series Digits",
@@ -146,7 +145,6 @@ export const BankImportTemplateSampleRow = [
 	"",
 	"",
 	"",
-	"",
 ] as const;
 
 export const BankImportFieldOrder: BankImportColumnId[] = [
@@ -155,7 +153,6 @@ export const BankImportFieldOrder: BankImportColumnId[] = [
 	"accountNumber",
 	"accountType",
 	"currencyCode",
-	"currencyExchangeRate",
 	"seriesStart",
 	"seriesEnd",
 	"seriesDigits",

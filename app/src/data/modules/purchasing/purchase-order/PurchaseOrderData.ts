@@ -29,7 +29,6 @@ export const purchaseOrderSeedRecords: PurchaseOrderRecord[] = [
 		projectName: "",
 		importationNo: "",
 		partialPayment: false,
-		fixedAsset: false,
 		items: [
 			{
 				id: "po-0001-item-1",
@@ -116,7 +115,6 @@ export function createPurchaseOrderFormValues(
 		projectName: "",
 		importationNo: "",
 		partialPayment: false,
-		fixedAsset: false,
 		items: [createBlankPurchaseOrderItem()],
 	};
 }

@@ -23,13 +23,25 @@ export type PickListRecord = {
 
 export type PickListLineEntry = {
 	id: string;
-	vceCode: string;
-	vceName: string;
-	remarks: string;
-	referenceNo: string;
+	soNo: string;
+	itemCode: string;
+	barcode: string;
+	itemName: string;
+	soQuantity: string;
+	plQuantity: string;
+	uom: string;
+	expirationDate: string;
+	lotNo: string;
+	color: string;
+	brand: string;
+	size: string;
+	model: string;
+	binNo: string;
 };
 
 export type PickListFormValues = {
+	partyCode: string;
+	partyName: string;
 	deliveryDate: string;
 	driverName: string;
 	plateNo: string;

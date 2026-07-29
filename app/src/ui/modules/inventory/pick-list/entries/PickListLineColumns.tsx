@@ -36,10 +36,20 @@ export function createPickListLineColumns(
 }
 
 const PickListEntryColumnConfigs = [
-	column("Party Code", "vceCode", 170, "w-[10.5rem]"),
-	column("Party Name", "vceName", 320, "w-[20rem]"),
-	column("Remarks", "remarks", 360, "w-[22.5rem]"),
-	column("RefNo", "referenceNo", 180, "w-[11.25rem]"),
+	column("SO No", "soNo", 150, "w-[9.375rem]"),
+	column("Item Code *", "itemCode", 150, "w-[9.375rem]"),
+	column("Barcode", "barcode", 150, "w-[9.375rem]"),
+	column("Item Name *", "itemName", 260, "w-[16.25rem]"),
+	column("SO Qty", "soQuantity", 120, "w-[7.5rem]"),
+	column("PL Qty *", "plQuantity", 120, "w-[7.5rem]"),
+	column("UOM *", "uom", 110, "w-[6.875rem]"),
+	column("Expiration Date", "expirationDate", 150, "w-[9.375rem]"),
+	column("Lot No", "lotNo", 130, "w-[8.125rem]"),
+	column("Color", "color", 120, "w-[7.5rem]"),
+	column("Brand", "brand", 120, "w-[7.5rem]"),
+	column("Size", "size", 110, "w-[6.875rem]"),
+	column("Model", "model", 130, "w-[8.125rem]"),
+	column("Bin No", "binNo", 130, "w-[8.125rem]"),
 ];
 
 function column(

@@ -130,14 +130,13 @@ export function useDeliveryReceiptActionForm(
 		const pickListLines = pickListValues.flatMap((pickList) =>
 			pickList.lineEntries.filter(
 				(lineEntry) =>
-					lineEntry.vceCode.trim() ||
-					lineEntry.vceName.trim() ||
-					lineEntry.remarks.trim() ||
-					lineEntry.referenceNo.trim(),
+					lineEntry.soNo.trim() ||
+					lineEntry.itemCode.trim() ||
+					lineEntry.itemName.trim() ||
+					lineEntry.plQuantity.trim(),
 			),
 		);
 		const firstPickList = pickListValues[0];
-		const firstLine = pickListLines[0];
 
 		setValues((current) => ({
 			...current,
@@ -146,18 +145,30 @@ export function useDeliveryReceiptActionForm(
 			driverName: firstPickList.driverName || current.driverName,
 			plateNo: firstPickList.plateNo || current.plateNo,
 			remarks: firstPickList.remarks || current.remarks,
-			soNo: firstLine?.referenceNo || current.soNo,
-			vceCode: firstLine?.vceCode || current.vceCode,
-			vceName: firstLine?.vceName || current.vceName,
-			billToCode: firstLine?.vceCode || current.billToCode,
-			billToName: firstLine?.vceName || current.billToName,
+			soNo:
+				pickListLines.find((lineEntry) => lineEntry.soNo.trim())?.soNo ||
+				current.soNo,
+			vceCode: firstPickList.partyCode || current.vceCode,
+			vceName: firstPickList.partyName || current.vceName,
+			billToCode: firstPickList.partyCode || current.billToCode,
+			billToName: firstPickList.partyName || current.billToName,
 			lineEntries:
 				pickListLines.length > 0
 					? pickListLines.map((lineEntry) =>
 							createBlankDeliveryReceiptLineEntry({
-								name: lineEntry.vceName,
-								description: lineEntry.referenceNo,
-								particulars: lineEntry.remarks,
+								itemCode: lineEntry.itemCode,
+								barcode: lineEntry.barcode,
+								name: lineEntry.itemName,
+								description: lineEntry.soNo,
+								quantity: lineEntry.plQuantity,
+								uom: lineEntry.uom,
+								expirationDate: lineEntry.expirationDate,
+								lotNo: lineEntry.lotNo,
+								color: lineEntry.color,
+								brand: lineEntry.brand,
+								size: lineEntry.size,
+								model: lineEntry.model,
+								binNo: lineEntry.binNo,
 							}),
 						)
 					: current.lineEntries,

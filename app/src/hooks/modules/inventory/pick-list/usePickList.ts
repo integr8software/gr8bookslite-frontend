@@ -128,12 +128,16 @@ export function usePickListActionForm(
 		setValues((current) => ({
 			...current,
 			documentDate: firstOrder.documentDate || current.documentDate,
+			partyCode: firstOrder.customerCode || current.partyCode,
+			partyName: firstOrder.customerName || current.partyName,
 			lineEntries: selectedOrders.map((order) =>
 				createBlankPickListLineEntry({
-					vceCode: order.customerCode,
-					vceName: order.customerName,
-					remarks: order.remarks,
-					referenceNo: order.referenceNo,
+					soNo: order.referenceNo,
+					itemCode: "ITEM-001",
+					itemName: order.remarks || "Inventory item",
+					soQuantity: "0.00",
+					plQuantity: "1000.00",
+					uom: "PCS",
 				}),
 			),
 		}));

@@ -55,18 +55,17 @@ export function PickListReportPreview({
 				]}
 				tableColumns={PickListReportColumns}
 				tableRows={values.lineEntries
-					.filter((entry) => entry.vceCode || entry.vceName)
+					.filter((entry) => entry.itemCode || entry.itemName)
 					.map((entry) => ({
-						code: entry.vceCode,
-						name: entry.vceName,
-						cs: "0.00",
-						pcS: "0.00",
-						po: "0.00",
-						add: "",
-						ttl: "",
-						sales: "",
-						return: "",
-						discount: "",
+						soNo: entry.soNo,
+						itemCode: entry.itemCode,
+						barcode: entry.barcode,
+						itemName: entry.itemName,
+						soQuantity: entry.soQuantity,
+						plQuantity: entry.plQuantity,
+						uom: entry.uom,
+						expirationDate: entry.expirationDate,
+						lotNo: entry.lotNo,
 					}))}
 			/>
 		</ReportPreviewDrawer>
@@ -74,16 +73,15 @@ export function PickListReportPreview({
 }
 
 export const PickListReportColumns = [
-	{ key: "code", label: "Code" },
-	{ key: "name", label: "Name" },
-	{ key: "cs", label: "CS", align: "right" },
-	{ key: "pcS", label: "Pc/S", align: "right" },
-	{ key: "po", label: "PO", align: "right" },
-	{ key: "add", label: "Add" },
-	{ key: "ttl", label: "TTL" },
-	{ key: "sales", label: "Sales" },
-	{ key: "return", label: "Return" },
-	{ key: "discount", label: "Discount" },
+	{ key: "soNo", label: "SO No" },
+	{ key: "itemCode", label: "Item Code" },
+	{ key: "barcode", label: "Barcode" },
+	{ key: "itemName", label: "Item Name" },
+	{ key: "soQuantity", label: "SO Qty", align: "right" },
+	{ key: "plQuantity", label: "PL Qty", align: "right" },
+	{ key: "uom", label: "UOM" },
+	{ key: "expirationDate", label: "Expiration Date" },
+	{ key: "lotNo", label: "Lot No" },
 ] satisfies InventoryReportTableColumn[];
 
 export function formatPickListReportNumber(value: string) {

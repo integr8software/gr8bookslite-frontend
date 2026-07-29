@@ -15,8 +15,16 @@ export function validatePickListForm(
 		return { isValid: false, message: "Enter the delivery date." };
 	}
 
+	if (!values.partyName.trim()) {
+		return { isValid: false, message: "Enter the party name." };
+	}
+
+	if (!values.partyCode.trim()) {
+		return { isValid: false, message: "Enter the party code." };
+	}
+
 	if (!values.transactionNo.trim()) {
-		return { isValid: false, message: "Enter the transaction number." };
+		return { isValid: false, message: "Enter the PL number." };
 	}
 
 	if (!values.documentDate.trim()) {
@@ -30,7 +38,7 @@ export function validatePickListForm(
 	if (!values.lineEntries.some(pickListEntryIsComplete)) {
 		return {
 			isValid: false,
-			message: "Add at least one pick list row with Party Code.",
+			message: "Add at least one pick list row with item code and item name.",
 		};
 	}
 

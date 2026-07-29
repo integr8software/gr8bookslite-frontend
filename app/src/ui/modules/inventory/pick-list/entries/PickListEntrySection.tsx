@@ -43,7 +43,7 @@ export function PickListEntrySection({
 		() =>
 			columns.map((column) => ({
 				id: column.id,
-				isHideable: column.id !== "vceCode" && column.id !== "vceName",
+				isHideable: column.id !== "itemCode" && column.id !== "itemName",
 				isVisible: true,
 				label: column.header,
 				width: column.width,

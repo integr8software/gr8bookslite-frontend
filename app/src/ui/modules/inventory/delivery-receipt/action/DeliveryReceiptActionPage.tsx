@@ -40,10 +40,7 @@ export function DeliveryReceiptActionPage() {
 			getInitialPickLists().map((pickList) => ({
 				documentDate: pickList.documentDate,
 				id: pickList.id,
-				partyName:
-					pickList.formValues?.lineEntries.find((entry) =>
-						entry.vceName.trim(),
-					)?.vceName ?? "",
+				partyName: pickList.formValues?.partyName ?? "",
 				remarks: pickList.formValues?.remarks,
 				source: "Pick List",
 				sourceNo: pickList.transactionNo,

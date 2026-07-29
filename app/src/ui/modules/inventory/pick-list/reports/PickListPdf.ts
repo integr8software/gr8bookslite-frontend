@@ -17,18 +17,17 @@ export function openPickListPdf(values: PickListFormValues) {
 		],
 		tableColumns: PickListReportColumns,
 		tableRows: values.lineEntries
-			.filter((entry) => entry.vceCode || entry.vceName)
+			.filter((entry) => entry.itemCode || entry.itemName)
 			.map((entry) => ({
-				code: entry.vceCode,
-				name: entry.vceName,
-				cs: "0.00",
-				pcS: "0.00",
-				po: "0.00",
-				add: "",
-				ttl: "",
-				sales: "",
-				return: "",
-				discount: "",
+				soNo: entry.soNo,
+				itemCode: entry.itemCode,
+				barcode: entry.barcode,
+				itemName: entry.itemName,
+				soQuantity: entry.soQuantity,
+				plQuantity: entry.plQuantity,
+				uom: entry.uom,
+				expirationDate: entry.expirationDate,
+				lotNo: entry.lotNo,
 			})),
 	});
 }

@@ -74,10 +74,20 @@ export function createBlankPickListLineEntry(
 ): PickListLineEntry {
 	return {
 		id: `pl-line-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-		vceCode: "",
-		vceName: "",
-		remarks: "",
-		referenceNo: "",
+		soNo: "",
+		itemCode: "",
+		barcode: "",
+		itemName: "",
+		soQuantity: "0.00",
+		plQuantity: "0.00",
+		uom: "PCS",
+		expirationDate: "",
+		lotNo: "",
+		color: "",
+		brand: "",
+		size: "",
+		model: "",
+		binNo: "",
 		...overrides,
 	};
 }
@@ -86,6 +96,8 @@ export function createPickListFormValues(): PickListFormValues {
 	const today = new Date().toISOString().slice(0, 10);
 
 	return {
+		partyCode: "",
+		partyName: "",
 		deliveryDate: today,
 		driverName: "",
 		plateNo: "",
@@ -102,9 +114,15 @@ export function createPickListFormValuesFromRecord(
 	record: PickListRecord,
 ): PickListFormValues {
 	if (record.formValues) {
+		const defaults = createPickListFormValues();
+
 		return {
+			...defaults,
 			...record.formValues,
-			lineEntries: record.formValues.lineEntries.map((entry) => ({ ...entry })),
+			lineEntries: record.formValues.lineEntries.map((entry) => ({
+				...createBlankPickListLineEntry(),
+				...entry,
+			})),
 		};
 	}
 
@@ -113,13 +131,18 @@ export function createPickListFormValuesFromRecord(
 		cluster: record.cluster,
 		deliveryDate: record.deliveryDate,
 		documentDate: record.documentDate,
+		partyCode: "VCE-001",
+		partyName: "North Harbor Office Depot",
 		status: record.status,
 		transactionNo: record.transactionNo,
 		lineEntries: [
 			createBlankPickListLineEntry({
-				vceCode: "VCE-001",
-				vceName: "North Harbor Office Depot",
-				referenceNo: record.referenceNo,
+				soNo: record.referenceNo,
+				itemCode: "ITEM-001",
+				itemName: "Inventory item",
+				soQuantity: "0.00",
+				plQuantity: "1000.00",
+				uom: "PCS",
 			}),
 		],
 	};
@@ -141,7 +164,7 @@ export function createPickListRecordFromForm(
 			lineEntries: values.lineEntries.map((entry) => ({ ...entry })),
 		},
 		referenceNo:
-			linesWithData.find((entry) => entry.referenceNo.trim())?.referenceNo ?? "",
+			linesWithData.find((entry) => entry.soNo.trim())?.soNo ?? "",
 		status: normalizePickListStatus(values.status),
 		totalLines: linesWithData.length,
 		transactionNo: values.transactionNo,
@@ -209,15 +232,19 @@ export function formatPickListPercentage(value: number, total: number) {
 
 export function pickListEntryHasData(entry: PickListLineEntry) {
 	return (
-		entry.vceCode.trim() !== "" ||
-		entry.vceName.trim() !== "" ||
-		entry.remarks.trim() !== "" ||
-		entry.referenceNo.trim() !== ""
+		entry.soNo.trim() !== "" ||
+		entry.itemCode.trim() !== "" ||
+		entry.barcode.trim() !== "" ||
+		entry.itemName.trim() !== "" ||
+		entry.lotNo.trim() !== "" ||
+		entry.binNo.trim() !== "" ||
+		Number(entry.soQuantity.replace(/,/g, "")) > 0 ||
+		Number(entry.plQuantity.replace(/,/g, "")) > 0
 	);
 }
 
 export function pickListEntryIsComplete(entry: PickListLineEntry) {
-	return entry.vceCode.trim() !== "" && entry.vceName.trim() !== "";
+	return entry.itemCode.trim() !== "" && entry.itemName.trim() !== "";
 }
 
 function normalizePickListStatus(value: string): PickListStatus {

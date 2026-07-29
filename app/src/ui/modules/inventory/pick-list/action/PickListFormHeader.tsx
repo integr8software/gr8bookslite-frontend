@@ -51,8 +51,8 @@ export function PickListFormHeader({
 			title={title}
 			description={
 				mode === "view"
-					? "Review delivery, driver, cluster, and pick list rows."
-					: "Complete delivery, driver, cluster, and Party Code rows before saving."
+					? "Review party, driver, plate, and item pick list rows."
+					: "Complete party, driver, plate, and item pick list rows before saving."
 			}
 			actionsClassName="items-center justify-start gap-2 sm:shrink-0 sm:justify-end [&>a]:shrink-0 [&>button]:shrink-0"
 			actions={

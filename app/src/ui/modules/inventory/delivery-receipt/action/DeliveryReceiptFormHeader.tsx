@@ -97,7 +97,7 @@ function DeliveryReceiptHeaderActions({
 				<>
 					<AppCopyFromDropdown
 						records={copyFromRecords}
-						sources={["Pick List"]}
+						sources={["Sales Order", "Pick List"]}
 						onApply={onCopyFromPickList}
 					/>
 					<div className="flex lg:hidden">

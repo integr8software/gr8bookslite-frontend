@@ -161,12 +161,12 @@ export function ServiceInvoiceCustomerFields({
         </FieldShell>
       </div>
       <div className="grid min-w-0 content-start gap-3">
-        <FieldShell controlId="service-invoice-transaction-no" label="Trans No.">
+        <FieldShell controlId="service-invoice-invoice-no" label="SI No.">
           <input
-            id="service-invoice-transaction-no"
-            value={values.transactionNo}
+            id="service-invoice-invoice-no"
+            value={values.invoiceNo}
             readOnly={isReadonly}
-            onChange={(event) => onUpdateField("transactionNo", event.target.value)}
+            onChange={(event) => onUpdateField("invoiceNo", event.target.value)}
             className={FieldClassName}
           />
         </FieldShell>
@@ -177,24 +177,6 @@ export function ServiceInvoiceCustomerFields({
             value={values.documentDate}
             readOnly={isReadonly}
             onChange={(event) => onUpdateField("documentDate", event.target.value)}
-            className={FieldClassName}
-          />
-        </FieldShell>
-        <FieldShell controlId="service-invoice-invoice-no" label="SI No.">
-          <input
-            id="service-invoice-invoice-no"
-            value={values.invoiceNo}
-            readOnly={isReadonly}
-            onChange={(event) => onUpdateField("invoiceNo", event.target.value)}
-            className={FieldClassName}
-          />
-        </FieldShell>
-        <FieldShell controlId="service-invoice-sj-no" label="SJ No.">
-          <input
-            id="service-invoice-sj-no"
-            value={values.sjNo}
-            readOnly={isReadonly}
-            onChange={(event) => onUpdateField("sjNo", event.target.value)}
             className={FieldClassName}
           />
         </FieldShell>

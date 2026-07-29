@@ -1,7 +1,5 @@
 import {
-	DeliveryReceiptResponsibilityCenterOptions,
 	DeliveryReceiptUomOptions,
-	DeliveryReceiptWarehouseOptions,
 } from "@/app/src/data/modules/inventory/delivery-receipt/DeliveryReceiptData";
 import type { DeliveryReceiptLineEntry } from "@/app/src/types/modules/inventory/delivery-receipt/DeliveryReceiptTypes";
 import {
@@ -163,32 +161,18 @@ function EntryAmountInput({
 }
 
 const DeliveryReceiptEntryColumnConfigs = [
-	column("Item Code", "itemCode", "text", 130, "w-[8rem]"),
-	column("Barcode", "barcode", "text", 130, "w-[8rem]"),
-	column("Name", "name", "text", 240, "w-[15rem]"),
-	column("Description", "description", "text", 260, "w-[16rem]"),
-	column("Serial No.", "serialNo", "text", 200, "w-[12.5rem]"),
-	column("Qty", "quantity", "amount", 110, "w-[7rem]"),
-	column("UOM", "uom", "dropdown", 130, "w-[8rem]", DeliveryReceiptUomOptions),
-	column("LotNo", "lotNo", "text", 130, "w-[8rem]"),
-	column(
-		"Warehouse",
-		"warehouse",
-		"dropdown",
-		210,
-		"w-[13rem]",
-		DeliveryReceiptWarehouseOptions,
-	),
-	column("Stock Qty", "stockQuantity", "amount", 120, "w-[7.5rem]"),
-	column(
-		"Res. Center",
-		"responsibilityCenter",
-		"dropdown",
-		210,
-		"w-[13rem]",
-		DeliveryReceiptResponsibilityCenterOptions,
-	),
-	column("Remarks", "particulars", "text", 260, "w-[16rem]"),
+	column("Item Code *", "itemCode", "text", 140, "w-[8.75rem]"),
+	column("Barcode", "barcode", "text", 140, "w-[8.75rem]"),
+	column("Item Name *", "name", "text", 260, "w-[16rem]"),
+	column("DR Qty *", "quantity", "amount", 120, "w-[7.5rem]"),
+	column("UOM *", "uom", "dropdown", 130, "w-[8rem]", DeliveryReceiptUomOptions),
+	column("Expiration Date", "expirationDate", "text", 150, "w-[9.5rem]"),
+	column("Lot No", "lotNo", "text", 130, "w-[8rem]"),
+	column("Color", "color", "text", 120, "w-[7.5rem]"),
+	column("Brand", "brand", "text", 120, "w-[7.5rem]"),
+	column("Size", "size", "text", 110, "w-[7rem]"),
+	column("Model", "model", "text", 130, "w-[8rem]"),
+	column("Bin No", "binNo", "text", 130, "w-[8rem]"),
 ];
 
 function column(

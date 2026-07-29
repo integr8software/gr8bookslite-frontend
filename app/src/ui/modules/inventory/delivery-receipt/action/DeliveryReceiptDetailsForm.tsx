@@ -2,10 +2,12 @@ import type { DeliveryReceiptFormValues } from "@/app/src/types/modules/inventor
 import { DeliveryReceiptCustomerFields } from "@/app/src/ui/modules/inventory/delivery-receipt/action/DeliveryReceiptCustomerFields";
 import { DeliveryReceiptDeliveryFields } from "@/app/src/ui/modules/inventory/delivery-receipt/action/DeliveryReceiptDeliveryFields";
 import type { DeliveryReceiptFieldUpdater } from "@/app/src/ui/modules/inventory/delivery-receipt/action/DeliveryReceiptFieldControls";
+import { DeliveryReceiptFileAttachmentFields } from "@/app/src/ui/modules/inventory/delivery-receipt/action/DeliveryReceiptFileAttachmentFields";
 
 export type DeliveryReceiptDetailsSection =
 	| "customer"
-	| "delivery";
+	| "delivery"
+	| "attachment";
 
 type DeliveryReceiptDetailsFormProps = {
 	isReadonly: boolean;
@@ -34,6 +36,15 @@ export function DeliveryReceiptDetailsForm({
 					isReadonly={isReadonly}
 					values={values}
 					onUpdateField={onUpdateField}
+				/>
+			) : null}
+			{section === "attachment" ? (
+				<DeliveryReceiptFileAttachmentFields
+					attachments={values.attachments ?? []}
+					isReadonly={isReadonly}
+					onAttachmentsChange={(attachments) =>
+						onUpdateField("attachments", attachments)
+					}
 				/>
 			) : null}
 		</section>

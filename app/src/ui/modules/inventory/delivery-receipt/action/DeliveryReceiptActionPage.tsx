@@ -97,6 +97,7 @@ export function DeliveryReceiptActionPage() {
 const DeliveryReceiptTabs = [
 	{ id: "customer", label: "Customer / Billing" },
 	{ id: "delivery", label: "Delivery / Vehicle" },
+	{ id: "attachment", label: "File Attachment" },
 ] satisfies ModuleTabItem<DeliveryReceiptDetailsSection>[];
 
 function getModeFromPathname(pathname: string): DeliveryReceiptActionMode {

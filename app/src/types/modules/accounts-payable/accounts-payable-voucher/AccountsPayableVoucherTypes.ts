@@ -55,6 +55,10 @@ export type AccountsPayableVoucherRecord = {
   documentDate: string;
   partyCode: string;
   partyName: string;
+  address: string;
+  contactPerson: string;
+  contactNo: string;
+  projectName: string;
   currency: string;
   exchangeRate: number;
   amount: number;

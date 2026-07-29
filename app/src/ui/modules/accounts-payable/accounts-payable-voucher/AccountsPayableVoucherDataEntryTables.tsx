@@ -22,7 +22,7 @@ import { getModuleChartAccounts } from "@/app/src/data/shared/accounts/ModuleCha
 import type { useAccountsPayableVoucherFormPage } from "@/app/src/hooks/modules/accounts-payable/accounts-payable-voucher/useAccountsPayableVoucherFormPage";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
 import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenter";
-import { useAlphanumericTaxCodes } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
+import { useTaxes } from "@/app/src/hooks/shared/tax/useTaxOptions";
 import type {
   AccountsPayableVoucherAccountingEntry,
   AccountsPayableVoucherAccountingEntryField,
@@ -77,6 +77,9 @@ const ManualInputVatAccountingEntryIdPrefix = "apv-entry-manual-input-vat-";
 const ManualEwtAccountingEntryIdPrefix = "apv-entry-manual-ewt-";
 const ManualDefaultPayableAccountingEntryId =
   "apv-entry-manual-default-payable";
+const PurchaseTaxCodeQuery = {
+  transactionType: "Purchases",
+} as const;
 
 export function AccountsPayableVoucherDataEntryTables({
   page,
@@ -160,7 +163,7 @@ function AccountsPayableVoucherExpenseTable({
     (state) => state.centers,
   );
   const chartAccounts = useMemo(() => getModuleChartAccounts(), []);
-  const taxCodesQuery = useAlphanumericTaxCodes();
+  const taxCodesQuery = useTaxes(PurchaseTaxCodeQuery);
   const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
   const vatOptions = useMemo(() => createVatOptions(taxCodes), [taxCodes]);
   const ewtOptions = useMemo(() => createEwtOptions(taxCodes), [taxCodes]);
@@ -210,6 +213,7 @@ function AccountsPayableVoucherExpenseTable({
           columnId,
           chartAccounts,
           partyOptions,
+          partyRecords,
           responsibilityCenterOptions,
           vatOptions,
           ewtOptions,
@@ -393,7 +397,7 @@ function AccountsPayableVoucherAccountingTable({
     (state) => state.centers,
   );
   const chartAccounts = useMemo(() => getModuleChartAccounts(), []);
-  const taxCodesQuery = useAlphanumericTaxCodes();
+  const taxCodesQuery = useTaxes(PurchaseTaxCodeQuery);
   const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
   const vatOptions = useMemo(() => createVatOptions(taxCodes), [taxCodes]);
   const ewtOptions = useMemo(() => createEwtOptions(taxCodes), [taxCodes]);
@@ -444,9 +448,11 @@ function AccountsPayableVoucherAccountingTable({
           columnId,
           chartAccounts,
           partyOptions,
+          partyRecords,
           responsibilityCenterOptions,
           vatOptions,
           ewtOptions,
+          taxCodes,
           () => setParticularsEditorEntryId(entry.id),
         ),
       width: columnWidths[columnId],
@@ -611,6 +617,7 @@ function renderExpenseCell(
   columnId: AccountsPayableVoucherExpenseColumnId,
   chartAccounts: ReturnType<typeof getModuleChartAccounts>,
   partyOptions: AppAdvancedDropdownOption[],
+  partyRecords: PartyInformationRecord[],
   responsibilityCenterOptions: AppAdvancedDropdownOption[],
   vatOptions: AppAdvancedDropdownOption[],
   ewtOptions: AppAdvancedDropdownOption[],
@@ -726,6 +733,12 @@ function renderExpenseCell(
           onSelect={(partyCode, partyName) => {
             page.updateExpenseLine(line.id, "partyCode", partyCode);
             page.updateExpenseLine(line.id, "partyName", partyName);
+            applyExpenseLinePartyTaxDefaults(
+              page,
+              line.id,
+              findPartyRecordByCode(partyRecords, partyCode),
+              taxCodes,
+            );
           }}
         />
       );
@@ -776,9 +789,11 @@ function renderAccountingCell(
   columnId: AccountsPayableVoucherAccountingColumnId,
   chartAccounts: ReturnType<typeof getModuleChartAccounts>,
   partyOptions: AppAdvancedDropdownOption[],
+  partyRecords: PartyInformationRecord[],
   responsibilityCenterOptions: AppAdvancedDropdownOption[],
   vatOptions: AppAdvancedDropdownOption[],
   ewtOptions: AppAdvancedDropdownOption[],
+  taxCodes: Parameters<typeof createVatOptions>[0],
   onOpenParticulars: () => void,
 ) {
   const entryErrors = page.errors.accountingEntryErrors?.[entry.id] ?? {};
@@ -855,6 +870,12 @@ function renderAccountingCell(
           onSelect={(partyCode, partyName) => {
             page.updateAccountingEntry(entry.id, "partyCode", partyCode);
             page.updateAccountingEntry(entry.id, "partyName", partyName);
+            applyAccountingEntryPartyTaxDefaults(
+              page,
+              entry.id,
+              findPartyRecordByCode(partyRecords, partyCode),
+              taxCodes,
+            );
           }}
         />
       );
@@ -953,6 +974,100 @@ function isManualGeneratedTaxAccountingEntry(
     entry.id.startsWith(ManualEwtAccountingEntryIdPrefix) ||
     entry.id === ManualDefaultPayableAccountingEntryId
   );
+}
+
+function applyExpenseLinePartyTaxDefaults(
+  page: ReturnType<typeof useAccountsPayableVoucherFormPage>,
+  lineId: string,
+  party: PartyInformationRecord | undefined,
+  taxCodes: Parameters<typeof createVatOptions>[0],
+) {
+  if (!party) {
+    return;
+  }
+
+  const defaults = getPartyPurchaseTaxDefaults(party, taxCodes);
+
+  if (!party.defaultPurchaseInputVatTaxSourceKey || defaults.inputVatCode) {
+    page.updateExpenseLine(lineId, "vat", defaults.inputVatCode);
+    page.updateExpenseLine(lineId, "vatPercent", defaults.inputVatPercent);
+  }
+
+  if (!party.defaultPurchaseEwtTaxSourceKey || defaults.ewtCode) {
+    page.updateExpenseLine(lineId, "ewt", defaults.ewtCode);
+    page.updateExpenseLine(lineId, "ewtPercent", defaults.ewtPercent);
+  }
+}
+
+function applyAccountingEntryPartyTaxDefaults(
+  page: ReturnType<typeof useAccountsPayableVoucherFormPage>,
+  entryId: string,
+  party: PartyInformationRecord | undefined,
+  taxCodes: Parameters<typeof createVatOptions>[0],
+) {
+  if (!party) {
+    return;
+  }
+
+  const defaults = getPartyPurchaseTaxDefaults(party, taxCodes);
+
+  if (!party.defaultPurchaseInputVatTaxSourceKey || defaults.inputVatCode) {
+    page.updateAccountingEntry(entryId, "vatType", defaults.inputVatCode);
+  }
+
+  if (!party.defaultPurchaseEwtTaxSourceKey || defaults.ewtCode) {
+    page.updateAccountingEntry(entryId, "atcCode", defaults.ewtCode);
+  }
+}
+
+function getPartyPurchaseTaxDefaults(
+  party: PartyInformationRecord,
+  taxCodes: Parameters<typeof createVatOptions>[0],
+) {
+  const inputVatCode = getTaxCodeBySourceKey(
+    taxCodes,
+    party.defaultPurchaseInputVatTaxSourceKey,
+    "INPUT VAT",
+  );
+  const ewtCode = getTaxCodeBySourceKey(
+    taxCodes,
+    party.defaultPurchaseEwtTaxSourceKey,
+    "EWT",
+  );
+  const inputVatRate = getVatRateFromCode(inputVatCode, taxCodes);
+
+  return {
+    ewtCode,
+    ewtPercent: getEwtPercentFromCode(ewtCode, taxCodes),
+    inputVatCode,
+    inputVatPercent: getVatPercentFromRate(inputVatRate),
+  };
+}
+
+function getTaxCodeBySourceKey(
+  taxCodes: Parameters<typeof createVatOptions>[0],
+  sourceKey: string,
+  taxType: "EWT" | "INPUT VAT",
+) {
+  if (!sourceKey) {
+    return "";
+  }
+
+  return (
+    taxCodes.find(
+      (taxCode) =>
+        taxCode.sourceKey === sourceKey &&
+        taxCode.transactionType === "Purchases" &&
+        taxCode.taxType === taxType,
+    )?.taxCode ?? ""
+  );
+}
+
+function findPartyRecordByCode(
+  partyRecords: PartyInformationRecord[],
+  partyCode: string,
+) {
+  return partyRecords.find((record) => record.partyCodeNo === partyCode);
 }
 
 function PartyDropdown({

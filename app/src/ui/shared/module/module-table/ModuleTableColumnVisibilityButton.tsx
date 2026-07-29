@@ -55,12 +55,13 @@ export function ModuleTableColumnVisibilityButton<TData>({
 		typeof document === "undefined" ? null : document.body;
 	const columns = table.getAllLeafColumns();
 	const hideableColumns = columns.filter((column) => column.getCanHide());
-	const visibleHideableColumnCount = hideableColumns.filter((column) =>
+	const visibleHideableColumns = hideableColumns.filter((column) =>
 		column.getIsVisible(),
-	).length;
+	);
+	const visibleHideableColumnCount = visibleHideableColumns.length;
 	const hasHideableColumns = hideableColumns.length > 0;
-	const allHideableColumnsVisible =
-		hasHideableColumns && visibleHideableColumnCount === hideableColumns.length;
+	const hasHiddenColumns = columns.some((column) => !column.getIsVisible());
+	const hasVisibleHideableColumns = visibleHideableColumns.length > 0;
 	const columnLabelById = useMemo(() => {
 		return new Map(
 			columns.map((column) => [
@@ -73,6 +74,27 @@ export function ModuleTableColumnVisibilityButton<TData>({
 			]),
 		);
 	}, [columns]);
+
+	function hideAllHideableColumns() {
+		if (!hasVisibleHideableColumns) {
+			return;
+		}
+
+		table.setColumnVisibility((currentVisibility) => ({
+			...currentVisibility,
+			...Object.fromEntries(
+				visibleHideableColumns.map((column) => [column.id, false]),
+			),
+		}));
+	}
+
+	function showAllColumns() {
+		if (!hasHiddenColumns) {
+			return;
+		}
+
+		table.toggleAllColumnsVisible(true);
+	}
 
 	function moveColumn(
 		sourceColumnId: string,
@@ -140,7 +162,7 @@ export function ModuleTableColumnVisibilityButton<TData>({
 
 			const menuWidth = 288;
 			const viewportPadding = 12;
-			const menuHeaderHeight = 42;
+			const menuHeaderHeight = 82;
 			const preferredLeft =
 				align === "right" ? rect.right - menuWidth : rect.left;
 			const maxLeft = window.innerWidth - menuWidth - viewportPadding;
@@ -226,11 +248,11 @@ export function ModuleTableColumnVisibilityButton<TData>({
 						"z-[80] overflow-hidden rounded-lg border border-darknavy/10 bg-white text-darknavy shadow-[0_18px_50px_rgba(33,39,56,0.18)]",
 					)}
 				>
-					<div className="flex items-center justify-between border-b border-darknavy/10 px-3 py-2">
-						<span className="text-xs font-bold uppercase tracking-wide text-darknavy/55">
-							Visible columns
-						</span>
-						<div className="flex items-center gap-1.5">
+					<div className="border-b border-darknavy/10 px-3 py-2">
+						<div className="flex items-center justify-between gap-3">
+							<span className="text-xs font-bold uppercase tracking-wide text-darknavy/55">
+								Visible columns
+							</span>
 							<button
 								type="button"
 								onClick={() => {
@@ -244,14 +266,29 @@ export function ModuleTableColumnVisibilityButton<TData>({
 							>
 								Default
 							</button>
+						</div>
+						<div className="mt-2 grid grid-cols-2 gap-2">
 							<button
 								type="button"
-								disabled={!hasHideableColumns || allHideableColumnsVisible}
-								onClick={() => table.toggleAllColumnsVisible(true)}
+								disabled={!hasHideableColumns || !hasVisibleHideableColumns}
+								onClick={hideAllHideableColumns}
 								className={joinClasses(
-									"rounded-md px-2 py-1 text-xs font-semibold text-skyblue transition hover:bg-skyblue/10 focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:text-darknavy/35 disabled:hover:bg-transparent",
+									"rounded-md border border-darknavy/10 px-2 py-1.5 text-xs font-semibold text-darknavy/65 transition hover:bg-darknavy/5 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:text-darknavy/35 disabled:hover:bg-transparent",
 									moduleAccentClassNames.focusRing,
 								)}
+								aria-label="Hide all hideable columns"
+							>
+								Hide all
+							</button>
+							<button
+								type="button"
+								disabled={!hasHiddenColumns}
+								onClick={showAllColumns}
+								className={joinClasses(
+									"rounded-md border border-skyblue/15 px-2 py-1.5 text-xs font-semibold text-skyblue transition hover:bg-skyblue/10 focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:border-darknavy/10 disabled:text-darknavy/35 disabled:hover:bg-transparent",
+									moduleAccentClassNames.focusRing,
+								)}
+								aria-label="Show all columns"
 							>
 								Show all
 							</button>

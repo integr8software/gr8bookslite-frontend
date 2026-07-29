@@ -31,8 +31,8 @@ import {
   type ModuleChartAccount,
 } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import { useAccountsPayableVoucherStore } from "@/app/src/hooks/modules/accounts-payable/accounts-payable-voucher/useAccountsPayableVoucher";
-import { useAlphanumericTaxCodes } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
 import { useTaxDefinitionOptions } from "@/app/src/hooks/shared/tax/useTaxDefinitionOptions";
+import { useTaxes } from "@/app/src/hooks/shared/tax/useTaxOptions";
 import { FetchMultiCurrencyRates } from "@/app/src/services/modules/system-administration/multi-currency-setup/MultiCurrencySetupService";
 import type {
   AccountsPayableVoucherAccountingEntry,
@@ -44,15 +44,19 @@ import type {
   AccountsPayableVoucherFormValues,
 } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
 import type { ModuleDataEntryClearAction } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
-import type { AlphanumericTaxCode } from "@/app/src/types/shared/tax/AlphanumericTaxCodeTypes";
 import type { TaxDefinitionDefaultAccountIds } from "@/app/src/types/shared/tax/TaxDefinitionTypes";
+import type { Tax } from "@/app/src/types/shared/tax/TaxTypes";
 import { validateAccountsPayableVoucherForm } from "@/app/src/validations/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherValidation";
 
 type AccountsPayableVoucherTaxAccountingContext = {
   accountOptions: ModuleChartAccount[];
   defaultAccountIds: TaxDefinitionDefaultAccountIds;
-  taxCodes: AlphanumericTaxCode[];
+  taxCodes: Tax[];
 };
+
+const PurchaseTaxCodeQuery = {
+  transactionType: "Purchases",
+} as const;
 
 const ManualInputVatAccountingEntryIdPrefix = "apv-entry-manual-input-vat-";
 const ManualEwtAccountingEntryIdPrefix = "apv-entry-manual-ewt-";
@@ -74,15 +78,15 @@ export function useAccountsPayableVoucherFormPage() {
   const taxDefinitionOptions = useTaxDefinitionOptions({
     transactionScope: "PURCHASE",
   });
-  const alphanumericTaxCodesQuery = useAlphanumericTaxCodes();
+  const taxCodesQuery = useTaxes(PurchaseTaxCodeQuery);
   const taxAccountingContext = useMemo(
     () => ({
       accountOptions: taxDefinitionOptions.accountOptions,
       defaultAccountIds: taxDefinitionOptions.defaultAccountIds,
-      taxCodes: alphanumericTaxCodesQuery.data ?? [],
+      taxCodes: taxCodesQuery.data ?? [],
     }),
     [
-      alphanumericTaxCodesQuery.data,
+      taxCodesQuery.data,
       taxDefinitionOptions.accountOptions,
       taxDefinitionOptions.defaultAccountIds,
     ],

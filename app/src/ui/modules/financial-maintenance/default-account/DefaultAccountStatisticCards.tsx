@@ -5,7 +5,6 @@ import {
 	CheckCircle2,
 	CirclePause,
 	FileCog,
-	Package,
 	ReceiptText,
 	WalletCards,
 } from "lucide-react";
@@ -56,13 +55,6 @@ export function DefaultAccountStatisticCards({
 				summary: "Expense templates",
 				value: statistics.expenseDefaultAccounts,
 			},
-			{
-				icon: Package,
-				iconClassName: "bg-cyan-50 text-cyan-700",
-				label: "Fixed Asset",
-				summary: "Asset templates",
-				value: statistics.fixedAssetDefaultAccounts,
-			},
 		],
 		[statistics],
 	);
@@ -71,7 +63,7 @@ export function DefaultAccountStatisticCards({
 		<ModuleStatisticCards
 			items={statisticCards}
 			isLoading={isLoading}
-			className="xl:grid-cols-6"
+			className="xl:grid-cols-5"
 		/>
 	);
 }

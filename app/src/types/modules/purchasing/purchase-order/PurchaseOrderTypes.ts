@@ -51,7 +51,6 @@ export type PurchaseOrderRecord = {
 	projectName: string;
 	importationNo: string;
 	partialPayment: boolean;
-	fixedAsset: boolean;
 	items: PurchaseOrderItem[];
 };
 

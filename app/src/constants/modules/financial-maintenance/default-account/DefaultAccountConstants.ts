@@ -88,7 +88,6 @@ export const DefaultAccountDefaultSorting: SortingState = [
 export const DefaultAccountTypeOptions = [
   { value: "EXPENSE", label: "Expense Type" },
   { value: "COLLECTION", label: "Collection Type" },
-  { value: "FIXED_ASSET", label: "Fixed Asset Type" },
 ] as const satisfies readonly { value: DefaultAccountType; label: string }[];
 
 export const DefaultAccountStatusOptions = [

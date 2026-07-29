@@ -42,7 +42,7 @@ The route currently renders a heading-only shell. Work orders, schedules, costs,
 
 ## Connections
 
-Failed inspections/incidents may create work orders. Availability consumes maintenance state. Purchasing/Payables may supply parts/services. Fixed Assets may receive vehicle cost history.
+Failed inspections/incidents may create work orders. Availability consumes maintenance state. Purchasing/Payables may supply parts/services.
 
 ## UI Requirements
 

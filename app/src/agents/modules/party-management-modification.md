@@ -123,57 +123,7 @@ Implementation notes:
 - Store only the honorific label value, for example `Prof.`, not `Prof. (Professor)`.
 - `Gender`, `Civil Status`, and `Nationality` can be plain selects/inputs unless a shared reference table already exists.
 
-### 3. Create Tax Maintenance For VAT Registered Types
-
-Create a new Tax Maintenance module for VAT Registration Types.
-
-This must be a registered module, not only a support table/API. Add it to the backend module catalog and system sidebar catalog so every subscription/system that includes maintenance modules receives it.
-
-Recommended module catalog entry:
-
-| Field  | Value                |
-| ------ | -------------------- |
-| `code` | `TXM`                |
-| `name` | `Tax Maintenance`    |
-| `icon` | `receipt` or `scale` |
-| `type` | `Maintenance`        |
-
-Default data from the screenshot:
-
-| Name                     | Suggested Percentage |
-| ------------------------ | -------------------: |
-| VAT Registered           |                   12 |
-| Zero Rated               |                    0 |
-| Non-VAT                  |                    0 |
-| Exempt                   |                    0 |
-| Capital Goods            |                   12 |
-| Other Than Capital Goods |                   12 |
-| Services                 |                   12 |
-
-Fields:
-
-- `name`
-- `percentage`
-- `inputVatAccountId`
-- `outputVatAccountId`
-- `vatPayableAccountId`
-- `deferredInputTaxAccountId`
-- `deferredOutputVatAccountId`
-- `status`
-
-Behavior:
-
-- Seed default rows per company or globally, matching the app's maintenance-data pattern.
-- Tax Maintenance must use a drawer for add/edit/view.
-- Include active/inactive handling if consistent with other maintenance modules.
-- Prevent duplicate names per company.
-- Register the module in `moduleCatalog.ts`.
-- Register the module sidebar link in `moduleSystemCatalog.ts`, preferably under `financial-maintenance`.
-- Because `ACCOUNTING` uses `collectModuleCodes(AccountingSidebarTemplate)`, Tax Maintenance must be added to `AccountingSidebarTemplate` so Accounting subscriptions include it.
-- Because `ACCOUNTING_AND_INVENTORY` uses `ModuleCatalog.map((module) => module.code)`, adding Tax Maintenance to `ModuleCatalog` makes that system include it; still add the sidebar link so it is visible.
-- `seedSubscriptionPlans.ts` assigns subscription plans by module system code (`ACCOUNTING` and `ACCOUNTING_AND_INVENTORY`), so once `TXM` is included in those module systems, all existing onboarding and additional-company subscription plans inherit it.
-
-### 4. Tax Maintenance Account Titles / COA Seed Check
+### 3. Tax Account Titles / COA Seed Check
 
 The existing COA defaults already include the key account titles needed by Tax Maintenance:
 
@@ -194,30 +144,8 @@ The existing COA defaults already include the key account titles needed by Tax M
 Implementation note:
 
 - Do not duplicate these account titles in the COA seed unless a missing title is discovered during implementation.
-- Add system account group tags/mappings only if Tax Maintenance needs constrained dropdowns by role.
+- Add system account group tags/mappings only if tax defaults need constrained dropdowns by role.
 - If using account dropdowns, filter to active posting accounts and preselect the matching default account titles above.
-
-### 5. Change Party VAT Registration Type To Advanced Dropdown
-
-Replace the native `select` for `VAT Registration Type` in `PartyInformationDetailsFields.tsx` with `AppAdvancedDropdown`.
-
-New behavior:
-
-- Options come from Tax Maintenance instead of hard-coded `VatRegistrationTypeOptions`.
-- Dropdown label is the Tax Maintenance `name`.
-- Dropdown description is the percentage.
-- The selected value display should not redundantly show `VAT Registration Type`.
-- Example options:
-  - label `VAT Registered`, description `12%`
-  - label `Zero Rated`, description `0%`
-  - label `Non-VAT`, description `0%`
-- Store the selected Tax Maintenance id if the database relationship is changed.
-- Keep backward compatibility or migration for existing `Party.vatRegistrationType` enum/string data.
-
-Implementation options:
-
-- Tax definitions are selected by transaction modules and are not stored as a party-level default.
-- Transitional: keep existing enum/string value and resolve by name until migration is completed.
 
 ### 6. Create Reusable Drawer For Add-From-Dropdown Flows
 
@@ -298,7 +226,6 @@ Current status:
 - Normalize Member Registration Date to today's date for `Member` when blank; clear it to `NULL` for non-Member parties.
 - Create Tax Maintenance controller/service/module/DTOs.
 - Seed default Tax Maintenance rows.
-- Register Tax Maintenance as module code `TXM` in `moduleCatalog.ts` and add it to the Financial Maintenance sidebar in `moduleSystemCatalog.ts` so every subscription plan using `ACCOUNTING` or `ACCOUNTING_AND_INVENTORY` includes it.
 - Verify COA default account titles exist before assigning default account ids.
 
 ## Frontend Checklist
@@ -310,11 +237,7 @@ Current status:
 - Default Nationality to `Filipino` for `Employee` and `Member`.
 - Default Member Registration Date to today's date when `Member` is selected; clear it when `Member` is removed.
 - Add Member party type and home-address role behavior.
-- Replace VAT Registration Type select with `AppAdvancedDropdown`.
-- Configure VAT Registration Type option label as name and description as percentage.
 - Configure Honorific with advanced-dropdown label/description instead of parenthesized text.
-- Add Tax Maintenance service/types/hooks/UI route.
-- Add Tax Maintenance drawer using reusable drawer pattern.
 - Ensure view mode shows Full Address for all visible address sections.
 - Update import template, preview, validation, and export columns if the new fields are importable/exportable.
 
@@ -326,9 +249,5 @@ Current status:
 - Remove Member from a party and verify Member Registration Date is saved as `NULL`.
 - Add party with multiple types, including Customer + Member, and verify Home, Billing, and Delivery sections render correctly.
 - View a disabled party record and verify Full Address is visible.
-- Create/edit/view Tax Maintenance through drawer.
-- Verify VAT Registration Type dropdown uses `AppAdvancedDropdown` and displays name as label and percentage as description.
 - Verify Honorific dropdown stores labels without parenthesized descriptions.
-- Verify seeded Tax Maintenance defaults appear without manual entry.
-- Verify default Tax Maintenance accounts resolve to existing COA default account titles.
 - Run frontend build/typecheck and backend tests after implementation.

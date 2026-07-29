@@ -64,7 +64,6 @@ export type GoodsIssueFormValues = {
 	mrNo: string;
 	rrNo: string;
 	icNo: string;
-	faNo: string;
 	projectRef: string;
 	projectName: string;
 	lineEntries: GoodsIssueLineEntry[];

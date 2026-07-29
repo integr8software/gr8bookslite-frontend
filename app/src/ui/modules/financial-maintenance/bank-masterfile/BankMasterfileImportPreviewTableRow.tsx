@@ -105,13 +105,6 @@ export function BankImportRow({
 				/>
 				<EditableCell
 					row={row}
-					field="currencyExchangeRate"
-					disabled={disabled}
-					onUpdate={onUpdate}
-					onPasteCell={onPasteCell}
-				/>
-				<EditableCell
-					row={row}
 					field="seriesStart"
 					disabled={disabled}
 					onUpdate={onUpdate}
@@ -137,7 +130,7 @@ export function BankImportRow({
 					<td />
 					<td />
 					<td
-						colSpan={9}
+						colSpan={8}
 						className="px-2 pb-3 text-xs font-semibold text-coralpink"
 					>
 						<span className="inline-flex items-start gap-1.5">

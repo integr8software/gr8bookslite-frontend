@@ -39,16 +39,11 @@ export const MODULE_ROUTE_MAP = {
   WIA: "/warehouse-management/warehouse-inventory-stock",
   WT: "/warehouse-management/warehouse-transfers",
   WLOCT: "/warehouse-management/warehouse-transfers",
-  WRP: "/warehouse-management/receiving-putaway",
-  WPD: "/warehouse-management/picking-dispatch",
   WSC: "/warehouse-management/warehouse-inventory-stock",
   WSA: "/warehouse-management/warehouse-inventory-stock",
   WSI: "/warehouse-management/warehouse-inventory-stock",
   DVE: "/delivery-vehicle-management/delivery-vehicles",
   DVT: "/delivery-vehicle-management/vehicle-types",
-  DVAS: "/delivery-vehicle-management/vehicle-scheduling-assignment",
-  DVD: "/delivery-vehicle-management/delivery-planning-dispatch",
-  DVTK: "/delivery-vehicle-management/trip-monitoring",
   DVMR: "/delivery-vehicle-management/vehicle-repair-maintenance",
   DSM: "/financial-maintenance/discount-maintenance",
   TM: "/financial-maintenance/terms-maintenance",
@@ -149,20 +144,12 @@ export const MainModuleCatalogHelperText: Record<string, string> = {
   "maintenance-warehouse-inventory-stock":
     "View stock by warehouse and location, stock movements, item availability, counts, and adjustments.",
   "maintenance-warehouse-transfers": "Transfer inventory between warehouses and warehouse storage.",
-  "maintenance-receiving-putaway": "Receive stock and assign putaway locations.",
-  "maintenance-picking-dispatch": "Pick stock from locations and dispatch it.",
   "maintenance-delivery-vehicle-management":
     "Manage delivery vehicle setup, operations, availability, dispatch, tracking, and repairs.",
   "maintenance-delivery-vehicle-management-delivery-vehicles":
     "Maintain vehicles, capacity, ownership, assignment, registration, and status.",
   "maintenance-delivery-vehicle-management-vehicle-types":
     "Maintain vehicle type setup, capacity defaults, specifications, and handling rules.",
-  "maintenance-delivery-vehicle-management-vehicle-scheduling-assignment":
-    "Track availability, reservations, driver assignments, assignment history, and conflicts.",
-  "maintenance-delivery-vehicle-management-delivery-planning-dispatch":
-    "Plan loads, assign vehicle and driver capacity, schedule trips, and dispatch deliveries.",
-  "maintenance-delivery-vehicle-management-trip-monitoring":
-    "Monitor live trips, timelines, fuel logs, expenses, delays, incidents, and proof of delivery.",
   "maintenance-delivery-vehicle-management-vehicle-repair-maintenance":
     "Schedule inspections, record defects, manage maintenance requests, repairs, and service history.",
   "maintenance-items": "Maintain item master records.",
@@ -239,6 +226,7 @@ export const MainModuleCatalogHelperText: Record<string, string> = {
   "purchasing-journal": "Review and post purchase journal entries.",
   "others-fixed-asset": "Track fixed asset records and movements.",
   "fixed-asset-default": "Track fixed asset records and movements.",
+  "others-beginning-balance-uploader": "Upload and review opening balances.",
   "maintenance-user-management": "Manage users and roles.",
   "maintenance-users": "Create and maintain system user accounts.",
   "maintenance-user-role": "Maintain user role classifications.",
@@ -354,18 +342,6 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
             "maintenance.warehouse",
           ),
           moduleItem(
-            "maintenance-receiving-putaway",
-            "Receiving & Putaway",
-            "WRP",
-            "maintenance.warehouse",
-          ),
-          moduleItem(
-            "maintenance-picking-dispatch",
-            "Picking & Dispatch",
-            "WPD",
-            "maintenance.warehouse",
-          ),
-          moduleItem(
             "maintenance-warehouse-transfers",
             "Warehouse Inventory Transfer",
             "WT",
@@ -389,24 +365,6 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
             "maintenance-delivery-vehicle-management-vehicle-types",
             "Vehicle Types",
             "DVT",
-            "maintenance.deliveryVehicle",
-          ),
-          moduleItem(
-            "maintenance-delivery-vehicle-management-vehicle-scheduling-assignment",
-            "Vehicle Scheduling & Assignment",
-            "DVAS",
-            "maintenance.deliveryVehicle",
-          ),
-          moduleItem(
-            "maintenance-delivery-vehicle-management-delivery-planning-dispatch",
-            "Delivery Planning & Dispatch",
-            "DVD",
-            "maintenance.deliveryVehicle",
-          ),
-          moduleItem(
-            "maintenance-delivery-vehicle-management-trip-monitoring",
-            "Trip Monitoring",
-            "DVTK",
             "maintenance.deliveryVehicle",
           ),
           moduleItem(

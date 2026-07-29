@@ -576,8 +576,6 @@ function getSortablePartyManagementValue(
 			return record.updatedAt;
 		case "updatedBy":
 			return record.updatedBy ?? "";
-		case "vatRegistrationType":
-			return record.vatRegistrationType;
 		default:
 			return "";
 	}

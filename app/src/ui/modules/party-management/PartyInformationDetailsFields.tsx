@@ -11,7 +11,6 @@ import {
   PartyManagementFieldClassName,
   PartyManagementFieldControlSelector,
   PartyManagementSelectClassName,
-  VatRegistrationTypeOptions,
 } from "@/app/src/constants/modules/party-management/PartyManagementConstants";
 import {
   DefaultPhilippineContactNumber,
@@ -113,7 +112,6 @@ export function PartyInformationDetailsFields({
   ]);
   const taxErrorCount = countErrors(errors, [
     "tin",
-    "vatRegistrationType",
     "defaultPurchaseInputVatTaxSourceKey",
     "defaultPurchaseEwtTaxSourceKey",
     "defaultPurchaseFwtTaxSourceKey",
@@ -440,22 +438,6 @@ export function PartyInformationDetailsFields({
                 className={PartyManagementFieldClassName}
                 placeholder="000-000-000-000"
               />
-            </Field>
-            <Field label="VAT Registration Type" error={errors.vatRegistrationType}>
-              <select
-                name="vatRegistrationType"
-                value={values.vatRegistrationType}
-                onChange={onInputChange}
-                disabled={isDetailsDisabled}
-                className={PartyManagementSelectClassName}
-              >
-                <option value="">--Select VAT Registration Type--</option>
-                {VatRegistrationTypeOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
             </Field>
           </div>
           {values.partyTypes.includes("Vendor") ? (

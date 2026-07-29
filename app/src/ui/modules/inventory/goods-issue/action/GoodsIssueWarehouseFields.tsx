@@ -135,13 +135,6 @@ export function GoodsIssueWarehouseFields({
           onChange={(value) => onUpdateField("rrNo", value)}
         />
         <TextField
-          id="goods-issue-fa-no"
-          label="FA No."
-          readOnly={isReadonly}
-          value={values.faNo}
-          onChange={(value) => onUpdateField("faNo", value)}
-        />
-        <TextField
           id="goods-issue-project-ref"
           label="Project Ref"
           readOnly={isReadonly}

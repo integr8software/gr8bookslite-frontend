@@ -7,7 +7,6 @@ import {
   PartyImportTemplateHeaders,
   PartyDefaultNationality,
   PartyTypeOptions,
-  VatRegistrationTypeOptions,
 } from "@/app/src/constants/modules/party-management/PartyManagementConstants";
 import { isAtcCodeLike, normalizeAtcCode } from "@/app/src/data/shared/tax/AtcCode";
 import { DefaultPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
@@ -33,7 +32,6 @@ import type {
   PartyInformationRecord,
   PartyInformationTableRecord,
   PartyType,
-  VatRegistrationType,
 } from "@/app/src/types/modules/party-management/PartyManagementTypes";
 import { downloadBlob } from "@/app/src/ui/shared/module/module-table/ModuleTableExportDownload";
 import { todayDateValue } from "@/app/src/utils/date.util";
@@ -101,7 +99,6 @@ export const PartyInformationInitialFormValues: PartyInformationFormValues = {
   termId: "",
   termName: "",
   tin: "",
-  vatRegistrationType: "",
   atcCode: "",
   ...PartyDefaultTaxSourceKeys,
   email: "",
@@ -154,7 +151,6 @@ export function createPartyInformationFormValues(
     termId: record.termId ?? "",
     termName: record.termName ?? "",
     tin: record.tin,
-    vatRegistrationType: record.vatRegistrationType,
     atcCode: record.atcCode ? normalizeAtcCode(record.atcCode) : "",
     defaultPurchaseInputVatTaxSourceKey: record.defaultPurchaseInputVatTaxSourceKey ?? "",
     defaultPurchaseEwtTaxSourceKey: record.defaultPurchaseEwtTaxSourceKey ?? "",
@@ -225,7 +221,6 @@ export function createPartySubmitPayload(values: PartyInformationFormValues) {
     termId: values.termId,
     termName: values.termName,
     tin: values.tin.trim(),
-    vatRegistrationType: values.vatRegistrationType,
     atcCode: values.atcCode ? normalizeAtcCode(values.atcCode) : "",
     defaultPurchaseInputVatTaxSourceKey: values.defaultPurchaseInputVatTaxSourceKey,
     defaultPurchaseEwtTaxSourceKey: values.defaultPurchaseEwtTaxSourceKey,
@@ -309,7 +304,6 @@ export function createPartyInformationRecordFromTableRecord(
     updatedBy: record.updatedBy,
     updatedAt: record.updatedAt,
     vendorAdvanceAccount: record.vendorAdvanceAccount,
-    vatRegistrationType: record.vatRegistrationType,
   };
 }
 
@@ -391,7 +385,6 @@ export function createBlankPartyImportRow(rowNumber: number): PartyImportPreview
       termId: "",
       termName: "",
       tin: "",
-      vatRegistrationType: "",
       atcCode: "",
       ...PartyDefaultTaxSourceKeys,
       email: "",
@@ -459,10 +452,6 @@ export function normalizeImportedPartyCellValue(field: PartyImportColumnId, valu
     return normalizeImportedPartyTypes(value);
   }
 
-  if (field === "vatRegistrationType") {
-    return normalizeImportedVatRegistrationType(value);
-  }
-
   if (field === "honorific") {
     return normalizePartyHonorific(value);
   }
@@ -497,12 +486,6 @@ export async function downloadPartyImportTemplate() {
       worksheet.getCell(`B${rowNumber}`).dataValidation = {
         allowBlank: false,
         formulae: [`"${PartyClassificationOptions.join(",")}"`],
-        showErrorMessage: true,
-        type: "list",
-      };
-      worksheet.getCell(`K${rowNumber}`).dataValidation = {
-        allowBlank: true,
-        formulae: [`"${VatRegistrationTypeOptions.join(",")}"`],
         showErrorMessage: true,
         type: "list",
       };
@@ -655,9 +638,6 @@ function createPartyImportPreviewRow(
     termId: "",
     termName: getImportedPartyValue(row, indexes.termName),
     tin: formatImportedTin(getImportedPartyValue(row, indexes.tin)),
-    vatRegistrationType: normalizeImportedVatRegistrationType(
-      getImportedPartyValue(row, indexes.vatRegistrationType),
-    ),
     atcCode: normalizeAtcCode(getImportedPartyValue(row, indexes.atcCode)),
     ...PartyDefaultTaxSourceKeys,
     email: getImportedPartyValue(row, indexes.email),
@@ -844,12 +824,6 @@ export function validatePartyImportRows(
       cellErrors[field] = [...(cellErrors[field] ?? []), "Duplicate party name in import."];
     }
 
-    if (
-      row.party.vatRegistrationType &&
-      !isModuleImportOptionValue(row.party.vatRegistrationType, VatRegistrationTypeOptions)
-    ) {
-      cellErrors.vatRegistrationType = ["Choose a valid VAT registration type from the list."];
-    }
     if (row.party.atcCode && !isAtcCodeLike(row.party.atcCode)) {
       cellErrors.atcCode = ["Enter a valid BIR ATC code."];
     }
@@ -1101,7 +1075,6 @@ export function createPartyImportRecord(
     tin: party.tin.trim(),
     termId: party.termId,
     termName: party.termName.trim(),
-    vatRegistrationType: party.vatRegistrationType,
     atcCode: party.atcCode ? normalizeAtcCode(party.atcCode) : "",
     defaultPurchaseInputVatTaxSourceKey: party.defaultPurchaseInputVatTaxSourceKey,
     defaultPurchaseEwtTaxSourceKey: party.defaultPurchaseEwtTaxSourceKey,
@@ -1213,7 +1186,6 @@ function normalizePartyRecordValues(
     termId: values.termId,
     termName: values.termName,
     tin: values.tin.trim(),
-    vatRegistrationType: values.vatRegistrationType,
     atcCode: values.atcCode ? normalizeAtcCode(values.atcCode) : "",
     defaultPurchaseInputVatTaxSourceKey: values.defaultPurchaseInputVatTaxSourceKey,
     defaultPurchaseEwtTaxSourceKey: values.defaultPurchaseEwtTaxSourceKey,
@@ -1337,8 +1309,6 @@ function normalizePartyImportHeader(value: string): PartyImportColumnId | null {
   )
     return "memberRegistrationDate";
   if (["tin", "tinno", "taxidentificationnumber"].includes(normalized)) return "tin";
-  if (["vatregistrationtype", "vatregistry", "vat", "vattype"].includes(normalized))
-    return "vatRegistrationType";
   if (["atccode", "atc"].includes(normalized)) return "atcCode";
   if (["email", "emailaddress"].includes(normalized)) return "email";
   if (["contactno", "contactnumber", "phone", "mobile", "mobilenumber"].includes(normalized))
@@ -1463,45 +1433,6 @@ export function normalizeImportedPartyTypes(value: string): PartyType[] {
     .filter((type): type is PartyType => Boolean(type));
 
   return normalizedTypes.length > 0 ? normalizedTypes : ["Vendor"];
-}
-
-function normalizeImportedVatRegistrationType(value: string): VatRegistrationType | "" {
-  const normalized = value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, "");
-
-  if (!normalized) {
-    return "";
-  }
-
-  if (normalized === "exempt" || normalized === "vatexempt") {
-    return "VAT Exempt";
-  }
-  if (normalized === "nonvat") {
-    return "Non-VAT (0%)";
-  }
-  if (normalized === "vatregistered") {
-    return "VAT Registered (12%)";
-  }
-  if (normalized === "zerorated") {
-    return "Zero Rated (0%)";
-  }
-  if (normalized === "capitalgoods") {
-    return "Capital Goods (12%)";
-  }
-  if (normalized === "otherthancapitalgoods") {
-    return "Other than Capital Goods (12%)";
-  }
-  if (normalized === "services") {
-    return "Services (12%)";
-  }
-
-  return (
-    VatRegistrationTypeOptions.find(
-      (option) => option.toLowerCase().replace(/[^a-z0-9]/g, "") === normalized,
-    ) ?? (value as VatRegistrationType)
-  );
 }
 
 function normalizeImportedDateValue(value: string) {

@@ -39,7 +39,6 @@ export function DefaultAccountImportPreviewTableRow({
   const typeOptionLabels = {
     EXPENSE: "Expense",
     COLLECTION: "Collection",
-    FIXED_ASSET: "Fixed Asset",
   } as const;
 
   return (

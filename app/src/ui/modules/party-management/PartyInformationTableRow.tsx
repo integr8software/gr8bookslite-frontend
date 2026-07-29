@@ -93,8 +93,6 @@ function PartyInformationCellContent({
 			return <AddressCell value={record.deliveryAddressLabel} />;
 		case "tin":
 			return <TextCell value={record.tin} />;
-		case "vatRegistrationType":
-			return <TextCell value={record.vatRegistrationType} />;
 		case "createdBy":
 			return <TextCell value={record.createdBy ?? ""} />;
 		case "createdAt":

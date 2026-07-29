@@ -4,7 +4,6 @@ import {
   PartyImportFieldOrder,
   PartyImportPreviewColumnCount,
   PartyClassificationOptions,
-  VatRegistrationTypeOptions,
 } from "@/app/src/constants/modules/party-management/PartyManagementConstants";
 import { partyImportRowHasErrors } from "@/app/src/data/modules/party-management/PartyManagementData";
 import type { PartyImportColumnId, PartyImportPreviewRow } from "@/app/src/types/modules/party-management/PartyManagementTypes";
@@ -54,15 +53,6 @@ export function PartyManagementImportPreviewTableRow({
                 options={PartyClassificationOptions}
                 onChange={(value) => onUpdateCell(row.id, "classification", value)}
                 onPaste={(text) => onPasteCell(row.id, "classification", text)}
-              />
-            ) : field === "vatRegistrationType" ? (
-              <ModuleImportEditableSelect
-                value={row.party.vatRegistrationType}
-                errors={row.cellErrors.vatRegistrationType}
-                warnings={row.cellWarnings.vatRegistrationType}
-                options={["", ...VatRegistrationTypeOptions]}
-                onChange={(value) => onUpdateCell(row.id, "vatRegistrationType", value)}
-                onPaste={(text) => onPasteCell(row.id, "vatRegistrationType", text)}
               />
             ) : (
               <ImportCell row={row} field={field} onUpdateCell={onUpdateCell} onPasteCell={onPasteCell} />

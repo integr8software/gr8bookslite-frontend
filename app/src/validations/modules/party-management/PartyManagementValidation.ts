@@ -3,7 +3,6 @@ import {
   PartyClassificationOptions,
   PartyInformationStatusOptions,
   PartyTypeOptions,
-  VatRegistrationTypeOptions,
 } from "@/app/src/constants/modules/party-management/PartyManagementConstants";
 import { DefaultPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
 import { isAtcCodeLike } from "@/app/src/data/shared/tax/AtcCode";
@@ -85,7 +84,6 @@ export const PartyInformationFormSchema = z
       .refine((value) => !value || PhilippineTinPattern.test(value), {
         message: "Enter a valid TIN in the format 000-000-000-000.",
       }),
-    vatRegistrationType: z.union([z.literal(""), z.enum(VatRegistrationTypeOptions)]),
     atcCode: z.string().trim(),
     defaultPurchaseInputVatTaxSourceKey: z.string().trim(),
     defaultPurchaseEwtTaxSourceKey: z.string().trim(),

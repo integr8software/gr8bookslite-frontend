@@ -23,7 +23,6 @@ const BankMasterfileFormSchema = z
 		accountNumber: z.string(),
 		accountType: BankMasterfileAccountTypeSchema,
 		currencyCode: z.string().trim().min(1, "Currency is required."),
-		currencyExchangeRate: z.string(),
 		isDefault: z.boolean(),
 		seriesStart: z.string().trim().min(1, "Series start is required."),
 		seriesEnd: z.string().trim().min(1, "Series end is required."),
@@ -34,8 +33,6 @@ const BankMasterfileFormSchema = z
 		addBankMasterfileIssues(values, ctx, {
 			accountNumberRequiredMessage:
 				"Account number is required before activating.",
-			currencyExchangeRateMessage: "Exchange rate must be numeric.",
-			requirePositiveExchangeRate: false,
 		});
 	});
 
@@ -46,7 +43,6 @@ const BankImportRowSchema = z
 		accountNumber: z.string(),
 		accountType: BankMasterfileAccountTypeSchema,
 		currencyCode: z.string().trim().min(1, "Currency is required."),
-		currencyExchangeRate: z.string(),
 		isDefault: z.boolean(),
 		seriesStart: z.string().trim().min(1, "Series start is required."),
 		seriesEnd: z.string().trim().min(1, "Series end is required."),
@@ -57,8 +53,6 @@ const BankImportRowSchema = z
 		addBankMasterfileIssues(values, ctx, {
 			accountNumberRequiredMessage:
 				"Account number is required before activating.",
-			currencyExchangeRateMessage: "Exchange rate must be a positive number.",
-			requirePositiveExchangeRate: true,
 		});
 	});
 
@@ -117,7 +111,6 @@ export function isBlankBankImportRow(row: BankImportPreviewRow) {
 		!values.accountNumber.trim() &&
 		values.accountType === "Checking" &&
 		values.currencyCode === "PHP" &&
-		!values.currencyExchangeRate.trim() &&
 		!values.seriesStart.trim() &&
 		!values.seriesEnd.trim() &&
 		!values.seriesDigits.trim() &&
@@ -139,25 +132,10 @@ function addBankMasterfileIssues(
 	ctx: z.RefinementCtx,
 	messages: {
 		accountNumberRequiredMessage: string;
-		currencyExchangeRateMessage: string;
-		requirePositiveExchangeRate: boolean;
 	},
 ) {
 	if (values.status === "Active" && !values.accountNumber.trim()) {
 		addIssue(ctx, "accountNumber", messages.accountNumberRequiredMessage);
-	}
-
-	if (
-		values.currencyExchangeRate.trim() &&
-		(messages.requirePositiveExchangeRate
-			? !isPositiveNumber(values.currencyExchangeRate)
-			: !isNumeric(values.currencyExchangeRate))
-	) {
-		addIssue(
-			ctx,
-			"currencyExchangeRate",
-			messages.currencyExchangeRateMessage,
-		);
 	}
 
 	if (values.seriesDigits.trim() && !isPositiveInteger(values.seriesDigits)) {
@@ -274,7 +252,6 @@ function isBankMasterfileField(value: unknown): value is BankImportColumnId {
 			"accountNumber",
 			"accountType",
 			"currencyCode",
-			"currencyExchangeRate",
 			"isDefault",
 			"seriesStart",
 			"seriesEnd",
@@ -282,15 +259,6 @@ function isBankMasterfileField(value: unknown): value is BankImportColumnId {
 			"status",
 		].includes(value)
 	);
-}
-
-function isPositiveNumber(value: string) {
-	const number = Number(value);
-	return Number.isFinite(number) && number > 0;
-}
-
-function isNumeric(value: string) {
-	return Number.isFinite(Number(value));
 }
 
 function isPositiveInteger(value: string) {

@@ -65,6 +65,7 @@ function BankMasterfileDrawerPanel({
 			isOpen={isOpen}
 			isReadonly={page.isReadonly}
 			isSaving={page.isSubmitting}
+			maxWidthClassName="max-w-4xl"
 			onBeforeSaveConfirm={page.validateBeforeSubmit}
 			onClose={onClose}
 			savingLabel={getModuleSavePendingLabel(mode)}

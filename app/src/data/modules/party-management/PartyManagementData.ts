@@ -1,6 +1,7 @@
 import {
   BIRAtcSourceUrl,
   PartyClassificationOptions,
+  PartyEntityTypeOptions,
   PartyImportDefaultColumnIndexes,
   PartyImportMaxFileSizeBytes,
   PartyImportMinFileSizeBytes,
@@ -31,6 +32,7 @@ import type {
   PartyInformationFormValues,
   PartyInformationRecord,
   PartyInformationTableRecord,
+  PartyEntityType,
   PartyType,
 } from "@/app/src/types/modules/party-management/PartyManagementTypes";
 import { downloadBlob } from "@/app/src/ui/shared/module/module-table/ModuleTableExportDownload";
@@ -74,6 +76,7 @@ type PartyDefaultAccountingAccountValues = {
 export const PartyInformationInitialFormValues: PartyInformationFormValues = {
   partyCodeNo: "",
   classification: "",
+  partyEntityType: "",
   partyTypes: [],
   status: "Active",
   partyName: "",
@@ -101,6 +104,7 @@ export const PartyInformationInitialFormValues: PartyInformationFormValues = {
   tin: "",
   atcCode: "",
   ...PartyDefaultTaxSourceKeys,
+  contactPerson: "",
   email: "",
   contactNo: "",
   landline: "",
@@ -126,6 +130,10 @@ export function createPartyInformationFormValues(
   return {
     partyCodeNo: record.partyCodeNo,
     classification: record.classification,
+    partyEntityType: normalizePartyEntityTypeForClassification(
+      record.partyEntityType ?? "",
+      record.classification,
+    ),
     partyTypes: [...record.partyTypes],
     status: record.status,
     partyName: record.partyName,
@@ -159,6 +167,7 @@ export function createPartyInformationFormValues(
     defaultSalesOutputVatTaxSourceKey: record.defaultSalesOutputVatTaxSourceKey ?? "",
     defaultSalesCwtTaxSourceKey: record.defaultSalesCwtTaxSourceKey ?? "",
     defaultSalesWvatTaxSourceKey: record.defaultSalesWvatTaxSourceKey ?? "",
+    contactPerson: record.contactPerson,
     email: record.email,
     contactNo: record.contactNo,
     landline: record.landline ?? "",
@@ -180,6 +189,10 @@ export function createPartySubmitPayload(values: PartyInformationFormValues) {
   return {
     partyCodeNo: values.partyCodeNo.trim(),
     classification: values.classification,
+    partyEntityType: normalizePartyEntityTypeForClassification(
+      values.partyEntityType,
+      values.classification,
+    ),
     partyTypes,
     status: values.status,
     name,
@@ -224,11 +237,18 @@ export function createPartySubmitPayload(values: PartyInformationFormValues) {
     atcCode: values.atcCode ? normalizeAtcCode(values.atcCode) : "",
     defaultPurchaseInputVatTaxSourceKey: values.defaultPurchaseInputVatTaxSourceKey,
     defaultPurchaseEwtTaxSourceKey: values.defaultPurchaseEwtTaxSourceKey,
-    defaultPurchaseFwtTaxSourceKey: values.defaultPurchaseFwtTaxSourceKey,
-    defaultPurchaseWvatTaxSourceKey: values.defaultPurchaseWvatTaxSourceKey,
+    defaultPurchaseFwtTaxSourceKey: isPartyEntityTypeWithholdingDefaultEnabled(values.partyEntityType)
+      ? values.defaultPurchaseFwtTaxSourceKey
+      : "",
+    defaultPurchaseWvatTaxSourceKey: isPartyEntityTypeWithholdingDefaultEnabled(values.partyEntityType)
+      ? values.defaultPurchaseWvatTaxSourceKey
+      : "",
     defaultSalesOutputVatTaxSourceKey: values.defaultSalesOutputVatTaxSourceKey,
     defaultSalesCwtTaxSourceKey: values.defaultSalesCwtTaxSourceKey,
-    defaultSalesWvatTaxSourceKey: values.defaultSalesWvatTaxSourceKey,
+    defaultSalesWvatTaxSourceKey: isPartyEntityTypeWithholdingDefaultEnabled(values.partyEntityType)
+      ? values.defaultSalesWvatTaxSourceKey
+      : "",
+    contactPerson: values.contactPerson.trim() || null,
     email: values.email.trim() || null,
     contactNo: normalizePartyContactNo(values.contactNo) || null,
     landline: values.landline.trim() || null,
@@ -274,6 +294,8 @@ export function createPartyInformationRecordFromTableRecord(
     defaultSalesCwtTaxSourceKey: record.defaultSalesCwtTaxSourceKey,
     defaultSalesWvatTaxSourceKey: record.defaultSalesWvatTaxSourceKey,
     classification: record.classification,
+    partyEntityType: record.partyEntityType,
+    contactPerson: record.contactPerson,
     contactNo: record.contactNo,
     createdBy: record.createdBy,
     createdAt: record.createdAt,
@@ -321,6 +343,39 @@ export function isKnownPartyType(value: string): value is PartyType {
   return PartyTypeOptions.includes(value as PartyType);
 }
 
+export function isKnownPartyEntityType(value: string): value is PartyEntityType {
+  return PartyEntityTypeOptions.some((option) => option.name === value);
+}
+
+export function getPartyEntityTypeOption(value: string | null | undefined) {
+  return PartyEntityTypeOptions.find((option) => option.name === value);
+}
+
+export function isPartyEntityTypeWithholdingDefaultEnabled(
+  value: PartyEntityType | "" | null | undefined,
+) {
+  return Boolean(getPartyEntityTypeOption(value)?.showsGovernmentWithholdingDefaults);
+}
+
+export function normalizePartyEntityTypeForClassification(
+  value: PartyEntityType | "" | null | undefined,
+  classification: PartyClassification | "",
+): PartyEntityType | "" {
+  if (!value || !isKnownPartyEntityType(value)) {
+    return "";
+  }
+
+  if (classification === "Individual") {
+    return "";
+  }
+
+  if (classification === "Non-Individual") {
+    return getPartyEntityTypeOption(value)?.classificationScope === classification ? value : "";
+  }
+
+  return "";
+}
+
 export function isKnownAtcCode(value: string) {
   const normalizedCode = normalizeAtcCode(value);
 
@@ -361,6 +416,7 @@ export function createBlankPartyImportRow(rowNumber: number): PartyImportPreview
     party: {
       partyCodeNo: "",
       classification: "Non-Individual",
+      partyEntityType: "",
       partyTypes: ["Vendor"],
       status: "Active",
       partyName: "",
@@ -387,6 +443,7 @@ export function createBlankPartyImportRow(rowNumber: number): PartyImportPreview
       tin: "",
       atcCode: "",
       ...PartyDefaultTaxSourceKeys,
+      contactPerson: "",
       email: "",
       contactNo: "",
       landline: "",
@@ -446,6 +503,10 @@ export function getNextPartyImportRowNumber(rows: PartyImportPreviewRow[]) {
 export function normalizeImportedPartyCellValue(field: PartyImportColumnId, value: string) {
   if (field === "classification") {
     return normalizeImportedPartyClassification(value);
+  }
+
+  if (field === "partyEntityType") {
+    return normalizeImportedPartyEntityType(value, "Non-Individual");
   }
 
   if (field === "partyTypes") {
@@ -595,6 +656,10 @@ function createPartyImportPreviewRow(
   );
   const partyTypes = normalizeImportedPartyTypes(getImportedPartyValue(row, indexes.partyTypes));
   const normalizedPartyTypes = normalizePartyTypesForClassification(partyTypes, classification);
+  const partyEntityType = normalizeImportedPartyEntityType(
+    getImportedPartyValue(row, indexes.partyEntityType),
+    classification,
+  );
   const accountingAccounts = applyPartyDefaultAccountingAccounts(
     {
       customerAdvanceAccount: getImportedPartyValue(row, indexes.customerAdvanceAccount),
@@ -617,6 +682,7 @@ function createPartyImportPreviewRow(
   const party: Omit<PartyInformationRecord, "id" | "createdAt" | "updatedAt"> = {
     partyCodeNo: getImportedPartyValue(row, indexes.partyCodeNo),
     classification,
+    partyEntityType,
     partyTypes: normalizedPartyTypes,
     status: "Active",
     partyName: getImportedPartyValue(row, indexes.partyName),
@@ -640,6 +706,7 @@ function createPartyImportPreviewRow(
     tin: formatImportedTin(getImportedPartyValue(row, indexes.tin)),
     atcCode: normalizeAtcCode(getImportedPartyValue(row, indexes.atcCode)),
     ...PartyDefaultTaxSourceKeys,
+    contactPerson: getImportedPartyValue(row, indexes.contactPerson),
     email: getImportedPartyValue(row, indexes.email),
     contactNo: getImportedPartyValue(row, indexes.contactNo),
     landline: getImportedPartyValue(row, indexes.landline),
@@ -784,6 +851,28 @@ export function validatePartyImportRows(
       cellErrors.classification = ["Classification is required. Choose a value from the list."];
     } else if (!isModuleImportOptionValue(row.party.classification, PartyClassificationOptions)) {
       cellErrors.classification = ["Choose Individual or Non-Individual from the list."];
+    }
+    if (row.party.classification === "Individual" && row.party.partyEntityType.trim()) {
+      cellErrors.partyEntityType = [
+        "Party entity type is only available for non-individual parties.",
+      ];
+    } else if (
+      row.party.classification === "Non-Individual" &&
+      !row.party.partyEntityType.trim()
+    ) {
+      cellErrors.partyEntityType = ["Party entity type is required. Choose a value from the list."];
+    } else if (
+      row.party.partyEntityType.trim() &&
+      !isKnownPartyEntityType(row.party.partyEntityType)
+    ) {
+      cellErrors.partyEntityType = ["Choose a valid party entity type from the list."];
+    } else if (
+      row.party.classification === "Non-Individual" &&
+      row.party.partyEntityType.trim() &&
+      getPartyEntityTypeOption(row.party.partyEntityType as PartyEntityType)?.classificationScope !==
+        row.party.classification
+    ) {
+      cellErrors.partyEntityType = ["Choose a non-individual party entity type."];
     }
 
     if (row.party.partyTypes.length === 0) {
@@ -1034,6 +1123,10 @@ export function createPartyImportRecord(
     id: `party-import-${Date.now()}-${index}`,
     partyCodeNo: party.partyCodeNo.trim(),
     classification: party.classification,
+    partyEntityType: normalizePartyEntityTypeForClassification(
+      party.partyEntityType,
+      party.classification,
+    ),
     partyTypes,
     status: "Active",
     partyName: party.classification === "Non-Individual" ? party.partyName.trim() : "",
@@ -1078,11 +1171,18 @@ export function createPartyImportRecord(
     atcCode: party.atcCode ? normalizeAtcCode(party.atcCode) : "",
     defaultPurchaseInputVatTaxSourceKey: party.defaultPurchaseInputVatTaxSourceKey,
     defaultPurchaseEwtTaxSourceKey: party.defaultPurchaseEwtTaxSourceKey,
-    defaultPurchaseFwtTaxSourceKey: party.defaultPurchaseFwtTaxSourceKey,
-    defaultPurchaseWvatTaxSourceKey: party.defaultPurchaseWvatTaxSourceKey,
+    defaultPurchaseFwtTaxSourceKey: isPartyEntityTypeWithholdingDefaultEnabled(party.partyEntityType)
+      ? party.defaultPurchaseFwtTaxSourceKey
+      : "",
+    defaultPurchaseWvatTaxSourceKey: isPartyEntityTypeWithholdingDefaultEnabled(party.partyEntityType)
+      ? party.defaultPurchaseWvatTaxSourceKey
+      : "",
     defaultSalesOutputVatTaxSourceKey: party.defaultSalesOutputVatTaxSourceKey,
     defaultSalesCwtTaxSourceKey: party.defaultSalesCwtTaxSourceKey,
-    defaultSalesWvatTaxSourceKey: party.defaultSalesWvatTaxSourceKey,
+    defaultSalesWvatTaxSourceKey: isPartyEntityTypeWithholdingDefaultEnabled(party.partyEntityType)
+      ? party.defaultSalesWvatTaxSourceKey
+      : "",
+    contactPerson: party.contactPerson.trim(),
     email: party.email.trim(),
     contactNo: normalizePartyContactNo(party.contactNo),
     landline: party.landline?.trim() ?? "",
@@ -1145,6 +1245,10 @@ function normalizePartyRecordValues(
     ...values,
     partyCodeNo: values.partyCodeNo.trim(),
     classification: values.classification,
+    partyEntityType: normalizePartyEntityTypeForClassification(
+      values.partyEntityType,
+      values.classification,
+    ),
     partyName: values.classification === "Non-Individual" ? values.partyName.trim() : "",
     status: values.status,
     tradeName: values.classification === "Non-Individual" ? values.tradeName.trim() : "",
@@ -1189,11 +1293,18 @@ function normalizePartyRecordValues(
     atcCode: values.atcCode ? normalizeAtcCode(values.atcCode) : "",
     defaultPurchaseInputVatTaxSourceKey: values.defaultPurchaseInputVatTaxSourceKey,
     defaultPurchaseEwtTaxSourceKey: values.defaultPurchaseEwtTaxSourceKey,
-    defaultPurchaseFwtTaxSourceKey: values.defaultPurchaseFwtTaxSourceKey,
-    defaultPurchaseWvatTaxSourceKey: values.defaultPurchaseWvatTaxSourceKey,
+    defaultPurchaseFwtTaxSourceKey: isPartyEntityTypeWithholdingDefaultEnabled(values.partyEntityType)
+      ? values.defaultPurchaseFwtTaxSourceKey
+      : "",
+    defaultPurchaseWvatTaxSourceKey: isPartyEntityTypeWithholdingDefaultEnabled(values.partyEntityType)
+      ? values.defaultPurchaseWvatTaxSourceKey
+      : "",
     defaultSalesOutputVatTaxSourceKey: values.defaultSalesOutputVatTaxSourceKey,
     defaultSalesCwtTaxSourceKey: values.defaultSalesCwtTaxSourceKey,
-    defaultSalesWvatTaxSourceKey: values.defaultSalesWvatTaxSourceKey,
+    defaultSalesWvatTaxSourceKey: isPartyEntityTypeWithholdingDefaultEnabled(values.partyEntityType)
+      ? values.defaultSalesWvatTaxSourceKey
+      : "",
+    contactPerson: values.contactPerson.trim(),
     email: values.email.trim(),
     contactNo: normalizePartyContactNo(values.contactNo),
     landline: values.landline.trim(),
@@ -1290,6 +1401,18 @@ function normalizePartyImportHeader(value: string): PartyImportColumnId | null {
 
   if (["partycode", "partycodeno", "code"].includes(normalized)) return "partyCodeNo";
   if (["classification", "partyclassification"].includes(normalized)) return "classification";
+  if (
+    [
+      "partyentitytype",
+      "entitytype",
+      "vendortype",
+      "customertype",
+      "membertype",
+      "employeetype",
+      "legaltype",
+    ].includes(normalized)
+  )
+    return "partyEntityType";
   if (["partytypes", "partytype", "type", "types"].includes(normalized)) return "partyTypes";
   if (["partyname", "name", "companyname", "organizationname"].includes(normalized))
     return "partyName";
@@ -1310,6 +1433,7 @@ function normalizePartyImportHeader(value: string): PartyImportColumnId | null {
     return "memberRegistrationDate";
   if (["tin", "tinno", "taxidentificationnumber"].includes(normalized)) return "tin";
   if (["atccode", "atc"].includes(normalized)) return "atcCode";
+  if (["contactperson", "contactname", "contact"].includes(normalized)) return "contactPerson";
   if (["email", "emailaddress"].includes(normalized)) return "email";
   if (["contactno", "contactnumber", "phone", "mobile", "mobilenumber"].includes(normalized))
     return "contactNo";
@@ -1433,6 +1557,23 @@ export function normalizeImportedPartyTypes(value: string): PartyType[] {
     .filter((type): type is PartyType => Boolean(type));
 
   return normalizedTypes.length > 0 ? normalizedTypes : ["Vendor"];
+}
+
+export function normalizeImportedPartyEntityType(
+  value: string,
+  classification: PartyClassification,
+): PartyEntityType | "" {
+  const normalized = normalizePartyEntityTypeMatchValue(value);
+
+  const exactOption = PartyEntityTypeOptions.find(
+    (option) => normalizePartyEntityTypeMatchValue(option.name) === normalized,
+  );
+
+  return normalizePartyEntityTypeForClassification(exactOption?.name ?? "", classification);
+}
+
+function normalizePartyEntityTypeMatchValue(value: string) {
+  return value.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
 }
 
 function normalizeImportedDateValue(value: string) {

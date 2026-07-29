@@ -122,7 +122,7 @@ export async function fetchPartyOptions(partyType: PartyType): Promise<ItemSuppl
     id: party.id,
     code: party.partyCodeNo,
     name: party.name,
-    contactPerson: party.name,
+    contactPerson: party.contactPerson || party.name,
     contactDetails: party.email || party.contactNo,
     status: mapStatusFromApi(party.status),
   }));
@@ -154,6 +154,8 @@ export async function GetPartyManagementRecordsPage({
       (!normalizedQuery ||
         name.includes(normalizedQuery) ||
         record.partyCodeNo.toLowerCase().includes(normalizedQuery) ||
+        record.partyEntityType.toLowerCase().includes(normalizedQuery) ||
+        record.contactPerson.toLowerCase().includes(normalizedQuery) ||
         record.email.toLowerCase().includes(normalizedQuery) ||
         record.contactNo.toLowerCase().includes(normalizedQuery) ||
         (record.landline ?? "").toLowerCase().includes(normalizedQuery) ||
@@ -184,6 +186,7 @@ function mapApiParty(party: ApiParty): PartyInformationRecord {
     id: party.id,
     partyCodeNo: party.partyCodeNo,
     classification: mapClassificationFromApi(party.classification),
+    partyEntityType: mapPartyEntityTypeFromApi(party.partyEntityType),
     partyTypes: party.partyTypes.map(mapPartyTypeFromApi),
     status: mapStatusFromApi(party.status ?? "ACTIVE"),
     partyName: party.partyName ?? "",
@@ -216,6 +219,7 @@ function mapApiParty(party: ApiParty): PartyInformationRecord {
     defaultSalesOutputVatTaxSourceKey: party.defaultSalesOutputVatTaxSourceKey ?? "",
     defaultSalesCwtTaxSourceKey: party.defaultSalesCwtTaxSourceKey ?? "",
     defaultSalesWvatTaxSourceKey: party.defaultSalesWvatTaxSourceKey ?? "",
+    contactPerson: party.contactPerson ?? "",
     email: party.email ?? "",
     contactNo: party.contactNo ?? "",
     landline: party.landline ?? "",
@@ -257,6 +261,7 @@ function toApiPartyPayload(
     branchUnitId: options.branchUnitId ?? undefined,
     partyCodeNo: record.partyCodeNo.trim(),
     classification: mapClassificationToApi(record.classification),
+    partyEntityType: mapPartyEntityTypeToApi(record.partyEntityType),
     partyTypes: record.partyTypes.map(mapPartyTypeToApi),
     status: mapStatusToApi(record.status),
     partyName:
@@ -332,6 +337,7 @@ function toApiPartyPayload(
     defaultSalesWvatTaxSourceKey: record.partyTypes.includes("Customer")
       ? normalizeOptionalText(record.defaultSalesWvatTaxSourceKey)
       : null,
+    contactPerson: normalizeOptionalText(record.contactPerson),
     email: normalizeOptionalText(record.email),
     contactNo: normalizeOptionalText(record.contactNo),
     landline: normalizeOptionalText(record.landline),
@@ -391,6 +397,8 @@ function getSortablePartyManagementValue(
       return formatPartyAddress(getPartyAddressByRole(record, "billing"));
     case "classification":
       return record.classification;
+    case "contactPerson":
+      return record.contactPerson;
     case "contactNo":
       return record.contactNo;
     case "createdAt":
@@ -405,6 +413,8 @@ function getSortablePartyManagementValue(
       return getPartyDisplayName(record);
     case "partyTypesLabel":
       return record.partyTypes.join(", ");
+    case "partyEntityType":
+      return record.partyEntityType;
     case "partyCodeNo":
       return record.partyCodeNo;
     case "deliveryAddressLabel":
@@ -424,7 +434,7 @@ function getSortablePartyManagementValue(
 
 function formatPartyAddress(address?: PartyInformationRecord["address"] | null) {
   if (!address) {
-    return "-";
+    return "";
   }
 
   return (
@@ -438,7 +448,7 @@ function formatPartyAddress(address?: PartyInformationRecord["address"] | null) 
     ]
       .map((part) => part.trim())
       .filter(Boolean)
-      .join(", ") || "-"
+      .join(", ") || ""
   );
 }
 
@@ -461,6 +471,14 @@ function mapClassificationFromApi(value: ApiPartyClassification): PartyClassific
 
 function mapClassificationToApi(value: PartyClassification): ApiPartyClassification {
   return value === "Individual" ? "INDIVIDUAL" : "NON_INDIVIDUAL";
+}
+
+function mapPartyEntityTypeFromApi(value?: string | null): string {
+  return value?.trim() ?? "";
+}
+
+function mapPartyEntityTypeToApi(value: string): string | null {
+  return normalizeOptionalText(value);
 }
 
 function mapPartyTypeFromApi(value: ApiPartyType): PartyType {

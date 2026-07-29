@@ -45,7 +45,7 @@ Accounting Setup tab:
 
 | Field | Required | Notes |
 | --- | ---: | --- |
-| Account setup mode | Yes | `Generate automatically` or `Select existing`. |
+| Account setup mode | Yes | `Generate Account Automatically` or `Select Existing Account`. |
 | Revenue account | Yes when selected existing | Use advanced dropdown for active revenue posting accounts. |
 | Generated/selected account title | Yes | Display the resolved COA title in all modes. |
 

@@ -13,7 +13,11 @@ export type PartyInformationStatus = "Active" | "Inactive";
 
 export type PartyType = "Vendor" | "Customer" | "Employee" | "Member";
 
+export type PartyEntityType = string;
+
 export type ApiPartyClassification = "INDIVIDUAL" | "NON_INDIVIDUAL";
+
+export type ApiPartyEntityType = string;
 
 export type ApiPartyStatus = "ACTIVE" | "INACTIVE";
 
@@ -44,6 +48,7 @@ export type PartyInformationRecord = {
   id: string;
   partyCodeNo: string;
   classification: PartyClassification;
+  partyEntityType: PartyEntityType | "";
   partyTypes: PartyType[];
   status: PartyInformationStatus;
   partyName: string;
@@ -76,6 +81,7 @@ export type PartyInformationRecord = {
   defaultSalesOutputVatTaxSourceKey: string;
   defaultSalesCwtTaxSourceKey: string;
   defaultSalesWvatTaxSourceKey: string;
+  contactPerson: string;
   email: string;
   contactNo: string;
   landline?: string;
@@ -88,6 +94,7 @@ export type PartyInformationRecord = {
 export type PartyInformationFormValues = {
   partyCodeNo: string;
   classification: PartyClassification | "";
+  partyEntityType: PartyEntityType | "";
   partyTypes: PartyType[];
   status: PartyInformationStatus;
   partyName: string;
@@ -121,6 +128,7 @@ export type PartyInformationFormValues = {
   defaultSalesOutputVatTaxSourceKey: string;
   defaultSalesCwtTaxSourceKey: string;
   defaultSalesWvatTaxSourceKey: string;
+  contactPerson: string;
   email: string;
   contactNo: string;
   landline: string;
@@ -129,6 +137,7 @@ export type PartyInformationFormValues = {
 export type PartyInformationFormErrors = Partial<{
   partyCodeNo: string;
   classification: string;
+  partyEntityType: string;
   partyTypes: string;
   status: string;
   partyName: string;
@@ -162,6 +171,7 @@ export type PartyInformationFormErrors = Partial<{
   employeePayableAccount: string;
   termId: string;
   tin: string;
+  contactPerson: string;
   email: string;
   contactNo: string;
   landline: string;
@@ -203,6 +213,7 @@ export type PartyInformationTableColumnKey =
   | "billingAddressLabel"
   | "classification"
   | "civilStatus"
+  | "contactPerson"
   | "contactNo"
   | "createdAt"
   | "createdBy"
@@ -213,6 +224,7 @@ export type PartyInformationTableColumnKey =
   | "memberRegistrationDate"
   | "name"
   | "nationality"
+  | "partyEntityType"
   | "partyTypesLabel"
   | "partyCodeNo"
   | "deliveryAddressLabel"
@@ -287,6 +299,8 @@ export type PartyInformationDetailsFieldsProps = {
   isPartyCodeReadonly?: boolean;
   isReadonly: boolean;
   partyTypeOptions: readonly PartyType[];
+  taxDefaultOptionsError?: boolean;
+  taxDefaultOptionsLoading?: boolean;
   taxDefaultOptions: PartyTaxDefaultOptions;
   termOptions: PartyAddressDropdownOption[];
   values: PartyInformationFormValues;
@@ -451,6 +465,7 @@ export type ApiPartyPayload = {
   branchUnitId?: number;
   partyCodeNo: string;
   classification: ApiPartyClassification;
+  partyEntityType?: ApiPartyEntityType | null;
   partyTypes: ApiPartyType[];
   status?: ApiPartyStatus;
   partyName?: string | null;
@@ -481,6 +496,7 @@ export type ApiPartyPayload = {
   defaultSalesOutputVatTaxSourceKey?: string | null;
   defaultSalesCwtTaxSourceKey?: string | null;
   defaultSalesWvatTaxSourceKey?: string | null;
+  contactPerson?: string | null;
   email?: string | null;
   contactNo?: string | null;
   landline?: string | null;
@@ -510,6 +526,7 @@ export type ApiPartyOption = {
   classification: ApiPartyClassification;
   partyTypes: ApiPartyType[];
   name: string;
+  contactPerson: string;
   email: string;
   contactNo: string;
   status: ApiPartyStatus;
@@ -576,6 +593,7 @@ export type ApiPartyImportResponse = {
 export type PartyImportColumnId =
   | "partyCodeNo"
   | "classification"
+  | "partyEntityType"
   | "partyTypes"
   | "partyName"
   | "tradeName"
@@ -590,6 +608,7 @@ export type PartyImportColumnId =
   | "memberRegistrationDate"
   | "tin"
   | "atcCode"
+  | "contactPerson"
   | "email"
   | "contactNo"
   | "landline"

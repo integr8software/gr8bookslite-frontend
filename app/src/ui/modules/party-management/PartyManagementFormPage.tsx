@@ -99,6 +99,8 @@ function PartyManagementFormPageInner() {
           isPartyCodeReadonly={page.isPartyCodeReadonly}
           isReadonly={page.isReadonly}
           partyTypeOptions={page.partyTypeOptions}
+          taxDefaultOptionsError={page.taxDefaultOptionsError}
+          taxDefaultOptionsLoading={page.taxDefaultOptionsLoading}
           taxDefaultOptions={page.taxDefaultOptions}
           termOptions={page.termOptions}
           values={page.values}

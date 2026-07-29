@@ -1,9 +1,11 @@
 import { z } from "zod";
 import {
   PartyClassificationOptions,
+  PartyEntityTypeOptions,
   PartyInformationStatusOptions,
   PartyTypeOptions,
 } from "@/app/src/constants/modules/party-management/PartyManagementConstants";
+import { getPartyEntityTypeOption } from "@/app/src/data/modules/party-management/PartyManagementData";
 import { DefaultPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
 import { isAtcCodeLike } from "@/app/src/data/shared/tax/AtcCode";
 import type {
@@ -44,6 +46,7 @@ export const PartyInformationFormSchema = z
     classification: z.enum(PartyClassificationOptions, {
       error: "Select a party classification first.",
     }),
+    partyEntityType: z.string().trim(),
     partyTypes: z.array(z.enum(PartyTypeOptions)).min(1, "Select at least one party type."),
     status: z.enum(PartyInformationStatusOptions, {
       error: "Select a status.",
@@ -92,6 +95,7 @@ export const PartyInformationFormSchema = z
     defaultSalesOutputVatTaxSourceKey: z.string().trim(),
     defaultSalesCwtTaxSourceKey: z.string().trim(),
     defaultSalesWvatTaxSourceKey: z.string().trim(),
+    contactPerson: z.string().trim().max(255, "Contact person must be 255 characters or fewer."),
     email: z
       .string()
       .trim()
@@ -159,6 +163,39 @@ export const PartyInformationFormSchema = z
         code: z.ZodIssueCode.custom,
         message: "Employee and Member are only available for individual parties.",
         path: ["partyTypes"],
+      });
+    }
+
+    if (values.classification === "Individual" && values.partyEntityType.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Party entity type is only available for non-individual parties.",
+        path: ["partyEntityType"],
+      });
+    } else if (values.classification === "Non-Individual" && !values.partyEntityType.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Select a party entity type.",
+        path: ["partyEntityType"],
+      });
+    } else if (
+      values.partyEntityType.trim() &&
+      !PartyEntityTypeOptions.some((option) => option.name === values.partyEntityType)
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Choose a valid party entity type.",
+        path: ["partyEntityType"],
+      });
+    } else if (
+      values.classification === "Non-Individual" &&
+      getPartyEntityTypeOption(values.partyEntityType)?.classificationScope !==
+        values.classification
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Choose a non-individual party entity type.",
+        path: ["partyEntityType"],
       });
     }
 
@@ -358,12 +395,16 @@ export function validatePartyInformationForm(
       errors.nationality = issue.message;
     } else if (field === "classification" && !errors.classification) {
       errors.classification = issue.message;
+    } else if (field === "partyEntityType" && !errors.partyEntityType) {
+      errors.partyEntityType = issue.message;
     } else if (field === "contactNo" && !errors.contactNo) {
       errors.contactNo = issue.message;
     } else if (field === "landline" && !errors.landline) {
       errors.landline = issue.message;
     } else if (field === "memberRegistrationDate" && !errors.memberRegistrationDate) {
       errors.memberRegistrationDate = issue.message;
+    } else if (field === "contactPerson" && !errors.contactPerson) {
+      errors.contactPerson = issue.message;
     } else if (field === "email" && !errors.email) {
       errors.email = issue.message;
     } else if (field === "firstName" && !errors.firstName) {

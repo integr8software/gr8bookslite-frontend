@@ -60,6 +60,8 @@ function PartyInformationCellContent({
 					))}
 				</div>
 			);
+		case "contactPerson":
+			return <TextCell value={record.contactPerson} />;
 		case "email":
 			return <TextCell value={record.email} />;
 		case "contactNo":

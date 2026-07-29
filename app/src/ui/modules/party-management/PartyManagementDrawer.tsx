@@ -16,7 +16,9 @@ import {
   clearAddressRolesForPartyTypes,
   createPartyInformationRecord,
   hasPersonalInformationPartyType,
+  isPartyEntityTypeWithholdingDefaultEnabled,
   isKnownPartyType,
+  normalizePartyEntityTypeForClassification,
   normalizePartyTypesForClassification,
 } from "@/app/src/data/modules/party-management/PartyManagementData";
 import { FormatPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
@@ -146,6 +148,7 @@ export function PartyManagementDrawer({
         return {
           ...current,
           classification,
+          partyEntityType: "",
           partyTypes,
           partyName: "",
           tradeName: "",
@@ -178,6 +181,16 @@ export function PartyManagementDrawer({
       return {
         ...current,
         [field]: value,
+        ...(field === "partyEntityType" &&
+        !isPartyEntityTypeWithholdingDefaultEnabled(
+          value as PartyInformationFormValues["partyEntityType"],
+        )
+          ? {
+              defaultPurchaseFwtTaxSourceKey: "",
+              defaultPurchaseWvatTaxSourceKey: "",
+              defaultSalesWvatTaxSourceKey: "",
+            }
+          : {}),
       };
     });
     setErrors((current) => ({ ...current, [field]: undefined }));
@@ -284,6 +297,17 @@ export function PartyManagementDrawer({
       return {
         ...current,
         partyTypes,
+        ...(current.classification === "Individual"
+          ? {
+              defaultPurchaseFwtTaxSourceKey: "",
+              defaultPurchaseWvatTaxSourceKey: "",
+              defaultSalesWvatTaxSourceKey: "",
+            }
+          : {}),
+        partyEntityType: normalizePartyEntityTypeForClassification(
+          current.partyEntityType,
+          current.classification,
+        ),
         nationality:
           hasPersonalInformationPartyType(partyTypes) && !current.nationality
             ? PartyDefaultNationality
@@ -617,6 +641,8 @@ export function PartyManagementDrawer({
           isPartyCodeReadonly={isAutoPartyCode}
           isReadonly={false}
           partyTypeOptions={PartyTypeOptions}
+          taxDefaultOptionsError={taxDefaults.isError}
+          taxDefaultOptionsLoading={taxDefaults.isLoading}
           taxDefaultOptions={taxDefaults.options}
           termOptions={termDropdown.options}
           values={effectiveValues}

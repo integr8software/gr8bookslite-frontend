@@ -12,12 +12,14 @@ export type Tax = {
 	officialAtcCode: string | null;
 	natureOfIncome: string | null;
 	sortOrder: number;
+	status?: "ACTIVE" | "INACTIVE";
 };
 
 export type TaxListQuery = {
 	limit?: number;
 	officialAtcCode?: string;
 	query?: string;
+	status?: "ACTIVE" | "INACTIVE" | "ALL";
 	taxCode?: string;
 	taxExempt?: boolean;
 	taxType?: string;
@@ -47,6 +49,7 @@ export type PartyTaxDefaultClassification =
 export type TaxDefaultOption = {
 	code: string;
 	description: string;
+	disabled?: boolean;
 	label: string;
 	name: string;
 	selectedDetails: string;

@@ -501,6 +501,8 @@ function filterPartyManagementRecords(
 			(!normalizedQuery ||
 				name.includes(normalizedQuery) ||
 				record.partyCodeNo.toLowerCase().includes(normalizedQuery) ||
+				record.partyEntityType.toLowerCase().includes(normalizedQuery) ||
+				record.contactPerson.toLowerCase().includes(normalizedQuery) ||
 				record.email.toLowerCase().includes(normalizedQuery) ||
 				record.contactNo.toLowerCase().includes(normalizedQuery) ||
 				record.tin.toLowerCase().includes(normalizedQuery) ||
@@ -542,6 +544,8 @@ function getSortablePartyManagementValue(
 			return record.classification;
 		case "civilStatus":
 			return record.civilStatus ?? "";
+		case "contactPerson":
+			return record.contactPerson;
 		case "contactNo":
 			return record.contactNo;
 		case "createdAt":
@@ -564,6 +568,8 @@ function getSortablePartyManagementValue(
 			return record.nationality ?? "";
 		case "partyTypesLabel":
 			return record.partyTypes.join(", ");
+		case "partyEntityType":
+			return record.partyEntityType;
 		case "partyCodeNo":
 			return record.partyCodeNo;
 		case "deliveryAddressLabel":

@@ -5,6 +5,7 @@ import {
   PartyClassificationOptions,
   PartyCivilStatusOptions,
   PartyDefaultNationality,
+  PartyEntityTypeOptions,
   PartyGenderOptions,
   PartyHonorificOptions,
   PartyAccountingAccountFieldLabels,
@@ -25,8 +26,10 @@ import type {
   PartyInformationTab,
   PartyInformationTabId,
   PartyInformationFormValues,
+  PartyEntityType,
 } from "@/app/src/types/modules/party-management/PartyManagementTypes";
 import type { PartyTaxDefaultClassificationKey } from "@/app/src/types/shared/tax/TaxTypes";
+import { isPartyEntityTypeWithholdingDefaultEnabled } from "@/app/src/data/modules/party-management/PartyManagementData";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
 import { PartyAddressContainer } from "@/app/src/ui/modules/party-management/PartyAddressContainer";
@@ -44,6 +47,8 @@ export function PartyInformationDetailsFields({
   isPartyCodeReadonly = false,
   isReadonly,
   partyTypeOptions,
+  taxDefaultOptionsError = false,
+  taxDefaultOptionsLoading = false,
   taxDefaultOptions,
   termOptions,
   values,
@@ -72,6 +77,10 @@ export function PartyInformationDetailsFields({
     values.partyTypes.includes("Employee") || values.partyTypes.includes("Member");
   const showMemberRegistrationDate = values.partyTypes.includes("Member");
   const isMember = values.partyTypes.includes("Member");
+  const showPartyEntityTypeField =
+    values.classification === "Non-Individual" && isPartyTypeSelected;
+  const showWithholdingDefaults =
+    isPartyEntityTypeWithholdingDefaultEnabled(values.partyEntityType);
   const visiblePartyTypeOptions =
     values.classification === "Non-Individual"
       ? partyTypeOptions.filter((type) => type !== "Employee" && type !== "Member")
@@ -80,6 +89,17 @@ export function PartyInformationDetailsFields({
     name: type,
     value: type,
   }));
+  const partyEntityTypeSelectOptions = [...PartyEntityTypeOptions]
+    .filter(
+      (option) =>
+        option.classificationScope === values.classification,
+    )
+    .sort((leftOption, rightOption) => leftOption.sortOrder - rightOption.sortOrder)
+    .map((option) => ({
+      description: option.description,
+      name: option.name,
+      value: option.name,
+    }));
   const honorificOptions = PartyHonorificOptions.map((honorific) => ({
     description: "description" in honorific ? honorific.description : undefined,
     name: honorific.name,
@@ -88,6 +108,7 @@ export function PartyInformationDetailsFields({
   const basicErrorCount = countErrors(errors, [
     "partyCodeNo",
     "classification",
+    "partyEntityType",
     "partyTypes",
     "status",
     "partyName",
@@ -99,6 +120,7 @@ export function PartyInformationDetailsFields({
     "memberRegistrationDate",
   ]);
   const contactErrorCount = countErrors(errors, [
+    "contactPerson",
     "email",
     "contactNo",
     "landline",
@@ -137,7 +159,13 @@ export function PartyInformationDetailsFields({
       badge: basicErrorCount,
       content: (
         <div className="grid gap-5">
-          <div className="grid gap-4 lg:grid-cols-3">
+          <div
+            className={
+              showPartyEntityTypeField
+                ? "grid gap-4 lg:grid-cols-4"
+                : "grid gap-4 lg:grid-cols-3"
+            }
+          >
             <Field label="Party Code" error={errors.partyCodeNo} required>
               <input
                 name="partyCodeNo"
@@ -180,6 +208,24 @@ export function PartyInformationDetailsFields({
                 onChange={onPartyTypesChange}
               />
             </Field>
+            {showPartyEntityTypeField ? (
+              <Field label="Party Entity" error={errors.partyEntityType} required>
+                <AppAdvancedDropdown
+                  disabled={isDetailsDisabled}
+                  emptyMessage="No matching entity type found."
+                  options={partyEntityTypeSelectOptions}
+                  placeholder="--Select Entity Type--"
+                  searchPlaceholder="Search entity type"
+                  value={values.partyEntityType}
+                  onChange={(value) =>
+                    onUpdateField(
+                      "partyEntityType",
+                      getSingleSelectedValue(value) as PartyEntityType | "",
+                    )
+                  }
+                />
+              </Field>
+            ) : null}
           </div>
 
           {showBusinessNameFields ? (
@@ -356,7 +402,18 @@ export function PartyInformationDetailsFields({
       badge: contactErrorCount,
       content: (
         <div className="grid gap-5">
-          <div className="grid gap-4 lg:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <Field label="Contact Person" error={errors.contactPerson}>
+              <input
+                name="contactPerson"
+                value={values.contactPerson}
+                onChange={onInputChange}
+                readOnly={isReadonly}
+                disabled={isDetailsDisabled}
+                className={PartyManagementFieldClassName}
+                placeholder="Contact person"
+              />
+            </Field>
             <Field label="Email Address" error={errors.email}>
               <input
                 name="email"
@@ -447,6 +504,7 @@ export function PartyInformationDetailsFields({
                 error={errors.defaultPurchaseInputVatTaxSourceKey}
                 field="defaultPurchaseInputVatTaxSourceKey"
                 label="Input VAT"
+                loadState={getTaxDefaultLoadState(taxDefaultOptionsLoading, taxDefaultOptionsError)}
                 options={taxDefaultOptions.defaultPurchaseInputVatTaxSourceKey ?? []}
                 value={values.defaultPurchaseInputVatTaxSourceKey}
                 onUpdateField={onUpdateField}
@@ -456,28 +514,35 @@ export function PartyInformationDetailsFields({
                 error={errors.defaultPurchaseEwtTaxSourceKey}
                 field="defaultPurchaseEwtTaxSourceKey"
                 label="Expanded Withholding Tax"
+                loadState={getTaxDefaultLoadState(taxDefaultOptionsLoading, taxDefaultOptionsError)}
                 options={taxDefaultOptions.defaultPurchaseEwtTaxSourceKey ?? []}
                 value={values.defaultPurchaseEwtTaxSourceKey}
                 onUpdateField={onUpdateField}
               />
-              <TaxDefaultField
-                disabled={isDetailsDisabled}
-                error={errors.defaultPurchaseFwtTaxSourceKey}
-                field="defaultPurchaseFwtTaxSourceKey"
-                label="Final Withholding Tax"
-                options={taxDefaultOptions.defaultPurchaseFwtTaxSourceKey ?? []}
-                value={values.defaultPurchaseFwtTaxSourceKey}
-                onUpdateField={onUpdateField}
-              />
-              <TaxDefaultField
-                disabled={isDetailsDisabled}
-                error={errors.defaultPurchaseWvatTaxSourceKey}
-                field="defaultPurchaseWvatTaxSourceKey"
-                label="VAT Withholding"
-                options={taxDefaultOptions.defaultPurchaseWvatTaxSourceKey ?? []}
-                value={values.defaultPurchaseWvatTaxSourceKey}
-                onUpdateField={onUpdateField}
-              />
+              {showWithholdingDefaults ? (
+                <>
+                  <TaxDefaultField
+                    disabled={isDetailsDisabled}
+                    error={errors.defaultPurchaseFwtTaxSourceKey}
+                    field="defaultPurchaseFwtTaxSourceKey"
+                    label="Final Withholding Tax"
+                    loadState={getTaxDefaultLoadState(taxDefaultOptionsLoading, taxDefaultOptionsError)}
+                    options={taxDefaultOptions.defaultPurchaseFwtTaxSourceKey ?? []}
+                    value={values.defaultPurchaseFwtTaxSourceKey}
+                    onUpdateField={onUpdateField}
+                  />
+                  <TaxDefaultField
+                    disabled={isDetailsDisabled}
+                    error={errors.defaultPurchaseWvatTaxSourceKey}
+                    field="defaultPurchaseWvatTaxSourceKey"
+                    label="VAT Withholding"
+                    loadState={getTaxDefaultLoadState(taxDefaultOptionsLoading, taxDefaultOptionsError)}
+                    options={taxDefaultOptions.defaultPurchaseWvatTaxSourceKey ?? []}
+                    value={values.defaultPurchaseWvatTaxSourceKey}
+                    onUpdateField={onUpdateField}
+                  />
+                </>
+              ) : null}
             </TaxDefaultGroup>
           ) : null}
           {values.partyTypes.includes("Customer") ? (
@@ -487,6 +552,7 @@ export function PartyInformationDetailsFields({
                 error={errors.defaultSalesOutputVatTaxSourceKey}
                 field="defaultSalesOutputVatTaxSourceKey"
                 label="Output VAT"
+                loadState={getTaxDefaultLoadState(taxDefaultOptionsLoading, taxDefaultOptionsError)}
                 options={taxDefaultOptions.defaultSalesOutputVatTaxSourceKey ?? []}
                 value={values.defaultSalesOutputVatTaxSourceKey}
                 onUpdateField={onUpdateField}
@@ -496,19 +562,23 @@ export function PartyInformationDetailsFields({
                 error={errors.defaultSalesCwtTaxSourceKey}
                 field="defaultSalesCwtTaxSourceKey"
                 label="Creditable Withholding Tax"
+                loadState={getTaxDefaultLoadState(taxDefaultOptionsLoading, taxDefaultOptionsError)}
                 options={taxDefaultOptions.defaultSalesCwtTaxSourceKey ?? []}
                 value={values.defaultSalesCwtTaxSourceKey}
                 onUpdateField={onUpdateField}
               />
-              <TaxDefaultField
-                disabled={isDetailsDisabled}
-                error={errors.defaultSalesWvatTaxSourceKey}
-                field="defaultSalesWvatTaxSourceKey"
-                label="VAT Withholding"
-                options={taxDefaultOptions.defaultSalesWvatTaxSourceKey ?? []}
-                value={values.defaultSalesWvatTaxSourceKey}
-                onUpdateField={onUpdateField}
-              />
+              {showWithholdingDefaults ? (
+                <TaxDefaultField
+                  disabled={isDetailsDisabled}
+                  error={errors.defaultSalesWvatTaxSourceKey}
+                  field="defaultSalesWvatTaxSourceKey"
+                  label="VAT Withholding"
+                  loadState={getTaxDefaultLoadState(taxDefaultOptionsLoading, taxDefaultOptionsError)}
+                  options={taxDefaultOptions.defaultSalesWvatTaxSourceKey ?? []}
+                  value={values.defaultSalesWvatTaxSourceKey}
+                  onUpdateField={onUpdateField}
+                />
+              ) : null}
             </TaxDefaultGroup>
           ) : null}
         </div>
@@ -574,6 +644,7 @@ function TaxDefaultField({
   error,
   field,
   label,
+  loadState,
   options,
   value,
   onUpdateField,
@@ -582,25 +653,56 @@ function TaxDefaultField({
   error?: string;
   field: PartyTaxDefaultClassificationKey;
   label: string;
+  loadState: TaxDefaultLoadState;
   options: PartyInformationDetailsFieldsProps["taxDefaultOptions"][PartyTaxDefaultClassificationKey];
   value: string;
   onUpdateField: PartyInformationFieldUpdateHandler;
 }) {
+  const showOptionViewToggle = ![
+    "defaultPurchaseInputVatTaxSourceKey",
+    "defaultSalesOutputVatTaxSourceKey",
+  ].includes(field);
+
   return (
     <Field label={label} error={error}>
       <AppAdvancedDropdown
         disabled={disabled}
-        emptyMessage="No matching tax records found."
-        optionViewToggle
+        emptyMessage={getTaxDefaultEmptyMessage(loadState)}
+        optionViewToggle={showOptionViewToggle}
         options={options}
         placeholder={`--Select ${label}--`}
         searchPlaceholder="Search tax name, code, rate, or description"
-        showSelectedDetails
         value={value}
         onChange={(nextValue) => onUpdateField(field, getSingleSelectedValue(nextValue))}
       />
     </Field>
   );
+}
+
+type TaxDefaultLoadState = "error" | "loading" | "ready";
+
+function getTaxDefaultLoadState(isLoading: boolean, isError: boolean): TaxDefaultLoadState {
+  if (isLoading) {
+    return "loading";
+  }
+
+  if (isError) {
+    return "error";
+  }
+
+  return "ready";
+}
+
+function getTaxDefaultEmptyMessage(loadState: TaxDefaultLoadState) {
+  if (loadState === "loading") {
+    return "Loading tax records...";
+  }
+
+  if (loadState === "error") {
+    return "Unable to load tax records. Check your session and try again.";
+  }
+
+  return "No matching tax records found.";
 }
 
 function AccountFields({

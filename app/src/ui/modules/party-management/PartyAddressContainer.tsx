@@ -442,7 +442,7 @@ function formatFullAddress(address: PartyAddress) {
 		]
 			.map((part) => part.trim())
 			.filter(Boolean)
-			.join(", ") || "-"
+			.join(", ")
 	);
 }
 

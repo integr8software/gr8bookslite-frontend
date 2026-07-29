@@ -58,7 +58,7 @@ export function ServicesMaintenanceAccountingSetupTab({
 						} disabled:cursor-not-allowed disabled:bg-darknavy/[0.03]`}
 					>
 						<span className="block font-semibold">
-							{option === "Auto" ? "Generate automatically" : "Select existing"}
+							{option === "Auto" ? "Generate Account Automatically" : "Select Existing Account"}
 						</span>
 						<span className="mt-1 block text-xs text-darknavy/55">
 							{option === "Auto"

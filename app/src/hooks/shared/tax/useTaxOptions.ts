@@ -29,6 +29,7 @@ const PartyTaxDefaultDropdownLimit = 1000;
 
 export type TaxDefaultOptionFormatting = {
 	includeRateInName?: boolean;
+	nameFormat?: "description" | "codeRate";
 	showDescription?: boolean;
 	sortBy?: "name" | "rate";
 	sortByName?: boolean;
@@ -92,6 +93,7 @@ export function usePartyTaxDefaultOptions() {
 	}, [classificationsQuery.data, taxesQuery.data]);
 
 	return {
+		isError: taxesQuery.isError || classificationsQuery.isError,
 		isLoading: taxesQuery.isLoading || classificationsQuery.isLoading,
 		options,
 		refetch: () => {
@@ -271,20 +273,17 @@ export function createTaxDefaultOption(
 	const rate = formatPercentage(tax.taxRate);
 	const description = getPartyAtcDescription(tax);
 	const displayCode = tax.officialAtcCode || tax.taxCode;
+	const codeRateName = formatTaxDefaultCodeRateName(displayCode, rate);
 	const displayName = getPartyTaxDefaultDisplayName(tax, description);
 	const showDescription = formatting.showDescription ?? true;
 
 	return {
 		code: tax.sourceKey,
-		description:
-			showDescription
-				? [tax.transactionType, tax.taxType, displayCode, rate]
-						.filter(Boolean)
-						.join(" - ")
-				: "",
+		description: showDescription ? displayName : "",
+		disabled: tax.status === "INACTIVE",
 		label: "",
-		name: getTaxDefaultOptionName(tax, displayName, rate, formatting),
-		selectedDetails: `${displayCode} - ${tax.transactionType} ${tax.taxType}`,
+		name: getTaxDefaultOptionName(tax, displayName, codeRateName, rate, formatting),
+		selectedDetails: codeRateName,
 		value: tax.sourceKey,
 	};
 }
@@ -320,6 +319,7 @@ function getPartyTaxDefaultFormatting(
 	return {
 		includeRateInName:
 			isVatDefault || shouldUseTitleOnlyTaxDefault(classification.key),
+		nameFormat: isVatDefault ? undefined : "codeRate",
 		showDescription: !isVatDefault,
 		sortBy: getTaxDefaultSortModeForClassification(classification.key),
 		sortByName: shouldSortTaxDefaultByName(classification.key),
@@ -351,14 +351,26 @@ function compareTaxDefaultRates(first: Tax, second: Tax) {
 function getTaxDefaultOptionName(
 	tax: Tax,
 	displayName: string,
+	codeRateName: string,
 	rate: string,
 	formatting: TaxDefaultOptionFormatting,
 ) {
+	if (formatting.nameFormat === "codeRate") {
+		return codeRateName;
+	}
+
 	if ((formatting.includeRateInName ?? false) && !tax.taxExempt) {
 		return `${displayName} (${rate})`;
 	}
 
 	return displayName;
+}
+
+function formatTaxDefaultCodeRateName(
+	displayCode: string,
+	rate: string,
+) {
+	return [displayCode, rate ? `(${rate})` : ""].filter(Boolean).join(" ");
 }
 
 function shouldUseTitleOnlyTaxDefault(classificationKey: string) {

@@ -21,8 +21,17 @@ export type InventoryCountRecord = {
 
 export type InventoryCountLine = {
 	id: string;
+	barcode: string;
+	brand: string;
+	color: string;
+	expiryDate: string;
 	itemCode: string;
 	itemName: string;
+	lotNo: string;
+	model: string;
+	responsibilityCenter: string;
+	serialNumber: string;
+	size: string;
 	uom: string;
 	systemQty: string;
 	countQty: string;
@@ -44,6 +53,14 @@ export type InventoryCountValues = {
 	countNo: string;
 	countDate: string;
 	warehouse: string;
+	requestingWarehouse: string;
+	partyCode: string;
+	partyName: string;
+	projectRef: string;
+	projectName: string;
+	mrType: string;
+	currency: string;
+	exchangeRate: string;
 	uploader: string;
 	itemType: string;
 	category: string;

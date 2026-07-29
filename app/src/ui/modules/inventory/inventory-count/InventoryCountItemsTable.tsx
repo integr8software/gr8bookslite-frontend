@@ -22,40 +22,67 @@ export function InventoryCountItemsTable({
 				</div>
 			</div>
 			<div className="overflow-x-auto">
-				<table className="w-full min-w-[48rem] table-fixed border-collapse text-left text-xs text-darknavy">
+				<table className="w-full min-w-[82rem] table-fixed border-collapse text-left text-xs text-darknavy">
 					<colgroup>
-						<col className="w-[13%]" />
-						<col className="w-[30%]" />
-						<col className="w-[9%]" />
-						<col className="w-[16%]" />
-						<col className="w-[16%]" />
-						<col className="w-[16%]" />
+						<col className="w-[7rem]" />
+						<col className="w-[7rem]" />
+						<col className="w-[14rem]" />
+						<col className="w-[6rem]" />
+						<col className="w-[6rem]" />
+						<col className="w-[7rem]" />
+						<col className="w-[7rem]" />
+						<col className="w-[8rem]" />
+						<col className="w-[6rem]" />
+						<col className="w-[7rem]" />
+						<col className="w-[7rem]" />
+						<col className="w-[6rem]" />
+						<col className="w-[6rem]" />
+						<col className="w-[5rem]" />
+						<col className="w-[6rem]" />
 					</colgroup>
 					<thead>
 						<tr className="bg-[#f59e0b] text-white">
-							<TableHeaderCell>Item Code</TableHeaderCell>
-							<TableHeaderCell>Item Name</TableHeaderCell>
-							<TableHeaderCell>UOM</TableHeaderCell>
-							<TableHeaderCell className="text-right">Stock On Hand</TableHeaderCell>
+							<TableHeaderCell>Item Code *</TableHeaderCell>
+							<TableHeaderCell>Barcode</TableHeaderCell>
+							<TableHeaderCell>Item Name *</TableHeaderCell>
+							<TableHeaderCell className="text-right">Stock Qty</TableHeaderCell>
+							<TableHeaderCell>UOM *</TableHeaderCell>
 							<TableHeaderCell className="text-right">Inventory Count</TableHeaderCell>
 							<TableHeaderCell className="text-right">Variance</TableHeaderCell>
+							<TableHeaderCell>Expiration Date</TableHeaderCell>
+							<TableHeaderCell>Lot No</TableHeaderCell>
+							<TableHeaderCell>Serial No.</TableHeaderCell>
+							<TableHeaderCell>Res Center</TableHeaderCell>
+							<TableHeaderCell>Color</TableHeaderCell>
+							<TableHeaderCell>Brand</TableHeaderCell>
+							<TableHeaderCell>Size</TableHeaderCell>
+							<TableHeaderCell>Model</TableHeaderCell>
 						</tr>
 					</thead>
 					<tbody>
 						{rows.map((row) => (
 							<tr key={row.id} className="border-b border-darknavy/10 last:border-b-0 even:bg-offwhite/55">
 								<TableCell>{row.itemCode}</TableCell>
+								<TableCell>{row.barcode}</TableCell>
 								<TableCell>{row.itemName}</TableCell>
-								<TableCell>{row.uom}</TableCell>
 								<TableCell className="text-right tabular-nums">
 									{row.systemQty}
 								</TableCell>
+								<TableCell>{row.uom}</TableCell>
 								<TableCell className="text-right tabular-nums">
 									{row.countQty}
 								</TableCell>
 								<TableCell className="text-right tabular-nums">
 									{row.variance}
 								</TableCell>
+								<TableCell>{row.expiryDate}</TableCell>
+								<TableCell>{row.lotNo}</TableCell>
+								<TableCell>{row.serialNumber}</TableCell>
+								<TableCell>{row.responsibilityCenter}</TableCell>
+								<TableCell>{row.color}</TableCell>
+								<TableCell>{row.brand}</TableCell>
+								<TableCell>{row.size}</TableCell>
+								<TableCell>{row.model}</TableCell>
 							</tr>
 						))}
 					</tbody>

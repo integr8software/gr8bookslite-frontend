@@ -1,9 +1,6 @@
 "use client";
 
-import {
-	useMemo,
-	useState,
-} from "react";
+import { useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import { useWarehousesStore } from "@/app/src/hooks/modules/warehouse-management/warehouses/useWarehouses";
 import type {
@@ -52,29 +49,42 @@ export function MaterialRequestDetailsPanel({
 	);
 	return (
 		<>
-			<div className="rounded-lg border border-darknavy/10 bg-white p-3 shadow-sm shadow-darknavy/5">
-				<div className="grid gap-x-6 gap-y-3 xl:grid-cols-2">
+			<div className="rounded-md border border-darknavy/10 bg-white p-2 shadow-sm shadow-darknavy/5 sm:p-3">
+				<div className="grid gap-x-10 gap-y-3 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1.2fr)_minmax(0,0.95fr)]">
 					<div className="grid content-start gap-2">
-						<WarehouseDropdownField
-							error={errors.toWarehouse}
-							id={MaterialRequestFieldIds.toWarehouse}
-							isReadonly={isReadonly}
+						<Field
+							error={errors.vceName}
+							id={MaterialRequestFieldIds.vceName}
 							isRequired
-							label="Warehouse"
-							value={values.toWarehouse}
-							options={warehouseOptions}
-							onAddWarehouse={() => setIsWarehouseDrawerOpen(true)}
-							onChange={(value) => updateField("toWarehouse", value)}
+							label="Party Name"
+							value={values.vceName}
+							readOnly={isReadonly}
+							onChange={(value) => updateField("vceName", value)}
 						/>
 						<Field
-							error={errors.department}
-							id={MaterialRequestFieldIds.department}
-							isRequired
-							label="Requestor"
-							value={values.department}
+							error={errors.projectRef}
+							id={MaterialRequestFieldIds.projectRef}
+							label="Proj. Ref No"
+							value={values.projectRef}
 							readOnly={isReadonly}
-							onChange={(value) => updateField("department", value)}
+							onChange={(value) => updateField("projectRef", value)}
 						/>
+						<Field
+							error={errors.projectName}
+							id={MaterialRequestFieldIds.projectName}
+							label="Project Name"
+							value={values.projectName}
+							readOnly={isReadonly}
+							onChange={(value) => updateField("projectName", value)}
+						/>
+						<RemarksField
+							isReadonly={isReadonly}
+							remainingRemarks={remainingRemarks}
+							value={values.remarks}
+							onChange={(value) => updateField("remarks", value)}
+						/>
+					</div>
+					<div className="grid content-start gap-2">
 						<Field
 							error={errors.vceCode}
 							id={MaterialRequestFieldIds.vceCode}
@@ -85,21 +95,37 @@ export function MaterialRequestDetailsPanel({
 							readOnly={isReadonly}
 							onChange={(value) => updateField("vceCode", value)}
 						/>
-						<Field
-							error={errors.vceName}
-							id={MaterialRequestFieldIds.vceName}
-							isRequired
-							label="Party Name"
-							value={values.vceName}
+						<SelectField
+							error={errors.referenceModule}
+							id={MaterialRequestFieldIds.referenceModule}
+							label="MR Type"
+							options={MaterialRequestTypeOptions}
+							value={values.referenceModule}
 							readOnly={isReadonly}
-							onChange={(value) => updateField("vceName", value)}
+							onChange={(value) => updateField("referenceModule", value)}
 						/>
-						<RemarksField
+						<WarehouseDropdownField
+							error={errors.toWarehouse}
+							id={MaterialRequestFieldIds.toWarehouse}
 							isReadonly={isReadonly}
-							remainingRemarks={remainingRemarks}
-							value={values.remarks}
-							onChange={(value) => updateField("remarks", value)}
+							isRequired
+							label="Get From Warehouse"
+							value={values.toWarehouse}
+							options={warehouseOptions}
+							onAddWarehouse={() => setIsWarehouseDrawerOpen(true)}
+							onChange={(value) => updateField("toWarehouse", value)}
 						/>
+						<Field
+							error={errors.department}
+							id={MaterialRequestFieldIds.department}
+							isRequired
+							label="Insert To Warehouse"
+							value={values.department}
+							readOnly={isReadonly}
+							onChange={(value) => updateField("department", value)}
+						/>
+						<ReadOnlyField id={MaterialRequestFieldIds.currency} label="Currency" />
+						<ReadOnlyField id={MaterialRequestFieldIds.exchangeRate} label="ER" />
 					</div>
 					<div className="grid content-start gap-2">
 						<Field
@@ -115,47 +141,40 @@ export function MaterialRequestDetailsPanel({
 						<Field
 							error={errors.documentDate}
 							id={MaterialRequestFieldIds.documentDate}
-							label="Document Date"
+							label="MR Date"
 							isRequired
 							type="date"
 							value={values.documentDate}
 							readOnly={isReadonly}
 							onChange={(value) => updateField("documentDate", value)}
 						/>
-						<StatusField error={errors.status} status={values.status} />
-						<Field
-							error={errors.projectRef}
-							id={MaterialRequestFieldIds.projectRef}
-							label="ProjectRef."
-							value={values.projectRef}
-							readOnly={isReadonly}
-							onChange={(value) => updateField("projectRef", value)}
-						/>
-						<Field
-							error={errors.projectName}
-							id={MaterialRequestFieldIds.projectName}
-							label="ProjectName"
-							value={values.projectName}
-							readOnly={isReadonly}
-							onChange={(value) => updateField("projectName", value)}
-						/>
-						<Field
-							error={errors.referenceNo}
-							id={MaterialRequestFieldIds.referenceNo}
-							label="Reference No"
-							value={values.referenceNo}
-							readOnly={isReadonly}
-							onChange={(value) => updateField("referenceNo", value)}
-						/>
 						<Field
 							error={errors.requiredDate}
 							id={MaterialRequestFieldIds.requiredDate}
-							label="Required Date"
+							label="Date Needed"
+							isRequired
 							type="date"
 							value={values.requiredDate}
 							readOnly={isReadonly}
 							onChange={(value) => updateField("requiredDate", value)}
 						/>
+						<Field
+							error={errors.referenceNo}
+							id={MaterialRequestFieldIds.referenceNo}
+							label="SO No"
+							value={values.referenceNo}
+							readOnly={isReadonly}
+							onChange={(value) => updateField("referenceNo", value)}
+						/>
+						<Field
+							error={errors.purpose}
+							id={MaterialRequestFieldIds.purpose}
+							label="Job Order No"
+							value={values.purpose}
+							readOnly={isReadonly}
+							onChange={(value) => updateField("purpose", value)}
+						/>
+						<StatusField error={errors.status} status={values.status} />
 					</div>
 				</div>
 			</div>
@@ -170,16 +189,24 @@ export function MaterialRequestDetailsPanel({
 }
 
 const RemarksLimit = 500;
-const AttachedDropdownClassName =
-	"sm:[&_.app-advanced-dropdown-control]:rounded-r-none";
+const MaterialRequestTypeOptions = [
+	{ label: "-Select MR Type-", value: "" },
+	{ label: "Issuance to Department", value: "Issuance to Department" },
+	{ label: "Warehouse Transfer", value: "Warehouse Transfer" },
+] as const;
+const AttachedDropdownClassName = "sm:[&_.app-advanced-dropdown-control]:rounded-r-none";
 const AttachedAddButtonClassName =
 	"inline-flex h-11 w-20 shrink-0 items-center justify-center gap-2 rounded-lg border border-darknavy/10 border-l-darknavy/20 bg-skyblue/8 px-3 text-sm font-semibold text-skyblue transition hover:border-skyblue/25 hover:bg-skyblue/12 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/15 disabled:cursor-not-allowed disabled:opacity-45 sm:rounded-l-none";
 const MaterialRequestFieldIds = {
 	department: "material-request-department",
 	documentDate: "material-request-document-date",
+	currency: "material-request-currency",
+	exchangeRate: "material-request-exchange-rate",
 	partyName: "material-request-party-member",
 	projectName: "material-request-project-name",
 	projectRef: "material-request-project-ref",
+	purpose: "material-request-purpose",
+	referenceModule: "material-request-reference-module",
 	referenceNo: "material-request-reference-no",
 	remarks: "material-request-remarks",
 	requestNo: "material-request-request-no",
@@ -201,6 +228,45 @@ type FieldProps = {
 	type?: string;
 	value: string;
 };
+
+function SelectField({
+	error,
+	id,
+	isRequired = false,
+	label,
+	onChange,
+	options,
+	readOnly,
+	value,
+}: FieldProps & { options: readonly { label: string; value: string }[] }) {
+	const errorId = error ? `${id}-error` : undefined;
+
+	return (
+		<div className="grid gap-2 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-start">
+			<FieldLabel htmlFor={id} isRequired={isRequired}>
+				{label}
+			</FieldLabel>
+			<div>
+				<select
+					id={id}
+					value={value}
+					disabled={readOnly}
+					aria-describedby={errorId}
+					aria-invalid={Boolean(error)}
+					onChange={(event) => onChange(event.target.value)}
+					className={fieldClassName()}
+				>
+					{options.map((option) => (
+						<option key={option.value || option.label} value={option.value}>
+							{option.label}
+						</option>
+					))}
+				</select>
+				{error ? <ErrorText id={errorId} message={error} /> : null}
+			</div>
+		</div>
+	);
+}
 
 function WarehouseDropdownField({
 	error,
@@ -227,7 +293,7 @@ function WarehouseDropdownField({
 	const labelId = `${id}-label`;
 
 	return (
-		<div className="grid gap-2 sm:grid-cols-[8rem_minmax(0,1fr)] sm:items-start">
+		<div className="grid gap-2 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-start">
 			<FieldLabel id={labelId} htmlFor={id} isRequired={isRequired}>
 				{label}
 			</FieldLabel>
@@ -263,6 +329,17 @@ function WarehouseDropdownField({
 	);
 }
 
+function ReadOnlyField({ id, label }: { id: string; label: string }) {
+	return (
+		<div className="grid gap-2 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-start">
+			<FieldLabel htmlFor={id} isRequired={false}>
+				{label}
+			</FieldLabel>
+			<input id={id} type="text" value="" readOnly className={fieldClassName()} />
+		</div>
+	);
+}
+
 function StatusField({
 	error,
 	status,
@@ -273,11 +350,8 @@ function StatusField({
 	const errorId = error ? `${MaterialRequestFieldIds.status}-error` : undefined;
 
 	return (
-		<div className="grid gap-2 sm:grid-cols-[8rem_minmax(0,1fr)] sm:items-start">
-			<FieldLabel
-				htmlFor={MaterialRequestFieldIds.status}
-				isRequired={false}
-			>
+		<div className="grid gap-2 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-start">
+			<FieldLabel htmlFor={MaterialRequestFieldIds.status} isRequired>
 				Status
 			</FieldLabel>
 			<div>
@@ -308,7 +382,7 @@ function RemarksField({
 	value: string;
 }) {
 	return (
-		<div className="grid gap-2 sm:grid-cols-[8rem_minmax(0,1fr)] sm:items-start">
+		<div className="grid gap-2 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-start">
 			<label
 				htmlFor={MaterialRequestFieldIds.remarks}
 				className="pt-2 text-sm font-semibold text-darknavy"
@@ -347,7 +421,7 @@ function Field({
 	const errorId = error ? `${id}-error` : undefined;
 
 	return (
-		<div className="grid gap-2 sm:grid-cols-[8rem_minmax(0,1fr)] sm:items-start">
+		<div className="grid gap-2 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-start">
 			<FieldLabel htmlFor={id} isRequired={isRequired}>
 				{label}
 			</FieldLabel>
@@ -381,11 +455,7 @@ function FieldLabel({
 	isRequired: boolean;
 }) {
 	return (
-		<label
-			id={id}
-			htmlFor={htmlFor}
-			className="pt-2 text-sm font-semibold text-darknavy"
-		>
+		<label id={id} htmlFor={htmlFor} className="pt-2 text-sm font-semibold text-darknavy">
 			{children}
 			{isRequired ? <span className="ml-1 text-coralpink">*</span> : null}
 		</label>
@@ -407,10 +477,7 @@ function ErrorText({ id, message }: { id?: string; message: string }) {
 	);
 }
 
-function includeCurrentWarehouseOptions(
-	options: AppAdvancedDropdownOption[],
-	values: string[],
-) {
+function includeCurrentWarehouseOptions(options: AppAdvancedDropdownOption[], values: string[]) {
 	const optionByValue = new Map(options.map((option) => [option.value, option]));
 
 	values.forEach((value) => {

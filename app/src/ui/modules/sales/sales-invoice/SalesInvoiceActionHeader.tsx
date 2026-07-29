@@ -13,16 +13,24 @@ import {
   moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
+import {
+  AppCopyFromDropdown,
+  type AppCopyFromRecord,
+} from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
 
 type SalesInvoiceActionHeaderProps = {
+  copyFromRecords: AppCopyFromRecord[];
   mode: SalesInvoiceActionMode;
+  onCopyFromDeliveryReceipt: (recordIds: string[]) => void;
   values: SalesInvoiceFormValues;
   onPreview: () => void;
   onSubmit: () => void;
 };
 
 export function SalesInvoiceActionHeader({
+  copyFromRecords,
   mode,
+  onCopyFromDeliveryReceipt,
   onPreview,
   onSubmit,
   values,
@@ -55,6 +63,11 @@ export function SalesInvoiceActionHeader({
           <ReportPreviewAction onPreview={onPreview} />
           {mode === "view" ? null : (
             <>
+              <AppCopyFromDropdown
+                records={copyFromRecords}
+                sources={["Delivery Receipt"]}
+                onApply={onCopyFromDeliveryReceipt}
+              />
               <Link href={SalesInvoiceHref} className={moduleHeaderActionClassNames.secondary}>
                 <X className="h-4 w-4" aria-hidden="true" />
                 Cancel

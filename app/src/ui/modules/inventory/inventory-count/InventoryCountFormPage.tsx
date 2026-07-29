@@ -12,6 +12,7 @@ import {
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
+import { AppCopyFromDropdown } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
 import { openInventoryCountPdf } from "./InventoryCountPdf";
 import { InventoryCountHeaderFields } from "./InventoryCountHeaderFields";
 import { InventoryCountItemsTable } from "./InventoryCountItemsTable";
@@ -60,13 +61,20 @@ export function InventoryCountFormPage() {
 								Upload Count History
 							</button>
 							{!page.isReadonly ? (
-								<button
-									type="submit"
-									className={moduleHeaderActionClassNames.primary}
-								>
-									<Save className="h-4 w-4" aria-hidden="true" />
-									Save
-								</button>
+								<>
+									<AppCopyFromDropdown
+										records={page.copyFromRecords}
+										sources={["Sales Order", "Job Order"]}
+										onApply={page.copyFromSourceTransactions}
+									/>
+									<button
+										type="submit"
+										className={moduleHeaderActionClassNames.primary}
+									>
+										<Save className="h-4 w-4" aria-hidden="true" />
+										Save
+									</button>
+								</>
 							) : null}
 						</div>
 					}

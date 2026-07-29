@@ -1,11 +1,8 @@
 import type { ChangeEventHandler } from "react";
 import {
-	InventoryCountCategoryOptions,
-	inventoryCountFieldClassName,
-	InventoryCountItemGroupOptions,
-	InventoryCountItemTypeOptions,
 	InventoryCountStatusOptions,
 	InventoryCountWarehouseOptions,
+	inventoryCountFieldClassName,
 } from "@/app/src/constants/modules/inventory/inventory-count/InventoryCountConstants";
 import type { InventoryCountValues } from "@/app/src/types/modules/inventory/inventory-count/InventoryCountTypes";
 
@@ -21,180 +18,130 @@ export function InventoryCountHeaderFields({
 	values,
 }: InventoryCountHeaderFieldsProps) {
 	return (
-		<section className="w-full rounded-md border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5">
-			<div className="grid w-full items-start gap-4 xl:grid-cols-[1fr_0.85fr_1fr]">
-				<div className="grid gap-2">
-					<RequiredSelectRow
-						label="Warehouse"
-						name="warehouse"
-						disabled={isReadonly}
-						value={values.warehouse}
-						options={InventoryCountWarehouseOptions}
+		<section className="rounded-md border border-darknavy/10 bg-white p-2 shadow-sm shadow-darknavy/5 sm:p-3">
+			<div className="grid gap-x-10 gap-y-3 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1.2fr)_minmax(0,0.95fr)]">
+				<div className="grid content-start gap-2">
+					<TextRow
+						label="Party Name"
+						name="partyName"
+						readOnly={isReadonly}
+						required
+						value={values.partyName}
 						onChange={onChange}
 					/>
-					<RequiredSelectRow
-						label="Item Type"
-						name="itemType"
-						disabled={isReadonly}
-						value={values.itemType}
-						options={InventoryCountItemTypeOptions}
+					<TextRow
+						label="Proj. Ref No"
+						name="projectRef"
+						readOnly={isReadonly}
+						value={values.projectRef}
 						onChange={onChange}
 					/>
-					<RequiredSelectRow
-						label="Item Category"
-						name="category"
-						disabled={isReadonly}
-						value={values.category}
-						options={InventoryCountCategoryOptions}
+					<TextRow
+						label="Project Name"
+						name="projectName"
+						readOnly={isReadonly}
+						value={values.projectName}
 						onChange={onChange}
 					/>
-					<RequiredSelectRow
-						label="Item Group"
-						name="itemGroup"
-						disabled={isReadonly}
-						value={values.itemGroup}
-						options={InventoryCountItemGroupOptions}
-						onChange={onChange}
-					/>
-				</div>
-
-				<div className="grid gap-2 sm:grid-cols-[6.5rem_minmax(0,1fr)] xl:pt-0">
-					<label
-						htmlFor="inventory-count-remarks"
-						className="pt-8 text-sm font-semibold text-darknavy"
-					>
-						Remarks:
-					</label>
-					<textarea
-						id="inventory-count-remarks"
+					<TextAreaRow
+						label="Remarks"
 						name="remarks"
 						readOnly={isReadonly}
 						value={values.remarks}
 						onChange={onChange}
-						className={`${inventoryCountFieldClassName} min-h-20 resize-y`}
 					/>
 				</div>
 
-				<div className="grid gap-2">
-					<CompactTextRow
-						label="Inventory Count No."
-						name="countNo"
+				<div className="grid content-start gap-2">
+					<TextRow
+						label="Party Code"
+						name="partyCode"
 						readOnly={isReadonly}
 						required
+						value={values.partyCode}
+						onChange={onChange}
+					/>
+					<SelectRow
+						label="MR Type"
+						name="mrType"
+						disabled={isReadonly}
+						required
+						value={values.mrType}
+						options={InventoryCountMrTypeOptions}
+						onChange={onChange}
+					/>
+					<SelectRow
+						label="Source Warehouse"
+						name="warehouse"
+						disabled={isReadonly}
+						required
+						value={values.warehouse}
+						options={InventoryCountWarehouseOptions}
+						onChange={onChange}
+					/>
+					<TextRow
+						label="Requesting Warehouse"
+						name="requestingWarehouse"
+						readOnly={isReadonly}
+						required
+						value={values.requestingWarehouse}
+						onChange={onChange}
+					/>
+					<TextRow
+						label="Currency"
+						name="currency"
+						readOnly={isReadonly}
+						value={values.currency}
+						onChange={onChange}
+					/>
+					<TextRow
+						label="ER"
+						name="exchangeRate"
+						readOnly={isReadonly}
+						value={values.exchangeRate}
+						onChange={onChange}
+					/>
+				</div>
+
+				<div className="grid content-start gap-2">
+					<TextRow
+						label="IC No"
+						name="countNo"
+						readOnly={isReadonly}
 						value={values.countNo}
 						onChange={onChange}
 					/>
-					<CompactTextRow
-						label="Inventory Count Date"
+					<TextRow
+						label="IC Date"
 						name="countDate"
 						readOnly={isReadonly}
+						required
 						type="date"
 						value={values.countDate}
 						onChange={onChange}
 					/>
-					<CompactSelectRow
+					<SelectRow
 						label="Status"
 						name="status"
 						disabled={isReadonly}
+						required
 						value={values.status}
 						options={InventoryCountStatusOptions}
 						onChange={onChange}
 					/>
 				</div>
 			</div>
-
-			<div className="mt-4 grid w-full gap-4 border-t border-darknavy/10 pt-4 md:grid-cols-2">
-				<TextField
-					label="Uploader"
-					name="uploader"
-					readOnly={isReadonly}
-					value={values.uploader}
-					onChange={onChange}
-				/>
-				<TextField
-					label="Counter"
-					name="counter"
-					readOnly={isReadonly}
-					value={values.counter}
-					onChange={onChange}
-				/>
-			</div>
 		</section>
 	);
 }
 
-function RequiredSelectRow({
-	disabled,
-	label,
-	name,
-	onChange,
-	options,
-	value,
-}: {
-	disabled: boolean;
-	label: string;
-	name: string;
-	onChange: ChangeEventHandler<HTMLSelectElement>;
-	options: readonly string[];
-	value: string;
-}) {
-	return (
-		<div className="grid items-center gap-2 sm:grid-cols-[7rem_minmax(0,1fr)]">
-			<label
-				htmlFor={`inventory-count-${name}`}
-				className="whitespace-nowrap text-sm font-medium text-darknavy"
-			>
-				{label}: <span className="text-red-500">*</span>
-			</label>
-			<select
-				id={`inventory-count-${name}`}
-				name={name}
-				disabled={disabled}
-				value={value}
-				onChange={onChange}
-				className={`${inventoryCountFieldClassName} min-h-7 py-0 text-xs`}
-			>
-				{options.map((option) => (
-					<option key={option} value={option}>
-						{option}
-					</option>
-				))}
-			</select>
-		</div>
-	);
-}
+const InventoryCountMrTypeOptions = [
+	{ label: "-Select MR Type-", value: "" },
+	{ label: "Issuance to Department", value: "Issuance to Department" },
+	{ label: "Warehouse Transfer", value: "Warehouse Transfer" },
+] as const;
 
-function TextField({
-	label,
-	name,
-	onChange,
-	readOnly,
-	type = "text",
-	value,
-}: {
-	label: string;
-	name: string;
-	onChange: ChangeEventHandler<HTMLInputElement>;
-	readOnly: boolean;
-	type?: "date" | "text";
-	value: string;
-}) {
-	return (
-		<label className="grid gap-2">
-			<span className="text-sm font-semibold text-darknavy">{label}</span>
-			<input
-				name={name}
-				readOnly={readOnly}
-				type={type}
-				value={value}
-				onChange={onChange}
-				className={inventoryCountFieldClassName}
-			/>
-		</label>
-	);
-}
-
-function CompactTextRow({
+function TextRow({
 	label,
 	name,
 	onChange,
@@ -204,7 +151,7 @@ function CompactTextRow({
 	value,
 }: {
 	label: string;
-	name: string;
+	name: keyof InventoryCountValues;
 	onChange: ChangeEventHandler<HTMLInputElement>;
 	readOnly: boolean;
 	required?: boolean;
@@ -212,13 +159,10 @@ function CompactTextRow({
 	value: string;
 }) {
 	return (
-		<div className="grid items-center gap-2 sm:grid-cols-[11rem_minmax(0,1fr)]">
-			<label
-				htmlFor={`inventory-count-${name}`}
-				className="whitespace-nowrap text-sm font-medium text-darknavy"
-			>
-				{label}: {required ? <span className="text-red-500">*</span> : null}
-			</label>
+		<div className="grid gap-2 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-start">
+			<FieldLabel htmlFor={`inventory-count-${name}`} required={required}>
+				{label}
+			</FieldLabel>
 			<input
 				id={`inventory-count-${name}`}
 				name={name}
@@ -226,49 +170,101 @@ function CompactTextRow({
 				type={type}
 				value={value}
 				onChange={onChange}
-				className={`${inventoryCountFieldClassName} min-h-7 py-0 text-xs`}
+				className={fieldClassName}
 			/>
 		</div>
 	);
 }
 
-function CompactSelectRow({
+function SelectRow({
 	disabled,
 	label,
 	name,
 	onChange,
 	options,
+	required = false,
 	value,
 }: {
 	disabled: boolean;
 	label: string;
-	name: string;
+	name: keyof InventoryCountValues;
 	onChange: ChangeEventHandler<HTMLSelectElement>;
-	options: readonly string[];
+	options: readonly (string | { label: string; value: string })[];
+	required?: boolean;
 	value: string;
 }) {
 	return (
-		<div className="grid items-center gap-2 sm:grid-cols-[11rem_minmax(0,1fr)]">
-			<label
-				htmlFor={`inventory-count-${name}`}
-				className="whitespace-nowrap text-sm font-medium text-darknavy"
-			>
-				{label}:
-			</label>
+		<div className="grid gap-2 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-start">
+			<FieldLabel htmlFor={`inventory-count-${name}`} required={required}>
+				{label}
+			</FieldLabel>
 			<select
 				id={`inventory-count-${name}`}
 				name={name}
 				disabled={disabled}
 				value={value}
 				onChange={onChange}
-				className={`${inventoryCountFieldClassName} min-h-7 py-0 text-xs`}
+				className={fieldClassName}
 			>
-				{options.map((option) => (
-					<option key={option} value={option}>
-						{option}
-					</option>
-				))}
+				{options.map((option) => {
+					const value = typeof option === "string" ? option : option.value;
+					const label = typeof option === "string" ? option : option.label;
+
+					return (
+						<option key={value || label} value={value}>
+							{label}
+						</option>
+					);
+				})}
 			</select>
 		</div>
 	);
 }
+
+function TextAreaRow({
+	label,
+	name,
+	onChange,
+	readOnly,
+	value,
+}: {
+	label: string;
+	name: keyof InventoryCountValues;
+	onChange: ChangeEventHandler<HTMLTextAreaElement>;
+	readOnly: boolean;
+	value: string;
+}) {
+	return (
+		<div className="grid gap-2 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-start">
+			<FieldLabel htmlFor={`inventory-count-${name}`}>{label}</FieldLabel>
+			<textarea
+				id={`inventory-count-${name}`}
+				name={name}
+				readOnly={readOnly}
+				value={value}
+				onChange={onChange}
+				rows={2}
+				className={`${fieldClassName} min-h-16 resize-y py-2`}
+			/>
+		</div>
+	);
+}
+
+function FieldLabel({
+	children,
+	htmlFor,
+	required = false,
+}: {
+	children: string;
+	htmlFor: string;
+	required?: boolean;
+}) {
+	return (
+		<label htmlFor={htmlFor} className="pt-2 text-sm font-semibold text-darknavy">
+			{children}
+			{required ? <span className="ml-1 text-coralpink">*</span> : null}
+		</label>
+	);
+}
+
+const fieldClassName = `${inventoryCountFieldClassName} h-10 min-h-10 py-0 text-xs`;

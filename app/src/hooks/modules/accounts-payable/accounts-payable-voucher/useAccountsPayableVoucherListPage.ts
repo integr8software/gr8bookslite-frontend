@@ -18,7 +18,7 @@ import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/A
 import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
 
 export function useAccountsPayableVoucherListPage() {
-  const { isLoading, isMutating, lastSyncedAt, records, updateRecord } =
+  const { isLoading, isMutating, lastSyncedAt, records, updateStatus } =
     useAccountsPayableVoucherStore();
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -137,11 +137,7 @@ export function useAccountsPayableVoucherListPage() {
     record: AccountsPayableVoucherRecord,
     status: AccountsPayableVoucherRecord["status"],
   ) {
-    updateRecord({
-      ...record,
-      status,
-      updatedAt: new Date().toISOString(),
-    });
+    void updateStatus(record.id, status);
   }
 
   return {

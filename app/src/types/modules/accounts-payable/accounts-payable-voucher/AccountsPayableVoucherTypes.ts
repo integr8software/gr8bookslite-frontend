@@ -14,9 +14,15 @@ export type AccountsPayableVoucherPayableType =
 
 export type AccountsPayableVoucherExpenseLine = {
   id: string;
+  companyId?: number;
+  branchUnitId?: number;
+  partyId?: string;
+  expenseAccountId?: string;
   lineNumber: number;
   expenseAccountCode: string;
   expenseType: string;
+  currencyCode?: string;
+  exchangeRate?: number;
   amount: number;
   netAmount: number;
   vat: string;
@@ -29,15 +35,21 @@ export type AccountsPayableVoucherExpenseLine = {
   partyCode: string;
   partyName: string;
   particulars: string;
+  responsibilityCenterId?: string;
   responsibilityCenter: string;
   referenceNo: string;
 };
 
 export type AccountsPayableVoucherAccountingEntry = {
   id: string;
+  referenceType?: string;
+  referenceId?: string;
+  accountId?: string;
   lineNumber: number;
   accountCode: string;
   accountTitle: string;
+  currencyCode?: string;
+  exchangeRate?: number;
   particulars: string;
   debit: number;
   credit: number;
@@ -45,14 +57,17 @@ export type AccountsPayableVoucherAccountingEntry = {
   atcCode: string;
   partyCode: string;
   partyName: string;
+  responsibilityCenterId?: string;
   responsibilityCenter: string;
   refNo: string;
 };
 
 export type AccountsPayableVoucherRecord = {
   id: string;
+  branchUnitId?: number;
   transactionNo: string;
   documentDate: string;
+  partyId?: string;
   partyCode: string;
   partyName: string;
   address: string;
@@ -66,6 +81,7 @@ export type AccountsPayableVoucherRecord = {
   terms: string;
   dueDate: string;
   referenceNo: string;
+  creditAccountId?: string;
   creditAccountCode: string;
   creditAccountTitle: string;
   payableType: AccountsPayableVoucherPayableType;
@@ -102,3 +118,158 @@ export type AccountsPayableVoucherFormErrors = Partial<
 };
 
 export type AccountsPayableVoucherActionMode = "add" | "edit" | "view";
+
+export type ApiAccountsPayableVoucherStatus =
+  | "DRAFT"
+  | "APPROVED"
+  | "DISAPPROVED"
+  | "CLOSED"
+  | "CANCELLED"
+  | AccountsPayableVoucherStatus;
+
+export type ApiAccountsPayableVoucherPayableType =
+  | "TRADE_PAYABLE"
+  | "NON_TRADE_PAYABLE"
+  | "EMPLOYEE_PAYABLE"
+  | "TAX_PAYABLE"
+  | "ACCRUED_PAYABLE"
+  | AccountsPayableVoucherPayableType;
+
+export type ApiAccountsPayableVoucherDetails = {
+  id: string;
+  companyId?: number;
+  branchUnitId?: number;
+  partyId?: string | null;
+  expenseAccountId?: string | null;
+  lineNumber: number;
+  expenseAccountCode: string;
+  expenseType: string;
+  currencyCode: string;
+  exchangeRate: number;
+  amount: number;
+  netAmount: number;
+  vat?: string | null;
+  vatPercent: number;
+  vatAmount: number;
+  ewt?: string | null;
+  ewtPercent: number;
+  ewtAmount: number;
+  totalAmountDue: number;
+  partyCode?: string | null;
+  partyName?: string | null;
+  particulars?: string | null;
+  responsibilityCenterId?: string | null;
+  responsibilityCenter?: string | null;
+  referenceNo?: string | null;
+};
+
+export type ApiJournalEntry = {
+  id: string;
+  referenceType?: string | null;
+  referenceId?: string | null;
+  accountId?: string | null;
+  lineNumber: number;
+  accountCode: string;
+  accountTitle: string;
+  currencyCode: string;
+  exchangeRate: number;
+  particulars?: string | null;
+  debit: number;
+  credit: number;
+  vatType?: string | null;
+  atcCode?: string | null;
+  partyCode?: string | null;
+  partyName?: string | null;
+  responsibilityCenterId?: string | null;
+  responsibilityCenter?: string | null;
+  refNo?: string | null;
+};
+
+export type ApiAccountsPayableVoucher = {
+  id: string;
+  branchUnitId?: number;
+  transactionNo: string;
+  documentDate: string;
+  partyId?: string | null;
+  partyCode: string;
+  partyName: string;
+  address?: string | null;
+  contactPerson?: string | null;
+  contactNo?: string | null;
+  projectName?: string | null;
+  currency: string;
+  exchangeRate: number;
+  amount: number;
+  termId?: string | null;
+  terms?: string | null;
+  dueDate: string;
+  referenceNo?: string | null;
+  creditAccountId?: string | null;
+  creditAccountCode: string;
+  creditAccountTitle: string;
+  payableType: ApiAccountsPayableVoucherPayableType;
+  remarks?: string | null;
+  status: ApiAccountsPayableVoucherStatus;
+  details: ApiAccountsPayableVoucherDetails[];
+  journalEntries: ApiJournalEntry[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AccountsPayableVoucherStatistics = {
+  approvedVouchers: number;
+  cancelledVouchers: number;
+  closedVouchers: number;
+  disapprovedVouchers: number;
+  draftVouchers: number;
+  totalVouchers: number;
+};
+
+export type AccountsPayableVoucherPermissions = {
+  canApprove: boolean;
+  canCancel: boolean;
+  canClose: boolean;
+  canCreate: boolean;
+  canDisapprove: boolean;
+  canExport: boolean;
+  canUpdate: boolean;
+  canView: boolean;
+};
+
+export type AccountsPayableVoucherPagination = {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+};
+
+export type ApiAccountsPayableVoucherListResponse = {
+  vouchers: ApiAccountsPayableVoucher[];
+  statistics: AccountsPayableVoucherStatistics;
+  pagination: AccountsPayableVoucherPagination;
+  permissions: AccountsPayableVoucherPermissions;
+};
+
+export type ApiAccountsPayableVoucherSaveResponse = {
+  message?: string;
+  voucher: ApiAccountsPayableVoucher;
+  permissions?: AccountsPayableVoucherPermissions;
+};
+
+export type ApiAccountsPayableVoucherDetailResponse = {
+  voucher: ApiAccountsPayableVoucher;
+  permissions: AccountsPayableVoucherPermissions;
+};
+
+export type AccountsPayableVoucherListResponse = {
+  records: AccountsPayableVoucherRecord[];
+  statistics: AccountsPayableVoucherStatistics;
+  pagination: AccountsPayableVoucherPagination;
+  permissions: AccountsPayableVoucherPermissions;
+};
+
+export type AccountsPayableVoucherNumberSuggestion = {
+  branchUnitId: number;
+  inputMode: "AUTO" | "MANUAL" | string;
+  transactionNo: string;
+};

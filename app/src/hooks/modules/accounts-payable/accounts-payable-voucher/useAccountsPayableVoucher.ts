@@ -1,104 +1,251 @@
 "use client";
 
-import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { MockAccountsPayableVouchers } from "@/app/src/data/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherData";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+import {
+  createAccountsPayableVoucher,
+  fetchAccountsPayableVoucher,
+  fetchAccountsPayableVoucherNumberSuggestion,
+  fetchAccountsPayableVouchers,
+  updateAccountsPayableVoucher,
+  updateAccountsPayableVoucherStatus,
+} from "@/app/src/services/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherApi";
 import { AccountsPayableVoucherQueryKeys } from "@/app/src/services/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherQueryKeys";
-import type { AccountsPayableVoucherRecord } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
+import type {
+  AccountsPayableVoucherFormValues,
+  AccountsPayableVoucherListResponse,
+  AccountsPayableVoucherPagination,
+  AccountsPayableVoucherPermissions,
+  AccountsPayableVoucherRecord,
+  AccountsPayableVoucherStatistics,
+  AccountsPayableVoucherStatus,
+} from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
 
 type AccountsPayableVoucherStoreState = {
   records: AccountsPayableVoucherRecord[];
-  addRecord: (record: AccountsPayableVoucherRecord) => void;
-  updateRecord: (record: AccountsPayableVoucherRecord) => void;
-  deleteRecord: (recordId: string) => void;
+  addRecord: (
+    values: AccountsPayableVoucherFormValues,
+  ) => Promise<AccountsPayableVoucherRecord>;
+  updateRecord: (
+    record: AccountsPayableVoucherRecord,
+  ) => Promise<AccountsPayableVoucherRecord>;
+  updateStatus: (
+    recordId: string,
+    status: AccountsPayableVoucherStatus,
+  ) => Promise<AccountsPayableVoucherRecord>;
+  deleteRecord: (recordId: string) => Promise<AccountsPayableVoucherRecord>;
+  refreshRecords: () => void;
+  permissions: AccountsPayableVoucherPermissions;
+  statistics: AccountsPayableVoucherStatistics;
+  pagination: AccountsPayableVoucherPagination;
   isLoading: boolean;
+  isRefreshing: boolean;
   lastSyncedAt: number;
   isMutating: boolean;
 };
+
+const EmptyAccountsPayableVoucherPermissions: AccountsPayableVoucherPermissions =
+  {
+    canApprove: false,
+    canCancel: false,
+    canClose: false,
+    canCreate: false,
+    canDisapprove: false,
+    canExport: false,
+    canUpdate: false,
+    canView: false,
+  };
+
+const EmptyAccountsPayableVoucherStatistics: AccountsPayableVoucherStatistics =
+  {
+    approvedVouchers: 0,
+    cancelledVouchers: 0,
+    closedVouchers: 0,
+    disapprovedVouchers: 0,
+    draftVouchers: 0,
+    totalVouchers: 0,
+  };
+
+const EmptyAccountsPayableVoucherPagination: AccountsPayableVoucherPagination =
+  {
+    limit: 500,
+    page: 1,
+    total: 0,
+    totalPages: 1,
+  };
 
 export function useAccountsPayableVoucherStore<
   TSelected = AccountsPayableVoucherStoreState,
 >(selector?: (state: AccountsPayableVoucherStoreState) => TSelected) {
   const queryClient = useQueryClient();
+  const activeBranchId = useAppStore((state) => state.activeBranchId);
+  const activeCompanyId = useAppStore((state) => state.activeCompanyId);
   const recordsQuery = useQuery({
-    queryKey: AccountsPayableVoucherQueryKeys.records(),
-    queryFn: async () => MockAccountsPayableVouchers,
-    initialData: MockAccountsPayableVouchers,
+    enabled: activeCompanyId !== null && activeBranchId !== null,
+    queryFn: () =>
+      fetchAccountsPayableVouchers({
+        branchUnitId: activeBranchId,
+        limit: 500,
+        sortBy: "documentDate",
+        sortDirection: "desc",
+      }),
+    queryKey: AccountsPayableVoucherQueryKeys.records(
+      activeCompanyId,
+      activeBranchId,
+    ),
+    retry: false,
   });
 
-  function updateCachedRecords(
-    updater: (
-      records: AccountsPayableVoucherRecord[],
-    ) => AccountsPayableVoucherRecord[],
-  ) {
-    queryClient.setQueryData<AccountsPayableVoucherRecord[]>(
-      AccountsPayableVoucherQueryKeys.records(),
-      (currentRecords = MockAccountsPayableVouchers) => updater(currentRecords),
-    );
+  function refreshRecords() {
+    void queryClient.invalidateQueries({
+      queryKey: AccountsPayableVoucherQueryKeys.all(
+        activeCompanyId,
+        activeBranchId,
+      ),
+    });
   }
 
   const addRecordMutation = useMutation({
-    mutationFn: async (record: AccountsPayableVoucherRecord) => record,
-    onSuccess: (record) => {
-      updateCachedRecords((records) => [...records, record]);
+    mutationFn: (values: AccountsPayableVoucherFormValues) =>
+      createAccountsPayableVoucher(values, requireActiveBranchId(activeBranchId)),
+    onSuccess: () => {
+      refreshRecords();
       toast.success("Accounts payable voucher saved.");
     },
-    onError: () => {
-      toast.error("Could not save accounts payable voucher. Please try again.");
+    onError: (error) => {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Could not save accounts payable voucher. Please try again.",
+      );
     },
   });
 
   const updateRecordMutation = useMutation({
-    mutationFn: async (record: AccountsPayableVoucherRecord) => record,
+    mutationFn: (record: AccountsPayableVoucherRecord) =>
+      updateAccountsPayableVoucher(record, requireActiveBranchId(activeBranchId)),
     onSuccess: (record) => {
-      updateCachedRecords((records) =>
-        records.map((currentRecord) =>
-          currentRecord.id === record.id ? record : currentRecord,
+      refreshRecords();
+      void queryClient.invalidateQueries({
+        queryKey: AccountsPayableVoucherQueryKeys.detail(
+          activeCompanyId,
+          activeBranchId,
+          record.id,
         ),
-      );
+      });
       toast.success("Accounts payable voucher updated.");
     },
-    onError: () => {
-      toast.error("Could not update accounts payable voucher. Please try again.");
-    },
-  });
-
-  const deleteRecordMutation = useMutation({
-    mutationFn: async (recordId: string) => recordId,
-    onSuccess: (recordId) => {
-      updateCachedRecords((records) =>
-        records.filter((record) => record.id !== recordId),
+    onError: (error) => {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Could not update accounts payable voucher. Please try again.",
       );
-      toast.success("Accounts payable voucher deleted.");
-    },
-    onError: () => {
-      toast.error("Could not delete accounts payable voucher. Please try again.");
     },
   });
 
-  const state = useMemo<AccountsPayableVoucherStoreState>(
-    () => ({
-      records: recordsQuery.data,
-      addRecord: (record) => addRecordMutation.mutate(record),
-      updateRecord: (record) => updateRecordMutation.mutate(record),
-      deleteRecord: (recordId) => deleteRecordMutation.mutate(recordId),
-      isLoading: recordsQuery.isLoading,
-      lastSyncedAt: recordsQuery.dataUpdatedAt,
-      isMutating:
-        addRecordMutation.isPending ||
-        updateRecordMutation.isPending ||
-        deleteRecordMutation.isPending,
-    }),
-    [
-      addRecordMutation,
-      deleteRecordMutation,
-      recordsQuery.data,
-      recordsQuery.dataUpdatedAt,
-      recordsQuery.isLoading,
-      updateRecordMutation,
-    ],
-  );
+  const statusMutation = useMutation({
+    mutationFn: ({
+      recordId,
+      status,
+    }: {
+      recordId: string;
+      status: AccountsPayableVoucherStatus;
+    }) => updateAccountsPayableVoucherStatus({ recordId, status }),
+    onSuccess: (record) => {
+      refreshRecords();
+      void queryClient.invalidateQueries({
+        queryKey: AccountsPayableVoucherQueryKeys.detail(
+          activeCompanyId,
+          activeBranchId,
+          record.id,
+        ),
+      });
+      toast.success(`Accounts payable voucher set ${record.status.toLowerCase()}.`);
+    },
+    onError: (error) => {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Could not update accounts payable voucher status. Please try again.",
+      );
+    },
+  });
+
+  const state: AccountsPayableVoucherStoreState = {
+    addRecord: (values) => addRecordMutation.mutateAsync(values),
+    deleteRecord: (recordId) =>
+      statusMutation.mutateAsync({ recordId, status: "Cancelled" }),
+    isLoading: recordsQuery.isLoading,
+    isMutating:
+      addRecordMutation.isPending ||
+      updateRecordMutation.isPending ||
+      statusMutation.isPending,
+    isRefreshing: recordsQuery.isFetching && !recordsQuery.isLoading,
+    lastSyncedAt: recordsQuery.dataUpdatedAt,
+    pagination:
+      recordsQuery.data?.pagination ?? EmptyAccountsPayableVoucherPagination,
+    permissions:
+      recordsQuery.data?.permissions ?? EmptyAccountsPayableVoucherPermissions,
+    records: recordsQuery.data?.records ?? [],
+    refreshRecords,
+    statistics:
+      recordsQuery.data?.statistics ?? EmptyAccountsPayableVoucherStatistics,
+    updateRecord: (record) => updateRecordMutation.mutateAsync(record),
+    updateStatus: (recordId, status) =>
+      statusMutation.mutateAsync({ recordId, status }),
+  };
 
   return selector ? selector(state) : (state as TSelected);
+}
+
+export function useAccountsPayableVoucherRecord(recordId?: string) {
+  const queryClient = useQueryClient();
+  const activeBranchId = useAppStore((state) => state.activeBranchId);
+  const activeCompanyId = useAppStore((state) => state.activeCompanyId);
+
+  return useQuery({
+    enabled:
+      Boolean(recordId) && activeCompanyId !== null && activeBranchId !== null,
+    initialData: () =>
+      queryClient
+        .getQueryData<AccountsPayableVoucherListResponse>(
+          AccountsPayableVoucherQueryKeys.records(activeCompanyId, activeBranchId),
+        )
+        ?.records.find((record) => record.id === recordId),
+    queryFn: () =>
+      fetchAccountsPayableVoucher(recordId ?? "", {
+        branchUnitId: activeBranchId,
+      }),
+    queryKey: AccountsPayableVoucherQueryKeys.detail(
+      activeCompanyId,
+      activeBranchId,
+      recordId ?? "missing",
+    ),
+    retry: false,
+  });
+}
+
+export function useAccountsPayableVoucherNumberSuggestion(enabled = true) {
+  const activeBranchId = useAppStore((state) => state.activeBranchId);
+  const activeCompanyId = useAppStore((state) => state.activeCompanyId);
+
+  return useQuery({
+    enabled: enabled && activeCompanyId !== null && activeBranchId !== null,
+    queryFn: () => fetchAccountsPayableVoucherNumberSuggestion(activeBranchId),
+    queryKey: AccountsPayableVoucherQueryKeys.numberSuggestion(
+      activeCompanyId,
+      activeBranchId,
+    ),
+    retry: false,
+  });
+}
+
+function requireActiveBranchId(branchUnitId: number | null) {
+  if (branchUnitId === null) {
+    throw new Error("Select a branch before saving accounts payable vouchers.");
+  }
+
+  return branchUnitId;
 }

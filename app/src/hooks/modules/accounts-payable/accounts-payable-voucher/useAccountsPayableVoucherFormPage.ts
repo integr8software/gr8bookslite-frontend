@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -16,7 +17,6 @@ import {
   createAccountsPayableVoucherAccountingEntry,
   createAccountsPayableVoucherExpenseLine,
   createAccountsPayableVoucherFormValues,
-  createAccountsPayableVoucherFromForm,
   getAccountsPayableVoucherAccountingTotals,
   getAccountsPayableVoucherExpenseTotals,
   renumberAccountsPayableVoucherAccountingEntries,
@@ -30,7 +30,11 @@ import {
   getModuleChartAccounts,
   type ModuleChartAccount,
 } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
-import { useAccountsPayableVoucherStore } from "@/app/src/hooks/modules/accounts-payable/accounts-payable-voucher/useAccountsPayableVoucher";
+import {
+  useAccountsPayableVoucherNumberSuggestion,
+  useAccountsPayableVoucherStore,
+  useAccountsPayableVoucherRecord,
+} from "@/app/src/hooks/modules/accounts-payable/accounts-payable-voucher/useAccountsPayableVoucher";
 import { useTaxDefinitionOptions } from "@/app/src/hooks/shared/tax/useTaxDefinitionOptions";
 import { useTaxes } from "@/app/src/hooks/shared/tax/useTaxOptions";
 import { FetchMultiCurrencyRates } from "@/app/src/services/modules/system-administration/multi-currency-setup/MultiCurrencySetupService";
@@ -67,14 +71,9 @@ export function useAccountsPayableVoucherFormPage() {
   const router = useRouter();
   const pathname = usePathname();
   const params = useParams<{ recordId?: string }>();
-  const records = useAccountsPayableVoucherStore((state) => state.records);
-  const addRecord = useAccountsPayableVoucherStore((state) => state.addRecord);
-  const updateRecord = useAccountsPayableVoucherStore(
-    (state) => state.updateRecord,
-  );
-  const isMutating = useAccountsPayableVoucherStore(
-    (state) => state.isMutating,
-  );
+  const recordId = params.recordId;
+  const { addRecord, isMutating, records, updateRecord, updateStatus } =
+    useAccountsPayableVoucherStore();
   const taxDefinitionOptions = useTaxDefinitionOptions({
     transactionScope: "PURCHASE",
   });
@@ -92,15 +91,66 @@ export function useAccountsPayableVoucherFormPage() {
     ],
   );
   const mode = getActionMode(pathname);
-  const existingRecord = records.find((record) => record.id === params.recordId);
-  const isReadonly = mode === "view" || existingRecord?.status === "Closed";
+  const recordQuery = useAccountsPayableVoucherRecord(recordId);
+  const numberSuggestionQuery = useAccountsPayableVoucherNumberSuggestion(
+    mode === "add",
+  );
+  const existingRecord =
+    recordQuery.data ?? records.find((record) => record.id === recordId);
+  const isReadonly =
+    mode === "view" ||
+    (mode === "edit" && existingRecord?.status !== "Draft");
   const [values, setValues] = useState<AccountsPayableVoucherFormValues>(() =>
     createAccountsPayableVoucherFormValues(existingRecord),
   );
   const [errors, setErrors] = useState<AccountsPayableVoucherFormErrors>({});
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [isExchangeRateLoading, setIsExchangeRateLoading] = useState(false);
+  const hasAppliedNumberSuggestionRef = useRef(false);
+  const hasEditedTransactionNoRef = useRef(false);
+  const hasHydratedExistingRecordRef = useRef(false);
   const exchangeRateRequestIdRef = useRef(0);
+
+  useEffect(() => {
+    hasHydratedExistingRecordRef.current = false;
+  }, [recordId]);
+
+  useEffect(() => {
+    if (
+      mode === "add" ||
+      !existingRecord ||
+      hasHydratedExistingRecordRef.current
+    ) {
+      return;
+    }
+
+    setValues(createAccountsPayableVoucherFormValues(existingRecord));
+    setErrors({});
+    hasHydratedExistingRecordRef.current = true;
+  }, [existingRecord, mode]);
+
+  useEffect(() => {
+    hasAppliedNumberSuggestionRef.current = false;
+    hasEditedTransactionNoRef.current = false;
+  }, [mode]);
+
+  useEffect(() => {
+    if (
+      mode !== "add" ||
+      !numberSuggestionQuery.data ||
+      hasAppliedNumberSuggestionRef.current ||
+      hasEditedTransactionNoRef.current
+    ) {
+      return;
+    }
+
+    setValues((current) => ({
+      ...current,
+      transactionNo: numberSuggestionQuery.data.transactionNo,
+    }));
+    hasAppliedNumberSuggestionRef.current = true;
+  }, [mode, numberSuggestionQuery.data]);
+
   const displayValues = useMemo(
     () =>
       syncAccountsPayableVoucherWithGeneratedAccountingEntries(
@@ -139,6 +189,10 @@ export function useAccountsPayableVoucherFormPage() {
 
     const field = event.target.name as keyof AccountsPayableVoucherFormValues;
     const fieldValue = event.target.value;
+
+    if (field === "transactionNo") {
+      hasEditedTransactionNoRef.current = true;
+    }
 
     if (field === "currency") {
       void updateCurrencyFromExchangeRates(fieldValue);
@@ -633,7 +687,7 @@ export function useAccountsPayableVoucherFormPage() {
     }));
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (isReadonly) {
@@ -656,31 +710,36 @@ export function useAccountsPayableVoucherFormPage() {
       return;
     }
 
-    if (mode === "edit" && existingRecord) {
-      updateRecord(
-        updateAccountsPayableVoucherFromForm(existingRecord, submitValues),
-      );
-    } else if (mode === "edit") {
-      toast.error("Could not find the accounts payable voucher to update.");
+    try {
+      if (mode === "edit" && existingRecord) {
+        await updateRecord(
+          updateAccountsPayableVoucherFromForm(existingRecord, submitValues),
+        );
+      } else if (mode === "edit") {
+        toast.error("Could not find the accounts payable voucher to update.");
+        return;
+      } else {
+        await addRecord(submitValues);
+      }
+    } catch {
       return;
-    } else {
-      addRecord(createAccountsPayableVoucherFromForm(submitValues));
     }
 
     router.push(AccountsPayableVoucherHref);
   }
 
-  function handleConfirmCancelVoucher() {
+  async function handleConfirmCancelVoucher() {
     if (!existingRecord) {
       toast.error("Could not find the accounts payable voucher to cancel.");
       return;
     }
 
-    updateRecord({
-      ...existingRecord,
-      status: "Cancelled",
-      updatedAt: new Date().toISOString(),
-    });
+    try {
+      await updateStatus(existingRecord.id, "Cancelled");
+    } catch {
+      return;
+    }
+
     setIsCancelDialogOpen(false);
     router.push(AccountsPayableVoucherHref);
   }
@@ -750,6 +809,7 @@ export function useAccountsPayableVoucherFormPage() {
     isExchangeRateLoading,
     isExpenseDetailsReadonly,
     isMutating,
+    isRecordLoading: recordQuery.isLoading,
     isReadonly,
     mode,
     moveAccountingEntry,

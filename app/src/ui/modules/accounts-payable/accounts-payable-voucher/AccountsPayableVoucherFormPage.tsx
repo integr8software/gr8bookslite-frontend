@@ -32,6 +32,8 @@ import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/Char
 import { AccountsPayableVoucherDataEntryTables } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherDataEntryTables";
 import { AccountsPayableVoucherHeaderPage } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherHeaderPage";
 import { AccountsPayableVoucherNotFound } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherNotFound";
+import { openAccountsPayableVoucherPdf } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherPdf";
+import { AccountsPayableVoucherReportPreview } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherReportPreview";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
@@ -63,6 +65,7 @@ export function AccountsPayableVoucherFormPage() {
   const partyStore = usePartyManagementStore();
   const termDropdown = useTermDropdownOptions();
   const taxCodesQuery = useTaxes(PurchaseTaxCodeQuery);
+  const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
   const [isPartyDrawerOpen, setIsPartyDrawerOpen] = useState(false);
   const chartAccounts = useMemo(() => getModuleChartAccounts(), []);
   const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
@@ -90,6 +93,16 @@ export function AccountsPayableVoucherFormPage() {
     () => createAccountsPayableVoucherCurrencyDropdownOptions(),
     [],
   );
+
+  if (page.needsRecord && page.isRecordLoading) {
+    return (
+      <section className="grid min-h-[22rem] place-items-center rounded-md border border-darknavy/10 bg-white p-8 text-center shadow-sm shadow-darknavy/5">
+        <p className="text-sm font-semibold text-darknavy/65">
+          Loading accounts payable voucher...
+        </p>
+      </section>
+    );
+  }
 
   if (page.needsRecord && !page.existingRecord) {
     return <AccountsPayableVoucherNotFound />;
@@ -222,7 +235,10 @@ export function AccountsPayableVoucherFormPage() {
   return (
     <>
       <form onSubmit={page.handleSubmit} className="grid gap-5">
-        <AccountsPayableVoucherHeaderPage page={page} />
+        <AccountsPayableVoucherHeaderPage
+          page={page}
+          onPreview={() => setIsReportPreviewOpen(true)}
+        />
 
         <section className="min-w-0 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
           <div className="grid min-w-0 gap-x-8 gap-y-5 xl:grid-cols-3">
@@ -461,6 +477,13 @@ export function AccountsPayableVoucherFormPage() {
         tone="danger"
         onCancel={() => page.setIsCancelDialogOpen(false)}
         onConfirm={page.handleConfirmCancelVoucher}
+      />
+
+      <AccountsPayableVoucherReportPreview
+        isOpen={isReportPreviewOpen}
+        values={page.values}
+        onClose={() => setIsReportPreviewOpen(false)}
+        onGeneratePdf={() => openAccountsPayableVoucherPdf(page.values)}
       />
 
       <PartyManagementDrawer

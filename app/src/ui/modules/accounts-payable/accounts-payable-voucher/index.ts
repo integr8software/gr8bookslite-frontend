@@ -4,3 +4,5 @@ export * from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/Ac
 export * from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherFormPage";
 export * from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherHeaderPage";
 export * from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherListPage";
+export * from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherPdf";
+export * from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherReportPreview";

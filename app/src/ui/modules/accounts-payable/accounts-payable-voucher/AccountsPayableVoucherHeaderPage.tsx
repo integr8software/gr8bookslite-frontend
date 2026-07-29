@@ -9,12 +9,15 @@ import {
   ModuleHeader,
   moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
+import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 
 type AccountsPayableVoucherHeaderPageProps = {
+  onPreview?: () => void;
   page: ReturnType<typeof useAccountsPayableVoucherFormPage>;
 };
 
 export function AccountsPayableVoucherHeaderPage({
+  onPreview,
   page,
 }: AccountsPayableVoucherHeaderPageProps) {
   const copy = AccountsPayableVoucherActionCopy[page.mode];
@@ -50,6 +53,7 @@ export function AccountsPayableVoucherHeaderPage({
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Back
           </Link>
+          {onPreview ? <ReportPreviewAction onPreview={onPreview} /> : null}
           {page.mode === "view" && page.existingRecord ? (
             <Link
               href={`${AccountsPayableVoucherHref}/edit/${page.existingRecord.id}`}

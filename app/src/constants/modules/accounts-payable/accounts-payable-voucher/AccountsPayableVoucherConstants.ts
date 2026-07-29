@@ -6,6 +6,9 @@ import type {
 
 export const AccountsPayableVoucherHref = MODULE_ROUTE_MAP.APV;
 
+export const AccountsPayableVoucherApiPath =
+  "/accounts-payable/accounts-payable-voucher";
+
 export const AccountsPayableVoucherTablePaginationStorageKey =
   "accounts-payable.accounts-payable-voucher";
 

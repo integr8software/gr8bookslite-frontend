@@ -1828,3 +1828,56 @@ export const ChartOfAccountsControllerFindNextCodeV1AccountLevel = {
 } as const;
 
 export type AiAssistantControllerChatV1201 = { [key: string]: unknown };
+
+export interface ApproverSetupUserResponseDto {
+id: number;
+name: string;
+email: string;
+}
+
+export interface CreateApproverSetupDto {
+approverCondition: string;
+type: string;
+status: string;
+level?: number;
+moduleScope: string;
+validUntil?: string;
+approverUserIds: number[];
+}
+
+export interface ApproverSetupResponseDto {
+id: string;
+approverCondition: string;
+type: string;
+status: string;
+level: number | null;
+moduleScope: string;
+validUntil: string | null;
+approvers: ApproverSetupUserResponseDto[];
+createdAt: string;
+updatedAt: string;
+}
+
+export interface CreateApproverSetupResponseDto {
+message: string;
+setup: ApproverSetupResponseDto;
+}
+
+export interface ApproverSetupsPaginatedResponseDto {
+items: ApproverSetupResponseDto[];
+page: number;
+limit: number;
+total: number;
+totalPages: number;
+}
+
+export type ApproverSetupsControllerFindCompanyUsersV1Params = {
+page?: number;
+limit?: number;
+search?: string;
+};
+
+export type ApproverSetupsControllerFindAllV1Params = {
+page?: number;
+limit?: number;
+};

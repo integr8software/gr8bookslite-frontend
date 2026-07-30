@@ -1,10 +1,13 @@
-import { UserListMockData } from "@/app/src/data/modules/system-administration/user-management/users/UserListData";
 import type {
 	ApproverCondition,
 	ApproverSetupFormValues,
+	ApproverSetupUser,
 } from "@/app/src/types/modules/system-administration/user-management/approver-setup/ApproverSetupTypes";
 
-export function getApproverConditionLimit(condition: ApproverCondition) {
+export function getApproverConditionLimit(
+	condition: ApproverCondition,
+	users: ApproverSetupUser[] = [],
+) {
 	if (condition === "Any one approver") {
 		return 1;
 	}
@@ -13,25 +16,33 @@ export function getApproverConditionLimit(condition: ApproverCondition) {
 		return 2;
 	}
 
-	return UserListMockData.length;
+	return users.length;
 }
 
 export function normalizeSelectedApproverIds(
 	condition: ApproverCondition,
 	userIds: string[],
+	users: ApproverSetupUser[] = [],
 ) {
 	if (condition === "All approvers") {
-		return UserListMockData.map((user) => user.id);
+		return users.map((user) => user.id);
 	}
 
-	return userIds.slice(0, getApproverConditionLimit(condition));
+	return userIds.slice(0, getApproverConditionLimit(condition, users));
 }
 
-export function getApproverSelectionError(values: ApproverSetupFormValues) {
-	const requiredCount = getApproverConditionLimit(values.condition);
+export function getApproverSelectionError(
+	values: ApproverSetupFormValues,
+	users: ApproverSetupUser[] = [],
+) {
+	if (users.length === 0) {
+		return "Approver users are still loading. Please try again.";
+	}
+
+	const requiredCount = getApproverConditionLimit(values.condition, users);
 
 	if (values.condition === "All approvers") {
-		return values.userIds.length === UserListMockData.length
+		return values.userIds.length === users.length
 			? ""
 			: "All approvers must be selected for this condition.";
 	}
@@ -43,10 +54,13 @@ export function getApproverSelectionError(values: ApproverSetupFormValues) {
 	return "";
 }
 
-export function getApproverConditionHelpText(condition: ApproverCondition) {
+export function getApproverConditionHelpText(
+	condition: ApproverCondition,
+	users: ApproverSetupUser[] = [],
+) {
 	if (condition === "All approvers") {
 		return "All users are automatically selected for this condition.";
 	}
 
-	return `Select exactly ${getApproverConditionLimit(condition)} approver${condition === "Any one approver" ? "" : "s"} for this condition.`;
+	return `Select exactly ${getApproverConditionLimit(condition, users)} approver${condition === "Any one approver" ? "" : "s"} for this condition.`;
 }

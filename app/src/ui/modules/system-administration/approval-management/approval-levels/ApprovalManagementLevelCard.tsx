@@ -1,11 +1,7 @@
 import { UsersRound } from "lucide-react";
-import {
-	getApproverSetupInitials,
-	getApproverSetupUser,
-} from "@/app/src/data/modules/system-administration/user-management/approver-setup/ApproverSetupData";
 import type { ApproverSetupRecord } from "@/app/src/types/modules/system-administration/user-management/approver-setup/ApproverSetupTypes";
-import type { UserListRecord } from "@/app/src/types/modules/user-management/UserListTypes";
 import { ApprovalReadOnlyField } from "@/app/src/ui/modules/system-administration/approval-management/workflow-details/ApprovalManagementEditorFields";
+import { getApproverSetupInitials } from "@/app/src/ui/modules/system-administration/user-management/approver-setup/utils";
 
 type ApprovalManagementLevelCardProps = {
 	record: ApproverSetupRecord;
@@ -14,9 +10,7 @@ type ApprovalManagementLevelCardProps = {
 export function ApprovalManagementLevelCard({
 	record,
 }: ApprovalManagementLevelCardProps) {
-	const approvers = record.userIds
-		.map((userId) => getApproverSetupUser(userId))
-		.filter((user): user is UserListRecord => Boolean(user));
+	const approvers = record.approverUsers ?? [];
 
 	return (
 		<article className="overflow-hidden rounded-lg border border-darknavy/10 bg-white">
@@ -77,7 +71,7 @@ export function ApprovalManagementLevelCard({
 										{approver.name}
 									</span>
 									<span className="block truncate text-xs font-medium text-darknavy/45">
-										{approver.userRole}
+										{approver.email}
 									</span>
 								</span>
 							</div>

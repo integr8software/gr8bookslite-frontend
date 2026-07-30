@@ -32,10 +32,12 @@ function PurchaseOrderActionPageInner() {
 	return (
 		<section className="grid gap-5">
 			<PurchaseOrderFormHeader
+				copyFromRecords={page.copyFromRecords}
 				isSubmitting={page.isSubmitting}
 				mode={page.mode}
 				recordId={page.recordId}
 				values={page.values}
+				onCopyFromSource={page.copyFromSourceRecords}
 				onPreview={() => page.setShowPreview(true)}
 				onSubmit={page.handleSubmit}
 			/>
@@ -48,7 +50,9 @@ function PurchaseOrderActionPageInner() {
 				error={page.errors.items}
 				isReadonly={page.isReadonly}
 				rows={page.values.items}
+				values={page.values}
 				onRowsChange={page.updateItems}
+				onUpdateField={page.updateField}
 			/>
 			<PurchaseOrderReportPreview
 				isOpen={page.showPreview}

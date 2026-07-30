@@ -13,19 +13,27 @@ import {
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
+import {
+	AppCopyFromDropdown,
+	type AppCopyFromRecord,
+} from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
 
 type CanvassFormFormHeaderProps = {
+	copyFromRecords: AppCopyFromRecord[];
 	isSubmitting?: boolean;
 	mode: CanvassFormMode;
 	recordId?: string;
 	values: CanvassFormValues;
+	onCopyFromPurchaseRequest: (recordIds: string[]) => void;
 	onPreview: () => void;
 	onSubmit: () => void;
 };
 
 export function CanvassFormFormHeader({
+	copyFromRecords,
 	isSubmitting = false,
 	mode,
+	onCopyFromPurchaseRequest,
 	onPreview,
 	onSubmit,
 	recordId,
@@ -59,15 +67,22 @@ export function CanvassFormFormHeader({
 							Edit
 						</Link>
 					) : (
-						<button
-							type="button"
-							disabled={isSubmitting}
-							onClick={onSubmit}
-							className={`${moduleHeaderActionClassNames.primary} disabled:cursor-not-allowed disabled:opacity-60`}
-						>
-							<Save className="h-4 w-4" aria-hidden="true" />
-							{isSubmitting ? "Saving..." : "Save"}
-						</button>
+						<>
+							<AppCopyFromDropdown
+								records={copyFromRecords}
+								sources={["Purchase Request"]}
+								onApply={onCopyFromPurchaseRequest}
+							/>
+							<button
+								type="button"
+								disabled={isSubmitting}
+								onClick={onSubmit}
+								className={`${moduleHeaderActionClassNames.primary} disabled:cursor-not-allowed disabled:opacity-60`}
+							>
+								<Save className="h-4 w-4" aria-hidden="true" />
+								{isSubmitting ? "Saving..." : "Save"}
+							</button>
+						</>
 					)}
 				</>
 			}

@@ -141,9 +141,12 @@ export function AmountField({
 			<input
 				id={id}
 				type="number"
+				step="0.01"
 				value={value}
 				readOnly={readOnly}
-				onChange={(event) => onChange(Number(event.target.value))}
+				onChange={(event) =>
+					onChange(Math.round(Number(event.target.value || 0) * 100) / 100)
+				}
 				className={`${FieldClassName} text-right tabular-nums`}
 			/>
 		</FieldShell>

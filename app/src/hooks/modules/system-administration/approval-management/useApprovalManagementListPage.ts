@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import toast from "react-hot-toast";
 import {
 	type ColumnDef,
@@ -27,6 +27,10 @@ import {
 	syncApprovalRoutingRulesForStages,
 	updateApprovalManagementRecord,
 } from "@/app/src/data/modules/system-administration/approval-management/ApprovalManagementData";
+import { useQuery } from "@tanstack/react-query";
+import { GetApprovalManagementModules } from "@/app/src/services/modules/system-administration/approval-management/ApprovalManagementApi";
+import { FetchApproverSetups } from "@/app/src/services/modules/system-administration/user-management/approver-setup/ApproverSetupApi";
+import { ApproverSetupQueryKeys } from "@/app/src/services/modules/system-administration/user-management/approver-setup/ApproverSetupQueryKeys";
 import {
 	createApproverNameById,
 	formatApprovalApproverNames,
@@ -34,6 +38,7 @@ import {
 	formatApprovalWorkflowFeatures,
 	formatApprovalWorkflowUpdatedAt,
 } from "@/app/src/services/modules/system-administration/approval-management/ApprovalManagementFormatters";
+import { ApprovalManagementQueryKeys } from "@/app/src/services/modules/system-administration/approval-management/ApprovalManagementQueryKeys";
 import type {
 	ApprovalManagementRecord,
 	ApprovalManagementFormErrors,
@@ -46,9 +51,12 @@ import type {
 	ApprovalStageFormValues,
 	ApprovalWorkflowFeatureKey,
 } from "@/app/src/types/modules/system-administration/approval-management/ApprovalManagementTypes";
+import type {
+	ApproverAssignmentType,
+	ApproverSetupRecord,
+} from "@/app/src/types/modules/system-administration/user-management/approver-setup/ApproverSetupTypes";
 import { validateApprovalManagementForm } from "@/app/src/validations/modules/system-administration/approval-management/ApprovalManagementValidation";
 import { useApprovalManagementStore } from "@/app/src/hooks/modules/system-administration/approval-management/useApprovalManagement";
-import { useTransactionNumberSetupStore } from "@/app/src/hooks/modules/system-administration/transaction-number-setup/useTransactionNumberSetup";
 
 export function useApprovalManagementListPage() {
 	const {
@@ -60,21 +68,17 @@ export function useApprovalManagementListPage() {
 		updateWorkflow,
 		workflows,
 	} = useApprovalManagementStore();
-	const {
-		isLoading: isModuleLoading,
-		lastSyncedAt: moduleLastSyncedAt,
-		setups: transactionNumberSetups,
-	} = useTransactionNumberSetupStore();
+	const modulesQuery = useQuery({
+		queryKey: ApprovalManagementQueryKeys.modules(),
+		queryFn: GetApprovalManagementModules,
+		placeholderData: [],
+	});
+	const approverSetupsQuery = useQuery({
+		queryKey: ApproverSetupQueryKeys.records(),
+		queryFn: FetchApproverSetups,
+	});
 	const moduleOptions = useMemo<ApprovalManagementModuleOption[]>(() => {
-		const sourceOptions = transactionNumberSetups.length
-			? transactionNumberSetups.map((setup) => ({
-					code: setup.moduleCode,
-					name: setup.moduleName,
-				}))
-			: workflows.map((workflow) => ({
-					code: workflow.moduleCode,
-					name: workflow.moduleName,
-				}));
+		const sourceOptions = modulesQuery.data ?? [];
 
 		return sourceOptions
 			.filter(
@@ -83,7 +87,7 @@ export function useApprovalManagementListPage() {
 					index,
 			)
 			.sort((first, second) => first.name.localeCompare(second.name));
-	}, [transactionNumberSetups, workflows]);
+	}, [modulesQuery.data]);
 	const workflowByModuleCode = useMemo(
 		() => new Map(workflows.map((workflow) => [workflow.moduleCode, workflow])),
 		[workflows],
@@ -122,6 +126,9 @@ export function useApprovalManagementListPage() {
 	const [statusFilter, setStatusFilter] = useState<
 		ApprovalManagementStatus | "any"
 	>("any");
+	const [selectedApproverType, setSelectedApproverType] = useState<
+		ApproverAssignmentType | ""
+	>("");
 	const [pendingInactiveWorkflow, setPendingInactiveWorkflow] =
 		useState<ApprovalManagementRecord | null>(null);
 	const [pagination, setPagination] = useState<PaginationState>({
@@ -140,6 +147,29 @@ export function useApprovalManagementListPage() {
 			: createApprovalManagementInitialFormValues(),
 	);
 	const [errors, setErrors] = useState<ApprovalManagementFormErrors>({});
+	const visibleApproverSetupRecords = useMemo(
+		() =>
+			selectedWorkflow && selectedApproverType
+				? getVisibleApproverSetupRecords({
+						moduleCode: selectedWorkflow.moduleCode,
+						moduleName: selectedWorkflow.moduleName,
+						records: approverSetupsQuery.data ?? [],
+						selectedApproverType,
+					})
+				: [],
+		[
+			approverSetupsQuery.data,
+			selectedApproverType,
+			selectedWorkflow,
+		],
+	);
+	const derivedApprovalLevelCount = useMemo(
+		() => getApprovalLevelCount(visibleApproverSetupRecords),
+		[visibleApproverSetupRecords],
+	);
+	const displayedApprovalLevelCount = selectedApproverType
+		? derivedApprovalLevelCount
+		: null;
 	const approverNameById = useMemo(
 		() => createApproverNameById(ApprovalApproverOptions),
 		[],
@@ -225,6 +255,34 @@ export function useApprovalManagementListPage() {
 		setErrors({});
 	}, [selectedWorkflow, workflowRecords]);
 
+	useEffect(() => {
+		if (!selectedApproverType) {
+			return;
+		}
+
+		setValues((current) => {
+			if (current.stageCount === derivedApprovalLevelCount) {
+				return current;
+			}
+
+			const stages = createApprovalStagesForCount(
+				current.stages,
+				derivedApprovalLevelCount,
+			);
+
+			return {
+				...current,
+				stageCount: derivedApprovalLevelCount,
+				stages,
+				routingRules: syncApprovalRoutingRulesForStages(
+					current.routingRules,
+					stages,
+				),
+			};
+		});
+		setErrors((current) => ({ ...current, stageCount: undefined }));
+	}, [derivedApprovalLevelCount, selectedApproverType]);
+
 	function handleQueryChange(value: string) {
 		setQuery(value);
 		table.setPageIndex(0);
@@ -265,21 +323,6 @@ export function useApprovalManagementListPage() {
 			};
 		});
 		setErrors((current) => ({ ...current, [field]: undefined }));
-	}
-
-	function handleInputChange(
-		event: ChangeEvent<
-			HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-		>,
-	) {
-		const { name, value } = event.target;
-
-		if (name === "stageCount") {
-			updateField("stageCount", Number(value));
-			return;
-		}
-
-		updateField(name as keyof ApprovalManagementFormValues, value as never);
 	}
 
 	function handleModuleCodeChange(moduleCode: ApprovalManagementModuleCode) {
@@ -496,21 +539,28 @@ export function useApprovalManagementListPage() {
 		approverOptions: ApprovalApproverOptions,
 		errors,
 		handleConfirmInactive,
-		handleInputChange,
 		handleModuleCodeChange,
 		handleQueryChange,
 		handleSelectWorkflow,
 		handleStatusFilterChange,
 		handleSubmit,
 		inactiveWorkflowCount: workflowRecords.length - activeWorkflowCount,
-		isLoading: isLoading || isModuleLoading,
+		isApproverSetupsLoading: approverSetupsQuery.isLoading,
+		derivedApprovalLevelCount: displayedApprovalLevelCount,
+		isLoading: isLoading || modulesQuery.isLoading,
 		isMutating,
-		lastSyncedAt: Math.max(lastSyncedAt, moduleLastSyncedAt),
+		lastSyncedAt: Math.max(
+			lastSyncedAt,
+			modulesQuery.dataUpdatedAt,
+			approverSetupsQuery.dataUpdatedAt,
+		),
 		moduleOptions,
 		pendingInactiveWorkflow,
 		query,
+		selectedApproverType,
 		selectedWorkflow,
 		selectedWorkflowId: selectedWorkflow?.id ?? null,
+		setSelectedApproverType,
 		setPendingInactiveWorkflow,
 		statusFilter,
 		table,
@@ -526,8 +576,48 @@ export function useApprovalManagementListPage() {
 		updateStageField,
 		updateWorkflowFeature,
 		values,
+		visibleApproverSetupRecords,
 		workflows: filteredWorkflows,
 	};
+}
+
+function getVisibleApproverSetupRecords({
+	moduleCode,
+	moduleName,
+	records,
+	selectedApproverType,
+}: {
+	moduleCode: string;
+	moduleName: string;
+	records: ApproverSetupRecord[];
+	selectedApproverType: ApproverAssignmentType;
+}): ApproverSetupRecord[] {
+	const normalizedModuleCode = normalizeModuleScope(moduleCode);
+	const normalizedModuleName = normalizeModuleScope(moduleName);
+
+	return records
+		.filter((record) => {
+			const normalizedModuleScope = normalizeModuleScope(record.moduleScope);
+
+			return (
+				record.assignmentType === selectedApproverType &&
+				record.status === "Active" &&
+				(normalizedModuleScope === normalizedModuleCode ||
+					normalizedModuleScope === normalizedModuleName)
+			);
+		})
+		.sort((first, second) => first.sequence - second.sequence);
+}
+
+function getApprovalLevelCount(records: ApproverSetupRecord[]) {
+	return records.reduce(
+		(maxSequence, record) => Math.max(maxSequence, record.sequence),
+		0,
+	);
+}
+
+function normalizeModuleScope(value: string) {
+	return value.trim().toLowerCase();
 }
 
 function clearStageError<TKey extends keyof ApprovalStageFormValues>(

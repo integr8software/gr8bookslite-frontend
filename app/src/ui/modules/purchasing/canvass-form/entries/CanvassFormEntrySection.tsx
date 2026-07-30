@@ -164,6 +164,7 @@ function shouldClearEntry(
 			entry.supplierName4.trim() ||
 			entry.vatExclusive.trim() ||
 			entry.vatInclusive.trim() ||
+			Number(entry.minimumOrderQuantity) ||
 			Number(entry.quantity),
 	);
 	const isComplete = Boolean(

@@ -10,9 +10,22 @@ export type ApproverCondition =
 
 export type ApproverCoverageStatus = "Active" | "Scheduled" | "Expired";
 
+export type ApproverSetupUser = {
+	id: string;
+	name: string;
+	email: string;
+};
+
+export type ApproverSetupModuleOption = {
+	code: string;
+	id: string;
+	name: string;
+};
+
 export type ApproverSetupRecord = {
 	id: string;
 	userIds: string[];
+	approverUsers?: ApproverSetupUser[];
 	assignmentType: ApproverAssignmentType;
 	levelName: string;
 	moduleScope: string;

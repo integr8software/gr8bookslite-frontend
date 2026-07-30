@@ -10,36 +10,53 @@ import type {
 	ApproverCoverageStatus,
 	ApproverSetupDrawerMode,
 	ApproverSetupFormValues,
+	ApproverSetupModuleOption,
+	ApproverSetupUser,
 } from "@/app/src/types/modules/system-administration/user-management/approver-setup/ApproverSetupTypes";
+import {
+	AppAdvancedDropdown,
+	type AppAdvancedDropdownOption,
+} from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { normalizeSelectedApproverIds } from "@/app/src/validations/modules/system-administration/user-management/approver-setup/ApproverSetupValidation";
 import {
 	ApproverSetupSelectField,
 	ApproverSetupTextField,
 } from "./ApproverSetupFields";
-import { ApproverSetupUserCheckboxList } from "./ApproverSetupUserCheckboxList";
+import { ApproverSetupUserSelectList } from "./ApproverSetupUserSelectList";
 
 type ApproverSetupDrawerProps = {
 	formValues: ApproverSetupFormValues;
 	isOpen: boolean;
+	moduleOptions: ApproverSetupModuleOption[];
 	mode: ApproverSetupDrawerMode;
 	onChange: (values: ApproverSetupFormValues) => void;
 	onClose: () => void;
 	onSave: () => void;
+	users: ApproverSetupUser[];
 	validationMessage: string;
 };
 
 export function ApproverSetupDrawer({
 	formValues,
 	isOpen,
+	moduleOptions,
 	mode,
 	onChange,
 	onClose,
 	onSave,
+	users,
 	validationMessage,
 }: ApproverSetupDrawerProps) {
 	const title =
 		mode === "edit" ? "Edit Approver Assignment" : "Assign Approver";
+	const moduleSelectOptions = moduleOptions.map<AppAdvancedDropdownOption>(
+		(module) => ({
+			description: module.code,
+			name: module.name,
+			value: module.code,
+		}),
+	);
 
 	function updateField<TKey extends keyof ApproverSetupFormValues>(
 		key: TKey,
@@ -52,6 +69,7 @@ export function ApproverSetupDrawer({
 				userIds: normalizeSelectedApproverIds(
 					value as ApproverCondition,
 					formValues.userIds,
+					users,
 				),
 			});
 			return;
@@ -98,9 +116,10 @@ export function ApproverSetupDrawer({
 						value: condition,
 					}))}
 				/>
-				<ApproverSetupUserCheckboxList
+				<ApproverSetupUserSelectList
 					condition={formValues.condition}
 					selectedUserIds={formValues.userIds}
+					users={users}
 					onChange={(userIds) => updateField("userIds", userIds)}
 				/>
 				<div className="grid gap-4 sm:grid-cols-2">
@@ -151,11 +170,25 @@ export function ApproverSetupDrawer({
 						}))}
 					/>
 				</div>
-				<ApproverSetupTextField
-					label="Module scope"
-					value={formValues.moduleScope}
-					onChange={(value) => updateField("moduleScope", value)}
-				/>
+				<label>
+					<span className="text-sm font-semibold text-darknavy">
+						Module scope
+					</span>
+					<AppAdvancedDropdown
+						className="mt-2"
+						disabled={moduleOptions.length === 0}
+						emptyMessage="No approver setup modules found."
+						options={moduleSelectOptions}
+						placeholder="Select module"
+						searchPlaceholder="Search module"
+						value={formValues.moduleScope}
+						onChange={(value) => {
+							if (typeof value === "string") {
+								updateField("moduleScope", value);
+							}
+						}}
+					/>
+				</label>
 				{validationMessage ? (
 					<div className="rounded-md border border-coralpink/30 bg-coralpink/10 px-3 py-2 text-sm font-semibold text-coralpink">
 						{validationMessage}
@@ -172,7 +205,7 @@ export function ApproverSetupDrawer({
 							}
 						/>
 						<ApproverSetupTextField
-							label="Effective to"
+							label="Valid until"
 							type="date"
 							value={formValues.effectiveTo}
 							onChange={(value) =>

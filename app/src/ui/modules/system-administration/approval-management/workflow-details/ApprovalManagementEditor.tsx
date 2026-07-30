@@ -1,8 +1,4 @@
-"use client";
-
 import {
-	useState,
-	type ChangeEventHandler,
 	type FormEventHandler,
 } from "react";
 import type {
@@ -11,7 +7,10 @@ import type {
 	ApprovalManagementRecord,
 	ApprovalRoutingRuleFormValues,
 } from "@/app/src/types/modules/system-administration/approval-management/ApprovalManagementTypes";
-import type { ApproverAssignmentType } from "@/app/src/types/modules/system-administration/user-management/approver-setup/ApproverSetupTypes";
+import type {
+	ApproverAssignmentType,
+	ApproverSetupRecord,
+} from "@/app/src/types/modules/system-administration/user-management/approver-setup/ApproverSetupTypes";
 import { ApprovalManagementLevels } from "@/app/src/ui/modules/system-administration/approval-management/approval-levels/ApprovalManagementLevels";
 import { ApprovalManagementRules } from "@/app/src/ui/modules/system-administration/approval-management/approval-rules/ApprovalManagementRules";
 import { ApprovalManagementEditorHeader } from "@/app/src/ui/modules/system-administration/approval-management/workflow-details/ApprovalManagementEditorHeader";
@@ -19,14 +18,16 @@ import { ApprovalManagementEditorSkeleton } from "@/app/src/ui/modules/system-ad
 import { ApprovalManagementWorkflowDetails } from "@/app/src/ui/modules/system-administration/approval-management/workflow-details/ApprovalManagementWorkflowDetails";
 
 export type ApprovalManagementEditorProps = {
+	derivedApprovalLevelCount: number | null;
 	errors: ApprovalManagementFormErrors;
+	isApproverSetupsLoading: boolean;
 	isLoading: boolean;
 	isMutating: boolean;
+	selectedApproverType: ApproverAssignmentType | "";
 	selectedWorkflow?: ApprovalManagementRecord;
 	values: ApprovalManagementFormValues;
-	onInputChange: ChangeEventHandler<
-		HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-	>;
+	visibleApproverSetupRecords: ApproverSetupRecord[];
+	onApproverTypeChange: (type: ApproverAssignmentType | "") => void;
 	onAmountConditionModeChange: (hasAmountCondition: boolean) => void;
 	onAddAmountConditionRule: () => void;
 	onRemoveAmountConditionRule: (routingRuleId: string) => void;
@@ -42,23 +43,23 @@ export type ApprovalManagementEditorProps = {
 };
 
 export function ApprovalManagementEditor({
+	derivedApprovalLevelCount,
 	errors,
+	isApproverSetupsLoading,
 	isLoading,
 	isMutating,
 	onAddAmountConditionRule,
 	onAmountConditionModeChange,
-	onInputChange,
+	onApproverTypeChange,
 	onRemoveAmountConditionRule,
 	onRoutingRuleFieldChange,
 	onRoutingRuleStageToggle,
 	onSubmit,
+	selectedApproverType,
 	selectedWorkflow,
 	values,
+	visibleApproverSetupRecords,
 }: ApprovalManagementEditorProps) {
-	const [selectedApproverType, setSelectedApproverType] = useState<
-		ApproverAssignmentType | ""
-	>("");
-
 	if (isLoading) {
 		return <ApprovalManagementEditorSkeleton />;
 	}
@@ -85,21 +86,20 @@ export function ApprovalManagementEditor({
 				isLoading={isLoading}
 				isMutating={isMutating}
 				selectedWorkflow={selectedWorkflow}
-				stageCount={values.stageCount}
+				stageCount={derivedApprovalLevelCount}
 			/>
 
 			<ApprovalManagementWorkflowDetails
+				derivedApprovalLevelCount={derivedApprovalLevelCount}
 				errors={errors}
 				selectedWorkflow={selectedWorkflow}
-				values={values}
-				onInputChange={onInputChange}
 			/>
 
 			<ApprovalManagementLevels
-				moduleName={selectedWorkflow.moduleName}
+				isLoading={isApproverSetupsLoading}
+				records={visibleApproverSetupRecords}
 				selectedApproverType={selectedApproverType}
-				stageCount={values.stageCount}
-				onApproverTypeChange={setSelectedApproverType}
+				onApproverTypeChange={onApproverTypeChange}
 			/>
 
 			<ApprovalManagementRules

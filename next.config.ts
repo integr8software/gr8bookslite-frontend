@@ -3,6 +3,13 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
 	poweredByHeader: false,
 	allowedDevOrigins: ["192.168.18.190"],
+	serverExternalPackages: [
+		"@jsreport/jsreport-chrome-pdf",
+		"@jsreport/jsreport-core",
+		"@jsreport/jsreport-handlebars",
+		"puppeteer",
+		"puppeteer-core",
+	],
 	turbopack: {
 		root: process.cwd(),
 	},

@@ -28,24 +28,8 @@ export function GoodsReceiptWarehouseFields({
   values,
 }: GoodsReceiptWarehouseFieldsProps) {
   return (
-    <div className="grid min-w-0 gap-5 xl:grid-cols-2">
-      <div className="grid min-w-0 gap-4">
-        <TextField
-          id="goods-receipt-transaction-no"
-          label="GR No."
-          isRequired
-          readOnly={isReadonly}
-          value={values.transactionNo}
-          onChange={(value) => onUpdateField("transactionNo", value)}
-        />
-        <TextField
-          id="goods-receipt-vce-code"
-          label="Party Code"
-          isRequired
-          readOnly={isReadonly}
-          value={values.vceCode}
-          onChange={(value) => onUpdateField("vceCode", value)}
-        />
+    <div className="grid min-w-0 gap-5 xl:grid-cols-3">
+      <div className="grid min-w-0 content-start gap-4">
         <FieldShell controlId="goods-receipt-vce-name" label="Party Name" isRequired>
           <AttachedDropdown
             id="goods-receipt-vce-name"
@@ -58,7 +42,43 @@ export function GoodsReceiptWarehouseFields({
             onChange={(value) => onUpdateField("vceName", value)}
           />
         </FieldShell>
-        <FieldShell controlId="goods-receipt-transaction-type" label="Transaction Type" isRequired>
+        <TextField
+          id="goods-receipt-project-ref"
+          label="Proj. Ref No"
+          readOnly={isReadonly}
+          value={values.projectRef}
+          onChange={(value) => onUpdateField("projectRef", value)}
+        />
+        <TextField
+          id="goods-receipt-project-name"
+          label="Project Name"
+          readOnly={isReadonly}
+          value={values.projectName}
+          onChange={(value) => onUpdateField("projectName", value)}
+        />
+        <FieldShell controlId="goods-receipt-remarks" label="Remarks">
+          <AppLimitedTextarea
+            id="goods-receipt-remarks"
+            value={values.remarks}
+            readOnly={isReadonly}
+            onChange={(event) => onUpdateField("remarks", event.target.value)}
+            className={`${FieldClassName} min-h-24 py-3`}
+            counterMode="remaining"
+            maxLength={250}
+          />
+        </FieldShell>
+      </div>
+
+      <div className="grid min-w-0 content-start gap-4">
+        <TextField
+          id="goods-receipt-vce-code"
+          label="Party Code"
+          isRequired
+          readOnly={isReadonly}
+          value={values.vceCode}
+          onChange={(value) => onUpdateField("vceCode", value)}
+        />
+        <FieldShell controlId="goods-receipt-transaction-type" label="GR Type" isRequired>
           <AttachedDropdown
             id="goods-receipt-transaction-type"
             value={values.transactionType}
@@ -70,13 +90,6 @@ export function GoodsReceiptWarehouseFields({
             onChange={(value) => onUpdateField("transactionType", value)}
           />
         </FieldShell>
-        <DateField
-          id="goods-receipt-document-date"
-          label="Document Date"
-          readOnly={isReadonly}
-          value={values.documentDate}
-          onChange={(value) => onUpdateField("documentDate", value)}
-        />
         <FieldShell controlId="goods-receipt-source-warehouse" label="Source Warehouse" isRequired>
           <AttachedDropdown
             id="goods-receipt-source-warehouse"
@@ -89,7 +102,11 @@ export function GoodsReceiptWarehouseFields({
             onChange={(value) => onUpdateField("sourceWarehouse", value)}
           />
         </FieldShell>
-        <FieldShell controlId="goods-receipt-receiving-warehouse" label="Receiving Warehouse">
+        <FieldShell
+          controlId="goods-receipt-receiving-warehouse"
+          label="Receiving Warehouse"
+          isRequired
+        >
           <AttachedDropdown
             id="goods-receipt-receiving-warehouse"
             value={values.receivingWarehouse ?? ""}
@@ -102,43 +119,45 @@ export function GoodsReceiptWarehouseFields({
           />
         </FieldShell>
       </div>
+
       <div className="grid min-w-0 content-start gap-4">
         <TextField
-          id="goods-receipt-ic-no"
-          label="IC No."
+          id="goods-receipt-transaction-no"
+          label="GR No."
+          isRequired
           readOnly={isReadonly}
-          value={values.icNo}
-          onChange={(value) => onUpdateField("icNo", value)}
+          value={values.transactionNo}
+          onChange={(value) => onUpdateField("transactionNo", value)}
+        />
+        <DateField
+          id="goods-receipt-document-date"
+          label="GR Date"
+          readOnly={isReadonly}
+          value={values.documentDate}
+          onChange={(value) => onUpdateField("documentDate", value)}
         />
         <TextField
           id="goods-receipt-gi-no"
-          label="GI No."
+          label="GI No"
           readOnly={isReadonly}
           value={values.giNo}
           onChange={(value) => onUpdateField("giNo", value)}
         />
         <TextField
           id="goods-receipt-si-ref"
-          label="SI Ref."
+          label="SI Ref"
           readOnly={isReadonly}
           value={values.siRef}
           onChange={(value) => onUpdateField("siRef", value)}
         />
         <TextField
-          id="goods-receipt-project-ref"
-          label="Project Ref"
+          id="goods-receipt-ic-no"
+          label="IC No"
           readOnly={isReadonly}
-          value={values.projectRef}
-          onChange={(value) => onUpdateField("projectRef", value)}
+          value={values.icNo}
+          onChange={(value) => onUpdateField("icNo", value)}
         />
-        <TextField
-          id="goods-receipt-project-name"
-          label="Project Name"
-          readOnly={isReadonly}
-          value={values.projectName}
-          onChange={(value) => onUpdateField("projectName", value)}
-        />
-        <FieldShell controlId="goods-receipt-status" label="Status">
+        <FieldShell controlId="goods-receipt-status" label="Status" isRequired>
           <AppAdvancedDropdown
             id="goods-receipt-status"
             value={values.status}
@@ -147,17 +166,6 @@ export function GoodsReceiptWarehouseFields({
             placeholder="Select status"
             searchPlaceholder="Search status"
             onChange={(value) => onUpdateField("status", String(value))}
-          />
-        </FieldShell>
-        <FieldShell controlId="goods-receipt-remarks" label="Remarks">
-          <AppLimitedTextarea
-            id="goods-receipt-remarks"
-            value={values.remarks}
-            readOnly={isReadonly}
-            onChange={(event) => onUpdateField("remarks", event.target.value)}
-            className={`${FieldClassName} min-h-24 py-3`}
-            counterMode="remaining"
-            maxLength={250}
           />
         </FieldShell>
       </div>

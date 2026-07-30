@@ -49,6 +49,7 @@ export function CanvassFormReportDocument({ record }: { record: CanvassFormRecor
 						<div className="text-right font-bold">
 							<p>Document Date: {formatCanvassFormDate(record.documentDate)}</p>
 							<p>Trans No.: {record.transNo}</p>
+							<p>PR No.: {record.prNo}</p>
 						</div>
 					</div>
 					<div className="grid grid-cols-2 border-t border-black">
@@ -57,6 +58,7 @@ export function CanvassFormReportDocument({ record }: { record: CanvassFormRecor
 						<InfoCell label="Terms of Payment" value={record.termsOfPayment} />
 						<InfoCell label="Currency" value={record.currency} />
 						<InfoCell label="Status" value={record.status} />
+						<InfoCell label="PR No." value={record.prNo} />
 					</div>
 					<div className="min-h-14 border-t border-black px-1 py-1">
 						<span className="font-bold">Remarks:</span> {record.remarks}
@@ -70,6 +72,7 @@ export function CanvassFormReportDocument({ record }: { record: CanvassFormRecor
 									"Description",
 									"UOM",
 									"Qty",
+									"MOQ",
 									"VAT Inc.",
 									"VAT Ex.",
 									"Supplier 1",
@@ -99,6 +102,7 @@ export function CanvassFormReportDocument({ record }: { record: CanvassFormRecor
 										<td className="border border-black px-1 py-1">{item.description}</td>
 										<td className="border border-black px-1 py-1">{item.uom}</td>
 										<td className="border border-black px-1 py-1 text-right">{formatCanvassFormAmount(item.quantity)}</td>
+										<td className="border border-black px-1 py-1 text-right">{formatCanvassFormAmount(item.minimumOrderQuantity)}</td>
 										<td className="border border-black px-1 py-1">{item.vatInclusive}</td>
 										<td className="border border-black px-1 py-1">{item.vatExclusive}</td>
 										<td className="border border-black px-1 py-1">{item.supplierName1}</td>
@@ -117,7 +121,7 @@ export function CanvassFormReportDocument({ record }: { record: CanvassFormRecor
 						</tbody>
 						<tfoot>
 							<tr>
-								<td colSpan={16} className="border border-black px-1 py-1 text-right font-bold">
+								<td colSpan={17} className="border border-black px-1 py-1 text-right font-bold">
 									Total:
 								</td>
 								<td className="border border-black px-1 py-1 text-right font-bold">

@@ -32,10 +32,12 @@ function CanvassFormActionPageInner() {
 	return (
 		<section className="grid gap-5">
 			<CanvassFormFormHeader
+				copyFromRecords={page.purchaseRequestCopyRecords}
 				isSubmitting={page.isSubmitting}
 				mode={page.mode}
 				recordId={page.recordId}
 				values={page.values}
+				onCopyFromPurchaseRequest={page.copyFromPurchaseRequests}
 				onPreview={() => page.setShowPreview(true)}
 				onSubmit={page.handleSubmit}
 			/>

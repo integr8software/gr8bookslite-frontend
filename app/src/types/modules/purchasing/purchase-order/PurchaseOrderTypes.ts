@@ -11,6 +11,10 @@ export type PurchaseOrderItem = {
 	barcode: string;
 	itemName: string;
 	itemCategory: string;
+	color: string;
+	brand: string;
+	size: string;
+	model: string;
 	quantity: number;
 	uom: string;
 	expiryDate: string;
@@ -26,6 +30,8 @@ export type PurchaseOrderItem = {
 	responsibilityCenter: string;
 	budgetCode: string;
 	prQuantity: number;
+	linePrNo: string;
+	canvassNo: string;
 };
 
 export type PurchaseOrderRecord = {

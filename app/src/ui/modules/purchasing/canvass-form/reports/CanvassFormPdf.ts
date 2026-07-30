@@ -62,6 +62,7 @@ function header(record: CanvassFormRecord): TableCell {
 										stack: [
 											`Document Date: ${formatCanvassFormDate(record.documentDate)}`,
 											`Trans No.: ${record.transNo}`,
+											`PR No.: ${record.prNo}`,
 										],
 										bold: true,
 										alignment: "right",
@@ -85,7 +86,7 @@ function info(record: CanvassFormRecord): TableCell {
 			widths: ["*", "*", "*"],
 			body: [
 				[label("Requested By", record.requestedBy), label("Required Before", formatCanvassFormDate(record.requiredBefore)), label("Terms of Payment", record.termsOfPayment)],
-				[label("Currency", record.currency), label("Status", record.status), label("Trans No.", record.transNo)],
+				[label("Currency", record.currency), label("Status", record.status), label("PR No.", record.prNo)],
 			],
 		},
 		layout: gridLayout,
@@ -98,7 +99,7 @@ function remarks(record: CanvassFormRecord): TableCell {
 
 function items(record: CanvassFormRecord): TableCell {
 	const body: TableCell[][] = [
-		["PR No.", "Item Code", "Description", "UOM", "Qty", "VAT Inc.", "VAT Ex.", "Supplier 1", "Cost 1", "Supplier 2", "Cost 2", "Supplier 3", "Cost 3", "Supplier 4", "Cost 4", "Selected", "Total"].map((text) => ({ text, bold: true })),
+		["PR No.", "Item Code", "Description", "UOM", "Qty", "MOQ", "VAT Inc.", "VAT Ex.", "Supplier 1", "Cost 1", "Supplier 2", "Cost 2", "Supplier 3", "Cost 3", "Supplier 4", "Cost 4", "Selected", "Total"].map((text) => ({ text, bold: true })),
 		...record.items.map((item) => {
 			const normalized = normalizeCanvassFormItem(item);
 			return [
@@ -107,6 +108,7 @@ function items(record: CanvassFormRecord): TableCell {
 				item.description,
 				item.uom,
 				amount(item.quantity),
+				amount(item.minimumOrderQuantity),
 				item.vatInclusive,
 				item.vatExclusive,
 				item.supplierName1,
@@ -122,12 +124,12 @@ function items(record: CanvassFormRecord): TableCell {
 			] as TableCell[];
 		}),
 		[
-			{ text: "Total:", bold: true, alignment: "right", colSpan: 16 },
-			{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+			{ text: "Total:", bold: true, alignment: "right", colSpan: 17 },
+			{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
 			amount(getCanvassFormTotal(record), true),
 		],
 	];
-	return { table: { headerRows: 1, widths: [48, 50, "*", 34, 38, 42, 42, 60, 44, 60, 44, 60, 44, 60, 44, 60, 54], body }, layout: gridLayout };
+	return { table: { headerRows: 1, widths: [42, 46, "*", 30, 34, 34, 38, 38, 54, 40, 54, 40, 54, 40, 54, 40, 54, 48], body }, layout: gridLayout };
 }
 
 function signatures(): TableCell {

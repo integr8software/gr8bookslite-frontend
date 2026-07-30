@@ -10,6 +10,7 @@ export const canvassFormSeedRecords: CanvassFormRecord[] = [
 		id: "cf-0001",
 		currency: "PHP",
 		exchangeRate: 1,
+		prNo: "",
 		purchaseType: "Goods",
 		requestedBy: "Purchasing Team",
 		responsibilityCenter: "",
@@ -32,6 +33,7 @@ export function createBlankCanvassFormItem(): CanvassFormItem {
 		description: "",
 		uom: "PC",
 		quantity: 0,
+		minimumOrderQuantity: 0,
 		responsibilityCenter: "",
 		supplierCount: 1,
 		vatExclusive: "False",
@@ -57,6 +59,7 @@ export function createCanvassFormValues(record?: CanvassFormRecord): CanvassForm
 	if (record) {
 		return {
 			...record,
+			prNo: record.prNo ?? getRecordPrNoFromItems(record.items),
 			termsOfPayment: record.termsOfPayment ?? "",
 			items: record.items.map((item) => normalizeCanvassFormItemDefaults(item)),
 		};
@@ -65,6 +68,7 @@ export function createCanvassFormValues(record?: CanvassFormRecord): CanvassForm
 	return {
 		currency: "PHP",
 		exchangeRate: 1,
+		prNo: "",
 		purchaseType: "Goods",
 		requestedBy: "",
 		responsibilityCenter: "",
@@ -85,6 +89,7 @@ export function createCanvassFormRecord(
 	return {
 		id,
 		...values,
+		exchangeRate: roundCanvassFormAmount(values.exchangeRate),
 		items: values.items.map((item) => normalizeCanvassFormItem(item)),
 	};
 }
@@ -95,12 +100,13 @@ export function normalizeCanvassFormItem(item: CanvassFormItem): CanvassFormItem
 	return {
 		...normalizeCanvassFormItemDefaults(item),
 		quantity: Number(item.quantity) || 0,
-		unitCost1: Number(item.unitCost1) || 0,
-		unitCost2: Number(item.unitCost2) || 0,
-		unitCost3: Number(item.unitCost3) || 0,
-		unitCost4: Number(item.unitCost4) || 0,
+		minimumOrderQuantity: Number(item.minimumOrderQuantity) || 0,
+		unitCost1: roundCanvassFormAmount(item.unitCost1),
+		unitCost2: roundCanvassFormAmount(item.unitCost2),
+		unitCost3: roundCanvassFormAmount(item.unitCost3),
+		unitCost4: roundCanvassFormAmount(item.unitCost4),
 		supplierCount: clampSupplierCount(item.supplierCount),
-		totalCost: selectedCost * (Number(item.quantity) || 0),
+		totalCost: roundCanvassFormAmount(selectedCost * (Number(item.quantity) || 0)),
 	};
 }
 
@@ -111,6 +117,7 @@ function normalizeCanvassFormItemDefaults(
 		...createBlankCanvassFormItem(),
 		...item,
 		prNo: item.prNo ?? "",
+		minimumOrderQuantity: Number(item.minimumOrderQuantity) || 0,
 		supplierCount: getInitialSupplierCount(item),
 		vatExclusive: item.vatExclusive ?? "False",
 		vatInclusive: item.vatInclusive ?? "False",
@@ -170,6 +177,11 @@ export function formatCanvassFormAmount(value: number) {
 	});
 }
 
+export function roundCanvassFormAmount(value: number | string) {
+	const amount = Number(value) || 0;
+	return Math.round(amount * 100) / 100;
+}
+
 export function formatCanvassFormDate(value: string) {
 	if (!value) return "";
 	const [year, month, day] = value.split("-");
@@ -198,6 +210,7 @@ function normalizeCanvassFormRecordDefaults(
 		id: record.id ?? createCanvassFormId("cf"),
 		currency: record.currency ?? "PHP",
 		exchangeRate: Number(record.exchangeRate) || 1,
+		prNo: record.prNo ?? getRecordPrNoFromItems(record.items),
 		purchaseType: record.purchaseType ?? "Goods",
 		requestedBy: record.requestedBy ?? "",
 		responsibilityCenter: record.responsibilityCenter ?? "",
@@ -211,6 +224,18 @@ function normalizeCanvassFormRecordDefaults(
 			normalizeCanvassFormItemDefaults,
 		),
 	};
+}
+
+function getRecordPrNoFromItems(items: Partial<CanvassFormItem>[] | undefined) {
+	const prNumbers = Array.from(
+		new Set(
+			(items ?? [])
+				.map((item) => item.prNo?.trim())
+				.filter((prNo): prNo is string => Boolean(prNo)),
+		),
+	);
+
+	return prNumbers.join(", ");
 }
 
 export function saveCanvassForms(records: CanvassFormRecord[]) {

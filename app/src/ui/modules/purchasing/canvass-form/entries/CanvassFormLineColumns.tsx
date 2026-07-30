@@ -160,9 +160,8 @@ const columnConfigs = [
 	column("Description", "description", "text", 300, "w-[18.75rem]"),
 	column("UOM", "uom", "select", 120, "w-[7.5rem]"),
 	column("Qty", "quantity", "amount", 140, "w-[8.75rem]"),
-	column("VAT Inc.", "vatInclusive", "select", 120, "w-[7.5rem]"),
-	column("VAT Ex.", "vatExclusive", "select", 120, "w-[7.5rem]"),
-	column("Supplier Quotations", "supplierQuotations", "text", 620, "w-[38.75rem]"),
+	column("MOQ", "minimumOrderQuantity", "amount", 140, "w-[8.75rem]"),
+	column("Supplier Quotations", "supplierQuotations", "text", 760, "w-[47.5rem]"),
 	column("Selected Supplier", "selectedSupplier", "text", 200, "w-[12.5rem]"),
 	column("Total Cost", "computedTotalCost", "amount", 150, "w-[9.5rem]"),
 ];
@@ -197,7 +196,47 @@ function SupplierQuotationsCell({
 		!isReadonly && visibleSupplierCount < SupplierQuotationFields.length;
 
 	return (
-		<div className="grid min-w-[38rem] gap-1.5 p-2">
+		<div className="grid min-w-[46rem] gap-2 p-2">
+			<div className="grid grid-cols-2 gap-2 rounded-md bg-offwhite/70 p-2">
+				<label className="grid gap-1 text-[11px] font-semibold text-darknavy/55">
+					VAT Inc.
+					<select
+						id={`${fieldId}-vat-inclusive`}
+						name={`${fieldId}-vat-inclusive`}
+						value={row.vatInclusive}
+						disabled={isReadonly}
+						onChange={(event) =>
+							onUpdateEntry(row.id, { vatInclusive: event.target.value })
+						}
+						className={controlClassName()}
+					>
+						{VatOptions.map((option) => (
+							<option key={option} value={option}>
+								{option}
+							</option>
+						))}
+					</select>
+				</label>
+				<label className="grid gap-1 text-[11px] font-semibold text-darknavy/55">
+					VAT Ex.
+					<select
+						id={`${fieldId}-vat-exclusive`}
+						name={`${fieldId}-vat-exclusive`}
+						value={row.vatExclusive}
+						disabled={isReadonly}
+						onChange={(event) =>
+							onUpdateEntry(row.id, { vatExclusive: event.target.value })
+						}
+						className={controlClassName()}
+					>
+						{VatOptions.map((option) => (
+							<option key={option} value={option}>
+								{option}
+							</option>
+						))}
+					</select>
+				</label>
+			</div>
 			<div className="grid grid-cols-[4.5rem_minmax(7rem,0.75fr)_minmax(10rem,1fr)_minmax(7rem,0.7fr)] items-center gap-1.5 px-1 text-[11px] font-semibold text-darknavy/50">
 				<span />
 				<span>Code</span>
@@ -295,3 +334,5 @@ const SupplierQuotationFields = [
 	name: keyof CanvassFormItem;
 	cost: keyof CanvassFormItem;
 }[];
+
+const VatOptions = ["False", "True"];

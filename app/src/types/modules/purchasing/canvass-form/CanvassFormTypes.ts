@@ -8,6 +8,7 @@ export type CanvassFormItem = {
 	description: string;
 	uom: string;
 	quantity: number;
+	minimumOrderQuantity: number;
 	responsibilityCenter: string;
 	supplierCount: number;
 	vatExclusive: string;
@@ -32,6 +33,7 @@ export type CanvassFormRecord = {
 	id: string;
 	currency: string;
 	exchangeRate: number;
+	prNo: string;
 	purchaseType: string;
 	requestedBy: string;
 	responsibilityCenter: string;

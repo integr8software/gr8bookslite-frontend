@@ -1,5 +1,6 @@
 import {
 	CanvassFormCurrencyOptions,
+	CanvassFormPurchaseTypeOptions,
 	CanvassFormStatusOptions,
 } from "@/app/src/constants/modules/purchasing/canvass-form/CanvassFormConstants";
 import type {
@@ -30,22 +31,31 @@ export function CanvassFormRequestFields({
 }: CanvassFormRequestFieldsProps) {
 	return (
 		<div className="grid min-w-0 gap-5 xl:grid-cols-2">
-			<div className="grid min-w-0 gap-4">
-				<TextField
-					id="canvass-form-trans-no"
-					label="Trans No."
-					isRequired
-					readOnly={isReadonly}
-					value={values.transNo}
-					onChange={(value) => onUpdateField("transNo", value)}
-				/>
+			<div className="grid min-w-0 content-start gap-4">
+				<div className="grid min-w-0 gap-4 md:grid-cols-2">
+					<SelectField
+						id="canvass-form-currency"
+						label="Currency"
+						readOnly={isReadonly}
+						value={values.currency}
+						options={CanvassFormCurrencyOptions}
+						onChange={(value) => onUpdateField("currency", value)}
+					/>
+					<AmountField
+						id="canvass-form-exchange-rate"
+						label="Exchange Rate"
+						readOnly={isReadonly}
+						value={values.exchangeRate}
+						onChange={(value) => onUpdateField("exchangeRate", value)}
+					/>
+				</div>
 				<SelectField
-					id="canvass-form-currency"
-					label="Currency"
+					id="canvass-form-purchase-type"
+					label="Purchase Type"
 					readOnly={isReadonly}
-					value={values.currency}
-					options={CanvassFormCurrencyOptions}
-					onChange={(value) => onUpdateField("currency", value)}
+					value={values.purchaseType}
+					options={CanvassFormPurchaseTypeOptions}
+					onChange={(value) => onUpdateField("purchaseType", value)}
 				/>
 				<TextField
 					id="canvass-form-requested-by"
@@ -56,37 +66,11 @@ export function CanvassFormRequestFields({
 					onChange={(value) => onUpdateField("requestedBy", value)}
 				/>
 				<TextField
-					id="canvass-form-terms-of-payment"
-					label="Terms of Payment"
+					id="canvass-form-responsibility-center"
+					label="Responsibility Center"
 					readOnly={isReadonly}
-					value={values.termsOfPayment}
-					onChange={(value) => onUpdateField("termsOfPayment", value)}
-				/>
-			</div>
-			<div className="grid min-w-0 content-start gap-4">
-				<DateField
-					id="canvass-form-document-date"
-					label="Document Date"
-					readOnly={isReadonly}
-					value={values.documentDate}
-					onChange={(value) => onUpdateField("documentDate", value)}
-				/>
-				<AmountField
-					id="canvass-form-exchange-rate"
-					label="Exchange Rate"
-					readOnly={isReadonly}
-					value={values.exchangeRate}
-					onChange={(value) => onUpdateField("exchangeRate", value)}
-				/>
-				<SelectField
-					id="canvass-form-status"
-					label="Status"
-					readOnly={isReadonly}
-					value={values.status}
-					options={CanvassFormStatusOptions}
-					onChange={(value) =>
-						onUpdateField("status", value as CanvassFormStatus)
-					}
+					value={values.responsibilityCenter}
+					onChange={(value) => onUpdateField("responsibilityCenter", value)}
 				/>
 				<DateField
 					id="canvass-form-required-before"
@@ -95,8 +79,6 @@ export function CanvassFormRequestFields({
 					value={values.requiredBefore}
 					onChange={(value) => onUpdateField("requiredBefore", value)}
 				/>
-			</div>
-			<div className="xl:col-span-2">
 				<FieldShell controlId="canvass-form-remarks" label="Remarks">
 					<AppLimitedTextarea
 						id="canvass-form-remarks"
@@ -108,6 +90,47 @@ export function CanvassFormRequestFields({
 						maxLength={250}
 					/>
 				</FieldShell>
+			</div>
+			<div className="grid min-w-0 content-start gap-4">
+				<TextField
+					id="canvass-form-trans-no"
+					label="Trans No."
+					isRequired
+					readOnly={isReadonly}
+					value={values.transNo}
+					onChange={(value) => onUpdateField("transNo", value)}
+				/>
+				<TextField
+					id="canvass-form-pr-no"
+					label="PR No."
+					readOnly={isReadonly}
+					value={values.prNo}
+					onChange={(value) => onUpdateField("prNo", value)}
+				/>
+				<DateField
+					id="canvass-form-document-date"
+					label="Document Date"
+					readOnly={isReadonly}
+					value={values.documentDate}
+					onChange={(value) => onUpdateField("documentDate", value)}
+				/>
+				<SelectField
+					id="canvass-form-status"
+					label="Status"
+					readOnly={isReadonly}
+					value={values.status}
+					options={CanvassFormStatusOptions}
+					onChange={(value) =>
+						onUpdateField("status", value as CanvassFormStatus)
+					}
+				/>
+				<TextField
+					id="canvass-form-terms-of-payment"
+					label="Terms of Payment"
+					readOnly={isReadonly}
+					value={values.termsOfPayment}
+					onChange={(value) => onUpdateField("termsOfPayment", value)}
+				/>
 			</div>
 		</div>
 	);

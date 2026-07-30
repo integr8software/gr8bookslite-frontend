@@ -36,6 +36,10 @@ export const purchaseOrderSeedRecords: PurchaseOrderRecord[] = [
 				barcode: "",
 				itemName: "Office supplies",
 				itemCategory: "",
+				color: "",
+				brand: "",
+				size: "",
+				model: "",
 				quantity: 1,
 				uom: "PC",
 				expiryDate: "",
@@ -51,6 +55,8 @@ export const purchaseOrderSeedRecords: PurchaseOrderRecord[] = [
 				responsibilityCenter: "",
 				budgetCode: "",
 				prQuantity: 0,
+				linePrNo: "",
+				canvassNo: "",
 			},
 		],
 	},
@@ -62,6 +68,10 @@ export const emptyPurchaseOrderItem: PurchaseOrderItem = {
 	barcode: "",
 	itemName: "",
 	itemCategory: "",
+	color: "",
+	brand: "",
+	size: "",
+	model: "",
 	quantity: 0,
 	uom: "PC",
 	expiryDate: "",
@@ -77,6 +87,8 @@ export const emptyPurchaseOrderItem: PurchaseOrderItem = {
 	responsibilityCenter: "",
 	budgetCode: "",
 	prQuantity: 0,
+	linePrNo: "",
+	canvassNo: "",
 };
 
 export function createPurchaseOrderFormValues(
@@ -86,10 +98,7 @@ export function createPurchaseOrderFormValues(
 		return {
 			...record,
 			termsOfPayment: record.termsOfPayment ?? "",
-			items: record.items.map((item) => ({
-				...item,
-				rateDelivery: item.rateDelivery ?? 0,
-			})),
+			items: record.items.map((item) => normalizePurchaseOrderItemDefaults(item)),
 		};
 	}
 
@@ -127,7 +136,7 @@ export function createPurchaseOrderRecord(
 		id,
 		...values,
 		items: values.items.map((item) => ({
-			...item,
+			...normalizePurchaseOrderItemDefaults(item),
 			id: item.id || createPurchaseOrderId("item"),
 			quantity: Number(item.quantity) || 0,
 			freightCost: Number(item.freightCost) || 0,
@@ -137,6 +146,22 @@ export function createPurchaseOrderRecord(
 			discountAmount: Number(item.discountAmount) || 0,
 			prQuantity: Number(item.prQuantity) || 0,
 		})),
+	};
+}
+
+function normalizePurchaseOrderItemDefaults(
+	item: Partial<PurchaseOrderItem>,
+): PurchaseOrderItem {
+	return {
+		...emptyPurchaseOrderItem,
+		...item,
+		color: item.color ?? "",
+		brand: item.brand ?? "",
+		size: item.size ?? "",
+		model: item.model ?? "",
+		rateDelivery: item.rateDelivery ?? 0,
+		linePrNo: item.linePrNo ?? "",
+		canvassNo: item.canvassNo ?? "",
 	};
 }
 

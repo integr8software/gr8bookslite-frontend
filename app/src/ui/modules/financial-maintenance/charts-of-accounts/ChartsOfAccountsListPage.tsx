@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { ChartAccount } from "@/app/src/types/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 import { ChartsOfAccountsDrawer } from "@/app/src/ui/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsDrawer";
 import { ChartsOfAccountsFilters } from "@/app/src/ui/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsFilters";
@@ -15,7 +15,12 @@ import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 
 export function ChartsOfAccountsListPage() {
 	const coa = useChartsOfAccounts();
-	const accountOptions = coa.flatAccounts.map((item) => item.account);
+	const accountOptions = useMemo(
+		() => coa.flatAccounts.map((item) => item.account),
+		[coa.flatAccounts],
+	);
+	const canDragRows =
+		coa.structureFilter !== "Without Submodules" && !coa.searchQuery.trim();
 	const [pendingStatusAccount, setPendingStatusAccount] =
 		useState<ChartAccount | null>(null);
 	useMaintenanceAddDrawerSpotlight(coa.openAddDrawer, coa.closeDrawer);
@@ -44,7 +49,7 @@ export function ChartsOfAccountsListPage() {
 				/>
 
 				<Card
-					className="overflow-hidden rounded-lg"
+					className="overflow-visible rounded-lg bg-white"
 					data-spotlight-id="charts-of-accounts-table"
 				>
 					<ChartsOfAccountsTable
@@ -76,7 +81,7 @@ export function ChartsOfAccountsListPage() {
 								onTabChange={coa.setActiveTab}
 							/>
 						}
-						canDragRows={coa.structureFilter !== "Without Submodules"}
+						canDragRows={canDragRows}
 						showHierarchyGuides={coa.structureFilter !== "Without Submodules"}
 						showParentColumn={false}
 						onAddChild={coa.openAddDrawer}

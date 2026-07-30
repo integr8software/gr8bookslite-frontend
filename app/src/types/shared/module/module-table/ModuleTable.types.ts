@@ -16,7 +16,11 @@ export type ModuleTableProps<TData> = {
 	paginationTotalRows?: number;
 	pageSizeOptions?: number[];
 	renderRow: (row: Row<TData>) => ReactNode;
+	rootClassName?: string;
+	scrollContainerClassName?: string;
 	skeletonRowCount?: number;
+	stickyToolbarAndHeader?: boolean;
+	stickyTopOffset?: number;
 	table: Table<TData>;
 	tableTitle?: ReactNode;
 	toolbar?: ReactNode;

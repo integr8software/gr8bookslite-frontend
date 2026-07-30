@@ -99,8 +99,7 @@ export type ChartsOfAccountsNav =
   | "All Accounts"
   | "Balance Sheet"
   | "Income Statement"
-  | "Cash Flow"
-  | "Inactive Accounts";
+  | "Cash Flow";
 
 export type ChartsOfAccountsDrawerMode = "add" | "edit" | "view";
 

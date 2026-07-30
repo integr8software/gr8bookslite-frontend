@@ -16,11 +16,13 @@ type HeaderDropIndicator = {
 };
 
 type ModuleTableHeaderProps<TData> = {
+	stickyTop?: number;
 	scrollContainerRef?: RefObject<HTMLDivElement | null>;
 	table: Table<TData>;
 };
 
 export function ModuleTableHeader<TData>({
+	stickyTop,
 	scrollContainerRef,
 	table,
 }: ModuleTableHeaderProps<TData>) {
@@ -119,7 +121,7 @@ export function ModuleTableHeader<TData>({
 	}
 
 	return (
-		<thead className="module-table-header sticky top-0 z-50 bg-slate-50 text-xs font-bold text-darknavy/80">
+		<thead className="module-table-header sticky top-0 z-50 bg-slate-50 text-xs font-bold text-darknavy/80" style={stickyTop === undefined ? undefined : { top: stickyTop }}>
 			{table.getHeaderGroups().map((headerGroup) => (
 				<tr key={headerGroup.id} className="border-b border-darknavy/10">
 					{headerGroup.headers.map((header) => (

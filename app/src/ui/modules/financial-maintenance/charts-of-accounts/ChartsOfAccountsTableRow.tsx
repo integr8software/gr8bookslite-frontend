@@ -2,9 +2,8 @@
 
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import { motion } from "framer-motion";
 import { ChevronRight, GripVertical, Plus } from "lucide-react";
-import type { CSSProperties } from "react";
+import { memo, type CSSProperties } from "react";
 import {
   AccountLevelLabels,
   NormalBalanceLabels,
@@ -17,6 +16,7 @@ import {
 import { formatDateTime } from "@/app/src/utils/date.util";
 import type {
   ChartAccount,
+  ChartsOfAccountsDropPlacement,
   ChartsOfAccountsPermissions,
   ChartsOfAccountsTableRowProps,
 } from "@/app/src/types/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsTypes";
@@ -30,24 +30,30 @@ import {
   ModuleTableActions,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
-export function ChartsOfAccountsTableRow({
+type ChartsOfAccountsTableRowViewProps = ChartsOfAccountsTableRowProps & {
+  dragAttributes?: ReturnType<typeof useDraggable>["attributes"];
+  dragListeners?: ReturnType<typeof useDraggable>["listeners"];
+  dropMode: ChartsOfAccountsDropPlacement | null;
+  isDragging?: boolean;
+  rowRef?: (node: HTMLTableRowElement | null) => void;
+  rowStyle?: CSSProperties;
+};
+
+export const ChartsOfAccountsTableRow = memo(function ChartsOfAccountsTableRow(
+  props: ChartsOfAccountsTableRowProps,
+) {
+  if (!props.canDragRows) {
+    return <StaticChartsOfAccountsTableRow {...props} />;
+  }
+
+  return <DraggableChartsOfAccountsTableRow {...props} />;
+}, areChartAccountRowsEqual);
+
+function DraggableChartsOfAccountsTableRow({
   account,
   activeDragAccount,
   activeDropPlacement,
-  canDragRows,
-  expandedIds,
-  level,
-  parentAccount,
-  parentPath,
-  permissions,
-  showHierarchyGuides,
-  showParentColumn,
-  visibleColumnIds,
-  onAddChild,
-  onEdit,
-  onStatusChange,
-  onToggleExpanded,
-  onView,
+  ...props
 }: ChartsOfAccountsTableRowProps) {
   const {
     attributes,
@@ -57,13 +63,12 @@ export function ChartsOfAccountsTableRow({
     transform,
   } = useDraggable({
     id: account.id,
-    disabled: !canDragRows || !isSpecificAccountLevel(account),
+    disabled: !isSpecificAccountLevel(account),
   });
   const { isOver, setNodeRef: setDroppableNodeRef } = useDroppable({
     id: account.id,
   });
   const targetIsSpecific = isSpecificAccountNumber(account.accountNumber);
-  const accountIsSpecific = isSpecificAccountLevel(account);
   const dropPlacementMode = getDropPlacementMode({
     activeDragAccount,
     placement: activeDropPlacement ?? "before",
@@ -81,9 +86,56 @@ export function ChartsOfAccountsTableRow({
     setDroppableNodeRef(node);
   }
 
+  return (
+    <ChartsOfAccountsTableRowView
+      {...props}
+      account={account}
+      activeDragAccount={activeDragAccount}
+      activeDropPlacement={activeDropPlacement}
+      dragAttributes={attributes}
+      dragListeners={listeners}
+      dropMode={dropMode}
+      isDragging={isDragging}
+      rowRef={setRowNodeRef}
+      rowStyle={rowStyle}
+    />
+  );
+}
+
+function StaticChartsOfAccountsTableRow(props: ChartsOfAccountsTableRowProps) {
+  return <ChartsOfAccountsTableRowView {...props} dropMode={null} />;
+}
+
+function ChartsOfAccountsTableRowView({
+  account,
+  activeDragAccount,
+  canDragRows,
+  dragAttributes,
+  dragListeners,
+  dropMode,
+  expandedIds,
+  isDragging = false,
+  level,
+  parentAccount,
+  parentPath,
+  permissions,
+  rowRef,
+  rowStyle,
+  showHierarchyGuides,
+  showParentColumn,
+  visibleColumnIds,
+  onAddChild,
+  onEdit,
+  onStatusChange,
+  onToggleExpanded,
+  onView,
+}: ChartsOfAccountsTableRowViewProps) {
+  const accountIsSpecific = isSpecificAccountLevel(account);
   const renderedColumnIds = visibleColumnIds.filter(
     (columnId) => showParentColumn || columnId !== "parentPath",
   );
+  const hasChildren = Boolean(account.children?.length);
+  const isCollapsedParent = hasChildren && !expandedIds.has(account.id);
   const firstRenderedColumnId = renderedColumnIds[0];
   const addTitleParentAccount = accountIsSpecific ? parentAccount : account;
   const canAddAccountTitle =
@@ -120,8 +172,8 @@ export function ChartsOfAccountsTableRow({
               account={account}
               canDrag={canDragRows && accountIsSpecific}
               expandedIds={expandedIds}
-              dragAttributes={attributes}
-              dragListeners={listeners}
+              dragAttributes={dragAttributes}
+              dragListeners={dragListeners}
               level={level}
               showHierarchyGuides={showHierarchyGuides}
               onToggleExpanded={onToggleExpanded}
@@ -179,9 +231,11 @@ export function ChartsOfAccountsTableRow({
       case "status":
         return (
           <td key={columnId} className="px-5 py-4 text-center">
-            <Badge variant={account.status === "Active" ? "green" : "gray"}>
-              {account.status}
-            </Badge>
+            {isCollapsedParent ? null : (
+              <Badge variant={account.status === "Active" ? "green" : "gray"}>
+                {account.status}
+              </Badge>
+            )}
           </td>
         );
       case "createdBy":
@@ -210,13 +264,10 @@ export function ChartsOfAccountsTableRow({
   }
 
   return (
-    <motion.tr
-      ref={setRowNodeRef}
+    <tr
+      ref={rowRef}
       data-chart-account-id={account.id}
       style={rowStyle}
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.18 }}
       className={joinClasses(
         "module-table-row group relative z-0 text-darknavy hover:z-30 focus-within:z-30",
         isDragging && "relative z-10 bg-skyblue/5 opacity-70 shadow-sm",
@@ -228,7 +279,7 @@ export function ChartsOfAccountsTableRow({
       )}
     >
       {renderedColumnIds.map(renderCell)}
-    </motion.tr>
+    </tr>
   );
 }
 
@@ -280,8 +331,8 @@ function AccountNameCell({
   account: ChartAccount;
   canDrag: boolean;
   expandedIds: Set<string>;
-  dragAttributes: ReturnType<typeof useDraggable>["attributes"];
-  dragListeners: ReturnType<typeof useDraggable>["listeners"];
+  dragAttributes?: ReturnType<typeof useDraggable>["attributes"];
+  dragListeners?: ReturnType<typeof useDraggable>["listeners"];
   level: number;
   showHierarchyGuides: boolean;
   onToggleExpanded: (accountId: string) => void;
@@ -417,4 +468,41 @@ function RowActions({
       ) : null}
     </ModuleTableActions>
   );
+}
+
+function areChartAccountRowsEqual(
+  previous: ChartsOfAccountsTableRowProps,
+  next: ChartsOfAccountsTableRowProps,
+) {
+  return (
+    previous.account === next.account &&
+    previous.activeDragAccount === next.activeDragAccount &&
+    previous.activeDropPlacement === next.activeDropPlacement &&
+    previous.canDragRows === next.canDragRows &&
+    previous.expandedIds === next.expandedIds &&
+    previous.level === next.level &&
+    previous.parentAccount === next.parentAccount &&
+    previous.parentPath === next.parentPath &&
+    previous.permissions === next.permissions &&
+    previous.showHierarchyGuides === next.showHierarchyGuides &&
+    previous.showParentColumn === next.showParentColumn &&
+    previous.onAddChild === next.onAddChild &&
+    previous.onEdit === next.onEdit &&
+    previous.onStatusChange === next.onStatusChange &&
+    previous.onToggleExpanded === next.onToggleExpanded &&
+    previous.onView === next.onView &&
+    areStringArraysEqual(previous.visibleColumnIds, next.visibleColumnIds)
+  );
+}
+
+function areStringArraysEqual(previous: string[], next: string[]) {
+  if (previous === next) {
+    return true;
+  }
+
+  if (previous.length !== next.length) {
+    return false;
+  }
+
+  return previous.every((value, index) => value === next[index]);
 }

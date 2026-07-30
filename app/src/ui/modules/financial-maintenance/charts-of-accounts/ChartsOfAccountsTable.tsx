@@ -11,15 +11,17 @@ import {
   type DragMoveEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
+import type { Row } from "@tanstack/react-table";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { getEventCoordinates } from "@dnd-kit/utilities";
 import { Search } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { getPointerDropPlacement } from "@/app/src/data/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsData";
 import type {
   ActiveDragAccount,
   ActiveDropTarget,
   ChartsOfAccountsTableProps,
+  FlattenedChartAccount,
 } from "@/app/src/types/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import { ChartsOfAccountsTableRow } from "@/app/src/ui/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsTableRow";
@@ -32,8 +34,9 @@ export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
   const visibleColumnIds = props.table
     .getVisibleLeafColumns()
     .map((column) => column.id);
-  const accountById = new Map(
-    props.accounts.map((account) => [account.id, account]),
+  const accountById = useMemo(
+    () => new Map(props.accounts.map((account) => [account.id, account])),
+    [props.accounts],
   );
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -129,6 +132,84 @@ export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
     };
   }
 
+  const renderRow = useCallback(
+    ({ id, original }: Row<FlattenedChartAccount>) => (
+      <ChartsOfAccountsTableRow
+        key={id}
+        account={original.account}
+        activeDragAccount={activeDragAccount}
+        activeDropPlacement={
+          activeDropTarget?.id === original.account.id
+            ? activeDropTarget.placement
+            : null
+        }
+        canDragRows={props.canDragRows}
+        expandedIds={props.expandedIds}
+        level={original.level}
+        parentAccount={
+          original.account.parentId
+            ? accountById.get(original.account.parentId) ?? null
+            : null
+        }
+        parentPath={original.parentPath}
+        permissions={props.permissions}
+        showHierarchyGuides={props.showHierarchyGuides}
+        showParentColumn={props.showParentColumn}
+        visibleColumnIds={visibleColumnIds}
+        onAddChild={props.onAddChild}
+        onEdit={props.onEdit}
+        onStatusChange={props.onStatusChange}
+        onToggleExpanded={props.onToggleExpanded}
+        onView={props.onView}
+      />
+    ),
+    [
+      accountById,
+      activeDragAccount,
+      activeDropTarget,
+      props.canDragRows,
+      props.expandedIds,
+      props.onAddChild,
+      props.onEdit,
+      props.onStatusChange,
+      props.onToggleExpanded,
+      props.onView,
+      props.permissions,
+      props.showHierarchyGuides,
+      props.showParentColumn,
+      visibleColumnIds,
+    ],
+  );
+
+  const table = (
+    <ModuleTable
+      emptyDescription="Adjust the filters or add a new ledger account."
+      emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
+      emptyTitle="No accounts found"
+      isLoading={props.isLoading}
+      isSyncing={props.isRefreshing}
+      lastSyncedAt={props.lastSyncedAt}
+      maxHeightClassName="max-h-none"
+      paginationLabel="accounts"
+      paginationStorageKey="maintenance:chart-of-accounts"
+      pageSizeOptions={[25, 50, 100, 150, 200, 250]}
+      rootClassName="overflow-visible"
+      scrollContainerClassName="overflow-visible"
+      stickyToolbarAndHeader
+      stickyTopOffset={-16}
+      table={props.table}
+      tableTitle="Ledger Accounts"
+      toolbar={props.toolbar}
+      useColumnSizing
+      variant="embedded"
+      renderRow={renderRow}
+    />
+  );
+
+  if (!props.canDragRows) {
+    return table;
+  }
+
   return (
     <DndContext
       collisionDetection={closestCenter}
@@ -138,52 +219,7 @@ export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
       onDragMove={handleDragMove}
       onDragStart={handleDragStart}
     >
-      <ModuleTable
-        emptyDescription="Adjust the filters or add a new ledger account."
-        emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
-        emptyTitle="No accounts found"
-        isLoading={props.isLoading}
-        isSyncing={props.isRefreshing}
-        lastSyncedAt={props.lastSyncedAt}
-        paginationLabel="accounts"
-        paginationStorageKey="maintenance:chart-of-accounts"
-        pageSizeOptions={[25, 50, 100, 150, 200]}
-        table={props.table}
-        tableTitle="Ledger Accounts"
-        toolbar={props.toolbar}
-        useColumnSizing
-        variant="embedded"
-        renderRow={({ id, original }) => (
-          <ChartsOfAccountsTableRow
-            key={id}
-            account={original.account}
-            activeDragAccount={activeDragAccount}
-            activeDropPlacement={
-              activeDropTarget?.id === original.account.id
-                ? activeDropTarget.placement
-                : null
-            }
-            canDragRows={props.canDragRows}
-            expandedIds={props.expandedIds}
-            level={original.level}
-            parentAccount={
-              original.account.parentId
-                ? accountById.get(original.account.parentId) ?? null
-                : null
-            }
-            parentPath={original.parentPath}
-            permissions={props.permissions}
-            showHierarchyGuides={props.showHierarchyGuides}
-            showParentColumn={props.showParentColumn}
-            visibleColumnIds={visibleColumnIds}
-            onAddChild={props.onAddChild}
-            onEdit={props.onEdit}
-            onStatusChange={props.onStatusChange}
-            onToggleExpanded={props.onToggleExpanded}
-            onView={props.onView}
-          />
-        )}
-      />
+      {table}
     </DndContext>
   );
 }

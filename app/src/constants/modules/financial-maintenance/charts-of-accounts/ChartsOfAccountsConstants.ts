@@ -74,7 +74,6 @@ export const ChartsOfAccountsNavs = [
   "Balance Sheet",
   "Income Statement",
   "Cash Flow",
-  "Inactive Accounts",
 ] as const satisfies ChartsOfAccountsNav[];
 
 export const ChartsOfAccountsDrawerTabs: ChartsOfAccountsFormTab[] = [

@@ -10,7 +10,7 @@ export function validateGoodsIssueForm(
 	values: GoodsIssueFormValues,
 ): GoodsIssueValidationResult {
 	if (!values.transactionType.trim()) {
-		return { isValid: false, message: "Select the transaction type." };
+		return { isValid: false, message: "Select the goods issue type." };
 	}
 
 	if (!values.sourceWarehouse.trim()) {

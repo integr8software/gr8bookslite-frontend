@@ -60,10 +60,10 @@ export function GoodsIssueReportDocument({
 			]}
 			tableColumns={GoodsIssueReportColumns}
 			tableRows={values.lineEntries
-				.filter((entry) => entry.itemCode || entry.description)
+				.filter((entry) => entry.itemCode || entry.itemName)
 				.map((entry) => ({
 					itemCode: entry.itemCode,
-					itemName: entry.description,
+					itemName: entry.itemName,
 					uom: entry.uom,
 					quantity: formatInventoryReportNumber(entry.issueQuantity),
 				}))}

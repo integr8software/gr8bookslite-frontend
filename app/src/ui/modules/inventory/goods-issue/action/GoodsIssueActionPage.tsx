@@ -26,14 +26,14 @@ export function GoodsIssueActionPage() {
 	const issueForm = useGoodsIssueActionForm(mode, recordId, () => {
 		router.push(GoodsIssueHref);
 	});
-	const materialRequestCopyRecords = useMemo<AppCopyFromRecord[]>(
+	const copyFromRecords = useMemo<AppCopyFromRecord[]>(
 		() =>
 			GoodsIssueMaterialRequestCopyRecords.map((record) => ({
 				documentDate: record.documentDate,
 				id: record.id,
 				partyName: record.partyName,
 				remarks: record.remarks,
-				source: "Material Request",
+				source: record.source,
 				sourceNo: record.sourceNo,
 			})),
 		[],
@@ -47,7 +47,7 @@ export function GoodsIssueActionPage() {
 		<>
 		<section className="grid gap-5">
 			<GoodsIssueFormHeader
-				copyFromRecords={materialRequestCopyRecords}
+				copyFromRecords={copyFromRecords}
 				mode={mode}
 				onCopyFromMaterialRequest={issueForm.copyFromMaterialRequests}
 				onPreview={() => setIsReportPreviewOpen(true)}

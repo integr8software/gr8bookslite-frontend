@@ -194,25 +194,30 @@ function entryCellControlClassName(extraClassName?: string) {
 }
 
 const GoodsIssueEntryColumnConfigs = [
-	column("Item Code", "itemCode", "text", 130, "w-[8rem]"),
+	column("Item Code *", "itemCode", "text", 140, "w-[8.75rem]"),
 	column("Barcode", "barcode", "text", 130, "w-[8rem]"),
-	column("Description", "description", "text", 260, "w-[16rem]"),
-	column("Item Category", "itemCategory", "text", 180, "w-[11.25rem]"),
-	column("UOM", "uom", "dropdown", 130, "w-[8rem]", GoodsIssueUomOptions),
-	column("LotNo", "lotNo", "text", 120, "w-[7.5rem]"),
-	column("Stock QTY", "stockQuantity", "amount", 130, "w-[8rem]"),
-	column("Issue QTY", "issueQuantity", "amount", 130, "w-[8rem]"),
+	column("Item Name *", "itemName", "text", 260, "w-[16rem]"),
+	column("Stock Qty", "stockQuantity", "amount", 130, "w-[8rem]"),
+	column("GI QTY *", "issueQuantity", "amount", 130, "w-[8rem]"),
+	column("Remaining Qty", "remainingQuantity", "amount", 150, "w-[9.5rem]"),
+	column("UOM *", "uom", "dropdown", 130, "w-[8rem]", GoodsIssueUomOptions),
 	column("Unit Cost", "unitCost", "amount", 130, "w-[8rem]"),
-	column("Amount", "amount", "amount", 130, "w-[8rem]"),
-	column("Ref No.", "referenceNo", "text", 150, "w-[9.5rem]"),
+	column("Mfg Date", "mfgDate", "text", 130, "w-[8rem]"),
+	column("Expiration Date", "expirationDate", "text", 150, "w-[9.5rem]"),
+	column("Lot No", "lotNo", "text", 120, "w-[7.5rem]"),
+	column("Serial No.", "serialNo", "text", 140, "w-[8.75rem]"),
 	column(
-		"Res. Center",
+		"Res Center",
 		"responsibilityCenter",
 		"dropdown",
-		210,
-		"w-[13rem]",
+		170,
+		"w-[10.5rem]",
 		GoodsIssueResponsibilityCenterOptions,
 	),
+	column("Color", "color", "text", 120, "w-[7.5rem]"),
+	column("Brand", "brand", "text", 120, "w-[7.5rem]"),
+	column("Size", "size", "text", 110, "w-[6.875rem]"),
+	column("Model", "model", "text", 130, "w-[8rem]"),
 ];
 
 function column(

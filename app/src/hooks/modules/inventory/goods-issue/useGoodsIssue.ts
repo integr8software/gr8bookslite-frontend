@@ -126,18 +126,37 @@ export function useGoodsIssueActionForm(
 		setValues((current) => ({
 			...current,
 			documentDate: firstRequest.documentDate || current.documentDate,
-			mrNo: firstRequest.mrNo,
+			icNo:
+				firstRequest.source === "Inventory Count"
+					? firstRequest.sourceNo
+					: current.icNo,
+			joNo:
+				firstRequest.source === "Job Order" ? firstRequest.sourceNo : current.joNo,
+			mrNo:
+				firstRequest.source === "Material Request"
+					? firstRequest.sourceNo
+					: current.mrNo,
+			rrNo:
+				firstRequest.source === "Receiving Report"
+					? firstRequest.sourceNo
+					: current.rrNo,
 			sourceWarehouse: firstRequest.warehouse || current.sourceWarehouse,
-			transactionType: "Material Request Issue",
+			transactionType:
+				firstRequest.source === "Inventory Count"
+					? "Variance"
+					: firstRequest.source === "Material Request"
+						? "Material Request Issue"
+						: current.transactionType,
 			vceCode: firstRequest.partyCode,
 			vceName: firstRequest.partyName,
 			lineEntries: selectedRequests.map((request) =>
 				createBlankGoodsIssueLineEntry({
-					description: request.remarks,
+					itemName: request.remarks,
 					itemCategory: request.itemCategory,
 					itemCode: request.itemCode,
 					issueQuantity: request.requestedQuantity,
-					referenceNo: request.mrNo,
+					remainingQuantity: "0.00",
+					referenceNo: request.sourceNo,
 					uom: request.uom,
 				}),
 			),
@@ -236,7 +255,7 @@ export function useGoodsIssueTable(issues: GoodsIssueRecord[]) {
 			{
 				id: "transactionType",
 				accessorKey: "transactionType",
-				header: "Transaction Type",
+				header: "Goods Issue Type",
 				sortingFn: "alphanumeric",
 				meta: { className: "w-[16rem]" },
 			},

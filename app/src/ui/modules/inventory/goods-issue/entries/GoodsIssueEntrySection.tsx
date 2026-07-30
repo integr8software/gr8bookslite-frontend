@@ -46,7 +46,7 @@ export function GoodsIssueEntrySection({
 		() =>
 			columns.map((column) => ({
 				id: column.id,
-				isHideable: !["itemCode", "description", "issueQuantity"].includes(
+				isHideable: !["itemCode", "itemName", "issueQuantity"].includes(
 					column.id,
 				),
 				isVisible: true,
@@ -147,7 +147,6 @@ export function GoodsIssueEntrySection({
 			isReadonly={isReadonly}
 			rows={rows}
 			summaryCells={{
-				amount: formatGoodsIssueAmount(totals.amount),
 				issueQuantity: formatGoodsIssueAmount(totals.issueQuantity),
 			}}
 			title="Goods Issue Details"

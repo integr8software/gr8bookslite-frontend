@@ -94,7 +94,12 @@ function GoodsIssueHeaderActions({
 				<>
 					<AppCopyFromDropdown
 						records={copyFromRecords}
-						sources={["Material Request"]}
+						sources={[
+							"Receiving Report",
+							"Material Request",
+							"Inventory Count",
+							"Job Order",
+						]}
 						onApply={onCopyFromMaterialRequest}
 					/>
 					<div className="flex lg:hidden">

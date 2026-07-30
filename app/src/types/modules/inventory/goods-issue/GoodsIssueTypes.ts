@@ -25,16 +25,24 @@ export type GoodsIssueLineEntry = {
 	id: string;
 	itemCode: string;
 	barcode: string;
-	description: string;
+	itemName: string;
 	itemCategory: string;
 	uom: string;
+	mfgDate: string;
+	expirationDate: string;
 	lotNo: string;
+	serialNo: string;
 	stockQuantity: string;
 	issueQuantity: string;
+	remainingQuantity: string;
 	unitCost: string;
 	amount: string;
 	referenceNo: string;
 	responsibilityCenter: string;
+	color: string;
+	brand: string;
+	size: string;
+	model: string;
 };
 
 export type GoodsIssueMaterialRequestCopyRecord = {
@@ -47,6 +55,7 @@ export type GoodsIssueMaterialRequestCopyRecord = {
 	partyName: string;
 	remarks: string;
 	requestedQuantity: string;
+	source: string;
 	sourceNo: string;
 	uom: string;
 	warehouse: string;
@@ -57,6 +66,8 @@ export type GoodsIssueFormValues = {
 	sourceWarehouse: string;
 	vceCode: string;
 	vceName: string;
+	currency: string;
+	exchangeRate: string;
 	remarks: string;
 	transactionNo: string;
 	documentDate: string;
@@ -64,6 +75,7 @@ export type GoodsIssueFormValues = {
 	mrNo: string;
 	rrNo: string;
 	icNo: string;
+	joNo: string;
 	projectRef: string;
 	projectName: string;
 	lineEntries: GoodsIssueLineEntry[];

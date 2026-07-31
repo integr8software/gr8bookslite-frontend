@@ -1,3 +1,5 @@
+import Script from "next/script";
+
 import {
   AccountPreferencesStorageKey,
   AccountThemeCookieName,
@@ -37,8 +39,9 @@ try {
 
 export function InitialAppTheme() {
   return (
-    <script
+    <Script
       id="initial-app-theme"
+      strategy="beforeInteractive"
       dangerouslySetInnerHTML={{ __html: InitialAppThemeScript }}
     />
   );

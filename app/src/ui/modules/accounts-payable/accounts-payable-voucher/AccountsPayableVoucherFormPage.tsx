@@ -2,10 +2,7 @@
 
 import { useMemo, useState, type ChangeEventHandler, type ReactNode } from "react";
 import { Plus } from "lucide-react";
-import {
-  MockMultiCurrencySetupRecords,
-  MultiCurrencyCatalog,
-} from "@/app/src/data/modules/system-administration/multi-currency-setup/MultiCurrencySetupData";
+import { MultiCurrencyCatalog } from "@/app/src/data/modules/system-administration/multi-currency-setup/MultiCurrencySetupData";
 import {
   calculateAccountsPayableVoucherDueDate,
 } from "@/app/src/data/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherData";
@@ -625,20 +622,7 @@ function FieldShell({
 }
 
 function createAccountsPayableVoucherCurrencyOptions() {
-  const activeCurrencyCodes = new Set(
-    MockMultiCurrencySetupRecords.filter(
-      (record) => record.status === "Active",
-    ).flatMap((record) => [
-      record.baseCurrencyCode,
-      record.targetCurrencyCode,
-    ]),
-  );
-
-  activeCurrencyCodes.add("PHP");
-
-  return MultiCurrencyCatalog.filter(
-    (currency) => currency.isEnabled && activeCurrencyCodes.has(currency.code),
-  );
+  return MultiCurrencyCatalog.filter((currency) => currency.isEnabled);
 }
 
 function createAccountsPayableVoucherCurrencyDropdownOptions(): AppAdvancedDropdownOption[] {

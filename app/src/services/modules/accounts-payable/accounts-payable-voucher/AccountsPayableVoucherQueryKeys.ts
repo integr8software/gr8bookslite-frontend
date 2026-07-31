@@ -35,6 +35,20 @@ export const AccountsPayableVoucherQueryKeys = {
       ...AccountsPayableVoucherQueryKeys.all(companyId, branchUnitId),
       "number-suggestion",
     ] as const,
+  lookups: (companyId?: number | null, branchUnitId?: number | null) =>
+    [
+      ...AccountsPayableVoucherQueryKeys.all(companyId, branchUnitId),
+      "lookups",
+    ] as const,
+  lookup: (
+    name: string,
+    companyId?: number | null,
+    branchUnitId?: number | null,
+  ) =>
+    [
+      ...AccountsPayableVoucherQueryKeys.lookups(companyId, branchUnitId),
+      name,
+    ] as const,
   records: (companyId?: number | null, branchUnitId?: number | null) =>
     AccountsPayableVoucherQueryKeys.list(companyId, branchUnitId),
 };

@@ -5,12 +5,14 @@ import type {
 	ApiTermDateMode,
 	ApiTermImportResponse,
 	ApiTermListResponse,
+	ApiTermLookupResponse,
 	ApiTermSaveResponse,
 	ApiTermStatus,
 	TermsMaintenance,
 	TermsMaintenanceDatemode,
 	TermsMaintenanceFormValues,
 	TermsMaintenanceListResponse,
+	TermsMaintenanceLookupResponse,
 	TermsMaintenanceStatus,
 } from "@/app/src/types/modules/financial-maintenance/terms-maintenance/TermsMaintenanceTypes";
 
@@ -23,6 +25,16 @@ export async function fetchTerms(): Promise<TermsMaintenanceListResponse> {
 		terms: response.data.terms.map(mapApiTerm),
 		statistics: response.data.statistics,
 		permissions: response.data.permissions,
+	};
+}
+
+export async function fetchTermOptions(): Promise<TermsMaintenanceLookupResponse> {
+	const response = await ApiClient.get<ApiTermLookupResponse>(
+		`${TermsMaintenanceApiPath}/options`,
+	);
+
+	return {
+		terms: response.data.terms.map(mapApiTermOption),
 	};
 }
 
@@ -73,6 +85,17 @@ function mapApiTerm(term: ApiTerm): TermsMaintenance {
 		createdAt: term.createdAt,
 		updatedBy: term.updatedBy,
 		updatedAt: term.updatedAt,
+	};
+}
+
+function mapApiTermOption(term: ApiTermLookupResponse["terms"][number]): TermsMaintenance {
+	return {
+		id: term.id,
+		name: term.name,
+		description: "",
+		datemode: mapDateModeFromApi(term.dateMode),
+		period: String(term.period),
+		status: mapStatusFromApi(term.status),
 	};
 }
 

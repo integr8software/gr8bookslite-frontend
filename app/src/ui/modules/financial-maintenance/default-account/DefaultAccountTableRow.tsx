@@ -117,18 +117,18 @@ function DefaultAccountCellContent({
             label={`View ${defaultAccount.defaultAccountName}`}
           />
           {permissions.canUpdate ? (
-            <>
-              <ModuleTableActionButton
-                variant="edit"
-                onClick={() => onEditDefaultAccount(defaultAccount)}
-                label={`Edit ${defaultAccount.defaultAccountName}`}
-              />
-              <ModuleTableActionButton
-                variant={nextStatus === "Inactive" ? "inactive" : "active"}
-                onClick={() => onToggleStatus(defaultAccount)}
-                label={`${statusActionLabel} ${defaultAccount.defaultAccountName}`}
-              />
-            </>
+            <ModuleTableActionButton
+              variant="edit"
+              onClick={() => onEditDefaultAccount(defaultAccount)}
+              label={`Edit ${defaultAccount.defaultAccountName}`}
+            />
+          ) : null}
+          {permissions.canCancel ? (
+            <ModuleTableActionButton
+              variant={nextStatus === "Inactive" ? "inactive" : "active"}
+              onClick={() => onToggleStatus(defaultAccount)}
+              label={`${statusActionLabel} ${defaultAccount.defaultAccountName}`}
+            />
           ) : null}
         </ModuleTableActions>
       );

@@ -66,7 +66,7 @@ export type DefaultAccountPermissions = {
   canView: boolean;
   canCreate: boolean;
   canUpdate: boolean;
-  canDelete: boolean;
+  canCancel: boolean;
   canExport: boolean;
   canImport: boolean;
 };
@@ -115,6 +115,12 @@ export type ApiDefaultAccountExpenseParentOptionsResponse = {
   options: DefaultAccountExpenseParentOption[];
 };
 
+export type ApiDefaultAccountExpenseSubAccountSaveResponse = {
+  account: {
+    id: string;
+  };
+};
+
 export type DefaultAccountListResponse = {
   defaultAccounts: DefaultAccount[];
   statistics: DefaultAccountStatistics;
@@ -130,6 +136,7 @@ export type DefaultAccountDrawerProps = {
   defaultAccount?: DefaultAccount;
   isOpen: boolean;
   mode: DefaultAccountActionMode;
+  permissions: DefaultAccountPermissions;
   onClose: () => void;
 };
 

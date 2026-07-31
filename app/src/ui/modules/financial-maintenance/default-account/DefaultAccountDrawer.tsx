@@ -12,8 +12,8 @@ import { EmptyBankDetails } from "@/app/src/data/modules/financial-maintenance/c
 import { useDefaultAccountFormPage } from "@/app/src/hooks/modules/financial-maintenance/default-account/useDefaultAccountFormPage";
 import {
   FetchNextChartAccountCode,
-  SaveChartAccount,
 } from "@/app/src/services/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsApi";
+import { createDefaultAccountExpenseSubAccount } from "@/app/src/services/modules/financial-maintenance/default-account/DefaultAccountApi";
 import type {
   AccountLevel,
   ChartAccountFormValues,
@@ -22,9 +22,9 @@ import type {
   DefaultAccountDrawerProps,
   DefaultAccountExpenseParentOption,
 } from "@/app/src/types/modules/financial-maintenance/default-account/DefaultAccountTypes";
-import { AnimatedPendingLabel } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
+import { QuickAddDialog } from "@/app/src/ui/shared/module/QuickAddDialog";
 import {
   AppAdvancedDropdown,
   type AppAdvancedDropdownOption,
@@ -40,6 +40,7 @@ export function DefaultAccountDrawer({
   defaultAccount,
   isOpen,
   mode,
+  permissions,
   onClose,
 }: DefaultAccountDrawerProps) {
   return (
@@ -48,6 +49,7 @@ export function DefaultAccountDrawer({
       defaultAccount={defaultAccount}
       isOpen={isOpen}
       mode={mode}
+      permissions={permissions}
       onClose={onClose}
     />
   );
@@ -57,6 +59,7 @@ function DefaultAccountDrawerPanel({
   defaultAccount,
   isOpen,
   mode,
+  permissions,
   onClose,
 }: DefaultAccountDrawerProps) {
   const page = useDefaultAccountFormPage({
@@ -87,6 +90,7 @@ function DefaultAccountDrawerPanel({
   );
   const canAddExpenseTypeSubAccount =
     !page.isReadonly &&
+    permissions.canCreate &&
     page.values.type === "EXPENSE" &&
     Boolean(selectedExpenseParentAccount && nextExpenseSubAccountLevel);
 
@@ -192,7 +196,7 @@ function DefaultAccountDrawerPanel({
             <AppSwitch
               falseOption={MaintenanceInactiveStatusSwitchOption}
               value={page.values.status}
-              readOnly={page.isReadonly}
+              readOnly={page.isReadonly || (mode === "edit" && !permissions.canCancel)}
               onChange={page.handleStatusChange}
               trueOption={MaintenanceActiveStatusSwitchOption}
             />
@@ -241,16 +245,12 @@ type ExpenseSubAccountDialogState = {
 
 function ExpenseSubAccountDialog({
   accountLevel,
-  closeOnBackdrop = true,
-  closeOnEscape = true,
   isOpen,
   parentAccount,
   onClose,
   onSaved,
 }: {
   accountLevel: AccountLevel | null;
-  closeOnBackdrop?: boolean;
-  closeOnEscape?: boolean;
   isOpen: boolean;
   parentAccount: DefaultAccountExpenseParentOption | null;
   onClose: () => void;
@@ -319,7 +319,7 @@ function ExpenseSubAccountDialog({
     setError("");
 
     try {
-      const savedAccount = await SaveChartAccount(
+      const savedAccount = await createDefaultAccountExpenseSubAccount(
         createExpenseSubAccountValues({
           accountCode,
           accountLevel,
@@ -337,88 +337,36 @@ function ExpenseSubAccountDialog({
     }
   }, [accountCode, accountLevel, accountName, onSaved, parentAccount]);
 
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape" && closeOnEscape && !isPending) {
-        onClose();
-        return;
-      }
-
-      if (event.key === "Enter" && !isPending && accountCode) {
-        event.preventDefault();
-        void handleSave();
-      }
-    }
-
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [accountCode, closeOnEscape, handleSave, isOpen, isPending, onClose]);
-
   if (!isOpen || !parentAccount || !accountLevel) {
     return null;
   }
 
   return (
-    <div
-      role="presentation"
-      className="fixed inset-0 z-[150] flex items-center justify-center bg-slate-950/20 px-4 py-6 backdrop-blur-[1px]"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget && closeOnBackdrop && !isPending) {
-          onClose();
-        }
-      }}
+    <QuickAddDialog
+      error={error}
+      isOpen={isOpen}
+      isPending={isPending}
+      saveDisabled={!accountCode}
+      title="Add Expense Type"
+      onClose={onClose}
+      onSave={handleSave}
     >
-      <section
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="expense-sub-account-dialog-title"
-        className="w-full max-w-md rounded-lg border border-darknavy/10 bg-white p-5 shadow-[0_28px_90px_rgba(33,39,56,0.24)]"
-      >
-        <h2 id="expense-sub-account-dialog-title" className="text-base font-semibold text-darknavy">
-          Add Expense Type
-        </h2>
-        <div className="mt-5 grid gap-4">
-          <label className="grid gap-2">
-            <span className="text-sm font-semibold text-darknavy">
-              Expense Type Name <span className="text-coralpink">*</span>
-            </span>
-            <input
-              value={accountName}
-              disabled={isPending}
-              onChange={(event) => setAccountName(event.target.value)}
-              placeholder="Meals and representation"
-              className="h-11 rounded-md border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-4 focus:ring-skyblue/15 disabled:cursor-not-allowed disabled:bg-darknavy/5"
-            />
-          </label>
-        </div>
-        {error ? <p className="mt-2 text-sm font-semibold text-coralpink">{error}</p> : null}
-        <div className="mt-5 flex justify-end gap-2">
-          <button
-            type="button"
-            disabled={isPending}
-            onClick={onClose}
-            className="inline-flex h-10 min-w-28 items-center justify-center rounded-md border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy transition hover:bg-darknavy/5 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            disabled={isPending || !accountCode}
-            onClick={() => void handleSave()}
-            className="app-dialog-primary-button inline-flex h-10 min-w-32 items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
-          >
-            {isSaving ? <AnimatedPendingLabel label="Saving..." /> : "Save"}
-          </button>
-        </div>
-      </section>
-    </div>
+      <label className="grid gap-2">
+        <span className="text-sm font-semibold text-darknavy">
+          Expense Type Name <span className="text-coralpink">*</span>
+        </span>
+        <input
+          value={accountName}
+          disabled={isPending}
+          onChange={(event) => {
+            setAccountName(event.target.value);
+            setError("");
+          }}
+          placeholder="Meals and representation"
+          className="h-11 rounded-md border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-4 focus:ring-skyblue/15 disabled:cursor-not-allowed disabled:bg-darknavy/5"
+        />
+      </label>
+    </QuickAddDialog>
   );
 }
 

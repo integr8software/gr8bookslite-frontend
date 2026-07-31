@@ -1,25 +1,29 @@
 "use client";
 
 import { useMemo, useState, type ChangeEventHandler, type ReactNode } from "react";
-import { Plus } from "lucide-react";
 import { MultiCurrencyCatalog } from "@/app/src/data/modules/system-administration/multi-currency-setup/MultiCurrencySetupData";
 import {
   calculateAccountsPayableVoucherDueDate,
 } from "@/app/src/data/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherData";
-import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
 import {
   findModuleChartAccount,
   getModuleChartAccounts,
 } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
-import { useAccountsPayableVoucherFormPage } from "@/app/src/hooks/modules/accounts-payable/accounts-payable-voucher/useAccountsPayableVoucherFormPage";
-import { usePartyManagementAccountOptions } from "@/app/src/hooks/modules/party-management/usePartyManagementAccountOptions";
-import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
-import { useTermDropdownOptions } from "@/app/src/hooks/modules/financial-maintenance/terms-maintenance/useTermDropdownOptions";
+import {
+  useAccountsPayableVoucherFormPage,
+} from "@/app/src/hooks/modules/accounts-payable/accounts-payable-voucher/useAccountsPayableVoucherFormPage";
+import {
+  useAccountsPayableVoucherPartyOptions,
+  useAccountsPayableVoucherPayableAccountOptions,
+  useAccountsPayableVoucherTermOptions,
+} from "@/app/src/hooks/modules/accounts-payable/accounts-payable-voucher/useAccountsPayableVoucher";
 import { useTaxes } from "@/app/src/hooks/shared/tax/useTaxOptions";
 import type {
-  PartyAccountingAccountOption,
-  PartyInformationRecord,
-} from "@/app/src/types/modules/party-management/PartyManagementTypes";
+  AccountsPayableVoucherLookupAccount,
+  AccountsPayableVoucherLookupParty,
+  AccountsPayableVoucherLookupTerm,
+} from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
+import type { TermsMaintenance } from "@/app/src/types/modules/financial-maintenance/terms-maintenance/TermsMaintenanceTypes";
 import type { Tax } from "@/app/src/types/shared/tax/TaxTypes";
 import {
   AppAdvancedDropdown,
@@ -31,7 +35,6 @@ import { AccountsPayableVoucherHeaderPage } from "@/app/src/ui/modules/accounts-
 import { AccountsPayableVoucherNotFound } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherNotFound";
 import { openAccountsPayableVoucherPdf } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherPdf";
 import { AccountsPayableVoucherReportPreview } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherReportPreview";
-import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import {
@@ -39,6 +42,7 @@ import {
   getVatPercentFromRate,
   getVatRateFromCode,
 } from "@/app/src/ui/shared/transaction-setup/AppTaxRateDialog";
+import { isActiveStatus } from "@/app/src/utils/status.util";
 
 const fieldClassName =
   "app-data-entry-field h-11 min-w-0 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15 disabled:cursor-not-allowed disabled:bg-white disabled:text-darknavy disabled:opacity-60";
@@ -48,9 +52,7 @@ const textareaClassName =
   "app-data-entry-field min-h-24 min-w-0 w-full resize-y rounded-lg border border-darknavy/10 bg-white px-3 py-3 text-sm font-medium leading-6 text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15 disabled:cursor-not-allowed disabled:bg-white disabled:text-darknavy disabled:opacity-60";
 const errorClassName = "mt-1.5 block text-xs font-semibold text-coralpink";
 const AttachedDropdownClassName =
-  "sm:[&_.app-advanced-dropdown-control]:rounded-r-none";
-const AttachedAddButtonClassName =
-  "inline-flex h-11 w-20 shrink-0 items-center justify-center gap-2 rounded-lg border border-darknavy/10 border-l-darknavy/20 bg-skyblue/8 px-3 text-sm font-semibold text-skyblue transition hover:border-skyblue/25 hover:bg-skyblue/12 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/15 disabled:cursor-not-allowed disabled:opacity-45 sm:rounded-l-none";
+  "";
 const RemarksMaxLength = 500;
 const PurchaseTaxCodeQuery = {
   transactionType: "Purchases",
@@ -58,33 +60,40 @@ const PurchaseTaxCodeQuery = {
 
 export function AccountsPayableVoucherFormPage() {
   const page = useAccountsPayableVoucherFormPage();
-  const partyAccountOptions = usePartyManagementAccountOptions();
-  const partyStore = usePartyManagementStore();
-  const termDropdown = useTermDropdownOptions();
+  const partyOptionsQuery = useAccountsPayableVoucherPartyOptions();
+  const payableAccountOptionsQuery = useAccountsPayableVoucherPayableAccountOptions();
+  const termOptionsQuery = useAccountsPayableVoucherTermOptions();
   const taxCodesQuery = useTaxes(PurchaseTaxCodeQuery);
   const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
-  const [isPartyDrawerOpen, setIsPartyDrawerOpen] = useState(false);
   const chartAccounts = useMemo(() => getModuleChartAccounts(), []);
   const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
-  const defaultPayableAccounts =
-    partyAccountOptions.accountOptions.defaultPayableAccount;
+  const partyRecords = partyOptionsQuery.data ?? [];
+  const termRecords = termOptionsQuery.data ?? [];
+  const defaultPayableAccounts = useMemo(
+    () =>
+      mergePayableAccountOptions(
+        payableAccountOptionsQuery.data?.accountOptions.defaultPayableAccount ?? [],
+        payableAccountOptionsQuery.data?.accountOptions.employeePayableAccount ?? [],
+      ),
+    [payableAccountOptionsQuery.data],
+  );
   const partyOptions = useMemo<AppAdvancedDropdownOption[]>(
     () =>
       createPartyOptions(
-        partyStore.records,
+        partyRecords,
         page.values.partyCode,
         page.values.partyName,
       ),
-    [page.values.partyCode, page.values.partyName, partyStore.records],
+    [page.values.partyCode, page.values.partyName, partyRecords],
   );
   const termOptions = useMemo<AppAdvancedDropdownOption[]>(
     () =>
       createTermOptions(
-        termDropdown.options,
+        createLookupTermOptions(termRecords),
         page.values.termId,
         page.values.terms,
       ),
-    [page.values.termId, page.values.terms, termDropdown.options],
+    [page.values.termId, page.values.terms, termRecords],
   );
   const currencyOptions = useMemo(
     () => createAccountsPayableVoucherCurrencyDropdownOptions(),
@@ -105,17 +114,17 @@ export function AccountsPayableVoucherFormPage() {
     return <AccountsPayableVoucherNotFound />;
   }
 
-  function selectParty(record: PartyInformationRecord | null, fallbackName = "") {
+  function selectParty(record: AccountsPayableVoucherLookupParty | null, fallbackName = "") {
     const previousPartyCode = page.values.partyCode;
     const partyCode = record?.partyCodeNo ?? "";
-    const partyName = record ? getPartyDisplayName(record) : fallbackName;
+    const partyName = record ? record.name : fallbackName;
 
     page.updateHeaderField("partyCode", partyCode);
     page.updateHeaderField("partyName", partyName);
     page.updateHeaderField("address", record ? formatPartyAddress(record) : "");
     page.updateHeaderField(
       "contactPerson",
-      record?.classification === "Individual" ? partyName : "",
+      isIndividualParty(record) ? partyName : "",
     );
     page.updateHeaderField("contactNo", record?.contactNo ?? "");
 
@@ -133,7 +142,7 @@ export function AccountsPayableVoucherFormPage() {
     }
 
     if (record?.termId || record?.termName) {
-      const term = termDropdown.terms.find(
+      const term = termRecords.find(
         (currentTerm) => currentTerm.id === record.termId,
       );
 
@@ -141,13 +150,16 @@ export function AccountsPayableVoucherFormPage() {
       page.updateHeaderField("terms", record.termName);
       page.updateHeaderField(
         "dueDate",
-        calculateAccountsPayableVoucherDueDate(page.values.documentDate, term),
+        calculateAccountsPayableVoucherDueDate(
+          page.values.documentDate,
+          mapLookupTermToMaintenanceTerm(term),
+        ),
       );
     }
   }
 
   function applyPartyPurchaseTaxDefaults(
-    record: PartyInformationRecord | null,
+    record: AccountsPayableVoucherLookupParty | null,
     previousPartyCode: string,
     nextPartyCode: string,
   ) {
@@ -205,7 +217,7 @@ export function AccountsPayableVoucherFormPage() {
   }
 
   function selectTerm(termId: string) {
-    const term = termDropdown.terms.find(
+    const term = termRecords.find(
       (currentTerm) => currentTerm.id === termId,
     );
 
@@ -213,19 +225,25 @@ export function AccountsPayableVoucherFormPage() {
     page.updateHeaderField("terms", term?.name ?? "");
     page.updateHeaderField(
       "dueDate",
-      calculateAccountsPayableVoucherDueDate(page.values.documentDate, term),
+      calculateAccountsPayableVoucherDueDate(
+        page.values.documentDate,
+        mapLookupTermToMaintenanceTerm(term),
+      ),
     );
   }
 
   function updateDocumentDate(documentDate: string) {
-    const term = termDropdown.terms.find(
+    const term = termRecords.find(
       (currentTerm) => currentTerm.id === page.values.termId,
     );
 
     page.updateHeaderField("documentDate", documentDate);
     page.updateHeaderField(
       "dueDate",
-      calculateAccountsPayableVoucherDueDate(documentDate, term),
+      calculateAccountsPayableVoucherDueDate(
+        documentDate,
+        mapLookupTermToMaintenanceTerm(term),
+      ),
     );
   }
 
@@ -246,7 +264,7 @@ export function AccountsPayableVoucherFormPage() {
                 error={page.errors.partyCode || page.errors.partyName}
                 isRequired
               >
-                <div className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-0">
+                <div className="min-w-0">
                   <AppAdvancedDropdown
                     id="accounts-payable-voucher-party"
                     className={AttachedDropdownClassName}
@@ -255,10 +273,11 @@ export function AccountsPayableVoucherFormPage() {
                     options={partyOptions}
                     placeholder="Select Party Name"
                     searchPlaceholder="Search Party Name"
+                    emptyMessage={getPartyDropdownEmptyMessage(partyOptionsQuery)}
                     showSelectedDetails
                     onChange={(value) => {
                       const code = String(value);
-                      const party = partyStore.records.find(
+                      const party = partyRecords.find(
                         (record) => record.partyCodeNo === code,
                       );
                       const option = partyOptions.find(
@@ -268,15 +287,6 @@ export function AccountsPayableVoucherFormPage() {
                       selectParty(party ?? null, option?.name ?? "");
                     }}
                   />
-                  <button
-                    type="button"
-                    disabled={page.isReadonly}
-                    onClick={() => setIsPartyDrawerOpen(true)}
-                    className={AttachedAddButtonClassName}
-                  >
-                    <Plus className="h-4 w-4" aria-hidden="true" />
-                    Add
-                  </button>
                 </div>
               </FieldShell>
 
@@ -404,7 +414,7 @@ export function AccountsPayableVoucherFormPage() {
                     page.values.creditAccountCode
                   }
                   valueField="id"
-                  readOnly={page.isReadonly || partyAccountOptions.isLoading}
+                  readOnly={page.isReadonly || payableAccountOptionsQuery.isLoading}
                   isClearable
                   ariaInvalid={Boolean(
                     page.errors.creditAccountTitle ||
@@ -481,18 +491,6 @@ export function AccountsPayableVoucherFormPage() {
         values={page.values}
         onClose={() => setIsReportPreviewOpen(false)}
         onGeneratePdf={() => openAccountsPayableVoucherPdf(page.values)}
-      />
-
-      <PartyManagementDrawer
-        isOpen={!page.isReadonly && isPartyDrawerOpen}
-        isPending={partyStore.isMutating}
-        records={partyStore.records}
-        onAddRecord={partyStore.addRecord}
-        onClose={() => setIsPartyDrawerOpen(false)}
-        onCreateParty={(record) => {
-          selectParty(record);
-          setIsPartyDrawerOpen(false);
-        }}
       />
     </>
   );
@@ -635,7 +633,7 @@ function createAccountsPayableVoucherCurrencyDropdownOptions(): AppAdvancedDropd
 
 function findPayableAccount(
   value: string,
-  accounts: PartyAccountingAccountOption[],
+  accounts: AccountsPayableVoucherLookupAccount[],
 ) {
   return accounts.find(
     (account) =>
@@ -646,7 +644,7 @@ function findPayableAccount(
 }
 
 function getPartyPurchaseTaxDefaults(
-  record: PartyInformationRecord,
+  record: AccountsPayableVoucherLookupParty,
   taxCodes: Tax[],
 ) {
   const inputVatCode = getTaxCodeBySourceKey(
@@ -700,7 +698,7 @@ function shouldApplyPartyDefaultsToLineParty(
   );
 }
 
-function formatPartyAddress(record: PartyInformationRecord) {
+function formatPartyAddress(record: AccountsPayableVoucherLookupParty) {
   const address = record.address;
 
   return [
@@ -717,16 +715,16 @@ function formatPartyAddress(record: PartyInformationRecord) {
 }
 
 function createPartyOptions(
-  partyRecords: PartyInformationRecord[],
+  partyRecords: AccountsPayableVoucherLookupParty[],
   currentPartyCode: string,
   currentPartyName: string,
 ): AppAdvancedDropdownOption[] {
   const options = partyRecords
-    .filter((party) => party.status === "Active")
+    .filter((party) => isActiveStatus(party.status))
     .map((party) => ({
       description: party.partyTypes.join(", "),
       label: party.partyCodeNo,
-      name: getPartyDisplayName(party),
+      name: party.name || party.partyCodeNo,
       value: party.partyCodeNo,
     }));
 
@@ -764,4 +762,74 @@ function createTermOptions(
   }
 
   return nextOptions;
+}
+
+function createLookupTermOptions(
+  terms: AccountsPayableVoucherLookupTerm[],
+): AppAdvancedDropdownOption[] {
+  return terms.map((term) => ({
+    description: formatLookupTermDuration(term),
+    name: term.name,
+    value: term.id,
+  }));
+}
+
+function mapLookupTermToMaintenanceTerm(
+  term?: AccountsPayableVoucherLookupTerm,
+): Pick<TermsMaintenance, "datemode" | "period"> | null {
+  if (!term) {
+    return null;
+  }
+
+  return {
+    datemode: mapLookupTermDateMode(term.dateMode),
+    period: String(term.period),
+  };
+}
+
+function mapLookupTermDateMode(
+  dateMode: AccountsPayableVoucherLookupTerm["dateMode"],
+) {
+  if (dateMode === "DAY") return "Day";
+  if (dateMode === "MONTH") return "Month";
+  return "Year";
+}
+
+function formatLookupTermDuration(term: AccountsPayableVoucherLookupTerm) {
+  const unit = mapLookupTermDateMode(term.dateMode).toLowerCase();
+  const suffix = Number(term.period) === 1 ? unit : `${unit}s`;
+
+  return `${term.period} ${suffix}`;
+}
+
+function mergePayableAccountOptions(
+  ...groups: AccountsPayableVoucherLookupAccount[][]
+) {
+  const accountsById = new Map<string, AccountsPayableVoucherLookupAccount>();
+
+  groups.flat().forEach((account) => {
+    accountsById.set(account.id, account);
+  });
+
+  return [...accountsById.values()];
+}
+
+function getPartyDropdownEmptyMessage(query: {
+  isError: boolean;
+  isFetching: boolean;
+  isLoading: boolean;
+}) {
+  if (query.isLoading || query.isFetching) {
+    return "Loading parties...";
+  }
+
+  if (query.isError) {
+    return "Could not load parties.";
+  }
+
+  return "No active vendors or employees found.";
+}
+
+function isIndividualParty(record: AccountsPayableVoucherLookupParty | null) {
+  return record?.classification.trim().toUpperCase() === "INDIVIDUAL";
 }

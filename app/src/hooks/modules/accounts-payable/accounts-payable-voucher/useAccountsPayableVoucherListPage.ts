@@ -2,23 +2,31 @@
 
 import { useDeferredValue, useMemo, useState } from "react";
 import {
+  type ColumnDef,
+  type PaginationState,
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-  type ColumnDef,
-  type PaginationState,
-  type SortingState,
 } from "@tanstack/react-table";
-import { AccountsPayableVoucherStatusFilters } from "@/app/src/constants/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherConstants";
+import {
+  AccountsPayableVoucherDefaultColumnOrder,
+  AccountsPayableVoucherDefaultColumnVisibility,
+  AccountsPayableVoucherDefaultSorting,
+  AccountsPayableVoucherStatusFilters,
+  AccountsPayableVoucherTableColumns,
+  AccountsPayableVoucherTablePreferencesModuleKey,
+  AccountsPayableVoucherTablePreferencesStorageKey,
+} from "@/app/src/constants/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherConstants";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import { useAccountsPayableVoucherStore } from "@/app/src/hooks/modules/accounts-payable/accounts-payable-voucher/useAccountsPayableVoucher";
+import { useTablePreferences } from "@/app/src/hooks/shared/table-preferences/useTablePreferences";
 import type { AccountsPayableVoucherRecord } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
 import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
 
 export function useAccountsPayableVoucherListPage() {
-  const { isLoading, isMutating, lastSyncedAt, records, updateStatus } =
+  const { isLoading, isMutating, isRefreshing, lastSyncedAt, records, refreshRecords, updateStatus } =
     useAccountsPayableVoucherStore();
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -33,12 +41,23 @@ export function useAccountsPayableVoucherListPage() {
     from: "",
     to: "",
   });
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: "documentDate", desc: true },
-  ]);
   const [statusFilter, setStatusFilterState] = useState<
     (typeof AccountsPayableVoucherStatusFilters)[number]
   >("all");
+  const {
+    columnOrder,
+    columnVisibility,
+    sorting,
+    setColumnOrder,
+    setColumnVisibility,
+    setSorting,
+  } = useTablePreferences({
+    defaultColumnOrder: AccountsPayableVoucherDefaultColumnOrder,
+    defaultColumnVisibility: AccountsPayableVoucherDefaultColumnVisibility,
+    defaultSorting: AccountsPayableVoucherDefaultSorting,
+    moduleKey: AccountsPayableVoucherTablePreferencesModuleKey,
+    storageKey: AccountsPayableVoucherTablePreferencesStorageKey,
+  });
   const deferredQuery = useDeferredValue(query);
 
   const filteredRecords = useMemo(() => {
@@ -65,26 +84,19 @@ export function useAccountsPayableVoucherListPage() {
   }, [amountRange, dateRange, deferredQuery, records, statusFilter]);
 
   const columns = useMemo<ColumnDef<AccountsPayableVoucherRecord>[]>(
-    () => [
-      createColumn("transactionNo", "Voucher No.", "w-[12rem]"),
-      createColumn("documentDate", "Document Date", "w-[11rem]"),
-      createColumn("partyName", "Party Name", "w-[18rem]"),
-      createColumn("payableType", "Payable Type", "w-[12rem]"),
-      {
-        accessorKey: "amount",
-        header: "Amount",
-        sortingFn: "basic",
-        meta: { className: "w-[11rem] text-right" },
-      },
-      createColumn("currency", "Currency", "w-[8rem]"),
-      createColumn("status", "Status", "w-[10rem]"),
-      {
-        id: "actions",
-        header: "Actions",
-        enableSorting: false,
-        meta: { className: "w-[9rem] text-center" },
-      },
-    ],
+    () =>
+      AccountsPayableVoucherTableColumns.map((column) => {
+        if (!("key" in column)) {
+          return {
+            id: "actions",
+            header: column.label,
+            enableSorting: false,
+            meta: { className: column.className, label: column.label },
+          };
+        }
+
+        return createColumn(column.key, column.label, column.className);
+      }),
     [],
   );
 
@@ -92,10 +104,19 @@ export function useAccountsPayableVoucherListPage() {
   const table = useReactTable({
     data: filteredRecords,
     columns,
+    initialState: {
+      columnOrder: AccountsPayableVoucherDefaultColumnOrder,
+      columnVisibility: AccountsPayableVoucherDefaultColumnVisibility,
+      sorting: AccountsPayableVoucherDefaultSorting,
+    },
     state: {
+      columnOrder,
+      columnVisibility,
       pagination,
       sorting,
     },
+    onColumnOrderChange: setColumnOrder,
+    onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
@@ -147,9 +168,11 @@ export function useAccountsPayableVoucherListPage() {
     handleUpdateStatus,
     isLoading,
     isMutating,
+    isRefreshing,
     lastSyncedAt,
     query,
     records,
+    refreshRecords,
     resetFilters,
     setAmountRange,
     setDateRange,
@@ -167,8 +190,13 @@ function createColumn(
   return {
     accessorKey: key,
     header,
-    sortingFn: key === "documentDate" ? "datetime" : "alphanumeric",
-    meta: { className },
+    sortingFn:
+      key === "documentDate"
+        ? "datetime"
+        : key === "amount"
+          ? "basic"
+          : "alphanumeric",
+    meta: { className, label: header },
   };
 }
 

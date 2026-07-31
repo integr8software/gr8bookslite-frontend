@@ -7,6 +7,10 @@ import {
   createAccountsPayableVoucher,
   fetchAccountsPayableVoucher,
   fetchAccountsPayableVoucherNumberSuggestion,
+  fetchAccountsPayableVoucherPartyOptions,
+  fetchAccountsPayableVoucherPayableAccountOptions,
+  fetchAccountsPayableVoucherResponsibilityCenterOptions,
+  fetchAccountsPayableVoucherTermOptions,
   fetchAccountsPayableVouchers,
   updateAccountsPayableVoucher,
   updateAccountsPayableVoucherStatus,
@@ -239,6 +243,75 @@ export function useAccountsPayableVoucherNumberSuggestion(enabled = true) {
       activeBranchId,
     ),
     retry: false,
+  });
+}
+
+export function useAccountsPayableVoucherPartyOptions() {
+  const activeBranchId = useAppStore((state) => state.activeBranchId);
+  const activeCompanyId = useAppStore((state) => state.activeCompanyId);
+
+  return useQuery({
+    enabled: activeCompanyId !== null,
+    queryFn: fetchAccountsPayableVoucherPartyOptions,
+    queryKey: AccountsPayableVoucherQueryKeys.lookup(
+      "parties",
+      activeCompanyId,
+      activeBranchId,
+    ),
+    refetchOnMount: "always",
+    retry: false,
+    staleTime: 0,
+  });
+}
+
+export function useAccountsPayableVoucherTermOptions() {
+  const activeBranchId = useAppStore((state) => state.activeBranchId);
+  const activeCompanyId = useAppStore((state) => state.activeCompanyId);
+
+  return useQuery({
+    enabled: activeCompanyId !== null,
+    queryFn: fetchAccountsPayableVoucherTermOptions,
+    queryKey: AccountsPayableVoucherQueryKeys.lookup(
+      "terms",
+      activeCompanyId,
+      activeBranchId,
+    ),
+    retry: false,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useAccountsPayableVoucherResponsibilityCenterOptions() {
+  const activeBranchId = useAppStore((state) => state.activeBranchId);
+  const activeCompanyId = useAppStore((state) => state.activeCompanyId);
+
+  return useQuery({
+    enabled: activeCompanyId !== null,
+    queryFn: fetchAccountsPayableVoucherResponsibilityCenterOptions,
+    queryKey: AccountsPayableVoucherQueryKeys.lookup(
+      "responsibility-centers",
+      activeCompanyId,
+      activeBranchId,
+    ),
+    retry: false,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useAccountsPayableVoucherPayableAccountOptions() {
+  const activeBranchId = useAppStore((state) => state.activeBranchId);
+  const activeCompanyId = useAppStore((state) => state.activeCompanyId);
+
+  return useQuery({
+    enabled: activeCompanyId !== null,
+    queryFn: fetchAccountsPayableVoucherPayableAccountOptions,
+    queryKey: AccountsPayableVoucherQueryKeys.lookup(
+      "payable-accounts",
+      activeCompanyId,
+      activeBranchId,
+    ),
+    retry: false,
+    staleTime: 5 * 60 * 1000,
   });
 }
 

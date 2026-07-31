@@ -2,6 +2,11 @@ import { AccountsPayableVoucherApiPath } from "@/app/src/constants/modules/accou
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
 import type {
   AccountsPayableVoucherFormValues,
+  AccountsPayableVoucherLookupAccountOptions,
+  AccountsPayableVoucherLookupDefaultAccounts,
+  AccountsPayableVoucherLookupParty,
+  AccountsPayableVoucherLookupResponsibilityCenter,
+  AccountsPayableVoucherLookupTerm,
   AccountsPayableVoucherListResponse,
   AccountsPayableVoucherNumberSuggestion,
   AccountsPayableVoucherPayableType,
@@ -111,6 +116,36 @@ type JournalEntryPayload = {
   vatType?: string | null;
 };
 
+type AccountsPayableVoucherPartyLookupResponse = {
+  parties: AccountsPayableVoucherLookupParty[];
+};
+
+type AccountsPayableVoucherFullPartyLookupResponse = {
+  parties: Array<
+    Partial<AccountsPayableVoucherLookupParty> & {
+      partyName?: string | null;
+      tradeName?: string | null;
+      firstName?: string | null;
+      middleName?: string | null;
+      lastName?: string | null;
+      suffixName?: string | null;
+    }
+  >;
+};
+
+type AccountsPayableVoucherTermLookupResponse = {
+  terms: AccountsPayableVoucherLookupTerm[];
+};
+
+type AccountsPayableVoucherResponsibilityCenterLookupResponse = {
+  responsibilityCenters: AccountsPayableVoucherLookupResponsibilityCenter[];
+};
+
+type AccountsPayableVoucherPayableAccountLookupResponse = {
+  defaultAccounts: AccountsPayableVoucherLookupDefaultAccounts;
+  accountOptions: AccountsPayableVoucherLookupAccountOptions;
+};
+
 const StatusFromApi: Record<string, AccountsPayableVoucherStatus> = {
   APPROVED: "Approved",
   CANCELLED: "Cancelled",
@@ -207,6 +242,177 @@ export async function fetchAccountsPayableVoucherNumberSuggestion(
   );
 
   return response.data;
+}
+
+export async function fetchAccountsPayableVoucherPartyOptions() {
+  try {
+    const response = await ApiClient.get<AccountsPayableVoucherPartyLookupResponse>(
+      `${AccountsPayableVoucherApiPath}/lookups/parties`,
+    );
+
+    if (response.data.parties.length > 0) {
+      return response.data.parties;
+    }
+  } catch {
+    // Fall back to shared company-scoped party options so APV creation is not blocked by maintenance permissions.
+  }
+
+  return fetchAccountsPayableVoucherSharedPartyOptions();
+}
+
+export async function fetchAccountsPayableVoucherTermOptions() {
+  const response = await ApiClient.get<AccountsPayableVoucherTermLookupResponse>(
+    `${AccountsPayableVoucherApiPath}/lookups/terms`,
+  );
+
+  return response.data.terms;
+}
+
+export async function fetchAccountsPayableVoucherResponsibilityCenterOptions() {
+  const response =
+    await ApiClient.get<AccountsPayableVoucherResponsibilityCenterLookupResponse>(
+      `${AccountsPayableVoucherApiPath}/lookups/responsibility-centers`,
+    );
+
+  return response.data.responsibilityCenters;
+}
+
+export async function fetchAccountsPayableVoucherPayableAccountOptions() {
+  const response =
+    await ApiClient.get<AccountsPayableVoucherPayableAccountLookupResponse>(
+      `${AccountsPayableVoucherApiPath}/lookups/payable-accounts`,
+    );
+
+  return response.data;
+}
+
+async function fetchAccountsPayableVoucherSharedPartyOptions() {
+  const partiesById = new Map<string, AccountsPayableVoucherLookupParty>();
+  const lookupResults = await Promise.allSettled([
+    ApiClient.get<AccountsPayableVoucherPartyLookupResponse>(
+      "/maintenance/party-maintenance/options/VENDOR",
+    ),
+    ApiClient.get<AccountsPayableVoucherPartyLookupResponse>(
+      "/maintenance/party-maintenance/options/EMPLOYEE",
+    ),
+  ]);
+
+  lookupResults.forEach((result) => {
+    if (result.status !== "fulfilled") {
+      return;
+    }
+
+    result.value.data.parties.forEach((party) => {
+      partiesById.set(party.id, normalizeLookupParty(party));
+    });
+  });
+
+  if (partiesById.size === 0) {
+    const fullParties = await fetchAccountsPayableVoucherFullPartyFallback();
+
+    fullParties.forEach((party) => {
+      partiesById.set(party.id, party);
+    });
+  }
+
+  return [...partiesById.values()];
+}
+
+async function fetchAccountsPayableVoucherFullPartyFallback() {
+  try {
+    const response = await ApiClient.get<AccountsPayableVoucherFullPartyLookupResponse>(
+      "/maintenance/party-maintenance",
+      {
+        params: {
+          page: 1,
+          pageSize: 500,
+          sortBy: "name",
+          sortDirection: "asc",
+        },
+      },
+    );
+
+    return response.data.parties
+      .filter(
+        (party) =>
+          normalizeStatus(party.status) === "ACTIVE" &&
+          (party.partyTypes ?? []).some((partyType) =>
+            ["VENDOR", "EMPLOYEE"].includes(String(partyType).toUpperCase()),
+          ),
+      )
+      .map((party) => normalizeLookupParty(party));
+  } catch {
+    return [];
+  }
+}
+
+function normalizeLookupParty(
+  party: Partial<AccountsPayableVoucherLookupParty> & {
+    partyName?: string | null;
+    tradeName?: string | null;
+    firstName?: string | null;
+    middleName?: string | null;
+    lastName?: string | null;
+    suffixName?: string | null;
+  },
+): AccountsPayableVoucherLookupParty {
+  return {
+    id: party.id ?? party.partyCodeNo ?? "",
+    partyCodeNo: party.partyCodeNo ?? "",
+    classification: party.classification ?? "INDIVIDUAL",
+    partyTypes: party.partyTypes ?? [],
+    status: "ACTIVE",
+    name:
+      party.name?.trim() ||
+      party.tradeName?.trim() ||
+      party.partyName?.trim() ||
+      [party.firstName, party.middleName, party.lastName, party.suffixName]
+        .map((part) => part?.trim())
+        .filter(Boolean)
+        .join(" ") ||
+      party.partyCodeNo ||
+      "",
+    address: party.address ?? createEmptyLookupAddress(),
+    addresses: party.addresses ?? [],
+    defaultPayableAccount: party.defaultPayableAccount ?? "",
+    termId: party.termId ?? "",
+    termName: party.termName ?? "",
+    defaultPurchaseInputVatTaxSourceKey:
+      party.defaultPurchaseInputVatTaxSourceKey ?? "",
+    defaultPurchaseEwtTaxSourceKey: party.defaultPurchaseEwtTaxSourceKey ?? "",
+    defaultPurchaseFwtTaxSourceKey: party.defaultPurchaseFwtTaxSourceKey ?? "",
+    defaultPurchaseWvatTaxSourceKey: party.defaultPurchaseWvatTaxSourceKey ?? "",
+    contactPerson: party.contactPerson ?? "",
+    email: party.email ?? "",
+    contactNo: party.contactNo ?? "",
+  };
+}
+
+function normalizeStatus(status: unknown) {
+  return String(status ?? "").trim().toUpperCase();
+}
+
+function createEmptyLookupAddress() {
+  return {
+    id: "",
+    addressName: "",
+    addressLine1: "",
+    addressLine2: "",
+    barangay: "",
+    barangayCode: "",
+    cityMunicipality: "",
+    cityMunicipalityCode: "",
+    isBilling: false,
+    isBuilding: false,
+    isDefault: true,
+    isDelivery: false,
+    isForeign: false,
+    isHome: false,
+    province: "",
+    provinceCode: "",
+    region: "",
+    regionCode: "",
+  };
 }
 
 export async function createAccountsPayableVoucher(

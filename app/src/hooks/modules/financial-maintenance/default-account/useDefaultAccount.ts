@@ -5,7 +5,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
-import { ResolveAuthProfileEffectiveRole } from "@/app/src/services/auth/AuthProfileAccess";
 import {
   createDefaultAccount,
   fetchDefaultAccounts,
@@ -39,18 +38,9 @@ const EmptyPermissions: DefaultAccountPermissions = {
   canView: false,
   canCreate: false,
   canUpdate: false,
-  canDelete: false,
+  canCancel: false,
   canExport: false,
   canImport: false,
-};
-
-const ReservedRolePermissions: DefaultAccountPermissions = {
-  canView: true,
-  canCreate: true,
-  canUpdate: true,
-  canDelete: false,
-  canExport: true,
-  canImport: true,
 };
 
 const EmptyStatistics: DefaultAccountStatistics = {
@@ -124,14 +114,9 @@ export function useDefaultAccountStore<TSelected = DefaultAccountStoreState>(
     },
   });
   const state = useMemo<DefaultAccountStoreState>(() => {
-    const effectiveRole = ResolveAuthProfileEffectiveRole(authProfileQuery.data);
-    const hasReservedRoleAccess = effectiveRole === "ADMIN" || effectiveRole === "SUPER_ADMIN";
-
     return {
       defaultAccounts: defaultAccountsQuery.data?.defaultAccounts ?? [],
-      permissions: hasReservedRoleAccess
-        ? ReservedRolePermissions
-        : (defaultAccountsQuery.data?.permissions ?? EmptyPermissions),
+      permissions: defaultAccountsQuery.data?.permissions ?? EmptyPermissions,
       statistics: defaultAccountsQuery.data?.statistics ?? EmptyStatistics,
       addDefaultAccount: (account) => addDefaultAccountMutation.mutateAsync(account),
       addDefaultAccounts: (accounts) =>
@@ -150,7 +135,6 @@ export function useDefaultAccountStore<TSelected = DefaultAccountStoreState>(
     };
   }, [
     addDefaultAccountMutation,
-    authProfileQuery.data,
     defaultAccountsQuery.data,
     defaultAccountsQuery.dataUpdatedAt,
     defaultAccountsQuery.isFetching,

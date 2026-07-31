@@ -17,20 +17,21 @@ import {
   type AccountsPayableVoucherExpenseColumnId,
 } from "@/app/src/constants/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherConstants";
 import { formatAccountsPayableVoucherAmount } from "@/app/src/data/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherData";
-import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
 import { getModuleChartAccounts } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import type { useAccountsPayableVoucherFormPage } from "@/app/src/hooks/modules/accounts-payable/accounts-payable-voucher/useAccountsPayableVoucherFormPage";
-import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
-import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenter";
+import {
+  useAccountsPayableVoucherPartyOptions,
+  useAccountsPayableVoucherResponsibilityCenterOptions,
+} from "@/app/src/hooks/modules/accounts-payable/accounts-payable-voucher/useAccountsPayableVoucher";
 import { useTaxes } from "@/app/src/hooks/shared/tax/useTaxOptions";
 import type {
   AccountsPayableVoucherAccountingEntry,
   AccountsPayableVoucherAccountingEntryField,
   AccountsPayableVoucherExpenseLine,
   AccountsPayableVoucherExpenseLineField,
+  AccountsPayableVoucherLookupParty,
+  AccountsPayableVoucherLookupResponsibilityCenter,
 } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
-import type { PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";
-import type { ResponsibilityCenter } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
 import {
   AppAdvancedDropdown,
   type AppAdvancedDropdownOption,
@@ -158,10 +159,9 @@ function AccountsPayableVoucherExpenseTable({
   const [columnWidths, setColumnWidths] = useState<
     Record<AccountsPayableVoucherExpenseColumnId, number>
   >({ ...AccountsPayableVoucherExpenseColumnWidths });
-  const partyRecords = usePartyManagementStore((state) => state.records);
-  const responsibilityCenters = useResponsibilityCenterStore(
-    (state) => state.centers,
-  );
+  const partyRecords = useAccountsPayableVoucherPartyOptions().data ?? [];
+  const responsibilityCenters =
+    useAccountsPayableVoucherResponsibilityCenterOptions().data ?? [];
   const chartAccounts = useMemo(() => getModuleChartAccounts(), []);
   const taxCodesQuery = useTaxes(PurchaseTaxCodeQuery);
   const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
@@ -392,10 +392,9 @@ function AccountsPayableVoucherAccountingTable({
     Record<AccountsPayableVoucherAccountingColumnId, number>
   >({ ...AccountsPayableVoucherAccountingColumnWidths });
   const isReadonly = page.isAccountingEntriesReadonly;
-  const partyRecords = usePartyManagementStore((state) => state.records);
-  const responsibilityCenters = useResponsibilityCenterStore(
-    (state) => state.centers,
-  );
+  const partyRecords = useAccountsPayableVoucherPartyOptions().data ?? [];
+  const responsibilityCenters =
+    useAccountsPayableVoucherResponsibilityCenterOptions().data ?? [];
   const chartAccounts = useMemo(() => getModuleChartAccounts(), []);
   const taxCodesQuery = useTaxes(PurchaseTaxCodeQuery);
   const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
@@ -617,7 +616,7 @@ function renderExpenseCell(
   columnId: AccountsPayableVoucherExpenseColumnId,
   chartAccounts: ReturnType<typeof getModuleChartAccounts>,
   partyOptions: AppAdvancedDropdownOption[],
-  partyRecords: PartyInformationRecord[],
+  partyRecords: AccountsPayableVoucherLookupParty[],
   responsibilityCenterOptions: AppAdvancedDropdownOption[],
   vatOptions: AppAdvancedDropdownOption[],
   ewtOptions: AppAdvancedDropdownOption[],
@@ -789,7 +788,7 @@ function renderAccountingCell(
   columnId: AccountsPayableVoucherAccountingColumnId,
   chartAccounts: ReturnType<typeof getModuleChartAccounts>,
   partyOptions: AppAdvancedDropdownOption[],
-  partyRecords: PartyInformationRecord[],
+  partyRecords: AccountsPayableVoucherLookupParty[],
   responsibilityCenterOptions: AppAdvancedDropdownOption[],
   vatOptions: AppAdvancedDropdownOption[],
   ewtOptions: AppAdvancedDropdownOption[],
@@ -979,7 +978,7 @@ function isManualGeneratedTaxAccountingEntry(
 function applyExpenseLinePartyTaxDefaults(
   page: ReturnType<typeof useAccountsPayableVoucherFormPage>,
   lineId: string,
-  party: PartyInformationRecord | undefined,
+  party: AccountsPayableVoucherLookupParty | undefined,
   taxCodes: Parameters<typeof createVatOptions>[0],
 ) {
   if (!party) {
@@ -1002,7 +1001,7 @@ function applyExpenseLinePartyTaxDefaults(
 function applyAccountingEntryPartyTaxDefaults(
   page: ReturnType<typeof useAccountsPayableVoucherFormPage>,
   entryId: string,
-  party: PartyInformationRecord | undefined,
+  party: AccountsPayableVoucherLookupParty | undefined,
   taxCodes: Parameters<typeof createVatOptions>[0],
 ) {
   if (!party) {
@@ -1021,7 +1020,7 @@ function applyAccountingEntryPartyTaxDefaults(
 }
 
 function getPartyPurchaseTaxDefaults(
-  party: PartyInformationRecord,
+  party: AccountsPayableVoucherLookupParty,
   taxCodes: Parameters<typeof createVatOptions>[0],
 ) {
   const inputVatCode = getTaxCodeBySourceKey(
@@ -1064,7 +1063,7 @@ function getTaxCodeBySourceKey(
 }
 
 function findPartyRecordByCode(
-  partyRecords: PartyInformationRecord[],
+  partyRecords: AccountsPayableVoucherLookupParty[],
   partyCode: string,
 ) {
   return partyRecords.find((record) => record.partyCodeNo === partyCode);
@@ -1316,13 +1315,13 @@ function getPartyFallbackValue(partyName: string) {
 }
 
 function createPartyOptions(
-  partyRecords: PartyInformationRecord[],
+  partyRecords: AccountsPayableVoucherLookupParty[],
   rows: PartyBearingRow[],
 ): AppAdvancedDropdownOption[] {
   const options = partyRecords.map((party) => ({
     description: party.partyTypes.join(", "),
     label: party.partyCodeNo,
-    name: getPartyDisplayName(party),
+    name: party.name,
     value: party.partyCodeNo,
   }));
   const optionNames = new Set(
@@ -1356,13 +1355,13 @@ function createPartyOptions(
 }
 
 function createResponsibilityCenterOptions(
-  responsibilityCenters: ResponsibilityCenter[],
+  responsibilityCenters: AccountsPayableVoucherLookupResponsibilityCenter[],
   rows: Array<{ responsibilityCenter: string }>,
 ): AppAdvancedDropdownOption[] {
   const options = responsibilityCenters
-    .filter((center) => center.status === "Active")
+    .filter((center) => center.status === "ACTIVE")
     .map((center) => ({
-      description: `${center.category} / ${center.financialType}`,
+      description: center.typeName,
       label: center.code,
       name: center.name,
       value: center.name,

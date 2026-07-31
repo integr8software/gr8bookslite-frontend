@@ -25,6 +25,14 @@ export type ApiTerm = {
 	updatedAt: string;
 };
 
+export type ApiTermOption = {
+	id: string;
+	name: string;
+	dateMode: ApiTermDateMode;
+	period: number;
+	status: ApiTermStatus;
+};
+
 export type TermsMaintenance = {
 	id: string;
 	name: string;
@@ -112,6 +120,10 @@ export type TermsMaintenanceListResponse = {
 	permissions: TermsMaintenancePermissions;
 };
 
+export type TermsMaintenanceLookupResponse = {
+	terms: TermsMaintenance[];
+};
+
 export type TermsMaintenanceStatisticCardsProps = {
 	statistics: TermsMaintenanceStatistics;
 	isLoading?: boolean;
@@ -121,6 +133,10 @@ export type ApiTermListResponse = {
 	terms: ApiTerm[];
 	statistics: TermsMaintenanceStatistics;
 	permissions: TermsMaintenancePermissions;
+};
+
+export type ApiTermLookupResponse = {
+	terms: ApiTermOption[];
 };
 
 export type ApiTermSaveResponse = {

@@ -52,6 +52,7 @@ export function DefaultAccountListPage() {
         defaultAccount={drawerState?.defaultAccount}
         isOpen={Boolean(drawerState)}
         mode={drawerState?.mode ?? "add"}
+        permissions={page.permissions}
         onClose={() => setDrawerState(null)}
       />
       {page.permissions.canImport ? (

@@ -3,6 +3,7 @@ import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
 import type {
 	ApiDefaultAccount,
 	ApiDefaultAccountExpenseParentOptionsResponse,
+	ApiDefaultAccountExpenseSubAccountSaveResponse,
 	ApiDefaultAccountListResponse,
 	ApiDefaultAccountSaveResponse,
 	ApiDefaultAccountStatus,
@@ -12,6 +13,22 @@ import type {
 	DefaultAccountListResponse,
 	DefaultAccountStatus,
 } from "@/app/src/types/modules/financial-maintenance/default-account/DefaultAccountTypes";
+import type { ChartAccountFormValues } from "@/app/src/types/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsTypes";
+
+type SaveDefaultAccountExpenseSubAccountPayload = {
+	parentAccountId?: string;
+	accountLevel?: string;
+	accountTitle: string;
+	accountType?: string;
+	accountNature?: string;
+	accountGroup?: string | string[];
+	statementSection?: string;
+	reportAlias?: string;
+	description?: string;
+	isPostingAccount?: boolean;
+	showTotal?: boolean;
+	status?: ApiDefaultAccountStatus;
+};
 
 export async function fetchDefaultAccounts(): Promise<DefaultAccountListResponse> {
 	const response = await ApiClient.get<ApiDefaultAccountListResponse>(
@@ -38,15 +55,15 @@ export async function fetchDefaultAccounts(): Promise<DefaultAccountListResponse
 				defaultAccounts.filter((account) => account.type === "COLLECTION").length,
 		},
 		permissions: {
-			canView: response.data.permissions?.canView ?? true,
-			canCreate: response.data.permissions?.canCreate ?? true,
-			canUpdate: response.data.permissions?.canUpdate ?? true,
-			canDelete: response.data.permissions?.canDelete ?? true,
-			canExport: response.data.permissions?.canExport ?? true,
+			canView: response.data.permissions?.canView ?? false,
+			canCreate: response.data.permissions?.canCreate ?? false,
+			canUpdate: response.data.permissions?.canUpdate ?? false,
+			canCancel: response.data.permissions?.canCancel ?? false,
+			canExport: response.data.permissions?.canExport ?? false,
 			canImport:
 				response.data.permissions?.canImport ??
 				response.data.permissions?.canCreate ??
-				true,
+				false,
 		},
 	};
 }
@@ -93,6 +110,36 @@ export async function updateDefaultAccountStatus(
 	);
 
 	return mapApiDefaultAccount(response.data.defaultAccount);
+}
+
+export async function createDefaultAccountExpenseSubAccount(
+	values: ChartAccountFormValues & { accountGroup?: string | string[] },
+) {
+	const response = await ApiClient.post<ApiDefaultAccountExpenseSubAccountSaveResponse>(
+		`${DefaultAccountApiPath}/expense-sub-accounts`,
+		createDefaultAccountExpenseSubAccountPayload(values),
+	);
+
+	return response.data.account;
+}
+
+function createDefaultAccountExpenseSubAccountPayload(
+	values: ChartAccountFormValues & { accountGroup?: string | string[] },
+): SaveDefaultAccountExpenseSubAccountPayload {
+	return {
+		accountGroup: values.accountGroup ?? "",
+		accountLevel: values.accountLevel || undefined,
+		accountNature: values.normalBalance || undefined,
+		accountTitle: values.accountName,
+		accountType: values.accountType || undefined,
+		description: values.description || undefined,
+		isPostingAccount: values.isPostingAccount,
+		parentAccountId: values.parentId ?? undefined,
+		reportAlias: values.showInReports ? values.reportAlias : "",
+		statementSection: values.statementSection,
+		showTotal: values.showInReports,
+		status: values.status ? mapStatusToApi(values.status) : undefined,
+	};
 }
 
 function mapApiDefaultAccount(account: ApiDefaultAccount): DefaultAccount {

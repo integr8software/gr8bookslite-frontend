@@ -96,9 +96,9 @@ export function UserRolePermissionsPanel({
         </div>
       </div>
 
-      <div className="grid xl:items-start xl:grid-cols-[18rem_minmax(0,1fr)]">
-        <aside className="border-b border-darknavy/10 bg-darknavy/1.5 p-3 xl:border-b-0 xl:border-r">
-          <div className="grid gap-2">
+      <div className="grid min-w-0 xl:items-start xl:grid-cols-[18rem_minmax(0,1fr)]">
+        <aside className="min-w-0 overflow-hidden border-b border-darknavy/10 bg-darknavy/[0.015] p-3 xl:border-b-0 xl:border-r xl:border-darknavy/10">
+          <div className="grid min-w-0 gap-2">
             {moduleStats.map(({ accessModule, enabledCount, totalCount }) => {
               const isActive = accessModule.value === selectedModule.value;
               const modulePermissionState = getModulePermissionState(
@@ -110,7 +110,7 @@ export function UserRolePermissionsPanel({
                 <div
                   key={accessModule.value}
                   className={[
-                    "grid gap-1 rounded border px-3 py-2 text-left transition",
+                    "grid min-w-0 gap-1 overflow-hidden rounded border px-3 py-2 text-left transition",
                     isActive
                       ? "permission-neutral-selected shadow-sm"
                       : "border-transparent hover:border-darknavy/15 hover:bg-darknavy/5",
@@ -118,7 +118,7 @@ export function UserRolePermissionsPanel({
                     .filter(Boolean)
                     .join(" ")}
                 >
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex min-w-0 items-start justify-between gap-3">
                     <button
                       type="button"
                       onClick={() => setSelectedModuleValue(accessModule.value)}
@@ -158,7 +158,7 @@ export function UserRolePermissionsPanel({
           </div>
         </aside>
 
-        <section className="min-w-0">
+        <section className="min-w-0 overflow-hidden">
           <div className="border-b border-darknavy/10 px-4 py-4">
             <div>
               <h4 className="text-base font-semibold text-darknavy">
@@ -240,9 +240,19 @@ export function UserRolePermissionsPanel({
               })}
             </div>
 
-            <div className="hidden overflow-hidden rounded border border-darknavy/10 xl:block">
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-230 border-collapse text-left">
+            <div className="hidden max-w-full overflow-hidden rounded border border-darknavy/10 xl:block">
+              <div className="max-w-full overflow-x-auto">
+                <table className="w-full min-w-[71rem] table-fixed border-collapse text-left">
+                  <colgroup>
+                    <col className="w-[15rem]" />
+                    <col className="w-[8rem]" />
+                    {UserPermissionActions.map((action) => (
+                      <col
+                        key={action.value}
+                        className="w-[8rem]"
+                      />
+                    ))}
+                  </colgroup>
                   <thead className="bg-darknavy/3 text-[11px] font-semibold uppercase tracking-[0.18em] text-darknavy/45">
                     <tr>
                       <th className="px-4 py-3">Module</th>

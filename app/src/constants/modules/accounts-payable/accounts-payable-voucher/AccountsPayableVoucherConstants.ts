@@ -1,3 +1,4 @@
+import type { SortingState, VisibilityState } from "@tanstack/react-table";
 import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type {
   AccountsPayableVoucherPayableType,
@@ -11,6 +12,61 @@ export const AccountsPayableVoucherApiPath =
 
 export const AccountsPayableVoucherTablePaginationStorageKey =
   "accounts-payable.accounts-payable-voucher";
+
+export const AccountsPayableVoucherTableColumns = [
+  {
+    key: "transactionNo",
+    label: "Voucher No.",
+    className: "w-[12rem]",
+  },
+  {
+    key: "documentDate",
+    label: "Document Date",
+    className: "w-[11rem]",
+  },
+  {
+    key: "partyName",
+    label: "Party Name",
+    className: "w-[18rem]",
+  },
+  {
+    key: "amount",
+    label: "Amount",
+    className: "w-[11rem] text-right",
+  },
+  {
+    key: "payableType",
+    label: "Payable Type",
+    className: "w-[12rem]",
+  },
+  {
+    key: "currency",
+    label: "Currency",
+    className: "w-[8rem]",
+  },
+  {
+    key: "status",
+    label: "Status",
+    className: "w-[10rem]",
+  },
+  {
+    label: "Actions",
+    className: "w-[9rem] text-center",
+  },
+] as const;
+
+export const AccountsPayableVoucherTablePreferencesStorageKey =
+  "gr8booksneo:accounts-payable-voucher:table-preferences";
+export const AccountsPayableVoucherTablePreferencesModuleKey =
+  "accounts-payable:accounts-payable-voucher";
+export const AccountsPayableVoucherDefaultColumnOrder =
+  AccountsPayableVoucherTableColumns.map((column) =>
+    "key" in column ? column.key : "actions",
+  );
+export const AccountsPayableVoucherDefaultColumnVisibility: VisibilityState = {};
+export const AccountsPayableVoucherDefaultSorting: SortingState = [
+  { id: "documentDate", desc: true },
+];
 
 export const AccountsPayableVoucherStatusOptions: AccountsPayableVoucherStatus[] =
   ["Draft", "Approved", "Disapproved", "Closed", "Cancelled"];

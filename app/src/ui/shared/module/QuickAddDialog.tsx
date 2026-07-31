@@ -64,11 +64,7 @@ export function QuickAddDialog({
           {title}
         </h2>
         <div className="mt-5 grid gap-4">{children}</div>
-        {error ? (
-          <p className="mt-4 rounded-md border border-coralpink/20 bg-coralpink/5 px-3 py-2 text-sm font-semibold text-coralpink">
-            {error}
-          </p>
-        ) : null}
+        {error ? <p className="mt-2 text-sm font-semibold text-coralpink">{error}</p> : null}
         <div className="mt-5 flex justify-end gap-2">
           <button
             type="button"

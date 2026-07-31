@@ -12,6 +12,87 @@ export type AccountsPayableVoucherPayableType =
   | "Tax Payable"
   | "Accrued Payable";
 
+export type AccountsPayableVoucherLookupAddress = {
+  id: string;
+  addressName: string;
+  addressLine1: string;
+  addressLine2: string;
+  barangay: string;
+  barangayCode: string;
+  cityMunicipality: string;
+  cityMunicipalityCode: string;
+  isBilling: boolean;
+  isBuilding?: boolean;
+  isDefault: boolean;
+  isDelivery: boolean;
+  isForeign?: boolean;
+  isHome?: boolean;
+  province: string;
+  provinceCode: string;
+  region: string;
+  regionCode: string;
+};
+
+export type AccountsPayableVoucherLookupParty = {
+  id: string;
+  partyCodeNo: string;
+  classification: "INDIVIDUAL" | "NON_INDIVIDUAL" | "Individual" | "Non-Individual";
+  partyTypes: Array<"VENDOR" | "EMPLOYEE" | "Vendor" | "Employee" | string>;
+  status: "ACTIVE" | "Active";
+  name: string;
+  address: AccountsPayableVoucherLookupAddress;
+  addresses: AccountsPayableVoucherLookupAddress[];
+  defaultPayableAccount: string;
+  termId: string;
+  termName: string;
+  defaultPurchaseInputVatTaxSourceKey: string;
+  defaultPurchaseEwtTaxSourceKey: string;
+  defaultPurchaseFwtTaxSourceKey: string;
+  defaultPurchaseWvatTaxSourceKey: string;
+  contactPerson: string;
+  email: string;
+  contactNo: string;
+};
+
+export type AccountsPayableVoucherLookupTerm = {
+  id: string;
+  name: string;
+  dateMode: "DAY" | "MONTH" | "YEAR";
+  period: number;
+  status: "ACTIVE";
+};
+
+export type AccountsPayableVoucherLookupResponsibilityCenter = {
+  id: string;
+  code: string;
+  name: string;
+  typeName: string;
+  status: "ACTIVE";
+};
+
+export type AccountsPayableVoucherLookupAccount = {
+  id: string;
+  accountNumber: string;
+  accountName: string;
+  accountType: string;
+  statementGroup: string;
+  statementSection: string;
+  normalBalance: "Debit" | "Credit";
+  accountCategory: string;
+  description: string;
+  status: "Active" | "Inactive";
+};
+
+export type AccountsPayableVoucherLookupAccountOptions = {
+  defaultPayableAccount: AccountsPayableVoucherLookupAccount[];
+  employeePayableAccount: AccountsPayableVoucherLookupAccount[];
+};
+
+export type AccountsPayableVoucherLookupDefaultAccounts = {
+  defaultPayableAccount: string;
+  employeePayableAccount: string;
+};
+
 export type AccountsPayableVoucherExpenseLine = {
   id: string;
   companyId?: number;

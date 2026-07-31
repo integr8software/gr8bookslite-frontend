@@ -10,6 +10,8 @@ import {
   Undo2,
   XCircle,
 } from "lucide-react";
+import type { ReactNode } from "react";
+import type { Row } from "@tanstack/react-table";
 import {
   AccountsPayableVoucherHref,
   canApproveAccountsPayableVoucherStatus,
@@ -29,10 +31,13 @@ import {
   ModuleActionMenu,
   type ModuleActionMenuItem,
 } from "@/app/src/ui/shared/module/ModuleActionMenu";
-import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import {
+  getColumnMetaClassName,
+  joinClasses,
+} from "@/app/src/ui/shared/module/module-table/utils";
 
 type AccountsPayableVoucherTableRowProps = {
-  record: AccountsPayableVoucherRecord;
+  row: Row<AccountsPayableVoucherRecord>;
   onUpdateStatus: (
     record: AccountsPayableVoucherRecord,
     status: AccountsPayableVoucherStatus,
@@ -40,9 +45,10 @@ type AccountsPayableVoucherTableRowProps = {
 };
 
 export function AccountsPayableVoucherTableRow({
-  record,
+  row,
   onUpdateStatus,
 }: AccountsPayableVoucherTableRowProps) {
+  const record = row.original;
   const isApproved = record.status === "Approved";
   const isDisapproved = record.status === "Disapproved";
   const isCancelled = record.status === "Cancelled";
@@ -99,41 +105,94 @@ export function AccountsPayableVoucherTableRow({
 
   return (
     <tr className="module-table-row border-b border-darknavy/8 last:border-b-0">
-      <td className="px-4 py-4 font-semibold">{record.transactionNo}</td>
-      <td className="px-4 py-4">
+      {row.getVisibleCells().map((cell) => (
+        <AccountsPayableVoucherTableCell
+          key={cell.id}
+          className={getColumnMetaClassName(cell.column.columnDef.meta)}
+        >
+          <AccountsPayableVoucherCellContent
+            actionItems={actionItems}
+            columnId={cell.column.id}
+            record={record}
+          />
+        </AccountsPayableVoucherTableCell>
+      ))}
+    </tr>
+  );
+}
+
+function AccountsPayableVoucherCellContent({
+  actionItems,
+  columnId,
+  record,
+}: {
+  actionItems: ModuleActionMenuItem[];
+  columnId: string;
+  record: AccountsPayableVoucherRecord;
+}) {
+  switch (columnId) {
+    case "transactionNo":
+      return <span className="font-semibold">{record.transactionNo}</span>;
+    case "documentDate":
+      return (
         <span className="inline-flex items-center gap-2">
           <CalendarDays className="h-4 w-4 text-skyblue" aria-hidden="true" />
           {record.documentDate}
         </span>
-      </td>
-      <td className="px-4 py-4">
-        <div className="font-medium">{record.partyName || "No party"}</div>
-        <div className="text-xs text-darknavy/55">
-          {record.partyCode || "No party code"}
-        </div>
-      </td>
-      <td className="px-4 py-4">{record.payableType}</td>
-      <td className="px-4 py-4 text-right font-semibold tabular-nums">
-        {formatAccountsPayableVoucherAmount(record.amount)}
-      </td>
-      <td className="px-4 py-4">
-        <div className="font-medium">{record.currency}</div>
-        <div className="text-xs text-darknavy/55">
-          Exchange Rate {formatAccountsPayableVoucherAmount(record.exchangeRate)}
-        </div>
-      </td>
-      <td className="px-4 py-4">
-        <AccountsPayableVoucherStatusBadge status={record.status} />
-      </td>
-      <td className="px-4 py-4 text-center">
-        <ModuleTableActions className="!justify-center">
+      );
+    case "partyName":
+      return (
+        <>
+          <div className="font-medium">{record.partyName || "No party"}</div>
+          <div className="text-xs text-darknavy/55">
+            {record.partyCode || "No party code"}
+          </div>
+        </>
+      );
+    case "amount":
+      return (
+        <span className="font-semibold tabular-nums">
+          {formatAccountsPayableVoucherAmount(record.amount)}
+        </span>
+      );
+    case "payableType":
+      return <span>{record.payableType}</span>;
+    case "currency":
+      return (
+        <>
+          <div className="font-medium">{record.currency}</div>
+          <div className="text-xs text-darknavy/55">
+            Exchange Rate {formatAccountsPayableVoucherAmount(record.exchangeRate)}
+          </div>
+        </>
+      );
+    case "status":
+      return <AccountsPayableVoucherStatusBadge status={record.status} />;
+    case "actions":
+      return (
+        <ModuleTableActions className="w-full !justify-center">
           <ModuleActionMenu
             items={actionItems}
             label={`Actions for accounts payable voucher ${record.transactionNo}`}
           />
         </ModuleTableActions>
-      </td>
-    </tr>
+      );
+    default:
+      return null;
+  }
+}
+
+function AccountsPayableVoucherTableCell({
+  className = "text-left",
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <td className={`px-4 py-4 align-middle text-sm text-darknavy ${className}`}>
+      {children}
+    </td>
   );
 }
 

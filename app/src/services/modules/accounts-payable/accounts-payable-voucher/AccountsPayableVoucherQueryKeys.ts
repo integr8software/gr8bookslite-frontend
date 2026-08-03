@@ -33,7 +33,7 @@ export const AccountsPayableVoucherQueryKeys = {
   ) =>
     [
       ...AccountsPayableVoucherQueryKeys.all(companyId, branchUnitId),
-      "number-suggestion",
+      "transaction-number",
     ] as const,
   lookups: (companyId?: number | null, branchUnitId?: number | null) =>
     [

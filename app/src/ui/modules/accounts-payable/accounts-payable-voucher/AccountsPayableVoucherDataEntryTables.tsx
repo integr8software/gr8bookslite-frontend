@@ -159,9 +159,17 @@ function AccountsPayableVoucherExpenseTable({
   const [columnWidths, setColumnWidths] = useState<
     Record<AccountsPayableVoucherExpenseColumnId, number>
   >({ ...AccountsPayableVoucherExpenseColumnWidths });
-  const partyRecords = useAccountsPayableVoucherPartyOptions().data ?? [];
-  const responsibilityCenters =
-    useAccountsPayableVoucherResponsibilityCenterOptions().data ?? [];
+  const partyOptionsQuery = useAccountsPayableVoucherPartyOptions();
+  const responsibilityCenterOptionsQuery =
+    useAccountsPayableVoucherResponsibilityCenterOptions();
+  const partyRecords = useMemo(
+    () => partyOptionsQuery.data ?? [],
+    [partyOptionsQuery.data],
+  );
+  const responsibilityCenters = useMemo(
+    () => responsibilityCenterOptionsQuery.data ?? [],
+    [responsibilityCenterOptionsQuery.data],
+  );
   const chartAccounts = useMemo(() => getModuleChartAccounts(), []);
   const taxCodesQuery = useTaxes(PurchaseTaxCodeQuery);
   const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
@@ -392,9 +400,17 @@ function AccountsPayableVoucherAccountingTable({
     Record<AccountsPayableVoucherAccountingColumnId, number>
   >({ ...AccountsPayableVoucherAccountingColumnWidths });
   const isReadonly = page.isAccountingEntriesReadonly;
-  const partyRecords = useAccountsPayableVoucherPartyOptions().data ?? [];
-  const responsibilityCenters =
-    useAccountsPayableVoucherResponsibilityCenterOptions().data ?? [];
+  const partyOptionsQuery = useAccountsPayableVoucherPartyOptions();
+  const responsibilityCenterOptionsQuery =
+    useAccountsPayableVoucherResponsibilityCenterOptions();
+  const partyRecords = useMemo(
+    () => partyOptionsQuery.data ?? [],
+    [partyOptionsQuery.data],
+  );
+  const responsibilityCenters = useMemo(
+    () => responsibilityCenterOptionsQuery.data ?? [],
+    [responsibilityCenterOptionsQuery.data],
+  );
   const chartAccounts = useMemo(() => getModuleChartAccounts(), []);
   const taxCodesQuery = useTaxes(PurchaseTaxCodeQuery);
   const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);

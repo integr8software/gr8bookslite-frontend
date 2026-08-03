@@ -67,8 +67,14 @@ export function AccountsPayableVoucherFormPage() {
   const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
   const chartAccounts = useMemo(() => getModuleChartAccounts(), []);
   const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
-  const partyRecords = partyOptionsQuery.data ?? [];
-  const termRecords = termOptionsQuery.data ?? [];
+  const partyRecords = useMemo(
+    () => partyOptionsQuery.data ?? [],
+    [partyOptionsQuery.data],
+  );
+  const termRecords = useMemo(
+    () => termOptionsQuery.data ?? [],
+    [termOptionsQuery.data],
+  );
   const defaultPayableAccounts = useMemo(
     () =>
       mergePayableAccountOptions(

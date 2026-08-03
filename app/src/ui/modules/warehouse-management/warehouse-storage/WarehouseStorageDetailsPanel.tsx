@@ -51,7 +51,7 @@ export function WarehouseStorageDetailsPanel({
         </button>
       </div>
       <div className="p-4">
-        <span className="inline-flex rounded-md bg-violet-100 px-2.5 py-1 text-[11px] font-bold text-violet-700">
+        <span className="warehouse-storage-selected-badge inline-flex rounded-md px-2.5 py-1 text-[11px] font-bold">
           Selected Location
         </span>
         <dl className="mt-4 grid gap-3 text-xs">
@@ -127,7 +127,7 @@ function PanelAction({
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-violet-300 bg-white px-3 text-xs font-bold text-violet-700 transition hover:bg-violet-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-violet-500/15"
+      className="warehouse-storage-violet-action inline-flex h-9 items-center justify-center gap-2 rounded-md border px-3 text-xs font-bold transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-violet-500/15"
     >
       <Icon className="h-3.5 w-3.5" aria-hidden="true" />
       {label}

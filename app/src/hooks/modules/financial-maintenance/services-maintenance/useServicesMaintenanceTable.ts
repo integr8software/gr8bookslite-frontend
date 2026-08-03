@@ -61,6 +61,7 @@ export function useServicesMaintenanceTable(services: ServicesMaintenance[]) {
 		[],
 	);
 
+	// eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table owns table state handlers.
 	return useReactTable({
 		data: services,
 		columns,

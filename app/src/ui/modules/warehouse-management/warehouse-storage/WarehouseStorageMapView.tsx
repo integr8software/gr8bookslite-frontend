@@ -473,13 +473,22 @@ function LocationNavigator({
                                         className={joinClasses(
                                           "flex w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left text-xs font-semibold transition",
                                           selectedRecordId === record.id
-                                            ? "bg-violet-100 text-violet-700"
+                                            ? "warehouse-storage-selected-row"
                                             : "text-darknavy/65 hover:bg-offwhite",
                                         )}
                                         style={{ paddingLeft: `${4.25}rem` }}
                                       >
                                         <span className="truncate">{record.location.locationName || record.location.locationCode}</span>
-                                        <span className="rounded-full bg-white px-1.5 text-[10px] text-darknavy/45">{record.itemCount}</span>
+                                        <span
+                                          className={joinClasses(
+                                            "rounded-full px-1.5 text-[10px]",
+                                            selectedRecordId === record.id
+                                              ? "warehouse-storage-selected-count"
+                                              : "bg-white text-darknavy/45",
+                                          )}
+                                        >
+                                          {record.itemCount}
+                                        </span>
                                       </button>
                                     ))}
                                   </div>
@@ -649,9 +658,9 @@ function SlotButton({
       disabled={!slot.record}
       onClick={() => slot.record && onSelectRecord(slot.record.id)}
       className={joinClasses(
-        "grid h-9 place-items-center rounded-md border text-[11px] font-bold transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-violet-500/20",
+        "grid h-9 place-items-center rounded-md border text-[11px] font-bold transition focus-visible:outline-none focus-visible:ring-4",
         getSlotClassName(slot.status),
-        isSelected ? "border-violet-500 bg-violet-100 text-violet-700 ring-2 ring-violet-500/25" : "",
+        isSelected ? getSelectedSlotClassName(slot.status) : "",
         !slot.record ? "cursor-default opacity-95" : "hover:-translate-y-0.5",
       )}
       title={slot.record?.path ?? slot.label}
@@ -757,16 +766,33 @@ function getSlotStatus(record: WarehouseStorageListRecord | undefined, slotNumbe
 function getSlotClassName(status: LayoutSlot["status"]) {
   switch (status) {
     case "Blocked":
-      return "border-slate-200 bg-slate-100 text-slate-500";
+      return "border-slate-200 bg-slate-100 text-slate-500 focus-visible:ring-slate-500/20";
     case "Reserved":
-      return "border-amber-200 bg-amber-100 text-amber-700";
+      return "border-amber-200 bg-amber-100 text-amber-700 focus-visible:ring-amber-500/20";
     case "Occupied":
-      return "border-blue-200 bg-blue-100 text-blue-700";
+      return "border-blue-200 bg-blue-100 text-blue-700 focus-visible:ring-blue-500/20";
     case "Full":
-      return "border-rose-200 bg-rose-100 text-rose-700";
+      return "border-rose-200 bg-rose-100 text-rose-700 focus-visible:ring-rose-500/20";
     case "Maintenance":
-      return "border-violet-200 bg-violet-100 text-violet-700";
+      return "border-violet-200 bg-violet-100 text-violet-700 focus-visible:ring-violet-500/20";
     default:
-      return "border-emerald-200 bg-emerald-100 text-emerald-700";
+      return "border-emerald-200 bg-emerald-100 text-emerald-700 focus-visible:ring-emerald-500/20";
+  }
+}
+
+function getSelectedSlotClassName(status: LayoutSlot["status"]) {
+  switch (status) {
+    case "Blocked":
+      return "border-slate-500 bg-slate-100 text-slate-700 ring-2 ring-slate-500/35";
+    case "Reserved":
+      return "border-amber-500 bg-amber-100 text-amber-800 ring-2 ring-amber-500/35";
+    case "Occupied":
+      return "border-blue-500 bg-blue-100 text-blue-800 ring-2 ring-blue-500/35";
+    case "Full":
+      return "border-rose-500 bg-rose-100 text-rose-800 ring-2 ring-rose-500/35";
+    case "Maintenance":
+      return "border-violet-500 bg-violet-100 text-violet-800 ring-2 ring-violet-500/35";
+    default:
+      return "border-emerald-500 bg-emerald-100 text-emerald-800 ring-2 ring-emerald-500/35";
   }
 }

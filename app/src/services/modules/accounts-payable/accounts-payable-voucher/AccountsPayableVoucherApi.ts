@@ -235,7 +235,7 @@ export async function fetchAccountsPayableVoucherNumberSuggestion(
   branchUnitId?: number | null,
 ): Promise<AccountsPayableVoucherNumberSuggestion> {
   const response = await ApiClient.get<AccountsPayableVoucherNumberSuggestion>(
-    `${AccountsPayableVoucherApiPath}/number-suggestion`,
+    `${AccountsPayableVoucherApiPath}/transaction-number`,
     {
       params: cleanQueryParams({ branchUnitId }),
     },

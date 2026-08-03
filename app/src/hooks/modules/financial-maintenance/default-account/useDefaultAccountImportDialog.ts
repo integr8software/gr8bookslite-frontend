@@ -69,12 +69,6 @@ export function useDefaultAccountImportDialog({
   const actualInvalidRows = validatedRows.filter(defaultAccountImportRowHasErrors);
   const validRows = validatedRows.filter((row) => !defaultAccountImportRowHasErrors(row));
   const validSelectedRows = validRows.filter((row) => selectedRowIds.has(row.id));
-  const importableRows =
-    importMode === "selected-valid"
-      ? validSelectedRows
-      : importMode === "all-valid"
-        ? validRows
-        : validatedRows;
   const totalPages = Math.max(
     1,
     Math.ceil(displayedRows.length / DefaultAccountImportPreviewPageSize),

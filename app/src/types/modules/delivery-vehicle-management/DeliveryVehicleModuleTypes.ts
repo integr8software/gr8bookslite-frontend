@@ -11,6 +11,7 @@ export type DeliveryVehicleField = {
   options?: readonly string[];
   required?: boolean;
   type?: DeliveryVehicleFieldType;
+  defaultValue?: string;
 };
 
 export type DeliveryVehicleModuleRecord = {

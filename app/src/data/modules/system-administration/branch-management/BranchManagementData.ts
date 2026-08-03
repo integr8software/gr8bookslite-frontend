@@ -2,6 +2,7 @@ import type { MainBranch } from "@/app/src/data/shared/main-layout/MainLayoutTyp
 import type {
   WorkspaceCompanyRecord,
 } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
+import { cleanOptional } from "@/app/src/utils/string.util";
 
 export type BranchManagementClassification = "branch" | "satellite";
 
@@ -48,15 +49,15 @@ export function createBranchFromForm(
     code,
     companyCode: resolvedCompanyCode,
     name: normalizedName,
-    contactNo: optionalTrim(values.contactNo),
-    email: optionalTrim(values.email),
-    description: optionalTrim(values.description),
+    contactNo: cleanOptional(values.contactNo),
+    email: cleanOptional(values.email),
+    description: cleanOptional(values.description),
     tin,
     linkedMainBranchId:
       values.classification === "satellite"
         ? values.linkedMainBranchId
         : undefined,
-    address: optionalTrim(values.address),
+    address: cleanOptional(values.address),
     href: "/dashboard",
     kind: values.classification,
     isMain: values.classification === "branch" ? values.isMain : false,
@@ -170,8 +171,3 @@ function resolveCompanyCode(
   return generatedCompanyCode || "AUTO";
 }
 
-function optionalTrim(value: string) {
-  const trimmedValue = value.trim();
-
-  return trimmedValue || undefined;
-}

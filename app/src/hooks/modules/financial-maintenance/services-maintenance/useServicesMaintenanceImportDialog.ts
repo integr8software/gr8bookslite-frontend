@@ -69,12 +69,6 @@ export function useServicesMaintenanceImportDialog({
   const actualInvalidRows = validatedRows.filter(serviceImportRowHasErrors);
   const validRows = validatedRows.filter((row) => !serviceImportRowHasErrors(row));
   const validSelectedRows = validRows.filter((row) => selectedRowIds.has(row.id));
-  const importableRows =
-    importMode === "selected-valid"
-      ? validSelectedRows
-      : importMode === "all-valid"
-        ? validRows
-        : validatedRows;
   const totalPages = Math.max(
     1,
     Math.ceil(displayedRows.length / ServicesMaintenanceImportPreviewPageSize),

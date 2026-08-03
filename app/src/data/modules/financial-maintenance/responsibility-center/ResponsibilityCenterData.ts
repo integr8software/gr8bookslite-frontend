@@ -4,6 +4,7 @@ import type {
 	ResponsibilityCenterFormValues,
 	ResponsibilityCenterTreeNode,
 } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
+import { cleanOptional } from "@/app/src/utils/string.util";
 
 export const ResponsibilityCenterInitialFormValues: ResponsibilityCenterFormValues =
 	{
@@ -115,9 +116,9 @@ export function createResponsibilityCenterFromForm(
 		category: values.category,
 		financialType: values.financialType,
 		manager: values.manager.trim(),
-		parentId: optionalTrim(values.parentId),
+		parentId: cleanOptional(values.parentId),
 		status: values.status,
-		description: optionalTrim(values.description),
+		description: cleanOptional(values.description),
 		createdBy: "Current User",
 		createdAt: now,
 		updatedBy: "Current User",
@@ -137,12 +138,6 @@ export function updateResponsibilityCenterFromForm(
 		updatedBy: "Current User",
 		updatedAt: new Date().toISOString(),
 	};
-}
-
-function optionalTrim(value: string) {
-	const trimmedValue = value.trim();
-
-	return trimmedValue || undefined;
 }
 
 export function getResponsibilityCenterTableMinWidthClassName(

@@ -14,3 +14,4 @@ jobs:
       maximum-findings-per-rule: 50
       fail-on-blockers: true
       fail-on-warnings: false
+    secrets: inherit

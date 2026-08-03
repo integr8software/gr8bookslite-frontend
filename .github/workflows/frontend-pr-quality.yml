@@ -1,0 +1,16 @@
+name: Frontend PR Quality
+
+on:
+  pull_request:
+    branches:
+      - develop
+
+  workflow_dispatch:
+
+jobs:
+  frontend-pr-quality:
+    uses: integr8software/gr8booksneo-automation/.github/workflows/frontend-pr-quality.yml@develop
+    with:
+      maximum-findings-per-rule: 50
+      fail-on-blockers: true
+      fail-on-warnings: false

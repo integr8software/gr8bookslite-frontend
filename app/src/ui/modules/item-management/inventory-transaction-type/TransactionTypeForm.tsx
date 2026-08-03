@@ -51,7 +51,7 @@ export function TransactionTypeForm({
 					onChange={onInputChange}
 					readOnly={isReadonly}
 					className={fieldClassName}
-					placeholder="Enter inventory transaction type name"
+					placeholder="Enter inventory transaction type name..."
 				/>
 			</FormField>
 
@@ -63,7 +63,7 @@ export function TransactionTypeForm({
 					readOnly={isReadonly}
 					className={`${fieldClassName} min-h-24 py-3`}
 					counterMode="used"
-					placeholder="Enter description"
+					placeholder="Enter description..."
 				/>
 			</FormField>
 

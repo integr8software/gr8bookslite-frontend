@@ -31,6 +31,8 @@ export const TransactionTypeStatusOptions = [
 	"Inactive",
 ] as const satisfies readonly TransactionTypeStatus[];
 
+export const TransactionTypeDefaultStatus: TransactionTypeStatus = "Active";
+
 export const TransactionTypeModuleOptions = [
 	{
 		label: "Goods Issue",
@@ -41,6 +43,25 @@ export const TransactionTypeModuleOptions = [
 		value: "GR",
 	},
 ] as const;
+
+export const TransactionTypeModuleDescriptions = {
+	GI: "Issues goods out of inventory.",
+	GR: "Receives goods into inventory.",
+} as const;
+
+export const TransactionTypeNamePlaceholder =
+	"Enter inventory transaction type";
+
+export const TransactionTypeAccountTitles = {
+	accountsPayableTrade: "Accounts Payable - Trade",
+	accountsReceivablesOthers: "Accounts Receivables - Others",
+	badOrderExpense: "Bad Order Expense",
+	costOfSalesMerchandise: "Cost of Sales - Merchandise",
+	expenseOperatingSupplies: "Expense - Operating Supplies",
+	inventoryMerchandise: "Inventory - Merchandise",
+	salesReturnsAndAllowances: "Sales Returns and Allowances",
+	spoilageExpense: "Spoilage Expense",
+} as const;
 
 export const TransactionTypeTableColumns: Array<
 	| {
@@ -120,6 +141,6 @@ export const TransactionTypeActionCopy = {
 	view: {
 		title: "View Inventory Transaction Type",
 		description:
-			"Review the inventory transaction type details, goods movement, and account mapping.",
+			"Review the selected goods movement and account mapping for this inventory transaction type.",
 	},
 } as const;

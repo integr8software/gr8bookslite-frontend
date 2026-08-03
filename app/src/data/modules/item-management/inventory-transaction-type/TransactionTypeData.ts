@@ -1,6 +1,10 @@
 import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import type { ModuleOption } from "@/app/src/data/shared/modules/ModuleOptionsData";
-import { TransactionTypeModuleOptions } from "@/app/src/constants/modules/item-management/inventory-transaction-type/TransactionTypeConstants";
+import {
+	TransactionTypeAccountTitles,
+	TransactionTypeDefaultStatus,
+	TransactionTypeModuleOptions,
+} from "@/app/src/constants/modules/item-management/inventory-transaction-type/TransactionTypeConstants";
 import type {
 	TransactionType,
 	TransactionTypeFormValues,
@@ -17,7 +21,7 @@ export const MockTransactionTypes: TransactionType[] = [
 		moduleId: "GR",
 		moduleName: InventoryMovementTypeGoodsReceipt,
 		accountNumber: "4010200002",
-		accountTitle: "Sales Returns and Allowances",
+		accountTitle: TransactionTypeAccountTitles.salesReturnsAndAllowances,
 	}),
 	createMockTransactionType({
 		id: "transaction-type-gr-stock-adjustment-receipt",
@@ -26,7 +30,7 @@ export const MockTransactionTypes: TransactionType[] = [
 		moduleId: "GR",
 		moduleName: InventoryMovementTypeGoodsReceipt,
 		accountNumber: "1010400001",
-		accountTitle: "Inventory - Merchandise",
+		accountTitle: TransactionTypeAccountTitles.inventoryMerchandise,
 	}),
 	createMockTransactionType({
 		id: "transaction-type-inventory-variance",
@@ -35,7 +39,7 @@ export const MockTransactionTypes: TransactionType[] = [
 		moduleId: "GR",
 		moduleName: InventoryMovementTypeGoodsReceipt,
 		accountNumber: "5010100001",
-		accountTitle: "Cost of Sales - Merchandise",
+		accountTitle: TransactionTypeAccountTitles.costOfSalesMerchandise,
 	}),
 	createMockTransactionType({
 		id: "transaction-type-gr-transfer",
@@ -44,7 +48,7 @@ export const MockTransactionTypes: TransactionType[] = [
 		moduleId: "GR",
 		moduleName: InventoryMovementTypeGoodsReceipt,
 		accountNumber: "1010400001",
-		accountTitle: "Inventory - Merchandise",
+		accountTitle: TransactionTypeAccountTitles.inventoryMerchandise,
 	}),
 	createMockTransactionType({
 		id: "transaction-type-gr-free-items",
@@ -53,7 +57,7 @@ export const MockTransactionTypes: TransactionType[] = [
 		moduleId: "GR",
 		moduleName: InventoryMovementTypeGoodsReceipt,
 		accountNumber: "1010400001",
-		accountTitle: "Inventory - Merchandise",
+		accountTitle: TransactionTypeAccountTitles.inventoryMerchandise,
 	}),
 	createMockTransactionType({
 		id: "transaction-type-gr-gifts",
@@ -62,7 +66,7 @@ export const MockTransactionTypes: TransactionType[] = [
 		moduleId: "GR",
 		moduleName: InventoryMovementTypeGoodsReceipt,
 		accountNumber: "1010400001",
-		accountTitle: "Inventory - Merchandise",
+		accountTitle: TransactionTypeAccountTitles.inventoryMerchandise,
 	}),
 	createMockTransactionType({
 		id: "transaction-type-gi-transfer",
@@ -71,7 +75,7 @@ export const MockTransactionTypes: TransactionType[] = [
 		moduleId: "GI",
 		moduleName: InventoryMovementTypeGoodsIssue,
 		accountNumber: "1010400001",
-		accountTitle: "Inventory - Merchandise",
+		accountTitle: TransactionTypeAccountTitles.inventoryMerchandise,
 	}),
 	createMockTransactionType({
 		id: "transaction-type-gi-issuance",
@@ -80,7 +84,7 @@ export const MockTransactionTypes: TransactionType[] = [
 		moduleId: "GI",
 		moduleName: InventoryMovementTypeGoodsIssue,
 		accountNumber: "5020100001",
-		accountTitle: "Expense - Operating Supplies",
+		accountTitle: TransactionTypeAccountTitles.expenseOperatingSupplies,
 	}),
 	createMockTransactionType({
 		id: "transaction-type-gi-purchase-return",
@@ -89,7 +93,7 @@ export const MockTransactionTypes: TransactionType[] = [
 		moduleId: "GI",
 		moduleName: InventoryMovementTypeGoodsIssue,
 		accountNumber: "2010001001",
-		accountTitle: "Accounts Payable - Trade",
+		accountTitle: TransactionTypeAccountTitles.accountsPayableTrade,
 	}),
 	createMockTransactionType({
 		id: "transaction-type-gi-damaged-item",
@@ -98,7 +102,7 @@ export const MockTransactionTypes: TransactionType[] = [
 		moduleId: "GI",
 		moduleName: InventoryMovementTypeGoodsIssue,
 		accountNumber: "5020200001",
-		accountTitle: "Bad Order Expense",
+		accountTitle: TransactionTypeAccountTitles.badOrderExpense,
 	}),
 	createMockTransactionType({
 		id: "transaction-type-gi-spoilage",
@@ -107,7 +111,7 @@ export const MockTransactionTypes: TransactionType[] = [
 		moduleId: "GI",
 		moduleName: InventoryMovementTypeGoodsIssue,
 		accountNumber: "5020200002",
-		accountTitle: "Spoilage Expense",
+		accountTitle: TransactionTypeAccountTitles.spoilageExpense,
 	}),
 	createMockTransactionType({
 		id: "transaction-type-gi-expired-item",
@@ -116,7 +120,7 @@ export const MockTransactionTypes: TransactionType[] = [
 		moduleId: "GI",
 		moduleName: InventoryMovementTypeGoodsIssue,
 		accountNumber: "5020200002",
-		accountTitle: "Spoilage Expense",
+		accountTitle: TransactionTypeAccountTitles.spoilageExpense,
 	}),
 	createMockTransactionType({
 		id: "transaction-type-gi-bad-order",
@@ -125,7 +129,7 @@ export const MockTransactionTypes: TransactionType[] = [
 		moduleId: "GI",
 		moduleName: InventoryMovementTypeGoodsIssue,
 		accountNumber: "5020200001",
-		accountTitle: "Bad Order Expense",
+		accountTitle: TransactionTypeAccountTitles.badOrderExpense,
 	}),
 	createMockTransactionType({
 		id: "transaction-type-gi-freebies",
@@ -134,7 +138,7 @@ export const MockTransactionTypes: TransactionType[] = [
 		moduleId: "GI",
 		moduleName: InventoryMovementTypeGoodsIssue,
 		accountNumber: "5010100001",
-		accountTitle: "Cost of Sales - Merchandise",
+		accountTitle: TransactionTypeAccountTitles.costOfSalesMerchandise,
 	}),
 	createMockTransactionType({
 		id: "transaction-type-gi-gifts",
@@ -143,7 +147,7 @@ export const MockTransactionTypes: TransactionType[] = [
 		moduleId: "GI",
 		moduleName: InventoryMovementTypeGoodsIssue,
 		accountNumber: "5020100001",
-		accountTitle: "Expense - Operating Supplies",
+		accountTitle: TransactionTypeAccountTitles.expenseOperatingSupplies,
 	}),
 	createMockTransactionType({
 		id: "transaction-type-gi-intercompany",
@@ -152,7 +156,7 @@ export const MockTransactionTypes: TransactionType[] = [
 		moduleId: "GI",
 		moduleName: InventoryMovementTypeGoodsIssue,
 		accountNumber: "1010103002",
-		accountTitle: "Accounts Receivables - Others",
+		accountTitle: TransactionTypeAccountTitles.accountsReceivablesOthers,
 	}),
 ];
 
@@ -160,7 +164,7 @@ export const TransactionTypeInitialFormValues: TransactionTypeFormValues = {
 	name: "",
 	description: "",
 	moduleIds: [],
-	status: "Active",
+	status: TransactionTypeDefaultStatus,
 	accountId: "",
 };
 
@@ -257,7 +261,7 @@ function createMockTransactionType({
 	moduleIds,
 	moduleNames,
 	name,
-	status = "Active",
+	status = TransactionTypeDefaultStatus,
 }: {
 	accountNumber: string;
 	accountTitle: string;

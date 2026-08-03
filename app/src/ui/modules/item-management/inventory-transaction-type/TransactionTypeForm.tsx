@@ -1,9 +1,13 @@
-import type { ChangeEventHandler, ReactNode } from "react";
+import * as React from "react";
 import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import type {
 	TransactionTypeFormErrors,
 	TransactionTypeFormValues,
 } from "@/app/src/types/modules/item-management/inventory-transaction-type/TransactionTypeTypes";
+import {
+	TransactionTypeModuleDescriptions,
+	TransactionTypeNamePlaceholder,
+} from "@/app/src/constants/modules/item-management/inventory-transaction-type/TransactionTypeConstants";
 import type { ModuleOption } from "@/app/src/data/shared/modules/ModuleOptionsData";
 import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
@@ -18,7 +22,7 @@ type TransactionTypeFormProps = {
 	moduleOptions: ModuleOption[];
 	values: TransactionTypeFormValues;
 	onAccountChange: (accountId: string) => void;
-	onInputChange: ChangeEventHandler<
+	onInputChange: React.ChangeEventHandler<
 		HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
 	>;
 	onModuleChange: (value: string | string[]) => void;
@@ -37,7 +41,10 @@ export function TransactionTypeForm({
 	onStatusChange,
 }: TransactionTypeFormProps) {
 	const moduleRadioOptions = moduleOptions.map((option) => ({
-		description: getGoodsMovementDescription(option.value),
+		description:
+			TransactionTypeModuleDescriptions[
+				option.value as keyof typeof TransactionTypeModuleDescriptions
+			],
 		label: option.label,
 		value: option.value,
 	}));
@@ -51,7 +58,7 @@ export function TransactionTypeForm({
 					onChange={onInputChange}
 					readOnly={isReadonly}
 					className={fieldClassName}
-					placeholder="Enter inventory transaction type name..."
+					placeholder={TransactionTypeNamePlaceholder}
 				/>
 			</FormField>
 
@@ -106,18 +113,6 @@ export function TransactionTypeForm({
 	);
 }
 
-function getGoodsMovementDescription(value: string) {
-	if (value === "GI") {
-		return "Issues goods out of inventory.";
-	}
-
-	if (value === "GR") {
-		return "Receives goods into inventory.";
-	}
-
-	return "Classifies the inventory movement.";
-}
-
 function FormField({
 	asFieldset,
 	children,
@@ -127,7 +122,7 @@ function FormField({
 	required,
 }: {
 	asFieldset?: boolean;
-	children: ReactNode;
+	children: React.ReactNode;
 	className?: string;
 	error?: string;
 	label: string;

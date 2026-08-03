@@ -1,9 +1,9 @@
-import type { ReactNode } from "react";
+import * as React from "react";
 
 export type AppRadioGroupOption<TValue extends string> = {
-	description?: ReactNode;
+	description?: React.ReactNode;
 	disabled?: boolean;
-	label: ReactNode;
+	label: React.ReactNode;
 	value: TValue;
 };
 

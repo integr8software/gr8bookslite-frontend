@@ -2,7 +2,7 @@ import {
 	TransactionTypeExportColumns,
 	TransactionTypeStatusOptions,
 } from "@/app/src/constants/modules/item-management/inventory-transaction-type/TransactionTypeConstants";
-import type { TransactionTypeFiltersProps } from "@/app/src/types/modules/item-management/inventory-transaction-type/TransactionTypeTypes";
+import { TransactionTypeFiltersProps } from "@/app/src/types/modules/item-management/inventory-transaction-type/TransactionTypeTypes";
 import {
 	ModuleTableColumnVisibilityButton,
 	ModuleTableExportButton,

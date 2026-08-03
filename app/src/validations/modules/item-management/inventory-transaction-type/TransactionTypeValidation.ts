@@ -1,10 +1,11 @@
 import { z } from "zod";
+import { TransactionTypeStatusOptions } from "@/app/src/constants/modules/item-management/inventory-transaction-type/TransactionTypeConstants";
 import type {
 	TransactionTypeFormErrors,
 	TransactionTypeFormValues,
 } from "@/app/src/types/modules/item-management/inventory-transaction-type/TransactionTypeTypes";
 
-const TransactionTypeStatusSchema = z.enum(["Active", "Inactive"], {
+const TransactionTypeStatusSchema = z.enum(TransactionTypeStatusOptions, {
 	message: "Select status.",
 });
 

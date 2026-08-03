@@ -7,11 +7,46 @@ on:
 
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   frontend-pr-quality:
-    uses: integr8software/gr8booksneo-automation/.github/workflows/frontend-pr-quality.yml@develop
-    with:
-      maximum-findings-per-rule: 50
-      fail-on-blockers: true
-      fail-on-warnings: false
-    secrets: inherit
+    name: Frontend PR Quality
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout frontend repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Run Frontend PR Quality
+        id: frontend-quality
+        uses: integr8software/gr8booksneo-automation/.github/actions/frontend-analysis@develop
+        with:
+          repository-root: ${{ github.workspace }}
+          base-reference: ${{ github.event.pull_request.base.sha }}
+          head-reference: ${{ github.event.pull_request.head.sha }}
+          maximum-findings-per-rule: "50"
+          fail-on-blockers: "true"
+          fail-on-warnings: "false"
+
+      - name: Upload Frontend QA Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-pr-quality-${{ github.run_number }}
+          path: |
+            ${{ steps.frontend-quality.outputs.report-json }}
+            ${{ steps.frontend-quality.outputs.report-markdown }}
+            ${{ steps.frontend-quality.outputs.report-html }}
+            ${{ steps.frontend-quality.outputs.report-png }}
+          if-no-files-found: error
+          retention-days: 14

@@ -218,6 +218,80 @@ label.permission-neutral-control:hover {
 	border-color: var(--permission-selected-border);
 }
 
+.warehouse-storage-selected-row {
+	background-color: color-mix(in srgb, var(--skyblue) 16%, #ffffff);
+	color: var(--darknavy);
+	box-shadow: inset 3px 0 0 var(--skyblue);
+}
+
+.warehouse-storage-selected-count {
+	background-color: var(--skyblue);
+	color: var(--skyblue-contrast);
+}
+
+.warehouse-storage-selected-slot {
+	background-color: color-mix(in srgb, var(--skyblue) 18%, #ffffff);
+	border-color: var(--skyblue);
+	color: var(--darknavy);
+}
+
+.warehouse-storage-selected-badge {
+	background-color: color-mix(in srgb, var(--skyblue) 16%, #ffffff);
+	color: var(--darknavy);
+}
+
+.warehouse-storage-violet-action {
+	background-color: #ffffff;
+	border-color: color-mix(in srgb, var(--skyblue) 55%, var(--darknavy));
+	color: var(--darknavy);
+}
+
+.warehouse-storage-violet-action:hover {
+	background-color: color-mix(in srgb, var(--skyblue) 12%, #ffffff);
+	border-color: var(--skyblue);
+	color: var(--darknavy);
+}
+
+:root[data-app-theme="midnight-dark"] .warehouse-storage-selected-row {
+	background-color: rgb(var(--skyblue-rgb) / 0.18);
+	color: #f0f6fc;
+	box-shadow:
+		inset 3px 0 0 var(--skyblue),
+		0 0 0 1px rgb(var(--skyblue-rgb) / 0.32);
+}
+
+:root[data-app-theme="midnight-dark"] .warehouse-storage-selected-count {
+	background-color: rgb(var(--skyblue-rgb) / 0.22);
+	color: #f0f6fc;
+}
+
+:root[data-app-theme="midnight-dark"] .warehouse-storage-selected-slot {
+	background-color: rgb(var(--skyblue-rgb) / 0.22);
+	border-color: var(--skyblue);
+	color: #f0f6fc;
+	box-shadow:
+		0 0 0 2px rgb(var(--skyblue-rgb) / 0.34),
+		0 8px 20px rgba(0, 0, 0, 0.28);
+}
+
+:root[data-app-theme="midnight-dark"] .warehouse-storage-selected-badge {
+	background-color: rgb(var(--skyblue-rgb) / 0.16);
+	color: #f0f6fc;
+	box-shadow: inset 0 0 0 1px rgb(var(--skyblue-rgb) / 0.28);
+}
+
+:root[data-app-theme="midnight-dark"] .warehouse-storage-violet-action {
+	background-color: var(--surface-primary);
+	border-color: rgb(var(--skyblue-rgb) / 0.58);
+	color: #f0f6fc;
+}
+
+:root[data-app-theme="midnight-dark"] .warehouse-storage-violet-action:hover {
+	background-color: rgb(var(--skyblue-rgb) / 0.14);
+	border-color: var(--skyblue);
+	color: #f0f6fc;
+}
+
 :root[data-app-theme="midnight-dark"] .border-darknavy\/10,
 :root[data-app-theme="midnight-dark"] .border-darknavy\/12 {
 	border-color: var(--surface-border) !important;

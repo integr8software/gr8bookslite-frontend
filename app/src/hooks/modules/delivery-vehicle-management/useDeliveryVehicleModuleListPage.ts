@@ -99,6 +99,7 @@ export function useDeliveryVehicleModuleListPage({
     return base;
   }, [config]);
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table owns table state handlers.
   const table = useReactTable({
     data: filteredRecords,
     columns,

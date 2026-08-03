@@ -1,14 +1,22 @@
 import { WarehouseAccessApiPath } from "@/app/src/constants/modules/warehouse-management/warehouse-access/WarehouseAccessConstants";
-import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import {
+  warehouseAccessControllerCreateV1,
+  warehouseAccessControllerFindAllV1,
+  warehouseAccessControllerFindDirectoryUsersV1,
+  warehouseAccessControllerFindOneV1,
+  warehouseAccessControllerRevokeV1,
+  warehouseAccessControllerUpdateV1,
+} from "@/app/src/generated/api/warehouse-access/warehouse-access";
 import type {
-  ApiWarehouseAccessCreateResponse,
-  ApiWarehouseAccessDirectoryResponse,
-  ApiWarehouseAccessLevel,
-  ApiWarehouseAccessListResponse,
-  ApiWarehouseAccessPermission,
-  ApiWarehouseAccessRecord,
-  ApiWarehouseAccessSaveResponse,
-  ApiWarehouseAccessStatus,
+  CreateWarehouseAccessAssignmentDtoAccessLevel,
+  CreateWarehouseAccessAssignmentDtoPermissions,
+  CreateWarehouseAccessAssignmentDtoStatus,
+  WarehouseAccessResponseDto,
+  WarehouseAccessResponseDtoAccessLevel,
+  WarehouseAccessResponseDtoPermissions,
+  WarehouseAccessResponseDtoStatus,
+} from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
+import type {
   WarehouseAccessDirectoryResponse,
   WarehouseAccessFormValues,
   WarehouseAccessLevel,
@@ -28,37 +36,40 @@ export type FetchWarehouseAccessParams = {
   limit?: number;
 };
 
-export async function fetchWarehouseAccess(params: FetchWarehouseAccessParams = {}): Promise<WarehouseAccessListResponse> {
-  const response = await ApiClient.get<ApiWarehouseAccessListResponse>(WarehouseAccessApiPath, {
-    params: {
-      warehouseId: params.warehouseId || undefined,
-      search: params.search?.trim() || undefined,
-      status: params.status && params.status !== "All" ? mapStatusToApi(params.status) : undefined,
-      permission: params.permission && params.permission !== "All" ? mapPermissionToApi(params.permission) : undefined,
-      limit: params.limit ?? 500,
-      sortBy: "warehouse",
-      sortDirection: "asc",
-    },
+export async function fetchWarehouseAccess(
+  params: FetchWarehouseAccessParams = {},
+): Promise<WarehouseAccessListResponse> {
+  const response = await warehouseAccessControllerFindAllV1({
+    warehouseId: params.warehouseId || undefined,
+    search: params.search?.trim() || undefined,
+    status: params.status && params.status !== "All" ? mapStatusToApi(params.status) : undefined,
+    permission:
+      params.permission && params.permission !== "All"
+        ? mapPermissionToApi(params.permission)
+        : undefined,
+    limit: params.limit ?? 500,
+    sortBy: "warehouse",
+    sortDirection: "asc",
   });
 
   return {
-    warehouseAccess: response.data.warehouseAccess.map(mapApiWarehouseAccess),
-    statistics: response.data.statistics,
-    permissions: response.data.permissions,
+    warehouseAccess: response.warehouseAccess.map(mapApiWarehouseAccess),
+    statistics: response.statistics,
+    permissions: response.permissions,
   };
 }
 
 export async function fetchWarehouseAccessRecord(recordId: string): Promise<WarehouseAccessRecord> {
-  const response = await ApiClient.get<ApiWarehouseAccessSaveResponse>(`${WarehouseAccessApiPath}/${recordId}`);
+  const response = await warehouseAccessControllerFindOneV1(recordId);
 
-  return mapApiWarehouseAccess(response.data.warehouseAccess);
+  return mapApiWarehouseAccess(response.warehouseAccess);
 }
 
 export async function fetchWarehouseAccessDirectory(): Promise<WarehouseAccessDirectoryResponse> {
-  const response = await ApiClient.get<ApiWarehouseAccessDirectoryResponse>(`${WarehouseAccessApiPath}/directory/users`);
+  const response = await warehouseAccessControllerFindDirectoryUsersV1();
 
   return {
-    users: response.data.users.map((user) => ({
+    users: response.users.map((user) => ({
       branchName: user.branchNames[0] ?? "All branches",
       branchNames: user.branchNames,
       branchUnitIds: user.branchUnitIds.map(String),
@@ -70,14 +81,16 @@ export async function fetchWarehouseAccessDirectory(): Promise<WarehouseAccessDi
       name: user.name,
       status: user.status,
     })),
-    branches: response.data.branches.map((branch) => ({
+    branches: response.branches.map((branch) => ({
       id: String(branch.id),
       name: branch.name,
     })),
   };
 }
 
-export async function createWarehouseAccess(values: WarehouseAccessFormValues): Promise<WarehouseAccessRecord> {
+export async function createWarehouseAccess(
+  values: WarehouseAccessFormValues,
+): Promise<WarehouseAccessRecord> {
   const created = await createWarehouseAccessAssignments([
     {
       warehouseId: values.warehouseId,
@@ -106,7 +119,7 @@ export async function createWarehouseAccessAssignments(
     accessLevel?: WarehouseAccessLevel;
   }>,
 ): Promise<WarehouseAccessRecord[]> {
-  const response = await ApiClient.post<ApiWarehouseAccessCreateResponse>(WarehouseAccessApiPath, {
+  const response = await warehouseAccessControllerCreateV1({
     assignments: assignments.map((assignment) => ({
       warehouseId: assignment.warehouseId,
       userId: Number(assignment.userId),
@@ -116,26 +129,28 @@ export async function createWarehouseAccessAssignments(
     })),
   });
 
-  return response.data.warehouseAccess.map(mapApiWarehouseAccess);
+  return response.warehouseAccess.map(mapApiWarehouseAccess);
 }
 
-export async function updateWarehouseAccess(record: WarehouseAccessRecord): Promise<WarehouseAccessRecord> {
-  const response = await ApiClient.patch<ApiWarehouseAccessSaveResponse>(`${WarehouseAccessApiPath}/${record.id}`, {
+export async function updateWarehouseAccess(
+  record: WarehouseAccessRecord,
+): Promise<WarehouseAccessRecord> {
+  const response = await warehouseAccessControllerUpdateV1(record.id, {
     accessLevel: mapAccessLevelToApi(record.accessLevel),
     permissions: record.permissions.map(mapPermissionToApi),
     status: mapStatusToApi(record.status),
   });
 
-  return mapApiWarehouseAccess(response.data.warehouseAccess);
+  return mapApiWarehouseAccess(response.warehouseAccess);
 }
 
 export async function revokeWarehouseAccess(recordId: string): Promise<WarehouseAccessRecord> {
-  const response = await ApiClient.delete<ApiWarehouseAccessSaveResponse>(`${WarehouseAccessApiPath}/${recordId}`);
+  const response = await warehouseAccessControllerRevokeV1(recordId);
 
-  return mapApiWarehouseAccess(response.data.warehouseAccess);
+  return mapApiWarehouseAccess(response.warehouseAccess);
 }
 
-export function mapApiWarehouseAccess(record: ApiWarehouseAccessRecord): WarehouseAccessRecord {
+export function mapApiWarehouseAccess(record: WarehouseAccessResponseDto): WarehouseAccessRecord {
   return {
     accessLevel: mapAccessLevelFromApi(record.accessLevel),
     id: record.id,
@@ -150,19 +165,23 @@ export function mapApiWarehouseAccess(record: ApiWarehouseAccessRecord): Warehou
   };
 }
 
-function mapAccessLevelFromApi(value: ApiWarehouseAccessLevel): WarehouseAccessLevel {
+function mapAccessLevelFromApi(value: WarehouseAccessResponseDtoAccessLevel): WarehouseAccessLevel {
   if (value === "MANAGER") return "Manager";
   if (value === "PICKER") return "Picker";
   return "Viewer";
 }
 
-function mapAccessLevelToApi(value: WarehouseAccessLevel): ApiWarehouseAccessLevel {
+function mapAccessLevelToApi(
+  value: WarehouseAccessLevel,
+): CreateWarehouseAccessAssignmentDtoAccessLevel {
   if (value === "Manager") return "MANAGER";
   if (value === "Picker") return "PICKER";
   return "VIEWER";
 }
 
-function mapPermissionFromApi(value: ApiWarehouseAccessPermission): WarehouseAccessPermission {
+function mapPermissionFromApi(
+  value: WarehouseAccessResponseDtoPermissions,
+): WarehouseAccessPermission {
   if (value === "RECEIVE_STOCK") return "Receive Stock";
   if (value === "ISSUE_STOCK") return "Issue Stock";
   if (value === "TRANSFER_STOCK") return "Transfer Stock";
@@ -172,7 +191,9 @@ function mapPermissionFromApi(value: ApiWarehouseAccessPermission): WarehouseAcc
   return "View Stock";
 }
 
-function mapPermissionToApi(value: WarehouseAccessPermission): ApiWarehouseAccessPermission {
+function mapPermissionToApi(
+  value: WarehouseAccessPermission,
+): CreateWarehouseAccessAssignmentDtoPermissions {
   if (value === "Receive Stock") return "RECEIVE_STOCK";
   if (value === "Issue Stock") return "ISSUE_STOCK";
   if (value === "Transfer Stock") return "TRANSFER_STOCK";
@@ -182,10 +203,10 @@ function mapPermissionToApi(value: WarehouseAccessPermission): ApiWarehouseAcces
   return "VIEW_STOCK";
 }
 
-function mapStatusFromApi(value: ApiWarehouseAccessStatus): WarehouseStatus {
+function mapStatusFromApi(value: WarehouseAccessResponseDtoStatus): WarehouseStatus {
   return value === "ACTIVE" ? "Active" : "Inactive";
 }
 
-function mapStatusToApi(value: WarehouseStatus): ApiWarehouseAccessStatus {
+function mapStatusToApi(value: WarehouseStatus): CreateWarehouseAccessAssignmentDtoStatus {
   return value === "Active" ? "ACTIVE" : "INACTIVE";
 }

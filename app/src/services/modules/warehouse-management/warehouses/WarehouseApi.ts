@@ -1,12 +1,18 @@
-import { WarehouseApiPath } from "@/app/src/constants/modules/warehouse-management/warehouses/WarehouseConstants";
-import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import {
+  warehouseMaintenanceControllerCreateV1,
+  warehouseMaintenanceControllerFindAllV1,
+  warehouseMaintenanceControllerFindOneV1,
+  warehouseMaintenanceControllerUpdateV1,
+} from "@/app/src/generated/api/warehouse-maintenance/warehouse-maintenance";
 import type {
-  ApiWarehouse,
-  ApiWarehouseBranchAvailabilityMode,
-  ApiWarehouseListResponse,
-  ApiWarehousePayload,
-  ApiWarehouseSaveResponse,
-  ApiWarehouseStatus,
+  CreateWarehouseDto,
+  CreateWarehouseDtoBranchAvailabilityMode,
+  CreateWarehouseDtoStatus,
+  WarehouseResponseDto,
+  WarehouseResponseDtoBranchAvailabilityMode,
+  WarehouseResponseDtoStatus,
+} from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
+import type {
   WarehouseBranchAvailability,
   WarehouseBranchAvailabilityMode,
   WarehouseFormValues,
@@ -14,54 +20,65 @@ import type {
   WarehouseRecord,
   WarehouseStatus,
 } from "@/app/src/types/modules/warehouse-management/warehouses/WarehouseTypes";
+import { cleanOptional } from "@/app/src/utils/string.util";
 
 export async function fetchWarehouses(): Promise<WarehouseListResponse> {
-  const response = await ApiClient.get<ApiWarehouseListResponse>(WarehouseApiPath, {
-    params: {
-      limit: 500,
-      sortBy: "name",
-      sortDirection: "asc",
-    },
+  const response = await warehouseMaintenanceControllerFindAllV1({
+    limit: 500,
+    sortBy: "name",
+    sortDirection: "asc",
   });
 
   return {
-    warehouses: response.data.warehouses.map(mapApiWarehouse),
-    statistics: response.data.statistics,
-    permissions: response.data.permissions,
+    warehouses: response.warehouses.map(mapApiWarehouse),
+    statistics: response.statistics,
+    permissions: response.permissions,
   };
 }
 
 export async function fetchWarehouse(id: string): Promise<WarehouseRecord> {
-  const response = await ApiClient.get<ApiWarehouseSaveResponse>(`${WarehouseApiPath}/${id}`);
+  const response = await warehouseMaintenanceControllerFindOneV1(id);
 
-  return mapApiWarehouse(response.data.warehouse);
+  return mapApiWarehouse(response.warehouse);
 }
 
 export async function createWarehouse(values: WarehouseFormValues): Promise<WarehouseRecord> {
-  const response = await ApiClient.post<ApiWarehouseSaveResponse>(WarehouseApiPath, toApiWarehousePayload(values));
+  const response = await warehouseMaintenanceControllerCreateV1(toApiWarehousePayload(values));
 
-  return mapApiWarehouse(response.data.warehouse);
+  return mapApiWarehouse(response.warehouse);
 }
 
 export async function updateWarehouse(warehouse: WarehouseRecord): Promise<WarehouseRecord> {
-  const response = await ApiClient.patch<ApiWarehouseSaveResponse>(`${WarehouseApiPath}/${warehouse.id}`, toApiWarehousePayload(warehouse));
+  const response = await warehouseMaintenanceControllerUpdateV1(
+    warehouse.id,
+    toApiWarehousePayload(warehouse),
+  );
 
-  return mapApiWarehouse(response.data.warehouse);
+  return mapApiWarehouse(response.warehouse);
 }
 
-export async function updateWarehouseStatus(input: { status: WarehouseStatus; warehouseId: string }): Promise<WarehouseRecord> {
-  const response = await ApiClient.patch<ApiWarehouseSaveResponse>(`${WarehouseApiPath}/${input.warehouseId}`, {
+export async function updateWarehouseStatus(input: {
+  status: WarehouseStatus;
+  warehouseId: string;
+}): Promise<WarehouseRecord> {
+  const response = await warehouseMaintenanceControllerUpdateV1(input.warehouseId, {
     status: mapStatusToApi(input.status),
   });
 
-  return mapApiWarehouse(response.data.warehouse);
+  return mapApiWarehouse(response.warehouse);
 }
 
-function mapApiWarehouse(warehouse: ApiWarehouse): WarehouseRecord {
+function mapApiWarehouse(warehouse: WarehouseResponseDto): WarehouseRecord {
   const availableBranches = warehouse.branches.map((branch) => branch.name);
-  const branchUnitIds = warehouse.branchUnitIds.length > 0 ? warehouse.branchUnitIds : warehouse.branches.map((branch) => branch.id);
+  const branchUnitIds =
+    warehouse.branchUnitIds.length > 0
+      ? warehouse.branchUnitIds
+      : warehouse.branches.map((branch) => branch.id);
   const branchName = availableBranches[0] ?? "";
-  const branchAvailabilityMode = mapBranchAvailabilityModeFromApi(warehouse.branchAvailabilityMode, availableBranches);
+  const branchAvailabilityMode = mapBranchAvailabilityModeFromApi(
+    warehouse.branchAvailabilityMode,
+    availableBranches,
+  );
 
   return {
     id: warehouse.id,
@@ -89,11 +106,13 @@ function mapApiWarehouse(warehouse: ApiWarehouse): WarehouseRecord {
   };
 }
 
-function toApiWarehousePayload(warehouse: WarehouseRecord | WarehouseFormValues): ApiWarehousePayload {
+function toApiWarehousePayload(
+  warehouse: WarehouseRecord | WarehouseFormValues,
+): CreateWarehouseDto {
   return {
     code: warehouse.code.trim() || undefined,
     name: warehouse.name.trim(),
-    branchUnitIds: warehouse.branchUnitIds,
+    branchUnitIds: warehouse.branchUnitIds.map(Number),
     branchAvailabilityMode: mapBranchAvailabilityModeToApi(warehouse.branchAvailabilityMode),
     managerName: cleanOptional(warehouse.managerName),
     status: mapStatusToApi(warehouse.status),
@@ -103,15 +122,18 @@ function toApiWarehousePayload(warehouse: WarehouseRecord | WarehouseFormValues)
   };
 }
 
-function mapStatusFromApi(value: ApiWarehouseStatus): WarehouseStatus {
+function mapStatusFromApi(value: WarehouseResponseDtoStatus): WarehouseStatus {
   return value === "ACTIVE" ? "Active" : "Inactive";
 }
 
-function mapStatusToApi(value: WarehouseStatus): ApiWarehouseStatus {
+function mapStatusToApi(value: WarehouseStatus): CreateWarehouseDtoStatus {
   return value === "Active" ? "ACTIVE" : "INACTIVE";
 }
 
-function mapBranchAvailabilityModeFromApi(value: ApiWarehouseBranchAvailabilityMode | undefined, availableBranches: string[]): WarehouseBranchAvailabilityMode {
+function mapBranchAvailabilityModeFromApi(
+  value: WarehouseResponseDtoBranchAvailabilityMode | undefined,
+  availableBranches: string[],
+): WarehouseBranchAvailabilityMode {
   if (value === "ALL") {
     return "All Branches";
   }
@@ -127,7 +149,9 @@ function mapBranchAvailabilityModeFromApi(value: ApiWarehouseBranchAvailabilityM
   return getWarehouseAvailability(availableBranches);
 }
 
-function mapBranchAvailabilityModeToApi(value: WarehouseBranchAvailabilityMode): ApiWarehouseBranchAvailabilityMode {
+function mapBranchAvailabilityModeToApi(
+  value: WarehouseBranchAvailabilityMode,
+): CreateWarehouseDtoBranchAvailabilityMode {
   if (value === "All Branches") {
     return "ALL";
   }
@@ -137,12 +161,6 @@ function mapBranchAvailabilityModeToApi(value: WarehouseBranchAvailabilityMode):
   }
 
   return "SPECIFIC";
-}
-
-function cleanOptional(value: string) {
-  const normalized = value.trim();
-
-  return normalized || null;
 }
 
 function getWarehouseAvailability(availableBranches: string[]): WarehouseBranchAvailability {

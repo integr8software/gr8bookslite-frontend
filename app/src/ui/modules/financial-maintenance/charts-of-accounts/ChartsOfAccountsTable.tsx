@@ -206,10 +206,6 @@ export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
     />
   );
 
-  if (!props.canDragRows) {
-    return table;
-  }
-
   return (
     <DndContext
       collisionDetection={closestCenter}

@@ -18,9 +18,9 @@ export interface RegisterDto {
 export interface VerifyEmailDto {
   email: string;
   /**
-     * @minLength 4
-     * @maxLength 4
-     */
+   * @minLength 4
+   * @maxLength 4
+   */
   code: string;
 }
 
@@ -40,9 +40,9 @@ export interface ForgotPasswordDto {
 export interface VerifyForgotPasswordCodeDto {
   email: string;
   /**
-     * @minLength 4
-     * @maxLength 4
-     */
+   * @minLength 4
+   * @maxLength 4
+   */
   code: string;
 }
 
@@ -74,9 +74,9 @@ export interface LoginDto {
 
 export interface ExchangeGoogleSessionDto {
   /**
-     * @minLength 64
-     * @maxLength 64
-     */
+   * @minLength 64
+   * @maxLength 64
+   */
   handoffCode: string;
 }
 
@@ -87,10 +87,10 @@ export interface SwitchCompanyContextDto {
 
 export interface VerifyPasswordChangeCodeDto {
   /**
-     * @minLength 4
-     * @maxLength 4
-     * @pattern ^\d+$
-     */
+   * @minLength 4
+   * @maxLength 4
+   * @pattern ^\d+$
+   */
   code: string;
 }
 
@@ -102,12 +102,12 @@ export interface ChangeAuthenticatedPasswordDto {
   confirmNewPassword: string;
 }
 
-export type CreateUserDtoSystemRole = typeof CreateUserDtoSystemRole[keyof typeof CreateUserDtoSystemRole];
-
+export type CreateUserDtoSystemRole =
+  (typeof CreateUserDtoSystemRole)[keyof typeof CreateUserDtoSystemRole];
 
 export const CreateUserDtoSystemRole = {
-  SUPER_ADMIN: 'SUPER_ADMIN',
-  STANDARD: 'STANDARD',
+  SUPER_ADMIN: "SUPER_ADMIN",
+  STANDARD: "STANDARD",
 } as const;
 
 export interface CreateUserDto {
@@ -126,12 +126,12 @@ export interface UpdateOwnProfileDto {
   contactNumber?: string;
 }
 
-export type UpdateUserDtoSystemRole = typeof UpdateUserDtoSystemRole[keyof typeof UpdateUserDtoSystemRole];
-
+export type UpdateUserDtoSystemRole =
+  (typeof UpdateUserDtoSystemRole)[keyof typeof UpdateUserDtoSystemRole];
 
 export const UpdateUserDtoSystemRole = {
-  SUPER_ADMIN: 'SUPER_ADMIN',
-  STANDARD: 'STANDARD',
+  SUPER_ADMIN: "SUPER_ADMIN",
+  STANDARD: "STANDARD",
 } as const;
 
 export interface UpdateUserDto {
@@ -143,13 +143,13 @@ export interface UpdateUserDto {
   systemRole?: UpdateUserDtoSystemRole;
 }
 
-export type SelectOnboardingPlanDtoBillingCycle = typeof SelectOnboardingPlanDtoBillingCycle[keyof typeof SelectOnboardingPlanDtoBillingCycle];
-
+export type SelectOnboardingPlanDtoBillingCycle =
+  (typeof SelectOnboardingPlanDtoBillingCycle)[keyof typeof SelectOnboardingPlanDtoBillingCycle];
 
 export const SelectOnboardingPlanDtoBillingCycle = {
-  MONTHLY: 'MONTHLY',
-  QUARTERLY: 'QUARTERLY',
-  YEARLY: 'YEARLY',
+  MONTHLY: "MONTHLY",
+  QUARTERLY: "QUARTERLY",
+  YEARLY: "YEARLY",
 } as const;
 
 export interface SelectOnboardingPlanDto {
@@ -167,14 +167,14 @@ export interface SaveOnboardingBillingDto {
   /** @minLength 2 */
   cardBrand: string;
   /**
-     * @minimum 1
-     * @maximum 12
-     */
+   * @minimum 1
+   * @maximum 12
+   */
   expiryMonth: number;
   /**
-     * @minimum 2000
-     * @maximum 9999
-     */
+   * @minimum 2000
+   * @maximum 9999
+   */
   expiryYear: number;
   /** @minLength 5 */
   billingAddress: string;
@@ -182,12 +182,12 @@ export interface SaveOnboardingBillingDto {
   paymentMethodId: string;
 }
 
-export type SaveOnboardingCompanyDetailsDtoTaxpayerType = typeof SaveOnboardingCompanyDetailsDtoTaxpayerType[keyof typeof SaveOnboardingCompanyDetailsDtoTaxpayerType];
-
+export type SaveOnboardingCompanyDetailsDtoTaxpayerType =
+  (typeof SaveOnboardingCompanyDetailsDtoTaxpayerType)[keyof typeof SaveOnboardingCompanyDetailsDtoTaxpayerType];
 
 export const SaveOnboardingCompanyDetailsDtoTaxpayerType = {
-  individual: 'individual',
-  'non-individual': 'non-individual',
+  individual: "individual",
+  "non-individual": "non-individual",
 } as const;
 
 export interface SaveOnboardingCompanyDetailsDto {
@@ -235,13 +235,13 @@ export interface BillingPlanPricingResponseDto {
   yearly: BillingPlanPriceResponseDto;
 }
 
-export type BillingPlanDetailedPriceResponseDtoBillingCycle = typeof BillingPlanDetailedPriceResponseDtoBillingCycle[keyof typeof BillingPlanDetailedPriceResponseDtoBillingCycle];
-
+export type BillingPlanDetailedPriceResponseDtoBillingCycle =
+  (typeof BillingPlanDetailedPriceResponseDtoBillingCycle)[keyof typeof BillingPlanDetailedPriceResponseDtoBillingCycle];
 
 export const BillingPlanDetailedPriceResponseDtoBillingCycle = {
-  MONTHLY: 'MONTHLY',
-  QUARTERLY: 'QUARTERLY',
-  YEARLY: 'YEARLY',
+  MONTHLY: "MONTHLY",
+  QUARTERLY: "QUARTERLY",
+  YEARLY: "YEARLY",
 } as const;
 
 export interface BillingPlanDetailedPriceResponseDto {
@@ -352,13 +352,13 @@ export interface CompanySubscriptionProviderReferencesResponseDto {
   latestPaymentIntentId: string | null;
 }
 
-export type CompanySubscriptionSelectedPriceResponseDtoBillingCycle = typeof CompanySubscriptionSelectedPriceResponseDtoBillingCycle[keyof typeof CompanySubscriptionSelectedPriceResponseDtoBillingCycle];
-
+export type CompanySubscriptionSelectedPriceResponseDtoBillingCycle =
+  (typeof CompanySubscriptionSelectedPriceResponseDtoBillingCycle)[keyof typeof CompanySubscriptionSelectedPriceResponseDtoBillingCycle];
 
 export const CompanySubscriptionSelectedPriceResponseDtoBillingCycle = {
-  MONTHLY: 'MONTHLY',
-  QUARTERLY: 'QUARTERLY',
-  YEARLY: 'YEARLY',
+  MONTHLY: "MONTHLY",
+  QUARTERLY: "QUARTERLY",
+  YEARLY: "YEARLY",
 } as const;
 
 export interface CompanySubscriptionSelectedPriceResponseDto {
@@ -444,34 +444,34 @@ export interface BillingInvoiceResponseDto {
   periodEndAt: string | null;
 }
 
-export type CompanySubscriptionResponseDtoStatus = typeof CompanySubscriptionResponseDtoStatus[keyof typeof CompanySubscriptionResponseDtoStatus];
-
+export type CompanySubscriptionResponseDtoStatus =
+  (typeof CompanySubscriptionResponseDtoStatus)[keyof typeof CompanySubscriptionResponseDtoStatus];
 
 export const CompanySubscriptionResponseDtoStatus = {
-  INCOMPLETE: 'INCOMPLETE',
-  TRIALING: 'TRIALING',
-  ACTIVE: 'ACTIVE',
-  PAST_DUE: 'PAST_DUE',
-  UNPAID: 'UNPAID',
-  INCOMPLETE_CANCELED: 'INCOMPLETE_CANCELED',
-  EXPIRED: 'EXPIRED',
-  CANCELED: 'CANCELED',
+  INCOMPLETE: "INCOMPLETE",
+  TRIALING: "TRIALING",
+  ACTIVE: "ACTIVE",
+  PAST_DUE: "PAST_DUE",
+  UNPAID: "UNPAID",
+  INCOMPLETE_CANCELED: "INCOMPLETE_CANCELED",
+  EXPIRED: "EXPIRED",
+  CANCELED: "CANCELED",
 } as const;
 
-export type CompanySubscriptionResponseDtoBillingCycle = typeof CompanySubscriptionResponseDtoBillingCycle[keyof typeof CompanySubscriptionResponseDtoBillingCycle];
-
+export type CompanySubscriptionResponseDtoBillingCycle =
+  (typeof CompanySubscriptionResponseDtoBillingCycle)[keyof typeof CompanySubscriptionResponseDtoBillingCycle];
 
 export const CompanySubscriptionResponseDtoBillingCycle = {
-  MONTHLY: 'MONTHLY',
-  QUARTERLY: 'QUARTERLY',
-  YEARLY: 'YEARLY',
+  MONTHLY: "MONTHLY",
+  QUARTERLY: "QUARTERLY",
+  YEARLY: "YEARLY",
 } as const;
 
-export type CompanySubscriptionResponseDtoBillingProvider = typeof CompanySubscriptionResponseDtoBillingProvider[keyof typeof CompanySubscriptionResponseDtoBillingProvider];
-
+export type CompanySubscriptionResponseDtoBillingProvider =
+  (typeof CompanySubscriptionResponseDtoBillingProvider)[keyof typeof CompanySubscriptionResponseDtoBillingProvider];
 
 export const CompanySubscriptionResponseDtoBillingProvider = {
-  PAYMONGO: 'PAYMONGO',
+  PAYMONGO: "PAYMONGO",
 } as const;
 
 export interface CompanySubscriptionResponseDto {
@@ -515,13 +515,13 @@ export interface CurrentSubscriptionResponseDto {
   subscription: CompanySubscriptionResponseDto | null;
 }
 
-export type SubscribeCompanyDtoBillingCycle = typeof SubscribeCompanyDtoBillingCycle[keyof typeof SubscribeCompanyDtoBillingCycle];
-
+export type SubscribeCompanyDtoBillingCycle =
+  (typeof SubscribeCompanyDtoBillingCycle)[keyof typeof SubscribeCompanyDtoBillingCycle];
 
 export const SubscribeCompanyDtoBillingCycle = {
-  MONTHLY: 'MONTHLY',
-  QUARTERLY: 'QUARTERLY',
-  YEARLY: 'YEARLY',
+  MONTHLY: "MONTHLY",
+  QUARTERLY: "QUARTERLY",
+  YEARLY: "YEARLY",
 } as const;
 
 export interface SubscribeCompanyDto {
@@ -563,22 +563,22 @@ export interface CancelSubscriptionResponseDto {
   subscription: CompanySubscriptionResponseDto;
 }
 
-export type MasterPlanPriceDtoBillingCycle = typeof MasterPlanPriceDtoBillingCycle[keyof typeof MasterPlanPriceDtoBillingCycle];
-
+export type MasterPlanPriceDtoBillingCycle =
+  (typeof MasterPlanPriceDtoBillingCycle)[keyof typeof MasterPlanPriceDtoBillingCycle];
 
 export const MasterPlanPriceDtoBillingCycle = {
-  MONTHLY: 'MONTHLY',
-  QUARTERLY: 'QUARTERLY',
-  YEARLY: 'YEARLY',
+  MONTHLY: "MONTHLY",
+  QUARTERLY: "QUARTERLY",
+  YEARLY: "YEARLY",
 } as const;
 
-export type MasterPlanPriceDtoIntervalUnit = typeof MasterPlanPriceDtoIntervalUnit[keyof typeof MasterPlanPriceDtoIntervalUnit];
-
+export type MasterPlanPriceDtoIntervalUnit =
+  (typeof MasterPlanPriceDtoIntervalUnit)[keyof typeof MasterPlanPriceDtoIntervalUnit];
 
 export const MasterPlanPriceDtoIntervalUnit = {
-  DAY: 'DAY',
-  MONTH: 'MONTH',
-  YEAR: 'YEAR',
+  DAY: "DAY",
+  MONTH: "MONTH",
+  YEAR: "YEAR",
 } as const;
 
 export interface MasterPlanPriceDto {
@@ -589,20 +589,20 @@ export interface MasterPlanPriceDto {
   /** @minimum 0 */
   priceInCents: number;
   /**
-     * @minimum 0
-     * @nullable
-     */
+   * @minimum 0
+   * @nullable
+   */
   compareAtInCents?: number | null;
 }
 
-export type MasterPlanUsageRuleDtoMetric = typeof MasterPlanUsageRuleDtoMetric[keyof typeof MasterPlanUsageRuleDtoMetric];
-
+export type MasterPlanUsageRuleDtoMetric =
+  (typeof MasterPlanUsageRuleDtoMetric)[keyof typeof MasterPlanUsageRuleDtoMetric];
 
 export const MasterPlanUsageRuleDtoMetric = {
-  USER: 'USER',
-  BRANCH: 'BRANCH',
-  COMPANY: 'COMPANY',
-  SATELLITE: 'SATELLITE',
+  USER: "USER",
+  BRANCH: "BRANCH",
+  COMPANY: "COMPANY",
+  SATELLITE: "SATELLITE",
 } as const;
 
 export interface MasterPlanUsageRuleDto {
@@ -613,14 +613,14 @@ export interface MasterPlanUsageRuleDto {
   unitPriceInCents: number;
 }
 
-export type MasterPlanDiscountTierDtoMetric = typeof MasterPlanDiscountTierDtoMetric[keyof typeof MasterPlanDiscountTierDtoMetric];
-
+export type MasterPlanDiscountTierDtoMetric =
+  (typeof MasterPlanDiscountTierDtoMetric)[keyof typeof MasterPlanDiscountTierDtoMetric];
 
 export const MasterPlanDiscountTierDtoMetric = {
-  USER: 'USER',
-  BRANCH: 'BRANCH',
-  COMPANY: 'COMPANY',
-  SATELLITE: 'SATELLITE',
+  USER: "USER",
+  BRANCH: "BRANCH",
+  COMPANY: "COMPANY",
+  SATELLITE: "SATELLITE",
 } as const;
 
 export interface MasterPlanDiscountTierDto {
@@ -628,51 +628,51 @@ export interface MasterPlanDiscountTierDto {
   /** @minimum 1 */
   thresholdCount: number;
   /**
-     * @minimum 0
-     * @maximum 100
-     */
+   * @minimum 0
+   * @maximum 100
+   */
   discountPercent: number;
 }
 
-export type CreateMasterPlanAndPackageDtoScope = typeof CreateMasterPlanAndPackageDtoScope[keyof typeof CreateMasterPlanAndPackageDtoScope];
-
+export type CreateMasterPlanAndPackageDtoScope =
+  (typeof CreateMasterPlanAndPackageDtoScope)[keyof typeof CreateMasterPlanAndPackageDtoScope];
 
 export const CreateMasterPlanAndPackageDtoScope = {
-  ONBOARDING: 'ONBOARDING',
-  ADDITIONAL_COMPANY: 'ADDITIONAL_COMPANY',
+  ONBOARDING: "ONBOARDING",
+  ADDITIONAL_COMPANY: "ADDITIONAL_COMPANY",
 } as const;
 
-export type CreateMasterPlanAndPackageDtoStatus = typeof CreateMasterPlanAndPackageDtoStatus[keyof typeof CreateMasterPlanAndPackageDtoStatus];
-
+export type CreateMasterPlanAndPackageDtoStatus =
+  (typeof CreateMasterPlanAndPackageDtoStatus)[keyof typeof CreateMasterPlanAndPackageDtoStatus];
 
 export const CreateMasterPlanAndPackageDtoStatus = {
-  ACTIVE: 'ACTIVE',
-  DRAFT: 'DRAFT',
-  INACTIVE: 'INACTIVE',
+  ACTIVE: "ACTIVE",
+  DRAFT: "DRAFT",
+  INACTIVE: "INACTIVE",
 } as const;
 
 export interface CreateMasterPlanAndPackageDto {
   /**
-     * @minLength 2
-     * @maxLength 64
-     */
+   * @minLength 2
+   * @maxLength 64
+   */
   code: string;
   /**
-     * @minLength 3
-     * @maxLength 160
-     */
+   * @minLength 3
+   * @maxLength 160
+   */
   name: string;
   /**
-     * @maxLength 1000
-     * @nullable
-     */
+   * @maxLength 1000
+   * @nullable
+   */
   description?: string | null;
   scope: CreateMasterPlanAndPackageDtoScope;
   status: CreateMasterPlanAndPackageDtoStatus;
   /**
-     * @minimum 0
-     * @maximum 365
-     */
+   * @minimum 0
+   * @maximum 365
+   */
   trialDays: number;
   /** @minItems 1 */
   prices: MasterPlanPriceDto[];
@@ -687,13 +687,13 @@ export interface WorkspaceCompanyCreatedByResponseDto {
   email: string;
 }
 
-export type WorkspaceCompanySubscriptionPlanResponseDtoBillingCycle = typeof WorkspaceCompanySubscriptionPlanResponseDtoBillingCycle[keyof typeof WorkspaceCompanySubscriptionPlanResponseDtoBillingCycle];
-
+export type WorkspaceCompanySubscriptionPlanResponseDtoBillingCycle =
+  (typeof WorkspaceCompanySubscriptionPlanResponseDtoBillingCycle)[keyof typeof WorkspaceCompanySubscriptionPlanResponseDtoBillingCycle];
 
 export const WorkspaceCompanySubscriptionPlanResponseDtoBillingCycle = {
-  MONTHLY: 'MONTHLY',
-  QUARTERLY: 'QUARTERLY',
-  YEARLY: 'YEARLY',
+  MONTHLY: "MONTHLY",
+  QUARTERLY: "QUARTERLY",
+  YEARLY: "YEARLY",
 } as const;
 
 export interface WorkspaceCompanySubscriptionPlanResponseDto {
@@ -705,13 +705,13 @@ export interface WorkspaceCompanySubscriptionPlanResponseDto {
   yearlyPriceInCents: number;
 }
 
-export type WorkspaceCompanyUnitResponseDtoType = typeof WorkspaceCompanyUnitResponseDtoType[keyof typeof WorkspaceCompanyUnitResponseDtoType];
-
+export type WorkspaceCompanyUnitResponseDtoType =
+  (typeof WorkspaceCompanyUnitResponseDtoType)[keyof typeof WorkspaceCompanyUnitResponseDtoType];
 
 export const WorkspaceCompanyUnitResponseDtoType = {
-  HEAD_OFFICE: 'HEAD_OFFICE',
-  BRANCH: 'BRANCH',
-  SATELLITE: 'SATELLITE',
+  HEAD_OFFICE: "HEAD_OFFICE",
+  BRANCH: "BRANCH",
+  SATELLITE: "SATELLITE",
 } as const;
 
 export interface WorkspaceCompanyUnitResponseDto {
@@ -744,23 +744,24 @@ export interface WorkspaceCompanyUnitResponseDto {
 /**
  * @nullable
  */
-export type WorkspaceCompanyResponseDtoTaxpayerType = typeof WorkspaceCompanyResponseDtoTaxpayerType[keyof typeof WorkspaceCompanyResponseDtoTaxpayerType] | null;
-
+export type WorkspaceCompanyResponseDtoTaxpayerType =
+  | (typeof WorkspaceCompanyResponseDtoTaxpayerType)[keyof typeof WorkspaceCompanyResponseDtoTaxpayerType]
+  | null;
 
 export const WorkspaceCompanyResponseDtoTaxpayerType = {
-  INDIVIDUAL: 'INDIVIDUAL',
-  NON_INDIVIDUAL: 'NON_INDIVIDUAL',
+  INDIVIDUAL: "INDIVIDUAL",
+  NON_INDIVIDUAL: "NON_INDIVIDUAL",
 } as const;
 
-export type WorkspaceCompanyResponseDtoStatus = typeof WorkspaceCompanyResponseDtoStatus[keyof typeof WorkspaceCompanyResponseDtoStatus];
-
+export type WorkspaceCompanyResponseDtoStatus =
+  (typeof WorkspaceCompanyResponseDtoStatus)[keyof typeof WorkspaceCompanyResponseDtoStatus];
 
 export const WorkspaceCompanyResponseDtoStatus = {
-  PENDING: 'PENDING',
-  PROVISIONING: 'PROVISIONING',
-  ACTIVE: 'ACTIVE',
-  FAILED: 'FAILED',
-  SUSPENDED: 'SUSPENDED',
+  PENDING: "PENDING",
+  PROVISIONING: "PROVISIONING",
+  ACTIVE: "ACTIVE",
+  FAILED: "FAILED",
+  SUSPENDED: "SUSPENDED",
 } as const;
 
 export interface WorkspaceCompanyResponseDto {
@@ -820,13 +821,13 @@ export interface WorkspaceCompanyResponseDto {
   updatedAt: string;
 }
 
-export type WorkspaceUserAssignedUnitResponseDtoType = typeof WorkspaceUserAssignedUnitResponseDtoType[keyof typeof WorkspaceUserAssignedUnitResponseDtoType];
-
+export type WorkspaceUserAssignedUnitResponseDtoType =
+  (typeof WorkspaceUserAssignedUnitResponseDtoType)[keyof typeof WorkspaceUserAssignedUnitResponseDtoType];
 
 export const WorkspaceUserAssignedUnitResponseDtoType = {
-  HEAD_OFFICE: 'HEAD_OFFICE',
-  BRANCH: 'BRANCH',
-  SATELLITE: 'SATELLITE',
+  HEAD_OFFICE: "HEAD_OFFICE",
+  BRANCH: "BRANCH",
+  SATELLITE: "SATELLITE",
 } as const;
 
 export interface WorkspaceUserAssignedUnitResponseDto {
@@ -867,13 +868,13 @@ export interface WorkspaceCompanyManagementSummaryResponseDto {
   users: WorkspaceUserResponseDto[];
 }
 
-export type CreateWorkspaceCompanyBillingDtoBillingCycle = typeof CreateWorkspaceCompanyBillingDtoBillingCycle[keyof typeof CreateWorkspaceCompanyBillingDtoBillingCycle];
-
+export type CreateWorkspaceCompanyBillingDtoBillingCycle =
+  (typeof CreateWorkspaceCompanyBillingDtoBillingCycle)[keyof typeof CreateWorkspaceCompanyBillingDtoBillingCycle];
 
 export const CreateWorkspaceCompanyBillingDtoBillingCycle = {
-  MONTHLY: 'MONTHLY',
-  QUARTERLY: 'QUARTERLY',
-  YEARLY: 'YEARLY',
+  MONTHLY: "MONTHLY",
+  QUARTERLY: "QUARTERLY",
+  YEARLY: "YEARLY",
 } as const;
 
 export interface CreateWorkspaceCompanyBillingDto {
@@ -885,23 +886,23 @@ export interface CreateWorkspaceCompanyBillingDto {
   /** @pattern ^\d{4}$ */
   cardLast4?: string;
   /**
-     * @minimum 1
-     * @maximum 12
-     */
+   * @minimum 1
+   * @maximum 12
+   */
   cardExpiryMonth?: number;
   /**
-     * @minimum 2000
-     * @maximum 9999
-     */
+   * @minimum 2000
+   * @maximum 9999
+   */
   cardExpiryYear?: number;
 }
 
-export type CreateWorkspaceCompanyDtoTaxpayerType = typeof CreateWorkspaceCompanyDtoTaxpayerType[keyof typeof CreateWorkspaceCompanyDtoTaxpayerType];
-
+export type CreateWorkspaceCompanyDtoTaxpayerType =
+  (typeof CreateWorkspaceCompanyDtoTaxpayerType)[keyof typeof CreateWorkspaceCompanyDtoTaxpayerType];
 
 export const CreateWorkspaceCompanyDtoTaxpayerType = {
-  individual: 'individual',
-  'non-individual': 'non-individual',
+  individual: "individual",
+  "non-individual": "non-individual",
 } as const;
 
 export interface CreateWorkspaceCompanyDto {
@@ -932,12 +933,12 @@ export interface CreateWorkspaceCompanyDto {
   billing?: CreateWorkspaceCompanyBillingDto;
 }
 
-export type UpdateWorkspaceCompanyDtoTaxpayerType = typeof UpdateWorkspaceCompanyDtoTaxpayerType[keyof typeof UpdateWorkspaceCompanyDtoTaxpayerType];
-
+export type UpdateWorkspaceCompanyDtoTaxpayerType =
+  (typeof UpdateWorkspaceCompanyDtoTaxpayerType)[keyof typeof UpdateWorkspaceCompanyDtoTaxpayerType];
 
 export const UpdateWorkspaceCompanyDtoTaxpayerType = {
-  individual: 'individual',
-  'non-individual': 'non-individual',
+  individual: "individual",
+  "non-individual": "non-individual",
 } as const;
 
 export interface UpdateWorkspaceCompanyDto {
@@ -975,12 +976,12 @@ export interface WorkspaceCompanyLogoUploadResponseDto {
   logo: WorkspaceCompanyLogoUploadResponseDtoLogo;
 }
 
-export type CreateCompanyUnitDtoType = typeof CreateCompanyUnitDtoType[keyof typeof CreateCompanyUnitDtoType];
-
+export type CreateCompanyUnitDtoType =
+  (typeof CreateCompanyUnitDtoType)[keyof typeof CreateCompanyUnitDtoType];
 
 export const CreateCompanyUnitDtoType = {
-  BRANCH: 'BRANCH',
-  SATELLITE: 'SATELLITE',
+  BRANCH: "BRANCH",
+  SATELLITE: "SATELLITE",
 } as const;
 
 export interface CreateCompanyUnitDto {
@@ -1049,9 +1050,9 @@ export interface WorkspaceUserAssignmentDto {
   /** @minimum 1 */
   companyId: number;
   /**
-     * @minItems 1
-     * @items.minimum 1
-     */
+   * @minItems 1
+   * @items.minimum 1
+   */
   unitIds: number[];
 }
 
@@ -1082,38 +1083,38 @@ export interface UpdateWorkspaceUserDto {
   companyAssignments: WorkspaceUserAssignmentDto[];
 }
 
-export type BranchRolePermissionDtoActionsItem = typeof BranchRolePermissionDtoActionsItem[keyof typeof BranchRolePermissionDtoActionsItem];
-
+export type BranchRolePermissionDtoActionsItem =
+  (typeof BranchRolePermissionDtoActionsItem)[keyof typeof BranchRolePermissionDtoActionsItem];
 
 export const BranchRolePermissionDtoActionsItem = {
-  view: 'view',
-  create: 'create',
-  update: 'update',
-  cancel: 'cancel',
-  uncancel: 'uncancel',
-  export: 'export',
+  view: "view",
+  create: "create",
+  update: "update",
+  cancel: "cancel",
+  uncancel: "uncancel",
+  export: "export",
 } as const;
 
 export interface BranchRolePermissionDto {
   /**
-     * @minLength 2
-     * @maxLength 120
-     */
+   * @minLength 2
+   * @maxLength 120
+   */
   moduleCode: string;
   /**
-     * @minLength 2
-     * @maxLength 160
-     */
+   * @minLength 2
+   * @maxLength 160
+   */
   moduleName: string;
   /**
-     * @minLength 1
-     * @maxLength 160
-     */
+   * @minLength 1
+   * @maxLength 160
+   */
   permissionCode: string;
   /**
-     * @minLength 2
-     * @maxLength 160
-     */
+   * @minLength 2
+   * @maxLength 160
+   */
   permissionName: string;
   actions?: BranchRolePermissionDtoActionsItem[];
   canView?: boolean;
@@ -1126,14 +1127,14 @@ export interface BranchRolePermissionDto {
 
 export interface CreateBranchRoleDto {
   /**
-     * @minLength 2
-     * @maxLength 120
-     */
+   * @minLength 2
+   * @maxLength 120
+   */
   name: string;
   /**
-     * @maxLength 1000
-     * @nullable
-     */
+   * @maxLength 1000
+   * @nullable
+   */
   description?: string | null;
   /** @minItems 1 */
   permissions: BranchRolePermissionDto[];
@@ -1141,14 +1142,14 @@ export interface CreateBranchRoleDto {
 
 export interface UpdateBranchRoleDto {
   /**
-     * @minLength 2
-     * @maxLength 120
-     */
+   * @minLength 2
+   * @maxLength 120
+   */
   name: string;
   /**
-     * @maxLength 1000
-     * @nullable
-     */
+   * @maxLength 1000
+   * @nullable
+   */
   description?: string | null;
   /** @minItems 1 */
   permissions: BranchRolePermissionDto[];
@@ -1160,9 +1161,9 @@ export interface UpdateBranchRoleStatusDto {
 
 export interface UpdateBranchUserRoleDto {
   /**
-     * @minimum 1
-     * @nullable
-     */
+   * @minimum 1
+   * @nullable
+   */
   companyRoleId?: number | null;
 }
 
@@ -1268,9 +1269,9 @@ export interface SaveFormSignatoryDto {
   /** @maxLength 160 */
   moduleName: string;
   /**
-     * @minItems 1
-     * @maxItems 5
-     */
+   * @minItems 1
+   * @maxItems 5
+   */
   rows: FormSignatoryRowDto[];
 }
 
@@ -1279,12 +1280,12 @@ export interface SaveFormSignatoryResponseDto {
   setup: FormSignatorySetupResponseDto;
 }
 
-export type ChartAccountBankAccountResponseDtoStatus = typeof ChartAccountBankAccountResponseDtoStatus[keyof typeof ChartAccountBankAccountResponseDtoStatus];
-
+export type ChartAccountBankAccountResponseDtoStatus =
+  (typeof ChartAccountBankAccountResponseDtoStatus)[keyof typeof ChartAccountBankAccountResponseDtoStatus];
 
 export const ChartAccountBankAccountResponseDtoStatus = {
-  ACTIVE: 'ACTIVE',
-  INACTIVE: 'INACTIVE',
+  ACTIVE: "ACTIVE",
+  INACTIVE: "INACTIVE",
 } as const;
 
 export interface ChartAccountBankAccountResponseDto {
@@ -1302,48 +1303,50 @@ export interface ChartAccountBankAccountResponseDto {
   status: ChartAccountBankAccountResponseDtoStatus;
 }
 
-export type ChartAccountResponseDtoAccountLevel = typeof ChartAccountResponseDtoAccountLevel[keyof typeof ChartAccountResponseDtoAccountLevel];
-
+export type ChartAccountResponseDtoAccountLevel =
+  (typeof ChartAccountResponseDtoAccountLevel)[keyof typeof ChartAccountResponseDtoAccountLevel];
 
 export const ChartAccountResponseDtoAccountLevel = {
-  MAJOR: 'MAJOR',
-  SUB1: 'SUB1',
-  SUB2: 'SUB2',
-  SUB3: 'SUB3',
-  SPECIFIC: 'SPECIFIC',
+  MAJOR: "MAJOR",
+  SUB1: "SUB1",
+  SUB2: "SUB2",
+  SUB3: "SUB3",
+  SPECIFIC: "SPECIFIC",
 } as const;
 
 /**
  * @nullable
  */
-export type ChartAccountResponseDtoAccountType = typeof ChartAccountResponseDtoAccountType[keyof typeof ChartAccountResponseDtoAccountType] | null;
-
+export type ChartAccountResponseDtoAccountType =
+  | (typeof ChartAccountResponseDtoAccountType)[keyof typeof ChartAccountResponseDtoAccountType]
+  | null;
 
 export const ChartAccountResponseDtoAccountType = {
-  ASSET: 'ASSET',
-  LIABILITY: 'LIABILITY',
-  EQUITY: 'EQUITY',
-  REVENUE: 'REVENUE',
-  EXPENSE: 'EXPENSE',
+  ASSET: "ASSET",
+  LIABILITY: "LIABILITY",
+  EQUITY: "EQUITY",
+  REVENUE: "REVENUE",
+  EXPENSE: "EXPENSE",
 } as const;
 
 /**
  * @nullable
  */
-export type ChartAccountResponseDtoAccountNature = typeof ChartAccountResponseDtoAccountNature[keyof typeof ChartAccountResponseDtoAccountNature] | null;
-
+export type ChartAccountResponseDtoAccountNature =
+  | (typeof ChartAccountResponseDtoAccountNature)[keyof typeof ChartAccountResponseDtoAccountNature]
+  | null;
 
 export const ChartAccountResponseDtoAccountNature = {
-  DEBIT: 'DEBIT',
-  CREDIT: 'CREDIT',
+  DEBIT: "DEBIT",
+  CREDIT: "CREDIT",
 } as const;
 
-export type ChartAccountResponseDtoStatus = typeof ChartAccountResponseDtoStatus[keyof typeof ChartAccountResponseDtoStatus];
-
+export type ChartAccountResponseDtoStatus =
+  (typeof ChartAccountResponseDtoStatus)[keyof typeof ChartAccountResponseDtoStatus];
 
 export const ChartAccountResponseDtoStatus = {
-  ACTIVE: 'ACTIVE',
-  INACTIVE: 'INACTIVE',
+  ACTIVE: "ACTIVE",
+  INACTIVE: "INACTIVE",
 } as const;
 
 export interface ChartAccountResponseDto {
@@ -1359,7 +1362,7 @@ export interface ChartAccountResponseDto {
   /** @nullable */
   accountNature: ChartAccountResponseDtoAccountNature;
   /** @nullable */
-  accountGroup: string | null;
+  accountGroup: string[] | null;
   /** @nullable */
   statementSection: string | null;
   /** @nullable */
@@ -1375,59 +1378,84 @@ export interface ChartAccountResponseDto {
   status: ChartAccountResponseDtoStatus;
   /** @nullable */
   currencyCode: string | null;
+  isSystemDefault: boolean;
+  isUserCreated: boolean;
+  isBankLinked: boolean;
   /** @nullable */
   deletedAt: string | null;
+  /** @nullable */
+  createdBy: string | null;
   createdAt: string;
+  /** @nullable */
+  updatedBy: string | null;
+  /** @nullable */
   updatedAt: string;
   bankAccounts: ChartAccountBankAccountResponseDto[];
+}
+
+export interface ChartAccountOptionResponseDto {
+  id: string;
+  accountCode: string;
+  accountTitle: string;
+  /** @nullable */
+  accountType: ChartAccountResponseDtoAccountType;
+  /** @nullable */
+  accountNature: ChartAccountResponseDtoAccountNature;
+  status: ChartAccountResponseDtoStatus;
+}
+
+export interface ChartAccountOptionsResponseDto {
+  accounts: ChartAccountOptionResponseDto[];
 }
 
 export interface ChartAccountListResponseDto {
   accounts: ChartAccountResponseDto[];
 }
 
-export type ChartAccountTreeNodeResponseDtoAccountLevel = typeof ChartAccountTreeNodeResponseDtoAccountLevel[keyof typeof ChartAccountTreeNodeResponseDtoAccountLevel];
-
+export type ChartAccountTreeNodeResponseDtoAccountLevel =
+  (typeof ChartAccountTreeNodeResponseDtoAccountLevel)[keyof typeof ChartAccountTreeNodeResponseDtoAccountLevel];
 
 export const ChartAccountTreeNodeResponseDtoAccountLevel = {
-  MAJOR: 'MAJOR',
-  SUB1: 'SUB1',
-  SUB2: 'SUB2',
-  SUB3: 'SUB3',
-  SPECIFIC: 'SPECIFIC',
+  MAJOR: "MAJOR",
+  SUB1: "SUB1",
+  SUB2: "SUB2",
+  SUB3: "SUB3",
+  SPECIFIC: "SPECIFIC",
 } as const;
 
 /**
  * @nullable
  */
-export type ChartAccountTreeNodeResponseDtoAccountType = typeof ChartAccountTreeNodeResponseDtoAccountType[keyof typeof ChartAccountTreeNodeResponseDtoAccountType] | null;
-
+export type ChartAccountTreeNodeResponseDtoAccountType =
+  | (typeof ChartAccountTreeNodeResponseDtoAccountType)[keyof typeof ChartAccountTreeNodeResponseDtoAccountType]
+  | null;
 
 export const ChartAccountTreeNodeResponseDtoAccountType = {
-  ASSET: 'ASSET',
-  LIABILITY: 'LIABILITY',
-  EQUITY: 'EQUITY',
-  REVENUE: 'REVENUE',
-  EXPENSE: 'EXPENSE',
+  ASSET: "ASSET",
+  LIABILITY: "LIABILITY",
+  EQUITY: "EQUITY",
+  REVENUE: "REVENUE",
+  EXPENSE: "EXPENSE",
 } as const;
 
 /**
  * @nullable
  */
-export type ChartAccountTreeNodeResponseDtoAccountNature = typeof ChartAccountTreeNodeResponseDtoAccountNature[keyof typeof ChartAccountTreeNodeResponseDtoAccountNature] | null;
-
+export type ChartAccountTreeNodeResponseDtoAccountNature =
+  | (typeof ChartAccountTreeNodeResponseDtoAccountNature)[keyof typeof ChartAccountTreeNodeResponseDtoAccountNature]
+  | null;
 
 export const ChartAccountTreeNodeResponseDtoAccountNature = {
-  DEBIT: 'DEBIT',
-  CREDIT: 'CREDIT',
+  DEBIT: "DEBIT",
+  CREDIT: "CREDIT",
 } as const;
 
-export type ChartAccountTreeNodeResponseDtoStatus = typeof ChartAccountTreeNodeResponseDtoStatus[keyof typeof ChartAccountTreeNodeResponseDtoStatus];
-
+export type ChartAccountTreeNodeResponseDtoStatus =
+  (typeof ChartAccountTreeNodeResponseDtoStatus)[keyof typeof ChartAccountTreeNodeResponseDtoStatus];
 
 export const ChartAccountTreeNodeResponseDtoStatus = {
-  ACTIVE: 'ACTIVE',
-  INACTIVE: 'INACTIVE',
+  ACTIVE: "ACTIVE",
+  INACTIVE: "INACTIVE",
 } as const;
 
 export interface ChartAccountTreeNodeResponseDto {
@@ -1443,7 +1471,7 @@ export interface ChartAccountTreeNodeResponseDto {
   /** @nullable */
   accountNature: ChartAccountTreeNodeResponseDtoAccountNature;
   /** @nullable */
-  accountGroup: string | null;
+  accountGroup: string[] | null;
   /** @nullable */
   statementSection: string | null;
   /** @nullable */
@@ -1459,9 +1487,17 @@ export interface ChartAccountTreeNodeResponseDto {
   status: ChartAccountTreeNodeResponseDtoStatus;
   /** @nullable */
   currencyCode: string | null;
+  isSystemDefault: boolean;
+  isUserCreated: boolean;
+  isBankLinked: boolean;
   /** @nullable */
   deletedAt: string | null;
+  /** @nullable */
+  createdBy: string | null;
   createdAt: string;
+  /** @nullable */
+  updatedBy: string | null;
+  /** @nullable */
   updatedAt: string;
   bankAccounts: ChartAccountBankAccountResponseDto[];
   children: ChartAccountTreeNodeResponseDto[];
@@ -1479,35 +1515,68 @@ export interface ChartAccountContainerResponseDto {
   account: ChartAccountResponseDto;
 }
 
-export type CreateChartAccountDtoAccountLevel = typeof CreateChartAccountDtoAccountLevel[keyof typeof CreateChartAccountDtoAccountLevel];
-
+export type CreateChartAccountDtoAccountLevel =
+  (typeof CreateChartAccountDtoAccountLevel)[keyof typeof CreateChartAccountDtoAccountLevel];
 
 export const CreateChartAccountDtoAccountLevel = {
-  MAJOR: 'MAJOR',
-  SUB1: 'SUB1',
-  SUB2: 'SUB2',
-  SUB3: 'SUB3',
-  SPECIFIC: 'SPECIFIC',
+  MAJOR: "MAJOR",
+  SUB1: "SUB1",
+  SUB2: "SUB2",
+  SUB3: "SUB3",
+  SPECIFIC: "SPECIFIC",
 } as const;
 
-export type CreateChartAccountDtoAccountType = typeof CreateChartAccountDtoAccountType[keyof typeof CreateChartAccountDtoAccountType];
-
+export type CreateChartAccountDtoAccountType =
+  (typeof CreateChartAccountDtoAccountType)[keyof typeof CreateChartAccountDtoAccountType];
 
 export const CreateChartAccountDtoAccountType = {
-  ASSET: 'ASSET',
-  LIABILITY: 'LIABILITY',
-  EQUITY: 'EQUITY',
-  REVENUE: 'REVENUE',
-  EXPENSE: 'EXPENSE',
+  ASSET: "ASSET",
+  LIABILITY: "LIABILITY",
+  EQUITY: "EQUITY",
+  REVENUE: "REVENUE",
+  EXPENSE: "EXPENSE",
 } as const;
 
-export type CreateChartAccountDtoAccountNature = typeof CreateChartAccountDtoAccountNature[keyof typeof CreateChartAccountDtoAccountNature];
-
+export type CreateChartAccountDtoAccountNature =
+  (typeof CreateChartAccountDtoAccountNature)[keyof typeof CreateChartAccountDtoAccountNature];
 
 export const CreateChartAccountDtoAccountNature = {
-  DEBIT: 'DEBIT',
-  CREDIT: 'CREDIT',
+  DEBIT: "DEBIT",
+  CREDIT: "CREDIT",
 } as const;
+
+export const CreateChartAccountDtoStatus = ChartAccountResponseDtoStatus;
+export type CreateChartAccountDtoStatus =
+  (typeof CreateChartAccountDtoStatus)[keyof typeof CreateChartAccountDtoStatus];
+
+export type CreateChartAccountDtoLinkedDetailsKind =
+  (typeof CreateChartAccountDtoLinkedDetailsKind)[keyof typeof CreateChartAccountDtoLinkedDetailsKind];
+
+export const CreateChartAccountDtoLinkedDetailsKind = {
+  BANK: "BANK",
+} as const;
+
+export interface CreateChartAccountDtoLinkedDetails {
+  kind?: CreateChartAccountDtoLinkedDetailsKind;
+  /** @maxLength 100 */
+  bankName?: string;
+  /** @maxLength 100 */
+  branch?: string;
+  /** @maxLength 100 */
+  accountNumber?: string;
+  /** @maxLength 50 */
+  accountType?: string;
+  /** @maxLength 10 */
+  currencyCode?: string;
+  /** @minimum 0 */
+  currencyExchangeRate?: number;
+  /** @maxLength 50 */
+  seriesStart?: string;
+  /** @maxLength 50 */
+  seriesEnd?: string;
+  /** @minimum 1 */
+  seriesDigits?: number;
+}
 
 export interface CreateChartAccountDto {
   parentAccountId?: string;
@@ -1517,7 +1586,7 @@ export interface CreateChartAccountDto {
   accountType?: CreateChartAccountDtoAccountType;
   accountNature?: CreateChartAccountDtoAccountNature;
   /** @maxLength 50 */
-  accountGroup?: string;
+  accountGroup?: string | string[];
   /** @maxLength 250 */
   statementSection?: string;
   /** @maxLength 250 */
@@ -1532,6 +1601,8 @@ export interface CreateChartAccountDto {
   orderNo?: number;
   /** @maxLength 10 */
   currencyCode?: string;
+  status?: CreateChartAccountDtoStatus;
+  linkedDetails?: CreateChartAccountDtoLinkedDetails;
 }
 
 export interface ChartAccountSaveResponseDto {
@@ -1539,35 +1610,39 @@ export interface ChartAccountSaveResponseDto {
   account: ChartAccountResponseDto;
 }
 
-export type UpdateChartAccountDtoAccountLevel = typeof UpdateChartAccountDtoAccountLevel[keyof typeof UpdateChartAccountDtoAccountLevel];
-
+export type UpdateChartAccountDtoAccountLevel =
+  (typeof UpdateChartAccountDtoAccountLevel)[keyof typeof UpdateChartAccountDtoAccountLevel];
 
 export const UpdateChartAccountDtoAccountLevel = {
-  MAJOR: 'MAJOR',
-  SUB1: 'SUB1',
-  SUB2: 'SUB2',
-  SUB3: 'SUB3',
-  SPECIFIC: 'SPECIFIC',
+  MAJOR: "MAJOR",
+  SUB1: "SUB1",
+  SUB2: "SUB2",
+  SUB3: "SUB3",
+  SPECIFIC: "SPECIFIC",
 } as const;
 
-export type UpdateChartAccountDtoAccountType = typeof UpdateChartAccountDtoAccountType[keyof typeof UpdateChartAccountDtoAccountType];
-
+export type UpdateChartAccountDtoAccountType =
+  (typeof UpdateChartAccountDtoAccountType)[keyof typeof UpdateChartAccountDtoAccountType];
 
 export const UpdateChartAccountDtoAccountType = {
-  ASSET: 'ASSET',
-  LIABILITY: 'LIABILITY',
-  EQUITY: 'EQUITY',
-  REVENUE: 'REVENUE',
-  EXPENSE: 'EXPENSE',
+  ASSET: "ASSET",
+  LIABILITY: "LIABILITY",
+  EQUITY: "EQUITY",
+  REVENUE: "REVENUE",
+  EXPENSE: "EXPENSE",
 } as const;
 
-export type UpdateChartAccountDtoAccountNature = typeof UpdateChartAccountDtoAccountNature[keyof typeof UpdateChartAccountDtoAccountNature];
-
+export type UpdateChartAccountDtoAccountNature =
+  (typeof UpdateChartAccountDtoAccountNature)[keyof typeof UpdateChartAccountDtoAccountNature];
 
 export const UpdateChartAccountDtoAccountNature = {
-  DEBIT: 'DEBIT',
-  CREDIT: 'CREDIT',
+  DEBIT: "DEBIT",
+  CREDIT: "CREDIT",
 } as const;
+
+export const UpdateChartAccountDtoStatus = ChartAccountResponseDtoStatus;
+export type UpdateChartAccountDtoStatus =
+  (typeof UpdateChartAccountDtoStatus)[keyof typeof UpdateChartAccountDtoStatus];
 
 export interface UpdateChartAccountDto {
   parentAccountId?: string;
@@ -1577,7 +1652,7 @@ export interface UpdateChartAccountDto {
   accountType?: UpdateChartAccountDtoAccountType;
   accountNature?: UpdateChartAccountDtoAccountNature;
   /** @maxLength 50 */
-  accountGroup?: string;
+  accountGroup?: string | string[];
   /** @maxLength 250 */
   statementSection?: string;
   /** @maxLength 250 */
@@ -1592,19 +1667,1592 @@ export interface UpdateChartAccountDto {
   orderNo?: number;
   /** @maxLength 10 */
   currencyCode?: string;
+  status?: UpdateChartAccountDtoStatus;
+  linkedDetails?: CreateChartAccountDtoLinkedDetails;
 }
 
-export type UpdateChartAccountStatusDtoStatus = typeof UpdateChartAccountStatusDtoStatus[keyof typeof UpdateChartAccountStatusDtoStatus];
-
+export type UpdateChartAccountStatusDtoStatus =
+  (typeof UpdateChartAccountStatusDtoStatus)[keyof typeof UpdateChartAccountStatusDtoStatus];
 
 export const UpdateChartAccountStatusDtoStatus = {
-  ACTIVE: 'ACTIVE',
-  INACTIVE: 'INACTIVE',
+  ACTIVE: "ACTIVE",
+  INACTIVE: "INACTIVE",
 } as const;
 
 export interface UpdateChartAccountStatusDto {
   status: UpdateChartAccountStatusDtoStatus;
 }
+
+export type TermResponseDtoDateMode =
+  (typeof TermResponseDtoDateMode)[keyof typeof TermResponseDtoDateMode];
+
+export const TermResponseDtoDateMode = {
+  DAY: "DAY",
+  MONTH: "MONTH",
+  YEAR: "YEAR",
+} as const;
+
+export type TermResponseDtoStatus =
+  (typeof TermResponseDtoStatus)[keyof typeof TermResponseDtoStatus];
+
+export const TermResponseDtoStatus = {
+  ACTIVE: "ACTIVE",
+  INACTIVE: "INACTIVE",
+} as const;
+
+export interface TermResponseDto {
+  id: string;
+  name: string;
+  /** @nullable */
+  description: string | null;
+  dateMode: TermResponseDtoDateMode;
+  period: number;
+  status: TermResponseDtoStatus;
+  /** @nullable */
+  createdBy: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedBy: string | null;
+  updatedAt: string;
+}
+
+export type TermLookupOptionResponseDtoDateMode =
+  (typeof TermLookupOptionResponseDtoDateMode)[keyof typeof TermLookupOptionResponseDtoDateMode];
+
+export const TermLookupOptionResponseDtoDateMode = {
+  DAY: "DAY",
+  MONTH: "MONTH",
+  YEAR: "YEAR",
+} as const;
+
+export type TermLookupOptionResponseDtoStatus =
+  (typeof TermLookupOptionResponseDtoStatus)[keyof typeof TermLookupOptionResponseDtoStatus];
+
+export const TermLookupOptionResponseDtoStatus = {
+  ACTIVE: "ACTIVE",
+  INACTIVE: "INACTIVE",
+} as const;
+
+export interface TermLookupOptionResponseDto {
+  id: string;
+  name: string;
+  dateMode: TermLookupOptionResponseDtoDateMode;
+  period: number;
+  status: TermLookupOptionResponseDtoStatus;
+}
+
+export interface TermsMaintenanceStatisticsResponseDto {
+  totalTerms: number;
+  activeTerms: number;
+  inactiveTerms: number;
+  dayTerms: number;
+  monthTerms: number;
+  yearTerms: number;
+}
+
+export interface TermsMaintenancePermissionsResponseDto {
+  canView: boolean;
+  canCreate: boolean;
+  canUpdate: boolean;
+  canExport: boolean;
+  canImport?: boolean;
+}
+
+export interface TermsMaintenancePaginationResponseDto {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface TermListResponseDto {
+  terms: TermResponseDto[];
+  statistics: TermsMaintenanceStatisticsResponseDto;
+  pagination: TermsMaintenancePaginationResponseDto;
+  permissions: TermsMaintenancePermissionsResponseDto;
+}
+
+export interface TermLookupResponseDto {
+  terms: TermLookupOptionResponseDto[];
+}
+
+export interface TermContainerResponseDto {
+  term: TermResponseDto;
+  permissions: TermsMaintenancePermissionsResponseDto;
+}
+
+export interface SaveTermResponseDto {
+  message: string;
+  term: TermResponseDto;
+}
+
+export interface ImportTermsResponseDto {
+  message: string;
+  terms: TermResponseDto[];
+}
+
+export type CreateTermDtoDateMode =
+  (typeof CreateTermDtoDateMode)[keyof typeof CreateTermDtoDateMode];
+
+export const CreateTermDtoDateMode = {
+  DAY: "DAY",
+  MONTH: "MONTH",
+  YEAR: "YEAR",
+} as const;
+
+export type CreateTermDtoStatus = (typeof CreateTermDtoStatus)[keyof typeof CreateTermDtoStatus];
+
+export const CreateTermDtoStatus = {
+  ACTIVE: "ACTIVE",
+  INACTIVE: "INACTIVE",
+} as const;
+
+export interface CreateTermDto {
+  /** @maxLength 150 */
+  name: string;
+  /** @maxLength 500 */
+  description?: string;
+  dateMode: CreateTermDtoDateMode;
+  /** @minimum 0 */
+  period: number;
+  status?: CreateTermDtoStatus;
+}
+
+export type UpdateTermDtoDateMode =
+  (typeof UpdateTermDtoDateMode)[keyof typeof UpdateTermDtoDateMode];
+
+export const UpdateTermDtoDateMode = {
+  DAY: "DAY",
+  MONTH: "MONTH",
+  YEAR: "YEAR",
+} as const;
+
+export type UpdateTermDtoStatus = (typeof UpdateTermDtoStatus)[keyof typeof UpdateTermDtoStatus];
+
+export const UpdateTermDtoStatus = {
+  ACTIVE: "ACTIVE",
+  INACTIVE: "INACTIVE",
+} as const;
+
+export interface UpdateTermDto {
+  /** @maxLength 150 */
+  name?: string;
+  /** @maxLength 500 */
+  description?: string;
+  dateMode?: UpdateTermDtoDateMode;
+  /** @minimum 0 */
+  period?: number;
+  status?: UpdateTermDtoStatus;
+}
+
+export interface ImportTermsDto {
+  /**
+   * @minItems 1
+   * @maxItems 500
+   */
+  terms: CreateTermDto[];
+}
+
+export type DiscountResponseDtoType =
+  (typeof DiscountResponseDtoType)[keyof typeof DiscountResponseDtoType];
+
+export const DiscountResponseDtoType = {
+  SALES: "SALES",
+  PURCHASE: "PURCHASE",
+} as const;
+
+export type DiscountResponseDtoValueType =
+  (typeof DiscountResponseDtoValueType)[keyof typeof DiscountResponseDtoValueType];
+
+export const DiscountResponseDtoValueType = {
+  PERCENTAGE: "PERCENTAGE",
+  FIXED: "FIXED",
+} as const;
+
+export type DiscountResponseDtoStatus =
+  (typeof DiscountResponseDtoStatus)[keyof typeof DiscountResponseDtoStatus];
+
+export const DiscountResponseDtoStatus = {
+  ACTIVE: "ACTIVE",
+  INACTIVE: "INACTIVE",
+} as const;
+
+export interface DiscountResponseDto {
+  id: string;
+  name: string;
+  /** @nullable */
+  description: string | null;
+  type: DiscountResponseDtoType;
+  valueType: DiscountResponseDtoValueType;
+  value: string;
+  status: DiscountResponseDtoStatus;
+  chartAccountId: string;
+  accountCode: string;
+  accountTitle: string;
+  accountGroupPath: string;
+  /** @nullable */
+  createdBy: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedBy: string | null;
+  updatedAt: string;
+}
+
+export interface DiscountOptionResponseDto {
+  id: string;
+  name: string;
+  type: DiscountResponseDtoType;
+  valueType: DiscountResponseDtoValueType;
+  value: string;
+  status: DiscountResponseDtoStatus;
+}
+
+export interface DiscountMaintenanceStatisticsResponseDto {
+  totalDiscounts: number;
+  activeDiscounts: number;
+  inactiveDiscounts: number;
+  purchaseDiscounts: number;
+  salesDiscounts: number;
+  percentageDiscounts: number;
+}
+
+export interface DiscountMaintenancePermissionsResponseDto {
+  canView: boolean;
+  canCreate: boolean;
+  canUpdate: boolean;
+  canExport: boolean;
+  canImport?: boolean;
+}
+
+export interface DiscountMaintenancePaginationResponseDto {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface DiscountListResponseDto {
+  discounts: DiscountResponseDto[];
+  statistics: DiscountMaintenanceStatisticsResponseDto;
+  pagination: DiscountMaintenancePaginationResponseDto;
+  permissions: DiscountMaintenancePermissionsResponseDto;
+}
+
+export interface DiscountOptionsResponseDto {
+  discounts: DiscountOptionResponseDto[];
+}
+
+export interface DiscountContainerResponseDto {
+  discount: DiscountResponseDto;
+  permissions: DiscountMaintenancePermissionsResponseDto;
+}
+
+export interface SaveDiscountResponseDto {
+  message: string;
+  discount: DiscountResponseDto;
+}
+
+export interface ImportDiscountsResponseDto {
+  message: string;
+  discounts: DiscountResponseDto[];
+}
+
+export const CreateDiscountDtoType = DiscountResponseDtoType;
+export type CreateDiscountDtoType =
+  (typeof CreateDiscountDtoType)[keyof typeof CreateDiscountDtoType];
+
+export const CreateDiscountDtoValueType = DiscountResponseDtoValueType;
+export type CreateDiscountDtoValueType =
+  (typeof CreateDiscountDtoValueType)[keyof typeof CreateDiscountDtoValueType];
+
+export const CreateDiscountDtoStatus = DiscountResponseDtoStatus;
+export type CreateDiscountDtoStatus =
+  (typeof CreateDiscountDtoStatus)[keyof typeof CreateDiscountDtoStatus];
+
+export interface CreateDiscountDto {
+  /** @maxLength 150 */
+  name: string;
+  /** @maxLength 500 */
+  description?: string;
+  type: CreateDiscountDtoType;
+  valueType: CreateDiscountDtoValueType;
+  /** @minimum 0 */
+  value: number;
+  status?: CreateDiscountDtoStatus;
+}
+
+export const UpdateDiscountDtoType = DiscountResponseDtoType;
+export type UpdateDiscountDtoType =
+  (typeof UpdateDiscountDtoType)[keyof typeof UpdateDiscountDtoType];
+
+export const UpdateDiscountDtoValueType = DiscountResponseDtoValueType;
+export type UpdateDiscountDtoValueType =
+  (typeof UpdateDiscountDtoValueType)[keyof typeof UpdateDiscountDtoValueType];
+
+export const UpdateDiscountDtoStatus = DiscountResponseDtoStatus;
+export type UpdateDiscountDtoStatus =
+  (typeof UpdateDiscountDtoStatus)[keyof typeof UpdateDiscountDtoStatus];
+
+export interface UpdateDiscountDto {
+  /** @maxLength 150 */
+  name?: string;
+  /** @maxLength 500 */
+  description?: string;
+  type?: UpdateDiscountDtoType;
+  valueType?: UpdateDiscountDtoValueType;
+  /** @minimum 0 */
+  value?: number;
+  status?: UpdateDiscountDtoStatus;
+}
+
+export interface ImportDiscountsDto {
+  /**
+   * @minItems 1
+   * @maxItems 500
+   */
+  discounts: CreateDiscountDto[];
+}
+
+export type DiscountMaintenanceControllerFindAllV1Params = {
+  /** @maxLength 120 */
+  search?: string;
+  type?: DiscountMaintenanceControllerFindAllV1Type;
+  valueType?: DiscountMaintenanceControllerFindAllV1ValueType;
+  status?: DiscountMaintenanceControllerFindAllV1Status;
+  page?: number;
+  limit?: number;
+  sortBy?: DiscountMaintenanceControllerFindAllV1SortBy;
+  sortDirection?: DiscountMaintenanceControllerFindAllV1SortDirection;
+};
+
+export const DiscountMaintenanceControllerFindAllV1Type = DiscountResponseDtoType;
+export type DiscountMaintenanceControllerFindAllV1Type =
+  (typeof DiscountMaintenanceControllerFindAllV1Type)[keyof typeof DiscountMaintenanceControllerFindAllV1Type];
+
+export const DiscountMaintenanceControllerFindAllV1ValueType = DiscountResponseDtoValueType;
+export type DiscountMaintenanceControllerFindAllV1ValueType =
+  (typeof DiscountMaintenanceControllerFindAllV1ValueType)[keyof typeof DiscountMaintenanceControllerFindAllV1ValueType];
+
+export const DiscountMaintenanceControllerFindAllV1Status = DiscountResponseDtoStatus;
+export type DiscountMaintenanceControllerFindAllV1Status =
+  (typeof DiscountMaintenanceControllerFindAllV1Status)[keyof typeof DiscountMaintenanceControllerFindAllV1Status];
+
+export type DiscountMaintenanceControllerFindAllV1SortBy =
+  (typeof DiscountMaintenanceControllerFindAllV1SortBy)[keyof typeof DiscountMaintenanceControllerFindAllV1SortBy];
+
+export const DiscountMaintenanceControllerFindAllV1SortBy = {
+  name: "name",
+  type: "type",
+  valueType: "valueType",
+  value: "value",
+  status: "status",
+  createdAt: "createdAt",
+  updatedAt: "updatedAt",
+} as const;
+
+export type DiscountMaintenanceControllerFindAllV1SortDirection =
+  (typeof DiscountMaintenanceControllerFindAllV1SortDirection)[keyof typeof DiscountMaintenanceControllerFindAllV1SortDirection];
+
+export const DiscountMaintenanceControllerFindAllV1SortDirection = {
+  asc: "asc",
+  desc: "desc",
+} as const;
+
+export type DiscountMaintenanceControllerFindOptionsV1Params =
+  DiscountMaintenanceControllerFindAllV1Params;
+
+export type PaymentTypeResponseDtoClassification =
+  (typeof PaymentTypeResponseDtoClassification)[keyof typeof PaymentTypeResponseDtoClassification];
+
+export const PaymentTypeResponseDtoClassification = {
+  CASH: "CASH",
+  BANK_TRANSFER: "BANK_TRANSFER",
+  CHECK: "CHECK",
+  DIGITAL_WALLET: "DIGITAL_WALLET",
+  NON_CASH_SETTLEMENT: "NON_CASH_SETTLEMENT",
+} as const;
+
+export type PaymentTypeResponseDtoStatus =
+  (typeof PaymentTypeResponseDtoStatus)[keyof typeof PaymentTypeResponseDtoStatus];
+
+export const PaymentTypeResponseDtoStatus = {
+  ACTIVE: "ACTIVE",
+  INACTIVE: "INACTIVE",
+} as const;
+
+export interface PaymentTypeResponseDto {
+  id: string;
+  name: string;
+  /** @nullable */
+  description: string | null;
+  classification: PaymentTypeResponseDtoClassification;
+  sortOrder: number;
+  status: PaymentTypeResponseDtoStatus;
+  /** @nullable */
+  createdBy: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedBy: string | null;
+  updatedAt: string;
+}
+
+export interface PaymentTypeOptionResponseDto {
+  id: string;
+  name: string;
+  classification: PaymentTypeResponseDtoClassification;
+  sortOrder: number;
+  status: PaymentTypeResponseDtoStatus;
+}
+
+export interface PaymentTypeStatisticsResponseDto {
+  totalPaymentTypes: number;
+  activePaymentTypes: number;
+  inactivePaymentTypes: number;
+  cashPaymentTypes: number;
+  bankTransferPaymentTypes: number;
+  checkPaymentTypes: number;
+  digitalWalletPaymentTypes: number;
+  nonCashSettlementPaymentTypes: number;
+}
+
+export interface PaymentTypePermissionsResponseDto {
+  canView: boolean;
+  canCreate: boolean;
+  canUpdate: boolean;
+  canExport: boolean;
+  canImport?: boolean;
+}
+
+export interface PaymentTypePaginationResponseDto {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface PaymentTypeListResponseDto {
+  paymentTypes: PaymentTypeResponseDto[];
+  statistics: PaymentTypeStatisticsResponseDto;
+  pagination: PaymentTypePaginationResponseDto;
+  permissions: PaymentTypePermissionsResponseDto;
+}
+
+export interface PaymentTypeOptionsResponseDto {
+  paymentTypes: PaymentTypeOptionResponseDto[];
+}
+
+export interface PaymentTypeContainerResponseDto {
+  paymentType: PaymentTypeResponseDto;
+  permissions: PaymentTypePermissionsResponseDto;
+}
+
+export interface SavePaymentTypeResponseDto {
+  message: string;
+  paymentType: PaymentTypeResponseDto;
+}
+
+export interface ImportPaymentTypesResponseDto {
+  message: string;
+  paymentTypes: PaymentTypeResponseDto[];
+}
+
+export const CreatePaymentTypeDtoClassification = PaymentTypeResponseDtoClassification;
+export type CreatePaymentTypeDtoClassification =
+  (typeof CreatePaymentTypeDtoClassification)[keyof typeof CreatePaymentTypeDtoClassification];
+
+export const CreatePaymentTypeDtoStatus = PaymentTypeResponseDtoStatus;
+export type CreatePaymentTypeDtoStatus =
+  (typeof CreatePaymentTypeDtoStatus)[keyof typeof CreatePaymentTypeDtoStatus];
+
+export interface CreatePaymentTypeDto {
+  /** @maxLength 150 */
+  name: string;
+  /** @maxLength 500 */
+  description?: string;
+  classification: CreatePaymentTypeDtoClassification;
+  /** @minimum 0 */
+  sortOrder?: number;
+  status?: CreatePaymentTypeDtoStatus;
+}
+
+export const UpdatePaymentTypeDtoClassification = PaymentTypeResponseDtoClassification;
+export type UpdatePaymentTypeDtoClassification =
+  (typeof UpdatePaymentTypeDtoClassification)[keyof typeof UpdatePaymentTypeDtoClassification];
+
+export const UpdatePaymentTypeDtoStatus = PaymentTypeResponseDtoStatus;
+export type UpdatePaymentTypeDtoStatus =
+  (typeof UpdatePaymentTypeDtoStatus)[keyof typeof UpdatePaymentTypeDtoStatus];
+
+export interface UpdatePaymentTypeDto {
+  /** @maxLength 150 */
+  name?: string;
+  /** @maxLength 500 */
+  description?: string;
+  classification?: UpdatePaymentTypeDtoClassification;
+  /** @minimum 0 */
+  sortOrder?: number;
+  status?: UpdatePaymentTypeDtoStatus;
+}
+
+export interface ImportPaymentTypesDto {
+  /**
+   * @minItems 1
+   * @maxItems 500
+   */
+  paymentTypes: CreatePaymentTypeDto[];
+}
+
+export type PaymentTypeMaintenanceControllerFindAllV1Params = {
+  /** @maxLength 120 */
+  search?: string;
+  classification?: PaymentTypeMaintenanceControllerFindAllV1Classification;
+  status?: PaymentTypeMaintenanceControllerFindAllV1Status;
+  page?: number;
+  limit?: number;
+  sortBy?: PaymentTypeMaintenanceControllerFindAllV1SortBy;
+  sortDirection?: PaymentTypeMaintenanceControllerFindAllV1SortDirection;
+};
+
+export const PaymentTypeMaintenanceControllerFindAllV1Classification =
+  PaymentTypeResponseDtoClassification;
+export type PaymentTypeMaintenanceControllerFindAllV1Classification =
+  (typeof PaymentTypeMaintenanceControllerFindAllV1Classification)[keyof typeof PaymentTypeMaintenanceControllerFindAllV1Classification];
+
+export const PaymentTypeMaintenanceControllerFindAllV1Status = PaymentTypeResponseDtoStatus;
+export type PaymentTypeMaintenanceControllerFindAllV1Status =
+  (typeof PaymentTypeMaintenanceControllerFindAllV1Status)[keyof typeof PaymentTypeMaintenanceControllerFindAllV1Status];
+
+export type PaymentTypeMaintenanceControllerFindAllV1SortBy =
+  (typeof PaymentTypeMaintenanceControllerFindAllV1SortBy)[keyof typeof PaymentTypeMaintenanceControllerFindAllV1SortBy];
+
+export const PaymentTypeMaintenanceControllerFindAllV1SortBy = {
+  name: "name",
+  classification: "classification",
+  sortOrder: "sortOrder",
+  status: "status",
+  createdAt: "createdAt",
+  updatedAt: "updatedAt",
+} as const;
+
+export type PaymentTypeMaintenanceControllerFindAllV1SortDirection =
+  (typeof PaymentTypeMaintenanceControllerFindAllV1SortDirection)[keyof typeof PaymentTypeMaintenanceControllerFindAllV1SortDirection];
+
+export const PaymentTypeMaintenanceControllerFindAllV1SortDirection = {
+  asc: "asc",
+  desc: "desc",
+} as const;
+
+export type PaymentTypeMaintenanceControllerFindOptionsV1Params =
+  PaymentTypeMaintenanceControllerFindAllV1Params;
+
+export type ServiceMaintenanceResponseDtoStatus =
+  (typeof ServiceMaintenanceResponseDtoStatus)[keyof typeof ServiceMaintenanceResponseDtoStatus];
+
+export const ServiceMaintenanceResponseDtoStatus = {
+  ACTIVE: "ACTIVE",
+  INACTIVE: "INACTIVE",
+} as const;
+
+export type ServiceMaintenanceResponseDtoAccountSetupMode =
+  (typeof ServiceMaintenanceResponseDtoAccountSetupMode)[keyof typeof ServiceMaintenanceResponseDtoAccountSetupMode];
+
+export const ServiceMaintenanceResponseDtoAccountSetupMode = {
+  AUTO: "AUTO",
+  EXISTING: "EXISTING",
+} as const;
+
+export interface ServiceMaintenanceResponseDto {
+  id: string;
+  serviceName: string;
+  /** @nullable */
+  description: string | null;
+  status: ServiceMaintenanceResponseDtoStatus;
+  accountSetupMode: ServiceMaintenanceResponseDtoAccountSetupMode;
+  revenueCoaId: string;
+  revenueAccountCode: string;
+  revenueAccountTitle: string;
+  isGeneratedRevenueAccount: boolean;
+  /** @nullable */
+  createdBy: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedBy: string | null;
+  /** @nullable */
+  updatedAt: string | null;
+}
+
+export interface ServiceMaintenanceOptionResponseDto {
+  id: string;
+  serviceName: string;
+  name: string;
+  status: ServiceMaintenanceResponseDtoStatus;
+}
+
+export interface ServiceMaintenanceStatisticsResponseDto {
+  totalServices: number;
+  activeServices: number;
+  inactiveServices: number;
+  accountTitles: number;
+}
+
+export interface ServiceMaintenancePermissionsResponseDto {
+  canView: boolean;
+  canCreate: boolean;
+  canUpdate: boolean;
+  canExport: boolean;
+  canImport?: boolean;
+}
+
+export interface ServiceMaintenancePaginationResponseDto {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface ServiceMaintenanceListResponseDto {
+  services: ServiceMaintenanceResponseDto[];
+  statistics: ServiceMaintenanceStatisticsResponseDto;
+  pagination: ServiceMaintenancePaginationResponseDto;
+  permissions: ServiceMaintenancePermissionsResponseDto;
+}
+
+export interface ServiceMaintenanceOptionsResponseDto {
+  services: ServiceMaintenanceOptionResponseDto[];
+}
+
+export interface ServiceMaintenanceContainerResponseDto {
+  service: ServiceMaintenanceResponseDto;
+  permissions: ServiceMaintenancePermissionsResponseDto;
+}
+
+export interface ServiceMaintenanceAccountOptionResponseDto {
+  id: string;
+  accountNumber: string;
+  accountName: string;
+  /** @nullable */
+  description?: string | null;
+  /** @nullable */
+  accountType?: string | null;
+  /** @nullable */
+  accountCategory?: string | null;
+  /** @nullable */
+  statementGroup?: string | null;
+  /** @nullable */
+  statementSection?: string | null;
+  /** @nullable */
+  normalBalance?: "Debit" | "Credit" | null;
+  status?: "Active" | "Inactive";
+}
+
+export interface ServiceMaintenanceAccountOptionsResponseDto {
+  accounts: ServiceMaintenanceAccountOptionResponseDto[];
+}
+
+export type ServiceMaintenanceNextAccountCodeResponseDtoParentAccountLevel =
+  (typeof ServiceMaintenanceNextAccountCodeResponseDtoParentAccountLevel)[keyof typeof ServiceMaintenanceNextAccountCodeResponseDtoParentAccountLevel];
+
+export const ServiceMaintenanceNextAccountCodeResponseDtoParentAccountLevel =
+  ChartAccountResponseDtoAccountLevel;
+
+export interface ServiceMaintenanceNextAccountCodeResponseDto {
+  accountCode: string;
+  parentAccountId: string;
+  parentAccountCode: string;
+  parentAccountLevel: ServiceMaintenanceNextAccountCodeResponseDtoParentAccountLevel;
+  parentAccountTitle: string;
+}
+
+export interface SaveServiceMaintenanceResponseDto {
+  message: string;
+  service: ServiceMaintenanceResponseDto;
+}
+
+export const CreateServiceMaintenanceDtoStatus = ServiceMaintenanceResponseDtoStatus;
+export type CreateServiceMaintenanceDtoStatus =
+  (typeof CreateServiceMaintenanceDtoStatus)[keyof typeof CreateServiceMaintenanceDtoStatus];
+
+export const CreateServiceMaintenanceDtoAccountSetupMode =
+  ServiceMaintenanceResponseDtoAccountSetupMode;
+export type CreateServiceMaintenanceDtoAccountSetupMode =
+  (typeof CreateServiceMaintenanceDtoAccountSetupMode)[keyof typeof CreateServiceMaintenanceDtoAccountSetupMode];
+
+export interface CreateServiceMaintenanceDto {
+  /** @maxLength 150 */
+  serviceName: string;
+  /**
+   * @maxLength 500
+   * @nullable
+   */
+  description?: string | null;
+  status?: CreateServiceMaintenanceDtoStatus;
+  accountSetupMode: CreateServiceMaintenanceDtoAccountSetupMode;
+  /** @nullable */
+  revenueCoaId?: string | null;
+}
+
+export const UpdateServiceMaintenanceDtoStatus = ServiceMaintenanceResponseDtoStatus;
+export type UpdateServiceMaintenanceDtoStatus =
+  (typeof UpdateServiceMaintenanceDtoStatus)[keyof typeof UpdateServiceMaintenanceDtoStatus];
+
+export const UpdateServiceMaintenanceDtoAccountSetupMode =
+  ServiceMaintenanceResponseDtoAccountSetupMode;
+export type UpdateServiceMaintenanceDtoAccountSetupMode =
+  (typeof UpdateServiceMaintenanceDtoAccountSetupMode)[keyof typeof UpdateServiceMaintenanceDtoAccountSetupMode];
+
+export interface UpdateServiceMaintenanceDto {
+  /** @maxLength 150 */
+  serviceName?: string;
+  /**
+   * @maxLength 500
+   * @nullable
+   */
+  description?: string | null;
+  status?: UpdateServiceMaintenanceDtoStatus;
+  accountSetupMode?: UpdateServiceMaintenanceDtoAccountSetupMode;
+  /** @nullable */
+  revenueCoaId?: string | null;
+}
+
+export interface UpdateServiceMaintenanceStatusDto {
+  status: UpdateServiceMaintenanceDtoStatus;
+}
+
+export type ServicesMaintenanceControllerFindAllV1Params = {
+  /** @maxLength 120 */
+  search?: string;
+  status?: ServicesMaintenanceControllerFindAllV1Status;
+  accountSetupMode?: ServicesMaintenanceControllerFindAllV1AccountSetupMode;
+  page?: number;
+  limit?: number;
+  sortBy?: ServicesMaintenanceControllerFindAllV1SortBy;
+  sortDirection?: ServicesMaintenanceControllerFindAllV1SortDirection;
+};
+
+export const ServicesMaintenanceControllerFindAllV1Status = ServiceMaintenanceResponseDtoStatus;
+export type ServicesMaintenanceControllerFindAllV1Status =
+  (typeof ServicesMaintenanceControllerFindAllV1Status)[keyof typeof ServicesMaintenanceControllerFindAllV1Status];
+
+export const ServicesMaintenanceControllerFindAllV1AccountSetupMode =
+  ServiceMaintenanceResponseDtoAccountSetupMode;
+export type ServicesMaintenanceControllerFindAllV1AccountSetupMode =
+  (typeof ServicesMaintenanceControllerFindAllV1AccountSetupMode)[keyof typeof ServicesMaintenanceControllerFindAllV1AccountSetupMode];
+
+export type ServicesMaintenanceControllerFindAllV1SortBy =
+  (typeof ServicesMaintenanceControllerFindAllV1SortBy)[keyof typeof ServicesMaintenanceControllerFindAllV1SortBy];
+
+export const ServicesMaintenanceControllerFindAllV1SortBy = {
+  serviceName: "serviceName",
+  status: "status",
+  accountSetupMode: "accountSetupMode",
+  createdAt: "createdAt",
+  updatedAt: "updatedAt",
+} as const;
+
+export type ServicesMaintenanceControllerFindAllV1SortDirection =
+  (typeof ServicesMaintenanceControllerFindAllV1SortDirection)[keyof typeof ServicesMaintenanceControllerFindAllV1SortDirection];
+
+export const ServicesMaintenanceControllerFindAllV1SortDirection = {
+  asc: "asc",
+  desc: "desc",
+} as const;
+
+export type ServicesMaintenanceControllerFindOptionsV1Params =
+  ServicesMaintenanceControllerFindAllV1Params;
+export type ServicesMaintenanceLookupControllerFindOptionsV1Params =
+  ServicesMaintenanceControllerFindAllV1Params;
+
+export type BankAccountResponseDtoStatus =
+  (typeof BankAccountResponseDtoStatus)[keyof typeof BankAccountResponseDtoStatus];
+
+export const BankAccountResponseDtoStatus = {
+  ACTIVE: "ACTIVE",
+  INACTIVE: "INACTIVE",
+} as const;
+
+export interface BankChartAccountResponseDto {
+  id: string;
+  accountCode: string;
+  accountTitle: string;
+  accountGroup: string[];
+  status: BankAccountResponseDtoStatus;
+}
+
+export interface BankAccountResponseDto {
+  id: string;
+  companyId: number;
+  coaId: string;
+  accountCode: string;
+  bankName: string;
+  /** @nullable */
+  branch: string | null;
+  accountNumber: string;
+  accountName: string;
+  /** @nullable */
+  accountType: string | null;
+  /** @nullable */
+  seriesStart: string | null;
+  /** @nullable */
+  seriesEnd: string | null;
+  /** @nullable */
+  seriesDigits: number | null;
+  /** @nullable */
+  currencyCode: string | null;
+  isDefault: boolean;
+  status: BankAccountResponseDtoStatus;
+  chartAccount: BankChartAccountResponseDto;
+  /** @nullable */
+  createdBy: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedBy: string | null;
+  /** @nullable */
+  updatedAt: string | null;
+}
+
+export interface BankAccountOptionResponseDto {
+  id: string;
+  bankName: string;
+  accountName: string;
+  maskedAccountNumber: string;
+  /** @nullable */
+  currencyCode: string | null;
+  status: BankAccountResponseDtoStatus;
+}
+
+export interface BankMasterfileStatisticsResponseDto {
+  totalBanks: number;
+  activeBanks: number;
+  inactiveBanks: number;
+  defaultBanks: number;
+}
+
+export interface BankMasterfilePermissionsResponseDto {
+  canView: boolean;
+  canCreate: boolean;
+  canUpdate: boolean;
+  canExport: boolean;
+  canImport?: boolean;
+}
+
+export interface BankMasterfilePaginationResponseDto {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface BankAccountListResponseDto {
+  bankAccounts: BankAccountResponseDto[];
+  statistics: BankMasterfileStatisticsResponseDto;
+  pagination: BankMasterfilePaginationResponseDto;
+  permissions: BankMasterfilePermissionsResponseDto;
+}
+
+export interface BankAccountOptionsResponseDto {
+  banks: BankAccountOptionResponseDto[];
+}
+
+export interface BankAccountContainerResponseDto {
+  bankAccount: BankAccountResponseDto;
+  permissions: BankMasterfilePermissionsResponseDto;
+}
+
+export interface BankNextAccountCodeResponseDto {
+  accountCode: string;
+  parentAccountCode: string;
+  parentAccountTitle: string;
+}
+
+export interface SaveBankAccountResponseDto {
+  message: string;
+  bankAccount: BankAccountResponseDto;
+}
+
+export interface ImportBankAccountsResponseDto {
+  message: string;
+  bankAccounts: BankAccountResponseDto[];
+}
+
+export const CreateBankAccountDtoStatus = BankAccountResponseDtoStatus;
+export type CreateBankAccountDtoStatus =
+  (typeof CreateBankAccountDtoStatus)[keyof typeof CreateBankAccountDtoStatus];
+
+export interface CreateBankAccountDto {
+  /** @maxLength 100 */
+  bankName: string;
+  /** @maxLength 100 */
+  branch?: string;
+  /** @maxLength 100 */
+  accountNumber?: string;
+  /** @maxLength 250 */
+  accountName?: string;
+  /** @maxLength 50 */
+  accountType?: string;
+  /** @maxLength 50 */
+  seriesStart: string;
+  /** @maxLength 50 */
+  seriesEnd: string;
+  /** @minimum 1 */
+  seriesDigits: number;
+  /** @maxLength 10 */
+  currencyCode?: string;
+  /** @pattern ^\d{10}$ */
+  accountCode?: string;
+  isDefault?: boolean;
+  status?: CreateBankAccountDtoStatus;
+}
+
+export interface UpdateBankAccountDto {
+  /** @maxLength 100 */
+  bankName?: string;
+  /** @maxLength 100 */
+  branch?: string;
+  /** @maxLength 100 */
+  accountNumber?: string;
+  /** @maxLength 250 */
+  accountName?: string;
+  /** @maxLength 50 */
+  accountType?: string;
+  /** @maxLength 50 */
+  seriesStart?: string;
+  /** @maxLength 50 */
+  seriesEnd?: string;
+  /** @minimum 1 */
+  seriesDigits?: number;
+  /** @maxLength 10 */
+  currencyCode?: string;
+  /** @pattern ^\d{10}$ */
+  accountCode?: string;
+  isDefault?: boolean;
+  status?: CreateBankAccountDtoStatus;
+}
+
+export interface UpdateBankAccountStatusDto {
+  status: CreateBankAccountDtoStatus;
+}
+
+export interface ImportBankAccountsDto {
+  /**
+   * @minItems 1
+   * @maxItems 500
+   */
+  banks: CreateBankAccountDto[];
+}
+
+export type BankMasterfileControllerFindAllV1Params = {
+  search?: string;
+  status?: BankMasterfileControllerFindAllV1Status;
+  currencyCode?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: BankMasterfileControllerFindAllV1SortBy;
+  sortDirection?: BankMasterfileControllerFindAllV1SortDirection;
+};
+
+export const BankMasterfileControllerFindAllV1Status = BankAccountResponseDtoStatus;
+export type BankMasterfileControllerFindAllV1Status =
+  (typeof BankMasterfileControllerFindAllV1Status)[keyof typeof BankMasterfileControllerFindAllV1Status];
+
+export type BankMasterfileControllerFindAllV1SortBy =
+  (typeof BankMasterfileControllerFindAllV1SortBy)[keyof typeof BankMasterfileControllerFindAllV1SortBy];
+
+export const BankMasterfileControllerFindAllV1SortBy = {
+  bankName: "bankName",
+  branch: "branch",
+  accountName: "accountName",
+  accountNumber: "accountNumber",
+  status: "status",
+  createdAt: "createdAt",
+  updatedAt: "updatedAt",
+} as const;
+
+export type BankMasterfileControllerFindAllV1SortDirection =
+  (typeof BankMasterfileControllerFindAllV1SortDirection)[keyof typeof BankMasterfileControllerFindAllV1SortDirection];
+
+export const BankMasterfileControllerFindAllV1SortDirection = {
+  asc: "asc",
+  desc: "desc",
+} as const;
+
+export type BankMasterfileControllerFindOptionsV1Params = BankMasterfileControllerFindAllV1Params;
+export type BankMasterfileLookupControllerFindOptionsV1Params =
+  BankMasterfileControllerFindAllV1Params;
+
+export type DefaultAccountResponseDtoType =
+  (typeof DefaultAccountResponseDtoType)[keyof typeof DefaultAccountResponseDtoType];
+
+export const DefaultAccountResponseDtoType = {
+  EXPENSE: "EXPENSE",
+  COLLECTION: "COLLECTION",
+} as const;
+
+export type DefaultAccountResponseDtoStatus =
+  (typeof DefaultAccountResponseDtoStatus)[keyof typeof DefaultAccountResponseDtoStatus];
+
+export const DefaultAccountResponseDtoStatus = {
+  ACTIVE: "ACTIVE",
+  INACTIVE: "INACTIVE",
+} as const;
+
+export type GeneratedDefaultAccountResponseDtoRole =
+  (typeof GeneratedDefaultAccountResponseDtoRole)[keyof typeof GeneratedDefaultAccountResponseDtoRole];
+
+export const GeneratedDefaultAccountResponseDtoRole = {
+  EXPENSE: "EXPENSE",
+  REVENUE: "REVENUE",
+} as const;
+
+export type GeneratedDefaultAccountResponseDtoAccountType =
+  | (typeof GeneratedDefaultAccountResponseDtoAccountType)[keyof typeof GeneratedDefaultAccountResponseDtoAccountType]
+  | null;
+
+export const GeneratedDefaultAccountResponseDtoAccountType = {
+  ASSET: "ASSET",
+  LIABILITY: "LIABILITY",
+  EQUITY: "EQUITY",
+  REVENUE: "REVENUE",
+  EXPENSE: "EXPENSE",
+} as const;
+
+export type GeneratedDefaultAccountResponseDtoAccountNature =
+  | (typeof GeneratedDefaultAccountResponseDtoAccountNature)[keyof typeof GeneratedDefaultAccountResponseDtoAccountNature]
+  | null;
+
+export const GeneratedDefaultAccountResponseDtoAccountNature = {
+  DEBIT: "DEBIT",
+  CREDIT: "CREDIT",
+} as const;
+
+export interface GeneratedDefaultAccountResponseDto {
+  role: GeneratedDefaultAccountResponseDtoRole;
+  chartAccountId: string;
+  accountCode: string;
+  accountTitle: string;
+  /** @nullable */
+  accountType: GeneratedDefaultAccountResponseDtoAccountType;
+  /** @nullable */
+  accountNature: GeneratedDefaultAccountResponseDtoAccountNature;
+  /** @nullable */
+  parentAccountId: string | null;
+  status: DefaultAccountResponseDtoStatus;
+}
+
+export interface DefaultAccountResponseDto {
+  id: string;
+  companyId: number;
+  type: DefaultAccountResponseDtoType;
+  defaultAccountName: string;
+  description: string;
+  status: DefaultAccountResponseDtoStatus;
+  /** @nullable */
+  expenseParentCoaId: string | null;
+  generatedAccounts: GeneratedDefaultAccountResponseDto[];
+  /** @nullable */
+  createdBy: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedBy: string | null;
+  /** @nullable */
+  updatedAt: string | null;
+}
+
+export interface DefaultAccountStatisticsResponseDto {
+  totalDefaultAccounts: number;
+  activeDefaultAccounts: number;
+  inactiveDefaultAccounts: number;
+  expenseDefaultAccounts: number;
+  collectionDefaultAccounts: number;
+}
+
+export interface DefaultAccountPermissionsResponseDto {
+  canView: boolean;
+  canCreate: boolean;
+  canUpdate: boolean;
+  canCancel: boolean;
+  canExport: boolean;
+  canImport?: boolean;
+}
+
+export interface DefaultAccountPaginationResponseDto {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface DefaultAccountListResponseDto {
+  defaultAccounts: DefaultAccountResponseDto[];
+  statistics: DefaultAccountStatisticsResponseDto;
+  pagination: DefaultAccountPaginationResponseDto;
+  permissions: DefaultAccountPermissionsResponseDto;
+}
+
+export interface DefaultAccountContainerResponseDto {
+  defaultAccount: DefaultAccountResponseDto;
+  permissions: DefaultAccountPermissionsResponseDto;
+}
+
+export type DefaultAccountExpenseParentOptionResponseDtoAccountLevel =
+  (typeof DefaultAccountExpenseParentOptionResponseDtoAccountLevel)[keyof typeof DefaultAccountExpenseParentOptionResponseDtoAccountLevel];
+
+export const DefaultAccountExpenseParentOptionResponseDtoAccountLevel =
+  ChartAccountResponseDtoAccountLevel;
+
+export interface DefaultAccountExpenseParentOptionResponseDto {
+  id: string;
+  accountCode: string;
+  accountTitle: string;
+  accountLevel: DefaultAccountExpenseParentOptionResponseDtoAccountLevel;
+  /** @nullable */
+  parentAccountId: string | null;
+}
+
+export interface DefaultAccountExpenseParentOptionsResponseDto {
+  options: DefaultAccountExpenseParentOptionResponseDto[];
+}
+
+export interface CreateDefaultAccountExpenseSubAccountResponseDto {
+  id: string;
+}
+
+export interface SaveDefaultAccountExpenseSubAccountResponseDto {
+  message: string;
+  account: CreateDefaultAccountExpenseSubAccountResponseDto;
+}
+
+export interface SaveDefaultAccountResponseDto {
+  message: string;
+  defaultAccount: DefaultAccountResponseDto;
+}
+
+export const CreateDefaultAccountTemplateDtoType = DefaultAccountResponseDtoType;
+export type CreateDefaultAccountTemplateDtoType =
+  (typeof CreateDefaultAccountTemplateDtoType)[keyof typeof CreateDefaultAccountTemplateDtoType];
+
+export const CreateDefaultAccountTemplateDtoStatus = DefaultAccountResponseDtoStatus;
+export type CreateDefaultAccountTemplateDtoStatus =
+  (typeof CreateDefaultAccountTemplateDtoStatus)[keyof typeof CreateDefaultAccountTemplateDtoStatus];
+
+export interface CreateDefaultAccountTemplateDto {
+  type: CreateDefaultAccountTemplateDtoType;
+  /** @maxLength 250 */
+  defaultAccountName: string;
+  /** @maxLength 500 */
+  description?: string;
+  status?: CreateDefaultAccountTemplateDtoStatus;
+  expenseParentCoaId?: string;
+}
+
+export interface UpdateDefaultAccountTemplateDto {
+  type?: CreateDefaultAccountTemplateDtoType;
+  /** @maxLength 250 */
+  defaultAccountName?: string;
+  /** @maxLength 500 */
+  description?: string;
+  status?: CreateDefaultAccountTemplateDtoStatus;
+  expenseParentCoaId?: string;
+}
+
+export interface UpdateDefaultAccountTemplateStatusDto {
+  status: CreateDefaultAccountTemplateDtoStatus;
+}
+
+export type DefaultAccountControllerFindAllV1Params = {
+  /** @maxLength 120 */
+  search?: string;
+  type?: DefaultAccountControllerFindAllV1Type;
+  status?: DefaultAccountControllerFindAllV1Status;
+  page?: number;
+  limit?: number;
+  sortBy?: DefaultAccountControllerFindAllV1SortBy;
+  sortDirection?: DefaultAccountControllerFindAllV1SortDirection;
+};
+
+export const DefaultAccountControllerFindAllV1Type = DefaultAccountResponseDtoType;
+export type DefaultAccountControllerFindAllV1Type =
+  (typeof DefaultAccountControllerFindAllV1Type)[keyof typeof DefaultAccountControllerFindAllV1Type];
+
+export const DefaultAccountControllerFindAllV1Status = DefaultAccountResponseDtoStatus;
+export type DefaultAccountControllerFindAllV1Status =
+  (typeof DefaultAccountControllerFindAllV1Status)[keyof typeof DefaultAccountControllerFindAllV1Status];
+
+export type DefaultAccountControllerFindAllV1SortBy =
+  (typeof DefaultAccountControllerFindAllV1SortBy)[keyof typeof DefaultAccountControllerFindAllV1SortBy];
+
+export const DefaultAccountControllerFindAllV1SortBy = {
+  name: "name",
+  description: "description",
+  type: "type",
+  status: "status",
+  createdAt: "createdAt",
+  updatedAt: "updatedAt",
+} as const;
+
+export type DefaultAccountControllerFindAllV1SortDirection =
+  (typeof DefaultAccountControllerFindAllV1SortDirection)[keyof typeof DefaultAccountControllerFindAllV1SortDirection];
+
+export const DefaultAccountControllerFindAllV1SortDirection = {
+  asc: "asc",
+  desc: "desc",
+} as const;
+
+export type ResponsibilityCenterResponseDtoFinancialType =
+  (typeof ResponsibilityCenterResponseDtoFinancialType)[keyof typeof ResponsibilityCenterResponseDtoFinancialType];
+
+export const ResponsibilityCenterResponseDtoFinancialType = {
+  COST_CENTER: "COST_CENTER",
+  PROFIT_CENTER: "PROFIT_CENTER",
+  REVENUE_CENTER: "REVENUE_CENTER",
+  INVESTMENT_CENTER: "INVESTMENT_CENTER",
+} as const;
+
+export type ResponsibilityCenterResponseDtoStatus =
+  (typeof ResponsibilityCenterResponseDtoStatus)[keyof typeof ResponsibilityCenterResponseDtoStatus];
+
+export const ResponsibilityCenterResponseDtoStatus = {
+  ACTIVE: "ACTIVE",
+  INACTIVE: "INACTIVE",
+} as const;
+
+export interface ResponsibilityCenterResponseDto {
+  id: string;
+  code: string;
+  name: string;
+  classificationId: string;
+  classificationCode: string;
+  classificationName: string;
+  typeId: string;
+  typeName: string;
+  typeCodePrefix: string;
+  category: string;
+  financialType: ResponsibilityCenterResponseDtoFinancialType;
+  /** @nullable */
+  manager: string | null;
+  /** @nullable */
+  parentId: string | null;
+  /** @nullable */
+  parentName: string | null;
+  status: ResponsibilityCenterResponseDtoStatus;
+  /** @nullable */
+  description: string | null;
+  /** @nullable */
+  createdBy: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedBy: string | null;
+  updatedAt: string;
+}
+
+export interface ResponsibilityCenterTreeNodeResponseDto extends ResponsibilityCenterResponseDto {
+  children: ResponsibilityCenterTreeNodeResponseDto[];
+}
+
+export interface ResponsibilityCenterStatisticsResponseDto {
+  totalCenters: number;
+  activeCenters: number;
+  inactiveCenters: number;
+  departmentCenters: number;
+  branchCenters: number;
+  projectCenters: number;
+}
+
+export interface ResponsibilityCenterPermissionsResponseDto {
+  canView: boolean;
+  canCreate: boolean;
+  canUpdate: boolean;
+  canExport: boolean;
+}
+
+export interface ResponsibilityCenterPaginationResponseDto {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface ResponsibilityCenterListResponseDto {
+  centers: ResponsibilityCenterResponseDto[];
+  statistics: ResponsibilityCenterStatisticsResponseDto;
+  pagination: ResponsibilityCenterPaginationResponseDto;
+  permissions: ResponsibilityCenterPermissionsResponseDto;
+}
+
+export interface ResponsibilityCenterTreeResponseDto {
+  centers: ResponsibilityCenterTreeNodeResponseDto[];
+  statistics: ResponsibilityCenterStatisticsResponseDto;
+  permissions: ResponsibilityCenterPermissionsResponseDto;
+}
+
+export interface ResponsibilityCenterContainerResponseDto {
+  center: ResponsibilityCenterResponseDto;
+  permissions: ResponsibilityCenterPermissionsResponseDto;
+}
+
+export interface SaveResponsibilityCenterResponseDto {
+  message: string;
+  center: ResponsibilityCenterResponseDto;
+}
+
+export type ResponsibilityCenterOptionResponseDtoStatus =
+  (typeof ResponsibilityCenterOptionResponseDtoStatus)[keyof typeof ResponsibilityCenterOptionResponseDtoStatus];
+
+export const ResponsibilityCenterOptionResponseDtoStatus = {
+  ACTIVE: "ACTIVE",
+  INACTIVE: "INACTIVE",
+} as const;
+
+export interface ResponsibilityCenterOptionResponseDto {
+  id: string;
+  code: string;
+  name: string;
+  typeName: string;
+  status: ResponsibilityCenterOptionResponseDtoStatus;
+}
+
+export interface ResponsibilityCenterOptionsResponseDto {
+  responsibilityCenters: ResponsibilityCenterOptionResponseDto[];
+}
+
+export type ResponsibilityCenterClassificationResponseDtoStatus =
+  (typeof ResponsibilityCenterClassificationResponseDtoStatus)[keyof typeof ResponsibilityCenterClassificationResponseDtoStatus];
+
+export const ResponsibilityCenterClassificationResponseDtoStatus = {
+  ACTIVE: "ACTIVE",
+  INACTIVE: "INACTIVE",
+} as const;
+
+export interface ResponsibilityCenterClassificationResponseDto {
+  id: string;
+  code: string;
+  name: string;
+  trackingBehavior: string;
+  isSystem: boolean;
+  status: ResponsibilityCenterClassificationResponseDtoStatus;
+}
+
+export interface ResponsibilityCenterClassificationsResponseDto {
+  classifications: ResponsibilityCenterClassificationResponseDto[];
+}
+
+export type ResponsibilityCenterTypeResponseDtoStatus =
+  (typeof ResponsibilityCenterTypeResponseDtoStatus)[keyof typeof ResponsibilityCenterTypeResponseDtoStatus];
+
+export const ResponsibilityCenterTypeResponseDtoStatus = {
+  ACTIVE: "ACTIVE",
+  INACTIVE: "INACTIVE",
+} as const;
+
+export interface ResponsibilityCenterTypeResponseDto {
+  id: string;
+  classificationId: string;
+  classificationCode: string;
+  classificationName: string;
+  name: string;
+  codePrefix: string;
+  /** @nullable */
+  description: string | null;
+  sortOrder: number;
+  isRequired: boolean;
+  status: ResponsibilityCenterTypeResponseDtoStatus;
+}
+
+export interface ResponsibilityCenterTypesResponseDto {
+  types: ResponsibilityCenterTypeResponseDto[];
+}
+
+export interface ResponsibilityCenterCodeSuggestionResponseDto {
+  code: string;
+}
+
+export type CreateResponsibilityCenterDtoFinancialType =
+  (typeof CreateResponsibilityCenterDtoFinancialType)[keyof typeof CreateResponsibilityCenterDtoFinancialType];
+
+export const CreateResponsibilityCenterDtoFinancialType =
+  ResponsibilityCenterResponseDtoFinancialType;
+
+export type CreateResponsibilityCenterDtoStatus =
+  (typeof CreateResponsibilityCenterDtoStatus)[keyof typeof CreateResponsibilityCenterDtoStatus];
+
+export const CreateResponsibilityCenterDtoStatus = ResponsibilityCenterResponseDtoStatus;
+
+export interface CreateResponsibilityCenterDto {
+  classificationId?: string;
+  typeId?: string;
+  /** @maxLength 50 */
+  code?: string;
+  /** @maxLength 150 */
+  name: string;
+  category?: string;
+  financialType?: CreateResponsibilityCenterDtoFinancialType;
+  /** @maxLength 150 */
+  manager?: string;
+  parentId?: string;
+  status?: CreateResponsibilityCenterDtoStatus;
+  /** @maxLength 500 */
+  description?: string;
+}
+
+export type UpdateResponsibilityCenterDtoFinancialType =
+  (typeof UpdateResponsibilityCenterDtoFinancialType)[keyof typeof UpdateResponsibilityCenterDtoFinancialType];
+
+export const UpdateResponsibilityCenterDtoFinancialType =
+  ResponsibilityCenterResponseDtoFinancialType;
+
+export type UpdateResponsibilityCenterDtoStatus =
+  (typeof UpdateResponsibilityCenterDtoStatus)[keyof typeof UpdateResponsibilityCenterDtoStatus];
+
+export const UpdateResponsibilityCenterDtoStatus = ResponsibilityCenterResponseDtoStatus;
+
+export interface UpdateResponsibilityCenterDto {
+  classificationId?: string;
+  typeId?: string;
+  /** @maxLength 50 */
+  code?: string;
+  /** @maxLength 150 */
+  name?: string;
+  category?: string;
+  financialType?: UpdateResponsibilityCenterDtoFinancialType;
+  /** @maxLength 150 */
+  manager?: string;
+  parentId?: string;
+  status?: UpdateResponsibilityCenterDtoStatus;
+  /** @maxLength 500 */
+  description?: string;
+}
+
+export interface UpdateResponsibilityCenterStatusDto {
+  status: UpdateResponsibilityCenterDtoStatus;
+}
+
+export type ResponsibilityCenterControllerFindAllV1Params = {
+  /** @maxLength 120 */
+  search?: string;
+  status?: ResponsibilityCenterControllerFindAllV1Status;
+  category?: ResponsibilityCenterControllerFindAllV1Category;
+  financialType?: ResponsibilityCenterControllerFindAllV1FinancialType;
+  classificationId?: string;
+  typeId?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: ResponsibilityCenterControllerFindAllV1SortBy;
+  sortDirection?: ResponsibilityCenterControllerFindAllV1SortDirection;
+};
+
+export const ResponsibilityCenterControllerFindAllV1Status = ResponsibilityCenterResponseDtoStatus;
+export type ResponsibilityCenterControllerFindAllV1Status =
+  (typeof ResponsibilityCenterControllerFindAllV1Status)[keyof typeof ResponsibilityCenterControllerFindAllV1Status];
+
+export type ResponsibilityCenterControllerFindAllV1Category = string;
+
+export const ResponsibilityCenterControllerFindAllV1FinancialType =
+  ResponsibilityCenterResponseDtoFinancialType;
+export type ResponsibilityCenterControllerFindAllV1FinancialType =
+  (typeof ResponsibilityCenterControllerFindAllV1FinancialType)[keyof typeof ResponsibilityCenterControllerFindAllV1FinancialType];
+
+export type ResponsibilityCenterControllerFindAllV1SortBy =
+  (typeof ResponsibilityCenterControllerFindAllV1SortBy)[keyof typeof ResponsibilityCenterControllerFindAllV1SortBy];
+
+export const ResponsibilityCenterControllerFindAllV1SortBy = {
+  code: "code",
+  name: "name",
+  category: "category",
+  financialType: "financialType",
+  manager: "manager",
+  status: "status",
+  createdAt: "createdAt",
+  updatedAt: "updatedAt",
+} as const;
+
+export type ResponsibilityCenterControllerFindAllV1SortDirection =
+  (typeof ResponsibilityCenterControllerFindAllV1SortDirection)[keyof typeof ResponsibilityCenterControllerFindAllV1SortDirection];
+
+export const ResponsibilityCenterControllerFindAllV1SortDirection = {
+  asc: "asc",
+  desc: "desc",
+} as const;
+
+export type ResponsibilityCenterControllerFindOptionsV1Params =
+  ResponsibilityCenterControllerFindAllV1Params;
+export type ResponsibilityCenterControllerFindTreeV1Params =
+  ResponsibilityCenterControllerFindAllV1Params;
+export type ResponsibilityCenterLookupControllerFindOptionsV1Params =
+  ResponsibilityCenterControllerFindAllV1Params;
+
+export type ResponsibilityCenterControllerFindTypesV1Params = {
+  classificationId?: string;
+};
+
+export type ResponsibilityCenterControllerSuggestCodeV1Params = {
+  typeId: string;
+};
+
+export type TermsMaintenanceControllerFindAllV1Params = {
+  /**
+   * @maxLength 120
+   */
+  search?: string;
+  dateMode?: TermsMaintenanceControllerFindAllV1DateMode;
+  status?: TermsMaintenanceControllerFindAllV1Status;
+  page?: number;
+  limit?: number;
+  sortBy?: TermsMaintenanceControllerFindAllV1SortBy;
+  sortDirection?: TermsMaintenanceControllerFindAllV1SortDirection;
+};
+
+export type TermsMaintenanceControllerFindAllV1DateMode =
+  (typeof TermsMaintenanceControllerFindAllV1DateMode)[keyof typeof TermsMaintenanceControllerFindAllV1DateMode];
+
+export const TermsMaintenanceControllerFindAllV1DateMode = {
+  DAY: "DAY",
+  MONTH: "MONTH",
+  YEAR: "YEAR",
+} as const;
+
+export type TermsMaintenanceControllerFindAllV1Status =
+  (typeof TermsMaintenanceControllerFindAllV1Status)[keyof typeof TermsMaintenanceControllerFindAllV1Status];
+
+export const TermsMaintenanceControllerFindAllV1Status = {
+  ACTIVE: "ACTIVE",
+  INACTIVE: "INACTIVE",
+} as const;
+
+export type TermsMaintenanceControllerFindAllV1SortBy =
+  (typeof TermsMaintenanceControllerFindAllV1SortBy)[keyof typeof TermsMaintenanceControllerFindAllV1SortBy];
+
+export const TermsMaintenanceControllerFindAllV1SortBy = {
+  name: "name",
+  dateMode: "dateMode",
+  period: "period",
+  status: "status",
+  createdAt: "createdAt",
+  updatedAt: "updatedAt",
+} as const;
+
+export type TermsMaintenanceControllerFindAllV1SortDirection =
+  (typeof TermsMaintenanceControllerFindAllV1SortDirection)[keyof typeof TermsMaintenanceControllerFindAllV1SortDirection];
+
+export const TermsMaintenanceControllerFindAllV1SortDirection = {
+  asc: "asc",
+  desc: "desc",
+} as const;
+
+export type TermsMaintenanceControllerFindOptionsV1Params = {
+  /**
+   * @maxLength 120
+   */
+  search?: string;
+  dateMode?: TermsMaintenanceControllerFindOptionsV1DateMode;
+};
+
+export type TermsMaintenanceControllerFindOptionsV1DateMode =
+  (typeof TermsMaintenanceControllerFindOptionsV1DateMode)[keyof typeof TermsMaintenanceControllerFindOptionsV1DateMode];
+
+export const TermsMaintenanceControllerFindOptionsV1DateMode = {
+  DAY: "DAY",
+  MONTH: "MONTH",
+  YEAR: "YEAR",
+} as const;
 
 export interface TransactionNumberBranchResponseDto {
   id: number;
@@ -1613,28 +3261,28 @@ export interface TransactionNumberBranchResponseDto {
   name: string;
 }
 
-export type TransactionNumberSequenceResponseDtoInputMode = typeof TransactionNumberSequenceResponseDtoInputMode[keyof typeof TransactionNumberSequenceResponseDtoInputMode];
-
+export type TransactionNumberSequenceResponseDtoInputMode =
+  (typeof TransactionNumberSequenceResponseDtoInputMode)[keyof typeof TransactionNumberSequenceResponseDtoInputMode];
 
 export const TransactionNumberSequenceResponseDtoInputMode = {
-  Auto: 'Auto',
-  Manual: 'Manual',
+  Auto: "Auto",
+  Manual: "Manual",
 } as const;
 
-export type TransactionNumberSequenceResponseDtoScope = typeof TransactionNumberSequenceResponseDtoScope[keyof typeof TransactionNumberSequenceResponseDtoScope];
-
+export type TransactionNumberSequenceResponseDtoScope =
+  (typeof TransactionNumberSequenceResponseDtoScope)[keyof typeof TransactionNumberSequenceResponseDtoScope];
 
 export const TransactionNumberSequenceResponseDtoScope = {
-  all: 'all',
-  branch: 'branch',
+  all: "all",
+  branch: "branch",
 } as const;
 
-export type TransactionNumberSequenceResponseDtoStatus = typeof TransactionNumberSequenceResponseDtoStatus[keyof typeof TransactionNumberSequenceResponseDtoStatus];
-
+export type TransactionNumberSequenceResponseDtoStatus =
+  (typeof TransactionNumberSequenceResponseDtoStatus)[keyof typeof TransactionNumberSequenceResponseDtoStatus];
 
 export const TransactionNumberSequenceResponseDtoStatus = {
-  Active: 'Active',
-  Inactive: 'Inactive',
+  Active: "Active",
+  Inactive: "Inactive",
 } as const;
 
 export interface TransactionNumberSequenceResponseDto {
@@ -1660,28 +3308,28 @@ export interface TransactionNumberSequenceBootstrapResponseDto {
   sequences: TransactionNumberSequenceResponseDto[];
 }
 
-export type UpdateTransactionNumberSequenceDtoInputMode = typeof UpdateTransactionNumberSequenceDtoInputMode[keyof typeof UpdateTransactionNumberSequenceDtoInputMode];
-
+export type UpdateTransactionNumberSequenceDtoInputMode =
+  (typeof UpdateTransactionNumberSequenceDtoInputMode)[keyof typeof UpdateTransactionNumberSequenceDtoInputMode];
 
 export const UpdateTransactionNumberSequenceDtoInputMode = {
-  Auto: 'Auto',
-  Manual: 'Manual',
+  Auto: "Auto",
+  Manual: "Manual",
 } as const;
 
-export type UpdateTransactionNumberSequenceDtoScope = typeof UpdateTransactionNumberSequenceDtoScope[keyof typeof UpdateTransactionNumberSequenceDtoScope];
-
+export type UpdateTransactionNumberSequenceDtoScope =
+  (typeof UpdateTransactionNumberSequenceDtoScope)[keyof typeof UpdateTransactionNumberSequenceDtoScope];
 
 export const UpdateTransactionNumberSequenceDtoScope = {
-  all: 'all',
-  branch: 'branch',
+  all: "all",
+  branch: "branch",
 } as const;
 
-export type UpdateTransactionNumberSequenceDtoStatus = typeof UpdateTransactionNumberSequenceDtoStatus[keyof typeof UpdateTransactionNumberSequenceDtoStatus];
-
+export type UpdateTransactionNumberSequenceDtoStatus =
+  (typeof UpdateTransactionNumberSequenceDtoStatus)[keyof typeof UpdateTransactionNumberSequenceDtoStatus];
 
 export const UpdateTransactionNumberSequenceDtoStatus = {
-  Active: 'Active',
-  Inactive: 'Inactive',
+  Active: "Active",
+  Inactive: "Inactive",
 } as const;
 
 export interface UpdateTransactionNumberSequenceDto {
@@ -1695,9 +3343,9 @@ export interface UpdateTransactionNumberSequenceDto {
   /** @maxLength 40 */
   suffix?: string;
   /**
-     * @minimum 1
-     * @maximum 12
-     */
+   * @minimum 1
+   * @maximum 12
+   */
   padding: number;
   /** @minimum 0 */
   startingNumber: number;
@@ -1716,12 +3364,12 @@ export interface SaveTransactionNumberSequenceResponseDto {
   sequence: TransactionNumberSequenceResponseDto;
 }
 
-export type AiAssistantChatMessageDtoRole = typeof AiAssistantChatMessageDtoRole[keyof typeof AiAssistantChatMessageDtoRole];
-
+export type AiAssistantChatMessageDtoRole =
+  (typeof AiAssistantChatMessageDtoRole)[keyof typeof AiAssistantChatMessageDtoRole];
 
 export const AiAssistantChatMessageDtoRole = {
-  user: 'user',
-  assistant: 'assistant',
+  user: "user",
+  assistant: "assistant",
 } as const;
 
 export interface AiAssistantChatMessageDto {
@@ -1740,13 +3388,13 @@ export interface AiAssistantChatDto {
 export type AuthControllerLoginV1201 = { [key: string]: unknown };
 
 export type AuthControllerGoogleAuthV1Params = {
-mode?: unknown;
+  mode?: unknown;
 };
 
 export type AuthControllerGoogleAuthCallbackV1Params = {
-error?: unknown;
-state?: unknown;
-code?: unknown;
+  error?: unknown;
+  state?: unknown;
+  code?: unknown;
 };
 
 export type UsersControllerFindAllV1200Item = { [key: string]: unknown };
@@ -1764,120 +3412,1296 @@ export type UsersControllerFindOneV1200 = { [key: string]: unknown };
 export type UsersControllerUpdateV1200 = { [key: string]: unknown };
 
 export type BillingControllerListPlansV1Params = {
-scope?: string;
+  scope?: string;
 };
 
 export type BillingControllerGetSubscriptionSetupV1Params = {
-scope?: string;
+  scope?: string;
 };
 
 export type WorkspaceCompaniesControllerGetManagementSummaryV1Params = {
-includeUsers?: string;
+  includeUsers?: string;
 };
 
 export type BranchUsersControllerUpdateRoleV1200 = { [key: string]: unknown };
 
 export type FormSignatoriesControllerResolveV1Params = {
-unitId: number;
-moduleCodes: string;
+  unitId: number;
+  moduleCodes: string;
 };
 
 export type ChartOfAccountsControllerFindAllV1Params = {
-/**
- * @maxLength 120
- */
-search?: string;
-accountLevel?: ChartOfAccountsControllerFindAllV1AccountLevel;
-status?: ChartOfAccountsControllerFindAllV1Status;
-parentAccountId?: string;
+  /**
+   * @maxLength 120
+   */
+  search?: string;
+  accountLevel?: ChartOfAccountsControllerFindAllV1AccountLevel;
+  status?: ChartOfAccountsControllerFindAllV1Status;
+  accountType?: ChartOfAccountsControllerFindAllV1AccountType;
+  accountNature?: ChartOfAccountsControllerFindAllV1AccountNature;
+  postingOnly?: boolean;
+  parentAccountId?: string;
 };
 
-export type ChartOfAccountsControllerFindAllV1AccountLevel = typeof ChartOfAccountsControllerFindAllV1AccountLevel[keyof typeof ChartOfAccountsControllerFindAllV1AccountLevel];
-
+export type ChartOfAccountsControllerFindAllV1AccountLevel =
+  (typeof ChartOfAccountsControllerFindAllV1AccountLevel)[keyof typeof ChartOfAccountsControllerFindAllV1AccountLevel];
 
 export const ChartOfAccountsControllerFindAllV1AccountLevel = {
-  MAJOR: 'MAJOR',
-  SUB1: 'SUB1',
-  SUB2: 'SUB2',
-  SUB3: 'SUB3',
-  SPECIFIC: 'SPECIFIC',
+  MAJOR: "MAJOR",
+  SUB1: "SUB1",
+  SUB2: "SUB2",
+  SUB3: "SUB3",
+  SPECIFIC: "SPECIFIC",
 } as const;
 
-export type ChartOfAccountsControllerFindAllV1Status = typeof ChartOfAccountsControllerFindAllV1Status[keyof typeof ChartOfAccountsControllerFindAllV1Status];
-
+export type ChartOfAccountsControllerFindAllV1Status =
+  (typeof ChartOfAccountsControllerFindAllV1Status)[keyof typeof ChartOfAccountsControllerFindAllV1Status];
 
 export const ChartOfAccountsControllerFindAllV1Status = {
-  ACTIVE: 'ACTIVE',
-  INACTIVE: 'INACTIVE',
+  ACTIVE: "ACTIVE",
+  INACTIVE: "INACTIVE",
 } as const;
+
+export const ChartOfAccountsControllerFindAllV1AccountType = ChartAccountResponseDtoAccountType;
+export type ChartOfAccountsControllerFindAllV1AccountType =
+  (typeof ChartOfAccountsControllerFindAllV1AccountType)[keyof typeof ChartOfAccountsControllerFindAllV1AccountType];
+
+export const ChartOfAccountsControllerFindAllV1AccountNature = ChartAccountResponseDtoAccountNature;
+export type ChartOfAccountsControllerFindAllV1AccountNature =
+  (typeof ChartOfAccountsControllerFindAllV1AccountNature)[keyof typeof ChartOfAccountsControllerFindAllV1AccountNature];
+
+export type ChartOfAccountsControllerFindOptionsV1Params = ChartOfAccountsControllerFindAllV1Params;
 
 export type ChartOfAccountsControllerFindNextCodeV1Params = {
-parentAccountId?: string;
-accountLevel: ChartOfAccountsControllerFindNextCodeV1AccountLevel;
+  parentAccountId?: string;
+  accountLevel: ChartOfAccountsControllerFindNextCodeV1AccountLevel;
 };
 
-export type ChartOfAccountsControllerFindNextCodeV1AccountLevel = typeof ChartOfAccountsControllerFindNextCodeV1AccountLevel[keyof typeof ChartOfAccountsControllerFindNextCodeV1AccountLevel];
-
+export type ChartOfAccountsControllerFindNextCodeV1AccountLevel =
+  (typeof ChartOfAccountsControllerFindNextCodeV1AccountLevel)[keyof typeof ChartOfAccountsControllerFindNextCodeV1AccountLevel];
 
 export const ChartOfAccountsControllerFindNextCodeV1AccountLevel = {
-  MAJOR: 'MAJOR',
-  SUB1: 'SUB1',
-  SUB2: 'SUB2',
-  SUB3: 'SUB3',
-  SPECIFIC: 'SPECIFIC',
+  MAJOR: "MAJOR",
+  SUB1: "SUB1",
+  SUB2: "SUB2",
+  SUB3: "SUB3",
+  SPECIFIC: "SPECIFIC",
 } as const;
+
+export type PartyResponseDtoClassification =
+  (typeof PartyResponseDtoClassification)[keyof typeof PartyResponseDtoClassification];
+
+export const PartyResponseDtoClassification = {
+  INDIVIDUAL: "INDIVIDUAL",
+  NON_INDIVIDUAL: "NON_INDIVIDUAL",
+} as const;
+
+export type PartyResponseDtoPartyTypes =
+  (typeof PartyResponseDtoPartyTypes)[keyof typeof PartyResponseDtoPartyTypes];
+
+export const PartyResponseDtoPartyTypes = {
+  VENDOR: "VENDOR",
+  CUSTOMER: "CUSTOMER",
+  EMPLOYEE: "EMPLOYEE",
+  MEMBER: "MEMBER",
+} as const;
+
+export type PartyResponseDtoStatus =
+  (typeof PartyResponseDtoStatus)[keyof typeof PartyResponseDtoStatus];
+
+export const PartyResponseDtoStatus = {
+  ACTIVE: "ACTIVE",
+  INACTIVE: "INACTIVE",
+} as const;
+
+export interface PartyAddressResponseDto {
+  id: string;
+  addressName: string;
+  addressLine1: string;
+  addressLine2: string;
+  barangay: string;
+  barangayCode: string;
+  cityMunicipality: string;
+  cityMunicipalityCode: string;
+  province: string;
+  provinceCode: string;
+  region: string;
+  regionCode: string;
+  isBilling: boolean;
+  isBuilding: boolean;
+  isDefault: boolean;
+  isDelivery: boolean;
+  isForeign: boolean;
+  isHome: boolean;
+}
+
+export interface PartyAccountingAccountSummaryResponseDto {
+  id: string;
+  accountCode: string;
+  accountTitle: string;
+}
+
+export interface PartyAccountingAccountsResponseDto {
+  defaultReceivableAccount: PartyAccountingAccountSummaryResponseDto | null;
+  customerAdvanceAccount: PartyAccountingAccountSummaryResponseDto | null;
+  defaultPayableAccount: PartyAccountingAccountSummaryResponseDto | null;
+  vendorAdvanceAccount: PartyAccountingAccountSummaryResponseDto | null;
+  employeeAdvanceAccount: PartyAccountingAccountSummaryResponseDto | null;
+  employeePayableAccount: PartyAccountingAccountSummaryResponseDto | null;
+}
+
+export interface PartyResponseDto {
+  id: string;
+  partyCodeNo: string;
+  classification: PartyResponseDtoClassification;
+  /** @nullable */
+  partyEntityType: string | null;
+  partyTypes: PartyResponseDtoPartyTypes[];
+  status: PartyResponseDtoStatus;
+  partyName: string;
+  tradeName: string;
+  firstName: string;
+  middleName: string;
+  lastName: string;
+  suffixName: string;
+  honorific: string;
+  gender: string;
+  civilStatus: string;
+  nationality: string;
+  memberRegistrationDate: string;
+  address: PartyAddressResponseDto;
+  addresses: PartyAddressResponseDto[];
+  defaultReceivableAccount: string;
+  customerAdvanceAccount: string;
+  defaultPayableAccount: string;
+  vendorAdvanceAccount: string;
+  employeeAdvanceAccount: string;
+  employeePayableAccount: string;
+  accountingAccounts: PartyAccountingAccountsResponseDto;
+  termId: string;
+  termName: string;
+  tin: string;
+  atcCode: string;
+  defaultPurchaseInputVatTaxSourceKey: string;
+  defaultPurchaseEwtTaxSourceKey: string;
+  defaultPurchaseFwtTaxSourceKey: string;
+  defaultPurchaseWvatTaxSourceKey: string;
+  defaultSalesOutputVatTaxSourceKey: string;
+  defaultSalesCwtTaxSourceKey: string;
+  defaultSalesWvatTaxSourceKey: string;
+  contactPerson: string;
+  email: string;
+  contactNo: string;
+  landline: string;
+  /** @nullable */
+  createdBy: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedBy: string | null;
+  /** @nullable */
+  updatedAt: string | null;
+}
+
+export interface PartyStatisticsResponseDto {
+  activeParties: number;
+  inactiveParties: number;
+  individualParties: number;
+  multiTypeParties: number;
+  nonIndividualParties: number;
+  totalParties: number;
+}
+
+export interface PartyPermissionsResponseDto {
+  canView: boolean;
+  canCreate: boolean;
+  canUpdate: boolean;
+  canCancel: boolean;
+  canUncancel: boolean;
+  canExport: boolean;
+  canImport?: boolean;
+}
+
+export interface PartyPaginationResponseDto {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface PartyListResponseDto {
+  parties: PartyResponseDto[];
+  totalRows: number;
+  statistics: PartyStatisticsResponseDto;
+  pagination: PartyPaginationResponseDto;
+  permissions: PartyPermissionsResponseDto;
+}
+
+export interface PartyContainerResponseDto {
+  party: PartyResponseDto;
+  permissions: PartyPermissionsResponseDto;
+}
+
+export interface SavePartyResponseDto {
+  message: string;
+  party: PartyResponseDto;
+}
+
+export interface ImportPartiesResponseDto {
+  message: string;
+  parties: PartyResponseDto[];
+}
+
+export interface PartyOptionResponseDto {
+  id: string;
+  partyCodeNo: string;
+  classification: PartyResponseDtoClassification;
+  partyTypes: PartyResponseDtoPartyTypes[];
+  name: string;
+  contactPerson: string;
+  email: string;
+  contactNo: string;
+  status: PartyResponseDtoStatus;
+}
+
+export interface PartyOptionsResponseDto {
+  parties: PartyOptionResponseDto[];
+}
+
+export type PartyAccountingAccountOptionResponseDtoNormalBalance =
+  (typeof PartyAccountingAccountOptionResponseDtoNormalBalance)[keyof typeof PartyAccountingAccountOptionResponseDtoNormalBalance];
+
+export const PartyAccountingAccountOptionResponseDtoNormalBalance = {
+  Debit: "Debit",
+  Credit: "Credit",
+} as const;
+
+export type PartyAccountingAccountOptionResponseDtoStatus =
+  (typeof PartyAccountingAccountOptionResponseDtoStatus)[keyof typeof PartyAccountingAccountOptionResponseDtoStatus];
+
+export const PartyAccountingAccountOptionResponseDtoStatus = {
+  Active: "Active",
+  Inactive: "Inactive",
+} as const;
+
+export interface PartyAccountingAccountOptionResponseDto {
+  id: string;
+  accountNumber: string;
+  accountName: string;
+  accountType: string;
+  statementGroup: string;
+  statementSection: string;
+  normalBalance: PartyAccountingAccountOptionResponseDtoNormalBalance;
+  accountCategory: string;
+  description: string;
+  status: PartyAccountingAccountOptionResponseDtoStatus;
+}
+
+export interface PartyAccountingAccountIdsResponseDto {
+  defaultReceivableAccount: string;
+  customerAdvanceAccount: string;
+  defaultPayableAccount: string;
+  vendorAdvanceAccount: string;
+  employeeAdvanceAccount: string;
+  employeePayableAccount: string;
+}
+
+export interface PartyAccountingAccountOptionsResponseDto {
+  defaultReceivableAccount: PartyAccountingAccountOptionResponseDto[];
+  customerAdvanceAccount: PartyAccountingAccountOptionResponseDto[];
+  defaultPayableAccount: PartyAccountingAccountOptionResponseDto[];
+  vendorAdvanceAccount: PartyAccountingAccountOptionResponseDto[];
+  employeeAdvanceAccount: PartyAccountingAccountOptionResponseDto[];
+  employeePayableAccount: PartyAccountingAccountOptionResponseDto[];
+}
+
+export interface PartyAccountingOptionsResponseDto {
+  defaultAccounts: PartyAccountingAccountIdsResponseDto;
+  accountOptions: PartyAccountingAccountOptionsResponseDto;
+}
+
+export interface CreatePartyAddressDto {
+  /** @maxLength 120 */
+  addressName: string;
+  /** @maxLength 255 */
+  addressLine1: string;
+  /** @maxLength 255 */
+  addressLine2: string;
+  /** @maxLength 120 */
+  barangay?: string | null;
+  /** @maxLength 30 */
+  barangayCode?: string | null;
+  /** @maxLength 120 */
+  cityMunicipality?: string | null;
+  /** @maxLength 30 */
+  cityMunicipalityCode?: string | null;
+  /** @maxLength 120 */
+  province?: string | null;
+  /** @maxLength 30 */
+  provinceCode?: string | null;
+  /** @maxLength 120 */
+  region?: string | null;
+  /** @maxLength 30 */
+  regionCode?: string | null;
+  isBilling: boolean;
+  isBuilding?: boolean;
+  isDefault: boolean;
+  isDelivery: boolean;
+  isForeign?: boolean;
+  isHome?: boolean;
+}
+
+export const CreatePartyDtoClassification = PartyResponseDtoClassification;
+export type CreatePartyDtoClassification =
+  (typeof CreatePartyDtoClassification)[keyof typeof CreatePartyDtoClassification];
+
+export const CreatePartyDtoPartyTypes = PartyResponseDtoPartyTypes;
+export type CreatePartyDtoPartyTypes =
+  (typeof CreatePartyDtoPartyTypes)[keyof typeof CreatePartyDtoPartyTypes];
+
+export const CreatePartyDtoStatus = PartyResponseDtoStatus;
+export type CreatePartyDtoStatus = (typeof CreatePartyDtoStatus)[keyof typeof CreatePartyDtoStatus];
+
+export interface CreatePartyDto {
+  branchUnitId?: number;
+  /** @maxLength 80 */
+  partyCodeNo: string;
+  classification: CreatePartyDtoClassification;
+  /** @maxLength 120 */
+  partyEntityType?: string | null;
+  /** @minItems 1 */
+  partyTypes: CreatePartyDtoPartyTypes[];
+  status?: CreatePartyDtoStatus;
+  /** @maxLength 255 */
+  partyName?: string | null;
+  /** @maxLength 255 */
+  tradeName?: string | null;
+  /** @maxLength 120 */
+  firstName?: string | null;
+  /** @maxLength 120 */
+  middleName?: string | null;
+  /** @maxLength 120 */
+  lastName?: string | null;
+  /** @maxLength 40 */
+  suffixName?: string | null;
+  /** @maxLength 80 */
+  honorific?: string | null;
+  /** @maxLength 40 */
+  gender?: string | null;
+  /** @maxLength 40 */
+  civilStatus?: string | null;
+  /** @maxLength 80 */
+  nationality?: string | null;
+  memberRegistrationDate?: string | null;
+  /** @minItems 1 */
+  addresses: CreatePartyAddressDto[];
+  /** @maxLength 80 */
+  defaultReceivableAccount?: string | null;
+  /** @maxLength 80 */
+  customerAdvanceAccount?: string | null;
+  /** @maxLength 80 */
+  defaultPayableAccount?: string | null;
+  /** @maxLength 80 */
+  vendorAdvanceAccount?: string | null;
+  /** @maxLength 80 */
+  employeeAdvanceAccount?: string | null;
+  /** @maxLength 80 */
+  employeePayableAccount?: string | null;
+  termId?: string | null;
+  tin?: string | null;
+  /** @maxLength 40 */
+  atcCode?: string | null;
+  /** @maxLength 40 */
+  defaultPurchaseInputVatTaxSourceKey?: string | null;
+  /** @maxLength 40 */
+  defaultPurchaseEwtTaxSourceKey?: string | null;
+  /** @maxLength 40 */
+  defaultPurchaseFwtTaxSourceKey?: string | null;
+  /** @maxLength 40 */
+  defaultPurchaseWvatTaxSourceKey?: string | null;
+  /** @maxLength 40 */
+  defaultSalesOutputVatTaxSourceKey?: string | null;
+  /** @maxLength 40 */
+  defaultSalesCwtTaxSourceKey?: string | null;
+  /** @maxLength 40 */
+  defaultSalesWvatTaxSourceKey?: string | null;
+  /** @maxLength 255 */
+  contactPerson?: string | null;
+  /** @maxLength 255 */
+  email?: string | null;
+  contactNo?: string | null;
+  /** @maxLength 40 */
+  landline?: string | null;
+}
+
+export interface UpdatePartyDto {
+  branchUnitId?: number;
+  partyCodeNo?: string;
+  classification?: CreatePartyDtoClassification;
+  partyEntityType?: string | null;
+  partyTypes?: CreatePartyDtoPartyTypes[];
+  status?: CreatePartyDtoStatus;
+  partyName?: string | null;
+  tradeName?: string | null;
+  firstName?: string | null;
+  middleName?: string | null;
+  lastName?: string | null;
+  suffixName?: string | null;
+  honorific?: string | null;
+  gender?: string | null;
+  civilStatus?: string | null;
+  nationality?: string | null;
+  memberRegistrationDate?: string | null;
+  addresses?: CreatePartyAddressDto[];
+  defaultReceivableAccount?: string | null;
+  customerAdvanceAccount?: string | null;
+  defaultPayableAccount?: string | null;
+  vendorAdvanceAccount?: string | null;
+  employeeAdvanceAccount?: string | null;
+  employeePayableAccount?: string | null;
+  termId?: string | null;
+  tin?: string | null;
+  atcCode?: string | null;
+  defaultPurchaseInputVatTaxSourceKey?: string | null;
+  defaultPurchaseEwtTaxSourceKey?: string | null;
+  defaultPurchaseFwtTaxSourceKey?: string | null;
+  defaultPurchaseWvatTaxSourceKey?: string | null;
+  defaultSalesOutputVatTaxSourceKey?: string | null;
+  defaultSalesCwtTaxSourceKey?: string | null;
+  defaultSalesWvatTaxSourceKey?: string | null;
+  contactPerson?: string | null;
+  email?: string | null;
+  contactNo?: string | null;
+  landline?: string | null;
+}
+
+export interface ImportPartiesDto {
+  branchUnitId?: number;
+  /** @minItems 1 */
+  parties: CreatePartyDto[];
+}
+
+export type PartyMaintenanceControllerFindAllV1Params = {
+  /** @maxLength 120 */
+  query?: string;
+  /** @maxLength 120 */
+  search?: string;
+  classification?: PartyMaintenanceControllerFindAllV1Classification;
+  partyType?: PartyMaintenanceControllerFindAllV1PartyType;
+  status?: PartyMaintenanceControllerFindAllV1Status;
+  page?: number;
+  pageSize?: number;
+  limit?: number;
+  sortBy?: PartyMaintenanceControllerFindAllV1SortBy;
+  sortDirection?: PartyMaintenanceControllerFindAllV1SortDirection;
+};
+
+export const PartyMaintenanceControllerFindAllV1Classification = PartyResponseDtoClassification;
+export type PartyMaintenanceControllerFindAllV1Classification =
+  (typeof PartyMaintenanceControllerFindAllV1Classification)[keyof typeof PartyMaintenanceControllerFindAllV1Classification];
+
+export const PartyMaintenanceControllerFindAllV1PartyType = PartyResponseDtoPartyTypes;
+export type PartyMaintenanceControllerFindAllV1PartyType =
+  (typeof PartyMaintenanceControllerFindAllV1PartyType)[keyof typeof PartyMaintenanceControllerFindAllV1PartyType];
+
+export const PartyMaintenanceControllerFindAllV1Status = PartyResponseDtoStatus;
+export type PartyMaintenanceControllerFindAllV1Status =
+  (typeof PartyMaintenanceControllerFindAllV1Status)[keyof typeof PartyMaintenanceControllerFindAllV1Status];
+
+export type PartyMaintenanceControllerFindAllV1SortBy =
+  (typeof PartyMaintenanceControllerFindAllV1SortBy)[keyof typeof PartyMaintenanceControllerFindAllV1SortBy];
+
+export const PartyMaintenanceControllerFindAllV1SortBy = {
+  partyCodeNo: "partyCodeNo",
+  name: "name",
+  classification: "classification",
+  partyTypes: "partyTypes",
+  address: "address",
+  status: "status",
+  createdAt: "createdAt",
+  updatedAt: "updatedAt",
+} as const;
+
+export type PartyMaintenanceControllerFindAllV1SortDirection =
+  (typeof PartyMaintenanceControllerFindAllV1SortDirection)[keyof typeof PartyMaintenanceControllerFindAllV1SortDirection];
+
+export const PartyMaintenanceControllerFindAllV1SortDirection = {
+  asc: "asc",
+  desc: "desc",
+} as const;
+
+export type PartyMaintenanceControllerFindOptionsV1PartyType = PartyResponseDtoPartyTypes;
+
+export type UnitOfMeasurementResponseDtoQuantityMode =
+  (typeof UnitOfMeasurementResponseDtoQuantityMode)[keyof typeof UnitOfMeasurementResponseDtoQuantityMode];
+
+export const UnitOfMeasurementResponseDtoQuantityMode = {
+  INTEGER: "INTEGER",
+  FLOAT: "FLOAT",
+} as const;
+
+export type UnitOfMeasurementResponseDtoStatus =
+  (typeof UnitOfMeasurementResponseDtoStatus)[keyof typeof UnitOfMeasurementResponseDtoStatus];
+
+export const UnitOfMeasurementResponseDtoStatus = {
+  ACTIVE: "ACTIVE",
+  INACTIVE: "INACTIVE",
+} as const;
+
+export interface UnitOfMeasurementResponseDto {
+  id: string;
+  name: string;
+  symbol: string;
+  quantityMode: UnitOfMeasurementResponseDtoQuantityMode;
+  status: UnitOfMeasurementResponseDtoStatus;
+  /** @nullable */
+  createdBy: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedBy: string | null;
+  /** @nullable */
+  updatedAt: string | null;
+}
+
+export interface UnitOfMeasurementOptionResponseDto {
+  id: string;
+  name: string;
+  symbol: string;
+  quantityMode: UnitOfMeasurementResponseDtoQuantityMode;
+  status: UnitOfMeasurementResponseDtoStatus;
+}
+
+export interface UnitOfMeasurementStatisticsResponseDto {
+  totalUnits: number;
+  activeUnits: number;
+  inactiveUnits: number;
+  decimalUnits: number;
+}
+
+export interface UnitOfMeasurementPermissionsResponseDto {
+  canView: boolean;
+  canCreate: boolean;
+  canUpdate: boolean;
+  canExport: boolean;
+  canImport?: boolean;
+}
+
+export interface UnitOfMeasurementPaginationResponseDto {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface UnitOfMeasurementListResponseDto {
+  units: UnitOfMeasurementResponseDto[];
+  statistics: UnitOfMeasurementStatisticsResponseDto;
+  pagination: UnitOfMeasurementPaginationResponseDto;
+  permissions: UnitOfMeasurementPermissionsResponseDto;
+}
+
+export interface UnitOfMeasurementOptionsResponseDto {
+  units: UnitOfMeasurementOptionResponseDto[];
+}
+
+export interface UnitOfMeasurementContainerResponseDto {
+  unit: UnitOfMeasurementResponseDto;
+  permissions: UnitOfMeasurementPermissionsResponseDto;
+}
+
+export interface SaveUnitOfMeasurementResponseDto {
+  message: string;
+  unit: UnitOfMeasurementResponseDto;
+}
+
+export interface ImportUnitOfMeasurementsResponseDto {
+  message: string;
+  units: UnitOfMeasurementResponseDto[];
+}
+
+export const CreateUnitOfMeasurementDtoQuantityMode = UnitOfMeasurementResponseDtoQuantityMode;
+export type CreateUnitOfMeasurementDtoQuantityMode =
+  (typeof CreateUnitOfMeasurementDtoQuantityMode)[keyof typeof CreateUnitOfMeasurementDtoQuantityMode];
+
+export const CreateUnitOfMeasurementDtoStatus = UnitOfMeasurementResponseDtoStatus;
+export type CreateUnitOfMeasurementDtoStatus =
+  (typeof CreateUnitOfMeasurementDtoStatus)[keyof typeof CreateUnitOfMeasurementDtoStatus];
+
+export interface CreateUnitOfMeasurementDto {
+  /** @maxLength 150 */
+  name: string;
+  /** @maxLength 30 */
+  symbol: string;
+  quantityMode: CreateUnitOfMeasurementDtoQuantityMode;
+  status?: CreateUnitOfMeasurementDtoStatus;
+}
+
+export interface UpdateUnitOfMeasurementDto {
+  /** @maxLength 150 */
+  name?: string;
+  /** @maxLength 30 */
+  symbol?: string;
+  quantityMode?: CreateUnitOfMeasurementDtoQuantityMode;
+  status?: CreateUnitOfMeasurementDtoStatus;
+}
+
+export interface ImportUnitOfMeasurementsDto {
+  /**
+   * @minItems 1
+   * @maxItems 500
+   */
+  units: CreateUnitOfMeasurementDto[];
+}
+
+export type UnitOfMeasurementControllerFindAllV1Params = {
+  /** @maxLength 120 */
+  search?: string;
+  quantityMode?: UnitOfMeasurementControllerFindAllV1QuantityMode;
+  status?: UnitOfMeasurementControllerFindAllV1Status;
+  page?: number;
+  limit?: number;
+  sortBy?: UnitOfMeasurementControllerFindAllV1SortBy;
+  sortDirection?: UnitOfMeasurementControllerFindAllV1SortDirection;
+};
+
+export const UnitOfMeasurementControllerFindAllV1QuantityMode =
+  UnitOfMeasurementResponseDtoQuantityMode;
+export type UnitOfMeasurementControllerFindAllV1QuantityMode =
+  (typeof UnitOfMeasurementControllerFindAllV1QuantityMode)[keyof typeof UnitOfMeasurementControllerFindAllV1QuantityMode];
+
+export const UnitOfMeasurementControllerFindAllV1Status = UnitOfMeasurementResponseDtoStatus;
+export type UnitOfMeasurementControllerFindAllV1Status =
+  (typeof UnitOfMeasurementControllerFindAllV1Status)[keyof typeof UnitOfMeasurementControllerFindAllV1Status];
+
+export type UnitOfMeasurementControllerFindAllV1SortBy =
+  (typeof UnitOfMeasurementControllerFindAllV1SortBy)[keyof typeof UnitOfMeasurementControllerFindAllV1SortBy];
+
+export const UnitOfMeasurementControllerFindAllV1SortBy = {
+  name: "name",
+  symbol: "symbol",
+  quantityMode: "quantityMode",
+  status: "status",
+  createdAt: "createdAt",
+  updatedAt: "updatedAt",
+} as const;
+
+export type UnitOfMeasurementControllerFindAllV1SortDirection =
+  (typeof UnitOfMeasurementControllerFindAllV1SortDirection)[keyof typeof UnitOfMeasurementControllerFindAllV1SortDirection];
+
+export const UnitOfMeasurementControllerFindAllV1SortDirection = {
+  asc: "asc",
+  desc: "desc",
+} as const;
+
+export type UnitOfMeasurementControllerFindOptionsV1Params = {
+  /** @maxLength 120 */
+  search?: string;
+  quantityMode?: UnitOfMeasurementControllerFindAllV1QuantityMode;
+};
+
+export type WarehouseResponseDtoBranchAvailabilityMode =
+  (typeof WarehouseResponseDtoBranchAvailabilityMode)[keyof typeof WarehouseResponseDtoBranchAvailabilityMode];
+
+export const WarehouseResponseDtoBranchAvailabilityMode = {
+  ALL: "ALL",
+  SPECIFIC: "SPECIFIC",
+  EXCEPT: "EXCEPT",
+} as const;
+
+export type WarehouseResponseDtoStatus =
+  (typeof WarehouseResponseDtoStatus)[keyof typeof WarehouseResponseDtoStatus];
+
+export const WarehouseResponseDtoStatus = {
+  ACTIVE: "ACTIVE",
+  INACTIVE: "INACTIVE",
+} as const;
+
+export interface WarehouseBranchResponseDto {
+  id: string;
+  code: string;
+  name: string;
+}
+
+export interface WarehouseResponseDto {
+  id: string;
+  code: string;
+  name: string;
+  branchUnitIds: string[];
+  branchAvailabilityMode: WarehouseResponseDtoBranchAvailabilityMode;
+  branches: WarehouseBranchResponseDto[];
+  /** @nullable */
+  managerName: string | null;
+  status: WarehouseResponseDtoStatus;
+  /** @nullable */
+  address: string | null;
+  /** @nullable */
+  contactNo: string | null;
+  /** @nullable */
+  description: string | null;
+  /** @nullable */
+  createdBy: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedBy: string | null;
+  /** @nullable */
+  updatedAt: string | null;
+}
+
+export interface WarehouseOptionResponseDto {
+  id: string;
+  code: string;
+  name: string;
+  status: WarehouseResponseDtoStatus;
+}
+
+export interface WarehouseStatisticsResponseDto {
+  totalWarehouses: number;
+  activeWarehouses: number;
+  inactiveWarehouses: number;
+}
+
+export interface WarehousePermissionsResponseDto {
+  canView: boolean;
+  canCreate: boolean;
+  canUpdate: boolean;
+  canExport: boolean;
+}
+
+export interface WarehousePaginationResponseDto {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface WarehouseListResponseDto {
+  warehouses: WarehouseResponseDto[];
+  statistics: WarehouseStatisticsResponseDto;
+  pagination: WarehousePaginationResponseDto;
+  permissions: WarehousePermissionsResponseDto;
+}
+
+export interface WarehouseOptionsResponseDto {
+  warehouses: WarehouseOptionResponseDto[];
+}
+
+export interface WarehouseContainerResponseDto {
+  warehouse: WarehouseResponseDto;
+  permissions: WarehousePermissionsResponseDto;
+}
+
+export interface SaveWarehouseResponseDto {
+  message: string;
+  warehouse: WarehouseResponseDto;
+}
+
+export const CreateWarehouseDtoBranchAvailabilityMode = WarehouseResponseDtoBranchAvailabilityMode;
+export type CreateWarehouseDtoBranchAvailabilityMode =
+  (typeof CreateWarehouseDtoBranchAvailabilityMode)[keyof typeof CreateWarehouseDtoBranchAvailabilityMode];
+
+export const CreateWarehouseDtoStatus = WarehouseResponseDtoStatus;
+export type CreateWarehouseDtoStatus =
+  (typeof CreateWarehouseDtoStatus)[keyof typeof CreateWarehouseDtoStatus];
+
+export interface CreateWarehouseDto {
+  /** @maxLength 80 */
+  code?: string;
+  /** @maxLength 180 */
+  name: string;
+  branchUnitIds?: number[];
+  branchAvailabilityMode?: CreateWarehouseDtoBranchAvailabilityMode;
+  /** @maxLength 180 */
+  managerName?: string;
+  status?: CreateWarehouseDtoStatus;
+  /** @maxLength 500 */
+  address?: string;
+  /** @maxLength 40 */
+  contactNo?: string;
+  /** @maxLength 500 */
+  description?: string;
+}
+
+export interface UpdateWarehouseDto {
+  /** @maxLength 80 */
+  code?: string;
+  /** @maxLength 180 */
+  name?: string;
+  branchUnitIds?: number[];
+  branchAvailabilityMode?: CreateWarehouseDtoBranchAvailabilityMode;
+  /** @maxLength 180 */
+  managerName?: string;
+  status?: CreateWarehouseDtoStatus;
+  /** @maxLength 500 */
+  address?: string;
+  /** @maxLength 40 */
+  contactNo?: string;
+  /** @maxLength 500 */
+  description?: string;
+}
+
+export type WarehouseMaintenanceControllerFindAllV1Params = {
+  /** @maxLength 120 */
+  search?: string;
+  branchUnitId?: number;
+  status?: WarehouseMaintenanceControllerFindAllV1Status;
+  page?: number;
+  limit?: number;
+  sortBy?: WarehouseMaintenanceControllerFindAllV1SortBy;
+  sortDirection?: WarehouseMaintenanceControllerFindAllV1SortDirection;
+};
+
+export const WarehouseMaintenanceControllerFindAllV1Status = WarehouseResponseDtoStatus;
+export type WarehouseMaintenanceControllerFindAllV1Status =
+  (typeof WarehouseMaintenanceControllerFindAllV1Status)[keyof typeof WarehouseMaintenanceControllerFindAllV1Status];
+
+export type WarehouseMaintenanceControllerFindAllV1SortBy =
+  (typeof WarehouseMaintenanceControllerFindAllV1SortBy)[keyof typeof WarehouseMaintenanceControllerFindAllV1SortBy];
+
+export const WarehouseMaintenanceControllerFindAllV1SortBy = {
+  code: "code",
+  name: "name",
+  managerName: "managerName",
+  status: "status",
+  createdAt: "createdAt",
+  updatedAt: "updatedAt",
+} as const;
+
+export type WarehouseMaintenanceControllerFindAllV1SortDirection =
+  (typeof WarehouseMaintenanceControllerFindAllV1SortDirection)[keyof typeof WarehouseMaintenanceControllerFindAllV1SortDirection];
+
+export const WarehouseMaintenanceControllerFindAllV1SortDirection = {
+  asc: "asc",
+  desc: "desc",
+} as const;
+
+export type WarehouseMaintenanceControllerFindOptionsV1Params = {
+  /** @maxLength 120 */
+  search?: string;
+  branchUnitId?: number;
+};
+
+export type WarehouseAccessResponseDtoAccessLevel =
+  (typeof WarehouseAccessResponseDtoAccessLevel)[keyof typeof WarehouseAccessResponseDtoAccessLevel];
+
+export const WarehouseAccessResponseDtoAccessLevel = {
+  VIEWER: "VIEWER",
+  PICKER: "PICKER",
+  MANAGER: "MANAGER",
+} as const;
+
+export type WarehouseAccessResponseDtoPermissions =
+  (typeof WarehouseAccessResponseDtoPermissions)[keyof typeof WarehouseAccessResponseDtoPermissions];
+
+export const WarehouseAccessResponseDtoPermissions = {
+  VIEW_STOCK: "VIEW_STOCK",
+  RECEIVE_STOCK: "RECEIVE_STOCK",
+  ISSUE_STOCK: "ISSUE_STOCK",
+  TRANSFER_STOCK: "TRANSFER_STOCK",
+  ADJUST_STOCK: "ADJUST_STOCK",
+  MANAGE_LOCATIONS: "MANAGE_LOCATIONS",
+  VIEW_HISTORY: "VIEW_HISTORY",
+} as const;
+
+export type WarehouseAccessResponseDtoStatus =
+  (typeof WarehouseAccessResponseDtoStatus)[keyof typeof WarehouseAccessResponseDtoStatus];
+
+export const WarehouseAccessResponseDtoStatus = {
+  ACTIVE: "ACTIVE",
+  INACTIVE: "INACTIVE",
+} as const;
+
+export interface WarehouseAccessResponseDto {
+  id: string;
+  warehouseId: string;
+  warehouseCode: string;
+  warehouseName: string;
+  userId: number;
+  userName: string;
+  userEmail: string;
+  accessLevel: WarehouseAccessResponseDtoAccessLevel;
+  permissions: WarehouseAccessResponseDtoPermissions[];
+  status: WarehouseAccessResponseDtoStatus;
+  /** @nullable */
+  createdBy: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedBy: string | null;
+  /** @nullable */
+  updatedAt: string | null;
+}
+
+export interface WarehouseAccessStatisticsResponseDto {
+  totalAssignments: number;
+  activeAssignments: number;
+  inactiveAssignments: number;
+  managerAssignments: number;
+  pickerAssignments: number;
+  viewerAssignments: number;
+}
+
+export interface WarehouseAccessPermissionsResponseDto {
+  canView: boolean;
+  canCreate: boolean;
+  canUpdate: boolean;
+  canDelete: boolean;
+  canExport: boolean;
+}
+
+export interface WarehouseAccessPaginationResponseDto {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface WarehouseAccessListResponseDto {
+  warehouseAccess: WarehouseAccessResponseDto[];
+  statistics: WarehouseAccessStatisticsResponseDto;
+  pagination: WarehouseAccessPaginationResponseDto;
+  permissions: WarehouseAccessPermissionsResponseDto;
+}
+
+export interface WarehouseAccessContainerResponseDto {
+  warehouseAccess: WarehouseAccessResponseDto;
+  permissions: WarehouseAccessPermissionsResponseDto;
+}
+
+export interface SaveWarehouseAccessResponseDto {
+  message: string;
+  warehouseAccess: WarehouseAccessResponseDto;
+}
+
+export interface CreateWarehouseAccessResponseDto {
+  message: string;
+  warehouseAccess: WarehouseAccessResponseDto[];
+}
+
+export type WarehouseAccessDirectoryUserResponseDtoStatus =
+  (typeof WarehouseAccessDirectoryUserResponseDtoStatus)[keyof typeof WarehouseAccessDirectoryUserResponseDtoStatus];
+
+export const WarehouseAccessDirectoryUserResponseDtoStatus = {
+  ACTIVE: "ACTIVE",
+  INACTIVE: "INACTIVE",
+  INVITED: "INVITED",
+} as const;
+
+export interface WarehouseAccessDirectoryUserResponseDto {
+  id: number;
+  name: string;
+  email: string;
+  /** @nullable */
+  contactNumber: string | null;
+  status: WarehouseAccessDirectoryUserResponseDtoStatus;
+  branchUnitIds: number[];
+  branchNames: string[];
+  /** @nullable */
+  companyRoleId: number | null;
+  /** @nullable */
+  companyRoleName: string | null;
+}
+
+export interface WarehouseAccessDirectoryBranchResponseDto {
+  id: number;
+  name: string;
+}
+
+export interface WarehouseAccessDirectoryResponseDto {
+  users: WarehouseAccessDirectoryUserResponseDto[];
+  branches: WarehouseAccessDirectoryBranchResponseDto[];
+}
+
+export const CreateWarehouseAccessAssignmentDtoAccessLevel = WarehouseAccessResponseDtoAccessLevel;
+export type CreateWarehouseAccessAssignmentDtoAccessLevel =
+  (typeof CreateWarehouseAccessAssignmentDtoAccessLevel)[keyof typeof CreateWarehouseAccessAssignmentDtoAccessLevel];
+
+export const CreateWarehouseAccessAssignmentDtoPermissions = WarehouseAccessResponseDtoPermissions;
+export type CreateWarehouseAccessAssignmentDtoPermissions =
+  (typeof CreateWarehouseAccessAssignmentDtoPermissions)[keyof typeof CreateWarehouseAccessAssignmentDtoPermissions];
+
+export const CreateWarehouseAccessAssignmentDtoStatus = WarehouseAccessResponseDtoStatus;
+export type CreateWarehouseAccessAssignmentDtoStatus =
+  (typeof CreateWarehouseAccessAssignmentDtoStatus)[keyof typeof CreateWarehouseAccessAssignmentDtoStatus];
+
+export interface CreateWarehouseAccessAssignmentDto {
+  warehouseId: string;
+  userId: number;
+  accessLevel?: CreateWarehouseAccessAssignmentDtoAccessLevel;
+  permissions: CreateWarehouseAccessAssignmentDtoPermissions[];
+  status?: CreateWarehouseAccessAssignmentDtoStatus;
+}
+
+export interface CreateWarehouseAccessDto {
+  assignments: CreateWarehouseAccessAssignmentDto[];
+}
+
+export interface UpdateWarehouseAccessDto {
+  accessLevel?: CreateWarehouseAccessAssignmentDtoAccessLevel;
+  permissions?: CreateWarehouseAccessAssignmentDtoPermissions[];
+  status?: CreateWarehouseAccessAssignmentDtoStatus;
+}
+
+export type WarehouseAccessControllerFindAllV1Params = {
+  warehouseId?: string;
+  /** @maxLength 120 */
+  search?: string;
+  status?: WarehouseAccessControllerFindAllV1Status;
+  permission?: WarehouseAccessControllerFindAllV1Permission;
+  branchUnitId?: number;
+  page?: number;
+  limit?: number;
+  sortBy?: WarehouseAccessControllerFindAllV1SortBy;
+  sortDirection?: WarehouseAccessControllerFindAllV1SortDirection;
+};
+
+export const WarehouseAccessControllerFindAllV1Status = WarehouseAccessResponseDtoStatus;
+export type WarehouseAccessControllerFindAllV1Status =
+  (typeof WarehouseAccessControllerFindAllV1Status)[keyof typeof WarehouseAccessControllerFindAllV1Status];
+
+export const WarehouseAccessControllerFindAllV1Permission = WarehouseAccessResponseDtoPermissions;
+export type WarehouseAccessControllerFindAllV1Permission =
+  (typeof WarehouseAccessControllerFindAllV1Permission)[keyof typeof WarehouseAccessControllerFindAllV1Permission];
+
+export type WarehouseAccessControllerFindAllV1SortBy =
+  (typeof WarehouseAccessControllerFindAllV1SortBy)[keyof typeof WarehouseAccessControllerFindAllV1SortBy];
+
+export const WarehouseAccessControllerFindAllV1SortBy = {
+  warehouse: "warehouse",
+  user: "user",
+  accessLevel: "accessLevel",
+  status: "status",
+  createdAt: "createdAt",
+  updatedAt: "updatedAt",
+} as const;
+
+export type WarehouseAccessControllerFindAllV1SortDirection =
+  (typeof WarehouseAccessControllerFindAllV1SortDirection)[keyof typeof WarehouseAccessControllerFindAllV1SortDirection];
+
+export const WarehouseAccessControllerFindAllV1SortDirection = {
+  asc: "asc",
+  desc: "desc",
+} as const;
+
+export type WarehouseAccessControllerFindDirectoryUsersV1Params = {
+  /** @maxLength 120 */
+  search?: string;
+  branchUnitId?: number;
+};
+
+export type ItemCategoryResponseDtoAccountingSetupMode =
+  (typeof ItemCategoryResponseDtoAccountingSetupMode)[keyof typeof ItemCategoryResponseDtoAccountingSetupMode];
+
+export const ItemCategoryResponseDtoAccountingSetupMode = {
+  INHERIT: "INHERIT",
+  AUTO_CREATE: "AUTO_CREATE",
+} as const;
+
+export type ItemCategoryResponseDtoStatus =
+  (typeof ItemCategoryResponseDtoStatus)[keyof typeof ItemCategoryResponseDtoStatus];
+
+export const ItemCategoryResponseDtoStatus = {
+  ACTIVE: "ACTIVE",
+  INACTIVE: "INACTIVE",
+} as const;
+
+export interface ItemCategoryAccountingSetupResponseDto {
+  inventoryAccount: string;
+  salesAccount: string;
+  costOfSalesAccount: string;
+  expenseAccount: string;
+}
+
+export interface ItemCategoryResponseDto {
+  id: string;
+  code: string;
+  name: string;
+  /** @nullable */
+  description: string | null;
+  /** @nullable */
+  parentId: string | null;
+  accountingSetupMode: ItemCategoryResponseDtoAccountingSetupMode;
+  /** @nullable */
+  accountingSetup: Partial<ItemCategoryAccountingSetupResponseDto> | null;
+  effectiveAccountingSetup: ItemCategoryAccountingSetupResponseDto;
+  requiresInventoryAccount: boolean;
+  requiresSalesAccount: boolean;
+  requiresCostOfSalesAccount: boolean;
+  requiresExpenseAccount: boolean;
+  behaviors: string[];
+  /** @nullable */
+  inheritedAccountingSourceName: string | null;
+  allowSubCategory: boolean;
+  status: ItemCategoryResponseDtoStatus;
+  /** @nullable */
+  createdBy: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedBy: string | null;
+  /** @nullable */
+  updatedAt: string | null;
+  usedByItemCount: number;
+}
+
+export interface ItemCategoryOptionResponseDto {
+  id: string;
+  code: string;
+  name: string;
+  /** @nullable */
+  description: string | null;
+  /** @nullable */
+  parentId: string | null;
+  behaviors: string[];
+  allowSubCategory: boolean;
+  status: ItemCategoryResponseDtoStatus;
+}
+
+export interface ItemCategoryStatisticsResponseDto {
+  totalCount: number;
+  activeCount: number;
+  inactiveCount: number;
+  configuredCount: number;
+  inheritedCount: number;
+  subcategoryLockedCount: number;
+}
+
+export interface ItemCategoryPermissionsResponseDto {
+  canView: boolean;
+  canCreate: boolean;
+  canUpdate: boolean;
+  canExport: boolean;
+  canImport?: boolean;
+}
+
+export interface ItemCategoryListResponseDto {
+  categories: ItemCategoryResponseDto[];
+  statistics: ItemCategoryStatisticsResponseDto;
+  permissions: ItemCategoryPermissionsResponseDto;
+}
+
+export interface ItemCategoryOptionsResponseDto {
+  categories: ItemCategoryOptionResponseDto[];
+}
+
+export interface SaveItemCategoryResponseDto {
+  message: string;
+  category: ItemCategoryResponseDto;
+}
+
+export const CreateItemCategoryDtoAccountingSetupMode = ItemCategoryResponseDtoAccountingSetupMode;
+export type CreateItemCategoryDtoAccountingSetupMode =
+  (typeof CreateItemCategoryDtoAccountingSetupMode)[keyof typeof CreateItemCategoryDtoAccountingSetupMode];
+
+export type CreateItemCategoryDtoBehaviors =
+  (typeof CreateItemCategoryDtoBehaviors)[keyof typeof CreateItemCategoryDtoBehaviors];
+
+export const CreateItemCategoryDtoBehaviors = {
+  SellableItem: "Sellable Item",
+  PurchasableItem: "Purchasable Item",
+  IssuableItem: "Issuable Item",
+  ReturnableItem: "Returnable Item",
+  NonInventoryItem: "Non-Inventory Item",
+  RawMaterial: "Raw Material",
+  SemiFinishedGoodsWIP: "Semi-Finished Goods/WIP",
+  FinishedGoods: "Finished Goods",
+  AssetItem: "Asset Item",
+  ConsumableItem: "Consumable Item",
+} as const;
+
+export const CreateItemCategoryDtoStatus = ItemCategoryResponseDtoStatus;
+export type CreateItemCategoryDtoStatus =
+  (typeof CreateItemCategoryDtoStatus)[keyof typeof CreateItemCategoryDtoStatus];
+
+export interface CreateItemCategoryDto {
+  /** @maxLength 150 */
+  name: string;
+  /** @nullable */
+  parentId?: string | null;
+  /**
+   * @maxLength 500
+   * @nullable
+   */
+  description?: string | null;
+  accountingSetupMode: CreateItemCategoryDtoAccountingSetupMode;
+  requiresInventoryAccount?: boolean;
+  requiresSalesAccount?: boolean;
+  requiresCostOfSalesAccount?: boolean;
+  requiresExpenseAccount?: boolean;
+  /** @minItems 1 */
+  behaviors?: CreateItemCategoryDtoBehaviors[];
+  allowSubCategory: boolean;
+  status?: CreateItemCategoryDtoStatus;
+}
+
+export interface UpdateItemCategoryDto {
+  /** @maxLength 150 */
+  name?: string;
+  /** @nullable */
+  parentId?: string | null;
+  /**
+   * @maxLength 500
+   * @nullable
+   */
+  description?: string | null;
+  accountingSetupMode?: CreateItemCategoryDtoAccountingSetupMode;
+  requiresInventoryAccount?: boolean;
+  requiresSalesAccount?: boolean;
+  requiresCostOfSalesAccount?: boolean;
+  requiresExpenseAccount?: boolean;
+  /** @minItems 1 */
+  behaviors?: CreateItemCategoryDtoBehaviors[];
+  allowSubCategory?: boolean;
+  status?: CreateItemCategoryDtoStatus;
+}
 
 export type AiAssistantControllerChatV1201 = { [key: string]: unknown };
 
 export interface ApproverSetupUserResponseDto {
-id: number;
-name: string;
-email: string;
+  id: number;
+  name: string;
+  email: string;
 }
 
 export interface CreateApproverSetupDto {
-approverCondition: string;
-type: string;
-status: string;
-level?: number;
-moduleScope: string;
-validUntil?: string;
-approverUserIds: number[];
+  approverCondition: string;
+  type: string;
+  status: string;
+  level?: number;
+  moduleScope: string;
+  validUntil?: string;
+  approverUserIds: number[];
 }
 
 export interface ApproverSetupResponseDto {
-id: string;
-approverCondition: string;
-type: string;
-status: string;
-level: number | null;
-moduleScope: string;
-validUntil: string | null;
-approvers: ApproverSetupUserResponseDto[];
-createdAt: string;
-updatedAt: string;
+  id: string;
+  approverCondition: string;
+  type: string;
+  status: string;
+  level: number | null;
+  moduleScope: string;
+  validUntil: string | null;
+  approvers: ApproverSetupUserResponseDto[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CreateApproverSetupResponseDto {
-message: string;
-setup: ApproverSetupResponseDto;
+  message: string;
+  setup: ApproverSetupResponseDto;
 }
 
 export interface ApproverSetupsPaginatedResponseDto {
-items: ApproverSetupResponseDto[];
-page: number;
-limit: number;
-total: number;
-totalPages: number;
+  items: ApproverSetupResponseDto[];
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
 }
 
 export type ApproverSetupsControllerFindCompanyUsersV1Params = {
-page?: number;
-limit?: number;
-search?: string;
+  page?: number;
+  limit?: number;
+  search?: string;
 };
 
 export type ApproverSetupsControllerFindAllV1Params = {
-page?: number;
-limit?: number;
+  page?: number;
+  limit?: number;
 };

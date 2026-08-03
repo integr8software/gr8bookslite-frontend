@@ -19,8 +19,12 @@ export const DefaultAccountFormValidationSchema = z.object({
 	defaultAccountName: z
 		.string()
 		.trim()
-		.min(1, "Default Account Name is required."),
-	description: z.string(),
+		.min(1, "Default Account Name is required.")
+		.max(250, "Default Account Name must be 250 characters or fewer."),
+	description: z
+		.string()
+		.trim()
+		.max(500, "Description must be 500 characters or fewer."),
 	status: z.enum(DefaultAccountStatusOptions, {
 		message: "Status is required.",
 	}),

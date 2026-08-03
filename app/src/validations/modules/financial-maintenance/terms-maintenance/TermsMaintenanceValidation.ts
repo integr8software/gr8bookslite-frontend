@@ -5,7 +5,11 @@ import type {
 } from "@/app/src/types/modules/financial-maintenance/terms-maintenance/TermsMaintenanceTypes";
 
 const TermsMaintenanceFormSchema = z.object({
-	name: z.string().trim().min(1, "Enter a name."),
+	name: z
+		.string()
+		.trim()
+		.min(1, "Enter a name.")
+		.max(150, "Name must be 150 characters or fewer."),
 	description: z
 		.string()
 		.trim()

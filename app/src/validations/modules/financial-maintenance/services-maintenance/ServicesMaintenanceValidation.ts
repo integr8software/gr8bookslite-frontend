@@ -17,8 +17,15 @@ type ServicesMaintenanceValidationOptions = {
 
 const ServicesMaintenanceFormSchema = z
 	.object({
-		serviceName: z.string().trim().min(1, "Name is required."),
-		description: z.string().max(500, "Description can only be up to 500 characters."),
+		serviceName: z
+			.string()
+			.trim()
+			.min(1, "Name is required.")
+			.max(150, "Name must be 150 characters or fewer."),
+		description: z
+			.string()
+			.trim()
+			.max(500, "Description can only be up to 500 characters."),
 		status: z.enum(ServicesMaintenanceStatusOptions),
 		accountSetupMode: z.enum(ServicesMaintenanceAccountSetupModeOptions),
 		revenueCoaId: z.string(),

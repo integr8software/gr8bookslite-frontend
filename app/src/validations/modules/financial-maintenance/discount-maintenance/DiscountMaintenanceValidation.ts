@@ -11,7 +11,11 @@ import type {
 
 export const DiscountMaintenanceFormValidationSchema = z
 	.object({
-		name: z.string().trim().min(1, "Enter a discount name."),
+		name: z
+			.string()
+			.trim()
+			.min(1, "Enter a discount name.")
+			.max(150, "Discount name must be 150 characters or fewer."),
 		description: z
 			.string()
 			.trim()

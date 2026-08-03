@@ -42,16 +42,23 @@ const ResponsibilityCenterStatusSchema = z.enum(["Active", "Inactive"], {
 });
 
 export const ResponsibilityCenterFormValidationSchema = z.object({
-	code: z.string(),
-	name: z.string().trim().min(1, "Name is required."),
+	code: z.string().trim().max(50, "Code must be 50 characters or fewer."),
+	name: z
+		.string()
+		.trim()
+		.min(1, "Name is required.")
+		.max(150, "Name must be 150 characters or fewer."),
 	classificationId: z.string().trim().min(1, "Classification is required."),
 	typeId: z.string().trim().min(1, "Type is required."),
 	category: ResponsibilityCenterCategorySchema,
 	financialType: ResponsibilityCenterFinancialTypeSchema,
-	manager: z.string(),
+	manager: z.string().trim().max(150, "Manager must be 150 characters or fewer."),
 	parentId: z.string(),
 	status: ResponsibilityCenterStatusSchema,
-	description: z.string(),
+	description: z
+		.string()
+		.trim()
+		.max(500, "Description must be 500 characters or fewer."),
 });
 
 export function validateResponsibilityCenterForm(

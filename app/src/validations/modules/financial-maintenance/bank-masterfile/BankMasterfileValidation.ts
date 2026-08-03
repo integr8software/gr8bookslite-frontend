@@ -18,14 +18,33 @@ const BankMasterfileStatusSchema = z.enum(BankMasterfileStatusOptions);
 
 const BankMasterfileFormSchema = z
 	.object({
-		bankName: z.string().trim().min(1, "Bank is required."),
-		branch: z.string(),
-		accountNumber: z.string(),
+		bankName: z
+			.string()
+			.trim()
+			.min(1, "Bank is required.")
+			.max(100, "Bank must be 100 characters or fewer."),
+		branch: z.string().trim().max(100, "Branch must be 100 characters or fewer."),
+		accountNumber: z
+			.string()
+			.trim()
+			.max(100, "Account number must be 100 characters or fewer."),
 		accountType: BankMasterfileAccountTypeSchema,
-		currencyCode: z.string().trim().min(1, "Currency is required."),
+		currencyCode: z
+			.string()
+			.trim()
+			.min(1, "Currency is required.")
+			.max(10, "Currency must be 10 characters or fewer."),
 		isDefault: z.boolean(),
-		seriesStart: z.string().trim().min(1, "Series start is required."),
-		seriesEnd: z.string().trim().min(1, "Series end is required."),
+		seriesStart: z
+			.string()
+			.trim()
+			.min(1, "Series start is required.")
+			.max(50, "Series start must be 50 characters or fewer."),
+		seriesEnd: z
+			.string()
+			.trim()
+			.min(1, "Series end is required.")
+			.max(50, "Series end must be 50 characters or fewer."),
 		seriesDigits: z.string().trim().min(1, "Series digits are required."),
 		status: BankMasterfileStatusSchema,
 	})
@@ -38,14 +57,33 @@ const BankMasterfileFormSchema = z
 
 const BankImportRowSchema = z
 	.object({
-		bankName: z.string().trim().min(1, "Bank is required."),
-		branch: z.string(),
-		accountNumber: z.string(),
+		bankName: z
+			.string()
+			.trim()
+			.min(1, "Bank is required.")
+			.max(100, "Bank must be 100 characters or fewer."),
+		branch: z.string().trim().max(100, "Branch must be 100 characters or fewer."),
+		accountNumber: z
+			.string()
+			.trim()
+			.max(100, "Account number must be 100 characters or fewer."),
 		accountType: BankMasterfileAccountTypeSchema,
-		currencyCode: z.string().trim().min(1, "Currency is required."),
+		currencyCode: z
+			.string()
+			.trim()
+			.min(1, "Currency is required.")
+			.max(10, "Currency must be 10 characters or fewer."),
 		isDefault: z.boolean(),
-		seriesStart: z.string().trim().min(1, "Series start is required."),
-		seriesEnd: z.string().trim().min(1, "Series end is required."),
+		seriesStart: z
+			.string()
+			.trim()
+			.min(1, "Series start is required.")
+			.max(50, "Series start must be 50 characters or fewer."),
+		seriesEnd: z
+			.string()
+			.trim()
+			.min(1, "Series end is required.")
+			.max(50, "Series end must be 50 characters or fewer."),
 		seriesDigits: z.string().trim().min(1, "Series digits are required."),
 		status: BankMasterfileStatusSchema,
 	})

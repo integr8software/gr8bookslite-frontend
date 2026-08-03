@@ -7,23 +7,31 @@ import type {
 } from "@/app/src/types/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 
 const RequiredStringSchema = z.string().trim().min(1);
+const OptionalNonNegativeNumberTextSchema = z.string().trim().refine(
+  (value) => !value || Number(value) >= 0,
+  "Enter an exchange rate of 0 or greater.",
+);
 
 const ChartsOfAccountsBankDetailsSchema = z.object({
-  bankName: RequiredStringSchema,
-  bankAccountNumber: RequiredStringSchema,
-  accountType: RequiredStringSchema,
-  currency: RequiredStringSchema,
+  bankName: RequiredStringSchema.max(100),
+  bankAccountNumber: RequiredStringSchema.max(100),
+  branch: z.string().trim().max(100),
+  accountType: RequiredStringSchema.max(50),
+  currency: RequiredStringSchema.max(10),
+  currencyExchangeRate: OptionalNonNegativeNumberTextSchema,
 });
 
 const ChartsOfAccountsAccountInformationSchema = z.object({
   accountType: RequiredStringSchema,
-  statementSection: RequiredStringSchema,
+  statementSection: RequiredStringSchema.max(250),
   parentId: z.string().nullable(),
   accountNumber: RequiredStringSchema,
-  accountName: RequiredStringSchema,
+  accountName: RequiredStringSchema.max(250),
   accountLevel: RequiredStringSchema,
   normalBalance: RequiredStringSchema,
   status: RequiredStringSchema,
+  description: z.string().trim().max(500),
+  reportAlias: z.string().trim().max(250),
 });
 
 export function getDuplicateAccountNameError(

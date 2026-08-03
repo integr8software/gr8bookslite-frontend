@@ -120,6 +120,6 @@ export const TransactionTypeActionCopy = {
 	view: {
 		title: "View Inventory Transaction Type",
 		description:
-			"Review the inventory transaction type configuration before making changes.",
+			"Review the inventory transaction type details, goods movement, and account mapping.",
 	},
 } as const;

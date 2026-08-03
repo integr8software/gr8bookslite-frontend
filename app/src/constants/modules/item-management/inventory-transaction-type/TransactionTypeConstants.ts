@@ -33,12 +33,12 @@ export const TransactionTypeStatusOptions = [
 
 export const TransactionTypeModuleOptions = [
 	{
-		label: "Goods Receipt",
-		value: "GR",
-	},
-	{
 		label: "Goods Issue",
 		value: "GI",
+	},
+	{
+		label: "Goods Receipt",
+		value: "GR",
 	},
 ] as const;
 

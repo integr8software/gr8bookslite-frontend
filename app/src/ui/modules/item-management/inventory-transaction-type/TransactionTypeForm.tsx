@@ -6,8 +6,8 @@ import type {
 } from "@/app/src/types/modules/item-management/inventory-transaction-type/TransactionTypeTypes";
 import type { ModuleOption } from "@/app/src/data/shared/modules/ModuleOptionsData";
 import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
-import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
+import { AppRadioGroup } from "@/app/src/ui/shared/app/AppRadioGroup";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
 import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/utils/status.util";
 
@@ -36,14 +36,15 @@ export function TransactionTypeForm({
 	onModuleChange,
 	onStatusChange,
 }: TransactionTypeFormProps) {
-	const moduleDropdownOptions = moduleOptions.map((option) => ({
-		name: option.label,
+	const moduleRadioOptions = moduleOptions.map((option) => ({
+		description: getGoodsMovementDescription(option.value),
+		label: option.label,
 		value: option.value,
 	}));
 
 	return (
 		<div className="grid gap-4">
-			<FormField label="Name" error={errors.name} required>
+			<FormField label="Inventory Transaction Type Name" error={errors.name} required>
 				<input
 					name="name"
 					value={values.name}
@@ -66,6 +67,22 @@ export function TransactionTypeForm({
 				/>
 			</FormField>
 
+			<FormField
+				asFieldset
+				label="Goods Movement"
+				error={errors.moduleIds}
+				required
+			>
+				<AppRadioGroup
+					aria-label="Goods Movement"
+					name="moduleIds"
+					options={moduleRadioOptions}
+					readOnly={isReadonly}
+					value={values.moduleIds[0] ?? ""}
+					onChange={onModuleChange}
+				/>
+			</FormField>
+
 			<FormField label="Account Title" error={errors.accountId} required>
 				<ChartAccountDropdown
 					accounts={accountOptions}
@@ -73,18 +90,6 @@ export function TransactionTypeForm({
 					readOnly={isReadonly}
 					value={values.accountId}
 					onChange={onAccountChange}
-				/>
-			</FormField>
-
-			<FormField label="Goods Movement Module" error={errors.moduleIds} required>
-				<AppAdvancedDropdown
-					options={moduleDropdownOptions}
-					placeholder="--Select Goods Movement Module--"
-					readOnly={isReadonly}
-					searchPlaceholder="Search goods movement module"
-					selectionMode="multiple"
-					value={values.moduleIds}
-					onChange={onModuleChange}
 				/>
 			</FormField>
 
@@ -101,19 +106,50 @@ export function TransactionTypeForm({
 	);
 }
 
+function getGoodsMovementDescription(value: string) {
+	if (value === "GI") {
+		return "Issues goods out of inventory.";
+	}
+
+	if (value === "GR") {
+		return "Receives goods into inventory.";
+	}
+
+	return "Classifies the inventory movement.";
+}
+
 function FormField({
+	asFieldset,
 	children,
 	className,
 	error,
 	label,
 	required,
 }: {
+	asFieldset?: boolean;
 	children: ReactNode;
 	className?: string;
 	error?: string;
 	label: string;
 	required?: boolean;
 }) {
+	if (asFieldset) {
+		return (
+			<fieldset className={className}>
+				<legend className="mb-2 block text-sm font-semibold text-darknavy">
+					{label}
+					{required ? <span className="text-coralpink"> *</span> : null}
+				</legend>
+				{children}
+				{error ? (
+					<span className="mt-1 block text-xs font-medium text-coralpink">
+						{error}
+					</span>
+				) : null}
+			</fieldset>
+		);
+	}
+
 	return (
 		<label className={className}>
 			<span className="mb-2 block text-sm font-semibold text-darknavy">

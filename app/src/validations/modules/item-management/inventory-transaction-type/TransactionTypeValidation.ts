@@ -14,7 +14,9 @@ export const TransactionTypeFormValidationSchema = z.object({
 		.string()
 		.trim()
 		.max(500, "Description must be 500 characters or fewer."),
-	moduleIds: z.array(z.string()).min(1, "Select at least one module."),
+	moduleIds: z
+		.array(z.string())
+		.length(1, "Select either Goods Receipt or Goods Issue."),
 	accountId: z.string().trim().min(1, "Select an account."),
 	status: TransactionTypeStatusSchema,
 });

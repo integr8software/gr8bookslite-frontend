@@ -9,8 +9,14 @@ const TransactionTypeStatusSchema = z.enum(TransactionTypeStatusOptions, {
 	message: "Select status.",
 });
 
+const TransactionTypeNameField = "name";
+const TransactionTypeNameSchema = z
+	.string()
+	.trim()
+	.min(1, "Enter an inventory transaction type name.");
+
 export const TransactionTypeFormValidationSchema = z.object({
-	name: z.string().trim().min(1, "Enter an inventory transaction type name."),
+	[TransactionTypeNameField]: TransactionTypeNameSchema,
 	description: z
 		.string()
 		.trim()

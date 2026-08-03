@@ -1,33 +1,18 @@
 import * as React from "react";
-import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
-import type {
+import {
 	TransactionTypeFormErrors,
+	TransactionTypeFormProps,
 	TransactionTypeFormValues,
 } from "@/app/src/types/modules/item-management/inventory-transaction-type/TransactionTypeTypes";
 import {
 	TransactionTypeModuleDescriptions,
 	TransactionTypeNamePlaceholder,
 } from "@/app/src/constants/modules/item-management/inventory-transaction-type/TransactionTypeConstants";
-import type { ModuleOption } from "@/app/src/data/shared/modules/ModuleOptionsData";
 import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { AppRadioGroup } from "@/app/src/ui/shared/app/AppRadioGroup";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
 import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/utils/status.util";
-
-type TransactionTypeFormProps = {
-	accountOptions: ModuleChartAccount[];
-	errors: TransactionTypeFormErrors;
-	isReadonly: boolean;
-	moduleOptions: ModuleOption[];
-	values: TransactionTypeFormValues;
-	onAccountChange: (accountId: string) => void;
-	onInputChange: React.ChangeEventHandler<
-		HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-	>;
-	onModuleChange: (value: string | string[]) => void;
-	onStatusChange: (value: TransactionTypeFormValues["status"]) => void;
-};
 
 export function TransactionTypeForm({
 	accountOptions,

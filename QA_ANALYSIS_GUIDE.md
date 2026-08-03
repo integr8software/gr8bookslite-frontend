@@ -332,30 +332,32 @@ Specific error examples:
 
 ## Writing QA Findings
 
-When documenting a PR issue, be generic about the module category but specific about the code and error.
+When documenting a PR issue, keep the module name generic but make the code problem easy to act on. A finding should read like a reviewer explaining what they saw, where they saw it, and what should move or change.
 
 Use this format:
 
 ```text
+Category: <UI, Types, Data, Hooks, Services, Forms, Routing, or Integration>
 Location: <exact file path>:<line>
-Error: <exact or near-exact reported message>
-Code signal: <identifier, literal, API call, filename, or state that triggered the finding>
-Fix: <specific code movement or replacement using app/src/<layer>/modules/<domain>/<feature>/...>
+Issue: <short plain-language issue>
+Code: <small snippet or identifier that shows the problem>
+Recommendation: <specific code movement or replacement using app/src/<layer>/modules/<domain>/<feature>/...>
 ```
 
 Good example:
 
 ```text
+Category: UI
 Location: app/src/ui/modules/<domain>/<feature>/ExampleList.tsx:42
-Error: A UI component is directly calling Axios or an API client.
-Code signal: apiClient.get(...)
-Fix: Move the request to app/src/services/modules/<domain>/<feature>/ExampleApi.ts and expose it through useExampleListQuery().
+Issue: The UI component is doing request work instead of only rendering the screen.
+Code: apiClient.get(...)
+Recommendation: Move the request to app/src/services/modules/<domain>/<feature>/ExampleApi.ts and expose it through useExampleListQuery().
 ```
 
 Avoid:
 
 ```text
-The module has API issues. Please refactor.
+This module has mixed responsibilities and has API issues. Please refactor.
 ```
 
 ## Module File Checklist
@@ -382,4 +384,3 @@ For route or module identity changes, also run:
 ```bash
 rg '/add/new|add/\[recordId\]|add\\\[recordId\\\]' 'app/(modules)' app/src -g '*.tsx' -g '*.ts'
 ```
-

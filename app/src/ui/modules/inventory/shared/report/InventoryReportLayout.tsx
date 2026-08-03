@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { ReportCompanyHeader } from "@/app/src/ui/shared/reports/ReportCompanyHeader";
 
 export type InventoryReportInfoRow = {
 	label: string;
@@ -21,19 +22,24 @@ export type InventoryReportSignature = {
 
 type InventoryReportDocumentProps = {
 	afterTitle?: ReactNode;
+	beforeTitle?: ReactNode;
 	footerCodeLabel?: string;
 	footerCodeValue?: string;
+	infoLabelWidth?: "compact" | "default";
 	infoRows?: InventoryReportInfoRow[];
 	signatures?: InventoryReportSignature[];
 	tableColumns: InventoryReportTableColumn[];
 	tableRows: InventoryReportTableRow[];
 	title: string;
+	titleLayout?: "center" | "centerWithInfo" | "default";
 };
 
 export function InventoryReportDocument({
 	afterTitle,
+	beforeTitle,
 	footerCodeLabel,
 	footerCodeValue,
+	infoLabelWidth = "default",
 	infoRows = [],
 	signatures = [
 		{ label: "Prepared by" },
@@ -42,16 +48,24 @@ export function InventoryReportDocument({
 	tableColumns,
 	tableRows,
 	title,
+	titleLayout = "default",
 }: InventoryReportDocumentProps) {
+	const usesCenteredTitle =
+		titleLayout === "center" || titleLayout === "centerWithInfo";
+
 	return (
 		<div className="mx-auto w-full max-w-[58rem] bg-white p-3 text-[11px] text-black shadow-sm print:p-0 print:shadow-none">
 			<div className="flex min-h-[32rem] flex-col border-2 border-black">
-				<InventoryReportHeader />
-				<div className="grid grid-cols-[1fr_auto] items-end border-b-2 border-black px-3 pb-2">
-					<h2 className="text-2xl font-black uppercase leading-none">{title}</h2>
-					{afterTitle}
-				</div>
-				{infoRows.length ? <InventoryReportInfo rows={infoRows} /> : null}
+				<ReportCompanyHeader isCompact={usesCenteredTitle} />
+				<InventoryReportTitle
+					afterTitle={afterTitle}
+					beforeTitle={beforeTitle}
+					layout={titleLayout}
+					title={title}
+				/>
+				{infoRows.length ? (
+					<InventoryReportInfo labelWidth={infoLabelWidth} rows={infoRows} />
+				) : null}
 				<InventoryReportTable columns={tableColumns} rows={tableRows} />
 				<InventoryReportFooter
 					codeLabel={footerCodeLabel}
@@ -64,40 +78,58 @@ export function InventoryReportDocument({
 	);
 }
 
-function InventoryReportHeader() {
+function InventoryReportTitle({
+	afterTitle,
+	beforeTitle,
+	layout,
+	title,
+}: {
+	afterTitle?: ReactNode;
+	beforeTitle?: ReactNode;
+	layout: "center" | "centerWithInfo" | "default";
+	title: string;
+}) {
+	if (layout === "center" || layout === "centerWithInfo") {
+		return (
+			<div
+				className={`grid min-h-6 grid-cols-3 items-end border-b-2 border-black px-3 pb-1 ${
+					layout === "centerWithInfo" ? "border-t-2" : ""
+				}`}
+			>
+				<div className="text-left">{layout === "centerWithInfo" ? beforeTitle : null}</div>
+				<h2 className="text-center text-sm font-black uppercase leading-none">
+					{title}
+				</h2>
+				<div className="text-right">{afterTitle}</div>
+			</div>
+		);
+	}
+
 	return (
-		<div className="grid grid-cols-[8.5rem_1fr_8.5rem] items-start px-4 pt-4">
-			<div className="pt-1">
-				<img
-					src="/img/icons/gr8booksneo-logo-wide.png"
-					alt="Company logo"
-					className="h-16 w-24 object-contain"
-				/>
-			</div>
-			<div className="text-center">
-				<p className="text-sm font-bold">Your Company Name Here</p>
-				<p className="mt-1 text-[10px] font-semibold">
-					VAT REG TIN : 000-000-000-000
-				</p>
-				<p className="mt-1 text-[10px] font-semibold uppercase">
-					ABC, 123, Sample, Malamig, City Of Mandaluyong, NCR, Second District
-				</p>
-				<p className="mt-3 text-[10px] font-semibold">
-					Telephone No: 0967-237-4514
-				</p>
-			</div>
-			<div />
+		<div className="grid grid-cols-[1fr_auto] items-end border-b-2 border-black px-3 pb-2">
+			<h2 className="text-2xl font-black uppercase leading-none">{title}</h2>
+			{afterTitle}
 		</div>
 	);
 }
 
-function InventoryReportInfo({ rows }: { rows: InventoryReportInfoRow[] }) {
+function InventoryReportInfo({
+	labelWidth,
+	rows,
+}: {
+	labelWidth: "compact" | "default";
+	rows: InventoryReportInfoRow[];
+}) {
 	return (
 		<div className="border-b-2 border-black text-[11px] font-bold">
 			{rows.map((row) => (
 				<div
 					key={row.label}
-					className="grid min-h-6 grid-cols-[9rem_1fr] border-b border-black px-2 py-1 last:border-b-0"
+					className={`grid min-h-6 border-b border-black px-2 py-1 last:border-b-0 ${
+						labelWidth === "compact"
+							? "grid-cols-[2.25rem_1fr]"
+							: "grid-cols-[9rem_1fr]"
+					}`}
 				>
 					<span>{row.label}:</span>
 					<span className="font-normal">{row.value || "\u00a0"}</span>

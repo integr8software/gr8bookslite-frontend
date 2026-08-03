@@ -22,6 +22,7 @@ import {
 	type ModuleActionMenuItem,
 } from "@/app/src/ui/shared/module/ModuleActionMenu";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
+import { AppCopyFromDropdown } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
 
 type MaterialRequestActionPageState = ReturnType<typeof useMaterialRequestFormPage>;
 
@@ -71,9 +72,7 @@ function getMaterialRequestHeaderTitle(page: MaterialRequestActionPageState) {
 			: "View Material Request";
 	}
 
-	return requestNo
-		? `Edit Material Request - ${requestNo}`
-		: "Edit Material Request";
+	return "Edit Material Request";
 }
 
 function MaterialRequestHeaderActions({
@@ -97,6 +96,11 @@ function MaterialRequestHeaderActions({
 				Cancel
 			</Link>
 			<ReportPreviewAction onPreview={onPreview} />
+			<AppCopyFromDropdown
+				records={page.copyFromRecords}
+				sources={["Sales Order", "Job Order"]}
+				onApply={page.copyFromSourceTransactions}
+			/>
 			<button
 				type="button"
 				onClick={page.handleSubmit}

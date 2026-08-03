@@ -37,7 +37,7 @@ export function ModuleTabs<TabId extends string>({
 							aria-selected={isActive}
 							onClick={() => onTabChange(tab.id)}
 							className={joinClasses(
-								"inline-flex h-10 items-center gap-2 rounded-md px-4 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coralpink/25",
+								"inline-flex h-10 items-center gap-2 rounded-md px-4 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/25",
 								isActive
 									? "bg-skyblue text-white shadow-sm"
 									: "text-darknavy/65 hover:bg-offwhite hover:text-darknavy",
@@ -51,7 +51,7 @@ export function ModuleTabs<TabId extends string>({
 										"inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold",
 										isActive
 											? "bg-white/20 text-white"
-											: "bg-coralpink/10 text-coralpink",
+											: "bg-skyblue/10 text-skyblue",
 									)}
 								>
 									{tab.badge}

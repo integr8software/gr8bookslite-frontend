@@ -112,10 +112,12 @@ export function ApproverSetupPage() {
 			<ApproverSetupDrawer
 				formValues={page.formValues}
 				isOpen={Boolean(page.drawerState)}
+				moduleOptions={page.moduleOptions}
 				mode={page.drawerState?.mode ?? "add"}
 				onChange={page.setFormValues}
 				onClose={page.closeDrawer}
 				onSave={page.saveAssignment}
+				users={page.approverUsers}
 				validationMessage={page.drawerError}
 			/>
 

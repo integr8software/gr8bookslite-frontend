@@ -2,6 +2,7 @@
 
 import { formatBillingInvoiceAmount } from "@/app/src/data/modules/sales/billing-invoice/BillingInvoiceData";
 import type { BillingInvoiceFormValues } from "@/app/src/types/modules/sales/billing-invoice/BillingInvoiceTypes";
+import { ReportCompanyHeader } from "@/app/src/ui/shared/reports/ReportCompanyHeader";
 import { ReportPreviewDrawer } from "@/app/src/ui/shared/reports/Reports";
 
 type BillingInvoiceReportPreviewProps = {
@@ -42,7 +43,7 @@ function BillingInvoiceReportDocument({
 	return (
 		<div className="mx-auto w-full max-w-[52rem] bg-white p-3 text-[11px] text-black shadow-sm print:p-0 print:shadow-none">
 			<div className="flex min-h-[68rem] flex-col border-2 border-black">
-				<InvoiceLetterhead />
+				<ReportCompanyHeader isCompact paddingClassName="px-4 pt-4 pb-0" />
 				<InvoiceTitleBlock
 					date={values.documentDate}
 					invoiceNo={values.invoiceNo || values.transactionNo}
@@ -78,33 +79,6 @@ function BillingInvoiceReportDocument({
 					preparedBy={values.salesAssociate || "Emman/Demo"}
 				/>
 			</div>
-		</div>
-	);
-}
-
-function InvoiceLetterhead() {
-	return (
-		<div className="grid grid-cols-[8.5rem_1fr_8.5rem] items-start px-4 pt-4">
-			<div className="pt-1">
-				<img
-					src="/img/icons/gr8booksneo-logo-wide.png"
-					alt="Company logo"
-					className="h-16 w-24 object-contain"
-				/>
-			</div>
-			<div className="text-center">
-				<p className="text-sm font-bold">Your Company Name Here</p>
-				<p className="mt-1 text-[10px] font-semibold">
-					VAT REG TIN : 000-000-000-000
-				</p>
-				<p className="mt-1 text-[10px] font-semibold uppercase">
-					ABC, 123, Sample, Malamig, City of Mandaluyong, NCR, Second District
-				</p>
-				<p className="mt-3 text-[10px] font-semibold">
-					Telephone No: 0967-237-4514
-				</p>
-			</div>
-			<div />
 		</div>
 	);
 }

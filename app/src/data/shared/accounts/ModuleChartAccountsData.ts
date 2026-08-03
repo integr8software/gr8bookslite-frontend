@@ -18,7 +18,7 @@ export type ModuleChartAccountScope = {
 };
 
 const ModuleChartAccountAccess: Record<string, Record<string, string[]>> = {
-	"maintenance-discount-management": {
+	"maintenance-discount-maintenance": {
 		default: [
 			"accounts-receivable-trade",
 			"accounts-receivable-others",
@@ -182,6 +182,22 @@ export const ModuleChartAccounts: ModuleChartAccount[] = [
 		"Accounts Payable - Others",
 		"Liabilities",
 		"Accounts Payables",
+		"Credit",
+	),
+	createAccount(
+		"expanded-withholding-tax",
+		"2010002002",
+		"Expanded Withholding Tax",
+		"Liabilities",
+		"Taxes Payable",
+		"Credit",
+	),
+	createAccount(
+		"input-vat-tax-payable",
+		"2010002011",
+		"Input VAT",
+		"Liabilities",
+		"Taxes Payable",
 		"Credit",
 	),
 	createAccount(

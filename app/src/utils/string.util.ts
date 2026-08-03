@@ -24,3 +24,11 @@ export function normalizeCodeWithHyphens(
 export function normalizeWhitespace(value: string) {
 	return value.trim().replace(/\s+/g, " ");
 }
+
+export function cleanOptional(value: string) {
+	return value.trim() || undefined;
+}
+
+export function toOptionalNumber(value: string) {
+	return value.trim() ? Number(value) : undefined;
+}

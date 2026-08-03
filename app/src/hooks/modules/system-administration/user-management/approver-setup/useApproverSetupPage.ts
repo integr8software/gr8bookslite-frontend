@@ -1,29 +1,35 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	getCoreRowModel,
 	getPaginationRowModel,
 	useReactTable,
 	type ColumnDef,
 } from "@tanstack/react-table";
+import toast from "react-hot-toast";
 import {
 	ApproverSetupAllStatusesFilter,
 	ApproverSetupAllTypesFilter,
 	ApproverSetupCurrentDate,
 } from "@/app/src/constants/modules/system-administration/user-management/approver-setup/ApproverSetupConstants";
 import {
-	ApproverSetupMockData,
-	getApproverSetupUser,
-} from "@/app/src/data/modules/system-administration/user-management/approver-setup/ApproverSetupData";
-import { UserListMockData } from "@/app/src/data/modules/system-administration/user-management/users/UserListData";
+	CreateApproverSetup,
+	FetchApproverSetupModules,
+	FetchApproverSetups,
+	FetchApproverSetupUsers,
+} from "@/app/src/services/modules/system-administration/user-management/approver-setup/ApproverSetupApi";
+import { ApproverSetupQueryKeys } from "@/app/src/services/modules/system-administration/user-management/approver-setup/ApproverSetupQueryKeys";
 import type {
 	ApproverAssignmentType,
 	ApproverCondition,
 	ApproverCoverageStatus,
 	ApproverSetupDrawerState,
 	ApproverSetupFormValues,
+	ApproverSetupModuleOption,
 	ApproverSetupRecord,
+	ApproverSetupUser,
 } from "@/app/src/types/modules/system-administration/user-management/approver-setup/ApproverSetupTypes";
 import {
 	getApproverSelectionError,
@@ -31,9 +37,35 @@ import {
 } from "@/app/src/validations/modules/system-administration/user-management/approver-setup/ApproverSetupValidation";
 
 export function useApproverSetupPage() {
-	const [records, setRecords] = useState<ApproverSetupRecord[]>(
-		ApproverSetupMockData,
-	);
+	const queryClient = useQueryClient();
+	const [records, setRecords] = useState<ApproverSetupRecord[]>([]);
+	const approverUsersQuery = useQuery({
+		queryKey: ApproverSetupQueryKeys.users(),
+		queryFn: () => FetchApproverSetupUsers(),
+	});
+	const approverModulesQuery = useQuery({
+		queryKey: ApproverSetupQueryKeys.modules(),
+		queryFn: FetchApproverSetupModules,
+		placeholderData: [],
+	});
+	const approverSetupsQuery = useQuery({
+		queryKey: ApproverSetupQueryKeys.records(),
+		queryFn: FetchApproverSetups,
+	});
+	const createApproverSetupMutation = useMutation({
+		mutationFn: CreateApproverSetup,
+		onSuccess: (record) => {
+			queryClient.setQueryData<ApproverSetupRecord[]>(
+				ApproverSetupQueryKeys.records(),
+				(current = []) => [record, ...current],
+			);
+			setRecords((current) => [record, ...current]);
+			toast.success("Approver setup created.");
+		},
+		onError: () => {
+			toast.error("Could not create approver setup.");
+		},
+	});
 	const [query, setQuery] = useState("");
 	const [typeFilter, setTypeFilter] = useState<
 		ApproverAssignmentType | typeof ApproverSetupAllTypesFilter
@@ -49,6 +81,31 @@ export function useApproverSetupPage() {
 	const [pendingDelete, setPendingDelete] =
 		useState<ApproverSetupRecord | null>(null);
 	const [drawerError, setDrawerError] = useState("");
+	const approverUsers = approverUsersQuery.data ?? [];
+	const moduleOptions = useMemo(
+		() => approverModulesQuery.data ?? [],
+		[approverModulesQuery.data],
+	);
+
+	useEffect(() => {
+		if (approverSetupsQuery.data) {
+			setRecords(approverSetupsQuery.data);
+		}
+	}, [approverSetupsQuery.data]);
+
+	useEffect(() => {
+		if (
+			drawerState?.mode === "add" &&
+			!formValues.moduleScope &&
+			moduleOptions[0]
+		) {
+			setFormValues((current) => ({
+				...current,
+				moduleScope: moduleOptions[0].code,
+			}));
+		}
+	}, [drawerState?.mode, formValues.moduleScope, moduleOptions]);
+
 	const activeCount = records.filter(
 		(record) => record.status === "Active",
 	).length;
@@ -63,9 +120,7 @@ export function useApproverSetupPage() {
 		const normalizedQuery = query.trim().toLowerCase();
 
 		return records.filter((record) => {
-			const users = record.userIds
-				.map((userId) => getApproverSetupUser(userId))
-				.filter(Boolean);
+			const users = record.approverUsers ?? [];
 			const searchableText = [
 				...users.flatMap((user) => [user?.name, user?.email]),
 				record.assignmentType,
@@ -116,7 +171,9 @@ export function useApproverSetupPage() {
 	});
 
 	function openAddDrawer() {
-		setFormValues(createApproverSetupFormValues());
+		setFormValues(
+			createApproverSetupFormValues(null, approverUsers, moduleOptions),
+		);
 		setDrawerError("");
 		setDrawerState({ mode: "add", record: null });
 	}
@@ -129,15 +186,30 @@ export function useApproverSetupPage() {
 
 	function closeDrawer() {
 		setDrawerState(null);
-		setFormValues(createApproverSetupFormValues());
+		setFormValues(
+			createApproverSetupFormValues(null, approverUsers, moduleOptions),
+		);
 		setDrawerError("");
 	}
 
 	function saveAssignment() {
-		const validationMessage = getApproverSelectionError(formValues);
+		const validationMessage = getApproverSelectionError(
+			formValues,
+			approverUsers,
+		);
 
 		if (validationMessage) {
 			setDrawerError(validationMessage);
+			return;
+		}
+
+		if (!formValues.moduleScope.trim()) {
+			setDrawerError("Select a module scope.");
+			return;
+		}
+
+		if (formValues.assignmentType === "Temporary" && !formValues.effectiveTo) {
+			setDrawerError("Enter a valid until date.");
 			return;
 		}
 
@@ -146,14 +218,36 @@ export function useApproverSetupPage() {
 			drawerState?.record,
 		);
 
-		setRecords((current) => {
-			if (drawerState?.mode === "edit" && drawerState.record) {
-				return current.map((record) =>
+		if (drawerState?.mode === "edit" && drawerState.record) {
+			setRecords((current) =>
+				current.map((record) =>
 					record.id === drawerState.record?.id ? nextRecord : record,
-				);
-			}
+				),
+			);
+			closeDrawer();
+			return;
+		}
 
-			return [nextRecord, ...current];
+		const approverUserIds = formValues.userIds
+			.map((userId) => Number(userId))
+			.filter(Number.isInteger);
+
+		if (approverUserIds.length !== formValues.userIds.length) {
+			setDrawerError("Approver users are still loading. Please try again.");
+			return;
+		}
+
+		createApproverSetupMutation.mutate({
+			approverCondition: formValues.condition,
+			approverUserIds,
+			level: Number.parseInt(formValues.sequence, 10) || undefined,
+			moduleScope: formValues.moduleScope.trim(),
+			status: formValues.status,
+			type: formValues.assignmentType,
+			validUntil:
+				formValues.assignmentType === "Temporary"
+					? formValues.effectiveTo
+					: undefined,
 		});
 		closeDrawer();
 	}
@@ -189,6 +283,7 @@ export function useApproverSetupPage() {
 
 	return {
 		activeCount,
+		approverUsers,
 		closeDrawer,
 		deleteAssignment,
 		drawerError,
@@ -196,6 +291,7 @@ export function useApproverSetupPage() {
 		expiringCount,
 		formValues,
 		levelCount,
+		moduleOptions,
 		openAddDrawer,
 		openEditDrawer,
 		pendingDelete,
@@ -217,6 +313,8 @@ export function useApproverSetupPage() {
 
 export function createApproverSetupFormValues(
 	record?: ApproverSetupRecord | null,
+	users: ApproverSetupUser[] = [],
+	modules: ApproverSetupModuleOption[] = [],
 ): ApproverSetupFormValues {
 	const condition = record?.condition ?? "Any one approver";
 
@@ -226,12 +324,13 @@ export function createApproverSetupFormValues(
 		effectiveFrom: record?.effectiveFrom ?? "2026-07-08",
 		effectiveTo: record?.effectiveTo ?? "",
 		levelName: record?.levelName ?? "Department Review",
-		moduleScope: record?.moduleScope ?? "Purchase Request",
+		moduleScope: record?.moduleScope ?? modules[0]?.code ?? "",
 		sequence: String(record?.sequence ?? 1),
 		status: record?.status ?? "Active",
 		userIds: normalizeSelectedApproverIds(
 			condition,
-			record?.userIds ?? [UserListMockData[0]?.id].filter(Boolean),
+			record?.userIds ?? [users[0]?.id].filter(Boolean),
+			users,
 		),
 	};
 }

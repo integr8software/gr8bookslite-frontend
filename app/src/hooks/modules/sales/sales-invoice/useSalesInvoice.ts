@@ -12,12 +12,19 @@ import {
 } from "@tanstack/react-table";
 import toast from "react-hot-toast";
 import {
+  createDeliveryReceiptFormValuesFromRecord,
+  getInitialDeliveryReceipts,
+} from "@/app/src/data/modules/inventory/delivery-receipt/DeliveryReceiptData";
+import {
+  createBlankSalesInvoiceLineItem,
   createSalesInvoiceFormValues,
   createSalesInvoiceFormValuesFromRecord,
   createSalesInvoiceRecordFromForm,
+} from "@/app/src/data/modules/sales/sales-invoice/SalesInvoiceFactories";
+import {
   getInitialSalesInvoices,
   writeStoredSalesInvoices,
-} from "@/app/src/data/modules/sales/sales-invoice/SalesInvoiceData";
+} from "@/app/src/data/modules/sales/sales-invoice/SalesInvoiceStorage";
 import { SalesInvoiceStatusFilters } from "@/app/src/constants/modules/sales/sales-invoice/SalesInvoiceConstants";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import type {
@@ -34,10 +41,7 @@ type SalesInvoiceStoreState = {
   invoices: SalesInvoiceRecord[];
   isLoading: boolean;
   lastSyncedAt: number;
-  updateInvoiceStatus: (
-    invoice: SalesInvoiceRecord,
-    status: SalesInvoiceStatus,
-  ) => void;
+  updateInvoiceStatus: (invoice: SalesInvoiceRecord, status: SalesInvoiceStatus) => void;
 };
 
 export function useSalesInvoiceStore<TSelected = SalesInvoiceStoreState>(
@@ -91,11 +95,8 @@ export function useSalesInvoiceActionForm(
   const initialRecord =
     mode === "add"
       ? null
-      : getInitialSalesInvoices().find((invoice) => invoice.id === recordId) ??
-        null;
-  const [loadedRecord, setLoadedRecord] = useState<SalesInvoiceRecord | null>(
-    initialRecord,
-  );
+      : (getInitialSalesInvoices().find((invoice) => invoice.id === recordId) ?? null);
+  const [loadedRecord, setLoadedRecord] = useState<SalesInvoiceRecord | null>(initialRecord);
   const [values, setValues] = useState<SalesInvoiceFormValues>(() =>
     initialRecord
       ? createSalesInvoiceFormValuesFromRecord(initialRecord)
@@ -109,6 +110,80 @@ export function useSalesInvoiceActionForm(
     setValues((current) => ({ ...current, [key]: value }));
   }
 
+  function copyFromDeliveryReceipts(recordIds: string[]) {
+    const selectedReceipts = getInitialDeliveryReceipts().filter((receipt) =>
+      recordIds.includes(receipt.id),
+    );
+
+    if (selectedReceipts.length === 0) {
+      toast.error("Select at least one delivery receipt to copy.");
+      return;
+    }
+
+    const receiptValues = selectedReceipts.map(createDeliveryReceiptFormValuesFromRecord);
+    const receiptLines = receiptValues.flatMap((receipt) =>
+      receipt.lineEntries
+        .filter(
+          (lineEntry) =>
+            lineEntry.itemCode.trim() ||
+            lineEntry.name.trim() ||
+            lineEntry.description.trim() ||
+            lineEntry.particulars.trim(),
+        )
+        .map((lineEntry) => ({
+          lineEntry,
+          receiptNo: receipt.transactionNo,
+        })),
+    );
+    const firstReceipt = receiptValues[0];
+    const deliveryReceiptNos = receiptValues
+      .map((receipt) => receipt.transactionNo)
+      .filter(Boolean);
+    const salesOrderNos = receiptValues.map((receipt) => receipt.soNo).filter(Boolean);
+    const purchaseOrderNos = receiptValues.map((receipt) => receipt.poNo).filter(Boolean);
+
+    setValues((current) => ({
+      ...current,
+      address: firstReceipt.address || current.address,
+      billToCode: firstReceipt.billToCode || firstReceipt.vceCode || current.billToCode,
+      billToName: firstReceipt.billToName || firstReceipt.vceName || current.billToName,
+      branch: firstReceipt.branch || current.branch,
+      contactNo: firstReceipt.contactNo || current.contactNo,
+      currency: firstReceipt.currency || current.currency,
+      drNo: joinUniqueValues(deliveryReceiptNos) || current.drNo,
+      dueDate: firstReceipt.dueDate || current.dueDate,
+      exchangeRate: firstReceipt.exchangeRate || current.exchangeRate,
+      poNo: joinUniqueValues(purchaseOrderNos) || current.poNo,
+      projectRef: firstReceipt.projectRef || current.projectRef,
+      referenceNo:
+        joinUniqueValues(deliveryReceiptNos) ||
+        firstReceipt.soNo ||
+        firstReceipt.poNo ||
+        current.referenceNo,
+      remarks: firstReceipt.remarks || current.remarks,
+      soDate: firstReceipt.soDate || current.soDate,
+      soNo: joinUniqueValues(salesOrderNos) || current.soNo,
+      terms: firstReceipt.terms || current.terms,
+      vceCode: firstReceipt.vceCode || current.vceCode,
+      vceName: firstReceipt.vceName || current.vceName,
+      lineItems:
+        receiptLines.length > 0
+          ? receiptLines.map(({ lineEntry, receiptNo }) =>
+              createBlankSalesInvoiceLineItem({
+                barcode: lineEntry.barcode,
+                itemCode: lineEntry.itemCode,
+                name: lineEntry.name || lineEntry.description,
+                quantity: lineEntry.quantity,
+                refNo: receiptNo,
+                resCenter: lineEntry.responsibilityCenter,
+                uom: lineEntry.uom,
+              }),
+            )
+          : current.lineItems,
+    }));
+    toast.success("Delivery receipt copied to sales invoice. Add unit prices before saving.");
+  }
+
   function submitInvoice() {
     const validation = validateSalesInvoiceForm(values);
 
@@ -119,19 +194,18 @@ export function useSalesInvoiceActionForm(
 
     const nextRecord = createSalesInvoiceRecordFromForm(
       values,
-      mode === "edit" ? loadedRecord ?? undefined : undefined,
+      mode === "edit" ? (loadedRecord ?? undefined) : undefined,
     );
     const nextInvoices = upsertSalesInvoiceRecord(nextRecord);
 
     writeStoredSalesInvoices(nextInvoices);
     setLoadedRecord(nextRecord);
-    toast.success(
-      mode === "edit" ? "Sales invoice updated." : "Sales invoice saved.",
-    );
+    toast.success(mode === "edit" ? "Sales invoice updated." : "Sales invoice saved.");
     onSaved?.(nextRecord);
   }
 
   return {
+    copyFromDeliveryReceipts,
     submitInvoice,
     updateField,
     values,
@@ -152,12 +226,9 @@ export function useSalesInvoiceTable(invoices: SalesInvoiceRecord[]) {
     from: "",
     to: "",
   });
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: "invoiceDate", desc: true },
-  ]);
-  const [statusFilter, setStatusFilterState] = useState<
-    (typeof SalesInvoiceStatusFilters)[number]
-  >("all");
+  const [sorting, setSorting] = useState<SortingState>([{ id: "invoiceDate", desc: true }]);
+  const [statusFilter, setStatusFilterState] =
+    useState<(typeof SalesInvoiceStatusFilters)[number]>("all");
   const deferredQuery = useDeferredValue(query);
   const filteredRows = useMemo(
     () =>
@@ -285,9 +356,7 @@ function persistSalesInvoices(invoices: SalesInvoiceRecord[]) {
 
 function upsertSalesInvoiceRecord(record: SalesInvoiceRecord) {
   const currentInvoices = getInitialSalesInvoices();
-  const existingIndex = currentInvoices.findIndex(
-    (invoice) => invoice.id === record.id,
-  );
+  const existingIndex = currentInvoices.findIndex((invoice) => invoice.id === record.id);
 
   if (existingIndex === -1) {
     return persistSalesInvoices([record, ...currentInvoices]);
@@ -300,11 +369,13 @@ function upsertSalesInvoiceRecord(record: SalesInvoiceRecord) {
   );
 }
 
+function joinUniqueValues(values: string[]) {
+  return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean))).join(", ");
+}
+
 function isAmountInRange(value: number, range: AmountRangeValue) {
   const fromAmount = range.from.trim() ? parseMoneyNumberInput(range.from) : 0;
-  const toAmount = range.to.trim()
-    ? parseMoneyNumberInput(range.to)
-    : Number.MAX_SAFE_INTEGER;
+  const toAmount = range.to.trim() ? parseMoneyNumberInput(range.to) : Number.MAX_SAFE_INTEGER;
 
   return value >= fromAmount && value <= toAmount;
 }
@@ -318,8 +389,5 @@ function isDateInRange(value: string, range: DateRangeValue) {
   const fromTime = range.from ? new Date(range.from).setHours(0, 0, 0, 0) : null;
   const toTime = range.to ? new Date(range.to).setHours(0, 0, 0, 0) : null;
 
-  return !(
-    (fromTime !== null && dateTime < fromTime) ||
-    (toTime !== null && dateTime > toTime)
-  );
+  return !((fromTime !== null && dateTime < fromTime) || (toTime !== null && dateTime > toTime));
 }

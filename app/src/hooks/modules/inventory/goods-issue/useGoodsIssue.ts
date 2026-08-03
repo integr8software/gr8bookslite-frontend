@@ -13,9 +13,11 @@ import {
 import toast from "react-hot-toast";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import {
+	createBlankGoodsIssueLineEntry,
 	createGoodsIssueFormValues,
 	createGoodsIssueFormValuesFromRecord,
 	createGoodsIssueRecordFromForm,
+	GoodsIssueMaterialRequestCopyRecords,
 	getInitialGoodsIssues,
 	writeStoredGoodsIssues,
 } from "@/app/src/data/modules/inventory/goods-issue/GoodsIssueData";
@@ -104,6 +106,64 @@ export function useGoodsIssueActionForm(
 		setValues((current) => ({ ...current, lineEntries }));
 	}
 
+	function copyFromMaterialRequests(recordIds: string[]) {
+		const selectedRequests = GoodsIssueMaterialRequestCopyRecords.filter(
+			(record) => recordIds.includes(record.id),
+		);
+
+		if (selectedRequests.length === 0) {
+			toast.error("Select at least one material request to copy.");
+			return;
+		}
+
+		const firstRequest = selectedRequests[0];
+
+		if (!firstRequest) {
+			toast.error("Select at least one material request to copy.");
+			return;
+		}
+
+		setValues((current) => ({
+			...current,
+			documentDate: firstRequest.documentDate || current.documentDate,
+			icNo:
+				firstRequest.source === "Inventory Count"
+					? firstRequest.sourceNo
+					: current.icNo,
+			joNo:
+				firstRequest.source === "Job Order" ? firstRequest.sourceNo : current.joNo,
+			mrNo:
+				firstRequest.source === "Material Request"
+					? firstRequest.sourceNo
+					: current.mrNo,
+			rrNo:
+				firstRequest.source === "Receiving Report"
+					? firstRequest.sourceNo
+					: current.rrNo,
+			sourceWarehouse: firstRequest.warehouse || current.sourceWarehouse,
+			transactionType:
+				firstRequest.source === "Inventory Count"
+					? "Variance"
+					: firstRequest.source === "Material Request"
+						? "Material Request Issue"
+						: current.transactionType,
+			vceCode: firstRequest.partyCode,
+			vceName: firstRequest.partyName,
+			lineEntries: selectedRequests.map((request) =>
+				createBlankGoodsIssueLineEntry({
+					itemName: request.remarks,
+					itemCategory: request.itemCategory,
+					itemCode: request.itemCode,
+					issueQuantity: request.requestedQuantity,
+					remainingQuantity: "0.00",
+					referenceNo: request.sourceNo,
+					uom: request.uom,
+				}),
+			),
+		}));
+		toast.success("Material request copied to goods issue.");
+	}
+
 	function submitIssue() {
 		const validation = validateGoodsIssueForm(values);
 
@@ -125,6 +185,7 @@ export function useGoodsIssueActionForm(
 	}
 
 	return {
+		copyFromMaterialRequests,
 		isRecordMissing: mode !== "add" && !initialRecord,
 		submitIssue,
 		updateField,
@@ -194,7 +255,7 @@ export function useGoodsIssueTable(issues: GoodsIssueRecord[]) {
 			{
 				id: "transactionType",
 				accessorKey: "transactionType",
-				header: "Transaction Type",
+				header: "Goods Issue Type",
 				sortingFn: "alphanumeric",
 				meta: { className: "w-[16rem]" },
 			},

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { ServiceInvoiceActionPage } from "@/app/src/ui/modules/sales/service-invoice/ServiceInvoiceActionPage";
+import { ServiceInvoiceActionPage } from "@/app/src/ui/modules/sales/service-invoice/action/ServiceInvoiceActionPage";
 
 const PageTitle = "View Service Invoice";
 

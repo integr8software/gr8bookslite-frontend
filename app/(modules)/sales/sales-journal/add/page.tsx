@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { SalesJournalAction } from "@/app/src/ui/modules/sales/sales-journal/Action";
+import { SalesJournalFormPage } from "@/app/src/ui/modules/sales/sales-journal/SalesJournalFormPage";
 
 const PageTitle = "Add Sales Journal";
 
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default function SalesSalesJournalAddPage() {
-  return <SalesJournalAction />;
+  return <SalesJournalFormPage />;
 }
 
 

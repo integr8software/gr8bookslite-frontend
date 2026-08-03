@@ -1,7 +1,7 @@
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import type { Content, TableCell, TDocumentDefinitions } from "pdfmake/interfaces";
-import type { InventoryCountValues } from "@/app/src/ui/modules/inventory/inventory-count/Action";
+import type { InventoryCountValues } from "@/app/src/types/modules/inventory/inventory-count/InventoryCountTypes";
 
 pdfMake.addVirtualFileSystem(pdfFonts);
 
@@ -35,8 +35,9 @@ function createInventoryCountPdfDefinition(
 				alignment: "center",
 				bold: true,
 				fontSize: 16,
-				margin: [0, 12, 0, 20],
+				margin: [0, 12, 0, 10],
 			},
+			createReportDetails(values),
 			createItemsTable(values),
 		],
 	};
@@ -74,6 +75,28 @@ function createCompanyHeader(): Content {
 	});
 }
 
+function createReportDetails(values: InventoryCountValues): Content {
+	return toContent({
+		columns: [
+			{
+				width: "*",
+				stack: [
+					detailText(`Warehouse: ${values.warehouse}`),
+					detailText(`Inventory Count No.: ${values.countNo}`),
+				],
+			},
+			{
+				width: "*",
+				stack: [
+					detailText(`Uploader: ${values.uploader || "-"}`),
+					detailText(`Inventory Count Date: ${values.countDate}`),
+				],
+			},
+		],
+		margin: [0, 0, 0, 10],
+	});
+}
+
 function createItemsTable(values: InventoryCountValues): Content {
 	const rows = values.lines.length
 		? values.lines
@@ -100,7 +123,7 @@ function createItemsTable(values: InventoryCountValues): Content {
 					headerCell("Description"),
 					headerCell("UOM"),
 					headerCell("StockQTY"),
-					headerCell("PhysicalQTY"),
+					headerCell("InventoryCountQTY"),
 					headerCell("VarianceQTY"),
 				],
 				...rows.map((row) => [
@@ -119,6 +142,10 @@ function createItemsTable(values: InventoryCountValues): Content {
 
 function centerText(text: string, fontSize = 8, margin: number[] = [0, 2, 0, 0]) {
 	return { text, alignment: "center" as const, bold: true, fontSize, margin };
+}
+
+function detailText(text: string) {
+	return { text, bold: true, fontSize: 8, margin: [0, 1, 0, 1] };
 }
 
 function headerCell(text: string) {

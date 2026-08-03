@@ -5,10 +5,7 @@
  * Versioned REST API for GR8Books Neo frontend clients.
  * OpenAPI spec version: 1.0
  */
-import {
-  useMutation,
-  useQuery
-} from '@tanstack/react-query';
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
   DataTag,
   DefinedInitialDataOptions,
@@ -21,545 +18,813 @@ import type {
   UseMutationOptions,
   UseMutationResult,
   UseQueryOptions,
-  UseQueryResult
-} from '@tanstack/react-query';
+  UseQueryResult,
+} from "@tanstack/react-query";
 
 import type {
   ChartAccountContainerResponseDto,
   ChartAccountListResponseDto,
   ChartAccountNextCodeResponseDto,
+  ChartAccountOptionsResponseDto,
   ChartAccountSaveResponseDto,
   ChartAccountTreeResponseDto,
   ChartOfAccountsControllerFindAllV1Params,
+  ChartOfAccountsControllerFindOptionsV1Params,
   ChartOfAccountsControllerFindNextCodeV1Params,
   CreateChartAccountDto,
   UpdateChartAccountDto,
-  UpdateChartAccountStatusDto
-} from '../gR8BooksNeoAPI.schemas';
+  UpdateChartAccountStatusDto,
+} from "../gR8BooksNeoAPI.schemas";
 
-import { OrvalApiClient } from '../../../services/shared/api/OrvalApiClient';
-
+import { OrvalApiClient } from "../../../services/shared/api/OrvalApiClient";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
-
-
 export const chartOfAccountsControllerFindAllV1 = (
-    params?: ChartOfAccountsControllerFindAllV1Params,
- options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
+  params?: ChartOfAccountsControllerFindAllV1Params,
+  options?: SecondParameter<typeof OrvalApiClient>,
+  signal?: AbortSignal,
 ) => {
+  return OrvalApiClient<ChartAccountListResponseDto>(
+    { url: `/api/v1/maintenance/chart-of-accounts`, method: "GET", params, signal },
+    options,
+  );
+};
 
-
-      return OrvalApiClient<ChartAccountListResponseDto>(
-      {url: `/api/v1/maintenance/chart-of-accounts`, method: 'GET',
-        params, signal
-    },
-      options);
-    }
-
-
-
-
-export const getChartOfAccountsControllerFindAllV1QueryKey = (params?: ChartOfAccountsControllerFindAllV1Params,) => {
-    return [
-    `/api/v1/maintenance/chart-of-accounts`, ...(params ? [params] : [])
-    ] as const;
-    }
-
-
-export const getChartOfAccountsControllerFindAllV1QueryOptions = <TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindAllV1>>, TError = unknown>(params?: ChartOfAccountsControllerFindAllV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+export const chartOfAccountsControllerFindOptionsV1 = (
+  params?: ChartOfAccountsControllerFindOptionsV1Params,
+  options?: SecondParameter<typeof OrvalApiClient>,
+  signal?: AbortSignal,
 ) => {
+  return OrvalApiClient<ChartAccountOptionsResponseDto>(
+    { url: `/api/v1/maintenance/chart-of-accounts/options`, method: "GET", params, signal },
+    options,
+  );
+};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+export const getChartOfAccountsControllerFindAllV1QueryKey = (
+  params?: ChartOfAccountsControllerFindAllV1Params,
+) => {
+  return [`/api/v1/maintenance/chart-of-accounts`, ...(params ? [params] : [])] as const;
+};
 
-  const queryKey =  queryOptions?.queryKey ?? getChartOfAccountsControllerFindAllV1QueryKey(params);
+export const getChartOfAccountsControllerFindAllV1QueryOptions = <
+  TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindAllV1>>,
+  TError = unknown,
+>(
+  params?: ChartOfAccountsControllerFindAllV1Params,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindAllV1>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof OrvalApiClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
+  const queryKey = queryOptions?.queryKey ?? getChartOfAccountsControllerFindAllV1QueryKey(params);
 
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof chartOfAccountsControllerFindAllV1>>> = ({
+    signal,
+  }) => chartOfAccountsControllerFindAllV1(params, requestOptions, signal);
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof chartOfAccountsControllerFindAllV1>>> = ({ signal }) => chartOfAccountsControllerFindAllV1(params, requestOptions, signal);
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof chartOfAccountsControllerFindAllV1>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
+export type ChartOfAccountsControllerFindAllV1QueryResult = NonNullable<
+  Awaited<ReturnType<typeof chartOfAccountsControllerFindAllV1>>
+>;
+export type ChartOfAccountsControllerFindAllV1QueryError = unknown;
 
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindAllV1>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ChartOfAccountsControllerFindAllV1QueryResult = NonNullable<Awaited<ReturnType<typeof chartOfAccountsControllerFindAllV1>>>
-export type ChartOfAccountsControllerFindAllV1QueryError = unknown
-
-
-export function useChartOfAccountsControllerFindAllV1<TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindAllV1>>, TError = unknown>(
- params: undefined |  ChartOfAccountsControllerFindAllV1Params, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindAllV1>>, TError, TData>> & Pick<
+export function useChartOfAccountsControllerFindAllV1<
+  TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindAllV1>>,
+  TError = unknown,
+>(
+  params: undefined | ChartOfAccountsControllerFindAllV1Params,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindAllV1>>, TError, TData>
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof chartOfAccountsControllerFindAllV1>>,
           TError,
           Awaited<ReturnType<typeof chartOfAccountsControllerFindAllV1>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof OrvalApiClient>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChartOfAccountsControllerFindAllV1<TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindAllV1>>, TError = unknown>(
- params?: ChartOfAccountsControllerFindAllV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindAllV1>>, TError, TData>> & Pick<
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof OrvalApiClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useChartOfAccountsControllerFindAllV1<
+  TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindAllV1>>,
+  TError = unknown,
+>(
+  params?: ChartOfAccountsControllerFindAllV1Params,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindAllV1>>, TError, TData>
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof chartOfAccountsControllerFindAllV1>>,
           TError,
           Awaited<ReturnType<typeof chartOfAccountsControllerFindAllV1>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof OrvalApiClient>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChartOfAccountsControllerFindAllV1<TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindAllV1>>, TError = unknown>(
- params?: ChartOfAccountsControllerFindAllV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof OrvalApiClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useChartOfAccountsControllerFindAllV1<
+  TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindAllV1>>,
+  TError = unknown,
+>(
+  params?: ChartOfAccountsControllerFindAllV1Params,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindAllV1>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof OrvalApiClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
-export function useChartOfAccountsControllerFindAllV1<TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindAllV1>>, TError = unknown>(
- params?: ChartOfAccountsControllerFindAllV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useChartOfAccountsControllerFindAllV1<
+  TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindAllV1>>,
+  TError = unknown,
+>(
+  params?: ChartOfAccountsControllerFindAllV1Params,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindAllV1>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof OrvalApiClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getChartOfAccountsControllerFindAllV1QueryOptions(params, options);
 
-  const queryOptions = getChartOfAccountsControllerFindAllV1QueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
-
-
-
-
-
 
 export const chartOfAccountsControllerCreateV1 = (
-    createChartAccountDto: CreateChartAccountDto,
- options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
+  createChartAccountDto: CreateChartAccountDto,
+  options?: SecondParameter<typeof OrvalApiClient>,
+  signal?: AbortSignal,
 ) => {
-
-
-      return OrvalApiClient<ChartAccountSaveResponseDto>(
-      {url: `/api/v1/maintenance/chart-of-accounts`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: createChartAccountDto, signal
+  return OrvalApiClient<ChartAccountSaveResponseDto>(
+    {
+      url: `/api/v1/maintenance/chart-of-accounts`,
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      data: createChartAccountDto,
+      signal,
     },
-      options);
-    }
+    options,
+  );
+};
 
+export const getChartOfAccountsControllerCreateV1MutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof chartOfAccountsControllerCreateV1>>,
+    TError,
+    { data: CreateChartAccountDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof OrvalApiClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof chartOfAccountsControllerCreateV1>>,
+  TError,
+  { data: CreateChartAccountDto },
+  TContext
+> => {
+  const mutationKey = ["chartOfAccountsControllerCreateV1"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof chartOfAccountsControllerCreateV1>>,
+    { data: CreateChartAccountDto }
+  > = (props) => {
+    const { data } = props ?? {};
 
-export const getChartOfAccountsControllerCreateV1MutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof chartOfAccountsControllerCreateV1>>, TError,{data: CreateChartAccountDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
-): UseMutationOptions<Awaited<ReturnType<typeof chartOfAccountsControllerCreateV1>>, TError,{data: CreateChartAccountDto}, TContext> => {
+    return chartOfAccountsControllerCreateV1(data, requestOptions);
+  };
 
-const mutationKey = ['chartOfAccountsControllerCreateV1'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
+  return { mutationFn, ...mutationOptions };
+};
 
+export type ChartOfAccountsControllerCreateV1MutationResult = NonNullable<
+  Awaited<ReturnType<typeof chartOfAccountsControllerCreateV1>>
+>;
+export type ChartOfAccountsControllerCreateV1MutationBody = CreateChartAccountDto;
+export type ChartOfAccountsControllerCreateV1MutationError = unknown;
 
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof chartOfAccountsControllerCreateV1>>, {data: CreateChartAccountDto}> = (props) => {
-          const {data} = props ?? {};
-
-          return  chartOfAccountsControllerCreateV1(data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type ChartOfAccountsControllerCreateV1MutationResult = NonNullable<Awaited<ReturnType<typeof chartOfAccountsControllerCreateV1>>>
-    export type ChartOfAccountsControllerCreateV1MutationBody = CreateChartAccountDto
-    export type ChartOfAccountsControllerCreateV1MutationError = unknown
-
-    export const useChartOfAccountsControllerCreateV1 = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof chartOfAccountsControllerCreateV1>>, TError,{data: CreateChartAccountDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof chartOfAccountsControllerCreateV1>>,
-        TError,
-        {data: CreateChartAccountDto},
-        TContext
-      > => {
-      return useMutation(getChartOfAccountsControllerCreateV1MutationOptions(options), queryClient);
-    }
-    export const chartOfAccountsControllerFindTreeV1 = (
-
- options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
+export const useChartOfAccountsControllerCreateV1 = <TError = unknown, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof chartOfAccountsControllerCreateV1>>,
+      TError,
+      { data: CreateChartAccountDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof OrvalApiClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof chartOfAccountsControllerCreateV1>>,
+  TError,
+  { data: CreateChartAccountDto },
+  TContext
+> => {
+  return useMutation(getChartOfAccountsControllerCreateV1MutationOptions(options), queryClient);
+};
+export const chartOfAccountsControllerFindTreeV1 = (
+  options?: SecondParameter<typeof OrvalApiClient>,
+  signal?: AbortSignal,
 ) => {
-
-
-      return OrvalApiClient<ChartAccountTreeResponseDto>(
-      {url: `/api/v1/maintenance/chart-of-accounts/tree`, method: 'GET', signal
-    },
-      options);
-    }
-
-
-
+  return OrvalApiClient<ChartAccountTreeResponseDto>(
+    { url: `/api/v1/maintenance/chart-of-accounts/tree`, method: "GET", signal },
+    options,
+  );
+};
 
 export const getChartOfAccountsControllerFindTreeV1QueryKey = () => {
-    return [
-    `/api/v1/maintenance/chart-of-accounts/tree`
-    ] as const;
-    }
+  return [`/api/v1/maintenance/chart-of-accounts/tree`] as const;
+};
 
+export const getChartOfAccountsControllerFindTreeV1QueryOptions = <
+  TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindTreeV1>>,
+  TError = unknown,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindTreeV1>>, TError, TData>
+  >;
+  request?: SecondParameter<typeof OrvalApiClient>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-export const getChartOfAccountsControllerFindTreeV1QueryOptions = <TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindTreeV1>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindTreeV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
-) => {
+  const queryKey = queryOptions?.queryKey ?? getChartOfAccountsControllerFindTreeV1QueryKey();
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof chartOfAccountsControllerFindTreeV1>>> = ({
+    signal,
+  }) => chartOfAccountsControllerFindTreeV1(requestOptions, signal);
 
-  const queryKey =  queryOptions?.queryKey ?? getChartOfAccountsControllerFindTreeV1QueryKey();
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof chartOfAccountsControllerFindTreeV1>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
+export type ChartOfAccountsControllerFindTreeV1QueryResult = NonNullable<
+  Awaited<ReturnType<typeof chartOfAccountsControllerFindTreeV1>>
+>;
+export type ChartOfAccountsControllerFindTreeV1QueryError = unknown;
 
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof chartOfAccountsControllerFindTreeV1>>> = ({ signal }) => chartOfAccountsControllerFindTreeV1(requestOptions, signal);
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindTreeV1>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ChartOfAccountsControllerFindTreeV1QueryResult = NonNullable<Awaited<ReturnType<typeof chartOfAccountsControllerFindTreeV1>>>
-export type ChartOfAccountsControllerFindTreeV1QueryError = unknown
-
-
-export function useChartOfAccountsControllerFindTreeV1<TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindTreeV1>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindTreeV1>>, TError, TData>> & Pick<
+export function useChartOfAccountsControllerFindTreeV1<
+  TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindTreeV1>>,
+  TError = unknown,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof chartOfAccountsControllerFindTreeV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof chartOfAccountsControllerFindTreeV1>>,
           TError,
           Awaited<ReturnType<typeof chartOfAccountsControllerFindTreeV1>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof OrvalApiClient>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChartOfAccountsControllerFindTreeV1<TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindTreeV1>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindTreeV1>>, TError, TData>> & Pick<
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof OrvalApiClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useChartOfAccountsControllerFindTreeV1<
+  TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindTreeV1>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof chartOfAccountsControllerFindTreeV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof chartOfAccountsControllerFindTreeV1>>,
           TError,
           Awaited<ReturnType<typeof chartOfAccountsControllerFindTreeV1>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof OrvalApiClient>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChartOfAccountsControllerFindTreeV1<TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindTreeV1>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindTreeV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof OrvalApiClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useChartOfAccountsControllerFindTreeV1<
+  TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindTreeV1>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof chartOfAccountsControllerFindTreeV1>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof OrvalApiClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
-export function useChartOfAccountsControllerFindTreeV1<TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindTreeV1>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindTreeV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useChartOfAccountsControllerFindTreeV1<
+  TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindTreeV1>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof chartOfAccountsControllerFindTreeV1>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof OrvalApiClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getChartOfAccountsControllerFindTreeV1QueryOptions(options);
 
-  const queryOptions = getChartOfAccountsControllerFindTreeV1QueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
-
-
-
-
-
 
 export const chartOfAccountsControllerFindNextCodeV1 = (
-    params: ChartOfAccountsControllerFindNextCodeV1Params,
- options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
+  params: ChartOfAccountsControllerFindNextCodeV1Params,
+  options?: SecondParameter<typeof OrvalApiClient>,
+  signal?: AbortSignal,
 ) => {
+  return OrvalApiClient<ChartAccountNextCodeResponseDto>(
+    { url: `/api/v1/maintenance/chart-of-accounts/next-code`, method: "GET", params, signal },
+    options,
+  );
+};
 
-
-      return OrvalApiClient<ChartAccountNextCodeResponseDto>(
-      {url: `/api/v1/maintenance/chart-of-accounts/next-code`, method: 'GET',
-        params, signal
-    },
-      options);
-    }
-
-
-
-
-export const getChartOfAccountsControllerFindNextCodeV1QueryKey = (params?: ChartOfAccountsControllerFindNextCodeV1Params,) => {
-    return [
-    `/api/v1/maintenance/chart-of-accounts/next-code`, ...(params ? [params] : [])
-    ] as const;
-    }
-
-
-export const getChartOfAccountsControllerFindNextCodeV1QueryOptions = <TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindNextCodeV1>>, TError = unknown>(params: ChartOfAccountsControllerFindNextCodeV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindNextCodeV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+export const getChartOfAccountsControllerFindNextCodeV1QueryKey = (
+  params?: ChartOfAccountsControllerFindNextCodeV1Params,
 ) => {
+  return [`/api/v1/maintenance/chart-of-accounts/next-code`, ...(params ? [params] : [])] as const;
+};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+export const getChartOfAccountsControllerFindNextCodeV1QueryOptions = <
+  TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindNextCodeV1>>,
+  TError = unknown,
+>(
+  params: ChartOfAccountsControllerFindNextCodeV1Params,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof chartOfAccountsControllerFindNextCodeV1>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof OrvalApiClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getChartOfAccountsControllerFindNextCodeV1QueryKey(params);
+  const queryKey =
+    queryOptions?.queryKey ?? getChartOfAccountsControllerFindNextCodeV1QueryKey(params);
 
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof chartOfAccountsControllerFindNextCodeV1>>
+  > = ({ signal }) => chartOfAccountsControllerFindNextCodeV1(params, requestOptions, signal);
 
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof chartOfAccountsControllerFindNextCodeV1>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof chartOfAccountsControllerFindNextCodeV1>>> = ({ signal }) => chartOfAccountsControllerFindNextCodeV1(params, requestOptions, signal);
+export type ChartOfAccountsControllerFindNextCodeV1QueryResult = NonNullable<
+  Awaited<ReturnType<typeof chartOfAccountsControllerFindNextCodeV1>>
+>;
+export type ChartOfAccountsControllerFindNextCodeV1QueryError = unknown;
 
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindNextCodeV1>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ChartOfAccountsControllerFindNextCodeV1QueryResult = NonNullable<Awaited<ReturnType<typeof chartOfAccountsControllerFindNextCodeV1>>>
-export type ChartOfAccountsControllerFindNextCodeV1QueryError = unknown
-
-
-export function useChartOfAccountsControllerFindNextCodeV1<TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindNextCodeV1>>, TError = unknown>(
- params: ChartOfAccountsControllerFindNextCodeV1Params, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindNextCodeV1>>, TError, TData>> & Pick<
+export function useChartOfAccountsControllerFindNextCodeV1<
+  TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindNextCodeV1>>,
+  TError = unknown,
+>(
+  params: ChartOfAccountsControllerFindNextCodeV1Params,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof chartOfAccountsControllerFindNextCodeV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof chartOfAccountsControllerFindNextCodeV1>>,
           TError,
           Awaited<ReturnType<typeof chartOfAccountsControllerFindNextCodeV1>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof OrvalApiClient>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChartOfAccountsControllerFindNextCodeV1<TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindNextCodeV1>>, TError = unknown>(
- params: ChartOfAccountsControllerFindNextCodeV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindNextCodeV1>>, TError, TData>> & Pick<
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof OrvalApiClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useChartOfAccountsControllerFindNextCodeV1<
+  TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindNextCodeV1>>,
+  TError = unknown,
+>(
+  params: ChartOfAccountsControllerFindNextCodeV1Params,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof chartOfAccountsControllerFindNextCodeV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof chartOfAccountsControllerFindNextCodeV1>>,
           TError,
           Awaited<ReturnType<typeof chartOfAccountsControllerFindNextCodeV1>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof OrvalApiClient>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChartOfAccountsControllerFindNextCodeV1<TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindNextCodeV1>>, TError = unknown>(
- params: ChartOfAccountsControllerFindNextCodeV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindNextCodeV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof OrvalApiClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useChartOfAccountsControllerFindNextCodeV1<
+  TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindNextCodeV1>>,
+  TError = unknown,
+>(
+  params: ChartOfAccountsControllerFindNextCodeV1Params,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof chartOfAccountsControllerFindNextCodeV1>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof OrvalApiClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
-export function useChartOfAccountsControllerFindNextCodeV1<TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindNextCodeV1>>, TError = unknown>(
- params: ChartOfAccountsControllerFindNextCodeV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindNextCodeV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useChartOfAccountsControllerFindNextCodeV1<
+  TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindNextCodeV1>>,
+  TError = unknown,
+>(
+  params: ChartOfAccountsControllerFindNextCodeV1Params,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof chartOfAccountsControllerFindNextCodeV1>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof OrvalApiClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getChartOfAccountsControllerFindNextCodeV1QueryOptions(params, options);
 
-  const queryOptions = getChartOfAccountsControllerFindNextCodeV1QueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
-
-
-
-
-
 
 export const chartOfAccountsControllerFindOneV1 = (
-    id: string,
- options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
+  id: string,
+  options?: SecondParameter<typeof OrvalApiClient>,
+  signal?: AbortSignal,
 ) => {
+  return OrvalApiClient<ChartAccountContainerResponseDto>(
+    { url: `/api/v1/maintenance/chart-of-accounts/${id}`, method: "GET", signal },
+    options,
+  );
+};
 
+export const getChartOfAccountsControllerFindOneV1QueryKey = (id: string) => {
+  return [`/api/v1/maintenance/chart-of-accounts/${id}`] as const;
+};
 
-      return OrvalApiClient<ChartAccountContainerResponseDto>(
-      {url: `/api/v1/maintenance/chart-of-accounts/${id}`, method: 'GET', signal
-    },
-      options);
-    }
-
-
-
-
-export const getChartOfAccountsControllerFindOneV1QueryKey = (id: string,) => {
-    return [
-    `/api/v1/maintenance/chart-of-accounts/${id}`
-    ] as const;
-    }
-
-
-export const getChartOfAccountsControllerFindOneV1QueryOptions = <TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindOneV1>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindOneV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+export const getChartOfAccountsControllerFindOneV1QueryOptions = <
+  TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindOneV1>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindOneV1>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof OrvalApiClient>;
+  },
 ) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+  const queryKey = queryOptions?.queryKey ?? getChartOfAccountsControllerFindOneV1QueryKey(id);
 
-  const queryKey =  queryOptions?.queryKey ?? getChartOfAccountsControllerFindOneV1QueryKey(id);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof chartOfAccountsControllerFindOneV1>>> = ({
+    signal,
+  }) => chartOfAccountsControllerFindOneV1(id, requestOptions, signal);
 
+  return {
+    queryKey,
+    queryFn,
+    enabled: id !== null && id !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof chartOfAccountsControllerFindOneV1>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
+export type ChartOfAccountsControllerFindOneV1QueryResult = NonNullable<
+  Awaited<ReturnType<typeof chartOfAccountsControllerFindOneV1>>
+>;
+export type ChartOfAccountsControllerFindOneV1QueryError = unknown;
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof chartOfAccountsControllerFindOneV1>>> = ({ signal }) => chartOfAccountsControllerFindOneV1(id, requestOptions, signal);
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindOneV1>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ChartOfAccountsControllerFindOneV1QueryResult = NonNullable<Awaited<ReturnType<typeof chartOfAccountsControllerFindOneV1>>>
-export type ChartOfAccountsControllerFindOneV1QueryError = unknown
-
-
-export function useChartOfAccountsControllerFindOneV1<TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindOneV1>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindOneV1>>, TError, TData>> & Pick<
+export function useChartOfAccountsControllerFindOneV1<
+  TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindOneV1>>,
+  TError = unknown,
+>(
+  id: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindOneV1>>, TError, TData>
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof chartOfAccountsControllerFindOneV1>>,
           TError,
           Awaited<ReturnType<typeof chartOfAccountsControllerFindOneV1>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof OrvalApiClient>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChartOfAccountsControllerFindOneV1<TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindOneV1>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindOneV1>>, TError, TData>> & Pick<
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof OrvalApiClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useChartOfAccountsControllerFindOneV1<
+  TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindOneV1>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindOneV1>>, TError, TData>
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof chartOfAccountsControllerFindOneV1>>,
           TError,
           Awaited<ReturnType<typeof chartOfAccountsControllerFindOneV1>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof OrvalApiClient>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChartOfAccountsControllerFindOneV1<TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindOneV1>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindOneV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof OrvalApiClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useChartOfAccountsControllerFindOneV1<
+  TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindOneV1>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindOneV1>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof OrvalApiClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
-export function useChartOfAccountsControllerFindOneV1<TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindOneV1>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindOneV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useChartOfAccountsControllerFindOneV1<
+  TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindOneV1>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindOneV1>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof OrvalApiClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getChartOfAccountsControllerFindOneV1QueryOptions(id, options);
 
-  const queryOptions = getChartOfAccountsControllerFindOneV1QueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
 
-
-
-
-
-
 export const chartOfAccountsControllerUpdateV1 = (
-    id: string,
-    updateChartAccountDto: UpdateChartAccountDto,
- options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
+  id: string,
+  updateChartAccountDto: UpdateChartAccountDto,
+  options?: SecondParameter<typeof OrvalApiClient>,
+  signal?: AbortSignal,
 ) => {
-
-
-      return OrvalApiClient<ChartAccountSaveResponseDto>(
-      {url: `/api/v1/maintenance/chart-of-accounts/${id}`, method: 'PATCH',
-      headers: {'Content-Type': 'application/json', },
-      data: updateChartAccountDto, signal
+  return OrvalApiClient<ChartAccountSaveResponseDto>(
+    {
+      url: `/api/v1/maintenance/chart-of-accounts/${id}`,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      data: updateChartAccountDto,
+      signal,
     },
-      options);
-    }
+    options,
+  );
+};
 
+export const getChartOfAccountsControllerUpdateV1MutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof chartOfAccountsControllerUpdateV1>>,
+    TError,
+    { id: string; data: UpdateChartAccountDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof OrvalApiClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof chartOfAccountsControllerUpdateV1>>,
+  TError,
+  { id: string; data: UpdateChartAccountDto },
+  TContext
+> => {
+  const mutationKey = ["chartOfAccountsControllerUpdateV1"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof chartOfAccountsControllerUpdateV1>>,
+    { id: string; data: UpdateChartAccountDto }
+  > = (props) => {
+    const { id, data } = props ?? {};
 
-export const getChartOfAccountsControllerUpdateV1MutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof chartOfAccountsControllerUpdateV1>>, TError,{id: string;data: UpdateChartAccountDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
-): UseMutationOptions<Awaited<ReturnType<typeof chartOfAccountsControllerUpdateV1>>, TError,{id: string;data: UpdateChartAccountDto}, TContext> => {
+    return chartOfAccountsControllerUpdateV1(id, data, requestOptions);
+  };
 
-const mutationKey = ['chartOfAccountsControllerUpdateV1'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
+  return { mutationFn, ...mutationOptions };
+};
 
+export type ChartOfAccountsControllerUpdateV1MutationResult = NonNullable<
+  Awaited<ReturnType<typeof chartOfAccountsControllerUpdateV1>>
+>;
+export type ChartOfAccountsControllerUpdateV1MutationBody = UpdateChartAccountDto;
+export type ChartOfAccountsControllerUpdateV1MutationError = unknown;
 
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof chartOfAccountsControllerUpdateV1>>, {id: string;data: UpdateChartAccountDto}> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  chartOfAccountsControllerUpdateV1(id,data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type ChartOfAccountsControllerUpdateV1MutationResult = NonNullable<Awaited<ReturnType<typeof chartOfAccountsControllerUpdateV1>>>
-    export type ChartOfAccountsControllerUpdateV1MutationBody = UpdateChartAccountDto
-    export type ChartOfAccountsControllerUpdateV1MutationError = unknown
-
-    export const useChartOfAccountsControllerUpdateV1 = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof chartOfAccountsControllerUpdateV1>>, TError,{id: string;data: UpdateChartAccountDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof chartOfAccountsControllerUpdateV1>>,
-        TError,
-        {id: string;data: UpdateChartAccountDto},
-        TContext
-      > => {
-      return useMutation(getChartOfAccountsControllerUpdateV1MutationOptions(options), queryClient);
-    }
-    export const chartOfAccountsControllerUpdateStatusV1 = (
-    id: string,
-    updateChartAccountStatusDto: UpdateChartAccountStatusDto,
- options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
+export const useChartOfAccountsControllerUpdateV1 = <TError = unknown, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof chartOfAccountsControllerUpdateV1>>,
+      TError,
+      { id: string; data: UpdateChartAccountDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof OrvalApiClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof chartOfAccountsControllerUpdateV1>>,
+  TError,
+  { id: string; data: UpdateChartAccountDto },
+  TContext
+> => {
+  return useMutation(getChartOfAccountsControllerUpdateV1MutationOptions(options), queryClient);
+};
+export const chartOfAccountsControllerUpdateStatusV1 = (
+  id: string,
+  updateChartAccountStatusDto: UpdateChartAccountStatusDto,
+  options?: SecondParameter<typeof OrvalApiClient>,
+  signal?: AbortSignal,
 ) => {
-
-
-      return OrvalApiClient<ChartAccountSaveResponseDto>(
-      {url: `/api/v1/maintenance/chart-of-accounts/${id}/status`, method: 'PATCH',
-      headers: {'Content-Type': 'application/json', },
-      data: updateChartAccountStatusDto, signal
+  return OrvalApiClient<ChartAccountSaveResponseDto>(
+    {
+      url: `/api/v1/maintenance/chart-of-accounts/${id}/status`,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      data: updateChartAccountStatusDto,
+      signal,
     },
-      options);
-    }
+    options,
+  );
+};
 
+export const getChartOfAccountsControllerUpdateStatusV1MutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof chartOfAccountsControllerUpdateStatusV1>>,
+    TError,
+    { id: string; data: UpdateChartAccountStatusDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof OrvalApiClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof chartOfAccountsControllerUpdateStatusV1>>,
+  TError,
+  { id: string; data: UpdateChartAccountStatusDto },
+  TContext
+> => {
+  const mutationKey = ["chartOfAccountsControllerUpdateStatusV1"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof chartOfAccountsControllerUpdateStatusV1>>,
+    { id: string; data: UpdateChartAccountStatusDto }
+  > = (props) => {
+    const { id, data } = props ?? {};
 
-export const getChartOfAccountsControllerUpdateStatusV1MutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof chartOfAccountsControllerUpdateStatusV1>>, TError,{id: string;data: UpdateChartAccountStatusDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
-): UseMutationOptions<Awaited<ReturnType<typeof chartOfAccountsControllerUpdateStatusV1>>, TError,{id: string;data: UpdateChartAccountStatusDto}, TContext> => {
+    return chartOfAccountsControllerUpdateStatusV1(id, data, requestOptions);
+  };
 
-const mutationKey = ['chartOfAccountsControllerUpdateStatusV1'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
+  return { mutationFn, ...mutationOptions };
+};
 
+export type ChartOfAccountsControllerUpdateStatusV1MutationResult = NonNullable<
+  Awaited<ReturnType<typeof chartOfAccountsControllerUpdateStatusV1>>
+>;
+export type ChartOfAccountsControllerUpdateStatusV1MutationBody = UpdateChartAccountStatusDto;
+export type ChartOfAccountsControllerUpdateStatusV1MutationError = unknown;
 
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof chartOfAccountsControllerUpdateStatusV1>>, {id: string;data: UpdateChartAccountStatusDto}> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  chartOfAccountsControllerUpdateStatusV1(id,data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type ChartOfAccountsControllerUpdateStatusV1MutationResult = NonNullable<Awaited<ReturnType<typeof chartOfAccountsControllerUpdateStatusV1>>>
-    export type ChartOfAccountsControllerUpdateStatusV1MutationBody = UpdateChartAccountStatusDto
-    export type ChartOfAccountsControllerUpdateStatusV1MutationError = unknown
-
-    export const useChartOfAccountsControllerUpdateStatusV1 = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof chartOfAccountsControllerUpdateStatusV1>>, TError,{id: string;data: UpdateChartAccountStatusDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof chartOfAccountsControllerUpdateStatusV1>>,
-        TError,
-        {id: string;data: UpdateChartAccountStatusDto},
-        TContext
-      > => {
-      return useMutation(getChartOfAccountsControllerUpdateStatusV1MutationOptions(options), queryClient);
-    }
+export const useChartOfAccountsControllerUpdateStatusV1 = <TError = unknown, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof chartOfAccountsControllerUpdateStatusV1>>,
+      TError,
+      { id: string; data: UpdateChartAccountStatusDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof OrvalApiClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof chartOfAccountsControllerUpdateStatusV1>>,
+  TError,
+  { id: string; data: UpdateChartAccountStatusDto },
+  TContext
+> => {
+  return useMutation(
+    getChartOfAccountsControllerUpdateStatusV1MutationOptions(options),
+    queryClient,
+  );
+};

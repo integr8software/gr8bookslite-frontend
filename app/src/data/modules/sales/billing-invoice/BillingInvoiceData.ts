@@ -1,5 +1,6 @@
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import type {
+	BillingInvoiceAccountEntry,
 	BillingInvoiceFormValues,
 	BillingInvoiceLineEntry,
 	BillingInvoiceRecord,
@@ -114,6 +115,8 @@ export function createBlankBillingInvoiceLineEntry(
 ): BillingInvoiceLineEntry {
 	return {
 		id: `bi-line-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+		itemNo: "",
+		itemName: "",
 		description: "",
 		particulars: "",
 		amount: "0.00",
@@ -137,18 +140,51 @@ export function createBlankBillingInvoiceLineEntry(
 	};
 }
 
+export function createBlankBillingInvoiceAccountEntry(
+	overrides: Partial<BillingInvoiceAccountEntry> = {},
+): BillingInvoiceAccountEntry {
+	return {
+		id: `bi-account-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+		accountCode: "",
+		accountTitle: "",
+		debit: "0.00",
+		credit: "0.00",
+		...overrides,
+	};
+}
+
 export function createBillingInvoiceFormValues(): BillingInvoiceFormValues {
 	const today = new Date().toISOString().slice(0, 10);
 
 	return {
+		accountEntries: [
+			createBlankBillingInvoiceAccountEntry({
+				accountTitle: "Accounts Receivable - Trade",
+			}),
+			createBlankBillingInvoiceAccountEntry({
+				accountTitle: "Sales Discount",
+			}),
+			createBlankBillingInvoiceAccountEntry({
+				accountTitle: "Output Tax",
+			}),
+			createBlankBillingInvoiceAccountEntry({
+				accountTitle: "Sales",
+			}),
+		],
 		code: "",
 		name: "",
+		address: "",
+		billToCode: "",
+		billToName: "",
 		currency: "PHP",
 		exchangeRate: "1.0000",
+		contactNo: "",
 		contactPerson: "",
 		remarks: "",
 		terms: "",
 		dueDate: today,
+		drNo: "",
+		resCenter: "",
 		description: "",
 		defaultAccount: "",
 		teamAssigned: "",
@@ -205,8 +241,15 @@ export function createBillingInvoiceFormValuesFromRecord(
 ): BillingInvoiceFormValues {
 	if (record.formValues) {
 		return {
+			...createBillingInvoiceFormValues(),
 			...record.formValues,
-			lineEntries: record.formValues.lineEntries.map((entry) => ({ ...entry })),
+			accountEntries:
+				record.formValues.accountEntries?.map((entry) => ({ ...entry })) ??
+				createBillingInvoiceFormValues().accountEntries,
+			lineEntries: record.formValues.lineEntries.map((entry) => ({
+				...createBlankBillingInvoiceLineEntry(),
+				...entry,
+			})),
 		};
 	}
 
@@ -214,7 +257,9 @@ export function createBillingInvoiceFormValuesFromRecord(
 		...createBillingInvoiceFormValues(),
 		code: record.customerCode,
 		name: record.customerName,
+		billToName: record.customerName,
 		documentDate: record.documentDate,
+		drNo: record.referenceNo,
 		grossAmount: record.amount.toFixed(2),
 		invoiceNo: record.invoiceNo,
 		netAmount: record.amount.toFixed(2),
@@ -224,6 +269,7 @@ export function createBillingInvoiceFormValuesFromRecord(
 		lineEntries: [
 			createBlankBillingInvoiceLineEntry({
 				description: "Professional services",
+				itemName: "Professional services",
 				grossAmount: record.amount.toFixed(2),
 				netAmount: record.amount.toFixed(2),
 				particulars: record.referenceNo,
@@ -247,10 +293,11 @@ export function createBillingInvoiceRecordFromForm(
 		documentDate: values.documentDate,
 		formValues: {
 			...values,
+			accountEntries: values.accountEntries.map((entry) => ({ ...entry })),
 			lineEntries: values.lineEntries.map((entry) => ({ ...entry })),
 		},
 		invoiceNo: values.invoiceNo || values.transactionNo,
-		referenceNo: values.referenceNo || values.poNo || values.joNo,
+		referenceNo: values.referenceNo || values.drNo || values.poNo || values.joNo,
 		status: normalizeBillingInvoiceStatus(values.status),
 		transactionNo: values.transactionNo,
 	};

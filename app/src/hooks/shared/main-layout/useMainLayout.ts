@@ -33,17 +33,13 @@ import {
 } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
 import {
   filterMainNavigationSections,
-  filterMainSearchItems,
   flattenSections,
   getAccessibleBranches,
 } from "@/app/src/data/shared/main-layout/sidebar/SidebarUtils";
 import {
-  MainAccountNavigationSections,
-  MainAccountSearchItems,
   MainMasterNavigationSections,
-  MainMasterSearchItems,
   MainWorkspaceNavigationSections,
-  MainWorkspaceSearchItems,
+  MainAccountNavigationSections,
 } from "@/app/src/data/shared/main-layout/sidebar/SidebarNavigationData";
 import {
   MainLayoutDefaultSubscription,
@@ -61,20 +57,14 @@ import {
   GetAuthProfileCompanyId,
   ResolveAuthProfileEffectiveRole,
 } from "@/app/src/services/auth/AuthProfileAccess";
-import {
-  CreateFrontendAuthSession,
-  SwitchCompanyContext,
-} from "@/app/src/services/auth/AuthApi";
+import { CreateFrontendAuthSession, SwitchCompanyContext } from "@/app/src/services/auth/AuthApi";
 import { AuthenticatedSessionMarker } from "@/app/src/data/auth/AuthSessionStorage";
 import { NotifyAuthSessionExpired } from "@/app/src/services/auth/AuthSessionExpired";
 import {
   BuildAuthProfileFromSwitchResponse,
   PrepareQueryCacheForContextSwitch,
 } from "@/app/src/services/auth/AuthContextCache";
-import {
-  OnboardingRoutePath,
-  RequiresOnboarding,
-} from "@/app/src/services/auth/AuthRouteState";
+import { OnboardingRoutePath, RequiresOnboarding } from "@/app/src/services/auth/AuthRouteState";
 import {
   AuthQueryKeys,
   CreateAuthAccessTokenQueryScope,
@@ -161,30 +151,14 @@ export function useMainLayout() {
   const searchParams = useSearchParams();
   const storedAccessToken = useAppStore((state) => state.accessToken);
   const setStoredAccessToken = useAppStore((state) => state.setAccessToken);
-  const setStoredActiveBranchContext = useAppStore(
-    (state) => state.setActiveBranchContext,
-  );
-  const setStoredActiveCompanyId = useAppStore(
-    (state) => state.setActiveCompanyId,
-  );
-  const setStoredActiveCompanyName = useAppStore(
-    (state) => state.setActiveCompanyName,
-  );
-  const shellContextSwitchMessage = useAppStore(
-    (state) => state.shellContextSwitchMessage,
-  );
-  const isShellContextSettling = useAppStore(
-    (state) => state.isShellContextSettling,
-  );
-  const beginShellContextSwitch = useAppStore(
-    (state) => state.beginShellContextSwitch,
-  );
-  const endShellContextSwitch = useAppStore(
-    (state) => state.endShellContextSwitch,
-  );
-  const finishShellContextSettling = useAppStore(
-    (state) => state.finishShellContextSettling,
-  );
+  const setStoredActiveBranchContext = useAppStore((state) => state.setActiveBranchContext);
+  const setStoredActiveCompanyId = useAppStore((state) => state.setActiveCompanyId);
+  const setStoredActiveCompanyName = useAppStore((state) => state.setActiveCompanyName);
+  const shellContextSwitchMessage = useAppStore((state) => state.shellContextSwitchMessage);
+  const isShellContextSettling = useAppStore((state) => state.isShellContextSettling);
+  const beginShellContextSwitch = useAppStore((state) => state.beginShellContextSwitch);
+  const endShellContextSwitch = useAppStore((state) => state.endShellContextSwitch);
+  const finishShellContextSettling = useAppStore((state) => state.finishShellContextSettling);
   const isAuthSessionReady = useAppStore((state) => state.isAuthSessionReady);
   const queryClient = useQueryClient();
   const sidebarTransitionFrameRef = useRef<number | null>(null);
@@ -193,45 +167,32 @@ export function useMainLayout() {
   const latestCompanySwitchRequestRef = useRef(0);
   const hasHandledAuthProfileErrorRef = useRef(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isSidebarTransitionEnabled, setIsSidebarTransitionEnabled] =
-    useState(false);
+  const [isSidebarTransitionEnabled, setIsSidebarTransitionEnabled] = useState(false);
   const [searchOpenPath, setSearchOpenPath] = useState<string | null>(null);
-  const [notificationsOpenPath, setNotificationsOpenPath] = useState<
-    string | null
-  >(null);
+  const [notificationsOpenPath, setNotificationsOpenPath] = useState<string | null>(null);
   const [helpOpenPath, setHelpOpenPath] = useState<string | null>(null);
   const [selectedHelpArticleState, setSelectedHelpArticleState] = useState({
     pathname: "",
     key: "",
   });
-  const [notificationTab, setNotificationTab] =
-    useState<MainNotificationTab>("all");
-  const [manualExpandedKeys, setManualExpandedKeys] =
-    useState<string[]>(DefaultExpandedKeys);
-  const [sidebarNavigationPath, setSidebarNavigationPath] = useState<
-    string | null
-  >(null);
+  const [notificationTab, setNotificationTab] = useState<MainNotificationTab>("all");
+  const [manualExpandedKeys, setManualExpandedKeys] = useState<string[]>(DefaultExpandedKeys);
+  const [sidebarNavigationPath, setSidebarNavigationPath] = useState<string | null>(null);
   const [queryState, setQueryState] = useState({
     pathname,
     value: "",
   });
   const [selectedBranchId, setSelectedBranchId] = useState("");
-  const [switchingCompanyName, setSwitchingCompanyName] = useState<
-    string | null
+  const [switchingCompanyName, setSwitchingCompanyName] = useState<string | null>(null);
+  const [switchingCompanyId, setSwitchingCompanyId] = useState<string | null>(null);
+  const [switchingAdministrationScope, setSwitchingAdministrationScope] = useState<
+    "master" | "workspace" | null
   >(null);
-  const [switchingCompanyId, setSwitchingCompanyId] = useState<string | null>(
-    null,
-  );
-  const [switchingAdministrationScope, setSwitchingAdministrationScope] =
-    useState<"master" | "workspace" | null>(null);
-  const missingRecordActionRedirectHref =
-    getMissingRecordActionRedirectHref(pathname);
+  const missingRecordActionRedirectHref = getMissingRecordActionRedirectHref(pathname);
   const routedCompanyId = searchParams.get(CompanyUsersContextParam);
   const routedBranchId = searchParams.get(BranchUsersContextParam);
   const routedBranchName = searchParams.get(BranchUsersNameParam);
-  const subscriberManagementCompanyId = pathname.startsWith(
-    MasterSubscriberManagementHref,
-  )
+  const subscriberManagementCompanyId = pathname.startsWith(MasterSubscriberManagementHref)
     ? (searchParams.get("companyId") ?? undefined)
     : undefined;
   const accessToken = storedAccessToken;
@@ -244,20 +205,15 @@ export function useMainLayout() {
     accessToken,
     enabled: isAuthSessionReady,
   });
-  const effectiveRole = authProfile
-    ? ResolveAuthProfileEffectiveRole(authProfile)
-    : null;
+  const effectiveRole = authProfile ? ResolveAuthProfileEffectiveRole(authProfile) : null;
   const isSuperAdmin = effectiveRole === "SUPER_ADMIN";
   const isMasterRoute = isMasterPath(pathname);
   const isWorkspaceRoute = isWorkspacePath(pathname);
   const isAccountRoute = isAccountPath(pathname);
   const hasMasterAccess = effectiveRole === "SUPER_ADMIN";
   const hasWorkspaceAccess =
-    authProfile && effectiveRole !== "SUPER_ADMIN"
-      ? ProfileHasWorkspaceAccess(authProfile)
-      : false;
-  const isProfileLoading =
-    Boolean(accessToken) && !authProfile && isAuthProfileFetching;
+    authProfile && effectiveRole !== "SUPER_ADMIN" ? ProfileHasWorkspaceAccess(authProfile) : false;
+  const isProfileLoading = Boolean(accessToken) && !authProfile && isAuthProfileFetching;
   const shouldRedirectToOnboarding = RequiresOnboarding(authProfile);
 
   useEffect(() => {
@@ -288,15 +244,10 @@ export function useMainLayout() {
         ? "workspace"
         : "company";
   const workspaceCompanies = useMemo(
-    () =>
-      authProfile && !isSuperAdmin
-        ? MapProfileCompaniesToMainCompanies(authProfile)
-        : [],
+    () => (authProfile && !isSuperAdmin ? MapProfileCompaniesToMainCompanies(authProfile) : []),
     [authProfile, isSuperAdmin],
   );
-  const profileActiveCompanyId = authProfile
-    ? GetAuthProfileCompanyId(authProfile)
-    : null;
+  const profileActiveCompanyId = authProfile ? GetAuthProfileCompanyId(authProfile) : null;
   const [activeCompanyId, setActiveCompanyId] = useState("");
   const [notifications, setNotifications] = useState<MainNotification[]>(
     MainLayoutInitialNotifications,
@@ -311,20 +262,12 @@ export function useMainLayout() {
     availableCompanies.find((company) => company.id === activeCompanyId) ??
     availableCompanies[0] ??
     EmptyCompany;
-  const subscription =
-    currentCompany.subscriptionPackage ?? MainLayoutDefaultSubscription;
-  const { branches, isLoading: isBranchLoading } =
-    useWorkspaceCompanyMainLayoutBranches({
-      company: activeNavigationScope === "company" ? currentCompany : undefined,
-    });
+  const subscription = currentCompany.subscriptionPackage ?? MainLayoutDefaultSubscription;
+  const { branches, isLoading: isBranchLoading } = useWorkspaceCompanyMainLayoutBranches({
+    company: activeNavigationScope === "company" ? currentCompany : undefined,
+  });
   const switchCompanyMutation = useMutation({
-    mutationFn: async ({
-      companyId,
-      requestId,
-    }: {
-      companyId: string;
-      requestId: number;
-    }) => {
+    mutationFn: async ({ companyId, requestId }: { companyId: string; requestId: number }) => {
       const numericCompanyId = Number(companyId);
 
       if (!Number.isInteger(numericCompanyId) || numericCompanyId <= 0) {
@@ -361,9 +304,7 @@ export function useMainLayout() {
       setStoredAccessToken(AuthenticatedSessionMarker);
       setStoredActiveBranchContext(null, null);
       queryClient.setQueryData(
-        AuthQueryKeys.profile(
-          CreateAuthAccessTokenQueryScope(AuthenticatedSessionMarker),
-        ),
+        AuthQueryKeys.profile(CreateAuthAccessTokenQueryScope(AuthenticatedSessionMarker)),
         profile,
       );
       router.push("/dashboard");
@@ -389,9 +330,7 @@ export function useMainLayout() {
       return null;
     }
 
-    const normalizedRoutedBranchName = normalizeBranchRouteToken(
-      routedBranchName ?? "",
-    );
+    const normalizedRoutedBranchName = normalizeBranchRouteToken(routedBranchName ?? "");
 
     return (
       accessibleBranches.find((branch) => {
@@ -429,8 +368,7 @@ export function useMainLayout() {
       companyId: currentCompany.id,
     });
 
-    return storedBranchId &&
-      accessibleBranches.some((branch) => branch.id === storedBranchId)
+    return storedBranchId && accessibleBranches.some((branch) => branch.id === storedBranchId)
       ? storedBranchId
       : "";
   }, [
@@ -442,16 +380,12 @@ export function useMainLayout() {
     routedBranchName,
   ]);
   const selectedActiveBranchId =
-    selectedBranchId &&
-    accessibleBranches.some((branch) => branch.id === selectedBranchId)
+    selectedBranchId && accessibleBranches.some((branch) => branch.id === selectedBranchId)
       ? selectedBranchId
       : "";
   const activeBranchId =
     routedBranch?.id ??
-    (selectedActiveBranchId ||
-      storedActiveBranchId ||
-      accessibleBranches[0]?.id ||
-      "");
+    (selectedActiveBranchId || storedActiveBranchId || accessibleBranches[0]?.id || "");
   const displayUser = authProfile
     ? CreateWorkspaceCurrentUserFromProfile(authProfile, activeBranchId)
     : EmptyCurrentUser;
@@ -460,13 +394,11 @@ export function useMainLayout() {
     const branchModules = userModules?.byBranch?.find(
       (branch) => String(branch.branchUnitId) === activeBranchId,
     );
-    const fallbackBranchModules = userModules?.byBranch?.find(
-      (branch) => branch.items.length > 0,
-    );
+    const fallbackBranchModules = userModules?.byBranch?.find((branch) => branch.items.length > 0);
 
     return branchModules?.items.length
       ? branchModules.items
-      : fallbackBranchModules?.items ?? userModules?.items ?? [];
+      : (fallbackBranchModules?.items ?? userModules?.items ?? []);
   }, [activeBranchId, authProfile]);
   useEffect(() => {
     if (activeNavigationScope !== "company" || !authProfile) return;
@@ -488,24 +420,16 @@ export function useMainLayout() {
     companyUserModuleItems.length,
     currentCompany.id,
   ]);
-  const companyNavigationSections = useMemo(
-    () => {
-      return MapUserModulesToNavigation(companyUserModuleItems);
-    },
-    [companyUserModuleItems],
-  );
+  const companyNavigationSections = useMemo(() => {
+    return MapUserModulesToNavigation(companyUserModuleItems);
+  }, [companyUserModuleItems]);
   const hasCompanyAdministrationAccess = hasCurrentCompanyAdministrationAccess(
     authProfile,
     currentCompany.id,
   );
-  const hasProfileBranchAccess = hasCurrentCompanyBranchAccess(
-    authProfile,
-    currentCompany.id,
-  );
+  const hasProfileBranchAccess = hasCurrentCompanyBranchAccess(authProfile, currentCompany.id);
   const hasBranchAccess =
-    hasCompanyAdministrationAccess ||
-    hasProfileBranchAccess ||
-    accessibleBranches.length > 0;
+    hasCompanyAdministrationAccess || hasProfileBranchAccess || accessibleBranches.length > 0;
   const shouldShowBranchSwitcher = shouldShowBranchControls(accessibleBranches);
   const currentBranch =
     accessibleBranches.find((branch) => branch.id === activeBranchId) ??
@@ -525,11 +449,7 @@ export function useMainLayout() {
             : companyNavigationSections;
 
     if (activeNavigationScope === "company") return sourceSections;
-    return filterMainNavigationSections(
-      sourceSections,
-      displayUser,
-      subscription,
-    );
+    return filterMainNavigationSections(sourceSections, displayUser, subscription);
   }, [activeNavigationScope, companyNavigationSections, displayUser, subscription]);
   const activeExpandedKeys = useMemo(
     () => getActiveExpandedKeys(navigationSections, pathname),
@@ -537,40 +457,33 @@ export function useMainLayout() {
   );
   const shouldAutoRevealActiveRoute = sidebarNavigationPath !== pathname;
   const expandedKeys = useMemo(
-    () =>
-      Array.from(
-        new Set([
-          ...manualExpandedKeys,
-          ...(shouldAutoRevealActiveRoute ? activeExpandedKeys : []),
-        ]),
-      ),
-    [activeExpandedKeys, manualExpandedKeys, shouldAutoRevealActiveRoute],
+    () => Array.from(new Set([...manualExpandedKeys, ...activeExpandedKeys])),
+    [activeExpandedKeys, manualExpandedKeys],
   );
 
-  const availableSearchItems = useMemo(() => {
-    const sourceItems =
-      activeNavigationScope === "account"
-        ? MainAccountSearchItems
-        : activeNavigationScope === "master"
-          ? MainMasterSearchItems
-          : activeNavigationScope === "workspace"
-            ? MainWorkspaceSearchItems
-            : flattenSections(companyNavigationSections);
-
-    if (activeNavigationScope === "company") return sourceItems;
-    return filterMainSearchItems(sourceItems, displayUser, subscription);
-  }, [activeNavigationScope, companyNavigationSections, displayUser, subscription]);
+  const availableSearchItems = useMemo(
+    () => flattenSections(navigationSections),
+    [navigationSections],
+  );
+  const activeSearchContext = useMemo(
+    () => getActiveSearchContext(availableSearchItems, pathname),
+    [availableSearchItems, pathname],
+  );
   const searchResults = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
+    const rankedItems = rankSearchItemsByActiveContext(
+      availableSearchItems,
+      activeSearchContext,
+      normalizedQuery,
+      pathname,
+    );
 
     if (!normalizedQuery) {
-      return availableSearchItems.slice(0, 8);
+      return rankedItems.slice(0, 8);
     }
 
-    return availableSearchItems
-      .filter((item) => matchesSearchQuery(item, normalizedQuery))
-      .slice(0, 12);
-  }, [availableSearchItems, query]);
+    return rankedItems.filter((item) => matchesSearchQuery(item, normalizedQuery)).slice(0, 12);
+  }, [activeSearchContext, availableSearchItems, pathname, query]);
   const companySearchItems = useMemo(
     () => flattenSections(companyNavigationSections),
     [companyNavigationSections],
@@ -688,12 +601,7 @@ export function useMainLayout() {
       setSwitchingAdministrationScope(null);
       clearShellContextSwitch();
     }
-  }, [
-    clearShellContextSwitch,
-    isMasterRoute,
-    isWorkspaceRoute,
-    switchingAdministrationScope,
-  ]);
+  }, [clearShellContextSwitch, isMasterRoute, isWorkspaceRoute, switchingAdministrationScope]);
 
   useEffect(() => {
     if (profileActiveCompanyId == null || switchingCompanyId) {
@@ -721,9 +629,7 @@ export function useMainLayout() {
     const numericCompanyId = Number(currentCompany.id);
 
     setStoredActiveCompanyId(
-      Number.isInteger(numericCompanyId) && numericCompanyId > 0
-        ? numericCompanyId
-        : null,
+      Number.isInteger(numericCompanyId) && numericCompanyId > 0 ? numericCompanyId : null,
     );
     setStoredActiveCompanyName(currentCompany.name || null);
   }, [
@@ -737,9 +643,7 @@ export function useMainLayout() {
     const numericBranchId = Number(currentBranch?.id);
 
     setStoredActiveBranchContext(
-      Number.isInteger(numericBranchId) && numericBranchId > 0
-        ? numericBranchId
-        : null,
+      Number.isInteger(numericBranchId) && numericBranchId > 0 ? numericBranchId : null,
       currentBranch ? getBranchSwitcherLabel(currentBranch) : null,
     );
   }, [currentBranch, setStoredActiveBranchContext]);
@@ -816,19 +720,12 @@ export function useMainLayout() {
         activeNavigationScope,
         subscriberManagementCompanyId,
       }),
-    [
-      activeNavigationScope,
-      navigationSections,
-      pathname,
-      subscriberManagementCompanyId,
-    ],
+    [activeNavigationScope, navigationSections, pathname, subscriberManagementCompanyId],
   );
   const moduleTitle = breadcrumbs[breadcrumbs.length - 1]?.label ?? "Module";
 
   const currentHelpArticle = useMemo(
-    () =>
-      getHelpArticleForPath(pathname, ModuleHelpArticles) ??
-      ModuleHelpArticles[0],
+    () => getHelpArticleForPath(pathname, ModuleHelpArticles) ?? ModuleHelpArticles[0],
     [pathname],
   );
   const selectedHelpArticleKey =
@@ -844,9 +741,7 @@ export function useMainLayout() {
       return true;
     }
 
-    return notificationTab === "unread"
-      ? !notification.isRead
-      : notification.isRead;
+    return notificationTab === "unread" ? !notification.isRead : notification.isRead;
   });
 
   useEffect(
@@ -882,9 +777,7 @@ export function useMainLayout() {
 
     const mediaQuery = window.matchMedia("(min-width: 1024px)");
 
-    function syncSidebarToViewport(
-      event: MediaQueryList | MediaQueryListEvent,
-    ) {
+    function syncSidebarToViewport(event: MediaQueryList | MediaQueryListEvent) {
       setIsSidebarOpen(event.matches);
     }
 
@@ -918,9 +811,7 @@ export function useMainLayout() {
   }
 
   function toggleNotifications() {
-    setNotificationsOpenPath((current) =>
-      current === pathname ? null : pathname,
-    );
+    setNotificationsOpenPath((current) => (current === pathname ? null : pathname));
     setSearchOpenPath(null);
   }
 
@@ -968,9 +859,7 @@ export function useMainLayout() {
       return;
     }
 
-    const selectedBranch = accessibleBranches.find(
-      (branch) => branch.id === branchId,
-    );
+    const selectedBranch = accessibleBranches.find((branch) => branch.id === branchId);
 
     beginShellContextSwitchWithFallback(
       selectedBranch
@@ -980,9 +869,7 @@ export function useMainLayout() {
     void PrepareQueryCacheForContextSwitch(queryClient);
     setSelectedBranchId(branchId);
     setStoredActiveBranchContext(
-      Number.isInteger(Number(branchId)) && Number(branchId) > 0
-        ? Number(branchId)
-        : null,
+      Number.isInteger(Number(branchId)) && Number(branchId) > 0 ? Number(branchId) : null,
       selectedBranch ? getBranchSwitcherLabel(selectedBranch) : null,
     );
 
@@ -1007,17 +894,13 @@ export function useMainLayout() {
       return;
     }
 
-    const selectedCompany = availableCompanies.find(
-      (company) => company.id === companyId,
-    );
+    const selectedCompany = availableCompanies.find((company) => company.id === companyId);
 
     const requestId = latestCompanySwitchRequestRef.current + 1;
 
     latestCompanySwitchRequestRef.current = requestId;
     beginShellContextSwitchWithFallback(
-      selectedCompany
-        ? `Switching to ${selectedCompany.name}...`
-        : "Switching company...",
+      selectedCompany ? `Switching to ${selectedCompany.name}...` : "Switching company...",
     );
     setSwitchingCompanyName(selectedCompany?.name ?? "company");
     setSwitchingCompanyId(companyId);
@@ -1069,9 +952,7 @@ export function useMainLayout() {
   function markNotificationAsRead(notificationId: string) {
     setNotifications((current) =>
       current.map((notification) =>
-        notification.id === notificationId
-          ? { ...notification, isRead: true }
-          : notification,
+        notification.id === notificationId ? { ...notification, isRead: true } : notification,
       ),
     );
   }
@@ -1101,9 +982,7 @@ export function useMainLayout() {
     helpArticles: ModuleHelpArticles,
     homeHref,
     isCompanySwitching: Boolean(
-      shellContextSwitchMessage ||
-      switchingCompanyId ||
-      switchingAdministrationScope,
+      shellContextSwitchMessage || switchingCompanyId || switchingAdministrationScope,
     ),
     isLoggingOut: shellContextSwitchMessage === "Logging out...",
     companySwitchMessage:
@@ -1116,8 +995,7 @@ export function useMainLayout() {
             ? `Switching to ${switchingCompanyName}...`
             : "Switching company..."),
     isTopbarContextLoading: isShellContextSettling,
-    isShellLoading:
-      !isAuthSessionReady || isProfileLoading || shouldRedirectToOnboarding,
+    isShellLoading: !isAuthSessionReady || isProfileLoading || shouldRedirectToOnboarding,
     isRedirectingToOnboarding: shouldRedirectToOnboarding,
     isProfileLoading,
     isBranchLoading,
@@ -1189,9 +1067,7 @@ function ProfileHasWorkspaceAccess(profile: AuthProfileResponse) {
 
   return (
     profile.companies?.some(
-      (company) =>
-        company.role === "ADMIN" &&
-        isOptionalActiveStatus(company.membershipStatus),
+      (company) => company.role === "ADMIN" && isOptionalActiveStatus(company.membershipStatus),
     ) ?? false
   );
 }
@@ -1304,9 +1180,8 @@ function CreateWorkspaceCurrentUserFromProfile(
   );
   const activeCompanyId = GetAuthProfileCompanyId(profile);
   const activeCompanyMembership =
-    profile.companies?.find(
-      (company) => company.companyId === activeCompanyId,
-    ) ?? profile.companies?.[0];
+    profile.companies?.find((company) => company.companyId === activeCompanyId) ??
+    profile.companies?.[0];
   const companyRoleName =
     activeBranchAccess?.companyRoleName ??
     activeAccess?.companyRoleName ??
@@ -1321,14 +1196,8 @@ function CreateWorkspaceCurrentUserFromProfile(
     activeCompanyMembership?.companyRoleCode;
   const effectiveRole = ResolveAuthProfileEffectiveRole(profile);
   const userRole =
-    effectiveRole === "SUPER_ADMIN"
-      ? "Super Admin"
-      : effectiveRole === "ADMIN"
-        ? "Admin"
-        : "User";
-  const profilePermissionMap = CreateProfilePermissionMap(
-    activeAccess?.permissions,
-  );
+    effectiveRole === "SUPER_ADMIN" ? "Super Admin" : effectiveRole === "ADMIN" ? "Admin" : "User";
+  const profilePermissionMap = CreateProfilePermissionMap(activeAccess?.permissions);
   const adminPermissionMap = HasPermissionEntries(profilePermissionMap)
     ? profilePermissionMap
     : CreateNavigationPermissionMap();
@@ -1357,11 +1226,8 @@ function CreateWorkspaceCurrentUserFromProfile(
 
   return {
     id: String(profile.user.id),
-    activeCompanyId:
-      activeCompanyId == null ? undefined : String(activeCompanyId),
-    companyIds: (profile.companies ?? []).map((company) =>
-      String(company.companyId),
-    ),
+    activeCompanyId: activeCompanyId == null ? undefined : String(activeCompanyId),
+    companyIds: (profile.companies ?? []).map((company) => String(company.companyId)),
     firstName: firstName || profile.user.name,
     lastName,
     name: profile.user.name,
@@ -1445,10 +1311,7 @@ function HasPermissionEntries(permissionMap: MainPermissionMap) {
 
 function CreateNavigationPermissionMap() {
   const permissionMap: MainPermissionMap = {};
-  const sections = [
-    ...MainMasterNavigationSections,
-    ...MainWorkspaceNavigationSections,
-  ];
+  const sections = [...MainMasterNavigationSections, ...MainWorkspaceNavigationSections];
 
   for (const section of sections) {
     GrantNavigationAccess(permissionMap, section.accessKey);
@@ -1461,10 +1324,7 @@ function CreateNavigationPermissionMap() {
   return permissionMap;
 }
 
-function AddNavigationItemPermissions(
-  permissionMap: MainPermissionMap,
-  item: MainNavigationItem,
-) {
+function AddNavigationItemPermissions(permissionMap: MainPermissionMap, item: MainNavigationItem) {
   GrantNavigationAccess(permissionMap, item.accessKey);
   if (item.permissionCode) {
     GrantNavigationAccess(permissionMap, item.permissionCode);
@@ -1475,10 +1335,7 @@ function AddNavigationItemPermissions(
   }
 }
 
-function GrantNavigationAccess(
-  permissionMap: MainPermissionMap,
-  accessKey: string,
-) {
+function GrantNavigationAccess(permissionMap: MainPermissionMap, accessKey: string) {
   permissionMap[accessKey] = {
     add: true,
     cancel: true,
@@ -1489,9 +1346,7 @@ function GrantNavigationAccess(
   };
 }
 
-function MapBackendPermissionAction(
-  action: string | undefined,
-): MainAccessAction | undefined {
+function MapBackendPermissionAction(action: string | undefined): MainAccessAction | undefined {
   if (action === "view") {
     return "view";
   }
@@ -1563,9 +1418,7 @@ function buildBreadcrumbs({
 }): MainBreadcrumb[] {
   const trail = findNavigationTrail(navigationSections, pathname);
   const fallbackLabel =
-    activeNavigationScope === "workspace"
-      ? "Dashboard"
-      : getPathFallbackTitle(pathname);
+    activeNavigationScope === "workspace" ? "Dashboard" : getPathFallbackTitle(pathname);
   const fallbackTrail =
     trail.length > 0
       ? trail
@@ -1577,8 +1430,7 @@ function buildBreadcrumbs({
           },
         ];
   const normalizedTrail =
-    activeNavigationScope === "workspace" &&
-    fallbackTrail[0]?.label === "Workspace"
+    activeNavigationScope === "workspace" && fallbackTrail[0]?.label === "Workspace"
       ? fallbackTrail.slice(1)
       : fallbackTrail;
   const masterSubscriberTrail = buildMasterSubscriberManagementBreadcrumbs({
@@ -1587,8 +1439,7 @@ function buildBreadcrumbs({
     trail: normalizedTrail,
   });
   const completeTrail = removeAdjacentDuplicateBreadcrumbs(
-    masterSubscriberTrail ??
-      appendPathSegmentBreadcrumbs(normalizedTrail, pathname),
+    masterSubscriberTrail ?? appendPathSegmentBreadcrumbs(normalizedTrail, pathname),
   );
 
   return completeTrail.map((item) => ({
@@ -1717,15 +1568,9 @@ function buildMasterSubscriberManagementBreadcrumbs({
     return null;
   }
 
-  const selectedCompanyId = companyIdSegment
-    ? decodeURIComponent(companyIdSegment)
-    : companyId;
-  const company = getMasterSubscriberManagementCompany(
-    recordId,
-    selectedCompanyId,
-  );
-  const sectionTitle =
-    getMasterSubscriberManagementSectionPageTitle(sectionSegment);
+  const selectedCompanyId = companyIdSegment ? decodeURIComponent(companyIdSegment) : companyId;
+  const company = getMasterSubscriberManagementCompany(recordId, selectedCompanyId);
+  const sectionTitle = getMasterSubscriberManagementSectionPageTitle(sectionSegment);
 
   if (editSegment === "edit") {
     return [
@@ -1733,20 +1578,12 @@ function buildMasterSubscriberManagementBreadcrumbs({
       {
         key: `subscriber-${recordId}-company`,
         label: company.name,
-        href: getMasterSubscriberManagementSectionHref(
-          recordId,
-          "company-information",
-          company.id,
-        ),
+        href: getMasterSubscriberManagementSectionHref(recordId, "company-information", company.id),
       },
       {
         key: `subscriber-${recordId}-${sectionSegment}`,
         label: sectionTitle,
-        href: getMasterSubscriberManagementSectionHref(
-          recordId,
-          sectionSegment,
-          company.id,
-        ),
+        href: getMasterSubscriberManagementSectionHref(recordId, sectionSegment, company.id),
       },
       {
         key: `subscriber-${recordId}-${sectionSegment}-edit`,
@@ -1761,11 +1598,7 @@ function buildMasterSubscriberManagementBreadcrumbs({
     {
       key: `subscriber-${recordId}-company`,
       label: company.name,
-      href: getMasterSubscriberManagementSectionHref(
-        recordId,
-        "company-information",
-        company.id,
-      ),
+      href: getMasterSubscriberManagementSectionHref(recordId, "company-information", company.id),
     },
     {
       key: `subscriber-${recordId}-${sectionSegment}`,
@@ -1798,10 +1631,7 @@ function appendPathSegmentBreadcrumbs(
     return trail;
   }
 
-  const extraSegments = pathname
-    .slice(lastHref.length)
-    .split("/")
-    .filter(Boolean);
+  const extraSegments = pathname.slice(lastHref.length).split("/").filter(Boolean);
 
   if (isMissingRecordActionPath(extraSegments)) {
     return trail;
@@ -1826,9 +1656,7 @@ function appendPathSegmentBreadcrumbs(
   ];
 }
 
-function removeAdjacentDuplicateBreadcrumbs(
-  trail: NavigationTrailNode[],
-): NavigationTrailNode[] {
+function removeAdjacentDuplicateBreadcrumbs(trail: NavigationTrailNode[]): NavigationTrailNode[] {
   return trail.filter((item, index) => {
     const previous = trail[index - 1];
 
@@ -1898,9 +1726,7 @@ function getMissingRecordActionRedirectHref(pathname: string) {
   return parentSegments.length > 0 ? `/${parentSegments.join("/")}` : "/";
 }
 
-function isMasterSubscriberManagementCompanyInformationEditPath(
-  segments: string[],
-) {
+function isMasterSubscriberManagementCompanyInformationEditPath(segments: string[]) {
   return (
     segments[0] === "master" &&
     segments[1] === "subscriber-management" &&
@@ -1913,18 +1739,13 @@ function isMasterSubscriberManagementCompanyInformationEditPath(
   );
 }
 
-function findItemTrail(
-  items: MainNavigationItem[],
-  pathname: string,
-): NavigationTrailNode[] {
+function findItemTrail(items: MainNavigationItem[], pathname: string): NavigationTrailNode[] {
   const siblingDropdownItems = items.map(toDropdownItem);
   let bestTrail: NavigationTrailNode[] = [];
   let bestTrailHrefLength = -1;
 
   for (const item of items) {
-    const childTrail = item.children
-      ? findItemTrail(item.children, pathname)
-      : [];
+    const childTrail = item.children ? findItemTrail(item.children, pathname) : [];
 
     if (childTrail.length > 0) {
       const candidateTrail = [
@@ -1974,31 +1795,18 @@ function getTrailHrefLength(trail: NavigationTrailNode[]) {
   return trail.at(-1)?.href?.length ?? -1;
 }
 
-function getActiveExpandedKeys(
-  sections: MainNavigationSection[],
-  pathname: string,
-): string[] {
+function getActiveExpandedKeys(sections: MainNavigationSection[], pathname: string): string[] {
   const activeKeys: string[] = [];
 
   for (const section of sections) {
-    const itemKeys = getActiveItemAncestorKeys(section.items, pathname);
+    const itemKeys = findActiveItemAncestorKeys(section.items, pathname);
 
-    if (
-      itemKeys.length > 0 ||
-      (section.href && pathMatches(section.href, pathname))
-    ) {
-      activeKeys.push(section.key, ...itemKeys);
+    if (itemKeys !== null || (section.href && pathMatches(section.href, pathname))) {
+      activeKeys.push(section.key, ...(itemKeys ?? []));
     }
   }
 
   return activeKeys;
-}
-
-function getActiveItemAncestorKeys(
-  items: MainNavigationItem[],
-  pathname: string,
-): string[] {
-  return findActiveItemAncestorKeys(items, pathname) ?? [];
 }
 
 function findActiveItemAncestorKeys(
@@ -2027,24 +1835,15 @@ function pathMatches(href: string, pathname: string) {
 }
 
 function isWorkspacePath(pathname: string) {
-  return (
-    pathname === WorkspaceRoutePrefix ||
-    pathname.startsWith(`${WorkspaceRoutePrefix}/`)
-  );
+  return pathname === WorkspaceRoutePrefix || pathname.startsWith(`${WorkspaceRoutePrefix}/`);
 }
 
 function isMasterPath(pathname: string) {
-  return (
-    pathname === MasterRoutePrefix ||
-    pathname.startsWith(`${MasterRoutePrefix}/`)
-  );
+  return pathname === MasterRoutePrefix || pathname.startsWith(`${MasterRoutePrefix}/`);
 }
 
 function isAccountPath(pathname: string) {
-  return (
-    pathname === AccountRoutePrefix ||
-    pathname.startsWith(`${AccountRoutePrefix}/`)
-  );
+  return pathname === AccountRoutePrefix || pathname.startsWith(`${AccountRoutePrefix}/`);
 }
 
 function getPathFallbackTitle(pathname: string) {
@@ -2064,9 +1863,7 @@ function titleFromPathSegment(segment: string) {
     .join(" ");
 }
 
-function toSectionDropdownItem(
-  section: MainNavigationSection,
-): MainBreadcrumbDropdownItem {
+function toSectionDropdownItem(section: MainNavigationSection): MainBreadcrumbDropdownItem {
   const firstItem = section.items[0];
 
   return {
@@ -2101,9 +1898,7 @@ function getNavigationDropdownHelperText(key: string) {
 }
 
 function getSectionTargetHref(section: MainNavigationSection) {
-  return section.items[0]
-    ? getItemTargetHref(section.items[0])
-    : (section.href ?? "/");
+  return section.items[0] ? getItemTargetHref(section.items[0]) : (section.href ?? "/");
 }
 
 function getItemTargetHref(item: MainNavigationItem): string {
@@ -2124,31 +1919,17 @@ function getCompanyHomeHref(items: MainSearchItem[]) {
   return items[0]?.href ?? CompanyFallbackHomeHref;
 }
 
-function getActiveBranchStorageKey({
-  userId,
-  companyId,
-}: {
-  userId: number;
-  companyId: string;
-}) {
+function getActiveBranchStorageKey({ userId, companyId }: { userId: number; companyId: string }) {
   return `${ActiveBranchStorageKey}:user:${userId}:company:${companyId}`;
 }
 
-function readStoredActiveBranchId({
-  userId,
-  companyId,
-}: {
-  userId: number;
-  companyId: string;
-}) {
+function readStoredActiveBranchId({ userId, companyId }: { userId: number; companyId: string }) {
   if (typeof window === "undefined") {
     return null;
   }
 
   try {
-    return window.localStorage.getItem(
-      getActiveBranchStorageKey({ userId, companyId }),
-    );
+    return window.localStorage.getItem(getActiveBranchStorageKey({ userId, companyId }));
   } catch {
     return null;
   }
@@ -2168,12 +1949,8 @@ function writeStoredActiveBranchId({
   }
 
   try {
-    window.localStorage.setItem(
-      getActiveBranchStorageKey({ userId, companyId }),
-      branchId,
-    );
-  } catch {
-  }
+    window.localStorage.setItem(getActiveBranchStorageKey({ userId, companyId }), branchId);
+  } catch {}
 }
 
 function sortBranchesByPriority(branches: MainBranch[]) {
@@ -2205,8 +1982,91 @@ function normalizeBranchRouteToken(value: string) {
 }
 
 function matchesSearchQuery(item: MainSearchItem, query: string) {
-  return [item.label, item.section, ...item.trail]
-    .join(" ")
-    .toLowerCase()
-    .includes(query);
+  return [item.label, item.section, ...item.trail].join(" ").toLowerCase().includes(query);
+}
+
+type ActiveSearchContext = {
+  href: string;
+  section: string;
+  trail: string[];
+} | null;
+
+function getActiveSearchContext(items: MainSearchItem[], pathname: string): ActiveSearchContext {
+  const activeItem = items
+    .filter((item) => pathMatches(item.href, pathname))
+    .sort((first, second) => second.href.length - first.href.length)[0];
+
+  if (!activeItem) {
+    return null;
+  }
+
+  return {
+    href: activeItem.href,
+    section: activeItem.section,
+    trail: activeItem.trail,
+  };
+}
+
+function rankSearchItemsByActiveContext(
+  items: MainSearchItem[],
+  context: ActiveSearchContext,
+  query: string,
+  pathname: string,
+) {
+  return [...items].sort((first, second) => {
+    const scoreDelta =
+      getSearchItemScore(second, context, query, pathname) -
+      getSearchItemScore(first, context, query, pathname);
+
+    if (scoreDelta !== 0) {
+      return scoreDelta;
+    }
+
+    return first.label.localeCompare(second.label);
+  });
+}
+
+function getSearchItemScore(
+  item: MainSearchItem,
+  context: ActiveSearchContext,
+  query: string,
+  pathname: string,
+) {
+  let score = 0;
+  const label = item.label.toLowerCase();
+  const trail = item.trail.join(" ").toLowerCase();
+
+  if (pathMatches(item.href, pathname)) {
+    score += 1000;
+  }
+
+  if (context) {
+    if (item.section === context.section) {
+      score += 220;
+    }
+
+    if (item.trail[1] && item.trail[1] === context.trail[1]) {
+      score += 120;
+    }
+
+    if (item.trail.join("/") === context.trail.join("/")) {
+      score += 80;
+    }
+  }
+
+  if (query) {
+    if (label === query) {
+      score += 80;
+    } else if (label.startsWith(query)) {
+      score += 50;
+    } else if (label.includes(query)) {
+      score += 25;
+    }
+
+    if (trail.includes(query)) {
+      score += 10;
+    }
+  }
+
+  return score;
 }

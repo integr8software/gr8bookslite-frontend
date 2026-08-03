@@ -12,11 +12,15 @@ import {
 	Bell,
 	CircleHelp,
 	Menu,
+	Moon,
 	PanelLeftClose,
 	PanelLeftOpen,
 	Search,
+	Sun,
 } from "lucide-react";
 import { useLogout } from "@/app/src/hooks/auth/useLogout";
+import { useAccountPreferences } from "@/app/src/hooks/shared/account/useAccountPreferences";
+import { ResolveAccountTheme } from "@/app/src/services/shared/account/AccountTheme";
 import { LogoText } from "@/app/src/ui/shared/layout/LogoText";
 import type {
 	MainTopbarProps,
@@ -78,9 +82,15 @@ export function MainTopbar({
 	onToggleSidebar,
 }: MainTopbarProps) {
 	const logout = useLogout();
+	const hasHydratedTheme = useAccountPreferences((state) => state.hasHydrated);
+	const theme = useAccountPreferences((state) => state.theme);
+	const setTheme = useAccountPreferences((state) => state.setTheme);
 	const desktopSearchInputRef = useRef<HTMLInputElement>(null);
 	const mobileSearchInputRef = useRef<HTMLInputElement>(null);
 	const SidebarIcon = isSidebarOpen ? PanelLeftClose : PanelLeftOpen;
+	const resolvedTheme = ResolveAccountTheme(theme);
+	const isDarkTheme = resolvedTheme === "midnight-dark";
+	const ThemeToggleIcon = isDarkTheme ? Sun : Moon;
 	const [openSwitcherState, setOpenSwitcherState] = useState<{
 		href: string;
 		key: OpenSwitcherKey | null;
@@ -312,6 +322,10 @@ export function MainTopbar({
 		onToggleNotifications();
 	}
 
+	function handleToggleTheme() {
+		setTheme(isDarkTheme ? "classic-light" : "midnight-dark");
+	}
+
 	function handleToggleSidebar() {
 		closeSwitcher();
 		closeDropdownNotifications();
@@ -503,6 +517,29 @@ export function MainTopbar({
 							/>
 						</div>
 					</div>
+
+					<button
+						type="button"
+						onClick={handleToggleTheme}
+						disabled={!hasHydratedTheme}
+						aria-label={
+							isDarkTheme
+								? "Switch to light mode"
+								: "Switch to dark mode"
+						}
+						aria-pressed={isDarkTheme}
+						title={
+							isDarkTheme
+								? "Switch to light mode"
+								: "Switch to dark mode"
+						}
+						className="flex h-10 w-10 items-center justify-center rounded-full text-darknavy transition-all duration-200 ease-out hover:bg-darknavy/5 active:scale-95 disabled:cursor-wait disabled:opacity-45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 motion-reduce:transition-none motion-reduce:active:scale-100 md:rounded-md"
+					>
+						<ThemeToggleIcon
+							className="h-5 w-5"
+							aria-hidden="true"
+						/>
+					</button>
 
 					<SpotlightTutorialButton activeHref={activeHref} />
 

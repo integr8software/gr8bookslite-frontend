@@ -100,7 +100,13 @@ export function createBlankDeliveryReceiptLineEntry(
 		serialNo: "",
 		quantity: "0.00",
 		uom: "PCS",
+		expirationDate: "",
 		lotNo: "",
+		color: "",
+		brand: "",
+		size: "",
+		model: "",
+		binNo: "",
 		warehouse: "",
 		stockQuantity: "0.00",
 		responsibilityCenter: "",
@@ -121,6 +127,7 @@ export function createDeliveryReceiptFormValues(): DeliveryReceiptFormValues {
 		exchangeRate: "1.0000",
 		address: "",
 		branch: "",
+		contactPerson: "",
 		contactNo: "",
 		remarks: "",
 		terms: "",
@@ -135,6 +142,10 @@ export function createDeliveryReceiptFormValues(): DeliveryReceiptFormValues {
 		poNo: "",
 		status: "Draft",
 		projectRef: "",
+		projectName: "",
+		plNo: "",
+		resCenter: "",
+		attachments: [],
 		lineEntries: [createBlankDeliveryReceiptLineEntry()],
 	};
 }
@@ -143,9 +154,15 @@ export function createDeliveryReceiptFormValuesFromRecord(
 	record: DeliveryReceiptRecord,
 ): DeliveryReceiptFormValues {
 	if (record.formValues) {
+		const defaults = createDeliveryReceiptFormValues();
+
 		return {
+			...defaults,
 			...record.formValues,
-			lineEntries: record.formValues.lineEntries.map((entry) => ({ ...entry })),
+			lineEntries: record.formValues.lineEntries.map((entry) => ({
+				...createBlankDeliveryReceiptLineEntry(),
+				...entry,
+			})),
 		};
 	}
 
@@ -159,6 +176,8 @@ export function createDeliveryReceiptFormValuesFromRecord(
 		soNo: record.referenceNo,
 		status: record.status,
 		transactionNo: record.transactionNo,
+		plNo: "",
+		resCenter: "",
 		lineEntries: [
 			createBlankDeliveryReceiptLineEntry({
 				itemCode: "ITEM-001",
@@ -274,6 +293,9 @@ export function deliveryReceiptEntryHasData(entry: DeliveryReceiptLineEntry) {
 		entry.name.trim() !== "" ||
 		entry.description.trim() !== "" ||
 		entry.particulars.trim() !== "" ||
+		entry.barcode.trim() !== "" ||
+		entry.lotNo.trim() !== "" ||
+		entry.binNo.trim() !== "" ||
 		parseMoneyNumberInput(entry.quantity) > 0
 	);
 }

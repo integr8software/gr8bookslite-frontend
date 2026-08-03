@@ -31,7 +31,7 @@ export function ModuleImportResizableColumnHeader({
 	return (
 		<th
 			className={joinClasses(
-				"module-import-preview-header sticky top-0 z-30 px-2 py-2",
+				"module-import-preview-header sticky top-0 z-30 h-12 px-2 py-2",
 				className,
 			)}
 			style={stickyStyle}
@@ -66,7 +66,7 @@ export function ModuleImportResizableColumnHeader({
 						document.addEventListener("pointermove", handlePointerMove);
 						document.addEventListener("pointerup", handlePointerUp);
 					}}
-					className="absolute -right-2 inset-y-[-0.5rem] z-50 w-3 cursor-col-resize touch-none border-r border-transparent transition hover:border-skyblue hover:bg-skyblue/15"
+					className="absolute -right-2 inset-y-[-0.5rem] z-50 w-3 cursor-col-resize touch-none border-r border-transparent transition"
 				/>
 			</div>
 		</th>

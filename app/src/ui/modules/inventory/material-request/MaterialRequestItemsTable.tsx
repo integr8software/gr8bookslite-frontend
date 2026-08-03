@@ -101,7 +101,7 @@ export function MaterialRequestItemsTable({
 	);
 	const [visibleColumnIds, setVisibleColumnIds] = useState<
 		MaterialRequestItemColumnId[]
-	>(DefaultItemColumnOrder);
+	>(DefaultVisibleItemColumnOrder);
 	const [requiredColumnIds, setRequiredColumnIds] = useState<
 		MaterialRequestItemColumnId[]
 	>(DefaultRequiredItemColumnOrder);
@@ -1890,7 +1890,7 @@ function resolveVisibleItemColumnIds(
 	const normalizedColumnIds = columnIds.filter(isItemColumnId);
 
 	if (isSameItemColumnOrder(normalizedColumnIds, LegacyDefaultItemColumnOrder)) {
-		return DefaultItemColumnOrder;
+		return DefaultVisibleItemColumnOrder;
 	}
 
 	const visibleColumnIds = new Set([
@@ -1898,7 +1898,7 @@ function resolveVisibleItemColumnIds(
 		...normalizedColumnIds,
 	]);
 
-	return DefaultItemColumnOrder.filter((columnId) =>
+	return DefaultVisibleItemColumnOrder.filter((columnId) =>
 		visibleColumnIds.has(columnId),
 	);
 }
@@ -2232,27 +2232,45 @@ const DefaultItemColumnOrder = [
 	"itemCode",
 	"barcode",
 	"itemName",
-	"description",
-	"category",
-	"uom",
-	"serialNumber",
-	"batchNo",
-	"warehouse",
-	"location",
-	"costCenter",
 	"requestQuantity",
 	"stockQuantity",
-	"unitCost",
-	"unitPrice",
-	"lotNo",
-	"expiryDate",
+	"uom",
 	"manufacturingDate",
+	"expiryDate",
+	"lotNo",
+	"serialNumber",
+	"costCenter",
 	"color",
 	"brand",
 	"size",
 	"model",
+	"description",
+	"category",
+	"batchNo",
+	"warehouse",
+	"location",
+	"unitCost",
+	"unitPrice",
 	"remarks",
 ] satisfies MaterialRequestItemColumnId[];
+
+const DefaultVisibleItemColumnOrder: MaterialRequestItemColumnId[] = [
+	"itemCode",
+	"barcode",
+	"itemName",
+	"requestQuantity",
+	"stockQuantity",
+	"uom",
+	"manufacturingDate",
+	"expiryDate",
+	"lotNo",
+	"serialNumber",
+	"costCenter",
+	"color",
+	"brand",
+	"size",
+	"model",
+];
 
 const LegacyDefaultItemColumnOrder = [
 	"itemCode",
@@ -2285,49 +2303,49 @@ const DefaultItemColumnLabels: Record<MaterialRequestItemColumnId, string> = {
 	brand: "Brand",
 	category: "Item Category",
 	color: "Color",
-	costCenter: "Cost Center",
+	costCenter: "Res Center",
 	description: "Description",
-	expiryDate: "Expiry Date",
-	itemCode: "Item Code",
-	itemName: "Item Name",
+	expiryDate: "Expiration Date",
+	itemCode: "Item Code *",
+	itemName: "Item Name *",
 	lotNo: "Lot No.",
 	location: "Location",
-	manufacturingDate: "Manufacturing Date",
+	manufacturingDate: "Mfg Date",
 	model: "Model",
 	remarks: "Remarks",
-	requestQuantity: "Request Quantity",
-	serialNumber: "Serial Number",
+	requestQuantity: "MR Qty *",
+	serialNumber: "Serial No.",
 	size: "Size",
-	stockQuantity: "Stock Quantity",
+	stockQuantity: "Stock Qty",
 	unitCost: "Unit Cost",
 	unitPrice: "Unit Price",
-	uom: "UOM",
+	uom: "UOM *",
 	warehouse: "Warehouse",
 };
 
 const DefaultItemColumnWidths: Record<MaterialRequestItemColumnId, number> = {
 	batchNo: 150,
-	barcode: 150,
-	brand: 150,
+	barcode: 90,
+	brand: 90,
 	category: 190,
-	color: 130,
-	costCenter: 190,
+	color: 90,
+	costCenter: 105,
 	description: 240,
-	expiryDate: 170,
-	itemCode: 150,
+	expiryDate: 120,
+	itemCode: 110,
 	itemName: 220,
-	lotNo: 145,
+	lotNo: 105,
 	location: 170,
-	manufacturingDate: 190,
-	model: 150,
+	manufacturingDate: 115,
+	model: 95,
 	remarks: 260,
-	requestQuantity: 190,
-	serialNumber: 180,
-	size: 120,
-	stockQuantity: 180,
+	requestQuantity: 95,
+	serialNumber: 105,
+	size: 85,
+	stockQuantity: 95,
 	unitCost: 150,
 	unitPrice: 150,
-	uom: 120,
+	uom: 85,
 	warehouse: 170,
 };
 

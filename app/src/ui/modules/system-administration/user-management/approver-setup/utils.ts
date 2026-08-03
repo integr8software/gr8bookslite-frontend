@@ -23,3 +23,12 @@ export function formatApproverListLabel(userNames: (string | undefined)[]) {
 
 	return `${validNames[0]} + ${validNames.length - 1} more`;
 }
+
+export function getApproverSetupInitials(name: string) {
+	return name
+		.split(" ")
+		.map((part) => part[0])
+		.join("")
+		.slice(0, 2)
+		.toUpperCase();
+}

@@ -1,6 +1,6 @@
 # Gr8Books Neo Frontend Map
 
-Last updated: 2026-07-09
+Last updated: 2026-07-27
 
 Use this file as the first stop before changing the frontend. It is a compact graph of how the app is organized, where code belongs, and which files usually matter for common changes.
 
@@ -55,13 +55,39 @@ graph TD
 ```
 
 - `app/(auth)`: login, signup, forgot password, verification, auth legal pages.
-- `app/(modules)`: tenant/company modules such as inventory, sales, purchasing, maintenance, reports, system administration, cash receipt, and cash disbursement.
+- `app/(modules)`: tenant/company modules such as financial maintenance, item management, party management, warehouse management, delivery vehicle management, inventory, sales, purchasing, system administration, cash receipt, and cash disbursement.
 - `app/workspace`: company/workspace administration pages.
 - `app/master`: platform administration pages.
 - `app/onboarding`: onboarding flow, guarded by `proxy.ts`.
 - `app/pricing`: public pricing page.
 
 Route files should stay thin. They should import and render UI from `app/src/ui/...`.
+
+### Maintenance Domain Roots
+
+Maintenance features are grouped by their business module instead of a generic `maintenance` source or route folder:
+
+```txt
+app/(modules)/
+  financial-maintenance/
+  item-management/
+  party-management/
+  warehouse-management/
+  delivery-vehicle-management/
+
+app/src/{ui,hooks,services,data,types,constants,validations}/modules/
+  financial-maintenance/
+  item-management/
+  party-management/
+  warehouse-management/
+  delivery-vehicle-management/
+```
+
+Party Management, Warehouse Management, and Delivery Vehicle Management are independent module roots. Warehouse storage, inventory, and operation features live directly under `warehouse-management`; delivery vehicle operation features live directly under `delivery-vehicle-management`. New feature paths must use the same business-module root across routes and every source concern.
+
+Financial Maintenance includes `services-maintenance` at `/financial-maintenance/services-maintenance`; it follows the drawer/list maintenance pattern and appears after Bank Masterfile in catalogs/navigation.
+
+Legacy browser paths under `/maintenance/...` redirect temporarily to the corresponding business-module route. Backend API endpoints containing `/maintenance/` are unchanged.
 
 ## Source Directory Graph
 
@@ -104,6 +130,7 @@ app/src/utils/
   currency.util.ts  # formatCurrency(value, currencyCode = "PHP")
   date.util.ts      # formatDateTime(value, options)
   file.util.ts      # formatFileSize(bytes)
+  status.util.ts # shared Active/Inactive switch options
   string.util.ts    # lowercase-text and whitespace normalization
 ```
 
@@ -155,7 +182,7 @@ Main shell entry points:
 
 ## Feature Module Pattern
 
-Recommended module shape:
+Recommended module shape. Create only the route/source folders that the feature actually uses; do not keep empty folders just to match the pattern.
 
 ```txt
 app/(modules)/<domain>/<feature>/
@@ -180,6 +207,8 @@ app/src/types/modules/<domain>/<feature>/
 app/src/constants/modules/<domain>/<feature>/
 app/src/validations/modules/<domain>/<feature>/
 ```
+
+For read-only or display-only modules, it is normal to omit unused `add`, `edit`, `view`, `services`, or `validations` folders. The folder structure should stay clean and reflect real files.
 
 For new work, prefer specific names such as `PurchaseRequestListPage.tsx` and `PurchaseRequestFormPage.tsx`. Older modules may still use generic `Main.tsx`, `Action.tsx`, or `index.ts`; avoid extending that pattern for new modules.
 

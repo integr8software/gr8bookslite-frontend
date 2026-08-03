@@ -31,11 +31,26 @@ export type DeliveryReceiptLineEntry = {
 	serialNo: string;
 	quantity: string;
 	uom: string;
+	expirationDate: string;
 	lotNo: string;
+	color: string;
+	brand: string;
+	size: string;
+	model: string;
+	binNo: string;
 	warehouse: string;
 	stockQuantity: string;
 	responsibilityCenter: string;
 	particulars: string;
+};
+
+export type DeliveryReceiptAttachment = {
+	id: string;
+	name: string;
+	size: number;
+	type: string;
+	lastModified: number;
+	dataUrl?: string;
 };
 
 export type DeliveryReceiptFormValues = {
@@ -47,6 +62,7 @@ export type DeliveryReceiptFormValues = {
 	exchangeRate: string;
 	address: string;
 	branch: string;
+	contactPerson: string;
 	contactNo: string;
 	remarks: string;
 	terms: string;
@@ -61,5 +77,9 @@ export type DeliveryReceiptFormValues = {
 	poNo: string;
 	status: string;
 	projectRef: string;
+	projectName: string;
+	plNo: string;
+	resCenter: string;
+	attachments: DeliveryReceiptAttachment[];
 	lineEntries: DeliveryReceiptLineEntry[];
 };

@@ -27,7 +27,7 @@ export function ApprovalManagementShell() {
 				}
 			/>
 
-			<div className="approval-management-list-page grid min-h-152 min-w-0 items-stretch overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm xl:grid-cols-[minmax(20rem,0.8fr)_minmax(32rem,1.35fr)]">
+			<div className="approval-management-list-page grid min-h-[38rem] min-w-0 items-stretch overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm xl:grid-cols-[minmax(22rem,0.85fr)_minmax(0,1.35fr)]">
 				<ApprovalManagementSidepanel
 					isLoading={page.isLoading}
 					query={page.query}
@@ -40,14 +40,18 @@ export function ApprovalManagementShell() {
 				/>
 
 				<ApprovalManagementEditor
+					derivedApprovalLevelCount={page.derivedApprovalLevelCount}
 					errors={page.errors}
+					isApproverSetupsLoading={page.isApproverSetupsLoading}
 					isLoading={page.isLoading}
 					isMutating={page.isMutating}
+					selectedApproverType={page.selectedApproverType}
 					selectedWorkflow={page.selectedWorkflow}
 					values={page.values}
+					visibleApproverSetupRecords={page.visibleApproverSetupRecords}
 					onAddAmountConditionRule={page.addAmountConditionRule}
 					onAmountConditionModeChange={page.updateAmountConditionMode}
-					onInputChange={page.handleInputChange}
+					onApproverTypeChange={page.setSelectedApproverType}
 					onRemoveAmountConditionRule={page.removeAmountConditionRule}
 					onRoutingRuleFieldChange={page.updateRoutingRuleField}
 					onRoutingRuleStageToggle={page.toggleRoutingRuleStage}

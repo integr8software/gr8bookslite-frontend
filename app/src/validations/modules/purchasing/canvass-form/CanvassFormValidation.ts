@@ -11,9 +11,12 @@ const itemSchema = z.object({
 	description: requiredText("Enter a description."),
 	id: z.string(),
 	itemCode: requiredText("Enter an item code."),
+	minimumOrderQuantity: z.coerce.number().min(0),
+	prNo: z.string(),
 	quantity: z.coerce.number().min(0),
 	responsibilityCenter: z.string(),
 	selectedSupplier: z.string(),
+	supplierCount: z.coerce.number().min(1).max(4),
 	supplierCode1: z.string(),
 	supplierCode2: z.string(),
 	supplierCode3: z.string(),
@@ -28,6 +31,8 @@ const itemSchema = z.object({
 	unitCost3: z.coerce.number().min(0),
 	unitCost4: z.coerce.number().min(0),
 	uom: requiredText("Select a UOM."),
+	vatExclusive: z.string(),
+	vatInclusive: z.string(),
 });
 
 const formSchema = z.object({
@@ -35,12 +40,14 @@ const formSchema = z.object({
 	documentDate: requiredText("Select a document date."),
 	exchangeRate: z.coerce.number().positive("Enter a valid exchange rate."),
 	items: z.array(itemSchema).min(1, "Add at least one item."),
-	purchaseType: requiredText("Select a purchase type."),
+	prNo: z.string(),
+	purchaseType: z.string(),
 	remarks: z.string(),
 	requestedBy: requiredText("Enter requested by."),
 	requiredBefore: z.string(),
 	responsibilityCenter: z.string(),
 	status: z.enum(["Draft", "Open", "Approved", "Closed", "Cancelled"]),
+	termsOfPayment: z.string(),
 	transNo: requiredText("Enter a transaction number."),
 });
 

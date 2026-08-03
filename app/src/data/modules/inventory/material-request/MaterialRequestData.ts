@@ -10,10 +10,9 @@ import type {
 
 type LegacyMaterialRequestStatus = MaterialRequestStatus | "Completed" | "Rejected";
 
-const materialRequestSeedRecordFixtures: Omit<
-	MaterialRequestRecord,
-	"history"
->[] = [
+const DefaultMaterialRequestType = "";
+
+const materialRequestSeedRecordFixtures: Omit<MaterialRequestRecord, "history">[] = [
 	{
 		id: "mr-2024-128",
 		requestNo: "MR-2024-128",
@@ -247,7 +246,7 @@ export function createMaterialRequestFormValues(
 		vceName: "",
 		projectRef: "",
 		projectName: "",
-		referenceModule: "",
+		referenceModule: DefaultMaterialRequestType,
 		referenceNo: "",
 		purpose: "",
 		requiresApproval: true,
@@ -339,18 +338,12 @@ export function formatMaterialRequestDate(value: string) {
 	}).format(date);
 }
 
-export function getMaterialRequestItemSummary(
-	record: Pick<MaterialRequestRecord, "items">,
-) {
-	const descriptions = record.items
-		.map((item) => item.itemName.trim())
-		.filter(Boolean);
+export function getMaterialRequestItemSummary(record: Pick<MaterialRequestRecord, "items">) {
+	const descriptions = record.items.map((item) => item.itemName.trim()).filter(Boolean);
 	const visibleItems = descriptions.slice(0, 3).join(", ");
 	const remainingCount = Math.max(0, descriptions.length - 3);
 
-	return remainingCount > 0
-		? `${visibleItems} +${remainingCount} more`
-		: visibleItems;
+	return remainingCount > 0 ? `${visibleItems} +${remainingCount} more` : visibleItems;
 }
 
 export function createNextMaterialRequestNo(records: MaterialRequestRecord[]) {
@@ -366,9 +359,7 @@ export function createNextMaterialRequestNo(records: MaterialRequestRecord[]) {
 }
 
 export function createMaterialRequestId(prefix: string) {
-	return `${prefix}-${Date.now().toString(36)}-${Math.random()
-		.toString(36)
-		.slice(2, 8)}`;
+	return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
 export function createMaterialRequestStatusHistoryEntry(
@@ -397,10 +388,7 @@ export function getMaterialRequestUncancelStatus(
 }
 
 export function getMaterialRequestUndoApprovalStatus(
-	record: Pick<
-		MaterialRequestRecord,
-		"history" | "requiresApproval" | "status"
-	>,
+	record: Pick<MaterialRequestRecord, "history" | "requiresApproval" | "status">,
 ): MaterialRequestStatus {
 	const lastOperationalStatus = [...record.history]
 		.reverse()
@@ -420,11 +408,7 @@ function createInitialMaterialRequestHistory(
 	record: Omit<MaterialRequestRecord, "history">,
 ): MaterialRequestHistoryEntry[] {
 	const createdStatus =
-		record.status === "Draft"
-			? "Draft"
-			: record.requiresApproval
-				? "Pending"
-				: "Active";
+		record.status === "Draft" ? "Draft" : record.requiresApproval ? "Pending" : "Active";
 	const createdAt = createMaterialRequestHistoryDate(record.documentDate, 8);
 	const history: MaterialRequestHistoryEntry[] = [
 		{
@@ -461,8 +445,7 @@ function normalizeMaterialRequestHistoryEntry(
 		actor: entry.actor || "System",
 		createdAt: entry.createdAt || new Date().toISOString(),
 		description:
-			entry.description ||
-			getMaterialRequestHistoryDescription(status, "this material request"),
+			entry.description || getMaterialRequestHistoryDescription(status, "this material request"),
 		status,
 	};
 }
@@ -501,10 +484,7 @@ function getMaterialRequestHistoryAction(status: MaterialRequestStatus) {
 	return "Updated";
 }
 
-function getMaterialRequestHistoryDescription(
-	status: MaterialRequestStatus,
-	requestNo: string,
-) {
+function getMaterialRequestHistoryDescription(status: MaterialRequestStatus, requestNo: string) {
 	if (status === "Approved") {
 		return `${requestNo} was approved for warehouse processing.`;
 	}
@@ -567,9 +547,7 @@ function createSeedItem(
 	};
 }
 
-function normalizeMaterialRequestRecord(
-	record: MaterialRequestRecord,
-): MaterialRequestRecord {
+function normalizeMaterialRequestRecord(record: MaterialRequestRecord): MaterialRequestRecord {
 	const status = normalizeMaterialRequestStatus(record.status);
 	const normalizedRecord = {
 		...record,
@@ -577,7 +555,7 @@ function normalizeMaterialRequestRecord(
 		vceName: record.vceName ?? "",
 		projectRef: record.projectRef ?? record.referenceNo ?? "",
 		projectName: record.projectName ?? "",
-		referenceModule: record.referenceModule ?? "",
+		referenceModule: record.referenceModule ?? DefaultMaterialRequestType,
 		requiresApproval: record.requiresApproval ?? true,
 		remarks: record.remarks ?? "",
 		status,

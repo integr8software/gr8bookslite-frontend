@@ -17,6 +17,7 @@ import {
 	createMaterialRequestStatusHistoryEntry,
 	emptyMaterialRequestItem,
 } from "@/app/src/data/modules/inventory/material-request/MaterialRequestData";
+import { PickListSalesOrderCopyRecords } from "@/app/src/data/modules/inventory/pick-list/PickListData";
 import { useMaterialRequestStore } from "@/app/src/hooks/modules/inventory/material-request/useMaterialRequest";
 import type {
 	MaterialRequestFormErrors,
@@ -36,6 +37,7 @@ import {
 	pasteModuleDataEntryRows,
 	removeModuleDataEntryRow,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryRowUtils";
+import type { AppCopyFromRecord } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
 
 export function useMaterialRequestFormPage() {
 	const router = useRouter();
@@ -80,6 +82,33 @@ export function useMaterialRequestFormPage() {
 	const previewRecord = useMemo(
 		() => createMaterialRequestRecord(values, params.recordId ?? "preview"),
 		[params.recordId, values],
+	);
+	const copyFromRecords = useMemo<AppCopyFromRecord[]>(
+		() => [
+			...PickListSalesOrderCopyRecords.map((record) => ({
+				documentDate: record.documentDate,
+				id: record.id,
+				partyName: record.customerName,
+				remarks: record.remarks,
+				source: "Sales Order",
+				sourceNo: record.sourceNo,
+			})),
+			...requests
+				.filter(
+					(request) =>
+						request.referenceModule === "Job Order" &&
+						request.id !== existingRequest?.id,
+				)
+				.map((request) => ({
+					documentDate: request.documentDate,
+					id: request.id,
+					partyName: request.vceName,
+					remarks: request.remarks,
+					source: "Job Order",
+					sourceNo: request.referenceNo || request.requestNo,
+				})),
+		],
+		[existingRequest?.id, requests],
 	);
 
 	function updateField<TKey extends keyof MaterialRequestFormValues>(
@@ -283,6 +312,68 @@ export function useMaterialRequestFormPage() {
 		toast.success(`${importedItems.length} material request items imported.`);
 	}
 
+	function copyFromSourceTransactions(recordIds: string[]) {
+		if (isReadonly) {
+			return;
+		}
+
+		const selectedSalesOrders = PickListSalesOrderCopyRecords.filter((record) =>
+			recordIds.includes(record.id),
+		);
+		const selectedJobOrders = requests.filter(
+			(request) =>
+				request.referenceModule === "Job Order" &&
+				recordIds.includes(request.id),
+		);
+
+		if (selectedSalesOrders.length === 0 && selectedJobOrders.length === 0) {
+			toast.error("Select at least one source transaction to copy.");
+			return;
+		}
+
+		const firstSalesOrder = selectedSalesOrders[0];
+		const firstJobOrder = selectedJobOrders[0];
+		const copiedItems = selectedJobOrders.flatMap((request) =>
+			request.items
+				.filter(materialRequestItemHasData)
+				.map((item) => ({
+					...item,
+					id: createMaterialRequestId("item"),
+				})),
+		);
+		const salesOrderNos = selectedSalesOrders.map((record) => record.sourceNo);
+		const jobOrderNos = selectedJobOrders.map(
+			(record) => record.referenceNo || record.requestNo,
+		);
+		const remarks = [
+			...selectedSalesOrders.map((record) => record.remarks),
+			...selectedJobOrders.map((record) => record.remarks),
+		].filter(Boolean);
+
+		setValues((current) => ({
+			...current,
+			vceCode:
+				firstSalesOrder?.customerCode || firstJobOrder?.vceCode || current.vceCode,
+			vceName:
+				firstSalesOrder?.customerName || firstJobOrder?.vceName || current.vceName,
+			projectRef: firstJobOrder?.projectRef || current.projectRef,
+			projectName: firstJobOrder?.projectName || current.projectName,
+			referenceNo: joinUniqueValues(salesOrderNos) || current.referenceNo,
+			purpose: joinUniqueValues(jobOrderNos) || current.purpose,
+			remarks: joinUniqueValues(remarks) || current.remarks,
+			items: copiedItems.length > 0 ? copiedItems : current.items,
+		}));
+		setErrors((current) => ({
+			...current,
+			items: undefined,
+			purpose: undefined,
+			referenceNo: undefined,
+			vceCode: undefined,
+			vceName: undefined,
+		}));
+		toast.success("Source transaction copied to material request.");
+	}
+
 	function handleSubmit() {
 		if (isReadonly) {
 			return;
@@ -351,6 +442,8 @@ export function useMaterialRequestFormPage() {
 		backHref,
 		clearItem,
 		clearItems,
+		copyFromSourceTransactions,
+		copyFromRecords,
 		duplicateItem,
 		errors,
 		existingRequest,
@@ -496,4 +589,8 @@ function materialRequestItemIsComplete(item: MaterialRequestItem) {
 
 function hasMaterialRequestNumberValue(value: MaterialRequestItem["requestQuantity"]) {
 	return value !== "";
+}
+
+function joinUniqueValues(values: string[]) {
+	return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean))).join(", ");
 }

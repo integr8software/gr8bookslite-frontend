@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { PickListActionPage } from "@/app/src/ui/modules/inventory/pick-list/PickListActionPage";
+import { PickListActionPage } from "@/app/src/ui/modules/inventory/pick-list/action/PickListActionPage";
 
 const PageTitle = "Edit Pick List";
 

@@ -10,11 +10,13 @@ export const canvassFormSeedRecords: CanvassFormRecord[] = [
 		id: "cf-0001",
 		currency: "PHP",
 		exchangeRate: 1,
+		prNo: "",
 		purchaseType: "Goods",
 		requestedBy: "Purchasing Team",
 		responsibilityCenter: "",
 		requiredBefore: "2026-07-18",
 		remarks: "",
+		termsOfPayment: "",
 		transNo: "CF-2026-0001",
 		documentDate: "2026-07-18",
 		status: "Draft",
@@ -25,12 +27,17 @@ export const canvassFormSeedRecords: CanvassFormRecord[] = [
 export function createBlankCanvassFormItem(): CanvassFormItem {
 	return {
 		id: createCanvassFormId("item"),
+		prNo: "",
 		itemCode: "",
 		barcode: "",
 		description: "",
 		uom: "PC",
 		quantity: 0,
+		minimumOrderQuantity: 0,
 		responsibilityCenter: "",
+		supplierCount: 1,
+		vatExclusive: "False",
+		vatInclusive: "False",
 		supplierCode1: "",
 		supplierName1: "",
 		unitCost1: 0,
@@ -50,17 +57,24 @@ export function createBlankCanvassFormItem(): CanvassFormItem {
 
 export function createCanvassFormValues(record?: CanvassFormRecord): CanvassFormValues {
 	if (record) {
-		return { ...record, items: record.items.map((item) => ({ ...item })) };
+		return {
+			...record,
+			prNo: record.prNo ?? getRecordPrNoFromItems(record.items),
+			termsOfPayment: record.termsOfPayment ?? "",
+			items: record.items.map((item) => normalizeCanvassFormItemDefaults(item)),
+		};
 	}
 
 	return {
 		currency: "PHP",
 		exchangeRate: 1,
+		prNo: "",
 		purchaseType: "Goods",
 		requestedBy: "",
 		responsibilityCenter: "",
 		requiredBefore: new Date().toISOString().slice(0, 10),
 		remarks: "",
+		termsOfPayment: "",
 		transNo: createNextCanvassFormTransNo(canvassFormSeedRecords),
 		documentDate: new Date().toISOString().slice(0, 10),
 		status: "Draft",
@@ -75,6 +89,7 @@ export function createCanvassFormRecord(
 	return {
 		id,
 		...values,
+		exchangeRate: roundCanvassFormAmount(values.exchangeRate),
 		items: values.items.map((item) => normalizeCanvassFormItem(item)),
 	};
 }
@@ -83,14 +98,58 @@ export function normalizeCanvassFormItem(item: CanvassFormItem): CanvassFormItem
 	const selectedCost = getSelectedSupplierCost(item);
 
 	return {
-		...item,
+		...normalizeCanvassFormItemDefaults(item),
 		quantity: Number(item.quantity) || 0,
-		unitCost1: Number(item.unitCost1) || 0,
-		unitCost2: Number(item.unitCost2) || 0,
-		unitCost3: Number(item.unitCost3) || 0,
-		unitCost4: Number(item.unitCost4) || 0,
-		totalCost: selectedCost * (Number(item.quantity) || 0),
+		minimumOrderQuantity: Number(item.minimumOrderQuantity) || 0,
+		unitCost1: roundCanvassFormAmount(item.unitCost1),
+		unitCost2: roundCanvassFormAmount(item.unitCost2),
+		unitCost3: roundCanvassFormAmount(item.unitCost3),
+		unitCost4: roundCanvassFormAmount(item.unitCost4),
+		supplierCount: clampSupplierCount(item.supplierCount),
+		totalCost: roundCanvassFormAmount(selectedCost * (Number(item.quantity) || 0)),
 	};
+}
+
+function normalizeCanvassFormItemDefaults(
+	item: Partial<CanvassFormItem>,
+): CanvassFormItem {
+	return {
+		...createBlankCanvassFormItem(),
+		...item,
+		prNo: item.prNo ?? "",
+		minimumOrderQuantity: Number(item.minimumOrderQuantity) || 0,
+		supplierCount: getInitialSupplierCount(item),
+		vatExclusive: item.vatExclusive ?? "False",
+		vatInclusive: item.vatInclusive ?? "False",
+	};
+}
+
+function getInitialSupplierCount(item: Partial<CanvassFormItem>) {
+	if (typeof item.supplierCount === "number") {
+		return clampSupplierCount(item.supplierCount);
+	}
+
+	if (hasSupplierData(item, 4)) return 4;
+	if (hasSupplierData(item, 3)) return 3;
+	if (hasSupplierData(item, 2)) return 2;
+
+	return 1;
+}
+
+function hasSupplierData(item: Partial<CanvassFormItem>, index: 2 | 3 | 4) {
+	const supplierCode = item[`supplierCode${index}` as keyof CanvassFormItem];
+	const supplierName = item[`supplierName${index}` as keyof CanvassFormItem];
+	const unitCost = item[`unitCost${index}` as keyof CanvassFormItem];
+
+	return Boolean(
+		String(supplierCode ?? "").trim() ||
+			String(supplierName ?? "").trim() ||
+			Number(unitCost),
+	);
+}
+
+function clampSupplierCount(value: number) {
+	return Math.min(4, Math.max(1, Math.trunc(Number(value) || 1)));
 }
 
 export function getSelectedSupplierCost(item: CanvassFormItem) {
@@ -118,6 +177,11 @@ export function formatCanvassFormAmount(value: number) {
 	});
 }
 
+export function roundCanvassFormAmount(value: number | string) {
+	const amount = Number(value) || 0;
+	return Math.round(amount * 100) / 100;
+}
+
 export function formatCanvassFormDate(value: string) {
 	if (!value) return "";
 	const [year, month, day] = value.split("-");
@@ -131,10 +195,47 @@ export function loadCanvassForms() {
 		const stored = window.localStorage.getItem(CanvassFormStorageKey);
 		if (!stored) return canvassFormSeedRecords;
 		const parsed = JSON.parse(stored) as CanvassFormRecord[];
-		return Array.isArray(parsed) && parsed.length > 0 ? parsed : canvassFormSeedRecords;
+		return Array.isArray(parsed) && parsed.length > 0
+			? parsed.map(normalizeCanvassFormRecordDefaults)
+			: canvassFormSeedRecords;
 	} catch {
 		return canvassFormSeedRecords;
 	}
+}
+
+function normalizeCanvassFormRecordDefaults(
+	record: Partial<CanvassFormRecord>,
+): CanvassFormRecord {
+	return {
+		id: record.id ?? createCanvassFormId("cf"),
+		currency: record.currency ?? "PHP",
+		exchangeRate: Number(record.exchangeRate) || 1,
+		prNo: record.prNo ?? getRecordPrNoFromItems(record.items),
+		purchaseType: record.purchaseType ?? "Goods",
+		requestedBy: record.requestedBy ?? "",
+		responsibilityCenter: record.responsibilityCenter ?? "",
+		requiredBefore: record.requiredBefore ?? "",
+		remarks: record.remarks ?? "",
+		termsOfPayment: record.termsOfPayment ?? "",
+		transNo: record.transNo ?? createNextCanvassFormTransNo(canvassFormSeedRecords),
+		documentDate: record.documentDate ?? "",
+		status: record.status ?? "Draft",
+		items: (record.items ?? [createBlankCanvassFormItem()]).map(
+			normalizeCanvassFormItemDefaults,
+		),
+	};
+}
+
+function getRecordPrNoFromItems(items: Partial<CanvassFormItem>[] | undefined) {
+	const prNumbers = Array.from(
+		new Set(
+			(items ?? [])
+				.map((item) => item.prNo?.trim())
+				.filter((prNo): prNo is string => Boolean(prNo)),
+		),
+	);
+
+	return prNumbers.join(", ");
 }
 
 export function saveCanvassForms(records: CanvassFormRecord[]) {

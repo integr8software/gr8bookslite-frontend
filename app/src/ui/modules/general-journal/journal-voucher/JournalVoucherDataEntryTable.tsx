@@ -11,16 +11,16 @@ import {
 } from "@/app/src/constants/modules/general-journal/journal-voucher/JournalVoucherConstants";
 import { getModuleChartAccounts } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import { formatJournalVoucherAmount } from "@/app/src/data/modules/general-journal/journal-voucher/JournalVoucherData";
-import { getPartyDisplayName } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
+import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
 import type { useJournalVoucherFormPage } from "@/app/src/hooks/modules/general-journal/journal-voucher/useJournalVoucherFormPage";
-import { usePartyManagementStore } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagement";
-import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/maintenance/responsibility-center/useResponsibilityCenter";
+import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
+import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenter";
 import type {
   JournalVoucherLine,
   JournalVoucherLineField,
 } from "@/app/src/types/modules/general-journal/journal-voucher/JournalVoucherTypes";
-import type { PartyInformationRecord } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
-import type { ResponsibilityCenter } from "@/app/src/types/modules/maintenance/responsibility-center/ResponsibilityCenterTypes";
+import type { PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";
+import type { ResponsibilityCenter } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
 import {
   AppAdvancedDropdown,
   type AppAdvancedDropdownOption,

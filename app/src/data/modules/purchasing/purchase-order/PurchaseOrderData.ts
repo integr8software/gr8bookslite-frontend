@@ -21,6 +21,7 @@ export const purchaseOrderSeedRecords: PurchaseOrderRecord[] = [
 		contactNo: "",
 		emailAddress: "",
 		deliveryDate: "2026-07-18",
+		termsOfPayment: "Net 30",
 		remarks: "",
 		discountAmount: 0,
 		vatAmount: 0,
@@ -28,7 +29,6 @@ export const purchaseOrderSeedRecords: PurchaseOrderRecord[] = [
 		projectName: "",
 		importationNo: "",
 		partialPayment: false,
-		fixedAsset: false,
 		items: [
 			{
 				id: "po-0001-item-1",
@@ -36,10 +36,15 @@ export const purchaseOrderSeedRecords: PurchaseOrderRecord[] = [
 				barcode: "",
 				itemName: "Office supplies",
 				itemCategory: "",
+				color: "",
+				brand: "",
+				size: "",
+				model: "",
 				quantity: 1,
 				uom: "PC",
 				expiryDate: "",
 				freightCost: 0,
+				rateDelivery: 0,
 				cost: 0,
 				vatAmount: 0,
 				ewt: "",
@@ -50,6 +55,8 @@ export const purchaseOrderSeedRecords: PurchaseOrderRecord[] = [
 				responsibilityCenter: "",
 				budgetCode: "",
 				prQuantity: 0,
+				linePrNo: "",
+				canvassNo: "",
 			},
 		],
 	},
@@ -61,10 +68,15 @@ export const emptyPurchaseOrderItem: PurchaseOrderItem = {
 	barcode: "",
 	itemName: "",
 	itemCategory: "",
+	color: "",
+	brand: "",
+	size: "",
+	model: "",
 	quantity: 0,
 	uom: "PC",
 	expiryDate: "",
 	freightCost: 0,
+	rateDelivery: 0,
 	cost: 0,
 	vatAmount: 0,
 	ewt: "",
@@ -75,6 +87,8 @@ export const emptyPurchaseOrderItem: PurchaseOrderItem = {
 	responsibilityCenter: "",
 	budgetCode: "",
 	prQuantity: 0,
+	linePrNo: "",
+	canvassNo: "",
 };
 
 export function createPurchaseOrderFormValues(
@@ -83,7 +97,8 @@ export function createPurchaseOrderFormValues(
 	if (record) {
 		return {
 			...record,
-			items: record.items.map((item) => ({ ...item })),
+			termsOfPayment: record.termsOfPayment ?? "",
+			items: record.items.map((item) => normalizePurchaseOrderItemDefaults(item)),
 		};
 	}
 
@@ -101,6 +116,7 @@ export function createPurchaseOrderFormValues(
 		contactNo: "",
 		emailAddress: "",
 		deliveryDate: new Date().toISOString().slice(0, 10),
+		termsOfPayment: "",
 		remarks: "",
 		discountAmount: 0,
 		vatAmount: 0,
@@ -108,7 +124,6 @@ export function createPurchaseOrderFormValues(
 		projectName: "",
 		importationNo: "",
 		partialPayment: false,
-		fixedAsset: false,
 		items: [createBlankPurchaseOrderItem()],
 	};
 }
@@ -121,15 +136,32 @@ export function createPurchaseOrderRecord(
 		id,
 		...values,
 		items: values.items.map((item) => ({
-			...item,
+			...normalizePurchaseOrderItemDefaults(item),
 			id: item.id || createPurchaseOrderId("item"),
 			quantity: Number(item.quantity) || 0,
 			freightCost: Number(item.freightCost) || 0,
+			rateDelivery: Number(item.rateDelivery) || 0,
 			cost: Number(item.cost) || 0,
 			vatAmount: Number(item.vatAmount) || 0,
 			discountAmount: Number(item.discountAmount) || 0,
 			prQuantity: Number(item.prQuantity) || 0,
 		})),
+	};
+}
+
+function normalizePurchaseOrderItemDefaults(
+	item: Partial<PurchaseOrderItem>,
+): PurchaseOrderItem {
+	return {
+		...emptyPurchaseOrderItem,
+		...item,
+		color: item.color ?? "",
+		brand: item.brand ?? "",
+		size: item.size ?? "",
+		model: item.model ?? "",
+		rateDelivery: item.rateDelivery ?? 0,
+		linePrNo: item.linePrNo ?? "",
+		canvassNo: item.canvassNo ?? "",
 	};
 }
 
@@ -148,6 +180,7 @@ export function getPurchaseOrderItemNetAmount(item: PurchaseOrderItem) {
 	return (
 		getPurchaseOrderItemGrossAmount(item) +
 		(Number(item.freightCost) || 0) +
+		(Number(item.rateDelivery) || 0) +
 		(Number(item.vatAmount) || 0) -
 		(Number(item.discountAmount) || 0)
 	);

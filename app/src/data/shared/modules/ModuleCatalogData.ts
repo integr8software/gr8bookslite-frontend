@@ -6,58 +6,55 @@ import type {
 } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
 import { flattenSections } from "@/app/src/data/shared/main-layout/sidebar/SidebarUtils";
 
-export type MainModuleAction = Extract<
-  MainAccessAction,
-  "view" | "add" | "edit"
->;
+export type MainModuleAction = Extract<MainAccessAction, "view" | "add" | "edit">;
 
 export const MODULE_ROUTE_FALLBACK = "/not-found";
 
 export const MODULE_ROUTE_MAP = {
   DO: "/dashboard",
-  COA: "/maintenance/charts-of-accounts",
-  BM: "/maintenance/bank-masterfile",
-  DA: "/maintenance/default-account",
-  PM: "/maintenance/party-management",
-  I: "/maintenance/items",
-  IB: "/maintenance/item-bundles",
-  IC: "/maintenance/item-category",
-  IA: "/maintenance/item-attributes",
-  UOM: "/maintenance/unit-of-measurement",
-  IPR: "/maintenance/item-promotions",
-  PLS: "/maintenance/price-lists",
-  TT: "/maintenance/inventory-transaction-type",
-  WM: "/maintenance/warehouses",
-  WA: "/maintenance/warehouse-access",
-  WS: "/maintenance/warehouse-storage",
-  WSL: "/maintenance/warehouse-storage",
-  WLY: "/maintenance/warehouse-storage/layout",
-  WILS: "/maintenance/warehouse-storage/item-location-setup",
-  WCSR: "/maintenance/warehouse-storage/capacity-storage-rules",
-  WLA: "/maintenance/warehouse-storage/location-availability",
-  WLT: "/maintenance/warehouse-storage/location-templates",
-  WSBW: "/maintenance/warehouse-inventory/stock-by-warehouse",
-  WSBL: "/maintenance/warehouse-inventory/stock-by-location",
-  WSMH: "/maintenance/warehouse-inventory/stock-movement-history",
-  WIA: "/maintenance/warehouse-inventory/item-availability",
-  WT: "/maintenance/warehouse-transfers",
-  WLOCT: "/maintenance/warehouse-operations/location-transfer",
-  WRP: "/maintenance/warehouse-operations/receiving-putaway",
-  WPD: "/maintenance/warehouse-operations/picking-dispatch",
-  WSC: "/maintenance/warehouse-operations/stock-count",
-  WSA: "/maintenance/warehouse-operations/stock-adjustment",
-  WSI: "/maintenance/warehouse-inventory/item-availability",
-  DSM: "/maintenance/discount-management",
-  TM: "/maintenance/term-management",
-  PT: "/maintenance/payment-type",
-  RC: "/maintenance/responsibility-center",
-  TXM: "/maintenance/tax-maintenance",
+  COA: "/financial-maintenance/charts-of-accounts",
+  BM: "/financial-maintenance/bank-masterfile",
+  SM: "/financial-maintenance/services-maintenance",
+  DA: "/financial-maintenance/default-account",
+  PM: "/party-management",
+  I: "/item-management/items",
+  IB: "/item-management/item-bundles",
+  IC: "/item-management/item-category",
+  IV: "/item-management/item-variations",
+  UOM: "/item-management/unit-of-measurement",
+  IPR: "/item-management/item-promotions",
+  PLS: "/item-management/item-price-lists",
+  TT: "/item-management/inventory-transaction-type",
+  WM: "/warehouse-management/warehouses",
+  WA: "/warehouse-management/warehouse-access",
+  WS: "/warehouse-management/warehouse-storage",
+  WSL: "/warehouse-management/warehouse-storage",
+  WLY: "/warehouse-management/warehouse-storage",
+  WILS: "/warehouse-management/warehouse-storage",
+  WCSR: "/warehouse-management/warehouse-storage",
+  WLA: "/warehouse-management/warehouse-storage",
+  WSBW: "/warehouse-management/warehouse-inventory-stock",
+  WSBL: "/warehouse-management/warehouse-inventory-stock",
+  WSMH: "/warehouse-management/warehouse-inventory-stock",
+  WIA: "/warehouse-management/warehouse-inventory-stock",
+  WT: "/warehouse-management/warehouse-transfers",
+  WLOCT: "/warehouse-management/warehouse-transfers",
+  WSC: "/warehouse-management/warehouse-inventory-stock",
+  WSA: "/warehouse-management/warehouse-inventory-stock",
+  WSI: "/warehouse-management/warehouse-inventory-stock",
+  DVE: "/delivery-vehicle-management/delivery-vehicles",
+  DVT: "/delivery-vehicle-management/vehicle-types",
+  DVMR: "/delivery-vehicle-management/vehicle-repair-maintenance",
+  DSM: "/financial-maintenance/discount-maintenance",
+  TM: "/financial-maintenance/terms-maintenance",
+  PT: "/financial-maintenance/payment-type",
+  RC: "/financial-maintenance/responsibility-center",
   OR: "/cash-receipt/official-receipt",
   CR: "/cash-receipt/collection-receipt",
   AR: "/cash-receipt/acknowledgement-receipt",
   PVR: "/cash-receipt/provisional-receipt",
   BR: "/cash-receipt/bank-reconciliation",
-  PDCW: "/cash-receipt/product-distribution-center-warehouse",
+  PDCW: "/cash-receipt/post-dated-check-registry",
   DV: "/cash-disbursement/disbursement-voucher",
   CA: "/cash-disbursement/cash-advance",
   CAME: "/cash-disbursement/cash-advance-multiple-entry",
@@ -105,6 +102,7 @@ export const MODULE_ROUTE_MAP = {
   MCS: "/system-administration/multi-currency-setup",
   FS: "/system-administration/form-signatory",
   MM: "/system-administration/mail-maintenance",
+  CRPT: "/system-administration/customized-reports",
 } as const;
 
 export const MainModuleCatalogHelperText: Record<string, string> = {
@@ -121,102 +119,78 @@ export const MainModuleCatalogHelperText: Record<string, string> = {
   "system-administration":
     "Manage users, approvals, audits, numbering, currencies, and mail setup.",
   "dashboard-overview": "View company activity, approvals, and performance.",
-  "maintenance-charts-of-accounts":
-    "Maintain account codes used by transactions and reports.",
+  "maintenance-charts-of-accounts": "Maintain account codes used by transactions and reports.",
   "maintenance-bank-masterfile":
     "Maintain company bank accounts and their linked Cash in Bank chart accounts.",
+  "maintenance-services-maintenance":
+    "Maintain sellable services and their Service Revenues account setup.",
   "maintenance-default-account":
     "Maintain reusable account templates and generated Chart of Accounts records.",
   "system-administration-multi-currency-setup":
     "Configure currencies, exchange rates, preferences, and rounding rules.",
-  "maintenance-discount-management":
-    "Maintain discount rules for sales and purchasing.",
-  "maintenance-term-management": "Manage payment and collection terms.",
+  "maintenance-discount-maintenance": "Maintain discount rules for sales and purchasing.",
+  "maintenance-terms-maintenance": "Manage payment and collection terms.",
   "maintenance-transaction-type":
     "Configure inventory movement classifications for goods receipt and goods issue.",
   "maintenance-payment-type":
     "Maintain payment methods and classifications used by disbursement vouchers.",
-  "maintenance-responsibility-center":
-    "Maintain accountability centers for financial reporting.",
-  "maintenance-tax-maintenance":
-    "Maintain VAT registration types and their related account titles.",
+  "maintenance-responsibility-center": "Maintain accountability centers for financial reporting.",
   "maintenance-warehouse-management":
     "Maintain warehouse records, storage setup, inventory visibility, and warehouse operations.",
   "maintenance-warehouses": "Maintain warehouse master records.",
   "maintenance-warehouse-access": "Manage warehouse user permissions.",
-  "maintenance-warehouse-storage": "Configure warehouse-scoped storage modules.",
-  "maintenance-storage-locations": "Maintain warehouse-scoped storage locations and codes.",
-  "maintenance-storage-layout": "Review one warehouse storage structure at a time.",
-  "maintenance-item-location-setup": "Assign item storage locations per warehouse.",
-  "maintenance-capacity-storage-rules": "Maintain warehouse location capacity and storage rules.",
-  "maintenance-location-availability": "Manage operational availability for warehouse locations.",
-  "maintenance-location-templates": "Prepare reusable warehouse storage layout templates.",
-  "maintenance-warehouse-inventory": "Review inventory by warehouse, location, movement, and item availability.",
-  "maintenance-stock-by-warehouse": "View stock balances summarized by warehouse.",
-  "maintenance-stock-by-location": "View stock balances by storage location.",
-  "maintenance-stock-movement-history": "Review warehouse and location movement history.",
-  "maintenance-item-availability": "View item availability across warehouses and locations.",
-  "maintenance-warehouse-operations": "Move, count, receive, pick, dispatch, and adjust warehouse inventory.",
-  "maintenance-warehouse-transfers": "Track stock transfers between warehouses.",
-  "maintenance-location-transfer": "Track stock transfers between locations in one warehouse.",
-  "maintenance-receiving-putaway": "Receive stock and assign putaway locations.",
-  "maintenance-picking-dispatch": "Pick stock from locations and dispatch it.",
-  "maintenance-stock-count": "Count stock by warehouse and location.",
-  "maintenance-stock-adjustment": "Adjust warehouse or location stock balances.",
-  "maintenance-warehouse-stock-inquiry": "View warehouse stock availability.",
+  "maintenance-warehouse-storage":
+    "Maintain warehouse warehouse storage, layout, capacity rules, and location availability.",
+  "maintenance-warehouse-inventory-stock":
+    "View stock by warehouse and location, stock movements, item availability, counts, and adjustments.",
+  "maintenance-warehouse-transfers": "Transfer inventory between warehouses and warehouse storage.",
+  "maintenance-delivery-vehicle-management":
+    "Manage delivery vehicle setup, operations, availability, dispatch, tracking, and repairs.",
+  "maintenance-delivery-vehicle-management-delivery-vehicles":
+    "Maintain vehicles, capacity, ownership, assignment, registration, and status.",
+  "maintenance-delivery-vehicle-management-vehicle-types":
+    "Maintain vehicle type setup, capacity defaults, specifications, and handling rules.",
+  "maintenance-delivery-vehicle-management-vehicle-repair-maintenance":
+    "Schedule inspections, record defects, manage maintenance requests, repairs, and service history.",
   "maintenance-items": "Maintain item master records.",
   "maintenance-warehouse": "Maintain warehouse records and warehouse storage.",
   "maintenance-item": "Maintain item master records.",
   "maintenance-item-bundles": "Maintain item bundles.",
   "maintenance-item-category": "Maintain the item category hierarchy.",
-  "maintenance-item-attributes": "Maintain item attributes and variant values.",
+  "maintenance-item-variations": "Maintain item variations and variant values.",
   "maintenance-item-promotions": "Maintain item promotion records and rules.",
   "maintenance-unit-of-measurement": "Maintain unit of measurement records.",
   "maintenance-price-lists": "Maintain item price list records.",
-  "maintenance-party-management":
-    "Maintain customers, suppliers, vendors, members, and employees.",
-  "maintenance-party":
-    "Maintain customers, suppliers, vendors, members, and employees.",
-  "system-administration-form-signatory":
-    "Manage authorized signatories for official documents.",
+  "maintenance-party-management": "Maintain customers, suppliers, vendors, members, and employees.",
+  "maintenance-party": "Maintain customers, suppliers, vendors, members, and employees.",
+  "system-administration-form-signatory": "Manage authorized signatories for official documents.",
+  "system-administration-customized-reports":
+    "Customize printable report templates, fields, headers, footers, and signatories.",
   "cash-receipt-official-receipt": "Record official customer payments.",
-  "cash-receipt-collection-receipt":
-    "Record collections received from customers.",
-  "cash-receipt-acknowledgement-receipt":
-    "Acknowledge received payments before official posting.",
-  "cash-receipt-provisional-receipt":
-    "Record temporary receipts pending final confirmation.",
-  "cash-receipt-bank-reconciliation":
-    "Match bank transactions against company records.",
-  "cash-receipt-product-distribution-center-warehouse":
-    "Track product distribution center warehouse receipts.",
-  "cash-disbursement-disbursement-voucher":
-    "Prepare and track payment vouchers.",
+  "cash-receipt-collection-receipt": "Record collections received from customers.",
+  "cash-receipt-acknowledgement-receipt": "Acknowledge received payments before official posting.",
+  "cash-receipt-provisional-receipt": "Record temporary receipts pending final confirmation.",
+  "cash-receipt-bank-reconciliation": "Match bank transactions against company records.",
+  "cash-receipt-post-dated-check-registry":
+    "Register and monitor customer post-dated checks and their current status.",
+  "cash-disbursement-disbursement-voucher": "Prepare and track payment vouchers.",
   "cash-disbursement-voucher": "Prepare and track payment vouchers.",
   "cash-disbursement-cash-advance": "Record employee cash advances.",
-  "cash-disbursement-cash-advance-multiple-entry":
-    "Record cash advances across multiple entries.",
-  "cash-disbursement-cash-advance-multiple":
-    "Record cash advances across multiple entries.",
+  "cash-disbursement-cash-advance-multiple-entry": "Record cash advances across multiple entries.",
+  "cash-disbursement-cash-advance-multiple": "Record cash advances across multiple entries.",
   "cash-disbursement-petty-cash": "Record petty cash vouchers.",
   "cash-disbursement-petty-cash-voucher": "Record petty cash vouchers.",
-  "cash-disbursement-petty-cash-fund":
-    "Manage petty cash fund setup and balances.",
-  "cash-disbursement-petty-cash-fund-replenishment":
-    "Replenish petty cash funds.",
-  "cash-disbursement-petty-cash-advance-replenishment":
-    "Replenish petty cash advances.",
+  "cash-disbursement-petty-cash-fund": "Manage petty cash fund setup and balances.",
+  "cash-disbursement-petty-cash-fund-replenishment": "Replenish petty cash funds.",
+  "cash-disbursement-petty-cash-advance-replenishment": "Replenish petty cash advances.",
   "cash-disbursement-petty-cash-advance": "Record petty cash advances.",
   "cash-disbursement-revolving-fund": "Manage revolving fund activity.",
   "cash-disbursement-request-for-payment": "Create and track payment requests.",
   "cash-disbursement-request-payment": "Create and track payment requests.",
-  "cash-disbursement-advances-to-supplier":
-    "Record supplier advances before final billing.",
-  "accounts-payable-accounts-payable-voucher":
-    "Create and track supplier payable vouchers.",
+  "cash-disbursement-advances-to-supplier": "Record supplier advances before final billing.",
+  "accounts-payable-accounts-payable-voucher": "Create and track supplier payable vouchers.",
   "accounts-payable-voucher": "Create and track supplier payable vouchers.",
-  "general-journal-journal-voucher":
-    "Post manual journal entries and adjustments.",
+  "general-journal-journal-voucher": "Post manual journal entries and adjustments.",
   "general-journal-voucher": "Post manual journal entries and adjustments.",
   "sales-debit-memo": "Record debit adjustments to customer accounts.",
   "sales-credit-memo": "Record credit adjustments to customer accounts.",
@@ -252,6 +226,7 @@ export const MainModuleCatalogHelperText: Record<string, string> = {
   "purchasing-journal": "Review and post purchase journal entries.",
   "others-fixed-asset": "Track fixed asset records and movements.",
   "fixed-asset-default": "Track fixed asset records and movements.",
+  "others-beginning-balance-uploader": "Upload and review opening balances.",
   "maintenance-user-management": "Manage users and roles.",
   "maintenance-users": "Create and maintain system user accounts.",
   "maintenance-user-role": "Maintain user role classifications.",
@@ -275,13 +250,7 @@ const ModuleRecordIds = ["1001", "1002", "1003"];
 
 export const MainModuleCatalogSections: MainNavigationSection[] = [
   section("dashboard", "Dashboard", "/dashboard", "dashboard", "dashboard", [
-    moduleItem(
-      "dashboard-overview",
-      "Dashboard Overview",
-      "DO",
-      "dashboard",
-      ["view"],
-    ),
+    moduleItem("dashboard-overview", "Dashboard Overview", "DO", "dashboard", ["view"]),
   ]),
   section(
     "maintenance",
@@ -294,291 +263,138 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
         "maintenance-charts-of-accounts",
         "Chart of Accounts",
         "COA",
-        "maintenance.chartOfAccounts"
+        "maintenance.chartOfAccounts",
       ),
       moduleItem(
         "maintenance-default-account",
         "Default Accounts",
         "DA",
-        "maintenance.defaultAccount"
+        "maintenance.defaultAccount",
       ),
       moduleItem(
         "maintenance-bank-masterfile",
         "Bank Masterfile",
         "BM",
-        "maintenance.bankMasterfile"
+        "maintenance.bankMasterfile",
       ),
       moduleItem(
-        "maintenance-payment-type",
-        "Payment Type",
-        "PT",
-        "maintenance.paymentType"
+        "maintenance-services-maintenance",
+        "Services Maintenance",
+        "SM",
+        "maintenance.servicesMaintenance",
       ),
+      moduleItem("maintenance-payment-type", "Payment Type", "PT", "maintenance.paymentType"),
       moduleItem(
-        "maintenance-discount-management",
-        "Discount Management",
+        "maintenance-discount-maintenance",
+        "Discount Maintenance",
         "DSM",
-        "maintenance.discount"
+        "maintenance.discount",
       ),
-      moduleItem(
-        "maintenance-term-management",
-        "Term Management",
-        "TM",
-        "maintenance.term"
-      ),
-      moduleItem(
-        "maintenance-tax-maintenance",
-        "Tax Maintenance",
-        "TXM",
-        "maintenance.taxMaintenance"
-      ),
+      moduleItem("maintenance-terms-maintenance", "Terms Maintenance", "TM", "maintenance.term"),
       moduleItem(
         "maintenance-responsibility-center",
         "Responsibility Center",
         "RC",
-        "maintenance.responsibilityCenter"
+        "maintenance.responsibilityCenter",
       ),
-      moduleItem(
-        "maintenance-party-management",
-        "Party Management",
-        "PM",
-        "maintenance.party"
-      ),
-      moduleItem(
-        "maintenance-items",
-        "Items",
-        "I",
-        "maintenance.item"
-      ),
-      moduleItem(
-        "maintenance-item-bundles",
-        "Item Bundles",
-        "IB",
-        "maintenance.item"
-      ),
-      moduleItem(
-        "maintenance-item-category",
-        "Item Category",
-        "IC",
-        "maintenance.item"
-      ),
-      moduleItem(
-        "maintenance-item-attributes",
-        "Item Attributes",
-        "IA",
-        "maintenance.item"
-      ),
+      moduleItem("maintenance-party-management", "Party Management", "PM", "maintenance.party"),
+      moduleItem("maintenance-items", "Items", "I", "maintenance.item"),
+      moduleItem("maintenance-item-bundles", "Item Bundles", "IB", "maintenance.item"),
+      moduleItem("maintenance-item-category", "Item Category", "IC", "maintenance.item"),
+      moduleItem("maintenance-item-variations", "Item Variations", "IV", "maintenance.item"),
       moduleItem(
         "maintenance-unit-of-measurement",
         "Unit of Measurement",
         "UOM",
-        "maintenance.item"
+        "maintenance.item",
       ),
-      moduleItem(
-        "maintenance-item-promotions",
-        "Item Promotions",
-        "IPR",
-        "maintenance.item"
-      ),
-      moduleItem(
-        "maintenance-price-lists",
-        "Price Lists",
-        "PLS",
-        "maintenance.item"
-      ),
+      moduleItem("maintenance-item-promotions", "Item Promotions", "IPR", "maintenance.item"),
+      moduleItem("maintenance-price-lists", "Item Price List", "PLS", "maintenance.item"),
       moduleItem(
         "maintenance-transaction-type",
         "Inventory Transaction Type",
         "TT",
-        "maintenance.transactionType"
+        "maintenance.transactionType",
       ),
       group(
         "maintenance-warehouse-management",
         "Warehouse Management",
-        "/maintenance/warehouse",
+        MODULE_ROUTE_MAP.WM,
         "maintenance.warehouse",
         [
-          moduleItem(
-            "maintenance-warehouses",
-            "Warehouses",
-            "WM",
-            "maintenance.warehouse"
-          ),
+          moduleItem("maintenance-warehouses", "Warehouses", "WM", "maintenance.warehouse"),
           moduleItem(
             "maintenance-warehouse-access",
             "Warehouse Access",
             "WA",
-            "maintenance.warehouse"
+            "maintenance.warehouse",
           ),
-          group(
+          moduleItem(
             "maintenance-warehouse-storage",
             "Warehouse Storage",
-            MODULE_ROUTE_MAP.WS,
+            "WS",
             "maintenance.warehouse",
-            [
-              moduleItem(
-                "maintenance-storage-locations",
-                "Storage Locations",
-                "WS",
-                "maintenance.warehouse"
-              ),
-              moduleItem(
-                "maintenance-storage-layout",
-                "Storage Layout",
-                "WLY",
-                "maintenance.warehouse"
-              ),
-              moduleItem(
-                "maintenance-item-location-setup",
-                "Item Location Setup",
-                "WILS",
-                "maintenance.warehouse"
-              ),
-              moduleItem(
-                "maintenance-capacity-storage-rules",
-                "Capacity & Storage Rules",
-                "WCSR",
-                "maintenance.warehouse"
-              ),
-              moduleItem(
-                "maintenance-location-availability",
-                "Location Availability",
-                "WLA",
-                "maintenance.warehouse"
-              ),
-              moduleItem(
-                "maintenance-location-templates",
-                "Location Templates",
-                "WLT",
-                "maintenance.warehouse"
-              ),
-            ],
           ),
-          group(
-            "maintenance-warehouse-inventory",
-            "Warehouse Inventory",
-            MODULE_ROUTE_MAP.WSBW,
+          moduleItem(
+            "maintenance-warehouse-inventory-stock",
+            "Warehouse Inventory Stock",
+            "WSI",
             "maintenance.warehouse",
-            [
-              moduleItem(
-                "maintenance-stock-by-warehouse",
-                "Stock by Warehouse",
-                "WSBW",
-                "maintenance.warehouse"
-              ),
-              moduleItem(
-                "maintenance-stock-by-location",
-                "Stock by Location",
-                "WSBL",
-                "maintenance.warehouse"
-              ),
-              moduleItem(
-                "maintenance-stock-movement-history",
-                "Stock Movement History",
-                "WSMH",
-                "maintenance.warehouse"
-              ),
-              moduleItem(
-                "maintenance-item-availability",
-                "Item Availability",
-                "WIA",
-                "maintenance.warehouse"
-              ),
-            ],
           ),
-          group(
-            "maintenance-warehouse-operations",
-            "Warehouse Operations",
-            MODULE_ROUTE_MAP.WT,
+          moduleItem(
+            "maintenance-warehouse-transfers",
+            "Warehouse Inventory Transfer",
+            "WT",
             "maintenance.warehouse",
-            [
-              moduleItem(
-                "maintenance-warehouse-transfers",
-                "Warehouse Transfer",
-                "WT",
-                "maintenance.warehouse"
-              ),
-              moduleItem(
-                "maintenance-location-transfer",
-                "Location Transfer",
-                "WLOCT",
-                "maintenance.warehouse"
-              ),
-              moduleItem(
-                "maintenance-receiving-putaway",
-                "Receiving & Putaway",
-                "WRP",
-                "maintenance.warehouse"
-              ),
-              moduleItem(
-                "maintenance-picking-dispatch",
-                "Picking & Dispatch",
-                "WPD",
-                "maintenance.warehouse"
-              ),
-              moduleItem(
-                "maintenance-stock-count",
-                "Stock Count",
-                "WSC",
-                "maintenance.warehouse"
-              ),
-              moduleItem(
-                "maintenance-stock-adjustment",
-                "Stock Adjustment",
-                "WSA",
-                "maintenance.warehouse"
-              ),
-            ],
+          ),
+        ],
+      ),
+      group(
+        "maintenance-delivery-vehicle-management",
+        "Delivery Vehicle Management",
+        MODULE_ROUTE_MAP.DVE,
+        "maintenance.deliveryVehicle",
+        [
+          moduleItem(
+            "maintenance-delivery-vehicle-management-delivery-vehicles",
+            "Delivery Vehicles",
+            "DVE",
+            "maintenance.deliveryVehicle",
+          ),
+          moduleItem(
+            "maintenance-delivery-vehicle-management-vehicle-types",
+            "Vehicle Types",
+            "DVT",
+            "maintenance.deliveryVehicle",
+          ),
+          moduleItem(
+            "maintenance-delivery-vehicle-management-vehicle-repair-maintenance",
+            "Vehicle Repair and Maintenance",
+            "DVMR",
+            "maintenance.deliveryVehicle",
           ),
         ],
       ),
     ],
   ),
-  section(
-    "cash-receipt",
-    "Cash Receipt",
-    "/cash-receipt",
-    "cashIn",
-    "cashReceipt",
-    [
-      moduleItem(
-        "cash-receipt-official-receipt",
-        "Official Receipt",
-        "OR",
-        "cashReceipt"
-      ),
-      moduleItem(
-        "cash-receipt-collection-receipt",
-        "Collection Receipt",
-        "CR",
-        "cashReceipt"
-      ),
-      moduleItem(
-        "cash-receipt-acknowledgement-receipt",
-        "Acknowledgement Receipt",
-        "AR",
-        "cashReceipt"
-      ),
-      moduleItem(
-        "cash-receipt-provisional-receipt",
-        "Provisional Receipt",
-        "PVR",
-        "cashReceipt"
-      ),
-      moduleItem(
-        "cash-receipt-bank-reconciliation",
-        "Bank Reconciliation",
-        "BR",
-        "cashReceipt"
-      ),
-      moduleItem(
-        "cash-receipt-product-distribution-center-warehouse",
-        "Product Distribution Center Warehouse",
-        "PDCW",
-        "cashReceipt"
-      ),
-    ],
-  ),
+  section("cash-receipt", "Cash Receipt", "/cash-receipt", "cashIn", "cashReceipt", [
+    moduleItem("cash-receipt-official-receipt", "Official Receipt", "OR", "cashReceipt"),
+    moduleItem("cash-receipt-collection-receipt", "Collection Receipt", "CR", "cashReceipt"),
+    moduleItem(
+      "cash-receipt-acknowledgement-receipt",
+      "Acknowledgement Receipt",
+      "AR",
+      "cashReceipt",
+    ),
+    moduleItem("cash-receipt-provisional-receipt", "Provisional Receipt", "PVR", "cashReceipt"),
+    moduleItem("cash-receipt-bank-reconciliation", "Bank Reconciliation", "BR", "cashReceipt"),
+    moduleItem(
+      "cash-receipt-post-dated-check-registry",
+      "Post-Dated Check Registry",
+      "PDCW",
+      "cashReceipt",
+    ),
+  ]),
   section(
     "cash-disbursement",
     "Cash Disbursement",
@@ -590,67 +406,52 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
         "cash-disbursement-disbursement-voucher",
         "Disbursement Voucher",
         "DV",
-        "cashDisbursement"
+        "cashDisbursement",
       ),
-      moduleItem(
-        "cash-disbursement-cash-advance",
-        "Cash Advance",
-        "CA",
-        "cashDisbursement"
-      ),
+      moduleItem("cash-disbursement-cash-advance", "Cash Advance", "CA", "cashDisbursement"),
       moduleItem(
         "cash-disbursement-cash-advance-multiple-entry",
         "Cash Advance Multiple Entry",
         "CAME",
-        "cashDisbursement"
+        "cashDisbursement",
       ),
       moduleItem(
         "cash-disbursement-petty-cash-voucher",
         "Petty Cash Voucher",
         "PCV",
-        "cashDisbursement"
+        "cashDisbursement",
       ),
-      moduleItem(
-        "cash-disbursement-petty-cash-fund",
-        "Petty Cash Fund",
-        "PCF",
-        "cashDisbursement"
-      ),
+      moduleItem("cash-disbursement-petty-cash-fund", "Petty Cash Fund", "PCF", "cashDisbursement"),
       moduleItem(
         "cash-disbursement-petty-cash-fund-replenishment",
         "Petty Cash Fund Replenishment",
         "PCFR",
-        "cashDisbursement"
+        "cashDisbursement",
       ),
       moduleItem(
         "cash-disbursement-petty-cash-advance",
         "Petty Cash Advance",
         "PCA",
-        "cashDisbursement"
+        "cashDisbursement",
       ),
       moduleItem(
         "cash-disbursement-petty-cash-advance-replenishment",
         "Petty Cash Advance Replenishment",
         "PCAR",
-        "cashDisbursement"
+        "cashDisbursement",
       ),
-      moduleItem(
-        "cash-disbursement-revolving-fund",
-        "Revolving Fund",
-        "RF",
-        "cashDisbursement"
-      ),
+      moduleItem("cash-disbursement-revolving-fund", "Revolving Fund", "RF", "cashDisbursement"),
       moduleItem(
         "cash-disbursement-request-for-payment",
         "Request For Payment",
         "RFP",
-        "cashDisbursement"
+        "cashDisbursement",
       ),
       moduleItem(
         "cash-disbursement-advances-to-supplier",
         "Advances To Supplier",
         "ATS",
-        "cashDisbursement"
+        "cashDisbursement",
       ),
     ],
   ),
@@ -665,188 +466,49 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
         "accounts-payable-accounts-payable-voucher",
         "Accounts Payable Voucher",
         "APV",
-        "accountsPayable"
+        "accountsPayable",
       ),
     ],
   ),
-  section(
-    "general-journal",
-    "General Journal",
-    "/general-journal",
-    "journal",
-    "generalJournal",
-    [
-      moduleItem(
-        "general-journal-journal-voucher",
-        "Journal Voucher",
-        "JV",
-        "generalJournal"
-      ),
-    ],
-  ),
+  section("general-journal", "General Journal", "/general-journal", "journal", "generalJournal", [
+    moduleItem("general-journal-journal-voucher", "Journal Voucher", "JV", "generalJournal"),
+  ]),
   section("sales", "Sales", "/sales", "sales", "sales", [
-    moduleItem(
-      "sales-debit-memo",
-      "Debit Memo",
-      "DM",
-      "sales"
-    ),
-    moduleItem(
-      "sales-credit-memo",
-      "Credit Memo",
-      "CM",
-      "sales"
-    ),
-    moduleItem(
-      "sales-sales-quotation",
-      "Sales Quotation",
-      "SQ",
-      "sales"
-    ),
-    moduleItem(
-      "sales-sales-order",
-      "Sales Order",
-      "SO",
-      "sales"
-    ),
-    moduleItem(
-      "sales-sales-invoice",
-      "Sales Invoice",
-      "SI",
-      "sales"
-    ),
-    moduleItem(
-      "sales-billing",
-      "Billing",
-      "B",
-      "sales"
-    ),
-    moduleItem(
-      "sales-billing-statement",
-      "Billing Statement",
-      "BS",
-      "sales"
-    ),
-    moduleItem(
-      "sales-billing-invoice",
-      "Billing Invoice",
-      "BI",
-      "sales"
-    ),
-    moduleItem(
-      "sales-service-invoice",
-      "Service Invoice",
-      "SVI",
-      "sales"
-    ),
-    moduleItem(
-      "sales-cash-sales-invoice",
-      "Cash Sales Invoice",
-      "CSI",
-      "sales"
-    ),
-    moduleItem(
-      "sales-sales-journal",
-      "Sales Journal",
-      "SJ",
-      "sales"
-    ),
-    moduleItem(
-      "sales-statement-of-account",
-      "Statement of Account",
-      "SOA",
-      "sales"
-    ),
+    moduleItem("sales-debit-memo", "Debit Memo", "DM", "sales"),
+    moduleItem("sales-credit-memo", "Credit Memo", "CM", "sales"),
+    moduleItem("sales-sales-quotation", "Sales Quotation", "SQ", "sales"),
+    moduleItem("sales-sales-order", "Sales Order", "SO", "sales"),
+    moduleItem("sales-sales-invoice", "Sales Invoice", "SI", "sales"),
+    moduleItem("sales-billing", "Billing", "B", "sales"),
+    moduleItem("sales-billing-statement", "Billing Statement", "BS", "sales"),
+    moduleItem("sales-billing-invoice", "Billing Invoice", "BI", "sales"),
+    moduleItem("sales-service-invoice", "Service Invoice", "SVI", "sales"),
+    moduleItem("sales-cash-sales-invoice", "Cash Sales Invoice", "CSI", "sales"),
+    moduleItem("sales-sales-journal", "Sales Journal", "SJ", "sales"),
+    moduleItem("sales-statement-of-account", "Statement of Account", "SOA", "sales"),
   ]),
   section("inventory", "Inventory", "/inventory", "inventory", "inventory", [
-    moduleItem(
-      "inventory-receiving-report",
-      "Receiving Report",
-      "RR",
-      "inventory"
-    ),
-    moduleItem(
-      "inventory-goods-receipt",
-      "Goods Receipt",
-      "GR",
-      "inventory"
-    ),
-    moduleItem(
-      "inventory-inventory-count",
-      "Inventory Count",
-      "INC",
-      "inventory"
-    ),
-    moduleItem(
-      "inventory-material-request",
-      "Material Request",
-      "MR",
-      "inventory"
-    ),
-    moduleItem(
-      "inventory-pick-list",
-      "Pick List",
-      "PL",
-      "inventory"
-    ),
-    moduleItem(
-      "inventory-goods-issue",
-      "Goods Issue",
-      "GI",
-      "inventory"
-    ),
-    moduleItem(
-      "inventory-delivery-receipt",
-      "Delivery Receipt",
-      "DR",
-      "inventory"
-    ),
+    moduleItem("inventory-receiving-report", "Receiving Report", "RR", "inventory"),
+    moduleItem("inventory-goods-receipt", "Goods Receipt", "GR", "inventory"),
+    moduleItem("inventory-inventory-count", "Inventory Count", "INC", "inventory"),
+    moduleItem("inventory-material-request", "Material Request", "MR", "inventory"),
+    moduleItem("inventory-pick-list", "Pick List", "PL", "inventory"),
+    moduleItem("inventory-goods-issue", "Goods Issue", "GI", "inventory"),
+    moduleItem("inventory-delivery-receipt", "Delivery Receipt", "DR", "inventory"),
   ]),
-  section(
-    "purchasing",
-    "Purchasing",
-    "/purchasing",
-    "purchasing",
-    "purchasing",
-    [
-      moduleItem(
-        "purchasing-purchase-request",
-        "Purchase Request",
-        "PR",
-        "purchasing"
-      ),
-      moduleItem(
-        "purchasing-canvass-form",
-        "Canvass Form",
-        "CF",
-        "canvass"
-      ),
-      moduleItem(
-        "purchasing-purchase-order",
-        "Purchase Order",
-        "PO",
-        "purchasing"
-      ),
-      moduleItem(
-        "purchasing-purchase-journal",
-        "Purchase Journal",
-        "PJ",
-        "purchasing"
-      ),
-    ],
-  ),
+  section("purchasing", "Purchasing", "/purchasing", "purchasing", "purchasing", [
+    moduleItem("purchasing-purchase-request", "Purchase Request", "PR", "purchasing"),
+    moduleItem("purchasing-canvass-form", "Canvass Form", "CF", "canvass"),
+    moduleItem("purchasing-purchase-order", "Purchase Order", "PO", "purchasing"),
+    moduleItem("purchasing-purchase-journal", "Purchase Journal", "PJ", "purchasing"),
+  ]),
   section("others", "Others", "/others", "asset", "fixedAsset", [
-    moduleItem(
-      "others-fixed-asset",
-      "Fixed Asset",
-      "FA",
-      "fixedAsset"
-    ),
+    moduleItem("others-fixed-asset", "Fixed Asset", "FA", "fixedAsset"),
     moduleItem(
       "others-beginning-balance-uploader",
       "Beginning Balance Uploader",
       "BBU",
-      "fixedAsset"
+      "fixedAsset",
     ),
   ]),
   section(
@@ -862,69 +524,33 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
         MODULE_ROUTE_MAP.U,
         "maintenance.users",
         [
-          moduleItem(
-            "maintenance-users",
-            "Users",
-            "U",
-            "maintenance.users",
-          ),
-          moduleItem(
-            "maintenance-user-role",
-            "User Role",
-            "UR",
-            "maintenance.users",
-          ),
-          moduleItem(
-            "maintenance-approver-setup",
-            "Approver Setup",
-            "AS",
-            "maintenance.users",
-          ),
+          moduleItem("maintenance-users", "Users", "U", "maintenance.users"),
+          moduleItem("maintenance-user-role", "User Role", "UR", "maintenance.users"),
+          moduleItem("maintenance-approver-setup", "Approver Setup", "AS", "maintenance.users"),
         ],
       ),
-      moduleItem(
-        "maintenance-approval",
-        "Approval Management",
-        "AM",
-        "maintenance.approval",
-      ),
-      moduleItem(
-        "maintenance-audit",
-        "Audit Trail",
-        "AT",
-        "maintenance.audit",
-      ),
-      moduleItem(
-        "transaction-number-setup",
-        "Transaction Number Setup",
-        "TNS",
-        "settings",
-      ),
+      moduleItem("maintenance-approval", "Approval Management", "AM", "maintenance.approval"),
+      moduleItem("maintenance-audit", "Audit Trail", "AT", "maintenance.audit"),
+      moduleItem("transaction-number-setup", "Transaction Number Setup", "TNS", "settings"),
       moduleItem(
         "system-administration-multi-currency-setup",
         "Multi-Currency Setup",
         "MCS",
-        "maintenance.currency"
+        "maintenance.currency",
       ),
+      moduleItem("system-administration-form-signatory", "Form Signatory", "FS", "settings"),
       moduleItem(
-        "system-administration-form-signatory",
-        "Form Signatory",
-        "FS",
-        "settings"
+        "system-administration-customized-reports",
+        "Customize Report",
+        "CRPT",
+        "settings",
       ),
-      moduleItem(
-        "maintenance-mail",
-        "Mail Maintenance",
-        "MM",
-        "maintenance.mail",
-      ),
+      moduleItem("maintenance-mail", "Mail Maintenance", "MM", "maintenance.mail"),
     ],
   ),
 ];
 
-export const MainModuleCatalogSearchItems = flattenSections(
-  MainModuleCatalogSections,
-);
+export const MainModuleCatalogSearchItems = flattenSections(MainModuleCatalogSections);
 
 function section(
   key: string,

@@ -81,13 +81,13 @@ function createCompanyHeader(): TableCell {
 					{
 						stack: [
 							centerText("Your Company Name Here", 12, [0, 12, 0, 0]),
-							centerText("VAT REG TIN : 000-000-000", 8, [0, 8, 0, 0]),
+							centerText("VAT REG TIN : 000-000-000", 8, [0, 3, 0, 0]),
 							centerText(
 								"Abc, 123, Sample, Malamig, City Of Mandaluyong, Ncr, Second District",
 								8,
-								[0, 8, 0, 0],
+								[0, 3, 0, 0],
 							),
-							centerText("Telephone No: 0967-237-4514", 8, [0, 14, 0, 0]),
+							centerText("Telephone No: 0967-237-4514", 8, [0, 5, 0, 0]),
 						],
 					},
 					{ text: "" },
@@ -131,6 +131,8 @@ function createInfoTable(values: ReceivingReportReportValues): TableCell {
 					infoCell("Supplier", values.vceName || values.vceCode),
 					infoCell("Delivery Date", formatReportDate(values.deliveryDate)),
 				],
+				[infoCell("DR No.", values.drNo), infoCell("PR No.", values.prNo)],
+				[infoCell("PO No.", values.poNo), blankInfoCell()],
 				[infoCell("Address", values.address), infoCell("Contact No", values.contactNo)],
 			],
 		},
@@ -269,6 +271,13 @@ function centerText(text: string, fontSize = 8, margin: number[] = [0, 2, 0, 0])
 function infoCell(label: string, value: string): TableCell {
 	return toTableCell({
 		text: [{ text: `${label}: `, bold: true }, { text: value || " " }],
+		margin: [4, 3, 4, 3],
+	});
+}
+
+function blankInfoCell(): TableCell {
+	return toTableCell({
+		text: " ",
 		margin: [4, 3, 4, 3],
 	});
 }

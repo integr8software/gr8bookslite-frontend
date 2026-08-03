@@ -18,6 +18,7 @@ import type {
 	SalesJournalActionMode,
 	SalesJournalFormErrors,
 	SalesJournalFormValues,
+	SalesJournalItemEntry,
 	SalesJournalLine,
 	SalesJournalLineField,
 } from "@/app/src/types/modules/sales/sales-journal/SalesJournalTypes";
@@ -38,7 +39,13 @@ export function useSalesJournalFormPage() {
 	const [values, setValues] = useState<SalesJournalFormValues>(() =>
 		existingRecord
 			? createSalesJournalFormValues(existingRecord)
-			: SalesJournalInitialFormValues,
+			: {
+					...SalesJournalInitialFormValues,
+					itemEntries: SalesJournalInitialFormValues.itemEntries.map((entry) => ({
+						...entry,
+					})),
+					lines: SalesJournalInitialFormValues.lines.map((line) => ({ ...line })),
+				},
 	);
 	const [errors, setErrors] = useState<SalesJournalFormErrors>({});
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -107,6 +114,17 @@ export function useSalesJournalFormPage() {
 			balance: undefined,
 			lines: undefined,
 			lineErrors: undefined,
+		}));
+	}
+
+	function updateItemEntries(itemEntries: SalesJournalItemEntry[]) {
+		if (isReadonly) {
+			return;
+		}
+
+		setValues((current) => ({
+			...current,
+			itemEntries,
 		}));
 	}
 
@@ -193,6 +211,7 @@ export function useSalesJournalFormPage() {
 		submitSalesJournal,
 		totals,
 		updateLine,
+		updateItemEntries,
 		updateLines,
 		values,
 	};

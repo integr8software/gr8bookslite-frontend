@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { BeginningBalanceUploaderActionPage } from "@/app/src/ui/modules/beginning-balance-uploader/BeginningBalanceUploaderActionPage";
+import { BeginningBalanceUploaderActionPage } from "@/app/src/ui/modules/others/beginning-balance-uploader/BeginningBalanceUploaderActionPage";
 
 export const metadata: Metadata = {
   title: `View Beginning Balance | ${AppName}`,

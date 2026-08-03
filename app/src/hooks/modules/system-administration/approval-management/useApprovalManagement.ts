@@ -3,7 +3,6 @@
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { MockApprovalManagementWorkflows } from "@/app/src/data/modules/system-administration/approval-management/ApprovalManagementData";
 import { ApprovalManagementQueryKeys } from "@/app/src/services/modules/system-administration/approval-management/ApprovalManagementQueryKeys";
 import type { ApprovalManagementRecord } from "@/app/src/types/modules/system-administration/approval-management/ApprovalManagementTypes";
 
@@ -17,14 +16,16 @@ type ApprovalManagementState = {
 	workflows: ApprovalManagementRecord[];
 };
 
+const EmptyApprovalManagementWorkflows: ApprovalManagementRecord[] = [];
+
 export function useApprovalManagementStore<TSelected = ApprovalManagementState>(
 	selector?: (state: ApprovalManagementState) => TSelected,
 ) {
 	const queryClient = useQueryClient();
 	const workflowsQuery = useQuery({
 		queryKey: ApprovalManagementQueryKeys.workflows(),
-		queryFn: async () => MockApprovalManagementWorkflows,
-		initialData: MockApprovalManagementWorkflows,
+		queryFn: async () => EmptyApprovalManagementWorkflows,
+		initialData: EmptyApprovalManagementWorkflows,
 	});
 
 	function setWorkflows(
@@ -34,7 +35,7 @@ export function useApprovalManagementStore<TSelected = ApprovalManagementState>(
 	) {
 		queryClient.setQueryData<ApprovalManagementRecord[]>(
 			ApprovalManagementQueryKeys.workflows(),
-			(current = MockApprovalManagementWorkflows) => updater(current),
+			(current = EmptyApprovalManagementWorkflows) => updater(current),
 		);
 	}
 

@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
-import { ModulePreviewPages } from "@/app/src/data/shared/modules/ModulePreviewData";
-import { ModulePreviewPage } from "@/app/src/ui/shared/module/ModulePreviewPage";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
+import { CustomizeReportPage } from "@/app/src/ui/workspace/reports-analytics/CustomizeReportPage";
 
 export const metadata: Metadata = {
-	title: `Reports & Analytics | ${AppName}`,
-	description: `Reports and analytics module mockup for ${AppName}.`,
+	title: `Customize Report | ${AppName}`,
+	description: `Customize report layout designer for ${AppName}.`,
 };
 
 export default function ReportsAnalyticsPage() {
-	return <ModulePreviewPage data={ModulePreviewPages.reportsAnalytics} />;
+	return <CustomizeReportPage />;
 }

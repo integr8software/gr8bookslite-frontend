@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { InventoryCountAction } from "@/app/src/ui/modules/inventory/inventory-count/Action";
+import { InventoryCountFormPage } from "@/app/src/ui/modules/inventory/inventory-count/InventoryCountFormPage";
 
 const PageTitle = "View Inventory Count";
 
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default function InventoryInventoryCountViewPage() {
-  return <InventoryCountAction />;
+  return <InventoryCountFormPage />;
 }
 
 

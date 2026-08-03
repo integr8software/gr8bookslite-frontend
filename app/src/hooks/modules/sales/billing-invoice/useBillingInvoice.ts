@@ -13,6 +13,7 @@ import {
 import toast from "react-hot-toast";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import {
+	createBlankBillingInvoiceAccountEntry,
 	createBlankBillingInvoiceLineEntry,
 	createBillingInvoiceFormValues,
 	createBillingInvoiceFormValuesFromRecord,
@@ -391,5 +392,5 @@ function isDateInRange(value: string, range: DateRangeValue) {
 	);
 }
 
-export { createBlankBillingInvoiceLineEntry };
+export { createBlankBillingInvoiceAccountEntry, createBlankBillingInvoiceLineEntry };
 

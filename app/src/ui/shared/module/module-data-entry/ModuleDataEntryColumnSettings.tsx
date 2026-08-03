@@ -37,6 +37,34 @@ export function ModuleDataEntryColumnSettingsButton({
 	);
 	const [menuStyle, setMenuStyle] = useState<CSSProperties>({});
 	const visibleColumnCount = columns.filter((column) => column.isVisible).length;
+	const canToggleColumns = Boolean(onToggleColumnVisibility);
+	const hideableColumns = columns.filter((column) => column.isHideable !== false);
+	const visibleHideableColumns = hideableColumns.filter(
+		(column) => column.isVisible,
+	);
+	const hiddenColumns = columns.filter((column) => !column.isVisible);
+	const hasVisibleHideableColumns = visibleHideableColumns.length > 0;
+	const hasHiddenColumns = hiddenColumns.length > 0;
+
+	function hideAllHideableColumns() {
+		if (!onToggleColumnVisibility) {
+			return;
+		}
+
+		visibleHideableColumns.forEach((column) => {
+			onToggleColumnVisibility(column.id, false);
+		});
+	}
+
+	function showAllColumns() {
+		if (!onToggleColumnVisibility) {
+			return;
+		}
+
+		hiddenColumns.forEach((column) => {
+			onToggleColumnVisibility(column.id, true);
+		});
+	}
 
 	useLayoutEffect(() => {
 		if (!isOpen || !triggerRef.current) {
@@ -46,7 +74,7 @@ export function ModuleDataEntryColumnSettingsButton({
 		const rect = triggerRef.current.getBoundingClientRect();
 		const menuWidth = 360;
 		const viewportPadding = 8;
-		const preferredHeight = Math.min(440, 84 + columns.length * 50);
+		const preferredHeight = Math.min(480, 132 + columns.length * 50);
 		const left =
 			align === "right"
 				? Math.min(
@@ -160,6 +188,26 @@ export function ModuleDataEntryColumnSettingsButton({
 								<p className="mt-1 text-xs leading-5 text-darknavy/55">
 									Choose visible columns or edit column labels.
 								</p>
+								<div className="mt-2 grid grid-cols-2 gap-2">
+									<button
+										type="button"
+										disabled={!canToggleColumns || !hasVisibleHideableColumns}
+										onClick={hideAllHideableColumns}
+										className="inline-flex h-8 items-center justify-center rounded-md border border-darknavy/10 bg-white px-2 text-xs font-semibold text-darknavy/65 transition hover:border-skyblue/25 hover:bg-skyblue/8 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/20 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-darknavy/10 disabled:hover:bg-white"
+										aria-label="Hide all hideable columns"
+									>
+										Hide all
+									</button>
+									<button
+										type="button"
+										disabled={!canToggleColumns || !hasHiddenColumns}
+										onClick={showAllColumns}
+										className="inline-flex h-8 items-center justify-center rounded-md border border-skyblue/20 bg-skyblue/8 px-2 text-xs font-semibold text-skyblue transition hover:border-skyblue/35 hover:bg-skyblue/12 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/20 disabled:cursor-not-allowed disabled:border-darknavy/10 disabled:bg-white disabled:text-darknavy/35"
+										aria-label="Show all columns"
+									>
+										Show all
+									</button>
+								</div>
 							</div>
 							<div className="grid min-h-0 gap-2 overflow-y-auto pr-1">
 								{columns.map((column) => {

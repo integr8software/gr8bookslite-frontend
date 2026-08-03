@@ -131,6 +131,14 @@ export function useJournalVoucherFormPage() {
     }
   }
 
+  function updateCurrencyType(currencyCode: string) {
+    if (isReadonly) {
+      return;
+    }
+
+    void updateCurrencyFromExchangeRates(currencyCode);
+  }
+
   function updateLine(
     lineId: string,
     field: JournalVoucherLineField,
@@ -362,6 +370,7 @@ export function useJournalVoucherFormPage() {
     setIsDeleteDialogOpen,
     totals,
     updateLine,
+    updateCurrencyType,
     values,
   };
 }

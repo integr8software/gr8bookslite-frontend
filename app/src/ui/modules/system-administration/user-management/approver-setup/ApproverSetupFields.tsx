@@ -6,6 +6,7 @@ type ApproverSetupTextFieldProps = {
 };
 
 type ApproverSetupSelectFieldProps = {
+	disabled?: boolean;
 	label: string;
 	onChange: (value: string) => void;
 	options: { label: string; value: string }[];
@@ -32,6 +33,7 @@ export function ApproverSetupTextField({
 }
 
 export function ApproverSetupSelectField({
+	disabled = false,
 	label,
 	onChange,
 	options,
@@ -41,9 +43,10 @@ export function ApproverSetupSelectField({
 		<label>
 			<span className="text-sm font-semibold text-darknavy">{label}</span>
 			<select
+				disabled={disabled}
 				value={value}
 				onChange={(event) => onChange(event.target.value)}
-				className="mt-2 h-10 w-full rounded-md border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition focus:border-skyblue focus:ring-4 focus:ring-skyblue/15"
+				className="mt-2 h-10 w-full rounded-md border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition focus:border-skyblue focus:ring-4 focus:ring-skyblue/15 disabled:cursor-default disabled:bg-offwhite/65 disabled:text-darknavy/50"
 			>
 				{options.map((option) => (
 					<option

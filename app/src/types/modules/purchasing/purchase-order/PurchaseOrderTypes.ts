@@ -11,10 +11,15 @@ export type PurchaseOrderItem = {
 	barcode: string;
 	itemName: string;
 	itemCategory: string;
+	color: string;
+	brand: string;
+	size: string;
+	model: string;
 	quantity: number;
 	uom: string;
 	expiryDate: string;
 	freightCost: number;
+	rateDelivery: number;
 	cost: number;
 	vatAmount: number;
 	ewt: string;
@@ -25,6 +30,8 @@ export type PurchaseOrderItem = {
 	responsibilityCenter: string;
 	budgetCode: string;
 	prQuantity: number;
+	linePrNo: string;
+	canvassNo: string;
 };
 
 export type PurchaseOrderRecord = {
@@ -42,6 +49,7 @@ export type PurchaseOrderRecord = {
 	contactNo: string;
 	emailAddress: string;
 	deliveryDate: string;
+	termsOfPayment: string;
 	remarks: string;
 	discountAmount: number;
 	vatAmount: number;
@@ -49,7 +57,6 @@ export type PurchaseOrderRecord = {
 	projectName: string;
 	importationNo: string;
 	partialPayment: boolean;
-	fixedAsset: boolean;
 	items: PurchaseOrderItem[];
 };
 

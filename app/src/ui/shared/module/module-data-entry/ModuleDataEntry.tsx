@@ -10,6 +10,7 @@ import { formatEntryCountLabel } from "@/app/src/ui/shared/module/module-data-en
 import type { ModuleDataEntryProps } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 
 export type {
+	ModuleDataEntryAddMenuAction,
 	ModuleDataEntryAddColumnOption,
 	ModuleDataEntryCellContext,
 	ModuleDataEntryCellTarget,
@@ -21,6 +22,7 @@ export type {
 
 export function ModuleDataEntry<TRow extends { id: string }>({
 	addColumnOptions = [],
+	addMenuActions = [],
 	columnOptions = [],
 	columns,
 	description,
@@ -31,6 +33,7 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 	summaryCells,
 	summaryRowHeader,
 	toolbarActions = [],
+	canConfigureColumnsWhenReadonly = false,
 	isDraggable = false,
 	isReadonly,
 	isRowNumberColumnFixed = false,
@@ -68,7 +71,7 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 	const shouldScrollToBottomAfterAddRef = useRef(false);
 	const canEditRows = !isReadonly;
 	const canConfigureColumns =
-		canEditRows &&
+		(canEditRows || canConfigureColumnsWhenReadonly) &&
 		columnOptions.length > 0 &&
 		Boolean(
 			onMoveColumn ||
@@ -78,7 +81,7 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 				onUpdateColumnWidth ||
 				onAutoColumnWidth,
 		);
-	const hasHeaderActions = canEditRows || Boolean(onExport);
+	const hasHeaderActions = canEditRows || canConfigureColumns || Boolean(onExport);
 	const hasExportActions = Boolean(onExport) || exportOptions.length > 0;
 	const shouldShowActions = hasHeaderActions || hasExportActions;
 	const entryCountLabel = formatEntryCountLabel(rows.length, emptyRowLabel);
@@ -111,6 +114,7 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 		return (
 			<ModuleDataEntryActionGroup
 				addColumnOptions={addColumnOptions}
+				addMenuActions={addMenuActions}
 				align={placement === "footer" ? "right" : "left"}
 				canConfigureColumns={canConfigureColumns}
 				canEditRows={canEditRows}
@@ -174,6 +178,7 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 				columns={columns}
 				emptyRowLabel={emptyRowLabel}
 				getCellValue={getCellValue}
+				canConfigureColumnsWhenReadonly={canConfigureColumnsWhenReadonly}
 				isDraggable={isDraggable}
 				isReadonly={isReadonly}
 				isRowNumberColumnFixed={isRowNumberColumnFixed}

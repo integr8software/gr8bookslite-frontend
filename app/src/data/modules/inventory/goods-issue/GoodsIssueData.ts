@@ -2,6 +2,7 @@ import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberDa
 import type {
 	GoodsIssueFormValues,
 	GoodsIssueLineEntry,
+	GoodsIssueMaterialRequestCopyRecord,
 	GoodsIssueRecord,
 	GoodsIssueStatus,
 	GoodsIssueTotals,
@@ -10,10 +11,15 @@ import type {
 export const GoodsIssueStorageKey = "gr8books.goods-issue.records";
 
 export const GoodsIssueTransactionTypeOptions = [
-	{ name: "--Select Transaction Type--", value: "" },
+	{ name: "--Select Goods Issue Type--", value: "" },
 	{ name: "Inventory Issue", value: "Inventory Issue" },
 	{ name: "Material Request Issue", value: "Material Request Issue" },
-	{ name: "Fixed Asset Issue", value: "Fixed Asset Issue" },
+	{ name: "Variance", value: "Variance" },
+];
+
+export const GoodsIssueCurrencyOptions = [
+	{ name: "PHP", value: "PHP" },
+	{ name: "USD", value: "USD" },
 ];
 
 export const GoodsIssueWarehouseOptions = [
@@ -41,6 +47,85 @@ export const GoodsIssueResponsibilityCenterOptions = [
 	{ name: "CC-ADM-001", value: "CC-ADM-001" },
 ];
 
+export const GoodsIssueMaterialRequestCopyRecords: GoodsIssueMaterialRequestCopyRecord[] =
+	[
+		{
+			id: "mr-001",
+			documentDate: "2026-07-16",
+			itemCategory: "Supplies",
+			itemCode: "ITEM-001",
+			mrNo: "MR-2026-0031",
+			partyCode: "VCE-001",
+			partyName: "North Harbor Office Depot",
+			remarks: "Office supplies material request.",
+			requestedQuantity: "18.00",
+			source: "Material Request",
+			sourceNo: "MR-2026-0031",
+			uom: "PCS",
+			warehouse: "Main Warehouse",
+		},
+		{
+			id: "mr-002",
+			documentDate: "2026-07-14",
+			itemCategory: "Consumables",
+			itemCode: "ITEM-002",
+			mrNo: "MR-2026-0028",
+			partyCode: "VCE-002",
+			partyName: "Aster Foods Corporation",
+			remarks: "Warehouse consumables request.",
+			requestedQuantity: "8.00",
+			source: "Material Request",
+			sourceNo: "MR-2026-0028",
+			uom: "BOX",
+			warehouse: "Project Warehouse",
+		},
+		{
+			id: "rr-001",
+			documentDate: "2026-07-13",
+			itemCategory: "Inventory",
+			itemCode: "ITEM-003",
+			mrNo: "",
+			partyCode: "VCE-003",
+			partyName: "Harborview Logistics",
+			remarks: "Receiving report goods issue.",
+			requestedQuantity: "12.00",
+			source: "Receiving Report",
+			sourceNo: "RR-2026-0014",
+			uom: "PCS",
+			warehouse: "Main Warehouse",
+		},
+		{
+			id: "ic-001",
+			documentDate: "2026-07-11",
+			itemCategory: "Inventory",
+			itemCode: "ITEM-004",
+			mrNo: "",
+			partyCode: "VCE-001",
+			partyName: "North Harbor Office Depot",
+			remarks: "Inventory count variance.",
+			requestedQuantity: "5.00",
+			source: "Inventory Count",
+			sourceNo: "IC-2026-0008",
+			uom: "PCS",
+			warehouse: "Main Warehouse",
+		},
+		{
+			id: "jo-001",
+			documentDate: "2026-07-10",
+			itemCategory: "Production",
+			itemCode: "ITEM-005",
+			mrNo: "",
+			partyCode: "VCE-002",
+			partyName: "Aster Foods Corporation",
+			remarks: "Job order material issue.",
+			requestedQuantity: "20.00",
+			source: "Job Order",
+			sourceNo: "JO-2026-0048",
+			uom: "PACK",
+			warehouse: "Project Warehouse",
+		},
+	];
+
 export const MockGoodsIssues: GoodsIssueRecord[] = [
 	{
 		id: "gi-001",
@@ -62,16 +147,6 @@ export const MockGoodsIssues: GoodsIssueRecord[] = [
 		transactionType: "Inventory Issue",
 		vceName: "Aster Foods Corporation",
 	},
-	{
-		id: "gi-003",
-		documentDate: "2026-07-08",
-		referenceNo: "FA-2026-0008",
-		status: "Approved",
-		totalAmount: 93800,
-		transactionNo: "GI-2026-0003",
-		transactionType: "Fixed Asset Issue",
-		vceName: "Harborview Logistics",
-	},
 ];
 
 export function createBlankGoodsIssueLineEntry(
@@ -81,16 +156,24 @@ export function createBlankGoodsIssueLineEntry(
 		id: `gi-line-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
 		itemCode: "",
 		barcode: "",
-		description: "",
+		itemName: "",
 		itemCategory: "",
 		uom: "PCS",
+		mfgDate: "",
+		expirationDate: "",
 		lotNo: "",
+		serialNo: "",
 		stockQuantity: "0.00",
 		issueQuantity: "0.00",
+		remainingQuantity: "0.00",
 		unitCost: "0.0000",
 		amount: "0.00",
 		referenceNo: "",
 		responsibilityCenter: "",
+		color: "",
+		brand: "",
+		size: "",
+		model: "",
 		...overrides,
 	};
 }
@@ -103,6 +186,8 @@ export function createGoodsIssueFormValues(): GoodsIssueFormValues {
 		sourceWarehouse: "",
 		vceCode: "",
 		vceName: "",
+		currency: "PHP",
+		exchangeRate: "1.0000",
 		remarks: "",
 		transactionNo: "GI-2026-0004",
 		documentDate: today,
@@ -110,7 +195,7 @@ export function createGoodsIssueFormValues(): GoodsIssueFormValues {
 		mrNo: "",
 		rrNo: "",
 		icNo: "",
-		faNo: "",
+		joNo: "",
 		projectRef: "",
 		projectName: "",
 		lineEntries: [createBlankGoodsIssueLineEntry()],
@@ -121,9 +206,15 @@ export function createGoodsIssueFormValuesFromRecord(
 	record: GoodsIssueRecord,
 ): GoodsIssueFormValues {
 	if (record.formValues) {
+		const defaults = createGoodsIssueFormValues();
+
 		return {
+			...defaults,
 			...record.formValues,
-			lineEntries: record.formValues.lineEntries.map((entry) => ({ ...entry })),
+			lineEntries: record.formValues.lineEntries.map((entry) => ({
+				...createBlankGoodsIssueLineEntry(),
+				...entry,
+			})),
 		};
 	}
 
@@ -136,13 +227,13 @@ export function createGoodsIssueFormValuesFromRecord(
 		vceName: record.vceName,
 		mrNo: record.referenceNo.startsWith("MR") ? record.referenceNo : "",
 		rrNo: record.referenceNo.startsWith("RR") ? record.referenceNo : "",
-		faNo: record.referenceNo.startsWith("FA") ? record.referenceNo : "",
 		lineEntries: [
 			createBlankGoodsIssueLineEntry({
 				itemCode: "ITEM-001",
-				description: "Issued inventory item",
+				itemName: "Issued inventory item",
 				itemCategory: "Supplies",
 				issueQuantity: "1.00",
+				remainingQuantity: "999.00",
 				unitCost: record.totalAmount.toFixed(4),
 				amount: record.totalAmount.toFixed(2),
 				referenceNo: record.referenceNo,
@@ -164,7 +255,7 @@ export function createGoodsIssueRecordFromForm(
 			...values,
 			lineEntries: values.lineEntries.map((entry) => ({ ...entry })),
 		},
-		referenceNo: values.mrNo || values.rrNo || values.icNo || values.faNo,
+		referenceNo: values.mrNo || values.rrNo || values.icNo || values.joNo,
 		status: normalizeGoodsIssueStatus(values.status),
 		totalAmount: totals.amount,
 		transactionNo: values.transactionNo,
@@ -262,7 +353,7 @@ export function formatGoodsIssuePercentage(value: number, total: number) {
 export function goodsIssueEntryHasData(entry: GoodsIssueLineEntry) {
 	return (
 		entry.itemCode.trim() !== "" ||
-		entry.description.trim() !== "" ||
+		entry.itemName.trim() !== "" ||
 		entry.referenceNo.trim() !== "" ||
 		parseMoneyNumberInput(entry.issueQuantity) > 0 ||
 		parseMoneyNumberInput(entry.amount) > 0

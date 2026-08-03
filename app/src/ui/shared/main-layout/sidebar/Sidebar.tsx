@@ -46,7 +46,11 @@ import {
 	SidebarItem,
 	SidebarSection,
 } from "./SidebarNavigation";
-import { joinClasses, pathMatches } from "./utils";
+import {
+	getActiveNavigationHref,
+	joinClasses,
+	pathMatches,
+} from "./utils";
 
 type TreeItem = Omit<UserSidebarApiItem, "children"> & { children: TreeItem[] };
 type GapDropData = {
@@ -214,6 +218,11 @@ export function MainSidebar({
 		};
 	}, []);
 
+	const navigationActiveHref = getActiveNavigationHref(
+		navigationSections.flatMap((section) => section.items),
+		activeHref,
+	);
+
 	return (
 		<aside
 			data-main-sidebar-root
@@ -295,7 +304,7 @@ export function MainSidebar({
 										{section.items.map((item) => (
 											<SidebarItem
 												key={item.key}
-												activeHref={activeHref}
+												activeHref={navigationActiveHref}
 												expandedKeys={expandedKeys}
 												item={item}
 												depth={-1}
@@ -314,7 +323,7 @@ export function MainSidebar({
 								) : isDirectNavigationSection(section) ? (
 									<SidebarSection
 										key={section.key}
-										activeHref={activeHref}
+										activeHref={navigationActiveHref}
 										expandedKeys={expandedKeys}
 										section={section}
 										onInteract={
@@ -328,7 +337,7 @@ export function MainSidebar({
 								) : isAdminNavigationSection(section) ? (
 									<SidebarCategorySection
 										key={section.key}
-										activeHref={activeHref}
+										activeHref={navigationActiveHref}
 										expandedKeys={expandedKeys}
 										section={section}
 										onInteract={
@@ -342,7 +351,7 @@ export function MainSidebar({
 								) : (
 									<SidebarSection
 										key={section.key}
-										activeHref={activeHref}
+										activeHref={navigationActiveHref}
 										expandedKeys={expandedKeys}
 										section={section}
 										onInteract={

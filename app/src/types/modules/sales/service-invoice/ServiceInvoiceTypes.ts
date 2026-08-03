@@ -45,6 +45,14 @@ export type ServiceInvoiceLineEntry = {
 	responsibilityCenter: string;
 };
 
+export type ServiceInvoiceAccountingEntry = {
+	id: string;
+	accountCode: string;
+	accountTitle: string;
+	debit: number;
+	credit: number;
+};
+
 export type ServiceInvoiceFormValues = {
 	code: string;
 	name: string;
@@ -84,6 +92,7 @@ export type ServiceInvoiceFormValues = {
 	projectRef: string;
 	projectName: string;
 	lineEntries: ServiceInvoiceLineEntry[];
+	accountingEntries: ServiceInvoiceAccountingEntry[];
 };
 
 export type ServiceInvoiceTotals = {

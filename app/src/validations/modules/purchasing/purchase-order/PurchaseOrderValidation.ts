@@ -8,7 +8,10 @@ const requiredText = (message: string) => z.string().trim().min(1, message);
 
 const PurchaseOrderItemSchema = z.object({
 	barcode: z.string(),
+	brand: z.string(),
 	budgetCode: z.string(),
+	canvassNo: z.string(),
+	color: z.string(),
 	cost: z.coerce.number().min(0),
 	discountAmount: z.coerce.number().min(0),
 	ewt: z.string(),
@@ -18,9 +21,13 @@ const PurchaseOrderItemSchema = z.object({
 	itemCategory: z.string(),
 	itemCode: requiredText("Enter an item code."),
 	itemName: requiredText("Enter an item name."),
+	linePrNo: z.string(),
+	model: z.string(),
 	prQuantity: z.coerce.number().min(0),
 	quantity: z.coerce.number().min(0),
+	rateDelivery: z.coerce.number().min(0),
 	responsibilityCenter: z.string(),
+	size: z.string(),
 	uom: requiredText("Select a UOM."),
 	vatAmount: z.coerce.number().min(0),
 	vatInclusive: z.string(),
@@ -37,7 +44,6 @@ const PurchaseOrderFormSchema = z.object({
 	documentDate: requiredText("Select a document date."),
 	emailAddress: z.string(),
 	exchangeRate: z.coerce.number().positive("Enter a valid exchange rate."),
-	fixedAsset: z.boolean(),
 	importationNo: z.string(),
 	items: z.array(PurchaseOrderItemSchema).min(1, "Add at least one entry."),
 	partialPayment: z.boolean(),
@@ -47,10 +53,11 @@ const PurchaseOrderFormSchema = z.object({
 	purchaseType: requiredText("Select a purchase type."),
 	remarks: z.string(),
 	status: z.enum(["Draft", "Open", "Approved", "Closed", "Cancelled"]),
+	termsOfPayment: z.string(),
 	transNo: requiredText("Enter a transaction number."),
 	vatAmount: z.coerce.number().min(0),
 	vceCode: z.string(),
-	vceName: requiredText("Enter a VCE name."),
+	vceName: requiredText("Enter a Party name."),
 });
 
 export function validatePurchaseOrderForm(

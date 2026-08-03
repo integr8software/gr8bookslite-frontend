@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { GoodsIssueActionPage } from "@/app/src/ui/modules/inventory/goods-issue/GoodsIssueActionPage";
+import { GoodsIssueActionPage } from "@/app/src/ui/modules/inventory/goods-issue/action/GoodsIssueActionPage";
 
 const PageTitle = "Add Goods Issue";
 

@@ -26,7 +26,11 @@ export function ModuleTable<TData>({
 	paginationTotalRows,
 	pageSizeOptions = DefaultPageSizeOptions,
 	renderRow,
+	rootClassName,
+	scrollContainerClassName = "overflow-x-auto overflow-y-auto",
 	skeletonRowCount = 5,
+	stickyToolbarAndHeader = false,
+	stickyTopOffset = 0,
 	table,
 	tableTitle,
 	toolbar,
@@ -137,19 +141,30 @@ export function ModuleTable<TData>({
 		<div
 			className={joinClasses(
 				"overflow-hidden bg-white",
-				variant === "standalone" &&
-					"rounded-lg border border-darknavy/10 shadow-sm shadow-darknavy/5",
+				variant === "standalone" && "rounded-lg border border-darknavy/10 shadow-sm shadow-darknavy/5",
+				rootClassName,
 			)}
 		>
-			<ModuleTableSyncStatus
-				isSyncing={isSyncing}
-				lastSyncedAt={lastSyncedAt}
-				tableTitle={tableTitle}
-			/>
-			{toolbar ? <div className="border-b border-darknavy/10">{toolbar}</div> : null}
+			<div
+				className={joinClasses(
+					stickyToolbarAndHeader && "sticky z-[60] -mx-px -mt-px w-[calc(100%+2px)] overflow-hidden rounded-t-lg border border-b-0 border-darknavy/10 bg-white",
+				)}
+				style={
+					stickyToolbarAndHeader ? { top: stickyTopOffset } : undefined
+				}
+			>
+				<ModuleTableSyncStatus
+					isSyncing={isSyncing}
+					lastSyncedAt={lastSyncedAt}
+					tableTitle={tableTitle}
+				/>
+				{toolbar ? (
+					<div className="border-b border-darknavy/10">{toolbar}</div>
+				) : null}
+			</div>
 			<div
 				ref={scrollContainerRef}
-				className={joinClasses(maxHeightClassName, "overflow-x-auto overflow-y-auto")}
+				className={joinClasses(maxHeightClassName, scrollContainerClassName)}
 			>
 				<table
 					className={joinClasses(
@@ -171,6 +186,7 @@ export function ModuleTable<TData>({
 						</colgroup>
 					) : null}
 					<ModuleTableHeader
+						stickyTop={stickyToolbarAndHeader ? stickyTopOffset : undefined}
 						scrollContainerRef={scrollContainerRef}
 						table={table}
 					/>

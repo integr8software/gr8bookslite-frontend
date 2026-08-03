@@ -15,10 +15,10 @@ import {
   PaymentTypeInitialFormValues,
   PaymentTypeOptions,
   updatePaymentTypeFromForm,
-} from "@/app/src/data/modules/maintenance/payment-type/PaymentTypeData";
+} from "@/app/src/data/modules/financial-maintenance/payment-type/PaymentTypeData";
 import {
   applyPaymentTypeListParams,
-} from "@/app/src/services/modules/maintenance/payment-type/PaymentTypeService";
+} from "@/app/src/services/modules/financial-maintenance/payment-type/PaymentTypeService";
 import type {
   PaymentTypeClassification,
   PaymentTypeFormErrors,
@@ -26,9 +26,9 @@ import type {
   PaymentTypeRecord,
   PaymentTypeSortKey,
   PaymentTypeStatus,
-} from "@/app/src/types/modules/maintenance/payment-type/PaymentTypeTypes";
+} from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
-import { validatePaymentTypeForm } from "@/app/src/validations/modules/maintenance/payment-type/PaymentTypeValidation";
+import { validatePaymentTypeForm } from "@/app/src/validations/modules/financial-maintenance/payment-type/PaymentTypeValidation";
 
 type PaymentTypeDialogMode = "list" | "add" | "edit" | "view";
 export type AppPaymentTypeRecord = PaymentTypeRecord;

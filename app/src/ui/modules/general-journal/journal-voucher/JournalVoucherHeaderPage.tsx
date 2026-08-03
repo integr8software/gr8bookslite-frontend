@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FileText, Save, Trash2 } from "lucide-react";
+import { ArrowLeft, Save, Trash2, X } from "lucide-react";
 import {
   JournalVoucherActionCopy,
   JournalVoucherHref,
@@ -18,25 +18,36 @@ export function JournalVoucherHeaderPage({
   page,
 }: JournalVoucherHeaderPageProps) {
   const copy = JournalVoucherActionCopy[page.mode];
+  const transactionLabel =
+    page.existingRecord?.transactionNo ||
+    page.values.transactionNo ||
+    "Journal voucher";
+  const title =
+    page.mode === "view"
+      ? page.existingRecord?.transactionNo
+        ? `View Journal Voucher | ${page.existingRecord.transactionNo}`
+        : copy.title
+      : page.mode === "edit"
+        ? page.existingRecord?.transactionNo
+          ? `Edit Journal Voucher | ${page.existingRecord.transactionNo}`
+          : copy.title
+        : copy.title;
 
   return (
     <ModuleHeader
       variant="panel"
       titleAs="h1"
-      title={copy.title}
+      title={title}
       description={copy.description}
-      eyebrow={
-        <>
-          <FileText className="h-3.5 w-3.5" aria-hidden="true" />
-          General journal
-        </>
-      }
+      eyebrow={transactionLabel}
+      actionsClassName="items-center gap-1"
       actions={
-        <div className="flex flex-wrap gap-2">
+        <>
           <Link
             href={JournalVoucherHref}
             className={moduleHeaderActionClassNames.secondary}
           >
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Back
           </Link>
           {page.mode === "view" && page.existingRecord ? (
@@ -47,27 +58,36 @@ export function JournalVoucherHeaderPage({
               Edit
             </Link>
           ) : null}
-          {page.mode === "edit" ? (
-            <button
-              type="button"
-              className={moduleHeaderActionClassNames.danger}
-              onClick={() => page.setIsDeleteDialogOpen(true)}
-            >
-              <Trash2 className="h-4 w-4" aria-hidden="true" />
-              Delete
-            </button>
+          {!page.isReadonly && page.mode !== "view" ? (
+            <>
+              <Link
+                href={JournalVoucherHref}
+                className={moduleHeaderActionClassNames.secondary}
+              >
+                <X className="h-4 w-4" aria-hidden="true" />
+                Cancel
+              </Link>
+              {page.mode === "edit" ? (
+                <button
+                  type="button"
+                  className={moduleHeaderActionClassNames.danger}
+                  onClick={() => page.setIsDeleteDialogOpen(true)}
+                >
+                  <Trash2 className="h-4 w-4" aria-hidden="true" />
+                  Delete
+                </button>
+              ) : null}
+              <button
+                type="submit"
+                className={moduleHeaderActionClassNames.primary}
+                disabled={page.isMutating}
+              >
+                <Save className="h-4 w-4" aria-hidden="true" />
+                Save
+              </button>
+            </>
           ) : null}
-          {!page.isReadonly ? (
-            <button
-              type="submit"
-              className={moduleHeaderActionClassNames.primary}
-              disabled={page.isMutating}
-            >
-              <Save className="h-4 w-4" aria-hidden="true" />
-              Save
-            </button>
-          ) : null}
-        </div>
+        </>
       }
     />
   );

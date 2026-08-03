@@ -1,16 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-	Check,
-	ChevronDown,
-	ExternalLink,
-	LayoutGrid,
-	List,
-	Plus,
-	Search,
-	X,
-} from "lucide-react";
+import { Check, ChevronDown, ExternalLink, LayoutGrid, List, Plus, Search, X } from "lucide-react";
 import {
 	useEffect,
 	useId,
@@ -22,6 +13,7 @@ import {
 	type MouseEvent as ReactMouseEvent,
 } from "react";
 import { createPortal } from "react-dom";
+import { ModuleTooltip } from "@/app/src/ui/shared/module/ModuleTooltip";
 
 export type AppAdvancedDropdownOption = {
 	children?: AppAdvancedDropdownOption[];
@@ -30,6 +22,7 @@ export type AppAdvancedDropdownOption = {
 	href?: string;
 	label?: string;
 	name: string;
+	selectedDetails?: string;
 	value: string;
 };
 
@@ -112,15 +105,12 @@ export function AppAdvancedDropdown({
 	const controlId = id ?? generatedId;
 	const listboxId = `${controlId}-listbox`;
 	const [isOpen, setIsOpen] = useState(false);
-	const [optionView, setOptionView] =
-		useState<AppAdvancedDropdownOptionView>("list");
+	const [optionView, setOptionView] = useState<AppAdvancedDropdownOptionView>("list");
 	const [query, setQuery] = useState("");
 	const [activeOptionValue, setActiveOptionValue] = useState("");
 	const [portalStyle, setPortalStyle] = useState<CSSProperties>({});
 	const menuRef = useRef<HTMLDivElement>(null);
-	const menuInteractionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
-		null,
-	);
+	const menuInteractionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const isMenuInteractionActiveRef = useRef(false);
 	const isMenuPointerDownRef = useRef(false);
 	const rootRef = useRef<HTMLDivElement>(null);
@@ -128,24 +118,13 @@ export function AppAdvancedDropdown({
 		() => (Array.isArray(value) ? value : value ? [value] : []),
 		[value],
 	);
-	const selectedValueSet = useMemo(
-		() => new Set(selectedValues),
-		[selectedValues],
-	);
+	const selectedValueSet = useMemo(() => new Set(selectedValues), [selectedValues]);
 	const flatOptions = useMemo(() => flattenOptions(options), [options]);
 	const selectedOptions = selectedValues
-		.map((selectedValue) =>
-			flatOptions.find((option) => option.value === selectedValue),
-		)
+		.map((selectedValue) => flatOptions.find((option) => option.value === selectedValue))
 		.filter((option): option is AppAdvancedDropdownOption => Boolean(option));
-	const filteredOptions = useMemo(
-		() => filterOptions(options, query),
-		[options, query],
-	);
-	const visibleOptions = useMemo(
-		() => flattenOptions(filteredOptions),
-		[filteredOptions],
-	);
+	const filteredOptions = useMemo(() => filterOptions(options, query), [options, query]);
+	const visibleOptions = useMemo(() => flattenOptions(filteredOptions), [filteredOptions]);
 	const selectableOptions = useMemo(
 		() => visibleOptions.filter((option) => !option.disabled),
 		[visibleOptions],
@@ -153,35 +132,26 @@ export function AppAdvancedDropdown({
 	const optionIdByValue = useMemo(
 		() =>
 			new Map(
-				visibleOptions.map((option, index) => [
-					option.value,
-					`${listboxId}-option-${index}`,
-				]),
+				visibleOptions.map((option, index) => [option.value, `${listboxId}-option-${index}`]),
 			),
 		[visibleOptions, listboxId],
 	);
 	const hasOptions = filteredOptions.length > 0;
 	const isInteractionLocked = disabled || readOnly;
 	const isMultiple = selectionMode === "multiple";
-	const hasActiveOption = selectableOptions.some(
-		(option) => option.value === activeOptionValue,
-	);
+	const hasActiveOption = selectableOptions.some((option) => option.value === activeOptionValue);
 	const effectiveActiveOptionValue =
 		activeOptionValue && hasActiveOption
 			? activeOptionValue
 			: getInitialActiveOptionValue(selectableOptions, selectedValueSet);
 	const activeOption = effectiveActiveOptionValue
-		? visibleOptions.find(
-			(option) => option.value === effectiveActiveOptionValue,
-		)
+		? visibleOptions.find((option) => option.value === effectiveActiveOptionValue)
 		: undefined;
 	const activeOptionId = effectiveActiveOptionValue
 		? optionIdByValue.get(effectiveActiveOptionValue)
 		: undefined;
-	const canClearSelection =
-		selectedValues.length > 0 && isClearable && !isInteractionLocked;
-	const resolvedAriaDescribedBy =
-		ariaDescribedByAttribute ?? ariaDescribedBy;
+	const canClearSelection = selectedValues.length > 0 && isClearable && !isInteractionLocked;
+	const resolvedAriaDescribedBy = ariaDescribedByAttribute ?? ariaDescribedBy;
 	const resolvedAriaInvalid = ariaInvalidAttribute ?? ariaInvalid;
 	const resolvedAriaLabelledBy = ariaLabelledByAttribute ?? ariaLabelledBy;
 
@@ -246,9 +216,7 @@ export function AppAdvancedDropdown({
 		}
 
 		const labels = Array.from(
-			document.querySelectorAll<HTMLLabelElement>(
-				`label[for="${escapeCssIdentifier(controlId)}"]`,
-			),
+			document.querySelectorAll<HTMLLabelElement>(`label[for="${escapeCssIdentifier(controlId)}"]`),
 		);
 
 		if (labels.length === 0) {
@@ -261,9 +229,7 @@ export function AppAdvancedDropdown({
 			}
 
 			event.preventDefault();
-			rootRef.current
-				?.querySelector<HTMLElement>(".app-advanced-dropdown-control")
-				?.focus();
+			rootRef.current?.querySelector<HTMLElement>(".app-advanced-dropdown-control")?.focus();
 		}
 
 		labels.forEach((label) => {
@@ -315,9 +281,7 @@ export function AppAdvancedDropdown({
 			return;
 		}
 
-		document
-			.getElementById(activeOptionId)
-			?.scrollIntoView({ block: "nearest" });
+		document.getElementById(activeOptionId)?.scrollIntoView({ block: "nearest" });
 	}, [activeOptionId, isOpen]);
 
 	useEffect(() => {
@@ -332,9 +296,7 @@ export function AppAdvancedDropdown({
 		}
 
 		window.requestAnimationFrame(() => {
-			document
-				.getElementById(selectedOptionId)
-				?.scrollIntoView({ block: "start" });
+			document.getElementById(selectedOptionId)?.scrollIntoView({ block: "start" });
 		});
 	}, [isOpen, optionIdByValue, selectedValues]);
 
@@ -391,8 +353,7 @@ export function AppAdvancedDropdown({
 				? direction === 1
 					? 0
 					: selectableOptions.length - 1
-				: (currentIndex + direction + selectableOptions.length) %
-				selectableOptions.length;
+				: (currentIndex + direction + selectableOptions.length) % selectableOptions.length;
 
 		setActiveOptionValue(selectableOptions[nextIndex].value);
 	}
@@ -408,9 +369,7 @@ export function AppAdvancedDropdown({
 			event.preventDefault();
 
 			if (!isOpen) {
-				showOptions(
-					getInitialActiveOptionValue(selectableOptions, selectedValueSet),
-				);
+				showOptions(getInitialActiveOptionValue(selectableOptions, selectedValueSet));
 				return;
 			}
 
@@ -422,9 +381,7 @@ export function AppAdvancedDropdown({
 			event.preventDefault();
 
 			if (!isOpen) {
-				showOptions(
-					selectableOptions[selectableOptions.length - 1]?.value ?? "",
-				);
+				showOptions(selectableOptions[selectableOptions.length - 1]?.value ?? "");
 				return;
 			}
 
@@ -436,9 +393,7 @@ export function AppAdvancedDropdown({
 			event.preventDefault();
 
 			if (!isOpen) {
-				showOptions(
-					getInitialActiveOptionValue(selectableOptions, selectedValueSet),
-				);
+				showOptions(getInitialActiveOptionValue(selectableOptions, selectedValueSet));
 				return;
 			}
 
@@ -470,21 +425,15 @@ export function AppAdvancedDropdown({
 		}
 
 		if (selectionMode === "multiple") {
-			if (
-				selectedValueSet.has(option.value) &&
-				!removeSelectionOnSelectedOptionClick
-			) {
+			if (selectedValueSet.has(option.value) && !removeSelectionOnSelectedOptionClick) {
 				setQuery("");
 				onSelectOption?.(option);
 				return;
 			}
 
-			const nextValues =
-				selectedValueSet.has(option.value)
-					? selectedValues.filter(
-							(selectedValue) => selectedValue !== option.value,
-						)
-					: [...selectedValues, option.value];
+			const nextValues = selectedValueSet.has(option.value)
+				? selectedValues.filter((selectedValue) => selectedValue !== option.value)
+				: [...selectedValues, option.value];
 
 			onChange(nextValues);
 		} else {
@@ -555,9 +504,7 @@ export function AppAdvancedDropdown({
 				event.stopPropagation();
 			}}
 			className={joinClasses(
-				menuPortal
-					? "fixed z-130"
-					: "absolute left-0 top-full z-40 mt-1 w-full",
+				menuPortal ? "fixed z-130" : "absolute left-0 top-full z-40 mt-1 w-full",
 				"app-advanced-dropdown-menu flex max-h-80 flex-col overflow-hidden overscroll-contain rounded-lg border border-darknavy/12 bg-white shadow-[0_18px_50px_rgba(33,39,56,0.16)]",
 			)}
 		>
@@ -566,10 +513,7 @@ export function AppAdvancedDropdown({
 					<div className="flex items-center gap-2">
 						{isSearchable ? (
 							<div className="app-advanced-dropdown-search-control flex h-10 min-w-0 flex-1 items-center gap-2 rounded-md border border-darknavy/10 px-2.5">
-								<Search
-									className="h-4 w-4 text-darknavy/35"
-									aria-hidden="true"
-								/>
+								<Search className="h-4 w-4 text-darknavy/35" aria-hidden="true" />
 								<input
 									autoCapitalize="none"
 									autoComplete="off"
@@ -586,9 +530,7 @@ export function AppAdvancedDropdown({
 								/>
 							</div>
 						) : null}
-						{optionViewToggle ? (
-							<ViewToggle value={optionView} onChange={setOptionView} />
-						) : null}
+						{optionViewToggle ? <ViewToggle value={optionView} onChange={setOptionView} /> : null}
 					</div>
 				</div>
 			) : null}
@@ -619,9 +561,7 @@ export function AppAdvancedDropdown({
 						<OptionRow
 							key={option.value}
 							activeValue={effectiveActiveOptionValue}
-							getOptionId={(visibleOption) =>
-								optionIdByValue.get(visibleOption.value)
-							}
+							getOptionId={(visibleOption) => optionIdByValue.get(visibleOption.value)}
 							level={0}
 							option={option}
 							view={optionViewToggle ? optionView : "list"}
@@ -632,7 +572,7 @@ export function AppAdvancedDropdown({
 						/>
 					))
 				) : (
-					<div className="px-3 py-6 text-center text-sm text-darknavy/45">
+					<div className="col-span-full px-3 py-6 text-center text-sm text-darknavy/45">
 						{emptyMessage}
 					</div>
 				)}
@@ -643,11 +583,7 @@ export function AppAdvancedDropdown({
 	return (
 		<div ref={rootRef} className={joinClasses("relative", className)}>
 			{name ? (
-				<input
-					type="hidden"
-					name={name}
-					value={Array.isArray(value) ? value.join(",") : value}
-				/>
+				<input type="hidden" name={name} value={Array.isArray(value) ? value.join(",") : value} />
 			) : null}
 			<div
 				id={controlId}
@@ -695,9 +631,7 @@ export function AppAdvancedDropdown({
 									<SelectionChip
 										key={option.value}
 										disabled={disabled}
-										removable={
-											showSelectionRemoveButton && !isInteractionLocked
-										}
+										removable={showSelectionRemoveButton && !isInteractionLocked}
 										option={option}
 										onRemove={() => removeOption(option.value)}
 									/>
@@ -821,38 +755,40 @@ function OptionRow({
 	const optionClassName =
 		view === "grid"
 			? getGridOptionClassName(isSelected, option.disabled, isActive)
-			: getOptionClassName(
-					isSelected,
-					option.disabled,
-					isActive,
-					hasChildren,
-					level,
-				);
+			: getOptionClassName(isSelected, option.disabled, isActive, hasChildren, level);
 	const content = (
 		<>
 			{showSelectionIndicator ? (
 				<span className="flex h-5 w-5 shrink-0 items-center justify-center" aria-hidden="true">
-					{isSelected ? (
-						<Check className="h-4 w-4 text-skyblue" aria-hidden="true" />
-					) : null}
+					{isSelected ? <Check className="h-4 w-4 text-skyblue" aria-hidden="true" /> : null}
 				</span>
 			) : null}
 			<span className="grid min-w-0 flex-1 gap-0.5">
 				<span className="truncate text-sm font-semibold">{option.name}</span>
 				{option.label ? (
-					<span className="truncate text-xs text-darknavy/58">
-						{option.label}
-					</span>
+					<span className="truncate text-xs text-darknavy/58">{option.label}</span>
 				) : null}
 				{option.description ? (
-					<span className="line-clamp-2 text-xs leading-4 text-darknavy/45">
-						{option.description}
-					</span>
+					view === "grid" ? (
+						<ModuleTooltip
+							className="min-w-0 w-full"
+							contentClassName="max-w-80"
+							description={option.description}
+							position="top"
+							title={option.name}
+						>
+							<span className="line-clamp-2 w-full text-xs leading-4 text-darknavy/45">
+								{option.description}
+							</span>
+						</ModuleTooltip>
+					) : (
+						<span className="line-clamp-2 text-xs leading-4 text-darknavy/45">
+							{option.description}
+						</span>
+					)
 				) : null}
 			</span>
-			{option.href ? (
-				<ExternalLink className="h-3.5 w-3.5 text-darknavy/35" />
-			) : null}
+			{option.href ? <ExternalLink className="h-3.5 w-3.5 text-darknavy/35" /> : null}
 		</>
 	);
 
@@ -910,19 +846,19 @@ function OptionRow({
 			)}
 			{hasChildren
 				? option.children?.map((child) => (
-					<OptionRow
-						key={child.value}
-						activeValue={activeValue}
-						getOptionId={getOptionId}
-						level={level + 1}
-						option={child}
-						view={view}
-						selectedValues={selectedValues}
-						showSelectionIndicator={showSelectionIndicator}
-						onActive={onActive}
-						onSelect={onSelect}
-					/>
-				))
+						<OptionRow
+							key={child.value}
+							activeValue={activeValue}
+							getOptionId={getOptionId}
+							level={level + 1}
+							option={child}
+							view={view}
+							selectedValues={selectedValues}
+							showSelectionIndicator={showSelectionIndicator}
+							onActive={onActive}
+							onSelect={onSelect}
+						/>
+					))
 				: null}
 		</div>
 	);
@@ -975,15 +911,12 @@ function SelectedSingle({
 	option: AppAdvancedDropdownOption;
 	showDetails: boolean;
 }) {
-	const detailText = option.label ?? option.description;
+	const detailText = option.selectedDetails ?? option.label ?? option.description;
 
 	return (
 		<span className="flex min-w-0 items-center gap-2 px-0.5">
 			<span
-				className={joinClasses(
-					"truncate text-sm text-darknavy",
-					disabled && "text-darknavy/45",
-				)}
+				className={joinClasses("truncate text-sm text-darknavy", disabled && "text-darknavy/45")}
 			>
 				{option.name}
 			</span>
@@ -994,7 +927,7 @@ function SelectedSingle({
 						disabled && "text-darknavy/35",
 					)}
 				>
-					{detailText}
+					{detailText ? ` - ${detailText}` : null}
 				</span>
 			) : null}
 		</span>
@@ -1009,28 +942,17 @@ function getPortalStyle(root: HTMLDivElement | null): CSSProperties | undefined 
 	const rect = root.getBoundingClientRect();
 	const viewportHeight = window.innerHeight;
 	const viewportWidth = window.innerWidth;
-	const availableWidth = Math.max(
-		0,
-		viewportWidth - DropdownMenuViewportPadding * 2,
-	);
+	const availableWidth = Math.max(0, viewportWidth - DropdownMenuViewportPadding * 2);
 	const width = Math.min(rect.width, availableWidth);
 	const maxLeft = Math.max(
 		DropdownMenuViewportPadding,
 		viewportWidth - DropdownMenuViewportPadding - width,
 	);
-	const left = Math.min(
-		Math.max(rect.left, DropdownMenuViewportPadding),
-		maxLeft,
-	);
-	const spaceBelow =
-		viewportHeight - rect.bottom - DropdownMenuGap - DropdownMenuViewportPadding;
+	const left = Math.min(Math.max(rect.left, DropdownMenuViewportPadding), maxLeft);
+	const spaceBelow = viewportHeight - rect.bottom - DropdownMenuGap - DropdownMenuViewportPadding;
 	const spaceAbove = rect.top - DropdownMenuGap - DropdownMenuViewportPadding;
-	const shouldOpenAbove =
-		spaceBelow < DropdownMenuMaxHeight && spaceAbove > spaceBelow;
-	const availableHeight = Math.max(
-		0,
-		shouldOpenAbove ? spaceAbove : spaceBelow,
-	);
+	const shouldOpenAbove = spaceBelow < DropdownMenuMaxHeight && spaceAbove > spaceBelow;
+	const availableHeight = Math.max(0, shouldOpenAbove ? spaceAbove : spaceBelow);
 	const maxHeight = Math.max(
 		DropdownMenuMinHeight,
 		Math.min(DropdownMenuMaxHeight, availableHeight),
@@ -1060,10 +982,7 @@ function isEventInsideDropdown(
 ) {
 	const target = event.target as Node | null;
 
-	if (
-		(target && root?.contains(target)) ||
-		(target && menu?.contains(target))
-	) {
+	if ((target && root?.contains(target)) || (target && menu?.contains(target))) {
 		return true;
 	}
 
@@ -1092,9 +1011,7 @@ function isPointInsideElement(
 	);
 }
 
-function flattenOptions(
-	options: AppAdvancedDropdownOption[],
-): AppAdvancedDropdownOption[] {
+function flattenOptions(options: AppAdvancedDropdownOption[]): AppAdvancedDropdownOption[] {
 	return options.flatMap((option) => [
 		option,
 		...(option.children ? flattenOptions(option.children) : []),
@@ -1112,9 +1029,7 @@ function filterOptions(
 	}
 
 	return options.reduce<AppAdvancedDropdownOption[]>((matches, option) => {
-		const children = option.children
-			? filterOptions(option.children, normalizedQuery)
-			: undefined;
+		const children = option.children ? filterOptions(option.children, normalizedQuery) : undefined;
 		const isMatch = getSearchText(option).includes(normalizedQuery);
 
 		if (!isMatch && !children?.length) {
@@ -1141,10 +1056,7 @@ function getInitialActiveOptionValue(
 	options: AppAdvancedDropdownOption[],
 	selectedValues: Set<string>,
 ) {
-	return (
-		options.find((option) => selectedValues.has(option.value)) ??
-		options[0]
-	)?.value ?? "";
+	return (options.find((option) => selectedValues.has(option.value)) ?? options[0])?.value ?? "";
 }
 
 function getOptionClassName(
@@ -1164,11 +1076,7 @@ function getOptionClassName(
 	);
 }
 
-function getGridOptionClassName(
-	isSelected: boolean,
-	isDisabled?: boolean,
-	isActive?: boolean,
-) {
+function getGridOptionClassName(isSelected: boolean, isDisabled?: boolean, isActive?: boolean) {
 	return joinClasses(
 		"app-advanced-dropdown-option flex min-h-20 w-full items-start gap-2 rounded-md border p-2 text-left transition",
 		isSelected

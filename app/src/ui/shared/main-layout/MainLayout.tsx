@@ -15,7 +15,7 @@ import { NoBranchAccess } from "./NoBranchAccess";
 import { joinClasses } from "./utils";
 import { AiAssistantChat } from "@/app/src/ui/shared/ai-assistant/AiAssistantChat";
 import { LogoutLoadingScreen } from "@/app/src/ui/auth/LogoutLoadingScreen";
-import { MaintenanceSpotlightTutorial } from "@/app/src/ui/modules/maintenance/MaintenanceSpotlightTutorial";
+import { MaintenanceSpotlightTutorial } from "@/app/src/ui/shared/tour/SpotlightTutorial";
 import { MainActivityLogger } from "./MainActivityLogger";
 
 const MainHelpModal = dynamic(

@@ -7,7 +7,7 @@ type ApprovalManagementEditorHeaderProps = {
 	isLoading: boolean;
 	isMutating: boolean;
 	selectedWorkflow: ApprovalManagementRecord;
-	stageCount: number;
+	stageCount: number | null;
 };
 
 export function ApprovalManagementEditorHeader({
@@ -28,8 +28,9 @@ export function ApprovalManagementEditorHeader({
 						{selectedWorkflow.moduleCode}
 					</span>
 					<span className="rounded-md border border-darknavy/8 bg-offwhite/60 px-2 py-0.5 text-darknavy/65">
-						{stageCount} approval level
-						{stageCount === 1 ? "" : "s"}
+						{stageCount === null
+							? "No approver type selected"
+							: `${stageCount} approval level${stageCount === 1 ? "" : "s"}`}
 					</span>
 					{hasAmountCondition ? (
 						<span className="inline-flex items-center gap-1.5 rounded-md border border-emerald-500/20 bg-emerald-50 px-2 py-0.5 text-emerald-700">

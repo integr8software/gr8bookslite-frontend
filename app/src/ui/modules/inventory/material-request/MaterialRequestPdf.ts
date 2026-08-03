@@ -39,11 +39,11 @@ function createMaterialRequestPdfDefinition(
 					widths: ["*"],
 					body: [
 						[createCompanyHeader()],
-						[createTitleRow(values)],
+						[createTitleRow()],
 						[createInfoTable(values)],
 						[createPurposeRow(values)],
 						[createItemsTable(values.items)],
-						[createFooterTable()],
+						[createFooterTable(values)],
 					],
 				},
 				layout: outerLayout,
@@ -67,13 +67,13 @@ function createCompanyHeader(): TableCell {
 					{
 						stack: [
 							centerText("Your Company Name Here", 12, [0, 12, 0, 0]),
-							centerText("VAT REG TIN : 000-000-000", 8, [0, 8, 0, 0]),
+							centerText("VAT REG TIN : 000-000-000", 8, [0, 3, 0, 0]),
 							centerText(
 								"ABC, 123, Sample, Malamig, City Of Mandaluyong, NCR, Second District",
 								8,
-								[0, 8, 0, 0],
+								[0, 3, 0, 0],
 							),
-							centerText("Telephone No: 0967-237-4514", 8, [0, 14, 0, 0]),
+							centerText("Telephone No: 0967-237-4514", 8, [0, 5, 0, 0]),
 						],
 					},
 					{ text: "" },
@@ -84,25 +84,18 @@ function createCompanyHeader(): TableCell {
 	});
 }
 
-function createTitleRow(values: MaterialRequestFormValues): TableCell {
+function createTitleRow(): TableCell {
 	return toTableCell({
 		table: {
-			widths: ["*", 150],
+			widths: ["*"],
 			body: [
 				[
 					{
 						text: "MATERIAL REQUEST",
 						bold: true,
 						fontSize: 18,
-						alignment: "center",
-						margin: [120, 2, 0, 12],
-					},
-					{
-						text: `NO. ${formatRequestNo(values.requestNo)}`,
-						bold: true,
-						fontSize: 14,
-						alignment: "right",
-						margin: [0, 8, 22, 0],
+						alignment: "left",
+						margin: [4, 2, 0, 7],
 					},
 				],
 			],
@@ -136,43 +129,72 @@ function createPurposeRow(values: MaterialRequestFormValues): TableCell {
 			{ text: "Purpose", bold: true },
 			{ text: values.purpose || values.remarks || " ", margin: [0, 8, 0, 0] },
 		],
-		margin: [4, 5, 4, 38],
+		margin: [4, 5, 4, 26],
 	});
 }
 
 function createItemsTable(items: MaterialRequestItem[]): TableCell {
 	const rows = createMaterialRequestPdfRows(items);
+	const shouldShowStockQuantity = hasStockQuantity(items);
 
 	return toTableCell({
 		table: {
 			headerRows: 1,
-			widths: [105, "*", 80, 110, 110],
+			widths: shouldShowStockQuantity ? [105, "*", 80, 110, 110] : [120, "*", 90, 120],
 			body: [
-				[
-					headerCell("Item Code"),
-					headerCell("Item Name"),
-					headerCell("UOM", "center"),
-					headerCell("Req QTY", "right"),
-					headerCell("Stock QTY", "right"),
-				],
-				...rows.map((row) => [
-					bodyCell(row.itemCode),
-					bodyCell(row.itemName),
-					bodyCell(row.uom, "center"),
-					bodyCell(row.requestQuantity, "right"),
-					bodyCell(row.stockQuantity, "right"),
-				]),
+				createItemsTableHeader(shouldShowStockQuantity),
+				...rows.map((row) => createItemsTableRow(row, shouldShowStockQuantity)),
 			],
 		},
 		layout: innerGridLayout,
 	});
 }
 
-function createFooterTable(): TableCell {
+function createItemsTableHeader(shouldShowStockQuantity: boolean) {
+	const cells = [
+		headerCell("Item Code"),
+		headerCell("Item Name"),
+		headerCell("UOM", "center"),
+		headerCell("Req QTY", "right"),
+	];
+
+	if (shouldShowStockQuantity) {
+		cells.push(headerCell("Stock QTY", "right"));
+	}
+
+	return cells;
+}
+
+function createItemsTableRow(
+	row: ReturnType<typeof createMaterialRequestPdfRows>[number],
+	shouldShowStockQuantity: boolean,
+) {
+	const cells = [
+		bodyCell(row.itemCode),
+		bodyCell(row.itemName),
+		bodyCell(row.uom, "center"),
+		bodyCell(row.requestQuantity, "right"),
+	];
+
+	if (shouldShowStockQuantity) {
+		cells.push(bodyCell(row.stockQuantity, "right"));
+	}
+
+	return cells;
+}
+
+function createFooterTable(values: MaterialRequestFormValues): TableCell {
 	return toTableCell({
 		table: {
-			widths: ["*", "*", "*"],
-			body: [[footerCell("Prepared by:"), footerCell("Checked by:"), footerCell("Approved by:")]],
+			widths: ["*", "*", "*", 95],
+			body: [
+				[
+					footerCell("Prepared by:"),
+					footerCell("Checked by:"),
+					footerCell("Approved by:"),
+					requestNumberFooterCell(values.requestNo),
+				],
+			],
 		},
 		layout: innerGridLayout,
 	});
@@ -200,6 +222,10 @@ function createMaterialRequestPdfRows(items: MaterialRequestItem[]) {
 					uom: "",
 				},
 			];
+}
+
+function hasStockQuantity(items: MaterialRequestItem[]) {
+	return items.some((item) => item.stockQuantity !== "" && Number(item.stockQuantity) > 0);
 }
 
 function centerText(text: string, fontSize = 8, margin: number[] = [0, 2, 0, 0]) {
@@ -234,6 +260,27 @@ function footerCell(label: string): TableCell {
 	return toTableCell({
 		text: label,
 		margin: [4, 5, 4, 42],
+	});
+}
+
+function requestNumberFooterCell(requestNo: string): TableCell {
+	return toTableCell({
+		stack: [
+			{
+				text: "MR No.:",
+				bold: true,
+				fontSize: 8,
+				alignment: "left",
+			},
+			{
+				text: formatRequestNo(requestNo),
+				bold: true,
+				fontSize: 16,
+				alignment: "right",
+				margin: [0, 18, 4, 0],
+			},
+		],
+		margin: [4, 5, 4, 5],
 	});
 }
 

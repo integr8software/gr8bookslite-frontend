@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { ModuleTableBody } from "@/app/src/ui/shared/module/module-table/ModuleTableBody";
 import { ModuleTableHeader } from "@/app/src/ui/shared/module/module-table/ModuleTableHeader";
@@ -39,9 +39,7 @@ export function ModuleTable<TData>({
 }: ModuleTableProps<TData>) {
 	const pathname = usePathname();
 	const scrollContainerRef = useRef<HTMLDivElement>(null);
-	const stickyHeaderRef = useRef<HTMLDivElement>(null);
 	const [hasLoadedPagination, setHasLoadedPagination] = useState(false);
-	const [stickyHeaderHeight, setStickyHeaderHeight] = useState(0);
 	const rows = table.getRowModel().rows;
 	const visibleColumns = table.getVisibleLeafColumns();
 	const visibleColumnCount = table.getVisibleLeafColumns().length;
@@ -139,26 +137,6 @@ export function ModuleTable<TData>({
 		table.setPageIndex(safeTotalPages - 1);
 	}, [pagination.pageIndex, safeTotalPages, table]);
 
-	useLayoutEffect(() => {
-		if (!stickyToolbarAndHeader || !stickyHeaderRef.current) {
-			setStickyHeaderHeight(0);
-			return;
-		}
-
-		const stickyHeaderElement = stickyHeaderRef.current;
-
-		function updateStickyHeaderHeight() {
-			setStickyHeaderHeight(stickyHeaderElement.getBoundingClientRect().height);
-		}
-
-		updateStickyHeaderHeight();
-
-		const resizeObserver = new ResizeObserver(updateStickyHeaderHeight);
-		resizeObserver.observe(stickyHeaderElement);
-
-		return () => resizeObserver.disconnect();
-	}, [stickyToolbarAndHeader, toolbar]);
-
 	return (
 		<div
 			className={joinClasses(
@@ -168,7 +146,6 @@ export function ModuleTable<TData>({
 			)}
 		>
 			<div
-				ref={stickyHeaderRef}
 				className={joinClasses(
 					stickyToolbarAndHeader && "sticky z-[60] -mx-px -mt-px w-[calc(100%+2px)] overflow-hidden rounded-t-lg border border-b-0 border-darknavy/10 bg-white",
 				)}
@@ -209,7 +186,7 @@ export function ModuleTable<TData>({
 						</colgroup>
 					) : null}
 					<ModuleTableHeader
-						stickyTop={ stickyToolbarAndHeader ? stickyHeaderHeight + stickyTopOffset : undefined }
+						stickyTop={stickyToolbarAndHeader ? stickyTopOffset : undefined}
 						scrollContainerRef={scrollContainerRef}
 						table={table}
 					/>

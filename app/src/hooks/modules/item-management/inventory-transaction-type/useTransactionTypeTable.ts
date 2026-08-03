@@ -4,13 +4,20 @@ import { useMemo, useState } from "react";
 import {
 	type ColumnDef,
 	type PaginationState,
-	type SortingState,
 	getCoreRowModel,
 	getPaginationRowModel,
 	getSortedRowModel,
 	useReactTable,
 } from "@tanstack/react-table";
-import { TransactionTypeTableColumns } from "@/app/src/constants/modules/item-management/inventory-transaction-type/TransactionTypeConstants";
+import {
+	TransactionTypeDefaultColumnOrder,
+	TransactionTypeDefaultColumnVisibility,
+	TransactionTypeDefaultSorting,
+	TransactionTypeTableColumns,
+	TransactionTypeTablePreferencesModuleKey,
+	TransactionTypeTablePreferencesStorageKey,
+} from "@/app/src/constants/modules/item-management/inventory-transaction-type/TransactionTypeConstants";
+import { useTablePreferences } from "@/app/src/hooks/shared/table-preferences/useTablePreferences";
 import type {
 	TransactionType,
 	TransactionTypeTableColumnKey,
@@ -22,40 +29,35 @@ export function useTransactionTypeTable(transactionTypes: TransactionType[]) {
 		pageIndex: 0,
 		pageSize: 10,
 	});
-	const [sorting, setSorting] = useState<SortingState>([
-		{ id: "name", desc: false },
-	]);
+	const {
+		columnOrder,
+		columnVisibility,
+		sorting,
+		setColumnOrder,
+		setColumnVisibility,
+		setSorting,
+	} = useTablePreferences({
+		defaultColumnOrder: TransactionTypeDefaultColumnOrder,
+		defaultColumnVisibility: TransactionTypeDefaultColumnVisibility,
+		defaultSorting: TransactionTypeDefaultSorting,
+		moduleKey: TransactionTypeTablePreferencesModuleKey,
+		storageKey: TransactionTypeTablePreferencesStorageKey,
+	});
 	const tableData = useMemo<TransactionTypeTableRecord[]>(
-		() =>
-			transactionTypes.map((transactionType) => {
-				const legacyTransactionType = transactionType as TransactionType & {
-					type?: string;
-				};
-
-				return {
-					...transactionType,
-					name:
-						transactionType.name ??
-						legacyTransactionType.type ??
-						transactionType.description,
-					accountLabel:
-						transactionType.accountTitle || "No account selected",
-					moduleLabel: getTransactionTypeModuleLabel(transactionType),
-				};
-			}),
+		() => transactionTypes.map(createTransactionTypeTableRecord),
 		[transactionTypes],
 	);
 	const columns = useMemo<ColumnDef<TransactionTypeTableRecord>[]>(
 		() =>
 			TransactionTypeTableColumns.map((column) => {
 				if (!("key" in column)) {
-					return {
-						id: "actions",
-						header: column.label,
-						enableSorting: false,
-						meta: { className: column.className },
-					};
-				}
+				return {
+					id: "actions",
+					header: column.label,
+					enableSorting: false,
+					meta: { className: column.className, label: column.label },
+				};
+			}
 
 				return createTransactionTypeColumn(
 					column.key,
@@ -70,16 +72,43 @@ export function useTransactionTypeTable(transactionTypes: TransactionType[]) {
 	return useReactTable({
 		data: tableData,
 		columns,
+		initialState: {
+			columnOrder: TransactionTypeDefaultColumnOrder,
+			columnVisibility: TransactionTypeDefaultColumnVisibility,
+			sorting: TransactionTypeDefaultSorting,
+		},
 		state: {
+			columnOrder,
+			columnVisibility,
 			pagination,
 			sorting,
 		},
+		onColumnOrderChange: setColumnOrder,
+		onColumnVisibilityChange: setColumnVisibility,
 		onPaginationChange: setPagination,
 		onSortingChange: setSorting,
 		getCoreRowModel: getCoreRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 	});
+}
+
+export function createTransactionTypeTableRecord(
+	transactionType: TransactionType,
+): TransactionTypeTableRecord {
+	const legacyTransactionType = transactionType as TransactionType & {
+		type?: string;
+	};
+
+	return {
+		...transactionType,
+		name:
+			transactionType.name ??
+			legacyTransactionType.type ??
+			transactionType.description,
+		accountLabel: transactionType.accountTitle || "No account selected",
+		moduleLabel: getTransactionTypeModuleLabel(transactionType),
+	};
 }
 
 function createTransactionTypeColumn(
@@ -91,7 +120,7 @@ function createTransactionTypeColumn(
 		accessorKey: key,
 		header,
 		sortingFn: "alphanumeric",
-		meta: { className },
+		meta: { className, label: header },
 	};
 }
 

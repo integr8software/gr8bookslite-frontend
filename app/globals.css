@@ -1028,6 +1028,15 @@ button {
 	background-color: #f8fafc;
 }
 
+.module-table-scrollbar-hidden {
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+}
+
+.module-table-scrollbar-hidden::-webkit-scrollbar {
+	display: none;
+}
+
 .module-table-header th {
 	background-color: #f8fafc;
 	color: color-mix(in srgb, var(--foreground) 75%, transparent);

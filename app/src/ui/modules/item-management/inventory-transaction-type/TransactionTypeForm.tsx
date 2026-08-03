@@ -42,67 +42,61 @@ export function TransactionTypeForm({
 	}));
 
 	return (
-		<div className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm sm:p-5">
-			<div className="grid gap-4 lg:grid-cols-2">
-				<FormField label="Name" error={errors.name} required>
-					<input
-						name="name"
-						value={values.name}
-						onChange={onInputChange}
-						readOnly={isReadonly}
-						className={fieldClassName}
-						placeholder="Enter inventory transaction type name"
-					/>
-				</FormField>
+		<div className="grid gap-4">
+			<FormField label="Name" error={errors.name} required>
+				<input
+					name="name"
+					value={values.name}
+					onChange={onInputChange}
+					readOnly={isReadonly}
+					className={fieldClassName}
+					placeholder="Enter inventory transaction type name"
+				/>
+			</FormField>
 
-				<FormField label="Status" error={errors.status} required>
-					<AppSwitch
-						falseOption={MaintenanceInactiveStatusSwitchOption}
-						value={values.status}
-						onChange={onStatusChange}
-						readOnly={isReadonly}
-						trueOption={MaintenanceActiveStatusSwitchOption}
-					/>
-				</FormField>
+			<FormField label="Description" error={errors.description}>
+				<AppLimitedTextarea
+					name="description"
+					value={values.description}
+					onChange={onInputChange}
+					readOnly={isReadonly}
+					className={`${fieldClassName} min-h-24 py-3`}
+					counterMode="used"
+					placeholder="Enter description"
+				/>
+			</FormField>
 
-				<FormField
-					label="Description"
-					error={errors.description}
-					className="lg:col-span-2"
-				>
-					<AppLimitedTextarea
-						name="description"
-						value={values.description}
-						onChange={onInputChange}
-						readOnly={isReadonly}
-						className={`${fieldClassName} min-h-24 py-3`}
-						counterMode="used"
-						placeholder="Enter description"
-					/>
-				</FormField>
+			<FormField label="Account Title" error={errors.accountId} required>
+				<ChartAccountDropdown
+					accounts={accountOptions}
+					placeholder="Search account by name or code"
+					readOnly={isReadonly}
+					value={values.accountId}
+					onChange={onAccountChange}
+				/>
+			</FormField>
 
-				<FormField label="Account Title" error={errors.accountId} required>
-					<ChartAccountDropdown
-						accounts={accountOptions}
-						placeholder="Search account by name or code"
-						readOnly={isReadonly}
-						value={values.accountId}
-						onChange={onAccountChange}
-					/>
-				</FormField>
+			<FormField label="Goods Movement Module" error={errors.moduleIds} required>
+				<AppAdvancedDropdown
+					options={moduleDropdownOptions}
+					placeholder="--Select Goods Movement Module--"
+					readOnly={isReadonly}
+					searchPlaceholder="Search goods movement module"
+					selectionMode="multiple"
+					value={values.moduleIds}
+					onChange={onModuleChange}
+				/>
+			</FormField>
 
-				<FormField label="Inventory Module" error={errors.moduleIds} required>
-					<AppAdvancedDropdown
-						options={moduleDropdownOptions}
-						placeholder="--Select Goods Movement Module--"
-						readOnly={isReadonly}
-						searchPlaceholder="Search goods movement module"
-						selectionMode="multiple"
-						value={values.moduleIds}
-						onChange={onModuleChange}
-					/>
-				</FormField>
-			</div>
+			<FormField label="Status" error={errors.status} required>
+				<AppSwitch
+					falseOption={MaintenanceInactiveStatusSwitchOption}
+					value={values.status}
+					onChange={onStatusChange}
+					readOnly={isReadonly}
+					trueOption={MaintenanceActiveStatusSwitchOption}
+				/>
+			</FormField>
 		</div>
 	);
 }

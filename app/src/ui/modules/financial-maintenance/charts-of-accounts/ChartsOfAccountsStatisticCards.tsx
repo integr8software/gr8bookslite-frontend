@@ -94,7 +94,7 @@ export function ChartsOfAccountsStatisticCards({
 		<ModuleStatisticCards
 			items={statisticCards}
 			isLoading={isLoading}
-			className="xl:grid-cols-6"
+			className="min-w-0 xl:grid-cols-6"
 		/>
 	);
 }

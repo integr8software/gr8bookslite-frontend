@@ -106,12 +106,12 @@ export function ChartsOfAccountsFilters({
       </div>
 
       <ModuleTableToolbar
-        className="!grid-cols-1 !gap-2 rounded-none border-x-0 border-t-0 !p-3 shadow-none sm:!gap-2 sm:!p-3"
+        className="min-w-0 !grid-cols-1 !gap-2 rounded-none border-x-0 border-t-0 !p-3 shadow-none sm:!gap-2 sm:!p-3"
         data-spotlight-id="charts-of-accounts-filters"
       >
         <div
           data-spotlight-id="maintenance-table-filters"
-          className="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] lg:grid-cols-[minmax(11rem,1.2fr)_minmax(7rem,0.8fr)_minmax(7rem,0.8fr)_auto]"
+          className="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] lg:grid-cols-[minmax(13rem,1.35fr)_minmax(8rem,0.85fr)_minmax(7rem,0.7fr)_auto]"
         >
           <div className="col-span-2 sm:col-span-3 lg:col-span-1">
             <ModuleTableSearch

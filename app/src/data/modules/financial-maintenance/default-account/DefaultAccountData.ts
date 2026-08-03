@@ -248,8 +248,10 @@ function normalizeImportedDefaultAccountType(value: string): DefaultAccountType 
     .replace(/[^a-z0-9]/g, "");
   const typeOptions = DefaultAccountTypeOptions.map((option) => option.value);
 
-  if (["collection", "collectiontype"].includes(normalized)) return "COLLECTION";
-  if (["expense", "expensetype"].includes(normalized)) return "EXPENSE";
+  if (["collection", "collections", "collectiontype"].includes(normalized)) return "COLLECTION";
+  if (["service", "services", "servicetype", "expense", "expensetype"].includes(normalized)) {
+    return "EXPENSE";
+  }
 
   return (getModuleImportOptionValue(value, typeOptions) ?? value) as DefaultAccountType;
 }

@@ -29,7 +29,7 @@ export function BankMasterfileTableFilters({
 	onStatusFilterChange,
 }: BankMasterfileTableFiltersProps) {
 	return (
-		<ModuleTableToolbar className="!grid-cols-2 !gap-2 rounded-none border-x-0 border-t-0 !p-3 shadow-none sm:!gap-2 sm:!p-3 md:!grid-cols-[minmax(14rem,1.4fr)_minmax(8rem,0.8fr)_3.25rem_3.25rem_3.25rem]">
+		<ModuleTableToolbar className="!grid-cols-2 !gap-2 rounded-none border-x-0 border-t-0 !p-3 shadow-none sm:!gap-2 sm:!p-3 md:!grid-cols-[minmax(13rem,1.35fr)_minmax(7rem,0.7fr)_3.25rem_3.25rem_3.25rem]">
 			<ModuleTableSearch
 				label="Search banks"
 				value={query}

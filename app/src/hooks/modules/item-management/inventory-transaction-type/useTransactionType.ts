@@ -11,8 +11,10 @@ type TransactionTypeStoreState = {
 	transactionTypes: TransactionType[];
 	addTransactionType: (transactionType: TransactionType) => void;
 	updateTransactionType: (transactionType: TransactionType) => void;
+	refreshTransactionTypes: () => void;
 	isLoading: boolean;
 	lastSyncedAt: number;
+	isRefreshing: boolean;
 	isMutating: boolean;
 };
 
@@ -76,16 +78,25 @@ export function useTransactionTypeStore<
 				addTransactionTypeMutation.mutate(transactionType),
 			updateTransactionType: (transactionType) =>
 				updateTransactionTypeMutation.mutate(transactionType),
+			refreshTransactionTypes: () => {
+				void queryClient.invalidateQueries({
+					queryKey: TransactionTypeQueryKeys.transactionTypes(),
+				});
+			},
 			isLoading: transactionTypesQuery.isLoading,
 			lastSyncedAt: transactionTypesQuery.dataUpdatedAt,
+			isRefreshing:
+				transactionTypesQuery.isFetching && !transactionTypesQuery.isLoading,
 			isMutating:
 				addTransactionTypeMutation.isPending ||
 				updateTransactionTypeMutation.isPending,
 		}),
 		[
 			addTransactionTypeMutation,
+			queryClient,
 			transactionTypesQuery.data,
 			transactionTypesQuery.dataUpdatedAt,
+			transactionTypesQuery.isFetching,
 			transactionTypesQuery.isLoading,
 			updateTransactionTypeMutation,
 		],

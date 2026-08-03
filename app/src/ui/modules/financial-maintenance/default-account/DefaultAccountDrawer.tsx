@@ -164,13 +164,13 @@ function DefaultAccountDrawerPanel({
           </label>
           {page.values.type === "EXPENSE" ? (
             <label className="grid gap-2">
-              <span className="text-sm font-semibold text-darknavy">Expense Type</span>
+              <span className="text-sm font-semibold text-darknavy">Service Type</span>
               <AppAdvancedDropdown
                 value={page.values.expenseParentCoaId}
                 disabled={page.isReadonly || page.isLoadingExpenseParentOptions}
                 addAction={{
                   disabled: !canAddExpenseTypeSubAccount,
-                  label: nextExpenseSubAccountLevel ? "Add Sub Account" : "Add Expense Type",
+                  label: nextExpenseSubAccountLevel ? "Add Sub Account" : "Add Service Type",
                   onClick: () => {
                     if (selectedExpenseParentAccount && nextExpenseSubAccountLevel) {
                       setExpenseSubAccountDialog({
@@ -183,10 +183,10 @@ function DefaultAccountDrawerPanel({
                 options={expenseParentOptions}
                 placeholder={
                   page.isLoadingExpenseParentOptions
-                    ? "Loading expense accounts..."
-                    : "--Select Expense Type--"
+                    ? "Loading service accounts..."
+                    : "--Select Service Type--"
                 }
-                searchPlaceholder="Search expense types"
+                searchPlaceholder="Search service types"
                 onChange={page.handleExpenseParentChange}
               />
             </label>
@@ -306,12 +306,12 @@ function ExpenseSubAccountDialog({
     const trimmedName = accountName.trim();
 
     if (!trimmedName) {
-      setError("Expense Type Name is required.");
+      setError("Service Type Name is required.");
       return;
     }
 
     if (!parentAccount || !accountLevel) {
-      setError("Select an expense parent before adding a sub account.");
+      setError("Select a service parent before adding a sub account.");
       return;
     }
 
@@ -329,9 +329,9 @@ function ExpenseSubAccountDialog({
       );
 
       await onSaved(savedAccount.id);
-      toast.success("Expense type saved.");
+      toast.success("Service type saved.");
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Could not save the expense sub account."));
+      setError(getErrorMessage(caughtError, "Could not save the service sub account."));
     } finally {
       setIsSaving(false);
     }
@@ -347,13 +347,13 @@ function ExpenseSubAccountDialog({
       isOpen={isOpen}
       isPending={isPending}
       saveDisabled={!accountCode}
-      title="Add Expense Type"
+      title="Add Service Type"
       onClose={onClose}
       onSave={handleSave}
     >
       <label className="grid gap-2">
         <span className="text-sm font-semibold text-darknavy">
-          Expense Type Name <span className="text-coralpink">*</span>
+          Service Type Name <span className="text-coralpink">*</span>
         </span>
         <input
           value={accountName}

@@ -193,10 +193,10 @@ export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
       paginationLabel="accounts"
       paginationStorageKey="maintenance:chart-of-accounts"
       pageSizeOptions={[25, 50, 100, 150, 200, 250]}
-      rootClassName="overflow-visible"
-      scrollContainerClassName="overflow-visible"
+      rootClassName="overflow-hidden"
+      scrollContainerClassName="module-table-scrollbar-hidden overflow-x-auto overflow-y-visible"
       stickyToolbarAndHeader
-      stickyTopOffset={-16}
+      stickyTopOffset={0}
       table={props.table}
       tableTitle="Ledger Accounts"
       toolbar={props.toolbar}

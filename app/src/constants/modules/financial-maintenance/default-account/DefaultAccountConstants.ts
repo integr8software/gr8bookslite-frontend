@@ -86,9 +86,14 @@ export const DefaultAccountDefaultSorting: SortingState = [
 ];
 
 export const DefaultAccountTypeOptions = [
-  { value: "EXPENSE", label: "Expense Type" },
-  { value: "COLLECTION", label: "Collection Type" },
+  { value: "EXPENSE", label: "Expenses" },
+  { value: "COLLECTION", label: "Collections" },
 ] as const satisfies readonly { value: DefaultAccountType; label: string }[];
+
+export const DefaultAccountTypeFilterOptions = [
+  { value: "", label: "All Accounts" },
+  ...DefaultAccountTypeOptions,
+] as const satisfies readonly { value: "" | DefaultAccountType; label: string }[];
 
 export const DefaultAccountStatusOptions = [
   "Active",

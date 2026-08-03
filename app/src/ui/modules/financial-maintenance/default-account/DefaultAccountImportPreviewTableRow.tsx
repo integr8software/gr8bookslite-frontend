@@ -36,10 +36,6 @@ export function DefaultAccountImportPreviewTableRow({
       ? "bg-coralpink/[0.025]"
       : "bg-white";
   const typeOptions = DefaultAccountTypeOptions.map((option) => option.value);
-  const typeOptionLabels = {
-    EXPENSE: "Expense",
-    COLLECTION: "Collection",
-  } as const;
 
   return (
     <>
@@ -86,7 +82,7 @@ export function DefaultAccountImportPreviewTableRow({
             value={row.defaultAccount.type}
             errors={row.cellErrors.type}
             options={typeOptions}
-            getOptionLabel={(option) => typeOptionLabels[option]}
+            getOptionLabel={getDefaultAccountTypeLabel}
             onChange={(value) => onUpdateCell(row.id, "type", value)}
             onPaste={(text) => onPasteCell(row.id, "type", text)}
           />

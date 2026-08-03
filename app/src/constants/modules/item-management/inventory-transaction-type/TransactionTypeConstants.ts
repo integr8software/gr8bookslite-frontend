@@ -1,7 +1,10 @@
+import type { SortingState, VisibilityState } from "@tanstack/react-table";
 import type {
 	TransactionTypeStatus,
+	TransactionTypeTableRecord,
 	TransactionTypeTableColumnKey,
 } from "@/app/src/types/modules/item-management/inventory-transaction-type/TransactionTypeTypes";
+import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
 export const TransactionTypeHref =
 	"/maintenance/inventory-transaction-type";
@@ -17,6 +20,10 @@ export const TransactionTypeDrawerFormId =
 	"inventory-transaction-type-drawer-form";
 
 export const TransactionTypePaginationStorageKey =
+	"maintenance:inventory-transaction-type";
+export const TransactionTypeTablePreferencesStorageKey =
+	"gr8booksneo:inventory-transaction-type:table-preferences";
+export const TransactionTypeTablePreferencesModuleKey =
 	"maintenance:inventory-transaction-type";
 
 export const TransactionTypeStatusOptions = [
@@ -76,6 +83,28 @@ export const TransactionTypeTableColumns: Array<
 		className: "w-[12%] text-center",
 	},
 ] as const;
+
+export const TransactionTypeDefaultColumnOrder =
+	TransactionTypeTableColumns.map((column) =>
+		"key" in column ? column.key : "actions",
+	);
+export const TransactionTypeDefaultColumnVisibility: VisibilityState = {};
+export const TransactionTypeDefaultSorting: SortingState = [
+	{ id: "name", desc: false },
+];
+
+export const TransactionTypeExportColumns: ModuleTableExportColumn<TransactionTypeTableRecord>[] =
+	TransactionTypeTableColumns.flatMap((column) =>
+		"key" in column
+			? [
+					{
+						header: column.label,
+						id: column.key satisfies TransactionTypeTableColumnKey,
+						value: column.key,
+					},
+				]
+			: [],
+	);
 
 export const TransactionTypeActionCopy = {
 	add: {

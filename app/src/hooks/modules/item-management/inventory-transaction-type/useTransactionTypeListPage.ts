@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { normalizeLowercaseText } from "@/app/src/utils/string.util";
 import { useTransactionTypeStore } from "@/app/src/hooks/modules/item-management/inventory-transaction-type/useTransactionType";
+import { useTransactionTypeTable } from "@/app/src/hooks/modules/item-management/inventory-transaction-type/useTransactionTypeTable";
 import { TransactionTypeStatusOptions } from "@/app/src/constants/modules/item-management/inventory-transaction-type/TransactionTypeConstants";
 import type { TransactionType } from "@/app/src/types/modules/item-management/inventory-transaction-type/TransactionTypeTypes";
 
@@ -10,7 +11,9 @@ export function useTransactionTypeListPage() {
 	const {
 		isLoading,
 		isMutating,
+		isRefreshing,
 		lastSyncedAt,
+		refreshTransactionTypes,
 		transactionTypes,
 		updateTransactionType,
 	} = useTransactionTypeStore();
@@ -57,6 +60,9 @@ export function useTransactionTypeListPage() {
 		() => createModuleFilterOptions(transactionTypes),
 		[transactionTypes],
 	);
+	const table = useTransactionTypeTable(filteredTransactionTypes);
+	const hasActiveFilters =
+		Boolean(searchTerm) || Boolean(moduleFilter) || Boolean(statusFilter);
 
 	function confirmTransactionTypeStatusChange() {
 		if (!pendingStatusTransactionType) {
@@ -76,19 +82,34 @@ export function useTransactionTypeListPage() {
 	return {
 		confirmTransactionTypeStatusChange,
 		filteredTransactionTypes,
+		hasActiveFilters,
 		isLoading,
 		isMutating,
+		isRefreshing,
 		lastSyncedAt,
 		moduleFilter,
 		moduleFilterOptions,
 		pendingStatusTransactionType,
+		refreshTransactionTypes,
 		searchTerm,
 		statusFilter,
+		table,
 		transactionTypes,
-		setModuleFilter,
+		setModuleFilter: (value: string) => {
+			setModuleFilter(value);
+			table.setPageIndex(0);
+		},
 		setPendingStatusTransactionType,
-		setSearchTerm,
-		setStatusFilter,
+		setSearchTerm: (value: string) => {
+			setSearchTerm(value);
+			table.setPageIndex(0);
+		},
+		setStatusFilter: (
+			value: "" | (typeof TransactionTypeStatusOptions)[number],
+		) => {
+			setStatusFilter(value);
+			table.setPageIndex(0);
+		},
 	};
 }
 

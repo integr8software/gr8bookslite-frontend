@@ -35,9 +35,9 @@ export function ChartsOfAccountsListPage() {
 	}
 
 	return (
-		<section className="-mx-3 -my-4 min-h-[calc(100dvh-5rem)] bg-white text-darknavy sm:-mx-5 lg:-mx-6">
+		<section className="-mx-3 -my-4 min-h-[calc(100dvh-5rem)] min-w-0 overflow-x-hidden bg-white text-darknavy sm:-mx-5 lg:-mx-6">
 			<ChartsOfAccountsSpotlightTutorial />
-			<main className="grid min-h-[calc(100dvh-5rem)] content-start gap-5 p-4 sm:p-6">
+			<main className="grid min-h-[calc(100dvh-5rem)] min-w-0 content-start gap-5 p-4 sm:p-6">
 				<ChartsOfAccountsHeader
 					canCreate={coa.permissions.canCreate}
 					onAddAccount={() => coa.openAddDrawer()}
@@ -49,7 +49,7 @@ export function ChartsOfAccountsListPage() {
 				/>
 
 				<Card
-					className="overflow-visible rounded-lg bg-white"
+					className="min-w-0 overflow-hidden rounded-lg bg-white"
 					data-spotlight-id="charts-of-accounts-table"
 				>
 					<ChartsOfAccountsTable

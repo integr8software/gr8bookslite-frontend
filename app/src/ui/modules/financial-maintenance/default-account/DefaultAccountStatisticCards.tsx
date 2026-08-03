@@ -44,14 +44,14 @@ export function DefaultAccountStatisticCards({
 			{
 				icon: ReceiptText,
 				iconClassName: "bg-cyan-50 text-cyan-700",
-				label: "Collection",
+				label: "Collections",
 				summary: "Revenue templates",
 				value: statistics.collectionDefaultAccounts,
 			},
 			{
 				icon: WalletCards,
 				iconClassName: "bg-rose-50 text-rose-700",
-				label: "Expense",
+				label: "Expenses",
 				summary: "Expense templates",
 				value: statistics.expenseDefaultAccounts,
 			},

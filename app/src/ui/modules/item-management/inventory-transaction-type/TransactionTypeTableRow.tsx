@@ -1,43 +1,71 @@
+import type { ReactNode } from "react";
 import type {
 	TransactionType,
 	TransactionTypeTableRecord,
+	TransactionTypeTableRowProps,
 } from "@/app/src/types/modules/item-management/inventory-transaction-type/TransactionTypeTypes";
 import {
 	ModuleTableActionButton,
 	ModuleTableActions,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
-
-type TransactionTypeTableRowProps = {
-	transactionType: TransactionTypeTableRecord;
-	onEdit: (transactionType: TransactionType) => void;
-	onToggleStatus: (transactionType: TransactionType) => void;
-	onView: (transactionType: TransactionType) => void;
-};
+import { getColumnMetaClassName } from "@/app/src/ui/shared/module/module-table/utils";
 
 export function TransactionTypeTableRow({
-	transactionType,
+	row,
 	onEdit,
 	onToggleStatus,
 	onView,
 }: TransactionTypeTableRowProps) {
 	return (
 		<tr className="module-table-row">
-			<td className="px-4 py-4 font-semibold text-darknavy">
-				{transactionType.name}
-			</td>
-			<td className="px-4 py-4 text-darknavy">
-				{transactionType.description}
-			</td>
-			<td className="px-4 py-4 text-darknavy">
-				{transactionType.moduleLabel}
-			</td>
-			<td className="px-4 py-4 text-darknavy">
-				{transactionType.accountLabel}
-			</td>
-			<td className="px-4 py-4 text-darknavy">
-				{transactionType.status}
-			</td>
-			<td className="px-4 py-4 text-center">
+			{row.getVisibleCells().map((cell) => (
+				<TransactionTypeTableCell
+					key={cell.id}
+					className={getColumnMetaClassName(cell.column.columnDef.meta)}
+				>
+					<TransactionTypeCellContent
+						columnId={cell.column.id}
+						transactionType={row.original}
+						onEdit={onEdit}
+						onToggleStatus={onToggleStatus}
+						onView={onView}
+					/>
+				</TransactionTypeTableCell>
+			))}
+		</tr>
+	);
+}
+
+function TransactionTypeCellContent({
+	columnId,
+	transactionType,
+	onEdit,
+	onToggleStatus,
+	onView,
+}: {
+	columnId: string;
+	transactionType: TransactionTypeTableRecord;
+	onEdit: (transactionType: TransactionType) => void;
+	onToggleStatus: (transactionType: TransactionType) => void;
+	onView: (transactionType: TransactionType) => void;
+}) {
+	switch (columnId) {
+		case "name":
+			return <span className="font-semibold text-darknavy">{transactionType.name}</span>;
+		case "description":
+			return (
+				<span className="block truncate text-darknavy" title={transactionType.description}>
+					{transactionType.description}
+				</span>
+			);
+		case "moduleLabel":
+			return <span className="text-darknavy">{transactionType.moduleLabel}</span>;
+		case "accountLabel":
+			return <span className="text-darknavy">{transactionType.accountLabel}</span>;
+		case "status":
+			return <span className="text-darknavy">{transactionType.status}</span>;
+		case "actions":
+			return (
 				<ModuleTableActions className="justify-center">
 					<ModuleTableActionButton
 						variant="view"
@@ -55,7 +83,22 @@ export function TransactionTypeTableRow({
 						label={`${transactionType.status === "Active" ? "Deactivate" : "Activate"} ${transactionType.name}`}
 					/>
 				</ModuleTableActions>
-			</td>
-		</tr>
+			);
+		default:
+			return null;
+	}
+}
+
+function TransactionTypeTableCell({
+	className = "text-left",
+	children,
+}: {
+	className?: string;
+	children: ReactNode;
+}) {
+	return (
+		<td className={`px-4 py-4 align-middle text-sm text-darknavy ${className}`}>
+			{children}
+		</td>
 	);
 }

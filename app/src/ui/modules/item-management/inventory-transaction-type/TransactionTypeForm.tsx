@@ -1,10 +1,9 @@
 import * as React from "react";
 import {
-	TransactionTypeFormErrors,
 	TransactionTypeFormProps,
-	TransactionTypeFormValues,
 } from "@/app/src/types/modules/item-management/inventory-transaction-type/TransactionTypeTypes";
 import {
+	TransactionTypeFieldClassName,
 	TransactionTypeModuleDescriptions,
 	TransactionTypeNamePlaceholder,
 } from "@/app/src/constants/modules/item-management/inventory-transaction-type/TransactionTypeConstants";
@@ -42,7 +41,7 @@ export function TransactionTypeForm({
 					value={values.name}
 					onChange={onInputChange}
 					readOnly={isReadonly}
-					className={fieldClassName}
+					className={TransactionTypeFieldClassName}
 					placeholder={TransactionTypeNamePlaceholder}
 				/>
 			</FormField>
@@ -53,7 +52,7 @@ export function TransactionTypeForm({
 					value={values.description}
 					onChange={onInputChange}
 					readOnly={isReadonly}
-					className={`${fieldClassName} min-h-24 py-3`}
+					className={`${TransactionTypeFieldClassName} min-h-24 py-3`}
 					counterMode="used"
 					placeholder="Enter description..."
 				/>
@@ -145,6 +144,3 @@ function FormField({
 		</label>
 	);
 }
-
-const fieldClassName =
-	"min-h-11 w-full rounded-md border border-darknavy/15 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20 disabled:cursor-not-allowed disabled:bg-darknavy/5 read-only:bg-darknavy/[0.03]";

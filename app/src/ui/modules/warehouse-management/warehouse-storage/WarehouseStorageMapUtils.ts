@@ -1,18 +1,8 @@
 import type {
+  WarehouseStorageLayoutSlot,
   WarehouseStorageListRecord,
   WarehouseStorageStatus,
 } from "@/app/src/types/modules/warehouse-management/warehouse-storage/WarehouseStorageTypes";
-
-export type WarehouseStorageLayoutSlot = {
-  aisle: string;
-  bin: string;
-  id: string;
-  label: string;
-  rack: string;
-  record?: WarehouseStorageListRecord;
-  shelf: string;
-  status: WarehouseStorageStatus | "Occupied" | "Full" | "Maintenance";
-};
 
 export type WarehouseStorageShortcutArea = {
   icon: import("lucide-react").LucideIcon;

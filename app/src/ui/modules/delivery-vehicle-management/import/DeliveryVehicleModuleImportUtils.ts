@@ -8,8 +8,6 @@ import { downloadBlob } from "@/app/src/ui/shared/module/module-table/ModuleTabl
 import { formatFileSize } from "@/app/src/utils/file.util";
 import { isModuleImportOptionValue } from "@/app/src/utils/module-import.util";
 
-export type DeliveryVehicleImportProgress = { imported: number; total: number };
-
 export type DeliveryVehicleImportPreviewRow = {
   cellErrors: Record<string, string[] | undefined>;
   cellWarnings: Record<string, string[] | undefined>;

@@ -57,6 +57,8 @@ export type DeliveryVehicleModuleConfig = {
 export type DeliveryVehicleEditorState =
   { mode: "add" } | { mode: "edit" | "view"; record: DeliveryVehicleModuleRecord } | null;
 
+export type DeliveryVehicleImportProgress = { imported: number; total: number };
+
 export type DeliveryVehicleModulePageState = {
   config: DeliveryVehicleModuleConfig;
   editor: DeliveryVehicleEditorState;

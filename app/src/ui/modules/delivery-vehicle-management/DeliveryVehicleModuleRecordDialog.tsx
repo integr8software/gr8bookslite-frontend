@@ -199,46 +199,11 @@ function DeliveryVehicleFieldRows({
 }) {
   return (
     <>
-      <VehicleTypeFieldRow
-        errors={errors}
-        fieldByKey={fieldByKey}
-        fieldKeys={["plateNumber"]}
-        isView={isView}
-        values={values}
-        onChange={onChange}
-      />
-      <VehicleTypeFieldRow
-        errors={errors}
-        fieldByKey={fieldByKey}
-        fieldKeys={["vehicleType", "baseWarehouse"]}
-        isView={isView}
-        values={values}
-        onChange={onChange}
-      />
-      <VehicleTypeFieldRow
-        errors={errors}
-        fieldByKey={fieldByKey}
-        fieldKeys={["ownership"]}
-        isView={isView}
-        values={values}
-        onChange={onChange}
-      />
-      <VehicleTypeFieldRow
-        errors={errors}
-        fieldByKey={fieldByKey}
-        fieldKeys={["registrationExpiry", "insuranceExpiry"]}
-        isView={isView}
-        values={values}
-        onChange={onChange}
-      />
-      <VehicleTypeFieldRow
-        errors={errors}
-        fieldByKey={fieldByKey}
-        fieldKeys={["description"]}
-        isView={isView}
-        values={values}
-        onChange={onChange}
-      />
+      <VehicleTypeFieldRow errors={errors} fieldByKey={fieldByKey} fieldKeys={["plateNumber"]} isView={isView} values={values} onChange={onChange} />
+      <VehicleTypeFieldRow errors={errors} fieldByKey={fieldByKey} fieldKeys={["vehicleType", "baseWarehouse"]} isView={isView} values={values} onChange={onChange} />
+      <VehicleTypeFieldRow errors={errors} fieldByKey={fieldByKey} fieldKeys={["ownership"]} isView={isView} values={values} onChange={onChange} />
+      <VehicleTypeFieldRow errors={errors} fieldByKey={fieldByKey} fieldKeys={["registrationExpiry", "insuranceExpiry"]} isView={isView} values={values} onChange={onChange} />
+      <VehicleTypeFieldRow errors={errors} fieldByKey={fieldByKey} fieldKeys={["description"]} isView={isView} values={values} onChange={onChange} />
       <div className="grid gap-4 sm:grid-cols-2">
         <DeliveryVehicleModuleField
           error={errors.deliveryStatus}
@@ -268,46 +233,11 @@ function VehicleTypeFieldRows({
 }) {
   return (
     <>
-      <VehicleTypeFieldRow
-        errors={errors}
-        fieldByKey={fieldByKey}
-        fieldKeys={["typeName"]}
-        isView={isView}
-        values={values}
-        onChange={onChange}
-      />
-      <VehicleTypeFieldRow
-        errors={errors}
-        fieldByKey={fieldByKey}
-        fieldKeys={["brand", "model"]}
-        isView={isView}
-        values={values}
-        onChange={onChange}
-      />
-      <VehicleTypeFieldRow
-        errors={errors}
-        fieldByKey={fieldByKey}
-        fieldKeys={["maxPayload", "cargoVolume"]}
-        isView={isView}
-        values={values}
-        onChange={onChange}
-      />
-      <VehicleTypeFieldRow
-        errors={errors}
-        fieldByKey={fieldByKey}
-        fieldKeys={["palletCapacity", "handling"]}
-        isView={isView}
-        values={values}
-        onChange={onChange}
-      />
-      <VehicleTypeFieldRow
-        errors={errors}
-        fieldByKey={fieldByKey}
-        fieldKeys={["description"]}
-        isView={isView}
-        values={values}
-        onChange={onChange}
-      />
+      <VehicleTypeFieldRow errors={errors} fieldByKey={fieldByKey} fieldKeys={["typeName"]} isView={isView} values={values} onChange={onChange} />
+      <VehicleTypeFieldRow errors={errors} fieldByKey={fieldByKey} fieldKeys={["brand", "model"]} isView={isView} values={values} onChange={onChange} />
+      <VehicleTypeFieldRow errors={errors} fieldByKey={fieldByKey} fieldKeys={["maxPayload", "cargoVolume"]} isView={isView} values={values} onChange={onChange} />
+      <VehicleTypeFieldRow errors={errors} fieldByKey={fieldByKey} fieldKeys={["palletCapacity", "handling"]} isView={isView} values={values} onChange={onChange} />
+      <VehicleTypeFieldRow errors={errors} fieldByKey={fieldByKey} fieldKeys={["description"]} isView={isView} values={values} onChange={onChange} />
     </>
   );
 }

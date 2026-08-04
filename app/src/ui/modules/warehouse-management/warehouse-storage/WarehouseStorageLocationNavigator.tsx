@@ -53,10 +53,7 @@ export function WarehouseStorageLocationNavigator({
       </div>
       <div className="p-3">
         <label className="relative block">
-          <Search
-            className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/35"
-            aria-hidden="true"
-          />
+          <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/35" aria-hidden="true" />
           <input
             value={query}
             onChange={(event) => onQueryChange(event.target.value)}
@@ -399,11 +396,7 @@ function NavigatorRow({
           className="grid h-6 w-4 shrink-0 place-items-center rounded text-darknavy/45 transition hover:bg-white hover:text-darknavy"
           aria-label={`${isOpen ? "Collapse" : "Expand"} ${label}`}
         >
-          {isOpen ? (
-            <ChevronDown className="h-3.5 w-3.5 shrink-0" />
-          ) : (
-            <ChevronRight className="h-3.5 w-3.5 shrink-0" />
-          )}
+          {isOpen ? <ChevronDown className="h-3.5 w-3.5 shrink-0" /> : <ChevronRight className="h-3.5 w-3.5 shrink-0" />}
         </button>
         <button
           type="button"
@@ -418,12 +411,7 @@ function NavigatorRow({
   );
 }
 
-function NavigatorLeafRow({
-  depth,
-  isSelected,
-  label,
-  onClick,
-}: {
+function NavigatorLeafRow({ depth, isSelected, label, onClick }: {
   depth: number;
   isSelected: boolean;
   label: string;
@@ -444,10 +432,7 @@ function NavigatorLeafRow({
   );
 }
 
-function createDefaultNavigatorKeys(
-  records: WarehouseStorageListRecord[],
-  warehouses: WarehouseRecord[],
-) {
+function createDefaultNavigatorKeys(records: WarehouseStorageListRecord[], warehouses: WarehouseRecord[]) {
   const keys = new Set<string>();
 
   warehouses
@@ -502,10 +487,7 @@ function addZoneNavigatorKeys(
   );
 }
 
-function selectFirstRecord(
-  records: WarehouseStorageListRecord[],
-  onSelectRecord: (recordId: string) => void,
-) {
+function selectFirstRecord(records: WarehouseStorageListRecord[], onSelectRecord: (recordId: string) => void) {
   const firstRecord = records[0];
 
   if (firstRecord) {

@@ -13,6 +13,8 @@ import { DeliveryVehicleModuleStatisticCards } from "@/app/src/ui/modules/delive
 import { DeliveryVehicleModuleTable } from "@/app/src/ui/modules/delivery-vehicle-management/DeliveryVehicleModuleTable";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 
+const ActiveStatus = "Active";
+
 export function DeliveryVehicleModuleListPage({
   pageConfig,
   paginationKey,
@@ -27,11 +29,12 @@ export function DeliveryVehicleModuleListPage({
     validateRecord,
   });
   const [isImportOpen, setIsImportOpen] = useState(false);
-  const defaultStatusFilter = page.config.statuses.includes("Active") ? "Active" : "";
+  const defaultStatusFilter = page.config.statuses.includes(ActiveStatus) ? ActiveStatus : "";
   const hasActiveFilters =
     page.query.trim().length > 0 ||
     page.statusFilter !== defaultStatusFilter ||
     page.vehicleTypeFilter.length > 0;
+  const isPendingRecordActive = page.pendingStatusRecord?.status === ActiveStatus;
 
   function openRecord(mode: "edit" | "view", record: DeliveryVehicleModuleRecord) {
     page.setEditor({ mode, record });
@@ -74,18 +77,14 @@ export function DeliveryVehicleModuleListPage({
       />
       <AppDialog
         isOpen={Boolean(page.pendingStatusRecord)}
-        title={
-          page.pendingStatusRecord?.status === "Active"
-            ? `Disable ${page.config.noun}?`
-            : `Enable ${page.config.noun}?`
-        }
+        title={isPendingRecordActive ? `Disable ${page.config.noun}?` : `Enable ${page.config.noun}?`}
         description={
-          page.pendingStatusRecord?.status === "Active"
+          isPendingRecordActive
             ? `${page.pendingStatusRecord.name} will remain in history and references, but will no longer be active for normal selection.`
             : `${page.pendingStatusRecord?.name ?? `This ${page.config.noun}`} will be available for normal selection again.`
         }
-        confirmLabel={page.pendingStatusRecord?.status === "Active" ? "Disable" : "Enable"}
-        tone={page.pendingStatusRecord?.status === "Active" ? "deactivate" : "activate"}
+        confirmLabel={isPendingRecordActive ? "Disable" : "Enable"}
+        tone={isPendingRecordActive ? "deactivate" : "activate"}
         onCancel={() => page.setPendingStatusRecord(null)}
         onConfirm={page.confirmStatusChange}
       />

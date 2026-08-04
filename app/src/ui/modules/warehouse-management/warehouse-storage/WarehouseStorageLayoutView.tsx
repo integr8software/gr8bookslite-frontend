@@ -1,4 +1,4 @@
-import type { WarehouseStorageLayoutSlot } from "@/app/src/ui/modules/warehouse-management/warehouse-storage/WarehouseStorageMapUtils";
+import type { WarehouseStorageLayoutSlot } from "@/app/src/types/modules/warehouse-management/warehouse-storage/WarehouseStorageTypes";
 import { compareWarehouseStorageLocationTokens } from "@/app/src/ui/modules/warehouse-management/warehouse-storage/WarehouseStorageMapUtils";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import type { ModuleImportMode } from "@/app/src/ui/shared/module/ModuleImportControls";
 import type {
+  DeliveryVehicleImportProgress,
   DeliveryVehicleModuleConfig,
   DeliveryVehicleModuleRecord,
 } from "@/app/src/types/modules/delivery-vehicle-management/DeliveryVehicleModuleTypes";
@@ -26,7 +27,6 @@ import {
   validateDeliveryVehicleImportRows,
   waitForNextDeliveryVehicleImportBatch,
   type DeliveryVehicleImportPreviewRow,
-  type DeliveryVehicleImportProgress,
 } from "@/app/src/ui/modules/delivery-vehicle-management/import/DeliveryVehicleModuleImportUtils";
 
 type Params = {

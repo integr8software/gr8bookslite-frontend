@@ -72,6 +72,11 @@ export type DeliveryVehicleModulePageState = {
     total: number;
     attention: number;
     insight: number;
+    active: number;
+    hazardous: number;
+    inactive: number;
+    dispatchQueue: number;
+    inTransit: number;
     averageProgress: number;
   };
   table: import("@tanstack/react-table").Table<DeliveryVehicleModuleRecord>;
@@ -92,6 +97,9 @@ export type DeliveryVehicleModulePageState = {
   setPendingStatusRecord: (value: DeliveryVehicleModuleRecord | null) => void;
   setQuery: (value: string) => void;
   setStatusFilter: (value: string) => void;
+  setVehicleTypeFilter: (value: string) => void;
+  vehicleTypeFilter: string;
+  vehicleTypeFilterOptions: readonly string[];
 };
 
 export type DeliveryVehicleModuleListPageProps = {

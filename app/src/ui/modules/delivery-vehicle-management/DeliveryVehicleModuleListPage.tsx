@@ -29,7 +29,9 @@ export function DeliveryVehicleModuleListPage({
   const [isImportOpen, setIsImportOpen] = useState(false);
   const defaultStatusFilter = page.config.statuses.includes("Active") ? "Active" : "";
   const hasActiveFilters =
-    page.query.trim().length > 0 || page.statusFilter !== defaultStatusFilter;
+    page.query.trim().length > 0 ||
+    page.statusFilter !== defaultStatusFilter ||
+    page.vehicleTypeFilter.length > 0;
 
   function openRecord(mode: "edit" | "view", record: DeliveryVehicleModuleRecord) {
     page.setEditor({ mode, record });
@@ -74,13 +76,13 @@ export function DeliveryVehicleModuleListPage({
         isOpen={Boolean(page.pendingStatusRecord)}
         title={
           page.pendingStatusRecord?.status === "Active"
-            ? "Disable vehicle type?"
-            : "Enable vehicle type?"
+            ? `Disable ${page.config.noun}?`
+            : `Enable ${page.config.noun}?`
         }
         description={
           page.pendingStatusRecord?.status === "Active"
             ? `${page.pendingStatusRecord.name} will remain in history and references, but will no longer be active for normal selection.`
-            : `${page.pendingStatusRecord?.name ?? "This vehicle type"} will be available for normal selection again.`
+            : `${page.pendingStatusRecord?.name ?? `This ${page.config.noun}`} will be available for normal selection again.`
         }
         confirmLabel={page.pendingStatusRecord?.status === "Active" ? "Disable" : "Enable"}
         tone={page.pendingStatusRecord?.status === "Active" ? "deactivate" : "activate"}

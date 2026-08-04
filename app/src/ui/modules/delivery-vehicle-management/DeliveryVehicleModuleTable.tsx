@@ -58,16 +58,19 @@ export function DeliveryVehicleModuleTable({
             query={page.query}
             statusFilter={page.statusFilter}
             table={page.table}
+            vehicleTypeFilter={page.vehicleTypeFilter}
+            vehicleTypeFilterOptions={page.vehicleTypeFilterOptions}
             onQueryChange={page.setQuery}
             onRefresh={page.refreshRecords}
             onStatusFilterChange={page.setStatusFilter}
+            onVehicleTypeFilterChange={page.setVehicleTypeFilter}
           />
         }
         renderRow={(row) => (
           <DeliveryVehicleModuleTableRow
             key={row.id}
             allowWorkflowAction={config.key === "vehicle-repair-maintenance"}
-            allowStatusAction={config.key === "vehicle-types"}
+            allowStatusAction={config.key === "vehicle-types" || config.key === "delivery-vehicles"}
             row={row}
             fields={config.fields}
             onAdvanceRecord={onAdvanceRecord}

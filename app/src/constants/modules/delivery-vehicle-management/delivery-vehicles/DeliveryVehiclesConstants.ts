@@ -12,7 +12,7 @@ export const DeliveryVehiclesConfig: DeliveryVehicleModuleConfig = {
   description: "Manage fleet identity, compliance, assignment, and home-base information.",
   primaryAction: "Add Vehicle",
   noun: "vehicle",
-  searchPlaceholder: "Search Fleet No., Plate, Warehouse, Or Status",
+  searchPlaceholder: "Search Fleet No., Plate, Or Warehouse",
   statuses: ["Active", "Inactive"],
   hideReferenceColumn: true,
   fields: [
@@ -48,7 +48,6 @@ export const DeliveryVehiclesConfig: DeliveryVehicleModuleConfig = {
       ],
       defaultValue: "Pending",
     },
-    { key: "odometer", label: "Current Odometer (KM)", required: true, type: "number" },
     {
       key: "ownership",
       label: "Ownership",
@@ -62,13 +61,13 @@ export const DeliveryVehiclesConfig: DeliveryVehicleModuleConfig = {
   tableFieldKeys: [
     "plateNumber",
     "vehicleType",
-    "deliveryStatus",
     "baseWarehouse",
+    "deliveryStatus",
     "registrationExpiry",
     "insuranceExpiry",
   ],
   insightLabel: "Compliance Alerts",
   insightStatuses: ["Inactive"],
   operationalNote:
-    "Vehicle records keep assignment, compliance, odometer, and status together; type defaults are maintained under Vehicle Types.",
+    "Vehicle records keep assignment, compliance, ownership, and status together; type defaults are maintained under Vehicle Types.",
 };

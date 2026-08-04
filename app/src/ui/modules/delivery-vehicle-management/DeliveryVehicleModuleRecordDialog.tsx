@@ -7,6 +7,10 @@ import type {
   DeliveryVehicleModuleConfig,
   DeliveryVehicleModuleRecord,
 } from "@/app/src/types/modules/delivery-vehicle-management/DeliveryVehicleModuleTypes";
+import {
+  AppAdvancedDropdown,
+  type AppAdvancedDropdownOption,
+} from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
 import { getModuleSavePendingLabel, ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
@@ -214,7 +218,7 @@ function DeliveryVehicleFieldRows({
       <VehicleTypeFieldRow
         errors={errors}
         fieldByKey={fieldByKey}
-        fieldKeys={["odometer", "ownership"]}
+        fieldKeys={["ownership"]}
         isView={isView}
         values={values}
         onChange={onChange}
@@ -283,14 +287,6 @@ function VehicleTypeFieldRows({
       <VehicleTypeFieldRow
         errors={errors}
         fieldByKey={fieldByKey}
-        fieldKeys={["bodyType", "handling"]}
-        isView={isView}
-        values={values}
-        onChange={onChange}
-      />
-      <VehicleTypeFieldRow
-        errors={errors}
-        fieldByKey={fieldByKey}
         fieldKeys={["maxPayload", "cargoVolume"]}
         isView={isView}
         values={values}
@@ -299,7 +295,7 @@ function VehicleTypeFieldRows({
       <VehicleTypeFieldRow
         errors={errors}
         fieldByKey={fieldByKey}
-        fieldKeys={["palletCapacity"]}
+        fieldKeys={["palletCapacity", "handling"]}
         isView={isView}
         values={values}
         onChange={onChange}
@@ -403,14 +399,18 @@ function DeliveryVehicleModuleField({
           counterMode="used"
         />
       ) : field.type === "select" ? (
-        <select {...common} className={controlClassName(error)}>
-          <option value="">Select {field.label.toLowerCase()}</option>
-          {field.options?.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
+        <AppAdvancedDropdown
+          id={id}
+          name={field.key}
+          value={value}
+          readOnly={isView}
+          ariaInvalid={Boolean(error)}
+          isClearable={!field.required}
+          options={createDeliveryVehicleDropdownOptions(field.options)}
+          placeholder={`--Select ${field.label}--`}
+          searchPlaceholder={`Search ${field.label.toLowerCase()}`}
+          onChange={(nextValue) => onChange(String(nextValue))}
+        />
       ) : (
         <input
           {...common}
@@ -428,6 +428,15 @@ function DeliveryVehicleModuleField({
       )}
     </FormField>
   );
+}
+
+function createDeliveryVehicleDropdownOptions(
+  options: readonly string[] | undefined,
+): AppAdvancedDropdownOption[] {
+  return (options ?? []).map((option) => ({
+    name: option,
+    value: option,
+  }));
 }
 
 function FormField({

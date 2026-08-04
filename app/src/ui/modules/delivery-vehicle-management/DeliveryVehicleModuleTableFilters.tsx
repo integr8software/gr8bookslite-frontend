@@ -22,9 +22,12 @@ type DeliveryVehicleModuleTableFiltersProps = {
   query: string;
   statusFilter: string;
   table: Table<DeliveryVehicleModuleRecord>;
+  vehicleTypeFilter: string;
+  vehicleTypeFilterOptions: readonly string[];
   onQueryChange: (value: string) => void;
   onRefresh: () => void;
   onStatusFilterChange: (value: string) => void;
+  onVehicleTypeFilterChange: (value: string) => void;
 };
 
 export function DeliveryVehicleModuleTableFilters({
@@ -36,19 +39,45 @@ export function DeliveryVehicleModuleTableFilters({
   query,
   statusFilter,
   table,
+  vehicleTypeFilter,
+  vehicleTypeFilterOptions,
   onQueryChange,
   onRefresh,
   onStatusFilterChange,
+  onVehicleTypeFilterChange,
 }: DeliveryVehicleModuleTableFiltersProps) {
+  const showVehicleTypeFilter =
+    config.key === "delivery-vehicles" && vehicleTypeFilterOptions.length > 0;
+
   return (
     <ModuleTableToolbar className="!grid-cols-1 !gap-2 rounded-none border-x-0 border-t-0 !p-3 shadow-none sm:!gap-2 sm:!p-3 md:!grid-cols-[minmax(0,1fr)_auto]">
-      <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(13rem,1.4fr)_minmax(8rem,0.7fr)]">
+      <div
+        className={
+          showVehicleTypeFilter
+            ? "grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(13rem,1.4fr)_minmax(8rem,0.7fr)_minmax(10rem,0.8fr)]"
+            : "grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(13rem,1.4fr)_minmax(8rem,0.7fr)]"
+        }
+      >
         <ModuleTableSearch
           label={`Search ${config.title}`}
           value={query}
           onChange={onQueryChange}
           placeholder={config.searchPlaceholder}
         />
+        {showVehicleTypeFilter ? (
+          <ModuleTableFilterSelect
+            label="Vehicle Type"
+            value={vehicleTypeFilter}
+            onChange={onVehicleTypeFilterChange}
+            options={[
+              { label: "All", value: "" },
+              ...vehicleTypeFilterOptions.map((vehicleType) => ({
+                label: vehicleType,
+                value: vehicleType,
+              })),
+            ]}
+          />
+        ) : null}
         <ModuleTableFilterSelect
           label="Status"
           value={statusFilter}

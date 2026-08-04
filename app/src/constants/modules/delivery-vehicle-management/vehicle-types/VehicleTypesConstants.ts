@@ -19,13 +19,6 @@ export const VehicleTypesConfig: DeliveryVehicleModuleConfig = {
     { key: "brand", label: "Brand", required: true },
     { key: "model", label: "Model", required: true },
     {
-      key: "bodyType",
-      label: "Body Type",
-      required: true,
-      type: "select",
-      options: ["Closed Van", "Refrigerated Van", "Box Truck", "Motorcycle"],
-    },
-    {
       key: "maxPayload",
       label: "Maximum Payload (KG)",
       required: true,
@@ -34,7 +27,7 @@ export const VehicleTypesConfig: DeliveryVehicleModuleConfig = {
     },
     {
       key: "cargoVolume",
-      label: "Cargo Volume",
+      label: "Cargo Volume (CBM)",
       required: true,
       type: "number",
       defaultValue: "18",
@@ -64,7 +57,7 @@ export const VehicleTypesConfig: DeliveryVehicleModuleConfig = {
     },
     { key: "description", label: "Description", maxLength: 500, type: "textarea" },
   ],
-  tableFieldKeys: ["brand", "model", "bodyType", "maxPayload", "cargoVolume", "handling"],
+  tableFieldKeys: ["brand", "model", "maxPayload", "cargoVolume", "handling"],
   insightLabel: "Capacity Ready",
   insightStatuses: ["Active"],
   operationalNote: "Type defaults flow into vehicle profiles and are checked during load planning.",

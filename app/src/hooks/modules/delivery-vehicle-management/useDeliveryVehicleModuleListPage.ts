@@ -39,6 +39,7 @@ export function useDeliveryVehicleModuleListPage({
   const [statusFilter, setStatusFilter] = useState(() =>
     config.statuses.includes("Active") ? "Active" : "",
   );
+  const [vehicleTypeFilter, setVehicleTypeFilter] = useState("");
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
@@ -88,9 +89,29 @@ export function useDeliveryVehicleModuleListPage({
           .filter(Boolean)
           .some((value) => value?.toLowerCase().includes(normalizedQuery));
       const matchesStatus = !statusFilter || item.status === statusFilter;
-      return matchesQuery && matchesStatus;
+      const matchesVehicleType =
+        config.key !== "delivery-vehicles" ||
+        !vehicleTypeFilter ||
+        item.fields.vehicleType === vehicleTypeFilter;
+      return matchesQuery && matchesStatus && matchesVehicleType;
     });
-  }, [query, records, statusFilter]);
+  }, [config.key, query, records, statusFilter, vehicleTypeFilter]);
+
+  const vehicleTypeFilterOptions = useMemo(() => {
+    if (config.key !== "delivery-vehicles") {
+      return [];
+    }
+
+    const configuredOptions =
+      config.fields.find((field) => field.key === "vehicleType")?.options ?? [];
+    const recordOptions = records
+      .map((record) => record.fields.vehicleType)
+      .filter((value): value is string => Boolean(value));
+
+    return Array.from(new Set([...configuredOptions, ...recordOptions])).sort((a, b) =>
+      a.localeCompare(b),
+    );
+  }, [config.fields, config.key, records]);
 
   const columns = useMemo<ColumnDef<DeliveryVehicleModuleRecord>[]>(() => {
     const base: ColumnDef<DeliveryVehicleModuleRecord>[] = [];
@@ -175,11 +196,28 @@ export function useDeliveryVehicleModuleListPage({
     const visible = filteredRecords;
     const attention = visible.filter((item) => item.alert).length;
     const insight = visible.filter((item) => config.insightStatuses.includes(item.status)).length;
+    const active = visible.filter((item) => item.status === "Active").length;
+    const hazardous = visible.filter((item) => item.fields.handling === "Hazardous Eligible").length;
+    const inactive = visible.filter((item) => item.status === "Inactive").length;
+    const dispatchQueue = visible.filter((item) =>
+      ["Pending", "Schedule", "For Dispatch"].includes(item.fields.deliveryStatus),
+    ).length;
+    const inTransit = visible.filter((item) => item.fields.deliveryStatus === "In Transit").length;
     const averageProgress = Math.round(
       visible.reduce((sum, item) => sum + (item.progress ?? 0), 0) /
         Math.max(1, visible.filter((item) => item.progress !== undefined).length),
     );
-    return { total: visible.length, attention, insight, averageProgress };
+    return {
+      total: visible.length,
+      attention,
+      insight,
+      active,
+      hazardous,
+      inactive,
+      dispatchQueue,
+      inTransit,
+      averageProgress,
+    };
   }, [config.insightStatuses, filteredRecords]);
 
   function saveRecord(
@@ -289,6 +327,7 @@ export function useDeliveryVehicleModuleListPage({
   function resetFilters() {
     setQuery("");
     setStatusFilter(config.statuses.includes("Active") ? "Active" : "");
+    setVehicleTypeFilter("");
     table.setPageIndex(0);
   }
 
@@ -314,6 +353,8 @@ export function useDeliveryVehicleModuleListPage({
     statusFilter,
     table,
     validateRecord,
+    vehicleTypeFilter,
+    vehicleTypeFilterOptions,
     advanceRecord,
     confirmStatusChange,
     importRecords,
@@ -325,6 +366,7 @@ export function useDeliveryVehicleModuleListPage({
     setPendingStatusRecord,
     setQuery,
     setStatusFilter,
+    setVehicleTypeFilter,
   };
 }
 

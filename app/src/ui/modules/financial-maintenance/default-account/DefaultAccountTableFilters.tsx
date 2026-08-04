@@ -8,6 +8,7 @@ import type {
 	DefaultAccountTableFiltersProps,
 	DefaultAccountTypeFilter,
 } from "@/app/src/types/modules/financial-maintenance/default-account/DefaultAccountTypes";
+import { Tabs } from "@/app/src/ui/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsControls";
 import {
 	ModuleTableColumnVisibilityButton,
 	ModuleTableExportButton,
@@ -32,19 +33,28 @@ export function DefaultAccountTableFilters({
 	onStatusFilterChange,
 	onTypeFilterChange,
 }: DefaultAccountTableFiltersProps) {
+	const typeFilterLabels = DefaultAccountTypeFilterOptions.map(
+		(option) => option.label,
+	);
+	const activeTypeFilterLabel =
+		DefaultAccountTypeFilterOptions.find((option) => option.value === typeFilter)
+			?.label ?? DefaultAccountTypeFilterOptions[0].label;
+
 	return (
 		<div>
-			<div className="grid gap-2 border-b border-darknavy/10 px-3 py-3">
-				<ModuleTableFilterSelect
-					label="Type"
-					value={typeFilter}
-					options={DefaultAccountTypeFilterOptions.map((option) => ({
-						label: option.label,
-						value: option.value,
-					}))}
-					onChange={(value) =>
-						onTypeFilterChange(value as DefaultAccountTypeFilter)
-					}
+			<div className="border-b border-darknavy/10 px-3">
+				<Tabs
+					value={activeTypeFilterLabel}
+					options={typeFilterLabels}
+					onChange={(label) => {
+						const selectedOption = DefaultAccountTypeFilterOptions.find(
+							(option) => option.label === label,
+						);
+
+						onTypeFilterChange(
+							(selectedOption?.value ?? "") as DefaultAccountTypeFilter,
+						);
+					}}
 				/>
 			</div>
 			<ModuleTableToolbar

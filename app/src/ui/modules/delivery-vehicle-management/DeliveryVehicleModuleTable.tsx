@@ -17,6 +17,7 @@ type DeliveryVehicleModuleTableProps = {
   paginationKey: string;
   onAdvanceRecord: (record: DeliveryVehicleModuleRecord) => void;
   onEditRecord: (record: DeliveryVehicleModuleRecord) => void;
+  onToggleStatus: (record: DeliveryVehicleModuleRecord) => void;
   onViewRecord: (record: DeliveryVehicleModuleRecord) => void;
 };
 
@@ -27,6 +28,7 @@ export function DeliveryVehicleModuleTable({
   paginationKey,
   onAdvanceRecord,
   onEditRecord,
+  onToggleStatus,
   onViewRecord,
 }: DeliveryVehicleModuleTableProps) {
   return (
@@ -65,9 +67,12 @@ export function DeliveryVehicleModuleTable({
           <DeliveryVehicleModuleTableRow
             key={row.id}
             allowWorkflowAction={config.key === "vehicle-repair-maintenance"}
+            allowStatusAction={config.key === "vehicle-types"}
             row={row}
+            fields={config.fields}
             onAdvanceRecord={onAdvanceRecord}
             onEditRecord={onEditRecord}
+            onToggleStatus={onToggleStatus}
             onViewRecord={onViewRecord}
           />
         )}

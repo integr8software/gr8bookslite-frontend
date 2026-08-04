@@ -9,7 +9,12 @@ export function createDeliveryVehicleMockRecord(
   name: string,
   status: string,
   fields: Record<string, string>,
-  options: Pick<DeliveryVehicleModuleRecord, "alert" | "category" | "progress"> = {},
+  options: Partial<
+    Pick<
+      DeliveryVehicleModuleRecord,
+      "alert" | "category" | "createdAt" | "createdBy" | "progress" | "updatedAt" | "updatedBy"
+    >
+  > = {},
 ): DeliveryVehicleModuleRecord {
   return {
     id,

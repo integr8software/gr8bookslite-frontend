@@ -45,6 +45,8 @@ export function useDeliveryVehicleModuleListPage({
   });
   const [editor, setEditor] = useState<DeliveryVehicleEditorState>(null);
   const [pendingAdvance, setPendingAdvance] = useState<DeliveryVehicleModuleRecord | null>(null);
+  const [pendingStatusRecord, setPendingStatusRecord] =
+    useState<DeliveryVehicleModuleRecord | null>(null);
   const [lastSyncedAt, setLastSyncedAt] = useState(() => new Date());
   const [isRefreshing, setIsRefreshing] = useState(false);
   const defaultColumnOrder = useMemo(() => createDefaultColumnOrder(config), [config]);
@@ -58,7 +60,10 @@ export function useDeliveryVehicleModuleListPage({
     }),
     [config.tableFieldKeys],
   );
-  const defaultSorting = useMemo<SortingState>(() => [{ id: "code", desc: false }], []);
+  const defaultSorting = useMemo<SortingState>(
+    () => [{ id: config.hideReferenceColumn ? "name" : "code", desc: false }],
+    [config.hideReferenceColumn],
+  );
   const {
     columnOrder,
     columnVisibility,
@@ -88,18 +93,21 @@ export function useDeliveryVehicleModuleListPage({
   }, [query, records, statusFilter]);
 
   const columns = useMemo<ColumnDef<DeliveryVehicleModuleRecord>[]>(() => {
-    const base: ColumnDef<DeliveryVehicleModuleRecord>[] = [
-      {
+    const base: ColumnDef<DeliveryVehicleModuleRecord>[] = [];
+
+    if (!config.hideReferenceColumn) {
+      base.push({
         accessorKey: "code",
         header: "Reference",
         meta: { className: "min-w-36 font-semibold" },
-      },
-      {
-        accessorKey: "name",
-        header: config.noun.replace(/\b\w/g, (letter) => letter.toUpperCase()),
-        meta: { className: "min-w-52" },
-      },
-    ];
+      });
+    }
+
+    base.push({
+      accessorKey: "name",
+      header: config.noun.replace(/\b\w/g, (letter) => letter.toUpperCase()),
+      meta: { className: "min-w-52" },
+    });
 
     base.push(
       ...config.tableFieldKeys.map((fieldKey) => ({
@@ -256,6 +264,28 @@ export function useDeliveryVehicleModuleListPage({
     setLastSyncedAt(new Date());
   }
 
+  function confirmStatusChange() {
+    if (!pendingStatusRecord) {
+      return;
+    }
+
+    const nextStatus = pendingStatusRecord.status === "Active" ? "Inactive" : "Active";
+    setRecords((current) =>
+      current.map((item) =>
+        item.id === pendingStatusRecord.id
+          ? {
+              ...item,
+              status: nextStatus,
+              updatedBy: "Fleet Operations",
+              updatedAt: new Date().toISOString(),
+            }
+          : item,
+      ),
+    );
+    setPendingStatusRecord(null);
+    setLastSyncedAt(new Date());
+  }
+
   function resetFilters() {
     setQuery("");
     setStatusFilter(config.statuses.includes("Active") ? "Active" : "");
@@ -277,6 +307,7 @@ export function useDeliveryVehicleModuleListPage({
     isRefreshing,
     lastSyncedAt,
     pendingAdvance,
+    pendingStatusRecord,
     query,
     records,
     statistics,
@@ -284,12 +315,14 @@ export function useDeliveryVehicleModuleListPage({
     table,
     validateRecord,
     advanceRecord,
+    confirmStatusChange,
     importRecords,
     refreshRecords,
     resetFilters,
     saveRecord,
     setEditor,
     setPendingAdvance,
+    setPendingStatusRecord,
     setQuery,
     setStatusFilter,
   };
@@ -297,7 +330,7 @@ export function useDeliveryVehicleModuleListPage({
 
 function createDefaultColumnOrder(config: DeliveryVehicleModuleConfig) {
   return [
-    "code",
+    ...(config.hideReferenceColumn ? [] : ["code"]),
     "name",
     ...config.tableFieldKeys,
     "status",

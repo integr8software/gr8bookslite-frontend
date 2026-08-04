@@ -39,7 +39,7 @@ export const DeliveryVehiclesConfig: DeliveryVehicleModuleConfig = {
       label: "Vehicle type",
       required: true,
       type: "select",
-      options: ["Light Truck", "Refrigerated Van", "Delivery Van", "Motorcycle"],
+      options: ["Light Truck", "Refrigerated Van", "Delivery Van", "Motorcycle", "Heavy Truck"],
     },
     { key: "makeModel", label: "Make and model", required: true },
     {
@@ -87,8 +87,8 @@ export const DeliveryVehiclesConfig: DeliveryVehicleModuleConfig = {
       label: "Capacity unit",
       required: true,
       type: "select",
-      options: ["CBM (cubic meter)"],
-      defaultValue: "CBM (cubic meter)",
+      options: ["CBM (m³)"],
+      defaultValue: "CBM (m³)",
     },
   ],
   tableFieldKeys: [

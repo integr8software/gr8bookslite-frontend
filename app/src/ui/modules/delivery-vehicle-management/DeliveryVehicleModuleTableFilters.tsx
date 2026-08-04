@@ -85,18 +85,30 @@ function createDeliveryVehicleExportColumns(
   config: DeliveryVehicleModuleConfig,
 ): ModuleTableExportColumn<DeliveryVehicleModuleRecord>[] {
   return [
-    { header: "Reference", id: "code", value: "code" },
+    ...(config.hideReferenceColumn
+      ? []
+      : ([
+          { header: "Reference", id: "code", value: "code" },
+        ] satisfies ModuleTableExportColumn<DeliveryVehicleModuleRecord>[])),
     {
       header: config.noun.replace(/\b\w/g, (letter) => letter.toUpperCase()),
       id: "name",
       value: "name",
     },
     ...config.tableFieldKeys.map<ModuleTableExportColumn<DeliveryVehicleModuleRecord>>(
-      (fieldKey) => ({
-        header: config.fields.find((field) => field.key === fieldKey)?.label ?? fieldKey,
-        id: fieldKey,
-        value: (record) => record.fields[fieldKey] ?? "",
-      }),
+      (fieldKey) => {
+        const field = config.fields.find((item) => item.key === fieldKey);
+
+        return {
+          header: field?.label ?? fieldKey,
+          id: fieldKey,
+          value: (record) => {
+            const value = record.fields[fieldKey] ?? "";
+
+            return value && field?.unitSuffix ? `${value} ${field.unitSuffix}` : value;
+          },
+        };
+      },
     ),
     { header: "Status", id: "status", value: "status" },
     { header: "Created By", id: "createdBy", value: "createdBy" },

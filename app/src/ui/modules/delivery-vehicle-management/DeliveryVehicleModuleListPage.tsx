@@ -11,6 +11,7 @@ import { DeliveryVehicleModuleImportDialog } from "@/app/src/ui/modules/delivery
 import { DeliveryVehicleModuleRecordDialog } from "@/app/src/ui/modules/delivery-vehicle-management/DeliveryVehicleModuleRecordDialog";
 import { DeliveryVehicleModuleStatisticCards } from "@/app/src/ui/modules/delivery-vehicle-management/DeliveryVehicleModuleStatisticCards";
 import { DeliveryVehicleModuleTable } from "@/app/src/ui/modules/delivery-vehicle-management/DeliveryVehicleModuleTable";
+import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 
 export function DeliveryVehicleModuleListPage({
   pageConfig,
@@ -49,6 +50,7 @@ export function DeliveryVehicleModuleListPage({
         paginationKey={paginationKey}
         onAdvanceRecord={page.advanceRecord}
         onEditRecord={(record) => openRecord("edit", record)}
+        onToggleStatus={page.setPendingStatusRecord}
         onViewRecord={(record) => openRecord("view", record)}
       />
       {page.editor ? (
@@ -63,9 +65,27 @@ export function DeliveryVehicleModuleListPage({
       ) : null}
       <DeliveryVehicleModuleImportDialog
         config={page.config}
+        existingRecords={page.records}
         isOpen={isImportOpen}
         onClose={() => setIsImportOpen(false)}
         onImportRecords={page.importRecords}
+      />
+      <AppDialog
+        isOpen={Boolean(page.pendingStatusRecord)}
+        title={
+          page.pendingStatusRecord?.status === "Active"
+            ? "Disable vehicle type?"
+            : "Enable vehicle type?"
+        }
+        description={
+          page.pendingStatusRecord?.status === "Active"
+            ? `${page.pendingStatusRecord.name} will remain in history and references, but will no longer be active for normal selection.`
+            : `${page.pendingStatusRecord?.name ?? "This vehicle type"} will be available for normal selection again.`
+        }
+        confirmLabel={page.pendingStatusRecord?.status === "Active" ? "Disable" : "Enable"}
+        tone={page.pendingStatusRecord?.status === "Active" ? "deactivate" : "activate"}
+        onCancel={() => page.setPendingStatusRecord(null)}
+        onConfirm={page.confirmStatusChange}
       />
     </section>
   );

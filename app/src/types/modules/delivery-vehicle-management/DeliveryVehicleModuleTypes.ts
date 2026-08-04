@@ -7,10 +7,12 @@ export type DeliveryVehicleFieldType =
 export type DeliveryVehicleField = {
   key: string;
   label: string;
+  maxLength?: number;
   options?: readonly string[];
   required?: boolean;
   tooltip?: string;
   type?: DeliveryVehicleFieldType;
+  unitSuffix?: string;
   defaultValue?: string;
 };
 
@@ -45,6 +47,7 @@ export type DeliveryVehicleModuleConfig = {
   statuses: readonly string[];
   fieldTabs?: readonly DeliveryVehicleFieldTab[];
   fields: readonly DeliveryVehicleField[];
+  hideReferenceColumn?: boolean;
   tableFieldKeys: readonly string[];
   insightLabel: string;
   insightStatuses: readonly string[];
@@ -61,6 +64,7 @@ export type DeliveryVehicleModulePageState = {
   isRefreshing: boolean;
   lastSyncedAt: Date;
   pendingAdvance: DeliveryVehicleModuleRecord | null;
+  pendingStatusRecord: DeliveryVehicleModuleRecord | null;
   query: string;
   records: DeliveryVehicleModuleRecord[];
   statusFilter: string;
@@ -73,6 +77,7 @@ export type DeliveryVehicleModulePageState = {
   table: import("@tanstack/react-table").Table<DeliveryVehicleModuleRecord>;
   validateRecord: (values: Record<string, string>) => Record<string, string>;
   advanceRecord: (record: DeliveryVehicleModuleRecord) => void;
+  confirmStatusChange: () => void;
   importRecords: (rows: Array<Record<string, string>>) => void;
   refreshRecords: () => void;
   resetFilters: () => void;
@@ -84,6 +89,7 @@ export type DeliveryVehicleModulePageState = {
   ) => void;
   setEditor: (value: DeliveryVehicleEditorState) => void;
   setPendingAdvance: (value: DeliveryVehicleModuleRecord | null) => void;
+  setPendingStatusRecord: (value: DeliveryVehicleModuleRecord | null) => void;
   setQuery: (value: string) => void;
   setStatusFilter: (value: string) => void;
 };

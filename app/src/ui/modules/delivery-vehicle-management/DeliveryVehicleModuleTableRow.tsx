@@ -1,5 +1,8 @@
 import type { Row } from "@tanstack/react-table";
-import type { DeliveryVehicleModuleRecord } from "@/app/src/types/modules/delivery-vehicle-management/DeliveryVehicleModuleTypes";
+import type {
+  DeliveryVehicleField,
+  DeliveryVehicleModuleRecord,
+} from "@/app/src/types/modules/delivery-vehicle-management/DeliveryVehicleModuleTypes";
 import { formatDateTime } from "@/app/src/utils/date.util";
 import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import {
@@ -9,18 +12,24 @@ import {
 import { getColumnMetaClassName } from "@/app/src/ui/shared/module/module-table/utils";
 
 type DeliveryVehicleModuleTableRowProps = {
+  allowStatusAction: boolean;
   allowWorkflowAction: boolean;
+  fields: readonly DeliveryVehicleField[];
   row: Row<DeliveryVehicleModuleRecord>;
   onAdvanceRecord: (record: DeliveryVehicleModuleRecord) => void;
   onEditRecord: (record: DeliveryVehicleModuleRecord) => void;
+  onToggleStatus: (record: DeliveryVehicleModuleRecord) => void;
   onViewRecord: (record: DeliveryVehicleModuleRecord) => void;
 };
 
 export function DeliveryVehicleModuleTableRow({
+  allowStatusAction,
   allowWorkflowAction,
+  fields,
   row,
   onAdvanceRecord,
   onEditRecord,
+  onToggleStatus,
   onViewRecord,
 }: DeliveryVehicleModuleTableRowProps) {
   return (
@@ -31,11 +40,14 @@ export function DeliveryVehicleModuleTableRow({
           className={`px-4 py-4 align-middle text-sm text-darknavy ${getColumnMetaClassName(cell.column.columnDef.meta)}`}
         >
           <DeliveryVehicleModuleCellContent
+            allowStatusAction={allowStatusAction}
             allowWorkflowAction={allowWorkflowAction}
             columnId={cell.column.id}
+            fields={fields}
             record={row.original}
             onAdvanceRecord={onAdvanceRecord}
             onEditRecord={onEditRecord}
+            onToggleStatus={onToggleStatus}
             onViewRecord={onViewRecord}
           />
         </td>
@@ -45,20 +57,29 @@ export function DeliveryVehicleModuleTableRow({
 }
 
 function DeliveryVehicleModuleCellContent({
+  allowStatusAction,
   allowWorkflowAction,
   columnId,
+  fields,
   record,
   onAdvanceRecord,
   onEditRecord,
+  onToggleStatus,
   onViewRecord,
 }: {
+  allowStatusAction: boolean;
   allowWorkflowAction: boolean;
   columnId: string;
+  fields: readonly DeliveryVehicleField[];
   record: DeliveryVehicleModuleRecord;
   onAdvanceRecord: (record: DeliveryVehicleModuleRecord) => void;
   onEditRecord: (record: DeliveryVehicleModuleRecord) => void;
+  onToggleStatus: (record: DeliveryVehicleModuleRecord) => void;
   onViewRecord: (record: DeliveryVehicleModuleRecord) => void;
 }) {
+  const nextStatus = record.status === "Active" ? "Inactive" : "Active";
+  const statusActionLabel = record.status === "Active" ? "Disable" : "Enable";
+
   if (columnId === "actions") {
     return (
       <ModuleTableActions className="w-full !justify-center">
@@ -77,6 +98,13 @@ function DeliveryVehicleModuleCellContent({
             variant="active"
             onClick={() => onAdvanceRecord(record)}
             label={`Advance ${record.name}`}
+          />
+        ) : null}
+        {allowStatusAction ? (
+          <ModuleTableActionButton
+            variant={nextStatus === "Inactive" ? "inactive" : "active"}
+            onClick={() => onToggleStatus(record)}
+            label={`${statusActionLabel} ${record.name}`}
           />
         ) : null}
       </ModuleTableActions>
@@ -111,9 +139,26 @@ function DeliveryVehicleModuleCellContent({
     return <span>{formatDateTime(record.updatedAt, { emptyValue: "", locale: "en-US" })}</span>;
   }
 
+  const fieldValue = formatFieldValue(record, columnId, fields);
+
   return (
-    <span className="block truncate text-darknavy/75" title={record.fields[columnId] ?? ""}>
-      {record.fields[columnId] ?? ""}
+    <span className="block truncate text-darknavy/75" title={fieldValue}>
+      {fieldValue}
     </span>
   );
+}
+
+function formatFieldValue(
+  record: DeliveryVehicleModuleRecord,
+  fieldKey: string,
+  fields: readonly DeliveryVehicleField[],
+) {
+  const value = record.fields[fieldKey] ?? "";
+  const suffix = fields.find((field) => field.key === fieldKey)?.unitSuffix;
+
+  if (!value || !suffix) {
+    return value;
+  }
+
+  return `${value} ${suffix}`;
 }

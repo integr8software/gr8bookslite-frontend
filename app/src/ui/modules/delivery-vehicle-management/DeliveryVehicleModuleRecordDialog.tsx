@@ -7,9 +7,9 @@ import type {
   DeliveryVehicleModuleConfig,
   DeliveryVehicleModuleRecord,
 } from "@/app/src/types/modules/delivery-vehicle-management/DeliveryVehicleModuleTypes";
+import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
-import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
+import { getModuleSavePendingLabel, ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { ModuleTooltip } from "@/app/src/ui/shared/module/ModuleTooltip";
 import {
   MaintenanceActiveStatusSwitchOption,
@@ -70,6 +70,13 @@ export function DeliveryVehicleModuleRecordDialog({
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!validateBeforeSubmit()) {
+      return;
+    }
+    onSave(values, status, undefined, record);
+  }
+
+  function validateBeforeSubmit() {
     const nextErrors = validate(values);
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
@@ -79,9 +86,9 @@ export function DeliveryVehicleModuleRecordDialog({
       if (firstErrorTab) {
         setActiveTab(firstErrorTab.label);
       }
-      return;
+      return false;
     }
-    onSave(values, status, undefined, record);
+    return true;
   }
 
   return (
@@ -92,26 +99,14 @@ export function DeliveryVehicleModuleRecordDialog({
           : "Keep fleet identity, capacity, compliance, and status together."
       }
       eyebrow={`${config.code} - Fleet workspace`}
-      footer={
-        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <button
-            type="button"
-            onClick={onClose}
-            className={moduleHeaderActionClassNames.secondary}
-          >
-            {isView ? "Close" : "Cancel"}
-          </button>
-          {!isView ? (
-            <button type="submit" form={formId} className={moduleHeaderActionClassNames.primary}>
-              Save {config.noun}
-            </button>
-          ) : null}
-        </div>
-      }
+      formId={formId}
       isOpen
       isReadonly={isView}
       maxWidthClassName="max-w-3xl"
+      onBeforeSaveConfirm={validateBeforeSubmit}
       onClose={onClose}
+      savingLabel={getModuleSavePendingLabel(mode)}
+      submitLabel={mode === "edit" ? `Update ${config.noun}` : `Save ${config.noun}`}
       title={title}
     >
       <form id={formId} onSubmit={submit} className="grid gap-6 p-6">
@@ -330,7 +325,15 @@ function DeliveryVehicleModuleField({
       tooltip={field.tooltip}
     >
       {field.type === "textarea" ? (
-        <textarea {...common} rows={3} className={controlClassName(error)} />
+        <AppLimitedTextarea
+          {...common}
+          maxLength={field.maxLength}
+          placeholder={isView ? `No ${field.label}...` : `Enter ${field.label}...`}
+          className={`${controlClassName(error)} min-h-24 resize-y py-3 ${
+            isView ? "placeholder:italic" : ""
+          }`}
+          counterMode="used"
+        />
       ) : field.type === "select" ? (
         <select {...common} className={controlClassName(error)}>
           <option value="">Select {field.label.toLowerCase()}</option>

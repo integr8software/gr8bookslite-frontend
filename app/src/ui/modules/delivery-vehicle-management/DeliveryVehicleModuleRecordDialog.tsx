@@ -67,6 +67,13 @@ export function DeliveryVehicleModuleRecordDialog({
       : mode === "edit"
         ? `Edit ${config.noun}`
         : `${config.noun.replace(/^./, (letter) => letter.toUpperCase())} details`;
+  const statusField = renderStatusField({
+    isView,
+    status,
+    statuses: config.statuses,
+    usesActiveInactiveSwitch,
+    onStatusChange: setStatus,
+  });
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -139,6 +146,17 @@ export function DeliveryVehicleModuleRecordDialog({
                 setValues((current) => ({ ...current, [fieldKey]: value }))
               }
             />
+          ) : config.key === "delivery-vehicles" ? (
+            <DeliveryVehicleFieldRows
+              errors={errors}
+              fieldByKey={fieldByKey}
+              isView={isView}
+              statusField={statusField}
+              values={values}
+              onChange={(fieldKey, value) =>
+                setValues((current) => ({ ...current, [fieldKey]: value }))
+              }
+            />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               {visibleFields.map((field) => (
@@ -153,31 +171,81 @@ export function DeliveryVehicleModuleRecordDialog({
               ))}
             </div>
           )}
-          <FormField label="Status" required>
-            {usesActiveInactiveSwitch ? (
-              <AppSwitch
-                falseOption={MaintenanceInactiveStatusSwitchOption}
-                readOnly={isView}
-                trueOption={MaintenanceActiveStatusSwitchOption}
-                value={status}
-                onChange={setStatus}
-              />
-            ) : (
-              <select
-                value={status}
-                disabled={isView}
-                onChange={(event) => setStatus(event.target.value)}
-                className={controlClassName()}
-              >
-                {config.statuses.map((option) => (
-                  <option key={option}>{option}</option>
-                ))}
-              </select>
-            )}
-          </FormField>
+          {config.key === "delivery-vehicles" ? null : statusField}
         </div>
       </form>
     </ModuleDrawer>
+  );
+}
+
+function DeliveryVehicleFieldRows({
+  errors,
+  fieldByKey,
+  isView,
+  statusField,
+  values,
+  onChange,
+}: {
+  errors: Record<string, string>;
+  fieldByKey: Map<string, DeliveryVehicleField>;
+  isView: boolean;
+  statusField: React.ReactNode;
+  values: Record<string, string>;
+  onChange: (fieldKey: string, value: string) => void;
+}) {
+  return (
+    <>
+      <VehicleTypeFieldRow
+        errors={errors}
+        fieldByKey={fieldByKey}
+        fieldKeys={["plateNumber"]}
+        isView={isView}
+        values={values}
+        onChange={onChange}
+      />
+      <VehicleTypeFieldRow
+        errors={errors}
+        fieldByKey={fieldByKey}
+        fieldKeys={["vehicleType", "baseWarehouse"]}
+        isView={isView}
+        values={values}
+        onChange={onChange}
+      />
+      <VehicleTypeFieldRow
+        errors={errors}
+        fieldByKey={fieldByKey}
+        fieldKeys={["odometer", "ownership"]}
+        isView={isView}
+        values={values}
+        onChange={onChange}
+      />
+      <VehicleTypeFieldRow
+        errors={errors}
+        fieldByKey={fieldByKey}
+        fieldKeys={["registrationExpiry", "insuranceExpiry"]}
+        isView={isView}
+        values={values}
+        onChange={onChange}
+      />
+      <VehicleTypeFieldRow
+        errors={errors}
+        fieldByKey={fieldByKey}
+        fieldKeys={["description"]}
+        isView={isView}
+        values={values}
+        onChange={onChange}
+      />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <DeliveryVehicleModuleField
+          error={errors.deliveryStatus}
+          field={fieldByKey.get("deliveryStatus") as DeliveryVehicleField}
+          isView={isView}
+          value={values.deliveryStatus ?? ""}
+          onChange={(value) => onChange("deliveryStatus", value)}
+        />
+        {statusField}
+      </div>
+    </>
   );
 }
 
@@ -399,6 +467,45 @@ function FormField({
         <span className="mt-1 block text-xs font-medium text-coralpink">{error}</span>
       ) : null}
     </label>
+  );
+}
+
+function renderStatusField({
+  isView,
+  status,
+  statuses,
+  usesActiveInactiveSwitch,
+  onStatusChange,
+}: {
+  isView: boolean;
+  status: string;
+  statuses: readonly string[];
+  usesActiveInactiveSwitch: boolean;
+  onStatusChange: (value: string) => void;
+}) {
+  return (
+    <FormField label="Status" required>
+      {usesActiveInactiveSwitch ? (
+        <AppSwitch
+          falseOption={MaintenanceInactiveStatusSwitchOption}
+          readOnly={isView}
+          trueOption={MaintenanceActiveStatusSwitchOption}
+          value={status}
+          onChange={onStatusChange}
+        />
+      ) : (
+        <select
+          value={status}
+          disabled={isView}
+          onChange={(event) => onStatusChange(event.target.value)}
+          className={controlClassName()}
+        >
+          {statuses.map((option) => (
+            <option key={option}>{option}</option>
+          ))}
+        </select>
+      )}
+    </FormField>
   );
 }
 

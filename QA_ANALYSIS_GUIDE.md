@@ -40,6 +40,7 @@ How to qualify:
 - Keep record, form, table, drawer, and filter prop types in `app/src/types/modules/<domain>/<feature>/...Types.ts`.
 - Component-only props may stay local when they are not reused outside that component.
 - Avoid reusable business names like `details` for copy constants if a clearer copy key works.
+- In validation messages and other user-facing strings, avoid wording that can look like a TypeScript declaration to the scanner, such as `<business noun> type must ...`. Prefer clearer field wording like `<business noun> name must ...` when the rule is validating a name field.
 - Use generated API types from `app/src/generated/...` for backend DTOs.
 - If the backend schema is incomplete, keep a temporary frontend type only with a removal reference.
 - Replace `any` with `unknown`, a generated DTO, or a clear frontend view model.

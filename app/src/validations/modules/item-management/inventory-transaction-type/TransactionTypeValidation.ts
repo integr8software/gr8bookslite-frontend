@@ -14,7 +14,7 @@ export const TransactionTypeFormValidationSchema = z.object({
 		.string()
 		.trim()
 		.min(1, "Enter the name of the inventory transaction type.")
-		.max(100, "Inventory transaction type must be 100 characters or fewer."),
+		.max(100, "Inventory transaction name must be 100 characters or fewer."),
 	description: z
 		.string()
 		.trim()

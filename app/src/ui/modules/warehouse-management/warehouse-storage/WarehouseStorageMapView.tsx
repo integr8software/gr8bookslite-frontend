@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import {
   Boxes,
   ChevronDown,
@@ -10,14 +9,12 @@ import {
   Folder,
   Grid3X3,
   MapPinned,
-  Maximize2,
   Minus,
   PackageSearch,
   Plus,
   Search,
   type LucideIcon,
 } from "lucide-react";
-import { WarehouseStorageHref } from "@/app/src/constants/modules/warehouse-management/warehouse-storage/WarehouseStorageConstants";
 import type {
   WarehouseStorageListRecord,
   WarehouseStorageStatus,
@@ -27,7 +24,6 @@ import { ModuleTableFilterSelect } from "@/app/src/ui/shared/module/module-table
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 type WarehouseStorageMapViewProps = {
-  isFullView?: boolean;
   isLoading: boolean;
   onQueryChange: (value: string) => void;
   onSelectRecord: (recordId: string) => void;
@@ -38,11 +34,11 @@ type WarehouseStorageMapViewProps = {
   selectedRecordId: string | null;
   statusFilter: string;
   statuses: string[];
-  warehouseFilter: string;
   warehouses: WarehouseRecord[];
 };
 
 type LayoutSlot = {
+  aisle: string;
   bin: string;
   id: string;
   label: string;
@@ -58,16 +54,11 @@ type ShortcutArea = {
   targetRecord?: WarehouseStorageListRecord;
 };
 
-const rackNumbers = ["01", "02", "03", "04", "05", "06"];
-const aisleNumbers = ["01", "02", "03"];
-const shelfNumbers = ["02", "01"];
-const MaxBinsPerShelf = 4;
 const MinZoom = 75;
 const MaxZoom = 150;
 const ZoomStep = 25;
 
 export function WarehouseStorageMapView({
-  isFullView = false,
   isLoading,
   onQueryChange,
   onSelectRecord,
@@ -78,7 +69,6 @@ export function WarehouseStorageMapView({
   selectedRecordId,
   statusFilter,
   statuses,
-  warehouseFilter,
   warehouses,
 }: WarehouseStorageMapViewProps) {
   const [typeFilter, setTypeFilter] = useState("All");
@@ -92,7 +82,9 @@ export function WarehouseStorageMapView({
   );
   const selectedRecord =
     visibleRecords.find((record) => record.id === selectedRecordId) ?? visibleRecords[0] ?? null;
-  const selectedWarehouse = warehouses.find((warehouse) => warehouse.id === selectedRecord?.warehouseId);
+  const selectedWarehouse = warehouses.find(
+    (warehouse) => warehouse.id === selectedRecord?.warehouseId,
+  );
   const activeWarehouseRecords = selectedWarehouse
     ? visibleRecords.filter((record) => record.warehouseId === selectedWarehouse.id)
     : visibleRecords;
@@ -110,17 +102,38 @@ export function WarehouseStorageMapView({
   const zones = Array.from(
     new Set(activeWarehouseRecords.map((record) => record.location.zone || "General")),
   ).sort((first, second) => first.localeCompare(second));
-  const primaryZone = zones[0] ?? "A";
-  const layoutSlots = createLayoutSlots(activeWarehouseRecords, primaryZone);
+  const selectedZone = selectedRecord?.location.zone || zones[0] || "General";
+  const primaryZone = zones.includes(selectedZone) ? selectedZone : (zones[0] ?? "General");
+  const zoneRecords = activeWarehouseRecords.filter(
+    (record) => (record.location.zone || "General") === primaryZone,
+  );
+  const layoutSlots = createLayoutSlots(zoneRecords);
+  const layoutAisles = Array.from(new Set(layoutSlots.map((slot) => slot.aisle))).sort(
+    compareLocationTokens,
+  );
+  const selectedLocationLabel = selectedRecord
+    ? selectedRecord.location.locationName || selectedRecord.location.locationCode
+    : "No location selected";
   const navigatorKey = useMemo(
-    () => [
-      warehouses.map((warehouse) => warehouse.id).join(","),
-      visibleRecords.map((record) => record.id).join(","),
-    ].join("|"),
+    () =>
+      [
+        warehouses.map((warehouse) => warehouse.id).join(","),
+        visibleRecords.map((record) => record.id).join(","),
+      ].join("|"),
     [visibleRecords, warehouses],
   );
   const shortcutAreas: ShortcutArea[] = [
-    { icon: Boxes, label: "Zone B", targetRecord: getFirstRecordForZone(activeWarehouseRecords, "B") },
+    {
+      icon: Boxes,
+      label:
+        zones.length > 1
+          ? `Zone ${zones.find((zone) => zone !== primaryZone) ?? zones[0]}`
+          : `Zone ${primaryZone}`,
+      targetRecord: getFirstRecordForZone(
+        activeWarehouseRecords,
+        zones.find((zone) => zone !== primaryZone) ?? primaryZone,
+      ),
+    },
     {
       icon: PackageSearch,
       label: "Receiving Area",
@@ -169,7 +182,9 @@ export function WarehouseStorageMapView({
   }
 
   return (
-    <section className={joinClasses("grid min-h-[34rem] gap-3", isFullView ? "xl:grid-cols-[20rem_minmax(0,1fr)]" : "lg:grid-cols-[18rem_minmax(0,1fr)]")}>
+    <section
+      className={joinClasses("grid min-h-[34rem] gap-3", "lg:grid-cols-[18rem_minmax(0,1fr)]")}
+    >
       <LocationNavigator
         key={navigatorKey}
         query={query}
@@ -191,7 +206,10 @@ export function WarehouseStorageMapView({
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-darknavy/10 p-3">
           <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
             <label className="relative min-w-[13rem] flex-1 sm:max-w-xs">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/35" aria-hidden="true" />
+              <Search
+                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/35"
+                aria-hidden="true"
+              />
               <input
                 value={query}
                 onChange={(event) => onQueryChange(event.target.value)}
@@ -215,48 +233,92 @@ export function WarehouseStorageMapView({
             />
           </div>
           <div className="inline-flex h-10 items-center overflow-hidden rounded-md border border-darknavy/10 bg-white text-sm font-semibold text-darknavy/65">
-            <button type="button" className="grid h-9 w-9 place-items-center border-r border-darknavy/10 hover:bg-offwhite hover:text-darknavy" aria-label="Fit layout" onClick={() => setZoom(100)}>
+            <button
+              type="button"
+              className="grid h-9 w-9 place-items-center border-r border-darknavy/10 hover:bg-offwhite hover:text-darknavy"
+              aria-label="Fit layout"
+              onClick={() => setZoom(100)}
+            >
               <Expand className="h-4 w-4" aria-hidden="true" />
             </button>
-            <button type="button" className="grid h-9 w-9 place-items-center border-r border-darknavy/10 hover:bg-offwhite hover:text-darknavy" aria-label="Zoom out" onClick={() => setZoom((value) => Math.max(MinZoom, value - ZoomStep))}>
+            <button
+              type="button"
+              className="grid h-9 w-9 place-items-center border-r border-darknavy/10 hover:bg-offwhite hover:text-darknavy"
+              aria-label="Zoom out"
+              onClick={() => setZoom((value) => Math.max(MinZoom, value - ZoomStep))}
+            >
               <Minus className="h-4 w-4" aria-hidden="true" />
             </button>
             <span className="min-w-16 px-4 text-center">{zoom}%</span>
-            <button type="button" className="grid h-9 w-9 place-items-center border-l border-darknavy/10 hover:bg-offwhite hover:text-darknavy" aria-label="Zoom in" onClick={() => setZoom((value) => Math.min(MaxZoom, value + ZoomStep))}>
+            <button
+              type="button"
+              className="grid h-9 w-9 place-items-center border-l border-darknavy/10 hover:bg-offwhite hover:text-darknavy"
+              aria-label="Zoom in"
+              onClick={() => setZoom((value) => Math.min(MaxZoom, value + ZoomStep))}
+            >
               <Plus className="h-4 w-4" aria-hidden="true" />
             </button>
-            {isFullView ? null : (
-              <Link
-                href={`${WarehouseStorageHref}/map${warehouseFilter !== "All" ? `?warehouseId=${encodeURIComponent(warehouseFilter)}` : ""}`}
-                className="inline-flex h-9 items-center gap-1.5 border-l border-darknavy/10 px-3 hover:bg-offwhite hover:text-darknavy"
-                aria-label="View full map"
-              >
-                <Maximize2 className="h-4 w-4" aria-hidden="true" />
-                View Full
-              </Link>
-            )}
           </div>
         </div>
         <div className="space-y-3 overflow-auto p-3">
-          <div className="origin-top-left rounded-lg border border-violet-400/35 bg-violet-50/20 p-3 transition-transform" style={{ transform: `scale(${zoom / 100})`, width: `${10000 / zoom}%` }}>
-            <div className="mb-4 text-center text-xs font-bold uppercase tracking-normal text-violet-600">
-              {selectedWarehouse ? `${selectedWarehouse.name} - ` : ""}Zone {primaryZone}
+          <div
+            className="origin-top-left overflow-hidden rounded-lg border border-violet-400/35 bg-white transition-transform"
+            style={{ transform: `scale(${zoom / 100})`, width: `${10000 / zoom}%` }}
+          >
+            <div className="border-b border-violet-200/70 bg-violet-50/55 px-4 py-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-[11px] font-bold uppercase text-violet-600">
+                    {selectedWarehouse ? selectedWarehouse.name : "All Warehouses"} - Zone{" "}
+                    {primaryZone}
+                  </p>
+                  <h2 className="mt-1 truncate text-sm font-bold text-darknavy">
+                    {selectedLocationLabel}
+                  </h2>
+                  <p className="mt-0.5 text-xs font-medium text-darknavy/50">
+                    {selectedRecord?.path ?? `Zone ${primaryZone}`}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {zones.map((zone) => {
+                    const targetRecord = getFirstRecordForZone(activeWarehouseRecords, zone);
+                    const isActive = zone === primaryZone;
+
+                    return (
+                      <button
+                        key={zone}
+                        type="button"
+                        disabled={!targetRecord}
+                        onClick={() => targetRecord && onSelectRecord(targetRecord.id)}
+                        className={joinClasses(
+                          "min-h-8 rounded-md border px-3 text-xs font-bold transition",
+                          isActive
+                            ? "border-violet-500 bg-violet-600 text-white shadow-sm"
+                            : "border-violet-200 bg-white text-violet-600 hover:border-violet-400 hover:bg-violet-50",
+                        )}
+                      >
+                        Zone {zone}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
-            {activeWarehouseRecords.length > 0 ? (
-              <div className="grid gap-3 xl:grid-cols-3">
-                {aisleNumbers.map((aisle) => (
+            {layoutSlots.length > 0 ? (
+              <div className="grid gap-3 bg-violet-50/20 p-3 xl:grid-cols-3">
+                {layoutAisles.map((aisle) => (
                   <AisleBlock
                     key={aisle}
                     aisle={aisle}
                     onSelectRecord={onSelectRecord}
                     selectedRecordId={selectedRecord?.id ?? null}
-                    slots={layoutSlots.filter((slot) => slot.id.includes(`-a${aisle}-`))}
+                    slots={layoutSlots.filter((slot) => slot.aisle === aisle)}
                   />
                 ))}
               </div>
             ) : (
-              <div className="rounded-lg border border-dashed border-violet-300 bg-white p-8 text-center text-sm font-semibold text-darknavy/55">
-                No locations match the current map filters.
+              <div className="m-3 rounded-lg border border-dashed border-violet-300 bg-white p-8 text-center text-sm font-semibold text-darknavy/55">
+                No locations match the selected zone and filters.
               </div>
             )}
           </div>
@@ -335,13 +397,13 @@ function LocationNavigator({
           <MapPinned className="h-4 w-4 text-darknavy/45" aria-hidden="true" />
           Location Navigator
         </div>
-        <span className="rounded-full bg-offwhite px-2 py-0.5 text-[11px] font-bold text-darknavy/45">
-          {records.length}
-        </span>
       </div>
       <div className="p-3">
         <label className="relative block">
-          <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/35" aria-hidden="true" />
+          <Search
+            className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/35"
+            aria-hidden="true"
+          />
           <input
             value={query}
             onChange={(event) => onQueryChange(event.target.value)}
@@ -369,7 +431,9 @@ function LocationNavigator({
           {warehouses
             .filter((warehouse) => records.some((record) => record.warehouseId === warehouse.id))
             .map((warehouse) => {
-              const warehouseRecords = records.filter((record) => record.warehouseId === warehouse.id);
+              const warehouseRecords = records.filter(
+                (record) => record.warehouseId === warehouse.id,
+              );
               const zones = Array.from(
                 new Set(warehouseRecords.map((record) => record.location.zone || "General")),
               );
@@ -379,7 +443,6 @@ function LocationNavigator({
               return (
                 <div key={warehouse.id}>
                   <NavigatorRow
-                    count={warehouseRecords.length}
                     depth={0}
                     icon="warehouse"
                     isOpen={isWarehouseOpen}
@@ -387,119 +450,156 @@ function LocationNavigator({
                     onClick={() => onSelectWarehouse(warehouse.id)}
                     onToggle={() => toggleKey(warehouseKey)}
                   />
-                  {isWarehouseOpen && zones.map((zone) => {
-                    const zoneRecords = warehouseRecords.filter(
-                      (record) => (record.location.zone || "General") === zone,
-                    );
-                    const aisles = Array.from(
-                      new Set(zoneRecords.map((record) => record.location.aisle || "Area")),
-                    );
-                    const zoneKey = `${warehouseKey}-zone-${zone}`;
-                    const isZoneOpen = expandedKeys.has(zoneKey);
+                  {isWarehouseOpen &&
+                    zones.map((zone) => {
+                      const zoneRecords = warehouseRecords.filter(
+                        (record) => (record.location.zone || "General") === zone,
+                      );
+                      const aisles = Array.from(
+                        new Set(zoneRecords.map((record) => record.location.aisle || "Area")),
+                      );
+                      const zoneKey = `${warehouseKey}-zone-${zone}`;
+                      const isZoneOpen = expandedKeys.has(zoneKey);
 
-                    return (
-                      <div key={`${warehouse.id}-${zone}`}>
-                        <NavigatorRow
-                          count={zoneRecords.length}
-                          depth={1}
-                          icon="zone"
-                          isOpen={isZoneOpen}
-                          label={`Zone ${zone}`}
-                          onClick={() => {
-                            const firstRecord = zoneRecords[0];
+                      return (
+                        <div key={`${warehouse.id}-${zone}`}>
+                          <NavigatorRow
+                            depth={1}
+                            icon="zone"
+                            isOpen={isZoneOpen}
+                            label={`Zone ${zone}`}
+                            onClick={() => {
+                              const firstRecord = zoneRecords[0];
 
-                            if (firstRecord) {
-                              onSelectRecord(firstRecord.id);
-                            }
-                          }}
-                          onToggle={() => toggleKey(zoneKey)}
-                        />
-                        {isZoneOpen && aisles.map((aisle) => {
-                          const aisleRecords = zoneRecords.filter(
-                            (record) => (record.location.aisle || "Area") === aisle,
-                          );
-                          const racks = Array.from(
-                            new Set(aisleRecords.map((record) => record.location.rackNo || "Open")),
-                          );
-                          const aisleKey = `${zoneKey}-aisle-${aisle}`;
-                          const isAisleOpen = expandedKeys.has(aisleKey);
+                              if (firstRecord) {
+                                onSelectRecord(firstRecord.id);
+                              }
+                            }}
+                            onToggle={() => toggleKey(zoneKey)}
+                          />
+                          {isZoneOpen &&
+                            aisles.map((aisle) => {
+                              const aisleRecords = zoneRecords.filter(
+                                (record) => (record.location.aisle || "Area") === aisle,
+                              );
+                              const racks = Array.from(
+                                new Set(
+                                  aisleRecords.map((record) => record.location.rackNo || "Open"),
+                                ),
+                              );
+                              const aisleKey = `${zoneKey}-aisle-${aisle}`;
+                              const isAisleOpen = expandedKeys.has(aisleKey);
 
-                          return (
-                            <div key={`${warehouse.id}-${zone}-${aisle}`}>
-                              <NavigatorRow
-                                count={aisleRecords.length}
-                                depth={2}
-                                icon="aisle"
-                                isOpen={isAisleOpen}
-                                label={`Aisle ${aisle}`}
-                                onClick={() => {
-                                  const firstRecord = aisleRecords[0];
+                              return (
+                                <div key={`${warehouse.id}-${zone}-${aisle}`}>
+                                  <NavigatorRow
+                                    depth={2}
+                                    icon="aisle"
+                                    isOpen={isAisleOpen}
+                                    label={`Aisle ${aisle}`}
+                                    onClick={() => {
+                                      const firstRecord = aisleRecords[0];
 
-                                  if (firstRecord) {
-                                    onSelectRecord(firstRecord.id);
-                                  }
-                                }}
-                                onToggle={() => toggleKey(aisleKey)}
-                              />
-                              {isAisleOpen && racks.map((rack) => {
-                                const rackRecords = aisleRecords.filter(
-                                  (record) => (record.location.rackNo || "Open") === rack,
-                                );
-                                const rackKey = `${aisleKey}-rack-${rack}`;
-                                const isRackOpen = expandedKeys.has(rackKey);
+                                      if (firstRecord) {
+                                        onSelectRecord(firstRecord.id);
+                                      }
+                                    }}
+                                    onToggle={() => toggleKey(aisleKey)}
+                                  />
+                                  {isAisleOpen &&
+                                    racks.map((rack) => {
+                                      const rackRecords = aisleRecords.filter(
+                                        (record) => (record.location.rackNo || "Open") === rack,
+                                      );
+                                      const levels = Array.from(
+                                        new Set(
+                                          rackRecords.map(
+                                            (record) => record.location.shelfNo || "Open",
+                                          ),
+                                        ),
+                                      ).sort(compareLocationTokens);
+                                      const rackKey = `${aisleKey}-rack-${rack}`;
+                                      const isRackOpen = expandedKeys.has(rackKey);
 
-                                return (
-                                  <div key={`${warehouse.id}-${zone}-${aisle}-${rack}`}>
-                                    <NavigatorRow
-                                      count={rackRecords.length}
-                                      depth={3}
-                                      icon="rack"
-                                      isOpen={isRackOpen}
-                                      label={`Rack ${rack}`}
-                                      onClick={() => {
-                                        const firstRecord = rackRecords[0];
+                                      return (
+                                        <div key={`${warehouse.id}-${zone}-${aisle}-${rack}`}>
+                                          <NavigatorRow
+                                            depth={3}
+                                            icon="rack"
+                                            isOpen={isRackOpen}
+                                            label={`Rack ${rack}`}
+                                            onClick={() => {
+                                              const firstRecord = rackRecords[0];
 
-                                        if (firstRecord) {
-                                          onSelectRecord(firstRecord.id);
-                                        }
-                                      }}
-                                      onToggle={() => toggleKey(rackKey)}
-                                    />
-                                    {isRackOpen && rackRecords.slice(0, 8).map((record) => (
-                                      <button
-                                        key={record.id}
-                                        type="button"
-                                        onClick={() => onSelectRecord(record.id)}
-                                        className={joinClasses(
-                                          "flex w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left text-xs font-semibold transition",
-                                          selectedRecordId === record.id
-                                            ? "warehouse-storage-selected-row"
-                                            : "text-darknavy/65 hover:bg-offwhite",
-                                        )}
-                                        style={{ paddingLeft: `${4.25}rem` }}
-                                      >
-                                        <span className="truncate">{record.location.locationName || record.location.locationCode}</span>
-                                        <span
-                                          className={joinClasses(
-                                            "rounded-full px-1.5 text-[10px]",
-                                            selectedRecordId === record.id
-                                              ? "warehouse-storage-selected-count"
-                                              : "bg-white text-darknavy/45",
-                                          )}
-                                        >
-                                          {record.itemCount}
-                                        </span>
-                                      </button>
-                                    ))}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    );
-                  })}
+                                              if (firstRecord) {
+                                                onSelectRecord(firstRecord.id);
+                                              }
+                                            }}
+                                            onToggle={() => toggleKey(rackKey)}
+                                          />
+                                          {isRackOpen &&
+                                            levels.map((level) => {
+                                              const levelRecords = rackRecords
+                                                .filter(
+                                                  (record) =>
+                                                    (record.location.shelfNo || "Open") === level,
+                                                )
+                                                .sort((first, second) =>
+                                                  compareLocationTokens(
+                                                    first.location.binNo,
+                                                    second.location.binNo,
+                                                  ),
+                                                );
+                                              const levelKey = `${rackKey}-level-${level}`;
+                                              const isLevelOpen = expandedKeys.has(levelKey);
+
+                                              return (
+                                                <div
+                                                  key={`${warehouse.id}-${zone}-${aisle}-${rack}-${level}`}
+                                                >
+                                                  <NavigatorRow
+                                                    depth={4}
+                                                    icon="level"
+                                                    isOpen={isLevelOpen}
+                                                    label={`Level ${level}`}
+                                                    onClick={() => {
+                                                      const firstRecord = levelRecords[0];
+
+                                                      if (firstRecord) {
+                                                        onSelectRecord(firstRecord.id);
+                                                      }
+                                                    }}
+                                                    onToggle={() => toggleKey(levelKey)}
+                                                  />
+                                                  {isLevelOpen &&
+                                                    levelRecords
+                                                      .slice(0, 8)
+                                                      .map((record) => (
+                                                        <NavigatorLeafRow
+                                                          key={record.id}
+                                                          depth={5}
+                                                          isSelected={
+                                                            selectedRecordId === record.id
+                                                          }
+                                                          label={
+                                                            record.location.locationName ||
+                                                            record.location.locationCode
+                                                          }
+                                                          onClick={() => onSelectRecord(record.id)}
+                                                        />
+                                                      ))}
+                                                </div>
+                                              );
+                                            })}
+                                        </div>
+                                      );
+                                    })}
+                                </div>
+                              );
+                            })}
+                        </div>
+                      );
+                    })}
                 </div>
               );
             })}
@@ -510,7 +610,6 @@ function LocationNavigator({
 }
 
 function NavigatorRow({
-  count,
   depth,
   icon,
   isOpen,
@@ -518,9 +617,8 @@ function NavigatorRow({
   onClick,
   onToggle,
 }: {
-  count: number;
   depth: number;
-  icon: "warehouse" | "zone" | "aisle" | "rack";
+  icon: "warehouse" | "zone" | "aisle" | "rack" | "level";
   isOpen: boolean;
   label: string;
   onClick: () => void;
@@ -530,17 +628,21 @@ function NavigatorRow({
 
   return (
     <div
-      className="flex w-full items-center justify-between gap-2 rounded-md py-1 text-xs font-semibold text-darknavy/70 transition hover:bg-offwhite"
-      style={{ paddingLeft: `${0.5 + depth * 1.05}rem` }}
+      className="flex w-full items-center gap-1.5 rounded-md py-1 text-xs font-semibold text-darknavy/70 transition hover:bg-offwhite"
+      style={{ paddingLeft: `${0.35 + depth * 0.72}rem` }}
     >
-      <span className="flex min-w-0 flex-1 items-center gap-1">
+      <span className="flex min-w-0 flex-1 items-center gap-0.5">
         <button
           type="button"
           onClick={onToggle}
-          className="grid h-6 w-6 shrink-0 place-items-center rounded text-darknavy/45 transition hover:bg-white hover:text-darknavy"
+          className="grid h-6 w-4 shrink-0 place-items-center rounded text-darknavy/45 transition hover:bg-white hover:text-darknavy"
           aria-label={`${isOpen ? "Collapse" : "Expand"} ${label}`}
         >
-          {isOpen ? <ChevronDown className="h-3.5 w-3.5 shrink-0" /> : <ChevronRight className="h-3.5 w-3.5 shrink-0" />}
+          {isOpen ? (
+            <ChevronDown className="h-3.5 w-3.5 shrink-0" />
+          ) : (
+            <ChevronRight className="h-3.5 w-3.5 shrink-0" />
+          )}
         </button>
         <button
           type="button"
@@ -551,8 +653,33 @@ function NavigatorRow({
           <span className="truncate">{label}</span>
         </button>
       </span>
-      <span className="rounded-full bg-offwhite px-1.5 py-0.5 text-[10px] text-darknavy/45">{count}</span>
     </div>
+  );
+}
+
+function NavigatorLeafRow({
+  depth,
+  isSelected,
+  label,
+  onClick,
+}: {
+  depth: number;
+  isSelected: boolean;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={joinClasses(
+        "flex w-full items-center rounded-md px-2 py-1.5 text-left text-xs font-semibold transition",
+        isSelected ? "warehouse-storage-selected-row" : "text-darknavy/65 hover:bg-offwhite",
+      )}
+      style={{ paddingLeft: `${0.35 + depth * 0.72 + 1.25}rem` }}
+    >
+      <span className="truncate">{label}</span>
+    </button>
   );
 }
 
@@ -570,7 +697,9 @@ function createDefaultNavigatorKeys(
 
       keys.add(warehouseKey);
 
-      Array.from(new Set(warehouseRecords.map((record) => record.location.zone || "General"))).forEach((zone) => {
+      Array.from(
+        new Set(warehouseRecords.map((record) => record.location.zone || "General")),
+      ).forEach((zone) => {
         const zoneRecords = warehouseRecords.filter(
           (record) => (record.location.zone || "General") === zone,
         );
@@ -578,22 +707,50 @@ function createDefaultNavigatorKeys(
 
         keys.add(zoneKey);
 
-        Array.from(new Set(zoneRecords.map((record) => record.location.aisle || "Area"))).forEach((aisle) => {
-          const aisleRecords = zoneRecords.filter(
-            (record) => (record.location.aisle || "Area") === aisle,
-          );
-          const aisleKey = `${zoneKey}-aisle-${aisle}`;
+        Array.from(new Set(zoneRecords.map((record) => record.location.aisle || "Area"))).forEach(
+          (aisle) => {
+            const aisleRecords = zoneRecords.filter(
+              (record) => (record.location.aisle || "Area") === aisle,
+            );
+            const aisleKey = `${zoneKey}-aisle-${aisle}`;
 
-          keys.add(aisleKey);
+            keys.add(aisleKey);
 
-          Array.from(new Set(aisleRecords.map((record) => record.location.rackNo || "Open"))).forEach((rack) => {
-            keys.add(`${aisleKey}-rack-${rack}`);
-          });
-        });
+            Array.from(
+              new Set(aisleRecords.map((record) => record.location.rackNo || "Open")),
+            ).forEach((rack) => {
+              const rackRecords = aisleRecords.filter(
+                (record) => (record.location.rackNo || "Open") === rack,
+              );
+              const rackKey = `${aisleKey}-rack-${rack}`;
+
+              keys.add(rackKey);
+
+              Array.from(
+                new Set(rackRecords.map((record) => record.location.shelfNo || "Open")),
+              ).forEach((level) => {
+                keys.add(`${rackKey}-level-${level}`);
+              });
+            });
+          },
+        );
       });
     });
 
   return keys;
+}
+
+function compareLocationTokens(first: string | undefined, second: string | undefined) {
+  const firstValue = first || "";
+  const secondValue = second || "";
+  const firstNumber = Number(firstValue);
+  const secondNumber = Number(secondValue);
+
+  if (!Number.isNaN(firstNumber) && !Number.isNaN(secondNumber)) {
+    return firstNumber - secondNumber;
+  }
+
+  return firstValue.localeCompare(secondValue);
 }
 
 function AisleBlock({
@@ -607,37 +764,45 @@ function AisleBlock({
   selectedRecordId: string | null;
   slots: LayoutSlot[];
 }) {
-  const rackPairs = [
-    rackNumbers.slice(0, 2),
-    rackNumbers.slice(2, 4),
-    rackNumbers.slice(4, 6),
-  ][Number(aisle) - 1] ?? rackNumbers.slice(0, 2);
+  const racks = Array.from(new Set(slots.map((slot) => slot.rack))).sort(compareLocationTokens);
 
   return (
     <div className="rounded-lg border border-darknavy/10 bg-white p-2 shadow-sm shadow-darknavy/5">
       <div className="mb-2 text-center text-xs font-bold text-darknavy/65">Aisle {aisle}</div>
-      <div className="grid grid-cols-2 gap-2">
-        {rackPairs.map((rack) => (
-          <div key={rack} className="rounded-md bg-offwhite/80 p-2">
-            <div className="mb-2 text-center text-[11px] font-bold text-darknavy/65">Rack {rack}</div>
-            <div className="space-y-2">
-              {shelfNumbers.map((shelf) => (
-                <div key={shelf} className="grid grid-cols-2 gap-1.5">
-                  {slots
-                    .filter((slot) => slot.rack === rack && slot.shelf === shelf)
-                    .map((slot) => (
-                      <SlotButton
-                        key={slot.id}
-                        isSelected={slot.record?.id === selectedRecordId}
-                        onSelectRecord={onSelectRecord}
-                        slot={slot}
-                      />
-                    ))}
-                </div>
-              ))}
+      <div className="grid gap-2 md:grid-cols-2">
+        {racks.map((rack) => {
+          const rackSlots = slots.filter((slot) => slot.rack === rack);
+          const levels = Array.from(new Set(rackSlots.map((slot) => slot.shelf))).sort(
+            compareLocationTokens,
+          );
+
+          return (
+            <div key={rack} className="rounded-md border border-darknavy/5 bg-offwhite/80 p-2">
+              <div className="mb-2 text-[11px] font-bold text-darknavy/65">Rack {rack}</div>
+              <div className="space-y-2">
+                {levels.map((shelf) => (
+                  <div key={shelf}>
+                    <div className="mb-1 text-[10px] font-bold uppercase text-darknavy/40">
+                      Level {shelf}
+                    </div>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {rackSlots
+                        .filter((slot) => slot.shelf === shelf)
+                        .map((slot) => (
+                          <SlotButton
+                            key={slot.id}
+                            isSelected={slot.record?.id === selectedRecordId}
+                            onSelectRecord={onSelectRecord}
+                            slot={slot}
+                          />
+                        ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -687,52 +852,42 @@ function getFirstRecordForType(records: WarehouseStorageListRecord[], type: stri
   return records.find((record) => (record.location.locationType || "").includes(type));
 }
 
-function createLayoutSlots(records: WarehouseStorageListRecord[], zone: string) {
-  const slots: LayoutSlot[] = [];
-  const matchingRecords = records.filter((record) => (record.location.zone || "General") === zone);
+function createLayoutSlots(records: WarehouseStorageListRecord[]) {
+  return [...records]
+    .sort(
+      (first, second) =>
+        compareLocationTokens(first.location.aisle, second.location.aisle) ||
+        compareLocationTokens(first.location.rackNo, second.location.rackNo) ||
+        compareLocationTokens(first.location.shelfNo, second.location.shelfNo) ||
+        compareLocationTokens(first.location.binNo, second.location.binNo),
+    )
+    .map<LayoutSlot>((record, index) => {
+      const aisle = normalizeLocationToken(record.location.aisle, "01");
+      const rack = normalizeLocationToken(record.location.rackNo, "01");
+      const shelf = normalizeLocationToken(record.location.shelfNo, "01");
+      const bin = normalizeLocationToken(record.location.binNo, String(index + 1).padStart(2, "0"));
 
-  aisleNumbers.forEach((aisle) => {
-    rackNumbers.forEach((rack) => {
-      shelfNumbers.forEach((shelf) => {
-        const shelfRecords = matchingRecords
-          .filter(
-            (record) =>
-              padCoordinate(record.location.aisle, "01") === aisle &&
-              padCoordinate(record.location.rackNo, "01") === rack &&
-              padCoordinate(record.location.shelfNo, "01") === shelf,
-          )
-          .sort((first, second) =>
-            Number(first.location.binNo || 0) - Number(second.location.binNo || 0),
-          );
-
-        Array.from({ length: MaxBinsPerShelf }).forEach((_, binIndex) => {
-          const record = shelfRecords[binIndex];
-          const slotNumber = slots.length + 1;
-          const bin = String(binIndex + 1).padStart(2, "0");
-
-          slots.push({
-            bin,
-            id: `slot-a${aisle}-r${rack}-s${shelf}-b${bin}`,
-            label: record?.location.binNo ? `B${record.location.binNo}` : `B${String(slotNumber).padStart(2, "0")}`,
-            rack,
-            record,
-            shelf,
-            status: getSlotStatus(record, slotNumber),
-          });
-        });
-      });
+      return {
+        aisle,
+        bin,
+        id: `slot-${record.id}`,
+        label: `B${bin}`,
+        rack,
+        record,
+        shelf,
+        status: getSlotStatus(record, index + 1),
+      };
     });
-  });
-
-  return slots;
 }
 
-function padCoordinate(value: string | undefined, fallback: string) {
-  if (!value || Number.isNaN(Number(value))) {
+function normalizeLocationToken(value: string | undefined, fallback: string) {
+  const normalizedValue = value?.trim();
+
+  if (!normalizedValue) {
     return fallback;
   }
 
-  return value.padStart(2, "0");
+  return Number.isNaN(Number(normalizedValue)) ? normalizedValue : normalizedValue.padStart(2, "0");
 }
 
 function getSlotStatus(record: WarehouseStorageListRecord | undefined, slotNumber: number) {

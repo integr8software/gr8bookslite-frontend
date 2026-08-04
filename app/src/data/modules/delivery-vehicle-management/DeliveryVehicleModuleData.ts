@@ -18,6 +18,8 @@ export function createDeliveryVehicleMockRecord(
     status,
     fields,
     createdBy: "Fleet Operations",
+    createdAt: "2026-07-24T09:15:00+08:00",
+    updatedBy: "Fleet Operations",
     updatedAt: "2026-07-25T08:30:00+08:00",
     ...options,
   };
@@ -41,4 +43,3 @@ export function createDeliveryVehicleModuleRecord(
     { category },
   );
 }
-

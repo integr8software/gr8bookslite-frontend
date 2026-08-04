@@ -10,4 +10,3 @@ export type VehicleTypeFormValues = {
   handling: string;
   description: string;
 };
-

@@ -7,9 +7,10 @@ import {
   getSortedRowModel,
   useReactTable,
   type ColumnDef,
+  type PaginationState,
   type SortingState,
-  type VisibilityState,
 } from "@tanstack/react-table";
+import { useTablePreferences } from "@/app/src/hooks/shared/table-preferences/useTablePreferences";
 import type {
   DeliveryVehicleEditorState,
   DeliveryVehicleModuleConfig,
@@ -31,69 +32,113 @@ export function useDeliveryVehicleModuleListPage({
   initialRecords: DeliveryVehicleModuleRecord[];
   validateRecord: (values: Record<string, string>) => Record<string, string>;
 }) {
-  const [records, setRecords] = useState(() => initialRecords.map((item) => ({ ...item, fields: { ...item.fields } })));
+  const [records, setRecords] = useState(() =>
+    initialRecords.map((item) => ({ ...item, fields: { ...item.fields } })),
+  );
   const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
-  const [categoryFilter, setCategoryFilter] = useState("All");
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [statusFilter, setStatusFilter] = useState(() =>
+    config.statuses.includes("Active") ? "Active" : "",
+  );
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  });
   const [editor, setEditor] = useState<DeliveryVehicleEditorState>(null);
   const [pendingAdvance, setPendingAdvance] = useState<DeliveryVehicleModuleRecord | null>(null);
   const [lastSyncedAt, setLastSyncedAt] = useState(() => new Date());
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const defaultColumnOrder = useMemo(() => createDefaultColumnOrder(config), [config]);
+  const defaultColumnVisibility = useMemo(
+    () => ({
+      ...Object.fromEntries(config.tableFieldKeys.slice(4).map((fieldKey) => [fieldKey, false])),
+      createdBy: false,
+      createdAt: false,
+      updatedBy: false,
+      updatedAt: false,
+    }),
+    [config.tableFieldKeys],
+  );
+  const defaultSorting = useMemo<SortingState>(() => [{ id: "code", desc: false }], []);
+  const {
+    columnOrder,
+    columnVisibility,
+    sorting,
+    setColumnOrder,
+    setColumnVisibility,
+    setSorting,
+  } = useTablePreferences({
+    defaultColumnOrder,
+    defaultColumnVisibility,
+    defaultSorting,
+    moduleKey: `delivery-vehicle-management:${config.key}`,
+    storageKey: `gr8booksneo:delivery-vehicle-management:${config.key}:table-preferences`,
+  });
 
   const filteredRecords = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
     return records.filter((item) => {
       const matchesQuery =
         !normalizedQuery ||
-        [item.code, item.name, item.status, item.category, ...Object.values(item.fields)]
+        [item.code, item.name, item.status, ...Object.values(item.fields)]
           .filter(Boolean)
           .some((value) => value?.toLowerCase().includes(normalizedQuery));
-      const matchesStatus = statusFilter === "All" || item.status === statusFilter;
-      const matchesCategory = categoryFilter === "All" || item.category === categoryFilter;
-      return matchesQuery && matchesStatus && matchesCategory;
+      const matchesStatus = !statusFilter || item.status === statusFilter;
+      return matchesQuery && matchesStatus;
     });
-  }, [categoryFilter, query, records, statusFilter]);
+  }, [query, records, statusFilter]);
 
   const columns = useMemo<ColumnDef<DeliveryVehicleModuleRecord>[]>(() => {
     const base: ColumnDef<DeliveryVehicleModuleRecord>[] = [
       {
         accessorKey: "code",
         header: "Reference",
-        meta: { headerClassName: "min-w-36", cellClassName: "font-semibold" },
+        meta: { className: "min-w-36 font-semibold" },
       },
       {
         accessorKey: "name",
         header: config.noun.replace(/\b\w/g, (letter) => letter.toUpperCase()),
-        meta: { headerClassName: "min-w-52" },
+        meta: { className: "min-w-52" },
       },
     ];
-    if (config.categories) {
-      base.push({
-        accessorKey: "category",
-        header: "Workspace",
-        meta: { headerClassName: "min-w-28" },
-      });
-    }
+
     base.push(
       ...config.tableFieldKeys.map((fieldKey) => ({
         id: fieldKey,
         accessorFn: (item: DeliveryVehicleModuleRecord) => item.fields[fieldKey] ?? "",
         header: config.fields.find((field) => field.key === fieldKey)?.label ?? fieldKey,
-        meta: { headerClassName: "min-w-40" },
+        meta: { className: "min-w-40" },
       })),
       {
         accessorKey: "status",
         header: "Status",
-        meta: { headerClassName: "min-w-36" },
+        meta: { className: "min-w-32 text-center" },
+      },
+      {
+        accessorKey: "createdBy",
+        header: "Created By",
+        meta: { className: "min-w-40" },
+      },
+      {
+        accessorKey: "createdAt",
+        header: "Date Created",
+        meta: { className: "min-w-44" },
+      },
+      {
+        accessorKey: "updatedBy",
+        header: "Updated By",
+        meta: { className: "min-w-40" },
+      },
+      {
+        accessorKey: "updatedAt",
+        header: "Date Modified",
+        meta: { className: "min-w-44" },
       },
       {
         id: "actions",
-        header: "Actions",
+        header: "Action",
         enableHiding: false,
         enableSorting: false,
-        meta: { headerClassName: "w-52 min-w-52 text-right", cellClassName: "text-right" },
+        meta: { className: "w-44 min-w-44 text-center" },
       },
     );
     return base;
@@ -103,10 +148,16 @@ export function useDeliveryVehicleModuleListPage({
   const table = useReactTable({
     data: filteredRecords,
     columns,
-    state: { sorting, columnVisibility },
-    initialState: { pagination: { pageIndex: 0, pageSize: 10 } },
-    onSortingChange: setSorting,
+    state: { columnOrder, columnVisibility, pagination, sorting },
+    initialState: {
+      columnOrder: defaultColumnOrder,
+      columnVisibility: defaultColumnVisibility,
+      sorting: defaultSorting,
+    },
+    onColumnOrderChange: setColumnOrder,
     onColumnVisibilityChange: setColumnVisibility,
+    onPaginationChange: setPagination,
+    onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -139,6 +190,7 @@ export function useDeliveryVehicleModuleListPage({
                 fields: values,
                 status,
                 category,
+                updatedBy: "Fleet Operations",
                 updatedAt: new Date().toISOString(),
               }
             : item,
@@ -151,10 +203,39 @@ export function useDeliveryVehicleModuleListPage({
     setLastSyncedAt(new Date());
   }
 
+  function importRecords(rows: Array<Record<string, string>>) {
+    if (rows.length === 0) {
+      return;
+    }
+
+    const nextRecords = rows.map((values) =>
+      createRecord(
+        normalizeImportedValues(values, config),
+        config.statuses[0] ?? "Active",
+        undefined,
+      ),
+    );
+
+    setRecords((current) => [...nextRecords, ...current]);
+    setLastSyncedAt(new Date());
+  }
+
   function advanceRecord(record: DeliveryVehicleModuleRecord) {
     const currentIndex = config.statuses.indexOf(record.status);
-    const terminalStatuses = ["Cancelled", "Closed", "Completed", "Released", "Retired", "Inactive", "Trip Completed"];
-    if (terminalStatuses.includes(record.status) || currentIndex < 0 || currentIndex === config.statuses.length - 1) {
+    const terminalStatuses = [
+      "Cancelled",
+      "Closed",
+      "Completed",
+      "Released",
+      "Retired",
+      "Inactive",
+      "Trip Completed",
+    ];
+    if (
+      terminalStatuses.includes(record.status) ||
+      currentIndex < 0 ||
+      currentIndex === config.statuses.length - 1
+    ) {
       setPendingAdvance(null);
       return;
     }
@@ -162,7 +243,12 @@ export function useDeliveryVehicleModuleListPage({
     setRecords((current) =>
       current.map((item) =>
         item.id === record.id && nextStatus
-          ? { ...item, status: nextStatus, updatedAt: new Date().toISOString() }
+          ? {
+              ...item,
+              status: nextStatus,
+              updatedBy: "Fleet Operations",
+              updatedAt: new Date().toISOString(),
+            }
           : item,
       ),
     );
@@ -172,8 +258,7 @@ export function useDeliveryVehicleModuleListPage({
 
   function resetFilters() {
     setQuery("");
-    setStatusFilter("All");
-    setCategoryFilter("All");
+    setStatusFilter(config.statuses.includes("Active") ? "Active" : "");
     table.setPageIndex(0);
   }
 
@@ -186,7 +271,6 @@ export function useDeliveryVehicleModuleListPage({
   }
 
   return {
-    categoryFilter,
     config,
     editor,
     filteredRecords,
@@ -200,13 +284,39 @@ export function useDeliveryVehicleModuleListPage({
     table,
     validateRecord,
     advanceRecord,
+    importRecords,
     refreshRecords,
     resetFilters,
     saveRecord,
-    setCategoryFilter,
     setEditor,
     setPendingAdvance,
     setQuery,
     setStatusFilter,
   };
+}
+
+function createDefaultColumnOrder(config: DeliveryVehicleModuleConfig) {
+  return [
+    "code",
+    "name",
+    ...config.tableFieldKeys,
+    "status",
+    "createdBy",
+    "createdAt",
+    "updatedBy",
+    "updatedAt",
+    "actions",
+  ];
+}
+
+function normalizeImportedValues(
+  values: Record<string, string>,
+  config: DeliveryVehicleModuleConfig,
+) {
+  return Object.fromEntries(
+    config.fields.map((field) => [
+      field.key,
+      values[field.key] ?? values[field.label] ?? field.defaultValue ?? "",
+    ]),
+  );
 }

@@ -11,4 +11,3 @@ export type DeliveryVehicleFormValues = {
   odometer: string;
   ownership: string;
 };
-

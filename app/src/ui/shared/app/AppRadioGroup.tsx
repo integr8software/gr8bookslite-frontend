@@ -1,21 +1,8 @@
-import type { ReactNode } from "react";
-
-export type AppRadioGroupOption<TValue extends string> = {
-	description?: ReactNode;
-	label: ReactNode;
-	value: TValue;
-};
-
-export type AppRadioGroupProps<TValue extends string> = {
-	className?: string;
-	name: string;
-	options: ReadonlyArray<AppRadioGroupOption<TValue>>;
-	readOnly?: boolean;
-	value: TValue;
-	onChange: (value: TValue) => void;
-};
+import * as React from "react";
+import { AppRadioGroupProps } from "@/app/src/types/shared/app/AppRadioGroupTypes";
 
 export function AppRadioGroup<TValue extends string>({
+	"aria-label": ariaLabel,
 	className,
 	name,
 	onChange,
@@ -24,38 +11,58 @@ export function AppRadioGroup<TValue extends string>({
 	value,
 }: AppRadioGroupProps<TValue>) {
 	return (
-		<div className={className ?? "grid gap-2 sm:grid-cols-2"}>
+		<div
+			role="radiogroup"
+			aria-label={ariaLabel}
+			className={className ?? "grid gap-3 sm:grid-cols-2"}
+		>
 			{options.map((option) => {
 				const isSelected = option.value === value;
+				const isDisabled = readOnly || option.disabled;
 
 				return (
 					<label
 						key={option.value}
 						className={[
-							"flex min-h-11 cursor-pointer items-start gap-3 rounded-md border bg-white px-3 py-2.5 text-sm transition",
+							"group flex min-h-20 cursor-pointer items-start justify-between gap-4 rounded-md border bg-white p-4 text-left shadow-sm shadow-darknavy/[0.03] transition",
 							isSelected
-								? "border-skyblue bg-skyblue/5 text-darknavy ring-2 ring-skyblue/15"
-								: "border-darknavy/15 text-darknavy hover:border-skyblue/55 hover:bg-skyblue/5",
-							readOnly ? "cursor-default opacity-75" : "",
+								? "border-skyblue bg-skyblue/[0.04] ring-2 ring-skyblue/15"
+								: "border-darknavy/10 hover:border-skyblue/60 hover:bg-skyblue/[0.03]",
+							isDisabled ? "cursor-default opacity-75" : "",
 						]
 							.filter(Boolean)
 							.join(" ")}
 					>
 						<input
 							checked={isSelected}
-							className="mt-0.5 h-4 w-4 accent-skyblue"
-							disabled={readOnly}
+							className="sr-only"
+							disabled={isDisabled}
 							name={name}
 							type="radio"
 							value={option.value}
 							onChange={() => onChange(option.value)}
 						/>
 						<span className="min-w-0">
-							<span className="block font-semibold">{option.label}</span>
+							<span className="block text-sm font-semibold text-darknavy">
+								{option.label}
+							</span>
 							{option.description ? (
-								<span className="mt-0.5 block text-xs leading-5 text-darknavy/60">
+								<span className="mt-2 block text-xs leading-5 text-darknavy/55">
 									{option.description}
 								</span>
+							) : null}
+						</span>
+						<span
+							className={[
+								"mt-1 grid h-5 w-5 shrink-0 place-items-center rounded-full border transition",
+								isSelected
+									? "border-skyblue bg-skyblue"
+									: "border-darknavy/20 bg-white group-hover:border-skyblue/60",
+							].join(" ")}
+							aria-hidden="true"
+						>
+							{isSelected ? (
+								<span className="h-1.5 w-1.5 rounded-full bg-white" />
 							) : null}
 						</span>
 					</label>

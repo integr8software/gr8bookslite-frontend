@@ -2,10 +2,18 @@
 
 import Link from "next/link";
 import { useParams, usePathname, useRouter } from "next/navigation";
-import { useCallback, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
-import { Boxes, Gift, Save } from "lucide-react";
+import {
+  useCallback,
+  useMemo,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+  type ReactNode,
+} from "react";
+import { Boxes, Gift, Paperclip, Save, Upload, X } from "lucide-react";
 import {
   calculateReceivingReportTotals,
+  createReceivingReportAccountingEntry,
   createReceivingReportFormValues,
   createReceivingReportFormValuesFromRecord,
   createReceivingReportLine,
@@ -17,6 +25,8 @@ import {
   type ReceivingReportLine,
   type ReceivingReportRecord,
   type ReceivingReportTotals,
+  type ReceivingReportAttachment,
+  type ReceivingReportAccountingEntry,
 } from "@/app/src/data/modules/inventory/receiving-report/ReceivingReportData";
 import {
   getPurchaseOrderItemGrossAmount,
@@ -42,6 +52,7 @@ import {
   type ModuleDataEntryColumn,
   type ModuleDataEntryColumnOption,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import { ModuleTabs, type ModuleTabItem } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 import {
@@ -54,7 +65,10 @@ import { ReceivingReportReportPreview } from "@/app/src/ui/modules/inventory/rec
 const ReceivingReportHref = "/inventory/receiving-report";
 
 type ReceivingReportActionMode = "add" | "edit" | "view";
+type ReceivingReportActionTab = "details" | "attachments";
+type ReceivingReportEntryTab = "items" | "accounting";
 type ReceivingReportLineField = keyof ReceivingReportLine;
+type ReceivingReportAccountingEntryField = keyof ReceivingReportAccountingEntry;
 type ReceivingReportColumnKind = "amount" | "date" | "dropdown" | "text";
 
 type ReceivingReportColumnConfig = {
@@ -66,9 +80,22 @@ type ReceivingReportColumnConfig = {
   widthClassName: string;
 };
 
+type ReceivingReportAccountingColumnConfig = {
+  header: string;
+  id: ReceivingReportAccountingEntryField;
+  kind: "amount" | "text";
+  width: number;
+  widthClassName: string;
+};
+
 type ReceivingReportEntryUpdater = (
   rowId: string,
   field: ReceivingReportLineField,
+  value: string,
+) => void;
+type ReceivingReportAccountingEntryUpdater = (
+  rowId: string,
+  field: ReceivingReportAccountingEntryField,
   value: string,
 ) => void;
 type ReceivingReportFormField = Exclude<keyof ReceivingReportFormValues, "lines">;
@@ -96,6 +123,7 @@ export function ReceivingReportAction() {
         },
   );
   const [errors, setErrors] = useState<ReceivingReportFormErrors>({});
+  const [activeTab, setActiveTab] = useState<ReceivingReportActionTab>("details");
   const totals = useMemo(() => calculateReceivingReportTotals(values.lines), [values.lines]);
   const purchaseOrderCopyRecords = useMemo<AppCopyFromRecord[]>(
     () =>
@@ -158,6 +186,31 @@ export function ReceivingReportAction() {
     });
   }
 
+  function updateAccountingEntry(
+    rowId: string,
+    field: ReceivingReportAccountingEntryField,
+    value: string,
+  ) {
+    if (isReadonly) {
+      return;
+    }
+
+    setValues((current) => ({
+      ...current,
+      accountingEntries: current.accountingEntries.map((entry) =>
+        entry.id === rowId ? { ...entry, [field]: value } : entry,
+      ),
+    }));
+  }
+
+  function updateAccountingEntries(accountingEntries: ReceivingReportAccountingEntry[]) {
+    if (isReadonly) {
+      return;
+    }
+
+    setValues((current) => ({ ...current, accountingEntries }));
+  }
+
   function copyFromPurchaseOrders(recordIds: string[]) {
     if (isReadonly) {
       return;
@@ -211,12 +264,18 @@ export function ReceivingReportAction() {
       address: firstOrder.address || current.address,
       contactNo: firstOrder.contactNo || current.contactNo,
       deliveryDate: firstOrder.deliveryDate || current.deliveryDate,
+      dueDate: firstOrder.deliveryDate || current.dueDate,
+      termsOfPayment: firstOrder.termsOfPayment || current.termsOfPayment,
       remarks: firstOrder.remarks || current.remarks,
       poNo: joinUniqueValues(purchaseOrderNos) || current.poNo,
       prNo: joinUniqueValues(purchaseRequestNos) || current.prNo,
       importationRefNo: firstOrder.importationNo || current.importationRefNo,
       projectRef: firstOrder.projectRef || current.projectRef,
+      projectCode: firstOrder.projectRef || current.projectCode,
       projectName: firstOrder.projectName || current.projectName,
+      responsibilityCenter:
+        firstOrder.items.find((item) => item.responsibilityCenter.trim().length > 0)
+          ?.responsibilityCenter || current.responsibilityCenter,
       lines: copiedLines.length > 0 ? copiedLines : current.lines,
     }));
     setErrors((current) => {
@@ -228,8 +287,11 @@ export function ReceivingReportAction() {
         "exchangeRate",
         "address",
         "contactNo",
+        "dueDate",
+        "termsOfPayment",
         "deliveryDate",
         "poNo",
+        "responsibilityCenter",
         "lines",
       ].forEach((field) => {
         delete nextErrors[field as ReceivingReportFormField | "lines"];
@@ -256,9 +318,37 @@ export function ReceivingReportAction() {
     router.push(ReceivingReportHref);
   }
 
+  function handleAttachmentChange(event: ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files ?? []);
+
+    if (files.length === 0) {
+      return;
+    }
+
+    setValues((current) => ({
+      ...current,
+      attachments: [
+        ...current.attachments,
+        ...files.map((file) => ({
+          id: `rr-attachment-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          name: file.name,
+          size: file.size,
+        })),
+      ],
+    }));
+    event.target.value = "";
+  }
+
+  function removeAttachment(attachmentId: string) {
+    setValues((current) => ({
+      ...current,
+      attachments: current.attachments.filter((attachment) => attachment.id !== attachmentId),
+    }));
+  }
+
   return (
     <>
-      <form className="grid gap-3" onSubmit={handleSubmit}>
+      <form className="grid gap-5" onSubmit={handleSubmit}>
         <ReceivingReportHeader
           mode={mode}
           isReadonly={isReadonly}
@@ -266,23 +356,41 @@ export function ReceivingReportAction() {
           onCopyFromPurchaseOrder={copyFromPurchaseOrders}
           onPreview={() => setIsReportPreviewOpen(true)}
         />
-        <section className="grid gap-2 rounded-md border border-darknavy/10 bg-white p-2 shadow-sm shadow-darknavy/5 sm:p-3">
-          <ReceivingReportVendorSection
-            errors={errors}
-            isReadonly={isReadonly}
-            totals={totals}
-            values={values}
-            onChange={handleInputChange}
-          />
-        </section>
-        <ReceivingReportEntries
-          error={errors.lines}
-          isReadonly={isReadonly}
-          rows={values.lines}
-          totals={totals}
-          onRowsChange={updateLines}
-          onUpdateLine={updateLine}
+        <ReceivingReportTabs
+          activeTab={activeTab}
+          attachmentCount={values.attachments.length}
+          onTabChange={setActiveTab}
         />
+        {activeTab === "details" ? (
+          <>
+            <section className="grid gap-5 rounded-sm border border-darknavy/10 bg-white px-2 py-2 shadow-sm shadow-darknavy/5 sm:px-2.5">
+              <ReceivingReportVendorSection
+                errors={errors}
+                isReadonly={isReadonly}
+                values={values}
+                onChange={handleInputChange}
+              />
+            </section>
+            <ReceivingReportEntries
+              accountingEntries={values.accountingEntries}
+              error={errors.lines}
+              isReadonly={isReadonly}
+              rows={values.lines}
+              totals={totals}
+              onAccountingRowsChange={updateAccountingEntries}
+              onUpdateAccountingEntry={updateAccountingEntry}
+              onRowsChange={updateLines}
+              onUpdateLine={updateLine}
+            />
+          </>
+        ) : (
+          <ReceivingReportAttachments
+            attachments={values.attachments}
+            isReadonly={isReadonly}
+            onAddAttachments={handleAttachmentChange}
+            onRemoveAttachment={removeAttachment}
+          />
+        )}
       </form>
       <ReceivingReportReportPreview
         isOpen={isReportPreviewOpen}
@@ -316,6 +424,8 @@ function ReceivingReportHeader({
       titleAs="h1"
       title={copy.title}
       description={copy.description}
+      className="gap-2"
+      descriptionClassName="mt-1 text-xs leading-5"
       eyebrow={
         <>
           <Boxes className="h-3.5 w-3.5" aria-hidden="true" />
@@ -347,17 +457,104 @@ function ReceivingReportHeader({
   );
 }
 
+function ReceivingReportTabs({
+  activeTab,
+  attachmentCount,
+  onTabChange,
+}: {
+  activeTab: ReceivingReportActionTab;
+  attachmentCount: number;
+  onTabChange: (tab: ReceivingReportActionTab) => void;
+}) {
+  const tabs = useMemo<ModuleTabItem<ReceivingReportActionTab>[]>(
+    () => [
+      { id: "details", label: "Details" },
+      { badge: attachmentCount, id: "attachments", label: "Attachments" },
+    ],
+    [attachmentCount],
+  );
+
+  return (
+    <ModuleTabs
+      activeTab={activeTab}
+      ariaLabel="Receiving report sections"
+      tabs={tabs}
+      onTabChange={onTabChange}
+    />
+  );
+}
+
+function ReceivingReportAttachments({
+  attachments,
+  isReadonly,
+  onAddAttachments,
+  onRemoveAttachment,
+}: {
+  attachments: ReceivingReportAttachment[];
+  isReadonly: boolean;
+  onAddAttachments: (event: ChangeEvent<HTMLInputElement>) => void;
+  onRemoveAttachment: (attachmentId: string) => void;
+}) {
+  return (
+    <section className="grid gap-3 rounded-sm border border-darknavy/10 bg-white p-3 shadow-sm shadow-darknavy/5">
+      {!isReadonly ? (
+        <label className="flex min-h-32 cursor-pointer flex-col items-center justify-center gap-2 rounded-md border border-dashed border-darknavy/20 bg-offwhite/50 px-4 py-6 text-center transition hover:border-skyblue/45 hover:bg-skyblue/5">
+          <Upload className="h-5 w-5 text-skyblue" aria-hidden="true" />
+          <span className="text-sm font-semibold text-darknavy">Upload attachment</span>
+          <span className="text-xs font-medium text-darknavy/55">
+            Select files related to this receiving report.
+          </span>
+          <input className="sr-only" type="file" multiple onChange={onAddAttachments} />
+        </label>
+      ) : null}
+      <div className="grid gap-5">
+        {attachments.length > 0 ? (
+          attachments.map((attachment) => (
+            <div
+              key={attachment.id}
+              className="flex items-center justify-between gap-3 rounded-md border border-darknavy/10 bg-white px-3 py-2"
+            >
+              <div className="flex min-w-0 items-center gap-2">
+                <Paperclip className="h-4 w-4 shrink-0 text-darknavy/55" aria-hidden="true" />
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-darknavy">{attachment.name}</p>
+                  <p className="text-xs font-medium text-darknavy/50">
+                    {formatAttachmentSize(attachment.size)}
+                  </p>
+                </div>
+              </div>
+              {!isReadonly ? (
+                <button
+                  type="button"
+                  className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-darknavy/55 transition hover:bg-coralpink/10 hover:text-coralpink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coralpink/25"
+                  onClick={() => onRemoveAttachment(attachment.id)}
+                  aria-label={`Remove ${attachment.name}`}
+                >
+                  <X className="h-4 w-4" aria-hidden="true" />
+                </button>
+              ) : null}
+            </div>
+          ))
+        ) : (
+          <div className="rounded-md border border-darknavy/10 bg-offwhite/45 px-4 py-6 text-center">
+            <p className="text-sm font-semibold text-darknavy">No attachments yet</p>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
 function ReceivingReportVendorSection({
   errors,
   isReadonly,
   onChange,
-  totals,
   values,
-}: ReceivingReportSectionProps & { totals: ReceivingReportTotals }) {
+}: ReceivingReportSectionProps) {
   return (
-    <div className="grid gap-3">
-      <div className="grid gap-x-10 gap-y-3 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1.2fr)_minmax(0,0.95fr)]">
-        <div className="grid content-start gap-2">
+    <div className="grid gap-5">
+      <div className="grid gap-x-4 gap-y-2 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1.2fr)_minmax(0,0.95fr)]">
+        <div className="grid content-start gap-4">
           <TextField
             label="Party Name"
             name="vceName"
@@ -377,7 +574,14 @@ function ReceivingReportVendorSection({
             onChange={onChange}
           />
           <TextField
-            label="Contact No."
+            label="Contact Person"
+            name="contactPerson"
+            value={values.contactPerson}
+            disabled={isReadonly}
+            onChange={onChange}
+          />
+          <TextField
+            label="Contact No"
             name="contactNo"
             value={values.contactNo}
             disabled={isReadonly}
@@ -386,9 +590,9 @@ function ReceivingReportVendorSection({
             onChange={onChange}
           />
           <TextField
-            label="Proj. Ref No"
-            name="projectRef"
-            value={values.projectRef}
+            label="Project Code"
+            name="projectCode"
+            value={values.projectCode}
             disabled={isReadonly}
             onChange={onChange}
           />
@@ -407,7 +611,7 @@ function ReceivingReportVendorSection({
             onChange={onChange}
           />
         </div>
-        <div className="grid content-start gap-2">
+        <div className="grid content-start gap-4">
           <TextField
             label="Party Code"
             name="vceCode"
@@ -428,46 +632,43 @@ function ReceivingReportVendorSection({
             onChange={onChange}
           />
           <SelectField
-            label="Default Account"
-            name="defaultAccount"
-            value={values.defaultAccount}
+            label="Terms of Payment"
+            name="termsOfPayment"
+            value={values.termsOfPayment}
             disabled={isReadonly}
-            required
-            error={errors.defaultAccount}
-            options={DefaultAccountOptions}
+            error={errors.termsOfPayment}
+            options={TermsOfPaymentOptions}
             onChange={onChange}
           />
           <TextField
-            label="Delivery Date"
-            name="deliveryDate"
+            label="Due Date"
+            name="dueDate"
             type="date"
-            value={values.deliveryDate}
+            value={values.dueDate}
             disabled={isReadonly}
-            required
-            error={errors.deliveryDate}
+            error={errors.dueDate}
+            onChange={onChange}
+          />
+          <CurrencyExchangeRateField
+            currencyValue={values.currency}
+            exchangeRateValue={values.exchangeRate}
+            disabled={isReadonly}
+            currencyError={errors.currency}
+            exchangeRateError={errors.exchangeRate}
             onChange={onChange}
           />
           <SelectField
-            label="Currency"
-            name="currency"
-            value={values.currency}
+            label="Responsibility Center"
+            name="responsibilityCenter"
+            value={values.responsibilityCenter}
             disabled={isReadonly}
             required
-            error={errors.currency}
-            options={CurrencyOptions}
-            onChange={onChange}
-          />
-          <TextField
-            label="ER"
-            name="exchangeRate"
-            value={values.exchangeRate}
-            disabled={isReadonly}
-            required
-            error={errors.exchangeRate}
+            error={errors.responsibilityCenter}
+            options={ResponsibilityCenterOptions}
             onChange={onChange}
           />
         </div>
-        <div className="grid content-start gap-2">
+        <div className="grid content-start gap-4">
           <TextField
             label="RR No."
             name="transNo"
@@ -529,22 +730,106 @@ function ReceivingReportVendorSection({
           />
         </div>
       </div>
-      <div className="grid gap-2 border-t border-darknavy/10 pt-3 sm:grid-cols-2 xl:grid-cols-4">
-        <ReadOnlyField label="Gross Amount" value={formatAmount(totals.grossAmount)} />
-        <ReadOnlyField label="Net Amount" value={formatAmount(totals.netAmount)} />
-        <ReadOnlyField label="VAT Amount" value={formatAmount(totals.vatAmount)} />
-        <ReadOnlyField label="Discount" value={formatAmount(totals.discountAmount)} />
-      </div>
     </div>
   );
 }
 
 function ReceivingReportEntries({
+  accountingEntries,
+  error,
+  isReadonly,
+  onAccountingRowsChange,
+  onRowsChange,
+  onUpdateAccountingEntry,
+  onUpdateLine,
+  rows,
+  totals,
+}: {
+  accountingEntries: ReceivingReportAccountingEntry[];
+  error?: string;
+  isReadonly: boolean;
+  onAccountingRowsChange: (rows: ReceivingReportAccountingEntry[]) => void;
+  onRowsChange: (rows: ReceivingReportLine[]) => void;
+  onUpdateAccountingEntry: ReceivingReportAccountingEntryUpdater;
+  onUpdateLine: ReceivingReportEntryUpdater;
+  rows: ReceivingReportLine[];
+  totals: ReceivingReportTotals;
+}) {
+  const [activeEntryTab, setActiveEntryTab] = useState<ReceivingReportEntryTab>("items");
+  const tabs = (
+    <ReceivingReportEntryTabs activeTab={activeEntryTab} onTabChange={setActiveEntryTab} />
+  );
+
+  if (activeEntryTab === "accounting") {
+    return (
+      <ReceivingReportAccountingEntries
+        isReadonly={isReadonly}
+        rows={accountingEntries}
+        title={tabs}
+        onRowsChange={onAccountingRowsChange}
+        onUpdateEntry={onUpdateAccountingEntry}
+      />
+    );
+  }
+
+  return (
+    <ReceivingReportItemEntries
+      error={error}
+      isReadonly={isReadonly}
+      rows={rows}
+      title={tabs}
+      totals={totals}
+      onRowsChange={onRowsChange}
+      onUpdateLine={onUpdateLine}
+    />
+  );
+}
+
+function ReceivingReportEntryTabs({
+  activeTab,
+  onTabChange,
+}: {
+  activeTab: ReceivingReportEntryTab;
+  onTabChange: (tab: ReceivingReportEntryTab) => void;
+}) {
+  return (
+    <div
+      role="tablist"
+      aria-label="Receiving report row entry sections"
+      className="inline-flex items-center gap-1 rounded-lg border border-darknavy/10 bg-offwhite/70 p-1"
+    >
+      {ReceivingReportEntryTabsList.map((tab) => {
+        const isActive = activeTab === tab.id;
+
+        return (
+          <button
+            key={tab.id}
+            type="button"
+            role="tab"
+            aria-selected={isActive}
+            className={joinClasses(
+              "h-7 rounded-md px-3 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coralpink/25",
+              isActive
+                ? "bg-white text-coralpink shadow-sm ring-1 ring-darknavy/10"
+                : "text-darknavy/55 hover:bg-white/70 hover:text-darknavy",
+            )}
+            onClick={() => onTabChange(tab.id)}
+          >
+            {tab.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function ReceivingReportItemEntries({
   error,
   isReadonly,
   onRowsChange,
   onUpdateLine,
   rows,
+  title,
   totals,
 }: {
   error?: string;
@@ -552,6 +837,7 @@ function ReceivingReportEntries({
   onRowsChange: (rows: ReceivingReportLine[]) => void;
   onUpdateLine: ReceivingReportEntryUpdater;
   rows: ReceivingReportLine[];
+  title: ReactNode;
   totals: ReceivingReportTotals;
 }) {
   const updateEntry = useCallback(
@@ -564,18 +850,48 @@ function ReceivingReportEntries({
     () => createReceivingReportColumns(ReceivingReportItemColumnConfigs, isReadonly, updateEntry),
     [isReadonly, updateEntry],
   );
+  const [visibleColumnIds, setVisibleColumnIds] = useState<Set<string>>(
+    () =>
+      new Set(
+        columns
+          .map((column) => column.id)
+          .filter((columnId) => !DefaultHiddenReceivingReportItemColumns.has(columnId)),
+      ),
+  );
+  const visibleColumns = useMemo(
+    () => columns.filter((column) => visibleColumnIds.has(column.id)),
+    [columns, visibleColumnIds],
+  );
   const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
     () =>
       columns.map((column) => ({
         id: column.id,
-        isHideable: !["itemCode", "description", "rrQty"].includes(column.id),
-        isVisible: true,
+        isHideable: DefaultHiddenReceivingReportItemColumns.has(column.id),
+        isVisible: visibleColumnIds.has(column.id),
         label: column.header,
         width: column.width,
         widthMode: column.widthMode,
       })),
-    [columns],
+    [columns, visibleColumnIds],
   );
+
+  function toggleColumnVisibility(columnId: string, isVisible: boolean) {
+    setVisibleColumnIds((current) => {
+      if (!isVisible && !DefaultHiddenReceivingReportItemColumns.has(columnId)) {
+        return current;
+      }
+
+      const next = new Set(current);
+
+      if (isVisible) {
+        next.add(columnId);
+      } else {
+        next.delete(columnId);
+      }
+
+      return next;
+    });
+  }
 
   function addRows(count: number) {
     onRowsChange([...rows, ...Array.from({ length: count }, () => createReceivingReportLine())]);
@@ -658,7 +974,7 @@ function ReceivingReportEntries({
   }
 
   return (
-    <div className="grid gap-2">
+    <div className="grid gap-5">
       {error ? <ErrorText message={error} /> : null}
       <ModuleDataEntry
         addMenuActions={[
@@ -670,22 +986,14 @@ function ReceivingReportEntries({
             onSelect: addFreebies,
           },
         ]}
-        columns={columns}
+        columns={visibleColumns}
         columnOptions={columnOptions}
-        description="Record received inventory quantities, costs, taxes, and warehouse details."
         emptyRowLabel="received item"
         exportOptions={[
           { id: "csv", label: "CSV", onSelect: () => undefined },
           { id: "excel", label: "Excel", onSelect: () => undefined },
           { id: "pdf", label: "PDF", onSelect: () => undefined },
         ]}
-        footerDetails={
-          <div className="flex flex-wrap items-center gap-3 text-sm font-semibold text-darknavy">
-            <span>Gross: {formatAmount(totals.grossAmount)}</span>
-            <span>VAT: {formatAmount(totals.vatAmount)}</span>
-            <span>Net: {formatAmount(totals.netAmount)}</span>
-          </div>
-        }
         isDraggable
         isReadonly={isReadonly}
         rows={rows}
@@ -696,7 +1004,7 @@ function ReceivingReportEntries({
           netAmount: formatAmount(totals.netAmount),
           vatAmount: formatAmount(totals.vatAmount),
         }}
-        title={null}
+        title={title}
         onAddRows={addRows}
         onAutoColumnWidth={() => undefined}
         onClearRows={clearRows}
@@ -706,7 +1014,7 @@ function ReceivingReportEntries({
         onInsertRow={insertRow}
         onMoveRow={moveRow}
         onRemoveRow={removeRow}
-        onToggleColumnVisibility={() => undefined}
+        onToggleColumnVisibility={toggleColumnVisibility}
         onUpdateColumnHeader={() => undefined}
         onUpdateColumnWidth={() => undefined}
       />
@@ -733,6 +1041,223 @@ function createReceivingReportColumns(
       />
     ),
   }));
+}
+
+function ReceivingReportAccountingEntries({
+  isReadonly,
+  onRowsChange,
+  onUpdateEntry,
+  rows,
+  title,
+}: {
+  isReadonly: boolean;
+  onRowsChange: (rows: ReceivingReportAccountingEntry[]) => void;
+  onUpdateEntry: ReceivingReportAccountingEntryUpdater;
+  rows: ReceivingReportAccountingEntry[];
+  title: ReactNode;
+}) {
+  const updateEntry = useCallback(
+    (rowId: string, field: ReceivingReportAccountingEntryField, value: string) => {
+      onUpdateEntry(rowId, field, value);
+    },
+    [onUpdateEntry],
+  );
+  const columns = useMemo<ModuleDataEntryColumn<ReceivingReportAccountingEntry>[]>(
+    () => createReceivingReportAccountingColumns(isReadonly, updateEntry),
+    [isReadonly, updateEntry],
+  );
+  const [visibleColumnIds, setVisibleColumnIds] = useState<Set<string>>(
+    () => new Set(DefaultVisibleReceivingReportAccountingColumns),
+  );
+  const visibleColumns = useMemo(
+    () => columns.filter((column) => visibleColumnIds.has(column.id)),
+    [columns, visibleColumnIds],
+  );
+  const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
+    () =>
+      columns.map((column) => ({
+        id: column.id,
+        isHideable: !DefaultVisibleReceivingReportAccountingColumns.has(column.id),
+        isVisible: visibleColumnIds.has(column.id),
+        label: column.header,
+        width: column.width,
+        widthMode: column.widthMode,
+      })),
+    [columns, visibleColumnIds],
+  );
+
+  function toggleColumnVisibility(columnId: string, isVisible: boolean) {
+    setVisibleColumnIds((current) => {
+      if (!isVisible && DefaultVisibleReceivingReportAccountingColumns.has(columnId)) {
+        return current;
+      }
+
+      const next = new Set(current);
+
+      if (isVisible) {
+        next.add(columnId);
+      } else {
+        next.delete(columnId);
+      }
+
+      return next;
+    });
+  }
+
+  function addRows(count: number) {
+    onRowsChange([
+      ...rows,
+      ...Array.from({ length: count }, () => createReceivingReportAccountingEntry()),
+    ]);
+  }
+
+  function clearRows(action: ModuleDataEntryClearAction) {
+    if (action === "all") {
+      onRowsChange([createReceivingReportAccountingEntry()]);
+      return;
+    }
+
+    const nextRows = rows.filter((row) => !shouldClearAccountingEntry(row, action));
+    onRowsChange(nextRows.length > 0 ? nextRows : [createReceivingReportAccountingEntry()]);
+  }
+
+  function duplicateRow(rowId: string) {
+    const rowIndex = rows.findIndex((row) => row.id === rowId);
+    const row = rows[rowIndex];
+
+    if (!row) {
+      return;
+    }
+
+    const nextRows = [...rows];
+    nextRows.splice(rowIndex + 1, 0, {
+      ...row,
+      id: createReceivingReportAccountingEntry().id,
+    });
+    onRowsChange(nextRows);
+  }
+
+  function insertRow(rowId: string, position: "above" | "below") {
+    const rowIndex = rows.findIndex((row) => row.id === rowId);
+
+    if (rowIndex < 0) {
+      return;
+    }
+
+    const nextRows = [...rows];
+    nextRows.splice(
+      position === "above" ? rowIndex : rowIndex + 1,
+      0,
+      createReceivingReportAccountingEntry(),
+    );
+    onRowsChange(nextRows);
+  }
+
+  function moveRow(fromRowId: string, toRowId: string) {
+    const fromIndex = rows.findIndex((row) => row.id === fromRowId);
+    const toIndex = rows.findIndex((row) => row.id === toRowId);
+
+    if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) {
+      return;
+    }
+
+    const nextRows = [...rows];
+    const [movedRow] = nextRows.splice(fromIndex, 1);
+
+    if (!movedRow) {
+      return;
+    }
+
+    nextRows.splice(toIndex, 0, movedRow);
+    onRowsChange(nextRows);
+  }
+
+  function removeRow(rowId: string) {
+    const nextRows = rows.filter((row) => row.id !== rowId);
+    onRowsChange(nextRows.length > 0 ? nextRows : [createReceivingReportAccountingEntry()]);
+  }
+
+  return (
+    <ModuleDataEntry
+      columns={visibleColumns}
+      columnOptions={columnOptions}
+      emptyRowLabel="accounting entry"
+      exportOptions={[
+        { id: "csv", label: "CSV", onSelect: () => undefined },
+        { id: "excel", label: "Excel", onSelect: () => undefined },
+        { id: "pdf", label: "PDF", onSelect: () => undefined },
+      ]}
+      isDraggable
+      isReadonly={isReadonly}
+      rows={rows}
+      title={title}
+      onAddRows={addRows}
+      onAutoColumnWidth={() => undefined}
+      onClearRows={clearRows}
+      onDuplicateRow={duplicateRow}
+      onFitColumnWidth={() => undefined}
+      onImport={() => undefined}
+      onInsertRow={insertRow}
+      onMoveRow={moveRow}
+      onRemoveRow={removeRow}
+      onToggleColumnVisibility={toggleColumnVisibility}
+      onUpdateColumnHeader={() => undefined}
+      onUpdateColumnWidth={() => undefined}
+    />
+  );
+}
+
+function createReceivingReportAccountingColumns(
+  isReadonly: boolean,
+  onUpdateEntry: ReceivingReportAccountingEntryUpdater,
+): ModuleDataEntryColumn<ReceivingReportAccountingEntry>[] {
+  return ReceivingReportAccountingColumnConfigs.map((column) => ({
+    header: column.header,
+    id: column.id,
+    width: column.width,
+    widthClassName: column.widthClassName,
+    renderCell: (row) => (
+      <ReceivingReportAccountingEntryCell
+        column={column}
+        isReadonly={isReadonly}
+        row={row}
+        onUpdateEntry={onUpdateEntry}
+      />
+    ),
+  }));
+}
+
+function ReceivingReportAccountingEntryCell({
+  column,
+  isReadonly,
+  onUpdateEntry,
+  row,
+}: {
+  column: ReceivingReportAccountingColumnConfig;
+  isReadonly: boolean;
+  onUpdateEntry: ReceivingReportAccountingEntryUpdater;
+  row: ReceivingReportAccountingEntry;
+}) {
+  const value = row[column.id];
+
+  if (column.kind === "amount") {
+    return (
+      <EntryAmountInput
+        value={value}
+        readOnly={isReadonly}
+        onValueChange={(nextValue) => onUpdateEntry(row.id, column.id, nextValue)}
+      />
+    );
+  }
+
+  return (
+    <EntryInput
+      type="text"
+      value={value}
+      readOnly={isReadonly}
+      onChange={(nextValue) => onUpdateEntry(row.id, column.id, nextValue)}
+    />
+  );
 }
 
 function ReceivingReportEntryCell({
@@ -898,7 +1423,7 @@ function TextAreaField({ disabled, error, label, name, onChange, required, value
       <FieldLabel label={label} required={required} controlName={name} />
       <span className="min-w-0">
         <textarea
-          className={`${getFieldClassName(error)} min-h-24 py-3`}
+          className={`${getFieldClassName(error)} min-h-20 py-2`}
           disabled={disabled}
           name={name}
           onChange={onChange}
@@ -906,7 +1431,7 @@ function TextAreaField({ disabled, error, label, name, onChange, required, value
           aria-invalid={Boolean(error)}
         />
         {error ? <ErrorText message={error} /> : null}
-        <span className="mt-2 block text-xs font-medium text-darknavy/45">
+        <span className="mt-1 block text-xs font-medium text-darknavy/45">
           Characters remaining: {Math.max(250 - value.length, 0)}
         </span>
       </span>
@@ -948,16 +1473,62 @@ function SelectField({
   );
 }
 
-function ReadOnlyField({ label, value }: { label: string; value: string }) {
+function CurrencyExchangeRateField({
+  currencyError,
+  currencyValue,
+  disabled,
+  exchangeRateError,
+  exchangeRateValue,
+  onChange,
+}: {
+  currencyError?: string;
+  currencyValue: string;
+  disabled: boolean;
+  exchangeRateError?: string;
+  exchangeRateValue: string;
+  onChange: ReceivingReportSectionProps["onChange"];
+}) {
+  const hasError = Boolean(currencyError || exchangeRateError);
+
   return (
-    <label className="block">
-      <span className="mb-2 block text-sm font-medium text-darknavy">{label}</span>
-      <input
-        className={`${fieldClassName} bg-offwhite text-right tabular-nums text-darknavy/70`}
-        readOnly
-        value={value}
-      />
-    </label>
+    <div className="grid min-w-0 gap-1.5 sm:grid-cols-[7.5rem_minmax(0,1fr)_max-content_6.5rem] sm:items-start">
+      <FieldLabel label="Currency" required controlName="currency" />
+      <span className="min-w-0">
+        <select
+          className={getFieldClassName(currencyError)}
+          disabled={disabled}
+          name="currency"
+          onChange={onChange}
+          value={currencyValue}
+          aria-invalid={Boolean(currencyError)}
+          aria-label="Currency"
+        >
+          {CurrencyOptions.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+      </span>
+      <FieldLabel label="Exchange Rate" required controlName="exchangeRate" />
+      <span className="min-w-0">
+        <input
+          className={`${getFieldClassName(exchangeRateError)} text-right tabular-nums`}
+          disabled={disabled}
+          name="exchangeRate"
+          onChange={onChange}
+          value={exchangeRateValue}
+          aria-invalid={Boolean(exchangeRateError)}
+          aria-label="Exchange Rate"
+        />
+      </span>
+      {hasError ? (
+        <span className="sm:col-span-4">
+          {currencyError ? <ErrorText message={currencyError} /> : null}
+          {exchangeRateError ? <ErrorText message={exchangeRateError} /> : null}
+        </span>
+      ) : null}
+    </div>
   );
 }
 
@@ -993,12 +1564,8 @@ function validateReceivingReport(values: ReceivingReportFormValues): ReceivingRe
     }
   });
 
-  if (values.defaultAccount === "--Select Credit Account--") {
-    errors.defaultAccount = "Select a default account.";
-  }
-
   if (!values.lines.some(receivingReportEntryIsComplete)) {
-    errors.lines = "Add at least one received item with item name and RR quantity.";
+    errors.lines = "Add at least one received item with item code, item name, and RR quantity.";
   }
 
   return errors;
@@ -1017,6 +1584,22 @@ function receivingReportColumn(
     id,
     kind,
     options,
+    width,
+    widthClassName,
+  };
+}
+
+function receivingReportAccountingColumn(
+  header: string,
+  id: ReceivingReportAccountingEntryField,
+  kind: "amount" | "text",
+  width: number,
+  widthClassName: string,
+): ReceivingReportAccountingColumnConfig {
+  return {
+    header,
+    id,
+    kind,
     width,
     widthClassName,
   };
@@ -1041,7 +1624,11 @@ function receivingReportEntryHasData(entry: ReceivingReportLine) {
 }
 
 function receivingReportEntryIsComplete(entry: ReceivingReportLine) {
-  return entry.description.trim().length > 0 && parseMoneyNumberInput(entry.rrQty) > 0;
+  return (
+    entry.itemCode.trim().length > 0 &&
+    entry.description.trim().length > 0 &&
+    parseMoneyNumberInput(entry.rrQty) > 0
+  );
 }
 
 function shouldClearReceivingReportEntry(
@@ -1057,6 +1644,33 @@ function shouldClearReceivingReportEntry(
   }
 
   return !receivingReportEntryHasData(entry);
+}
+
+function accountingEntryHasData(entry: ReceivingReportAccountingEntry) {
+  return Object.entries(entry).some(([key, value]) => {
+    if (key === "id") {
+      return false;
+    }
+
+    return String(value).trim().length > 0 && !DefaultEmptyValues.has(String(value));
+  });
+}
+
+function shouldClearAccountingEntry(
+  entry: ReceivingReportAccountingEntry,
+  action: Exclude<ModuleDataEntryClearAction, "all">,
+) {
+  if (action === "with-data") {
+    return accountingEntryHasData(entry);
+  }
+
+  if (action === "incomplete") {
+    return (
+      accountingEntryHasData(entry) && (!entry.accountCode.trim() || !entry.accountTitle.trim())
+    );
+  }
+
+  return !accountingEntryHasData(entry);
 }
 
 function entryCellControlClassName(extraClassName?: string) {
@@ -1079,6 +1693,18 @@ function formatMoney(value: number) {
 
 function formatQuantity(value: number) {
   return value.toFixed(2);
+}
+
+function formatAttachmentSize(size: number) {
+  if (size < 1024) {
+    return `${size} B`;
+  }
+
+  if (size < 1024 * 1024) {
+    return `${(size / 1024).toFixed(1)} KB`;
+  }
+
+  return `${(size / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 function joinUniqueValues(values: string[]) {
@@ -1123,20 +1749,33 @@ const ReceivingReportActionCopy = {
   },
 } satisfies Record<ReceivingReportActionMode, { description: string; title: string }>;
 
+const ReceivingReportEntryTabsList = [
+  { id: "items", label: "Item Entry" },
+  { id: "accounting", label: "Accounting Entry" },
+] satisfies Array<{ id: ReceivingReportEntryTab; label: string }>;
+
 const CurrencyOptions = ["PHP", "USD", "EUR", "JPY"] as const;
 const WarehouseOptions = ["Laguna", "Manila", "Cebu", "Davao"] as const;
 const StatusOptions = ["Draft", "Open", "Approved", "Closed", "Cancelled"] as const;
-const DefaultAccountOptions = [
-  "--Select Credit Account--",
-  "Accounts Payable - Trade",
-  "Goods Received Not Invoiced",
-  "Inventory Clearing",
-] as const;
+const TermsOfPaymentOptions = ["", "COD", "Net 15", "Net 30", "Net 45", "Net 60"] as const;
 const UomOptions = ["", "PCS", "BOX", "KG", "LTR"] as const;
-const BooleanOptions = ["False", "True"] as const;
-const AtcOptions = ["", "WI010", "WC158", "WC160"] as const;
 const ResponsibilityCenterOptions = ["", "Warehouse", "Purchasing", "Operations"] as const;
 const DefaultEmptyValues = new Set(["0.00", "0.0000", "False", "Laguna"]);
+const DefaultHiddenReceivingReportItemColumns = new Set<string>([
+  "barcode",
+  "expiryDate",
+  "lotNo",
+  "color",
+  "brand",
+  "size",
+  "model",
+]);
+const DefaultVisibleReceivingReportAccountingColumns = new Set<string>([
+  "accountTitle",
+  "debit",
+  "credit",
+  "particulars",
+]);
 
 const RequiredReceivingReportFields = [
   { field: "vceCode", message: "Party code is required." },
@@ -1145,9 +1784,8 @@ const RequiredReceivingReportFields = [
   { field: "exchangeRate", message: "Exchange rate is required." },
   { field: "address", message: "Address is required." },
   { field: "contactNo", message: "Contact number is required." },
-  { field: "deliveryDate", message: "Delivery date is required." },
-  { field: "defaultAccount", message: "Default account is required." },
   { field: "warehouse", message: "Warehouse is required." },
+  { field: "responsibilityCenter", message: "Responsibility center is required." },
   { field: "status", message: "Status is required." },
   { field: "transNo", message: "Transaction number is required." },
   { field: "documentDate", message: "Document date is required." },
@@ -1155,6 +1793,8 @@ const RequiredReceivingReportFields = [
 ] satisfies Array<{ field: ReceivingReportFormField; message: string }>;
 
 const ReceivingReportItemColumnConfigs = [
+  receivingReportColumn("Item Code *", "itemCode", "text", 150, "w-[9.5rem]"),
+  receivingReportColumn("Barcode", "barcode", "text", 130, "w-[8rem]"),
   receivingReportColumn("Item Name *", "description", "text", 220, "w-[13.75rem]"),
   receivingReportColumn("PO Qty", "poQty", "amount", 105, "w-[6.5rem]"),
   receivingReportColumn("RR Qty *", "rrQty", "amount", 110, "w-[7rem]"),
@@ -1171,62 +1811,31 @@ const ReceivingReportItemColumnConfigs = [
   receivingReportColumn("Total Cost (Gross of VAT)", "netAmount", "amount", 160, "w-[10rem]"),
 ];
 
-const ReceivingReportDetailColumnConfigs = [
-  receivingReportColumn("Item Code", "itemCode", "text", 150, "w-[9.5rem]"),
-  receivingReportColumn("Barcode", "barcode", "text", 150, "w-[9.5rem]"),
-  receivingReportColumn("Item Category", "itemCategory", "text", 190, "w-[12rem]"),
-  receivingReportColumn("Serial No.", "serialNo", "text", 220, "w-[13.75rem]"),
-  receivingReportColumn(
-    "Warehouse",
-    "warehouse",
-    "dropdown",
-    160,
-    "w-[10rem]",
-    dropdownOptions(WarehouseOptions),
-  ),
-  receivingReportColumn("Freight Cost", "freightCost", "amount", 140, "w-[8.75rem]"),
-  receivingReportColumn("Discount Amount", "discountAmount", "amount", 160, "w-[10rem]"),
-  receivingReportColumn("EWT Amount", "ewtAmount", "amount", 150, "w-[9.5rem]"),
-  receivingReportColumn("ATC", "atc", "dropdown", 120, "w-[7.5rem]", dropdownOptions(AtcOptions)),
-  receivingReportColumn("Net Amount", "netAmount", "amount", 150, "w-[9.5rem]"),
-  receivingReportColumn(
-    "VATable",
-    "vatable",
-    "dropdown",
-    120,
-    "w-[7.5rem]",
-    dropdownOptions(BooleanOptions),
-  ),
-  receivingReportColumn(
-    "VAT Inc.",
-    "vatInclusive",
-    "dropdown",
-    120,
-    "w-[7.5rem]",
-    dropdownOptions(BooleanOptions),
-  ),
-  receivingReportColumn(
-    "With EWT",
-    "withEwt",
-    "dropdown",
-    120,
-    "w-[7.5rem]",
-    dropdownOptions(BooleanOptions),
-  ),
-  receivingReportColumn(
-    "Res. Center",
+const ReceivingReportAccountingColumnConfigs = [
+  receivingReportAccountingColumn("Account Code", "accountCode", "text", 140, "w-[8.75rem]"),
+  receivingReportAccountingColumn("Account Title", "accountTitle", "text", 220, "w-[13.75rem]"),
+  receivingReportAccountingColumn("Debit", "debit", "amount", 130, "w-[8rem]"),
+  receivingReportAccountingColumn("Credit", "credit", "amount", 130, "w-[8rem]"),
+  receivingReportAccountingColumn("Party Code", "partyCode", "text", 140, "w-[8.75rem]"),
+  receivingReportAccountingColumn("Party Name", "partyName", "text", 220, "w-[13.75rem]"),
+  receivingReportAccountingColumn("Particulars", "particulars", "text", 220, "w-[13.75rem]"),
+  receivingReportAccountingColumn("VAT Type", "vatType", "text", 140, "w-[8.75rem]"),
+  receivingReportAccountingColumn("EWT Code", "ewtCode", "text", 140, "w-[8.75rem]"),
+  receivingReportAccountingColumn(
+    "Responsibility Center",
     "responsibilityCenter",
-    "dropdown",
-    180,
-    "w-[11.25rem]",
-    dropdownOptions(ResponsibilityCenterOptions),
+    "text",
+    190,
+    "w-[12rem]",
   ),
+  receivingReportAccountingColumn("Reference No.", "referenceNo", "text", 160, "w-[10rem]"),
 ];
 
 const fieldClassName =
-  "app-theme-field h-11 w-full min-w-0 rounded-lg border border-darknavy/10 bg-white px-3 text-sm text-darknavy outline-none transition focus:border-skyblue/45 focus:ring-4 focus:ring-skyblue/15 disabled:bg-offwhite/65 disabled:text-darknavy/65";
+  "app-data-entry-field h-11 min-w-0 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15 read-only:bg-white read-only:text-darknavy disabled:bg-white disabled:text-darknavy";
 
-const fieldShellClassName = "grid min-w-0 gap-2 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-start";
+const fieldShellClassName =
+  "grid min-w-0 gap-1.5 sm:grid-cols-[7.5rem_minmax(0,1fr)] sm:items-start";
 
 const EntryDropdownClassName =
   "[&_.app-advanced-dropdown-control]:h-10 [&_.app-advanced-dropdown-control]:rounded-none [&_.app-advanced-dropdown-control]:border-0 [&_.app-advanced-dropdown-control]:bg-transparent [&_.app-advanced-dropdown-control]:px-3 [&_.app-advanced-dropdown-control]:shadow-none [&_.app-advanced-dropdown-control]:focus:ring-2 [&_.app-advanced-dropdown-control]:focus:ring-inset [&_.app-advanced-dropdown-control]:focus:ring-skyblue/35";

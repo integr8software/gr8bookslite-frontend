@@ -59,6 +59,15 @@ export type DeliveryVehicleEditorState =
 
 export type DeliveryVehicleImportProgress = { imported: number; total: number };
 
+export type DeliveryVehicleImportPreviewRow = {
+  cellErrors: Record<string, string[] | undefined>;
+  cellWarnings: Record<string, string[] | undefined>;
+  id: string;
+  rowErrors: string[];
+  rowNumber: number;
+  values: Record<string, string>;
+};
+
 export type DeliveryVehicleModulePageState = {
   config: DeliveryVehicleModuleConfig;
   editor: DeliveryVehicleEditorState;

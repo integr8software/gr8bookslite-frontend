@@ -4,12 +4,6 @@ import type {
   WarehouseStorageStatus,
 } from "@/app/src/types/modules/warehouse-management/warehouse-storage/WarehouseStorageTypes";
 
-export type WarehouseStorageShortcutArea = {
-  icon: import("lucide-react").LucideIcon;
-  label: string;
-  targetRecord?: WarehouseStorageListRecord;
-};
-
 export function compareWarehouseStorageLocationTokens(
   first: string | undefined,
   second: string | undefined,

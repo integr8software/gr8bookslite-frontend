@@ -12,7 +12,10 @@ import {
   Plus,
   Search,
 } from "lucide-react";
-import type { WarehouseStorageListRecord } from "@/app/src/types/modules/warehouse-management/warehouse-storage/WarehouseStorageTypes";
+import type {
+  WarehouseStorageListRecord,
+  WarehouseStorageShortcutArea,
+} from "@/app/src/types/modules/warehouse-management/warehouse-storage/WarehouseStorageTypes";
 import type { WarehouseRecord } from "@/app/src/types/modules/warehouse-management/warehouses/WarehouseTypes";
 import { ModuleTableFilterSelect } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
@@ -26,7 +29,6 @@ import {
   createWarehouseStorageLayoutSlots,
   getFirstWarehouseStorageRecordForType,
   getFirstWarehouseStorageRecordForZone,
-  type WarehouseStorageShortcutArea,
 } from "@/app/src/ui/modules/warehouse-management/warehouse-storage/WarehouseStorageMapUtils";
 
 type WarehouseStorageMapViewProps = {

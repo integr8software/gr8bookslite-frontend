@@ -1,21 +1,13 @@
 import { AppMaxFileUploadSizeBytes } from "@/app/src/constants/shared/app/AppConstants";
 import type {
   DeliveryVehicleField,
+  DeliveryVehicleImportPreviewRow,
   DeliveryVehicleModuleConfig,
   DeliveryVehicleModuleRecord,
 } from "@/app/src/types/modules/delivery-vehicle-management/DeliveryVehicleModuleTypes";
 import { downloadBlob } from "@/app/src/ui/shared/module/module-table/ModuleTableExportDownload";
 import { formatFileSize } from "@/app/src/utils/file.util";
 import { isModuleImportOptionValue } from "@/app/src/utils/module-import.util";
-
-export type DeliveryVehicleImportPreviewRow = {
-  cellErrors: Record<string, string[] | undefined>;
-  cellWarnings: Record<string, string[] | undefined>;
-  id: string;
-  rowErrors: string[];
-  rowNumber: number;
-  values: Record<string, string>;
-};
 
 export const DeliveryVehicleImportPreviewPageSize = 20;
 export const DeliveryVehicleImportBatchSize = 25;

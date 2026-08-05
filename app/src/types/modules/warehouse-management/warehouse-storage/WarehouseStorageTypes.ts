@@ -74,6 +74,12 @@ export type WarehouseStorageListRecord = {
 	warehouseId: string;
 };
 
+export type WarehouseStorageShortcutArea = {
+	icon: import("lucide-react").LucideIcon;
+	label: string;
+	targetRecord?: WarehouseStorageListRecord;
+};
+
 export type WarehouseStorageLayoutSlot = {
 	aisle: string;
 	bin: string;

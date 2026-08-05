@@ -1,16 +1,16 @@
 "use client";
 
-import type { DeliveryVehicleField } from "@/app/src/types/modules/delivery-vehicle-management/DeliveryVehicleModuleTypes";
+import type {
+  DeliveryVehicleField,
+  DeliveryVehicleImportPreviewRow,
+} from "@/app/src/types/modules/delivery-vehicle-management/DeliveryVehicleModuleTypes";
 import {
   ModuleImportEditableCell,
   ModuleImportEditableSelect,
   ModuleImportRowNumberCell,
 } from "@/app/src/ui/shared/module/ModuleImportControls";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
-import {
-  deliveryVehicleImportRowHasErrors,
-  type DeliveryVehicleImportPreviewRow,
-} from "@/app/src/ui/modules/delivery-vehicle-management/import/DeliveryVehicleModuleImportUtils";
+import { deliveryVehicleImportRowHasErrors } from "@/app/src/ui/modules/delivery-vehicle-management/import/DeliveryVehicleModuleImportUtils";
 
 type Props = {
   fields: readonly DeliveryVehicleField[];

@@ -21,11 +21,7 @@ type ServiceInvoiceCustomerFieldsProps = {
   values: ServiceInvoiceFormValues;
 };
 
-export function ServiceInvoiceCustomerFields({
-  isReadonly,
-  onUpdateField,
-  values,
-}: ServiceInvoiceCustomerFieldsProps) {
+export function ServiceInvoiceCustomerFields({ isReadonly, onUpdateField, values }: ServiceInvoiceCustomerFieldsProps) {
   return (
     <div className="grid min-w-0 content-start gap-x-8 gap-y-3 xl:grid-cols-3">
       <div className="grid min-w-0 content-start gap-3">
@@ -45,9 +41,7 @@ export function ServiceInvoiceCustomerFields({
             }}
             onChange={(value) => {
               const partyName = String(value);
-              const selectedParty = ServiceInvoicePartyOptions.find(
-                (option) => option.value === partyName,
-              );
+              const selectedParty = ServiceInvoicePartyOptions.find((option) => option.value === partyName);
 
               onUpdateField("name", partyName);
               onUpdateField("code", selectedParty?.label ?? "");
@@ -164,10 +158,7 @@ export function ServiceInvoiceCustomerFields({
               onChange={(value) => onUpdateField("currency", String(value))}
             />
             <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2">
-              <label
-                htmlFor="service-invoice-exchange-rate"
-                className="text-sm font-semibold text-darknavy"
-              >
+              <label htmlFor="service-invoice-exchange-rate" className="text-sm font-semibold text-darknavy">
                 ER:
               </label>
               <MoneyNumberField

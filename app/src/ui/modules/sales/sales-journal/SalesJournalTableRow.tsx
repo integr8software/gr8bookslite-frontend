@@ -108,7 +108,7 @@ function SalesJournalRecordActions({
 	];
 
 	return (
-		<ModuleTableActions className="!justify-center">
+		<ModuleTableActions className="justify-center!">
 			<ModuleTableActionLink
 				href={`${SalesJournalHref}/view/${record.id}`}
 				icon={Eye}

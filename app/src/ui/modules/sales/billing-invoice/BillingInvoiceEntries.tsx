@@ -2,7 +2,6 @@ import { useCallback, useMemo, useState, type ReactNode } from "react";
 import {
 	billingInvoiceEntryHasData,
 	billingInvoiceEntryIsComplete,
-	calculateBillingInvoiceTotals,
 	createBlankBillingInvoiceAccountEntry,
 	createBlankBillingInvoiceLineEntry,
 	formatBillingInvoiceAmount,
@@ -127,8 +126,6 @@ function BillingInvoiceItemEntries({
 		},
 		[onRowsChange, rows],
 	);
-	const totals = useMemo(() => calculateBillingInvoiceTotals(rows), [rows]);
-	const vatInclusiveTotal = totals.netAmount + totals.vatAmount;
 	const columns = useMemo<ModuleDataEntryColumn<BillingInvoiceLineEntry>[]>(
 		() => createBillingInvoiceItemEntryColumns(isReadonly, updateEntry),
 		[isReadonly, updateEntry],
@@ -145,23 +142,9 @@ function BillingInvoiceItemEntries({
 			description=""
 			emptyRowLabel="item"
 			exportOptions={EntryExportOptions}
-			footerDetails={
-				<div className="flex flex-wrap items-center gap-3 text-sm font-semibold text-darknavy">
-					<span>Sales Discount: {formatBillingInvoiceAmount(totals.discountAmount)}</span>
-					<span>Net Amount: {formatBillingInvoiceAmount(totals.grossAmount)}</span>
-				</div>
-			}
 			isDraggable
 			isReadonly={isReadonly}
 			rows={rows}
-			summaryCells={{
-				discountAmount: formatBillingInvoiceAmount(totals.discountAmount),
-				grossAmount: formatBillingInvoiceAmount(totals.grossAmount),
-				netAmount: formatBillingInvoiceAmount(totals.netAmount),
-				vatAmount: formatBillingInvoiceAmount(totals.vatAmount),
-				vatInclusiveAmount: formatBillingInvoiceAmount(vatInclusiveTotal),
-			}}
-			summaryRowHeader="Total"
 			title={title}
 			onAddRows={(count) =>
 				onRowsChange([
@@ -286,11 +269,13 @@ function recalculateEntry(
 	const discountAmount = parseMoneyNumberInput(entry.discountAmount);
 	const netAmount = unitPrice > 0 ? unitPrice * Math.max(quantity, 1) : parseMoneyNumberInput(entry.netAmount);
 	const vatAmount = parseMoneyNumberInput(entry.vatAmount);
+	const wvatAmount = netAmount + vatAmount;
 	const grossAmount = Math.max(netAmount + vatAmount - discountAmount, 0);
 
 	return {
 		...entry,
 		netAmount: netAmount.toFixed(2),
+		wvatAmount: wvatAmount.toFixed(2),
 		grossAmount: grossAmount.toFixed(2),
 	};
 }

@@ -8,9 +8,9 @@ const TaxDefinitionsApiPath = "/tax";
 
 type ApiTaxDefinition = {
   id: string;
-  name: string;
-  percentage: number;
-  sortOrder: number;
+  name?: string | null;
+  percentage?: number | string | null;
+  sortOrder?: number | null;
   treatment: TaxDefinition["treatment"];
   transactionScope: TaxDefinition["transactionScope"];
   status: "ACTIVE" | "INACTIVE";
@@ -29,10 +29,10 @@ export async function fetchTaxDefinitions(): Promise<TaxDefinitionLookup> {
 
   return {
     taxDefinitions: response.data.taxes.map((tax) => ({
-      id: tax.id,
-      name: tax.name,
-      percentage: String(Number(tax.percentage)),
-      sortOrder: tax.sortOrder,
+      id: String(tax.id),
+      name: tax.name?.trim() || "Unnamed tax",
+      percentage: String(Number(tax.percentage ?? 0)),
+      sortOrder: tax.sortOrder ?? 0,
       treatment: tax.treatment,
       transactionScope: tax.transactionScope,
       status: tax.status === "ACTIVE" ? "Active" : "Inactive",

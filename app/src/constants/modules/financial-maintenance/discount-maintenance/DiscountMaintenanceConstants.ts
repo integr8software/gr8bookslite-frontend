@@ -6,6 +6,7 @@ import type {
 	DiscountImportColumnWidths,
 	DiscountStatus,
 	DiscountTransactionType,
+	DiscountTypeFilter,
 	DiscountType,
 } from "@/app/src/types/modules/financial-maintenance/discount-maintenance/DiscountMaintenanceTypes";
 import { AppMaxFileUploadSizeBytes } from "@/app/src/constants/shared/app/AppConstants";
@@ -125,6 +126,14 @@ export const DiscountMaintenanceTypeOptions = [
 	"Purchase",
 	"Sales",
 ] as const satisfies readonly DiscountTransactionType[];
+
+export const DiscountMaintenanceTypeFilterOptions = [
+	{ value: "All", label: "All Discounts" },
+	...DiscountMaintenanceTypeOptions.map((type) => ({
+		value: type,
+		label: type,
+	})),
+] as const satisfies readonly { value: DiscountTypeFilter; label: string }[];
 
 export const DiscountMaintenanceValueTypeOptions = [
 	"Percentage",

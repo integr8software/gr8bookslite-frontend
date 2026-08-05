@@ -4,6 +4,10 @@ import {
 	formatCanvassFormAmount,
 } from "@/app/src/data/modules/purchasing/canvass-form/CanvassFormData";
 import type { CanvassFormAccountingEntry } from "@/app/src/types/modules/purchasing/canvass-form/CanvassFormTypes";
+import type {
+	PurchasingAccountingColumnId,
+	PurchasingEntryTab,
+} from "@/app/src/types/modules/purchasing/PurchasingAccountingTypes";
 import {
 	ModuleDataEntry,
 	type ModuleDataEntryClearAction,
@@ -15,12 +19,8 @@ import {
 	createPurchasingAccountingEntryColumns,
 	PurchasingAccountingDefaultVisibleColumnIds,
 	PurchasingAccountingProtectedColumnIds,
-	type PurchasingAccountingColumnId,
 } from "@/app/src/ui/modules/purchasing/shared/PurchasingAccountingEntryColumns";
-import {
-	PurchasingEntryTabs,
-	type PurchasingEntryTab,
-} from "@/app/src/ui/modules/purchasing/shared/PurchasingEntryTabs";
+import { PurchasingEntryTabs } from "@/app/src/ui/modules/purchasing/shared/PurchasingEntryTabs";
 
 type CanvassFormAccountingEntrySectionProps = {
 	error?: string;

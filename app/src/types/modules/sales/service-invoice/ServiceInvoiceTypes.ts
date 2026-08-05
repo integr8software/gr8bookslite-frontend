@@ -7,6 +7,21 @@ export type ServiceInvoiceStatus =
 	| "For Approval"
 	| "Posted";
 
+export type ServiceInvoiceAccountingColumnId =
+	| "accountCode"
+	| "accountTitle"
+	| "atcCode"
+	| "credit"
+	| "debit"
+	| "partyCode"
+	| "partyName"
+	| "particulars"
+	| "refNo"
+	| "responsibilityCenter"
+	| "vatType";
+
+export type ServiceInvoiceEntryTab = "accounting" | "service";
+
 export type ServiceInvoiceRecord = {
 	id: string;
 	amount: number;

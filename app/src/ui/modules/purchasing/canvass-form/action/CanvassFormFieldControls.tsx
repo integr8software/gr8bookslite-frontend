@@ -1,11 +1,6 @@
 import type { ReactNode } from "react";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 
-export type CanvassFormFieldUpdater<TValues> = <Key extends keyof TValues>(
-	key: Key,
-	value: TValues[Key],
-) => void;
-
 export const FieldClassName =
 	"app-data-entry-field h-11 min-w-0 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15 read-only:bg-white read-only:text-darknavy disabled:bg-white disabled:text-darknavy";
 

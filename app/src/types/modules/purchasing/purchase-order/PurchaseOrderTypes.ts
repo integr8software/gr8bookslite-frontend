@@ -1,5 +1,10 @@
 import type { PurchasingAccountingEntry } from "@/app/src/types/modules/purchasing/PurchasingAccountingTypes";
 
+export type PurchaseOrderFieldUpdater<TValues> = <Key extends keyof TValues>(
+	key: Key,
+	value: TValues[Key],
+) => void;
+
 export type PurchaseOrderStatus =
 	| "Draft"
 	| "For Approval"

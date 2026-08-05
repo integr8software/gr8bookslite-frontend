@@ -59,7 +59,7 @@ export function ModuleDataEntryColumnSettingsButton({
 		});
 	}
 
-	function showAllColumns() {
+	function handleShowAllColumns() {
 		if (!onToggleColumnVisibility) {
 			return;
 		}
@@ -209,7 +209,7 @@ export function ModuleDataEntryColumnSettingsButton({
 									<button
 										type="button"
 										disabled={!canToggleColumns || !hasHiddenColumns}
-										onClick={showAllColumns}
+							onClick={handleShowAllColumns}
 										className={joinClasses(
 											"inline-flex h-8 items-center justify-center rounded-md border px-2 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/20 disabled:cursor-not-allowed",
 											isShowAllColumnsActive

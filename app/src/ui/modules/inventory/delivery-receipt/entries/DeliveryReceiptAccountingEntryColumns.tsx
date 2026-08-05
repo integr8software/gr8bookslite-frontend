@@ -2,7 +2,10 @@ import {
 	DeliveryReceiptPartyOptions,
 	DeliveryReceiptResponsibilityCenterOptions,
 } from "@/app/src/data/modules/inventory/delivery-receipt/DeliveryReceiptData";
-import type { DeliveryReceiptAccountingEntry } from "@/app/src/types/modules/inventory/delivery-receipt/DeliveryReceiptTypes";
+import type {
+	DeliveryReceiptAccountingColumnId,
+	DeliveryReceiptAccountingEntry,
+} from "@/app/src/types/modules/inventory/delivery-receipt/DeliveryReceiptTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { parseMoneyNumberInput } from "@/app/src/ui/shared/money/MoneyNumberField";
@@ -11,11 +14,14 @@ import {
 	DeliveryReceiptEntryTextInput,
 } from "@/app/src/ui/modules/inventory/delivery-receipt/entries/DeliveryReceiptEntryCellControls";
 
+const DebitColumnId = "debit";
+const CreditColumnId = "credit";
+
 export const DeliveryReceiptAccountingColumnIds = [
 	"accountCode",
 	"accountTitle",
-	"debit",
-	"credit",
+	DebitColumnId,
+	CreditColumnId,
 	"partyCode",
 	"partyName",
 	"particulars",
@@ -25,21 +31,18 @@ export const DeliveryReceiptAccountingColumnIds = [
 	"refNo",
 ] as const;
 
-export type DeliveryReceiptAccountingColumnId =
-	(typeof DeliveryReceiptAccountingColumnIds)[number];
-
 export const DeliveryReceiptAccountingDefaultVisibleColumnIds = [
 	"accountTitle",
-	"debit",
-	"credit",
+	DebitColumnId,
+	CreditColumnId,
 	"particulars",
 ] as const satisfies readonly DeliveryReceiptAccountingColumnId[];
 
 export const DeliveryReceiptAccountingProtectedColumnIds =
 	new Set<DeliveryReceiptAccountingColumnId>([
 		"accountTitle",
-		"debit",
-		"credit",
+		DebitColumnId,
+		CreditColumnId,
 	]);
 
 const DeliveryReceiptAccountingColumnLabels: Record<
@@ -49,8 +52,8 @@ const DeliveryReceiptAccountingColumnLabels: Record<
 	accountCode: "Account Code",
 	accountTitle: "Account Title",
 	atcCode: "EWT Code",
-	credit: "Credit",
-	debit: "Debit",
+	[CreditColumnId]: "Credit",
+	[DebitColumnId]: "Debit",
 	partyCode: "Party Code",
 	partyName: "Party Name",
 	particulars: "Particulars",
@@ -66,8 +69,8 @@ const DeliveryReceiptAccountingColumnWidths: Record<
 	accountCode: 160,
 	accountTitle: 260,
 	atcCode: 140,
-	credit: 160,
-	debit: 160,
+	[CreditColumnId]: 160,
+	[DebitColumnId]: 160,
 	partyCode: 150,
 	partyName: 220,
 	particulars: 320,
@@ -103,7 +106,10 @@ function renderAccountingCell(
 	isReadonly: boolean,
 	onUpdateEntry: DeliveryReceiptAccountingEntryUpdater,
 ) {
-	if (columnId === "debit" || columnId === "credit") {
+	if (columnId === DebitColumnId || columnId === CreditColumnId) {
+		const oppositeColumnId =
+			columnId === DebitColumnId ? CreditColumnId : DebitColumnId;
+
 		return (
 			<DeliveryReceiptEntryAmountInput
 				id={context.fieldId}
@@ -115,8 +121,8 @@ function renderAccountingCell(
 
 					onUpdateEntry(entry.id, {
 						[columnId]: amount,
-						[columnId === "debit" ? "credit" : "debit"]:
-							amount > 0 ? 0 : entry[columnId === "debit" ? "credit" : "debit"],
+						[oppositeColumnId]:
+							amount > 0 ? 0 : entry[oppositeColumnId],
 					});
 				}}
 			/>
@@ -203,8 +209,8 @@ const EntryDropdownClassName =
 function getColumnWidthClassName(columnId: DeliveryReceiptAccountingColumnId) {
 	switch (columnId) {
 		case "accountCode":
-		case "credit":
-		case "debit":
+		case CreditColumnId:
+		case DebitColumnId:
 		case "refNo":
 			return "w-[10rem]";
 		case "accountTitle":

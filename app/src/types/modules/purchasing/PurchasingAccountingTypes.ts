@@ -12,3 +12,18 @@ export type PurchasingAccountingEntry = {
 	responsibilityCenter: string;
 	refNo: string;
 };
+
+export type PurchasingAccountingColumnId =
+	| "accountCode"
+	| "accountTitle"
+	| "atcCode"
+	| "credit"
+	| "debit"
+	| "partyCode"
+	| "partyName"
+	| "particulars"
+	| "refNo"
+	| "responsibilityCenter"
+	| "vatType";
+
+export type PurchasingEntryTab = "accounting" | "details";

@@ -19,6 +19,7 @@ import type {
   PurchaseRequestAccountingEntry,
   PurchaseRequestItem,
   PurchaseRequestFormMode,
+  PurchaseRequestRecord,
 } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
 import type { AiAssistantPurchaseRequestPrefill } from "@/app/src/types/shared/ai-assistant/AiAssistantTypes";
 import { validatePurchaseRequestForm } from "@/app/src/validations/modules/purchasing/purchase-request/PurchaseRequestValidation";

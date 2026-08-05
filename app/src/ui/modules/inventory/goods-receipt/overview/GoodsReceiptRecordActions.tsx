@@ -1,5 +1,8 @@
 import { Ban, CheckCircle2, Edit3, Eye, ThumbsDown, Undo2 } from "lucide-react";
-import { GoodsReceiptHref } from "@/app/src/constants/modules/inventory/goods-receipt/GoodsReceiptConstants";
+import {
+	GoodsReceiptHref,
+	GoodsReceiptStatuses,
+} from "@/app/src/constants/modules/inventory/goods-receipt/GoodsReceiptConstants";
 import type {
 	GoodsReceiptRecord,
 	GoodsReceiptStatus,
@@ -24,21 +27,21 @@ export function GoodsReceiptRecordActions({
 	) => void;
 	record: GoodsReceiptRecord;
 }) {
-	const isPosted = record.status === "Posted";
-	const isDisapproved = record.status === "Disapproved";
-	const isCancelled = record.status === "Cancelled";
+	const isPosted = record.status === GoodsReceiptStatuses.posted;
+	const isDisapproved = record.status === GoodsReceiptStatuses.disapproved;
+	const isCancelled = record.status === GoodsReceiptStatuses.cancelled;
 	const canEdit = canEditGoodsReceiptStatus(record.status);
-	const undoStatus: GoodsReceiptStatus = "Draft";
+	const undoStatus: GoodsReceiptStatus = GoodsReceiptStatuses.draft;
 	const cancelStatus: GoodsReceiptStatus = isCancelled
-		? "Draft"
-		: "Cancelled";
+		? GoodsReceiptStatuses.draft
+		: GoodsReceiptStatuses.cancelled;
 	const overflowItems: ModuleActionMenuItem[] = [
 		{
 			disabled: !canPostGoodsReceiptStatus(record.status),
 			icon: isPosted ? Undo2 : CheckCircle2,
 			label: isPosted ? "Undo Posted" : "Post",
 			onSelect: () =>
-				onUpdateStatus(record, isPosted ? undoStatus : "Posted"),
+				onUpdateStatus(record, isPosted ? undoStatus : GoodsReceiptStatuses.posted),
 			type: "button",
 		},
 		{
@@ -48,7 +51,7 @@ export function GoodsReceiptRecordActions({
 			onSelect: () =>
 				onUpdateStatus(
 					record,
-					isDisapproved ? undoStatus : "Disapproved",
+					isDisapproved ? undoStatus : GoodsReceiptStatuses.disapproved,
 				),
 			tone: isDisapproved ? "default" : "danger",
 			type: "button",
@@ -99,25 +102,28 @@ export function GoodsReceiptRecordActions({
 }
 
 function canEditGoodsReceiptStatus(status: GoodsReceiptStatus) {
-	return status === "Draft" || status === "For Approval";
+	return (
+		status === GoodsReceiptStatuses.draft ||
+		status === GoodsReceiptStatuses.forApproval
+	);
 }
 
 function canPostGoodsReceiptStatus(status: GoodsReceiptStatus) {
 	return (
-		status === "Draft" ||
-		status === "For Approval" ||
-		status === "Posted"
+		status === GoodsReceiptStatuses.draft ||
+		status === GoodsReceiptStatuses.forApproval ||
+		status === GoodsReceiptStatuses.posted
 	);
 }
 
 function canDisapproveGoodsReceiptStatus(status: GoodsReceiptStatus) {
 	return (
-		status === "Draft" ||
-		status === "For Approval" ||
-		status === "Disapproved"
+		status === GoodsReceiptStatuses.draft ||
+		status === GoodsReceiptStatuses.forApproval ||
+		status === GoodsReceiptStatuses.disapproved
 	);
 }
 
 function canCancelGoodsReceiptStatus(status: GoodsReceiptStatus) {
-	return status !== "Posted";
+	return status !== GoodsReceiptStatuses.posted;
 }

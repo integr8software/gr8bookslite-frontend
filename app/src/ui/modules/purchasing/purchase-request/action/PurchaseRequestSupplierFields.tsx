@@ -4,6 +4,7 @@ import {
   PurchaseRequestTypeOptions,
 } from "@/app/src/constants/modules/purchasing/purchase-request/PurchaseRequestConstants";
 import type {
+  PurchaseRequestFieldUpdater,
   PurchaseRequestFormValues,
   PurchaseRequestStatus,
 } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
@@ -14,7 +15,6 @@ import {
   PurchaseRequestFieldShell,
   PurchaseRequestSelectField,
   PurchaseRequestTextField,
-  type PurchaseRequestFieldUpdater,
 } from "@/app/src/ui/modules/purchasing/purchase-request/action/PurchaseRequestFormControls";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";

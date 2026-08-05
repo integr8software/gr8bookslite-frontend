@@ -10,6 +10,7 @@ import type {
 	CanvassFormAccountingEntry,
 	CanvassFormItem,
 } from "@/app/src/types/modules/purchasing/canvass-form/CanvassFormTypes";
+import type { PurchasingEntryTab } from "@/app/src/types/modules/purchasing/PurchasingAccountingTypes";
 import {
 	ModuleDataEntry,
 	type ModuleDataEntryClearAction,
@@ -19,10 +20,7 @@ import {
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { CanvassFormAccountingEntrySection } from "@/app/src/ui/modules/purchasing/canvass-form/entries/CanvassFormAccountingEntrySection";
 import { createCanvassFormLineColumns } from "@/app/src/ui/modules/purchasing/canvass-form/entries/CanvassFormLineColumns";
-import {
-	PurchasingEntryTabs,
-	type PurchasingEntryTab,
-} from "@/app/src/ui/modules/purchasing/shared/PurchasingEntryTabs";
+import { PurchasingEntryTabs } from "@/app/src/ui/modules/purchasing/shared/PurchasingEntryTabs";
 
 type CanvassFormEntrySectionProps = {
 	accountingRows: CanvassFormAccountingEntry[];

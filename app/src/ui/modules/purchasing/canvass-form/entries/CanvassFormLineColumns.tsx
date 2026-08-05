@@ -5,10 +5,7 @@ import {
 	normalizeCanvassFormItem,
 } from "@/app/src/data/modules/purchasing/canvass-form/CanvassFormData";
 import type { CanvassFormItem } from "@/app/src/types/modules/purchasing/canvass-form/CanvassFormTypes";
-import {
-	AppAdvancedDropdown,
-	type AppAdvancedDropdownOption,
-} from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import {
 	formatMoneyNumberInput,
 	MoneyNumberField,
@@ -16,8 +13,22 @@ import {
 } from "@/app/src/ui/shared/money/MoneyNumberField";
 import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import {
+	createRemoveSupplierUpdates,
+	getSupplierNameFromOptionValue,
+	getSupplierSelectionOptions,
+	getSupplierSelectionOptionValue,
+	getVisibleSupplierFields,
+	splitSelectedSupplierSlots,
+	SupplierQuotationFields,
+	updateSelectedSupplierValue,
+} from "@/app/src/ui/modules/purchasing/canvass-form/entries/CanvassFormSupplierQuotationUtils";
 
 type ColumnKind = "amount" | "select" | "text";
+const AmountColumnKind = "amount";
+const SelectColumnKind = "select";
+const TextColumnKind = "text";
+
 type ColumnConfig = {
 	header: string;
 	id: keyof CanvassFormItem | "computedTotalCost" | "supplierQuotations";
@@ -168,16 +179,16 @@ function displayClassName(extraClassName?: string) {
 }
 
 const columnConfigs = [
-	column("PR No.", "prNo", "text", 150, "w-[9.5rem]"),
-	column("Item Code", "itemCode", "text", 150, "w-[9.5rem]"),
-	column("Barcode", "barcode", "text", 150, "w-[9.5rem]"),
-	column("Description", "description", "text", 300, "w-[18.75rem]"),
-	column("UOM", "uom", "select", 120, "w-[7.5rem]"),
-	column("Qty", "quantity", "amount", 140, "w-[8.75rem]"),
-	column("MOQ", "minimumOrderQuantity", "amount", 140, "w-[8.75rem]"),
-	column("Supplier Quotations", "supplierQuotations", "text", 880, "w-[55rem]", "fixed"),
-	column("Selected Supplier", "selectedSupplier", "text", 300, "w-[18.75rem]"),
-	column("Total Cost", "computedTotalCost", "amount", 150, "w-[9.5rem]"),
+	column("PR No.", "prNo", TextColumnKind, 150, "w-[9.5rem]"),
+	column("Item Code", "itemCode", TextColumnKind, 150, "w-[9.5rem]"),
+	column("Barcode", "barcode", TextColumnKind, 150, "w-[9.5rem]"),
+	column("Description", "description", TextColumnKind, 300, "w-[18.75rem]"),
+	column("UOM", "uom", SelectColumnKind, 120, "w-[7.5rem]"),
+	column("Qty", "quantity", AmountColumnKind, 140, "w-[8.75rem]"),
+	column("MOQ", "minimumOrderQuantity", AmountColumnKind, 140, "w-[8.75rem]"),
+	column("Supplier Quotations", "supplierQuotations", TextColumnKind, 880, "w-[55rem]", "fixed"),
+	column("Selected Supplier", "selectedSupplier", TextColumnKind, 300, "w-[18.75rem]"),
+	column("Total Cost", "computedTotalCost", AmountColumnKind, 150, "w-[9.5rem]"),
 ];
 
 function column(
@@ -400,149 +411,5 @@ function SelectedSupplierCell({
 	);
 }
 
-const SupplierQuotationFields = [
-	{
-		index: 1,
-		code: "supplierCode1",
-		name: "supplierName1",
-		cost: "unitCost1",
-		vatExclusive: "vatExclusive1",
-		vatInclusive: "vatInclusive1",
-	},
-	{
-		index: 2,
-		code: "supplierCode2",
-		name: "supplierName2",
-		cost: "unitCost2",
-		vatExclusive: "vatExclusive2",
-		vatInclusive: "vatInclusive2",
-	},
-	{
-		index: 3,
-		code: "supplierCode3",
-		name: "supplierName3",
-		cost: "unitCost3",
-		vatExclusive: "vatExclusive3",
-		vatInclusive: "vatInclusive3",
-	},
-	{
-		index: 4,
-		code: "supplierCode4",
-		name: "supplierName4",
-		cost: "unitCost4",
-		vatExclusive: "vatExclusive4",
-		vatInclusive: "vatInclusive4",
-	},
-] satisfies {
-	index: number;
-	code: keyof CanvassFormItem;
-	name: keyof CanvassFormItem;
-	cost: keyof CanvassFormItem;
-	vatExclusive: keyof CanvassFormItem;
-	vatInclusive: keyof CanvassFormItem;
-}[];
-
 const EntryDropdownClassName =
 	"[&_.app-advanced-dropdown-control]:h-10 [&_.app-advanced-dropdown-control]:min-h-10 [&_.app-advanced-dropdown-control]:rounded-none [&_.app-advanced-dropdown-control]:border-0 [&_.app-advanced-dropdown-control]:bg-transparent [&_.app-advanced-dropdown-control]:px-3 [&_.app-advanced-dropdown-control]:shadow-none [&_.app-advanced-dropdown-control]:focus:ring-2 [&_.app-advanced-dropdown-control]:focus:ring-inset [&_.app-advanced-dropdown-control]:focus:ring-skyblue/35";
-
-function getSupplierSelectionOptions(row: CanvassFormItem) {
-	return SupplierQuotationFields.reduce<AppAdvancedDropdownOption[]>((options, supplier) => {
-		const name = String(row[supplier.name] ?? "").trim();
-		const code = String(row[supplier.code] ?? "").trim();
-		const value = name || code;
-
-		if (!value) {
-			return options;
-		}
-
-		options.push({
-			name: value,
-			value: `${supplier.index}:${value}`,
-			label: code && name && code !== name ? code : undefined,
-		});
-
-		return options;
-	}, []);
-}
-
-function getSupplierSelectionOptionValue(
-	options: AppAdvancedDropdownOption[],
-	selectedValue: string,
-) {
-	return (
-		options.find((option) => option.name === selectedValue)?.value ??
-		(selectedValue ? `custom:${selectedValue}` : "")
-	);
-}
-
-function getSupplierNameFromOptionValue(
-	options: AppAdvancedDropdownOption[],
-	optionValue: string,
-) {
-	return options.find((option) => option.value === optionValue)?.name ?? "";
-}
-
-function getVisibleSupplierFields(row: CanvassFormItem) {
-	const visibleSupplierCount = Math.min(
-		SupplierQuotationFields.length,
-		Math.max(1, Math.trunc(Number(row.supplierCount) || 1)),
-	);
-
-	return SupplierQuotationFields.slice(0, visibleSupplierCount);
-}
-
-function updateSelectedSupplierValue(
-	currentValues: string[],
-	index: number,
-	nextValue: string,
-) {
-	const nextValues = [...currentValues];
-	nextValues[index] = nextValue.trim();
-
-	return nextValues.join(", ");
-}
-
-function splitSelectedSupplierSlots(value: string, slotCount: number) {
-	const values = String(value ?? "")
-		.split(",")
-		.map((supplier) => supplier.trim());
-
-	while (values.length < slotCount) {
-		values.push("");
-	}
-
-	return values.slice(0, slotCount);
-}
-
-function createRemoveSupplierUpdates(
-	row: CanvassFormItem,
-	removeIndex: number,
-	visibleSupplierCount: number,
-): Partial<CanvassFormItem> {
-	const updates: Partial<CanvassFormItem> = {
-		supplierCount: Math.max(1, visibleSupplierCount - 1),
-	};
-	for (let index = removeIndex; index <= SupplierQuotationFields.length; index += 1) {
-		const current = SupplierQuotationFields[index - 1];
-		const next = SupplierQuotationFields[index];
-
-		updates[current.code] = next ? String(row[next.code] ?? "") : "";
-		updates[current.name] = next ? String(row[next.name] ?? "") : "";
-		updates[current.cost] = next ? Number(row[next.cost]) || 0 : 0;
-		updates[current.vatExclusive] = next
-			? formatMoneyNumberInput(String(row[next.vatExclusive] ?? ""))
-			: "0.00";
-		updates[current.vatInclusive] = next
-			? formatMoneyNumberInput(String(row[next.vatInclusive] ?? ""))
-			: "0.00";
-	}
-
-	const selectedSupplierSlots = splitSelectedSupplierSlots(
-		row.selectedSupplier,
-		visibleSupplierCount,
-	);
-	selectedSupplierSlots.splice(removeIndex - 1, 1);
-	updates.selectedSupplier = selectedSupplierSlots.join(", ");
-
-	return updates;
-}

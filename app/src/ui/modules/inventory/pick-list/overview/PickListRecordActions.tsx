@@ -1,5 +1,8 @@
 import { Ban, CheckCircle2, Edit3, Eye, ThumbsDown, Undo2 } from "lucide-react";
-import { PickListHref } from "@/app/src/constants/modules/inventory/pick-list/PickListConstants";
+import {
+	PickListHref,
+	PickListStatuses,
+} from "@/app/src/constants/modules/inventory/pick-list/PickListConstants";
 import type {
 	PickListRecord,
 	PickListStatus,
@@ -21,19 +24,21 @@ export function PickListRecordActions({
 	onUpdateStatus: (record: PickListRecord, status: PickListStatus) => void;
 	record: PickListRecord;
 }) {
-	const isPosted = record.status === "Posted";
-	const isDisapproved = record.status === "Disapproved";
-	const isCancelled = record.status === "Cancelled";
+	const isPosted = record.status === PickListStatuses.posted;
+	const isDisapproved = record.status === PickListStatuses.disapproved;
+	const isCancelled = record.status === PickListStatuses.cancelled;
 	const canEdit = canEditPickListStatus(record.status);
-	const undoStatus: PickListStatus = "Draft";
-	const cancelStatus: PickListStatus = isCancelled ? "Draft" : "Cancelled";
+	const undoStatus: PickListStatus = PickListStatuses.draft;
+	const cancelStatus: PickListStatus = isCancelled
+		? PickListStatuses.draft
+		: PickListStatuses.cancelled;
 	const overflowItems: ModuleActionMenuItem[] = [
 		{
 			disabled: !canPostPickListStatus(record.status),
 			icon: isPosted ? Undo2 : CheckCircle2,
 			label: isPosted ? "Undo Posted" : "Post",
 			onSelect: () =>
-				onUpdateStatus(record, isPosted ? undoStatus : "Posted"),
+				onUpdateStatus(record, isPosted ? undoStatus : PickListStatuses.posted),
 			type: "button",
 		},
 		{
@@ -41,7 +46,10 @@ export function PickListRecordActions({
 			icon: isDisapproved ? Undo2 : ThumbsDown,
 			label: isDisapproved ? "Undo Disapproved" : "Disapprove",
 			onSelect: () =>
-				onUpdateStatus(record, isDisapproved ? undoStatus : "Disapproved"),
+				onUpdateStatus(
+					record,
+					isDisapproved ? undoStatus : PickListStatuses.disapproved,
+				),
 			tone: isDisapproved ? "default" : "danger",
 			type: "button",
 		},
@@ -91,25 +99,28 @@ export function PickListRecordActions({
 }
 
 function canEditPickListStatus(status: PickListStatus) {
-	return status === "Draft" || status === "For Approval";
+	return (
+		status === PickListStatuses.draft ||
+		status === PickListStatuses.forApproval
+	);
 }
 
 function canPostPickListStatus(status: PickListStatus) {
 	return (
-		status === "Draft" ||
-		status === "For Approval" ||
-		status === "Posted"
+		status === PickListStatuses.draft ||
+		status === PickListStatuses.forApproval ||
+		status === PickListStatuses.posted
 	);
 }
 
 function canDisapprovePickListStatus(status: PickListStatus) {
 	return (
-		status === "Draft" ||
-		status === "For Approval" ||
-		status === "Disapproved"
+		status === PickListStatuses.draft ||
+		status === PickListStatuses.forApproval ||
+		status === PickListStatuses.disapproved
 	);
 }
 
 function canCancelPickListStatus(status: PickListStatus) {
-	return status !== "Posted";
+	return status !== PickListStatuses.posted;
 }

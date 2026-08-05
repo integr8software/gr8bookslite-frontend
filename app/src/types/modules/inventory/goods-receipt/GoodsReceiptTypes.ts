@@ -3,6 +3,21 @@ export type GoodsReceiptActionMode = "add" | "edit" | "view";
 export type GoodsReceiptStatus =
   "Cancelled" | "Disapproved" | "Draft" | "For Approval" | "Posted";
 
+export type GoodsReceiptAccountingColumnId =
+  | "accountCode"
+  | "accountTitle"
+  | "atcCode"
+  | "credit"
+  | "debit"
+  | "partyCode"
+  | "partyName"
+  | "particulars"
+  | "refNo"
+  | "responsibilityCenter"
+  | "vatType";
+
+export type GoodsReceiptEntryTab = "accounting" | "goods";
+
 export type GoodsReceiptRecord = {
   id: string;
   documentDate: string;

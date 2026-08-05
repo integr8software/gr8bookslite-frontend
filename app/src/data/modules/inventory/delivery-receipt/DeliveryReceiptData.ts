@@ -353,6 +353,10 @@ export function countDeliveryReceiptsByStatus(
 	return records.filter((record) => record.status === status).length;
 }
 
+export function isDeliveryReceiptActiveStatus(status: DeliveryReceiptStatus) {
+	return status === "Draft" || status === "For Approval" || status === "Posted";
+}
+
 export function formatDeliveryReceiptPercentage(value: number, total: number) {
 	if (total === 0) {
 		return "0.00% of total";

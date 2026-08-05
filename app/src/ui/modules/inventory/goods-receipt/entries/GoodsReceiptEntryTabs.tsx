@@ -1,6 +1,5 @@
+import type { GoodsReceiptEntryTab } from "@/app/src/types/modules/inventory/goods-receipt/GoodsReceiptTypes";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
-
-export type GoodsReceiptEntryTab = "accounting" | "goods";
 
 type GoodsReceiptEntryTabsProps = {
 	activeTab: GoodsReceiptEntryTab;

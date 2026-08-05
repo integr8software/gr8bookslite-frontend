@@ -4,6 +4,7 @@ import {
   CanvassFormStatusOptions,
 } from "@/app/src/constants/modules/purchasing/canvass-form/CanvassFormConstants";
 import type {
+  CanvassFormFieldUpdater,
   CanvassFormStatus,
   CanvassFormValues,
 } from "@/app/src/types/modules/purchasing/canvass-form/CanvassFormTypes";
@@ -14,7 +15,6 @@ import {
   FieldShell,
   SelectField,
   TextField,
-  type CanvassFormFieldUpdater,
 } from "@/app/src/ui/modules/purchasing/canvass-form/action/CanvassFormFieldControls";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";

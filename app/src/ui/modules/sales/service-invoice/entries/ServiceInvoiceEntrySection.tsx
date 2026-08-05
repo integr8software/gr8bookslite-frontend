@@ -6,7 +6,9 @@ import {
 	formatServiceInvoiceAmount,
 } from "@/app/src/data/modules/sales/service-invoice/ServiceInvoiceData";
 import type {
+	ServiceInvoiceAccountingColumnId,
 	ServiceInvoiceAccountingEntry,
+	ServiceInvoiceEntryTab,
 	ServiceInvoiceFormValues,
 	ServiceInvoiceLineEntry,
 } from "@/app/src/types/modules/sales/service-invoice/ServiceInvoiceTypes";
@@ -21,7 +23,6 @@ import { createServiceInvoiceAccountingEntryColumns } from "@/app/src/ui/modules
 import {
 	ServiceInvoiceAccountingDefaultVisibleColumnIds,
 	ServiceInvoiceAccountingProtectedColumnIds,
-	type ServiceInvoiceAccountingColumnId,
 } from "@/app/src/ui/modules/sales/service-invoice/entries/ServiceInvoiceAccountingEntryColumns";
 import { createServiceInvoiceServiceDetailColumns } from "@/app/src/ui/modules/sales/service-invoice/entries/ServiceInvoiceServiceDetailColumns";
 import {
@@ -36,10 +37,7 @@ import {
 	shouldClearServiceInvoiceAccountingEntry,
 	shouldClearServiceInvoiceLineEntry,
 } from "@/app/src/ui/modules/sales/service-invoice/entries/utils/ServiceInvoiceEntryRowUtils";
-import {
-	ServiceInvoiceEntryTabs,
-	type ServiceInvoiceEntryTab,
-} from "@/app/src/ui/modules/sales/service-invoice/entries/ServiceInvoiceEntryTabs";
+import { ServiceInvoiceEntryTabs } from "@/app/src/ui/modules/sales/service-invoice/entries/ServiceInvoiceEntryTabs";
 
 type ServiceInvoiceEntrySectionProps = {
 	isReadonly: boolean;

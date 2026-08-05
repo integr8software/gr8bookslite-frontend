@@ -10,6 +10,9 @@ import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-da
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 type PurchaseRequestLineColumnKind = "amount" | "select" | "text";
+const AmountColumnKind = "amount";
+const SelectColumnKind = "select";
+const TextColumnKind = "text";
 
 type PurchaseRequestLineColumnConfig = {
 	header: string;
@@ -126,14 +129,14 @@ function entryCellControlClassName(extraClassName?: string) {
 }
 
 const PurchaseRequestLineColumnConfigs = [
-	column("Item Code", "itemCode", "text", 150, "w-[9.5rem]"),
-	column("Barcode", "barcode", "text", 150, "w-[9.5rem]"),
-	column("Description", "description", "text", 300, "w-[18.75rem]"),
-	column("UOM", "uom", "select", 120, "w-[7.5rem]"),
-	column("Qty", "quantity", "amount", 150, "w-[9.5rem]"),
-	column("LotNo", "lotNo", "text", 120, "w-[7.5rem]"),
-	column("Cost", "cost", "amount", 160, "w-[10rem]"),
-	column("Res. Center", "responsibilityCenter", "text", 190, "w-[12rem]"),
+	column("Item Code", "itemCode", TextColumnKind, 150, "w-[9.5rem]"),
+	column("Barcode", "barcode", TextColumnKind, 150, "w-[9.5rem]"),
+	column("Description", "description", TextColumnKind, 300, "w-[18.75rem]"),
+	column("UOM", "uom", SelectColumnKind, 120, "w-[7.5rem]"),
+	column("Qty", "quantity", AmountColumnKind, 150, "w-[9.5rem]"),
+	column("LotNo", "lotNo", TextColumnKind, 120, "w-[7.5rem]"),
+	column("Cost", "cost", AmountColumnKind, 160, "w-[10rem]"),
+	column("Res. Center", "responsibilityCenter", TextColumnKind, 190, "w-[12rem]"),
 ];
 
 function column(

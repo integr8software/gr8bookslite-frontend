@@ -1,6 +1,5 @@
+import type { ServiceInvoiceEntryTab } from "@/app/src/types/modules/sales/service-invoice/ServiceInvoiceTypes";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
-
-export type ServiceInvoiceEntryTab = "accounting" | "service";
 
 type ServiceInvoiceEntryTabsProps = {
   activeTab: ServiceInvoiceEntryTab;

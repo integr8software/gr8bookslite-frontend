@@ -5,7 +5,9 @@ import {
 	formatDeliveryReceiptQuantity,
 } from "@/app/src/data/modules/inventory/delivery-receipt/DeliveryReceiptData";
 import type {
+	DeliveryReceiptAccountingColumnId,
 	DeliveryReceiptAccountingEntry,
+	DeliveryReceiptEntryTab,
 	DeliveryReceiptLineEntry,
 } from "@/app/src/types/modules/inventory/delivery-receipt/DeliveryReceiptTypes";
 import {
@@ -18,12 +20,8 @@ import { createDeliveryReceiptAccountingEntryColumns } from "@/app/src/ui/module
 import {
 	DeliveryReceiptAccountingDefaultVisibleColumnIds,
 	DeliveryReceiptAccountingProtectedColumnIds,
-	type DeliveryReceiptAccountingColumnId,
 } from "@/app/src/ui/modules/inventory/delivery-receipt/entries/DeliveryReceiptAccountingEntryColumns";
-import {
-	DeliveryReceiptEntryTabs,
-	type DeliveryReceiptEntryTab,
-} from "@/app/src/ui/modules/inventory/delivery-receipt/entries/DeliveryReceiptEntryTabs";
+import { DeliveryReceiptEntryTabs } from "@/app/src/ui/modules/inventory/delivery-receipt/entries/DeliveryReceiptEntryTabs";
 import { createDeliveryReceiptLineColumns } from "@/app/src/ui/modules/inventory/delivery-receipt/entries/DeliveryReceiptLineColumns";
 import {
 	clearDeliveryReceiptAccountingEntries,

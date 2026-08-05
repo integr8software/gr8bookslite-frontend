@@ -32,6 +32,7 @@ import type {
 	PurchaseOrderFormMode,
 	PurchaseOrderFormValues,
 	PurchaseOrderItem,
+	PurchaseOrderRecord,
 } from "@/app/src/types/modules/purchasing/purchase-order/PurchaseOrderTypes";
 import type {
 	CanvassFormItem,

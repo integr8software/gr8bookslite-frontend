@@ -1,6 +1,5 @@
+import type { DeliveryReceiptEntryTab } from "@/app/src/types/modules/inventory/delivery-receipt/DeliveryReceiptTypes";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
-
-export type DeliveryReceiptEntryTab = "accounting" | "delivery";
 
 type DeliveryReceiptEntryTabsProps = {
 	activeTab: DeliveryReceiptEntryTab;

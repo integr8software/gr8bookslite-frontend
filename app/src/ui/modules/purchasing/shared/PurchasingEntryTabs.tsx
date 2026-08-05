@@ -1,6 +1,5 @@
+import type { PurchasingEntryTab } from "@/app/src/types/modules/purchasing/PurchasingAccountingTypes";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
-
-export type PurchasingEntryTab = "accounting" | "details";
 
 type PurchasingEntryTabsProps = {
 	activeTab: PurchasingEntryTab;

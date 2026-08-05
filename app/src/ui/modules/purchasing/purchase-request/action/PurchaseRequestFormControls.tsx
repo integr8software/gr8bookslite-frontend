@@ -7,11 +7,6 @@ export const PurchaseRequestFieldClassName =
 export const PurchaseRequestTextareaClassName =
 	"min-h-24 w-full min-w-0 rounded-lg border border-darknavy/10 bg-white px-3 py-3 text-sm text-darknavy outline-none transition focus:border-skyblue/45 focus:ring-4 focus:ring-skyblue/15 disabled:bg-offwhite/65 disabled:text-darknavy/65";
 
-export type PurchaseRequestFieldUpdater<TValues> = <Key extends keyof TValues>(
-	key: Key,
-	value: TValues[Key],
-) => void;
-
 export function PurchaseRequestFormField({
 	children,
 	className,

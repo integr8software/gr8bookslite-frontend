@@ -6,6 +6,7 @@ import {
   PurchaseOrderTypeOptions,
 } from "@/app/src/constants/modules/purchasing/purchase-order/PurchaseOrderConstants";
 import type {
+  PurchaseOrderFieldUpdater,
   PurchaseOrderFormValues,
   PurchaseOrderStatus,
 } from "@/app/src/types/modules/purchasing/purchase-order/PurchaseOrderTypes";
@@ -18,7 +19,6 @@ import {
   PurchaseOrderFieldClassName,
   SelectField,
   TextField,
-  type PurchaseOrderFieldUpdater,
 } from "@/app/src/ui/modules/purchasing/purchase-order/action/PurchaseOrderFieldControls";
 
 type PurchaseOrderSupplierFieldsProps = {

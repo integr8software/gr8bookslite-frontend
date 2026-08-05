@@ -14,7 +14,10 @@ import {
 	type ModuleActionMenuItem,
 } from "@/app/src/ui/shared/module/ModuleActionMenu";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
-import { AppCopyFromDropdown } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
+import {
+	AppCopyFromDropdown,
+	type AppCopyFromRecord,
+} from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
 
 type ServiceInvoiceFormHeaderProps = {
 	mode: ServiceInvoiceActionMode;
@@ -135,4 +138,4 @@ function createOverflowItems(onSubmit: () => void): ModuleActionMenuItem[] {
 	];
 }
 
-const ServiceInvoiceCopyFromRecords = [];
+const ServiceInvoiceCopyFromRecords: AppCopyFromRecord[] = [];

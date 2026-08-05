@@ -8,7 +8,9 @@ import {
 	goodsReceiptEntryIsComplete,
 } from "@/app/src/data/modules/inventory/goods-receipt/GoodsReceiptData";
 import type {
+	GoodsReceiptAccountingColumnId,
 	GoodsReceiptAccountingEntry,
+	GoodsReceiptEntryTab,
 	GoodsReceiptLineEntry,
 } from "@/app/src/types/modules/inventory/goods-receipt/GoodsReceiptTypes";
 import {
@@ -23,12 +25,8 @@ import { createGoodsReceiptAccountingEntryColumns } from "@/app/src/ui/modules/i
 import {
 	GoodsReceiptAccountingDefaultVisibleColumnIds,
 	GoodsReceiptAccountingProtectedColumnIds,
-	type GoodsReceiptAccountingColumnId,
 } from "@/app/src/ui/modules/inventory/goods-receipt/entries/GoodsReceiptAccountingEntryColumns";
-import {
-	GoodsReceiptEntryTabs,
-	type GoodsReceiptEntryTab,
-} from "@/app/src/ui/modules/inventory/goods-receipt/entries/GoodsReceiptEntryTabs";
+import { GoodsReceiptEntryTabs } from "@/app/src/ui/modules/inventory/goods-receipt/entries/GoodsReceiptEntryTabs";
 import { createGoodsReceiptLineColumns } from "@/app/src/ui/modules/inventory/goods-receipt/entries/GoodsReceiptLineColumns";
 
 type GoodsReceiptEntrySectionProps = {

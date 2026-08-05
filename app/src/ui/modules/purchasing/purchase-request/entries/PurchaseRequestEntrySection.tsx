@@ -9,6 +9,10 @@ import type {
   PurchaseRequestAccountingEntry,
   PurchaseRequestItem,
 } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
+import type {
+  PurchasingAccountingColumnId,
+  PurchasingEntryTab,
+} from "@/app/src/types/modules/purchasing/PurchasingAccountingTypes";
 import {
   ModuleDataEntry,
   type ModuleDataEntryClearAction,
@@ -21,12 +25,8 @@ import {
   createPurchasingAccountingEntryColumns,
   PurchasingAccountingDefaultVisibleColumnIds,
   PurchasingAccountingProtectedColumnIds,
-  type PurchasingAccountingColumnId,
 } from "@/app/src/ui/modules/purchasing/shared/PurchasingAccountingEntryColumns";
-import {
-  PurchasingEntryTabs,
-  type PurchasingEntryTab,
-} from "@/app/src/ui/modules/purchasing/shared/PurchasingEntryTabs";
+import { PurchasingEntryTabs } from "@/app/src/ui/modules/purchasing/shared/PurchasingEntryTabs";
 
 type PurchaseRequestEntrySectionProps = {
   accountingRows: PurchaseRequestAccountingEntry[];

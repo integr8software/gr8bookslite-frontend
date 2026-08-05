@@ -1,6 +1,11 @@
 import type { FormSignatoryRow } from "@/app/src/types/modules/system-administration/form-signatory/FormSignatoryTypes";
 import type { PurchasingAccountingEntry } from "@/app/src/types/modules/purchasing/PurchasingAccountingTypes";
 
+export type PurchaseRequestFieldUpdater<TValues> = <Key extends keyof TValues>(
+	key: Key,
+	value: TValues[Key],
+) => void;
+
 export type PurchaseRequestStatus =
 	| "Draft"
 	| "For Approval"

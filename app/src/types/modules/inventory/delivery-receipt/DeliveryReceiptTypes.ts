@@ -7,6 +7,21 @@ export type DeliveryReceiptStatus =
 	| "For Approval"
 	| "Posted";
 
+export type DeliveryReceiptAccountingColumnId =
+	| "accountCode"
+	| "accountTitle"
+	| "atcCode"
+	| "credit"
+	| "debit"
+	| "partyCode"
+	| "partyName"
+	| "particulars"
+	| "refNo"
+	| "responsibilityCenter"
+	| "vatType";
+
+export type DeliveryReceiptEntryTab = "accounting" | "delivery";
+
 export type DeliveryReceiptRecord = {
 	id: string;
 	customerCode: string;

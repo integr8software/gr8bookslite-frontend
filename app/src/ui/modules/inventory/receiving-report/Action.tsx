@@ -988,6 +988,7 @@ function ReceivingReportItemEntries({
         ]}
         columns={visibleColumns}
         columnOptions={columnOptions}
+        description="List the received items, quantities, costs, discounts, taxes, and warehouse allocations."
         emptyRowLabel="received item"
         exportOptions={[
           { id: "csv", label: "CSV", onSelect: () => undefined },
@@ -1181,6 +1182,7 @@ function ReceivingReportAccountingEntries({
     <ModuleDataEntry
       columns={visibleColumns}
       columnOptions={columnOptions}
+      description="Balance the receiving report with debit and credit accounting entries."
       emptyRowLabel="accounting entry"
       exportOptions={[
         { id: "csv", label: "CSV", onSelect: () => undefined },

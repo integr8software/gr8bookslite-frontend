@@ -4,11 +4,9 @@ export type DeliveryVehicleRecord = DeliveryVehicleModuleRecord;
 export type DeliveryVehicleFormValues = {
   plateNumber: string;
   vehicleType: string;
-  makeModel: string;
   baseWarehouse: string;
   registrationExpiry: string;
   insuranceExpiry: string;
   odometer: string;
   ownership: string;
 };
-

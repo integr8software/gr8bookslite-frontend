@@ -5,12 +5,152 @@ import {
 import type { VehicleRepairMaintenanceRecord } from "@/app/src/types/modules/delivery-vehicle-management/vehicle-repair-maintenance/VehicleRepairMaintenanceTypes";
 
 export const VehicleRepairMaintenanceMockData: VehicleRepairMaintenanceRecord[] = [
-  mock("dvmr-1", "WO-2607-0048", "Brake system repair", "In Progress", { vehicle: "FLEET-044 · Mitsubishi L300", maintenanceType: "Inspection Repair", priority: "Critical", schedule: "Jul 25, 2026 · 8:30 AM", serviceProvider: "Prime Fleet Services", description: "Replace front brake pads and inspect hydraulic system.", estimatedCost: "₱18,500" }, { progress: 45, alert: "Vehicle is out of service until release." }),
-  mock("dvmr-2", "WO-2607-0049", "80,000 km preventive service", "Scheduled", { vehicle: "FLEET-032 · Hino 500", maintenanceType: "Preventive", priority: "Normal", schedule: "Jul 27, 2026 · 7:30 AM", serviceProvider: "Hino Pasig", description: "Engine oil, filters, belts, brake and suspension inspection.", estimatedCost: "₱31,200" }, { progress: 0 }),
-  mock("dvmr-3", "WO-2607-0047", "Cold unit belt replacement", "Waiting for Parts", { vehicle: "FLEET-021 · Toyota HiAce", maintenanceType: "Corrective", priority: "High", schedule: "Jul 26, 2026 · 9:00 AM", serviceProvider: "Thermo Fleet PH", description: "Replace refrigeration compressor belt.", estimatedCost: "₱12,600" }, { progress: 25, alert: "Part ETA July 27." }),
+  mock(
+    "dvmr-1",
+    "WO-2607-0048",
+    "Brake system repair",
+    "In Progress",
+    {
+      vehicle: "FLEET-044 - Mitsubishi L300",
+      maintenanceType: "Inspection Repair",
+      priority: "Critical",
+      schedule: "2026-07-25T08:30",
+      serviceProvider: "Prime Fleet Services",
+      description: "Replace front brake pads and inspect hydraulic system.",
+      estimatedCost: "18500",
+    },
+    {
+      alert: "Vehicle is out of service until release.",
+      createdAt: "2026-07-23T09:20:00+08:00",
+      progress: 45,
+      updatedAt: "2026-07-25T08:45:00+08:00",
+    },
+  ),
+  mock(
+    "dvmr-2",
+    "WO-2607-0049",
+    "80,000 km preventive service",
+    "Scheduled",
+    {
+      vehicle: "FLEET-032 - Hino 500",
+      maintenanceType: "Preventive",
+      priority: "Normal",
+      schedule: "2026-07-27T07:30",
+      serviceProvider: "Hino Pasig",
+      description: "Engine oil, filters, belts, brake and suspension inspection.",
+      estimatedCost: "31200",
+    },
+    { createdAt: "2026-07-22T13:10:00+08:00", progress: 0 },
+  ),
+  mock(
+    "dvmr-3",
+    "WO-2607-0047",
+    "Cold unit belt replacement",
+    "Waiting for Parts",
+    {
+      vehicle: "FLEET-021 - Toyota HiAce",
+      maintenanceType: "Corrective",
+      priority: "High",
+      schedule: "2026-07-26T09:00",
+      serviceProvider: "Thermo Fleet PH",
+      description: "Replace refrigeration compressor belt.",
+      estimatedCost: "12600",
+    },
+    {
+      alert: "Part ETA July 27.",
+      createdAt: "2026-07-22T11:55:00+08:00",
+      progress: 25,
+    },
+  ),
+  mock(
+    "dvmr-4",
+    "WO-2607-0050",
+    "Annual registration renewal",
+    "Draft",
+    {
+      vehicle: "FLEET-014 - Isuzu N-Series",
+      maintenanceType: "Registration/Compliance",
+      priority: "Normal",
+      schedule: "2026-08-01T10:00",
+      serviceProvider: "LTO Liaison Services",
+      description: "Prepare registration renewal, smoke test, and compliance documents.",
+      estimatedCost: "9800",
+    },
+    { createdAt: "2026-07-24T10:00:00+08:00", progress: 5 },
+  ),
+  mock(
+    "dvmr-5",
+    "WO-2607-0051",
+    "Rear tire replacement",
+    "Completed",
+    {
+      vehicle: "FLEET-063 - Hyundai H-100",
+      maintenanceType: "Tire",
+      priority: "Low",
+      schedule: "2026-07-24T13:00",
+      serviceProvider: "RoadReady Tire Center",
+      description: "Replace two rear tires and complete balancing.",
+      estimatedCost: "22400",
+    },
+    { createdAt: "2026-07-20T09:35:00+08:00", progress: 100 },
+  ),
+  mock(
+    "dvmr-6",
+    "WO-2607-0052",
+    "Starter motor replacement",
+    "Released",
+    {
+      vehicle: "FLEET-057 - Yamaha Mio Gear",
+      maintenanceType: "Corrective",
+      priority: "High",
+      schedule: "2026-07-23T15:00",
+      serviceProvider: "MotoCare Makati",
+      description: "Replace starter motor and road-test dispatch readiness.",
+      estimatedCost: "7400",
+    },
+    { createdAt: "2026-07-21T14:30:00+08:00", progress: 100 },
+  ),
+  mock(
+    "dvmr-7",
+    "WO-2607-0053",
+    "Accident damage inspection",
+    "Cancelled",
+    {
+      vehicle: "FLEET-082 - Suzuki Carry",
+      maintenanceType: "Emergency",
+      priority: "Critical",
+      schedule: "2026-07-22T16:00",
+      serviceProvider: "Cebu Fleet Bodyworks",
+      description: "Cancelled after vehicle was moved to disposal review.",
+      estimatedCost: "0",
+    },
+    {
+      alert: "Work order cancelled due to inactive vehicle status.",
+      createdAt: "2026-07-19T17:00:00+08:00",
+      progress: 0,
+    },
+  ),
+  mock(
+    "dvmr-8",
+    "WO-2607-0054",
+    "Quarterly safety inspection",
+    "Scheduled",
+    {
+      vehicle: "FLEET-071 - Foton Tornado",
+      maintenanceType: "Preventive",
+      priority: "Normal",
+      schedule: "2026-07-29T08:00",
+      serviceProvider: "Foton North Service",
+      description: "Inspect cooling unit, brakes, lights, and cargo door seals.",
+      estimatedCost: "15800",
+    },
+    { createdAt: "2026-07-25T08:00:00+08:00", progress: 0 },
+  ),
 ];
 
-export function createVehicleRepairMaintenanceRecord(values: Record<string, string>, status: string) {
+export function createVehicleRepairMaintenanceRecord(
+  values: Record<string, string>,
+  status: string,
+) {
   return createDeliveryVehicleModuleRecord("vehicle-repair-maintenance", "WO", values, status);
 }
-

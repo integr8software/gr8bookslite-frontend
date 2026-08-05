@@ -1,28 +1,93 @@
 "use client";
 
-import { AlertTriangle, CheckCircle2, Gauge, Plus, RefreshCw, Search, Truck, Wrench } from "lucide-react";
-import { DeliveryVehicleModuleRecordDialog } from "@/app/src/ui/modules/delivery-vehicle-management/DeliveryVehicleModuleRecordDialog";
-import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
-import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
-import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
-import { ModuleTableFilterSelect, ModuleTableSearch, ModuleTableToolbar } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
-import { getColumnMetaClassName } from "@/app/src/ui/shared/module/module-table/utils";
-import type { DeliveryVehicleModuleConfig, DeliveryVehicleModuleRecord } from "@/app/src/types/modules/delivery-vehicle-management/DeliveryVehicleModuleTypes";
+import { useState } from "react";
+import type {
+  DeliveryVehicleModuleListPageProps,
+  DeliveryVehicleModuleRecord,
+} from "@/app/src/types/modules/delivery-vehicle-management/DeliveryVehicleModuleTypes";
 import { useDeliveryVehicleModuleListPage } from "@/app/src/hooks/modules/delivery-vehicle-management/useDeliveryVehicleModuleListPage";
+import { DeliveryVehicleModuleHeader } from "@/app/src/ui/modules/delivery-vehicle-management/DeliveryVehicleModuleHeader";
+import { DeliveryVehicleModuleImportDialog } from "@/app/src/ui/modules/delivery-vehicle-management/DeliveryVehicleModuleImportDialog";
+import { DeliveryVehicleModuleRecordDialog } from "@/app/src/ui/modules/delivery-vehicle-management/DeliveryVehicleModuleRecordDialog";
+import { DeliveryVehicleModuleStatisticCards } from "@/app/src/ui/modules/delivery-vehicle-management/DeliveryVehicleModuleStatisticCards";
+import { DeliveryVehicleModuleTable } from "@/app/src/ui/modules/delivery-vehicle-management/DeliveryVehicleModuleTable";
+import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 
-export function DeliveryVehicleModuleListPage({ pageConfig, paginationKey, createRecord, initialRecords, validateRecord }: { pageConfig: DeliveryVehicleModuleConfig; paginationKey: string; createRecord: (values: Record<string, string>, status: string, category?: string) => DeliveryVehicleModuleRecord; initialRecords: DeliveryVehicleModuleRecord[]; validateRecord: (values: Record<string, string>) => Record<string, string> }) {
-  const page = useDeliveryVehicleModuleListPage({ config: pageConfig, createRecord, initialRecords, validateRecord });
-  const activeCount = page.filteredRecords.filter((record) => record.status === "Active" || record.status === "Released").length;
-  const attentionCount = page.filteredRecords.filter((record) => record.alert).length;
-  const capacity = page.filteredRecords.reduce((sum, record) => sum + Number.parseFloat(record.fields.cargoCapacity ?? record.fields.cargoVolume ?? "0"), 0);
-  const Icon = page.config.key === "vehicle-repair-maintenance" ? Wrench : page.config.key === "vehicle-types" ? Gauge : Truck;
-  const hasFilters = Boolean(page.query.trim() || page.statusFilter !== "All" || page.categoryFilter !== "All");
+const ActiveStatus = "Active";
 
-  return <section className="grid min-h-[calc(100vh-8rem)] content-start gap-5 pb-2">
-    <ModuleHeader titleAs="h1" eyebrow={`${page.config.code} · Delivery Vehicle Management`} title={page.config.title} description={page.config.description} actions={<button type="button" onClick={() => page.setEditor({ mode: "add" })} className={moduleHeaderActionClassNames.primary}><Plus className="h-4 w-4" />{page.config.primaryAction}</button>} />
-    <ModuleStatisticCards className="xl:grid-cols-4" items={[{ label: "Records", value: page.statistics.total, helper: "Current filtered scope", icon: Icon, tone: "blue" }, { label: page.config.key === "vehicle-repair-maintenance" ? "Released / ready" : "Active", value: activeCount, helper: "Available for normal use", icon: CheckCircle2, tone: "emerald" }, { label: page.config.key === "vehicle-repair-maintenance" ? "Blocking work" : "Needs attention", value: attentionCount, helper: attentionCount ? "Review before dispatch" : "No alerts in scope", icon: AlertTriangle, tone: attentionCount ? "amber" : "slate" }, { label: page.config.key === "vehicle-repair-maintenance" ? "Progress" : "Capacity", value: page.config.key === "vehicle-repair-maintenance" ? `${page.statistics.averageProgress}%` : `${capacity} m³`, helper: page.config.key === "vehicle-repair-maintenance" ? "Work completion average" : "Default measurement: m³", icon: Gauge, tone: "cyan" }]} />
-    <ModuleTable paginationStorageKey={paginationKey} table={page.table} tableTitle={page.config.title} minWidthClassName="min-w-[82rem]" emptyTitle={`No ${page.config.noun} found`} emptyDescription={hasFilters ? "Try clearing one or more filters." : `Add the first ${page.config.noun} to this workspace.`} emptyIcon={<Search className="h-5 w-5" />} toolbar={<ModuleTableToolbar><div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-[minmax(24rem,2fr)_minmax(12rem,1fr)_minmax(12rem,1fr)]"><ModuleTableSearch label={`Search ${page.config.title}`} value={page.query} onChange={page.setQuery} placeholder={page.config.searchPlaceholder} /><ModuleTableFilterSelect label="Status" value={page.statusFilter} onChange={page.setStatusFilter} options={[{ label: "All statuses", value: "All" }, ...page.config.statuses.map((status) => ({ label: status, value: status }))]} />{page.config.categories ? <ModuleTableFilterSelect label="Workspace" value={page.categoryFilter} onChange={page.setCategoryFilter} options={[{ label: "All workspaces", value: "All" }, ...page.config.categories.map((category) => ({ label: category, value: category }))]} /> : null}</div><div className="flex items-center justify-end gap-2"><button type="button" onClick={hasFilters ? page.resetFilters : page.refreshRecords} className="inline-flex h-12 items-center gap-2 rounded-lg border border-darknavy/10 px-3 text-sm font-semibold text-darknavy/70 hover:bg-darknavy/5" aria-label={hasFilters ? "Clear filters" : "Refresh records"}><RefreshCw className={`h-4 w-4 ${page.isRefreshing ? "animate-spin" : ""}`} />{hasFilters ? "Clear filters" : "Refresh"}</button></div></ModuleTableToolbar>} renderRow={(row) => <tr key={row.id} className="module-table-row">{row.getVisibleCells().map((cell) => <td key={cell.id} className={`px-4 py-3.5 align-middle text-sm text-darknavy ${getColumnMetaClassName(cell.column.columnDef.meta)}`}>{cell.column.id === "status" ? <ModuleStatusBadge status={row.original.status} /> : cell.column.id === "actions" ? <span className="flex justify-end gap-3"><button type="button" onClick={() => page.setEditor({ mode: "view", record: row.original })} className="font-semibold text-skyblue hover:underline">View</button><button type="button" onClick={() => page.setEditor({ mode: "edit", record: row.original })} className="font-semibold text-darknavy/65 hover:text-darknavy">Edit</button></span> : String(cell.getValue() || "—")}</td>)}</tr>} />
-    {page.editor ? <DeliveryVehicleModuleRecordDialog config={page.config} mode={page.editor.mode} record={page.editor.mode === "add" ? undefined : page.editor.record} onClose={() => page.setEditor(null)} onSave={page.saveRecord} validate={page.validateRecord} /> : null}
-  </section>;
+export function DeliveryVehicleModuleListPage({
+  pageConfig,
+  paginationKey,
+  createRecord,
+  initialRecords,
+  validateRecord,
+}: DeliveryVehicleModuleListPageProps) {
+  const page = useDeliveryVehicleModuleListPage({
+    config: pageConfig,
+    createRecord,
+    initialRecords,
+    validateRecord,
+  });
+  const [isImportOpen, setIsImportOpen] = useState(false);
+  const defaultStatusFilter = page.config.statuses.includes(ActiveStatus) ? ActiveStatus : "";
+  const hasActiveFilters =
+    page.query.trim().length > 0 ||
+    page.statusFilter !== defaultStatusFilter ||
+    page.vehicleTypeFilter.length > 0;
+  const isPendingRecordActive = page.pendingStatusRecord?.status === ActiveStatus;
+
+  function openRecord(mode: "edit" | "view", record: DeliveryVehicleModuleRecord) {
+    page.setEditor({ mode, record });
+  }
+
+  return (
+    <section className="grid min-h-[calc(100vh-8rem)] content-start gap-5 pb-2">
+      <DeliveryVehicleModuleHeader
+        config={page.config}
+        onAdd={() => page.setEditor({ mode: "add" })}
+        onImport={() => setIsImportOpen(true)}
+      />
+      <DeliveryVehicleModuleStatisticCards config={page.config} statistics={page.statistics} />
+      <DeliveryVehicleModuleTable
+        config={page.config}
+        hasActiveFilters={hasActiveFilters}
+        page={page}
+        paginationKey={paginationKey}
+        onAdvanceRecord={page.advanceRecord}
+        onEditRecord={(record) => openRecord("edit", record)}
+        onToggleStatus={page.setPendingStatusRecord}
+        onViewRecord={(record) => openRecord("view", record)}
+      />
+      {page.editor ? (
+        <DeliveryVehicleModuleRecordDialog
+          config={page.config}
+          mode={page.editor.mode}
+          record={page.editor.mode === "add" ? undefined : page.editor.record}
+          validate={page.validateRecord}
+          onClose={() => page.setEditor(null)}
+          onSave={page.saveRecord}
+        />
+      ) : null}
+      <DeliveryVehicleModuleImportDialog
+        config={page.config}
+        existingRecords={page.records}
+        isOpen={isImportOpen}
+        onClose={() => setIsImportOpen(false)}
+        onImportRecords={page.importRecords}
+      />
+      <AppDialog
+        isOpen={Boolean(page.pendingStatusRecord)}
+        title={isPendingRecordActive ? `Disable ${page.config.noun}?` : `Enable ${page.config.noun}?`}
+        description={
+          isPendingRecordActive
+            ? `${page.pendingStatusRecord.name} will remain in history and references, but will no longer be active for normal selection.`
+            : `${page.pendingStatusRecord?.name ?? `This ${page.config.noun}`} will be available for normal selection again.`
+        }
+        confirmLabel={isPendingRecordActive ? "Disable" : "Enable"}
+        tone={isPendingRecordActive ? "deactivate" : "activate"}
+        onCancel={() => page.setPendingStatusRecord(null)}
+        onConfirm={page.confirmStatusChange}
+      />
+    </section>
+  );
 }

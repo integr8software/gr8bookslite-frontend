@@ -16,6 +16,13 @@ export const ItemVariationsDrawerFormId = "item-variations-drawer-form";
 
 export const ItemVariationsPaginationStorageKey = "maintenance.item-variations";
 
+export const ItemVariationActiveStatus: ItemVariationRecord["status"] = "Active";
+export const ItemVariationInactiveStatus: ItemVariationRecord["status"] = "Inactive";
+export const ItemVariationStatusOptions = [
+  ItemVariationActiveStatus,
+  ItemVariationInactiveStatus,
+] as const satisfies readonly ItemVariationRecord["status"][];
+
 export const ItemVariationsFieldClassName =
   "min-h-11 w-full rounded-md border border-darknavy/15 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20 read-only:bg-offwhite/65 disabled:cursor-not-allowed disabled:bg-offwhite/65";
 

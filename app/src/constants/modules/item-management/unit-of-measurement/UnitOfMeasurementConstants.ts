@@ -33,9 +33,13 @@ export const UnitOfMeasurementQuantityModeOptions = [
 	{ label: "Decimal quantities", value: "Float" },
 ] as const;
 
+export const UnitOfMeasurementActiveStatus: UnitOfMeasurementRecord["status"] =
+	"Active";
+export const UnitOfMeasurementInactiveStatus: UnitOfMeasurementRecord["status"] =
+	"Inactive";
 export const UnitOfMeasurementStatusOptions = [
-	"Active",
-	"Inactive",
+	UnitOfMeasurementActiveStatus,
+	UnitOfMeasurementInactiveStatus,
 ] as const satisfies readonly UnitOfMeasurementRecord["status"][];
 
 export const UnitOfMeasurementActionCopy = {

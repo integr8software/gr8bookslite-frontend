@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { UnitOfMeasurementActiveStatus } from "@/app/src/constants/modules/item-management/unit-of-measurement/UnitOfMeasurementConstants";
 import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/useMaintenanceAddDrawerSpotlight";
 import { useUnitOfMeasurementListPage } from "@/app/src/hooks/modules/item-management/unit-of-measurement/useUnitOfMeasurementListPage";
 import type { UnitOfMeasurementDrawerState } from "@/app/src/types/modules/item-management/unit-of-measurement/UnitOfMeasurementTypes";
@@ -60,14 +61,15 @@ export function UnitOfMeasurementListPage() {
 	const statistics = {
 		totalUnits: page.records.length,
 		activeUnits: page.activeCount,
-		inactiveUnits: page.records.filter((record) => record.status === "Inactive")
-			.length,
+		inactiveUnits: page.records.filter(
+			(record) => record.status !== UnitOfMeasurementActiveStatus,
+		).length,
 		decimalUnits: page.decimalCount,
 	};
 	const hasActiveFilters =
 		page.query.trim().length > 0 ||
 		page.quantityModeFilter !== "All" ||
-		page.statusFilter !== "Active";
+		page.statusFilter !== UnitOfMeasurementActiveStatus;
 
 	return (
 		<section className="grid gap-5">
@@ -123,22 +125,22 @@ export function UnitOfMeasurementListPage() {
 				isOpen={Boolean(page.pendingStatusRecord)}
 				isPending={page.isMutating}
 				title={
-					page.pendingStatusRecord?.status === "Active"
+					page.pendingStatusRecord?.status === UnitOfMeasurementActiveStatus
 						? "Deactivate unit?"
 						: "Activate unit?"
 				}
 				description={
-					page.pendingStatusRecord?.status === "Active"
+					page.pendingStatusRecord?.status === UnitOfMeasurementActiveStatus
 						? `${page.pendingStatusRecord?.name ?? "This unit"} will remain in history and references, but will no longer be active for normal selection.`
 						: `${page.pendingStatusRecord?.name ?? "This unit"} will be available for normal selection again.`
 				}
 				confirmLabel={
-					page.pendingStatusRecord?.status === "Active"
+					page.pendingStatusRecord?.status === UnitOfMeasurementActiveStatus
 						? "Deactivate"
 						: "Activate"
 				}
 				tone={
-					page.pendingStatusRecord?.status === "Active"
+					page.pendingStatusRecord?.status === UnitOfMeasurementActiveStatus
 						? "deactivate"
 						: "activate"
 				}

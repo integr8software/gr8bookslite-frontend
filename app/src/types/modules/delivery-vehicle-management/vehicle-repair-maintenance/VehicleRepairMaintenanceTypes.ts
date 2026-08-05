@@ -2,11 +2,13 @@ import type { DeliveryVehicleModuleRecord } from "@/app/src/types/modules/delive
 
 export type VehicleRepairMaintenanceRecord = DeliveryVehicleModuleRecord;
 export type VehicleRepairMaintenanceFormValues = {
+  workOrderNo: string;
+  workOrderDate: string;
   vehicle: string;
   maintenanceType: string;
   priority: string;
-  schedule: string;
   serviceProvider: string;
   description: string;
   estimatedCost: string;
+  schedule: string;
 };

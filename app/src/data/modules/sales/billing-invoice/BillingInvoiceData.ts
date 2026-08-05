@@ -29,6 +29,16 @@ export const BillingInvoiceTermOptions = [
 	{ name: "Net 30", value: "Net 30" },
 ];
 
+export const BillingInvoiceStatusOptions = [
+	{ name: "Draft", value: "Draft" },
+	{ name: "Active", value: "Active" },
+	{ name: "Pending", value: "Pending" },
+	{ name: "Approved", value: "Approved" },
+	{ name: "Disapproved", value: "Disapproved" },
+	{ name: "Closed", value: "Closed" },
+	{ name: "Cancelled", value: "Cancelled" },
+];
+
 export const BillingInvoiceDescriptionOptions = [
 	{ name: "--Select Description--", value: "" },
 	{ name: "Professional services", value: "Professional services" },
@@ -147,8 +157,15 @@ export function createBlankBillingInvoiceAccountEntry(
 		id: `bi-account-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
 		accountCode: "",
 		accountTitle: "",
+		particulars: "",
 		debit: "0.00",
 		credit: "0.00",
+		vatType: "",
+		atcCode: "",
+		partyCode: "",
+		partyName: "",
+		responsibilityCenter: "",
+		refNo: "",
 		...overrides,
 	};
 }
@@ -158,18 +175,8 @@ export function createBillingInvoiceFormValues(): BillingInvoiceFormValues {
 
 	return {
 		accountEntries: [
-			createBlankBillingInvoiceAccountEntry({
-				accountTitle: "Accounts Receivable - Trade",
-			}),
-			createBlankBillingInvoiceAccountEntry({
-				accountTitle: "Sales Discount",
-			}),
-			createBlankBillingInvoiceAccountEntry({
-				accountTitle: "Output Tax",
-			}),
-			createBlankBillingInvoiceAccountEntry({
-				accountTitle: "Sales",
-			}),
+			createBlankBillingInvoiceAccountEntry(),
+			createBlankBillingInvoiceAccountEntry(),
 		],
 		code: "",
 		name: "",
@@ -213,7 +220,7 @@ export function createBillingInvoiceFormValues(): BillingInvoiceFormValues {
 		transactionNo: "BI-2026-0004",
 		documentDate: today,
 		sjNo: "",
-		joNo: "",
+		soNo: "",
 		poNo: "",
 		invoiceNo: "",
 		referenceNo: "",
@@ -297,7 +304,7 @@ export function createBillingInvoiceRecordFromForm(
 			lineEntries: values.lineEntries.map((entry) => ({ ...entry })),
 		},
 		invoiceNo: values.invoiceNo || values.transactionNo,
-		referenceNo: values.referenceNo || values.drNo || values.poNo || values.joNo,
+		referenceNo: values.referenceNo || values.drNo || values.poNo || values.soNo,
 		status: normalizeBillingInvoiceStatus(values.status),
 		transactionNo: values.transactionNo,
 	};

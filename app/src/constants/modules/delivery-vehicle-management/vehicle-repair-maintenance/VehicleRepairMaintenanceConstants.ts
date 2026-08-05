@@ -7,9 +7,10 @@ export const VehicleRepairMaintenanceTablePaginationStorageKey =
 
 export const VehicleRepairMaintenanceConfig: DeliveryVehicleModuleConfig = {
   key: "vehicle-repair-maintenance",
-  code: "DVMR",
   title: "Vehicle Repair and Maintenance",
   description: "Plan preventive service and control corrective work through release.",
+  formDescription:
+    "Create one work order for a vehicle, then update the status as the job moves from scheduling to release.",
   primaryAction: "Create Work Order",
   noun: "work order",
   searchPlaceholder: "Search work order, vehicle, type, or provider",
@@ -22,40 +23,23 @@ export const VehicleRepairMaintenanceConfig: DeliveryVehicleModuleConfig = {
     "Released",
     "Cancelled",
   ],
-  fieldTabs: [
-    {
-      label: "Inspection Schedule",
-      fieldKeys: ["vehicle", "maintenanceType", "schedule"],
-    },
-    {
-      label: "Inspection Results",
-      fieldKeys: ["description", "priority"],
-    },
-    {
-      label: "Reported Defects",
-      fieldKeys: ["description", "priority"],
-    },
-    {
-      label: "Maintenance Requests",
-      fieldKeys: ["vehicle", "maintenanceType", "priority", "description"],
-    },
-    {
-      label: "Repair Work Orders",
-      fieldKeys: ["vehicle", "serviceProvider", "estimatedCost"],
-    },
-    {
-      label: "Service History",
-      fieldKeys: ["vehicle", "serviceProvider", "schedule", "estimatedCost"],
-    },
-    {
-      label: "Maintenance Schedule",
-      fieldKeys: ["vehicle", "maintenanceType", "schedule"],
-    },
-  ],
   fields: [
+    {
+      key: "workOrderNo",
+      label: "Work Order No.",
+      placeholder: "Example: WO-2607-0048",
+      required: true,
+    },
+    {
+      key: "workOrderDate",
+      label: "Work Order Date",
+      required: true,
+      type: "date",
+    },
     {
       key: "vehicle",
       label: "Vehicle",
+      placeholder: "Select vehicle",
       required: true,
       type: "select",
       options: [
@@ -71,7 +55,8 @@ export const VehicleRepairMaintenanceConfig: DeliveryVehicleModuleConfig = {
     },
     {
       key: "maintenanceType",
-      label: "Maintenance type",
+      label: "Work type",
+      placeholder: "Select work type",
       required: true,
       type: "select",
       options: [
@@ -80,28 +65,66 @@ export const VehicleRepairMaintenanceConfig: DeliveryVehicleModuleConfig = {
         "Emergency",
         "Inspection Repair",
         "Tire",
+        "Battery",
+        "Brake System",
+        "Engine",
+        "Electrical",
+        "Air Conditioning",
+        "Cooling System",
+        "Suspension",
+        "Body Repair",
+        "Calibration",
+        "Road Test",
+        "Oil Change",
+        "Safety Inspection",
         "Registration/Compliance",
       ],
     },
     {
       key: "priority",
       label: "Priority",
+      placeholder: "Select priority",
       required: true,
       type: "select",
       options: ["Low", "Normal", "High", "Critical"],
     },
-    { key: "schedule", label: "Scheduled start", required: true, type: "datetime-local" },
-    { key: "serviceProvider", label: "Service provider" },
+    {
+      key: "schedule",
+      label: "Schedule",
+      required: true,
+      type: "date",
+    },
+    {
+      key: "serviceProvider",
+      label: "Service provider or mechanic",
+      placeholder: "Example: Prime Fleet Services",
+    },
     {
       key: "description",
-      label: "Description and diagnosis",
+      label: "Remarks",
       maxLength: 500,
+      placeholder: "Example: Replace front brake pads and inspect hydraulic lines before release.",
       required: true,
       type: "textarea",
     },
-    { key: "estimatedCost", label: "Estimated cost (PHP)", type: "number" },
+    {
+      key: "estimatedCost",
+      label: "Cost",
+      placeholder: "0.00",
+      type: "number",
+    },
   ],
-  tableFieldKeys: ["vehicle", "maintenanceType", "priority", "schedule"],
+  tableFieldKeys: [
+    "workOrderNo",
+    "workOrderDate",
+    "vehicle",
+    "maintenanceType",
+    "priority",
+    "serviceProvider",
+    "description",
+    "estimatedCost",
+    "schedule",
+  ],
   insightLabel: "Vehicle blocking",
   insightStatuses: ["In Progress", "Waiting for Parts"],
   operationalNote:

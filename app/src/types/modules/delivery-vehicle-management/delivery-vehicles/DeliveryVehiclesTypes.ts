@@ -5,8 +5,9 @@ export type DeliveryVehicleFormValues = {
   plateNumber: string;
   vehicleType: string;
   baseWarehouse: string;
+  deliveryStatus: string;
+  ownership: string;
   registrationExpiry: string;
   insuranceExpiry: string;
-  odometer: string;
-  ownership: string;
+  description: string;
 };

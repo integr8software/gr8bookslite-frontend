@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type {
   DeliveryVehicleModuleListPageProps,
+  DeliveryVehicleModuleListViewProps,
   DeliveryVehicleModuleRecord,
 } from "@/app/src/types/modules/delivery-vehicle-management/DeliveryVehicleModuleTypes";
 import { useDeliveryVehicleModuleListPage } from "@/app/src/hooks/modules/delivery-vehicle-management/useDeliveryVehicleModuleListPage";
@@ -28,12 +29,18 @@ export function DeliveryVehicleModuleListPage({
     initialRecords,
     validateRecord,
   });
+
+  return <DeliveryVehicleModuleListView page={page} paginationKey={paginationKey} />;
+}
+
+export function DeliveryVehicleModuleListView({ page, paginationKey }: DeliveryVehicleModuleListViewProps) {
   const [isImportOpen, setIsImportOpen] = useState(false);
   const defaultStatusFilter = page.config.statuses.includes(ActiveStatus) ? ActiveStatus : "";
   const hasActiveFilters =
     page.query.trim().length > 0 ||
     page.statusFilter !== defaultStatusFilter ||
-    page.vehicleTypeFilter.length > 0;
+    page.vehicleTypeFilter.length > 0 ||
+    page.workTypeFilter.length > 0;
   const isPendingRecordActive = page.pendingStatusRecord?.status === ActiveStatus;
 
   function openRecord(mode: "edit" | "view", record: DeliveryVehicleModuleRecord) {

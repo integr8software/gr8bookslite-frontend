@@ -89,7 +89,41 @@ export function DeliveryVehicleModuleStatisticCards({
                 value: statistics.attention,
               },
             ]
-          : [
+          : config.key === "vehicle-repair-maintenance"
+            ? [
+                {
+                  icon: ListChecks,
+                  iconClassName: "bg-skyblue/20 text-skyblue",
+                  label: "Work Orders",
+                  summary: "Current filtered scope",
+                  value: statistics.total,
+                },
+                {
+                  icon: Gauge,
+                  iconClassName: "bg-cyan-50 text-cyan-700",
+                  label: "Scheduled",
+                  summary: "Planned service",
+                  value: statistics.scheduledWorkOrders,
+                },
+                {
+                  icon: AlertTriangle,
+                  iconClassName:
+                    statistics.activeWorkOrders > 0
+                      ? "bg-amber-50 text-amber-700"
+                      : "bg-slate-100 text-slate-700",
+                  label: "In Service",
+                  summary: "In progress or waiting",
+                  value: statistics.activeWorkOrders,
+                },
+                {
+                  icon: Power,
+                  iconClassName: "bg-emerald-50 text-emerald-700",
+                  label: "Completed",
+                  summary: "Completed or released",
+                  value: statistics.completedWorkOrders,
+                },
+              ]
+            : [
             {
               icon: Truck,
               iconClassName: "bg-skyblue/20 text-skyblue",

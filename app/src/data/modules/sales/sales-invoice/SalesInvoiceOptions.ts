@@ -17,6 +17,15 @@ export const SalesInvoiceTermOptions = [
   { name: "Net 45", value: "Net 45" },
 ];
 
+export const SalesInvoiceStatusOptions = [
+  { name: "Draft", value: "Draft" },
+  { name: "Active", value: "Active" },
+  { name: "Pending", value: "Pending" },
+  { name: "Approved", value: "Approved" },
+  { name: "Closed", value: "Closed" },
+  { name: "Cancelled", value: "Cancelled" },
+];
+
 export const SalesInvoiceBranchOptions = [
   { name: "Main Branch", value: "Main Branch" },
   { name: "Cebu Branch", value: "Cebu Branch" },

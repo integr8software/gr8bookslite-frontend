@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { ReceivingReportAction } from "@/app/src/ui/modules/inventory/receiving-report/Action";
+import { ReceivingReportActionPage } from "@/app/src/ui/modules/inventory/receiving-report/action/ReceivingReportActionPage";
 
 const PageTitle = "Edit Receiving Report";
 
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default function InventoryReceivingReportEditPage() {
-  return <ReceivingReportAction />;
+  return <ReceivingReportActionPage />;
 }
 
 

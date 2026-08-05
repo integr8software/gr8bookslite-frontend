@@ -2,7 +2,6 @@ import { useCallback, useMemo, useState, type ReactNode } from "react";
 import {
 	billingInvoiceEntryHasData,
 	billingInvoiceEntryIsComplete,
-	calculateBillingInvoiceTotals,
 	createBlankBillingInvoiceAccountEntry,
 	createBlankBillingInvoiceLineEntry,
 	formatBillingInvoiceAmount,
@@ -127,8 +126,6 @@ function BillingInvoiceItemEntries({
 		},
 		[onRowsChange, rows],
 	);
-	const totals = useMemo(() => calculateBillingInvoiceTotals(rows), [rows]);
-	const vatInclusiveTotal = totals.netAmount + totals.vatAmount;
 	const columns = useMemo<ModuleDataEntryColumn<BillingInvoiceLineEntry>[]>(
 		() => createBillingInvoiceItemEntryColumns(isReadonly, updateEntry),
 		[isReadonly, updateEntry],
@@ -145,23 +142,9 @@ function BillingInvoiceItemEntries({
 			description=""
 			emptyRowLabel="item"
 			exportOptions={EntryExportOptions}
-			footerDetails={
-				<div className="flex flex-wrap items-center gap-3 text-sm font-semibold text-darknavy">
-					<span>Sales Discount: {formatBillingInvoiceAmount(totals.discountAmount)}</span>
-					<span>Net Amount: {formatBillingInvoiceAmount(totals.grossAmount)}</span>
-				</div>
-			}
 			isDraggable
 			isReadonly={isReadonly}
 			rows={rows}
-			summaryCells={{
-				discountAmount: formatBillingInvoiceAmount(totals.discountAmount),
-				grossAmount: formatBillingInvoiceAmount(totals.grossAmount),
-				netAmount: formatBillingInvoiceAmount(totals.netAmount),
-				vatAmount: formatBillingInvoiceAmount(totals.vatAmount),
-				vatInclusiveAmount: formatBillingInvoiceAmount(vatInclusiveTotal),
-			}}
-			summaryRowHeader="Total"
 			title={title}
 			onAddRows={(count) =>
 				onRowsChange([
@@ -203,6 +186,9 @@ function BillingInvoiceAccountEntries({
 	title: ReactNode;
 	onRowsChange: (rows: BillingInvoiceAccountEntry[]) => void;
 }) {
+	const [visibleColumnIds, setVisibleColumnIds] = useState<string[]>([
+		...BillingInvoiceAccountingDefaultVisibleColumnIds,
+	]);
 	const updateEntry = useCallback(
 		(rowId: string, updates: Partial<BillingInvoiceAccountEntry>) => {
 			onRowsChange(
@@ -212,14 +198,41 @@ function BillingInvoiceAccountEntries({
 		[onRowsChange, rows],
 	);
 	const totals = useMemo(() => calculateAccountEntryTotals(rows), [rows]);
-	const columns = useMemo<ModuleDataEntryColumn<BillingInvoiceAccountEntry>[]>(
+	const allColumns = useMemo<ModuleDataEntryColumn<BillingInvoiceAccountEntry>[]>(
 		() => createBillingInvoiceAccountEntryColumns(isReadonly, updateEntry),
 		[isReadonly, updateEntry],
 	);
-	const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
-		() => createColumnOptions(columns),
-		[columns],
+	const columns = useMemo(
+		() => allColumns.filter((column) => visibleColumnIds.includes(column.id)),
+		[allColumns, visibleColumnIds],
 	);
+	const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
+		() =>
+			allColumns.map((column) => ({
+				id: column.id,
+				isHideable: !BillingInvoiceAccountingProtectedColumnIds.has(column.id),
+				isVisible: visibleColumnIds.includes(column.id),
+				label: column.header,
+				width: column.width,
+				widthMode: column.widthMode,
+			})),
+		[allColumns, visibleColumnIds],
+	);
+
+	function toggleColumnVisibility(columnId: string, isVisible: boolean) {
+		if (!isVisible && BillingInvoiceAccountingProtectedColumnIds.has(columnId)) {
+			return;
+		}
+
+		setVisibleColumnIds((currentVisibleIds) =>
+			updateVisibleColumnIds(
+				currentVisibleIds,
+				allColumns.map((column) => column.id),
+				columnId,
+				isVisible,
+			),
+		);
+	}
 
 	return (
 		<ModuleDataEntry
@@ -271,7 +284,7 @@ function BillingInvoiceAccountEntries({
 				moveRow(fromRowId, toRowId, rows, onRowsChange)
 			}
 			onRemoveRow={(rowId) => removeAccountRow(rowId, rows, onRowsChange)}
-			onToggleColumnVisibility={() => undefined}
+			onToggleColumnVisibility={toggleColumnVisibility}
 			onUpdateColumnHeader={() => undefined}
 			onUpdateColumnWidth={() => undefined}
 		/>
@@ -306,6 +319,26 @@ function createColumnOptions<TRow>(
 		width: column.width,
 		widthMode: column.widthMode,
 	}));
+}
+
+function updateVisibleColumnIds(
+	visibleColumnIds: string[],
+	columnOrder: string[],
+	columnId: string,
+	isVisible: boolean,
+) {
+	if (isVisible) {
+		const nextVisibleIds = new Set([...visibleColumnIds, columnId]);
+		return columnOrder.filter((currentColumnId) =>
+			nextVisibleIds.has(currentColumnId),
+		);
+	}
+
+	if (visibleColumnIds.length <= 1) {
+		return visibleColumnIds;
+	}
+
+	return visibleColumnIds.filter((currentColumnId) => currentColumnId !== columnId);
 }
 
 function clearLineRows(
@@ -500,6 +533,13 @@ function shouldClearAccountEntry(
 	const hasData =
 		entry.accountCode.trim() !== "" ||
 		entry.accountTitle.trim() !== "" ||
+		entry.particulars.trim() !== "" ||
+		entry.vatType.trim() !== "" ||
+		entry.atcCode.trim() !== "" ||
+		entry.partyCode.trim() !== "" ||
+		entry.partyName.trim() !== "" ||
+		entry.responsibilityCenter.trim() !== "" ||
+		entry.refNo.trim() !== "" ||
 		entry.debit.trim() !== "" ||
 		entry.credit.trim() !== "";
 	const isComplete =
@@ -532,3 +572,16 @@ const BillingInvoiceEntryTabsList = [
 	id: BillingInvoiceEntriesTab;
 	label: string;
 }>;
+
+const BillingInvoiceAccountingDefaultVisibleColumnIds = [
+	"accountTitle",
+	"debit",
+	"credit",
+	"particulars",
+];
+
+const BillingInvoiceAccountingProtectedColumnIds = new Set([
+	"accountTitle",
+	"debit",
+	"credit",
+]);

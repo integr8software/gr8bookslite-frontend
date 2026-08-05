@@ -63,6 +63,7 @@ export type SalesInvoiceFormValues = {
   icrNo: string;
   invoiceNo: string;
   poNo: string;
+  projectName: string;
   projectRef: string;
   referenceNo: string;
   remarks: string;

@@ -2,6 +2,7 @@ import { type ReactNode } from "react";
 import {
   SalesInvoiceCurrencyOptions,
   SalesInvoiceResCenterOptions,
+  SalesInvoiceStatusOptions,
   SalesInvoiceTermOptions,
 } from "@/app/src/data/modules/sales/sales-invoice/SalesInvoiceOptions";
 import type { SalesInvoiceFormValues } from "@/app/src/types/modules/sales/sales-invoice/SalesInvoiceTypes";
@@ -40,7 +41,7 @@ export function SalesInvoiceDetailsForm({
           />
           <TextField
             id="sales-invoice-bill-to-name"
-            label="Bill to Name"
+            label="Bill To Name"
             readOnly={isReadonly}
             value={values.billToName}
             onChange={(value) => onUpdateField("billToName", value)}
@@ -67,11 +68,18 @@ export function SalesInvoiceDetailsForm({
             onChange={(value) => onUpdateField("contactNo", value)}
           />
           <TextField
-            id="sales-invoice-project-name"
-            label="Project Name"
+            id="sales-invoice-project-code"
+            label="Project Code"
             readOnly={isReadonly}
             value={values.projectRef}
             onChange={(value) => onUpdateField("projectRef", value)}
+          />
+          <TextField
+            id="sales-invoice-project-name"
+            label="Project Name"
+            readOnly={isReadonly}
+            value={values.projectName}
+            onChange={(value) => onUpdateField("projectName", value)}
           />
           <FieldShell controlId="sales-invoice-remarks" label="Remarks">
             <AppLimitedTextarea
@@ -104,7 +112,7 @@ export function SalesInvoiceDetailsForm({
           />
           <SelectField
             id="sales-invoice-terms"
-            label="Terms of Pyt"
+            label="Terms of Payment"
             options={SalesInvoiceTermOptions}
             placeholder="--Select Terms--"
             readOnly={isReadonly}
@@ -176,6 +184,15 @@ export function SalesInvoiceDetailsForm({
             readOnly={isReadonly}
             value={values.salesPersonnel}
             onChange={(value) => onUpdateField("salesPersonnel", value)}
+          />
+          <SelectField
+            id="sales-invoice-status"
+            label="Status"
+            options={SalesInvoiceStatusOptions}
+            placeholder="Select status"
+            readOnly={isReadonly}
+            value={values.status}
+            onChange={(value) => onUpdateField("status", value)}
           />
         </div>
       </div>

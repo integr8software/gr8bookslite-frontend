@@ -1,14 +1,14 @@
-export type DeliveryVehicleFeatureKey =
-  "delivery-vehicles" | "vehicle-types" | "vehicle-repair-maintenance";
+export type DeliveryVehicleFeatureKey = "delivery-vehicles" | "vehicle-types" | "vehicle-repair-maintenance";
 
-export type DeliveryVehicleFieldType =
-  "text" | "number" | "date" | "datetime-local" | "select" | "textarea";
+export type DeliveryVehicleFieldType = "text" | "number" | "date" | "datetime-local" | "select" | "textarea";
 
 export type DeliveryVehicleField = {
+  helper?: string;
   key: string;
   label: string;
   maxLength?: number;
   options?: readonly string[];
+  placeholder?: string;
   required?: boolean;
   tooltip?: string;
   type?: DeliveryVehicleFieldType;
@@ -17,6 +17,7 @@ export type DeliveryVehicleField = {
 };
 
 export type DeliveryVehicleFieldTab = {
+  description?: string;
   label: string;
   fieldKeys: readonly string[];
 };
@@ -38,9 +39,10 @@ export type DeliveryVehicleModuleRecord = {
 
 export type DeliveryVehicleModuleConfig = {
   key: DeliveryVehicleFeatureKey;
-  code: string;
   title: string;
   description: string;
+  dispatchQueueStatuses?: readonly string[];
+  formDescription?: string;
   primaryAction: string;
   noun: string;
   searchPlaceholder: string;
@@ -54,8 +56,7 @@ export type DeliveryVehicleModuleConfig = {
   operationalNote: string;
 };
 
-export type DeliveryVehicleEditorState =
-  { mode: "add" } | { mode: "edit" | "view"; record: DeliveryVehicleModuleRecord } | null;
+export type DeliveryVehicleEditorState = { mode: "add" } | { mode: "edit" | "view"; record: DeliveryVehicleModuleRecord } | null;
 
 export type DeliveryVehicleImportProgress = { imported: number; total: number };
 
@@ -79,6 +80,8 @@ export type DeliveryVehicleModulePageState = {
   query: string;
   records: DeliveryVehicleModuleRecord[];
   statusFilter: string;
+  workTypeFilter: string;
+  workTypeFilterOptions: readonly string[];
   statistics: {
     total: number;
     attention: number;
@@ -89,6 +92,9 @@ export type DeliveryVehicleModulePageState = {
     dispatchQueue: number;
     inTransit: number;
     averageProgress: number;
+    scheduledWorkOrders: number;
+    activeWorkOrders: number;
+    completedWorkOrders: number;
   };
   table: import("@tanstack/react-table").Table<DeliveryVehicleModuleRecord>;
   validateRecord: (values: Record<string, string>) => Record<string, string>;
@@ -109,6 +115,7 @@ export type DeliveryVehicleModulePageState = {
   setQuery: (value: string) => void;
   setStatusFilter: (value: string) => void;
   setVehicleTypeFilter: (value: string) => void;
+  setWorkTypeFilter: (value: string) => void;
   vehicleTypeFilter: string;
   vehicleTypeFilterOptions: readonly string[];
 };
@@ -116,11 +123,12 @@ export type DeliveryVehicleModulePageState = {
 export type DeliveryVehicleModuleListPageProps = {
   pageConfig: DeliveryVehicleModuleConfig;
   paginationKey: string;
-  createRecord: (
-    values: Record<string, string>,
-    status: string,
-    category?: string,
-  ) => DeliveryVehicleModuleRecord;
+  createRecord: (values: Record<string, string>, status: string, category?: string) => DeliveryVehicleModuleRecord;
   initialRecords: DeliveryVehicleModuleRecord[];
   validateRecord: (values: Record<string, string>) => Record<string, string>;
+};
+
+export type DeliveryVehicleModuleListViewProps = {
+  page: DeliveryVehicleModulePageState;
+  paginationKey: string;
 };

@@ -7,7 +7,7 @@ import {
 	formatReportDate,
 	formatReportNumberAmount,
 	type ReceivingReportReportValues,
-} from "@/app/src/ui/modules/inventory/receiving-report/ReceivingReportReportPreview";
+} from "@/app/src/ui/modules/inventory/receiving-report/reports/ReceivingReportReportPreview";
 import { parseMoneyNumberInput } from "@/app/src/ui/shared/money/MoneyNumberField";
 
 pdfMake.addVirtualFileSystem(pdfFonts);

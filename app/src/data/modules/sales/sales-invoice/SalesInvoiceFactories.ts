@@ -86,6 +86,7 @@ export function createSalesInvoiceFormValues(): SalesInvoiceFormValues {
     icrNo: "",
     invoiceNo: "SI-2026-0005",
     poNo: "",
+    projectName: "",
     projectRef: "",
     referenceNo: "",
     remarks: "",

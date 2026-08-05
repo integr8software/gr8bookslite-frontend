@@ -2,13 +2,14 @@ import {
 	BillingInvoiceCurrencyOptions,
 	BillingInvoicePartyOptions,
 	BillingInvoiceResponsibilityCenterOptions,
+	BillingInvoiceStatusOptions,
 	BillingInvoiceTermOptions,
 } from "@/app/src/data/modules/sales/billing-invoice/BillingInvoiceData";
 import type { BillingInvoiceFormValues } from "@/app/src/types/modules/sales/billing-invoice/BillingInvoiceTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
+import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 import {
-	AmountField,
 	FieldClassName,
 	FieldShell,
 	SelectField,
@@ -44,7 +45,7 @@ export function BillingInvoiceDetailsForm({
 					</FieldShell>
 					<TextField
 						id="billing-invoice-bill-to-name"
-						label="Bill to Name"
+						label="Bill To Name"
 						value={values.billToName}
 						readOnly={isReadonly}
 						onChange={(value) => onUpdateField("billToName", value)}
@@ -69,6 +70,13 @@ export function BillingInvoiceDetailsForm({
 						value={values.contactNo}
 						readOnly={isReadonly}
 						onChange={(value) => onUpdateField("contactNo", value)}
+					/>
+					<TextField
+						id="billing-invoice-project-code"
+						label="Project Code"
+						value={values.projectRef}
+						readOnly={isReadonly}
+						onChange={(value) => onUpdateField("projectRef", value)}
 					/>
 					<TextField
 						id="billing-invoice-project-name"
@@ -105,7 +113,7 @@ export function BillingInvoiceDetailsForm({
 						readOnly={isReadonly}
 						onChange={(value) => onUpdateField("billToCode", value)}
 					/>
-					<FieldShell controlId="billing-invoice-terms" label="Terms of Pyt">
+					<FieldShell controlId="billing-invoice-terms" label="Terms of Payment">
 						<SelectField
 							value={values.terms}
 							readOnly={isReadonly}
@@ -121,21 +129,12 @@ export function BillingInvoiceDetailsForm({
 						readOnly={isReadonly}
 						onChange={(value) => onUpdateField("dueDate", value)}
 					/>
-					<FieldShell controlId="billing-invoice-currency" label="Currency">
-						<SelectField
-							value={values.currency}
-							readOnly={isReadonly}
-							options={BillingInvoiceCurrencyOptions}
-							placeholder="Currency"
-							onChange={(value) => onUpdateField("currency", value)}
-						/>
-					</FieldShell>
-					<AmountField
-						id="billing-invoice-exchange-rate"
-						label="ER"
-						value={values.exchangeRate}
+					<CurrencyExchangeRateField
+						currency={values.currency}
+						exchangeRate={values.exchangeRate}
 						readOnly={isReadonly}
-						onValueChange={(value) => onUpdateField("exchangeRate", value)}
+						onCurrencyChange={(value) => onUpdateField("currency", value)}
+						onExchangeRateChange={(value) => onUpdateField("exchangeRate", value)}
 					/>
 					<FieldShell controlId="billing-invoice-res-center" label="Res Center">
 						<SelectField
@@ -164,22 +163,66 @@ export function BillingInvoiceDetailsForm({
 						onChange={(value) => onUpdateField("documentDate", value)}
 					/>
 					<TextField
-						id="billing-invoice-dr-no"
-						label="DR No."
-						value={values.drNo}
+						id="billing-invoice-so-no"
+						label="SO No."
+						value={values.soNo}
 						readOnly={isReadonly}
-						onChange={(value) => onUpdateField("drNo", value)}
+						onChange={(value) => onUpdateField("soNo", value)}
 					/>
-					<TextField
-						id="billing-invoice-sales-personnel"
-						label="Sales Personnel"
-						value={values.salesAssociate}
-						readOnly={isReadonly}
-						onChange={(value) => onUpdateField("salesAssociate", value)}
-					/>
+					<FieldShell controlId="billing-invoice-status" label="Status">
+						<AppAdvancedDropdown
+							id="billing-invoice-status"
+							value={values.status}
+							readOnly={isReadonly}
+							options={BillingInvoiceStatusOptions}
+							placeholder="Select status"
+							searchPlaceholder="Search status"
+							onChange={(value) => onUpdateField("status", String(value))}
+						/>
+					</FieldShell>
 				</div>
 			</div>
 		</section>
+	);
+}
+
+function CurrencyExchangeRateField({
+	currency,
+	exchangeRate,
+	onCurrencyChange,
+	onExchangeRateChange,
+	readOnly,
+}: {
+	currency: string;
+	exchangeRate: string;
+	onCurrencyChange: (value: string) => void;
+	onExchangeRateChange: (value: string) => void;
+	readOnly: boolean;
+}) {
+	return (
+		<div className="grid min-w-0 gap-2 sm:grid-cols-[7.5rem_minmax(0,1fr)_2.5rem_7rem] sm:items-start">
+			<label htmlFor="billing-invoice-currency" className="pt-2 text-sm font-semibold text-darknavy">
+				Currency
+			</label>
+			<AppAdvancedDropdown
+				id="billing-invoice-currency"
+				value={currency}
+				readOnly={readOnly}
+				options={BillingInvoiceCurrencyOptions}
+				placeholder="Currency"
+				onChange={(value) => onCurrencyChange(String(value))}
+			/>
+			<label htmlFor="billing-invoice-exchange-rate" className="pt-2 text-sm font-semibold text-darknavy">
+				ER
+			</label>
+			<MoneyNumberField
+				id="billing-invoice-exchange-rate"
+				value={exchangeRate}
+				readOnly={readOnly}
+				onValueChange={onExchangeRateChange}
+				className={`${FieldClassName} text-right tabular-nums`}
+			/>
+		</div>
 	);
 }
 

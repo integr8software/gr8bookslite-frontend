@@ -21,15 +21,15 @@ export function BillingInvoiceReferenceProjectFields({
 		<div className="grid min-w-0 content-start gap-x-8 gap-y-3 lg:grid-cols-2">
 			<FieldShell
 				controlId="billing-invoice-transaction-no"
-				label="Trans No."
+				label="SO No."
 				isRequired
 			>
 				<input
 					id="billing-invoice-transaction-no"
-					value={values.transactionNo}
+					value={values.soNo}
 					readOnly={isReadonly}
 					onChange={(event) =>
-						onUpdateField("transactionNo", event.target.value)
+						onUpdateField("soNo", event.target.value)
 					}
 					className={FieldClassName}
 				/>
@@ -53,13 +53,6 @@ export function BillingInvoiceReferenceProjectFields({
 				value={values.sjNo}
 				readOnly={isReadonly}
 				onChange={(value) => onUpdateField("sjNo", value)}
-			/>
-			<TextField
-				id="billing-invoice-jo-no"
-				label="JO No."
-				value={values.joNo}
-				readOnly={isReadonly}
-				onChange={(value) => onUpdateField("joNo", value)}
 			/>
 			<TextField
 				id="billing-invoice-po-no"
@@ -98,7 +91,7 @@ export function BillingInvoiceReferenceProjectFields({
 			/>
 			<TextField
 				id="billing-invoice-project-ref"
-				label="ProjectRef"
+				label="Project Code"
 				value={values.projectRef}
 				readOnly={isReadonly}
 				onChange={(value) => onUpdateField("projectRef", value)}

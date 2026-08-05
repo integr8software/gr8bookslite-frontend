@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import {
   JournalVoucherLineColumnIds,
+  JournalVoucherLineDefaultVisibleColumnIds,
   JournalVoucherLineColumnLabels,
   JournalVoucherLineColumnWidths,
   JournalVoucherProtectedLineColumnIds,
@@ -51,7 +52,7 @@ export function JournalVoucherDataEntryTable({
   ]);
   const [visibleColumnIds, setVisibleColumnIds] = useState<
     JournalVoucherLineColumnId[]
-  >([...JournalVoucherLineColumnIds]);
+  >([...JournalVoucherLineDefaultVisibleColumnIds]);
   const [columnLabels, setColumnLabels] = useState<
     Record<JournalVoucherLineColumnId, string>
   >({ ...JournalVoucherLineColumnLabels });
@@ -168,6 +169,13 @@ export function JournalVoucherDataEntryTable({
     });
   }
 
+  function resetColumns() {
+    setColumnOrder([...JournalVoucherLineColumnIds]);
+    setVisibleColumnIds([...JournalVoucherLineDefaultVisibleColumnIds]);
+    setColumnLabels({ ...JournalVoucherLineColumnLabels });
+    setColumnWidths({ ...JournalVoucherLineColumnWidths });
+  }
+
   function toggleColumnVisibility(columnId: string, isVisible: boolean) {
     if (!isJournalVoucherLineColumnId(columnId)) {
       return;
@@ -252,6 +260,7 @@ export function JournalVoucherDataEntryTable({
   return (
     <ModuleDataEntry
       columns={columns}
+      columnResetLabel="Default"
       columnOptions={columnOptions}
       description="Use the editable entry grid for manual accounting distributions."
       emptyRowLabel="entry"
@@ -286,13 +295,14 @@ export function JournalVoucherDataEntryTable({
       isDraggable
       isReadonly={page.isReadonly}
       isRowNumberColumnFixed
+      canConfigureColumnsWhenReadonly
       rows={page.values.lines}
       summaryCells={{
         credit: formatJournalVoucherAmount(page.totals.totalCredit),
         debit: formatJournalVoucherAmount(page.totals.totalDebit),
       }}
       summaryRowHeader="Totals"
-      title="Journal Entries"
+      title="Accounting Entries"
       onAddRows={page.addLines}
       onAutoColumnWidth={fitColumnWidth}
       onClearCell={clearCell}
@@ -303,6 +313,7 @@ export function JournalVoucherDataEntryTable({
       onMoveColumn={moveColumn}
       onMoveRow={page.moveLine}
       onRemoveRow={page.removeLine}
+      onResetColumns={resetColumns}
       onToggleColumnVisibility={toggleColumnVisibility}
       onUpdateColumnHeader={updateColumnHeader}
       onUpdateColumnWidth={updateColumnWidth}

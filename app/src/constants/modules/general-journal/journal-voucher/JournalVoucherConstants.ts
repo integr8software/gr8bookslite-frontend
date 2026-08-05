@@ -7,18 +7,18 @@ export const JournalVoucherTablePaginationStorageKey =
 
 export const JournalVoucherStatusOptions: JournalVoucherStatus[] = [
   "Draft",
-  "Approved",
-  "Disapproved",
+  "For Approval",
   "Posted",
+  "Disapproved",
   "Cancelled",
 ];
 
 export const JournalVoucherStatusFilters = [
   "all",
   "Draft",
-  "Approved",
-  "Disapproved",
+  "For Approval",
   "Posted",
+  "Disapproved",
   "Cancelled",
 ] as const;
 
@@ -27,6 +27,22 @@ export const JournalVoucherStatusFilterOptions =
     label: status === "all" ? "All" : status,
     value: status,
   }));
+
+export function canEditJournalVoucherStatus(status: JournalVoucherStatus) {
+  return status === "Draft" || status === "For Approval";
+}
+
+export function canApproveJournalVoucherStatus(status: JournalVoucherStatus) {
+  return status === "For Approval" || status === "Posted";
+}
+
+export function canDisapproveJournalVoucherStatus(status: JournalVoucherStatus) {
+  return status === "For Approval" || status === "Disapproved";
+}
+
+export function canCancelJournalVoucherStatus(status: JournalVoucherStatus) {
+  return status === "Draft" || status === "For Approval" || status === "Cancelled";
+}
 
 export const JournalVoucherCurrencyOptions = [
   "PHP",
@@ -63,13 +79,13 @@ export const JournalVoucherActionCopy = {
 export const JournalVoucherLineColumnIds = [
   "accountCode",
   "accountTitle",
-  "particulars",
   "debit",
   "credit",
-  "vatType",
-  "atcCode",
   "partyCode",
   "partyName",
+  "particulars",
+  "vatType",
+  "atcCode",
   "responsibilityCenter",
   "refNo",
 ] as const;
@@ -79,11 +95,19 @@ export type JournalVoucherLineColumnId =
 
 export const JournalVoucherProtectedLineColumnIds =
   new Set<JournalVoucherLineColumnId>([
-    "accountCode",
     "accountTitle",
     "debit",
     "credit",
   ]);
+
+export const JournalVoucherLineDefaultVisibleColumnIds = [
+  "accountTitle",
+  "debit",
+  "credit",
+  "partyName",
+  "particulars",
+  "responsibilityCenter",
+] as const satisfies readonly JournalVoucherLineColumnId[];
 
 export const JournalVoucherLineColumnLabels: Record<
   JournalVoucherLineColumnId,
@@ -95,9 +119,9 @@ export const JournalVoucherLineColumnLabels: Record<
   partyCode: "Party Code",
   partyName: "Party Name",
   responsibilityCenter: "Responsibility Center",
-  refNo: "Ref No.",
+  refNo: "Reference No",
   vatType: "VAT Type",
-  atcCode: "ATC Code",
+  atcCode: "EWT Code",
   debit: "Debit",
   credit: "Credit",
 };
@@ -107,14 +131,14 @@ export const JournalVoucherLineColumnWidths: Record<
   number
 > = {
   accountCode: 160,
-  accountTitle: 240,
-  particulars: 320,
-  partyCode: 150,
-  partyName: 220,
-  responsibilityCenter: 210,
-  refNo: 160,
-  vatType: 150,
-  atcCode: 140,
+  accountTitle: 260,
   debit: 160,
   credit: 160,
+  partyCode: 150,
+  partyName: 220,
+  particulars: 320,
+  vatType: 150,
+  atcCode: 140,
+  responsibilityCenter: 220,
+  refNo: 160,
 };

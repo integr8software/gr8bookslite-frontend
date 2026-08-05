@@ -62,10 +62,9 @@ type AccountsPayableVoucherDataEntryTablesProps = {
   page: ReturnType<typeof useAccountsPayableVoucherFormPage>;
 };
 
-type AccountsPayableVoucherDataEntryPanelProps =
-  AccountsPayableVoucherDataEntryTablesProps & {
-    title: ReactNode;
-  };
+type AccountsPayableVoucherDataEntryPanelProps = AccountsPayableVoucherDataEntryTablesProps & {
+  title: ReactNode;
+};
 
 type AccountsPayableVoucherEntryView = "expense" | "accounting";
 
@@ -76,8 +75,7 @@ type PartyBearingRow = {
 
 const ManualInputVatAccountingEntryIdPrefix = "apv-entry-manual-input-vat-";
 const ManualEwtAccountingEntryIdPrefix = "apv-entry-manual-ewt-";
-const ManualDefaultPayableAccountingEntryId =
-  "apv-entry-manual-default-payable";
+const ManualDefaultPayableAccountingEntryId = "apv-entry-manual-default-payable";
 const PurchaseTaxCodeQuery = {
   transactionType: "Purchases",
 } as const;
@@ -85,11 +83,8 @@ const PurchaseTaxCodeQuery = {
 export function AccountsPayableVoucherDataEntryTables({
   page,
 }: AccountsPayableVoucherDataEntryTablesProps) {
-  const [entryView, setEntryView] =
-    useState<AccountsPayableVoucherEntryView>("expense");
-  const title = (
-    <EntryViewTabs entryView={entryView} onEntryViewChange={setEntryView} />
-  );
+  const [entryView, setEntryView] = useState<AccountsPayableVoucherEntryView>("expense");
+  const title = <EntryViewTabs entryView={entryView} onEntryViewChange={setEntryView} />;
 
   return entryView === "expense" ? (
     <AccountsPayableVoucherExpenseTable page={page} title={title} />
@@ -111,10 +106,12 @@ function EntryViewTabs({
       aria-label="Entry view"
       className="inline-flex rounded-lg border border-darknavy/10 bg-offwhite/70 p-1"
     >
-      {([
-        ["expense", "Payable Details"],
-        ["accounting", "Accounting Entries"],
-      ] as const).map(([view, label]) => {
+      {(
+        [
+          ["expense", "Payable Details"],
+          ["accounting", "Accounting Entries"],
+        ] as const
+      ).map(([view, label]) => {
         const isActive = entryView === view;
 
         return (
@@ -144,15 +141,13 @@ function AccountsPayableVoucherExpenseTable({
   title,
 }: AccountsPayableVoucherDataEntryPanelProps) {
   const isReadonly = page.isExpenseDetailsReadonly;
-  const [particularsEditorLineId, setParticularsEditorLineId] = useState<
-    string | null
-  >(null);
-  const [columnOrder, setColumnOrder] = useState<
-    AccountsPayableVoucherExpenseColumnId[]
-  >([...AccountsPayableVoucherExpenseColumnIds]);
-  const [visibleColumnIds, setVisibleColumnIds] = useState<
-    AccountsPayableVoucherExpenseColumnId[]
-  >([...AccountsPayableVoucherExpenseDefaultVisibleColumnIds]);
+  const [particularsEditorLineId, setParticularsEditorLineId] = useState<string | null>(null);
+  const [columnOrder, setColumnOrder] = useState<AccountsPayableVoucherExpenseColumnId[]>([
+    ...AccountsPayableVoucherExpenseColumnIds,
+  ]);
+  const [visibleColumnIds, setVisibleColumnIds] = useState<AccountsPayableVoucherExpenseColumnId[]>(
+    [...AccountsPayableVoucherExpenseDefaultVisibleColumnIds],
+  );
   const [columnLabels, setColumnLabels] = useState<
     Record<AccountsPayableVoucherExpenseColumnId, string>
   >({ ...AccountsPayableVoucherExpenseColumnLabels });
@@ -160,12 +155,8 @@ function AccountsPayableVoucherExpenseTable({
     Record<AccountsPayableVoucherExpenseColumnId, number>
   >({ ...AccountsPayableVoucherExpenseColumnWidths });
   const partyOptionsQuery = useAccountsPayableVoucherPartyOptions();
-  const responsibilityCenterOptionsQuery =
-    useAccountsPayableVoucherResponsibilityCenterOptions();
-  const partyRecords = useMemo(
-    () => partyOptionsQuery.data ?? [],
-    [partyOptionsQuery.data],
-  );
+  const responsibilityCenterOptionsQuery = useAccountsPayableVoucherResponsibilityCenterOptions();
+  const partyRecords = useMemo(() => partyOptionsQuery.data ?? [], [partyOptionsQuery.data]);
   const responsibilityCenters = useMemo(
     () => responsibilityCenterOptionsQuery.data ?? [],
     [responsibilityCenterOptionsQuery.data],
@@ -194,26 +185,17 @@ function AccountsPayableVoucherExpenseTable({
     ],
   );
   const responsibilityCenterOptions = useMemo<AppAdvancedDropdownOption[]>(
-    () =>
-      createResponsibilityCenterOptions(
-        responsibilityCenters,
-        page.values.expenseLines,
-      ),
+    () => createResponsibilityCenterOptions(responsibilityCenters, page.values.expenseLines),
     [page.values.expenseLines, responsibilityCenters],
   );
-  const visibleColumnOrder = columnOrder.filter((columnId) =>
-    visibleColumnIds.includes(columnId),
-  );
+  const visibleColumnOrder = columnOrder.filter((columnId) => visibleColumnIds.includes(columnId));
   const particularsEditorLine =
-    page.values.expenseLines.find((line) => line.id === particularsEditorLineId) ??
-    null;
+    page.values.expenseLines.find((line) => line.id === particularsEditorLineId) ?? null;
   const columns: ModuleDataEntryColumn<AccountsPayableVoucherExpenseLine>[] =
     visibleColumnOrder.map((columnId) => ({
       header: columnLabels[columnId],
       id: columnId,
-      isRemovable: !AccountsPayableVoucherExpenseProtectedColumnIds.has(
-        columnId,
-      ),
+      isRemovable: !AccountsPayableVoucherExpenseProtectedColumnIds.has(columnId),
       renderCell: (line) =>
         renderExpenseCell(
           page,
@@ -232,18 +214,14 @@ function AccountsPayableVoucherExpenseTable({
       widthClassName: "",
       widthMode: "fixed",
     }));
-  const columnOptions: ModuleDataEntryColumnOption[] = columnOrder.map(
-    (columnId) => ({
-      id: columnId,
-      isHideable: !AccountsPayableVoucherExpenseProtectedColumnIds.has(
-        columnId,
-      ),
-      isVisible: visibleColumnIds.includes(columnId),
-      label: columnLabels[columnId],
-      width: columnWidths[columnId],
-      widthMode: "fixed",
-    }),
-  );
+  const columnOptions: ModuleDataEntryColumnOption[] = columnOrder.map((columnId) => ({
+    id: columnId,
+    isHideable: !AccountsPayableVoucherExpenseProtectedColumnIds.has(columnId),
+    isVisible: visibleColumnIds.includes(columnId),
+    label: columnLabels[columnId],
+    width: columnWidths[columnId],
+    widthMode: "fixed",
+  }));
 
   function updateColumnHeader(columnId: string, header: string) {
     if (!isExpenseColumnId(columnId)) {
@@ -287,9 +265,14 @@ function AccountsPayableVoucherExpenseTable({
       return;
     }
 
-    setColumnOrder((currentOrder) =>
-      moveColumnId(currentOrder, fromColumnId, toColumnId),
-    );
+    setColumnOrder((currentOrder) => moveColumnId(currentOrder, fromColumnId, toColumnId));
+  }
+
+  function resetColumns() {
+    setColumnOrder([...AccountsPayableVoucherExpenseColumnIds]);
+    setVisibleColumnIds([...AccountsPayableVoucherExpenseDefaultVisibleColumnIds]);
+    setColumnLabels({ ...AccountsPayableVoucherExpenseColumnLabels });
+    setColumnWidths({ ...AccountsPayableVoucherExpenseColumnWidths });
   }
 
   function toggleColumnVisibility(columnId: string, isVisible: boolean) {
@@ -297,10 +280,7 @@ function AccountsPayableVoucherExpenseTable({
       return;
     }
 
-    if (
-      !isVisible &&
-      AccountsPayableVoucherExpenseProtectedColumnIds.has(columnId)
-    ) {
+    if (!isVisible && AccountsPayableVoucherExpenseProtectedColumnIds.has(columnId)) {
       return;
     }
 
@@ -313,16 +293,11 @@ function AccountsPayableVoucherExpenseTable({
     <>
       <ModuleDataEntry
         columns={columns}
+        columnResetLabel="Default"
         columnOptions={columnOptions}
         description=""
         emptyRowLabel="entry"
         error={page.errors.expenseLines}
-        footerDetails={
-          <span className="text-sm font-semibold text-darknavy">
-            Total Amount Due:{" "}
-            {formatAccountsPayableVoucherAmount(page.expenseTotal)}
-          </span>
-        }
         isDraggable
         isReadonly={isReadonly}
         rows={page.values.expenseLines}
@@ -354,6 +329,7 @@ function AccountsPayableVoucherExpenseTable({
         onMoveColumn={moveColumn}
         onMoveRow={page.moveExpenseLine}
         onRemoveRow={page.removeExpenseLine}
+        onResetColumns={resetColumns}
         onToggleColumnVisibility={toggleColumnVisibility}
         onUpdateColumnHeader={updateColumnHeader}
         onUpdateColumnWidth={updateColumnWidth}
@@ -384,12 +360,10 @@ function AccountsPayableVoucherAccountingTable({
   page,
   title,
 }: AccountsPayableVoucherDataEntryPanelProps) {
-  const [particularsEditorEntryId, setParticularsEditorEntryId] = useState<
-    string | null
-  >(null);
-  const [columnOrder, setColumnOrder] = useState<
-    AccountsPayableVoucherAccountingColumnId[]
-  >([...AccountsPayableVoucherAccountingColumnIds]);
+  const [particularsEditorEntryId, setParticularsEditorEntryId] = useState<string | null>(null);
+  const [columnOrder, setColumnOrder] = useState<AccountsPayableVoucherAccountingColumnId[]>([
+    ...AccountsPayableVoucherAccountingColumnIds,
+  ]);
   const [visibleColumnIds, setVisibleColumnIds] = useState<
     AccountsPayableVoucherAccountingColumnId[]
   >([...AccountsPayableVoucherAccountingDefaultVisibleColumnIds]);
@@ -401,12 +375,8 @@ function AccountsPayableVoucherAccountingTable({
   >({ ...AccountsPayableVoucherAccountingColumnWidths });
   const isReadonly = page.isAccountingEntriesReadonly;
   const partyOptionsQuery = useAccountsPayableVoucherPartyOptions();
-  const responsibilityCenterOptionsQuery =
-    useAccountsPayableVoucherResponsibilityCenterOptions();
-  const partyRecords = useMemo(
-    () => partyOptionsQuery.data ?? [],
-    [partyOptionsQuery.data],
-  );
+  const responsibilityCenterOptionsQuery = useAccountsPayableVoucherResponsibilityCenterOptions();
+  const partyRecords = useMemo(() => partyOptionsQuery.data ?? [], [partyOptionsQuery.data]);
   const responsibilityCenters = useMemo(
     () => responsibilityCenterOptionsQuery.data ?? [],
     [responsibilityCenterOptionsQuery.data],
@@ -442,20 +412,14 @@ function AccountsPayableVoucherAccountingTable({
       ]),
     [page.values.accountingEntries, page.values.expenseLines, responsibilityCenters],
   );
-  const visibleColumnOrder = columnOrder.filter((columnId) =>
-    visibleColumnIds.includes(columnId),
-  );
+  const visibleColumnOrder = columnOrder.filter((columnId) => visibleColumnIds.includes(columnId));
   const particularsEditorEntry =
-    page.values.accountingEntries.find(
-      (entry) => entry.id === particularsEditorEntryId,
-    ) ?? null;
+    page.values.accountingEntries.find((entry) => entry.id === particularsEditorEntryId) ?? null;
   const columns: ModuleDataEntryColumn<AccountsPayableVoucherAccountingEntry>[] =
     visibleColumnOrder.map((columnId) => ({
       header: columnLabels[columnId],
       id: columnId,
-      isRemovable: !AccountsPayableVoucherAccountingProtectedColumnIds.has(
-        columnId,
-      ),
+      isRemovable: !AccountsPayableVoucherAccountingProtectedColumnIds.has(columnId),
       renderCell: (entry) =>
         renderAccountingCell(
           page,
@@ -474,18 +438,14 @@ function AccountsPayableVoucherAccountingTable({
       widthClassName: "",
       widthMode: "fixed",
     }));
-  const columnOptions: ModuleDataEntryColumnOption[] = columnOrder.map(
-    (columnId) => ({
-      id: columnId,
-      isHideable: !AccountsPayableVoucherAccountingProtectedColumnIds.has(
-        columnId,
-      ),
-      isVisible: visibleColumnIds.includes(columnId),
-      label: columnLabels[columnId],
-      width: columnWidths[columnId],
-      widthMode: "fixed",
-    }),
-  );
+  const columnOptions: ModuleDataEntryColumnOption[] = columnOrder.map((columnId) => ({
+    id: columnId,
+    isHideable: !AccountsPayableVoucherAccountingProtectedColumnIds.has(columnId),
+    isVisible: visibleColumnIds.includes(columnId),
+    label: columnLabels[columnId],
+    width: columnWidths[columnId],
+    widthMode: "fixed",
+  }));
 
   function updateColumnHeader(columnId: string, header: string) {
     if (!isAccountingColumnId(columnId)) {
@@ -525,16 +485,18 @@ function AccountsPayableVoucherAccountingTable({
   }
 
   function moveColumn(fromColumnId: string, toColumnId: string) {
-    if (
-      !isAccountingColumnId(fromColumnId) ||
-      !isAccountingColumnId(toColumnId)
-    ) {
+    if (!isAccountingColumnId(fromColumnId) || !isAccountingColumnId(toColumnId)) {
       return;
     }
 
-    setColumnOrder((currentOrder) =>
-      moveColumnId(currentOrder, fromColumnId, toColumnId),
-    );
+    setColumnOrder((currentOrder) => moveColumnId(currentOrder, fromColumnId, toColumnId));
+  }
+
+  function resetColumns() {
+    setColumnOrder([...AccountsPayableVoucherAccountingColumnIds]);
+    setVisibleColumnIds([...AccountsPayableVoucherAccountingDefaultVisibleColumnIds]);
+    setColumnLabels({ ...AccountsPayableVoucherAccountingColumnLabels });
+    setColumnWidths({ ...AccountsPayableVoucherAccountingColumnWidths });
   }
 
   function toggleColumnVisibility(columnId: string, isVisible: boolean) {
@@ -542,10 +504,7 @@ function AccountsPayableVoucherAccountingTable({
       return;
     }
 
-    if (
-      !isVisible &&
-      AccountsPayableVoucherAccountingProtectedColumnIds.has(columnId)
-    ) {
+    if (!isVisible && AccountsPayableVoucherAccountingProtectedColumnIds.has(columnId)) {
       return;
     }
 
@@ -558,6 +517,7 @@ function AccountsPayableVoucherAccountingTable({
     <>
       <ModuleDataEntry
         columns={columns}
+        columnResetLabel="Default"
         columnOptions={columnOptions}
         description=""
         emptyRowLabel="entry"
@@ -567,27 +527,18 @@ function AccountsPayableVoucherAccountingTable({
           <span
             className={joinClasses(
               "text-sm font-semibold",
-              page.accountingTotals.isBalanced
-                ? "text-emerald-700"
-                : "text-coralpink",
+              page.accountingTotals.isBalanced ? "text-emerald-700" : "text-coralpink",
             )}
           >
-            Variance:{" "}
-            {formatAccountsPayableVoucherAmount(
-              Math.abs(page.accountingTotals.variance),
-            )}
+            Variance: {formatAccountsPayableVoucherAmount(Math.abs(page.accountingTotals.variance))}
           </span>
         }
         isDraggable
         isReadonly={isReadonly}
         rows={page.values.accountingEntries}
         summaryCells={{
-          credit: formatAccountsPayableVoucherAmount(
-            page.accountingTotals.totalCredit,
-          ),
-          debit: formatAccountsPayableVoucherAmount(
-            page.accountingTotals.totalDebit,
-          ),
+          credit: formatAccountsPayableVoucherAmount(page.accountingTotals.totalCredit),
+          debit: formatAccountsPayableVoucherAmount(page.accountingTotals.totalDebit),
         }}
         summaryRowHeader="Totals"
         title={title}
@@ -600,6 +551,7 @@ function AccountsPayableVoucherAccountingTable({
         onMoveColumn={moveColumn}
         onMoveRow={page.moveAccountingEntry}
         onRemoveRow={page.removeAccountingEntry}
+        onResetColumns={resetColumns}
         onToggleColumnVisibility={toggleColumnVisibility}
         onUpdateColumnHeader={updateColumnHeader}
         onUpdateColumnWidth={updateColumnWidth}
@@ -657,16 +609,8 @@ function renderExpenseCell(
           searchPlaceholder="Search payable type"
           onChange={() => undefined}
           onSelectAccount={(account) => {
-            page.updateExpenseLine(
-              line.id,
-              "expenseAccountCode",
-              account?.accountNumber ?? "",
-            );
-            page.updateExpenseLine(
-              line.id,
-              "expenseType",
-              account?.accountName ?? "",
-            );
+            page.updateExpenseLine(line.id, "expenseAccountCode", account?.accountNumber ?? "");
+            page.updateExpenseLine(line.id, "expenseType", account?.accountName ?? "");
           }}
         />
       );
@@ -685,13 +629,7 @@ function renderExpenseCell(
     case "totalAmountDue":
       return <ExpenseDetailValue value={line[columnId]} />;
     case "partyCode":
-      return (
-        <LineInput
-          value={line.partyCode}
-          onChange={() => undefined}
-          readOnly
-        />
-      );
+      return <LineInput value={line.partyCode} onChange={() => undefined} readOnly />;
     case "vatPercent":
     case "ewtPercent":
       return <ExpenseDetailValue value={line[columnId]} suffix="%" />;
@@ -709,11 +647,7 @@ function renderExpenseCell(
             const taxRate = getVatRateFromCode(vat, taxCodes ?? []);
 
             page.updateExpenseLine(line.id, "vat", vat);
-            page.updateExpenseLine(
-              line.id,
-              "vatPercent",
-              getVatPercentFromRate(taxRate),
-            );
+            page.updateExpenseLine(line.id, "vatPercent", getVatPercentFromRate(taxRate));
           }}
         />
       );
@@ -764,9 +698,7 @@ function renderExpenseCell(
           isReadonly={isReadonly}
           value={line.particulars}
           onOpen={onOpenParticulars}
-          onUpdate={(value) =>
-            page.updateExpenseLine(line.id, "particulars", value)
-          }
+          onUpdate={(value) => page.updateExpenseLine(line.id, "particulars", value)}
         />
       );
     case "responsibilityCenter":
@@ -775,9 +707,7 @@ function renderExpenseCell(
           isReadonly={isReadonly}
           options={responsibilityCenterOptions}
           value={line.responsibilityCenter}
-          onChange={(value) =>
-            page.updateExpenseLine(line.id, "responsibilityCenter", value)
-          }
+          onChange={(value) => page.updateExpenseLine(line.id, "responsibilityCenter", value)}
         />
       );
     default:
@@ -839,16 +769,8 @@ function renderAccountingCell(
           searchPlaceholder="Search account title"
           onChange={() => undefined}
           onSelectAccount={(account) => {
-            page.updateAccountingEntry(
-              entry.id,
-              "accountCode",
-              account?.accountNumber ?? "",
-            );
-            page.updateAccountingEntry(
-              entry.id,
-              "accountTitle",
-              account?.accountName ?? "",
-            );
+            page.updateAccountingEntry(entry.id, "accountCode", account?.accountNumber ?? "");
+            page.updateAccountingEntry(entry.id, "accountTitle", account?.accountName ?? "");
           }}
         />
       );
@@ -868,13 +790,7 @@ function renderAccountingCell(
         />
       );
     case "partyCode":
-      return (
-        <LineInput
-          value={entry.partyCode}
-          onChange={() => undefined}
-          readOnly
-        />
-      );
+      return <LineInput value={entry.partyCode} onChange={() => undefined} readOnly />;
     case "partyName":
       return (
         <PartyDropdown
@@ -900,9 +816,7 @@ function renderAccountingCell(
           isReadonly={isReadonly || isGeneratedTaxEntry}
           value={entry.particulars}
           onOpen={onOpenParticulars}
-          onUpdate={(value) =>
-            page.updateAccountingEntry(entry.id, "particulars", value)
-          }
+          onUpdate={(value) => page.updateAccountingEntry(entry.id, "particulars", value)}
         />
       );
     case "responsibilityCenter":
@@ -911,24 +825,17 @@ function renderAccountingCell(
           isReadonly={isReadonly || isGeneratedTaxEntry}
           options={responsibilityCenterOptions}
           value={entry.responsibilityCenter}
-          onChange={(value) =>
-            page.updateAccountingEntry(entry.id, "responsibilityCenter", value)
-          }
+          onChange={(value) => page.updateAccountingEntry(entry.id, "responsibilityCenter", value)}
         />
       );
     case "vatType":
-      if (
-        entry.vatType &&
-        !vatOptions.some((option) => option.value === entry.vatType)
-      ) {
+      if (entry.vatType && !vatOptions.some((option) => option.value === entry.vatType)) {
         return (
           <LineInput
             disabled={isReadonly}
             readOnly={isGeneratedTaxEntry}
             value={entry.vatType}
-            onChange={(value) =>
-              page.updateAccountingEntry(entry.id, "vatType", value)
-            }
+            onChange={(value) => page.updateAccountingEntry(entry.id, "vatType", value)}
           />
         );
       }
@@ -942,9 +849,7 @@ function renderAccountingCell(
           placeholder="Select VAT"
           searchPlaceholder="Search VAT rate or description"
           className={entryDropdownClassName()}
-          onChange={(value) =>
-            page.updateAccountingEntry(entry.id, "vatType", String(value))
-          }
+          onChange={(value) => page.updateAccountingEntry(entry.id, "vatType", String(value))}
         />
       );
     case "atcCode":
@@ -958,9 +863,7 @@ function renderAccountingCell(
           searchPlaceholder="Search EWT code, rate, or description"
           className={entryDropdownClassName(entryErrors.atcCode)}
           ariaInvalid={Boolean(entryErrors.atcCode)}
-          onChange={(value) =>
-            page.updateAccountingEntry(entry.id, "atcCode", String(value))
-          }
+          onChange={(value) => page.updateAccountingEntry(entry.id, "atcCode", String(value))}
         />
       );
     default:
@@ -981,9 +884,7 @@ function renderAccountingCell(
   }
 }
 
-function isManualGeneratedTaxAccountingEntry(
-  entry: AccountsPayableVoucherAccountingEntry,
-) {
+function isManualGeneratedTaxAccountingEntry(entry: AccountsPayableVoucherAccountingEntry) {
   return (
     entry.id.startsWith(ManualInputVatAccountingEntryIdPrefix) ||
     entry.id.startsWith(ManualEwtAccountingEntryIdPrefix) ||
@@ -1044,11 +945,7 @@ function getPartyPurchaseTaxDefaults(
     party.defaultPurchaseInputVatTaxSourceKey,
     "INPUT VAT",
   );
-  const ewtCode = getTaxCodeBySourceKey(
-    taxCodes,
-    party.defaultPurchaseEwtTaxSourceKey,
-    "EWT",
-  );
+  const ewtCode = getTaxCodeBySourceKey(taxCodes, party.defaultPurchaseEwtTaxSourceKey, "EWT");
   const inputVatRate = getVatRateFromCode(inputVatCode, taxCodes);
 
   return {
@@ -1109,12 +1006,10 @@ function PartyDropdown({
       onChange={(value) => {
         const selectedValue = String(value);
         const party = options.find((option) => option.value === selectedValue);
-        const isFallbackValue = selectedValue.startsWith(
-          PartyFallbackValuePrefix,
-        );
+        const isFallbackValue = selectedValue.startsWith(PartyFallbackValuePrefix);
 
         onSelect(
-          isFallbackValue ? "" : party?.value ?? "",
+          isFallbackValue ? "" : (party?.value ?? ""),
           party?.name ?? (isFallbackValue ? selectedValue : ""),
         );
       }}
@@ -1137,12 +1032,7 @@ function ParticularsCell({
 }) {
   return (
     <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_2.5rem]">
-      <LineInput
-        error={error}
-        value={value}
-        onChange={onUpdate}
-        readOnly={isReadonly}
-      />
+      <LineInput error={error} value={value} onChange={onUpdate} readOnly={isReadonly} />
       <button
         type="button"
         onClick={onOpen}
@@ -1200,9 +1090,7 @@ function LineInput({
       disabled={disabled}
       readOnly={readOnly}
       title={error}
-      className={entryCellControlClassName(
-        error ? "ring-2 ring-inset ring-red-500/45" : "",
-      )}
+      className={entryCellControlClassName(error ? "ring-2 ring-inset ring-red-500/45" : "")}
     />
   );
 }
@@ -1249,22 +1137,13 @@ function LineAmountInput({
       disabled={disabled}
       title={error}
       className={entryCellControlClassName(
-        joinClasses(
-          "text-right tabular-nums",
-          error ? "ring-2 ring-inset ring-red-500/45" : "",
-        ),
+        joinClasses("text-right tabular-nums", error ? "ring-2 ring-inset ring-red-500/45" : ""),
       )}
     />
   );
 }
 
-function ExpenseDetailValue({
-  suffix = "",
-  value,
-}: {
-  suffix?: string;
-  value: number;
-}) {
+function ExpenseDetailValue({ suffix = "", value }: { suffix?: string; value: number }) {
   return (
     <div className="flex h-10 w-full items-center justify-end bg-offwhite/45 px-3 text-sm font-medium tabular-nums text-darknavy/70">
       {formatAccountsPayableVoucherAmount(value)}
@@ -1340,9 +1219,7 @@ function createPartyOptions(
     name: party.name,
     value: party.partyCodeNo,
   }));
-  const optionNames = new Set(
-    options.map((option) => option.name.toLowerCase()),
-  );
+  const optionNames = new Set(options.map((option) => option.name.toLowerCase()));
   const optionValues = new Set(options.map((option) => option.value));
   const customOptions: AppAdvancedDropdownOption[] = [];
 
@@ -1350,11 +1227,7 @@ function createPartyOptions(
     const partyName = row.partyName.trim();
     const value = row.partyCode || getPartyFallbackValue(partyName);
 
-    if (
-      !partyName ||
-      optionNames.has(partyName.toLowerCase()) ||
-      optionValues.has(value)
-    ) {
+    if (!partyName || optionNames.has(partyName.toLowerCase()) || optionValues.has(value)) {
       return;
     }
 
@@ -1404,9 +1277,7 @@ function createResponsibilityCenterOptions(
   return [...options, ...customOptions];
 }
 
-function isExpenseColumnId(
-  columnId: string,
-): columnId is AccountsPayableVoucherExpenseColumnId {
+function isExpenseColumnId(columnId: string): columnId is AccountsPayableVoucherExpenseColumnId {
   return AccountsPayableVoucherExpenseColumnIds.includes(
     columnId as AccountsPayableVoucherExpenseColumnId,
   );
@@ -1425,17 +1296,13 @@ function getExpenseExportCell(
   columnId: AccountsPayableVoucherExpenseColumnId,
 ) {
   if (isExpenseAmountColumn(columnId)) {
-    return Number(line[columnId] || 0) > 0
-      ? Number(line[columnId] || 0).toFixed(2)
-      : "";
+    return Number(line[columnId] || 0) > 0 ? Number(line[columnId] || 0).toFixed(2) : "";
   }
 
   return String(line[columnId] ?? "");
 }
 
-function isExpenseAmountColumn(
-  columnId: AccountsPayableVoucherExpenseColumnId,
-) {
+function isExpenseAmountColumn(columnId: AccountsPayableVoucherExpenseColumnId) {
   return (
     columnId === "amount" ||
     columnId === "netAmount" ||
@@ -1479,10 +1346,7 @@ function calculateExpenseColumnFitWidth({
   const headerWidth = estimateTextWidth(columnLabels[columnId], 76);
   const contentWidth = lines.reduce(
     (currentWidth, line) =>
-      Math.max(
-        currentWidth,
-        estimateTextWidth(String(getExpenseExportCell(line, columnId)), 24),
-      ),
+      Math.max(currentWidth, estimateTextWidth(String(getExpenseExportCell(line, columnId)), 24)),
     50,
   );
 
@@ -1543,9 +1407,7 @@ function updateVisibleColumnIds<TColumnId extends string>(
   if (isVisible) {
     const nextVisibleIds = new Set([...visibleColumnIds, columnId]);
 
-    return columnOrder.filter((currentColumnId) =>
-      nextVisibleIds.has(currentColumnId),
-    );
+    return columnOrder.filter((currentColumnId) => nextVisibleIds.has(currentColumnId));
   }
 
   if (visibleColumnIds.length <= 1) {

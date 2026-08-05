@@ -18,6 +18,7 @@ const accountsPayableVoucherHeaderSchema = z.object({
   address: z.string(),
   contactPerson: z.string(),
   contactNo: z.string(),
+  projectCode: z.string(),
   projectName: z.string(),
   currency: z.string().trim().min(1, "Select a currency."),
   exchangeRate: z.number().positive("Enter an exchange rate greater than zero."),
@@ -35,9 +36,7 @@ const accountsPayableVoucherHeaderSchema = z.object({
 const accountsPayableVoucherExpenseLineSchema = z.object({
   expenseAccountCode: z.string().trim().min(1, "Enter an account code."),
   expenseType: z.string().trim().min(1, "Enter an expense type."),
-  amount: z
-    .number()
-    .refine((value) => Math.abs(value) > 0, "Enter a non-zero amount."),
+  amount: z.number().refine((value) => Math.abs(value) > 0, "Enter a non-zero amount."),
 });
 
 const accountsPayableVoucherAccountingEntrySchema = z.object({
@@ -55,8 +54,7 @@ export function validateAccountsPayableVoucherForm(
 
   if (!headerResult.success) {
     for (const issue of headerResult.error.issues) {
-      const field =
-        issue.path[0] as keyof AccountsPayableVoucherFormValues | undefined;
+      const field = issue.path[0] as keyof AccountsPayableVoucherFormValues | undefined;
 
       if (field) {
         errors[field] = issue.message;
@@ -74,9 +72,7 @@ function validateExpenseLines(
   values: AccountsPayableVoucherFormValues,
   errors: AccountsPayableVoucherFormErrors,
 ) {
-  const hasExpenseItems = accountsPayableVoucherExpenseLinesHaveItems(
-    values.expenseLines,
-  );
+  const hasExpenseItems = accountsPayableVoucherExpenseLinesHaveItems(values.expenseLines);
 
   if (!hasExpenseItems) {
     return;
@@ -105,12 +101,10 @@ function validateExpenseLines(
     }
   }
 
-  const expenseTotals = getAccountsPayableVoucherExpenseTotals(
-    values.expenseLines,
-  );
+  const expenseTotals = getAccountsPayableVoucherExpenseTotals(values.expenseLines);
 
   if (Math.abs(expenseTotals.totalAmountDue - values.amount) >= 0.001) {
-    errors.expenseLines = "Expense total due must match the voucher amount.";
+    errors.expenseLines = "Expense total payable must match the voucher amount.";
   }
 }
 
@@ -123,15 +117,13 @@ function validateAccountingEntries(
   }
 
   for (const entry of values.accountingEntries) {
-    const entryResult =
-      accountsPayableVoucherAccountingEntrySchema.safeParse(entry);
+    const entryResult = accountsPayableVoucherAccountingEntrySchema.safeParse(entry);
     const hasDebit = Number(entry.debit || 0) > 0;
     const hasCredit = Number(entry.credit || 0) > 0;
 
     if (!entryResult.success || (!hasDebit && !hasCredit)) {
       errors.accountingEntryErrors = errors.accountingEntryErrors ?? {};
-      errors.accountingEntryErrors[entry.id] =
-        errors.accountingEntryErrors[entry.id] ?? {};
+      errors.accountingEntryErrors[entry.id] = errors.accountingEntryErrors[entry.id] ?? {};
 
       for (const issue of entryResult.success ? [] : entryResult.error.issues) {
         const field = issue.path[0] as keyof typeof entry | undefined;
@@ -158,30 +150,24 @@ function validateAccountingEntries(
     }
   }
 
-  const totals = getAccountsPayableVoucherAccountingTotals(
-    values.accountingEntries,
-  );
+  const totals = getAccountsPayableVoucherAccountingTotals(values.accountingEntries);
 
   if (Math.abs(totals.variance) >= 0.001) {
     errors.balance = "Variance must be zero before saving.";
   }
 
-  const expectedAccountingTotal =
-    getAccountsPayableVoucherAccountingControlTotal(values);
+  const expectedAccountingTotal = getAccountsPayableVoucherAccountingControlTotal(values);
 
   if (
     expectedAccountingTotal > 0 &&
     (Math.abs(totals.totalDebit - expectedAccountingTotal) >= 0.001 ||
       Math.abs(totals.totalCredit - expectedAccountingTotal) >= 0.001)
   ) {
-    errors.accountingEntries =
-      "Accounting debit and credit totals must match the expense total.";
+    errors.accountingEntries = "Accounting debit and credit totals must match the expense total.";
   }
 }
 
-function getAccountsPayableVoucherAccountingControlTotal(
-  values: AccountsPayableVoucherFormValues,
-) {
+function getAccountsPayableVoucherAccountingControlTotal(values: AccountsPayableVoucherFormValues) {
   const total = values.expenseLines.reduce(
     (sum, line) => sum + Math.abs(Number(line.amount || 0)),
     0,

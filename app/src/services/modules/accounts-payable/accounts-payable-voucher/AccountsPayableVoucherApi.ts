@@ -63,6 +63,7 @@ type AccountsPayableVoucherPayload = {
   partyId?: string | null;
   partyName: string;
   payableType: ApiAccountsPayableVoucherPayableType;
+  projectCode?: string | null;
   projectName?: string | null;
   referenceNo?: string | null;
   remarks?: string | null;
@@ -147,21 +148,22 @@ type AccountsPayableVoucherPayableAccountLookupResponse = {
 };
 
 const StatusFromApi: Record<string, AccountsPayableVoucherStatus> = {
-  APPROVED: "Approved",
+  APPROVED: "For Approval",
   CANCELLED: "Cancelled",
-  CLOSED: "Closed",
+  CLOSED: "Posted",
   DISAPPROVED: "Disapproved",
   DRAFT: "Draft",
+  FOR_APPROVAL: "For Approval",
+  POSTED: "Posted",
 };
 
-const StatusToApi: Record<AccountsPayableVoucherStatus, ApiAccountsPayableVoucherStatus> =
-  {
-    Approved: "APPROVED",
-    Cancelled: "CANCELLED",
-    Closed: "CLOSED",
-    Disapproved: "DISAPPROVED",
-    Draft: "DRAFT",
-  };
+const StatusToApi: Record<AccountsPayableVoucherStatus, ApiAccountsPayableVoucherStatus> = {
+  Cancelled: "CANCELLED",
+  Disapproved: "DISAPPROVED",
+  Draft: "DRAFT",
+  "For Approval": "APPROVED",
+  Posted: "CLOSED",
+};
 
 const PayableTypeFromApi: Record<string, AccountsPayableVoucherPayableType> = {
   ACCRUED_PAYABLE: "Accrued Payable",
@@ -199,10 +201,7 @@ export async function fetchAccountsPayableVouchers(
         search: query.search,
         sortBy: query.sortBy ?? "documentDate",
         sortDirection: query.sortDirection ?? "desc",
-        status:
-          query.status && query.status !== "all"
-            ? mapStatusToApi(query.status)
-            : undefined,
+        status: query.status && query.status !== "all" ? mapStatusToApi(query.status) : undefined,
       }),
     },
   );
@@ -269,19 +268,17 @@ export async function fetchAccountsPayableVoucherTermOptions() {
 }
 
 export async function fetchAccountsPayableVoucherResponsibilityCenterOptions() {
-  const response =
-    await ApiClient.get<AccountsPayableVoucherResponsibilityCenterLookupResponse>(
-      `${AccountsPayableVoucherApiPath}/lookups/responsibility-centers`,
-    );
+  const response = await ApiClient.get<AccountsPayableVoucherResponsibilityCenterLookupResponse>(
+    `${AccountsPayableVoucherApiPath}/lookups/responsibility-centers`,
+  );
 
   return response.data.responsibilityCenters;
 }
 
 export async function fetchAccountsPayableVoucherPayableAccountOptions() {
-  const response =
-    await ApiClient.get<AccountsPayableVoucherPayableAccountLookupResponse>(
-      `${AccountsPayableVoucherApiPath}/lookups/payable-accounts`,
-    );
+  const response = await ApiClient.get<AccountsPayableVoucherPayableAccountLookupResponse>(
+    `${AccountsPayableVoucherApiPath}/lookups/payable-accounts`,
+  );
 
   return response.data;
 }
@@ -377,8 +374,7 @@ function normalizeLookupParty(
     defaultPayableAccount: party.defaultPayableAccount ?? "",
     termId: party.termId ?? "",
     termName: party.termName ?? "",
-    defaultPurchaseInputVatTaxSourceKey:
-      party.defaultPurchaseInputVatTaxSourceKey ?? "",
+    defaultPurchaseInputVatTaxSourceKey: party.defaultPurchaseInputVatTaxSourceKey ?? "",
     defaultPurchaseEwtTaxSourceKey: party.defaultPurchaseEwtTaxSourceKey ?? "",
     defaultPurchaseFwtTaxSourceKey: party.defaultPurchaseFwtTaxSourceKey ?? "",
     defaultPurchaseWvatTaxSourceKey: party.defaultPurchaseWvatTaxSourceKey ?? "",
@@ -389,7 +385,9 @@ function normalizeLookupParty(
 }
 
 function normalizeStatus(status: unknown) {
-  return String(status ?? "").trim().toUpperCase();
+  return String(status ?? "")
+    .trim()
+    .toUpperCase();
 }
 
 function createEmptyLookupAddress() {
@@ -477,6 +475,7 @@ function mapApiAccountsPayableVoucher(
     partyId: voucher.partyId ?? undefined,
     partyName: voucher.partyName,
     payableType: mapPayableTypeFromApi(voucher.payableType),
+    projectCode: voucher.projectCode ?? "",
     projectName: voucher.projectName ?? "",
     referenceNo: voucher.referenceNo ?? "",
     remarks: voucher.remarks ?? "",
@@ -488,9 +487,7 @@ function mapApiAccountsPayableVoucher(
   };
 }
 
-function mapApiAccountsPayableVoucherDetails(
-  detail: ApiAccountsPayableVoucherDetails,
-) {
+function mapApiAccountsPayableVoucherDetails(detail: ApiAccountsPayableVoucherDetails) {
   return {
     amount: toNumber(detail.amount),
     branchUnitId: detail.branchUnitId,
@@ -610,6 +607,7 @@ function toApiAccountsPayableVoucherPayload(
     partyId: cleanOptional(values.partyId),
     partyName: values.partyName.trim(),
     payableType: mapPayableTypeToApi(values.payableType),
+    projectCode: cleanOptional(values.projectCode),
     projectName: cleanOptional(values.projectName),
     referenceNo: cleanOptional(values.referenceNo),
     remarks: cleanOptional(values.remarks),
@@ -619,9 +617,7 @@ function toApiAccountsPayableVoucherPayload(
   };
 }
 
-function cleanQueryParams(
-  params: Record<string, number | string | null | undefined>,
-) {
+function cleanQueryParams(params: Record<string, number | string | null | undefined>) {
   return Object.fromEntries(
     Object.entries(params).filter(([, value]) => {
       if (value === undefined || value === null) return false;
@@ -649,15 +645,11 @@ function mapPayableTypeToApi(
   return PayableTypeToApi[value] ?? value;
 }
 
-function mapStatusFromApi(
-  value: ApiAccountsPayableVoucherStatus,
-): AccountsPayableVoucherStatus {
+function mapStatusFromApi(value: ApiAccountsPayableVoucherStatus): AccountsPayableVoucherStatus {
   return StatusFromApi[value] ?? (value as AccountsPayableVoucherStatus);
 }
 
-function mapStatusToApi(
-  value: AccountsPayableVoucherStatus,
-): ApiAccountsPayableVoucherStatus {
+function mapStatusToApi(value: AccountsPayableVoucherStatus): ApiAccountsPayableVoucherStatus {
   return StatusToApi[value] ?? value;
 }
 

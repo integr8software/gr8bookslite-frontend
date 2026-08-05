@@ -10,7 +10,10 @@ import {
 } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { AccountsPayableVoucherHref } from "@/app/src/constants/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherConstants";
+import {
+  AccountsPayableVoucherHref,
+  canEditAccountsPayableVoucherStatus,
+} from "@/app/src/constants/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherConstants";
 import {
   accountsPayableVoucherExpenseLineHasItem,
   accountsPayableVoucherExpenseLinesHaveItems,
@@ -34,6 +37,7 @@ import {
   useAccountsPayableVoucherNumberSuggestion,
   useAccountsPayableVoucherStore,
   useAccountsPayableVoucherRecord,
+  useAccountsPayableVoucherPartyOptions,
 } from "@/app/src/hooks/modules/accounts-payable/accounts-payable-voucher/useAccountsPayableVoucher";
 import { useTaxDefinitionOptions } from "@/app/src/hooks/shared/tax/useTaxDefinitionOptions";
 import { useTaxes } from "@/app/src/hooks/shared/tax/useTaxOptions";
@@ -46,16 +50,29 @@ import type {
   AccountsPayableVoucherExpenseLineField,
   AccountsPayableVoucherFormErrors,
   AccountsPayableVoucherFormValues,
+  AccountsPayableVoucherLookupParty,
 } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
 import type { ModuleDataEntryClearAction } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 import type { TaxDefinitionDefaultAccountIds } from "@/app/src/types/shared/tax/TaxDefinitionTypes";
 import type { Tax } from "@/app/src/types/shared/tax/TaxTypes";
+import {
+  getEwtPercentFromCode,
+  getVatPercentFromRate,
+  getVatRateFromCode,
+} from "@/app/src/ui/shared/transaction-setup/AppTaxRateDialog";
 import { validateAccountsPayableVoucherForm } from "@/app/src/validations/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherValidation";
 
 type AccountsPayableVoucherTaxAccountingContext = {
   accountOptions: ModuleChartAccount[];
   defaultAccountIds: TaxDefinitionDefaultAccountIds;
   taxCodes: Tax[];
+};
+
+type PartyPurchaseTaxDefaults = {
+  ewtCode: string;
+  ewtPercent: number;
+  inputVatCode: string;
+  inputVatPercent: number;
 };
 
 const PurchaseTaxCodeQuery = {
@@ -74,10 +91,15 @@ export function useAccountsPayableVoucherFormPage() {
   const recordId = params.recordId;
   const { addRecord, isMutating, records, updateRecord, updateStatus } =
     useAccountsPayableVoucherStore();
+  const partyOptionsQuery = useAccountsPayableVoucherPartyOptions();
   const taxDefinitionOptions = useTaxDefinitionOptions({
     transactionScope: "PURCHASE",
   });
   const taxCodesQuery = useTaxes(PurchaseTaxCodeQuery);
+  const partyRecords = useMemo(
+    () => partyOptionsQuery.data ?? [],
+    [partyOptionsQuery.data],
+  );
   const taxAccountingContext = useMemo(
     () => ({
       accountOptions: taxDefinitionOptions.accountOptions,
@@ -99,12 +121,16 @@ export function useAccountsPayableVoucherFormPage() {
     recordQuery.data ?? records.find((record) => record.id === recordId);
   const isReadonly =
     mode === "view" ||
-    (mode === "edit" && existingRecord?.status !== "Draft");
+    (mode === "edit" &&
+      (!existingRecord ||
+        !canEditAccountsPayableVoucherStatus(existingRecord.status)));
   const [values, setValues] = useState<AccountsPayableVoucherFormValues>(() =>
     createAccountsPayableVoucherFormValues(existingRecord),
   );
   const [errors, setErrors] = useState<AccountsPayableVoucherFormErrors>({});
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+  const [pendingSaveValues, setPendingSaveValues] =
+    useState<AccountsPayableVoucherFormValues | null>(null);
   const [isExchangeRateLoading, setIsExchangeRateLoading] = useState(false);
   const hasAppliedNumberSuggestionRef = useRef(false);
   const hasEditedTransactionNoRef = useRef(false);
@@ -173,7 +199,7 @@ export function useAccountsPayableVoucherFormPage() {
     [displayValues.expenseLines],
   );
   const hasAccountingEntryItems = useMemo(
-    () => values.accountingEntries.some(accountingEntryHasData),
+    () => values.accountingEntries.some(accountingEntryHasTransactionData),
     [values.accountingEntries],
   );
   const isExpenseDetailsReadonly =
@@ -320,20 +346,30 @@ export function useAccountsPayableVoucherFormPage() {
       return;
     }
 
-    setValues((current) =>
-      syncAccountsPayableVoucherWithGeneratedAccountingEntries({
+    setValues((current) => {
+      const partyTaxDefaults = getHeaderPartyPurchaseTaxDefaults(
+        current,
+        partyRecords,
+        taxAccountingContext.taxCodes,
+      );
+
+      return syncAccountsPayableVoucherWithGeneratedAccountingEntries({
         ...current,
         expenseLines: [
           ...current.expenseLines,
           ...Array.from({ length: count }, (_, index) =>
             createAccountsPayableVoucherExpenseLine(
               current.expenseLines.length + index + 1,
-              createInheritedLineDefaults(current),
+              createInheritedExpenseLineDefaults(
+                current,
+                current.expenseLines,
+                partyTaxDefaults,
+              ),
             ),
           ),
         ],
-      }, taxAccountingContext),
-    );
+      }, taxAccountingContext);
+    });
     setErrors((current) => ({ ...current, expenseLines: undefined }));
   }
 
@@ -366,6 +402,11 @@ export function useAccountsPayableVoucherFormPage() {
       const rowIndex = current.expenseLines.findIndex(
         (line) => line.id === lineId,
       );
+      const partyTaxDefaults = getHeaderPartyPurchaseTaxDefaults(
+        current,
+        partyRecords,
+        taxAccountingContext.taxCodes,
+      );
       const insertIndex =
         rowIndex === -1
           ? current.expenseLines.length
@@ -377,7 +418,11 @@ export function useAccountsPayableVoucherFormPage() {
         0,
         createAccountsPayableVoucherExpenseLine(
           insertIndex + 1,
-          createInheritedLineDefaults(current),
+          createInheritedExpenseLineDefaults(
+            current,
+            current.expenseLines,
+            partyTaxDefaults,
+          ),
         ),
       );
 
@@ -506,18 +551,30 @@ export function useAccountsPayableVoucherFormPage() {
       return;
     }
 
-    setValues((current) => ({
-      ...current,
-      accountingEntries: [
-        ...current.accountingEntries,
-        ...Array.from({ length: count }, (_, index) =>
-          createAccountsPayableVoucherAccountingEntry(
-            current.accountingEntries.length + index + 1,
-            createInheritedLineDefaults(current),
+    setValues((current) => {
+      const partyTaxDefaults = getHeaderPartyPurchaseTaxDefaults(
+        current,
+        partyRecords,
+        taxAccountingContext.taxCodes,
+      );
+
+      return {
+        ...current,
+        accountingEntries: [
+          ...current.accountingEntries,
+          ...Array.from({ length: count }, (_, index) =>
+            createAccountsPayableVoucherAccountingEntry(
+              current.accountingEntries.length + index + 1,
+              createInheritedAccountingEntryDefaults(
+                current,
+                current.accountingEntries,
+                partyTaxDefaults,
+              ),
+            ),
           ),
-        ),
-      ],
-    }));
+        ],
+      };
+    });
     setErrors((current) => ({
       ...current,
       accountingEntries: undefined,
@@ -560,6 +617,11 @@ export function useAccountsPayableVoucherFormPage() {
       const rowIndex = current.accountingEntries.findIndex(
         (entry) => entry.id === entryId,
       );
+      const partyTaxDefaults = getHeaderPartyPurchaseTaxDefaults(
+        current,
+        partyRecords,
+        taxAccountingContext.taxCodes,
+      );
       const insertIndex =
         rowIndex === -1
           ? current.accountingEntries.length
@@ -571,7 +633,11 @@ export function useAccountsPayableVoucherFormPage() {
         0,
         createAccountsPayableVoucherAccountingEntry(
           insertIndex + 1,
-          createInheritedLineDefaults(current),
+          createInheritedAccountingEntryDefaults(
+            current,
+            current.accountingEntries,
+            partyTaxDefaults,
+          ),
         ),
       );
 
@@ -687,7 +753,7 @@ export function useAccountsPayableVoucherFormPage() {
     }));
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (isReadonly) {
@@ -710,22 +776,36 @@ export function useAccountsPayableVoucherFormPage() {
       return;
     }
 
+    setValues(submitValues);
+    setPendingSaveValues(submitValues);
+  }
+
+  async function handleConfirmSaveVoucher() {
+    if (!pendingSaveValues) {
+      return;
+    }
+
     try {
       if (mode === "edit" && existingRecord) {
         await updateRecord(
-          updateAccountsPayableVoucherFromForm(existingRecord, submitValues),
+          updateAccountsPayableVoucherFromForm(existingRecord, pendingSaveValues),
         );
       } else if (mode === "edit") {
         toast.error("Could not find the accounts payable voucher to update.");
         return;
       } else {
-        await addRecord(submitValues);
+        await addRecord(pendingSaveValues);
       }
     } catch {
       return;
     }
 
+    setPendingSaveValues(null);
     router.push(AccountsPayableVoucherHref);
+  }
+
+  function handleCancelSaveVoucher() {
+    setPendingSaveValues(null);
   }
 
   async function handleConfirmCancelVoucher() {
@@ -797,6 +877,8 @@ export function useAccountsPayableVoucherFormPage() {
     existingRecord,
     expenseTotal: expenseTotals.totalAmountDue,
     expenseTotals,
+    handleCancelSaveVoucher,
+    handleConfirmSaveVoucher,
     handleConfirmCancelVoucher,
     handleInputChange,
     handleSubmit,
@@ -811,6 +893,7 @@ export function useAccountsPayableVoucherFormPage() {
     isMutating,
     isRecordLoading: recordQuery.isLoading,
     isReadonly,
+    isSaveDialogOpen: pendingSaveValues !== null,
     mode,
     moveAccountingEntry,
     moveExpenseLine,
@@ -893,13 +976,71 @@ function createHeaderUpdatedVoucherValues<
   } as AccountsPayableVoucherFormValues;
 
   if (field !== "remarks") {
-    return nextValues;
+    if (field !== "partyCode" && field !== "partyName") {
+      return nextValues;
+    }
+
+    return syncInheritedLineParties(
+      nextValues,
+      current.partyCode,
+      current.partyName,
+    );
   }
 
   return syncInheritedExpenseLineParticulars(
     nextValues,
     current.remarks,
     String(value ?? ""),
+  );
+}
+
+function syncInheritedLineParties(
+  values: AccountsPayableVoucherFormValues,
+  previousPartyCode: string,
+  previousPartyName: string,
+) {
+  return {
+    ...values,
+    accountingEntries: values.accountingEntries.map((entry) =>
+      shouldLinePartyFollowHeader(entry, previousPartyCode, previousPartyName, values)
+        ? {
+            ...entry,
+            partyCode: values.partyCode,
+            partyName: values.partyName,
+          }
+        : entry,
+    ),
+    expenseLines: values.expenseLines.map((line) =>
+      shouldLinePartyFollowHeader(line, previousPartyCode, previousPartyName, values)
+        ? {
+            ...line,
+            partyCode: values.partyCode,
+            partyName: values.partyName,
+          }
+        : line,
+    ),
+  };
+}
+
+function shouldLinePartyFollowHeader(
+  row: Pick<AccountsPayableVoucherExpenseLine, "partyCode" | "partyName">,
+  previousPartyCode: string,
+  previousPartyName: string,
+  values: Pick<AccountsPayableVoucherFormValues, "partyCode" | "partyName">,
+) {
+  const rowPartyCode = row.partyCode.trim();
+  const rowPartyName = row.partyName.trim();
+  const previousCode = previousPartyCode.trim();
+  const previousName = previousPartyName.trim();
+  const nextCode = values.partyCode.trim();
+  const nextName = values.partyName.trim();
+
+  return (
+    (rowPartyCode === "" && rowPartyName === "") ||
+    (previousCode !== "" && rowPartyCode === previousCode) ||
+    (previousName !== "" && rowPartyName === previousName) ||
+    (nextCode !== "" && rowPartyCode === nextCode) ||
+    (nextName !== "" && rowPartyName === nextName)
   );
 }
 
@@ -1644,12 +1785,124 @@ function hasNonZeroAmount(value: number) {
 
 function createInheritedLineDefaults(
   values: AccountsPayableVoucherFormValues,
+  rows: Array<{ responsibilityCenter: string }> = [],
 ) {
   return {
     particulars: values.remarks,
     partyCode: values.partyCode,
     partyName: values.partyName,
+    responsibilityCenter: getLastResponsibilityCenter(rows),
   };
+}
+
+function createInheritedExpenseLineDefaults(
+  values: AccountsPayableVoucherFormValues,
+  rows: Array<{ responsibilityCenter: string }>,
+  partyTaxDefaults: PartyPurchaseTaxDefaults,
+) {
+  return {
+    ...createInheritedLineDefaults(values, rows),
+    ewt: partyTaxDefaults.ewtCode,
+    ewtPercent: partyTaxDefaults.ewtPercent,
+    vat: partyTaxDefaults.inputVatCode,
+    vatPercent: partyTaxDefaults.inputVatPercent,
+  };
+}
+
+function createInheritedAccountingEntryDefaults(
+  values: AccountsPayableVoucherFormValues,
+  rows: Array<{ responsibilityCenter: string }>,
+  partyTaxDefaults: PartyPurchaseTaxDefaults,
+) {
+  return {
+    ...createInheritedLineDefaults(values, rows),
+    atcCode: partyTaxDefaults.ewtCode,
+    vatType: partyTaxDefaults.inputVatCode,
+  };
+}
+
+function getLastResponsibilityCenter(
+  rows: Array<{ responsibilityCenter: string }>,
+) {
+  for (let index = rows.length - 1; index >= 0; index -= 1) {
+    const responsibilityCenter = rows[index]?.responsibilityCenter.trim();
+
+    if (responsibilityCenter) {
+      return responsibilityCenter;
+    }
+  }
+
+  return "";
+}
+
+function getHeaderPartyPurchaseTaxDefaults(
+  values: AccountsPayableVoucherFormValues,
+  partyRecords: AccountsPayableVoucherLookupParty[],
+  taxCodes: Tax[],
+): PartyPurchaseTaxDefaults {
+  const party = findHeaderPartyRecord(values, partyRecords);
+
+  if (!party) {
+    return {
+      ewtCode: "",
+      ewtPercent: 0,
+      inputVatCode: "",
+      inputVatPercent: 0,
+    };
+  }
+
+  const inputVatCode = getTaxCodeBySourceKey(
+    taxCodes,
+    party.defaultPurchaseInputVatTaxSourceKey,
+    "INPUT VAT",
+  );
+  const ewtCode = getTaxCodeBySourceKey(
+    taxCodes,
+    party.defaultPurchaseEwtTaxSourceKey,
+    "EWT",
+  );
+  const inputVatRate = getVatRateFromCode(inputVatCode, taxCodes);
+
+  return {
+    ewtCode,
+    ewtPercent: getEwtPercentFromCode(ewtCode, taxCodes),
+    inputVatCode,
+    inputVatPercent: getVatPercentFromRate(inputVatRate),
+  };
+}
+
+function findHeaderPartyRecord(
+  values: AccountsPayableVoucherFormValues,
+  partyRecords: AccountsPayableVoucherLookupParty[],
+) {
+  const partyCode = values.partyCode.trim();
+  const partyName = values.partyName.trim().toLowerCase();
+
+  return (
+    partyRecords.find((party) => partyCode && party.partyCodeNo === partyCode) ??
+    partyRecords.find(
+      (party) => partyName && party.name.trim().toLowerCase() === partyName,
+    )
+  );
+}
+
+function getTaxCodeBySourceKey(
+  taxCodes: Tax[],
+  sourceKey: string,
+  taxType: "EWT" | "INPUT VAT",
+) {
+  if (!sourceKey) {
+    return "";
+  }
+
+  return (
+    taxCodes.find(
+      (taxCode) =>
+        taxCode.sourceKey === sourceKey &&
+        taxCode.transactionType === "Purchases" &&
+        taxCode.taxType === taxType,
+    )?.taxCode ?? ""
+  );
 }
 
 function shouldClearExpenseLine(
@@ -1708,6 +1961,20 @@ function accountingEntryHasData(entry: AccountsPayableVoucherAccountingEntry) {
     entry.particulars.trim() !== "" ||
     entry.partyCode.trim() !== "" ||
     entry.partyName.trim() !== "" ||
+    entry.responsibilityCenter.trim() !== "" ||
+    entry.refNo.trim() !== "" ||
+    entry.vatType.trim() !== "" ||
+    entry.atcCode.trim() !== "" ||
+    Number(entry.debit || 0) > 0 ||
+    Number(entry.credit || 0) > 0
+  );
+}
+
+function accountingEntryHasTransactionData(entry: AccountsPayableVoucherAccountingEntry) {
+  return (
+    entry.accountCode.trim() !== "" ||
+    entry.accountTitle.trim() !== "" ||
+    entry.particulars.trim() !== "" ||
     entry.responsibilityCenter.trim() !== "" ||
     entry.refNo.trim() !== "" ||
     entry.vatType.trim() !== "" ||

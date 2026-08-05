@@ -37,7 +37,7 @@ export function useJournalVoucherFormPage() {
   const records = useJournalVoucherStore((state) => state.records);
   const addRecord = useJournalVoucherStore((state) => state.addRecord);
   const updateRecord = useJournalVoucherStore((state) => state.updateRecord);
-  const deleteRecord = useJournalVoucherStore((state) => state.deleteRecord);
+  const updateStatus = useJournalVoucherStore((state) => state.updateStatus);
   const isMutating = useJournalVoucherStore((state) => state.isMutating);
   const mode = getActionMode(pathname);
   const existingRecord = records.find((record) => record.id === params.recordId);
@@ -46,7 +46,7 @@ export function useJournalVoucherFormPage() {
     createJournalVoucherFormValues(existingRecord),
   );
   const [errors, setErrors] = useState<JournalVoucherFormErrors>({});
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [isExchangeRateLoading, setIsExchangeRateLoading] = useState(false);
   const exchangeRateRequestIdRef = useRef(0);
   const totals = useMemo(() => getJournalVoucherTotals(values.lines), [values.lines]);
@@ -318,14 +318,14 @@ export function useJournalVoucherFormPage() {
     router.push(JournalVoucherHref);
   }
 
-  function handleConfirmDelete() {
+  function handleConfirmCancelVoucher() {
     if (!existingRecord) {
-      toast.error("Could not find the journal voucher to delete.");
+      toast.error("Could not find the journal voucher to cancel.");
       return;
     }
 
-    deleteRecord(existingRecord.id);
-    setIsDeleteDialogOpen(false);
+    updateStatus(existingRecord.id, "Cancelled");
+    setIsCancelDialogOpen(false);
     router.push(JournalVoucherHref);
   }
 
@@ -355,11 +355,11 @@ export function useJournalVoucherFormPage() {
     duplicateLine,
     errors,
     existingRecord,
-    handleConfirmDelete,
+    handleConfirmCancelVoucher,
     handleInputChange,
     handleSubmit,
     insertLine,
-    isDeleteDialogOpen,
+    isCancelDialogOpen,
     isExchangeRateLoading,
     isMutating,
     isReadonly,
@@ -367,7 +367,7 @@ export function useJournalVoucherFormPage() {
     moveLine,
     needsRecord: mode === "edit" || mode === "view",
     removeLine,
-    setIsDeleteDialogOpen,
+    setIsCancelDialogOpen,
     totals,
     updateLine,
     updateCurrencyType,

@@ -63,11 +63,11 @@ const EmptyAccountsPayableVoucherPermissions: AccountsPayableVoucherPermissions 
 
 const EmptyAccountsPayableVoucherStatistics: AccountsPayableVoucherStatistics =
   {
-    approvedVouchers: 0,
     cancelledVouchers: 0,
-    closedVouchers: 0,
     disapprovedVouchers: 0,
     draftVouchers: 0,
+    forApprovalVouchers: 0,
+    postedVouchers: 0,
     totalVouchers: 0,
   };
 

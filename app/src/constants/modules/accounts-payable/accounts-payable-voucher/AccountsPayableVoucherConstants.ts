@@ -30,14 +30,14 @@ export const AccountsPayableVoucherTableColumns = [
     className: "w-[18rem]",
   },
   {
+    key: "remarks",
+    label: "Remarks",
+    className: "w-[18rem]",
+  },
+  {
     key: "amount",
     label: "Amount",
     className: "w-[11rem] text-right",
-  },
-  {
-    key: "payableType",
-    label: "Payable Type",
-    className: "w-[12rem]",
   },
   {
     key: "currency",
@@ -69,7 +69,7 @@ export const AccountsPayableVoucherDefaultSorting: SortingState = [
 ];
 
 export const AccountsPayableVoucherStatusOptions: AccountsPayableVoucherStatus[] =
-  ["Draft", "Approved", "Disapproved", "Closed", "Cancelled"];
+  ["Draft", "For Approval", "Posted", "Disapproved", "Cancelled"];
 
 export const AccountsPayableVoucherStatusFilters = [
   "all",
@@ -85,25 +85,25 @@ export const AccountsPayableVoucherStatusFilterOptions =
 export function canEditAccountsPayableVoucherStatus(
   status: AccountsPayableVoucherStatus,
 ) {
-  return status === "Draft";
+  return status === "Draft" || status === "For Approval";
 }
 
 export function canApproveAccountsPayableVoucherStatus(
   status: AccountsPayableVoucherStatus,
 ) {
-  return status === "Draft" || status === "Approved";
+  return status === "For Approval" || status === "Posted";
 }
 
 export function canDisapproveAccountsPayableVoucherStatus(
   status: AccountsPayableVoucherStatus,
 ) {
-  return status === "Draft" || status === "Disapproved";
+  return status === "For Approval" || status === "Disapproved";
 }
 
 export function canCancelAccountsPayableVoucherStatus(
   status: AccountsPayableVoucherStatus,
 ) {
-  return status === "Draft" || status === "Cancelled";
+  return status === "Draft" || status === "For Approval" || status === "Cancelled";
 }
 
 export const AccountsPayableVoucherCurrencyOptions = [
@@ -176,7 +176,10 @@ export const AccountsPayableVoucherExpenseProtectedColumnIds =
 
 export const AccountsPayableVoucherExpenseDefaultVisibleColumnIds =
   AccountsPayableVoucherExpenseColumnIds.filter(
-    (columnId) => columnId !== "partyCode",
+    (columnId) =>
+      !["vat", "vatPercent", "ewt", "ewtPercent", "partyCode"].includes(
+        columnId,
+      ),
   );
 
 export const AccountsPayableVoucherExpenseColumnLabels: Record<
@@ -189,7 +192,7 @@ export const AccountsPayableVoucherExpenseColumnLabels: Record<
   vatAmount: "VAT Amount",
   netAmount: "Net Amount",
   ewtAmount: "EWT Amount",
-  totalAmountDue: "Total Amount Due",
+  totalAmountDue: "Total Payable",
   partyCode: "Party Code",
   partyName: "Party Name",
   vat: "VAT Type",

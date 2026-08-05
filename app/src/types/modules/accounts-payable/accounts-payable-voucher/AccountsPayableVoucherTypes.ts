@@ -1,16 +1,8 @@
 export type AccountsPayableVoucherStatus =
-  | "Draft"
-  | "Approved"
-  | "Disapproved"
-  | "Closed"
-  | "Cancelled";
+  "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled";
 
 export type AccountsPayableVoucherPayableType =
-  | "Trade Payable"
-  | "Non-Trade Payable"
-  | "Employee Payable"
-  | "Tax Payable"
-  | "Accrued Payable";
+  "Trade Payable" | "Non-Trade Payable" | "Employee Payable" | "Tax Payable" | "Accrued Payable";
 
 export type AccountsPayableVoucherLookupAddress = {
   id: string;
@@ -154,6 +146,7 @@ export type AccountsPayableVoucherRecord = {
   address: string;
   contactPerson: string;
   contactNo: string;
+  projectCode: string;
   projectName: string;
   currency: string;
   exchangeRate: number;
@@ -179,8 +172,7 @@ export type AccountsPayableVoucherFormValues = Omit<
   "id" | "createdAt" | "updatedAt"
 >;
 
-export type AccountsPayableVoucherExpenseLineField =
-  keyof AccountsPayableVoucherExpenseLine;
+export type AccountsPayableVoucherExpenseLineField = keyof AccountsPayableVoucherExpenseLine;
 
 export type AccountsPayableVoucherAccountingEntryField =
   keyof AccountsPayableVoucherAccountingEntry;
@@ -202,7 +194,9 @@ export type AccountsPayableVoucherActionMode = "add" | "edit" | "view";
 
 export type ApiAccountsPayableVoucherStatus =
   | "DRAFT"
+  | "FOR_APPROVAL"
   | "APPROVED"
+  | "POSTED"
   | "DISAPPROVED"
   | "CLOSED"
   | "CANCELLED"
@@ -277,6 +271,7 @@ export type ApiAccountsPayableVoucher = {
   address?: string | null;
   contactPerson?: string | null;
   contactNo?: string | null;
+  projectCode?: string | null;
   projectName?: string | null;
   currency: string;
   exchangeRate: number;
@@ -298,11 +293,11 @@ export type ApiAccountsPayableVoucher = {
 };
 
 export type AccountsPayableVoucherStatistics = {
-  approvedVouchers: number;
   cancelledVouchers: number;
-  closedVouchers: number;
   disapprovedVouchers: number;
   draftVouchers: number;
+  forApprovalVouchers: number;
+  postedVouchers: number;
   totalVouchers: number;
 };
 

@@ -34,6 +34,8 @@ import { validateGoodsReceiptForm } from "@/app/src/validations/modules/inventor
 import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
 
+const AlphanumericSortingFn = "alphanumeric";
+
 type GoodsReceiptStoreState = {
   isLoading: boolean;
   receipts: GoodsReceiptRecord[];
@@ -232,7 +234,7 @@ export function useGoodsReceiptTable(receipts: GoodsReceiptRecord[]) {
         id: "transactionNo",
         accessorKey: "transactionNo",
         header: "GR No.",
-        sortingFn: "alphanumeric",
+        sortingFn: AlphanumericSortingFn,
         meta: { className: "w-[12rem]" },
       },
       {
@@ -246,21 +248,21 @@ export function useGoodsReceiptTable(receipts: GoodsReceiptRecord[]) {
         id: "transactionType",
         accessorKey: "transactionType",
         header: "Transaction Type",
-        sortingFn: "alphanumeric",
+        sortingFn: AlphanumericSortingFn,
         meta: { className: "w-[16rem]" },
       },
       {
         id: "vceName",
         accessorKey: "vceName",
         header: "Party Name",
-        sortingFn: "alphanumeric",
+        sortingFn: AlphanumericSortingFn,
         meta: { className: "w-[16rem]" },
       },
       {
         id: "referenceNo",
         accessorKey: "referenceNo",
         header: "Reference No.",
-        sortingFn: "alphanumeric",
+        sortingFn: AlphanumericSortingFn,
         meta: { className: "w-[12rem]" },
       },
       {
@@ -274,7 +276,7 @@ export function useGoodsReceiptTable(receipts: GoodsReceiptRecord[]) {
         id: "status",
         accessorKey: "status",
         header: "Status",
-        sortingFn: "alphanumeric",
+        sortingFn: AlphanumericSortingFn,
         meta: { className: "w-[10rem]" },
       },
       {

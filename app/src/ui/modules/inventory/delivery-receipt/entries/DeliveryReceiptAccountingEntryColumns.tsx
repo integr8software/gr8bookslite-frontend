@@ -1,25 +1,23 @@
 import {
-	ServiceInvoicePartyOptions,
-	ServiceInvoiceResponsibilityCenterOptions,
-	ServiceInvoiceTaxTypeOptions,
-	ServiceInvoiceVatTypeOptions,
-} from "@/app/src/data/modules/sales/service-invoice/ServiceInvoiceData";
+	DeliveryReceiptPartyOptions,
+	DeliveryReceiptResponsibilityCenterOptions,
+} from "@/app/src/data/modules/inventory/delivery-receipt/DeliveryReceiptData";
 import type {
-	ServiceInvoiceAccountingColumnId,
-	ServiceInvoiceAccountingEntry,
-} from "@/app/src/types/modules/sales/service-invoice/ServiceInvoiceTypes";
+	DeliveryReceiptAccountingColumnId,
+	DeliveryReceiptAccountingEntry,
+} from "@/app/src/types/modules/inventory/delivery-receipt/DeliveryReceiptTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
-import {
-	ServiceInvoiceEntryAmountInput,
-	ServiceInvoiceEntryTextInput,
-} from "@/app/src/ui/modules/sales/service-invoice/entries/ServiceInvoiceEntryCellControls";
 import { parseMoneyNumberInput } from "@/app/src/ui/shared/money/MoneyNumberField";
+import {
+	DeliveryReceiptEntryAmountInput,
+	DeliveryReceiptEntryTextInput,
+} from "@/app/src/ui/modules/inventory/delivery-receipt/entries/DeliveryReceiptEntryCellControls";
 
 const DebitColumnId = "debit";
 const CreditColumnId = "credit";
 
-export const ServiceInvoiceAccountingColumnIds = [
+export const DeliveryReceiptAccountingColumnIds = [
 	"accountCode",
 	"accountTitle",
 	DebitColumnId,
@@ -33,22 +31,22 @@ export const ServiceInvoiceAccountingColumnIds = [
 	"refNo",
 ] as const;
 
-export const ServiceInvoiceAccountingDefaultVisibleColumnIds = [
+export const DeliveryReceiptAccountingDefaultVisibleColumnIds = [
 	"accountTitle",
 	DebitColumnId,
 	CreditColumnId,
 	"particulars",
-] as const satisfies readonly ServiceInvoiceAccountingColumnId[];
+] as const satisfies readonly DeliveryReceiptAccountingColumnId[];
 
-export const ServiceInvoiceAccountingProtectedColumnIds =
-	new Set<ServiceInvoiceAccountingColumnId>([
+export const DeliveryReceiptAccountingProtectedColumnIds =
+	new Set<DeliveryReceiptAccountingColumnId>([
 		"accountTitle",
 		DebitColumnId,
 		CreditColumnId,
 	]);
 
-const ServiceInvoiceAccountingColumnLabels: Record<
-	ServiceInvoiceAccountingColumnId,
+const DeliveryReceiptAccountingColumnLabels: Record<
+	DeliveryReceiptAccountingColumnId,
 	string
 > = {
 	accountCode: "Account Code",
@@ -64,8 +62,8 @@ const ServiceInvoiceAccountingColumnLabels: Record<
 	vatType: "VAT Type",
 };
 
-const ServiceInvoiceAccountingColumnWidths: Record<
-	ServiceInvoiceAccountingColumnId,
+const DeliveryReceiptAccountingColumnWidths: Record<
+	DeliveryReceiptAccountingColumnId,
 	number
 > = {
 	accountCode: 160,
@@ -81,19 +79,19 @@ const ServiceInvoiceAccountingColumnWidths: Record<
 	vatType: 150,
 };
 
-type ServiceInvoiceAccountingEntryUpdater = (
+type DeliveryReceiptAccountingEntryUpdater = (
 	rowId: string,
-	updates: Partial<Omit<ServiceInvoiceAccountingEntry, "id">>,
+	updates: Partial<Omit<DeliveryReceiptAccountingEntry, "id">>,
 ) => void;
 
-export function createServiceInvoiceAccountingEntryColumns(
+export function createDeliveryReceiptAccountingEntryColumns(
 	isReadonly: boolean,
-	onUpdateEntry: ServiceInvoiceAccountingEntryUpdater,
-): ModuleDataEntryColumn<ServiceInvoiceAccountingEntry>[] {
-	return ServiceInvoiceAccountingColumnIds.map((columnId) => ({
-		header: ServiceInvoiceAccountingColumnLabels[columnId],
+	onUpdateEntry: DeliveryReceiptAccountingEntryUpdater,
+): ModuleDataEntryColumn<DeliveryReceiptAccountingEntry>[] {
+	return DeliveryReceiptAccountingColumnIds.map((columnId) => ({
+		header: DeliveryReceiptAccountingColumnLabels[columnId],
 		id: columnId,
-		width: ServiceInvoiceAccountingColumnWidths[columnId],
+		width: DeliveryReceiptAccountingColumnWidths[columnId],
 		widthClassName: getColumnWidthClassName(columnId),
 		widthMode: "fixed",
 		renderCell: (entry, _index, context) =>
@@ -102,18 +100,18 @@ export function createServiceInvoiceAccountingEntryColumns(
 }
 
 function renderAccountingCell(
-	entry: ServiceInvoiceAccountingEntry,
-	columnId: ServiceInvoiceAccountingColumnId,
+	entry: DeliveryReceiptAccountingEntry,
+	columnId: DeliveryReceiptAccountingColumnId,
 	context: { fieldId: string; fieldName: string },
 	isReadonly: boolean,
-	onUpdateEntry: ServiceInvoiceAccountingEntryUpdater,
+	onUpdateEntry: DeliveryReceiptAccountingEntryUpdater,
 ) {
 	if (columnId === DebitColumnId || columnId === CreditColumnId) {
 		const oppositeColumnId =
 			columnId === DebitColumnId ? CreditColumnId : DebitColumnId;
 
 		return (
-			<ServiceInvoiceEntryAmountInput
+			<DeliveryReceiptEntryAmountInput
 				id={context.fieldId}
 				name={context.fieldName}
 				value={entry[columnId] > 0 ? String(entry[columnId]) : ""}
@@ -139,18 +137,18 @@ function renderAccountingCell(
 				className={EntryDropdownClassName}
 				value={entry.partyName}
 				readOnly={isReadonly}
-				options={ServiceInvoicePartyOptions}
+				options={DeliveryReceiptPartyOptions}
 				placeholder=""
 				searchPlaceholder="Search party"
 				showSelectedDetails
 				onChange={(value) => {
 					const partyName = String(value);
-					const selectedParty = ServiceInvoicePartyOptions.find(
+					const selectedParty = DeliveryReceiptPartyOptions.find(
 						(option) => option.value === partyName,
 					);
 
 					onUpdateEntry(entry.id, {
-						partyCode: selectedParty?.label ?? "",
+						partyCode: selectedParty?.value ?? "",
 						partyName,
 					});
 				}}
@@ -160,11 +158,11 @@ function renderAccountingCell(
 
 	if (columnId === "vatType" || columnId === "atcCode" || columnId === "responsibilityCenter") {
 		const options =
-			columnId === "vatType"
-				? ServiceInvoiceVatTypeOptions
-				: columnId === "atcCode"
-					? ServiceInvoiceTaxTypeOptions
-					: ServiceInvoiceResponsibilityCenterOptions;
+			columnId === "responsibilityCenter"
+				? DeliveryReceiptResponsibilityCenterOptions
+				: columnId === "vatType"
+					? DeliveryReceiptVatTypeOptions
+					: DeliveryReceiptTaxTypeOptions;
 
 		return (
 			<AppAdvancedDropdown
@@ -183,7 +181,7 @@ function renderAccountingCell(
 	}
 
 	return (
-		<ServiceInvoiceEntryTextInput
+		<DeliveryReceiptEntryTextInput
 			id={context.fieldId}
 			name={context.fieldName}
 			value={String(entry[columnId])}
@@ -193,10 +191,22 @@ function renderAccountingCell(
 	);
 }
 
+const DeliveryReceiptVatTypeOptions = [
+	{ name: "VATable", value: "VATable" },
+	{ name: "Zero Rated", value: "Zero Rated" },
+	{ name: "Exempt", value: "Exempt" },
+];
+
+const DeliveryReceiptTaxTypeOptions = [
+	{ name: "None", value: "" },
+	{ name: "WI010", value: "WI010", label: "Professional fees" },
+	{ name: "WC158", value: "WC158", label: "Goods" },
+];
+
 const EntryDropdownClassName =
 	"[&_.app-advanced-dropdown-control]:h-10 [&_.app-advanced-dropdown-control]:rounded-none [&_.app-advanced-dropdown-control]:border-0 [&_.app-advanced-dropdown-control]:bg-transparent [&_.app-advanced-dropdown-control]:px-3 [&_.app-advanced-dropdown-control]:shadow-none [&_.app-advanced-dropdown-control]:focus:ring-2 [&_.app-advanced-dropdown-control]:focus:ring-inset [&_.app-advanced-dropdown-control]:focus:ring-skyblue/35";
 
-function getColumnWidthClassName(columnId: ServiceInvoiceAccountingColumnId) {
+function getColumnWidthClassName(columnId: DeliveryReceiptAccountingColumnId) {
 	switch (columnId) {
 		case "accountCode":
 		case CreditColumnId:

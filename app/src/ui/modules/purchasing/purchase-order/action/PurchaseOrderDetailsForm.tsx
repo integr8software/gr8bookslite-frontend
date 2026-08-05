@@ -1,5 +1,7 @@
-import type { PurchaseOrderFormValues } from "@/app/src/types/modules/purchasing/purchase-order/PurchaseOrderTypes";
-import type { PurchaseOrderFieldUpdater } from "@/app/src/ui/modules/purchasing/purchase-order/action/PurchaseOrderFieldControls";
+import type {
+	PurchaseOrderFieldUpdater,
+	PurchaseOrderFormValues,
+} from "@/app/src/types/modules/purchasing/purchase-order/PurchaseOrderTypes";
 import { PurchaseOrderSupplierFields } from "@/app/src/ui/modules/purchasing/purchase-order/action/PurchaseOrderSupplierFields";
 
 type PurchaseOrderDetailsFormProps = {

@@ -1,5 +1,6 @@
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import type {
+  GoodsReceiptAccountingEntry,
   GoodsReceiptCopyRecord,
   GoodsReceiptFormValues,
   GoodsReceiptLineEntry,
@@ -16,6 +17,11 @@ export const GoodsReceiptTransactionTypeOptions = [
   { name: "Sales Return", value: "Sales Return" },
   { name: "Stock Adjustment Receipt", value: "Stock Adjustment Receipt" },
   { name: "Variance", value: "Variance" },
+];
+
+export const GoodsReceiptCurrencyOptions = [
+  { name: "PHP", value: "PHP" },
+  { name: "USD", value: "USD" },
 ];
 
 export const GoodsReceiptWarehouseOptions = [
@@ -41,6 +47,14 @@ export const GoodsReceiptResponsibilityCenterOptions = [
   { name: "CC-INV-001", value: "CC-INV-001" },
   { name: "CC-OPS-001", value: "CC-OPS-001" },
   { name: "CC-ADM-001", value: "CC-ADM-001" },
+];
+
+export const GoodsReceiptStatusOptions = [
+  { name: "Draft", value: "Draft" },
+  { name: "For Approval", value: "For Approval" },
+  { name: "Posted", value: "Posted" },
+  { name: "Disapproved", value: "Disapproved" },
+  { name: "Cancelled", value: "Cancelled" },
 ];
 
 export const GoodsReceiptCopyRecords: GoodsReceiptCopyRecord[] = [
@@ -99,7 +113,7 @@ export const MockGoodsReceipts: GoodsReceiptRecord[] = [
     id: "gr-001",
     documentDate: "2026-07-16",
     referenceNo: "GI-2026-0001",
-    status: "Active",
+    status: "Posted",
     totalAmount: 18450,
     transactionNo: "GR-2026-0001",
     transactionType: "Goods Issue Return",
@@ -109,7 +123,7 @@ export const MockGoodsReceipts: GoodsReceiptRecord[] = [
     id: "gr-002",
     documentDate: "2026-07-12",
     referenceNo: "IC-2026-0014",
-    status: "Pending",
+    status: "For Approval",
     totalAmount: 62500,
     transactionNo: "GR-2026-0002",
     transactionType: "Sales Return",
@@ -119,7 +133,7 @@ export const MockGoodsReceipts: GoodsReceiptRecord[] = [
     id: "gr-003",
     documentDate: "2026-07-08",
     referenceNo: "SI-2026-0008",
-    status: "Approved",
+    status: "Posted",
     totalAmount: 93800,
     transactionNo: "GR-2026-0003",
     transactionType: "Stock Adjustment Receipt",
@@ -148,8 +162,52 @@ export function createBlankGoodsReceiptLineEntry(
   };
 }
 
+export function createBlankGoodsReceiptAccountingEntry(
+  overrides: Partial<GoodsReceiptAccountingEntry> = {},
+): GoodsReceiptAccountingEntry {
+  return {
+    id: `gr-accounting-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    accountCode: "",
+    accountTitle: "",
+    debit: 0,
+    credit: 0,
+    partyCode: "",
+    partyName: "",
+    particulars: "",
+    vatType: "",
+    atcCode: "",
+    responsibilityCenter: "",
+    refNo: "",
+    ...overrides,
+  };
+}
+
+export function createGoodsReceiptAccountingEntries(
+  values: Pick<GoodsReceiptFormValues, "transactionNo" | "vceCode" | "vceName">,
+): GoodsReceiptAccountingEntry[] {
+  return [
+    createBlankGoodsReceiptAccountingEntry({
+      accountTitle: "Inventory",
+      debit: 0,
+      partyCode: values.vceCode,
+      partyName: values.vceName,
+      particulars: values.transactionNo,
+      refNo: values.transactionNo,
+    }),
+    createBlankGoodsReceiptAccountingEntry({
+      accountTitle: "Accrued Payable",
+      credit: 0,
+      partyCode: values.vceCode,
+      partyName: values.vceName,
+      particulars: values.transactionNo,
+      refNo: values.transactionNo,
+    }),
+  ];
+}
+
 export function createGoodsReceiptFormValues(): GoodsReceiptFormValues {
   const today = new Date().toISOString().slice(0, 10);
+  const transactionNo = "GR-2026-0004";
 
   return {
     transactionType: "",
@@ -157,8 +215,10 @@ export function createGoodsReceiptFormValues(): GoodsReceiptFormValues {
     receivingWarehouse: "",
     vceCode: "",
     vceName: "",
+    currency: "PHP",
+    exchangeRate: "1.0000",
     remarks: "",
-    transactionNo: "GR-2026-0004",
+    transactionNo,
     documentDate: today,
     status: "Draft",
     icNo: "",
@@ -166,6 +226,11 @@ export function createGoodsReceiptFormValues(): GoodsReceiptFormValues {
     siRef: "",
     projectRef: "",
     projectName: "",
+    accountingEntries: createGoodsReceiptAccountingEntries({
+      transactionNo,
+      vceCode: "",
+      vceName: "",
+    }),
     lineEntries: [createBlankGoodsReceiptLineEntry()],
   };
 }
@@ -174,9 +239,19 @@ export function createGoodsReceiptFormValuesFromRecord(
   record: GoodsReceiptRecord,
 ): GoodsReceiptFormValues {
   if (record.formValues) {
+    const defaults = createGoodsReceiptFormValues();
+
     return {
+      ...defaults,
       ...record.formValues,
       receivingWarehouse: record.formValues.receivingWarehouse ?? "",
+      status: normalizeGoodsReceiptStatus(record.formValues.status),
+      accountingEntries: (
+        record.formValues.accountingEntries ?? defaults.accountingEntries
+      ).map((entry) => ({
+        ...createBlankGoodsReceiptAccountingEntry(),
+        ...entry,
+      })),
       lineEntries: record.formValues.lineEntries.map((entry) => ({ ...entry })),
     };
   }
@@ -186,8 +261,13 @@ export function createGoodsReceiptFormValuesFromRecord(
     transactionNo: record.transactionNo,
     transactionType: record.transactionType,
     documentDate: record.documentDate,
-    status: record.status,
+    status: normalizeGoodsReceiptStatus(record.status),
     vceName: record.vceName,
+    accountingEntries: createGoodsReceiptAccountingEntries({
+      transactionNo: record.transactionNo,
+      vceCode: "",
+      vceName: record.vceName,
+    }),
     icNo: record.referenceNo.startsWith("IC") ? record.referenceNo : "",
     giNo: record.referenceNo.startsWith("GI") ? record.referenceNo : "",
     siRef: record.referenceNo.startsWith("SI") ? record.referenceNo : "",
@@ -216,6 +296,7 @@ export function createGoodsReceiptRecordFromForm(
     documentDate: values.documentDate,
     formValues: {
       ...values,
+      accountingEntries: values.accountingEntries.map((entry) => ({ ...entry })),
       lineEntries: values.lineEntries.map((entry) => ({ ...entry })),
     },
     referenceNo: values.icNo || values.giNo || values.siRef,
@@ -249,7 +330,9 @@ export function readStoredGoodsReceipts() {
 
   try {
     const parsedRecords = JSON.parse(storedRecords) as GoodsReceiptRecord[];
-    return Array.isArray(parsedRecords) ? parsedRecords : null;
+    return Array.isArray(parsedRecords)
+      ? parsedRecords.map(normalizeStoredGoodsReceiptRecord)
+      : null;
   } catch {
     return null;
   }
@@ -289,10 +372,6 @@ export function countGoodsReceiptsByStatus(
   return records.filter((record) => record.status === status).length;
 }
 
-export function isGoodsReceiptActiveStatus(status: GoodsReceiptStatus) {
-  return status === "Active" || status === "Approved";
-}
-
 export function formatGoodsReceiptPercentage(value: number, total: number) {
   return total === 0 ? "0.00% of total" : `${((value / total) * 100).toFixed(2)}% of total`;
 }
@@ -312,15 +391,36 @@ export function goodsReceiptEntryIsComplete(entry: GoodsReceiptLineEntry) {
 }
 
 function normalizeGoodsReceiptStatus(value: string): GoodsReceiptStatus {
+  if (value === "Active" || value === "Approved" || value === "Closed") {
+    return "Posted";
+  }
+
+  if (value === "Pending") {
+    return "For Approval";
+  }
+
   const statuses: GoodsReceiptStatus[] = [
-    "Active",
-    "Approved",
     "Cancelled",
-    "Closed",
     "Disapproved",
     "Draft",
-    "Pending",
+    "For Approval",
+    "Posted",
   ];
 
   return statuses.includes(value as GoodsReceiptStatus) ? (value as GoodsReceiptStatus) : "Draft";
+}
+
+function normalizeStoredGoodsReceiptRecord(record: GoodsReceiptRecord): GoodsReceiptRecord {
+  const status = normalizeGoodsReceiptStatus(record.status);
+
+  return {
+    ...record,
+    formValues: record.formValues
+      ? {
+          ...record.formValues,
+          status: normalizeGoodsReceiptStatus(record.formValues.status),
+        }
+      : record.formValues,
+    status,
+  };
 }

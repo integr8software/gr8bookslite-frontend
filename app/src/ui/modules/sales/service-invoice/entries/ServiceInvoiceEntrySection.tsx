@@ -6,7 +6,9 @@ import {
 	formatServiceInvoiceAmount,
 } from "@/app/src/data/modules/sales/service-invoice/ServiceInvoiceData";
 import type {
+	ServiceInvoiceAccountingColumnId,
 	ServiceInvoiceAccountingEntry,
+	ServiceInvoiceEntryTab,
 	ServiceInvoiceFormValues,
 	ServiceInvoiceLineEntry,
 } from "@/app/src/types/modules/sales/service-invoice/ServiceInvoiceTypes";
@@ -18,6 +20,10 @@ import {
 	type ModuleDataEntryExportOption,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { createServiceInvoiceAccountingEntryColumns } from "@/app/src/ui/modules/sales/service-invoice/entries/ServiceInvoiceAccountingEntryColumns";
+import {
+	ServiceInvoiceAccountingDefaultVisibleColumnIds,
+	ServiceInvoiceAccountingProtectedColumnIds,
+} from "@/app/src/ui/modules/sales/service-invoice/entries/ServiceInvoiceAccountingEntryColumns";
 import { createServiceInvoiceServiceDetailColumns } from "@/app/src/ui/modules/sales/service-invoice/entries/ServiceInvoiceServiceDetailColumns";
 import {
 	createBlankServiceInvoiceAccountingEntry,
@@ -31,10 +37,7 @@ import {
 	shouldClearServiceInvoiceAccountingEntry,
 	shouldClearServiceInvoiceLineEntry,
 } from "@/app/src/ui/modules/sales/service-invoice/entries/utils/ServiceInvoiceEntryRowUtils";
-import {
-	ServiceInvoiceEntryTabs,
-	type ServiceInvoiceEntryTab,
-} from "@/app/src/ui/modules/sales/service-invoice/entries/ServiceInvoiceEntryTabs";
+import { ServiceInvoiceEntryTabs } from "@/app/src/ui/modules/sales/service-invoice/entries/ServiceInvoiceEntryTabs";
 
 type ServiceInvoiceEntrySectionProps = {
 	isReadonly: boolean;
@@ -50,6 +53,9 @@ export function ServiceInvoiceEntrySection({
 	values,
 }: ServiceInvoiceEntrySectionProps) {
 	const [activeTab, setActiveTab] = useState<ServiceInvoiceEntryTab>("service");
+	const [visibleAccountingColumnIds, setVisibleAccountingColumnIds] = useState<
+		ServiceInvoiceAccountingColumnId[]
+	>([...ServiceInvoiceAccountingDefaultVisibleColumnIds]);
 	const serviceRows = values.lineEntries;
 	const accountingRows =
 		values.accountingEntries?.length > 0
@@ -96,12 +102,24 @@ export function ServiceInvoiceEntrySection({
 			),
 		[isReadonly, updateAccountingEntry],
 	);
+	const visibleAccountingColumns = useMemo(
+		() =>
+			accountingColumns.filter((column) =>
+				visibleAccountingColumnIds.includes(
+					column.id as ServiceInvoiceAccountingColumnId,
+				),
+			),
+		[accountingColumns, visibleAccountingColumnIds],
+	);
 
 	if (activeTab === "accounting") {
 		return (
 			<ModuleDataEntry
-				columns={accountingColumns}
-				columnOptions={createColumnOptions(accountingColumns)}
+				columns={visibleAccountingColumns}
+				columnOptions={createAccountingColumnOptions(
+					accountingColumns,
+					visibleAccountingColumnIds,
+				)}
 				description=""
 				emptyRowLabel="entry"
 				exportOptions={EntryExportOptions}
@@ -160,7 +178,15 @@ export function ServiceInvoiceEntrySection({
 						),
 					)
 				}
-				onToggleColumnVisibility={() => undefined}
+				onToggleColumnVisibility={(columnId, isVisible) =>
+					setVisibleAccountingColumnIds((current) =>
+						toggleAccountingColumnVisibility(
+							current,
+							columnId as ServiceInvoiceAccountingColumnId,
+							isVisible,
+						),
+					)
+				}
 				onUpdateColumnHeader={() => undefined}
 				onUpdateColumnWidth={() => undefined}
 			/>
@@ -244,6 +270,40 @@ function createColumnOptions<TRow>(
 		width: column.width,
 		widthMode: column.widthMode,
 	}));
+}
+
+function createAccountingColumnOptions(
+	columns: ModuleDataEntryColumn<ServiceInvoiceAccountingEntry>[],
+	visibleColumnIds: ServiceInvoiceAccountingColumnId[],
+): ModuleDataEntryColumnOption[] {
+	return columns.map((column) => ({
+		id: column.id,
+		isHideable: !ServiceInvoiceAccountingProtectedColumnIds.has(
+			column.id as ServiceInvoiceAccountingColumnId,
+		),
+		isVisible: visibleColumnIds.includes(
+			column.id as ServiceInvoiceAccountingColumnId,
+		),
+		label: column.header,
+		width: column.width,
+		widthMode: column.widthMode,
+	}));
+}
+
+function toggleAccountingColumnVisibility(
+	current: ServiceInvoiceAccountingColumnId[],
+	columnId: ServiceInvoiceAccountingColumnId,
+	isVisible: boolean,
+) {
+	if (ServiceInvoiceAccountingProtectedColumnIds.has(columnId)) {
+		return current;
+	}
+
+	if (isVisible) {
+		return current.includes(columnId) ? current : [...current, columnId];
+	}
+
+	return current.filter((currentColumnId) => currentColumnId !== columnId);
 }
 
 function createServiceSummaryCells(rows: ServiceInvoiceLineEntry[]) {

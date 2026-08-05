@@ -1,7 +1,7 @@
 import {
 	DiscountMaintenanceExportColumns,
 	DiscountMaintenanceStatusOptions,
-	DiscountMaintenanceTypeOptions,
+	DiscountMaintenanceTypeFilterOptions,
 	DiscountMaintenanceValueTypeOptions,
 } from "@/app/src/constants/modules/financial-maintenance/discount-maintenance/DiscountMaintenanceConstants";
 import type {
@@ -37,6 +37,14 @@ export function DiscountMaintenanceTableFilters({
 	onStatusFilterChange,
 	onTypeFilterChange,
 }: DiscountMaintenanceTableFiltersProps) {
+	const typeFilterLabels = DiscountMaintenanceTypeFilterOptions.map(
+		(option) => option.label,
+	);
+	const activeTypeFilterLabel =
+		DiscountMaintenanceTypeFilterOptions.find(
+			(option) => option.value === typeFilter,
+		)?.label ?? DiscountMaintenanceTypeFilterOptions[0].label;
+
 	return (
 		<div>
 			<div className="grid gap-2 border-b border-darknavy/10 px-3 py-3 xl:flex xl:items-end xl:justify-between xl:pb-0 xl:pt-2">
@@ -44,13 +52,7 @@ export function DiscountMaintenanceTableFilters({
 					<ModuleTableFilterSelect
 						label="Type"
 						value={typeFilter}
-						options={[
-							{ label: "All", value: "All" },
-							...DiscountMaintenanceTypeOptions.map((type) => ({
-								label: type,
-								value: type,
-							})),
-						]}
+						options={DiscountMaintenanceTypeFilterOptions}
 						onChange={(value) =>
 							onTypeFilterChange(value as DiscountTypeFilter)
 						}
@@ -58,7 +60,8 @@ export function DiscountMaintenanceTableFilters({
 				</div>
 				<div className="hidden xl:block">
 					<DiscountMaintenanceTypeTabs
-						value={typeFilter}
+						value={activeTypeFilterLabel}
+						options={typeFilterLabels}
 						onChange={onTypeFilterChange}
 					/>
 				</div>
@@ -137,17 +140,25 @@ export function DiscountMaintenanceTableFilters({
 }
 
 function DiscountMaintenanceTypeTabs({
+	options,
 	value,
 	onChange,
 }: {
-	value: DiscountTypeFilter;
+	options: string[];
+	value: string;
 	onChange: (value: DiscountTypeFilter) => void;
 }) {
 	return (
 		<Tabs
 			value={value}
-			options={["All", ...DiscountMaintenanceTypeOptions]}
-			onChange={onChange}
+			options={options}
+			onChange={(label) => {
+				const selectedOption = DiscountMaintenanceTypeFilterOptions.find(
+					(option) => option.label === label,
+				);
+
+				onChange((selectedOption?.value ?? "All") as DiscountTypeFilter);
+			}}
 		/>
 	);
 }

@@ -9,9 +9,9 @@ export const CanvassFormPurchaseTypeOptions = ["Goods", "Services", "Assets"] as
 export const CanvassFormUomOptions = ["PC", "BOX", "LOT", "SET", "KG"] as const;
 export const CanvassFormStatusOptions: CanvassFormStatus[] = [
 	"Draft",
-	"Open",
-	"Approved",
-	"Closed",
+	"For Approval",
+	"Posted",
+	"Disapproved",
 	"Cancelled",
 ];
 

@@ -1,5 +1,8 @@
 import { Ban, CheckCircle2, Edit3, Eye, ThumbsDown, Undo2 } from "lucide-react";
-import { ServiceInvoiceHref } from "@/app/src/constants/modules/sales/service-invoice/ServiceInvoiceConstants";
+import {
+	ServiceInvoiceHref,
+	ServiceInvoiceStatuses,
+} from "@/app/src/constants/modules/sales/service-invoice/ServiceInvoiceConstants";
 import type {
   ServiceInvoiceRecord,
   ServiceInvoiceStatus,
@@ -21,28 +24,35 @@ export function ServiceInvoiceRecordActions({
   onUpdateStatus: (record: ServiceInvoiceRecord, status: ServiceInvoiceStatus) => void;
   record: ServiceInvoiceRecord;
 }) {
-  const isApproved = record.status === "Approved";
-  const isDisapproved = record.status === "Disapproved";
-  const isCancelled = record.status === "Cancelled";
+  const isPosted = record.status === ServiceInvoiceStatuses.posted;
+  const isDisapproved = record.status === ServiceInvoiceStatuses.disapproved;
+  const isCancelled = record.status === ServiceInvoiceStatuses.cancelled;
   const canEdit = canEditServiceInvoiceStatus(record.status);
-  const approveLabel = isApproved ? "Undo Approved" : "Approve";
+  const postLabel = isPosted ? "Undo Posted" : "Post";
   const disapproveLabel = isDisapproved ? "Undo Disapproved" : "Disapprove";
   const cancelLabel = isCancelled ? "Uncancelled" : "Cancel";
-  const undoStatus: ServiceInvoiceStatus = "Active";
-  const cancelStatus: ServiceInvoiceStatus = isCancelled ? "Draft" : "Cancelled";
+  const undoStatus: ServiceInvoiceStatus = ServiceInvoiceStatuses.draft;
+  const cancelStatus: ServiceInvoiceStatus = isCancelled
+    ? ServiceInvoiceStatuses.draft
+    : ServiceInvoiceStatuses.cancelled;
   const overflowItems: ModuleActionMenuItem[] = [
     {
-      disabled: !canApproveServiceInvoiceStatus(record.status),
-      icon: isApproved ? Undo2 : CheckCircle2,
-      label: approveLabel,
-      onSelect: () => onUpdateStatus(record, isApproved ? undoStatus : "Approved"),
+      disabled: !canPostServiceInvoiceStatus(record.status),
+      icon: isPosted ? Undo2 : CheckCircle2,
+      label: postLabel,
+      onSelect: () =>
+        onUpdateStatus(record, isPosted ? undoStatus : ServiceInvoiceStatuses.posted),
       type: "button",
     },
     {
       disabled: !canDisapproveServiceInvoiceStatus(record.status),
       icon: isDisapproved ? Undo2 : ThumbsDown,
       label: disapproveLabel,
-      onSelect: () => onUpdateStatus(record, isDisapproved ? undoStatus : "Disapproved"),
+      onSelect: () =>
+        onUpdateStatus(
+          record,
+          isDisapproved ? undoStatus : ServiceInvoiceStatuses.disapproved,
+        ),
       tone: isDisapproved ? "default" : "danger",
       type: "button",
     },
@@ -92,19 +102,28 @@ export function ServiceInvoiceRecordActions({
 }
 
 function canEditServiceInvoiceStatus(status: ServiceInvoiceStatus) {
-  return status === "Active" || status === "Draft" || status === "Pending";
+  return (
+    status === ServiceInvoiceStatuses.draft ||
+    status === ServiceInvoiceStatuses.forApproval
+  );
 }
 
-function canApproveServiceInvoiceStatus(status: ServiceInvoiceStatus) {
-  return status === "Active" || status === "Draft" || status === "Pending" || status === "Approved";
+function canPostServiceInvoiceStatus(status: ServiceInvoiceStatus) {
+  return (
+    status === ServiceInvoiceStatuses.draft ||
+    status === ServiceInvoiceStatuses.forApproval ||
+    status === ServiceInvoiceStatuses.posted
+  );
 }
 
 function canDisapproveServiceInvoiceStatus(status: ServiceInvoiceStatus) {
   return (
-    status === "Active" || status === "Draft" || status === "Pending" || status === "Disapproved"
+    status === ServiceInvoiceStatuses.draft ||
+    status === ServiceInvoiceStatuses.forApproval ||
+    status === ServiceInvoiceStatuses.disapproved
   );
 }
 
 function canCancelServiceInvoiceStatus(status: ServiceInvoiceStatus) {
-  return status !== "Closed";
+  return status !== ServiceInvoiceStatuses.posted;
 }

@@ -1,8 +1,15 @@
+import type { PurchasingAccountingEntry } from "@/app/src/types/modules/purchasing/PurchasingAccountingTypes";
+
+export type PurchaseOrderFieldUpdater<TValues> = <Key extends keyof TValues>(
+	key: Key,
+	value: TValues[Key],
+) => void;
+
 export type PurchaseOrderStatus =
 	| "Draft"
-	| "Open"
-	| "Approved"
-	| "Closed"
+	| "For Approval"
+	| "Posted"
+	| "Disapproved"
 	| "Cancelled";
 
 export type PurchaseOrderItem = {
@@ -57,10 +64,12 @@ export type PurchaseOrderRecord = {
 	projectName: string;
 	importationNo: string;
 	partialPayment: boolean;
+	accountingEntries: PurchaseOrderAccountingEntry[];
 	items: PurchaseOrderItem[];
 };
 
 export type PurchaseOrderFormValues = Omit<PurchaseOrderRecord, "id">;
+export type PurchaseOrderAccountingEntry = PurchasingAccountingEntry;
 
 export type PurchaseOrderFormMode = "add" | "edit" | "view";
 

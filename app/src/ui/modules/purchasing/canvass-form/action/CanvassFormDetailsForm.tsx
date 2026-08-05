@@ -1,5 +1,7 @@
-import type { CanvassFormValues } from "@/app/src/types/modules/purchasing/canvass-form/CanvassFormTypes";
-import type { CanvassFormFieldUpdater } from "@/app/src/ui/modules/purchasing/canvass-form/action/CanvassFormFieldControls";
+import type {
+	CanvassFormFieldUpdater,
+	CanvassFormValues,
+} from "@/app/src/types/modules/purchasing/canvass-form/CanvassFormTypes";
 import { CanvassFormRequestFields } from "@/app/src/ui/modules/purchasing/canvass-form/action/CanvassFormRequestFields";
 
 type CanvassFormDetailsFormProps = {

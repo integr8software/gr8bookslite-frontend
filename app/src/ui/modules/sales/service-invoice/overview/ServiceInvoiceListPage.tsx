@@ -7,7 +7,6 @@ import {
   Clock3,
   Download,
   FileText,
-  PackageCheck,
   Plus,
   Search,
   Upload,
@@ -188,10 +187,10 @@ function ServiceInvoiceMetrics({ records }: { records: ServiceInvoiceRecord[] })
   const activeCount = records.filter((record) =>
     isServiceInvoiceActiveStatus(record.status),
   ).length;
-  const approvedCount = countServiceInvoicesByStatus(records, "Approved");
+  const postedCount = countServiceInvoicesByStatus(records, "Posted");
   const disapprovedCount = countServiceInvoicesByStatus(records, "Disapproved");
-  const pendingCount = countServiceInvoicesByStatus(records, "Pending");
-  const closedCount = countServiceInvoicesByStatus(records, "Closed");
+  const forApprovalCount = countServiceInvoicesByStatus(records, "For Approval");
+  const cancelledCount = countServiceInvoicesByStatus(records, "Cancelled");
 
   return (
     <ModuleStatisticCards
@@ -212,16 +211,16 @@ function ServiceInvoiceMetrics({ records }: { records: ServiceInvoiceRecord[] })
           iconClassName: "bg-emerald-50 text-emerald-700",
         },
         {
-          label: "Pending",
-          value: pendingCount,
-          summary: formatServiceInvoicePercentage(pendingCount, records.length),
+          label: "For Approval",
+          value: forApprovalCount,
+          summary: formatServiceInvoicePercentage(forApprovalCount, records.length),
           icon: Clock3,
           iconClassName: "bg-offwhite text-darknavy",
         },
         {
-          label: "Approved",
-          value: approvedCount,
-          summary: formatServiceInvoicePercentage(approvedCount, records.length),
+          label: "Posted",
+          value: postedCount,
+          summary: formatServiceInvoicePercentage(postedCount, records.length),
           icon: CheckCircle2,
           iconClassName: "bg-citron/25 text-darknavy",
         },
@@ -233,10 +232,10 @@ function ServiceInvoiceMetrics({ records }: { records: ServiceInvoiceRecord[] })
           iconClassName: "bg-coralpink/15 text-coralpink",
         },
         {
-          label: "Closed",
-          value: closedCount,
-          summary: formatServiceInvoicePercentage(closedCount, records.length),
-          icon: PackageCheck,
+          label: "Cancelled",
+          value: cancelledCount,
+          summary: formatServiceInvoicePercentage(cancelledCount, records.length),
+          icon: Ban,
           iconClassName: "bg-skyblue/15 text-skyblue",
         },
       ]}
@@ -245,13 +244,13 @@ function ServiceInvoiceMetrics({ records }: { records: ServiceInvoiceRecord[] })
 }
 
 function ServiceInvoiceStatusBadge({ status }: { status: ServiceInvoiceStatus }) {
-  const Icon = statusIconByStatus[status];
+  const Icon = statusIconByStatus[status] ?? Clock3;
 
   return (
     <span
       className={joinClasses(
         "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold",
-        statusClassNameByStatus[status],
+        statusClassNameByStatus[status] ?? "bg-offwhite text-darknavy/70",
       )}
     >
       <Icon className="h-3.5 w-3.5" aria-hidden="true" />
@@ -261,21 +260,17 @@ function ServiceInvoiceStatusBadge({ status }: { status: ServiceInvoiceStatus })
 }
 
 const statusIconByStatus = {
-  Active: CheckCircle2,
-  Approved: CheckCircle2,
   Cancelled: Ban,
-  Closed: PackageCheck,
   Disapproved: XCircle,
   Draft: Clock3,
-  Pending: Clock3,
+  "For Approval": Clock3,
+  Posted: CheckCircle2,
 } satisfies Record<ServiceInvoiceStatus, typeof CheckCircle2>;
 
 const statusClassNameByStatus = {
-  Active: "bg-citron/25 text-darknavy",
-  Approved: "bg-citron/25 text-darknavy",
   Cancelled: "bg-darknavy/10 text-darknavy/70",
-  Closed: "bg-skyblue/20 text-darknavy",
   Disapproved: "bg-coralpink/15 text-coralpink",
   Draft: "bg-offwhite text-darknavy/70",
-  Pending: "bg-offwhite text-darknavy",
+  "For Approval": "bg-offwhite text-darknavy",
+  Posted: "bg-citron/25 text-darknavy",
 } satisfies Record<ServiceInvoiceStatus, string>;

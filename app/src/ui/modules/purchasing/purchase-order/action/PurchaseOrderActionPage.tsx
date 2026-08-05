@@ -47,10 +47,12 @@ function PurchaseOrderActionPageInner() {
 				onUpdateField={page.updateField}
 			/>
 			<PurchaseOrderEntrySection
+				accountingRows={page.values.accountingEntries}
 				error={page.errors.items}
 				isReadonly={page.isReadonly}
 				rows={page.values.items}
 				values={page.values}
+				onAccountingRowsChange={page.updateAccountingEntries}
 				onRowsChange={page.updateItems}
 				onUpdateField={page.updateField}
 			/>

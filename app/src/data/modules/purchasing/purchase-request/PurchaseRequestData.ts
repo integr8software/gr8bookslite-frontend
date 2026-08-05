@@ -1,9 +1,11 @@
 import { PurchaseRequestStorageKey } from "@/app/src/constants/modules/purchasing/purchase-request/PurchaseRequestConstants";
 import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import type {
+  PurchaseRequestAccountingEntry,
   PurchaseRequestFormValues,
   PurchaseRequestItem,
   PurchaseRequestRecord,
+  PurchaseRequestStatus,
 } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
 
 const DefaultPurchaseRequestPrintHeader = {
@@ -24,7 +26,7 @@ export const purchaseRequestSeedRecords: PurchaseRequestRecord[] = [
     purchaseType: "Goods",
     transNo: "000292",
     prDate: "2026-03-24",
-    status: "Closed",
+    status: "Posted",
     currency: "PHP",
     exchangeRate: 1,
     bomNo: "",
@@ -41,6 +43,22 @@ export const purchaseRequestSeedRecords: PurchaseRequestRecord[] = [
     approvedByLabel: "Approved by",
     approvedBySignatureFileName: "",
     approvedBySignatureImageUrl: "",
+    accountingEntries: [
+      createPurchaseRequestAccountingEntry({
+        accountTitle: "Purchase Request Clearing",
+        debit: 0,
+        particulars: "Purchase request accrual",
+        refNo: "000292",
+      }),
+      createPurchaseRequestAccountingEntry({
+        accountTitle: "Accounts Payable",
+        credit: 0,
+        partyCode: "RMBT0001",
+        partyName: "RMBT Corporation-yes",
+        particulars: "Purchase request accrual",
+        refNo: "000292",
+      }),
+    ],
     items: [
       {
         id: "pr-000292-item-1",
@@ -70,6 +88,10 @@ export const emptyPurchaseRequestItem: PurchaseRequestItem = {
   cost: 0,
   responsibilityCenter: "",
 };
+
+export function createBlankPurchaseRequestAccountingEntry(): PurchaseRequestAccountingEntry {
+  return createPurchaseRequestAccountingEntry();
+}
 
 export const PurchaseRequestMaterialPlanRecords = [
   {
@@ -118,36 +140,12 @@ export function createPurchaseRequestFormValues(
   record?: PurchaseRequestRecord,
 ): PurchaseRequestFormValues {
   if (record) {
+    const normalizedRecord = normalizePurchaseRequestRecordDefaults(record);
+
     return {
-      companyAddress: record.companyAddress ?? DefaultPurchaseRequestPrintHeader.companyAddress,
-      companyName: record.companyName ?? DefaultPurchaseRequestPrintHeader.companyName,
-      logoFileName: record.logoFileName ?? DefaultPurchaseRequestPrintHeader.logoFileName,
-      logoImageUrl: record.logoImageUrl ?? DefaultPurchaseRequestPrintHeader.logoImageUrl,
-      telephoneNo: record.telephoneNo ?? DefaultPurchaseRequestPrintHeader.telephoneNo,
-      vatRegTin: record.vatRegTin ?? DefaultPurchaseRequestPrintHeader.vatRegTin,
-      vceCode: record.vceCode,
-      vceName: record.vceName,
-      purchaseType: record.purchaseType,
-      transNo: record.transNo,
-      prDate: record.prDate,
-      status: record.status,
-      currency: record.currency,
-      exchangeRate: record.exchangeRate,
-      bomNo: record.bomNo,
-      projectCode: record.projectCode,
-      projectName: record.projectName,
-      vendorAddress: record.vendorAddress,
-      remarks: record.remarks,
-      forDepartment: record.forDepartment,
-      preparedBy: record.preparedBy,
-      preparedByLabel: record.preparedByLabel ?? "Prepared by",
-      preparedBySignatureFileName: record.preparedBySignatureFileName ?? "",
-      preparedBySignatureImageUrl: record.preparedBySignatureImageUrl ?? "",
-      approvedBy: record.approvedBy,
-      approvedByLabel: record.approvedByLabel ?? "Approved by",
-      approvedBySignatureFileName: record.approvedBySignatureFileName ?? "",
-      approvedBySignatureImageUrl: record.approvedBySignatureImageUrl ?? "",
-      items: record.items.map((item) => ({ ...item })),
+      ...normalizedRecord,
+      items: normalizedRecord.items.map((item) => ({ ...item })),
+      accountingEntries: normalizedRecord.accountingEntries.map((entry) => ({ ...entry })),
     };
   }
 
@@ -175,6 +173,9 @@ export function createPurchaseRequestFormValues(
     approvedByLabel: "Approved by",
     approvedBySignatureFileName: "",
     approvedBySignatureImageUrl: "",
+    accountingEntries: createPurchaseRequestAccountingEntries({
+      refNo: createNextTransNo(purchaseRequestSeedRecords),
+    }),
     items: [{ ...emptyPurchaseRequestItem, id: createPurchaseRequestId("item") }],
   };
 }
@@ -187,6 +188,20 @@ export function createPurchaseRequestRecord(
     id,
     ...values,
     vatRegTin: FormatTinNumber(values.vatRegTin),
+    status: normalizePurchaseRequestStatus(values.status),
+    accountingEntries: (
+      values.accountingEntries ??
+      createPurchaseRequestAccountingEntries({
+        partyCode: values.vceCode,
+        partyName: values.vceName,
+        refNo: values.transNo,
+      })
+    ).map((entry) => ({
+      ...createBlankPurchaseRequestAccountingEntry(),
+      ...entry,
+      debit: Number(entry.debit) || 0,
+      credit: Number(entry.credit) || 0,
+    })),
     items: values.items.map((item) => ({
       ...item,
       id: item.id || createPurchaseRequestId("item"),
@@ -274,10 +289,128 @@ export function loadPurchaseRequests() {
     const records =
       Array.isArray(parsed) && parsed.length > 0 ? parsed : purchaseRequestSeedRecords;
 
-    return records;
+    return records.map(normalizePurchaseRequestRecordDefaults);
   } catch {
     return purchaseRequestSeedRecords;
   }
+}
+
+function createPurchaseRequestAccountingEntries({
+  partyCode = "",
+  partyName = "",
+  refNo = "",
+}: {
+  partyCode?: string;
+  partyName?: string;
+  refNo?: string;
+} = {}) {
+  return [
+    createPurchaseRequestAccountingEntry({
+      accountTitle: "Purchase Request Clearing",
+      debit: 0,
+      particulars: "Purchase request accrual",
+      refNo,
+    }),
+    createPurchaseRequestAccountingEntry({
+      accountTitle: "Accounts Payable",
+      credit: 0,
+      partyCode,
+      partyName,
+      particulars: "Purchase request accrual",
+      refNo,
+    }),
+  ];
+}
+
+function createPurchaseRequestAccountingEntry(
+  entry: Partial<PurchaseRequestAccountingEntry> = {},
+): PurchaseRequestAccountingEntry {
+  return {
+    id: createPurchaseRequestId("accounting"),
+    accountCode: "",
+    accountTitle: "",
+    debit: 0,
+    credit: 0,
+    partyCode: "",
+    partyName: "",
+    particulars: "",
+    vatType: "",
+    atcCode: "",
+    responsibilityCenter: "",
+    refNo: "",
+    ...entry,
+  };
+}
+
+function normalizePurchaseRequestRecordDefaults(
+  record: Partial<PurchaseRequestRecord>,
+): PurchaseRequestRecord {
+  const transNo = record.transNo ?? createNextTransNo(purchaseRequestSeedRecords);
+
+  return {
+    id: record.id ?? createPurchaseRequestId("pr"),
+    companyAddress: record.companyAddress ?? DefaultPurchaseRequestPrintHeader.companyAddress,
+    companyName: record.companyName ?? DefaultPurchaseRequestPrintHeader.companyName,
+    logoFileName: record.logoFileName ?? DefaultPurchaseRequestPrintHeader.logoFileName,
+    logoImageUrl: record.logoImageUrl ?? DefaultPurchaseRequestPrintHeader.logoImageUrl,
+    telephoneNo: record.telephoneNo ?? DefaultPurchaseRequestPrintHeader.telephoneNo,
+    vatRegTin: record.vatRegTin ?? DefaultPurchaseRequestPrintHeader.vatRegTin,
+    vceCode: record.vceCode ?? "",
+    vceName: record.vceName ?? "",
+    purchaseType: record.purchaseType ?? "Goods",
+    transNo,
+    prDate: record.prDate ?? new Date().toISOString().slice(0, 10),
+    status: normalizePurchaseRequestStatus(record.status),
+    currency: record.currency ?? "PHP",
+    exchangeRate: Number(record.exchangeRate) || 1,
+    bomNo: record.bomNo ?? "",
+    projectCode: record.projectCode ?? "",
+    projectName: record.projectName ?? "",
+    vendorAddress: record.vendorAddress ?? "",
+    remarks: record.remarks ?? "",
+    forDepartment: record.forDepartment ?? "",
+    preparedBy: record.preparedBy ?? "",
+    preparedByLabel: record.preparedByLabel ?? "Prepared by",
+    preparedBySignatureFileName: record.preparedBySignatureFileName ?? "",
+    preparedBySignatureImageUrl: record.preparedBySignatureImageUrl ?? "",
+    approvedBy: record.approvedBy ?? "",
+    approvedByLabel: record.approvedByLabel ?? "Approved by",
+    approvedBySignatureFileName: record.approvedBySignatureFileName ?? "",
+    approvedBySignatureImageUrl: record.approvedBySignatureImageUrl ?? "",
+    accountingEntries:
+      record.accountingEntries?.map((entry) =>
+        createPurchaseRequestAccountingEntry({
+          ...entry,
+          debit: Number(entry.debit) || 0,
+          credit: Number(entry.credit) || 0,
+        }),
+      ) ??
+      createPurchaseRequestAccountingEntries({
+        partyCode: record.vceCode ?? "",
+        partyName: record.vceName ?? "",
+        refNo: transNo,
+      }),
+    items: (record.items ?? [{ ...emptyPurchaseRequestItem }]).map((item) => ({
+      ...emptyPurchaseRequestItem,
+      ...item,
+      id: item.id || createPurchaseRequestId("item"),
+      quantity: Number(item.quantity) || 0,
+      cost: Number(item.cost) || 0,
+    })),
+  };
+}
+
+function normalizePurchaseRequestStatus(status: unknown): PurchaseRequestStatus {
+  const value = String(status ?? "");
+
+  if (value === "Draft" || value === "For Approval" || value === "Posted" || value === "Disapproved" || value === "Cancelled") {
+    return value;
+  }
+
+  if (value === "Open") return "For Approval";
+  if (value === "Approved" || value === "Closed") return "Posted";
+
+  return "Draft";
 }
 
 export function savePurchaseRequests(records: PurchaseRequestRecord[]) {

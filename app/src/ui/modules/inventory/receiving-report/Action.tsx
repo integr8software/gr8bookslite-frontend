@@ -722,7 +722,7 @@ function ReceivingReportVendorSection({
             label="Status"
             name="status"
             value={values.status}
-            disabled={isReadonly}
+            disabled
             required
             error={errors.status}
             options={StatusOptions}

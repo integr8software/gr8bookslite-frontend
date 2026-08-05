@@ -65,7 +65,7 @@ export function ModuleTableColumnVisibilityButton<TData>({
     );
   }, [columns]);
 
-  function showAllColumns() {
+  function handleShowAllColumns() {
     if (!hasHiddenColumns) {
       return;
     }
@@ -227,7 +227,7 @@ export function ModuleTableColumnVisibilityButton<TData>({
                     <button
                       type="button"
                       disabled={!hasHiddenColumns}
-                      onClick={showAllColumns}
+                      onClick={handleShowAllColumns}
                       className={joinClasses(
                         "rounded-md px-2 py-1 text-xs font-semibold text-skyblue transition hover:bg-skyblue/10 focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:text-darknavy/35 disabled:hover:bg-transparent",
                         moduleAccentClassNames.focusRing,

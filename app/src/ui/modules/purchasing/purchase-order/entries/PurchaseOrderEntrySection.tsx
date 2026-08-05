@@ -1,43 +1,71 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
+	createBlankPurchaseOrderAccountingEntry,
 	createBlankPurchaseOrderItem,
 	createPurchaseOrderId,
 	formatPurchaseOrderAmount,
 	getPurchaseOrderTotals,
 } from "@/app/src/data/modules/purchasing/purchase-order/PurchaseOrderData";
 import type {
+	PurchaseOrderAccountingEntry,
+	PurchaseOrderFieldUpdater,
 	PurchaseOrderFormValues,
 	PurchaseOrderItem,
 } from "@/app/src/types/modules/purchasing/purchase-order/PurchaseOrderTypes";
-import {
-	PurchaseOrderFieldClassName,
-	type PurchaseOrderFieldUpdater,
-} from "@/app/src/ui/modules/purchasing/purchase-order/action/PurchaseOrderFieldControls";
+import type {
+	PurchasingAccountingColumnId,
+	PurchasingEntryTab,
+} from "@/app/src/types/modules/purchasing/PurchasingAccountingTypes";
+import { PurchaseOrderFieldClassName } from "@/app/src/ui/modules/purchasing/purchase-order/action/PurchaseOrderFieldControls";
 import {
 	ModuleDataEntry,
 	type ModuleDataEntryClearAction,
 	type ModuleDataEntryColumn,
 	type ModuleDataEntryColumnOption,
+	type ModuleDataEntryExportOption,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { createPurchaseOrderLineColumns } from "@/app/src/ui/modules/purchasing/purchase-order/entries/PurchaseOrderLineColumns";
+import {
+	duplicateEntryRow,
+	insertEntryRow,
+	moveEntryRow,
+	normalizePurchaseOrderEntry as normalizeEntry,
+	removeEntryRow,
+	shouldClearPurchaseOrderAccountingEntry as shouldClearAccountingEntry,
+	shouldClearPurchaseOrderEntry as shouldClearEntry,
+} from "@/app/src/ui/modules/purchasing/purchase-order/entries/PurchaseOrderEntrySectionUtils";
+import {
+	createPurchasingAccountingEntryColumns,
+	PurchasingAccountingDefaultVisibleColumnIds,
+	PurchasingAccountingProtectedColumnIds,
+} from "@/app/src/ui/modules/purchasing/shared/PurchasingAccountingEntryColumns";
+import { PurchasingEntryTabs } from "@/app/src/ui/modules/purchasing/shared/PurchasingEntryTabs";
 
 type PurchaseOrderEntrySectionProps = {
+	accountingRows: PurchaseOrderAccountingEntry[];
 	error?: string;
 	isReadonly: boolean;
 	rows: PurchaseOrderItem[];
 	values: PurchaseOrderFormValues;
+	onAccountingRowsChange: (rows: PurchaseOrderAccountingEntry[]) => void;
 	onRowsChange: (rows: PurchaseOrderItem[]) => void;
 	onUpdateField: PurchaseOrderFieldUpdater<PurchaseOrderFormValues>;
 };
 
 export function PurchaseOrderEntrySection({
+	accountingRows,
 	error,
 	isReadonly,
+	onAccountingRowsChange,
 	onRowsChange,
 	onUpdateField,
 	rows,
 	values,
 }: PurchaseOrderEntrySectionProps) {
+	const [activeTab, setActiveTab] = useState<PurchasingEntryTab>("details");
+	const [visibleAccountingColumnIds, setVisibleAccountingColumnIds] = useState<
+		PurchasingAccountingColumnId[]
+	>([...PurchasingAccountingDefaultVisibleColumnIds]);
 	const updateEntry = useCallback(
 		(rowId: string, updates: Partial<PurchaseOrderItem>) => {
 			onRowsChange(
@@ -48,6 +76,16 @@ export function PurchaseOrderEntrySection({
 		},
 		[onRowsChange, rows],
 	);
+	const updateAccountingEntry = useCallback(
+		(rowId: string, updates: Partial<Omit<PurchaseOrderAccountingEntry, "id">>) => {
+			onAccountingRowsChange(
+				accountingRows.map((row) =>
+					row.id === rowId ? { ...row, ...updates } : row,
+				),
+			);
+		},
+		[accountingRows, onAccountingRowsChange],
+	);
 	const totals = useMemo(
 		() => getPurchaseOrderTotals({ ...values, items: rows }),
 		[rows, values],
@@ -55,6 +93,19 @@ export function PurchaseOrderEntrySection({
 	const columns = useMemo<ModuleDataEntryColumn<PurchaseOrderItem>[]>(
 		() => createPurchaseOrderLineColumns(isReadonly, updateEntry),
 		[isReadonly, updateEntry],
+	);
+	const accountingColumns = useMemo(
+		() => createPurchasingAccountingEntryColumns(isReadonly, updateAccountingEntry),
+		[isReadonly, updateAccountingEntry],
+	);
+	const visibleAccountingColumns = useMemo(
+		() =>
+			accountingColumns.filter((column) =>
+				visibleAccountingColumnIds.includes(
+					column.id as PurchasingAccountingColumnId,
+				),
+			),
+		[accountingColumns, visibleAccountingColumnIds],
 	);
 	const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
 		() =>
@@ -68,6 +119,93 @@ export function PurchaseOrderEntrySection({
 			})),
 		[columns],
 	);
+
+	if (activeTab === "accounting") {
+		return (
+			<ModuleDataEntry
+				columns={visibleAccountingColumns}
+				columnOptions={createAccountingColumnOptions(
+					accountingColumns,
+					visibleAccountingColumnIds,
+				)}
+				description=""
+				emptyRowLabel="accounting entry"
+				error={error}
+				exportOptions={EntryExportOptions}
+				isDraggable
+				isReadonly={isReadonly}
+				rows={accountingRows}
+				summaryCells={createAccountingSummaryCells(accountingRows)}
+				title={
+					<PurchasingEntryTabs
+						activeTab={activeTab}
+						detailsLabel="Purchase Order Details"
+						onTabChange={setActiveTab}
+					/>
+				}
+				onAddRows={(count) =>
+					onAccountingRowsChange([
+						...accountingRows,
+						...Array.from({ length: count }, () =>
+							createBlankPurchaseOrderAccountingEntry(),
+						),
+					])
+				}
+				onAutoColumnWidth={() => undefined}
+				onClearRows={(action) =>
+					onAccountingRowsChange(
+						clearAccountingRows(
+							accountingRows,
+							action,
+							createBlankPurchaseOrderAccountingEntry,
+						),
+					)
+				}
+				onDuplicateRow={(rowId) =>
+					onAccountingRowsChange(
+						duplicateEntryRow(accountingRows, rowId, () =>
+							createBlankPurchaseOrderAccountingEntry().id,
+						),
+					)
+				}
+				onFitColumnWidth={() => undefined}
+				onImport={() => undefined}
+				onInsertRow={(rowId, position) =>
+					onAccountingRowsChange(
+						insertEntryRow(
+							accountingRows,
+							rowId,
+							position,
+							createBlankPurchaseOrderAccountingEntry,
+						),
+					)
+				}
+				onMoveRow={(fromRowId, toRowId) =>
+					onAccountingRowsChange(moveEntryRow(accountingRows, fromRowId, toRowId))
+				}
+				onRemoveRow={(rowId) =>
+					onAccountingRowsChange(
+						removeEntryRow(
+							accountingRows,
+							rowId,
+							createBlankPurchaseOrderAccountingEntry,
+						),
+					)
+				}
+				onToggleColumnVisibility={(columnId, isVisible) =>
+					setVisibleAccountingColumnIds((current) =>
+						toggleAccountingColumnVisibility(
+							current,
+							columnId as PurchasingAccountingColumnId,
+							isVisible,
+						),
+					)
+				}
+				onUpdateColumnHeader={() => undefined}
+				onUpdateColumnWidth={() => undefined}
+			/>
+		);
+	}
 
 	function addRows(count: number) {
 		onRowsChange([
@@ -147,9 +285,7 @@ export function PurchaseOrderEntrySection({
 				emptyRowLabel="purchase order line"
 				error={error}
 				exportOptions={[
-					{ id: "csv", label: "CSV", onSelect: () => undefined },
-					{ id: "excel", label: "Excel", onSelect: () => undefined },
-					{ id: "pdf", label: "PDF", onSelect: () => undefined },
+					...EntryExportOptions,
 				]}
 				isDraggable
 				isReadonly={isReadonly}
@@ -159,7 +295,13 @@ export function PurchaseOrderEntrySection({
 					netAmount: formatPurchaseOrderAmount(totals.netAmount),
 					vatAmount: formatPurchaseOrderAmount(totals.vatAmount),
 				}}
-				title="Entries"
+				title={
+					<PurchasingEntryTabs
+						activeTab={activeTab}
+						detailsLabel="Purchase Order Details"
+						onTabChange={setActiveTab}
+					/>
+				}
 				onAddRows={addRows}
 				onAutoColumnWidth={() => undefined}
 				onClearRows={clearRows}
@@ -207,6 +349,64 @@ export function PurchaseOrderEntrySection({
 	);
 }
 
+function createAccountingColumnOptions(
+	columns: ModuleDataEntryColumn<PurchaseOrderAccountingEntry>[],
+	visibleColumnIds: PurchasingAccountingColumnId[],
+): ModuleDataEntryColumnOption[] {
+	return columns.map((column) => ({
+		id: column.id,
+		isHideable: !PurchasingAccountingProtectedColumnIds.has(
+			column.id as PurchasingAccountingColumnId,
+		),
+		isVisible: visibleColumnIds.includes(column.id as PurchasingAccountingColumnId),
+		label: column.header,
+		width: column.width,
+		widthMode: column.widthMode,
+	}));
+}
+
+function toggleAccountingColumnVisibility(
+	current: PurchasingAccountingColumnId[],
+	columnId: PurchasingAccountingColumnId,
+	isVisible: boolean,
+) {
+	if (PurchasingAccountingProtectedColumnIds.has(columnId)) return current;
+	if (isVisible) return current.includes(columnId) ? current : [...current, columnId];
+	return current.filter((currentColumnId) => currentColumnId !== columnId);
+}
+
+function createAccountingSummaryCells(rows: PurchaseOrderAccountingEntry[]) {
+	const totals = rows.reduce(
+		(summary, entry) => ({
+			credit: summary.credit + entry.credit,
+			debit: summary.debit + entry.debit,
+		}),
+		{ credit: 0, debit: 0 },
+	);
+
+	return {
+		accountTitle: "Totals",
+		credit: formatPurchaseOrderAmount(totals.credit),
+		debit: formatPurchaseOrderAmount(totals.debit),
+	};
+}
+
+function clearAccountingRows(
+	rows: PurchaseOrderAccountingEntry[],
+	action: ModuleDataEntryClearAction,
+	createFallbackRow: () => PurchaseOrderAccountingEntry,
+) {
+	if (action === "all") return [createFallbackRow()];
+	const nextRows = rows.filter((row) => !shouldClearAccountingEntry(row, action));
+	return nextRows.length > 0 ? nextRows : [createFallbackRow()];
+}
+
+const EntryExportOptions = [
+	{ id: "csv", label: "CSV", onSelect: () => undefined },
+	{ id: "excel", label: "Excel", onSelect: () => undefined },
+	{ id: "pdf", label: "PDF", onSelect: () => undefined },
+] satisfies ModuleDataEntryExportOption[];
+
 function CompactAmountField({
 	id,
 	label,
@@ -237,58 +437,3 @@ function CompactAmountField({
 	);
 }
 
-function normalizeEntry(entry: PurchaseOrderItem): PurchaseOrderItem {
-	return {
-		...entry,
-		cost: Number(entry.cost) || 0,
-		discountAmount: Number(entry.discountAmount) || 0,
-		freightCost: Number(entry.freightCost) || 0,
-		prQuantity: Number(entry.prQuantity) || 0,
-		quantity: Number(entry.quantity) || 0,
-		rateDelivery: Number(entry.rateDelivery) || 0,
-		vatAmount: Number(entry.vatAmount) || 0,
-	};
-}
-
-function shouldClearEntry(
-	entry: PurchaseOrderItem,
-	action: Exclude<ModuleDataEntryClearAction, "all">,
-) {
-	const hasData = purchaseOrderEntryHasData(entry);
-
-	if (action === "with-data") return hasData;
-	if (action === "incomplete") return hasData && !purchaseOrderEntryIsComplete(entry);
-
-	return !hasData;
-}
-
-function purchaseOrderEntryHasData(entry: PurchaseOrderItem) {
-	return Boolean(
-		entry.itemCode.trim() ||
-			entry.barcode.trim() ||
-			entry.itemName.trim() ||
-			entry.itemCategory.trim() ||
-			entry.color.trim() ||
-			entry.brand.trim() ||
-			entry.size.trim() ||
-			entry.model.trim() ||
-			entry.responsibilityCenter.trim() ||
-			entry.budgetCode.trim() ||
-			entry.linePrNo.trim() ||
-			entry.canvassNo.trim() ||
-			Number(entry.quantity) ||
-			Number(entry.prQuantity) ||
-			Number(entry.rateDelivery) ||
-			Number(entry.cost),
-	);
-}
-
-function purchaseOrderEntryIsComplete(entry: PurchaseOrderItem) {
-	return Boolean(
-		entry.itemCode.trim() &&
-			entry.itemName.trim() &&
-			entry.uom.trim() &&
-			Number(entry.quantity) >= 0 &&
-			Number(entry.cost) >= 0,
-	);
-}

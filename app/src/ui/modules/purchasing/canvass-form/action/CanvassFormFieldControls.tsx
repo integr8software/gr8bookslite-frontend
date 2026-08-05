@@ -1,9 +1,5 @@
 import type { ReactNode } from "react";
-
-export type CanvassFormFieldUpdater<TValues> = <Key extends keyof TValues>(
-	key: Key,
-	value: TValues[Key],
-) => void;
+import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 
 export const FieldClassName =
 	"app-data-entry-field h-11 min-w-0 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15 read-only:bg-white read-only:text-darknavy disabled:bg-white disabled:text-darknavy";
@@ -49,7 +45,7 @@ export function TextField({
 		<FieldShell controlId={id} label={label} isRequired={isRequired}>
 			<input
 				id={id}
-				value={value}
+				value={value ?? ""}
 				readOnly={readOnly}
 				onChange={(event) => onChange(event.target.value)}
 				className={FieldClassName}
@@ -78,7 +74,7 @@ export function DateField({
 			<input
 				id={id}
 				type="date"
-				value={value}
+				value={value ?? ""}
 				readOnly={readOnly}
 				onChange={(event) => onChange(event.target.value)}
 				className={FieldClassName}
@@ -106,19 +102,14 @@ export function SelectField({
 }) {
 	return (
 		<FieldShell controlId={id} label={label} isRequired={isRequired}>
-			<select
+			<AppAdvancedDropdown
 				id={id}
-				value={value}
-				disabled={readOnly}
-				onChange={(event) => onChange(event.target.value)}
-				className={FieldClassName}
-			>
-				{options.map((option) => (
-					<option key={option} value={option}>
-						{option}
-					</option>
-				))}
-			</select>
+				value={value ?? ""}
+				readOnly={readOnly}
+				options={options.map((option) => ({ name: option, value: option }))}
+				placeholder="--Select Option--"
+				onChange={(nextValue) => onChange(String(nextValue))}
+			/>
 		</FieldShell>
 	);
 }
@@ -142,7 +133,7 @@ export function AmountField({
 				id={id}
 				type="number"
 				step="0.01"
-				value={value}
+				value={value ?? ""}
 				readOnly={readOnly}
 				onChange={(event) =>
 					onChange(Math.round(Number(event.target.value || 0) * 100) / 100)

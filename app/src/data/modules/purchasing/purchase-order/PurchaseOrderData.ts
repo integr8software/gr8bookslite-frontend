@@ -1,8 +1,10 @@
 import { PurchaseOrderStorageKey } from "@/app/src/constants/modules/purchasing/purchase-order/PurchaseOrderConstants";
 import type {
+	PurchaseOrderAccountingEntry,
 	PurchaseOrderFormValues,
 	PurchaseOrderItem,
 	PurchaseOrderRecord,
+	PurchaseOrderStatus,
 } from "@/app/src/types/modules/purchasing/purchase-order/PurchaseOrderTypes";
 
 export const purchaseOrderSeedRecords: PurchaseOrderRecord[] = [
@@ -29,6 +31,11 @@ export const purchaseOrderSeedRecords: PurchaseOrderRecord[] = [
 		projectName: "",
 		importationNo: "",
 		partialPayment: false,
+		accountingEntries: createPurchaseOrderAccountingEntries({
+			partyCode: "VCE-001",
+			partyName: "North Harbor Office Depot",
+			refNo: "PO-2026-0001",
+		}),
 		items: [
 			{
 				id: "po-0001-item-1",
@@ -91,14 +98,24 @@ export const emptyPurchaseOrderItem: PurchaseOrderItem = {
 	canvassNo: "",
 };
 
+export function createBlankPurchaseOrderAccountingEntry(): PurchaseOrderAccountingEntry {
+	return createPurchaseOrderAccountingEntry();
+}
+
 export function createPurchaseOrderFormValues(
 	record?: PurchaseOrderRecord,
 ): PurchaseOrderFormValues {
 	if (record) {
+		const normalizedRecord = normalizePurchaseOrderRecordDefaults(record);
+
 		return {
-			...record,
-			termsOfPayment: record.termsOfPayment ?? "",
-			items: record.items.map((item) => normalizePurchaseOrderItemDefaults(item)),
+			...normalizedRecord,
+			accountingEntries: normalizedRecord.accountingEntries.map((entry) => ({
+				...entry,
+			})),
+			items: normalizedRecord.items.map((item) =>
+				normalizePurchaseOrderItemDefaults(item),
+			),
 		};
 	}
 
@@ -124,6 +141,7 @@ export function createPurchaseOrderFormValues(
 		projectName: "",
 		importationNo: "",
 		partialPayment: false,
+		accountingEntries: createPurchaseOrderAccountingEntries(),
 		items: [createBlankPurchaseOrderItem()],
 	};
 }
@@ -135,6 +153,21 @@ export function createPurchaseOrderRecord(
 	return {
 		id,
 		...values,
+		status: normalizePurchaseOrderStatus(values.status),
+		accountingEntries: (
+			values.accountingEntries ??
+			createPurchaseOrderAccountingEntries({
+				partyCode: values.vceCode,
+				partyName: values.vceName,
+				refNo: values.transNo,
+			})
+		).map((entry) =>
+			createPurchaseOrderAccountingEntry({
+				...entry,
+				debit: Number(entry.debit) || 0,
+				credit: Number(entry.credit) || 0,
+			}),
+		),
 		items: values.items.map((item) => ({
 			...normalizePurchaseOrderItemDefaults(item),
 			id: item.id || createPurchaseOrderId("item"),
@@ -240,11 +273,124 @@ export function loadPurchaseOrders() {
 		const parsed = JSON.parse(stored) as PurchaseOrderRecord[];
 
 		return Array.isArray(parsed) && parsed.length > 0
-			? parsed
+			? parsed.map(normalizePurchaseOrderRecordDefaults)
 			: purchaseOrderSeedRecords;
 	} catch {
 		return purchaseOrderSeedRecords;
 	}
+}
+
+function normalizePurchaseOrderRecordDefaults(
+	record: Partial<PurchaseOrderRecord>,
+): PurchaseOrderRecord {
+	const transNo = record.transNo ?? createNextPurchaseOrderTransNo(purchaseOrderSeedRecords);
+
+	return {
+		id: record.id ?? createPurchaseOrderId("po"),
+		vceCode: record.vceCode ?? "",
+		vceName: record.vceName ?? "",
+		purchaseType: record.purchaseType ?? "Goods",
+		transNo,
+		documentDate: record.documentDate ?? new Date().toISOString().slice(0, 10),
+		prNo: record.prNo ?? "",
+		status: normalizePurchaseOrderStatus(record.status),
+		currency: record.currency ?? "PHP",
+		exchangeRate: Number(record.exchangeRate) || 1,
+		address: record.address ?? "",
+		contactNo: record.contactNo ?? "",
+		emailAddress: record.emailAddress ?? "",
+		deliveryDate: record.deliveryDate ?? new Date().toISOString().slice(0, 10),
+		termsOfPayment: record.termsOfPayment ?? "",
+		remarks: record.remarks ?? "",
+		discountAmount: Number(record.discountAmount) || 0,
+		vatAmount: Number(record.vatAmount) || 0,
+		projectRef: record.projectRef ?? "",
+		projectName: record.projectName ?? "",
+		importationNo: record.importationNo ?? "",
+		partialPayment: Boolean(record.partialPayment),
+		accountingEntries:
+			record.accountingEntries?.map((entry) =>
+				createPurchaseOrderAccountingEntry({
+					...entry,
+					debit: Number(entry.debit) || 0,
+					credit: Number(entry.credit) || 0,
+				}),
+			) ??
+			createPurchaseOrderAccountingEntries({
+				partyCode: record.vceCode ?? "",
+				partyName: record.vceName ?? "",
+				refNo: transNo,
+			}),
+		items: (record.items ?? [createBlankPurchaseOrderItem()]).map(
+			normalizePurchaseOrderItemDefaults,
+		),
+	};
+}
+
+function createPurchaseOrderAccountingEntries({
+	partyCode = "",
+	partyName = "",
+	refNo = "",
+}: {
+	partyCode?: string;
+	partyName?: string;
+	refNo?: string;
+} = {}) {
+	return [
+		createPurchaseOrderAccountingEntry({
+			accountTitle: "Inventory",
+			debit: 0,
+			particulars: "Purchase order accrual",
+			refNo,
+		}),
+		createPurchaseOrderAccountingEntry({
+			accountTitle: "Accounts Payable",
+			credit: 0,
+			partyCode,
+			partyName,
+			particulars: "Purchase order accrual",
+			refNo,
+		}),
+	];
+}
+
+function createPurchaseOrderAccountingEntry(
+	entry: Partial<PurchaseOrderAccountingEntry> = {},
+): PurchaseOrderAccountingEntry {
+	return {
+		id: createPurchaseOrderId("accounting"),
+		accountCode: "",
+		accountTitle: "",
+		debit: 0,
+		credit: 0,
+		partyCode: "",
+		partyName: "",
+		particulars: "",
+		vatType: "",
+		atcCode: "",
+		responsibilityCenter: "",
+		refNo: "",
+		...entry,
+	};
+}
+
+function normalizePurchaseOrderStatus(status: unknown): PurchaseOrderStatus {
+	const value = String(status ?? "");
+
+	if (
+		value === "Draft" ||
+		value === "For Approval" ||
+		value === "Posted" ||
+		value === "Disapproved" ||
+		value === "Cancelled"
+	) {
+		return value;
+	}
+
+	if (value === "Open") return "For Approval";
+	if (value === "Approved" || value === "Closed") return "Posted";
+
+	return "Draft";
 }
 
 export function savePurchaseOrders(records: PurchaseOrderRecord[]) {

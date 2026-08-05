@@ -1,15 +1,15 @@
-import { GoodsIssueStatusFilterOptions } from "@/app/src/constants/modules/inventory/goods-issue/GoodsIssueConstants";
 import {
 	GoodsIssueCurrencyOptions,
 	GoodsIssuePartyOptions,
+	GoodsIssueStatusOptions,
 	GoodsIssueTransactionTypeOptions,
 	GoodsIssueWarehouseOptions,
 } from "@/app/src/data/modules/inventory/goods-issue/GoodsIssueData";
 import type { GoodsIssueFormValues } from "@/app/src/types/modules/inventory/goods-issue/GoodsIssueTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
+import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 import {
-	AttachedDropdown,
 	DateField,
 	FieldClassName,
 	FieldShell,
@@ -36,15 +36,14 @@ export function GoodsIssueWarehouseFields({
 					label="Party Name"
 					isRequired
 				>
-					<AttachedDropdown
+					<AppAdvancedDropdown
 						id="goods-issue-vce-name"
 						value={values.vceName}
 						readOnly={isReadonly}
 						options={GoodsIssuePartyOptions}
 						placeholder=""
 						searchPlaceholder="Search Party Name"
-						onAdd={() => undefined}
-						onChange={(value) => onUpdateField("vceName", value)}
+						onChange={(value) => onUpdateField("vceName", String(value))}
 					/>
 				</FieldShell>
 				<TextField
@@ -88,15 +87,16 @@ export function GoodsIssueWarehouseFields({
 					label="GI Type"
 					isRequired
 				>
-					<AttachedDropdown
+					<AppAdvancedDropdown
 						id="goods-issue-transaction-type"
 						value={values.transactionType}
 						readOnly={isReadonly}
 						options={GoodsIssueTransactionTypeOptions}
 						placeholder="--Select Goods Issue Type--"
 						searchPlaceholder="Search goods issue type"
-						onAdd={() => undefined}
-						onChange={(value) => onUpdateField("transactionType", value)}
+						onChange={(value) =>
+							onUpdateField("transactionType", String(value))
+						}
 					/>
 				</FieldShell>
 				<FieldShell
@@ -104,35 +104,48 @@ export function GoodsIssueWarehouseFields({
 					label="Source Warehouse"
 					isRequired
 				>
-					<AttachedDropdown
+					<AppAdvancedDropdown
 						id="goods-issue-source-warehouse"
 						value={values.sourceWarehouse}
 						readOnly={isReadonly}
 						options={GoodsIssueWarehouseOptions}
 						placeholder="--Select Warehouse--"
 						searchPlaceholder="Search warehouse"
-						onAdd={() => undefined}
-						onChange={(value) => onUpdateField("sourceWarehouse", value)}
+						onChange={(value) =>
+							onUpdateField("sourceWarehouse", String(value))
+						}
 					/>
 				</FieldShell>
 				<FieldShell controlId="goods-issue-currency" label="Currency">
-					<AppAdvancedDropdown
-						id="goods-issue-currency"
-						value={values.currency}
-						readOnly={isReadonly}
-						options={GoodsIssueCurrencyOptions}
-						placeholder="Select currency"
-						searchPlaceholder="Search currency"
-						onChange={(value) => onUpdateField("currency", String(value))}
-					/>
+					<div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_8.5rem]">
+						<AppAdvancedDropdown
+							id="goods-issue-currency"
+							value={values.currency}
+							readOnly={isReadonly}
+							options={GoodsIssueCurrencyOptions}
+							placeholder="Select currency"
+							searchPlaceholder="Search currency"
+							onChange={(value) => onUpdateField("currency", String(value))}
+						/>
+						<div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2">
+							<label
+								htmlFor="goods-issue-exchange-rate"
+								className="text-sm font-semibold text-darknavy"
+							>
+								ER:
+							</label>
+							<MoneyNumberField
+								id="goods-issue-exchange-rate"
+								value={values.exchangeRate}
+								readOnly={isReadonly}
+								onValueChange={(value) =>
+									onUpdateField("exchangeRate", value)
+								}
+								className={`${FieldClassName} text-right`}
+							/>
+						</div>
+					</div>
 				</FieldShell>
-				<TextField
-					id="goods-issue-exchange-rate"
-					label="ER"
-					readOnly={isReadonly}
-					value={values.exchangeRate}
-					onChange={(value) => onUpdateField("exchangeRate", value)}
-				/>
 			</div>
 
 			<div className="grid min-w-0 content-start gap-4">
@@ -184,9 +197,9 @@ export function GoodsIssueWarehouseFields({
 					<AppAdvancedDropdown
 						id="goods-issue-status"
 						value={values.status}
-						readOnly={isReadonly}
+						readOnly
 						options={GoodsIssueStatusOptions}
-						placeholder="Select status"
+						placeholder="Draft"
 						searchPlaceholder="Search status"
 						onChange={(value) => onUpdateField("status", String(value))}
 					/>
@@ -195,10 +208,3 @@ export function GoodsIssueWarehouseFields({
 		</div>
 	);
 }
-
-const GoodsIssueStatusOptions = GoodsIssueStatusFilterOptions.filter(
-	(option) => option.value !== "all",
-).map((option) => ({
-	name: option.label,
-	value: option.value,
-}));

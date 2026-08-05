@@ -3,17 +3,17 @@
 import { Search } from "lucide-react";
 import type {
   DeliveryVehicleModuleConfig,
+  DeliveryVehicleModulePageState,
   DeliveryVehicleModuleRecord,
 } from "@/app/src/types/modules/delivery-vehicle-management/DeliveryVehicleModuleTypes";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import { DeliveryVehicleModuleTableFilters } from "@/app/src/ui/modules/delivery-vehicle-management/DeliveryVehicleModuleTableFilters";
 import { DeliveryVehicleModuleTableRow } from "@/app/src/ui/modules/delivery-vehicle-management/DeliveryVehicleModuleTableRow";
-import type { useDeliveryVehicleModuleListPage } from "@/app/src/hooks/modules/delivery-vehicle-management/useDeliveryVehicleModuleListPage";
 
 type DeliveryVehicleModuleTableProps = {
   config: DeliveryVehicleModuleConfig;
   hasActiveFilters: boolean;
-  page: ReturnType<typeof useDeliveryVehicleModuleListPage>;
+  page: DeliveryVehicleModulePageState;
   paginationKey: string;
   onAdvanceRecord: (record: DeliveryVehicleModuleRecord) => void;
   onEditRecord: (record: DeliveryVehicleModuleRecord) => void;
@@ -40,11 +40,7 @@ export function DeliveryVehicleModuleTable({
         tableTitle={config.title}
         minWidthClassName="min-w-[82rem] table-fixed"
         emptyTitle={`No ${config.noun} records found`}
-        emptyDescription={
-          hasActiveFilters
-            ? "Try clearing one or more filters."
-            : `Add the first ${config.noun} to this workspace.`
-        }
+        emptyDescription={hasActiveFilters ? "Try clearing one or more filters." : `Add the first ${config.noun} to this workspace.`}
         emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
         isSyncing={page.isRefreshing}
         lastSyncedAt={page.lastSyncedAt}

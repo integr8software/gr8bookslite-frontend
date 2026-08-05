@@ -1,6 +1,4 @@
-import {
-  createDeliveryVehicleMockRecord as mock,
-} from "@/app/src/data/modules/delivery-vehicle-management/DeliveryVehicleModuleData";
+import { createDeliveryVehicleMockRecord as mock } from "@/app/src/data/modules/delivery-vehicle-management/DeliveryVehicleModuleData";
 import type { VehicleRepairMaintenanceRecord } from "@/app/src/types/modules/delivery-vehicle-management/vehicle-repair-maintenance/VehicleRepairMaintenanceTypes";
 
 export const VehicleRepairMaintenanceMockData: VehicleRepairMaintenanceRecord[] = [
@@ -279,13 +277,10 @@ export const VehicleRepairMaintenanceMockData: VehicleRepairMaintenanceRecord[] 
   ),
 ];
 
-export function createVehicleRepairMaintenanceRecord(
-  values: Record<string, string>,
-  status: string,
-) {
+export function createVehicleRepairMaintenanceRecord(values: Record<string, string>, status: string) {
   const workOrderNo = values.workOrderNo.trim() || createSuggestedWorkOrderNumber();
   const workOrderDate = values.workOrderDate || formatDateInput(new Date());
-  const normalizedValues = {
+  const normalizedValues: Record<string, string> = {
     ...values,
     workOrderNo,
     workOrderDate,

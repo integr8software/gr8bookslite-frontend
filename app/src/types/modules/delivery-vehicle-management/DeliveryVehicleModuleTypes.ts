@@ -1,8 +1,6 @@
-export type DeliveryVehicleFeatureKey =
-  "delivery-vehicles" | "vehicle-types" | "vehicle-repair-maintenance";
+export type DeliveryVehicleFeatureKey = "delivery-vehicles" | "vehicle-types" | "vehicle-repair-maintenance";
 
-export type DeliveryVehicleFieldType =
-  "text" | "number" | "date" | "datetime-local" | "select" | "textarea";
+export type DeliveryVehicleFieldType = "text" | "number" | "date" | "datetime-local" | "select" | "textarea";
 
 export type DeliveryVehicleField = {
   helper?: string;
@@ -43,6 +41,7 @@ export type DeliveryVehicleModuleConfig = {
   key: DeliveryVehicleFeatureKey;
   title: string;
   description: string;
+  dispatchQueueStatuses?: readonly string[];
   formDescription?: string;
   primaryAction: string;
   noun: string;
@@ -57,8 +56,7 @@ export type DeliveryVehicleModuleConfig = {
   operationalNote: string;
 };
 
-export type DeliveryVehicleEditorState =
-  { mode: "add" } | { mode: "edit" | "view"; record: DeliveryVehicleModuleRecord } | null;
+export type DeliveryVehicleEditorState = { mode: "add" } | { mode: "edit" | "view"; record: DeliveryVehicleModuleRecord } | null;
 
 export type DeliveryVehicleImportProgress = { imported: number; total: number };
 
@@ -125,11 +123,12 @@ export type DeliveryVehicleModulePageState = {
 export type DeliveryVehicleModuleListPageProps = {
   pageConfig: DeliveryVehicleModuleConfig;
   paginationKey: string;
-  createRecord: (
-    values: Record<string, string>,
-    status: string,
-    category?: string,
-  ) => DeliveryVehicleModuleRecord;
+  createRecord: (values: Record<string, string>, status: string, category?: string) => DeliveryVehicleModuleRecord;
   initialRecords: DeliveryVehicleModuleRecord[];
   validateRecord: (values: Record<string, string>) => Record<string, string>;
+};
+
+export type DeliveryVehicleModuleListViewProps = {
+  page: DeliveryVehicleModulePageState;
+  paginationKey: string;
 };

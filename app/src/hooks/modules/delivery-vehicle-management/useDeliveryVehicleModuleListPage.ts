@@ -9,6 +9,7 @@ import {
   type ColumnDef,
   type PaginationState,
   type SortingState,
+  type VisibilityState,
 } from "@tanstack/react-table";
 import { useTablePreferences } from "@/app/src/hooks/shared/table-preferences/useTablePreferences";
 import type {
@@ -24,21 +25,13 @@ export function useDeliveryVehicleModuleListPage({
   validateRecord,
 }: {
   config: DeliveryVehicleModuleConfig;
-  createRecord: (
-    values: Record<string, string>,
-    status: string,
-    category?: string,
-  ) => DeliveryVehicleModuleRecord;
+  createRecord: (values: Record<string, string>, status: string, category?: string) => DeliveryVehicleModuleRecord;
   initialRecords: DeliveryVehicleModuleRecord[];
   validateRecord: (values: Record<string, string>) => Record<string, string>;
 }) {
-  const [records, setRecords] = useState(() =>
-    initialRecords.map((item) => ({ ...item, fields: { ...item.fields } })),
-  );
+  const [records, setRecords] = useState(() => initialRecords.map((item) => ({ ...item, fields: { ...item.fields } })));
   const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState(() =>
-    config.statuses.includes("Active") ? "Active" : "",
-  );
+  const [statusFilter, setStatusFilter] = useState(() => (config.statuses.includes("Active") ? "Active" : ""));
   const [vehicleTypeFilter, setVehicleTypeFilter] = useState("");
   const [workTypeFilter, setWorkTypeFilter] = useState("");
   const [pagination, setPagination] = useState<PaginationState>({
@@ -47,63 +40,49 @@ export function useDeliveryVehicleModuleListPage({
   });
   const [editor, setEditor] = useState<DeliveryVehicleEditorState>(null);
   const [pendingAdvance, setPendingAdvance] = useState<DeliveryVehicleModuleRecord | null>(null);
-  const [pendingStatusRecord, setPendingStatusRecord] =
-    useState<DeliveryVehicleModuleRecord | null>(null);
+  const [pendingStatusRecord, setPendingStatusRecord] = useState<DeliveryVehicleModuleRecord | null>(null);
   const [lastSyncedAt, setLastSyncedAt] = useState(() => new Date());
   const [isRefreshing, setIsRefreshing] = useState(false);
   const defaultColumnOrder = useMemo(() => createDefaultColumnOrder(config), [config]);
   const tablePreferencesKey = useMemo(
-    () =>
-      config.key === "vehicle-repair-maintenance"
-        ? `${config.key}:work-order-default-v2`
-        : config.key,
+    () => (config.key === "vehicle-repair-maintenance" ? `${config.key}:work-order-default-v2` : config.key),
     [config.key],
   );
-  const defaultColumnVisibility = useMemo(
-    () =>
-      config.key === "vehicle-repair-maintenance"
-        ? {
-            priority: false,
-            serviceProvider: false,
-            description: false,
-            schedule: false,
-            createdBy: false,
-            updatedBy: false,
-            updatedAt: false,
-          }
-        : {
-            ...Object.fromEntries(
-              config.tableFieldKeys.slice(4).map((fieldKey) => [fieldKey, false]),
-            ),
-            createdBy: false,
-            createdAt: false,
-            updatedBy: false,
-            updatedAt: false,
-          },
-    [config.key, config.tableFieldKeys],
-  );
+  const defaultColumnVisibility = useMemo<VisibilityState>(() => {
+    if (config.key === "vehicle-repair-maintenance") {
+      const repairVisibility: VisibilityState = {
+        priority: false,
+        serviceProvider: false,
+        description: false,
+        schedule: false,
+        createdBy: false,
+        updatedBy: false,
+        updatedAt: false,
+      };
+
+      return repairVisibility;
+    }
+
+    const standardVisibility: VisibilityState = {
+      ...Object.fromEntries(config.tableFieldKeys.slice(4).map((fieldKey) => [fieldKey, false])),
+      createdBy: false,
+      createdAt: false,
+      updatedBy: false,
+      updatedAt: false,
+    };
+
+    return standardVisibility;
+  }, [config.key, config.tableFieldKeys]);
   const defaultSorting = useMemo<SortingState>(
     () => [
       {
-        id:
-          config.key === "vehicle-repair-maintenance"
-            ? "workOrderNo"
-            : config.hideReferenceColumn
-              ? "name"
-              : "code",
+        id: config.key === "vehicle-repair-maintenance" ? "workOrderNo" : config.hideReferenceColumn ? "name" : "code",
         desc: false,
       },
     ],
     [config.hideReferenceColumn, config.key],
   );
-  const {
-    columnOrder,
-    columnVisibility,
-    sorting,
-    setColumnOrder,
-    setColumnVisibility,
-    setSorting,
-  } = useTablePreferences({
+  const { columnOrder, columnVisibility, sorting, setColumnOrder, setColumnVisibility, setSorting } = useTablePreferences({
     defaultColumnOrder,
     defaultColumnVisibility,
     defaultSorting,
@@ -120,14 +99,9 @@ export function useDeliveryVehicleModuleListPage({
           .filter(Boolean)
           .some((value) => value?.toLowerCase().includes(normalizedQuery));
       const matchesStatus = !statusFilter || item.status === statusFilter;
-      const matchesVehicleType =
-        config.key !== "delivery-vehicles" ||
-        !vehicleTypeFilter ||
-        item.fields.vehicleType === vehicleTypeFilter;
+      const matchesVehicleType = config.key !== "delivery-vehicles" || !vehicleTypeFilter || item.fields.vehicleType === vehicleTypeFilter;
       const matchesWorkType =
-        config.key !== "vehicle-repair-maintenance" ||
-        !workTypeFilter ||
-        item.fields.maintenanceType === workTypeFilter;
+        config.key !== "vehicle-repair-maintenance" || !workTypeFilter || item.fields.maintenanceType === workTypeFilter;
       return matchesQuery && matchesStatus && matchesVehicleType && matchesWorkType;
     });
   }, [config.key, query, records, statusFilter, vehicleTypeFilter, workTypeFilter]);
@@ -137,15 +111,10 @@ export function useDeliveryVehicleModuleListPage({
       return [];
     }
 
-    const configuredOptions =
-      config.fields.find((field) => field.key === "vehicleType")?.options ?? [];
-    const recordOptions = records
-      .map((record) => record.fields.vehicleType)
-      .filter((value): value is string => Boolean(value));
+    const configuredOptions = config.fields.find((field) => field.key === "vehicleType")?.options ?? [];
+    const recordOptions = records.map((record) => record.fields.vehicleType).filter((value): value is string => Boolean(value));
 
-    return Array.from(new Set([...configuredOptions, ...recordOptions])).sort((a, b) =>
-      a.localeCompare(b),
-    );
+    return Array.from(new Set([...configuredOptions, ...recordOptions])).sort((a, b) => a.localeCompare(b));
   }, [config.fields, config.key, records]);
 
   const workTypeFilterOptions = useMemo(() => {
@@ -153,15 +122,10 @@ export function useDeliveryVehicleModuleListPage({
       return [];
     }
 
-    const configuredOptions =
-      config.fields.find((field) => field.key === "maintenanceType")?.options ?? [];
-    const recordOptions = records
-      .map((record) => record.fields.maintenanceType)
-      .filter((value): value is string => Boolean(value));
+    const configuredOptions = config.fields.find((field) => field.key === "maintenanceType")?.options ?? [];
+    const recordOptions = records.map((record) => record.fields.maintenanceType).filter((value): value is string => Boolean(value));
 
-    return Array.from(new Set([...configuredOptions, ...recordOptions])).sort((a, b) =>
-      a.localeCompare(b),
-    );
+    return Array.from(new Set([...configuredOptions, ...recordOptions])).sort((a, b) => a.localeCompare(b));
   }, [config.fields, config.key, records]);
 
   const columns = useMemo<ColumnDef<DeliveryVehicleModuleRecord>[]>(() => {
@@ -256,17 +220,16 @@ export function useDeliveryVehicleModuleListPage({
     const active = visible.filter((item) => item.status === "Active").length;
     const hazardous = visible.filter((item) => item.fields.handling === "Hazardous Eligible").length;
     const inactive = visible.filter((item) => item.status === "Inactive").length;
-    const dispatchQueue = visible.filter((item) =>
-      ["Pending", "Schedule", "For Dispatch"].includes(item.fields.deliveryStatus),
-    ).length;
+    const dispatchQueue =
+      config.key === "delivery-vehicles"
+        ? visible.filter((item) =>
+            Boolean(item.fields.deliveryStatus && config.dispatchQueueStatuses?.includes(item.fields.deliveryStatus)),
+          ).length
+        : 0;
     const inTransit = visible.filter((item) => item.fields.deliveryStatus === "In Transit").length;
     const scheduledWorkOrders = visible.filter((item) => item.status === "Scheduled").length;
-    const activeWorkOrders = visible.filter((item) =>
-      ["In Progress", "Waiting for Parts"].includes(item.status),
-    ).length;
-    const completedWorkOrders = visible.filter((item) =>
-      ["Completed", "Released"].includes(item.status),
-    ).length;
+    const activeWorkOrders = visible.filter((item) => ["In Progress", "Waiting for Parts"].includes(item.status)).length;
+    const completedWorkOrders = visible.filter((item) => ["Completed", "Released"].includes(item.status)).length;
     const averageProgress = Math.round(
       visible.reduce((sum, item) => sum + (item.progress ?? 0), 0) /
         Math.max(1, visible.filter((item) => item.progress !== undefined).length),
@@ -285,7 +248,7 @@ export function useDeliveryVehicleModuleListPage({
       activeWorkOrders,
       completedWorkOrders,
     };
-  }, [config.insightStatuses, filteredRecords]);
+  }, [config.dispatchQueueStatuses, config.insightStatuses, config.key, filteredRecords]);
 
   function saveRecord(
     values: Record<string, string>,
@@ -325,11 +288,7 @@ export function useDeliveryVehicleModuleListPage({
     }
 
     const nextRecords = rows.map((values) =>
-      createRecord(
-        normalizeRecordValues(normalizeImportedValues(values, config), config),
-        config.statuses[0] ?? "Active",
-        undefined,
-      ),
+      createRecord(normalizeRecordValues(normalizeImportedValues(values, config), config), config.statuses[0] ?? "Active", undefined),
     );
 
     setRecords((current) => [...nextRecords, ...current]);
@@ -338,20 +297,8 @@ export function useDeliveryVehicleModuleListPage({
 
   function advanceRecord(record: DeliveryVehicleModuleRecord) {
     const currentIndex = config.statuses.indexOf(record.status);
-    const terminalStatuses = [
-      "Cancelled",
-      "Closed",
-      "Completed",
-      "Released",
-      "Retired",
-      "Inactive",
-      "Trip Completed",
-    ];
-    if (
-      terminalStatuses.includes(record.status) ||
-      currentIndex < 0 ||
-      currentIndex === config.statuses.length - 1
-    ) {
+    const terminalStatuses = ["Cancelled", "Closed", "Completed", "Released", "Retired", "Inactive", "Trip Completed"];
+    if (terminalStatuses.includes(record.status) || currentIndex < 0 || currentIndex === config.statuses.length - 1) {
       setPendingAdvance(null);
       return;
     }
@@ -477,15 +424,9 @@ function createDefaultColumnOrder(config: DeliveryVehicleModuleConfig) {
   ];
 }
 
-function normalizeImportedValues(
-  values: Record<string, string>,
-  config: DeliveryVehicleModuleConfig,
-) {
+function normalizeImportedValues(values: Record<string, string>, config: DeliveryVehicleModuleConfig) {
   return Object.fromEntries(
-    config.fields.map((field) => [
-      field.key,
-      values[field.key] ?? values[field.label] ?? field.defaultValue ?? "",
-    ]),
+    config.fields.map((field) => [field.key, values[field.key] ?? values[field.label] ?? field.defaultValue ?? ""]),
   );
 }
 
@@ -502,8 +443,7 @@ function normalizeRecordValues(
     ...values,
     workOrderNo: values.workOrderNo?.trim() || existing?.code || createSuggestedWorkOrderNumber(),
     workOrderDate:
-      values.workOrderDate ||
-      (existing?.createdAt ? formatDateInput(new Date(existing.createdAt)) : formatDateInput(new Date())),
+      values.workOrderDate || (existing?.createdAt ? formatDateInput(new Date(existing.createdAt)) : formatDateInput(new Date())),
   };
 }
 

@@ -2,6 +2,10 @@ import {
   createDeliveryVehicleMockRecord as mock,
   createDeliveryVehicleModuleRecord,
 } from "@/app/src/data/modules/delivery-vehicle-management/DeliveryVehicleModuleData";
+import {
+  DeliveryVehicleDefaultStatus,
+  DeliveryVehicleStatuses,
+} from "@/app/src/constants/modules/delivery-vehicle-management/delivery-vehicles/DeliveryVehiclesConstants";
 import type { DeliveryVehicleRecord } from "@/app/src/types/modules/delivery-vehicle-management/delivery-vehicles/DeliveryVehiclesTypes";
 
 export const DeliveryVehiclesMockData: DeliveryVehicleRecord[] = [
@@ -9,7 +13,7 @@ export const DeliveryVehiclesMockData: DeliveryVehicleRecord[] = [
     "dve-1",
     "FLEET-014",
     "Isuzu N-Series",
-    "Active",
+    DeliveryVehicleStatuses.active,
     {
       plateNumber: "NCR 8214",
       vehicleType: "Light Truck",
@@ -17,7 +21,7 @@ export const DeliveryVehiclesMockData: DeliveryVehicleRecord[] = [
       deliveryStatus: "For Dispatch",
       registrationExpiry: "2027-03-14",
       insuranceExpiry: "2027-01-30",
-      ownership: "Company owned",
+      ownership: "Company Owned",
       description: "Primary Metro Manila route vehicle assigned to palletized deliveries.",
     },
     {
@@ -30,7 +34,7 @@ export const DeliveryVehiclesMockData: DeliveryVehicleRecord[] = [
     "dve-2",
     "FLEET-021",
     "Toyota HiAce",
-    "Active",
+    DeliveryVehicleStatuses.active,
     {
       plateNumber: "NCR 5931",
       vehicleType: "Delivery Van",
@@ -52,15 +56,15 @@ export const DeliveryVehiclesMockData: DeliveryVehicleRecord[] = [
     "dve-3",
     "FLEET-032",
     "Hino 500",
-    "Active",
+    DeliveryVehicleStatuses.active,
     {
       plateNumber: "NCR 7742",
       vehicleType: "Heavy Truck",
       baseWarehouse: "Pasig Distribution Hub",
-      deliveryStatus: "Schedule",
+      deliveryStatus: "Scheduled",
       registrationExpiry: "2027-01-18",
       insuranceExpiry: "2026-12-22",
-      ownership: "Company owned",
+      ownership: "Company Owned",
       description: "Heavy truck reserved for scheduled provincial replenishment routes.",
     },
     {
@@ -73,7 +77,7 @@ export const DeliveryVehiclesMockData: DeliveryVehicleRecord[] = [
     "dve-4",
     "FLEET-044",
     "Mitsubishi L300",
-    "Inactive",
+    DeliveryVehicleStatuses.inactive,
     {
       plateNumber: "NCR 1187",
       vehicleType: "Delivery Van",
@@ -81,7 +85,7 @@ export const DeliveryVehiclesMockData: DeliveryVehicleRecord[] = [
       deliveryStatus: "On Hold",
       registrationExpiry: "2026-05-19",
       insuranceExpiry: "2026-06-02",
-      ownership: "Company owned",
+      ownership: "Company Owned",
       description: "On hold while compliance renewal and inspection are completed.",
     },
     {
@@ -95,7 +99,7 @@ export const DeliveryVehiclesMockData: DeliveryVehicleRecord[] = [
     "dve-5",
     "FLEET-057",
     "Yamaha Mio Gear",
-    "Active",
+    DeliveryVehicleStatuses.active,
     {
       plateNumber: "NCR 2905",
       vehicleType: "Motorcycle",
@@ -103,7 +107,7 @@ export const DeliveryVehiclesMockData: DeliveryVehicleRecord[] = [
       deliveryStatus: "Pending",
       registrationExpiry: "2027-05-28",
       insuranceExpiry: "2027-05-12",
-      ownership: "Company owned",
+      ownership: "Company Owned",
       description: "Motorcycle unit for same-day small parcel dispatch coverage.",
     },
     {
@@ -116,7 +120,7 @@ export const DeliveryVehiclesMockData: DeliveryVehicleRecord[] = [
     "dve-6",
     "FLEET-063",
     "Hyundai H-100",
-    "Active",
+    DeliveryVehicleStatuses.active,
     {
       plateNumber: "NCR 4409",
       vehicleType: "Light Truck",
@@ -124,7 +128,7 @@ export const DeliveryVehiclesMockData: DeliveryVehicleRecord[] = [
       deliveryStatus: "Delivered",
       registrationExpiry: "2026-11-04",
       insuranceExpiry: "2026-10-18",
-      ownership: "Third party",
+      ownership: "Third Party",
       description: "Third-party vehicle used for completed Cebu delivery routes.",
     },
     {
@@ -137,7 +141,7 @@ export const DeliveryVehiclesMockData: DeliveryVehicleRecord[] = [
     "dve-7",
     "FLEET-071",
     "Foton Tornado",
-    "Active",
+    DeliveryVehicleStatuses.active,
     {
       plateNumber: "NCR 6081",
       vehicleType: "Refrigerated Van",
@@ -159,7 +163,7 @@ export const DeliveryVehiclesMockData: DeliveryVehicleRecord[] = [
     "dve-8",
     "FLEET-082",
     "Suzuki Carry",
-    "Inactive",
+    DeliveryVehicleStatuses.inactive,
     {
       plateNumber: "NCR 7310",
       vehicleType: "Light Truck",
@@ -167,7 +171,7 @@ export const DeliveryVehiclesMockData: DeliveryVehicleRecord[] = [
       deliveryStatus: "Cancelled",
       registrationExpiry: "2026-02-11",
       insuranceExpiry: "2026-02-01",
-      ownership: "Company owned",
+      ownership: "Company Owned",
       description: "Inactive vehicle pending disposal review and final clearance.",
     },
     {
@@ -180,5 +184,5 @@ export const DeliveryVehiclesMockData: DeliveryVehicleRecord[] = [
 ];
 
 export function createDeliveryVehicleRecord(values: Record<string, string>, status: string) {
-  return createDeliveryVehicleModuleRecord("delivery-vehicles", "FLEET", values, status);
+  return createDeliveryVehicleModuleRecord("delivery-vehicles", "FLEET", values, status || DeliveryVehicleDefaultStatus);
 }

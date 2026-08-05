@@ -166,7 +166,7 @@ export function ItemVariationsListPage() {
         }
         description={
           page.pendingStatusRecord?.status === "Active"
-            ? `${page.pendingStatusRecord.name} will remain in history and references, but will no longer be active for normal selection.`
+            ? `${page.pendingStatusRecord?.name ?? "This item variation"} will remain in history and references, but will no longer be active for normal selection.`
             : `${page.pendingStatusRecord?.name ?? "This item variation"} will be available for normal selection again.`
         }
         confirmLabel={page.pendingStatusRecord?.status === "Active" ? "Deactivate" : "Activate"}

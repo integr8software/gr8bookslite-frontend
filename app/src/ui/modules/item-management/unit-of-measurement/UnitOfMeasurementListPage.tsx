@@ -129,7 +129,7 @@ export function UnitOfMeasurementListPage() {
 				}
 				description={
 					page.pendingStatusRecord?.status === "Active"
-						? `${page.pendingStatusRecord.name} will remain in history and references, but will no longer be active for normal selection.`
+						? `${page.pendingStatusRecord?.name ?? "This unit"} will remain in history and references, but will no longer be active for normal selection.`
 						: `${page.pendingStatusRecord?.name ?? "This unit"} will be available for normal selection again.`
 				}
 				confirmLabel={

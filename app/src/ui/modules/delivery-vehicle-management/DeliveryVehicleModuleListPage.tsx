@@ -80,7 +80,7 @@ export function DeliveryVehicleModuleListPage({
         title={isPendingRecordActive ? `Disable ${page.config.noun}?` : `Enable ${page.config.noun}?`}
         description={
           isPendingRecordActive
-            ? `${page.pendingStatusRecord.name} will remain in history and references, but will no longer be active for normal selection.`
+            ? `${page.pendingStatusRecord?.name ?? `This ${page.config.noun}`} will remain in history and references, but will no longer be active for normal selection.`
             : `${page.pendingStatusRecord?.name ?? `This ${page.config.noun}`} will be available for normal selection again.`
         }
         confirmLabel={isPendingRecordActive ? "Disable" : "Enable"}

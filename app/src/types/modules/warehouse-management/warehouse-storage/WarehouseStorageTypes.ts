@@ -74,6 +74,23 @@ export type WarehouseStorageListRecord = {
 	warehouseId: string;
 };
 
+export type WarehouseStorageShortcutArea = {
+	icon: import("lucide-react").LucideIcon;
+	label: string;
+	targetRecord?: WarehouseStorageListRecord;
+};
+
+export type WarehouseStorageLayoutSlot = {
+	aisle: string;
+	bin: string;
+	id: string;
+	label: string;
+	rack: string;
+	record?: WarehouseStorageListRecord;
+	shelf: string;
+	status: WarehouseStorageStatus | "Occupied" | "Full" | "Maintenance";
+};
+
 export type WarehouseStorageActionMode = "add" | "edit" | "view";
 
 export type WarehouseStorageDrawerState =

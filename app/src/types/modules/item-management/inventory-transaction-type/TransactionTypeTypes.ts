@@ -1,6 +1,15 @@
 import type { Table, Row } from "@tanstack/react-table";
+import type * as React from "react";
+import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
+import type { ModuleOption } from "@/app/src/data/shared/modules/ModuleOptionsData";
+import {
+	MaintenanceActiveStatusSwitchOption,
+	MaintenanceInactiveStatusSwitchOption,
+} from "@/app/src/utils/status.util";
 
-export type TransactionTypeStatus = "Active" | "Inactive";
+export type TransactionTypeStatus =
+	| typeof MaintenanceActiveStatusSwitchOption.value
+	| typeof MaintenanceInactiveStatusSwitchOption.value;
 
 export type TransactionType = {
 	id: string;
@@ -27,6 +36,20 @@ export type TransactionTypeFormValues = {
 export type TransactionTypeFormErrors = Partial<
 	Record<keyof TransactionTypeFormValues, string>
 >;
+
+export type TransactionTypeFormProps = {
+	accountOptions: ModuleChartAccount[];
+	errors: TransactionTypeFormErrors;
+	isReadonly: boolean;
+	moduleOptions: ModuleOption[];
+	values: TransactionTypeFormValues;
+	onAccountChange: (accountId: string) => void;
+	onInputChange: React.ChangeEventHandler<
+		HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+	>;
+	onModuleChange: (value: string | string[]) => void;
+	onStatusChange: (value: TransactionTypeFormValues["status"]) => void;
+};
 
 export type TransactionTypeActionMode = "add" | "edit" | "view";
 

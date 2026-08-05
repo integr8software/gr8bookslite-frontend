@@ -74,7 +74,6 @@ export function WarehouseStorageListPage() {
               selectedRecordId={page.selectedRecord?.id ?? null}
               statusFilter={page.statusFilter}
               statuses={page.statuses}
-              warehouseFilter={page.warehouseFilter}
               warehouses={page.warehouses}
               onSelectRecord={page.setSelectedRecordId}
               onStatusFilterChange={page.setStatusFilter}

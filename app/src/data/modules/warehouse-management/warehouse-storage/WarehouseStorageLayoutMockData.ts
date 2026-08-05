@@ -1,5 +1,8 @@
 import type { WarehouseInventoryStockItem as WarehouseStockItem } from "@/app/src/types/modules/warehouse-management/warehouse-inventory-stock/WarehouseInventoryStockTypes";
-import type { WarehouseStorageRecord, WarehouseStorageStatus } from "@/app/src/types/modules/warehouse-management/warehouse-storage/WarehouseStorageTypes";
+import type {
+  WarehouseStorageRecord,
+  WarehouseStorageStatus,
+} from "@/app/src/types/modules/warehouse-management/warehouse-storage/WarehouseStorageTypes";
 import type { WarehouseRecord } from "@/app/src/types/modules/warehouse-management/warehouses/WarehouseTypes";
 
 type LayoutKind = "ambient" | "bulk" | "branch" | "cold" | "hazmat";
@@ -16,31 +19,167 @@ type SlotPlan = {
 
 const LayoutPlans: Record<LayoutKind, SlotPlan[]> = {
   ambient: [
-    { aisle: "01", binCount: 4, locationType: "Picking", rackStart: 1, racks: 2, shelfCount: 2, zone: "A" },
-    { aisle: "02", binCount: 4, locationType: "Pallet", rackStart: 3, racks: 2, shelfCount: 2, zone: "A" },
-    { aisle: "03", binCount: 4, locationType: "Case", rackStart: 5, racks: 2, shelfCount: 2, zone: "A" },
-    { aisle: "02", binCount: 3, locationType: "Reserve", rackStart: 7, racks: 2, shelfCount: 2, zone: "B" },
-    { aisle: "03", binCount: 2, locationType: "Quality Hold", rackStart: 1, racks: 1, shelfCount: 1, zone: "QA" },
+    {
+      aisle: "01",
+      binCount: 4,
+      locationType: "Picking",
+      rackStart: 1,
+      racks: 2,
+      shelfCount: 2,
+      zone: "A",
+    },
+    {
+      aisle: "02",
+      binCount: 4,
+      locationType: "Pallet",
+      rackStart: 3,
+      racks: 2,
+      shelfCount: 2,
+      zone: "A",
+    },
+    {
+      aisle: "03",
+      binCount: 4,
+      locationType: "Case",
+      rackStart: 5,
+      racks: 2,
+      shelfCount: 2,
+      zone: "A",
+    },
+    {
+      aisle: "02",
+      binCount: 3,
+      locationType: "Reserve",
+      rackStart: 7,
+      racks: 2,
+      shelfCount: 2,
+      zone: "B",
+    },
+    {
+      aisle: "03",
+      binCount: 2,
+      locationType: "Quality Hold",
+      rackStart: 1,
+      racks: 1,
+      shelfCount: 1,
+      zone: "QA",
+    },
   ],
   cold: [
-    { aisle: "01", binCount: 3, locationType: "Cold Storage", rackStart: 1, racks: 2, shelfCount: 2, zone: "CHILL" },
-    { aisle: "02", binCount: 3, locationType: "Cold Storage", rackStart: 3, racks: 2, shelfCount: 2, zone: "FREEZER" },
-    { aisle: "03", binCount: 2, locationType: "Receiving", rackStart: 5, racks: 1, shelfCount: 1, zone: "RCV" },
+    {
+      aisle: "01",
+      binCount: 3,
+      locationType: "Cold Storage",
+      rackStart: 1,
+      racks: 2,
+      shelfCount: 2,
+      zone: "CHILL",
+    },
+    {
+      aisle: "02",
+      binCount: 3,
+      locationType: "Cold Storage",
+      rackStart: 3,
+      racks: 2,
+      shelfCount: 2,
+      zone: "FREEZER",
+    },
+    {
+      aisle: "03",
+      binCount: 2,
+      locationType: "Receiving",
+      rackStart: 5,
+      racks: 1,
+      shelfCount: 1,
+      zone: "RCV",
+    },
   ],
   branch: [
-    { aisle: "01", binCount: 4, locationType: "General Storage", rackStart: 1, racks: 1, shelfCount: 2, zone: "STOCK" },
-    { aisle: "02", binCount: 4, locationType: "Display", rackStart: 2, racks: 1, shelfCount: 2, zone: "DISPLAY" },
-    { aisle: "03", binCount: 2, locationType: "Blocked", rackStart: 3, racks: 1, shelfCount: 1, zone: "HOLD" },
+    {
+      aisle: "01",
+      binCount: 4,
+      locationType: "General Storage",
+      rackStart: 1,
+      racks: 1,
+      shelfCount: 2,
+      zone: "STOCK",
+    },
+    {
+      aisle: "02",
+      binCount: 4,
+      locationType: "Display",
+      rackStart: 2,
+      racks: 1,
+      shelfCount: 2,
+      zone: "DISPLAY",
+    },
+    {
+      aisle: "03",
+      binCount: 2,
+      locationType: "Blocked",
+      rackStart: 3,
+      racks: 1,
+      shelfCount: 1,
+      zone: "HOLD",
+    },
   ],
   bulk: [
-    { aisle: "01", binCount: 2, locationType: "Bulk Floor", rackStart: 1, racks: 3, shelfCount: 1, zone: "BULK" },
-    { aisle: "02", binCount: 2, locationType: "Pallet", rackStart: 4, racks: 3, shelfCount: 1, zone: "BULK" },
-    { aisle: "03", binCount: 2, locationType: "Dispatch", rackStart: 1, racks: 2, shelfCount: 1, zone: "STAGE" },
+    {
+      aisle: "01",
+      binCount: 2,
+      locationType: "Bulk Floor",
+      rackStart: 1,
+      racks: 3,
+      shelfCount: 1,
+      zone: "BULK",
+    },
+    {
+      aisle: "02",
+      binCount: 2,
+      locationType: "Pallet",
+      rackStart: 4,
+      racks: 3,
+      shelfCount: 1,
+      zone: "BULK",
+    },
+    {
+      aisle: "03",
+      binCount: 2,
+      locationType: "Dispatch",
+      rackStart: 1,
+      racks: 2,
+      shelfCount: 1,
+      zone: "STAGE",
+    },
   ],
   hazmat: [
-    { aisle: "01", binCount: 2, locationType: "Controlled", rackStart: 1, racks: 2, shelfCount: 2, zone: "HAZ" },
-    { aisle: "02", binCount: 2, locationType: "Quarantine", rackStart: 3, racks: 1, shelfCount: 2, zone: "QA" },
-    { aisle: "03", binCount: 2, locationType: "Receiving", rackStart: 4, racks: 1, shelfCount: 1, zone: "RCV" },
+    {
+      aisle: "01",
+      binCount: 2,
+      locationType: "Controlled",
+      rackStart: 1,
+      racks: 2,
+      shelfCount: 2,
+      zone: "HAZ",
+    },
+    {
+      aisle: "02",
+      binCount: 2,
+      locationType: "Quarantine",
+      rackStart: 3,
+      racks: 1,
+      shelfCount: 2,
+      zone: "QA",
+    },
+    {
+      aisle: "03",
+      binCount: 2,
+      locationType: "Receiving",
+      rackStart: 4,
+      racks: 1,
+      shelfCount: 1,
+      zone: "RCV",
+    },
   ],
 };
 
@@ -48,13 +187,13 @@ export function createWarehouseStorageLayoutMockWarehouses(warehouses: Warehouse
   const sourceWarehouses = getThreeWarehouseSources(warehouses);
 
   return sourceWarehouses.map((warehouse, index) => {
-    if (warehouse.locations.length > 0 || warehouse.items.length > 0) {
-      return warehouse;
-    }
-
     const layoutKind = getLayoutKind(index);
-    const locations = createLayoutLocations(warehouse, layoutKind);
-    const items = createLayoutItems(locations, layoutKind);
+    const shouldUseGeneratedLayout = warehouse.locations.length < getLayoutSlotCount(layoutKind);
+    const locations = shouldUseGeneratedLayout
+      ? createLayoutLocations(warehouse, layoutKind)
+      : warehouse.locations;
+    const items =
+      warehouse.items.length > 0 ? warehouse.items : createLayoutItems(locations, layoutKind);
 
     return {
       ...warehouse,
@@ -62,6 +201,13 @@ export function createWarehouseStorageLayoutMockWarehouses(warehouses: Warehouse
       locations,
     };
   });
+}
+
+function getLayoutSlotCount(layoutKind: LayoutKind) {
+  return LayoutPlans[layoutKind].reduce(
+    (total, plan) => total + plan.racks * plan.shelfCount * plan.binCount,
+    0,
+  );
 }
 
 function createLayoutLocations(warehouse: WarehouseRecord, layoutKind: LayoutKind) {
@@ -181,7 +327,12 @@ function getThreeWarehouseSources(warehouses: WarehouseRecord[]) {
   return [...sourceWarehouses, ...distinctFallbacks].slice(0, 5);
 }
 
-function createWarehouse(id: string, code: string, name: string, branchName: string): WarehouseRecord {
+function createWarehouse(
+  id: string,
+  code: string,
+  name: string,
+  branchName: string,
+): WarehouseRecord {
   return {
     access: [],
     address: "",
@@ -284,5 +435,10 @@ function getItemName(layoutKind: LayoutKind, index: number) {
 }
 
 function normalizeWarehouseIdentity(value: string | undefined) {
-  return value?.trim().toLowerCase().replace(/[^a-z0-9]+/g, "") ?? "";
+  return (
+    value
+      ?.trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "") ?? ""
+  );
 }

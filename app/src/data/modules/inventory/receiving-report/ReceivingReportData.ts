@@ -36,16 +36,40 @@ export type ReceivingReportLine = {
   responsibilityCenter: string;
 };
 
+export type ReceivingReportAttachment = {
+  id: string;
+  name: string;
+  size: number;
+};
+
+export type ReceivingReportAccountingEntry = {
+  id: string;
+  accountCode: string;
+  accountTitle: string;
+  debit: string;
+  credit: string;
+  partyCode: string;
+  partyName: string;
+  particulars: string;
+  vatType: string;
+  ewtCode: string;
+  responsibilityCenter: string;
+  referenceNo: string;
+};
+
 export type ReceivingReportFormValues = {
   vceCode: string;
   vceName: string;
   currency: string;
   exchangeRate: string;
   address: string;
+  contactPerson: string;
   contactNo: string;
   deliveryDate: string;
+  dueDate: string;
   remarks: string;
   defaultAccount: string;
+  termsOfPayment: string;
   grossAmount: string;
   discountAmount: string;
   vatAmount: string;
@@ -61,8 +85,12 @@ export type ReceivingReportFormValues = {
   siNo: string;
   importationRefNo: string;
   projectRef: string;
+  projectCode: string;
   projectName: string;
   pjNo: string;
+  responsibilityCenter: string;
+  attachments: ReceivingReportAttachment[];
+  accountingEntries: ReceivingReportAccountingEntry[];
   lines: ReceivingReportLine[];
 };
 
@@ -164,10 +192,13 @@ export function createReceivingReportFormValues(): ReceivingReportFormValues {
     currency: "PHP",
     exchangeRate: "1.0000",
     address: "",
+    contactPerson: "",
     contactNo: "",
     deliveryDate: today,
+    dueDate: today,
     remarks: "",
     defaultAccount: "--Select Credit Account--",
+    termsOfPayment: "",
     grossAmount: "0.0000",
     discountAmount: "0.0000",
     vatAmount: "0.0000",
@@ -183,8 +214,12 @@ export function createReceivingReportFormValues(): ReceivingReportFormValues {
     siNo: "",
     importationRefNo: "",
     projectRef: "",
+    projectCode: "",
     projectName: "",
     pjNo: "",
+    responsibilityCenter: "",
+    attachments: [],
+    accountingEntries: [createReceivingReportAccountingEntry()],
     lines: [createReceivingReportLine()],
   };
 }
@@ -193,10 +228,24 @@ export function createReceivingReportFormValuesFromRecord(
   record: ReceivingReportRecord,
 ): ReceivingReportFormValues {
   if (record.formValues) {
+    const normalizedLines = record.formValues.lines.map((line) => createReceivingReportLine(line));
+
     return {
       ...createReceivingReportFormValues(),
       ...record.formValues,
-      lines: record.formValues.lines.map((line) => createReceivingReportLine(line)),
+      dueDate: record.formValues.dueDate || record.formValues.deliveryDate,
+      projectCode: record.formValues.projectCode || record.formValues.projectRef,
+      responsibilityCenter:
+        record.formValues.responsibilityCenter ||
+        normalizedLines.find((line) => line.responsibilityCenter.trim().length > 0)
+          ?.responsibilityCenter ||
+        "",
+      attachments: record.formValues.attachments ?? [],
+      accountingEntries:
+        record.formValues.accountingEntries?.map((entry) =>
+          createReceivingReportAccountingEntry(entry),
+        ) ?? [createReceivingReportAccountingEntry()],
+      lines: normalizedLines,
     };
   }
 
@@ -209,6 +258,7 @@ export function createReceivingReportFormValuesFromRecord(
     vceCode: record.vceCode,
     vceName: record.vceName,
     warehouse: record.warehouse,
+    accountingEntries: [createReceivingReportAccountingEntry()],
     lines: [
       createReceivingReportLine({
         itemCode: "ITEM-001",
@@ -242,6 +292,26 @@ export function createReceivingReportRecordFromForm(
     vceCode: values.vceCode,
     vceName: values.vceName,
     warehouse: values.warehouse,
+  };
+}
+
+export function createReceivingReportAccountingEntry(
+  overrides: Partial<ReceivingReportAccountingEntry> = {},
+): ReceivingReportAccountingEntry {
+  return {
+    id: `rr-accounting-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    accountCode: "",
+    accountTitle: "",
+    debit: "0.0000",
+    credit: "0.0000",
+    partyCode: "",
+    partyName: "",
+    particulars: "",
+    vatType: "",
+    ewtCode: "",
+    responsibilityCenter: "",
+    referenceNo: "",
+    ...overrides,
   };
 }
 

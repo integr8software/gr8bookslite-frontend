@@ -3,7 +3,10 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { formatTaxDefinitionPercentage } from "@/app/src/data/shared/tax/TaxDefinitionData";
-import { fetchTaxDefinitions } from "@/app/src/services/shared/tax/TaxDefinitionApi";
+import {
+  TaxDefinitionQueryKeys,
+  fetchTaxDefinitions,
+} from "@/app/src/services/shared/tax/TaxDefinitionApi";
 import type {
   TaxDefinition,
   TaxDefinitionTransactionScope,
@@ -27,7 +30,7 @@ export function useTaxDefinitionOptions({
 } = {}) {
   const activeCompanyId = useAppStore((state) => state.activeCompanyId);
   const query = useQuery({
-    queryKey: ["taxDefinitions", activeCompanyId ?? "no-company", "lookup"],
+    queryKey: TaxDefinitionQueryKeys.lookup(activeCompanyId),
     queryFn: fetchTaxDefinitions,
     enabled: activeCompanyId !== null,
     retry: false,

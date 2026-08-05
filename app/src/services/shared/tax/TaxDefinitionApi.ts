@@ -22,6 +22,13 @@ type ApiTaxDefinitionLookup = {
   defaultAccountIds: TaxDefinitionLookup["defaultAccountIds"];
 };
 
+export const TaxDefinitionQueryKeys = {
+  all: (companyId?: number | null) =>
+    ["taxDefinitions", companyId ?? "no-company"] as const,
+  lookup: (companyId?: number | null) =>
+    [...TaxDefinitionQueryKeys.all(companyId), "lookup"] as const,
+};
+
 export async function fetchTaxDefinitions(): Promise<TaxDefinitionLookup> {
   const response = await ApiClient.get<ApiTaxDefinitionLookup>(TaxDefinitionsApiPath, {
     params: { page: 1, limit: 500, sortBy: "sortOrder", sortDirection: "asc" },

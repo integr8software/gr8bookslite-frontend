@@ -25,9 +25,9 @@ export const PurchaseOrderTermsOptions = [
 
 export const PurchaseOrderStatusOptions: PurchaseOrderStatus[] = [
 	"Draft",
-	"Open",
-	"Approved",
-	"Closed",
+	"For Approval",
+	"Posted",
+	"Disapproved",
 	"Cancelled",
 ];
 

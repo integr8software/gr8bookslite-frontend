@@ -1,5 +1,6 @@
 import { PurchaseRequestUomOptions } from "@/app/src/constants/modules/purchasing/purchase-request/PurchaseRequestConstants";
 import type { PurchaseRequestItem } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
+import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import {
 	formatMoneyNumberInput,
 	MoneyNumberField,
@@ -9,6 +10,9 @@ import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-da
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 type PurchaseRequestLineColumnKind = "amount" | "select" | "text";
+const AmountColumnKind = "amount";
+const SelectColumnKind = "select";
+const TextColumnKind = "text";
 
 type PurchaseRequestLineColumnConfig = {
 	header: string;
@@ -64,22 +68,21 @@ function PurchaseRequestLineCell({
 
 	if (column.kind === "select") {
 		return (
-			<select
+			<AppAdvancedDropdown
 				id={fieldId}
 				name={fieldName}
 				value={value}
-				disabled={isReadonly}
-				onChange={(event) =>
-					onUpdateEntry(row.id, { [column.id]: event.target.value })
+				readOnly={isReadonly}
+				options={PurchaseRequestUomOptions.map((option) => ({
+					name: option,
+					value: option,
+				}))}
+				placeholder=""
+				className={EntryDropdownClassName}
+				onChange={(nextValue) =>
+					onUpdateEntry(row.id, { [column.id]: String(nextValue) })
 				}
-				className={entryCellControlClassName()}
-			>
-				{PurchaseRequestUomOptions.map((option) => (
-					<option key={option} value={option}>
-						{option}
-					</option>
-				))}
-			</select>
+			/>
 		);
 	}
 
@@ -115,6 +118,9 @@ function PurchaseRequestLineCell({
 	);
 }
 
+const EntryDropdownClassName =
+	"[&_.app-advanced-dropdown-control]:h-10 [&_.app-advanced-dropdown-control]:rounded-none [&_.app-advanced-dropdown-control]:border-0 [&_.app-advanced-dropdown-control]:bg-transparent [&_.app-advanced-dropdown-control]:px-3 [&_.app-advanced-dropdown-control]:shadow-none [&_.app-advanced-dropdown-control]:focus:ring-2 [&_.app-advanced-dropdown-control]:focus:ring-inset [&_.app-advanced-dropdown-control]:focus:ring-skyblue/35";
+
 function entryCellControlClassName(extraClassName?: string) {
 	return joinClasses(
 		"h-10 w-full rounded-none border-0 bg-transparent px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:bg-skyblue/10 focus:ring-2 focus:ring-inset focus:ring-skyblue/35 disabled:cursor-not-allowed disabled:bg-offwhite/45 disabled:text-darknavy/35",
@@ -123,14 +129,14 @@ function entryCellControlClassName(extraClassName?: string) {
 }
 
 const PurchaseRequestLineColumnConfigs = [
-	column("Item Code", "itemCode", "text", 150, "w-[9.5rem]"),
-	column("Barcode", "barcode", "text", 150, "w-[9.5rem]"),
-	column("Description", "description", "text", 300, "w-[18.75rem]"),
-	column("UOM", "uom", "select", 120, "w-[7.5rem]"),
-	column("Qty", "quantity", "amount", 150, "w-[9.5rem]"),
-	column("LotNo", "lotNo", "text", 120, "w-[7.5rem]"),
-	column("Cost", "cost", "amount", 160, "w-[10rem]"),
-	column("Res. Center", "responsibilityCenter", "text", 190, "w-[12rem]"),
+	column("Item Code", "itemCode", TextColumnKind, 150, "w-[9.5rem]"),
+	column("Barcode", "barcode", TextColumnKind, 150, "w-[9.5rem]"),
+	column("Description", "description", TextColumnKind, 300, "w-[18.75rem]"),
+	column("UOM", "uom", SelectColumnKind, 120, "w-[7.5rem]"),
+	column("Qty", "quantity", AmountColumnKind, 150, "w-[9.5rem]"),
+	column("LotNo", "lotNo", TextColumnKind, 120, "w-[7.5rem]"),
+	column("Cost", "cost", AmountColumnKind, 160, "w-[10rem]"),
+	column("Res. Center", "responsibilityCenter", TextColumnKind, 190, "w-[12rem]"),
 ];
 
 function column(

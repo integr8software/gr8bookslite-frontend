@@ -2,26 +2,30 @@ import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData"
 
 export const PickListHref = getModuleRoute("PL");
 
+export const PickListStatuses = {
+	cancelled: "Cancelled",
+	disapproved: "Disapproved",
+	draft: "Draft",
+	forApproval: "For Approval",
+	posted: "Posted",
+} as const;
+
 export const PickListStatusFilterOptions = [
 	{ label: "All statuses", value: "all" },
-	{ label: "Draft", value: "Draft" },
-	{ label: "Active", value: "Active" },
-	{ label: "Pending", value: "Pending" },
-	{ label: "Approved", value: "Approved" },
-	{ label: "Disapproved", value: "Disapproved" },
-	{ label: "Closed", value: "Closed" },
-	{ label: "Cancelled", value: "Cancelled" },
+	{ label: PickListStatuses.draft, value: PickListStatuses.draft },
+	{ label: PickListStatuses.forApproval, value: PickListStatuses.forApproval },
+	{ label: PickListStatuses.posted, value: PickListStatuses.posted },
+	{ label: PickListStatuses.disapproved, value: PickListStatuses.disapproved },
+	{ label: PickListStatuses.cancelled, value: PickListStatuses.cancelled },
 ] as const;
 
 export const PickListStatusFilters = [
 	"all",
-	"Draft",
-	"Active",
-	"Pending",
-	"Approved",
-	"Disapproved",
-	"Closed",
-	"Cancelled",
+	PickListStatuses.draft,
+	PickListStatuses.forApproval,
+	PickListStatuses.posted,
+	PickListStatuses.disapproved,
+	PickListStatuses.cancelled,
 ] as const;
 
 export const PickListTablePaginationStorageKey = "inventory-pick-list";

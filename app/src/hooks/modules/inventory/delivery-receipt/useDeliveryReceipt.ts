@@ -26,6 +26,7 @@ import {
 import { DeliveryReceiptStatusFilters } from "@/app/src/constants/modules/inventory/delivery-receipt/DeliveryReceiptConstants";
 import type {
 	DeliveryReceiptActionMode,
+	DeliveryReceiptAccountingEntry,
 	DeliveryReceiptFormValues,
 	DeliveryReceiptLineEntry,
 	DeliveryReceiptRecord,
@@ -114,6 +115,10 @@ export function useDeliveryReceiptActionForm(
 
 	function updateLineEntries(lineEntries: DeliveryReceiptLineEntry[]) {
 		setValues((current) => ({ ...current, lineEntries }));
+	}
+
+	function updateAccountingEntries(accountingEntries: DeliveryReceiptAccountingEntry[]) {
+		setValues((current) => ({ ...current, accountingEntries }));
 	}
 
 	function copyFromPickLists(recordIds: string[]) {
@@ -205,6 +210,7 @@ export function useDeliveryReceiptActionForm(
 		isRecordMissing: mode !== "add" && !initialRecord,
 		submitReceipt,
 		updateField,
+		updateAccountingEntries,
 		updateLineEntries,
 		values,
 	};

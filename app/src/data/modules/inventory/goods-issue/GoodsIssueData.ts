@@ -47,6 +47,14 @@ export const GoodsIssueResponsibilityCenterOptions = [
 	{ name: "CC-ADM-001", value: "CC-ADM-001" },
 ];
 
+export const GoodsIssueStatusOptions = [
+	{ name: "Draft", value: "Draft" },
+	{ name: "For Approval", value: "For Approval" },
+	{ name: "Posted", value: "Posted" },
+	{ name: "Disapproved", value: "Disapproved" },
+	{ name: "Cancelled", value: "Cancelled" },
+];
+
 export const GoodsIssueMaterialRequestCopyRecords: GoodsIssueMaterialRequestCopyRecord[] =
 	[
 		{
@@ -131,7 +139,7 @@ export const MockGoodsIssues: GoodsIssueRecord[] = [
 		id: "gi-001",
 		documentDate: "2026-07-16",
 		referenceNo: "MR-2026-0031",
-		status: "Active",
+		status: "Posted",
 		totalAmount: 18450,
 		transactionNo: "GI-2026-0001",
 		transactionType: "Material Request Issue",
@@ -141,7 +149,7 @@ export const MockGoodsIssues: GoodsIssueRecord[] = [
 		id: "gi-002",
 		documentDate: "2026-07-12",
 		referenceNo: "RR-2026-0014",
-		status: "Pending",
+		status: "For Approval",
 		totalAmount: 62500,
 		transactionNo: "GI-2026-0002",
 		transactionType: "Inventory Issue",
@@ -211,6 +219,7 @@ export function createGoodsIssueFormValuesFromRecord(
 		return {
 			...defaults,
 			...record.formValues,
+			status: normalizeGoodsIssueStatus(record.formValues.status),
 			lineEntries: record.formValues.lineEntries.map((entry) => ({
 				...createBlankGoodsIssueLineEntry(),
 				...entry,
@@ -223,7 +232,7 @@ export function createGoodsIssueFormValuesFromRecord(
 		transactionNo: record.transactionNo,
 		transactionType: record.transactionType,
 		documentDate: record.documentDate,
-		status: record.status,
+		status: normalizeGoodsIssueStatus(record.status),
 		vceName: record.vceName,
 		mrNo: record.referenceNo.startsWith("MR") ? record.referenceNo : "",
 		rrNo: record.referenceNo.startsWith("RR") ? record.referenceNo : "",
@@ -295,7 +304,9 @@ export function readStoredGoodsIssues() {
 	try {
 		const parsedRecords = JSON.parse(storedRecords) as GoodsIssueRecord[];
 
-		return Array.isArray(parsedRecords) ? parsedRecords : null;
+		return Array.isArray(parsedRecords)
+			? parsedRecords.map(normalizeStoredGoodsIssueRecord)
+			: null;
 	} catch {
 		return null;
 	}
@@ -338,10 +349,6 @@ export function countGoodsIssuesByStatus(
 	return records.filter((record) => record.status === status).length;
 }
 
-export function isGoodsIssueActiveStatus(status: GoodsIssueStatus) {
-	return status === "Active" || status === "Approved";
-}
-
 export function formatGoodsIssuePercentage(value: number, total: number) {
 	if (total === 0) {
 		return "0.00% of total";
@@ -368,17 +375,40 @@ export function goodsIssueEntryIsComplete(entry: GoodsIssueLineEntry) {
 }
 
 function normalizeGoodsIssueStatus(value: string): GoodsIssueStatus {
+	if (value === "Active" || value === "Approved" || value === "Closed") {
+		return "Posted";
+	}
+
+	if (value === "Pending") {
+		return "For Approval";
+	}
+
 	const statuses: GoodsIssueStatus[] = [
-		"Active",
-		"Approved",
 		"Cancelled",
-		"Closed",
 		"Disapproved",
 		"Draft",
-		"Pending",
+		"For Approval",
+		"Posted",
 	];
 
 	return statuses.includes(value as GoodsIssueStatus)
 		? (value as GoodsIssueStatus)
 		: "Draft";
+}
+
+function normalizeStoredGoodsIssueRecord(
+	record: GoodsIssueRecord,
+): GoodsIssueRecord {
+	const status = normalizeGoodsIssueStatus(record.status);
+
+	return {
+		...record,
+		formValues: record.formValues
+			? {
+					...record.formValues,
+					status: normalizeGoodsIssueStatus(record.formValues.status),
+				}
+			: record.formValues,
+		status,
+	};
 }

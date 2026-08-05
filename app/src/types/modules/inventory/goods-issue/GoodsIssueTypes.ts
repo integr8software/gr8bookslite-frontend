@@ -1,13 +1,11 @@
 export type GoodsIssueActionMode = "add" | "edit" | "view";
 
 export type GoodsIssueStatus =
-	| "Active"
-	| "Approved"
 	| "Cancelled"
-	| "Closed"
 	| "Disapproved"
 	| "Draft"
-	| "Pending";
+	| "For Approval"
+	| "Posted";
 
 export type GoodsIssueRecord = {
 	id: string;

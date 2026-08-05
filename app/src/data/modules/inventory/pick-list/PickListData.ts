@@ -15,6 +15,14 @@ export const PickListClusterOptions = [
 	{ name: "Central Dispatch", value: "Central Dispatch" },
 ];
 
+export const PickListStatusOptions = [
+	{ name: "Draft", value: "Draft" },
+	{ name: "For Approval", value: "For Approval" },
+	{ name: "Posted", value: "Posted" },
+	{ name: "Disapproved", value: "Disapproved" },
+	{ name: "Cancelled", value: "Cancelled" },
+];
+
 export const PickListSalesOrderCopyRecords: PickListSalesOrderCopyRecord[] = [
 	{
 		id: "so-001",
@@ -43,7 +51,7 @@ export const MockPickLists: PickListRecord[] = [
 		deliveryDate: "2026-07-16",
 		documentDate: "2026-07-16",
 		referenceNo: "SO-2026-0101",
-		status: "Active",
+		status: "Posted",
 		totalLines: 2,
 		transactionNo: "PL-2026-0001",
 	},
@@ -53,7 +61,7 @@ export const MockPickLists: PickListRecord[] = [
 		deliveryDate: "2026-07-14",
 		documentDate: "2026-07-14",
 		referenceNo: "SO-2026-0098",
-		status: "Pending",
+		status: "For Approval",
 		totalLines: 1,
 		transactionNo: "PL-2026-0002",
 	},
@@ -63,7 +71,7 @@ export const MockPickLists: PickListRecord[] = [
 		deliveryDate: "2026-07-12",
 		documentDate: "2026-07-12",
 		referenceNo: "SO-2026-0093",
-		status: "Approved",
+		status: "Posted",
 		totalLines: 3,
 		transactionNo: "PL-2026-0003",
 	},
@@ -119,6 +127,7 @@ export function createPickListFormValuesFromRecord(
 		return {
 			...defaults,
 			...record.formValues,
+			status: normalizePickListStatus(record.formValues.status),
 			lineEntries: record.formValues.lineEntries.map((entry) => ({
 				...createBlankPickListLineEntry(),
 				...entry,
@@ -133,7 +142,7 @@ export function createPickListFormValuesFromRecord(
 		documentDate: record.documentDate,
 		partyCode: "VCE-001",
 		partyName: "North Harbor Office Depot",
-		status: record.status,
+		status: normalizePickListStatus(record.status),
 		transactionNo: record.transactionNo,
 		lineEntries: [
 			createBlankPickListLineEntry({
@@ -189,7 +198,9 @@ export function readStoredPickLists() {
 	try {
 		const parsedRecords = JSON.parse(storedRecords) as PickListRecord[];
 
-		return Array.isArray(parsedRecords) ? parsedRecords : null;
+		return Array.isArray(parsedRecords)
+			? parsedRecords.map(normalizeStoredPickListRecord)
+			: null;
 	} catch {
 		return null;
 	}
@@ -218,10 +229,6 @@ export function countPickListsByStatus(
 	return records.filter((record) => record.status === status).length;
 }
 
-export function isPickListActiveStatus(status: PickListStatus) {
-	return status === "Active" || status === "Approved";
-}
-
 export function formatPickListPercentage(value: number, total: number) {
 	if (total === 0) {
 		return "0.00% of total";
@@ -248,17 +255,38 @@ export function pickListEntryIsComplete(entry: PickListLineEntry) {
 }
 
 function normalizePickListStatus(value: string): PickListStatus {
+	if (value === "Active" || value === "Approved" || value === "Closed") {
+		return "Posted";
+	}
+
+	if (value === "Pending") {
+		return "For Approval";
+	}
+
 	const statuses: PickListStatus[] = [
-		"Active",
-		"Approved",
 		"Cancelled",
-		"Closed",
 		"Disapproved",
 		"Draft",
-		"Pending",
+		"For Approval",
+		"Posted",
 	];
 
 	return statuses.includes(value as PickListStatus)
 		? (value as PickListStatus)
 		: "Draft";
+}
+
+function normalizeStoredPickListRecord(record: PickListRecord): PickListRecord {
+	const status = normalizePickListStatus(record.status);
+
+	return {
+		...record,
+		formValues: record.formValues
+			? {
+					...record.formValues,
+					status: normalizePickListStatus(record.formValues.status),
+				}
+			: record.formValues,
+		status,
+	};
 }

@@ -28,9 +28,11 @@ import {
 import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import type {
 	PurchaseOrderFormErrors,
+	PurchaseOrderAccountingEntry,
 	PurchaseOrderFormMode,
 	PurchaseOrderFormValues,
 	PurchaseOrderItem,
+	PurchaseOrderRecord,
 } from "@/app/src/types/modules/purchasing/purchase-order/PurchaseOrderTypes";
 import type {
 	CanvassFormItem,
@@ -76,7 +78,7 @@ export function usePurchaseOrderFormPage() {
 	);
 	const mode = getPurchaseOrderFormMode(pathname);
 	const isReadonly = mode === "view";
-	const existingOrder = orders.find((order) => order.id === params.recordId);
+	const existingOrder = findPurchaseOrderByRouteId(orders, params.recordId);
 	const [values, setValues] = useState<PurchaseOrderFormValues>(() =>
 		createPurchaseOrderFormValues(existingOrder),
 	);
@@ -114,6 +116,12 @@ export function usePurchaseOrderFormPage() {
 
 		setValues((current) => ({ ...current, items }));
 		setErrors((current) => ({ ...current, items: undefined }));
+	}
+
+	function updateAccountingEntries(accountingEntries: PurchaseOrderAccountingEntry[]) {
+		if (isReadonly) return;
+
+		setValues((current) => ({ ...current, accountingEntries }));
 	}
 
 	function copyFromSourceRecords(recordIds: string[]) {
@@ -242,6 +250,7 @@ export function usePurchaseOrderFormPage() {
 		showPreview,
 		copyFromSourceRecords,
 		updateField,
+		updateAccountingEntries,
 		updateItems,
 		values,
 	};
@@ -328,7 +337,7 @@ function purchaseOrderItemHasData(item: PurchaseOrderItem) {
 function mergeUniqueTextValues(currentValue: string, nextValues: string[]) {
 	return Array.from(
 		new Set([
-			...currentValue
+			...(currentValue ?? "")
 				.split(",")
 				.map((value) => value.trim())
 				.filter(Boolean),
@@ -342,4 +351,26 @@ function getPurchaseOrderFormMode(pathname: string): PurchaseOrderFormMode {
 	if (pathname.includes("/view/")) return "view";
 
 	return "add";
+}
+
+function findPurchaseOrderByRouteId(
+	orders: PurchaseOrderRecord[],
+	routeId?: string,
+) {
+	if (!routeId) {
+		return undefined;
+	}
+
+	const normalizedRouteId = routeId.trim().toLowerCase();
+
+	return orders.find((order) => {
+		const normalizedId = order.id.trim().toLowerCase();
+		const normalizedTransNo = order.transNo.trim().toLowerCase();
+
+		return (
+			normalizedId === normalizedRouteId ||
+			normalizedTransNo === normalizedRouteId ||
+			`po-${normalizedTransNo}` === normalizedRouteId
+		);
+	});
 }

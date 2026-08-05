@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
 	createBlankCanvassFormItem,
 	createCanvassFormId,
@@ -6,28 +6,40 @@ import {
 	getCanvassFormTotal,
 	normalizeCanvassFormItem,
 } from "@/app/src/data/modules/purchasing/canvass-form/CanvassFormData";
-import type { CanvassFormItem } from "@/app/src/types/modules/purchasing/canvass-form/CanvassFormTypes";
+import type {
+	CanvassFormAccountingEntry,
+	CanvassFormItem,
+} from "@/app/src/types/modules/purchasing/canvass-form/CanvassFormTypes";
+import type { PurchasingEntryTab } from "@/app/src/types/modules/purchasing/PurchasingAccountingTypes";
 import {
 	ModuleDataEntry,
 	type ModuleDataEntryClearAction,
 	type ModuleDataEntryColumn,
 	type ModuleDataEntryColumnOption,
+	type ModuleDataEntryExportOption,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import { CanvassFormAccountingEntrySection } from "@/app/src/ui/modules/purchasing/canvass-form/entries/CanvassFormAccountingEntrySection";
 import { createCanvassFormLineColumns } from "@/app/src/ui/modules/purchasing/canvass-form/entries/CanvassFormLineColumns";
+import { PurchasingEntryTabs } from "@/app/src/ui/modules/purchasing/shared/PurchasingEntryTabs";
 
 type CanvassFormEntrySectionProps = {
+	accountingRows: CanvassFormAccountingEntry[];
 	error?: string;
 	isReadonly: boolean;
 	rows: CanvassFormItem[];
+	onAccountingRowsChange: (rows: CanvassFormAccountingEntry[]) => void;
 	onRowsChange: (rows: CanvassFormItem[]) => void;
 };
 
 export function CanvassFormEntrySection({
+	accountingRows,
 	error,
 	isReadonly,
+	onAccountingRowsChange,
 	onRowsChange,
 	rows,
 }: CanvassFormEntrySectionProps) {
+	const [activeTab, setActiveTab] = useState<PurchasingEntryTab>("details");
 	const updateEntry = useCallback(
 		(rowId: string, updates: Partial<CanvassFormItem>) => {
 			onRowsChange(
@@ -57,6 +69,18 @@ export function CanvassFormEntrySection({
 			})),
 		[columns],
 	);
+
+	if (activeTab === "accounting") {
+		return (
+			<CanvassFormAccountingEntrySection
+				error={error}
+				isReadonly={isReadonly}
+				rows={accountingRows}
+				onRowsChange={onAccountingRowsChange}
+				onTabChange={setActiveTab}
+			/>
+		);
+	}
 
 	function addRows(count: number) {
 		onRowsChange([
@@ -119,9 +143,7 @@ export function CanvassFormEntrySection({
 			emptyRowLabel="canvass line"
 			error={error}
 			exportOptions={[
-				{ id: "csv", label: "CSV", onSelect: () => undefined },
-				{ id: "excel", label: "Excel", onSelect: () => undefined },
-				{ id: "pdf", label: "PDF", onSelect: () => undefined },
+				...EntryExportOptions,
 			]}
 			footerDetails={
 				<div className="text-sm font-semibold text-darknavy">
@@ -132,7 +154,13 @@ export function CanvassFormEntrySection({
 			isReadonly={isReadonly}
 			rows={rows}
 			summaryCells={{ computedTotalCost: formatCanvassFormAmount(total) }}
-			title="Items"
+			title={
+				<PurchasingEntryTabs
+					activeTab={activeTab}
+					detailsLabel="Canvass Details"
+					onTabChange={setActiveTab}
+				/>
+			}
 			onAddRows={addRows}
 			onAutoColumnWidth={() => undefined}
 			onClearRows={clearRows}
@@ -148,6 +176,12 @@ export function CanvassFormEntrySection({
 		/>
 	);
 }
+
+const EntryExportOptions = [
+	{ id: "csv", label: "CSV", onSelect: () => undefined },
+	{ id: "excel", label: "Excel", onSelect: () => undefined },
+	{ id: "pdf", label: "PDF", onSelect: () => undefined },
+] satisfies ModuleDataEntryExportOption[];
 
 function shouldClearEntry(
 	entry: CanvassFormItem,

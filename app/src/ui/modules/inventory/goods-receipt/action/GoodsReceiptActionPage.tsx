@@ -60,8 +60,10 @@ export function GoodsReceiptActionPage() {
           onUpdateField={receiptForm.updateField}
         />
         <GoodsReceiptEntrySection
+          accountingRows={receiptForm.values.accountingEntries}
           isReadonly={isReadonly}
           rows={receiptForm.values.lineEntries}
+          onAccountingRowsChange={receiptForm.updateAccountingEntries}
           onRowsChange={receiptForm.updateLineEntries}
         />
       </section>

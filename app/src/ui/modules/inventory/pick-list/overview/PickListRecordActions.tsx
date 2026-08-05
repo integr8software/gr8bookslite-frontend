@@ -21,19 +21,19 @@ export function PickListRecordActions({
 	onUpdateStatus: (record: PickListRecord, status: PickListStatus) => void;
 	record: PickListRecord;
 }) {
-	const isApproved = record.status === "Approved";
+	const isPosted = record.status === "Posted";
 	const isDisapproved = record.status === "Disapproved";
 	const isCancelled = record.status === "Cancelled";
 	const canEdit = canEditPickListStatus(record.status);
-	const undoStatus: PickListStatus = "Active";
+	const undoStatus: PickListStatus = "Draft";
 	const cancelStatus: PickListStatus = isCancelled ? "Draft" : "Cancelled";
 	const overflowItems: ModuleActionMenuItem[] = [
 		{
-			disabled: !canApprovePickListStatus(record.status),
-			icon: isApproved ? Undo2 : CheckCircle2,
-			label: isApproved ? "Undo Approved" : "Approve",
+			disabled: !canPostPickListStatus(record.status),
+			icon: isPosted ? Undo2 : CheckCircle2,
+			label: isPosted ? "Undo Posted" : "Post",
 			onSelect: () =>
-				onUpdateStatus(record, isApproved ? undoStatus : "Approved"),
+				onUpdateStatus(record, isPosted ? undoStatus : "Posted"),
 			type: "button",
 		},
 		{
@@ -91,27 +91,25 @@ export function PickListRecordActions({
 }
 
 function canEditPickListStatus(status: PickListStatus) {
-	return status === "Active" || status === "Draft" || status === "Pending";
+	return status === "Draft" || status === "For Approval";
 }
 
-function canApprovePickListStatus(status: PickListStatus) {
+function canPostPickListStatus(status: PickListStatus) {
 	return (
-		status === "Active" ||
 		status === "Draft" ||
-		status === "Pending" ||
-		status === "Approved"
+		status === "For Approval" ||
+		status === "Posted"
 	);
 }
 
 function canDisapprovePickListStatus(status: PickListStatus) {
 	return (
-		status === "Active" ||
 		status === "Draft" ||
-		status === "Pending" ||
+		status === "For Approval" ||
 		status === "Disapproved"
 	);
 }
 
 function canCancelPickListStatus(status: PickListStatus) {
-	return status !== "Closed";
+	return status !== "Posted";
 }

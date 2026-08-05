@@ -32,10 +32,34 @@ const itemSchema = z.object({
 	unitCost4: z.coerce.number().min(0),
 	uom: requiredText("Select a UOM."),
 	vatExclusive: z.string(),
+	vatExclusive1: z.string(),
+	vatExclusive2: z.string(),
+	vatExclusive3: z.string(),
+	vatExclusive4: z.string(),
 	vatInclusive: z.string(),
+	vatInclusive1: z.string(),
+	vatInclusive2: z.string(),
+	vatInclusive3: z.string(),
+	vatInclusive4: z.string(),
+});
+
+const accountingEntrySchema = z.object({
+	accountCode: z.string(),
+	accountTitle: z.string(),
+	atcCode: z.string(),
+	credit: z.coerce.number().min(0),
+	debit: z.coerce.number().min(0),
+	id: z.string(),
+	partyCode: z.string(),
+	partyName: z.string(),
+	particulars: z.string(),
+	refNo: z.string(),
+	responsibilityCenter: z.string(),
+	vatType: z.string(),
 });
 
 const formSchema = z.object({
+	accountingEntries: z.array(accountingEntrySchema),
 	currency: requiredText("Select a currency."),
 	documentDate: requiredText("Select a document date."),
 	exchangeRate: z.coerce.number().positive("Enter a valid exchange rate."),
@@ -46,7 +70,7 @@ const formSchema = z.object({
 	requestedBy: requiredText("Enter requested by."),
 	requiredBefore: z.string(),
 	responsibilityCenter: z.string(),
-	status: z.enum(["Draft", "Open", "Approved", "Closed", "Cancelled"]),
+	status: z.enum(["Draft", "For Approval", "Posted", "Disapproved", "Cancelled"]),
 	termsOfPayment: z.string(),
 	transNo: requiredText("Enter a transaction number."),
 });

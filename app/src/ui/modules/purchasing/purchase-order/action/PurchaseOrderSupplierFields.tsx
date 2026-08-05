@@ -10,8 +10,9 @@ import type {
   PurchaseOrderStatus,
 } from "@/app/src/types/modules/purchasing/purchase-order/PurchaseOrderTypes";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
+import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 import {
-  AttachedTextField,
   DateField,
   FieldShell,
   PurchaseOrderFieldClassName,
@@ -34,12 +35,11 @@ export function PurchaseOrderSupplierFields({
   return (
     <div className="grid min-w-0 gap-5 xl:grid-cols-3">
       <div className="grid min-w-0 content-start gap-4">
-        <AttachedTextField
+        <TextField
           id="purchase-order-party-name"
           label="Party Name"
           readOnly={isReadonly}
           value={values.vceName}
-          onAdd={() => undefined}
           onChange={(value) => onUpdateField("vceName", value)}
         />
         <TextField
@@ -91,7 +91,7 @@ export function PurchaseOrderSupplierFields({
           <AppLimitedTextarea
             id="purchase-order-remarks"
             readOnly={isReadonly}
-            value={values.remarks}
+            value={values.remarks ?? ""}
             onChange={(event) => onUpdateField("remarks", event.target.value)}
             className={`${PurchaseOrderFieldClassName} min-h-[5.75rem] py-3`}
             counterMode="remaining"
@@ -170,7 +170,7 @@ export function PurchaseOrderSupplierFields({
         <SelectField
           id="purchase-order-status"
           label="Status"
-          readOnly={isReadonly}
+          readOnly
           value={values.status}
           options={PurchaseOrderStatusOptions}
           onChange={(value) => onUpdateField("status", value as PurchaseOrderStatus)}
@@ -195,36 +195,32 @@ function CurrencyExchangeRateField({
 }) {
   return (
     <FieldShell controlId="purchase-order-currency" label="Currency">
-      <div className="grid min-w-0 gap-3 sm:grid-cols-[7rem_minmax(0,1fr)]">
-        <select
+      <div className="grid min-w-0 gap-3 sm:grid-cols-[minmax(8.5rem,1fr)_auto_minmax(7.5rem,0.75fr)] sm:items-center">
+        <AppAdvancedDropdown
           id="purchase-order-currency"
-          value={currency}
-          disabled={isReadonly}
-          onChange={(event) => onCurrencyChange(event.target.value)}
-          className={PurchaseOrderFieldClassName}
+          value={currency ?? ""}
+          readOnly={isReadonly}
+          isClearable={false}
+          options={PurchaseOrderCurrencyOptions.map((option) => ({
+            name: option,
+            value: option,
+          }))}
+          placeholder="PHP"
+          onChange={(value) => onCurrencyChange(String(value))}
+        />
+        <label
+          htmlFor="purchase-order-exchange-rate"
+          className="text-sm font-semibold text-darknavy"
         >
-          {PurchaseOrderCurrencyOptions.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
-        <div className="grid min-w-0 gap-2 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-center">
-          <label
-            htmlFor="purchase-order-exchange-rate"
-            className="text-sm font-semibold text-darknavy"
-          >
-            Exchange Rate
-          </label>
-          <input
-            id="purchase-order-exchange-rate"
-            type="number"
-            value={exchangeRate}
-            readOnly={isReadonly}
-            onChange={(event) => onExchangeRateChange(Number(event.target.value))}
-            className={`${PurchaseOrderFieldClassName} text-right tabular-nums`}
-          />
-        </div>
+          ER:
+        </label>
+        <MoneyNumberField
+          id="purchase-order-exchange-rate"
+          value={String(exchangeRate ?? "")}
+          readOnly={isReadonly}
+          onValueChange={(value) => onExchangeRateChange(Number(value) || 0)}
+          className={`${PurchaseOrderFieldClassName} text-right tabular-nums`}
+        />
       </div>
     </FieldShell>
   );
@@ -248,19 +244,17 @@ function BooleanSelectField({
       <label htmlFor={id} className="text-sm font-semibold text-darknavy">
         {label}
       </label>
-      <select
+      <AppAdvancedDropdown
         id={id}
         value={value}
-        disabled={readOnly}
-        onChange={(event) => onChange(event.target.value)}
-        className={PurchaseOrderFieldClassName}
-      >
-        {PurchaseOrderBooleanOptions.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
-      </select>
+        readOnly={readOnly}
+        options={PurchaseOrderBooleanOptions.map((option) => ({
+          name: option,
+          value: option,
+        }))}
+        placeholder="False"
+        onChange={(nextValue) => onChange(String(nextValue))}
+      />
     </div>
   );
 }

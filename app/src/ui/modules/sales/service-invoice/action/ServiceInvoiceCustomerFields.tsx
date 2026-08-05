@@ -1,7 +1,8 @@
 import {
   ServiceInvoiceCurrencyOptions,
   ServiceInvoicePartyOptions,
-  ServiceInvoiceTeamOptions,
+  ServiceInvoiceResponsibilityCenterOptions,
+  ServiceInvoiceStatusOptions,
   ServiceInvoiceTermOptions,
 } from "@/app/src/data/modules/sales/service-invoice/ServiceInvoiceData";
 import type { ServiceInvoiceFormValues } from "@/app/src/types/modules/sales/service-invoice/ServiceInvoiceTypes";
@@ -9,10 +10,8 @@ import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAd
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 import {
-  AttachedDropdown,
   FieldClassName,
   FieldShell,
-  SelectField,
   type ServiceInvoiceFieldUpdater,
 } from "@/app/src/ui/modules/sales/service-invoice/action/ServiceInvoiceFieldControls";
 
@@ -31,15 +30,28 @@ export function ServiceInvoiceCustomerFields({
     <div className="grid min-w-0 content-start gap-x-8 gap-y-3 xl:grid-cols-3">
       <div className="grid min-w-0 content-start gap-3">
         <FieldShell controlId="service-invoice-name" label="Party Name" isRequired>
-          <AttachedDropdown
+          <AppAdvancedDropdown
             id="service-invoice-name"
             value={values.name}
             readOnly={isReadonly}
             options={ServiceInvoicePartyOptions}
             placeholder=""
             searchPlaceholder="Search customer"
-            onAdd={() => undefined}
-            onChange={(value) => onUpdateField("name", value)}
+            showSelectedDetails
+            addAction={{
+              disabled: isReadonly,
+              label: "Add",
+              onClick: () => undefined,
+            }}
+            onChange={(value) => {
+              const partyName = String(value);
+              const selectedParty = ServiceInvoicePartyOptions.find(
+                (option) => option.value === partyName,
+              );
+
+              onUpdateField("name", partyName);
+              onUpdateField("code", selectedParty?.label ?? "");
+            }}
           />
         </FieldShell>
         <FieldShell controlId="service-invoice-code" label="Party Code">
@@ -48,6 +60,15 @@ export function ServiceInvoiceCustomerFields({
             value={values.code}
             readOnly={isReadonly}
             onChange={(event) => onUpdateField("code", event.target.value)}
+            className={FieldClassName}
+          />
+        </FieldShell>
+        <FieldShell controlId="service-invoice-address" label="Address">
+          <input
+            id="service-invoice-address"
+            value={values.address}
+            readOnly={isReadonly}
+            onChange={(event) => onUpdateField("address", event.target.value)}
             className={FieldClassName}
           />
         </FieldShell>
@@ -60,12 +81,30 @@ export function ServiceInvoiceCustomerFields({
             className={FieldClassName}
           />
         </FieldShell>
-        <FieldShell controlId="service-invoice-business-style" label="Business Style">
+        <FieldShell controlId="service-invoice-contact-no" label="Contact No.">
           <input
-            id="service-invoice-business-style"
-            value={values.businessStyle}
+            id="service-invoice-contact-no"
+            value={values.contactNo}
             readOnly={isReadonly}
-            onChange={(event) => onUpdateField("businessStyle", event.target.value)}
+            onChange={(event) => onUpdateField("contactNo", event.target.value)}
+            className={FieldClassName}
+          />
+        </FieldShell>
+        <FieldShell controlId="service-invoice-bill-to-name" label="Bill To Name">
+          <input
+            id="service-invoice-bill-to-name"
+            value={values.billToName}
+            readOnly={isReadonly}
+            onChange={(event) => onUpdateField("billToName", event.target.value)}
+            className={FieldClassName}
+          />
+        </FieldShell>
+        <FieldShell controlId="service-invoice-project-code" label="Project Code">
+          <input
+            id="service-invoice-project-code"
+            value={values.projectCode}
+            readOnly={isReadonly}
+            onChange={(event) => onUpdateField("projectCode", event.target.value)}
             className={FieldClassName}
           />
         </FieldShell>
@@ -92,13 +131,14 @@ export function ServiceInvoiceCustomerFields({
       </div>
       <div className="grid min-w-0 content-start gap-3">
         <FieldShell controlId="service-invoice-terms" label="Terms of Payment">
-          <SelectField
+          <AppAdvancedDropdown
             id="service-invoice-terms"
             value={values.terms}
             readOnly={isReadonly}
             options={ServiceInvoiceTermOptions}
             placeholder="--Select Terms--"
-            onChange={(value) => onUpdateField("terms", value)}
+            searchPlaceholder="Search terms"
+            onChange={(value) => onUpdateField("terms", String(value))}
           />
         </FieldShell>
         <FieldShell controlId="service-invoice-due-date" label="Due Date">
@@ -140,23 +180,15 @@ export function ServiceInvoiceCustomerFields({
             </div>
           </div>
         </FieldShell>
-        <FieldShell controlId="service-invoice-res-center" label="Res Center">
-          <input
+        <FieldShell controlId="service-invoice-res-center" label="Responsibility Center">
+          <AppAdvancedDropdown
             id="service-invoice-res-center"
             value={values.residentCustomerCode}
             readOnly={isReadonly}
-            onChange={(event) => onUpdateField("residentCustomerCode", event.target.value)}
-            className={FieldClassName}
-          />
-        </FieldShell>
-        <FieldShell controlId="service-invoice-team-assigned" label="Team Personnel">
-          <SelectField
-            id="service-invoice-team-assigned"
-            value={values.teamAssigned}
-            readOnly={isReadonly}
-            options={ServiceInvoiceTeamOptions}
-            placeholder="--Select Team--"
-            onChange={(value) => onUpdateField("teamAssigned", value)}
+            options={ServiceInvoiceResponsibilityCenterOptions}
+            placeholder="--Select Responsibility Center--"
+            searchPlaceholder="Search responsibility center"
+            onChange={(value) => onUpdateField("residentCustomerCode", String(value))}
           />
         </FieldShell>
       </div>
@@ -180,22 +212,42 @@ export function ServiceInvoiceCustomerFields({
             className={FieldClassName}
           />
         </FieldShell>
-        <FieldShell controlId="service-invoice-jo-no" label="JO No.">
+        <FieldShell controlId="service-invoice-so-no" label="SO No.">
           <input
-            id="service-invoice-jo-no"
-            value={values.joNo}
+            id="service-invoice-so-no"
+            value={values.soNo}
             readOnly={isReadonly}
-            onChange={(event) => onUpdateField("joNo", event.target.value)}
+            onChange={(event) => onUpdateField("soNo", event.target.value)}
             className={FieldClassName}
           />
         </FieldShell>
-        <FieldShell controlId="service-invoice-po-no" label="PO No.">
+        <FieldShell controlId="service-invoice-customer-po-no" label="Customer PO No.">
           <input
-            id="service-invoice-po-no"
+            id="service-invoice-customer-po-no"
             value={values.poNo}
             readOnly={isReadonly}
             onChange={(event) => onUpdateField("poNo", event.target.value)}
             className={FieldClassName}
+          />
+        </FieldShell>
+        <FieldShell controlId="service-invoice-sales-personnel" label="Sales Personnel">
+          <input
+            id="service-invoice-sales-personnel"
+            value={values.teamAssigned}
+            readOnly={isReadonly}
+            onChange={(event) => onUpdateField("teamAssigned", event.target.value)}
+            className={FieldClassName}
+          />
+        </FieldShell>
+        <FieldShell controlId="service-invoice-status" label="Status">
+          <AppAdvancedDropdown
+            id="service-invoice-status"
+            value={values.status}
+            readOnly={isReadonly}
+            options={ServiceInvoiceStatusOptions}
+            placeholder="Select status"
+            searchPlaceholder="Search status"
+            onChange={(value) => onUpdateField("status", String(value))}
           />
         </FieldShell>
       </div>

@@ -1,13 +1,11 @@
 export type ServiceInvoiceActionMode = "add" | "edit" | "view";
 
 export type ServiceInvoiceStatus =
-	| "Active"
-	| "Approved"
 	| "Cancelled"
-	| "Closed"
 	| "Disapproved"
 	| "Draft"
-	| "Pending";
+	| "For Approval"
+	| "Posted";
 
 export type ServiceInvoiceRecord = {
 	id: string;
@@ -51,14 +49,24 @@ export type ServiceInvoiceAccountingEntry = {
 	accountTitle: string;
 	debit: number;
 	credit: number;
+	partyCode: string;
+	partyName: string;
+	particulars: string;
+	vatType: string;
+	atcCode: string;
+	responsibilityCenter: string;
+	refNo: string;
 };
 
 export type ServiceInvoiceFormValues = {
+	address: string;
+	billToName: string;
 	code: string;
 	name: string;
 	currency: string;
 	exchangeRate: string;
 	contactPerson: string;
+	contactNo: string;
 	remarks: string;
 	terms: string;
 	dueDate: string;
@@ -90,7 +98,9 @@ export type ServiceInvoiceFormValues = {
 	businessStyle: string;
 	status: string;
 	projectRef: string;
+	projectCode: string;
 	projectName: string;
+	soNo: string;
 	lineEntries: ServiceInvoiceLineEntry[];
 	accountingEntries: ServiceInvoiceAccountingEntry[];
 };

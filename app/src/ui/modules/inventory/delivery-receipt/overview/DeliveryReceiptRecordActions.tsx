@@ -24,19 +24,19 @@ export function DeliveryReceiptRecordActions({
 	) => void;
 	record: DeliveryReceiptRecord;
 }) {
-	const isApproved = record.status === "Approved";
+	const isPosted = record.status === "Posted";
 	const isDisapproved = record.status === "Disapproved";
 	const isCancelled = record.status === "Cancelled";
 	const canEdit = canEditDeliveryReceiptStatus(record.status);
-	const undoStatus: DeliveryReceiptStatus = "Active";
+	const undoStatus: DeliveryReceiptStatus = "Draft";
 	const cancelStatus: DeliveryReceiptStatus = isCancelled ? "Draft" : "Cancelled";
 	const overflowItems: ModuleActionMenuItem[] = [
 		{
-			disabled: !canApproveDeliveryReceiptStatus(record.status),
-			icon: isApproved ? Undo2 : CheckCircle2,
-			label: isApproved ? "Undo Approved" : "Approve",
+			disabled: !canPostDeliveryReceiptStatus(record.status),
+			icon: isPosted ? Undo2 : CheckCircle2,
+			label: isPosted ? "Undo Posted" : "Post",
 			onSelect: () =>
-				onUpdateStatus(record, isApproved ? undoStatus : "Approved"),
+				onUpdateStatus(record, isPosted ? undoStatus : "Posted"),
 			type: "button",
 		},
 		{
@@ -94,27 +94,25 @@ export function DeliveryReceiptRecordActions({
 }
 
 function canEditDeliveryReceiptStatus(status: DeliveryReceiptStatus) {
-	return status === "Active" || status === "Draft" || status === "Pending";
+	return status === "Draft" || status === "For Approval";
 }
 
-function canApproveDeliveryReceiptStatus(status: DeliveryReceiptStatus) {
+function canPostDeliveryReceiptStatus(status: DeliveryReceiptStatus) {
 	return (
-		status === "Active" ||
 		status === "Draft" ||
-		status === "Pending" ||
-		status === "Approved"
+		status === "For Approval" ||
+		status === "Posted"
 	);
 }
 
 function canDisapproveDeliveryReceiptStatus(status: DeliveryReceiptStatus) {
 	return (
-		status === "Active" ||
 		status === "Draft" ||
-		status === "Pending" ||
+		status === "For Approval" ||
 		status === "Disapproved"
 	);
 }
 
 function canCancelDeliveryReceiptStatus(status: DeliveryReceiptStatus) {
-	return status !== "Closed";
+	return status !== "Posted";
 }

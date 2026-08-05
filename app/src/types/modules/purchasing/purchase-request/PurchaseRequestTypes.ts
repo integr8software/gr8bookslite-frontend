@@ -1,10 +1,11 @@
 import type { FormSignatoryRow } from "@/app/src/types/modules/system-administration/form-signatory/FormSignatoryTypes";
+import type { PurchasingAccountingEntry } from "@/app/src/types/modules/purchasing/PurchasingAccountingTypes";
 
 export type PurchaseRequestStatus =
 	| "Draft"
-	| "Open"
-	| "Approved"
-	| "Closed"
+	| "For Approval"
+	| "Posted"
+	| "Disapproved"
 	| "Cancelled";
 
 export type PurchaseRequestItem = {
@@ -50,10 +51,12 @@ export type PurchaseRequestRecord = {
 	approvedByLabel: string;
 	approvedBySignatureFileName: string;
 	approvedBySignatureImageUrl: string;
+	accountingEntries: PurchaseRequestAccountingEntry[];
 	items: PurchaseRequestItem[];
 };
 
 export type PurchaseRequestFormValues = Omit<PurchaseRequestRecord, "id">;
+export type PurchaseRequestAccountingEntry = PurchasingAccountingEntry;
 
 export type PurchaseRequestFormMode = "add" | "edit" | "view";
 

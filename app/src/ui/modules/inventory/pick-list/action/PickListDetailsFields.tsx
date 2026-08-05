@@ -1,13 +1,13 @@
-import { PickListStatusFilterOptions } from "@/app/src/constants/modules/inventory/pick-list/PickListConstants";
+import { PickListStatusOptions } from "@/app/src/data/modules/inventory/pick-list/PickListData";
 import type { PickListFormValues } from "@/app/src/types/modules/inventory/pick-list/PickListTypes";
 import {
 	DateField,
 	FieldClassName,
 	FieldShell,
-	SelectField,
 	TextField,
 	type PickListFieldUpdater,
 } from "@/app/src/ui/modules/inventory/pick-list/action/PickListFieldControls";
+import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 
 type PickListDetailsFieldsProps = {
@@ -83,21 +83,16 @@ export function PickListDetailsFields({
 				</FieldShell>
 			</div>
 			<FieldShell controlId="pick-list-status" label="Status">
-				<SelectField
+				<AppAdvancedDropdown
+					id="pick-list-status"
 					value={values.status}
-					readOnly={isReadonly}
+					readOnly
 					options={PickListStatusOptions}
-					placeholder="Select status"
-					onChange={(value) => onUpdateField("status", value)}
+					placeholder="Draft"
+					searchPlaceholder="Search status"
+					onChange={(value) => onUpdateField("status", String(value))}
 				/>
 			</FieldShell>
 		</div>
 	);
 }
-
-const PickListStatusOptions = PickListStatusFilterOptions.filter(
-	(option) => option.value !== "all",
-).map((option) => ({
-	name: option.label,
-	value: option.value,
-}));

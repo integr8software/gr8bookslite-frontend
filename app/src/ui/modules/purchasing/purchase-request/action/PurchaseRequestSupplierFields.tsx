@@ -16,7 +16,9 @@ import {
   PurchaseRequestTextField,
   type PurchaseRequestFieldUpdater,
 } from "@/app/src/ui/modules/purchasing/purchase-request/action/PurchaseRequestFormControls";
+import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
+import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 
 type PurchaseRequestSupplierFieldsProps = {
   isReadonly: boolean;
@@ -48,7 +50,7 @@ export function PurchaseRequestSupplierFields({
           <textarea
             id="purchase-request-vendor-address"
             readOnly={isReadonly}
-            value={values.vendorAddress}
+            value={values.vendorAddress ?? ""}
             onChange={(event) => onUpdateField("vendorAddress", event.target.value)}
             className={`${PurchaseRequestFieldClassName} min-h-20 py-3`}
           />
@@ -57,7 +59,7 @@ export function PurchaseRequestSupplierFields({
           <AppLimitedTextarea
             id="purchase-request-remarks"
             readOnly={isReadonly}
-            value={values.remarks}
+            value={values.remarks ?? ""}
             onChange={(event) => onUpdateField("remarks", event.target.value)}
             className={`${PurchaseRequestFieldClassName} min-h-20 py-3`}
             counterMode="remaining"
@@ -84,23 +86,33 @@ export function PurchaseRequestSupplierFields({
           options={PurchaseRequestTypeOptions}
           onChange={(value) => onUpdateField("purchaseType", value)}
         />
-        <PurchaseRequestSelectField
-          id="purchase-request-currency"
-          label="Currency"
-          readOnly={isReadonly}
-          value={values.currency}
-          options={PurchaseRequestCurrencyOptions}
-          onChange={(value) => onUpdateField("currency", value)}
-        />
-        <PurchaseRequestFieldShell controlId="purchase-request-exchange-rate" label="Exchange Rate">
-          <input
-            id="purchase-request-exchange-rate"
-            type="number"
-            readOnly={isReadonly}
-            value={values.exchangeRate}
-            onChange={(event) => onUpdateField("exchangeRate", Number(event.target.value))}
-            className={`${PurchaseRequestFieldClassName} text-right`}
-          />
+        <PurchaseRequestFieldShell controlId="purchase-request-currency" label="Currency">
+          <div className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto_minmax(6.5rem,0.65fr)] sm:items-center">
+            <AppAdvancedDropdown
+              id="purchase-request-currency"
+              value={values.currency ?? ""}
+              readOnly={isReadonly}
+              options={PurchaseRequestCurrencyOptions.map((option) => ({
+                name: option,
+                value: option,
+              }))}
+              placeholder="PHP"
+              onChange={(value) => onUpdateField("currency", String(value))}
+            />
+            <label
+              htmlFor="purchase-request-exchange-rate"
+              className="text-sm font-semibold text-darknavy"
+            >
+              ER:
+            </label>
+            <MoneyNumberField
+              id="purchase-request-exchange-rate"
+              value={String(values.exchangeRate ?? "")}
+              readOnly={isReadonly}
+              onValueChange={(value) => onUpdateField("exchangeRate", Number(value) || 0)}
+              className={`${PurchaseRequestFieldClassName} text-right tabular-nums`}
+            />
+          </div>
         </PurchaseRequestFieldShell>
         <PurchaseRequestTextField
           id="purchase-request-for-department"
@@ -130,7 +142,7 @@ export function PurchaseRequestSupplierFields({
         <PurchaseRequestSelectField
           id="purchase-request-status"
           label="Status"
-          readOnly={isReadonly}
+          readOnly
           value={values.status}
           options={PurchaseRequestStatusOptions}
           onChange={(value) => onUpdateField("status", value as PurchaseRequestStatus)}

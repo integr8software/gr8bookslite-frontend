@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 
 export type CanvassFormFieldUpdater<TValues> = <Key extends keyof TValues>(
 	key: Key,
@@ -49,7 +50,7 @@ export function TextField({
 		<FieldShell controlId={id} label={label} isRequired={isRequired}>
 			<input
 				id={id}
-				value={value}
+				value={value ?? ""}
 				readOnly={readOnly}
 				onChange={(event) => onChange(event.target.value)}
 				className={FieldClassName}
@@ -78,7 +79,7 @@ export function DateField({
 			<input
 				id={id}
 				type="date"
-				value={value}
+				value={value ?? ""}
 				readOnly={readOnly}
 				onChange={(event) => onChange(event.target.value)}
 				className={FieldClassName}
@@ -106,19 +107,14 @@ export function SelectField({
 }) {
 	return (
 		<FieldShell controlId={id} label={label} isRequired={isRequired}>
-			<select
+			<AppAdvancedDropdown
 				id={id}
-				value={value}
-				disabled={readOnly}
-				onChange={(event) => onChange(event.target.value)}
-				className={FieldClassName}
-			>
-				{options.map((option) => (
-					<option key={option} value={option}>
-						{option}
-					</option>
-				))}
-			</select>
+				value={value ?? ""}
+				readOnly={readOnly}
+				options={options.map((option) => ({ name: option, value: option }))}
+				placeholder="--Select Option--"
+				onChange={(nextValue) => onChange(String(nextValue))}
+			/>
 		</FieldShell>
 	);
 }
@@ -142,7 +138,7 @@ export function AmountField({
 				id={id}
 				type="number"
 				step="0.01"
-				value={value}
+				value={value ?? ""}
 				readOnly={readOnly}
 				onChange={(event) =>
 					onChange(Math.round(Number(event.target.value || 0) * 100) / 100)

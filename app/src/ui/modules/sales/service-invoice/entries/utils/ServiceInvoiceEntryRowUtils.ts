@@ -45,6 +45,13 @@ export function createBlankServiceInvoiceAccountingEntry(): ServiceInvoiceAccoun
 		accountTitle: "",
 		debit: 0,
 		credit: 0,
+		partyCode: "",
+		partyName: "",
+		particulars: "",
+		vatType: "",
+		atcCode: "",
+		responsibilityCenter: "",
+		refNo: "",
 	};
 }
 
@@ -147,6 +154,13 @@ export function shouldClearServiceInvoiceAccountingEntry(
 	const hasData =
 		entry.accountCode.trim() !== "" ||
 		entry.accountTitle.trim() !== "" ||
+		entry.partyCode.trim() !== "" ||
+		entry.partyName.trim() !== "" ||
+		entry.particulars.trim() !== "" ||
+		entry.vatType.trim() !== "" ||
+		entry.atcCode.trim() !== "" ||
+		entry.responsibilityCenter.trim() !== "" ||
+		entry.refNo.trim() !== "" ||
 		entry.debit > 0 ||
 		entry.credit > 0;
 

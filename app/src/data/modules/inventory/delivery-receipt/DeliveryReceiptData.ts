@@ -1,5 +1,6 @@
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import type {
+	DeliveryReceiptAccountingEntry,
 	DeliveryReceiptFormValues,
 	DeliveryReceiptLineEntry,
 	DeliveryReceiptRecord,
@@ -34,6 +35,14 @@ export const DeliveryReceiptTermOptions = [
 	{ name: "Net 30", value: "Net 30" },
 ];
 
+export const DeliveryReceiptStatusOptions = [
+	{ name: "Draft", value: "Draft" },
+	{ name: "For Approval", value: "For Approval" },
+	{ name: "Posted", value: "Posted" },
+	{ name: "Disapproved", value: "Disapproved" },
+	{ name: "Cancelled", value: "Cancelled" },
+];
+
 export const DeliveryReceiptUomOptions = [
 	{ name: "PCS", value: "PCS" },
 	{ name: "BOX", value: "BOX" },
@@ -60,7 +69,7 @@ export const MockDeliveryReceipts: DeliveryReceiptRecord[] = [
 		deliveryDate: "2026-07-16",
 		documentDate: "2026-07-16",
 		referenceNo: "SO-2026-0101",
-		status: "Active",
+		status: "Posted",
 		totalQuantity: 18,
 		transactionNo: "DR-2026-0001",
 	},
@@ -71,7 +80,7 @@ export const MockDeliveryReceipts: DeliveryReceiptRecord[] = [
 		deliveryDate: "2026-07-14",
 		documentDate: "2026-07-14",
 		referenceNo: "PO-2026-0144",
-		status: "Pending",
+		status: "For Approval",
 		totalQuantity: 32,
 		transactionNo: "DR-2026-0002",
 	},
@@ -82,7 +91,7 @@ export const MockDeliveryReceipts: DeliveryReceiptRecord[] = [
 		deliveryDate: "2026-07-10",
 		documentDate: "2026-07-10",
 		referenceNo: "SO-2026-0096",
-		status: "Approved",
+		status: "Posted",
 		totalQuantity: 12,
 		transactionNo: "DR-2026-0003",
 	},
@@ -115,8 +124,55 @@ export function createBlankDeliveryReceiptLineEntry(
 	};
 }
 
+export function createBlankDeliveryReceiptAccountingEntry(
+	overrides: Partial<DeliveryReceiptAccountingEntry> = {},
+): DeliveryReceiptAccountingEntry {
+	return {
+		id: `dr-accounting-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+		accountCode: "",
+		accountTitle: "",
+		debit: 0,
+		credit: 0,
+		partyCode: "",
+		partyName: "",
+		particulars: "",
+		vatType: "",
+		atcCode: "",
+		responsibilityCenter: "",
+		refNo: "",
+		...overrides,
+	};
+}
+
+export function createDeliveryReceiptAccountingEntries(
+	values: Pick<
+		DeliveryReceiptFormValues,
+		"soNo" | "transactionNo" | "vceCode" | "vceName"
+	>,
+): DeliveryReceiptAccountingEntry[] {
+	return [
+		createBlankDeliveryReceiptAccountingEntry({
+			accountTitle: "Cost of Goods Sold",
+			debit: 0,
+			partyCode: values.vceCode,
+			partyName: values.vceName,
+			particulars: values.soNo || values.transactionNo,
+			refNo: values.transactionNo,
+		}),
+		createBlankDeliveryReceiptAccountingEntry({
+			accountTitle: "Inventory",
+			credit: 0,
+			partyCode: values.vceCode,
+			partyName: values.vceName,
+			particulars: values.soNo || values.transactionNo,
+			refNo: values.transactionNo,
+		}),
+	];
+}
+
 export function createDeliveryReceiptFormValues(): DeliveryReceiptFormValues {
 	const today = new Date().toISOString().slice(0, 10);
+	const transactionNo = "DR-2026-0004";
 
 	return {
 		vceCode: "",
@@ -135,7 +191,7 @@ export function createDeliveryReceiptFormValues(): DeliveryReceiptFormValues {
 		deliveryDate: today,
 		driverName: "",
 		plateNo: "",
-		transactionNo: "DR-2026-0004",
+		transactionNo,
 		documentDate: today,
 		soNo: "",
 		soDate: "",
@@ -146,6 +202,12 @@ export function createDeliveryReceiptFormValues(): DeliveryReceiptFormValues {
 		plNo: "",
 		resCenter: "",
 		attachments: [],
+		accountingEntries: createDeliveryReceiptAccountingEntries({
+			soNo: "",
+			transactionNo,
+			vceCode: "",
+			vceName: "",
+		}),
 		lineEntries: [createBlankDeliveryReceiptLineEntry()],
 	};
 }
@@ -159,6 +221,13 @@ export function createDeliveryReceiptFormValuesFromRecord(
 		return {
 			...defaults,
 			...record.formValues,
+			status: normalizeDeliveryReceiptStatus(record.formValues.status),
+			accountingEntries: (
+				record.formValues.accountingEntries ?? defaults.accountingEntries
+			).map((entry) => ({
+				...createBlankDeliveryReceiptAccountingEntry(),
+				...entry,
+			})),
 			lineEntries: record.formValues.lineEntries.map((entry) => ({
 				...createBlankDeliveryReceiptLineEntry(),
 				...entry,
@@ -174,10 +243,16 @@ export function createDeliveryReceiptFormValuesFromRecord(
 		deliveryDate: record.deliveryDate,
 		documentDate: record.documentDate,
 		soNo: record.referenceNo,
-		status: record.status,
+		status: normalizeDeliveryReceiptStatus(record.status),
 		transactionNo: record.transactionNo,
 		plNo: "",
 		resCenter: "",
+		accountingEntries: createDeliveryReceiptAccountingEntries({
+			soNo: record.referenceNo,
+			transactionNo: record.transactionNo,
+			vceCode: record.customerCode,
+			vceName: record.customerName,
+		}),
 		lineEntries: [
 			createBlankDeliveryReceiptLineEntry({
 				itemCode: "ITEM-001",
@@ -203,6 +278,7 @@ export function createDeliveryReceiptRecordFromForm(
 		documentDate: values.documentDate,
 		formValues: {
 			...values,
+			accountingEntries: values.accountingEntries.map((entry) => ({ ...entry })),
 			lineEntries: values.lineEntries.map((entry) => ({ ...entry })),
 		},
 		referenceNo: values.soNo || values.poNo || values.projectRef,
@@ -239,7 +315,9 @@ export function readStoredDeliveryReceipts() {
 	try {
 		const parsedRecords = JSON.parse(storedRecords) as DeliveryReceiptRecord[];
 
-		return Array.isArray(parsedRecords) ? parsedRecords : null;
+		return Array.isArray(parsedRecords)
+			? parsedRecords.map(normalizeStoredDeliveryReceiptRecord)
+			: null;
 	} catch {
 		return null;
 	}
@@ -275,10 +353,6 @@ export function countDeliveryReceiptsByStatus(
 	return records.filter((record) => record.status === status).length;
 }
 
-export function isDeliveryReceiptActiveStatus(status: DeliveryReceiptStatus) {
-	return status === "Active" || status === "Approved";
-}
-
 export function formatDeliveryReceiptPercentage(value: number, total: number) {
 	if (total === 0) {
 		return "0.00% of total";
@@ -310,17 +384,40 @@ export function deliveryReceiptEntryIsComplete(
 }
 
 function normalizeDeliveryReceiptStatus(value: string): DeliveryReceiptStatus {
+	if (value === "Active" || value === "Approved" || value === "Closed") {
+		return "Posted";
+	}
+
+	if (value === "Pending") {
+		return "For Approval";
+	}
+
 	const statuses: DeliveryReceiptStatus[] = [
-		"Active",
-		"Approved",
 		"Cancelled",
-		"Closed",
 		"Disapproved",
 		"Draft",
-		"Pending",
+		"For Approval",
+		"Posted",
 	];
 
 	return statuses.includes(value as DeliveryReceiptStatus)
 		? (value as DeliveryReceiptStatus)
 		: "Draft";
+}
+
+function normalizeStoredDeliveryReceiptRecord(
+	record: DeliveryReceiptRecord,
+): DeliveryReceiptRecord {
+	const status = normalizeDeliveryReceiptStatus(record.status);
+
+	return {
+		...record,
+		formValues: record.formValues
+			? {
+					...record.formValues,
+					status: normalizeDeliveryReceiptStatus(record.formValues.status),
+				}
+			: record.formValues,
+		status,
+	};
 }

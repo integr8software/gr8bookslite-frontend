@@ -77,7 +77,9 @@ export function DeliveryReceiptActionPage() {
 				/>
 				<DeliveryReceiptEntrySection
 					isReadonly={isReadonly}
+					accountingRows={receiptForm.values.accountingEntries}
 					rows={receiptForm.values.lineEntries}
+					onAccountingRowsChange={receiptForm.updateAccountingEntries}
 					onRowsChange={receiptForm.updateLineEntries}
 				/>
 			</section>

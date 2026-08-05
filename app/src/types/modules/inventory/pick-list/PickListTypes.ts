@@ -1,13 +1,11 @@
 export type PickListActionMode = "add" | "edit" | "view";
 
 export type PickListStatus =
-	| "Active"
-	| "Approved"
 	| "Cancelled"
-	| "Closed"
 	| "Disapproved"
 	| "Draft"
-	| "Pending";
+	| "For Approval"
+	| "Posted";
 
 export type PickListRecord = {
 	id: string;

@@ -4,6 +4,7 @@ import {
 	getPurchaseOrderItemGrossAmount,
 } from "@/app/src/data/modules/purchasing/purchase-order/PurchaseOrderData";
 import type { PurchaseOrderItem } from "@/app/src/types/modules/purchasing/purchase-order/PurchaseOrderTypes";
+import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import {
 	MoneyNumberField,
 	parseMoneyNumberInput,
@@ -84,22 +85,21 @@ function PurchaseOrderLineCell({
 
 	if (column.kind === "select") {
 		return (
-			<select
+			<AppAdvancedDropdown
 				id={fieldId}
 				name={fieldName}
 				value={value}
-				disabled={isReadonly}
-				onChange={(event) =>
-					onUpdateEntry(row.id, { [column.id]: event.target.value })
+				readOnly={isReadonly}
+				options={(column.options ?? []).map((option) => ({
+					name: option,
+					value: option,
+				}))}
+				placeholder=""
+				className={EntryDropdownClassName}
+				onChange={(nextValue) =>
+					onUpdateEntry(row.id, { [column.id]: String(nextValue) })
 				}
-				className={entryCellControlClassName()}
-			>
-				{(column.options ?? []).map((option) => (
-					<option key={option} value={option}>
-						{option}
-					</option>
-				))}
-			</select>
+			/>
 		);
 	}
 
@@ -132,6 +132,9 @@ function PurchaseOrderLineCell({
 		/>
 	);
 }
+
+const EntryDropdownClassName =
+	"[&_.app-advanced-dropdown-control]:h-10 [&_.app-advanced-dropdown-control]:rounded-none [&_.app-advanced-dropdown-control]:border-0 [&_.app-advanced-dropdown-control]:bg-transparent [&_.app-advanced-dropdown-control]:px-3 [&_.app-advanced-dropdown-control]:shadow-none [&_.app-advanced-dropdown-control]:focus:ring-2 [&_.app-advanced-dropdown-control]:focus:ring-inset [&_.app-advanced-dropdown-control]:focus:ring-skyblue/35";
 
 function entryCellControlClassName(extraClassName?: string) {
 	return joinClasses(

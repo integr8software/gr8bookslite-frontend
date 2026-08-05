@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 
 export type PurchaseOrderFieldUpdater<TValues> = <Key extends keyof TValues>(
 	key: Key,
@@ -52,7 +53,7 @@ export function TextField({
 		<FieldShell controlId={id} label={label} isRequired={isRequired}>
 			<input
 				id={id}
-				value={value}
+				value={value ?? ""}
 				readOnly={readOnly}
 				onChange={(event) => onChange(event.target.value)}
 				className={PurchaseOrderFieldClassName}
@@ -81,7 +82,7 @@ export function DateField({
 			<input
 				id={id}
 				type="date"
-				value={value}
+				value={value ?? ""}
 				readOnly={readOnly}
 				onChange={(event) => onChange(event.target.value)}
 				className={PurchaseOrderFieldClassName}
@@ -109,19 +110,14 @@ export function SelectField({
 }) {
 	return (
 		<FieldShell controlId={id} label={label} isRequired={isRequired}>
-			<select
+			<AppAdvancedDropdown
 				id={id}
-				value={value}
-				disabled={readOnly}
-				onChange={(event) => onChange(event.target.value)}
-				className={PurchaseOrderFieldClassName}
-			>
-				{options.map((option) => (
-					<option key={option} value={option}>
-						{option}
-					</option>
-				))}
-			</select>
+				value={value ?? ""}
+				readOnly={readOnly}
+				options={options.map((option) => ({ name: option, value: option }))}
+				placeholder="--Select Option--"
+				onChange={(nextValue) => onChange(String(nextValue))}
+			/>
 		</FieldShell>
 	);
 }
@@ -144,7 +140,7 @@ export function AmountField({
 			<input
 				id={id}
 				type="number"
-				value={value}
+				value={value ?? ""}
 				readOnly={readOnly || !onChange}
 				onChange={(event) => onChange?.(Number(event.target.value))}
 				className={`${PurchaseOrderFieldClassName} text-right tabular-nums`}
@@ -201,9 +197,9 @@ export function AttachedTextField({
 		<FieldShell controlId={id} label={label} isRequired={isRequired}>
 			<div className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-0">
 				<input
-					id={id}
-					value={value}
-					readOnly={readOnly}
+				id={id}
+				value={value ?? ""}
+				readOnly={readOnly}
 					onChange={(event) => onChange(event.target.value)}
 					className={`${PurchaseOrderFieldClassName} sm:rounded-r-none`}
 				/>

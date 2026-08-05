@@ -1,13 +1,11 @@
 export type DeliveryReceiptActionMode = "add" | "edit" | "view";
 
 export type DeliveryReceiptStatus =
-	| "Active"
-	| "Approved"
 	| "Cancelled"
-	| "Closed"
 	| "Disapproved"
 	| "Draft"
-	| "Pending";
+	| "For Approval"
+	| "Posted";
 
 export type DeliveryReceiptRecord = {
 	id: string;
@@ -42,6 +40,21 @@ export type DeliveryReceiptLineEntry = {
 	stockQuantity: string;
 	responsibilityCenter: string;
 	particulars: string;
+};
+
+export type DeliveryReceiptAccountingEntry = {
+	id: string;
+	accountCode: string;
+	accountTitle: string;
+	debit: number;
+	credit: number;
+	partyCode: string;
+	partyName: string;
+	particulars: string;
+	vatType: string;
+	atcCode: string;
+	responsibilityCenter: string;
+	refNo: string;
 };
 
 export type DeliveryReceiptAttachment = {
@@ -81,5 +94,6 @@ export type DeliveryReceiptFormValues = {
 	plNo: string;
 	resCenter: string;
 	attachments: DeliveryReceiptAttachment[];
+	accountingEntries: DeliveryReceiptAccountingEntry[];
 	lineEntries: DeliveryReceiptLineEntry[];
 };

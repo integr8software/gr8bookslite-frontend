@@ -21,19 +21,19 @@ export function GoodsIssueRecordActions({
 	onUpdateStatus: (record: GoodsIssueRecord, status: GoodsIssueStatus) => void;
 	record: GoodsIssueRecord;
 }) {
-	const isApproved = record.status === "Approved";
+	const isPosted = record.status === "Posted";
 	const isDisapproved = record.status === "Disapproved";
 	const isCancelled = record.status === "Cancelled";
 	const canEdit = canEditGoodsIssueStatus(record.status);
-	const undoStatus: GoodsIssueStatus = "Active";
+	const undoStatus: GoodsIssueStatus = "Draft";
 	const cancelStatus: GoodsIssueStatus = isCancelled ? "Draft" : "Cancelled";
 	const overflowItems: ModuleActionMenuItem[] = [
 		{
-			disabled: !canApproveGoodsIssueStatus(record.status),
-			icon: isApproved ? Undo2 : CheckCircle2,
-			label: isApproved ? "Undo Approved" : "Approve",
+			disabled: !canPostGoodsIssueStatus(record.status),
+			icon: isPosted ? Undo2 : CheckCircle2,
+			label: isPosted ? "Undo Posted" : "Post",
 			onSelect: () =>
-				onUpdateStatus(record, isApproved ? undoStatus : "Approved"),
+				onUpdateStatus(record, isPosted ? undoStatus : "Posted"),
 			type: "button",
 		},
 		{
@@ -91,27 +91,25 @@ export function GoodsIssueRecordActions({
 }
 
 function canEditGoodsIssueStatus(status: GoodsIssueStatus) {
-	return status === "Active" || status === "Draft" || status === "Pending";
+	return status === "Draft" || status === "For Approval";
 }
 
-function canApproveGoodsIssueStatus(status: GoodsIssueStatus) {
+function canPostGoodsIssueStatus(status: GoodsIssueStatus) {
 	return (
-		status === "Active" ||
 		status === "Draft" ||
-		status === "Pending" ||
-		status === "Approved"
+		status === "For Approval" ||
+		status === "Posted"
 	);
 }
 
 function canDisapproveGoodsIssueStatus(status: GoodsIssueStatus) {
 	return (
-		status === "Active" ||
 		status === "Draft" ||
-		status === "Pending" ||
+		status === "For Approval" ||
 		status === "Disapproved"
 	);
 }
 
 function canCancelGoodsIssueStatus(status: GoodsIssueStatus) {
-	return status !== "Closed";
+	return status !== "Posted";
 }

@@ -57,9 +57,11 @@ function PurchaseRequestActionPageInner() {
           onUpdateField={page.updateField}
         />
         <PurchaseRequestEntrySection
+          accountingRows={page.values.accountingEntries}
           error={page.errors.items}
           isReadonly={page.isReadonly}
           rows={page.values.items}
+          onAccountingRowsChange={page.updateAccountingEntries}
           onRowsChange={page.updateItems}
         />
       </div>

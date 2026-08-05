@@ -4,21 +4,19 @@ export const ServiceInvoiceHref = getModuleRoute("SVI");
 
 export const ServiceInvoiceStatusFilterOptions = [
 	{ label: "All statuses", value: "all" },
-	{ label: "Active", value: "Active" },
-	{ label: "Pending", value: "Pending" },
-	{ label: "Approved", value: "Approved" },
+	{ label: "Draft", value: "Draft" },
+	{ label: "For Approval", value: "For Approval" },
+	{ label: "Posted", value: "Posted" },
 	{ label: "Disapproved", value: "Disapproved" },
-	{ label: "Closed", value: "Closed" },
 	{ label: "Cancelled", value: "Cancelled" },
 ] as const;
 
 export const ServiceInvoiceStatusFilters = [
 	"all",
-	"Active",
-	"Pending",
-	"Approved",
+	"Draft",
+	"For Approval",
+	"Posted",
 	"Disapproved",
-	"Closed",
 	"Cancelled",
 ] as const;
 

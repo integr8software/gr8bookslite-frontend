@@ -21,21 +21,21 @@ export function ServiceInvoiceRecordActions({
   onUpdateStatus: (record: ServiceInvoiceRecord, status: ServiceInvoiceStatus) => void;
   record: ServiceInvoiceRecord;
 }) {
-  const isApproved = record.status === "Approved";
+  const isPosted = record.status === "Posted";
   const isDisapproved = record.status === "Disapproved";
   const isCancelled = record.status === "Cancelled";
   const canEdit = canEditServiceInvoiceStatus(record.status);
-  const approveLabel = isApproved ? "Undo Approved" : "Approve";
+  const postLabel = isPosted ? "Undo Posted" : "Post";
   const disapproveLabel = isDisapproved ? "Undo Disapproved" : "Disapprove";
   const cancelLabel = isCancelled ? "Uncancelled" : "Cancel";
-  const undoStatus: ServiceInvoiceStatus = "Active";
+  const undoStatus: ServiceInvoiceStatus = "Draft";
   const cancelStatus: ServiceInvoiceStatus = isCancelled ? "Draft" : "Cancelled";
   const overflowItems: ModuleActionMenuItem[] = [
     {
-      disabled: !canApproveServiceInvoiceStatus(record.status),
-      icon: isApproved ? Undo2 : CheckCircle2,
-      label: approveLabel,
-      onSelect: () => onUpdateStatus(record, isApproved ? undoStatus : "Approved"),
+      disabled: !canPostServiceInvoiceStatus(record.status),
+      icon: isPosted ? Undo2 : CheckCircle2,
+      label: postLabel,
+      onSelect: () => onUpdateStatus(record, isPosted ? undoStatus : "Posted"),
       type: "button",
     },
     {
@@ -92,19 +92,17 @@ export function ServiceInvoiceRecordActions({
 }
 
 function canEditServiceInvoiceStatus(status: ServiceInvoiceStatus) {
-  return status === "Active" || status === "Draft" || status === "Pending";
+  return status === "Draft" || status === "For Approval";
 }
 
-function canApproveServiceInvoiceStatus(status: ServiceInvoiceStatus) {
-  return status === "Active" || status === "Draft" || status === "Pending" || status === "Approved";
+function canPostServiceInvoiceStatus(status: ServiceInvoiceStatus) {
+  return status === "Draft" || status === "For Approval" || status === "Posted";
 }
 
 function canDisapproveServiceInvoiceStatus(status: ServiceInvoiceStatus) {
-  return (
-    status === "Active" || status === "Draft" || status === "Pending" || status === "Disapproved"
-  );
+  return status === "Draft" || status === "For Approval" || status === "Disapproved";
 }
 
 function canCancelServiceInvoiceStatus(status: ServiceInvoiceStatus) {
-  return status !== "Closed";
+  return status !== "Posted";
 }

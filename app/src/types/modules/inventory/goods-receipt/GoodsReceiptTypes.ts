@@ -1,7 +1,7 @@
 export type GoodsReceiptActionMode = "add" | "edit" | "view";
 
 export type GoodsReceiptStatus =
-  "Active" | "Approved" | "Cancelled" | "Closed" | "Disapproved" | "Draft" | "Pending";
+  "Cancelled" | "Disapproved" | "Draft" | "For Approval" | "Posted";
 
 export type GoodsReceiptRecord = {
   id: string;
@@ -48,12 +48,29 @@ export type GoodsReceiptLineEntry = {
   responsibilityCenter: string;
 };
 
+export type GoodsReceiptAccountingEntry = {
+  id: string;
+  accountCode: string;
+  accountTitle: string;
+  debit: number;
+  credit: number;
+  partyCode: string;
+  partyName: string;
+  particulars: string;
+  vatType: string;
+  atcCode: string;
+  responsibilityCenter: string;
+  refNo: string;
+};
+
 export type GoodsReceiptFormValues = {
   transactionType: string;
   sourceWarehouse: string;
   receivingWarehouse: string;
   vceCode: string;
   vceName: string;
+  currency: string;
+  exchangeRate: string;
   remarks: string;
   transactionNo: string;
   documentDate: string;
@@ -63,6 +80,7 @@ export type GoodsReceiptFormValues = {
   siRef: string;
   projectRef: string;
   projectName: string;
+  accountingEntries: GoodsReceiptAccountingEntry[];
   lineEntries: GoodsReceiptLineEntry[];
 };
 

@@ -24,21 +24,21 @@ export function GoodsReceiptRecordActions({
 	) => void;
 	record: GoodsReceiptRecord;
 }) {
-	const isApproved = record.status === "Approved";
+	const isPosted = record.status === "Posted";
 	const isDisapproved = record.status === "Disapproved";
 	const isCancelled = record.status === "Cancelled";
 	const canEdit = canEditGoodsReceiptStatus(record.status);
-	const undoStatus: GoodsReceiptStatus = "Active";
+	const undoStatus: GoodsReceiptStatus = "Draft";
 	const cancelStatus: GoodsReceiptStatus = isCancelled
 		? "Draft"
 		: "Cancelled";
 	const overflowItems: ModuleActionMenuItem[] = [
 		{
-			disabled: !canApproveGoodsReceiptStatus(record.status),
-			icon: isApproved ? Undo2 : CheckCircle2,
-			label: isApproved ? "Undo Approved" : "Approve",
+			disabled: !canPostGoodsReceiptStatus(record.status),
+			icon: isPosted ? Undo2 : CheckCircle2,
+			label: isPosted ? "Undo Posted" : "Post",
 			onSelect: () =>
-				onUpdateStatus(record, isApproved ? undoStatus : "Approved"),
+				onUpdateStatus(record, isPosted ? undoStatus : "Posted"),
 			type: "button",
 		},
 		{
@@ -99,27 +99,25 @@ export function GoodsReceiptRecordActions({
 }
 
 function canEditGoodsReceiptStatus(status: GoodsReceiptStatus) {
-	return status === "Active" || status === "Draft" || status === "Pending";
+	return status === "Draft" || status === "For Approval";
 }
 
-function canApproveGoodsReceiptStatus(status: GoodsReceiptStatus) {
+function canPostGoodsReceiptStatus(status: GoodsReceiptStatus) {
 	return (
-		status === "Active" ||
 		status === "Draft" ||
-		status === "Pending" ||
-		status === "Approved"
+		status === "For Approval" ||
+		status === "Posted"
 	);
 }
 
 function canDisapproveGoodsReceiptStatus(status: GoodsReceiptStatus) {
 	return (
-		status === "Active" ||
 		status === "Draft" ||
-		status === "Pending" ||
+		status === "For Approval" ||
 		status === "Disapproved"
 	);
 }
 
 function canCancelGoodsReceiptStatus(status: GoodsReceiptStatus) {
-	return status !== "Closed";
+	return status !== "Posted";
 }

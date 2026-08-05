@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 
 export const PurchaseRequestFieldClassName =
 	"h-11 w-full min-w-0 rounded-lg border border-darknavy/10 bg-white px-3 text-sm text-darknavy outline-none transition focus:border-skyblue/45 focus:ring-4 focus:ring-skyblue/15 disabled:bg-offwhite/65 disabled:text-darknavy/65";
@@ -88,7 +89,7 @@ export function PurchaseRequestTextField({
 		>
 			<input
 				id={id}
-				value={value}
+				value={value ?? ""}
 				readOnly={readOnly}
 				onChange={(event) => onChange(event.target.value)}
 				className={PurchaseRequestFieldClassName}
@@ -121,7 +122,7 @@ export function PurchaseRequestDateField({
 			<input
 				id={id}
 				type="date"
-				value={value}
+				value={value ?? ""}
 				readOnly={readOnly}
 				onChange={(event) => onChange(event.target.value)}
 				className={PurchaseRequestFieldClassName}
@@ -153,19 +154,14 @@ export function PurchaseRequestSelectField({
 			label={label}
 			isRequired={isRequired}
 		>
-			<select
+			<AppAdvancedDropdown
 				id={id}
-				value={value}
-				disabled={readOnly}
-				onChange={(event) => onChange(event.target.value)}
-				className={PurchaseRequestFieldClassName}
-			>
-				{options.map((option) => (
-					<option key={option} value={option}>
-						{option}
-					</option>
-				))}
-			</select>
+				value={value ?? ""}
+				readOnly={readOnly}
+				options={options.map((option) => ({ name: option, value: option }))}
+				placeholder="--Select Option--"
+				onChange={(nextValue) => onChange(String(nextValue))}
+			/>
 		</PurchaseRequestFieldShell>
 	);
 }
@@ -196,7 +192,7 @@ export function PurchaseRequestAttachedTextField({
 			<div className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-0">
 				<input
 					id={id}
-					value={value}
+					value={value ?? ""}
 					readOnly={readOnly}
 					onChange={(event) => onChange(event.target.value)}
 					className={`${PurchaseRequestFieldClassName} sm:rounded-r-none`}

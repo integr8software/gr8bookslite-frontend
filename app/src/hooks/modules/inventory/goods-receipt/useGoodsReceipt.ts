@@ -24,6 +24,7 @@ import {
 import { GoodsReceiptStatusFilters } from "@/app/src/constants/modules/inventory/goods-receipt/GoodsReceiptConstants";
 import type {
   GoodsReceiptActionMode,
+  GoodsReceiptAccountingEntry,
   GoodsReceiptFormValues,
   GoodsReceiptLineEntry,
   GoodsReceiptRecord,
@@ -101,6 +102,10 @@ export function useGoodsReceiptActionForm(
     setValues((current) => ({ ...current, lineEntries }));
   }
 
+  function updateAccountingEntries(accountingEntries: GoodsReceiptAccountingEntry[]) {
+    setValues((current) => ({ ...current, accountingEntries }));
+  }
+
   function copyFromSourceRecords(recordIds: string[]) {
     const selectedRecords = GoodsReceiptCopyRecords.filter((record) =>
       recordIds.includes(record.id),
@@ -176,6 +181,7 @@ export function useGoodsReceiptActionForm(
     isRecordMissing: mode !== "add" && !initialRecord,
     submitReceipt,
     updateField,
+    updateAccountingEntries,
     updateLineEntries,
     values,
   };

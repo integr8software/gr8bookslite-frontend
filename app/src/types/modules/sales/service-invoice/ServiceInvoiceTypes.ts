@@ -54,6 +54,7 @@ export type ServiceInvoiceAccountingEntry = {
 };
 
 export type ServiceInvoiceFormValues = {
+	billToName: string;
 	code: string;
 	name: string;
 	currency: string;

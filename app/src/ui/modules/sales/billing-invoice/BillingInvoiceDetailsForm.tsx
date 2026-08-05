@@ -71,6 +71,13 @@ export function BillingInvoiceDetailsForm({
 						onChange={(value) => onUpdateField("contactNo", value)}
 					/>
 					<TextField
+						id="billing-invoice-project-code"
+						label="Project Code"
+						value={values.projectRef}
+						readOnly={isReadonly}
+						onChange={(value) => onUpdateField("projectRef", value)}
+					/>
+					<TextField
 						id="billing-invoice-project-name"
 						label="Project Name"
 						value={values.projectName}
@@ -105,7 +112,7 @@ export function BillingInvoiceDetailsForm({
 						readOnly={isReadonly}
 						onChange={(value) => onUpdateField("billToCode", value)}
 					/>
-					<FieldShell controlId="billing-invoice-terms" label="Terms of Pyt">
+					<FieldShell controlId="billing-invoice-terms" label="Terms of Payment">
 						<SelectField
 							value={values.terms}
 							readOnly={isReadonly}
@@ -164,18 +171,11 @@ export function BillingInvoiceDetailsForm({
 						onChange={(value) => onUpdateField("documentDate", value)}
 					/>
 					<TextField
-						id="billing-invoice-dr-no"
-						label="DR No."
-						value={values.drNo}
-						readOnly={isReadonly}
-						onChange={(value) => onUpdateField("drNo", value)}
-					/>
-					<TextField
-						id="billing-invoice-sales-personnel"
-						label="Sales Personnel"
-						value={values.salesAssociate}
-						readOnly={isReadonly}
-						onChange={(value) => onUpdateField("salesAssociate", value)}
+						id="billing-invoice-status"
+						label="Status"
+						value={values.status}
+						readOnly
+						onChange={() => undefined}
 					/>
 				</div>
 			</div>

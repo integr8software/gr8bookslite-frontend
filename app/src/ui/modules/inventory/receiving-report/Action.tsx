@@ -718,14 +718,13 @@ function ReceivingReportVendorSection({
             disabled={isReadonly}
             onChange={onChange}
           />
-          <SelectField
+          <TextField
             label="Status"
             name="status"
             value={values.status}
             disabled
             required
             error={errors.status}
-            options={StatusOptions}
             onChange={onChange}
           />
         </div>
@@ -1077,7 +1076,7 @@ function ReceivingReportAccountingEntries({
     () =>
       columns.map((column) => ({
         id: column.id,
-        isHideable: !DefaultVisibleReceivingReportAccountingColumns.has(column.id),
+        isHideable: !ProtectedReceivingReportAccountingColumns.has(column.id),
         isVisible: visibleColumnIds.has(column.id),
         label: column.header,
         width: column.width,
@@ -1088,7 +1087,7 @@ function ReceivingReportAccountingEntries({
 
   function toggleColumnVisibility(columnId: string, isVisible: boolean) {
     setVisibleColumnIds((current) => {
-      if (!isVisible && DefaultVisibleReceivingReportAccountingColumns.has(columnId)) {
+      if (!isVisible && ProtectedReceivingReportAccountingColumns.has(columnId)) {
         return current;
       }
 
@@ -1756,7 +1755,6 @@ const ReceivingReportEntryTabsList = [
 
 const CurrencyOptions = ["PHP", "USD", "EUR", "JPY"] as const;
 const WarehouseOptions = ["Laguna", "Manila", "Cebu", "Davao"] as const;
-const StatusOptions = ["Draft", "Open", "Approved", "Closed", "Cancelled"] as const;
 const TermsOfPaymentOptions = ["", "COD", "Net 15", "Net 30", "Net 45", "Net 60"] as const;
 const UomOptions = ["", "PCS", "BOX", "KG", "LTR"] as const;
 const ResponsibilityCenterOptions = ["", "Warehouse", "Purchasing", "Operations"] as const;
@@ -1775,6 +1773,11 @@ const DefaultVisibleReceivingReportAccountingColumns = new Set<string>([
   "debit",
   "credit",
   "particulars",
+]);
+const ProtectedReceivingReportAccountingColumns = new Set<string>([
+  "accountTitle",
+  "debit",
+  "credit",
 ]);
 
 const RequiredReceivingReportFields = [

@@ -51,6 +51,15 @@ export function ServiceInvoiceCustomerFields({
             className={FieldClassName}
           />
         </FieldShell>
+        <FieldShell controlId="service-invoice-bill-to-name" label="Bill to Name">
+          <input
+            id="service-invoice-bill-to-name"
+            value={values.billToName}
+            readOnly={isReadonly}
+            onChange={(event) => onUpdateField("billToName", event.target.value)}
+            className={FieldClassName}
+          />
+        </FieldShell>
         <FieldShell controlId="service-invoice-contact-person" label="Contact Person">
           <input
             id="service-invoice-contact-person"

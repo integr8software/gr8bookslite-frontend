@@ -86,7 +86,7 @@ function InventoryCountUploadHistoryTable({
 						<col className="w-[14%]" />
 					</colgroup>
 					<thead>
-						<tr className="bg-[#f59e0b] text-white">
+						<tr className="theme-accent-contrast-text bg-skyblue">
 							<TableHeaderCell>Inventory Count No.</TableHeaderCell>
 							<TableHeaderCell>Uploaded At</TableHeaderCell>
 							<TableHeaderCell>Uploader</TableHeaderCell>
@@ -106,7 +106,7 @@ function InventoryCountUploadHistoryTable({
 									{row.rowCount}
 								</TableCell>
 								<TableCell>
-									<span className="rounded-full bg-[#f59e0b]/12 px-2 py-0.5 text-[11px] font-semibold text-[#b45309]">
+									<span className="rounded-full bg-skyblue/12 px-2 py-0.5 text-[11px] font-semibold text-skyblue">
 										{row.status}
 									</span>
 								</TableCell>

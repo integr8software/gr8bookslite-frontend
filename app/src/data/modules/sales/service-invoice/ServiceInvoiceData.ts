@@ -142,6 +142,7 @@ export function createServiceInvoiceFormValues(): ServiceInvoiceFormValues {
 	const lineEntries = [createBlankServiceInvoiceLineEntry()];
 
 	const values = {
+		billToName: "",
 		code: "",
 		name: "",
 		currency: "PHP",
@@ -193,7 +194,9 @@ export function createServiceInvoiceFormValuesFromRecord(
 ): ServiceInvoiceFormValues {
 	if (record.formValues) {
 		const formValues = {
+			...createServiceInvoiceFormValues(),
 			...record.formValues,
+			billToName: record.formValues.billToName ?? record.formValues.name,
 			lineEntries: record.formValues.lineEntries.map((entry) => ({ ...entry })),
 		};
 
@@ -207,6 +210,7 @@ export function createServiceInvoiceFormValuesFromRecord(
 
 	const values = {
 		...createServiceInvoiceFormValues(),
+		billToName: record.customerName,
 		code: record.customerCode,
 		name: record.customerName,
 		documentDate: record.documentDate,

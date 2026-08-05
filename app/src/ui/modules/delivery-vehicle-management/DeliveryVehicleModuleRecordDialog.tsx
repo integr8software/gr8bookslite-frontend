@@ -47,7 +47,7 @@ export function DeliveryVehicleModuleRecordDialog({
     Object.fromEntries(
       config.fields.map((field) => [
         field.key,
-        record?.fields[field.key] ?? field.defaultValue ?? "",
+        createInitialFieldValue(config.key, field, record),
       ]),
     ),
   );
@@ -63,6 +63,8 @@ export function DeliveryVehicleModuleRecordDialog({
   const activeFieldKeys =
     config.fieldTabs?.find((tab) => tab.label === activeTab)?.fieldKeys ??
     config.fields.map((field) => field.key);
+  const activeTabDescription = config.fieldTabs?.find((tab) => tab.label === activeTab)
+    ?.description;
   const visibleFields = config.fields.filter((field) => activeFieldKeys.includes(field.key));
   const fieldByKey = new Map(visibleFields.map((field) => [field.key, field]));
   const title =
@@ -106,10 +108,11 @@ export function DeliveryVehicleModuleRecordDialog({
     <ModuleDrawer
       description={
         isView
-          ? "Review the persisted profile and operational references."
-          : "Keep fleet identity, capacity, compliance, and status together."
+          ? `Review the saved ${config.noun} details and operational references.`
+          : (config.formDescription ??
+            "Enter the required details, then set the current workflow status.")
       }
-      eyebrow={`${config.code} - Fleet workspace`}
+      eyebrow={config.title}
       formId={formId}
       isOpen
       isReadonly={isView}
@@ -122,21 +125,26 @@ export function DeliveryVehicleModuleRecordDialog({
     >
       <form id={formId} onSubmit={submit} className="grid gap-6 p-6">
         {config.fieldTabs ? (
-          <div className="flex flex-wrap gap-2 border-b border-darknavy/10 pb-4">
-            {config.fieldTabs.map((tab) => (
-              <button
-                key={tab.label}
-                type="button"
-                onClick={() => setActiveTab(tab.label)}
-                className={`rounded-md border px-3 py-2 text-sm font-semibold transition ${
-                  activeTab === tab.label
-                    ? "border-skyblue bg-skyblue/10 text-skyblue"
-                    : "border-darknavy/10 bg-white text-darknavy/65 hover:bg-darknavy/5"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+          <div className="grid gap-3 border-b border-darknavy/10 pb-4">
+            <div className="flex flex-wrap gap-2">
+              {config.fieldTabs.map((tab) => (
+                <button
+                  key={tab.label}
+                  type="button"
+                  onClick={() => setActiveTab(tab.label)}
+                  className={`rounded-md border px-3 py-2 text-sm font-semibold transition ${
+                    activeTab === tab.label
+                      ? "border-skyblue bg-skyblue/10 text-skyblue"
+                      : "border-darknavy/10 bg-white text-darknavy/65 hover:bg-darknavy/5"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+            {activeTabDescription ? (
+              <p className="text-sm leading-6 text-darknavy/60">{activeTabDescription}</p>
+            ) : null}
           </div>
         ) : null}
         <div className="grid gap-4">
@@ -161,6 +169,17 @@ export function DeliveryVehicleModuleRecordDialog({
                 setValues((current) => ({ ...current, [fieldKey]: value }))
               }
             />
+          ) : config.key === "vehicle-repair-maintenance" ? (
+            <VehicleRepairMaintenanceFieldRows
+              errors={errors}
+              fieldByKey={fieldByKey}
+              isView={isView}
+              statusField={statusField}
+              values={values}
+              onChange={(fieldKey, value) =>
+                setValues((current) => ({ ...current, [fieldKey]: value }))
+              }
+            />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               {visibleFields.map((field) => (
@@ -175,10 +194,91 @@ export function DeliveryVehicleModuleRecordDialog({
               ))}
             </div>
           )}
-          {config.key === "delivery-vehicles" ? null : statusField}
+          {config.key === "delivery-vehicles" ||
+          config.key === "vehicle-repair-maintenance"
+            ? null
+            : statusField}
         </div>
       </form>
     </ModuleDrawer>
+  );
+}
+
+function VehicleRepairMaintenanceFieldRows({
+  errors,
+  fieldByKey,
+  isView,
+  statusField,
+  values,
+  onChange,
+}: {
+  errors: Record<string, string>;
+  fieldByKey: Map<string, DeliveryVehicleField>;
+  isView: boolean;
+  statusField: React.ReactNode;
+  values: Record<string, string>;
+  onChange: (fieldKey: string, value: string) => void;
+}) {
+  return (
+    <>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <DeliveryVehicleModuleField
+          error={errors.workOrderNo}
+          field={fieldByKey.get("workOrderNo") as DeliveryVehicleField}
+          isView={isView}
+          value={values.workOrderNo ?? ""}
+          onChange={(value) => onChange("workOrderNo", value)}
+        />
+        <DeliveryVehicleModuleField
+          error={errors.workOrderDate}
+          field={fieldByKey.get("workOrderDate") as DeliveryVehicleField}
+          isView={isView}
+          value={values.workOrderDate ?? ""}
+          onChange={(value) => onChange("workOrderDate", value)}
+        />
+      </div>
+      <VehicleTypeFieldRow
+        errors={errors}
+        fieldByKey={fieldByKey}
+        fieldKeys={["vehicle"]}
+        isView={isView}
+        values={values}
+        onChange={onChange}
+      />
+      <VehicleTypeFieldRow
+        errors={errors}
+        fieldByKey={fieldByKey}
+        fieldKeys={["maintenanceType", "priority"]}
+        isView={isView}
+        values={values}
+        onChange={onChange}
+      />
+      <VehicleTypeFieldRow
+        errors={errors}
+        fieldByKey={fieldByKey}
+        fieldKeys={["serviceProvider"]}
+        isView={isView}
+        values={values}
+        onChange={onChange}
+      />
+      <VehicleTypeFieldRow
+        errors={errors}
+        fieldByKey={fieldByKey}
+        fieldKeys={["description"]}
+        isView={isView}
+        values={values}
+        onChange={onChange}
+      />
+      <VehicleTypeFieldRow
+        errors={errors}
+        fieldByKey={fieldByKey}
+        fieldKeys={["estimatedCost", "schedule"]}
+        isView={isView}
+        values={values}
+        onChange={onChange}
+      />
+      <div className="grid gap-4 sm:grid-cols-2">{statusField}</div>
+    </>
   );
 }
 
@@ -314,6 +414,7 @@ function DeliveryVehicleModuleField({
         .filter(Boolean)
         .join(" ")}
       error={error}
+      helper={field.helper}
       label={field.label}
       required={field.required}
       tooltip={field.tooltip}
@@ -322,7 +423,7 @@ function DeliveryVehicleModuleField({
         <AppLimitedTextarea
           {...common}
           maxLength={field.maxLength}
-          placeholder={isView ? `No ${field.label}...` : `Enter ${field.label}...`}
+          placeholder={isView ? `No ${field.label}...` : (field.placeholder ?? `Enter ${field.label}...`)}
           className={`${controlClassName(error)} min-h-24 resize-y py-3 ${
             isView ? "placeholder:italic" : ""
           }`}
@@ -337,7 +438,7 @@ function DeliveryVehicleModuleField({
           ariaInvalid={Boolean(error)}
           isClearable={!field.required}
           options={createDeliveryVehicleDropdownOptions(field.options)}
-          placeholder={`--Select ${field.label}--`}
+          placeholder={field.placeholder ?? `Select ${field.label}`}
           searchPlaceholder={`Search ${field.label.toLowerCase()}`}
           onChange={(nextValue) => onChange(String(nextValue))}
         />
@@ -354,6 +455,7 @@ function DeliveryVehicleModuleField({
                   : "text"
           }
           className={controlClassName(error)}
+          placeholder={field.placeholder}
         />
       )}
     </FormField>
@@ -373,6 +475,7 @@ function FormField({
   children,
   className,
   error,
+  helper,
   label,
   required,
   tooltip,
@@ -380,6 +483,7 @@ function FormField({
   children: React.ReactNode;
   className?: string;
   error?: string;
+  helper?: string;
   label: string;
   required?: boolean;
   tooltip?: string;
@@ -404,9 +508,55 @@ function FormField({
       {children}
       {error ? (
         <span className="mt-1 block text-xs font-medium text-coralpink">{error}</span>
+      ) : helper ? (
+        <span className="mt-1 block text-xs font-medium leading-5 text-darknavy/50">
+          {helper}
+        </span>
       ) : null}
     </label>
   );
+}
+
+function createInitialFieldValue(
+  configKey: string,
+  field: DeliveryVehicleField,
+  record?: DeliveryVehicleModuleRecord,
+) {
+  const recordValue = record?.fields[field.key];
+
+  if (recordValue !== undefined) {
+    return recordValue;
+  }
+
+  if (configKey === "vehicle-repair-maintenance") {
+    if (field.key === "workOrderNo") {
+      return record?.code ?? createSuggestedWorkOrderNumber();
+    }
+
+    if (field.key === "workOrderDate") {
+      return record?.createdAt ? formatDateInput(new Date(record.createdAt)) : formatDateInput(new Date());
+    }
+
+  }
+
+  return field.defaultValue ?? "";
+}
+
+function createSuggestedWorkOrderNumber() {
+  const now = new Date();
+  const year = String(now.getFullYear()).slice(-2);
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const sequence = String(Date.now()).slice(-4);
+
+  return `WO-${year}${month}-${sequence}`;
+}
+
+function formatDateInput(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
 }
 
 function renderStatusField({

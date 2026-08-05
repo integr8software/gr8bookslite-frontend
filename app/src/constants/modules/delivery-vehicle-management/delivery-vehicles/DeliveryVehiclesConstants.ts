@@ -7,7 +7,6 @@ export const DeliveryVehiclesTablePaginationStorageKey =
 
 export const DeliveryVehiclesConfig: DeliveryVehicleModuleConfig = {
   key: "delivery-vehicles",
-  code: "DVE",
   title: "Delivery Vehicles",
   description: "Manage fleet identity, compliance, assignment, and home-base information.",
   primaryAction: "Add Vehicle",

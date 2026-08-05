@@ -2,7 +2,7 @@
 
 Use this checklist before finishing frontend module work and frontend-side integration work. The internal PR quality report is stricter than ESLint and flags broad patterns that may indicate misplaced code, repeated business literals, mixed responsibilities, API calls in the wrong layer, or missing async UI states.
 
-Use the project Prettier configuration when reviewing formatting. The expected `printWidth` is `140`, so short prop lists, object entries, options, and simple arrays can stay on one readable line when Prettier keeps them there. Do not split code only to make files look taller, and do not target 500 lines per page or per component. Prefer smaller files because responsibilities are cleanly separated, not because a line-count quota was reached.
+Use the project Prettier configuration when reviewing formatting. The expected `printWidth` is `140`, so short prop lists, object entries, options, and simple arrays can stay on one readable line when Prettier keeps them there. Do not split code only to make files look taller, and do not target 1000 lines per page or per component. Prefer smaller files because responsibilities are cleanly separated, not because a line-count quota was reached.
 
 Keep module references generic, but make each code issue specific:
 
@@ -107,7 +107,7 @@ How to qualify:
 - Move validation rules to validations files.
 - Keep reusable UI primitives in `app/src/ui/shared/...`.
 - Use PascalCase filenames for React components.
-- Split large components into smaller UI components, feature hooks, data adapters, and utilities when responsibilities are mixed or the file is hard to scan. Do not wait for a component to reach 500 lines before refactoring.
+- Split large components into smaller UI components, feature hooks, data adapters, and utilities when responsibilities are mixed or the file is hard to scan. Do not wait for a component to reach 1000 lines before refactoring.
 - Keep formatting aligned with Prettier using `"printWidth": 140`; do not manually force every JSX prop, object field, or array item onto separate lines when a one-line form remains readable.
 
 Specific error examples:
@@ -118,7 +118,7 @@ Specific error examples:
   Fix: rename it to `ExampleList.tsx`.
 - Error: `The component contains 1042 lines, exceeding the blocking limit of 1000 lines.`
   Fix: split rendering sections, form orchestration, mappers, and constants into their proper feature files.
-- Error: `The component was kept near 500 lines by squeezing unrelated hook logic, static data, and rendering into one file.`
+- Error: `The component was kept near 1000 lines by squeezing unrelated hook logic, static data, and rendering into one file.`
   Fix: move state orchestration to `app/src/hooks/modules/<domain>/<feature>/use...ts`, static records or mappers to data, and reusable types to types; then run Prettier.
 
 ### Fetching Layer Or Request State Is Incomplete
@@ -410,7 +410,7 @@ Before finishing a module change:
 5. Keep shared React controls reusable under `app/src/ui/shared/...`.
 6. Keep API functions in services and server-state orchestration in hooks.
 7. Name hook functions and hook files with the `use...` pattern, and keep their internal structure readable.
-8. Refactor files by responsibility before they become hard to scan; do not use 500 lines as a target size.
+8. Refactor files by responsibility before they become hard to scan; do not use 1000 lines as a target size.
 9. Run Prettier with the project configuration (`"printWidth": 140`) so readable one-line code stays compact.
 10. Reuse existing helpers in `app/src/utils` before creating module-local normalization, formatting, parsing, or comparison functions.
 11. Render loading, error, empty, permission-denied, and mutation-pending states when a feature reads or writes server data.

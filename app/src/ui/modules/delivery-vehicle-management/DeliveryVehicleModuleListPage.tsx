@@ -33,7 +33,8 @@ export function DeliveryVehicleModuleListPage({
   const hasActiveFilters =
     page.query.trim().length > 0 ||
     page.statusFilter !== defaultStatusFilter ||
-    page.vehicleTypeFilter.length > 0;
+    page.vehicleTypeFilter.length > 0 ||
+    page.workTypeFilter.length > 0;
   const isPendingRecordActive = page.pendingStatusRecord?.status === ActiveStatus;
 
   function openRecord(mode: "edit" | "view", record: DeliveryVehicleModuleRecord) {

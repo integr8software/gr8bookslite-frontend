@@ -24,10 +24,13 @@ type DeliveryVehicleModuleTableFiltersProps = {
   table: Table<DeliveryVehicleModuleRecord>;
   vehicleTypeFilter: string;
   vehicleTypeFilterOptions: readonly string[];
+  workTypeFilter: string;
+  workTypeFilterOptions: readonly string[];
   onQueryChange: (value: string) => void;
   onRefresh: () => void;
   onStatusFilterChange: (value: string) => void;
   onVehicleTypeFilterChange: (value: string) => void;
+  onWorkTypeFilterChange: (value: string) => void;
 };
 
 export function DeliveryVehicleModuleTableFilters({
@@ -41,13 +44,18 @@ export function DeliveryVehicleModuleTableFilters({
   table,
   vehicleTypeFilter,
   vehicleTypeFilterOptions,
+  workTypeFilter,
+  workTypeFilterOptions,
   onQueryChange,
   onRefresh,
   onStatusFilterChange,
   onVehicleTypeFilterChange,
+  onWorkTypeFilterChange,
 }: DeliveryVehicleModuleTableFiltersProps) {
   const showVehicleTypeFilter =
     config.key === "delivery-vehicles" && vehicleTypeFilterOptions.length > 0;
+  const showWorkTypeFilter =
+    config.key === "vehicle-repair-maintenance" && workTypeFilterOptions.length > 0;
 
   return (
     <ModuleTableToolbar className="!grid-cols-1 !gap-2 rounded-none border-x-0 border-t-0 !p-3 shadow-none sm:!gap-2 sm:!p-3 md:!grid-cols-[minmax(0,1fr)_auto]">
@@ -55,6 +63,8 @@ export function DeliveryVehicleModuleTableFilters({
         className={
           showVehicleTypeFilter
             ? "grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(13rem,1.4fr)_minmax(8rem,0.7fr)_minmax(10rem,0.8fr)]"
+            : showWorkTypeFilter
+              ? "grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(13rem,1.4fr)_minmax(10rem,0.8fr)_minmax(8rem,0.7fr)]"
             : "grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(13rem,1.4fr)_minmax(8rem,0.7fr)]"
         }
       >
@@ -74,6 +84,20 @@ export function DeliveryVehicleModuleTableFilters({
               ...vehicleTypeFilterOptions.map((vehicleType) => ({
                 label: vehicleType,
                 value: vehicleType,
+              })),
+            ]}
+          />
+        ) : null}
+        {showWorkTypeFilter ? (
+          <ModuleTableFilterSelect
+            label="Work Type"
+            value={workTypeFilter}
+            onChange={onWorkTypeFilterChange}
+            options={[
+              { label: "All", value: "" },
+              ...workTypeFilterOptions.map((workType) => ({
+                label: workType,
+                value: workType,
               })),
             ]}
           />
@@ -113,6 +137,27 @@ export function DeliveryVehicleModuleTableFilters({
 function createDeliveryVehicleExportColumns(
   config: DeliveryVehicleModuleConfig,
 ): ModuleTableExportColumn<DeliveryVehicleModuleRecord>[] {
+  if (config.key === "vehicle-repair-maintenance") {
+    return [
+      ...config.tableFieldKeys.map<ModuleTableExportColumn<DeliveryVehicleModuleRecord>>(
+        (fieldKey) => {
+          const field = config.fields.find((item) => item.key === fieldKey);
+
+          return {
+            header: field?.label ?? fieldKey,
+            id: fieldKey,
+            value: (record) => {
+              const value = record.fields[fieldKey] ?? "";
+
+              return value && field?.unitSuffix ? `${value} ${field.unitSuffix}` : value;
+            },
+          };
+        },
+      ),
+      { header: "Status", id: "status", value: "status" },
+    ];
+  }
+
   return [
     ...(config.hideReferenceColumn
       ? []

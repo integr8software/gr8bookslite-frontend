@@ -30,7 +30,7 @@ export function DeliveryVehicleModuleHeader({
       eyebrow={
         <>
           <Icon className="h-3.5 w-3.5" aria-hidden="true" />
-          {config.code} - Delivery Vehicle Management
+          {config.title}
         </>
       }
       title={config.title}

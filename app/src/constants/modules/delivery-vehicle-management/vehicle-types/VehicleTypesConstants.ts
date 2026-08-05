@@ -6,7 +6,6 @@ export const VehicleTypesTablePaginationStorageKey = "delivery-vehicle-managemen
 
 export const VehicleTypesConfig: DeliveryVehicleModuleConfig = {
   key: "vehicle-types",
-  code: "DVT",
   title: "Vehicle Types",
   description: "Define reusable fleet classes, capacity limits, and handling capabilities.",
   primaryAction: "Add Vehicle Type",

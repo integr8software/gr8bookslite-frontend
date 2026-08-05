@@ -60,10 +60,13 @@ export function DeliveryVehicleModuleTable({
             table={page.table}
             vehicleTypeFilter={page.vehicleTypeFilter}
             vehicleTypeFilterOptions={page.vehicleTypeFilterOptions}
+            workTypeFilter={page.workTypeFilter}
+            workTypeFilterOptions={page.workTypeFilterOptions}
             onQueryChange={page.setQuery}
             onRefresh={page.refreshRecords}
             onStatusFilterChange={page.setStatusFilter}
             onVehicleTypeFilterChange={page.setVehicleTypeFilter}
+            onWorkTypeFilterChange={page.setWorkTypeFilter}
           />
         }
         renderRow={(row) => (

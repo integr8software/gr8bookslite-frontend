@@ -243,7 +243,7 @@ export function ServiceInvoiceCustomerFields({
           <AppAdvancedDropdown
             id="service-invoice-status"
             value={values.status}
-            readOnly={isReadonly}
+            readOnly
             options={ServiceInvoiceStatusOptions}
             placeholder="Select status"
             searchPlaceholder="Search status"

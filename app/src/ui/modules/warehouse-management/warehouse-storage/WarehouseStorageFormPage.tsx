@@ -5,7 +5,6 @@ import { useState } from "react";
 import { ArrowLeft, MapPin, Save, Settings2 } from "lucide-react";
 import {
 	WarehouseStorageTypeOptions,
-	WarehouseStorageStatusOptions,
 	WarehouseStorageHref,
 	WarehouseStorageTitle,
 } from "@/app/src/constants/modules/warehouse-management/warehouse-storage/WarehouseStorageConstants";
@@ -166,18 +165,11 @@ export function WarehouseStorageFormPage() {
 					) : null}
 					<label className="grid gap-2">
 						<span className="text-sm font-semibold text-darknavy">Status *</span>
-						<select
+						<input
 							value={page.form.status}
-							disabled={isReadonly}
+							readOnly
 							className={fieldClassName}
-							onChange={(event) => updateField("status", event.target.value)}
-						>
-							{WarehouseStorageStatusOptions.map((status) => (
-								<option key={status} value={status}>
-									{status}
-								</option>
-							))}
-						</select>
+						/>
 					</label>
 					<div className="md:col-span-2">
 						<TextField label="Notes" readOnly={isReadonly} value={page.form.notes} placeholder="Optional storage instructions" onChange={(value) => updateField("notes", value)} />

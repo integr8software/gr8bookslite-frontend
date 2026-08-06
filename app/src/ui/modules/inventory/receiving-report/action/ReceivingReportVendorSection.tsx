@@ -1,6 +1,5 @@
 import {
   ReceivingReportResponsibilityCenterOptions,
-  ReceivingReportStatusOptions,
   ReceivingReportTermsOfPaymentOptions,
   ReceivingReportWarehouseOptions,
 } from "@/app/src/constants/modules/inventory/receiving-report/ReceivingReportConstants";
@@ -45,7 +44,7 @@ export function ReceivingReportVendorSection({
           <TextField label="DR No." name="drNo" value={values.drNo} disabled={isReadonly} onChange={onChange} />
           <TextField label="SI No." name="siNo" value={values.siNo} disabled={isReadonly} onChange={onChange} />
           <TextField label="IMP No." name="importationRefNo" value={values.importationRefNo} disabled={isReadonly} onChange={onChange} />
-          <SelectField label="Status" name="status" value={values.status} disabled required error={errors.status} options={ReceivingReportStatusOptions} onChange={onChange} />
+          <TextField label="Status" name="status" value={values.status} disabled required error={errors.status} onChange={onChange} />
         </div>
       </div>
     </div>

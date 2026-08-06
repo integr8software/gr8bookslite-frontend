@@ -4,12 +4,18 @@ export const SalesJournalHref = "/sales/sales-journal";
 
 export const SalesJournalStorageKey = "gr8books.salesJournals";
 
+export const SalesJournalApprovedStatus: SalesJournalStatus = "Approved";
+export const SalesJournalCancelledStatus: SalesJournalStatus = "Cancelled";
+export const SalesJournalClosedStatus: SalesJournalStatus = "Closed";
+export const SalesJournalDraftStatus: SalesJournalStatus = "Draft";
+export const SalesJournalOpenStatus: SalesJournalStatus = "Open";
+
 export const SalesJournalStatusOptions: SalesJournalStatus[] = [
-	"Draft",
-	"Open",
-	"Approved",
-	"Closed",
-	"Cancelled",
+	SalesJournalDraftStatus,
+	SalesJournalOpenStatus,
+	SalesJournalApprovedStatus,
+	SalesJournalClosedStatus,
+	SalesJournalCancelledStatus,
 ];
 
 export const SalesJournalStatusFilterOptions = [
@@ -23,11 +29,11 @@ export const SalesJournalStatusFilterOptions = [
 
 export const SalesJournalStatusFilters = [
 	"all",
-	"Draft",
-	"Open",
-	"Approved",
-	"Closed",
-	"Cancelled",
+	SalesJournalDraftStatus,
+	SalesJournalOpenStatus,
+	SalesJournalApprovedStatus,
+	SalesJournalClosedStatus,
+	SalesJournalCancelledStatus,
 ] as const;
 
 export const SalesJournalTablePaginationStorageKey =

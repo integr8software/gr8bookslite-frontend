@@ -1,7 +1,7 @@
 "use client";
 
 import type { useMaterialRequestFormPage } from "@/app/src/hooks/modules/inventory/material-request/useMaterialRequestFormPage";
-import { MaterialRequestItemsTable } from "@/app/src/ui/modules/inventory/material-request/entries/MaterialRequestItemsTable";
+import { MaterialRequestItemsTableContainer } from "@/app/src/ui/modules/inventory/material-request/entries/MaterialRequestItemsTableContainer";
 
 type MaterialRequestActionPageState = ReturnType<typeof useMaterialRequestFormPage>;
 
@@ -11,7 +11,7 @@ export function MaterialRequestEntrySection({
 	page: MaterialRequestActionPageState;
 }) {
 	return (
-		<MaterialRequestItemsTable
+		<MaterialRequestItemsTableContainer
 			error={page.errors.items}
 			isReadonly={page.isReadonly}
 			items={page.values.items}

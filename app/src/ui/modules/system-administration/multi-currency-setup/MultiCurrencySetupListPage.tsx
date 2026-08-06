@@ -1,10 +1,7 @@
 "use client";
 
 import { Settings } from "lucide-react";
-import {
-	DefaultWantedCurrencyCode,
-	MultiCurrencyCatalog,
-} from "@/app/src/data/modules/system-administration/multi-currency-setup/MultiCurrencySetupData";
+import { DefaultWantedCurrencyCode } from "@/app/src/data/modules/system-administration/multi-currency-setup/MultiCurrencySetupData";
 import { useMultiCurrencySetupListPage } from "@/app/src/hooks/modules/system-administration/multi-currency-setup/useMultiCurrencySetupListPage";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
 import {
@@ -21,7 +18,7 @@ export function MultiCurrencySetupListPage() {
 		page.setPreferredBaseCurrencyCode(value);
 
 		const nextWantedCode =
-			MultiCurrencyCatalog.find((currency) => currency.code !== value)
+			page.enabledCurrencies.find((currency) => currency.code !== value)
 				?.code ?? DefaultWantedCurrencyCode;
 
 		page.setWantedCurrencyCode(nextWantedCode);
@@ -57,7 +54,7 @@ export function MultiCurrencySetupListPage() {
 						<ModuleTableFilterSelect
 							label="Base Currency"
 							value={page.preferredBaseCurrencyCode}
-							options={MultiCurrencyCatalog.map((currency) => ({
+							options={page.enabledCurrencies.map((currency) => ({
 								label: `${currency.code} - ${currency.name}`,
 								value: currency.code,
 							}))}

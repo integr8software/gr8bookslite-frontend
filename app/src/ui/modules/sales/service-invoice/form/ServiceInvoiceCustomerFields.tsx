@@ -13,7 +13,7 @@ import {
   FieldClassName,
   FieldShell,
   type ServiceInvoiceFieldUpdater,
-} from "@/app/src/ui/modules/sales/service-invoice/action/ServiceInvoiceFieldControls";
+} from "@/app/src/ui/modules/sales/service-invoice/form/ServiceInvoiceFieldControls";
 
 type ServiceInvoiceCustomerFieldsProps = {
   isReadonly: boolean;

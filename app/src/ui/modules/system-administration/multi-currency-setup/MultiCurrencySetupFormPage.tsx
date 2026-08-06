@@ -13,7 +13,7 @@ export function MultiCurrencySetupFormPage() {
 	const page = useMultiCurrencySetupFormPage();
 	const copy = MultiCurrencySetupActionCopy[page.mode];
 
-	if (page.needsRecord && !page.existingRecord) {
+	if (page.needsRecord && !page.isRecordLoading && !page.existingRecord) {
 		return <MultiCurrencySetupNotFound />;
 	}
 
@@ -45,6 +45,7 @@ export function MultiCurrencySetupFormPage() {
 					baseOriginalExchangeRateDisplay={
 						page.baseOriginalExchangeRateDisplay
 					}
+					currencyOptions={page.currencyOptions}
 					errors={page.errors}
 					fetchedExchangeRateDisplay={page.fetchedExchangeRateDisplay}
 					fetchedRate={page.fetchedRate}
@@ -54,6 +55,7 @@ export function MultiCurrencySetupFormPage() {
 					isReadonly={page.isReadonly}
 					originalExchangeRateDisplay={page.originalExchangeRateDisplay}
 					values={page.values}
+					onFieldChange={page.updateField}
 					onInputChange={page.handleInputChange}
 				/>
 			</form>

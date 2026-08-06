@@ -5,8 +5,8 @@ import { useState } from "react";
 import { ServiceInvoiceHref } from "@/app/src/constants/modules/sales/service-invoice/ServiceInvoiceConstants";
 import { useServiceInvoiceActionForm } from "@/app/src/hooks/modules/sales/service-invoice/useServiceInvoice";
 import type { ServiceInvoiceActionMode } from "@/app/src/types/modules/sales/service-invoice/ServiceInvoiceTypes";
-import { ServiceInvoiceCustomerFields } from "@/app/src/ui/modules/sales/service-invoice/action/ServiceInvoiceCustomerFields";
-import { ServiceInvoiceFormHeader } from "@/app/src/ui/modules/sales/service-invoice/action/ServiceInvoiceFormHeader";
+import { ServiceInvoiceCustomerFields } from "@/app/src/ui/modules/sales/service-invoice/form/ServiceInvoiceCustomerFields";
+import { ServiceInvoiceFormHeader } from "@/app/src/ui/modules/sales/service-invoice/form/ServiceInvoicePageHeader";
 import { ServiceInvoiceEntrySection } from "@/app/src/ui/modules/sales/service-invoice/entries/ServiceInvoiceEntrySection";
 import { ServiceInvoiceNotFound } from "@/app/src/ui/modules/sales/service-invoice/overview/ServiceInvoiceNotFound";
 import { openServiceInvoicePdf } from "@/app/src/ui/modules/sales/service-invoice/reports/ServiceInvoicePdf";
@@ -38,11 +38,7 @@ export function ServiceInvoiceActionPage() {
           onSubmit={invoiceForm.submitInvoice}
         />
         <section className="min-w-0 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
-          <ServiceInvoiceCustomerFields
-            isReadonly={isReadonly}
-            values={invoiceForm.values}
-            onUpdateField={invoiceForm.updateField}
-          />
+          <ServiceInvoiceCustomerFields isReadonly={isReadonly} values={invoiceForm.values} onUpdateField={invoiceForm.updateField} />
         </section>
         <ServiceInvoiceEntrySection
           isReadonly={isReadonly}

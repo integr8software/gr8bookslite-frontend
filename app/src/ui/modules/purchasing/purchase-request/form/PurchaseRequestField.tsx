@@ -15,7 +15,7 @@ import {
   PurchaseRequestFieldShell,
   PurchaseRequestSelectField,
   PurchaseRequestTextField,
-} from "@/app/src/ui/modules/purchasing/purchase-request/action/PurchaseRequestFormControls";
+} from "@/app/src/ui/modules/purchasing/purchase-request/form/PurchaseRequestFieldControls";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
@@ -26,11 +26,7 @@ type PurchaseRequestSupplierFieldsProps = {
   onUpdateField: PurchaseRequestFieldUpdater<PurchaseRequestFormValues>;
 };
 
-export function PurchaseRequestSupplierFields({
-  isReadonly,
-  onUpdateField,
-  values,
-}: PurchaseRequestSupplierFieldsProps) {
+export function PurchaseRequestSupplierFields({ isReadonly, onUpdateField, values }: PurchaseRequestSupplierFieldsProps) {
   return (
     <div className="grid min-w-0 gap-4 xl:grid-cols-3">
       <div className="grid min-w-0 gap-4">
@@ -43,10 +39,7 @@ export function PurchaseRequestSupplierFields({
           onAdd={() => undefined}
           onChange={(value) => onUpdateField("vceName", value)}
         />
-        <PurchaseRequestFieldShell
-          controlId="purchase-request-vendor-address"
-          label="Vendor Address"
-        >
+        <PurchaseRequestFieldShell controlId="purchase-request-vendor-address" label="Vendor Address">
           <textarea
             id="purchase-request-vendor-address"
             readOnly={isReadonly}
@@ -99,10 +92,7 @@ export function PurchaseRequestSupplierFields({
               placeholder="PHP"
               onChange={(value) => onUpdateField("currency", String(value))}
             />
-            <label
-              htmlFor="purchase-request-exchange-rate"
-              className="text-sm font-semibold text-darknavy"
-            >
+            <label htmlFor="purchase-request-exchange-rate" className="text-sm font-semibold text-darknavy">
               ER:
             </label>
             <MoneyNumberField

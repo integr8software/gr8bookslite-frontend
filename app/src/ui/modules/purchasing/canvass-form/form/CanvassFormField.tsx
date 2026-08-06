@@ -14,7 +14,7 @@ import {
   FieldShell,
   SelectField,
   TextField,
-} from "@/app/src/ui/modules/purchasing/canvass-form/action/CanvassFormFieldControls";
+} from "@/app/src/ui/modules/purchasing/canvass-form/form/CanvassFormFieldControls";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";

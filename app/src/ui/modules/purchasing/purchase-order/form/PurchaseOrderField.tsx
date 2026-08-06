@@ -19,7 +19,7 @@ import {
   PurchaseOrderFieldClassName,
   SelectField,
   TextField,
-} from "@/app/src/ui/modules/purchasing/purchase-order/action/PurchaseOrderFieldControls";
+} from "@/app/src/ui/modules/purchasing/purchase-order/form/PurchaseOrderFieldControls";
 
 type PurchaseOrderSupplierFieldsProps = {
   isReadonly: boolean;

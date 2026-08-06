@@ -1,7 +1,8 @@
 "use client";
 
-import { useDeferredValue, useMemo, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import {
+  type ColumnOrderState,
   type ColumnDef,
   type PaginationState,
   getCoreRowModel,
@@ -26,8 +27,16 @@ import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/A
 import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
 
 export function useAccountsPayableVoucherListPage() {
-  const { isLoading, isMutating, isRefreshing, lastSyncedAt, records, refreshRecords, updateStatus } =
-    useAccountsPayableVoucherStore();
+  const {
+    isLoading,
+    isMutating,
+    isRefreshing,
+    lastSyncedAt,
+    records,
+    refreshRecords,
+    statistics,
+    updateStatus,
+  } = useAccountsPayableVoucherStore();
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 5,
@@ -58,7 +67,19 @@ export function useAccountsPayableVoucherListPage() {
     moduleKey: AccountsPayableVoucherTablePreferencesModuleKey,
     storageKey: AccountsPayableVoucherTablePreferencesStorageKey,
   });
+  const listColumnOrder = useMemo(
+    () => normalizeAccountsPayableVoucherListColumnOrder(columnOrder),
+    [columnOrder],
+  );
   const deferredQuery = useDeferredValue(query);
+
+  useEffect(() => {
+    if (listColumnOrder === columnOrder) {
+      return;
+    }
+
+    setColumnOrder(listColumnOrder);
+  }, [columnOrder, listColumnOrder, setColumnOrder]);
 
   const filteredRecords = useMemo(() => {
     const normalizedQuery = deferredQuery.trim().toLowerCase();
@@ -110,7 +131,7 @@ export function useAccountsPayableVoucherListPage() {
       sorting: AccountsPayableVoucherDefaultSorting,
     },
     state: {
-      columnOrder,
+      columnOrder: listColumnOrder,
       columnVisibility,
       pagination,
       sorting,
@@ -178,8 +199,41 @@ export function useAccountsPayableVoucherListPage() {
     setDateRange,
     setStatusFilter,
     statusFilter,
+    statistics,
     table,
   };
+}
+
+function normalizeAccountsPayableVoucherListColumnOrder(
+  columnOrder: ColumnOrderState,
+) {
+  if (!columnOrder.includes("partyName") || !columnOrder.includes("remarks")) {
+    return columnOrder;
+  }
+
+  const columnOrderWithoutRemarks = columnOrder.filter(
+    (columnId) => columnId !== "remarks",
+  );
+  const partyNameIndex = columnOrderWithoutRemarks.indexOf("partyName");
+  const nextColumnOrder = [...columnOrderWithoutRemarks];
+
+  nextColumnOrder.splice(partyNameIndex + 1, 0, "remarks");
+
+  return areColumnOrdersEqual(columnOrder, nextColumnOrder)
+    ? columnOrder
+    : nextColumnOrder;
+}
+
+function areColumnOrdersEqual(
+  leftColumnOrder: ColumnOrderState,
+  rightColumnOrder: ColumnOrderState,
+) {
+  return (
+    leftColumnOrder.length === rightColumnOrder.length &&
+    leftColumnOrder.every(
+      (columnId, index) => columnId === rightColumnOrder[index],
+    )
+  );
 }
 
 function createColumn(

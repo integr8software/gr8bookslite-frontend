@@ -31,6 +31,7 @@ import {
   ModuleActionMenu,
   type ModuleActionMenuItem,
 } from "@/app/src/ui/shared/module/ModuleActionMenu";
+import { ModuleTooltip } from "@/app/src/ui/shared/module/ModuleTooltip";
 import {
   getColumnMetaClassName,
   joinClasses,
@@ -49,12 +50,12 @@ export function AccountsPayableVoucherTableRow({
   onUpdateStatus,
 }: AccountsPayableVoucherTableRowProps) {
   const record = row.original;
-  const isApproved = record.status === "Approved";
+  const isPosted = record.status === "Posted";
   const isDisapproved = record.status === "Disapproved";
   const isCancelled = record.status === "Cancelled";
-  const approvalUndoStatus: AccountsPayableVoucherStatus = "Draft";
+  const approvalUndoStatus: AccountsPayableVoucherStatus = "For Approval";
   const cancelStatus: AccountsPayableVoucherStatus = isCancelled
-    ? "Draft"
+    ? "For Approval"
     : "Cancelled";
   const actionItems: ModuleActionMenuItem[] = [
     {
@@ -75,10 +76,10 @@ export function AccountsPayableVoucherTableRow({
       : []),
     {
       disabled: !canApproveAccountsPayableVoucherStatus(record.status),
-      icon: isApproved ? Undo2 : CheckCircle2,
-      label: isApproved ? "Undo Approved" : "Approve",
+      icon: isPosted ? Undo2 : PackageCheck,
+      label: isPosted ? "Undo Posted" : "Approve",
       onSelect: () =>
-        onUpdateStatus(record, isApproved ? approvalUndoStatus : "Approved"),
+        onUpdateStatus(record, isPosted ? approvalUndoStatus : "Posted"),
       type: "button",
     },
     {
@@ -155,8 +156,8 @@ function AccountsPayableVoucherCellContent({
           {formatAccountsPayableVoucherAmount(record.amount)}
         </span>
       );
-    case "payableType":
-      return <span>{record.payableType}</span>;
+    case "remarks":
+      return <AccountsPayableVoucherRemarksCell remarks={record.remarks} />;
     case "currency":
       return (
         <>
@@ -180,6 +181,33 @@ function AccountsPayableVoucherCellContent({
     default:
       return null;
   }
+}
+
+function AccountsPayableVoucherRemarksCell({ remarks }: { remarks: string }) {
+  const normalizedRemarks = remarks.trim();
+  const displayRemarks = normalizedRemarks || "-";
+  const remarksContent = (
+    <span className="line-clamp-3 whitespace-pre-line leading-5">
+      {displayRemarks}
+    </span>
+  );
+
+  if (!normalizedRemarks) {
+    return remarksContent;
+  }
+
+  return (
+    <ModuleTooltip
+      align="start"
+      className="min-w-0 max-w-full"
+      contentClassName="max-w-sm whitespace-pre-line"
+      position="top"
+      title="Remarks"
+      description={normalizedRemarks}
+    >
+      {remarksContent}
+    </ModuleTooltip>
+  );
 }
 
 function AccountsPayableVoucherTableCell({
@@ -217,17 +245,17 @@ function AccountsPayableVoucherStatusBadge({
 }
 
 const statusIconByStatus = {
-  Approved: CheckCircle2,
   Cancelled: Ban,
-  Closed: PackageCheck,
   Disapproved: XCircle,
   Draft: Clock3,
+  "For Approval": CheckCircle2,
+  Posted: PackageCheck,
 } satisfies Record<AccountsPayableVoucherStatus, typeof CheckCircle2>;
 
 const statusClassNameByStatus = {
-  Approved: "bg-citron/25 text-darknavy",
   Cancelled: "bg-darknavy/10 text-darknavy/70",
-  Closed: "bg-skyblue/20 text-darknavy",
   Disapproved: "bg-coralpink/15 text-coralpink",
   Draft: "bg-offwhite text-darknavy/70",
+  "For Approval": "bg-citron/25 text-darknavy",
+  Posted: "bg-skyblue/20 text-darknavy",
 } satisfies Record<AccountsPayableVoucherStatus, string>;

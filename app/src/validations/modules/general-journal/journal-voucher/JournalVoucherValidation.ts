@@ -10,6 +10,7 @@ const journalVoucherHeaderSchema = z.object({
   documentDate: z.string().trim().min(1, "Select a document date."),
   currencyType: z.string().trim().min(1, "Select a currency."),
   currencyRate: z.number().positive("Enter an exchange rate greater than zero."),
+  remarks: z.string().max(500, "Remarks must be 500 characters or less."),
   status: z.string().trim().min(1, "Select a status."),
 });
 

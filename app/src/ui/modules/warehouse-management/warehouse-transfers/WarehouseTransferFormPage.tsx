@@ -6,7 +6,6 @@ import { ArrowLeft, MoveRight, Save } from "lucide-react";
 import {
 	WarehouseTransfersHref,
 	WarehouseTransfersTitle,
-	WarehouseTransferStatusOptions,
 } from "@/app/src/constants/modules/warehouse-management/warehouse-transfers/WarehouseTransferConstants";
 import { useWarehouseTransferFormPage } from "@/app/src/hooks/modules/warehouse-management/warehouse-transfers/useWarehouseTransferFormPage";
 import type { WarehouseModuleFormValues } from "@/app/src/types/modules/warehouse-management/warehouses/WarehouseModuleTypes";
@@ -105,18 +104,11 @@ export function WarehouseTransferFormPage() {
 					<TextField label="Approved By" readOnly={isReadonly} value={page.form.approvedBy} onChange={(value) => updateField("approvedBy", value)} />
 					<label className="grid gap-2">
 						<span className="text-sm font-semibold text-darknavy">Status</span>
-						<select
+						<input
 							value={page.form.status}
-							disabled={isReadonly}
+							readOnly
 							className={fieldClassName}
-							onChange={(event) => updateField("status", event.target.value)}
-						>
-							{WarehouseTransferStatusOptions.map((status) => (
-								<option key={status} value={status}>
-									{status}
-								</option>
-							))}
-						</select>
+						/>
 					</label>
 				</div>
 			</section>

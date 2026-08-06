@@ -67,6 +67,17 @@ export type SalesJournalFormValues = Omit<
 export type SalesJournalLineField = keyof SalesJournalLine;
 export type SalesJournalItemEntryField = keyof SalesJournalItemEntry;
 
+export type SalesJournalItemEntryUpdater = (
+	rowId: string,
+	updates: Partial<SalesJournalItemEntry>,
+) => void;
+
+export type SalesJournalEntryUpdater = (
+	rowId: string,
+	field: SalesJournalLineField,
+	value: string,
+) => void;
+
 export type SalesJournalFormErrors = Partial<
 	Record<keyof SalesJournalFormValues | "balance", string>
 > & {

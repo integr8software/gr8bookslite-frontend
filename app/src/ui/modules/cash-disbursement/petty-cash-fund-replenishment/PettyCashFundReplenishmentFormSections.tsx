@@ -1,12 +1,8 @@
 import { ChevronDown, Plus, Save, X } from "lucide-react";
 import {
 	PettyCashFundReplenishmentCopySources,
-	PettyCashFundReplenishmentFormStatusOptions,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentConstants";
-import type {
-	PettyCashFundReplenishmentEntry,
-	PettyCashFundReplenishmentStatus,
-} from "@/app/src/types/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentTypes";
+import type { PettyCashFundReplenishmentEntry } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentTypes";
 import {
 	buttonBaseClassName,
 	Field,
@@ -157,24 +153,11 @@ export function PettyCashFundReplenishmentSummaryFields({
 					/>
 				</Field>
 				<Field label="Status" error={page.errors.status}>
-					<select
+					<input
 						value={page.values.status}
-						disabled={page.isReadonly}
-						onChange={(event) =>
-							page.updateField(
-								"status",
-								event.target
-									.value as PettyCashFundReplenishmentStatus,
-							)
-						}
+						readOnly
 						className={inputClassName}
-					>
-						{PettyCashFundReplenishmentFormStatusOptions.map(
-							(status) => (
-								<option key={status}>{status}</option>
-							),
-						)}
-					</select>
+					/>
 				</Field>
 				<Field label="Project Ref" error={page.errors.projectRef}>
 					<input

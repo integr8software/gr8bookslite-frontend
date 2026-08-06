@@ -3,7 +3,6 @@ import {
 	MultiCurrencyCatalog,
 	getCurrencyLabel,
 } from "@/app/src/data/modules/system-administration/multi-currency-setup/MultiCurrencySetupData";
-import { MultiCurrencySetupStatusOptions } from "@/app/src/constants/modules/system-administration/multi-currency-setup/MultiCurrencySetupConstants";
 import type {
 	MultiCurrencyFetchedRate,
 	MultiCurrencySetupFormErrors,
@@ -105,19 +104,12 @@ export function MultiCurrencySetupFields({
 					</FormField>
 
 					<FormField label="Availability" error={errors.status} required>
-						<select
+						<input
 							name="status"
-							value={values.status}
-							onChange={onInputChange}
-							disabled={isReadonly}
+							value={values.status === "Active" ? "Enabled" : "Disabled"}
+							readOnly
 							className={fieldClassName}
-						>
-							{MultiCurrencySetupStatusOptions.map((status) => (
-								<option key={status} value={status}>
-									{status === "Active" ? "Enabled" : "Disabled"}
-								</option>
-							))}
-						</select>
+						/>
 					</FormField>
 
 					<FormField label="Notes" error={errors.notes}>

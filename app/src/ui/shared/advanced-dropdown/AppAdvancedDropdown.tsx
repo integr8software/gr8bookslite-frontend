@@ -591,7 +591,7 @@ export function AppAdvancedDropdown({
 				<div
 					className={joinClasses(
 						"flex items-center gap-2",
-						canClearSelection ? "pr-14" : "pr-8",
+						readOnly ? "pr-0" : canClearSelection ? "pr-14" : "pr-8",
 						isMultiple ? "min-h-7" : "h-full",
 					)}
 				>
@@ -633,31 +633,33 @@ export function AppAdvancedDropdown({
 							</span>
 						)}
 					</div>
-					<div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
-						{canClearSelection ? (
-							<button
-								type="button"
-								disabled={disabled}
-								onClick={(event) => {
-									event.preventDefault();
-									event.stopPropagation();
-									clearSelection();
-								}}
-								className="rounded-md p-1 text-darknavy/38 transition hover:bg-darknavy/5 hover:text-darknavy disabled:pointer-events-none"
-								aria-label="Clear selection"
-							>
-								<X className="h-3.5 w-3.5" aria-hidden="true" />
-							</button>
-						) : null}
-						<ChevronDown
-							className={joinClasses(
-								"pointer-events-none h-4 w-4 text-darknavy/40 transition",
-								isOpen && "rotate-180",
-								disabled && "text-darknavy/30",
-							)}
-							aria-hidden="true"
-						/>
-					</div>
+					{readOnly ? null : (
+						<div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
+							{canClearSelection ? (
+								<button
+									type="button"
+									disabled={disabled}
+									onClick={(event) => {
+										event.preventDefault();
+										event.stopPropagation();
+										clearSelection();
+									}}
+									className="rounded-md p-1 text-darknavy/38 transition hover:bg-darknavy/5 hover:text-darknavy disabled:pointer-events-none"
+									aria-label="Clear selection"
+								>
+									<X className="h-3.5 w-3.5" aria-hidden="true" />
+								</button>
+							) : null}
+							<ChevronDown
+								className={joinClasses(
+									"pointer-events-none h-4 w-4 text-darknavy/40 transition",
+									isOpen && "rotate-180",
+									disabled && "text-darknavy/30",
+								)}
+								aria-hidden="true"
+							/>
+						</div>
+					)}
 				</div>
 			</div>
 

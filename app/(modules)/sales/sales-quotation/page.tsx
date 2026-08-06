@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { SalesQuotationListPage } from "@/app/src/ui/modules/sales/sales-quotation/SalesQuotationListPage";
+import { SalesQuotationListPage } from "@/app/src/ui/modules/sales/sales-quotation/overview/SalesQuotationListPage";
 
 const PageTitle = "Sales Quotation";
 

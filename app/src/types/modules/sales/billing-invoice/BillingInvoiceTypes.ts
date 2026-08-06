@@ -1,5 +1,7 @@
 export type BillingInvoiceActionMode = "add" | "edit" | "view";
 
+export type BillingInvoiceEntriesTab = "accounts" | "items";
+
 export type BillingInvoiceStatus =
 	| "Active"
 	| "Approved"

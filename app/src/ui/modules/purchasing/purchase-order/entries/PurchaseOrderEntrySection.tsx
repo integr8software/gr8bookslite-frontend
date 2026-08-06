@@ -39,7 +39,6 @@ import {
 	PurchasingAccountingDefaultVisibleColumnIds,
 	PurchasingAccountingProtectedColumnIds,
 } from "@/app/src/ui/modules/purchasing/shared/PurchasingAccountingEntryColumns";
-import { PurchasingEntryTabs } from "@/app/src/ui/modules/purchasing/shared/PurchasingEntryTabs";
 
 type PurchaseOrderEntrySectionProps = {
 	accountingRows: PurchaseOrderAccountingEntry[];
@@ -62,7 +61,7 @@ export function PurchaseOrderEntrySection({
 	rows,
 	values,
 }: PurchaseOrderEntrySectionProps) {
-	const [activeTab, setActiveTab] = useState<PurchasingEntryTab>("details");
+	const [activeTab] = useState<PurchasingEntryTab>("details");
 	const [visibleAccountingColumnIds, setVisibleAccountingColumnIds] = useState<
 		PurchasingAccountingColumnId[]
 	>([...PurchasingAccountingDefaultVisibleColumnIds]);
@@ -136,13 +135,7 @@ export function PurchaseOrderEntrySection({
 				isReadonly={isReadonly}
 				rows={accountingRows}
 				summaryCells={createAccountingSummaryCells(accountingRows)}
-				title={
-					<PurchasingEntryTabs
-						activeTab={activeTab}
-						detailsLabel="Purchase Order Details"
-						onTabChange={setActiveTab}
-					/>
-				}
+				title="Accounting Entries"
 				onAddRows={(count) =>
 					onAccountingRowsChange([
 						...accountingRows,
@@ -295,13 +288,7 @@ export function PurchaseOrderEntrySection({
 					netAmount: formatPurchaseOrderAmount(totals.netAmount),
 					vatAmount: formatPurchaseOrderAmount(totals.vatAmount),
 				}}
-				title={
-					<PurchasingEntryTabs
-						activeTab={activeTab}
-						detailsLabel="Purchase Order Details"
-						onTabChange={setActiveTab}
-					/>
-				}
+				title="Purchase Order Details"
 				onAddRows={addRows}
 				onAutoColumnWidth={() => undefined}
 				onClearRows={clearRows}

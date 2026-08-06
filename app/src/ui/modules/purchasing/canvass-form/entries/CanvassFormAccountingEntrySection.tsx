@@ -4,10 +4,7 @@ import {
 	formatCanvassFormAmount,
 } from "@/app/src/data/modules/purchasing/canvass-form/CanvassFormData";
 import type { CanvassFormAccountingEntry } from "@/app/src/types/modules/purchasing/canvass-form/CanvassFormTypes";
-import type {
-	PurchasingAccountingColumnId,
-	PurchasingEntryTab,
-} from "@/app/src/types/modules/purchasing/PurchasingAccountingTypes";
+import type { PurchasingAccountingColumnId } from "@/app/src/types/modules/purchasing/PurchasingAccountingTypes";
 import {
 	ModuleDataEntry,
 	type ModuleDataEntryClearAction,
@@ -20,21 +17,18 @@ import {
 	PurchasingAccountingDefaultVisibleColumnIds,
 	PurchasingAccountingProtectedColumnIds,
 } from "@/app/src/ui/modules/purchasing/shared/PurchasingAccountingEntryColumns";
-import { PurchasingEntryTabs } from "@/app/src/ui/modules/purchasing/shared/PurchasingEntryTabs";
 
 type CanvassFormAccountingEntrySectionProps = {
 	error?: string;
 	isReadonly: boolean;
 	rows: CanvassFormAccountingEntry[];
 	onRowsChange: (rows: CanvassFormAccountingEntry[]) => void;
-	onTabChange: (tab: PurchasingEntryTab) => void;
 };
 
 export function CanvassFormAccountingEntrySection({
 	error,
 	isReadonly,
 	onRowsChange,
-	onTabChange,
 	rows,
 }: CanvassFormAccountingEntrySectionProps) {
 	const [visibleAccountingColumnIds, setVisibleAccountingColumnIds] = useState<
@@ -77,13 +71,7 @@ export function CanvassFormAccountingEntrySection({
 			isReadonly={isReadonly}
 			rows={rows}
 			summaryCells={createAccountingSummaryCells(rows)}
-			title={
-				<PurchasingEntryTabs
-					activeTab="accounting"
-					detailsLabel="Canvass Details"
-					onTabChange={onTabChange}
-				/>
-			}
+			title="Accounting Entries"
 			onAddRows={(count) =>
 				onRowsChange([
 					...rows,

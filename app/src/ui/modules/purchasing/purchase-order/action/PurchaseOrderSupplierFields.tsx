@@ -27,11 +27,7 @@ type PurchaseOrderSupplierFieldsProps = {
   onUpdateField: PurchaseOrderFieldUpdater<PurchaseOrderFormValues>;
 };
 
-export function PurchaseOrderSupplierFields({
-  isReadonly,
-  onUpdateField,
-  values,
-}: PurchaseOrderSupplierFieldsProps) {
+export function PurchaseOrderSupplierFields({ isReadonly, onUpdateField, values }: PurchaseOrderSupplierFieldsProps) {
   return (
     <div className="grid min-w-0 gap-5 xl:grid-cols-3">
       <div className="grid min-w-0 content-start gap-4">
@@ -71,11 +67,11 @@ export function PurchaseOrderSupplierFields({
           onChange={(value) => onUpdateField("prNo", value)}
         />
         <TextField
-          id="purchase-order-project-ref"
-          label="Project Ref"
+          id="purchase-order-project-code"
+          label="Project Code"
           readOnly={isReadonly}
-          value={values.projectRef}
-          onChange={(value) => onUpdateField("projectRef", value)}
+          value={values.projectCode}
+          onChange={(value) => onUpdateField("projectCode", value)}
         />
         <TextField
           id="purchase-order-project-name"
@@ -93,7 +89,7 @@ export function PurchaseOrderSupplierFields({
             readOnly={isReadonly}
             value={values.remarks ?? ""}
             onChange={(event) => onUpdateField("remarks", event.target.value)}
-            className={`${PurchaseOrderFieldClassName} min-h-[5.75rem] py-3`}
+            className={`${PurchaseOrderFieldClassName} min-h-23 py-3`}
             counterMode="remaining"
             maxLength={250}
           />
@@ -208,10 +204,7 @@ function CurrencyExchangeRateField({
           placeholder="PHP"
           onChange={(value) => onCurrencyChange(String(value))}
         />
-        <label
-          htmlFor="purchase-order-exchange-rate"
-          className="text-sm font-semibold text-darknavy"
-        >
+        <label htmlFor="purchase-order-exchange-rate" className="text-sm font-semibold text-darknavy">
           ER:
         </label>
         <MoneyNumberField

@@ -1,5 +1,16 @@
-import { AccountsPayableVoucherApiPath } from "@/app/src/constants/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherConstants";
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import {
+  accountsPayableVoucherControllerCreateV1,
+  accountsPayableVoucherControllerFindAllV1,
+  accountsPayableVoucherControllerFindOneV1,
+  accountsPayableVoucherControllerFindPartyOptionsV1,
+  accountsPayableVoucherControllerFindPayableAccountOptionsV1,
+  accountsPayableVoucherControllerFindResponsibilityCenterOptionsV1,
+  accountsPayableVoucherControllerFindTermOptionsV1,
+  accountsPayableVoucherControllerSuggestTransactionNumberV1,
+  accountsPayableVoucherControllerUpdateStatusV1,
+  accountsPayableVoucherControllerUpdateV1,
+} from "@/app/src/generated/api/accounts-payable-voucher/accounts-payable-voucher";
 import type {
   AccountsPayableVoucherFormValues,
   AccountsPayableVoucherLookupAccountOptions,
@@ -13,10 +24,7 @@ import type {
   AccountsPayableVoucherRecord,
   AccountsPayableVoucherStatus,
   ApiAccountsPayableVoucher,
-  ApiAccountsPayableVoucherDetailResponse,
-  ApiAccountsPayableVoucherListResponse,
   ApiAccountsPayableVoucherPayableType,
-  ApiAccountsPayableVoucherSaveResponse,
   ApiAccountsPayableVoucherStatus,
   ApiAccountsPayableVoucherDetails,
   ApiJournalEntry,
@@ -45,7 +53,7 @@ type AccountsPayableVoucherListQuery = {
   status?: AccountsPayableVoucherStatus | "all" | null;
 };
 
-type AccountsPayableVoucherPayload = {
+export type AccountsPayableVoucherPayload = {
   amount: number;
   branchUnitId?: number | null;
   contactNo?: string | null;
@@ -117,7 +125,7 @@ type JournalEntryPayload = {
   vatType?: string | null;
 };
 
-type AccountsPayableVoucherPartyLookupResponse = {
+export type AccountsPayableVoucherPartyLookupResponse = {
   parties: AccountsPayableVoucherLookupParty[];
 };
 
@@ -134,17 +142,21 @@ type AccountsPayableVoucherFullPartyLookupResponse = {
   >;
 };
 
-type AccountsPayableVoucherTermLookupResponse = {
+export type AccountsPayableVoucherTermLookupResponse = {
   terms: AccountsPayableVoucherLookupTerm[];
 };
 
-type AccountsPayableVoucherResponsibilityCenterLookupResponse = {
+export type AccountsPayableVoucherResponsibilityCenterLookupResponse = {
   responsibilityCenters: AccountsPayableVoucherLookupResponsibilityCenter[];
 };
 
-type AccountsPayableVoucherPayableAccountLookupResponse = {
+export type AccountsPayableVoucherPayableAccountLookupResponse = {
   defaultAccounts: AccountsPayableVoucherLookupDefaultAccounts;
   accountOptions: AccountsPayableVoucherLookupAccountOptions;
+};
+
+export type UpdateAccountsPayableVoucherStatusDto = {
+  status: ApiAccountsPayableVoucherStatus;
 };
 
 const StatusFromApi: Record<string, AccountsPayableVoucherStatus> = {
@@ -187,30 +199,27 @@ const PayableTypeToApi: Record<
 export async function fetchAccountsPayableVouchers(
   query: AccountsPayableVoucherListQuery = {},
 ): Promise<AccountsPayableVoucherListResponse> {
-  const response = await ApiClient.get<ApiAccountsPayableVoucherListResponse>(
-    AccountsPayableVoucherApiPath,
-    {
-      params: cleanQueryParams({
-        amountFrom: query.amountFrom,
-        amountTo: query.amountTo,
-        branchUnitId: query.branchUnitId,
-        documentDateFrom: query.documentDateFrom,
-        documentDateTo: query.documentDateTo,
-        limit: query.limit ?? 500,
-        page: query.page ?? 1,
-        search: query.search,
-        sortBy: query.sortBy ?? "documentDate",
-        sortDirection: query.sortDirection ?? "desc",
-        status: query.status && query.status !== "all" ? mapStatusToApi(query.status) : undefined,
-      }),
-    },
+  const response = await accountsPayableVoucherControllerFindAllV1(
+    cleanQueryParams({
+      amountFrom: query.amountFrom,
+      amountTo: query.amountTo,
+      branchUnitId: query.branchUnitId,
+      documentDateFrom: query.documentDateFrom,
+      documentDateTo: query.documentDateTo,
+      limit: query.limit ?? 500,
+      page: query.page ?? 1,
+      search: query.search,
+      sortBy: query.sortBy ?? "documentDate",
+      sortDirection: query.sortDirection ?? "desc",
+      status: query.status && query.status !== "all" ? mapStatusToApi(query.status) : undefined,
+    }),
   );
 
   return {
-    pagination: response.data.pagination,
-    permissions: response.data.permissions,
-    records: response.data.vouchers.map(mapApiAccountsPayableVoucher),
-    statistics: response.data.statistics,
+    pagination: response.pagination,
+    permissions: response.permissions,
+    records: response.vouchers.map(mapApiAccountsPayableVoucher),
+    statistics: response.statistics,
   };
 }
 
@@ -218,39 +227,32 @@ export async function fetchAccountsPayableVoucher(
   id: string,
   query: Pick<AccountsPayableVoucherListQuery, "branchUnitId"> = {},
 ): Promise<AccountsPayableVoucherRecord> {
-  const response = await ApiClient.get<ApiAccountsPayableVoucherDetailResponse>(
-    `${AccountsPayableVoucherApiPath}/${id}`,
-    {
-      params: cleanQueryParams({
-        branchUnitId: query.branchUnitId,
-      }),
-    },
+  const response = await accountsPayableVoucherControllerFindOneV1(
+    id,
+    cleanQueryParams({
+      branchUnitId: query.branchUnitId,
+    }),
   );
 
-  return mapApiAccountsPayableVoucher(response.data.voucher);
+  return mapApiAccountsPayableVoucher(response.voucher);
 }
 
 export async function fetchAccountsPayableVoucherNumberSuggestion(
   branchUnitId?: number | null,
 ): Promise<AccountsPayableVoucherNumberSuggestion> {
-  const response = await ApiClient.get<AccountsPayableVoucherNumberSuggestion>(
-    `${AccountsPayableVoucherApiPath}/transaction-number`,
-    {
-      params: cleanQueryParams({ branchUnitId }),
-    },
+  const response = await accountsPayableVoucherControllerSuggestTransactionNumberV1(
+    cleanQueryParams({ branchUnitId }),
   );
 
-  return response.data;
+  return response;
 }
 
 export async function fetchAccountsPayableVoucherPartyOptions() {
   try {
-    const response = await ApiClient.get<AccountsPayableVoucherPartyLookupResponse>(
-      `${AccountsPayableVoucherApiPath}/lookups/parties`,
-    );
+    const response = await accountsPayableVoucherControllerFindPartyOptionsV1();
 
-    if (response.data.parties.length > 0) {
-      return response.data.parties;
+    if (response.parties.length > 0) {
+      return response.parties;
     }
   } catch {
     // Fall back to shared company-scoped party options so APV creation is not blocked by maintenance permissions.
@@ -260,27 +262,22 @@ export async function fetchAccountsPayableVoucherPartyOptions() {
 }
 
 export async function fetchAccountsPayableVoucherTermOptions() {
-  const response = await ApiClient.get<AccountsPayableVoucherTermLookupResponse>(
-    `${AccountsPayableVoucherApiPath}/lookups/terms`,
-  );
+  const response = await accountsPayableVoucherControllerFindTermOptionsV1();
 
-  return response.data.terms;
+  return response.terms;
 }
 
 export async function fetchAccountsPayableVoucherResponsibilityCenterOptions() {
-  const response = await ApiClient.get<AccountsPayableVoucherResponsibilityCenterLookupResponse>(
-    `${AccountsPayableVoucherApiPath}/lookups/responsibility-centers`,
-  );
+  const response =
+    await accountsPayableVoucherControllerFindResponsibilityCenterOptionsV1();
 
-  return response.data.responsibilityCenters;
+  return response.responsibilityCenters;
 }
 
 export async function fetchAccountsPayableVoucherPayableAccountOptions() {
-  const response = await ApiClient.get<AccountsPayableVoucherPayableAccountLookupResponse>(
-    `${AccountsPayableVoucherApiPath}/lookups/payable-accounts`,
-  );
+  const response = await accountsPayableVoucherControllerFindPayableAccountOptionsV1();
 
-  return response.data;
+  return response;
 }
 
 async function fetchAccountsPayableVoucherSharedPartyOptions() {
@@ -417,38 +414,37 @@ export async function createAccountsPayableVoucher(
   values: AccountsPayableVoucherFormValues,
   branchUnitId?: number | null,
 ): Promise<AccountsPayableVoucherRecord> {
-  const response = await ApiClient.post<ApiAccountsPayableVoucherSaveResponse>(
-    AccountsPayableVoucherApiPath,
+  const response = await accountsPayableVoucherControllerCreateV1(
     toApiAccountsPayableVoucherPayload(values, branchUnitId),
   );
 
-  return mapApiAccountsPayableVoucher(response.data.voucher);
+  return mapApiAccountsPayableVoucher(response.voucher);
 }
 
 export async function updateAccountsPayableVoucher(
   record: AccountsPayableVoucherRecord,
   branchUnitId?: number | null,
 ): Promise<AccountsPayableVoucherRecord> {
-  const response = await ApiClient.patch<ApiAccountsPayableVoucherSaveResponse>(
-    `${AccountsPayableVoucherApiPath}/${record.id}`,
+  const response = await accountsPayableVoucherControllerUpdateV1(
+    record.id,
     toApiAccountsPayableVoucherPayload(record, branchUnitId),
   );
 
-  return mapApiAccountsPayableVoucher(response.data.voucher);
+  return mapApiAccountsPayableVoucher(response.voucher);
 }
 
 export async function updateAccountsPayableVoucherStatus(input: {
   recordId: string;
   status: AccountsPayableVoucherStatus;
 }): Promise<AccountsPayableVoucherRecord> {
-  const response = await ApiClient.patch<ApiAccountsPayableVoucherSaveResponse>(
-    `${AccountsPayableVoucherApiPath}/${input.recordId}/status`,
+  const response = await accountsPayableVoucherControllerUpdateStatusV1(
+    input.recordId,
     {
       status: mapStatusToApi(input.status),
     },
   );
 
-  return mapApiAccountsPayableVoucher(response.data.voucher);
+  return mapApiAccountsPayableVoucher(response.voucher);
 }
 
 function mapApiAccountsPayableVoucher(

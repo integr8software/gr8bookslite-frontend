@@ -142,3 +142,7 @@ export const JournalVoucherLineColumnWidths: Record<
   responsibilityCenter: 220,
   refNo: 160,
 };
+
+
+
+export const JournalVoucherBaseCurrencyCode = "PHP";

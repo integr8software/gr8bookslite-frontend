@@ -1,8 +1,20 @@
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type { ColumnDef } from "@tanstack/react-table";
-import type { BillingInvoiceRecord } from "@/app/src/types/modules/sales/billing-invoice/BillingInvoiceTypes";
+import type {
+	BillingInvoiceRecord,
+	BillingInvoiceStatus,
+} from "@/app/src/types/modules/sales/billing-invoice/BillingInvoiceTypes";
 
 export const BillingInvoiceHref = getModuleRoute("BI");
+
+export const BillingInvoiceActiveStatus: BillingInvoiceStatus = "Active";
+export const BillingInvoiceApprovedStatus: BillingInvoiceStatus = "Approved";
+export const BillingInvoiceCancelledStatus: BillingInvoiceStatus = "Cancelled";
+export const BillingInvoiceClosedStatus: BillingInvoiceStatus = "Closed";
+export const BillingInvoiceDisapprovedStatus: BillingInvoiceStatus =
+	"Disapproved";
+export const BillingInvoiceDraftStatus: BillingInvoiceStatus = "Draft";
+export const BillingInvoicePendingStatus: BillingInvoiceStatus = "Pending";
 
 export const BillingInvoiceStatusFilterOptions = [
 	{ label: "All statuses", value: "all" },

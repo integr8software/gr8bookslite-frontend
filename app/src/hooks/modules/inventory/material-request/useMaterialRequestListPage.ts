@@ -23,6 +23,8 @@ import {
 	canDisapproveMaterialRequestStatus,
 } from "@/app/src/constants/modules/inventory/material-request/MaterialRequestConstants";
 
+const AllMaterialRequestFilterValue = "all";
+
 export function useMaterialRequestListPage() {
 	const { deleteRequest, isLoading, isMutating, lastSyncedAt, requests, updateRequest } =
 		useMaterialRequestStore();
@@ -31,8 +33,12 @@ export function useMaterialRequestListPage() {
 		pageSize: 5,
 	});
 	const [query, setQuery] = useState("");
-	const [toWarehouseFilter, setToWarehouseFilter] = useState("all");
-	const [statusFilter, setStatusFilter] = useState("all");
+	const [toWarehouseFilter, setToWarehouseFilter] = useState(
+		AllMaterialRequestFilterValue,
+	);
+	const [statusFilter, setStatusFilter] = useState(
+		AllMaterialRequestFilterValue,
+	);
 	const [sorting, setSorting] = useState<SortingState>([
 		{ id: "documentDate", desc: true },
 	]);
@@ -63,10 +69,11 @@ export function useMaterialRequestListPage() {
 					.toLowerCase()
 					.includes(normalizedQuery);
 			const matchesToWarehouse =
-				toWarehouseFilter === "all" ||
+				toWarehouseFilter === AllMaterialRequestFilterValue ||
 				request.toWarehouse === toWarehouseFilter;
 			const matchesStatus =
-				statusFilter === "all" || request.status === statusFilter;
+				statusFilter === AllMaterialRequestFilterValue ||
+				request.status === statusFilter;
 
 			return matchesQuery && matchesToWarehouse && matchesStatus;
 		});
@@ -125,8 +132,8 @@ export function useMaterialRequestListPage() {
 
 	function resetFilters() {
 		setQuery("");
-		setToWarehouseFilter("all");
-		setStatusFilter("all");
+		setToWarehouseFilter(AllMaterialRequestFilterValue);
+		setStatusFilter(AllMaterialRequestFilterValue);
 		table.setPageIndex(0);
 	}
 

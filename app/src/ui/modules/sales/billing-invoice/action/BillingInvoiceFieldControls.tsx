@@ -6,11 +6,6 @@ import {
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
-export type BillingInvoiceFieldUpdater<TValues> = <Key extends keyof TValues>(
-	key: Key,
-	value: TValues[Key],
-) => void;
-
 export function TextField({
 	id,
 	label,

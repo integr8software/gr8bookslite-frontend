@@ -1,8 +1,10 @@
-import type { BillingInvoiceFormValues } from "@/app/src/types/modules/sales/billing-invoice/BillingInvoiceTypes";
+import type {
+	BillingInvoiceFieldUpdater,
+	BillingInvoiceFormValues,
+} from "@/app/src/types/modules/sales/billing-invoice/BillingInvoiceTypes";
 import {
 	AmountField,
 	TextField,
-	type BillingInvoiceFieldUpdater,
 } from "@/app/src/ui/modules/sales/billing-invoice/action/BillingInvoiceFieldControls";
 
 type BillingInvoiceAmountPartnerFieldsProps = {

@@ -7,6 +7,7 @@ import {
 	getSalesQuotationTotals,
 } from "@/app/src/data/modules/sales/sales-quotation/SalesQuotationData";
 import type {
+	SalesQuotationFieldUpdater,
 	SalesQuotationFormValues,
 	SalesQuotationStatus,
 } from "@/app/src/types/modules/sales/sales-quotation/SalesQuotationTypes";
@@ -17,7 +18,6 @@ import {
 	SalesQuotationFieldShell,
 	SalesQuotationSelectField,
 	SalesQuotationTextField,
-	type SalesQuotationFieldUpdater,
 } from "@/app/src/ui/modules/sales/sales-quotation/action/SalesQuotationFormControls";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 

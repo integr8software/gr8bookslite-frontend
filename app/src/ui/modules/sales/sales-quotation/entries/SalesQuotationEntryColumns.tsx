@@ -13,7 +13,16 @@ import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
-type SalesQuotationEntryColumnKind = "amount" | "date" | "select" | "text";
+const AmountColumnKind = "amount";
+const DateColumnKind = "date";
+const SelectColumnKind = "select";
+const TextColumnKind = "text";
+
+type SalesQuotationEntryColumnKind =
+	| typeof AmountColumnKind
+	| typeof DateColumnKind
+	| typeof SelectColumnKind
+	| typeof TextColumnKind;
 
 type SalesQuotationEntryColumnConfig = {
 	header: string;
@@ -92,7 +101,7 @@ function SalesQuotationEntryCell({
 
 	const value = String(row[column.id] ?? "");
 
-	if (column.kind === "select") {
+	if (column.kind === SelectColumnKind) {
 		return (
 			<select
 				id={fieldId}
@@ -113,7 +122,7 @@ function SalesQuotationEntryCell({
 		);
 	}
 
-	if (column.kind === "amount") {
+	if (column.kind === AmountColumnKind) {
 		return (
 			<MoneyNumberField
 				id={fieldId}
@@ -132,7 +141,7 @@ function SalesQuotationEntryCell({
 		<input
 			id={fieldId}
 			name={fieldName}
-			type={column.kind === "date" ? "date" : "text"}
+			type={column.kind === DateColumnKind ? "date" : "text"}
 			value={value}
 			readOnly={isReadonly}
 			onChange={(event) =>
@@ -158,22 +167,36 @@ function entryCellDisplayClassName(extraClassName?: string) {
 }
 
 const SalesQuotationEntryColumnConfigs = [
-	column("Item Code", "itemCode", "text", 130, "w-[8rem]"),
-	column("Barcode", "barcode", "text", 130, "w-[8rem]"),
-	column("Item Name", "itemName", "text", 180, "w-[11.25rem]"),
-	column("Item Category", "itemCategory", "text", 180, "w-[11.25rem]"),
-	column("UOM", "uom", "select", 130, "w-[8rem]", SalesQuotationUomOptions),
-	column("Qty", "quantity", "amount", 120, "w-[7.5rem]"),
-	column("Item Price", "itemPrice", "amount", 130, "w-[8rem]"),
-	column("Gross Amount", "grossAmount", "amount", 150, "w-[9.5rem]"),
-	column("VAT Amount", "vatAmount", "amount", 140, "w-[8.75rem]"),
-	column("EWT", "ewtAmount", "amount", 140, "w-[8.75rem]"),
-	column("Discount", "discountAmount", "amount", 150, "w-[9.5rem]"),
-	column("Net Amount", "netAmount", "amount", 150, "w-[9.5rem]"),
-	column("VATable", "vatable", "select", 120, "w-[7.5rem]", SalesQuotationBooleanOptions),
-	column("VAT Inc.", "vatInclusive", "select", 120, "w-[7.5rem]", SalesQuotationBooleanOptions),
-	column("VAT Type", "vatType", "text", 170, "w-[10.5rem]"),
-	column("Res. Center", "responsibilityCenter", "text", 190, "w-[12rem]"),
+	column("Item Code", "itemCode", TextColumnKind, 130, "w-[8rem]"),
+	column("Barcode", "barcode", TextColumnKind, 130, "w-[8rem]"),
+	column("Item Name", "itemName", TextColumnKind, 180, "w-[11.25rem]"),
+	column("Item Category", "itemCategory", TextColumnKind, 180, "w-[11.25rem]"),
+	column("UOM", "uom", SelectColumnKind, 130, "w-[8rem]", SalesQuotationUomOptions),
+	column("Qty", "quantity", AmountColumnKind, 120, "w-[7.5rem]"),
+	column("Item Price", "itemPrice", AmountColumnKind, 130, "w-[8rem]"),
+	column("Gross Amount", "grossAmount", AmountColumnKind, 150, "w-[9.5rem]"),
+	column("VAT Amount", "vatAmount", AmountColumnKind, 140, "w-[8.75rem]"),
+	column("EWT", "ewtAmount", AmountColumnKind, 140, "w-[8.75rem]"),
+	column("Discount", "discountAmount", AmountColumnKind, 150, "w-[9.5rem]"),
+	column("Net Amount", "netAmount", AmountColumnKind, 150, "w-[9.5rem]"),
+	column(
+		"VATable",
+		"vatable",
+		SelectColumnKind,
+		120,
+		"w-[7.5rem]",
+		SalesQuotationBooleanOptions,
+	),
+	column(
+		"VAT Inc.",
+		"vatInclusive",
+		SelectColumnKind,
+		120,
+		"w-[7.5rem]",
+		SalesQuotationBooleanOptions,
+	),
+	column("VAT Type", "vatType", TextColumnKind, 170, "w-[10.5rem]"),
+	column("Res. Center", "responsibilityCenter", TextColumnKind, 190, "w-[12rem]"),
 ];
 
 function column(

@@ -1,6 +1,15 @@
 import { Ban, CheckCircle2, Edit3, Eye, ThumbsDown, Undo2 } from "lucide-react";
 import { useState } from "react";
-import { BillingInvoiceHref } from "@/app/src/constants/modules/sales/billing-invoice/BillingInvoiceConstants";
+import {
+	BillingInvoiceActiveStatus,
+	BillingInvoiceApprovedStatus,
+	BillingInvoiceCancelledStatus,
+	BillingInvoiceClosedStatus,
+	BillingInvoiceDisapprovedStatus,
+	BillingInvoiceDraftStatus,
+	BillingInvoiceHref,
+	BillingInvoicePendingStatus,
+} from "@/app/src/constants/modules/sales/billing-invoice/BillingInvoiceConstants";
 import type {
 	BillingInvoiceRecord,
 	BillingInvoiceStatus,
@@ -27,22 +36,27 @@ export function BillingInvoiceRecordActions({
 	record: BillingInvoiceRecord;
 }) {
 	const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
-	const isApproved = record.status === "Approved";
-	const isDisapproved = record.status === "Disapproved";
-	const isCancelled = record.status === "Cancelled";
+	const isApproved = record.status === BillingInvoiceApprovedStatus;
+	const isDisapproved = record.status === BillingInvoiceDisapprovedStatus;
+	const isCancelled = record.status === BillingInvoiceCancelledStatus;
 	const canEdit = canEditBillingInvoiceStatus(record.status);
 	const approveLabel = isApproved ? "Undo Approved" : "Approve";
 	const disapproveLabel = isDisapproved ? "Undo Disapproved" : "Disapprove";
 	const cancelLabel = isCancelled ? "Uncancelled" : "Cancel";
-	const undoStatus: BillingInvoiceStatus = "Active";
-	const cancelStatus: BillingInvoiceStatus = isCancelled ? "Draft" : "Cancelled";
+	const undoStatus = BillingInvoiceActiveStatus;
+	const cancelStatus = isCancelled
+		? BillingInvoiceDraftStatus
+		: BillingInvoiceCancelledStatus;
 	const overflowItems: ModuleActionMenuItem[] = [
 		{
 			disabled: !canApproveBillingInvoiceStatus(record.status),
 			icon: isApproved ? Undo2 : CheckCircle2,
 			label: approveLabel,
 			onSelect: () =>
-				onUpdateStatus(record, isApproved ? undoStatus : "Approved"),
+				onUpdateStatus(
+					record,
+					isApproved ? undoStatus : BillingInvoiceApprovedStatus,
+				),
 			type: "button",
 		},
 		{
@@ -50,7 +64,10 @@ export function BillingInvoiceRecordActions({
 			icon: isDisapproved ? Undo2 : ThumbsDown,
 			label: disapproveLabel,
 			onSelect: () =>
-				onUpdateStatus(record, isDisapproved ? undoStatus : "Disapproved"),
+				onUpdateStatus(
+					record,
+					isDisapproved ? undoStatus : BillingInvoiceDisapprovedStatus,
+				),
 			tone: isDisapproved ? "default" : "danger",
 			type: "button",
 		},
@@ -115,28 +132,32 @@ export function BillingInvoiceRecordActions({
 }
 
 function canEditBillingInvoiceStatus(status: BillingInvoiceStatus) {
-	return status === "Active" || status === "Draft" || status === "Pending";
+	return (
+		status === BillingInvoiceActiveStatus ||
+		status === BillingInvoiceDraftStatus ||
+		status === BillingInvoicePendingStatus
+	);
 }
 
 function canApproveBillingInvoiceStatus(status: BillingInvoiceStatus) {
 	return (
-		status === "Active" ||
-		status === "Draft" ||
-		status === "Pending" ||
-		status === "Approved"
+		status === BillingInvoiceActiveStatus ||
+		status === BillingInvoiceDraftStatus ||
+		status === BillingInvoicePendingStatus ||
+		status === BillingInvoiceApprovedStatus
 	);
 }
 
 function canDisapproveBillingInvoiceStatus(status: BillingInvoiceStatus) {
 	return (
-		status === "Active" ||
-		status === "Draft" ||
-		status === "Pending" ||
-		status === "Disapproved"
+		status === BillingInvoiceActiveStatus ||
+		status === BillingInvoiceDraftStatus ||
+		status === BillingInvoicePendingStatus ||
+		status === BillingInvoiceDisapprovedStatus
 	);
 }
 
 function canCancelBillingInvoiceStatus(status: BillingInvoiceStatus) {
-	return status !== "Closed";
+	return status !== BillingInvoiceClosedStatus;
 }
 

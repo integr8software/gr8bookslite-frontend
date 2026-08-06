@@ -7,6 +7,8 @@ import {
 import type {
 	SalesJournalItemEntry,
 	SalesJournalItemEntryField,
+	SalesJournalItemEntryUpdater,
+	SalesJournalEntryUpdater,
 	SalesJournalLine,
 	SalesJournalLineField,
 } from "@/app/src/types/modules/sales/sales-journal/SalesJournalTypes";
@@ -17,7 +19,14 @@ import type {
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
-type SalesJournalItemColumnKind = "amount" | "readonlyAmount" | "text";
+const AmountColumnKind = "amount";
+const ReadonlyAmountColumnKind = "readonlyAmount";
+const TextColumnKind = "text";
+
+type SalesJournalItemColumnKind =
+	| typeof AmountColumnKind
+	| typeof ReadonlyAmountColumnKind
+	| typeof TextColumnKind;
 
 type SalesJournalItemColumnConfig = {
 	header: string;
@@ -27,7 +36,7 @@ type SalesJournalItemColumnConfig = {
 	widthClassName: string;
 };
 
-type SalesJournalColumnKind = "amount" | "text";
+type SalesJournalColumnKind = typeof AmountColumnKind | typeof TextColumnKind;
 
 type SalesJournalColumnConfig = {
 	header: string;
@@ -36,17 +45,6 @@ type SalesJournalColumnConfig = {
 	width: number;
 	widthClassName: string;
 };
-
-export type SalesJournalItemEntryUpdater = (
-	rowId: string,
-	updates: Partial<SalesJournalItemEntry>,
-) => void;
-
-export type SalesJournalEntryUpdater = (
-	rowId: string,
-	field: SalesJournalLineField,
-	value: string,
-) => void;
 
 export function createSalesJournalItemColumns(
 	isReadonly: boolean,
@@ -70,11 +68,14 @@ export function createSalesJournalItemColumns(
 				);
 			}
 
-			if (column.kind === "amount" || column.kind === "readonlyAmount") {
+			if (
+				column.kind === AmountColumnKind ||
+				column.kind === ReadonlyAmountColumnKind
+			) {
 				return (
 					<EntryAmountInput
 						value={String(row[column.id])}
-						readOnly={isReadonly || column.kind === "readonlyAmount"}
+						readOnly={isReadonly || column.kind === ReadonlyAmountColumnKind}
 						onValueChange={(value) => onUpdateEntry(row.id, { [column.id]: value })}
 					/>
 				);
@@ -137,7 +138,7 @@ function SalesJournalEntryCell({
 }) {
 	const value = String(row[column.id]);
 
-	if (column.kind === "amount") {
+	if (column.kind === AmountColumnKind) {
 		return (
 			<EntryAmountInput
 				value={formatSalesJournalAmount(Number(row[column.id] || 0))}
@@ -235,37 +236,49 @@ function salesJournalItemColumn(
 }
 
 const SalesJournalColumnConfigs = [
-	salesJournalColumn("Acct Code", "accountCode", "text", 150, "w-[9.5rem]"),
-	salesJournalColumn("Acct Title", "accountTitle", "text", 260, "w-[16rem]"),
-	salesJournalColumn("Debit", "debit", "amount", 140, "w-[8.75rem]"),
-	salesJournalColumn("Credit", "credit", "amount", 140, "w-[8.75rem]"),
+	salesJournalColumn("Acct Code", "accountCode", TextColumnKind, 150, "w-[9.5rem]"),
+	salesJournalColumn("Acct Title", "accountTitle", TextColumnKind, 260, "w-[16rem]"),
+	salesJournalColumn("Debit", "debit", AmountColumnKind, 140, "w-[8.75rem]"),
+	salesJournalColumn("Credit", "credit", AmountColumnKind, 140, "w-[8.75rem]"),
 ];
 
 const SalesJournalItemColumnConfigs = [
 	salesJournalItemColumn(
 		"Professional Service Type",
 		"professionalServiceType",
-		"text",
+		TextColumnKind,
 		260,
 		"w-[16rem]",
 	),
-	salesJournalItemColumn("Rate", "rate", "amount", 140, "w-[8.75rem]"),
-	salesJournalItemColumn("Qty", "quantity", "amount", 100, "w-[6.25rem]"),
-	salesJournalItemColumn("Amount", "amount", "readonlyAmount", 140, "w-[8.75rem]"),
-	salesJournalItemColumn("VAT", "vatAmount", "amount", 130, "w-[8.125rem]"),
+	salesJournalItemColumn("Rate", "rate", AmountColumnKind, 140, "w-[8.75rem]"),
+	salesJournalItemColumn("Qty", "quantity", AmountColumnKind, 100, "w-[6.25rem]"),
+	salesJournalItemColumn(
+		"Amount",
+		"amount",
+		ReadonlyAmountColumnKind,
+		140,
+		"w-[8.75rem]",
+	),
+	salesJournalItemColumn("VAT", "vatAmount", AmountColumnKind, 130, "w-[8.125rem]"),
 	salesJournalItemColumn(
 		"VAT Inc.",
 		"vatInclusiveAmount",
-		"readonlyAmount",
+		ReadonlyAmountColumnKind,
 		140,
 		"w-[8.75rem]",
 	),
 	salesJournalItemColumn(
 		"Disct",
 		"discountAmount",
-		"amount",
+		AmountColumnKind,
 		130,
 		"w-[8.125rem]",
 	),
-	salesJournalItemColumn("Net Amt", "netAmount", "readonlyAmount", 150, "w-[9.375rem]"),
+	salesJournalItemColumn(
+		"Net Amt",
+		"netAmount",
+		ReadonlyAmountColumnKind,
+		150,
+		"w-[9.375rem]",
+	),
 ];

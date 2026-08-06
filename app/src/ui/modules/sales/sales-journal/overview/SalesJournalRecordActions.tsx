@@ -1,5 +1,12 @@
 import { Ban, CheckCircle2, Edit3, Eye, Trash2, Undo2 } from "lucide-react";
-import { SalesJournalHref } from "@/app/src/constants/modules/sales/sales-journal/SalesJournalConstants";
+import {
+	SalesJournalApprovedStatus,
+	SalesJournalCancelledStatus,
+	SalesJournalClosedStatus,
+	SalesJournalDraftStatus,
+	SalesJournalHref,
+	SalesJournalOpenStatus,
+} from "@/app/src/constants/modules/sales/sales-journal/SalesJournalConstants";
 import type {
 	SalesJournalRecord,
 	SalesJournalStatus,
@@ -28,22 +35,30 @@ export function SalesJournalRecordActions({
 	onUpdateStatus,
 	record,
 }: SalesJournalRecordActionsProps) {
-	const isApproved = record.status === "Approved";
-	const isCancelled = record.status === "Cancelled";
+	const isApproved = record.status === SalesJournalApprovedStatus;
+	const isCancelled = record.status === SalesJournalCancelledStatus;
 	const canEdit = canEditSalesJournalStatus(record.status);
 	const items: ModuleActionMenuItem[] = [
 		{
 			disabled: !canApproveSalesJournalStatus(record.status),
 			icon: isApproved ? Undo2 : CheckCircle2,
 			label: isApproved ? "Undo Approved" : "Approve",
-			onSelect: () => onUpdateStatus(record, isApproved ? "Open" : "Approved"),
+			onSelect: () =>
+				onUpdateStatus(
+					record,
+					isApproved ? SalesJournalOpenStatus : SalesJournalApprovedStatus,
+				),
 			type: "button",
 		},
 		{
-			disabled: record.status === "Closed",
+			disabled: record.status === SalesJournalClosedStatus,
 			icon: Ban,
 			label: isCancelled ? "Uncancelled" : "Cancel",
-			onSelect: () => onUpdateStatus(record, isCancelled ? "Draft" : "Cancelled"),
+			onSelect: () =>
+				onUpdateStatus(
+					record,
+					isCancelled ? SalesJournalDraftStatus : SalesJournalCancelledStatus,
+				),
 			tone: isCancelled ? "default" : "danger",
 			type: "button",
 		},
@@ -92,9 +107,15 @@ export function SalesJournalRecordActions({
 }
 
 function canEditSalesJournalStatus(status: SalesJournalStatus) {
-	return status === "Draft" || status === "Open";
+	return (
+		status === SalesJournalDraftStatus || status === SalesJournalOpenStatus
+	);
 }
 
 function canApproveSalesJournalStatus(status: SalesJournalStatus) {
-	return status === "Draft" || status === "Open" || status === "Approved";
+	return (
+		status === SalesJournalDraftStatus ||
+		status === SalesJournalOpenStatus ||
+		status === SalesJournalApprovedStatus
+	);
 }

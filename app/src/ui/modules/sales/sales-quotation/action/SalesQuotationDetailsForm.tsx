@@ -1,5 +1,7 @@
-import type { SalesQuotationFormValues } from "@/app/src/types/modules/sales/sales-quotation/SalesQuotationTypes";
-import type { SalesQuotationFieldUpdater } from "@/app/src/ui/modules/sales/sales-quotation/action/SalesQuotationFormControls";
+import type {
+	SalesQuotationFieldUpdater,
+	SalesQuotationFormValues,
+} from "@/app/src/types/modules/sales/sales-quotation/SalesQuotationTypes";
 import { SalesQuotationPartyFields } from "@/app/src/ui/modules/sales/sales-quotation/action/SalesQuotationPartyFields";
 
 type SalesQuotationDetailsFormProps = {

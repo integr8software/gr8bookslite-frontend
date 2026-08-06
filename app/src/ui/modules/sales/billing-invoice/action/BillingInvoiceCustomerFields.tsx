@@ -6,7 +6,10 @@ import {
 	BillingInvoiceTeamOptions,
 	BillingInvoiceTermOptions,
 } from "@/app/src/data/modules/sales/billing-invoice/BillingInvoiceData";
-import type { BillingInvoiceFormValues } from "@/app/src/types/modules/sales/billing-invoice/BillingInvoiceTypes";
+import type {
+	BillingInvoiceFieldUpdater,
+	BillingInvoiceFormValues,
+} from "@/app/src/types/modules/sales/billing-invoice/BillingInvoiceTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
@@ -15,7 +18,6 @@ import {
 	FieldClassName,
 	FieldShell,
 	SelectField,
-	type BillingInvoiceFieldUpdater,
 } from "@/app/src/ui/modules/sales/billing-invoice/action/BillingInvoiceFieldControls";
 
 type BillingInvoiceCustomerFieldsProps = {

@@ -2,6 +2,11 @@ export type BillingInvoiceActionMode = "add" | "edit" | "view";
 
 export type BillingInvoiceEntriesTab = "accounts" | "items";
 
+export type BillingInvoiceFieldUpdater<TValues> = <Key extends keyof TValues>(
+	key: Key,
+	value: TValues[Key],
+) => void;
+
 export type BillingInvoiceStatus =
 	| "Active"
 	| "Approved"

@@ -542,7 +542,7 @@ export function AppAdvancedDropdown({
 						addAction.onClick();
 						setIsOpen(false);
 					}}
-					className="app-advanced-dropdown-add-action flex w-full items-center gap-2 border-b border-darknavy/10 bg-emerald-50 px-3 py-2.5 text-left text-sm font-semibold text-emerald-600 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-45"
+					className="app-advanced-dropdown-add-action flex w-full items-center gap-2 border-b border-darknavy/10 bg-skyblue/8 px-3 py-2.5 text-left text-sm font-semibold text-skyblue transition hover:bg-skyblue/12 disabled:cursor-not-allowed disabled:opacity-45"
 				>
 					<Plus className="h-4 w-4" aria-hidden="true" />
 					{addAction.label}

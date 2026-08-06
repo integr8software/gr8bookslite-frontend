@@ -11,7 +11,13 @@ import {
 import { useParams, usePathname, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import {
+  AccountsPayableVoucherAccountingCreditSide,
+  AccountsPayableVoucherAccountingDebitSide,
+  AccountsPayableVoucherBaseCurrencyCode,
+  AccountsPayableVoucherEwtTaxLabel,
   AccountsPayableVoucherHref,
+  AccountsPayableVoucherInputVatTaxLabel,
+  AccountsPayableVoucherPurchaseTransactionType,
   canEditAccountsPayableVoucherStatus,
 } from "@/app/src/constants/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherConstants";
 import {
@@ -76,7 +82,7 @@ type PartyPurchaseTaxDefaults = {
 };
 
 const PurchaseTaxCodeQuery = {
-  transactionType: "Purchases",
+  transactionType: AccountsPayableVoucherPurchaseTransactionType,
 } as const;
 
 const ManualInputVatAccountingEntryIdPrefix = "apv-entry-manual-input-vat-";
@@ -265,7 +271,10 @@ export function useAccountsPayableVoucherFormPage() {
     setValues((current) => ({
       ...current,
       currency: currencyCode,
-      exchangeRate: currencyCode === "PHP" ? 1 : current.exchangeRate,
+      exchangeRate:
+        currencyCode === AccountsPayableVoucherBaseCurrencyCode
+          ? 1
+          : current.exchangeRate,
     }));
     setErrors((current) => ({
       ...current,
@@ -273,7 +282,7 @@ export function useAccountsPayableVoucherFormPage() {
       exchangeRate: undefined,
     }));
 
-    if (currencyCode === "PHP") {
+    if (currencyCode === AccountsPayableVoucherBaseCurrencyCode) {
       setIsExchangeRateLoading(false);
       return;
     }
@@ -282,7 +291,9 @@ export function useAccountsPayableVoucherFormPage() {
 
     try {
       const rates = await FetchMultiCurrencyRates(currencyCode);
-      const phpRate = rates.find((rate) => rate.targetCurrencyCode === "PHP");
+      const phpRate = rates.find(
+        (rate) => rate.targetCurrencyCode === AccountsPayableVoucherBaseCurrencyCode,
+      );
 
       if (exchangeRateRequestIdRef.current !== requestId) {
         return;
@@ -1198,7 +1209,10 @@ function createManualInputVatAccountingEntry(
     },
   );
   const vatAmount = getManualAccountingTaxAmount(sourceEntry, vatPercent);
-  const vatEntryAmounts = getSignedAccountingEntryAmounts(vatAmount, "debit");
+  const vatEntryAmounts = getSignedAccountingEntryAmounts(
+    vatAmount,
+    AccountsPayableVoucherAccountingDebitSide,
+  );
 
   return createAccountsPayableVoucherAccountingEntry(
     sourceEntry.lineNumber + 1,
@@ -1211,10 +1225,10 @@ function createManualInputVatAccountingEntry(
       credit: vatEntryAmounts.credit,
       debit: vatEntryAmounts.debit,
       particulars: createManualAccountingTaxParticulars(
-        "Input VAT",
+        AccountsPayableVoucherInputVatTaxLabel,
         sourceEntry,
       ),
-      vatType: "Input VAT",
+      vatType: AccountsPayableVoucherInputVatTaxLabel,
     },
   );
 }
@@ -1245,7 +1259,10 @@ function createManualEwtAccountingEntry(
     },
   );
   const ewtAmount = getManualAccountingTaxAmount(sourceEntry, ewtPercent);
-  const ewtEntryAmounts = getSignedAccountingEntryAmounts(ewtAmount, "credit");
+  const ewtEntryAmounts = getSignedAccountingEntryAmounts(
+    ewtAmount,
+    AccountsPayableVoucherAccountingCreditSide,
+  );
 
   return createAccountsPayableVoucherAccountingEntry(
     sourceEntry.lineNumber + 1,
@@ -1257,8 +1274,11 @@ function createManualEwtAccountingEntry(
       atcCode: sourceEntry.atcCode,
       credit: ewtEntryAmounts.credit,
       debit: ewtEntryAmounts.debit,
-      particulars: createManualAccountingTaxParticulars("EWT", sourceEntry),
-      vatType: "EWT",
+      particulars: createManualAccountingTaxParticulars(
+        AccountsPayableVoucherEwtTaxLabel,
+        sourceEntry,
+      ),
+      vatType: AccountsPayableVoucherEwtTaxLabel,
     },
   );
 }
@@ -1285,7 +1305,7 @@ function createManualDefaultPayableAccountingEntry(
 
   const payableEntryAmounts = getSignedAccountingEntryAmounts(
     payableAmount,
-    "credit",
+    AccountsPayableVoucherAccountingCreditSide,
   );
   const referenceEntry =
     entries.find(
@@ -1341,7 +1361,7 @@ function createAccountsPayableVoucherGeneratedAccountingEntries(
     const ewtAmount = roundAccountingAmount(line.ewtAmount);
     const netEntryAmounts = getSignedAccountingEntryAmounts(
       netAmount,
-      "debit",
+      AccountsPayableVoucherAccountingDebitSide,
     );
 
     debitEntries.push(
@@ -1360,7 +1380,7 @@ function createAccountsPayableVoucherGeneratedAccountingEntries(
     if (line.vat.trim() && hasNonZeroAccountingAmount(vatAmount)) {
       const vatEntryAmounts = getSignedAccountingEntryAmounts(
         vatAmount,
-        "debit",
+        AccountsPayableVoucherAccountingDebitSide,
       );
 
       debitEntries.push(
@@ -1372,8 +1392,12 @@ function createAccountsPayableVoucherGeneratedAccountingEntries(
           atcCode: "",
           credit: vatEntryAmounts.credit,
           debit: vatEntryAmounts.debit,
-          particulars: createGeneratedTaxParticulars("Input VAT", values, line),
-          vatType: "Input VAT",
+          particulars: createGeneratedTaxParticulars(
+            AccountsPayableVoucherInputVatTaxLabel,
+            values,
+            line,
+          ),
+          vatType: AccountsPayableVoucherInputVatTaxLabel,
         }),
       );
     }
@@ -1381,7 +1405,7 @@ function createAccountsPayableVoucherGeneratedAccountingEntries(
     if (line.ewt.trim() && hasNonZeroAccountingAmount(ewtAmount)) {
       const ewtEntryAmounts = getSignedAccountingEntryAmounts(
         ewtAmount,
-        "credit",
+        AccountsPayableVoucherAccountingCreditSide,
       );
 
       ewtEntries.push(
@@ -1393,8 +1417,12 @@ function createAccountsPayableVoucherGeneratedAccountingEntries(
           atcCode: line.ewt,
           credit: ewtEntryAmounts.credit,
           debit: ewtEntryAmounts.debit,
-          particulars: createGeneratedTaxParticulars("EWT", values, line),
-          vatType: "EWT",
+          particulars: createGeneratedTaxParticulars(
+            AccountsPayableVoucherEwtTaxLabel,
+            values,
+            line,
+          ),
+          vatType: AccountsPayableVoucherEwtTaxLabel,
         }),
       );
     }
@@ -1419,7 +1447,7 @@ function createAccountsPayableVoucherGeneratedAccountingEntries(
     debitEntries[0];
   const payableEntryAmounts = getSignedAccountingEntryAmounts(
     totalAmountDue,
-    "credit",
+    AccountsPayableVoucherAccountingCreditSide,
   );
   const payableEntry = shouldCreateCreditEntry
     ? createAccountsPayableVoucherAccountingEntry(

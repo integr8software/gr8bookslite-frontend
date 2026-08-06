@@ -2,6 +2,11 @@ import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
 import {
   type AccountsPayableVoucherPayload,
   type AccountsPayableVoucherPartyLookupResponse,
+  type ApiAccountsPayableVoucher,
+  type ApiAccountsPayableVoucherDetails,
+  type ApiAccountsPayableVoucherPayableType,
+  type ApiAccountsPayableVoucherStatus,
+  type ApiJournalEntry,
   accountsPayableVoucherControllerCreateV1,
   accountsPayableVoucherControllerFindAllV1,
   accountsPayableVoucherControllerFindOneV1,
@@ -16,16 +21,11 @@ import {
 import type {
   AccountsPayableVoucherFormValues,
   AccountsPayableVoucherLookupParty,
-  AccountsPayableVoucherListResponse,
+  AccountsPayableVoucherListData,
   AccountsPayableVoucherNumberSuggestion,
   AccountsPayableVoucherPayableType,
   AccountsPayableVoucherRecord,
   AccountsPayableVoucherStatus,
-  ApiAccountsPayableVoucher,
-  ApiAccountsPayableVoucherPayableType,
-  ApiAccountsPayableVoucherStatus,
-  ApiAccountsPayableVoucherDetails,
-  ApiJournalEntry,
 } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
 
 type AccountsPayableVoucherListQuery = {
@@ -90,7 +90,7 @@ const PayableTypeToApi: Record<
 
 export async function fetchAccountsPayableVouchers(
   query: AccountsPayableVoucherListQuery = {},
-): Promise<AccountsPayableVoucherListResponse> {
+): Promise<AccountsPayableVoucherListData> {
   const response = await accountsPayableVoucherControllerFindAllV1(
     cleanQueryParams({
       amountFrom: query.amountFrom,

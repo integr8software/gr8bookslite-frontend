@@ -3,22 +3,140 @@
  * Mirrors the Orval client shape used by generated module clients.
  */
 import type {
+  AccountsPayableVoucherPagination,
+  AccountsPayableVoucherPayableType,
+  AccountsPayableVoucherPermissions,
   AccountsPayableVoucherLookupAccountOptions,
   AccountsPayableVoucherLookupDefaultAccounts,
   AccountsPayableVoucherLookupParty,
   AccountsPayableVoucherLookupResponsibilityCenter,
   AccountsPayableVoucherLookupTerm,
   AccountsPayableVoucherNumberSuggestion,
-  ApiAccountsPayableVoucherDetailResponse,
-  ApiAccountsPayableVoucherListResponse,
-  ApiAccountsPayableVoucherPayableType,
-  ApiAccountsPayableVoucherSaveResponse,
-  ApiAccountsPayableVoucherStatus,
+  AccountsPayableVoucherStatistics,
+  AccountsPayableVoucherStatus,
 } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
 
 import { OrvalApiClient } from "../../../services/shared/api/OrvalApiClient";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
+export type ApiAccountsPayableVoucherStatus =
+  | "DRAFT"
+  | "FOR_APPROVAL"
+  | "APPROVED"
+  | "POSTED"
+  | "DISAPPROVED"
+  | "CLOSED"
+  | "CANCELLED"
+  | AccountsPayableVoucherStatus;
+
+export type ApiAccountsPayableVoucherPayableType =
+  | "TRADE_PAYABLE"
+  | "NON_TRADE_PAYABLE"
+  | "EMPLOYEE_PAYABLE"
+  | "TAX_PAYABLE"
+  | "ACCRUED_PAYABLE"
+  | AccountsPayableVoucherPayableType;
+
+export type ApiAccountsPayableVoucherDetails = {
+  id: string;
+  companyId?: number;
+  branchUnitId?: number;
+  partyId?: string | null;
+  expenseAccountId?: string | null;
+  lineNumber: number;
+  expenseAccountCode: string;
+  expenseType: string;
+  currencyCode: string;
+  exchangeRate: number;
+  amount: number;
+  netAmount: number;
+  vat?: string | null;
+  vatPercent: number;
+  vatAmount: number;
+  ewt?: string | null;
+  ewtPercent: number;
+  ewtAmount: number;
+  totalAmountDue: number;
+  partyCode?: string | null;
+  partyName?: string | null;
+  particulars?: string | null;
+  responsibilityCenterId?: string | null;
+  responsibilityCenter?: string | null;
+  referenceNo?: string | null;
+};
+
+export type ApiJournalEntry = {
+  id: string;
+  referenceType?: string | null;
+  referenceId?: string | null;
+  accountId?: string | null;
+  lineNumber: number;
+  accountCode: string;
+  accountTitle: string;
+  currencyCode: string;
+  exchangeRate: number;
+  particulars?: string | null;
+  debit: number;
+  credit: number;
+  vatType?: string | null;
+  atcCode?: string | null;
+  partyCode?: string | null;
+  partyName?: string | null;
+  responsibilityCenterId?: string | null;
+  responsibilityCenter?: string | null;
+  refNo?: string | null;
+};
+
+export type ApiAccountsPayableVoucher = {
+  id: string;
+  branchUnitId?: number;
+  transactionNo: string;
+  documentDate: string;
+  partyId?: string | null;
+  partyCode: string;
+  partyName: string;
+  address?: string | null;
+  contactPerson?: string | null;
+  contactNo?: string | null;
+  projectCode?: string | null;
+  projectName?: string | null;
+  currency: string;
+  exchangeRate: number;
+  amount: number;
+  termId?: string | null;
+  terms?: string | null;
+  dueDate: string;
+  referenceNo?: string | null;
+  creditAccountId?: string | null;
+  creditAccountCode: string;
+  creditAccountTitle: string;
+  payableType: ApiAccountsPayableVoucherPayableType;
+  remarks?: string | null;
+  status: ApiAccountsPayableVoucherStatus;
+  details: ApiAccountsPayableVoucherDetails[];
+  journalEntries: ApiJournalEntry[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ApiAccountsPayableVoucherListResponse = {
+  vouchers: ApiAccountsPayableVoucher[];
+  statistics: AccountsPayableVoucherStatistics;
+  pagination: AccountsPayableVoucherPagination;
+  permissions: AccountsPayableVoucherPermissions;
+};
+
+export type ApiAccountsPayableVoucherSaveResponse = {
+  message?: string;
+  voucher: ApiAccountsPayableVoucher;
+  permissions?: AccountsPayableVoucherPermissions;
+};
+
+export type ApiAccountsPayableVoucherDetailResponse = {
+  voucher: ApiAccountsPayableVoucher;
+  permissions: AccountsPayableVoucherPermissions;
+};
 
 export type AccountsPayableVoucherControllerFindAllV1Params = {
   amountFrom?: number | null;

@@ -2,6 +2,7 @@
 
 import { useMemo, useState, type ChangeEventHandler, type ReactNode } from "react";
 import { MultiCurrencyCatalog } from "@/app/src/data/modules/system-administration/multi-currency-setup/MultiCurrencySetupData";
+import { AccountsPayableVoucherPurchaseTransactionType } from "@/app/src/constants/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherConstants";
 import { calculateAccountsPayableVoucherDueDate } from "@/app/src/data/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherData";
 import {
   findModuleChartAccount,
@@ -49,7 +50,7 @@ const errorClassName = "mt-1.5 block text-xs font-semibold text-coralpink";
 const AttachedDropdownClassName = "";
 const RemarksMaxLength = 500;
 const PurchaseTaxCodeQuery = {
-  transactionType: "Purchases",
+  transactionType: AccountsPayableVoucherPurchaseTransactionType,
 } as const;
 
 export function AccountsPayableVoucherFormPage() {

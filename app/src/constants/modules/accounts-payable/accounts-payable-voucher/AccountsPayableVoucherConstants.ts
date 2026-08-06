@@ -1,6 +1,8 @@
 import type { SortingState, VisibilityState } from "@tanstack/react-table";
 import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type {
+  AccountsPayableVoucherAccountingColumnId,
+  AccountsPayableVoucherExpenseColumnId,
   AccountsPayableVoucherPayableType,
   AccountsPayableVoucherStatus,
 } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
@@ -113,6 +115,13 @@ export const AccountsPayableVoucherCurrencyOptions = [
   "JPY",
 ] as const;
 
+export const AccountsPayableVoucherBaseCurrencyCode = "PHP";
+export const AccountsPayableVoucherPurchaseTransactionType = "Purchases";
+export const AccountsPayableVoucherAccountingCreditSide = "credit";
+export const AccountsPayableVoucherAccountingDebitSide = "debit";
+export const AccountsPayableVoucherEwtTaxLabel = "EWT";
+export const AccountsPayableVoucherInputVatTaxLabel = "Input VAT";
+
 export const AccountsPayableVoucherPayableTypeOptions: AccountsPayableVoucherPayableType[] =
   [
     "Trade Payable",
@@ -164,9 +173,6 @@ export const AccountsPayableVoucherExpenseColumnIds = [
   "responsibilityCenter",
   "referenceNo",
 ] as const;
-
-export type AccountsPayableVoucherExpenseColumnId =
-  (typeof AccountsPayableVoucherExpenseColumnIds)[number];
 
 export const AccountsPayableVoucherExpenseProtectedColumnIds =
   new Set<AccountsPayableVoucherExpenseColumnId>([
@@ -237,9 +243,6 @@ export const AccountsPayableVoucherAccountingColumnIds = [
   "responsibilityCenter",
   "refNo",
 ] as const;
-
-export type AccountsPayableVoucherAccountingColumnId =
-  (typeof AccountsPayableVoucherAccountingColumnIds)[number];
 
 export const AccountsPayableVoucherAccountingProtectedColumnIds =
   new Set<AccountsPayableVoucherAccountingColumnId>([

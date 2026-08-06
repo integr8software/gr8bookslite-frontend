@@ -18,7 +18,7 @@ import {
 import { AccountsPayableVoucherQueryKeys } from "@/app/src/services/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherQueryKeys";
 import type {
   AccountsPayableVoucherFormValues,
-  AccountsPayableVoucherListResponse,
+  AccountsPayableVoucherListData,
   AccountsPayableVoucherPagination,
   AccountsPayableVoucherPermissions,
   AccountsPayableVoucherRecord,
@@ -214,7 +214,7 @@ export function useAccountsPayableVoucherRecord(recordId?: string) {
       Boolean(recordId) && activeCompanyId !== null && activeBranchId !== null,
     initialData: () =>
       queryClient
-        .getQueryData<AccountsPayableVoucherListResponse>(
+        .getQueryData<AccountsPayableVoucherListData>(
           AccountsPayableVoucherQueryKeys.records(activeCompanyId, activeBranchId),
         )
         ?.records.find((record) => record.id === recordId),

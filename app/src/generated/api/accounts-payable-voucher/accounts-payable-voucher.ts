@@ -3,19 +3,18 @@
  * Mirrors the Orval client shape used by generated module clients.
  */
 import type {
+  AccountsPayableVoucherLookupAccountOptions,
+  AccountsPayableVoucherLookupDefaultAccounts,
+  AccountsPayableVoucherLookupParty,
+  AccountsPayableVoucherLookupResponsibilityCenter,
+  AccountsPayableVoucherLookupTerm,
   AccountsPayableVoucherNumberSuggestion,
   ApiAccountsPayableVoucherDetailResponse,
   ApiAccountsPayableVoucherListResponse,
+  ApiAccountsPayableVoucherPayableType,
   ApiAccountsPayableVoucherSaveResponse,
+  ApiAccountsPayableVoucherStatus,
 } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
-import type {
-  AccountsPayableVoucherPartyLookupResponse,
-  AccountsPayableVoucherPayload,
-  AccountsPayableVoucherPayableAccountLookupResponse,
-  AccountsPayableVoucherResponsibilityCenterLookupResponse,
-  AccountsPayableVoucherTermLookupResponse,
-  UpdateAccountsPayableVoucherStatusDto,
-} from "@/app/src/services/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherApi";
 
 import { OrvalApiClient } from "../../../services/shared/api/OrvalApiClient";
 
@@ -51,6 +50,99 @@ export type AccountsPayableVoucherControllerFindOneV1Params = Pick<
 
 export type AccountsPayableVoucherControllerSuggestTransactionNumberV1Params =
   Pick<AccountsPayableVoucherControllerFindAllV1Params, "branchUnitId">;
+
+export type AccountsPayableVoucherPayload = {
+  amount: number;
+  branchUnitId?: number | null;
+  contactNo?: string | null;
+  contactPerson?: string | null;
+  creditAccountCode: string;
+  creditAccountId?: string | null;
+  creditAccountTitle: string;
+  currency: string;
+  details: AccountsPayableVoucherDetailsPayload[];
+  documentDate: string;
+  dueDate: string;
+  exchangeRate: number;
+  journalEntries: JournalEntryPayload[];
+  partyCode: string;
+  partyId?: string | null;
+  partyName: string;
+  payableType: ApiAccountsPayableVoucherPayableType;
+  projectCode?: string | null;
+  projectName?: string | null;
+  referenceNo?: string | null;
+  remarks?: string | null;
+  termId: string;
+  terms?: string | null;
+  transactionNo?: string | null;
+};
+
+export type AccountsPayableVoucherDetailsPayload = {
+  amount: number;
+  currencyCode: string;
+  ewt?: string | null;
+  ewtAmount: number;
+  ewtPercent: number;
+  exchangeRate: number;
+  expenseAccountCode: string;
+  expenseAccountId?: string | null;
+  expenseType: string;
+  lineNumber: number;
+  netAmount: number;
+  particulars?: string | null;
+  partyCode?: string | null;
+  partyId?: string | null;
+  partyName?: string | null;
+  referenceNo?: string | null;
+  responsibilityCenter?: string | null;
+  responsibilityCenterId?: string | null;
+  totalAmountDue: number;
+  vat?: string | null;
+  vatAmount: number;
+  vatPercent: number;
+};
+
+export type JournalEntryPayload = {
+  accountCode: string;
+  accountId?: string | null;
+  accountTitle: string;
+  atcCode?: string | null;
+  credit: number;
+  currencyCode: string;
+  debit: number;
+  exchangeRate: number;
+  lineNumber: number;
+  particulars?: string | null;
+  partyCode?: string | null;
+  partyName?: string | null;
+  referenceType: string;
+  refNo?: string | null;
+  responsibilityCenter?: string | null;
+  responsibilityCenterId?: string | null;
+  vatType?: string | null;
+};
+
+export type AccountsPayableVoucherPartyLookupResponse = {
+  parties: AccountsPayableVoucherLookupParty[];
+};
+
+export type AccountsPayableVoucherTermLookupResponse = {
+  terms: AccountsPayableVoucherLookupTerm[];
+};
+
+export type AccountsPayableVoucherResponsibilityCenterLookupResponse = {
+  responsibilityCenters: AccountsPayableVoucherLookupResponsibilityCenter[];
+};
+
+export type AccountsPayableVoucherPayableAccountLookupResponse = {
+  defaultAccounts: AccountsPayableVoucherLookupDefaultAccounts;
+  accountOptions: AccountsPayableVoucherLookupAccountOptions;
+};
+
+export type UpdateAccountsPayableVoucherStatusDto = {
+  status: ApiAccountsPayableVoucherStatus;
+};
 
 const AccountsPayableVoucherUrl =
   "/api/v1/accounts-payable/accounts-payable-voucher";

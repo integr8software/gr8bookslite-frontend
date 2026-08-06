@@ -1,5 +1,7 @@
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
 import {
+  type AccountsPayableVoucherPayload,
+  type AccountsPayableVoucherPartyLookupResponse,
   accountsPayableVoucherControllerCreateV1,
   accountsPayableVoucherControllerFindAllV1,
   accountsPayableVoucherControllerFindOneV1,
@@ -13,11 +15,7 @@ import {
 } from "@/app/src/generated/api/accounts-payable-voucher/accounts-payable-voucher";
 import type {
   AccountsPayableVoucherFormValues,
-  AccountsPayableVoucherLookupAccountOptions,
-  AccountsPayableVoucherLookupDefaultAccounts,
   AccountsPayableVoucherLookupParty,
-  AccountsPayableVoucherLookupResponsibilityCenter,
-  AccountsPayableVoucherLookupTerm,
   AccountsPayableVoucherListResponse,
   AccountsPayableVoucherNumberSuggestion,
   AccountsPayableVoucherPayableType,
@@ -51,112 +49,6 @@ type AccountsPayableVoucherListQuery = {
     | "updatedAt";
   sortDirection?: "asc" | "desc";
   status?: AccountsPayableVoucherStatus | "all" | null;
-};
-
-export type AccountsPayableVoucherPayload = {
-  amount: number;
-  branchUnitId?: number | null;
-  contactNo?: string | null;
-  contactPerson?: string | null;
-  creditAccountCode: string;
-  creditAccountId?: string | null;
-  creditAccountTitle: string;
-  currency: string;
-  details: AccountsPayableVoucherDetailsPayload[];
-  documentDate: string;
-  dueDate: string;
-  exchangeRate: number;
-  journalEntries: JournalEntryPayload[];
-  partyCode: string;
-  partyId?: string | null;
-  partyName: string;
-  payableType: ApiAccountsPayableVoucherPayableType;
-  projectCode?: string | null;
-  projectName?: string | null;
-  referenceNo?: string | null;
-  remarks?: string | null;
-  termId: string;
-  terms?: string | null;
-  transactionNo?: string | null;
-};
-
-type AccountsPayableVoucherDetailsPayload = {
-  amount: number;
-  currencyCode: string;
-  ewt?: string | null;
-  ewtAmount: number;
-  ewtPercent: number;
-  exchangeRate: number;
-  expenseAccountCode: string;
-  expenseAccountId?: string | null;
-  expenseType: string;
-  lineNumber: number;
-  netAmount: number;
-  particulars?: string | null;
-  partyCode?: string | null;
-  partyId?: string | null;
-  partyName?: string | null;
-  referenceNo?: string | null;
-  responsibilityCenter?: string | null;
-  responsibilityCenterId?: string | null;
-  totalAmountDue: number;
-  vat?: string | null;
-  vatAmount: number;
-  vatPercent: number;
-};
-
-type JournalEntryPayload = {
-  accountCode: string;
-  accountId?: string | null;
-  accountTitle: string;
-  atcCode?: string | null;
-  credit: number;
-  currencyCode: string;
-  debit: number;
-  exchangeRate: number;
-  lineNumber: number;
-  particulars?: string | null;
-  partyCode?: string | null;
-  partyName?: string | null;
-  referenceType: string;
-  refNo?: string | null;
-  responsibilityCenter?: string | null;
-  responsibilityCenterId?: string | null;
-  vatType?: string | null;
-};
-
-export type AccountsPayableVoucherPartyLookupResponse = {
-  parties: AccountsPayableVoucherLookupParty[];
-};
-
-type AccountsPayableVoucherFullPartyLookupResponse = {
-  parties: Array<
-    Partial<AccountsPayableVoucherLookupParty> & {
-      partyName?: string | null;
-      tradeName?: string | null;
-      firstName?: string | null;
-      middleName?: string | null;
-      lastName?: string | null;
-      suffixName?: string | null;
-    }
-  >;
-};
-
-export type AccountsPayableVoucherTermLookupResponse = {
-  terms: AccountsPayableVoucherLookupTerm[];
-};
-
-export type AccountsPayableVoucherResponsibilityCenterLookupResponse = {
-  responsibilityCenters: AccountsPayableVoucherLookupResponsibilityCenter[];
-};
-
-export type AccountsPayableVoucherPayableAccountLookupResponse = {
-  defaultAccounts: AccountsPayableVoucherLookupDefaultAccounts;
-  accountOptions: AccountsPayableVoucherLookupAccountOptions;
-};
-
-export type UpdateAccountsPayableVoucherStatusDto = {
-  status: ApiAccountsPayableVoucherStatus;
 };
 
 const StatusFromApi: Record<string, AccountsPayableVoucherStatus> = {
@@ -314,7 +206,18 @@ async function fetchAccountsPayableVoucherSharedPartyOptions() {
 
 async function fetchAccountsPayableVoucherFullPartyFallback() {
   try {
-    const response = await ApiClient.get<AccountsPayableVoucherFullPartyLookupResponse>(
+    const response = await ApiClient.get<{
+      parties: Array<
+        Partial<AccountsPayableVoucherLookupParty> & {
+          partyName?: string | null;
+          tradeName?: string | null;
+          firstName?: string | null;
+          middleName?: string | null;
+          lastName?: string | null;
+          suffixName?: string | null;
+        }
+      >;
+    }>(
       "/maintenance/party-maintenance",
       {
         params: {

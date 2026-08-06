@@ -1,4 +1,5 @@
 import type { JournalVoucherStatus } from "@/app/src/types/modules/general-journal/journal-voucher/JournalVoucherTypes";
+import type { JournalVoucherLineColumnId} from "@/app/src/types/modules/general-journal/journal-voucher/JournalVoucherTypes"
 
 export const JournalVoucherHref = "/general-journal/journal-voucher";
 
@@ -90,8 +91,7 @@ export const JournalVoucherLineColumnIds = [
   "refNo",
 ] as const;
 
-export type JournalVoucherLineColumnId =
-  (typeof JournalVoucherLineColumnIds)[number];
+
 
 export const JournalVoucherProtectedLineColumnIds =
   new Set<JournalVoucherLineColumnId>([

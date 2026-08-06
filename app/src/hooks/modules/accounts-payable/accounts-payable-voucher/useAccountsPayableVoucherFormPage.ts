@@ -1737,7 +1737,7 @@ function getManualAccountingEwtPercent(
   const taxCode = context.taxCodes.find(
     (row) =>
       row.transactionType === "Purchases" &&
-      row.taxType === "EWT" &&
+      row.taxType === AccountsPayableVoucherEwtTaxLabel &&
       row.taxCode === atcValue,
   );
 
@@ -1768,7 +1768,7 @@ function getExplicitVatPercent(value: string) {
 }
 
 function getExplicitEwtPercent(value: string) {
-  return getExplicitCodePercent(value, "EWT") ?? getPercentSignAmount(value);
+  return getExplicitCodePercent(value, AccountsPayableVoucherEwtTaxLabel) ?? getPercentSignAmount(value);
 }
 
 function getExplicitCodePercent(value: string, codePrefix: "EWT" | "VAT") {
@@ -1887,7 +1887,7 @@ function getHeaderPartyPurchaseTaxDefaults(
   const ewtCode = getTaxCodeBySourceKey(
     taxCodes,
     party.defaultPurchaseEwtTaxSourceKey,
-    "EWT",
+    AccountsPayableVoucherEwtTaxLabel,
   );
   const inputVatRate = getVatRateFromCode(inputVatCode, taxCodes);
 

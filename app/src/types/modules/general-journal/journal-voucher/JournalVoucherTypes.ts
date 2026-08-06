@@ -1,3 +1,5 @@
+import type { JournalVoucherLineColumnIds} from "@/app/src/constants/modules/general-journal/journal-voucher/JournalVoucherConstants"
+
 export type JournalVoucherStatus =
   | "Draft"
   | "For Approval"
@@ -48,3 +50,6 @@ export type JournalVoucherFormErrors = Partial<
 };
 
 export type JournalVoucherActionMode = "add" | "edit" | "view";
+
+export type JournalVoucherLineColumnId =
+  (typeof JournalVoucherLineColumnIds)[number];

@@ -115,34 +115,36 @@ export function GoodsReceiptWarehouseFields({
             onChange={(value) => onUpdateField("receivingWarehouse", String(value))}
           />
         </FieldShell>
-        <FieldShell controlId="goods-receipt-currency" label="Currency">
-          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_8.5rem]">
-            <AppAdvancedDropdown
-              id="goods-receipt-currency"
-              value={values.currency}
-              readOnly={isReadonly}
-              options={GoodsReceiptCurrencyOptions}
-              placeholder="Select currency"
-              searchPlaceholder="Search currency"
-              onChange={(value) => onUpdateField("currency", String(value))}
-            />
-            <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2">
-              <label
-                htmlFor="goods-receipt-exchange-rate"
-                className="text-sm font-semibold text-darknavy"
-              >
-                ER:
-              </label>
-              <MoneyNumberField
-                id="goods-receipt-exchange-rate"
-                value={values.exchangeRate}
-                readOnly={isReadonly}
-                onValueChange={(value) => onUpdateField("exchangeRate", value)}
-                className={`${FieldClassName} text-right`}
-              />
-            </div>
-          </div>
-        </FieldShell>
+        <div className="grid min-w-0 gap-1.5 sm:grid-cols-[7.5rem_minmax(0,1fr)_max-content_6.5rem] sm:items-start">
+          <label
+            htmlFor="goods-receipt-currency"
+            className="pt-2 text-sm font-semibold text-darknavy"
+          >
+            Currency
+          </label>
+          <AppAdvancedDropdown
+            id="goods-receipt-currency"
+            value={values.currency}
+            readOnly={isReadonly}
+            options={GoodsReceiptCurrencyOptions}
+            placeholder="Select currency"
+            searchPlaceholder="Search currency"
+            onChange={(value) => onUpdateField("currency", String(value))}
+          />
+          <label
+            htmlFor="goods-receipt-exchange-rate"
+            className="pt-2 text-sm font-semibold text-darknavy"
+          >
+            Exchange Rate
+          </label>
+          <MoneyNumberField
+            id="goods-receipt-exchange-rate"
+            value={values.exchangeRate}
+            readOnly={isReadonly}
+            onValueChange={(value) => onUpdateField("exchangeRate", value)}
+            className={`${FieldClassName} text-right tabular-nums`}
+          />
+        </div>
       </div>
 
       <div className="grid min-w-0 content-start gap-4">

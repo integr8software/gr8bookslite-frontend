@@ -19,7 +19,7 @@ type BillingCustomerFieldsProps = {
 
 export function BillingCustomerFields({ isReadonly, onUpdateField, values }: BillingCustomerFieldsProps) {
   return (
-    <div className="grid min-w-0 content-start gap-x-8 gap-y-3 xl:grid-cols-3">
+    <div className="grid min-w-0 gap-x-8 gap-y-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(16rem,0.65fr)]">
       <div className="grid min-w-0 content-start gap-3">
         <FieldShell controlId="billing-name" label="Party Name" isRequired>
           <AppAdvancedDropdown
@@ -29,12 +29,6 @@ export function BillingCustomerFields({ isReadonly, onUpdateField, values }: Bil
             options={BillingPartyOptions}
             placeholder=""
             searchPlaceholder="Search customer"
-            showSelectedDetails
-            addAction={{
-              disabled: isReadonly,
-              label: "Add",
-              onClick: () => undefined,
-            }}
             onChange={(value) => {
               const partyName = String(value);
               const selectedParty = BillingPartyOptions.find((option) => option.value === partyName);
@@ -44,12 +38,12 @@ export function BillingCustomerFields({ isReadonly, onUpdateField, values }: Bil
             }}
           />
         </FieldShell>
-        <FieldShell controlId="billing-code" label="Party Code">
+        <FieldShell controlId="billing-bill-to-name" label="Bill To Name">
           <input
-            id="billing-code"
-            value={values.code}
+            id="billing-bill-to-name"
+            value={values.billToName}
             readOnly={isReadonly}
-            onChange={(event) => onUpdateField("code", event.target.value)}
+            onChange={(event) => onUpdateField("billToName", event.target.value)}
             className={FieldClassName}
           />
         </FieldShell>
@@ -77,15 +71,6 @@ export function BillingCustomerFields({ isReadonly, onUpdateField, values }: Bil
             value={values.contactNo}
             readOnly={isReadonly}
             onChange={(event) => onUpdateField("contactNo", event.target.value)}
-            className={FieldClassName}
-          />
-        </FieldShell>
-        <FieldShell controlId="billing-bill-to-name" label="Bill To Name">
-          <input
-            id="billing-bill-to-name"
-            value={values.billToName}
-            readOnly={isReadonly}
-            onChange={(event) => onUpdateField("billToName", event.target.value)}
             className={FieldClassName}
           />
         </FieldShell>
@@ -120,6 +105,15 @@ export function BillingCustomerFields({ isReadonly, onUpdateField, values }: Bil
         </FieldShell>
       </div>
       <div className="grid min-w-0 content-start gap-3">
+        <FieldShell controlId="billing-code" label="Party Code">
+          <input
+            id="billing-code"
+            value={values.code}
+            readOnly={isReadonly}
+            onChange={(event) => onUpdateField("code", event.target.value)}
+            className={FieldClassName}
+          />
+        </FieldShell>
         <FieldShell controlId="billing-terms" label="Terms of Payment">
           <AppAdvancedDropdown
             id="billing-terms"
@@ -142,7 +136,7 @@ export function BillingCustomerFields({ isReadonly, onUpdateField, values }: Bil
           />
         </FieldShell>
         <FieldShell controlId="billing-currency" label="Currency">
-          <div className="grid min-w-0 gap-3 sm:grid-cols-[7rem_minmax(0,1fr)]">
+          <div className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto_6.5rem] sm:items-start">
             <AppAdvancedDropdown
               id="billing-currency"
               value={values.currency}
@@ -153,18 +147,16 @@ export function BillingCustomerFields({ isReadonly, onUpdateField, values }: Bil
               searchPlaceholder="Search currency"
               onChange={(value) => onUpdateField("currency", String(value))}
             />
-            <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2">
-              <label htmlFor="billing-exchange-rate" className="text-sm font-semibold text-darknavy">
-                ER:
-              </label>
-              <MoneyNumberField
-                id="billing-exchange-rate"
-                value={values.exchangeRate}
-                readOnly={isReadonly}
-                onValueChange={(value) => onUpdateField("exchangeRate", value)}
-                className={`${FieldClassName} text-right`}
-              />
-            </div>
+            <label htmlFor="billing-exchange-rate" className="pt-2 text-sm font-semibold text-darknavy">
+              ER
+            </label>
+            <MoneyNumberField
+              id="billing-exchange-rate"
+              value={values.exchangeRate}
+              readOnly={isReadonly}
+              onValueChange={(value) => onUpdateField("exchangeRate", value)}
+              className={`${FieldClassName} text-right tabular-nums`}
+            />
           </div>
         </FieldShell>
         <FieldShell controlId="billing-res-center" label="Responsibility Center">

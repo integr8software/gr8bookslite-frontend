@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { BillingStatementActionPage } from "@/app/src/ui/modules/sales/billing-statement/action/BillingStatementActionPage";
+import { BillingStatementActionPage } from "@/app/src/ui/modules/sales/billing-statement/form/BillingStatementActionPage";
 
 const PageTitle = "Add Billing Statement";
 

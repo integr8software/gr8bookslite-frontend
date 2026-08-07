@@ -12,6 +12,9 @@ import {
   Edit3,
   Eye,
   LoaderCircle,
+  Ban,
+  ThumbsDown,
+  ThumbsUp,
   Trash2,
   type LucideIcon,
 } from "lucide-react";
@@ -22,7 +25,10 @@ import {
 
 export type ModuleTableActionVariant =
   | "active"
+  | "approve"
+  | "cancel"
   | "delete"
+  | "disapprove"
   | "edit"
   | "inactive"
   | "neutral"
@@ -120,8 +126,14 @@ function renderActionIcon(
   switch (variant) {
     case "active":
       return <CheckCircle2 className="h-4 w-4" aria-hidden="true" />;
+    case "approve":
+      return <ThumbsUp className="h-4 w-4" aria-hidden="true" />;
+    case "cancel":
+      return <Ban className="h-4 w-4" aria-hidden="true" />;
     case "delete":
       return <Trash2 className="h-4 w-4" aria-hidden="true" />;
+    case "disapprove":
+      return <ThumbsDown className="h-4 w-4" aria-hidden="true" />;
     case "edit":
       return <Edit3 className="h-4 w-4" aria-hidden="true" />;
     case "inactive":
@@ -139,8 +151,11 @@ function getActionClassName(variant: ModuleTableActionVariant) {
 
   switch (variant) {
     case "active":
+    case "approve":
       return `${baseClassName} border-emerald-200 text-emerald-700 hover:bg-emerald-50 focus-visible:ring-emerald-500/25`;
+    case "cancel":
     case "delete":
+    case "disapprove":
     case "inactive":
       return `${baseClassName} border-coralpink/30 text-coralpink hover:bg-coralpink/10 focus-visible:ring-coralpink/30`;
     case "edit":

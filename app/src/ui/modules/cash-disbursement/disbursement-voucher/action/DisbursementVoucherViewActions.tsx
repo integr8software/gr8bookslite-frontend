@@ -2,9 +2,9 @@ import dynamic from "next/dynamic";
 import { useState } from "react";
 import {
   Ban,
-  CheckCircle2,
   History,
   ThumbsDown,
+  ThumbsUp,
   Undo2,
 } from "lucide-react";
 import {
@@ -25,7 +25,6 @@ import {
   type ModuleActionMenuItem,
 } from "@/app/src/ui/shared/module/ModuleActionMenu";
 import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ModuleTooltip } from "@/app/src/ui/shared/module/ModuleTooltip";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 
 const ModuleHistoryDialog = dynamic(
@@ -110,6 +109,7 @@ export function DisbursementVoucherViewActions({
           description={statusDialogCopy.description}
           cancelLabel="Keep Current Status"
           confirmLabel={statusDialogCopy.confirmLabel}
+          iconTone={statusDialogCopy.iconTone}
           pendingLabel={statusDialogCopy.pendingLabel}
           tone={statusDialogCopy.tone}
           onCancel={() => setStatusToConfirm(null)}
@@ -155,7 +155,7 @@ function createDisbursementVoucherViewActionItems({
     {
       disabled:
         !onUpdateStatus || !canApproveDisbursementVoucherStatus(status),
-      icon: isPosted ? Undo2 : CheckCircle2,
+      icon: isPosted ? Undo2 : ThumbsUp,
       label: isPosted ? "Undo Approved" : "Approve",
       onSelect: () => {
         if (isPosted) {
@@ -239,17 +239,16 @@ function HeaderHistoryButton({
   const Icon = action.icon;
 
   return (
-    <ModuleTooltip title="History" description="Open voucher history.">
-      <button
-        type="button"
-        disabled={action.disabled}
-        onClick={action.onSelect}
-        className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-darknavy/10 bg-white text-darknavy/70 shadow-sm shadow-darknavy/5 transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20 disabled:cursor-not-allowed disabled:opacity-45"
-        aria-label="Open disbursement voucher history"
-      >
-        <Icon className="h-4 w-4" aria-hidden="true" />
-      </button>
-    </ModuleTooltip>
+    <button
+      type="button"
+      disabled={action.disabled}
+      onClick={action.onSelect}
+      className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy/70 shadow-sm shadow-darknavy/5 transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20 disabled:cursor-not-allowed disabled:opacity-45"
+      aria-label="Open disbursement voucher history"
+    >
+      <Icon className="h-4 w-4" aria-hidden="true" />
+      {action.label}
+    </button>
   );
 }
 
@@ -318,6 +317,7 @@ function getStatusDialogCopy(
     return {
       confirmLabel: "Approve Voucher",
       description: `This will approve ${recordLabel} and update its status to Posted.`,
+      iconTone: "approve" as const,
       pendingLabel: "Approving...",
       title: "Approve disbursement voucher?",
       tone: "success" as const,
@@ -328,6 +328,7 @@ function getStatusDialogCopy(
     return {
       confirmLabel: "Disapprove Voucher",
       description: `This will mark ${recordLabel} as Disapproved.`,
+      iconTone: "disapprove" as const,
       pendingLabel: "Disapproving...",
       title: "Disapprove disbursement voucher?",
       tone: "danger" as const,
@@ -337,6 +338,7 @@ function getStatusDialogCopy(
   return {
     confirmLabel: "Mark as Cancelled",
     description: `This will mark ${recordLabel} as Cancelled.`,
+    iconTone: "cancel" as const,
     pendingLabel: "Cancelling...",
     title: "Make Disbursement Voucher as Cancelled",
     tone: "danger" as const,

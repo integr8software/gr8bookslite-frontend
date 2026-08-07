@@ -1,11 +1,11 @@
 import { useState } from "react";
 import {
 	Ban,
-	CheckCircle2,
 	Edit3,
 	Eye,
 	History as HistoryIcon,
 	ThumbsDown,
+	ThumbsUp,
 	Undo2,
 } from "lucide-react";
 import {
@@ -81,7 +81,7 @@ export function DisbursementVoucherRecordActions({
 			: []),
 		{
 			disabled: !canApproveDisbursementVoucherStatus(status),
-			icon: isPosted ? Undo2 : CheckCircle2,
+			icon: isPosted ? Undo2 : ThumbsUp,
 			label: isPosted ? "Undo Approved" : "Approve",
 			onSelect: () => {
 				if (isPosted) {
@@ -146,6 +146,7 @@ export function DisbursementVoucherRecordActions({
 					description={statusDialogCopy.description}
 					cancelLabel="Keep Current Status"
 					confirmLabel={statusDialogCopy.confirmLabel}
+					iconTone={statusDialogCopy.iconTone}
 					pendingLabel={statusDialogCopy.pendingLabel}
 					tone={statusDialogCopy.tone}
 					onCancel={() => setStatusToConfirm(null)}
@@ -205,6 +206,7 @@ function getStatusDialogCopy(
 		return {
 			confirmLabel: "Approve Voucher",
 			description: `This will approve ${recordLabel} and update its status to Posted.`,
+			iconTone: "approve" as const,
 			pendingLabel: "Approving...",
 			title: "Approve disbursement voucher?",
 			tone: "success" as const,
@@ -215,6 +217,7 @@ function getStatusDialogCopy(
 		return {
 			confirmLabel: "Disapprove Voucher",
 			description: `This will mark ${recordLabel} as Disapproved.`,
+			iconTone: "disapprove" as const,
 			pendingLabel: "Disapproving...",
 			title: "Disapprove disbursement voucher?",
 			tone: "danger" as const,
@@ -224,6 +227,7 @@ function getStatusDialogCopy(
 	return {
 		confirmLabel: "Mark as Cancelled",
 		description: `This will mark ${recordLabel} as Cancelled.`,
+		iconTone: "cancel" as const,
 		pendingLabel: "Cancelling...",
 		title: "Make Disbursement Voucher as Cancelled",
 		tone: "danger" as const,

@@ -1,7 +1,14 @@
 "use client";
 
 import { type ReactNode, useCallback, useEffect, useState } from "react";
-import { LoaderCircle, Power, PowerOff } from "lucide-react";
+import {
+  Ban,
+  LoaderCircle,
+  Power,
+  PowerOff,
+  ThumbsDown,
+  ThumbsUp,
+} from "lucide-react";
 
 export type AppDialogTone =
   | "default"
@@ -13,8 +20,11 @@ export type AppDialogTone =
   | "activate"
   | "deactivate";
 export type AppDialogIconTone =
+  | "approve"
   | "activate"
+  | "cancel"
   | "deactivate"
+  | "disapprove"
   | "error"
   | "info"
   | "question"
@@ -239,7 +249,17 @@ function AppDialogStatusIcon({
 }) {
   const isDoubleMark = tone === "error";
   const StatusIcon =
-    tone === "activate" ? Power : tone === "deactivate" ? PowerOff : null;
+    tone === "activate"
+      ? Power
+      : tone === "approve"
+        ? ThumbsUp
+        : tone === "cancel"
+          ? Ban
+          : tone === "deactivate"
+            ? PowerOff
+            : tone === "disapprove"
+              ? ThumbsDown
+              : null;
 
   return (
     <span
@@ -313,6 +333,10 @@ function getConfirmButtonClassName({
   }
 
   if (tone === "activate") {
+    return `${baseClassName} ${disabledClassName} ${pendingClassName} bg-emerald-500 text-white hover:bg-emerald-500/90 focus-visible:ring-emerald-500/35`;
+  }
+
+  if (tone === "success") {
     return `${baseClassName} ${disabledClassName} ${pendingClassName} bg-emerald-500 text-white hover:bg-emerald-500/90 focus-visible:ring-emerald-500/35`;
   }
 

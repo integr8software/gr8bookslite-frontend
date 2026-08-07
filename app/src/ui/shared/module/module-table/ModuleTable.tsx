@@ -15,6 +15,7 @@ export function ModuleTable<TData>({
 	emptyDescription = "Try adjusting your filters or add a new record.",
 	emptyIcon,
 	emptyTitle = "No records found",
+	enableColumnReorder = true,
 	isLoading = false,
 	isSyncing = false,
 	lastSyncedAt,
@@ -186,6 +187,7 @@ export function ModuleTable<TData>({
 						</colgroup>
 					) : null}
 					<ModuleTableHeader
+						enableColumnReorder={enableColumnReorder}
 						stickyTop={stickyToolbarAndHeader ? stickyTopOffset : undefined}
 						scrollContainerRef={scrollContainerRef}
 						table={table}

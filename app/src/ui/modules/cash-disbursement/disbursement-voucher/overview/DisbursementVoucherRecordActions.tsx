@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Ban, CheckCircle2, Edit3, Eye, ThumbsDown, Undo2 } from "lucide-react";
 import {
 	DisbursementVoucherHref,
+	DisbursementVoucherStatuses,
 	canApproveDisbursementVoucherStatus,
 	canCancelDisbursementVoucherStatus,
 	canDisapproveDisbursementVoucherStatus,
@@ -17,6 +19,7 @@ import {
 	ModuleActionMenu,
 	type ModuleActionMenuItem,
 } from "@/app/src/ui/shared/module/ModuleActionMenu";
+import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 
 export function DisbursementVoucherRecordActions({
 	row,
@@ -28,19 +31,21 @@ export function DisbursementVoucherRecordActions({
 		status: DisbursementVoucherStatus,
 	) => void;
 }) {
+	const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
 	const transactionId = row.transaction.id;
 	const recordLabel = row.voucher?.voucherNo ?? row.transaction.transactionNo;
 	const status = row.voucher?.status ?? row.transaction.status;
 	const canEdit = row.voucher && canEditDisbursementVoucherStatus(status);
-	const isApproved = status === "Approved";
-	const isDisapproved = status === "Disapproved";
-	const isCancelled = status === "Cancelled";
-	const approvalUndoStatus: DisbursementVoucherStatus = "Active";
+	const isPosted = status === DisbursementVoucherStatuses.posted;
+	const isDisapproved = status === DisbursementVoucherStatuses.disapproved;
+	const isCancelled = status === DisbursementVoucherStatuses.cancelled;
+	const approvalUndoStatus: DisbursementVoucherStatus =
+		DisbursementVoucherStatuses.forApproval;
 	const cancelStatus: DisbursementVoucherStatus = isCancelled
 		? row.voucher
-			? "Draft"
-			: "Pending"
-		: "Cancelled";
+			? DisbursementVoucherStatuses.draft
+			: DisbursementVoucherStatuses.forApproval
+		: DisbursementVoucherStatuses.cancelled;
 	const items: ModuleActionMenuItem[] = [
 		{
 			href: `${DisbursementVoucherHref}/view/${transactionId}`,
@@ -60,10 +65,13 @@ export function DisbursementVoucherRecordActions({
 			: []),
 		{
 			disabled: !canApproveDisbursementVoucherStatus(status),
-			icon: isApproved ? Undo2 : CheckCircle2,
-			label: isApproved ? "Undo Approved" : "Approve",
+			icon: isPosted ? Undo2 : CheckCircle2,
+			label: isPosted ? "Undo Approved" : "Approve",
 			onSelect: () =>
-				onUpdateStatus(row, isApproved ? approvalUndoStatus : "Approved"),
+				onUpdateStatus(
+					row,
+					isPosted ? approvalUndoStatus : DisbursementVoucherStatuses.posted,
+				),
 			type: "button",
 		},
 		{
@@ -73,7 +81,9 @@ export function DisbursementVoucherRecordActions({
 			onSelect: () =>
 				onUpdateStatus(
 					row,
-					isDisapproved ? approvalUndoStatus : "Disapproved",
+					isDisapproved
+						? approvalUndoStatus
+						: DisbursementVoucherStatuses.disapproved,
 				),
 			tone: isDisapproved ? "default" : "danger",
 			type: "button",
@@ -81,19 +91,41 @@ export function DisbursementVoucherRecordActions({
 		{
 			disabled: !canCancelDisbursementVoucherStatus(status),
 			icon: isCancelled ? Undo2 : Ban,
-			label: isCancelled ? "Uncancelled" : "Cancel",
-			onSelect: () => onUpdateStatus(row, cancelStatus),
+			label: isCancelled ? "Undo Cancelled" : "Cancel",
+			onSelect: () => {
+				if (isCancelled) {
+					onUpdateStatus(row, cancelStatus);
+					return;
+				}
+
+				setIsCancelDialogOpen(true);
+			},
 			tone: isCancelled ? "default" : "danger",
 			type: "button",
 		},
 	];
 
 	return (
-		<ModuleTableActions className="!justify-center">
-			<ModuleActionMenu
-				items={items}
-				label={`Actions for disbursement voucher ${recordLabel}`}
+		<>
+			<ModuleTableActions className="!justify-center">
+				<ModuleActionMenu
+					items={items}
+					label={`Actions for disbursement voucher ${recordLabel}`}
+				/>
+			</ModuleTableActions>
+			<AppDialog
+				isOpen={isCancelDialogOpen}
+				title="Cancel disbursement voucher?"
+				description={`This will mark ${recordLabel} as cancelled.`}
+				confirmLabel="Cancel Voucher"
+				pendingLabel="Cancelling..."
+				tone="danger"
+				onCancel={() => setIsCancelDialogOpen(false)}
+				onConfirm={() => {
+					onUpdateStatus(row, DisbursementVoucherStatuses.cancelled);
+					setIsCancelDialogOpen(false);
+				}}
 			/>
-		</ModuleTableActions>
+		</>
 	);
 }

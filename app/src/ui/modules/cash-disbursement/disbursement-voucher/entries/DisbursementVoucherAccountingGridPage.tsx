@@ -1628,7 +1628,7 @@ function GridPreviewDialog({
                 eyebrow="Transaction Preview"
                 title={
                   selectedTransaction?.payee ??
-                  (values.vceName || "Voucher Preview")
+                  (values.partyName || "Voucher Preview")
                 }
               >
                 <div className="grid gap-5">
@@ -2018,7 +2018,7 @@ function VoucherAccountingGridHeader({
     },
     {
       label: "Payee",
-      value: values.vceName || selectedTransaction?.payee || "-",
+      value: values.partyName || selectedTransaction?.payee || "-",
     },
     {
       label: "Reference",
@@ -2327,7 +2327,7 @@ function createPdfVoucherDetails(
   const detailRows = [
     ["Voucher No.", values?.voucherNo || "-"],
     ["Voucher Date", values?.voucherDate ? formatDateLabel(values.voucherDate) : "-"],
-    ["Payee", values?.vceName || "-"],
+    ["Payee", values?.partyName || "-"],
     ["Payment Method", values?.paymentMethod || "-"],
     ["Disbursement Type", values?.disbursementType || "-"],
     [

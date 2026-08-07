@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import {
   DisbursementVoucherHref,
+  DisbursementVoucherStatuses,
   canApproveDisbursementVoucherStatus,
   canCancelDisbursementVoucherStatus,
   canDisapproveDisbursementVoucherStatus,
@@ -21,6 +22,7 @@ import type {
   DisbursementVoucherRecord,
   DisbursementVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import {
   ModuleActionMenu,
   type ModuleActionMenuItem,
@@ -45,8 +47,13 @@ export function DisbursementVoucherViewActions({
   voucher?: DisbursementVoucherRecord;
 }) {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [cancelStatusToConfirm, setCancelStatusToConfirm] =
+    useState<DisbursementVoucherStatus | null>(null);
+  const recordLabel =
+    voucher?.voucherNo ?? transaction?.transactionNo ?? "this disbursement voucher";
   const actions = createDisbursementVoucherViewActionItems({
     onOpenHistory: () => setIsHistoryOpen(true),
+    onRequestCancel: setCancelStatusToConfirm,
     onUpdateStatus,
     transaction,
     voucher,
@@ -85,35 +92,56 @@ export function DisbursementVoucherViewActions({
           description="Status changes and major disbursement voucher events."
           history={voucher?.history ?? []}
           isOpen
+          title="Disbursement Voucher History"
           onClose={() => setIsHistoryOpen(false)}
         />
       ) : null}
+      <AppDialog
+        isOpen={Boolean(cancelStatusToConfirm)}
+        title="Cancel disbursement voucher?"
+        description={`This will mark ${recordLabel} as cancelled.`}
+        confirmLabel="Cancel Voucher"
+        pendingLabel="Cancelling..."
+        tone="danger"
+        onCancel={() => setCancelStatusToConfirm(null)}
+        onConfirm={() => {
+          if (!cancelStatusToConfirm) {
+            return;
+          }
+
+          onUpdateStatus?.(cancelStatusToConfirm);
+          setCancelStatusToConfirm(null);
+        }}
+      />
     </>
   );
 }
 
 function createDisbursementVoucherViewActionItems({
   onOpenHistory,
+  onRequestCancel,
   onUpdateStatus,
   transaction,
   voucher,
 }: {
   onOpenHistory: () => void;
+  onRequestCancel: (status: DisbursementVoucherStatus) => void;
   onUpdateStatus?: (status: DisbursementVoucherStatus) => void;
   transaction?: DisbursementTransactionRecord;
   voucher?: DisbursementVoucherRecord;
 }) {
   const status = voucher?.status ?? transaction?.status ?? "Draft";
   const canEdit = voucher && canEditDisbursementVoucherStatus(status);
-  const isApproved = status === "Approved";
-  const isDisapproved = status === "Disapproved";
-  const isCancelled = status === "Cancelled";
-  const approvalUndoStatus: DisbursementVoucherStatus = "Active";
+  const isPosted = status === DisbursementVoucherStatuses.posted;
+  const isDisapproved = status === DisbursementVoucherStatuses.disapproved;
+  const isCancelled = status === DisbursementVoucherStatuses.cancelled;
+  const approvalUndoStatus: DisbursementVoucherStatus =
+    DisbursementVoucherStatuses.forApproval;
   const cancelStatus: DisbursementVoucherStatus = isCancelled
     ? voucher
-      ? "Draft"
-      : "Pending"
-    : "Cancelled";
+      ? DisbursementVoucherStatuses.draft
+      : DisbursementVoucherStatuses.forApproval
+    : DisbursementVoucherStatuses.cancelled;
   const actions: ModuleActionMenuItem[] = [
     ...(canEdit
       ? [
@@ -128,10 +156,12 @@ function createDisbursementVoucherViewActionItems({
     {
       disabled:
         !onUpdateStatus || !canApproveDisbursementVoucherStatus(status),
-      icon: isApproved ? Undo2 : CheckCircle2,
-      label: isApproved ? "Undo Approved" : "Approve",
+      icon: isPosted ? Undo2 : CheckCircle2,
+      label: isPosted ? "Undo Approved" : "Approve",
       onSelect: () =>
-        onUpdateStatus?.(isApproved ? approvalUndoStatus : "Approved"),
+        onUpdateStatus?.(
+          isPosted ? approvalUndoStatus : DisbursementVoucherStatuses.posted,
+        ),
       type: "button",
     },
     {
@@ -141,7 +171,9 @@ function createDisbursementVoucherViewActionItems({
       label: isDisapproved ? "Undo Disapproved" : "Disapprove",
       onSelect: () =>
         onUpdateStatus?.(
-          isDisapproved ? approvalUndoStatus : "Disapproved",
+          isDisapproved
+            ? approvalUndoStatus
+            : DisbursementVoucherStatuses.disapproved,
         ),
       tone: isDisapproved ? "default" : "danger",
       type: "button",
@@ -150,8 +182,15 @@ function createDisbursementVoucherViewActionItems({
       disabled:
         !onUpdateStatus || !canCancelDisbursementVoucherStatus(status),
       icon: isCancelled ? Undo2 : Ban,
-      label: isCancelled ? "Uncancelled" : "Cancel",
-      onSelect: () => onUpdateStatus?.(cancelStatus),
+      label: isCancelled ? "Undo Cancelled" : "Cancel",
+      onSelect: () => {
+        if (isCancelled) {
+          onUpdateStatus?.(cancelStatus);
+          return;
+        }
+
+        onRequestCancel(cancelStatus);
+      },
       tone: isCancelled ? "default" : "danger",
       type: "button",
     },
@@ -201,13 +240,9 @@ function getViewActionButtonClassName(
   if (
     action.label === "Undo Approved" ||
     action.label === "Undo Disapproved" ||
-    action.label === "Uncancelled"
+    action.label === "Undo Cancelled"
   ) {
     return `${baseClassName} border-skyblue/35 bg-skyblue/10 text-skyblue hover:bg-skyblue/15 focus-visible:ring-skyblue/20`;
-  }
-
-  if (action.label === "Cancel") {
-    return `${baseClassName} border-darknavy/12 bg-white text-darknavy/70 hover:bg-darknavy/5 hover:text-darknavy focus-visible:ring-darknavy/10`;
   }
 
   if (action.tone === "danger") {

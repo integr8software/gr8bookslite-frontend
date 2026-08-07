@@ -106,9 +106,11 @@ export type ResponsibilityCenterDrawerState =
 
 export type ResponsibilityCenterDrawerProps = {
 	center?: ResponsibilityCenter;
+	initialValues?: ResponsibilityCenterFormValues;
 	isOpen: boolean;
 	mode: ResponsibilityCenterActionMode;
 	onClose: () => void;
+	onSaved?: (center: ResponsibilityCenter) => void;
 };
 
 export type ResponsibilityCenterFormValues = {

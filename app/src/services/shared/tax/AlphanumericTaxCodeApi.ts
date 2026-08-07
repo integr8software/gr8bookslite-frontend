@@ -5,10 +5,11 @@ import type {
 } from "@/app/src/types/shared/tax/AlphanumericTaxCodeTypes";
 
 type AlphanumericTaxCodeListResponse = {
-	taxCodes: AlphanumericTaxCode[];
+	taxCodes?: AlphanumericTaxCode[];
+	taxes?: AlphanumericTaxCode[];
 };
 
-const AlphanumericTaxCodesPath = "/alphanumeric-tax-codes";
+const AlphanumericTaxCodesPath = "/tax";
 
 export const AlphanumericTaxCodeQueryKeys = {
 	all: () => ["alphanumericTaxCodes"] as const,
@@ -26,5 +27,5 @@ export async function fetchAlphanumericTaxCodes(
 		},
 	);
 
-	return response.data.taxCodes;
+	return response.data.taxCodes ?? response.data.taxes ?? [];
 }

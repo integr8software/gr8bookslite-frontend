@@ -134,7 +134,7 @@ function DisbursementVoucherReportDocument({
 				</div>
 
 				<div className="grid grid-cols-[1fr_20.25rem] border-t-2 border-black">
-					<LabeledLine label="PAY TO:" value={values.vceName} />
+					<LabeledLine label="PAY TO:" value={values.partyName} />
 					<MetaCell label="Check/DM No.:" value={checkOrReferenceNo} />
 				</div>
 				<div className="grid grid-cols-[1fr_20.25rem] border-t-2 border-black">
@@ -176,7 +176,7 @@ function DisbursementVoucherReportDocument({
 									{formatAccountLabel(entry.accountCode, entry.accountName)}
 								</ReportTableCell>
 								<ReportTableCell>
-									{entry.partyName || entry.partyCode || values.vceName || "-"}
+									{entry.partyName || entry.partyCode || values.partyName || "-"}
 								</ReportTableCell>
 								<ReportTableCell>{entry.particulars || "-"}</ReportTableCell>
 								<ReportTableCell>

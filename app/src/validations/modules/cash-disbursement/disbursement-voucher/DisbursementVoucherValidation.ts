@@ -18,12 +18,12 @@ export function validateDisbursementVoucherDetails(
 		errors.paymentMethod = "Payment method is required.";
 	}
 
-	if (!values.vceCode.trim()) {
-		errors.vceCode = "Party code is required.";
+	if (!values.partyCode.trim()) {
+		errors.partyCode = "Party code is required.";
 	}
 
-	if (!values.vceName.trim()) {
-		errors.vceName = "Party name is required.";
+	if (!values.partyName.trim()) {
+		errors.partyName = "Party name is required.";
 	}
 
 	return errors;

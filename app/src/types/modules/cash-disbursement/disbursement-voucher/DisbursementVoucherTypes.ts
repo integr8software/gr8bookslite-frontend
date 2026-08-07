@@ -1,11 +1,24 @@
 export type DisbursementVoucherStatus =
-  | "Active"
   | "Draft"
-  | "Pending"
-  | "Approved"
+  | "For Approval"
+  | "Posted"
   | "Disapproved"
   | "Cancelled"
   | "Closed";
+
+export type DisbursementVoucherTableColumnKey =
+  | "voucherNo"
+  | "documentDate"
+  | "partyName"
+  | "paymentType"
+  | "remarks"
+  | "currency"
+  | "amount"
+  | "status"
+  | "createdBy"
+  | "createdAt"
+  | "updatedBy"
+  | "updatedAt";
 
 export type DisbursementPaymentMethod =
   | "Bank Transfer"
@@ -69,6 +82,7 @@ export type DisbursementVoucherPaymentDetails = {
   checkNo: string;
   checkStatus?: string;
   commission?: string;
+  isMultiCheckNumber?: boolean;
   payee?: string;
   paymentReferenceNo: string;
   transferAccountName?: string;
@@ -102,6 +116,7 @@ export type DisbursementTransactionRecord = {
   payee: string;
   purpose: string;
   department: string;
+  projectName?: string;
   requestedBy: string;
   transactionDate: string;
   paymentDueDate: string;
@@ -112,12 +127,19 @@ export type DisbursementTransactionRecord = {
   status: DisbursementVoucherStatus;
   costCenter: string;
   accountingEntries?: DisbursementLineEntry[];
+  createdBy?: string;
+  createdAt?: string;
+  updatedBy?: string;
+  updatedAt?: string;
 };
 
 export type DisbursementLineEntry = {
   id: string;
   accountCode: string;
   accountName: string;
+  checkDate?: string;
+  checkNo?: string;
+  checkStatus?: string;
   partyCode?: string;
   partyName?: string;
   responsibilityCenter?: string;
@@ -166,8 +188,9 @@ export type DisbursementVoucherRecord = {
   currency: VoucherCurrency;
   fxRate: string;
   costCenter: string;
-  vceCode: string;
-  vceName: string;
+  projectName?: string;
+  partyCode: string;
+  partyName: string;
   amount: number;
   taxRate: string;
   taxDetails: DisbursementTaxDetails;
@@ -182,6 +205,10 @@ export type DisbursementVoucherRecord = {
   attachments: DisbursementAttachment[];
   status: DisbursementVoucherStatus;
   history: DisbursementVoucherHistoryEntry[];
+  createdBy?: string;
+  createdAt?: string;
+  updatedBy?: string;
+  updatedAt?: string;
 };
 
 export type DisbursementVoucherPreviewRow = {
@@ -198,8 +225,9 @@ export type DisbursementVoucherFormValues = {
   currency: VoucherCurrency;
   fxRate: string;
   costCenter: string;
-  vceCode: string;
-  vceName: string;
+  projectName: string;
+  partyCode: string;
+  partyName: string;
   amount: string;
   taxRate: string;
   taxDetails: DisbursementTaxDetails;

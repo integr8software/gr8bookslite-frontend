@@ -11,10 +11,10 @@ import type {
 } from "@/app/src/types/modules/financial-maintenance/discount-maintenance/DiscountMaintenanceTypes";
 import { AppMaxFileUploadSizeBytes } from "@/app/src/constants/shared/app/AppConstants";
 import { ModuleImportFixedColumnsWidth } from "@/app/src/constants/shared/module/ModuleImportConstants";
-import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogData";
+import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
-export const DiscountMaintenanceHref = MODULE_ROUTE_MAP.DSM;
+export const DiscountMaintenanceHref = getModuleRoute("DSM");
 
 export const DiscountMaintenanceApiPath = "/maintenance/discount-maintenance";
 
@@ -71,15 +71,15 @@ export const DiscountMaintenanceTableColumns = [
 		label: "Account Title",
 		className: "w-[22%]",
 	},
+	{ key: "createdBy", label: "Created By", className: "w-[14%]" },
+	{ key: "createdAt", label: "Date Created", className: "w-[16%]" },
+	{ key: "updatedBy", label: "Updated By", className: "w-[14%]" },
+	{ key: "updatedAt", label: "Date Modified", className: "w-[16%]" },
 	{
 		key: "status",
 		label: "Status",
 		className: "w-[12%] text-center",
 	},
-	{ key: "createdBy", label: "Created By", className: "w-[14%]" },
-	{ key: "createdAt", label: "Date Created", className: "w-[16%]" },
-	{ key: "updatedBy", label: "Updated By", className: "w-[14%]" },
-	{ key: "updatedAt", label: "Date Modified", className: "w-[16%]" },
 	{
 		label: "Action",
 		className: "w-[16%] text-center",

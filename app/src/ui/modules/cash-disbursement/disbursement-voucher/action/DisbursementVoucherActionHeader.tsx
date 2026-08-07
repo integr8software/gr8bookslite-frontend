@@ -1,9 +1,5 @@
 import Link from "next/link";
-import {
-  ArrowLeft,
-  Save,
-  X,
-} from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { DisbursementVoucherHref } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import type {
   DisbursementTransactionRecord,
@@ -15,12 +11,13 @@ import {
   ModuleHeader,
   moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
+import { ModuleSaveButton } from "@/app/src/ui/shared/module/ModuleSaveButton";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 import {
   AppCopyFromDropdown,
   type AppCopyFromRecord,
 } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
-import { DisbursementVoucherViewActions } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherViewActions";
+import { DisbursementVoucherViewActions } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherViewActions";
 
 type DisbursementVoucherActionHeaderProps = {
   mode: DisbursementVoucherActionMode;
@@ -29,6 +26,7 @@ type DisbursementVoucherActionHeaderProps = {
   onUpdateStatus?: (status: DisbursementVoucherStatus) => void;
   onPreview?: () => void;
   onSubmit?: () => void;
+  onSaveDraft?: () => void;
   copyFromRecords?: AppCopyFromRecord[];
   copyFromSources?: string[];
   onCopyFrom?: (recordIds: string[]) => void;
@@ -42,6 +40,7 @@ export function DisbursementVoucherActionHeader({
   onUpdateStatus,
   onPreview,
   onSubmit,
+  onSaveDraft,
   copyFromRecords = [],
   copyFromSources = [],
   onCopyFrom,
@@ -70,7 +69,7 @@ export function DisbursementVoucherActionHeader({
       eyebrow={transactionLabel}
       title={title}
       description={helperText}
-      actionsClassName="items-center gap-1"
+      actionsClassName="items-center justify-end gap-2"
       actions={
         <>
           <Link
@@ -88,14 +87,7 @@ export function DisbursementVoucherActionHeader({
               onUpdateStatus={onUpdateStatus}
             />
           ) : (
-            <>
-              <Link
-                href={returnHref}
-                className={moduleHeaderActionClassNames.secondary}
-              >
-                <X className="h-4 w-4" aria-hidden="true" />
-                Cancel
-              </Link>
+            <span className="inline-flex shrink-0 items-center gap-2">
               {mode === "add" && onCopyFrom ? (
                 <AppCopyFromDropdown
                   records={copyFromRecords}
@@ -103,15 +95,16 @@ export function DisbursementVoucherActionHeader({
                   onApply={onCopyFrom}
                 />
               ) : null}
-              <button
-                type="button"
-                onClick={onSubmit}
-                className={moduleHeaderActionClassNames.primary}
-              >
-                <Save className="h-4 w-4" aria-hidden="true" />
-                Save
-              </button>
-            </>
+              <ModuleSaveButton
+                onSave={onSubmit}
+                menuItems={[
+                  {
+                    label: "Save As Draft",
+                    onSelect: onSaveDraft,
+                  },
+                ]}
+              />
+            </span>
           )}
         </>
       }

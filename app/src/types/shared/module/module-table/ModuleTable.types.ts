@@ -5,6 +5,7 @@ export type ModuleTableProps<TData> = {
 	emptyDescription?: string;
 	emptyIcon?: ReactNode;
 	emptyTitle?: string;
+	enableColumnReorder?: boolean;
 	isLoading?: boolean;
 	isSyncing?: boolean;
 	lastSyncedAt?: number | string | Date | null;

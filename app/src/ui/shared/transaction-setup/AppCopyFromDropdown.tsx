@@ -8,11 +8,16 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import {
+	getCoreRowModel,
+	getPaginationRowModel,
+	useReactTable,
+	type ColumnDef,
+	type PaginationState,
+} from "@tanstack/react-table";
+import {
 	ChevronDown,
-	ChevronLeft,
-	ChevronRight,
+	RefreshCw,
 	Search,
-	X,
 } from "lucide-react";
 import {
 	AmountRangePicker,
@@ -24,6 +29,8 @@ import {
 } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import { ModuleResizableDialog } from "@/app/src/ui/shared/module/ModuleResizableDialog";
+import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 
 export type AppCopyFromRecord = {
 	amount?: string;
@@ -47,7 +54,8 @@ const EmptyCopyFromFilters: AppCopyFromFiltersValue = {
 	query: "",
 };
 
-const CopyFromPageSize = 5;
+const CopyFromPageSize = 10;
+const CopyFromPageSizeOptions = [5, 10, 15, 20, 25, 50];
 
 export function AppCopyFromDropdown({
 	disabled = false,
@@ -72,7 +80,10 @@ export function AppCopyFromDropdown({
 	const [filters, setFilters] = useState<AppCopyFromFiltersValue>(
 		EmptyCopyFromFilters,
 	);
-	const [pageIndex, setPageIndex] = useState(0);
+	const [pagination, setPagination] = useState<PaginationState>({
+		pageIndex: 0,
+		pageSize: CopyFromPageSize,
+	});
 	const [selectedIds, setSelectedIds] = useState<string[]>([]);
 	const availableSourceSet = useMemo(
 		() => new Set(availableSources),
@@ -92,23 +103,6 @@ export function AppCopyFromDropdown({
 		() => filterCopyFromRecords(sourceRecords, filters),
 		[filters, sourceRecords],
 	);
-	const totalPages = Math.max(
-		1,
-		Math.ceil(filteredRecords.length / CopyFromPageSize),
-	);
-	const currentPageIndex = Math.min(pageIndex, totalPages - 1);
-	const paginatedRecords = useMemo(
-		() =>
-			filteredRecords.slice(
-				currentPageIndex * CopyFromPageSize,
-				currentPageIndex * CopyFromPageSize + CopyFromPageSize,
-			),
-		[currentPageIndex, filteredRecords],
-	);
-	const visibleRecordIds = useMemo(
-		() => paginatedRecords.map((record) => record.id),
-		[paginatedRecords],
-	);
 	const selectedRecords = useMemo(
 		() => sourceRecords.filter((record) => selectedIds.includes(record.id)),
 		[selectedIds, sourceRecords],
@@ -116,19 +110,6 @@ export function AppCopyFromDropdown({
 	const selectedTotalAmount = selectedRecords.reduce(
 		(total, record) => total + parseCopyFromAmount(record.amount),
 		0,
-	);
-	const hasSelectableRows = paginatedRecords.length > 0;
-	const isAllVisibleSelected =
-		hasSelectableRows &&
-		visibleRecordIds.every((recordId) => selectedIds.includes(recordId));
-	const isPartiallySelected =
-		visibleRecordIds.some((recordId) => selectedIds.includes(recordId)) &&
-		!isAllVisibleSelected;
-	const pageStart =
-		filteredRecords.length === 0 ? 0 : currentPageIndex * CopyFromPageSize + 1;
-	const pageEnd = Math.min(
-		filteredRecords.length,
-		currentPageIndex * CopyFromPageSize + paginatedRecords.length,
 	);
 
 	useEffect(() => {
@@ -175,20 +156,20 @@ export function AppCopyFromDropdown({
 		setActiveSource(source);
 		setSelectedIds([]);
 		setFilters(EmptyCopyFromFilters);
-		setPageIndex(0);
+		setPagination((current) => ({ ...current, pageIndex: 0 }));
 		setIsMenuOpen(false);
 	}
 
 	function updateFilters(nextFilters: AppCopyFromFiltersValue) {
 		setFilters(nextFilters);
-		setPageIndex(0);
+		setPagination((current) => ({ ...current, pageIndex: 0 }));
 	}
 
 	function closeDialog() {
 		setActiveSource("");
 		setSelectedIds([]);
 		setFilters(EmptyCopyFromFilters);
-		setPageIndex(0);
+		setPagination((current) => ({ ...current, pageIndex: 0 }));
 	}
 
 	function toggleRecord(recordId: string) {
@@ -200,29 +181,6 @@ export function AppCopyFromDropdown({
 			return currentIds.includes(recordId)
 				? currentIds.filter((currentId) => currentId !== recordId)
 				: [...currentIds, recordId];
-		});
-	}
-
-	function toggleVisibleRecords() {
-		if (!hasSelectableRows) {
-			return;
-		}
-
-		if (selectionMode === "single") {
-			setSelectedIds((currentIds) =>
-				currentIds.includes(visibleRecordIds[0]) ? [] : [visibleRecordIds[0]],
-			);
-			return;
-		}
-
-		setSelectedIds((currentIds) => {
-			if (isAllVisibleSelected) {
-				return currentIds.filter(
-					(recordId) => !visibleRecordIds.includes(recordId),
-				);
-			}
-
-			return Array.from(new Set([...currentIds, ...visibleRecordIds]));
 		});
 	}
 
@@ -270,22 +228,16 @@ export function AppCopyFromDropdown({
 				activeSource={activeSource}
 				filters={filters}
 				filteredRecords={filteredRecords}
-				isAllVisibleSelected={isAllVisibleSelected}
 				isOpen={isDialogOpen}
-				isPartiallySelected={isPartiallySelected}
-				pageEnd={pageEnd}
-				pageIndex={currentPageIndex}
-				pageStart={pageStart}
-				paginatedRecords={paginatedRecords}
+				pagination={pagination}
+				selectionMode={selectionMode}
 				selectedIds={selectedIds}
 				selectedTotalAmount={selectedTotalAmount}
-				totalPages={totalPages}
 				onApply={applySelection}
 				onClose={closeDialog}
 				onFiltersChange={updateFilters}
-				onPageChange={setPageIndex}
+				onPaginationChange={setPagination}
 				onToggleRecord={toggleRecord}
-				onToggleVisibleRecords={toggleVisibleRecords}
 			/>
 		</div>
 	);
@@ -295,242 +247,293 @@ export function AppCopyFromSourceDialog({
 	activeSource,
 	filters,
 	filteredRecords,
-	isAllVisibleSelected,
 	isOpen,
-	isPartiallySelected,
-	pageEnd,
-	pageIndex,
-	pageStart,
-	paginatedRecords,
+	pagination,
+	selectionMode,
 	selectedIds,
 	selectedTotalAmount,
-	totalPages,
 	onApply,
 	onClose,
 	onFiltersChange,
-	onPageChange,
+	onPaginationChange,
 	onToggleRecord,
-	onToggleVisibleRecords,
 }: {
 	activeSource: string;
 	filters: AppCopyFromFiltersValue;
 	filteredRecords: AppCopyFromRecord[];
-	isAllVisibleSelected: boolean;
 	isOpen: boolean;
-	isPartiallySelected: boolean;
-	pageEnd: number;
-	pageIndex: number;
-	pageStart: number;
-	paginatedRecords: AppCopyFromRecord[];
+	pagination: PaginationState;
+	selectionMode: "multiple" | "single";
 	selectedIds: string[];
 	selectedTotalAmount: number;
-	totalPages: number;
 	onApply: () => void;
 	onClose: () => void;
 	onFiltersChange: (value: AppCopyFromFiltersValue) => void;
-	onPageChange: (value: number | ((current: number) => number)) => void;
+	onPaginationChange: (
+		value: PaginationState | ((current: PaginationState) => PaginationState),
+	) => void;
 	onToggleRecord: (recordId: string) => void;
-	onToggleVisibleRecords: () => void;
 }) {
+	const [isRefreshing, setIsRefreshing] = useState(false);
+	const [lastRefreshedAt, setLastRefreshedAt] = useState(() => new Date());
+	const columns = useMemo<ColumnDef<AppCopyFromRecord>[]>(
+		() => [
+			{
+				id: "selection",
+				enableSorting: false,
+				meta: {
+					className:
+						"sticky left-0 z-30 w-12 bg-slate-50 text-center shadow-[6px_0_12px_rgba(33,39,56,0.08)]",
+				},
+				header: ({ table }) => {
+					const visibleRecordIds = table
+						.getRowModel()
+						.rows.map((row) => row.original.id);
+					const hasVisibleRows = visibleRecordIds.length > 0;
+					const isAllVisibleSelected =
+						hasVisibleRows &&
+						visibleRecordIds.every((recordId) => selectedIds.includes(recordId));
+					const isPartiallySelected =
+						visibleRecordIds.some((recordId) => selectedIds.includes(recordId)) &&
+						!isAllVisibleSelected;
+
+					return (
+						<input
+							type="checkbox"
+							checked={isAllVisibleSelected}
+							ref={(input) => {
+								if (input) {
+									input.indeterminate = isPartiallySelected;
+								}
+							}}
+							disabled={!hasVisibleRows}
+							onChange={() => {
+								if (!hasVisibleRows) {
+									return;
+								}
+
+								if (selectionMode === "single") {
+									const firstRecordId = visibleRecordIds[0];
+
+									onToggleRecord(firstRecordId);
+									return;
+								}
+
+								if (isAllVisibleSelected) {
+									visibleRecordIds.forEach((recordId) => {
+										if (selectedIds.includes(recordId)) {
+											onToggleRecord(recordId);
+										}
+									});
+									return;
+								}
+
+								visibleRecordIds.forEach((recordId) => {
+									if (!selectedIds.includes(recordId)) {
+										onToggleRecord(recordId);
+									}
+								});
+							}}
+							className="h-4 w-4 rounded border-darknavy/20 text-skyblue focus:ring-skyblue/35 disabled:cursor-not-allowed disabled:opacity-40"
+							aria-label="Select visible copy from rows"
+						/>
+					);
+				},
+			},
+			{
+				accessorKey: "sourceNo",
+				header: "Transaction No",
+			},
+			{
+				accessorKey: "documentDate",
+				header: "Transaction Date",
+			},
+			{
+				accessorKey: "partyName",
+				header: "Party Name",
+			},
+			{
+				accessorKey: "amount",
+				header: "Amount",
+				meta: { className: "text-right" },
+			},
+			{
+				accessorKey: "remarks",
+				header: "Remarks",
+			},
+		],
+		[onToggleRecord, selectedIds, selectionMode],
+	);
+	const table = useReactTable({
+		columns,
+		data: filteredRecords,
+		getCoreRowModel: getCoreRowModel(),
+		getPaginationRowModel: getPaginationRowModel(),
+		onPaginationChange,
+		state: { pagination },
+	});
+
+	function refreshRecords() {
+		setIsRefreshing(true);
+		setLastRefreshedAt(new Date());
+		onPaginationChange((current) => ({ ...current, pageIndex: 0 }));
+		window.setTimeout(() => setIsRefreshing(false), 500);
+	}
+
 	if (!isOpen || typeof document === "undefined") {
 		return null;
 	}
 
 	return createPortal(
-		<div
-			role="presentation"
-			className="fixed inset-0 z-[140] flex items-center justify-center bg-slate-950/35 px-4 py-6 backdrop-blur-sm"
-			onMouseDown={(event) => {
-				if (event.target === event.currentTarget) {
-					onClose();
-				}
-			}}
+		<ModuleResizableDialog
+			actions={
+				<AppCopyFromDialogActions
+					lastRefreshedAt={lastRefreshedAt}
+				/>
+			}
+			bodyClassName="flex min-h-0 flex-col p-0"
+			closeLabel="Close copy from dialog"
+			description="Select source transactions to copy into this voucher."
+			footer={
+				<AppCopyFromFooter
+					selectedCount={selectedIds.length}
+					selectedTotalAmount={selectedTotalAmount}
+					onApply={onApply}
+				/>
+			}
+			footerClassName="px-5 py-4"
+			isOpen={isOpen}
+			normalClassName="h-[calc(100dvh-2rem)] max-h-[47rem] max-w-[96rem]"
+			title={`Copy From ${activeSource}`}
+			titleId="copy-from-dialog-title"
+			onClose={onClose}
 		>
-			<section
-				role="dialog"
-				aria-modal="true"
-				aria-labelledby="copy-from-dialog-title"
-				className="flex max-h-[calc(100dvh-2rem)] w-full max-w-6xl flex-col overflow-hidden rounded-lg border border-white/20 bg-white shadow-[0_28px_90px_rgba(33,39,56,0.28)]"
-			>
-				<div className="flex items-start justify-between gap-4 border-b border-darknavy/10 px-5 py-4">
-					<div className="min-w-0">
-						<h2
-							id="copy-from-dialog-title"
-							className="text-lg font-semibold text-darknavy"
-						>
-							Copy From {activeSource}
-						</h2>
-						<p className="mt-1 text-sm text-darknavy/55">
-							Select source transactions to copy into this voucher.
-						</p>
-					</div>
-					<button
-						type="button"
-						onClick={onClose}
-						className="inline-flex h-9 w-9 items-center justify-center rounded-md text-darknavy/60 transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/25"
-						aria-label="Close copy from dialog"
-					>
-						<X className="h-5 w-5" aria-hidden="true" />
-					</button>
-				</div>
-				<AppCopyFromFilters value={filters} onChange={onFiltersChange} />
-				<div className="min-h-0 overflow-auto px-5 pb-4">
-					<table className="min-w-full border-separate border-spacing-0 text-left text-sm">
-						<thead className="sticky top-0 z-10 bg-offwhite text-xs font-semibold uppercase tracking-[0.12em] text-darknavy/50">
-							<tr>
-								<th className="w-12 border-b border-darknavy/10 px-3 py-3">
-									<input
-										type="checkbox"
-										checked={isAllVisibleSelected}
-										ref={(input) => {
-											if (input) {
-												input.indeterminate = isPartiallySelected;
-											}
-										}}
-										disabled={paginatedRecords.length === 0}
-										onChange={onToggleVisibleRecords}
-										className="h-4 w-4 rounded border-darknavy/20 text-skyblue focus:ring-skyblue/35 disabled:cursor-not-allowed disabled:opacity-40"
-										aria-label="Select visible copy from rows"
-									/>
-								</th>
-								<th className="border-b border-darknavy/10 px-3 py-3">
-									Transaction No
-								</th>
-								<th className="border-b border-darknavy/10 px-3 py-3">
-									Transaction Date
-								</th>
-								<th className="border-b border-darknavy/10 px-3 py-3">
-									Party Name
-								</th>
-								<th className="border-b border-darknavy/10 px-3 py-3 text-right">
-									Amount
-								</th>
-								<th className="border-b border-darknavy/10 px-3 py-3">
-									Remarks
-								</th>
-							</tr>
-						</thead>
-						<tbody>
-							{paginatedRecords.length > 0 ? (
-								paginatedRecords.map((record) => {
-									const isSelected = selectedIds.includes(record.id);
+			<ModuleTable
+				enableColumnReorder={false}
+				emptyDescription="Try a different source number, party, amount, date, or remarks."
+				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
+				emptyTitle="No transactions found"
+				maxHeightClassName="min-h-0 flex-1"
+				minWidthClassName="min-w-[70rem]"
+				pageSizeOptions={CopyFromPageSizeOptions}
+				paginationLabel="transactions"
+				paginationStorageKey={`copy-from:${activeSource}:default-10`}
+				renderRow={({ id, original }) => {
+					const isSelected = selectedIds.includes(original.id);
 
-									return (
-										<tr
-											key={record.id}
-											className={joinClasses(
-												"transition hover:bg-skyblue/8",
-												isSelected && "bg-skyblue/10",
-											)}
-										>
-											<td className="border-b border-darknavy/8 px-3 py-3 align-top">
-												<input
-													type="checkbox"
-													checked={isSelected}
-													onChange={() => onToggleRecord(record.id)}
-													className="h-4 w-4 rounded border-darknavy/20 text-skyblue focus:ring-skyblue/35"
-													aria-label={`Select ${record.sourceNo}`}
-												/>
-											</td>
-											<td className="border-b border-darknavy/8 px-3 py-3 align-top font-semibold text-darknavy">
-												{record.sourceNo}
-											</td>
-											<td className="border-b border-darknavy/8 px-3 py-3 align-top text-darknavy/70">
-												{formatCopyFromDate(record.documentDate)}
-											</td>
-											<td className="border-b border-darknavy/8 px-3 py-3 align-top text-darknavy/80">
-												{record.partyName || "-"}
-											</td>
-											<td className="border-b border-darknavy/8 px-3 py-3 align-top text-right font-semibold text-darknavy">
-												{formatCopyFromAmount(record.amount)}
-											</td>
-											<td className="max-w-md border-b border-darknavy/8 px-3 py-3 align-top text-darknavy/65">
-												<span className="line-clamp-2">
-													{record.remarks || "-"}
-												</span>
-											</td>
-										</tr>
-									);
-								})
-							) : (
-								<tr>
-									<td
-										colSpan={6}
-										className="px-3 py-12 text-center text-sm font-medium text-darknavy/45"
-									>
-										No transactions found.
-									</td>
-								</tr>
+					return (
+						<tr
+							key={id}
+							className={joinClasses(
+								"module-table-row border-b border-darknavy/8 last:border-b-0",
+								isSelected && "bg-skyblue/10",
 							)}
-						</tbody>
-					</table>
-				</div>
-				<div className="flex flex-col gap-3 border-t border-darknavy/10 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
-					<div className="text-sm font-semibold text-darknavy/65">
-						{selectedIds.length} selected
-						<span className="mx-2 text-darknavy/25">|</span>
-						Total Amount:{" "}
-						<span className="text-darknavy">
-							{formatCopyFromAmount(selectedTotalAmount)}
-						</span>
-					</div>
-					<div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-						<div className="flex items-center justify-between gap-3 rounded-md border border-darknavy/10 bg-offwhite/60 px-2 py-1.5 text-sm font-semibold text-darknavy/65">
-							<span className="px-2">
-								{pageStart}-{pageEnd} of {filteredRecords.length}
-							</span>
-							<div className="flex items-center gap-1">
-								<button
-									type="button"
-									disabled={pageIndex === 0}
-									onClick={() =>
-										onPageChange((current) => Math.max(0, current - 1))
-									}
-									className="inline-flex h-8 w-8 items-center justify-center rounded-md text-darknavy/70 transition hover:bg-skyblue/10 hover:text-darknavy disabled:cursor-not-allowed disabled:opacity-35"
-									aria-label="Previous copy from page"
-								>
-									<ChevronLeft className="h-4 w-4" aria-hidden="true" />
-								</button>
-								<span className="min-w-16 text-center text-xs uppercase tracking-[0.12em] text-darknavy/45">
-									{pageIndex + 1} / {totalPages}
-								</span>
-								<button
-									type="button"
-									disabled={pageIndex >= totalPages - 1}
-									onClick={() =>
-										onPageChange((current) =>
-											Math.min(totalPages - 1, current + 1),
-										)
-									}
-									className="inline-flex h-8 w-8 items-center justify-center rounded-md text-darknavy/70 transition hover:bg-skyblue/10 hover:text-darknavy disabled:cursor-not-allowed disabled:opacity-35"
-									aria-label="Next copy from page"
-								>
-									<ChevronRight className="h-4 w-4" aria-hidden="true" />
-								</button>
-							</div>
-						</div>
-						<button
-							type="button"
-							disabled={selectedIds.length === 0}
-							onClick={onApply}
-							className="theme-accent-contrast-text inline-flex h-10 items-center justify-center rounded-md bg-skyblue px-5 text-sm font-semibold transition hover:bg-skyblue/85 disabled:cursor-not-allowed disabled:opacity-45"
 						>
-							Apply
-						</button>
-					</div>
-				</div>
-			</section>
-		</div>,
+							<td
+								className={joinClasses(
+									"sticky left-0 z-20 w-12 text-center shadow-[6px_0_12px_rgba(33,39,56,0.08)]",
+									isSelected ? "bg-skyblue/10" : "bg-white",
+								)}
+							>
+								<input
+									type="checkbox"
+									checked={isSelected}
+									onChange={() => onToggleRecord(original.id)}
+									className="h-4 w-4 rounded border-darknavy/20 text-skyblue focus:ring-skyblue/35"
+									aria-label={`Select ${original.sourceNo}`}
+								/>
+							</td>
+							<td className="font-semibold text-darknavy">{original.sourceNo}</td>
+							<td>{formatCopyFromDate(original.documentDate)}</td>
+							<td>{original.partyName || "-"}</td>
+							<td className="text-right font-semibold text-darknavy">
+								{formatCopyFromAmount(original.amount)}
+							</td>
+							<td className="max-w-md text-darknavy/65">
+								<span className="line-clamp-2">{original.remarks || "-"}</span>
+							</td>
+						</tr>
+					);
+				}}
+				rootClassName="flex min-h-0 flex-1 flex-col rounded-none border-0 shadow-none"
+				scrollContainerClassName="min-h-0 flex-1 overflow-auto"
+				table={table}
+				toolbar={
+					<AppCopyFromFilters
+						isRefreshing={isRefreshing}
+						value={filters}
+						onChange={onFiltersChange}
+						onRefresh={refreshRecords}
+					/>
+				}
+				variant="embedded"
+			/>
+		</ModuleResizableDialog>,
 		document.body,
 	);
 }
 
+function AppCopyFromDialogActions({
+	lastRefreshedAt,
+}: {
+	lastRefreshedAt: Date;
+}) {
+	return (
+		<div className="flex items-center gap-2">
+			<div className="inline-flex h-9 items-center gap-2 rounded-md border border-darknavy/10 bg-white px-3 text-xs font-semibold text-darknavy/58 shadow-sm shadow-darknavy/5">
+				<RefreshCw className="h-3.5 w-3.5 text-citron" aria-hidden="true" />
+				Live
+				<span className="font-medium text-darknavy/42">
+					{formatCopyFromLiveTime(lastRefreshedAt)}
+				</span>
+			</div>
+		</div>
+	);
+}
+
+function AppCopyFromFooter({
+	selectedCount,
+	selectedTotalAmount,
+	onApply,
+}: {
+	selectedCount: number;
+	selectedTotalAmount: number;
+	onApply: () => void;
+}) {
+	return (
+		<div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+			<div className="text-sm font-semibold text-darknavy/65">
+				{selectedCount} selected
+				<span className="mx-2 text-darknavy/25">|</span>
+				Total Amount:{" "}
+				<span className="text-darknavy">
+					{formatCopyFromAmount(selectedTotalAmount)}
+				</span>
+			</div>
+			<div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+				<button
+					type="button"
+					disabled={selectedCount === 0}
+					onClick={onApply}
+					className="theme-accent-contrast-text inline-flex h-10 items-center justify-center rounded-md bg-skyblue px-5 text-sm font-semibold transition hover:bg-skyblue/85 disabled:cursor-not-allowed disabled:opacity-45"
+				>
+					Apply
+				</button>
+			</div>
+		</div>
+	);
+}
+
 export function AppCopyFromFilters({
+	isRefreshing = false,
 	value,
 	onChange,
+	onRefresh,
 }: {
+	isRefreshing?: boolean;
 	value: AppCopyFromFiltersValue;
 	onChange: (value: AppCopyFromFiltersValue) => void;
+	onRefresh?: () => void;
 }) {
 	function updateField<TKey extends keyof AppCopyFromFiltersValue>(
 		field: TKey,
@@ -543,7 +546,7 @@ export function AppCopyFromFilters({
 	}
 
 	return (
-		<div className="grid gap-3 border-b border-darknavy/10 px-5 py-4 lg:grid-cols-[minmax(16rem,1fr)_minmax(18rem,22rem)_minmax(18rem,22rem)]">
+		<div className="grid gap-3 border-b border-darknavy/10 px-5 py-4 lg:grid-cols-[minmax(16rem,1fr)_minmax(18rem,22rem)_minmax(18rem,22rem)_auto]">
 			<label className="relative min-w-0">
 				<span className="absolute -top-2 left-3 z-10 bg-white px-1 text-xs font-semibold text-darknavy/70">
 					Search
@@ -570,6 +573,23 @@ export function AppCopyFromFilters({
 				value={value.amountRange}
 				onChange={(amountRange) => updateField("amountRange", amountRange)}
 			/>
+			{onRefresh ? (
+				<button
+					type="button"
+					onClick={onRefresh}
+					className="inline-flex h-12 w-12 items-center justify-center rounded-lg border border-darknavy/10 bg-white text-darknavy/65 shadow-sm shadow-darknavy/5 transition hover:border-skyblue/25 hover:bg-skyblue/8 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/20"
+					aria-label="Refresh"
+					title="Refresh"
+				>
+					<RefreshCw
+						className={joinClasses(
+							"h-4 w-4",
+							isRefreshing && "animate-spin text-skyblue",
+						)}
+						aria-hidden="true"
+					/>
+				</button>
+			) : null}
 		</div>
 	);
 }
@@ -635,6 +655,14 @@ function formatCopyFromAmount(value: number | string | undefined) {
 		currency: "PHP",
 		style: "currency",
 	}).format(parseCopyFromAmount(value));
+}
+
+function formatCopyFromLiveTime(value: Date) {
+	return new Intl.DateTimeFormat(undefined, {
+		hour: "numeric",
+		minute: "2-digit",
+		second: "2-digit",
+	}).format(value);
 }
 
 function formatCopyFromDate(value: string | undefined) {

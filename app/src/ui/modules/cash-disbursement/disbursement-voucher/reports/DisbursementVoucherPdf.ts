@@ -137,7 +137,7 @@ function createPayeeRow(values: DisbursementVoucherFormValues): TableCell {
     "-";
 
   return createTwoColumnInfoRow(
-    [{ text: "PAY TO: ", bold: true }, values.vceName || "-"],
+    [{ text: "PAY TO: ", bold: true }, values.partyName || "-"],
     [{ text: "Check/DM No.: ", bold: true }, checkOrReferenceNo],
   );
 }
@@ -251,7 +251,7 @@ function createEntryRow(
 ): TableCell[] {
   return [
     bodyCell(formatAccountLabel(entry.accountCode, entry.accountName)),
-    bodyCell(entry.partyName || entry.partyCode || values.vceName || "-"),
+    bodyCell(entry.partyName || entry.partyCode || values.partyName || "-"),
     bodyCell(entry.particulars || "-"),
     bodyCell(entry.responsibilityCenter || values.costCenter || "-"),
     bodyCell(entry.debit ? formatCurrency(entry.debit) : "", "right"),

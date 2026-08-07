@@ -1,23 +1,20 @@
 import dynamic from "next/dynamic";
-import Link from "next/link";
 import { useState } from "react";
 import {
   Ban,
   CheckCircle2,
-  Edit3,
   History,
   ThumbsDown,
   Undo2,
 } from "lucide-react";
 import {
-  DisbursementVoucherHref,
   DisbursementVoucherStatuses,
   canApproveDisbursementVoucherStatus,
   canCancelDisbursementVoucherStatus,
   canDisapproveDisbursementVoucherStatus,
-  canEditDisbursementVoucherStatus,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import type {
+  DisbursementVoucherHistoryEntry,
   DisbursementTransactionRecord,
   DisbursementVoucherRecord,
   DisbursementVoucherStatus,
@@ -28,6 +25,8 @@ import {
   type ModuleActionMenuItem,
 } from "@/app/src/ui/shared/module/ModuleActionMenu";
 import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
+import { ModuleTooltip } from "@/app/src/ui/shared/module/ModuleTooltip";
+import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 
 const ModuleHistoryDialog = dynamic(
   () =>
@@ -39,99 +38,109 @@ const ModuleHistoryDialog = dynamic(
 
 export function DisbursementVoucherViewActions({
   onUpdateStatus,
+  onPreview,
   transaction,
   voucher,
 }: {
   onUpdateStatus?: (status: DisbursementVoucherStatus) => void;
+  onPreview?: () => void;
   transaction?: DisbursementTransactionRecord;
   voucher?: DisbursementVoucherRecord;
 }) {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-  const [cancelStatusToConfirm, setCancelStatusToConfirm] =
+  const [statusToConfirm, setStatusToConfirm] =
     useState<DisbursementVoucherStatus | null>(null);
   const recordLabel =
     voucher?.voucherNo ?? transaction?.transactionNo ?? "this disbursement voucher";
+  const historyEntries = createDisbursementVoucherViewHistory({
+    recordLabel,
+    transaction,
+    voucher,
+  });
+  const statusDialogCopy = statusToConfirm
+    ? getStatusDialogCopy(statusToConfirm, recordLabel)
+    : null;
   const actions = createDisbursementVoucherViewActionItems({
     onOpenHistory: () => setIsHistoryOpen(true),
-    onRequestCancel: setCancelStatusToConfirm,
+    onRequestStatusConfirmation: setStatusToConfirm,
     onUpdateStatus,
     transaction,
     voucher,
   });
+  const visibleActions = actions.filter((action) => action.label !== "History");
+  const historyAction = actions.find(
+    (action): action is Extract<ModuleActionMenuItem, { type: "button" }> =>
+      action.type === "button" && action.label === "History",
+  );
 
   return (
     <>
-      <div className="flex lg:hidden">
+      <div className="flex items-center gap-2 lg:hidden">
+        {historyAction ? <HeaderHistoryButton action={historyAction} /> : null}
+        {onPreview ? <ReportPreviewAction onPreview={onPreview} /> : null}
         <ModuleActionMenu
-          items={actions}
+          items={visibleActions}
           label="Disbursement voucher actions"
         />
       </div>
       <div className="hidden flex-wrap gap-2 lg:flex">
-        {actions.map((action) => {
+        {historyAction ? <HeaderHistoryButton action={historyAction} /> : null}
+        {onPreview ? <ReportPreviewAction onPreview={onPreview} /> : null}
+        {visibleActions.map((action) => {
           if (action.type === "button") {
             return <HeaderActionButton key={action.label} action={action} />;
           }
 
-          const Icon = action.icon;
-
-          return (
-            <Link
-              key={action.label}
-              href={action.href}
-              className={moduleHeaderActionClassNames.secondary}
-            >
-              <Icon className="h-4 w-4" aria-hidden="true" />
-              {action.label}
-            </Link>
-          );
+          return null;
         })}
       </div>
       {isHistoryOpen ? (
         <ModuleHistoryDialog
           description="Status changes and major disbursement voucher events."
-          history={voucher?.history ?? []}
+          history={historyEntries}
           isOpen
           title="Disbursement Voucher History"
           onClose={() => setIsHistoryOpen(false)}
         />
       ) : null}
-      <AppDialog
-        isOpen={Boolean(cancelStatusToConfirm)}
-        title="Cancel disbursement voucher?"
-        description={`This will mark ${recordLabel} as cancelled.`}
-        confirmLabel="Cancel Voucher"
-        pendingLabel="Cancelling..."
-        tone="danger"
-        onCancel={() => setCancelStatusToConfirm(null)}
-        onConfirm={() => {
-          if (!cancelStatusToConfirm) {
-            return;
-          }
+      {statusDialogCopy ? (
+        <AppDialog
+          isOpen
+          title={statusDialogCopy.title}
+          description={statusDialogCopy.description}
+          cancelLabel="Keep Current Status"
+          confirmLabel={statusDialogCopy.confirmLabel}
+          pendingLabel={statusDialogCopy.pendingLabel}
+          tone={statusDialogCopy.tone}
+          onCancel={() => setStatusToConfirm(null)}
+          onConfirm={() => {
+            if (!statusToConfirm) {
+              return;
+            }
 
-          onUpdateStatus?.(cancelStatusToConfirm);
-          setCancelStatusToConfirm(null);
-        }}
-      />
+            onUpdateStatus?.(statusToConfirm);
+            setStatusToConfirm(null);
+          }}
+        />
+      ) : null}
     </>
   );
 }
 
 function createDisbursementVoucherViewActionItems({
   onOpenHistory,
-  onRequestCancel,
+  onRequestStatusConfirmation,
   onUpdateStatus,
   transaction,
   voucher,
 }: {
   onOpenHistory: () => void;
-  onRequestCancel: (status: DisbursementVoucherStatus) => void;
+  onRequestStatusConfirmation: (status: DisbursementVoucherStatus) => void;
   onUpdateStatus?: (status: DisbursementVoucherStatus) => void;
   transaction?: DisbursementTransactionRecord;
   voucher?: DisbursementVoucherRecord;
 }) {
   const status = voucher?.status ?? transaction?.status ?? "Draft";
-  const canEdit = voucher && canEditDisbursementVoucherStatus(status);
   const isPosted = status === DisbursementVoucherStatuses.posted;
   const isDisapproved = status === DisbursementVoucherStatuses.disapproved;
   const isCancelled = status === DisbursementVoucherStatuses.cancelled;
@@ -143,25 +152,19 @@ function createDisbursementVoucherViewActionItems({
       : DisbursementVoucherStatuses.forApproval
     : DisbursementVoucherStatuses.cancelled;
   const actions: ModuleActionMenuItem[] = [
-    ...(canEdit
-      ? [
-          {
-            href: `${DisbursementVoucherHref}/edit/${transaction?.id ?? voucher.transactionId}`,
-            icon: Edit3,
-            label: "Edit",
-            type: "link",
-          } satisfies ModuleActionMenuItem,
-        ]
-      : []),
     {
       disabled:
         !onUpdateStatus || !canApproveDisbursementVoucherStatus(status),
       icon: isPosted ? Undo2 : CheckCircle2,
       label: isPosted ? "Undo Approved" : "Approve",
-      onSelect: () =>
-        onUpdateStatus?.(
-          isPosted ? approvalUndoStatus : DisbursementVoucherStatuses.posted,
-        ),
+      onSelect: () => {
+        if (isPosted) {
+          onUpdateStatus?.(approvalUndoStatus);
+          return;
+        }
+
+        onRequestStatusConfirmation(DisbursementVoucherStatuses.posted);
+      },
       type: "button",
     },
     {
@@ -169,12 +172,14 @@ function createDisbursementVoucherViewActionItems({
         !onUpdateStatus || !canDisapproveDisbursementVoucherStatus(status),
       icon: isDisapproved ? Undo2 : ThumbsDown,
       label: isDisapproved ? "Undo Disapproved" : "Disapprove",
-      onSelect: () =>
-        onUpdateStatus?.(
-          isDisapproved
-            ? approvalUndoStatus
-            : DisbursementVoucherStatuses.disapproved,
-        ),
+      onSelect: () => {
+        if (isDisapproved) {
+          onUpdateStatus?.(approvalUndoStatus);
+          return;
+        }
+
+        onRequestStatusConfirmation(DisbursementVoucherStatuses.disapproved);
+      },
       tone: isDisapproved ? "default" : "danger",
       type: "button",
     },
@@ -189,13 +194,12 @@ function createDisbursementVoucherViewActionItems({
           return;
         }
 
-        onRequestCancel(cancelStatus);
+        onRequestStatusConfirmation(cancelStatus);
       },
       tone: isCancelled ? "default" : "danger",
       type: "button",
     },
     {
-      disabled: !voucher,
       icon: History,
       label: "History",
       onSelect: onOpenHistory,
@@ -227,6 +231,28 @@ function HeaderActionButton({
   );
 }
 
+function HeaderHistoryButton({
+  action,
+}: {
+  action: Extract<ModuleActionMenuItem, { type: "button" }>;
+}) {
+  const Icon = action.icon;
+
+  return (
+    <ModuleTooltip title="History" description="Open voucher history.">
+      <button
+        type="button"
+        disabled={action.disabled}
+        onClick={action.onSelect}
+        className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-darknavy/10 bg-white text-darknavy/70 shadow-sm shadow-darknavy/5 transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20 disabled:cursor-not-allowed disabled:opacity-45"
+        aria-label="Open disbursement voucher history"
+      >
+        <Icon className="h-4 w-4" aria-hidden="true" />
+      </button>
+    </ModuleTooltip>
+  );
+}
+
 function getViewActionButtonClassName(
   action: Extract<ModuleActionMenuItem, { type: "button" }>,
 ) {
@@ -250,4 +276,69 @@ function getViewActionButtonClassName(
   }
 
   return moduleHeaderActionClassNames.secondary;
+}
+
+function createDisbursementVoucherViewHistory({
+  recordLabel,
+  transaction,
+  voucher,
+}: {
+  recordLabel: string;
+  transaction?: DisbursementTransactionRecord;
+  voucher?: DisbursementVoucherRecord;
+}): DisbursementVoucherHistoryEntry[] {
+  if (voucher?.history?.length) {
+    return voucher.history;
+  }
+
+  if (!transaction) {
+    return [];
+  }
+
+  const sourceDate =
+    transaction.updatedAt ?? transaction.createdAt ?? transaction.transactionDate;
+
+  return [
+    {
+      action: "Source Transaction",
+      actor: transaction.updatedBy ?? transaction.createdBy ?? "System",
+      createdAt: sourceDate,
+      description: `${recordLabel} is available for disbursement voucher processing.`,
+      id: `dv-history-${transaction.id}-source`,
+      status: transaction.status,
+    },
+  ];
+}
+
+function getStatusDialogCopy(
+  status: DisbursementVoucherStatus,
+  recordLabel: string,
+) {
+  if (status === DisbursementVoucherStatuses.posted) {
+    return {
+      confirmLabel: "Approve Voucher",
+      description: `This will approve ${recordLabel} and update its status to Posted.`,
+      pendingLabel: "Approving...",
+      title: "Approve disbursement voucher?",
+      tone: "success" as const,
+    };
+  }
+
+  if (status === DisbursementVoucherStatuses.disapproved) {
+    return {
+      confirmLabel: "Disapprove Voucher",
+      description: `This will mark ${recordLabel} as Disapproved.`,
+      pendingLabel: "Disapproving...",
+      title: "Disapprove disbursement voucher?",
+      tone: "danger" as const,
+    };
+  }
+
+  return {
+    confirmLabel: "Mark as Cancelled",
+    description: `This will mark ${recordLabel} as Cancelled.`,
+    pendingLabel: "Cancelling...",
+    title: "Make Disbursement Voucher as Cancelled",
+    tone: "danger" as const,
+  };
 }

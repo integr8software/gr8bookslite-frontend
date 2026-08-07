@@ -22,6 +22,7 @@ export function ModuleTable<TData>({
 	maxHeightClassName = "max-h-[58vh]",
 	minWidthClassName = "min-w-[78rem]",
 	paginationLabel = "records",
+	paginationDensity = "default",
 	paginationPageLimit = 3,
 	paginationStorageKey,
 	paginationTotalRows,
@@ -206,6 +207,7 @@ export function ModuleTable<TData>({
 			</div>
 
 			<ModuleTablePagination
+				density={paginationDensity}
 				firstRow={firstRow}
 				label={paginationLabel}
 				lastRow={lastRow}

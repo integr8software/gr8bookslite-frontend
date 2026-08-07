@@ -416,6 +416,7 @@ export function AppCopyFromSourceDialog({
 				maxHeightClassName="min-h-0 flex-1"
 				minWidthClassName="min-w-[70rem]"
 				pageSizeOptions={CopyFromPageSizeOptions}
+				paginationDensity="compact"
 				paginationLabel="transactions"
 				paginationStorageKey={`copy-from:${activeSource}:default-10`}
 				renderRow={({ id, original }) => {

@@ -10,10 +10,6 @@ export function validateDisbursementVoucherDetails(
 ) {
 	const errors: DisbursementVoucherFormErrors = {};
 
-	if (!values.transactionId) {
-		errors.transactionId = "Choose a transaction before continuing.";
-	}
-
 	if (!values.paymentMethod) {
 		errors.paymentMethod = "Payment method is required.";
 	}

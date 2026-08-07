@@ -575,7 +575,12 @@ function DisbursementVoucherActionInner() {
       return;
     }
 
-    const valuesForSubmit = { ...values, status };
+    const valuesForSubmit = {
+      ...values,
+      status,
+      transactionId:
+        values.transactionId.trim() || createManualDisbursementTransactionId(),
+    };
     const detailsErrors = validateDisbursementVoucherDetails(valuesForSubmit);
     const entryErrors = validateDisbursementVoucherEntries(valuesForSubmit);
     const nextErrors = { ...detailsErrors, ...entryErrors };
@@ -1056,6 +1061,10 @@ function createVoucherActionReturnHref(from: string | null, transactionId?: stri
   }
 
   return DisbursementVoucherHref;
+}
+
+function createManualDisbursementTransactionId() {
+  return `dv-tx-manual-${Date.now()}`;
 }
 
 function createAccountingChartAccountOptions(
@@ -2627,19 +2636,19 @@ function VoucherDataEntry({
               }
               : {
                 amount: formatAccountingAmount(
-                  getExpenseEntryColumnTotal(entries, "amount"),
+                  getExpenseEntryColumnTotal(expenseRows, "amount"),
                 ),
                 ewtAmount: formatAccountingAmount(
-                  getExpenseEntryColumnTotal(entries, "ewtAmount"),
+                  getExpenseEntryColumnTotal(expenseRows, "ewtAmount"),
                 ),
                 netAmount: formatAccountingAmount(
-                  getExpenseEntryColumnTotal(entries, "netAmount"),
+                  getExpenseEntryColumnTotal(expenseRows, "netAmount"),
                 ),
                 totalAmountDue: formatAccountingAmount(
-                  getExpenseEntryColumnTotal(entries, "totalAmountDue"),
+                  getExpenseEntryColumnTotal(expenseRows, "totalAmountDue"),
                 ),
                 vatAmount: formatAccountingAmount(
-                  getExpenseEntryColumnTotal(entries, "vatAmount"),
+                  getExpenseEntryColumnTotal(expenseRows, "vatAmount"),
                 ),
               }
           }

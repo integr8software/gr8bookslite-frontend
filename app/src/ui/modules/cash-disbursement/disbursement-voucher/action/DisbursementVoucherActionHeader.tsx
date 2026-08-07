@@ -79,15 +79,16 @@ export function DisbursementVoucherActionHeader({
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Back
           </Link>
-          {onPreview ? <ReportPreviewAction onPreview={onPreview} /> : null}
           {mode === "view" ? (
             <DisbursementVoucherViewActions
               transaction={transaction}
               voucher={voucher}
               onUpdateStatus={onUpdateStatus}
+              onPreview={onPreview}
             />
           ) : (
             <span className="inline-flex shrink-0 items-center gap-2">
+              {onPreview ? <ReportPreviewAction onPreview={onPreview} /> : null}
               {mode === "add" && onCopyFrom ? (
                 <AppCopyFromDropdown
                   records={copyFromRecords}

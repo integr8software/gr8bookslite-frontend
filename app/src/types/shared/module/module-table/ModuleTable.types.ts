@@ -12,6 +12,7 @@ export type ModuleTableProps<TData> = {
 	maxHeightClassName?: string;
 	minWidthClassName?: string;
 	paginationLabel?: string;
+	paginationDensity?: "compact" | "default";
 	paginationPageLimit?: number;
 	paginationStorageKey?: string;
 	paginationTotalRows?: number;
@@ -41,6 +42,7 @@ export type ModuleTableBodyProps<TData> = {
 };
 
 export type ModuleTablePaginationProps = {
+	density?: "compact" | "default";
 	firstRow: number;
 	label: string;
 	lastRow: number;

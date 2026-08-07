@@ -181,7 +181,7 @@ export function usePurchaseOrderFormPage() {
 				firstCanvassForm?.requiredBefore ||
 				current.deliveryDate,
 			prNo: mergeUniqueTextValues(current.prNo, prNos),
-			projectRef: firstPurchaseRequest?.projectCode || current.projectRef,
+			projectCode: firstPurchaseRequest?.projectCode || current.projectCode,
 			projectName: firstPurchaseRequest?.projectName || current.projectName,
 			remarks: current.remarks || remarks,
 			items: current.items.some(purchaseOrderItemHasData)

@@ -65,7 +65,7 @@ const PurchaseOrderFormSchema = z.object({
 	partialPayment: z.boolean(),
 	prNo: z.string(),
 	projectName: z.string(),
-	projectRef: z.string(),
+	projectCode: z.string(),
 	purchaseType: requiredText("Select a purchase type."),
 	remarks: z.string(),
 	status: z.enum(["Draft", "For Approval", "Posted", "Disapproved", "Cancelled"]),

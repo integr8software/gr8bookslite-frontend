@@ -8,7 +8,6 @@ import {
   JournalVoucherLineColumnWidths,
   JournalVoucherProtectedLineColumnIds,
   JournalVoucherVatTypeOptions,
-  type JournalVoucherLineColumnId,
 } from "@/app/src/constants/modules/general-journal/journal-voucher/JournalVoucherConstants";
 import { getModuleChartAccounts } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import { formatJournalVoucherAmount } from "@/app/src/data/modules/general-journal/journal-voucher/JournalVoucherData";
@@ -18,6 +17,7 @@ import { usePartyManagementStore } from "@/app/src/hooks/modules/party-managemen
 import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenter";
 import type {
   JournalVoucherLine,
+  JournalVoucherLineColumnId,
   JournalVoucherLineField,
 } from "@/app/src/types/modules/general-journal/journal-voucher/JournalVoucherTypes";
 import type { PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";

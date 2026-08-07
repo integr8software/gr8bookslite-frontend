@@ -61,7 +61,6 @@ import {
   type ModuleChartAccount,
 } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import {
-  MockMultiCurrencySetupRecords,
   MultiCurrencyCatalog,
 } from "@/app/src/data/modules/system-administration/multi-currency-setup/MultiCurrencySetupData";
 import {
@@ -724,20 +723,7 @@ function createVoucherActionReturnHref(from: string | null, transactionId?: stri
 }
 
 function createVoucherCurrencyOptions() {
-  const activeCurrencyCodes = new Set(
-    MockMultiCurrencySetupRecords.filter(
-      (record) => record.status === "Active",
-    ).flatMap((record) => [
-      record.baseCurrencyCode,
-      record.targetCurrencyCode,
-    ]),
-  );
-
-  activeCurrencyCodes.add("PHP");
-
-  return MultiCurrencyCatalog.filter(
-    (currency) => currency.isEnabled && activeCurrencyCodes.has(currency.code),
-  );
+  return MultiCurrencyCatalog.filter((currency) => currency.isEnabled);
 }
 
 function createVoucherCurrencyDropdownOptions(): AppAdvancedDropdownOption[] {
@@ -753,14 +739,7 @@ function getVoucherCurrencyExchangeRate(currencyCode: string) {
     return "1.0000";
   }
 
-  const matchedRate = MockMultiCurrencySetupRecords.find(
-    (record) =>
-      record.status === "Active" &&
-      record.baseCurrencyCode === "PHP" &&
-      record.targetCurrencyCode === currencyCode,
-  );
-
-  return (matchedRate?.originalExchangeRate ?? 1).toFixed(4);
+  return "1.0000";
 }
 
 function createVoucherBankAccounts(

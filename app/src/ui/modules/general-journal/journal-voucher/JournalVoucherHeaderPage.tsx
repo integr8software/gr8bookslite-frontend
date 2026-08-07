@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, Save, Trash2, X } from "lucide-react";
+import { ArrowLeft, Ban, Save } from "lucide-react";
 import {
   JournalVoucherActionCopy,
   JournalVoucherHref,
@@ -60,21 +60,14 @@ export function JournalVoucherHeaderPage({
           ) : null}
           {!page.isReadonly && page.mode !== "view" ? (
             <>
-              <Link
-                href={JournalVoucherHref}
-                className={moduleHeaderActionClassNames.secondary}
-              >
-                <X className="h-4 w-4" aria-hidden="true" />
-                Cancel
-              </Link>
               {page.mode === "edit" ? (
                 <button
                   type="button"
                   className={moduleHeaderActionClassNames.danger}
-                  onClick={() => page.setIsDeleteDialogOpen(true)}
+                  onClick={() => page.setIsCancelDialogOpen(true)}
                 >
-                  <Trash2 className="h-4 w-4" aria-hidden="true" />
-                  Delete
+                  <Ban className="h-4 w-4" aria-hidden="true" />
+                  Cancel
                 </button>
               ) : null}
               <button

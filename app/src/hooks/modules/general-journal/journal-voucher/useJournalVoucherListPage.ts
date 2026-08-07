@@ -14,12 +14,15 @@ import { JournalVoucherStatusFilters } from "@/app/src/constants/modules/general
 import { getJournalVoucherTotals } from "@/app/src/data/modules/general-journal/journal-voucher/JournalVoucherData";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import { useJournalVoucherStore } from "@/app/src/hooks/modules/general-journal/journal-voucher/useJournalVoucher";
-import type { JournalVoucherRecord } from "@/app/src/types/modules/general-journal/journal-voucher/JournalVoucherTypes";
+import type {
+  JournalVoucherRecord,
+  JournalVoucherStatus,
+} from "@/app/src/types/modules/general-journal/journal-voucher/JournalVoucherTypes";
 import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
 
 export function useJournalVoucherListPage() {
-  const { deleteRecord, isLoading, isMutating, lastSyncedAt, records } =
+  const { isLoading, isMutating, lastSyncedAt, records, updateStatus } =
     useJournalVoucherStore();
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -40,8 +43,6 @@ export function useJournalVoucherListPage() {
   const [statusFilter, setStatusFilterState] = useState<
     (typeof JournalVoucherStatusFilters)[number]
   >("all");
-  const [pendingDeleteRecord, setPendingDeleteRecord] =
-    useState<JournalVoucherRecord | null>(null);
   const deferredQuery = useDeferredValue(query);
 
   const filteredRecords = useMemo(() => {
@@ -132,30 +133,26 @@ export function useJournalVoucherListPage() {
     table.setPageIndex(0);
   }
 
-  function handleConfirmDelete() {
-    if (!pendingDeleteRecord) {
-      return;
-    }
-
-    deleteRecord(pendingDeleteRecord.id);
-    setPendingDeleteRecord(null);
+  function handleUpdateStatus(
+    record: JournalVoucherRecord,
+    status: JournalVoucherStatus,
+  ) {
+    updateStatus(record.id, status);
   }
 
   return {
     amountRange,
     dateRange,
-    handleConfirmDelete,
     handleQueryChange,
+    handleUpdateStatus,
     isLoading,
     isMutating,
     lastSyncedAt,
-    pendingDeleteRecord,
     query,
     records,
     resetFilters,
     setAmountRange,
     setDateRange,
-    setPendingDeleteRecord,
     setStatusFilter,
     statusFilter,
     table,

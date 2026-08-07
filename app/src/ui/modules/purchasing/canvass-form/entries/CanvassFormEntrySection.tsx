@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import {
 	createBlankCanvassFormItem,
 	createCanvassFormId,
@@ -10,7 +10,6 @@ import type {
 	CanvassFormAccountingEntry,
 	CanvassFormItem,
 } from "@/app/src/types/modules/purchasing/canvass-form/CanvassFormTypes";
-import type { PurchasingEntryTab } from "@/app/src/types/modules/purchasing/PurchasingAccountingTypes";
 import {
 	ModuleDataEntry,
 	type ModuleDataEntryClearAction,
@@ -18,9 +17,7 @@ import {
 	type ModuleDataEntryColumnOption,
 	type ModuleDataEntryExportOption,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
-import { CanvassFormAccountingEntrySection } from "@/app/src/ui/modules/purchasing/canvass-form/entries/CanvassFormAccountingEntrySection";
 import { createCanvassFormLineColumns } from "@/app/src/ui/modules/purchasing/canvass-form/entries/CanvassFormLineColumns";
-import { PurchasingEntryTabs } from "@/app/src/ui/modules/purchasing/shared/PurchasingEntryTabs";
 
 type CanvassFormEntrySectionProps = {
 	accountingRows: CanvassFormAccountingEntry[];
@@ -32,14 +29,11 @@ type CanvassFormEntrySectionProps = {
 };
 
 export function CanvassFormEntrySection({
-	accountingRows,
 	error,
 	isReadonly,
-	onAccountingRowsChange,
 	onRowsChange,
 	rows,
 }: CanvassFormEntrySectionProps) {
-	const [activeTab, setActiveTab] = useState<PurchasingEntryTab>("details");
 	const updateEntry = useCallback(
 		(rowId: string, updates: Partial<CanvassFormItem>) => {
 			onRowsChange(
@@ -69,18 +63,6 @@ export function CanvassFormEntrySection({
 			})),
 		[columns],
 	);
-
-	if (activeTab === "accounting") {
-		return (
-			<CanvassFormAccountingEntrySection
-				error={error}
-				isReadonly={isReadonly}
-				rows={accountingRows}
-				onRowsChange={onAccountingRowsChange}
-				onTabChange={setActiveTab}
-			/>
-		);
-	}
 
 	function addRows(count: number) {
 		onRowsChange([
@@ -154,13 +136,7 @@ export function CanvassFormEntrySection({
 			isReadonly={isReadonly}
 			rows={rows}
 			summaryCells={{ computedTotalCost: formatCanvassFormAmount(total) }}
-			title={
-				<PurchasingEntryTabs
-					activeTab={activeTab}
-					detailsLabel="Canvass Details"
-					onTabChange={setActiveTab}
-				/>
-			}
+			title="Canvass Details"
 			onAddRows={addRows}
 			onAutoColumnWidth={() => undefined}
 			onClearRows={clearRows}

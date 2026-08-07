@@ -26,7 +26,6 @@ import {
   PurchasingAccountingDefaultVisibleColumnIds,
   PurchasingAccountingProtectedColumnIds,
 } from "@/app/src/ui/modules/purchasing/shared/PurchasingAccountingEntryColumns";
-import { PurchasingEntryTabs } from "@/app/src/ui/modules/purchasing/shared/PurchasingEntryTabs";
 
 type PurchaseRequestEntrySectionProps = {
   accountingRows: PurchaseRequestAccountingEntry[];
@@ -45,7 +44,7 @@ export function PurchaseRequestEntrySection({
   onRowsChange,
   rows,
 }: PurchaseRequestEntrySectionProps) {
-  const [activeTab, setActiveTab] = useState<PurchasingEntryTab>("details");
+  const [activeTab] = useState<PurchasingEntryTab>("details");
   const [visibleAccountingColumnIds, setVisibleAccountingColumnIds] = useState<
     PurchasingAccountingColumnId[]
   >([...PurchasingAccountingDefaultVisibleColumnIds]);
@@ -114,13 +113,7 @@ export function PurchaseRequestEntrySection({
         isReadonly={isReadonly}
         rows={accountingRows}
         summaryCells={createAccountingSummaryCells(accountingRows)}
-        title={
-          <PurchasingEntryTabs
-            activeTab={activeTab}
-            detailsLabel="Purchase Request Details"
-            onTabChange={setActiveTab}
-          />
-        }
+        title="Accounting Entries"
         onAddRows={(count) =>
           onAccountingRowsChange([
             ...accountingRows,
@@ -263,13 +256,7 @@ export function PurchaseRequestEntrySection({
       isDraggable
       isReadonly={isReadonly}
       rows={rows}
-      title={
-        <PurchasingEntryTabs
-          activeTab={activeTab}
-          detailsLabel="Purchase Request Details"
-          onTabChange={setActiveTab}
-        />
-      }
+      title="Purchase Request Details"
       onAddRows={addRows}
       onAutoColumnWidth={() => undefined}
       onClearRows={clearRows}

@@ -189,8 +189,8 @@ export function useReceivingReportActionPage() {
       poNo: joinUniqueReceivingReportValues(purchaseOrderNos) || current.poNo,
       prNo: joinUniqueReceivingReportValues(purchaseRequestNos) || current.prNo,
       importationRefNo: firstOrder.importationNo || current.importationRefNo,
-      projectRef: firstOrder.projectRef || current.projectRef,
-      projectCode: firstOrder.projectRef || current.projectCode,
+      projectRef: firstOrder.projectCode || current.projectRef,
+      projectCode: firstOrder.projectCode || current.projectCode,
       projectName: firstOrder.projectName || current.projectName,
       responsibilityCenter:
         firstOrder.items.find((item) => item.responsibilityCenter.trim().length > 0)

@@ -2,6 +2,7 @@ import {
   DeliveryReceiptBranchOptions,
   DeliveryReceiptCurrencyOptions,
   DeliveryReceiptPartyOptions,
+  DeliveryReceiptResponsibilityCenterOptions,
   DeliveryReceiptStatusOptions,
   DeliveryReceiptTermOptions,
 } from "@/app/src/data/modules/inventory/delivery-receipt/DeliveryReceiptData";
@@ -23,11 +24,7 @@ type DeliveryReceiptCustomerFieldsProps = {
   onUpdateField: DeliveryReceiptFieldUpdater<DeliveryReceiptFormValues>;
 };
 
-export function DeliveryReceiptCustomerFields({
-  isReadonly,
-  onUpdateField,
-  values,
-}: DeliveryReceiptCustomerFieldsProps) {
+export function DeliveryReceiptCustomerFields({ isReadonly, onUpdateField, values }: DeliveryReceiptCustomerFieldsProps) {
   return (
     <div className="grid min-w-0 content-start gap-x-8 gap-y-3 xl:grid-cols-3">
       <div className="grid min-w-0 content-start gap-3">
@@ -39,9 +36,21 @@ export function DeliveryReceiptCustomerFields({
             options={DeliveryReceiptPartyOptions}
             placeholder=""
             searchPlaceholder="Search Party Name"
+            addAction={{
+              disabled: isReadonly,
+              label: "Add",
+              onClick: () => undefined,
+            }}
             onChange={(value) => onUpdateField("vceName", String(value))}
           />
         </FieldShell>
+        <TextField
+          id="delivery-receipt-address"
+          label="Address"
+          readOnly={isReadonly}
+          value={values.address}
+          onChange={(value) => onUpdateField("address", value)}
+        />
         <FieldShell controlId="delivery-receipt-bill-to-name" label="Bill To Name">
           <AppAdvancedDropdown
             id="delivery-receipt-bill-to-name"
@@ -50,6 +59,11 @@ export function DeliveryReceiptCustomerFields({
             options={DeliveryReceiptPartyOptions}
             placeholder=""
             searchPlaceholder="Search bill to"
+            addAction={{
+              disabled: isReadonly,
+              label: "Add",
+              onClick: () => undefined,
+            }}
             onChange={(value) => onUpdateField("billToName", String(value))}
           />
         </FieldShell>
@@ -69,7 +83,7 @@ export function DeliveryReceiptCustomerFields({
         />
         <TextField
           id="delivery-receipt-project-ref"
-          label="Proj. Ref No"
+          label="Project Code"
           readOnly={isReadonly}
           value={values.projectRef}
           onChange={(value) => onUpdateField("projectRef", value)}
@@ -117,6 +131,11 @@ export function DeliveryReceiptCustomerFields({
             options={DeliveryReceiptBranchOptions}
             placeholder="--Select Warehouse--"
             searchPlaceholder="Search warehouse"
+            addAction={{
+              disabled: isReadonly,
+              label: "Add",
+              onClick: () => undefined,
+            }}
             onChange={(value) => onUpdateField("branch", String(value))}
           />
         </FieldShell>
@@ -128,6 +147,11 @@ export function DeliveryReceiptCustomerFields({
             options={DeliveryReceiptTermOptions}
             placeholder="--Select Terms--"
             searchPlaceholder="Search terms"
+            addAction={{
+              disabled: isReadonly,
+              label: "Add",
+              onClick: () => undefined,
+            }}
             onChange={(value) => onUpdateField("terms", String(value))}
           />
         </FieldShell>
@@ -139,7 +163,7 @@ export function DeliveryReceiptCustomerFields({
           onChange={(value) => onUpdateField("dueDate", value)}
         />
         <FieldShell controlId="delivery-receipt-currency" label="Currency">
-          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_8.5rem]">
+          <div className="grid min-w-0 gap-3 sm:grid-cols-[8rem_minmax(0,1fr)]">
             <AppAdvancedDropdown
               id="delivery-receipt-currency-select"
               value={values.currency}
@@ -149,11 +173,8 @@ export function DeliveryReceiptCustomerFields({
               onChange={(value) => onUpdateField("currency", String(value))}
             />
             <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2">
-              <label
-                htmlFor="delivery-receipt-exchange-rate"
-                className="text-sm font-semibold text-darknavy"
-              >
-                FX Rate:
+              <label htmlFor="delivery-receipt-exchange-rate" className="text-sm font-semibold text-darknavy">
+                Exchange Rate:
               </label>
               <MoneyNumberField
                 id="delivery-receipt-exchange-rate"
@@ -165,14 +186,22 @@ export function DeliveryReceiptCustomerFields({
             </div>
           </div>
         </FieldShell>
-        <TextField
-          id="delivery-receipt-res-center"
-          label="Responsibility Center"
-          isRequired
-          readOnly={isReadonly}
-          value={values.resCenter}
-          onChange={(value) => onUpdateField("resCenter", value)}
-        />
+        <FieldShell controlId="delivery-receipt-res-center" label="Responsibility Center" isRequired>
+          <AppAdvancedDropdown
+            id="delivery-receipt-res-center"
+            value={values.resCenter}
+            readOnly={isReadonly}
+            options={DeliveryReceiptResponsibilityCenterOptions}
+            placeholder="--Select Responsibility Center--"
+            searchPlaceholder="Search responsibility center"
+            addAction={{
+              disabled: isReadonly,
+              label: "Add",
+              onClick: () => undefined,
+            }}
+            onChange={(value) => onUpdateField("resCenter", String(value))}
+          />
+        </FieldShell>
       </div>
       <div className="grid min-w-0 content-start gap-3">
         <TextField
@@ -194,25 +223,25 @@ export function DeliveryReceiptCustomerFields({
         <TextField
           id="delivery-receipt-pl-no"
           label="PL No"
-          readOnly={isReadonly}
+          readOnly
           value={values.plNo}
           onChange={(value) => onUpdateField("plNo", value)}
         />
         <TextField
           id="delivery-receipt-so-no"
           label="SO No."
-          readOnly={isReadonly}
+          readOnly
           value={values.soNo}
           onChange={(value) => onUpdateField("soNo", value)}
         />
         <FieldShell controlId="delivery-receipt-status" label="Status">
-					<AppAdvancedDropdown
-						id="delivery-receipt-status"
-						value={values.status}
-						readOnly
-						options={DeliveryReceiptStatusOptions}
-						placeholder="Draft"
-						searchPlaceholder="Search status"
+          <AppAdvancedDropdown
+            id="delivery-receipt-status"
+            value={values.status}
+            readOnly
+            options={DeliveryReceiptStatusOptions}
+            placeholder="Draft"
+            searchPlaceholder="Search status"
             onChange={(value) => onUpdateField("status", String(value))}
           />
         </FieldShell>

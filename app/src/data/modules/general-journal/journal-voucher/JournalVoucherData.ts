@@ -12,7 +12,7 @@ export const MockJournalVouchers: JournalVoucherRecord[] = [
     remarks: "Month-end accrual for professional services.",
     currencyType: "PHP",
     currencyRate: 1,
-    status: "Approved",
+    status: "For Approval",
     lines: [
       createJournalVoucherLine(1, {
         id: "jv-2026-0001-line-1",

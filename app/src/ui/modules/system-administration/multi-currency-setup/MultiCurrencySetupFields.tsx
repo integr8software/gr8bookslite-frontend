@@ -1,16 +1,19 @@
 import type { ChangeEventHandler, ReactNode } from "react";
-import {
-	MultiCurrencyCatalog,
-	getCurrencyLabel,
-} from "@/app/src/data/modules/system-administration/multi-currency-setup/MultiCurrencySetupData";
+import { getCurrencyLabel } from "@/app/src/data/modules/system-administration/multi-currency-setup/MultiCurrencySetupData";
 import type {
+	MultiCurrencyCatalogItem,
 	MultiCurrencyFetchedRate,
 	MultiCurrencySetupFormErrors,
 	MultiCurrencySetupFormValues,
 } from "@/app/src/types/modules/system-administration/multi-currency-setup/MultiCurrencySetupTypes";
+import {
+	AppAdvancedDropdown,
+	type AppAdvancedDropdownOption,
+} from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 
 type MultiCurrencySetupFieldsProps = {
 	baseOriginalExchangeRateDisplay: string;
+	currencyOptions: MultiCurrencyCatalogItem[];
 	errors: MultiCurrencySetupFormErrors;
 	fetchedExchangeRateDisplay: string;
 	fetchedRate?: MultiCurrencyFetchedRate;
@@ -23,10 +26,15 @@ type MultiCurrencySetupFieldsProps = {
 	onInputChange: ChangeEventHandler<
 		HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
 	>;
+	onFieldChange: (
+		field: keyof MultiCurrencySetupFormValues,
+		value: MultiCurrencySetupFormValues[keyof MultiCurrencySetupFormValues] | string,
+	) => void;
 };
 
 export function MultiCurrencySetupFields({
 	baseOriginalExchangeRateDisplay,
+	currencyOptions,
 	errors,
 	fetchedExchangeRateDisplay,
 	fetchedRate,
@@ -36,8 +44,17 @@ export function MultiCurrencySetupFields({
 	isReadonly,
 	originalExchangeRateDisplay,
 	values,
+	onFieldChange,
 	onInputChange,
 }: MultiCurrencySetupFieldsProps) {
+	const dropdownOptions = currencyOptions.map<AppAdvancedDropdownOption>(
+		(currency) => ({
+			label: `${currency.code} - ${currency.name}`,
+			name: currency.code,
+			value: currency.code,
+		}),
+	);
+
 	return (
 		<div className="grid gap-5">
 			<div className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm sm:p-5">
@@ -47,22 +64,18 @@ export function MultiCurrencySetupFields({
 						error={errors.baseCurrencyCode}
 						required
 					>
-						<select
+						<AppAdvancedDropdown
+							id="multi-currency-baseCurrencyCode"
 							name="baseCurrencyCode"
 							value={values.baseCurrencyCode}
-							onChange={onInputChange}
-							disabled={isReadonly}
-							className={fieldClassName}
-						>
-							{MultiCurrencyCatalog.map((currency) => (
-								<option
-									key={currency.code}
-									value={currency.code}
-								>
-									{currency.code} - {currency.name}
-								</option>
-							))}
-						</select>
+							options={dropdownOptions}
+							placeholder="Select base currency"
+							readOnly={isReadonly}
+							isClearable={false}
+							onChange={(value) =>
+								onFieldChange("baseCurrencyCode", String(value))
+							}
+						/>
 					</FormField>
 
 					<FormField
@@ -70,22 +83,18 @@ export function MultiCurrencySetupFields({
 						error={errors.targetCurrencyCode}
 						required
 					>
-						<select
+						<AppAdvancedDropdown
+							id="multi-currency-targetCurrencyCode"
 							name="targetCurrencyCode"
 							value={values.targetCurrencyCode}
-							onChange={onInputChange}
-							disabled={isReadonly}
-							className={fieldClassName}
-						>
-							{MultiCurrencyCatalog.map((currency) => (
-								<option
-									key={currency.code}
-									value={currency.code}
-								>
-									{currency.code} - {currency.name}
-								</option>
-							))}
-						</select>
+							options={dropdownOptions}
+							placeholder="Select wanted currency"
+							readOnly={isReadonly}
+							isClearable={false}
+							onChange={(value) =>
+								onFieldChange("targetCurrencyCode", String(value))
+							}
+						/>
 					</FormField>
 
 					<FormField

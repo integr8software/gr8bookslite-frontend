@@ -60,7 +60,7 @@ export type PurchaseOrderRecord = {
 	remarks: string;
 	discountAmount: number;
 	vatAmount: number;
-	projectRef: string;
+	projectCode: string;
 	projectName: string;
 	importationNo: string;
 	partialPayment: boolean;

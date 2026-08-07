@@ -13,7 +13,7 @@ import {
   FieldClassName,
   FieldShell,
   type ServiceInvoiceFieldUpdater,
-} from "@/app/src/ui/modules/sales/service-invoice/action/ServiceInvoiceFieldControls";
+} from "@/app/src/ui/modules/sales/service-invoice/form/ServiceInvoiceFieldControls";
 
 type ServiceInvoiceCustomerFieldsProps = {
   isReadonly: boolean;
@@ -151,16 +151,18 @@ export function ServiceInvoiceCustomerFields({ isReadonly, onUpdateField, values
               searchPlaceholder="Search currency"
               onChange={(value) => onUpdateField("currency", String(value))}
             />
-            <label htmlFor="service-invoice-exchange-rate" className="pt-2 text-sm font-semibold text-darknavy">
-              ER
-            </label>
-            <MoneyNumberField
-              id="service-invoice-exchange-rate"
-              value={values.exchangeRate}
-              readOnly={isReadonly}
-              onValueChange={(value) => onUpdateField("exchangeRate", value)}
-              className={`${FieldClassName} text-right tabular-nums`}
-            />
+            <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2">
+              <label htmlFor="service-invoice-exchange-rate" className="text-sm font-semibold text-darknavy">
+                ER:
+              </label>
+              <MoneyNumberField
+                id="service-invoice-exchange-rate"
+                value={values.exchangeRate}
+                readOnly={isReadonly}
+                onValueChange={(value) => onUpdateField("exchangeRate", value)}
+                className={`${FieldClassName} text-right`}
+              />
+            </div>
           </div>
         </FieldShell>
         <FieldShell controlId="service-invoice-res-center" label="Responsibility Center">

@@ -1,10 +1,7 @@
 "use client";
 
 import { useMemo, type ChangeEventHandler, type ReactNode } from "react";
-import {
-  MockMultiCurrencySetupRecords,
-  MultiCurrencyCatalog,
-} from "@/app/src/data/modules/system-administration/multi-currency-setup/MultiCurrencySetupData";
+import { MultiCurrencyCatalog } from "@/app/src/data/modules/system-administration/multi-currency-setup/MultiCurrencySetupData";
 import { useJournalVoucherFormPage } from "@/app/src/hooks/modules/general-journal/journal-voucher/useJournalVoucherFormPage";
 import { JournalVoucherDataEntryTable } from "@/app/src/ui/modules/general-journal/journal-voucher/JournalVoucherDataEntryTable";
 import { JournalVoucherHeaderPage } from "@/app/src/ui/modules/general-journal/journal-voucher/JournalVoucherHeaderPage";
@@ -40,65 +37,51 @@ export function JournalVoucherFormPage() {
         <JournalVoucherHeaderPage page={page} />
 
         <section className="min-w-0 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
-          <div className="grid min-w-0 gap-x-8 gap-y-5 xl:grid-cols-2">
+          <div className="grid min-w-0 gap-x-8 gap-y-5 xl:grid-cols-3">
             <div className="grid min-w-0 gap-4">
               <FieldShell
                 controlId="journal-voucher-currencyType"
                 error={page.errors.currencyType}
                 label="Currency"
               >
-                <div className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
-                  <AppAdvancedDropdown
-                    id="journal-voucher-currencyType"
-                    value={page.values.currencyType}
-                    readOnly={page.isReadonly}
-                    isClearable={false}
-                    options={currencyOptions}
-                    placeholder="Currency"
-                    searchPlaceholder="Search currency"
-                    onChange={(value) => page.updateCurrencyType(String(value))}
-                  />
-                  <div className="grid min-w-0 gap-2 sm:grid-cols-[auto_9rem] sm:items-start">
-                    <label
-                      htmlFor="journal-voucher-currencyRate"
-                      className="whitespace-nowrap pt-2 text-sm font-semibold text-darknavy"
-                    >
-                      Exchange Rate
-                    </label>
-                    <div className="min-w-0">
-                      <input
-                        id="journal-voucher-currencyRate"
-                        className={`${fieldClassName} text-right`}
-                        disabled={page.isReadonly || page.isExchangeRateLoading}
-                        min="0"
-                        name="currencyRate"
-                        onChange={page.handleInputChange}
-                        step="0.000001"
-                        type="number"
-                        value={String(page.values.currencyRate)}
-                      />
-                      {page.errors.currencyRate ? (
-                        <span className={errorClassName}>
-                          {page.errors.currencyRate}
-                        </span>
-                      ) : null}
-                    </div>
-                  </div>
-                </div>
+                <AppAdvancedDropdown
+                  id="journal-voucher-currencyType"
+                  value={page.values.currencyType}
+                  readOnly={page.isReadonly}
+                  isClearable={false}
+                  options={currencyOptions}
+                  placeholder="Currency"
+                  searchPlaceholder="Search currency"
+                  onChange={(value) => page.updateCurrencyType(String(value))}
+                />
               </FieldShell>
+              <TextField
+                label="Exchange Rate"
+                name="currencyRate"
+                type="number"
+                value={String(page.values.currencyRate)}
+                error={page.errors.currencyRate}
+                disabled={page.isReadonly || page.isExchangeRateLoading}
+                min="0"
+                step="0.000001"
+                onChange={page.handleInputChange}
+              />
               <TextareaField
                 label="Remarks"
                 name="remarks"
                 value={page.values.remarks}
                 error={page.errors.remarks}
                 disabled={page.isReadonly}
+                maxLength={500}
                 onChange={page.handleInputChange}
               />
             </div>
 
+            <div className="hidden xl:block" aria-hidden="true" />
+
             <div className="grid min-w-0 content-start gap-4">
               <TextField
-                label="Transaction Number"
+                label="JV No"
                 name="transactionNo"
                 value={page.values.transactionNo}
                 error={page.errors.transactionNo}
@@ -107,7 +90,7 @@ export function JournalVoucherFormPage() {
                 onChange={page.handleInputChange}
               />
               <TextField
-                label="Document Date"
+                label="JV Date"
                 name="documentDate"
                 type="date"
                 value={page.values.documentDate}
@@ -133,14 +116,14 @@ export function JournalVoucherFormPage() {
       </form>
 
       <AppDialog
-        isOpen={page.isDeleteDialogOpen}
+        isOpen={page.isCancelDialogOpen}
         isPending={page.isMutating}
-        title="Delete journal voucher?"
-        description={`This will remove ${page.existingRecord?.transactionNo ?? "the selected journal voucher"}.`}
-        confirmLabel="Delete Journal Voucher"
+        title="Cancel journal voucher?"
+        description={`This will change ${page.existingRecord?.transactionNo ?? "the selected journal voucher"} status to Cancelled.`}
+        confirmLabel="Cancel Journal Voucher"
         tone="danger"
-        onCancel={() => page.setIsDeleteDialogOpen(false)}
-        onConfirm={page.handleConfirmDelete}
+        onCancel={() => page.setIsCancelDialogOpen(false)}
+        onConfirm={page.handleConfirmCancelVoucher}
       />
     </>
   );
@@ -157,6 +140,7 @@ type FieldProps = {
   type?: string;
   min?: string;
   isRequired?: boolean;
+  maxLength?: number;
   readOnly?: boolean;
   step?: string;
 };
@@ -172,6 +156,7 @@ function TextField({
   type = "text",
   min,
   isRequired = false,
+  maxLength,
   readOnly = false,
   step,
 }: FieldProps) {
@@ -190,6 +175,7 @@ function TextField({
         className={readOnly ? readOnlyFieldClassName : fieldClassName}
         disabled={disabled}
         min={min}
+        maxLength={maxLength}
         name={name}
         onChange={onChange}
         readOnly={readOnly}
@@ -205,6 +191,7 @@ function TextareaField({
   disabled,
   error,
   label,
+  maxLength,
   name,
   onChange,
   value,
@@ -224,6 +211,7 @@ function TextareaField({
         id={controlId}
         className={textareaClassName}
         disabled={disabled}
+        maxLength={maxLength}
         name={name}
         onChange={onChange}
         value={value}
@@ -233,20 +221,7 @@ function TextareaField({
 }
 
 function createJournalVoucherCurrencyOptions() {
-  const activeCurrencyCodes = new Set(
-    MockMultiCurrencySetupRecords.filter(
-      (record) => record.status === "Active",
-    ).flatMap((record) => [
-      record.baseCurrencyCode,
-      record.targetCurrencyCode,
-    ]),
-  );
-
-  activeCurrencyCodes.add("PHP");
-
-  return MultiCurrencyCatalog.filter(
-    (currency) => currency.isEnabled && activeCurrencyCodes.has(currency.code),
-  );
+  return MultiCurrencyCatalog.filter((currency) => currency.isEnabled);
 }
 
 function createJournalVoucherCurrencyDropdownOptions(): AppAdvancedDropdownOption[] {

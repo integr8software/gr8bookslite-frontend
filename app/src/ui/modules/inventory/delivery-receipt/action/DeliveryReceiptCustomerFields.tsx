@@ -16,6 +16,7 @@ import {
 } from "@/app/src/ui/modules/inventory/delivery-receipt/action/DeliveryReceiptFieldControls";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
+import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 
 type DeliveryReceiptCustomerFieldsProps = {
@@ -26,7 +27,7 @@ type DeliveryReceiptCustomerFieldsProps = {
 
 export function DeliveryReceiptCustomerFields({ isReadonly, onUpdateField, values }: DeliveryReceiptCustomerFieldsProps) {
   return (
-    <div className="grid min-w-0 content-start gap-x-8 gap-y-3 xl:grid-cols-3">
+    <div className="grid min-w-0 content-start gap-x-8 gap-y-3 xl:grid-cols-2 2xl:grid-cols-3">
       <div className="grid min-w-0 content-start gap-3">
         <FieldShell controlId="delivery-receipt-vce-name" label="Party Name" isRequired>
           <AppAdvancedDropdown
@@ -163,28 +164,28 @@ export function DeliveryReceiptCustomerFields({ isReadonly, onUpdateField, value
           onChange={(value) => onUpdateField("dueDate", value)}
         />
         <FieldShell controlId="delivery-receipt-currency" label="Currency">
-          <div className="grid min-w-0 gap-3 sm:grid-cols-[8rem_minmax(0,1fr)]">
-            <AppAdvancedDropdown
-              id="delivery-receipt-currency-select"
-              value={values.currency}
-              readOnly={isReadonly}
-              options={DeliveryReceiptCurrencyOptions}
-              placeholder="PHP"
-              onChange={(value) => onUpdateField("currency", String(value))}
-            />
-            <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2">
-              <label htmlFor="delivery-receipt-exchange-rate" className="text-sm font-semibold text-darknavy">
-                Exchange Rate:
-              </label>
+          <CurrencyExchangeRateRow
+            currencyControl={
+              <AppAdvancedDropdown
+                id="delivery-receipt-currency-select"
+                className="w-full min-w-0"
+                value={values.currency}
+                readOnly={isReadonly}
+                options={DeliveryReceiptCurrencyOptions}
+                placeholder="PHP"
+                onChange={(value) => onUpdateField("currency", String(value))}
+              />
+            }
+            exchangeRateControl={
               <MoneyNumberField
                 id="delivery-receipt-exchange-rate"
                 value={values.exchangeRate}
                 readOnly={isReadonly}
                 onValueChange={(value) => onUpdateField("exchangeRate", value)}
-                className={`${FieldClassName} text-right`}
+                className={`${FieldClassName} text-right tabular-nums`}
               />
-            </div>
-          </div>
+            }
+          />
         </FieldShell>
         <FieldShell controlId="delivery-receipt-res-center" label="Responsibility Center" isRequired>
           <AppAdvancedDropdown

@@ -7,6 +7,7 @@ import {
 import type { ServiceInvoiceFormValues } from "@/app/src/types/modules/sales/service-invoice/ServiceInvoiceTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
+import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 import {
   FieldClassName,
@@ -127,8 +128,8 @@ export function ServiceInvoiceCustomerFields({ isReadonly, onUpdateField, values
           />
         </FieldShell>
         <FieldShell controlId="service-invoice-currency" label="Currency">
-          <div className="grid min-w-0 gap-1.5 sm:grid-cols-[minmax(0,1fr)_max-content_6.5rem] sm:items-start">
-            <div className="min-w-0">
+          <CurrencyExchangeRateRow
+            currencyControl={
               <AppAdvancedDropdown
                 id="service-invoice-currency"
                 className="w-full min-w-0"
@@ -140,11 +141,8 @@ export function ServiceInvoiceCustomerFields({ isReadonly, onUpdateField, values
                 searchPlaceholder="Search currency"
                 onChange={(value) => onUpdateField("currency", String(value))}
               />
-            </div>
-            <label htmlFor="service-invoice-exchange-rate" className="pt-2 text-sm font-semibold text-darknavy">
-              Exchange Rate
-            </label>
-            <div className="min-w-0">
+            }
+            exchangeRateControl={
               <MoneyNumberField
                 id="service-invoice-exchange-rate"
                 value={values.exchangeRate}
@@ -152,8 +150,8 @@ export function ServiceInvoiceCustomerFields({ isReadonly, onUpdateField, values
                 onValueChange={(value) => onUpdateField("exchangeRate", value)}
                 className={`${FieldClassName} text-right tabular-nums`}
               />
-            </div>
-          </div>
+            }
+          />
         </FieldShell>
         <FieldShell controlId="service-invoice-res-center" label="Res Center">
           <AppAdvancedDropdown

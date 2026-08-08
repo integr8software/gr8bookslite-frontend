@@ -38,8 +38,8 @@ export function MaterialRequestDetailsPanel({ errors, isReadonly, updateField, v
   return (
     <>
       <div className="rounded-md border border-darknavy/10 bg-white p-2 shadow-sm shadow-darknavy/5 sm:p-3">
-        <div className="grid gap-x-10 gap-y-3 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1.2fr)_minmax(0,0.95fr)]">
-          <div className="grid content-start gap-4">
+        <div className="grid gap-x-10 gap-y-3 xl:grid-cols-2 2xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1.2fr)_minmax(0,0.95fr)]">
+          <div className="grid min-w-0 content-start gap-4">
             <Field
               error={errors.vceName}
               id={MaterialRequestFieldIds.vceName}
@@ -72,7 +72,7 @@ export function MaterialRequestDetailsPanel({ errors, isReadonly, updateField, v
               onChange={(value) => updateField("remarks", value)}
             />
           </div>
-          <div className="grid content-start gap-4">
+          <div className="grid min-w-0 content-start gap-4">
             <Field
               error={errors.vceCode}
               id={MaterialRequestFieldIds.vceCode}
@@ -114,12 +114,9 @@ export function MaterialRequestDetailsPanel({ errors, isReadonly, updateField, v
               onAddWarehouse={() => setIsWarehouseDrawerOpen(true)}
               onChange={(value) => updateField("department", value)}
             />
-            <CurrencyExchangeRateField
-              currency="PHP"
-              exchangeRate="1.0000"
-            />
+            <CurrencyExchangeRateField currency="PHP" exchangeRate="1.0000" />
           </div>
-          <div className="grid content-start gap-4">
+          <div className="grid min-w-0 content-start gap-4">
             <Field
               error={errors.requestNo}
               id={MaterialRequestFieldIds.requestNo}
@@ -311,38 +308,30 @@ function WarehouseDropdownField({
   );
 }
 
-function CurrencyExchangeRateField({
-  currency,
-  exchangeRate,
-}: {
-  currency: string;
-  exchangeRate: string;
-}) {
+function CurrencyExchangeRateField({ currency, exchangeRate }: { currency: string; exchangeRate: string }) {
   return (
-    <div className="grid gap-2 sm:grid-cols-[10rem_minmax(0,1fr)_6.5rem_6.5rem] sm:items-start">
+    <div className="grid min-w-0 gap-1.5 sm:grid-cols-[7.5rem_minmax(0,1fr)_max-content_6.5rem] sm:items-start">
       <FieldLabel htmlFor={MaterialRequestFieldIds.currency} isRequired={false}>
         Currency
       </FieldLabel>
-      <select
-        id={MaterialRequestFieldIds.currency}
-        value={currency}
-        disabled
-        className={fieldClassName()}
-        aria-label="Currency"
-      >
-        <option value={currency}>{currency}</option>
-      </select>
+      <div className="min-w-0">
+        <select id={MaterialRequestFieldIds.currency} value={currency} disabled className={fieldClassName()} aria-label="Currency">
+          <option value={currency}>{currency}</option>
+        </select>
+      </div>
       <FieldLabel htmlFor={MaterialRequestFieldIds.exchangeRate} isRequired={false}>
         Exchange Rate
       </FieldLabel>
-      <input
-        id={MaterialRequestFieldIds.exchangeRate}
-        type="text"
-        value={exchangeRate}
-        readOnly
-        className={fieldClassName("text-right tabular-nums")}
-        aria-label="Exchange Rate"
-      />
+      <div className="min-w-0">
+        <input
+          id={MaterialRequestFieldIds.exchangeRate}
+          type="text"
+          value={exchangeRate}
+          readOnly
+          className={fieldClassName("text-right tabular-nums")}
+          aria-label="Exchange Rate"
+        />
+      </div>
     </div>
   );
 }

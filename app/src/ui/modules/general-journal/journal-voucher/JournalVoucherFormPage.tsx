@@ -6,26 +6,20 @@ import { useJournalVoucherFormPage } from "@/app/src/hooks/modules/general-journ
 import { JournalVoucherDataEntryTable } from "@/app/src/ui/modules/general-journal/journal-voucher/JournalVoucherDataEntryTable";
 import { JournalVoucherHeaderPage } from "@/app/src/ui/modules/general-journal/journal-voucher/JournalVoucherHeaderPage";
 import { JournalVoucherNotFound } from "@/app/src/ui/modules/general-journal/journal-voucher/JournalVoucherNotFound";
-import {
-  AppAdvancedDropdown,
-  type AppAdvancedDropdownOption,
-} from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { AppAdvancedDropdown, type AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
+import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 
 const fieldClassName =
   "app-data-entry-field h-11 min-w-0 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15 disabled:cursor-not-allowed disabled:bg-white disabled:text-darknavy disabled:opacity-60";
-const readOnlyFieldClassName =
-  `${fieldClassName} !bg-darknavy/5 text-darknavy/60`;
+const readOnlyFieldClassName = `${fieldClassName} !bg-darknavy/5 text-darknavy/60`;
 const textareaClassName =
   "app-data-entry-field min-h-24 min-w-0 w-full resize-y rounded-lg border border-darknavy/10 bg-white px-3 py-3 text-sm font-medium leading-6 text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15 disabled:cursor-not-allowed disabled:bg-white disabled:text-darknavy disabled:opacity-60";
 const errorClassName = "mt-1.5 block text-xs font-semibold text-coralpink";
 
 export function JournalVoucherFormPage() {
   const page = useJournalVoucherFormPage();
-  const currencyOptions = useMemo(
-    () => createJournalVoucherCurrencyDropdownOptions(),
-    [],
-  );
+  const currencyOptions = useMemo(() => createJournalVoucherCurrencyDropdownOptions(), []);
 
   if (page.needsRecord && !page.existingRecord) {
     return <JournalVoucherNotFound />;
@@ -37,35 +31,41 @@ export function JournalVoucherFormPage() {
         <JournalVoucherHeaderPage page={page} />
 
         <section className="min-w-0 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
-          <div className="grid min-w-0 gap-x-8 gap-y-5 xl:grid-cols-3">
+          <div className="grid min-w-0 gap-x-8 gap-y-5 xl:grid-cols-2 2xl:grid-cols-3">
             <div className="grid min-w-0 gap-4">
-              <FieldShell
-                controlId="journal-voucher-currencyType"
-                error={page.errors.currencyType}
-                label="Currency"
-              >
-                <AppAdvancedDropdown
-                  id="journal-voucher-currencyType"
-                  value={page.values.currencyType}
-                  readOnly={page.isReadonly}
-                  isClearable={false}
-                  options={currencyOptions}
-                  placeholder="Currency"
-                  searchPlaceholder="Search currency"
-                  onChange={(value) => page.updateCurrencyType(String(value))}
+              <FieldShell controlId="journal-voucher-currencyType" error={page.errors.currencyType} label="Currency">
+                <CurrencyExchangeRateRow
+                  currencyControl={
+                    <AppAdvancedDropdown
+                      id="journal-voucher-currencyType"
+                      className="w-full min-w-0"
+                      value={page.values.currencyType}
+                      readOnly={page.isReadonly}
+                      isClearable={false}
+                      options={currencyOptions}
+                      placeholder="Currency"
+                      searchPlaceholder="Search currency"
+                      onChange={(value) => page.updateCurrencyType(String(value))}
+                    />
+                  }
+                  exchangeRateControl={
+                    <div className="min-w-0">
+                      <input
+                        id="journal-voucher-currencyRate"
+                        className={fieldClassName}
+                        disabled={page.isReadonly || page.isExchangeRateLoading}
+                        min="0"
+                        name="currencyRate"
+                        onChange={page.handleInputChange}
+                        step="0.000001"
+                        type="number"
+                        value={String(page.values.currencyRate)}
+                      />
+                      {page.errors.currencyRate ? <span className={errorClassName}>{page.errors.currencyRate}</span> : null}
+                    </div>
+                  }
                 />
               </FieldShell>
-              <TextField
-                label="Exchange Rate"
-                name="currencyRate"
-                type="number"
-                value={String(page.values.currencyRate)}
-                error={page.errors.currencyRate}
-                disabled={page.isReadonly || page.isExchangeRateLoading}
-                min="0"
-                step="0.000001"
-                onChange={page.handleInputChange}
-              />
               <TextareaField
                 label="Remarks"
                 name="remarks"
@@ -77,7 +77,7 @@ export function JournalVoucherFormPage() {
               />
             </div>
 
-            <div className="hidden xl:block" aria-hidden="true" />
+            <div className="hidden 2xl:block" aria-hidden="true" />
 
             <div className="grid min-w-0 content-start gap-4">
               <TextField
@@ -163,13 +163,7 @@ function TextField({
   const controlId = `journal-voucher-${name}`;
 
   return (
-    <FieldShell
-      controlId={controlId}
-      compact={compact}
-      error={error}
-      isRequired={isRequired}
-      label={label}
-    >
+    <FieldShell controlId={controlId} compact={compact} error={error} isRequired={isRequired} label={label}>
       <input
         id={controlId}
         className={readOnly ? readOnlyFieldClassName : fieldClassName}
@@ -201,12 +195,7 @@ function TextareaField({
   const controlId = `journal-voucher-${name}`;
 
   return (
-    <FieldShell
-      controlId={controlId}
-      error={error}
-      isRequired={false}
-      label={label}
-    >
+    <FieldShell controlId={controlId} error={error} isRequired={false} label={label}>
       <textarea
         id={controlId}
         className={textareaClassName}
@@ -262,9 +251,7 @@ function FieldShell({
             {labelContent}
           </label>
         ) : (
-          <span className="text-sm font-semibold text-darknavy">
-            {labelContent}
-          </span>
+          <span className="text-sm font-semibold text-darknavy">{labelContent}</span>
         )}
         {children}
         {error ? <span className={errorClassName}>{error}</span> : null}
@@ -275,16 +262,11 @@ function FieldShell({
   return (
     <div className="grid min-w-0 gap-2 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-start">
       {controlId ? (
-        <label
-          htmlFor={controlId}
-          className="pt-2 text-sm font-semibold text-darknavy"
-        >
+        <label htmlFor={controlId} className="pt-2 text-sm font-semibold text-darknavy">
           {labelContent}
         </label>
       ) : (
-        <span className="pt-2 text-sm font-semibold text-darknavy">
-          {labelContent}
-        </span>
+        <span className="pt-2 text-sm font-semibold text-darknavy">{labelContent}</span>
       )}
       <div className="min-w-0">
         {children}

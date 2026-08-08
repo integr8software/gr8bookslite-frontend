@@ -12,6 +12,7 @@ import type {
 } from "@/app/src/types/modules/purchasing/purchase-order/PurchaseOrderTypes";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 import {
   DateField,
@@ -29,7 +30,7 @@ type PurchaseOrderSupplierFieldsProps = {
 
 export function PurchaseOrderSupplierFields({ isReadonly, onUpdateField, values }: PurchaseOrderSupplierFieldsProps) {
   return (
-    <div className="grid min-w-0 gap-5 xl:grid-cols-3">
+    <div className="grid min-w-0 gap-5 xl:grid-cols-2 2xl:grid-cols-3">
       <div className="grid min-w-0 content-start gap-4">
         <TextField
           id="purchase-order-party-name"
@@ -191,30 +192,32 @@ function CurrencyExchangeRateField({
 }) {
   return (
     <FieldShell controlId="purchase-order-currency" label="Currency">
-      <div className="grid min-w-0 gap-3 sm:grid-cols-[minmax(8.5rem,1fr)_auto_minmax(7.5rem,0.75fr)] sm:items-center">
-        <AppAdvancedDropdown
-          id="purchase-order-currency"
-          value={currency ?? ""}
-          readOnly={isReadonly}
-          isClearable={false}
-          options={PurchaseOrderCurrencyOptions.map((option) => ({
-            name: option,
-            value: option,
-          }))}
-          placeholder="PHP"
-          onChange={(value) => onCurrencyChange(String(value))}
-        />
-        <label htmlFor="purchase-order-exchange-rate" className="text-sm font-semibold text-darknavy">
-          ER:
-        </label>
-        <MoneyNumberField
-          id="purchase-order-exchange-rate"
-          value={String(exchangeRate ?? "")}
-          readOnly={isReadonly}
-          onValueChange={(value) => onExchangeRateChange(Number(value) || 0)}
-          className={`${PurchaseOrderFieldClassName} text-right tabular-nums`}
-        />
-      </div>
+      <CurrencyExchangeRateRow
+        currencyControl={
+          <AppAdvancedDropdown
+            id="purchase-order-currency"
+            className="w-full min-w-0"
+            value={currency ?? ""}
+            readOnly={isReadonly}
+            isClearable={false}
+            options={PurchaseOrderCurrencyOptions.map((option) => ({
+              name: option,
+              value: option,
+            }))}
+            placeholder="PHP"
+            onChange={(value) => onCurrencyChange(String(value))}
+          />
+        }
+        exchangeRateControl={
+          <MoneyNumberField
+            id="purchase-order-exchange-rate"
+            value={String(exchangeRate ?? "")}
+            readOnly={isReadonly}
+            onValueChange={(value) => onExchangeRateChange(Number(value) || 0)}
+            className={`${PurchaseOrderFieldClassName} text-right tabular-nums`}
+          />
+        }
+      />
     </FieldShell>
   );
 }

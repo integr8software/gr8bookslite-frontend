@@ -63,7 +63,6 @@ export type DisbursementVoucherPaymentDetails = {
   checkDate: string;
   checkNo: string;
   checkStatus?: string;
-  commission?: string;
   isMultiCheckNumber?: boolean;
   payee?: string;
   paymentReferenceNo: string;

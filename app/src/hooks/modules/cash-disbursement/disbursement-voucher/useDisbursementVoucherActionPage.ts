@@ -203,7 +203,6 @@ export function useDisbursementVoucherActionPage() {
     updateField("paymentMethod", paymentMethod);
     updatePaymentDetails({
       checkStatus: "",
-      commission: "",
       isMultiCheckNumber: false,
       payee: values.partyName,
       paymentReferenceNo: "",

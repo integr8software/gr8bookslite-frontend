@@ -4,8 +4,7 @@ export type DefaultAccountType = "EXPENSE" | "COLLECTION";
 export type DefaultAccountStatus = "Active" | "Inactive";
 export type ApiDefaultAccountStatus = "ACTIVE" | "INACTIVE";
 
-export type GeneratedDefaultAccountRole =
-  "EXPENSE" | "REVENUE";
+export type GeneratedDefaultAccountRole = "EXPENSE" | "REVENUE";
 
 export type GeneratedDefaultAccount = {
   role: GeneratedDefaultAccountRole;
@@ -200,9 +199,7 @@ export type DefaultAccountImportColumnHeader = {
 
 export type DefaultAccountImportColumnWidths = Record<DefaultAccountImportColumnId, number>;
 
-export type DefaultAccountImportCellErrors = Partial<
-  Record<DefaultAccountImportColumnId, string[]>
->;
+export type DefaultAccountImportCellErrors = Partial<Record<DefaultAccountImportColumnId, string[]>>;
 
 export type DefaultAccountImportPreviewRow = {
   cellErrors: DefaultAccountImportCellErrors;
@@ -223,7 +220,5 @@ export type DefaultAccountImportDialogProps = {
   existingDefaultAccounts: DefaultAccount[];
   isOpen: boolean;
   onClose: () => void;
-  onImportDefaultAccounts: (
-    defaultAccounts: DefaultAccountFormValues[],
-  ) => Promise<DefaultAccount[]>;
+  onImportDefaultAccounts: (defaultAccounts: DefaultAccountFormValues[]) => Promise<DefaultAccount[]>;
 };

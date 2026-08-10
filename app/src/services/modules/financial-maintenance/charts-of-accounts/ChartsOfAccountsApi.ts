@@ -116,9 +116,7 @@ function CreateSaveChartAccountPayload(
   return payload;
 }
 
-function MapChartAccount(
-  account: ChartAccountResponseDto | ChartAccountTreeNodeResponseDto,
-): ChartAccount {
+function MapChartAccount(account: ChartAccountResponseDto | ChartAccountTreeNodeResponseDto): ChartAccount {
   const bankAccount = account.bankAccounts[0];
 
   return {
@@ -166,9 +164,7 @@ function MapStatusFromApi(status: ChartAccountResponseDtoStatus): AccountStatus 
   return status === "INACTIVE" ? "Inactive" : "Active";
 }
 
-function InferStatementGroup(
-  account: ChartAccountResponseDto | ChartAccountTreeNodeResponseDto,
-): StatementGroup {
+function InferStatementGroup(account: ChartAccountResponseDto | ChartAccountTreeNodeResponseDto): StatementGroup {
   if (account.accountType === "REVENUE" || account.accountType === "EXPENSE") {
     return "Income Statement";
   }

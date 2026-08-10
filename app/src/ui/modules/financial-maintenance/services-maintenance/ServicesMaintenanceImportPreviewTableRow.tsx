@@ -1,6 +1,4 @@
-import {
-  ServicesMaintenanceAccountSetupModeOptions,
-} from "@/app/src/constants/modules/financial-maintenance/services-maintenance/ServicesMaintenanceConstants";
+import { ServicesMaintenanceAccountSetupModeOptions } from "@/app/src/constants/modules/financial-maintenance/services-maintenance/ServicesMaintenanceConstants";
 import { serviceImportRowHasErrors } from "@/app/src/data/modules/financial-maintenance/services-maintenance/ServicesMaintenanceData";
 import type {
   ServicesMaintenanceImportColumnId,
@@ -29,20 +27,11 @@ export function ServicesMaintenanceImportPreviewTableRow({
   row: ServicesMaintenanceImportPreviewRow;
 }) {
   const hasErrors = serviceImportRowHasErrors(row);
-  const stickyCellBackground = isSelected
-    ? "bg-skyblue/10"
-    : hasErrors
-      ? "bg-coralpink/[0.025]"
-      : "bg-white";
+  const stickyCellBackground = isSelected ? "bg-skyblue/10" : hasErrors ? "bg-coralpink/[0.025]" : "bg-white";
   return (
     <>
       <tr className={isSelected ? "bg-skyblue/10" : hasErrors ? "bg-coralpink/[0.025]" : undefined}>
-        <td
-          className={joinClasses(
-            "module-import-selection-column sticky left-0 z-20 text-center",
-            stickyCellBackground,
-          )}
-        >
+        <td className={joinClasses("module-import-selection-column sticky left-0 z-20 text-center", stickyCellBackground)}>
           <input
             type="checkbox"
             checked={isSelected}
@@ -52,12 +41,7 @@ export function ServicesMaintenanceImportPreviewTableRow({
           />
         </td>
         <ModuleImportRowNumberCell rowId={row.id} rowNumber={row.rowNumber} onMoveRow={onMoveRow} />
-        <td
-          className={joinClasses(
-            "module-import-first-data-column sticky z-10 px-3 py-2 align-middle",
-            stickyCellBackground,
-          )}
-        >
+        <td className={joinClasses("module-import-first-data-column sticky z-10 px-3 py-2 align-middle", stickyCellBackground)}>
           <ModuleImportEditableCell
             value={row.service.serviceName}
             errors={row.cellErrors.serviceName}

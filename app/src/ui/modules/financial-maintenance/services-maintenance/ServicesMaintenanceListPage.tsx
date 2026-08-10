@@ -24,11 +24,7 @@ export function ServicesMaintenanceListPage() {
 
   return (
     <section className="grid gap-5">
-      <ServicesMaintenanceHeader
-        onAdd={openAddDrawer}
-        onImport={() => setIsImportOpen(true)}
-        permissions={page.permissions}
-      />
+      <ServicesMaintenanceHeader onAdd={openAddDrawer} onImport={() => setIsImportOpen(true)} permissions={page.permissions} />
       <ServicesMaintenanceStatisticCards isLoading={page.isLoading} statistics={page.statistics} />
       <ServicesMaintenanceTable
         filteredServices={page.filteredServices}
@@ -65,11 +61,7 @@ export function ServicesMaintenanceListPage() {
       <AppDialog
         isOpen={Boolean(page.pendingStatusService)}
         isPending={page.isMutating}
-        title={
-          page.pendingStatusService?.status === "Active"
-            ? "Inactivate service?"
-            : "Activate service?"
-        }
+        title={page.pendingStatusService?.status === "Active" ? "Inactivate service?" : "Activate service?"}
         description={
           page.pendingStatusService?.status === "Active"
             ? `${page.pendingStatusService.serviceName} will remain in history and references, but will no longer be active for normal selection.`

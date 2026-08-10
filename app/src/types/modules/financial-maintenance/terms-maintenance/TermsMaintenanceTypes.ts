@@ -13,215 +13,197 @@ export type ApiTermDateMode = "DAY" | "MONTH" | "YEAR";
 export type ApiTermStatus = "ACTIVE" | "INACTIVE";
 
 export type ApiTerm = {
-	id: string;
-	name: string;
-	description: string | null;
-	dateMode: ApiTermDateMode;
-	period: number;
-	status: ApiTermStatus;
-	createdBy: string | null;
-	createdAt: string;
-	updatedBy: string | null;
-	updatedAt: string;
+  id: string;
+  name: string;
+  description: string | null;
+  dateMode: ApiTermDateMode;
+  period: number;
+  status: ApiTermStatus;
+  createdBy: string | null;
+  createdAt: string;
+  updatedBy: string | null;
+  updatedAt: string;
 };
 
 export type ApiTermOption = {
-	id: string;
-	name: string;
-	dateMode: ApiTermDateMode;
-	period: number;
-	status: ApiTermStatus;
+  id: string;
+  name: string;
+  dateMode: ApiTermDateMode;
+  period: number;
+  status: ApiTermStatus;
 };
 
 export type TermsMaintenance = {
-	id: string;
-	name: string;
-	description: string;
-	datemode: TermsMaintenanceDatemode;
-	period: string;
-	status: TermsMaintenanceStatus;
-	createdBy?: string;
-	createdAt?: string;
-	updatedBy?: string | null;
-	updatedAt?: string;
+  id: string;
+  name: string;
+  description: string;
+  datemode: TermsMaintenanceDatemode;
+  period: string;
+  status: TermsMaintenanceStatus;
+  createdBy?: string;
+  createdAt?: string;
+  updatedBy?: string | null;
+  updatedAt?: string;
 };
 
 export type TermsMaintenanceFormValues = {
-	name: string;
-	description: string;
-	datemode: TermsMaintenanceDatemode;
-	period: string;
-	status: TermsMaintenanceStatus;
+  name: string;
+  description: string;
+  datemode: TermsMaintenanceDatemode;
+  period: string;
+  status: TermsMaintenanceStatus;
 };
 
-export type TermsMaintenanceFormErrors = Partial<
-	Record<keyof TermsMaintenanceFormValues, string>
->;
+export type TermsMaintenanceFormErrors = Partial<Record<keyof TermsMaintenanceFormValues, string>>;
 
 export type TermsMaintenanceActionMode = "add" | "edit" | "view";
 
-export type TermsMaintenanceDrawerState =
-	| {
-			initialValues?: TermsMaintenanceFormValues;
-			mode: TermsMaintenanceActionMode;
-			term?: TermsMaintenance;
-	  }
-	| null;
+export type TermsMaintenanceDrawerState = {
+  initialValues?: TermsMaintenanceFormValues;
+  mode: TermsMaintenanceActionMode;
+  term?: TermsMaintenance;
+} | null;
 
 export type TermsMaintenanceDrawerProps = {
-	initialValues?: TermsMaintenanceFormValues;
-	isOpen: boolean;
-	mode: TermsMaintenanceActionMode;
-	onClose: () => void;
-	term?: TermsMaintenance;
+  initialValues?: TermsMaintenanceFormValues;
+  isOpen: boolean;
+  mode: TermsMaintenanceActionMode;
+  onClose: () => void;
+  term?: TermsMaintenance;
 };
 
 export type TermsMaintenanceFieldsProps = {
-	errors: TermsMaintenanceFormErrors;
-	isReadonly: boolean;
-	values: TermsMaintenanceFormValues;
-	onInputChange: ChangeEventHandler<
-		HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-	>;
-	onStatusChange: (value: TermsMaintenanceFormValues["status"]) => void;
+  errors: TermsMaintenanceFormErrors;
+  isReadonly: boolean;
+  values: TermsMaintenanceFormValues;
+  onInputChange: ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>;
+  onStatusChange: (value: TermsMaintenanceFormValues["status"]) => void;
 };
 
 export type TermsMaintenanceTableColumnKey =
-	| "name"
-	| "description"
-	| "datemode"
-	| "period"
-	| "status"
-	| "createdBy"
-	| "createdAt"
-	| "updatedBy"
-	| "updatedAt";
+  "name" | "description" | "datemode" | "period" | "status" | "createdBy" | "createdAt" | "updatedBy" | "updatedAt";
 
 export type TermsMaintenancePermissions = {
-	canView: boolean;
-	canCreate: boolean;
-	canUpdate: boolean;
-	canExport: boolean;
-	canImport: boolean;
+  canView: boolean;
+  canCreate: boolean;
+  canUpdate: boolean;
+  canExport: boolean;
+  canImport: boolean;
 };
 
 export type TermsMaintenanceStatistics = {
-	totalTerms: number;
-	activeTerms: number;
-	inactiveTerms: number;
-	dayTerms: number;
-	monthTerms: number;
-	yearTerms: number;
+  totalTerms: number;
+  activeTerms: number;
+  inactiveTerms: number;
+  dayTerms: number;
+  monthTerms: number;
+  yearTerms: number;
 };
 
 export type TermsMaintenanceListResponse = {
-	terms: TermsMaintenance[];
-	statistics: TermsMaintenanceStatistics;
-	permissions: TermsMaintenancePermissions;
+  terms: TermsMaintenance[];
+  statistics: TermsMaintenanceStatistics;
+  permissions: TermsMaintenancePermissions;
 };
 
 export type TermsMaintenanceLookupResponse = {
-	terms: TermsMaintenance[];
+  terms: TermsMaintenance[];
 };
 
 export type TermsMaintenanceStatisticCardsProps = {
-	statistics: TermsMaintenanceStatistics;
-	isLoading?: boolean;
+  statistics: TermsMaintenanceStatistics;
+  isLoading?: boolean;
 };
 
 export type ApiTermListResponse = {
-	terms: ApiTerm[];
-	statistics: TermsMaintenanceStatistics;
-	permissions: TermsMaintenancePermissions;
+  terms: ApiTerm[];
+  statistics: TermsMaintenanceStatistics;
+  permissions: TermsMaintenancePermissions;
 };
 
 export type ApiTermLookupResponse = {
-	terms: ApiTermOption[];
+  terms: ApiTermOption[];
 };
 
 export type ApiTermSaveResponse = {
-	term: ApiTerm;
+  term: ApiTerm;
 };
 
 export type ApiTermImportResponse = {
-	terms: ApiTerm[];
+  terms: ApiTerm[];
 };
 
 export type TermsMaintenanceTableProps = {
-	datemodeFilter: TermsMaintenanceDatemodeFilter;
-	filteredTerms: TermsMaintenance[];
-	hasActiveFilters: boolean;
-	isLoading: boolean;
-	isRefreshing: boolean;
-	lastSyncedAt?: number | string | Date | null;
-	query: string;
-	statusFilter: TermsMaintenanceStatusFilter;
-	terms: TermsMaintenance[];
-	permissions: TermsMaintenancePermissions;
-	onDatemodeFilterChange: (value: TermsMaintenanceDatemodeFilter) => void;
-	onEditTerm: (term: TermsMaintenance) => void;
-	onQueryChange: (value: string) => void;
-	onRefresh: () => void;
-	onStatusFilterChange: (value: TermsMaintenanceStatusFilter) => void;
-	onToggleStatus: (term: TermsMaintenance) => void;
-	onViewTerm: (term: TermsMaintenance) => void;
+  datemodeFilter: TermsMaintenanceDatemodeFilter;
+  filteredTerms: TermsMaintenance[];
+  hasActiveFilters: boolean;
+  isLoading: boolean;
+  isRefreshing: boolean;
+  lastSyncedAt?: number | string | Date | null;
+  query: string;
+  statusFilter: TermsMaintenanceStatusFilter;
+  terms: TermsMaintenance[];
+  permissions: TermsMaintenancePermissions;
+  onDatemodeFilterChange: (value: TermsMaintenanceDatemodeFilter) => void;
+  onEditTerm: (term: TermsMaintenance) => void;
+  onQueryChange: (value: string) => void;
+  onRefresh: () => void;
+  onStatusFilterChange: (value: TermsMaintenanceStatusFilter) => void;
+  onToggleStatus: (term: TermsMaintenance) => void;
+  onViewTerm: (term: TermsMaintenance) => void;
 };
 
 export type TermsMaintenanceTableRowProps = {
-	row: Row<TermsMaintenance>;
-	permissions: TermsMaintenancePermissions;
-	onEditTerm: (term: TermsMaintenance) => void;
-	onToggleStatus: (term: TermsMaintenance) => void;
-	onViewTerm: (term: TermsMaintenance) => void;
+  row: Row<TermsMaintenance>;
+  permissions: TermsMaintenancePermissions;
+  onEditTerm: (term: TermsMaintenance) => void;
+  onToggleStatus: (term: TermsMaintenance) => void;
+  onViewTerm: (term: TermsMaintenance) => void;
 };
 
 export type TermsMaintenanceTableFiltersProps = {
-	datemodeFilter: TermsMaintenanceDatemodeFilter;
-	exportAllRows: TermsMaintenance[];
-	exportFilteredRows: TermsMaintenance[];
-	hasActiveFilters: boolean;
-	isRefreshing: boolean;
-	permissions: TermsMaintenancePermissions;
-	query: string;
-	statusFilter: TermsMaintenanceStatusFilter;
-	table: Table<TermsMaintenance>;
-	onDatemodeFilterChange: (value: TermsMaintenanceDatemodeFilter) => void;
-	onQueryChange: (value: string) => void;
-	onRefresh: () => void;
-	onStatusFilterChange: (value: TermsMaintenanceStatusFilter) => void;
+  datemodeFilter: TermsMaintenanceDatemodeFilter;
+  exportAllRows: TermsMaintenance[];
+  exportFilteredRows: TermsMaintenance[];
+  hasActiveFilters: boolean;
+  isRefreshing: boolean;
+  permissions: TermsMaintenancePermissions;
+  query: string;
+  statusFilter: TermsMaintenanceStatusFilter;
+  table: Table<TermsMaintenance>;
+  onDatemodeFilterChange: (value: TermsMaintenanceDatemodeFilter) => void;
+  onQueryChange: (value: string) => void;
+  onRefresh: () => void;
+  onStatusFilterChange: (value: TermsMaintenanceStatusFilter) => void;
 };
 
 export type TermImportColumnId = "name" | "datemode" | "period";
 
 export type TermImportColumnHeader = {
-	className: string;
-	id: TermImportColumnId;
-	label: string;
-	stickyLeft?: number;
+  className: string;
+  id: TermImportColumnId;
+  label: string;
+  stickyLeft?: number;
 };
 
 export type TermImportColumnWidths = Record<TermImportColumnId, number>;
 
-export type TermImportCellErrors = Partial<
-	Record<TermImportColumnId, string[]>
->;
+export type TermImportCellErrors = Partial<Record<TermImportColumnId, string[]>>;
 
-export type TermImportCellWarnings = Partial<
-	Record<TermImportColumnId, string[]>
->;
+export type TermImportCellWarnings = Partial<Record<TermImportColumnId, string[]>>;
 
 export type TermImportPreviewRow = {
-	cellErrors: TermImportCellErrors;
-	cellWarnings: TermImportCellWarnings;
-	id: string;
-	rowErrors: string[];
-	rowNumber: number;
-	term: Omit<TermsMaintenance, "id">;
+  cellErrors: TermImportCellErrors;
+  cellWarnings: TermImportCellWarnings;
+  id: string;
+  rowErrors: string[];
+  rowNumber: number;
+  term: Omit<TermsMaintenance, "id">;
 };
 
 export type TermImportProgress = {
-	imported: number;
-	total: number;
+  imported: number;
+  total: number;
 };
 
 export type TermImportMode = "all-rows" | "all-valid" | "selected-valid";
@@ -229,8 +211,8 @@ export type TermImportMode = "all-rows" | "all-valid" | "selected-valid";
 export type ImportProgress = TermImportProgress;
 
 export type TermsMaintenanceImportDialogProps = {
-	existingTerms: TermsMaintenance[];
-	isOpen: boolean;
-	onClose: () => void;
-	onImportTerms: (terms: TermsMaintenance[]) => Promise<TermsMaintenance[]>;
+  existingTerms: TermsMaintenance[];
+  isOpen: boolean;
+  onClose: () => void;
+  onImportTerms: (terms: TermsMaintenance[]) => Promise<TermsMaintenance[]>;
 };

@@ -1,7 +1,4 @@
-import type {
-  SortingState,
-  VisibilityState,
-} from "@tanstack/react-table";
+import type { SortingState, VisibilityState } from "@tanstack/react-table";
 import type {
   AccountLevel,
   AccountStatus,
@@ -20,19 +17,9 @@ import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-
 export const ChartsOfAccountsHref = getModuleRoute("COA");
 export const ChartsOfAccountsAccountNamePlaceholder = `${BankMasterfileCashInBankAccountTitle} - Bank Name`;
 
-export const ChartsOfAccountsAccountTitleSeparators = [
-  "-",
-  "/",
-  "&",
-] as const;
+export const ChartsOfAccountsAccountTitleSeparators = ["-", "/", "&"] as const;
 
-export const AccountLevels: AccountLevel[] = [
-  "MAJOR",
-  "SUB1",
-  "SUB2",
-  "SUB3",
-  "SPECIFIC",
-];
+export const AccountLevels: AccountLevel[] = ["MAJOR", "SUB1", "SUB2", "SUB3", "SPECIFIC"];
 
 export const AccountLevelLabels: Record<AccountLevel, string> = {
   MAJOR: "Major Account",
@@ -42,13 +29,7 @@ export const AccountLevelLabels: Record<AccountLevel, string> = {
   SPECIFIC: "Specific Account",
 };
 
-export const AccountTypes: AccountType[] = [
-  "ASSET",
-  "LIABILITY",
-  "EQUITY",
-  "REVENUE",
-  "EXPENSE",
-];
+export const AccountTypes: AccountType[] = ["ASSET", "LIABILITY", "EQUITY", "REVENUE", "EXPENSE"];
 
 export const AccountTypeLabels: Record<AccountType, string> = {
   ASSET: "Asset",
@@ -76,10 +57,7 @@ export const ChartsOfAccountsNavs = [
   "Cash Flow",
 ] as const satisfies ChartsOfAccountsNav[];
 
-export const ChartsOfAccountsDrawerTabs: ChartsOfAccountsFormTab[] = [
-  "Account Information",
-  "Bank Details",
-];
+export const ChartsOfAccountsDrawerTabs: ChartsOfAccountsFormTab[] = ["Account Information", "Bank Details"];
 
 export const ChartsOfAccountsBankFields: Array<{
   label: string;
@@ -94,12 +72,7 @@ export const ChartsOfAccountsBankFields: Array<{
   { label: "Account Type", key: "accountType" },
 ];
 
-export const ChartsOfAccountsRequiredBankFields: BankDetailsKey[] = [
-  "bankName",
-  "bankAccountNumber",
-  "accountType",
-  "currency",
-];
+export const ChartsOfAccountsRequiredBankFields: BankDetailsKey[] = ["bankName", "bankAccountNumber", "accountType", "currency"];
 
 export const ChartsOfAccountsTableColumns: Array<{
   label: string;
@@ -111,8 +84,7 @@ export const ChartsOfAccountsTableColumns: Array<{
   { label: "Account Code", key: "accountNumber", className: "text-left", size: 140 },
   { label: "Account Name", key: "accountName", className: "text-left", size: 500 },
   { label: "Parent", key: "parentPath", className: "text-left", size: 320 },
-  { label: "Account Type", key: "accountType", className: "text-center", size: 140,
-  },
+  { label: "Account Type", key: "accountType", className: "text-center", size: 140 },
   { label: "Account Level", key: "accountLevel", className: "text-center", size: 140 },
   { label: "Statement Section", key: "statementSection", className: "text-center", size: 160 },
   { label: "Account Nature", key: "normalBalance", className: "text-center", size: 140 },
@@ -125,14 +97,11 @@ export const ChartsOfAccountsTableColumns: Array<{
   { label: "Actions", className: "text-center", size: 120 },
 ];
 
-export const ChartsOfAccountsTablePreferencesStorageKey =
-  "gr8booksneo:charts-of-accounts:table-preferences";
-export const ChartsOfAccountsTablePreferencesModuleKey =
-  "maintenance:charts-of-accounts";
-export const ChartsOfAccountsDefaultColumnOrder =
-  ChartsOfAccountsTableColumns.filter((column) => column.key !== "parentPath").map(
-    (column) => column.key ?? "actions",
-  );
+export const ChartsOfAccountsTablePreferencesStorageKey = "gr8booksneo:charts-of-accounts:table-preferences";
+export const ChartsOfAccountsTablePreferencesModuleKey = "maintenance:charts-of-accounts";
+export const ChartsOfAccountsDefaultColumnOrder = ChartsOfAccountsTableColumns.filter((column) => column.key !== "parentPath").map(
+  (column) => column.key ?? "actions",
+);
 export const ChartsOfAccountsDefaultColumnVisibility: VisibilityState = {
   accountLevel: false,
   reportAlias: false,
@@ -143,65 +112,61 @@ export const ChartsOfAccountsDefaultColumnVisibility: VisibilityState = {
 };
 export const ChartsOfAccountsDefaultSorting: SortingState = [];
 
-export const ChartsOfAccountsExportColumns: ModuleTableExportColumn<FlattenedChartAccount>[] =
-  [
-    {
-      header: "Account Code",
-      id: "accountNumber",
-      value: (row) => row.account.accountNumber,
-    },
-    {
-      header: "Parent Account Code",
-      id: "parentAccountNumber",
-      value: (row) => row.parentAccountNumber,
-    },
-    { header: "Parent", id: "parent", value: (row) => row.parentPath },
-    {
-      header: "Account Name",
-      id: "accountName",
-      value: (row) => row.account.accountName,
-    },
-    {
-      header: "Account Level",
-      id: "accountLevel",
-      value: (row) => AccountLevelLabels[row.account.accountLevel],
-    },
-    {
-      header: "Account Type",
-      id: "accountType",
-      value: (row) => AccountTypeLabels[row.account.accountType],
-    },
-    {
-      header: "Statement Section",
-      id: "statementSection",
-      value: (row) => row.account.statementSection,
-    },
-    {
-      header: "Account Nature",
-      id: "normalBalance",
-      value: (row) => NormalBalanceLabels[row.account.normalBalance],
-    },
-    {
-      header: "Description",
-      id: "description",
-      value: (row) => row.account.description,
-    },
-    { header: "Created By", id: "createdBy", value: (row) => row.account.createdBy },
-    { header: "Date Created", id: "createdAt", value: (row) => row.account.createdAt },
-    { header: "Updated By", id: "updatedBy", value: (row) => row.account.updatedBy },
-    { header: "Date Modified", id: "updatedAt", value: (row) => row.account.updatedAt },
-    { header: "Status", id: "status", value: (row) => row.account.status },
-    {
-      header: "Posting Account",
-      id: "isPostingAccount",
-      value: (row) => (row.account.isPostingAccount ? "Yes" : "No"),
-    },
-  ];
+export const ChartsOfAccountsExportColumns: ModuleTableExportColumn<FlattenedChartAccount>[] = [
+  {
+    header: "Account Code",
+    id: "accountNumber",
+    value: (row) => row.account.accountNumber,
+  },
+  {
+    header: "Parent Account Code",
+    id: "parentAccountNumber",
+    value: (row) => row.parentAccountNumber,
+  },
+  { header: "Parent", id: "parent", value: (row) => row.parentPath },
+  {
+    header: "Account Name",
+    id: "accountName",
+    value: (row) => row.account.accountName,
+  },
+  {
+    header: "Account Level",
+    id: "accountLevel",
+    value: (row) => AccountLevelLabels[row.account.accountLevel],
+  },
+  {
+    header: "Account Type",
+    id: "accountType",
+    value: (row) => AccountTypeLabels[row.account.accountType],
+  },
+  {
+    header: "Statement Section",
+    id: "statementSection",
+    value: (row) => row.account.statementSection,
+  },
+  {
+    header: "Account Nature",
+    id: "normalBalance",
+    value: (row) => NormalBalanceLabels[row.account.normalBalance],
+  },
+  {
+    header: "Description",
+    id: "description",
+    value: (row) => row.account.description,
+  },
+  { header: "Created By", id: "createdBy", value: (row) => row.account.createdBy },
+  { header: "Date Created", id: "createdAt", value: (row) => row.account.createdAt },
+  { header: "Updated By", id: "updatedBy", value: (row) => row.account.updatedBy },
+  { header: "Date Modified", id: "updatedAt", value: (row) => row.account.updatedAt },
+  { header: "Status", id: "status", value: (row) => row.account.status },
+  {
+    header: "Posting Account",
+    id: "isPostingAccount",
+    value: (row) => (row.account.isPostingAccount ? "Yes" : "No"),
+  },
+];
 
-export const AccountTypeBadgeVariants: Record<
-  AccountType,
-  "blue" | "green" | "gray" | "amber" | "violet" | "rose"
-> = {
+export const AccountTypeBadgeVariants: Record<AccountType, "blue" | "green" | "gray" | "amber" | "violet" | "rose"> = {
   ASSET: "blue",
   LIABILITY: "amber",
   EQUITY: "violet",
@@ -217,4 +182,3 @@ export const BadgeVariantClasses = {
   violet: "bg-violet-50 text-violet-700 ring-violet-200",
   rose: "bg-rose-50 text-rose-700 ring-rose-200",
 } as const;
-

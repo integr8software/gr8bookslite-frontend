@@ -27,12 +27,8 @@ const paymentTypeCollator = new Intl.Collator(undefined, {
   sensitivity: "base",
 });
 
-export async function fetchPaymentTypes(
-  params: PaymentTypeListParams = {},
-): Promise<PaymentTypeListResponse> {
-  const response = await paymentTypeMaintenanceControllerFindAllV1(
-    toApiPaymentTypeListParams(params),
-  );
+export async function fetchPaymentTypes(params: PaymentTypeListParams = {}): Promise<PaymentTypeListResponse> {
+  const response = await paymentTypeMaintenanceControllerFindAllV1(toApiPaymentTypeListParams(params));
 
   return {
     paymentTypes: response.paymentTypes.map(mapApiPaymentType),
@@ -44,30 +40,19 @@ export async function fetchPaymentTypes(
   };
 }
 
-export async function createPaymentType(
-  paymentType: PaymentTypeRecord,
-): Promise<PaymentTypeRecord> {
-  const response = await paymentTypeMaintenanceControllerCreateV1(
-    toApiPaymentTypePayload(paymentType),
-  );
+export async function createPaymentType(paymentType: PaymentTypeRecord): Promise<PaymentTypeRecord> {
+  const response = await paymentTypeMaintenanceControllerCreateV1(toApiPaymentTypePayload(paymentType));
 
   return mapApiPaymentType(response.paymentType);
 }
 
-export async function updatePaymentType(
-  paymentType: PaymentTypeRecord,
-): Promise<PaymentTypeRecord> {
-  const response = await paymentTypeMaintenanceControllerUpdateV1(
-    paymentType.id,
-    toApiPaymentTypePayload(paymentType),
-  );
+export async function updatePaymentType(paymentType: PaymentTypeRecord): Promise<PaymentTypeRecord> {
+  const response = await paymentTypeMaintenanceControllerUpdateV1(paymentType.id, toApiPaymentTypePayload(paymentType));
 
   return mapApiPaymentType(response.paymentType);
 }
 
-export async function importPaymentTypes(
-  paymentTypes: PaymentTypeRecord[],
-): Promise<PaymentTypeRecord[]> {
+export async function importPaymentTypes(paymentTypes: PaymentTypeRecord[]): Promise<PaymentTypeRecord[]> {
   const response = await paymentTypeMaintenanceControllerImportPaymentTypesV1({
     paymentTypes: paymentTypes.map(toApiPaymentTypePayload),
   });
@@ -75,10 +60,7 @@ export async function importPaymentTypes(
   return response.paymentTypes.map(mapApiPaymentType);
 }
 
-export function applyPaymentTypeListParams(
-  paymentTypes: PaymentTypeRecord[],
-  params: PaymentTypeListParams = {},
-) {
+export function applyPaymentTypeListParams(paymentTypes: PaymentTypeRecord[], params: PaymentTypeListParams = {}) {
   const normalizedSearch = params.search?.trim().toLowerCase() ?? "";
   const sortBy = params.sortBy ?? "paymentType";
   const sortDirection = params.sortDirection ?? "asc";
@@ -96,10 +78,7 @@ export function applyPaymentTypeListParams(
       return matchesSearch && matchesType && matchesStatus;
     })
     .sort((left, right) => {
-      const result =
-        sortBy === "sortOrder"
-          ? left.sortOrder - right.sortOrder
-          : paymentTypeCollator.compare(left[sortBy], right[sortBy]);
+      const result = sortBy === "sortOrder" ? left.sortOrder - right.sortOrder : paymentTypeCollator.compare(left[sortBy], right[sortBy]);
 
       return sortDirection === "asc" ? result : -result;
     });
@@ -130,9 +109,7 @@ function toApiPaymentTypePayload(paymentType: PaymentTypeRecord): CreatePaymentT
   };
 }
 
-function toApiPaymentTypeListParams(
-  params: PaymentTypeListParams,
-): PaymentTypeMaintenanceControllerFindAllV1Params {
+function toApiPaymentTypeListParams(params: PaymentTypeListParams): PaymentTypeMaintenanceControllerFindAllV1Params {
   return {
     search: params.search?.trim() || undefined,
     sortBy: mapSortKeyToApi(params.sortBy),
@@ -162,9 +139,7 @@ function mapSortKeyToApi(sortBy?: PaymentTypeSortKey) {
   return sortBy;
 }
 
-function mapClassificationFromApi(
-  value: PaymentTypeResponseDtoClassification,
-): PaymentTypeClassification {
+function mapClassificationFromApi(value: PaymentTypeResponseDtoClassification): PaymentTypeClassification {
   if (value === "CASH") return "Cash";
   if (value === "BANK_TRANSFER") return "Bank Transfer";
   if (value === "CHECK") return "Check";
@@ -172,9 +147,7 @@ function mapClassificationFromApi(
   return "Non-Cash Settlement";
 }
 
-function mapClassificationToApi(
-  value: PaymentTypeClassification,
-): CreatePaymentTypeDtoClassification {
+function mapClassificationToApi(value: PaymentTypeClassification): CreatePaymentTypeDtoClassification {
   if (value === "Cash") return "CASH";
   if (value === "Bank Transfer") return "BANK_TRANSFER";
   if (value === "Check") return "CHECK";

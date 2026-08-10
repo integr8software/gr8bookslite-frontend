@@ -112,9 +112,7 @@ export function useServicesMaintenanceStore<TSelected = ServicesMaintenanceStore
       toast.success("Service created successfully.");
     },
     onError: (error) => {
-      toast.error(
-        error instanceof Error ? error.message : "Could not create service. Please try again.",
-      );
+      toast.error(error instanceof Error ? error.message : "Could not create service. Please try again.");
     },
   });
   const updateServiceMutation = useMutation({
@@ -126,9 +124,7 @@ export function useServicesMaintenanceStore<TSelected = ServicesMaintenanceStore
       toast.success("Service updated successfully.");
     },
     onError: (error) => {
-      toast.error(
-        error instanceof Error ? error.message : "Could not update service. Please try again.",
-      );
+      toast.error(error instanceof Error ? error.message : "Could not update service. Please try again.");
     },
   });
   const updateServiceStatusMutation = useMutation({
@@ -137,16 +133,10 @@ export function useServicesMaintenanceStore<TSelected = ServicesMaintenanceStore
       void queryClient.invalidateQueries({
         queryKey: ServicesMaintenanceQueryKeys.all(companyId),
       });
-      toast.success(
-        `Service ${updatedService.status === "Active" ? "activated" : "inactivated"} successfully.`,
-      );
+      toast.success(`Service ${updatedService.status === "Active" ? "activated" : "inactivated"} successfully.`);
     },
     onError: (error) => {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Could not update service status. Please try again.",
-      );
+      toast.error(error instanceof Error ? error.message : "Could not update service status. Please try again.");
     },
   });
 
@@ -157,21 +147,15 @@ export function useServicesMaintenanceStore<TSelected = ServicesMaintenanceStore
     return {
       accountOptions: accountOptionsQuery.data ?? [],
       addService: (service) => addServiceMutation.mutateAsync(service),
-      addServices: (services) =>
-        Promise.all(services.map((service) => addServiceMutation.mutateAsync(service))),
+      addServices: (services) => Promise.all(services.map((service) => addServiceMutation.mutateAsync(service))),
       isAccountOptionsLoading: accountOptionsQuery.isFetching,
       isLoading: servicesQuery.isLoading,
-      isMutating:
-        addServiceMutation.isPending ||
-        updateServiceMutation.isPending ||
-        updateServiceStatusMutation.isPending,
+      isMutating: addServiceMutation.isPending || updateServiceMutation.isPending || updateServiceStatusMutation.isPending,
       isNextAccountCodeLoading: nextAccountCodeQuery.isFetching,
       isRefreshing: servicesQuery.isFetching && !servicesQuery.isLoading,
       lastSyncedAt: servicesQuery.dataUpdatedAt,
       nextAccountCode: nextAccountCodeQuery.data ?? null,
-      permissions: hasReservedRoleAccess
-        ? ReservedRolePermissions
-        : (servicesQuery.data?.permissions ?? EmptyPermissions),
+      permissions: hasReservedRoleAccess ? ReservedRolePermissions : (servicesQuery.data?.permissions ?? EmptyPermissions),
       refreshServices,
       refreshSetup,
       services: servicesQuery.data?.services ?? [],

@@ -32,9 +32,7 @@ export type ServicesMaintenanceFormValues = {
   revenueCoaId: string;
 };
 
-export type ServicesMaintenanceFormErrors = Partial<
-  Record<keyof ServicesMaintenanceFormValues, string>
->;
+export type ServicesMaintenanceFormErrors = Partial<Record<keyof ServicesMaintenanceFormValues, string>>;
 
 export type ServicesMaintenanceActionMode = "add" | "edit" | "view";
 export type ServicesMaintenanceStatusFilter = "" | ServicesMaintenanceStatus;
@@ -214,8 +212,7 @@ export type ServicesMaintenanceCellContentProps = {
   onViewService: (service: ServicesMaintenance) => void;
 };
 
-export type ServicesMaintenanceImportColumnId =
-  "serviceName" | "description" | "accountSetupMode" | "revenueCoaId";
+export type ServicesMaintenanceImportColumnId = "serviceName" | "description" | "accountSetupMode" | "revenueCoaId";
 
 export type ServicesMaintenanceImportColumnHeader = {
   className: string;
@@ -224,14 +221,9 @@ export type ServicesMaintenanceImportColumnHeader = {
   stickyLeft?: number;
 };
 
-export type ServicesMaintenanceImportColumnWidths = Record<
-  ServicesMaintenanceImportColumnId,
-  number
->;
+export type ServicesMaintenanceImportColumnWidths = Record<ServicesMaintenanceImportColumnId, number>;
 
-export type ServicesMaintenanceImportCellErrors = Partial<
-  Record<ServicesMaintenanceImportColumnId, string[]>
->;
+export type ServicesMaintenanceImportCellErrors = Partial<Record<ServicesMaintenanceImportColumnId, string[]>>;
 
 export type ServicesMaintenanceImportPreviewRow = {
   cellErrors: ServicesMaintenanceImportCellErrors;

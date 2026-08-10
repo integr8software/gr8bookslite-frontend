@@ -27,10 +27,7 @@ import { ChartsOfAccountsForm } from "@/app/src/ui/modules/financial-maintenance
 import { Button } from "@/app/src/ui/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsControls";
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
-import {
-  AnimatedPendingLabel,
-  AppDialog,
-} from "@/app/src/ui/shared/app/AppDialog";
+import { AnimatedPendingLabel, AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 
 export function ChartsOfAccountsDrawer({
   account,
@@ -70,9 +67,7 @@ function DrawerPanel({
   onClose,
   onSave,
 }: ChartsOfAccountsDrawerProps) {
-  const [values, setValues] = useState<ChartAccountFormValues>(() =>
-    getInitialFormValues(account, parentAccount),
-  );
+  const [values, setValues] = useState<ChartAccountFormValues>(() => getInitialFormValues(account, parentAccount));
   const [submitted, setSubmitted] = useState(false);
   const [isAccountCodeLoading, setIsAccountCodeLoading] = useState(false);
   const [accountCodeError, setAccountCodeError] = useState("");
@@ -80,16 +75,9 @@ function DrawerPanel({
   const [isSaveConfirmPending, setIsSaveConfirmPending] = useState(false);
   const handledSaveResetToken = useRef(saveResetToken);
   const hasSeenSavingFromDialog = useRef(false);
-  const availableAccountLevels = useMemo(
-    () => getAvailableAccountLevels(accounts, values.parentId),
-    [accounts, values.parentId],
-  );
+  const availableAccountLevels = useMemo(() => getAvailableAccountLevels(accounts, values.parentId), [accounts, values.parentId]);
   const savePendingLabel = getModuleSavePendingLabel(mode);
-  const accountNameError = getDuplicateAccountNameError(
-    accounts,
-    values,
-    account,
-  );
+  const accountNameError = getDuplicateAccountNameError(accounts, values, account);
 
   useEffect(() => {
     if (!isOpen) {
@@ -104,10 +92,7 @@ function DrawerPanel({
       return;
     }
 
-    const shouldRefreshCode =
-      !account ||
-      account.parentId !== values.parentId ||
-      account.accountLevel !== values.accountLevel;
+    const shouldRefreshCode = !account || account.parentId !== values.parentId || account.accountLevel !== values.accountLevel;
 
     if (!shouldRefreshCode) {
       return;
@@ -144,11 +129,7 @@ function DrawerPanel({
           ...current,
           accountNumber: "",
         }));
-        setAccountCodeError(
-          error instanceof Error
-            ? error.message
-            : "Could not generate the next account code.",
-        );
+        setAccountCodeError(error instanceof Error ? error.message : "Could not generate the next account code.");
       })
       .finally(() => {
         if (isCurrent) {
@@ -193,11 +174,7 @@ function DrawerPanel({
   }, [isOpen, isSaveDialogOpen, isSaving]);
 
   useEffect(() => {
-    if (
-      mode !== "add" ||
-      saveResetToken === 0 ||
-      saveResetToken === handledSaveResetToken.current
-    ) {
+    if (mode !== "add" || saveResetToken === 0 || saveResetToken === handledSaveResetToken.current) {
       return;
     }
 
@@ -208,19 +185,14 @@ function DrawerPanel({
     setAccountCodeError("");
   }, [mode, parentAccount, saveResetToken]);
 
-  function updateField<Key extends keyof ChartAccountFormValues>(
-    key: Key,
-    value: ChartAccountFormValues[Key],
-  ) {
+  function updateField<Key extends keyof ChartAccountFormValues>(key: Key, value: ChartAccountFormValues[Key]) {
     setValues((current) => ({
       ...current,
       [key]: value,
       ...(key === "accountType"
         ? {
             normalBalance: getStandardNormalBalance(value as AccountType | ""),
-            statementSection: getStandardStatementSection(
-              value as AccountType | "",
-            ),
+            statementSection: getStandardStatementSection(value as AccountType | ""),
             parentId: null,
             accountNumber: "",
             isBankLinked: false,
@@ -229,8 +201,7 @@ function DrawerPanel({
       ...(key === "accountLevel" ? { accountNumber: "" } : {}),
       ...(key === "accountLevel"
         ? {
-            isBankLinked:
-              value === "SPECIFIC" && isCashInBankParent(accounts, current.parentId),
+            isBankLinked: value === "SPECIFIC" && isCashInBankParent(accounts, current.parentId),
             isPostingAccount: value === "SPECIFIC",
           }
         : {}),
@@ -239,13 +210,8 @@ function DrawerPanel({
 
   function updateParentAccount(parentId: string | null) {
     const nextLevels = getAvailableAccountLevels(accounts, parentId);
-    const nextAccountLevel = currentAccountLevelOrDefault(
-      values.accountLevel,
-      nextLevels,
-      !account,
-    );
-    const isBankLinked =
-      nextAccountLevel === "SPECIFIC" && isCashInBankParent(accounts, parentId);
+    const nextAccountLevel = currentAccountLevelOrDefault(values.accountLevel, nextLevels, !account);
+    const isBankLinked = nextAccountLevel === "SPECIFIC" && isCashInBankParent(accounts, parentId);
 
     setIsAccountCodeLoading(false);
     setAccountCodeError("");
@@ -256,12 +222,8 @@ function DrawerPanel({
       accountType: isBankLinked ? "ASSET" : current.accountType,
       isBankLinked,
       isPostingAccount: nextAccountLevel === "SPECIFIC",
-      normalBalance: isBankLinked
-        ? "DEBIT"
-        : getStandardNormalBalance(current.accountType),
-      statementSection: isBankLinked
-        ? "Balance Sheet"
-        : getStandardStatementSection(current.accountType),
+      normalBalance: isBankLinked ? "DEBIT" : getStandardNormalBalance(current.accountType),
+      statementSection: isBankLinked ? "Balance Sheet" : getStandardStatementSection(current.accountType),
       parentId,
       showInReports: true,
     }));
@@ -346,23 +308,22 @@ function DrawerPanel({
                     }
                   }}
                 >
-                  {isSaving
-                    ? <AnimatedPendingLabel label={savePendingLabel} />
-                    : isAccountCodeLoading
-                    ? "Generating Code"
-                    : account
-                      ? "Save Changes"
-                      : "Create Account"}
+                  {isSaving ? (
+                    <AnimatedPendingLabel label={savePendingLabel} />
+                  ) : isAccountCodeLoading ? (
+                    "Generating Code"
+                  ) : account ? (
+                    "Save Changes"
+                  ) : (
+                    "Create Account"
+                  )}
                 </Button>
               </div>
             )}
           </div>
         }
       >
-        <div
-          className="h-full min-h-0"
-          data-spotlight-id="module-drawer-fields"
-        >
+        <div className="h-full min-h-0" data-spotlight-id="module-drawer-fields">
           <ChartsOfAccountsForm
             account={account}
             accounts={accounts}
@@ -372,9 +333,7 @@ function DrawerPanel({
             accountCodeError={accountCodeError}
             accountNameError={accountNameError}
             isReadOnly={mode === "view"}
-            parentAccountError={
-              submitted && !values.parentId ? "Required" : undefined
-            }
+            parentAccountError={submitted && !values.parentId ? "Required" : undefined}
             values={values}
             onFieldChange={updateField}
             onParentChange={updateParentAccount}
@@ -405,10 +364,7 @@ function DrawerPanel({
   );
 }
 
-function getDrawerEyebrow(
-  account: ChartAccount | null,
-  parentAccount: ChartAccount | null,
-) {
+function getDrawerEyebrow(account: ChartAccount | null, parentAccount: ChartAccount | null) {
   if (account) {
     return "Edit ledger account";
   }
@@ -420,11 +376,7 @@ function getDrawerEyebrow(
   return "Create ledger account";
 }
 
-function getDrawerTitle(
-  mode: ChartsOfAccountsDrawerMode,
-  account: ChartAccount | null,
-  parentAccount: ChartAccount | null,
-) {
+function getDrawerTitle(mode: ChartsOfAccountsDrawerMode, account: ChartAccount | null, parentAccount: ChartAccount | null) {
   if (mode === "view") {
     return "View Account";
   }

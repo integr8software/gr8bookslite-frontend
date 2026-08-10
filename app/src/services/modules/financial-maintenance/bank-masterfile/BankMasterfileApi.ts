@@ -29,13 +29,9 @@ export async function fetchBanks(): Promise<BankMasterfileListResponse> {
     banks,
     statistics: {
       totalBanks: response.statistics?.totalBanks ?? banks.length,
-      activeBanks:
-        response.statistics?.activeBanks ?? banks.filter((bank) => bank.status === "Active").length,
-      inactiveBanks:
-        response.statistics?.inactiveBanks ??
-        banks.filter((bank) => bank.status === "Inactive").length,
-      defaultBanks:
-        response.statistics?.defaultBanks ?? banks.filter((bank) => bank.isDefault).length,
+      activeBanks: response.statistics?.activeBanks ?? banks.filter((bank) => bank.status === "Active").length,
+      inactiveBanks: response.statistics?.inactiveBanks ?? banks.filter((bank) => bank.status === "Inactive").length,
+      defaultBanks: response.statistics?.defaultBanks ?? banks.filter((bank) => bank.isDefault).length,
     },
     permissions: {
       canView: response.permissions?.canView ?? true,

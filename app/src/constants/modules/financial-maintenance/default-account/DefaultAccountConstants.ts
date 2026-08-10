@@ -18,13 +18,11 @@ export const DefaultAccountApiPath = "/maintenance/financial-management/default-
 
 export const DefaultAccountParentLabel = "Accounting master data";
 export const DefaultAccountTitle = "Default Accounts";
-export const DefaultAccountDescription =
-  "Maintain reusable account templates that automatically create linked Chart of Accounts records.";
+export const DefaultAccountDescription = "Maintain reusable account templates that automatically create linked Chart of Accounts records.";
 
 export const DefaultAccountDrawerFormId = "default-account-drawer-form";
 
-export const DefaultAccountTablePaginationStorageKey =
-  "maintenance:financial-management:default-account";
+export const DefaultAccountTablePaginationStorageKey = "maintenance:financial-management:default-account";
 
 export const DefaultAccountTableColumns = [
   {
@@ -67,12 +65,9 @@ export const DefaultAccountTableColumns = [
   },
 ] as const;
 
-export const DefaultAccountTablePreferencesStorageKey =
-  "gr8booksneo:default-account:table-preferences";
+export const DefaultAccountTablePreferencesStorageKey = "gr8booksneo:default-account:table-preferences";
 export const DefaultAccountTablePreferencesModuleKey = "maintenance:default-account";
-export const DefaultAccountDefaultColumnOrder = DefaultAccountTableColumns.map((column) =>
-  "key" in column ? column.key : "actions",
-);
+export const DefaultAccountDefaultColumnOrder = DefaultAccountTableColumns.map((column) => ("key" in column ? column.key : "actions"));
 export const DefaultAccountDefaultColumnVisibility: VisibilityState = {
   description: false,
   accountCode: false,
@@ -81,9 +76,7 @@ export const DefaultAccountDefaultColumnVisibility: VisibilityState = {
   updatedBy: false,
   updatedAt: false,
 };
-export const DefaultAccountDefaultSorting: SortingState = [
-  { id: "defaultAccountName", desc: false },
-];
+export const DefaultAccountDefaultSorting: SortingState = [{ id: "defaultAccountName", desc: false }];
 
 export const DefaultAccountTypeOptions = [
   { value: "EXPENSE", label: "Expenses" },
@@ -95,34 +88,20 @@ export const DefaultAccountTypeFilterOptions = [
   ...DefaultAccountTypeOptions,
 ] as const satisfies readonly { value: "" | DefaultAccountType; label: string }[];
 
-export const DefaultAccountStatusOptions = [
-  "Active",
-  "Inactive",
-] as const satisfies readonly DefaultAccountStatus[];
+export const DefaultAccountStatusOptions = ["Active", "Inactive"] as const satisfies readonly DefaultAccountStatus[];
 
-export const DefaultAccountImportTemplateHeaders = [
-  "Default Account Name",
-  "Description",
-  "Type",
-];
+export const DefaultAccountImportTemplateHeaders = ["Default Account Name", "Description", "Type"];
 
 export const DefaultAccountImportAcceptedFileExtensions = ".xlsx,.csv,.tsv,.txt";
 export const DefaultAccountImportAcceptedFileLabel = ".xlsx, .csv, .tsv, .txt";
 
-export const DefaultAccountImportDefaultColumnIndexes: Record<
-  DefaultAccountImportColumnId,
-  number
-> = {
+export const DefaultAccountImportDefaultColumnIndexes: Record<DefaultAccountImportColumnId, number> = {
   defaultAccountName: 0,
   description: 1,
   type: 2,
 };
 
-export const DefaultAccountImportFieldOrder: DefaultAccountImportColumnId[] = [
-  "defaultAccountName",
-  "description",
-  "type",
-];
+export const DefaultAccountImportFieldOrder: DefaultAccountImportColumnId[] = ["defaultAccountName", "description", "type"];
 
 export const DefaultAccountImportSelectionColumnWidth = ModuleImportFixedColumnsWidth;
 
@@ -144,8 +123,7 @@ export const DefaultAccountImportColumnHeaders: DefaultAccountImportColumnHeader
 ];
 
 export const DefaultAccountImportPreviewColumnCount = DefaultAccountImportFieldOrder.length + 1;
-export const DefaultAccountImportPreviewGridLabel =
-  "Default account import preview grid. Paste copied Excel rows here.";
+export const DefaultAccountImportPreviewGridLabel = "Default account import preview grid. Paste copied Excel rows here.";
 export const DefaultAccountImportPreviewPageSize = 20;
 export const DefaultAccountImportBatchSize = 25;
 export const DefaultAccountImportMinFileSizeBytes = 1;

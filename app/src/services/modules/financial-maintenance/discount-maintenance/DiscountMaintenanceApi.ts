@@ -36,19 +36,14 @@ export async function fetchDiscounts(): Promise<DiscountMaintenanceListResponse>
   };
 }
 
-export async function createDiscount(
-  values: DiscountMaintenanceFormValues | Discount,
-): Promise<Discount> {
+export async function createDiscount(values: DiscountMaintenanceFormValues | Discount): Promise<Discount> {
   const response = await discountMaintenanceControllerCreateV1(toApiDiscountPayload(values));
 
   return mapApiDiscount(response.discount);
 }
 
 export async function updateDiscount(discount: Discount): Promise<Discount> {
-  const response = await discountMaintenanceControllerUpdateV1(
-    discount.id,
-    toApiDiscountPayload(discount),
-  );
+  const response = await discountMaintenanceControllerUpdateV1(discount.id, toApiDiscountPayload(discount));
 
   return mapApiDiscount(response.discount);
 }
@@ -81,9 +76,7 @@ function mapApiDiscount(discount: DiscountResponseDto): Discount {
   };
 }
 
-function toApiDiscountPayload(
-  discount: Discount | DiscountMaintenanceFormValues,
-): CreateDiscountDto {
+function toApiDiscountPayload(discount: Discount | DiscountMaintenanceFormValues): CreateDiscountDto {
   return {
     name: discount.name.trim(),
     description: discount.description.trim(),

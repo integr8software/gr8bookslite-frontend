@@ -37,10 +37,7 @@ export function useServicesMaintenanceImportDialog({
   existingServices,
   onClose,
   onImportServices,
-}: Pick<
-  ServicesMaintenanceImportDialogProps,
-  "existingServices" | "onClose" | "onImportServices"
->) {
+}: Pick<ServicesMaintenanceImportDialogProps, "existingServices" | "onClose" | "onImportServices">) {
   const [importError, setImportError] = useState<string | null>(null);
   const [isParsing, setIsParsing] = useState(false);
   const [previewRows, setPreviewRows] = useState<ServicesMaintenanceImportPreviewRow[]>([]);
@@ -50,29 +47,21 @@ export function useServicesMaintenanceImportDialog({
   const [isSelectionMenuOpen, setIsSelectionMenuOpen] = useState(false);
   const [isImportMenuOpen, setIsImportMenuOpen] = useState(false);
   const [importMode, setImportMode] = useState<ServicesMaintenanceImportMode>("all-rows");
-  const [columnWidths, setColumnWidths] = useState<ServicesMaintenanceImportColumnWidths>(
-    ServicesMaintenanceImportDefaultColumnWidths,
-  );
+  const [columnWidths, setColumnWidths] = useState<ServicesMaintenanceImportColumnWidths>(ServicesMaintenanceImportDefaultColumnWidths);
   const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(() => new Set());
   const validatedRows = useMemo(
     () => validateServicesMaintenanceImportRows(previewRows, existingServices),
     [existingServices, previewRows],
   );
   const displayedRows = useMemo(
-    () =>
-      validatedRows.map((row) =>
-        pristineManualRowIds.has(row.id) ? { ...row, cellErrors: {}, rowErrors: [] } : row,
-      ),
+    () => validatedRows.map((row) => (pristineManualRowIds.has(row.id) ? { ...row, cellErrors: {}, rowErrors: [] } : row)),
     [pristineManualRowIds, validatedRows],
   );
   const invalidRows = displayedRows.filter(serviceImportRowHasErrors);
   const actualInvalidRows = validatedRows.filter(serviceImportRowHasErrors);
   const validRows = validatedRows.filter((row) => !serviceImportRowHasErrors(row));
   const validSelectedRows = validRows.filter((row) => selectedRowIds.has(row.id));
-  const totalPages = Math.max(
-    1,
-    Math.ceil(displayedRows.length / ServicesMaintenanceImportPreviewPageSize),
-  );
+  const totalPages = Math.max(1, Math.ceil(displayedRows.length / ServicesMaintenanceImportPreviewPageSize));
   const safePreviewPage = Math.min(previewPage, totalPages);
   const visibleRows = displayedRows.slice(
     (safePreviewPage - 1) * ServicesMaintenanceImportPreviewPageSize,
@@ -83,8 +72,7 @@ export function useServicesMaintenanceImportDialog({
   const canImportAllValid = validRows.length > 0 && !isBusy;
   const canImportSelectedValid = validSelectedRows.length > 0 && !isBusy;
   const importTableWidth =
-    ModuleImportFixedColumnsWidth +
-    ServicesMaintenanceImportFieldOrder.reduce((total, field) => total + columnWidths[field], 0);
+    ModuleImportFixedColumnsWidth + ServicesMaintenanceImportFieldOrder.reduce((total, field) => total + columnWidths[field], 0);
 
   function updateColumnWidth(field: ServicesMaintenanceImportColumnId, width: number) {
     setColumnWidths((current) => ({ ...current, [field]: width }));
@@ -103,11 +91,7 @@ export function useServicesMaintenanceImportDialog({
   }
 
   function appendRows(rows: ServicesMaintenanceImportPreviewRow[]) {
-    const seenNames = new Set(
-      previewRows
-        .map((row) => normalizeServicesMaintenanceName(row.service.serviceName))
-        .filter(Boolean),
-    );
+    const seenNames = new Set(previewRows.map((row) => normalizeServicesMaintenanceName(row.service.serviceName)).filter(Boolean));
     const uniqueRows = rows.filter((row) => {
       const normalizedName = normalizeServicesMaintenanceName(row.service.serviceName);
       if (normalizedName && seenNames.has(normalizedName)) return false;
@@ -123,9 +107,7 @@ export function useServicesMaintenanceImportDialog({
       return next;
     });
     setSelectedRowIds(new Set());
-    setPreviewPage(
-      Math.max(1, Math.ceil(nextRows.length / ServicesMaintenanceImportPreviewPageSize)),
-    );
+    setPreviewPage(Math.max(1, Math.ceil(nextRows.length / ServicesMaintenanceImportPreviewPageSize)));
     setImportError(
       rows.length > uniqueRows.length
         ? `${rows.length - uniqueRows.length} duplicate ${rows.length - uniqueRows.length === 1 ? "row was" : "rows were"} skipped.`
@@ -145,16 +127,11 @@ export function useServicesMaintenanceImportDialog({
     setIsParsing(true);
     try {
       const text = await readServicesMaintenanceImportFileText(file);
-      const rows = parseServicesMaintenanceImportText(
-        text,
-        getNextServicesMaintenanceImportRowNumber(previewRows),
-      );
+      const rows = parseServicesMaintenanceImportText(text, getNextServicesMaintenanceImportRowNumber(previewRows));
       if (rows.length === 0) throw new Error("No service rows were found.");
       appendRows(rows);
     } catch (error) {
-      setImportError(
-        error instanceof Error ? error.message : "Could not read the imported services.",
-      );
+      setImportError(error instanceof Error ? error.message : "Could not read the imported services.");
     } finally {
       setIsParsing(false);
     }
@@ -162,23 +139,15 @@ export function useServicesMaintenanceImportDialog({
 
   function addBlankRow() {
     if (progress) return;
-    const blankRow = createBlankServicesMaintenanceImportRow(
-      getNextServicesMaintenanceImportRowNumber(previewRows),
-    );
+    const blankRow = createBlankServicesMaintenanceImportRow(getNextServicesMaintenanceImportRowNumber(previewRows));
     const nextRows = [...previewRows, blankRow];
     setPreviewRows(nextRows);
     setPristineManualRowIds((current) => new Set(current).add(blankRow.id));
-    setPreviewPage(
-      Math.max(1, Math.ceil(nextRows.length / ServicesMaintenanceImportPreviewPageSize)),
-    );
+    setPreviewPage(Math.max(1, Math.ceil(nextRows.length / ServicesMaintenanceImportPreviewPageSize)));
     setImportError(null);
   }
 
-  function updatePreviewCell(
-    rowId: string,
-    field: ServicesMaintenanceImportColumnId,
-    value: string,
-  ) {
+  function updatePreviewCell(rowId: string, field: ServicesMaintenanceImportColumnId, value: string) {
     setPristineManualRowIds((current) => {
       if (!current.has(rowId)) return current;
       const next = new Set(current);
@@ -201,14 +170,8 @@ export function useServicesMaintenanceImportDialog({
     setImportError(null);
   }
 
-  function pasteIntoPreviewCell(
-    rowId: string,
-    field: ServicesMaintenanceImportColumnId,
-    text: string,
-  ) {
-    const pastedRows = parseImportTabularRows(text).filter((row) =>
-      row.some((cell) => cell.trim() !== ""),
-    );
+  function pasteIntoPreviewCell(rowId: string, field: ServicesMaintenanceImportColumnId, text: string) {
+    const pastedRows = parseImportTabularRows(text).filter((row) => row.some((cell) => cell.trim() !== ""));
 
     if (pastedRows.length === 0) return;
     const startColumnIndex = ServicesMaintenanceImportFieldOrder.indexOf(field);
@@ -227,19 +190,13 @@ export function useServicesMaintenanceImportDialog({
       pastedRows.forEach((pastedRow, pastedRowIndex) => {
         const targetIndex = startRowIndex + pastedRowIndex;
         const targetRow =
-          nextRows[targetIndex] ??
-          createBlankServicesMaintenanceImportRow(
-            getNextServicesMaintenanceImportRowNumber(nextRows),
-          );
+          nextRows[targetIndex] ?? createBlankServicesMaintenanceImportRow(getNextServicesMaintenanceImportRowNumber(nextRows));
         const nextServicesMaintenance = { ...targetRow.service };
 
         pastedRow.forEach((cellValue, cellIndex) => {
           const targetField = ServicesMaintenanceImportFieldOrder[startColumnIndex + cellIndex];
           if (!targetField) return;
-          nextServicesMaintenance[targetField] = normalizeImportedServicesMaintenanceCellValue(
-            targetField,
-            cellValue,
-          ) as never;
+          nextServicesMaintenance[targetField] = normalizeImportedServicesMaintenanceCellValue(targetField, cellValue) as never;
         });
 
         touchedRowIds.add(targetRow.id);
@@ -257,12 +214,7 @@ export function useServicesMaintenanceImportDialog({
 
   function pasteIntoPreviewGrid(text: string) {
     if (!text.trim() || progress) return;
-    appendRows(
-      parseServicesMaintenanceImportText(
-        text,
-        getNextServicesMaintenanceImportRowNumber(previewRows),
-      ),
-    );
+    appendRows(parseServicesMaintenanceImportText(text, getNextServicesMaintenanceImportRowNumber(previewRows)));
   }
 
   function toggleRowSelection(rowId: string, isSelected: boolean) {
@@ -290,25 +242,14 @@ export function useServicesMaintenanceImportDialog({
   }
 
   function removeSelectedRows() {
-    const nextRows = renumberServicesMaintenanceImportRows(
-      previewRows.filter((row) => !selectedRowIds.has(row.id)),
-    );
+    const nextRows = renumberServicesMaintenanceImportRows(previewRows.filter((row) => !selectedRowIds.has(row.id)));
     setPreviewRows(nextRows);
     setSelectedRowIds(new Set());
-    setPreviewPage((page) =>
-      Math.max(
-        1,
-        Math.min(page, Math.ceil(nextRows.length / ServicesMaintenanceImportPreviewPageSize)),
-      ),
-    );
+    setPreviewPage((page) => Math.max(1, Math.min(page, Math.ceil(nextRows.length / ServicesMaintenanceImportPreviewPageSize))));
   }
 
   function movePreviewRow(sourceRowId: string, targetRowId: string, position: "before" | "after") {
-    setPreviewRows((rows) =>
-      renumberServicesMaintenanceImportRows(
-        reorderModuleImportRows(rows, sourceRowId, targetRowId, position),
-      ),
-    );
+    setPreviewRows((rows) => renumberServicesMaintenanceImportRows(reorderModuleImportRows(rows, sourceRowId, targetRowId, position)));
   }
 
   function setImportSelection(mode: ServicesMaintenanceImportMode) {
@@ -317,12 +258,7 @@ export function useServicesMaintenanceImportDialog({
   }
 
   async function handleImport(mode = importMode) {
-    const rowsToImport =
-      mode === "selected-valid"
-        ? validSelectedRows
-        : mode === "all-valid"
-          ? validRows
-          : validatedRows;
+    const rowsToImport = mode === "selected-valid" ? validSelectedRows : mode === "all-valid" ? validRows : validatedRows;
 
     if (mode === "selected-valid" && selectedRowIds.size === 0) {
       setImportError("Select at least one valid row to import.");
@@ -346,11 +282,7 @@ export function useServicesMaintenanceImportDialog({
     setImportError(null);
 
     try {
-      for (
-        let index = 0;
-        index < rowsToImport.length;
-        index += ServicesMaintenanceImportBatchSize
-      ) {
+      for (let index = 0; index < rowsToImport.length; index += ServicesMaintenanceImportBatchSize) {
         const batch = rowsToImport.slice(index, index + ServicesMaintenanceImportBatchSize);
         await onImportServices(batch.map((row) => row.service));
         setProgress({
@@ -360,12 +292,8 @@ export function useServicesMaintenanceImportDialog({
         await waitForNextServicesMaintenanceImportBatch();
       }
 
-      toast.success(
-        `${rowsToImport.length} ${rowsToImport.length === 1 ? "service" : "services"} imported.`,
-      );
-      const nextRows = renumberServicesMaintenanceImportRows(
-        previewRows.filter((row) => !importedRowIds.has(row.id)),
-      );
+      toast.success(`${rowsToImport.length} ${rowsToImport.length === 1 ? "service" : "services"} imported.`);
+      const nextRows = renumberServicesMaintenanceImportRows(previewRows.filter((row) => !importedRowIds.has(row.id)));
       setPreviewRows(nextRows);
       setSelectedRowIds(new Set());
       setPreviewPage(1);

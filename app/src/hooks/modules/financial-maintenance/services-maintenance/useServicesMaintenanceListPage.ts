@@ -23,9 +23,7 @@ export function useServicesMaintenanceListPage() {
   } = useServicesMaintenanceStore();
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<ServicesMaintenanceStatusFilter>("");
-  const [pendingStatusService, setPendingStatusService] = useState<ServicesMaintenance | null>(
-    null,
-  );
+  const [pendingStatusService, setPendingStatusService] = useState<ServicesMaintenance | null>(null);
   const filteredServices = useMemo(() => {
     const normalizedQuery = normalizeLowercaseText(query);
 
@@ -33,13 +31,7 @@ export function useServicesMaintenanceListPage() {
       if (statusFilter && service.status !== statusFilter) return false;
       if (!normalizedQuery) return true;
 
-      return [
-        service.serviceName,
-        service.description,
-        service.revenueAccountCode,
-        service.revenueAccountTitle,
-        service.status,
-      ]
+      return [service.serviceName, service.description, service.revenueAccountCode, service.revenueAccountTitle, service.status]
         .join(" ")
         .toLowerCase()
         .includes(normalizedQuery);

@@ -56,28 +56,19 @@ export async function fetchNextServiceRevenueAccountCode(): Promise<ServiceMaint
   return servicesMaintenanceControllerGetNextAccountCodeV1();
 }
 
-export async function createServiceMaintenance(
-  values: ServicesMaintenanceFormValues,
-): Promise<ServicesMaintenance> {
+export async function createServiceMaintenance(values: ServicesMaintenanceFormValues): Promise<ServicesMaintenance> {
   const response = await servicesMaintenanceControllerCreateV1(toApiServicePayload(values));
 
   return mapApiService(response.service);
 }
 
-export async function updateServiceMaintenance(
-  service: ServicesMaintenance,
-): Promise<ServicesMaintenance> {
-  const response = await servicesMaintenanceControllerUpdateV1(
-    service.id,
-    toApiServicePayload(service),
-  );
+export async function updateServiceMaintenance(service: ServicesMaintenance): Promise<ServicesMaintenance> {
+  const response = await servicesMaintenanceControllerUpdateV1(service.id, toApiServicePayload(service));
 
   return mapApiService(response.service);
 }
 
-export async function updateServiceMaintenanceStatus(
-  service: ServicesMaintenance,
-): Promise<ServicesMaintenance> {
+export async function updateServiceMaintenanceStatus(service: ServicesMaintenance): Promise<ServicesMaintenance> {
   const response = await servicesMaintenanceControllerUpdateStatusV1(service.id, {
     status: mapStatusToApi(service.status),
   });
@@ -103,9 +94,7 @@ function mapApiService(service: ServiceMaintenanceResponseDto): ServicesMaintena
   };
 }
 
-function mapApiAccountOption(
-  account: ServiceMaintenanceAccountOptionResponseDto,
-): ModuleChartAccount {
+function mapApiAccountOption(account: ServiceMaintenanceAccountOptionResponseDto): ModuleChartAccount {
   return {
     id: account.id,
     accountNumber: account.accountNumber,
@@ -120,9 +109,7 @@ function mapApiAccountOption(
   };
 }
 
-function toApiServicePayload(
-  service: ServicesMaintenance | ServicesMaintenanceFormValues,
-): CreateServiceMaintenanceDto {
+function toApiServicePayload(service: ServicesMaintenance | ServicesMaintenanceFormValues): CreateServiceMaintenanceDto {
   return {
     serviceName: service.serviceName.trim(),
     description: service.description.trim(),
@@ -140,14 +127,10 @@ function mapStatusToApi(value: ServicesMaintenanceStatus): CreateServiceMaintena
   return value === "Active" ? "ACTIVE" : "INACTIVE";
 }
 
-function mapSetupModeFromApi(
-  value: ServiceMaintenanceResponseDtoAccountSetupMode,
-): ServicesMaintenanceAccountSetupMode {
+function mapSetupModeFromApi(value: ServiceMaintenanceResponseDtoAccountSetupMode): ServicesMaintenanceAccountSetupMode {
   return value === "AUTO" ? "Auto" : "Existing";
 }
 
-function mapSetupModeToApi(
-  value: ServicesMaintenanceAccountSetupMode,
-): CreateServiceMaintenanceDtoAccountSetupMode {
+function mapSetupModeToApi(value: ServicesMaintenanceAccountSetupMode): CreateServiceMaintenanceDtoAccountSetupMode {
   return value === "Auto" ? "AUTO" : "EXISTING";
 }

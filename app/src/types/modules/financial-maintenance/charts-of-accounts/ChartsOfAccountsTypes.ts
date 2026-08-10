@@ -3,12 +3,7 @@ import type { Table } from "@tanstack/react-table";
 
 export type AccountLevel = "MAJOR" | "SUB1" | "SUB2" | "SUB3" | "SPECIFIC";
 
-export type AccountType =
-  | "ASSET"
-  | "LIABILITY"
-  | "EQUITY"
-  | "REVENUE"
-  | "EXPENSE";
+export type AccountType = "ASSET" | "LIABILITY" | "EQUITY" | "REVENUE" | "EXPENSE";
 
 export type AccountNature = "DEBIT" | "CREDIT";
 
@@ -90,16 +85,9 @@ export type FlattenedChartAccount = {
 
 export type FilterValue<TValue> = TValue | "All";
 
-export type ChartAccountStructureFilter =
-  | "All"
-  | "With Submodules"
-  | "Without Submodules";
+export type ChartAccountStructureFilter = "All" | "With Submodules" | "Without Submodules";
 
-export type ChartsOfAccountsNav =
-  | "All Accounts"
-  | "Balance Sheet"
-  | "Income Statement"
-  | "Cash Flow";
+export type ChartsOfAccountsNav = "All Accounts" | "Balance Sheet" | "Income Statement" | "Cash Flow";
 
 export type ChartsOfAccountsDrawerMode = "add" | "edit" | "view";
 
@@ -123,10 +111,7 @@ export type ChartsOfAccountsFormProps = {
   parentAccountError?: string;
   submitted: boolean;
   values: ChartAccountFormValues;
-  onFieldChange: <Key extends keyof ChartAccountFormValues>(
-    key: Key,
-    value: ChartAccountFormValues[Key],
-  ) => void;
+  onFieldChange: <Key extends keyof ChartAccountFormValues>(key: Key, value: ChartAccountFormValues[Key]) => void;
   onParentChange: (parentId: string | null) => void;
 };
 
@@ -211,18 +196,14 @@ export type ChartsOfAccountsTableProps = {
   onEdit: (account: ChartAccount) => void;
   onAddChild: (account: ChartAccount) => void;
   onStatusChange: (account: ChartAccount) => void;
-  onReorderAccount: (
-    accountId: string,
-    overAccountId: string,
-    placement: ChartsOfAccountsDropPlacement,
-  ) => void;
+  onReorderAccount: (accountId: string, overAccountId: string, placement: ChartsOfAccountsDropPlacement) => void;
   onToggleExpanded: (accountId: string) => void;
   onView: (account: ChartAccount) => void;
 };
 
 export type ChartsOfAccountsStatisticCardsProps = {
-	flatAccounts: FlattenedChartAccount[];
-	isLoading?: boolean;
+  flatAccounts: FlattenedChartAccount[];
+  isLoading?: boolean;
 };
 
 export type ChartsOfAccountsTableRowProps = {

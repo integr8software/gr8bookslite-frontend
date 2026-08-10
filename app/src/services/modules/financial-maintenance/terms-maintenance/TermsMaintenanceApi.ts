@@ -100,9 +100,7 @@ function toApiTermPayload(term: TermsMaintenance | TermsMaintenanceFormValues): 
   };
 }
 
-function mapDateModeFromApi(
-  value: TermResponseDtoDateMode | TermLookupOptionResponseDto["dateMode"],
-): TermsMaintenanceDatemode {
+function mapDateModeFromApi(value: TermResponseDtoDateMode | TermLookupOptionResponseDto["dateMode"]): TermsMaintenanceDatemode {
   if (value === "DAY") return "Day";
   if (value === "MONTH") return "Month";
   return "Year";
@@ -114,9 +112,7 @@ function mapDateModeToApi(value: TermsMaintenanceDatemode): CreateTermDtoDateMod
   return "YEAR";
 }
 
-function mapStatusFromApi(
-  value: TermResponseDtoStatus | TermLookupOptionResponseDto["status"],
-): TermsMaintenanceStatus {
+function mapStatusFromApi(value: TermResponseDtoStatus | TermLookupOptionResponseDto["status"]): TermsMaintenanceStatus {
   return value === "ACTIVE" ? "Active" : "Inactive";
 }
 

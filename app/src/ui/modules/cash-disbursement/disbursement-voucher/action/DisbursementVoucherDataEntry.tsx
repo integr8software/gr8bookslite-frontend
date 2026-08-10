@@ -59,6 +59,8 @@ import {
   formatAccountingAmount,
 } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherDataEntrySupport";
 
+const ExpenseEntryView: DisbursementEntryView = "expense";
+
 export function VoucherDataEntry(props: VoucherDataEntryProps) {
   const {
     bankAccount,
@@ -91,7 +93,7 @@ export function VoucherDataEntry(props: VoucherDataEntryProps) {
   } = props;
   const variance = Math.abs(totalDebit - totalCredit);
   const [particularsEditorEntryId, setParticularsEditorEntryId] = useState<string | null>(null);
-  const [entryView, setEntryView] = useState<DisbursementEntryView>("expense");
+  const [entryView, setEntryView] = useState<DisbursementEntryView>(ExpenseEntryView);
   const taxCodesQuery = useAlphanumericTaxCodes();
   const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
   const vatOptions = useMemo(() => createVatOptions(taxCodes), [taxCodes]);
@@ -263,8 +265,8 @@ export function VoucherDataEntry(props: VoucherDataEntryProps) {
     () => visibleExpenseColumnOrder.map((columnId) => allExpenseColumns[columnId]),
     [allExpenseColumns, visibleExpenseColumnOrder],
   );
-  const activeColumns = entryView === "expense" ? expenseColumns : columns;
-  const activeRows = entryView === "expense" ? expenseRows : entries;
+  const activeColumns = entryView === ExpenseEntryView ? expenseColumns : columns;
+  const activeRows = entryView === ExpenseEntryView ? expenseRows : entries;
   const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
     () =>
       columnOrder
@@ -295,7 +297,7 @@ export function VoucherDataEntry(props: VoucherDataEntryProps) {
   );
 
   function updateColumnHeader(columnId: string, header: string) {
-    if (entryView === "expense" && isExpenseEntryColumnId(columnId)) {
+    if (entryView === ExpenseEntryView && isExpenseEntryColumnId(columnId)) {
       setExpenseColumnLabels((currentLabels) => ({
         ...currentLabels,
         [columnId]: header,
@@ -314,7 +316,7 @@ export function VoucherDataEntry(props: VoucherDataEntryProps) {
   }
 
   function updateColumnWidth(columnId: string, width: number) {
-    if (entryView === "expense" && isExpenseEntryColumnId(columnId)) {
+    if (entryView === ExpenseEntryView && isExpenseEntryColumnId(columnId)) {
       setExpenseColumnWidths((currentWidths) => ({
         ...currentWidths,
         [columnId]: clampColumnWidth(width),
@@ -333,7 +335,7 @@ export function VoucherDataEntry(props: VoucherDataEntryProps) {
   }
 
   function fitColumnWidth(columnId: string) {
-    if (entryView === "expense" && isExpenseEntryColumnId(columnId)) {
+    if (entryView === ExpenseEntryView && isExpenseEntryColumnId(columnId)) {
       updateColumnWidth(columnId, estimateDisbursementEntryTextWidth(expenseColumnLabels[columnId], 76));
       return;
     }
@@ -353,7 +355,7 @@ export function VoucherDataEntry(props: VoucherDataEntryProps) {
   }
 
   function moveColumn(fromColumnId: string, toColumnId: string) {
-    if (entryView === "expense" && isExpenseEntryColumnId(fromColumnId) && isExpenseEntryColumnId(toColumnId)) {
+    if (entryView === ExpenseEntryView && isExpenseEntryColumnId(fromColumnId) && isExpenseEntryColumnId(toColumnId)) {
       setExpenseColumnOrder((currentOrder) => moveEntryColumn(currentOrder, fromColumnId, toColumnId));
       return;
     }
@@ -366,7 +368,7 @@ export function VoucherDataEntry(props: VoucherDataEntryProps) {
   }
 
   function toggleColumnVisibility(columnId: string, isVisible: boolean) {
-    if (entryView === "expense" && isExpenseEntryColumnId(columnId)) {
+    if (entryView === ExpenseEntryView && isExpenseEntryColumnId(columnId)) {
       if (!isVisible && ProtectedExpenseEntryColumnIds.has(columnId)) {
         return;
       }
@@ -396,7 +398,7 @@ export function VoucherDataEntry(props: VoucherDataEntryProps) {
           description=""
           emptyRowLabel="entry"
           error={errors.lineEntries}
-          columnOptions={entryView === "expense" ? expenseColumnOptions : columnOptions}
+          columnOptions={entryView === ExpenseEntryView ? expenseColumnOptions : columnOptions}
           summaryCells={
             entryView === "accounting"
               ? {
@@ -424,7 +426,7 @@ export function VoucherDataEntry(props: VoucherDataEntryProps) {
             <div role="tablist" aria-label="Entry view" className="inline-flex rounded-lg border border-darknavy/10 bg-offwhite/70 p-1">
               {(
                 [
-                  ["expense", "Expense Details"],
+                  [ExpenseEntryView, "Expense Details"],
                   ["accounting", "Accounting Entries"],
                 ] as const
               ).map(([view, label]) => {

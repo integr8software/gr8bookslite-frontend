@@ -1,38 +1,10 @@
 "use client";
 
-import {
-  createElement,
-  type ComponentPropsWithoutRef,
-  type ReactNode,
-} from "react";
+import { createElement, type ComponentPropsWithoutRef, type ReactNode } from "react";
 import Link from "next/link";
-import {
-  CheckCircle2,
-  CircleOff,
-  Edit3,
-  Eye,
-  LoaderCircle,
-  Ban,
-  ThumbsDown,
-  ThumbsUp,
-  Trash2,
-  type LucideIcon,
-} from "lucide-react";
-import {
-  joinClasses,
-  moduleAccentClassNames,
-} from "@/app/src/ui/shared/module/module-table/utils";
-
-export type ModuleTableActionVariant =
-  | "active"
-  | "approve"
-  | "cancel"
-  | "delete"
-  | "disapprove"
-  | "edit"
-  | "inactive"
-  | "neutral"
-  | "view";
+import { CheckCircle2, CircleOff, Edit3, Eye, LoaderCircle, Ban, ThumbsDown, ThumbsUp, Trash2, type LucideIcon } from "lucide-react";
+import { joinClasses, moduleAccentClassNames } from "@/app/src/ui/shared/module/module-table/utils";
+import type { ModuleTableActionVariant } from "@/app/src/types/shared/module/ModuleTableActionTypes";
 
 type SharedActionProps = {
   icon?: LucideIcon;
@@ -41,11 +13,9 @@ type SharedActionProps = {
   variant?: ModuleTableActionVariant;
 };
 
-type ModuleTableActionLinkProps = SharedActionProps &
-  Omit<ComponentPropsWithoutRef<typeof Link>, "aria-label" | "children">;
+type ModuleTableActionLinkProps = SharedActionProps & Omit<ComponentPropsWithoutRef<typeof Link>, "aria-label" | "children">;
 
-type ModuleTableActionButtonProps = SharedActionProps &
-  Omit<ComponentPropsWithoutRef<"button">, "aria-label" | "children">;
+type ModuleTableActionButtonProps = SharedActionProps & Omit<ComponentPropsWithoutRef<"button">, "aria-label" | "children">;
 
 export function ModuleTableActions({
   children,
@@ -55,13 +25,7 @@ export function ModuleTableActions({
   children: ReactNode;
 }) {
   return (
-    <div
-      {...props}
-      className={joinClasses(
-        "flex items-center justify-end gap-1.5",
-        className,
-      )}
-    >
+    <div {...props} className={joinClasses("flex items-center justify-end gap-1.5", className)}>
       {children}
     </div>
   );
@@ -76,11 +40,7 @@ export function ModuleTableActionLink({
   ...props
 }: ModuleTableActionLinkProps) {
   return (
-    <Link
-      {...props}
-      aria-label={label}
-      className={joinClasses(getActionClassName(variant), className)}
-    >
+    <Link {...props} aria-label={label} className={joinClasses(getActionClassName(variant), className)}>
       {renderActionIcon(variant, icon, isLoading)}
     </Link>
   );
@@ -96,22 +56,13 @@ export function ModuleTableActionButton({
   ...props
 }: ModuleTableActionButtonProps) {
   return (
-    <button
-      {...props}
-      type={type}
-      aria-label={label}
-      className={joinClasses(getActionClassName(variant), className)}
-    >
+    <button {...props} type={type} aria-label={label} className={joinClasses(getActionClassName(variant), className)}>
       {renderActionIcon(variant, icon, isLoading)}
     </button>
   );
 }
 
-function renderActionIcon(
-  variant: ModuleTableActionVariant,
-  icon?: LucideIcon,
-  isLoading = false,
-) {
+function renderActionIcon(variant: ModuleTableActionVariant, icon?: LucideIcon, isLoading = false) {
   if (isLoading) {
     return <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />;
   }

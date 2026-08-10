@@ -25,6 +25,7 @@ import type {
   AccountsPayableVoucherNumberSuggestion,
   AccountsPayableVoucherPayableType,
   AccountsPayableVoucherRecord,
+  AccountsPayableVoucherStatistics,
   AccountsPayableVoucherStatus,
 } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
 
@@ -111,7 +112,7 @@ export async function fetchAccountsPayableVouchers(
     pagination: response.pagination,
     permissions: response.permissions,
     records: response.vouchers.map(mapApiAccountsPayableVoucher),
-    statistics: response.statistics,
+    statistics: mapApiAccountsPayableVoucherStatistics(response.statistics),
   };
 }
 
@@ -550,6 +551,24 @@ function mapStatusFromApi(value: ApiAccountsPayableVoucherStatus): AccountsPayab
 
 function mapStatusToApi(value: AccountsPayableVoucherStatus): ApiAccountsPayableVoucherStatus {
   return StatusToApi[value] ?? value;
+}
+
+function mapApiAccountsPayableVoucherStatistics(
+  statistics?: Partial<
+    AccountsPayableVoucherStatistics & {
+      approvedVouchers: number;
+      closedVouchers: number;
+    }
+  >,
+): AccountsPayableVoucherStatistics {
+  return {
+    cancelledVouchers: statistics?.cancelledVouchers ?? 0,
+    disapprovedVouchers: statistics?.disapprovedVouchers ?? 0,
+    draftVouchers: statistics?.draftVouchers ?? 0,
+    forApprovalVouchers: statistics?.forApprovalVouchers ?? statistics?.approvedVouchers ?? 0,
+    postedVouchers: statistics?.postedVouchers ?? statistics?.closedVouchers ?? 0,
+    totalVouchers: statistics?.totalVouchers ?? 0,
+  };
 }
 
 function toExchangeRate(value: number | string | null | undefined) {

@@ -191,7 +191,7 @@ export function AccountsPayableVoucherFormPage() {
         <section className="min-w-0 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
           <div className="grid min-w-0 gap-x-8 gap-y-5 xl:grid-cols-2 2xl:grid-cols-3">
             <div className="grid min-w-0 gap-4">
-              <FieldShell controlId="accounts-payable-voucher-party" label="Party Name" error={page.errors.partyName} isRequired>
+              <FieldShell controlId="accounts-payable-voucher-party" label="Party Name" error={page.errors.partyName || page.errors.partyCode} isRequired>
                 <div className="min-w-0">
                   <AppAdvancedDropdown
                     id="accounts-payable-voucher-party"
@@ -242,15 +242,6 @@ export function AccountsPayableVoucherFormPage() {
               />
 
               <TextField
-                label="Project Code"
-                name="projectCode"
-                value={page.values.projectCode}
-                error={page.errors.projectCode}
-                disabled={page.isReadonly}
-                onChange={page.handleInputChange}
-              />
-
-              <TextField
                 label="Project Name"
                 name="projectName"
                 value={page.values.projectName}
@@ -271,17 +262,6 @@ export function AccountsPayableVoucherFormPage() {
             </div>
 
             <div className="grid min-w-0 content-start gap-4">
-              <TextField
-                label="Party Code"
-                name="partyCode"
-                value={page.values.partyCode}
-                error={page.errors.partyCode}
-                disabled={page.isReadonly}
-                isRequired
-                readOnly
-                onChange={page.handleInputChange}
-              />
-
               <FieldShell
                 controlId="accounts-payable-voucher-terms"
                 label="Terms of Payment"

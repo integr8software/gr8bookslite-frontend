@@ -49,6 +49,7 @@ type UseOnboardingDraftParams = {
   setHasPersistedBillingSetup: React.Dispatch<React.SetStateAction<boolean>>;
   setStepIndex: React.Dispatch<React.SetStateAction<number>>;
   setValues: React.Dispatch<React.SetStateAction<OnboardingValues>>;
+  markDraftCurrencySelectionAsExplicit: () => void;
   setPersistedLogoPreviewUrl: (value: string) => void;
 };
 
@@ -60,6 +61,7 @@ export function useOnboardingDraft({
   setHasPersistedBillingSetup,
   setStepIndex,
   setValues,
+  markDraftCurrencySelectionAsExplicit,
   setPersistedLogoPreviewUrl,
 }: UseOnboardingDraftParams) {
   const [hasMounted, setHasMounted] = useState(false);
@@ -110,6 +112,10 @@ export function useOnboardingDraft({
         const draftCompanyDetails = draft.companyDetails;
         const selectedDraftPlan = GetDraftPlan(draft);
 
+        if (draftCompanyDetails.baseCurrencyCode) {
+          markDraftCurrencySelectionAsExplicit();
+        }
+
         setSelectedPlan(selectedDraftPlan);
         setSelectedBillingCycle(GetUiBillingCycle(draft.billingCycle));
         setHasPersistedBillingSetup(draft.hasBillingSetup);
@@ -127,6 +133,9 @@ export function useOnboardingDraft({
           nonIndividualTypeOther:
             draftCompanyDetails.nonIndividualTypeOther ?? "",
           address: draftCompanyDetails.address ?? "",
+          countryCode: draftCompanyDetails.countryCode ?? current.countryCode,
+          baseCurrencyCode:
+            draftCompanyDetails.baseCurrencyCode ?? current.baseCurrencyCode,
           tin: draftCompanyDetails.tin ?? "",
           companyEmail: draftCompanyDetails.companyEmail ?? "",
           website: draftCompanyDetails.website ?? "",
@@ -183,6 +192,7 @@ export function useOnboardingDraft({
     setStepIndex,
     setPersistedLogoPreviewUrl,
     setValues,
+    markDraftCurrencySelectionAsExplicit,
   ]);
 
   return {

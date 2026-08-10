@@ -26,6 +26,8 @@ export function useOnboardingFlow() {
     setHasPersistedBillingSetup: formState.setHasPersistedBillingSetup,
     setStepIndex: formState.setStepIndex,
     setValues: formState.setValues,
+    markDraftCurrencySelectionAsExplicit:
+      formState.markDraftCurrencySelectionAsExplicit,
     setPersistedLogoPreviewUrl: formState.setPersistedLogoPreviewUrl,
   });
   const { handlePlanSelection, handleNext, handleBack } =
@@ -92,6 +94,8 @@ export function useOnboardingFlow() {
     isFirstStep: formState.isFirstStep,
     isLastStep: formState.isLastStep,
     updateValue: formState.updateValue,
+    updateCountry: formState.updateCountry,
+    updateBaseCurrency: formState.updateBaseCurrency,
     setTaxpayerType: formState.setTaxpayerType,
     handleLogoChange: formState.handleLogoChange,
     handleLogoRemove: formState.handleLogoRemove,

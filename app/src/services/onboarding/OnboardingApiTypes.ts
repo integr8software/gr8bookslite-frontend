@@ -75,6 +75,8 @@ export type OnboardingDraftCompanyDetails = {
   logoStoragePath: string | null;
   logoPublicUrl: string | null;
   address: string | null;
+  countryCode: string | null;
+  baseCurrencyCode: string | null;
   tin: string | null;
   companyEmail: string | null;
   website: string | null;
@@ -144,6 +146,8 @@ export type SaveOnboardingCompanyDetailsRequest = {
   logoStoragePath?: string;
   logoPublicUrl?: string;
   address: string;
+  countryCode: string;
+  baseCurrencyCode: string;
   tin: string;
   companyEmail: string;
   website?: string;

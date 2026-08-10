@@ -19,6 +19,8 @@ export type OnboardingFieldErrors = Partial<
     | "nonIndividualType"
     | "nonIndividualTypeOther"
     | "address"
+    | "countryCode"
+    | "baseCurrencyCode"
     | "tin"
     | "companyEmail"
     | "website"
@@ -52,6 +54,8 @@ export type OnboardingValues = {
   nonIndividualTypeOther: string;
   // Shared step 1 fields
   address: string;
+  countryCode: string;
+  baseCurrencyCode: string;
   tin: string;
   companyEmail: string;
   website: string;
@@ -95,6 +99,8 @@ export const InitialOnboardingValues: OnboardingValues = {
   nonIndividualType: "",
   nonIndividualTypeOther: "",
   address: "",
+  countryCode: "PH",
+  baseCurrencyCode: "PHP",
   tin: "",
   companyEmail: "",
   website: "",

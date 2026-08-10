@@ -125,6 +125,8 @@ export function OnboardingReviewStep({
             />
             <DetailRow label="Organization type" value={organizationType} />
             <DetailRow label="TIN" value={values.tin} />
+            <DetailRow label="Country" value={values.countryCode} />
+            <DetailRow label="Base currency" value={values.baseCurrencyCode} />
             <DetailRow label="Website" value={values.website} />
           </dl>
         </section>

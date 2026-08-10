@@ -18,6 +18,7 @@ import { OnboardingField } from "@/app/src/ui/onboarding/OnboardingField";
 import { OnboardingFileField } from "@/app/src/ui/onboarding/OnboardingFileField";
 import { OnboardingReportYearField } from "@/app/src/ui/onboarding/OnboardingReportYearField";
 import { OnboardingSelectField } from "@/app/src/ui/onboarding/OnboardingSelectField";
+import { useOnboardingReferenceData } from "@/app/src/hooks/onboarding/useOnboardingReferenceData";
 
 type OnboardingStepOneProps = {
   values: OnboardingValues;
@@ -26,6 +27,8 @@ type OnboardingStepOneProps = {
   logoPreviewUrl: string;
   isSubmitting: boolean;
   updateValue: (key: keyof OnboardingValues, value: string) => void;
+  updateCountry: (countryCode: string, defaultCurrencyCode: string) => void;
+  updateBaseCurrency: (value: string) => void;
   setTaxpayerType: (type: OnboardingTaxpayerType) => void;
   handleLogoChange: (file: File | undefined) => void;
   handleLogoRemove: () => void;
@@ -40,6 +43,8 @@ export function OnboardingStepOne({
   logoPreviewUrl,
   isSubmitting,
   updateValue,
+  updateCountry,
+  updateBaseCurrency,
   setTaxpayerType,
   handleLogoChange,
   handleLogoRemove,
@@ -48,6 +53,8 @@ export function OnboardingStepOne({
 }: OnboardingStepOneProps) {
   const isIndividual = values.taxpayerType === "individual";
   const isOtherOrganizationType = values.nonIndividualType === "Others";
+  const { countries, currencies, isLoading: isReferenceLoading } =
+    useOnboardingReferenceData();
 
   return (
     <div className="space-y-8">
@@ -192,6 +199,41 @@ export function OnboardingStepOne({
         onChange={(e) => updateValue("address", e.target.value)}
         errors={errors.address}
       />
+
+      <div className="grid gap-5 md:grid-cols-2">
+        <OnboardingSelectField
+          id="countryCode"
+          name="countryCode"
+          label="Country"
+          value={values.countryCode}
+          options={countries.map((country) => ({
+            value: country.code,
+            label: country.name,
+          }))}
+          errors={errors.countryCode}
+          onChange={(value) => {
+            const country = countries.find((item) => item.code === value);
+            updateCountry(value, country?.defaultCurrencyCode ?? "");
+          }}
+        />
+        <OnboardingSelectField
+          id="baseCurrencyCode"
+          name="baseCurrencyCode"
+          label="Base Currency"
+          value={values.baseCurrencyCode}
+          options={currencies.map((currency) => ({
+            value: currency.code,
+            label: `${currency.code} - ${currency.name}`,
+          }))}
+          errors={errors.baseCurrencyCode}
+          onChange={updateBaseCurrency}
+        />
+      </div>
+      {isReferenceLoading ? (
+        <p className="-mt-5 text-xs text-darknavy/55">
+          Loading country and currency references...
+        </p>
+      ) : null}
 
       {/* TIN + Company Email + Contact Number */}
       <div className="grid gap-5 lg:grid-cols-3">

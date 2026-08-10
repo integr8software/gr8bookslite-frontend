@@ -29,16 +29,18 @@ type DialogDemo = {
 	tone: AppDialogTone;
 };
 
+const SuccessDialogValue = "success";
+
 const DialogDemos: DialogDemo[] = [
 	{
-		id: "success",
+		id: SuccessDialogValue,
 		title: "Save changes?",
 		description: "Your latest updates will be applied to this record.",
 		confirmLabel: "Save",
 		confirmIcon: <Save />,
 		pendingLabel: "Saving...",
-		tone: "success",
-		iconTone: "success",
+		tone: SuccessDialogValue,
+		iconTone: SuccessDialogValue,
 	},
 	{
 		id: "error",
@@ -109,8 +111,8 @@ const DialogDemos: DialogDemo[] = [
 		confirmLabel: "Done",
 		confirmIcon: <Check />,
 		pendingLabel: "Closing...",
-		tone: "success",
-		iconTone: "success",
+		tone: SuccessDialogValue,
+		iconTone: SuccessDialogValue,
 		cancelLabel: "",
 	},
 ];

@@ -1,4 +1,5 @@
 import type { PurchasingAccountingEntry } from "@/app/src/types/modules/purchasing/PurchasingAccountingTypes";
+import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 
 export type PurchaseOrderFieldUpdater<TValues> = <Key extends keyof TValues>(
 	key: Key,
@@ -76,3 +77,14 @@ export type PurchaseOrderFormMode = "add" | "edit" | "view";
 export type PurchaseOrderFormErrors = Partial<
 	Record<keyof Omit<PurchaseOrderFormValues, "items"> | "items", string>
 >;
+
+export type PurchaseOrderFormHeaderProps = {
+	copyFromRecords: AppCopyFromRecord[];
+	isSubmitting?: boolean;
+	mode: PurchaseOrderFormMode;
+	recordId?: string;
+	values: PurchaseOrderFormValues;
+	onCopyFromSource: (recordIds: string[]) => void;
+	onPreview: () => void;
+	onSubmit: () => void;
+};

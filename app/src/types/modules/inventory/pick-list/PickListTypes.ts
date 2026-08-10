@@ -1,3 +1,5 @@
+import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
+
 export type PickListActionMode = "add" | "edit" | "view";
 
 export type PickListStatus =
@@ -59,4 +61,13 @@ export type PickListSalesOrderCopyRecord = {
 	referenceNo: string;
 	remarks: string;
 	sourceNo: string;
+};
+
+export type PickListFormHeaderProps = {
+	copyFromRecords: AppCopyFromRecord[];
+	mode: PickListActionMode;
+	onCopyFromSalesOrder: (recordIds: string[]) => void;
+	onPreview: () => void;
+	values: PickListFormValues;
+	onSubmit: () => void;
 };

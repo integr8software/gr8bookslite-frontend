@@ -3,7 +3,7 @@ import { ArrowLeft, Save, X } from "lucide-react";
 import { PickListHref } from "@/app/src/constants/modules/inventory/pick-list/PickListConstants";
 import type {
 	PickListActionMode,
-	PickListFormValues,
+	PickListFormHeaderProps,
 } from "@/app/src/types/modules/inventory/pick-list/PickListTypes";
 import {
 	ModuleActionMenu,
@@ -16,15 +16,6 @@ import {
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 import { AppCopyFromDropdown } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
-
-type PickListFormHeaderProps = {
-	copyFromRecords: AppCopyFromRecord[];
-	mode: PickListActionMode;
-	onCopyFromSalesOrder: (recordIds: string[]) => void;
-	onPreview: () => void;
-	values: PickListFormValues;
-	onSubmit: () => void;
-};
 
 export function PickListFormHeader({
 	copyFromRecords,

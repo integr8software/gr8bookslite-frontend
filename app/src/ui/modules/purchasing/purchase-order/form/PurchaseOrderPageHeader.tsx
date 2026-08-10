@@ -5,27 +5,15 @@ import {
 	PurchaseOrderHref,
 } from "@/app/src/constants/modules/purchasing/purchase-order/PurchaseOrderConstants";
 import type {
+	PurchaseOrderFormHeaderProps,
 	PurchaseOrderFormMode,
-	PurchaseOrderFormValues,
 } from "@/app/src/types/modules/purchasing/purchase-order/PurchaseOrderTypes";
 import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
-import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 import { AppCopyFromDropdown } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
-
-type PurchaseOrderFormHeaderProps = {
-	copyFromRecords: AppCopyFromRecord[];
-	isSubmitting?: boolean;
-	mode: PurchaseOrderFormMode;
-	recordId?: string;
-	values: PurchaseOrderFormValues;
-	onCopyFromSource: (recordIds: string[]) => void;
-	onPreview: () => void;
-	onSubmit: () => void;
-};
 
 export function PurchaseOrderFormHeader({
 	copyFromRecords,

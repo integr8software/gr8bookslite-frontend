@@ -1,4 +1,5 @@
 import type { AccountingEntry } from "@/app/src/types/shared/accounting/AccountingEntryTypes";
+import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 
 export type GoodsIssueActionMode = "add" | "edit" | "view";
 
@@ -84,4 +85,13 @@ export type GoodsIssueFormValues = {
 export type GoodsIssueTotals = {
   issueQuantity: number;
   amount: number;
+};
+
+export type GoodsIssueFormHeaderProps = {
+  copyFromRecords: AppCopyFromRecord[];
+  mode: GoodsIssueActionMode;
+  onCopyFromMaterialRequest: (recordIds: string[]) => void;
+  onPreview: () => void;
+  values: GoodsIssueFormValues;
+  onSubmit: () => void;
 };

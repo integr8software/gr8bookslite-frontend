@@ -159,22 +159,7 @@ export type ResponsibilityCenterStatistics = {
   projectCenters: number;
 };
 
-export type ApiResponsibilityCenterCategory =
-  | "CORPORATE"
-  | "DIVISION"
-  | "DEPARTMENT"
-  | "SECTION"
-  | "TEAM"
-  | "BRANCH"
-  | "BUILDING"
-  | "PROJECT"
-  | "BUSINESS_UNIT"
-  | "REGION"
-  | "SALESMAN"
-  | "WAREHOUSE"
-  | "OUTLET"
-  | "SALES_TERRITORY"
-  | "FLEET";
+export type ApiResponsibilityCenterCategory = ResponsibilityCenterResponseDto["category"];
 
 export type ApiResponsibilityCenterFinancialType = ResponsibilityCenterResponseDtoFinancialType;
 export type ApiResponsibilityCenterStatus = ResponsibilityCenterResponseDtoStatus;

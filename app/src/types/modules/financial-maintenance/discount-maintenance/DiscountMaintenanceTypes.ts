@@ -1,5 +1,14 @@
 import type { ChangeEventHandler } from "react";
 import type { Row, Table } from "@tanstack/react-table";
+import type {
+  DiscountListResponseDto,
+  DiscountResponseDto,
+  DiscountResponseDtoStatus,
+  DiscountResponseDtoType,
+  DiscountResponseDtoValueType,
+  ImportDiscountsResponseDto,
+  SaveDiscountResponseDto,
+} from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 
 export type DiscountType = "Percentage" | "Fixed";
 export type DiscountTransactionType = "Purchase" | "Sales";
@@ -88,27 +97,11 @@ export type DiscountMaintenancePermissions = {
   canImport: boolean;
 };
 
-export type ApiDiscountType = "SALES" | "PURCHASE";
-export type ApiDiscountValueType = "PERCENTAGE" | "FIXED";
-export type ApiDiscountStatus = "ACTIVE" | "INACTIVE";
+export type ApiDiscountType = DiscountResponseDtoType;
+export type ApiDiscountValueType = DiscountResponseDtoValueType;
+export type ApiDiscountStatus = DiscountResponseDtoStatus;
 
-export type ApiDiscount = {
-  id: string;
-  name: string;
-  description: string | null;
-  type: ApiDiscountType;
-  valueType: ApiDiscountValueType;
-  value: string;
-  status: ApiDiscountStatus;
-  chartAccountId: string;
-  accountCode: string;
-  accountTitle: string;
-  accountGroupPath: string;
-  createdBy: string | null;
-  createdAt: string;
-  updatedBy: string | null;
-  updatedAt: string;
-};
+export type ApiDiscount = DiscountResponseDto;
 
 export type DiscountMaintenanceListResponse = {
   discounts: Discount[];
@@ -116,19 +109,11 @@ export type DiscountMaintenanceListResponse = {
   permissions: DiscountMaintenancePermissions;
 };
 
-export type ApiDiscountListResponse = {
-  discounts: ApiDiscount[];
-  statistics: DiscountMaintenanceStatistics;
-  permissions: DiscountMaintenancePermissions;
-};
+export type ApiDiscountListResponse = DiscountListResponseDto;
 
-export type ApiDiscountSaveResponse = {
-  discount: ApiDiscount;
-};
+export type ApiDiscountSaveResponse = SaveDiscountResponseDto;
 
-export type ApiDiscountImportResponse = {
-  discounts: ApiDiscount[];
-};
+export type ApiDiscountImportResponse = ImportDiscountsResponseDto;
 
 export type DiscountMaintenanceTableProps = {
   discountTypeFilter: DiscountValueTypeFilter;

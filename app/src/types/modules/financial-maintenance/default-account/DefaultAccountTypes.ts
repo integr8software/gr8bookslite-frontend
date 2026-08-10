@@ -1,10 +1,20 @@
 import type { Row, Table } from "@tanstack/react-table";
+import type {
+  DefaultAccountExpenseParentOptionsResponseDto,
+  DefaultAccountListResponseDto,
+  DefaultAccountResponseDto,
+  DefaultAccountResponseDtoStatus,
+  DefaultAccountResponseDtoType,
+  GeneratedDefaultAccountResponseDtoRole,
+  SaveDefaultAccountExpenseSubAccountResponseDto,
+  SaveDefaultAccountResponseDto,
+} from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 
-export type DefaultAccountType = "EXPENSE" | "COLLECTION";
+export type DefaultAccountType = DefaultAccountResponseDtoType;
 export type DefaultAccountStatus = "Active" | "Inactive";
-export type ApiDefaultAccountStatus = "ACTIVE" | "INACTIVE";
+export type ApiDefaultAccountStatus = DefaultAccountResponseDtoStatus;
 
-export type GeneratedDefaultAccountRole = "EXPENSE" | "REVENUE";
+export type GeneratedDefaultAccountRole = GeneratedDefaultAccountResponseDtoRole;
 
 export type GeneratedDefaultAccount = {
   role: GeneratedDefaultAccountRole;
@@ -78,29 +88,11 @@ export type DefaultAccountStatistics = {
   collectionDefaultAccounts: number;
 };
 
-export type ApiDefaultAccount = {
-  id: string;
-  type: DefaultAccountType;
-  defaultAccountName: string;
-  description: string;
-  status: ApiDefaultAccountStatus;
-  expenseParentCoaId?: string | null;
-  generatedAccounts: GeneratedDefaultAccount[];
-  createdBy: string | null;
-  createdAt: string;
-  updatedBy: string | null;
-  updatedAt: string;
-};
+export type ApiDefaultAccount = DefaultAccountResponseDto;
 
-export type ApiDefaultAccountListResponse = {
-  defaultAccounts: ApiDefaultAccount[];
-  statistics?: Partial<DefaultAccountStatistics>;
-  permissions?: Partial<DefaultAccountPermissions>;
-};
+export type ApiDefaultAccountListResponse = DefaultAccountListResponseDto;
 
-export type ApiDefaultAccountSaveResponse = {
-  defaultAccount: ApiDefaultAccount;
-};
+export type ApiDefaultAccountSaveResponse = SaveDefaultAccountResponseDto;
 
 export type DefaultAccountExpenseParentOption = {
   id: string;
@@ -110,15 +102,9 @@ export type DefaultAccountExpenseParentOption = {
   parentAccountId: string | null;
 };
 
-export type ApiDefaultAccountExpenseParentOptionsResponse = {
-  options: DefaultAccountExpenseParentOption[];
-};
+export type ApiDefaultAccountExpenseParentOptionsResponse = DefaultAccountExpenseParentOptionsResponseDto;
 
-export type ApiDefaultAccountExpenseSubAccountSaveResponse = {
-  account: {
-    id: string;
-  };
-};
+export type ApiDefaultAccountExpenseSubAccountSaveResponse = SaveDefaultAccountExpenseSubAccountResponseDto;
 
 export type DefaultAccountListResponse = {
   defaultAccounts: DefaultAccount[];

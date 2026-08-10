@@ -3,6 +3,14 @@ import type {
   DisbursementPaymentMethod,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import type { Row, Table } from "@tanstack/react-table";
+import type {
+  ImportPaymentTypesResponseDto,
+  PaymentTypeListResponseDto,
+  PaymentTypeResponseDto,
+  PaymentTypeResponseDtoClassification,
+  PaymentTypeResponseDtoStatus,
+  SavePaymentTypeResponseDto,
+} from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 
 export type PaymentTypeStatus = "Active" | "Inactive";
 export type PaymentTypeClassification = DisbursementPaymentClassification;
@@ -18,22 +26,11 @@ export type PaymentTypeListParams = {
   type?: "" | PaymentTypeClassification;
 };
 
-export type ApiPaymentTypeClassification = "CASH" | "BANK_TRANSFER" | "CHECK" | "DIGITAL_WALLET" | "NON_CASH_SETTLEMENT";
+export type ApiPaymentTypeClassification = PaymentTypeResponseDtoClassification;
 
-export type ApiPaymentTypeStatus = "ACTIVE" | "INACTIVE";
+export type ApiPaymentTypeStatus = PaymentTypeResponseDtoStatus;
 
-export type ApiPaymentType = {
-  id: string;
-  name: string;
-  description: string | null;
-  classification: ApiPaymentTypeClassification;
-  sortOrder: number;
-  status: ApiPaymentTypeStatus;
-  createdBy: string | null;
-  createdAt: string;
-  updatedBy: string | null;
-  updatedAt: string;
-};
+export type ApiPaymentType = PaymentTypeResponseDto;
 
 export type PaymentTypeRecord = {
   description: string;
@@ -135,19 +132,11 @@ export type PaymentTypeStatisticCardsProps = {
   isLoading?: boolean;
 };
 
-export type ApiPaymentTypeListResponse = {
-  paymentTypes: ApiPaymentType[];
-  statistics: PaymentTypeStatistics;
-  permissions: PaymentTypePermissions;
-};
+export type ApiPaymentTypeListResponse = PaymentTypeListResponseDto;
 
-export type ApiPaymentTypeSaveResponse = {
-  paymentType: ApiPaymentType;
-};
+export type ApiPaymentTypeSaveResponse = SavePaymentTypeResponseDto;
 
-export type ApiPaymentTypeImportResponse = {
-  paymentTypes: ApiPaymentType[];
-};
+export type ApiPaymentTypeImportResponse = ImportPaymentTypesResponseDto;
 
 export type PaymentTypeTableFiltersProps = {
   exportAllRows: PaymentTypeRecord[];

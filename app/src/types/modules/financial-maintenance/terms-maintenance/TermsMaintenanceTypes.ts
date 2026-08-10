@@ -1,5 +1,15 @@
 import type { ChangeEventHandler } from "react";
 import type { Row, Table } from "@tanstack/react-table";
+import type {
+  ImportTermsResponseDto,
+  SaveTermResponseDto,
+  TermListResponseDto,
+  TermLookupOptionResponseDto,
+  TermLookupResponseDto,
+  TermResponseDto,
+  TermResponseDtoDateMode,
+  TermResponseDtoStatus,
+} from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 
 export type TermsMaintenanceDatemode = "Day" | "Month" | "Year";
 
@@ -9,29 +19,12 @@ export type TermsMaintenanceDatemodeFilter = "All" | TermsMaintenanceDatemode;
 
 export type TermsMaintenanceStatusFilter = "" | TermsMaintenanceStatus;
 
-export type ApiTermDateMode = "DAY" | "MONTH" | "YEAR";
-export type ApiTermStatus = "ACTIVE" | "INACTIVE";
+export type ApiTermDateMode = TermResponseDtoDateMode;
+export type ApiTermStatus = TermResponseDtoStatus;
 
-export type ApiTerm = {
-  id: string;
-  name: string;
-  description: string | null;
-  dateMode: ApiTermDateMode;
-  period: number;
-  status: ApiTermStatus;
-  createdBy: string | null;
-  createdAt: string;
-  updatedBy: string | null;
-  updatedAt: string;
-};
+export type ApiTerm = TermResponseDto;
 
-export type ApiTermOption = {
-  id: string;
-  name: string;
-  dateMode: ApiTermDateMode;
-  period: number;
-  status: ApiTermStatus;
-};
+export type ApiTermOption = TermLookupOptionResponseDto;
 
 export type TermsMaintenance = {
   id: string;
@@ -115,23 +108,13 @@ export type TermsMaintenanceStatisticCardsProps = {
   isLoading?: boolean;
 };
 
-export type ApiTermListResponse = {
-  terms: ApiTerm[];
-  statistics: TermsMaintenanceStatistics;
-  permissions: TermsMaintenancePermissions;
-};
+export type ApiTermListResponse = TermListResponseDto;
 
-export type ApiTermLookupResponse = {
-  terms: ApiTermOption[];
-};
+export type ApiTermLookupResponse = TermLookupResponseDto;
 
-export type ApiTermSaveResponse = {
-  term: ApiTerm;
-};
+export type ApiTermSaveResponse = SaveTermResponseDto;
 
-export type ApiTermImportResponse = {
-  terms: ApiTerm[];
-};
+export type ApiTermImportResponse = ImportTermsResponseDto;
 
 export type TermsMaintenanceTableProps = {
   datemodeFilter: TermsMaintenanceDatemodeFilter;

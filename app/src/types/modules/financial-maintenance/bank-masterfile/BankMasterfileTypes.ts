@@ -1,9 +1,17 @@
 import type { ChangeEventHandler, ReactNode } from "react";
 import type { Row, Table } from "@tanstack/react-table";
+import type {
+  BankAccountListResponseDto,
+  BankAccountResponseDto,
+  BankAccountResponseDtoStatus,
+  BankNextAccountCodeResponseDto,
+  ImportBankAccountsResponseDto,
+  SaveBankAccountResponseDto,
+} from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 
 export type BankMasterfileStatus = "Active" | "Inactive";
 
-export type ApiBankStatus = "ACTIVE" | "INACTIVE";
+export type ApiBankStatus = BankAccountResponseDtoStatus;
 
 export type BankMasterfile = {
   id: string;
@@ -100,49 +108,15 @@ export type BankMasterfileListResponse = {
   permissions: BankMasterfilePermissions;
 };
 
-export type ApiBank = {
-  id: string;
-  accountCode: string;
-  accountTitle?: string | null;
-  bankName: string;
-  branch: string | null;
-  accountNumber: string;
-  accountName: string;
-  chartAccount?: {
-    accountTitle?: string | null;
-  } | null;
-  accountType: string | null;
-  currencyCode: string | null;
-  isDefault: boolean;
-  seriesStart: string | null;
-  seriesEnd: string | null;
-  seriesDigits: number | null;
-  status: ApiBankStatus;
-  createdBy: string | null;
-  createdAt: string;
-  updatedBy: string | null;
-  updatedAt: string;
-};
+export type ApiBank = BankAccountResponseDto;
 
-export type ApiBankListResponse = {
-  bankAccounts: ApiBank[];
-  statistics?: Partial<BankMasterfileStatistics>;
-  permissions?: Partial<BankMasterfilePermissions>;
-};
+export type ApiBankListResponse = BankAccountListResponseDto;
 
-export type ApiBankSaveResponse = {
-  bankAccount: ApiBank;
-};
+export type ApiBankSaveResponse = SaveBankAccountResponseDto;
 
-export type ApiBankImportResponse = {
-  bankAccounts: ApiBank[];
-};
+export type ApiBankImportResponse = ImportBankAccountsResponseDto;
 
-export type ApiNextAccountCodeResponse = {
-  accountCode: string;
-  parentAccountCode: string;
-  parentAccountTitle: string;
-};
+export type ApiNextAccountCodeResponse = BankNextAccountCodeResponseDto;
 
 export type BankMasterfileStatusFilter = "" | BankMasterfileStatus;
 

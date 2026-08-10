@@ -1,12 +1,21 @@
 import type { ChangeEventHandler, ReactNode } from "react";
 import type { Row, Table } from "@tanstack/react-table";
+import type {
+  SaveServiceMaintenanceResponseDto,
+  ServiceMaintenanceAccountOptionResponseDto,
+  ServiceMaintenanceAccountOptionsResponseDto,
+  ServiceMaintenanceListResponseDto,
+  ServiceMaintenanceNextAccountCodeResponseDto,
+  ServiceMaintenanceResponseDto,
+  ServiceMaintenanceResponseDtoAccountSetupMode,
+  ServiceMaintenanceResponseDtoStatus,
+} from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
-import type { AccountLevel } from "@/app/src/types/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 
 export type ServicesMaintenanceStatus = "Active" | "Inactive";
-export type ApiServicesMaintenanceStatus = "ACTIVE" | "INACTIVE";
+export type ApiServicesMaintenanceStatus = ServiceMaintenanceResponseDtoStatus;
 export type ServicesMaintenanceAccountSetupMode = "Auto" | "Existing";
-export type ApiServicesMaintenanceAccountSetupMode = "AUTO" | "EXISTING";
+export type ApiServicesMaintenanceAccountSetupMode = ServiceMaintenanceResponseDtoAccountSetupMode;
 
 export type ServicesMaintenance = {
   id: string;
@@ -70,56 +79,17 @@ export type ServicesMaintenanceListResponse = {
   permissions: ServicesMaintenancePermissions;
 };
 
-export type ApiServicesMaintenance = {
-  id: string;
-  serviceName: string;
-  description: string | null;
-  status: ApiServicesMaintenanceStatus;
-  accountSetupMode: ApiServicesMaintenanceAccountSetupMode;
-  revenueCoaId: string;
-  revenueAccountCode: string;
-  revenueAccountTitle: string;
-  isGeneratedRevenueAccount: boolean;
-  createdBy: string | null;
-  createdAt: string;
-  updatedBy: string | null;
-  updatedAt: string;
-};
+export type ApiServicesMaintenance = ServiceMaintenanceResponseDto;
 
-export type ApiServicesMaintenanceListResponse = {
-  services: ApiServicesMaintenance[];
-  statistics?: Partial<ServicesMaintenanceStatistics>;
-  permissions?: Partial<ServicesMaintenancePermissions>;
-};
+export type ApiServicesMaintenanceListResponse = ServiceMaintenanceListResponseDto;
 
-export type ApiServicesMaintenanceSaveResponse = {
-  service: ApiServicesMaintenance;
-};
+export type ApiServicesMaintenanceSaveResponse = SaveServiceMaintenanceResponseDto;
 
-export type ApiServicesMaintenanceAccountOption = {
-  id: string;
-  accountNumber: string;
-  accountName: string;
-  description?: string | null;
-  accountType?: string | null;
-  accountCategory?: string | null;
-  statementGroup?: string | null;
-  statementSection?: string | null;
-  normalBalance?: "Debit" | "Credit" | null;
-  status?: ServicesMaintenanceStatus;
-};
+export type ApiServicesMaintenanceAccountOption = ServiceMaintenanceAccountOptionResponseDto;
 
-export type ApiServicesMaintenanceAccountOptionsResponse = {
-  accounts: ApiServicesMaintenanceAccountOption[];
-};
+export type ApiServicesMaintenanceAccountOptionsResponse = ServiceMaintenanceAccountOptionsResponseDto;
 
-export type ApiServicesMaintenanceNextAccountCodeResponse = {
-  accountCode: string;
-  parentAccountId: string;
-  parentAccountCode: string;
-  parentAccountLevel: AccountLevel;
-  parentAccountTitle: string;
-};
+export type ApiServicesMaintenanceNextAccountCodeResponse = ServiceMaintenanceNextAccountCodeResponseDto;
 
 export type ServicesMaintenanceDrawerState = {
   mode: ServicesMaintenanceActionMode;

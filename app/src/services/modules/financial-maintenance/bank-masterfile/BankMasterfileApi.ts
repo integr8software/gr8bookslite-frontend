@@ -16,12 +16,12 @@ import type {
 import type {
   BankMasterfile,
   BankMasterfileFormValues,
-  BankMasterfileListResponse,
+  BankMasterfileListResult,
   BankMasterfileStatus,
 } from "@/app/src/types/modules/financial-maintenance/bank-masterfile/BankMasterfileTypes";
 import { cleanOptional } from "@/app/src/utils/string.util";
 
-export async function fetchBanks(): Promise<BankMasterfileListResponse> {
+export async function fetchBanks(): Promise<BankMasterfileListResult> {
   const response = await bankMasterfileControllerFindAllV1();
   const banks = response.bankAccounts.map(mapApiBank);
 

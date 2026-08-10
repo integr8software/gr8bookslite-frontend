@@ -16,7 +16,7 @@ import { DiscountMaintenanceQueryKeys } from "@/app/src/services/modules/financi
 import type {
   Discount,
   DiscountMaintenanceFormValues,
-  DiscountMaintenanceListResponse,
+  DiscountMaintenanceListResult,
   DiscountMaintenancePermissions,
   DiscountMaintenanceStatistics,
 } from "@/app/src/types/modules/financial-maintenance/discount-maintenance/DiscountMaintenanceTypes";
@@ -122,7 +122,7 @@ export function useDiscountMaintenanceStore<TSelected = DiscountStoreState>(sele
   const state = useMemo<DiscountStoreState>(() => {
     const effectiveRole = ResolveAuthProfileEffectiveRole(authProfileQuery.data);
     const hasReservedRoleAccess = effectiveRole === "ADMIN" || effectiveRole === "SUPER_ADMIN";
-    const data = discountsQuery.data as DiscountMaintenanceListResponse | undefined;
+    const data = discountsQuery.data as DiscountMaintenanceListResult | undefined;
 
     return {
       discounts: data?.discounts ?? [],

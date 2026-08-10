@@ -107,7 +107,7 @@ export type PaymentTypeStatistics = {
   nonCashSettlementPaymentTypes: number;
 };
 
-export type PaymentTypeListResponse = {
+export type PaymentTypeListResult = {
   paymentTypes: PaymentTypeRecord[];
   statistics: PaymentTypeStatistics;
   permissions: PaymentTypePermissions;

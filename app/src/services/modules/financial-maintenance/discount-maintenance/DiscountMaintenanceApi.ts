@@ -17,13 +17,13 @@ import type {
 import type {
   Discount,
   DiscountMaintenanceFormValues,
-  DiscountMaintenanceListResponse,
+  DiscountMaintenanceListResult,
   DiscountStatus,
   DiscountTransactionType,
   DiscountType,
 } from "@/app/src/types/modules/financial-maintenance/discount-maintenance/DiscountMaintenanceTypes";
 
-export async function fetchDiscounts(): Promise<DiscountMaintenanceListResponse> {
+export async function fetchDiscounts(): Promise<DiscountMaintenanceListResult> {
   const response = await discountMaintenanceControllerFindAllV1();
 
   return {

@@ -18,12 +18,12 @@ import type {
   DefaultAccount,
   DefaultAccountExpenseParentOption,
   DefaultAccountFormValues,
-  DefaultAccountListResponse,
+  DefaultAccountListResult,
   DefaultAccountStatus,
 } from "@/app/src/types/modules/financial-maintenance/default-account/DefaultAccountTypes";
 import type { ChartAccountFormValues } from "@/app/src/types/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 
-export async function fetchDefaultAccounts(): Promise<DefaultAccountListResponse> {
+export async function fetchDefaultAccounts(): Promise<DefaultAccountListResult> {
   const response = await defaultAccountControllerFindAllV1();
   const defaultAccounts = response.defaultAccounts.map(mapApiDefaultAccount);
 

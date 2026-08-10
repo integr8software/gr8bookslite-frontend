@@ -66,7 +66,7 @@ export type ServicesMaintenanceStatistics = {
   accountTitles: number;
 };
 
-export type ServicesMaintenanceListResponse = {
+export type ServicesMaintenanceListResult = {
   services: ServicesMaintenance[];
   statistics: ServicesMaintenanceStatistics;
   permissions: ServicesMaintenancePermissions;

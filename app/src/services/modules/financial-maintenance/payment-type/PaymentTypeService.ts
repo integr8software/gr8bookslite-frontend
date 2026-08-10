@@ -16,7 +16,7 @@ import type {
 import type {
   PaymentTypeClassification,
   PaymentTypeListParams,
-  PaymentTypeListResponse,
+  PaymentTypeListResult,
   PaymentTypeRecord,
   PaymentTypeSortKey,
   PaymentTypeStatus,
@@ -27,7 +27,7 @@ const paymentTypeCollator = new Intl.Collator(undefined, {
   sensitivity: "base",
 });
 
-export async function fetchPaymentTypes(params: PaymentTypeListParams = {}): Promise<PaymentTypeListResponse> {
+export async function fetchPaymentTypes(params: PaymentTypeListParams = {}): Promise<PaymentTypeListResult> {
   const response = await paymentTypeMaintenanceControllerFindAllV1(toApiPaymentTypeListParams(params));
 
   return {

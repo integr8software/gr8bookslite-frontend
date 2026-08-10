@@ -92,7 +92,7 @@ export type BankMasterfileStatistics = {
   defaultBanks: number;
 };
 
-export type BankMasterfileListResponse = {
+export type BankMasterfileListResult = {
   banks: BankMasterfile[];
   statistics: BankMasterfileStatistics;
   permissions: BankMasterfilePermissions;

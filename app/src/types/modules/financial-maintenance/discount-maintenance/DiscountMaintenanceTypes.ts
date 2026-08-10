@@ -88,7 +88,7 @@ export type DiscountMaintenancePermissions = {
   canImport: boolean;
 };
 
-export type DiscountMaintenanceListResponse = {
+export type DiscountMaintenanceListResult = {
   discounts: Discount[];
   statistics: DiscountMaintenanceStatistics;
   permissions: DiscountMaintenancePermissions;

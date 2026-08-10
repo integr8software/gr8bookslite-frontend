@@ -91,7 +91,7 @@ export type DefaultAccountExpenseParentOption = {
   parentAccountId: string | null;
 };
 
-export type DefaultAccountListResponse = {
+export type DefaultAccountListResult = {
   defaultAccounts: DefaultAccount[];
   statistics: DefaultAccountStatistics;
   permissions: DefaultAccountPermissions;

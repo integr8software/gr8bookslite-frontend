@@ -21,11 +21,11 @@ import type {
   ServicesMaintenance,
   ServicesMaintenanceAccountSetupMode,
   ServicesMaintenanceFormValues,
-  ServicesMaintenanceListResponse,
+  ServicesMaintenanceListResult,
   ServicesMaintenanceStatus,
 } from "@/app/src/types/modules/financial-maintenance/services-maintenance/ServicesMaintenanceTypes";
 
-export async function fetchServicesMaintenance(): Promise<ServicesMaintenanceListResponse> {
+export async function fetchServicesMaintenance(): Promise<ServicesMaintenanceListResult> {
   const response = await servicesMaintenanceControllerFindAllV1();
 
   return {

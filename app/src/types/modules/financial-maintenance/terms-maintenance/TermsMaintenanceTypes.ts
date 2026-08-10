@@ -76,13 +76,13 @@ export type TermsMaintenanceStatistics = {
   yearTerms: number;
 };
 
-export type TermsMaintenanceListResponse = {
+export type TermsMaintenanceListResult = {
   terms: TermsMaintenance[];
   statistics: TermsMaintenanceStatistics;
   permissions: TermsMaintenancePermissions;
 };
 
-export type TermsMaintenanceLookupResponse = {
+export type TermsMaintenanceLookupResult = {
   terms: TermsMaintenance[];
 };
 

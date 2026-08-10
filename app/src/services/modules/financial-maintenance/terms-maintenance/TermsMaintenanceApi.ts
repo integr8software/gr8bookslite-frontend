@@ -18,12 +18,12 @@ import type {
   TermsMaintenance,
   TermsMaintenanceDatemode,
   TermsMaintenanceFormValues,
-  TermsMaintenanceListResponse,
-  TermsMaintenanceLookupResponse,
+  TermsMaintenanceListResult,
+  TermsMaintenanceLookupResult,
   TermsMaintenanceStatus,
 } from "@/app/src/types/modules/financial-maintenance/terms-maintenance/TermsMaintenanceTypes";
 
-export async function fetchTerms(): Promise<TermsMaintenanceListResponse> {
+export async function fetchTerms(): Promise<TermsMaintenanceListResult> {
   const response = await termsMaintenanceControllerFindAllV1();
 
   return {
@@ -36,7 +36,7 @@ export async function fetchTerms(): Promise<TermsMaintenanceListResponse> {
   };
 }
 
-export async function fetchTermOptions(): Promise<TermsMaintenanceLookupResponse> {
+export async function fetchTermOptions(): Promise<TermsMaintenanceLookupResult> {
   const response = await termsMaintenanceControllerFindOptionsV1();
 
   return {

@@ -37,6 +37,7 @@ import {
   DisbursementVoucherStatuses,
   canEditDisbursementVoucherStatus,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
+import { DisbursementVoucherLineEntriesField } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryConstants";
 import {
   validateDisbursementVoucherDetails,
   validateDisbursementVoucherEntries,
@@ -190,7 +191,7 @@ export function useDisbursementVoucherActionPage() {
     const isCashPayment = paymentTypeRecord?.type === "Cash" || paymentMethod.trim().toLowerCase() === "cash";
 
     updateField(
-      "lineEntries",
+      DisbursementVoucherLineEntriesField,
       createAutomaticEntriesForPayment(values.lineEntries, {
         bankAccount: isCashPayment ? null : selectedBankAccount,
         paymentMethod,
@@ -227,7 +228,7 @@ export function useDisbursementVoucherActionPage() {
         bankName: "",
       });
       updateField(
-        "lineEntries",
+        DisbursementVoucherLineEntriesField,
         createAutomaticEntriesForPayment(values.lineEntries, {
           bankAccount: null,
         }),
@@ -244,7 +245,7 @@ export function useDisbursementVoucherActionPage() {
       bankName: bankAccount.bankName,
     });
     updateField(
-      "lineEntries",
+      DisbursementVoucherLineEntriesField,
       createAutomaticEntriesForPayment(values.lineEntries, {
         bankAccount,
       }),
@@ -269,11 +270,19 @@ export function useDisbursementVoucherActionPage() {
   }
 
   function replaceEntriesWithAutomaticRows(nextEntries: DisbursementLineEntry[]) {
-    updateField("lineEntries", createAutomaticEntriesForPayment(nextEntries.length > 0 ? nextEntries : [createBlankEntry()]));
+    updateField(
+      DisbursementVoucherLineEntriesField,
+      createAutomaticEntriesForPayment(
+        nextEntries.length > 0 ? nextEntries : [createBlankEntry()],
+      ),
+    );
   }
 
   function handleAddEntries(count = 1) {
-    updateField("lineEntries", [...values.lineEntries, ...createDisbursementEntryRows(count, createBlankEntry)]);
+    updateField(DisbursementVoucherLineEntriesField, [
+      ...values.lineEntries,
+      ...createDisbursementEntryRows(count, createBlankEntry),
+    ]);
     setErrors((current) => ({
       ...current,
       entryDraft: undefined,
@@ -291,7 +300,7 @@ export function useDisbursementVoucherActionPage() {
 
   function handleUpdateEntryFields(entryId: string, updates: Partial<DisbursementLineEntry>) {
     updateField(
-      "lineEntries",
+      DisbursementVoucherLineEntriesField,
       values.lineEntries.map((entry) => {
         if (entry.id !== entryId) {
           return entry;
@@ -321,20 +330,39 @@ export function useDisbursementVoucherActionPage() {
   }
 
   function handleInsertEntry(entryId: string, position: "above" | "below") {
-    updateField("lineEntries", insertDisbursementEntryRow(values.lineEntries, entryId, position, createBlankEntry));
+    updateField(
+      DisbursementVoucherLineEntriesField,
+      insertDisbursementEntryRow(
+        values.lineEntries,
+        entryId,
+        position,
+        createBlankEntry,
+      ),
+    );
     setErrors((current) => ({ ...current, lineEntries: undefined }));
   }
 
   function handleDuplicateEntry(entryId: string) {
     updateField(
-      "lineEntries",
-      duplicateDisbursementEntryRow(values.lineEntries, entryId, () => `line-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`),
+      DisbursementVoucherLineEntriesField,
+      duplicateDisbursementEntryRow(
+        values.lineEntries,
+        entryId,
+        () => `line-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      ),
     );
     setErrors((current) => ({ ...current, lineEntries: undefined }));
   }
 
   function handleMoveEntry(fromEntryId: string, toEntryId: string) {
-    updateField("lineEntries", moveDisbursementEntryRow(values.lineEntries, fromEntryId, toEntryId));
+    updateField(
+      DisbursementVoucherLineEntriesField,
+      moveDisbursementEntryRow(
+        values.lineEntries,
+        fromEntryId,
+        toEntryId,
+      ),
+    );
     setErrors((current) => ({ ...current, lineEntries: undefined }));
   }
 
@@ -348,7 +376,7 @@ export function useDisbursementVoucherActionPage() {
       .filter((entry) => !isGeneratedAccountingEntry(entry))
       .reduce((sum, entry) => sum + Number(entry.taxDetails.amount || 0), 0);
 
-    updateField("lineEntries", nextEntries);
+    updateField(DisbursementVoucherLineEntriesField, nextEntries);
     updateField("amount", hasNonZeroAccountingAmount(amount) ? amount.toFixed(2) : "");
     updateField("taxDetails", syncTaxDetailsAmount(values.taxDetails, amount, values.taxRate));
   }

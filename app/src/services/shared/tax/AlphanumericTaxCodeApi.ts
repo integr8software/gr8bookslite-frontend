@@ -1,5 +1,8 @@
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
-import type { AlphanumericTaxCodeListQuery, AlphanumericTaxCodeListResponse } from "@/app/src/types/shared/tax/AlphanumericTaxCodeTypes";
+import type {
+  AlphanumericTaxCode,
+  AlphanumericTaxCodeListQuery,
+} from "@/app/src/types/shared/tax/AlphanumericTaxCodeTypes";
 
 const AlphanumericTaxCodesPath = "/tax";
 
@@ -9,7 +12,9 @@ export const AlphanumericTaxCodeQueryKeys = {
 };
 
 export async function fetchAlphanumericTaxCodes(query: AlphanumericTaxCodeListQuery = {}) {
-  const response = await ApiClient.get<AlphanumericTaxCodeListResponse>(AlphanumericTaxCodesPath, {
+  const response = await ApiClient.get<
+    Partial<Record<"taxCodes" | "taxes", AlphanumericTaxCode[]>>
+  >(AlphanumericTaxCodesPath, {
     params: query,
   });
 

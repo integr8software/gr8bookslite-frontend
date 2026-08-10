@@ -20,8 +20,3 @@ export type AlphanumericTaxCodeListQuery = {
   taxType?: string;
   transactionType?: string;
 };
-
-export type AlphanumericTaxCodeListResponse = {
-  taxCodes?: AlphanumericTaxCode[];
-  taxes?: AlphanumericTaxCode[];
-};

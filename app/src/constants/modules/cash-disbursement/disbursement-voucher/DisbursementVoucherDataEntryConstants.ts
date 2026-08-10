@@ -5,6 +5,8 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryTypes";
 import type { ModuleDataEntryClearAction } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 
+export const DisbursementVoucherLineEntriesField = "lineEntries";
+
 export const DefaultExpenseEntryColumnOrder: ExpenseEntryColumnId[] = [
   "expenseType",
   "amount",

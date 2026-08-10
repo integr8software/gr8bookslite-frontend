@@ -58,12 +58,3 @@ export type TaxDefaultOption = {
 export type PartyTaxDefaultOption = TaxDefaultOption;
 
 export type PartyTaxDefaultOptions = Record<PartyTaxDefaultClassificationKey, PartyTaxDefaultOption[]>;
-
-export type TaxListResponse = {
-  taxCodes?: Tax[];
-  taxes?: Tax[];
-};
-
-export type PartyTaxDefaultClassificationResponse = {
-  classifications: PartyTaxDefaultClassification[];
-};

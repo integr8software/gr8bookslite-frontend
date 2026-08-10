@@ -1,5 +1,9 @@
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
-import type { PartyTaxDefaultClassificationResponse, TaxListQuery, TaxListResponse } from "@/app/src/types/shared/tax/TaxTypes";
+import type {
+  PartyTaxDefaultClassification,
+  Tax,
+  TaxListQuery,
+} from "@/app/src/types/shared/tax/TaxTypes";
 
 const TaxesPath = "/tax";
 
@@ -10,7 +14,9 @@ export const TaxQueryKeys = {
 };
 
 export async function fetchTaxes(query: TaxListQuery = {}) {
-  const response = await ApiClient.get<TaxListResponse>(TaxesPath, {
+  const response = await ApiClient.get<
+    Partial<Record<"taxCodes" | "taxes", Tax[]>>
+  >(TaxesPath, {
     params: query,
   });
 
@@ -18,7 +24,9 @@ export async function fetchTaxes(query: TaxListQuery = {}) {
 }
 
 export async function fetchPartyTaxDefaultClassifications() {
-  const response = await ApiClient.get<PartyTaxDefaultClassificationResponse>(`${TaxesPath}/party-default-classifications`);
+  const response = await ApiClient.get<Record<"classifications", PartyTaxDefaultClassification[]>>(
+    `${TaxesPath}/party-default-classifications`,
+  );
 
   return response.data.classifications;
 }

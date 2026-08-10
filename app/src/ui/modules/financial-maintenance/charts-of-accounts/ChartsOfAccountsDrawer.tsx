@@ -16,6 +16,7 @@ import {
 import { FetchNextChartAccountCode } from "@/app/src/services/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsApi";
 import type {
   AccountType,
+  AccountLevel,
   ChartAccount,
   ChartAccountFormValues,
   ChartsOfAccountsDrawerMode,
@@ -395,7 +396,7 @@ function getDrawerTitle(mode: ChartsOfAccountsDrawerMode, account: ChartAccount 
   return `Add ${AccountLevelLabels[SpecificAccountLevel]}`;
 }
 
-function getDefaultChildAccountLevel(parentAccount: ChartAccount) {
+function getDefaultChildAccountLevel(parentAccount: ChartAccount): AccountLevel {
   switch (parentAccount.accountLevel) {
     case "MAJOR":
       return "SUB1";
@@ -405,6 +406,8 @@ function getDefaultChildAccountLevel(parentAccount: ChartAccount) {
     case SpecificAccountLevel:
       return SpecificAccountLevel;
   }
+
+  return SpecificAccountLevel;
 }
 
 function getDrawerDescription(parentAccount: ChartAccount | null) {

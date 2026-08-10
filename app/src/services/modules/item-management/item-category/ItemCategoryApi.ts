@@ -14,7 +14,6 @@ import type {
   CreateItemCategoryDtoAccountingSetupMode,
   CreateItemCategoryDtoBehaviors,
   CreateItemCategoryDtoStatus,
-  ItemCategoryOptionResponseDto,
   ItemCategoryResponseDto,
   ItemCategoryResponseDtoAccountingSetupMode,
   ItemCategoryResponseDtoStatus,

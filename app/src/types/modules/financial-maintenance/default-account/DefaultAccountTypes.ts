@@ -1,6 +1,5 @@
 import type { Row, Table } from "@tanstack/react-table";
 import type {
-  DefaultAccountExpenseParentOptionsResponseDto,
   DefaultAccountResponseDtoStatus,
   DefaultAccountResponseDtoType,
   GeneratedDefaultAccountResponseDtoRole,

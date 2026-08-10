@@ -1,9 +1,6 @@
 import type { ReactNode } from "react";
 import type { Row, Table } from "@tanstack/react-table";
-import type {
-  ResponsibilityCenterResponseDtoFinancialType,
-  ResponsibilityCenterResponseDtoStatus,
-} from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
+import type { ResponsibilityCenterResponseDtoStatus } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import type { TablePreferencesState } from "@/app/src/types/shared/table-preferences/TablePreferencesTypes";
 
 export type ResponsibilityCenterStatus = "Active" | "Inactive";

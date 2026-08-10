@@ -1,10 +1,6 @@
 import type { ChangeEventHandler, ReactNode } from "react";
 import type { Row, Table } from "@tanstack/react-table";
-import type {
-  ServiceMaintenanceAccountOptionResponseDto,
-  ServiceMaintenanceAccountOptionsResponseDto,
-  ServiceMaintenanceNextAccountCodeResponseDto,
-} from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
+import type { ServiceMaintenanceNextAccountCodeResponseDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 
 export type ServicesMaintenanceStatus = "Active" | "Inactive";

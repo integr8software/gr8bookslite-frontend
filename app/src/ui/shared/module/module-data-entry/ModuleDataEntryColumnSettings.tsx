@@ -168,42 +168,41 @@ export function ModuleDataEntryColumnSettingsButton({
 							style={menuStyle}
 							className="fixed z-130 flex w-[22.5rem] flex-col overflow-hidden rounded-lg border border-darknavy/10 bg-white p-2 text-left shadow-[0_18px_46px_rgba(33,39,56,0.18)]"
 						>
-							<div className="shrink-0 px-2 pb-2 pt-1">
-								<p className="text-xs font-semibold uppercase tracking-[0.16em] text-darknavy/45">
-									Column
-								</p>
-								<p className="mt-1 text-xs leading-5 text-darknavy/55">
-									Choose visible columns or edit column labels.
-								</p>
-								<div className="mt-2 grid grid-cols-2 gap-2">
-									<button
-										type="button"
-										disabled={!canToggleColumns || !hasVisibleHideableColumns}
-										onClick={restoreDefaultColumns}
-										className={joinClasses(
-											"inline-flex h-8 items-center justify-center rounded-md border px-2 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/20 disabled:cursor-not-allowed",
-											isDefaultColumnsActive
-												? "border-skyblue/20 bg-skyblue/8 text-skyblue"
-												: "border-darknavy/10 bg-white text-darknavy/65 hover:border-skyblue/25 hover:bg-skyblue/8 hover:text-darknavy disabled:opacity-40 disabled:hover:border-darknavy/10 disabled:hover:bg-white",
-										)}
-										aria-label="Restore default columns"
-									>
-										Default
-									</button>
-									<button
-										type="button"
-										disabled={!canToggleColumns || !hasHiddenColumns}
-							onClick={handleShowAllColumns}
-										className={joinClasses(
-											"inline-flex h-8 items-center justify-center rounded-md border px-2 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/20 disabled:cursor-not-allowed",
-											isShowAllColumnsActive
-												? "border-skyblue/20 bg-skyblue/8 text-skyblue"
-												: "border-darknavy/10 bg-white text-darknavy/65 hover:border-skyblue/25 hover:bg-skyblue/8 hover:text-darknavy disabled:opacity-40 disabled:hover:border-darknavy/10 disabled:hover:bg-white",
-										)}
-										aria-label="Show all columns"
-									>
-										Show all
-									</button>
+							<div className="shrink-0 border-b border-darknavy/10 px-2 pb-2 pt-1">
+								<div className="flex h-8 items-center justify-between gap-3">
+									<p className="min-w-0 text-xs font-semibold uppercase text-darknavy/45">
+										Visible Columns
+									</p>
+									<div className="inline-flex shrink-0 items-center gap-5">
+										<button
+											type="button"
+											disabled={!canToggleColumns}
+											onClick={handleShowAllColumns}
+											className={joinClasses(
+												"text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/20 disabled:cursor-not-allowed disabled:text-darknavy/25",
+												isShowAllColumnsActive
+													? "text-coralpink"
+													: "text-coralpink/75 hover:text-coralpink",
+											)}
+											aria-label="Show all columns"
+										>
+											Show All
+										</button>
+										<button
+											type="button"
+											disabled={!canToggleColumns}
+											onClick={restoreDefaultColumns}
+											className={joinClasses(
+												"text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/20 disabled:cursor-not-allowed disabled:text-darknavy/25",
+												isDefaultColumnsActive
+													? "text-darknavy/45"
+													: "text-darknavy/50 hover:text-coralpink",
+											)}
+											aria-label="Restore default columns"
+										>
+											Default
+										</button>
+									</div>
 								</div>
 							</div>
 							<div className="grid min-h-0 gap-2 overflow-y-auto pr-1">

@@ -3,7 +3,7 @@ import { ArrowLeft, Save, X } from "lucide-react";
 import { GoodsIssueHref } from "@/app/src/constants/modules/inventory/goods-issue/GoodsIssueConstants";
 import type {
 	GoodsIssueActionMode,
-	GoodsIssueFormValues,
+	GoodsIssueFormHeaderProps,
 } from "@/app/src/types/modules/inventory/goods-issue/GoodsIssueTypes";
 import {
 	ModuleActionMenu,
@@ -14,19 +14,8 @@ import {
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
-import {
-	AppCopyFromDropdown,
-	type AppCopyFromRecord,
-} from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
-
-type GoodsIssueFormHeaderProps = {
-	copyFromRecords: AppCopyFromRecord[];
-	mode: GoodsIssueActionMode;
-	onCopyFromMaterialRequest: (recordIds: string[]) => void;
-	onPreview: () => void;
-	values: GoodsIssueFormValues;
-	onSubmit: () => void;
-};
+import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
+import { AppCopyFromDropdown } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
 
 export function GoodsIssueFormHeader({
 	copyFromRecords,

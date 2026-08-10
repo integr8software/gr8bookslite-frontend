@@ -14,10 +14,7 @@ import type {
 } from "@/app/src/types/modules/financial-maintenance/bank-masterfile/BankMasterfileTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
-import {
-  MaintenanceActiveStatusSwitchOption,
-  MaintenanceInactiveStatusSwitchOption,
-} from "@/app/src/utils/status.util";
+import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/utils/status.util";
 
 export function BankMasterfileFields({
   accountCode,
@@ -62,11 +59,7 @@ export function BankMasterfileFields({
         <FormField
           label="Account Number"
           error={errors.accountNumber}
-          helper={
-            values.status === "Inactive" && !values.accountNumber.trim()
-              ? "Add an account number to activate this bank."
-              : undefined
-          }
+          helper={values.status === "Inactive" && !values.accountNumber.trim() ? "Add an account number to activate this bank." : undefined}
           required={values.status === "Active"}
         >
           <input
@@ -98,24 +91,13 @@ export function BankMasterfileFields({
         <FormField label="Possible Account Code">
           <input
             id="bank-masterfile-account-code"
-            value={
-              mode === "add"
-                ? isAccountCodeLoading
-                  ? "Loading..."
-                  : accountCode || "Auto series"
-                : accountCode
-            }
+            value={mode === "add" ? (isAccountCodeLoading ? "Loading..." : accountCode || "Auto series") : accountCode}
             readOnly
             className={BankMasterfileReadOnlyFieldClassName}
           />
         </FormField>
         <FormField label="Possible Account Title" required={values.status === "Active"}>
-          <input
-            id="bank-masterfile-account-title"
-            value={accountName}
-            readOnly
-            className={BankMasterfileReadOnlyFieldClassName}
-          />
+          <input id="bank-masterfile-account-title" value={accountName} readOnly className={BankMasterfileReadOnlyFieldClassName} />
         </FormField>
       </div>
       <div className="grid gap-4 lg:grid-cols-3">
@@ -196,18 +178,9 @@ export function BankMasterfileFields({
   );
 }
 
-function FormField({
-  children,
-  className,
-  error,
-  helper,
-  label,
-  required,
-}: BankMasterfileFormFieldProps) {
+function FormField({ children, className, error, helper, label, required }: BankMasterfileFormFieldProps) {
   const generatedId = useId();
-  const fieldId = isValidElement<{ id?: string }>(children)
-    ? (children.props.id ?? generatedId)
-    : generatedId;
+  const fieldId = isValidElement<{ id?: string }>(children) ? (children.props.id ?? generatedId) : generatedId;
 
   return (
     <div className={className}>

@@ -35,9 +35,7 @@ export function useChartsOfAccountsSpotlightTutorial() {
       };
     }
 
-    const storedValue = window.localStorage.getItem(
-      ChartsOfAccountsSpotlightTutorialStorageKey,
-    );
+    const storedValue = window.localStorage.getItem(ChartsOfAccountsSpotlightTutorialStorageKey);
 
     if (!storedValue) {
       scheduleVisibilityChange(true);
@@ -77,16 +75,10 @@ export function useChartsOfAccountsSpotlightTutorial() {
       setIsOpen(true);
     }
 
-    window.addEventListener(
-      ChartsOfAccountsSpotlightTutorialOpenEvent,
-      handleOpenTutorial,
-    );
+    window.addEventListener(ChartsOfAccountsSpotlightTutorialOpenEvent, handleOpenTutorial);
 
     return () => {
-      window.removeEventListener(
-        ChartsOfAccountsSpotlightTutorialOpenEvent,
-        handleOpenTutorial,
-      );
+      window.removeEventListener(ChartsOfAccountsSpotlightTutorialOpenEvent, handleOpenTutorial);
     };
   }, [pathname]);
 
@@ -112,11 +104,6 @@ export function useChartsOfAccountsSpotlightTutorial() {
       updatedAt: new Date().toISOString(),
     };
 
-    window.localStorage.setItem(
-      ChartsOfAccountsSpotlightTutorialStorageKey,
-      JSON.stringify(value),
-    );
+    window.localStorage.setItem(ChartsOfAccountsSpotlightTutorialStorageKey, JSON.stringify(value));
   }
 }
-
-

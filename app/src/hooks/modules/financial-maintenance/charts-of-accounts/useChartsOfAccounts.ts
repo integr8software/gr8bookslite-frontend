@@ -15,6 +15,8 @@ import {
   ChartsOfAccountsDefaultColumnOrder,
   ChartsOfAccountsDefaultColumnVisibility,
   ChartsOfAccountsDefaultSorting,
+  ChartsOfAccountsAllFilterValue,
+  ChartsOfAccountsPageSize,
   ChartsOfAccountsTableColumns,
   ChartsOfAccountsTablePreferencesModuleKey,
   ChartsOfAccountsTablePreferencesStorageKey,
@@ -49,8 +51,6 @@ import type {
 } from "@/app/src/types/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 import toast from "react-hot-toast";
 
-const PageSize = 50;
-
 export function useChartsOfAccounts() {
   const queryClient = useQueryClient();
   const accessToken = useAppStore((state) => state.accessToken);
@@ -62,14 +62,7 @@ export function useChartsOfAccounts() {
     enabled: Boolean(companyId),
     retry: false,
   });
-  const {
-    columnOrder,
-    columnVisibility,
-    sorting,
-    setColumnOrder,
-    setColumnVisibility,
-    setSorting,
-  } = useTablePreferences({
+  const { columnOrder, columnVisibility, sorting, setColumnOrder, setColumnVisibility, setSorting } = useTablePreferences({
     defaultColumnOrder: ChartsOfAccountsDefaultColumnOrder,
     defaultColumnVisibility: ChartsOfAccountsDefaultColumnVisibility,
     defaultSorting: ChartsOfAccountsDefaultSorting,
@@ -78,24 +71,18 @@ export function useChartsOfAccounts() {
   });
   const [accounts, setAccounts] = useState<ChartAccount[]>([]);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set());
-  const [activeTab, setActiveTab] = useState<ChartsOfAccountsNav>(
-    ChartsOfAccountsNavs[0],
-  );
+  const [activeTab, setActiveTab] = useState<ChartsOfAccountsNav>(ChartsOfAccountsNavs[0]);
   const [searchQuery, setSearchQuery] = useState("");
   const deferredSearchQuery = useDeferredValue(searchQuery);
-  const [accountTypeFilter, setAccountTypeFilter] =
-    useState<FilterValue<AccountType>>("All");
-  const [statusFilter, setStatusFilter] =
-    useState<FilterValue<AccountStatus>>("Active");
-  const [structureFilter, setStructureFilter] =
-    useState<ChartAccountStructureFilter>("All");
+  const [accountTypeFilter, setAccountTypeFilter] = useState<FilterValue<AccountType>>(ChartsOfAccountsAllFilterValue);
+  const [statusFilter, setStatusFilter] = useState<FilterValue<AccountStatus>>("Active");
+  const [structureFilter, setStructureFilter] = useState<ChartAccountStructureFilter>(ChartsOfAccountsAllFilterValue);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
-    pageSize: PageSize,
+    pageSize: ChartsOfAccountsPageSize,
   });
   const [drawerAccount, setDrawerAccount] = useState<ChartAccount | null>(null);
-  const [drawerParentAccount, setDrawerParentAccount] =
-    useState<ChartAccount | null>(null);
+  const [drawerParentAccount, setDrawerParentAccount] = useState<ChartAccount | null>(null);
   const [drawerMode, setDrawerMode] = useState<"add" | "edit" | "view">("add");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [savedAccountId, setSavedAccountId] = useState<string | null>(null);
@@ -119,46 +106,29 @@ export function useChartsOfAccounts() {
   }, [accountsQuery.data, companyId]);
 
   const saveAccountMutation = useMutation({
-    mutationFn: (values: ChartAccountFormValues) =>
-      SaveChartAccount(values, drawerAccount),
+    mutationFn: (values: ChartAccountFormValues) => SaveChartAccount(values, drawerAccount),
     onSuccess: async (account) => {
       await queryClient.invalidateQueries({
         queryKey: ChartsOfAccountsQueryKeys.tree(companyId),
       });
       setExpandedIds(
         (current) =>
-          new Set([
-            ...current,
-            ...getAccountAncestorIds(accounts, account.parentId),
-            ...(account.parentId ? [account.parentId] : []),
-          ]),
+          new Set([...current, ...getAccountAncestorIds(accounts, account.parentId), ...(account.parentId ? [account.parentId] : [])]),
       );
       setSavedAccountId(account.id);
       if (!drawerAccount) {
         setSaveResetToken((current) => current + 1);
       }
       closeDrawer();
-      toast.success(
-        drawerAccount ? "Chart account updated." : "Chart account created.",
-      );
+      toast.success(drawerAccount ? "Chart account updated." : "Chart account created.");
     },
     onError: (error) => {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Could not save chart account.",
-      );
+      toast.error(error instanceof Error ? error.message : "Could not save chart account.");
     },
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: ({
-      accountId,
-      status,
-    }: {
-      accountId: string;
-      status: AccountStatus;
-    }) => UpdateChartAccountStatus(accountId, status),
+    mutationFn: ({ accountId, status }: { accountId: string; status: AccountStatus }) => UpdateChartAccountStatus(accountId, status),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
         queryKey: ChartsOfAccountsQueryKeys.tree(companyId),
@@ -166,36 +136,17 @@ export function useChartsOfAccounts() {
       toast.success("Chart account status updated.");
     },
     onError: (error) => {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Could not update chart account status.",
-      );
+      toast.error(error instanceof Error ? error.message : "Could not update chart account status.");
     },
   });
 
   const flatAccounts = useMemo(() => flattenAccounts(accounts), [accounts]);
-  const parentIdByAccountId = useMemo(
-    () =>
-      new Map(
-        flatAccounts.map(({ account }) => [account.id, account.parentId]),
-      ),
-    [flatAccounts],
-  );
+  const parentIdByAccountId = useMemo(() => new Map(flatAccounts.map(({ account }) => [account.id, account.parentId])), [flatAccounts]);
   const searchableTextByAccountId = useMemo(
-    () =>
-      new Map(
-        flatAccounts.map(({ account }) => [
-          account.id,
-          `${account.accountName} ${account.accountNumber}`.toLowerCase(),
-        ]),
-      ),
+    () => new Map(flatAccounts.map(({ account }) => [account.id, `${account.accountName} ${account.accountNumber}`.toLowerCase()])),
     [flatAccounts],
   );
-  const normalizedSearchQuery = useMemo(
-    () => deferredSearchQuery.trim().toLowerCase(),
-    [deferredSearchQuery],
-  );
+  const normalizedSearchQuery = useMemo(() => deferredSearchQuery.trim().toLowerCase(), [deferredSearchQuery]);
 
   const visibleAccounts = useMemo(() => {
     const expanded = flatAccounts.filter(({ account }) => {
@@ -217,33 +168,17 @@ export function useChartsOfAccounts() {
     });
 
     return expanded.filter(({ account }) => {
-      const matchesQuery =
-        !normalizedSearchQuery ||
-        (searchableTextByAccountId
-          .get(account.id)
-          ?.includes(normalizedSearchQuery) ??
-          false);
-      const matchesType =
-        accountTypeFilter === "All" ||
-        account.accountType === accountTypeFilter;
-      const matchesStatus =
-        statusFilter === "All" || account.status === statusFilter;
+      const matchesQuery = !normalizedSearchQuery || (searchableTextByAccountId.get(account.id)?.includes(normalizedSearchQuery) ?? false);
+      const matchesType = accountTypeFilter === ChartsOfAccountsAllFilterValue || account.accountType === accountTypeFilter;
+      const matchesStatus = statusFilter === ChartsOfAccountsAllFilterValue || account.status === statusFilter;
       const hasSubmodules = Boolean(account.children?.length);
       const matchesStructure =
-        structureFilter === "All" ||
+        structureFilter === ChartsOfAccountsAllFilterValue ||
         (structureFilter === "With Submodules" && hasSubmodules) ||
         (structureFilter === "Without Submodules" && !hasSubmodules);
-      const matchesTab =
-        activeTab === "All Accounts" ||
-        account.statementGroup === activeTab;
+      const matchesTab = activeTab === "All Accounts" || account.statementGroup === activeTab;
 
-      return (
-        matchesQuery &&
-        matchesType &&
-        matchesStatus &&
-        matchesStructure &&
-        matchesTab
-      );
+      return matchesQuery && matchesType && matchesStatus && matchesStructure && matchesTab;
     });
   }, [
     activeTab,
@@ -259,9 +194,7 @@ export function useChartsOfAccounts() {
 
   const columns = useMemo<ColumnDef<FlattenedChartAccount>[]>(
     () =>
-      ChartsOfAccountsTableColumns.filter(
-        (column) => column.key !== "parentPath",
-      ).map((column) => {
+      ChartsOfAccountsTableColumns.filter((column) => column.key !== "parentPath").map((column) => {
         const meta = {
           className: column.className ?? "",
         };
@@ -276,13 +209,7 @@ export function useChartsOfAccounts() {
           };
         }
 
-        return createAccountColumn(
-          column.key,
-          column.label,
-          meta,
-          column.size,
-          column.sortable ?? true,
-        );
+        return createAccountColumn(column.key, column.label, meta, column.size, column.sortable ?? true);
       }),
     [],
   );
@@ -317,9 +244,7 @@ export function useChartsOfAccounts() {
       return;
     }
 
-    const rowIndex = table
-      .getPrePaginationRowModel()
-      .rows.findIndex((row) => row.original.account.id === savedAccountId);
+    const rowIndex = table.getPrePaginationRowModel().rows.findIndex((row) => row.original.account.id === savedAccountId);
 
     if (rowIndex < 0) {
       return;
@@ -330,9 +255,7 @@ export function useChartsOfAccounts() {
 
     window.requestAnimationFrame(() => {
       window.requestAnimationFrame(() => {
-        const row = document.querySelector(
-          `[data-chart-account-id="${savedAccountId}"]`,
-        );
+        const row = document.querySelector(`[data-chart-account-id="${savedAccountId}"]`);
 
         row?.scrollIntoView({
           behavior: "smooth",
@@ -355,37 +278,52 @@ export function useChartsOfAccounts() {
     });
   }, []);
 
-  const changeActiveTab = useCallback((nextTab: ChartsOfAccountsNav) => {
-    setActiveTab(nextTab);
-    table.setPageIndex(0);
-  }, [table]);
+  const changeActiveTab = useCallback(
+    (nextTab: ChartsOfAccountsNav) => {
+      setActiveTab(nextTab);
+      table.setPageIndex(0);
+    },
+    [table],
+  );
 
-  const changeSearchQuery = useCallback((nextQuery: string) => {
-    setSearchQuery(nextQuery);
-    table.setPageIndex(0);
-  }, [table]);
+  const changeSearchQuery = useCallback(
+    (nextQuery: string) => {
+      setSearchQuery(nextQuery);
+      table.setPageIndex(0);
+    },
+    [table],
+  );
 
-  const changeAccountTypeFilter = useCallback((nextFilter: FilterValue<AccountType>) => {
-    setAccountTypeFilter(nextFilter);
-    table.setPageIndex(0);
-  }, [table]);
+  const changeAccountTypeFilter = useCallback(
+    (nextFilter: FilterValue<AccountType>) => {
+      setAccountTypeFilter(nextFilter);
+      table.setPageIndex(0);
+    },
+    [table],
+  );
 
-  const changeStatusFilter = useCallback((nextFilter: FilterValue<AccountStatus>) => {
-    setStatusFilter(nextFilter);
-    table.setPageIndex(0);
-  }, [table]);
+  const changeStatusFilter = useCallback(
+    (nextFilter: FilterValue<AccountStatus>) => {
+      setStatusFilter(nextFilter);
+      table.setPageIndex(0);
+    },
+    [table],
+  );
 
-  const changeStructureFilter = useCallback((nextFilter: ChartAccountStructureFilter) => {
-    setStructureFilter(nextFilter);
-    table.setPageIndex(0);
-  }, [table]);
+  const changeStructureFilter = useCallback(
+    (nextFilter: ChartAccountStructureFilter) => {
+      setStructureFilter(nextFilter);
+      table.setPageIndex(0);
+    },
+    [table],
+  );
 
   const resetFilters = useCallback(() => {
     setActiveTab(ChartsOfAccountsNavs[0]);
     setSearchQuery("");
-    setAccountTypeFilter("All");
+    setAccountTypeFilter(ChartsOfAccountsAllFilterValue);
     setStatusFilter("Active");
-    setStructureFilter("All");
+    setStructureFilter(ChartsOfAccountsAllFilterValue);
     table.setPageIndex(0);
   }, [table]);
 
@@ -414,43 +352,37 @@ export function useChartsOfAccounts() {
     setIsDrawerOpen(false);
   }, []);
 
-  const saveAccount = useCallback((values: ChartAccountFormValues) => {
-    saveAccountMutation.mutate(values);
-  }, [saveAccountMutation]);
+  const saveAccount = useCallback(
+    (values: ChartAccountFormValues) => {
+      saveAccountMutation.mutate(values);
+    },
+    [saveAccountMutation],
+  );
 
-  const updateAccountStatus = useCallback((account: ChartAccount) => {
-    updateStatusMutation.mutate({
-      accountId: account.id,
-      status: account.status === "Active" ? "Inactive" : "Active",
-    });
-  }, [updateStatusMutation]);
+  const updateAccountStatus = useCallback(
+    (account: ChartAccount) => {
+      updateStatusMutation.mutate({
+        accountId: account.id,
+        status: account.status === "Active" ? "Inactive" : "Active",
+      });
+    },
+    [updateStatusMutation],
+  );
 
-  const reorderAccount = useCallback((
-    accountId: string,
-    overAccountId: string,
-    placement: ChartsOfAccountsDropPlacement,
-  ) => {
-    const activeAccount = flatAccounts.find(
-      ({ account }) => account.id === accountId,
-    )?.account;
-    const overAccount = flatAccounts.find(
-      ({ account }) => account.id === overAccountId,
-    )?.account;
+  const reorderAccount = useCallback(
+    (accountId: string, overAccountId: string, placement: ChartsOfAccountsDropPlacement) => {
+      const activeAccount = flatAccounts.find(({ account }) => account.id === accountId)?.account;
+      const overAccount = flatAccounts.find(({ account }) => account.id === overAccountId)?.account;
 
-    setAccounts((current) =>
-      moveOrReorderAccount(current, accountId, overAccountId, placement),
-    );
-    setSorting([]);
+      setAccounts((current) => moveOrReorderAccount(current, accountId, overAccountId, placement));
+      setSorting([]);
 
-    if (
-      activeAccount &&
-      overAccount &&
-      !isSpecificAccount(overAccount) &&
-      placement === "inside"
-    ) {
-      setExpandedIds((current) => new Set([...current, overAccount.id]));
-    }
-  }, [flatAccounts, setSorting]);
+      if (activeAccount && overAccount && !isSpecificAccount(overAccount) && placement === "inside") {
+        setExpandedIds((current) => new Set([...current, overAccount.id]));
+      }
+    },
+    [flatAccounts, setSorting],
+  );
 
   const effectiveRole = ResolveAuthProfileEffectiveRole(authProfileQuery.data);
   const canManage = effectiveRole === "ADMIN" || effectiveRole === "SUPER_ADMIN";
@@ -477,8 +409,7 @@ export function useChartsOfAccounts() {
     isLoading: accountsQuery.isLoading,
     isRefreshing: accountsQuery.isFetching && !accountsQuery.isLoading,
     lastSyncedAt: accountsQuery.dataUpdatedAt,
-    isMutating:
-    saveAccountMutation.isPending || updateStatusMutation.isPending,
+    isMutating: saveAccountMutation.isPending || updateStatusMutation.isPending,
     permissions,
     searchQuery,
     saveResetToken,
@@ -519,11 +450,7 @@ function createAccountColumn(
     id,
     header,
     accessorFn: (row) =>
-      id === "parentPath"
-        ? row.parentPath
-        : id === "accountLevel"
-          ? AccountLevelLabels[row.account.accountLevel]
-          : row.account[id],
+      id === "parentPath" ? row.parentPath : id === "accountLevel" ? AccountLevelLabels[row.account.accountLevel] : row.account[id],
     enableSorting,
     size,
     sortingFn: "alphanumeric",
@@ -539,10 +466,7 @@ function getExpandableAccountIds(accounts: ChartAccount[]) {
   );
 }
 
-function getAccountAncestorIds(
-  accounts: ChartAccount[],
-  parentAccountId: string | null,
-) {
+function getAccountAncestorIds(accounts: ChartAccount[], parentAccountId: string | null) {
   if (!parentAccountId) {
     return [];
   }
@@ -563,5 +487,3 @@ function getAccountAncestorIds(
 
   return ancestorIds;
 }
-
-

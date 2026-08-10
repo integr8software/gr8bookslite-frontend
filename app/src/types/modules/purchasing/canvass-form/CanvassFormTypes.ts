@@ -1,4 +1,5 @@
 import type { PurchasingAccountingEntry } from "@/app/src/types/modules/purchasing/PurchasingAccountingTypes";
+import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 
 export type CanvassFormFieldUpdater<TValues> = <Key extends keyof TValues>(
 	key: Key,
@@ -73,3 +74,14 @@ export type CanvassFormMode = "add" | "edit" | "view";
 export type CanvassFormErrors = Partial<
 	Record<keyof Omit<CanvassFormValues, "items"> | "items", string>
 >;
+
+export type CanvassFormFormHeaderProps = {
+	copyFromRecords: AppCopyFromRecord[];
+	isSubmitting?: boolean;
+	mode: CanvassFormMode;
+	recordId?: string;
+	values: CanvassFormValues;
+	onCopyFromPurchaseRequest: (recordIds: string[]) => void;
+	onPreview: () => void;
+	onSubmit: () => void;
+};

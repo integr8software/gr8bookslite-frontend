@@ -42,7 +42,7 @@ import type {
 	PurchaseRequestItem,
 	PurchaseRequestRecord,
 } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
-import type { AppCopyFromRecord } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
+import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 import { validatePurchaseOrderForm } from "@/app/src/validations/modules/purchasing/purchase-order/PurchaseOrderValidation";
 
 export function usePurchaseOrderFormPage() {

@@ -3,7 +3,7 @@ import { ArrowLeft, Save, X } from "lucide-react";
 import { DeliveryReceiptHref } from "@/app/src/constants/modules/inventory/delivery-receipt/DeliveryReceiptConstants";
 import type {
 	DeliveryReceiptActionMode,
-	DeliveryReceiptFormValues,
+	DeliveryReceiptFormHeaderProps,
 } from "@/app/src/types/modules/inventory/delivery-receipt/DeliveryReceiptTypes";
 import {
 	ModuleActionMenu,
@@ -14,19 +14,8 @@ import {
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
-import {
-	AppCopyFromDropdown,
-	type AppCopyFromRecord,
-} from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
-
-type DeliveryReceiptFormHeaderProps = {
-	copyFromRecords: AppCopyFromRecord[];
-	mode: DeliveryReceiptActionMode;
-	onCopyFromPickList: (recordIds: string[]) => void;
-	onPreview: () => void;
-	values: DeliveryReceiptFormValues;
-	onSubmit: () => void;
-};
+import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
+import { AppCopyFromDropdown } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
 
 export function DeliveryReceiptFormHeader({
 	copyFromRecords,

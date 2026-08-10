@@ -26,7 +26,7 @@ import {
 import { ReceivingReportHref } from "@/app/src/constants/modules/inventory/receiving-report/ReceivingReportConstants";
 import { openReceivingReportPdf } from "@/app/src/ui/modules/inventory/receiving-report/reports/ReceivingReportPdf";
 import { validateReceivingReport } from "@/app/src/validations/modules/inventory/receiving-report/ReceivingReportValidation";
-import type { AppCopyFromRecord } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
+import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 import type {
   ReceivingReportAccountingEntryField,
   ReceivingReportActionMode,

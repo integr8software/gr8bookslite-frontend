@@ -5,10 +5,7 @@ import {
   DefaultAccountTitle,
 } from "@/app/src/constants/modules/financial-maintenance/default-account/DefaultAccountConstants";
 import type { DefaultAccountPermissions } from "@/app/src/types/modules/financial-maintenance/default-account/DefaultAccountTypes";
-import {
-  ModuleHeader,
-  moduleHeaderActionClassNames,
-} from "@/app/src/ui/shared/module/ModuleHeader";
+import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 
 export function DefaultAccountHeader({
   onAdd,

@@ -17,6 +17,7 @@ import {
 } from "@/app/src/ui/modules/purchasing/canvass-form/form/CanvassFormFieldControls";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
+import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 
 type CanvassFormRequestFieldsProps = {
@@ -27,34 +28,34 @@ type CanvassFormRequestFieldsProps = {
 
 export function CanvassFormRequestFields({ isReadonly, onUpdateField, values }: CanvassFormRequestFieldsProps) {
   return (
-    <div className="grid min-w-0 gap-5 md:grid-cols-2 xl:grid-cols-3">
+    <div className="grid min-w-0 gap-5 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3">
       {/* Row 1 */}
       <FieldShell controlId="canvass-form-currency" label="Currency">
-        <div className="grid min-w-0 grid-cols-[minmax(8rem,1fr)_auto_minmax(7rem,0.65fr)] items-center gap-2">
-          <AppAdvancedDropdown
-            id="canvass-form-currency"
-            value={values.currency ?? ""}
-            readOnly={isReadonly}
-            options={CanvassFormCurrencyOptions.map((option) => ({
-              name: option,
-              value: option,
-            }))}
-            placeholder="PHP"
-            onChange={(value) => onUpdateField("currency", String(value))}
-          />
-
-          <label htmlFor="canvass-form-exchange-rate" className="whitespace-nowrap text-sm font-semibold text-darknavy">
-            ER:
-          </label>
-
-          <MoneyNumberField
-            id="canvass-form-exchange-rate"
-            value={String(values.exchangeRate ?? "")}
-            readOnly={isReadonly}
-            onValueChange={(value) => onUpdateField("exchangeRate", Number(value) || 0)}
-            className={`${FieldClassName} text-right tabular-nums`}
-          />
-        </div>
+        <CurrencyExchangeRateRow
+          currencyControl={
+            <AppAdvancedDropdown
+              id="canvass-form-currency"
+              className="w-full min-w-0"
+              value={values.currency ?? ""}
+              readOnly={isReadonly}
+              options={CanvassFormCurrencyOptions.map((option) => ({
+                name: option,
+                value: option,
+              }))}
+              placeholder="PHP"
+              onChange={(value) => onUpdateField("currency", String(value))}
+            />
+          }
+          exchangeRateControl={
+            <MoneyNumberField
+              id="canvass-form-exchange-rate"
+              value={String(values.exchangeRate ?? "")}
+              readOnly={isReadonly}
+              onValueChange={(value) => onUpdateField("exchangeRate", Number(value) || 0)}
+              className={`${FieldClassName} text-right tabular-nums`}
+            />
+          }
+        />
       </FieldShell>
 
       <TextField

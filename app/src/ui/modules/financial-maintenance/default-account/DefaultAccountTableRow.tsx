@@ -6,10 +6,7 @@ import type {
   DefaultAccountPermissions,
   DefaultAccountTableRowProps,
 } from "@/app/src/types/modules/financial-maintenance/default-account/DefaultAccountTypes";
-import {
-  ModuleTableActionButton,
-  ModuleTableActions,
-} from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
+import { ModuleTableActionButton, ModuleTableActions } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import { getColumnMetaClassName } from "@/app/src/ui/shared/module/module-table/utils";
 
@@ -23,10 +20,7 @@ export function DefaultAccountTableRow({
   return (
     <tr className="module-table-row">
       {row.getVisibleCells().map((cell) => (
-        <DefaultAccountTableCell
-          key={cell.id}
-          className={getColumnMetaClassName(cell.column.columnDef.meta)}
-        >
+        <DefaultAccountTableCell key={cell.id} className={getColumnMetaClassName(cell.column.columnDef.meta)}>
           <DefaultAccountCellContent
             columnId={cell.column.id}
             defaultAccount={row.original}
@@ -137,16 +131,8 @@ function DefaultAccountCellContent({
   }
 }
 
-function DefaultAccountTableCell({
-  className = "text-left",
-  children,
-}: {
-  className?: string;
-  children: ReactNode;
-}) {
-  return (
-    <td className={`px-4 py-4 align-middle text-sm text-darknavy ${className}`}>{children}</td>
-  );
+function DefaultAccountTableCell({ className = "text-left", children }: { className?: string; children: ReactNode }) {
+  return <td className={`px-4 py-4 align-middle text-sm text-darknavy ${className}`}>{children}</td>;
 }
 
 function TypeBadge({ type }: { type: DefaultAccount["type"] }) {

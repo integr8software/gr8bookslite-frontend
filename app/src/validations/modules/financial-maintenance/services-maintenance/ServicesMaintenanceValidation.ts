@@ -1,102 +1,80 @@
 import { z } from "zod";
 import {
-	ServicesMaintenanceAccountSetupModeOptions,
-	ServicesMaintenanceStatusOptions,
+  ServicesMaintenanceAccountSetupModeOptions,
+  ServicesMaintenanceStatusOptions,
 } from "@/app/src/constants/modules/financial-maintenance/services-maintenance/ServicesMaintenanceConstants";
 import type {
-	ServicesMaintenance,
-	ServicesMaintenanceFormErrors,
-	ServicesMaintenanceFormValues,
+  ServicesMaintenance,
+  ServicesMaintenanceFormErrors,
+  ServicesMaintenanceFormValues,
 } from "@/app/src/types/modules/financial-maintenance/services-maintenance/ServicesMaintenanceTypes";
 import { normalizeLowercaseWhitespace } from "@/app/src/utils/string.util";
 
 type ServicesMaintenanceValidationOptions = {
-	excludedServiceId?: string;
-	services?: ServicesMaintenance[];
+  excludedServiceId?: string;
+  services?: ServicesMaintenance[];
 };
 
 const ServicesMaintenanceFormSchema = z
-	.object({
-		serviceName: z
-			.string()
-			.trim()
-			.min(1, "Name is required.")
-			.max(150, "Name must be 150 characters or fewer."),
-		description: z
-			.string()
-			.trim()
-			.max(500, "Description can only be up to 500 characters."),
-		status: z.enum(ServicesMaintenanceStatusOptions),
-		accountSetupMode: z.enum(ServicesMaintenanceAccountSetupModeOptions),
-		revenueCoaId: z.string(),
-	})
-	.superRefine((values, ctx) => {
-		if (values.accountSetupMode === "Existing" && !values.revenueCoaId.trim()) {
-			ctx.addIssue({
-				code: z.ZodIssueCode.custom,
-				message: "Revenue account is required.",
-				path: ["revenueCoaId"],
-			});
-		}
-	});
+  .object({
+    serviceName: z.string().trim().min(1, "Name is required.").max(150, "Name must be 150 characters or fewer."),
+    description: z.string().trim().max(500, "Description can only be up to 500 characters."),
+    status: z.enum(ServicesMaintenanceStatusOptions),
+    accountSetupMode: z.enum(ServicesMaintenanceAccountSetupModeOptions),
+    revenueCoaId: z.string(),
+  })
+  .superRefine((values, ctx) => {
+    if (values.accountSetupMode === "Existing" && !values.revenueCoaId.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Revenue account is required.",
+        path: ["revenueCoaId"],
+      });
+    }
+  });
 
 export function validateServicesMaintenanceForm(
-	values: ServicesMaintenanceFormValues,
-	options: ServicesMaintenanceValidationOptions = {},
+  values: ServicesMaintenanceFormValues,
+  options: ServicesMaintenanceValidationOptions = {},
 ): ServicesMaintenanceFormErrors {
-	const parsed = ServicesMaintenanceFormSchema.safeParse(values);
-	const errors: ServicesMaintenanceFormErrors = {};
+  const parsed = ServicesMaintenanceFormSchema.safeParse(values);
+  const errors: ServicesMaintenanceFormErrors = {};
 
-	if (parsed.success) {
-		const normalizedName = normalizeLowercaseWhitespace(values.serviceName);
-		const hasDuplicateName = options.services?.some(
-			(service) =>
-				service.id !== options.excludedServiceId &&
-				normalizeLowercaseWhitespace(service.serviceName) === normalizedName,
-		);
+  if (parsed.success) {
+    const normalizedName = normalizeLowercaseWhitespace(values.serviceName);
+    const hasDuplicateName = options.services?.some(
+      (service) => service.id !== options.excludedServiceId && normalizeLowercaseWhitespace(service.serviceName) === normalizedName,
+    );
 
-		if (hasDuplicateName) {
-			errors.serviceName = "A service with this name already exists.";
-		}
+    if (hasDuplicateName) {
+      errors.serviceName = "A service with this name already exists.";
+    }
 
-		return errors;
-	}
+    return errors;
+  }
 
-	for (const issue of parsed.error.issues) {
-		const field = issue.path[0];
+  for (const issue of parsed.error.issues) {
+    const field = issue.path[0];
 
-		if (isServicesMaintenanceField(field) && !errors[field]) {
-			errors[field] = issue.message;
-		}
-	}
+    if (isServicesMaintenanceField(field) && !errors[field]) {
+      errors[field] = issue.message;
+    }
+  }
 
-	if (!errors.serviceName) {
-		const normalizedName = normalizeLowercaseWhitespace(values.serviceName);
-		const hasDuplicateName = options.services?.some(
-			(service) =>
-				service.id !== options.excludedServiceId &&
-				normalizeLowercaseWhitespace(service.serviceName) === normalizedName,
-		);
+  if (!errors.serviceName) {
+    const normalizedName = normalizeLowercaseWhitespace(values.serviceName);
+    const hasDuplicateName = options.services?.some(
+      (service) => service.id !== options.excludedServiceId && normalizeLowercaseWhitespace(service.serviceName) === normalizedName,
+    );
 
-		if (hasDuplicateName) {
-			errors.serviceName = "A service with this name already exists.";
-		}
-	}
+    if (hasDuplicateName) {
+      errors.serviceName = "A service with this name already exists.";
+    }
+  }
 
-	return errors;
+  return errors;
 }
 
-function isServicesMaintenanceField(
-	value: unknown,
-): value is keyof ServicesMaintenanceFormValues {
-	return (
-		typeof value === "string" &&
-		[
-			"serviceName",
-			"description",
-			"status",
-			"accountSetupMode",
-			"revenueCoaId",
-		].includes(value)
-	);
+function isServicesMaintenanceField(value: unknown): value is keyof ServicesMaintenanceFormValues {
+  return typeof value === "string" && ["serviceName", "description", "status", "accountSetupMode", "revenueCoaId"].includes(value);
 }

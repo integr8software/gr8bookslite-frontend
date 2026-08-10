@@ -1,4 +1,4 @@
 export const DiscountMaintenanceQueryKeys = {
-	all: () => ["discountManagement"],
-	discounts: () => ["discountManagement", "discounts"],
+  all: () => ["discountManagement"],
+  discounts: () => ["discountManagement", "discounts"],
 };

@@ -11,10 +11,7 @@ import type {
   NormalBalance,
 } from "@/app/src/types/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 
-export function getAvailableAccountLevels(
-  accounts: ChartAccount[],
-  parentAccountId: string | null,
-): AccountLevel[] {
+export function getAvailableAccountLevels(accounts: ChartAccount[], parentAccountId: string | null): AccountLevel[] {
   if (!parentAccountId) {
     return ["SPECIFIC"];
   }
@@ -44,21 +41,15 @@ export function currentAccountLevelOrDefault(
     return "SPECIFIC";
   }
 
-  return currentAccountLevel && availableAccountLevels.includes(currentAccountLevel)
-    ? currentAccountLevel
-    : availableAccountLevels[0];
+  return currentAccountLevel && availableAccountLevels.includes(currentAccountLevel) ? currentAccountLevel : availableAccountLevels[0];
 }
 
-export function getStandardNormalBalance(
-  accountType: AccountType | "",
-): NormalBalance | "" {
+export function getStandardNormalBalance(accountType: AccountType | ""): NormalBalance | "" {
   if (!accountType) {
     return "";
   }
 
-  return accountType === "ASSET" || accountType === "EXPENSE"
-    ? "DEBIT"
-    : "CREDIT";
+  return accountType === "ASSET" || accountType === "EXPENSE" ? "DEBIT" : "CREDIT";
 }
 
 export function getStandardStatementSection(accountType: AccountType | "") {
@@ -66,24 +57,13 @@ export function getStandardStatementSection(accountType: AccountType | "") {
     return "";
   }
 
-  return accountType === "REVENUE" || accountType === "EXPENSE"
-    ? "Income Statement"
-    : "Balance Sheet";
+  return accountType === "REVENUE" || accountType === "EXPENSE" ? "Income Statement" : "Balance Sheet";
 }
 
-export function getInitialFormValues(
-  account: ChartAccount | null,
-  parentAccount: ChartAccount | null,
-): ChartAccountFormValues {
-  const values = account
-    ? accountToFormValues(account)
-    : EmptyAccountFormValues;
+export function getInitialFormValues(account: ChartAccount | null, parentAccount: ChartAccount | null): ChartAccountFormValues {
+  const values = account ? accountToFormValues(account) : EmptyAccountFormValues;
   const childAccountLevel = parentAccount
-    ? currentAccountLevelOrDefault(
-        "",
-        getAvailableAccountLevels([parentAccount], parentAccount.id),
-        true,
-      )
+    ? currentAccountLevelOrDefault("", getAvailableAccountLevels([parentAccount], parentAccount.id), true)
     : values.accountLevel;
 
   return {
@@ -102,17 +82,11 @@ export function getInitialFormValues(
     bankDetails: {
       ...(values.bankDetails ?? EmptyBankDetails),
     },
-    isBankLinked:
-      account?.isBankLinked ??
-      (childAccountLevel === "SPECIFIC" &&
-        isCashInBankAccount(parentAccount)),
+    isBankLinked: account?.isBankLinked ?? (childAccountLevel === "SPECIFIC" && isCashInBankAccount(parentAccount)),
   };
 }
 
-export function isCashInBankParent(
-  accounts: ChartAccount[],
-  parentAccountId: string | null,
-) {
+export function isCashInBankParent(accounts: ChartAccount[], parentAccountId: string | null) {
   if (!parentAccountId) {
     return false;
   }
@@ -120,10 +94,7 @@ export function isCashInBankParent(
   return isCashInBankAccount(findAccountById(accounts, parentAccountId));
 }
 
-function findAccountById(
-  accounts: ChartAccount[],
-  accountId: string,
-): ChartAccount | null {
+function findAccountById(accounts: ChartAccount[], accountId: string): ChartAccount | null {
   for (const account of accounts) {
     if (account.id === accountId) {
       return account;
@@ -147,4 +118,3 @@ function isCashInBankAccount(account: ChartAccount | null | undefined) {
 
   return label === "cash in bank" || label === "cash in banks";
 }
-

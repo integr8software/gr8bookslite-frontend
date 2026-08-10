@@ -51,9 +51,7 @@ const EmptyStatistics: DefaultAccountStatistics = {
   collectionDefaultAccounts: 0,
 };
 
-export function useDefaultAccountStore<TSelected = DefaultAccountStoreState>(
-  selector?: (state: DefaultAccountStoreState) => TSelected,
-) {
+export function useDefaultAccountStore<TSelected = DefaultAccountStoreState>(selector?: (state: DefaultAccountStoreState) => TSelected) {
   const queryClient = useQueryClient();
   const accessToken = useAppStore((state) => state.accessToken);
   const authProfileQuery = useAuthProfileQuery({ accessToken });
@@ -76,11 +74,7 @@ export function useDefaultAccountStore<TSelected = DefaultAccountStoreState>(
       toast.success("Default account created successfully.");
     },
     onError: (error) => {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Could not create default account. Please try again.",
-      );
+      toast.error(error instanceof Error ? error.message : "Could not create default account. Please try again.");
     },
   });
   const updateDefaultAccountMutation = useMutation({
@@ -90,27 +84,17 @@ export function useDefaultAccountStore<TSelected = DefaultAccountStoreState>(
       toast.success("Default account updated successfully.");
     },
     onError: (error) => {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Could not update default account. Please try again.",
-      );
+      toast.error(error instanceof Error ? error.message : "Could not update default account. Please try again.");
     },
   });
   const updateDefaultAccountStatusMutation = useMutation({
     mutationFn: updateDefaultAccountStatus,
     onSuccess: (_, account) => {
       refreshDefaultAccounts();
-      toast.success(
-        `Default account ${account.status === "Active" ? "activated" : "inactivated"} successfully.`,
-      );
+      toast.success(`Default account ${account.status === "Active" ? "activated" : "inactivated"} successfully.`);
     },
     onError: (error) => {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Could not update default account status. Please try again.",
-      );
+      toast.error(error instanceof Error ? error.message : "Could not update default account status. Please try again.");
     },
   });
   const state = useMemo<DefaultAccountStoreState>(() => {
@@ -119,19 +103,15 @@ export function useDefaultAccountStore<TSelected = DefaultAccountStoreState>(
       permissions: defaultAccountsQuery.data?.permissions ?? EmptyPermissions,
       statistics: defaultAccountsQuery.data?.statistics ?? EmptyStatistics,
       addDefaultAccount: (account) => addDefaultAccountMutation.mutateAsync(account),
-      addDefaultAccounts: (accounts) =>
-        Promise.all(accounts.map((account) => addDefaultAccountMutation.mutateAsync(account))),
+      addDefaultAccounts: (accounts) => Promise.all(accounts.map((account) => addDefaultAccountMutation.mutateAsync(account))),
       updateDefaultAccount: (account) => updateDefaultAccountMutation.mutateAsync(account),
-      updateDefaultAccountStatus: (account) =>
-        updateDefaultAccountStatusMutation.mutateAsync(account),
+      updateDefaultAccountStatus: (account) => updateDefaultAccountStatusMutation.mutateAsync(account),
       refreshDefaultAccounts,
       isLoading: defaultAccountsQuery.isLoading,
       isRefreshing: defaultAccountsQuery.isFetching && !defaultAccountsQuery.isLoading,
       lastSyncedAt: defaultAccountsQuery.dataUpdatedAt,
       isMutating:
-        addDefaultAccountMutation.isPending ||
-        updateDefaultAccountMutation.isPending ||
-        updateDefaultAccountStatusMutation.isPending,
+        addDefaultAccountMutation.isPending || updateDefaultAccountMutation.isPending || updateDefaultAccountStatusMutation.isPending,
     };
   }, [
     addDefaultAccountMutation,

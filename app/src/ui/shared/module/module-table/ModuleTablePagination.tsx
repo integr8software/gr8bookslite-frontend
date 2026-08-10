@@ -14,6 +14,7 @@ import {
 } from "@/app/src/ui/shared/module/module-table/utils";
 
 export function ModuleTablePagination({
+	density = "default",
 	firstRow,
 	label,
 	lastRow,
@@ -32,9 +33,16 @@ export function ModuleTablePagination({
 		safeTotalPages,
 		pageLimit,
 	);
+	const isCompact = density === "compact";
+	const pageButtonSize = isCompact ? "icon" : "defaultIcon";
 
 	return (
-		<div className="grid gap-4 border-t border-darknavy/10 bg-white px-4 py-4 text-sm text-darknavy/65 sm:grid-cols-[1fr_auto_1fr] sm:items-center sm:px-6 sm:py-5">
+		<div
+			className={joinClasses(
+				"grid gap-3 border-t border-darknavy/10 bg-white px-4 text-sm text-darknavy/65 sm:grid-cols-[1fr_auto_1fr] sm:items-center sm:px-6",
+				isCompact ? "py-2" : "py-4",
+			)}
+		>
 			<p className="text-center font-medium sm:text-left">
 				Showing {firstRow} to {lastRow} of {totalRows} {label}
 			</p>
@@ -43,7 +51,7 @@ export function ModuleTablePagination({
 				<ModuleTablePageButton
 					aria-label="First page"
 					disabled={page === 1}
-					size="icon"
+					size={pageButtonSize}
 					onClick={() => onPageChange(1)}
 				>
 					<ChevronsLeft className="h-4 w-4" aria-hidden="true" />
@@ -51,7 +59,7 @@ export function ModuleTablePagination({
 				<ModuleTablePageButton
 					aria-label="Previous page"
 					disabled={page === 1}
-					size="icon"
+					size={pageButtonSize}
 					onClick={() => onPageChange(Math.max(1, page - 1))}
 				>
 					<ChevronLeft className="h-4 w-4" aria-hidden="true" />
@@ -62,7 +70,7 @@ export function ModuleTablePagination({
 						active={pageNumber === page}
 						aria-current={pageNumber === page ? "page" : undefined}
 						aria-label={`Page ${pageNumber}`}
-						size="icon"
+						size={pageButtonSize}
 						onClick={() => onPageChange(pageNumber)}
 					>
 						{pageNumber}
@@ -71,7 +79,7 @@ export function ModuleTablePagination({
 				<ModuleTablePageButton
 					aria-label="Next page"
 					disabled={page >= safeTotalPages}
-					size="icon"
+					size={pageButtonSize}
 					onClick={() =>
 						onPageChange(Math.min(safeTotalPages, page + 1))
 					}
@@ -81,7 +89,7 @@ export function ModuleTablePagination({
 				<ModuleTablePageButton
 					aria-label="Last page"
 					disabled={page >= safeTotalPages}
-					size="icon"
+					size={pageButtonSize}
 					onClick={() => onPageChange(safeTotalPages)}
 				>
 					<ChevronsRight className="h-4 w-4" aria-hidden="true" />
@@ -97,7 +105,8 @@ export function ModuleTablePagination({
 							onPageSizeChange(Number(event.target.value))
 						}
 						className={joinClasses(
-							"h-11 appearance-none rounded-lg border border-darknavy/10 bg-white px-4 pr-9 text-center text-sm font-semibold text-darknavy shadow-sm shadow-darknavy/5 outline-none transition [text-align-last:center] focus:ring-2",
+							"appearance-none rounded-lg border border-darknavy/10 bg-white px-4 pr-9 text-center text-sm font-semibold text-darknavy shadow-sm shadow-darknavy/5 outline-none transition [text-align-last:center] focus:ring-2",
+							isCompact ? "h-9" : "h-10",
 							moduleAccentClassNames.hoverBorder,
 							"focus:border-[var(--skyblue)]",
 							moduleAccentClassNames.focusRing,
@@ -126,16 +135,18 @@ function ModuleTablePageButton({
 	...props
 }: ComponentProps<"button"> & {
 	active?: boolean;
-	size?: "compact" | "default" | "icon";
+	size?: "compact" | "default" | "defaultIcon" | "icon";
 }) {
 	return (
 		<button
 			type="button"
 			className={joinClasses(
-				"inline-flex h-11 items-center justify-center gap-2 rounded-lg border text-sm font-semibold shadow-sm transition focus-visible:outline-none focus-visible:ring-4 disabled:pointer-events-none disabled:bg-white disabled:text-darknavy/35 disabled:opacity-70 disabled:shadow-none",
-				size === "icon" && "w-11 px-0",
+				"inline-flex items-center justify-center gap-2 rounded-lg border text-sm font-semibold shadow-sm transition focus-visible:outline-none focus-visible:ring-4 disabled:pointer-events-none disabled:bg-white disabled:text-darknavy/35 disabled:opacity-70 disabled:shadow-none",
+				size === "icon" && "w-9 px-0",
+				size === "defaultIcon" && "h-10 w-10 px-0",
 				size === "compact" && "px-3",
-				size === "default" && "px-4",
+				size === "default" && "h-10 px-4",
+				size === "icon" && "h-9",
 				active
 					? moduleAccentClassNames.button
 					: joinClasses(

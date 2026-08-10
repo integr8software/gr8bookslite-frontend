@@ -5,27 +5,14 @@ import {
   SalesInvoiceTitle,
 } from "@/app/src/constants/modules/sales/sales-invoice/SalesInvoiceConstants";
 import type {
-  SalesInvoiceActionMode,
-  SalesInvoiceFormValues,
+  SalesInvoiceActionHeaderProps,
 } from "@/app/src/types/modules/sales/sales-invoice/SalesInvoiceTypes";
 import {
   ModuleHeader,
   moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
-import {
-  AppCopyFromDropdown,
-  type AppCopyFromRecord,
-} from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
-
-type SalesInvoiceActionHeaderProps = {
-  copyFromRecords: AppCopyFromRecord[];
-  mode: SalesInvoiceActionMode;
-  onCopyFromDeliveryReceipt: (recordIds: string[]) => void;
-  values: SalesInvoiceFormValues;
-  onPreview: () => void;
-  onSubmit: () => void;
-};
+import { AppCopyFromDropdown } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
 
 export function SalesInvoiceActionHeader({
   copyFromRecords,

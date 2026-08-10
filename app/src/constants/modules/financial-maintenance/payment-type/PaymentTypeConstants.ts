@@ -9,10 +9,10 @@ import type {
 	PaymentTypeRecord,
 	PaymentTypeStatus,
 } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
-import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogData";
+import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
-export const PaymentTypeHref = MODULE_ROUTE_MAP.PT;
+export const PaymentTypeHref = getModuleRoute("PT");
 
 export const PaymentTypeApiPath = "/maintenance/payment-type-maintenance";
 
@@ -35,11 +35,11 @@ export const PaymentTypeTableColumns = [
 	{ key: "paymentType", label: "Payment Type Name", className: "w-[22%]" },
 	{ key: "description", label: "Description", className: "w-[28%]" },
 	{ key: "type", label: "Category", className: "w-[16%] text-center" },
-	{ key: "status", label: "Status", className: "w-[12%] text-center" },
 	{ key: "createdBy", label: "Created By", className: "w-[14%]" },
 	{ key: "createdAt", label: "Date Created", className: "w-[16%]" },
 	{ key: "updatedBy", label: "Updated By", className: "w-[14%]" },
 	{ key: "updatedAt", label: "Date Modified", className: "w-[16%]" },
+	{ key: "status", label: "Status", className: "w-[12%] text-center" },
 	{ label: "Action", className: "w-[16%] text-center" },
 ] as const;
 

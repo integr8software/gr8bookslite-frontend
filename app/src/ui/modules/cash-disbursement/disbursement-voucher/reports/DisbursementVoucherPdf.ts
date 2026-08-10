@@ -5,21 +5,16 @@ import { formatCurrency } from "@/app/src/data/modules/cash-disbursement/disburs
 import type {
   DisbursementLineEntry,
   DisbursementVoucherFormValues,
+  DisbursementVoucherPdfText,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 
 pdfMake.addVirtualFileSystem(pdfFonts);
 
-type PdfText = string | Array<string | { text: string; bold?: boolean }>;
-
-export function openDisbursementVoucherPdf(
-  values: DisbursementVoucherFormValues,
-) {
+export function openDisbursementVoucherPdf(values: DisbursementVoucherFormValues) {
   pdfMake.createPdf(createDisbursementVoucherPdfDefinition(values)).open();
 }
 
-function createDisbursementVoucherPdfDefinition(
-  values: DisbursementVoucherFormValues,
-): TDocumentDefinitions {
+function createDisbursementVoucherPdfDefinition(values: DisbursementVoucherFormValues): TDocumentDefinitions {
   return {
     pageSize: "A4",
     pageOrientation: "portrait",
@@ -101,9 +96,7 @@ function createHeaderTable(): TableCell {
   };
 }
 
-function createTitleAndDateRow(
-  values: DisbursementVoucherFormValues,
-): TableCell {
+function createTitleAndDateRow(values: DisbursementVoucherFormValues): TableCell {
   return {
     table: {
       widths: ["*", 220],
@@ -116,10 +109,7 @@ function createTitleAndDateRow(
             margin: [6, 7, 0, 6],
           },
           {
-            text: [
-              { text: "Check Voucher Date: ", bold: true },
-              formatShortDateLabel(values.voucherDate),
-            ],
+            text: [{ text: "Check Voucher Date: ", bold: true }, formatShortDateLabel(values.voucherDate)],
             margin: [4, 8, 4, 4],
           },
         ],
@@ -130,14 +120,10 @@ function createTitleAndDateRow(
 }
 
 function createPayeeRow(values: DisbursementVoucherFormValues): TableCell {
-  const checkOrReferenceNo =
-    values.paymentDetails.checkNo ||
-    values.paymentDetails.paymentReferenceNo ||
-    values.invoiceReferenceNo ||
-    "-";
+  const checkOrReferenceNo = values.paymentDetails.checkNo || values.paymentDetails.paymentReferenceNo || values.invoiceReferenceNo || "-";
 
   return createTwoColumnInfoRow(
-    [{ text: "PAY TO: ", bold: true }, values.vceName || "-"],
+    [{ text: "PAY TO: ", bold: true }, values.partyName || "-"],
     [{ text: "Check/DM No.: ", bold: true }, checkOrReferenceNo],
   );
 }
@@ -145,11 +131,7 @@ function createPayeeRow(values: DisbursementVoucherFormValues): TableCell {
 function createPesosRow(values: DisbursementVoucherFormValues): TableCell {
   const totalDebit = getTotalDebit(values);
   const totalCredit = getTotalCredit(values);
-  const voucherAmount = Math.max(
-    parseMoneyAmount(values.amount),
-    totalDebit,
-    totalCredit,
-  );
+  const voucherAmount = Math.max(parseMoneyAmount(values.amount), totalDebit, totalCredit);
 
   return createTwoColumnInfoRow(
     [{ text: "PESOS: ", bold: true }, formatPesosInWords(voucherAmount)],
@@ -157,10 +139,7 @@ function createPesosRow(values: DisbursementVoucherFormValues): TableCell {
   );
 }
 
-function createTwoColumnInfoRow(
-  leftText: PdfText,
-  rightText: PdfText,
-): TableCell {
+function createTwoColumnInfoRow(leftText: DisbursementVoucherPdfText, rightText: DisbursementVoucherPdfText): TableCell {
   return {
     table: {
       widths: ["*", 220],
@@ -183,10 +162,7 @@ function createTwoColumnInfoRow(
 
 function createForRow(values: DisbursementVoucherFormValues): TableCell {
   return {
-    text: [
-      { text: "FOR: ", bold: true },
-      values.remarks || values.disbursementType || "-",
-    ],
+    text: [{ text: "FOR: ", bold: true }, values.remarks || values.disbursementType || "-"],
     margin: [3, 3, 3, 3],
   };
 }
@@ -245,13 +221,10 @@ function createEntriesTable(values: DisbursementVoucherFormValues): TableCell {
   };
 }
 
-function createEntryRow(
-  entry: DisbursementLineEntry,
-  values: DisbursementVoucherFormValues,
-): TableCell[] {
+function createEntryRow(entry: DisbursementLineEntry, values: DisbursementVoucherFormValues): TableCell[] {
   return [
     bodyCell(formatAccountLabel(entry.accountCode, entry.accountName)),
-    bodyCell(entry.partyName || entry.partyCode || values.vceName || "-"),
+    bodyCell(entry.partyName || entry.partyCode || values.partyName || "-"),
     bodyCell(entry.particulars || "-"),
     bodyCell(entry.responsibilityCenter || values.costCenter || "-"),
     bodyCell(entry.debit ? formatCurrency(entry.debit) : "", "right"),
@@ -310,10 +283,7 @@ function createPaymentReceivedRow(): TableCell {
   };
 }
 
-function headerCell(
-  text: string,
-  alignment: "left" | "right" = "left",
-): TableCell {
+function headerCell(text: string, alignment: "left" | "right" = "left"): TableCell {
   return {
     text,
     bold: true,
@@ -322,10 +292,7 @@ function headerCell(
   };
 }
 
-function bodyCell(
-  text: string,
-  alignment: "left" | "right" = "left",
-): TableCell {
+function bodyCell(text: string, alignment: "left" | "right" = "left"): TableCell {
   return {
     text,
     alignment,
@@ -411,18 +378,7 @@ function numberToWords(value: number): string {
     "eighteen",
     "nineteen",
   ];
-  const tens = [
-    "",
-    "",
-    "twenty",
-    "thirty",
-    "forty",
-    "fifty",
-    "sixty",
-    "seventy",
-    "eighty",
-    "ninety",
-  ];
+  const tens = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"];
   const scales = ["", "thousand", "million", "billion"];
   const chunks: string[] = [];
   let remaining = Math.floor(value);

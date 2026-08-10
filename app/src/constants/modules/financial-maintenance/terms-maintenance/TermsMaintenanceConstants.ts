@@ -9,10 +9,10 @@ import type {
 } from "@/app/src/types/modules/financial-maintenance/terms-maintenance/TermsMaintenanceTypes";
 import { AppMaxFileUploadSizeBytes } from "@/app/src/constants/shared/app/AppConstants";
 import { ModuleImportFixedColumnsWidth } from "@/app/src/constants/shared/module/ModuleImportConstants";
-import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogData";
+import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
-export const TermsMaintenanceHref = MODULE_ROUTE_MAP.TM;
+export const TermsMaintenanceHref = getModuleRoute("TM");
 
 export const TermsMaintenanceApiPath = "/maintenance/terms-maintenance";
 
@@ -55,11 +55,6 @@ export const TermsMaintenanceTableColumns = [
 		className: "w-[11%] text-center",
 	},
 	{
-		key: "status",
-		label: "Status",
-		className: "w-[12%] text-center",
-	},
-	{
 		key: "createdBy",
 		label: "Created By",
 		className: "w-[14%]",
@@ -78,6 +73,11 @@ export const TermsMaintenanceTableColumns = [
 		key: "updatedAt",
 		label: "Date Modified",
 		className: "w-[16%]",
+	},
+	{
+		key: "status",
+		label: "Status",
+		className: "w-[12%] text-center",
 	},
 	{
 		label: "Action",

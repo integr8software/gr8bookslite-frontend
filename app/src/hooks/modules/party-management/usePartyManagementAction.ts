@@ -54,7 +54,7 @@ import type {
   AddressAutocompleteDetails,
   AddressAutocompleteItem,
 } from "@/app/src/types/shared/address/AddressTypes";
-import type { AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { todayDateValue } from "@/app/src/utils/date.util";
 
 export function usePartyManagementAction() {

@@ -5,10 +5,10 @@ import type {
 	BankMasterfileStatus,
 } from "@/app/src/types/modules/financial-maintenance/bank-masterfile/BankMasterfileTypes";
 import { AppMaxFileUploadSizeBytes } from "@/app/src/constants/shared/app/AppConstants";
-import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogData";
+import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
-export const BankMasterfileHref = MODULE_ROUTE_MAP.BM;
+export const BankMasterfileHref = getModuleRoute("BM");
 
 export const BankMasterfileApiPath =
 	"/maintenance/financial-management/bank-masterfile";
@@ -42,11 +42,11 @@ export const BankMasterfileTableColumns = [
 	{ key: "accountTitle", label: "Account Title", className: "w-[26%]" },
 	{ key: "currencyCode", label: "Currency", className: "w-[10%] text-center" },
 	{ key: "isDefault", label: "Default", className: "w-[10%] text-center" },
-	{ key: "status", label: "Status", className: "w-[11%] text-center" },
 	{ key: "createdBy", label: "Created By", className: "w-[14%]" },
 	{ key: "createdAt", label: "Date Created", className: "w-[16%]" },
 	{ key: "updatedBy", label: "Updated By", className: "w-[14%]" },
 	{ key: "updatedAt", label: "Date Modified", className: "w-[16%]" },
+	{ key: "status", label: "Status", className: "w-[11%] text-center" },
 	{ label: "Action", className: "w-[16%] text-center" },
 ] as const;
 

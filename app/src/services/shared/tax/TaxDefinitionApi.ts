@@ -1,32 +1,11 @@
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
-import type {
-  TaxDefinition,
-  TaxDefinitionLookup,
-} from "@/app/src/types/shared/tax/TaxDefinitionTypes";
+import type { ApiTaxDefinitionLookup, TaxDefinitionLookup } from "@/app/src/types/shared/tax/TaxDefinitionTypes";
 
 const TaxDefinitionsApiPath = "/tax";
 
-type ApiTaxDefinition = {
-  id: string;
-  name?: string | null;
-  percentage?: number | string | null;
-  sortOrder?: number | null;
-  treatment: TaxDefinition["treatment"];
-  transactionScope: TaxDefinition["transactionScope"];
-  status: "ACTIVE" | "INACTIVE";
-};
-
-type ApiTaxDefinitionLookup = {
-  taxes: ApiTaxDefinition[];
-  accountOptions: TaxDefinitionLookup["accountOptions"];
-  defaultAccountIds: TaxDefinitionLookup["defaultAccountIds"];
-};
-
 export const TaxDefinitionQueryKeys = {
-  all: (companyId?: number | null) =>
-    ["taxDefinitions", companyId ?? "no-company"] as const,
-  lookup: (companyId?: number | null) =>
-    [...TaxDefinitionQueryKeys.all(companyId), "lookup"] as const,
+  all: (companyId?: number | null) => ["taxDefinitions", companyId ?? "no-company"] as const,
+  lookup: (companyId?: number | null) => [...TaxDefinitionQueryKeys.all(companyId), "lookup"] as const,
 };
 
 export async function fetchTaxDefinitions(): Promise<TaxDefinitionLookup> {

@@ -14,7 +14,10 @@ const DropdownMenuMinHeight = 96;
 const DropdownPointerBoundaryPadding = 24;
 const DropdownMenuViewportPadding = 8;
 
-export function getPortalStyle(root: HTMLDivElement | null): CSSProperties | undefined {
+export function getPortalStyle(
+	root: HTMLDivElement | null,
+	menuMinWidth = 0,
+): CSSProperties | undefined {
 	if (!root || typeof window === "undefined") {
 		return undefined;
 	}
@@ -23,7 +26,7 @@ export function getPortalStyle(root: HTMLDivElement | null): CSSProperties | und
 	const viewportHeight = window.innerHeight;
 	const viewportWidth = window.innerWidth;
 	const availableWidth = Math.max(0, viewportWidth - DropdownMenuViewportPadding * 2);
-	const width = Math.min(rect.width, availableWidth);
+	const width = Math.min(Math.max(rect.width, menuMinWidth), availableWidth);
 	const maxLeft = Math.max(
 		DropdownMenuViewportPadding,
 		viewportWidth - DropdownMenuViewportPadding - width,

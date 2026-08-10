@@ -5,29 +5,15 @@ import {
 	CanvassFormPageCopy,
 } from "@/app/src/constants/modules/purchasing/canvass-form/CanvassFormConstants";
 import type {
+	CanvassFormFormHeaderProps,
 	CanvassFormMode,
-	CanvassFormValues,
 } from "@/app/src/types/modules/purchasing/canvass-form/CanvassFormTypes";
 import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
-import {
-	AppCopyFromDropdown,
-	type AppCopyFromRecord,
-} from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
-
-type CanvassFormFormHeaderProps = {
-	copyFromRecords: AppCopyFromRecord[];
-	isSubmitting?: boolean;
-	mode: CanvassFormMode;
-	recordId?: string;
-	values: CanvassFormValues;
-	onCopyFromPurchaseRequest: (recordIds: string[]) => void;
-	onPreview: () => void;
-	onSubmit: () => void;
-};
+import { AppCopyFromDropdown } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
 
 export function CanvassFormFormHeader({
 	copyFromRecords,

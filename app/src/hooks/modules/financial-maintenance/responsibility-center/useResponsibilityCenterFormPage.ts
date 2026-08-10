@@ -19,15 +19,16 @@ import { validateResponsibilityCenterForm } from "@/app/src/validations/modules/
 
 type ResponsibilityCenterFormPageOptions = {
   center?: ResponsibilityCenter;
+  initialValues?: ResponsibilityCenterFormValues;
   mode: ResponsibilityCenterActionMode;
-  onSaved?: () => void;
+  onSaved?: (center: ResponsibilityCenter) => void;
 };
 
-export function useResponsibilityCenterFormPage({ center, mode, onSaved }: ResponsibilityCenterFormPageOptions) {
+export function useResponsibilityCenterFormPage({ center, initialValues, mode, onSaved }: ResponsibilityCenterFormPageOptions) {
   const store = useResponsibilityCenterStore();
   const isReadonly = mode === "view";
   const [errors, setErrors] = useState<ResponsibilityCenterFormErrors>({});
-  const [values, setValues] = useState(() => (center ? createResponsibilityCenterFormValues(center) : ResponsibilityCenterInitialFormValues));
+  const [values, setValues] = useState(() => (center ? createResponsibilityCenterFormValues(center) : (initialValues ?? ResponsibilityCenterInitialFormValues)));
   const [hasManualCode, setHasManualCode] = useState(Boolean(center?.code));
   const parentOptions = useMemo(() => store.centers.filter(({ id, status }) => id !== center?.id && status === "Active"), [store.centers, center?.id]);
   const typeOptions = useMemo(() => store.types.filter((type) => type.classificationId === values.classificationId), [store.types, values.classificationId]);
@@ -131,12 +132,14 @@ export function useResponsibilityCenterFormPage({ center, mode, onSaved }: Respo
 
     try {
       if (mode === "edit" && center) {
-        await store.updateCenter(updateResponsibilityCenterFromForm(center, values));
-      } else {
-        await store.addCenter(createResponsibilityCenterFromForm(values));
-      }
+        const savedCenter = await store.updateCenter(updateResponsibilityCenterFromForm(center, values));
 
-      onSaved?.();
+        onSaved?.(savedCenter);
+      } else {
+        const savedCenter = await store.addCenter(createResponsibilityCenterFromForm(values));
+
+        onSaved?.(savedCenter);
+      }
     } catch {
       // Mutation handlers surface the error toast.
     }

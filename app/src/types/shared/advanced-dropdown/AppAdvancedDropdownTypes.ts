@@ -33,6 +33,7 @@ export type AppAdvancedDropdownProps = {
 	id?: string;
 	isClearable?: boolean;
 	isSearchable?: boolean;
+	menuMinWidth?: number;
 	name?: string;
 	menuPortal?: boolean;
 	optionViewToggle?: boolean;

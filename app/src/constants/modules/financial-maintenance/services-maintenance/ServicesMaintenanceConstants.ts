@@ -1,5 +1,5 @@
 import type { SortingState, VisibilityState } from "@tanstack/react-table";
-import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogData";
+import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type {
   ServicesMaintenance,
   ServicesMaintenanceAccountSetupMode,
@@ -12,7 +12,7 @@ import { AppMaxFileUploadSizeBytes } from "@/app/src/constants/shared/app/AppCon
 import { ModuleImportFixedColumnsWidth } from "@/app/src/constants/shared/module/ModuleImportConstants";
 import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
-export const ServicesMaintenanceHref = MODULE_ROUTE_MAP.SM;
+export const ServicesMaintenanceHref = getModuleRoute("SM");
 export const ServicesMaintenanceApiPath = "/maintenance/financial-management/services-maintenance";
 export const ServicesMaintenanceParentLabel = "Accounting master data";
 export const ServicesMaintenanceTitle = "Services Maintenance";
@@ -43,11 +43,11 @@ export const ServicesMaintenanceTableColumns = [
   { key: "description", label: "Description", className: "w-[22%]" },
   { key: "revenueAccountCode", label: "Account Code", className: "w-[12%]" },
   { key: "revenueAccountTitle", label: "Account Title", className: "w-[24%]" },
-  { key: "status", label: "Status", className: "w-[11%] text-center" },
   { key: "createdBy", label: "Created By", className: "w-[14%]" },
   { key: "createdAt", label: "Date Created", className: "w-[16%]" },
   { key: "updatedBy", label: "Updated By", className: "w-[14%]" },
   { key: "updatedAt", label: "Date Modified", className: "w-[16%]" },
+  { key: "status", label: "Status", className: "w-[11%] text-center" },
   { label: "Action", className: "w-[16%] text-center" },
 ] as const;
 

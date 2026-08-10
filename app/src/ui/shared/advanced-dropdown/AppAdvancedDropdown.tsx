@@ -61,6 +61,7 @@ export function AppAdvancedDropdown({
 	id,
 	isClearable = true,
 	isSearchable = true,
+	menuMinWidth,
 	menuPortal = true,
 	name,
 	optionViewToggle = false,
@@ -227,7 +228,7 @@ export function AppAdvancedDropdown({
 		}
 
 		function updatePortalStyle() {
-			const nextStyle = getPortalStyle(rootRef.current);
+			const nextStyle = getPortalStyle(rootRef.current, menuMinWidth);
 
 			if (nextStyle) {
 				setPortalStyle(nextStyle);
@@ -252,7 +253,7 @@ export function AppAdvancedDropdown({
 			window.removeEventListener("resize", updatePortalStyle);
 			window.removeEventListener("scroll", handleScroll, true);
 		};
-	}, [isOpen, menuPortal]);
+	}, [isOpen, menuMinWidth, menuPortal]);
 
 	useEffect(() => {
 		if (!isOpen || !activeOptionId) {
@@ -304,7 +305,7 @@ export function AppAdvancedDropdown({
 		}
 
 		if (menuPortal) {
-			const nextStyle = getPortalStyle(rootRef.current);
+			const nextStyle = getPortalStyle(rootRef.current, menuMinWidth);
 
 			if (nextStyle) {
 				setPortalStyle(nextStyle);

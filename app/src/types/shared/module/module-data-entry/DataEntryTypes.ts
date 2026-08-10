@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactNode, RefObject } from "react";
 import type { LucideIcon } from "lucide-react";
 
 export type ModuleDataEntryColumn<TRow> = {
@@ -110,6 +110,35 @@ export type ModuleDataEntryProps<TRow extends { id: string }> = {
   onPasteCells?: (target: ModuleDataEntryCellTarget, rows: string[][]) => void;
   onToggleColumnRequired?: (columnId: string, isRequired: boolean) => void;
   onToggleColumnVisibility?: (columnId: string, isVisible: boolean) => void;
+  onUpdateColumnHeader?: (columnId: string, header: string) => void;
+  onUpdateColumnWidth?: (columnId: string, width: number) => void;
+};
+
+export type ModuleDataEntryTableProps<TRow extends { id: string }> = {
+  columns: ModuleDataEntryColumn<TRow>[];
+  emptyRowLabel: string;
+  getCellValue?: (row: TRow, columnId: string) => string;
+  canConfigureColumnsWhenReadonly: boolean;
+  isDraggable: boolean;
+  isReadonly: boolean;
+  isRowNumberColumnFixed: boolean;
+  rows: TRow[];
+  scrollContainerRef: RefObject<HTMLDivElement | null>;
+  summaryCells?: Record<string, ReactNode>;
+  summaryRowHeader?: ReactNode;
+  onAddRows: (count: number) => void;
+  onAutoColumnWidth?: (columnId: string) => void;
+  onClearCell?: (rowId: string, columnId: string) => void;
+  onClearRow?: (rowId: string) => void;
+  onDuplicateRow: (rowId: string) => void;
+  onFitColumnWidth?: (columnId: string) => void;
+  onInsertRow: (rowId: string, position: "above" | "below") => void;
+  onHideColumn?: (columnId: string) => void;
+  onMoveColumn?: (fromColumnId: string, toColumnId: string) => void;
+  onMoveRow: (fromRowId: string, toRowId: string) => void;
+  onPasteCells?: (target: ModuleDataEntryCellTarget, rows: string[][]) => void;
+  onRemoveColumn?: (columnId: string) => void;
+  onRemoveRow: (rowId: string) => void;
   onUpdateColumnHeader?: (columnId: string, header: string) => void;
   onUpdateColumnWidth?: (columnId: string, width: number) => void;
 };

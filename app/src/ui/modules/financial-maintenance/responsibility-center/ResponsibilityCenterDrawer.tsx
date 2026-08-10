@@ -29,7 +29,7 @@ import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOpt
 export function ResponsibilityCenterDrawer(props: ResponsibilityCenterDrawerProps) {
 	return (
 		<ResponsibilityCenterDrawerPanel
-			key={`${props.mode}-${props.center?.id ?? "new"}`}
+			key={`${props.mode}-${props.center?.id ?? "new"}-${props.initialValues?.classificationId ?? ""}-${props.initialValues?.typeId ?? ""}`}
 			{...props}
 		/>
 	);
@@ -37,14 +37,20 @@ export function ResponsibilityCenterDrawer(props: ResponsibilityCenterDrawerProp
 
 function ResponsibilityCenterDrawerPanel({
 	center,
+	initialValues,
 	isOpen,
 	mode,
 	onClose,
+	onSaved,
 }: ResponsibilityCenterDrawerProps) {
 	const page = useResponsibilityCenterFormPage({
 		center,
+		initialValues,
 		mode,
-		onSaved: onClose,
+		onSaved: (savedCenter) => {
+			onSaved?.(savedCenter);
+			onClose();
+		},
 	});
 	const copy = ResponsibilityCenterActionCopy[mode];
 

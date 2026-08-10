@@ -16,7 +16,7 @@ import { DeliveryReceiptNotFound } from "@/app/src/ui/modules/inventory/delivery
 import { openDeliveryReceiptPdf } from "@/app/src/ui/modules/inventory/delivery-receipt/reports/DeliveryReceiptPdf";
 import { DeliveryReceiptReportPreview } from "@/app/src/ui/modules/inventory/delivery-receipt/reports/DeliveryReceiptReportPreview";
 import { ModuleTabs, type ModuleTabItem } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
-import type { AppCopyFromRecord } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
+import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 
 export function DeliveryReceiptActionPage() {
   const params = useParams<{ recordId?: string }>();

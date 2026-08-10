@@ -3,7 +3,7 @@ import { ArrowLeft, Save, X } from "lucide-react";
 import { ServiceInvoiceHref } from "@/app/src/constants/modules/sales/service-invoice/ServiceInvoiceConstants";
 import type {
 	ServiceInvoiceActionMode,
-	ServiceInvoiceFormValues,
+	ServiceInvoiceFormHeaderProps,
 } from "@/app/src/types/modules/sales/service-invoice/ServiceInvoiceTypes";
 import {
 	ModuleHeader,
@@ -14,17 +14,8 @@ import {
 	type ModuleActionMenuItem,
 } from "@/app/src/ui/shared/module/ModuleActionMenu";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
-import {
-	AppCopyFromDropdown,
-	type AppCopyFromRecord,
-} from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
-
-type ServiceInvoiceFormHeaderProps = {
-	mode: ServiceInvoiceActionMode;
-	onPreview: () => void;
-	values: ServiceInvoiceFormValues;
-	onSubmit: () => void;
-};
+import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
+import { AppCopyFromDropdown } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
 
 export function ServiceInvoiceFormHeader({
 	mode,

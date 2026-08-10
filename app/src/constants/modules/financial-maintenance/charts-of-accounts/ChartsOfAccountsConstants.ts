@@ -14,10 +14,10 @@ import type {
   NormalBalance,
 } from "@/app/src/types/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 import { BankMasterfileCashInBankAccountTitle } from "@/app/src/constants/modules/financial-maintenance/bank-masterfile/BankMasterfileConstants";
-import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogData";
+import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
-export const ChartsOfAccountsHref = MODULE_ROUTE_MAP.COA;
+export const ChartsOfAccountsHref = getModuleRoute("COA");
 export const ChartsOfAccountsAccountNamePlaceholder = `${BankMasterfileCashInBankAccountTitle} - Bank Name`;
 
 export const ChartsOfAccountsAccountTitleSeparators = [
@@ -117,11 +117,11 @@ export const ChartsOfAccountsTableColumns: Array<{
   { label: "Statement Section", key: "statementSection", className: "text-center", size: 160 },
   { label: "Account Nature", key: "normalBalance", className: "text-center", size: 140 },
   { label: "Report Alias", key: "reportAlias", className: "text-center", size: 200 },
-  { label: "Status", key: "status", className: "text-center", size: 100 },
   { label: "Created By", key: "createdBy", className: "text-left", size: 160 },
   { label: "Date Created", key: "createdAt", className: "text-left", size: 180 },
   { label: "Updated By", key: "updatedBy", className: "text-left", size: 160 },
   { label: "Date Modified", key: "updatedAt", className: "text-left", size: 180 },
+  { label: "Status", key: "status", className: "text-center", size: 100 },
   { label: "Actions", className: "text-center", size: 120 },
 ];
 
@@ -186,11 +186,11 @@ export const ChartsOfAccountsExportColumns: ModuleTableExportColumn<FlattenedCha
       id: "description",
       value: (row) => row.account.description,
     },
-    { header: "Status", id: "status", value: (row) => row.account.status },
     { header: "Created By", id: "createdBy", value: (row) => row.account.createdBy },
     { header: "Date Created", id: "createdAt", value: (row) => row.account.createdAt },
     { header: "Updated By", id: "updatedBy", value: (row) => row.account.updatedBy },
     { header: "Date Modified", id: "updatedAt", value: (row) => row.account.updatedAt },
+    { header: "Status", id: "status", value: (row) => row.account.status },
     {
       header: "Posting Account",
       id: "isPostingAccount",

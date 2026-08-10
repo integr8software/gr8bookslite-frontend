@@ -19,12 +19,12 @@ import type {
 } from "@/app/src/types/modules/party-management/PartyManagementTypes";
 import {
 	AppAdvancedDropdown,
-	type AppAdvancedDropdownOption,
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import type {
 	AddressAutocompleteDetails,
 	AddressAutocompleteItem,
 } from "@/app/src/types/shared/address/AddressTypes";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { AppAddressAutocomplete } from "@/app/src/ui/shared/address/AppAddressAutocomplete";
 
 export function PartyAddressContainer({
@@ -299,106 +299,112 @@ function AddressFields({
 				/>
 			)}
 			{!address.isForeign ? (
-				<div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1.25fr)]">
-					<AddressSelectField
-						disabled={disabled || options.isProvincesLoading}
-						error={getRequiredAddressFieldError(
-							errors.provinceCode,
-							address.provinceCode,
-						)}
-						label="Province"
-						id={getAddressControlId(sectionKey, address.id, "provinceCode")}
-						options={options.provinceOptions}
-						placeholder={
-							options.isProvincesLoading
-								? "Loading provinces"
-								: "--Select Province--"
-						}
-						required
-						value={address.provinceCode}
-						onChange={(value) => onSelectProvince(value, address.id)}
-						onSelectOption={(option) =>
-							onSelectProvince(option.value, address.id, option)
-						}
-					/>
-					<AddressSelectField
-						disabled={
-							disabled ||
-							options.isCitiesMunicipalitiesLoading ||
-							!address.provinceCode
-						}
-						error={getRequiredAddressFieldError(
-							errors.cityMunicipalityCode,
-							address.cityMunicipalityCode,
-						)}
-						label="City/Municipality"
-						id={getAddressControlId(
-							sectionKey,
-							address.id,
-							"cityMunicipalityCode",
-						)}
-						options={options.cityMunicipalityOptions}
-						placeholder={
-							!address.provinceCode
-								? "--Select Province First--"
-								: options.isCitiesMunicipalitiesLoading
-									? "Loading cities"
-									: "--Select City--"
-						}
-						required
-						value={address.cityMunicipalityCode}
-						onChange={(value) => onSelectCityMunicipality(value, address.id)}
-						onSelectOption={(option) =>
-							onSelectCityMunicipality(option.value, address.id, option)
-						}
-					/>
-					<AddressSelectField
-						disabled={
-							disabled ||
-							options.isBarangaysLoading ||
-							!address.cityMunicipalityCode
-						}
-						error={getRequiredAddressFieldError(
-							errors.barangayCode,
-							address.barangayCode,
-						)}
-						label="Barangay"
-						id={getAddressControlId(sectionKey, address.id, "barangayCode")}
-						options={options.barangayOptions}
-						placeholder={
-							!address.cityMunicipalityCode
-								? "--Select City First--"
-								: options.isBarangaysLoading
-									? "Loading barangays"
-									: "--Select Barangay--"
-						}
-						required
-						value={address.barangayCode}
-						onChange={(value) => onSelectBarangay(value, address.id)}
-						onSelectOption={(option) =>
-							onSelectBarangay(option.value, address.id, option)
-						}
-					/>
-					<AddressInput
-						addressId={address.id}
-						disabled={disabled}
-						error={errors.addressLine2}
-						id={getAddressControlId(sectionKey, address.id, "addressLine2")}
-						label="Street, Subdivision, Village"
-						name="addressLine2"
-						value={address.addressLine2}
-						onChange={onAddressInputChange}
-					/>
-					<AddressInput
-						addressId={address.id}
-						disabled={disabled}
-						error={errors.addressLine1}
-						id={getAddressControlId(sectionKey, address.id, "addressLine1")}
-						label="Unit, Block, Lot, Building"
-						name="addressLine1"
-						value={address.addressLine1}
-						onChange={onAddressInputChange}
-					/>
+				<div className="grid gap-4">
+					<div className="grid gap-3 md:grid-cols-3">
+						<AddressSelectField
+							disabled={disabled || options.isProvincesLoading}
+							error={getRequiredAddressFieldError(
+								errors.provinceCode,
+								address.provinceCode,
+							)}
+							label="Province"
+							id={getAddressControlId(sectionKey, address.id, "provinceCode")}
+							options={options.provinceOptions}
+							placeholder={
+								options.isProvincesLoading
+									? "Loading provinces"
+									: "--Select Province--"
+							}
+							required
+							value={address.provinceCode}
+							onChange={(value) => onSelectProvince(value, address.id)}
+							onSelectOption={(option) =>
+								onSelectProvince(option.value, address.id, option)
+							}
+						/>
+						<AddressSelectField
+							disabled={
+								disabled ||
+								options.isCitiesMunicipalitiesLoading ||
+								!address.provinceCode
+							}
+							error={getRequiredAddressFieldError(
+								errors.cityMunicipalityCode,
+								address.cityMunicipalityCode,
+							)}
+							label="City/Municipality"
+							id={getAddressControlId(
+								sectionKey,
+								address.id,
+								"cityMunicipalityCode",
+							)}
+							options={options.cityMunicipalityOptions}
+							placeholder={
+								!address.provinceCode
+									? "--Select Province First--"
+									: options.isCitiesMunicipalitiesLoading
+										? "Loading cities"
+										: "--Select City--"
+							}
+							required
+							value={address.cityMunicipalityCode}
+							onChange={(value) => onSelectCityMunicipality(value, address.id)}
+							onSelectOption={(option) =>
+								onSelectCityMunicipality(option.value, address.id, option)
+							}
+						/>
+						<AddressSelectField
+							disabled={
+								disabled ||
+								options.isBarangaysLoading ||
+								!address.cityMunicipalityCode
+							}
+							error={getRequiredAddressFieldError(
+								errors.barangayCode,
+								address.barangayCode,
+							)}
+							label="Barangay"
+							id={getAddressControlId(sectionKey, address.id, "barangayCode")}
+							options={options.barangayOptions}
+							placeholder={
+								!address.cityMunicipalityCode
+									? "--Select City First--"
+									: options.isBarangaysLoading
+										? "Loading barangays"
+										: "--Select Barangay--"
+							}
+							required
+							value={address.barangayCode}
+							onChange={(value) => onSelectBarangay(value, address.id)}
+							onSelectOption={(option) =>
+								onSelectBarangay(option.value, address.id, option)
+							}
+						/>
+					</div>
+					<div className="grid gap-3 md:grid-cols-2">
+						<AddressInput
+							addressId={address.id}
+							disabled={disabled}
+							error={errors.addressLine2}
+							id={getAddressControlId(sectionKey, address.id, "addressLine2")}
+							label="Street / Subdivision / Village"
+							name="addressLine2"
+							placeholder="Street name, subdivision, or village"
+							value={address.addressLine2}
+							onChange={onAddressInputChange}
+						/>
+						<AddressInput
+							addressId={address.id}
+							disabled={disabled}
+							error={errors.addressLine1}
+							id={getAddressControlId(sectionKey, address.id, "addressLine1")}
+							label="Unit / Block / Lot / Building"
+							name="addressLine1"
+							placeholder="Unit, block, lot, floor, or building"
+							value={address.addressLine1}
+							onChange={onAddressInputChange}
+						/>
+					</div>
 				</div>
 			) : null}
 		</div>

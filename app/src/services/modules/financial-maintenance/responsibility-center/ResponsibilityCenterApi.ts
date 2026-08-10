@@ -22,12 +22,12 @@ import type {
   ResponsibilityCenterClassification,
   ResponsibilityCenterFinancialType,
   ResponsibilityCenterFormValues,
-  ResponsibilityCenterListResponse,
+  ResponsibilityCenterListResult,
   ResponsibilityCenterStatus,
   ResponsibilityCenterTypeOption,
 } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
 
-export async function fetchResponsibilityCenters(): Promise<ResponsibilityCenterListResponse> {
+export async function fetchResponsibilityCenters(): Promise<ResponsibilityCenterListResult> {
   const response = await responsibilityCenterControllerFindAllV1({
     limit: 500,
   });
@@ -39,20 +39,14 @@ export async function fetchResponsibilityCenters(): Promise<ResponsibilityCenter
   };
 }
 
-export async function fetchResponsibilityCenterClassifications(): Promise<
-  ResponsibilityCenterClassification[]
-> {
+export async function fetchResponsibilityCenterClassifications(): Promise<ResponsibilityCenterClassification[]> {
   const response = await responsibilityCenterControllerFindClassificationsV1();
 
   return response.classifications.map(mapApiResponsibilityCenterClassification);
 }
 
-export async function fetchResponsibilityCenterTypes(
-  classificationId?: string,
-): Promise<ResponsibilityCenterTypeOption[]> {
-  const response = await responsibilityCenterControllerFindTypesV1(
-    classificationId ? { classificationId } : undefined,
-  );
+export async function fetchResponsibilityCenterTypes(classificationId?: string): Promise<ResponsibilityCenterTypeOption[]> {
+  const response = await responsibilityCenterControllerFindTypesV1(classificationId ? { classificationId } : undefined);
 
   return response.types.map(mapApiResponsibilityCenterType);
 }
@@ -68,27 +62,18 @@ export async function fetchResponsibilityCenterCodeSuggestion(typeId: string): P
 export async function createResponsibilityCenter(
   values: ResponsibilityCenterFormValues | ResponsibilityCenter,
 ): Promise<ResponsibilityCenter> {
-  const response = await responsibilityCenterControllerCreateV1(
-    toApiResponsibilityCenterPayload(values),
-  );
+  const response = await responsibilityCenterControllerCreateV1(toApiResponsibilityCenterPayload(values));
 
   return mapApiResponsibilityCenter(response.center);
 }
 
-export async function updateResponsibilityCenter(
-  center: ResponsibilityCenter,
-): Promise<ResponsibilityCenter> {
-  const response = await responsibilityCenterControllerUpdateV1(
-    center.id,
-    toApiResponsibilityCenterPayload(center),
-  );
+export async function updateResponsibilityCenter(center: ResponsibilityCenter): Promise<ResponsibilityCenter> {
+  const response = await responsibilityCenterControllerUpdateV1(center.id, toApiResponsibilityCenterPayload(center));
 
   return mapApiResponsibilityCenter(response.center);
 }
 
-export async function updateResponsibilityCenterStatus(
-  center: ResponsibilityCenter,
-): Promise<ResponsibilityCenter> {
+export async function updateResponsibilityCenterStatus(center: ResponsibilityCenter): Promise<ResponsibilityCenter> {
   const response = await responsibilityCenterControllerUpdateStatusV1(center.id, {
     status: mapStatusToApi(center.status),
   });
@@ -133,9 +118,7 @@ function mapApiResponsibilityCenterClassification(
   };
 }
 
-function mapApiResponsibilityCenterType(
-  type: ResponsibilityCenterTypeResponseDto,
-): ResponsibilityCenterTypeOption {
+function mapApiResponsibilityCenterType(type: ResponsibilityCenterTypeResponseDto): ResponsibilityCenterTypeOption {
   return {
     id: type.id,
     classificationId: type.classificationId,
@@ -150,9 +133,7 @@ function mapApiResponsibilityCenterType(
   };
 }
 
-function toApiResponsibilityCenterPayload(
-  center: ResponsibilityCenterFormValues | ResponsibilityCenter,
-): CreateResponsibilityCenterDto {
+function toApiResponsibilityCenterPayload(center: ResponsibilityCenterFormValues | ResponsibilityCenter): CreateResponsibilityCenterDto {
   return {
     code: center.code.trim().toUpperCase(),
     name: center.name.trim(),
@@ -165,15 +146,8 @@ function toApiResponsibilityCenterPayload(
   };
 }
 
-function mapFinancialTypeFromLabel(
-  value: ResponsibilityCenterResponseDtoFinancialType | string,
-): ResponsibilityCenterFinancialType {
-  if (
-    value === "COST_CENTER" ||
-    value === "PROFIT_CENTER" ||
-    value === "REVENUE_CENTER" ||
-    value === "INVESTMENT_CENTER"
-  ) {
+function mapFinancialTypeFromLabel(value: ResponsibilityCenterResponseDtoFinancialType | string): ResponsibilityCenterFinancialType {
+  if (value === "COST_CENTER" || value === "PROFIT_CENTER" || value === "REVENUE_CENTER" || value === "INVESTMENT_CENTER") {
     return mapFinancialTypeFromApi(value);
   }
 
@@ -185,8 +159,7 @@ function mapFinancialTypeFromLabel(
 }
 
 function mapCategoryFromApi(value: string, typeName?: string): ResponsibilityCenterCategory {
-  return (typeName?.trim() ||
-    formatResponsibilityCenterCategory(value)) as ResponsibilityCenterCategory;
+  return (typeName?.trim() || formatResponsibilityCenterCategory(value)) as ResponsibilityCenterCategory;
 }
 
 function formatResponsibilityCenterCategory(value: string) {
@@ -197,13 +170,8 @@ function formatResponsibilityCenterCategory(value: string) {
     .join(" ");
 }
 
-function mapFinancialTypeFromApi(
-  value: ResponsibilityCenterResponseDtoFinancialType,
-): ResponsibilityCenterFinancialType {
-  const financialTypes: Record<
-    ResponsibilityCenterResponseDtoFinancialType,
-    ResponsibilityCenterFinancialType
-  > = {
+function mapFinancialTypeFromApi(value: ResponsibilityCenterResponseDtoFinancialType): ResponsibilityCenterFinancialType {
+  const financialTypes: Record<ResponsibilityCenterResponseDtoFinancialType, ResponsibilityCenterFinancialType> = {
     COST_CENTER: "Cost Center",
     PROFIT_CENTER: "Profit Center",
     REVENUE_CENTER: "Revenue Center",
@@ -213,9 +181,7 @@ function mapFinancialTypeFromApi(
   return financialTypes[value];
 }
 
-function mapStatusFromApi(
-  value: ResponsibilityCenterResponseDtoStatus,
-): ResponsibilityCenterStatus {
+function mapStatusFromApi(value: ResponsibilityCenterResponseDtoStatus): ResponsibilityCenterStatus {
   return value === "ACTIVE" ? "Active" : "Inactive";
 }
 

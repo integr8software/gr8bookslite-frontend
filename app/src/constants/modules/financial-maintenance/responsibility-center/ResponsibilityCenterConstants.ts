@@ -8,10 +8,10 @@ import type {
 	ResponsibilityCenter,
 	ResponsibilityCenterStatus,
 } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
-import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogData";
+import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
-export const ResponsibilityCenterHref = MODULE_ROUTE_MAP.RC;
+export const ResponsibilityCenterHref = getModuleRoute("RC");
 
 export const ResponsibilityCenterApiPath =
 	"/maintenance/financial-management/responsibility-centers";
@@ -69,11 +69,6 @@ export const ResponsibilityCenterTableColumns = [
 		className: "w-[12rem]",
 	},
 	{
-		key: "status",
-		label: "Status",
-		className: "w-[9rem] text-center",
-	},
-	{
 		key: "createdBy",
 		label: "Created By",
 		className: "w-[12rem]",
@@ -92,6 +87,11 @@ export const ResponsibilityCenterTableColumns = [
 		key: "updatedAt",
 		label: "Updated At",
 		className: "w-[12rem]",
+	},
+	{
+		key: "status",
+		label: "Status",
+		className: "w-[9rem] text-center",
 	},
 	{
 		label: "Actions",
@@ -146,7 +146,6 @@ export const ResponsibilityCenterExportColumns: ModuleTableExportColumn<Responsi
 		},
 		{ id: "category", header: "Type", value: "category" },
 		{ id: "manager", header: "Manager", value: "manager" },
-		{ id: "status", header: "Status", value: "status" },
 		{
 			id: "createdBy",
 			header: "Created By",
@@ -167,6 +166,7 @@ export const ResponsibilityCenterExportColumns: ModuleTableExportColumn<Responsi
 			header: "Updated At",
 			value: "updatedAt",
 		},
+		{ id: "status", header: "Status", value: "status" },
 	];
 
 export const ResponsibilityCenterCategoryOptions: ResponsibilityCenterCategory[] =

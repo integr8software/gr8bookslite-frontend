@@ -1,11 +1,4 @@
-import type { ReactNode } from "react";
-
-type CurrencyExchangeRateRowProps = {
-  currencyControl: ReactNode;
-  currencyLabel?: string;
-  exchangeRateControl: ReactNode;
-  exchangeRateLabel?: string;
-};
+import type { CurrencyExchangeRateRowProps } from "@/app/src/types/shared/app/CurrencyExchangeRateRowTypes";
 
 export function CurrencyExchangeRateRow({
   currencyControl,

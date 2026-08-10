@@ -5,10 +5,10 @@ import { ResponsibilityCenterListPage } from "@/app/src/ui/modules/financial-mai
 const PageTitle = "Responsibility Center";
 
 export const metadata: Metadata = {
-	title: `${PageTitle} | ${AppName}`,
-	description: `${PageTitle} page for ${AppName}.`,
+  title: `${PageTitle} | ${AppName}`,
+  description: `${PageTitle} page for ${AppName}.`,
 };
 
 export default function MaintenanceFinancialManagementResponsibilityCenterPage() {
-	return <ResponsibilityCenterListPage />;
+  return <ResponsibilityCenterListPage />;
 }

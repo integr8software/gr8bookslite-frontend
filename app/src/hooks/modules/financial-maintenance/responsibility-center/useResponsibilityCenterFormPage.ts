@@ -28,10 +28,18 @@ export function useResponsibilityCenterFormPage({ center, initialValues, mode, o
   const store = useResponsibilityCenterStore();
   const isReadonly = mode === "view";
   const [errors, setErrors] = useState<ResponsibilityCenterFormErrors>({});
-  const [values, setValues] = useState(() => (center ? createResponsibilityCenterFormValues(center) : (initialValues ?? ResponsibilityCenterInitialFormValues)));
+  const [values, setValues] = useState(() =>
+    center ? createResponsibilityCenterFormValues(center) : (initialValues ?? ResponsibilityCenterInitialFormValues),
+  );
   const [hasManualCode, setHasManualCode] = useState(Boolean(center?.code));
-  const parentOptions = useMemo(() => store.centers.filter(({ id, status }) => id !== center?.id && status === "Active"), [store.centers, center?.id]);
-  const typeOptions = useMemo(() => store.types.filter((type) => type.classificationId === values.classificationId), [store.types, values.classificationId]);
+  const parentOptions = useMemo(
+    () => store.centers.filter(({ id, status }) => id !== center?.id && status === "Active"),
+    [store.centers, center?.id],
+  );
+  const typeOptions = useMemo(
+    () => store.types.filter((type) => type.classificationId === values.classificationId),
+    [store.types, values.classificationId],
+  );
   const nameLabel = values.classificationId && values.financialType ? `${values.financialType} Name` : "Name";
   const codePlaceholder = useMemo(() => {
     const selectedType = store.types.find(({ id }) => id === values.typeId);

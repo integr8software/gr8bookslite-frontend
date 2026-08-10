@@ -18,12 +18,12 @@ import type {
   DefaultAccount,
   DefaultAccountExpenseParentOption,
   DefaultAccountFormValues,
-  DefaultAccountListResponse,
+  DefaultAccountListResult,
   DefaultAccountStatus,
 } from "@/app/src/types/modules/financial-maintenance/default-account/DefaultAccountTypes";
 import type { ChartAccountFormValues } from "@/app/src/types/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 
-export async function fetchDefaultAccounts(): Promise<DefaultAccountListResponse> {
+export async function fetchDefaultAccounts(): Promise<DefaultAccountListResult> {
   const response = await defaultAccountControllerFindAllV1();
   const defaultAccounts = response.defaultAccounts.map(mapApiDefaultAccount);
 
@@ -32,17 +32,13 @@ export async function fetchDefaultAccounts(): Promise<DefaultAccountListResponse
     statistics: {
       totalDefaultAccounts: response.statistics?.totalDefaultAccounts ?? defaultAccounts.length,
       activeDefaultAccounts:
-        response.statistics?.activeDefaultAccounts ??
-        defaultAccounts.filter((account) => account.status === "Active").length,
+        response.statistics?.activeDefaultAccounts ?? defaultAccounts.filter((account) => account.status === "Active").length,
       inactiveDefaultAccounts:
-        response.statistics?.inactiveDefaultAccounts ??
-        defaultAccounts.filter((account) => account.status === "Inactive").length,
+        response.statistics?.inactiveDefaultAccounts ?? defaultAccounts.filter((account) => account.status === "Inactive").length,
       expenseDefaultAccounts:
-        response.statistics?.expenseDefaultAccounts ??
-        defaultAccounts.filter((account) => account.type === "EXPENSE").length,
+        response.statistics?.expenseDefaultAccounts ?? defaultAccounts.filter((account) => account.type === "EXPENSE").length,
       collectionDefaultAccounts:
-        response.statistics?.collectionDefaultAccounts ??
-        defaultAccounts.filter((account) => account.type === "COLLECTION").length,
+        response.statistics?.collectionDefaultAccounts ?? defaultAccounts.filter((account) => account.type === "COLLECTION").length,
     },
     permissions: {
       canView: response.permissions?.canView ?? false,
@@ -55,17 +51,13 @@ export async function fetchDefaultAccounts(): Promise<DefaultAccountListResponse
   };
 }
 
-export async function createDefaultAccount(
-  values: DefaultAccountFormValues,
-): Promise<DefaultAccount> {
+export async function createDefaultAccount(values: DefaultAccountFormValues): Promise<DefaultAccount> {
   const response = await defaultAccountControllerCreateV1(toApiPayload(values));
 
   return mapApiDefaultAccount(response.defaultAccount);
 }
 
-export async function fetchDefaultAccountExpenseParentOptions(): Promise<
-  DefaultAccountExpenseParentOption[]
-> {
+export async function fetchDefaultAccountExpenseParentOptions(): Promise<DefaultAccountExpenseParentOption[]> {
   const response = await defaultAccountControllerFindExpenseParentOptionsV1();
 
   return response.options.map(mapApiExpenseParentOption);
@@ -85,12 +77,8 @@ export async function updateDefaultAccountStatus(account: DefaultAccount): Promi
   return mapApiDefaultAccount(response.defaultAccount);
 }
 
-export async function createDefaultAccountExpenseSubAccount(
-  values: ChartAccountFormValues & { accountGroup?: string | string[] },
-) {
-  const response = await defaultAccountControllerCreateExpenseSubAccountV1(
-    createDefaultAccountExpenseSubAccountPayload(values),
-  );
+export async function createDefaultAccountExpenseSubAccount(values: ChartAccountFormValues & { accountGroup?: string | string[] }) {
+  const response = await defaultAccountControllerCreateExpenseSubAccountV1(createDefaultAccountExpenseSubAccountPayload(values));
 
   return response.account;
 }
@@ -130,9 +118,7 @@ function mapApiDefaultAccount(account: DefaultAccountResponseDto): DefaultAccoun
   };
 }
 
-function mapApiExpenseParentOption(
-  option: DefaultAccountExpenseParentOptionResponseDto,
-): DefaultAccountExpenseParentOption {
+function mapApiExpenseParentOption(option: DefaultAccountExpenseParentOptionResponseDto): DefaultAccountExpenseParentOption {
   return {
     id: option.id,
     accountCode: option.accountCode,
@@ -142,16 +128,13 @@ function mapApiExpenseParentOption(
   };
 }
 
-function toApiPayload(
-  account: DefaultAccount | DefaultAccountFormValues,
-): CreateDefaultAccountTemplateDto {
+function toApiPayload(account: DefaultAccount | DefaultAccountFormValues): CreateDefaultAccountTemplateDto {
   return {
     type: account.type,
     defaultAccountName: account.defaultAccountName.trim(),
     description: account.description.trim(),
     status: mapStatusToApi(account.status),
-    expenseParentCoaId:
-      account.type === "EXPENSE" ? account.expenseParentCoaId || undefined : undefined,
+    expenseParentCoaId: account.type === "EXPENSE" ? account.expenseParentCoaId || undefined : undefined,
   };
 }
 

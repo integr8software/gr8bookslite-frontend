@@ -5,10 +5,10 @@ import { DefaultAccountListPage } from "@/app/src/ui/modules/financial-maintenan
 const PageTitle = "Default Accounts";
 
 export const metadata: Metadata = {
-	title: `${PageTitle} | ${AppName}`,
-	description: `${PageTitle} page for ${AppName}.`,
+  title: `${PageTitle} | ${AppName}`,
+  description: `${PageTitle} page for ${AppName}.`,
 };
 
 export default function MaintenanceDefaultAccountPage() {
-	return <DefaultAccountListPage />;
+  return <DefaultAccountListPage />;
 }

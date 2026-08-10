@@ -7,22 +7,11 @@ import type {
   BankDetailsKey,
   ChartsOfAccountsBankFieldsProps,
 } from "@/app/src/types/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsTypes";
-import {
-  Field,
-  Input,
-  Select,
-} from "@/app/src/ui/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsControls";
+import { Field, Input, Select } from "@/app/src/ui/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsControls";
 
-export function ChartsOfAccountsBankFields({
-  readOnly = false,
-  submitted,
-  values,
-  onBankFieldChange,
-}: ChartsOfAccountsBankFieldsProps) {
-  const firstInvalidField = ChartsOfAccountsRequiredBankFields.find(
-    (field) => !values.bankDetails[field].trim(),
-  );
-  const focusTarget = submitted ? firstInvalidField ?? null : null;
+export function ChartsOfAccountsBankFields({ readOnly = false, submitted, values, onBankFieldChange }: ChartsOfAccountsBankFieldsProps) {
+  const firstInvalidField = ChartsOfAccountsRequiredBankFields.find((field) => !values.bankDetails[field].trim());
+  const focusTarget = submitted ? (firstInvalidField ?? null) : null;
 
   return (
     <div className="grid items-start gap-4 sm:grid-cols-2">
@@ -169,20 +158,8 @@ function BankAccountTypeField({
   }, [autoFocus]);
 
   return (
-    <Field
-      label="Account Type"
-      htmlFor={selectId}
-      required
-      error={submitted && !value ? "Required" : undefined}
-      reserveMessageSpace
-    >
-      <Select
-        id={selectId}
-        disabled={readOnly}
-        ref={selectRef}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-      >
+    <Field label="Account Type" htmlFor={selectId} required error={submitted && !value ? "Required" : undefined} reserveMessageSpace>
+      <Select id={selectId} disabled={readOnly} ref={selectRef} value={value} onChange={(event) => onChange(event.target.value)}>
         {BankMasterfileAccountTypeOptions.map((option) => (
           <option key={option} value={option}>
             {option}
@@ -192,4 +169,3 @@ function BankAccountTypeField({
     </Field>
   );
 }
-

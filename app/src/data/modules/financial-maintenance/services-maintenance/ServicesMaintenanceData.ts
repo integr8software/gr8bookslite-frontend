@@ -15,10 +15,7 @@ import {
 } from "@/app/src/constants/modules/financial-maintenance/services-maintenance/ServicesMaintenanceConstants";
 import { downloadBlob } from "@/app/src/ui/shared/module/module-table/ModuleTableExportDownload";
 import { formatFileSize } from "@/app/src/utils/file.util";
-import {
-  getModuleImportOptionValue,
-  isModuleImportOptionValue,
-} from "@/app/src/utils/module-import.util";
+import { getModuleImportOptionValue, isModuleImportOptionValue } from "@/app/src/utils/module-import.util";
 
 export const ServicesMaintenanceInitialFormValues: ServicesMaintenanceFormValues = {
   serviceName: "",
@@ -28,9 +25,7 @@ export const ServicesMaintenanceInitialFormValues: ServicesMaintenanceFormValues
   revenueCoaId: "",
 };
 
-export function createServicesMaintenanceFormValues(
-  service: ServicesMaintenance,
-): ServicesMaintenanceFormValues {
+export function createServicesMaintenanceFormValues(service: ServicesMaintenance): ServicesMaintenanceFormValues {
   return {
     serviceName: service.serviceName,
     description: service.description,
@@ -50,9 +45,7 @@ export function updateServicesMaintenanceFromForm(
     serviceName: values.serviceName.trim(),
     description: values.description.trim(),
     revenueAccountTitle:
-      values.accountSetupMode === "Auto"
-        ? buildGeneratedServiceRevenueAccountTitle(values.serviceName)
-        : service.revenueAccountTitle,
+      values.accountSetupMode === "Auto" ? buildGeneratedServiceRevenueAccountTitle(values.serviceName) : service.revenueAccountTitle,
   };
 }
 
@@ -68,9 +61,7 @@ export function getServicesMaintenanceTableMinWidthClassName(visibleColumnCount:
   return "min-w-[68rem]";
 }
 
-export function createBlankServicesMaintenanceImportRow(
-  rowNumber: number,
-): ServicesMaintenanceImportPreviewRow {
+export function createBlankServicesMaintenanceImportRow(rowNumber: number): ServicesMaintenanceImportPreviewRow {
   return {
     cellErrors: {},
     id: `services-maintenance-import-preview-${rowNumber}-${Date.now()}`,
@@ -86,9 +77,7 @@ export function createBlankServicesMaintenanceImportRow(
   };
 }
 
-export function getNextServicesMaintenanceImportRowNumber(
-  rows: ServicesMaintenanceImportPreviewRow[],
-) {
+export function getNextServicesMaintenanceImportRowNumber(rows: ServicesMaintenanceImportPreviewRow[]) {
   return Math.max(0, ...rows.map((row) => row.rowNumber)) + 1;
 }
 
@@ -100,10 +89,7 @@ export function normalizeServicesMaintenanceName(value: string) {
   return value.trim().replace(/\s+/g, " ").toLowerCase();
 }
 
-export function normalizeImportedServicesMaintenanceCellValue(
-  field: ServicesMaintenanceImportColumnId,
-  value: string,
-) {
+export function normalizeImportedServicesMaintenanceCellValue(field: ServicesMaintenanceImportColumnId, value: string) {
   if (field === "accountSetupMode") {
     return normalizeImportedServicesMaintenanceSetupMode(value);
   }
@@ -159,10 +145,7 @@ export async function readServicesMaintenanceImportFileText(file: File) {
   throw new Error("Please upload an .xlsx, .csv, .tsv, or .txt file.");
 }
 
-export function parseServicesMaintenanceImportText(
-  text: string,
-  startRowNumber = 1,
-): ServicesMaintenanceImportPreviewRow[] {
+export function parseServicesMaintenanceImportText(text: string, startRowNumber = 1): ServicesMaintenanceImportPreviewRow[] {
   const rows = parseImportTabularRows(text).filter((row) => row.some((cell) => cell.trim() !== ""));
 
   if (rows.length === 0) return [];
@@ -183,9 +166,7 @@ export function parseServicesMaintenanceImportText(
         rowErrors: [],
         rowNumber,
         service: {
-          accountSetupMode: normalizeImportedServicesMaintenanceSetupMode(
-            getImportedValue(row, indexes.accountSetupMode),
-          ),
+          accountSetupMode: normalizeImportedServicesMaintenanceSetupMode(getImportedValue(row, indexes.accountSetupMode)),
           description: getImportedValue(row, indexes.description),
           revenueCoaId: getImportedValue(row, indexes.revenueCoaId),
           serviceName: getImportedValue(row, indexes.serviceName),
@@ -200,10 +181,7 @@ export function validateServicesMaintenanceImportRows(
   existingServices: ServicesMaintenance[],
 ) {
   const existingNames = new Map(
-    existingServices.map((service) => [
-      normalizeServicesMaintenanceName(service.serviceName),
-      service.serviceName,
-    ]),
+    existingServices.map((service) => [normalizeServicesMaintenanceName(service.serviceName), service.serviceName]),
   );
   const importedNameCounts = new Map<string, number>();
 
@@ -226,10 +204,7 @@ export function validateServicesMaintenanceImportRows(
     const existingName = existingNames.get(normalizedName);
 
     if (existingName) {
-      cellErrors.serviceName = [
-        ...(cellErrors.serviceName ?? []),
-        `Service already exists: ${existingName}.`,
-      ];
+      cellErrors.serviceName = [...(cellErrors.serviceName ?? []), `Service already exists: ${existingName}.`];
     }
 
     if (normalizedName && (importedNameCounts.get(normalizedName) ?? 0) > 1) {
@@ -240,12 +215,7 @@ export function validateServicesMaintenanceImportRows(
       cellErrors.description = ["Description must be 500 characters or fewer."];
     }
 
-    if (
-      !isModuleImportOptionValue(
-        row.service.accountSetupMode,
-        ServicesMaintenanceAccountSetupModeOptions,
-      )
-    ) {
+    if (!isModuleImportOptionValue(row.service.accountSetupMode, ServicesMaintenanceAccountSetupModeOptions)) {
       cellErrors.accountSetupMode = ["Choose Auto or Existing."];
     }
 
@@ -258,10 +228,7 @@ export function validateServicesMaintenanceImportRows(
 }
 
 export function serviceImportRowHasErrors(row: ServicesMaintenanceImportPreviewRow) {
-  return (
-    row.rowErrors.length > 0 ||
-    Object.values(row.cellErrors).some((errors) => Boolean(errors?.length))
-  );
+  return row.rowErrors.length > 0 || Object.values(row.cellErrors).some((errors) => Boolean(errors?.length));
 }
 
 export function validateServicesMaintenanceImportFileSize(file: File) {
@@ -277,11 +244,7 @@ export function validateServicesMaintenanceImportFileSize(file: File) {
 }
 
 export function isServicesMaintenanceImportGridPasteTarget(target: EventTarget | null) {
-  return !(
-    target instanceof HTMLInputElement ||
-    target instanceof HTMLSelectElement ||
-    target instanceof HTMLTextAreaElement
-  );
+  return !(target instanceof HTMLInputElement || target instanceof HTMLSelectElement || target instanceof HTMLTextAreaElement);
 }
 
 export function parseImportTabularRows(text: string) {
@@ -298,9 +261,7 @@ export function waitForNextServicesMaintenanceImportBatch() {
   });
 }
 
-function normalizeImportedServicesMaintenanceSetupMode(
-  value: string,
-): ServicesMaintenanceAccountSetupMode {
+function normalizeImportedServicesMaintenanceSetupMode(value: string): ServicesMaintenanceAccountSetupMode {
   const normalized = value.trim().toLowerCase();
 
   if (!normalized || normalized === "auto" || normalized === "automatic") {
@@ -308,8 +269,7 @@ function normalizeImportedServicesMaintenanceSetupMode(
   }
   if (normalized === "existing" || normalized === "manual") return "Existing";
 
-  return (getModuleImportOptionValue(value, ServicesMaintenanceAccountSetupModeOptions) ??
-    value) as ServicesMaintenanceAccountSetupMode;
+  return (getModuleImportOptionValue(value, ServicesMaintenanceAccountSetupModeOptions) ?? value) as ServicesMaintenanceAccountSetupMode;
 }
 
 function getServicesMaintenanceImportHeaderIndexes(row: string[]) {
@@ -324,9 +284,7 @@ function getServicesMaintenanceImportHeaderIndexes(row: string[]) {
   return Object.keys(indexes).length >= 2 ? indexes : null;
 }
 
-function normalizeServicesMaintenanceImportHeader(
-  value: string,
-): ServicesMaintenanceImportColumnId | null {
+function normalizeServicesMaintenanceImportHeader(value: string): ServicesMaintenanceImportColumnId | null {
   const normalized = value.toLowerCase().replace(/[^a-z0-9]/g, "");
 
   if (["servicename", "service", "name"].includes(normalized)) return "serviceName";
@@ -431,9 +389,7 @@ function formatImportExcelCellValue(value: unknown, displayText?: string) {
 }
 
 function createImportTemplateCsv(headers: string[]) {
-  return [headers]
-    .map((row) => row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(","))
-    .join("\n");
+  return [headers].map((row) => row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(",")).join("\n");
 }
 
 function getImportedValue(row: string[], index?: number) {

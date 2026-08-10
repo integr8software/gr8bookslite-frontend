@@ -16,26 +16,20 @@ export const ServicesMaintenanceHref = getModuleRoute("SM");
 export const ServicesMaintenanceApiPath = "/maintenance/financial-management/services-maintenance";
 export const ServicesMaintenanceParentLabel = "Accounting master data";
 export const ServicesMaintenanceTitle = "Services Maintenance";
-export const ServicesMaintenanceDescription =
-  "Maintain sellable services and their revenue account setup.";
+export const ServicesMaintenanceDescription = "Maintain sellable services and their revenue account setup.";
 export const ServicesMaintenanceDrawerFormId = "services-maintenance-drawer-form";
 export const ServicesMaintenanceFieldClassName =
   "h-11 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10 disabled:cursor-not-allowed disabled:bg-darknavy/[0.03] disabled:text-darknavy/70 disabled:placeholder:text-darknavy/32 read-only:bg-darknavy/[0.03] read-only:text-darknavy/70";
 export const ServicesMaintenanceReadOnlyFieldClassName = `${ServicesMaintenanceFieldClassName} bg-darknavy/[0.03] font-semibold text-darknavy/80`;
 
-export const ServicesMaintenanceStatusOptions = [
-  "Active",
-  "Inactive",
-] as const satisfies readonly ServicesMaintenanceStatus[];
+export const ServicesMaintenanceStatusOptions = ["Active", "Inactive"] as const satisfies readonly ServicesMaintenanceStatus[];
 export const ServicesMaintenanceAccountSetupModeOptions = [
   "Auto",
   "Existing",
 ] as const satisfies readonly ServicesMaintenanceAccountSetupMode[];
 
-export const ServicesMaintenanceTablePaginationStorageKey =
-  "maintenance:financial-management:services-maintenance";
-export const ServicesMaintenanceTablePreferencesStorageKey =
-  "gr8booksneo:services-maintenance:table-preferences";
+export const ServicesMaintenanceTablePaginationStorageKey = "maintenance:financial-management:services-maintenance";
+export const ServicesMaintenanceTablePreferencesStorageKey = "gr8booksneo:services-maintenance:table-preferences";
 export const ServicesMaintenanceTablePreferencesModuleKey = "maintenance:services-maintenance";
 
 export const ServicesMaintenanceTableColumns = [
@@ -51,8 +45,8 @@ export const ServicesMaintenanceTableColumns = [
   { label: "Action", className: "w-[16%] text-center" },
 ] as const;
 
-export const ServicesMaintenanceDefaultColumnOrder = ServicesMaintenanceTableColumns.map(
-  (column) => ("key" in column ? column.key : "actions"),
+export const ServicesMaintenanceDefaultColumnOrder = ServicesMaintenanceTableColumns.map((column) =>
+  "key" in column ? column.key : "actions",
 );
 export const ServicesMaintenanceDefaultColumnVisibility: VisibilityState = {
   description: false,
@@ -64,10 +58,9 @@ export const ServicesMaintenanceDefaultColumnVisibility: VisibilityState = {
 };
 export const ServicesMaintenanceDefaultSorting: SortingState = [{ id: "serviceName", desc: false }];
 
-export const ServicesMaintenanceExportColumns: ModuleTableExportColumn<ServicesMaintenance>[] =
-  ServicesMaintenanceTableColumns.flatMap((column) =>
-    "key" in column ? [{ header: column.label, id: column.key, value: column.key }] : [],
-  );
+export const ServicesMaintenanceExportColumns: ModuleTableExportColumn<ServicesMaintenance>[] = ServicesMaintenanceTableColumns.flatMap(
+  (column) => ("key" in column ? [{ header: column.label, id: column.key, value: column.key }] : []),
+);
 
 export const ServicesMaintenanceActionCopy = {
   add: {
@@ -84,20 +77,12 @@ export const ServicesMaintenanceActionCopy = {
   },
 } as const;
 
-export const ServicesMaintenanceImportTemplateHeaders = [
-  "Service Name",
-  "Description",
-  "Account Setup",
-  "Revenue Account ID",
-];
+export const ServicesMaintenanceImportTemplateHeaders = ["Service Name", "Description", "Account Setup", "Revenue Account ID"];
 
 export const ServicesMaintenanceImportAcceptedFileExtensions = ".xlsx,.csv,.tsv,.txt";
 export const ServicesMaintenanceImportAcceptedFileLabel = ".xlsx, .csv, .tsv, .txt";
 
-export const ServicesMaintenanceImportDefaultColumnIndexes: Record<
-  ServicesMaintenanceImportColumnId,
-  number
-> = {
+export const ServicesMaintenanceImportDefaultColumnIndexes: Record<ServicesMaintenanceImportColumnId, number> = {
   serviceName: 0,
   description: 1,
   accountSetupMode: 2,
@@ -132,10 +117,8 @@ export const ServicesMaintenanceImportColumnHeaders: ServicesMaintenanceImportCo
   { className: "px-3", id: "revenueCoaId", label: "Revenue Account ID" },
 ];
 
-export const ServicesMaintenanceImportPreviewColumnCount =
-  ServicesMaintenanceImportFieldOrder.length + 1;
-export const ServicesMaintenanceImportPreviewGridLabel =
-  "Services maintenance import preview grid. Paste copied Excel rows here.";
+export const ServicesMaintenanceImportPreviewColumnCount = ServicesMaintenanceImportFieldOrder.length + 1;
+export const ServicesMaintenanceImportPreviewGridLabel = "Services maintenance import preview grid. Paste copied Excel rows here.";
 export const ServicesMaintenanceImportPreviewPageSize = 20;
 export const ServicesMaintenanceImportBatchSize = 25;
 export const ServicesMaintenanceImportMinFileSizeBytes = 1;

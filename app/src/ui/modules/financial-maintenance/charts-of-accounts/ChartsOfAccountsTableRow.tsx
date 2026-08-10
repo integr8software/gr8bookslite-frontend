@@ -20,15 +20,8 @@ import type {
   ChartsOfAccountsPermissions,
   ChartsOfAccountsTableRowProps,
 } from "@/app/src/types/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsTypes";
-import {
-  Badge,
-  TypeBadge,
-  joinClasses,
-} from "@/app/src/ui/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsControls";
-import {
-  ModuleTableActionButton,
-  ModuleTableActions,
-} from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
+import { Badge, TypeBadge, joinClasses } from "@/app/src/ui/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsControls";
+import { ModuleTableActionButton, ModuleTableActions } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
 type ChartsOfAccountsTableRowViewProps = ChartsOfAccountsTableRowProps & {
   dragAttributes?: ReturnType<typeof useDraggable>["attributes"];
@@ -39,9 +32,7 @@ type ChartsOfAccountsTableRowViewProps = ChartsOfAccountsTableRowProps & {
   rowStyle?: CSSProperties;
 };
 
-export const ChartsOfAccountsTableRow = memo(function ChartsOfAccountsTableRow(
-  props: ChartsOfAccountsTableRowProps,
-) {
+export const ChartsOfAccountsTableRow = memo(function ChartsOfAccountsTableRow(props: ChartsOfAccountsTableRowProps) {
   if (!props.canDragRows) {
     return <StaticChartsOfAccountsTableRow {...props} />;
   }
@@ -49,12 +40,7 @@ export const ChartsOfAccountsTableRow = memo(function ChartsOfAccountsTableRow(
   return <DraggableChartsOfAccountsTableRow {...props} />;
 }, areChartAccountRowsEqual);
 
-function DraggableChartsOfAccountsTableRow({
-  account,
-  activeDragAccount,
-  activeDropPlacement,
-  ...props
-}: ChartsOfAccountsTableRowProps) {
+function DraggableChartsOfAccountsTableRow({ account, activeDragAccount, activeDropPlacement, ...props }: ChartsOfAccountsTableRowProps) {
   const {
     attributes,
     isDragging,
@@ -75,8 +61,7 @@ function DraggableChartsOfAccountsTableRow({
     targetAccount: account,
     targetIsSpecific,
   });
-  const dropMode =
-    isOver && !isDragging && activeDropPlacement ? dropPlacementMode : null;
+  const dropMode = isOver && !isDragging && activeDropPlacement ? dropPlacementMode : null;
   const rowStyle: CSSProperties = {
     transform: CSS.Translate.toString(transform),
   };
@@ -131,17 +116,12 @@ function ChartsOfAccountsTableRowView({
   onView,
 }: ChartsOfAccountsTableRowViewProps) {
   const accountIsSpecific = isSpecificAccountLevel(account);
-  const renderedColumnIds = visibleColumnIds.filter(
-    (columnId) => showParentColumn || columnId !== "parentPath",
-  );
+  const renderedColumnIds = visibleColumnIds.filter((columnId) => showParentColumn || columnId !== "parentPath");
   const hasChildren = Boolean(account.children?.length);
   const isCollapsedParent = hasChildren && !expandedIds.has(account.id);
   const firstRenderedColumnId = renderedColumnIds[0];
   const addTitleParentAccount = accountIsSpecific ? parentAccount : account;
-  const canAddAccountTitle =
-    !activeDragAccount &&
-    permissions.canCreate &&
-    Boolean(addTitleParentAccount);
+  const canAddAccountTitle = !activeDragAccount && permissions.canCreate && Boolean(addTitleParentAccount);
 
   function renderCell(columnId: string) {
     const showDropIndicator = dropMode && columnId === firstRenderedColumnId;
@@ -150,24 +130,14 @@ function ChartsOfAccountsTableRowView({
       case "accountNumber":
         return (
           <td key={columnId} className="relative px-5 py-4 font-semibold text-darknavy">
-            {showDropIndicator ? (
-              <DropPlacementIndicator
-                mode={dropMode}
-                accountName={account.accountName}
-              />
-            ) : null}
+            {showDropIndicator ? <DropPlacementIndicator mode={dropMode} accountName={account.accountName} /> : null}
             {account.accountNumber}
           </td>
         );
       case "accountName":
         return (
           <td key={columnId} className="relative px-5 py-4">
-            {showDropIndicator ? (
-              <DropPlacementIndicator
-                mode={dropMode}
-                accountName={account.accountName}
-              />
-            ) : null}
+            {showDropIndicator ? <DropPlacementIndicator mode={dropMode} accountName={account.accountName} /> : null}
             <AccountNameCell
               account={account}
               canDrag={canDragRows && accountIsSpecific}
@@ -179,10 +149,7 @@ function ChartsOfAccountsTableRowView({
               onToggleExpanded={onToggleExpanded}
             />
             {canAddAccountTitle && addTitleParentAccount ? (
-              <AddAccountTitleButton
-                parentAccount={addTitleParentAccount}
-                onAddChild={onAddChild}
-              />
+              <AddAccountTitleButton parentAccount={addTitleParentAccount} onAddChild={onAddChild} />
             ) : null}
           </td>
         );
@@ -203,9 +170,7 @@ function ChartsOfAccountsTableRowView({
       case "accountLevel":
         return (
           <td key={columnId} className="px-5 py-4 text-center">
-            <Badge variant="gray">
-              {AccountLevelLabels[account.accountLevel]}
-            </Badge>
+            <Badge variant="gray">{AccountLevelLabels[account.accountLevel]}</Badge>
           </td>
         );
       case "statementSection":
@@ -217,9 +182,7 @@ function ChartsOfAccountsTableRowView({
       case "normalBalance":
         return (
           <td key={columnId} className="px-5 py-4 text-center">
-            <Badge variant={account.normalBalance === "DEBIT" ? "blue" : "violet"}>
-              {NormalBalanceLabels[account.normalBalance]}
-            </Badge>
+            <Badge variant={account.normalBalance === "DEBIT" ? "blue" : "violet"}>{NormalBalanceLabels[account.normalBalance]}</Badge>
           </td>
         );
       case "reportAlias":
@@ -231,31 +194,37 @@ function ChartsOfAccountsTableRowView({
       case "status":
         return (
           <td key={columnId} className="px-5 py-4 text-center">
-            {isCollapsedParent ? null : (
-              <Badge variant={account.status === "Active" ? "green" : "gray"}>
-                {account.status}
-              </Badge>
-            )}
+            {isCollapsedParent ? null : <Badge variant={account.status === "Active" ? "green" : "gray"}>{account.status}</Badge>}
           </td>
         );
       case "createdBy":
-        return <td key={columnId} className="px-5 py-4">{account.createdBy ?? ""}</td>;
+        return (
+          <td key={columnId} className="px-5 py-4">
+            {account.createdBy ?? ""}
+          </td>
+        );
       case "createdAt":
-        return <td key={columnId} className="px-5 py-4">{formatDateTime(account.createdAt)}</td>;
+        return (
+          <td key={columnId} className="px-5 py-4">
+            {formatDateTime(account.createdAt)}
+          </td>
+        );
       case "updatedBy":
-        return <td key={columnId} className="px-5 py-4">{account.updatedBy ?? ""}</td>;
+        return (
+          <td key={columnId} className="px-5 py-4">
+            {account.updatedBy ?? ""}
+          </td>
+        );
       case "updatedAt":
-        return <td key={columnId} className="px-5 py-4">{formatDateTime(account.updatedAt)}</td>;
+        return (
+          <td key={columnId} className="px-5 py-4">
+            {formatDateTime(account.updatedAt)}
+          </td>
+        );
       case "actions":
         return (
           <td key={columnId} className="px-5 py-4 text-center">
-            <RowActions
-              account={account}
-              permissions={permissions}
-              onEdit={onEdit}
-              onStatusChange={onStatusChange}
-              onView={onView}
-            />
+            <RowActions account={account} permissions={permissions} onEdit={onEdit} onStatusChange={onStatusChange} onView={onView} />
           </td>
         );
       default:
@@ -271,10 +240,8 @@ function ChartsOfAccountsTableRowView({
       className={joinClasses(
         "module-table-row group relative z-0 text-darknavy hover:z-30 focus-within:z-30",
         isDragging && "relative z-10 bg-skyblue/5 opacity-70 shadow-sm",
-        dropMode === "before" &&
-        "border-t-2 border-skyblue bg-skyblue/[0.035]",
-        dropMode === "after" &&
-        "border-b-2 border-skyblue bg-skyblue/[0.035]",
+        dropMode === "before" && "border-t-2 border-skyblue bg-skyblue/[0.035]",
+        dropMode === "after" && "border-b-2 border-skyblue bg-skyblue/[0.035]",
         dropMode === "inside" && "bg-skyblue/10 ring-1 ring-inset ring-skyblue/25",
       )}
     >
@@ -283,13 +250,7 @@ function ChartsOfAccountsTableRowView({
   );
 }
 
-function DropPlacementIndicator({
-  accountName,
-  mode,
-}: {
-  accountName: string;
-  mode: "before" | "inside" | "after";
-}) {
+function DropPlacementIndicator({ accountName, mode }: { accountName: string; mode: "before" | "inside" | "after" }) {
   if (mode === "inside") {
     return (
       <span
@@ -377,24 +338,12 @@ function AccountNameCell({
           aria-label={`Toggle ${account.accountName}`}
           className="flex h-7 w-7 items-center justify-center rounded-md text-darknavy/50 transition hover:bg-white hover:text-skyblue"
         >
-          <ChevronRight
-            className={joinClasses(
-              "h-4 w-4 transition",
-              expandedIds.has(account.id) && "rotate-90",
-            )}
-            aria-hidden="true"
-          />
+          <ChevronRight className={joinClasses("h-4 w-4 transition", expandedIds.has(account.id) && "rotate-90")} aria-hidden="true" />
         </button>
       ) : null}
       <div className="flex min-h-9 min-w-0 flex-1 flex-col justify-center">
-        <p className="truncate font-semibold text-darknavy">
-          {account.accountName}
-        </p>
-        {account.description ? (
-          <p className="truncate text-sm text-darknavy/60">
-            {account.description}
-          </p>
-        ) : null}
+        <p className="truncate font-semibold text-darknavy">{account.accountName}</p>
+        {account.description ? <p className="truncate text-sm text-darknavy/60">{account.description}</p> : null}
       </div>
     </div>
   );
@@ -440,25 +389,16 @@ function RowActions({
   onView: (account: ChartAccount) => void;
 }) {
   const nextStatus = account.status === "Active" ? "Inactive" : "Active";
-  const canManageAccount =
-    permissions.canUpdate && (account.isUserCreated || account.isBankLinked);
+  const canManageAccount = permissions.canUpdate && (account.isUserCreated || account.isBankLinked);
 
   return (
     <ModuleTableActions className="w-full !justify-center">
       {permissions.canView ? (
-        <ModuleTableActionButton
-          variant="view"
-          label={`View ${account.accountName}`}
-          onClick={() => onView(account)}
-        />
+        <ModuleTableActionButton variant="view" label={`View ${account.accountName}`} onClick={() => onView(account)} />
       ) : null}
       {canManageAccount ? (
         <>
-          <ModuleTableActionButton
-            variant="edit"
-            label={`Edit ${account.accountName}`}
-            onClick={() => onEdit(account)}
-          />
+          <ModuleTableActionButton variant="edit" label={`Edit ${account.accountName}`} onClick={() => onEdit(account)} />
           <ModuleTableActionButton
             variant={nextStatus === "Inactive" ? "inactive" : "active"}
             label={`${nextStatus === "Inactive" ? "Deactivate" : "Activate"} ${account.accountName}`}
@@ -470,10 +410,7 @@ function RowActions({
   );
 }
 
-function areChartAccountRowsEqual(
-  previous: ChartsOfAccountsTableRowProps,
-  next: ChartsOfAccountsTableRowProps,
-) {
+function areChartAccountRowsEqual(previous: ChartsOfAccountsTableRowProps, next: ChartsOfAccountsTableRowProps) {
   return (
     previous.account === next.account &&
     previous.activeDragAccount === next.activeDragAccount &&

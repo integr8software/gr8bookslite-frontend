@@ -18,7 +18,7 @@ import {
   PurchaseRequestFieldShell,
   PurchaseRequestSelectField,
   PurchaseRequestTextField,
-} from "@/app/src/ui/modules/purchasing/purchase-request/action/PurchaseRequestFormControls";
+} from "@/app/src/ui/modules/purchasing/purchase-request/form/PurchaseRequestFieldControls";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
@@ -30,12 +30,7 @@ type BillingStatementCustomerFieldsProps = {
   onUpdateField: BillingStatementFieldUpdater<BillingStatementFormValues>;
 };
 
-export function BillingStatementCustomerFields({
-  errors,
-  isReadonly,
-  onUpdateField,
-  values,
-}: BillingStatementCustomerFieldsProps) {
+export function BillingStatementCustomerFields({ errors, isReadonly, onUpdateField, values }: BillingStatementCustomerFieldsProps) {
   return (
     <div className="grid min-w-0 gap-4 xl:grid-cols-3">
       <div className="grid min-w-0 content-start gap-4">
@@ -71,10 +66,7 @@ export function BillingStatementCustomerFields({
               placeholder="PHP"
               onChange={(value) => onUpdateField("currency", String(value))}
             />
-            <label
-              htmlFor="billing-statement-exchange-rate"
-              className="text-sm font-semibold text-darknavy"
-            >
+            <label htmlFor="billing-statement-exchange-rate" className="text-sm font-semibold text-darknavy">
               FX Rate:
             </label>
             <MoneyNumberField
@@ -230,13 +222,55 @@ export function BillingStatementCustomerFields({
           value={values.documentDate}
           onChange={(value) => onUpdateField("documentDate", value)}
         />
-        <PurchaseRequestTextField id="billing-statement-sj-no" label="SJ No." readOnly={isReadonly} value={values.sjNo} onChange={(value) => onUpdateField("sjNo", value)} />
-        <PurchaseRequestTextField id="billing-statement-jo-no" label="JO No." readOnly={isReadonly} value={values.joNo} onChange={(value) => onUpdateField("joNo", value)} />
-        <PurchaseRequestTextField id="billing-statement-po-no" label="PO No." readOnly={isReadonly} value={values.poNo} onChange={(value) => onUpdateField("poNo", value)} />
-        <PurchaseRequestTextField id="billing-statement-sq-no" label="SQ No." readOnly={isReadonly} value={values.sqNo} onChange={(value) => onUpdateField("sqNo", value)} />
-        <PurchaseRequestTextField id="billing-statement-invoice-no" label="Invoice No." readOnly={isReadonly} value={values.invoiceNo} onChange={(value) => onUpdateField("invoiceNo", value)} />
-        <PurchaseRequestTextField id="billing-statement-ref-no" label="Ref No." readOnly={isReadonly} value={values.refNo} onChange={(value) => onUpdateField("refNo", value)} />
-        <PurchaseRequestTextField id="billing-statement-business-style" label="Bus. Style" readOnly={isReadonly} value={values.businessStyle} onChange={(value) => onUpdateField("businessStyle", value)} />
+        <PurchaseRequestTextField
+          id="billing-statement-sj-no"
+          label="SJ No."
+          readOnly={isReadonly}
+          value={values.sjNo}
+          onChange={(value) => onUpdateField("sjNo", value)}
+        />
+        <PurchaseRequestTextField
+          id="billing-statement-jo-no"
+          label="JO No."
+          readOnly={isReadonly}
+          value={values.joNo}
+          onChange={(value) => onUpdateField("joNo", value)}
+        />
+        <PurchaseRequestTextField
+          id="billing-statement-po-no"
+          label="PO No."
+          readOnly={isReadonly}
+          value={values.poNo}
+          onChange={(value) => onUpdateField("poNo", value)}
+        />
+        <PurchaseRequestTextField
+          id="billing-statement-sq-no"
+          label="SQ No."
+          readOnly={isReadonly}
+          value={values.sqNo}
+          onChange={(value) => onUpdateField("sqNo", value)}
+        />
+        <PurchaseRequestTextField
+          id="billing-statement-invoice-no"
+          label="Invoice No."
+          readOnly={isReadonly}
+          value={values.invoiceNo}
+          onChange={(value) => onUpdateField("invoiceNo", value)}
+        />
+        <PurchaseRequestTextField
+          id="billing-statement-ref-no"
+          label="Ref No."
+          readOnly={isReadonly}
+          value={values.refNo}
+          onChange={(value) => onUpdateField("refNo", value)}
+        />
+        <PurchaseRequestTextField
+          id="billing-statement-business-style"
+          label="Bus. Style"
+          readOnly={isReadonly}
+          value={values.businessStyle}
+          onChange={(value) => onUpdateField("businessStyle", value)}
+        />
         <PurchaseRequestSelectField
           id="billing-statement-status"
           label="Status"
@@ -245,8 +279,20 @@ export function BillingStatementCustomerFields({
           options={BillingStatementStatusOptions}
           onChange={(value) => onUpdateField("status", value as BillingStatementStatus)}
         />
-        <PurchaseRequestTextField id="billing-statement-project-ref" label="ProjectRef" readOnly={isReadonly} value={values.projectRef} onChange={(value) => onUpdateField("projectRef", value)} />
-        <PurchaseRequestTextField id="billing-statement-project-name" label="Project Name" readOnly={isReadonly} value={values.projectName} onChange={(value) => onUpdateField("projectName", value)} />
+        <PurchaseRequestTextField
+          id="billing-statement-project-ref"
+          label="ProjectRef"
+          readOnly={isReadonly}
+          value={values.projectRef}
+          onChange={(value) => onUpdateField("projectRef", value)}
+        />
+        <PurchaseRequestTextField
+          id="billing-statement-project-name"
+          label="Project Name"
+          readOnly={isReadonly}
+          value={values.projectName}
+          onChange={(value) => onUpdateField("projectName", value)}
+        />
       </div>
     </div>
   );
@@ -285,11 +331,7 @@ function BillingSelectField({
 
 function BillingAttachedSelectField(props: Parameters<typeof BillingSelectField>[0]) {
   return (
-    <PurchaseRequestFieldShell
-      controlId={props.id}
-      label={props.label}
-      isRequired={props.isRequired}
-    >
+    <PurchaseRequestFieldShell controlId={props.id} label={props.label} isRequired={props.isRequired}>
       <div className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-0">
         <AppAdvancedDropdown
           id={props.id}

@@ -1,19 +1,11 @@
 import { createRequire } from "module";
 import { NextResponse } from "next/server";
+import type { CustomizeReportRenderPdfRequest } from "@/app/src/types/modules/system-administration/customized-reports/CustomizeReportApiTypes";
+import type { CustomizeReportPaperFormat } from "@/app/src/types/modules/system-administration/customized-reports/CustomizeReportTypes";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
 export const runtime = "nodejs";
-
-type JsreportRenderRequest = {
-	template?: string;
-	data?: Record<string, unknown>;
-	fileName?: string;
-	page?: {
-		format?: "A4" | "Letter" | "Legal";
-		landscape?: boolean;
-	};
-};
 
 type JsreportInstance = {
 	init: () => Promise<void>;
@@ -68,13 +60,50 @@ function sanitizeFileName(fileName?: string) {
 		.toLowerCase();
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function parseRenderRequest(value: unknown): CustomizeReportRenderPdfRequest | null {
+	if (!isRecord(value) || typeof value.template !== "string" || !value.template.trim()) {
+		return null;
+	}
+
+	const page = isRecord(value.page) ? value.page : {};
+	const format = page.format;
+	const landscape = page.landscape;
+
+	if (format !== undefined && !["A4", "Letter", "Legal"].includes(String(format))) {
+		return null;
+	}
+
+	if (landscape !== undefined && typeof landscape !== "boolean") {
+		return null;
+	}
+
+	const parsedFormat =
+		typeof format === "string" && ["A4", "Letter", "Legal"].includes(format)
+			? (format as CustomizeReportPaperFormat)
+			: undefined;
+
+	return {
+		data: isRecord(value.data) ? value.data : undefined,
+		fileName: typeof value.fileName === "string" ? value.fileName : undefined,
+		page: {
+			format: parsedFormat,
+			landscape,
+		},
+		template: value.template,
+	};
+}
+
 export async function POST(request: Request) {
 	try {
-		const body = (await request.json()) as JsreportRenderRequest;
+		const body = parseRenderRequest(await request.json());
 
-		if (!body.template?.trim()) {
+		if (!body) {
 			return NextResponse.json(
-				{ message: "Template content is required." },
+				{ message: "Valid report template content is required." },
 				{ status: 400 },
 			);
 		}
@@ -108,12 +137,13 @@ export async function POST(request: Request) {
 			},
 		});
 	} catch (error) {
-		const message =
-			error instanceof Error ? error.message : "Unable to render the report.";
+		console.error("[customize-report:render] PDF render failed", {
+			message: error instanceof Error ? error.message : "Unknown render error.",
+		});
 
 		return NextResponse.json(
 			{
-				message,
+				message: "Unable to render the report.",
 			},
 			{ status: 500 },
 		);

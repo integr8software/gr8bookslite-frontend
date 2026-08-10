@@ -1,10 +1,16 @@
-import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import type { CustomizeReportModuleOption, CustomizeReportPageSetup } from "@/app/src/types/modules/system-administration/customized-reports/CustomizeReportTypes";
+import { RenderCustomizeReportPdf } from "@/app/src/services/modules/system-administration/customized-reports/CustomizeReportPdfService";
+import type {
+  CustomizeReportModuleOption,
+  CustomizeReportPageSetup,
+} from "@/app/src/types/modules/system-administration/customized-reports/CustomizeReportTypes";
+
+const CustomizeReportPreviewErrorMessage = "Unable to generate PDF preview.";
 
 type UseCustomizeReportPdfPreviewParams = {
   pageSetup: CustomizeReportPageSetup;
-  reportData: unknown;
+  reportData: Record<string, unknown>;
   selectedReport: CustomizeReportModuleOption | null;
   templatePreview: string;
 };
@@ -15,7 +21,9 @@ export function useCustomizeReportPdfPreview({
   selectedReport,
   templatePreview,
 }: UseCustomizeReportPdfPreviewParams) {
-  const [isRendering, setIsRendering] = useState(false);
+  const previewMutation = useMutation({
+    mutationFn: RenderCustomizeReportPdf,
+  });
 
   async function handlePreviewPdf() {
     if (!selectedReport) {
@@ -23,32 +31,18 @@ export function useCustomizeReportPdfPreview({
       return;
     }
 
-    setIsRendering(true);
     const previewWindow = window.open("", "_blank");
 
     try {
-      const response = await fetch("/api/customize-report/render", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const pdfBlob = await previewMutation.mutateAsync({
+        template: templatePreview,
+        data: reportData,
+        fileName: `${selectedReport.documentPrefix}-custom-report-preview`,
+        page: {
+          format: pageSetup.format,
+          landscape: pageSetup.orientation === "landscape",
         },
-        body: JSON.stringify({
-          template: templatePreview,
-          data: reportData,
-          fileName: `${selectedReport.documentPrefix}-custom-report-preview`,
-          page: {
-            format: pageSetup.format,
-            landscape: pageSetup.orientation === "landscape",
-          },
-        }),
       });
-
-      if (!response.ok) {
-        const errorBody = (await response.json().catch(() => null)) as { message?: string } | null;
-        throw new Error(errorBody?.message || "Unable to generate PDF preview.");
-      }
-
-      const pdfBlob = await response.blob();
       const pdfUrl = URL.createObjectURL(pdfBlob);
 
       if (previewWindow) {
@@ -60,14 +54,12 @@ export function useCustomizeReportPdfPreview({
       toast.success("PDF preview generated.");
     } catch (error) {
       previewWindow?.close();
-      toast.error(error instanceof Error ? error.message : "Unable to generate PDF preview.");
-    } finally {
-      setIsRendering(false);
+      toast.error(error instanceof Error ? error.message : CustomizeReportPreviewErrorMessage);
     }
   }
 
   return {
     handlePreviewPdf,
-    isRendering,
+    isRendering: previewMutation.isPending,
   };
 }

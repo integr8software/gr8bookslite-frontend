@@ -68,18 +68,28 @@ import {
 } from "@/app/src/ui/modules/system-administration/customized-reports/utils/CustomizeReportDesignerUtils";
 import { validateCustomizeReportLayout } from "@/app/src/ui/modules/system-administration/customized-reports/validation/CustomizeReportValidation";
 
-export function useCustomizeReportDesigner() {  const [fields, setFields] = useState<CustomizeReportField[]>(CustomizeReportFields);
+const CustomizeReportElementTypes = {
+  Field: "field",
+  Line: "line",
+} as const;
+
+const CustomizeReportLineOrientations = {
+  Horizontal: "horizontal",
+} as const;
+
+type CustomizeReportElementType = (typeof CustomizeReportElementTypes)[keyof typeof CustomizeReportElementTypes];
+
+export function useCustomizeReportDesigner() {
+  const [fields, setFields] = useState<CustomizeReportField[]>(CustomizeReportFields);
   const [lines, setLines] = useState<CustomizeReportLine[]>(CustomizeReportLines);
-  const [pageSetup, setPageSetup] = useState<CustomizeReportPageSetup>(
-    CustomizeReportDefaultPageSetup,
-  );
+  const [pageSetup, setPageSetup] = useState<CustomizeReportPageSetup>(CustomizeReportDefaultPageSetup);
   const [tableSetup, setTableSetup] = useState<CustomizeReportTableSetup>(DefaultTableSetup);
   const [marginSetup, setMarginSetup] = useState<CustomizeReportMarginSetup>(DefaultMarginSetup);
   const [selectedFieldId, setSelectedFieldId] = useState(CustomizeReportFields[0].id);
   const [selectedLineId, setSelectedLineId] = useState<string | null>(null);
-  const [selectedElementType, setSelectedElementType] = useState<"field" | "line">("field");
+  const [selectedElementType, setSelectedElementType] = useState<CustomizeReportElementType>(CustomizeReportElementTypes.Field);
   const [selectedElementKeys, setSelectedElementKeys] = useState<SelectedElementKey[]>([
-    getSelectedElementKey("field", CustomizeReportFields[0].id),
+    getSelectedElementKey(CustomizeReportElementTypes.Field, CustomizeReportFields[0].id),
   ]);
   const [selectedReportId, setSelectedReportId] = useState(DefaultCustomizeReportModuleId);
   const [alignmentGuides, setAlignmentGuides] = useState<AlignmentGuide[]>([]);
@@ -89,7 +99,7 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
   const [isCanvasPanning, setIsCanvasPanning] = useState(false);
   const [isElementsPanelOpen, setIsElementsPanelOpen] = useState(true);
   const [isToolsDialogOpen, setIsToolsDialogOpen] = useState(false);
-  const [deleteTargetType, setDeleteTargetType] = useState<"field" | "line" | null>(null);
+  const [deleteTargetType, setDeleteTargetType] = useState<CustomizeReportElementType | null>(null);
   const [layoutHistory, setLayoutHistory] = useState<LayoutHistory>({
     past: [],
     future: [],
@@ -132,24 +142,23 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
     setMarginSetup(getMarginSetupWithDefaults(nextLayout.marginSetup));
     setAlignmentGuides([]);
 
-    if (selectedElementType === "line" && selectedLineId) {
+    if (selectedElementType === CustomizeReportElementTypes.Line && selectedLineId) {
       const restoredLine = nextLayout.lines.find((line) => line.id === selectedLineId);
 
       if (restoredLine) {
         setSelectedLineId(restoredLine.id);
-        setSelectedElementType("line");
-        setSelectedElementKeys([getSelectedElementKey("line", restoredLine.id)]);
+        setSelectedElementType(CustomizeReportElementTypes.Line);
+        setSelectedElementKeys([getSelectedElementKey(CustomizeReportElementTypes.Line, restoredLine.id)]);
         return;
       }
     }
 
-    const restoredField =
-      nextLayout.fields.find((field) => field.id === selectedFieldId) || nextLayout.fields[0];
+    const restoredField = nextLayout.fields.find((field) => field.id === selectedFieldId) || nextLayout.fields[0];
 
     setSelectedFieldId(restoredField?.id || CustomizeReportFields[0].id);
     setSelectedLineId(null);
-    setSelectedElementType("field");
-    setSelectedElementKeys(restoredField ? [getSelectedElementKey("field", restoredField.id)] : []);
+    setSelectedElementType(CustomizeReportElementTypes.Field);
+    setSelectedElementKeys(restoredField ? [getSelectedElementKey(CustomizeReportElementTypes.Field, restoredField.id)] : []);
   }
 
   function handleUndoLayout() {
@@ -183,9 +192,7 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
   useEffect(() => {
     const reportStorageKey = getReportStorageKey(selectedReportId);
     const legacyStoredLayout =
-      selectedReportId === DefaultCustomizeReportModuleId
-        ? window.localStorage.getItem(CustomizeReportStorageKey)
-        : null;
+      selectedReportId === DefaultCustomizeReportModuleId ? window.localStorage.getItem(CustomizeReportStorageKey) : null;
     const storedLayout = window.localStorage.getItem(reportStorageKey) || legacyStoredLayout;
 
     if (!storedLayout) {
@@ -196,26 +203,21 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
       setMarginSetup(DefaultMarginSetup);
       setSelectedFieldId(CustomizeReportFields[0].id);
       setSelectedLineId(null);
-      setSelectedElementType("field");
-      setSelectedElementKeys([getSelectedElementKey("field", CustomizeReportFields[0].id)]);
+      setSelectedElementType(CustomizeReportElementTypes.Field);
+      setSelectedElementKeys([getSelectedElementKey(CustomizeReportElementTypes.Field, CustomizeReportFields[0].id)]);
       setLayoutHistory({ past: [], future: [] });
       return;
     }
 
     try {
-      const parsedLayout = JSON.parse(storedLayout) as
-        CustomizeReportField[] | CustomizeReportLayout;
+      const parsedLayout = JSON.parse(storedLayout) as CustomizeReportField[] | CustomizeReportLayout;
       const nextFields = isSavedLayout(parsedLayout) ? parsedLayout.fields : parsedLayout;
       const nextLines = isSavedLayout(parsedLayout) ? parsedLayout.lines : CustomizeReportLines;
       const nextPageSetup = isSavedLayout(parsedLayout)
         ? parsedLayout.pageSetup || CustomizeReportDefaultPageSetup
         : CustomizeReportDefaultPageSetup;
-      const nextTableSetup = isSavedLayout(parsedLayout)
-        ? getTableSetupWithDefaults(parsedLayout.tableSetup)
-        : DefaultTableSetup;
-      const nextMarginSetup = isSavedLayout(parsedLayout)
-        ? getMarginSetupWithDefaults(parsedLayout.marginSetup)
-        : DefaultMarginSetup;
+      const nextTableSetup = isSavedLayout(parsedLayout) ? getTableSetupWithDefaults(parsedLayout.tableSetup) : DefaultTableSetup;
+      const nextMarginSetup = isSavedLayout(parsedLayout) ? getMarginSetupWithDefaults(parsedLayout.marginSetup) : DefaultMarginSetup;
 
       setFields(nextFields);
       setLines(nextLines);
@@ -224,35 +226,24 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
       setMarginSetup(nextMarginSetup);
       setSelectedFieldId(nextFields[0]?.id || CustomizeReportFields[0].id);
       setSelectedLineId(null);
-      setSelectedElementType("field");
-      setSelectedElementKeys(
-        nextFields[0] ? [getSelectedElementKey("field", nextFields[0].id)] : [],
-      );
+      setSelectedElementType(CustomizeReportElementTypes.Field);
+      setSelectedElementKeys(nextFields[0] ? [getSelectedElementKey(CustomizeReportElementTypes.Field, nextFields[0].id)] : []);
       setLayoutHistory({ past: [], future: [] });
     } catch {
       window.localStorage.removeItem(reportStorageKey);
     }
   }, [selectedReportId]);
 
-  const selectedField = useMemo(
-    () => fields.find((field) => field.id === selectedFieldId) || fields[0],
-    [fields, selectedFieldId],
-  );
+  const selectedField = useMemo(() => fields.find((field) => field.id === selectedFieldId) || fields[0], [fields, selectedFieldId]);
 
-  const selectedLine = useMemo(
-    () => lines.find((line) => line.id === selectedLineId) || null,
-    [lines, selectedLineId],
-  );
+  const selectedLine = useMemo(() => lines.find((line) => line.id === selectedLineId) || null, [lines, selectedLineId]);
 
   const selectedReport = useMemo(
     () => CustomizeReportModuleOptions.find((report) => report.id === selectedReportId) || null,
     [selectedReportId],
   );
 
-  const selectedElementSet = useMemo(
-    () => new Set<SelectedElementKey>(selectedElementKeys),
-    [selectedElementKeys],
-  );
+  const selectedElementSet = useMemo(() => new Set<SelectedElementKey>(selectedElementKeys), [selectedElementKeys]);
 
   const selectedElements = useMemo(
     () =>
@@ -260,7 +251,7 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
         .map((key) => {
           const { type, id } = parseSelectedElementKey(key);
 
-          if (type === "field") {
+          if (type === CustomizeReportElementTypes.Field) {
             const field = fields.find((currentField) => currentField.id === id);
             return field ? { key, type, id, bounds: getFieldBounds(field) } : null;
           }
@@ -276,17 +267,11 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
   const hasMultiSelection = selectedElements.length > 1;
 
   const reportData = useMemo(
-    () =>
-      selectedReport
-        ? getReportData(CustomizeReportSampleData, selectedReport)
-        : CustomizeReportSampleData,
+    () => (selectedReport ? getReportData(CustomizeReportSampleData, selectedReport) : CustomizeReportSampleData),
     [selectedReport],
   );
 
-  const templatePreview = useMemo(
-    () => buildReportTemplate(fields, lines, pageSetup, tableSetup),
-    [fields, lines, pageSetup, tableSetup],
-  );
+  const templatePreview = useMemo(() => buildReportTemplate(fields, lines, pageSetup, tableSetup), [fields, lines, pageSetup, tableSetup]);
   const { handlePreviewPdf, isRendering } = useCustomizeReportPdfPreview({
     pageSetup,
     reportData,
@@ -313,7 +298,7 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
         const deltaX = key === "arrowleft" ? -nudgeAmount : key === "arrowright" ? nudgeAmount : 0;
         const deltaY = key === "arrowup" ? -nudgeAmount : key === "arrowdown" ? nudgeAmount : 0;
 
-        if (selectedElementType === "line" && selectedLine) {
+        if (selectedElementType === CustomizeReportElementTypes.Line && selectedLine) {
           if (selectedLine.locked) {
             return;
           }
@@ -325,8 +310,8 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
                 return line;
               }
 
-              const width = line.orientation === "horizontal" ? line.length : line.thickness;
-              const height = line.orientation === "horizontal" ? line.thickness : line.length;
+              const width = line.orientation === CustomizeReportLineOrientations.Horizontal ? line.length : line.thickness;
+              const height = line.orientation === CustomizeReportLineOrientations.Horizontal ? line.thickness : line.length;
 
               return {
                 ...line,
@@ -399,9 +384,7 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
 
       event.preventDefault();
       event.stopPropagation();
-      setZoom((currentZoom) =>
-        clamp(currentZoom + (event.deltaY < 0 ? ZoomStep : -ZoomStep), MinZoom, MaxZoom),
-      );
+      setZoom((currentZoom) => clamp(currentZoom + (event.deltaY < 0 ? ZoomStep : -ZoomStep), MinZoom, MaxZoom));
     }
 
     canvasScrollElement.addEventListener("wheel", handleCanvasWheel, {
@@ -420,9 +403,7 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
     }
 
     pushUndoSnapshot();
-    setFields((currentFields) =>
-      currentFields.map((field) => (field.id === selectedField.id ? updater(field) : field)),
-    );
+    setFields((currentFields) => currentFields.map((field) => (field.id === selectedField.id ? updater(field) : field)));
   }
 
   function updateSelectedLine(updater: (line: CustomizeReportLine) => CustomizeReportLine) {
@@ -436,16 +417,14 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
     }
 
     pushUndoSnapshot();
-    setLines((currentLines) =>
-      currentLines.map((line) => (line.id === selectedLine.id ? updater(line) : line)),
-    );
+    setLines((currentLines) => currentLines.map((line) => (line.id === selectedLine.id ? updater(line) : line)));
   }
 
-  function selectElement(type: "field" | "line", id: string, additive = false) {
+  function selectElement(type: CustomizeReportElementType, id: string, additive = false) {
     const key = getSelectedElementKey(type, id);
 
     setSelectedElementType(type);
-    if (type === "field") {
+    if (type === CustomizeReportElementTypes.Field) {
       setSelectedFieldId(id);
       setSelectedLineId(null);
     } else {
@@ -466,11 +445,7 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
     });
   }
 
-  function handleElementSelect(
-    event: ReactMouseEvent<HTMLElement>,
-    type: "field" | "line",
-    id: string,
-  ) {
+  function handleElementSelect(event: ReactMouseEvent<HTMLElement>, type: CustomizeReportElementType, id: string) {
     selectElement(type, id, event.shiftKey);
   }
 
@@ -481,7 +456,7 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
       .map((key) => {
         const { type, id } = parseSelectedElementKey(key);
 
-        if (type === "field") {
+        if (type === CustomizeReportElementTypes.Field) {
           const field = fields.find((currentField) => currentField.id === id);
 
           if (!field || field.locked) {
@@ -518,23 +493,20 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
       .filter((origin): origin is NonNullable<typeof origin> => Boolean(origin));
   }
 
-  function handlePointerDown(
-    event: ReactPointerEvent<HTMLButtonElement | HTMLDivElement>,
-    field: CustomizeReportField,
-  ) {
+  function handlePointerDown(event: ReactPointerEvent<HTMLButtonElement | HTMLDivElement>, field: CustomizeReportField) {
     if (field.locked) {
-      selectElement("field", field.id, event.shiftKey);
+      selectElement(CustomizeReportElementTypes.Field, field.id, event.shiftKey);
       return;
     }
 
     event.stopPropagation();
     event.currentTarget.setPointerCapture(event.pointerId);
     pushUndoSnapshot();
-    selectElement("field", field.id, event.shiftKey);
-    const activeKey = getSelectedElementKey("field", field.id);
+    selectElement(CustomizeReportElementTypes.Field, field.id, event.shiftKey);
+    const activeKey = getSelectedElementKey(CustomizeReportElementTypes.Field, field.id);
     dragStateRef.current = {
       elementId: field.id,
-      elementType: "field",
+      elementType: CustomizeReportElementTypes.Field,
       action: "move",
       startX: event.clientX,
       startY: event.clientY,
@@ -544,23 +516,20 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
     };
   }
 
-  function handleLinePointerDown(
-    event: ReactPointerEvent<HTMLButtonElement>,
-    line: CustomizeReportLine,
-  ) {
+  function handleLinePointerDown(event: ReactPointerEvent<HTMLButtonElement>, line: CustomizeReportLine) {
     if (line.locked) {
-      selectElement("line", line.id, event.shiftKey);
+      selectElement(CustomizeReportElementTypes.Line, line.id, event.shiftKey);
       return;
     }
 
     event.stopPropagation();
     event.currentTarget.setPointerCapture(event.pointerId);
     pushUndoSnapshot();
-    selectElement("line", line.id, event.shiftKey);
-    const activeKey = getSelectedElementKey("line", line.id);
+    selectElement(CustomizeReportElementTypes.Line, line.id, event.shiftKey);
+    const activeKey = getSelectedElementKey(CustomizeReportElementTypes.Line, line.id);
     dragStateRef.current = {
       elementId: line.id,
-      elementType: "line",
+      elementType: CustomizeReportElementTypes.Line,
       action: "move",
       startX: event.clientX,
       startY: event.clientY,
@@ -582,10 +551,10 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
     event.stopPropagation();
     event.currentTarget.setPointerCapture(event.pointerId);
     pushUndoSnapshot();
-    selectElement("field", field.id, false);
+    selectElement(CustomizeReportElementTypes.Field, field.id, false);
     dragStateRef.current = {
       elementId: field.id,
-      elementType: "field",
+      elementType: CustomizeReportElementTypes.Field,
       action: "resize",
       resizeHandle,
       startX: event.clientX,
@@ -608,17 +577,11 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
     const deltaX = (event.clientX - dragState.startX) / zoomScale;
     const deltaY = (event.clientY - dragState.startY) / zoomScale;
 
-    if (
-      dragState.action === "move" &&
-      dragState.groupOrigins &&
-      dragState.groupOrigins.length > 1
-    ) {
+    if (dragState.action === "move" && dragState.groupOrigins && dragState.groupOrigins.length > 1) {
       const pageMinX = Math.min(...dragState.groupOrigins.map((origin) => origin.x));
       const pageMaxX = Math.max(...dragState.groupOrigins.map((origin) => origin.x + origin.width));
       const pageMinY = Math.min(...dragState.groupOrigins.map((origin) => origin.y));
-      const pageMaxY = Math.max(
-        ...dragState.groupOrigins.map((origin) => origin.y + origin.height),
-      );
+      const pageMaxY = Math.max(...dragState.groupOrigins.map((origin) => origin.y + origin.height));
       const groupDeltaX = clamp(snapValue(deltaX), -pageMinX, pageSetup.width - pageMaxX);
       const groupDeltaY = clamp(snapValue(deltaY), -pageMinY, pageSetup.height - pageMaxY);
       const nextPositions = new Map(
@@ -633,7 +596,7 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
 
       setFields((currentFields) =>
         currentFields.map((field) => {
-          const position = nextPositions.get(getSelectedElementKey("field", field.id));
+          const position = nextPositions.get(getSelectedElementKey(CustomizeReportElementTypes.Field, field.id));
 
           return position
             ? {
@@ -646,7 +609,7 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
       );
       setLines((currentLines) =>
         currentLines.map((line) => {
-          const position = nextPositions.get(getSelectedElementKey("line", line.id));
+          const position = nextPositions.get(getSelectedElementKey(CustomizeReportElementTypes.Line, line.id));
 
           return position
             ? {
@@ -713,22 +676,22 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
       return;
     }
 
-    if (dragState.elementType === "line") {
+    if (dragState.elementType === CustomizeReportElementTypes.Line) {
       const line = lines.find((currentLine) => currentLine.id === dragState.elementId);
 
       if (!line) {
         return;
       }
 
-      const width = line.orientation === "horizontal" ? line.length : line.thickness;
-      const height = line.orientation === "horizontal" ? line.thickness : line.length;
+      const width = line.orientation === CustomizeReportLineOrientations.Horizontal ? line.length : line.thickness;
+      const height = line.orientation === CustomizeReportLineOrientations.Horizontal ? line.thickness : line.length;
       const rawX = clamp(snapValue(dragState.originX + deltaX), 0, pageSetup.width - width);
       const rawY = clamp(snapValue(dragState.originY + deltaY), 0, pageSetup.height - height);
       const snappedPosition = getSnappedPosition(
         {
           id: line.id,
           label: line.label,
-          type: "line",
+          type: CustomizeReportElementTypes.Line,
           x: rawX,
           y: rawY,
           width,
@@ -834,7 +797,6 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
     setIsCanvasPanning(false);
   }
 
-
   function handleSaveLayout() {
     if (!selectedReport) {
       toast.error("Select a report module before saving.");
@@ -874,7 +836,7 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
     setPageSetup(CustomizeReportDefaultPageSetup);
     setTableSetup(DefaultTableSetup);
     setMarginSetup(DefaultMarginSetup);
-    selectElement("field", CustomizeReportFields[0].id);
+    selectElement(CustomizeReportElementTypes.Field, CustomizeReportFields[0].id);
     toast.success(`${selectedReport.label} layout reset.`);
   }
 
@@ -887,13 +849,13 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
       y: 190 + lines.length * 14,
       length: 240,
       thickness: 1,
-      orientation: "horizontal",
+      orientation: CustomizeReportLineOrientations.Horizontal,
       color: "#334155",
       visible: true,
     };
 
     setLines((currentLines) => [...currentLines, nextLine]);
-    selectElement("line", nextLine.id);
+    selectElement(CustomizeReportElementTypes.Line, nextLine.id);
     toast.success("Line added.");
   }
 
@@ -917,7 +879,7 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
     };
 
     setFields((currentFields) => [...currentFields, nextField]);
-    selectElement("field", nextField.id);
+    selectElement(CustomizeReportElementTypes.Field, nextField.id);
     toast.success("Text added.");
   }
 
@@ -963,7 +925,7 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
       };
 
       setFields((currentFields) => [...currentFields, nextField]);
-      selectElement("field", nextField.id);
+      selectElement(CustomizeReportElementTypes.Field, nextField.id);
       toast.success("Logo uploaded.");
     };
 
@@ -987,7 +949,7 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
 
     pushUndoSnapshot();
     setLines((currentLines) => currentLines.filter((line) => line.id !== selectedLine.id));
-    selectElement("field", fields[0]?.id || CustomizeReportFields[0].id);
+    selectElement(CustomizeReportElementTypes.Field, fields[0]?.id || CustomizeReportFields[0].id);
     toast.success("Line removed.");
   }
 
@@ -1010,18 +972,18 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
     const remainingFields = fields.filter((field) => field.id !== selectedField.id);
 
     setFields(remainingFields);
-    selectElement("field", remainingFields[0]?.id || CustomizeReportFields[0].id);
+    selectElement(CustomizeReportElementTypes.Field, remainingFields[0]?.id || CustomizeReportFields[0].id);
     toast.success("Element removed.");
   }
 
   function handleDuplicateSelectedElement() {
     pushUndoSnapshot();
 
-    if (selectedElementType === "line" && selectedLine) {
+    if (selectedElementType === CustomizeReportElementTypes.Line && selectedLine) {
       const lineWidth =
-        selectedLine.orientation === "horizontal" ? selectedLine.length : selectedLine.thickness;
+        selectedLine.orientation === CustomizeReportLineOrientations.Horizontal ? selectedLine.length : selectedLine.thickness;
       const lineHeight =
-        selectedLine.orientation === "horizontal" ? selectedLine.thickness : selectedLine.length;
+        selectedLine.orientation === CustomizeReportLineOrientations.Horizontal ? selectedLine.thickness : selectedLine.length;
       const nextLine: CustomizeReportLine = {
         ...selectedLine,
         id: `line-${Date.now()}`,
@@ -1033,7 +995,7 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
       };
 
       setLines((currentLines) => [...currentLines, nextLine]);
-      selectElement("line", nextLine.id);
+      selectElement(CustomizeReportElementTypes.Line, nextLine.id);
       toast.success("Line duplicated.");
       return;
     }
@@ -1053,14 +1015,14 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
     };
 
     setFields((currentFields) => [...currentFields, nextField]);
-    selectElement("field", nextField.id);
+    selectElement(CustomizeReportElementTypes.Field, nextField.id);
     toast.success("Element duplicated.");
   }
 
   function handleToggleSelectedLock() {
     pushUndoSnapshot();
 
-    if (selectedElementType === "line" && selectedLine) {
+    if (selectedElementType === CustomizeReportElementTypes.Line && selectedLine) {
       setLines((currentLines) =>
         currentLines.map((line) =>
           line.id === selectedLine.id
@@ -1089,10 +1051,7 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
   }
 
   function handleLayerSelectedElement(action: "backward" | "forward" | "back" | "front") {
-    const allZIndexes = [
-      ...fields.map((field) => field.zIndex ?? 1),
-      ...lines.map((line) => line.zIndex ?? 1),
-    ];
+    const allZIndexes = [...fields.map((field) => field.zIndex ?? 1), ...lines.map((line) => line.zIndex ?? 1)];
     const minZIndex = Math.min(1, ...allZIndexes);
     const maxZIndex = Math.max(1, ...allZIndexes);
     const getNextZIndex = (currentZIndex: number) => {
@@ -1109,7 +1068,7 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
 
     pushUndoSnapshot();
 
-    if (selectedElementType === "line" && selectedLine) {
+    if (selectedElementType === CustomizeReportElementTypes.Line && selectedLine) {
       setLines((currentLines) =>
         currentLines.map((line) =>
           line.id === selectedLine.id
@@ -1144,7 +1103,7 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
     }
 
     const unlockedElements = selectedElements.filter((element) => {
-      if (element.type === "field") {
+      if (element.type === CustomizeReportElementTypes.Field) {
         return !fields.find((field) => field.id === element.id)?.locked;
       }
 
@@ -1157,26 +1116,20 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
     }
 
     const minLeft = Math.min(...unlockedElements.map((element) => element.bounds.x));
-    const maxRight = Math.max(
-      ...unlockedElements.map((element) => element.bounds.x + element.bounds.width),
-    );
+    const maxRight = Math.max(...unlockedElements.map((element) => element.bounds.x + element.bounds.width));
     const minTop = Math.min(...unlockedElements.map((element) => element.bounds.y));
-    const maxBottom = Math.max(
-      ...unlockedElements.map((element) => element.bounds.y + element.bounds.height),
-    );
+    const maxBottom = Math.max(...unlockedElements.map((element) => element.bounds.y + element.bounds.height));
     const centerX = minLeft + (maxRight - minLeft) / 2;
     const centerY = minTop + (maxBottom - minTop) / 2;
     const horizontalOrder = [...unlockedElements].sort((a, b) => a.bounds.x - b.bounds.x);
     const verticalOrder = [...unlockedElements].sort((a, b) => a.bounds.y - b.bounds.y);
     const horizontalGap =
       horizontalOrder.length > 2
-        ? (maxRight - minLeft - horizontalOrder.reduce((sum, item) => sum + item.bounds.width, 0)) /
-          (horizontalOrder.length - 1)
+        ? (maxRight - minLeft - horizontalOrder.reduce((sum, item) => sum + item.bounds.width, 0)) / (horizontalOrder.length - 1)
         : 0;
     const verticalGap =
       verticalOrder.length > 2
-        ? (maxBottom - minTop - verticalOrder.reduce((sum, item) => sum + item.bounds.height, 0)) /
-          (verticalOrder.length - 1)
+        ? (maxBottom - minTop - verticalOrder.reduce((sum, item) => sum + item.bounds.height, 0)) / (verticalOrder.length - 1)
         : 0;
     const nextPositions = new Map<string, { x: number; y: number }>();
 
@@ -1215,7 +1168,7 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
     pushUndoSnapshot();
     setFields((currentFields) =>
       currentFields.map((field) => {
-        const position = nextPositions.get(getSelectedElementKey("field", field.id));
+        const position = nextPositions.get(getSelectedElementKey(CustomizeReportElementTypes.Field, field.id));
 
         return position
           ? {
@@ -1228,7 +1181,7 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
     );
     setLines((currentLines) =>
       currentLines.map((line) => {
-        const position = nextPositions.get(getSelectedElementKey("line", line.id));
+        const position = nextPositions.get(getSelectedElementKey(CustomizeReportElementTypes.Line, line.id));
         const bounds = getLineBounds(line);
 
         return position
@@ -1254,7 +1207,7 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
           : field,
       ),
     );
-    selectElement("field", fieldId);
+    selectElement(CustomizeReportElementTypes.Field, fieldId);
   }
 
   function handleToggleLineVisibility(lineId: string) {
@@ -1269,7 +1222,7 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
           : line,
       ),
     );
-    selectElement("line", lineId);
+    selectElement(CustomizeReportElementTypes.Line, lineId);
   }
 
   function handlePageFormatChange(format: CustomizeReportPaperFormat) {
@@ -1282,9 +1235,7 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
     setPageSetup((currentSetup) => getPageSetup(currentSetup.format, orientation));
   }
 
-  function updateTableSetup(
-    updater: (setup: CustomizeReportTableSetup) => CustomizeReportTableSetup,
-  ) {
+  function updateTableSetup(updater: (setup: CustomizeReportTableSetup) => CustomizeReportTableSetup) {
     pushUndoSnapshot();
     setTableSetup((currentSetup) => getTableSetupWithDefaults(updater(currentSetup)));
   }
@@ -1295,21 +1246,17 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
   ) {
     updateTableSetup((currentSetup) => ({
       ...currentSetup,
-      columns: currentSetup.columns.map((column) =>
-        column.key === columnKey ? updater(column) : column,
-      ),
+      columns: currentSetup.columns.map((column) => (column.key === columnKey ? updater(column) : column)),
     }));
   }
 
-  function updateMarginSetup(
-    updater: (setup: CustomizeReportMarginSetup) => CustomizeReportMarginSetup,
-  ) {
+  function updateMarginSetup(updater: (setup: CustomizeReportMarginSetup) => CustomizeReportMarginSetup) {
     pushUndoSnapshot();
     setMarginSetup((currentSetup) => updater(currentSetup));
   }
 
   function handleConfirmDeleteSelectedElement() {
-    if (deleteTargetType === "line") {
+    if (deleteTargetType === CustomizeReportElementTypes.Line) {
       handleDeleteSelectedLine();
     } else {
       handleDeleteSelectedField();
@@ -1388,5 +1335,3 @@ export function useCustomizeReportDesigner() {  const [fields, setFields] = useS
     zoom,
   };
 }
-
-

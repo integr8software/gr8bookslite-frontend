@@ -5,11 +5,9 @@ import {
   AcknowledgementReceiptPaymentTypeOptions,
 } from "@/app/src/data/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptData";
 import type { AcknowledgementReceiptFormValues } from "@/app/src/types/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptTypes";
-import {
-  AppAdvancedDropdown,
-  type AppAdvancedDropdownOption,
-} from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { AppAdvancedDropdown, type AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
+import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
@@ -18,10 +16,7 @@ type AcknowledgementReceiptDetailsFormProps = {
   values: AcknowledgementReceiptFormValues;
   onOpenPartyDrawer: () => void;
   onOpenPaymentTypeDialog: () => void;
-  onUpdateField: <Key extends keyof AcknowledgementReceiptFormValues>(
-    key: Key,
-    value: AcknowledgementReceiptFormValues[Key],
-  ) => void;
+  onUpdateField: <Key extends keyof AcknowledgementReceiptFormValues>(key: Key, value: AcknowledgementReceiptFormValues[Key]) => void;
 };
 
 export function AcknowledgementReceiptDetailsForm({
@@ -60,33 +55,30 @@ export function AcknowledgementReceiptDetailsForm({
             />
           </FieldShell>
           <FieldShell controlId="acknowledgement-receipt-currency" label="Currency">
-            <div className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-              <AppAdvancedDropdown
-                id="acknowledgement-receipt-currency"
-                value={values.currency}
-                readOnly={isReadonly}
-                isClearable={false}
-                options={AcknowledgementReceiptCurrencyOptions}
-                placeholder="Currency"
-                searchPlaceholder="Search currency"
-                onChange={(value) => onUpdateField("currency", String(value))}
-              />
-              <div className="grid min-w-0 gap-2 sm:grid-cols-[auto_9rem] sm:items-center">
-                <label
-                  htmlFor="acknowledgement-receipt-exchange-rate"
-                  className="whitespace-nowrap text-sm font-semibold text-darknavy"
-                >
-                  Exchange Rate
-                </label>
+            <CurrencyExchangeRateRow
+              currencyControl={
+                <AppAdvancedDropdown
+                  id="acknowledgement-receipt-currency"
+                  className="w-full min-w-0"
+                  value={values.currency}
+                  readOnly={isReadonly}
+                  isClearable={false}
+                  options={AcknowledgementReceiptCurrencyOptions}
+                  placeholder="Currency"
+                  searchPlaceholder="Search currency"
+                  onChange={(value) => onUpdateField("currency", String(value))}
+                />
+              }
+              exchangeRateControl={
                 <MoneyNumberField
                   id="acknowledgement-receipt-exchange-rate"
                   value={values.exchangeRate}
                   readOnly={isReadonly}
                   onValueChange={(value) => onUpdateField("exchangeRate", value)}
-                  className={`${FieldClassName} text-right`}
+                  className={`${FieldClassName} text-right tabular-nums`}
                 />
-              </div>
-            </div>
+              }
+            />
           </FieldShell>
           <FieldShell controlId="acknowledgement-receipt-remarks" label="Remarks">
             <AppLimitedTextarea
@@ -174,12 +166,7 @@ function AttachedDropdown({
         searchPlaceholder={searchPlaceholder}
         onChange={(nextValue) => onChange(String(nextValue))}
       />
-      <button
-        type="button"
-        disabled={readOnly}
-        onClick={onAdd}
-        className={AttachedAddButtonClassName}
-      >
+      <button type="button" disabled={readOnly} onClick={onAdd} className={AttachedAddButtonClassName}>
         Add
       </button>
     </div>
@@ -199,10 +186,7 @@ function FieldShell({
 }) {
   return (
     <div className="grid min-w-0 gap-2 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-start">
-      <label
-        htmlFor={controlId}
-        className="pt-2 text-sm font-semibold text-darknavy"
-      >
+      <label htmlFor={controlId} className="pt-2 text-sm font-semibold text-darknavy">
         {label}
         {isRequired ? <span className="ml-1 text-coralpink">*</span> : null}
       </label>
@@ -214,8 +198,7 @@ function FieldShell({
 const FieldClassName =
   "app-data-entry-field h-11 min-w-0 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15 read-only:bg-white read-only:text-darknavy disabled:bg-white disabled:text-darknavy";
 
-const AttachedDropdownClassName =
-  "sm:[&_.app-advanced-dropdown-control]:rounded-r-none";
+const AttachedDropdownClassName = "sm:[&_.app-advanced-dropdown-control]:rounded-r-none";
 
 const AttachedAddButtonClassName = joinClasses(
   "inline-flex h-11 w-20 shrink-0 items-center justify-center gap-2 rounded-lg border border-darknavy/10 border-l-darknavy/20 bg-skyblue/8 px-3 text-sm font-semibold text-skyblue transition hover:border-skyblue/25 hover:bg-skyblue/12 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/15 disabled:cursor-not-allowed disabled:opacity-45 sm:rounded-l-none",

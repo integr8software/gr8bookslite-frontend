@@ -18,6 +18,7 @@ import {
 } from "@/app/src/ui/modules/purchasing/purchase-request/form/PurchaseRequestFieldControls";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
+import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 
 type PurchaseRequestSupplierFieldsProps = {
@@ -28,7 +29,7 @@ type PurchaseRequestSupplierFieldsProps = {
 
 export function PurchaseRequestSupplierFields({ isReadonly, onUpdateField, values }: PurchaseRequestSupplierFieldsProps) {
   return (
-    <div className="grid min-w-0 gap-4 xl:grid-cols-3">
+    <div className="grid min-w-0 gap-4 xl:grid-cols-2 2xl:grid-cols-3">
       <div className="grid min-w-0 gap-4">
         <PurchaseRequestAttachedTextField
           id="purchase-request-vce-name"
@@ -61,7 +62,7 @@ export function PurchaseRequestSupplierFields({ isReadonly, onUpdateField, value
         </PurchaseRequestFieldShell>
       </div>
 
-      <div className="grid min-w-0 content-start gap-4 xl:col-start-2">
+      <div className="grid min-w-0 content-start gap-4 2xl:col-start-2">
         <PurchaseRequestTextField
           id="purchase-request-vce-code"
           label="Party Code"
@@ -80,29 +81,31 @@ export function PurchaseRequestSupplierFields({ isReadonly, onUpdateField, value
           onChange={(value) => onUpdateField("purchaseType", value)}
         />
         <PurchaseRequestFieldShell controlId="purchase-request-currency" label="Currency">
-          <div className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto_minmax(6.5rem,0.65fr)] sm:items-center">
-            <AppAdvancedDropdown
-              id="purchase-request-currency"
-              value={values.currency ?? ""}
-              readOnly={isReadonly}
-              options={PurchaseRequestCurrencyOptions.map((option) => ({
-                name: option,
-                value: option,
-              }))}
-              placeholder="PHP"
-              onChange={(value) => onUpdateField("currency", String(value))}
-            />
-            <label htmlFor="purchase-request-exchange-rate" className="text-sm font-semibold text-darknavy">
-              ER:
-            </label>
-            <MoneyNumberField
-              id="purchase-request-exchange-rate"
-              value={String(values.exchangeRate ?? "")}
-              readOnly={isReadonly}
-              onValueChange={(value) => onUpdateField("exchangeRate", Number(value) || 0)}
-              className={`${PurchaseRequestFieldClassName} text-right tabular-nums`}
-            />
-          </div>
+          <CurrencyExchangeRateRow
+            currencyControl={
+              <AppAdvancedDropdown
+                id="purchase-request-currency"
+                className="w-full min-w-0"
+                value={values.currency ?? ""}
+                readOnly={isReadonly}
+                options={PurchaseRequestCurrencyOptions.map((option) => ({
+                  name: option,
+                  value: option,
+                }))}
+                placeholder="PHP"
+                onChange={(value) => onUpdateField("currency", String(value))}
+              />
+            }
+            exchangeRateControl={
+              <MoneyNumberField
+                id="purchase-request-exchange-rate"
+                value={String(values.exchangeRate ?? "")}
+                readOnly={isReadonly}
+                onValueChange={(value) => onUpdateField("exchangeRate", Number(value) || 0)}
+                className={`${PurchaseRequestFieldClassName} text-right tabular-nums`}
+              />
+            }
+          />
         </PurchaseRequestFieldShell>
         <PurchaseRequestTextField
           id="purchase-request-for-department"
@@ -113,7 +116,7 @@ export function PurchaseRequestSupplierFields({ isReadonly, onUpdateField, value
         />
       </div>
 
-      <div className="grid min-w-0 content-start gap-4 xl:col-start-3">
+      <div className="grid min-w-0 content-start gap-4 2xl:col-start-3">
         <PurchaseRequestTextField
           id="purchase-request-trans-no"
           label="PR No."

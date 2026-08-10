@@ -8,6 +8,7 @@ import {
 import type { GoodsIssueFormValues } from "@/app/src/types/modules/inventory/goods-issue/GoodsIssueTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
+import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 import {
   DateField,
@@ -25,7 +26,7 @@ type GoodsIssueWarehouseFieldsProps = {
 
 export function GoodsIssueWarehouseFields({ isReadonly, onUpdateField, values }: GoodsIssueWarehouseFieldsProps) {
   return (
-    <div className="grid min-w-0 gap-5 xl:grid-cols-3">
+    <div className="grid min-w-0 gap-5 xl:grid-cols-2 2xl:grid-cols-3">
       <div className="grid min-w-0 content-start gap-4">
         <FieldShell controlId="goods-issue-vce-name" label="Party Name" isRequired>
           <AppAdvancedDropdown
@@ -96,36 +97,31 @@ export function GoodsIssueWarehouseFields({ isReadonly, onUpdateField, values }:
             onChange={(value) => onUpdateField("sourceWarehouse", String(value))}
           />
         </FieldShell>
-        <div className="grid min-w-0 gap-1.5 sm:grid-cols-[7.5rem_minmax(0,1fr)_max-content_6.5rem] sm:items-start">
-          <label
-            htmlFor="goods-issue-currency"
-            className="pt-2 text-sm font-semibold text-darknavy"
-          >
-            Currency
-          </label>
-          <AppAdvancedDropdown
-            id="goods-issue-currency"
-            value={values.currency}
-            readOnly={isReadonly}
-            options={GoodsIssueCurrencyOptions}
-            placeholder="Select currency"
-            searchPlaceholder="Search currency"
-            onChange={(value) => onUpdateField("currency", String(value))}
+        <FieldShell controlId="goods-issue-currency" label="Currency">
+          <CurrencyExchangeRateRow
+            currencyControl={
+              <AppAdvancedDropdown
+                id="goods-issue-currency"
+                className="w-full min-w-0"
+                value={values.currency}
+                readOnly={isReadonly}
+                options={GoodsIssueCurrencyOptions}
+                placeholder="Select currency"
+                searchPlaceholder="Search currency"
+                onChange={(value) => onUpdateField("currency", String(value))}
+              />
+            }
+            exchangeRateControl={
+              <MoneyNumberField
+                id="goods-issue-exchange-rate"
+                value={values.exchangeRate}
+                readOnly={isReadonly}
+                onValueChange={(value) => onUpdateField("exchangeRate", value)}
+                className={`${FieldClassName} text-right tabular-nums`}
+              />
+            }
           />
-          <label
-            htmlFor="goods-issue-exchange-rate"
-            className="pt-2 text-sm font-semibold text-darknavy"
-          >
-            Exchange Rate
-          </label>
-          <MoneyNumberField
-            id="goods-issue-exchange-rate"
-            value={values.exchangeRate}
-            readOnly={isReadonly}
-            onValueChange={(value) => onUpdateField("exchangeRate", value)}
-            className={`${FieldClassName} text-right tabular-nums`}
-          />
-        </div>
+        </FieldShell>
       </div>
 
       <div className="grid min-w-0 content-start gap-4">

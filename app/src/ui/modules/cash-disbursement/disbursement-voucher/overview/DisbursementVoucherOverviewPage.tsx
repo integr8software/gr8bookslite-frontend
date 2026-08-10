@@ -189,10 +189,7 @@ function canUpdatePreviewRowStatus(
 		return true;
 	}
 
-	if (
-		nextStatus === DisbursementVoucherStatuses.draft ||
-		nextStatus === DisbursementVoucherStatuses.forApproval
-	) {
+	if (nextStatus === DisbursementVoucherStatuses.draft) {
 		return currentStatus === DisbursementVoucherStatuses.cancelled;
 	}
 

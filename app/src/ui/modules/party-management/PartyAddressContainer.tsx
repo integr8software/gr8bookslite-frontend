@@ -19,12 +19,12 @@ import type {
 } from "@/app/src/types/modules/party-management/PartyManagementTypes";
 import {
 	AppAdvancedDropdown,
-	type AppAdvancedDropdownOption,
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import type {
 	AddressAutocompleteDetails,
 	AddressAutocompleteItem,
 } from "@/app/src/types/shared/address/AddressTypes";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { AppAddressAutocomplete } from "@/app/src/ui/shared/address/AppAddressAutocomplete";
 
 export function PartyAddressContainer({

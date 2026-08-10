@@ -4,26 +4,21 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
-import type {
-  Content,
-  TableCell,
-  TDocumentDefinitions,
-} from "pdfmake/interfaces";
+import type { Content, TableCell, TDocumentDefinitions } from "pdfmake/interfaces";
+import { ChevronDown, ClipboardPaste, Download, Eye, FileText, LayoutGrid, Save, Upload, X } from "lucide-react";
+import { AppMaxFileUploadSizeBytes, AppMaxFileUploadSizeLabel } from "@/app/src/constants/shared/app/AppConstants";
 import {
-  ChevronDown,
-  ClipboardPaste,
-  Download,
-  Eye,
-  FileText,
-  LayoutGrid,
-  Save,
-  Upload,
-  X,
-} from "lucide-react";
-import {
-  AppMaxFileUploadSizeBytes,
-  AppMaxFileUploadSizeLabel,
-} from "@/app/src/constants/shared/app/AppConstants";
+  DefaultDisbursementAccountingGridColumnLabels,
+  DefaultDisbursementAccountingGridColumnOrder,
+  DefaultDisbursementAccountingGridColumnWidths,
+  DisbursementAccountingExportColumnWidths,
+  DisbursementAccountingGridTaxRateOptions,
+  DisbursementAccountingImportClearActions,
+  DisbursementAccountingImportTemplateColumnWidths,
+  DisbursementAccountingImportTemplateHeaders,
+  DisbursementAccountingImportTemplateRows,
+  ProtectedDisbursementAccountingGridColumnIds,
+} from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryConstants";
 import {
   DisbursementVoucherInitialEntryDraft,
   createBlankDisbursementLineEntry,
@@ -36,9 +31,13 @@ import { DisbursementVoucherHref } from "@/app/src/constants/modules/cash-disbur
 import { useDisbursementVoucherStore } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucher";
 import { validateDisbursementVoucherEntries } from "@/app/src/validations/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherValidation";
 import type {
+  DisbursementAccountingExportTheme,
+  DisbursementAccountingGridColumnId,
+  EditableDisbursementAccountingGridRow,
+} from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryTypes";
+import type {
   DisbursementVoucherAccountingGridSession,
   DisbursementLineEntry,
-  DisbursementTaxDetails,
   DisbursementTransactionRecord,
   DisbursementVoucherFormValues,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
@@ -52,153 +51,35 @@ import {
   type ModuleDataEntryColumn,
   type ModuleDataEntryColumnOption,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
-import {
-  MoneyNumberField,
-  formatMoneyNumberInput,
-  parseMoneyNumberInput,
-} from "@/app/src/ui/shared/money/MoneyNumberField";
+import { MoneyNumberField, formatMoneyNumberInput, parseMoneyNumberInput } from "@/app/src/ui/shared/money/MoneyNumberField";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 pdfMake.addVirtualFileSystem(pdfFonts);
 
-type EditableGridRow = {
-  accountCode: string;
-  accountName: string;
-  credit: string;
-  debit: string;
-  id: string;
-  particulars: string;
-  taxDetails: DisbursementTaxDetails;
-  taxRate: string;
-};
-
-type GridColumnId =
-  | "accountCode"
-  | "accountName"
-  | "particulars"
-  | "taxRate"
-  | "debit"
-  | "credit";
-
-type AccountingExportTheme = {
-  accentColor: string;
-  accentContrastColor: string;
-  excelAccentArgb: string;
-  excelAccentContrastArgb: string;
-};
-
-const TaxRateOptions = ["0%", "1%", "2%", "5%", "12%"];
-
-const DefaultGridColumnOrder: GridColumnId[] = [
-  "accountCode",
-  "accountName",
-  "particulars",
-  "taxRate",
-  "debit",
-  "credit",
-];
-
-const ProtectedGridColumnIds = new Set<GridColumnId>([
-  "accountCode",
-  "accountName",
-  "debit",
-  "credit",
-]);
-
-const DefaultGridColumnLabels: Record<GridColumnId, string> = {
-  accountCode: "Account Code",
-  accountName: "Account Name",
-  credit: "Credit",
-  debit: "Debit",
-  particulars: "Particulars",
-  taxRate: "Tax Rate",
-};
-
-const DefaultGridColumnWidths: Record<GridColumnId, number> = {
-  accountCode: 190,
-  accountName: 240,
-  credit: 165,
-  debit: 165,
-  particulars: 330,
-  taxRate: 150,
-};
-
-const AccountingImportTemplateHeaders = [
-  "Account Code",
-  "Account Name",
-  "Particulars",
-  "Tax Rate",
-  "Debit",
-  "Credit",
-];
-
-const AccountingImportTemplateRows = [
-  [
-    "2010-003",
-    "Accounts Payable",
-    "Settlement of approved office depot payable",
-    "0%",
-    "",
-    "18450.00",
-  ],
-  [
-    "5010-001",
-    "Office Supplies Expense",
-    "Replenishment of paper, toner, and pantry labels",
-    "0%",
-    "18450.00",
-    "",
-  ],
-];
-
-const AccountingImportTemplateColumnWidths = [18, 30, 44, 14, 18, 18];
-
-const AccountingExportColumnWidths: Record<GridColumnId, number> = {
-  accountCode: 18,
-  accountName: 30,
-  credit: 18,
-  debit: 18,
-  particulars: 44,
-  taxRate: 14,
-};
-
-const ImportClearActions: {
-  label: string;
-  value: ModuleDataEntryClearAction;
-}[] = [
-    { label: "Clear All", value: "all" },
-    { label: "Clear With Data", value: "with-data" },
-    { label: "Clear Incomplete", value: "incomplete" },
-    { label: "Clear No Data", value: "no-data" },
-  ];
+type EditableGridRow = EditableDisbursementAccountingGridRow;
+type GridColumnId = DisbursementAccountingGridColumnId;
+type AccountingExportTheme = DisbursementAccountingExportTheme;
 
 export function DisbursementVoucherAccountingGridPage() {
   const router = useRouter();
   const transactions = useDisbursementVoucherStore((state) => state.transactions);
-  const [session, setSession] =
-    useState<DisbursementVoucherAccountingGridSession | null>(null);
+  const [session, setSession] = useState<DisbursementVoucherAccountingGridSession | null>(null);
   const [rows, setRows] = useState<EditableGridRow[]>([]);
-  const [columnOrder, setColumnOrder] =
-    useState<GridColumnId[]>(DefaultGridColumnOrder);
-  const [visibleColumnIds, setVisibleColumnIds] =
-    useState<GridColumnId[]>(DefaultGridColumnOrder);
-  const [columnLabels, setColumnLabels] = useState(DefaultGridColumnLabels);
-  const [columnWidths, setColumnWidths] = useState(DefaultGridColumnWidths);
-  const [autoWidthColumnIds, setAutoWidthColumnIds] = useState<GridColumnId[]>(
-    [],
-  );
+  const [columnOrder, setColumnOrder] = useState<GridColumnId[]>(DefaultDisbursementAccountingGridColumnOrder);
+  const [visibleColumnIds, setVisibleColumnIds] = useState<GridColumnId[]>(DefaultDisbursementAccountingGridColumnOrder);
+  const [columnLabels, setColumnLabels] = useState(DefaultDisbursementAccountingGridColumnLabels);
+  const [columnWidths, setColumnWidths] = useState(DefaultDisbursementAccountingGridColumnWidths);
+  const [autoWidthColumnIds, setAutoWidthColumnIds] = useState<GridColumnId[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isDragActive, setIsDragActive] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false);
   const [pasteText, setPasteText] = useState("");
-  const [pendingImportAttachment, setPendingImportAttachment] = useState<
-    DisbursementVoucherFormValues["attachments"][number] | null
-  >(null);
-  const [importedImportAttachment, setImportedImportAttachment] = useState<
-    DisbursementVoucherFormValues["attachments"][number] | null
-  >(null);
+  const [pendingImportAttachment, setPendingImportAttachment] = useState<DisbursementVoucherFormValues["attachments"][number] | null>(null);
+  const [importedImportAttachment, setImportedImportAttachment] = useState<DisbursementVoucherFormValues["attachments"][number] | null>(
+    null,
+  );
   const [viewedParticulars, setViewedParticulars] = useState<{
     rowNo: number;
     value: string;
@@ -221,14 +102,8 @@ export function DisbursementVoucherAccountingGridPage() {
   }, []);
 
   const totals = useMemo(() => {
-    const totalDebit = rows.reduce(
-      (sum, row) => sum + normalizeAmount(row.debit),
-      0,
-    );
-    const totalCredit = rows.reduce(
-      (sum, row) => sum + normalizeAmount(row.credit),
-      0,
-    );
+    const totalDebit = rows.reduce((sum, row) => sum + normalizeAmount(row.debit), 0);
+    const totalCredit = rows.reduce((sum, row) => sum + normalizeAmount(row.credit), 0);
 
     return {
       isBalanced: totalDebit > 0 && Math.abs(totalDebit - totalCredit) < 0.001,
@@ -239,17 +114,10 @@ export function DisbursementVoucherAccountingGridPage() {
   }, [rows]);
   const previewEntries = useMemo(() => buildLineEntries(rows), [rows]);
   const selectedTransaction = useMemo(
-    () =>
-      session
-        ? transactions.find(
-          (transaction) => transaction.id === session.values.transactionId,
-        )
-        : undefined,
+    () => (session ? transactions.find((transaction) => transaction.id === session.values.transactionId) : undefined),
     [session, transactions],
   );
-  const visibleColumnOrder = columnOrder.filter((columnId) =>
-    visibleColumnIds.includes(columnId),
-  );
+  const visibleColumnOrder = columnOrder.filter((columnId) => visibleColumnIds.includes(columnId));
   const resolvedColumnWidths = useMemo<Record<GridColumnId, number>>(() => {
     const nextWidths = { ...columnWidths };
 
@@ -263,45 +131,35 @@ export function DisbursementVoucherAccountingGridPage() {
 
     return nextWidths;
   }, [autoWidthColumnIds, columnLabels, columnWidths, rows]);
-  const columns: ModuleDataEntryColumn<EditableGridRow>[] =
-    visibleColumnOrder.map((columnId) => ({
-      header: columnLabels[columnId],
-      id: columnId,
-      isRemovable: !ProtectedGridColumnIds.has(columnId),
-      renderCell: (row) => renderGridCell(row, columnId),
-      width: resolvedColumnWidths[columnId],
-      widthClassName: "",
-      widthMode: autoWidthColumnIds.includes(columnId) ? "auto" : "fixed",
-    }));
-  const columnOptions: ModuleDataEntryColumnOption[] = columnOrder.map(
-    (columnId) => ({
-      id: columnId,
-      isHideable: !ProtectedGridColumnIds.has(columnId),
-      isVisible: visibleColumnIds.includes(columnId),
-      label: columnLabels[columnId] || DefaultGridColumnLabels[columnId],
-      width: resolvedColumnWidths[columnId],
-      widthMode: autoWidthColumnIds.includes(columnId) ? "auto" : "fixed",
-    }),
-  );
+  const columns: ModuleDataEntryColumn<EditableGridRow>[] = visibleColumnOrder.map((columnId) => ({
+    header: columnLabels[columnId],
+    id: columnId,
+    isRemovable: !ProtectedDisbursementAccountingGridColumnIds.has(columnId),
+    renderCell: (row) => renderGridCell(row, columnId),
+    width: resolvedColumnWidths[columnId],
+    widthClassName: "",
+    widthMode: autoWidthColumnIds.includes(columnId) ? "auto" : "fixed",
+  }));
+  const columnOptions: ModuleDataEntryColumnOption[] = columnOrder.map((columnId) => ({
+    id: columnId,
+    isHideable: !ProtectedDisbursementAccountingGridColumnIds.has(columnId),
+    isVisible: visibleColumnIds.includes(columnId),
+    label: columnLabels[columnId] || DefaultDisbursementAccountingGridColumnLabels[columnId],
+    width: resolvedColumnWidths[columnId],
+    widthMode: autoWidthColumnIds.includes(columnId) ? "auto" : "fixed",
+  }));
   const previewValues = session
     ? withAccountingImportAttachment(
-      {
-        ...session.values,
-        lineEntries: previewEntries,
-      },
-      importedImportAttachment,
-    )
+        {
+          ...session.values,
+          lineEntries: previewEntries,
+        },
+        importedImportAttachment,
+      )
     : null;
 
-  function updateRow(
-    rowId: string,
-    field: keyof Omit<EditableGridRow, "id" | "taxDetails">,
-    value: string,
-  ) {
-    const nextValue =
-      field === "debit" || field === "credit"
-        ? formatMoneyNumberInput(value)
-        : value;
+  function updateRow(rowId: string, field: keyof Omit<EditableGridRow, "id" | "taxDetails">, value: string) {
+    const nextValue = field === "debit" || field === "credit" ? formatMoneyNumberInput(value) : value;
 
     setRows((currentRows) =>
       currentRows.map((row) => {
@@ -314,11 +172,7 @@ export function DisbursementVoucherAccountingGridPage() {
         if (field === "debit" || field === "credit" || field === "taxRate") {
           const amount = normalizeAmount(nextRow.debit || nextRow.credit);
 
-          nextRow.taxDetails = syncTaxDetailsAmount(
-            nextRow.taxDetails,
-            amount,
-            nextRow.taxRate,
-          );
+          nextRow.taxDetails = syncTaxDetailsAmount(nextRow.taxDetails, amount, nextRow.taxRate);
         }
 
         return nextRow;
@@ -328,10 +182,7 @@ export function DisbursementVoucherAccountingGridPage() {
   }
 
   function addBlankRows(count = 1) {
-    setRows((currentRows) => [
-      ...currentRows,
-      ...Array.from({ length: count }, createBlankEditableRow),
-    ]);
+    setRows((currentRows) => [...currentRows, ...Array.from({ length: count }, createBlankEditableRow)]);
     setErrorMessage(null);
   }
 
@@ -346,10 +197,7 @@ export function DisbursementVoucherAccountingGridPage() {
   function insertRow(rowId: string, position: "above" | "below") {
     setRows((currentRows) => {
       const rowIndex = currentRows.findIndex((row) => row.id === rowId);
-      const insertIndex =
-        rowIndex === -1
-          ? currentRows.length
-          : rowIndex + (position === "below" ? 1 : 0);
+      const insertIndex = rowIndex === -1 ? currentRows.length : rowIndex + (position === "below" ? 1 : 0);
       const nextRows = [...currentRows];
 
       nextRows.splice(insertIndex, 0, createBlankEditableRow());
@@ -401,10 +249,7 @@ export function DisbursementVoucherAccountingGridPage() {
 
   function clearRows(action: ModuleDataEntryClearAction) {
     setRows((currentRows) => {
-      const nextRows =
-        action === "all"
-          ? []
-          : currentRows.filter((row) => !shouldClearRow(row, action));
+      const nextRows = action === "all" ? [] : currentRows.filter((row) => !shouldClearRow(row, action));
 
       return nextRows.length > 0 ? nextRows : [createBlankEditableRow()];
     });
@@ -423,9 +268,7 @@ export function DisbursementVoucherAccountingGridPage() {
       return;
     }
 
-    setAutoWidthColumnIds((currentColumnIds) =>
-      currentColumnIds.filter((currentColumnId) => currentColumnId !== columnId),
-    );
+    setAutoWidthColumnIds((currentColumnIds) => currentColumnIds.filter((currentColumnId) => currentColumnId !== columnId));
     setColumnWidths((currentWidths) => ({
       ...currentWidths,
       [columnId]: Math.min(800, Math.max(50, Math.round(width))),
@@ -437,11 +280,7 @@ export function DisbursementVoucherAccountingGridPage() {
       return;
     }
 
-    setAutoWidthColumnIds((currentColumnIds) =>
-      currentColumnIds.includes(columnId)
-        ? currentColumnIds
-        : [...currentColumnIds, columnId],
-    );
+    setAutoWidthColumnIds((currentColumnIds) => (currentColumnIds.includes(columnId) ? currentColumnIds : [...currentColumnIds, columnId]));
   }
 
   function fitColumnWidth(columnId: string) {
@@ -477,16 +316,12 @@ export function DisbursementVoucherAccountingGridPage() {
   }
 
   function removeColumn(columnId: string) {
-    if (!isGridColumnId(columnId) || ProtectedGridColumnIds.has(columnId)) {
+    if (!isGridColumnId(columnId) || ProtectedDisbursementAccountingGridColumnIds.has(columnId)) {
       return;
     }
 
     setVisibleColumnIds((currentVisibleIds) =>
-      currentVisibleIds.length <= 1
-        ? currentVisibleIds
-        : currentVisibleIds.filter(
-          (currentColumnId) => currentColumnId !== columnId,
-        ),
+      currentVisibleIds.length <= 1 ? currentVisibleIds : currentVisibleIds.filter((currentColumnId) => currentColumnId !== columnId),
     );
   }
 
@@ -495,7 +330,7 @@ export function DisbursementVoucherAccountingGridPage() {
       return;
     }
 
-    if (!isVisible && ProtectedGridColumnIds.has(columnId)) {
+    if (!isVisible && ProtectedDisbursementAccountingGridColumnIds.has(columnId)) {
       return;
     }
 
@@ -503,18 +338,14 @@ export function DisbursementVoucherAccountingGridPage() {
       if (isVisible) {
         const nextVisibleIds = new Set([...currentVisibleIds, columnId]);
 
-        return columnOrder.filter((currentColumnId) =>
-          nextVisibleIds.has(currentColumnId),
-        );
+        return columnOrder.filter((currentColumnId) => nextVisibleIds.has(currentColumnId));
       }
 
       if (currentVisibleIds.length <= 1) {
         return currentVisibleIds;
       }
 
-      return currentVisibleIds.filter(
-        (currentColumnId) => currentColumnId !== columnId,
-      );
+      return currentVisibleIds.filter((currentColumnId) => currentColumnId !== columnId);
     });
   }
 
@@ -526,7 +357,7 @@ export function DisbursementVoucherAccountingGridPage() {
           onChange={(event) => updateRow(row.id, "taxRate", event.target.value)}
           className={gridCellControlClassName("app-select-control")}
         >
-          {TaxRateOptions.map((option) => (
+          {DisbursementAccountingGridTaxRateOptions.map((option) => (
             <option key={option} value={option}>
               {option}
             </option>
@@ -553,10 +384,7 @@ export function DisbursementVoucherAccountingGridPage() {
 
       return (
         <div className="flex items-center gap-2">
-          <GridEntryInput
-            value={row.particulars}
-            onChange={(value) => updateRow(row.id, "particulars", value)}
-          />
+          <GridEntryInput value={row.particulars} onChange={(value) => updateRow(row.id, "particulars", value)} />
           <button
             type="button"
             onClick={() =>
@@ -573,12 +401,7 @@ export function DisbursementVoucherAccountingGridPage() {
       );
     }
 
-    return (
-      <GridEntryInput
-        value={row[columnId]}
-        onChange={(value) => updateRow(row.id, columnId, value)}
-      />
-    );
+    return <GridEntryInput value={row[columnId]} onChange={(value) => updateRow(row.id, columnId, value)} />;
   }
 
   async function handleImportFile(file: File) {
@@ -591,16 +414,10 @@ export function DisbursementVoucherAccountingGridPage() {
       const previewText = await readAccountingImportFilePreviewText(file);
 
       setPasteText(previewText);
-      setPendingImportAttachment(
-        createImportSourceAttachment(file.name, file.size),
-      );
+      setPendingImportAttachment(createImportSourceAttachment(file.name, file.size));
       setErrorMessage(null);
     } catch (error) {
-      setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Could not preview the selected accounting entries file.",
-      );
+      setErrorMessage(error instanceof Error ? error.message : "Could not preview the selected accounting entries file.");
     }
   }
 
@@ -608,11 +425,7 @@ export function DisbursementVoucherAccountingGridPage() {
     try {
       const importedRows = parseTabularText(pasteText);
       const sourceAttachment =
-        pendingImportAttachment ??
-        createImportSourceAttachment(
-          "pasted-accounting-entries.tsv",
-          new Blob([pasteText]).size,
-        );
+        pendingImportAttachment ?? createImportSourceAttachment("pasted-accounting-entries.tsv", new Blob([pasteText]).size);
 
       applyImportedRows(importedRows);
       setImportedImportAttachment(sourceAttachment);
@@ -621,11 +434,7 @@ export function DisbursementVoucherAccountingGridPage() {
       setIsImportDialogOpen(false);
       setErrorMessage(null);
     } catch (error) {
-      setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Could not import the pasted accounting entries.",
-      );
+      setErrorMessage(error instanceof Error ? error.message : "Could not import the pasted accounting entries.");
     }
   }
 
@@ -637,21 +446,16 @@ export function DisbursementVoucherAccountingGridPage() {
     setRows((currentRows) => {
       const populatedRows = currentRows.filter(hasRowData);
 
-      return populatedRows.length > 0
-        ? [...populatedRows, ...importedRows]
-        : importedRows;
+      return populatedRows.length > 0 ? [...populatedRows, ...importedRows] : importedRows;
     });
   }
 
   function handleExportRows() {
-    const { amountColumnIndexes, rows: workbookRows, visibleColumnIds } =
-      createAccountingExportRows();
+    const { amountColumnIndexes, rows: workbookRows, visibleColumnIds } = createAccountingExportRows();
     const exportTheme = getAccountingExportTheme();
     const workbookBytes = createAccountingWorkbook({
       amountColumnIndexes,
-      columnWidths: visibleColumnIds.map(
-        (columnId) => AccountingExportColumnWidths[columnId],
-      ),
+      columnWidths: visibleColumnIds.map((columnId) => DisbursementAccountingExportColumnWidths[columnId]),
       rows: workbookRows,
       sheetName: "Accounting Entries",
       theme: exportTheme,
@@ -677,18 +481,12 @@ export function DisbursementVoucherAccountingGridPage() {
     const exportColumnIds = visibleColumnOrder;
     const exportRows = rows.filter(hasRowData);
     const workbookRows = [
-      exportColumnIds.map(
-        (columnId) => columnLabels[columnId] || DefaultGridColumnLabels[columnId],
-      ),
-      ...exportRows.map((row) =>
-        exportColumnIds.map((columnId) => getExportCellValue(row, columnId)),
-      ),
+      exportColumnIds.map((columnId) => columnLabels[columnId] || DefaultDisbursementAccountingGridColumnLabels[columnId]),
+      ...exportRows.map((row) => exportColumnIds.map((columnId) => getExportCellValue(row, columnId))),
     ];
     const amountColumnIndexes = new Set(
       exportColumnIds
-        .map((columnId, columnIndex) =>
-          columnId === "debit" || columnId === "credit" ? columnIndex : null,
-        )
+        .map((columnId, columnIndex) => (columnId === "debit" || columnId === "credit" ? columnIndex : null))
         .filter((columnIndex): columnIndex is number => columnIndex !== null),
     );
 
@@ -765,21 +563,14 @@ export function DisbursementVoucherAccountingGridPage() {
       <section className="-mx-3 -my-4 min-h-[calc(100dvh-5rem)] bg-white text-darknavy sm:-mx-5 lg:-mx-6">
         <main className="grid min-h-[calc(100dvh-5rem)] content-start gap-5 p-4 sm:p-6">
           <div className="rounded-xl border border-darknavy/10 bg-white p-5 shadow-sm shadow-darknavy/5 sm:p-8">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-skyblue">
-              Cash Disbursement Setup
-            </p>
-            <h1 className="mt-2 text-2xl font-semibold text-darknavy sm:text-3xl">
-              Accounting Grid View
-            </h1>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-skyblue">Cash Disbursement Setup</p>
+            <h1 className="mt-2 text-2xl font-semibold text-darknavy sm:text-3xl">Accounting Grid View</h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-darknavy/58">
-              No voucher draft is available yet. Open a disbursement voucher
-              first, then click Data Grid View from Accounting Entries.
+              No voucher draft is available yet. Open a disbursement voucher first, then click Data Grid View from Accounting Entries.
             </p>
             <button
               type="button"
-              onClick={() =>
-                router.push("/cash-disbursement/disbursement-voucher")
-              }
+              onClick={() => router.push("/cash-disbursement/disbursement-voucher")}
               className="mt-6 inline-flex h-11 w-full items-center justify-center rounded-xl border border-darknavy/12 bg-white px-5 text-sm font-semibold text-darknavy transition hover:border-skyblue/35 sm:w-auto"
             >
               Back to Disbursement Voucher
@@ -797,15 +588,10 @@ export function DisbursementVoucherAccountingGridPage() {
           <div className="min-w-0 p-4 sm:p-6 lg:p-8">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-skyblue">
-                  Cash Disbursement Setup
-                </p>
-                <h1 className="mt-2 text-2xl font-semibold text-darknavy sm:text-3xl">
-                  Accounting Grid View
-                </h1>
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-skyblue">Cash Disbursement Setup</p>
+                <h1 className="mt-2 text-2xl font-semibold text-darknavy sm:text-3xl">Accounting Grid View</h1>
                 <p className="mt-3 max-w-3xl text-sm leading-6 text-darknavy/58">
-                  Encode accounting entries in a dedicated grid page, then save
-                  and return to the voucher preview for final checking before
+                  Encode accounting entries in a dedicated grid page, then save and return to the voucher preview for final checking before
                   saving.
                 </p>
               </div>
@@ -815,24 +601,12 @@ export function DisbursementVoucherAccountingGridPage() {
               </div>
             </div>
 
-            <VoucherAccountingGridHeader
-              selectedTransaction={selectedTransaction}
-              values={session.values}
-            />
+            <VoucherAccountingGridHeader selectedTransaction={selectedTransaction} values={session.values} />
 
             <div className="mt-6 grid gap-3 md:grid-cols-3">
-              <SummaryCard
-                label="Records"
-                value={String(buildLineEntries(rows).length)}
-              />
-              <SummaryCard
-                label="Debit Total"
-                value={formatCurrency(totals.totalDebit)}
-              />
-              <SummaryCard
-                label="Credit Total"
-                value={formatCurrency(totals.totalCredit)}
-              />
+              <SummaryCard label="Records" value={String(buildLineEntries(rows).length)} />
+              <SummaryCard label="Debit Total" value={formatCurrency(totals.totalDebit)} />
+              <SummaryCard label="Credit Total" value={formatCurrency(totals.totalCredit)} />
             </div>
 
             <div className="mt-6">
@@ -850,14 +624,7 @@ export function DisbursementVoucherAccountingGridPage() {
                   debit: formatCurrency(totals.totalDebit),
                 }}
                 footerDetails={
-                  <span
-                    className={joinClasses(
-                      "text-sm font-semibold",
-                      totals.variance < 0.001
-                        ? "text-emerald-700"
-                        : "text-coralpink",
-                    )}
-                  >
+                  <span className={joinClasses("text-sm font-semibold", totals.variance < 0.001 ? "text-emerald-700" : "text-coralpink")}>
                     Variance: {formatCurrency(totals.variance)}
                   </span>
                 }
@@ -948,19 +715,11 @@ export function DisbursementVoucherAccountingGridPage() {
         onPasteTextChange={(value) => {
           setPasteText(value);
           if (value.trim() && !pendingImportAttachment) {
-            setPendingImportAttachment(
-              createImportSourceAttachment(
-                "pasted-accounting-entries.tsv",
-                new Blob([value]).size,
-              ),
-            );
+            setPendingImportAttachment(createImportSourceAttachment("pasted-accounting-entries.tsv", new Blob([value]).size));
           }
         }}
       />
-      <ParticularsViewDialog
-        viewedParticulars={viewedParticulars}
-        onClose={() => setViewedParticulars(null)}
-      />
+      <ParticularsViewDialog viewedParticulars={viewedParticulars} onClose={() => setViewedParticulars(null)} />
     </section>
   );
 }
@@ -1005,11 +764,7 @@ function AccountingImportPanel({
     setFileInputKey((current) => current + 1);
   }
 
-  function handlePreviewCellChange(
-    rowIndex: number,
-    columnIndex: number,
-    value: string,
-  ) {
+  function handlePreviewCellChange(rowIndex: number, columnIndex: number, value: string) {
     const nextRows = previewRows.map((row) => [...row]);
 
     nextRows[rowIndex] = nextRows[rowIndex] ?? [];
@@ -1057,12 +812,8 @@ function AccountingImportPanel({
         {!isUploadFormOpen ? (
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-semibold text-darknavy">
-                Import accounting entries
-              </p>
-              <p className="mt-1 text-xs leading-5 text-darknavy/55">
-                Upload Excel/CSV or paste rows when you are ready to import.
-              </p>
+              <p className="text-sm font-semibold text-darknavy">Import accounting entries</p>
+              <p className="mt-1 text-xs leading-5 text-darknavy/55">Upload Excel/CSV or paste rows when you are ready to import.</p>
               {importAttachment ? (
                 <p className="mt-2 inline-flex items-center gap-2 rounded-full border border-skyblue/20 bg-skyblue/8 px-3 py-1 text-xs font-semibold text-skyblue">
                   <FileText className="h-3.5 w-3.5" aria-hidden="true" />
@@ -1094,9 +845,7 @@ function AccountingImportPanel({
             <label
               className={joinClasses(
                 "app-theme-field-readonly flex min-h-40 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed px-4 py-5 text-center transition",
-                isDragActive
-                  ? "border-skyblue bg-skyblue/12"
-                  : "hover:border-skyblue/45 hover:bg-skyblue/8",
+                isDragActive ? "border-skyblue bg-skyblue/12" : "hover:border-skyblue/45 hover:bg-skyblue/8",
               )}
               onDragEnter={(event) => {
                 event.preventDefault();
@@ -1118,9 +867,7 @@ function AccountingImportPanel({
               }}
             >
               <Upload className="h-6 w-6 text-skyblue" aria-hidden="true" />
-              <span className="mt-3 text-sm font-semibold text-darknavy">
-                Drop Excel or CSV here
-              </span>
+              <span className="mt-3 text-sm font-semibold text-darknavy">Drop Excel or CSV here</span>
               <span className="mt-1 max-w-md text-xs leading-5 text-darknavy/55">
                 Supports .xlsx, .csv, .tsv, and text copied from spreadsheets.
               </span>
@@ -1143,9 +890,7 @@ function AccountingImportPanel({
                   <div className="flex min-w-0 items-center gap-2 rounded-full border border-darknavy/10 bg-offwhite/45 px-3 py-1 text-xs font-semibold text-darknavy/60">
                     <FileText className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                     <span className="truncate">{importAttachment.name}</span>
-                    <span className="shrink-0 text-darknavy/40">
-                      {importAttachment.sizeLabel}
-                    </span>
+                    <span className="shrink-0 text-darknavy/40">{importAttachment.sizeLabel}</span>
                   </div>
                 ) : null}
                 <div className="flex flex-wrap items-center gap-2">
@@ -1170,28 +915,20 @@ function AccountingImportPanel({
                     <button
                       type="button"
                       disabled={!canClearTable}
-                      onClick={() =>
-                        setIsClearMenuOpen((current) => !current)
-                      }
+                      onClick={() => setIsClearMenuOpen((current) => !current)}
                       className="inline-flex h-9 w-9 items-center justify-center rounded-l-none rounded-r-lg border border-darknavy/12 bg-white text-darknavy transition hover:border-skyblue/35 hover:bg-skyblue/8 disabled:cursor-not-allowed disabled:opacity-45"
                       aria-expanded={isClearMenuOpen}
                       aria-haspopup="menu"
                       aria-label="Choose upload clear option"
                     >
-                      <ChevronDown
-                        className={joinClasses(
-                          "h-4 w-4 transition",
-                          isClearMenuOpen && "rotate-180",
-                        )}
-                        aria-hidden="true"
-                      />
+                      <ChevronDown className={joinClasses("h-4 w-4 transition", isClearMenuOpen && "rotate-180")} aria-hidden="true" />
                     </button>
                     {isClearMenuOpen ? (
                       <div
                         role="menu"
                         className="absolute right-0 top-[calc(100%+0.35rem)] z-[80] w-48 overflow-hidden rounded-lg border border-darknavy/10 bg-white p-1 shadow-[0_18px_45px_rgba(33,39,56,0.16)]"
                       >
-                        {ImportClearActions.map((action) => (
+                        {DisbursementAccountingImportClearActions.map((action) => (
                           <button
                             key={action.value}
                             type="button"
@@ -1223,11 +960,7 @@ function AccountingImportPanel({
                 </div>
               </div>
               {hasPreviewRows ? (
-                <AccountingImportPreviewTable
-                  maxHeightClassName="max-h-40"
-                  rows={previewRows}
-                  onCellChange={handlePreviewCellChange}
-                />
+                <AccountingImportPreviewTable maxHeightClassName="max-h-40" rows={previewRows} onCellChange={handlePreviewCellChange} />
               ) : (
                 <textarea
                   value={pasteText}
@@ -1238,8 +971,7 @@ function AccountingImportPanel({
               )}
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <p className="text-xs leading-5 text-darknavy/55">
-                  First row may be headers. Columns can be named Account Code, Account
-                  Name, Particulars, Tax Rate, Debit, and Credit.
+                  First row may be headers. Columns can be named Account Code, Account Name, Particulars, Tax Rate, Debit, and Credit.
                 </p>
                 <button
                   type="button"
@@ -1275,12 +1007,7 @@ function AccountingImportPreviewTable({
   onCellChange: (rowIndex: number, columnIndex: number, value: string) => void;
 }) {
   return (
-    <div
-      className={joinClasses(
-        "app-theme-field overflow-auto rounded-lg border",
-        maxHeightClassName,
-      )}
-    >
+    <div className={joinClasses("app-theme-field overflow-auto rounded-lg border", maxHeightClassName)}>
       <table className="min-w-[780px] table-fixed border-collapse text-left text-xs text-darknavy">
         <colgroup>
           <col className="w-[9rem]" />
@@ -1294,21 +1021,13 @@ function AccountingImportPreviewTable({
           {rows.map((row, rowIndex) => (
             <tr
               key={`preview-row-${rowIndex}`}
-              className={joinClasses(
-                "border-b border-darknavy/10 last:border-b-0",
-                rowIndex === 0 ? "bg-skyblue/8 font-semibold" : "",
-              )}
+              className={joinClasses("border-b border-darknavy/10 last:border-b-0", rowIndex === 0 ? "bg-skyblue/8 font-semibold" : "")}
             >
-              {AccountingImportTemplateHeaders.map((header, columnIndex) => (
-                <td
-                  key={`${header}-${columnIndex}`}
-                  className="border-r border-darknavy/10 last:border-r-0"
-                >
+              {DisbursementAccountingImportTemplateHeaders.map((header, columnIndex) => (
+                <td key={`${header}-${columnIndex}`} className="border-r border-darknavy/10 last:border-r-0">
                   <input
                     value={row[columnIndex] ?? ""}
-                    onChange={(event) =>
-                      onCellChange(rowIndex, columnIndex, event.target.value)
-                    }
+                    onChange={(event) => onCellChange(rowIndex, columnIndex, event.target.value)}
                     className={joinClasses(
                       "h-9 w-full min-w-0 bg-transparent px-2 text-xs outline-none transition focus:bg-skyblue/10",
                       columnIndex >= 4 ? "text-right" : "text-left",
@@ -1358,13 +1077,8 @@ function AccountingImportPreviewDialog({
       >
         <div className="flex items-start justify-between gap-4 border-b border-darknavy/10 px-5 py-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-skyblue">
-              Import Preview
-            </p>
-            <h2
-              id="accounting-import-preview-title"
-              className="mt-1 text-xl font-semibold text-darknavy"
-            >
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-skyblue">Import Preview</p>
+            <h2 id="accounting-import-preview-title" className="mt-1 text-xl font-semibold text-darknavy">
               Accounting Entries Table
             </h2>
           </div>
@@ -1377,11 +1091,7 @@ function AccountingImportPreviewDialog({
           </button>
         </div>
         <div className="min-h-0 flex-1 px-5 py-5">
-          <AccountingImportPreviewTable
-            maxHeightClassName="h-full"
-            rows={rows}
-            onCellChange={onCellChange}
-          />
+          <AccountingImportPreviewTable maxHeightClassName="h-full" rows={rows} onCellChange={onCellChange} />
         </div>
         <div className="flex justify-end border-t border-darknavy/10 px-5 py-4">
           <button
@@ -1444,18 +1154,11 @@ function AccountingImportDialog({
       >
         <div className="flex items-start justify-between gap-4 border-b border-darknavy/10 px-5 py-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-skyblue">
-              Accounting Entries
-            </p>
-            <h2
-              id="accounting-import-title"
-              className="mt-1 text-xl font-semibold text-darknavy"
-            >
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-skyblue">Accounting Entries</p>
+            <h2 id="accounting-import-title" className="mt-1 text-xl font-semibold text-darknavy">
               Import Data Entry Rows
             </h2>
-            <p className="mt-1 text-sm text-darknavy/58">
-              Upload a spreadsheet or paste copied rows into the data entry grid.
-            </p>
+            <p className="mt-1 text-sm text-darknavy/58">Upload a spreadsheet or paste copied rows into the data entry grid.</p>
           </div>
           <button
             type="button"
@@ -1524,13 +1227,8 @@ function ParticularsViewDialog({
       >
         <div className="flex items-start justify-between gap-4 border-b border-darknavy/10 px-5 py-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-skyblue">
-              Particulars
-            </p>
-            <h2
-              id="particulars-view-title"
-              className="mt-1 text-xl font-semibold text-darknavy"
-            >
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-skyblue">Particulars</p>
+            <h2 id="particulars-view-title" className="mt-1 text-xl font-semibold text-darknavy">
               Row {viewedParticulars.rowNo}
             </h2>
           </div>
@@ -1605,18 +1303,12 @@ function GridPreviewDialog({
         className="flex h-[min(100dvh-0.75rem,980px)] w-full max-w-7xl flex-col overflow-hidden rounded-[20px] border border-darknavy/10 bg-white shadow-[0_18px_60px_rgba(33,39,56,0.18)] sm:h-[min(86vh,980px)] sm:rounded-[28px]"
       >
         <div className="border-b border-darknavy/10 px-4 py-4 sm:px-6 sm:py-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-skyblue">
-            Edit Disbursement Voucher
-          </p>
-          <h2
-            id="grid-preview-title"
-            className="mt-2 text-xl font-semibold text-darknavy sm:text-2xl"
-          >
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-skyblue">Edit Disbursement Voucher</p>
+          <h2 id="grid-preview-title" className="mt-2 text-xl font-semibold text-darknavy sm:text-2xl">
             {values.voucherNo}
           </h2>
           <p className="mt-2 text-sm text-darknavy/58">
-            Review the voucher details and accounting entries from grid view
-            before continuing to the final save step.
+            Review the voucher details and accounting entries from grid view before continuing to the final save step.
           </p>
         </div>
 
@@ -1626,34 +1318,14 @@ function GridPreviewDialog({
               <PreviewShell
                 description="This panel shows the source transaction that the voucher workflow will use."
                 eyebrow="Transaction Preview"
-                title={
-                  selectedTransaction?.payee ??
-                  (values.partyName || "Voucher Preview")
-                }
+                title={selectedTransaction?.payee ?? (values.partyName || "Voucher Preview")}
               >
                 <div className="grid gap-5">
-                  <PreviewInfoLine
-                    label="Transaction No."
-                    value={selectedTransaction?.transactionNo ?? "-"}
-                  />
-                  <PreviewInfoLine
-                    label="Department"
-                    value={selectedTransaction?.department ?? "-"}
-                  />
-                  <PreviewInfoLine
-                    label="Requested By"
-                    value={selectedTransaction?.requestedBy ?? "-"}
-                  />
-                  <PreviewInfoLine
-                    label="Amount"
-                    value={formatCurrency(parseMoneyNumberInput(values.amount))}
-                  />
-                  <PreviewInfoLine
-                    label="Purpose"
-                    value={
-                      selectedTransaction?.purpose ?? (values.remarks || "-")
-                    }
-                  />
+                  <PreviewInfoLine label="Transaction No." value={selectedTransaction?.transactionNo ?? "-"} />
+                  <PreviewInfoLine label="Department" value={selectedTransaction?.department ?? "-"} />
+                  <PreviewInfoLine label="Requested By" value={selectedTransaction?.requestedBy ?? "-"} />
+                  <PreviewInfoLine label="Amount" value={formatCurrency(parseMoneyNumberInput(values.amount))} />
+                  <PreviewInfoLine label="Purpose" value={selectedTransaction?.purpose ?? (values.remarks || "-")} />
                 </div>
               </PreviewShell>
 
@@ -1663,28 +1335,15 @@ function GridPreviewDialog({
                 title={values.voucherNo}
               >
                 <div className="grid gap-5">
-                  <PreviewInfoLine
-                    label="Voucher Date"
-                    value={formatDateLabel(values.voucherDate)}
-                  />
-                  <PreviewInfoLine
-                    label="Payment Method"
-                    value={values.paymentMethod || "-"}
-                  />
-                  <PreviewInfoLine
-                    label="Prepared By"
-                    value={values.preparedBy || "-"}
-                  />
+                  <PreviewInfoLine label="Voucher Date" value={formatDateLabel(values.voucherDate)} />
+                  <PreviewInfoLine label="Payment Method" value={values.paymentMethod || "-"} />
+                  <PreviewInfoLine label="Prepared By" value={values.preparedBy || "-"} />
                   <PreviewInfoLine label="Status" value={values.status || "-"} />
                   <PreviewInfoLine label="Remarks" value={values.remarks || "-"} />
 
                   <div className="rounded-[18px] border border-darknavy/10 bg-offwhite/45 px-4 py-4 sm:px-5 sm:py-5">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-darknavy/45">
-                      Linked Voucher Amount
-                    </p>
-                    <p className="mt-2 text-3xl font-semibold text-darknavy">
-                      {formatCurrency(parseMoneyNumberInput(values.amount))}
-                    </p>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-darknavy/45">Linked Voucher Amount</p>
+                    <p className="mt-2 text-3xl font-semibold text-darknavy">{formatCurrency(parseMoneyNumberInput(values.amount))}</p>
                   </div>
                 </div>
               </PreviewShell>
@@ -1696,9 +1355,7 @@ function GridPreviewDialog({
               title="Accounting entries review"
             >
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                <p className="text-sm text-darknavy/58">
-                  {entries.length} accounting entries prepared.
-                </p>
+                <p className="text-sm text-darknavy/58">{entries.length} accounting entries prepared.</p>
                 <button
                   type="button"
                   onClick={onClose}
@@ -1710,33 +1367,18 @@ function GridPreviewDialog({
 
               <div className="mt-5 grid gap-3">
                 {entries.map((entry) => (
-                  <div
-                    key={entry.id}
-                    className="rounded-[18px] border border-darknavy/8 bg-offwhite/65 px-4 py-4"
-                  >
+                  <div key={entry.id} className="rounded-[18px] border border-darknavy/8 bg-offwhite/65 px-4 py-4">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="text-sm font-semibold text-darknavy">
                           {entry.accountCode} - {entry.accountName}
                         </p>
-                        <p className="mt-1 text-sm text-darknavy/58">
-                          {entry.particulars}
-                        </p>
-                        <p className="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/40">
-                          {entry.taxRate || "0%"}
-                        </p>
+                        <p className="mt-1 text-sm text-darknavy/58">{entry.particulars}</p>
+                        <p className="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/40">{entry.taxRate || "0%"}</p>
                       </div>
                       <div className="text-right text-sm font-semibold text-darknavy">
-                        <p>
-                          {entry.debit > 0
-                            ? `DR ${formatCurrency(entry.debit)}`
-                            : "-"}
-                        </p>
-                        <p className="mt-1">
-                          {entry.credit > 0
-                            ? `CR ${formatCurrency(entry.credit)}`
-                            : "-"}
-                        </p>
+                        <p>{entry.debit > 0 ? `DR ${formatCurrency(entry.debit)}` : "-"}</p>
+                        <p className="mt-1">{entry.credit > 0 ? `CR ${formatCurrency(entry.credit)}` : "-"}</p>
                       </div>
                     </div>
                   </div>
@@ -1744,19 +1386,9 @@ function GridPreviewDialog({
               </div>
 
               <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                <SummaryCard
-                  label="Total Debit"
-                  value={formatCurrency(totalDebit)}
-                />
-                <SummaryCard
-                  label="Total Credit"
-                  value={formatCurrency(totalCredit)}
-                />
-                <SummaryCard
-                  label="Variance"
-                  tone={isBalanced ? "balanced" : "warning"}
-                  value={formatCurrency(variance)}
-                />
+                <SummaryCard label="Total Debit" value={formatCurrency(totalDebit)} />
+                <SummaryCard label="Total Credit" value={formatCurrency(totalCredit)} />
+                <SummaryCard label="Variance" tone={isBalanced ? "balanced" : "warning"} value={formatCurrency(variance)} />
               </div>
 
               <AttachmentPreviewList attachments={values.attachments} />
@@ -1798,12 +1430,8 @@ function PreviewShell({
 }) {
   return (
     <section className="flex h-full flex-col rounded-xl border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5 lg:p-6">
-      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-darknavy/40">
-        {eyebrow}
-      </p>
-      <h3 className="mt-2 text-xl font-semibold text-darknavy sm:text-2xl">
-        {title}
-      </h3>
+      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-darknavy/40">{eyebrow}</p>
+      <h3 className="mt-2 text-xl font-semibold text-darknavy sm:text-2xl">{title}</h3>
       <p className="mt-2 text-sm leading-6 text-darknavy/58">{description}</p>
       <div className="mt-5 flex-1">{children}</div>
     </section>
@@ -1813,34 +1441,22 @@ function PreviewShell({
 function PreviewInfoLine({ label, value }: { label: string; value: string }) {
   return (
     <div className="grid gap-1">
-      <dt className="text-[11px] font-semibold uppercase tracking-[0.18em] text-darknavy/38">
-        {label}
-      </dt>
+      <dt className="text-[11px] font-semibold uppercase tracking-[0.18em] text-darknavy/38">{label}</dt>
       <dd className="text-sm font-medium text-darknavy">{value}</dd>
     </div>
   );
 }
 
-function AttachmentPreviewList({
-  attachments,
-}: {
-  attachments: DisbursementVoucherFormValues["attachments"];
-}) {
-  const [selectedAttachment, setSelectedAttachment] = useState<
-    DisbursementVoucherFormValues["attachments"][number] | null
-  >(null);
+function AttachmentPreviewList({ attachments }: { attachments: DisbursementVoucherFormValues["attachments"] }) {
+  const [selectedAttachment, setSelectedAttachment] = useState<DisbursementVoucherFormValues["attachments"][number] | null>(null);
 
   return (
     <>
       <div className="mt-5 rounded-[18px] border border-darknavy/10 bg-white p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/42">
-              Attachments
-            </p>
-            <p className="mt-1 text-xs text-darknavy/50">
-              Review supporting files before continuing to voucher preview.
-            </p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/42">Attachments</p>
+            <p className="mt-1 text-xs text-darknavy/50">Review supporting files before continuing to voucher preview.</p>
           </div>
           <span className="rounded-full border border-darknavy/10 bg-offwhite/45 px-3 py-1 text-xs font-semibold text-darknavy/55">
             {attachments.length} file{attachments.length === 1 ? "" : "s"}
@@ -1859,12 +1475,8 @@ function AttachmentPreviewList({
                     <FileText className="h-4 w-4" aria-hidden="true" />
                   </span>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-darknavy">
-                      {attachment.name}
-                    </p>
-                    <p className="mt-1 text-xs text-darknavy/50">
-                      {attachment.sizeLabel}
-                    </p>
+                    <p className="truncate text-sm font-medium text-darknavy">{attachment.name}</p>
+                    <p className="mt-1 text-xs text-darknavy/50">{attachment.sizeLabel}</p>
                   </div>
                 </div>
                 <button
@@ -1885,10 +1497,7 @@ function AttachmentPreviewList({
         </div>
       </div>
 
-      <AttachmentDetailsDialog
-        attachment={selectedAttachment}
-        onClose={() => setSelectedAttachment(null)}
-      />
+      <AttachmentDetailsDialog attachment={selectedAttachment} onClose={() => setSelectedAttachment(null)} />
     </>
   );
 }
@@ -1922,13 +1531,8 @@ function AttachmentDetailsDialog({
       >
         <div className="flex items-start justify-between gap-4 border-b border-darknavy/10 px-5 py-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-skyblue">
-              Attachment
-            </p>
-            <h2
-              id="attachment-details-title"
-              className="mt-1 text-xl font-semibold text-darknavy"
-            >
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-skyblue">Attachment</p>
+            <h2 id="attachment-details-title" className="mt-1 text-xl font-semibold text-darknavy">
               File Details
             </h2>
           </div>
@@ -1946,18 +1550,13 @@ function AttachmentDetailsDialog({
               <FileText className="h-5 w-5" aria-hidden="true" />
             </span>
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-darknavy">
-                {attachment.name}
-              </p>
-              <p className="mt-1 text-xs text-darknavy/55">
-                {attachment.sizeLabel}
-              </p>
+              <p className="truncate text-sm font-semibold text-darknavy">{attachment.name}</p>
+              <p className="mt-1 text-xs text-darknavy/55">{attachment.sizeLabel}</p>
             </div>
           </div>
           <p className="rounded-xl border border-darknavy/10 bg-white px-4 py-3 text-sm leading-6 text-darknavy/60">
-            This preview shows the attachment record linked to the voucher. File
-            opening/downloading can be connected once real attachment storage is
-            available.
+            This preview shows the attachment record linked to the voucher. File opening/downloading can be connected once real attachment
+            storage is available.
           </p>
         </div>
         <div className="flex justify-end border-t border-darknavy/10 px-5 py-4">
@@ -1974,27 +1573,18 @@ function AttachmentDetailsDialog({
   );
 }
 
-function SummaryCard({
-  label,
-  tone = "default",
-  value,
-}: {
-  label: string;
-  tone?: "balanced" | "default" | "warning";
-  value: string;
-}) {
+function SummaryCard({ label, tone = "default", value }: { label: string; tone?: "balanced" | "default" | "warning"; value: string }) {
   return (
     <div
-      className={`rounded-[18px] border px-4 py-4 ${tone === "balanced"
+      className={`rounded-[18px] border px-4 py-4 ${
+        tone === "balanced"
           ? "border-citron/35 bg-citron/15"
           : tone === "warning"
             ? "border-coralpink/18 bg-coralpink/8"
             : "border-darknavy/10 bg-offwhite/35"
-        }`}
+      }`}
     >
-      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-darknavy/45">
-        {label}
-      </p>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-darknavy/45">{label}</p>
       <p className="mt-2 text-lg font-semibold text-darknavy">{value}</p>
     </div>
   );
@@ -2030,11 +1620,7 @@ function VoucherAccountingGridHeader({
     },
     {
       label: "Amount",
-      value: formatCurrency(
-        values.amount
-          ? parseMoneyNumberInput(values.amount)
-          : selectedTransaction?.amount || 0,
-      ),
+      value: formatCurrency(values.amount ? parseMoneyNumberInput(values.amount) : selectedTransaction?.amount || 0),
     },
   ];
 
@@ -2042,12 +1628,8 @@ function VoucherAccountingGridHeader({
     <section className="mt-6 overflow-hidden rounded-lg border border-darknavy/10 bg-offwhite/45">
       <div className="flex flex-col gap-3 border-b border-darknavy/10 bg-white px-4 py-4 sm:px-5 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/45">
-            Disbursement Voucher
-          </p>
-          <h2 className="mt-1 truncate text-xl font-semibold text-darknavy">
-            {values.voucherNo || "New Voucher"} Accounting Entries
-          </h2>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/45">Disbursement Voucher</p>
+          <h2 className="mt-1 truncate text-xl font-semibold text-darknavy">{values.voucherNo || "New Voucher"} Accounting Entries</h2>
         </div>
         <div className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-skyblue/20 bg-skyblue/8 px-4 py-2 text-sm font-semibold text-skyblue sm:w-auto">
           <FileText className="h-4 w-4" aria-hidden="true" />
@@ -2057,12 +1639,8 @@ function VoucherAccountingGridHeader({
       <div className="grid gap-px bg-darknavy/10 sm:grid-cols-2 xl:grid-cols-3">
         {headerFields.map((field) => (
           <div key={field.label} className="bg-white px-4 py-3 sm:px-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-darknavy/42">
-              {field.label}
-            </p>
-            <p className="mt-1 min-h-6 truncate text-sm font-semibold text-darknavy">
-              {field.value}
-            </p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-darknavy/42">{field.label}</p>
+            <p className="mt-1 min-h-6 truncate text-sm font-semibold text-darknavy">{field.value}</p>
           </div>
         ))}
       </div>
@@ -2070,12 +1648,8 @@ function VoucherAccountingGridHeader({
   );
 }
 
-function formatPaymentHeaderValue(
-  values: DisbursementVoucherFormValues,
-  selectedTransaction?: DisbursementTransactionRecord,
-) {
-  const paymentMethod =
-    values.paymentMethod || selectedTransaction?.paymentMethod || "";
+function formatPaymentHeaderValue(values: DisbursementVoucherFormValues, selectedTransaction?: DisbursementTransactionRecord) {
+  const paymentMethod = values.paymentMethod || selectedTransaction?.paymentMethod || "";
   const bankLabel = getPaymentHeaderBankLabel(values);
 
   if (!paymentMethod) {
@@ -2092,9 +1666,7 @@ function getPaymentHeaderBankLabel(values: DisbursementVoucherFormValues) {
     return bankName;
   }
 
-  return values.paymentDetails.bankAccountTitle
-    .replace(/^Cash in Bank\s*-\s*/i, "")
-    .trim();
+  return values.paymentDetails.bankAccountTitle.replace(/^Cash in Bank\s*-\s*/i, "").trim();
 }
 
 function GridEntryInput({
@@ -2139,10 +1711,7 @@ function createInitialRows(entries: DisbursementLineEntry[]) {
     return mappedRows;
   }
 
-  return [
-    ...mappedRows,
-    ...Array.from({ length: 6 - mappedRows.length }, createBlankEditableRow),
-  ];
+  return [...mappedRows, ...Array.from({ length: 6 - mappedRows.length }, createBlankEditableRow)];
 }
 
 function mapEntryToEditableRow(entry: DisbursementLineEntry): EditableGridRow {
@@ -2176,14 +1745,16 @@ function createGridRowId() {
 }
 
 function isGridColumnId(columnId: string): columnId is GridColumnId {
-  return DefaultGridColumnOrder.includes(columnId as GridColumnId);
+  return DefaultDisbursementAccountingGridColumnOrder.includes(columnId as GridColumnId);
 }
 
 function createImportSourceAttachment(name: string, size: number) {
   return {
     id: `accounting-import-${name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
     name,
+    size,
     sizeLabel: formatImportSourceSize(size),
+    type: "Imported accounting entries",
   };
 }
 
@@ -2196,9 +1767,7 @@ function withAccountingImportAttachment(
   }
 
   const existingAttachments = values.attachments.filter(
-    (currentAttachment) =>
-      currentAttachment.id !== attachment.id &&
-      currentAttachment.name !== attachment.name,
+    (currentAttachment) => currentAttachment.id !== attachment.id && currentAttachment.name !== attachment.name,
   );
 
   return {
@@ -2238,8 +1807,8 @@ function downloadAccountingImportTemplate() {
 function createAccountingImportTemplateWorkbook() {
   return createAccountingWorkbook({
     amountColumnIndexes: new Set([4, 5]),
-    columnWidths: AccountingImportTemplateColumnWidths,
-    rows: [AccountingImportTemplateHeaders, ...AccountingImportTemplateRows],
+    columnWidths: DisbursementAccountingImportTemplateColumnWidths,
+    rows: [DisbursementAccountingImportTemplateHeaders, ...DisbursementAccountingImportTemplateRows],
     sheetName: "Accounting Entries",
     theme: getAccountingExportTheme(),
   });
@@ -2260,11 +1829,7 @@ function createAccountingPdfDefinition(
   const creditTotal = getPdfColumnTotal(bodyRows, exportData.visibleColumnIds, "credit");
   const tableBody: TableCell[][] = [
     headers.map((header) => pdfHeaderCell(header, theme)),
-    ...bodyRows.map((row) =>
-      row.map((value, columnIndex) =>
-        pdfBodyCell(value, exportData.amountColumnIndexes.has(columnIndex)),
-      ),
-    ),
+    ...bodyRows.map((row) => row.map((value, columnIndex) => pdfBodyCell(value, exportData.amountColumnIndexes.has(columnIndex)))),
   ];
 
   if (bodyRows.length === 0) {
@@ -2280,9 +1845,7 @@ function createAccountingPdfDefinition(
     ]);
   }
 
-  tableBody.push(
-    createPdfTotalsRow(headers.length, exportData.visibleColumnIds, debitTotal, creditTotal),
-  );
+  tableBody.push(createPdfTotalsRow(headers.length, exportData.visibleColumnIds, debitTotal, creditTotal));
 
   return {
     pageSize: "A4",
@@ -2321,19 +1884,14 @@ function createAccountingPdfDefinition(
   };
 }
 
-function createPdfVoucherDetails(
-  values: DisbursementVoucherFormValues | undefined,
-): Content {
+function createPdfVoucherDetails(values: DisbursementVoucherFormValues | undefined): Content {
   const detailRows = [
     ["Voucher No.", values?.voucherNo || "-"],
     ["Voucher Date", values?.voucherDate ? formatDateLabel(values.voucherDate) : "-"],
     ["Payee", values?.partyName || "-"],
     ["Payment Method", values?.paymentMethod || "-"],
     ["Disbursement Type", values?.disbursementType || "-"],
-    [
-      "Amount",
-      values?.amount ? formatCurrency(parseMoneyNumberInput(values.amount)) : "-",
-    ],
+    ["Amount", values?.amount ? formatCurrency(parseMoneyNumberInput(values.amount)) : "-"],
   ];
 
   return {
@@ -2399,12 +1957,7 @@ function pdfDetailValueCell(text: string): TableCell {
   };
 }
 
-function createPdfTotalsRow(
-  columnCount: number,
-  visibleColumnIds: GridColumnId[],
-  debitTotal: number,
-  creditTotal: number,
-): TableCell[] {
+function createPdfTotalsRow(columnCount: number, visibleColumnIds: GridColumnId[], debitTotal: number, creditTotal: number): TableCell[] {
   return visibleColumnIds.map((columnId, columnIndex) => {
     if (columnIndex === 0) {
       return {
@@ -2441,21 +1994,14 @@ function pdfTotalAmountCell(total: number): TableCell {
   };
 }
 
-function getPdfColumnTotal(
-  bodyRows: string[][],
-  visibleColumnIds: GridColumnId[],
-  targetColumnId: GridColumnId,
-) {
+function getPdfColumnTotal(bodyRows: string[][], visibleColumnIds: GridColumnId[], targetColumnId: GridColumnId) {
   const targetIndex = visibleColumnIds.indexOf(targetColumnId);
 
   if (targetIndex < 0) {
     return 0;
   }
 
-  return bodyRows.reduce(
-    (total, row) => total + normalizeAmount(row[targetIndex] ?? ""),
-    0,
-  );
+  return bodyRows.reduce((total, row) => total + normalizeAmount(row[targetIndex] ?? ""), 0);
 }
 
 function getPdfColumnWidth(columnId: GridColumnId) {
@@ -2491,10 +2037,7 @@ const pdfGridLayout = {
 
 function getAccountingExportTheme(): AccountingExportTheme {
   const accentColor = getCssColorVariable("--skyblue", "#57C4E5");
-  const accentContrastColor = getCssColorVariable(
-    "--skyblue-contrast",
-    "#FFFFFF",
-  );
+  const accentContrastColor = getCssColorVariable("--skyblue-contrast", "#FFFFFF");
 
   return {
     accentColor,
@@ -2509,10 +2052,7 @@ function getCssColorVariable(variableName: string, fallback: string) {
     return normalizeColorToHex(fallback);
   }
 
-  const value = window
-    .getComputedStyle(document.documentElement)
-    .getPropertyValue(variableName)
-    .trim();
+  const value = window.getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
 
   return normalizeColorToHex(value || fallback);
 }
@@ -2530,27 +2070,17 @@ function normalizeColorToHex(value: string) {
     return `#${red}${red}${green}${green}${blue}${blue}`.toUpperCase();
   }
 
-  const rgbMatch = normalizedValue.match(
-    /^rgba?\(\s*(\d{1,3})[\s,]+(\d{1,3})[\s,]+(\d{1,3})/i,
-  );
+  const rgbMatch = normalizedValue.match(/^rgba?\(\s*(\d{1,3})[\s,]+(\d{1,3})[\s,]+(\d{1,3})/i);
 
   if (rgbMatch) {
-    return rgbPartsToHex(
-      Number(rgbMatch[1]),
-      Number(rgbMatch[2]),
-      Number(rgbMatch[3]),
-    );
+    return rgbPartsToHex(Number(rgbMatch[1]), Number(rgbMatch[2]), Number(rgbMatch[3]));
   }
 
   return "#57C4E5";
 }
 
 function rgbPartsToHex(red: number, green: number, blue: number) {
-  return `#${[red, green, blue]
-    .map((part) =>
-      Math.max(0, Math.min(255, part)).toString(16).padStart(2, "0"),
-    )
-    .join("")}`.toUpperCase();
+  return `#${[red, green, blue].map((part) => Math.max(0, Math.min(255, part)).toString(16).padStart(2, "0")).join("")}`.toUpperCase();
 }
 
 function createAccountingWorkbook({
@@ -2647,15 +2177,10 @@ function createAccountingTemplateWorksheetXml(
       const cellXml = row
         .map((cell, columnIndex) => {
           const reference = `${getExcelColumnLetters(columnIndex)}${rowNumber}`;
-          const styleId =
-            rowIndex === 0 ? 1 : amountColumnIndexes.has(columnIndex) ? 3 : 0;
+          const styleId = rowIndex === 0 ? 1 : amountColumnIndexes.has(columnIndex) ? 3 : 0;
           const normalizedAmount = cell.replace(/,/g, "");
 
-          if (
-            rowIndex > 0 &&
-            amountColumnIndexes.has(columnIndex) &&
-            Number(normalizedAmount || 0) > 0
-          ) {
+          if (rowIndex > 0 && amountColumnIndexes.has(columnIndex) && Number(normalizedAmount || 0) > 0) {
             return `<c r="${reference}" s="${styleId}"><v>${normalizedAmount}</v></c>`;
           }
 
@@ -2676,7 +2201,7 @@ function createAccountingTemplateWorksheetXml(
     '<pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/>' +
     '<selection pane="bottomLeft" activeCell="A2" sqref="A2"/>' +
     "</sheetView></sheetViews>" +
-    "<sheetFormatPr defaultRowHeight=\"20\"/>" +
+    '<sheetFormatPr defaultRowHeight="20"/>' +
     `<cols>${columnsXml}</cols>` +
     "<sheetData>" +
     rowXml +
@@ -2702,7 +2227,7 @@ function createAccountingTemplateStylesXml(theme: AccountingExportTheme) {
     `<fill><patternFill patternType="solid"><fgColor rgb="${theme.excelAccentArgb}"/><bgColor indexed="64"/></patternFill></fill>` +
     "</fills>" +
     '<borders count="2">' +
-    '<border><left/><right/><top/><bottom/><diagonal/></border>' +
+    "<border><left/><right/><top/><bottom/><diagonal/></border>" +
     '<border><left style="thin"><color rgb="FFE5E7EB"/></left><right style="thin"><color rgb="FFE5E7EB"/></right><top style="thin"><color rgb="FFE5E7EB"/></top><bottom style="thin"><color rgb="FFE5E7EB"/></bottom><diagonal/></border>' +
     "</borders>" +
     '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>' +
@@ -2731,10 +2256,7 @@ function getExcelColumnLetters(columnIndex: number) {
 }
 
 function escapeXmlText(value: string) {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 function escapeXmlAttribute(value: string) {
@@ -2752,12 +2274,7 @@ function createStoredZipArchive(files: { name: string; text: string }[]) {
     const dataBytes = encoder.encode(file.text);
     const crc = calculateCrc32(dataBytes);
     const localHeader = createZipLocalHeader(nameBytes, dataBytes, crc);
-    const centralHeader = createZipCentralHeader(
-      nameBytes,
-      dataBytes,
-      crc,
-      offset,
-    );
+    const centralHeader = createZipCentralHeader(nameBytes, dataBytes, crc, offset);
 
     localParts.push(localHeader, dataBytes);
     centralParts.push(centralHeader);
@@ -2765,24 +2282,13 @@ function createStoredZipArchive(files: { name: string; text: string }[]) {
   });
 
   const centralDirectoryOffset = offset;
-  const centralDirectorySize = centralParts.reduce(
-    (sum, part) => sum + part.byteLength,
-    0,
-  );
-  const endRecord = createZipEndRecord(
-    files.length,
-    centralDirectorySize,
-    centralDirectoryOffset,
-  );
+  const centralDirectorySize = centralParts.reduce((sum, part) => sum + part.byteLength, 0);
+  const endRecord = createZipEndRecord(files.length, centralDirectorySize, centralDirectoryOffset);
 
   return concatBytes([...localParts, ...centralParts, endRecord]);
 }
 
-function createZipLocalHeader(
-  nameBytes: Uint8Array,
-  dataBytes: Uint8Array,
-  crc: number,
-) {
+function createZipLocalHeader(nameBytes: Uint8Array, dataBytes: Uint8Array, crc: number) {
   const header = new Uint8Array(30 + nameBytes.byteLength);
   const view = new DataView(header.buffer);
 
@@ -2802,12 +2308,7 @@ function createZipLocalHeader(
   return header;
 }
 
-function createZipCentralHeader(
-  nameBytes: Uint8Array,
-  dataBytes: Uint8Array,
-  crc: number,
-  localHeaderOffset: number,
-) {
+function createZipCentralHeader(nameBytes: Uint8Array, dataBytes: Uint8Array, crc: number, localHeaderOffset: number) {
   const header = new Uint8Array(46 + nameBytes.byteLength);
   const view = new DataView(header.buffer);
 
@@ -2833,11 +2334,7 @@ function createZipCentralHeader(
   return header;
 }
 
-function createZipEndRecord(
-  fileCount: number,
-  centralDirectorySize: number,
-  centralDirectoryOffset: number,
-) {
+function createZipEndRecord(fileCount: number, centralDirectorySize: number, centralDirectoryOffset: number) {
   const header = new Uint8Array(22);
   const view = new DataView(header.buffer);
 
@@ -2889,11 +2386,7 @@ async function readAccountingImportFilePreviewText(file: File) {
     return formatRowsAsTabularText(rows);
   }
 
-  if (
-    fileName.endsWith(".csv") ||
-    fileName.endsWith(".tsv") ||
-    fileName.endsWith(".txt")
-  ) {
+  if (fileName.endsWith(".csv") || fileName.endsWith(".tsv") || fileName.endsWith(".txt")) {
     return (await file.text()).trim();
   }
 
@@ -2909,25 +2402,14 @@ function parseImportPreviewRows(text: string) {
 
   const delimiter = trimmedText.includes("\t") ? "\t" : ",";
   const rows =
-    delimiter === "\t"
-      ? trimmedText
-        .split(/\r?\n/)
-        .map((line) => line.split("\t").map((cell) => cell.trim()))
-      : parseCsvRows(trimmedText);
+    delimiter === "\t" ? trimmedText.split(/\r?\n/).map((line) => line.split("\t").map((cell) => cell.trim())) : parseCsvRows(trimmedText);
 
   return rows
     .filter((row) => row.some((cell) => String(cell ?? "").trim() !== ""))
-    .map((row) =>
-      AccountingImportTemplateHeaders.map((_, index) =>
-        String(row[index] ?? "").trim(),
-      ),
-    );
+    .map((row) => DisbursementAccountingImportTemplateHeaders.map((_, index) => String(row[index] ?? "").trim()));
 }
 
-function clearImportPreviewText(
-  text: string,
-  action: ModuleDataEntryClearAction,
-) {
+function clearImportPreviewText(text: string, action: ModuleDataEntryClearAction) {
   if (action === "all") {
     return "";
   }
@@ -2967,12 +2449,7 @@ function isCompleteImportPreviewRow(row: string[]) {
   const debit = normalizeImportedAmount(row[4] ?? "");
   const credit = normalizeImportedAmount(row[5] ?? "");
 
-  return Boolean(
-    String(row[0] ?? "").trim() &&
-    String(row[1] ?? "").trim() &&
-    String(row[2] ?? "").trim() &&
-    (debit || credit),
-  );
+  return Boolean(String(row[0] ?? "").trim() && String(row[1] ?? "").trim() && String(row[2] ?? "").trim() && (debit || credit));
 }
 
 function parseTabularText(text: string) {
@@ -2984,11 +2461,7 @@ function parseTabularText(text: string) {
 
   const delimiter = trimmedText.includes("\t") ? "\t" : ",";
   const rawRows =
-    delimiter === "\t"
-      ? trimmedText
-        .split(/\r?\n/)
-        .map((line) => line.split("\t").map((cell) => cell.trim()))
-      : parseCsvRows(trimmedText);
+    delimiter === "\t" ? trimmedText.split(/\r?\n/).map((line) => line.split("\t").map((cell) => cell.trim())) : parseCsvRows(trimmedText);
 
   return mapImportedRows(rawRows);
 }
@@ -3014,11 +2487,10 @@ async function readXlsxAccountingRawRows(buffer: ArrayBuffer) {
       const rawValue =
         cellType === "inlineStr"
           ? Array.from(cell.getElementsByTagName("t"))
-            .map((node) => node.textContent ?? "")
-            .join("")
+              .map((node) => node.textContent ?? "")
+              .join("")
           : (cell.getElementsByTagName("v")[0]?.textContent ?? "");
-      const value =
-        cellType === "s" ? (sharedStrings[Number(rawValue)] ?? "") : rawValue;
+      const value = cellType === "s" ? (sharedStrings[Number(rawValue)] ?? "") : rawValue;
 
       if (columnIndex >= 0) {
         cells[columnIndex] = value.trim();
@@ -3093,9 +2565,7 @@ function parseCsvRows(text: string) {
 }
 
 function mapImportedRows(rawRows: string[][]) {
-  const rows = rawRows.filter((row) =>
-    row.some((cell) => String(cell ?? "").trim() !== ""),
-  );
+  const rows = rawRows.filter((row) => row.some((cell) => String(cell ?? "").trim() !== ""));
 
   if (rows.length === 0) {
     throw new Error("No accounting rows were found to import.");
@@ -3111,9 +2581,7 @@ function mapImportedRows(rawRows: string[][]) {
     debit: 4,
     credit: 5,
   };
-  const importedRows = dataRows
-    .map((row) => createImportedGridRow(row, indexes))
-    .filter(hasRowData);
+  const importedRows = dataRows.map((row) => createImportedGridRow(row, indexes)).filter(hasRowData);
 
   if (importedRows.length === 0) {
     throw new Error("The imported file did not contain usable accounting rows.");
@@ -3133,9 +2601,7 @@ function getImportHeaderIndexes(row: string[]) {
     }
   });
 
-  return Object.keys(indexes).length >= 2
-    ? (indexes as Partial<Record<GridColumnId, number>>)
-    : null;
+  return Object.keys(indexes).length >= 2 ? (indexes as Partial<Record<GridColumnId, number>>) : null;
 }
 
 function normalizeImportHeader(value: string): GridColumnId | null {
@@ -3149,11 +2615,7 @@ function normalizeImportHeader(value: string): GridColumnId | null {
     return "accountName";
   }
 
-  if (
-    ["particulars", "particular", "description", "remarks", "memo"].includes(
-      normalized,
-    )
-  ) {
+  if (["particulars", "particular", "description", "remarks", "memo"].includes(normalized)) {
     return "particulars";
   }
 
@@ -3172,10 +2634,7 @@ function normalizeImportHeader(value: string): GridColumnId | null {
   return null;
 }
 
-function createImportedGridRow(
-  row: string[],
-  indexes: Partial<Record<GridColumnId, number>>,
-): EditableGridRow {
+function createImportedGridRow(row: string[], indexes: Partial<Record<GridColumnId, number>>): EditableGridRow {
   const taxRate = normalizeTaxRate(getImportedValue(row, indexes.taxRate));
   const debit = normalizeImportedAmount(getImportedValue(row, indexes.debit));
   const credit = normalizeImportedAmount(getImportedValue(row, indexes.credit));
@@ -3233,16 +2692,11 @@ async function readZipEntries(buffer: ArrayBuffer) {
     const extraLength = view.getUint16(centralDirectoryOffset + 30, true);
     const commentLength = view.getUint16(centralDirectoryOffset + 32, true);
     const localHeaderOffset = view.getUint32(centralDirectoryOffset + 42, true);
-    const fileNameBytes = new Uint8Array(
-      buffer,
-      centralDirectoryOffset + 46,
-      fileNameLength,
-    );
+    const fileNameBytes = new Uint8Array(buffer, centralDirectoryOffset + 46, fileNameLength);
     const fileName = decoder.decode(fileNameBytes);
     const localFileNameLength = view.getUint16(localHeaderOffset + 26, true);
     const localExtraLength = view.getUint16(localHeaderOffset + 28, true);
-    const dataOffset =
-      localHeaderOffset + 30 + localFileNameLength + localExtraLength;
+    const dataOffset = localHeaderOffset + 30 + localFileNameLength + localExtraLength;
     const compressedBytes = buffer.slice(dataOffset, dataOffset + compressedSize);
     const fileText =
       compressionMethod === 0
@@ -3278,9 +2732,7 @@ async function inflateRaw(compressedBytes: ArrayBuffer) {
     throw new Error("This browser cannot read compressed Excel files.");
   }
 
-  const stream = new Blob([compressedBytes])
-    .stream()
-    .pipeThrough(new DecompressionStream("deflate-raw"));
+  const stream = new Blob([compressedBytes]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
 
   return new Response(stream).arrayBuffer();
 }
@@ -3304,9 +2756,7 @@ function findFirstWorksheetPath(entries: Map<string, string>) {
     return "xl/worksheets/sheet1.xml";
   }
 
-  const worksheetPath = Array.from(entries.keys()).find(
-    (path) => path.startsWith("xl/worksheets/") && path.endsWith(".xml"),
-  );
+  const worksheetPath = Array.from(entries.keys()).find((path) => path.startsWith("xl/worksheets/") && path.endsWith(".xml"));
 
   if (!worksheetPath) {
     throw new Error("No worksheet was found in the Excel file.");
@@ -3339,10 +2789,7 @@ function hasRowValue(row: EditableGridRow) {
   );
 }
 
-function shouldClearRow(
-  row: EditableGridRow,
-  action: Exclude<ModuleDataEntryClearAction, "all">,
-) {
+function shouldClearRow(row: EditableGridRow, action: Exclude<ModuleDataEntryClearAction, "all">) {
   if (action === "with-data") {
     return hasRowData(row);
   }
@@ -3389,10 +2836,7 @@ function getExportCellValue(row: EditableGridRow, columnId: GridColumnId) {
   return row[columnId];
 }
 
-let accountingGridTextMeasureContext:
-  | CanvasRenderingContext2D
-  | null
-  | undefined;
+let accountingGridTextMeasureContext: CanvasRenderingContext2D | null | undefined;
 
 function calculateGridColumnFitWidth({
   columnId,
@@ -3404,11 +2848,7 @@ function calculateGridColumnFitWidth({
   rows: EditableGridRow[];
 }) {
   const headerWidth = estimateGridTextWidth(columnLabels[columnId], 76);
-  const contentWidth = rows.reduce(
-    (currentWidth, row) =>
-      Math.max(currentWidth, estimateGridTextWidth(row[columnId] ?? "", 24)),
-    50,
-  );
+  const contentWidth = rows.reduce((currentWidth, row) => Math.max(currentWidth, estimateGridTextWidth(row[columnId] ?? "", 24)), 50);
 
   return Math.max(headerWidth, contentWidth);
 }
@@ -3427,26 +2867,20 @@ function measureGridTextWidth(value: string) {
   }
 
   if (accountingGridTextMeasureContext === undefined) {
-    accountingGridTextMeasureContext = document
-      .createElement("canvas")
-      .getContext("2d");
+    accountingGridTextMeasureContext = document.createElement("canvas").getContext("2d");
   }
 
   if (!accountingGridTextMeasureContext) {
     return fallbackWidth;
   }
 
-  accountingGridTextMeasureContext.font =
-    "500 14px Inter, Arial, Helvetica, sans-serif";
+  accountingGridTextMeasureContext.font = "500 14px Inter, Arial, Helvetica, sans-serif";
 
   return accountingGridTextMeasureContext.measureText(value).width;
 }
 
 function estimateFallbackTextWidth(value: string) {
-  return Array.from(value).reduce(
-    (width, character) => width + getEstimatedCharacterWidth(character),
-    0,
-  );
+  return Array.from(value).reduce((width, character) => width + getEstimatedCharacterWidth(character), 0);
 }
 
 function getEstimatedCharacterWidth(character: string) {
@@ -3506,9 +2940,7 @@ function buildLineEntries(rows: EditableGridRow[]): DisbursementLineEntry[] {
   return entries.length > 0 ? entries : [createBlankDisbursementLineEntry()];
 }
 
-function createVoucherActionReturnHref(
-  session: DisbursementVoucherAccountingGridSession | null,
-) {
+function createVoucherActionReturnHref(session: DisbursementVoucherAccountingGridSession | null) {
   if (!session) {
     return DisbursementVoucherHref;
   }
@@ -3517,9 +2949,7 @@ function createVoucherActionReturnHref(
     return `${DisbursementVoucherHref}/edit/${session.values.transactionId}`;
   }
 
-  const transactionQuery = session.values.transactionId
-    ? `?transactionId=${encodeURIComponent(session.values.transactionId)}`
-    : "";
+  const transactionQuery = session.values.transactionId ? `?transactionId=${encodeURIComponent(session.values.transactionId)}` : "";
 
   return `${DisbursementVoucherHref}/add${transactionQuery}`;
 }

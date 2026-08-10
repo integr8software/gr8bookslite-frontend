@@ -60,7 +60,7 @@ import type {
   AddressAutocompleteDetails,
   AddressAutocompleteItem,
 } from "@/app/src/types/shared/address/AddressTypes";
-import type { AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 
 export function PartyManagementDrawer({
   description = "Create a party record from the party-management fields, then use it on this transaction.",

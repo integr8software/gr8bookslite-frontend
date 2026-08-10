@@ -15,6 +15,7 @@ import {
 	canCancelDisbursementVoucherStatus,
 	canDisapproveDisbursementVoucherStatus,
 	canEditDisbursementVoucherStatus,
+	getDisbursementVoucherStatusDialogCopy,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import type {
 	DisbursementVoucherHistoryEntry,
@@ -60,7 +61,7 @@ export function DisbursementVoucherRecordActions({
 			: DisbursementVoucherStatuses.forApproval
 		: DisbursementVoucherStatuses.cancelled;
 	const statusDialogCopy = statusToConfirm
-		? getStatusDialogCopy(statusToConfirm, recordLabel)
+		? getDisbursementVoucherStatusDialogCopy(statusToConfirm, recordLabel)
 		: null;
 	const items: ModuleActionMenuItem[] = [
 		{
@@ -196,40 +197,4 @@ function createDisbursementVoucherRowHistory(
 			status: row.transaction.status,
 		},
 	];
-}
-
-function getStatusDialogCopy(
-	status: DisbursementVoucherStatus,
-	recordLabel: string,
-) {
-	if (status === DisbursementVoucherStatuses.posted) {
-		return {
-			confirmLabel: "Approve Voucher",
-			description: `This will approve ${recordLabel} and update its status to Posted.`,
-			iconTone: "approve" as const,
-			pendingLabel: "Approving...",
-			title: "Approve disbursement voucher?",
-			tone: "success" as const,
-		};
-	}
-
-	if (status === DisbursementVoucherStatuses.disapproved) {
-		return {
-			confirmLabel: "Disapprove Voucher",
-			description: `This will mark ${recordLabel} as Disapproved.`,
-			iconTone: "disapprove" as const,
-			pendingLabel: "Disapproving...",
-			title: "Disapprove disbursement voucher?",
-			tone: "danger" as const,
-		};
-	}
-
-	return {
-		confirmLabel: "Mark as Cancelled",
-		description: `This will mark ${recordLabel} as Cancelled.`,
-		iconTone: "cancel" as const,
-		pendingLabel: "Cancelling...",
-		title: "Make Disbursement Voucher as Cancelled",
-		tone: "danger" as const,
-	};
 }

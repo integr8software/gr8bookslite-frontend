@@ -1,30 +1,18 @@
-import type { DisbursementVoucherBankAccount, DisbursementVoucherFormValues } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+import type {
+  DisbursementVoucherBankAccount,
+  DisbursementVoucherFormValues,
+  DisbursementVoucherPaymentFieldsProps,
+} from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import type { PaymentTypeRecord as AppPaymentTypeRecord } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
 import {
   DisbursementVoucherBankSearchPlaceholder,
   DisbursementVoucherBankSelectPlaceholder,
+  DisbursementVoucherFieldClassName,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
-import { FieldClassName, FieldShell } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherFieldControls";
-import {
-  AppAdvancedDropdown,
-  type AppAdvancedDropdownOption,
-} from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
+import { FieldShell } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherFieldControls";
+import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
-
-type DisbursementVoucherPaymentFieldsProps = {
-  bankAccounts: DisbursementVoucherBankAccount[];
-  canAddBankAccount: boolean;
-  isReadonly: boolean;
-  isMultiCheckNumber: boolean;
-  onOpenBankAccountDrawer: () => void;
-  paymentType: string;
-  paymentTypeRecord: AppPaymentTypeRecord | null;
-  values: DisbursementVoucherFormValues;
-  onUpdateBankAccount: (accountCode: string) => void;
-  onUpdatePaymentDetails: (
-    nextDetails: Partial<DisbursementVoucherFormValues["paymentDetails"]>,
-  ) => void;
-};
 
 export function DisbursementVoucherPaymentFields({
   bankAccounts,
@@ -83,18 +71,13 @@ export function DisbursementVoucherPaymentFields({
             onChange={(nextDetails) => onUpdatePaymentDetails(nextDetails)}
           />
         </FieldShell>
-        <FieldShell
-          controlId="disbursement-voucher-transfer-account-no"
-          label="Account No."
-        >
+        <FieldShell controlId="disbursement-voucher-transfer-account-no" label="Account No.">
           <input
             id="disbursement-voucher-transfer-account-no"
             value={values.paymentDetails.transferAccountNo ?? ""}
             readOnly={isReadonly}
-            onChange={(event) =>
-              onUpdatePaymentDetails({ transferAccountNo: event.target.value })
-            }
-            className={FieldClassName}
+            onChange={(event) => onUpdatePaymentDetails({ transferAccountNo: event.target.value })}
+            className={DisbursementVoucherFieldClassName}
           />
         </FieldShell>
       </div>
@@ -127,10 +110,8 @@ export function DisbursementVoucherPaymentFields({
           id="disbursement-voucher-payment-payee"
           value={values.paymentDetails.payee ?? values.partyName}
           readOnly={isReadonly}
-          onChange={(event) =>
-            onUpdatePaymentDetails({ payee: event.target.value })
-          }
-          className={FieldClassName}
+          onChange={(event) => onUpdatePaymentDetails({ payee: event.target.value })}
+          className={DisbursementVoucherFieldClassName}
         />
       </FieldShell>
       {isCheckPayment ? (
@@ -151,31 +132,23 @@ export function DisbursementVoucherPaymentFields({
       ) : null}
       {!isCheckPayment || !isMultiCheckNumber ? (
         <>
-          <FieldShell
-            controlId="disbursement-voucher-payment-document-no"
-            label={isCheckPayment ? "Check No." : "Debit Memo No."}
-          >
+          <FieldShell controlId="disbursement-voucher-payment-document-no" label={isCheckPayment ? "Check No." : "Debit Memo No."}>
             <input
               id="disbursement-voucher-payment-document-no"
               value={values.paymentDetails.checkNo}
               readOnly={isReadonly}
-              onChange={(event) =>
-                onUpdatePaymentDetails({ checkNo: event.target.value })
-              }
-              className={FieldClassName}
+              onChange={(event) => onUpdatePaymentDetails({ checkNo: event.target.value })}
+              className={DisbursementVoucherFieldClassName}
             />
           </FieldShell>
         </>
       ) : null}
-      <FieldShell
-        controlId="disbursement-voucher-payment-commission"
-        label="Commission"
-      >
+      <FieldShell controlId="disbursement-voucher-payment-commission" label="Commission">
         <input
           id="disbursement-voucher-payment-commission"
           value={values.paymentDetails.commission ?? ""}
           readOnly
-          className={`${FieldClassName} bg-darknavy/5 text-darknavy/55`}
+          className={`${DisbursementVoucherFieldClassName} bg-darknavy/5 text-darknavy/55`}
         />
       </FieldShell>
     </div>
@@ -235,9 +208,7 @@ function ToBankDropdown({
   bankAccounts: DisbursementVoucherBankAccount[];
   id?: string;
   isReadonly: boolean;
-  onChange: (
-    nextDetails: Partial<DisbursementVoucherFormValues["paymentDetails"]>,
-  ) => void;
+  onChange: (nextDetails: Partial<DisbursementVoucherFormValues["paymentDetails"]>) => void;
   value: string;
 }) {
   const options = createToBankOptions({
@@ -246,17 +217,10 @@ function ToBankDropdown({
     value,
   });
   const selectedBank = bankAccounts.find(
-    (bankAccount) =>
-      bankAccount.bankName === value &&
-      (!accountNo || bankAccount.accountNo === accountNo),
+    (bankAccount) => bankAccount.bankName === value && (!accountNo || bankAccount.accountNo === accountNo),
   );
   const selectedValue =
-    selectedBank?.id ??
-    options.find(
-      (option) =>
-        option.name === value &&
-        (!accountNo || option.label === accountNo),
-    )?.value ?? value;
+    selectedBank?.id ?? options.find((option) => option.name === value && (!accountNo || option.label === accountNo))?.value ?? value;
 
   return (
     <AppAdvancedDropdown
@@ -269,9 +233,7 @@ function ToBankDropdown({
       searchPlaceholder={DisbursementVoucherBankSearchPlaceholder}
       onChange={(nextValue) => {
         const selectedValue = String(nextValue);
-        const selectedBank = bankAccounts.find(
-          (bankAccount) => bankAccount.id === selectedValue,
-        );
+        const selectedBank = bankAccounts.find((bankAccount) => bankAccount.id === selectedValue);
 
         onChange({
           transferAccountName: selectedBank?.accountName ?? "",
@@ -280,9 +242,7 @@ function ToBankDropdown({
         });
       }}
       onSelectOption={(option) => {
-        const selectedBank = bankAccounts.find(
-          (bankAccount) => bankAccount.id === option.value,
-        );
+        const selectedBank = bankAccounts.find((bankAccount) => bankAccount.id === option.value);
 
         if (!selectedBank) {
           return;
@@ -325,14 +285,7 @@ function createToBankOptions({
     value: bankAccount.id,
   }));
 
-  if (
-    value.trim() &&
-    !options.some(
-      (option) =>
-        option.name === value &&
-        (!accountNo || option.label === accountNo),
-    )
-  ) {
+  if (value.trim() && !options.some((option) => option.name === value && (!accountNo || option.label === accountNo))) {
     options.push({
       label: accountNo,
       name: value,
@@ -344,15 +297,10 @@ function createToBankOptions({
 }
 
 function formatBankBranchName(bankAccount: DisbursementVoucherBankAccount) {
-  return bankAccount.branch
-    ? `${bankAccount.bankName} (${bankAccount.branch})`
-    : bankAccount.bankName;
+  return bankAccount.branch ? `${bankAccount.bankName} (${bankAccount.branch})` : bankAccount.bankName;
 }
 
-export function getPaymentTypeDetailKind(
-  paymentType: string,
-  paymentTypeRecord?: AppPaymentTypeRecord | null,
-) {
+export function getPaymentTypeDetailKind(paymentType: string, paymentTypeRecord?: AppPaymentTypeRecord | null) {
   if (paymentTypeRecord?.type === "Cash") {
     return "cash";
   }
@@ -379,18 +327,11 @@ export function getPaymentTypeDetailKind(
     return "";
   }
 
-  if (
-    normalizedPaymentType.includes("bank transfer") ||
-    normalizedPaymentType.includes("wire") ||
-    normalizedPaymentType === "transfer"
-  ) {
+  if (normalizedPaymentType.includes("bank transfer") || normalizedPaymentType.includes("wire") || normalizedPaymentType === "transfer") {
     return "bank-transfer";
   }
 
-  if (
-    normalizedPaymentType.includes("debit memo") ||
-    normalizedPaymentType.includes("debit")
-  ) {
+  if (normalizedPaymentType.includes("debit memo") || normalizedPaymentType.includes("debit")) {
     return "debit-memo";
   }
 
@@ -410,10 +351,7 @@ export function getPaymentTypeDetailKind(
     return "bank-transfer";
   }
 
-  if (
-    normalizedPaymentType === "cash" ||
-    normalizedPaymentType.includes("g-cash")
-  ) {
+  if (normalizedPaymentType === "cash" || normalizedPaymentType.includes("g-cash")) {
     return "cash";
   }
 

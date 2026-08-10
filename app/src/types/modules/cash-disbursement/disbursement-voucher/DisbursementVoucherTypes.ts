@@ -1,10 +1,7 @@
-export type DisbursementVoucherStatus =
-  | "Draft"
-  | "For Approval"
-  | "Posted"
-  | "Disapproved"
-  | "Cancelled"
-  | "Closed";
+import type { AppCopyFromRecord } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
+import type { PaymentTypeRecord as AppPaymentTypeRecord } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
+
+export type DisbursementVoucherStatus = "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled" | "Closed";
 
 export type DisbursementVoucherTableColumnKey =
   | "voucherNo"
@@ -20,34 +17,19 @@ export type DisbursementVoucherTableColumnKey =
   | "updatedBy"
   | "updatedAt";
 
-export type DisbursementPaymentMethod =
-  | "Bank Transfer"
-  | "Check"
-  | "E-Wallet"
-  | "InstaPay"
-  | "Manager's Check"
-  | "PESONet"
-  | (string & {});
+export type DisbursementPaymentMethod = "Bank Transfer" | "Check" | "E-Wallet" | "InstaPay" | "Manager's Check" | "PESONet" | (string & {});
 
-export type DisbursementPaymentClassification =
-  | "Cash"
-  | "Bank Transfer"
-  | "Check"
-  | "Digital Wallet"
-  | "Non-Cash Settlement";
+export type DisbursementPaymentClassification = "Cash" | "Bank Transfer" | "Check" | "Digital Wallet" | "Non-Cash Settlement";
 
-export type DisbursementType =
-  | "Vendor Payment"
-  | "Operating Expense"
-  | "Reimbursement"
-  | "Capital Expenditure"
-  | (string & {});
+export type DisbursementType = "Vendor Payment" | "Operating Expense" | "Reimbursement" | "Capital Expenditure" | (string & {});
 
 export type VoucherCurrency = "PHP" | "USD" | (string & {});
 
 export type WorkflowStep = "details" | "entries" | "review";
 
 export type DisbursementVoucherActionMode = "add" | "edit" | "view";
+
+export type DisbursementVoucherActionTab = "details" | "attachments";
 
 export type DisbursementVoucherHistoryEntry = {
   id: string;
@@ -173,9 +155,13 @@ export type DisbursementTaxDetails = {
 };
 
 export type DisbursementAttachment = {
+  dataUrl?: string;
   id: string;
+  lastModified?: number;
   name: string;
-  sizeLabel: string;
+  size?: number;
+  sizeLabel?: string;
+  type?: string;
 };
 
 export type DisbursementVoucherRecord = {
@@ -266,12 +252,7 @@ export type DisbursementVoucherAccountingGridSession = {
 };
 
 export type DisbursementVoucherFormErrors = Partial<
-  Record<
-    | keyof Omit<DisbursementVoucherFormValues, "lineEntries" | "attachments">
-    | "lineEntries"
-    | "entryDraft",
-    string
-  >
+  Record<keyof Omit<DisbursementVoucherFormValues, "lineEntries" | "attachments"> | "lineEntries" | "entryDraft", string>
 >;
 
 export type DisbursementVoucherCopyFromRecord = {
@@ -286,3 +267,62 @@ export type DisbursementVoucherCopyFromRecord = {
   remarks: string;
   templateValues: DisbursementVoucherFormValues;
 };
+
+export type DisbursementVoucherFieldUpdater<TValues> = <TKey extends keyof TValues>(field: TKey, value: TValues[TKey]) => void;
+
+export type DisbursementVoucherActionHeaderProps = {
+  copyFromRecords?: AppCopyFromRecord[];
+  copyFromSources?: string[];
+  mode: DisbursementVoucherActionMode;
+  returnHref?: string;
+  transaction?: DisbursementTransactionRecord;
+  voucher?: DisbursementVoucherRecord;
+  onCopyFrom?: (recordIds: string[]) => void;
+  onPreview?: () => void;
+  onSaveDraft?: () => void;
+  onSubmit?: () => void;
+  onUpdateStatus?: (status: DisbursementVoucherStatus) => void;
+};
+
+export type DisbursementVoucherDetailsFormProps = {
+  bankAccounts: DisbursementVoucherBankAccount[];
+  canAddBankAccount: boolean;
+  canAddPartyName: boolean;
+  canAddPaymentType: boolean;
+  canAddProjectName: boolean;
+  errors: DisbursementVoucherFormErrors;
+  isReadonly: boolean;
+  paymentTypeRecords: AppPaymentTypeRecord[];
+  values: DisbursementVoucherFormValues;
+  onOpenBankAccountDrawer: () => void;
+  onOpenPartyNameDialog: () => void;
+  onOpenPaymentTypeDrawer: () => void;
+  onOpenProjectNameDialog: () => void;
+  onPartyChange: (partyCode: string, partyName: string) => void;
+  onPaymentTypeChange: (paymentMethod: string) => void;
+  onUpdateBankAccount: (accountCode: string) => void;
+  onUpdateField: DisbursementVoucherFieldUpdater<DisbursementVoucherFormValues>;
+  onUpdatePaymentDetails: (nextDetails: Partial<DisbursementVoucherFormValues["paymentDetails"]>) => void;
+};
+
+export type DisbursementVoucherPaymentFieldsProps = {
+  bankAccounts: DisbursementVoucherBankAccount[];
+  canAddBankAccount: boolean;
+  isMultiCheckNumber: boolean;
+  isReadonly: boolean;
+  paymentType: string;
+  paymentTypeRecord: AppPaymentTypeRecord | null;
+  values: DisbursementVoucherFormValues;
+  onOpenBankAccountDrawer: () => void;
+  onUpdateBankAccount: (accountCode: string) => void;
+  onUpdatePaymentDetails: (nextDetails: Partial<DisbursementVoucherFormValues["paymentDetails"]>) => void;
+};
+
+export type DisbursementVoucherReportPreviewProps = {
+  isOpen: boolean;
+  values: DisbursementVoucherFormValues;
+  onClose: () => void;
+  onGeneratePdf: () => void;
+};
+
+export type DisbursementVoucherPdfText = string | Array<string | { text: string; bold?: boolean }>;

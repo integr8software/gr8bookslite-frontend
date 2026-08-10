@@ -16,7 +16,7 @@ import type {
 	InventoryCountValues,
 } from "@/app/src/types/modules/inventory/inventory-count/InventoryCountTypes";
 import { validateInventoryCount } from "@/app/src/validations/modules/inventory/inventory-count/InventoryCountValidation";
-import type { AppCopyFromRecord } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
+import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 
 export function useInventoryCountFormPage() {
 	const pathname = usePathname();

@@ -6,10 +6,8 @@ import {
 } from "@/app/src/constants/modules/inventory/receiving-report/ReceivingReportConstants";
 import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
-import {
-  AppCopyFromDropdown,
-  type AppCopyFromRecord,
-} from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
+import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
+import { AppCopyFromDropdown } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
 import type { ReceivingReportActionMode } from "@/app/src/types/modules/inventory/receiving-report/ReceivingReportTypes";
 
 export function ReceivingReportHeader({

@@ -17,7 +17,7 @@ import { SalesInvoiceEntries } from "@/app/src/ui/modules/sales/sales-invoice/en
 import { SalesInvoiceReportPreview } from "@/app/src/ui/modules/sales/sales-invoice/reports/SalesInvoiceReportPreview";
 import { SalesInvoiceActionHeader } from "@/app/src/ui/modules/sales/sales-invoice/action/SalesInvoiceActionHeader";
 import { SalesInvoiceDetailsForm } from "@/app/src/ui/modules/sales/sales-invoice/action/SalesInvoiceDetailsForm";
-import type { AppCopyFromRecord } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
+import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 
 export function SalesInvoiceFormPage() {
   const params = useParams<{ recordId?: string }>();

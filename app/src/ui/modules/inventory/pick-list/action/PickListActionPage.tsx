@@ -12,7 +12,7 @@ import { PickListEntrySection } from "@/app/src/ui/modules/inventory/pick-list/e
 import { PickListNotFound } from "@/app/src/ui/modules/inventory/pick-list/overview/PickListNotFound";
 import { openPickListPdf } from "@/app/src/ui/modules/inventory/pick-list/reports/PickListPdf";
 import { PickListReportPreview } from "@/app/src/ui/modules/inventory/pick-list/reports/PickListReportPreview";
-import type { AppCopyFromRecord } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
+import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 
 export function PickListActionPage() {
 	const params = useParams<{ recordId?: string }>();

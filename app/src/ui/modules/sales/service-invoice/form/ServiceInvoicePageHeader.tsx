@@ -14,10 +14,8 @@ import {
 	type ModuleActionMenuItem,
 } from "@/app/src/ui/shared/module/ModuleActionMenu";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
-import {
-	AppCopyFromDropdown,
-	type AppCopyFromRecord,
-} from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
+import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
+import { AppCopyFromDropdown } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
 
 type ServiceInvoiceFormHeaderProps = {
 	mode: ServiceInvoiceActionMode;

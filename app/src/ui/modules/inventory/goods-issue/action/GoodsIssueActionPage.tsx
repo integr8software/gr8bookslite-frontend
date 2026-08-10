@@ -12,7 +12,7 @@ import { GoodsIssueEntrySection } from "@/app/src/ui/modules/inventory/goods-iss
 import { GoodsIssueNotFound } from "@/app/src/ui/modules/inventory/goods-issue/overview/GoodsIssueNotFound";
 import { openGoodsIssuePdf } from "@/app/src/ui/modules/inventory/goods-issue/reports/GoodsIssuePdf";
 import { GoodsIssueReportPreview } from "@/app/src/ui/modules/inventory/goods-issue/reports/GoodsIssueReportPreview";
-import type { AppCopyFromRecord } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
+import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 
 export function GoodsIssueActionPage() {
   const params = useParams<{ recordId?: string }>();

@@ -1,14 +1,5 @@
 import type { ChangeEventHandler } from "react";
 import type { Row, Table } from "@tanstack/react-table";
-import type {
-  DiscountListResponseDto,
-  DiscountResponseDto,
-  DiscountResponseDtoStatus,
-  DiscountResponseDtoType,
-  DiscountResponseDtoValueType,
-  ImportDiscountsResponseDto,
-  SaveDiscountResponseDto,
-} from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 
 export type DiscountType = "Percentage" | "Fixed";
 export type DiscountTransactionType = "Purchase" | "Sales";
@@ -97,23 +88,11 @@ export type DiscountMaintenancePermissions = {
   canImport: boolean;
 };
 
-export type ApiDiscountType = DiscountResponseDtoType;
-export type ApiDiscountValueType = DiscountResponseDtoValueType;
-export type ApiDiscountStatus = DiscountResponseDtoStatus;
-
-export type ApiDiscount = DiscountResponseDto;
-
 export type DiscountMaintenanceListResponse = {
   discounts: Discount[];
   statistics: DiscountMaintenanceStatistics;
   permissions: DiscountMaintenancePermissions;
 };
-
-export type ApiDiscountListResponse = DiscountListResponseDto;
-
-export type ApiDiscountSaveResponse = SaveDiscountResponseDto;
-
-export type ApiDiscountImportResponse = ImportDiscountsResponseDto;
 
 export type DiscountMaintenanceTableProps = {
   discountTypeFilter: DiscountValueTypeFilter;

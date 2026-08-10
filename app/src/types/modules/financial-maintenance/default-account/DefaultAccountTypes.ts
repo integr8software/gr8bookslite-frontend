@@ -1,18 +1,13 @@
 import type { Row, Table } from "@tanstack/react-table";
 import type {
   DefaultAccountExpenseParentOptionsResponseDto,
-  DefaultAccountListResponseDto,
-  DefaultAccountResponseDto,
   DefaultAccountResponseDtoStatus,
   DefaultAccountResponseDtoType,
   GeneratedDefaultAccountResponseDtoRole,
-  SaveDefaultAccountExpenseSubAccountResponseDto,
-  SaveDefaultAccountResponseDto,
 } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 
 export type DefaultAccountType = DefaultAccountResponseDtoType;
 export type DefaultAccountStatus = "Active" | "Inactive";
-export type ApiDefaultAccountStatus = DefaultAccountResponseDtoStatus;
 
 export type GeneratedDefaultAccountRole = GeneratedDefaultAccountResponseDtoRole;
 
@@ -24,7 +19,7 @@ export type GeneratedDefaultAccount = {
   accountType: string | null;
   accountNature: string | null;
   parentAccountId: string | null;
-  status: ApiDefaultAccountStatus;
+  status: DefaultAccountResponseDtoStatus;
 };
 
 export type DefaultAccount = {
@@ -88,12 +83,6 @@ export type DefaultAccountStatistics = {
   collectionDefaultAccounts: number;
 };
 
-export type ApiDefaultAccount = DefaultAccountResponseDto;
-
-export type ApiDefaultAccountListResponse = DefaultAccountListResponseDto;
-
-export type ApiDefaultAccountSaveResponse = SaveDefaultAccountResponseDto;
-
 export type DefaultAccountExpenseParentOption = {
   id: string;
   accountCode: string;
@@ -101,10 +90,6 @@ export type DefaultAccountExpenseParentOption = {
   accountLevel: string;
   parentAccountId: string | null;
 };
-
-export type ApiDefaultAccountExpenseParentOptionsResponse = DefaultAccountExpenseParentOptionsResponseDto;
-
-export type ApiDefaultAccountExpenseSubAccountSaveResponse = SaveDefaultAccountExpenseSubAccountResponseDto;
 
 export type DefaultAccountListResponse = {
   defaultAccounts: DefaultAccount[];

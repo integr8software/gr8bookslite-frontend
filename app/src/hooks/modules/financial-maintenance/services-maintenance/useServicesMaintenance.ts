@@ -15,8 +15,8 @@ import {
   updateServiceMaintenanceStatus,
 } from "@/app/src/services/modules/financial-maintenance/services-maintenance/ServicesMaintenanceApi";
 import { ServicesMaintenanceQueryKeys } from "@/app/src/services/modules/financial-maintenance/services-maintenance/ServicesMaintenanceQueryKeys";
+import type { ServiceMaintenanceNextAccountCodeResponseDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import type {
-  ApiServicesMaintenanceNextAccountCodeResponse,
   ServicesMaintenance,
   ServicesMaintenanceFormValues,
   ServicesMaintenancePermissions,
@@ -34,7 +34,7 @@ type ServicesMaintenanceStoreState = {
   isNextAccountCodeLoading: boolean;
   isRefreshing: boolean;
   lastSyncedAt: number;
-  nextAccountCode: ApiServicesMaintenanceNextAccountCodeResponse | null;
+  nextAccountCode: ServiceMaintenanceNextAccountCodeResponseDto | null;
   permissions: ServicesMaintenancePermissions;
   refreshServices: () => void;
   refreshSetup: () => void;

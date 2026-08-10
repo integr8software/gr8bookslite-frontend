@@ -3,14 +3,6 @@ import type {
   DisbursementPaymentMethod,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import type { Row, Table } from "@tanstack/react-table";
-import type {
-  ImportPaymentTypesResponseDto,
-  PaymentTypeListResponseDto,
-  PaymentTypeResponseDto,
-  PaymentTypeResponseDtoClassification,
-  PaymentTypeResponseDtoStatus,
-  SavePaymentTypeResponseDto,
-} from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 
 export type PaymentTypeStatus = "Active" | "Inactive";
 export type PaymentTypeClassification = DisbursementPaymentClassification;
@@ -25,12 +17,6 @@ export type PaymentTypeListParams = {
   status?: "" | PaymentTypeStatus;
   type?: "" | PaymentTypeClassification;
 };
-
-export type ApiPaymentTypeClassification = PaymentTypeResponseDtoClassification;
-
-export type ApiPaymentTypeStatus = PaymentTypeResponseDtoStatus;
-
-export type ApiPaymentType = PaymentTypeResponseDto;
 
 export type PaymentTypeRecord = {
   description: string;
@@ -131,12 +117,6 @@ export type PaymentTypeStatisticCardsProps = {
   statistics: PaymentTypeStatistics;
   isLoading?: boolean;
 };
-
-export type ApiPaymentTypeListResponse = PaymentTypeListResponseDto;
-
-export type ApiPaymentTypeSaveResponse = SavePaymentTypeResponseDto;
-
-export type ApiPaymentTypeImportResponse = ImportPaymentTypesResponseDto;
 
 export type PaymentTypeTableFiltersProps = {
   exportAllRows: PaymentTypeRecord[];

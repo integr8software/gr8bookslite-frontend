@@ -1,11 +1,8 @@
 import type { ReactNode } from "react";
 import type { Row, Table } from "@tanstack/react-table";
 import type {
-  ResponsibilityCenterClassificationResponseDto,
-  ResponsibilityCenterResponseDto,
   ResponsibilityCenterResponseDtoFinancialType,
   ResponsibilityCenterResponseDtoStatus,
-  ResponsibilityCenterTypeResponseDto,
 } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import type { TablePreferencesState } from "@/app/src/types/shared/table-preferences/TablePreferencesTypes";
 
@@ -49,7 +46,7 @@ export type ResponsibilityCenterClassification = {
   name: ResponsibilityCenterFinancialType;
   trackingBehavior: string;
   isSystem: boolean;
-  status: ApiResponsibilityCenterStatus;
+  status: ResponsibilityCenterResponseDtoStatus;
 };
 
 export type ResponsibilityCenterTypeOption = {
@@ -62,7 +59,7 @@ export type ResponsibilityCenterTypeOption = {
   description: string | null;
   sortOrder: number;
   isRequired: boolean;
-  status: ApiResponsibilityCenterStatus;
+  status: ResponsibilityCenterResponseDtoStatus;
 };
 
 export type ResponsibilityCenter = {
@@ -158,14 +155,6 @@ export type ResponsibilityCenterStatistics = {
   branchCenters: number;
   projectCenters: number;
 };
-
-export type ApiResponsibilityCenterCategory = ResponsibilityCenterResponseDto["category"];
-
-export type ApiResponsibilityCenterFinancialType = ResponsibilityCenterResponseDtoFinancialType;
-export type ApiResponsibilityCenterStatus = ResponsibilityCenterResponseDtoStatus;
-export type ApiResponsibilityCenter = ResponsibilityCenterResponseDto;
-export type ApiResponsibilityCenterClassification = ResponsibilityCenterClassificationResponseDto;
-export type ApiResponsibilityCenterTypeOption = ResponsibilityCenterTypeResponseDto;
 
 export type ResponsibilityCenterListResult = {
   centers: ResponsibilityCenter[];

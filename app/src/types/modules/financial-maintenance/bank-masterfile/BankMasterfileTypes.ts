@@ -1,17 +1,7 @@
 import type { ChangeEventHandler, ReactNode } from "react";
 import type { Row, Table } from "@tanstack/react-table";
-import type {
-  BankAccountListResponseDto,
-  BankAccountResponseDto,
-  BankAccountResponseDtoStatus,
-  BankNextAccountCodeResponseDto,
-  ImportBankAccountsResponseDto,
-  SaveBankAccountResponseDto,
-} from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 
 export type BankMasterfileStatus = "Active" | "Inactive";
-
-export type ApiBankStatus = BankAccountResponseDtoStatus;
 
 export type BankMasterfile = {
   id: string;
@@ -107,16 +97,6 @@ export type BankMasterfileListResponse = {
   statistics: BankMasterfileStatistics;
   permissions: BankMasterfilePermissions;
 };
-
-export type ApiBank = BankAccountResponseDto;
-
-export type ApiBankListResponse = BankAccountListResponseDto;
-
-export type ApiBankSaveResponse = SaveBankAccountResponseDto;
-
-export type ApiBankImportResponse = ImportBankAccountsResponseDto;
-
-export type ApiNextAccountCodeResponse = BankNextAccountCodeResponseDto;
 
 export type BankMasterfileStatusFilter = "" | BankMasterfileStatus;
 

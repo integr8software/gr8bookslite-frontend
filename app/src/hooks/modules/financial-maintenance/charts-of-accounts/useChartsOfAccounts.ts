@@ -15,6 +15,8 @@ import {
   ChartsOfAccountsDefaultColumnOrder,
   ChartsOfAccountsDefaultColumnVisibility,
   ChartsOfAccountsDefaultSorting,
+  ChartsOfAccountsAllFilterValue,
+  ChartsOfAccountsPageSize,
   ChartsOfAccountsTableColumns,
   ChartsOfAccountsTablePreferencesModuleKey,
   ChartsOfAccountsTablePreferencesStorageKey,
@@ -49,8 +51,6 @@ import type {
 } from "@/app/src/types/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 import toast from "react-hot-toast";
 
-const PageSize = 50;
-
 export function useChartsOfAccounts() {
   const queryClient = useQueryClient();
   const accessToken = useAppStore((state) => state.accessToken);
@@ -74,12 +74,12 @@ export function useChartsOfAccounts() {
   const [activeTab, setActiveTab] = useState<ChartsOfAccountsNav>(ChartsOfAccountsNavs[0]);
   const [searchQuery, setSearchQuery] = useState("");
   const deferredSearchQuery = useDeferredValue(searchQuery);
-  const [accountTypeFilter, setAccountTypeFilter] = useState<FilterValue<AccountType>>("All");
+  const [accountTypeFilter, setAccountTypeFilter] = useState<FilterValue<AccountType>>(ChartsOfAccountsAllFilterValue);
   const [statusFilter, setStatusFilter] = useState<FilterValue<AccountStatus>>("Active");
-  const [structureFilter, setStructureFilter] = useState<ChartAccountStructureFilter>("All");
+  const [structureFilter, setStructureFilter] = useState<ChartAccountStructureFilter>(ChartsOfAccountsAllFilterValue);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
-    pageSize: PageSize,
+    pageSize: ChartsOfAccountsPageSize,
   });
   const [drawerAccount, setDrawerAccount] = useState<ChartAccount | null>(null);
   const [drawerParentAccount, setDrawerParentAccount] = useState<ChartAccount | null>(null);
@@ -169,11 +169,11 @@ export function useChartsOfAccounts() {
 
     return expanded.filter(({ account }) => {
       const matchesQuery = !normalizedSearchQuery || (searchableTextByAccountId.get(account.id)?.includes(normalizedSearchQuery) ?? false);
-      const matchesType = accountTypeFilter === "All" || account.accountType === accountTypeFilter;
-      const matchesStatus = statusFilter === "All" || account.status === statusFilter;
+      const matchesType = accountTypeFilter === ChartsOfAccountsAllFilterValue || account.accountType === accountTypeFilter;
+      const matchesStatus = statusFilter === ChartsOfAccountsAllFilterValue || account.status === statusFilter;
       const hasSubmodules = Boolean(account.children?.length);
       const matchesStructure =
-        structureFilter === "All" ||
+        structureFilter === ChartsOfAccountsAllFilterValue ||
         (structureFilter === "With Submodules" && hasSubmodules) ||
         (structureFilter === "Without Submodules" && !hasSubmodules);
       const matchesTab = activeTab === "All Accounts" || account.statementGroup === activeTab;
@@ -321,9 +321,9 @@ export function useChartsOfAccounts() {
   const resetFilters = useCallback(() => {
     setActiveTab(ChartsOfAccountsNavs[0]);
     setSearchQuery("");
-    setAccountTypeFilter("All");
+    setAccountTypeFilter(ChartsOfAccountsAllFilterValue);
     setStatusFilter("Active");
-    setStructureFilter("All");
+    setStructureFilter(ChartsOfAccountsAllFilterValue);
     table.setPageIndex(0);
   }, [table]);
 

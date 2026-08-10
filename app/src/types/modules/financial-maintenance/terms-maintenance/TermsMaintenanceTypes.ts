@@ -1,15 +1,5 @@
 import type { ChangeEventHandler } from "react";
 import type { Row, Table } from "@tanstack/react-table";
-import type {
-  ImportTermsResponseDto,
-  SaveTermResponseDto,
-  TermListResponseDto,
-  TermLookupOptionResponseDto,
-  TermLookupResponseDto,
-  TermResponseDto,
-  TermResponseDtoDateMode,
-  TermResponseDtoStatus,
-} from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 
 export type TermsMaintenanceDatemode = "Day" | "Month" | "Year";
 
@@ -18,13 +8,6 @@ export type TermsMaintenanceStatus = "Active" | "Inactive";
 export type TermsMaintenanceDatemodeFilter = "All" | TermsMaintenanceDatemode;
 
 export type TermsMaintenanceStatusFilter = "" | TermsMaintenanceStatus;
-
-export type ApiTermDateMode = TermResponseDtoDateMode;
-export type ApiTermStatus = TermResponseDtoStatus;
-
-export type ApiTerm = TermResponseDto;
-
-export type ApiTermOption = TermLookupOptionResponseDto;
 
 export type TermsMaintenance = {
   id: string;
@@ -107,14 +90,6 @@ export type TermsMaintenanceStatisticCardsProps = {
   statistics: TermsMaintenanceStatistics;
   isLoading?: boolean;
 };
-
-export type ApiTermListResponse = TermListResponseDto;
-
-export type ApiTermLookupResponse = TermLookupResponseDto;
-
-export type ApiTermSaveResponse = SaveTermResponseDto;
-
-export type ApiTermImportResponse = ImportTermsResponseDto;
 
 export type TermsMaintenanceTableProps = {
   datemodeFilter: TermsMaintenanceDatemodeFilter;

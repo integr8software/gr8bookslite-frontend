@@ -9,7 +9,10 @@ import {
   getStandardStatementSection,
   isCashInBankParent,
 } from "@/app/src/data/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsFormHelpers";
-import { AccountLevelLabels } from "@/app/src/constants/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsConstants";
+import {
+  AccountLevelLabels,
+  SpecificAccountLevel,
+} from "@/app/src/constants/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsConstants";
 import { FetchNextChartAccountCode } from "@/app/src/services/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsApi";
 import type {
   AccountType,
@@ -201,8 +204,8 @@ function DrawerPanel({
       ...(key === "accountLevel" ? { accountNumber: "" } : {}),
       ...(key === "accountLevel"
         ? {
-            isBankLinked: value === "SPECIFIC" && isCashInBankParent(accounts, current.parentId),
-            isPostingAccount: value === "SPECIFIC",
+            isBankLinked: value === SpecificAccountLevel && isCashInBankParent(accounts, current.parentId),
+            isPostingAccount: value === SpecificAccountLevel,
           }
         : {}),
     }));
@@ -211,7 +214,7 @@ function DrawerPanel({
   function updateParentAccount(parentId: string | null) {
     const nextLevels = getAvailableAccountLevels(accounts, parentId);
     const nextAccountLevel = currentAccountLevelOrDefault(values.accountLevel, nextLevels, !account);
-    const isBankLinked = nextAccountLevel === "SPECIFIC" && isCashInBankParent(accounts, parentId);
+    const isBankLinked = nextAccountLevel === SpecificAccountLevel && isCashInBankParent(accounts, parentId);
 
     setIsAccountCodeLoading(false);
     setAccountCodeError("");
@@ -221,7 +224,7 @@ function DrawerPanel({
       accountNumber: "",
       accountType: isBankLinked ? "ASSET" : current.accountType,
       isBankLinked,
-      isPostingAccount: nextAccountLevel === "SPECIFIC",
+      isPostingAccount: nextAccountLevel === SpecificAccountLevel,
       normalBalance: isBankLinked ? "DEBIT" : getStandardNormalBalance(current.accountType),
       statementSection: isBankLinked ? "Balance Sheet" : getStandardStatementSection(current.accountType),
       parentId,
@@ -389,7 +392,7 @@ function getDrawerTitle(mode: ChartsOfAccountsDrawerMode, account: ChartAccount 
     return `Add ${AccountLevelLabels[getDefaultChildAccountLevel(parentAccount)]}`;
   }
 
-  return `Add ${AccountLevelLabels.SPECIFIC}`;
+  return `Add ${AccountLevelLabels[SpecificAccountLevel]}`;
 }
 
 function getDefaultChildAccountLevel(parentAccount: ChartAccount) {
@@ -399,8 +402,8 @@ function getDefaultChildAccountLevel(parentAccount: ChartAccount) {
     case "SUB1":
     case "SUB2":
     case "SUB3":
-    case "SPECIFIC":
-      return "SPECIFIC";
+    case SpecificAccountLevel:
+      return SpecificAccountLevel;
   }
 }
 

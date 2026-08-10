@@ -19,6 +19,10 @@ export const ChartsOfAccountsAccountNamePlaceholder = `${BankMasterfileCashInBan
 
 export const ChartsOfAccountsAccountTitleSeparators = ["-", "/", "&"] as const;
 
+export const ChartsOfAccountsPageSize = 50;
+export const ChartsOfAccountsAllFilterValue = "All";
+export const SpecificAccountLevel: AccountLevel = "SPECIFIC";
+
 export const AccountLevels: AccountLevel[] = ["MAJOR", "SUB1", "SUB2", "SUB3", "SPECIFIC"];
 
 export const AccountLevelLabels: Record<AccountLevel, string> = {

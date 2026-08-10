@@ -1,21 +1,14 @@
 import type { ChangeEventHandler, ReactNode } from "react";
 import type { Row, Table } from "@tanstack/react-table";
 import type {
-  SaveServiceMaintenanceResponseDto,
   ServiceMaintenanceAccountOptionResponseDto,
   ServiceMaintenanceAccountOptionsResponseDto,
-  ServiceMaintenanceListResponseDto,
   ServiceMaintenanceNextAccountCodeResponseDto,
-  ServiceMaintenanceResponseDto,
-  ServiceMaintenanceResponseDtoAccountSetupMode,
-  ServiceMaintenanceResponseDtoStatus,
 } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 
 export type ServicesMaintenanceStatus = "Active" | "Inactive";
-export type ApiServicesMaintenanceStatus = ServiceMaintenanceResponseDtoStatus;
 export type ServicesMaintenanceAccountSetupMode = "Auto" | "Existing";
-export type ApiServicesMaintenanceAccountSetupMode = ServiceMaintenanceResponseDtoAccountSetupMode;
 
 export type ServicesMaintenance = {
   id: string;
@@ -79,18 +72,6 @@ export type ServicesMaintenanceListResponse = {
   permissions: ServicesMaintenancePermissions;
 };
 
-export type ApiServicesMaintenance = ServiceMaintenanceResponseDto;
-
-export type ApiServicesMaintenanceListResponse = ServiceMaintenanceListResponseDto;
-
-export type ApiServicesMaintenanceSaveResponse = SaveServiceMaintenanceResponseDto;
-
-export type ApiServicesMaintenanceAccountOption = ServiceMaintenanceAccountOptionResponseDto;
-
-export type ApiServicesMaintenanceAccountOptionsResponse = ServiceMaintenanceAccountOptionsResponseDto;
-
-export type ApiServicesMaintenanceNextAccountCodeResponse = ServiceMaintenanceNextAccountCodeResponseDto;
-
 export type ServicesMaintenanceDrawerState = {
   mode: ServicesMaintenanceActionMode;
   service?: ServicesMaintenance;
@@ -116,7 +97,7 @@ export type ServicesMaintenanceAccountingSetupTabProps = {
   isAccountCodeLoading: boolean;
   isReadonly: boolean;
   mode: ServicesMaintenanceActionMode;
-  nextAccountCode: ApiServicesMaintenanceNextAccountCodeResponse | null;
+  nextAccountCode: ServiceMaintenanceNextAccountCodeResponseDto | null;
   selectedService?: ServicesMaintenance;
   values: ServicesMaintenanceFormValues;
   onAccountSetupModeChange: (value: ServicesMaintenanceAccountSetupMode) => void;

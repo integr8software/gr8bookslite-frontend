@@ -16,12 +16,12 @@ import type {
 import type {
   BankMasterfile,
   BankMasterfileFormValues,
-  BankMasterfileListResponse,
+  BankMasterfileListResult,
   BankMasterfileStatus,
 } from "@/app/src/types/modules/financial-maintenance/bank-masterfile/BankMasterfileTypes";
 import { cleanOptional } from "@/app/src/utils/string.util";
 
-export async function fetchBanks(): Promise<BankMasterfileListResponse> {
+export async function fetchBanks(): Promise<BankMasterfileListResult> {
   const response = await bankMasterfileControllerFindAllV1();
   const banks = response.bankAccounts.map(mapApiBank);
 
@@ -29,13 +29,9 @@ export async function fetchBanks(): Promise<BankMasterfileListResponse> {
     banks,
     statistics: {
       totalBanks: response.statistics?.totalBanks ?? banks.length,
-      activeBanks:
-        response.statistics?.activeBanks ?? banks.filter((bank) => bank.status === "Active").length,
-      inactiveBanks:
-        response.statistics?.inactiveBanks ??
-        banks.filter((bank) => bank.status === "Inactive").length,
-      defaultBanks:
-        response.statistics?.defaultBanks ?? banks.filter((bank) => bank.isDefault).length,
+      activeBanks: response.statistics?.activeBanks ?? banks.filter((bank) => bank.status === "Active").length,
+      inactiveBanks: response.statistics?.inactiveBanks ?? banks.filter((bank) => bank.status === "Inactive").length,
+      defaultBanks: response.statistics?.defaultBanks ?? banks.filter((bank) => bank.isDefault).length,
     },
     permissions: {
       canView: response.permissions?.canView ?? true,

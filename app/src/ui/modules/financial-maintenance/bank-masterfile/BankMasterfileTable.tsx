@@ -10,67 +10,65 @@ import { BankMasterfileTableFilters } from "@/app/src/ui/modules/financial-maint
 import { BankMasterfileTableRow } from "@/app/src/ui/modules/financial-maintenance/bank-masterfile/BankMasterfileTableRow";
 
 export function BankMasterfileTable({
-	banks,
-	filteredBanks,
-	hasActiveFilters,
-	isLoading,
-	isRefreshing,
-	lastSyncedAt,
-	permissions,
-	query,
-	statusFilter,
-	onEditBank,
-	onQueryChange,
-	onRefresh,
-	onStatusFilterChange,
-	onToggleStatus,
-	onViewBank,
+  banks,
+  filteredBanks,
+  hasActiveFilters,
+  isLoading,
+  isRefreshing,
+  lastSyncedAt,
+  permissions,
+  query,
+  statusFilter,
+  onEditBank,
+  onQueryChange,
+  onRefresh,
+  onStatusFilterChange,
+  onToggleStatus,
+  onViewBank,
 }: BankMasterfileTableProps) {
-	const table = useBankMasterfileTable(filteredBanks);
-	const tableMinWidthClassName = getBankMasterfileTableMinWidthClassName(
-		table.getVisibleLeafColumns().length,
-	);
+  const table = useBankMasterfileTable(filteredBanks);
+  const tableMinWidthClassName = getBankMasterfileTableMinWidthClassName(table.getVisibleLeafColumns().length);
 
-	return (
-		<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
-			<ModuleTable
-				variant="embedded"
-				emptyDescription="Add a bank account to start managing Cash in Bank chart accounts."
-				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
-				emptyTitle="No Bank Records Found"
-				isLoading={isLoading}
-				isSyncing={isRefreshing}
-				lastSyncedAt={lastSyncedAt}
-				minWidthClassName={`${tableMinWidthClassName} table-fixed`}
-				paginationStorageKey={BankMasterfileTablePaginationStorageKey}
-				table={table}
-				tableTitle="Bank Accounts"
-				toolbar={
-					<BankMasterfileTableFilters
-						exportAllRows={banks}
-						exportFilteredRows={filteredBanks}
-						hasActiveFilters={hasActiveFilters}
-						isRefreshing={isRefreshing}
-						permissions={permissions}
-						query={query}
-						statusFilter={statusFilter}
-						table={table}
-						onQueryChange={onQueryChange}
-						onRefresh={onRefresh}
-						onStatusFilterChange={onStatusFilterChange}
-					/>
-				}
-				renderRow={(row) => (
-					<BankMasterfileTableRow
-						key={row.id}
-						row={row}
-						permissions={permissions}
-						onEditBank={onEditBank}
-						onToggleStatus={onToggleStatus}
-						onViewBank={onViewBank}
-					/>
-				)}
-			/>
-		</div>
-	);
+  return (
+    <div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
+      <ModuleTable
+        variant="embedded"
+        emptyDescription="Add a bank account to start managing Cash in Bank chart accounts."
+        emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
+        emptyTitle="No Bank Records Found"
+        isLoading={isLoading}
+        isSyncing={isRefreshing}
+        lastSyncedAt={lastSyncedAt}
+        minWidthClassName={`${tableMinWidthClassName} table-fixed`}
+        paginationStorageKey={BankMasterfileTablePaginationStorageKey}
+        table={table}
+        tableTitle="Bank Accounts"
+        toolbar={
+          <BankMasterfileTableFilters
+            exportAllRows={banks}
+            exportFilteredRows={filteredBanks}
+            hasActiveFilters={hasActiveFilters}
+            isRefreshing={isRefreshing}
+            permissions={permissions}
+            query={query}
+            statusFilter={statusFilter}
+            table={table}
+            onQueryChange={onQueryChange}
+            onRefresh={onRefresh}
+            onStatusFilterChange={onStatusFilterChange}
+          />
+        }
+        renderRow={(row) => (
+          <BankMasterfileTableRow
+            key={row.id}
+            row={row}
+            permissions={permissions}
+            onEditBank={onEditBank}
+            onToggleStatus={onToggleStatus}
+            onViewBank={onViewBank}
+          />
+        )}
+      />
+    </div>
+  );
 }

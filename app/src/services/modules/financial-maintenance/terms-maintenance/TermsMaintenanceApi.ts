@@ -18,12 +18,12 @@ import type {
   TermsMaintenance,
   TermsMaintenanceDatemode,
   TermsMaintenanceFormValues,
-  TermsMaintenanceListResponse,
-  TermsMaintenanceLookupResponse,
+  TermsMaintenanceListResult,
+  TermsMaintenanceLookupResult,
   TermsMaintenanceStatus,
 } from "@/app/src/types/modules/financial-maintenance/terms-maintenance/TermsMaintenanceTypes";
 
-export async function fetchTerms(): Promise<TermsMaintenanceListResponse> {
+export async function fetchTerms(): Promise<TermsMaintenanceListResult> {
   const response = await termsMaintenanceControllerFindAllV1();
 
   return {
@@ -36,7 +36,7 @@ export async function fetchTerms(): Promise<TermsMaintenanceListResponse> {
   };
 }
 
-export async function fetchTermOptions(): Promise<TermsMaintenanceLookupResponse> {
+export async function fetchTermOptions(): Promise<TermsMaintenanceLookupResult> {
   const response = await termsMaintenanceControllerFindOptionsV1();
 
   return {
@@ -100,9 +100,7 @@ function toApiTermPayload(term: TermsMaintenance | TermsMaintenanceFormValues): 
   };
 }
 
-function mapDateModeFromApi(
-  value: TermResponseDtoDateMode | TermLookupOptionResponseDto["dateMode"],
-): TermsMaintenanceDatemode {
+function mapDateModeFromApi(value: TermResponseDtoDateMode | TermLookupOptionResponseDto["dateMode"]): TermsMaintenanceDatemode {
   if (value === "DAY") return "Day";
   if (value === "MONTH") return "Month";
   return "Year";
@@ -114,9 +112,7 @@ function mapDateModeToApi(value: TermsMaintenanceDatemode): CreateTermDtoDateMod
   return "YEAR";
 }
 
-function mapStatusFromApi(
-  value: TermResponseDtoStatus | TermLookupOptionResponseDto["status"],
-): TermsMaintenanceStatus {
+function mapStatusFromApi(value: TermResponseDtoStatus | TermLookupOptionResponseDto["status"]): TermsMaintenanceStatus {
   return value === "ACTIVE" ? "Active" : "Inactive";
 }
 

@@ -57,7 +57,7 @@ import {
   calculateDisbursementEntryColumnFitWidth,
   estimateDisbursementEntryTextWidth,
   formatAccountingAmount,
-} from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherDataEntrySupport";
+} from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/DisbursementVoucherEntryCellControls";
 
 const ExpenseEntryView: DisbursementEntryView = "expense";
 

@@ -29,7 +29,6 @@ import {
   hasNonZeroAccountingAmount,
   isGeneratedAccountingEntry,
   normalizeDisbursementLineEntryFields,
-  shouldClearEntry,
   shouldSyncDisbursementEntryParty,
   syncDisbursementLineEntryTaxDetails,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingEntryData";
@@ -57,6 +56,14 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import type { ModuleDataEntryClearAction } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 import { useDisbursementVoucherStore } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucher";
+import {
+  clearDisbursementEntryRows,
+  createDisbursementEntryRows,
+  duplicateDisbursementEntryRow,
+  insertDisbursementEntryRow,
+  moveDisbursementEntryRow,
+  removeDisbursementEntryRow,
+} from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/utils/DisbursementVoucherEntryRowUtils";
 
 export function useDisbursementVoucherActionPage() {
   const router = useRouter();
@@ -266,7 +273,7 @@ export function useDisbursementVoucherActionPage() {
   }
 
   function handleAddEntries(count = 1) {
-    updateField("lineEntries", [...values.lineEntries, ...Array.from({ length: count }, createBlankEntry)]);
+    updateField("lineEntries", [...values.lineEntries, ...createDisbursementEntryRows(count, createBlankEntry)]);
     setErrors((current) => ({
       ...current,
       entryDraft: undefined,
@@ -275,7 +282,7 @@ export function useDisbursementVoucherActionPage() {
   }
 
   function handleRemoveEntry(entryId: string) {
-    replaceEntriesWithAutomaticRows(values.lineEntries.filter((entry) => entry.id !== entryId));
+    replaceEntriesWithAutomaticRows(removeDisbursementEntryRow(values.lineEntries, entryId));
   }
 
   function handleUpdateEntry(entryId: string, field: keyof DisbursementLineEntry, value: string | number) {
@@ -314,55 +321,25 @@ export function useDisbursementVoucherActionPage() {
   }
 
   function handleInsertEntry(entryId: string, position: "above" | "below") {
-    const rowIndex = values.lineEntries.findIndex((entry) => entry.id === entryId);
-    const insertIndex = rowIndex === -1 ? values.lineEntries.length : rowIndex + (position === "below" ? 1 : 0);
-    const nextEntries = [...values.lineEntries];
-
-    nextEntries.splice(insertIndex, 0, createBlankEntry());
-    updateField("lineEntries", nextEntries);
+    updateField("lineEntries", insertDisbursementEntryRow(values.lineEntries, entryId, position, createBlankEntry));
     setErrors((current) => ({ ...current, lineEntries: undefined }));
   }
 
   function handleDuplicateEntry(entryId: string) {
-    const rowIndex = values.lineEntries.findIndex((entry) => entry.id === entryId);
-    const sourceEntry = values.lineEntries[rowIndex];
-
-    if (!sourceEntry) {
-      return;
-    }
-
-    const nextEntries = [...values.lineEntries];
-
-    nextEntries.splice(rowIndex + 1, 0, {
-      ...sourceEntry,
-      id: `line-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    });
-    updateField("lineEntries", nextEntries);
+    updateField(
+      "lineEntries",
+      duplicateDisbursementEntryRow(values.lineEntries, entryId, () => `line-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`),
+    );
     setErrors((current) => ({ ...current, lineEntries: undefined }));
   }
 
   function handleMoveEntry(fromEntryId: string, toEntryId: string) {
-    if (fromEntryId === toEntryId) {
-      return;
-    }
-
-    const fromIndex = values.lineEntries.findIndex((entry) => entry.id === fromEntryId);
-    const toIndex = values.lineEntries.findIndex((entry) => entry.id === toEntryId);
-
-    if (fromIndex === -1 || toIndex === -1) {
-      return;
-    }
-
-    const nextEntries = [...values.lineEntries];
-    const [movedEntry] = nextEntries.splice(fromIndex, 1);
-
-    nextEntries.splice(toIndex, 0, movedEntry);
-    updateField("lineEntries", nextEntries);
+    updateField("lineEntries", moveDisbursementEntryRow(values.lineEntries, fromEntryId, toEntryId));
     setErrors((current) => ({ ...current, lineEntries: undefined }));
   }
 
   function handleClearEntries(action: ModuleDataEntryClearAction) {
-    replaceEntriesWithAutomaticRows(action === "all" ? [] : values.lineEntries.filter((entry) => !shouldClearEntry(entry, action)));
+    replaceEntriesWithAutomaticRows(clearDisbursementEntryRows(values.lineEntries, action));
     setErrors((current) => ({ ...current, lineEntries: undefined }));
   }
 

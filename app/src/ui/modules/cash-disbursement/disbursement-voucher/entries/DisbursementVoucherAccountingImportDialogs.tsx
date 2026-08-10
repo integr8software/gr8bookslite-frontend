@@ -9,11 +9,11 @@ import {
 import type { DisbursementVoucherFormValues } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import { type ModuleDataEntryClearAction } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
-import { downloadAccountingImportTemplate } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/DisbursementVoucherAccountingGridExport";
+import { downloadAccountingImportTemplate } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/utils/DisbursementVoucherAccountingGridExportUtils";
 import {
   formatRowsAsTabularText,
   parseImportPreviewRows,
-} from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/DisbursementVoucherAccountingGridImportUtils";
+} from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/utils/DisbursementVoucherAccountingGridImportUtils";
 
 type VoucherAttachment = DisbursementVoucherFormValues["attachments"][number];
 

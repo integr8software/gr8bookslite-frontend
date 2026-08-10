@@ -19,7 +19,7 @@ import {
   formatRowsAsTabularText,
   normalizeAmount,
   readXlsxAccountingRawRows,
-} from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/DisbursementVoucherAccountingGridImportUtils";
+} from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/utils/DisbursementVoucherAccountingGridImportUtils";
 
 type GridColumnId = DisbursementAccountingGridColumnId;
 type AccountingExportTheme = DisbursementAccountingExportTheme;

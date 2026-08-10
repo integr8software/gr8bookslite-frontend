@@ -1,7 +1,5 @@
 import { AccountingPartyFallbackValuePrefix } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryConstants";
-import {
-  getAccountingPartyFallbackValue,
-} from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingEntryData";
+import { getAccountingPartyFallbackValue } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingEntryData";
 import { syncTaxDetailsAmount } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import type {
   DisbursementAccountingEntryColumnsParams,
@@ -27,7 +25,7 @@ import {
   ExpenseDetailValue,
   ParticularsCell,
   accountingCellControlClassName,
-} from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherDataEntrySupport";
+} from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/DisbursementVoucherEntryCellControls";
 
 export function createDisbursementAccountingEntryColumns({
   canAddPartyName,
@@ -45,23 +43,14 @@ export function createDisbursementAccountingEntryColumns({
   partyOptions,
   responsibilityCenterOptions,
   vatOptions,
-}: DisbursementAccountingEntryColumnsParams): Record<
-  DisbursementEntryColumnId,
-  ModuleDataEntryColumn<DisbursementLineEntry>
-> {
+}: DisbursementAccountingEntryColumnsParams): Record<DisbursementEntryColumnId, ModuleDataEntryColumn<DisbursementLineEntry>> {
   return {
     accountCode: {
       header: columnLabels.accountCode,
       id: "accountCode",
       width: columnWidths.accountCode,
       widthClassName: "w-[12rem]",
-      renderCell: (entry) => (
-        <EntryInput
-          value={entry.accountCode ?? ""}
-          onChange={() => undefined}
-          readOnly
-        />
-      ),
+      renderCell: (entry) => <EntryInput value={entry.accountCode ?? ""} onChange={() => undefined} readOnly />,
     },
     accountName: {
       header: columnLabels.accountName,
@@ -120,11 +109,7 @@ export function createDisbursementAccountingEntryColumns({
       width: columnWidths.checkNo,
       widthClassName: "w-[12rem]",
       renderCell: (entry) => (
-        <EntryInput
-          value={entry.checkNo ?? ""}
-          onChange={(value) => onUpdateEntry(entry.id, "checkNo", value)}
-          disabled={isReadonly}
-        />
+        <EntryInput value={entry.checkNo ?? ""} onChange={(value) => onUpdateEntry(entry.id, "checkNo", value)} disabled={isReadonly} />
       ),
     },
     checkStatus: {
@@ -150,9 +135,7 @@ export function createDisbursementAccountingEntryColumns({
           type="date"
           value={entry.checkDate ?? ""}
           disabled={isReadonly}
-          onChange={(event) =>
-            onUpdateEntry(entry.id, "checkDate", event.target.value)
-          }
+          onChange={(event) => onUpdateEntry(entry.id, "checkDate", event.target.value)}
           className={accountingCellControlClassName()}
         />
       ),
@@ -176,13 +159,7 @@ export function createDisbursementAccountingEntryColumns({
       id: "partyCode",
       width: columnWidths.partyCode,
       widthClassName: "w-[12rem]",
-      renderCell: (entry) => (
-        <EntryInput
-          value={entry.partyCode ?? ""}
-          onChange={() => undefined}
-          readOnly
-        />
-      ),
+      renderCell: (entry) => <EntryInput value={entry.partyCode ?? ""} onChange={() => undefined} readOnly />,
     },
     partyName: {
       header: columnLabels.partyName,
@@ -191,15 +168,8 @@ export function createDisbursementAccountingEntryColumns({
       widthClassName: "w-[18rem]",
       renderCell: (entry) => (
         <AppAdvancedDropdown
-          addAction={
-            !isReadonly && canAddPartyName
-              ? { label: "Add Party Name", onClick: onAddPartyName }
-              : undefined
-          }
-          value={
-            entry.partyCode ||
-            getAccountingPartyFallbackValue(entry.partyName ?? "")
-          }
+          addAction={!isReadonly && canAddPartyName ? { label: "Add Party Name", onClick: onAddPartyName } : undefined}
+          value={entry.partyCode || getAccountingPartyFallbackValue(entry.partyName ?? "")}
           readOnly={isReadonly}
           options={partyOptions}
           placeholder="Select Party Name"
@@ -207,12 +177,8 @@ export function createDisbursementAccountingEntryColumns({
           className={AccountingDropdownClassName}
           onChange={(value) => {
             const selectedValue = String(value);
-            const party = partyOptions.find(
-              (option) => option.value === selectedValue,
-            );
-            const isFallbackValue = selectedValue.startsWith(
-              AccountingPartyFallbackValuePrefix,
-            );
+            const party = partyOptions.find((option) => option.value === selectedValue);
+            const isFallbackValue = selectedValue.startsWith(AccountingPartyFallbackValuePrefix);
 
             onUpdateEntryFields(entry.id, {
               partyCode: isFallbackValue ? "" : selectedValue,
@@ -243,9 +209,7 @@ export function createDisbursementAccountingEntryColumns({
           placeholder="Select responsibility center"
           searchPlaceholder="Search responsibility center"
           className={AccountingDropdownClassName}
-          onChange={(value) =>
-            onUpdateEntry(entry.id, "responsibilityCenter", String(value))
-          }
+          onChange={(value) => onUpdateEntry(entry.id, "responsibilityCenter", String(value))}
         />
       ),
     },
@@ -255,11 +219,7 @@ export function createDisbursementAccountingEntryColumns({
       width: columnWidths.refId,
       widthClassName: "w-[12rem]",
       renderCell: (entry) => (
-        <EntryInput
-          value={entry.refId ?? ""}
-          onChange={(value) => onUpdateEntry(entry.id, "refId", value)}
-          disabled={isReadonly}
-        />
+        <EntryInput value={entry.refId ?? ""} onChange={(value) => onUpdateEntry(entry.id, "refId", value)} disabled={isReadonly} />
       ),
     },
     vatType: {
@@ -271,13 +231,7 @@ export function createDisbursementAccountingEntryColumns({
         const vatType = entry.vatType ?? "";
 
         if (vatType && !vatOptions.some((option) => option.value === vatType)) {
-          return (
-            <EntryInput
-              value={vatType}
-              onChange={(value) => onUpdateEntry(entry.id, "vatType", value)}
-              disabled={isReadonly}
-            />
-          );
+          return <EntryInput value={vatType} onChange={(value) => onUpdateEntry(entry.id, "vatType", value)} disabled={isReadonly} />;
         }
 
         return (
@@ -289,9 +243,7 @@ export function createDisbursementAccountingEntryColumns({
             placeholder="Select VAT"
             searchPlaceholder="Search VAT rate or description"
             className={AccountingDropdownClassName}
-            onChange={(value) =>
-              onUpdateEntry(entry.id, "vatType", String(value))
-            }
+            onChange={(value) => onUpdateEntry(entry.id, "vatType", String(value))}
           />
         );
       },
@@ -310,9 +262,7 @@ export function createDisbursementAccountingEntryColumns({
           placeholder="Select EWT"
           searchPlaceholder="Search EWT code, rate, or description"
           className={AccountingDropdownClassName}
-          onChange={(value) =>
-            onUpdateEntry(entry.id, "atcCode", String(value))
-          }
+          onChange={(value) => onUpdateEntry(entry.id, "atcCode", String(value))}
         />
       ),
     },
@@ -331,10 +281,7 @@ export function createDisbursementExpenseEntryColumns({
   taxCodes,
   updateExpenseEntryFields,
   vatOptions,
-}: DisbursementExpenseEntryColumnsParams): Record<
-  ExpenseEntryColumnId,
-  ModuleDataEntryColumn<DisbursementLineEntry>
-> {
+}: DisbursementExpenseEntryColumnsParams): Record<ExpenseEntryColumnId, ModuleDataEntryColumn<DisbursementLineEntry>> {
   return {
     expenseType: {
       header: expenseColumnLabels.expenseType,
@@ -343,11 +290,7 @@ export function createDisbursementExpenseEntryColumns({
       widthClassName: "w-[15rem]",
       renderCell: (entry) => (
         <ChartAccountDropdown
-          addAction={
-            !isReadonly && canAddExpenseType
-              ? { label: "Add Expense Type", onClick: onAddExpenseType }
-              : undefined
-          }
+          addAction={!isReadonly && canAddExpenseType ? { label: "Add Expense Type", onClick: onAddExpenseType } : undefined}
           accounts={expenseAccounts}
           value={entry.accountName}
           valueField="accountName"
@@ -379,11 +322,7 @@ export function createDisbursementExpenseEntryColumns({
             updateExpenseEntryFields(entry.id, {
               credit: 0,
               debit: value,
-              taxDetails: syncTaxDetailsAmount(
-                entry.taxDetails,
-                value,
-                entry.taxRate,
-              ),
+              taxDetails: syncTaxDetailsAmount(entry.taxDetails, value, entry.taxRate),
             })
           }
           disabled={isReadonly}
@@ -413,9 +352,7 @@ export function createDisbursementExpenseEntryColumns({
       id: "netAmount",
       width: expenseColumnWidths.netAmount,
       widthClassName: "w-[9rem]",
-      renderCell: (entry) => (
-        <ExpenseDetailValue value={entry.taxDetails.netAmount} />
-      ),
+      renderCell: (entry) => <ExpenseDetailValue value={entry.taxDetails.netAmount} />,
     },
     vatCode: {
       header: expenseColumnLabels.vatCode,
@@ -456,18 +393,14 @@ export function createDisbursementExpenseEntryColumns({
       id: "vatPercent",
       width: expenseColumnWidths.vatPercent,
       widthClassName: "w-[7rem]",
-      renderCell: (entry) => (
-        <ExpenseDetailValue value={entry.taxDetails.vatPercent} suffix="%" />
-      ),
+      renderCell: (entry) => <ExpenseDetailValue value={entry.taxDetails.vatPercent} suffix="%" />,
     },
     vatAmount: {
       header: expenseColumnLabels.vatAmount,
       id: "vatAmount",
       width: expenseColumnWidths.vatAmount,
       widthClassName: "w-[9rem]",
-      renderCell: (entry) => (
-        <ExpenseDetailValue value={entry.taxDetails.vatAmount} />
-      ),
+      renderCell: (entry) => <ExpenseDetailValue value={entry.taxDetails.vatAmount} />,
     },
     ewtCode: {
       header: expenseColumnLabels.ewtCode,
@@ -506,27 +439,21 @@ export function createDisbursementExpenseEntryColumns({
       id: "ewtPercent",
       width: expenseColumnWidths.ewtPercent,
       widthClassName: "w-[7rem]",
-      renderCell: (entry) => (
-        <ExpenseDetailValue value={entry.taxDetails.ewtPercent} suffix="%" />
-      ),
+      renderCell: (entry) => <ExpenseDetailValue value={entry.taxDetails.ewtPercent} suffix="%" />,
     },
     ewtAmount: {
       header: expenseColumnLabels.ewtAmount,
       id: "ewtAmount",
       width: expenseColumnWidths.ewtAmount,
       widthClassName: "w-[9rem]",
-      renderCell: (entry) => (
-        <ExpenseDetailValue value={entry.taxDetails.ewtAmount} />
-      ),
+      renderCell: (entry) => <ExpenseDetailValue value={entry.taxDetails.ewtAmount} />,
     },
     totalAmountDue: {
       header: expenseColumnLabels.totalAmountDue,
       id: "totalAmountDue",
       width: expenseColumnWidths.totalAmountDue,
       widthClassName: "w-[10rem]",
-      renderCell: (entry) => (
-        <ExpenseDetailValue value={entry.taxDetails.amount} />
-      ),
+      renderCell: (entry) => <ExpenseDetailValue value={entry.taxDetails.amount} />,
     },
     partyName: {
       ...accountingColumns.partyName,

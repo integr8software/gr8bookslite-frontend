@@ -6,11 +6,7 @@ import type { DisbursementLineEntry } from "@/app/src/types/modules/cash-disburs
 import { ModuleTextareaDialog } from "@/app/src/ui/shared/module/ModuleTextareaDialog";
 import { clampColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/utils";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
-import {
-  MoneyNumberField,
-  formatMoneyNumberInput,
-  parseMoneyNumberInput,
-} from "@/app/src/ui/shared/money/MoneyNumberField";
+import { MoneyNumberField, formatMoneyNumberInput, parseMoneyNumberInput } from "@/app/src/ui/shared/money/MoneyNumberField";
 
 export const AccountingDropdownClassName =
   "[&_.app-advanced-dropdown-control]:h-10 [&_.app-advanced-dropdown-control]:rounded-none [&_.app-advanced-dropdown-control]:border-0 [&_.app-advanced-dropdown-control]:bg-transparent [&_.app-advanced-dropdown-control]:px-3 [&_.app-advanced-dropdown-control]:shadow-none [&_.app-advanced-dropdown-control]:focus:ring-2 [&_.app-advanced-dropdown-control]:focus:ring-inset [&_.app-advanced-dropdown-control]:focus:ring-skyblue/35";
@@ -38,13 +34,7 @@ export function EntryInput({
   );
 }
 
-export function ExpenseDetailValue({
-  suffix = "",
-  value,
-}: {
-  suffix?: string;
-  value: number;
-}) {
+export function ExpenseDetailValue({ suffix = "", value }: { suffix?: string; value: number }) {
   return (
     <div className="flex h-10 w-full items-center justify-end bg-offwhite/45 px-3 text-sm font-medium tabular-nums text-darknavy/70">
       {value.toLocaleString("en-US", {
@@ -69,11 +59,7 @@ export function ParticularsCell({
 }) {
   return (
     <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_2.5rem]">
-      <EntryInput
-        value={entry.particulars}
-        onChange={onUpdate}
-        readOnly={isReadonly}
-      />
+      <EntryInput value={entry.particulars} onChange={onUpdate} readOnly={isReadonly} />
       <button
         type="button"
         onClick={onOpen}
@@ -120,29 +106,17 @@ export function calculateDisbursementEntryColumnFitWidth({
   columnLabels: Record<DisbursementEntryColumnId, string>;
   entries: DisbursementLineEntry[];
 }) {
-  const headerWidth = estimateDisbursementEntryTextWidth(
-    columnLabels[columnId],
-    76,
-  );
+  const headerWidth = estimateDisbursementEntryTextWidth(columnLabels[columnId], 76);
   const contentWidth = entries.reduce(
     (currentWidth, entry) =>
-      Math.max(
-        currentWidth,
-        estimateDisbursementEntryTextWidth(
-          String(getDisbursementEntryExportCell(entry, columnId) ?? ""),
-          24,
-        ),
-      ),
+      Math.max(currentWidth, estimateDisbursementEntryTextWidth(String(getDisbursementEntryExportCell(entry, columnId) ?? ""), 24)),
     50,
   );
 
   return Math.max(headerWidth, contentWidth);
 }
 
-export function estimateDisbursementEntryTextWidth(
-  value: string,
-  padding: number,
-) {
+export function estimateDisbursementEntryTextWidth(value: string, padding: number) {
   return clampColumnWidth(value.trim().length * 7.5 + padding);
 }
 
@@ -159,11 +133,7 @@ export function EntryNumberInput({
 }) {
   const [draftValue, setDraftValue] = useState("");
   const [isEditing, setIsEditing] = useState(false);
-  const displayValue = isEditing
-    ? draftValue
-    : value !== 0
-      ? formatMoneyNumberInput(String(value), allowNegative)
-      : "";
+  const displayValue = isEditing ? draftValue : value !== 0 ? formatMoneyNumberInput(String(value), allowNegative) : "";
 
   function handleValueChange(nextValue: string) {
     setDraftValue(nextValue);

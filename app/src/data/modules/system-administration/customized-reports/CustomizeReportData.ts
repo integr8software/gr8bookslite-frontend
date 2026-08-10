@@ -5,7 +5,7 @@ import type {
 	CustomizeReportPageSetup,
 	CustomizeReportPaperFormat,
 	CustomizeReportSampleData as CustomizeReportSampleDataType,
-} from "@/app/src/types/workspace/reports-analytics/CustomizeReportTypes";
+} from "@/app/src/types/modules/system-administration/customized-reports/CustomizeReportTypes";
 
 export const CustomizeReportStorageKey =
 	"gr8booksneo.customizeReport.layout.v1";
@@ -379,3 +379,4 @@ export const CustomizeReportSampleData: CustomizeReportSampleDataType = {
 		},
 	],
 };
+

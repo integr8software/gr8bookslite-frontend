@@ -258,17 +258,6 @@ const bottomBorderLayout = {
 	hLineColor: () => "#000000",
 };
 
-const thinGridLayout = {
-	hLineWidth: () => 0.8,
-	vLineWidth: () => 0.8,
-	hLineColor: () => "#000000",
-	vLineColor: () => "#000000",
-	paddingLeft: () => 0,
-	paddingRight: () => 0,
-	paddingTop: () => 0,
-	paddingBottom: () => 0,
-};
-
 const invoiceBodyLayout = {
 	hLineWidth: (i: number, node: PdfTableLayoutNode) =>
 		i === getRowCount(node) ? 0 : 0.8,

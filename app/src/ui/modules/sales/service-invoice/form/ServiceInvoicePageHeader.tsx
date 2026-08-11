@@ -78,7 +78,7 @@ function ServiceInvoiceHeaderActions({
 				<>
 					<AppCopyFromDropdown
 						records={ServiceInvoiceCopyFromRecords}
-						sources={["SQ"]}
+						sources={["Sales Quotation"]}
 						onApply={() => undefined}
 					/>
 					<div className="flex lg:hidden">

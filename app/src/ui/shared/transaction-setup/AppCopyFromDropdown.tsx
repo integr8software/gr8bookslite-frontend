@@ -11,6 +11,7 @@ import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import { ModuleResizableDialog } from "@/app/src/ui/shared/module/ModuleResizableDialog";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
+export type { AppCopyFromRecord };
 
 type AppCopyFromFiltersValue = {
   amountRange: AmountRangeValue;

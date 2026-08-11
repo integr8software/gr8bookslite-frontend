@@ -2,7 +2,6 @@ import {
   BillingInvoiceCurrencyOptions,
   BillingInvoicePartyOptions,
   BillingInvoiceResponsibilityCenterOptions,
-  BillingInvoiceStatusOptions,
   BillingInvoiceTermOptions,
 } from "@/app/src/data/modules/sales/billing-invoice/BillingInvoiceData";
 import type {
@@ -29,7 +28,7 @@ type BillingInvoiceDetailsFormProps = {
 export function BillingInvoiceDetailsForm({ isReadonly, onUpdateField, values }: BillingInvoiceDetailsFormProps) {
   return (
     <section className="min-w-0 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
-      <div className="grid min-w-0 gap-x-8 gap-y-3 xl:grid-cols-2 2xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(16rem,0.65fr)]">
+      <div className="grid min-w-0 content-start gap-x-8 gap-y-3 xl:grid-cols-2 2xl:grid-cols-3">
         <div className="grid min-w-0 content-start gap-3">
           <FieldShell controlId="billing-invoice-party-name" label="Party Name" isRequired>
             <AppAdvancedDropdown
@@ -42,13 +41,6 @@ export function BillingInvoiceDetailsForm({ isReadonly, onUpdateField, values }:
               onChange={(value) => onUpdateField("name", String(value))}
             />
           </FieldShell>
-          <TextField
-            id="billing-invoice-bill-to-name"
-            label="Bill To Name"
-            value={values.billToName}
-            readOnly={isReadonly}
-            onChange={(value) => onUpdateField("billToName", value)}
-          />
           <TextField
             id="billing-invoice-address"
             label="Address"
@@ -65,17 +57,10 @@ export function BillingInvoiceDetailsForm({ isReadonly, onUpdateField, values }:
           />
           <TextField
             id="billing-invoice-contact-no"
-            label="Contact No"
+            label="Contact No."
             value={values.contactNo}
             readOnly={isReadonly}
             onChange={(value) => onUpdateField("contactNo", value)}
-          />
-          <TextField
-            id="billing-invoice-project-code"
-            label="Project Code"
-            value={values.projectRef}
-            readOnly={isReadonly}
-            onChange={(value) => onUpdateField("projectRef", value)}
           />
           <TextField
             id="billing-invoice-project-name"
@@ -105,13 +90,6 @@ export function BillingInvoiceDetailsForm({ isReadonly, onUpdateField, values }:
             readOnly={isReadonly}
             onChange={(value) => onUpdateField("code", value)}
           />
-          <TextField
-            id="billing-invoice-bill-to-code"
-            label="Bill to Code"
-            value={values.billToCode}
-            readOnly={isReadonly}
-            onChange={(value) => onUpdateField("billToCode", value)}
-          />
           <FieldShell controlId="billing-invoice-terms" label="Terms of Payment">
             <SelectField
               value={values.terms}
@@ -135,7 +113,7 @@ export function BillingInvoiceDetailsForm({ isReadonly, onUpdateField, values }:
             onCurrencyChange={(value) => onUpdateField("currency", value)}
             onExchangeRateChange={(value) => onUpdateField("exchangeRate", value)}
           />
-          <FieldShell controlId="billing-invoice-res-center" label="Res Center">
+          <FieldShell controlId="billing-invoice-res-center" label="Responsibility Center">
             <SelectField
               value={values.resCenter}
               readOnly={isReadonly}
@@ -168,17 +146,20 @@ export function BillingInvoiceDetailsForm({ isReadonly, onUpdateField, values }:
             readOnly={isReadonly}
             onChange={(value) => onUpdateField("soNo", value)}
           />
-          <FieldShell controlId="billing-invoice-status" label="Status">
-            <AppAdvancedDropdown
-              id="billing-invoice-status"
-              value={values.status}
-              readOnly
-              options={BillingInvoiceStatusOptions}
-              placeholder="Select status"
-              searchPlaceholder="Search status"
-              onChange={(value) => onUpdateField("status", String(value))}
-            />
-          </FieldShell>
+          <TextField
+            id="billing-invoice-po-no"
+            label="PO No."
+            value={values.poNo}
+            readOnly={isReadonly}
+            onChange={(value) => onUpdateField("poNo", value)}
+          />
+          <TextField
+            id="billing-invoice-sales-personnel"
+            label="Sales Personnel"
+            value={values.teamAssigned}
+            readOnly={isReadonly}
+            onChange={(value) => onUpdateField("teamAssigned", value)}
+          />
         </div>
       </div>
     </section>

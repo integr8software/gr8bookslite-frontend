@@ -10,6 +10,14 @@ import {
 } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type { AuthUserModuleItem } from "@/app/src/services/auth/AuthApiTypes";
 
+const HiddenModuleKeys = new Set(["system-administration-approver-setup"]);
+const HiddenModuleLabels = new Set([
+  "Approver Setup",
+  "Approval Setup",
+  "Approval Transactions",
+]);
+const ApprovalManagementHref = "/system-administration/approval-management";
+
 const SectionAccess: Record<string, MainAccessKey> = {
   dashboard: "dashboard",
   maintenance: "maintenance.chartOfAccounts",
@@ -27,6 +35,7 @@ const SectionAccess: Record<string, MainAccessKey> = {
   purchasing: "purchasing",
   others: "fixedAsset",
   "system-administration": "settings",
+  "approval-management": "maintenance.approval",
 };
 
 const SectionIcons = new Set<MainIconName>([
@@ -44,7 +53,7 @@ const SectionIcons = new Set<MainIconName>([
 ]);
 
 export function MapUserModulesToNavigation(items: AuthUserModuleItem[]): MainNavigationSection[] {
-  return items.flatMap((item): MainNavigationSection[] => {
+  return items.filter((item) => !isHiddenModuleItem(item)).flatMap((item): MainNavigationSection[] => {
     const accessKey = getAccessKey(item);
     const icon = SectionIcons.has(item.iconName as MainIconName)
       ? (item.iconName as MainIconName)
@@ -57,7 +66,9 @@ export function MapUserModulesToNavigation(items: AuthUserModuleItem[]): MainNav
           icon,
           iconName: item.iconName,
           accessKey,
-          items: item.children.map(mapItem),
+          items: item.children
+            .filter((child) => !isHiddenModuleItem(child))
+            .map(mapItem),
         },
       ];
     }
@@ -79,6 +90,38 @@ export function MapUserModulesToNavigation(items: AuthUserModuleItem[]): MainNav
 }
 
 function mapItem(item: AuthUserModuleItem): MainNavigationItem {
+  if (item.key === "system-administration-approval-management") {
+    return {
+      key: item.key,
+      label: item.label,
+      href: ApprovalManagementHref,
+      accessKey: "maintenance.approval",
+      permissionCode: item.permissionCode ?? undefined,
+      requiredActions: item.requiredActions?.includes("view") ? ["view"] : undefined,
+      iconName: item.iconName,
+      children: [
+        {
+          key: "system-administration-approval-setup",
+          label: "Approver Setup",
+          href: ApprovalManagementHref,
+          accessKey: "maintenance.approval",
+          permissionCode: item.permissionCode ?? undefined,
+          requiredActions: item.requiredActions?.includes("view") ? ["view"] : undefined,
+          iconName: "shieldCheck",
+        },
+        {
+          key: "system-administration-approval-transactions",
+          label: "Approval Transactions",
+          href: `${ApprovalManagementHref}/approval-transactions`,
+          accessKey: "maintenance.approval",
+          permissionCode: item.permissionCode ?? undefined,
+          requiredActions: item.requiredActions?.includes("view") ? ["view"] : undefined,
+          iconName: "clipboardCheck",
+        },
+      ],
+    };
+  }
+
   const firstLink = findFirstLink(item);
   const moduleHref =
     item.itemType === "LINK"
@@ -94,8 +137,14 @@ function mapItem(item: AuthUserModuleItem): MainNavigationItem {
     permissionCode: item.permissionCode ?? undefined,
     requiredActions: item.requiredActions?.includes("view") ? ["view"] : undefined,
     iconName: item.iconName,
-    children: item.children.length ? item.children.map(mapItem) : undefined,
+    children: item.children.length
+      ? item.children.filter((child) => !isHiddenModuleItem(child)).map(mapItem)
+      : undefined,
   };
+}
+
+function isHiddenModuleItem(item: AuthUserModuleItem) {
+  return HiddenModuleKeys.has(item.key) || HiddenModuleLabels.has(item.label);
 }
 
 function findFirstLink(item: AuthUserModuleItem): AuthUserModuleItem | undefined {

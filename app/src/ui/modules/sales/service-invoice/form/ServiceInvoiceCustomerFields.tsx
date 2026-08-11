@@ -33,12 +33,6 @@ export function ServiceInvoiceCustomerFields({ isReadonly, onUpdateField, values
             options={ServiceInvoicePartyOptions}
             placeholder=""
             searchPlaceholder="Search customer"
-            showSelectedDetails
-            addAction={{
-              disabled: isReadonly,
-              label: "Add",
-              onClick: () => undefined,
-            }}
             onChange={(value) => {
               const partyName = String(value);
               const selectedParty = ServiceInvoicePartyOptions.find((option) => option.value === partyName);

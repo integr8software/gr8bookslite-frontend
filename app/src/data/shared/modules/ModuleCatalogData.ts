@@ -95,7 +95,6 @@ export const MODULE_ROUTE_MAP = {
   BBU: "/others/beginning-balance-uploader",
   U: "/system-administration/user-management/users",
   UR: "/system-administration/user-management/user-role",
-  AS: "/system-administration/user-management/approver-setup",
   AM: "/system-administration/approval-management",
   AT: "/system-administration/audit-trail",
   TNS: "/system-administration/transaction-number-setup",
@@ -230,7 +229,6 @@ export const MainModuleCatalogHelperText: Record<string, string> = {
   "maintenance-user-management": "Manage users and roles.",
   "maintenance-users": "Create and maintain system user accounts.",
   "maintenance-user-role": "Maintain user role classifications.",
-  "maintenance-approver-setup": "Assign users as workflow approvers.",
   "maintenance-approval": "Configure approval workflows and rules.",
   "maintenance-audit": "Review audit trail activity.",
   "transaction-number-setup": "Configure transaction numbering sequences.",
@@ -526,10 +524,8 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
         [
           moduleItem("maintenance-users", "Users", "U", "maintenance.users"),
           moduleItem("maintenance-user-role", "User Role", "UR", "maintenance.users"),
-          moduleItem("maintenance-approver-setup", "Approver Setup", "AS", "maintenance.users"),
         ],
       ),
-      moduleItem("maintenance-approval", "Approval Management", "AM", "maintenance.approval"),
       moduleItem("maintenance-audit", "Audit Trail", "AT", "maintenance.audit"),
       moduleItem("transaction-number-setup", "Transaction Number Setup", "TNS", "settings"),
       moduleItem(
@@ -546,6 +542,27 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
         "settings",
       ),
       moduleItem("maintenance-mail", "Mail Maintenance", "MM", "maintenance.mail"),
+    ],
+  ),
+  section(
+    "approval-management",
+    "Approval Management",
+    MODULE_ROUTE_MAP.AM,
+    "approval",
+    "maintenance.approval",
+    [
+      {
+        key: "maintenance-approval-setup",
+        label: "Approver Setup",
+        href: MODULE_ROUTE_MAP.AM,
+        accessKey: "maintenance.approval",
+      },
+      {
+        key: "maintenance-approval-transactions",
+        label: "Approval Transactions",
+        href: `${MODULE_ROUTE_MAP.AM}/approval-transactions`,
+        accessKey: "maintenance.approval",
+      },
     ],
   ),
 ];

@@ -4,7 +4,7 @@ export const UserListHref = `${UserManagementHref}/users`;
 
 export const UserRoleHref = `${UserManagementHref}/user-role`;
 
-export const ApproverSetupHref = `${UserManagementHref}/approver-setup`;
+export const ApproverSetupHref = "/system-administration/approval-management";
 
 export const UserManagementEditFromParam = "from";
 

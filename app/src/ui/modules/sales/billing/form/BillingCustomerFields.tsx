@@ -2,12 +2,12 @@ import {
   BillingCurrencyOptions,
   BillingPartyOptions,
   BillingResponsibilityCenterOptions,
-  BillingStatusOptions,
   BillingTermOptions,
 } from "@/app/src/data/modules/sales/billing/BillingData";
 import type { BillingFormValues } from "@/app/src/types/modules/sales/billing/BillingTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
+import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 import { FieldClassName, FieldShell, type BillingFieldUpdater } from "@/app/src/ui/modules/sales/billing/form/BillingFieldControls";
 
@@ -19,7 +19,7 @@ type BillingCustomerFieldsProps = {
 
 export function BillingCustomerFields({ isReadonly, onUpdateField, values }: BillingCustomerFieldsProps) {
   return (
-    <div className="grid min-w-0 gap-x-8 gap-y-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(16rem,0.65fr)]">
+    <div className="grid min-w-0 content-start gap-x-8 gap-y-3 xl:grid-cols-2 2xl:grid-cols-3">
       <div className="grid min-w-0 content-start gap-3">
         <FieldShell controlId="billing-name" label="Party Name" isRequired>
           <AppAdvancedDropdown
@@ -36,15 +36,6 @@ export function BillingCustomerFields({ isReadonly, onUpdateField, values }: Bil
               onUpdateField("name", partyName);
               onUpdateField("code", selectedParty?.label ?? "");
             }}
-          />
-        </FieldShell>
-        <FieldShell controlId="billing-bill-to-name" label="Bill To Name">
-          <input
-            id="billing-bill-to-name"
-            value={values.billToName}
-            readOnly={isReadonly}
-            onChange={(event) => onUpdateField("billToName", event.target.value)}
-            className={FieldClassName}
           />
         </FieldShell>
         <FieldShell controlId="billing-address" label="Address">
@@ -71,15 +62,6 @@ export function BillingCustomerFields({ isReadonly, onUpdateField, values }: Bil
             value={values.contactNo}
             readOnly={isReadonly}
             onChange={(event) => onUpdateField("contactNo", event.target.value)}
-            className={FieldClassName}
-          />
-        </FieldShell>
-        <FieldShell controlId="billing-project-code" label="Project Code">
-          <input
-            id="billing-project-code"
-            value={values.projectCode}
-            readOnly={isReadonly}
-            onChange={(event) => onUpdateField("projectCode", event.target.value)}
             className={FieldClassName}
           />
         </FieldShell>
@@ -136,28 +118,30 @@ export function BillingCustomerFields({ isReadonly, onUpdateField, values }: Bil
           />
         </FieldShell>
         <FieldShell controlId="billing-currency" label="Currency">
-          <div className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto_6.5rem] sm:items-start">
-            <AppAdvancedDropdown
-              id="billing-currency"
-              value={values.currency}
-              readOnly={isReadonly}
-              isClearable={false}
-              options={BillingCurrencyOptions}
-              placeholder="Currency"
-              searchPlaceholder="Search currency"
-              onChange={(value) => onUpdateField("currency", String(value))}
-            />
-            <label htmlFor="billing-exchange-rate" className="pt-2 text-sm font-semibold text-darknavy">
-              ER
-            </label>
-            <MoneyNumberField
-              id="billing-exchange-rate"
-              value={values.exchangeRate}
-              readOnly={isReadonly}
-              onValueChange={(value) => onUpdateField("exchangeRate", value)}
-              className={`${FieldClassName} text-right tabular-nums`}
-            />
-          </div>
+          <CurrencyExchangeRateRow
+            currencyControl={
+              <AppAdvancedDropdown
+                id="billing-currency"
+                className="w-full min-w-0"
+                value={values.currency}
+                readOnly={isReadonly}
+                isClearable={false}
+                options={BillingCurrencyOptions}
+                placeholder="Currency"
+                searchPlaceholder="Search currency"
+                onChange={(value) => onUpdateField("currency", String(value))}
+              />
+            }
+            exchangeRateControl={
+              <MoneyNumberField
+                id="billing-exchange-rate"
+                value={values.exchangeRate}
+                readOnly={isReadonly}
+                onValueChange={(value) => onUpdateField("exchangeRate", value)}
+                className={`${FieldClassName} text-right tabular-nums`}
+              />
+            }
+          />
         </FieldShell>
         <FieldShell controlId="billing-res-center" label="Responsibility Center">
           <AppAdvancedDropdown
@@ -172,7 +156,7 @@ export function BillingCustomerFields({ isReadonly, onUpdateField, values }: Bil
         </FieldShell>
       </div>
       <div className="grid min-w-0 content-start gap-3">
-        <FieldShell controlId="billing-invoice-no" label="SI No.">
+        <FieldShell controlId="billing-invoice-no" label="B No.">
           <input
             id="billing-invoice-no"
             value={values.invoiceNo}
@@ -181,7 +165,7 @@ export function BillingCustomerFields({ isReadonly, onUpdateField, values }: Bil
             className={FieldClassName}
           />
         </FieldShell>
-        <FieldShell controlId="billing-document-date" label="SI Date" isRequired>
+        <FieldShell controlId="billing-document-date" label="B Date" isRequired>
           <input
             id="billing-document-date"
             type="date"
@@ -200,7 +184,7 @@ export function BillingCustomerFields({ isReadonly, onUpdateField, values }: Bil
             className={FieldClassName}
           />
         </FieldShell>
-        <FieldShell controlId="billing-customer-po-no" label="Customer PO No.">
+        <FieldShell controlId="billing-customer-po-no" label="PO No.">
           <input
             id="billing-customer-po-no"
             value={values.poNo}
@@ -216,17 +200,6 @@ export function BillingCustomerFields({ isReadonly, onUpdateField, values }: Bil
             readOnly={isReadonly}
             onChange={(event) => onUpdateField("teamAssigned", event.target.value)}
             className={FieldClassName}
-          />
-        </FieldShell>
-        <FieldShell controlId="billing-status" label="Status">
-          <AppAdvancedDropdown
-            id="billing-status"
-            value={values.status}
-            readOnly
-            options={BillingStatusOptions}
-            placeholder="Select status"
-            searchPlaceholder="Search status"
-            onChange={(value) => onUpdateField("status", String(value))}
           />
         </FieldShell>
       </div>

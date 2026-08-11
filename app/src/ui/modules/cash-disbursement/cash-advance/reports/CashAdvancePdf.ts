@@ -88,7 +88,7 @@ function createCashAdvancePdfDefinition(
               { text: "" },
             ],
             requestRow("Name Requesting Cash Advance", values.partyName),
-            requestRow("Cost Center", values.costCenter),
+            requestRow("Responsibility Center", values.costCenter),
             requestRow("Amount of Cash Advance", formatCashAdvanceCurrency(amount)),
             requestRow("Amount in Words", amountToWords(amount)),
             requestRow("Project Name", values.referenceFields.projectRef, 30),

@@ -40,6 +40,7 @@ export const MockCashAdvanceMultipleEntryRecords: CashAdvanceMultipleEntryRecord
     id: "came-001",
     partyCode: "00002",
     partyName: "Archipelago Phil Seafarers Training Institute",
+    projectCode: "",
     remarks: "",
     status: CashAdvanceMultipleEntryStatuses.forApproval,
     transNo: "CAME-000001",
@@ -74,7 +75,6 @@ export function createBlankCashAdvanceMultipleEntryAccountingEntry(
     particulars: "",
     partyCode: "",
     partyName: "",
-    refNo: "",
     responsibilityCenter: "",
     ...values,
   };
@@ -94,6 +94,7 @@ export function createCashAdvanceMultipleEntryFormValues(): CashAdvanceMultipleE
     items: [createBlankCashAdvanceMultipleEntryItem()],
     partyCode: "",
     partyName: "",
+    projectCode: "",
     projectRef: "",
     remarks: "",
     status: CashAdvanceMultipleEntryStatuses.draft,
@@ -109,6 +110,7 @@ export function createCashAdvanceMultipleEntryFormValuesFromRecord(
     return {
       ...createCashAdvanceMultipleEntryFormValues(),
       ...record.formValues,
+      projectCode: record.formValues.projectCode ?? record.projectCode ?? "",
       status: normalizeCashAdvanceMultipleEntryStatus(record.formValues.status),
       transNo: record.formValues.transNo || record.transNo,
     };
@@ -122,6 +124,7 @@ export function createCashAdvanceMultipleEntryFormValuesFromRecord(
     documentDate: record.documentDate,
     partyCode: record.partyCode,
     partyName: record.partyName,
+    projectCode: record.projectCode ?? "",
     remarks: record.remarks,
     status: normalizeCashAdvanceMultipleEntryStatus(record.status),
     totalAmount: String(record.amount || ""),
@@ -155,6 +158,7 @@ export function createCashAdvanceMultipleEntryRecordFromForm(
     id: existingRecord?.id ?? `came-${Date.now()}`,
     partyCode: values.partyCode,
     partyName: values.partyName,
+    projectCode: values.projectCode,
     remarks: values.remarks,
     status: normalizeCashAdvanceMultipleEntryStatus(values.status),
     transNo,
@@ -256,12 +260,14 @@ function normalizeStoredCashAdvanceMultipleEntryRecord(
 ): CashAdvanceMultipleEntryRecord {
   return {
     ...record,
+    projectCode: record.projectCode ?? record.formValues?.projectCode ?? "",
     createdAt: record.createdAt ?? record.documentDate,
     createdBy: record.createdBy ?? record.partyName,
     formValues: record.formValues
       ? {
           ...record.formValues,
           attachments: record.formValues.attachments ?? [],
+          projectCode: record.formValues.projectCode ?? record.projectCode ?? "",
           status: normalizeCashAdvanceMultipleEntryStatus(record.formValues.status),
         }
       : record.formValues,

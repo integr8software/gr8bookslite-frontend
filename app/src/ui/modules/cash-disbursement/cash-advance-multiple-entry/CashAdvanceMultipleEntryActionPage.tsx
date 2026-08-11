@@ -5,9 +5,9 @@ import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { DisbursementVoucherProjectOptions } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import {
   CashAdvanceMultipleEntryAccountOptions,
-  CashAdvanceMultipleEntryCostCenterOptions,
   CashAdvanceMultipleEntryHref,
   CashAdvanceMultipleEntryStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryConstants";
@@ -17,11 +17,13 @@ import {
   calculateCashAdvanceMultipleEntryTotal,
   formatCashAdvanceMultipleEntryAmount,
 } from "@/app/src/data/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryData";
+import { ResponsibilityCenterInitialFormValues } from "@/app/src/data/modules/financial-maintenance/responsibility-center/ResponsibilityCenterData";
 import {
   removeCashAdvanceMultipleEntryRow,
   replaceCashAdvanceMultipleEntryRow,
   useCashAdvanceMultipleEntryActionForm,
 } from "@/app/src/hooks/modules/cash-disbursement/cash-advance-multiple-entry/useCashAdvanceMultipleEntry";
+import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenter";
 import type {
   CashAdvanceMultipleEntryAccountingEntry,
   CashAdvanceMultipleEntryActionMode,
@@ -32,6 +34,12 @@ import type {
   CashAdvanceMultipleEntryTab,
 } from "@/app/src/types/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryTypes";
 import type { CashAdvanceRecord } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
+import type {
+  ResponsibilityCenter,
+  ResponsibilityCenterClassification,
+  ResponsibilityCenterFormValues,
+  ResponsibilityCenterTypeOption,
+} from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
@@ -46,6 +54,11 @@ import {
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleFieldsVisibilityDialog } from "@/app/src/ui/shared/module/ModuleFieldsVisibilityDialog";
 import { ModuleSaveButton } from "@/app/src/ui/shared/module/ModuleSaveButton";
+import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
+import {
+  AppPartyDialog,
+  mapPartyRecordToPartyValue,
+} from "@/app/src/ui/shared/transaction-setup/AppPartyDialog";
 import {
   ModuleDataEntry,
   type ModuleDataEntryColumn,
@@ -60,21 +73,53 @@ export function CashAdvanceMultipleEntryActionPage() {
   const mode = getActionMode(pathname);
   const recordId = typeof params.recordId === "string" ? params.recordId : undefined;
   const [activeDetailsTab, setActiveDetailsTab] = useState<CashAdvanceMultipleEntryDetailsTab>("details");
-  const [visibleFields, setVisibleFields] = useState<CashAdvanceMultipleEntryVisibleFieldState>({
-    contractNo: true,
-    costCenter: true,
-    defaultAccount: true,
-    documentDate: true,
-    partyName: true,
-    projectRef: true,
-    remarks: true,
-    status: true,
-    totalAmount: true,
-    transNo: true,
+  const [isPartyDialogOpen, setIsPartyDialogOpen] = useState(false);
+  const [isResponsibilityCenterDrawerOpen, setIsResponsibilityCenterDrawerOpen] = useState(false);
+  const [pendingAccountingPartyRowId, setPendingAccountingPartyRowId] = useState<string | null>(null);
+  const [pendingAccountingResponsibilityCenterRowId, setPendingAccountingResponsibilityCenterRowId] = useState<string | null>(null);
+  const [pendingItemPartyRowId, setPendingItemPartyRowId] = useState<string | null>(null);
+  const [isProjectDrawerOpen, setIsProjectDrawerOpen] = useState(false);
+  const [visibleCodes, setVisibleCodes] = useState<CashAdvanceMultipleEntryVisibleCodeState>({
+    accountCode: true,
+    partyCode: true,
+    projectCode: true,
   });
   const form = useCashAdvanceMultipleEntryActionForm(mode, recordId, () => {
     router.push(CashAdvanceMultipleEntryHref);
   });
+  const responsibilityCenterStore = useResponsibilityCenterStore();
+  const projectOptions = useMemo(
+    () =>
+      createCashAdvanceMultipleEntryProjectOptions({
+        centers: responsibilityCenterStore.centers,
+        currentProjectCode: form.values.projectCode,
+        currentProjectName: form.values.projectRef,
+      }),
+    [form.values.projectCode, form.values.projectRef, responsibilityCenterStore.centers],
+  );
+  const projectInitialValues = useMemo(
+    () =>
+      createProjectInitialValues(
+        responsibilityCenterStore.classifications,
+        responsibilityCenterStore.types,
+      ),
+    [responsibilityCenterStore.classifications, responsibilityCenterStore.types],
+  );
+  const responsibilityCenterOptions = useMemo(
+    () =>
+      createCashAdvanceMultipleEntryResponsibilityCenterOptions({
+        centers: responsibilityCenterStore.centers,
+      }),
+    [responsibilityCenterStore.centers],
+  );
+  const responsibilityCenterInitialValues = useMemo(
+    () =>
+      createResponsibilityCenterInitialValues(
+        responsibilityCenterStore.classifications,
+        responsibilityCenterStore.types,
+      ),
+    [responsibilityCenterStore.classifications, responsibilityCenterStore.types],
+  );
 
   if (form.isRecordMissing) {
     return (
@@ -91,6 +136,7 @@ export function CashAdvanceMultipleEntryActionPage() {
   const isReadonly = mode === "view";
 
   return (
+    <>
     <section className="grid gap-5">
       <CashAdvanceMultipleEntryHeader
         mode={mode}
@@ -99,9 +145,9 @@ export function CashAdvanceMultipleEntryActionPage() {
         onUpdateStatus={form.updateEntryStatus}
         visibilityAction={
           <CashAdvanceMultipleEntryFieldVisibilityButton
-            visibleFields={visibleFields}
-            onVisibleFieldChange={(field, isVisible) =>
-              setVisibleFields((current) => ({ ...current, [field]: isVisible }))
+            visibleCodes={visibleCodes}
+            onVisibleCodeChange={(field, isVisible) =>
+              setVisibleCodes((current) => ({ ...current, [field]: isVisible }))
             }
           />
         }
@@ -115,8 +161,14 @@ export function CashAdvanceMultipleEntryActionPage() {
       {activeDetailsTab === "details" ? (
         <CashAdvanceMultipleEntryDetails
           isReadonly={isReadonly}
+          projectOptions={projectOptions}
           values={form.values}
-          visibleFields={visibleFields}
+          visibleCodes={visibleCodes}
+          onOpenPartyDialog={() => {
+            setPendingItemPartyRowId(null);
+            setIsPartyDialogOpen(true);
+          }}
+          onOpenProjectDrawer={() => setIsProjectDrawerOpen(true)}
           onUpdateField={form.updateField}
         />
       ) : (
@@ -136,10 +188,92 @@ export function CashAdvanceMultipleEntryActionPage() {
           onAddAccountingRows={form.addAccountingEntries}
           onAddRows={form.addItems}
           onAccountingRowsChange={form.updateAccountingEntries}
+          onOpenAccountingPartyDialog={(rowId) => {
+            setPendingAccountingPartyRowId(rowId);
+            setIsPartyDialogOpen(true);
+          }}
+          onOpenAccountingResponsibilityCenterDrawer={(rowId) => {
+            setPendingAccountingResponsibilityCenterRowId(rowId);
+            setIsResponsibilityCenterDrawerOpen(true);
+          }}
+          onOpenItemPartyDialog={(rowId) => {
+            setPendingItemPartyRowId(rowId);
+            setIsPartyDialogOpen(true);
+          }}
+          responsibilityCenterOptions={responsibilityCenterOptions}
           onRowsChange={form.updateItems}
         />
       ) : null}
     </section>
+    <AppPartyDialog
+      isOpen={!isReadonly && isPartyDialogOpen}
+      onClose={() => {
+        setPendingAccountingPartyRowId(null);
+        setPendingItemPartyRowId(null);
+        setIsPartyDialogOpen(false);
+      }}
+      onSelect={(record) => {
+        const partyValue = mapPartyRecordToPartyValue(record);
+
+        if (pendingAccountingPartyRowId) {
+          form.updateAccountingEntries(
+            replaceCashAdvanceMultipleEntryRow(form.values.accountingEntries, pendingAccountingPartyRowId, {
+              partyCode: partyValue.partyCode,
+              partyName: partyValue.partyName,
+            }),
+          );
+        } else if (pendingItemPartyRowId) {
+          form.updateItems(
+            replaceCashAdvanceMultipleEntryRow(form.values.items, pendingItemPartyRowId, {
+              partyCode: partyValue.partyCode,
+              partyName: partyValue.partyName,
+            }),
+          );
+        } else {
+          form.updateField("partyCode", partyValue.partyCode);
+          form.updateField("partyName", partyValue.partyName);
+        }
+
+        setPendingAccountingPartyRowId(null);
+        setPendingItemPartyRowId(null);
+        setIsPartyDialogOpen(false);
+      }}
+    />
+    <ResponsibilityCenterDrawer
+      initialValues={projectInitialValues}
+      isOpen={!isReadonly && isProjectDrawerOpen}
+      mode="add"
+      onClose={() => setIsProjectDrawerOpen(false)}
+      onSaved={(center) => {
+        form.updateField("projectCode", center.code);
+        form.updateField("projectRef", center.name);
+        setIsProjectDrawerOpen(false);
+      }}
+    />
+    <ResponsibilityCenterDrawer
+      initialValues={responsibilityCenterInitialValues}
+      isOpen={!isReadonly && isResponsibilityCenterDrawerOpen}
+      mode="add"
+      onClose={() => {
+        setPendingAccountingResponsibilityCenterRowId(null);
+        setIsResponsibilityCenterDrawerOpen(false);
+      }}
+      onSaved={(center) => {
+        if (pendingAccountingResponsibilityCenterRowId) {
+          form.updateAccountingEntries(
+            replaceCashAdvanceMultipleEntryRow(
+              form.values.accountingEntries,
+              pendingAccountingResponsibilityCenterRowId,
+              { responsibilityCenter: center.name },
+            ),
+          );
+        }
+
+        setPendingAccountingResponsibilityCenterRowId(null);
+        setIsResponsibilityCenterDrawerOpen(false);
+      }}
+    />
+    </>
   );
 }
 
@@ -148,20 +282,13 @@ const DetailsTabs = [
   { id: "attachment", label: "File Attachments" },
 ] satisfies ModuleTabItem<CashAdvanceMultipleEntryDetailsTab>[];
 
-type CashAdvanceMultipleEntryVisibleField =
-  | "contractNo"
-  | "costCenter"
-  | "defaultAccount"
-  | "documentDate"
-  | "partyName"
-  | "projectRef"
-  | "remarks"
-  | "status"
-  | "totalAmount"
-  | "transNo";
+type CashAdvanceMultipleEntryVisibleCode =
+  | "accountCode"
+  | "partyCode"
+  | "projectCode";
 
-type CashAdvanceMultipleEntryVisibleFieldState = Record<
-  CashAdvanceMultipleEntryVisibleField,
+type CashAdvanceMultipleEntryVisibleCodeState = Record<
+  CashAdvanceMultipleEntryVisibleCode,
   boolean
 >;
 
@@ -215,26 +342,38 @@ function CashAdvanceMultipleEntryHeader({
 
 function CashAdvanceMultipleEntryDetails({
   isReadonly,
+  onOpenPartyDialog,
+  onOpenProjectDrawer,
   onUpdateField,
+  projectOptions,
   values,
-  visibleFields,
+  visibleCodes,
 }: {
   isReadonly: boolean;
+  onOpenPartyDialog: () => void;
+  onOpenProjectDrawer: () => void;
   values: CashAdvanceMultipleEntryFormValues;
-  visibleFields: CashAdvanceMultipleEntryVisibleFieldState;
+  projectOptions: AppAdvancedDropdownOption[];
+  visibleCodes: CashAdvanceMultipleEntryVisibleCodeState;
   onUpdateField: ReturnType<typeof useCashAdvanceMultipleEntryActionForm>["updateField"];
 }) {
   const partyOptions = useMemo(() => createPartyOptions(values.partyCode, values.partyName), [values.partyCode, values.partyName]);
   const accountOptions = useMemo(() => createSelectOptions(CashAdvanceMultipleEntryAccountOptions), []);
-  const costCenterOptions = useMemo(() => createSelectOptions(CashAdvanceMultipleEntryCostCenterOptions), []);
 
   return (
-    <form className="grid min-w-0 gap-x-8 gap-y-5 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5 xl:grid-cols-3">
+    <form className="grid min-w-0 gap-5 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5 xl:grid-cols-3">
       <div className="grid min-w-0 content-start gap-4">
-        {visibleFields.partyName ? (
           <FieldShell controlId="came-party-name" label="Party Name" isRequired>
             <AppAdvancedDropdown
               id="came-party-name"
+              addAction={
+                !isReadonly
+                  ? {
+                      label: "Add Party Name",
+                      onClick: onOpenPartyDialog,
+                    }
+                  : undefined
+              }
               menuMinWidth={340}
               options={partyOptions}
               placeholder="Select Party Name"
@@ -250,21 +389,35 @@ function CashAdvanceMultipleEntryDetails({
               }}
             />
           </FieldShell>
-        ) : null}
-        {visibleFields.costCenter ? (
-          <FieldShell controlId="came-cost-center" label="Cost Center" isRequired>
+          <FieldShell controlId="came-project-name" label="Project Name">
             <AppAdvancedDropdown
-              id="came-cost-center"
-              menuMinWidth={280}
-              options={costCenterOptions}
-              placeholder="Select Cost Center"
+              id="came-project-name"
+              addAction={
+                !isReadonly
+                  ? {
+                      label: "Add Project",
+                      onClick: onOpenProjectDrawer,
+                    }
+                  : undefined
+              }
+              menuMinWidth={320}
+              options={projectOptions}
+              placeholder="Select Project Name"
               readOnly={isReadonly}
-              value={values.costCenter}
-              onChange={(value) => onUpdateField("costCenter", String(value))}
+              searchPlaceholder="Search project name"
+              value={values.projectRef}
+              onChange={(value) => {
+                const projectName = String(value);
+                const project = projectOptions.find((option) => option.value === projectName);
+
+                onUpdateField("projectRef", projectName);
+                onUpdateField(
+                  "projectCode",
+                  project?.label === projectName ? "" : project?.label ?? "",
+                );
+              }}
             />
           </FieldShell>
-        ) : null}
-        {visibleFields.defaultAccount ? (
           <FieldShell controlId="came-account" label="Default Account" isRequired>
             <AppAdvancedDropdown
               id="came-account"
@@ -282,8 +435,6 @@ function CashAdvanceMultipleEntryDetails({
               }}
             />
           </FieldShell>
-        ) : null}
-        {visibleFields.remarks ? (
           <FieldShell controlId="came-remarks" label="Remarks">
             <AppLimitedTextarea
               id="came-remarks"
@@ -294,18 +445,41 @@ function CashAdvanceMultipleEntryDetails({
               onChange={(event) => onUpdateField("remarks", event.target.value)}
             />
           </FieldShell>
-        ) : null}
       </div>
       <div className="grid min-w-0 content-start gap-4">
-        {visibleFields.totalAmount ? (
-          <FieldShell controlId="came-total-amount" label="Total Amount">
-            <input id="came-total-amount" readOnly value={values.totalAmount} className={`${ReadOnlyFieldClassName} text-right`} />
+        {visibleCodes.partyCode ? (
+          <FieldShell controlId="came-party-code" label="Party Code">
+            <input
+              id="came-party-code"
+              readOnly
+              value={values.partyCode}
+              className={ReadOnlyFieldClassName}
+            />
+          </FieldShell>
+        ) : null}
+        {visibleCodes.projectCode ? (
+          <FieldShell controlId="came-project-code" label="Project Code">
+            <input
+              id="came-project-code"
+              readOnly
+              value={values.projectCode}
+              className={ReadOnlyFieldClassName}
+            />
+          </FieldShell>
+        ) : null}
+        {visibleCodes.accountCode ? (
+          <FieldShell controlId="came-account-code" label="Default Account Code">
+            <input
+              id="came-account-code"
+              readOnly
+              value={values.accountCode}
+              className={ReadOnlyFieldClassName}
+            />
           </FieldShell>
         ) : null}
       </div>
       <div className="grid min-w-0 content-start gap-4">
-        {visibleFields.transNo ? (
-          <FieldShell controlId="came-trans-no" label="Multiply Cash Advance No." isRequired>
+          <FieldShell controlId="came-trans-no" label="CAME No." isRequired>
             <input
               id="came-trans-no"
               readOnly={isReadonly}
@@ -314,8 +488,6 @@ function CashAdvanceMultipleEntryDetails({
               onChange={(event) => onUpdateField("transNo", event.target.value)}
             />
           </FieldShell>
-        ) : null}
-        {visibleFields.documentDate ? (
           <FieldShell controlId="came-document-date" label="Document Date">
             <input
               id="came-document-date"
@@ -326,75 +498,43 @@ function CashAdvanceMultipleEntryDetails({
               onChange={(event) => onUpdateField("documentDate", event.target.value)}
             />
           </FieldShell>
-        ) : null}
-        {visibleFields.status ? (
           <FieldShell controlId="came-status" label="Status">
             <input id="came-status" readOnly value={values.status} className={ReadOnlyFieldClassName} />
           </FieldShell>
-        ) : null}
-        {visibleFields.projectRef ? (
-          <FieldShell controlId="came-project-ref" label="Project Ref">
-            <input
-              id="came-project-ref"
-              readOnly={isReadonly}
-              value={values.projectRef}
-              className={FieldClassName}
-              onChange={(event) => onUpdateField("projectRef", event.target.value)}
-            />
-          </FieldShell>
-        ) : null}
-        {visibleFields.contractNo ? (
-          <FieldShell controlId="came-contract-no" label="Contract No.">
-            <input
-              id="came-contract-no"
-              readOnly={isReadonly}
-              value={values.contractNo}
-              className={FieldClassName}
-              onChange={(event) => onUpdateField("contractNo", event.target.value)}
-            />
-          </FieldShell>
-        ) : null}
       </div>
     </form>
   );
 }
 
 function CashAdvanceMultipleEntryFieldVisibilityButton({
-  onVisibleFieldChange,
-  visibleFields,
+  onVisibleCodeChange,
+  visibleCodes,
 }: {
-  onVisibleFieldChange: (field: CashAdvanceMultipleEntryVisibleField, isVisible: boolean) => void;
-  visibleFields: CashAdvanceMultipleEntryVisibleFieldState;
+  onVisibleCodeChange: (field: CashAdvanceMultipleEntryVisibleCode, isVisible: boolean) => void;
+  visibleCodes: CashAdvanceMultipleEntryVisibleCodeState;
 }) {
   return (
     <ModuleFieldsVisibilityDialog
-      buttonLabel="Field Visibility"
-      title="Cash Advances Multiple Entry Fields"
+      buttonLabel="Edit Layout"
+      title="Cash Advances Multiple Entry Codes"
       fields={[
-        createVisibilityField("partyName", "Party Name", visibleFields, onVisibleFieldChange),
-        createVisibilityField("costCenter", "Cost Center", visibleFields, onVisibleFieldChange),
-        createVisibilityField("defaultAccount", "Default Account", visibleFields, onVisibleFieldChange),
-        createVisibilityField("remarks", "Remarks", visibleFields, onVisibleFieldChange),
-        createVisibilityField("totalAmount", "Total Amount", visibleFields, onVisibleFieldChange),
-        createVisibilityField("transNo", "Multiply Cash Advance No.", visibleFields, onVisibleFieldChange),
-        createVisibilityField("documentDate", "Document Date", visibleFields, onVisibleFieldChange),
-        createVisibilityField("status", "Status", visibleFields, onVisibleFieldChange),
-        createVisibilityField("projectRef", "Project Ref", visibleFields, onVisibleFieldChange),
-        createVisibilityField("contractNo", "Contract No.", visibleFields, onVisibleFieldChange),
+        createVisibilityField("partyCode", "Party Code", visibleCodes, onVisibleCodeChange),
+        createVisibilityField("projectCode", "Project Code", visibleCodes, onVisibleCodeChange),
+        createVisibilityField("accountCode", "Default Account Code", visibleCodes, onVisibleCodeChange),
       ]}
     />
   );
 }
 
 function createVisibilityField(
-  field: CashAdvanceMultipleEntryVisibleField,
+  field: CashAdvanceMultipleEntryVisibleCode,
   label: string,
-  visibleFields: CashAdvanceMultipleEntryVisibleFieldState,
-  onVisibleFieldChange: (field: CashAdvanceMultipleEntryVisibleField, isVisible: boolean) => void,
+  visibleCodes: CashAdvanceMultipleEntryVisibleCodeState,
+  onVisibleFieldChange: (field: CashAdvanceMultipleEntryVisibleCode, isVisible: boolean) => void,
 ) {
   return {
     id: field,
-    isVisible: visibleFields[field],
+    isVisible: visibleCodes[field],
     label,
     onVisibleChange: (isVisible: boolean) => onVisibleFieldChange(field, isVisible),
   };
@@ -406,6 +546,10 @@ function CashAdvanceMultipleEntryEntrySection({
   onAccountingRowsChange,
   onAddAccountingRows,
   onAddRows,
+  onOpenAccountingPartyDialog,
+  onOpenAccountingResponsibilityCenterDrawer,
+  onOpenItemPartyDialog,
+  responsibilityCenterOptions,
   onRowsChange,
   rows,
 }: {
@@ -415,46 +559,72 @@ function CashAdvanceMultipleEntryEntrySection({
   onAccountingRowsChange: (rows: CashAdvanceMultipleEntryAccountingEntry[]) => void;
   onAddAccountingRows: (count: number) => void;
   onAddRows: (count: number) => void;
+  onOpenAccountingPartyDialog: (rowId: string) => void;
+  onOpenAccountingResponsibilityCenterDrawer: (rowId: string) => void;
+  onOpenItemPartyDialog: (rowId: string) => void;
+  responsibilityCenterOptions: AppAdvancedDropdownOption[];
   onRowsChange: (rows: CashAdvanceMultipleEntryItem[]) => void;
 }) {
   const [activeTab, setActiveTab] = useState<CashAdvanceMultipleEntryTab>("items");
   const [visibleItemColumnIds, setVisibleItemColumnIds] = useState<string[]>([
     "partyCode",
     "partyName",
-    "particulars",
     "amount",
     "responsibilityCenter",
+    "particulars",
   ]);
+  const [itemColumnWidths, setItemColumnWidths] = useState<Record<string, number>>({});
   const [visibleAccountingColumnIds, setVisibleAccountingColumnIds] = useState<string[]>([
-    "accountCode",
     "accountTitle",
     "debit",
     "credit",
-    "partyCode",
     "partyName",
-    "particulars",
     "responsibilityCenter",
-    "refNo",
+    "particulars",
   ]);
+  const [accountingColumnWidths, setAccountingColumnWidths] = useState<Record<string, number>>({});
   const totalAmount = useMemo(() => calculateCashAdvanceMultipleEntryTotal(rows), [rows]);
   const itemColumns = useMemo<ModuleDataEntryColumn<CashAdvanceMultipleEntryItem>[]>(
-    () => createItemColumns(isReadonly, (rowId, updates) => onRowsChange(replaceCashAdvanceMultipleEntryRow(rows, rowId, updates))),
-    [isReadonly, onRowsChange, rows],
+    () =>
+      createItemColumns(
+        isReadonly,
+        (rowId, updates) => onRowsChange(replaceCashAdvanceMultipleEntryRow(rows, rowId, updates)),
+        onOpenItemPartyDialog,
+      ),
+    [isReadonly, onOpenItemPartyDialog, onRowsChange, rows],
   );
   const accountingColumns = useMemo<ModuleDataEntryColumn<CashAdvanceMultipleEntryAccountingEntry>[]>(
     () =>
-      createAccountingColumns(isReadonly, (rowId, updates) =>
-        onAccountingRowsChange(replaceCashAdvanceMultipleEntryRow(accountingRows, rowId, updates)),
+      createAccountingColumns(
+        isReadonly,
+        (rowId, updates) =>
+          onAccountingRowsChange(replaceCashAdvanceMultipleEntryRow(accountingRows, rowId, updates)),
+        onOpenAccountingPartyDialog,
+        onOpenAccountingResponsibilityCenterDrawer,
+        responsibilityCenterOptions,
       ),
-    [accountingRows, isReadonly, onAccountingRowsChange],
+    [
+      accountingRows,
+      isReadonly,
+      onAccountingRowsChange,
+      onOpenAccountingPartyDialog,
+      onOpenAccountingResponsibilityCenterDrawer,
+      responsibilityCenterOptions,
+    ],
   );
   const visibleItemColumns = useMemo(
-    () => itemColumns.filter((column) => visibleItemColumnIds.includes(column.id)),
-    [itemColumns, visibleItemColumnIds],
+    () =>
+      itemColumns
+        .filter((column) => visibleItemColumnIds.includes(column.id))
+        .map((column) => applyColumnWidth(column, itemColumnWidths)),
+    [itemColumnWidths, itemColumns, visibleItemColumnIds],
   );
   const visibleAccountingColumns = useMemo(
-    () => accountingColumns.filter((column) => visibleAccountingColumnIds.includes(column.id)),
-    [accountingColumns, visibleAccountingColumnIds],
+    () =>
+      accountingColumns
+        .filter((column) => visibleAccountingColumnIds.includes(column.id))
+        .map((column) => applyColumnWidth(column, accountingColumnWidths)),
+    [accountingColumnWidths, accountingColumns, visibleAccountingColumnIds],
   );
   if (activeTab === "accounting") {
     return (
@@ -483,13 +653,18 @@ function CashAdvanceMultipleEntryEntrySection({
         onInsertRow={() => undefined}
         onMoveRow={() => undefined}
         onRemoveRow={(rowId) => onAccountingRowsChange(removeCashAdvanceMultipleEntryRow(accountingRows, rowId))}
+        onMoveColumn={(fromColumnId, toColumnId) =>
+          setVisibleAccountingColumnIds((current) => moveColumnId(current, fromColumnId, toColumnId))
+        }
         onToggleColumnVisibility={(columnId, isVisible) =>
           setVisibleAccountingColumnIds((current) =>
             updateVisibleColumnIds(current, accountingColumns, columnId, isVisible),
           )
         }
         onUpdateColumnHeader={() => undefined}
-        onUpdateColumnWidth={() => undefined}
+        onUpdateColumnWidth={(columnId, width) =>
+          setAccountingColumnWidths((current) => ({ ...current, [columnId]: width }))
+        }
       />
     );
   }
@@ -522,13 +697,18 @@ function CashAdvanceMultipleEntryEntrySection({
       onInsertRow={() => undefined}
       onMoveRow={() => undefined}
       onRemoveRow={(rowId) => onRowsChange(removeCashAdvanceMultipleEntryRow(rows, rowId))}
+      onMoveColumn={(fromColumnId, toColumnId) =>
+        setVisibleItemColumnIds((current) => moveColumnId(current, fromColumnId, toColumnId))
+      }
       onToggleColumnVisibility={(columnId, isVisible) =>
         setVisibleItemColumnIds((current) =>
           updateVisibleColumnIds(current, itemColumns, columnId, isVisible),
         )
       }
       onUpdateColumnHeader={() => undefined}
-      onUpdateColumnWidth={() => undefined}
+      onUpdateColumnWidth={(columnId, width) =>
+        setItemColumnWidths((current) => ({ ...current, [columnId]: width }))
+      }
     />
   );
 }
@@ -571,25 +751,28 @@ const EntryTabs = [
 function createItemColumns(
   isReadonly: boolean,
   onUpdateEntry: (rowId: string, updates: Partial<CashAdvanceMultipleEntryItem>) => void,
+  onOpenItemPartyDialog: (rowId: string) => void,
 ): ModuleDataEntryColumn<CashAdvanceMultipleEntryItem>[] {
   return [
     {
-      header: "Code",
+      header: "Party Code",
       id: "partyCode",
       width: 140,
       widthClassName: "w-[8.75rem]",
       renderCell: (row, _index, context) => (
-        <EntryTextInput
+        <EntryPartyDropdown
           id={context.fieldId}
           name={context.fieldName}
+          optionDisplay="code"
           readOnly={isReadonly}
           value={row.partyCode}
-          onChange={(value) => onUpdateEntry(row.id, { partyCode: value })}
+          onAddParty={() => onOpenItemPartyDialog(row.id)}
+          onChange={(partyCode, partyName) => onUpdateEntry(row.id, { partyCode, partyName })}
         />
       ),
     },
     {
-      header: "Payee",
+      header: "Party Name",
       id: "partyName",
       width: 260,
       widthClassName: "w-[16rem]",
@@ -597,24 +780,11 @@ function createItemColumns(
         <EntryPartyDropdown
           id={context.fieldId}
           name={context.fieldName}
+          optionDisplay="name"
           readOnly={isReadonly}
           value={row.partyCode}
+          onAddParty={() => onOpenItemPartyDialog(row.id)}
           onChange={(partyCode, partyName) => onUpdateEntry(row.id, { partyCode, partyName })}
-        />
-      ),
-    },
-    {
-      header: "Particulars",
-      id: "particulars",
-      width: 300,
-      widthClassName: "w-[18.75rem]",
-      renderCell: (row, _index, context) => (
-        <EntryTextInput
-          id={context.fieldId}
-          name={context.fieldName}
-          readOnly={isReadonly}
-          value={row.particulars}
-          onChange={(value) => onUpdateEntry(row.id, { particulars: value })}
         />
       ),
     },
@@ -634,10 +804,10 @@ function createItemColumns(
       ),
     },
     {
-      header: "Res. Center",
+      header: "Responsibility Center",
       id: "responsibilityCenter",
-      width: 170,
-      widthClassName: "w-[10.5rem]",
+      width: 190,
+      widthClassName: "w-[12rem]",
       renderCell: (row, _index, context) => (
         <EntryDropdown
           id={context.fieldId}
@@ -649,23 +819,85 @@ function createItemColumns(
         />
       ),
     },
+    {
+      header: "Remarks",
+      id: "particulars",
+      width: 300,
+      widthClassName: "w-[18.75rem]",
+      renderCell: (row, _index, context) => (
+        <EntryTextInput
+          id={context.fieldId}
+          name={context.fieldName}
+          readOnly={isReadonly}
+          value={row.particulars}
+          onChange={(value) => onUpdateEntry(row.id, { particulars: value })}
+        />
+      ),
+    },
   ];
 }
 
 function createAccountingColumns(
   isReadonly: boolean,
   onUpdateEntry: (rowId: string, updates: Partial<CashAdvanceMultipleEntryAccountingEntry>) => void,
+  onOpenAccountingPartyDialog: (rowId: string) => void,
+  onOpenAccountingResponsibilityCenterDrawer: (rowId: string) => void,
+  responsibilityCenterOptions: AppAdvancedDropdownOption[],
 ): ModuleDataEntryColumn<CashAdvanceMultipleEntryAccountingEntry>[] {
   return [
-    textColumn("Account Code", "accountCode", 150, isReadonly, onUpdateEntry),
-    textColumn("Account Title", "accountTitle", 240, isReadonly, onUpdateEntry),
+    {
+      header: "Account Title",
+      id: "accountTitle",
+      width: 260,
+      widthClassName: "w-[16.25rem]",
+      renderCell: (row, _index, context) => (
+        <EntryAccountDropdown
+          id={context.fieldId}
+          name={context.fieldName}
+          readOnly={isReadonly}
+          value={row.accountCode}
+          onChange={(accountCode, accountTitle) => onUpdateEntry(row.id, { accountCode, accountTitle })}
+        />
+      ),
+    },
     numberColumn("Debit", "debit", 140, isReadonly, onUpdateEntry),
     numberColumn("Credit", "credit", 140, isReadonly, onUpdateEntry),
-    textColumn("Party Code", "partyCode", 140, isReadonly, onUpdateEntry),
-    textColumn("Party Name", "partyName", 240, isReadonly, onUpdateEntry),
-    textColumn("Particulars", "particulars", 260, isReadonly, onUpdateEntry),
-    textColumn("Res. Center", "responsibilityCenter", 160, isReadonly, onUpdateEntry),
-    textColumn("Ref No.", "refNo", 140, isReadonly, onUpdateEntry),
+    {
+      header: "Party Name",
+      id: "partyName",
+      width: 240,
+      widthClassName: "w-[15rem]",
+      renderCell: (row, _index, context) => (
+        <EntryPartyDropdown
+          id={context.fieldId}
+          name={context.fieldName}
+          optionDisplay="name"
+          readOnly={isReadonly}
+          value={row.partyCode}
+          onAddParty={() => onOpenAccountingPartyDialog(row.id)}
+          onChange={(partyCode, partyName) => onUpdateEntry(row.id, { partyCode, partyName })}
+        />
+      ),
+    },
+    {
+      header: "Responsibility Center",
+      id: "responsibilityCenter",
+      width: 210,
+      widthClassName: "w-[13.125rem]",
+      renderCell: (row, _index, context) => (
+        <EntryDropdown
+          id={context.fieldId}
+          name={context.fieldName}
+          addActionLabel="Add Responsibility Center"
+          onAddAction={() => onOpenAccountingResponsibilityCenterDrawer(row.id)}
+          options={responsibilityCenterOptions}
+          readOnly={isReadonly}
+          value={row.responsibilityCenter}
+          onChange={(value) => onUpdateEntry(row.id, { responsibilityCenter: value })}
+        />
+      ),
+    },
+    textColumn("Remarks", "particulars", 260, isReadonly, onUpdateEntry),
   ];
 }
 
@@ -714,7 +946,7 @@ function numberColumn<TRow extends { id: string }>(
   };
 }
 
-function EntryPartyDropdown({
+function EntryAccountDropdown({
   id,
   name,
   onChange,
@@ -723,7 +955,7 @@ function EntryPartyDropdown({
 }: {
   id: string;
   name: string;
-  onChange: (partyCode: string, partyName: string) => void;
+  onChange: (accountCode: string, accountTitle: string) => void;
   readOnly: boolean;
   value: string;
 }) {
@@ -732,7 +964,51 @@ function EntryPartyDropdown({
       id={id}
       name={name}
       className={EntryDropdownClassName}
-      options={CashAdvanceMultipleEntryPartyOptions}
+      options={createSelectOptions(CashAdvanceMultipleEntryAccountOptions)}
+      placeholder=""
+      readOnly={readOnly}
+      value={value}
+      onChange={(nextValue) => {
+        const accountCode = String(nextValue);
+        const account = CashAdvanceMultipleEntryAccountOptions.find((option) => option.value === accountCode);
+
+        onChange(accountCode, account?.label ?? "");
+      }}
+    />
+  );
+}
+
+function EntryPartyDropdown({
+  id,
+  name,
+  onAddParty,
+  onChange,
+  optionDisplay = "name",
+  readOnly,
+  value,
+}: {
+  id: string;
+  name: string;
+  onAddParty: () => void;
+  onChange: (partyCode: string, partyName: string) => void;
+  optionDisplay?: "code" | "name";
+  readOnly: boolean;
+  value: string;
+}) {
+  return (
+    <AppAdvancedDropdown
+      id={id}
+      name={name}
+      addAction={
+        !readOnly
+          ? {
+              label: "Add Party Name",
+              onClick: onAddParty,
+            }
+          : undefined
+      }
+      className={EntryDropdownClassName}
+      options={createEntryPartyOptions(optionDisplay)}
       placeholder=""
       readOnly={readOnly}
       value={value}
@@ -746,16 +1022,29 @@ function EntryPartyDropdown({
   );
 }
 
+function createEntryPartyOptions(optionDisplay: "code" | "name"): AppAdvancedDropdownOption[] {
+  return CashAdvanceMultipleEntryPartyOptions.map((option) => ({
+    description: optionDisplay === "code" ? option.name : undefined,
+    label: optionDisplay === "code" ? option.name : option.label,
+    name: optionDisplay === "code" ? option.label : option.name,
+    value: option.value,
+  }));
+}
+
 function EntryDropdown({
+  addActionLabel,
   id,
   name,
+  onAddAction,
   onChange,
   options,
   readOnly,
   value,
 }: {
+  addActionLabel?: string;
   id: string;
   name: string;
+  onAddAction?: () => void;
   onChange: (value: string) => void;
   options: AppAdvancedDropdownOption[];
   readOnly: boolean;
@@ -765,6 +1054,14 @@ function EntryDropdown({
     <AppAdvancedDropdown
       id={id}
       name={name}
+      addAction={
+        addActionLabel && onAddAction && !readOnly
+          ? {
+              label: addActionLabel,
+              onClick: onAddAction,
+            }
+          : undefined
+      }
       className={EntryDropdownClassName}
       options={options}
       placeholder=""
@@ -861,6 +1158,102 @@ function createSelectOptions(options: readonly { label: string; value: string }[
     }));
 }
 
+function createCashAdvanceMultipleEntryProjectOptions({
+  centers,
+  currentProjectCode,
+  currentProjectName,
+}: {
+  centers: ResponsibilityCenter[];
+  currentProjectCode: string;
+  currentProjectName: string;
+}): AppAdvancedDropdownOption[] {
+  const options: AppAdvancedDropdownOption[] = [...DisbursementVoucherProjectOptions];
+
+  centers
+    .filter((center) => center.status === "Active" && center.category === "Project")
+    .forEach((center) => {
+      addUniqueDropdownOption(options, {
+        description: center.financialType,
+        label: center.code,
+        name: center.name,
+        value: center.name,
+      });
+    });
+
+  if (currentProjectName.trim() || currentProjectCode.trim()) {
+    addUniqueDropdownOption(options, {
+      description: "Current Cash Advances Multiple Entry value",
+      label: currentProjectCode || currentProjectName,
+      name: currentProjectName || currentProjectCode,
+      value: currentProjectName || currentProjectCode,
+    });
+  }
+
+  return options;
+}
+
+function createCashAdvanceMultipleEntryResponsibilityCenterOptions({
+  centers,
+}: {
+  centers: ResponsibilityCenter[];
+}): AppAdvancedDropdownOption[] {
+  const options: AppAdvancedDropdownOption[] = [...CashAdvanceMultipleEntryResponsibilityCenterOptions];
+
+  centers
+    .filter((center) => center.status === "Active")
+    .forEach((center) => {
+      addUniqueDropdownOption(options, {
+        description: center.financialType,
+        label: center.code,
+        name: center.name,
+        value: center.name,
+      });
+    });
+
+  return options;
+}
+
+function createProjectInitialValues(
+  classifications: ResponsibilityCenterClassification[],
+  types: ResponsibilityCenterTypeOption[],
+): ResponsibilityCenterFormValues {
+  const projectType = types.find((type) => type.name === "Project");
+  const projectClassification = classifications.find(
+    (classification) => classification.id === projectType?.classificationId,
+  );
+  const costCenterClassification = classifications.find(
+    (classification) => classification.name === "Cost Center",
+  );
+  const classification = projectClassification ?? costCenterClassification;
+
+  return {
+    ...ResponsibilityCenterInitialFormValues,
+    category: "Project",
+    classificationId: classification?.id ?? "",
+    financialType: classification?.name ?? "Cost Center",
+    typeId: projectType?.id ?? "",
+  };
+}
+
+function createResponsibilityCenterInitialValues(
+  classifications: ResponsibilityCenterClassification[],
+  types: ResponsibilityCenterTypeOption[],
+): ResponsibilityCenterFormValues {
+  const responsibilityCenterClassification =
+    classifications.find((classification) => classification.name === "Cost Center") ??
+    classifications[0];
+  const responsibilityCenterType = types.find(
+    (type) => type.classificationId === responsibilityCenterClassification?.id,
+  );
+
+  return {
+    ...ResponsibilityCenterInitialFormValues,
+    classificationId: responsibilityCenterClassification?.id ?? "",
+    financialType: responsibilityCenterClassification?.name ?? "",
+    typeId: responsibilityCenterType?.id ?? "",
+  };
+}
+
 function createColumnOptions<TRow extends { id: string }>(
   columns: ModuleDataEntryColumn<TRow>[],
   visibleColumnIds: string[],
@@ -873,6 +1266,37 @@ function createColumnOptions<TRow extends { id: string }>(
     width: column.width,
     widthMode: column.widthMode,
   }));
+}
+
+function applyColumnWidth<TRow>(
+  column: ModuleDataEntryColumn<TRow>,
+  widths: Record<string, number>,
+): ModuleDataEntryColumn<TRow> {
+  return widths[column.id] ? { ...column, width: widths[column.id] } : column;
+}
+
+function moveColumnId(
+  currentColumnIds: string[],
+  fromColumnId: string,
+  toColumnId: string,
+) {
+  if (fromColumnId === toColumnId) {
+    return currentColumnIds;
+  }
+
+  const fromIndex = currentColumnIds.indexOf(fromColumnId);
+  const toIndex = currentColumnIds.indexOf(toColumnId);
+
+  if (fromIndex < 0 || toIndex < 0) {
+    return currentColumnIds;
+  }
+
+  const nextColumnIds = [...currentColumnIds];
+  const [movedColumnId] = nextColumnIds.splice(fromIndex, 1);
+
+  nextColumnIds.splice(toIndex, 0, movedColumnId);
+
+  return nextColumnIds;
 }
 
 function updateVisibleColumnIds<TRow extends { id: string }>(

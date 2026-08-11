@@ -291,14 +291,14 @@ function CashAdvancePrimaryFields({
             }}
           />
         </FieldShell>
-        <FieldShell controlId="cash-advance-cost-center" label="Cost Center">
+        <FieldShell controlId="cash-advance-cost-center" label="Responsibility Center">
           <AppAdvancedDropdown
             id="cash-advance-cost-center"
             value={form.values.costCenter}
             addAction={
               !isReadonly
                 ? {
-                    label: "Add Cost Center",
+                    label: "Add Responsibility Center",
                     onClick: onOpenCostCenterDrawer,
                   }
                 : undefined
@@ -306,8 +306,8 @@ function CashAdvancePrimaryFields({
             readOnly={isReadonly}
             menuMinWidth={300}
             options={costCenterOptions}
-            placeholder="Select Cost Center"
-            searchPlaceholder="Search cost center"
+            placeholder="Select Responsibility Center"
+            searchPlaceholder="Search responsibility center"
             onChange={(value) => {
               const costCenter = String(value);
               const option = costCenterOptions.find((currentOption) => currentOption.value === costCenter);
@@ -430,7 +430,7 @@ function CashAdvancePrimaryFields({
           </FieldShell>
         ) : null}
         {form.visibleReferenceFields.costCenterCode ? (
-          <FieldShell controlId="cash-advance-cost-center-code" label="Cost Center Code">
+          <FieldShell controlId="cash-advance-cost-center-code" label="Responsibility Center Code">
             <input
               id="cash-advance-cost-center-code"
               value={form.values.referenceFields.costCenterCode}
@@ -658,7 +658,7 @@ export function CashAdvanceReferenceFieldsButton({
         },
         {
           id: "cost-center-code",
-          label: "Cost Center Code",
+          label: "Responsibility Center Code",
           isVisible: form.visibleReferenceFields.costCenterCode,
           onVisibleChange: (isVisible) => form.updateReferenceFieldVisibility("costCenterCode", isVisible),
         },

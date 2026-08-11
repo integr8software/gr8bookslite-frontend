@@ -3,7 +3,6 @@ import type { CashAdvanceMultipleEntryFormValues } from "@/app/src/types/modules
 
 const CashAdvanceMultipleEntrySchema = z.object({
   accountCode: z.string().trim().min(1, "Default Account is required."),
-  costCenter: z.string().trim().min(1, "Cost Center is required."),
   documentDate: z.string().trim().min(1, "Document Date is required."),
   items: z.array(
     z.object({
@@ -12,7 +11,7 @@ const CashAdvanceMultipleEntrySchema = z.object({
     }),
   ),
   partyName: z.string().trim().min(1, "Party Name is required."),
-  transNo: z.string().trim().min(1, "Multiply Cash Advance No. is required."),
+  transNo: z.string().trim().min(1, "CAME No. is required."),
 });
 
 export function validateCashAdvanceMultipleEntryForm(

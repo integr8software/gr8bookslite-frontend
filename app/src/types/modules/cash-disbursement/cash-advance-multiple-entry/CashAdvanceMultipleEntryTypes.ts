@@ -26,7 +26,6 @@ export type CashAdvanceMultipleEntryAccountingEntry = {
   partyName: string;
   particulars: string;
   responsibilityCenter: string;
-  refNo: string;
 };
 
 export type CashAdvanceMultipleEntryFormValues = {
@@ -39,6 +38,7 @@ export type CashAdvanceMultipleEntryFormValues = {
   accountingEntries: CashAdvanceMultipleEntryAccountingEntry[];
   partyCode: string;
   partyName: string;
+  projectCode: string;
   projectRef: string;
   contractNo: string;
   remarks: string;
@@ -53,6 +53,7 @@ export type CashAdvanceMultipleEntryRecord = {
   documentDate: string;
   partyCode: string;
   partyName: string;
+  projectCode?: string;
   accountCode: string;
   accountTitle: string;
   costCenter: string;

@@ -65,7 +65,7 @@ function CashAdvanceReportDocument({ values }: { values: CashAdvanceFormValues }
         </div>
 
         <RequestLine label="Name Requesting Cash Advance" value={values.partyName} />
-        <RequestLine label="Cost Center" value={values.costCenter} />
+        <RequestLine label="Responsibility Center" value={values.costCenter} />
         <RequestLine label="Amount of Cash Advance" value={formatCashAdvanceCurrency(amount)} />
         <RequestLine label="Amount in Words" value={amountToWords(amount)} />
         <RequestLine label="Project Name" value={values.referenceFields.projectRef} minHeightClassName="min-h-16" />

@@ -15,6 +15,7 @@ import { BankMasterfileDrawer } from "@/app/src/ui/modules/financial-maintenance
 import { DefaultAccountDrawer } from "@/app/src/ui/modules/financial-maintenance/default-account/DefaultAccountDrawer";
 import { PaymentTypeDrawer } from "@/app/src/ui/modules/financial-maintenance/payment-type/PaymentTypeDrawer";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
+import { ProjectNameDialog } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ProjectNameDialog";
 import { DisbursementVoucherActionHeader } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherActionHeader";
 import { VoucherDataEntry } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherDataEntry";
 import { DisbursementVoucherDetailsForm } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherDetailsForm";
@@ -115,7 +116,7 @@ function DisbursementVoucherDetailsSection({ voucherAction }: { voucherAction: D
         canAddBankAccount={voucherAction.bankMasterfileStore.permissions.canCreate}
         canAddPartyName={voucherAction.partyStore.permissions.canCreate}
         canAddPaymentType={voucherAction.paymentTypeStore.permissions.canCreate}
-        canAddProjectName={false}
+        canAddProjectName
         errors={voucherAction.errors}
         isReadonly={voucherAction.isReadonly}
         paymentTypeRecords={voucherAction.paymentTypeStore.paymentTypes}
@@ -123,7 +124,7 @@ function DisbursementVoucherDetailsSection({ voucherAction }: { voucherAction: D
         onOpenBankAccountDrawer={() => voucherAction.setIsBankMasterfileDrawerOpen(true)}
         onOpenPartyNameDialog={() => voucherAction.setIsPartyNameDrawerOpen(true)}
         onOpenPaymentTypeDrawer={() => voucherAction.setIsPaymentTypeDrawerOpen(true)}
-        onOpenProjectNameDialog={() => undefined}
+        onOpenProjectNameDialog={() => voucherAction.setIsProjectNameDialogOpen(true)}
         onPartyChange={voucherAction.handlePartyChange}
         onPaymentTypeChange={voucherAction.handlePaymentTypeChange}
         onUpdateBankAccount={voucherAction.handleBankAccountChange}
@@ -190,6 +191,11 @@ function DisbursementVoucherActionDialogs({ voucherAction }: { voucherAction: Di
         onAddRecord={voucherAction.partyStore.addRecord}
         onClose={() => voucherAction.setIsPartyNameDrawerOpen(false)}
         onCreateParty={voucherAction.handleCreateParty}
+      />
+      <ProjectNameDialog
+        isOpen={!voucherAction.isReadonly && voucherAction.isProjectNameDialogOpen}
+        onClose={() => voucherAction.setIsProjectNameDialogOpen(false)}
+        onCreateProject={voucherAction.handleCreateProject}
       />
       <DefaultAccountDrawer
         isOpen={!voucherAction.isReadonly && voucherAction.isDefaultAccountDrawerOpen}

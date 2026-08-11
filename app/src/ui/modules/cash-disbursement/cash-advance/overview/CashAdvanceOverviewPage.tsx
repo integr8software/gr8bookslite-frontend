@@ -1,17 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import type { Row } from "@tanstack/react-table";
 import {
+  Ban,
   CheckCircle2,
   Clock3,
   PackageCheck,
   Plus,
   ReceiptText,
-  Save,
   Search,
-  Upload,
-  X,
   XCircle,
 } from "lucide-react";
 import {
@@ -22,10 +20,13 @@ import {
   getCashAdvanceStatusLabel,
 } from "@/app/src/data/modules/cash-disbursement/cash-advance/CashAdvanceData";
 import {
+  CashAdvanceAccountOptions,
   CashAdvanceHref,
   CashAdvanceStatusFilterOptions,
   CashAdvanceStatusFilters,
+  CashAdvanceStatuses,
   CashAdvanceTablePaginationStorageKey,
+  getCashAdvanceTableMinWidthClassName,
 } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
 import {
   useCashAdvanceStore,
@@ -35,21 +36,18 @@ import type {
   CashAdvanceRecord,
   CashAdvanceStatus,
 } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
-import { CashAdvanceFormPanel } from "@/app/src/ui/modules/cash-disbursement/cash-advance/action/CashAdvanceContent";
 import { AmountRangePicker } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import { DateRangePicker } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
-import {
-  ModuleActionMenu,
-  type ModuleActionMenuItem,
-} from "@/app/src/ui/shared/module/ModuleActionMenu";
-import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
 import {
   ModuleHeader,
   moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
-import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import {
+  getColumnMetaClassName,
+  joinClasses,
+} from "@/app/src/ui/shared/module/module-table/utils";
 import {
   ModuleTableColumnVisibilityButton,
   ModuleTableFilterSelect,
@@ -60,9 +58,8 @@ import {
 import { CashAdvanceRecordActions } from "@/app/src/ui/modules/cash-disbursement/cash-advance/overview/CashAdvanceRecordActions";
 
 export function CashAdvanceOverviewPage() {
-  const { advances, lastSyncedAt } = useCashAdvanceStore();
+  const { advances, lastSyncedAt, updateAdvanceStatus } = useCashAdvanceStore();
   const tableState = useCashAdvanceTable(advances);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   return (
     <section className="grid gap-5">
@@ -90,12 +87,15 @@ export function CashAdvanceOverviewPage() {
         emptyDescription="Try a different party, transaction number, account, or status."
         emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
         emptyTitle="No cash advances matched"
-        minWidthClassName="min-w-[66rem]"
+        minWidthClassName={getCashAdvanceTableMinWidthClassName(
+          tableState.table.getVisibleLeafColumns().length,
+        )}
         paginationLabel="entries"
         paginationStorageKey={CashAdvanceTablePaginationStorageKey}
         lastSyncedAt={lastSyncedAt}
         pageSizeOptions={[5, 10, 15, 20, 25, 50]}
         table={tableState.table}
+        tableTitle="Cash Advances"
         toolbar={
           <ModuleTableToolbar className="!grid-cols-1 !gap-2 !p-3 sm:!gap-2 sm:!p-3 xl:!grid-cols-[minmax(0,1fr)_auto]">
             <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-[minmax(18rem,2fr)_minmax(14rem,1fr)_minmax(14rem,1fr)_minmax(12rem,1fr)]">
@@ -137,113 +137,109 @@ export function CashAdvanceOverviewPage() {
             </div>
           </ModuleTableToolbar>
         }
-        renderRow={({ id, original }) => (
-          <tr
-            key={id}
-            className="module-table-row border-b border-darknavy/8 last:border-b-0"
-          >
-            <td className="px-4 py-4 align-top">
-              <p className="text-sm font-semibold text-skyblue">
-                {original.transNo}
-              </p>
-            </td>
-            <td className="px-4 py-4 align-top text-sm text-darknavy/70">
-              {formatCashAdvanceDate(original.documentDate)}
-            </td>
-            <td className="px-4 py-4 align-top">
-              <p className="text-sm font-semibold text-darknavy">
-                {original.partyName}
-              </p>
-              <p className="mt-1 text-sm text-darknavy/60">
-                {original.partyCode}
-              </p>
-            </td>
-            <td className="px-4 py-4 align-top text-sm text-darknavy/70">
-              <p>{original.accountCode}</p>
-              <p className="mt-1 text-sm text-darknavy/55">{original.costCenter}</p>
-            </td>
-            <td className="px-4 py-4 align-top text-sm font-semibold text-darknavy">
-              {formatCashAdvanceCurrency(original.amount)}
-            </td>
-            <td className="px-4 py-4 align-top">
-              <CashAdvanceStatusBadge status={original.status} />
-            </td>
-            <td className="px-3 py-4 align-top text-center">
-              <CashAdvanceRecordActions
-                record={original}
-                onStartNew={() => setIsDrawerOpen(true)}
-              />
-            </td>
-          </tr>
+        renderRow={(row) => (
+          <CashAdvanceTableRow
+            key={row.id}
+            row={row}
+            onUpdateStatus={updateAdvanceStatus}
+          />
         )}
       />
-
-      <ModuleDrawer
-        isOpen={isDrawerOpen}
-        maxWidthClassName="max-w-6xl"
-        title="Cash Advance"
-        eyebrow="New Cash Advance"
-        description="Create the cash advance details, continue to accounting entries, then review everything before saving."
-        onClose={() => setIsDrawerOpen(false)}
-        footer={
-          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-            <button
-              type="button"
-              onClick={() => setIsDrawerOpen(false)}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy/70 transition hover:bg-darknavy/5"
-            >
-              <X className="h-4 w-4" aria-hidden="true" />
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsDrawerOpen(false)}
-              className="theme-accent-contrast-text inline-flex h-10 items-center justify-center gap-2 rounded-md bg-skyblue px-4 text-sm font-semibold transition hover:bg-skyblue/85"
-            >
-              <Save className="h-4 w-4" aria-hidden="true" />
-              Proceed to Accounting Entries
-            </button>
-          </div>
-        }
-      >
-        <CashAdvanceFormPanel mode="add" showToolbar={false} />
-      </ModuleDrawer>
     </section>
   );
 }
 
-function CashAdvanceListHeaderActions() {
+function CashAdvanceTableRow({
+  onUpdateStatus,
+  row,
+}: {
+  onUpdateStatus: (record: CashAdvanceRecord, status: CashAdvanceStatus) => void;
+  row: Row<CashAdvanceRecord>;
+}) {
   return (
-    <>
-      <div className="flex lg:hidden">
-        <ModuleActionMenu
-          className="[&>button]:h-10 [&>button]:w-10"
-          items={CashAdvanceListOverflowItems}
-          label="Cash advance list actions"
-        />
-      </div>
-      <div className="hidden items-center gap-2 lg:flex">
-        <button type="button" className={moduleHeaderActionClassNames.secondary}>
-          <Upload className="h-4 w-4" aria-hidden="true" />
-          Upload Attachments
-        </button>
-      </div>
-      <Link href={`${CashAdvanceHref}/add`} className={moduleHeaderActionClassNames.primary}>
-        <Plus className="h-4 w-4" aria-hidden="true" />
-        Start New Cash Advance
-      </Link>
-    </>
+    <tr className="module-table-row border-b border-darknavy/8 last:border-b-0">
+      {row.getVisibleCells().map((cell) => (
+        <td
+          key={cell.id}
+          className={joinClasses(
+            "px-4 py-4 align-top",
+            getColumnMetaClassName(cell.column.columnDef.meta),
+          )}
+        >
+          <CashAdvanceCellContent
+            columnId={cell.column.id}
+            record={row.original}
+            onUpdateStatus={onUpdateStatus}
+          />
+        </td>
+      ))}
+    </tr>
   );
 }
 
-const CashAdvanceListOverflowItems = [
-  {
-    icon: Upload,
-    label: "Upload Attachments",
-    onSelect: () => undefined,
-    type: "button",
-  },
-] satisfies ModuleActionMenuItem[];
+function CashAdvanceCellContent({
+  columnId,
+  onUpdateStatus,
+  record,
+}: {
+  columnId: string;
+  onUpdateStatus: (record: CashAdvanceRecord, status: CashAdvanceStatus) => void;
+  record: CashAdvanceRecord;
+}) {
+  switch (columnId) {
+    case "transNo":
+      return <span className="font-semibold text-skyblue">{record.transNo}</span>;
+    case "documentDate":
+      return formatCashAdvanceDate(record.documentDate);
+    case "partyName":
+      return <span className="font-semibold text-darknavy">{record.partyName}</span>;
+    case "partyCode":
+      return <span className="font-semibold text-darknavy">{record.partyCode}</span>;
+    case "accountCode":
+      return <span className="font-semibold text-darknavy">{record.accountCode || "-"}</span>;
+    case "accountTitle":
+      return (
+        <div className="text-darknavy">
+          <p>{getCashAdvanceAccountTitle(record.accountCode)}</p>
+        </div>
+      );
+    case "amount":
+      return <span className="font-semibold text-darknavy">{formatCashAdvanceCurrency(record.amount)}</span>;
+    case "currency":
+      return <span className="font-semibold text-darknavy">{record.formValues?.currency ?? "PHP"}</span>;
+    case "status":
+      return <CashAdvanceStatusBadge status={record.status} />;
+    case "createdBy":
+      return record.createdBy ?? "";
+    case "createdAt":
+      return formatCashAdvanceAuditDate(record.createdAt);
+    case "updatedBy":
+      return record.updatedBy ?? "";
+    case "updatedAt":
+      return formatCashAdvanceAuditDate(record.updatedAt);
+    case "actions":
+      return <CashAdvanceRecordActions record={record} onUpdateStatus={onUpdateStatus} />;
+    default:
+      return null;
+  }
+}
+
+function formatCashAdvanceAuditDate(value?: string) {
+  return value ? formatCashAdvanceDate(value) : "";
+}
+
+function getCashAdvanceAccountTitle(accountCode: string) {
+  return CashAdvanceAccountOptions.find((option) => option.value === accountCode)?.label ?? accountCode;
+}
+
+function CashAdvanceListHeaderActions() {
+  return (
+    <Link href={`${CashAdvanceHref}/add`} className={moduleHeaderActionClassNames.primary}>
+      <Plus className="h-4 w-4" aria-hidden="true" />
+      Start New Cash Advance
+    </Link>
+  );
+}
 
 function CashAdvanceMetrics({
   onStatusFilterChange,
@@ -254,11 +250,11 @@ function CashAdvanceMetrics({
   records: CashAdvanceRecord[];
   statusFilter: (typeof CashAdvanceStatusFilters)[number];
 }) {
-  const draftCount = countCashAdvancesByStatus(records, "Draft");
-  const approvedCount = countCashAdvancesByStatus(records, "Approved");
-  const pendingCount = countCashAdvancesByStatus(records, "Pending Review");
-  const rejectedCount = countCashAdvancesByStatus(records, "Rejected");
-  const cancelledCount = countCashAdvancesByStatus(records, "Cancelled");
+  const draftCount = countCashAdvancesByStatus(records, CashAdvanceStatuses.draft);
+  const forApprovalCount = countCashAdvancesByStatus(records, CashAdvanceStatuses.forApproval);
+  const postedCount = countCashAdvancesByStatus(records, CashAdvanceStatuses.posted);
+  const disapprovedCount = countCashAdvancesByStatus(records, CashAdvanceStatuses.disapproved);
+  const cancelledCount = countCashAdvancesByStatus(records, CashAdvanceStatuses.cancelled);
 
   return (
     <ModuleStatisticCards
@@ -266,7 +262,6 @@ function CashAdvanceMetrics({
       items={[
         {
           icon: ReceiptText,
-          iconClassName: "bg-skyblue/20 text-skyblue",
           label: "Total Transaction",
           summary: "All time",
           value: records.length,
@@ -275,48 +270,48 @@ function CashAdvanceMetrics({
         },
         {
           icon: Clock3,
-          iconClassName: "bg-offwhite text-darknavy",
-          label: "Draft",
+          iconClassName: "bg-slate-100 text-slate-700",
+          label: CashAdvanceStatuses.draft,
           summary: formatCashAdvancePercentage(draftCount, records.length),
           value: draftCount,
-          isActive: statusFilter === "Draft",
-          onClick: () => onStatusFilterChange("Draft"),
+          isActive: statusFilter === CashAdvanceStatuses.draft,
+          onClick: () => onStatusFilterChange(CashAdvanceStatuses.draft),
+        },
+        {
+          icon: Clock3,
+          iconClassName: "bg-skyblue/15 text-skyblue",
+          label: CashAdvanceStatuses.forApproval,
+          summary: formatCashAdvancePercentage(forApprovalCount, records.length),
+          value: forApprovalCount,
+          isActive: statusFilter === CashAdvanceStatuses.forApproval,
+          onClick: () => onStatusFilterChange(CashAdvanceStatuses.forApproval),
         },
         {
           icon: CheckCircle2,
           iconClassName: "bg-emerald-50 text-emerald-700",
-          label: "For Approval",
-          summary: formatCashAdvancePercentage(pendingCount, records.length),
-          value: pendingCount,
-          isActive: statusFilter === "Pending Review",
-          onClick: () => onStatusFilterChange("Pending Review"),
-        },
-        {
-          icon: PackageCheck,
-          iconClassName: "bg-skyblue/20 text-darknavy",
-          label: "Posted",
-          summary: formatCashAdvancePercentage(approvedCount, records.length),
-          value: approvedCount,
-          isActive: statusFilter === "Approved",
-          onClick: () => onStatusFilterChange("Approved"),
+          label: CashAdvanceStatuses.posted,
+          summary: formatCashAdvancePercentage(postedCount, records.length),
+          value: postedCount,
+          isActive: statusFilter === CashAdvanceStatuses.posted,
+          onClick: () => onStatusFilterChange(CashAdvanceStatuses.posted),
         },
         {
           icon: XCircle,
           iconClassName: "bg-coralpink/15 text-coralpink",
-          label: "Disapproved",
-          summary: formatCashAdvancePercentage(rejectedCount, records.length),
-          value: rejectedCount,
-          isActive: statusFilter === "Rejected",
-          onClick: () => onStatusFilterChange("Rejected"),
+          label: CashAdvanceStatuses.disapproved,
+          summary: formatCashAdvancePercentage(disapprovedCount, records.length),
+          value: disapprovedCount,
+          isActive: statusFilter === CashAdvanceStatuses.disapproved,
+          onClick: () => onStatusFilterChange(CashAdvanceStatuses.disapproved),
         },
         {
-          icon: XCircle,
-          iconClassName: "bg-slate-100 text-slate-700",
-          label: "Cancelled",
+          icon: Ban,
+          iconClassName: "bg-amber-50 text-amber-700",
+          label: CashAdvanceStatuses.cancelled,
           summary: formatCashAdvancePercentage(cancelledCount, records.length),
           value: cancelledCount,
-          isActive: statusFilter === "Cancelled",
-          onClick: () => onStatusFilterChange("Cancelled"),
+          isActive: statusFilter === CashAdvanceStatuses.cancelled,
+          onClick: () => onStatusFilterChange(CashAdvanceStatuses.cancelled),
         },
       ]}
     />
@@ -340,17 +335,17 @@ function CashAdvanceStatusBadge({ status }: { status: CashAdvanceStatus }) {
 }
 
 const statusIconByStatus = {
-  Approved: CheckCircle2,
-  Cancelled: XCircle,
-  Draft: Clock3,
-  "Pending Review": Clock3,
-  Rejected: XCircle,
+  [CashAdvanceStatuses.cancelled]: Ban,
+  [CashAdvanceStatuses.disapproved]: XCircle,
+  [CashAdvanceStatuses.draft]: Clock3,
+  [CashAdvanceStatuses.forApproval]: Clock3,
+  [CashAdvanceStatuses.posted]: PackageCheck,
 } satisfies Record<CashAdvanceStatus, typeof CheckCircle2>;
 
 const statusClassNameByStatus = {
-  Approved: "bg-citron/25 text-darknavy",
-  Cancelled: "bg-darknavy/10 text-darknavy/70",
-  Draft: "bg-offwhite text-darknavy/70",
-  "Pending Review": "bg-offwhite text-darknavy",
-  Rejected: "bg-coralpink/15 text-coralpink",
+  [CashAdvanceStatuses.cancelled]: "bg-amber-50 text-amber-700",
+  [CashAdvanceStatuses.disapproved]: "bg-coralpink/15 text-coralpink",
+  [CashAdvanceStatuses.draft]: "bg-slate-100 text-slate-700",
+  [CashAdvanceStatuses.forApproval]: "bg-skyblue/15 text-skyblue",
+  [CashAdvanceStatuses.posted]: "bg-emerald-50 text-emerald-700",
 } satisfies Record<CashAdvanceStatus, string>;

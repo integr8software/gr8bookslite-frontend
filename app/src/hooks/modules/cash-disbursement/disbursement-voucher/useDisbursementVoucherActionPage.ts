@@ -55,6 +55,7 @@ import type {
   DisbursementVoucherFormValues,
   DisbursementVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+import type { ResponsibilityCenter } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
 import type { ModuleDataEntryClearAction } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 import { useDisbursementVoucherStore } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucher";
 import {
@@ -95,6 +96,7 @@ export function useDisbursementVoucherActionPage() {
   const [isDefaultAccountDrawerOpen, setIsDefaultAccountDrawerOpen] = useState(false);
   const [isPartyNameDrawerOpen, setIsPartyNameDrawerOpen] = useState(false);
   const [isPaymentTypeDrawerOpen, setIsPaymentTypeDrawerOpen] = useState(false);
+  const [isProjectNameDialogOpen, setIsProjectNameDialogOpen] = useState(false);
   const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
   const bankMasterfileStore = useBankMasterfileStore();
   const defaultAccountStore = useDefaultAccountStore();
@@ -390,8 +392,13 @@ export function useDisbursementVoucherActionPage() {
       status,
       transactionId: values.transactionId.trim() || createManualDisbursementTransactionId(),
     };
-    const detailsErrors = validateDisbursementVoucherDetails(valuesForSubmit);
-    const entryErrors = validateDisbursementVoucherEntries(valuesForSubmit);
+    const shouldValidate = status !== DisbursementVoucherStatuses.draft;
+    const detailsErrors = shouldValidate
+      ? validateDisbursementVoucherDetails(valuesForSubmit)
+      : {};
+    const entryErrors = shouldValidate
+      ? validateDisbursementVoucherEntries(valuesForSubmit)
+      : {};
     const nextErrors = { ...detailsErrors, ...entryErrors };
 
     if (Object.keys(nextErrors).length > 0) {
@@ -400,6 +407,7 @@ export function useDisbursementVoucherActionPage() {
       return;
     }
 
+    setErrors({});
     setValues(valuesForSubmit);
 
     if (mode === "edit" && existingVoucher) {
@@ -469,6 +477,12 @@ export function useDisbursementVoucherActionPage() {
     setIsPartyNameDrawerOpen(false);
   }
 
+  function handleCreateProject(project: ResponsibilityCenter) {
+    updateField("projectName", project.name);
+    updateField("costCenter", project.code);
+    setIsProjectNameDialogOpen(false);
+  }
+
   return {
     activeTab,
     bankAccounts,
@@ -481,6 +495,7 @@ export function useDisbursementVoucherActionPage() {
     isDefaultAccountDrawerOpen,
     isPartyNameDrawerOpen,
     isPaymentTypeDrawerOpen,
+    isProjectNameDialogOpen,
     isReadonly,
     isRecordMissing,
     isReportPreviewOpen,
@@ -500,6 +515,7 @@ export function useDisbursementVoucherActionPage() {
     handleClearEntries,
     handleCopyFrom,
     handleCreateParty,
+    handleCreateProject,
     handleDuplicateEntry,
     handleInsertEntry,
     handleMoveEntry,
@@ -516,6 +532,7 @@ export function useDisbursementVoucherActionPage() {
     setIsDefaultAccountDrawerOpen,
     setIsPartyNameDrawerOpen,
     setIsPaymentTypeDrawerOpen,
+    setIsProjectNameDialogOpen,
     setIsReportPreviewOpen,
     submitDisbursementVoucher,
     updateField,

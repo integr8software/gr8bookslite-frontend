@@ -201,6 +201,7 @@ function CurrencyExchangeRateField({
   return (
     <FieldShell controlId="billing-invoice-currency" label="Currency">
       <CurrencyExchangeRateRow
+        exchangeRateControlId="billing-invoice-exchange-rate"
         currencyControl={
           <AppAdvancedDropdown
             id="billing-invoice-currency"

@@ -92,6 +92,7 @@ export function SalesJournalHeaderFields({ page }: SalesJournalHeaderFieldsProps
         />
         <CurrencyExchangeRateRow
           currencyLabel="Currency"
+          exchangeRateControlId="sales-journal-exchange-rate"
           currencyControl={
             <div className="min-w-0">
               <select
@@ -113,6 +114,7 @@ export function SalesJournalHeaderFields({ page }: SalesJournalHeaderFieldsProps
           exchangeRateControl={
             <div className="min-w-0">
               <input
+                id="sales-journal-exchange-rate"
                 className={fieldClassName}
                 disabled={page.isReadonly}
                 min="0"

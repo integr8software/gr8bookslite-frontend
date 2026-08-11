@@ -1,6 +1,6 @@
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
-import type { Content, TDocumentDefinitions } from "pdfmake/interfaces";
+import type { Content, TableCell, TDocumentDefinitions } from "pdfmake/interfaces";
 import {
   formatCashAdvanceCurrency,
   formatCashAdvanceDate,
@@ -16,166 +16,124 @@ export function openCashAdvancePdf(values: CashAdvanceFormValues) {
 function createCashAdvancePdfDefinition(
   values: CashAdvanceFormValues,
 ): TDocumentDefinitions {
+  const amount = Number(values.amount || 0);
+  const accountTitle = getCashAdvanceAccountTitle(values.accountCode);
+  const purpose = [accountTitle, values.remarks].filter(Boolean).join(" - ");
+
   return {
     pageSize: "A4",
-    pageMargins: [36, 32, 36, 36],
+    pageMargins: [24, 24, 24, 24],
     defaultStyle: {
       font: "Roboto",
-      fontSize: 9,
+      fontSize: 9.5,
       lineHeight: 1.15,
     },
     content: [
-      createHeader(),
-      {
-        columns: [
-          {
-            text: "CASH ADVANCE",
-            bold: true,
-            fontSize: 15,
-            margin: [0, 18, 0, 4],
-          },
-          {
-            stack: [
-              { text: "Advance No.", bold: true, fontSize: 8 },
-              { text: values.transNo || "-", bold: true, fontSize: 12 },
-            ],
-            alignment: "right",
-            margin: [0, 18, 0, 4],
-          },
-        ],
-      },
-      horizontalLine(),
       {
         table: {
-          widths: ["25%", "25%", "25%", "25%"],
+          widths: ["40%", "40%", "20%"],
           body: [
             [
-              labelValueCell("Document Date", formatPdfDate(values.documentDate)),
-              labelValueCell("Status", values.status),
-              labelValueCell("Party Code", values.partyCode),
-              labelValueCell("Party Name", values.partyName),
-            ],
-            [
-              labelValueCell("Account Code", values.accountCode),
-              labelValueCell("Cost Center", values.costCenter),
-              labelValueCell("Amount", formatCashAdvanceCurrency(Number(values.amount || 0))),
-              labelValueCell("Tax", createTaxSummary(values)),
-            ],
-          ],
-        },
-        layout: noBordersLayout,
-        margin: [0, 12, 0, 8],
-      },
-      sectionTitle("References"),
-      {
-        table: {
-          widths: ["25%", "25%", "25%", "25%"],
-          body: [
-            [
-              labelValueCell("Container No.", values.referenceFields.containerNo),
-              labelValueCell("Ref No.", values.referenceFields.refNo),
-              labelValueCell("Project Ref", values.referenceFields.projectRef),
-              labelValueCell(
-                "Importation Ref No.",
-                values.referenceFields.importationRefNo,
-              ),
-            ],
-          ],
-        },
-        layout: noBordersLayout,
-        margin: [0, 6, 0, 10],
-      },
-      sectionTitle("Remarks"),
-      {
-        text: values.remarks || " ",
-        margin: [0, 6, 0, 36],
-      },
-      {
-        columns: [
-          { text: "", width: "*" },
-          {
-            stack: [
-              horizontalLine(160),
               {
-                text: "Authorized Signature",
-                alignment: "center",
-                fontSize: 8,
-                margin: [0, 4, 0, 0],
+                colSpan: 3,
+                table: {
+                  widths: [108, "*", 108],
+                  body: [
+                    [
+                      {
+                        text: "integr8",
+                        color: "#126eb8",
+                        bold: true,
+                        fontSize: 28,
+                        alignment: "center",
+                        margin: [0, 12, 0, 0],
+                      },
+                      {
+                        stack: [
+                          { text: "Your Company Name Here", bold: true, fontSize: 13, alignment: "center" },
+                          { text: "VAT REG TIN : 000-000-000", alignment: "center", margin: [0, 8, 0, 0] },
+                          {
+                            text: "ABC, 123, Sample, Malamig, CITY OF MANDALUYONG, NCR, SECOND DISTRICT",
+                            alignment: "center",
+                            margin: [0, 8, 0, 0],
+                          },
+                          { text: "Telephone No: 0967-237-4514", alignment: "center", margin: [0, 16, 0, 0] },
+                        ],
+                        margin: [0, 6, 0, 18],
+                      },
+                      { text: "" },
+                    ],
+                  ],
+                },
+                layout: noBordersLayout,
+              },
+              { text: "" },
+              { text: "" },
+            ],
+            [
+              {
+                text: "CASH ADVANCE REQUEST FORM",
+                bold: true,
+                fontSize: 20,
+                margin: [8, 3, 0, 0],
+              },
+              {
+                colSpan: 2,
+                text: [
+                  { text: "Cash Advance Date: ", bold: true },
+                  formatCompactDate(values.documentDate),
+                ],
+                margin: [0, 11, 0, 0],
+              },
+              { text: "" },
+            ],
+            requestRow("Name Requesting Cash Advance", values.partyName),
+            requestRow("Cost Center", values.costCenter),
+            requestRow("Amount of Cash Advance", formatCashAdvanceCurrency(amount)),
+            requestRow("Amount in Words", amountToWords(amount)),
+            requestRow("Project Name", values.referenceFields.projectRef, 30),
+            requestRow("Purpose of Cash Advance", purpose, 40),
+            [
+              { text: "Prepared by:", margin: [4, 4, 0, 28] },
+              { text: "Approved by:", margin: [4, 4, 0, 28] },
+              {
+                stack: [
+                  { text: "CA NO.:", bold: true },
+                  { text: values.transNo || "-", bold: true, fontSize: 18, alignment: "right", margin: [0, 6, 0, 0] },
+                ],
+                margin: [4, 4, 4, 0],
               },
             ],
-            width: 170,
-          },
-        ],
+          ],
+        },
+        layout: requestFormLayout,
       },
-    ],
-  };
-}
-
-function createHeader(): Content {
-  return {
-    columns: [
+      horizontalLine(547, [0, 10, 0, 6]),
       {
-        text: "LOGO",
-        color: "#2b8ec6",
-        bold: true,
-        alignment: "center",
-        width: 72,
-        margin: [0, 14, 0, 0],
+        text: "RECEIVED BY:",
+        margin: [0, 0, 0, 10],
       },
-      {
-        stack: [
-          {
-            text: "Your Company Name Here",
-            bold: true,
-            fontSize: 13,
-            alignment: "center",
-          },
-          {
-            text: "VAT REG TIN : 000-000-000-000",
-            alignment: "center",
-            fontSize: 8,
-            margin: [0, 4, 0, 0],
-          },
-          {
-            text: "Abc, 123, Sample, Malamig, City Of Mandaluyong, NCR",
-            alignment: "center",
-            fontSize: 8,
-            margin: [0, 3, 0, 0],
-          },
-          {
-            text: "Telephone No: 0967-237-4514",
-            alignment: "center",
-            fontSize: 8,
-            margin: [0, 8, 0, 0],
-          },
-        ],
-        width: "*",
-      },
-      { text: "", width: 72 },
+      horizontalLine(547),
     ],
   };
 }
 
-function labelValueCell(label: string, value?: string): Content {
-  return {
-    stack: [
-      { text: label.toUpperCase(), bold: true, color: "#5b6478", fontSize: 7 },
-      { text: value || " ", margin: [0, 3, 8, 0] },
-    ],
-    margin: [0, 4, 8, 6],
-  };
+function requestRow(label: string, value?: string, height = 16): TableCell[] {
+  return [
+    {
+      colSpan: 3,
+      text: [
+        { text: `${label.toUpperCase()}: `, bold: true },
+        value || " ",
+      ],
+      margin: [4, 4, 4, height - 12],
+    },
+    { text: "" },
+    { text: "" },
+  ];
 }
 
-function sectionTitle(text: string): Content {
-  return {
-    text,
-    bold: true,
-    fillColor: "#f7f3e8",
-    margin: [0, 8, 0, 0],
-  };
-}
-
-function horizontalLine(width = 520): Content {
+function horizontalLine(width = 520, margin: [number, number, number, number] = [0, 0, 0, 0]): Content {
   return {
     canvas: [
       {
@@ -188,26 +146,93 @@ function horizontalLine(width = 520): Content {
         lineColor: "#212738",
       },
     ],
+    margin,
   };
 }
 
-function createTaxSummary(values: CashAdvanceFormValues) {
-  const { taxDetails, taxRate } = values.taxValue;
-
-  if (taxRate === "0%" && !taxDetails.ewtCode) {
-    return "No VAT";
+function formatCompactDate(value: string) {
+  if (!value) {
+    return "";
   }
 
-  return `${taxRate}${taxDetails.ewtCode ? ` / ${taxDetails.ewtCode}` : ""}`;
+  const [year, month, day] = value.split("-");
+
+  return year && month && day ? `${month}/${day}/${year}` : formatCashAdvanceDate(value);
 }
 
-function formatPdfDate(value: string) {
-  return value ? formatCashAdvanceDate(value) : "";
+function getCashAdvanceAccountTitle(accountCode: string) {
+  const accountTitles: Record<string, string> = {
+    "1130-CA": "Cash Advance",
+    "1130-EA": "Employee Advance",
+    "1135-OA": "Officer Advance",
+  };
+
+  return accountTitles[accountCode] ?? accountCode;
+}
+
+function amountToWords(value: number) {
+  if (!Number.isFinite(value) || value <= 0) {
+    return "";
+  }
+
+  const wholeAmount = Math.floor(value);
+
+  return `${integerToWords(wholeAmount)} Only`;
+}
+
+function integerToWords(value: number): string {
+  const ones = [
+    "Zero",
+    "One",
+    "Two",
+    "Three",
+    "Four",
+    "Five",
+    "Six",
+    "Seven",
+    "Eight",
+    "Nine",
+    "Ten",
+    "Eleven",
+    "Twelve",
+    "Thirteen",
+    "Fourteen",
+    "Fifteen",
+    "Sixteen",
+    "Seventeen",
+    "Eighteen",
+    "Nineteen",
+  ];
+  const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+
+  if (value < 20) return ones[value];
+  if (value < 100) {
+    return `${tens[Math.floor(value / 10)]}${value % 10 ? ` ${ones[value % 10]}` : ""}`;
+  }
+  if (value < 1000) {
+    return `${ones[Math.floor(value / 100)]} Hundred${value % 100 ? ` ${integerToWords(value % 100)}` : ""}`;
+  }
+  if (value < 1000000) {
+    return `${integerToWords(Math.floor(value / 1000))} Thousand${value % 1000 ? ` ${integerToWords(value % 1000)}` : ""}`;
+  }
+
+  return `${integerToWords(Math.floor(value / 1000000))} Million${value % 1000000 ? ` ${integerToWords(value % 1000000)}` : ""}`;
 }
 
 const noBordersLayout = {
   hLineWidth: () => 0,
   vLineWidth: () => 0,
+  paddingLeft: () => 0,
+  paddingRight: () => 0,
+  paddingTop: () => 0,
+  paddingBottom: () => 0,
+};
+
+const requestFormLayout = {
+  hLineWidth: () => 1,
+  vLineWidth: () => 1,
+  hLineColor: () => "#000000",
+  vLineColor: () => "#000000",
   paddingLeft: () => 0,
   paddingRight: () => 0,
   paddingTop: () => 0,

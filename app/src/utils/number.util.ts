@@ -16,3 +16,12 @@ export function formatExchangeRateInput(value: string) {
 
   return `${normalizedWholePart || "0"}.${decimalPart}`;
 }
+
+export function parseAmount(value: string) {
+  if (!value.trim()) {
+    return null;
+  }
+
+  const amount = Number.parseFloat(value.replace(/,/g, ""));
+  return Number.isFinite(amount) ? amount : null;
+}

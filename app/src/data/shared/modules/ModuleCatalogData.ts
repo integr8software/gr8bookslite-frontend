@@ -411,7 +411,7 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
       moduleItem("cash-disbursement-cash-advance", "Cash Advance", "CA", "cashDisbursement"),
       moduleItem(
         "cash-disbursement-cash-advance-multiple-entry",
-        "Cash Advance Multiple Entry",
+        "Cash Advances Multiple Entry",
         "CAME",
         "cashDisbursement",
       ),

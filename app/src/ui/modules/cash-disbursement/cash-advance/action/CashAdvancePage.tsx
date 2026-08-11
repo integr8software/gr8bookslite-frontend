@@ -2,10 +2,16 @@
 
 import { useState } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
-import { CashAdvanceHref } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
+import {
+  CashAdvanceHref,
+  CashAdvanceStatuses,
+} from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
 import { useCashAdvanceActionForm } from "@/app/src/hooks/modules/cash-disbursement/cash-advance/useCashAdvance";
 import type { CashAdvanceActionMode } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
-import { CashAdvanceDetailsForm } from "@/app/src/ui/modules/cash-disbursement/cash-advance/action/CashAdvanceContent";
+import {
+  CashAdvanceDetailsForm,
+  CashAdvanceReferenceFieldsButton,
+} from "@/app/src/ui/modules/cash-disbursement/cash-advance/action/CashAdvanceContent";
 import { CashAdvanceFormHeader } from "@/app/src/ui/modules/cash-disbursement/cash-advance/action/CashAdvancePageHeader";
 import { CashAdvanceNotFound } from "@/app/src/ui/modules/cash-disbursement/cash-advance/overview/CashAdvanceNotFound";
 import { openCashAdvancePdf } from "@/app/src/ui/modules/cash-disbursement/cash-advance/reports/CashAdvancePdf";
@@ -30,11 +36,19 @@ export function CashAdvanceActionPage() {
     <>
       <section className="grid gap-5">
         <CashAdvanceFormHeader
+          columnsAction={<CashAdvanceReferenceFieldsButton buttonLabel="Edit Layout" form={advanceForm} />}
           mode={mode}
           onPreview={() => setIsReportPreviewOpen(true)}
-          onSubmit={advanceForm.submitAdvance}
+          onSaveDraft={
+            mode === "add"
+              ? () => advanceForm.submitAdvance(CashAdvanceStatuses.draft)
+              : undefined
+          }
+          onSubmit={() => advanceForm.submitAdvance(CashAdvanceStatuses.forApproval)}
+          onUpdateStatus={advanceForm.updateAdvanceStatus}
+          record={advanceForm.record}
         />
-        <CashAdvanceDetailsForm form={advanceForm} mode={mode} />
+        <CashAdvanceDetailsForm form={advanceForm} mode={mode} showToolbar={false} />
       </section>
       <CashAdvanceReportPreview
         isOpen={isReportPreviewOpen}

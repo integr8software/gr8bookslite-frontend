@@ -17,6 +17,8 @@ import {
   type ReceivingReportStatus,
 } from "@/app/src/data/modules/inventory/receiving-report/ReceivingReportData";
 import type { ReceivingReportRangeValue } from "@/app/src/types/modules/inventory/receiving-report/ReceivingReportTypes";
+import { parseIsoDate } from "@/app/src/utils/date.util";
+import { parseAmount } from "@/app/src/utils/number.util";
 
 const columnHelper = createColumnHelper<ReceivingReportRecord>();
 
@@ -230,30 +232,3 @@ function filterReceivingReports(
   });
 }
 
-function parseAmount(value: string) {
-  if (!value.trim()) {
-    return null;
-  }
-
-  const amount = Number.parseFloat(value.replace(/,/g, ""));
-  return Number.isFinite(amount) ? amount : null;
-}
-
-function parseIsoDate(value: string) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    return null;
-  }
-
-  const [year, month, day] = value.split("-").map(Number);
-  const date = new Date(year, month - 1, day);
-
-  if (
-    date.getFullYear() !== year ||
-    date.getMonth() !== month - 1 ||
-    date.getDate() !== day
-  ) {
-    return null;
-  }
-
-  return date;
-}

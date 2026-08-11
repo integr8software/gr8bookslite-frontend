@@ -6,6 +6,7 @@ export type DisbursementVoucherStatus = "Draft" | "For Approval" | "Posted" | "D
 export type DisbursementVoucherTableColumnKey =
   | "voucherNo"
   | "documentDate"
+  | "partyCode"
   | "partyName"
   | "paymentType"
   | "remarks"

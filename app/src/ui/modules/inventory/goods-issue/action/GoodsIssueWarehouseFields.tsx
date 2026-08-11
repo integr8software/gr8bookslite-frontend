@@ -99,6 +99,7 @@ export function GoodsIssueWarehouseFields({ isReadonly, onUpdateField, values }:
         </FieldShell>
         <FieldShell controlId="goods-issue-currency" label="Currency">
           <CurrencyExchangeRateRow
+            exchangeRateControlId="goods-issue-exchange-rate"
             currencyControl={
               <AppAdvancedDropdown
                 id="goods-issue-currency"

@@ -293,6 +293,7 @@ export function AccountsPayableVoucherFormPage() {
 
               <FieldShell controlId="accounts-payable-voucher-currency" label="Currency" error={page.errors.currency} isRequired>
                 <CurrencyExchangeRateRow
+                  exchangeRateControlId="accounts-payable-voucher-exchange-rate"
                   currencyControl={
                     <AppAdvancedDropdown
                       id="accounts-payable-voucher-currency"

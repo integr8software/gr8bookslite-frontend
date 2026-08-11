@@ -42,7 +42,10 @@ const ExpandedWithholdingTaxAccount = {
 } as const;
 
 export function getSeedDisbursementTransactions() {
-  return MockDisbursementTransactions;
+  return MockDisbursementTransactions.map((transaction) => ({
+    ...transaction,
+    status: getDisbursementVoucherDisplayStatus(transaction.status),
+  }));
 }
 
 export function getSeedDisbursementVouchers() {
@@ -469,7 +472,7 @@ export const MockDisbursementTransactions: DisbursementTransactionRecord[] = [
     currency: "PHP",
     paymentMethod: "Bank Transfer",
     disbursementType: "Vendor Payment",
-    status: "Disapproved",
+    status: DisbursementVoucherStatuses.disapproved,
     costCenter: "CC-SCM-018",
     createdBy: "Eugene Ramirez",
     createdAt: "2026-04-28T11:45:00.000Z",
@@ -520,9 +523,9 @@ export const MockDisbursementTransactions: DisbursementTransactionRecord[] = [
 
 export const MockDisbursementVouchers: DisbursementVoucherRecord[] = [
   {
-    id: "dv-2026-0103",
+    id: "dv-2026-0104",
     transactionId: "dv-tx-1001",
-    voucherNo: "DV-2026-0103",
+    voucherNo: "DV-2026-0104",
     voucherDate: "2026-05-18",
     paymentMethod: "Bank Transfer",
     disbursementType: "Vendor Payment",
@@ -578,7 +581,7 @@ export const MockDisbursementVouchers: DisbursementVoucherRecord[] = [
     attachments: [],
     status: DisbursementVoucherStatuses.forApproval,
     history: createInitialDisbursementVoucherHistory({
-      voucherNo: "DV-2026-0103",
+      voucherNo: "DV-2026-0104",
       voucherDate: "2026-05-18",
       status: DisbursementVoucherStatuses.forApproval,
     }),
@@ -1445,6 +1448,10 @@ export function formatDateLabel(value: string) {
 }
 
 export function getDisbursementVoucherDisplayStatus(status: string): DisbursementVoucherDisplayStatus {
+  if (status === "Draft" || status === "Open") {
+    return DisbursementVoucherStatuses.draft;
+  }
+
   if (status === "Pending Review" || status === "Pending" || status === "Active") {
     return DisbursementVoucherStatuses.forApproval;
   }
@@ -1566,7 +1573,7 @@ function getDisbursementVoucherHistoryDescription(status: DisbursementVoucherSta
   }
 
   if (status === DisbursementVoucherStatuses.draft) {
-    return `${voucherNo} was restored to draft.`;
+    return `${voucherNo} was restored to Draft.`;
   }
 
   return `${voucherNo} was returned for approval.`;

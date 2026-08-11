@@ -33,6 +33,7 @@ export function SalesQuotationPartyFields({ isReadonly, onUpdateField, values }:
       <div className="grid min-w-0 gap-4">
         <SalesQuotationFieldShell controlId="sales-quotation-currency" label="Currency">
           <CurrencyExchangeRateRow
+            exchangeRateControlId="sales-quotation-exchange-rate"
             currencyControl={
               <select
                 id="sales-quotation-currency"

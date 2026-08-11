@@ -125,9 +125,11 @@ function DisbursementVoucherCellContent({
 				row.voucher?.voucherDate ?? row.transaction.transactionDate,
 			);
 		case "partyName":
-			return row.transaction.payee;
+			return row.voucher?.partyName || row.transaction.payee;
+		case "partyCode":
+			return row.voucher?.partyCode || "";
 		case "paymentType":
-			return row.transaction.disbursementType;
+			return getDisbursementVoucherPaymentType(row);
 		case "remarks":
 			return (
 				<span className="line-clamp-2 text-sm text-darknavy/80">
@@ -174,6 +176,15 @@ function DisbursementVoucherCellContent({
 	}
 }
 
+function getDisbursementVoucherPaymentType(row: DisbursementVoucherPreviewRow) {
+	return (
+		row.voucher?.disbursementType ||
+		row.transaction.disbursementType ||
+		row.voucher?.paymentMethod ||
+		row.transaction.paymentMethod
+	);
+}
+
 function DisbursementVoucherStatusBadge({
 	status,
 }: {
@@ -204,12 +215,12 @@ const statusIconByStatus = {
 } satisfies Record<DisbursementVoucherDisplayStatus, typeof CheckCircle2>;
 
 const statusClassNameByStatus = {
-	[DisbursementVoucherStatuses.cancelled]: "bg-darknavy/10 text-darknavy/70",
+	[DisbursementVoucherStatuses.cancelled]: "bg-amber-50 text-amber-700",
 	[DisbursementVoucherStatuses.closed]: "bg-skyblue/20 text-darknavy",
 	[DisbursementVoucherStatuses.disapproved]: "bg-coralpink/15 text-coralpink",
-	[DisbursementVoucherStatuses.draft]: "bg-offwhite text-darknavy/70",
-	[DisbursementVoucherStatuses.forApproval]: "bg-citron/25 text-darknavy",
-	[DisbursementVoucherStatuses.posted]: "bg-citron/25 text-darknavy",
+	[DisbursementVoucherStatuses.draft]: "bg-slate-100 text-slate-700",
+	[DisbursementVoucherStatuses.forApproval]: "bg-skyblue/15 text-skyblue",
+	[DisbursementVoucherStatuses.posted]: "bg-emerald-50 text-emerald-700",
 } satisfies Record<DisbursementVoucherDisplayStatus, string>;
 
 function formatAuditDate(value: string) {

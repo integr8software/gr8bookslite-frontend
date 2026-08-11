@@ -76,16 +76,16 @@ export function DisbursementVoucherViewActions({
   return (
     <>
       <div className="flex items-center gap-2 lg:hidden">
-        {historyAction ? <HeaderHistoryButton action={historyAction} /> : null}
         {onPreview ? <ReportPreviewAction onPreview={onPreview} /> : null}
+        {historyAction ? <HeaderHistoryButton action={historyAction} /> : null}
         <ModuleActionMenu
           items={visibleActions}
           label="Disbursement voucher actions"
         />
       </div>
       <div className="hidden flex-wrap gap-2 lg:flex">
-        {historyAction ? <HeaderHistoryButton action={historyAction} /> : null}
         {onPreview ? <ReportPreviewAction onPreview={onPreview} /> : null}
+        {historyAction ? <HeaderHistoryButton action={historyAction} /> : null}
         {visibleActions.map((action) => {
           if (action.type === "button") {
             return <HeaderActionButton key={action.label} action={action} />;
@@ -141,7 +141,7 @@ function createDisbursementVoucherViewActionItems({
   transaction?: DisbursementTransactionRecord;
   voucher?: DisbursementVoucherRecord;
 }) {
-  const status = voucher?.status ?? transaction?.status ?? "Draft";
+  const status = voucher?.status ?? transaction?.status ?? DisbursementVoucherStatuses.draft;
   const isPosted = status === DisbursementVoucherStatuses.posted;
   const isDisapproved = status === DisbursementVoucherStatuses.disapproved;
   const isCancelled = status === DisbursementVoucherStatuses.cancelled;

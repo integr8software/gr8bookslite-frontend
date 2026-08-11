@@ -193,6 +193,7 @@ function CurrencyExchangeRateField({
   return (
     <FieldShell controlId="purchase-order-currency" label="Currency">
       <CurrencyExchangeRateRow
+        exchangeRateControlId="purchase-order-exchange-rate"
         currencyControl={
           <AppAdvancedDropdown
             id="purchase-order-currency"

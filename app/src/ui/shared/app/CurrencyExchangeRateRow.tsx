@@ -4,6 +4,7 @@ export function CurrencyExchangeRateRow({
   currencyControl,
   currencyLabel,
   exchangeRateControl,
+  exchangeRateControlId,
   exchangeRateLabel = "Exchange Rate",
 }: CurrencyExchangeRateRowProps) {
   return (
@@ -16,7 +17,16 @@ export function CurrencyExchangeRateRow({
     >
       {currencyLabel ? <span className="pt-2 text-sm font-semibold text-darknavy">{currencyLabel}</span> : null}
       <div className="min-w-0">{currencyControl}</div>
-      <span className="whitespace-nowrap pt-2 text-sm font-semibold text-darknavy">{exchangeRateLabel}</span>
+      {exchangeRateControlId ? (
+        <label
+          htmlFor={exchangeRateControlId}
+          className="whitespace-nowrap pt-2 text-sm font-semibold text-darknavy"
+        >
+          {exchangeRateLabel}
+        </label>
+      ) : (
+        <span className="whitespace-nowrap pt-2 text-sm font-semibold text-darknavy">{exchangeRateLabel}</span>
+      )}
       <div className="min-w-0">{exchangeRateControl}</div>
     </div>
   );

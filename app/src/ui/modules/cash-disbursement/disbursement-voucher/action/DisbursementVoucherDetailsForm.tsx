@@ -177,7 +177,7 @@ function DisbursementVoucherHeaderFields({
               addAction={
                 !isReadonly && canAddProjectName
                   ? {
-                      label: "Add Project Name",
+                      label: "Add Project",
                       onClick: onOpenProjectNameDialog,
                     }
                   : undefined
@@ -196,6 +196,7 @@ function DisbursementVoucherHeaderFields({
           </FieldShell>
           <FieldShell controlId="disbursement-voucher-currency" label="Currency" error={errors.currency}>
             <CurrencyExchangeRateRow
+              exchangeRateControlId="disbursement-voucher-fx-rate"
               currencyControl={
                 <AppAdvancedDropdown
                   id="disbursement-voucher-currency"

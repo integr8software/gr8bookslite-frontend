@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
 import { CashAdvanceMultipleEntryListPage } from "@/app/src/ui/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryListPage";
 
-const PageTitle = "Cash Advance Multiple Entry";
+const PageTitle = "Cash Advances Multiple Entry";
 
 export const metadata: Metadata = {
   title: `${PageTitle} | ${AppName}`,

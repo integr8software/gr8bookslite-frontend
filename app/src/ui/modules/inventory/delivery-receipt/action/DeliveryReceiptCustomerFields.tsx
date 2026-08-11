@@ -165,6 +165,7 @@ export function DeliveryReceiptCustomerFields({ isReadonly, onUpdateField, value
         />
         <FieldShell controlId="delivery-receipt-currency" label="Currency">
           <CurrencyExchangeRateRow
+            exchangeRateControlId="delivery-receipt-exchange-rate"
             currencyControl={
               <AppAdvancedDropdown
                 id="delivery-receipt-currency-select"

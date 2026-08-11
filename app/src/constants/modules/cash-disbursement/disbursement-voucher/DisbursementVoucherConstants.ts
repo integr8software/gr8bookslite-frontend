@@ -31,7 +31,7 @@ export const DisbursementVoucherActionTabs: {
   label: string;
 }[] = [
   { id: "details", label: "Voucher Details" },
-  { id: "attachments", label: "Import / Upload Attachment" },
+  { id: "attachments", label: "File Attachments" },
 ];
 
 export const DisbursementVoucherStatuses = {
@@ -111,6 +111,11 @@ export const DisbursementVoucherTableColumns = [
     className: "w-[10rem]",
   },
   {
+    key: "partyCode",
+    label: "Party Code",
+    className: "w-[10rem]",
+  },
+  {
     key: "partyName",
     label: "Party Name",
     className: "w-[18rem]",
@@ -174,6 +179,7 @@ export const DisbursementVoucherDefaultColumnVisibility: VisibilityState = {
   currency: false,
   createdBy: false,
   createdAt: false,
+  partyCode: false,
   remarks: false,
   updatedBy: false,
   updatedAt: false,

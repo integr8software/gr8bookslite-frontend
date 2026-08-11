@@ -22,7 +22,7 @@ import {
   type OnboardingFieldErrors,
   type OnboardingTaxpayerType,
   type OnboardingValues,
-} from "@/app/src/data/onboarding/OnboardingTypes";
+} from "@/app/src/types/onboarding/OnboardingTypes";
 import type {
   BillingCycle,
   PricingPlan,

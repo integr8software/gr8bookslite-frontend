@@ -191,6 +191,10 @@ export const SaveOnboardingCompanyDetailsDtoTaxpayerType = {
 } as const;
 
 export interface SaveOnboardingCompanyDetailsDto {
+  /** @pattern ^[A-Z]{2}$ */
+  countryCode: string;
+  /** @pattern ^[A-Z]{3}$ */
+  baseCurrencyCode: string;
   taxpayerType: SaveOnboardingCompanyDetailsDtoTaxpayerType;
   /** @minLength 2 */
   lastName?: string;
@@ -220,6 +224,281 @@ export interface SaveOnboardingCompanyDetailsDto {
   reportEndDate: string;
   /** @pattern ^$|^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/.*)?$ */
   website?: string;
+}
+
+export interface OnboardingLogoResponseDto {
+  fileName: string;
+  mimeType: string;
+  storagePath: string;
+  publicUrl: string;
+}
+
+export interface UploadOnboardingCompanyLogoResponseDto {
+  message: string;
+  logo: OnboardingLogoResponseDto;
+}
+
+export interface OnboardingPlanPriceSummaryResponseDto {
+  amountInCents: number;
+  display: string;
+}
+
+export interface OnboardingPlanPricingResponseDto {
+  monthly: OnboardingPlanPriceSummaryResponseDto;
+  yearly: OnboardingPlanPriceSummaryResponseDto;
+  /** @nullable */
+  monthlyCompareAt: OnboardingPlanPriceSummaryResponseDto | null;
+  /** @nullable */
+  yearlyCompareAt: OnboardingPlanPriceSummaryResponseDto | null;
+}
+
+export type OnboardingPlanPriceResponseDtoBillingCycle =
+  (typeof OnboardingPlanPriceResponseDtoBillingCycle)[keyof typeof OnboardingPlanPriceResponseDtoBillingCycle];
+
+export const OnboardingPlanPriceResponseDtoBillingCycle = {
+  MONTHLY: "MONTHLY",
+  QUARTERLY: "QUARTERLY",
+  YEARLY: "YEARLY",
+} as const;
+
+export interface OnboardingPlanPriceResponseDto {
+  id: number;
+  billingCycle: OnboardingPlanPriceResponseDtoBillingCycle;
+  intervalCount: number;
+  intervalUnit: string;
+  amountInCents: number;
+  display: string;
+  /** @nullable */
+  compareAtInCents: number | null;
+  /** @nullable */
+  compareAtDisplay: string | null;
+  isActive: boolean;
+}
+
+export interface OnboardingPlanUsageRuleResponseDto {
+  id: number;
+  metric: string;
+  freeCount: number;
+  unitPriceInCents: number;
+  unitPriceDisplay: string;
+  isActive: boolean;
+}
+
+export interface OnboardingPlanDiscountTierResponseDto {
+  id: number;
+  metric: string;
+  thresholdCount: number;
+  discountPercent: number;
+  isActive: boolean;
+}
+
+export interface OnboardingPlanModuleResponseDto {
+  id: number;
+  moduleKey: string;
+  name: string;
+  isEnabled: boolean;
+}
+
+export interface OnboardingPlanResponseDto {
+  code: string;
+  name: string;
+  /** @nullable */
+  description: string | null;
+  trialDays: number;
+  pricing: OnboardingPlanPricingResponseDto;
+  prices: OnboardingPlanPriceResponseDto[];
+  usageRules: OnboardingPlanUsageRuleResponseDto[];
+  discountTiers: OnboardingPlanDiscountTierResponseDto[];
+  moduleKeys: string[];
+  modules: OnboardingPlanModuleResponseDto[];
+}
+
+export interface OnboardingPlansResponseDto {
+  plans: OnboardingPlanResponseDto[];
+}
+
+/**
+ * @nullable
+ */
+export type OnboardingDraftCompanyDetailsResponseDtoTaxpayerType =
+  (typeof OnboardingDraftCompanyDetailsResponseDtoTaxpayerType)[keyof typeof OnboardingDraftCompanyDetailsResponseDtoTaxpayerType] | null;
+
+export const OnboardingDraftCompanyDetailsResponseDtoTaxpayerType = {
+  individual: "individual",
+  "non-individual": "non-individual",
+} as const;
+
+export interface OnboardingDraftCompanyDetailsResponseDto {
+  /** @nullable */
+  taxpayerType: OnboardingDraftCompanyDetailsResponseDtoTaxpayerType;
+  /** @nullable */
+  lastName: string | null;
+  /** @nullable */
+  firstName: string | null;
+  /** @nullable */
+  middleName: string | null;
+  /** @nullable */
+  companyName: string | null;
+  /** @nullable */
+  nonIndividualType: string | null;
+  /** @nullable */
+  nonIndividualTypeOther: string | null;
+  /** @nullable */
+  logoName: string | null;
+  /** @nullable */
+  logoMimeType: string | null;
+  /** @nullable */
+  logoStoragePath: string | null;
+  /** @nullable */
+  logoPublicUrl: string | null;
+  /** @nullable */
+  address: string | null;
+  /** @nullable */
+  countryCode: string | null;
+  /** @nullable */
+  baseCurrencyCode: string | null;
+  /** @nullable */
+  tin: string | null;
+  /** @nullable */
+  companyEmail: string | null;
+  /** @nullable */
+  website: string | null;
+  /** @nullable */
+  contactNumber: string | null;
+  /** @nullable */
+  reportStartDate: string | null;
+  /** @nullable */
+  reportEndDate: string | null;
+}
+
+/**
+ * @nullable
+ */
+export type OnboardingDraftResponseDtoBillingCycle =
+  (typeof OnboardingDraftResponseDtoBillingCycle)[keyof typeof OnboardingDraftResponseDtoBillingCycle] | null;
+
+export const OnboardingDraftResponseDtoBillingCycle = {
+  MONTHLY: "MONTHLY",
+  QUARTERLY: "QUARTERLY",
+  YEARLY: "YEARLY",
+} as const;
+
+export interface OnboardingDraftResponseDto {
+  /** @nullable */
+  plan: OnboardingPlanResponseDto | null;
+  /** @nullable */
+  billingCycle: OnboardingDraftResponseDtoBillingCycle;
+  /** @nullable */
+  cardholderName: string | null;
+  /** @nullable */
+  billingEmail: string | null;
+  /** @nullable */
+  billingAddress: string | null;
+  /** @nullable */
+  cardLast4: string | null;
+  /** @nullable */
+  cardBrand: string | null;
+  /** @nullable */
+  cardExpiryMonth: number | null;
+  /** @nullable */
+  cardExpiryYear: number | null;
+  hasBillingSetup: boolean;
+  hasCompanyDetails: boolean;
+  /** @nullable */
+  planSelectedAt: string | null;
+  /** @nullable */
+  billingCompletedAt: string | null;
+  companyDetails: OnboardingDraftCompanyDetailsResponseDto;
+}
+
+export interface GetOnboardingDraftResponseDto {
+  /** @nullable */
+  draft: OnboardingDraftResponseDto | null;
+}
+
+/**
+ * @nullable
+ */
+export type OnboardingBillingResponseDtoBillingCycle =
+  (typeof OnboardingBillingResponseDtoBillingCycle)[keyof typeof OnboardingBillingResponseDtoBillingCycle] | null;
+
+export const OnboardingBillingResponseDtoBillingCycle = {
+  MONTHLY: "MONTHLY",
+  QUARTERLY: "QUARTERLY",
+  YEARLY: "YEARLY",
+} as const;
+
+export interface OnboardingBillingResponseDto {
+  /** @nullable */
+  planCode: string | null;
+  /** @nullable */
+  billingCycle: OnboardingBillingResponseDtoBillingCycle;
+  /** @nullable */
+  cardholderName: string | null;
+  /** @nullable */
+  billingEmail: string | null;
+  /** @nullable */
+  billingAddress: string | null;
+  /** @nullable */
+  cardBrand: string | null;
+  /** @nullable */
+  cardLast4: string | null;
+  /** @nullable */
+  cardExpiryMonth: number | null;
+  /** @nullable */
+  cardExpiryYear: number | null;
+  /** @nullable */
+  plan: OnboardingPlanResponseDto | null;
+  trialDays: number;
+}
+
+export interface OnboardingPaymentIntentResponseDto {
+  /** @nullable */
+  id: string | null;
+  /** @nullable */
+  status: string | null;
+  /** @nullable */
+  redirectUrl: string | null;
+}
+
+export type SaveOnboardingBillingResponseDtoPaymentSetupState =
+  (typeof SaveOnboardingBillingResponseDtoPaymentSetupState)[keyof typeof SaveOnboardingBillingResponseDtoPaymentSetupState];
+
+export const SaveOnboardingBillingResponseDtoPaymentSetupState = {
+  pending_provider_activation: "pending_provider_activation",
+  ready_for_confirmation: "ready_for_confirmation",
+} as const;
+
+export interface SaveOnboardingBillingResponseDto {
+  message: string;
+  billing: OnboardingBillingResponseDto;
+  pendingProviderActivation?: boolean;
+  paymentSetupState?: SaveOnboardingBillingResponseDtoPaymentSetupState;
+  /** @nullable */
+  paymentIntent?: OnboardingPaymentIntentResponseDto | null;
+  nextStep: string;
+}
+
+export interface OnboardingCompanyResponseDto {
+  id: number;
+  name: string;
+  status: string;
+}
+
+export interface OnboardingSubscriptionResponseDto {
+  id: number;
+  status: string;
+  /** @nullable */
+  trialEndsAt: string | null;
+}
+
+export interface CompleteOnboardingResponseDto {
+  message: string;
+  company: OnboardingCompanyResponseDto;
+  subscription: OnboardingSubscriptionResponseDto;
+  nextStep: "APP_READY";
+  requiresReauthentication: boolean;
+  accessToken?: string;
 }
 
 export interface BillingPlanPriceResponseDto {

@@ -10,7 +10,7 @@ import {
 import {
   type OnboardingFieldErrors,
   type OnboardingValues,
-} from "@/app/src/data/onboarding/OnboardingTypes";
+} from "@/app/src/types/onboarding/OnboardingTypes";
 import {
   validateOnboardingBillingValues,
   validateOnboardingStepOneValues,

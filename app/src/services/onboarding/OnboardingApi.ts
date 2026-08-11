@@ -3,15 +3,15 @@
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
 import { IsClientAuthSessionMarker } from "@/app/src/data/auth/AuthSessionStorage";
 import type {
-  CompleteOnboardingResponse,
-  GetOnboardingDraftResponse,
-  GetOnboardingPlansResponse,
-  SaveOnboardingBillingResponse,
-  SaveOnboardingBillingRequest,
-  SaveOnboardingCompanyDetailsRequest,
-  SelectOnboardingPlanRequest,
-  UploadOnboardingCompanyLogoResponse,
-} from "@/app/src/services/onboarding/OnboardingApiTypes";
+  CompleteOnboardingResponseDto,
+  GetOnboardingDraftResponseDto,
+  OnboardingPlansResponseDto,
+  SaveOnboardingBillingDto,
+  SaveOnboardingBillingResponseDto,
+  SaveOnboardingCompanyDetailsDto,
+  SelectOnboardingPlanDto,
+  UploadOnboardingCompanyLogoResponseDto,
+} from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 
 const CompleteOnboardingTimeoutMs = 60000;
 
@@ -27,7 +27,7 @@ function GetAuthorizationHeaders(accessToken: string | null) {
 
 export async function SelectOnboardingPlan(
   accessToken: string | null,
-  body: SelectOnboardingPlanRequest,
+  body: SelectOnboardingPlanDto,
 ) {
   await ApiClient.post("/onboarding/plan", body, {
     headers: GetAuthorizationHeaders(accessToken),
@@ -35,7 +35,7 @@ export async function SelectOnboardingPlan(
 }
 
 export async function GetOnboardingDraft(accessToken: string | null) {
-  const response = await ApiClient.get<GetOnboardingDraftResponse>(
+  const response = await ApiClient.get<GetOnboardingDraftResponseDto>(
     "/onboarding/draft",
     {
       headers: GetAuthorizationHeaders(accessToken),
@@ -46,7 +46,7 @@ export async function GetOnboardingDraft(accessToken: string | null) {
 }
 
 export async function GetOnboardingPlans(accessToken: string | null) {
-  const response = await ApiClient.get<GetOnboardingPlansResponse>(
+  const response = await ApiClient.get<OnboardingPlansResponseDto>(
     "/onboarding/plans",
     {
       headers: GetAuthorizationHeaders(accessToken),
@@ -58,9 +58,9 @@ export async function GetOnboardingPlans(accessToken: string | null) {
 
 export async function SaveOnboardingBilling(
   accessToken: string | null,
-  body: SaveOnboardingBillingRequest,
+  body: SaveOnboardingBillingDto,
 ) {
-  const response = await ApiClient.post<SaveOnboardingBillingResponse>(
+  const response = await ApiClient.post<SaveOnboardingBillingResponseDto>(
     "/onboarding/billing",
     body,
     {
@@ -74,7 +74,7 @@ export async function SaveOnboardingBilling(
 
 export async function SaveOnboardingCompanyDetails(
   accessToken: string | null,
-  body: SaveOnboardingCompanyDetailsRequest,
+  body: SaveOnboardingCompanyDetailsDto,
 ) {
   await ApiClient.post("/onboarding/company-details", body, {
     headers: GetAuthorizationHeaders(accessToken),
@@ -88,7 +88,7 @@ export async function UploadOnboardingCompanyLogo(
   const formData = new FormData();
   formData.append("logo", logoFile);
 
-  const response = await ApiClient.post<UploadOnboardingCompanyLogoResponse>(
+  const response = await ApiClient.post<UploadOnboardingCompanyLogoResponseDto>(
     "/onboarding/company-logo",
     formData,
     {
@@ -103,7 +103,7 @@ export async function UploadOnboardingCompanyLogo(
 }
 
 export async function CompleteOnboarding(accessToken: string | null) {
-  const response = await ApiClient.post<CompleteOnboardingResponse>(
+  const response = await ApiClient.post<CompleteOnboardingResponseDto>(
     "/onboarding/complete",
     {},
     {

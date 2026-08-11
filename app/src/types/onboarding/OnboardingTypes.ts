@@ -42,17 +42,13 @@ export type OnboardingFieldErrors = Partial<
 >;
 
 export type OnboardingValues = {
-  // Step 1 - taxpayer identity
   taxpayerType: OnboardingTaxpayerType;
-  // Individual fields
   lastName: string;
   firstName: string;
   middleName: string;
-  // Non-individual fields
   companyName: string;
   nonIndividualType: string;
   nonIndividualTypeOther: string;
-  // Shared step 1 fields
   address: string;
   countryCode: string;
   baseCurrencyCode: string;

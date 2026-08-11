@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import type { OnboardingValues } from "@/app/src/data/onboarding/OnboardingTypes";
+import type { OnboardingValues } from "@/app/src/types/onboarding/OnboardingTypes";
 import type { BillingCycle, PricingPlan } from "@/app/src/data/pricing/PricingTypes";
+import type { GetOnboardingDraftResponseDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import { GetOnboardingDraft } from "@/app/src/services/onboarding/OnboardingApi";
-import type { OnboardingDraft } from "@/app/src/services/onboarding/OnboardingApiTypes";
 import { MapOnboardingPlanToPricingPlan } from "@/app/src/services/onboarding/OnboardingPlanMapper";
 import { IsIntentionalLogoutInProgress } from "@/app/src/services/auth/AuthSessionExpired";
+
+type OnboardingDraft = NonNullable<GetOnboardingDraftResponseDto["draft"]>;
 
 function Wait(milliseconds: number) {
   return new Promise((resolve) => {
@@ -16,7 +18,7 @@ function Wait(milliseconds: number) {
 }
 
 function GetUiBillingCycle(
-  value: "MONTHLY" | "YEARLY" | null | undefined,
+  value: "MONTHLY" | "QUARTERLY" | "YEARLY" | null | undefined,
 ): BillingCycle {
   return value === "YEARLY" ? "yearly" : "monthly";
 }

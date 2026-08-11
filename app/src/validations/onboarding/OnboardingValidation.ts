@@ -6,7 +6,7 @@ import {
 import type {
   OnboardingFieldErrors,
   OnboardingValues,
-} from "@/app/src/data/onboarding/OnboardingTypes";
+} from "@/app/src/types/onboarding/OnboardingTypes";
 import {
   GetSyncedReportEndDate,
   IsValidOnboardingDateValue,

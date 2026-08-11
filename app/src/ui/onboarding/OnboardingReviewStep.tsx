@@ -2,7 +2,7 @@
 
 import { Building2, CalendarDays, Mail, MapPin, Phone, ReceiptText } from "lucide-react";
 import { FormatOnboardingReportDateLabel } from "@/app/src/data/onboarding/OnboardingData";
-import type { OnboardingValues } from "@/app/src/data/onboarding/OnboardingTypes";
+import type { OnboardingValues } from "@/app/src/types/onboarding/OnboardingTypes";
 import { OnboardingActionRow } from "@/app/src/ui/onboarding/OnboardingActionRow";
 
 type OnboardingReviewStepProps = {

@@ -123,6 +123,8 @@ export type AuthProfileResponse = {
     companyName: string;
     companyStatus?: string;
     isCompanyActive?: boolean;
+    countryCode?: string;
+    baseCurrencyCode?: string;
     logoPublicUrl: string | null;
     role: "ADMIN" | "USER";
     membershipStatus: string;

@@ -47,6 +47,8 @@ import {
 } from "@/app/src/hooks/modules/accounts-payable/accounts-payable-voucher/useAccountsPayableVoucher";
 import { useTaxDefinitionOptions } from "@/app/src/hooks/shared/tax/useTaxDefinitionOptions";
 import { useTaxes } from "@/app/src/hooks/shared/tax/useTaxOptions";
+import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { FetchMultiCurrencyRates } from "@/app/src/services/modules/system-administration/multi-currency-setup/MultiCurrencySetupService";
 import type {
   AccountsPayableVoucherAccountingEntry,
@@ -95,6 +97,8 @@ export function useAccountsPayableVoucherFormPage() {
   const pathname = usePathname();
   const params = useParams<{ recordId?: string }>();
   const recordId = params.recordId;
+  const accessToken = useAppStore((state) => state.accessToken);
+  const authProfileQuery = useAuthProfileQuery({ accessToken });
   const { addRecord, isMutating, records, updateRecord, updateStatus } =
     useAccountsPayableVoucherStore();
   const partyOptionsQuery = useAccountsPayableVoucherPartyOptions();
@@ -119,6 +123,12 @@ export function useAccountsPayableVoucherFormPage() {
     ],
   );
   const mode = getActionMode(pathname);
+  const activeCompanyId = authProfileQuery.data?.activeCompanyId ?? null;
+  const baseCurrencyCode =
+    authProfileQuery.data?.companies?.find(
+      (company) => company.companyId === activeCompanyId,
+    )?.baseCurrencyCode?.trim().toUpperCase() ??
+    AccountsPayableVoucherBaseCurrencyCode;
   const recordQuery = useAccountsPayableVoucherRecord(recordId);
   const numberSuggestionQuery = useAccountsPayableVoucherNumberSuggestion(
     mode === "add",
@@ -131,7 +141,7 @@ export function useAccountsPayableVoucherFormPage() {
       (!existingRecord ||
         !canEditAccountsPayableVoucherStatus(existingRecord.status)));
   const [values, setValues] = useState<AccountsPayableVoucherFormValues>(() =>
-    createAccountsPayableVoucherFormValues(existingRecord),
+    createAccountsPayableVoucherFormValues(existingRecord, baseCurrencyCode),
   );
   const [errors, setErrors] = useState<AccountsPayableVoucherFormErrors>({});
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
@@ -140,6 +150,8 @@ export function useAccountsPayableVoucherFormPage() {
   const [isExchangeRateLoading, setIsExchangeRateLoading] = useState(false);
   const hasAppliedNumberSuggestionRef = useRef(false);
   const hasEditedTransactionNoRef = useRef(false);
+  const hasEditedCurrencyRef = useRef(false);
+  const hasAppliedBaseCurrencyRef = useRef(false);
   const hasHydratedExistingRecordRef = useRef(false);
   const exchangeRateRequestIdRef = useRef(0);
 
@@ -164,7 +176,28 @@ export function useAccountsPayableVoucherFormPage() {
   useEffect(() => {
     hasAppliedNumberSuggestionRef.current = false;
     hasEditedTransactionNoRef.current = false;
+    hasEditedCurrencyRef.current = false;
+    hasAppliedBaseCurrencyRef.current = false;
   }, [mode]);
+
+  useEffect(() => {
+    if (
+      mode !== "add" ||
+      activeCompanyId == null ||
+      !authProfileQuery.data ||
+      hasAppliedBaseCurrencyRef.current ||
+      hasEditedCurrencyRef.current
+    ) {
+      return;
+    }
+
+    setValues((current) => ({
+      ...current,
+      currency: baseCurrencyCode,
+      exchangeRate: 1,
+    }));
+    hasAppliedBaseCurrencyRef.current = true;
+  }, [activeCompanyId, authProfileQuery.data, baseCurrencyCode, mode]);
 
   useEffect(() => {
     if (
@@ -227,6 +260,7 @@ export function useAccountsPayableVoucherFormPage() {
     }
 
     if (field === "currency") {
+      hasEditedCurrencyRef.current = true;
       void updateCurrencyFromExchangeRates(fieldValue);
       return;
     }
@@ -272,7 +306,7 @@ export function useAccountsPayableVoucherFormPage() {
       ...current,
       currency: currencyCode,
       exchangeRate:
-        currencyCode === AccountsPayableVoucherBaseCurrencyCode
+        currencyCode === baseCurrencyCode
           ? 1
           : current.exchangeRate,
     }));
@@ -282,7 +316,7 @@ export function useAccountsPayableVoucherFormPage() {
       exchangeRate: undefined,
     }));
 
-    if (currencyCode === AccountsPayableVoucherBaseCurrencyCode) {
+    if (currencyCode === baseCurrencyCode) {
       setIsExchangeRateLoading(false);
       return;
     }
@@ -291,21 +325,21 @@ export function useAccountsPayableVoucherFormPage() {
 
     try {
       const rates = await FetchMultiCurrencyRates(currencyCode);
-      const phpRate = rates.find(
-        (rate) => rate.targetCurrencyCode === AccountsPayableVoucherBaseCurrencyCode,
+      const baseRate = rates.find(
+        (rate) => rate.targetCurrencyCode === baseCurrencyCode,
       );
 
       if (exchangeRateRequestIdRef.current !== requestId) {
         return;
       }
 
-      if (!phpRate) {
-        throw new Error("No PHP exchange rate returned.");
+      if (!baseRate) {
+        throw new Error(`No ${baseCurrencyCode} exchange rate returned.`);
       }
 
       setValues((current) => ({
         ...current,
-        exchangeRate: normalizeExchangeRate(phpRate.exchangeRate),
+        exchangeRate: normalizeExchangeRate(baseRate.exchangeRate),
       }));
     } catch {
       if (exchangeRateRequestIdRef.current === requestId) {
@@ -916,6 +950,7 @@ export function useAccountsPayableVoucherFormPage() {
     updateCurrency,
     updateExpenseLine,
     updateHeaderField,
+    baseCurrencyCode,
     values: displayValues,
   };
 }

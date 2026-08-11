@@ -12,7 +12,7 @@ import type {
   OnboardingFieldErrors,
   OnboardingTaxpayerType,
   OnboardingValues,
-} from "@/app/src/data/onboarding/OnboardingTypes";
+} from "@/app/src/types/onboarding/OnboardingTypes";
 import { OnboardingActionRow } from "@/app/src/ui/onboarding/OnboardingActionRow";
 import { OnboardingField } from "@/app/src/ui/onboarding/OnboardingField";
 import { OnboardingFileField } from "@/app/src/ui/onboarding/OnboardingFileField";

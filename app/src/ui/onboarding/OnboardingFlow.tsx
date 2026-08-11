@@ -24,6 +24,8 @@ export function OnboardingFlow() {
     furthestStepIndex,
     isDraftLoading,
     updateValue,
+    updateCountry,
+    updateBaseCurrency,
     setTaxpayerType,
     handleLogoChange,
     handleLogoRemove,
@@ -83,6 +85,8 @@ export function OnboardingFlow() {
                 logoPreviewUrl={logoPreviewUrl}
                 isSubmitting={isSubmitting}
                 updateValue={updateValue}
+                updateCountry={updateCountry}
+                updateBaseCurrency={updateBaseCurrency}
                 setTaxpayerType={setTaxpayerType}
                 handleLogoChange={handleLogoChange}
                 handleLogoRemove={handleLogoRemove}

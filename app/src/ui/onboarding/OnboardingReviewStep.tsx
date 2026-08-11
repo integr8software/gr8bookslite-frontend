@@ -2,7 +2,7 @@
 
 import { Building2, CalendarDays, Mail, MapPin, Phone, ReceiptText } from "lucide-react";
 import { FormatOnboardingReportDateLabel } from "@/app/src/data/onboarding/OnboardingData";
-import type { OnboardingValues } from "@/app/src/data/onboarding/OnboardingTypes";
+import type { OnboardingValues } from "@/app/src/types/onboarding/OnboardingTypes";
 import { OnboardingActionRow } from "@/app/src/ui/onboarding/OnboardingActionRow";
 
 type OnboardingReviewStepProps = {
@@ -125,6 +125,8 @@ export function OnboardingReviewStep({
             />
             <DetailRow label="Organization type" value={organizationType} />
             <DetailRow label="TIN" value={values.tin} />
+            <DetailRow label="Country" value={values.countryCode} />
+            <DetailRow label="Base currency" value={values.baseCurrencyCode} />
             <DetailRow label="Website" value={values.website} />
           </dl>
         </section>

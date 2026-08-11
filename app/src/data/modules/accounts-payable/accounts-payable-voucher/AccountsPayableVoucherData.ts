@@ -6,7 +6,9 @@ import type {
 } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
 import type { TermsMaintenance } from "@/app/src/types/modules/financial-maintenance/terms-maintenance/TermsMaintenanceTypes";
 
-export function createAccountsPayableVoucherInitialFormValues(): AccountsPayableVoucherFormValues {
+export function createAccountsPayableVoucherInitialFormValues(
+  baseCurrencyCode = "PHP",
+): AccountsPayableVoucherFormValues {
   return {
     transactionNo: "",
     documentDate: new Date().toISOString().slice(0, 10),
@@ -17,7 +19,7 @@ export function createAccountsPayableVoucherInitialFormValues(): AccountsPayable
     contactNo: "",
     projectCode: "",
     projectName: "",
-    currency: "PHP",
+    currency: baseCurrencyCode,
     exchangeRate: 1,
     amount: 0,
     termId: "",
@@ -88,9 +90,10 @@ export function createAccountsPayableVoucherAccountingEntry(
 
 export function createAccountsPayableVoucherFormValues(
   record?: AccountsPayableVoucherRecord,
+  baseCurrencyCode = "PHP",
 ): AccountsPayableVoucherFormValues {
   if (!record) {
-    return createAccountsPayableVoucherInitialFormValues();
+    return createAccountsPayableVoucherInitialFormValues(baseCurrencyCode);
   }
 
   return syncAccountsPayableVoucherExpenseLinesAndAmount({

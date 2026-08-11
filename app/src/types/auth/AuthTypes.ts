@@ -1,4 +1,42 @@
-export type RegisterRequest = {
+export type AuthFieldErrors = Partial<
+  Record<"email" | "password" | "confirmPassword" | "name" | "contactNumber" | "termsAccepted" | "otp" | "newEmail", string[] | undefined>
+>;
+
+export type AuthFormValues = {
+  name?: string;
+  email?: string;
+  contactNumber?: string;
+  password?: string;
+  confirmPassword?: string;
+  termsAccepted?: boolean;
+  rememberMe?: boolean;
+};
+
+export const AuthActionStatuses = {
+  Idle: "idle",
+  Error: "error",
+  Success: "success",
+} as const;
+
+export type AuthActionState = {
+  status: (typeof AuthActionStatuses)[keyof typeof AuthActionStatuses];
+  message: string;
+  code?: string;
+  errors?: AuthFieldErrors;
+  formValues?: AuthFormValues;
+  redirectTo?: string;
+  pendingVerificationEmail?: string;
+  resetToken?: string;
+  accessToken?: string;
+  rememberMe?: boolean;
+};
+
+export const InitialAuthActionState: AuthActionState = {
+  status: AuthActionStatuses.Idle,
+  message: "",
+};
+
+export type RegistrationInput = {
   fullName: string;
   email: string;
   contactNumber?: string;
@@ -6,7 +44,7 @@ export type RegisterRequest = {
   confirmPassword: string;
 };
 
-export type RegisterResponse = {
+export type RegistrationResult = {
   message: string;
   verificationRequired: boolean;
   nextStep: string;
@@ -14,36 +52,56 @@ export type RegisterResponse = {
   maskedEmail: string;
 };
 
-export type VerifyEmailRequest = {
+export type EmailVerificationInput = {
   email: string;
   code: string;
 };
 
-export type LoginRequest = {
+export type LoginCredentials = {
   email: string;
   password: string;
   rememberMe?: boolean;
 };
 
-export type LoginResponse = {
+export type LoginResult = {
   message?: string;
   accessToken?: string;
-  user?: AuthProfileResponse["user"];
+  user?: AuthProfile["user"];
   companyId?: number | null;
-  role?: "ADMIN" | "USER" | "SUPER_ADMIN";
+  role?: AuthEffectiveRole;
   access?: AuthProfileAccess | null;
-  onboarding?: AuthProfileResponse["onboarding"];
-  companies?: AuthProfileResponse["companies"];
+  onboarding?: AuthProfile["onboarding"];
+  companies?: AuthProfile["companies"];
 };
 
-export type VerifyEmailResponse = {
+export type EmailVerificationResult = {
   message?: string;
   accessToken: string;
 };
 
-export type AuthSystemRole = "SUPER_ADMIN" | "STANDARD";
+export const AuthSystemRoleCodes = {
+  SuperAdmin: "SUPER_ADMIN",
+  Standard: "STANDARD",
+} as const;
 
-export type AuthMembershipRole = "ADMIN" | "USER" | null;
+export const AuthMembershipRoleCodes = {
+  Admin: "ADMIN",
+  User: "USER",
+} as const;
+
+export const AuthEffectiveRoleCodes = {
+  SuperAdmin: AuthSystemRoleCodes.SuperAdmin,
+  Admin: AuthMembershipRoleCodes.Admin,
+  User: AuthMembershipRoleCodes.User,
+} as const;
+
+export type AuthSystemRole = (typeof AuthSystemRoleCodes)[keyof typeof AuthSystemRoleCodes];
+
+export type AuthMembershipRole = (typeof AuthMembershipRoleCodes)[keyof typeof AuthMembershipRoleCodes] | null;
+
+export type AuthCompanyMembershipRole = NonNullable<AuthMembershipRole>;
+
+export type AuthEffectiveRole = (typeof AuthEffectiveRoleCodes)[keyof typeof AuthEffectiveRoleCodes];
 
 export type AuthUserModuleItem = {
   id: number;
@@ -66,7 +124,7 @@ export type AuthUserModuleItem = {
 export type AuthProfileAccess = {
   id?: number;
   companyId?: number | null;
-  role?: "ADMIN" | "USER" | null;
+  role?: AuthMembershipRole;
   systemRole?: AuthSystemRole;
   membershipRole: AuthMembershipRole;
   membershipStatus?: string;
@@ -88,7 +146,7 @@ export type AuthProfileAccess = {
   };
 };
 
-export type AuthProfileResponse = {
+export type AuthProfile = {
   user: {
     id: number;
     email: string;
@@ -105,7 +163,7 @@ export type AuthProfileResponse = {
     updatedAt: string | null;
   };
   companyId?: number | null;
-  role?: "ADMIN" | "USER" | null;
+  role?: AuthMembershipRole;
   activeCompanyId: number | null;
   activeAccess: AuthProfileAccess | null;
   access?: AuthProfileAccess | null;
@@ -123,8 +181,10 @@ export type AuthProfileResponse = {
     companyName: string;
     companyStatus?: string;
     isCompanyActive?: boolean;
+    countryCode?: string;
+    baseCurrencyCode?: string;
     logoPublicUrl: string | null;
-    role: "ADMIN" | "USER";
+    role: AuthCompanyMembershipRole;
     membershipStatus: string;
     accessScope?: string | null;
     companyRoleId?: number | null;
@@ -141,100 +201,100 @@ export type AuthProfileResponse = {
   }[];
 };
 
-export type SwitchCompanyContextRequest = {
+export type CompanyContextSelection = {
   companyId: number;
 };
 
-export type SwitchCompanyContextResponse = {
+export type CompanyContextSwitchResult = {
   accessToken: string;
-  user: AuthProfileResponse["user"];
+  user: AuthProfile["user"];
   companyId: number | null;
-  role: "ADMIN" | "USER" | "SUPER_ADMIN";
+  role: AuthEffectiveRole;
   access: AuthProfileAccess | null;
-  onboarding: AuthProfileResponse["onboarding"];
-  companies: NonNullable<AuthProfileResponse["companies"]>;
+  onboarding: AuthProfile["onboarding"];
+  companies: NonNullable<AuthProfile["companies"]>;
 };
 
-export type ResendVerificationRequest = {
+export type VerificationResendInput = {
   email: string;
 };
 
-export type ResendVerificationResponse = {
+export type VerificationResendResult = {
   message: string;
   maskedEmail: string;
 };
 
-export type ForgotPasswordRequest = {
+export type ForgotPasswordInput = {
   email: string;
 };
 
-export type ForgotPasswordResponse = {
+export type ForgotPasswordResult = {
   code?: string;
   message: string;
   maskedEmail?: string;
 };
 
-export type VerifyForgotPasswordCodeRequest = {
+export type ForgotPasswordCodeVerificationInput = {
   email: string;
   code: string;
 };
 
-export type VerifyForgotPasswordCodeResponse = {
+export type ForgotPasswordCodeVerificationResult = {
   message: string;
   resetToken: string;
 };
 
-export type ResetPasswordRequest = {
+export type PasswordResetInput = {
   resetToken: string;
   newPassword: string;
   confirmNewPassword: string;
 };
 
-export type ResetPasswordResponse = {
+export type PasswordResetResult = {
   message: string;
 };
 
-export type ActivateWorkspaceInvitationRequest = {
+export type WorkspaceInvitationActivationInput = {
   email: string;
   token: string;
   newPassword: string;
   confirmNewPassword: string;
 };
 
-export type ActivateWorkspaceInvitationResponse = {
+export type WorkspaceInvitationActivationResult = {
   message: string;
 };
 
-export type RequestPasswordChangeOtpResponse = {
+export type PasswordChangeOtpResult = {
   message: string;
   maskedEmail: string;
 };
 
-export type VerifyPasswordChangeOtpRequest = {
+export type PasswordChangeOtpVerificationInput = {
   code: string;
 };
 
-export type VerifyPasswordChangeOtpResponse = {
+export type PasswordChangeOtpVerificationResult = {
   message: string;
   resetToken: string;
 };
 
-export type ChangeAuthenticatedPasswordRequest = {
+export type AuthenticatedPasswordChangeInput = {
   resetToken: string;
   newPassword: string;
   confirmNewPassword: string;
 };
 
-export type ChangeAuthenticatedPasswordResponse = {
+export type AuthenticatedPasswordChangeResult = {
   message: string;
 };
 
-export type ChangeVerificationEmailRequest = {
+export type VerificationEmailChangeInput = {
   currentEmail: string;
   newEmail: string;
 };
 
-export type ChangeVerificationEmailResponse = {
+export type VerificationEmailChangeResult = {
   message: string;
   maskedEmail: string;
 };

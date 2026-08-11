@@ -2,12 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { AuthActionStatuses, InitialAuthActionState, type AuthActionState } from "@/app/src/types/auth/AuthTypes";
 import { ClearPendingVerificationEmail, SavePendingVerificationEmail } from "@/app/src/data/auth/AuthVerificationStorage";
 import { AuthenticatedSessionMarker } from "@/app/src/data/auth/AuthSessionStorage";
+import { LoginWithFrontendAuthSession } from "@/app/src/services/auth/AuthApi";
 import { GetFallbackPostAuthRedirectPath, IsOnboardingRedirectPath, IsSystemRedirectPath } from "@/app/src/services/auth/AuthRedirects";
 import { AuthQueryKeys } from "@/app/src/services/auth/AuthQueryKeys";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
@@ -26,17 +27,6 @@ function GetSubmittedValue(formData: FormData, key: string) {
   return typeof value === "string" ? value : "";
 }
 
-async function EnsureFrontendSessionCreated() {
-  const response = await fetch("/api/auth/session", {
-    cache: "no-store",
-    credentials: "include",
-  });
-
-  if (!response.ok) {
-    throw new Error("Login worked, but Safari did not save the session cookie.");
-  }
-}
-
 export function useLoginForm() {
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -44,8 +34,10 @@ export function useLoginForm() {
   const accessToken = useAppStore((state) => state.accessToken);
   const setAccessToken = useAppStore((state) => state.setAccessToken);
   const [state, setState] = useState<AuthActionState>(InitialAuthActionState);
-  const [pending, setPending] = useState(false);
   const [formValues, setFormValues] = useState<Partial<LoginFormValues>>({});
+  const loginMutation = useMutation({
+    mutationFn: LoginWithFrontendAuthSession,
+  });
   const values: LoginFormValues = {
     ...InitialLoginFormValues,
     ...state.formValues,
@@ -74,7 +66,7 @@ export function useLoginForm() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (pending) {
+    if (loginMutation.isPending) {
       return;
     }
 
@@ -100,33 +92,12 @@ export function useLoginForm() {
       return;
     }
 
-    setPending(true);
-
     try {
-      const response = await fetch("/api/auth/login", {
-        body: JSON.stringify({
-          email: parsed.data.email,
-          password: parsed.data.password,
-          rememberMe,
-        }),
-        cache: "no-store",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        method: "POST",
+      const payload = await loginMutation.mutateAsync({
+        email: parsed.data.email,
+        password: parsed.data.password,
+        rememberMe,
       });
-      const payload = (await response.json().catch(() => null)) as {
-        message?: string;
-        pendingVerificationEmail?: string;
-        redirectTo?: string;
-      } | null;
-
-      if (!response.ok) {
-        throw new Error(payload?.message ?? "Email or Password is incorrect.");
-      }
-
-      await EnsureFrontendSessionCreated();
 
       const nextState: AuthActionState = {
         status: AuthActionStatuses.Success,
@@ -167,8 +138,6 @@ export function useLoginForm() {
         SavePendingVerificationEmail(parsed.data.email);
         router.push("/auth/verify-email");
       }
-    } finally {
-      setPending(false);
     }
   }
 
@@ -180,7 +149,7 @@ export function useLoginForm() {
 
   return {
     state,
-    pending,
+    pending: loginMutation.isPending,
     isSystemRedirecting: shouldShowImmediateSystemLoader,
     isOnboardingRedirecting: IsOnboardingRedirectPath(successfulAuthRedirectPath),
     values,

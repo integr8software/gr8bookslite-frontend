@@ -126,11 +126,6 @@ export const DisbursementVoucherTableColumns = [
     className: "w-[12rem]",
   },
   {
-    key: "remarks",
-    label: "Remarks",
-    className: "w-[20rem]",
-  },
-  {
     key: "currency",
     label: "Currency",
     className: "w-[8rem]",
@@ -139,6 +134,11 @@ export const DisbursementVoucherTableColumns = [
     key: "amount",
     label: "Amount",
     className: "w-[11rem]",
+  },
+  {
+    key: "remarks",
+    label: "Remarks",
+    className: "w-[20rem]",
   },
   {
     key: "createdBy",

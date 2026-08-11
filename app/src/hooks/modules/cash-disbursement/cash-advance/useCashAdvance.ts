@@ -333,6 +333,12 @@ export function useCashAdvanceTable(advances: CashAdvanceRecord[]) {
         meta: { className: "w-[9rem]", label: "Amount" },
       },
       {
+        accessorKey: "remarks",
+        id: "remarks",
+        header: "Remarks",
+        meta: { className: "w-[18rem]", label: "Remarks" },
+      },
+      {
         accessorKey: "createdBy",
         id: "createdBy",
         header: "Created By",

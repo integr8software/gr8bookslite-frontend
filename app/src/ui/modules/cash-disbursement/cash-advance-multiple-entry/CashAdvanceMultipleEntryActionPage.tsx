@@ -128,22 +128,24 @@ export function CashAdvanceMultipleEntryActionPage() {
           onAttachmentsChange={(attachments) => form.updateField("attachments", attachments)}
         />
       )}
-      <CashAdvanceMultipleEntryEntrySection
-        accountingRows={form.values.accountingEntries}
-        isReadonly={isReadonly}
-        rows={form.values.items}
-        onAddAccountingRows={form.addAccountingEntries}
-        onAddRows={form.addItems}
-        onAccountingRowsChange={form.updateAccountingEntries}
-        onRowsChange={form.updateItems}
-      />
+      {activeDetailsTab === "details" ? (
+        <CashAdvanceMultipleEntryEntrySection
+          accountingRows={form.values.accountingEntries}
+          isReadonly={isReadonly}
+          rows={form.values.items}
+          onAddAccountingRows={form.addAccountingEntries}
+          onAddRows={form.addItems}
+          onAccountingRowsChange={form.updateAccountingEntries}
+          onRowsChange={form.updateItems}
+        />
+      ) : null}
     </section>
   );
 }
 
 const DetailsTabs = [
   { id: "details", label: "Cash Advance Details" },
-  { id: "attachment", label: "File Attachment" },
+  { id: "attachment", label: "File Attachments" },
 ] satisfies ModuleTabItem<CashAdvanceMultipleEntryDetailsTab>[];
 
 type CashAdvanceMultipleEntryVisibleField =
@@ -303,7 +305,7 @@ function CashAdvanceMultipleEntryDetails({
       </div>
       <div className="grid min-w-0 content-start gap-4">
         {visibleFields.transNo ? (
-          <FieldShell controlId="came-trans-no" label="Trans No." isRequired>
+          <FieldShell controlId="came-trans-no" label="Multiply Cash Advance No." isRequired>
             <input
               id="came-trans-no"
               readOnly={isReadonly}
@@ -374,7 +376,7 @@ function CashAdvanceMultipleEntryFieldVisibilityButton({
         createVisibilityField("defaultAccount", "Default Account", visibleFields, onVisibleFieldChange),
         createVisibilityField("remarks", "Remarks", visibleFields, onVisibleFieldChange),
         createVisibilityField("totalAmount", "Total Amount", visibleFields, onVisibleFieldChange),
-        createVisibilityField("transNo", "Trans No.", visibleFields, onVisibleFieldChange),
+        createVisibilityField("transNo", "Multiply Cash Advance No.", visibleFields, onVisibleFieldChange),
         createVisibilityField("documentDate", "Document Date", visibleFields, onVisibleFieldChange),
         createVisibilityField("status", "Status", visibleFields, onVisibleFieldChange),
         createVisibilityField("projectRef", "Project Ref", visibleFields, onVisibleFieldChange),
@@ -839,7 +841,7 @@ function createPartyOptions(currentPartyCode: string, currentPartyName: string):
 
   if (currentPartyCode.trim() || currentPartyName.trim()) {
     addUniqueDropdownOption(options, {
-      description: "Current cash advances multiple entry value",
+      description: "Current Cash Advances Multiple Entry value",
       label: currentPartyCode || "Current party",
       name: currentPartyName || currentPartyCode,
       value: currentPartyCode || currentPartyName,

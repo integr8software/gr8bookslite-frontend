@@ -84,9 +84,9 @@ export function CashAdvanceOverviewPage() {
       />
 
       <ModuleTable
-        emptyDescription="Try a different party, transaction number, account, or status."
+        emptyDescription="Try another cash advance no., remarks, date range, amount range, or status."
         emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
-        emptyTitle="No cash advances matched"
+        emptyTitle="No Cash Advance Transaction Found."
         minWidthClassName={getCashAdvanceTableMinWidthClassName(
           tableState.table.getVisibleLeafColumns().length,
         )}
@@ -203,6 +203,8 @@ function CashAdvanceCellContent({
           <p>{getCashAdvanceAccountTitle(record.accountCode)}</p>
         </div>
       );
+    case "remarks":
+      return <span className="line-clamp-2 text-sm text-darknavy/80">{record.remarks || "-"}</span>;
     case "amount":
       return <span className="font-semibold text-darknavy">{formatCashAdvanceCurrency(record.amount)}</span>;
     case "currency":

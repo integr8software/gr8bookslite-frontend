@@ -47,9 +47,9 @@ export function DisbursementVoucherTable({
 }) {
 	return (
 		<ModuleTable
-			emptyDescription="Try a different payee, transaction number, or status."
+			emptyDescription="Try another voucher no., remarks, date range, amount range, or status."
 			emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
-			emptyTitle="No transactions matched"
+			emptyTitle="No Disbursement Voucher Transaction Found."
 			minWidthClassName="min-w-full"
 			paginationLabel="entries"
 			paginationStorageKey={DisbursementVoucherTablePaginationStorageKey}

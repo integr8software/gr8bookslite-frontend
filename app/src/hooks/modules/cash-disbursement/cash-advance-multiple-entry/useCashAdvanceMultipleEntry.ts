@@ -46,6 +46,16 @@ type CashAdvanceMultipleEntryStoreState = {
   updateEntryStatus: (record: CashAdvanceMultipleEntryRecord, status: CashAdvanceStatus) => void;
 };
 
+const CashAdvanceMultipleEntryDefaultColumnVisibility: VisibilityState = {
+  accountCode: false,
+  createdAt: false,
+  createdBy: false,
+  partyCode: false,
+  remarks: false,
+  updatedAt: false,
+  updatedBy: false,
+};
+
 export function useCashAdvanceMultipleEntryStore<TSelected = CashAdvanceMultipleEntryStoreState>(
   selector?: (state: CashAdvanceMultipleEntryStoreState) => TSelected,
 ) {
@@ -221,9 +231,9 @@ export function useCashAdvanceMultipleEntryTable(records: CashAdvanceMultipleEnt
     to: "",
   });
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
-    partyCode: false,
-  });
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
+    CashAdvanceMultipleEntryDefaultColumnVisibility,
+  );
   const [statusFilter, setStatusFilterState] = useState<
     (typeof CashAdvanceMultipleEntryStatusFilters)[number]
   >("all");
@@ -260,14 +270,20 @@ export function useCashAdvanceMultipleEntryTable(records: CashAdvanceMultipleEnt
   }, [amountRange, dateRange, query, records, statusFilter]);
   const columns = useMemo<ColumnDef<CashAdvanceMultipleEntryRecord>[]>(
     () => [
-      { accessorKey: "transNo", id: "transNo", header: "Trans No.", meta: { className: "w-[10rem]", label: "Trans No." } },
+      { accessorKey: "transNo", id: "transNo", header: "Cash Advance Entry No.", meta: { className: "w-[13rem]", label: "Cash Advance Entry No." } },
       { accessorKey: "documentDate", id: "documentDate", header: "Document Date", meta: { className: "w-[9rem]", label: "Document Date" } },
       { accessorKey: "partyCode", id: "partyCode", header: "Party Code", meta: { className: "w-[10rem]", label: "Party Code" } },
       { accessorKey: "partyName", id: "partyName", header: "Party Name", meta: { className: "w-[18rem]", label: "Party Name" } },
-      { accessorKey: "accountTitle", id: "accountTitle", header: "Default Account", meta: { className: "w-[14rem]", label: "Default Account" } },
-      { accessorKey: "amount", id: "amount", header: "Total Amount", meta: { className: "w-[10rem]", label: "Total Amount" } },
-      { accessorKey: "status", id: "status", header: "Status", meta: { className: "w-[9rem] text-center", label: "Status" } },
-      { id: "actions", enableSorting: false, enableHiding: false, header: "Action", meta: { className: "w-[5.5rem] px-3 text-center last:pr-3", label: "Action" } },
+      { accessorKey: "accountCode", id: "accountCode", header: "Default Account Code", meta: { className: "w-[12rem]", label: "Default Account Code" } },
+      { accessorKey: "accountTitle", id: "accountTitle", header: "Default Account Title", meta: { className: "w-[15rem]", label: "Default Account Title" } },
+      { accessorKey: "amount", id: "amount", header: "Total Amount", meta: { className: "w-[9rem]", label: "Total Amount" } },
+      { accessorKey: "remarks", id: "remarks", header: "Remarks", meta: { className: "w-[18rem]", label: "Remarks" } },
+      { accessorKey: "createdBy", id: "createdBy", header: "Created By", meta: { className: "w-[14rem]", label: "Created By" } },
+      { accessorKey: "createdAt", id: "createdAt", header: "Date Created", sortingFn: "datetime", meta: { className: "w-[16rem]", label: "Date Created" } },
+      { accessorKey: "updatedBy", id: "updatedBy", header: "Updated By", meta: { className: "w-[14rem]", label: "Updated By" } },
+      { accessorKey: "updatedAt", id: "updatedAt", header: "Date Modified", sortingFn: "datetime", meta: { className: "w-[16rem]", label: "Date Modified" } },
+      { accessorKey: "status", id: "status", header: "Status", meta: { className: "w-[8rem]", label: "Status" } },
+      { id: "actions", enableSorting: false, enableHiding: false, header: "Action", meta: { className: "w-[9rem] text-center", label: "Action" } },
     ],
     [],
   );
@@ -279,6 +295,9 @@ export function useCashAdvanceMultipleEntryTable(records: CashAdvanceMultipleEnt
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    initialState: {
+      columnVisibility: CashAdvanceMultipleEntryDefaultColumnVisibility,
+    },
     onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: setPagination,
     onSortingChange: setSorting,

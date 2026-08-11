@@ -12,7 +12,7 @@ const CashAdvanceMultipleEntrySchema = z.object({
     }),
   ),
   partyName: z.string().trim().min(1, "Party Name is required."),
-  transNo: z.string().trim().min(1, "Trans No. is required."),
+  transNo: z.string().trim().min(1, "Multiply Cash Advance No. is required."),
 });
 
 export function validateCashAdvanceMultipleEntryForm(
@@ -23,7 +23,7 @@ export function validateCashAdvanceMultipleEntryForm(
   if (!result.success) {
     return {
       isValid: false,
-      message: result.error.issues[0]?.message ?? "Review the cash advances multiple entry details.",
+      message: result.error.issues[0]?.message ?? "Review the Cash Advances Multiple Entry details.",
     };
   }
 

@@ -48,6 +48,7 @@ export const CashAdvanceDefaultColumnVisibility: VisibilityState = {
   createdBy: false,
   currency: false,
   partyCode: false,
+  remarks: false,
   updatedAt: false,
   updatedBy: false,
 };

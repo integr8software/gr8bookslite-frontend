@@ -20,6 +20,10 @@ export const CashAdvanceMultipleEntryStatuses = {
 export const CashAdvanceMultipleEntryStatusFilterOptions = [
   { label: "All statuses", value: "all" },
   {
+    label: CashAdvanceMultipleEntryStatuses.draft,
+    value: CashAdvanceMultipleEntryStatuses.draft,
+  },
+  {
     label: CashAdvanceMultipleEntryStatuses.forApproval,
     value: CashAdvanceMultipleEntryStatuses.forApproval,
   },
@@ -36,6 +40,7 @@ export const CashAdvanceMultipleEntryStatusFilterOptions = [
 
 export const CashAdvanceMultipleEntryStatusFilters = [
   "all",
+  CashAdvanceMultipleEntryStatuses.draft,
   CashAdvanceMultipleEntryStatuses.forApproval,
   CashAdvanceMultipleEntryStatuses.posted,
   CashAdvanceMultipleEntryStatuses.disapproved,

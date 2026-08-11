@@ -14,6 +14,10 @@ import {
 	type ModuleActionMenuItem,
 } from "@/app/src/ui/shared/module/ModuleActionMenu";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
+import {
+	AppCopyFromDropdown,
+	type AppCopyFromRecord,
+} from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
 
 type BillingInvoiceFormHeaderProps = {
 	mode: BillingInvoiceActionMode;
@@ -81,6 +85,11 @@ function BillingInvoiceHeaderActions({
 			<ReportPreviewAction onPreview={onPreview} />
 			{mode === "view" ? null : (
 				<>
+					<AppCopyFromDropdown
+						records={BillingInvoiceCopyFromRecords}
+						sources={["Sales Quotation"]}
+						onApply={() => undefined}
+					/>
 					<div className="flex lg:hidden">
 						<ModuleActionMenu
 							className="[&>button]:h-10 [&>button]:w-10"
@@ -129,3 +138,4 @@ function createOverflowItems(onSubmit: () => void): ModuleActionMenuItem[] {
 	];
 }
 
+const BillingInvoiceCopyFromRecords: AppCopyFromRecord[] = [];

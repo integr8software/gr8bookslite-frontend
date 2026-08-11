@@ -11,6 +11,10 @@ import { useBillingStatementFormPage } from "@/app/src/hooks/modules/sales/billi
 import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { BillingStatementDetailsForm } from "@/app/src/ui/modules/sales/billing-statement/form/BillingStatementDetailsForm";
 import { BillingStatementEntrySection } from "@/app/src/ui/modules/sales/billing-statement/entries/BillingStatementEntrySection";
+import {
+  AppCopyFromDropdown,
+  type AppCopyFromRecord,
+} from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
 
 export function BillingStatementActionPage() {
   return (
@@ -79,15 +83,22 @@ function BillingStatementHeaderActions({ page }: { page: BillingStatementFormPag
           Edit
         </Link>
       ) : (
-        <button
-          type="button"
-          disabled={page.isSubmitting}
-          onClick={page.handleSubmit}
-          className={`${moduleHeaderActionClassNames.primary} disabled:cursor-not-allowed disabled:opacity-60`}
-        >
-          <Save className="h-4 w-4" aria-hidden="true" />
-          {page.isSubmitting ? "Saving..." : "Save"}
-        </button>
+        <>
+          <AppCopyFromDropdown
+            records={BillingStatementCopyFromRecords}
+            sources={["Sales Quotation"]}
+            onApply={() => undefined}
+          />
+          <button
+            type="button"
+            disabled={page.isSubmitting}
+            onClick={page.handleSubmit}
+            className={`${moduleHeaderActionClassNames.primary} disabled:cursor-not-allowed disabled:opacity-60`}
+          >
+            <Save className="h-4 w-4" aria-hidden="true" />
+            {page.isSubmitting ? "Saving..." : "Save"}
+          </button>
+        </>
       )}
     </>
   );
@@ -127,3 +138,5 @@ function getBillingStatementTitle(mode: string, transNo?: string) {
   if (mode === "edit") return `${BillingStatementFormPageCopy.edit.title} ${transNo ?? ""}`;
   return `${BillingStatementFormPageCopy.view.title} ${transNo ?? ""}`;
 }
+
+const BillingStatementCopyFromRecords: AppCopyFromRecord[] = [];

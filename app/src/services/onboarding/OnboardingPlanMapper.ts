@@ -1,7 +1,7 @@
 import type { PricingPlan } from "@/app/src/data/pricing/PricingTypes";
-import type { OnboardingPlanResponseDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
+import type { OnboardingPlan } from "@/app/src/types/onboarding/OnboardingApiModels";
 
-type OnboardingDraftPlan = OnboardingPlanResponseDto;
+type OnboardingDraftPlan = OnboardingPlan;
 
 function getUserRule(plan: OnboardingDraftPlan) {
   return plan.usageRules.find((rule) => rule.metric === "USER");

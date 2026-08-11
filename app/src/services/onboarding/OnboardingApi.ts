@@ -3,15 +3,17 @@
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
 import { IsClientAuthSessionMarker } from "@/app/src/data/auth/AuthSessionStorage";
 import type {
-  CompleteOnboardingResponseDto,
-  GetOnboardingDraftResponseDto,
-  OnboardingPlansResponseDto,
   SaveOnboardingBillingDto,
-  SaveOnboardingBillingResponseDto,
   SaveOnboardingCompanyDetailsDto,
   SelectOnboardingPlanDto,
-  UploadOnboardingCompanyLogoResponseDto,
 } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
+import type {
+  OnboardingBillingPayload,
+  OnboardingCompletionPayload,
+  OnboardingDraftPayload,
+  OnboardingLogoPayload,
+  OnboardingPlansPayload,
+} from "@/app/src/types/onboarding/OnboardingApiModels";
 
 const CompleteOnboardingTimeoutMs = 60000;
 
@@ -35,7 +37,7 @@ export async function SelectOnboardingPlan(
 }
 
 export async function GetOnboardingDraft(accessToken: string | null) {
-  const response = await ApiClient.get<GetOnboardingDraftResponseDto>(
+  const response = await ApiClient.get<OnboardingDraftPayload>(
     "/onboarding/draft",
     {
       headers: GetAuthorizationHeaders(accessToken),
@@ -46,7 +48,7 @@ export async function GetOnboardingDraft(accessToken: string | null) {
 }
 
 export async function GetOnboardingPlans(accessToken: string | null) {
-  const response = await ApiClient.get<OnboardingPlansResponseDto>(
+  const response = await ApiClient.get<OnboardingPlansPayload>(
     "/onboarding/plans",
     {
       headers: GetAuthorizationHeaders(accessToken),
@@ -60,7 +62,7 @@ export async function SaveOnboardingBilling(
   accessToken: string | null,
   body: SaveOnboardingBillingDto,
 ) {
-  const response = await ApiClient.post<SaveOnboardingBillingResponseDto>(
+  const response = await ApiClient.post<OnboardingBillingPayload>(
     "/onboarding/billing",
     body,
     {
@@ -88,7 +90,7 @@ export async function UploadOnboardingCompanyLogo(
   const formData = new FormData();
   formData.append("logo", logoFile);
 
-  const response = await ApiClient.post<UploadOnboardingCompanyLogoResponseDto>(
+  const response = await ApiClient.post<OnboardingLogoPayload>(
     "/onboarding/company-logo",
     formData,
     {
@@ -103,7 +105,7 @@ export async function UploadOnboardingCompanyLogo(
 }
 
 export async function CompleteOnboarding(accessToken: string | null) {
-  const response = await ApiClient.post<CompleteOnboardingResponseDto>(
+  const response = await ApiClient.post<OnboardingCompletionPayload>(
     "/onboarding/complete",
     {},
     {

@@ -576,11 +576,9 @@ function CashAdvanceMultipleEntryEntrySection({
   const [itemColumnWidths, setItemColumnWidths] = useState<Record<string, number>>({});
   const [visibleAccountingColumnIds, setVisibleAccountingColumnIds] = useState<string[]>([
     "accountTitle",
-    "debit",
     "credit",
+    "debit",
     "partyName",
-    "responsibilityCenter",
-    "particulars",
   ]);
   const [accountingColumnWidths, setAccountingColumnWidths] = useState<Record<string, number>>({});
   const totalAmount = useMemo(() => calculateCashAdvanceMultipleEntryTotal(rows), [rows]);
@@ -614,15 +612,13 @@ function CashAdvanceMultipleEntryEntrySection({
   );
   const visibleItemColumns = useMemo(
     () =>
-      itemColumns
-        .filter((column) => visibleItemColumnIds.includes(column.id))
+      createVisibleColumns(itemColumns, visibleItemColumnIds)
         .map((column) => applyColumnWidth(column, itemColumnWidths)),
     [itemColumnWidths, itemColumns, visibleItemColumnIds],
   );
   const visibleAccountingColumns = useMemo(
     () =>
-      accountingColumns
-        .filter((column) => visibleAccountingColumnIds.includes(column.id))
+      createVisibleColumns(accountingColumns, visibleAccountingColumnIds)
         .map((column) => applyColumnWidth(column, accountingColumnWidths)),
     [accountingColumnWidths, accountingColumns, visibleAccountingColumnIds],
   );
@@ -860,8 +856,8 @@ function createAccountingColumns(
         />
       ),
     },
-    numberColumn("Debit", "debit", 140, isReadonly, onUpdateEntry),
     numberColumn("Credit", "credit", 140, isReadonly, onUpdateEntry),
+    numberColumn("Debit", "debit", 140, isReadonly, onUpdateEntry),
     {
       header: "Party Name",
       id: "partyName",
@@ -1266,6 +1262,17 @@ function createColumnOptions<TRow extends { id: string }>(
     width: column.width,
     widthMode: column.widthMode,
   }));
+}
+
+function createVisibleColumns<TRow extends { id: string }>(
+  columns: ModuleDataEntryColumn<TRow>[],
+  visibleColumnIds: string[],
+): ModuleDataEntryColumn<TRow>[] {
+  const columnsById = new Map(columns.map((column) => [column.id, column]));
+
+  return visibleColumnIds
+    .map((columnId) => columnsById.get(columnId))
+    .filter((column): column is ModuleDataEntryColumn<TRow> => Boolean(column));
 }
 
 function applyColumnWidth<TRow>(

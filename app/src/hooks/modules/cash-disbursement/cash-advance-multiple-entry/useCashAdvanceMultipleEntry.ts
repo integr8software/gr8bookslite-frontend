@@ -7,6 +7,7 @@ import {
   getSortedRowModel,
   useReactTable,
   type ColumnDef,
+  type ColumnOrderState,
   type PaginationState,
   type SortingState,
   type VisibilityState,
@@ -55,6 +56,23 @@ const CashAdvanceMultipleEntryDefaultColumnVisibility: VisibilityState = {
   updatedAt: false,
   updatedBy: false,
 };
+
+const CashAdvanceMultipleEntryDefaultColumnOrder: ColumnOrderState = [
+  "transNo",
+  "documentDate",
+  "partyCode",
+  "partyName",
+  "accountCode",
+  "accountTitle",
+  "amount",
+  "remarks",
+  "createdBy",
+  "createdAt",
+  "updatedBy",
+  "updatedAt",
+  "status",
+  "actions",
+];
 
 export function useCashAdvanceMultipleEntryStore<TSelected = CashAdvanceMultipleEntryStoreState>(
   selector?: (state: CashAdvanceMultipleEntryStoreState) => TSelected,
@@ -230,6 +248,9 @@ export function useCashAdvanceMultipleEntryTable(records: CashAdvanceMultipleEnt
     from: "",
     to: "",
   });
+  const [columnOrder, setColumnOrder] = useState<ColumnOrderState>(
+    CashAdvanceMultipleEntryDefaultColumnOrder,
+  );
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
     CashAdvanceMultipleEntryDefaultColumnVisibility,
@@ -296,12 +317,14 @@ export function useCashAdvanceMultipleEntryTable(records: CashAdvanceMultipleEnt
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     initialState: {
+      columnOrder: CashAdvanceMultipleEntryDefaultColumnOrder,
       columnVisibility: CashAdvanceMultipleEntryDefaultColumnVisibility,
     },
+    onColumnOrderChange: setColumnOrder,
     onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
-    state: { columnVisibility, pagination, sorting },
+    state: { columnOrder, columnVisibility, pagination, sorting },
   });
 
   function setAmountRange(value: AmountRangeValue) {

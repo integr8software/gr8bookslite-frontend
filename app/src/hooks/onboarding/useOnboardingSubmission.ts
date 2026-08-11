@@ -10,7 +10,7 @@ import {
 import {
   type OnboardingFieldErrors,
   type OnboardingValues,
-} from "@/app/src/data/onboarding/OnboardingTypes";
+} from "@/app/src/types/onboarding/OnboardingTypes";
 import {
   validateOnboardingBillingValues,
   validateOnboardingStepOneValues,
@@ -336,6 +336,8 @@ export function useOnboardingSubmission({
           logoStoragePath: logoStoragePath || undefined,
           logoPublicUrl: logoPublicUrl || undefined,
           address: values.address.trim(),
+          countryCode: values.countryCode,
+          baseCurrencyCode: values.baseCurrencyCode,
           tin: values.tin.trim(),
           companyEmail: values.companyEmail.trim(),
           website: values.website.trim() || undefined,

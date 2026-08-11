@@ -2,23 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
-import {
-  InitialAuthActionState,
-  type AuthActionState,
-} from "@/app/src/data/auth/AuthTypes";
-import {
-  ClearPendingVerificationEmail,
-  SavePendingVerificationEmail,
-} from "@/app/src/data/auth/AuthVerificationStorage";
+import { AuthActionStatuses, InitialAuthActionState, type AuthActionState } from "@/app/src/types/auth/AuthTypes";
+import { ClearPendingVerificationEmail, SavePendingVerificationEmail } from "@/app/src/data/auth/AuthVerificationStorage";
 import { AuthenticatedSessionMarker } from "@/app/src/data/auth/AuthSessionStorage";
-import {
-  GetFallbackPostAuthRedirectPath,
-  IsOnboardingRedirectPath,
-  IsSystemRedirectPath,
-} from "@/app/src/services/auth/AuthRedirects";
+import { LoginWithFrontendAuthSession } from "@/app/src/services/auth/AuthApi";
+import { GetFallbackPostAuthRedirectPath, IsOnboardingRedirectPath, IsSystemRedirectPath } from "@/app/src/services/auth/AuthRedirects";
 import { AuthQueryKeys } from "@/app/src/services/auth/AuthQueryKeys";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { LoginSchema } from "@/app/src/validations/auth/AuthValidation";
@@ -36,17 +27,6 @@ function GetSubmittedValue(formData: FormData, key: string) {
   return typeof value === "string" ? value : "";
 }
 
-async function EnsureFrontendSessionCreated() {
-  const response = await fetch("/api/auth/session", {
-    cache: "no-store",
-    credentials: "include",
-  });
-
-  if (!response.ok) {
-    throw new Error("Login worked, but Safari did not save the session cookie.");
-  }
-}
-
 export function useLoginForm() {
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -54,23 +34,21 @@ export function useLoginForm() {
   const accessToken = useAppStore((state) => state.accessToken);
   const setAccessToken = useAppStore((state) => state.setAccessToken);
   const [state, setState] = useState<AuthActionState>(InitialAuthActionState);
-  const [pending, setPending] = useState(false);
   const [formValues, setFormValues] = useState<Partial<LoginFormValues>>({});
+  const loginMutation = useMutation({
+    mutationFn: LoginWithFrontendAuthSession,
+  });
   const values: LoginFormValues = {
     ...InitialLoginFormValues,
     ...state.formValues,
     ...formValues,
   };
   const shouldShowImmediateSystemLoader =
-    state.status === "success" &&
+    state.status === AuthActionStatuses.Success &&
     Boolean(state.redirectTo) &&
-    IsSystemRedirectPath(
-      state.redirectTo ?? GetFallbackPostAuthRedirectPath(accessToken),
-    );
+    IsSystemRedirectPath(state.redirectTo ?? GetFallbackPostAuthRedirectPath(accessToken));
   const successfulAuthRedirectPath =
-    state.status === "success"
-      ? state.redirectTo ?? GetFallbackPostAuthRedirectPath(accessToken)
-      : null;
+    state.status === AuthActionStatuses.Success ? (state.redirectTo ?? GetFallbackPostAuthRedirectPath(accessToken)) : null;
   const isResolvingPostAuthRef = useRef(false);
   const isForcedLogin = searchParams.get("force") === "true";
 
@@ -88,7 +66,7 @@ export function useLoginForm() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (pending) {
+    if (loginMutation.isPending) {
       return;
     }
 
@@ -106,7 +84,7 @@ export function useLoginForm() {
     if (!parsed.success) {
       setState({
         ...InitialAuthActionState,
-        status: "error",
+        status: AuthActionStatuses.Error,
         message: "Email or Password is incorrect.",
         errors: parsed.error.flatten().fieldErrors,
         formValues: { email },
@@ -114,36 +92,15 @@ export function useLoginForm() {
       return;
     }
 
-    setPending(true);
-
     try {
-      const response = await fetch("/api/auth/login", {
-        body: JSON.stringify({
-          email: parsed.data.email,
-          password: parsed.data.password,
-          rememberMe,
-        }),
-        cache: "no-store",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        method: "POST",
+      const payload = await loginMutation.mutateAsync({
+        email: parsed.data.email,
+        password: parsed.data.password,
+        rememberMe,
       });
-      const payload = (await response.json().catch(() => null)) as {
-        message?: string;
-        pendingVerificationEmail?: string;
-        redirectTo?: string;
-      } | null;
-
-      if (!response.ok) {
-        throw new Error(payload?.message ?? "Email or Password is incorrect.");
-      }
-
-      await EnsureFrontendSessionCreated();
 
       const nextState: AuthActionState = {
-        status: "success",
+        status: AuthActionStatuses.Success,
         message: payload?.message ?? "Login successful.",
         rememberMe,
         redirectTo: payload?.redirectTo,
@@ -161,15 +118,12 @@ export function useLoginForm() {
       }
       router.push(GetFallbackPostAuthRedirectPath(null));
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Email or Password is incorrect.";
-      const passwordMessage = message.startsWith(
-        "This account does not have a password yet.",
-      )
+      const message = error instanceof Error ? error.message : "Email or Password is incorrect.";
+      const passwordMessage = message.startsWith("This account does not have a password yet.")
         ? message
         : "Email or Password is incorrect.";
       const nextState: AuthActionState = {
-        status: "error",
+        status: AuthActionStatuses.Error,
         message,
         errors: {
           password: [passwordMessage],
@@ -184,8 +138,6 @@ export function useLoginForm() {
         SavePendingVerificationEmail(parsed.data.email);
         router.push("/auth/verify-email");
       }
-    } finally {
-      setPending(false);
     }
   }
 
@@ -197,7 +149,7 @@ export function useLoginForm() {
 
   return {
     state,
-    pending,
+    pending: loginMutation.isPending,
     isSystemRedirecting: shouldShowImmediateSystemLoader,
     isOnboardingRedirecting: IsOnboardingRedirectPath(successfulAuthRedirectPath),
     values,

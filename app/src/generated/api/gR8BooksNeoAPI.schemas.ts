@@ -191,6 +191,10 @@ export const SaveOnboardingCompanyDetailsDtoTaxpayerType = {
 } as const;
 
 export interface SaveOnboardingCompanyDetailsDto {
+  /** @pattern ^[A-Z]{2}$ */
+  countryCode: string;
+  /** @pattern ^[A-Z]{3}$ */
+  baseCurrencyCode: string;
   taxpayerType: SaveOnboardingCompanyDetailsDtoTaxpayerType;
   /** @minLength 2 */
   lastName?: string;

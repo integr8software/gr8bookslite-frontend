@@ -1,34 +1,23 @@
 "use server";
 
+import { ChangeVerificationEmailSchema, ForgotPasswordSchema, OtpSchema, SignUpSchema } from "@/app/src/validations/auth/AuthValidation";
+import { AuthActionStatuses, type AuthActionState } from "@/app/src/types/auth/AuthTypes";
 import {
-  ChangeVerificationEmailSchema,
-  ForgotPasswordSchema,
-  OtpSchema,
-  SignUpSchema,
-} from "@/app/src/validations/auth/AuthValidation";
-import type { AuthActionState } from "@/app/src/data/auth/AuthTypes";
-import {
-  type ChangeVerificationEmailRequest,
-  type ChangeVerificationEmailResponse,
-  type RegisterRequest,
-  type RegisterResponse,
-  type ResendVerificationRequest,
-  type ResendVerificationResponse,
-  type VerifyEmailRequest,
-  type VerifyEmailResponse,
-} from "@/app/src/services/auth/AuthApiTypes";
+  type VerificationEmailChangeInput,
+  type VerificationEmailChangeResult,
+  type RegistrationInput,
+  type RegistrationResult,
+  type VerificationResendInput,
+  type VerificationResendResult,
+  type EmailVerificationInput,
+  type EmailVerificationResult,
+} from "@/app/src/types/auth/AuthTypes";
 import { PostAuthJson } from "@/app/src/services/auth/AuthApi";
-import {
-  GetFormValue,
-  InvalidState,
-} from "@/app/src/services/auth/AuthActionUtils";
+import { GetFormValue, InvalidState } from "@/app/src/services/auth/AuthActionUtils";
 import { GetFallbackPostAuthRedirectPath } from "@/app/src/services/auth/AuthRedirects";
 import { SetAuthAccessTokenCookie } from "@/app/src/services/auth/AuthCookieServer";
 
-export async function SignUpAction(
-  _previousState: AuthActionState,
-  formData: FormData,
-): Promise<AuthActionState> {
+export async function SignUpAction(_previousState: AuthActionState, formData: FormData): Promise<AuthActionState> {
   const formValues = {
     name: GetFormValue(formData, "name"),
     email: GetFormValue(formData, "email"),
@@ -45,40 +34,30 @@ export async function SignUpAction(
   }
 
   try {
-    const response = await PostAuthJson<RegisterRequest, RegisterResponse>(
-      "/auth/register",
-      {
-        fullName: parsed.data.name,
-        email: parsed.data.email,
-        contactNumber: parsed.data.contactNumber,
-        password: parsed.data.password,
-        confirmPassword: parsed.data.confirmPassword,
-      },
-    );
+    const response = await PostAuthJson<RegistrationInput, RegistrationResult>("/auth/register", {
+      fullName: parsed.data.name,
+      email: parsed.data.email,
+      contactNumber: parsed.data.contactNumber,
+      password: parsed.data.password,
+      confirmPassword: parsed.data.confirmPassword,
+    });
 
     return {
-      status: "success",
+      status: AuthActionStatuses.Success,
       message: response.message,
       redirectTo: "/auth/verify-email",
       pendingVerificationEmail: response.email,
     };
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "We could not create your account right now.";
+    const message = error instanceof Error ? error.message : "We could not create your account right now.";
 
     return {
-      status: "error",
+      status: AuthActionStatuses.Error,
       message,
       errors:
-        message ===
-          "An account already uses this email. Sign in or reset your password." ||
-        message === "Email is already in use."
+        message === "An account already uses this email. Sign in or reset your password." || message === "Email is already in use."
           ? {
-              email: [
-                "An account already uses this email. Sign in or reset your password.",
-              ],
+              email: ["An account already uses this email. Sign in or reset your password."],
             }
           : undefined,
       formValues,
@@ -86,10 +65,7 @@ export async function SignUpAction(
   }
 }
 
-export async function OtpAction(
-  _previousState: AuthActionState,
-  formData: FormData,
-): Promise<AuthActionState> {
+export async function OtpAction(_previousState: AuthActionState, formData: FormData): Promise<AuthActionState> {
   const email = GetFormValue(formData, "email");
   const otp = GetFormValue(formData, "otp");
   const parsed = OtpSchema.safeParse({ otp });
@@ -102,7 +78,7 @@ export async function OtpAction(
 
   if (!emailValidation.success) {
     return {
-      status: "error",
+      status: AuthActionStatuses.Error,
       message: "Enter a valid email address.",
       errors: {
         email: emailValidation.error.flatten().fieldErrors.email,
@@ -111,27 +87,21 @@ export async function OtpAction(
   }
 
   try {
-    const response = await PostAuthJson<VerifyEmailRequest, VerifyEmailResponse>(
-      "/auth/verify-email",
-      {
-        email: emailValidation.data.email,
-        code: parsed.data.otp,
-      },
-    );
+    const response = await PostAuthJson<EmailVerificationInput, EmailVerificationResult>("/auth/verify-email", {
+      email: emailValidation.data.email,
+      code: parsed.data.otp,
+    });
     await SetAuthAccessTokenCookie(response.accessToken, false);
 
     return {
-      status: "success",
+      status: AuthActionStatuses.Success,
       message: response.message ?? "Email verified successfully.",
       redirectTo: GetFallbackPostAuthRedirectPath(response.accessToken),
     };
   } catch (error) {
     return {
-      status: "error",
-      message:
-        error instanceof Error
-          ? error.message
-          : "We could not verify your email right now.",
+      status: AuthActionStatuses.Error,
+      message: error instanceof Error ? error.message : "We could not verify your email right now.",
       errors: {
         otp: ["The code you entered is invalid."],
       },
@@ -139,10 +109,7 @@ export async function OtpAction(
   }
 }
 
-export async function ResendVerificationAction(
-  _previousState: AuthActionState,
-  formData: FormData,
-): Promise<AuthActionState> {
+export async function ResendVerificationAction(_previousState: AuthActionState, formData: FormData): Promise<AuthActionState> {
   const parsed = ForgotPasswordSchema.safeParse({
     email: GetFormValue(formData, "email"),
   });
@@ -152,32 +119,23 @@ export async function ResendVerificationAction(
   }
 
   try {
-    const response = await PostAuthJson<
-      ResendVerificationRequest,
-      ResendVerificationResponse
-    >("/auth/resend-verification", {
+    const response = await PostAuthJson<VerificationResendInput, VerificationResendResult>("/auth/resend-verification", {
       email: parsed.data.email,
     });
 
     return {
-      status: "success",
+      status: AuthActionStatuses.Success,
       message: response.message,
     };
   } catch (error) {
     return {
-      status: "error",
-      message:
-        error instanceof Error
-          ? error.message
-          : "We could not resend the verification code right now.",
+      status: AuthActionStatuses.Error,
+      message: error instanceof Error ? error.message : "We could not resend the verification code right now.",
     };
   }
 }
 
-export async function ChangeVerificationEmailAction(
-  _previousState: AuthActionState,
-  formData: FormData,
-): Promise<AuthActionState> {
+export async function ChangeVerificationEmailAction(_previousState: AuthActionState, formData: FormData): Promise<AuthActionState> {
   const parsed = ChangeVerificationEmailSchema.safeParse({
     currentEmail: GetFormValue(formData, "currentEmail"),
     newEmail: GetFormValue(formData, "newEmail"),
@@ -187,7 +145,7 @@ export async function ChangeVerificationEmailAction(
     const { fieldErrors } = parsed.error.flatten();
 
     return {
-      status: "error",
+      status: AuthActionStatuses.Error,
       message: "Please enter a valid new email address.",
       errors: {
         email: fieldErrors.newEmail,
@@ -197,22 +155,19 @@ export async function ChangeVerificationEmailAction(
   }
 
   try {
-    const response = await PostAuthJson<
-      ChangeVerificationEmailRequest,
-      ChangeVerificationEmailResponse
-    >("/auth/change-verification-email", parsed.data);
+    const response = await PostAuthJson<VerificationEmailChangeInput, VerificationEmailChangeResult>(
+      "/auth/change-verification-email",
+      parsed.data,
+    );
 
     return {
-      status: "success",
+      status: AuthActionStatuses.Success,
       message: response.message,
     };
   } catch (error) {
     return {
-      status: "error",
-      message:
-        error instanceof Error
-          ? error.message
-          : "We could not update your verification email right now.",
+      status: AuthActionStatuses.Error,
+      message: error instanceof Error ? error.message : "We could not update your verification email right now.",
     };
   }
 }

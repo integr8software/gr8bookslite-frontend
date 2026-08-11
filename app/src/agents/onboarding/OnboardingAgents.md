@@ -33,7 +33,9 @@ app/src/hooks/onboarding/
 
 app/src/services/onboarding/
   OnboardingApi.ts
-  OnboardingApiTypes.ts
+
+app/src/types/onboarding/
+  OnboardingApiModels.ts
 
 app/src/ui/onboarding/
   OnboardingActionRow.tsx
@@ -165,8 +167,8 @@ Use `ui` for presentational onboarding pieces and reusable step components.
   - shared Axios boilerplate for future onboarding API wrappers
 - `OnboardingApi.ts`
   - onboarding REST wrappers for draft load, plan save, billing save, company details save, and completion
-- `OnboardingApiTypes.ts`
-  - onboarding API request and response shapes
+- `OnboardingApiModels.ts`
+  - onboarding API payload models owned by the onboarding feature types layer
 - `QueryClient.ts`
   - shared TanStack Query client factory
 - `useAppStore.ts`

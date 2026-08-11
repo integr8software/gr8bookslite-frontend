@@ -25,7 +25,7 @@ export function ModuleTableActions({
   children: ReactNode;
 }) {
   return (
-    <div {...props} className={joinClasses("flex items-center justify-end gap-1.5", className)}>
+    <div {...props} className={joinClasses("flex items-center gap-1.5", className)}>
       {children}
     </div>
   );

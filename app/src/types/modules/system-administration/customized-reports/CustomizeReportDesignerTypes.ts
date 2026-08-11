@@ -2,7 +2,7 @@ import type { CustomizeReportLayout } from "@/app/src/types/modules/system-admin
 
 export type DragState = {
   elementId: string;
-  elementType: "field" | "line";
+  elementType: "field" | "line" | "table";
   action: "move" | "resize";
   resizeHandle?: "nw" | "ne" | "sw" | "se";
   startX: number;
@@ -30,7 +30,7 @@ export type CanvasPanState = {
 export type ReportElementBounds = {
   id: string;
   label: string;
-  type: "field" | "line";
+  type: "field" | "line" | "table";
   x: number;
   y: number;
   width: number;
@@ -56,7 +56,7 @@ export type LayoutHistory = {
   future: CustomizeReportLayout[];
 };
 
-export type SelectedElementKey = `field:${string}` | `line:${string}`;
+export type SelectedElementKey = `field:${string}` | `line:${string}` | `table:${string}`;
 
 export type AlignDistributionAction =
   | "left"

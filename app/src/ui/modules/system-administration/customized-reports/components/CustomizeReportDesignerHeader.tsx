@@ -1,5 +1,6 @@
 import {
   FileText,
+  LayoutTemplate,
   Redo2,
   RefreshCcw,
   Save,
@@ -17,7 +18,10 @@ import {
   ToolbarButtonClassName,
   ZoomStep,
 } from "@/app/src/ui/modules/system-administration/customized-reports/constants/CustomizeReportDesignerConstants";
-import { CustomizeReportModuleOptions } from "@/app/src/data/modules/system-administration/customized-reports/CustomizeReportData";
+import {
+  CustomizeReportModuleOptions,
+  CustomizeReportPresetTemplates,
+} from "@/app/src/data/modules/system-administration/customized-reports/CustomizeReportData";
 import type {
   CustomizeReportModuleOption,
   CustomizeReportPageSetup,
@@ -31,16 +35,19 @@ type CustomizeReportDesignerHeaderProps = {
   canUndo: boolean;
   isRendering: boolean;
   pageSetup: CustomizeReportPageSetup;
+  selectedPresetTemplateId: string;
   selectedReport: CustomizeReportModuleOption;
   selectedReportId: string;
   zoom: number;
   onOpenTools: () => void;
   onPageFormatChange: (format: CustomizeReportPaperFormat) => void;
   onPageOrientationChange: (orientation: CustomizeReportPageSetup["orientation"]) => void;
+  onPresetTemplateApply: () => void;
   onPreviewPdf: () => void;
   onRedoLayout: () => void;
   onResetLayout: () => void;
   onSaveLayout: () => void;
+  onSelectedPresetTemplateIdChange: (templateId: string) => void;
   onSelectedReportIdChange: (reportId: string) => void;
   onUndoLayout: () => void;
   onZoomChange: (zoom: number) => void;
@@ -53,14 +60,17 @@ export function CustomizeReportDesignerHeader({
   onOpenTools,
   onPageFormatChange,
   onPageOrientationChange,
+  onPresetTemplateApply,
   onPreviewPdf,
   onRedoLayout,
   onResetLayout,
   onSaveLayout,
+  onSelectedPresetTemplateIdChange,
   onSelectedReportIdChange,
   onUndoLayout,
   onZoomChange,
   pageSetup,
+  selectedPresetTemplateId,
   selectedReport,
   selectedReportId,
   zoom,
@@ -143,7 +153,7 @@ export function CustomizeReportDesignerHeader({
         </div>
       </div>
 
-      <div className="grid gap-3 border-t border-slate-100 bg-slate-50/70 px-4 py-3 sm:grid-cols-3">
+      <div className="grid gap-3 border-t border-slate-100 bg-slate-50/70 px-4 py-3 sm:grid-cols-2 xl:grid-cols-[minmax(13rem,1.2fr)_minmax(13rem,1fr)_minmax(10rem,0.75fr)_minmax(10rem,0.75fr)]">
         <label className="flex min-w-0 flex-col gap-1">
           <span className="text-xs font-semibold uppercase text-slate-500">Report Module</span>
           <select
@@ -163,6 +173,34 @@ export function CustomizeReportDesignerHeader({
               </optgroup>
             ))}
           </select>
+        </label>
+        <label className="flex min-w-0 flex-col gap-1">
+          <span className="text-xs font-semibold uppercase text-slate-500">Preset Template</span>
+          <span className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-2">
+            <select
+              className={`${ReportToolbarSelectClassName} w-full`}
+              onChange={(event) => onSelectedPresetTemplateIdChange(event.target.value)}
+              value={selectedPresetTemplateId}
+            >
+              {CustomizeReportPresetTemplates.map((template) => (
+                <option key={template.id} value={template.id}>
+                  {template.name}
+                </option>
+              ))}
+            </select>
+            <button
+              className={`${ToolbarButtonClassName} px-2.5`}
+              onClick={onPresetTemplateApply}
+              title={
+                CustomizeReportPresetTemplates.find((template) => template.id === selectedPresetTemplateId)?.description ||
+                "Apply preset template"
+              }
+              type="button"
+            >
+              <LayoutTemplate className="h-4 w-4" />
+              Apply
+            </button>
+          </span>
         </label>
         <label className="flex min-w-0 flex-col gap-1">
           <span className="text-xs font-semibold uppercase text-slate-500">Paper</span>

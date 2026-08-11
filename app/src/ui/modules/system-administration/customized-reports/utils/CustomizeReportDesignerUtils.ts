@@ -47,12 +47,19 @@ export function cloneLayout(layout: CustomizeReportLayout): CustomizeReportLayou
 }
 
 export function getTableSetupWithDefaults(tableSetup?: CustomizeReportTableSetup) {
+  const configuredColumns = tableSetup?.columns || [];
+  const defaultColumns = DefaultTableColumns.map((defaultColumn) => ({
+    ...defaultColumn,
+    ...(configuredColumns.find((column) => column.key === defaultColumn.key) || {}),
+  }));
+  const customColumns = configuredColumns.filter(
+    (column) => !DefaultTableColumns.some((defaultColumn) => defaultColumn.key === column.key),
+  );
+
   return {
     ...(tableSetup || DefaultTableSetup),
-    columns: DefaultTableColumns.map((defaultColumn) => ({
-      ...defaultColumn,
-      ...(tableSetup?.columns.find((column) => column.key === defaultColumn.key) || {}),
-    })),
+    previewRows: tableSetup?.previewRows ?? DefaultTableSetup.previewRows,
+    columns: [...defaultColumns, ...customColumns],
   };
 }
 
@@ -63,12 +70,12 @@ export function getMarginSetupWithDefaults(marginSetup?: CustomizeReportMarginSe
   };
 }
 
-export function getSelectedElementKey(type: "field" | "line", id: string): SelectedElementKey {
+export function getSelectedElementKey(type: "field" | "line" | "table", id: string): SelectedElementKey {
   return `${type}:${id}` as SelectedElementKey;
 }
 
 export function parseSelectedElementKey(key: SelectedElementKey) {
-  const [type, id] = key.split(":") as ["field" | "line", string];
+  const [type, id] = key.split(":") as ["field" | "line" | "table", string];
   return { type, id };
 }
 
@@ -113,14 +120,28 @@ export function getLineBounds(line: CustomizeReportLine): ReportElementBounds {
   };
 }
 
+export function getTableBounds(tableSetup: CustomizeReportTableSetup): ReportElementBounds {
+  return {
+    id: "items-table",
+    label: "Items Table",
+    type: "table",
+    x: tableSetup.x,
+    y: tableSetup.y,
+    width: tableSetup.width,
+    height: tableSetup.rowHeight * ((tableSetup.previewRows ?? DefaultTableSetup.previewRows) + 1),
+  };
+}
+
 export function getVisibleElementBounds(
   fields: CustomizeReportField[],
   lines: CustomizeReportLine[],
+  tableSetup: CustomizeReportTableSetup,
   excludedElementId?: string,
 ) {
   return [
     ...fields.filter((field) => field.visible).map(getFieldBounds),
     ...lines.filter((line) => line.visible).map(getLineBounds),
+    getTableBounds(tableSetup),
   ].filter((element) => element.id !== excludedElementId);
 }
 

@@ -1,6 +1,10 @@
-import type { AuthMembershipRole, AuthProfile } from "@/app/src/types/auth/AuthTypes";
-
-export type AuthEffectiveRole = "SUPER_ADMIN" | "ADMIN" | "USER";
+import {
+  AuthEffectiveRoleCodes,
+  AuthMembershipRoleCodes,
+  type AuthEffectiveRole,
+  type AuthMembershipRole,
+  type AuthProfile,
+} from "@/app/src/types/auth/AuthTypes";
 
 export function GetAuthProfileAccess(profile: AuthProfile | undefined) {
   return profile?.activeAccess ?? profile?.access ?? null;
@@ -29,13 +33,13 @@ export function GetAuthProfileMembershipRole(profile: AuthProfile | undefined): 
 }
 
 export function ResolveAuthProfileEffectiveRole(profile: AuthProfile | undefined): AuthEffectiveRole {
-  if (profile?.user.systemRole === "SUPER_ADMIN") {
-    return "SUPER_ADMIN";
+  if (profile?.user.systemRole === AuthEffectiveRoleCodes.SuperAdmin) {
+    return AuthEffectiveRoleCodes.SuperAdmin;
   }
 
-  if (GetAuthProfileMembershipRole(profile) === "ADMIN") {
-    return "ADMIN";
+  if (GetAuthProfileMembershipRole(profile) === AuthMembershipRoleCodes.Admin) {
+    return AuthEffectiveRoleCodes.Admin;
   }
 
-  return "USER";
+  return AuthEffectiveRoleCodes.User;
 }

@@ -80,6 +80,8 @@ const ManualInputVatAccountingEntryIdPrefix = "apv-entry-manual-input-vat-";
 const ManualEwtAccountingEntryIdPrefix = "apv-entry-manual-ewt-";
 const ManualDefaultPayableAccountingEntryId = "apv-entry-manual-default-payable";
 const AccountsPayableVoucherAddMode = "add" as const;
+const AccountsPayableVoucherEditMode = "edit" as const;
+const AccountsPayableVoucherViewMode = "view" as const;
 
 export function useAccountsPayableVoucherFormPage() {
   const router = useRouter();
@@ -114,7 +116,8 @@ export function useAccountsPayableVoucherFormPage() {
   const numberSuggestionQuery = useAccountsPayableVoucherNumberSuggestion(mode === AccountsPayableVoucherAddMode);
   const existingRecord = recordQuery.data ?? records.find((record) => record.id === recordId);
   const isReadonly =
-    mode === "view" || (mode === "edit" && (!existingRecord || !canEditAccountsPayableVoucherStatus(existingRecord.status)));
+    mode === AccountsPayableVoucherViewMode ||
+    (mode === AccountsPayableVoucherEditMode && (!existingRecord || !canEditAccountsPayableVoucherStatus(existingRecord.status)));
   const [values, setValues] = useState<AccountsPayableVoucherFormValues>(() =>
     createAccountsPayableVoucherFormValues(existingRecord, baseCurrencyCode),
   );
@@ -692,9 +695,9 @@ export function useAccountsPayableVoucherFormPage() {
     }
 
     try {
-      if (mode === "edit" && existingRecord) {
+      if (mode === AccountsPayableVoucherEditMode && existingRecord) {
         await updateRecord(updateAccountsPayableVoucherFromForm(existingRecord, pendingSaveValues));
-      } else if (mode === "edit") {
+      } else if (mode === AccountsPayableVoucherEditMode) {
         toast.error("Could not find the accounts payable voucher to update.");
         return;
       } else {
@@ -795,7 +798,7 @@ export function useAccountsPayableVoucherFormPage() {
     mode,
     moveAccountingEntry,
     moveExpenseLine,
-    needsRecord: mode === "edit" || mode === "view",
+    needsRecord: mode === AccountsPayableVoucherEditMode || mode === AccountsPayableVoucherViewMode,
     removeAccountingEntry,
     removeExpenseLine,
     setIsCancelDialogOpen,

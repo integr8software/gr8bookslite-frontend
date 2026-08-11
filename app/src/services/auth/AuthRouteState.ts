@@ -1,7 +1,6 @@
 import type { AuthProfile } from "@/app/src/types/auth/AuthTypes";
 import { GetPostAuthRedirectPathFromProfile } from "@/app/src/services/auth/AuthRedirects";
-
-export const OnboardingRoutePath = "/onboarding";
+export { OnboardingRoutePath } from "@/app/src/services/auth/AuthRouteConstants";
 
 export function RequiresOnboarding(profile: AuthProfile | undefined) {
   return profile?.onboarding.requiresCompanySetup === true;

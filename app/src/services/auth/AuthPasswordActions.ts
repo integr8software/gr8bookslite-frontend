@@ -1,7 +1,7 @@
 "use server";
 
 import { ForgotPasswordSchema, OtpSchema, ResetPasswordSchema } from "@/app/src/validations/auth/AuthValidation";
-import type { AuthActionState } from "@/app/src/data/auth/AuthTypes";
+import { AuthActionStatuses, type AuthActionState } from "@/app/src/data/auth/AuthTypes";
 import {
   type ForgotPasswordInput,
   type ForgotPasswordResult,
@@ -30,13 +30,13 @@ export async function ForgotPasswordAction(_previousState: AuthActionState, form
     });
 
     return {
-      status: "success",
+      status: AuthActionStatuses.Success,
       code: response.code,
       message: response.message,
     };
   } catch (error) {
     return {
-      status: "error",
+      status: AuthActionStatuses.Error,
       message: error instanceof Error ? error.message : "We could not send a reset code right now.",
     };
   }
@@ -55,7 +55,7 @@ export async function ForgotPasswordOtpAction(_previousState: AuthActionState, f
 
   if (!emailValidation.success) {
     return {
-      status: "error",
+      status: AuthActionStatuses.Error,
       message: "Enter a valid email address.",
       errors: {
         email: emailValidation.error.flatten().fieldErrors.email,
@@ -73,7 +73,7 @@ export async function ForgotPasswordOtpAction(_previousState: AuthActionState, f
     );
 
     return {
-      status: "success",
+      status: AuthActionStatuses.Success,
       message: response.message,
       resetToken: response.resetToken,
     };
@@ -81,7 +81,7 @@ export async function ForgotPasswordOtpAction(_previousState: AuthActionState, f
     const message = error instanceof Error ? error.message : "We could not verify your reset code right now.";
 
     return {
-      status: "error",
+      status: AuthActionStatuses.Error,
       message,
       errors: {
         otp: [
@@ -109,13 +109,13 @@ export async function ResendForgotPasswordAction(_previousState: AuthActionState
     });
 
     return {
-      status: "success",
+      status: AuthActionStatuses.Success,
       code: response.code,
       message: response.message,
     };
   } catch (error) {
     return {
-      status: "error",
+      status: AuthActionStatuses.Error,
       message: error instanceof Error ? error.message : "We could not resend the reset code right now.",
     };
   }
@@ -134,7 +134,7 @@ export async function ResetPasswordAction(_previousState: AuthActionState, formD
 
   if (!resetToken) {
     return {
-      status: "error",
+      status: AuthActionStatuses.Error,
       message: "Verify your reset code before creating a new password.",
       errors: {
         otp: ["Verify your reset code before creating a new password."],
@@ -150,7 +150,7 @@ export async function ResetPasswordAction(_previousState: AuthActionState, formD
     });
 
     return {
-      status: "success",
+      status: AuthActionStatuses.Success,
       message: response.message,
       redirectTo: "/login",
     };
@@ -158,7 +158,7 @@ export async function ResetPasswordAction(_previousState: AuthActionState, formD
     const message = error instanceof Error ? error.message : "We could not reset your password right now.";
 
     return {
-      status: "error",
+      status: AuthActionStatuses.Error,
       message,
       errors: {
         otp:
@@ -186,7 +186,7 @@ export async function ActivateWorkspaceInvitationAction(_previousState: AuthActi
 
   if (!email || !token) {
     return {
-      status: "error",
+      status: AuthActionStatuses.Error,
       message: "This invitation link is incomplete. Ask your administrator for a new invitation.",
     };
   }
@@ -203,13 +203,13 @@ export async function ActivateWorkspaceInvitationAction(_previousState: AuthActi
     );
 
     return {
-      status: "success",
+      status: AuthActionStatuses.Success,
       message: response.message,
       redirectTo: "/login",
     };
   } catch (error) {
     return {
-      status: "error",
+      status: AuthActionStatuses.Error,
       message: error instanceof Error ? error.message : "We could not activate this invitation right now.",
     };
   }

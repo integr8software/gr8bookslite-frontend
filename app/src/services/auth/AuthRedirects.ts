@@ -1,6 +1,7 @@
 import { GetAuthProfile } from "@/app/src/services/auth/AuthApi";
 import { GetAuthProfileCompanyId, ResolveAuthProfileEffectiveRole } from "@/app/src/services/auth/AuthProfileAccess";
-import type { AuthProfile } from "@/app/src/types/auth/AuthTypes";
+import { AuthEffectiveRoleCodes, AuthMembershipRoleCodes, AuthSystemRoleCodes, type AuthProfile } from "@/app/src/types/auth/AuthTypes";
+import { OnboardingRoutePath } from "@/app/src/services/auth/AuthRouteConstants";
 
 type AuthJwtPayload = {
   companyId?: number | null;
@@ -37,7 +38,7 @@ export function IsSystemRedirectPath(path: string | null | undefined) {
 }
 
 export function IsOnboardingRedirectPath(path: string | null | undefined) {
-  return path === "/onboarding" || path?.startsWith("/onboarding/");
+  return path === OnboardingRoutePath || path?.startsWith(`${OnboardingRoutePath}/`);
 }
 
 function NormalizeBase64Url(value: string) {
@@ -86,10 +87,10 @@ export function GetFallbackPostAuthRedirectPath(accessToken: string | null | und
   const payload = ReadAuthJwtPayload(accessToken);
 
   if (!payload) {
-    return "/onboarding";
+    return OnboardingRoutePath;
   }
 
-  if (payload.systemRole === "SUPER_ADMIN") {
+  if (payload.systemRole === AuthSystemRoleCodes.SuperAdmin) {
     return "/master/dashboard";
   }
 
@@ -97,21 +98,21 @@ export function GetFallbackPostAuthRedirectPath(accessToken: string | null | und
     return "/dashboard";
   }
 
-  if (payload.membershipRole === "ADMIN") {
+  if (payload.membershipRole === AuthMembershipRoleCodes.Admin) {
     return "/workspace/dashboard";
   }
 
-  return "/onboarding";
+  return OnboardingRoutePath;
 }
 
 export function GetPostAuthRedirectPathFromProfile(profile: AuthProfile) {
   if (profile.onboarding.requiresCompanySetup) {
-    return "/onboarding";
+    return OnboardingRoutePath;
   }
 
   const effectiveRole = ResolveAuthProfileEffectiveRole(profile);
 
-  if (effectiveRole === "SUPER_ADMIN") {
+  if (effectiveRole === AuthEffectiveRoleCodes.SuperAdmin) {
     return "/master/dashboard";
   }
 
@@ -119,11 +120,11 @@ export function GetPostAuthRedirectPathFromProfile(profile: AuthProfile) {
     return "/dashboard";
   }
 
-  if (effectiveRole === "ADMIN") {
+  if (effectiveRole === AuthEffectiveRoleCodes.Admin) {
     return "/workspace/dashboard";
   }
 
-  return "/onboarding";
+  return OnboardingRoutePath;
 }
 
 export async function ResolvePostAuthDestination(accessToken: string | null = null) {

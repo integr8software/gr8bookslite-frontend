@@ -54,7 +54,7 @@ import { BuildAuthProfileFromSwitchResponse, PrepareQueryCacheForContextSwitch }
 import { OnboardingRoutePath, RequiresOnboarding } from "@/app/src/services/auth/AuthRouteState";
 import { AuthQueryKeys, CreateAuthAccessTokenQueryScope } from "@/app/src/services/auth/AuthQueryKeys";
 import { IsUnauthorizedApiError } from "@/app/src/services/shared/api/ApiClient";
-import type { AuthProfile } from "@/app/src/types/auth/AuthTypes";
+import { AuthEffectiveRoleCodes, AuthMembershipRoleCodes, AuthSystemRoleCodes, type AuthProfile } from "@/app/src/types/auth/AuthTypes";
 import { MapUserModulesToNavigation } from "@/app/src/data/shared/main-layout/sidebar/UserModuleNavigationAdapter";
 import type { MainBreadcrumb, MainBreadcrumbDropdownItem, MainNotificationTab } from "@/app/src/types/shared/main-layout/MainLayoutTypes";
 
@@ -92,6 +92,12 @@ const AccountRoutePrefix = "/account";
 const WorkspaceHomeHref = "/workspace/dashboard";
 const MasterHomeHref = "/master/dashboard";
 const CompanyFallbackHomeHref = "/dashboard";
+const MainNavigationScopes = {
+  Account: "account",
+  Master: "master",
+  Workspace: "workspace",
+  Company: "company",
+} as const satisfies Record<string, MainNavigationScope>;
 const ShellContextSwitchFallbackMs = 8000;
 const BranchContextSwitchMinimumMs = 650;
 const TopbarContextSkeletonMs = 700;
@@ -124,6 +130,8 @@ type NavigationTrailNode = {
   href?: string;
   dropdownItems?: MainBreadcrumbDropdownItem[];
 };
+
+type AdministrationNavigationScope = typeof MainNavigationScopes.Master | typeof MainNavigationScopes.Workspace;
 
 export function useMainLayout() {
   const pathname = usePathname();
@@ -165,7 +173,7 @@ export function useMainLayout() {
   const [selectedBranchId, setSelectedBranchId] = useState("");
   const [switchingCompanyName, setSwitchingCompanyName] = useState<string | null>(null);
   const [switchingCompanyId, setSwitchingCompanyId] = useState<string | null>(null);
-  const [switchingAdministrationScope, setSwitchingAdministrationScope] = useState<"master" | "workspace" | null>(null);
+  const [switchingAdministrationScope, setSwitchingAdministrationScope] = useState<AdministrationNavigationScope | null>(null);
   const missingRecordActionRedirectHref = getMissingRecordActionRedirectHref(pathname);
   const routedCompanyId = searchParams.get(CompanyUsersContextParam);
   const routedBranchId = searchParams.get(BranchUsersContextParam);
@@ -184,12 +192,13 @@ export function useMainLayout() {
     enabled: isAuthSessionReady,
   });
   const effectiveRole = authProfile ? ResolveAuthProfileEffectiveRole(authProfile) : null;
-  const isSuperAdmin = effectiveRole === "SUPER_ADMIN";
+  const isSuperAdmin = effectiveRole === AuthEffectiveRoleCodes.SuperAdmin;
   const isMasterRoute = isMasterPath(pathname);
   const isWorkspaceRoute = isWorkspacePath(pathname);
   const isAccountRoute = isAccountPath(pathname);
-  const hasMasterAccess = effectiveRole === "SUPER_ADMIN";
-  const hasWorkspaceAccess = authProfile && effectiveRole !== "SUPER_ADMIN" ? ProfileHasWorkspaceAccess(authProfile) : false;
+  const hasMasterAccess = effectiveRole === AuthEffectiveRoleCodes.SuperAdmin;
+  const hasWorkspaceAccess =
+    authProfile && effectiveRole !== AuthEffectiveRoleCodes.SuperAdmin ? ProfileHasWorkspaceAccess(authProfile) : false;
   const isProfileLoading = Boolean(accessToken) && !authProfile && isAuthProfileFetching;
   const shouldRedirectToOnboarding = RequiresOnboarding(authProfile);
 
@@ -210,12 +219,12 @@ export function useMainLayout() {
     NotifyAuthSessionExpired();
   }, [authProfileError, isAuthProfileError]);
   const activeNavigationScope: MainNavigationScope = isAccountRoute
-    ? "account"
+    ? MainNavigationScopes.Account
     : hasMasterAccess
-      ? "master"
+      ? MainNavigationScopes.Master
       : authProfile && isWorkspaceRoute
-        ? "workspace"
-        : "company";
+        ? MainNavigationScopes.Workspace
+        : MainNavigationScopes.Company;
   const workspaceCompanies = useMemo(
     () => (authProfile && !isSuperAdmin ? MapProfileCompaniesToMainCompanies(authProfile) : []),
     [authProfile, isSuperAdmin],
@@ -232,7 +241,7 @@ export function useMainLayout() {
   const currentCompany = availableCompanies.find((company) => company.id === activeCompanyId) ?? availableCompanies[0] ?? EmptyCompany;
   const subscription = currentCompany.subscriptionPackage ?? MainLayoutDefaultSubscription;
   const { branches, isLoading: isBranchLoading } = useWorkspaceCompanyMainLayoutBranches({
-    company: activeNavigationScope === "company" ? currentCompany : undefined,
+    company: activeNavigationScope === MainNavigationScopes.Company ? currentCompany : undefined,
   });
   const switchCompanyMutation = useMutation({
     mutationFn: async ({ companyId, requestId }: { companyId: string; requestId: number }) => {
@@ -316,7 +325,7 @@ export function useMainLayout() {
     if (
       !authProfile?.user.id ||
       !currentCompany.id ||
-      activeNavigationScope !== "company" ||
+      activeNavigationScope !== MainNavigationScopes.Company ||
       routedBranchId ||
       routedBranchName ||
       accessibleBranches.length === 0
@@ -343,7 +352,7 @@ export function useMainLayout() {
     return branchModules?.items.length ? branchModules.items : (fallbackBranchModules?.items ?? userModules?.items ?? []);
   }, [activeBranchId, authProfile]);
   useEffect(() => {
-    if (activeNavigationScope !== "company" || !authProfile) return;
+    if (activeNavigationScope !== MainNavigationScopes.Company || !authProfile) return;
 
     const activeAccess = GetAuthProfileAccess(authProfile);
     const enabledModulesCount = activeAccess?.enabledModules?.length ?? 0;
@@ -369,15 +378,15 @@ export function useMainLayout() {
   /* eslint-disable react-hooks/preserve-manual-memoization */
   const navigationSections = useMemo(() => {
     const sourceSections =
-      activeNavigationScope === "account"
+      activeNavigationScope === MainNavigationScopes.Account
         ? MainAccountNavigationSections
-        : activeNavigationScope === "master"
+        : activeNavigationScope === MainNavigationScopes.Master
           ? MainMasterNavigationSections
-          : activeNavigationScope === "workspace"
+          : activeNavigationScope === MainNavigationScopes.Workspace
             ? MainWorkspaceNavigationSections
             : companyNavigationSections;
 
-    if (activeNavigationScope === "company") return sourceSections;
+    if (activeNavigationScope === MainNavigationScopes.Company) return sourceSections;
     return filterMainNavigationSections(sourceSections, displayUser, subscription);
   }, [activeNavigationScope, companyNavigationSections, displayUser, subscription]);
   const activeExpandedKeys = useMemo(() => getActiveExpandedKeys(navigationSections, pathname), [navigationSections, pathname]);
@@ -402,13 +411,13 @@ export function useMainLayout() {
   const companySearchItems = useMemo(() => flattenSections(companyNavigationSections), [companyNavigationSections]);
   const companyHomeHref = getCompanyHomeHref(companySearchItems);
   const homeHref =
-    activeNavigationScope === "account" && hasMasterAccess
+    activeNavigationScope === MainNavigationScopes.Account && hasMasterAccess
       ? MasterHomeHref
-      : activeNavigationScope === "account" && hasWorkspaceAccess
+      : activeNavigationScope === MainNavigationScopes.Account && hasWorkspaceAccess
         ? WorkspaceHomeHref
-        : activeNavigationScope === "master"
+        : activeNavigationScope === MainNavigationScopes.Master
           ? MasterHomeHref
-          : activeNavigationScope === "workspace"
+          : activeNavigationScope === MainNavigationScopes.Workspace
             ? WorkspaceHomeHref
             : companyHomeHref;
   const clearShellContextSwitch = useCallback(
@@ -473,7 +482,7 @@ export function useMainLayout() {
       return;
     }
 
-    if (activeNavigationScope !== "company") {
+    if (activeNavigationScope !== MainNavigationScopes.Company) {
       return;
     }
 
@@ -496,14 +505,14 @@ export function useMainLayout() {
       return;
     }
 
-    if (switchingAdministrationScope === "workspace" && isWorkspaceRoute) {
+    if (switchingAdministrationScope === MainNavigationScopes.Workspace && isWorkspaceRoute) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- clear the transition only after the workspace route is active.
       setSwitchingAdministrationScope(null);
       clearShellContextSwitch();
       return;
     }
 
-    if (switchingAdministrationScope === "master" && isMasterRoute) {
+    if (switchingAdministrationScope === MainNavigationScopes.Master && isMasterRoute) {
       setSwitchingAdministrationScope(null);
       clearShellContextSwitch();
     }
@@ -548,7 +557,7 @@ export function useMainLayout() {
   }, [currentBranch, setStoredActiveBranchContext]);
 
   useEffect(() => {
-    if (!authProfile?.user.id || !currentCompany.id || !activeBranchId || activeNavigationScope !== "company") {
+    if (!authProfile?.user.id || !currentCompany.id || !activeBranchId || activeNavigationScope !== MainNavigationScopes.Company) {
       return;
     }
 
@@ -757,7 +766,7 @@ export function useMainLayout() {
       return;
     }
 
-    if (activeNavigationScope === "company" && companyId === activeCompanyId) {
+    if (activeNavigationScope === MainNavigationScopes.Company && companyId === activeCompanyId) {
       router.push(companyHomeHref);
       return;
     }
@@ -768,7 +777,7 @@ export function useMainLayout() {
 
     latestCompanySwitchRequestRef.current = requestId;
     beginShellContextSwitchWithFallback(selectedCompany ? `Switching to ${selectedCompany.name}...` : "Switching company...");
-    setSwitchingCompanyName(selectedCompany?.name ?? "company");
+    setSwitchingCompanyName(selectedCompany?.name ?? "selected company");
     setSwitchingCompanyId(companyId);
     setSwitchingAdministrationScope(null);
     setSelectedBranchId("");
@@ -784,7 +793,7 @@ export function useMainLayout() {
 
     setSwitchingCompanyName(null);
     setSwitchingCompanyId(null);
-    setSwitchingAdministrationScope("workspace");
+    setSwitchingAdministrationScope(MainNavigationScopes.Workspace);
     beginShellContextSwitchWithFallback("Switching to workspace...");
     setSelectedBranchId("");
     setStoredActiveBranchContext(null, null);
@@ -803,7 +812,7 @@ export function useMainLayout() {
 
     setSwitchingCompanyName(null);
     setSwitchingCompanyId(null);
-    setSwitchingAdministrationScope("master");
+    setSwitchingAdministrationScope(MainNavigationScopes.Master);
     beginShellContextSwitchWithFallback("Switching to master control...");
     setSelectedBranchId("");
     setStoredActiveBranchContext(null, null);
@@ -847,9 +856,9 @@ export function useMainLayout() {
     isLoggingOut: shellContextSwitchMessage === "Logging out...",
     companySwitchMessage:
       shellContextSwitchMessage ??
-      (switchingAdministrationScope === "workspace"
+      (switchingAdministrationScope === MainNavigationScopes.Workspace
         ? "Switching to workspace..."
-        : switchingAdministrationScope === "master"
+        : switchingAdministrationScope === MainNavigationScopes.Master
           ? "Switching to master control..."
           : switchingCompanyName
             ? `Switching to ${switchingCompanyName}...`
@@ -917,15 +926,19 @@ function shouldShowBranchControls(branches: MainBranch[]) {
 function ProfileHasWorkspaceAccess(profile: AuthProfile) {
   const effectiveRole = ResolveAuthProfileEffectiveRole(profile);
 
-  if (effectiveRole === "SUPER_ADMIN") {
+  if (effectiveRole === AuthEffectiveRoleCodes.SuperAdmin) {
     return false;
   }
 
-  if (effectiveRole === "ADMIN") {
+  if (effectiveRole === AuthEffectiveRoleCodes.Admin) {
     return true;
   }
 
-  return profile.companies?.some((company) => company.role === "ADMIN" && isOptionalActiveStatus(company.membershipStatus)) ?? false;
+  return (
+    profile.companies?.some(
+      (company) => company.role === AuthMembershipRoleCodes.Admin && isOptionalActiveStatus(company.membershipStatus),
+    ) ?? false
+  );
 }
 
 function hasCurrentCompanyAdministrationAccess(profile: AuthProfile | undefined, companyId: string) {
@@ -933,7 +946,7 @@ function hasCurrentCompanyAdministrationAccess(profile: AuthProfile | undefined,
     return false;
   }
 
-  if (profile.user.systemRole === "SUPER_ADMIN") {
+  if (profile.user.systemRole === AuthSystemRoleCodes.SuperAdmin) {
     return true;
   }
 
@@ -944,7 +957,7 @@ function hasCurrentCompanyAdministrationAccess(profile: AuthProfile | undefined,
 
   if (
     isOptionalActiveStatus(activeAccess?.membershipStatus) &&
-    activeAccessRole === "ADMIN" &&
+    activeAccessRole === AuthMembershipRoleCodes.Admin &&
     (!numericCompanyId || activeProfileCompanyId === numericCompanyId || activeAccess?.companyId === numericCompanyId)
   ) {
     return true;
@@ -952,7 +965,7 @@ function hasCurrentCompanyAdministrationAccess(profile: AuthProfile | undefined,
 
   if (
     isOptionalActiveStatus(activeAccess?.membershipStatus) &&
-    ResolveAuthProfileEffectiveRole(profile) === "ADMIN" &&
+    ResolveAuthProfileEffectiveRole(profile) === AuthEffectiveRoleCodes.Admin &&
     (!numericCompanyId || activeProfileCompanyId === numericCompanyId)
   ) {
     return true;
@@ -966,7 +979,7 @@ function hasCurrentCompanyAdministrationAccess(profile: AuthProfile | undefined,
     profile.companies?.some(
       (company) =>
         company.companyId === numericCompanyId &&
-        company.role === "ADMIN" &&
+        company.role === AuthMembershipRoleCodes.Admin &&
         isOptionalActiveStatus(company.membershipStatus) &&
         company.isCompanyActive !== false &&
         isOptionalActiveStatus(company.companyStatus),
@@ -992,7 +1005,7 @@ function hasCurrentCompanyBranchAccess(profile: AuthProfile | undefined, company
   if (
     activeProfileCompanyId === numericCompanyId &&
     isOptionalActiveStatus(activeAccess?.membershipStatus) &&
-    activeAccessRole === "USER" &&
+    activeAccessRole === AuthMembershipRoleCodes.User &&
     activeAccess?.accessScope != null
   ) {
     return true;
@@ -1000,7 +1013,7 @@ function hasCurrentCompanyBranchAccess(profile: AuthProfile | undefined, company
 
   const companyMembership = profile.companies?.find((company) => company.companyId === numericCompanyId);
 
-  if (!isOptionalActiveStatus(companyMembership?.membershipStatus) || companyMembership?.role !== "USER") {
+  if (!isOptionalActiveStatus(companyMembership?.membershipStatus) || companyMembership?.role !== AuthMembershipRoleCodes.User) {
     return false;
   }
 
@@ -1024,16 +1037,20 @@ function CreateWorkspaceCurrentUserFromProfile(profile: AuthProfile, activeBranc
     FormatCompanyRoleName(activeBranchAccess?.companyRoleCode ?? activeAccess?.companyRoleCode ?? activeCompanyMembership?.companyRoleCode);
   const companyRoleCode = activeBranchAccess?.companyRoleCode ?? activeAccess?.companyRoleCode ?? activeCompanyMembership?.companyRoleCode;
   const effectiveRole = ResolveAuthProfileEffectiveRole(profile);
-  const userRole = effectiveRole === "SUPER_ADMIN" ? "Super Admin" : effectiveRole === "ADMIN" ? "Admin" : "User";
+  const userRole =
+    effectiveRole === AuthEffectiveRoleCodes.SuperAdmin ? "Super Admin" : effectiveRole === AuthEffectiveRoleCodes.Admin ? "Admin" : "User";
   const profilePermissionMap = CreateProfilePermissionMap(activeAccess?.permissions);
   const adminPermissionMap = HasPermissionEntries(profilePermissionMap) ? profilePermissionMap : CreateNavigationPermissionMap();
   const userRoleDetails = companyRoleName
     ? {
         id: companyRoleCode ?? "user-role-workspace",
         name: companyRoleName,
-        permissions: effectiveRole === "ADMIN" || effectiveRole === "SUPER_ADMIN" ? adminPermissionMap : profilePermissionMap,
+        permissions:
+          effectiveRole === AuthEffectiveRoleCodes.Admin || effectiveRole === AuthEffectiveRoleCodes.SuperAdmin
+            ? adminPermissionMap
+            : profilePermissionMap,
       }
-    : effectiveRole === "ADMIN"
+    : effectiveRole === AuthEffectiveRoleCodes.Admin
       ? {
           id: "user-role-admin",
           name: "Admin",
@@ -1084,7 +1101,7 @@ function MapProfileCompaniesToMainCompanies(profile: AuthProfile) {
         totalBranches: branches.length,
         branchCode: branches[0]?.code,
         branchName: branches[0]?.name,
-        helperText: company.role === "ADMIN" ? "Admin access" : "User access",
+        helperText: company.role === AuthMembershipRoleCodes.Admin ? "Admin access" : "User access",
       };
     });
 }
@@ -1240,7 +1257,7 @@ function buildBreadcrumbs({
   subscriberManagementCompanyId?: string;
 }): MainBreadcrumb[] {
   const trail = findNavigationTrail(navigationSections, pathname);
-  const fallbackLabel = activeNavigationScope === "workspace" ? "Dashboard" : getPathFallbackTitle(pathname);
+  const fallbackLabel = activeNavigationScope === MainNavigationScopes.Workspace ? "Dashboard" : getPathFallbackTitle(pathname);
   const fallbackTrail =
     trail.length > 0
       ? trail
@@ -1252,7 +1269,9 @@ function buildBreadcrumbs({
           },
         ];
   const normalizedTrail =
-    activeNavigationScope === "workspace" && fallbackTrail[0]?.label === "Workspace" ? fallbackTrail.slice(1) : fallbackTrail;
+    activeNavigationScope === MainNavigationScopes.Workspace && fallbackTrail[0]?.label === "Workspace"
+      ? fallbackTrail.slice(1)
+      : fallbackTrail;
   const masterSubscriberTrail = buildMasterSubscriberManagementBreadcrumbs({
     companyId: subscriberManagementCompanyId,
     pathname,
@@ -1527,7 +1546,7 @@ function getMissingRecordActionRedirectHref(pathname: string) {
 
 function isMasterSubscriberManagementCompanyInformationEditPath(segments: string[]) {
   return (
-    segments[0] === "master" &&
+    segments[0] === MainNavigationScopes.Master &&
     segments[1] === "subscriber-management" &&
     segments[2] === "view" &&
     Boolean(segments[3]) &&
@@ -1682,7 +1701,7 @@ function toDropdownItem(item: MainNavigationItem): MainBreadcrumbDropdownItem {
 }
 
 function getNavigationDropdownHelperText(key: string) {
-  if (key.startsWith("workspace")) {
+  if (key.startsWith(MainNavigationScopes.Workspace)) {
     return undefined;
   }
 

@@ -30,7 +30,7 @@ export type LoginResult = {
   accessToken?: string;
   user?: AuthProfile["user"];
   companyId?: number | null;
-  role?: "ADMIN" | "USER" | "SUPER_ADMIN";
+  role?: AuthEffectiveRole;
   access?: AuthProfileAccess | null;
   onboarding?: AuthProfile["onboarding"];
   companies?: AuthProfile["companies"];
@@ -41,9 +41,29 @@ export type EmailVerificationResult = {
   accessToken: string;
 };
 
-export type AuthSystemRole = "SUPER_ADMIN" | "STANDARD";
+export const AuthSystemRoleCodes = {
+  SuperAdmin: "SUPER_ADMIN",
+  Standard: "STANDARD",
+} as const;
 
-export type AuthMembershipRole = "ADMIN" | "USER" | null;
+export const AuthMembershipRoleCodes = {
+  Admin: "ADMIN",
+  User: "USER",
+} as const;
+
+export const AuthEffectiveRoleCodes = {
+  SuperAdmin: AuthSystemRoleCodes.SuperAdmin,
+  Admin: AuthMembershipRoleCodes.Admin,
+  User: AuthMembershipRoleCodes.User,
+} as const;
+
+export type AuthSystemRole = (typeof AuthSystemRoleCodes)[keyof typeof AuthSystemRoleCodes];
+
+export type AuthMembershipRole = (typeof AuthMembershipRoleCodes)[keyof typeof AuthMembershipRoleCodes] | null;
+
+export type AuthCompanyMembershipRole = NonNullable<AuthMembershipRole>;
+
+export type AuthEffectiveRole = (typeof AuthEffectiveRoleCodes)[keyof typeof AuthEffectiveRoleCodes];
 
 export type AuthUserModuleItem = {
   id: number;
@@ -66,7 +86,7 @@ export type AuthUserModuleItem = {
 export type AuthProfileAccess = {
   id?: number;
   companyId?: number | null;
-  role?: "ADMIN" | "USER" | null;
+  role?: AuthMembershipRole;
   systemRole?: AuthSystemRole;
   membershipRole: AuthMembershipRole;
   membershipStatus?: string;
@@ -105,7 +125,7 @@ export type AuthProfile = {
     updatedAt: string | null;
   };
   companyId?: number | null;
-  role?: "ADMIN" | "USER" | null;
+  role?: AuthMembershipRole;
   activeCompanyId: number | null;
   activeAccess: AuthProfileAccess | null;
   access?: AuthProfileAccess | null;
@@ -126,7 +146,7 @@ export type AuthProfile = {
     countryCode?: string;
     baseCurrencyCode?: string;
     logoPublicUrl: string | null;
-    role: "ADMIN" | "USER";
+    role: AuthCompanyMembershipRole;
     membershipStatus: string;
     accessScope?: string | null;
     companyRoleId?: number | null;
@@ -151,7 +171,7 @@ export type CompanyContextSwitchResult = {
   accessToken: string;
   user: AuthProfile["user"];
   companyId: number | null;
-  role: "ADMIN" | "USER" | "SUPER_ADMIN";
+  role: AuthEffectiveRole;
   access: AuthProfileAccess | null;
   onboarding: AuthProfile["onboarding"];
   companies: NonNullable<AuthProfile["companies"]>;

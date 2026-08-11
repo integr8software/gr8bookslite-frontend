@@ -1,15 +1,5 @@
 export type AuthFieldErrors = Partial<
-  Record<
-    | "email"
-    | "password"
-    | "confirmPassword"
-    | "name"
-    | "contactNumber"
-    | "termsAccepted"
-    | "otp"
-    | "newEmail",
-    string[] | undefined
-  >
+  Record<"email" | "password" | "confirmPassword" | "name" | "contactNumber" | "termsAccepted" | "otp" | "newEmail", string[] | undefined>
 >;
 
 export type AuthFormValues = {
@@ -35,7 +25,13 @@ export type AuthActionState = {
   rememberMe?: boolean;
 };
 
+export const AuthActionStatuses = {
+  Idle: "idle",
+  Error: "error",
+  Success: "success",
+} as const;
+
 export const InitialAuthActionState: AuthActionState = {
-  status: "idle",
+  status: AuthActionStatuses.Idle,
   message: "",
 };

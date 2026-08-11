@@ -1,7 +1,7 @@
 "use server";
 
 import { ChangeVerificationEmailSchema, ForgotPasswordSchema, OtpSchema, SignUpSchema } from "@/app/src/validations/auth/AuthValidation";
-import type { AuthActionState } from "@/app/src/data/auth/AuthTypes";
+import { AuthActionStatuses, type AuthActionState } from "@/app/src/data/auth/AuthTypes";
 import {
   type VerificationEmailChangeInput,
   type VerificationEmailChangeResult,
@@ -43,7 +43,7 @@ export async function SignUpAction(_previousState: AuthActionState, formData: Fo
     });
 
     return {
-      status: "success",
+      status: AuthActionStatuses.Success,
       message: response.message,
       redirectTo: "/auth/verify-email",
       pendingVerificationEmail: response.email,
@@ -52,7 +52,7 @@ export async function SignUpAction(_previousState: AuthActionState, formData: Fo
     const message = error instanceof Error ? error.message : "We could not create your account right now.";
 
     return {
-      status: "error",
+      status: AuthActionStatuses.Error,
       message,
       errors:
         message === "An account already uses this email. Sign in or reset your password." || message === "Email is already in use."
@@ -78,7 +78,7 @@ export async function OtpAction(_previousState: AuthActionState, formData: FormD
 
   if (!emailValidation.success) {
     return {
-      status: "error",
+      status: AuthActionStatuses.Error,
       message: "Enter a valid email address.",
       errors: {
         email: emailValidation.error.flatten().fieldErrors.email,
@@ -94,13 +94,13 @@ export async function OtpAction(_previousState: AuthActionState, formData: FormD
     await SetAuthAccessTokenCookie(response.accessToken, false);
 
     return {
-      status: "success",
+      status: AuthActionStatuses.Success,
       message: response.message ?? "Email verified successfully.",
       redirectTo: GetFallbackPostAuthRedirectPath(response.accessToken),
     };
   } catch (error) {
     return {
-      status: "error",
+      status: AuthActionStatuses.Error,
       message: error instanceof Error ? error.message : "We could not verify your email right now.",
       errors: {
         otp: ["The code you entered is invalid."],
@@ -124,12 +124,12 @@ export async function ResendVerificationAction(_previousState: AuthActionState, 
     });
 
     return {
-      status: "success",
+      status: AuthActionStatuses.Success,
       message: response.message,
     };
   } catch (error) {
     return {
-      status: "error",
+      status: AuthActionStatuses.Error,
       message: error instanceof Error ? error.message : "We could not resend the verification code right now.",
     };
   }
@@ -145,7 +145,7 @@ export async function ChangeVerificationEmailAction(_previousState: AuthActionSt
     const { fieldErrors } = parsed.error.flatten();
 
     return {
-      status: "error",
+      status: AuthActionStatuses.Error,
       message: "Please enter a valid new email address.",
       errors: {
         email: fieldErrors.newEmail,
@@ -161,12 +161,12 @@ export async function ChangeVerificationEmailAction(_previousState: AuthActionSt
     );
 
     return {
-      status: "success",
+      status: AuthActionStatuses.Success,
       message: response.message,
     };
   } catch (error) {
     return {
-      status: "error",
+      status: AuthActionStatuses.Error,
       message: error instanceof Error ? error.message : "We could not update your verification email right now.",
     };
   }

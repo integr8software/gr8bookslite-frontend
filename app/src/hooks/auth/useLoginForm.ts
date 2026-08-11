@@ -5,20 +5,10 @@ import type { ChangeEvent, FormEvent } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
-import {
-  InitialAuthActionState,
-  type AuthActionState,
-} from "@/app/src/data/auth/AuthTypes";
-import {
-  ClearPendingVerificationEmail,
-  SavePendingVerificationEmail,
-} from "@/app/src/data/auth/AuthVerificationStorage";
+import { AuthActionStatuses, InitialAuthActionState, type AuthActionState } from "@/app/src/types/auth/AuthTypes";
+import { ClearPendingVerificationEmail, SavePendingVerificationEmail } from "@/app/src/data/auth/AuthVerificationStorage";
 import { AuthenticatedSessionMarker } from "@/app/src/data/auth/AuthSessionStorage";
-import {
-  GetFallbackPostAuthRedirectPath,
-  IsOnboardingRedirectPath,
-  IsSystemRedirectPath,
-} from "@/app/src/services/auth/AuthRedirects";
+import { GetFallbackPostAuthRedirectPath, IsOnboardingRedirectPath, IsSystemRedirectPath } from "@/app/src/services/auth/AuthRedirects";
 import { AuthQueryKeys } from "@/app/src/services/auth/AuthQueryKeys";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { LoginSchema } from "@/app/src/validations/auth/AuthValidation";
@@ -62,15 +52,11 @@ export function useLoginForm() {
     ...formValues,
   };
   const shouldShowImmediateSystemLoader =
-    state.status === "success" &&
+    state.status === AuthActionStatuses.Success &&
     Boolean(state.redirectTo) &&
-    IsSystemRedirectPath(
-      state.redirectTo ?? GetFallbackPostAuthRedirectPath(accessToken),
-    );
+    IsSystemRedirectPath(state.redirectTo ?? GetFallbackPostAuthRedirectPath(accessToken));
   const successfulAuthRedirectPath =
-    state.status === "success"
-      ? state.redirectTo ?? GetFallbackPostAuthRedirectPath(accessToken)
-      : null;
+    state.status === AuthActionStatuses.Success ? (state.redirectTo ?? GetFallbackPostAuthRedirectPath(accessToken)) : null;
   const isResolvingPostAuthRef = useRef(false);
   const isForcedLogin = searchParams.get("force") === "true";
 
@@ -106,7 +92,7 @@ export function useLoginForm() {
     if (!parsed.success) {
       setState({
         ...InitialAuthActionState,
-        status: "error",
+        status: AuthActionStatuses.Error,
         message: "Email or Password is incorrect.",
         errors: parsed.error.flatten().fieldErrors,
         formValues: { email },
@@ -143,7 +129,7 @@ export function useLoginForm() {
       await EnsureFrontendSessionCreated();
 
       const nextState: AuthActionState = {
-        status: "success",
+        status: AuthActionStatuses.Success,
         message: payload?.message ?? "Login successful.",
         rememberMe,
         redirectTo: payload?.redirectTo,
@@ -161,15 +147,12 @@ export function useLoginForm() {
       }
       router.push(GetFallbackPostAuthRedirectPath(null));
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Email or Password is incorrect.";
-      const passwordMessage = message.startsWith(
-        "This account does not have a password yet.",
-      )
+      const message = error instanceof Error ? error.message : "Email or Password is incorrect.";
+      const passwordMessage = message.startsWith("This account does not have a password yet.")
         ? message
         : "Email or Password is incorrect.";
       const nextState: AuthActionState = {
-        status: "error",
+        status: AuthActionStatuses.Error,
         message,
         errors: {
           password: [passwordMessage],

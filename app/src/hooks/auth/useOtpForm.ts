@@ -5,10 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import {
-  InitialAuthActionState,
-  type AuthActionState,
-} from "@/app/src/data/auth/AuthTypes";
+import { AuthActionStatuses, InitialAuthActionState, type AuthActionState } from "@/app/src/types/auth/AuthTypes";
 import {
   ClearPendingVerificationEmail,
   GetPendingVerificationEmail,
@@ -17,16 +14,8 @@ import {
   SaveVerificationResendCooldown,
 } from "@/app/src/data/auth/AuthVerificationStorage";
 import { AuthenticatedSessionMarker } from "@/app/src/data/auth/AuthSessionStorage";
-import {
-  MaskEmailAddress,
-  OTP_LENGTH,
-  OTP_RESEND_SECONDS,
-} from "@/app/src/data/auth/OtpData";
-import {
-  ChangeVerificationEmailAction,
-  OtpAction,
-  ResendVerificationAction,
-} from "@/app/src/services/auth/AuthActions";
+import { MaskEmailAddress, OTP_LENGTH, OTP_RESEND_SECONDS } from "@/app/src/data/auth/OtpData";
+import { ChangeVerificationEmailAction, OtpAction, ResendVerificationAction } from "@/app/src/services/auth/AuthActions";
 import { GetFallbackPostAuthRedirectPath } from "@/app/src/services/auth/AuthRedirects";
 import { AuthQueryKeys } from "@/app/src/services/auth/AuthQueryKeys";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
@@ -51,38 +40,27 @@ function ResolveHasResendCooldown(email: string) {
   return ResolveInitialResendSeconds(email) > 0;
 }
 
-export function useOtpForm({
-  initialEmail = "",
-}: UseOtpFormOptions = {}) {
+export function useOtpForm({ initialEmail = "" }: UseOtpFormOptions = {}) {
   const queryClient = useQueryClient();
   const router = useRouter();
   const setAccessToken = useAppStore((state) => state.setAccessToken);
   const initialVerificationEmail = ResolveInitialEmail(initialEmail);
   const [hasEditedOtpAfterError, setHasEditedOtpAfterError] = useState(false);
-  const [state, formAction, pending] = useActionState(
-    async (previousState: AuthActionState, formData: FormData) => {
-      const nextState = await OtpAction(previousState, formData);
+  const [state, formAction, pending] = useActionState(async (previousState: AuthActionState, formData: FormData) => {
+    const nextState = await OtpAction(previousState, formData);
 
-      if (nextState.status === "error" || nextState.status === "success") {
-        setHasEditedOtpAfterError(false);
-      }
+    if (nextState.status === AuthActionStatuses.Error || nextState.status === AuthActionStatuses.Success) {
+      setHasEditedOtpAfterError(false);
+    }
 
-      return nextState;
-    },
-    InitialAuthActionState,
-  );
-  const [step, setStep] = useState<"email" | "verify">(
-    initialVerificationEmail ? "verify" : "email",
-  );
+    return nextState;
+  }, InitialAuthActionState);
+  const [step, setStep] = useState<"email" | "verify">(initialVerificationEmail ? "verify" : "email");
   const [email, setEmail] = useState(initialVerificationEmail);
   const [emailInput, setEmailInput] = useState(initialVerificationEmail);
   const [otp, setOtp] = useState("");
-  const [secondsRemaining, setSecondsRemaining] = useState(() =>
-    ResolveInitialResendSeconds(initialVerificationEmail),
-  );
-  const [hasActivatedResendCooldown, setHasActivatedResendCooldown] = useState(
-    () => ResolveHasResendCooldown(initialVerificationEmail),
-  );
+  const [secondsRemaining, setSecondsRemaining] = useState(() => ResolveInitialResendSeconds(initialVerificationEmail));
+  const [hasActivatedResendCooldown, setHasActivatedResendCooldown] = useState(() => ResolveHasResendCooldown(initialVerificationEmail));
   const [isOtpFocused, setIsOtpFocused] = useState(false);
   const [isChangingEmail, setIsChangingEmail] = useState(false);
   const [isSubmittingEmailStep, setIsSubmittingEmailStep] = useState(false);
@@ -134,7 +112,7 @@ export function useOtpForm({
       return;
     }
 
-    if (state.status === "success") {
+    if (state.status === AuthActionStatuses.Success) {
       ClearPendingVerificationEmail();
       queryClient.removeQueries({ queryKey: AuthQueryKeys.all });
       setAccessToken(AuthenticatedSessionMarker);
@@ -147,19 +125,10 @@ export function useOtpForm({
       return;
     }
 
-    if (state.status === "error") {
+    if (state.status === AuthActionStatuses.Error) {
       toast.error(state.message);
     }
-  }, [
-    pending,
-    queryClient,
-    router,
-    setAccessToken,
-    state.message,
-    state.redirectTo,
-    state.status,
-    step,
-  ]);
+  }, [pending, queryClient, router, setAccessToken, state.message, state.redirectTo, state.status, step]);
 
   const formattedTime = useMemo(() => {
     const minutes = Math.floor(secondsRemaining / 60);
@@ -190,8 +159,7 @@ export function useOtpForm({
     }
 
     if (!isChangingEmail) {
-      const nextSecondsRemaining =
-        GetVerificationResendSecondsRemaining(trimmedEmail);
+      const nextSecondsRemaining = GetVerificationResendSecondsRemaining(trimmedEmail);
 
       setEmail(trimmedEmail);
       setEmailInput(trimmedEmail);
@@ -212,9 +180,8 @@ export function useOtpForm({
 
       const nextState = await ChangeVerificationEmailAction(state, formData);
 
-      if (nextState.status === "success") {
-        const nextSecondsRemaining =
-          GetVerificationResendSecondsRemaining(trimmedEmail);
+      if (nextState.status === AuthActionStatuses.Success) {
+        const nextSecondsRemaining = GetVerificationResendSecondsRemaining(trimmedEmail);
 
         setEmail(trimmedEmail);
         setEmailInput(trimmedEmail);
@@ -237,7 +204,7 @@ export function useOtpForm({
 
   function handleOtpChange(event: React.ChangeEvent<HTMLInputElement>) {
     const nextValue = event.target.value.replace(/\D/g, "").slice(0, OTP_LENGTH);
-    if (state.status === "error") {
+    if (state.status === AuthActionStatuses.Error) {
       setHasEditedOtpAfterError(true);
     }
     setOtp(nextValue);
@@ -265,7 +232,7 @@ export function useOtpForm({
 
       const nextState = await ResendVerificationAction(state, formData);
 
-      if (nextState.status === "success") {
+      if (nextState.status === AuthActionStatuses.Success) {
         setOtp("");
         setHasEditedOtpAfterError(false);
         setSecondsRemaining(OTP_RESEND_SECONDS);
@@ -296,7 +263,7 @@ export function useOtpForm({
     formAction,
     pending,
     hasRouteAccess: Boolean(initialVerificationEmail),
-    isOtpErrorActive: state.status === "error" && !hasEditedOtpAfterError,
+    isOtpErrorActive: state.status === AuthActionStatuses.Error && !hasEditedOtpAfterError,
     step,
     email,
     setEmail,

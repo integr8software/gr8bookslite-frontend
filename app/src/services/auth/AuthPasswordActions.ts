@@ -1,7 +1,7 @@
 "use server";
 
 import { ForgotPasswordSchema, OtpSchema, ResetPasswordSchema } from "@/app/src/validations/auth/AuthValidation";
-import { AuthActionStatuses, type AuthActionState } from "@/app/src/data/auth/AuthTypes";
+import { AuthActionStatuses, type AuthActionState } from "@/app/src/types/auth/AuthTypes";
 import {
   type ForgotPasswordInput,
   type ForgotPasswordResult,

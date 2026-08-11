@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
-import {
-  FetchBackend,
-} from "@/app/src/services/auth/AuthBackendServer";
+import { FetchBackend } from "@/app/src/services/auth/AuthBackendServer";
 import { SetAuthAccessTokenCookie } from "@/app/src/services/auth/AuthCookieServer";
-import type { SwitchCompanyContextResponse } from "@/app/src/services/auth/AuthApiTypes";
+import type { CompanyContextSwitchResult } from "@/app/src/types/auth/AuthTypes";
 
 export async function POST(request: Request) {
   const body = await request.text();
@@ -12,16 +10,10 @@ export async function POST(request: Request) {
     inputHeaders: request.headers,
     method: "POST",
   });
-  const payload = (await response.json().catch(() => null)) as
-    | SwitchCompanyContextResponse
-    | { message?: string }
-    | null;
+  const payload = (await response.json().catch(() => null)) as CompanyContextSwitchResult | { message?: string } | null;
 
   if (!response.ok) {
-    return NextResponse.json(
-      payload ?? { message: "Company context switch failed." },
-      { status: response.status },
-    );
+    return NextResponse.json(payload ?? { message: "Company context switch failed." }, { status: response.status });
   }
 
   if (payload && "accessToken" in payload && payload.accessToken) {

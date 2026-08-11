@@ -4,11 +4,8 @@ import type {
   MainNavigationItem,
   MainNavigationSection,
 } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
-import {
-  getModuleRoute,
-  MODULE_ROUTE_FALLBACK,
-} from "@/app/src/data/shared/modules/ModuleCatalogData";
-import type { AuthUserModuleItem } from "@/app/src/services/auth/AuthApiTypes";
+import { getModuleRoute, MODULE_ROUTE_FALLBACK } from "@/app/src/data/shared/modules/ModuleCatalogData";
+import type { AuthUserModuleItem } from "@/app/src/types/auth/AuthTypes";
 
 const SectionAccess: Record<string, MainAccessKey> = {
   dashboard: "dashboard",
@@ -46,9 +43,7 @@ const SectionIcons = new Set<MainIconName>([
 export function MapUserModulesToNavigation(items: AuthUserModuleItem[]): MainNavigationSection[] {
   return items.flatMap((item): MainNavigationSection[] => {
     const accessKey = getAccessKey(item);
-    const icon = SectionIcons.has(item.iconName as MainIconName)
-      ? (item.iconName as MainIconName)
-      : "settings";
+    const icon = SectionIcons.has(item.iconName as MainIconName) ? (item.iconName as MainIconName) : "settings";
     if (item.itemType === "SECTION") {
       return [
         {
@@ -81,11 +76,7 @@ export function MapUserModulesToNavigation(items: AuthUserModuleItem[]): MainNav
 function mapItem(item: AuthUserModuleItem): MainNavigationItem {
   const firstLink = findFirstLink(item);
   const moduleHref =
-    item.itemType === "LINK"
-      ? getModuleRoute(item.moduleCode)
-      : firstLink
-        ? getModuleRoute(firstLink.moduleCode)
-        : MODULE_ROUTE_FALLBACK;
+    item.itemType === "LINK" ? getModuleRoute(item.moduleCode) : firstLink ? getModuleRoute(firstLink.moduleCode) : MODULE_ROUTE_FALLBACK;
   return {
     key: item.key,
     label: item.label,
@@ -109,14 +100,7 @@ function findFirstLink(item: AuthUserModuleItem): AuthUserModuleItem | undefined
 function getAccessKey(item: AuthUserModuleItem): MainAccessKey {
   const sectionKey = item.key
     .split("-")
-    .slice(
-      0,
-      item.key.startsWith("cash-") ||
-        item.key.startsWith("general-") ||
-        item.key.startsWith("accounts-")
-        ? 2
-        : 1,
-    )
+    .slice(0, item.key.startsWith("cash-") || item.key.startsWith("general-") || item.key.startsWith("accounts-") ? 2 : 1)
     .join("-");
   if (item.key.includes("user")) return "maintenance.users";
   if (item.key.includes("audit")) return "maintenance.audit";

@@ -1,9 +1,6 @@
 import { GetAuthProfile } from "@/app/src/services/auth/AuthApi";
-import {
-  GetAuthProfileCompanyId,
-  ResolveAuthProfileEffectiveRole,
-} from "@/app/src/services/auth/AuthProfileAccess";
-import type { AuthProfileResponse } from "@/app/src/services/auth/AuthApiTypes";
+import { GetAuthProfileCompanyId, ResolveAuthProfileEffectiveRole } from "@/app/src/services/auth/AuthProfileAccess";
+import type { AuthProfile } from "@/app/src/types/auth/AuthTypes";
 
 type AuthJwtPayload = {
   companyId?: number | null;
@@ -36,9 +33,7 @@ export function IsSystemRedirectPath(path: string | null | undefined) {
     return false;
   }
 
-  return SystemRedirectPathPrefixes.some(
-    (prefix) => path === prefix || path.startsWith(`${prefix}/`),
-  );
+  return SystemRedirectPathPrefixes.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
 }
 
 export function IsOnboardingRedirectPath(path: string | null | undefined) {
@@ -69,9 +64,7 @@ function DecodeJwtPayloadSegment(segment: string) {
   return new TextDecoder().decode(bytes);
 }
 
-export function ReadAuthJwtPayload(
-  accessToken: string | null | undefined,
-): AuthJwtPayload | null {
+export function ReadAuthJwtPayload(accessToken: string | null | undefined): AuthJwtPayload | null {
   if (!accessToken) {
     return null;
   }
@@ -89,9 +82,7 @@ export function ReadAuthJwtPayload(
   }
 }
 
-export function GetFallbackPostAuthRedirectPath(
-  accessToken: string | null | undefined,
-) {
+export function GetFallbackPostAuthRedirectPath(accessToken: string | null | undefined) {
   const payload = ReadAuthJwtPayload(accessToken);
 
   if (!payload) {
@@ -113,9 +104,7 @@ export function GetFallbackPostAuthRedirectPath(
   return "/onboarding";
 }
 
-export function GetPostAuthRedirectPathFromProfile(
-  profile: AuthProfileResponse,
-) {
+export function GetPostAuthRedirectPathFromProfile(profile: AuthProfile) {
   if (profile.onboarding.requiresCompanySetup) {
     return "/onboarding";
   }

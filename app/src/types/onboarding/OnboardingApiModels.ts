@@ -1,13 +1,10 @@
 export type OnboardingApiBillingCycle = "MONTHLY" | "QUARTERLY" | "YEARLY";
 
-export type OnboardingLogoPayload = {
-  message: string;
-  logo: {
-    fileName: string;
-    mimeType: string;
-    storagePath: string;
-    publicUrl: string;
-  };
+export type OnboardingLogo = {
+  fileName: string;
+  mimeType: string;
+  storagePath: string;
+  publicUrl: string;
 };
 
 export type OnboardingPlanPriceSummary = {
@@ -61,10 +58,6 @@ export type OnboardingPlan = {
   }>;
 };
 
-export type OnboardingPlansPayload = {
-  plans: OnboardingPlan[];
-};
-
 export type OnboardingDraftCompanyDetails = {
   taxpayerType: "individual" | "non-individual" | null;
   lastName: string | null;
@@ -105,50 +98,24 @@ export type OnboardingDraft = {
   companyDetails: OnboardingDraftCompanyDetails;
 };
 
-export type OnboardingDraftPayload = {
-  draft: OnboardingDraft | null;
+export type OnboardingBilling = {
+  planCode: string | null;
+  billingCycle: OnboardingApiBillingCycle | null;
+  cardholderName: string | null;
+  billingEmail: string | null;
+  billingAddress: string | null;
+  cardBrand: string | null;
+  cardLast4: string | null;
+  cardExpiryMonth: number | null;
+  cardExpiryYear: number | null;
+  plan: OnboardingPlan | null;
+  trialDays: number;
 };
 
-export type OnboardingBillingPayload = {
-  message: string;
-  billing: {
-    planCode: string | null;
-    billingCycle: OnboardingApiBillingCycle | null;
-    cardholderName: string | null;
-    billingEmail: string | null;
-    billingAddress: string | null;
-    cardBrand: string | null;
-    cardLast4: string | null;
-    cardExpiryMonth: number | null;
-    cardExpiryYear: number | null;
-    plan: OnboardingPlan | null;
-    trialDays: number;
-  };
-  pendingProviderActivation?: boolean;
-  paymentSetupState?:
-    | "pending_provider_activation"
-    | "ready_for_confirmation";
-  paymentIntent?: {
-    id: string | null;
-    status: string | null;
-    redirectUrl: string | null;
-  } | null;
-  nextStep: string;
-};
+export type OnboardingPaymentSetupState = "pending_provider_activation" | "ready_for_confirmation";
 
-export type OnboardingCompletionPayload = {
-  message: string;
-  company: {
-    id: number;
-    name: string;
-    status: string;
-  };
-  subscription: {
-    id: number;
-    status: string;
-    trialEndsAt: string | null;
-  };
-  nextStep: "APP_READY";
-  requiresReauthentication: boolean;
-  accessToken?: string;
+export type OnboardingPaymentIntent = {
+  id: string | null;
+  status: string | null;
+  redirectUrl: string | null;
 };

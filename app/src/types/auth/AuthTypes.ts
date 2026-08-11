@@ -1,4 +1,4 @@
-export type RegisterRequest = {
+export type RegistrationInput = {
   fullName: string;
   email: string;
   contactNumber?: string;
@@ -6,7 +6,7 @@ export type RegisterRequest = {
   confirmPassword: string;
 };
 
-export type RegisterResponse = {
+export type RegistrationResult = {
   message: string;
   verificationRequired: boolean;
   nextStep: string;
@@ -14,29 +14,29 @@ export type RegisterResponse = {
   maskedEmail: string;
 };
 
-export type VerifyEmailRequest = {
+export type EmailVerificationInput = {
   email: string;
   code: string;
 };
 
-export type LoginRequest = {
+export type LoginCredentials = {
   email: string;
   password: string;
   rememberMe?: boolean;
 };
 
-export type LoginResponse = {
+export type LoginResult = {
   message?: string;
   accessToken?: string;
-  user?: AuthProfileResponse["user"];
+  user?: AuthProfile["user"];
   companyId?: number | null;
   role?: "ADMIN" | "USER" | "SUPER_ADMIN";
   access?: AuthProfileAccess | null;
-  onboarding?: AuthProfileResponse["onboarding"];
-  companies?: AuthProfileResponse["companies"];
+  onboarding?: AuthProfile["onboarding"];
+  companies?: AuthProfile["companies"];
 };
 
-export type VerifyEmailResponse = {
+export type EmailVerificationResult = {
   message?: string;
   accessToken: string;
 };
@@ -88,7 +88,7 @@ export type AuthProfileAccess = {
   };
 };
 
-export type AuthProfileResponse = {
+export type AuthProfile = {
   user: {
     id: number;
     email: string;
@@ -143,100 +143,100 @@ export type AuthProfileResponse = {
   }[];
 };
 
-export type SwitchCompanyContextRequest = {
+export type CompanyContextSelection = {
   companyId: number;
 };
 
-export type SwitchCompanyContextResponse = {
+export type CompanyContextSwitchResult = {
   accessToken: string;
-  user: AuthProfileResponse["user"];
+  user: AuthProfile["user"];
   companyId: number | null;
   role: "ADMIN" | "USER" | "SUPER_ADMIN";
   access: AuthProfileAccess | null;
-  onboarding: AuthProfileResponse["onboarding"];
-  companies: NonNullable<AuthProfileResponse["companies"]>;
+  onboarding: AuthProfile["onboarding"];
+  companies: NonNullable<AuthProfile["companies"]>;
 };
 
-export type ResendVerificationRequest = {
+export type VerificationResendInput = {
   email: string;
 };
 
-export type ResendVerificationResponse = {
+export type VerificationResendResult = {
   message: string;
   maskedEmail: string;
 };
 
-export type ForgotPasswordRequest = {
+export type ForgotPasswordInput = {
   email: string;
 };
 
-export type ForgotPasswordResponse = {
+export type ForgotPasswordResult = {
   code?: string;
   message: string;
   maskedEmail?: string;
 };
 
-export type VerifyForgotPasswordCodeRequest = {
+export type ForgotPasswordCodeVerificationInput = {
   email: string;
   code: string;
 };
 
-export type VerifyForgotPasswordCodeResponse = {
+export type ForgotPasswordCodeVerificationResult = {
   message: string;
   resetToken: string;
 };
 
-export type ResetPasswordRequest = {
+export type PasswordResetInput = {
   resetToken: string;
   newPassword: string;
   confirmNewPassword: string;
 };
 
-export type ResetPasswordResponse = {
+export type PasswordResetResult = {
   message: string;
 };
 
-export type ActivateWorkspaceInvitationRequest = {
+export type WorkspaceInvitationActivationInput = {
   email: string;
   token: string;
   newPassword: string;
   confirmNewPassword: string;
 };
 
-export type ActivateWorkspaceInvitationResponse = {
+export type WorkspaceInvitationActivationResult = {
   message: string;
 };
 
-export type RequestPasswordChangeOtpResponse = {
+export type PasswordChangeOtpResult = {
   message: string;
   maskedEmail: string;
 };
 
-export type VerifyPasswordChangeOtpRequest = {
+export type PasswordChangeOtpVerificationInput = {
   code: string;
 };
 
-export type VerifyPasswordChangeOtpResponse = {
+export type PasswordChangeOtpVerificationResult = {
   message: string;
   resetToken: string;
 };
 
-export type ChangeAuthenticatedPasswordRequest = {
+export type AuthenticatedPasswordChangeInput = {
   resetToken: string;
   newPassword: string;
   confirmNewPassword: string;
 };
 
-export type ChangeAuthenticatedPasswordResponse = {
+export type AuthenticatedPasswordChangeResult = {
   message: string;
 };
 
-export type ChangeVerificationEmailRequest = {
+export type VerificationEmailChangeInput = {
   currentEmail: string;
   newEmail: string;
 };
 
-export type ChangeVerificationEmailResponse = {
+export type VerificationEmailChangeResult = {
   message: string;
   maskedEmail: string;
 };

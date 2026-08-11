@@ -26,10 +26,12 @@ type ApproverSetupModulesResponse = {
 };
 
 type ApproverSetupApiRecord = ApproverSetupResponseDto & {
+	levelName: string;
 	validUntil?: string | null;
 };
 
 export type CreateApproverSetupPayload = CreateApproverSetupDto & {
+	levelName: string;
 	validUntil?: string;
 };
 
@@ -66,12 +68,55 @@ export async function FetchApproverSetups() {
 		limit: 100,
 	});
 
-	return response.items.map(MapApproverSetupApiRecord);
+	return response.items.map((record) =>
+		MapApproverSetupApiRecord(record as ApproverSetupApiRecord),
+	);
 }
 
 export async function CreateApproverSetup(payload: CreateApproverSetupPayload) {
 	const response = await approverSetupsControllerCreateV1(payload);
+	return MapApproverSetupApiRecord(response.setup as ApproverSetupApiRecord);
+}
+
+export async function UpdateApproverSetup({
+	id,
+	payload,
+}: {
+	id: string;
+	payload: CreateApproverSetupPayload;
+}) {
+	const response = await OrvalApiClient<{ setup: ApproverSetupApiRecord }>({
+		data: payload,
+		method: "PUT",
+		url: `/api/v1/approver-setups/${encodeURIComponent(id)}`,
+	});
+
 	return MapApproverSetupApiRecord(response.setup);
+}
+
+export async function UpdateApproverSetupStatus({
+	id,
+	status,
+}: {
+	id: string;
+	status: string;
+}) {
+	const response = await OrvalApiClient<{ setup: ApproverSetupApiRecord }>({
+		data: { status },
+		method: "PATCH",
+		url: `/api/v1/approver-setups/${encodeURIComponent(id)}/status`,
+	});
+
+	return MapApproverSetupApiRecord(response.setup);
+}
+
+export async function DeleteApproverSetup(id: string) {
+	await OrvalApiClient<{ id: string; message: string }>({
+		method: "DELETE",
+		url: `/api/v1/approver-setups/${encodeURIComponent(id)}`,
+	});
+
+	return id;
 }
 
 export function MapApproverSetupApiRecord(
@@ -92,7 +137,7 @@ export function MapApproverSetupApiRecord(
 		effectiveTo: formatApiDate(record.validUntil),
 		lastUpdatedAt: record.updatedAt.slice(0, 10),
 		lastUpdatedBy: "System",
-		levelName: record.level ? `Level ${record.level}` : "Approval Review",
+		levelName: record.levelName,
 		moduleScope: record.moduleScope,
 		sequence: record.level ?? 1,
 		status: (record.status || "Active") as ApproverCoverageStatus,

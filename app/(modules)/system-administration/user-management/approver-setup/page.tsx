@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { ApproverSetupPage } from "@/app/src/ui/modules/system-administration/user-management/approver-setup/ApproverSetupPage";
+import { ApproverSetupPage } from "@/app/src/ui/modules/system-administration/approval-management/approver-setup/ApproverSetupPage";
 
 const PageTitle = "Approver Setup";
 

@@ -50,8 +50,7 @@ export type CustomizeReportPageSetup = {
   height: number;
 };
 
-export type CustomizeReportTableColumnKey =
-  "itemCode" | "description" | "qty" | "uom" | "unitCost" | "amount";
+export type CustomizeReportTableColumnKey = string;
 
 export type CustomizeReportTableColumn = {
   key: CustomizeReportTableColumnKey;
@@ -66,6 +65,7 @@ export type CustomizeReportTableSetup = {
   y: number;
   width: number;
   fontSize: number;
+  previewRows: number;
   rowHeight: number;
   showBorders: boolean;
   columns: CustomizeReportTableColumn[];
@@ -85,6 +85,13 @@ export type CustomizeReportLayout = {
   pageSetup: CustomizeReportPageSetup;
   tableSetup?: CustomizeReportTableSetup;
   marginSetup?: CustomizeReportMarginSetup;
+};
+
+export type CustomizeReportPresetTemplate = {
+  id: string;
+  name: string;
+  description: string;
+  layout: CustomizeReportLayout;
 };
 
 export type CustomizeReportModuleOption = {

@@ -25,6 +25,7 @@ import {
   CustomizeReportFields,
   CustomizeReportLines,
   CustomizeReportModuleOptions,
+  CustomizeReportPresetTemplates,
   CustomizeReportSampleData,
   CustomizeReportStorageKey,
 } from "@/app/src/data/modules/system-administration/customized-reports/CustomizeReportData";
@@ -60,6 +61,7 @@ import {
   getReportStorageKey,
   getSelectedElementKey,
   getSnappedPosition,
+  getTableBounds,
   getTableSetupWithDefaults,
   getVisibleElementBounds,
   isEditableElement,
@@ -71,7 +73,10 @@ import { validateCustomizeReportLayout } from "@/app/src/ui/modules/system-admin
 const CustomizeReportElementTypes = {
   Field: "field",
   Line: "line",
+  Table: "table",
 } as const;
+
+const CustomizeReportTableElementId = "items-table";
 
 const CustomizeReportLineOrientations = {
   Horizontal: "horizontal",
@@ -92,6 +97,7 @@ export function useCustomizeReportDesigner() {
     getSelectedElementKey(CustomizeReportElementTypes.Field, CustomizeReportFields[0].id),
   ]);
   const [selectedReportId, setSelectedReportId] = useState(DefaultCustomizeReportModuleId);
+  const [selectedPresetTemplateId, setSelectedPresetTemplateId] = useState(CustomizeReportPresetTemplates[0].id);
   const [alignmentGuides, setAlignmentGuides] = useState<AlignmentGuide[]>([]);
   const [snapToGrid, setSnapToGrid] = useState(true);
   const [gridSize, setGridSize] = useState(DefaultGridSize);
@@ -256,12 +262,16 @@ export function useCustomizeReportDesigner() {
             return field ? { key, type, id, bounds: getFieldBounds(field) } : null;
           }
 
+          if (type === CustomizeReportElementTypes.Table) {
+            return { key, type, id, bounds: getTableBounds(tableSetup) };
+          }
+
           const line = lines.find((currentLine) => currentLine.id === id);
 
           return line ? { key, type, id, bounds: getLineBounds(line) } : null;
         })
         .filter((element): element is NonNullable<typeof element> => Boolean(element)),
-    [fields, lines, selectedElementKeys],
+    [fields, lines, selectedElementKeys, tableSetup],
   );
 
   const hasMultiSelection = selectedElements.length > 1;
@@ -297,6 +307,16 @@ export function useCustomizeReportDesigner() {
         const nudgeAmount = event.shiftKey ? 10 : 1;
         const deltaX = key === "arrowleft" ? -nudgeAmount : key === "arrowright" ? nudgeAmount : 0;
         const deltaY = key === "arrowup" ? -nudgeAmount : key === "arrowdown" ? nudgeAmount : 0;
+
+        if (selectedElementType === CustomizeReportElementTypes.Table) {
+          pushUndoSnapshot();
+          setTableSetup((currentSetup) => ({
+            ...currentSetup,
+            x: clamp(currentSetup.x + deltaX, 0, pageSetup.width - currentSetup.width),
+            y: clamp(currentSetup.y + deltaY, 0, pageSetup.height - currentSetup.rowHeight),
+          }));
+          return;
+        }
 
         if (selectedElementType === CustomizeReportElementTypes.Line && selectedLine) {
           if (selectedLine.locked) {
@@ -422,17 +442,20 @@ export function useCustomizeReportDesigner() {
 
   function selectElement(type: CustomizeReportElementType, id: string, additive = false) {
     const key = getSelectedElementKey(type, id);
+    const allowAdditiveSelection = additive && type !== CustomizeReportElementTypes.Table;
 
     setSelectedElementType(type);
     if (type === CustomizeReportElementTypes.Field) {
       setSelectedFieldId(id);
       setSelectedLineId(null);
-    } else {
+    } else if (type === CustomizeReportElementTypes.Line) {
       setSelectedLineId(id);
+    } else {
+      setSelectedLineId(null);
     }
 
     setSelectedElementKeys((currentKeys) => {
-      if (!additive) {
+      if (!allowAdditiveSelection) {
         return [key];
       }
 
@@ -474,6 +497,18 @@ export function useCustomizeReportDesigner() {
           };
         }
 
+        if (type === CustomizeReportElementTypes.Table) {
+          const bounds = getTableBounds(tableSetup);
+
+          return {
+            key,
+            x: bounds.x,
+            y: bounds.y,
+            width: bounds.width,
+            height: bounds.height,
+          };
+        }
+
         const line = lines.find((currentLine) => currentLine.id === id);
 
         if (!line || line.locked) {
@@ -491,6 +526,23 @@ export function useCustomizeReportDesigner() {
         };
       })
       .filter((origin): origin is NonNullable<typeof origin> => Boolean(origin));
+  }
+
+  function handleTablePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+    event.stopPropagation();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    pushUndoSnapshot();
+    selectElement(CustomizeReportElementTypes.Table, CustomizeReportTableElementId, event.shiftKey);
+    dragStateRef.current = {
+      elementId: CustomizeReportTableElementId,
+      elementType: CustomizeReportElementTypes.Table,
+      action: "move",
+      startX: event.clientX,
+      startY: event.clientY,
+      originX: tableSetup.x,
+      originY: tableSetup.y,
+      groupOrigins: getSelectedGroupOrigins(getSelectedElementKey(CustomizeReportElementTypes.Table, CustomizeReportTableElementId)),
+    };
   }
 
   function handlePointerDown(event: ReactPointerEvent<HTMLButtonElement | HTMLDivElement>, field: CustomizeReportField) {
@@ -620,6 +672,15 @@ export function useCustomizeReportDesigner() {
             : line;
         }),
       );
+      const tablePosition = nextPositions.get(getSelectedElementKey(CustomizeReportElementTypes.Table, CustomizeReportTableElementId));
+
+      if (tablePosition) {
+        setTableSetup((currentSetup) => ({
+          ...currentSetup,
+          x: tablePosition.x,
+          y: tablePosition.y,
+        }));
+      }
       return;
     }
 
@@ -697,7 +758,7 @@ export function useCustomizeReportDesigner() {
           width,
           height,
         },
-        getVisibleElementBounds(fields, lines, line.id),
+        getVisibleElementBounds(fields, lines, tableSetup, line.id),
         pageSetup,
       );
 
@@ -716,6 +777,29 @@ export function useCustomizeReportDesigner() {
       return;
     }
 
+    if (dragState.elementType === CustomizeReportElementTypes.Table) {
+      const tableBounds = getTableBounds(tableSetup);
+      const rawX = clamp(snapValue(dragState.originX + deltaX), 0, pageSetup.width - tableSetup.width);
+      const rawY = clamp(snapValue(dragState.originY + deltaY), 0, pageSetup.height - tableBounds.height);
+      const snappedPosition = getSnappedPosition(
+        {
+          ...tableBounds,
+          x: rawX,
+          y: rawY,
+        },
+        getVisibleElementBounds(fields, lines, tableSetup, CustomizeReportTableElementId),
+        pageSetup,
+      );
+
+      setAlignmentGuides(snappedPosition.guides);
+      setTableSetup((currentSetup) => ({
+        ...currentSetup,
+        x: snappedPosition.x,
+        y: snappedPosition.y,
+      }));
+      return;
+    }
+
     const field = fields.find((currentField) => currentField.id === dragState.elementId);
 
     if (!field) {
@@ -730,7 +814,7 @@ export function useCustomizeReportDesigner() {
         x: rawX,
         y: rawY,
       },
-      getVisibleElementBounds(fields, lines, field.id),
+      getVisibleElementBounds(fields, lines, tableSetup, field.id),
       pageSetup,
     );
 
@@ -838,6 +922,19 @@ export function useCustomizeReportDesigner() {
     setMarginSetup(DefaultMarginSetup);
     selectElement(CustomizeReportElementTypes.Field, CustomizeReportFields[0].id);
     toast.success(`${selectedReport.label} layout reset.`);
+  }
+
+  function handleApplyPresetTemplate() {
+    const selectedTemplate = CustomizeReportPresetTemplates.find((template) => template.id === selectedPresetTemplateId);
+
+    if (!selectedTemplate) {
+      toast.error("Select a preset template before applying.");
+      return;
+    }
+
+    pushUndoSnapshot();
+    restoreLayoutSnapshot(selectedTemplate.layout);
+    toast.success(`${selectedTemplate.name} template applied.`);
   }
 
   function handleAddLine() {
@@ -1250,6 +1347,40 @@ export function useCustomizeReportDesigner() {
     }));
   }
 
+  function handleAddTableColumn() {
+    updateTableSetup((currentSetup) => {
+      const nextColumnNumber = currentSetup.columns.length + 1;
+
+      return {
+        ...currentSetup,
+        columns: [
+          ...currentSetup.columns,
+          {
+            key: `customColumn${Date.now()}`,
+            label: `Column ${nextColumnNumber}`,
+            width: 96,
+            visible: true,
+            align: "left",
+          },
+        ],
+      };
+    });
+    toast.success("Column added.");
+  }
+
+  function handleRemoveTableColumn(columnKey: CustomizeReportTableColumnKey) {
+    if (tableSetup.columns.length <= 1) {
+      toast.error("Keep at least one table column.");
+      return;
+    }
+
+    updateTableSetup((currentSetup) => ({
+      ...currentSetup,
+      columns: currentSetup.columns.filter((column) => column.key !== columnKey),
+    }));
+    toast.success("Column removed.");
+  }
+
   function updateMarginSetup(updater: (setup: CustomizeReportMarginSetup) => CustomizeReportMarginSetup) {
     pushUndoSnapshot();
     setMarginSetup((currentSetup) => updater(currentSetup));
@@ -1275,6 +1406,8 @@ export function useCustomizeReportDesigner() {
     gridSize,
     handleAddLine,
     handleAddStaticText,
+    handleAddTableColumn,
+    handleApplyPresetTemplate,
     handleAlignDistributeSelected,
     handleCanvasPointerDown,
     handleCanvasPointerMove,
@@ -1294,7 +1427,9 @@ export function useCustomizeReportDesigner() {
     handleRedoLayout,
     handleResetLayout,
     handleResizePointerDown,
+    handleRemoveTableColumn,
     handleSaveLayout,
+    handleTablePointerDown,
     handleToggleFieldVisibility,
     handleToggleLineVisibility,
     handleToggleSelectedLock,
@@ -1315,12 +1450,14 @@ export function useCustomizeReportDesigner() {
     selectedField,
     selectedFieldId,
     selectedLine,
+    selectedPresetTemplateId,
     selectedReport,
     selectedReportId,
     setDeleteTargetType,
     setGridSize,
     setIsElementsPanelOpen,
     setIsToolsDialogOpen,
+    setSelectedPresetTemplateId,
     setSelectedReportId,
     setSnapToGrid,
     setZoom,

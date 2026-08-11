@@ -6,12 +6,7 @@ import {
   ToolbarButtonClassName,
 } from "@/app/src/ui/modules/system-administration/customized-reports/constants/CustomizeReportDesignerConstants";
 import type {
-  CustomizeReportAlign,
   CustomizeReportMarginSetup,
-  CustomizeReportPageSetup,
-  CustomizeReportTableColumn,
-  CustomizeReportTableColumnKey,
-  CustomizeReportTableSetup,
 } from "@/app/src/types/modules/system-administration/customized-reports/CustomizeReportTypes";
 import { clamp } from "@/app/src/ui/modules/system-administration/customized-reports/utils/CustomizeReportDesignerUtils";
 
@@ -19,9 +14,7 @@ type CustomizeReportToolsDialogProps = {
   gridSize: number;
   isOpen: boolean;
   marginSetup: CustomizeReportMarginSetup;
-  pageSetup: CustomizeReportPageSetup;
   snapToGrid: boolean;
-  tableSetup: CustomizeReportTableSetup;
   onAddLine: () => void;
   onAddStaticText: () => void;
   onClose: () => void;
@@ -31,13 +24,6 @@ type CustomizeReportToolsDialogProps = {
     updater: (setup: CustomizeReportMarginSetup) => CustomizeReportMarginSetup,
   ) => void;
   onSnapToGridChange: (snapToGrid: boolean) => void;
-  onTableColumnChange: (
-    columnKey: CustomizeReportTableColumnKey,
-    updater: (column: CustomizeReportTableColumn) => CustomizeReportTableColumn,
-  ) => void;
-  onTableSetupChange: (
-    updater: (setup: CustomizeReportTableSetup) => CustomizeReportTableSetup,
-  ) => void;
 };
 
 export function CustomizeReportToolsDialog({
@@ -51,11 +37,7 @@ export function CustomizeReportToolsDialog({
   onLogoUpload,
   onMarginSetupChange,
   onSnapToGridChange,
-  onTableColumnChange,
-  onTableSetupChange,
-  pageSetup,
   snapToGrid,
-  tableSetup,
 }: CustomizeReportToolsDialogProps) {
   if (!isOpen) {
     return null;
@@ -136,135 +118,6 @@ export function CustomizeReportToolsDialog({
                     }))
                   }
                 />
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-md border border-slate-200 p-3">
-            <p className="mb-3 text-sm font-semibold text-slate-800">Table Designer</p>
-            <div className="grid grid-cols-2 gap-2 md:grid-cols-5">
-              <FieldNumberControl
-                label="X"
-                value={tableSetup.x}
-                onChange={(value) =>
-                  onTableSetupChange((currentSetup) => ({
-                    ...currentSetup,
-                    x: clamp(value, 0, pageSetup.width - currentSetup.width),
-                  }))
-                }
-              />
-              <FieldNumberControl
-                label="Y"
-                value={tableSetup.y}
-                onChange={(value) =>
-                  onTableSetupChange((currentSetup) => ({
-                    ...currentSetup,
-                    y: clamp(value, 0, pageSetup.height - currentSetup.rowHeight),
-                  }))
-                }
-              />
-              <FieldNumberControl
-                label="Width"
-                value={tableSetup.width}
-                onChange={(value) =>
-                  onTableSetupChange((currentSetup) => ({
-                    ...currentSetup,
-                    width: clamp(value, 160, pageSetup.width - currentSetup.x),
-                  }))
-                }
-              />
-              <FieldNumberControl
-                label="Font"
-                value={tableSetup.fontSize}
-                onChange={(value) =>
-                  onTableSetupChange((currentSetup) => ({
-                    ...currentSetup,
-                    fontSize: clamp(value, 8, 24),
-                  }))
-                }
-              />
-              <FieldNumberControl
-                label="Row"
-                value={tableSetup.rowHeight}
-                onChange={(value) =>
-                  onTableSetupChange((currentSetup) => ({
-                    ...currentSetup,
-                    rowHeight: clamp(value, 18, 48),
-                  }))
-                }
-              />
-            </div>
-            <label className="mt-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
-              <input
-                checked={tableSetup.showBorders}
-                className="h-4 w-4 accent-orange-500"
-                onChange={(event) =>
-                  onTableSetupChange((currentSetup) => ({
-                    ...currentSetup,
-                    showBorders: event.target.checked,
-                  }))
-                }
-                type="checkbox"
-              />
-              Show table borders
-            </label>
-            <div className="mt-3 space-y-2">
-              {tableSetup.columns.map((column) => (
-                <div
-                  key={column.key}
-                  className="grid gap-2 rounded-md border border-slate-100 bg-slate-50 p-2 md:grid-cols-[auto_minmax(0,1fr)_5rem_6rem]"
-                >
-                  <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
-                    <input
-                      checked={column.visible}
-                      className="h-4 w-4 accent-orange-500"
-                      onChange={(event) =>
-                        onTableColumnChange(column.key, (currentColumn) => ({
-                          ...currentColumn,
-                          visible: event.target.checked,
-                        }))
-                      }
-                      type="checkbox"
-                    />
-                    Show
-                  </label>
-                  <input
-                    className={InspectorNumberInputClassName}
-                    onChange={(event) =>
-                      onTableColumnChange(column.key, (currentColumn) => ({
-                        ...currentColumn,
-                        label: event.target.value,
-                      }))
-                    }
-                    value={column.label}
-                  />
-                  <input
-                    className={InspectorNumberInputClassName}
-                    min={24}
-                    onChange={(event) =>
-                      onTableColumnChange(column.key, (currentColumn) => ({
-                        ...currentColumn,
-                        width: clamp(Number(event.target.value), 24, 260),
-                      }))
-                    }
-                    type="number"
-                    value={column.width}
-                  />
-                  <select
-                    className={InspectorNumberInputClassName}
-                    onChange={(event) =>
-                      onTableColumnChange(column.key, (currentColumn) => ({
-                        ...currentColumn,
-                        align: event.target.value as CustomizeReportAlign,
-                      }))
-                    }
-                    value={column.align}
-                  >
-                    <option value="left">Left</option>
-                    <option value="center">Center</option>
-                    <option value="right">Right</option>
-                  </select>
-                </div>
               ))}
             </div>
           </div>

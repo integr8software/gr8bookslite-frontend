@@ -33,6 +33,7 @@ export const DefaultTableSetup: CustomizeReportTableSetup = {
   y: 238,
   width: 686,
   fontSize: 11,
+  previewRows: 2,
   rowHeight: 26,
   showBorders: true,
   columns: DefaultTableColumns,

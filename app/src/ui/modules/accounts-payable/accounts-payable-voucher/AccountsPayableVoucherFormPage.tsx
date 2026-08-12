@@ -71,7 +71,10 @@ export function AccountsPayableVoucherFormPage() {
     () => createTermOptions(createLookupTermOptions(termRecords), page.values.termId, page.values.terms),
     [page.values.termId, page.values.terms, termRecords],
   );
-  const currencyOptions = useMemo(() => createAccountsPayableVoucherCurrencyDropdownOptions(), []);
+  const currencyOptions = useMemo(
+    () => createAccountsPayableVoucherCurrencyDropdownOptions(page.baseCurrencyCode),
+    [page.baseCurrencyCode],
+  );
 
   if (page.needsRecord && page.isRecordLoading) {
     return (
@@ -538,8 +541,14 @@ function createAccountsPayableVoucherCurrencyOptions() {
   return MultiCurrencyCatalog.filter((currency) => currency.isEnabled);
 }
 
-function createAccountsPayableVoucherCurrencyDropdownOptions(): AppAdvancedDropdownOption[] {
-  return createAccountsPayableVoucherCurrencyOptions().map((currency) => ({
+function createAccountsPayableVoucherCurrencyDropdownOptions(baseCurrencyCode = "PHP"): AppAdvancedDropdownOption[] {
+  const currencies = createAccountsPayableVoucherCurrencyOptions();
+  const baseCurrency = MultiCurrencyCatalog.find((currency) => currency.code === baseCurrencyCode);
+  const options = baseCurrency && !currencies.some((currency) => currency.code === baseCurrencyCode)
+    ? [...currencies, baseCurrency]
+    : currencies;
+
+  return options.map((currency) => ({
     label: currency.isDefault ? `${currency.name} | Default` : currency.name,
     name: currency.code,
     value: currency.code,

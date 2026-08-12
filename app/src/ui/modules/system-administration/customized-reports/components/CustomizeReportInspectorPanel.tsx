@@ -1,6 +1,7 @@
 import { AlignDistributePanel } from "@/app/src/ui/modules/system-administration/customized-reports/components/CustomizeReportAlignDistributePanel";
 import { CustomizeReportFieldInspector } from "@/app/src/ui/modules/system-administration/customized-reports/components/CustomizeReportFieldInspector";
 import { CustomizeReportLineInspector } from "@/app/src/ui/modules/system-administration/customized-reports/components/CustomizeReportLineInspector";
+import { CustomizeReportTableInspector } from "@/app/src/ui/modules/system-administration/customized-reports/components/CustomizeReportTableInspector";
 import type {
   AlignDistributionAction,
   ReportElementBounds,
@@ -9,29 +10,44 @@ import type {
 import type {
   CustomizeReportField,
   CustomizeReportLine,
+  CustomizeReportMarginSetup,
   CustomizeReportPageSetup,
+  CustomizeReportTableColumn,
+  CustomizeReportTableColumnKey,
+  CustomizeReportTableSetup,
 } from "@/app/src/types/modules/system-administration/customized-reports/CustomizeReportTypes";
 
 type SelectedReportElement = {
   bounds: ReportElementBounds;
   id: string;
   key: SelectedElementKey;
-  type: "field" | "line";
+  type: "field" | "line" | "table";
 };
 
 type CustomizeReportInspectorPanelProps = {
   hasMultiSelection: boolean;
+  marginSetup: CustomizeReportMarginSetup;
   pageSetup: CustomizeReportPageSetup;
-  selectedElementType: "field" | "line";
+  selectedElementType: "field" | "line" | "table";
   selectedElements: SelectedReportElement[];
   selectedField: CustomizeReportField;
   selectedLine: CustomizeReportLine | null;
+  tableSetup: CustomizeReportTableSetup;
   templatePreview: string;
+  onAddTableColumn: () => void;
   onAlignDistribute: (action: AlignDistributionAction) => void;
   onDeleteField: () => void;
   onDeleteLine: () => void;
   onDuplicate: () => void;
   onLayer: (action: "backward" | "forward" | "back" | "front") => void;
+  onRemoveTableColumn: (columnKey: CustomizeReportTableColumnKey) => void;
+  onTableColumnChange: (
+    columnKey: CustomizeReportTableColumnKey,
+    updater: (column: CustomizeReportTableColumn) => CustomizeReportTableColumn,
+  ) => void;
+  onTableSetupChange: (
+    updater: (setup: CustomizeReportTableSetup) => CustomizeReportTableSetup,
+  ) => void;
   onToggleLock: () => void;
   onUpdateField: (updater: (field: CustomizeReportField) => CustomizeReportField) => void;
   onUpdateLine: (updater: (line: CustomizeReportLine) => CustomizeReportLine) => void;
@@ -39,11 +55,16 @@ type CustomizeReportInspectorPanelProps = {
 
 export function CustomizeReportInspectorPanel({
   hasMultiSelection,
+  marginSetup,
+  onAddTableColumn,
   onAlignDistribute,
   onDeleteField,
   onDeleteLine,
   onDuplicate,
   onLayer,
+  onRemoveTableColumn,
+  onTableColumnChange,
+  onTableSetupChange,
   onToggleLock,
   onUpdateField,
   onUpdateLine,
@@ -52,6 +73,7 @@ export function CustomizeReportInspectorPanel({
   selectedElements,
   selectedField,
   selectedLine,
+  tableSetup,
   templatePreview,
 }: CustomizeReportInspectorPanelProps) {
   return (
@@ -63,13 +85,25 @@ export function CustomizeReportInspectorPanel({
             ? `${selectedElements.length} elements selected`
             : selectedElementType === "line" && selectedLine
               ? selectedLine.label
+              : selectedElementType === "table"
+                ? "Items Table"
               : selectedField.label}
         </p>
       </div>
 
       {hasMultiSelection ? <AlignDistributePanel onAction={onAlignDistribute} /> : null}
 
-      {selectedElementType === "line" && selectedLine ? (
+      {selectedElementType === "table" ? (
+        <CustomizeReportTableInspector
+          marginSetup={marginSetup}
+          onAddColumn={onAddTableColumn}
+          onRemoveColumn={onRemoveTableColumn}
+          onTableColumnChange={onTableColumnChange}
+          onTableSetupChange={onTableSetupChange}
+          pageSetup={pageSetup}
+          tableSetup={tableSetup}
+        />
+      ) : selectedElementType === "line" && selectedLine ? (
         <CustomizeReportLineInspector
           line={selectedLine}
           onDelete={onDeleteLine}

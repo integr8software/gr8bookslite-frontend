@@ -20,6 +20,8 @@ export function CustomizeReportPage() {
     gridSize,
     handleAddLine,
     handleAddStaticText,
+    handleAddTableColumn,
+    handleApplyPresetTemplate,
     handleAlignDistributeSelected,
     handleCanvasPointerDown,
     handleCanvasPointerMove,
@@ -39,7 +41,9 @@ export function CustomizeReportPage() {
     handleRedoLayout,
     handleResetLayout,
     handleResizePointerDown,
+    handleRemoveTableColumn,
     handleSaveLayout,
+    handleTablePointerDown,
     handleToggleFieldVisibility,
     handleToggleLineVisibility,
     handleToggleSelectedLock,
@@ -59,12 +63,14 @@ export function CustomizeReportPage() {
     selectedField,
     selectedFieldId,
     selectedLine,
+    selectedPresetTemplateId,
     selectedReport,
     selectedReportId,
     setDeleteTargetType,
     setGridSize,
     setIsElementsPanelOpen,
     setIsToolsDialogOpen,
+    setSelectedPresetTemplateId,
     setSelectedReportId,
     setSnapToGrid,
     setZoom,
@@ -102,14 +108,17 @@ export function CustomizeReportPage() {
         onOpenTools={() => setIsToolsDialogOpen(true)}
         onPageFormatChange={handlePageFormatChange}
         onPageOrientationChange={handlePageOrientationChange}
+        onPresetTemplateApply={handleApplyPresetTemplate}
         onPreviewPdf={handlePreviewPdf}
         onRedoLayout={handleRedoLayout}
         onResetLayout={handleResetLayout}
         onSaveLayout={handleSaveLayout}
+        onSelectedPresetTemplateIdChange={setSelectedPresetTemplateId}
         onSelectedReportIdChange={setSelectedReportId}
         onUndoLayout={handleUndoLayout}
         onZoomChange={setZoom}
         pageSetup={pageSetup}
+        selectedPresetTemplateId={selectedPresetTemplateId}
         selectedReport={selectedReport}
         selectedReportId={selectedReportId}
         zoom={zoom}
@@ -126,11 +135,7 @@ export function CustomizeReportPage() {
         onLogoUpload={handleLogoUpload}
         onMarginSetupChange={updateMarginSetup}
         onSnapToGridChange={setSnapToGrid}
-        onTableColumnChange={updateTableColumn}
-        onTableSetupChange={updateTableSetup}
-        pageSetup={pageSetup}
         snapToGrid={snapToGrid}
-        tableSetup={tableSetup}
       />
       <section
         className={`grid gap-4 ${
@@ -166,6 +171,7 @@ export function CustomizeReportPage() {
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           onResizePointerDown={handleResizePointerDown}
+          onTablePointerDown={handleTablePointerDown}
           pageSetup={pageSetup}
           reportData={reportData}
           selectedElementSet={selectedElementSet}
@@ -177,12 +183,17 @@ export function CustomizeReportPage() {
         />
         <CustomizeReportInspectorPanel
           hasMultiSelection={hasMultiSelection}
+          marginSetup={marginSetup}
+          onAddTableColumn={handleAddTableColumn}
           onAlignDistribute={handleAlignDistributeSelected}
           onDeleteField={() => setDeleteTargetType("field")}
           onDeleteLine={() => setDeleteTargetType("line")}
           onDuplicate={handleDuplicateSelectedElement}
           onLayer={handleLayerSelectedElement}
+          onRemoveTableColumn={handleRemoveTableColumn}
           onToggleLock={handleToggleSelectedLock}
+          onTableColumnChange={updateTableColumn}
+          onTableSetupChange={updateTableSetup}
           onUpdateField={updateSelectedField}
           onUpdateLine={updateSelectedLine}
           pageSetup={pageSetup}
@@ -190,6 +201,7 @@ export function CustomizeReportPage() {
           selectedElements={selectedElements}
           selectedField={selectedField}
           selectedLine={selectedLine}
+          tableSetup={tableSetup}
           templatePreview={templatePreview}
         />
       </section>

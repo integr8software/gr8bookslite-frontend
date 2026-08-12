@@ -74,10 +74,12 @@ app/src/validations/auth/
 app/src/services/auth/
   AuthActions.ts
   AuthApi.ts
-  AuthApiTypes.ts
   AuthActionUtils.ts
   AuthRegistrationActions.ts
   AuthPasswordActions.ts
+
+app/src/types/auth/
+  AuthTypes.ts
 
 app/src/hooks/auth/
   useForgotPasswordForm.ts
@@ -154,8 +156,8 @@ This layer contains server-side auth operations.
 - `AuthActionUtils.ts`
   - contains shared auth action helpers such as form-value extraction and invalid-state mapping
 
-- `AuthApiTypes.ts`
-  - contains auth API request and response types
+- `app/src/types/auth/AuthTypes.ts`
+  - contains shared auth API and profile types
 
 Quick mental model for these files:
 
@@ -174,9 +176,9 @@ Quick mental model for these files:
   - knows how to call backend auth endpoints
   - handles base URL building and error shaping for auth requests
 
-- `AuthApiTypes.ts`
-  - shared request and response TypeScript types for auth API calls
-  - keeps payload and response shapes in one place
+- `app/src/types/auth/AuthTypes.ts`
+  - shared TypeScript types for auth API calls and authenticated profile state
+  - keeps reusable auth shapes in the shared auth types folder
   - avoids repeating those types across multiple auth action files
 
 - `AuthApi.ts`

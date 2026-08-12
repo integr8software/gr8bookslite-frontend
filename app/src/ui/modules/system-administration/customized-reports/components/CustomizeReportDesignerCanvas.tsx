@@ -34,7 +34,7 @@ type CustomizeReportDesignerCanvasProps = {
   pageSetup: CustomizeReportPageSetup;
   reportData: Record<string, unknown>;
   selectedElementSet: Set<SelectedElementKey>;
-  selectedElementType: "field" | "line";
+  selectedElementType: "field" | "line" | "table";
   selectedFieldId: string;
   snapToGrid: boolean;
   tableSetup: CustomizeReportTableSetup;
@@ -44,7 +44,7 @@ type CustomizeReportDesignerCanvasProps = {
   onCanvasPointerUp: (event: PointerEvent<HTMLDivElement>) => void;
   onElementSelect: (
     event: MouseEvent<HTMLElement>,
-    type: "field" | "line",
+    type: "field" | "line" | "table",
     id: string,
   ) => void;
   onFieldPointerDown: (
@@ -62,6 +62,7 @@ type CustomizeReportDesignerCanvasProps = {
     field: CustomizeReportField,
     resizeHandle: ResizeHandle,
   ) => void;
+  onTablePointerDown: (event: PointerEvent<HTMLDivElement>) => void;
 };
 
 export function CustomizeReportDesignerCanvas({
@@ -81,6 +82,7 @@ export function CustomizeReportDesignerCanvas({
   onPointerMove,
   onPointerUp,
   onResizePointerDown,
+  onTablePointerDown,
   pageSetup,
   reportData,
   selectedElementSet,
@@ -134,7 +136,14 @@ export function CustomizeReportDesignerCanvas({
             />
           ) : null}
 
-          <ReportItemsPreview tableSetup={tableSetup} />
+          <ReportItemsPreview
+            onElementSelect={onElementSelect}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onTablePointerDown={onTablePointerDown}
+            selectedElementSet={selectedElementSet}
+            tableSetup={tableSetup}
+          />
           <AlignmentGuides guides={alignmentGuides} />
 
           {lines
@@ -174,19 +183,53 @@ export function CustomizeReportDesignerCanvas({
   );
 }
 
-function ReportItemsPreview({ tableSetup }: { tableSetup: CustomizeReportTableSetup }) {
+function ReportItemsPreview({
+  onElementSelect,
+  onPointerMove,
+  onPointerUp,
+  onTablePointerDown,
+  selectedElementSet,
+  tableSetup,
+}: {
+  onElementSelect: (
+    event: MouseEvent<HTMLElement>,
+    type: "field" | "line" | "table",
+    id: string,
+  ) => void;
+  onPointerMove: (event: PointerEvent<HTMLButtonElement | HTMLDivElement>) => void;
+  onPointerUp: (event: PointerEvent<HTMLButtonElement | HTMLDivElement>) => void;
+  onTablePointerDown: (event: PointerEvent<HTMLDivElement>) => void;
+  selectedElementSet: Set<SelectedElementKey>;
+  tableSetup: CustomizeReportTableSetup;
+}) {
   const visibleColumns = tableSetup.columns.filter((column) => column.visible);
+  const isSelected = selectedElementSet.has(getSelectedElementKey("table", "items-table"));
+  const previewRows = Array.from({ length: tableSetup.previewRows }, (_, index) => CustomizeReportSampleData.items[index] ?? null);
 
   return (
     <div
-      className={`absolute overflow-hidden rounded-sm ${
-        tableSetup.showBorders ? "border border-slate-300" : ""
+      data-report-element="true"
+      className={`absolute overflow-hidden rounded-sm transition ${
+        tableSetup.showBorders ? "border border-slate-300" : "border border-transparent"
+      } ${
+        isSelected
+          ? "bg-orange-50/60 ring-2 ring-orange-300"
+          : "hover:bg-sky-50/50 hover:ring-2 hover:ring-sky-200"
       }`}
+      onClick={(event) => onElementSelect(event, "table", "items-table")}
+      onPointerCancel={onPointerUp}
+      onPointerDown={onTablePointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      role="button"
       style={{
         left: tableSetup.x,
         top: tableSetup.y,
         width: tableSetup.width,
+        zIndex: 1,
       }}
+      tabIndex={0}
+      title="Items Table"
     >
       <table className="w-full border-collapse" style={{ fontSize: tableSetup.fontSize }}>
         <thead className="bg-slate-50">
@@ -207,8 +250,8 @@ function ReportItemsPreview({ tableSetup }: { tableSetup: CustomizeReportTableSe
           </tr>
         </thead>
         <tbody>
-          {CustomizeReportSampleData.items.map((item) => (
-            <tr key={item.itemCode}>
+          {previewRows.map((item, rowIndex) => (
+            <tr key={item?.itemCode ?? `preview-row-${rowIndex}`}>
               {visibleColumns.map((column) => (
                 <td
                   key={column.key}
@@ -219,9 +262,7 @@ function ReportItemsPreview({ tableSetup }: { tableSetup: CustomizeReportTableSe
                     textAlign: column.align,
                   }}
                 >
-                  {column.key === "unitCost" || column.key === "amount"
-                    ? formatCurrency(item[column.key])
-                    : item[column.key]}
+                  {getTableCellPreviewValue(item, column.key)}
                 </td>
               ))}
             </tr>
@@ -230,6 +271,23 @@ function ReportItemsPreview({ tableSetup }: { tableSetup: CustomizeReportTableSe
       </table>
     </div>
   );
+}
+
+function getTableCellPreviewValue(
+  item: (typeof CustomizeReportSampleData.items)[number] | null,
+  columnKey: string,
+) {
+  if (!item) {
+    return "";
+  }
+
+  const value = item[columnKey as keyof typeof item];
+
+  if ((columnKey === "unitCost" || columnKey === "amount") && typeof value === "number") {
+    return formatCurrency(value);
+  }
+
+  return value ?? "";
 }
 
 function AlignmentGuides({ guides }: { guides: AlignmentGuide[] }) {
@@ -352,7 +410,7 @@ function ReportFieldElement({
   ) => void;
   reportData: Record<string, unknown>;
   selectedElementSet: Set<SelectedElementKey>;
-  selectedElementType: "field" | "line";
+  selectedElementType: "field" | "line" | "table";
   selectedFieldId: string;
 }) {
   return (

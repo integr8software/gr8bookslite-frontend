@@ -3,7 +3,7 @@
 import { ExternalLink } from "lucide-react";
 import type {
   OnboardingBillingStepProps,
-} from "@/app/src/data/onboarding/OnboardingTypes";
+} from "@/app/src/types/onboarding/OnboardingTypes";
 import { BillingMethodSelector } from "@/app/src/ui/billing/BillingMethodSelector";
 import { OnboardingActionRow } from "@/app/src/ui/onboarding/OnboardingActionRow";
 import { OnboardingBillingSummaryCard } from "@/app/src/ui/onboarding/OnboardingBillingSummaryCard";

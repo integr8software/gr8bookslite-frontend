@@ -1,28 +1,20 @@
-import type {
-  AuthMembershipRole,
-  AuthProfileResponse,
-} from "@/app/src/services/auth/AuthApiTypes";
+import {
+  AuthEffectiveRoleCodes,
+  AuthMembershipRoleCodes,
+  type AuthEffectiveRole,
+  type AuthMembershipRole,
+  type AuthProfile,
+} from "@/app/src/types/auth/AuthTypes";
 
-export type AuthEffectiveRole = "SUPER_ADMIN" | "ADMIN" | "USER";
-
-export function GetAuthProfileAccess(profile: AuthProfileResponse | undefined) {
+export function GetAuthProfileAccess(profile: AuthProfile | undefined) {
   return profile?.activeAccess ?? profile?.access ?? null;
 }
 
-export function GetAuthProfileCompanyId(
-  profile: AuthProfileResponse | undefined,
-) {
-  return (
-    profile?.activeCompanyId ??
-    profile?.companyId ??
-    GetAuthProfileAccess(profile)?.companyId ??
-    null
-  );
+export function GetAuthProfileCompanyId(profile: AuthProfile | undefined) {
+  return profile?.activeCompanyId ?? profile?.companyId ?? GetAuthProfileAccess(profile)?.companyId ?? null;
 }
 
-export function GetAuthProfileMembershipRole(
-  profile: AuthProfileResponse | undefined,
-): AuthMembershipRole {
+export function GetAuthProfileMembershipRole(profile: AuthProfile | undefined): AuthMembershipRole {
   const access = GetAuthProfileAccess(profile);
   const accessMembershipRole = access?.membershipRole ?? access?.role;
 
@@ -35,24 +27,19 @@ export function GetAuthProfileMembershipRole(
   }
 
   const activeCompanyId = GetAuthProfileCompanyId(profile);
-  const activeCompanyMembership =
-    profile?.companies?.find(
-      (company) => company.companyId === activeCompanyId,
-    ) ?? profile?.companies?.[0];
+  const activeCompanyMembership = profile?.companies?.find((company) => company.companyId === activeCompanyId) ?? profile?.companies?.[0];
 
   return activeCompanyMembership?.role ?? null;
 }
 
-export function ResolveAuthProfileEffectiveRole(
-  profile: AuthProfileResponse | undefined,
-): AuthEffectiveRole {
-  if (profile?.user.systemRole === "SUPER_ADMIN") {
-    return "SUPER_ADMIN";
+export function ResolveAuthProfileEffectiveRole(profile: AuthProfile | undefined): AuthEffectiveRole {
+  if (profile?.user.systemRole === AuthEffectiveRoleCodes.SuperAdmin) {
+    return AuthEffectiveRoleCodes.SuperAdmin;
   }
 
-  if (GetAuthProfileMembershipRole(profile) === "ADMIN") {
-    return "ADMIN";
+  if (GetAuthProfileMembershipRole(profile) === AuthMembershipRoleCodes.Admin) {
+    return AuthEffectiveRoleCodes.Admin;
   }
 
-  return "USER";
+  return AuthEffectiveRoleCodes.User;
 }

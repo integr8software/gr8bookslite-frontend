@@ -1,9 +1,11 @@
 import {
   formatReceivingReportCurrency,
   formatReceivingReportDate,
-  type ReceivingReportRecord,
-  type ReceivingReportStatus,
 } from "@/app/src/data/modules/inventory/receiving-report/ReceivingReportData";
+import type {
+  ReceivingReportRecord,
+  ReceivingReportStatus,
+} from "@/app/src/types/modules/inventory/receiving-report/ReceivingReportTypes";
 import { ReceivingReportRecordActions } from "@/app/src/ui/modules/inventory/receiving-report/overview/ReceivingReportRecordActions";
 import { ReceivingReportStatusBadge } from "@/app/src/ui/modules/inventory/receiving-report/overview/ReceivingReportStatusBadge";
 

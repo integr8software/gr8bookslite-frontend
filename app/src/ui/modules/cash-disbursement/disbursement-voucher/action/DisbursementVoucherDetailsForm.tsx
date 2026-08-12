@@ -13,6 +13,7 @@ import type { PaymentTypeRecord as AppPaymentTypeRecord } from "@/app/src/types/
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
+import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { DisbursementVoucherFieldClassName } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import { formatExchangeRateInput } from "@/app/src/utils/number.util";
 import { FieldShell } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherFieldControls";
@@ -176,7 +177,7 @@ function DisbursementVoucherHeaderFields({
               addAction={
                 !isReadonly && canAddProjectName
                   ? {
-                      label: "Add Project Name",
+                      label: "Add Project",
                       onClick: onOpenProjectNameDialog,
                     }
                   : undefined
@@ -194,11 +195,12 @@ function DisbursementVoucherHeaderFields({
             />
           </FieldShell>
           <FieldShell controlId="disbursement-voucher-currency" label="Currency" error={errors.currency}>
-            <div className="grid min-w-0 gap-3 md:grid-cols-2 md:items-center">
-              <div className="min-w-0">
+            <CurrencyExchangeRateRow
+              exchangeRateControlId="disbursement-voucher-fx-rate"
+              currencyControl={
                 <AppAdvancedDropdown
                   id="disbursement-voucher-currency"
-                  className="min-w-0"
+                  className="w-full min-w-0"
                   value={values.currency}
                   readOnly={isReadonly}
                   isClearable={false}
@@ -208,11 +210,8 @@ function DisbursementVoucherHeaderFields({
                   searchPlaceholder="Search currency"
                   onChange={(value) => updateCurrency(String(value))}
                 />
-              </div>
-              <div className="grid min-w-0 grid-cols-[max-content_minmax(0,1fr)] items-center gap-2">
-                <label htmlFor="disbursement-voucher-fx-rate" className="whitespace-nowrap text-sm font-semibold text-darknavy">
-                  Exchange Rate
-                </label>
+              }
+              exchangeRateControl={
                 <input
                   id="disbursement-voucher-fx-rate"
                   type="text"
@@ -222,8 +221,8 @@ function DisbursementVoucherHeaderFields({
                   onChange={(event) => onUpdateField("fxRate", formatExchangeRateInput(event.target.value))}
                   className={`${DisbursementVoucherFieldClassName} text-right`}
                 />
-              </div>
-            </div>
+              }
+            />
           </FieldShell>
           <FieldShell controlId="disbursement-voucher-remarks" label="Remarks" error={errors.remarks}>
             <AppLimitedTextarea

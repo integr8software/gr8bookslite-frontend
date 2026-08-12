@@ -140,6 +140,7 @@ const statusIconByStatus: Record<string, typeof CheckCircle2> = {
   Disapproved: XCircle,
   Draft: Clock3,
   "For Approval": Clock3,
+  Open: Clock3,
   Pending: Clock3,
   Posted: CheckCircle2,
 };
@@ -152,6 +153,7 @@ const statusClassNameByStatus: Record<string, string> = {
   Disapproved: "bg-coralpink/15 text-coralpink",
   Draft: "bg-offwhite text-darknavy/70",
   "For Approval": "bg-citron/25 text-darknavy",
+  Open: "bg-offwhite text-darknavy/70",
   Pending: "bg-offwhite text-darknavy",
   Posted: "bg-citron/25 text-darknavy",
 };

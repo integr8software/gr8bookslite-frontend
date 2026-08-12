@@ -56,6 +56,7 @@ export function OfficialReceiptDetailsForm({
           </FieldShell>
           <FieldShell controlId="official-receipt-currency" label="Currency">
             <CurrencyExchangeRateRow
+              exchangeRateControlId="official-receipt-exchange-rate"
               currencyControl={
                 <AppAdvancedDropdown
                   id="official-receipt-currency"

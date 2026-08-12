@@ -589,7 +589,7 @@ export function DisbursementVoucherAccountingGridPage() {
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-skyblue">Cash Disbursement Setup</p>
             <h1 className="mt-2 text-2xl font-semibold text-darknavy sm:text-3xl">Accounting Grid View</h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-darknavy/58">
-              No voucher draft is available yet. Open a disbursement voucher first, then click Data Grid View from Accounting Entries.
+              No voucher is available yet. Select a disbursement voucher first, then click Data Grid View from Accounting Entries.
             </p>
             <button
               type="button"

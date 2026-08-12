@@ -2,11 +2,7 @@
 
 import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { Gift } from "lucide-react";
-import {
-  createReceivingReportLine,
-  type ReceivingReportLine,
-  type ReceivingReportTotals,
-} from "@/app/src/data/modules/inventory/receiving-report/ReceivingReportData";
+import { createReceivingReportLine } from "@/app/src/data/modules/inventory/receiving-report/ReceivingReportData";
 import {
   DefaultHiddenReceivingReportItemColumns,
   ReceivingReportItemColumnConfigs,
@@ -26,7 +22,9 @@ import {
 import type {
   ReceivingReportColumnConfig,
   ReceivingReportEntryUpdater,
+  ReceivingReportLine,
   ReceivingReportLineField,
+  ReceivingReportTotals,
 } from "@/app/src/types/modules/inventory/receiving-report/ReceivingReportTypes";
 
 export function ReceivingReportItemEntries({
@@ -88,7 +86,11 @@ export function ReceivingReportItemEntries({
       }
 
       const next = new Set(current);
-      isVisible ? next.add(columnId) : next.delete(columnId);
+      if (isVisible) {
+        next.add(columnId);
+      } else {
+        next.delete(columnId);
+      }
       return next;
     });
   }

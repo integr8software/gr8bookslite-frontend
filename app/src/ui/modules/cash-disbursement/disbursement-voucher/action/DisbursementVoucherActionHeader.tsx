@@ -66,12 +66,16 @@ export function DisbursementVoucherActionHeader({
               ) : null}
               <ModuleSaveButton
                 onSave={onSubmit}
-                menuItems={[
-                  {
-                    label: "Save As Draft",
-                    onSelect: onSaveDraft,
-                  },
-                ]}
+                menuItems={
+                  mode === "add" && onSaveDraft
+                    ? [
+                          {
+                            label: "Save As Draft",
+                            onSelect: onSaveDraft,
+                          },
+                      ]
+                    : []
+                }
               />
             </span>
           )}

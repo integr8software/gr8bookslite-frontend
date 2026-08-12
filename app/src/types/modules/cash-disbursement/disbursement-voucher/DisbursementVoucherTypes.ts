@@ -6,6 +6,7 @@ export type DisbursementVoucherStatus = "Draft" | "For Approval" | "Posted" | "D
 export type DisbursementVoucherTableColumnKey =
   | "voucherNo"
   | "documentDate"
+  | "partyCode"
   | "partyName"
   | "paymentType"
   | "remarks"
@@ -30,6 +31,10 @@ export type WorkflowStep = "details" | "entries" | "review";
 export type DisbursementVoucherActionMode = "add" | "edit" | "view";
 
 export type DisbursementVoucherActionTab = "details" | "attachments";
+
+export type DisbursementVoucherStatusFilter =
+  | "all"
+  | DisbursementVoucherStatus;
 
 export type DisbursementVoucherHistoryEntry = {
   id: string;
@@ -63,7 +68,6 @@ export type DisbursementVoucherPaymentDetails = {
   checkDate: string;
   checkNo: string;
   checkStatus?: string;
-  commission?: string;
   isMultiCheckNumber?: boolean;
   payee?: string;
   paymentReferenceNo: string;
@@ -162,6 +166,14 @@ export type DisbursementAttachment = {
   size?: number;
   sizeLabel?: string;
   type?: string;
+};
+
+export type DisbursementVoucherFileAttachmentFieldsProps = {
+  attachments: DisbursementAttachment[];
+  isReadonly: boolean;
+  inputName?: string;
+  uploadTitle?: string;
+  onAttachmentsChange: (attachments: DisbursementAttachment[]) => void;
 };
 
 export type DisbursementVoucherRecord = {

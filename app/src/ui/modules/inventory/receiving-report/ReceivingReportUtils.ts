@@ -2,7 +2,7 @@ import type { ModuleDataEntryClearAction } from "@/app/src/ui/shared/module/modu
 import type {
   ReceivingReportAccountingEntry,
   ReceivingReportLine,
-} from "@/app/src/data/modules/inventory/receiving-report/ReceivingReportData";
+} from "@/app/src/types/modules/inventory/receiving-report/ReceivingReportTypes";
 import { ReceivingReportDefaultEmptyValues } from "@/app/src/constants/modules/inventory/receiving-report/ReceivingReportConstants";
 import { receivingReportEntryIsComplete } from "@/app/src/validations/modules/inventory/receiving-report/ReceivingReportValidation";
 

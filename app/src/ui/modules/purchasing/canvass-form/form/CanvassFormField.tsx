@@ -32,6 +32,7 @@ export function CanvassFormRequestFields({ isReadonly, onUpdateField, values }: 
       {/* Row 1 */}
       <FieldShell controlId="canvass-form-currency" label="Currency">
         <CurrencyExchangeRateRow
+          exchangeRateControlId="canvass-form-exchange-rate"
           currencyControl={
             <AppAdvancedDropdown
               id="canvass-form-currency"

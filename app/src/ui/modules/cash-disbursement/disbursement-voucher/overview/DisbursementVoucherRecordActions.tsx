@@ -3,7 +3,6 @@ import {
 	Ban,
 	Edit3,
 	Eye,
-	History as HistoryIcon,
 	ThumbsDown,
 	ThumbsUp,
 	Undo2,
@@ -18,7 +17,6 @@ import {
 	getDisbursementVoucherStatusDialogCopy,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import type {
-	DisbursementVoucherHistoryEntry,
 	DisbursementVoucherPreviewRow,
 	DisbursementVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
@@ -30,7 +28,6 @@ import {
 	type ModuleActionMenuItem,
 } from "@/app/src/ui/shared/module/ModuleActionMenu";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import { ModuleHistoryDialog } from "@/app/src/ui/shared/module/ModuleHistoryDialog";
 
 export function DisbursementVoucherRecordActions({
 	row,
@@ -44,10 +41,8 @@ export function DisbursementVoucherRecordActions({
 }) {
 	const [statusToConfirm, setStatusToConfirm] =
 		useState<DisbursementVoucherStatus | null>(null);
-	const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 	const transactionId = row.transaction.id;
 	const recordLabel = row.voucher?.voucherNo ?? row.transaction.transactionNo;
-	const historyEntries = createDisbursementVoucherRowHistory(row, recordLabel);
 	const status = row.voucher?.status ?? row.transaction.status;
 	const canEdit = row.voucher && canEditDisbursementVoucherStatus(status);
 	const isPosted = status === DisbursementVoucherStatuses.posted;
@@ -124,12 +119,6 @@ export function DisbursementVoucherRecordActions({
 			tone: isCancelled ? "default" : "danger",
 			type: "button",
 		},
-		{
-			icon: HistoryIcon,
-			label: "History",
-			onSelect: () => setIsHistoryOpen(true),
-			type: "button",
-		},
 	];
 
 	return (
@@ -161,40 +150,6 @@ export function DisbursementVoucherRecordActions({
 					}}
 				/>
 			) : null}
-			{isHistoryOpen ? (
-				<ModuleHistoryDialog
-					description="Status changes and major disbursement voucher events."
-					history={historyEntries}
-					isOpen
-					title="Disbursement Voucher History"
-					onClose={() => setIsHistoryOpen(false)}
-				/>
-			) : null}
 		</>
 	);
-}
-
-function createDisbursementVoucherRowHistory(
-	row: DisbursementVoucherPreviewRow,
-	recordLabel: string,
-): DisbursementVoucherHistoryEntry[] {
-	if (row.voucher?.history?.length) {
-		return row.voucher.history;
-	}
-
-	const sourceDate =
-		row.transaction.updatedAt ??
-		row.transaction.createdAt ??
-		row.transaction.transactionDate;
-
-	return [
-		{
-			action: "Source Transaction",
-			actor: row.transaction.updatedBy ?? row.transaction.createdBy ?? "System",
-			createdAt: sourceDate,
-			description: `${recordLabel} is available for disbursement voucher processing.`,
-			id: `dv-history-${row.transaction.id}-source`,
-			status: row.transaction.status,
-		},
-	];
 }

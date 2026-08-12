@@ -1,22 +1,22 @@
 import type { ChangeEvent } from "react";
 import { Download, FileText, Paperclip, Upload, X } from "lucide-react";
-import type { DisbursementAttachment } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
-
-type DisbursementVoucherFileAttachmentFieldsProps = {
-  attachments: DisbursementAttachment[];
-  isReadonly: boolean;
-  onAttachmentsChange: (attachments: DisbursementAttachment[]) => void;
-};
+import type {
+  DisbursementAttachment,
+  DisbursementVoucherFileAttachmentFieldsProps,
+} from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 
 export function DisbursementVoucherFileAttachmentFields({
   attachments,
+  inputName = "disbursementVoucherAttachments",
   isReadonly,
+  uploadTitle = "Attach Disbursement Voucher Files",
   onAttachmentsChange,
 }: DisbursementVoucherFileAttachmentFieldsProps) {
   const inputId = "disbursement-voucher-file-attachments";
 
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.currentTarget.files ?? []);
+    const input = event.currentTarget;
+    const files = Array.from(input.files ?? []);
 
     if (files.length === 0) {
       return;
@@ -34,7 +34,7 @@ export function DisbursementVoucherFileAttachmentFields({
     );
 
     onAttachmentsChange([...attachments, ...nextAttachments]);
-    event.currentTarget.value = "";
+    input.value = "";
   };
 
   const handleRemoveAttachment = (attachmentId: string) => {
@@ -54,11 +54,11 @@ export function DisbursementVoucherFileAttachmentFields({
           <span className="flex h-10 w-10 items-center justify-center rounded-full bg-skyblue/10 text-skyblue">
             <Upload className="h-5 w-5" aria-hidden="true" />
           </span>
-          <span className="text-sm font-semibold text-darknavy">Attach disbursement voucher files</span>
+          <span className="text-sm font-semibold text-darknavy">{uploadTitle}</span>
           <span className="text-xs text-darknavy/55">Choose one or more supporting documents.</span>
           <input
             id={inputId}
-            name="disbursementVoucherAttachments"
+            name={inputName}
             type="file"
             multiple
             disabled={isReadonly}

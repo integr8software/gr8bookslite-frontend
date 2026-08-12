@@ -82,6 +82,7 @@ export function PurchaseRequestSupplierFields({ isReadonly, onUpdateField, value
         />
         <PurchaseRequestFieldShell controlId="purchase-request-currency" label="Currency">
           <CurrencyExchangeRateRow
+            exchangeRateControlId="purchase-request-exchange-rate"
             currencyControl={
               <AppAdvancedDropdown
                 id="purchase-request-currency"

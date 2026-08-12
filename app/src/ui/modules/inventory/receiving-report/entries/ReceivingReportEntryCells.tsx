@@ -1,12 +1,10 @@
 import type {
   ReceivingReportAccountingEntry,
-  ReceivingReportLine,
-} from "@/app/src/data/modules/inventory/receiving-report/ReceivingReportData";
-import type {
   ReceivingReportAccountingColumnConfig,
   ReceivingReportAccountingEntryUpdater,
   ReceivingReportColumnConfig,
   ReceivingReportEntryUpdater,
+  ReceivingReportLine,
 } from "@/app/src/types/modules/inventory/receiving-report/ReceivingReportTypes";
 import {
   EntryAmountInput,

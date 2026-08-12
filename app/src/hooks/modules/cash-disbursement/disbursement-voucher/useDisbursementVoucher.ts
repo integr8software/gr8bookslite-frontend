@@ -286,6 +286,8 @@ export function useDisbursementVoucherPreviewTable(
         const searchable = [
           row.transaction.transactionNo,
           row.voucher?.voucherNo,
+          row.voucher?.partyCode,
+          row.voucher?.partyName,
           row.transaction.payee,
           row.transaction.department,
           row.transaction.purpose,
@@ -464,9 +466,11 @@ function getDisbursementVoucherColumnValue(
     case "documentDate":
       return row.voucher?.voucherDate ?? row.transaction.transactionDate;
     case "partyName":
-      return row.transaction.payee;
+      return row.voucher?.partyName || row.transaction.payee;
+    case "partyCode":
+      return row.voucher?.partyCode || "";
     case "paymentType":
-      return row.transaction.disbursementType;
+      return getDisbursementVoucherPaymentType(row);
     case "remarks":
       return row.voucher?.remarks ?? row.transaction.purpose;
     case "currency":
@@ -488,5 +492,14 @@ function getDisbursementVoucherColumnValue(
     default:
       return "";
   }
+}
+
+function getDisbursementVoucherPaymentType(row: DisbursementVoucherPreviewRow) {
+  return (
+    row.voucher?.disbursementType ||
+    row.transaction.disbursementType ||
+    row.voucher?.paymentMethod ||
+    row.transaction.paymentMethod
+  );
 }
 

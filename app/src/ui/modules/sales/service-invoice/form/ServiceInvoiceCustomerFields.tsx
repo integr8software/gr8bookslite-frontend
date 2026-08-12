@@ -123,6 +123,7 @@ export function ServiceInvoiceCustomerFields({ isReadonly, onUpdateField, values
         </FieldShell>
         <FieldShell controlId="service-invoice-currency" label="Currency">
           <CurrencyExchangeRateRow
+            exchangeRateControlId="service-invoice-exchange-rate"
             currencyControl={
               <AppAdvancedDropdown
                 id="service-invoice-currency"

@@ -120,6 +120,7 @@ export function SalesInvoiceDetailsForm({ isReadonly, onUpdateField, values }: S
           />
           <FieldShell controlId="sales-invoice-currency" label="Currency">
             <CurrencyExchangeRateRow
+              exchangeRateControlId="sales-invoice-exchange-rate"
               currencyControl={
                 <AppAdvancedDropdown
                   id="sales-invoice-currency"

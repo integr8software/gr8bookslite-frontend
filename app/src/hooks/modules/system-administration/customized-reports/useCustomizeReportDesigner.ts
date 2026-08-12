@@ -202,6 +202,7 @@ export function useCustomizeReportDesigner() {
     const storedLayout = window.localStorage.getItem(reportStorageKey) || legacyStoredLayout;
 
     if (!storedLayout) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Restore the selected report layout from localStorage when the report changes.
       setFields(CustomizeReportFields);
       setLines(CustomizeReportLines);
       setPageSetup(CustomizeReportDefaultPageSetup);

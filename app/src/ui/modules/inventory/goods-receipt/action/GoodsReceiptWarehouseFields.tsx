@@ -110,6 +110,7 @@ export function GoodsReceiptWarehouseFields({ isReadonly, onUpdateField, values 
         </FieldShell>
         <FieldShell controlId="goods-receipt-currency" label="Currency">
           <CurrencyExchangeRateRow
+            exchangeRateControlId="goods-receipt-exchange-rate"
             currencyControl={
               <AppAdvancedDropdown
                 id="goods-receipt-currency"

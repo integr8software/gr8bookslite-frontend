@@ -56,6 +56,7 @@ export function AcknowledgementReceiptDetailsForm({
           </FieldShell>
           <FieldShell controlId="acknowledgement-receipt-currency" label="Currency">
             <CurrencyExchangeRateRow
+              exchangeRateControlId="acknowledgement-receipt-exchange-rate"
               currencyControl={
                 <AppAdvancedDropdown
                   id="acknowledgement-receipt-currency"

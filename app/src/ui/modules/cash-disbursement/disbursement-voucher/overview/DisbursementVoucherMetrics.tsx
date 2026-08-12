@@ -1,14 +1,14 @@
-import { CheckCircle2, Clock3, ReceiptText, XCircle } from "lucide-react";
+import { Ban, CheckCircle2, Clock3, ReceiptText, XCircle } from "lucide-react";
 import {
   DisbursementVoucherStatuses,
-  type DisbursementVoucherStatusFilters,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import { getDisbursementVoucherDisplayStatus } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
-import type { DisbursementVoucherPreviewRow } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+import type {
+  DisbursementVoucherPreviewRow,
+  DisbursementVoucherStatusFilter,
+} from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { formatPartOfTotalPercentage } from "@/app/src/utils/percentage.util";
-
-type DisbursementVoucherStatusFilter = (typeof DisbursementVoucherStatusFilters)[number];
 
 export function DisbursementVoucherMetrics({
   onStatusFilterChange,
@@ -30,16 +30,15 @@ export function DisbursementVoucherMetrics({
       value: previewRows.length,
       summary: "All time",
       icon: ReceiptText,
-      iconClassName: "bg-skyblue/20 text-skyblue",
       isActive: statusFilter === "all",
       onClick: () => onStatusFilterChange("all"),
     },
     {
-      label: "Draft",
+      label: DisbursementVoucherStatuses.draft,
       value: draftCount,
       summary: formatPartOfTotalPercentage(draftCount, previewRows.length),
       icon: Clock3,
-      iconClassName: "bg-offwhite text-darknavy",
+      iconClassName: "bg-slate-100 text-slate-700",
       isActive: statusFilter === DisbursementVoucherStatuses.draft,
       onClick: () => onStatusFilterChange(DisbursementVoucherStatuses.draft),
     },
@@ -48,7 +47,7 @@ export function DisbursementVoucherMetrics({
       value: forApprovalCount,
       summary: formatPartOfTotalPercentage(forApprovalCount, previewRows.length),
       icon: Clock3,
-      iconClassName: "bg-citron/25 text-darknavy",
+      iconClassName: "bg-skyblue/15 text-skyblue",
       isActive: statusFilter === DisbursementVoucherStatuses.forApproval,
       onClick: () => onStatusFilterChange(DisbursementVoucherStatuses.forApproval),
     },
@@ -74,8 +73,8 @@ export function DisbursementVoucherMetrics({
       label: "Cancelled",
       value: cancelledCount,
       summary: formatPartOfTotalPercentage(cancelledCount, previewRows.length),
-      icon: XCircle,
-      iconClassName: "bg-slate-100 text-slate-700",
+      icon: Ban,
+      iconClassName: "bg-amber-50 text-amber-700",
       isActive: statusFilter === DisbursementVoucherStatuses.cancelled,
       onClick: () => onStatusFilterChange(DisbursementVoucherStatuses.cancelled),
     },

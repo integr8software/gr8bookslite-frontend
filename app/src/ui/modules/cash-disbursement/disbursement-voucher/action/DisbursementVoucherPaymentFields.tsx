@@ -143,14 +143,6 @@ export function DisbursementVoucherPaymentFields({
           </FieldShell>
         </>
       ) : null}
-      <FieldShell controlId="disbursement-voucher-payment-commission" label="Commission">
-        <input
-          id="disbursement-voucher-payment-commission"
-          value={values.paymentDetails.commission ?? ""}
-          readOnly
-          className={`${DisbursementVoucherFieldClassName} bg-darknavy/5 text-darknavy/55`}
-        />
-      </FieldShell>
     </div>
   );
 }

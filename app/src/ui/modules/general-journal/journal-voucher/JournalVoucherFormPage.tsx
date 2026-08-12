@@ -35,6 +35,7 @@ export function JournalVoucherFormPage() {
             <div className="grid min-w-0 gap-4">
               <FieldShell controlId="journal-voucher-currencyType" error={page.errors.currencyType} label="Currency">
                 <CurrencyExchangeRateRow
+                  exchangeRateControlId="journal-voucher-currencyRate"
                   currencyControl={
                     <AppAdvancedDropdown
                       id="journal-voucher-currencyType"

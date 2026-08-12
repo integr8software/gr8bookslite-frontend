@@ -15,9 +15,25 @@ import {
 	useRef,
 	useState,
 	type CSSProperties,
+	type Dispatch,
 	type ReactNode,
+	type SetStateAction,
 } from "react";
 import { createPortal } from "react-dom";
+import {
+	addDays,
+	addMonths,
+	coerceDate,
+	endOfMonth,
+	endOfWeek,
+	endOfYear,
+	parseIsoDate,
+	startOfDay,
+	startOfMonth,
+	startOfWeek,
+	startOfYear,
+	toIsoDate,
+} from "@/app/src/utils/date.util";
 import {
 	joinClasses,
 	moduleAccentClassNames,
@@ -53,14 +69,23 @@ type CalendarCell = {
 	isCurrentMonth: boolean;
 };
 
+type VisibleMonths = {
+	left: Date;
+	right: Date;
+};
+
 const WeekdayLabels = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 const EmptyDateRange: DateRangeValue = { from: "", to: "" };
 const PanelViewportPadding = 16;
 const PanelGap = 8;
 const PanelMaxWidth = 760;
 const PanelMinWidth = 300;
+const PanelPreferredHeight = 420;
+const PanelDefaultMaxHeight = "calc(100vh - 2rem)";
+const PanelSheetBreakpoint = 768;
 const InitialPanelStyle: CSSProperties = {
 	left: 0,
+	maxHeight: PanelDefaultMaxHeight,
 	opacity: 0,
 	pointerEvents: "none",
 	top: 0,
@@ -176,6 +201,10 @@ export function DateRangePicker({
 	);
 	const [panelStyle, setPanelStyle] =
 		useState<CSSProperties>(InitialPanelStyle);
+	const panelScrollStyle = useMemo<CSSProperties>(
+		() => ({ maxHeight: panelStyle.maxHeight ?? PanelDefaultMaxHeight }),
+		[panelStyle.maxHeight],
+	);
 	const displayLabel = formatDateRangeLabel(normalizedValue, placeholder);
 	const isEmpty = isDateRangeEmpty(normalizedValue);
 
@@ -361,107 +390,149 @@ export function DateRangePicker({
 							aria-label={`${label} date range`}
 							style={panelStyle}
 							className={joinClasses(
-								"fixed z-50 max-h-[calc(100vh-2rem)] overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-[0_20px_56px_rgba(33,39,56,0.14)]",
+								"fixed z-50 overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-[0_20px_56px_rgba(33,39,56,0.14)]",
 								panelClassName,
 							)}
 						>
-							<div className="max-h-[calc(100vh-2rem)] overflow-auto">
-								<div className="grid lg:grid-cols-[13.5rem_1fr]">
-									<PresetList
-										draftRange={draftRange}
-										presets={presets}
-										referenceDate={resolvedReferenceDate}
-										onSelectPreset={selectPreset}
-									/>
-									<div className="grid gap-4 p-4">
-										<div className="grid gap-3 md:grid-cols-[1fr_auto_1fr] md:items-end">
-											<RangeDisplayField label="From" value={draftRange.from} />
-											<span className="hidden h-10 items-center justify-center text-darknavy/55 md:flex">
-												&rarr;
-											</span>
-											<RangeDisplayField label="To" value={draftRange.to} />
-										</div>
-										<div className="grid gap-4 xl:grid-cols-2">
-											<CalendarMonth
-												month={visibleMonths.left}
-												range={draftRange}
-												onNextMonth={() =>
-													setVisibleMonths((current) => ({
-														...current,
-														left: addMonths(current.left, 1),
-													}))
-												}
-												onPreviousMonth={() =>
-													setVisibleMonths((current) => ({
-														...current,
-														left: addMonths(current.left, -1),
-													}))
-												}
-												onSelectDate={selectDate}
-											/>
-											<CalendarMonth
-												month={visibleMonths.right}
-												range={draftRange}
-												onNextMonth={() =>
-													setVisibleMonths((current) => ({
-														...current,
-														right: addMonths(current.right, 1),
-													}))
-												}
-												onPreviousMonth={() =>
-													setVisibleMonths((current) => ({
-														...current,
-														right: addMonths(current.right, -1),
-													}))
-												}
-												onSelectDate={selectDate}
-											/>
-										</div>
-									</div>
-								</div>
-								<div className="flex flex-col gap-3 border-t border-darknavy/10 p-3 sm:flex-row sm:items-center sm:justify-between">
-									<button
-										type="button"
-										onClick={clearRange}
-										className={joinClasses(
-											"inline-flex h-9 items-center justify-center rounded-lg px-3 text-sm font-semibold text-[var(--skyblue)] transition focus-visible:outline-none focus-visible:ring-4",
-											moduleAccentClassNames.hoverSoftBackground,
-											moduleAccentClassNames.focusRing,
-										)}
-									>
-										Clear
-									</button>
-									<div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-										<button
-											type="button"
-											onClick={cancelSelection}
-											className={joinClasses(
-												"inline-flex h-10 items-center justify-center rounded-lg border border-darknavy/10 bg-white px-5 text-sm font-semibold text-darknavy shadow-sm shadow-darknavy/5 transition focus-visible:outline-none focus-visible:ring-4",
-												moduleAccentClassNames.hoverBorder,
-												moduleAccentClassNames.hoverSoftBackground,
-												moduleAccentClassNames.focusRing,
-											)}
-										>
-											Cancel
-										</button>
-										<button
-											type="button"
-											onClick={applyDraftRange}
-											className={joinClasses(
-												"inline-flex h-10 items-center justify-center rounded-lg px-5 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-4",
-												moduleAccentClassNames.button,
-											)}
-										>
-											Apply
-										</button>
-									</div>
-								</div>
-							</div>
+							<DateRangePanelContent
+								draftRange={draftRange}
+								presets={presets}
+								referenceDate={resolvedReferenceDate}
+								scrollStyle={panelScrollStyle}
+								visibleMonths={visibleMonths}
+								onApply={applyDraftRange}
+								onCancel={cancelSelection}
+								onClear={clearRange}
+								onSelectDate={selectDate}
+								onSelectPreset={selectPreset}
+								onVisibleMonthsChange={setVisibleMonths}
+							/>
 						</div>,
 						document.body,
 					)
 				: null}
 		</>
+	);
+}
+
+function DateRangePanelContent({
+	draftRange,
+	onApply,
+	onCancel,
+	onClear,
+	onSelectDate,
+	onSelectPreset,
+	onVisibleMonthsChange,
+	presets,
+	referenceDate,
+	scrollStyle,
+	visibleMonths,
+}: {
+	draftRange: DateRangeValue;
+	onApply: () => void;
+	onCancel: () => void;
+	onClear: () => void;
+	onSelectDate: (date: Date) => void;
+	onSelectPreset: (preset: DateRangePreset) => void;
+	onVisibleMonthsChange: Dispatch<SetStateAction<VisibleMonths>>;
+	presets: readonly DateRangePreset[];
+	referenceDate: Date;
+	scrollStyle: CSSProperties;
+	visibleMonths: VisibleMonths;
+}) {
+	return (
+		<div className="overflow-auto" style={scrollStyle}>
+			<div className="grid xl:grid-cols-[13.5rem_1fr]">
+				<PresetList
+					draftRange={draftRange}
+					presets={presets}
+					referenceDate={referenceDate}
+					onSelectPreset={onSelectPreset}
+				/>
+				<div className="grid gap-3 p-3 sm:gap-4 sm:p-4">
+					<div className="grid gap-3 sm:grid-cols-[1fr_auto_1fr] sm:items-end">
+						<RangeDisplayField label="From" value={draftRange.from} />
+						<span className="hidden h-10 items-center justify-center text-darknavy/55 sm:flex">
+							&rarr;
+						</span>
+						<RangeDisplayField label="To" value={draftRange.to} />
+					</div>
+					<div className="grid gap-4 sm:grid-cols-2">
+						<CalendarMonth
+							month={visibleMonths.left}
+							range={draftRange}
+							onNextMonth={() =>
+								onVisibleMonthsChange((current) => ({
+									...current,
+									left: addMonths(current.left, 1),
+								}))
+							}
+							onPreviousMonth={() =>
+								onVisibleMonthsChange((current) => ({
+									...current,
+									left: addMonths(current.left, -1),
+								}))
+							}
+							onSelectDate={onSelectDate}
+						/>
+						<CalendarMonth
+							month={visibleMonths.right}
+							range={draftRange}
+							onNextMonth={() =>
+								onVisibleMonthsChange((current) => ({
+									...current,
+									right: addMonths(current.right, 1),
+								}))
+							}
+							onPreviousMonth={() =>
+								onVisibleMonthsChange((current) => ({
+									...current,
+									right: addMonths(current.right, -1),
+								}))
+							}
+							onSelectDate={onSelectDate}
+						/>
+					</div>
+				</div>
+			</div>
+			<div className="sticky bottom-0 flex flex-col gap-3 border-t border-darknavy/10 bg-white p-3 sm:flex-row sm:items-center sm:justify-between">
+				<button
+					type="button"
+					onClick={onClear}
+					className={joinClasses(
+						"order-2 inline-flex h-9 items-center justify-center rounded-lg px-3 text-sm font-semibold text-[var(--skyblue)] transition focus-visible:outline-none focus-visible:ring-4 sm:order-none",
+						moduleAccentClassNames.hoverSoftBackground,
+						moduleAccentClassNames.focusRing,
+					)}
+				>
+					Clear
+				</button>
+				<div className="contents sm:flex sm:justify-end sm:gap-3">
+					<button
+						type="button"
+						onClick={onCancel}
+						className={joinClasses(
+							"order-3 inline-flex h-10 items-center justify-center rounded-lg border border-darknavy/10 bg-white px-5 text-sm font-semibold text-darknavy shadow-sm shadow-darknavy/5 transition focus-visible:outline-none focus-visible:ring-4 sm:order-1",
+							moduleAccentClassNames.hoverBorder,
+							moduleAccentClassNames.hoverSoftBackground,
+							moduleAccentClassNames.focusRing,
+						)}
+					>
+						Cancel
+					</button>
+					<button
+						type="button"
+						onClick={onApply}
+						className={joinClasses(
+							"order-1 inline-flex h-10 items-center justify-center rounded-lg px-5 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-4 sm:order-2",
+							moduleAccentClassNames.button,
+						)}
+					>
+						Apply
+					</button>
+				</div>
+			</div>
+		</div>
 	);
 }
 
@@ -477,8 +548,8 @@ function PresetList({
 	referenceDate: Date;
 }) {
 	return (
-		<div className="border-b border-darknavy/10 p-3 lg:border-b-0 lg:border-r">
-			<div className="grid gap-1">
+		<div className="border-b border-darknavy/10 p-2.5 xl:border-b-0 xl:border-r xl:p-3">
+			<div className="grid grid-cols-2 gap-1 pb-1 xl:grid-cols-1 xl:overflow-visible xl:pb-0">
 				{presets.map((preset) => {
 					const Icon = preset.icon ?? CalendarDays;
 					const presetRange = normalizeDateRange(preset.getRange(referenceDate));
@@ -488,14 +559,16 @@ function PresetList({
 						<div
 							key={preset.label}
 							className={joinClasses(
-								preset.dividerBefore && "mt-2 border-t border-darknavy/10 pt-2",
+								"min-w-0",
+								preset.dividerBefore &&
+									"xl:mt-2 xl:border-t xl:border-darknavy/10 xl:pt-2",
 							)}
 						>
 							<button
 								type="button"
 								onClick={() => onSelectPreset(preset)}
 								className={joinClasses(
-									"flex h-9 w-full items-center gap-2 rounded-lg px-2.5 text-left text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-4",
+									"flex h-8 w-full min-w-0 items-center gap-2 rounded-lg px-2.5 text-left text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-4 xl:h-9",
 									isSelected
 										? "bg-[rgb(var(--skyblue-rgb)/0.12)] text-[var(--skyblue)]"
 										: "text-darknavy hover:bg-[rgb(var(--skyblue-rgb)/0.08)]",
@@ -560,7 +633,7 @@ function CalendarMonth({
 	const cells = useMemo(() => createCalendarCells(month), [month]);
 
 	return (
-		<div className="min-w-0">
+		<div className="mx-auto w-full min-w-0">
 			<div className="mb-2 grid grid-cols-[2rem_1fr_2rem] items-center gap-2">
 				<CalendarNavigationButton
 					label={`Show ${MonthFormatter.format(addMonths(month, -1))}`}
@@ -580,12 +653,12 @@ function CalendarMonth({
 			</div>
 			<div className="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-darknavy/60">
 				{WeekdayLabels.map((weekday) => (
-					<span key={weekday} className="flex h-6 items-center justify-center">
+					<span key={weekday} className="flex h-5 items-center justify-center">
 						{weekday}
 					</span>
 				))}
 			</div>
-			<div className="mt-1 grid grid-cols-7 gap-1">
+			<div className="mt-1 grid grid-cols-7 gap-0.5 sm:gap-1">
 				{cells.map((cell) => (
 					<CalendarDayButton
 						key={cell.isoDate}
@@ -651,7 +724,7 @@ function CalendarDayButton({
 			type="button"
 			onClick={() => onSelectDate(cell.date)}
 			className={joinClasses(
-				"flex aspect-square min-h-7 items-center justify-center rounded-md text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-4",
+				"flex h-8 w-full items-center justify-center rounded-md text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-4 sm:h-9",
 				cell.isCurrentMonth ? "text-darknavy" : "text-darknavy/30",
 				isInRange && "bg-[rgb(var(--skyblue-rgb)/0.12)]",
 				isSelected &&
@@ -675,6 +748,22 @@ function getPanelStyle(anchor: HTMLElement | null): CSSProperties | undefined {
 	const rect = anchor.getBoundingClientRect();
 	const viewportWidth = window.innerWidth;
 	const viewportHeight = window.innerHeight;
+
+	if (viewportWidth < PanelSheetBreakpoint) {
+		const width = Math.max(
+			PanelMinWidth,
+			viewportWidth - PanelViewportPadding * 2,
+		);
+
+		return {
+			bottom: PanelViewportPadding,
+			left: PanelViewportPadding,
+			maxHeight: viewportHeight - PanelViewportPadding * 2,
+			width,
+		};
+	}
+
+	const panelMaxHeight = getPanelMaxHeight(rect, viewportHeight);
 	const availableWidth = Math.max(
 		PanelMinWidth,
 		viewportWidth - PanelViewportPadding * 2,
@@ -687,15 +776,28 @@ function getPanelStyle(anchor: HTMLElement | null): CSSProperties | undefined {
 	const spaceBelow =
 		viewportHeight - rect.bottom - PanelGap - PanelViewportPadding;
 	const spaceAbove = rect.top - PanelGap - PanelViewportPadding;
-	const openAbove = spaceBelow < 420 && spaceAbove > spaceBelow;
+	const openAbove =
+		spaceBelow < PanelPreferredHeight && spaceAbove > spaceBelow;
 
 	return {
 		left,
+		maxHeight: panelMaxHeight,
 		width,
 		...(openAbove
 			? { bottom: viewportHeight - rect.top + PanelGap }
 			: { top: rect.bottom + PanelGap }),
 	};
+}
+
+function getPanelMaxHeight(rect: DOMRect, viewportHeight: number) {
+	const spaceBelow =
+		viewportHeight - rect.bottom - PanelGap - PanelViewportPadding;
+	const spaceAbove = rect.top - PanelGap - PanelViewportPadding;
+	const openAbove =
+		spaceBelow < PanelPreferredHeight && spaceAbove > spaceBelow;
+	const availableHeight = openAbove ? spaceAbove : spaceBelow;
+
+	return Math.max(0, Math.floor(availableHeight));
 }
 
 function getInitialVisibleDate(
@@ -807,82 +909,3 @@ function toDateRange(from: Date, to: Date): DateRangeValue {
 	});
 }
 
-function parseIsoDate(value: string) {
-	if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-		return null;
-	}
-
-	const [year, month, day] = value.split("-").map(Number);
-	const date = new Date(year, month - 1, day);
-
-	if (
-		date.getFullYear() !== year ||
-		date.getMonth() !== month - 1 ||
-		date.getDate() !== day
-	) {
-		return null;
-	}
-
-	return date;
-}
-
-function coerceDate(value: Date | string | undefined) {
-	if (!value) {
-		return null;
-	}
-
-	if (value instanceof Date) {
-		return startOfDay(value);
-	}
-
-	return parseIsoDate(value);
-}
-
-function toIsoDate(date: Date) {
-	const year = date.getFullYear();
-	const month = `${date.getMonth() + 1}`.padStart(2, "0");
-	const day = `${date.getDate()}`.padStart(2, "0");
-
-	return `${year}-${month}-${day}`;
-}
-
-function startOfDay(date: Date) {
-	return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-}
-
-function startOfWeek(date: Date) {
-	const day = startOfDay(date);
-
-	return addDays(day, -day.getDay());
-}
-
-function endOfWeek(date: Date) {
-	return addDays(startOfWeek(date), 6);
-}
-
-function startOfMonth(date: Date) {
-	return new Date(date.getFullYear(), date.getMonth(), 1);
-}
-
-function endOfMonth(date: Date) {
-	return new Date(date.getFullYear(), date.getMonth() + 1, 0);
-}
-
-function startOfYear(date: Date) {
-	return new Date(date.getFullYear(), 0, 1);
-}
-
-function endOfYear(date: Date) {
-	return new Date(date.getFullYear(), 11, 31);
-}
-
-function addDays(date: Date, days: number) {
-	const nextDate = startOfDay(date);
-	nextDate.setDate(nextDate.getDate() + days);
-
-	return nextDate;
-}
-
-function addMonths(date: Date, months: number) {
-	return new Date(date.getFullYear(), date.getMonth() + months, 1);
-}

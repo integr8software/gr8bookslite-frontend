@@ -32,6 +32,10 @@ export type DisbursementVoucherActionMode = "add" | "edit" | "view";
 
 export type DisbursementVoucherActionTab = "details" | "attachments";
 
+export type DisbursementVoucherStatusFilter =
+  | "all"
+  | DisbursementVoucherStatus;
+
 export type DisbursementVoucherHistoryEntry = {
   id: string;
   action: string;
@@ -162,6 +166,14 @@ export type DisbursementAttachment = {
   size?: number;
   sizeLabel?: string;
   type?: string;
+};
+
+export type DisbursementVoucherFileAttachmentFieldsProps = {
+  attachments: DisbursementAttachment[];
+  isReadonly: boolean;
+  inputName?: string;
+  uploadTitle?: string;
+  onAttachmentsChange: (attachments: DisbursementAttachment[]) => void;
 };
 
 export type DisbursementVoucherRecord = {

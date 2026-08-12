@@ -61,3 +61,10 @@ export type CashAdvanceFormValues = {
   taxValue: AppTaxRateDialogValue;
   transNo: string;
 };
+
+export type CashAdvanceReportPreviewProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  onGeneratePdf: () => void;
+  values: CashAdvanceFormValues;
+};

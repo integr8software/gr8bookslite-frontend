@@ -1,14 +1,14 @@
 import { Ban, CheckCircle2, Clock3, ReceiptText, XCircle } from "lucide-react";
 import {
   DisbursementVoucherStatuses,
-  type DisbursementVoucherStatusFilters,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import { getDisbursementVoucherDisplayStatus } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
-import type { DisbursementVoucherPreviewRow } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+import type {
+  DisbursementVoucherPreviewRow,
+  DisbursementVoucherStatusFilter,
+} from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { formatPartOfTotalPercentage } from "@/app/src/utils/percentage.util";
-
-type DisbursementVoucherStatusFilter = (typeof DisbursementVoucherStatusFilters)[number];
 
 export function DisbursementVoucherMetrics({
   onStatusFilterChange,

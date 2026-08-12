@@ -4,15 +4,11 @@ import {
   formatCashAdvanceCurrency,
   formatCashAdvanceDate,
 } from "@/app/src/data/modules/cash-disbursement/cash-advance/CashAdvanceData";
-import type { CashAdvanceFormValues } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
+import type {
+  CashAdvanceFormValues,
+  CashAdvanceReportPreviewProps,
+} from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 import { ReportPreviewDrawer } from "@/app/src/ui/shared/reports/Reports";
-
-type CashAdvanceReportPreviewProps = {
-  isOpen: boolean;
-  onClose: () => void;
-  onGeneratePdf: () => void;
-  values: CashAdvanceFormValues;
-};
 
 export function CashAdvanceReportPreview({
   isOpen,

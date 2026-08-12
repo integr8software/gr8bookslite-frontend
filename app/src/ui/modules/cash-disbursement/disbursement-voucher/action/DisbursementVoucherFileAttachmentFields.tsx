@@ -1,14 +1,9 @@
 import type { ChangeEvent } from "react";
 import { Download, FileText, Paperclip, Upload, X } from "lucide-react";
-import type { DisbursementAttachment } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
-
-type DisbursementVoucherFileAttachmentFieldsProps = {
-  attachments: DisbursementAttachment[];
-  isReadonly: boolean;
-  inputName?: string;
-  uploadTitle?: string;
-  onAttachmentsChange: (attachments: DisbursementAttachment[]) => void;
-};
+import type {
+  DisbursementAttachment,
+  DisbursementVoucherFileAttachmentFieldsProps,
+} from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 
 export function DisbursementVoucherFileAttachmentFields({
   attachments,

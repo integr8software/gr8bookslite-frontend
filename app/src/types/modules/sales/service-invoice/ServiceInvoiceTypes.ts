@@ -128,3 +128,10 @@ export type ServiceInvoiceTotals = {
 	vatAmount: number;
 	wvatAmount: number;
 };
+
+export type ServiceInvoiceFormHeaderProps = {
+	mode: ServiceInvoiceActionMode;
+	onPreview: () => void;
+	values: ServiceInvoiceFormValues;
+	onSubmit: () => void;
+};

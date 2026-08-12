@@ -1,6 +1,6 @@
 import type { ChangeEvent } from "react";
 import { Paperclip, Upload, X } from "lucide-react";
-import type { ReceivingReportAttachment } from "@/app/src/data/modules/inventory/receiving-report/ReceivingReportData";
+import type { ReceivingReportAttachment } from "@/app/src/types/modules/inventory/receiving-report/ReceivingReportTypes";
 import { formatReceivingReportAttachmentSize } from "@/app/src/ui/modules/inventory/receiving-report/ReceivingReportUtils";
 
 export function ReceivingReportAttachments({

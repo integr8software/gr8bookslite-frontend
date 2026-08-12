@@ -6,7 +6,9 @@ import type {
 } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
 import type { TermsMaintenance } from "@/app/src/types/modules/financial-maintenance/terms-maintenance/TermsMaintenanceTypes";
 
-export function createAccountsPayableVoucherInitialFormValues(): AccountsPayableVoucherFormValues {
+export function createAccountsPayableVoucherInitialFormValues(
+  baseCurrencyCode = "PHP",
+): AccountsPayableVoucherFormValues {
   return {
     transactionNo: "",
     documentDate: new Date().toISOString().slice(0, 10),
@@ -15,8 +17,9 @@ export function createAccountsPayableVoucherInitialFormValues(): AccountsPayable
     address: "",
     contactPerson: "",
     contactNo: "",
+    projectCode: "",
     projectName: "",
-    currency: "PHP",
+    currency: baseCurrencyCode,
     exchangeRate: 1,
     amount: 0,
     termId: "",
@@ -41,9 +44,7 @@ export function createAccountsPayableVoucherExpenseLine(
   overrides: Partial<AccountsPayableVoucherExpenseLine> = {},
 ): AccountsPayableVoucherExpenseLine {
   return {
-    id: `apv-expense-${Date.now()}-${lineNumber}-${Math.random()
-      .toString(36)
-      .slice(2, 7)}`,
+    id: `apv-expense-${Date.now()}-${lineNumber}-${Math.random().toString(36).slice(2, 7)}`,
     lineNumber,
     expenseAccountCode: "",
     expenseType: "",
@@ -70,9 +71,7 @@ export function createAccountsPayableVoucherAccountingEntry(
   overrides: Partial<AccountsPayableVoucherAccountingEntry> = {},
 ): AccountsPayableVoucherAccountingEntry {
   return {
-    id: `apv-entry-${Date.now()}-${lineNumber}-${Math.random()
-      .toString(36)
-      .slice(2, 7)}`,
+    id: `apv-entry-${Date.now()}-${lineNumber}-${Math.random().toString(36).slice(2, 7)}`,
     lineNumber,
     accountCode: "",
     accountTitle: "",
@@ -91,9 +90,10 @@ export function createAccountsPayableVoucherAccountingEntry(
 
 export function createAccountsPayableVoucherFormValues(
   record?: AccountsPayableVoucherRecord,
+  baseCurrencyCode = "PHP",
 ): AccountsPayableVoucherFormValues {
   if (!record) {
-    return createAccountsPayableVoucherInitialFormValues();
+    return createAccountsPayableVoucherInitialFormValues(baseCurrencyCode);
   }
 
   return syncAccountsPayableVoucherExpenseLinesAndAmount({
@@ -104,6 +104,7 @@ export function createAccountsPayableVoucherFormValues(
     address: record.address ?? "",
     contactPerson: record.contactPerson ?? "",
     contactNo: record.contactNo ?? "",
+    projectCode: record.projectCode ?? "",
     projectName: record.projectName ?? "",
     currency: record.currency,
     exchangeRate: record.exchangeRate,
@@ -166,23 +167,17 @@ export function renumberAccountsPayableVoucherAccountingEntries(
   }));
 }
 
-export function getAccountsPayableVoucherExpenseTotal(
-  lines: AccountsPayableVoucherExpenseLine[],
-) {
+export function getAccountsPayableVoucherExpenseTotal(lines: AccountsPayableVoucherExpenseLine[]) {
   return lines.reduce((sum, line) => sum + Number(line.amount || 0), 0);
 }
 
-export function getAccountsPayableVoucherExpenseTotals(
-  lines: AccountsPayableVoucherExpenseLine[],
-) {
+export function getAccountsPayableVoucherExpenseTotals(lines: AccountsPayableVoucherExpenseLine[]) {
   return lines.reduce(
     (totals, line) => ({
       ewtAmount: roundCurrency(totals.ewtAmount + Number(line.ewtAmount || 0)),
       grossAmount: roundCurrency(totals.grossAmount + Number(line.amount || 0)),
       netAmount: roundCurrency(totals.netAmount + Number(line.netAmount || 0)),
-      totalAmountDue: roundCurrency(
-        totals.totalAmountDue + Number(line.totalAmountDue || 0),
-      ),
+      totalAmountDue: roundCurrency(totals.totalAmountDue + Number(line.totalAmountDue || 0)),
       vatAmount: roundCurrency(totals.vatAmount + Number(line.vatAmount || 0)),
     }),
     {
@@ -205,12 +200,8 @@ export function syncAccountsPayableVoucherExpenseTaxAmounts(
   const ewtPercent = Number(line.ewtPercent || 0);
   const vatAmount = roundCurrency(sign * ((absoluteAmount * vatPercent) / 100));
   const ewtAmount = roundCurrency(sign * ((absoluteAmount * ewtPercent) / 100));
-  const netAmount = roundCurrency(
-    sign * Math.max(absoluteAmount - Math.abs(vatAmount), 0),
-  );
-  const totalAmountDue = roundCurrency(
-    sign * Math.max(absoluteAmount - Math.abs(ewtAmount), 0),
-  );
+  const netAmount = roundCurrency(sign * Math.max(absoluteAmount - Math.abs(vatAmount), 0));
+  const totalAmountDue = roundCurrency(sign * Math.max(absoluteAmount - Math.abs(ewtAmount), 0));
 
   return {
     ...line,
@@ -227,14 +218,11 @@ export function syncAccountsPayableVoucherExpenseTaxAmounts(
 export function syncAccountsPayableVoucherExpenseLinesAndAmount(
   values: AccountsPayableVoucherFormValues,
 ): AccountsPayableVoucherFormValues {
-  const expenseLines = values.expenseLines.map(
-    syncAccountsPayableVoucherExpenseTaxAmounts,
-  );
+  const expenseLines = values.expenseLines.map(syncAccountsPayableVoucherExpenseTaxAmounts);
   const expenseTotals = getAccountsPayableVoucherExpenseTotals(expenseLines);
   const amount = accountsPayableVoucherExpenseLinesHaveItems(expenseLines)
     ? expenseTotals.totalAmountDue
-    : getAccountsPayableVoucherAccountingTotals(values.accountingEntries)
-        .totalCredit;
+    : getAccountsPayableVoucherAccountingTotals(values.accountingEntries).totalCredit;
 
   return {
     ...values,
@@ -246,14 +234,8 @@ export function syncAccountsPayableVoucherExpenseLinesAndAmount(
 export function getAccountsPayableVoucherAccountingTotals(
   entries: AccountsPayableVoucherAccountingEntry[],
 ) {
-  const totalDebit = entries.reduce(
-    (sum, entry) => sum + Number(entry.debit || 0),
-    0,
-  );
-  const totalCredit = entries.reduce(
-    (sum, entry) => sum + Number(entry.credit || 0),
-    0,
-  );
+  const totalDebit = entries.reduce((sum, entry) => sum + Number(entry.debit || 0), 0);
+  const totalCredit = entries.reduce((sum, entry) => sum + Number(entry.credit || 0), 0);
   const variance = totalDebit - totalCredit;
 
   return {
@@ -261,10 +243,7 @@ export function getAccountsPayableVoucherAccountingTotals(
     totalDebit,
     variance,
     isBalanced:
-      entries.length > 1 &&
-      totalDebit > 0 &&
-      totalCredit > 0 &&
-      Math.abs(variance) < 0.001,
+      entries.length > 1 && totalDebit > 0 && totalCredit > 0 && Math.abs(variance) < 0.001,
   };
 }
 
@@ -281,9 +260,7 @@ export function accountsPayableVoucherExpenseLinesHaveItems(
   return lines.some(accountsPayableVoucherExpenseLineHasItem);
 }
 
-export function accountsPayableVoucherExpenseLineHasItem(
-  line: AccountsPayableVoucherExpenseLine,
-) {
+export function accountsPayableVoucherExpenseLineHasItem(line: AccountsPayableVoucherExpenseLine) {
   return (
     line.expenseAccountCode.trim() !== "" ||
     line.expenseType.trim() !== "" ||
@@ -314,6 +291,7 @@ function normalizeAccountsPayableVoucherFormValues(
     address: syncedValues.address.trim(),
     contactPerson: syncedValues.contactPerson.trim(),
     contactNo: syncedValues.contactNo.trim(),
+    projectCode: syncedValues.projectCode.trim(),
     projectName: syncedValues.projectName.trim(),
     currency: syncedValues.currency.trim(),
     termId: syncedValues.termId.trim(),
@@ -394,11 +372,7 @@ function formatDateValue(date: Date) {
 function addMonthsClamped(date: Date, monthCount: number) {
   const day = date.getDate();
   const targetDate = new Date(date.getFullYear(), date.getMonth() + monthCount, 1);
-  const lastTargetDay = new Date(
-    targetDate.getFullYear(),
-    targetDate.getMonth() + 1,
-    0,
-  ).getDate();
+  const lastTargetDay = new Date(targetDate.getFullYear(), targetDate.getMonth() + 1, 0).getDate();
 
   targetDate.setDate(Math.min(day, lastTargetDay));
   return targetDate;
@@ -415,4 +389,3 @@ function roundCurrency(value: number) {
 function hasNonZeroAmount(value: number) {
   return Math.abs(Number(value || 0)) > 0;
 }
-

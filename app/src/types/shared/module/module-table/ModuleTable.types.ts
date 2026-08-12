@@ -5,12 +5,14 @@ export type ModuleTableProps<TData> = {
 	emptyDescription?: string;
 	emptyIcon?: ReactNode;
 	emptyTitle?: string;
+	enableColumnReorder?: boolean;
 	isLoading?: boolean;
 	isSyncing?: boolean;
 	lastSyncedAt?: number | string | Date | null;
 	maxHeightClassName?: string;
 	minWidthClassName?: string;
 	paginationLabel?: string;
+	paginationDensity?: "compact" | "default";
 	paginationPageLimit?: number;
 	paginationStorageKey?: string;
 	paginationTotalRows?: number;
@@ -40,6 +42,7 @@ export type ModuleTableBodyProps<TData> = {
 };
 
 export type ModuleTablePaginationProps = {
+	density?: "compact" | "default";
 	firstRow: number;
 	label: string;
 	lastRow: number;

@@ -42,7 +42,7 @@ import type {
 	PurchaseRequestItem,
 	PurchaseRequestRecord,
 } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
-import type { AppCopyFromRecord } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
+import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 import { validatePurchaseOrderForm } from "@/app/src/validations/modules/purchasing/purchase-order/PurchaseOrderValidation";
 
 export function usePurchaseOrderFormPage() {
@@ -181,7 +181,7 @@ export function usePurchaseOrderFormPage() {
 				firstCanvassForm?.requiredBefore ||
 				current.deliveryDate,
 			prNo: mergeUniqueTextValues(current.prNo, prNos),
-			projectRef: firstPurchaseRequest?.projectCode || current.projectRef,
+			projectCode: firstPurchaseRequest?.projectCode || current.projectCode,
 			projectName: firstPurchaseRequest?.projectName || current.projectName,
 			remarks: current.remarks || remarks,
 			items: current.items.some(purchaseOrderItemHasData)

@@ -8,6 +8,7 @@ import {
 import type { GoodsReceiptFormValues } from "@/app/src/types/modules/inventory/goods-receipt/GoodsReceiptTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
+import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 import {
   DateField,
@@ -23,13 +24,9 @@ type GoodsReceiptWarehouseFieldsProps = {
   onUpdateField: GoodsReceiptFieldUpdater<GoodsReceiptFormValues>;
 };
 
-export function GoodsReceiptWarehouseFields({
-  isReadonly,
-  onUpdateField,
-  values,
-}: GoodsReceiptWarehouseFieldsProps) {
+export function GoodsReceiptWarehouseFields({ isReadonly, onUpdateField, values }: GoodsReceiptWarehouseFieldsProps) {
   return (
-    <div className="grid min-w-0 gap-5 xl:grid-cols-3">
+    <div className="grid min-w-0 gap-5 xl:grid-cols-2 2xl:grid-cols-3">
       <div className="grid min-w-0 content-start gap-4">
         <FieldShell controlId="goods-receipt-vce-name" label="Party Name" isRequired>
           <AppAdvancedDropdown
@@ -100,11 +97,7 @@ export function GoodsReceiptWarehouseFields({
             onChange={(value) => onUpdateField("sourceWarehouse", String(value))}
           />
         </FieldShell>
-        <FieldShell
-          controlId="goods-receipt-receiving-warehouse"
-          label="Receiving Warehouse"
-          isRequired
-        >
+        <FieldShell controlId="goods-receipt-receiving-warehouse" label="Receiving Warehouse" isRequired>
           <AppAdvancedDropdown
             id="goods-receipt-receiving-warehouse"
             value={values.receivingWarehouse ?? ""}
@@ -116,32 +109,30 @@ export function GoodsReceiptWarehouseFields({
           />
         </FieldShell>
         <FieldShell controlId="goods-receipt-currency" label="Currency">
-          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_8.5rem]">
-            <AppAdvancedDropdown
-              id="goods-receipt-currency"
-              value={values.currency}
-              readOnly={isReadonly}
-              options={GoodsReceiptCurrencyOptions}
-              placeholder="Select currency"
-              searchPlaceholder="Search currency"
-              onChange={(value) => onUpdateField("currency", String(value))}
-            />
-            <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2">
-              <label
-                htmlFor="goods-receipt-exchange-rate"
-                className="text-sm font-semibold text-darknavy"
-              >
-                ER:
-              </label>
+          <CurrencyExchangeRateRow
+            exchangeRateControlId="goods-receipt-exchange-rate"
+            currencyControl={
+              <AppAdvancedDropdown
+                id="goods-receipt-currency"
+                className="w-full min-w-0"
+                value={values.currency}
+                readOnly={isReadonly}
+                options={GoodsReceiptCurrencyOptions}
+                placeholder="Select currency"
+                searchPlaceholder="Search currency"
+                onChange={(value) => onUpdateField("currency", String(value))}
+              />
+            }
+            exchangeRateControl={
               <MoneyNumberField
                 id="goods-receipt-exchange-rate"
                 value={values.exchangeRate}
                 readOnly={isReadonly}
                 onValueChange={(value) => onUpdateField("exchangeRate", value)}
-                className={`${FieldClassName} text-right`}
+                className={`${FieldClassName} text-right tabular-nums`}
               />
-            </div>
-          </div>
+            }
+          />
         </FieldShell>
       </div>
 

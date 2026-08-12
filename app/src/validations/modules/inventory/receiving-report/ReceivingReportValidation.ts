@@ -1,10 +1,10 @@
 import { parseMoneyNumberInput } from "@/app/src/ui/shared/money/MoneyNumberField";
 import { RequiredReceivingReportFields } from "@/app/src/constants/modules/inventory/receiving-report/ReceivingReportConstants";
 import type {
+  ReceivingReportFormErrors,
   ReceivingReportFormValues,
   ReceivingReportLine,
-} from "@/app/src/data/modules/inventory/receiving-report/ReceivingReportData";
-import type { ReceivingReportFormErrors } from "@/app/src/types/modules/inventory/receiving-report/ReceivingReportTypes";
+} from "@/app/src/types/modules/inventory/receiving-report/ReceivingReportTypes";
 
 export function validateReceivingReport(
   values: ReceivingReportFormValues,

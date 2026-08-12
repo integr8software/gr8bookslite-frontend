@@ -10,8 +10,6 @@ import {
 	type ClipboardEvent as ReactClipboardEvent,
 	type CSSProperties,
 	type KeyboardEvent as ReactKeyboardEvent,
-	type ReactNode,
-	type RefObject,
 } from "react";
 import { ModuleDataEntryTableBody } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryTableBody";
 import {
@@ -40,39 +38,8 @@ import type {
 	ModuleDataEntryCellTarget,
 	ModuleDataEntryColumn,
 	ModuleDataEntrySelection,
+	ModuleDataEntryTableProps,
 } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
-
-export type ModuleDataEntryTableProps<TRow extends { id: string }> = {
-	columns: ModuleDataEntryColumn<TRow>[];
-	emptyRowLabel: string;
-	getCellValue?: (row: TRow, columnId: string) => string;
-	canConfigureColumnsWhenReadonly: boolean;
-	isDraggable: boolean;
-	isReadonly: boolean;
-	isRowNumberColumnFixed: boolean;
-	rows: TRow[];
-	scrollContainerRef: RefObject<HTMLDivElement | null>;
-	summaryCells?: Record<string, ReactNode>;
-	summaryRowHeader?: ReactNode;
-	onAddRows: (count: number) => void;
-	onAutoColumnWidth?: (columnId: string) => void;
-	onClearCell?: (rowId: string, columnId: string) => void;
-	onClearRow?: (rowId: string) => void;
-	onDuplicateRow: (rowId: string) => void;
-	onFitColumnWidth?: (columnId: string) => void;
-	onInsertRow: (rowId: string, position: "above" | "below") => void;
-	onHideColumn?: (columnId: string) => void;
-	onMoveColumn?: (fromColumnId: string, toColumnId: string) => void;
-	onMoveRow: (fromRowId: string, toRowId: string) => void;
-	onPasteCells?: (
-		target: ModuleDataEntryCellTarget,
-		rows: string[][],
-	) => void;
-	onRemoveColumn?: (columnId: string) => void;
-	onRemoveRow: (rowId: string) => void;
-	onUpdateColumnHeader?: (columnId: string, header: string) => void;
-	onUpdateColumnWidth?: (columnId: string, width: number) => void;
-};
 
 export function ModuleDataEntryTable<TRow extends { id: string }>({
 	columns,

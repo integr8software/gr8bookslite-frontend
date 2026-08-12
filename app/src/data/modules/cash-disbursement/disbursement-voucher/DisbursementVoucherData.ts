@@ -1,5 +1,6 @@
 import type {
   DisbursementAttachment,
+  DisbursementPaymentMethod,
   DisbursementVoucherBankAccount,
   DisbursementVoucherPaymentAccount,
   DisbursementVoucherCopyFromRecord,
@@ -14,30 +15,137 @@ import type {
   DisbursementVoucherHistoryEntry,
   DisbursementVoucherRecord,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+import type { DefaultAccount } from "@/app/src/types/modules/financial-maintenance/default-account/DefaultAccountTypes";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
+import {
+  DisbursementVoucherRecordStorageKey,
+  DisbursementVoucherStatuses,
+  DisbursementVoucherTransactionStorageKey,
+} from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
+import { MultiCurrencyCatalog } from "@/app/src/data/modules/system-administration/multi-currency-setup/MultiCurrencySetupData";
 
 export type DisbursementVoucherDisplayStatus = DisbursementVoucherStatus;
 
-export const DisbursementVoucherInitialEntryDraft: DisbursementVoucherEntryDraft =
-  {
-    accountCode: "",
-    accountName: "",
-    atcCode: "",
-    particulars: "",
-    partyCode: "",
-    partyName: "",
-    refId: "",
-    responsibilityCenter: "",
-    debit: "",
-    credit: "",
-    taxRate: "0%",
-    taxDetails: createTaxDetails(0, "0%"),
-    vatType: "",
-  };
+const CashInHandAccount = {
+  accountCode: "1001111",
+  accountName: "Cash in Hand",
+} as const;
 
-export function createBlankDisbursementLineEntry(
-  overrides: Partial<DisbursementLineEntry> = {},
-): DisbursementLineEntry {
+const InputVatAccount = {
+  accountCode: "2010002011",
+  accountName: "Input VAT",
+} as const;
+
+const ExpandedWithholdingTaxAccount = {
+  accountCode: "2010002002",
+  accountName: "Expanded Withholding Tax",
+} as const;
+
+export function getSeedDisbursementTransactions() {
+  return MockDisbursementTransactions.map((transaction) => ({
+    ...transaction,
+    status: getDisbursementVoucherDisplayStatus(transaction.status),
+  }));
+}
+
+export function getSeedDisbursementVouchers() {
+  return MockDisbursementVouchers.map(sanitizeDisbursementVoucherRecord);
+}
+
+export function readStoredDisbursementTransactions() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const storedTransactions = window.localStorage.getItem(DisbursementVoucherTransactionStorageKey);
+
+  if (!storedTransactions) {
+    return null;
+  }
+
+  try {
+    const parsedTransactions = JSON.parse(storedTransactions) as DisbursementTransactionRecord[];
+
+    return Array.isArray(parsedTransactions)
+      ? parsedTransactions.map((transaction) => ({
+          ...transaction,
+          status: getDisbursementVoucherDisplayStatus(transaction.status),
+        }))
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+export function readStoredDisbursementVouchers() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const storedVouchers = window.localStorage.getItem(DisbursementVoucherRecordStorageKey);
+
+  if (!storedVouchers) {
+    return null;
+  }
+
+  try {
+    const parsedVouchers = JSON.parse(storedVouchers) as DisbursementVoucherRecord[];
+
+    if (!Array.isArray(parsedVouchers)) {
+      return null;
+    }
+
+    return parsedVouchers.map(sanitizeDisbursementVoucherRecord);
+  } catch {
+    return null;
+  }
+}
+
+export function writeStoredDisbursementTransactions(transactions: DisbursementTransactionRecord[]) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.setItem(DisbursementVoucherTransactionStorageKey, JSON.stringify(transactions));
+}
+
+export function writeStoredDisbursementVouchers(vouchers: DisbursementVoucherRecord[]) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.setItem(DisbursementVoucherRecordStorageKey, JSON.stringify(vouchers.map(sanitizeDisbursementVoucherRecord)));
+}
+
+export function createVoucherCurrencyOptions() {
+  return MultiCurrencyCatalog.filter((currency) => currency.isEnabled);
+}
+
+export function getVoucherCurrencyExchangeRate(currencyCode: string) {
+  if (!currencyCode || currencyCode === "PHP") {
+    return "1.00";
+  }
+
+  return "1.00";
+}
+
+export const DisbursementVoucherInitialEntryDraft: DisbursementVoucherEntryDraft = {
+  accountCode: "",
+  accountName: "",
+  atcCode: "",
+  particulars: "",
+  partyCode: "",
+  partyName: "",
+  refId: "",
+  responsibilityCenter: "",
+  debit: "",
+  credit: "",
+  taxRate: "0%",
+  taxDetails: createTaxDetails(0, "0%"),
+  vatType: "",
+};
+
+export function createBlankDisbursementLineEntry(overrides: Partial<DisbursementLineEntry> = {}): DisbursementLineEntry {
   const refId = overrides.refId ?? "";
   const responsibilityCenter = overrides.responsibilityCenter ?? "";
 
@@ -45,6 +153,9 @@ export function createBlankDisbursementLineEntry(
     accountCode: "",
     accountName: "",
     atcCode: "",
+    checkDate: "",
+    checkNo: "",
+    checkStatus: "",
     credit: 0,
     debit: 0,
     id: `line-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -65,42 +176,227 @@ export function createBlankDisbursementLineEntry(
   };
 }
 
-export function ensureDisbursementLineEntries(
-  entries: DisbursementLineEntry[],
-) {
+export function ensureDisbursementLineEntries(entries: DisbursementLineEntry[]) {
   return entries.length > 0 ? entries : [createBlankDisbursementLineEntry()];
 }
 
-export const DisbursementVoucherBankAccounts: DisbursementVoucherBankAccount[] =
-  [
-    {
-      id: "bank-bdo-operating",
-      accountCode: "1010102001",
-      accountTitle: "Cash in Bank - BDO Operating",
-      bankName: "BDO Unibank",
-      branch: "Makati Corporate Branch",
-      accountName: "Gr8Books Operating Account",
-      accountNo: "1000-2201-44",
-    },
-    {
-      id: "bank-metrobank-checking",
-      accountCode: "1010102002",
-      accountTitle: "Cash in Bank - Metrobank Checking",
-      bankName: "Metrobank",
-      branch: "BGC Finance Center",
-      accountName: "Gr8Books Checking Account",
-      accountNo: "0028-4511-90",
-    },
-    {
-      id: "bank-bpi-payroll",
-      accountCode: "1010102003",
-      accountTitle: "Cash in Bank - BPI Payroll",
-      bankName: "BPI",
-      branch: "Ortigas Business Center",
-      accountName: "Gr8Books Payroll Account",
-      accountNo: "7781-0042-16",
-    },
-  ];
+export const DisbursementVoucherBankAccounts: DisbursementVoucherBankAccount[] = [
+  {
+    id: "bank-bdo-operating",
+    accountCode: "1010102001",
+    accountTitle: "Cash in Bank - BDO Operating",
+    bankName: "BDO Unibank",
+    branch: "Makati Corporate Branch",
+    accountName: "Gr8Books Operating Account",
+    accountNo: "1000-2201-44",
+  },
+  {
+    id: "bank-metrobank-checking",
+    accountCode: "1010102002",
+    accountTitle: "Cash in Bank - Metrobank Checking",
+    bankName: "Metrobank",
+    branch: "BGC Finance Center",
+    accountName: "Gr8Books Checking Account",
+    accountNo: "0028-4511-90",
+  },
+  {
+    id: "bank-bpi-payroll",
+    accountCode: "1010102003",
+    accountTitle: "Cash in Bank - BPI Payroll",
+    bankName: "BPI",
+    branch: "Ortigas Business Center",
+    accountName: "Gr8Books Payroll Account",
+    accountNo: "7781-0042-16",
+  },
+];
+
+export const DisbursementVoucherPartyOptions = [
+  {
+    label: "VCE-001",
+    name: "North Harbor Office Depot",
+    value: "VCE-001",
+  },
+  {
+    label: "VCE-002",
+    name: "Metro Utilities Services",
+    value: "VCE-002",
+  },
+  {
+    label: "VCE-003",
+    name: "Santos and Velasco Legal",
+    value: "VCE-003",
+  },
+  {
+    label: "VCE-004",
+    name: "Global Freight Movers",
+    value: "VCE-004",
+  },
+  {
+    label: "EMP-001",
+    name: "Juan dela Cruz",
+    value: "EMP-001",
+  },
+  {
+    label: "VCE-005",
+    name: "TechPro Infrastructure",
+    value: "VCE-005",
+  },
+] as const;
+
+export const DisbursementVoucherDefaultAccounts: DefaultAccount[] = [
+  {
+    id: "dv-default-account-office-supplies",
+    type: "EXPENSE",
+    defaultAccountName: "Office Supplies",
+    description: "Default expense account for office supply disbursements.",
+    status: "Active",
+    expenseParentCoaId: "exp-parent-office",
+    generatedAccounts: [
+      {
+        accountCode: "5010-001",
+        accountNature: "Operating Expense",
+        accountTitle: "Office Supplies Expense",
+        accountType: "Expenses",
+        chartAccountId: "coa-exp-office-supplies",
+        parentAccountId: "exp-parent-office",
+        role: "EXPENSE",
+        status: "ACTIVE",
+      },
+    ],
+  },
+  {
+    id: "dv-default-account-professional-fees",
+    type: "EXPENSE",
+    defaultAccountName: "Professional Fees",
+    description: "Default expense account for legal, consulting, and professional services.",
+    status: "Active",
+    expenseParentCoaId: "exp-parent-services",
+    generatedAccounts: [
+      {
+        accountCode: "6080-011",
+        accountNature: "Operating Expense",
+        accountTitle: "Professional Fees",
+        accountType: "Expenses",
+        chartAccountId: "coa-exp-professional-fees",
+        parentAccountId: "exp-parent-services",
+        role: "EXPENSE",
+        status: "ACTIVE",
+      },
+    ],
+  },
+  {
+    id: "dv-default-account-travel",
+    type: "EXPENSE",
+    defaultAccountName: "Travel and Transportation",
+    description: "Default expense account for travel, transport, and field reimbursement.",
+    status: "Active",
+    expenseParentCoaId: "exp-parent-travel",
+    generatedAccounts: [
+      {
+        accountCode: "6120-004",
+        accountNature: "Operating Expense",
+        accountTitle: "Travel and Transportation",
+        accountType: "Expenses",
+        chartAccountId: "coa-exp-travel-transport",
+        parentAccountId: "exp-parent-travel",
+        role: "EXPENSE",
+        status: "ACTIVE",
+      },
+    ],
+  },
+  {
+    id: "dv-default-account-utilities",
+    type: "EXPENSE",
+    defaultAccountName: "Utilities",
+    description: "Default expense account for utility settlements.",
+    status: "Active",
+    expenseParentCoaId: "exp-parent-utilities",
+    generatedAccounts: [
+      {
+        accountCode: "6040-002",
+        accountNature: "Operating Expense",
+        accountTitle: "Utilities Expense",
+        accountType: "Expenses",
+        chartAccountId: "coa-exp-utilities",
+        parentAccountId: "exp-parent-utilities",
+        role: "EXPENSE",
+        status: "ACTIVE",
+      },
+    ],
+  },
+];
+
+export const DisbursementVoucherProjectOptions = [
+  {
+    label: "CC-ADM-001",
+    name: "Finance Operations",
+    value: "Finance Operations",
+  },
+  {
+    label: "CC-FAC-014",
+    name: "Facilities",
+    value: "Facilities",
+  },
+  {
+    label: "CC-LGL-201",
+    name: "Corporate Affairs",
+    value: "Corporate Affairs",
+  },
+  {
+    label: "CC-SCM-018",
+    name: "Supply Chain",
+    value: "Supply Chain",
+  },
+  {
+    label: "CC-SAL-090",
+    name: "Sales",
+    value: "Sales",
+  },
+  {
+    label: "CC-IT-305",
+    name: "Technology",
+    value: "Technology",
+  },
+] as const;
+
+export const DisbursementVoucherResponsibilityCenterOptions = [
+  {
+    description: "Cost Center / Administrative",
+    label: "CC-ADM-001",
+    name: "Finance Operations",
+    value: "CC-ADM-001",
+  },
+  {
+    description: "Cost Center / Operating",
+    label: "CC-FAC-014",
+    name: "Facilities",
+    value: "CC-FAC-014",
+  },
+  {
+    description: "Cost Center / Administrative",
+    label: "CC-LGL-201",
+    name: "Corporate Affairs",
+    value: "CC-LGL-201",
+  },
+  {
+    description: "Cost Center / Operating",
+    label: "CC-SCM-018",
+    name: "Supply Chain",
+    value: "CC-SCM-018",
+  },
+  {
+    description: "Cost Center / Revenue",
+    label: "CC-SAL-090",
+    name: "Sales",
+    value: "CC-SAL-090",
+  },
+  {
+    description: "Cost Center / Operating",
+    label: "CC-IT-305",
+    name: "Technology",
+    value: "CC-IT-305",
+  },
+] as const;
 
 export const MockDisbursementTransactions: DisbursementTransactionRecord[] = [
   {
@@ -116,8 +412,12 @@ export const MockDisbursementTransactions: DisbursementTransactionRecord[] = [
     currency: "PHP",
     paymentMethod: "Bank Transfer",
     disbursementType: "Vendor Payment",
-    status: "Active",
+    status: DisbursementVoucherStatuses.forApproval,
     costCenter: "CC-ADM-001",
+    createdBy: "Maria Dizon",
+    createdAt: "2026-05-14T08:15:00.000Z",
+    updatedBy: "Marvin Torres",
+    updatedAt: "2026-05-18T09:30:00.000Z",
   },
   {
     id: "dv-tx-1002",
@@ -132,8 +432,12 @@ export const MockDisbursementTransactions: DisbursementTransactionRecord[] = [
     currency: "PHP",
     paymentMethod: "InstaPay",
     disbursementType: "Operating Expense",
-    status: "Active",
+    status: DisbursementVoucherStatuses.forApproval,
     costCenter: "CC-FAC-014",
+    createdBy: "Jasper Co",
+    createdAt: "2026-05-10T10:05:00.000Z",
+    updatedBy: "Jasper Co",
+    updatedAt: "2026-05-10T10:05:00.000Z",
   },
   {
     id: "dv-tx-1003",
@@ -148,8 +452,12 @@ export const MockDisbursementTransactions: DisbursementTransactionRecord[] = [
     currency: "PHP",
     paymentMethod: "Check",
     disbursementType: "Operating Expense",
-    status: "Approved",
+    status: DisbursementVoucherStatuses.posted,
     costCenter: "CC-LGL-201",
+    createdBy: "Patricia Cruz",
+    createdAt: "2026-05-03T13:20:00.000Z",
+    updatedBy: "Clarisse Yap",
+    updatedAt: "2026-05-05T15:45:00.000Z",
   },
   {
     id: "dv-tx-1004",
@@ -164,8 +472,12 @@ export const MockDisbursementTransactions: DisbursementTransactionRecord[] = [
     currency: "PHP",
     paymentMethod: "Bank Transfer",
     disbursementType: "Vendor Payment",
-    status: "Disapproved",
+    status: DisbursementVoucherStatuses.disapproved,
     costCenter: "CC-SCM-018",
+    createdBy: "Eugene Ramirez",
+    createdAt: "2026-04-28T11:45:00.000Z",
+    updatedBy: "Finance Reviewer",
+    updatedAt: "2026-04-29T16:10:00.000Z",
   },
   {
     id: "dv-tx-1005",
@@ -180,8 +492,12 @@ export const MockDisbursementTransactions: DisbursementTransactionRecord[] = [
     currency: "PHP",
     paymentMethod: "Cash",
     disbursementType: "Reimbursement",
-    status: "Approved",
+    status: DisbursementVoucherStatuses.posted,
     costCenter: "CC-SAL-090",
+    createdBy: "Lara Ong",
+    createdAt: "2026-04-22T09:25:00.000Z",
+    updatedBy: "Angela Go",
+    updatedAt: "2026-04-24T14:05:00.000Z",
   },
   {
     id: "dv-tx-1006",
@@ -196,24 +512,28 @@ export const MockDisbursementTransactions: DisbursementTransactionRecord[] = [
     currency: "PHP",
     paymentMethod: "Bank Transfer",
     disbursementType: "Capital Expenditure",
-    status: "Active",
+    status: DisbursementVoucherStatuses.forApproval,
     costCenter: "CC-IT-305",
+    createdBy: "Ivan Flores",
+    createdAt: "2026-04-15T10:30:00.000Z",
+    updatedBy: "Ivan Flores",
+    updatedAt: "2026-04-15T10:30:00.000Z",
   },
 ];
 
 export const MockDisbursementVouchers: DisbursementVoucherRecord[] = [
   {
-    id: "dv-2026-0103",
+    id: "dv-2026-0104",
     transactionId: "dv-tx-1001",
-    voucherNo: "DV-2026-0103",
+    voucherNo: "DV-2026-0104",
     voucherDate: "2026-05-18",
     paymentMethod: "Bank Transfer",
     disbursementType: "Vendor Payment",
     currency: "PHP",
-    fxRate: "1.0000",
+    fxRate: "1.00",
     costCenter: "CC-ADM-001",
-    vceCode: "VCE-OD-204",
-    vceName: "North Harbor Office Depot",
+    partyCode: "VCE-OD-204",
+    partyName: "North Harbor Office Depot",
     amount: 18450,
     taxRate: "0%",
     taxDetails: createTaxDetails(18450, "0%"),
@@ -248,9 +568,9 @@ export const MockDisbursementVouchers: DisbursementVoucherRecord[] = [
       },
       {
         id: "entry-1002",
-        accountCode: "2010-003",
-        accountName: "Accounts Payable",
-        particulars: "Settlement of approved office depot payable",
+        accountCode: "1010102001",
+        accountName: "Cash in Bank - BDO Operating",
+        particulars: "Settlement via BDO operating bank account",
         debit: 0,
         credit: 18450,
         taxRate: "0%",
@@ -259,12 +579,16 @@ export const MockDisbursementVouchers: DisbursementVoucherRecord[] = [
       },
     ],
     attachments: [],
-    status: "Active",
+    status: DisbursementVoucherStatuses.forApproval,
     history: createInitialDisbursementVoucherHistory({
-      voucherNo: "DV-2026-0103",
+      voucherNo: "DV-2026-0104",
       voucherDate: "2026-05-18",
-      status: "Active",
+      status: DisbursementVoucherStatuses.forApproval,
     }),
+    createdBy: "Marvin Torres",
+    createdAt: "2026-05-18T09:30:00.000Z",
+    updatedBy: "Marvin Torres",
+    updatedAt: "2026-05-18T09:30:00.000Z",
   },
   {
     id: "dv-2026-0101",
@@ -274,13 +598,19 @@ export const MockDisbursementVouchers: DisbursementVoucherRecord[] = [
     paymentMethod: "Check",
     disbursementType: "Operating Expense",
     currency: "PHP",
-    fxRate: "1.0000",
+    fxRate: "1.00",
     costCenter: "CC-LGL-201",
-    vceCode: "VCE-LAW-108",
-    vceName: "Santos and Velasco Legal",
-    amount: 25000,
-    taxRate: "5%",
-    taxDetails: createTaxDetails(25000, "5%"),
+    partyCode: "VCE-LAW-108",
+    partyName: "Santos and Velasco Legal",
+    amount: 22500,
+    taxRate: "12%",
+    taxDetails: createDisbursementTaxDetails({
+      amount: 25000,
+      ewtCode: "W10",
+      ewtPercent: 10,
+      vatCode: "V12",
+      vatPercent: 12,
+    }),
     remarks: "Monthly legal retainer for regulatory and contract support.",
     referenceModule: "Purchase Order",
     voucherReferenceNo: "DVR-2026-0081",
@@ -304,31 +634,66 @@ export const MockDisbursementVouchers: DisbursementVoucherRecord[] = [
         accountCode: "6080-011",
         accountName: "Professional Fees",
         particulars: "Corporate legal retainer for May",
-        debit: 25000,
+        debit: 22000,
         credit: 0,
-        taxRate: "5%",
-        taxDetails: createTaxDetails(25000, "5%"),
+        taxRate: "12%",
+        taxDetails: createDisbursementTaxDetails({
+          amount: 25000,
+          ewtCode: "W10",
+          ewtPercent: 10,
+          vatCode: "V12",
+          vatPercent: 12,
+        }),
+        status: "Balanced",
+      },
+      {
+        id: "entry-1004-vat",
+        accountCode: "2010002011",
+        accountName: "Input VAT",
+        particulars: "Input VAT - Corporate legal retainer for May",
+        debit: 3000,
+        credit: 0,
+        taxRate: "0%",
+        taxDetails: createTaxDetails(3000, "0%"),
+        vatType: "Input VAT",
+        status: "Balanced",
+      },
+      {
+        id: "entry-1004-ewt",
+        accountCode: "2010002002",
+        accountName: "Expanded Withholding Tax",
+        particulars: "EWT - Corporate legal retainer for May",
+        debit: 0,
+        credit: 2500,
+        taxRate: "0%",
+        taxDetails: createTaxDetails(2500, "0%"),
+        atcCode: "W10",
+        vatType: "EWT",
         status: "Balanced",
       },
       {
         id: "entry-1004",
-        accountCode: "1012-011",
-        accountName: "Check Disbursement Clearing",
-        particulars: "Release of legal retainer through issued check",
+        accountCode: "1010102002",
+        accountName: "Cash in Bank - Metrobank Checking",
+        particulars: "Release of legal retainer through Metrobank checking account",
         debit: 0,
-        credit: 25000,
+        credit: 22500,
         taxRate: "0%",
-        taxDetails: createTaxDetails(25000, "0%"),
+        taxDetails: createTaxDetails(22500, "0%"),
         status: "Balanced",
       },
     ],
     attachments: [],
-    status: "Approved",
+    status: DisbursementVoucherStatuses.posted,
     history: createInitialDisbursementVoucherHistory({
       voucherNo: "DV-2026-0101",
       voucherDate: "2026-05-05",
-      status: "Approved",
+      status: DisbursementVoucherStatuses.posted,
     }),
+    createdBy: "Clarisse Yap",
+    createdAt: "2026-05-05T15:45:00.000Z",
+    updatedBy: "Clarisse Yap",
+    updatedAt: "2026-05-05T15:45:00.000Z",
   },
   {
     id: "dv-2026-0099",
@@ -338,10 +703,10 @@ export const MockDisbursementVouchers: DisbursementVoucherRecord[] = [
     paymentMethod: "Cash",
     disbursementType: "Reimbursement",
     currency: "PHP",
-    fxRate: "1.0000",
+    fxRate: "1.00",
     costCenter: "CC-SAL-090",
-    vceCode: "EMP-044",
-    vceName: "Juan dela Cruz",
+    partyCode: "EMP-044",
+    partyName: "Juan dela Cruz",
     amount: 3200,
     taxRate: "0%",
     taxDetails: createTaxDetails(3200, "0%"),
@@ -377,12 +742,16 @@ export const MockDisbursementVouchers: DisbursementVoucherRecord[] = [
       },
     ],
     attachments: [],
-    status: "Approved",
+    status: DisbursementVoucherStatuses.posted,
     history: createInitialDisbursementVoucherHistory({
       voucherNo: "DV-2026-0099",
       voucherDate: "2026-04-24",
-      status: "Approved",
+      status: DisbursementVoucherStatuses.posted,
     }),
+    createdBy: "Angela Go",
+    createdAt: "2026-04-24T14:05:00.000Z",
+    updatedBy: "Angela Go",
+    updatedAt: "2026-04-24T14:05:00.000Z",
   },
 ];
 
@@ -393,29 +762,28 @@ const LegacyMockAttachmentNames = new Set([
   "travel-receipts.zip",
 ]);
 
-export function removeLegacyMockAttachments(
-  attachments: DisbursementAttachment[],
-) {
-  return attachments.filter(
-    (attachment) => !LegacyMockAttachmentNames.has(attachment.name),
-  );
+export function removeLegacyMockAttachments(attachments: DisbursementAttachment[]) {
+  return attachments.filter((attachment) => !LegacyMockAttachmentNames.has(attachment.name));
 }
 
-export function sanitizeDisbursementVoucherRecord(
-  voucher: DisbursementVoucherRecord,
-): DisbursementVoucherRecord {
+export function sanitizeDisbursementVoucherRecord(voucher: DisbursementVoucherRecord): DisbursementVoucherRecord {
+  const createdAt = voucher.createdAt ?? voucher.history?.[0]?.createdAt ?? "";
+  const updatedAt = voucher.updatedAt ?? voucher.history?.[voucher.history.length - 1]?.createdAt ?? createdAt;
+
   return {
     ...voucher,
     referenceModule: voucher.referenceModule ?? "",
-    paymentDetails: normalizePaymentDetails(
-      voucher.paymentDetails ?? createEmptyPaymentDetails(),
-    ),
+    paymentDetails: normalizePaymentDetails(voucher.paymentDetails ?? createEmptyPaymentDetails()),
     attachments: removeLegacyMockAttachments(voucher.attachments),
     status: getDisbursementVoucherDisplayStatus(voucher.status),
     history:
       voucher.history?.length > 0
         ? voucher.history.map(normalizeDisbursementVoucherHistoryEntry)
         : createInitialDisbursementVoucherHistory(voucher),
+    createdBy: voucher.createdBy ?? voucher.preparedBy ?? "",
+    createdAt,
+    updatedBy: voucher.updatedBy ?? voucher.preparedBy ?? "",
+    updatedAt,
   };
 }
 
@@ -432,90 +800,84 @@ export const DisbursementVoucherCopySources: DisbursementVoucherCopySource[] = [
   "Receiving Report",
 ];
 
-export const DisbursementVoucherCopyFromRecords: DisbursementVoucherCopyFromRecord[] =
-  [
-    createDisbursementVoucherCopyFromRecord(
-      "copy-dv-1001",
-      "Account Payable Voucher",
-      "APV-2026-0041",
-      "VCE-OD-204",
-      MockDisbursementTransactions[0],
-      MockDisbursementVouchers[0],
-    ),
-    createDisbursementVoucherCopyFromRecord(
-      "copy-dv-1002",
-      "Advances to Supplier",
-      "ATS-2026-0017",
-      "VCE-MUS-118",
-      MockDisbursementTransactions[1],
-    ),
-    createDisbursementVoucherCopyFromRecord(
-      "copy-dv-1003",
-      "Cash Advance",
-      "CA-2026-0021",
-      "EMP-044",
-      MockDisbursementTransactions[4],
-      MockDisbursementVouchers[2],
-    ),
-    createDisbursementVoucherCopyFromRecord(
-      "copy-dv-1004",
-      "Cash Advance Liquidation",
-      "CAL-2026-0015",
-      "EMP-044",
-      MockDisbursementTransactions[4],
-    ),
-    createDisbursementVoucherCopyFromRecord(
-      "copy-dv-1005",
-      "Petty Cash Advance Excess",
-      "PCAE-2026-0007",
-      "EMP-044",
-      MockDisbursementTransactions[4],
-    ),
-    createDisbursementVoucherCopyFromRecord(
-      "copy-dv-1006",
-      "Petty Cash Replenishment",
-      "PCR-2026-0019",
-      "VCE-GFM-077",
-      MockDisbursementTransactions[3],
-    ),
-    createDisbursementVoucherCopyFromRecord(
-      "copy-dv-1007",
-      "Petty Cash Fund Replenishment",
-      "PCFR-2026-0012",
-      "VCE-TPI-611",
-      MockDisbursementTransactions[5],
-    ),
-    createDisbursementVoucherCopyFromRecord(
-      "copy-dv-1008",
-      "Purchase Order",
-      "PO-2026-0322",
-      "VCE-LAW-108",
-      MockDisbursementTransactions[2],
-      MockDisbursementVouchers[1],
-    ),
-    createDisbursementVoucherCopyFromRecord(
-      "copy-dv-1009",
-      "Purchase Journal",
-      "PJ-2026-0088",
-      "VCE-MUS-118",
-      MockDisbursementTransactions[1],
-    ),
-    createDisbursementVoucherCopyFromRecord(
-      "copy-dv-1010",
-      "Receiving Report",
-      "RR-2026-0144",
-      "VCE-GFM-077",
-      MockDisbursementTransactions[3],
-    ),
-  ];
+export const DisbursementVoucherCopyFromRecords: DisbursementVoucherCopyFromRecord[] = [
+  createDisbursementVoucherCopyFromRecord(
+    "copy-dv-1001",
+    "Account Payable Voucher",
+    "APV-2026-0041",
+    "VCE-OD-204",
+    MockDisbursementTransactions[0],
+    MockDisbursementVouchers[0],
+  ),
+  createDisbursementVoucherCopyFromRecord(
+    "copy-dv-1002",
+    "Advances to Supplier",
+    "ATS-2026-0017",
+    "VCE-MUS-118",
+    MockDisbursementTransactions[1],
+  ),
+  createDisbursementVoucherCopyFromRecord(
+    "copy-dv-1003",
+    "Cash Advance",
+    "CA-2026-0021",
+    "EMP-044",
+    MockDisbursementTransactions[4],
+    MockDisbursementVouchers[2],
+  ),
+  createDisbursementVoucherCopyFromRecord(
+    "copy-dv-1004",
+    "Cash Advance Liquidation",
+    "CAL-2026-0015",
+    "EMP-044",
+    MockDisbursementTransactions[4],
+  ),
+  createDisbursementVoucherCopyFromRecord(
+    "copy-dv-1005",
+    "Petty Cash Advance Excess",
+    "PCAE-2026-0007",
+    "EMP-044",
+    MockDisbursementTransactions[4],
+  ),
+  createDisbursementVoucherCopyFromRecord(
+    "copy-dv-1006",
+    "Petty Cash Replenishment",
+    "PCR-2026-0019",
+    "VCE-GFM-077",
+    MockDisbursementTransactions[3],
+  ),
+  createDisbursementVoucherCopyFromRecord(
+    "copy-dv-1007",
+    "Petty Cash Fund Replenishment",
+    "PCFR-2026-0012",
+    "VCE-TPI-611",
+    MockDisbursementTransactions[5],
+  ),
+  createDisbursementVoucherCopyFromRecord(
+    "copy-dv-1008",
+    "Purchase Order",
+    "PO-2026-0322",
+    "VCE-LAW-108",
+    MockDisbursementTransactions[2],
+    MockDisbursementVouchers[1],
+  ),
+  createDisbursementVoucherCopyFromRecord(
+    "copy-dv-1009",
+    "Purchase Journal",
+    "PJ-2026-0088",
+    "VCE-MUS-118",
+    MockDisbursementTransactions[1],
+  ),
+  createDisbursementVoucherCopyFromRecord(
+    "copy-dv-1010",
+    "Receiving Report",
+    "RR-2026-0144",
+    "VCE-GFM-077",
+    MockDisbursementTransactions[3],
+  ),
+];
 
-export function buildDisbursementVoucherPreviewRows(
-  transactions: DisbursementTransactionRecord[],
-  vouchers: DisbursementVoucherRecord[],
-) {
-  const voucherByTransactionId = new Map(
-    vouchers.map((voucher) => [voucher.transactionId, voucher]),
-  );
+export function buildDisbursementVoucherPreviewRows(transactions: DisbursementTransactionRecord[], vouchers: DisbursementVoucherRecord[]) {
+  const voucherByTransactionId = new Map(vouchers.map((voucher) => [voucher.transactionId, voucher]));
 
   return transactions.map((transaction) => ({
     transaction,
@@ -537,8 +899,9 @@ export function createDisbursementVoucherFormValues(
       currency: voucher.currency,
       fxRate: voucher.fxRate,
       costCenter: voucher.costCenter,
-      vceCode: voucher.vceCode,
-      vceName: voucher.vceName,
+      projectName: voucher.projectName ?? transaction?.projectName ?? transaction?.department ?? "",
+      partyCode: voucher.partyCode,
+      partyName: voucher.partyName,
       amount: voucher.amount.toFixed(2),
       taxRate: voucher.taxRate,
       taxDetails: voucher.taxDetails,
@@ -557,21 +920,19 @@ export function createDisbursementVoucherFormValues(
 
   return {
     taxRate: transaction ? getDefaultTaxRate(transaction) : "0%",
-    taxDetails: createTaxDetails(
-      transaction?.amount ?? 0,
-      transaction ? getDefaultTaxRate(transaction) : "0%",
-    ),
+    taxDetails: transaction ? createDefaultTransactionTaxDetails(transaction) : createTaxDetails(0, "0%"),
     transactionId: transaction?.id ?? "",
     voucherNo: createNextVoucherNumber(),
     voucherDate: todayDateValue(),
     paymentMethod: transaction?.paymentMethod ?? "",
     disbursementType: transaction?.disbursementType ?? "",
     currency: transaction?.currency ?? "PHP",
-    fxRate: "1.0000",
+    fxRate: "1.00",
     costCenter: transaction?.costCenter ?? "",
-    vceCode: "",
-    vceName: transaction?.payee ?? "",
-    amount: transaction ? transaction.amount.toFixed(2) : "",
+    projectName: transaction?.projectName ?? transaction?.department ?? "",
+    partyCode: getDisbursementVoucherPartyCode(transaction?.payee ?? ""),
+    partyName: transaction?.payee ?? "",
+    amount: transaction ? createDefaultTransactionTaxDetails(transaction).amount.toFixed(2) : "",
     remarks: transaction?.purpose ?? "",
     referenceModule: "Disbursement Voucher",
     voucherReferenceNo: "",
@@ -579,7 +940,7 @@ export function createDisbursementVoucherFormValues(
     paymentDueDate: transaction?.paymentDueDate ?? todayDateValue(),
     paymentDetails: createEmptyPaymentDetails(),
     preparedBy: "Finance Shared Services",
-    status: "Draft",
+    status: DisbursementVoucherStatuses.draft,
     lineEntries: transaction
       ? ensureDisbursementLineEntries(createAutoDisbursementLineEntries(transaction))
       : [createBlankDisbursementLineEntry()],
@@ -587,29 +948,26 @@ export function createDisbursementVoucherFormValues(
   };
 }
 
-export function createDisbursementVoucherFromForm(
-  values: DisbursementVoucherFormValues,
-): DisbursementVoucherRecord {
+export function createDisbursementVoucherFromForm(values: DisbursementVoucherFormValues): DisbursementVoucherRecord {
+  const now = new Date().toISOString();
+  const actor = values.preparedBy.trim() || "Current User";
+
   return {
     id: `dv-${Date.now()}`,
     transactionId: values.transactionId,
     voucherNo: values.voucherNo.trim(),
     voucherDate: values.voucherDate,
     paymentMethod: values.paymentMethod as DisbursementVoucherRecord["paymentMethod"],
-    disbursementType:
-      values.disbursementType as DisbursementVoucherRecord["disbursementType"],
+    disbursementType: values.disbursementType as DisbursementVoucherRecord["disbursementType"],
     currency: values.currency,
-    fxRate: values.fxRate.trim() || "1.0000",
+    fxRate: values.fxRate.trim() || "1.00",
     costCenter: values.costCenter.trim(),
-    vceCode: values.vceCode.trim(),
-    vceName: values.vceName.trim(),
+    projectName: values.projectName.trim(),
+    partyCode: values.partyCode.trim(),
+    partyName: values.partyName.trim(),
     amount: parseMoneyNumberInput(values.amount),
     taxRate: values.taxRate,
-    taxDetails: syncTaxDetailsAmount(
-      values.taxDetails,
-      parseMoneyNumberInput(values.amount),
-      values.taxRate,
-    ),
+    taxDetails: syncTaxDetailsAmount(values.taxDetails, parseMoneyNumberInput(values.amount), values.taxRate),
     remarks: values.remarks.trim(),
     referenceModule: values.referenceModule.trim(),
     voucherReferenceNo: values.voucherReferenceNo.trim(),
@@ -625,6 +983,10 @@ export function createDisbursementVoucherFromForm(
       voucherDate: values.voucherDate,
       status: values.status,
     }),
+    createdBy: actor,
+    createdAt: now,
+    updatedBy: actor,
+    updatedAt: now,
   };
 }
 
@@ -632,28 +994,30 @@ export function createDisbursementTransactionFromForm(
   values: DisbursementVoucherFormValues,
   transaction?: DisbursementTransactionRecord,
 ): DisbursementTransactionRecord {
+  const now = new Date().toISOString();
+  const actor = values.preparedBy.trim() || "Finance Shared Services";
+
   return {
     id: transaction?.id ?? values.transactionId,
-    transactionNo:
-      transaction?.transactionNo ??
-      (values.transactionId.trim() || createNextTransactionNumber()),
-    payee: values.vceName.trim() || transaction?.payee || "Unnamed Payee",
+    transactionNo: transaction?.transactionNo ?? (values.transactionId.trim() || createNextTransactionNumber()),
+    payee: values.partyName.trim() || transaction?.payee || "Unnamed Payee",
     purpose: values.remarks.trim() || transaction?.purpose || "Disbursement voucher",
-    department: transaction?.department ?? "Finance Operations",
-    requestedBy:
-      transaction?.requestedBy ??
-      (values.preparedBy.trim() || "Finance Shared Services"),
+    department: values.projectName.trim() || transaction?.department || "Finance Operations",
+    projectName: values.projectName.trim(),
+    requestedBy: transaction?.requestedBy ?? (values.preparedBy.trim() || "Finance Shared Services"),
     transactionDate: transaction?.transactionDate ?? values.voucherDate,
     paymentDueDate: values.paymentDueDate,
     amount: parseMoneyNumberInput(values.amount),
     currency: values.currency,
-    paymentMethod:
-      values.paymentMethod as DisbursementTransactionRecord["paymentMethod"],
-    disbursementType:
-      values.disbursementType as DisbursementTransactionRecord["disbursementType"],
+    paymentMethod: values.paymentMethod as DisbursementTransactionRecord["paymentMethod"],
+    disbursementType: values.disbursementType as DisbursementTransactionRecord["disbursementType"],
     status: values.status,
     costCenter: values.costCenter.trim(),
     accountingEntries: ensureDisbursementLineEntries(values.lineEntries),
+    createdBy: transaction?.createdBy ?? actor,
+    createdAt: transaction?.createdAt ?? now,
+    updatedBy: actor,
+    updatedAt: now,
   };
 }
 
@@ -669,8 +1033,8 @@ export function applyCopyFromRecordToDisbursementVoucherForm(
     currency: record.templateValues.currency,
     fxRate: record.templateValues.fxRate,
     costCenter: record.templateValues.costCenter,
-    vceCode: record.templateValues.vceCode,
-    vceName: record.templateValues.vceName,
+    partyCode: record.templateValues.partyCode,
+    partyName: record.templateValues.partyName,
     amount: record.templateValues.amount,
     taxRate: record.templateValues.taxRate,
     taxDetails: record.templateValues.taxDetails,
@@ -699,17 +1063,11 @@ export function applyCopyFromRecordsToDisbursementVoucherForm(
   }
 
   if (records.length === 1) {
-    return applyCopyFromRecordToDisbursementVoucherForm(
-      currentValues,
-      firstRecord,
-    );
+    return applyCopyFromRecordToDisbursementVoucherForm(currentValues, firstRecord);
   }
 
   const firstValues = firstRecord.templateValues;
-  const totalAmount = records.reduce(
-    (sum, record) => sum + Number(record.templateValues.amount || 0),
-    0,
-  );
+  const totalAmount = records.reduce((sum, record) => sum + Number(record.templateValues.amount || 0), 0);
   const sourceNumbers = records.map((record) => record.sourceNo).join(", ");
   const combinedRemarks = records
     .map((record) => record.templateValues.remarks || record.remarks)
@@ -726,9 +1084,7 @@ export function applyCopyFromRecordsToDisbursementVoucherForm(
       },
     })),
   );
-  const attachments = records.flatMap((record) =>
-    removeLegacyMockAttachments(record.templateValues.attachments),
-  );
+  const attachments = records.flatMap((record) => removeLegacyMockAttachments(record.templateValues.attachments));
 
   return {
     ...currentValues,
@@ -738,19 +1094,11 @@ export function applyCopyFromRecordsToDisbursementVoucherForm(
     currency: firstValues.currency,
     fxRate: firstValues.fxRate,
     costCenter: firstValues.costCenter,
-    vceCode: records.every((record) => record.partyCode === firstRecord.partyCode)
-      ? firstValues.vceCode
-      : "",
-    vceName: records.every((record) => record.partyName === firstRecord.partyName)
-      ? firstValues.vceName
-      : "Multiple Parties",
+    partyCode: records.every((record) => record.partyCode === firstRecord.partyCode) ? firstValues.partyCode : "",
+    partyName: records.every((record) => record.partyName === firstRecord.partyName) ? firstValues.partyName : "Multiple Parties",
     amount: totalAmount.toFixed(2),
     taxRate: firstValues.taxRate,
-    taxDetails: syncTaxDetailsAmount(
-      firstValues.taxDetails,
-      totalAmount,
-      firstValues.taxRate,
-    ),
+    taxDetails: syncTaxDetailsAmount(firstValues.taxDetails, totalAmount, firstValues.taxRate),
     remarks: combinedRemarks,
     referenceModule: firstRecord.source,
     voucherReferenceNo: sourceNumbers,
@@ -762,14 +1110,18 @@ export function applyCopyFromRecordsToDisbursementVoucherForm(
   };
 }
 
-export function updateDisbursementVoucherFromForm(
-  voucher: DisbursementVoucherRecord,
-  values: DisbursementVoucherFormValues,
-) {
+export function updateDisbursementVoucherFromForm(voucher: DisbursementVoucherRecord, values: DisbursementVoucherFormValues) {
+  const updatedVoucher = createDisbursementVoucherFromForm(values);
+  const actor = values.preparedBy.trim() || "Current User";
+
   return {
-    ...createDisbursementVoucherFromForm(values),
+    ...updatedVoucher,
     id: voucher.id,
+    createdBy: voucher.createdBy ?? updatedVoucher.createdBy,
+    createdAt: voucher.createdAt ?? updatedVoucher.createdAt,
     history: voucher.history,
+    updatedBy: actor,
+    updatedAt: new Date().toISOString(),
   };
 }
 
@@ -788,19 +1140,14 @@ export function createDisbursementVoucherStatusHistoryEntry(
   };
 }
 
-export function createDisbursementLineEntry(
-  draft: DisbursementVoucherEntryDraft,
-): DisbursementLineEntry {
-  const amount =
-    parseMoneyNumberInput(draft.debit) || parseMoneyNumberInput(draft.credit);
+export function createDisbursementLineEntry(draft: DisbursementVoucherEntryDraft): DisbursementLineEntry {
+  const amount = parseMoneyNumberInput(draft.debit) || parseMoneyNumberInput(draft.credit);
   const taxDetails = syncTaxDetailsAmount(
     {
       ...draft.taxDetails,
       atcCode: draft.atcCode?.trim() ?? draft.taxDetails.atcCode,
       refId: draft.refId?.trim() ?? draft.taxDetails.refId,
-      responsibilityCenter:
-        draft.responsibilityCenter?.trim() ??
-        draft.taxDetails.responsibilityCenter,
+      responsibilityCenter: draft.responsibilityCenter?.trim() ?? draft.taxDetails.responsibilityCenter,
       vatType: draft.vatType?.trim() ?? draft.taxDetails.vatType,
     },
     amount,
@@ -831,64 +1178,102 @@ export function createAutoDisbursementLineEntries(
   bankAccount?: DisbursementVoucherBankAccount | null,
   paymentAccount?: DisbursementVoucherPaymentAccount | null,
 ): DisbursementLineEntry[] {
+  const bankPaymentAccount = bankAccount ?? getMockBankAccountForPayment(transaction.paymentMethod);
   const amount = transaction.amount;
   const debitAccount = getDebitAccountTemplate(transaction);
-  const creditAccount = getCreditAccountTemplate(
-    transaction,
-    bankAccount,
-    paymentAccount,
-  );
-  const taxRate = getDefaultTaxRate(transaction);
-  const creditParticulars = createCreditParticulars(
-    transaction,
-    bankAccount,
-    paymentAccount,
-  );
-
-  return [
+  const creditAccount = getCreditAccountTemplate(transaction, bankPaymentAccount, paymentAccount);
+  const taxProfile = getDefaultTaxProfile(transaction);
+  const taxDetails = createDisbursementTaxDetails({
+    amount,
+    ...taxProfile,
+  });
+  const creditParticulars = createCreditParticulars(transaction, bankPaymentAccount, paymentAccount);
+  const refId = transaction.transactionNo || transaction.id;
+  const commonFields = {
+    partyCode: getDisbursementVoucherPartyCode(transaction.payee),
+    partyName: transaction.payee,
+    refId,
+    responsibilityCenter: transaction.costCenter,
+  };
+  const entries: DisbursementLineEntry[] = [
     {
-      id: `auto-debit-${transaction.id}`,
+      id: `auto-expense-${transaction.id}`,
       accountCode: debitAccount.accountCode,
       accountName: debitAccount.accountName,
       atcCode: "",
       particulars: transaction.purpose,
-      partyCode: "",
-      partyName: transaction.payee,
-      refId: transaction.transactionNo || transaction.id,
-      responsibilityCenter: transaction.costCenter,
-      debit: amount,
+      ...commonFields,
+      debit: taxDetails.netAmount,
       credit: 0,
-      taxRate,
+      taxRate: taxProfile.vatPercent > 0 ? `${taxProfile.vatPercent}%` : "0%",
       taxDetails: {
-        ...createTaxDetails(amount, taxRate),
-        refId: transaction.transactionNo || transaction.id,
-        responsibilityCenter: transaction.costCenter,
+        ...taxDetails,
+        ...commonFields,
       },
-      vatType: "",
-      status: "Balanced",
-    },
-    {
-      id: `auto-credit-${transaction.id}`,
-      accountCode: creditAccount.accountCode,
-      accountName: creditAccount.accountName,
-      atcCode: "",
-      particulars: creditParticulars,
-      partyCode: "",
-      partyName: transaction.payee,
-      refId: transaction.transactionNo || transaction.id,
-      responsibilityCenter: transaction.costCenter,
-      debit: 0,
-      credit: amount,
-      taxRate: "0%",
-      taxDetails: {
-        ...createTaxDetails(amount, "0%"),
-        refId: transaction.transactionNo || transaction.id,
-        responsibilityCenter: transaction.costCenter,
-      },
-      vatType: "",
+      vatType: taxProfile.vatCode,
       status: "Balanced",
     },
   ];
+
+  if (taxDetails.vatAmount > 0) {
+    entries.push({
+      id: `auto-input-vat-${transaction.id}`,
+      accountCode: InputVatAccount.accountCode,
+      accountName: InputVatAccount.accountName,
+      atcCode: "",
+      particulars: `Input VAT - ${transaction.purpose}`,
+      ...commonFields,
+      debit: taxDetails.vatAmount,
+      credit: 0,
+      taxRate: "0%",
+      taxDetails: {
+        ...createTaxDetails(taxDetails.vatAmount, "0%"),
+        ...commonFields,
+      },
+      vatType: "Input VAT",
+      status: "Balanced",
+    });
+  }
+
+  if (taxDetails.ewtAmount > 0) {
+    entries.push({
+      id: `auto-ewt-${transaction.id}`,
+      accountCode: ExpandedWithholdingTaxAccount.accountCode,
+      accountName: ExpandedWithholdingTaxAccount.accountName,
+      atcCode: taxDetails.ewtCode,
+      particulars: `EWT - ${transaction.purpose}`,
+      ...commonFields,
+      debit: 0,
+      credit: taxDetails.ewtAmount,
+      taxRate: "0%",
+      taxDetails: {
+        ...createTaxDetails(taxDetails.ewtAmount, "0%"),
+        ...commonFields,
+      },
+      vatType: "EWT",
+      status: "Balanced",
+    });
+  }
+
+  entries.push({
+    id: `auto-credit-${transaction.id}`,
+    accountCode: creditAccount.accountCode,
+    accountName: creditAccount.accountName,
+    atcCode: "",
+    particulars: creditParticulars,
+    ...commonFields,
+    debit: 0,
+    credit: taxDetails.amount,
+    taxRate: "0%",
+    taxDetails: {
+      ...createTaxDetails(taxDetails.amount, "0%"),
+      ...commonFields,
+    },
+    vatType: "",
+    status: "Balanced",
+  });
+
+  return entries;
 }
 
 export function applyBankAccountToPaymentDetails(
@@ -928,7 +1313,7 @@ export function applyBankAccountToDisbursementLineEntries(
       ? {
           ...entry,
           accountCode: bankAccount.accountCode,
-          accountName: formatBankPaymentAccountName(bankAccount),
+          accountName: bankAccount.accountTitle,
           particulars: createCreditParticulars(undefined, bankAccount, paymentAccount),
         }
       : entry,
@@ -946,11 +1331,15 @@ function isBankReplaceableCreditEntry(entry: DisbursementLineEntry) {
 }
 
 export function createTaxDetails(amount: number, taxRate: string): DisbursementTaxDetails {
+  const roundedAmount = roundCurrency(amount);
+  const sign = roundedAmount < 0 ? -1 : 1;
+  const absoluteAmount = Math.abs(roundedAmount);
   const vatPercent = parseTaxPercent(taxRate);
-  const vatAmount = roundCurrency((amount * vatPercent) / 100);
+  const vatAmount = roundCurrency(sign * ((absoluteAmount * vatPercent) / 100));
   const ewtPercent = 0;
   const ewtAmount = 0;
-  const netAmount = roundCurrency(amount - ewtAmount);
+  const netAmount = roundCurrency(sign * Math.max(absoluteAmount - Math.abs(vatAmount), 0));
+  const totalPayable = roundCurrency(sign * Math.max(absoluteAmount - Math.abs(ewtAmount), 0));
 
   return {
     code: "",
@@ -959,7 +1348,7 @@ export function createTaxDetails(amount: number, taxRate: string): DisbursementT
     refId: "",
     vatType: "",
     atcCode: "",
-    grossAmount: amount,
+    grossAmount: roundedAmount,
     netAmount,
     vatCode: taxRate !== "0%" ? `VAT-${taxRate.replace("%", "")}` : "",
     vatPercent,
@@ -967,32 +1356,67 @@ export function createTaxDetails(amount: number, taxRate: string): DisbursementT
     ewtCode: "",
     ewtPercent,
     ewtAmount,
-    amount: netAmount,
+    amount: totalPayable,
   };
 }
 
-export function syncTaxDetailsAmount(
-  currentTaxDetails: DisbursementTaxDetails | undefined,
-  amount: number,
-  taxRate: string,
-) {
+export function syncTaxDetailsAmount(currentTaxDetails: DisbursementTaxDetails | undefined, amount: number, taxRate: string) {
+  const roundedAmount = roundCurrency(amount);
+  const sign = roundedAmount < 0 ? -1 : 1;
+  const absoluteAmount = Math.abs(roundedAmount);
   const baseTaxDetails = currentTaxDetails ?? createTaxDetails(amount, taxRate);
-  const vatPercent =
-    baseTaxDetails.vatCode || baseTaxDetails.vatPercent > 0
-      ? baseTaxDetails.vatPercent
-      : parseTaxPercent(taxRate);
-  const vatAmount = roundCurrency((amount * vatPercent) / 100);
-  const ewtAmount = roundCurrency((amount * baseTaxDetails.ewtPercent) / 100);
-  const netAmount = roundCurrency(amount - ewtAmount);
+  const vatPercent = baseTaxDetails.vatCode || baseTaxDetails.vatPercent > 0 ? baseTaxDetails.vatPercent : parseTaxPercent(taxRate);
+  const vatAmount = roundCurrency(sign * ((absoluteAmount * vatPercent) / 100));
+  const ewtAmount = roundCurrency(sign * ((absoluteAmount * baseTaxDetails.ewtPercent) / 100));
+  const netAmount = roundCurrency(sign * Math.max(absoluteAmount - Math.abs(vatAmount), 0));
+  const totalPayable = roundCurrency(sign * Math.max(absoluteAmount - Math.abs(ewtAmount), 0));
 
   return {
     ...baseTaxDetails,
-    grossAmount: amount,
+    grossAmount: roundedAmount,
     netAmount,
     vatPercent,
     vatAmount,
     ewtAmount,
-    amount: netAmount,
+    amount: totalPayable,
+  };
+}
+
+function createDisbursementTaxDetails({
+  amount,
+  ewtCode = "",
+  ewtPercent = 0,
+  vatCode = "",
+  vatPercent = 0,
+}: {
+  amount: number;
+  ewtCode?: string;
+  ewtPercent?: number;
+  vatCode?: string;
+  vatPercent?: number;
+}): DisbursementTaxDetails {
+  const roundedAmount = roundCurrency(amount);
+  const sign = roundedAmount < 0 ? -1 : 1;
+  const absoluteAmount = Math.abs(roundedAmount);
+  const vatAmount = roundCurrency(sign * ((absoluteAmount * vatPercent) / 100));
+  const ewtAmount = roundCurrency(sign * ((absoluteAmount * ewtPercent) / 100));
+
+  return {
+    code: "",
+    name: "",
+    responsibilityCenter: "",
+    refId: "",
+    vatType: vatCode,
+    atcCode: ewtCode,
+    grossAmount: roundedAmount,
+    netAmount: roundCurrency(sign * Math.max(absoluteAmount - Math.abs(vatAmount), 0)),
+    vatCode,
+    vatPercent,
+    vatAmount,
+    ewtCode,
+    ewtPercent,
+    ewtAmount,
+    amount: roundCurrency(sign * Math.max(absoluteAmount - Math.abs(ewtAmount), 0)),
   };
 }
 
@@ -1023,41 +1447,46 @@ export function formatDateLabel(value: string) {
   }).format(new Date(value));
 }
 
-export function getDisbursementVoucherDisplayStatus(
-  status: string,
-): DisbursementVoucherDisplayStatus {
-  if (status === "Pending Review") {
-    return "Pending";
+export function getDisbursementVoucherDisplayStatus(status: string): DisbursementVoucherDisplayStatus {
+  if (status === "Draft" || status === "Open") {
+    return DisbursementVoucherStatuses.draft;
+  }
+
+  if (status === "Pending Review" || status === "Pending" || status === "Active") {
+    return DisbursementVoucherStatuses.forApproval;
   }
 
   if (status === "Rejected") {
-    return "Disapproved";
+    return DisbursementVoucherStatuses.disapproved;
   }
 
   if (status === "Completed") {
-    return "Closed";
+    return DisbursementVoucherStatuses.closed;
+  }
+
+  if (status === "Approved") {
+    return DisbursementVoucherStatuses.posted;
   }
 
   if (
-    status === "Active" ||
-    status === "Draft" ||
-    status === "Pending" ||
-    status === "Approved" ||
-    status === "Disapproved" ||
-    status === "Cancelled" ||
-    status === "Closed"
+    status === DisbursementVoucherStatuses.draft ||
+    status === DisbursementVoucherStatuses.forApproval ||
+    status === DisbursementVoucherStatuses.posted ||
+    status === DisbursementVoucherStatuses.disapproved ||
+    status === DisbursementVoucherStatuses.cancelled ||
+    status === DisbursementVoucherStatuses.closed
   ) {
     return status;
   }
 
-  return "Draft";
+  return DisbursementVoucherStatuses.draft;
 }
 
 function createInitialDisbursementVoucherHistory(
   voucher: Pick<DisbursementVoucherRecord, "voucherNo" | "voucherDate" | "status">,
 ): DisbursementVoucherHistoryEntry[] {
   const createdStatus =
-    voucher.status === "Draft" ? "Draft" : voucher.status === "Pending" ? "Pending" : "Active";
+    voucher.status === DisbursementVoucherStatuses.draft ? DisbursementVoucherStatuses.draft : DisbursementVoucherStatuses.forApproval;
   const createdAt = createDisbursementVoucherHistoryDate(voucher.voucherDate, 8);
   const history: DisbursementVoucherHistoryEntry[] = [
     {
@@ -1083,9 +1512,7 @@ function createInitialDisbursementVoucherHistory(
   return history;
 }
 
-function normalizeDisbursementVoucherHistoryEntry(
-  entry: DisbursementVoucherHistoryEntry,
-): DisbursementVoucherHistoryEntry {
+function normalizeDisbursementVoucherHistoryEntry(entry: DisbursementVoucherHistoryEntry): DisbursementVoucherHistoryEntry {
   const status = getDisbursementVoucherDisplayStatus(entry.status);
 
   return {
@@ -1093,90 +1520,69 @@ function normalizeDisbursementVoucherHistoryEntry(
     action: entry.action || getDisbursementVoucherHistoryAction(status),
     actor: entry.actor || "System",
     createdAt: entry.createdAt || new Date().toISOString(),
-    description:
-      entry.description ||
-      getDisbursementVoucherHistoryDescription(
-        status,
-        "this disbursement voucher",
-      ),
+    description: entry.description || getDisbursementVoucherHistoryDescription(status, "this disbursement voucher"),
     status,
   };
 }
 
-function createDisbursementVoucherHistoryDate(
-  voucherDate: string,
-  hour: number,
-) {
+function createDisbursementVoucherHistoryDate(voucherDate: string, hour: number) {
   const date = voucherDate || new Date().toISOString().slice(0, 10);
 
   return `${date}T${hour.toString().padStart(2, "0")}:00:00.000Z`;
 }
 
-function getDisbursementVoucherHistoryAction(
-  status: DisbursementVoucherStatus,
-) {
-  if (status === "Approved") {
-    return "Approved";
+function getDisbursementVoucherHistoryAction(status: DisbursementVoucherStatus) {
+  if (status === DisbursementVoucherStatuses.posted) {
+    return "Posted";
   }
 
-  if (status === "Disapproved") {
+  if (status === DisbursementVoucherStatuses.disapproved) {
     return "Disapproved";
   }
 
-  if (status === "Cancelled") {
+  if (status === DisbursementVoucherStatuses.cancelled) {
     return "Cancelled";
   }
 
-  if (status === "Active") {
-    return "Activated";
-  }
-
-  if (status === "Closed") {
+  if (status === DisbursementVoucherStatuses.closed) {
     return "Closed";
   }
 
-  if (status === "Pending") {
-    return "Reopened";
+  if (status === DisbursementVoucherStatuses.forApproval) {
+    return "For Approval";
   }
 
   return "Updated";
 }
 
-function getDisbursementVoucherHistoryDescription(
-  status: DisbursementVoucherStatus,
-  voucherNo: string,
-) {
-  if (status === "Approved") {
-    return `${voucherNo} was approved for disbursement processing.`;
+function getDisbursementVoucherHistoryDescription(status: DisbursementVoucherStatus, voucherNo: string) {
+  if (status === DisbursementVoucherStatuses.posted) {
+    return `${voucherNo} was posted for disbursement processing.`;
   }
 
-  if (status === "Disapproved") {
+  if (status === DisbursementVoucherStatuses.disapproved) {
     return `${voucherNo} was disapproved and returned for review.`;
   }
 
-  if (status === "Cancelled") {
+  if (status === DisbursementVoucherStatuses.cancelled) {
     return `${voucherNo} was cancelled.`;
   }
 
-  if (status === "Active") {
-    return `${voucherNo} was restored to active processing.`;
-  }
-
-  if (status === "Closed") {
+  if (status === DisbursementVoucherStatuses.closed) {
     return `${voucherNo} was closed.`;
   }
 
-  if (status === "Draft") {
-    return `${voucherNo} was restored to draft.`;
+  if (status === DisbursementVoucherStatuses.draft) {
+    return `${voucherNo} was restored to Draft.`;
   }
 
-  return `${voucherNo} was returned to pending approval.`;
+  return `${voucherNo} was returned for approval.`;
 }
 
-export function isDisbursementVoucherActiveStatus(status: string) {
+export function isDisbursementVoucherForApprovalStatus(status: string) {
   const displayStatus = getDisbursementVoucherDisplayStatus(status);
 
-  return displayStatus === "Active" || displayStatus === "Pending";
+  return displayStatus === DisbursementVoucherStatuses.forApproval;
 }
 
 function todayDateValue() {
@@ -1209,7 +1615,6 @@ function createNextTransactionNumber() {
   return `TXN-${currentYear}-${serial}`;
 }
 
-
 function createDisbursementVoucherCopyFromRecord(
   id: string,
   source: DisbursementVoucherCopySource,
@@ -1232,17 +1637,13 @@ function createDisbursementVoucherCopyFromRecord(
     remarks: voucher?.remarks ?? transaction.purpose,
     templateValues: {
       ...templateValues,
-      vceCode: voucher?.vceCode ?? partyCode,
-      vceName: voucher?.vceName ?? transaction.payee,
-      remarks:
-        voucher?.remarks ??
-        `${transaction.purpose} Copied from ${sourceNo}.`,
+      partyCode: voucher?.partyCode ?? partyCode,
+      partyName: voucher?.partyName ?? transaction.payee,
+      remarks: voucher?.remarks ?? `${transaction.purpose} Copied from ${sourceNo}.`,
       referenceModule: voucher?.referenceModule ?? source,
-      invoiceReferenceNo:
-        voucher?.invoiceReferenceNo ?? `${sourceNo}-REF`,
+      invoiceReferenceNo: voucher?.invoiceReferenceNo ?? `${sourceNo}-REF`,
       attachments: voucher?.attachments ?? createAttachmentPlaceholders(),
-      lineEntries:
-        voucher?.lineEntries ?? createAutoDisbursementLineEntries(transaction),
+      lineEntries: voucher?.lineEntries ?? createAutoDisbursementLineEntries(transaction),
     },
   };
 }
@@ -1250,8 +1651,8 @@ function createDisbursementVoucherCopyFromRecord(
 function getDebitAccountTemplate(transaction: DisbursementTransactionRecord) {
   if (transaction.disbursementType === "Vendor Payment") {
     return {
-      accountCode: "2010-003",
-      accountName: "Accounts Payable",
+      accountCode: "5010-001",
+      accountName: "Office Supplies Expense",
     };
   }
 
@@ -1283,115 +1684,44 @@ function getCreditAccountTemplate(
   if (bankAccount) {
     return {
       accountCode: bankAccount.accountCode,
-      accountName: formatBankPaymentAccountName(bankAccount),
+      accountName: bankAccount.accountTitle,
     };
   }
 
   if (paymentAccount?.type === "Cash") {
     return {
-      accountCode: "1001111",
-      accountName: "Cash in Hand",
-    };
-  }
-
-  if (paymentAccount?.type === "Check") {
-    return {
-      accountCode: "1012-011",
-      accountName: "Check Disbursement Clearing",
-    };
-  }
-
-  if (paymentAccount?.type === "Non-Cash Settlement") {
-    return {
-      accountCode: "1013-001",
-      accountName: "Debit Memo Clearing",
-    };
-  }
-
-  if (paymentAccount?.type === "Bank Transfer") {
-    return {
-      accountCode: "1010-001",
-      accountName: "Cash in Bank",
-    };
-  }
-
-  if (paymentAccount?.type === "Digital Wallet") {
-    return {
-      accountCode: "1011-008",
-      accountName: "Online Payment Clearing",
-    };
-  }
-
-  if (paymentAccount?.accountCode?.trim() || paymentAccount?.accountTitle?.trim()) {
-    return {
-      accountCode: paymentAccount.accountCode?.trim() ?? "",
-      accountName: getPaymentAccountName(paymentAccount),
+      ...CashInHandAccount,
     };
   }
 
   if (transaction.paymentMethod === "Cash") {
     return {
-      accountCode: "1001111",
-      accountName: "Cash in Hand",
+      ...CashInHandAccount,
     };
   }
 
-  if (
-    transaction.paymentMethod === "Check" ||
-    transaction.paymentMethod === "Manager's Check"
-  ) {
-    return {
-      accountCode: "1012-011",
-      accountName: "Check Disbursement Clearing",
-    };
+  return createDefaultCashInBankCreditAccount();
+}
+
+function getMockBankAccountForPayment(paymentMethod: DisbursementPaymentMethod) {
+  if (paymentMethod === "Cash") {
+    return null;
   }
 
-  if (transaction.paymentMethod === "Debit Memo") {
-    return {
-      accountCode: "1013-001",
-      accountName: "Debit Memo Clearing",
-    };
+  if (paymentMethod === "Check" || paymentMethod === "Manager's Check") {
+    return DisbursementVoucherBankAccounts[1] ?? DisbursementVoucherBankAccounts[0] ?? null;
   }
 
-  if (transaction.paymentMethod === "E-Wallet") {
-    return {
-      accountCode: "1011-008",
-      accountName: "Online Payment Clearing",
-    };
-  }
+  return DisbursementVoucherBankAccounts[0] ?? null;
+}
+
+function createDefaultCashInBankCreditAccount() {
+  const bankAccount = DisbursementVoucherBankAccounts[0];
 
   return {
-    accountCode: "1010-001",
-    accountName: "Cash in Bank",
+    accountCode: bankAccount?.accountCode ?? "1010-001",
+    accountName: bankAccount?.accountTitle ?? "Cash in Bank",
   };
-}
-
-function formatBankPaymentAccountName(
-  bankAccount: DisbursementVoucherBankAccount,
-) {
-  const bankLabel = getBankDisplayName(bankAccount.bankName);
-
-  return bankLabel ? `Cash in Bank - ${bankLabel}` : "Cash in Bank";
-}
-
-function getBankDisplayName(bankName: string) {
-  const trimmedName = bankName.trim();
-
-  if (!trimmedName) {
-    return "";
-  }
-
-  return trimmedName.split(/\s+/)[0];
-}
-
-function getPaymentAccountName(
-  paymentAccount: DisbursementVoucherPaymentAccount,
-) {
-  if (paymentAccount.type === "Cash" || paymentAccount.paymentType === "Cash") {
-    return "Cash in Hand";
-  }
-
-  return paymentAccount.accountTitle?.trim() || paymentAccount.paymentType;
 }
 
 function createCreditParticulars(
@@ -1404,28 +1734,50 @@ function createCreditParticulars(
   const paymentLabel = paymentType ? ` via ${paymentType}` : "";
 
   if (bankAccount) {
-    return [
-      `Settlement${payee}${paymentLabel}`,
-      bankAccount.bankName,
-      bankAccount.branch,
-    ]
-      .filter(Boolean)
-      .join(" - ");
+    return [`Settlement${payee}${paymentLabel}`, bankAccount.bankName, bankAccount.branch].filter(Boolean).join(" - ");
   }
 
   return `Settlement${payee}${paymentLabel}`;
 }
 
 function getDefaultTaxRate(transaction: DisbursementTransactionRecord) {
+  const taxProfile = getDefaultTaxProfile(transaction);
+
+  return taxProfile.vatPercent > 0 ? `${taxProfile.vatPercent}%` : "0%";
+}
+
+function createDefaultTransactionTaxDetails(transaction: DisbursementTransactionRecord) {
+  return createDisbursementTaxDetails({
+    amount: transaction.amount,
+    ...getDefaultTaxProfile(transaction),
+  });
+}
+
+function getDefaultTaxProfile(transaction: DisbursementTransactionRecord) {
   if (transaction.disbursementType === "Operating Expense") {
-    return "5%";
+    return {
+      ewtCode: "W10",
+      ewtPercent: 10,
+      vatCode: "V12",
+      vatPercent: 12,
+    };
   }
 
   if (transaction.disbursementType === "Capital Expenditure") {
-    return "12%";
+    return {
+      ewtCode: "",
+      ewtPercent: 0,
+      vatCode: "V12",
+      vatPercent: 12,
+    };
   }
 
-  return "0%";
+  return {
+    ewtCode: "",
+    ewtPercent: 0,
+    vatCode: "",
+    vatPercent: 0,
+  };
 }
 
 function parseTaxPercent(taxRate: string) {
@@ -1449,7 +1801,7 @@ export function createEmptyPaymentDetails(): DisbursementVoucherPaymentDetails {
     checkDate: "",
     checkNo: "",
     checkStatus: "",
-    commission: "",
+    isMultiCheckNumber: false,
     payee: "",
     paymentReferenceNo: "",
     transferAccountName: "",
@@ -1459,9 +1811,7 @@ export function createEmptyPaymentDetails(): DisbursementVoucherPaymentDetails {
   };
 }
 
-function normalizePaymentDetails(
-  paymentDetails: DisbursementVoucherPaymentDetails,
-): DisbursementVoucherPaymentDetails {
+function normalizePaymentDetails(paymentDetails: DisbursementVoucherPaymentDetails): DisbursementVoucherPaymentDetails {
   return {
     bankAccountCode: paymentDetails.bankAccountCode?.trim() ?? "",
     bankAccountName: paymentDetails.bankAccountName.trim(),
@@ -1472,7 +1822,7 @@ function normalizePaymentDetails(
     checkDate: paymentDetails.checkDate,
     checkNo: paymentDetails.checkNo.trim(),
     checkStatus: paymentDetails.checkStatus?.trim() ?? "",
-    commission: paymentDetails.commission?.trim() ?? "",
+    isMultiCheckNumber: Boolean(paymentDetails.isMultiCheckNumber),
     payee: paymentDetails.payee?.trim() ?? "",
     paymentReferenceNo: paymentDetails.paymentReferenceNo.trim(),
     transferAccountName: paymentDetails.transferAccountName?.trim() ?? "",
@@ -1480,4 +1830,8 @@ function normalizePaymentDetails(
     transferToBank: paymentDetails.transferToBank?.trim() ?? "",
     transferTo: paymentDetails.transferTo?.trim() ?? "",
   };
+}
+
+function getDisbursementVoucherPartyCode(partyName: string) {
+  return DisbursementVoucherPartyOptions.find((option) => option.name.toLowerCase() === partyName.trim().toLowerCase())?.value ?? "";
 }

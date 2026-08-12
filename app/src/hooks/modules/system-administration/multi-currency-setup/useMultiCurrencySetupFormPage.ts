@@ -11,8 +11,10 @@ import toast from "react-hot-toast";
 import { MultiCurrencySetupHref } from "@/app/src/constants/modules/system-administration/multi-currency-setup/MultiCurrencySetupConstants";
 import {
 	MultiCurrencySetupInitialFormValues,
+	createMultiCurrencyCatalogFromFetchedRates,
 	createMultiCurrencySetupFormValues,
 	createMultiCurrencySetupRecord,
+	createMultiCurrencySetupRecordFromFetchedRate,
 	findFetchedRate,
 	formatExchangeRate,
 	updateMultiCurrencySetupRecord,
@@ -40,21 +42,28 @@ export function useMultiCurrencySetupFormPage() {
 	);
 	const isMutating = useMultiCurrencySetupStore((state) => state.isMutating);
 	const mode = getActionMode(pathname);
-	const existingRecord = records.find((record) => record.id === params.recordId);
 	const [values, setValues] = useState<MultiCurrencySetupFormValues>(() =>
-		existingRecord
-			? createMultiCurrencySetupFormValues(existingRecord)
-			: MultiCurrencySetupInitialFormValues,
+		createInitialFormValues(params.recordId),
 	);
 	const [errors, setErrors] = useState<MultiCurrencySetupFormErrors>({});
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 	const isReadonly = mode === "view";
 	const ratesQuery = useMultiCurrencySetupRates(values.baseCurrencyCode);
 	const fetchedRates = ratesQuery.data ?? [];
+	const currencyOptions = useMemo(
+		() => createMultiCurrencyCatalogFromFetchedRates(fetchedRates),
+		[fetchedRates],
+	);
 	const fetchedRate = findFetchedRate(
 		fetchedRates,
 		values.targetCurrencyCode,
 	);
+	const liveRecord = fetchedRate
+		? createMultiCurrencySetupRecordFromFetchedRate(fetchedRate)
+		: undefined;
+	const existingRecord =
+		records.find((record) => record.id === params.recordId) ??
+		(mode === "add" ? undefined : liveRecord);
 	const originalExchangeRate = existingRecord
 		? existingRecord.originalExchangeRate
 		: fetchedRate?.exchangeRate;
@@ -150,6 +159,7 @@ export function useMultiCurrencySetupFormPage() {
 
 	return {
 		baseOriginalExchangeRateDisplay,
+		currencyOptions,
 		errors,
 		existingRecord,
 		fetchedExchangeRateDisplay,
@@ -162,11 +172,13 @@ export function useMultiCurrencySetupFormPage() {
 		isDeleteDialogOpen,
 		isMutating,
 		isRateLoading: ratesQuery.isLoading,
+		isRecordLoading: ratesQuery.isLoading,
 		isReadonly,
 		mode,
 		needsRecord: mode === "edit" || mode === "view",
 		originalExchangeRateDisplay,
 		setIsDeleteDialogOpen,
+		updateField,
 		values,
 	};
 }
@@ -181,4 +193,39 @@ function getActionMode(pathname: string): MultiCurrencySetupActionMode {
 	}
 
 	return "add";
+}
+
+function createInitialFormValues(recordId?: string): MultiCurrencySetupFormValues {
+	const parsedRecordId = parseMultiCurrencySetupRecordId(recordId);
+
+	if (!parsedRecordId) {
+		return {
+			...MultiCurrencySetupInitialFormValues,
+			rateDate: getTodayDateInputValue(),
+		};
+	}
+
+	return {
+		...MultiCurrencySetupInitialFormValues,
+		baseCurrencyCode: parsedRecordId.baseCurrencyCode,
+		rateDate: getTodayDateInputValue(),
+		targetCurrencyCode: parsedRecordId.targetCurrencyCode,
+	};
+}
+
+function parseMultiCurrencySetupRecordId(recordId?: string) {
+	const match = recordId?.match(/^mcs_([a-z]{3})_([a-z]{3})$/i);
+
+	if (!match) {
+		return null;
+	}
+
+	return {
+		baseCurrencyCode: match[1].toUpperCase(),
+		targetCurrencyCode: match[2].toUpperCase(),
+	};
+}
+
+function getTodayDateInputValue() {
+	return new Date().toISOString().slice(0, 10);
 }

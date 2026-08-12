@@ -4,9 +4,7 @@ import type {
   ChartAccountFormValues,
 } from "@/app/src/types/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 
-export function accountToFormValues(
-  account: ChartAccount,
-): ChartAccountFormValues {
+export function accountToFormValues(account: ChartAccount): ChartAccountFormValues {
   return {
     accountNumber: account.accountNumber,
     accountName: account.accountName,
@@ -25,4 +23,3 @@ export function accountToFormValues(
     bankDetails: account.bankDetails ?? EmptyBankDetails,
   };
 }
-

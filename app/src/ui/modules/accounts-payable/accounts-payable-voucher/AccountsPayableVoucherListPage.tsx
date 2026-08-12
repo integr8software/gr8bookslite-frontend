@@ -17,7 +17,7 @@ import {
   AccountsPayableVoucherTablePaginationStorageKey,
 } from "@/app/src/constants/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherConstants";
 import { useAccountsPayableVoucherListPage } from "@/app/src/hooks/modules/accounts-payable/accounts-payable-voucher/useAccountsPayableVoucherListPage";
-import type { AccountsPayableVoucherRecord } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
+import type { AccountsPayableVoucherStatistics } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
 import { AccountsPayableVoucherTableRow } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTableRow";
 import { AmountRangePicker } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import { DateRangePicker } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
@@ -48,12 +48,12 @@ export function AccountsPayableVoucherListPage() {
     isRefreshing,
     lastSyncedAt,
     query,
-    records,
     refreshRecords,
     setAmountRange,
     setDateRange,
     setStatusFilter,
     statusFilter,
+    statistics,
     table,
   } = useAccountsPayableVoucherListPage();
 
@@ -83,7 +83,7 @@ export function AccountsPayableVoucherListPage() {
 
       <AccountsPayableVoucherMetrics
         isLoading={isLoading}
-        records={records}
+        statistics={statistics}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
       />
@@ -159,23 +159,19 @@ export function AccountsPayableVoucherListPage() {
 function AccountsPayableVoucherMetrics({
   isLoading,
   onStatusFilterChange,
-  records,
+  statistics,
   statusFilter,
 }: {
   isLoading: boolean;
   onStatusFilterChange: (status: AccountsPayableVoucherStatusFilter) => void;
-  records: AccountsPayableVoucherRecord[];
+  statistics: AccountsPayableVoucherStatistics;
   statusFilter: AccountsPayableVoucherStatusFilter;
 }) {
-  const draftCount = countRecordsByStatus(records, "Draft");
-  const approvedCount = countRecordsByStatus(records, "Approved");
-  const disapprovedCount = countRecordsByStatus(records, "Disapproved");
-  const closedCount = countRecordsByStatus(records, "Closed");
-  const cancelledCount = countRecordsByStatus(records, "Cancelled");
+  const totalCount = statistics.totalVouchers;
   const cards = [
     {
-      label: "Total Vouchers",
-      value: records.length,
+      label: "Total Transaction",
+      value: totalCount,
       summary: "All time",
       icon: FileText,
       iconClassName: "bg-skyblue/20 text-skyblue",
@@ -184,44 +180,44 @@ function AccountsPayableVoucherMetrics({
     },
     {
       label: "Draft",
-      value: draftCount,
-      summary: formatPercentage(draftCount, records.length),
+      value: statistics.draftVouchers,
+      summary: formatPercentage(statistics.draftVouchers, totalCount),
       icon: Clock3,
       iconClassName: "bg-offwhite text-darknavy",
       isActive: statusFilter === "Draft",
       onClick: () => onStatusFilterChange("Draft"),
     },
     {
-      label: "Approved",
-      value: approvedCount,
-      summary: formatPercentage(approvedCount, records.length),
+      label: "For Approval",
+      value: statistics.forApprovalVouchers,
+      summary: formatPercentage(statistics.forApprovalVouchers, totalCount),
       icon: CheckCircle2,
       iconClassName: "bg-emerald-50 text-emerald-700",
-      isActive: statusFilter === "Approved",
-      onClick: () => onStatusFilterChange("Approved"),
+      isActive: statusFilter === "For Approval",
+      onClick: () => onStatusFilterChange("For Approval"),
+    },
+    {
+      label: "Posted",
+      value: statistics.postedVouchers,
+      summary: formatPercentage(statistics.postedVouchers, totalCount),
+      icon: PackageCheck,
+      iconClassName: "bg-skyblue/20 text-darknavy",
+      isActive: statusFilter === "Posted",
+      onClick: () => onStatusFilterChange("Posted"),
     },
     {
       label: "Disapproved",
-      value: disapprovedCount,
-      summary: formatPercentage(disapprovedCount, records.length),
+      value: statistics.disapprovedVouchers,
+      summary: formatPercentage(statistics.disapprovedVouchers, totalCount),
       icon: XCircle,
       iconClassName: "bg-coralpink/15 text-coralpink",
       isActive: statusFilter === "Disapproved",
       onClick: () => onStatusFilterChange("Disapproved"),
     },
     {
-      label: "Closed",
-      value: closedCount,
-      summary: formatPercentage(closedCount, records.length),
-      icon: PackageCheck,
-      iconClassName: "bg-skyblue/20 text-darknavy",
-      isActive: statusFilter === "Closed",
-      onClick: () => onStatusFilterChange("Closed"),
-    },
-    {
       label: "Cancelled",
-      value: cancelledCount,
-      summary: formatPercentage(cancelledCount, records.length),
+      value: statistics.cancelledVouchers,
+      summary: formatPercentage(statistics.cancelledVouchers, totalCount),
       icon: XCircle,
       iconClassName: "bg-slate-100 text-slate-700",
       isActive: statusFilter === "Cancelled",
@@ -236,13 +232,6 @@ function AccountsPayableVoucherMetrics({
       className="2xl:grid-cols-6"
     />
   );
-}
-
-function countRecordsByStatus(
-  records: AccountsPayableVoucherRecord[],
-  status: AccountsPayableVoucherRecord["status"],
-) {
-  return records.filter((record) => record.status === status).length;
 }
 
 function formatPercentage(value: number, total: number) {

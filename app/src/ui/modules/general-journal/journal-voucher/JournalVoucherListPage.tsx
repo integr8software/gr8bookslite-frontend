@@ -20,7 +20,6 @@ import { useJournalVoucherListPage } from "@/app/src/hooks/modules/general-journ
 import type { JournalVoucherRecord } from "@/app/src/types/modules/general-journal/journal-voucher/JournalVoucherTypes";
 import { JournalVoucherTableRow } from "@/app/src/ui/modules/general-journal/journal-voucher/JournalVoucherTableRow";
 import { AmountRangePicker } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
-import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { DateRangePicker } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
 import {
   ModuleHeader,
@@ -41,18 +40,15 @@ export function JournalVoucherListPage() {
   const {
     amountRange,
     dateRange,
-    handleConfirmDelete,
     handleQueryChange,
+    handleUpdateStatus,
     isLoading,
-    isMutating,
     lastSyncedAt,
-    pendingDeleteRecord,
     query,
     records,
     resetFilters,
     setAmountRange,
     setDateRange,
-    setPendingDeleteRecord,
     setStatusFilter,
     statusFilter,
     table,
@@ -133,22 +129,11 @@ export function JournalVoucherListPage() {
             <JournalVoucherTableRow
               key={id}
               record={original}
-              onDeleteRecord={setPendingDeleteRecord}
+              onUpdateStatus={handleUpdateStatus}
             />
           )}
         />
       </div>
-
-      <AppDialog
-        isOpen={Boolean(pendingDeleteRecord)}
-        isPending={isMutating}
-        title="Delete journal voucher?"
-        description={`This will remove ${pendingDeleteRecord?.transactionNo ?? "the selected journal voucher"}.`}
-        confirmLabel="Delete Journal Voucher"
-        tone="danger"
-        onCancel={() => setPendingDeleteRecord(null)}
-        onConfirm={handleConfirmDelete}
-      />
     </section>
   );
 }
@@ -163,13 +148,13 @@ function JournalVoucherMetrics({
   statusFilter: JournalVoucherStatusFilter;
 }) {
   const draftCount = countRecordsByStatus(records, "Draft");
-  const approvedCount = countRecordsByStatus(records, "Approved");
-  const disapprovedCount = countRecordsByStatus(records, "Disapproved");
+  const forApprovalCount = countRecordsByStatus(records, "For Approval");
   const postedCount = countRecordsByStatus(records, "Posted");
+  const disapprovedCount = countRecordsByStatus(records, "Disapproved");
   const cancelledCount = countRecordsByStatus(records, "Cancelled");
   const cards = [
     {
-      label: "Total Vouchers",
+      label: "Total Transaction",
       value: records.length,
       summary: "All time",
       icon: FileText,
@@ -187,13 +172,22 @@ function JournalVoucherMetrics({
       onClick: () => onStatusFilterChange("Draft"),
     },
     {
-      label: "Approved",
-      value: approvedCount,
-      summary: formatPercentage(approvedCount, records.length),
+      label: "For Approval",
+      value: forApprovalCount,
+      summary: formatPercentage(forApprovalCount, records.length),
       icon: CheckCircle2,
       iconClassName: "bg-emerald-50 text-emerald-700",
-      isActive: statusFilter === "Approved",
-      onClick: () => onStatusFilterChange("Approved"),
+      isActive: statusFilter === "For Approval",
+      onClick: () => onStatusFilterChange("For Approval"),
+    },
+    {
+      label: "Posted",
+      value: postedCount,
+      summary: formatPercentage(postedCount, records.length),
+      icon: PackageCheck,
+      iconClassName: "bg-skyblue/20 text-darknavy",
+      isActive: statusFilter === "Posted",
+      onClick: () => onStatusFilterChange("Posted"),
     },
     {
       label: "Disapproved",
@@ -203,15 +197,6 @@ function JournalVoucherMetrics({
       iconClassName: "bg-coralpink/15 text-coralpink",
       isActive: statusFilter === "Disapproved",
       onClick: () => onStatusFilterChange("Disapproved"),
-    },
-    {
-      label: "Posted",
-      value: postedCount,
-      summary: formatPercentage(postedCount, records.length),
-      icon: PackageCheck,
-      iconClassName: "bg-citron/25 text-darknavy",
-      isActive: statusFilter === "Posted",
-      onClick: () => onStatusFilterChange("Posted"),
     },
     {
       label: "Cancelled",

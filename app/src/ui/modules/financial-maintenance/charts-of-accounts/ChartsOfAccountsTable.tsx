@@ -27,17 +27,10 @@ import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable
 import { ChartsOfAccountsTableRow } from "@/app/src/ui/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsTableRow";
 
 export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
-  const [activeDragAccount, setActiveDragAccount] =
-    useState<ActiveDragAccount>();
-  const [activeDropTarget, setActiveDropTarget] =
-    useState<ActiveDropTarget | null>(null);
-  const visibleColumnIds = props.table
-    .getVisibleLeafColumns()
-    .map((column) => column.id);
-  const accountById = useMemo(
-    () => new Map(props.accounts.map((account) => [account.id, account])),
-    [props.accounts],
-  );
+  const [activeDragAccount, setActiveDragAccount] = useState<ActiveDragAccount>();
+  const [activeDropTarget, setActiveDropTarget] = useState<ActiveDropTarget | null>(null);
+  const visibleColumnIds = props.table.getVisibleLeafColumns().map((column) => column.id);
+  const accountById = useMemo(() => new Map(props.accounts.map((account) => [account.id, account])), [props.accounts]);
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 6 },
@@ -52,18 +45,16 @@ export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
       return;
     }
 
-    const activeAccount = props.table
-      .getPrePaginationRowModel()
-      .rows.find((row) => row.original.account.id === event.active.id)
+    const activeAccount = props.table.getPrePaginationRowModel().rows.find((row) => row.original.account.id === event.active.id)
       ?.original.account;
 
     setActiveDragAccount(
       activeAccount
         ? {
-          id: activeAccount.id,
-          isSpecific: activeAccount.accountLevel === "SPECIFIC",
-          parentId: activeAccount.parentId,
-        }
+            id: activeAccount.id,
+            isSpecific: activeAccount.accountLevel === "SPECIFIC",
+            parentId: activeAccount.parentId,
+          }
         : undefined,
     );
   }
@@ -79,21 +70,11 @@ export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
     setActiveDragAccount(undefined);
     setActiveDropTarget(null);
 
-    if (
-      !props.canDragRows ||
-      !over ||
-      active.id === over.id ||
-      !activeDragAccount?.isSpecific ||
-      !dropTarget
-    ) {
+    if (!props.canDragRows || !over || active.id === over.id || !activeDragAccount?.isSpecific || !dropTarget) {
       return;
     }
 
-    props.onReorderAccount(
-      String(active.id),
-      dropTarget.id,
-      dropTarget.placement,
-    );
+    props.onReorderAccount(String(active.id), dropTarget.id, dropTarget.placement);
   }
 
   function handleDragCancel() {
@@ -101,17 +82,10 @@ export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
     setActiveDropTarget(null);
   }
 
-  function getActiveDropTarget(
-    event: DragMoveEvent | DragEndEvent,
-  ): ActiveDropTarget | null {
+  function getActiveDropTarget(event: DragMoveEvent | DragEndEvent): ActiveDropTarget | null {
     const { active, over } = event;
 
-    if (
-      !props.canDragRows ||
-      !over ||
-      active.id === over.id ||
-      !activeDragAccount?.isSpecific
-    ) {
+    if (!props.canDragRows || !over || active.id === over.id || !activeDragAccount?.isSpecific) {
       return null;
     }
 
@@ -138,19 +112,11 @@ export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
         key={id}
         account={original.account}
         activeDragAccount={activeDragAccount}
-        activeDropPlacement={
-          activeDropTarget?.id === original.account.id
-            ? activeDropTarget.placement
-            : null
-        }
+        activeDropPlacement={activeDropTarget?.id === original.account.id ? activeDropTarget.placement : null}
         canDragRows={props.canDragRows}
         expandedIds={props.expandedIds}
         level={original.level}
-        parentAccount={
-          original.account.parentId
-            ? accountById.get(original.account.parentId) ?? null
-            : null
-        }
+        parentAccount={original.account.parentId ? (accountById.get(original.account.parentId) ?? null) : null}
         parentPath={original.parentPath}
         permissions={props.permissions}
         showHierarchyGuides={props.showHierarchyGuides}
@@ -229,5 +195,3 @@ function getPointerY(event: DragMoveEvent | DragEndEvent) {
 
   return initialCoordinates.y + event.delta.y;
 }
-
-

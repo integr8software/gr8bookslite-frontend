@@ -1,8 +1,5 @@
 import type { QueryClient, QueryKey } from "@tanstack/react-query";
-import type {
-  AuthProfileResponse,
-  SwitchCompanyContextResponse,
-} from "@/app/src/services/auth/AuthApiTypes";
+import type { AuthProfile, CompanyContextSwitchResult } from "@/app/src/types/auth/AuthTypes";
 import { AuthQueryKeys } from "@/app/src/services/auth/AuthQueryKeys";
 
 const TenantScopedQueryPrefixes = [
@@ -46,16 +43,11 @@ const TenantScopedQueryPrefixes = [
   "workspace-users",
 ] as readonly string[];
 
-export function BuildAuthProfileFromSwitchResponse(
-  response: SwitchCompanyContextResponse,
-): AuthProfileResponse {
+export function BuildAuthProfileFromSwitchResponse(response: CompanyContextSwitchResult): AuthProfile {
   return {
     user: response.user,
     companyId: response.companyId,
-    role:
-      response.access?.role === "ADMIN" || response.access?.role === "USER"
-        ? response.access.role
-        : null,
+    role: response.access?.role === "ADMIN" || response.access?.role === "USER" ? response.access.role : null,
     activeCompanyId: response.companyId,
     activeAccess: response.access,
     access: response.access,
@@ -64,9 +56,7 @@ export function BuildAuthProfileFromSwitchResponse(
   };
 }
 
-export async function PrepareQueryCacheForContextSwitch(
-  queryClient: QueryClient,
-) {
+export async function PrepareQueryCacheForContextSwitch(queryClient: QueryClient) {
   await queryClient.cancelQueries({
     predicate: (query) => IsContextSwitchCancelledQuery(query.queryKey),
   });

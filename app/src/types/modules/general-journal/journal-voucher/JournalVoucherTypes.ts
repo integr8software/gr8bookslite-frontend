@@ -1,6 +1,8 @@
+import type { JournalVoucherLineColumnIds} from "@/app/src/constants/modules/general-journal/journal-voucher/JournalVoucherConstants"
+
 export type JournalVoucherStatus =
   | "Draft"
-  | "Approved"
+  | "For Approval"
   | "Disapproved"
   | "Posted"
   | "Cancelled";
@@ -48,3 +50,6 @@ export type JournalVoucherFormErrors = Partial<
 };
 
 export type JournalVoucherActionMode = "add" | "edit" | "view";
+
+export type JournalVoucherLineColumnId =
+  (typeof JournalVoucherLineColumnIds)[number];

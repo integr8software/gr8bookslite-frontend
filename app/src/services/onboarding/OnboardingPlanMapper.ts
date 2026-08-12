@@ -1,5 +1,7 @@
 import type { PricingPlan } from "@/app/src/data/pricing/PricingTypes";
-import type { OnboardingDraftPlan } from "@/app/src/services/onboarding/OnboardingApiTypes";
+import type { OnboardingPlan } from "@/app/src/types/onboarding/OnboardingApiModels";
+
+type OnboardingDraftPlan = OnboardingPlan;
 
 function getUserRule(plan: OnboardingDraftPlan) {
   return plan.usageRules.find((rule) => rule.metric === "USER");

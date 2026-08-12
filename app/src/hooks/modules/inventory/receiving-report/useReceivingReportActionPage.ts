@@ -12,10 +12,6 @@ import {
   createReceivingReportRecordFromForm,
   getInitialReceivingReports,
   upsertReceivingReportRecord,
-  type ReceivingReportAccountingEntry,
-  type ReceivingReportFormValues,
-  type ReceivingReportLine,
-  type ReceivingReportRecord,
 } from "@/app/src/data/modules/inventory/receiving-report/ReceivingReportData";
 import {
   getPurchaseOrderItemGrossAmount,
@@ -26,14 +22,18 @@ import {
 import { ReceivingReportHref } from "@/app/src/constants/modules/inventory/receiving-report/ReceivingReportConstants";
 import { openReceivingReportPdf } from "@/app/src/ui/modules/inventory/receiving-report/reports/ReceivingReportPdf";
 import { validateReceivingReport } from "@/app/src/validations/modules/inventory/receiving-report/ReceivingReportValidation";
-import type { AppCopyFromRecord } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
+import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 import type {
+  ReceivingReportAccountingEntry,
   ReceivingReportAccountingEntryField,
   ReceivingReportActionMode,
   ReceivingReportActionTab,
   ReceivingReportFormErrors,
+  ReceivingReportFormValues,
   ReceivingReportFormField,
+  ReceivingReportLine,
   ReceivingReportLineField,
+  ReceivingReportRecord,
 } from "@/app/src/types/modules/inventory/receiving-report/ReceivingReportTypes";
 
 export function useReceivingReportActionPage() {
@@ -189,8 +189,8 @@ export function useReceivingReportActionPage() {
       poNo: joinUniqueReceivingReportValues(purchaseOrderNos) || current.poNo,
       prNo: joinUniqueReceivingReportValues(purchaseRequestNos) || current.prNo,
       importationRefNo: firstOrder.importationNo || current.importationRefNo,
-      projectRef: firstOrder.projectRef || current.projectRef,
-      projectCode: firstOrder.projectRef || current.projectCode,
+      projectRef: firstOrder.projectCode || current.projectRef,
+      projectCode: firstOrder.projectCode || current.projectCode,
       projectName: firstOrder.projectName || current.projectName,
       responsibilityCenter:
         firstOrder.items.find((item) => item.responsibilityCenter.trim().length > 0)

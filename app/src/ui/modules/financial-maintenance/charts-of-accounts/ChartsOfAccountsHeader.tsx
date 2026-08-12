@@ -1,18 +1,9 @@
 "use client";
 
 import { Plus } from "lucide-react";
-import {
-  ModuleHeader,
-  moduleHeaderActionClassNames,
-} from "@/app/src/ui/shared/module/ModuleHeader";
+import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 
-export function ChartsOfAccountsHeader({
-  onAddAccount,
-  canCreate,
-}: {
-  onAddAccount: () => void;
-  canCreate: boolean;
-}) {
+export function ChartsOfAccountsHeader({ onAddAccount, canCreate }: { onAddAccount: () => void; canCreate: boolean }) {
   return (
     <ModuleHeader
       variant="plain"

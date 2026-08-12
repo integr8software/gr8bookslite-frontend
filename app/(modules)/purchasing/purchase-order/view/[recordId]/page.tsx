@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { PurchaseOrderActionPage } from "@/app/src/ui/modules/purchasing/purchase-order/action/PurchaseOrderActionPage";
+import { PurchaseOrderActionPage } from "@/app/src/ui/modules/purchasing/purchase-order/form/PurchaseOrderPage";
 
 const PageTitle = "View Purchase Order";
 
@@ -12,5 +12,3 @@ export const metadata: Metadata = {
 export default function PurchasingPurchaseOrderViewPage() {
   return <PurchaseOrderActionPage />;
 }
-
-

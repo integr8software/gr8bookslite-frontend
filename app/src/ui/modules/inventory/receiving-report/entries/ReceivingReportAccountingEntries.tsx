@@ -1,10 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState, type ReactNode } from "react";
-import {
-  createReceivingReportAccountingEntry,
-  type ReceivingReportAccountingEntry,
-} from "@/app/src/data/modules/inventory/receiving-report/ReceivingReportData";
+import { createReceivingReportAccountingEntry } from "@/app/src/data/modules/inventory/receiving-report/ReceivingReportData";
 import {
   DefaultVisibleReceivingReportAccountingColumns,
   ReceivingReportAccountingColumnConfigs,
@@ -18,7 +15,7 @@ import {
 import { ReceivingReportAccountingEntryCell } from "@/app/src/ui/modules/inventory/receiving-report/entries/ReceivingReportEntryCells";
 import { shouldClearAccountingEntry } from "@/app/src/ui/modules/inventory/receiving-report/ReceivingReportUtils";
 import type {
-  ReceivingReportAccountingColumnConfig,
+  ReceivingReportAccountingEntry,
   ReceivingReportAccountingEntryField,
   ReceivingReportAccountingEntryUpdater,
 } from "@/app/src/types/modules/inventory/receiving-report/ReceivingReportTypes";
@@ -73,7 +70,11 @@ export function ReceivingReportAccountingEntries({
       }
 
       const next = new Set(current);
-      isVisible ? next.add(columnId) : next.delete(columnId);
+      if (isVisible) {
+        next.add(columnId);
+      } else {
+        next.delete(columnId);
+      }
       return next;
     });
   }

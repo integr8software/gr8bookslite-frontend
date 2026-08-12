@@ -9,7 +9,6 @@ export type MultiCurrencyCatalogItem = {
 	isDefault?: boolean;
 	isEnabled: boolean;
 	name: string;
-	referencePerUsd: number;
 	source: MultiCurrencyRateSource;
 	symbol: string;
 };
@@ -20,7 +19,10 @@ export type MultiCurrencyFetchedRate = {
 	exchangeRate: number;
 	inverseExchangeRate: number;
 	rateAsOf: string;
+	source?: string;
 	targetCurrencyCode: string;
+	targetCurrencyName?: string;
+	targetCurrencySymbol?: string;
 };
 
 export type MultiCurrencySetupRecord = {

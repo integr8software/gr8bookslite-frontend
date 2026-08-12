@@ -12,29 +12,41 @@ import { parseMoneyNumberInput } from "@/app/src/ui/shared/money/MoneyNumberFiel
 
 export function recalculateServiceInvoiceEntry(
 	entry: ServiceInvoiceLineEntry,
+	updates: Partial<ServiceInvoiceLineEntry> = {},
 ): ServiceInvoiceLineEntry {
 	const amount = parseMoneyNumberInput(entry.amount);
 	const quantity = parseMoneyNumberInput(entry.quantity);
-	const discountAmount = parseMoneyNumberInput(entry.discountAmount);
 	const baseAmount = amount * Math.max(quantity, 0);
-	const vatAmount = baseAmount * 0.12;
+	const isVatInclusive = entry.vatInclusive.toLowerCase() === "true";
+	const shouldRecalculateVat =
+		"amount" in updates ||
+		"quantity" in updates ||
+		("vatInclusive" in updates && isVatInclusive);
+	const vatAmount = !isVatInclusive
+		? 0
+		: shouldRecalculateVat
+			? baseAmount * 0.12
+			: parseMoneyNumberInput(entry.vatAmount);
 	const vatInclusiveAmount = baseAmount + vatAmount;
-	const computedDiscountAmount =
-		discountAmount > 0 ? discountAmount : vatInclusiveAmount * 0.05;
+	const discountPercent = parseMoneyNumberInput(entry.discountPercent);
+	const enteredDiscountAmount = parseMoneyNumberInput(entry.discountAmount);
+	const shouldRecalculateDiscount =
+		"amount" in updates ||
+		"quantity" in updates ||
+		"vatAmount" in updates ||
+		"vatInclusive" in updates ||
+		"discountPercent" in updates;
+	const computedDiscountAmount = shouldRecalculateDiscount
+		? vatInclusiveAmount * (Math.max(discountPercent, 0) / 100)
+		: enteredDiscountAmount;
 	const computedNetAmount = vatInclusiveAmount - computedDiscountAmount;
 
 	return {
 		...entry,
-		discountAmount:
-			vatInclusiveAmount > 0
-				? computedDiscountAmount.toFixed(2)
-				: entry.discountAmount,
-		grossAmount:
-			computedNetAmount > 0 ? computedNetAmount.toFixed(2) : entry.grossAmount,
-		netAmount: baseAmount > 0 ? baseAmount.toFixed(2) : entry.netAmount,
-		vatAmount: vatAmount > 0 ? vatAmount.toFixed(2) : entry.vatAmount,
-		wvatAmount:
-			vatInclusiveAmount > 0 ? vatInclusiveAmount.toFixed(2) : entry.wvatAmount,
+		discountAmount: computedDiscountAmount.toFixed(2),
+		grossAmount: Math.max(computedNetAmount, 0).toFixed(2),
+		netAmount: baseAmount.toFixed(2),
+		vatAmount: vatAmount.toFixed(2),
 	};
 }
 

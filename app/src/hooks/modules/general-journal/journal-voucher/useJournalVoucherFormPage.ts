@@ -9,7 +9,9 @@ import {
 } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { JournalVoucherHref } from "@/app/src/constants/modules/general-journal/journal-voucher/JournalVoucherConstants";
+import { JournalVoucherHref,
+         JournalVoucherBaseCurrencyCode,
+ } from "@/app/src/constants/modules/general-journal/journal-voucher/JournalVoucherConstants";
 import {
   createJournalVoucherFormValues,
   createJournalVoucherFromForm,
@@ -37,7 +39,7 @@ export function useJournalVoucherFormPage() {
   const records = useJournalVoucherStore((state) => state.records);
   const addRecord = useJournalVoucherStore((state) => state.addRecord);
   const updateRecord = useJournalVoucherStore((state) => state.updateRecord);
-  const deleteRecord = useJournalVoucherStore((state) => state.deleteRecord);
+  const updateStatus = useJournalVoucherStore((state) => state.updateStatus);
   const isMutating = useJournalVoucherStore((state) => state.isMutating);
   const mode = getActionMode(pathname);
   const existingRecord = records.find((record) => record.id === params.recordId);
@@ -46,7 +48,7 @@ export function useJournalVoucherFormPage() {
     createJournalVoucherFormValues(existingRecord),
   );
   const [errors, setErrors] = useState<JournalVoucherFormErrors>({});
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [isExchangeRateLoading, setIsExchangeRateLoading] = useState(false);
   const exchangeRateRequestIdRef = useRef(0);
   const totals = useMemo(() => getJournalVoucherTotals(values.lines), [values.lines]);
@@ -85,7 +87,7 @@ export function useJournalVoucherFormPage() {
     setValues((current) => ({
       ...current,
       currencyType: currencyCode,
-      currencyRate: currencyCode === "PHP" ? 1 : current.currencyRate,
+      currencyRate: currencyCode === JournalVoucherBaseCurrencyCode ? 1 : current.currencyRate,
     }));
     setErrors((current) => ({
       ...current,
@@ -93,7 +95,7 @@ export function useJournalVoucherFormPage() {
       currencyRate: undefined,
     }));
 
-    if (currencyCode === "PHP") {
+    if (currencyCode === JournalVoucherBaseCurrencyCode) {
       setIsExchangeRateLoading(false);
       return;
     }
@@ -102,7 +104,7 @@ export function useJournalVoucherFormPage() {
 
     try {
       const rates = await FetchMultiCurrencyRates(currencyCode);
-      const phpRate = rates.find((rate) => rate.targetCurrencyCode === "PHP");
+      const phpRate = rates.find((rate) => rate.targetCurrencyCode === JournalVoucherBaseCurrencyCode);
 
       if (exchangeRateRequestIdRef.current !== requestId) {
         return;
@@ -318,14 +320,14 @@ export function useJournalVoucherFormPage() {
     router.push(JournalVoucherHref);
   }
 
-  function handleConfirmDelete() {
+  function handleConfirmCancelVoucher() {
     if (!existingRecord) {
-      toast.error("Could not find the journal voucher to delete.");
+      toast.error("Could not find the journal voucher to cancel.");
       return;
     }
 
-    deleteRecord(existingRecord.id);
-    setIsDeleteDialogOpen(false);
+    updateStatus(existingRecord.id, "Cancelled");
+    setIsCancelDialogOpen(false);
     router.push(JournalVoucherHref);
   }
 
@@ -355,11 +357,11 @@ export function useJournalVoucherFormPage() {
     duplicateLine,
     errors,
     existingRecord,
-    handleConfirmDelete,
+    handleConfirmCancelVoucher,
     handleInputChange,
     handleSubmit,
     insertLine,
-    isDeleteDialogOpen,
+    isCancelDialogOpen,
     isExchangeRateLoading,
     isMutating,
     isReadonly,
@@ -367,7 +369,7 @@ export function useJournalVoucherFormPage() {
     moveLine,
     needsRecord: mode === "edit" || mode === "view",
     removeLine,
-    setIsDeleteDialogOpen,
+    setIsCancelDialogOpen,
     totals,
     updateLine,
     updateCurrencyType,

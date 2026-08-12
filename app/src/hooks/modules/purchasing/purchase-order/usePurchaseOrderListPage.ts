@@ -39,7 +39,7 @@ export function usePurchaseOrderListPage() {
 				order.purchaseType,
 				order.status,
 				order.prNo,
-				order.projectRef,
+				order.projectCode,
 				order.projectName,
 			]
 				.join(" ")

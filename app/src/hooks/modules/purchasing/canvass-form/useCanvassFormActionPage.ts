@@ -29,7 +29,7 @@ import type {
 	CanvassFormValues,
 } from "@/app/src/types/modules/purchasing/canvass-form/CanvassFormTypes";
 import { validateCanvassForm } from "@/app/src/validations/modules/purchasing/canvass-form/CanvassFormValidation";
-import type { AppCopyFromRecord } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
+import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 
 export function useCanvassFormActionPage() {
 	const router = useRouter();

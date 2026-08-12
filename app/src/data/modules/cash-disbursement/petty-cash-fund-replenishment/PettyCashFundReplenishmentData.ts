@@ -4,6 +4,7 @@ import type {
   PettyCashFundReplenishmentFormValues,
   PettyCashFundReplenishmentRecord,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentTypes";
+import { parseAmount } from "@/app/src/utils/number.util";
 
 export const PettyCashFundReplenishmentRecords: PettyCashFundReplenishmentRecord[] = [
   {
@@ -129,15 +130,15 @@ export function calculatePettyCashFundReplenishmentTotals(
   entries: PettyCashFundReplenishmentEntry[],
 ) {
   const totalAmount = entries.reduce(
-    (sum, entry) => sum + parseAmount(entry.totalAmount),
+    (sum, entry) => sum + (parseAmount(entry.totalAmount) ?? 0),
     0,
   );
   const vatAmount = entries.reduce(
-    (sum, entry) => sum + parseAmount(entry.vatAmount),
+    (sum, entry) => sum + (parseAmount(entry.vatAmount) ?? 0),
     0,
   );
   const netAmount = entries.reduce(
-    (sum, entry) => sum + parseAmount(entry.netAmount),
+    (sum, entry) => sum + (parseAmount(entry.netAmount) ?? 0),
     0,
   );
 
@@ -146,8 +147,4 @@ export function calculatePettyCashFundReplenishmentTotals(
     vatAmount: vatAmount.toFixed(2),
     netAmount: netAmount.toFixed(2),
   };
-}
-
-function parseAmount(value: string) {
-  return Number(value.replace(/,/g, "")) || 0;
 }

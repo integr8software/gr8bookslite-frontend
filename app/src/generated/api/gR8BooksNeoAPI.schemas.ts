@@ -191,6 +191,10 @@ export const SaveOnboardingCompanyDetailsDtoTaxpayerType = {
 } as const;
 
 export interface SaveOnboardingCompanyDetailsDto {
+  /** @pattern ^[A-Z]{2}$ */
+  countryCode: string;
+  /** @pattern ^[A-Z]{3}$ */
+  baseCurrencyCode: string;
   taxpayerType: SaveOnboardingCompanyDetailsDtoTaxpayerType;
   /** @minLength 2 */
   lastName?: string;
@@ -4705,3 +4709,321 @@ export type ApproverSetupsControllerFindAllV1Params = {
   page?: number;
   limit?: number;
 };
+
+export interface ServiceInvoiceDetailResponseDto {
+  id: string;
+  lineNumber: number;
+  description: string;
+  particulars?: string | null;
+  quantity: number;
+  amount: number;
+  netAmount: number;
+  vatAmount: number;
+  wvatAmount: number;
+  ewtAmount: number;
+  discountPercent: number;
+  discountAmount: number;
+  grossAmount: number;
+  vatType?: string | null;
+  vatable: boolean;
+  vatInclusive: boolean;
+  withWvat: boolean;
+  wvatType?: string | null;
+  withEwt: boolean;
+  ewtType?: string | null;
+  responsibilityCenterId?: string | null;
+  responsibilityCenter?: string | null;
+}
+
+export interface ServiceInvoiceJournalEntryResponseDto {
+  id: string;
+  referenceType: string;
+  referenceId: string;
+  lineNumber: number;
+  accountId: string;
+  accountCode: string;
+  accountTitle: string;
+  currencyCode: string;
+  exchangeRate: number;
+  particulars?: string | null;
+  debit: number;
+  credit: number;
+  vatType?: string | null;
+  atcCode?: string | null;
+  partyCode?: string | null;
+  partyName?: string | null;
+  responsibilityCenterId?: string | null;
+  responsibilityCenter?: string | null;
+  refNo?: string | null;
+}
+
+export type ServiceInvoiceResponseDtoStatus =
+  typeof ServiceInvoiceResponseDtoStatus[keyof typeof ServiceInvoiceResponseDtoStatus];
+
+export const ServiceInvoiceResponseDtoStatus = {
+  DRAFT: "DRAFT",
+  FOR_APPROVAL: "FOR_APPROVAL",
+  DISAPPROVED: "DISAPPROVED",
+  POSTED: "POSTED",
+  CANCELLED: "CANCELLED",
+} as const;
+
+export interface ServiceInvoiceResponseDto {
+  id: string;
+  transactionNo: string;
+  documentDate: string;
+  dueDate: string;
+  invoiceNo?: string | null;
+  referenceNo?: string | null;
+  partyId?: string | null;
+  customerCode: string;
+  customerName: string;
+  billToName?: string | null;
+  address?: string | null;
+  contactPerson?: string | null;
+  contactNo?: string | null;
+  businessStyle?: string | null;
+  projectCode?: string | null;
+  projectName?: string | null;
+  projectRef?: string | null;
+  salesAssociate?: string | null;
+  teamAssigned?: string | null;
+  currency: string;
+  exchangeRate: number;
+  netAmount: number;
+  vatAmount: number;
+  wvatAmount: number;
+  ewtAmount: number;
+  discountAmount: number;
+  grossAmount: number;
+  termId?: string | null;
+  terms?: string | null;
+  receivableAccountId: string;
+  receivableAccountCode: string;
+  receivableAccountTitle: string;
+  remarks?: string | null;
+  status: ServiceInvoiceResponseDtoStatus;
+  details: ServiceInvoiceDetailResponseDto[];
+  journalEntries: ServiceInvoiceJournalEntryResponseDto[];
+  createdBy?: string | null;
+  createdAt: string;
+  updatedBy?: string | null;
+  updatedAt: string;
+}
+
+export interface ServiceInvoiceStatisticsResponseDto {
+  cancelledInvoices: number;
+  disapprovedInvoices: number;
+  draftInvoices: number;
+  forApprovalInvoices: number;
+  postedInvoices: number;
+  totalInvoices: number;
+}
+
+export interface ServiceInvoicePaginationResponseDto {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface ServiceInvoicePermissionsResponseDto {
+  canApprove: boolean;
+  canCancel: boolean;
+  canCreate: boolean;
+  canDisapprove: boolean;
+  canExport: boolean;
+  canPost: boolean;
+  canUpdate: boolean;
+  canView: boolean;
+}
+
+export interface ServiceInvoiceListResponseDto {
+  invoices: ServiceInvoiceResponseDto[];
+  statistics: ServiceInvoiceStatisticsResponseDto;
+  pagination: ServiceInvoicePaginationResponseDto;
+  permissions: ServiceInvoicePermissionsResponseDto;
+}
+
+export interface ServiceInvoiceNumberSuggestionResponseDto {
+  branchUnitId: number;
+  inputMode: string;
+  transactionNo: string;
+}
+
+export interface ServiceInvoiceContainerResponseDto {
+  invoice: ServiceInvoiceResponseDto;
+  permissions: ServiceInvoicePermissionsResponseDto;
+}
+
+export interface SaveServiceInvoiceResponseDto {
+  invoice: ServiceInvoiceResponseDto;
+  permissions: ServiceInvoicePermissionsResponseDto;
+  message: string;
+}
+
+export interface ServiceInvoiceDetailDto {
+  lineNumber: number;
+  description: string;
+  particulars?: string | null;
+  quantity: number;
+  amount: number;
+  netAmount: number;
+  vatAmount: number;
+  wvatAmount: number;
+  ewtAmount: number;
+  discountPercent: number;
+  discountAmount: number;
+  grossAmount: number;
+  vatType?: string | null;
+  vatable: boolean;
+  vatInclusive: boolean;
+  withWvat: boolean;
+  wvatType?: string | null;
+  withEwt: boolean;
+  ewtType?: string | null;
+  responsibilityCenterId?: string | null;
+  responsibilityCenter?: string | null;
+}
+
+export type ServiceInvoiceJournalEntryDtoReferenceType =
+  typeof ServiceInvoiceJournalEntryDtoReferenceType[keyof typeof ServiceInvoiceJournalEntryDtoReferenceType];
+
+export const ServiceInvoiceJournalEntryDtoReferenceType = {
+  SI: "SI",
+} as const;
+
+export interface ServiceInvoiceJournalEntryDto {
+  referenceType?: ServiceInvoiceJournalEntryDtoReferenceType;
+  lineNumber: number;
+  accountId?: string | null;
+  accountCode: string;
+  accountTitle: string;
+  currencyCode: string;
+  exchangeRate: number;
+  particulars?: string | null;
+  debit: number;
+  credit: number;
+  vatType?: string | null;
+  atcCode?: string | null;
+  partyCode?: string | null;
+  partyName?: string | null;
+  responsibilityCenterId?: string | null;
+  responsibilityCenter?: string | null;
+  refNo?: string | null;
+}
+
+export interface CreateServiceInvoiceDto {
+  branchUnitId?: number;
+  transactionNo?: string | null;
+  documentDate: string;
+  dueDate: string;
+  invoiceNo?: string | null;
+  referenceNo?: string | null;
+  partyId?: string | null;
+  customerCode: string;
+  customerName: string;
+  billToName?: string | null;
+  address?: string | null;
+  contactPerson?: string | null;
+  contactNo?: string | null;
+  businessStyle?: string | null;
+  projectCode?: string | null;
+  projectName?: string | null;
+  projectRef?: string | null;
+  salesAssociate?: string | null;
+  teamAssigned?: string | null;
+  currency: string;
+  exchangeRate: number;
+  netAmount: number;
+  vatAmount: number;
+  wvatAmount: number;
+  ewtAmount: number;
+  discountAmount: number;
+  grossAmount: number;
+  termId?: string | null;
+  terms?: string | null;
+  receivableAccountId?: string | null;
+  receivableAccountCode: string;
+  receivableAccountTitle: string;
+  remarks?: string | null;
+  details: ServiceInvoiceDetailDto[];
+  journalEntries: ServiceInvoiceJournalEntryDto[];
+}
+
+export interface UpdateServiceInvoiceDto
+  extends Partial<CreateServiceInvoiceDto> {}
+
+export type UpdateServiceInvoiceStatusDtoStatus =
+  typeof UpdateServiceInvoiceStatusDtoStatus[keyof typeof UpdateServiceInvoiceStatusDtoStatus];
+
+export const UpdateServiceInvoiceStatusDtoStatus = {
+  DRAFT: "DRAFT",
+  FOR_APPROVAL: "FOR_APPROVAL",
+  DISAPPROVED: "DISAPPROVED",
+  POSTED: "POSTED",
+  CANCELLED: "CANCELLED",
+  Draft: "Draft",
+  ForApproval: "For Approval",
+  Disapproved: "Disapproved",
+  Posted: "Posted",
+  Cancelled: "Cancelled",
+} as const;
+
+export interface UpdateServiceInvoiceStatusDto {
+  status: UpdateServiceInvoiceStatusDtoStatus;
+}
+
+export type ServiceInvoiceControllerFindAllV1Status =
+  typeof ServiceInvoiceControllerFindAllV1Status[keyof typeof ServiceInvoiceControllerFindAllV1Status];
+
+export const ServiceInvoiceControllerFindAllV1Status = {
+  DRAFT: "DRAFT",
+  FOR_APPROVAL: "FOR_APPROVAL",
+  DISAPPROVED: "DISAPPROVED",
+  POSTED: "POSTED",
+  CANCELLED: "CANCELLED",
+} as const;
+
+export type ServiceInvoiceControllerFindAllV1SortBy =
+  typeof ServiceInvoiceControllerFindAllV1SortBy[keyof typeof ServiceInvoiceControllerFindAllV1SortBy];
+
+export const ServiceInvoiceControllerFindAllV1SortBy = {
+  transactionNo: "transactionNo",
+  documentDate: "documentDate",
+  customerName: "customerName",
+  invoiceNo: "invoiceNo",
+  referenceNo: "referenceNo",
+  grossAmount: "grossAmount",
+  status: "status",
+  createdAt: "createdAt",
+  updatedAt: "updatedAt",
+} as const;
+
+export type ServiceInvoiceControllerFindAllV1SortDirection =
+  typeof ServiceInvoiceControllerFindAllV1SortDirection[keyof typeof ServiceInvoiceControllerFindAllV1SortDirection];
+
+export const ServiceInvoiceControllerFindAllV1SortDirection = {
+  asc: "asc",
+  desc: "desc",
+} as const;
+
+export type ServiceInvoiceControllerFindAllV1Params = {
+  branchUnitId?: number;
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: ServiceInvoiceControllerFindAllV1Status;
+  documentDateFrom?: string;
+  documentDateTo?: string;
+  amountFrom?: number;
+  amountTo?: number;
+  sortBy?: ServiceInvoiceControllerFindAllV1SortBy;
+  sortDirection?: ServiceInvoiceControllerFindAllV1SortDirection;
+};
+
+export type ServiceInvoiceControllerSuggestTransactionNumberV1Params =
+  ServiceInvoiceControllerFindAllV1Params;
+
+export type ServiceInvoiceControllerFindOneV1Params =
+  ServiceInvoiceControllerFindAllV1Params;

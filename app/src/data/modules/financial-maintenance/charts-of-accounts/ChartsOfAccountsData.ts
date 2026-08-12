@@ -21,4 +21,3 @@ export function getAccountPercentage(count: number, total: number) {
 
   return Math.round((count / total) * 100);
 }
-

@@ -496,13 +496,14 @@ select:-webkit-autofill:focus {
 
 .app-advanced-dropdown-option[data-selected="true"],
 .app-advanced-dropdown-option[data-active="true"] {
-	background-color: #bfdbfe !important;
-	color: #0f1724 !important;
+	background-color: var(--skyblue) !important;
+	border-color: var(--skyblue) !important;
+	color: var(--skyblue-contrast) !important;
 }
 
 .app-advanced-dropdown-option[data-selected="true"] *,
 .app-advanced-dropdown-option[data-active="true"] * {
-	color: #0f1724 !important;
+	color: var(--skyblue-contrast) !important;
 }
 
 :root[data-app-theme="midnight-dark"] .app-advanced-dropdown-control,
@@ -539,8 +540,9 @@ select:-webkit-autofill:focus {
 	.app-advanced-dropdown-option[data-selected="true"],
 :root[data-app-theme="midnight-dark"]
 	.app-advanced-dropdown-option[data-active="true"] {
-	background-color: #1f6feb !important;
-	color: #f0f6fc !important;
+	background-color: var(--skyblue) !important;
+	border-color: var(--skyblue) !important;
+	color: var(--skyblue-contrast) !important;
 }
 
 :root[data-app-theme="midnight-dark"]
@@ -549,7 +551,7 @@ select:-webkit-autofill:focus {
 :root[data-app-theme="midnight-dark"]
 	.app-advanced-dropdown-option[data-active="true"]
 	* {
-	color: #f0f6fc !important;
+	color: var(--skyblue-contrast) !important;
 }
 
 .app-data-entry-field:read-only,
@@ -619,11 +621,14 @@ select:-webkit-autofill:focus {
 }
 
 .app-dialog-status-icon--activate,
+.app-dialog-status-icon--approve,
 .app-dialog-status-icon--success {
 	color: #93d47d;
 }
 
+.app-dialog-status-icon--cancel,
 .app-dialog-status-icon--deactivate,
+.app-dialog-status-icon--disapprove,
 .app-dialog-status-icon--error {
 	color: #f97068;
 }
@@ -727,10 +732,40 @@ select:-webkit-autofill:focus {
 	transform: scale(1);
 }
 
+.app-dialog-status-icon--disapprove .app-dialog-status-icon-symbol {
+	transform: translateY(2px) scale(1);
+}
+
+.app-dialog-status-icon--cancel .app-dialog-status-icon-symbol {
+	transform: translateY(1px) scale(1);
+}
+
+.app-dialog-status-icon--approve .app-dialog-status-icon-symbol {
+	transform: translateY(1px) scale(1);
+}
+
 .app-dialog-status-icon[data-animated="true"] .app-dialog-status-icon-symbol {
 	opacity: 0;
 	transform: scale(0.72);
 	animation: app-dialog-symbol-rise 280ms ease-out 190ms forwards;
+}
+
+.app-dialog-status-icon--disapprove[data-animated="true"]
+	.app-dialog-status-icon-symbol {
+	transform: translateY(2px) scale(0.72);
+	animation: app-dialog-action-symbol-rise 280ms ease-out 190ms forwards;
+}
+
+.app-dialog-status-icon--cancel[data-animated="true"]
+	.app-dialog-status-icon-symbol {
+	transform: translateY(1px) scale(0.72);
+	animation: app-dialog-cancel-symbol-rise 280ms ease-out 190ms forwards;
+}
+
+.app-dialog-status-icon--approve[data-animated="true"]
+	.app-dialog-status-icon-symbol {
+	transform: translateY(1px) scale(0.72);
+	animation: app-dialog-approve-symbol-rise 280ms ease-out 190ms forwards;
 }
 
 @keyframes app-dialog-icon-pop {
@@ -778,6 +813,39 @@ select:-webkit-autofill:focus {
 	100% {
 		opacity: 1;
 		transform: translateY(0) scale(1);
+	}
+}
+
+@keyframes app-dialog-action-symbol-rise {
+	0% {
+		opacity: 0;
+		transform: translateY(8px) scale(0.8);
+	}
+	100% {
+		opacity: 1;
+		transform: translateY(2px) scale(1);
+	}
+}
+
+@keyframes app-dialog-cancel-symbol-rise {
+	0% {
+		opacity: 0;
+		transform: translateY(7px) scale(0.8);
+	}
+	100% {
+		opacity: 1;
+		transform: translateY(1px) scale(1);
+	}
+}
+
+@keyframes app-dialog-approve-symbol-rise {
+	0% {
+		opacity: 0;
+		transform: translateY(7px) scale(0.8);
+	}
+	100% {
+		opacity: 1;
+		transform: translateY(1px) scale(1);
 	}
 }
 
@@ -866,11 +934,14 @@ select:-webkit-autofill:focus {
 }
 
 :root[data-app-theme="midnight-dark"] .app-dialog-status-icon--activate,
+:root[data-app-theme="midnight-dark"] .app-dialog-status-icon--approve,
 :root[data-app-theme="midnight-dark"] .app-dialog-status-icon--success {
 	color: #86efac;
 }
 
+:root[data-app-theme="midnight-dark"] .app-dialog-status-icon--cancel,
 :root[data-app-theme="midnight-dark"] .app-dialog-status-icon--deactivate,
+:root[data-app-theme="midnight-dark"] .app-dialog-status-icon--disapprove,
 :root[data-app-theme="midnight-dark"] .app-dialog-status-icon--error {
 	color: #fb7185;
 }

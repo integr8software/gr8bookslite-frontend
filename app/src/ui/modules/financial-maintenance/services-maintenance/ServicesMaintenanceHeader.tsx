@@ -5,10 +5,7 @@ import {
   ServicesMaintenanceTitle,
 } from "@/app/src/constants/modules/financial-maintenance/services-maintenance/ServicesMaintenanceConstants";
 import type { ServicesMaintenancePermissions } from "@/app/src/types/modules/financial-maintenance/services-maintenance/ServicesMaintenanceTypes";
-import {
-  ModuleHeader,
-  moduleHeaderActionClassNames,
-} from "@/app/src/ui/shared/module/ModuleHeader";
+import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 
 export function ServicesMaintenanceHeader({
   onAdd,

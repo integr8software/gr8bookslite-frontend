@@ -1,3 +1,5 @@
+import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
+
 export type DeliveryReceiptActionMode = "add" | "edit" | "view";
 
 export type DeliveryReceiptStatus =
@@ -111,4 +113,13 @@ export type DeliveryReceiptFormValues = {
 	attachments: DeliveryReceiptAttachment[];
 	accountingEntries: DeliveryReceiptAccountingEntry[];
 	lineEntries: DeliveryReceiptLineEntry[];
+};
+
+export type DeliveryReceiptFormHeaderProps = {
+	copyFromRecords: AppCopyFromRecord[];
+	mode: DeliveryReceiptActionMode;
+	onCopyFromPickList: (recordIds: string[]) => void;
+	onPreview: () => void;
+	values: DeliveryReceiptFormValues;
+	onSubmit: () => void;
 };

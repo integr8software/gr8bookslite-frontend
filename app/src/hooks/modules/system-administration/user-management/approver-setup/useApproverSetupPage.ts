@@ -16,10 +16,14 @@ import {
 } from "@/app/src/constants/modules/system-administration/user-management/approver-setup/ApproverSetupConstants";
 import {
 	CreateApproverSetup,
+	DeleteApproverSetup,
 	FetchApproverSetupModules,
 	FetchApproverSetups,
 	FetchApproverSetupUsers,
+	UpdateApproverSetup,
+	UpdateApproverSetupStatus,
 } from "@/app/src/services/modules/system-administration/user-management/approver-setup/ApproverSetupApi";
+import { ApprovalManagementQueryKeys } from "@/app/src/services/modules/approval-management/ApprovalManagementQueryKeys";
 import { ApproverSetupQueryKeys } from "@/app/src/services/modules/system-administration/user-management/approver-setup/ApproverSetupQueryKeys";
 import type {
 	ApproverAssignmentType,
@@ -60,10 +64,67 @@ export function useApproverSetupPage() {
 				(current = []) => [record, ...current],
 			);
 			setRecords((current) => [record, ...current]);
+			invalidateConnectedApprovalData();
 			toast.success("Approver setup created.");
 		},
 		onError: () => {
 			toast.error("Could not create approver setup.");
+		},
+	});
+	const updateApproverSetupMutation = useMutation({
+		mutationFn: UpdateApproverSetup,
+		onSuccess: (record) => {
+			queryClient.setQueryData<ApproverSetupRecord[]>(
+				ApproverSetupQueryKeys.records(),
+				(current = []) =>
+					current.map((item) => (item.id === record.id ? record : item)),
+			);
+			setRecords((current) =>
+				current.map((item) => (item.id === record.id ? record : item)),
+			);
+			invalidateConnectedApprovalData();
+			toast.success("Approver setup updated.");
+		},
+		onError: () => {
+			toast.error("Could not update approver setup.");
+		},
+	});
+	const updateApproverSetupStatusMutation = useMutation({
+		mutationFn: UpdateApproverSetupStatus,
+		onSuccess: (record) => {
+			queryClient.setQueryData<ApproverSetupRecord[]>(
+				ApproverSetupQueryKeys.records(),
+				(current = []) =>
+					current.map((item) => (item.id === record.id ? record : item)),
+			);
+			setRecords((current) =>
+				current.map((item) => (item.id === record.id ? record : item)),
+			);
+			invalidateConnectedApprovalData();
+			toast.success("Approver setup status updated.");
+		},
+		onError: () => {
+			toast.error("Could not update approver setup status.");
+		},
+	});
+	const deleteApproverSetupMutation = useMutation({
+		mutationFn: DeleteApproverSetup,
+		onSuccess: (setupId) => {
+			queryClient.setQueryData<ApproverSetupRecord[]>(
+				ApproverSetupQueryKeys.records(),
+				(current = []) => current.filter((record) => record.id !== setupId),
+			);
+			setRecords((current) =>
+				current.filter((record) => record.id !== setupId),
+			);
+			invalidateConnectedApprovalData();
+			toast.success("Approver setup deleted.");
+		},
+		onError: () => {
+			toast.error("Could not delete approver setup.");
+		},
+		onSettled: () => {
+			setPendingDelete(null);
 		},
 	});
 	const [query, setQuery] = useState("");
@@ -208,23 +269,13 @@ export function useApproverSetupPage() {
 			return;
 		}
 
-		if (formValues.assignmentType === "Temporary" && !formValues.effectiveTo) {
-			setDrawerError("Enter a valid until date.");
+		if (!formValues.levelName.trim()) {
+			setDrawerError("Enter a level name.");
 			return;
 		}
 
-		const nextRecord = createRecordFromFormValues(
-			formValues,
-			drawerState?.record,
-		);
-
-		if (drawerState?.mode === "edit" && drawerState.record) {
-			setRecords((current) =>
-				current.map((record) =>
-					record.id === drawerState.record?.id ? nextRecord : record,
-				),
-			);
-			closeDrawer();
+		if (formValues.assignmentType === "Temporary" && !formValues.effectiveTo) {
+			setDrawerError("Enter a valid until date.");
 			return;
 		}
 
@@ -237,10 +288,11 @@ export function useApproverSetupPage() {
 			return;
 		}
 
-		createApproverSetupMutation.mutate({
+		const payload = {
 			approverCondition: formValues.condition,
 			approverUserIds,
 			level: Number.parseInt(formValues.sequence, 10) || undefined,
+			levelName: formValues.levelName.trim(),
 			moduleScope: formValues.moduleScope.trim(),
 			status: formValues.status,
 			type: formValues.assignmentType,
@@ -248,7 +300,18 @@ export function useApproverSetupPage() {
 				formValues.assignmentType === "Temporary"
 					? formValues.effectiveTo
 					: undefined,
-		});
+		};
+
+		if (drawerState?.mode === "edit" && drawerState.record) {
+			updateApproverSetupMutation.mutate({
+				id: drawerState.record.id,
+				payload,
+			});
+			closeDrawer();
+			return;
+		}
+
+		createApproverSetupMutation.mutate(payload);
 		closeDrawer();
 	}
 
@@ -257,28 +320,23 @@ export function useApproverSetupPage() {
 			return;
 		}
 
-		setRecords((current) =>
-			current.filter((record) => record.id !== pendingDelete.id),
-		);
-		setPendingDelete(null);
+		deleteApproverSetupMutation.mutate(pendingDelete.id);
 	}
 
 	function toggleAssignmentStatus(record: ApproverSetupRecord) {
-		setRecords((current) =>
-			current.map((item) =>
-				item.id === record.id
-					? {
-							...item,
-							status:
-								item.status === "Expired"
-									? "Active"
-									: "Expired",
-							lastUpdatedBy: "Sin Bad",
-							lastUpdatedAt: "2026-07-08",
-						}
-					: item,
-			),
-		);
+		updateApproverSetupStatusMutation.mutate({
+			id: record.id,
+			status: record.status === "Expired" ? "Active" : "Expired",
+		});
+	}
+
+	function invalidateConnectedApprovalData() {
+		void queryClient.invalidateQueries({
+			queryKey: ApproverSetupQueryKeys.records(),
+		});
+		void queryClient.invalidateQueries({
+			queryKey: ApprovalManagementQueryKeys.workflows(),
+		});
 	}
 
 	return {

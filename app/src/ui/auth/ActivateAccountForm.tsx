@@ -4,10 +4,7 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { CheckCircle2, KeyRound, LoaderCircle } from "lucide-react";
 import { ActivateWorkspaceInvitationAction } from "@/app/src/services/auth/AuthActions";
-import {
-  InitialAuthActionState,
-  type AuthActionState,
-} from "@/app/src/data/auth/AuthTypes";
+import { AuthActionStatuses, InitialAuthActionState, type AuthActionState } from "@/app/src/types/auth/AuthTypes";
 import { AuthField } from "@/app/src/ui/auth/AuthField";
 import { AuthPasswordRequirements } from "@/app/src/ui/auth/AuthPasswordRequirements";
 
@@ -16,25 +13,19 @@ type ActivateAccountFormProps = {
   token: string;
 };
 
-export function ActivateAccountForm({
-  email,
-  token,
-}: ActivateAccountFormProps) {
-  const [state, formAction, pending] = useActionState(
-    ActivateWorkspaceInvitationAction,
-    InitialAuthActionState,
-  );
+export function ActivateAccountForm({ email, token }: ActivateAccountFormProps) {
+  const [state, formAction, pending] = useActionState(ActivateWorkspaceInvitationAction, InitialAuthActionState);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const wasPendingRef = useRef(false);
   const hasValidInvitationLink = Boolean(email && token);
-  const isComplete = state.status === "success";
+  const isComplete = state.status === AuthActionStatuses.Success;
 
   useEffect(() => {
     const justFinishedSubmitting = wasPendingRef.current && !pending;
     wasPendingRef.current = pending;
 
-    if (justFinishedSubmitting && state.status === "error") {
+    if (justFinishedSubmitting && state.status === AuthActionStatuses.Error) {
       setConfirmPassword("");
     }
   }, [pending, state.status]);
@@ -81,10 +72,7 @@ export function ActivateAccountForm({
         )}
 
         <div className="pt-6 text-center">
-          <Link
-            href="/login?force=true"
-            className="text-sm font-semibold text-darknavy/65 transition hover:text-darknavy"
-          >
+          <Link href="/login?force=true" className="text-sm font-semibold text-darknavy/65 transition hover:text-darknavy">
             Back to log in
           </Link>
         </div>
@@ -141,7 +129,7 @@ function ActivatePasswordContent({
       <input type="hidden" name="email" value={email} />
       <input type="hidden" name="token" value={token} />
 
-      {state.status === "error" && state.message ? (
+      {state.status === AuthActionStatuses.Error && state.message ? (
         <div className="rounded-md border border-coralpink/25 bg-coralpink/10 px-4 py-3 text-sm leading-6 text-coralpink">
           {state.message}
         </div>
@@ -180,9 +168,7 @@ function ActivatePasswordContent({
         disabled={pending}
         className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#3d76ea] px-5 text-sm font-semibold text-white transition hover:bg-[#2f67d8] disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {pending ? (
-          <LoaderCircle className="h-5 w-5 animate-spin" aria-hidden="true" />
-        ) : null}
+        {pending ? <LoaderCircle className="h-5 w-5 animate-spin" aria-hidden="true" /> : null}
         {pending ? "Saving..." : "Create Password"}
       </button>
     </form>
@@ -192,8 +178,7 @@ function ActivatePasswordContent({
 function InvalidInvitationMessage() {
   return (
     <div className="rounded-md border border-coralpink/25 bg-coralpink/10 px-4 py-3 text-sm leading-6 text-coralpink">
-      This invitation link is missing required details. Ask your administrator
-      for a new invitation.
+      This invitation link is missing required details. Ask your administrator for a new invitation.
     </div>
   );
 }

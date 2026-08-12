@@ -5,7 +5,7 @@ type OnboardingSelectFieldProps = {
   name: string;
   label: string;
   value: string;
-  options: readonly string[];
+  options: readonly (string | { value: string; label: string })[];
   errors?: string[];
   onChange: (value: string) => void;
 };
@@ -41,11 +41,16 @@ export function OnboardingSelectField({
           className={fieldClassName}
         >
           <option value="">Select...</option>
-          {options.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
+          {options.map((option) => {
+            const value = typeof option === "string" ? option : option.value;
+            const label = typeof option === "string" ? option : option.label;
+
+            return (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            );
+          })}
         </select>
         <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-darknavy" />
       </div>

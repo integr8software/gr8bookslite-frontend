@@ -1,210 +1,187 @@
 import {
-	GoodsIssueCurrencyOptions,
-	GoodsIssuePartyOptions,
-	GoodsIssueStatusOptions,
-	GoodsIssueTransactionTypeOptions,
-	GoodsIssueWarehouseOptions,
+  GoodsIssueCurrencyOptions,
+  GoodsIssuePartyOptions,
+  GoodsIssueStatusOptions,
+  GoodsIssueTransactionTypeOptions,
+  GoodsIssueWarehouseOptions,
 } from "@/app/src/data/modules/inventory/goods-issue/GoodsIssueData";
 import type { GoodsIssueFormValues } from "@/app/src/types/modules/inventory/goods-issue/GoodsIssueTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
+import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 import {
-	DateField,
-	FieldClassName,
-	FieldShell,
-	TextField,
-	type GoodsIssueFieldUpdater,
+  DateField,
+  FieldClassName,
+  FieldShell,
+  TextField,
+  type GoodsIssueFieldUpdater,
 } from "@/app/src/ui/modules/inventory/goods-issue/action/GoodsIssueFieldControls";
 
 type GoodsIssueWarehouseFieldsProps = {
-	isReadonly: boolean;
-	values: GoodsIssueFormValues;
-	onUpdateField: GoodsIssueFieldUpdater<GoodsIssueFormValues>;
+  isReadonly: boolean;
+  values: GoodsIssueFormValues;
+  onUpdateField: GoodsIssueFieldUpdater<GoodsIssueFormValues>;
 };
 
-export function GoodsIssueWarehouseFields({
-	isReadonly,
-	onUpdateField,
-	values,
-}: GoodsIssueWarehouseFieldsProps) {
-	return (
-		<div className="grid min-w-0 gap-5 xl:grid-cols-3">
-			<div className="grid min-w-0 content-start gap-4">
-				<FieldShell
-					controlId="goods-issue-vce-name"
-					label="Party Name"
-					isRequired
-				>
-					<AppAdvancedDropdown
-						id="goods-issue-vce-name"
-						value={values.vceName}
-						readOnly={isReadonly}
-						options={GoodsIssuePartyOptions}
-						placeholder=""
-						searchPlaceholder="Search Party Name"
-						onChange={(value) => onUpdateField("vceName", String(value))}
-					/>
-				</FieldShell>
-				<TextField
-					id="goods-issue-project-ref"
-					label="Proj. Ref No"
-					readOnly={isReadonly}
-					value={values.projectRef}
-					onChange={(value) => onUpdateField("projectRef", value)}
-				/>
-				<TextField
-					id="goods-issue-project-name"
-					label="Project Name"
-					readOnly={isReadonly}
-					value={values.projectName}
-					onChange={(value) => onUpdateField("projectName", value)}
-				/>
-				<FieldShell controlId="goods-issue-remarks" label="Remarks">
-					<AppLimitedTextarea
-						id="goods-issue-remarks"
-						value={values.remarks}
-						readOnly={isReadonly}
-						onChange={(event) => onUpdateField("remarks", event.target.value)}
-						className={`${FieldClassName} min-h-24 py-3`}
-						counterMode="remaining"
-						maxLength={250}
-					/>
-				</FieldShell>
-			</div>
+export function GoodsIssueWarehouseFields({ isReadonly, onUpdateField, values }: GoodsIssueWarehouseFieldsProps) {
+  return (
+    <div className="grid min-w-0 gap-5 xl:grid-cols-2 2xl:grid-cols-3">
+      <div className="grid min-w-0 content-start gap-4">
+        <FieldShell controlId="goods-issue-vce-name" label="Party Name" isRequired>
+          <AppAdvancedDropdown
+            id="goods-issue-vce-name"
+            value={values.vceName}
+            readOnly={isReadonly}
+            options={GoodsIssuePartyOptions}
+            placeholder=""
+            searchPlaceholder="Search Party Name"
+            onChange={(value) => onUpdateField("vceName", String(value))}
+          />
+        </FieldShell>
+        <TextField
+          id="goods-issue-project-ref"
+          label="Proj. Ref No"
+          readOnly={isReadonly}
+          value={values.projectRef}
+          onChange={(value) => onUpdateField("projectRef", value)}
+        />
+        <TextField
+          id="goods-issue-project-name"
+          label="Project Name"
+          readOnly={isReadonly}
+          value={values.projectName}
+          onChange={(value) => onUpdateField("projectName", value)}
+        />
+        <FieldShell controlId="goods-issue-remarks" label="Remarks">
+          <AppLimitedTextarea
+            id="goods-issue-remarks"
+            value={values.remarks}
+            readOnly={isReadonly}
+            onChange={(event) => onUpdateField("remarks", event.target.value)}
+            className={`${FieldClassName} min-h-24 py-3`}
+            counterMode="remaining"
+            maxLength={250}
+          />
+        </FieldShell>
+      </div>
 
-			<div className="grid min-w-0 content-start gap-4">
-				<TextField
-					id="goods-issue-vce-code"
-					label="Party Code"
-					isRequired
-					readOnly={isReadonly}
-					value={values.vceCode}
-					onChange={(value) => onUpdateField("vceCode", value)}
-				/>
-				<FieldShell
-					controlId="goods-issue-transaction-type"
-					label="GI Type"
-					isRequired
-				>
-					<AppAdvancedDropdown
-						id="goods-issue-transaction-type"
-						value={values.transactionType}
-						readOnly={isReadonly}
-						options={GoodsIssueTransactionTypeOptions}
-						placeholder="--Select Goods Issue Type--"
-						searchPlaceholder="Search goods issue type"
-						onChange={(value) =>
-							onUpdateField("transactionType", String(value))
-						}
-					/>
-				</FieldShell>
-				<FieldShell
-					controlId="goods-issue-source-warehouse"
-					label="Source Warehouse"
-					isRequired
-				>
-					<AppAdvancedDropdown
-						id="goods-issue-source-warehouse"
-						value={values.sourceWarehouse}
-						readOnly={isReadonly}
-						options={GoodsIssueWarehouseOptions}
-						placeholder="--Select Warehouse--"
-						searchPlaceholder="Search warehouse"
-						onChange={(value) =>
-							onUpdateField("sourceWarehouse", String(value))
-						}
-					/>
-				</FieldShell>
-				<FieldShell controlId="goods-issue-currency" label="Currency">
-					<div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_8.5rem]">
-						<AppAdvancedDropdown
-							id="goods-issue-currency"
-							value={values.currency}
-							readOnly={isReadonly}
-							options={GoodsIssueCurrencyOptions}
-							placeholder="Select currency"
-							searchPlaceholder="Search currency"
-							onChange={(value) => onUpdateField("currency", String(value))}
-						/>
-						<div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2">
-							<label
-								htmlFor="goods-issue-exchange-rate"
-								className="text-sm font-semibold text-darknavy"
-							>
-								ER:
-							</label>
-							<MoneyNumberField
-								id="goods-issue-exchange-rate"
-								value={values.exchangeRate}
-								readOnly={isReadonly}
-								onValueChange={(value) =>
-									onUpdateField("exchangeRate", value)
-								}
-								className={`${FieldClassName} text-right`}
-							/>
-						</div>
-					</div>
-				</FieldShell>
-			</div>
+      <div className="grid min-w-0 content-start gap-4">
+        <TextField
+          id="goods-issue-vce-code"
+          label="Party Code"
+          isRequired
+          readOnly={isReadonly}
+          value={values.vceCode}
+          onChange={(value) => onUpdateField("vceCode", value)}
+        />
+        <FieldShell controlId="goods-issue-transaction-type" label="GI Type" isRequired>
+          <AppAdvancedDropdown
+            id="goods-issue-transaction-type"
+            value={values.transactionType}
+            readOnly={isReadonly}
+            options={GoodsIssueTransactionTypeOptions}
+            placeholder="--Select Goods Issue Type--"
+            searchPlaceholder="Search goods issue type"
+            onChange={(value) => onUpdateField("transactionType", String(value))}
+          />
+        </FieldShell>
+        <FieldShell controlId="goods-issue-source-warehouse" label="Source Warehouse" isRequired>
+          <AppAdvancedDropdown
+            id="goods-issue-source-warehouse"
+            value={values.sourceWarehouse}
+            readOnly={isReadonly}
+            options={GoodsIssueWarehouseOptions}
+            placeholder="--Select Warehouse--"
+            searchPlaceholder="Search warehouse"
+            onChange={(value) => onUpdateField("sourceWarehouse", String(value))}
+          />
+        </FieldShell>
+        <FieldShell controlId="goods-issue-currency" label="Currency">
+          <CurrencyExchangeRateRow
+            exchangeRateControlId="goods-issue-exchange-rate"
+            currencyControl={
+              <AppAdvancedDropdown
+                id="goods-issue-currency"
+                className="w-full min-w-0"
+                value={values.currency}
+                readOnly={isReadonly}
+                options={GoodsIssueCurrencyOptions}
+                placeholder="Select currency"
+                searchPlaceholder="Search currency"
+                onChange={(value) => onUpdateField("currency", String(value))}
+              />
+            }
+            exchangeRateControl={
+              <MoneyNumberField
+                id="goods-issue-exchange-rate"
+                value={values.exchangeRate}
+                readOnly={isReadonly}
+                onValueChange={(value) => onUpdateField("exchangeRate", value)}
+                className={`${FieldClassName} text-right tabular-nums`}
+              />
+            }
+          />
+        </FieldShell>
+      </div>
 
-			<div className="grid min-w-0 content-start gap-4">
-				<TextField
-					id="goods-issue-transaction-no"
-					label="GI No."
-					isRequired
-					readOnly={isReadonly}
-					value={values.transactionNo}
-					onChange={(value) => onUpdateField("transactionNo", value)}
-				/>
-				<DateField
-					id="goods-issue-document-date"
-					label="GI Date"
-					isRequired
-					readOnly={isReadonly}
-					value={values.documentDate}
-					onChange={(value) => onUpdateField("documentDate", value)}
-				/>
-				<TextField
-					id="goods-issue-mr-no"
-					label="MR No"
-					readOnly={isReadonly}
-					value={values.mrNo}
-					onChange={(value) => onUpdateField("mrNo", value)}
-				/>
-				<TextField
-					id="goods-issue-rr-no"
-					label="RR No"
-					readOnly={isReadonly}
-					value={values.rrNo}
-					onChange={(value) => onUpdateField("rrNo", value)}
-				/>
-				<TextField
-					id="goods-issue-ic-no"
-					label="IC No"
-					readOnly={isReadonly}
-					value={values.icNo}
-					onChange={(value) => onUpdateField("icNo", value)}
-				/>
-				<TextField
-					id="goods-issue-jo-no"
-					label="JO No"
-					readOnly={isReadonly}
-					value={values.joNo}
-					onChange={(value) => onUpdateField("joNo", value)}
-				/>
-				<FieldShell controlId="goods-issue-status" label="Status" isRequired>
-					<AppAdvancedDropdown
-						id="goods-issue-status"
-						value={values.status}
-						readOnly
-						options={GoodsIssueStatusOptions}
-						placeholder="Draft"
-						searchPlaceholder="Search status"
-						onChange={(value) => onUpdateField("status", String(value))}
-					/>
-				</FieldShell>
-			</div>
-		</div>
-	);
+      <div className="grid min-w-0 content-start gap-4">
+        <TextField
+          id="goods-issue-transaction-no"
+          label="GI No."
+          isRequired
+          readOnly={isReadonly}
+          value={values.transactionNo}
+          onChange={(value) => onUpdateField("transactionNo", value)}
+        />
+        <DateField
+          id="goods-issue-document-date"
+          label="GI Date"
+          isRequired
+          readOnly={isReadonly}
+          value={values.documentDate}
+          onChange={(value) => onUpdateField("documentDate", value)}
+        />
+        <TextField
+          id="goods-issue-mr-no"
+          label="MR No"
+          readOnly={isReadonly}
+          value={values.mrNo}
+          onChange={(value) => onUpdateField("mrNo", value)}
+        />
+        <TextField
+          id="goods-issue-rr-no"
+          label="RR No"
+          readOnly={isReadonly}
+          value={values.rrNo}
+          onChange={(value) => onUpdateField("rrNo", value)}
+        />
+        <TextField
+          id="goods-issue-ic-no"
+          label="IC No"
+          readOnly={isReadonly}
+          value={values.icNo}
+          onChange={(value) => onUpdateField("icNo", value)}
+        />
+        <TextField
+          id="goods-issue-jo-no"
+          label="JO No"
+          readOnly={isReadonly}
+          value={values.joNo}
+          onChange={(value) => onUpdateField("joNo", value)}
+        />
+        <FieldShell controlId="goods-issue-status" label="Status" isRequired>
+          <AppAdvancedDropdown
+            id="goods-issue-status"
+            value={values.status}
+            readOnly
+            options={GoodsIssueStatusOptions}
+            placeholder="Draft"
+            searchPlaceholder="Search status"
+            onChange={(value) => onUpdateField("status", String(value))}
+          />
+        </FieldShell>
+      </div>
+    </div>
+  );
 }

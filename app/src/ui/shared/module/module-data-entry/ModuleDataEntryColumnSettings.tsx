@@ -37,6 +37,11 @@ export function ModuleDataEntryColumnSettingsButton({
 	const isShowAllColumnsActive = columns.length > 0 && hiddenColumns.length === 0;
 
 	function restoreDefaultColumns() {
+    if (onResetColumns) {
+      onResetColumns();
+      return;
+    }
+
 		if (!onToggleColumnVisibility) {
 			return;
 		}

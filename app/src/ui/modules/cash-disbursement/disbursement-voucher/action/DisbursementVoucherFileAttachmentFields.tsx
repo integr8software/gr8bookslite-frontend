@@ -20,7 +20,8 @@ export function DisbursementVoucherFileAttachmentFields({
   const inputId = "disbursement-voucher-file-attachments";
 
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.currentTarget.files ?? []);
+    const input = event.currentTarget;
+    const files = Array.from(input.files ?? []);
 
     if (files.length === 0) {
       return;
@@ -38,7 +39,7 @@ export function DisbursementVoucherFileAttachmentFields({
     );
 
     onAttachmentsChange([...attachments, ...nextAttachments]);
-    event.currentTarget.value = "";
+    input.value = "";
   };
 
   const handleRemoveAttachment = (attachmentId: string) => {

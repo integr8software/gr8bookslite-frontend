@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useDeferredValue, useMemo, useState } from "react";
+import { useEffect, useDeferredValue, useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	getCoreRowModel,
 	getPaginationRowModel,
@@ -17,11 +18,18 @@ import {
 	createServiceInvoiceAccountingEntries,
 	createServiceInvoiceFormValues,
 	createServiceInvoiceFormValuesFromRecord,
-	createServiceInvoiceRecordFromForm,
-	getInitialServiceInvoices,
-	writeStoredServiceInvoices,
 } from "@/app/src/data/modules/sales/service-invoice/ServiceInvoiceData";
 import { ServiceInvoiceStatusFilters } from "@/app/src/constants/modules/sales/service-invoice/ServiceInvoiceConstants";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+import {
+	createServiceInvoice,
+	fetchServiceInvoice,
+	fetchServiceInvoices,
+	updateServiceInvoice,
+	updateServiceInvoiceStatus,
+	type ServiceInvoiceListData,
+} from "@/app/src/services/modules/sales/service-invoice/ServiceInvoiceApi";
+import { ServiceInvoiceQueryKeys } from "@/app/src/services/modules/sales/service-invoice/ServiceInvoiceQueryKeys";
 import type {
 	ServiceInvoiceActionMode,
 	ServiceInvoiceAccountingEntry,
@@ -30,7 +38,10 @@ import type {
 	ServiceInvoiceRecord,
 	ServiceInvoiceStatus,
 } from "@/app/src/types/modules/sales/service-invoice/ServiceInvoiceTypes";
-import { validateServiceInvoiceForm } from "@/app/src/validations/modules/sales/service-invoice/ServiceInvoiceValidation";
+import {
+	validateServiceInvoiceForm,
+	type ServiceInvoiceValidationResult,
+} from "@/app/src/validations/modules/sales/service-invoice/ServiceInvoiceValidation";
 import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
 
@@ -47,40 +58,88 @@ type ServiceInvoiceStoreState = {
 export function useServiceInvoiceStore<TSelected = ServiceInvoiceStoreState>(
 	selector?: (state: ServiceInvoiceStoreState) => TSelected,
 ) {
-	const [invoices, setInvoices] = useState(getInitialServiceInvoices);
-	const [lastSyncedAt] = useState(() => Date.now());
-	const updateInvoiceStatus = useCallback(
-		(invoice: ServiceInvoiceRecord, status: ServiceInvoiceStatus) => {
-			setInvoices((currentInvoices) =>
-				persistServiceInvoices(
-					currentInvoices.map((currentInvoice) =>
-						currentInvoice.id === invoice.id
-							? {
-									...currentInvoice,
-									formValues: currentInvoice.formValues
-										? {
-												...currentInvoice.formValues,
-												status,
-											}
-										: currentInvoice.formValues,
-									status,
-								}
-							: currentInvoice,
-					),
+	const queryClient = useQueryClient();
+	const activeBranchId = useAppStore((state) => state.activeBranchId);
+	const activeCompanyId = useAppStore((state) => state.activeCompanyId);
+	const recordsQuery = useQuery({
+		enabled: activeCompanyId !== null && activeBranchId !== null,
+		queryFn: () =>
+			fetchServiceInvoices({
+				branchUnitId: activeBranchId,
+				limit: 500,
+				sortBy: "documentDate",
+				sortDirection: "desc",
+			}),
+		queryKey: ServiceInvoiceQueryKeys.records(activeCompanyId, activeBranchId),
+		retry: false,
+	});
+	function refreshRecords() {
+		void queryClient.invalidateQueries({
+			queryKey: ServiceInvoiceQueryKeys.all(activeCompanyId, activeBranchId),
+		});
+	}
+	const statusMutation = useMutation({
+		mutationFn: ({
+			recordId,
+			status,
+		}: {
+			recordId: string;
+			status: ServiceInvoiceStatus;
+		}) => updateServiceInvoiceStatus({ recordId, status }),
+		onSuccess: (record) => {
+			refreshRecords();
+			void queryClient.invalidateQueries({
+				queryKey: ServiceInvoiceQueryKeys.detail(
+					activeCompanyId,
+					activeBranchId,
+					record.id,
 				),
-			);
-			toast.success(`Service invoice marked as ${status}.`);
+			});
+			toast.success(`Service invoice marked as ${record.status}.`);
 		},
-		[],
-	);
+		onError: (error) => {
+			toast.error(
+				error instanceof Error
+					? error.message
+					: "Could not update service invoice status. Please try again.",
+			);
+		},
+	});
+	const updateInvoiceStatus = (
+		invoice: ServiceInvoiceRecord,
+		status: ServiceInvoiceStatus,
+	) => {
+		statusMutation.mutate({ recordId: invoice.id, status });
+	};
 	const state = useMemo<ServiceInvoiceStoreState>(
 		() => ({
-			isLoading: false,
-			invoices,
-			lastSyncedAt,
+			isLoading: recordsQuery.isLoading,
+			invoices: recordsQuery.data?.invoices.map((invoice) => ({
+				amount: invoice.grossAmount,
+				customerCode: invoice.customerCode,
+				customerName: invoice.customerName,
+				documentDate: invoice.documentDate,
+				formValues: createServiceInvoiceFormValuesFromRecord({
+					amount: invoice.grossAmount,
+					customerCode: invoice.customerCode,
+					customerName: invoice.customerName,
+					documentDate: invoice.documentDate,
+					id: invoice.id,
+					invoiceNo: invoice.invoiceNo ?? "",
+					referenceNo: invoice.referenceNo ?? "",
+					status: mapApiStatus(invoice.status),
+					transactionNo: invoice.transactionNo,
+				}),
+				id: invoice.id,
+				invoiceNo: invoice.invoiceNo ?? "",
+				referenceNo: invoice.referenceNo ?? "",
+				status: mapApiStatus(invoice.status),
+				transactionNo: invoice.transactionNo,
+			})) ?? [],
+			lastSyncedAt: recordsQuery.dataUpdatedAt,
 			updateInvoiceStatus,
 		}),
-		[invoices, lastSyncedAt, updateInvoiceStatus],
+		[recordsQuery.data?.invoices, recordsQuery.dataUpdatedAt, recordsQuery.isLoading],
 	);
 
 	return selector ? selector(state) : (state as TSelected);
@@ -91,11 +150,44 @@ export function useServiceInvoiceActionForm(
 	recordId?: string,
 	onSaved?: (record: ServiceInvoiceRecord) => void,
 ) {
-	const initialRecord =
-		mode === "add"
-			? null
-			: getInitialServiceInvoices().find((invoice) => invoice.id === recordId) ??
-				null;
+	const queryClient = useQueryClient();
+	const activeBranchId = useAppStore((state) => state.activeBranchId);
+	const activeCompanyId = useAppStore((state) => state.activeCompanyId);
+	const recordQuery = useQuery({
+		enabled:
+			mode !== "add" &&
+			Boolean(recordId) &&
+			activeCompanyId !== null &&
+			activeBranchId !== null,
+		initialData: () =>
+			queryClient
+				.getQueryData<ServiceInvoiceListData>(
+					ServiceInvoiceQueryKeys.records(activeCompanyId, activeBranchId),
+				)
+				?.invoices.map((invoice) => ({
+					amount: invoice.grossAmount,
+					customerCode: invoice.customerCode,
+					customerName: invoice.customerName,
+					documentDate: invoice.documentDate,
+					id: invoice.id,
+					invoiceNo: invoice.invoiceNo ?? "",
+					referenceNo: invoice.referenceNo ?? "",
+					status: mapApiStatus(invoice.status),
+					transactionNo: invoice.transactionNo,
+				}))
+				.find((invoice) => invoice.id === recordId),
+		queryFn: () =>
+			fetchServiceInvoice(recordId ?? "", {
+				branchUnitId: activeBranchId,
+			}),
+		queryKey: ServiceInvoiceQueryKeys.detail(
+			activeCompanyId,
+			activeBranchId,
+			recordId ?? "missing",
+		),
+		retry: false,
+	});
+	const initialRecord = mode === "add" ? null : recordQuery.data ?? null;
 	const [loadedRecord, setLoadedRecord] = useState<ServiceInvoiceRecord | null>(
 		initialRecord,
 	);
@@ -104,15 +196,72 @@ export function useServiceInvoiceActionForm(
 			? createServiceInvoiceFormValuesFromRecord(initialRecord)
 			: createServiceInvoiceFormValues(),
 	);
+	const [errors, setErrors] = useState<ServiceInvoiceValidationResult>({
+		isValid: true,
+	});
+	const saveMutation = useMutation({
+		mutationFn: (nextValues: ServiceInvoiceFormValues) => {
+			if (mode === "edit" && loadedRecord) {
+				return updateServiceInvoice(
+					{
+						...loadedRecord,
+						formValues: nextValues,
+					},
+					requireActiveBranchId(activeBranchId),
+				);
+			}
+
+			return createServiceInvoice(
+				nextValues,
+				requireActiveBranchId(activeBranchId),
+			);
+		},
+		onSuccess: (record) => {
+			void queryClient.invalidateQueries({
+				queryKey: ServiceInvoiceQueryKeys.all(activeCompanyId, activeBranchId),
+			});
+			void queryClient.invalidateQueries({
+				queryKey: ServiceInvoiceQueryKeys.detail(
+					activeCompanyId,
+					activeBranchId,
+					record.id,
+				),
+			});
+			setLoadedRecord(record);
+			toast.success(
+				mode === "edit" ? "Service invoice updated." : "Service invoice saved.",
+			);
+			onSaved?.(record);
+		},
+		onError: (error) => {
+			toast.error(
+				error instanceof Error
+					? error.message
+					: "Could not save service invoice. Please try again.",
+			);
+		},
+	});
+
+	useEffect(() => {
+		if (!recordQuery.data) {
+			return;
+		}
+
+		setLoadedRecord(recordQuery.data);
+		setValues(createServiceInvoiceFormValuesFromRecord(recordQuery.data));
+		setErrors({ isValid: true });
+	}, [recordQuery.data]);
 
 	function updateField<Key extends keyof ServiceInvoiceFormValues>(
 		key: Key,
 		value: ServiceInvoiceFormValues[Key],
 	) {
+		setErrors({ isValid: true });
 		setValues((current) => ({ ...current, [key]: value }));
 	}
 
 	function updateLineEntries(lineEntries: ServiceInvoiceLineEntry[]) {
+		setErrors({ isValid: true });
 		setValues((current) => ({
 			...current,
 			...calculateHeaderAmounts(lineEntries),
@@ -127,6 +276,7 @@ export function useServiceInvoiceActionForm(
 	function updateAccountingEntries(
 		accountingEntries: ServiceInvoiceAccountingEntry[],
 	) {
+		setErrors({ isValid: true });
 		setValues((current) => ({
 			...current,
 			accountingEntries,
@@ -137,30 +287,26 @@ export function useServiceInvoiceActionForm(
 		const validation = validateServiceInvoiceForm(values);
 
 		if (!validation.isValid) {
+			setErrors(validation);
 			toast.error(validation.message ?? "Review the service invoice details.");
 			return;
 		}
 
-		const nextRecord = createServiceInvoiceRecordFromForm(
-			values,
-			mode === "edit" ? loadedRecord ?? undefined : undefined,
-		);
-		const nextInvoices = upsertServiceInvoiceRecord(nextRecord);
-
-		writeStoredServiceInvoices(nextInvoices);
-		setLoadedRecord(nextRecord);
-		toast.success(
-			mode === "edit" ? "Service invoice updated." : "Service invoice saved.",
-		);
-		onSaved?.(nextRecord);
+		setErrors({ isValid: true });
+		saveMutation.mutate(values);
 	}
 
 	return {
-		isRecordMissing: mode !== "add" && !initialRecord,
+		isRecordMissing:
+			mode !== "add" &&
+			recordQuery.isFetched &&
+			!recordQuery.isLoading &&
+			!recordQuery.data,
 		submitInvoice,
 		updateAccountingEntries,
 		updateField,
 		updateLineEntries,
+		errors,
 		values,
 	};
 }
@@ -360,29 +506,6 @@ function calculateHeaderAmounts(lineEntries: ServiceInvoiceLineEntry[]) {
 	};
 }
 
-function persistServiceInvoices(invoices: ServiceInvoiceRecord[]) {
-	writeStoredServiceInvoices(invoices);
-
-	return invoices;
-}
-
-function upsertServiceInvoiceRecord(record: ServiceInvoiceRecord) {
-	const currentInvoices = getInitialServiceInvoices();
-	const existingIndex = currentInvoices.findIndex(
-		(invoice) => invoice.id === record.id,
-	);
-
-	if (existingIndex === -1) {
-		return persistServiceInvoices([record, ...currentInvoices]);
-	}
-
-	return persistServiceInvoices(
-		currentInvoices.map((invoice) =>
-			invoice.id === record.id ? record : invoice,
-		),
-	);
-}
-
 function isAmountInRange(value: number, range: AmountRangeValue) {
 	const fromAmount = range.from.trim() ? parseMoneyNumberInput(range.from) : 0;
 	const toAmount = range.to.trim()
@@ -408,3 +531,23 @@ function isDateInRange(value: string, range: DateRangeValue) {
 }
 
 export { createBlankServiceInvoiceLineEntry };
+
+function mapApiStatus(status: string): ServiceInvoiceStatus {
+	const statusMap: Record<string, ServiceInvoiceStatus> = {
+		CANCELLED: "Cancelled",
+		DISAPPROVED: "Disapproved",
+		DRAFT: "Draft",
+		FOR_APPROVAL: "For Approval",
+		POSTED: "Posted",
+	};
+
+	return statusMap[status] ?? "Draft";
+}
+
+function requireActiveBranchId(branchUnitId: number | null) {
+	if (branchUnitId === null) {
+		throw new Error("Select a branch before saving service invoices.");
+	}
+
+	return branchUnitId;
+}

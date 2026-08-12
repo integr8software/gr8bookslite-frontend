@@ -1,11 +1,21 @@
 import { CashAdvanceMultipleEntryStatuses } from "@/app/src/constants/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryConstants";
+import { DisbursementVoucherProjectOptions } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
+import { ResponsibilityCenterInitialFormValues } from "@/app/src/data/modules/financial-maintenance/responsibility-center/ResponsibilityCenterData";
 import type {
   CashAdvanceMultipleEntryAccountingEntry,
   CashAdvanceMultipleEntryFormValues,
   CashAdvanceMultipleEntryItem,
   CashAdvanceMultipleEntryRecord,
 } from "@/app/src/types/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryTypes";
+import type { CashAdvanceRecord } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 import type { CashAdvanceStatus } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
+import type {
+  ResponsibilityCenter,
+  ResponsibilityCenterClassification,
+  ResponsibilityCenterFormValues,
+  ResponsibilityCenterTypeOption,
+} from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 
 export const CashAdvanceMultipleEntryStorageKey =
   "gr8books.cash-advance-multiple-entry.records";
@@ -226,6 +236,159 @@ export function formatCashAdvanceMultipleEntryPercentage(value: number, total: n
   return `${((value / total) * 100).toFixed(2)}% of total`;
 }
 
+export function createCashAdvanceMultipleEntryPartyOptions(
+  currentPartyCode: string,
+  currentPartyName: string,
+): AppAdvancedDropdownOption[] {
+  const options: AppAdvancedDropdownOption[] = [...CashAdvanceMultipleEntryPartyOptions];
+
+  if (currentPartyCode.trim() || currentPartyName.trim()) {
+    addUniqueDropdownOption(options, {
+      description: "Current Cash Advances Multiple Entry value",
+      label: currentPartyCode || "Current party",
+      name: currentPartyName || currentPartyCode,
+      value: currentPartyCode || currentPartyName,
+    });
+  }
+
+  return options;
+}
+
+export function createCashAdvanceMultipleEntrySelectOptions(
+  options: readonly { label: string; value: string }[],
+): AppAdvancedDropdownOption[] {
+  return options
+    .filter((option) => option.value)
+    .map((option) => ({
+      label: option.value,
+      name: option.label,
+      value: option.value,
+    }));
+}
+
+export function createCashAdvanceMultipleEntryProjectOptions({
+  centers,
+  currentProjectCode,
+  currentProjectName,
+}: {
+  centers: ResponsibilityCenter[];
+  currentProjectCode: string;
+  currentProjectName: string;
+}): AppAdvancedDropdownOption[] {
+  const options: AppAdvancedDropdownOption[] = [...DisbursementVoucherProjectOptions];
+
+  centers
+    .filter((center) => center.status === "Active" && center.category === "Project")
+    .forEach((center) => {
+      addUniqueDropdownOption(options, {
+        description: center.financialType,
+        label: center.code,
+        name: center.name,
+        value: center.name,
+      });
+    });
+
+  if (currentProjectName.trim() || currentProjectCode.trim()) {
+    addUniqueDropdownOption(options, {
+      description: "Current Cash Advances Multiple Entry value",
+      label: currentProjectCode || currentProjectName,
+      name: currentProjectName || currentProjectCode,
+      value: currentProjectName || currentProjectCode,
+    });
+  }
+
+  return options;
+}
+
+export function createCashAdvanceMultipleEntryResponsibilityCenterDropdownOptions({
+  centers,
+}: {
+  centers: ResponsibilityCenter[];
+}): AppAdvancedDropdownOption[] {
+  const options: AppAdvancedDropdownOption[] = [
+    ...CashAdvanceMultipleEntryResponsibilityCenterOptions,
+  ];
+
+  centers
+    .filter((center) => center.status === "Active")
+    .forEach((center) => {
+      addUniqueDropdownOption(options, {
+        description: center.financialType,
+        label: center.code,
+        name: center.name,
+        value: center.name,
+      });
+    });
+
+  return options;
+}
+
+export function createCashAdvanceMultipleEntryProjectInitialValues(
+  classifications: ResponsibilityCenterClassification[],
+  types: ResponsibilityCenterTypeOption[],
+): ResponsibilityCenterFormValues {
+  const projectType = types.find((type) => type.name === "Project");
+  const projectClassification = classifications.find(
+    (classification) => classification.id === projectType?.classificationId,
+  );
+  const costCenterClassification = classifications.find(
+    (classification) => classification.name === "Cost Center",
+  );
+  const classification = projectClassification ?? costCenterClassification;
+
+  return {
+    ...ResponsibilityCenterInitialFormValues,
+    category: "Project",
+    classificationId: classification?.id ?? "",
+    financialType: classification?.name ?? "Cost Center",
+    typeId: projectType?.id ?? "",
+  };
+}
+
+export function createCashAdvanceMultipleEntryResponsibilityCenterInitialValues(
+  classifications: ResponsibilityCenterClassification[],
+  types: ResponsibilityCenterTypeOption[],
+): ResponsibilityCenterFormValues {
+  const responsibilityCenterClassification =
+    classifications.find((classification) => classification.name === "Cost Center") ??
+    classifications[0];
+  const responsibilityCenterType = types.find(
+    (type) => type.classificationId === responsibilityCenterClassification?.id,
+  );
+
+  return {
+    ...ResponsibilityCenterInitialFormValues,
+    classificationId: responsibilityCenterClassification?.id ?? "",
+    financialType: responsibilityCenterClassification?.name ?? "",
+    typeId: responsibilityCenterType?.id ?? "",
+  };
+}
+
+export function createCashAdvanceMultipleEntryApprovalRecord(
+  record: CashAdvanceMultipleEntryRecord | null,
+): CashAdvanceRecord | null {
+  if (!record) {
+    return null;
+  }
+
+  return {
+    accountCode: record.accountCode,
+    amount: record.amount,
+    costCenter: record.costCenter,
+    createdAt: record.createdAt,
+    createdBy: record.createdBy,
+    documentDate: record.documentDate,
+    id: record.id,
+    partyCode: record.partyCode,
+    partyName: record.partyName,
+    remarks: record.remarks,
+    status: record.status,
+    transNo: record.transNo,
+    updatedAt: record.updatedAt,
+    updatedBy: record.updatedBy,
+  };
+}
+
 function createCashAdvanceMultipleEntryTransNo(
   value: string,
   existingRecord?: CashAdvanceMultipleEntryRecord,
@@ -293,4 +456,15 @@ function normalizeCashAdvanceMultipleEntryStatus(value: string): CashAdvanceStat
   return statuses.includes(value as CashAdvanceStatus)
     ? (value as CashAdvanceStatus)
     : CashAdvanceMultipleEntryStatuses.forApproval;
+}
+
+function addUniqueDropdownOption(
+  options: AppAdvancedDropdownOption[],
+  option: AppAdvancedDropdownOption,
+) {
+  if (!option.value.trim() || options.some((currentOption) => currentOption.value === option.value)) {
+    return;
+  }
+
+  options.push(option);
 }

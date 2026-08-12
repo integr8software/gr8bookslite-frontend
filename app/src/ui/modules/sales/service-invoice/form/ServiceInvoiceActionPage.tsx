@@ -41,6 +41,7 @@ export function ServiceInvoiceActionPage() {
           <ServiceInvoiceCustomerFields isReadonly={isReadonly} values={invoiceForm.values} onUpdateField={invoiceForm.updateField} />
         </section>
         <ServiceInvoiceEntrySection
+          errors={invoiceForm.errors}
           isReadonly={isReadonly}
           values={invoiceForm.values}
           onAccountingRowsChange={invoiceForm.updateAccountingEntries}

@@ -15,6 +15,7 @@ import type {
   ServiceInvoiceFormValues,
   ServiceInvoiceLineEntry,
 } from "@/app/src/types/modules/sales/service-invoice/ServiceInvoiceTypes";
+import type { ServiceInvoiceValidationResult } from "@/app/src/validations/modules/sales/service-invoice/ServiceInvoiceValidation";
 import {
   ModuleDataEntry,
   type ModuleDataEntryClearAction,
@@ -37,26 +38,31 @@ import {
 import { ServiceInvoiceEntryTabs } from "@/app/src/ui/modules/sales/service-invoice/entries/ServiceInvoiceEntryTabs";
 
 type ServiceInvoiceEntrySectionProps = {
+  errors?: ServiceInvoiceValidationResult;
   isReadonly: boolean;
   values: ServiceInvoiceFormValues;
   onAccountingRowsChange: (rows: ServiceInvoiceAccountingEntry[]) => void;
   onRowsChange: (rows: ServiceInvoiceLineEntry[]) => void;
 };
 
-export function ServiceInvoiceEntrySection({ isReadonly, onAccountingRowsChange, onRowsChange, values }: ServiceInvoiceEntrySectionProps) {
+export function ServiceInvoiceEntrySection({ errors, isReadonly, onAccountingRowsChange, onRowsChange, values }: ServiceInvoiceEntrySectionProps) {
   const [activeTab, setActiveTab] = useState<ServiceInvoiceEntryTab>("service");
   const serviceRows = values.lineEntries;
   const accountingRows =
     values.accountingEntries?.length > 0 ? values.accountingEntries : createDefaultServiceInvoiceAccountingEntries(values);
   const updateServiceEntry = useCallback(
     (rowId: string, updates: Partial<ServiceInvoiceLineEntry>) => {
-      onRowsChange(serviceRows.map((row) => (row.id === rowId ? recalculateServiceInvoiceEntry({ ...row, ...updates }) : row)));
+      onRowsChange(serviceRows.map((row) => (row.id === rowId ? recalculateServiceInvoiceEntry({ ...row, ...updates }, updates) : row)));
     },
     [onRowsChange, serviceRows],
   );
   const serviceColumns = useMemo(
-    () => createServiceInvoiceServiceDetailColumns(isReadonly, updateServiceEntry),
-    [isReadonly, updateServiceEntry],
+    () => createServiceInvoiceServiceDetailColumns(isReadonly, updateServiceEntry, errors?.serviceLineErrors),
+    [errors?.serviceLineErrors, isReadonly, updateServiceEntry],
+  );
+  const highlightedAccountingRowIds = useMemo(
+    () => new Set(Object.keys(errors?.accountingEntryErrors ?? {})),
+    [errors?.accountingEntryErrors],
   );
 
   if (activeTab === "accounting") {
@@ -64,6 +70,7 @@ export function ServiceInvoiceEntrySection({ isReadonly, onAccountingRowsChange,
       <AccountingEntryTable
         createBlankRow={createBlankServiceInvoiceAccountingEntry}
         description="Record service invoice accounting distributions."
+        error={errors?.accountingEntries}
         fieldOptions={{
           partyName: ServiceInvoicePartyOptions,
           vatType: ServiceInvoiceVatTypeOptions,
@@ -71,6 +78,7 @@ export function ServiceInvoiceEntrySection({ isReadonly, onAccountingRowsChange,
           responsibilityCenter: ServiceInvoiceResponsibilityCenterOptions,
         }}
         isReadonly={isReadonly}
+        highlightedAmountRowIds={highlightedAccountingRowIds}
         readOnlyFields={["partyCode"]}
         rows={accountingRows}
         title={<ServiceInvoiceEntryTabs activeTab={activeTab} onTabChange={setActiveTab} />}
@@ -109,6 +117,7 @@ export function ServiceInvoiceEntrySection({ isReadonly, onAccountingRowsChange,
       columnOptions={createColumnOptions(serviceColumns, ["description", "grossAmount"])}
       description=""
       emptyRowLabel="entry"
+      error={errors?.serviceLines}
       exportOptions={EntryExportOptions}
       isDraggable
       isReadonly={isReadonly}

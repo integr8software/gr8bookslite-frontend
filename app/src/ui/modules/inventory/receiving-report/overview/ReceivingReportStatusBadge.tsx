@@ -1,4 +1,4 @@
-import type { ReceivingReportStatus } from "@/app/src/data/modules/inventory/receiving-report/ReceivingReportData";
+import type { ReceivingReportStatus } from "@/app/src/types/modules/inventory/receiving-report/ReceivingReportTypes";
 import {
   receivingReportStatusClassNameByStatus,
   receivingReportStatusIconByStatus,

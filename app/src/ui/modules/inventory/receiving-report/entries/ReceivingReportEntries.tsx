@@ -1,18 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import type {
-  ReceivingReportAccountingEntry,
-  ReceivingReportLine,
-  ReceivingReportTotals,
-} from "@/app/src/data/modules/inventory/receiving-report/ReceivingReportData";
 import { ReceivingReportAccountingEntries } from "@/app/src/ui/modules/inventory/receiving-report/entries/ReceivingReportAccountingEntries";
 import { ReceivingReportEntryTabs } from "@/app/src/ui/modules/inventory/receiving-report/entries/ReceivingReportEntryTabs";
 import { ReceivingReportItemEntries } from "@/app/src/ui/modules/inventory/receiving-report/entries/ReceivingReportItemEntries";
 import type {
+  ReceivingReportAccountingEntry,
   ReceivingReportAccountingEntryUpdater,
   ReceivingReportEntryTab,
   ReceivingReportEntryUpdater,
+  ReceivingReportLine,
+  ReceivingReportTotals,
 } from "@/app/src/types/modules/inventory/receiving-report/ReceivingReportTypes";
 
 export function ReceivingReportEntries({

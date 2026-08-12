@@ -13,10 +13,13 @@ import {
   formatReceivingReportDate,
   getInitialReceivingReports,
   writeStoredReceivingReports,
-  type ReceivingReportRecord,
-  type ReceivingReportStatus,
 } from "@/app/src/data/modules/inventory/receiving-report/ReceivingReportData";
-import type { ReceivingReportRangeValue } from "@/app/src/types/modules/inventory/receiving-report/ReceivingReportTypes";
+import { ReceivingReportStatuses } from "@/app/src/constants/modules/inventory/receiving-report/ReceivingReportConstants";
+import type {
+  ReceivingReportRangeValue,
+  ReceivingReportRecord,
+  ReceivingReportStatus,
+} from "@/app/src/types/modules/inventory/receiving-report/ReceivingReportTypes";
 import { parseIsoDate } from "@/app/src/utils/date.util";
 import { parseAmount } from "@/app/src/utils/number.util";
 
@@ -158,19 +161,30 @@ export function useReceivingReportListPage() {
 }
 
 export function canEditReceivingReportStatus(status: ReceivingReportStatus) {
-  return status === "Draft" || status === "Pending";
+  return (
+    status === ReceivingReportStatuses.draft ||
+    status === ReceivingReportStatuses.pending
+  );
 }
 
 export function canApproveReceivingReportStatus(status: ReceivingReportStatus) {
-  return status === "Draft" || status === "Pending" || status === "Approved";
+  return (
+    status === ReceivingReportStatuses.draft ||
+    status === ReceivingReportStatuses.pending ||
+    status === ReceivingReportStatuses.approved
+  );
 }
 
 export function canDisapproveReceivingReportStatus(status: ReceivingReportStatus) {
-  return status === "Draft" || status === "Pending" || status === "Disapproved";
+  return (
+    status === ReceivingReportStatuses.draft ||
+    status === ReceivingReportStatuses.pending ||
+    status === ReceivingReportStatuses.disapproved
+  );
 }
 
 export function canCancelReceivingReportStatus(status: ReceivingReportStatus) {
-  return status !== "Closed";
+  return status !== ReceivingReportStatuses.closed;
 }
 
 function filterReceivingReports(

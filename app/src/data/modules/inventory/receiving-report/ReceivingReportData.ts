@@ -1,119 +1,15 @@
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
+import { ReceivingReportStatuses } from "@/app/src/constants/modules/inventory/receiving-report/ReceivingReportConstants";
+import type {
+  ReceivingReportAccountingEntry,
+  ReceivingReportFormValues,
+  ReceivingReportLine,
+  ReceivingReportRecord,
+  ReceivingReportStatus,
+  ReceivingReportTotals,
+} from "@/app/src/types/modules/inventory/receiving-report/ReceivingReportTypes";
 
 export const ReceivingReportStorageKey = "gr8books.receiving-report.records";
-
-export type ReceivingReportStatus =
-  "Approved" | "Cancelled" | "Closed" | "Disapproved" | "Draft" | "Pending";
-
-export type ReceivingReportLine = {
-  id: string;
-  itemCode: string;
-  barcode: string;
-  description: string;
-  itemCategory: string;
-  serialNo: string;
-  lotNo: string;
-  color: string;
-  brand: string;
-  size: string;
-  model: string;
-  warehouse: string;
-  poQty: string;
-  rrQty: string;
-  uom: string;
-  expiryDate: string;
-  freightCost: string;
-  cost: string;
-  grossAmount: string;
-  vatAmount: string;
-  discountAmount: string;
-  ewtAmount: string;
-  atc: string;
-  netAmount: string;
-  vatable: string;
-  vatInclusive: string;
-  withEwt: string;
-  responsibilityCenter: string;
-};
-
-export type ReceivingReportAttachment = {
-  id: string;
-  name: string;
-  size: number;
-};
-
-export type ReceivingReportAccountingEntry = {
-  id: string;
-  accountCode: string;
-  accountTitle: string;
-  debit: string;
-  credit: string;
-  partyCode: string;
-  partyName: string;
-  particulars: string;
-  vatType: string;
-  ewtCode: string;
-  responsibilityCenter: string;
-  referenceNo: string;
-};
-
-export type ReceivingReportFormValues = {
-  vceCode: string;
-  vceName: string;
-  currency: string;
-  exchangeRate: string;
-  address: string;
-  contactPerson: string;
-  contactNo: string;
-  deliveryDate: string;
-  dueDate: string;
-  remarks: string;
-  defaultAccount: string;
-  termsOfPayment: string;
-  grossAmount: string;
-  discountAmount: string;
-  vatAmount: string;
-  ewtAmount: string;
-  netAmount: string;
-  warehouse: string;
-  status: string;
-  transNo: string;
-  documentDate: string;
-  drNo: string;
-  poNo: string;
-  prNo: string;
-  siNo: string;
-  importationRefNo: string;
-  projectRef: string;
-  projectCode: string;
-  projectName: string;
-  pjNo: string;
-  responsibilityCenter: string;
-  attachments: ReceivingReportAttachment[];
-  accountingEntries: ReceivingReportAccountingEntry[];
-  lines: ReceivingReportLine[];
-};
-
-export type ReceivingReportRecord = {
-  id: string;
-  documentDate: string;
-  formValues?: ReceivingReportFormValues;
-  netAmount: number;
-  poNo: string;
-  status: ReceivingReportStatus;
-  transactionNo: string;
-  vceCode: string;
-  vceName: string;
-  warehouse: string;
-};
-
-export type ReceivingReportTotals = {
-  discountAmount: number;
-  ewtAmount: number;
-  grossAmount: number;
-  netAmount: number;
-  vatAmount: number;
-};
 
 export const MockReceivingReports: ReceivingReportRecord[] = [
   createReceivingReportRecordFromForm(createMockReceivingReportFormValues(), {
@@ -128,7 +24,7 @@ export const MockReceivingReports: ReceivingReportRecord[] = [
       deliveryDate: "2026-03-22",
       documentDate: "2026-03-22",
       poNo: "PO-000399",
-      status: "Draft",
+      status: ReceivingReportStatuses.draft,
       transNo: "RR-000399",
       vceCode: "SUP-00017",
       vceName: "Northstar Industrial Supply",
@@ -159,7 +55,7 @@ export const MockReceivingReports: ReceivingReportRecord[] = [
       deliveryDate: "2026-03-18",
       documentDate: "2026-03-18",
       poNo: "PO-000398",
-      status: "Closed",
+      status: ReceivingReportStatuses.closed,
       transNo: "RR-000398",
       vceCode: "SUP-00016",
       vceName: "Brightline Packaging Corp.",
@@ -205,7 +101,7 @@ export function createReceivingReportFormValues(): ReceivingReportFormValues {
     ewtAmount: "0.0000",
     netAmount: "0.0000",
     warehouse: "Laguna",
-    status: "Draft",
+    status: ReceivingReportStatuses.draft,
     transNo: "RR-000401",
     documentDate: today,
     drNo: "",
@@ -457,7 +353,7 @@ function createMockReceivingReportFormValues(): ReceivingReportFormValues {
     documentDate: "2026-03-24",
     poNo: "PO-000400",
     siNo: "SI-000400",
-    status: "Approved",
+    status: ReceivingReportStatuses.approved,
     transNo: "RR-000400",
     drNo: "DR-000400",
     vceCode: "SUP-00018",
@@ -484,15 +380,15 @@ function createMockReceivingReportFormValues(): ReceivingReportFormValues {
 
 function normalizeReceivingReportStatus(value: string): ReceivingReportStatus {
   const statuses: ReceivingReportStatus[] = [
-    "Approved",
-    "Cancelled",
-    "Closed",
-    "Disapproved",
-    "Draft",
-    "Pending",
+    ReceivingReportStatuses.approved,
+    ReceivingReportStatuses.cancelled,
+    ReceivingReportStatuses.closed,
+    ReceivingReportStatuses.disapproved,
+    ReceivingReportStatuses.draft,
+    ReceivingReportStatuses.pending,
   ];
 
   return statuses.includes(value as ReceivingReportStatus)
     ? (value as ReceivingReportStatus)
-    : "Draft";
+    : ReceivingReportStatuses.draft;
 }

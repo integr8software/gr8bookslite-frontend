@@ -3,8 +3,9 @@ import {
   countReceivingReportsByStatus,
   formatReceivingReportCurrency,
   formatReceivingReportPercentage,
-  type ReceivingReportRecord,
 } from "@/app/src/data/modules/inventory/receiving-report/ReceivingReportData";
+import { ReceivingReportStatuses } from "@/app/src/constants/modules/inventory/receiving-report/ReceivingReportConstants";
+import type { ReceivingReportRecord } from "@/app/src/types/modules/inventory/receiving-report/ReceivingReportTypes";
 import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 
 export function ReceivingReportMetrics({
@@ -12,10 +13,10 @@ export function ReceivingReportMetrics({
 }: {
   records: ReceivingReportRecord[];
 }) {
-  const approvedCount = countReceivingReportsByStatus(records, "Approved");
-  const draftCount = countReceivingReportsByStatus(records, "Draft");
-  const pendingCount = countReceivingReportsByStatus(records, "Pending");
-  const closedCount = countReceivingReportsByStatus(records, "Closed");
+  const approvedCount = countReceivingReportsByStatus(records, ReceivingReportStatuses.approved);
+  const draftCount = countReceivingReportsByStatus(records, ReceivingReportStatuses.draft);
+  const pendingCount = countReceivingReportsByStatus(records, ReceivingReportStatuses.pending);
+  const closedCount = countReceivingReportsByStatus(records, ReceivingReportStatuses.closed);
   const totalNet = records.reduce((sum, record) => sum + record.netAmount, 0);
 
   return (
@@ -30,21 +31,21 @@ export function ReceivingReportMetrics({
           iconClassName: "bg-skyblue/20 text-skyblue",
         },
         {
-          label: "Draft",
+          label: ReceivingReportStatuses.draft,
           value: draftCount,
           summary: formatReceivingReportPercentage(draftCount, records.length),
           icon: Clock3,
           iconClassName: "bg-offwhite text-darknavy",
         },
         {
-          label: "Pending",
+          label: ReceivingReportStatuses.pending,
           value: pendingCount,
           summary: formatReceivingReportPercentage(pendingCount, records.length),
           icon: Clock3,
           iconClassName: "bg-offwhite text-darknavy",
         },
         {
-          label: "Approved",
+          label: ReceivingReportStatuses.approved,
           value: approvedCount,
           summary: formatReceivingReportPercentage(approvedCount, records.length),
           icon: CheckCircle2,

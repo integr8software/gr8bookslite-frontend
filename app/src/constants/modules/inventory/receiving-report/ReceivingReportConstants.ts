@@ -1,6 +1,5 @@
 import { Ban, CheckCircle2, Clock3, Download, PackageCheck, Upload, XCircle } from "lucide-react";
 import type { ModuleActionMenuItem } from "@/app/src/ui/shared/module/ModuleActionMenu";
-import type { ReceivingReportStatus } from "@/app/src/data/modules/inventory/receiving-report/ReceivingReportData";
 import type {
   ReceivingReportAccountingColumnConfig,
   ReceivingReportAccountingEntryField,
@@ -10,6 +9,7 @@ import type {
   ReceivingReportEntryTab,
   ReceivingReportFormField,
   ReceivingReportLineField,
+  ReceivingReportStatus,
 } from "@/app/src/types/modules/inventory/receiving-report/ReceivingReportTypes";
 
 export const ReceivingReportHref = "/inventory/receiving-report";
@@ -37,7 +37,22 @@ export const ReceivingReportEntryTabsList = [
 
 export const ReceivingReportCurrencyOptions = ["PHP", "USD", "EUR", "JPY"] as const;
 export const ReceivingReportWarehouseOptions = ["Laguna", "Manila", "Cebu", "Davao"] as const;
-export const ReceivingReportStatusOptions = ["Draft", "Open", "Approved", "Closed", "Cancelled"] as const;
+export const ReceivingReportStatuses = {
+  approved: "Approved",
+  cancelled: "Cancelled",
+  closed: "Closed",
+  disapproved: "Disapproved",
+  draft: "Draft",
+  pending: "Pending",
+} as const satisfies Record<string, ReceivingReportStatus>;
+
+export const ReceivingReportStatusOptions = [
+  ReceivingReportStatuses.draft,
+  "Open",
+  ReceivingReportStatuses.approved,
+  ReceivingReportStatuses.closed,
+  ReceivingReportStatuses.cancelled,
+] as const;
 export const ReceivingReportTermsOfPaymentOptions = ["", "COD", "Net 15", "Net 30", "Net 45", "Net 60"] as const;
 export const ReceivingReportUomOptions = ["", "PCS", "BOX", "KG", "LTR"] as const;
 export const ReceivingReportResponsibilityCenterOptions = ["", "Warehouse", "Purchasing", "Operations"] as const;
@@ -78,12 +93,12 @@ export const ReceivingReportOverflowItems = [
 
 export const ReceivingReportStatusFilterOptions = [
   { label: "All Statuses", value: "all" },
-  { label: "Draft", value: "Draft" },
-  { label: "Pending", value: "Pending" },
-  { label: "Approved", value: "Approved" },
-  { label: "Disapproved", value: "Disapproved" },
-  { label: "Closed", value: "Closed" },
-  { label: "Cancelled", value: "Cancelled" },
+  { label: ReceivingReportStatuses.draft, value: ReceivingReportStatuses.draft },
+  { label: ReceivingReportStatuses.pending, value: ReceivingReportStatuses.pending },
+  { label: ReceivingReportStatuses.approved, value: ReceivingReportStatuses.approved },
+  { label: ReceivingReportStatuses.disapproved, value: ReceivingReportStatuses.disapproved },
+  { label: ReceivingReportStatuses.closed, value: ReceivingReportStatuses.closed },
+  { label: ReceivingReportStatuses.cancelled, value: ReceivingReportStatuses.cancelled },
 ] as const;
 
 export const receivingReportStatusIconByStatus = {

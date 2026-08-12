@@ -5,8 +5,11 @@ import { Ban, CheckCircle2, Edit3, Eye, ThumbsDown, Undo2 } from "lucide-react";
 import type {
   ReceivingReportRecord,
   ReceivingReportStatus,
-} from "@/app/src/data/modules/inventory/receiving-report/ReceivingReportData";
-import { ReceivingReportHref } from "@/app/src/constants/modules/inventory/receiving-report/ReceivingReportConstants";
+} from "@/app/src/types/modules/inventory/receiving-report/ReceivingReportTypes";
+import {
+  ReceivingReportHref,
+  ReceivingReportStatuses,
+} from "@/app/src/constants/modules/inventory/receiving-report/ReceivingReportConstants";
 import {
   canApproveReceivingReportStatus,
   canCancelReceivingReportStatus,
@@ -32,25 +35,35 @@ export function ReceivingReportRecordActions({
   record: ReceivingReportRecord;
 }) {
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
-  const isApproved = record.status === "Approved";
-  const isDisapproved = record.status === "Disapproved";
-  const isCancelled = record.status === "Cancelled";
+  const isApproved = record.status === ReceivingReportStatuses.approved;
+  const isDisapproved = record.status === ReceivingReportStatuses.disapproved;
+  const isCancelled = record.status === ReceivingReportStatuses.cancelled;
   const canEdit = canEditReceivingReportStatus(record.status);
-  const undoStatus: ReceivingReportStatus = "Draft";
-  const cancelStatus: ReceivingReportStatus = isCancelled ? "Draft" : "Cancelled";
+  const undoStatus: ReceivingReportStatus = ReceivingReportStatuses.draft;
+  const cancelStatus: ReceivingReportStatus = isCancelled
+    ? ReceivingReportStatuses.draft
+    : ReceivingReportStatuses.cancelled;
   const overflowItems: ModuleActionMenuItem[] = [
     {
       disabled: !canApproveReceivingReportStatus(record.status),
       icon: isApproved ? Undo2 : CheckCircle2,
       label: isApproved ? "Undo Approved" : "Approve",
-      onSelect: () => onUpdateStatus(record, isApproved ? undoStatus : "Approved"),
+      onSelect: () =>
+        onUpdateStatus(
+          record,
+          isApproved ? undoStatus : ReceivingReportStatuses.approved,
+        ),
       type: "button",
     },
     {
       disabled: !canDisapproveReceivingReportStatus(record.status),
       icon: isDisapproved ? Undo2 : ThumbsDown,
       label: isDisapproved ? "Undo Disapproved" : "Disapprove",
-      onSelect: () => onUpdateStatus(record, isDisapproved ? undoStatus : "Disapproved"),
+      onSelect: () =>
+        onUpdateStatus(
+          record,
+          isDisapproved ? undoStatus : ReceivingReportStatuses.disapproved,
+        ),
       tone: isDisapproved ? "default" : "danger",
       type: "button",
     },
@@ -113,7 +126,7 @@ export function ReceivingReportRecordActions({
         tone="danger"
         onCancel={() => setIsCancelDialogOpen(false)}
         onConfirm={() => {
-          onUpdateStatus(record, "Cancelled");
+          onUpdateStatus(record, ReceivingReportStatuses.cancelled);
           setIsCancelDialogOpen(false);
         }}
       />

@@ -71,8 +71,8 @@ export function CashAdvanceMultipleEntryListPage() {
       <ModuleHeader
         variant="panel"
         titleAs="h1"
-        title="Cash Advances Multiple Entry"
-        description="Search Cash Advances Multiple Entry records and open add, view, or edit forms."
+        title="Cash Advance Multiple Entry"
+        description="Search Cash Advance Multiple Entry records and open add, view, or edit forms."
         eyebrow={
           <>
             <ReceiptText className="h-3.5 w-3.5" aria-hidden="true" />
@@ -299,7 +299,7 @@ function CashAdvanceMultipleEntryRecordActions({
       <ModuleTableActions className="!justify-center">
         <ModuleActionMenu
           items={items}
-          label={`Actions for Cash Advances Multiple Entry ${recordLabel}`}
+          label={`Actions for Cash Advance Multiple Entry ${recordLabel}`}
         />
       </ModuleTableActions>
       {statusDialogCopy ? (
@@ -363,7 +363,7 @@ function getCashAdvanceMultipleEntryStatusDialogCopy(status: CashAdvanceStatus, 
       description: `This will approve ${recordLabel} and update its status to Posted.`,
       iconTone: "approve" as const,
       pendingLabel: "Approving...",
-      title: "Approve Cash Advances Multiple Entry?",
+      title: "Approve Cash Advance Multiple Entry?",
       tone: "success" as const,
     };
   }
@@ -374,7 +374,7 @@ function getCashAdvanceMultipleEntryStatusDialogCopy(status: CashAdvanceStatus, 
       description: `This will mark ${recordLabel} as Disapproved.`,
       iconTone: "disapprove" as const,
       pendingLabel: "Disapproving...",
-      title: "Disapprove Cash Advances Multiple Entry?",
+      title: "Disapprove Cash Advance Multiple Entry?",
       tone: "danger" as const,
     };
   }
@@ -384,7 +384,7 @@ function getCashAdvanceMultipleEntryStatusDialogCopy(status: CashAdvanceStatus, 
     description: `This will mark ${recordLabel} as Cancelled.`,
     iconTone: "cancel" as const,
     pendingLabel: "Cancelling...",
-    title: "Make Cash Advances Multiple Entry as Cancelled",
+    title: "Make Cash Advance Multiple Entry as Cancelled",
     tone: "danger" as const,
   };
 }
@@ -393,7 +393,7 @@ function CashAdvanceMultipleEntryListHeaderActions() {
   return (
     <Link href={`${CashAdvanceMultipleEntryHref}/add`} className={moduleHeaderActionClassNames.primary}>
       <Plus className="h-4 w-4" aria-hidden="true" />
-      Start New Cash Advances Multiple Entry
+      Start New Cash Advance Multiple Entry
     </Link>
   );
 }

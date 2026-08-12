@@ -33,10 +33,10 @@ export function CashAdvanceMultipleEntryHeader({
 }) {
   const title =
     mode === "view"
-      ? "View Cash Advances Multiple Entry"
+      ? "View Cash Advance Multiple Entry"
       : mode === "edit"
-        ? "Edit Cash Advances Multiple Entry"
-        : "Add Cash Advances Multiple Entry";
+        ? "Edit Cash Advance Multiple Entry"
+        : "Add Cash Advance Multiple Entry";
   const approvalRecord = createCashAdvanceMultipleEntryApprovalRecord(record);
 
   return (

@@ -230,7 +230,7 @@ function CashAdvanceMultipleEntryEntryTabsView({
   onTabChange: (tab: CashAdvanceMultipleEntryTab) => void;
 }) {
   return (
-    <div role="tablist" aria-label="Cash advances multiple entry lines" className="inline-flex rounded-lg border border-darknavy/10 bg-offwhite/70 p-1">
+    <div role="tablist" aria-label="Cash advance multiple entry lines" className="inline-flex rounded-lg border border-darknavy/10 bg-offwhite/70 p-1">
       {CashAdvanceMultipleEntryEntryTabs.map((tab) => (
         <button
           key={tab.id}

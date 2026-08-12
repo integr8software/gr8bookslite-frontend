@@ -22,7 +22,7 @@ export function validateCashAdvanceMultipleEntryForm(
   if (!result.success) {
     return {
       isValid: false,
-      message: result.error.issues[0]?.message ?? "Review the Cash Advances Multiple Entry details.",
+      message: result.error.issues[0]?.message ?? "Review the Cash Advance Multiple Entry details.",
     };
   }
 

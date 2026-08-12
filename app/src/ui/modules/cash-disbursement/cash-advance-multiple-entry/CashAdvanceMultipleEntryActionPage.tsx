@@ -101,7 +101,7 @@ export function CashAdvanceMultipleEntryActionPage() {
   if (form.isRecordMissing) {
     return (
       <section className="grid gap-4 rounded-lg border border-darknavy/10 bg-white p-5">
-        <h1 className="text-xl font-semibold text-darknavy">Cash advances multiple entry not found</h1>
+        <h1 className="text-xl font-semibold text-darknavy">Cash advance multiple entry not found</h1>
         <Link href={CashAdvanceMultipleEntryHref} className={moduleHeaderActionClassNames.secondary}>
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           Back
@@ -131,7 +131,7 @@ export function CashAdvanceMultipleEntryActionPage() {
         />
         <ModuleTabs
           activeTab={activeDetailsTab}
-          ariaLabel="Cash advances multiple entry details"
+          ariaLabel="Cash advance multiple entry details"
           tabs={CashAdvanceMultipleEntryDetailsTabs}
           onTabChange={setActiveDetailsTab}
         />
@@ -153,7 +153,7 @@ export function CashAdvanceMultipleEntryActionPage() {
             attachments={form.values.attachments}
             inputName="cashAdvanceMultipleEntryAttachments"
             isReadonly={isReadonly}
-            uploadTitle="Attach Cash Advances Multiple Entry Files"
+            uploadTitle="Attach Cash Advance Multiple Entry Files"
             onAttachmentsChange={(attachments) => form.updateField("attachments", attachments)}
           />
         )}
@@ -284,7 +284,7 @@ function CashAdvanceMultipleEntryFieldVisibilityButton({
   return (
     <ModuleFieldsVisibilityDialog
       buttonLabel="Edit Layout"
-      title="Cash Advances Multiple Entry Codes"
+      title="Cash Advance Multiple Entry Codes"
       fields={[
         createVisibilityField("partyCode", "Party Code", visibleCodes, onVisibleCodeChange),
         createVisibilityField("projectCode", "Project Code", visibleCodes, onVisibleCodeChange),

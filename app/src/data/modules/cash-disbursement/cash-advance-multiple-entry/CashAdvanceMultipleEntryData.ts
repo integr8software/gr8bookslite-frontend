@@ -244,7 +244,7 @@ export function createCashAdvanceMultipleEntryPartyOptions(
 
   if (currentPartyCode.trim() || currentPartyName.trim()) {
     addUniqueDropdownOption(options, {
-      description: "Current Cash Advances Multiple Entry value",
+      description: "Current Cash Advance Multiple Entry value",
       label: currentPartyCode || "Current party",
       name: currentPartyName || currentPartyCode,
       value: currentPartyCode || currentPartyName,
@@ -290,7 +290,7 @@ export function createCashAdvanceMultipleEntryProjectOptions({
 
   if (currentProjectName.trim() || currentProjectCode.trim()) {
     addUniqueDropdownOption(options, {
-      description: "Current Cash Advances Multiple Entry value",
+      description: "Current Cash Advance Multiple Entry value",
       label: currentProjectCode || currentProjectName,
       name: currentProjectName || currentProjectCode,
       value: currentProjectName || currentProjectCode,

@@ -102,7 +102,7 @@ export function useCashAdvanceMultipleEntryStore<TSelected = CashAdvanceMultiple
         return nextEntries;
       });
       setLastSyncedAt(Date.now());
-      toast.success(`Cash advances multiple entry marked as ${status}.`);
+      toast.success(`Cash advance multiple entry marked as ${status}.`);
     },
     [],
   );
@@ -174,7 +174,7 @@ export function useCashAdvanceMultipleEntryActionForm(
     const validation = validateCashAdvanceMultipleEntryForm(nextValues);
 
     if (!validation.isValid) {
-      toast.error(validation.message ?? "Review the cash advances multiple entry details.");
+      toast.error(validation.message ?? "Review the cash advance multiple entry details.");
       return;
     }
 
@@ -187,7 +187,7 @@ export function useCashAdvanceMultipleEntryActionForm(
     writeStoredCashAdvanceMultipleEntries(nextEntries);
     setLoadedRecord(nextRecord);
     setValues(createCashAdvanceMultipleEntryFormValuesFromRecord(nextRecord));
-    toast.success(mode === "edit" ? "Cash advances multiple entry updated." : "Cash advances multiple entry saved.");
+    toast.success(mode === "edit" ? "Cash advance multiple entry updated." : "Cash advance multiple entry saved.");
     onSaved?.(nextRecord);
   }
 
@@ -217,7 +217,7 @@ export function useCashAdvanceMultipleEntryActionForm(
     writeStoredCashAdvanceMultipleEntries(nextEntries);
     setLoadedRecord(nextRecord);
     setValues(nextValues);
-    toast.success(`Cash advances multiple entry marked as ${officialStatus}.`);
+    toast.success(`Cash advance multiple entry marked as ${officialStatus}.`);
   }
 
   return {

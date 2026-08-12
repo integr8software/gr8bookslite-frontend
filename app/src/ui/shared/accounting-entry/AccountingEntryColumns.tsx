@@ -39,6 +39,7 @@ export type AccountingEntryColumnOptions = Partial<
 
 export type AccountingEntryColumnConfig<TRow extends AccountingEntry> = {
   columnIds?: readonly AccountingEntryColumnId[];
+  highlightedAmountRowIds?: ReadonlySet<string>;
   options?: AccountingEntryColumnOptions;
   readOnlyFields?: readonly AccountingEntryColumnId[];
   onFieldChange?: (row: TRow, columnId: AccountingEntryColumnId, value: string) => Partial<Omit<TRow, "id">> | undefined;
@@ -48,6 +49,7 @@ export type AccountingEntryColumnConfig<TRow extends AccountingEntry> = {
 
 export function createAccountingEntryColumns<TRow extends AccountingEntry>({
   columnIds = AccountingEntryColumnIds,
+  highlightedAmountRowIds,
   isReadonly,
   onUpdateEntry,
   options = {},
@@ -71,6 +73,7 @@ export function createAccountingEntryColumns<TRow extends AccountingEntry>({
         onUpdateEntry,
         onFieldChange,
         options,
+        highlightedAmountRowIds,
       ),
   }));
 }
@@ -93,15 +96,23 @@ function renderAccountingCell<TRow extends AccountingEntry>(
   onUpdateEntry: AccountingEntryUpdate<TRow>,
   onFieldChange: ((row: TRow, columnId: AccountingEntryColumnId, value: string) => Partial<Omit<TRow, "id">> | undefined) | undefined,
   options: AccountingEntryColumnOptions,
+  highlightedAmountRowIds?: ReadonlySet<string>,
 ) {
   if (columnId === "debit" || columnId === "credit") {
+    const isHighlighted = highlightedAmountRowIds?.has(row.id) ?? false;
+
     return (
       <MoneyNumberField
         id={context.fieldId}
         name={context.fieldName}
         value={parseMoneyNumberInput(String(row[columnId])) > 0 ? String(row[columnId]) : ""}
         readOnly={isReadonly}
-        className="h-10 w-full border-0 bg-transparent px-3 text-right text-sm font-medium tabular-nums outline-none focus:bg-white/5"
+        className={joinClasses(
+          "h-10 w-full border-0 bg-transparent px-3 text-right text-sm font-medium tabular-nums outline-none focus:bg-white/5",
+          isHighlighted
+            ? "bg-coralpink/10 text-coralpink ring-2 ring-inset ring-coralpink/50"
+            : "",
+        )}
         onValueChange={(value) => {
           const amount = parseMoneyNumberInput(value);
           onUpdateEntry(row.id, getAccountingEntryAmountUpdates(row, columnId, amount));

@@ -32,7 +32,9 @@ import {
 type AccountingEntryTableProps<TRow extends AccountingEntry> = {
   createBlankRow: AccountingEntryRowFactory<TRow>;
   description?: string;
+  error?: string;
   fieldOptions?: AccountingEntryColumnOptions;
+  highlightedAmountRowIds?: ReadonlySet<string>;
   onFieldChange?: AccountingEntryColumnConfig<TRow>["onFieldChange"];
   isReadonly: boolean;
   readOnlyFields?: readonly AccountingEntryColumnId[];
@@ -45,7 +47,9 @@ type AccountingEntryTableProps<TRow extends AccountingEntry> = {
 export function AccountingEntryTable<TRow extends AccountingEntry>({
   createBlankRow,
   description = "Record accounting distributions.",
+  error,
   fieldOptions,
+  highlightedAmountRowIds,
   isReadonly,
   onFieldChange,
   readOnlyFields = [],
@@ -67,6 +71,7 @@ export function AccountingEntryTable<TRow extends AccountingEntry>({
         isReadonly,
         onUpdateEntry: updateEntry,
         onFieldChange,
+        highlightedAmountRowIds,
         options: fieldOptions,
         readOnlyFields,
       }),
@@ -107,6 +112,7 @@ export function AccountingEntryTable<TRow extends AccountingEntry>({
       columnOptions={columnOptions}
       description={description}
       emptyRowLabel="accounting entry"
+      error={error}
       exportOptions={AccountingEntryExportOptions}
       isDraggable
       isReadonly={isReadonly}

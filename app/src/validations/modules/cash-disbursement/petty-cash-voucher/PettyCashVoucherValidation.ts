@@ -3,10 +3,20 @@ import type {
   PettyCashVoucherFormErrors,
   PettyCashVoucherFormValues,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
+import {
+  PettyCashVoucherFormStatusOptions,
+  PettyCashVoucherTransactionNumberPadding,
+  PettyCashVoucherTransactionPrefix,
+  PettyCashVoucherVATableOptions,
+} from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
+import { parseAmount } from "@/app/src/utils/number.util";
 
 const requiredText = (message: string) => z.string().trim().min(1, message);
+const transactionNumberPattern = new RegExp(
+  `^${PettyCashVoucherTransactionPrefix}-\\d{${PettyCashVoucherTransactionNumberPadding}}$`,
+);
 const amount = z.preprocess(
-  (value) => (typeof value === "string" ? value.replace(/,/g, "") : value),
+  (value) => (typeof value === "string" ? parseAmount(value) : value),
   z.coerce.number().finite().min(0, "Enter a valid amount."),
 );
 
@@ -15,18 +25,22 @@ export const PettyCashVoucherFormValidationSchema = z.object({
   accountTitle: requiredText("Enter an account title."),
   amount: amount.refine(
     (value) => value > 0,
-    "Enter an amount greater than zero.",
+    "Enter an amount.",
   ),
-  costCenter: z.string(),
-  documentDate: requiredText("Select a document date."),
+  documentDate: requiredText("Select a petty cash voucher date."),
   netAmount: amount,
-  remarks: z.string(),
-  status: z.enum(["Pending", "Approved", "Cancelled"]),
-  transactionNo: requiredText("Enter a transaction number."),
-  vatable: z.enum(["False", "True"]),
+  remarks: z.string().max(500, "Remarks can only be up to 500 characters."),
+  responsibilityCenter: z.string(),
+  responsibilityCenterCode: z.string(),
+  status: z.enum(PettyCashVoucherFormStatusOptions),
+  transactionNo: requiredText("Generate a petty cash voucher number.").regex(
+    transactionNumberPattern,
+    "Use the generated petty cash voucher number format.",
+  ),
+  vatable: z.enum(PettyCashVoucherVATableOptions),
   vatAmount: amount,
-  vceCode: requiredText("Enter a VCE code."),
-  vceName: requiredText("Enter a VCE name."),
+  partyCode: requiredText("Enter a party code."),
+  partyName: requiredText("Enter a party name."),
 });
 
 export function validatePettyCashVoucherForm(

@@ -2,22 +2,12 @@
 
 import Link from "next/link";
 import type { Row } from "@tanstack/react-table";
-import {
-  Ban,
-  CheckCircle2,
-  Clock3,
-  PackageCheck,
-  Plus,
-  ReceiptText,
-  Search,
-  XCircle,
-} from "lucide-react";
+import { Plus, ReceiptText, Search } from "lucide-react";
 import {
   countCashAdvancesByStatus,
   formatCashAdvanceCurrency,
   formatCashAdvanceDate,
   formatCashAdvancePercentage,
-  getCashAdvanceStatusLabel,
 } from "@/app/src/data/modules/cash-disbursement/cash-advance/CashAdvanceData";
 import {
   CashAdvanceAccountOptions,
@@ -43,6 +33,11 @@ import {
   moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
+import {
+  getModuleStatusMetricIcon,
+  getModuleStatusMetricIconClassName,
+  ModuleStatusBadge,
+} from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import {
   getColumnMetaClassName,
@@ -196,7 +191,7 @@ function CashAdvanceCellContent({
     case "partyCode":
       return <span className="font-semibold text-darknavy">{record.partyCode}</span>;
     case "accountCode":
-      return <span className="font-semibold text-darknavy">{record.accountCode || "-"}</span>;
+      return <span className="font-semibold text-darknavy">{record.accountCode || ""}</span>;
     case "accountTitle":
       return (
         <div className="text-darknavy">
@@ -204,13 +199,17 @@ function CashAdvanceCellContent({
         </div>
       );
     case "remarks":
-      return <span className="line-clamp-2 text-sm text-darknavy/80">{record.remarks || "-"}</span>;
+      return <span className="line-clamp-2 text-sm text-darknavy/80">{record.remarks || ""}</span>;
     case "amount":
       return <span className="font-semibold text-darknavy">{formatCashAdvanceCurrency(record.amount)}</span>;
     case "currency":
       return <span className="font-semibold text-darknavy">{record.formValues?.currency ?? "PHP"}</span>;
     case "status":
-      return <CashAdvanceStatusBadge status={record.status} />;
+      return (
+        <div className="flex w-full justify-center">
+          <CashAdvanceStatusBadge status={record.status} />
+        </div>
+      );
     case "createdBy":
       return record.createdBy ?? "";
     case "createdAt":
@@ -264,15 +263,17 @@ function CashAdvanceMetrics({
       items={[
         {
           icon: ReceiptText,
-          label: "Total Transaction",
+          label: "Total Entries",
           summary: "All time",
+          tone: "violet",
           value: records.length,
           isActive: statusFilter === "all",
           onClick: () => onStatusFilterChange("all"),
         },
         {
-          icon: Clock3,
-          iconClassName: "bg-slate-100 text-slate-700",
+          icon: getModuleStatusMetricIcon(CashAdvanceStatuses.draft),
+          iconClassName: getModuleStatusMetricIconClassName(CashAdvanceStatuses.draft),
+          tone: "blue",
           label: CashAdvanceStatuses.draft,
           summary: formatCashAdvancePercentage(draftCount, records.length),
           value: draftCount,
@@ -280,8 +281,9 @@ function CashAdvanceMetrics({
           onClick: () => onStatusFilterChange(CashAdvanceStatuses.draft),
         },
         {
-          icon: Clock3,
-          iconClassName: "bg-skyblue/15 text-skyblue",
+          icon: getModuleStatusMetricIcon(CashAdvanceStatuses.forApproval),
+          iconClassName: getModuleStatusMetricIconClassName(CashAdvanceStatuses.forApproval),
+          tone: "amber",
           label: CashAdvanceStatuses.forApproval,
           summary: formatCashAdvancePercentage(forApprovalCount, records.length),
           value: forApprovalCount,
@@ -289,8 +291,9 @@ function CashAdvanceMetrics({
           onClick: () => onStatusFilterChange(CashAdvanceStatuses.forApproval),
         },
         {
-          icon: CheckCircle2,
-          iconClassName: "bg-emerald-50 text-emerald-700",
+          icon: getModuleStatusMetricIcon(CashAdvanceStatuses.posted),
+          iconClassName: getModuleStatusMetricIconClassName(CashAdvanceStatuses.posted),
+          tone: "emerald",
           label: CashAdvanceStatuses.posted,
           summary: formatCashAdvancePercentage(postedCount, records.length),
           value: postedCount,
@@ -298,8 +301,9 @@ function CashAdvanceMetrics({
           onClick: () => onStatusFilterChange(CashAdvanceStatuses.posted),
         },
         {
-          icon: XCircle,
-          iconClassName: "bg-coralpink/15 text-coralpink",
+          icon: getModuleStatusMetricIcon(CashAdvanceStatuses.disapproved),
+          iconClassName: getModuleStatusMetricIconClassName(CashAdvanceStatuses.disapproved),
+          tone: "red",
           label: CashAdvanceStatuses.disapproved,
           summary: formatCashAdvancePercentage(disapprovedCount, records.length),
           value: disapprovedCount,
@@ -307,8 +311,9 @@ function CashAdvanceMetrics({
           onClick: () => onStatusFilterChange(CashAdvanceStatuses.disapproved),
         },
         {
-          icon: Ban,
-          iconClassName: "bg-amber-50 text-amber-700",
+          icon: getModuleStatusMetricIcon(CashAdvanceStatuses.cancelled),
+          iconClassName: getModuleStatusMetricIconClassName(CashAdvanceStatuses.cancelled),
+          tone: "slate",
           label: CashAdvanceStatuses.cancelled,
           summary: formatCashAdvancePercentage(cancelledCount, records.length),
           value: cancelledCount,
@@ -321,33 +326,5 @@ function CashAdvanceMetrics({
 }
 
 function CashAdvanceStatusBadge({ status }: { status: CashAdvanceStatus }) {
-  const Icon = statusIconByStatus[status];
-
-  return (
-    <span
-      className={joinClasses(
-        "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold",
-        statusClassNameByStatus[status],
-      )}
-    >
-      <Icon className="h-3.5 w-3.5" aria-hidden="true" />
-      {getCashAdvanceStatusLabel(status)}
-    </span>
-  );
+  return <ModuleStatusBadge status={status} />;
 }
-
-const statusIconByStatus = {
-  [CashAdvanceStatuses.cancelled]: Ban,
-  [CashAdvanceStatuses.disapproved]: XCircle,
-  [CashAdvanceStatuses.draft]: Clock3,
-  [CashAdvanceStatuses.forApproval]: Clock3,
-  [CashAdvanceStatuses.posted]: PackageCheck,
-} satisfies Record<CashAdvanceStatus, typeof CheckCircle2>;
-
-const statusClassNameByStatus = {
-  [CashAdvanceStatuses.cancelled]: "bg-amber-50 text-amber-700",
-  [CashAdvanceStatuses.disapproved]: "bg-coralpink/15 text-coralpink",
-  [CashAdvanceStatuses.draft]: "bg-slate-100 text-slate-700",
-  [CashAdvanceStatuses.forApproval]: "bg-skyblue/15 text-skyblue",
-  [CashAdvanceStatuses.posted]: "bg-emerald-50 text-emerald-700",
-} satisfies Record<CashAdvanceStatus, string>;

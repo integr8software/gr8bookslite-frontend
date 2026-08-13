@@ -19,6 +19,10 @@ import {
   getInitialCashAdvances,
   writeStoredCashAdvances,
 } from "@/app/src/data/modules/cash-disbursement/cash-advance/CashAdvanceData";
+import {
+  formatMoneyNumberDisplayValue,
+  parseMoneyNumberInput,
+} from "@/app/src/data/shared/money/MoneyNumberData";
 import { syncTaxDetailsAmount } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import {
   CashAdvanceDefaultColumnVisibility,
@@ -103,12 +107,6 @@ export function useCashAdvanceActionForm(
       ? createCashAdvanceFormValuesFromRecord(initialRecord)
       : createCashAdvanceFormValues(),
   );
-  const [visibleReferenceFields, setVisibleReferenceFields] = useState({
-    accountCode: false,
-    costCenterCode: false,
-    partyCode: false,
-    projectCode: false,
-  });
 
   function updateField<Key extends keyof CashAdvanceFormValues>(
     key: Key,
@@ -125,7 +123,7 @@ export function useCashAdvanceActionForm(
         ...current.taxValue,
         taxDetails: syncTaxDetailsAmount(
           current.taxValue.taxDetails,
-          Number(amount || 0),
+          parseMoneyNumberInput(amount),
           current.taxValue.taxRate,
         ),
       },
@@ -142,20 +140,10 @@ export function useCashAdvanceActionForm(
     }));
   }
 
-  function updateReferenceFieldVisibility(
-    field: CashAdvanceReferenceField,
-    isVisible: boolean,
-  ) {
-    setVisibleReferenceFields((current) => ({
-      ...current,
-      [field]: isVisible,
-    }));
-  }
-
   function updateTaxValue(taxValue: AppTaxRateDialogValue) {
     setValues((current) => ({
       ...current,
-      amount: String(taxValue.taxDetails.grossAmount || ""),
+      amount: formatMoneyNumberDisplayValue(taxValue.taxDetails.grossAmount || ""),
       taxValue,
     }));
   }
@@ -222,10 +210,8 @@ export function useCashAdvanceActionForm(
     updateAmount,
     updateField,
     updateReferenceField,
-    updateReferenceFieldVisibility,
     updateTaxValue,
     values,
-    visibleReferenceFields,
   };
 }
 
@@ -329,8 +315,8 @@ export function useCashAdvanceTable(advances: CashAdvanceRecord[]) {
       {
         accessorKey: "amount",
         id: "amount",
-        header: "Amount",
-        meta: { className: "w-[9rem]", label: "Amount" },
+        header: "Total Amount",
+        meta: { className: "w-[9rem]", label: "Total Amount" },
       },
       {
         accessorKey: "remarks",
@@ -369,7 +355,7 @@ export function useCashAdvanceTable(advances: CashAdvanceRecord[]) {
         id: "status",
         header: "Status",
         meta: {
-          className: "w-[9rem]",
+          className: "w-[9rem] text-center",
           label: "Status",
         },
       },

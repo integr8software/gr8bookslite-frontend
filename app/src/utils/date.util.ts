@@ -88,6 +88,28 @@ export function addMonths(date: Date, months: number) {
 	return new Date(date.getFullYear(), date.getMonth() + months, 1);
 }
 
+export function formatDate(
+	value?: Date | string,
+	{
+		emptyValue = "",
+		invalidValue,
+		locale = "en-PH",
+	}: FormatDateTimeOptions = {},
+) {
+	if (!value) {
+		return emptyValue;
+	}
+
+	const date = value instanceof Date ? value : new Date(value);
+	if (Number.isNaN(date.getTime())) {
+		return invalidValue ?? (typeof value === "string" ? value : emptyValue);
+	}
+
+	return new Intl.DateTimeFormat(locale, {
+		dateStyle: "medium",
+	}).format(date);
+}
+
 export function formatDateTime(
 	value?: Date | string,
 	{

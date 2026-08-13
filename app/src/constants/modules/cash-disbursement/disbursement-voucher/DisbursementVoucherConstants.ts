@@ -31,6 +31,7 @@ export const DisbursementVoucherActionTabs: {
   label: string;
 }[] = [
   { id: "details", label: "Voucher Details" },
+  { id: "bank-information", label: "Bank Information" },
   { id: "attachments", label: "File Attachments" },
 ];
 
@@ -40,6 +41,7 @@ export const DisbursementVoucherStatuses = {
   disapproved: "Disapproved",
   draft: "Draft",
   forApproval: "For Approval",
+  open: "Open",
   posted: "Posted",
 } as const;
 
@@ -163,7 +165,7 @@ export const DisbursementVoucherTableColumns = [
   {
     key: "status",
     label: "Status",
-    className: "w-[10rem]",
+    className: "w-[10rem] text-center",
   },
   {
     label: "Action",

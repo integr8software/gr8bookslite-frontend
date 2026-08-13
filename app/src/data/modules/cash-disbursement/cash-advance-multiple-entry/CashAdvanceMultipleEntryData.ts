@@ -107,7 +107,7 @@ export function createCashAdvanceMultipleEntryFormValues(): CashAdvanceMultipleE
     projectCode: "",
     projectRef: "",
     remarks: "",
-    status: CashAdvanceMultipleEntryStatuses.draft,
+    status: CashAdvanceMultipleEntryStatuses.open,
     totalAmount: "",
     transNo: createNextCashAdvanceMultipleEntryTransNo(),
   };

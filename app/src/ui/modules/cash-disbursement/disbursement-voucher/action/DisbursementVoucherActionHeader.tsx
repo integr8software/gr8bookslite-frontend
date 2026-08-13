@@ -4,6 +4,7 @@ import { DisbursementVoucherHref } from "@/app/src/constants/modules/cash-disbur
 import type { DisbursementVoucherActionHeaderProps } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleSaveButton } from "@/app/src/ui/shared/module/ModuleSaveButton";
+import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 import { AppCopyFromDropdown } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
 import { DisbursementVoucherViewActions } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherViewActions";
@@ -21,7 +22,7 @@ export function DisbursementVoucherActionHeader({
   onCopyFrom,
   returnHref = DisbursementVoucherHref,
 }: DisbursementVoucherActionHeaderProps) {
-  const title =
+  const titleLabel =
     mode === "view"
       ? voucher?.voucherNo
         ? `View Disbursement Voucher | ${voucher.voucherNo}`
@@ -31,6 +32,12 @@ export function DisbursementVoucherActionHeader({
           ? `Edit Disbursement Voucher | ${voucher.voucherNo}`
           : "Edit Disbursement Voucher"
         : "Add Disbursement Voucher";
+  const title = (
+    <span className="inline-flex flex-wrap items-center gap-2">
+      <span>{titleLabel}</span>
+      {voucher?.status ? <ModuleStatusBadge status={voucher.status} /> : null}
+    </span>
+  );
   const helperText =
     mode === "view"
       ? "Review the transaction source and choose whether to create or update a voucher."

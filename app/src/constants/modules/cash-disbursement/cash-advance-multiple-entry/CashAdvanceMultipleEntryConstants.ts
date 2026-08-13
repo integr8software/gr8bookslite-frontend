@@ -18,6 +18,7 @@ export const CashAdvanceMultipleEntryStatuses = {
   disapproved: "Disapproved",
   draft: "Draft",
   forApproval: "For Approval",
+  open: "Open",
   posted: "Posted",
 } as const;
 
@@ -85,7 +86,7 @@ export const CashAdvanceMultipleEntryFieldClassName =
   "app-data-entry-field h-11 min-w-0 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15 read-only:bg-white read-only:text-darknavy disabled:bg-white disabled:text-darknavy";
 
 export const CashAdvanceMultipleEntryReadOnlyFieldClassName =
-  CashAdvanceMultipleEntryFieldClassName;
+  "app-data-entry-field transaction-readonly-placeholder h-11 min-w-0 w-full rounded-lg border border-darknavy/10 bg-darknavy/5 px-3 text-sm font-medium text-darknavy/60 outline-none placeholder:text-darknavy/35";
 
 export const CashAdvanceMultipleEntryEntryInputClassName =
   "h-10 w-full min-w-0 border-0 bg-transparent px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 read-only:text-darknavy focus:ring-2 focus:ring-inset focus:ring-skyblue/35";

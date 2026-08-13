@@ -7,16 +7,6 @@ export type CashAdvanceMultipleEntryTab = "items" | "accounting";
 
 export type CashAdvanceMultipleEntryDetailsTab = "details" | "attachment";
 
-export type CashAdvanceMultipleEntryVisibleCode =
-  | "accountCode"
-  | "partyCode"
-  | "projectCode";
-
-export type CashAdvanceMultipleEntryVisibleCodeState = Record<
-  CashAdvanceMultipleEntryVisibleCode,
-  boolean
->;
-
 export type CashAdvanceMultipleEntryItem = {
   id: string;
   partyCode: string;

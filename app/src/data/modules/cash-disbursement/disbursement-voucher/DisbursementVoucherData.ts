@@ -940,7 +940,7 @@ export function createDisbursementVoucherFormValues(
     paymentDueDate: transaction?.paymentDueDate ?? todayDateValue(),
     paymentDetails: createEmptyPaymentDetails(),
     preparedBy: "Finance Shared Services",
-    status: DisbursementVoucherStatuses.draft,
+    status: DisbursementVoucherStatuses.open,
     lineEntries: transaction
       ? ensureDisbursementLineEntries(createAutoDisbursementLineEntries(transaction))
       : [createBlankDisbursementLineEntry()],

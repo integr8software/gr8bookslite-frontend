@@ -1,8 +1,6 @@
-import dynamic from "next/dynamic";
 import { useState } from "react";
 import {
   Ban,
-  History,
   ThumbsDown,
   ThumbsUp,
   Undo2,
@@ -15,7 +13,6 @@ import {
   getDisbursementVoucherStatusDialogCopy,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import type {
-  DisbursementVoucherHistoryEntry,
   DisbursementTransactionRecord,
   DisbursementVoucherRecord,
   DisbursementVoucherStatus,
@@ -27,14 +24,7 @@ import {
 } from "@/app/src/ui/shared/module/ModuleActionMenu";
 import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
-
-const ModuleHistoryDialog = dynamic(
-  () =>
-    import("@/app/src/ui/shared/module/ModuleHistoryDialog").then(
-      (module) => module.ModuleHistoryDialog,
-    ),
-  { ssr: false },
-);
+import { DisbursementVoucherActionHistory } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherActionHistory";
 
 export function DisbursementVoucherViewActions({
   onUpdateStatus,
@@ -47,46 +37,33 @@ export function DisbursementVoucherViewActions({
   transaction?: DisbursementTransactionRecord;
   voucher?: DisbursementVoucherRecord;
 }) {
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [statusToConfirm, setStatusToConfirm] =
     useState<DisbursementVoucherStatus | null>(null);
   const recordLabel =
     voucher?.voucherNo ?? transaction?.transactionNo ?? "this disbursement voucher";
-  const historyEntries = createDisbursementVoucherViewHistory({
-    recordLabel,
-    transaction,
-    voucher,
-  });
   const statusDialogCopy = statusToConfirm
     ? getDisbursementVoucherStatusDialogCopy(statusToConfirm, recordLabel)
     : null;
   const actions = createDisbursementVoucherViewActionItems({
-    onOpenHistory: () => setIsHistoryOpen(true),
     onRequestStatusConfirmation: setStatusToConfirm,
     onUpdateStatus,
     transaction,
     voucher,
   });
-  const visibleActions = actions.filter((action) => action.label !== "History");
-  const historyAction = actions.find(
-    (action): action is Extract<ModuleActionMenuItem, { type: "button" }> =>
-      action.type === "button" && action.label === "History",
-  );
-
   return (
     <>
       <div className="flex items-center gap-2 lg:hidden">
         {onPreview ? <ReportPreviewAction onPreview={onPreview} /> : null}
-        {historyAction ? <HeaderHistoryButton action={historyAction} /> : null}
+        <DisbursementVoucherActionHistory transaction={transaction} voucher={voucher} />
         <ModuleActionMenu
-          items={visibleActions}
+          items={actions}
           label="Disbursement voucher actions"
         />
       </div>
       <div className="hidden flex-wrap gap-2 lg:flex">
         {onPreview ? <ReportPreviewAction onPreview={onPreview} /> : null}
-        {historyAction ? <HeaderHistoryButton action={historyAction} /> : null}
-        {visibleActions.map((action) => {
+        <DisbursementVoucherActionHistory transaction={transaction} voucher={voucher} />
+        {actions.map((action) => {
           if (action.type === "button") {
             return <HeaderActionButton key={action.label} action={action} />;
           }
@@ -94,15 +71,6 @@ export function DisbursementVoucherViewActions({
           return null;
         })}
       </div>
-      {isHistoryOpen ? (
-        <ModuleHistoryDialog
-          description="Status changes and major disbursement voucher events."
-          history={historyEntries}
-          isOpen
-          title="Disbursement Voucher History"
-          onClose={() => setIsHistoryOpen(false)}
-        />
-      ) : null}
       {statusDialogCopy ? (
         <AppDialog
           isOpen
@@ -129,13 +97,11 @@ export function DisbursementVoucherViewActions({
 }
 
 function createDisbursementVoucherViewActionItems({
-  onOpenHistory,
   onRequestStatusConfirmation,
   onUpdateStatus,
   transaction,
   voucher,
 }: {
-  onOpenHistory: () => void;
   onRequestStatusConfirmation: (status: DisbursementVoucherStatus) => void;
   onUpdateStatus?: (status: DisbursementVoucherStatus) => void;
   transaction?: DisbursementTransactionRecord;
@@ -200,12 +166,6 @@ function createDisbursementVoucherViewActionItems({
       tone: isCancelled ? "default" : "danger",
       type: "button",
     },
-    {
-      icon: History,
-      label: "History",
-      onSelect: onOpenHistory,
-      type: "button",
-    },
   ];
 
   return actions;
@@ -232,27 +192,6 @@ function HeaderActionButton({
   );
 }
 
-function HeaderHistoryButton({
-  action,
-}: {
-  action: Extract<ModuleActionMenuItem, { type: "button" }>;
-}) {
-  const Icon = action.icon;
-
-  return (
-    <button
-      type="button"
-      disabled={action.disabled}
-      onClick={action.onSelect}
-      className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy/70 shadow-sm shadow-darknavy/5 transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20 disabled:cursor-not-allowed disabled:opacity-45"
-      aria-label="Open disbursement voucher history"
-    >
-      <Icon className="h-4 w-4" aria-hidden="true" />
-      {action.label}
-    </button>
-  );
-}
-
 function getViewActionButtonClassName(
   action: Extract<ModuleActionMenuItem, { type: "button" }>,
 ) {
@@ -260,7 +199,15 @@ function getViewActionButtonClassName(
     "inline-flex h-10 items-center justify-center gap-2 rounded-md border px-4 text-sm font-semibold shadow-sm shadow-darknavy/5 transition focus-visible:outline-none focus-visible:ring-4 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-white";
 
   if (action.label === "Approve") {
-    return `${baseClassName} border-citron/60 bg-citron/20 text-darknavy hover:bg-citron/30 focus-visible:ring-citron/25`;
+    return `${baseClassName} border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50 focus-visible:ring-emerald-500/15`;
+  }
+
+  if (action.label === "Disapprove") {
+    return `${baseClassName} border-red-200 bg-white text-red-600 hover:bg-red-50 focus-visible:ring-red-500/15`;
+  }
+
+  if (action.label === "Cancel") {
+    return `${baseClassName} border-amber-200 bg-white text-amber-700 hover:bg-amber-50 focus-visible:ring-amber-500/15`;
   }
 
   if (
@@ -276,36 +223,4 @@ function getViewActionButtonClassName(
   }
 
   return moduleHeaderActionClassNames.secondary;
-}
-
-function createDisbursementVoucherViewHistory({
-  recordLabel,
-  transaction,
-  voucher,
-}: {
-  recordLabel: string;
-  transaction?: DisbursementTransactionRecord;
-  voucher?: DisbursementVoucherRecord;
-}): DisbursementVoucherHistoryEntry[] {
-  if (voucher?.history?.length) {
-    return voucher.history;
-  }
-
-  if (!transaction) {
-    return [];
-  }
-
-  const sourceDate =
-    transaction.updatedAt ?? transaction.createdAt ?? transaction.transactionDate;
-
-  return [
-    {
-      action: "Source Transaction",
-      actor: transaction.updatedBy ?? transaction.createdBy ?? "System",
-      createdAt: sourceDate,
-      description: `${recordLabel} is available for disbursement voucher processing.`,
-      id: `dv-history-${transaction.id}-source`,
-      status: transaction.status,
-    },
-  ];
 }

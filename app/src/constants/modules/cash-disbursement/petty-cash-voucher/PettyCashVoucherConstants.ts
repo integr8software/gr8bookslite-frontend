@@ -1,10 +1,151 @@
-import type { PettyCashVoucherStatus } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
+import type {
+  PettyCashVoucherActionTab,
+  PettyCashVoucherFormStatus,
+  PettyCashVoucherStatus,
+  PettyCashVoucherVATable,
+} from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
+import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 
-export const PettyCashVoucherHref = "/cash-disbursement/petty-cash-voucher";
+export const PettyCashVoucherHref = getModuleRoute("PCV");
 
 export const PettyCashVoucherPaginationStorageKey =
   "petty-cash-voucher-table";
 
-export const PettyCashVoucherStatusOptions: Array<
-  "All" | PettyCashVoucherStatus
-> = ["All", "Pending", "Approved", "Cancelled"];
+export const PettyCashVoucherTransactionPrefix = "PCV";
+
+export const PettyCashVoucherTransactionNumberPadding = 6;
+
+export const PettyCashVoucherDefaultFormStatus: PettyCashVoucherFormStatus =
+  "Open";
+
+export const PettyCashVoucherDefaultVATable: PettyCashVoucherVATable = "False";
+
+export const PettyCashVoucherVatRate = 0.12;
+
+export const PettyCashVoucherRecordStatuses = [
+  "Draft",
+  "For Approval",
+  "Posted",
+  "Disapproved",
+  "Cancelled",
+] as const satisfies readonly PettyCashVoucherStatus[];
+
+export const PettyCashVoucherStatusOptions = [
+  "All",
+  ...PettyCashVoucherRecordStatuses,
+] as const satisfies readonly ("All" | PettyCashVoucherStatus)[];
+
+export const PettyCashVoucherFormStatusOptions = [
+  "Open",
+  ...PettyCashVoucherRecordStatuses,
+] as const satisfies readonly PettyCashVoucherFormStatus[];
+
+export const PettyCashVoucherVATableOptions = [
+  "False",
+  "True",
+] as const satisfies readonly PettyCashVoucherVATable[];
+
+export const PettyCashVoucherActionTabs: {
+  id: PettyCashVoucherActionTab;
+  label: string;
+}[] = [
+  { id: "details", label: "Voucher Details" },
+  { id: "attachments", label: "File Attachments" },
+];
+
+export const PettyCashVoucherColumnLabels = {
+  voucherNo: "Petty Cash Voucher No.",
+  documentDate: "Document Date",
+  partyCode: "Party Code",
+  partyName: "Party Name",
+  accountCode: "Default Account Code",
+  accountTitle: "Default Account Title",
+  amount: "Total Amount",
+  remarks: "Remarks",
+  createdBy: "Created By",
+  dateCreated: "Date Created",
+  updatedBy: "Updated By",
+  dateModified: "Date Modified",
+  status: "Status",
+  actions: "Action",
+} as const;
+
+export const PettyCashVoucherDefaultVisibleColumnIds = [
+  "voucherNo",
+  "documentDate",
+  "partyName",
+  "amount",
+  "status",
+  "actions",
+] as const;
+
+export const PettyCashVoucherActionButtonClassNames = {
+  approve:
+    "inline-flex h-10 items-center justify-center gap-2 rounded-md border border-emerald-200 bg-white px-4 text-sm font-semibold text-emerald-700 shadow-sm shadow-darknavy/5 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-500/15 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-white",
+  disapprove:
+    "inline-flex h-10 items-center justify-center gap-2 rounded-md border border-red-200 bg-white px-4 text-sm font-semibold text-red-600 shadow-sm shadow-darknavy/5 transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-500/15 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-white",
+  cancel:
+    "inline-flex h-10 items-center justify-center gap-2 rounded-md border border-amber-200 bg-white px-4 text-sm font-semibold text-amber-700 shadow-sm shadow-darknavy/5 transition hover:bg-amber-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-500/15 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-white",
+  copyFrom:
+    "theme-accent-contrast-text inline-flex h-10 items-center justify-center gap-2 rounded-md bg-skyblue px-4 text-sm font-semibold transition hover:bg-skyblue/85 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20",
+} as const;
+
+export function canEditPettyCashVoucherStatus(status: PettyCashVoucherStatus) {
+  return status === "Draft" || status === "For Approval" || status === "Disapproved";
+}
+
+export function canApprovePettyCashVoucherStatus(status: PettyCashVoucherFormStatus) {
+  return status === "For Approval" || status === "Posted";
+}
+
+export function canDisapprovePettyCashVoucherStatus(status: PettyCashVoucherFormStatus) {
+  return status === "For Approval" || status === "Disapproved";
+}
+
+export function canCancelPettyCashVoucherStatus(status: PettyCashVoucherFormStatus) {
+  return status === "Draft" || status === "For Approval" || status === "Disapproved" || status === "Cancelled";
+}
+
+export function getPettyCashVoucherStatusDialogCopy(status: PettyCashVoucherStatus, recordLabel: string) {
+  if (status === "Posted") {
+    return {
+      confirmLabel: "Approve Voucher",
+      description: `This will approve ${recordLabel} and update its status to Posted.`,
+      iconTone: "approve" as const,
+      pendingLabel: "Approving...",
+      title: "Approve petty cash voucher?",
+      tone: "success" as const,
+    };
+  }
+
+  if (status === "Disapproved") {
+    return {
+      confirmLabel: "Disapprove Voucher",
+      description: `This will mark ${recordLabel} as Disapproved.`,
+      iconTone: "disapprove" as const,
+      pendingLabel: "Disapproving...",
+      title: "Disapprove petty cash voucher?",
+      tone: "danger" as const,
+    };
+  }
+
+  if (status === "Cancelled") {
+    return {
+      confirmLabel: "Cancel Voucher",
+      description: `This will mark ${recordLabel} as Cancelled.`,
+      iconTone: "cancel" as const,
+      pendingLabel: "Cancelling...",
+      title: "Cancel petty cash voucher?",
+      tone: "danger" as const,
+    };
+  }
+
+  return {
+    confirmLabel: "Restore Voucher",
+    description: `This will return ${recordLabel} to For Approval.`,
+    iconTone: "approve" as const,
+    pendingLabel: "Restoring...",
+    title: "Restore petty cash voucher?",
+    tone: "default" as const,
+  };
+}

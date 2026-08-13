@@ -8,6 +8,7 @@ export type CashAdvanceStatus =
   | "Disapproved"
   | "Draft"
   | "For Approval"
+  | "Open"
   | "Posted";
 
 export type CashAdvanceRecord = {

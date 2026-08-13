@@ -136,11 +136,11 @@ export const MaintenanceSpotlightTutorialConfigs: readonly MaintenanceSpotlightT
     label: "Petty cash fund replenishment",
   },
   {
-    href: "/cash-disbursement/petty-cash-advance-replenishment",
+    href: "/cash-disbursement/revolving-fund-replenishment",
     addMode: "none",
     includeFiltersStep: false,
     includeTableStep: false,
-    label: "Petty cash advance replenishment",
+    label: "Revolving fund replenishment",
   },
   {
     href: "/sales/sales-journal",

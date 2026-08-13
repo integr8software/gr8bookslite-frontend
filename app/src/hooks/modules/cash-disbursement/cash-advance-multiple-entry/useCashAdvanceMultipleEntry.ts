@@ -166,12 +166,11 @@ export function useCashAdvanceMultipleEntryActionForm(
   }
 
   function submitEntry(status: CashAdvanceStatus = CashAdvanceMultipleEntryStatuses.forApproval) {
-    const officialStatus =
+    const nextValues = { ...values, status };
+    const validation =
       status === CashAdvanceMultipleEntryStatuses.draft
-        ? CashAdvanceMultipleEntryStatuses.forApproval
-        : status;
-    const nextValues = { ...values, status: officialStatus };
-    const validation = validateCashAdvanceMultipleEntryForm(nextValues);
+        ? { isValid: true, message: null }
+        : validateCashAdvanceMultipleEntryForm(nextValues);
 
     if (!validation.isValid) {
       toast.error(validation.message ?? "Review the cash advance multiple entry details.");
@@ -197,18 +196,14 @@ export function useCashAdvanceMultipleEntryActionForm(
     }
 
     const updatedAt = new Date().toISOString();
-    const officialStatus =
-      status === CashAdvanceMultipleEntryStatuses.draft
-        ? CashAdvanceMultipleEntryStatuses.forApproval
-        : status;
-    const nextValues = { ...values, status: officialStatus };
+    const nextValues = { ...values, status };
     const nextRecord: CashAdvanceMultipleEntryRecord = {
       ...loadedRecord,
       formValues: {
         ...nextValues,
         attachments: nextValues.attachments.map((attachment) => ({ ...attachment })),
       },
-      status: officialStatus,
+      status,
       updatedAt,
       updatedBy: "Current User",
     };
@@ -217,7 +212,7 @@ export function useCashAdvanceMultipleEntryActionForm(
     writeStoredCashAdvanceMultipleEntries(nextEntries);
     setLoadedRecord(nextRecord);
     setValues(nextValues);
-    toast.success(`Cash advance multiple entry marked as ${officialStatus}.`);
+    toast.success(`Cash advance multiple entry marked as ${status}.`);
   }
 
   return {
@@ -291,7 +286,7 @@ export function useCashAdvanceMultipleEntryTable(records: CashAdvanceMultipleEnt
   }, [amountRange, dateRange, query, records, statusFilter]);
   const columns = useMemo<ColumnDef<CashAdvanceMultipleEntryRecord>[]>(
     () => [
-      { accessorKey: "transNo", id: "transNo", header: "Cash Advance Entry No.", meta: { className: "w-[13rem]", label: "Cash Advance Entry No." } },
+      { accessorKey: "transNo", id: "transNo", header: "Cash Advance Multiple Entry No.", meta: { className: "w-[16rem]", label: "Cash Advance Multiple Entry No." } },
       { accessorKey: "documentDate", id: "documentDate", header: "Document Date", meta: { className: "w-[9rem]", label: "Document Date" } },
       { accessorKey: "partyCode", id: "partyCode", header: "Party Code", meta: { className: "w-[10rem]", label: "Party Code" } },
       { accessorKey: "partyName", id: "partyName", header: "Party Name", meta: { className: "w-[18rem]", label: "Party Name" } },
@@ -303,7 +298,7 @@ export function useCashAdvanceMultipleEntryTable(records: CashAdvanceMultipleEnt
       { accessorKey: "createdAt", id: "createdAt", header: "Date Created", sortingFn: "datetime", meta: { className: "w-[16rem]", label: "Date Created" } },
       { accessorKey: "updatedBy", id: "updatedBy", header: "Updated By", meta: { className: "w-[14rem]", label: "Updated By" } },
       { accessorKey: "updatedAt", id: "updatedAt", header: "Date Modified", sortingFn: "datetime", meta: { className: "w-[16rem]", label: "Date Modified" } },
-      { accessorKey: "status", id: "status", header: "Status", meta: { className: "w-[8rem]", label: "Status" } },
+      { accessorKey: "status", id: "status", header: "Status", meta: { className: "w-[8rem] text-center", label: "Status" } },
       { id: "actions", enableSorting: false, enableHiding: false, header: "Action", meta: { className: "w-[9rem] text-center", label: "Action" } },
     ],
     [],

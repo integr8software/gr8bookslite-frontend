@@ -1,4 +1,4 @@
-import { Ban, CheckCircle2, Clock3, ReceiptText, XCircle } from "lucide-react";
+import { ReceiptText } from "lucide-react";
 import {
   DisbursementVoucherStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
@@ -8,6 +8,10 @@ import type {
   DisbursementVoucherStatusFilter,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
+import {
+  getModuleStatusMetricIcon,
+  getModuleStatusMetricIconClassName,
+} from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import { formatPartOfTotalPercentage } from "@/app/src/utils/percentage.util";
 
 export function DisbursementVoucherMetrics({
@@ -26,10 +30,11 @@ export function DisbursementVoucherMetrics({
   const cancelledCount = countPreviewRowsByStatus(previewRows, DisbursementVoucherStatuses.cancelled);
   const cards = [
     {
-      label: "Total Vouchers",
+      label: "Total Entries",
       value: previewRows.length,
       summary: "All time",
       icon: ReceiptText,
+      tone: "violet" as const,
       isActive: statusFilter === "all",
       onClick: () => onStatusFilterChange("all"),
     },
@@ -37,8 +42,9 @@ export function DisbursementVoucherMetrics({
       label: DisbursementVoucherStatuses.draft,
       value: draftCount,
       summary: formatPartOfTotalPercentage(draftCount, previewRows.length),
-      icon: Clock3,
-      iconClassName: "bg-slate-100 text-slate-700",
+      icon: getModuleStatusMetricIcon(DisbursementVoucherStatuses.draft),
+      iconClassName: getModuleStatusMetricIconClassName(DisbursementVoucherStatuses.draft),
+      tone: "blue" as const,
       isActive: statusFilter === DisbursementVoucherStatuses.draft,
       onClick: () => onStatusFilterChange(DisbursementVoucherStatuses.draft),
     },
@@ -46,8 +52,9 @@ export function DisbursementVoucherMetrics({
       label: "For Approval",
       value: forApprovalCount,
       summary: formatPartOfTotalPercentage(forApprovalCount, previewRows.length),
-      icon: Clock3,
-      iconClassName: "bg-skyblue/15 text-skyblue",
+      icon: getModuleStatusMetricIcon(DisbursementVoucherStatuses.forApproval),
+      iconClassName: getModuleStatusMetricIconClassName(DisbursementVoucherStatuses.forApproval),
+      tone: "amber" as const,
       isActive: statusFilter === DisbursementVoucherStatuses.forApproval,
       onClick: () => onStatusFilterChange(DisbursementVoucherStatuses.forApproval),
     },
@@ -55,8 +62,9 @@ export function DisbursementVoucherMetrics({
       label: "Posted",
       value: postedCount,
       summary: formatPartOfTotalPercentage(postedCount, previewRows.length),
-      icon: CheckCircle2,
-      iconClassName: "bg-emerald-50 text-emerald-700",
+      icon: getModuleStatusMetricIcon(DisbursementVoucherStatuses.posted),
+      iconClassName: getModuleStatusMetricIconClassName(DisbursementVoucherStatuses.posted),
+      tone: "emerald" as const,
       isActive: statusFilter === DisbursementVoucherStatuses.posted,
       onClick: () => onStatusFilterChange(DisbursementVoucherStatuses.posted),
     },
@@ -64,8 +72,9 @@ export function DisbursementVoucherMetrics({
       label: "Disapproved",
       value: disapprovedCount,
       summary: formatPartOfTotalPercentage(disapprovedCount, previewRows.length),
-      icon: XCircle,
-      iconClassName: "bg-coralpink/15 text-coralpink",
+      icon: getModuleStatusMetricIcon(DisbursementVoucherStatuses.disapproved),
+      iconClassName: getModuleStatusMetricIconClassName(DisbursementVoucherStatuses.disapproved),
+      tone: "red" as const,
       isActive: statusFilter === DisbursementVoucherStatuses.disapproved,
       onClick: () => onStatusFilterChange(DisbursementVoucherStatuses.disapproved),
     },
@@ -73,8 +82,9 @@ export function DisbursementVoucherMetrics({
       label: "Cancelled",
       value: cancelledCount,
       summary: formatPartOfTotalPercentage(cancelledCount, previewRows.length),
-      icon: Ban,
-      iconClassName: "bg-amber-50 text-amber-700",
+      icon: getModuleStatusMetricIcon(DisbursementVoucherStatuses.cancelled),
+      iconClassName: getModuleStatusMetricIconClassName(DisbursementVoucherStatuses.cancelled),
+      tone: "slate" as const,
       isActive: statusFilter === DisbursementVoucherStatuses.cancelled,
       onClick: () => onStatusFilterChange(DisbursementVoucherStatuses.cancelled),
     },

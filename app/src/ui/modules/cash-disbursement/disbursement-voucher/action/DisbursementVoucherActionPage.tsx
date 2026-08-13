@@ -17,10 +17,11 @@ import { PaymentTypeDrawer } from "@/app/src/ui/modules/financial-maintenance/pa
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
 import { ProjectNameDialog } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ProjectNameDialog";
 import { DisbursementVoucherActionHeader } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherActionHeader";
-import { VoucherDataEntry } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherDataEntry";
-import { DisbursementVoucherDetailsForm } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherDetailsForm";
+import { DisbursementVoucherBankInformationFields } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherBankInformationFields";
+import { DisbursementVoucherEntrySection } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/DisbursementVoucherEntrySection";
+import { DisbursementVoucherDetailsFields } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherDetailsFields";
 import { DisbursementVoucherFileAttachmentFields } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherFileAttachmentFields";
-import { DisbursementVoucherNotFound } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/overview/DisbursementVoucherNotFound";
+import { DisbursementVoucherNotFound } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherNotFound";
 import { openDisbursementVoucherPdf } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/reports/DisbursementVoucherPdf";
 import { DisbursementVoucherReportPreview } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/reports/DisbursementVoucherReportPreview";
 import { AppSkeleton, AppSkeletonCard } from "@/app/src/ui/shared/app/AppSkeleton";
@@ -95,6 +96,20 @@ function DisbursementVoucherActionContent({ voucherAction }: { voucherAction: Di
       />
       {voucherAction.activeTab === "details" ? (
         <DisbursementVoucherDetailsSection voucherAction={voucherAction} />
+      ) : voucherAction.activeTab === "bank-information" ? (
+        <DisbursementVoucherBankInformationFields
+          bankAccounts={voucherAction.bankAccounts}
+          canAddBankAccount={voucherAction.bankMasterfileStore.permissions.canCreate}
+          isMultiCheckNumber={Boolean(voucherAction.values.paymentDetails.isMultiCheckNumber)}
+          isReadonly={voucherAction.isReadonly}
+          paymentType={voucherAction.values.paymentMethod}
+          paymentTypeRecord={voucherAction.selectedPaymentTypeRecord}
+          paymentTypeRecords={voucherAction.paymentTypeStore.paymentTypes}
+          values={voucherAction.values}
+          onOpenBankAccountDrawer={() => voucherAction.setIsBankMasterfileDrawerOpen(true)}
+          onUpdateBankAccount={voucherAction.handleBankAccountChange}
+          onUpdatePaymentDetails={voucherAction.updatePaymentDetails}
+        />
       ) : (
         <DisbursementVoucherFileAttachmentFields
           attachments={voucherAction.values.attachments}
@@ -111,9 +126,7 @@ function DisbursementVoucherDetailsSection({ voucherAction }: { voucherAction: D
 
   return (
     <>
-      <DisbursementVoucherDetailsForm
-        bankAccounts={voucherAction.bankAccounts}
-        canAddBankAccount={voucherAction.bankMasterfileStore.permissions.canCreate}
+      <DisbursementVoucherDetailsFields
         canAddPartyName={voucherAction.partyStore.permissions.canCreate}
         canAddPaymentType={voucherAction.paymentTypeStore.permissions.canCreate}
         canAddProjectName
@@ -121,17 +134,14 @@ function DisbursementVoucherDetailsSection({ voucherAction }: { voucherAction: D
         isReadonly={voucherAction.isReadonly}
         paymentTypeRecords={voucherAction.paymentTypeStore.paymentTypes}
         values={values}
-        onOpenBankAccountDrawer={() => voucherAction.setIsBankMasterfileDrawerOpen(true)}
         onOpenPartyNameDialog={() => voucherAction.setIsPartyNameDrawerOpen(true)}
         onOpenPaymentTypeDrawer={() => voucherAction.setIsPaymentTypeDrawerOpen(true)}
         onOpenProjectNameDialog={() => voucherAction.setIsProjectNameDialogOpen(true)}
         onPartyChange={voucherAction.handlePartyChange}
         onPaymentTypeChange={voucherAction.handlePaymentTypeChange}
-        onUpdateBankAccount={voucherAction.handleBankAccountChange}
         onUpdateField={voucherAction.updateField}
-        onUpdatePaymentDetails={voucherAction.updatePaymentDetails}
       />
-      <VoucherDataEntry
+      <DisbursementVoucherEntrySection
         bankAccount={voucherAction.selectedBankAccount}
         canAddExpenseType={voucherAction.defaultAccountStore.permissions.canCreate}
         canAddPartyName={voucherAction.partyStore.permissions.canCreate}

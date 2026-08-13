@@ -2,6 +2,10 @@ import {
   createTaxDetails,
   syncTaxDetailsAmount,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
+import {
+  formatMoneyNumberDisplayValue,
+  parseMoneyNumberInput,
+} from "@/app/src/data/shared/money/MoneyNumberData";
 import { CashAdvanceStatuses } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
 import type {
   CashAdvanceFormValues,
@@ -126,7 +130,7 @@ export function createCashAdvanceFormValues(): CashAdvanceFormValues {
       importationRefNo: "",
     },
     remarks: "",
-    status: CashAdvanceStatuses.draft,
+    status: CashAdvanceStatuses.open,
     taxValue: {
       taxDetails: createTaxDetails(0, "0%"),
       taxRate: "0%",
@@ -150,7 +154,7 @@ export function createCashAdvanceFormValuesFromRecord(
   return {
     ...createCashAdvanceFormValues(),
     accountCode: record.accountCode,
-    amount: String(record.amount || ""),
+    amount: formatMoneyNumberDisplayValue(record.amount || ""),
     costCenter: record.costCenter,
     currency: "PHP",
     documentDate: record.documentDate,
@@ -171,7 +175,7 @@ export function createCashAdvanceRecordFromForm(
   values: CashAdvanceFormValues,
   existingRecord?: CashAdvanceRecord,
 ): CashAdvanceRecord {
-  const amount = Number(values.amount || 0);
+  const amount = parseMoneyNumberInput(values.amount);
   const now = new Date().toISOString();
   const actor = "Current User";
   const transNo = createCashAdvanceTransNo(values.transNo, existingRecord);

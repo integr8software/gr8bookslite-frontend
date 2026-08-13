@@ -9,6 +9,7 @@ export const CashAdvanceStatuses = {
   disapproved: "Disapproved",
   draft: "Draft",
   forApproval: "For Approval",
+  open: "Open",
   posted: "Posted",
 } as const;
 

@@ -112,7 +112,7 @@ export type OnboardingBilling = {
   trialDays: number;
 };
 
-export type OnboardingPaymentSetupState = "pending_provider_activation" | "ready_for_confirmation";
+export type OnboardingPaymentSetupState = "ready_for_confirmation";
 
 export type OnboardingPaymentIntent = {
   id: string | null;

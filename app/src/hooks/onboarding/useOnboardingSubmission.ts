@@ -418,11 +418,7 @@ export function useOnboardingSubmission({
 
         setStepIndex((current) => current + 1);
         setHasPersistedBillingSetup(true);
-        toast.success(
-          billingResponse.pendingProviderActivation
-            ? "Billing setup is pending while PayMongo subscription billing is being activated."
-            : billingResponse.message || "Billing details saved.",
-        );
+        toast.success(billingResponse.message || "Billing details saved.");
         return;
       }
 

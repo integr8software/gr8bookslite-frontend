@@ -1,7 +1,9 @@
 import { CanvassFormStorageKey } from "@/app/src/constants/modules/purchasing/canvass-form/CanvassFormConstants";
 import type {
+	CanvassFormAccountingEntry,
 	CanvassFormItem,
 	CanvassFormRecord,
+	CanvassFormStatus,
 	CanvassFormValues,
 } from "@/app/src/types/modules/purchasing/canvass-form/CanvassFormTypes";
 
@@ -20,6 +22,7 @@ export const canvassFormSeedRecords: CanvassFormRecord[] = [
 		transNo: "CF-2026-0001",
 		documentDate: "2026-07-18",
 		status: "Draft",
+		accountingEntries: createCanvassFormAccountingEntries({ refNo: "CF-2026-0001" }),
 		items: [createBlankCanvassFormItem()],
 	},
 ];
@@ -36,17 +39,25 @@ export function createBlankCanvassFormItem(): CanvassFormItem {
 		minimumOrderQuantity: 0,
 		responsibilityCenter: "",
 		supplierCount: 1,
-		vatExclusive: "False",
-		vatInclusive: "False",
+		vatExclusive: "0.00",
+		vatInclusive: "0.00",
+		vatExclusive1: "0.00",
+		vatInclusive1: "0.00",
 		supplierCode1: "",
 		supplierName1: "",
 		unitCost1: 0,
+		vatExclusive2: "0.00",
+		vatInclusive2: "0.00",
 		supplierCode2: "",
 		supplierName2: "",
 		unitCost2: 0,
+		vatExclusive3: "0.00",
+		vatInclusive3: "0.00",
 		supplierCode3: "",
 		supplierName3: "",
 		unitCost3: 0,
+		vatExclusive4: "0.00",
+		vatInclusive4: "0.00",
 		supplierCode4: "",
 		supplierName4: "",
 		unitCost4: 0,
@@ -55,13 +66,22 @@ export function createBlankCanvassFormItem(): CanvassFormItem {
 	};
 }
 
+export function createBlankCanvassFormAccountingEntry(): CanvassFormAccountingEntry {
+	return createCanvassFormAccountingEntry();
+}
+
 export function createCanvassFormValues(record?: CanvassFormRecord): CanvassFormValues {
 	if (record) {
+		const normalizedRecord = normalizeCanvassFormRecordDefaults(record);
+
 		return {
-			...record,
-			prNo: record.prNo ?? getRecordPrNoFromItems(record.items),
-			termsOfPayment: record.termsOfPayment ?? "",
-			items: record.items.map((item) => normalizeCanvassFormItemDefaults(item)),
+			...normalizedRecord,
+			accountingEntries: normalizedRecord.accountingEntries.map((entry) => ({
+				...entry,
+			})),
+			items: normalizedRecord.items.map((item) =>
+				normalizeCanvassFormItemDefaults(item),
+			),
 		};
 	}
 
@@ -78,6 +98,7 @@ export function createCanvassFormValues(record?: CanvassFormRecord): CanvassForm
 		transNo: createNextCanvassFormTransNo(canvassFormSeedRecords),
 		documentDate: new Date().toISOString().slice(0, 10),
 		status: "Draft",
+		accountingEntries: createCanvassFormAccountingEntries(),
 		items: [createBlankCanvassFormItem()],
 	};
 }
@@ -89,7 +110,20 @@ export function createCanvassFormRecord(
 	return {
 		id,
 		...values,
+		status: normalizeCanvassFormStatus(values.status),
 		exchangeRate: roundCanvassFormAmount(values.exchangeRate),
+		accountingEntries: (
+			values.accountingEntries ??
+			createCanvassFormAccountingEntries({
+				refNo: values.transNo,
+			})
+		).map((entry) =>
+			createCanvassFormAccountingEntry({
+				...entry,
+				debit: Number(entry.debit) || 0,
+				credit: Number(entry.credit) || 0,
+			}),
+		),
 		items: values.items.map((item) => normalizeCanvassFormItem(item)),
 	};
 }
@@ -119,9 +153,27 @@ function normalizeCanvassFormItemDefaults(
 		prNo: item.prNo ?? "",
 		minimumOrderQuantity: Number(item.minimumOrderQuantity) || 0,
 		supplierCount: getInitialSupplierCount(item),
-		vatExclusive: item.vatExclusive ?? "False",
-		vatInclusive: item.vatInclusive ?? "False",
+		vatExclusive: normalizeCanvassVatAmount(item.vatExclusive),
+		vatInclusive: normalizeCanvassVatAmount(item.vatInclusive),
+		vatExclusive1: normalizeCanvassVatAmount(item.vatExclusive1 ?? item.vatExclusive),
+		vatInclusive1: normalizeCanvassVatAmount(item.vatInclusive1 ?? item.vatInclusive),
+		vatExclusive2: normalizeCanvassVatAmount(item.vatExclusive2),
+		vatInclusive2: normalizeCanvassVatAmount(item.vatInclusive2),
+		vatExclusive3: normalizeCanvassVatAmount(item.vatExclusive3),
+		vatInclusive3: normalizeCanvassVatAmount(item.vatInclusive3),
+		vatExclusive4: normalizeCanvassVatAmount(item.vatExclusive4),
+		vatInclusive4: normalizeCanvassVatAmount(item.vatInclusive4),
 	};
+}
+
+function normalizeCanvassVatAmount(value: unknown) {
+	if (value === "True" || value === "False" || value === undefined || value === null) {
+		return "0.00";
+	}
+
+	const amount = Number(String(value).replace(/,/g, ""));
+
+	return Number.isFinite(amount) ? amount.toFixed(2) : "0.00";
 }
 
 function getInitialSupplierCount(item: Partial<CanvassFormItem>) {
@@ -219,11 +271,82 @@ function normalizeCanvassFormRecordDefaults(
 		termsOfPayment: record.termsOfPayment ?? "",
 		transNo: record.transNo ?? createNextCanvassFormTransNo(canvassFormSeedRecords),
 		documentDate: record.documentDate ?? "",
-		status: record.status ?? "Draft",
+		status: normalizeCanvassFormStatus(record.status),
+		accountingEntries:
+			record.accountingEntries?.map((entry) =>
+				createCanvassFormAccountingEntry({
+					...entry,
+					debit: Number(entry.debit) || 0,
+					credit: Number(entry.credit) || 0,
+				}),
+			) ??
+			createCanvassFormAccountingEntries({
+				refNo: record.transNo ?? "",
+			}),
 		items: (record.items ?? [createBlankCanvassFormItem()]).map(
 			normalizeCanvassFormItemDefaults,
 		),
 	};
+}
+
+function createCanvassFormAccountingEntries({
+	refNo = "",
+}: {
+	refNo?: string;
+} = {}) {
+	return [
+		createCanvassFormAccountingEntry({
+			accountTitle: "Canvass Clearing",
+			debit: 0,
+			particulars: "Canvass supplier comparison",
+			refNo,
+		}),
+		createCanvassFormAccountingEntry({
+			accountTitle: "Accounts Payable",
+			credit: 0,
+			particulars: "Canvass supplier comparison",
+			refNo,
+		}),
+	];
+}
+
+function createCanvassFormAccountingEntry(
+	entry: Partial<CanvassFormAccountingEntry> = {},
+): CanvassFormAccountingEntry {
+	return {
+		id: createCanvassFormId("accounting"),
+		accountCode: "",
+		accountTitle: "",
+		debit: 0,
+		credit: 0,
+		partyCode: "",
+		partyName: "",
+		particulars: "",
+		vatType: "",
+		atcCode: "",
+		responsibilityCenter: "",
+		refNo: "",
+		...entry,
+	};
+}
+
+function normalizeCanvassFormStatus(status: unknown): CanvassFormStatus {
+	const value = String(status ?? "");
+
+	if (
+		value === "Draft" ||
+		value === "For Approval" ||
+		value === "Posted" ||
+		value === "Disapproved" ||
+		value === "Cancelled"
+	) {
+		return value;
+	}
+
+	if (value === "Open") return "For Approval";
+	if (value === "Approved" || value === "Closed") return "Posted";
+
+	return "Draft";
 }
 
 function getRecordPrNoFromItems(items: Partial<CanvassFormItem>[] | undefined) {

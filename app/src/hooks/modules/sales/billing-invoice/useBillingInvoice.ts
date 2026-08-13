@@ -6,7 +6,6 @@ import {
 	getPaginationRowModel,
 	getSortedRowModel,
 	useReactTable,
-	type ColumnDef,
 	type PaginationState,
 	type SortingState,
 } from "@tanstack/react-table";
@@ -21,7 +20,10 @@ import {
 	getInitialBillingInvoices,
 	writeStoredBillingInvoices,
 } from "@/app/src/data/modules/sales/billing-invoice/BillingInvoiceData";
-import { BillingInvoiceStatusFilters } from "@/app/src/constants/modules/sales/billing-invoice/BillingInvoiceConstants";
+import {
+	BillingInvoiceStatusFilters,
+	BillingInvoiceTableColumns,
+} from "@/app/src/constants/modules/sales/billing-invoice/BillingInvoiceConstants";
 import type {
 	BillingInvoiceActionMode,
 	BillingInvoiceFormValues,
@@ -193,71 +195,10 @@ export function useBillingInvoiceTable(invoices: BillingInvoiceRecord[]) {
 			}),
 		[amountRange, dateRange, deferredQuery, invoices, statusFilter],
 	);
-	const columns = useMemo<ColumnDef<BillingInvoiceRecord>[]>(
-		() => [
-			{
-				id: "transactionNo",
-				accessorKey: "transactionNo",
-				header: "Trans No.",
-				sortingFn: "alphanumeric",
-				meta: { className: "w-[12rem]" },
-			},
-			{
-				id: "documentDate",
-				accessorKey: "documentDate",
-				header: "Document Date",
-				sortingFn: "datetime",
-				meta: { className: "w-[10rem]" },
-			},
-			{
-				id: "customerName",
-				accessorKey: "customerName",
-				header: "Customer Name",
-				sortingFn: "alphanumeric",
-				meta: { className: "w-[18rem]" },
-			},
-			{
-				id: "invoiceNo",
-				accessorKey: "invoiceNo",
-				header: "Invoice No.",
-				sortingFn: "alphanumeric",
-				meta: { className: "w-[12rem]" },
-			},
-			{
-				id: "referenceNo",
-				accessorKey: "referenceNo",
-				header: "Reference No.",
-				sortingFn: "alphanumeric",
-				meta: { className: "w-[12rem]" },
-			},
-			{
-				id: "amount",
-				accessorKey: "amount",
-				header: "Gross Amount",
-				sortingFn: "basic",
-				meta: { className: "w-[11rem]" },
-			},
-			{
-				id: "status",
-				accessorKey: "status",
-				header: "Status",
-				sortingFn: "alphanumeric",
-				meta: { className: "w-[10rem]" },
-			},
-			{
-				id: "actions",
-				header: "Actions",
-				enableSorting: false,
-				meta: { className: "w-[9rem] text-center" },
-			},
-		],
-		[],
-	);
-
 	// eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table owns the table state lifecycle.
 	const table = useReactTable({
 		data: filteredRows,
-		columns,
+		columns: BillingInvoiceTableColumns,
 		state: {
 			pagination,
 			sorting,

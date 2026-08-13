@@ -1,158 +1,136 @@
-import { ServicesMaintenanceApiPath } from "@/app/src/constants/modules/financial-maintenance/services-maintenance/ServicesMaintenanceConstants";
-import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
-import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import {
+  servicesMaintenanceControllerCreateV1,
+  servicesMaintenanceControllerFindAllV1,
+  servicesMaintenanceControllerGetAccountOptionsV1,
+  servicesMaintenanceControllerGetNextAccountCodeV1,
+  servicesMaintenanceControllerUpdateStatusV1,
+  servicesMaintenanceControllerUpdateV1,
+} from "@/app/src/generated/api/services-maintenance/services-maintenance";
 import type {
-	ApiServicesMaintenance,
-	ApiServicesMaintenanceAccountOptionsResponse,
-	ApiServicesMaintenanceAccountSetupMode,
-	ApiServicesMaintenanceListResponse,
-	ApiServicesMaintenanceNextAccountCodeResponse,
-	ApiServicesMaintenanceSaveResponse,
-	ApiServicesMaintenanceStatus,
-	ServicesMaintenance,
-	ServicesMaintenanceAccountSetupMode,
-	ServicesMaintenanceFormValues,
-	ServicesMaintenanceListResponse,
-	ServicesMaintenanceStatus,
+  CreateServiceMaintenanceDto,
+  CreateServiceMaintenanceDtoAccountSetupMode,
+  CreateServiceMaintenanceDtoStatus,
+  ServiceMaintenanceAccountOptionResponseDto,
+  ServiceMaintenanceNextAccountCodeResponseDto,
+  ServiceMaintenanceResponseDto,
+  ServiceMaintenanceResponseDtoAccountSetupMode,
+  ServiceMaintenanceResponseDtoStatus,
+} from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
+import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
+import type {
+  ServicesMaintenance,
+  ServicesMaintenanceAccountSetupMode,
+  ServicesMaintenanceFormValues,
+  ServicesMaintenanceListResult,
+  ServicesMaintenanceStatus,
 } from "@/app/src/types/modules/financial-maintenance/services-maintenance/ServicesMaintenanceTypes";
 
-export async function fetchServicesMaintenance(): Promise<ServicesMaintenanceListResponse> {
-	const response = await ApiClient.get<ApiServicesMaintenanceListResponse>(
-		ServicesMaintenanceApiPath,
-	);
+export async function fetchServicesMaintenance(): Promise<ServicesMaintenanceListResult> {
+  const response = await servicesMaintenanceControllerFindAllV1();
 
-	return {
-		services: response.data.services.map(mapApiService),
-		statistics: {
-			totalServices: response.data.statistics?.totalServices ?? 0,
-			activeServices: response.data.statistics?.activeServices ?? 0,
-			inactiveServices: response.data.statistics?.inactiveServices ?? 0,
-			accountTitles: response.data.statistics?.accountTitles ?? 0,
-		},
-		permissions: {
-			canView: response.data.permissions?.canView ?? false,
-			canCreate: response.data.permissions?.canCreate ?? false,
-			canUpdate: response.data.permissions?.canUpdate ?? false,
-			canExport: response.data.permissions?.canExport ?? false,
-			canImport:
-				response.data.permissions?.canImport ??
-				response.data.permissions?.canCreate ??
-				false,
-		},
-	};
+  return {
+    services: response.services.map(mapApiService),
+    statistics: {
+      totalServices: response.statistics?.totalServices ?? 0,
+      activeServices: response.statistics?.activeServices ?? 0,
+      inactiveServices: response.statistics?.inactiveServices ?? 0,
+      accountTitles: response.statistics?.accountTitles ?? 0,
+    },
+    permissions: {
+      canView: response.permissions?.canView ?? false,
+      canCreate: response.permissions?.canCreate ?? false,
+      canUpdate: response.permissions?.canUpdate ?? false,
+      canExport: response.permissions?.canExport ?? false,
+      canImport: response.permissions?.canImport ?? response.permissions?.canCreate ?? false,
+    },
+  };
 }
 
 export async function fetchServicesMaintenanceAccountOptions(): Promise<ModuleChartAccount[]> {
-	const response = await ApiClient.get<ApiServicesMaintenanceAccountOptionsResponse>(
-		`${ServicesMaintenanceApiPath}/account-options`,
-	);
+  const response = await servicesMaintenanceControllerGetAccountOptionsV1();
 
-	return response.data.accounts.map((account) => ({
-		id: account.id,
-		accountNumber: account.accountNumber,
-		accountName: account.accountName,
-		accountType: account.accountType ?? "Revenue",
-		statementGroup: account.statementGroup ?? "Income Statement",
-		statementSection: account.statementSection ?? "Income Statement",
-		normalBalance: account.normalBalance ?? "Credit",
-		accountCategory: account.accountCategory ?? "Detail",
-		description: account.description ?? "",
-		status: account.status ?? "Active",
-	}));
+  return response.accounts.map(mapApiAccountOption);
 }
 
-export async function fetchNextServiceRevenueAccountCode(): Promise<ApiServicesMaintenanceNextAccountCodeResponse> {
-	const response = await ApiClient.get<ApiServicesMaintenanceNextAccountCodeResponse>(
-		`${ServicesMaintenanceApiPath}/next-account-code`,
-	);
-
-	return response.data;
+export async function fetchNextServiceRevenueAccountCode(): Promise<ServiceMaintenanceNextAccountCodeResponseDto> {
+  return servicesMaintenanceControllerGetNextAccountCodeV1();
 }
 
-export async function createServiceMaintenance(
-	values: ServicesMaintenanceFormValues,
-): Promise<ServicesMaintenance> {
-	const response = await ApiClient.post<ApiServicesMaintenanceSaveResponse>(
-		ServicesMaintenanceApiPath,
-		toApiServicePayload(values),
-	);
+export async function createServiceMaintenance(values: ServicesMaintenanceFormValues): Promise<ServicesMaintenance> {
+  const response = await servicesMaintenanceControllerCreateV1(toApiServicePayload(values));
 
-	return mapApiService(response.data.service);
+  return mapApiService(response.service);
 }
 
-export async function updateServiceMaintenance(
-	service: ServicesMaintenance,
-): Promise<ServicesMaintenance> {
-	const response = await ApiClient.patch<ApiServicesMaintenanceSaveResponse>(
-		`${ServicesMaintenanceApiPath}/${service.id}`,
-		toApiServicePayload(service),
-	);
+export async function updateServiceMaintenance(service: ServicesMaintenance): Promise<ServicesMaintenance> {
+  const response = await servicesMaintenanceControllerUpdateV1(service.id, toApiServicePayload(service));
 
-	return mapApiService(response.data.service);
+  return mapApiService(response.service);
 }
 
-export async function updateServiceMaintenanceStatus(
-	service: ServicesMaintenance,
-): Promise<ServicesMaintenance> {
-	const response = await ApiClient.patch<ApiServicesMaintenanceSaveResponse>(
-		`${ServicesMaintenanceApiPath}/${service.id}/status`,
-		{ status: mapStatusToApi(service.status) },
-	);
+export async function updateServiceMaintenanceStatus(service: ServicesMaintenance): Promise<ServicesMaintenance> {
+  const response = await servicesMaintenanceControllerUpdateStatusV1(service.id, {
+    status: mapStatusToApi(service.status),
+  });
 
-	return mapApiService(response.data.service);
+  return mapApiService(response.service);
 }
 
-function mapApiService(service: ApiServicesMaintenance): ServicesMaintenance {
-	return {
-		id: service.id,
-		serviceName: service.serviceName,
-		description: service.description ?? "",
-		status: mapStatusFromApi(service.status),
-		accountSetupMode: mapSetupModeFromApi(service.accountSetupMode),
-		revenueCoaId: service.revenueCoaId,
-		revenueAccountCode: service.revenueAccountCode,
-		revenueAccountTitle: service.revenueAccountTitle,
-		isGeneratedRevenueAccount: service.isGeneratedRevenueAccount,
-		createdBy: service.createdBy,
-		createdAt: service.createdAt,
-		updatedBy: service.updatedBy,
-		updatedAt: service.updatedAt,
-	};
+function mapApiService(service: ServiceMaintenanceResponseDto): ServicesMaintenance {
+  return {
+    id: service.id,
+    serviceName: service.serviceName,
+    description: service.description ?? "",
+    status: mapStatusFromApi(service.status),
+    accountSetupMode: mapSetupModeFromApi(service.accountSetupMode),
+    revenueCoaId: service.revenueCoaId,
+    revenueAccountCode: service.revenueAccountCode,
+    revenueAccountTitle: service.revenueAccountTitle,
+    isGeneratedRevenueAccount: service.isGeneratedRevenueAccount,
+    createdBy: service.createdBy,
+    createdAt: service.createdAt,
+    updatedBy: service.updatedBy,
+    updatedAt: service.updatedAt ?? undefined,
+  };
 }
 
-function toApiServicePayload(
-	service: ServicesMaintenance | ServicesMaintenanceFormValues,
-) {
-	return {
-		serviceName: service.serviceName.trim(),
-		description: service.description.trim(),
-		status: mapStatusToApi(service.status),
-		accountSetupMode: mapSetupModeToApi(service.accountSetupMode),
-		revenueCoaId:
-			service.accountSetupMode === "Existing" ? service.revenueCoaId : null,
-	};
+function mapApiAccountOption(account: ServiceMaintenanceAccountOptionResponseDto): ModuleChartAccount {
+  return {
+    id: account.id,
+    accountNumber: account.accountNumber,
+    accountName: account.accountName,
+    accountType: account.accountType ?? "Revenue",
+    statementGroup: account.statementGroup ?? "Income Statement",
+    statementSection: account.statementSection ?? "Income Statement",
+    normalBalance: account.normalBalance ?? "Credit",
+    accountCategory: account.accountCategory ?? "Detail",
+    description: account.description ?? "",
+    status: account.status ?? "Active",
+  };
 }
 
-function mapStatusFromApi(
-	value: ApiServicesMaintenanceStatus,
-): ServicesMaintenanceStatus {
-	return value === "ACTIVE" ? "Active" : "Inactive";
+function toApiServicePayload(service: ServicesMaintenance | ServicesMaintenanceFormValues): CreateServiceMaintenanceDto {
+  return {
+    serviceName: service.serviceName.trim(),
+    description: service.description.trim(),
+    status: mapStatusToApi(service.status),
+    accountSetupMode: mapSetupModeToApi(service.accountSetupMode),
+    revenueCoaId: service.accountSetupMode === "Existing" ? service.revenueCoaId : null,
+  };
 }
 
-function mapStatusToApi(
-	value: ServicesMaintenanceStatus,
-): ApiServicesMaintenanceStatus {
-	return value === "Active" ? "ACTIVE" : "INACTIVE";
+function mapStatusFromApi(value: ServiceMaintenanceResponseDtoStatus): ServicesMaintenanceStatus {
+  return value === "ACTIVE" ? "Active" : "Inactive";
 }
 
-function mapSetupModeFromApi(
-	value: ApiServicesMaintenanceAccountSetupMode,
-): ServicesMaintenanceAccountSetupMode {
-	return value === "AUTO" ? "Auto" : "Existing";
+function mapStatusToApi(value: ServicesMaintenanceStatus): CreateServiceMaintenanceDtoStatus {
+  return value === "Active" ? "ACTIVE" : "INACTIVE";
 }
 
-function mapSetupModeToApi(
-	value: ServicesMaintenanceAccountSetupMode,
-): ApiServicesMaintenanceAccountSetupMode {
-	return value === "Auto" ? "AUTO" : "EXISTING";
+function mapSetupModeFromApi(value: ServiceMaintenanceResponseDtoAccountSetupMode): ServicesMaintenanceAccountSetupMode {
+  return value === "AUTO" ? "Auto" : "Existing";
+}
+
+function mapSetupModeToApi(value: ServicesMaintenanceAccountSetupMode): CreateServiceMaintenanceDtoAccountSetupMode {
+  return value === "Auto" ? "AUTO" : "EXISTING";
 }

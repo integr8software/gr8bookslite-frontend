@@ -8,28 +8,40 @@ import {
   useReactTable,
   type ColumnDef,
   type PaginationState,
-  type SortingState,
 } from "@tanstack/react-table";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { DisbursementVoucherStatusFilters } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import {
+  DisbursementVoucherDefaultColumnOrder,
+  DisbursementVoucherDefaultColumnVisibility,
+  DisbursementVoucherDefaultSorting,
+  DisbursementVoucherStatusFilters,
+  DisbursementVoucherTableColumns,
+  DisbursementVoucherTablePreferencesModuleKey,
+  DisbursementVoucherTablePreferencesStorageKey,
+} from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
+import {
+  getSeedDisbursementTransactions,
+  getSeedDisbursementVouchers,
+  readStoredDisbursementTransactions,
+  readStoredDisbursementVouchers,
   getDisbursementVoucherDisplayStatus,
-  isDisbursementVoucherActiveStatus,
-  MockDisbursementTransactions,
-  MockDisbursementVouchers,
   buildDisbursementVoucherPreviewRows,
   sanitizeDisbursementVoucherRecord,
+  writeStoredDisbursementTransactions,
+  writeStoredDisbursementVouchers,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import { DisbursementVoucherQueryKeys } from "@/app/src/services/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherQueryKeys";
 import type {
   DisbursementVoucherPreviewRow,
   DisbursementVoucherRecord,
   DisbursementTransactionRecord,
+  DisbursementVoucherTableColumnKey,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
 import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
+import { useTablePreferences } from "@/app/src/hooks/shared/table-preferences/useTablePreferences";
 
 type DisbursementVoucherStoreState = {
   previewRows: DisbursementVoucherPreviewRow[];
@@ -45,103 +57,12 @@ type DisbursementVoucherStoreState = {
   isMutating: boolean;
 };
 
-const DisbursementTransactionStorageKey =
-  "gr8books.disbursement-voucher.transactions";
-const DisbursementVoucherStorageKey = "gr8books.disbursement-voucher.vouchers";
-
-function getSeedTransactions() {
-  return MockDisbursementTransactions;
-}
-
-function getSeedVouchers() {
-  return MockDisbursementVouchers.map(sanitizeDisbursementVoucherRecord);
-}
-
-function readStoredTransactions() {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  const storedTransactions = window.localStorage.getItem(
-    DisbursementTransactionStorageKey,
-  );
-
-  if (!storedTransactions) {
-    return null;
-  }
-
-  try {
-    const parsedTransactions = JSON.parse(
-      storedTransactions,
-    ) as DisbursementTransactionRecord[];
-
-    return Array.isArray(parsedTransactions)
-      ? parsedTransactions.map((transaction) => ({
-          ...transaction,
-          status: getDisbursementVoucherDisplayStatus(transaction.status),
-        }))
-      : null;
-  } catch {
-    return null;
-  }
-}
-
-function readStoredVouchers() {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  const storedVouchers = window.localStorage.getItem(
-    DisbursementVoucherStorageKey,
-  );
-
-  if (!storedVouchers) {
-    return null;
-  }
-
-  try {
-    const parsedVouchers = JSON.parse(
-      storedVouchers,
-    ) as DisbursementVoucherRecord[];
-
-    if (!Array.isArray(parsedVouchers)) {
-      return null;
-    }
-
-    return parsedVouchers.map(sanitizeDisbursementVoucherRecord);
-  } catch {
-    return null;
-  }
-}
-
 function getInitialTransactions() {
-  return readStoredTransactions() ?? getSeedTransactions();
+  return readStoredDisbursementTransactions() ?? getSeedDisbursementTransactions();
 }
 
 function getInitialVouchers() {
-  return readStoredVouchers() ?? getSeedVouchers();
-}
-
-function writeStoredTransactions(transactions: DisbursementTransactionRecord[]) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  window.localStorage.setItem(
-    DisbursementTransactionStorageKey,
-    JSON.stringify(transactions),
-  );
-}
-
-function writeStoredVouchers(vouchers: DisbursementVoucherRecord[]) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  window.localStorage.setItem(
-    DisbursementVoucherStorageKey,
-    JSON.stringify(vouchers.map(sanitizeDisbursementVoucherRecord)),
-  );
+  return readStoredDisbursementVouchers() ?? getSeedDisbursementVouchers();
 }
 
 export function useDisbursementVoucherStore<
@@ -169,7 +90,7 @@ export function useDisbursementVoucherStore<
           currentVouchers.map(sanitizeDisbursementVoucherRecord),
         ).map(sanitizeDisbursementVoucherRecord);
 
-        writeStoredVouchers(nextVouchers);
+        writeStoredDisbursementVouchers(nextVouchers);
 
         return nextVouchers;
       },
@@ -186,7 +107,7 @@ export function useDisbursementVoucherStore<
       (currentTransactions = getInitialTransactions()) => {
         const nextTransactions = updater(currentTransactions);
 
-        writeStoredTransactions(nextTransactions);
+        writeStoredDisbursementTransactions(nextTransactions);
 
         return nextTransactions;
       },
@@ -341,9 +262,20 @@ export function useDisbursementVoucherPreviewTable(
     from: "",
     to: "",
   });
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: "documentDate", desc: true },
-  ]);
+  const {
+    columnOrder,
+    columnVisibility,
+    sorting,
+    setColumnOrder,
+    setColumnVisibility,
+    setSorting,
+  } = useTablePreferences({
+    defaultColumnOrder: DisbursementVoucherDefaultColumnOrder,
+    defaultColumnVisibility: DisbursementVoucherDefaultColumnVisibility,
+    defaultSorting: DisbursementVoucherDefaultSorting,
+    moduleKey: DisbursementVoucherTablePreferencesModuleKey,
+    storageKey: DisbursementVoucherTablePreferencesStorageKey,
+  });
   const [statusFilter, setStatusFilterState] = useState<
     (typeof DisbursementVoucherStatusFilters)[number]
   >("all");
@@ -354,10 +286,13 @@ export function useDisbursementVoucherPreviewTable(
         const searchable = [
           row.transaction.transactionNo,
           row.voucher?.voucherNo,
+          row.voucher?.partyCode,
+          row.voucher?.partyName,
           row.transaction.payee,
           row.transaction.department,
           row.transaction.purpose,
           row.voucher?.remarks,
+          row.voucher?.currency ?? row.transaction.currency,
         ]
           .filter(Boolean)
           .join(" ")
@@ -371,9 +306,7 @@ export function useDisbursementVoucherPreviewTable(
         return (
           searchable.includes(deferredQuery.toLowerCase()) &&
           (statusFilter === "all" ||
-            (statusFilter === "Active"
-              ? isDisbursementVoucherActiveStatus(rowStatus)
-              : rowStatus === statusFilter)) &&
+            rowStatus === statusFilter) &&
           isDateInRange(rowDate, dateRange) &&
           isAmountInRange(rowAmount, amountRange)
         );
@@ -381,61 +314,24 @@ export function useDisbursementVoucherPreviewTable(
     [amountRange, dateRange, deferredQuery, previewRows, statusFilter],
   );
   const columns = useMemo<ColumnDef<DisbursementVoucherPreviewRow>[]>(
-    () => [
-      {
-        id: "voucherNo",
-        accessorFn: (row) =>
-          row.voucher?.voucherNo ?? row.transaction.transactionNo,
-        header: "Voucher No.",
-        sortingFn: "alphanumeric",
-        meta: { className: "w-[12rem]" },
-      },
-      {
-        id: "documentDate",
-        accessorFn: (row) =>
-          row.voucher?.voucherDate ?? row.transaction.transactionDate,
-        header: "Document Date",
-        sortingFn: "datetime",
-        meta: { className: "w-[10rem]" },
-      },
-      {
-        id: "partyName",
-        accessorFn: (row) => row.transaction.payee,
-        header: "Party Name",
-        sortingFn: "alphanumeric",
-        meta: { className: "w-[18rem]" },
-      },
-      {
-        id: "paymentType",
-        accessorFn: (row) => row.transaction.disbursementType,
-        header: "Payment Type",
-        sortingFn: "alphanumeric",
-        meta: { className: "w-[12rem]" },
-      },
-      {
-        id: "amount",
-        accessorFn: (row) => row.voucher?.amount ?? row.transaction.amount,
-        header: "Amount",
-        sortingFn: "basic",
-        meta: { className: "w-[11rem]" },
-      },
-      {
-        id: "status",
-        accessorFn: (row) =>
-          getDisbursementVoucherDisplayStatus(
-            row.voucher?.status ?? row.transaction.status,
-          ),
-        header: "Status",
-        sortingFn: "alphanumeric",
-        meta: { className: "w-[10rem]" },
-      },
-      {
-        id: "actions",
-        header: "Actions",
-        enableSorting: false,
-        meta: { className: "w-[14rem] text-center" },
-      },
-    ],
+    () =>
+      DisbursementVoucherTableColumns.map((column) => {
+        if (!("key" in column)) {
+          return {
+            id: "actions",
+            header: column.label,
+            enableHiding: false,
+            enableSorting: false,
+            meta: { className: column.className, label: column.label },
+          };
+        }
+
+        return createDisbursementVoucherColumn(
+          column.key,
+          column.label,
+          column.className,
+        );
+      }),
     [],
   );
 
@@ -443,10 +339,19 @@ export function useDisbursementVoucherPreviewTable(
   const table = useReactTable({
     data: filteredRows,
     columns,
+    initialState: {
+      columnOrder: DisbursementVoucherDefaultColumnOrder,
+      columnVisibility: DisbursementVoucherDefaultColumnVisibility,
+      sorting: DisbursementVoucherDefaultSorting,
+    },
     state: {
+      columnOrder,
+      columnVisibility,
       pagination,
       sorting,
     },
+    onColumnOrderChange: setColumnOrder,
+    onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
@@ -530,5 +435,71 @@ function isDateInRange(value: string, range: DateRangeValue) {
   }
 
   return true;
+}
+
+function createDisbursementVoucherColumn(
+  key: DisbursementVoucherTableColumnKey,
+  header: string,
+  className: string,
+): ColumnDef<DisbursementVoucherPreviewRow> {
+  return {
+    id: key,
+    accessorFn: (row) => getDisbursementVoucherColumnValue(row, key),
+    header,
+    sortingFn:
+      key === "documentDate" || key === "createdAt" || key === "updatedAt"
+        ? "datetime"
+        : key === "amount"
+          ? "basic"
+          : "alphanumeric",
+    meta: { className, label: header },
+  };
+}
+
+function getDisbursementVoucherColumnValue(
+  row: DisbursementVoucherPreviewRow,
+  key: DisbursementVoucherTableColumnKey,
+) {
+  switch (key) {
+    case "voucherNo":
+      return row.voucher?.voucherNo ?? row.transaction.transactionNo;
+    case "documentDate":
+      return row.voucher?.voucherDate ?? row.transaction.transactionDate;
+    case "partyName":
+      return row.voucher?.partyName || row.transaction.payee;
+    case "partyCode":
+      return row.voucher?.partyCode || "";
+    case "paymentType":
+      return getDisbursementVoucherPaymentType(row);
+    case "remarks":
+      return row.voucher?.remarks ?? row.transaction.purpose;
+    case "currency":
+      return row.voucher?.currency ?? row.transaction.currency;
+    case "amount":
+      return row.voucher?.amount ?? row.transaction.amount;
+    case "status":
+      return getDisbursementVoucherDisplayStatus(
+        row.voucher?.status ?? row.transaction.status,
+      );
+    case "createdBy":
+      return row.voucher?.createdBy ?? row.transaction.createdBy ?? "";
+    case "createdAt":
+      return row.voucher?.createdAt ?? row.transaction.createdAt ?? "";
+    case "updatedBy":
+      return row.voucher?.updatedBy ?? row.transaction.updatedBy ?? "";
+    case "updatedAt":
+      return row.voucher?.updatedAt ?? row.transaction.updatedAt ?? "";
+    default:
+      return "";
+  }
+}
+
+function getDisbursementVoucherPaymentType(row: DisbursementVoucherPreviewRow) {
+  return (
+    row.voucher?.disbursementType ||
+    row.transaction.disbursementType ||
+    row.voucher?.paymentMethod ||
+    row.transaction.paymentMethod
+  );
 }
 

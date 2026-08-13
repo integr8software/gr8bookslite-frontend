@@ -37,7 +37,7 @@ import {
 	pasteModuleDataEntryRows,
 	removeModuleDataEntryRow,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryRowUtils";
-import type { AppCopyFromRecord } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
+import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 
 export function useMaterialRequestFormPage() {
 	const router = useRouter();

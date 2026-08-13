@@ -1,23 +1,9 @@
 "use client";
 
-import {
-  useActionState,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useActionState, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import {
-  InitialAuthActionState,
-  type AuthActionState,
-} from "@/app/src/data/auth/AuthTypes";
-import {
-  MaskEmailAddress,
-  OTP_LENGTH,
-  OTP_RESEND_SECONDS,
-} from "@/app/src/data/auth/OtpData";
+import { AuthActionStatuses, InitialAuthActionState, type AuthActionState } from "@/app/src/types/auth/AuthTypes";
+import { MaskEmailAddress, OTP_LENGTH, OTP_RESEND_SECONDS } from "@/app/src/data/auth/OtpData";
 import {
   ForgotPasswordAction,
   ForgotPasswordOtpAction,
@@ -40,57 +26,54 @@ export function useForgotPasswordForm() {
   const otpInputRef = useRef<HTMLInputElement>(null);
   const wasPendingRef = useRef(false);
 
-  const [state, formAction, pending] = useActionState(
-    async (previousState: AuthActionState, formData: FormData) => {
-      const intent = formData.get("intent");
+  const [state, formAction, pending] = useActionState(async (previousState: AuthActionState, formData: FormData) => {
+    const intent = formData.get("intent");
 
-      if (intent === "verify-otp") {
-        const nextState = await ForgotPasswordOtpAction(previousState, formData);
+    if (intent === "verify-otp") {
+      const nextState = await ForgotPasswordOtpAction(previousState, formData);
 
-        if (nextState.status === "error" && nextState.errors?.otp) {
-          setHasEditedOtpAfterError(false);
-        }
-
-        if (nextState.status === "success" && nextState.resetToken) {
-          setHasEditedOtpAfterError(false);
-          setResetToken(nextState.resetToken);
-          setStep("reset");
-        }
-
-        return nextState;
-      }
-
-      if (intent === "reset-password") {
-        const nextState = await ResetPasswordAction(previousState, formData);
-
-        if (nextState.status === "success") {
-          setIsResetComplete(true);
-        }
-
-        return nextState;
-      }
-
-      const nextState = await ForgotPasswordAction(previousState, formData);
-
-      if (nextState.status === "success") {
-        const submittedEmail = formData.get("email");
-
-        if (typeof submittedEmail === "string") {
-          setEmail(submittedEmail.trim());
-        }
-
-        setOtp("");
+      if (nextState.status === AuthActionStatuses.Error && nextState.errors?.otp) {
         setHasEditedOtpAfterError(false);
-        setResetToken("");
-        setIsResetComplete(false);
-        setSecondsRemaining(0);
-        setStep("verify");
+      }
+
+      if (nextState.status === AuthActionStatuses.Success && nextState.resetToken) {
+        setHasEditedOtpAfterError(false);
+        setResetToken(nextState.resetToken);
+        setStep("reset");
       }
 
       return nextState;
-    },
-    InitialAuthActionState,
-  );
+    }
+
+    if (intent === "reset-password") {
+      const nextState = await ResetPasswordAction(previousState, formData);
+
+      if (nextState.status === AuthActionStatuses.Success) {
+        setIsResetComplete(true);
+      }
+
+      return nextState;
+    }
+
+    const nextState = await ForgotPasswordAction(previousState, formData);
+
+    if (nextState.status === AuthActionStatuses.Success) {
+      const submittedEmail = formData.get("email");
+
+      if (typeof submittedEmail === "string") {
+        setEmail(submittedEmail.trim());
+      }
+
+      setOtp("");
+      setHasEditedOtpAfterError(false);
+      setResetToken("");
+      setIsResetComplete(false);
+      setSecondsRemaining(0);
+      setStep("verify");
+    }
+
+    return nextState;
+  }, InitialAuthActionState);
 
   useEffect(() => {
     if (step !== "verify" || secondsRemaining <= 0) {
@@ -129,12 +112,12 @@ export function useForgotPasswordForm() {
       return;
     }
 
-    if (state.status === "success") {
+    if (state.status === AuthActionStatuses.Success) {
       toast.success(state.message);
       return;
     }
 
-    if (state.status === "error") {
+    if (state.status === AuthActionStatuses.Error) {
       toast.error(state.message);
     }
   }, [pending, state]);
@@ -158,13 +141,16 @@ export function useForgotPasswordForm() {
     }
   }, []);
 
-  const handleOtpChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const nextValue = event.target.value.replace(/\D/g, "").slice(0, OTP_LENGTH);
-    if (state.status === "error" && state.errors?.otp) {
-      setHasEditedOtpAfterError(true);
-    }
-    setOtp(nextValue);
-  }, [state.errors?.otp, state.status]);
+  const handleOtpChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const nextValue = event.target.value.replace(/\D/g, "").slice(0, OTP_LENGTH);
+      if (state.status === AuthActionStatuses.Error && state.errors?.otp) {
+        setHasEditedOtpAfterError(true);
+      }
+      setOtp(nextValue);
+    },
+    [state.errors?.otp, state.status],
+  );
 
   const handleOtpFocus = useCallback(() => {
     setIsOtpFocused(true);
@@ -194,7 +180,7 @@ export function useForgotPasswordForm() {
 
       const nextState = await ResendForgotPasswordAction(state, formData);
 
-      if (nextState.status === "success") {
+      if (nextState.status === AuthActionStatuses.Success) {
         setOtp("");
         setHasEditedOtpAfterError(false);
         setResetToken("");
@@ -227,8 +213,7 @@ export function useForgotPasswordForm() {
     state,
     formAction,
     pending,
-    isOtpErrorActive:
-      state.status === "error" && Boolean(state.errors?.otp) && !hasEditedOtpAfterError,
+    isOtpErrorActive: state.status === AuthActionStatuses.Error && Boolean(state.errors?.otp) && !hasEditedOtpAfterError,
     step,
     email,
     otp,

@@ -1,31 +1,21 @@
 "use server";
 
+import { ForgotPasswordSchema, OtpSchema, ResetPasswordSchema } from "@/app/src/validations/auth/AuthValidation";
+import { AuthActionStatuses, type AuthActionState } from "@/app/src/types/auth/AuthTypes";
 import {
-  ForgotPasswordSchema,
-  OtpSchema,
-  ResetPasswordSchema,
-} from "@/app/src/validations/auth/AuthValidation";
-import type { AuthActionState } from "@/app/src/data/auth/AuthTypes";
-import {
-  type ForgotPasswordRequest,
-  type ForgotPasswordResponse,
-  type ActivateWorkspaceInvitationRequest,
-  type ActivateWorkspaceInvitationResponse,
-  type ResetPasswordRequest,
-  type ResetPasswordResponse,
-  type VerifyForgotPasswordCodeRequest,
-  type VerifyForgotPasswordCodeResponse,
-} from "@/app/src/services/auth/AuthApiTypes";
+  type ForgotPasswordInput,
+  type ForgotPasswordResult,
+  type WorkspaceInvitationActivationInput,
+  type WorkspaceInvitationActivationResult,
+  type PasswordResetInput,
+  type PasswordResetResult,
+  type ForgotPasswordCodeVerificationInput,
+  type ForgotPasswordCodeVerificationResult,
+} from "@/app/src/types/auth/AuthTypes";
 import { PostAuthJson } from "@/app/src/services/auth/AuthApi";
-import {
-  GetFormValue,
-  InvalidState,
-} from "@/app/src/services/auth/AuthActionUtils";
+import { GetFormValue, InvalidState } from "@/app/src/services/auth/AuthActionUtils";
 
-export async function ForgotPasswordAction(
-  _previousState: AuthActionState,
-  formData: FormData,
-): Promise<AuthActionState> {
+export async function ForgotPasswordAction(_previousState: AuthActionState, formData: FormData): Promise<AuthActionState> {
   const parsed = ForgotPasswordSchema.safeParse({
     email: GetFormValue(formData, "email"),
   });
@@ -35,33 +25,24 @@ export async function ForgotPasswordAction(
   }
 
   try {
-    const response = await PostAuthJson<
-      ForgotPasswordRequest,
-      ForgotPasswordResponse
-    >("/auth/forgot-password", {
+    const response = await PostAuthJson<ForgotPasswordInput, ForgotPasswordResult>("/auth/forgot-password", {
       email: parsed.data.email,
     });
 
     return {
-      status: "success",
+      status: AuthActionStatuses.Success,
       code: response.code,
       message: response.message,
     };
   } catch (error) {
     return {
-      status: "error",
-      message:
-        error instanceof Error
-          ? error.message
-          : "We could not send a reset code right now.",
+      status: AuthActionStatuses.Error,
+      message: error instanceof Error ? error.message : "We could not send a reset code right now.",
     };
   }
 }
 
-export async function ForgotPasswordOtpAction(
-  _previousState: AuthActionState,
-  formData: FormData,
-): Promise<AuthActionState> {
+export async function ForgotPasswordOtpAction(_previousState: AuthActionState, formData: FormData): Promise<AuthActionState> {
   const email = GetFormValue(formData, "email");
   const otp = GetFormValue(formData, "otp");
   const parsed = OtpSchema.safeParse({ otp });
@@ -74,7 +55,7 @@ export async function ForgotPasswordOtpAction(
 
   if (!emailValidation.success) {
     return {
-      status: "error",
+      status: AuthActionStatuses.Error,
       message: "Enter a valid email address.",
       errors: {
         email: emailValidation.error.flatten().fieldErrors.email,
@@ -83,33 +64,28 @@ export async function ForgotPasswordOtpAction(
   }
 
   try {
-    const response = await PostAuthJson<
-      VerifyForgotPasswordCodeRequest,
-      VerifyForgotPasswordCodeResponse
-    >("/auth/verify-forgot-password-code", {
-      email: emailValidation.data.email,
-      code: parsed.data.otp,
-    });
+    const response = await PostAuthJson<ForgotPasswordCodeVerificationInput, ForgotPasswordCodeVerificationResult>(
+      "/auth/verify-forgot-password-code",
+      {
+        email: emailValidation.data.email,
+        code: parsed.data.otp,
+      },
+    );
 
     return {
-      status: "success",
+      status: AuthActionStatuses.Success,
       message: response.message,
       resetToken: response.resetToken,
     };
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "We could not verify your reset code right now.";
+    const message = error instanceof Error ? error.message : "We could not verify your reset code right now.";
 
     return {
-      status: "error",
+      status: AuthActionStatuses.Error,
       message,
       errors: {
         otp: [
-          message === "Reset code is invalid." ||
-          message === "Reset code has expired." ||
-          message === "No active reset code was found."
+          message === "Reset code is invalid." || message === "Reset code has expired." || message === "No active reset code was found."
             ? message
             : "The code you entered is invalid.",
         ],
@@ -118,10 +94,7 @@ export async function ForgotPasswordOtpAction(
   }
 }
 
-export async function ResendForgotPasswordAction(
-  _previousState: AuthActionState,
-  formData: FormData,
-): Promise<AuthActionState> {
+export async function ResendForgotPasswordAction(_previousState: AuthActionState, formData: FormData): Promise<AuthActionState> {
   const parsed = ForgotPasswordSchema.safeParse({
     email: GetFormValue(formData, "email"),
   });
@@ -131,33 +104,24 @@ export async function ResendForgotPasswordAction(
   }
 
   try {
-    const response = await PostAuthJson<
-      ForgotPasswordRequest,
-      ForgotPasswordResponse
-    >("/auth/resend-forgot-password", {
+    const response = await PostAuthJson<ForgotPasswordInput, ForgotPasswordResult>("/auth/resend-forgot-password", {
       email: parsed.data.email,
     });
 
     return {
-      status: "success",
+      status: AuthActionStatuses.Success,
       code: response.code,
       message: response.message,
     };
   } catch (error) {
     return {
-      status: "error",
-      message:
-        error instanceof Error
-          ? error.message
-          : "We could not resend the reset code right now.",
+      status: AuthActionStatuses.Error,
+      message: error instanceof Error ? error.message : "We could not resend the reset code right now.",
     };
   }
 }
 
-export async function ResetPasswordAction(
-  _previousState: AuthActionState,
-  formData: FormData,
-): Promise<AuthActionState> {
+export async function ResetPasswordAction(_previousState: AuthActionState, formData: FormData): Promise<AuthActionState> {
   const resetToken = GetFormValue(formData, "resetToken");
   const parsed = ResetPasswordSchema.safeParse({
     password: GetFormValue(formData, "password"),
@@ -170,7 +134,7 @@ export async function ResetPasswordAction(
 
   if (!resetToken) {
     return {
-      status: "error",
+      status: AuthActionStatuses.Error,
       message: "Verify your reset code before creating a new password.",
       errors: {
         otp: ["Verify your reset code before creating a new password."],
@@ -179,28 +143,22 @@ export async function ResetPasswordAction(
   }
 
   try {
-    const response = await PostAuthJson<
-      ResetPasswordRequest,
-      ResetPasswordResponse
-    >("/auth/reset-password", {
+    const response = await PostAuthJson<PasswordResetInput, PasswordResetResult>("/auth/reset-password", {
       resetToken,
       newPassword: parsed.data.password,
       confirmNewPassword: parsed.data.confirmPassword,
     });
 
     return {
-      status: "success",
+      status: AuthActionStatuses.Success,
       message: response.message,
       redirectTo: "/login",
     };
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "We could not reset your password right now.";
+    const message = error instanceof Error ? error.message : "We could not reset your password right now.";
 
     return {
-      status: "error",
+      status: AuthActionStatuses.Error,
       message,
       errors: {
         otp:
@@ -214,10 +172,7 @@ export async function ResetPasswordAction(
   }
 }
 
-export async function ActivateWorkspaceInvitationAction(
-  _previousState: AuthActionState,
-  formData: FormData,
-): Promise<AuthActionState> {
+export async function ActivateWorkspaceInvitationAction(_previousState: AuthActionState, formData: FormData): Promise<AuthActionState> {
   const email = GetFormValue(formData, "email");
   const token = GetFormValue(formData, "token");
   const parsed = ResetPasswordSchema.safeParse({
@@ -231,35 +186,31 @@ export async function ActivateWorkspaceInvitationAction(
 
   if (!email || !token) {
     return {
-      status: "error",
-      message:
-        "This invitation link is incomplete. Ask your administrator for a new invitation.",
+      status: AuthActionStatuses.Error,
+      message: "This invitation link is incomplete. Ask your administrator for a new invitation.",
     };
   }
 
   try {
-    const response = await PostAuthJson<
-      ActivateWorkspaceInvitationRequest,
-      ActivateWorkspaceInvitationResponse
-    >("/auth/workspace-invitation/activate", {
-      email,
-      token,
-      newPassword: parsed.data.password,
-      confirmNewPassword: parsed.data.confirmPassword,
-    });
+    const response = await PostAuthJson<WorkspaceInvitationActivationInput, WorkspaceInvitationActivationResult>(
+      "/auth/workspace-invitation/activate",
+      {
+        email,
+        token,
+        newPassword: parsed.data.password,
+        confirmNewPassword: parsed.data.confirmPassword,
+      },
+    );
 
     return {
-      status: "success",
+      status: AuthActionStatuses.Success,
       message: response.message,
       redirectTo: "/login",
     };
   } catch (error) {
     return {
-      status: "error",
-      message:
-        error instanceof Error
-          ? error.message
-          : "We could not activate this invitation right now.",
+      status: AuthActionStatuses.Error,
+      message: error instanceof Error ? error.message : "We could not activate this invitation right now.",
     };
   }
 }

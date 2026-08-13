@@ -47,10 +47,7 @@ export function useDefaultAccountListPage() {
         account.description,
         account.type,
         account.status,
-        ...account.generatedAccounts.flatMap((generated) => [
-          generated.accountCode,
-          generated.accountTitle,
-        ]),
+        ...account.generatedAccounts.flatMap((generated) => [generated.accountCode, generated.accountTitle]),
       ]
         .join(" ")
         .toLowerCase()

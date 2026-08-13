@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { CustomizeReportPage } from "@/app/src/ui/workspace/reports-analytics/CustomizeReportPage";
+import { CustomizeReportPage } from "@/app/src/ui/modules/system-administration/customized-reports/CustomizeReportPage";
 
 export const metadata: Metadata = {
 	title: `Customize Report | ${AppName}`,

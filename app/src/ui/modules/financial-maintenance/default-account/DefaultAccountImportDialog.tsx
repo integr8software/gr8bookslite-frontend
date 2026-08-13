@@ -64,11 +64,7 @@ export function DefaultAccountImportDialog({
           onFileSelect={(file) => void importDialog.handleFileUpload(file)}
         />
       }
-      progress={
-        importDialog.progress ? (
-          <ModuleImportProgressPanel progress={importDialog.progress} />
-        ) : null
-      }
+      progress={importDialog.progress ? <ModuleImportProgressPanel progress={importDialog.progress} /> : null}
       footer={
         <ModuleImportFooter
           canImportAllRows={importDialog.canImportAllRows}
@@ -132,10 +128,7 @@ export function DefaultAccountImportDialog({
                     style={{
                       width: getModuleImportDataColumnWidth(
                         importDialog.columnWidths[field],
-                        Object.values(importDialog.columnWidths).reduce(
-                          (total, width) => total + width,
-                          0,
-                        ),
+                        Object.values(importDialog.columnWidths).reduce((total, width) => total + width, 0),
                       ),
                     }}
                   />
@@ -145,9 +138,7 @@ export function DefaultAccountImportDialog({
                 <tr>
                   <ModuleImportSelectionHeader
                     checked={importDialog.selectedRowIds.size > 0}
-                    disabled={
-                      importDialog.visibleRows.length === 0 || Boolean(importDialog.progress)
-                    }
+                    disabled={importDialog.visibleRows.length === 0 || Boolean(importDialog.progress)}
                     isOpen={importDialog.isSelectionMenuOpen}
                     onClearSelection={importDialog.clearRowSelection}
                     onSelectAll={() => importDialog.selectRows("all")}
@@ -159,9 +150,7 @@ export function DefaultAccountImportDialog({
                     <ModuleImportResizableColumnHeader
                       key={column.id}
                       className={column.className}
-                      left={
-                        column.stickyLeft === undefined ? undefined : ModuleImportFixedColumnsWidth
-                      }
+                      left={column.stickyLeft === undefined ? undefined : ModuleImportFixedColumnsWidth}
                       width={importDialog.columnWidths[column.id]}
                       onResize={(width) => importDialog.updateColumnWidth(column.id, width)}
                     >
@@ -212,9 +201,7 @@ export function DefaultAccountImportDialog({
             totalPages={importDialog.totalPages}
             onAddRow={importDialog.addBlankRow}
             onGoToPage={importDialog.setPreviewPage}
-            onNextPage={() =>
-              importDialog.setPreviewPage((page) => Math.min(importDialog.totalPages, page + 1))
-            }
+            onNextPage={() => importDialog.setPreviewPage((page) => Math.min(importDialog.totalPages, page + 1))}
             onPreviousPage={() => importDialog.setPreviewPage((page) => Math.max(1, page - 1))}
             onRemoveSelected={importDialog.removeSelectedRows}
           />

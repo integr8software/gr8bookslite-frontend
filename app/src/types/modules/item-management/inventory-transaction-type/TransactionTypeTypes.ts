@@ -1,6 +1,15 @@
-import type { ReactNode } from "react";
+import type { Table, Row } from "@tanstack/react-table";
+import type * as React from "react";
+import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
+import type { ModuleOption } from "@/app/src/data/shared/modules/ModuleOptionsData";
+import {
+	MaintenanceActiveStatusSwitchOption,
+	MaintenanceInactiveStatusSwitchOption,
+} from "@/app/src/utils/status.util";
 
-export type TransactionTypeStatus = "Active" | "Inactive";
+export type TransactionTypeStatus =
+	| typeof MaintenanceActiveStatusSwitchOption.value
+	| typeof MaintenanceInactiveStatusSwitchOption.value;
 
 export type TransactionType = {
 	id: string;
@@ -27,6 +36,20 @@ export type TransactionTypeFormValues = {
 export type TransactionTypeFormErrors = Partial<
 	Record<keyof TransactionTypeFormValues, string>
 >;
+
+export type TransactionTypeFormProps = {
+	accountOptions: ModuleChartAccount[];
+	errors: TransactionTypeFormErrors;
+	isReadonly: boolean;
+	moduleOptions: ModuleOption[];
+	values: TransactionTypeFormValues;
+	onAccountChange: (accountId: string) => void;
+	onInputChange: React.ChangeEventHandler<
+		HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+	>;
+	onModuleChange: (value: string | string[]) => void;
+	onStatusChange: (value: TransactionTypeFormValues["status"]) => void;
+};
 
 export type TransactionTypeActionMode = "add" | "edit" | "view";
 
@@ -59,21 +82,46 @@ export type TransactionTypeTableRecord = TransactionType & {
 };
 
 export type TransactionTypeTableProps = {
+	filteredTransactionTypes: TransactionType[];
+	hasActiveFilters: boolean;
 	isLoading: boolean;
+	isRefreshing: boolean;
+	isSyncing: boolean;
 	lastSyncedAt?: number | string | Date | null;
+	moduleFilter: string;
+	moduleFilterOptions: Array<{ label: string; value: string }>;
+	searchTerm: string;
+	statusFilter: TransactionTypeStatusFilter;
+	table: Table<TransactionTypeTableRecord>;
 	transactionTypes: TransactionType[];
-	toolbar?: ReactNode;
 	onEdit: (transactionType: TransactionType) => void;
+	onModuleFilterChange: (value: string) => void;
+	onRefresh: () => void;
+	onSearchTermChange: (value: string) => void;
+	onStatusFilterChange: (value: TransactionTypeStatusFilter) => void;
 	onToggleStatus: (transactionType: TransactionType) => void;
 	onView: (transactionType: TransactionType) => void;
 };
 
 export type TransactionTypeFiltersProps = {
+	exportAllRows: TransactionTypeTableRecord[];
+	exportFilteredRows: TransactionTypeTableRecord[];
+	hasActiveFilters: boolean;
+	isRefreshing: boolean;
 	moduleFilter: string;
 	moduleFilterOptions: Array<{ label: string; value: string }>;
 	searchTerm: string;
 	statusFilter: TransactionTypeStatusFilter;
+	table: Table<TransactionTypeTableRecord>;
 	onModuleFilterChange: (value: string) => void;
+	onRefresh: () => void;
 	onSearchTermChange: (value: string) => void;
 	onStatusFilterChange: (value: TransactionTypeStatusFilter) => void;
+};
+
+export type TransactionTypeTableRowProps = {
+	row: Row<TransactionTypeTableRecord>;
+	onEdit: (transactionType: TransactionType) => void;
+	onToggleStatus: (transactionType: TransactionType) => void;
+	onView: (transactionType: TransactionType) => void;
 };

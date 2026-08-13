@@ -16,12 +16,14 @@ type HeaderDropIndicator = {
 };
 
 type ModuleTableHeaderProps<TData> = {
+	enableColumnReorder?: boolean;
 	stickyTop?: number;
 	scrollContainerRef?: RefObject<HTMLDivElement | null>;
 	table: Table<TData>;
 };
 
 export function ModuleTableHeader<TData>({
+	enableColumnReorder = true,
 	stickyTop,
 	scrollContainerRef,
 	table,
@@ -133,7 +135,7 @@ export function ModuleTableHeader<TData>({
 								setDropIndicator(null);
 							}}
 							onDragOver={(event) => {
-								if (!header.isPlaceholder && draggedColumnId) {
+								if (enableColumnReorder && !header.isPlaceholder && draggedColumnId) {
 									event.preventDefault();
 									event.dataTransfer.dropEffect = "move";
 									scrollDuringColumnDrag(event);
@@ -148,7 +150,7 @@ export function ModuleTableHeader<TData>({
 							onDrop={(event) => {
 								event.preventDefault();
 
-								if (draggedColumnId && !header.isPlaceholder) {
+								if (enableColumnReorder && draggedColumnId && !header.isPlaceholder) {
 									moveColumn(
 										draggedColumnId,
 										header.column.id,
@@ -189,19 +191,21 @@ export function ModuleTableHeader<TData>({
 											: "justify-start",
 									)}
 								>
-									<span
-										draggable
-										onDragStart={(event) => {
-											event.dataTransfer.effectAllowed = "move";
-											event.dataTransfer.setData("text/plain", header.column.id);
-											setDraggedColumnId(header.column.id);
-											setDropIndicator(null);
-										}}
-										className="inline-flex h-6 w-5 shrink-0 cursor-grab items-center justify-center rounded bg-darknavy/5 text-darknavy/65 transition hover:bg-skyblue/10 hover:text-darknavy active:cursor-grabbing group-hover:text-darknavy"
-										title="Drag column"
-									>
-										<GripVertical className="h-3.5 w-3.5" aria-hidden="true" />
-									</span>
+									{enableColumnReorder ? (
+										<span
+											draggable
+											onDragStart={(event) => {
+												event.dataTransfer.effectAllowed = "move";
+												event.dataTransfer.setData("text/plain", header.column.id);
+												setDraggedColumnId(header.column.id);
+												setDropIndicator(null);
+											}}
+											className="inline-flex h-6 w-5 shrink-0 cursor-grab items-center justify-center rounded bg-darknavy/5 text-darknavy/65 transition hover:bg-skyblue/10 hover:text-darknavy active:cursor-grabbing group-hover:text-darknavy"
+											title="Drag column"
+										>
+											<GripVertical className="h-3.5 w-3.5" aria-hidden="true" />
+										</span>
+									) : null}
 									{header.column.getCanSort() ? (
 										<ModuleTableSortButton
 											header={header}

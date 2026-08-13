@@ -1,5 +1,5 @@
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
-import type { AuthUserModuleItem } from "@/app/src/services/auth/AuthApiTypes";
+import type { AuthUserModuleItem } from "@/app/src/types/auth/AuthTypes";
 
 export type UserSidebarApiItem = AuthUserModuleItem;
 
@@ -9,7 +9,14 @@ export type UserSidebarCustomization = {
   userId: number;
   version: number;
   items: UserSidebarApiItem[];
-  availableModules: Array<{ id: number; code: string; name: string; legacyRoute?: string | null; route?: string | null; iconName?: string | null }>;
+  availableModules: Array<{
+    id: number;
+    code: string;
+    name: string;
+    legacyRoute?: string | null;
+    route?: string | null;
+    iconName?: string | null;
+  }>;
   supportedIconNames: string[];
 };
 
@@ -26,17 +33,27 @@ function CreateScopeParams(scope: SidebarCustomizationScope & { applyScope?: "CU
 }
 
 export async function GetUserSidebarCustomization(companyId: number, scope: SidebarCustomizationScope) {
-  return (await ApiClient.get<UserSidebarCustomization>(`/companies/${companyId}/user-sidebar/customization?${CreateScopeParams(scope)}`)).data;
+  return (await ApiClient.get<UserSidebarCustomization>(`/companies/${companyId}/user-sidebar/customization?${CreateScopeParams(scope)}`))
+    .data;
 }
 
-export async function SaveUserSidebarCustomization(companyId: number, scope: SidebarCustomizationScope, value: Pick<UserSidebarCustomization, "version" | "items"> & { applyScope?: "CURRENT_BRANCH" | "ALL_BRANCHES" }) {
-  return (await ApiClient.request<UserSidebarCustomization>({
-    method: "PUT",
-    url: `/companies/${companyId}/user-sidebar/customization?${CreateScopeParams(scope)}`,
-    data: value,
-  })).data;
+export async function SaveUserSidebarCustomization(
+  companyId: number,
+  scope: SidebarCustomizationScope,
+  value: Pick<UserSidebarCustomization, "version" | "items"> & { applyScope?: "CURRENT_BRANCH" | "ALL_BRANCHES" },
+) {
+  return (
+    await ApiClient.request<UserSidebarCustomization>({
+      method: "PUT",
+      url: `/companies/${companyId}/user-sidebar/customization?${CreateScopeParams(scope)}`,
+      data: value,
+    })
+  ).data;
 }
 
-export async function ResetUserSidebar(companyId: number, scope: SidebarCustomizationScope & { applyScope?: "CURRENT_BRANCH" | "ALL_BRANCHES" }) {
+export async function ResetUserSidebar(
+  companyId: number,
+  scope: SidebarCustomizationScope & { applyScope?: "CURRENT_BRANCH" | "ALL_BRANCHES" },
+) {
   return (await ApiClient.post<UserSidebarCustomization>(`/companies/${companyId}/user-sidebar/reset?${CreateScopeParams(scope)}`)).data;
 }

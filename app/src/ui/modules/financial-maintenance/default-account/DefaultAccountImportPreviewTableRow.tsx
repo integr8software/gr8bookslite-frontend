@@ -30,26 +30,13 @@ export function DefaultAccountImportPreviewTableRow({
   row: DefaultAccountImportPreviewRow;
 }) {
   const hasErrors = defaultAccountImportRowHasErrors(row);
-  const stickyCellBackground = isSelected
-    ? "bg-skyblue/10"
-    : hasErrors
-      ? "bg-coralpink/[0.025]"
-      : "bg-white";
+  const stickyCellBackground = isSelected ? "bg-skyblue/10" : hasErrors ? "bg-coralpink/[0.025]" : "bg-white";
   const typeOptions = DefaultAccountTypeOptions.map((option) => option.value);
-  const typeOptionLabels = {
-    EXPENSE: "Expense",
-    COLLECTION: "Collection",
-  } as const;
 
   return (
     <>
       <tr className={isSelected ? "bg-skyblue/10" : hasErrors ? "bg-coralpink/[0.025]" : undefined}>
-        <td
-          className={joinClasses(
-            "module-import-selection-column sticky left-0 z-20 text-center",
-            stickyCellBackground,
-          )}
-        >
+        <td className={joinClasses("module-import-selection-column sticky left-0 z-20 text-center", stickyCellBackground)}>
           <input
             type="checkbox"
             checked={isSelected}
@@ -59,12 +46,7 @@ export function DefaultAccountImportPreviewTableRow({
           />
         </td>
         <ModuleImportRowNumberCell rowId={row.id} rowNumber={row.rowNumber} onMoveRow={onMoveRow} />
-        <td
-          className={joinClasses(
-            "module-import-first-data-column sticky z-10 px-3 py-2 align-middle",
-            stickyCellBackground,
-          )}
-        >
+        <td className={joinClasses("module-import-first-data-column sticky z-10 px-3 py-2 align-middle", stickyCellBackground)}>
           <ModuleImportEditableCell
             value={row.defaultAccount.defaultAccountName}
             errors={row.cellErrors.defaultAccountName}
@@ -86,7 +68,7 @@ export function DefaultAccountImportPreviewTableRow({
             value={row.defaultAccount.type}
             errors={row.cellErrors.type}
             options={typeOptions}
-            getOptionLabel={(option) => typeOptionLabels[option]}
+            getOptionLabel={getDefaultAccountTypeLabel}
             onChange={(value) => onUpdateCell(row.id, "type", value)}
             onPaste={(text) => onPasteCell(row.id, "type", text)}
           />

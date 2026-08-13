@@ -1,10 +1,17 @@
 import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import type { ModuleOption } from "@/app/src/data/shared/modules/ModuleOptionsData";
-import { TransactionTypeModuleOptions } from "@/app/src/constants/modules/item-management/inventory-transaction-type/TransactionTypeConstants";
+import {
+	TransactionTypeAccountTitles,
+	TransactionTypeDefaultStatus,
+	TransactionTypeModuleOptions,
+} from "@/app/src/constants/modules/item-management/inventory-transaction-type/TransactionTypeConstants";
 import type {
 	TransactionType,
 	TransactionTypeFormValues,
 } from "@/app/src/types/modules/item-management/inventory-transaction-type/TransactionTypeTypes";
+
+const InventoryMovementTypeGoodsReceipt: string = "Goods Receipt";
+const InventoryMovementTypeGoodsIssue: string = "Goods Issue";
 
 export const MockTransactionTypes: TransactionType[] = [
 	createMockTransactionType({
@@ -12,126 +19,144 @@ export const MockTransactionTypes: TransactionType[] = [
 		name: "Sales Return",
 		description: "Records customer-returned goods received back into inventory.",
 		moduleId: "GR",
-		moduleName: "Goods Receipt",
-		accountNumber: "1010103001",
-		accountTitle: "Accounts Receivables - Trade",
+		moduleName: InventoryMovementTypeGoodsReceipt,
+		accountNumber: "4010200002",
+		accountTitle: TransactionTypeAccountTitles.salesReturnsAndAllowances,
+	}),
+	createMockTransactionType({
+		id: "transaction-type-gr-stock-adjustment-receipt",
+		name: "Stock Adjustment Receipt",
+		description: "Records positive inventory adjustments found during stock count reconciliation.",
+		moduleId: "GR",
+		moduleName: InventoryMovementTypeGoodsReceipt,
+		accountNumber: "1010400001",
+		accountTitle: TransactionTypeAccountTitles.inventoryMerchandise,
+	}),
+	createMockTransactionType({
+		id: "transaction-type-inventory-variance",
+		name: "Variance",
+		description: "Records inventory count differences and other stock variance adjustments.",
+		moduleId: "GR",
+		moduleName: InventoryMovementTypeGoodsReceipt,
+		accountNumber: "5010100001",
+		accountTitle: TransactionTypeAccountTitles.costOfSalesMerchandise,
 	}),
 	createMockTransactionType({
 		id: "transaction-type-gr-transfer",
 		name: "Transfer",
 		description: "Records items received from another warehouse or branch.",
 		moduleId: "GR",
-		moduleName: "Goods Receipt",
-		accountNumber: "1010101001",
-		accountTitle: "Cash on Hand",
+		moduleName: InventoryMovementTypeGoodsReceipt,
+		accountNumber: "1010400001",
+		accountTitle: TransactionTypeAccountTitles.inventoryMerchandise,
 	}),
 	createMockTransactionType({
 		id: "transaction-type-gr-free-items",
 		name: "Free Items",
 		description: "Records complimentary items received into inventory.",
 		moduleId: "GR",
-		moduleName: "Goods Receipt",
-		accountNumber: "1010103003",
-		accountTitle: "Advances To Suppliers",
+		moduleName: InventoryMovementTypeGoodsReceipt,
+		accountNumber: "1010400001",
+		accountTitle: TransactionTypeAccountTitles.inventoryMerchandise,
 	}),
 	createMockTransactionType({
 		id: "transaction-type-gr-gifts",
 		name: "Gifts",
 		description: "Records gifted items received for inventory tracking.",
 		moduleId: "GR",
-		moduleName: "Goods Receipt",
-		accountNumber: "1010103004",
-		accountTitle: "Advances To Officers and Employees",
+		moduleName: InventoryMovementTypeGoodsReceipt,
+		accountNumber: "1010400001",
+		accountTitle: TransactionTypeAccountTitles.inventoryMerchandise,
 	}),
 	createMockTransactionType({
 		id: "transaction-type-gi-transfer",
 		name: "Transfer",
 		description: "Issues items out of inventory for transfer to another warehouse or branch.",
 		moduleId: "GI",
-		moduleName: "Goods Issue",
-		accountNumber: "1010101001",
-		accountTitle: "Cash on Hand",
+		moduleName: InventoryMovementTypeGoodsIssue,
+		accountNumber: "1010400001",
+		accountTitle: TransactionTypeAccountTitles.inventoryMerchandise,
 	}),
 	createMockTransactionType({
 		id: "transaction-type-gi-issuance",
 		name: "Issuance",
 		description: "Issues stock from inventory for approved internal use or release.",
 		moduleId: "GI",
-		moduleName: "Goods Issue",
-		accountNumber: "1010101002",
-		accountTitle: "Petty Cash Fund",
+		moduleName: InventoryMovementTypeGoodsIssue,
+		accountNumber: "5020100001",
+		accountTitle: TransactionTypeAccountTitles.expenseOperatingSupplies,
 	}),
 	createMockTransactionType({
 		id: "transaction-type-gi-purchase-return",
 		name: "Purchase Return",
 		description: "Issues goods out of inventory when returning items to a supplier.",
 		moduleId: "GI",
-		moduleName: "Goods Issue",
-		accountNumber: "1010103002",
-		accountTitle: "Accounts Receivables - Others",
+		moduleName: InventoryMovementTypeGoodsIssue,
+		accountNumber: "2010001001",
+		accountTitle: TransactionTypeAccountTitles.accountsPayableTrade,
 	}),
 	createMockTransactionType({
 		id: "transaction-type-gi-damaged-item",
 		name: "Damaged Item",
 		description: "Issues damaged stock out of available inventory for write-off or disposal.",
 		moduleId: "GI",
-		moduleName: "Goods Issue",
-		accountNumber: "1010103004",
-		accountTitle: "Advances To Officers and Employees",
+		moduleName: InventoryMovementTypeGoodsIssue,
+		accountNumber: "5020200001",
+		accountTitle: TransactionTypeAccountTitles.badOrderExpense,
 	}),
 	createMockTransactionType({
 		id: "transaction-type-gi-spoilage",
 		name: "Spoilage",
 		description: "Issues spoiled stock out of inventory for adjustment and accountability.",
 		moduleId: "GI",
-		moduleName: "Goods Issue",
-		accountNumber: "1010103003",
-		accountTitle: "Advances To Suppliers",
+		moduleName: InventoryMovementTypeGoodsIssue,
+		accountNumber: "5020200002",
+		accountTitle: TransactionTypeAccountTitles.spoilageExpense,
 	}),
 	createMockTransactionType({
 		id: "transaction-type-gi-expired-item",
 		name: "Expired Item",
 		description: "Issues expired stock out of inventory for removal or disposal.",
 		moduleId: "GI",
-		moduleName: "Goods Issue",
-		accountNumber: "1010103001",
-		accountTitle: "Accounts Receivables - Trade",
+		moduleName: InventoryMovementTypeGoodsIssue,
+		accountNumber: "5020200002",
+		accountTitle: TransactionTypeAccountTitles.spoilageExpense,
 	}),
 	createMockTransactionType({
 		id: "transaction-type-gi-bad-order",
 		name: "Bad Order",
 		description: "Issues unsellable or rejected stock out of inventory for tracking.",
 		moduleId: "GI",
-		moduleName: "Goods Issue",
-		accountNumber: "1010103002",
-		accountTitle: "Accounts Receivables - Others",
+		moduleName: InventoryMovementTypeGoodsIssue,
+		accountNumber: "5020200001",
+		accountTitle: TransactionTypeAccountTitles.badOrderExpense,
 	}),
 	createMockTransactionType({
 		id: "transaction-type-gi-freebies",
 		name: "Freebies",
 		description: "Issues promotional free items out of inventory for customer release.",
 		moduleId: "GI",
-		moduleName: "Goods Issue",
-		accountNumber: "1010103004",
-		accountTitle: "Advances To Officers and Employees",
+		moduleName: InventoryMovementTypeGoodsIssue,
+		accountNumber: "5010100001",
+		accountTitle: TransactionTypeAccountTitles.costOfSalesMerchandise,
 	}),
 	createMockTransactionType({
 		id: "transaction-type-gi-gifts",
 		name: "Gifts",
 		description: "Issues gifted items out of inventory for non-sale distribution.",
 		moduleId: "GI",
-		moduleName: "Goods Issue",
-		accountNumber: "1010103003",
-		accountTitle: "Advances To Suppliers",
+		moduleName: InventoryMovementTypeGoodsIssue,
+		accountNumber: "5020100001",
+		accountTitle: TransactionTypeAccountTitles.expenseOperatingSupplies,
 	}),
 	createMockTransactionType({
 		id: "transaction-type-gi-intercompany",
 		name: "Intercompany",
 		description: "Issues items out of inventory for transfer to another company entity.",
 		moduleId: "GI",
-		moduleName: "Goods Issue",
-		accountNumber: "1010103001",
-		accountTitle: "Accounts Receivables - Trade",
+		moduleName: InventoryMovementTypeGoodsIssue,
+		accountNumber: "1010103002",
+		accountTitle: TransactionTypeAccountTitles.accountsReceivablesOthers,
 	}),
 ];
 
@@ -139,7 +164,7 @@ export const TransactionTypeInitialFormValues: TransactionTypeFormValues = {
 	name: "",
 	description: "",
 	moduleIds: [],
-	status: "Active",
+	status: TransactionTypeDefaultStatus,
 	accountId: "",
 };
 
@@ -233,8 +258,10 @@ function createMockTransactionType({
 	id,
 	moduleId,
 	moduleName,
+	moduleIds,
+	moduleNames,
 	name,
-	status = "Active",
+	status = TransactionTypeDefaultStatus,
 }: {
 	accountNumber: string;
 	accountTitle: string;
@@ -242,6 +269,8 @@ function createMockTransactionType({
 	id: string;
 	moduleId: string;
 	moduleName: string;
+	moduleIds?: string[];
+	moduleNames?: string[];
 	name: string;
 	status?: TransactionType["status"];
 }): TransactionType {
@@ -251,8 +280,8 @@ function createMockTransactionType({
 		description,
 		moduleId,
 		moduleName,
-		moduleIds: [moduleId],
-		moduleNames: [moduleName],
+		moduleIds: moduleIds ?? [moduleId],
+		moduleNames: moduleNames ?? [moduleName],
 		accountId: accountNumber,
 		accountCode: accountNumber,
 		accountTitle,

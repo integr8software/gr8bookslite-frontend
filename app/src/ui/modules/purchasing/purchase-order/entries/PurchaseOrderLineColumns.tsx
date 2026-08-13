@@ -4,6 +4,7 @@ import {
 	getPurchaseOrderItemGrossAmount,
 } from "@/app/src/data/modules/purchasing/purchase-order/PurchaseOrderData";
 import type { PurchaseOrderItem } from "@/app/src/types/modules/purchasing/purchase-order/PurchaseOrderTypes";
+import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import {
 	MoneyNumberField,
 	parseMoneyNumberInput,
@@ -12,6 +13,9 @@ import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-da
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 type PurchaseOrderLineColumnKind = "amount" | "date" | "select" | "text";
+const AmountColumnKind = "amount";
+const SelectColumnKind = "select";
+const TextColumnKind = "text";
 
 type PurchaseOrderLineColumnConfig = {
 	header: string;
@@ -84,22 +88,21 @@ function PurchaseOrderLineCell({
 
 	if (column.kind === "select") {
 		return (
-			<select
+			<AppAdvancedDropdown
 				id={fieldId}
 				name={fieldName}
 				value={value}
-				disabled={isReadonly}
-				onChange={(event) =>
-					onUpdateEntry(row.id, { [column.id]: event.target.value })
+				readOnly={isReadonly}
+				options={(column.options ?? []).map((option) => ({
+					name: option,
+					value: option,
+				}))}
+				placeholder=""
+				className={EntryDropdownClassName}
+				onChange={(nextValue) =>
+					onUpdateEntry(row.id, { [column.id]: String(nextValue) })
 				}
-				className={entryCellControlClassName()}
-			>
-				{(column.options ?? []).map((option) => (
-					<option key={option} value={option}>
-						{option}
-					</option>
-				))}
-			</select>
+			/>
 		);
 	}
 
@@ -133,6 +136,9 @@ function PurchaseOrderLineCell({
 	);
 }
 
+const EntryDropdownClassName =
+	"[&_.app-advanced-dropdown-control]:h-10 [&_.app-advanced-dropdown-control]:rounded-none [&_.app-advanced-dropdown-control]:border-0 [&_.app-advanced-dropdown-control]:bg-transparent [&_.app-advanced-dropdown-control]:px-3 [&_.app-advanced-dropdown-control]:shadow-none [&_.app-advanced-dropdown-control]:focus:ring-2 [&_.app-advanced-dropdown-control]:focus:ring-inset [&_.app-advanced-dropdown-control]:focus:ring-skyblue/35";
+
 function entryCellControlClassName(extraClassName?: string) {
 	return joinClasses(
 		"h-10 w-full rounded-none border-0 bg-transparent px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:bg-skyblue/10 focus:ring-2 focus:ring-inset focus:ring-skyblue/35 disabled:cursor-not-allowed disabled:bg-offwhite/45 disabled:text-darknavy/35",
@@ -148,22 +154,22 @@ function entryCellDisplayClassName(extraClassName?: string) {
 }
 
 const PurchaseOrderLineColumnConfigs = [
-	column("Item Code *", "itemCode", "text", 120, "w-[7.5rem]"),
-	column("Barcode", "barcode", "text", 115, "w-[7.25rem]"),
-	column("Item Name *", "itemName", "text", 220, "w-[13.75rem]"),
-	column("PR Qty", "prQuantity", "amount", 100, "w-[6.25rem]"),
-	column("PO Qty", "quantity", "amount", 100, "w-[6.25rem]"),
-	column("UOM *", "uom", "select", 105, "w-[6.5rem]", PurchaseOrderUomOptions),
-	column("Color", "color", "text", 90, "w-[5.75rem]"),
-	column("Brand", "brand", "text", 100, "w-[6.25rem]"),
-	column("Size", "size", "text", 90, "w-[5.75rem]"),
-	column("Model", "model", "text", 110, "w-[7rem]"),
-	column("UC *", "cost", "amount", 110, "w-[7rem]"),
-	column("Total Cost (Net of VAT)", "netOfVatAmount", "amount", 150, "w-[9.5rem]"),
-	column("VAT Amt", "vatAmount", "amount", 125, "w-[7.75rem]"),
-	column("Total Cost (Gross of VAT)", "grossAmount", "amount", 160, "w-[10rem]"),
-	column("PR No", "linePrNo", "text", 130, "w-[8.25rem]"),
-	column("Canvass No", "canvassNo", "text", 140, "w-[8.75rem]"),
+	column("Item Code *", "itemCode", TextColumnKind, 120, "w-[7.5rem]"),
+	column("Barcode", "barcode", TextColumnKind, 115, "w-[7.25rem]"),
+	column("Item Name *", "itemName", TextColumnKind, 220, "w-[13.75rem]"),
+	column("PR Qty", "prQuantity", AmountColumnKind, 100, "w-[6.25rem]"),
+	column("PO Qty", "quantity", AmountColumnKind, 100, "w-[6.25rem]"),
+	column("UOM *", "uom", SelectColumnKind, 105, "w-[6.5rem]", PurchaseOrderUomOptions),
+	column("Color", "color", TextColumnKind, 90, "w-[5.75rem]"),
+	column("Brand", "brand", TextColumnKind, 100, "w-[6.25rem]"),
+	column("Size", "size", TextColumnKind, 90, "w-[5.75rem]"),
+	column("Model", "model", TextColumnKind, 110, "w-[7rem]"),
+	column("UC *", "cost", AmountColumnKind, 110, "w-[7rem]"),
+	column("Total Cost (Net of VAT)", "netOfVatAmount", AmountColumnKind, 150, "w-[9.5rem]"),
+	column("VAT Amt", "vatAmount", AmountColumnKind, 125, "w-[7.75rem]"),
+	column("Total Cost (Gross of VAT)", "grossAmount", AmountColumnKind, 160, "w-[10rem]"),
+	column("PR No", "linePrNo", TextColumnKind, 130, "w-[8.25rem]"),
+	column("Canvass No", "canvassNo", TextColumnKind, 140, "w-[8.75rem]"),
 ];
 
 function getPurchaseOrderItemNetOfVatAmount(item: PurchaseOrderItem) {

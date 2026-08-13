@@ -50,8 +50,7 @@ export function ChartAccountQuickAddDialog({
           if (isCurrent) setAccountCode(nextCode);
         })
         .catch((error: unknown) => {
-          if (isCurrent)
-            setError(error instanceof Error ? error.message : "Could not generate code.");
+          if (isCurrent) setError(error instanceof Error ? error.message : "Could not generate code.");
         })
         .finally(() => {
           if (isCurrent) setIsCodeLoading(false);

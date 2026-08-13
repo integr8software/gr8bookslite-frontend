@@ -2,24 +2,13 @@
 
 import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
-import {
-  BarChart3,
-  LayoutDashboard,
-  PanelsTopLeft,
-  Plus,
-  Share2,
-  SlidersHorizontal,
-  Users,
-} from "lucide-react";
+import { BarChart3, LayoutDashboard, PanelsTopLeft, Plus, Share2, SlidersHorizontal, Users } from "lucide-react";
 import { MainDashboardWidgets } from "@/app/src/data/shared/main-layout/MainLayoutDefaults";
 import type { MainDashboardWidget } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
 import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
-import {
-  GetAuthProfileAccess,
-  ResolveAuthProfileEffectiveRole,
-} from "@/app/src/services/auth/AuthProfileAccess";
-import type { AuthProfileResponse } from "@/app/src/services/auth/AuthApiTypes";
+import { GetAuthProfileAccess, ResolveAuthProfileEffectiveRole } from "@/app/src/services/auth/AuthProfileAccess";
+import type { AuthProfile } from "@/app/src/types/auth/AuthTypes";
 import { BranchDashboardSpotlightTutorial } from "@/app/src/ui/modules/dashboard/BranchDashboardSpotlightTutorial";
 
 const DashboardLibrary = [
@@ -31,11 +20,7 @@ const DashboardLibrary = [
   },
 ];
 
-const ActivityItems = [
-  "Dashboard was updated.",
-  "Dashboard widget settings were reviewed.",
-  "Dashboard access rules were synchronized.",
-];
+const ActivityItems = ["Dashboard was updated.", "Dashboard widget settings were reviewed.", "Dashboard access rules were synchronized."];
 
 export function ManagementMain() {
   const accessToken = useAppStore((state) => state.accessToken);
@@ -49,83 +34,49 @@ export function ManagementMain() {
   return (
     <div className="mx-auto flex w-full max-w-[94rem] flex-col gap-4">
       <BranchDashboardSpotlightTutorial />
-      <section
-        className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm sm:p-5"
-        data-spotlight-id="branch-dashboard-header"
-      >
+      <section className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm sm:p-5" data-spotlight-id="branch-dashboard-header">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <StatusPill label="Dashboard" tone="sky" />
               <StatusPill label="Customizable" tone="citron" />
-              {canAddDashboard ? (
-                <StatusPill label="Add enabled" tone="dark" />
-              ) : null}
+              {canAddDashboard ? <StatusPill label="Add enabled" tone="dark" /> : null}
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-2 sm:flex">
-            {canAddDashboard ? (
-              <ActionButton
-                dataSpotlightId="branch-dashboard-add"
-                icon={Plus}
-                label="Add Dashboard"
-              />
-            ) : null}
+            {canAddDashboard ? <ActionButton dataSpotlightId="branch-dashboard-add" icon={Plus} label="Add Dashboard" /> : null}
             <ActionButton icon={SlidersHorizontal} label="Customize" />
             <ActionButton icon={Share2} label="Share" />
           </div>
         </div>
       </section>
 
-      <section
-        className="grid gap-4 md:grid-cols-2 xl:grid-cols-4"
-        data-spotlight-id="branch-dashboard-summary"
-      >
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4" data-spotlight-id="branch-dashboard-summary">
         {MainDashboardWidgets.map((widget) => (
           <WidgetCard key={widget.id} widget={widget} />
         ))}
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[1.35fr_0.85fr]">
-        <Panel
-          dataSpotlightId="branch-dashboard-library"
-          title="Dashboard Library"
-          icon={LayoutDashboard}
-        >
+        <Panel dataSpotlightId="branch-dashboard-library" title="Dashboard Library" icon={LayoutDashboard}>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[42rem] border-separate border-spacing-0 text-left text-sm">
               <thead>
                 <tr className="text-xs font-semibold text-darknavy/45">
-                  <th className="border-b border-darknavy/10 px-3 py-3">
-                    Dashboard
-                  </th>
-                  <th className="border-b border-darknavy/10 px-3 py-3">
-                    Owner
-                  </th>
-                  <th className="border-b border-darknavy/10 px-3 py-3">
-                    Visibility
-                  </th>
-                  <th className="border-b border-darknavy/10 px-3 py-3">
-                    Widgets
-                  </th>
+                  <th className="border-b border-darknavy/10 px-3 py-3">Dashboard</th>
+                  <th className="border-b border-darknavy/10 px-3 py-3">Owner</th>
+                  <th className="border-b border-darknavy/10 px-3 py-3">Visibility</th>
+                  <th className="border-b border-darknavy/10 px-3 py-3">Widgets</th>
                 </tr>
               </thead>
               <tbody>
                 {DashboardLibrary.map((dashboard) => (
                   <tr key={dashboard.title} className="text-darknavy">
-                    <td className="border-b border-darknavy/5 px-3 py-3 font-semibold">
-                      {dashboard.title}
-                    </td>
-                    <td className="border-b border-darknavy/5 px-3 py-3 text-darknavy/70">
-                      {dashboard.owner}
-                    </td>
-                    <td className="border-b border-darknavy/5 px-3 py-3 text-darknavy/70">
-                      {dashboard.visibility}
-                    </td>
-                    <td className="border-b border-darknavy/5 px-3 py-3 font-medium">
-                      {dashboard.widgets}
-                    </td>
+                    <td className="border-b border-darknavy/5 px-3 py-3 font-semibold">{dashboard.title}</td>
+                    <td className="border-b border-darknavy/5 px-3 py-3 text-darknavy/70">{dashboard.owner}</td>
+                    <td className="border-b border-darknavy/5 px-3 py-3 text-darknavy/70">{dashboard.visibility}</td>
+                    <td className="border-b border-darknavy/5 px-3 py-3 font-medium">{dashboard.widgets}</td>
                   </tr>
                 ))}
               </tbody>
@@ -133,11 +84,7 @@ export function ManagementMain() {
           </div>
         </Panel>
 
-        <Panel
-          dataSpotlightId="branch-dashboard-builder"
-          title="Builder Preview"
-          icon={PanelsTopLeft}
-        >
+        <Panel dataSpotlightId="branch-dashboard-builder" title="Builder Preview" icon={PanelsTopLeft}>
           <div className="grid min-h-72 gap-3">
             <div className="grid grid-cols-2 gap-3">
               <PreviewBlock label="Summary" />
@@ -154,11 +101,7 @@ export function ManagementMain() {
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
-        <Panel
-          dataSpotlightId="branch-dashboard-team-access"
-          title="Team Access"
-          icon={Users}
-        >
+        <Panel dataSpotlightId="branch-dashboard-team-access" title="Team Access" icon={Users}>
           <div className="space-y-3">
             <AccessRow label="Administrators" value="Can view, add, edit" />
             <AccessRow label="Managers" value="Can view shared dashboards" />
@@ -166,17 +109,10 @@ export function ManagementMain() {
           </div>
         </Panel>
 
-        <Panel
-          dataSpotlightId="branch-dashboard-activity"
-          title="Recent Dashboard Activity"
-          icon={BarChart3}
-        >
+        <Panel dataSpotlightId="branch-dashboard-activity" title="Recent Dashboard Activity" icon={BarChart3}>
           <div className="space-y-2">
             {ActivityItems.map((activity) => (
-              <div
-                key={activity}
-                className="rounded-md border border-darknavy/10 px-4 py-3 text-sm font-medium text-darknavy/72"
-              >
+              <div key={activity} className="rounded-md border border-darknavy/10 px-4 py-3 text-sm font-medium text-darknavy/72">
                 {activity}
               </div>
             ))}
@@ -187,7 +123,7 @@ export function ManagementMain() {
   );
 }
 
-function canAddDashboardFromProfile(profile: AuthProfileResponse | undefined) {
+function canAddDashboardFromProfile(profile: AuthProfile | undefined) {
   if (!profile) {
     return false;
   }
@@ -198,10 +134,7 @@ function canAddDashboardFromProfile(profile: AuthProfileResponse | undefined) {
     return true;
   }
 
-  return (
-    GetAuthProfileAccess(profile)?.permissions?.includes("dashboard:add") ??
-    false
-  );
+  return GetAuthProfileAccess(profile)?.permissions?.includes("dashboard:add") ?? false;
 }
 
 type WidgetCardProps = {
@@ -212,18 +145,12 @@ function WidgetCard({ widget }: WidgetCardProps) {
   return (
     <article className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
-        <span
-          className={`flex h-10 w-10 items-center justify-center rounded-md ${bgTone(widget.tone)}`}
-        >
+        <span className={`flex h-10 w-10 items-center justify-center rounded-md ${bgTone(widget.tone)}`}>
           <LayoutDashboard className="h-5 w-5" aria-hidden="true" />
         </span>
-        <span className="rounded bg-darknavy/5 px-2 py-1 text-xs font-semibold text-darknavy/55">
-          Widget
-        </span>
+        <span className="rounded bg-darknavy/5 px-2 py-1 text-xs font-semibold text-darknavy/55">Widget</span>
       </div>
-      <p className="mt-5 text-sm font-medium text-darknavy/55">
-        {widget.title}
-      </p>
+      <p className="mt-5 text-sm font-medium text-darknavy/55">{widget.title}</p>
       <p className="mt-2 text-2xl font-semibold text-darknavy">{widget.value}</p>
       <p className="mt-2 text-sm text-darknavy/55">{widget.supportingText}</p>
     </article>
@@ -239,10 +166,7 @@ type PanelProps = {
 
 function Panel({ children, dataSpotlightId, icon: Icon, title }: PanelProps) {
   return (
-    <section
-      className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm"
-      data-spotlight-id={dataSpotlightId}
-    >
+    <section className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm" data-spotlight-id={dataSpotlightId}>
       <div className="mb-4 flex items-center gap-2">
         <Icon className="h-4 w-4 text-darknavy/55" aria-hidden="true" />
         <h2 className="text-base font-semibold text-darknavy">{title}</h2>
@@ -259,12 +183,7 @@ type ActionButtonProps = {
   onClick?: () => void;
 };
 
-function ActionButton({
-  dataSpotlightId,
-  icon: Icon,
-  label,
-  onClick,
-}: ActionButtonProps) {
+function ActionButton({ dataSpotlightId, icon: Icon, label, onClick }: ActionButtonProps) {
   return (
     <button
       type="button"
@@ -284,13 +203,7 @@ type StatusPillProps = {
 };
 
 function StatusPill({ label, tone }: StatusPillProps) {
-  return (
-    <span
-      className={`inline-flex min-h-7 items-center rounded px-2.5 text-xs font-semibold ${pillTone(tone)}`}
-    >
-      {label}
-    </span>
-  );
+  return <span className={`inline-flex min-h-7 items-center rounded px-2.5 text-xs font-semibold ${pillTone(tone)}`}>{label}</span>;
 }
 
 type PreviewBlockProps = {
@@ -301,8 +214,9 @@ type PreviewBlockProps = {
 function PreviewBlock({ label, tall }: PreviewBlockProps) {
   return (
     <div
-      className={`flex items-center justify-center rounded-md border border-dashed border-darknavy/15 bg-darknavy/5 px-3 text-center text-xs font-semibold text-darknavy/45 ${tall ? "min-h-28" : "min-h-16"
-        }`}
+      className={`flex items-center justify-center rounded-md border border-dashed border-darknavy/15 bg-darknavy/5 px-3 text-center text-xs font-semibold text-darknavy/45 ${
+        tall ? "min-h-28" : "min-h-16"
+      }`}
     >
       {label}
     </div>
@@ -317,9 +231,7 @@ type AccessRowProps = {
 function AccessRow({ label, value }: AccessRowProps) {
   return (
     <div className="flex items-center justify-between gap-3 rounded-md border border-darknavy/10 px-4 py-3">
-      <span className="min-w-0 text-sm font-semibold text-darknavy">
-        {label}
-      </span>
+      <span className="min-w-0 text-sm font-semibold text-darknavy">{label}</span>
       <span className="text-right text-sm text-darknavy/55">{value}</span>
     </div>
   );

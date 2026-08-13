@@ -35,7 +35,23 @@ const PurchaseOrderItemSchema = z.object({
 	vatable: z.string(),
 });
 
+const AccountingEntrySchema = z.object({
+	accountCode: z.string(),
+	accountTitle: z.string(),
+	atcCode: z.string(),
+	credit: z.coerce.number().min(0),
+	debit: z.coerce.number().min(0),
+	id: z.string(),
+	partyCode: z.string(),
+	partyName: z.string(),
+	particulars: z.string(),
+	refNo: z.string(),
+	responsibilityCenter: z.string(),
+	vatType: z.string(),
+});
+
 const PurchaseOrderFormSchema = z.object({
+	accountingEntries: z.array(AccountingEntrySchema),
 	address: z.string(),
 	contactNo: z.string(),
 	currency: requiredText("Select a currency."),
@@ -49,10 +65,10 @@ const PurchaseOrderFormSchema = z.object({
 	partialPayment: z.boolean(),
 	prNo: z.string(),
 	projectName: z.string(),
-	projectRef: z.string(),
+	projectCode: z.string(),
 	purchaseType: requiredText("Select a purchase type."),
 	remarks: z.string(),
-	status: z.enum(["Draft", "Open", "Approved", "Closed", "Cancelled"]),
+	status: z.enum(["Draft", "For Approval", "Posted", "Disapproved", "Cancelled"]),
 	termsOfPayment: z.string(),
 	transNo: requiredText("Enter a transaction number."),
 	vatAmount: z.coerce.number().min(0),

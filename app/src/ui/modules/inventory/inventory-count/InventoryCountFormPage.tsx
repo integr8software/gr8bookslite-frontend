@@ -86,7 +86,11 @@ export function InventoryCountFormPage() {
 					onChange={page.updateField}
 				/>
 
-				<InventoryCountItemsTable rows={page.values.lines} />
+				<InventoryCountItemsTable
+					isReadonly={page.isReadonly}
+					rows={page.values.lines}
+					onRowsChange={page.updateLines}
+				/>
 			</form>
 			<InventoryCountReportPreview
 				isOpen={page.isReportPreviewOpen}

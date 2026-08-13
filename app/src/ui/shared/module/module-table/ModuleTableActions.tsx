@@ -1,32 +1,10 @@
 "use client";
 
-import {
-  createElement,
-  type ComponentPropsWithoutRef,
-  type ReactNode,
-} from "react";
+import { createElement, type ComponentPropsWithoutRef, type ReactNode } from "react";
 import Link from "next/link";
-import {
-  CheckCircle2,
-  CircleOff,
-  Edit3,
-  Eye,
-  LoaderCircle,
-  Trash2,
-  type LucideIcon,
-} from "lucide-react";
-import {
-  joinClasses,
-  moduleAccentClassNames,
-} from "@/app/src/ui/shared/module/module-table/utils";
-
-export type ModuleTableActionVariant =
-  | "active"
-  | "delete"
-  | "edit"
-  | "inactive"
-  | "neutral"
-  | "view";
+import { CheckCircle2, CircleOff, Edit3, Eye, LoaderCircle, Ban, ThumbsDown, ThumbsUp, Trash2, type LucideIcon } from "lucide-react";
+import { joinClasses, moduleAccentClassNames } from "@/app/src/ui/shared/module/module-table/utils";
+import type { ModuleTableActionVariant } from "@/app/src/types/shared/module/ModuleTableActionTypes";
 
 type SharedActionProps = {
   icon?: LucideIcon;
@@ -35,11 +13,9 @@ type SharedActionProps = {
   variant?: ModuleTableActionVariant;
 };
 
-type ModuleTableActionLinkProps = SharedActionProps &
-  Omit<ComponentPropsWithoutRef<typeof Link>, "aria-label" | "children">;
+type ModuleTableActionLinkProps = SharedActionProps & Omit<ComponentPropsWithoutRef<typeof Link>, "aria-label" | "children">;
 
-type ModuleTableActionButtonProps = SharedActionProps &
-  Omit<ComponentPropsWithoutRef<"button">, "aria-label" | "children">;
+type ModuleTableActionButtonProps = SharedActionProps & Omit<ComponentPropsWithoutRef<"button">, "aria-label" | "children">;
 
 export function ModuleTableActions({
   children,
@@ -49,13 +25,7 @@ export function ModuleTableActions({
   children: ReactNode;
 }) {
   return (
-    <div
-      {...props}
-      className={joinClasses(
-        "flex items-center justify-end gap-1.5",
-        className,
-      )}
-    >
+    <div {...props} className={joinClasses("flex items-center gap-1.5", className)}>
       {children}
     </div>
   );
@@ -70,11 +40,7 @@ export function ModuleTableActionLink({
   ...props
 }: ModuleTableActionLinkProps) {
   return (
-    <Link
-      {...props}
-      aria-label={label}
-      className={joinClasses(getActionClassName(variant), className)}
-    >
+    <Link {...props} aria-label={label} className={joinClasses(getActionClassName(variant), className)}>
       {renderActionIcon(variant, icon, isLoading)}
     </Link>
   );
@@ -90,22 +56,13 @@ export function ModuleTableActionButton({
   ...props
 }: ModuleTableActionButtonProps) {
   return (
-    <button
-      {...props}
-      type={type}
-      aria-label={label}
-      className={joinClasses(getActionClassName(variant), className)}
-    >
+    <button {...props} type={type} aria-label={label} className={joinClasses(getActionClassName(variant), className)}>
       {renderActionIcon(variant, icon, isLoading)}
     </button>
   );
 }
 
-function renderActionIcon(
-  variant: ModuleTableActionVariant,
-  icon?: LucideIcon,
-  isLoading = false,
-) {
+function renderActionIcon(variant: ModuleTableActionVariant, icon?: LucideIcon, isLoading = false) {
   if (isLoading) {
     return <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />;
   }
@@ -120,8 +77,14 @@ function renderActionIcon(
   switch (variant) {
     case "active":
       return <CheckCircle2 className="h-4 w-4" aria-hidden="true" />;
+    case "approve":
+      return <ThumbsUp className="h-4 w-4" aria-hidden="true" />;
+    case "cancel":
+      return <Ban className="h-4 w-4" aria-hidden="true" />;
     case "delete":
       return <Trash2 className="h-4 w-4" aria-hidden="true" />;
+    case "disapprove":
+      return <ThumbsDown className="h-4 w-4" aria-hidden="true" />;
     case "edit":
       return <Edit3 className="h-4 w-4" aria-hidden="true" />;
     case "inactive":
@@ -139,8 +102,11 @@ function getActionClassName(variant: ModuleTableActionVariant) {
 
   switch (variant) {
     case "active":
+    case "approve":
       return `${baseClassName} border-emerald-200 text-emerald-700 hover:bg-emerald-50 focus-visible:ring-emerald-500/25`;
+    case "cancel":
     case "delete":
+    case "disapprove":
     case "inactive":
       return `${baseClassName} border-coralpink/30 text-coralpink hover:bg-coralpink/10 focus-visible:ring-coralpink/30`;
     case "edit":

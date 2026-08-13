@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { SalesJournalFormPage } from "@/app/src/ui/modules/sales/sales-journal/SalesJournalFormPage";
+import { SalesJournalFormPage } from "@/app/src/ui/modules/sales/sales-journal/action/SalesJournalFormPage";
 
 const PageTitle = "Add Sales Journal";
 

@@ -12,72 +12,69 @@ import { GoodsIssueEntrySection } from "@/app/src/ui/modules/inventory/goods-iss
 import { GoodsIssueNotFound } from "@/app/src/ui/modules/inventory/goods-issue/overview/GoodsIssueNotFound";
 import { openGoodsIssuePdf } from "@/app/src/ui/modules/inventory/goods-issue/reports/GoodsIssuePdf";
 import { GoodsIssueReportPreview } from "@/app/src/ui/modules/inventory/goods-issue/reports/GoodsIssueReportPreview";
-import type { AppCopyFromRecord } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
+import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 
 export function GoodsIssueActionPage() {
-	const params = useParams<{ recordId?: string }>();
-	const pathname = usePathname();
-	const router = useRouter();
-	const mode = getModeFromPathname(pathname);
-	const isReadonly = mode === "view";
-	const recordId =
-		typeof params.recordId === "string" ? params.recordId : undefined;
-	const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
-	const issueForm = useGoodsIssueActionForm(mode, recordId, () => {
-		router.push(GoodsIssueHref);
-	});
-	const copyFromRecords = useMemo<AppCopyFromRecord[]>(
-		() =>
-			GoodsIssueMaterialRequestCopyRecords.map((record) => ({
-				documentDate: record.documentDate,
-				id: record.id,
-				partyName: record.partyName,
-				remarks: record.remarks,
-				source: record.source,
-				sourceNo: record.sourceNo,
-			})),
-		[],
-	);
+  const params = useParams<{ recordId?: string }>();
+  const pathname = usePathname();
+  const router = useRouter();
+  const mode = getModeFromPathname(pathname);
+  const isReadonly = mode === "view";
+  const recordId = typeof params.recordId === "string" ? params.recordId : undefined;
+  const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
+  const issueForm = useGoodsIssueActionForm(mode, recordId, () => {
+    router.push(GoodsIssueHref);
+  });
+  const copyFromRecords = useMemo<AppCopyFromRecord[]>(
+    () =>
+      GoodsIssueMaterialRequestCopyRecords.map((record) => ({
+        documentDate: record.documentDate,
+        id: record.id,
+        partyName: record.partyName,
+        remarks: record.remarks,
+        source: record.source,
+        sourceNo: record.sourceNo,
+      })),
+    [],
+  );
 
-	if (issueForm.isRecordMissing) {
-		return <GoodsIssueNotFound />;
-	}
+  if (issueForm.isRecordMissing) {
+    return <GoodsIssueNotFound />;
+  }
 
-	return (
-		<>
-		<section className="grid gap-5">
-			<GoodsIssueFormHeader
-				copyFromRecords={copyFromRecords}
-				mode={mode}
-				onCopyFromMaterialRequest={issueForm.copyFromMaterialRequests}
-				onPreview={() => setIsReportPreviewOpen(true)}
-				values={issueForm.values}
-				onSubmit={issueForm.submitIssue}
-			/>
-			<GoodsIssueDetailsForm
-				isReadonly={isReadonly}
-				values={issueForm.values}
-				onUpdateField={issueForm.updateField}
-			/>
-			<GoodsIssueEntrySection
-				isReadonly={isReadonly}
-				rows={issueForm.values.lineEntries}
-				onRowsChange={issueForm.updateLineEntries}
-			/>
-		</section>
-		<GoodsIssueReportPreview
-			isOpen={isReportPreviewOpen}
-			values={issueForm.values}
-			onClose={() => setIsReportPreviewOpen(false)}
-			onGeneratePdf={() => openGoodsIssuePdf(issueForm.values)}
-		/>
-		</>
-	);
+  return (
+    <>
+      <section className="grid gap-5">
+        <GoodsIssueFormHeader
+          copyFromRecords={copyFromRecords}
+          mode={mode}
+          onCopyFromMaterialRequest={issueForm.copyFromMaterialRequests}
+          onPreview={() => setIsReportPreviewOpen(true)}
+          values={issueForm.values}
+          onSubmit={issueForm.submitIssue}
+        />
+        <GoodsIssueDetailsForm isReadonly={isReadonly} values={issueForm.values} onUpdateField={issueForm.updateField} />
+        <GoodsIssueEntrySection
+          isReadonly={isReadonly}
+          accountingRows={issueForm.values.accountingEntries}
+          rows={issueForm.values.lineEntries}
+          onAccountingRowsChange={issueForm.updateAccountingEntries}
+          onRowsChange={issueForm.updateLineEntries}
+        />
+      </section>
+      <GoodsIssueReportPreview
+        isOpen={isReportPreviewOpen}
+        values={issueForm.values}
+        onClose={() => setIsReportPreviewOpen(false)}
+        onGeneratePdf={() => openGoodsIssuePdf(issueForm.values)}
+      />
+    </>
+  );
 }
 
 function getModeFromPathname(pathname: string): GoodsIssueActionMode {
-	if (pathname.includes("/view/")) return "view";
-	if (pathname.includes("/edit/")) return "edit";
+  if (pathname.includes("/view/")) return "view";
+  if (pathname.includes("/edit/")) return "edit";
 
-	return "add";
+  return "add";
 }

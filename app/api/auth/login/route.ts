@@ -1,17 +1,12 @@
 import { NextResponse } from "next/server";
-import {
-  FetchBackend,
-} from "@/app/src/services/auth/AuthBackendServer";
+import { FetchBackend } from "@/app/src/services/auth/AuthBackendServer";
 import { SetAuthAccessTokenCookie } from "@/app/src/services/auth/AuthCookieServer";
-import type {
-  LoginRequest,
-  LoginResponse,
-} from "@/app/src/services/auth/AuthApiTypes";
+import type { LoginCredentials, LoginResult } from "@/app/src/types/auth/AuthTypes";
 import { GetFallbackPostAuthRedirectPath } from "@/app/src/services/auth/AuthRedirects";
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json().catch(() => null)) as LoginRequest | null;
+    const body = (await request.json().catch(() => null)) as LoginCredentials | null;
     const response = await FetchBackend("/auth/login", {
       body: JSON.stringify(body),
       headers: {
@@ -19,33 +14,23 @@ export async function POST(request: Request) {
       },
       method: "POST",
     });
-    const payload = (await response.json().catch(() => null)) as
-      | LoginResponse
-      | { message?: string }
-      | null;
+    const payload = (await response.json().catch(() => null)) as LoginResult | { message?: string } | null;
 
     console.log("[auth/login] backend response", {
-      hasAccessToken: Boolean(
-        payload && "accessToken" in payload && payload.accessToken,
-      ),
+      hasAccessToken: Boolean(payload && "accessToken" in payload && payload.accessToken),
       payloadKeys: payload ? Object.keys(payload) : [],
       status: response.status,
     });
 
     if (!response.ok) {
-      return NextResponse.json(
-        payload ?? { message: "Login failed." },
-        { status: response.status },
-      );
+      return NextResponse.json(payload ?? { message: "Login failed." }, { status: response.status });
     }
 
     if (!payload || !("accessToken" in payload) || !payload.accessToken) {
       return NextResponse.json(
         {
           code: "AUTH_SESSION_TOKEN_MISSING",
-          message:
-            payload?.message ??
-            "Login succeeded, but the backend did not return a session token.",
+          message: payload?.message ?? "Login succeeded, but the backend did not return a session token.",
         },
         { status: 502 },
       );

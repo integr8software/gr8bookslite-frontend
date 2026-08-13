@@ -1,5 +1,12 @@
 export type BillingInvoiceActionMode = "add" | "edit" | "view";
 
+export type BillingInvoiceEntriesTab = "accounts" | "items";
+
+export type BillingInvoiceFieldUpdater<TValues> = <Key extends keyof TValues>(
+	key: Key,
+	value: TValues[Key],
+) => void;
+
 export type BillingInvoiceStatus =
 	| "Active"
 	| "Approved"
@@ -51,8 +58,15 @@ export type BillingInvoiceAccountEntry = {
 	id: string;
 	accountCode: string;
 	accountTitle: string;
+	particulars: string;
 	debit: string;
 	credit: string;
+	vatType: string;
+	atcCode: string;
+	partyCode: string;
+	partyName: string;
+	responsibilityCenter: string;
+	refNo: string;
 };
 
 export type BillingInvoiceFormValues = {
@@ -99,7 +113,7 @@ export type BillingInvoiceFormValues = {
 	transactionNo: string;
 	documentDate: string;
 	sjNo: string;
-	joNo: string;
+	soNo: string;
 	poNo: string;
 	invoiceNo: string;
 	referenceNo: string;

@@ -63,18 +63,12 @@ export function ChartsOfAccountsFilters({
             label="Structure"
             value={structureFilter}
             options={["All", "With Submodules", "Without Submodules"]}
-            onChange={(value) =>
-              onStructureChange(value as ChartAccountStructureFilter)
-            }
+            onChange={(value) => onStructureChange(value as ChartAccountStructureFilter)}
           />
         </div>
 
         <div className="hidden xl:block">
-          <Tabs
-            value={activeTab}
-            options={[...ChartsOfAccountsNavs]}
-            onChange={onTabChange}
-          />
+          <Tabs value={activeTab} options={[...ChartsOfAccountsNavs]} onChange={onTabChange} />
         </div>
 
         <div className="hidden gap-2 overflow-x-auto pb-2 xl:flex">
@@ -82,36 +76,24 @@ export function ChartsOfAccountsFilters({
             active={structureFilter === "With Submodules"}
             icon={<Network className="h-4 w-4" aria-hidden="true" />}
             label="With Submodules"
-            onClick={() =>
-              onStructureChange(
-                structureFilter === "With Submodules"
-                  ? "All"
-                  : "With Submodules",
-              )
-            }
+            onClick={() => onStructureChange(structureFilter === "With Submodules" ? "All" : "With Submodules")}
           />
           <StructureButton
             active={structureFilter === "Without Submodules"}
             icon={<ListTree className="h-4 w-4" aria-hidden="true" />}
             label="Without Submodules"
-            onClick={() =>
-              onStructureChange(
-                structureFilter === "Without Submodules"
-                  ? "All"
-                  : "Without Submodules",
-              )
-            }
+            onClick={() => onStructureChange(structureFilter === "Without Submodules" ? "All" : "Without Submodules")}
           />
         </div>
       </div>
 
       <ModuleTableToolbar
-        className="!grid-cols-1 !gap-2 rounded-none border-x-0 border-t-0 !p-3 shadow-none sm:!gap-2 sm:!p-3"
+        className="min-w-0 !grid-cols-1 !gap-2 rounded-none border-x-0 border-t-0 !p-3 shadow-none sm:!gap-2 sm:!p-3"
         data-spotlight-id="charts-of-accounts-filters"
       >
         <div
           data-spotlight-id="maintenance-table-filters"
-          className="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] lg:grid-cols-[minmax(11rem,1.2fr)_minmax(7rem,0.8fr)_minmax(7rem,0.8fr)_auto]"
+          className="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] lg:grid-cols-[minmax(13rem,1.35fr)_minmax(8rem,0.85fr)_minmax(7rem,0.7fr)_auto]"
         >
           <div className="col-span-2 sm:col-span-3 lg:col-span-1">
             <ModuleTableSearch
@@ -131,9 +113,7 @@ export function ChartsOfAccountsFilters({
                 value: type,
               })),
             ]}
-            onChange={(value) =>
-              onAccountTypeChange(value as FilterValue<AccountType>)
-            }
+            onChange={(value) => onAccountTypeChange(value as FilterValue<AccountType>)}
           />
           <ModuleTableFilterSelect
             label="Status"
@@ -145,9 +125,7 @@ export function ChartsOfAccountsFilters({
                 value: status,
               })),
             ]}
-            onChange={(value) =>
-              onStatusChange(value as FilterValue<AccountStatus>)
-            }
+            onChange={(value) => onStatusChange(value as FilterValue<AccountStatus>)}
           />
           <div
             data-spotlight-id="maintenance-table-options"
@@ -197,9 +175,7 @@ function ResponsiveFilterSelect<TValue extends string>({
 }) {
   return (
     <label className="relative block min-w-0">
-      <span className="absolute -top-2 left-3 z-10 bg-white px-1 text-xs font-semibold text-darknavy/70">
-        {label}
-      </span>
+      <span className="absolute -top-2 left-3 z-10 bg-white px-1 text-xs font-semibold text-darknavy/70">{label}</span>
       <select
         value={value}
         onChange={(event) => onChange(event.target.value as TValue)}
@@ -242,4 +218,3 @@ function StructureButton({
     </button>
   );
 }
-

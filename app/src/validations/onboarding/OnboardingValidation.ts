@@ -6,7 +6,7 @@ import {
 import type {
   OnboardingFieldErrors,
   OnboardingValues,
-} from "@/app/src/data/onboarding/OnboardingTypes";
+} from "@/app/src/types/onboarding/OnboardingTypes";
 import {
   GetSyncedReportEndDate,
   IsValidOnboardingDateValue,
@@ -149,6 +149,8 @@ const ReportDateSchema = z
 
 const SharedStepOneFields = {
   address: z.string().trim().min(5, "Address must be at least 5 characters."),
+  countryCode: z.string().regex(/^[A-Z]{2}$/, "Select a country."),
+  baseCurrencyCode: z.string().regex(/^[A-Z]{3}$/, "Select a base currency."),
   tin: TINSchema,
   companyEmail: CompanyEmailSchema,
   website: z
@@ -331,6 +333,8 @@ export function validateOnboardingStepOneValues(
   const parsed = OnboardingStepOneSchema.safeParse({
     ...getOnboardingIdentityPayload(values),
     address: values.address,
+    countryCode: values.countryCode,
+    baseCurrencyCode: values.baseCurrencyCode,
     tin: values.tin,
     companyEmail: values.companyEmail,
     website: values.website,

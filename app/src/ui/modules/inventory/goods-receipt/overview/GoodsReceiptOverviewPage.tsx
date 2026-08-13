@@ -18,7 +18,6 @@ import {
 	formatGoodsReceiptCurrency,
 	formatGoodsReceiptDate,
 	formatGoodsReceiptPercentage,
-	isGoodsReceiptActiveStatus,
 } from "@/app/src/data/modules/inventory/goods-receipt/GoodsReceiptData";
 import {
 	GoodsReceiptHref,
@@ -189,13 +188,11 @@ const GoodsReceiptOverflowItems = [
 ] satisfies ModuleActionMenuItem[];
 
 function GoodsReceiptMetrics({ records }: { records: GoodsReceiptRecord[] }) {
-	const activeCount = records.filter((record) =>
-		isGoodsReceiptActiveStatus(record.status),
-	).length;
-	const approvedCount = countGoodsReceiptsByStatus(records, "Approved");
+	const draftCount = countGoodsReceiptsByStatus(records, "Draft");
+	const postedCount = countGoodsReceiptsByStatus(records, "Posted");
 	const disapprovedCount = countGoodsReceiptsByStatus(records, "Disapproved");
-	const pendingCount = countGoodsReceiptsByStatus(records, "Pending");
-	const closedCount = countGoodsReceiptsByStatus(records, "Closed");
+	const forApprovalCount = countGoodsReceiptsByStatus(records, "For Approval");
+	const cancelledCount = countGoodsReceiptsByStatus(records, "Cancelled");
 
 	return (
 		<ModuleStatisticCards
@@ -209,23 +206,23 @@ function GoodsReceiptMetrics({ records }: { records: GoodsReceiptRecord[] }) {
 					iconClassName: "bg-skyblue/20 text-skyblue",
 				},
 				{
-					label: "Active",
-					value: activeCount,
-					summary: formatGoodsReceiptPercentage(activeCount, records.length),
-					icon: CheckCircle2,
+					label: "Draft",
+					value: draftCount,
+					summary: formatGoodsReceiptPercentage(draftCount, records.length),
+					icon: Clock3,
 					iconClassName: "bg-emerald-50 text-emerald-700",
 				},
 				{
-					label: "Pending",
-					value: pendingCount,
-					summary: formatGoodsReceiptPercentage(pendingCount, records.length),
+					label: "For Approval",
+					value: forApprovalCount,
+					summary: formatGoodsReceiptPercentage(forApprovalCount, records.length),
 					icon: Clock3,
 					iconClassName: "bg-offwhite text-darknavy",
 				},
 				{
-					label: "Approved",
-					value: approvedCount,
-					summary: formatGoodsReceiptPercentage(approvedCount, records.length),
+					label: "Posted",
+					value: postedCount,
+					summary: formatGoodsReceiptPercentage(postedCount, records.length),
 					icon: CheckCircle2,
 					iconClassName: "bg-citron/25 text-darknavy",
 				},
@@ -237,10 +234,10 @@ function GoodsReceiptMetrics({ records }: { records: GoodsReceiptRecord[] }) {
 					iconClassName: "bg-coralpink/15 text-coralpink",
 				},
 				{
-					label: "Closed",
-					value: closedCount,
-					summary: formatGoodsReceiptPercentage(closedCount, records.length),
-					icon: PackageCheck,
+					label: "Cancelled",
+					value: cancelledCount,
+					summary: formatGoodsReceiptPercentage(cancelledCount, records.length),
+					icon: Ban,
 					iconClassName: "bg-skyblue/15 text-skyblue",
 				},
 			]}
@@ -265,21 +262,17 @@ function GoodsReceiptStatusBadge({ status }: { status: GoodsReceiptStatus }) {
 }
 
 const statusIconByStatus = {
-	Active: CheckCircle2,
-	Approved: CheckCircle2,
 	Cancelled: Ban,
-	Closed: PackageCheck,
 	Disapproved: XCircle,
 	Draft: Clock3,
-	Pending: Clock3,
+	"For Approval": Clock3,
+	Posted: PackageCheck,
 } satisfies Record<GoodsReceiptStatus, typeof CheckCircle2>;
 
 const statusClassNameByStatus = {
-	Active: "bg-citron/25 text-darknavy",
-	Approved: "bg-citron/25 text-darknavy",
 	Cancelled: "bg-darknavy/10 text-darknavy/70",
-	Closed: "bg-skyblue/20 text-darknavy",
 	Disapproved: "bg-coralpink/15 text-coralpink",
 	Draft: "bg-offwhite text-darknavy/70",
-	Pending: "bg-offwhite text-darknavy",
+	"For Approval": "bg-offwhite text-darknavy",
+	Posted: "bg-citron/25 text-darknavy",
 } satisfies Record<GoodsReceiptStatus, string>;

@@ -5,12 +5,16 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { MockJournalVouchers } from "@/app/src/data/modules/general-journal/journal-voucher/JournalVoucherData";
 import { JournalVoucherQueryKeys } from "@/app/src/services/modules/general-journal/journal-voucher/JournalVoucherQueryKeys";
-import type { JournalVoucherRecord } from "@/app/src/types/modules/general-journal/journal-voucher/JournalVoucherTypes";
+import type {
+  JournalVoucherRecord,
+  JournalVoucherStatus,
+} from "@/app/src/types/modules/general-journal/journal-voucher/JournalVoucherTypes";
 
 type JournalVoucherStoreState = {
   records: JournalVoucherRecord[];
   addRecord: (record: JournalVoucherRecord) => void;
   updateRecord: (record: JournalVoucherRecord) => void;
+  updateStatus: (recordId: string, status: JournalVoucherStatus) => void;
   deleteRecord: (recordId: string) => void;
   isLoading: boolean;
   lastSyncedAt: number;
@@ -62,6 +66,33 @@ export function useJournalVoucherStore<TSelected = JournalVoucherStoreState>(
     },
   });
 
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({
+      recordId,
+      status,
+    }: {
+      recordId: string;
+      status: JournalVoucherStatus;
+    }) => ({ recordId, status }),
+    onSuccess: ({ recordId, status }) => {
+      updateCachedRecords((records) =>
+        records.map((record) =>
+          record.id === recordId
+            ? {
+                ...record,
+                status,
+                updatedAt: new Date().toISOString(),
+              }
+            : record,
+        ),
+      );
+      toast.success("Journal voucher status updated.");
+    },
+    onError: () => {
+      toast.error("Could not update journal voucher status. Please try again.");
+    },
+  });
+
   const deleteRecordMutation = useMutation({
     mutationFn: async (recordId: string) => recordId,
     onSuccess: (recordId) => {
@@ -80,11 +111,14 @@ export function useJournalVoucherStore<TSelected = JournalVoucherStoreState>(
       records: recordsQuery.data,
       addRecord: (record) => addRecordMutation.mutate(record),
       updateRecord: (record) => updateRecordMutation.mutate(record),
+      updateStatus: (recordId, status) =>
+        updateStatusMutation.mutate({ recordId, status }),
       deleteRecord: (recordId) => deleteRecordMutation.mutate(recordId),
       isLoading: recordsQuery.isLoading,
       lastSyncedAt: recordsQuery.dataUpdatedAt,
       isMutating:
         addRecordMutation.isPending ||
+        updateStatusMutation.isPending ||
         updateRecordMutation.isPending ||
         deleteRecordMutation.isPending,
     }),
@@ -95,6 +129,7 @@ export function useJournalVoucherStore<TSelected = JournalVoucherStoreState>(
       recordsQuery.dataUpdatedAt,
       recordsQuery.isLoading,
       updateRecordMutation,
+      updateStatusMutation,
     ],
   );
 

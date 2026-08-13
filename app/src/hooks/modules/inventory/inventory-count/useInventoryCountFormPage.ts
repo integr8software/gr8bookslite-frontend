@@ -7,6 +7,7 @@ import { InventoryCountHref } from "@/app/src/constants/modules/inventory/invent
 import {
 	createInitialInventoryCountValues,
 	createInventoryCountLine,
+	recalculateInventoryCountLine,
 } from "@/app/src/data/modules/inventory/inventory-count/InventoryCountData";
 import { loadMaterialRequests } from "@/app/src/data/modules/inventory/material-request/MaterialRequestData";
 import { PickListSalesOrderCopyRecords } from "@/app/src/data/modules/inventory/pick-list/PickListData";
@@ -15,7 +16,7 @@ import type {
 	InventoryCountValues,
 } from "@/app/src/types/modules/inventory/inventory-count/InventoryCountTypes";
 import { validateInventoryCount } from "@/app/src/validations/modules/inventory/inventory-count/InventoryCountValidation";
-import type { AppCopyFromRecord } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
+import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 
 export function useInventoryCountFormPage() {
 	const pathname = usePathname();
@@ -63,6 +64,17 @@ export function useInventoryCountFormPage() {
 		const { name, value } = event.target;
 
 		setValues((current) => ({ ...current, [name]: value }));
+	}
+
+	function updateLines(lines: InventoryCountValues["lines"]) {
+		if (isReadonly) {
+			return;
+		}
+
+		setValues((current) => ({
+			...current,
+			lines: lines.map(recalculateInventoryCountLine),
+		}));
 	}
 
 	function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -156,6 +168,7 @@ export function useInventoryCountFormPage() {
 		setIsReportPreviewOpen,
 		setIsUploadHistoryDialogOpen,
 		updateField,
+		updateLines,
 		values,
 	};
 }

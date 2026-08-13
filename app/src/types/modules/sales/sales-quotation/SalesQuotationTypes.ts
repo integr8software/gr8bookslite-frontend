@@ -61,6 +61,11 @@ export type SalesQuotationFormValues = Omit<SalesQuotationRecord, "id">;
 
 export type SalesQuotationFormMode = "add" | "edit" | "view";
 
+export type SalesQuotationFieldUpdater<TValues> = <Key extends keyof TValues>(
+	key: Key,
+	value: TValues[Key],
+) => void;
+
 export type SalesQuotationFormErrors = Partial<
 	Record<
 		| keyof Omit<SalesQuotationFormValues, "items">

@@ -14,10 +14,7 @@ import type {
 } from "@/app/src/types/modules/financial-maintenance/default-account/DefaultAccountTypes";
 import { downloadBlob } from "@/app/src/ui/shared/module/module-table/ModuleTableExportDownload";
 import { formatFileSize } from "@/app/src/utils/file.util";
-import {
-  getModuleImportOptionValue,
-  isModuleImportOptionValue,
-} from "@/app/src/utils/module-import.util";
+import { getModuleImportOptionValue, isModuleImportOptionValue } from "@/app/src/utils/module-import.util";
 
 export function getDefaultAccountTableMinWidthClassName(visibleColumnCount: number) {
   if (visibleColumnCount >= 7) return "min-w-[104rem]";
@@ -26,9 +23,7 @@ export function getDefaultAccountTableMinWidthClassName(visibleColumnCount: numb
   return "min-w-[64rem]";
 }
 
-export function createBlankDefaultAccountImportRow(
-  rowNumber: number,
-): DefaultAccountImportPreviewRow {
+export function createBlankDefaultAccountImportRow(rowNumber: number): DefaultAccountImportPreviewRow {
   return {
     cellErrors: {},
     id: `default-account-import-preview-${rowNumber}-${Date.now()}`,
@@ -56,10 +51,7 @@ export function normalizeDefaultAccountName(value: string) {
   return value.trim().replace(/\s+/g, " ").toLowerCase();
 }
 
-export function normalizeImportedDefaultAccountCellValue(
-  field: DefaultAccountImportColumnId,
-  value: string,
-) {
+export function normalizeImportedDefaultAccountCellValue(field: DefaultAccountImportColumnId, value: string) {
   if (field === "type") return normalizeImportedDefaultAccountType(value);
   return value;
 }
@@ -113,10 +105,7 @@ export async function readDefaultAccountImportFileText(file: File) {
   throw new Error("Please upload an .xlsx, .csv, .tsv, or .txt file.");
 }
 
-export function parseDefaultAccountImportText(
-  text: string,
-  startRowNumber = 1,
-): DefaultAccountImportPreviewRow[] {
+export function parseDefaultAccountImportText(text: string, startRowNumber = 1): DefaultAccountImportPreviewRow[] {
   const rows = parseImportTabularRows(text).filter((row) => row.some((cell) => cell.trim() !== ""));
 
   if (rows.length === 0) return [];
@@ -147,15 +136,9 @@ export function parseDefaultAccountImportText(
     });
 }
 
-export function validateDefaultAccountImportRows(
-  rows: DefaultAccountImportPreviewRow[],
-  existingDefaultAccounts: DefaultAccount[],
-) {
+export function validateDefaultAccountImportRows(rows: DefaultAccountImportPreviewRow[], existingDefaultAccounts: DefaultAccount[]) {
   const existingNames = new Map(
-    existingDefaultAccounts.map((account) => [
-      normalizeDefaultAccountName(account.defaultAccountName),
-      account.defaultAccountName,
-    ]),
+    existingDefaultAccounts.map((account) => [normalizeDefaultAccountName(account.defaultAccountName), account.defaultAccountName]),
   );
   const importedNameCounts = new Map<string, number>();
 
@@ -179,17 +162,11 @@ export function validateDefaultAccountImportRows(
     const existingName = existingNames.get(normalizedName);
 
     if (existingName) {
-      cellErrors.defaultAccountName = [
-        ...(cellErrors.defaultAccountName ?? []),
-        `Default account already exists: ${existingName}.`,
-      ];
+      cellErrors.defaultAccountName = [...(cellErrors.defaultAccountName ?? []), `Default account already exists: ${existingName}.`];
     }
 
     if (normalizedName && (importedNameCounts.get(normalizedName) ?? 0) > 1) {
-      cellErrors.defaultAccountName = [
-        ...(cellErrors.defaultAccountName ?? []),
-        "Duplicate name in import.",
-      ];
+      cellErrors.defaultAccountName = [...(cellErrors.defaultAccountName ?? []), "Duplicate name in import."];
     }
 
     if (!isModuleImportOptionValue(row.defaultAccount.type, typeOptions)) {
@@ -201,10 +178,7 @@ export function validateDefaultAccountImportRows(
 }
 
 export function defaultAccountImportRowHasErrors(row: DefaultAccountImportPreviewRow) {
-  return (
-    row.rowErrors.length > 0 ||
-    Object.values(row.cellErrors).some((errors) => Boolean(errors?.length))
-  );
+  return row.rowErrors.length > 0 || Object.values(row.cellErrors).some((errors) => Boolean(errors?.length));
 }
 
 export function validateDefaultAccountImportFileSize(file: File) {
@@ -220,11 +194,7 @@ export function validateDefaultAccountImportFileSize(file: File) {
 }
 
 export function isDefaultAccountImportGridPasteTarget(target: EventTarget | null) {
-  return !(
-    target instanceof HTMLInputElement ||
-    target instanceof HTMLSelectElement ||
-    target instanceof HTMLTextAreaElement
-  );
+  return !(target instanceof HTMLInputElement || target instanceof HTMLSelectElement || target instanceof HTMLTextAreaElement);
 }
 
 export function parseImportTabularRows(text: string) {
@@ -248,8 +218,10 @@ function normalizeImportedDefaultAccountType(value: string): DefaultAccountType 
     .replace(/[^a-z0-9]/g, "");
   const typeOptions = DefaultAccountTypeOptions.map((option) => option.value);
 
-  if (["collection", "collectiontype"].includes(normalized)) return "COLLECTION";
-  if (["expense", "expensetype"].includes(normalized)) return "EXPENSE";
+  if (["collection", "collections", "collectiontype"].includes(normalized)) return "COLLECTION";
+  if (["service", "services", "servicetype", "expense", "expensetype"].includes(normalized)) {
+    return "EXPENSE";
+  }
 
   return (getModuleImportOptionValue(value, typeOptions) ?? value) as DefaultAccountType;
 }
@@ -374,9 +346,7 @@ function formatImportExcelCellValue(value: unknown, displayText?: string) {
 }
 
 function createImportTemplateCsv(headers: string[]) {
-  return [headers]
-    .map((row) => row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(","))
-    .join("\n");
+  return [headers].map((row) => row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(",")).join("\n");
 }
 
 function getImportedValue(row: string[], index?: number) {

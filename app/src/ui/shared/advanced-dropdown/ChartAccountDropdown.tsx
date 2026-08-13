@@ -2,11 +2,11 @@
 
 import { useMemo } from "react";
 import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
-import {
-	AppAdvancedDropdown,
-	type AppAdvancedDropdownOption,
-	type AppAdvancedDropdownProps,
-} from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import type {
+	AppAdvancedDropdownOption,
+	AppAdvancedDropdownProps,
+} from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
+import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 
 type ChartAccountDropdownProps = Omit<
 	AppAdvancedDropdownProps,

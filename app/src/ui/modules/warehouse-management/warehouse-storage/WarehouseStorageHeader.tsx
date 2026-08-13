@@ -1,7 +1,9 @@
+import Link from "next/link";
 import { MapPin, Plus } from "lucide-react";
 import {
   WarehouseStorageActionLabel,
   WarehouseStorageDescription,
+  WarehouseStorageHref,
   WarehouseStorageTitle,
 } from "@/app/src/constants/modules/warehouse-management/warehouse-storage/WarehouseStorageConstants";
 import {
@@ -9,11 +11,7 @@ import {
   moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 
-type WarehouseStorageHeaderProps = {
-  onAdd: () => void;
-};
-
-export function WarehouseStorageHeader({ onAdd }: WarehouseStorageHeaderProps) {
+export function WarehouseStorageHeader() {
   return (
     <ModuleHeader
       variant="panel"
@@ -28,10 +26,10 @@ export function WarehouseStorageHeader({ onAdd }: WarehouseStorageHeaderProps) {
         </>
       }
       actions={
-        <button type="button" onClick={onAdd} className={moduleHeaderActionClassNames.primary}>
+        <Link href={`${WarehouseStorageHref}/add`} className={moduleHeaderActionClassNames.primary}>
           <Plus className="h-4 w-4" aria-hidden="true" />
           {WarehouseStorageActionLabel}
-        </button>
+        </Link>
       }
     />
   );

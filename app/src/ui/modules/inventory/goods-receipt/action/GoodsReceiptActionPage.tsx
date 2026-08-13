@@ -12,7 +12,7 @@ import { GoodsReceiptEntrySection } from "@/app/src/ui/modules/inventory/goods-r
 import { GoodsReceiptNotFound } from "@/app/src/ui/modules/inventory/goods-receipt/overview/GoodsReceiptNotFound";
 import { openGoodsReceiptPdf } from "@/app/src/ui/modules/inventory/goods-receipt/reports/GoodsReceiptPdf";
 import { GoodsReceiptReportPreview } from "@/app/src/ui/modules/inventory/goods-receipt/reports/GoodsReceiptReportPreview";
-import type { AppCopyFromRecord } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
+import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 
 export function GoodsReceiptActionPage() {
   const params = useParams<{ recordId?: string }>();
@@ -60,8 +60,10 @@ export function GoodsReceiptActionPage() {
           onUpdateField={receiptForm.updateField}
         />
         <GoodsReceiptEntrySection
+          accountingRows={receiptForm.values.accountingEntries}
           isReadonly={isReadonly}
           rows={receiptForm.values.lineEntries}
+          onAccountingRowsChange={receiptForm.updateAccountingEntries}
           onRowsChange={receiptForm.updateLineEntries}
         />
       </section>

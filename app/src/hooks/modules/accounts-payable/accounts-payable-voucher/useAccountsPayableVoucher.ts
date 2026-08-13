@@ -18,7 +18,7 @@ import {
 import { AccountsPayableVoucherQueryKeys } from "@/app/src/services/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherQueryKeys";
 import type {
   AccountsPayableVoucherFormValues,
-  AccountsPayableVoucherListResponse,
+  AccountsPayableVoucherListData,
   AccountsPayableVoucherPagination,
   AccountsPayableVoucherPermissions,
   AccountsPayableVoucherRecord,
@@ -63,11 +63,11 @@ const EmptyAccountsPayableVoucherPermissions: AccountsPayableVoucherPermissions 
 
 const EmptyAccountsPayableVoucherStatistics: AccountsPayableVoucherStatistics =
   {
-    approvedVouchers: 0,
     cancelledVouchers: 0,
-    closedVouchers: 0,
     disapprovedVouchers: 0,
     draftVouchers: 0,
+    forApprovalVouchers: 0,
+    postedVouchers: 0,
     totalVouchers: 0,
   };
 
@@ -214,7 +214,7 @@ export function useAccountsPayableVoucherRecord(recordId?: string) {
       Boolean(recordId) && activeCompanyId !== null && activeBranchId !== null,
     initialData: () =>
       queryClient
-        .getQueryData<AccountsPayableVoucherListResponse>(
+        .getQueryData<AccountsPayableVoucherListData>(
           AccountsPayableVoucherQueryKeys.records(activeCompanyId, activeBranchId),
         )
         ?.records.find((record) => record.id === recordId),

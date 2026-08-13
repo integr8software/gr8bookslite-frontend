@@ -7,19 +7,13 @@ import {
 } from "@/app/src/data/shared/tour/SpotlightTutorialData";
 import { ChartsOfAccountsSpotlightTutorialSteps } from "@/app/src/data/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsSpotlightTutorialData";
 import { useChartsOfAccountsSpotlightTutorial } from "@/app/src/hooks/modules/financial-maintenance/charts-of-accounts/useChartsOfAccountsSpotlightTutorial";
-import {
-  SpotlightTour,
-  SpotlightTourBadge,
-} from "@/app/src/ui/shared/tour/SpotlightTour";
+import { SpotlightTour, SpotlightTourBadge } from "@/app/src/ui/shared/tour/SpotlightTour";
 
 export function ChartsOfAccountsSpotlightTutorial() {
-  const { completeTutorial, isOpen, skipTutorial } =
-    useChartsOfAccountsSpotlightTutorial();
+  const { completeTutorial, isOpen, skipTutorial } = useChartsOfAccountsSpotlightTutorial();
   const handleStepEnter = useCallback((_: unknown, index: number) => {
     if (index === 5) {
-      window.dispatchEvent(
-        new Event(MaintenanceAddDrawerSpotlightTutorialOpenEvent),
-      );
+      window.dispatchEvent(new Event(MaintenanceAddDrawerSpotlightTutorialOpenEvent));
     }
 
     if (index === 4) {
@@ -47,8 +41,5 @@ export function ChartsOfAccountsSpotlightTutorial() {
 }
 
 function closeMaintenanceAddDrawer() {
-  window.dispatchEvent(
-    new Event(MaintenanceAddDrawerSpotlightTutorialCloseEvent),
-  );
+  window.dispatchEvent(new Event(MaintenanceAddDrawerSpotlightTutorialCloseEvent));
 }
-

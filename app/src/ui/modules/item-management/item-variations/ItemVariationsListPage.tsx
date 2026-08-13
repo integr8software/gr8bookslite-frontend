@@ -2,6 +2,8 @@
 
 import { CheckCircle2, CirclePause, ListChecks, Plus, Tags } from "lucide-react";
 import {
+  ItemVariationActiveStatus,
+  ItemVariationInactiveStatus,
   ItemVariationsExportColumns,
   ItemVariationsDescription,
   ItemVariationsTitle,
@@ -26,7 +28,8 @@ import { ItemVariationsTable } from "@/app/src/ui/modules/item-management/item-v
 
 export function ItemVariationsListPage() {
   const page = useItemVariationsListPage();
-  const hasActiveFilters = page.query.trim().length > 0 || page.statusFilter !== "Active";
+  const hasActiveFilters =
+    page.query.trim().length > 0 || page.statusFilter !== ItemVariationActiveStatus;
 
   return (
     <section className="grid gap-5">
@@ -112,8 +115,8 @@ export function ItemVariationsListPage() {
                 value={page.statusFilter}
                 options={[
                   { label: "All", value: "All" },
-                  { label: "Active", value: "Active" },
-                  { label: "Inactive", value: "Inactive" },
+                  { label: ItemVariationActiveStatus, value: ItemVariationActiveStatus },
+                  { label: ItemVariationInactiveStatus, value: ItemVariationInactiveStatus },
                 ]}
                 onChange={page.setStatusFilter}
               />
@@ -137,7 +140,7 @@ export function ItemVariationsListPage() {
                 className="px-2"
                 onClick={() => {
                   page.setQuery("");
-                  page.setStatusFilter("Active");
+                  page.setStatusFilter(ItemVariationActiveStatus);
                   page.refreshRecords();
                 }}
               >
@@ -160,18 +163,26 @@ export function ItemVariationsListPage() {
       <AppDialog
         isOpen={Boolean(page.pendingStatusRecord)}
         title={
-          page.pendingStatusRecord?.status === "Active"
+          page.pendingStatusRecord?.status === ItemVariationActiveStatus
             ? "Deactivate item variation?"
             : "Activate item variation?"
         }
         description={
-          page.pendingStatusRecord?.status === "Active"
-            ? `${page.pendingStatusRecord.name} will remain in history and references, but will no longer be active for normal selection.`
+          page.pendingStatusRecord?.status === ItemVariationActiveStatus
+            ? `${page.pendingStatusRecord?.name ?? "This item variation"} will remain in history and references, but will no longer be active for normal selection.`
             : `${page.pendingStatusRecord?.name ?? "This item variation"} will be available for normal selection again.`
         }
-        confirmLabel={page.pendingStatusRecord?.status === "Active" ? "Deactivate" : "Activate"}
+        confirmLabel={
+          page.pendingStatusRecord?.status === ItemVariationActiveStatus
+            ? "Deactivate"
+            : "Activate"
+        }
         isPending={page.isMutating}
-        tone={page.pendingStatusRecord?.status === "Active" ? "deactivate" : "activate"}
+        tone={
+          page.pendingStatusRecord?.status === ItemVariationActiveStatus
+            ? "deactivate"
+            : "activate"
+        }
         onCancel={() => page.setPendingStatusRecord(null)}
         onConfirm={page.confirmStatusChange}
       />

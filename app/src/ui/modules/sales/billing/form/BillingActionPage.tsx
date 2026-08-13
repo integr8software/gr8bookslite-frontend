@@ -5,12 +5,16 @@ import { useState } from "react";
 import { BillingHref } from "@/app/src/constants/modules/sales/billing/BillingConstants";
 import { useBillingActionForm } from "@/app/src/hooks/modules/sales/billing/useBilling";
 import type { BillingActionMode } from "@/app/src/types/modules/sales/billing/BillingTypes";
-import { BillingCustomerFields } from "@/app/src/ui/modules/sales/billing/form/BillingCustomerFields";
+import {
+  BillingDetailsForm,
+  type BillingDetailsSection,
+} from "@/app/src/ui/modules/sales/billing/form/BillingContent";
 import { BillingFormHeader } from "@/app/src/ui/modules/sales/billing/form/BillingFormHeader";
 import { BillingEntrySection } from "@/app/src/ui/modules/sales/billing/entries/BillingEntrySection";
 import { BillingNotFound } from "@/app/src/ui/modules/sales/billing/overview/BillingNotFound";
 import { openBillingPdf } from "@/app/src/ui/modules/sales/billing/reports/BillingPdf";
 import { BillingReportPreview } from "@/app/src/ui/modules/sales/billing/reports/BillingReportPreview";
+import { ModuleTabs, type ModuleTabItem } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 
 export function BillingActionPage() {
   const params = useParams<{ recordId?: string }>();
@@ -19,6 +23,7 @@ export function BillingActionPage() {
   const mode = getModeFromPathname(pathname);
   const isReadonly = mode === "view";
   const recordId = typeof params.recordId === "string" ? params.recordId : undefined;
+  const [activeTab, setActiveTab] = useState<BillingDetailsSection>("customer");
   const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
   const invoiceForm = useBillingActionForm(mode, recordId, () => {
     router.push(BillingHref);
@@ -37,9 +42,13 @@ export function BillingActionPage() {
           values={invoiceForm.values}
           onSubmit={invoiceForm.submitInvoice}
         />
-        <section className="min-w-0 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
-          <BillingCustomerFields isReadonly={isReadonly} values={invoiceForm.values} onUpdateField={invoiceForm.updateField} />
-        </section>
+        <ModuleTabs activeTab={activeTab} ariaLabel="Billing sections" tabs={BillingTabs} onTabChange={setActiveTab} />
+        <BillingDetailsForm
+          isReadonly={isReadonly}
+          section={activeTab}
+          values={invoiceForm.values}
+          onUpdateField={invoiceForm.updateField}
+        />
         <BillingEntrySection
           isReadonly={isReadonly}
           values={invoiceForm.values}
@@ -56,6 +65,11 @@ export function BillingActionPage() {
     </>
   );
 }
+
+const BillingTabs = [
+  { id: "customer", label: "Customer / Billing" },
+  { id: "attachment", label: "File Attachment" },
+] satisfies ModuleTabItem<BillingDetailsSection>[];
 
 function getModeFromPathname(pathname: string): BillingActionMode {
   if (pathname.includes("/view/")) {

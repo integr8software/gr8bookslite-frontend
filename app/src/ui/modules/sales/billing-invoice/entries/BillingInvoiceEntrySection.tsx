@@ -17,7 +17,7 @@ import type {
 import { ModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
-type BillingInvoiceEntriesProps = {
+type BillingInvoiceEntrySectionProps = {
 	accountRows: BillingInvoiceAccountEntry[];
 	isReadonly: boolean;
 	rows: BillingInvoiceLineEntry[];
@@ -25,13 +25,13 @@ type BillingInvoiceEntriesProps = {
 	onRowsChange: (rows: BillingInvoiceLineEntry[]) => void;
 };
 
-export function BillingInvoiceEntries({
+export function BillingInvoiceEntrySection({
 	accountRows,
 	isReadonly,
 	onAccountRowsChange,
 	onRowsChange,
 	rows,
-}: BillingInvoiceEntriesProps) {
+}: BillingInvoiceEntrySectionProps) {
 	const [activeTab, setActiveTab] = useBillingInvoiceEntryTabs();
 	const tabs = (
 		<BillingInvoiceEntryTabsControl

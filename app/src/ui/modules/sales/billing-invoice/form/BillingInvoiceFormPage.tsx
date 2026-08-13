@@ -9,14 +9,14 @@ import type {
 	BillingInvoiceActionMode,
 	BillingInvoiceLineEntry,
 } from "@/app/src/types/modules/sales/billing-invoice/BillingInvoiceTypes";
-import { BillingInvoiceFormHeader } from "@/app/src/ui/modules/sales/billing-invoice/action/BillingInvoiceFormHeader";
-import { BillingInvoiceDetailsForm } from "@/app/src/ui/modules/sales/billing-invoice/action/BillingInvoiceDetailsForm";
-import { BillingInvoiceEntries } from "@/app/src/ui/modules/sales/billing-invoice/entries/BillingInvoiceEntries";
+import { BillingInvoiceDetailsForm } from "@/app/src/ui/modules/sales/billing-invoice/form/BillingInvoiceContent";
+import { BillingInvoiceFormHeader } from "@/app/src/ui/modules/sales/billing-invoice/form/BillingInvoiceFormHeader";
+import { BillingInvoiceEntrySection } from "@/app/src/ui/modules/sales/billing-invoice/entries/BillingInvoiceEntrySection";
 import { BillingInvoiceNotFound } from "@/app/src/ui/modules/sales/billing-invoice/overview/BillingInvoiceNotFound";
 import { openBillingInvoicePdf } from "@/app/src/ui/modules/sales/billing-invoice/reports/BillingInvoicePdf";
 import { BillingInvoiceReportPreview } from "@/app/src/ui/modules/sales/billing-invoice/reports/BillingInvoiceReportPreview";
 
-export function BillingInvoiceActionPage() {
+export function BillingInvoiceFormPage() {
 	const params = useParams<{ recordId?: string }>();
 	const pathname = usePathname();
 	const router = useRouter();
@@ -55,7 +55,7 @@ export function BillingInvoiceActionPage() {
 					values={invoiceForm.values}
 					onUpdateField={invoiceForm.updateField}
 				/>
-				<BillingInvoiceEntries
+				<BillingInvoiceEntrySection
 					accountRows={invoiceForm.values.accountEntries}
 					isReadonly={isReadonly}
 					rows={invoiceForm.values.lineEntries}

@@ -4,7 +4,7 @@ import { FormatOnboardingReportDateLabel } from "@/app/src/data/onboarding/Onboa
 import type {
   OnboardingFieldErrors,
   OnboardingReportYearBasis,
-} from "@/app/src/data/onboarding/OnboardingTypes";
+} from "@/app/src/types/onboarding/OnboardingTypes";
 
 type OnboardingReportYearFieldProps = {
   basis: OnboardingReportYearBasis;

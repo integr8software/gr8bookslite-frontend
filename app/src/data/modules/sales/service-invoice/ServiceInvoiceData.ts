@@ -16,10 +16,44 @@ export const ServiceInvoiceCurrencyOptions = [
 ];
 
 export const ServiceInvoicePartyOptions = [
-	{ name: "North Harbor Office Depot", value: "North Harbor Office Depot" },
-	{ name: "Aster Foods Corporation", value: "Aster Foods Corporation" },
-	{ name: "Bluecrest Trading", value: "Bluecrest Trading" },
-	{ name: "Harborview Logistics", value: "Harborview Logistics" },
+	{
+		label: "CUST-001",
+		name: "North Harbor Office Depot",
+		selectedDetails: "CUST-001",
+		value: "North Harbor Office Depot",
+	},
+	{
+		label: "CUST-002",
+		name: "Aster Foods Corporation",
+		selectedDetails: "CUST-002",
+		value: "Aster Foods Corporation",
+	},
+	{
+		label: "CUST-003",
+		name: "Bluecrest Trading",
+		selectedDetails: "CUST-003",
+		value: "Bluecrest Trading",
+	},
+	{
+		label: "CUST-004",
+		name: "Harborview Logistics",
+		selectedDetails: "CUST-004",
+		value: "Harborview Logistics",
+	},
+];
+
+export const ServiceInvoiceResponsibilityCenterOptions = [
+	{ name: "CC-ADM-001", value: "CC-ADM-001" },
+	{ name: "CC-SLS-001", value: "CC-SLS-001" },
+	{ name: "CC-OPS-001", value: "CC-OPS-001" },
+];
+
+export const ServiceInvoiceStatusOptions = [
+	{ name: "Draft", value: "Draft" },
+	{ name: "For Approval", value: "For Approval" },
+	{ name: "Posted", value: "Posted" },
+	{ name: "Disapproved", value: "Disapproved" },
+	{ name: "Cancelled", value: "Cancelled" },
 ];
 
 export const ServiceInvoiceTermOptions = [
@@ -67,12 +101,6 @@ export const ServiceInvoiceTaxTypeOptions = [
 	{ name: "5.00", value: "5.00" },
 ];
 
-export const ServiceInvoiceResponsibilityCenterOptions = [
-	{ name: "CC-ADM-001", value: "CC-ADM-001" },
-	{ name: "CC-SLS-001", value: "CC-SLS-001" },
-	{ name: "CC-OPS-001", value: "CC-OPS-001" },
-];
-
 export const MockServiceInvoices: ServiceInvoiceRecord[] = [
 	{
 		id: "svi-001",
@@ -82,7 +110,7 @@ export const MockServiceInvoices: ServiceInvoiceRecord[] = [
 		documentDate: "2026-07-15",
 		invoiceNo: "SVI-2026-0001",
 		referenceNo: "PO-2026-0192",
-		status: "Active",
+		status: "Draft",
 		transactionNo: "SVI-2026-0001",
 	},
 	{
@@ -93,7 +121,7 @@ export const MockServiceInvoices: ServiceInvoiceRecord[] = [
 		documentDate: "2026-07-11",
 		invoiceNo: "SVI-2026-0002",
 		referenceNo: "JO-2026-0048",
-		status: "Pending",
+		status: "For Approval",
 		transactionNo: "SVI-2026-0002",
 	},
 	{
@@ -104,7 +132,7 @@ export const MockServiceInvoices: ServiceInvoiceRecord[] = [
 		documentDate: "2026-07-08",
 		invoiceNo: "SVI-2026-0003",
 		referenceNo: "SO-2026-0105",
-		status: "Approved",
+		status: "Posted",
 		transactionNo: "SVI-2026-0003",
 	},
 ];
@@ -142,11 +170,14 @@ export function createServiceInvoiceFormValues(): ServiceInvoiceFormValues {
 	const lineEntries = [createBlankServiceInvoiceLineEntry()];
 
 	const values = {
+		address: "",
+		billToName: "",
 		code: "",
 		name: "",
 		currency: "PHP",
 		exchangeRate: "1.0000",
 		contactPerson: "",
+		contactNo: "",
 		remarks: "",
 		terms: "",
 		dueDate: today,
@@ -178,7 +209,9 @@ export function createServiceInvoiceFormValues(): ServiceInvoiceFormValues {
 		businessStyle: "",
 		status: "Draft",
 		projectRef: "",
+		projectCode: "",
 		projectName: "",
+		soNo: "",
 		lineEntries,
 	};
 
@@ -192,7 +225,9 @@ export function createServiceInvoiceFormValuesFromRecord(
 	record: ServiceInvoiceRecord,
 ): ServiceInvoiceFormValues {
 	if (record.formValues) {
+		const defaultValues = createServiceInvoiceFormValues();
 		const formValues = {
+			...defaultValues,
 			...record.formValues,
 			lineEntries: record.formValues.lineEntries.map((entry) => ({ ...entry })),
 		};
@@ -301,6 +336,13 @@ export function createServiceInvoiceAccountingEntries({
 			accountTitle: defaultAccount || "Accounts Receivable - Trade",
 			debit: receivableAmount,
 			credit: 0,
+			partyCode: "",
+			partyName: "",
+			particulars: "",
+			vatType: "",
+			atcCode: "",
+			responsibilityCenter: "",
+			refNo: "",
 		},
 		{
 			id: "sales-discount",
@@ -308,6 +350,13 @@ export function createServiceInvoiceAccountingEntries({
 			accountTitle: "Sales Discount",
 			debit: discountAmount,
 			credit: 0,
+			partyCode: "",
+			partyName: "",
+			particulars: "",
+			vatType: "",
+			atcCode: "",
+			responsibilityCenter: "",
+			refNo: "",
 		},
 		{
 			id: "output-tax",
@@ -315,6 +364,13 @@ export function createServiceInvoiceAccountingEntries({
 			accountTitle: "Output Tax",
 			debit: 0,
 			credit: vatAmount,
+			partyCode: "",
+			partyName: "",
+			particulars: "",
+			vatType: "",
+			atcCode: "",
+			responsibilityCenter: "",
+			refNo: "",
 		},
 		{
 			id: "service-fees",
@@ -322,6 +378,13 @@ export function createServiceInvoiceAccountingEntries({
 			accountTitle: "Service Fees",
 			debit: 0,
 			credit: serviceAmount,
+			partyCode: "",
+			partyName: "",
+			particulars: "",
+			vatType: "",
+			atcCode: "",
+			responsibilityCenter: "",
+			refNo: "",
 		},
 	];
 }
@@ -344,7 +407,9 @@ export function readStoredServiceInvoices() {
 	try {
 		const parsedRecords = JSON.parse(storedRecords) as ServiceInvoiceRecord[];
 
-		return Array.isArray(parsedRecords) ? parsedRecords : null;
+		return Array.isArray(parsedRecords)
+			? parsedRecords.map(normalizeStoredServiceInvoiceRecord)
+			: null;
 	} catch {
 		return null;
 	}
@@ -388,7 +453,7 @@ export function countServiceInvoicesByStatus(
 }
 
 export function isServiceInvoiceActiveStatus(status: ServiceInvoiceStatus) {
-	return status === "Active" || status === "Approved";
+	return status === "For Approval" || status === "Posted";
 }
 
 export function formatServiceInvoicePercentage(value: number, total: number) {
@@ -419,17 +484,42 @@ export function serviceInvoiceEntryIsComplete(entry: ServiceInvoiceLineEntry) {
 }
 
 function normalizeServiceInvoiceStatus(value: string): ServiceInvoiceStatus {
+	const legacyStatusMap: Record<string, ServiceInvoiceStatus> = {
+		Active: "Posted",
+		Approved: "Posted",
+		Closed: "Posted",
+		Pending: "For Approval",
+	};
 	const statuses: ServiceInvoiceStatus[] = [
-		"Active",
-		"Approved",
 		"Cancelled",
-		"Closed",
 		"Disapproved",
 		"Draft",
-		"Pending",
+		"For Approval",
+		"Posted",
 	];
+
+	if (legacyStatusMap[value]) {
+		return legacyStatusMap[value];
+	}
 
 	return statuses.includes(value as ServiceInvoiceStatus)
 		? (value as ServiceInvoiceStatus)
 		: "Draft";
+}
+
+function normalizeStoredServiceInvoiceRecord(
+	record: ServiceInvoiceRecord,
+): ServiceInvoiceRecord {
+	const status = normalizeServiceInvoiceStatus(record.status);
+
+	return {
+		...record,
+		formValues: record.formValues
+			? {
+					...record.formValues,
+					status: normalizeServiceInvoiceStatus(record.formValues.status),
+				}
+			: record.formValues,
+		status,
+	};
 }

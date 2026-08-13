@@ -3,7 +3,6 @@
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { MockMultiCurrencySetupRecords } from "@/app/src/data/modules/system-administration/multi-currency-setup/MultiCurrencySetupData";
 import type { MultiCurrencySetupRecord } from "@/app/src/types/modules/system-administration/multi-currency-setup/MultiCurrencySetupTypes";
 
 export const MultiCurrencySetupQueryKeys = {
@@ -29,8 +28,8 @@ export function useMultiCurrencySetupStore<
 	const queryClient = useQueryClient();
 	const recordsQuery = useQuery({
 		queryKey: MultiCurrencySetupQueryKeys.records(),
-		queryFn: async () => MockMultiCurrencySetupRecords,
-		initialData: MockMultiCurrencySetupRecords,
+		queryFn: async () => [] as MultiCurrencySetupRecord[],
+		initialData: [] as MultiCurrencySetupRecord[],
 	});
 
 	function updateCachedRecords(
@@ -40,7 +39,7 @@ export function useMultiCurrencySetupStore<
 	) {
 		queryClient.setQueryData<MultiCurrencySetupRecord[]>(
 			MultiCurrencySetupQueryKeys.records(),
-			(current = MockMultiCurrencySetupRecords) => updater(current),
+			(current = []) => updater(current),
 		);
 	}
 

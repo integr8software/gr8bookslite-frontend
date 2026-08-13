@@ -1,8 +1,7 @@
 import type { ChangeEventHandler } from "react";
 import {
-	InventoryCountStatusOptions,
+	InventoryCountCategoryOptions,
 	InventoryCountWarehouseOptions,
-	inventoryCountFieldClassName,
 } from "@/app/src/constants/modules/inventory/inventory-count/InventoryCountConstants";
 import type { InventoryCountValues } from "@/app/src/types/modules/inventory/inventory-count/InventoryCountTypes";
 
@@ -19,28 +18,24 @@ export function InventoryCountHeaderFields({
 }: InventoryCountHeaderFieldsProps) {
 	return (
 		<section className="rounded-md border border-darknavy/10 bg-white p-2 shadow-sm shadow-darknavy/5 sm:p-3">
-			<div className="grid gap-x-10 gap-y-3 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1.2fr)_minmax(0,0.95fr)]">
-				<div className="grid content-start gap-2">
-					<TextRow
-						label="Party Name"
-						name="partyName"
-						readOnly={isReadonly}
+			<div className="grid gap-x-10 gap-y-3 xl:grid-cols-2">
+				<div className="grid content-start gap-4">
+					<SelectRow
+						label="Source Warehouse"
+						name="warehouse"
+						disabled={isReadonly}
 						required
-						value={values.partyName}
+						value={values.warehouse}
+						options={InventoryCountWarehouseOptions}
 						onChange={onChange}
 					/>
-					<TextRow
-						label="Proj. Ref No"
-						name="projectRef"
-						readOnly={isReadonly}
-						value={values.projectRef}
-						onChange={onChange}
-					/>
-					<TextRow
-						label="Project Name"
-						name="projectName"
-						readOnly={isReadonly}
-						value={values.projectName}
+					<SelectRow
+						label="Item Category"
+						name="category"
+						disabled={isReadonly}
+						required
+						value={values.category}
+						options={InventoryCountCategoryOptions}
 						onChange={onChange}
 					/>
 					<TextAreaRow
@@ -52,62 +47,12 @@ export function InventoryCountHeaderFields({
 					/>
 				</div>
 
-				<div className="grid content-start gap-2">
-					<TextRow
-						label="Party Code"
-						name="partyCode"
-						readOnly={isReadonly}
-						required
-						value={values.partyCode}
-						onChange={onChange}
-					/>
-					<SelectRow
-						label="MR Type"
-						name="mrType"
-						disabled={isReadonly}
-						required
-						value={values.mrType}
-						options={InventoryCountMrTypeOptions}
-						onChange={onChange}
-					/>
-					<SelectRow
-						label="Source Warehouse"
-						name="warehouse"
-						disabled={isReadonly}
-						required
-						value={values.warehouse}
-						options={InventoryCountWarehouseOptions}
-						onChange={onChange}
-					/>
-					<TextRow
-						label="Requesting Warehouse"
-						name="requestingWarehouse"
-						readOnly={isReadonly}
-						required
-						value={values.requestingWarehouse}
-						onChange={onChange}
-					/>
-					<TextRow
-						label="Currency"
-						name="currency"
-						readOnly={isReadonly}
-						value={values.currency}
-						onChange={onChange}
-					/>
-					<TextRow
-						label="ER"
-						name="exchangeRate"
-						readOnly={isReadonly}
-						value={values.exchangeRate}
-						onChange={onChange}
-					/>
-				</div>
-
-				<div className="grid content-start gap-2">
+				<div className="grid content-start gap-4">
 					<TextRow
 						label="IC No"
 						name="countNo"
-						readOnly={isReadonly}
+						readOnly
+						required
 						value={values.countNo}
 						onChange={onChange}
 					/>
@@ -120,13 +65,12 @@ export function InventoryCountHeaderFields({
 						value={values.countDate}
 						onChange={onChange}
 					/>
-					<SelectRow
+					<TextRow
 						label="Status"
 						name="status"
-						disabled={isReadonly}
+						readOnly
 						required
 						value={values.status}
-						options={InventoryCountStatusOptions}
 						onChange={onChange}
 					/>
 				</div>
@@ -134,12 +78,6 @@ export function InventoryCountHeaderFields({
 		</section>
 	);
 }
-
-const InventoryCountMrTypeOptions = [
-	{ label: "-Select MR Type-", value: "" },
-	{ label: "Issuance to Department", value: "Issuance to Department" },
-	{ label: "Warehouse Transfer", value: "Warehouse Transfer" },
-] as const;
 
 function TextRow({
 	label,
@@ -267,4 +205,5 @@ function FieldLabel({
 	);
 }
 
-const fieldClassName = `${inventoryCountFieldClassName} h-10 min-h-10 py-0 text-xs`;
+const fieldClassName =
+	"app-data-entry-field h-10 min-h-10 w-full rounded-lg border border-darknavy/10 bg-white px-3 py-0 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15 read-only:bg-white read-only:text-darknavy disabled:bg-white disabled:text-darknavy";

@@ -1,3 +1,5 @@
+import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
+
 export type SalesInvoiceActionMode = "add" | "edit" | "view";
 
 export type SalesInvoiceStatus =
@@ -63,6 +65,7 @@ export type SalesInvoiceFormValues = {
   icrNo: string;
   invoiceNo: string;
   poNo: string;
+  projectName: string;
   projectRef: string;
   referenceNo: string;
   remarks: string;
@@ -98,4 +101,13 @@ export type SalesInvoiceTotals = {
   grossAmount: number;
   netAmount: number;
   vatAmount: number;
+};
+
+export type SalesInvoiceActionHeaderProps = {
+  copyFromRecords: AppCopyFromRecord[];
+  mode: SalesInvoiceActionMode;
+  onCopyFromDeliveryReceipt: (recordIds: string[]) => void;
+  values: SalesInvoiceFormValues;
+  onPreview: () => void;
+  onSubmit: () => void;
 };

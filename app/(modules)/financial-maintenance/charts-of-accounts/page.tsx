@@ -5,10 +5,10 @@ import { ChartsOfAccountsListPage } from "@/app/src/ui/modules/financial-mainten
 const PageTitle = "Charts Of Accounts";
 
 export const metadata: Metadata = {
-	title: `${PageTitle} | ${AppName}`,
-	description: `${PageTitle} page for ${AppName}.`,
+  title: `${PageTitle} | ${AppName}`,
+  description: `${PageTitle} page for ${AppName}.`,
 };
 
 export default function ChartsOfAccountsPage() {
-	return <ChartsOfAccountsListPage />;
+  return <ChartsOfAccountsListPage />;
 }

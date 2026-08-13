@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { CashAdvanceActionPage } from "@/app/src/ui/modules/cash-disbursement/cash-advance/CashAdvanceActionPage";
+import { CashAdvanceActionPage } from "@/app/src/ui/modules/cash-disbursement/cash-advance/action/CashAdvancePage";
 
 const PageTitle = "View Cash Advance";
 

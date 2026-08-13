@@ -4,9 +4,9 @@ import { PaymentTypeListPage } from "@/app/src/ui/modules/financial-maintenance/
 const PageTitle = "Payment Type";
 
 export const metadata: Metadata = {
-	title: PageTitle,
+  title: PageTitle,
 };
 
 export default function MaintenanceFinancialManagementPaymentTypePage() {
-	return <PaymentTypeListPage />;
+  return <PaymentTypeListPage />;
 }

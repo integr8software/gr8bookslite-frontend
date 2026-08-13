@@ -6,19 +6,25 @@ import {
 	getCanvassFormTotal,
 	normalizeCanvassFormItem,
 } from "@/app/src/data/modules/purchasing/canvass-form/CanvassFormData";
-import type { CanvassFormItem } from "@/app/src/types/modules/purchasing/canvass-form/CanvassFormTypes";
+import type {
+	CanvassFormAccountingEntry,
+	CanvassFormItem,
+} from "@/app/src/types/modules/purchasing/canvass-form/CanvassFormTypes";
 import {
 	ModuleDataEntry,
 	type ModuleDataEntryClearAction,
 	type ModuleDataEntryColumn,
 	type ModuleDataEntryColumnOption,
+	type ModuleDataEntryExportOption,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { createCanvassFormLineColumns } from "@/app/src/ui/modules/purchasing/canvass-form/entries/CanvassFormLineColumns";
 
 type CanvassFormEntrySectionProps = {
+	accountingRows: CanvassFormAccountingEntry[];
 	error?: string;
 	isReadonly: boolean;
 	rows: CanvassFormItem[];
+	onAccountingRowsChange: (rows: CanvassFormAccountingEntry[]) => void;
 	onRowsChange: (rows: CanvassFormItem[]) => void;
 };
 
@@ -119,9 +125,7 @@ export function CanvassFormEntrySection({
 			emptyRowLabel="canvass line"
 			error={error}
 			exportOptions={[
-				{ id: "csv", label: "CSV", onSelect: () => undefined },
-				{ id: "excel", label: "Excel", onSelect: () => undefined },
-				{ id: "pdf", label: "PDF", onSelect: () => undefined },
+				...EntryExportOptions,
 			]}
 			footerDetails={
 				<div className="text-sm font-semibold text-darknavy">
@@ -132,7 +136,7 @@ export function CanvassFormEntrySection({
 			isReadonly={isReadonly}
 			rows={rows}
 			summaryCells={{ computedTotalCost: formatCanvassFormAmount(total) }}
-			title="Items"
+			title="Canvass Details"
 			onAddRows={addRows}
 			onAutoColumnWidth={() => undefined}
 			onClearRows={clearRows}
@@ -148,6 +152,12 @@ export function CanvassFormEntrySection({
 		/>
 	);
 }
+
+const EntryExportOptions = [
+	{ id: "csv", label: "CSV", onSelect: () => undefined },
+	{ id: "excel", label: "Excel", onSelect: () => undefined },
+	{ id: "pdf", label: "PDF", onSelect: () => undefined },
+] satisfies ModuleDataEntryExportOption[];
 
 function shouldClearEntry(
 	entry: CanvassFormItem,

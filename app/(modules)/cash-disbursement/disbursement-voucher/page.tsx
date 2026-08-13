@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { DisbursementVoucherListPage } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherListPage";
+import { DisbursementVoucherOverviewPage } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/overview/DisbursementVoucherOverviewPage";
 
 const PageTitle = "Disbursement Voucher";
 
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default function CashDisbursementDisbursementVoucherPage() {
-  return <DisbursementVoucherListPage />;
+  return <DisbursementVoucherOverviewPage />;
 }
 
 

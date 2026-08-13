@@ -29,6 +29,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import type {
+	MainNavigationItem,
 	MainNavigationSection,
 } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
 import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
@@ -63,6 +64,15 @@ type GapDropData = {
 const InlineCustomizerRootDropId = "inline-sidebar-customizer-root";
 const InlineCustomizerGapPrefix = "inline-sidebar-gap:";
 const MaxCustomizationDepth = 2;
+const ApprovalManagementHref = "/system-administration/approval-management";
+const ApprovalTransactionsHref = `${ApprovalManagementHref}/approval-transactions`;
+const HiddenSidebarKeys = new Set([
+	"maintenance-approval-setup",
+	"maintenance-approval-transactions",
+	"system-administration-approval-setup",
+	"system-administration-approval-transactions",
+	"system-administration-approver-setup",
+]);
 
 type MainSidebarProps = {
 	activeHref: string;
@@ -218,8 +228,12 @@ export function MainSidebar({
 		};
 	}, []);
 
+	const normalizedNavigationSections = useMemo(
+		() => normalizeApprovalManagementNavigation(navigationSections),
+		[navigationSections],
+	);
 	const navigationActiveHref = getActiveNavigationHref(
-		navigationSections.flatMap((section) => section.items),
+		normalizedNavigationSections.flatMap((section) => section.items),
 		activeHref,
 	);
 
@@ -294,7 +308,7 @@ export function MainSidebar({
 						/>
 					) : (
 						<div className="space-y-2">
-							{navigationSections.map((section) =>
+							{normalizedNavigationSections.map((section) =>
 								section.key === "workspace" ||
 								section.key === "workspace-modules" ? (
 									<div key={section.key} className="space-y-3">
@@ -860,4 +874,156 @@ function getGapData(id: unknown): GapDropData | null {
 		index,
 		depth,
 	};
+}
+
+function normalizeApprovalManagementNavigation(
+	sections: MainNavigationSection[],
+): MainNavigationSection[] {
+	const normalizedSections: MainNavigationSection[] = [];
+
+	for (const section of sections) {
+		if (isHiddenApprovalManagementSection(section)) {
+			continue;
+		}
+
+		if (section.key === "approval-management") {
+			normalizedSections.push(createApprovalManagementSection(section.items[0]));
+			continue;
+		}
+
+		const approvalItem = findApprovalManagementItem(section.items);
+
+		if (isApprovalManagementSection(section)) {
+			normalizedSections.push(createApprovalManagementSection(approvalItem));
+			continue;
+		}
+
+		const nextSection = {
+			...section,
+			items: normalizeApprovalManagementItems(section.items),
+		};
+
+		normalizedSections.push(nextSection);
+
+		if (section.key === "system-administration" && approvalItem) {
+			normalizedSections.push(createApprovalManagementSection(approvalItem));
+		}
+	}
+
+	return normalizedSections;
+}
+
+function isApprovalManagementSection(section: MainNavigationSection) {
+	return (
+		section.title === "Approval Management" ||
+		section.key === "approval-management-root" ||
+		section.href === ApprovalManagementHref
+	);
+}
+
+function isHiddenApprovalManagementSection(section: MainNavigationSection) {
+	return (
+		HiddenSidebarKeys.has(section.key) ||
+		section.title === "Approver Setup" ||
+		section.title === "Approval Setup" ||
+		section.title === "Approval Transactions" ||
+		section.href === ApprovalTransactionsHref
+	);
+}
+
+function normalizeApprovalManagementItems(
+	items: MainNavigationItem[],
+): MainNavigationItem[] {
+	return items
+		.filter((item) => !isHiddenApprovalManagementItem(item) && !isApprovalManagementItem(item))
+		.map((item) => {
+			return {
+				...item,
+				children: item.children
+					? normalizeApprovalManagementItems(item.children)
+					: undefined,
+			};
+		});
+}
+
+function isHiddenApprovalManagementItem(item: MainNavigationItem) {
+	return (
+		HiddenSidebarKeys.has(item.key) ||
+		item.label === "Approver Setup" ||
+		item.label === "Approval Setup" ||
+		item.label === "Approval Transactions" ||
+		item.href === ApprovalTransactionsHref
+	);
+}
+
+function isApprovalManagementItem(item: MainNavigationItem) {
+	return (
+		item.key === "system-administration-approval-management" ||
+		item.key === "maintenance-approval" ||
+		(item.href === ApprovalManagementHref && item.label === "Approval Management")
+	);
+}
+
+function findApprovalManagementItem(
+	items: MainNavigationItem[],
+): MainNavigationItem | undefined {
+	for (const item of items) {
+		if (isApprovalManagementItem(item)) {
+			return item;
+		}
+
+		const child = item.children ? findApprovalManagementItem(item.children) : undefined;
+
+		if (child) {
+			return child;
+		}
+	}
+}
+
+function createApprovalManagementSection(
+	item?: MainNavigationItem,
+): MainNavigationSection {
+	const approvalItem = item ?? {
+		key: "approval-management",
+		label: "Approval Management",
+		href: ApprovalManagementHref,
+		accessKey: "maintenance.approval" as const,
+		iconName: "shieldCheck",
+	};
+
+	return {
+		key: "approval-management",
+		title: "Approval Management",
+		href: ApprovalManagementHref,
+		icon: "approval",
+		iconName: "shieldCheck",
+		accessKey: approvalItem.accessKey,
+		permissionCode: approvalItem.permissionCode,
+		items: createApprovalManagementChildren(approvalItem),
+	};
+}
+
+function createApprovalManagementChildren(
+	item: MainNavigationItem,
+): MainNavigationItem[] {
+	return [
+		{
+			key: "approval-management-setup",
+			label: "Approver Setup",
+			href: ApprovalManagementHref,
+			accessKey: item.accessKey,
+			permissionCode: item.permissionCode,
+			requiredActions: item.requiredActions,
+			iconName: "shieldCheck",
+		},
+		{
+			key: "approval-management-transactions",
+			label: "Approval Transactions",
+			href: ApprovalTransactionsHref,
+			accessKey: item.accessKey,
+			permissionCode: item.permissionCode,
+			requiredActions: item.requiredActions,
+			iconName: "clipboardCheck",
+		},
+	];
 }

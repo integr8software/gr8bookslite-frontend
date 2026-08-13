@@ -1,7 +1,6 @@
 import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 
-export type TaxDefinitionTreatment =
-  "STANDARD" | "REDUCED" | "ZERO_RATED" | "EXEMPT" | "OUT_OF_SCOPE";
+export type TaxDefinitionTreatment = "STANDARD" | "REDUCED" | "ZERO_RATED" | "EXEMPT" | "OUT_OF_SCOPE";
 export type TaxDefinitionTransactionScope = "SALE" | "PURCHASE" | "BOTH";
 
 export type TaxDefinition = {
@@ -28,4 +27,20 @@ export type TaxDefinitionLookup = {
   taxDefinitions: TaxDefinition[];
   accountOptions: ModuleChartAccount[];
   defaultAccountIds: TaxDefinitionDefaultAccountIds;
+};
+
+export type ApiTaxDefinition = {
+  id: string;
+  name?: string | null;
+  percentage?: number | string | null;
+  sortOrder?: number | null;
+  treatment: TaxDefinitionTreatment;
+  transactionScope: TaxDefinitionTransactionScope;
+  status: "ACTIVE" | "INACTIVE";
+};
+
+export type ApiTaxDefinitionLookup = {
+  taxes: ApiTaxDefinition[];
+  accountOptions: TaxDefinitionLookup["accountOptions"];
+  defaultAccountIds: TaxDefinitionLookup["defaultAccountIds"];
 };

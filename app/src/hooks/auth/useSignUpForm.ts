@@ -4,8 +4,7 @@ import { useActionState } from "react";
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { InitialAuthActionState } from "@/app/src/data/auth/AuthTypes";
-import type { AuthFieldErrors } from "@/app/src/data/auth/AuthTypes";
+import { AuthActionStatuses, InitialAuthActionState, type AuthFieldErrors } from "@/app/src/types/auth/AuthTypes";
 import { SavePendingVerificationEmail } from "@/app/src/data/auth/AuthVerificationStorage";
 import { SignUpAction } from "@/app/src/services/auth/AuthActions";
 
@@ -15,10 +14,7 @@ function HasFieldErrors(errors?: AuthFieldErrors) {
 
 export function useSignUpForm() {
   const router = useRouter();
-  const [state, formAction, pending] = useActionState(
-    SignUpAction,
-    InitialAuthActionState,
-  );
+  const [state, formAction, pending] = useActionState(SignUpAction, InitialAuthActionState);
   const wasPendingRef = useRef(false);
 
   useEffect(() => {
@@ -29,7 +25,7 @@ export function useSignUpForm() {
       return;
     }
 
-    if (state.status === "success") {
+    if (state.status === AuthActionStatuses.Success) {
       toast.success(state.message);
       if (state.pendingVerificationEmail) {
         SavePendingVerificationEmail(state.pendingVerificationEmail);
@@ -40,18 +36,10 @@ export function useSignUpForm() {
       return;
     }
 
-    if (state.status === "error" && !HasFieldErrors(state.errors)) {
+    if (state.status === AuthActionStatuses.Error && !HasFieldErrors(state.errors)) {
       toast.error(state.message);
     }
-  }, [
-    pending,
-    router,
-    state.message,
-    state.pendingVerificationEmail,
-    state.redirectTo,
-    state.errors,
-    state.status,
-  ]);
+  }, [pending, router, state.message, state.pendingVerificationEmail, state.redirectTo, state.errors, state.status]);
 
   return {
     state,

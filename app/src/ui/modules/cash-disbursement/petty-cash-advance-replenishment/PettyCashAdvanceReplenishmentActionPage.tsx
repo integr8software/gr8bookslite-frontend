@@ -3,10 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowLeft, Home, Save, X } from "lucide-react";
-import {
-	PettyCashAdvanceReplenishmentHref,
-	PettyCashAdvanceReplenishmentStatusOptions,
-} from "@/app/src/constants/modules/cash-disbursement/petty-cash-advance-replenishment/PettyCashAdvanceReplenishmentConstants";
+import { PettyCashAdvanceReplenishmentHref } from "@/app/src/constants/modules/cash-disbursement/petty-cash-advance-replenishment/PettyCashAdvanceReplenishmentConstants";
 import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
@@ -92,19 +89,13 @@ export function PettyCashAdvanceReplenishmentActionPage() {
 							/>
 						</FormField>
 						<FormField label="Status" fieldId="advance-replenishment-status">
-							<select
+							<input
 								id="advance-replenishment-status"
 								name="status"
-								disabled={isReadonly}
 								defaultValue="Draft"
+								readOnly
 								className={fieldClassName}
-							>
-								{PettyCashAdvanceReplenishmentStatusOptions.map((status) => (
-									<option key={status} value={status}>
-										{status}
-									</option>
-								))}
-							</select>
+							/>
 						</FormField>
 						<FormField label="Petty Cash Advance No." fieldId="advance-reference">
 							<input

@@ -15,19 +15,11 @@ export function flattenAccounts(
 
   return accounts.flatMap((account) => [
     { account, level, parentAccountNumber, parentPath: currentParentPath },
-    ...flattenAccounts(
-      account.children ?? [],
-      level + 1,
-      account.accountNumber,
-      [...parentPath, account.accountName],
-    ),
+    ...flattenAccounts(account.children ?? [], level + 1, account.accountNumber, [...parentPath, account.accountName]),
   ]);
 }
 
-export function insertAccount(
-  accounts: ChartAccount[],
-  newAccount: ChartAccount,
-): ChartAccount[] {
+export function insertAccount(accounts: ChartAccount[], newAccount: ChartAccount): ChartAccount[] {
   if (!newAccount.parentId) {
     return [...accounts, newAccount];
   }
@@ -42,18 +34,12 @@ export function insertAccount(
 
     return {
       ...account,
-      children: account.children
-        ? insertAccount(account.children, newAccount)
-        : account.children,
+      children: account.children ? insertAccount(account.children, newAccount) : account.children,
     };
   });
 }
 
-export function updateAccountTree(
-  accounts: ChartAccount[],
-  accountId: string,
-  updatedAccount: ChartAccount,
-): ChartAccount[] {
+export function updateAccountTree(accounts: ChartAccount[], accountId: string, updatedAccount: ChartAccount): ChartAccount[] {
   return accounts.map((account) => {
     if (account.id === accountId) {
       return { ...updatedAccount, children: account.children };
@@ -61,9 +47,7 @@ export function updateAccountTree(
 
     return {
       ...account,
-      children: account.children
-        ? updateAccountTree(account.children, accountId, updatedAccount)
-        : account.children,
+      children: account.children ? updateAccountTree(account.children, accountId, updatedAccount) : account.children,
     };
   });
 }
@@ -150,9 +134,7 @@ export function getCanDropOnAccount({
     return true;
   }
 
-  return (
-    !targetIsSpecific && activeDragAccount.parentId === targetAccount.parentId
-  );
+  return !targetIsSpecific && activeDragAccount.parentId === targetAccount.parentId;
 }
 
 export function getDropPlacementMode({
@@ -177,9 +159,7 @@ export function getDropPlacementMode({
   }
 
   if (placement === "inside" && targetIsSpecific) {
-    return activeDragAccount?.parentId === targetAccount.parentId
-      ? "after"
-      : "before";
+    return activeDragAccount?.parentId === targetAccount.parentId ? "after" : "before";
   }
 
   return placement;
@@ -200,8 +180,7 @@ export function getPointerDropPlacement({
     return "before";
   }
 
-  const relativeY =
-    typeof pointerY === "number" ? pointerY - targetTop : targetHeight / 2;
+  const relativeY = typeof pointerY === "number" ? pointerY - targetTop : targetHeight / 2;
 
   if (targetAccountLevel !== "SPECIFIC") {
     return relativeY <= targetHeight * 0.25 ? "before" : "inside";
@@ -218,24 +197,16 @@ export function getPointerDropPlacement({
   return "before";
 }
 
-export function removeAccount(
-  accounts: ChartAccount[],
-  accountId: string,
-): ChartAccount[] {
+export function removeAccount(accounts: ChartAccount[], accountId: string): ChartAccount[] {
   return accounts
     .filter((account) => account.id !== accountId)
     .map((account) => ({
       ...account,
-      children: account.children
-        ? removeAccount(account.children, accountId)
-        : account.children,
+      children: account.children ? removeAccount(account.children, accountId) : account.children,
     }));
 }
 
-function findAccount(
-  accounts: ChartAccount[],
-  accountId: string,
-): ChartAccount | null {
+function findAccount(accounts: ChartAccount[], accountId: string): ChartAccount | null {
   for (const account of accounts) {
     if (account.id === accountId) {
       return account;
@@ -266,18 +237,12 @@ function updateAccountChildren(
 
     return {
       ...account,
-      children: account.children
-        ? updateAccountChildren(account.children, parentId, updateChildren)
-        : account.children,
+      children: account.children ? updateAccountChildren(account.children, parentId, updateChildren) : account.children,
     };
   });
 }
 
-function moveSpecificAccountBefore(
-  accounts: ChartAccount[],
-  accountToMove: ChartAccount,
-  overAccount: ChartAccount,
-): ChartAccount[] {
+function moveSpecificAccountBefore(accounts: ChartAccount[], accountToMove: ChartAccount, overAccount: ChartAccount): ChartAccount[] {
   const targetParentId = overAccount.parentId;
   const updatedAccount = {
     ...accountToMove,
@@ -286,26 +251,15 @@ function moveSpecificAccountBefore(
   const accountsWithoutMovedAccount = removeAccount(accounts, accountToMove.id);
 
   if (!targetParentId) {
-    return insertDirectAccountBefore(
-      accountsWithoutMovedAccount,
-      updatedAccount,
-      overAccount.id,
-    );
+    return insertDirectAccountBefore(accountsWithoutMovedAccount, updatedAccount, overAccount.id);
   }
 
-  return updateAccountChildren(
-    accountsWithoutMovedAccount,
-    targetParentId,
-    (children) =>
-      insertDirectAccountBefore(children, updatedAccount, overAccount.id),
+  return updateAccountChildren(accountsWithoutMovedAccount, targetParentId, (children) =>
+    insertDirectAccountBefore(children, updatedAccount, overAccount.id),
   );
 }
 
-function moveSpecificAccountAfter(
-  accounts: ChartAccount[],
-  accountToMove: ChartAccount,
-  overAccount: ChartAccount,
-): ChartAccount[] {
+function moveSpecificAccountAfter(accounts: ChartAccount[], accountToMove: ChartAccount, overAccount: ChartAccount): ChartAccount[] {
   const targetParentId = overAccount.parentId;
   const updatedAccount = {
     ...accountToMove,
@@ -314,29 +268,16 @@ function moveSpecificAccountAfter(
   const accountsWithoutMovedAccount = removeAccount(accounts, accountToMove.id);
 
   if (!targetParentId) {
-    return insertDirectAccountAfter(
-      accountsWithoutMovedAccount,
-      updatedAccount,
-      overAccount.id,
-    );
+    return insertDirectAccountAfter(accountsWithoutMovedAccount, updatedAccount, overAccount.id);
   }
 
-  return updateAccountChildren(
-    accountsWithoutMovedAccount,
-    targetParentId,
-    (children) =>
-      insertDirectAccountAfter(children, updatedAccount, overAccount.id),
+  return updateAccountChildren(accountsWithoutMovedAccount, targetParentId, (children) =>
+    insertDirectAccountAfter(children, updatedAccount, overAccount.id),
   );
 }
 
-function insertDirectAccountBefore(
-  accounts: ChartAccount[],
-  accountToInsert: ChartAccount,
-  overAccountId: string,
-): ChartAccount[] {
-  const nextIndex = accounts.findIndex(
-    (account) => account.id === overAccountId,
-  );
+function insertDirectAccountBefore(accounts: ChartAccount[], accountToInsert: ChartAccount, overAccountId: string): ChartAccount[] {
+  const nextIndex = accounts.findIndex((account) => account.id === overAccountId);
 
   if (nextIndex < 0) {
     return [...accounts, accountToInsert];
@@ -348,14 +289,8 @@ function insertDirectAccountBefore(
   return nextAccounts;
 }
 
-function insertDirectAccountAfter(
-  accounts: ChartAccount[],
-  accountToInsert: ChartAccount,
-  overAccountId: string,
-): ChartAccount[] {
-  const nextIndex = accounts.findIndex(
-    (account) => account.id === overAccountId,
-  );
+function insertDirectAccountAfter(accounts: ChartAccount[], accountToInsert: ChartAccount, overAccountId: string): ChartAccount[] {
+  const nextIndex = accounts.findIndex((account) => account.id === overAccountId);
 
   if (nextIndex < 0) {
     return [...accounts, accountToInsert];
@@ -373,12 +308,8 @@ function reorderDirectAccounts(
   overAccountId: string,
   placement: ChartsOfAccountsDropPlacement,
 ): ChartAccount[] {
-  const currentIndex = accounts.findIndex(
-    (account) => account.id === accountId,
-  );
-  const nextIndex = accounts.findIndex(
-    (account) => account.id === overAccountId,
-  );
+  const currentIndex = accounts.findIndex((account) => account.id === accountId);
+  const nextIndex = accounts.findIndex((account) => account.id === overAccountId);
 
   if (currentIndex < 0 || nextIndex < 0) {
     return accounts;
@@ -386,15 +317,9 @@ function reorderDirectAccounts(
 
   const reorderedAccounts = [...accounts];
   const [accountToMove] = reorderedAccounts.splice(currentIndex, 1);
-  const overIndex = reorderedAccounts.findIndex(
-    (account) => account.id === overAccountId,
-  );
+  const overIndex = reorderedAccounts.findIndex((account) => account.id === overAccountId);
 
-  reorderedAccounts.splice(
-    placement === "after" ? overIndex + 1 : overIndex,
-    0,
-    accountToMove,
-  );
+  reorderedAccounts.splice(placement === "after" ? overIndex + 1 : overIndex, 0, accountToMove);
 
   return reorderedAccounts;
 }

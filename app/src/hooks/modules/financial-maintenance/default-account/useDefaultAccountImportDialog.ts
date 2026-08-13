@@ -37,10 +37,7 @@ export function useDefaultAccountImportDialog({
   existingDefaultAccounts,
   onClose,
   onImportDefaultAccounts,
-}: Pick<
-  DefaultAccountImportDialogProps,
-  "existingDefaultAccounts" | "onClose" | "onImportDefaultAccounts"
->) {
+}: Pick<DefaultAccountImportDialogProps, "existingDefaultAccounts" | "onClose" | "onImportDefaultAccounts">) {
   const [importError, setImportError] = useState<string | null>(null);
   const [isParsing, setIsParsing] = useState(false);
   const [previewRows, setPreviewRows] = useState<DefaultAccountImportPreviewRow[]>([]);
@@ -50,35 +47,21 @@ export function useDefaultAccountImportDialog({
   const [isSelectionMenuOpen, setIsSelectionMenuOpen] = useState(false);
   const [isImportMenuOpen, setIsImportMenuOpen] = useState(false);
   const [importMode, setImportMode] = useState<DefaultAccountImportMode>("all-rows");
-  const [columnWidths, setColumnWidths] = useState<DefaultAccountImportColumnWidths>(
-    DefaultAccountImportDefaultColumnWidths,
-  );
+  const [columnWidths, setColumnWidths] = useState<DefaultAccountImportColumnWidths>(DefaultAccountImportDefaultColumnWidths);
   const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(() => new Set());
   const validatedRows = useMemo(
     () => validateDefaultAccountImportRows(previewRows, existingDefaultAccounts),
     [existingDefaultAccounts, previewRows],
   );
   const displayedRows = useMemo(
-    () =>
-      validatedRows.map((row) =>
-        pristineManualRowIds.has(row.id) ? { ...row, cellErrors: {}, rowErrors: [] } : row,
-      ),
+    () => validatedRows.map((row) => (pristineManualRowIds.has(row.id) ? { ...row, cellErrors: {}, rowErrors: [] } : row)),
     [pristineManualRowIds, validatedRows],
   );
   const invalidRows = displayedRows.filter(defaultAccountImportRowHasErrors);
   const actualInvalidRows = validatedRows.filter(defaultAccountImportRowHasErrors);
   const validRows = validatedRows.filter((row) => !defaultAccountImportRowHasErrors(row));
   const validSelectedRows = validRows.filter((row) => selectedRowIds.has(row.id));
-  const importableRows =
-    importMode === "selected-valid"
-      ? validSelectedRows
-      : importMode === "all-valid"
-        ? validRows
-        : validatedRows;
-  const totalPages = Math.max(
-    1,
-    Math.ceil(displayedRows.length / DefaultAccountImportPreviewPageSize),
-  );
+  const totalPages = Math.max(1, Math.ceil(displayedRows.length / DefaultAccountImportPreviewPageSize));
   const safePreviewPage = Math.min(previewPage, totalPages);
   const visibleRows = displayedRows.slice(
     (safePreviewPage - 1) * DefaultAccountImportPreviewPageSize,
@@ -89,8 +72,7 @@ export function useDefaultAccountImportDialog({
   const canImportAllValid = validRows.length > 0 && !isBusy;
   const canImportSelectedValid = validSelectedRows.length > 0 && !isBusy;
   const importTableWidth =
-    ModuleImportFixedColumnsWidth +
-    DefaultAccountImportFieldOrder.reduce((total, field) => total + columnWidths[field], 0);
+    ModuleImportFixedColumnsWidth + DefaultAccountImportFieldOrder.reduce((total, field) => total + columnWidths[field], 0);
 
   function updateColumnWidth(field: DefaultAccountImportColumnId, width: number) {
     setColumnWidths((current) => ({ ...current, [field]: width }));
@@ -109,11 +91,7 @@ export function useDefaultAccountImportDialog({
   }
 
   function appendRows(rows: DefaultAccountImportPreviewRow[]) {
-    const seenNames = new Set(
-      previewRows
-        .map((row) => normalizeDefaultAccountName(row.defaultAccount.defaultAccountName))
-        .filter(Boolean),
-    );
+    const seenNames = new Set(previewRows.map((row) => normalizeDefaultAccountName(row.defaultAccount.defaultAccountName)).filter(Boolean));
     const uniqueRows = rows.filter((row) => {
       const normalizedName = normalizeDefaultAccountName(row.defaultAccount.defaultAccountName);
       if (normalizedName && seenNames.has(normalizedName)) return false;
@@ -149,16 +127,11 @@ export function useDefaultAccountImportDialog({
     setIsParsing(true);
     try {
       const text = await readDefaultAccountImportFileText(file);
-      const rows = parseDefaultAccountImportText(
-        text,
-        getNextDefaultAccountImportRowNumber(previewRows),
-      );
+      const rows = parseDefaultAccountImportText(text, getNextDefaultAccountImportRowNumber(previewRows));
       if (rows.length === 0) throw new Error("No default account rows were found.");
       appendRows(rows);
     } catch (error) {
-      setImportError(
-        error instanceof Error ? error.message : "Could not read the imported default accounts.",
-      );
+      setImportError(error instanceof Error ? error.message : "Could not read the imported default accounts.");
     } finally {
       setIsParsing(false);
     }
@@ -166,9 +139,7 @@ export function useDefaultAccountImportDialog({
 
   function addBlankRow() {
     if (progress) return;
-    const blankRow = createBlankDefaultAccountImportRow(
-      getNextDefaultAccountImportRowNumber(previewRows),
-    );
+    const blankRow = createBlankDefaultAccountImportRow(getNextDefaultAccountImportRowNumber(previewRows));
     const nextRows = [...previewRows, blankRow];
     setPreviewRows(nextRows);
     setPristineManualRowIds((current) => new Set(current).add(blankRow.id));
@@ -200,9 +171,7 @@ export function useDefaultAccountImportDialog({
   }
 
   function pasteIntoPreviewCell(rowId: string, field: DefaultAccountImportColumnId, text: string) {
-    const pastedRows = parseImportTabularRows(text).filter((row) =>
-      row.some((cell) => cell.trim() !== ""),
-    );
+    const pastedRows = parseImportTabularRows(text).filter((row) => row.some((cell) => cell.trim() !== ""));
 
     if (pastedRows.length === 0) return;
     const startColumnIndex = DefaultAccountImportFieldOrder.indexOf(field);
@@ -220,18 +189,13 @@ export function useDefaultAccountImportDialog({
 
       pastedRows.forEach((pastedRow, pastedRowIndex) => {
         const targetIndex = startRowIndex + pastedRowIndex;
-        const targetRow =
-          nextRows[targetIndex] ??
-          createBlankDefaultAccountImportRow(getNextDefaultAccountImportRowNumber(nextRows));
+        const targetRow = nextRows[targetIndex] ?? createBlankDefaultAccountImportRow(getNextDefaultAccountImportRowNumber(nextRows));
         const nextDefaultAccount = { ...targetRow.defaultAccount };
 
         pastedRow.forEach((cellValue, cellIndex) => {
           const targetField = DefaultAccountImportFieldOrder[startColumnIndex + cellIndex];
           if (!targetField) return;
-          nextDefaultAccount[targetField] = normalizeImportedDefaultAccountCellValue(
-            targetField,
-            cellValue,
-          ) as never;
+          nextDefaultAccount[targetField] = normalizeImportedDefaultAccountCellValue(targetField, cellValue) as never;
         });
 
         touchedRowIds.add(targetRow.id);
@@ -249,9 +213,7 @@ export function useDefaultAccountImportDialog({
 
   function pasteIntoPreviewGrid(text: string) {
     if (!text.trim() || progress) return;
-    appendRows(
-      parseDefaultAccountImportText(text, getNextDefaultAccountImportRowNumber(previewRows)),
-    );
+    appendRows(parseDefaultAccountImportText(text, getNextDefaultAccountImportRowNumber(previewRows)));
   }
 
   function toggleRowSelection(rowId: string, isSelected: boolean) {
@@ -279,22 +241,14 @@ export function useDefaultAccountImportDialog({
   }
 
   function removeSelectedRows() {
-    const nextRows = renumberDefaultAccountImportRows(
-      previewRows.filter((row) => !selectedRowIds.has(row.id)),
-    );
+    const nextRows = renumberDefaultAccountImportRows(previewRows.filter((row) => !selectedRowIds.has(row.id)));
     setPreviewRows(nextRows);
     setSelectedRowIds(new Set());
-    setPreviewPage((page) =>
-      Math.max(1, Math.min(page, Math.ceil(nextRows.length / DefaultAccountImportPreviewPageSize))),
-    );
+    setPreviewPage((page) => Math.max(1, Math.min(page, Math.ceil(nextRows.length / DefaultAccountImportPreviewPageSize))));
   }
 
   function movePreviewRow(sourceRowId: string, targetRowId: string, position: "before" | "after") {
-    setPreviewRows((rows) =>
-      renumberDefaultAccountImportRows(
-        reorderModuleImportRows(rows, sourceRowId, targetRowId, position),
-      ),
-    );
+    setPreviewRows((rows) => renumberDefaultAccountImportRows(reorderModuleImportRows(rows, sourceRowId, targetRowId, position)));
   }
 
   function setImportSelection(mode: DefaultAccountImportMode) {
@@ -303,12 +257,7 @@ export function useDefaultAccountImportDialog({
   }
 
   async function handleImport(mode = importMode) {
-    const rowsToImport =
-      mode === "selected-valid"
-        ? validSelectedRows
-        : mode === "all-valid"
-          ? validRows
-          : validatedRows;
+    const rowsToImport = mode === "selected-valid" ? validSelectedRows : mode === "all-valid" ? validRows : validatedRows;
 
     if (mode === "selected-valid" && selectedRowIds.size === 0) {
       setImportError("Select at least one valid row to import.");
@@ -342,21 +291,15 @@ export function useDefaultAccountImportDialog({
         await waitForNextDefaultAccountImportBatch();
       }
 
-      toast.success(
-        `${rowsToImport.length} default ${rowsToImport.length === 1 ? "account" : "accounts"} imported.`,
-      );
-      const nextRows = renumberDefaultAccountImportRows(
-        previewRows.filter((row) => !importedRowIds.has(row.id)),
-      );
+      toast.success(`${rowsToImport.length} default ${rowsToImport.length === 1 ? "account" : "accounts"} imported.`);
+      const nextRows = renumberDefaultAccountImportRows(previewRows.filter((row) => !importedRowIds.has(row.id)));
       setPreviewRows(nextRows);
       setSelectedRowIds(new Set());
       setPreviewPage(1);
       setImportMode("all-rows");
       if (nextRows.length === 0) onClose();
     } catch (error) {
-      setImportError(
-        error instanceof Error ? error.message : "Default accounts could not be imported.",
-      );
+      setImportError(error instanceof Error ? error.message : "Default accounts could not be imported.");
     } finally {
       setProgress(null);
     }

@@ -14,8 +14,7 @@ export function DefaultAccountListPage() {
   const page = useDefaultAccountListPage();
   const [drawerState, setDrawerState] = useState<DefaultAccountDrawerState>(null);
   const [isImportOpen, setIsImportOpen] = useState(false);
-  const hasActiveFilters =
-    page.query.trim().length > 0 || page.statusFilter !== "Active" || page.typeFilter !== "";
+  const hasActiveFilters = page.query.trim().length > 0 || page.statusFilter !== "Active" || page.typeFilter !== "";
 
   return (
     <section className="grid gap-5">
@@ -36,17 +35,13 @@ export function DefaultAccountListPage() {
         query={page.query}
         statusFilter={page.statusFilter}
         typeFilter={page.typeFilter}
-        onEditDefaultAccount={(selected) =>
-          setDrawerState({ mode: "edit", defaultAccount: selected })
-        }
+        onEditDefaultAccount={(selected) => setDrawerState({ mode: "edit", defaultAccount: selected })}
         onQueryChange={page.setQuery}
         onRefresh={page.refreshDefaultAccounts}
         onStatusFilterChange={page.setStatusFilter}
         onToggleStatus={page.setPendingStatusAccount}
         onTypeFilterChange={page.setTypeFilter}
-        onViewDefaultAccount={(selected) =>
-          setDrawerState({ mode: "view", defaultAccount: selected })
-        }
+        onViewDefaultAccount={(selected) => setDrawerState({ mode: "view", defaultAccount: selected })}
       />
       <DefaultAccountDrawer
         defaultAccount={drawerState?.defaultAccount}
@@ -66,11 +61,7 @@ export function DefaultAccountListPage() {
       <AppDialog
         isOpen={Boolean(page.pendingStatusAccount)}
         isPending={page.isMutating}
-        title={
-          page.pendingStatusAccount?.status === "Active"
-            ? "Inactivate default account?"
-            : "Activate default account?"
-        }
+        title={page.pendingStatusAccount?.status === "Active" ? "Inactivate default account?" : "Activate default account?"}
         description={
           page.pendingStatusAccount?.status === "Active"
             ? `${page.pendingStatusAccount.defaultAccountName} will no longer be available for new setup selection.`

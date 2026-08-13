@@ -216,7 +216,7 @@ function createDetailsTable(values: AccountsPayableVoucherFormValues): TableCell
       headerCell("Cost Center"),
       headerCell("Gross", "right"),
       headerCell("EWT", "right"),
-      headerCell("Total Due", "right"),
+      headerCell("Total Payable", "right"),
     ],
     ...values.expenseLines.map(createDetailRow),
     [

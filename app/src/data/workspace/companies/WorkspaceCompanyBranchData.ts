@@ -6,9 +6,10 @@ import type {
 } from "@/app/src/services/workspace/companies/WorkspaceCompanyUnitApi";
 import type { WorkspaceCompanyBranchFormValues } from "@/app/src/types/workspace/WorkspaceCompanyBranchTypes";
 import type {
-  WorkspaceCompanyBranchRecord,
-  WorkspaceCompanyRecord,
+	WorkspaceCompanyBranchRecord,
+	WorkspaceCompanyRecord,
 } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
+import { cleanOptional } from "@/app/src/utils/string.util";
 
 export const WorkspaceCompanyBranchFormId = "workspace-company-branch-form";
 
@@ -91,10 +92,10 @@ export function createWorkspaceCompanyUnitPayload(
   const parentUnitId = Number(linkedMainBranchId);
 
   return {
-    address: optionalTrim(values.address),
+    address: cleanOptional(values.address),
     code: createWorkspaceCompanyUnitCode(values.companyCode, values.name),
-    contactNumber: optionalTrim(values.contactNo),
-    email: optionalTrim(values.email)?.toLowerCase(),
+    contactNumber: cleanOptional(values.contactNo),
+    email: cleanOptional(values.email)?.toLowerCase(),
     name: values.name.trim(),
     parentUnitId:
       isSatellite && Number.isFinite(parentUnitId) ? parentUnitId : undefined,
@@ -112,10 +113,10 @@ export function createWorkspaceCompanyUnitUpdatePayload(
   const parentUnitId = Number(linkedMainBranchId);
 
   return {
-    address: optionalTrim(values.address),
+    address: cleanOptional(values.address),
     code: createWorkspaceCompanyUnitCode(values.companyCode, values.name),
-    contactNumber: optionalTrim(values.contactNo),
-    email: optionalTrim(values.email)?.toLowerCase(),
+    contactNumber: cleanOptional(values.contactNo),
+    email: cleanOptional(values.email)?.toLowerCase(),
     name: values.name.trim(),
     parentUnitId:
       isSatellite && Number.isFinite(parentUnitId) ? parentUnitId : undefined,
@@ -140,8 +141,3 @@ function createWorkspaceCompanyUnitCode(
   return [companyPrefix, branchPrefix].filter(Boolean).join("-") || undefined;
 }
 
-function optionalTrim(value: string) {
-  const trimmedValue = value.trim();
-
-  return trimmedValue || undefined;
-}

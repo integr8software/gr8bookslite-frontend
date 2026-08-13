@@ -4,21 +4,15 @@ import { useMemo, useState } from "react";
 import {
 	DefaultPreferredBaseCurrencyCode,
 	DefaultWantedCurrencyCode,
-	MultiCurrencyCatalog,
+	createMultiCurrencyCatalogFromFetchedRates,
+	createMultiCurrencySetupRecordsFromFetchedRates,
 	createMultiCurrencySetupTableRecords,
-	findCurrencyByCode,
 	findFetchedRate,
 	formatExchangeRate,
 } from "@/app/src/data/modules/system-administration/multi-currency-setup/MultiCurrencySetupData";
 import { useMultiCurrencySetupRates } from "@/app/src/hooks/modules/system-administration/multi-currency-setup/useMultiCurrencySetupRates";
-import { useMultiCurrencySetupStore } from "@/app/src/hooks/modules/system-administration/multi-currency-setup/useMultiCurrencySetup";
 
 export function useMultiCurrencySetupListPage() {
-	const records = useMultiCurrencySetupStore((state) => state.records);
-	const isLoading = useMultiCurrencySetupStore((state) => state.isLoading);
-	const lastSyncedAt = useMultiCurrencySetupStore(
-		(state) => state.lastSyncedAt,
-	);
 	const [preferredBaseCurrencyCode, setPreferredBaseCurrencyCode] = useState(
 		DefaultPreferredBaseCurrencyCode,
 	);
@@ -33,11 +27,8 @@ export function useMultiCurrencySetupListPage() {
 	);
 	const wantedRate = findFetchedRate(fetchedRates, wantedCurrencyCode);
 	const baseRecords = useMemo(
-		() =>
-			records.filter(
-				(record) => record.baseCurrencyCode === preferredBaseCurrencyCode,
-			),
-		[preferredBaseCurrencyCode, records],
+		() => createMultiCurrencySetupRecordsFromFetchedRates(fetchedRates),
+		[fetchedRates],
 	);
 	const tableRecords = useMemo(
 		() => createMultiCurrencySetupTableRecords(baseRecords, fetchedRates),
@@ -69,11 +60,13 @@ export function useMultiCurrencySetupListPage() {
 	const wantedInverseDisplay = wantedRate
 		? formatExchangeRate(wantedRate.inverseExchangeRate)
 		: "0.000000";
-	const enabledCurrencies = MultiCurrencyCatalog.filter(
-		(currency) => currency.isEnabled,
+	const enabledCurrencies = useMemo(
+		() => createMultiCurrencyCatalogFromFetchedRates(fetchedRates),
+		[fetchedRates],
 	);
-	const defaultCurrency =
-		findCurrencyByCode(preferredBaseCurrencyCode) ?? MultiCurrencyCatalog[0];
+	const defaultCurrency = enabledCurrencies.find(
+		(currency) => currency.code === preferredBaseCurrencyCode,
+	);
 
 	function resetFilters() {
 		setPreferredBaseCurrencyCode(DefaultPreferredBaseCurrencyCode);
@@ -87,8 +80,8 @@ export function useMultiCurrencySetupListPage() {
 		enabledCurrencies,
 		fetchedRates,
 		filteredRecords,
-		isLoading: isLoading || ratesQuery.isLoading,
-		lastSyncedAt: Math.max(lastSyncedAt, ratesQuery.dataUpdatedAt),
+		isLoading: ratesQuery.isLoading,
+		lastSyncedAt: ratesQuery.dataUpdatedAt,
 		preferredBaseCurrencyCode,
 		query,
 		resetFilters,

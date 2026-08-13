@@ -1,12 +1,12 @@
 import { z } from "zod";
-import { ApprovalAmountConditionLimit } from "@/app/src/constants/modules/system-administration/approval-management/ApprovalManagementConstants";
+import { ApprovalAmountConditionLimit } from "@/app/src/constants/modules/approval-management/ApprovalManagementConstants";
 import type {
 	ApprovalManagementFormErrors,
 	ApprovalManagementFormValues,
 	ApprovalManagementRecord,
 	ApprovalRoutingRuleFormErrors,
 	ApprovalStageFormErrors,
-} from "@/app/src/types/modules/system-administration/approval-management/ApprovalManagementTypes";
+} from "@/app/src/types/modules/approval-management/ApprovalManagementTypes";
 
 const ApprovalStageSchema = z.object({
 	id: z.string().min(1),
@@ -46,14 +46,6 @@ const ApprovalRoutingRuleSchema = z
 		}
 	});
 
-const ApprovalWorkflowFeaturesSchema = z.object({
-	autoReminders: z.boolean(),
-	escalationRules: z.boolean(),
-	makerCheckerApproval: z.boolean(),
-	multiLevelApproval: z.boolean(),
-	slaMonitoring: z.boolean(),
-});
-
 export const ApprovalManagementFormSchema = z
 	.object({
 		moduleCode: z
@@ -69,7 +61,6 @@ export const ApprovalManagementFormSchema = z
 		routingRules: z
 			.array(ApprovalRoutingRuleSchema)
 			.min(1, "Add at least one routing rule."),
-		workflowFeatures: ApprovalWorkflowFeaturesSchema,
 		status: z.enum(["Active", "Inactive"]),
 		description: z.string().trim().max(180, "Description is too long."),
 	})

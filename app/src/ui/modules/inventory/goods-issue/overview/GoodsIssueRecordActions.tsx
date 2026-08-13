@@ -1,5 +1,8 @@
 import { Ban, CheckCircle2, Edit3, Eye, ThumbsDown, Undo2 } from "lucide-react";
-import { GoodsIssueHref } from "@/app/src/constants/modules/inventory/goods-issue/GoodsIssueConstants";
+import {
+	GoodsIssueHref,
+	GoodsIssueStatuses,
+} from "@/app/src/constants/modules/inventory/goods-issue/GoodsIssueConstants";
 import type {
 	GoodsIssueRecord,
 	GoodsIssueStatus,
@@ -21,19 +24,21 @@ export function GoodsIssueRecordActions({
 	onUpdateStatus: (record: GoodsIssueRecord, status: GoodsIssueStatus) => void;
 	record: GoodsIssueRecord;
 }) {
-	const isApproved = record.status === "Approved";
-	const isDisapproved = record.status === "Disapproved";
-	const isCancelled = record.status === "Cancelled";
+	const isPosted = record.status === GoodsIssueStatuses.posted;
+	const isDisapproved = record.status === GoodsIssueStatuses.disapproved;
+	const isCancelled = record.status === GoodsIssueStatuses.cancelled;
 	const canEdit = canEditGoodsIssueStatus(record.status);
-	const undoStatus: GoodsIssueStatus = "Active";
-	const cancelStatus: GoodsIssueStatus = isCancelled ? "Draft" : "Cancelled";
+	const undoStatus: GoodsIssueStatus = GoodsIssueStatuses.draft;
+	const cancelStatus: GoodsIssueStatus = isCancelled
+		? GoodsIssueStatuses.draft
+		: GoodsIssueStatuses.cancelled;
 	const overflowItems: ModuleActionMenuItem[] = [
 		{
-			disabled: !canApproveGoodsIssueStatus(record.status),
-			icon: isApproved ? Undo2 : CheckCircle2,
-			label: isApproved ? "Undo Approved" : "Approve",
+			disabled: !canPostGoodsIssueStatus(record.status),
+			icon: isPosted ? Undo2 : CheckCircle2,
+			label: isPosted ? "Undo Posted" : "Post",
 			onSelect: () =>
-				onUpdateStatus(record, isApproved ? undoStatus : "Approved"),
+				onUpdateStatus(record, isPosted ? undoStatus : GoodsIssueStatuses.posted),
 			type: "button",
 		},
 		{
@@ -41,7 +46,10 @@ export function GoodsIssueRecordActions({
 			icon: isDisapproved ? Undo2 : ThumbsDown,
 			label: isDisapproved ? "Undo Disapproved" : "Disapprove",
 			onSelect: () =>
-				onUpdateStatus(record, isDisapproved ? undoStatus : "Disapproved"),
+				onUpdateStatus(
+					record,
+					isDisapproved ? undoStatus : GoodsIssueStatuses.disapproved,
+				),
 			tone: isDisapproved ? "default" : "danger",
 			type: "button",
 		},
@@ -91,27 +99,28 @@ export function GoodsIssueRecordActions({
 }
 
 function canEditGoodsIssueStatus(status: GoodsIssueStatus) {
-	return status === "Active" || status === "Draft" || status === "Pending";
+	return (
+		status === GoodsIssueStatuses.draft ||
+		status === GoodsIssueStatuses.forApproval
+	);
 }
 
-function canApproveGoodsIssueStatus(status: GoodsIssueStatus) {
+function canPostGoodsIssueStatus(status: GoodsIssueStatus) {
 	return (
-		status === "Active" ||
-		status === "Draft" ||
-		status === "Pending" ||
-		status === "Approved"
+		status === GoodsIssueStatuses.draft ||
+		status === GoodsIssueStatuses.forApproval ||
+		status === GoodsIssueStatuses.posted
 	);
 }
 
 function canDisapproveGoodsIssueStatus(status: GoodsIssueStatus) {
 	return (
-		status === "Active" ||
-		status === "Draft" ||
-		status === "Pending" ||
-		status === "Disapproved"
+		status === GoodsIssueStatuses.draft ||
+		status === GoodsIssueStatuses.forApproval ||
+		status === GoodsIssueStatuses.disapproved
 	);
 }
 
 function canCancelGoodsIssueStatus(status: GoodsIssueStatus) {
-	return status !== "Closed";
+	return status !== GoodsIssueStatuses.posted;
 }

@@ -23,10 +23,26 @@ export const PurchaseRequestItemValidationSchema = z.object({
 	uom: requiredText("Select a UOM."),
 });
 
+const accountingEntrySchema = z.object({
+	accountCode: z.string(),
+	accountTitle: z.string(),
+	atcCode: z.string(),
+	credit: z.coerce.number().min(0),
+	debit: z.coerce.number().min(0),
+	id: z.string(),
+	partyCode: z.string(),
+	partyName: z.string(),
+	particulars: z.string(),
+	refNo: z.string(),
+	responsibilityCenter: z.string(),
+	vatType: z.string(),
+});
+
 export const PurchaseRequestFormValidationSchema = z
 	.object({
 		approvedBy: z.string(),
 		approvedByLabel: z.string(),
+		accountingEntries: z.array(accountingEntrySchema),
 		bomNo: z.string(),
 		companyAddress: requiredText("Enter the company address."),
 		companyName: requiredText("Enter the company name."),
@@ -48,7 +64,7 @@ export const PurchaseRequestFormValidationSchema = z
 		projectName: z.string(),
 		purchaseType: requiredText("Select a purchase type."),
 		remarks: z.string(),
-		status: z.enum(["Draft", "Open", "Approved", "Closed", "Cancelled"]),
+		status: z.enum(["Draft", "For Approval", "Posted", "Disapproved", "Cancelled"]),
 		telephoneNo: requiredText("Enter the telephone number."),
 		transNo: requiredText("Enter a transaction number."),
 		vatRegTin: requiredText("Enter the VAT Reg TIN."),

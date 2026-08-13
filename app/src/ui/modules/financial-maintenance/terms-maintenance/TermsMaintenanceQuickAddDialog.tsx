@@ -26,11 +26,7 @@ const initialValues: TermsMaintenanceFormValues = {
   status: "Active",
 };
 
-export function TermsMaintenanceQuickAddDialog({
-  isOpen,
-  onClose,
-  onSaved,
-}: TermsMaintenanceQuickAddDialogProps) {
+export function TermsMaintenanceQuickAddDialog({ isOpen, onClose, onSaved }: TermsMaintenanceQuickAddDialogProps) {
   const [values, setValues] = useState<TermsMaintenanceFormValues>(initialValues);
   const [error, setError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -51,12 +47,7 @@ export function TermsMaintenanceQuickAddDialog({
       period: normalizeWholeNumberText(values.period),
     };
     const nextErrors = validateTermsMaintenanceForm(normalizedValues);
-    const nextError =
-      nextErrors.name ??
-      nextErrors.datemode ??
-      nextErrors.period ??
-      nextErrors.status ??
-      nextErrors.description;
+    const nextError = nextErrors.name ?? nextErrors.datemode ?? nextErrors.period ?? nextErrors.status ?? nextErrors.description;
 
     if (nextError) {
       setValues(normalizedValues);
@@ -78,14 +69,7 @@ export function TermsMaintenanceQuickAddDialog({
   }, [onSaved, values]);
 
   return (
-    <QuickAddDialog
-      error={error}
-      isOpen={isOpen}
-      isPending={isSaving}
-      title="Add Terms"
-      onClose={onClose}
-      onSave={handleSave}
-    >
+    <QuickAddDialog error={error} isOpen={isOpen} isPending={isSaving} title="Add Terms" onClose={onClose} onSave={handleSave}>
       <label className="grid gap-2">
         <span className="text-sm font-semibold text-darknavy">
           Term Name <span className="text-coralpink">*</span>
@@ -138,8 +122,7 @@ export function TermsMaintenanceQuickAddDialog({
             }}
             onKeyDown={preventNonWholeNumberInput}
             onPaste={(event) => {
-              if (!isWholeNumberText(event.clipboardData.getData("text").trim()))
-                event.preventDefault();
+              if (!isWholeNumberText(event.clipboardData.getData("text").trim())) event.preventDefault();
             }}
             className="h-11 rounded-md border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-4 focus:ring-skyblue/15 disabled:cursor-not-allowed disabled:bg-darknavy/5"
           />

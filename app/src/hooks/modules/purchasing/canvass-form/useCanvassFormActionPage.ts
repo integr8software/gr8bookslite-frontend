@@ -23,12 +23,13 @@ import {
 import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import type {
 	CanvassFormItem,
+	CanvassFormAccountingEntry,
 	CanvassFormMode,
 	CanvassFormErrors,
 	CanvassFormValues,
 } from "@/app/src/types/modules/purchasing/canvass-form/CanvassFormTypes";
 import { validateCanvassForm } from "@/app/src/validations/modules/purchasing/canvass-form/CanvassFormValidation";
-import type { AppCopyFromRecord } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
+import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 
 export function useCanvassFormActionPage() {
 	const router = useRouter();
@@ -88,6 +89,11 @@ export function useCanvassFormActionPage() {
 		if (isReadonly) return;
 		setValues((current) => ({ ...current, items }));
 		setErrors((current) => ({ ...current, items: undefined }));
+	}
+
+	function updateAccountingEntries(accountingEntries: CanvassFormAccountingEntry[]) {
+		if (isReadonly) return;
+		setValues((current) => ({ ...current, accountingEntries }));
 	}
 
 	function copyFromPurchaseRequests(recordIds: string[]) {
@@ -195,6 +201,7 @@ export function useCanvassFormActionPage() {
 		showPreview,
 		copyFromPurchaseRequests,
 		updateField,
+		updateAccountingEntries,
 		updateItems,
 		values,
 	};
@@ -218,11 +225,11 @@ function canvassFormItemHasData(item: CanvassFormItem) {
 function mergeUniqueTextValues(currentValue: string, nextValues: string[]) {
 	return Array.from(
 		new Set([
-			...currentValue
+			...(currentValue ?? "")
 				.split(",")
 				.map((value) => value.trim())
 				.filter(Boolean),
-			...nextValues,
+			...nextValues.map((value) => String(value ?? "").trim()).filter(Boolean),
 		]),
 	).join(", ");
 }

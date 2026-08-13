@@ -24,17 +24,8 @@ import type {
 } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
 
 export function useResponsibilityCenterListPage() {
-  const {
-    centers,
-    isLoading,
-    isMutating,
-    isRefreshing,
-    lastSyncedAt,
-    permissions,
-    refreshCenters,
-    statistics,
-    updateCenterStatus,
-  } = useResponsibilityCenterStore();
+  const { centers, isLoading, isMutating, isRefreshing, lastSyncedAt, permissions, refreshCenters, statistics, updateCenterStatus } =
+    useResponsibilityCenterStore();
   const [query, setQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [financialTypeFilter, setFinancialTypeFilter] = useState("All");
@@ -84,7 +75,16 @@ export function useResponsibilityCenterListPage() {
 
       const parentName = center.parentId ? centers.find((parentCenter) => parentCenter.id === center.parentId)?.name : "";
 
-      return [center.code, center.name, center.category, center.financialType, center.manager, parentName, center.status, center.description]
+      return [
+        center.code,
+        center.name,
+        center.category,
+        center.financialType,
+        center.manager,
+        parentName,
+        center.status,
+        center.description,
+      ]
         .join(" ")
         .toLowerCase()
         .includes(normalizedQuery);

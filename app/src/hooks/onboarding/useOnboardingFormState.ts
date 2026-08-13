@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState, type SetStateAction } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type SetStateAction,
+} from "react";
 import {
   AppMaxFileUploadSizeBytes,
   AppMaxFileUploadSizeLabel,
@@ -16,7 +22,7 @@ import {
   type OnboardingFieldErrors,
   type OnboardingTaxpayerType,
   type OnboardingValues,
-} from "@/app/src/data/onboarding/OnboardingTypes";
+} from "@/app/src/types/onboarding/OnboardingTypes";
 import type {
   BillingCycle,
   PricingPlan,
@@ -60,6 +66,7 @@ export function useOnboardingFormState() {
   );
   const logoPreviewUrlRef = useRef("");
   const previousStepIndexRef = useRef(stepIndex);
+  const baseCurrencyWasManuallySelectedRef = useRef(false);
 
   const currentStep = OnboardingSteps[stepIndex];
   const isFirstStep = stepIndex === 0;
@@ -225,6 +232,30 @@ export function useOnboardingFormState() {
     }));
   }
 
+  function updateCountry(countryCode: string, defaultCurrencyCode: string) {
+    setValues((current) => ({
+      ...current,
+      countryCode,
+      ...(baseCurrencyWasManuallySelectedRef.current
+        ? {}
+        : { baseCurrencyCode: defaultCurrencyCode }),
+    }));
+    setErrors((current) => ({
+      ...current,
+      countryCode: undefined,
+      baseCurrencyCode: undefined,
+    }));
+  }
+
+  function updateBaseCurrency(value: string) {
+    baseCurrencyWasManuallySelectedRef.current = true;
+    updateValue("baseCurrencyCode", value);
+  }
+
+  const markDraftCurrencySelectionAsExplicit = useCallback(() => {
+    baseCurrencyWasManuallySelectedRef.current = true;
+  }, []);
+
   function setTaxpayerType(type: OnboardingTaxpayerType) {
     setValues((current) => ({
       ...current,
@@ -343,6 +374,9 @@ export function useOnboardingFormState() {
     isFirstStep,
     isLastStep,
     updateValue,
+    updateCountry,
+    updateBaseCurrency,
+    markDraftCurrencySelectionAsExplicit,
     setTaxpayerType,
     handleLogoChange,
     handleLogoRemove,

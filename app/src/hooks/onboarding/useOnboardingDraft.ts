@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import type { OnboardingValues } from "@/app/src/data/onboarding/OnboardingTypes";
+import type { OnboardingValues } from "@/app/src/types/onboarding/OnboardingTypes";
 import type { BillingCycle, PricingPlan } from "@/app/src/data/pricing/PricingTypes";
+import type { OnboardingDraft } from "@/app/src/types/onboarding/OnboardingApiModels";
 import { GetOnboardingDraft } from "@/app/src/services/onboarding/OnboardingApi";
-import type { OnboardingDraft } from "@/app/src/services/onboarding/OnboardingApiTypes";
 import { MapOnboardingPlanToPricingPlan } from "@/app/src/services/onboarding/OnboardingPlanMapper";
 import { IsIntentionalLogoutInProgress } from "@/app/src/services/auth/AuthSessionExpired";
 
@@ -16,7 +16,7 @@ function Wait(milliseconds: number) {
 }
 
 function GetUiBillingCycle(
-  value: "MONTHLY" | "YEARLY" | null | undefined,
+  value: "MONTHLY" | "QUARTERLY" | "YEARLY" | null | undefined,
 ): BillingCycle {
   return value === "YEARLY" ? "yearly" : "monthly";
 }
@@ -49,6 +49,7 @@ type UseOnboardingDraftParams = {
   setHasPersistedBillingSetup: React.Dispatch<React.SetStateAction<boolean>>;
   setStepIndex: React.Dispatch<React.SetStateAction<number>>;
   setValues: React.Dispatch<React.SetStateAction<OnboardingValues>>;
+  markDraftCurrencySelectionAsExplicit: () => void;
   setPersistedLogoPreviewUrl: (value: string) => void;
 };
 
@@ -60,6 +61,7 @@ export function useOnboardingDraft({
   setHasPersistedBillingSetup,
   setStepIndex,
   setValues,
+  markDraftCurrencySelectionAsExplicit,
   setPersistedLogoPreviewUrl,
 }: UseOnboardingDraftParams) {
   const [hasMounted, setHasMounted] = useState(false);
@@ -110,6 +112,10 @@ export function useOnboardingDraft({
         const draftCompanyDetails = draft.companyDetails;
         const selectedDraftPlan = GetDraftPlan(draft);
 
+        if (draftCompanyDetails.baseCurrencyCode) {
+          markDraftCurrencySelectionAsExplicit();
+        }
+
         setSelectedPlan(selectedDraftPlan);
         setSelectedBillingCycle(GetUiBillingCycle(draft.billingCycle));
         setHasPersistedBillingSetup(draft.hasBillingSetup);
@@ -127,6 +133,9 @@ export function useOnboardingDraft({
           nonIndividualTypeOther:
             draftCompanyDetails.nonIndividualTypeOther ?? "",
           address: draftCompanyDetails.address ?? "",
+          countryCode: draftCompanyDetails.countryCode ?? current.countryCode,
+          baseCurrencyCode:
+            draftCompanyDetails.baseCurrencyCode ?? current.baseCurrencyCode,
           tin: draftCompanyDetails.tin ?? "",
           companyEmail: draftCompanyDetails.companyEmail ?? "",
           website: draftCompanyDetails.website ?? "",
@@ -183,6 +192,7 @@ export function useOnboardingDraft({
     setStepIndex,
     setPersistedLogoPreviewUrl,
     setValues,
+    markDraftCurrencySelectionAsExplicit,
   ]);
 
   return {

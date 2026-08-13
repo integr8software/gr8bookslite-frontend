@@ -50,7 +50,7 @@ export function WarehouseStorageListPage() {
 
   return (
     <section className="grid gap-3">
-      <WarehouseStorageHeader onAdd={() => setDrawerState({ mode: "add" })} />
+      <WarehouseStorageHeader />
       <WarehouseStorageScopeSwitcher
         value={page.warehouseFilter}
         warehouses={page.warehouses}
@@ -74,7 +74,6 @@ export function WarehouseStorageListPage() {
               selectedRecordId={page.selectedRecord?.id ?? null}
               statusFilter={page.statusFilter}
               statuses={page.statuses}
-              warehouseFilter={page.warehouseFilter}
               warehouses={page.warehouses}
               onSelectRecord={page.setSelectedRecordId}
               onStatusFilterChange={page.setStatusFilter}

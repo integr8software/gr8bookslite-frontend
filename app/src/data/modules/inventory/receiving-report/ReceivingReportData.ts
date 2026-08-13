@@ -1,91 +1,15 @@
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
+import { ReceivingReportStatuses } from "@/app/src/constants/modules/inventory/receiving-report/ReceivingReportConstants";
+import type {
+  ReceivingReportAccountingEntry,
+  ReceivingReportFormValues,
+  ReceivingReportLine,
+  ReceivingReportRecord,
+  ReceivingReportStatus,
+  ReceivingReportTotals,
+} from "@/app/src/types/modules/inventory/receiving-report/ReceivingReportTypes";
 
 export const ReceivingReportStorageKey = "gr8books.receiving-report.records";
-
-export type ReceivingReportStatus =
-  "Approved" | "Cancelled" | "Closed" | "Disapproved" | "Draft" | "Pending";
-
-export type ReceivingReportLine = {
-  id: string;
-  itemCode: string;
-  barcode: string;
-  description: string;
-  itemCategory: string;
-  serialNo: string;
-  lotNo: string;
-  color: string;
-  brand: string;
-  size: string;
-  model: string;
-  warehouse: string;
-  poQty: string;
-  rrQty: string;
-  uom: string;
-  expiryDate: string;
-  freightCost: string;
-  cost: string;
-  grossAmount: string;
-  vatAmount: string;
-  discountAmount: string;
-  ewtAmount: string;
-  atc: string;
-  netAmount: string;
-  vatable: string;
-  vatInclusive: string;
-  withEwt: string;
-  responsibilityCenter: string;
-};
-
-export type ReceivingReportFormValues = {
-  vceCode: string;
-  vceName: string;
-  currency: string;
-  exchangeRate: string;
-  address: string;
-  contactNo: string;
-  deliveryDate: string;
-  remarks: string;
-  defaultAccount: string;
-  grossAmount: string;
-  discountAmount: string;
-  vatAmount: string;
-  ewtAmount: string;
-  netAmount: string;
-  warehouse: string;
-  status: string;
-  transNo: string;
-  documentDate: string;
-  drNo: string;
-  poNo: string;
-  prNo: string;
-  siNo: string;
-  importationRefNo: string;
-  projectRef: string;
-  projectName: string;
-  pjNo: string;
-  lines: ReceivingReportLine[];
-};
-
-export type ReceivingReportRecord = {
-  id: string;
-  documentDate: string;
-  formValues?: ReceivingReportFormValues;
-  netAmount: number;
-  poNo: string;
-  status: ReceivingReportStatus;
-  transactionNo: string;
-  vceCode: string;
-  vceName: string;
-  warehouse: string;
-};
-
-export type ReceivingReportTotals = {
-  discountAmount: number;
-  ewtAmount: number;
-  grossAmount: number;
-  netAmount: number;
-  vatAmount: number;
-};
 
 export const MockReceivingReports: ReceivingReportRecord[] = [
   createReceivingReportRecordFromForm(createMockReceivingReportFormValues(), {
@@ -100,7 +24,7 @@ export const MockReceivingReports: ReceivingReportRecord[] = [
       deliveryDate: "2026-03-22",
       documentDate: "2026-03-22",
       poNo: "PO-000399",
-      status: "Draft",
+      status: ReceivingReportStatuses.draft,
       transNo: "RR-000399",
       vceCode: "SUP-00017",
       vceName: "Northstar Industrial Supply",
@@ -131,7 +55,7 @@ export const MockReceivingReports: ReceivingReportRecord[] = [
       deliveryDate: "2026-03-18",
       documentDate: "2026-03-18",
       poNo: "PO-000398",
-      status: "Closed",
+      status: ReceivingReportStatuses.closed,
       transNo: "RR-000398",
       vceCode: "SUP-00016",
       vceName: "Brightline Packaging Corp.",
@@ -164,17 +88,20 @@ export function createReceivingReportFormValues(): ReceivingReportFormValues {
     currency: "PHP",
     exchangeRate: "1.0000",
     address: "",
+    contactPerson: "",
     contactNo: "",
     deliveryDate: today,
+    dueDate: today,
     remarks: "",
     defaultAccount: "--Select Credit Account--",
+    termsOfPayment: "",
     grossAmount: "0.0000",
     discountAmount: "0.0000",
     vatAmount: "0.0000",
     ewtAmount: "0.0000",
     netAmount: "0.0000",
     warehouse: "Laguna",
-    status: "Draft",
+    status: ReceivingReportStatuses.draft,
     transNo: "RR-000401",
     documentDate: today,
     drNo: "",
@@ -183,8 +110,12 @@ export function createReceivingReportFormValues(): ReceivingReportFormValues {
     siNo: "",
     importationRefNo: "",
     projectRef: "",
+    projectCode: "",
     projectName: "",
     pjNo: "",
+    responsibilityCenter: "",
+    attachments: [],
+    accountingEntries: [createReceivingReportAccountingEntry()],
     lines: [createReceivingReportLine()],
   };
 }
@@ -193,10 +124,24 @@ export function createReceivingReportFormValuesFromRecord(
   record: ReceivingReportRecord,
 ): ReceivingReportFormValues {
   if (record.formValues) {
+    const normalizedLines = record.formValues.lines.map((line) => createReceivingReportLine(line));
+
     return {
       ...createReceivingReportFormValues(),
       ...record.formValues,
-      lines: record.formValues.lines.map((line) => createReceivingReportLine(line)),
+      dueDate: record.formValues.dueDate || record.formValues.deliveryDate,
+      projectCode: record.formValues.projectCode || record.formValues.projectRef,
+      responsibilityCenter:
+        record.formValues.responsibilityCenter ||
+        normalizedLines.find((line) => line.responsibilityCenter.trim().length > 0)
+          ?.responsibilityCenter ||
+        "",
+      attachments: record.formValues.attachments ?? [],
+      accountingEntries:
+        record.formValues.accountingEntries?.map((entry) =>
+          createReceivingReportAccountingEntry(entry),
+        ) ?? [createReceivingReportAccountingEntry()],
+      lines: normalizedLines,
     };
   }
 
@@ -209,6 +154,7 @@ export function createReceivingReportFormValuesFromRecord(
     vceCode: record.vceCode,
     vceName: record.vceName,
     warehouse: record.warehouse,
+    accountingEntries: [createReceivingReportAccountingEntry()],
     lines: [
       createReceivingReportLine({
         itemCode: "ITEM-001",
@@ -242,6 +188,26 @@ export function createReceivingReportRecordFromForm(
     vceCode: values.vceCode,
     vceName: values.vceName,
     warehouse: values.warehouse,
+  };
+}
+
+export function createReceivingReportAccountingEntry(
+  overrides: Partial<ReceivingReportAccountingEntry> = {},
+): ReceivingReportAccountingEntry {
+  return {
+    id: `rr-accounting-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    accountCode: "",
+    accountTitle: "",
+    debit: "0.0000",
+    credit: "0.0000",
+    partyCode: "",
+    partyName: "",
+    particulars: "",
+    vatType: "",
+    ewtCode: "",
+    responsibilityCenter: "",
+    referenceNo: "",
+    ...overrides,
   };
 }
 
@@ -387,7 +353,7 @@ function createMockReceivingReportFormValues(): ReceivingReportFormValues {
     documentDate: "2026-03-24",
     poNo: "PO-000400",
     siNo: "SI-000400",
-    status: "Approved",
+    status: ReceivingReportStatuses.approved,
     transNo: "RR-000400",
     drNo: "DR-000400",
     vceCode: "SUP-00018",
@@ -414,15 +380,15 @@ function createMockReceivingReportFormValues(): ReceivingReportFormValues {
 
 function normalizeReceivingReportStatus(value: string): ReceivingReportStatus {
   const statuses: ReceivingReportStatus[] = [
-    "Approved",
-    "Cancelled",
-    "Closed",
-    "Disapproved",
-    "Draft",
-    "Pending",
+    ReceivingReportStatuses.approved,
+    ReceivingReportStatuses.cancelled,
+    ReceivingReportStatuses.closed,
+    ReceivingReportStatuses.disapproved,
+    ReceivingReportStatuses.draft,
+    ReceivingReportStatuses.pending,
   ];
 
   return statuses.includes(value as ReceivingReportStatus)
     ? (value as ReceivingReportStatus)
-    : "Draft";
+    : ReceivingReportStatuses.draft;
 }

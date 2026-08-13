@@ -158,7 +158,7 @@ function AccountsPayableVoucherReportDocument({
               <ReportTableHeader>Cost Center</ReportTableHeader>
               <ReportTableHeader>Gross</ReportTableHeader>
               <ReportTableHeader>EWT</ReportTableHeader>
-              <ReportTableHeader>Total Due</ReportTableHeader>
+              <ReportTableHeader>Total Payable</ReportTableHeader>
             </tr>
           </thead>
           <tbody>

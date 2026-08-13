@@ -5,12 +5,10 @@ import { DiscountMaintenanceListPage } from "@/app/src/ui/modules/financial-main
 const PageTitle = "Discount Maintenance";
 
 export const metadata: Metadata = {
-	title: `${PageTitle} | ${AppName}`,
-	description: `${PageTitle} page for ${AppName}.`,
+  title: `${PageTitle} | ${AppName}`,
+  description: `${PageTitle} page for ${AppName}.`,
 };
 
 export default function MaintenanceFinancialManagementDiscountMaintenancePage() {
-	return <DiscountMaintenanceListPage />;
+  return <DiscountMaintenanceListPage />;
 }
-
-

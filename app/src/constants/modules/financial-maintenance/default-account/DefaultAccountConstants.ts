@@ -9,22 +9,20 @@ import type {
 } from "@/app/src/types/modules/financial-maintenance/default-account/DefaultAccountTypes";
 import { AppMaxFileUploadSizeBytes } from "@/app/src/constants/shared/app/AppConstants";
 import { ModuleImportFixedColumnsWidth } from "@/app/src/constants/shared/module/ModuleImportConstants";
-import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogData";
+import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
-export const DefaultAccountHref = MODULE_ROUTE_MAP.DA;
+export const DefaultAccountHref = getModuleRoute("DA");
 
 export const DefaultAccountApiPath = "/maintenance/financial-management/default-accounts";
 
 export const DefaultAccountParentLabel = "Accounting master data";
 export const DefaultAccountTitle = "Default Accounts";
-export const DefaultAccountDescription =
-  "Maintain reusable account templates that automatically create linked Chart of Accounts records.";
+export const DefaultAccountDescription = "Maintain reusable account templates that automatically create linked Chart of Accounts records.";
 
 export const DefaultAccountDrawerFormId = "default-account-drawer-form";
 
-export const DefaultAccountTablePaginationStorageKey =
-  "maintenance:financial-management:default-account";
+export const DefaultAccountTablePaginationStorageKey = "maintenance:financial-management:default-account";
 
 export const DefaultAccountTableColumns = [
   {
@@ -52,27 +50,24 @@ export const DefaultAccountTableColumns = [
     label: "Account Name",
     className: "w-[30%]",
   },
+  { key: "createdBy", label: "Created By", className: "w-[14%]" },
+  { key: "createdAt", label: "Date Created", className: "w-[16%]" },
+  { key: "updatedBy", label: "Updated By", className: "w-[14%]" },
+  { key: "updatedAt", label: "Date Modified", className: "w-[16%]" },
   {
     key: "status",
     label: "Status",
     className: "w-[11%] text-center",
   },
-  { key: "createdBy", label: "Created By", className: "w-[14%]" },
-  { key: "createdAt", label: "Date Created", className: "w-[16%]" },
-  { key: "updatedBy", label: "Updated By", className: "w-[14%]" },
-  { key: "updatedAt", label: "Date Modified", className: "w-[16%]" },
   {
     label: "Action",
     className: "w-[18%] text-center",
   },
 ] as const;
 
-export const DefaultAccountTablePreferencesStorageKey =
-  "gr8booksneo:default-account:table-preferences";
+export const DefaultAccountTablePreferencesStorageKey = "gr8booksneo:default-account:table-preferences";
 export const DefaultAccountTablePreferencesModuleKey = "maintenance:default-account";
-export const DefaultAccountDefaultColumnOrder = DefaultAccountTableColumns.map((column) =>
-  "key" in column ? column.key : "actions",
-);
+export const DefaultAccountDefaultColumnOrder = DefaultAccountTableColumns.map((column) => ("key" in column ? column.key : "actions"));
 export const DefaultAccountDefaultColumnVisibility: VisibilityState = {
   description: false,
   accountCode: false,
@@ -81,43 +76,32 @@ export const DefaultAccountDefaultColumnVisibility: VisibilityState = {
   updatedBy: false,
   updatedAt: false,
 };
-export const DefaultAccountDefaultSorting: SortingState = [
-  { id: "defaultAccountName", desc: false },
-];
+export const DefaultAccountDefaultSorting: SortingState = [{ id: "defaultAccountName", desc: false }];
 
 export const DefaultAccountTypeOptions = [
-  { value: "EXPENSE", label: "Expense Type" },
-  { value: "COLLECTION", label: "Collection Type" },
+  { value: "EXPENSE", label: "Expenses" },
+  { value: "COLLECTION", label: "Collections" },
 ] as const satisfies readonly { value: DefaultAccountType; label: string }[];
 
-export const DefaultAccountStatusOptions = [
-  "Active",
-  "Inactive",
-] as const satisfies readonly DefaultAccountStatus[];
+export const DefaultAccountTypeFilterOptions = [
+  { value: "", label: "All Accounts" },
+  ...DefaultAccountTypeOptions,
+] as const satisfies readonly { value: "" | DefaultAccountType; label: string }[];
 
-export const DefaultAccountImportTemplateHeaders = [
-  "Default Account Name",
-  "Description",
-  "Type",
-];
+export const DefaultAccountStatusOptions = ["Active", "Inactive"] as const satisfies readonly DefaultAccountStatus[];
+
+export const DefaultAccountImportTemplateHeaders = ["Default Account Name", "Description", "Type"];
 
 export const DefaultAccountImportAcceptedFileExtensions = ".xlsx,.csv,.tsv,.txt";
 export const DefaultAccountImportAcceptedFileLabel = ".xlsx, .csv, .tsv, .txt";
 
-export const DefaultAccountImportDefaultColumnIndexes: Record<
-  DefaultAccountImportColumnId,
-  number
-> = {
+export const DefaultAccountImportDefaultColumnIndexes: Record<DefaultAccountImportColumnId, number> = {
   defaultAccountName: 0,
   description: 1,
   type: 2,
 };
 
-export const DefaultAccountImportFieldOrder: DefaultAccountImportColumnId[] = [
-  "defaultAccountName",
-  "description",
-  "type",
-];
+export const DefaultAccountImportFieldOrder: DefaultAccountImportColumnId[] = ["defaultAccountName", "description", "type"];
 
 export const DefaultAccountImportSelectionColumnWidth = ModuleImportFixedColumnsWidth;
 
@@ -139,8 +123,7 @@ export const DefaultAccountImportColumnHeaders: DefaultAccountImportColumnHeader
 ];
 
 export const DefaultAccountImportPreviewColumnCount = DefaultAccountImportFieldOrder.length + 1;
-export const DefaultAccountImportPreviewGridLabel =
-  "Default account import preview grid. Paste copied Excel rows here.";
+export const DefaultAccountImportPreviewGridLabel = "Default account import preview grid. Paste copied Excel rows here.";
 export const DefaultAccountImportPreviewPageSize = 20;
 export const DefaultAccountImportBatchSize = 25;
 export const DefaultAccountImportMinFileSizeBytes = 1;

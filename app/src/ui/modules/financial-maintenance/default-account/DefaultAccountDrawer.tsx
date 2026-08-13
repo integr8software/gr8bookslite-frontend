@@ -10,9 +10,7 @@ import {
 } from "@/app/src/constants/modules/financial-maintenance/default-account/DefaultAccountConstants";
 import { EmptyBankDetails } from "@/app/src/data/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsDefaults";
 import { useDefaultAccountFormPage } from "@/app/src/hooks/modules/financial-maintenance/default-account/useDefaultAccountFormPage";
-import {
-  FetchNextChartAccountCode,
-} from "@/app/src/services/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsApi";
+import { FetchNextChartAccountCode } from "@/app/src/services/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsApi";
 import { createDefaultAccountExpenseSubAccount } from "@/app/src/services/modules/financial-maintenance/default-account/DefaultAccountApi";
 import type {
   AccountLevel,
@@ -25,24 +23,12 @@ import type {
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { QuickAddDialog } from "@/app/src/ui/shared/module/QuickAddDialog";
-import {
-  AppAdvancedDropdown,
-  type AppAdvancedDropdownOption,
-} from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { AppAdvancedDropdown, type AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
-import {
-  MaintenanceActiveStatusSwitchOption,
-  MaintenanceInactiveStatusSwitchOption,
-} from "@/app/src/utils/status.util";
+import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/utils/status.util";
 import { getAccountLevelLabel } from "@/app/src/utils/accounts.util";
 
-export function DefaultAccountDrawer({
-  defaultAccount,
-  isOpen,
-  mode,
-  permissions,
-  onClose,
-}: DefaultAccountDrawerProps) {
+export function DefaultAccountDrawer({ defaultAccount, isOpen, mode, permissions, onClose }: DefaultAccountDrawerProps) {
   return (
     <DefaultAccountDrawerPanel
       key={`${mode}-${defaultAccount?.id ?? "new"}`}
@@ -55,39 +41,26 @@ export function DefaultAccountDrawer({
   );
 }
 
-function DefaultAccountDrawerPanel({
-  defaultAccount,
-  isOpen,
-  mode,
-  permissions,
-  onClose,
-}: DefaultAccountDrawerProps) {
+function DefaultAccountDrawerPanel({ defaultAccount, isOpen, mode, permissions, onClose }: DefaultAccountDrawerProps) {
   const page = useDefaultAccountFormPage({
     existingDefaultAccount: defaultAccount,
     mode,
     onSaved: onClose,
   });
-  const [expenseSubAccountDialog, setExpenseSubAccountDialog] =
-    useState<ExpenseSubAccountDialogState>(null);
+  const [expenseSubAccountDialog, setExpenseSubAccountDialog] = useState<ExpenseSubAccountDialogState>(null);
   const copy = DefaultAccountActionCopy[mode];
-  const expenseParentOptions: AppAdvancedDropdownOption[] = page.expenseParentOptions.map(
-    (account) => ({
-      value: account.id,
-      name: account.accountTitle,
-      label: account.accountCode,
-      description: getAccountLevelLabel(account.accountLevel),
-    }),
-  );
-  const selectedExpenseParentId =
-    page.values.expenseParentCoaId || page.expenseParentOptions[0]?.id || "";
+  const expenseParentOptions: AppAdvancedDropdownOption[] = page.expenseParentOptions.map((account) => ({
+    value: account.id,
+    name: account.accountTitle,
+    label: account.accountCode,
+    description: getAccountLevelLabel(account.accountLevel),
+  }));
+  const selectedExpenseParentId = page.values.expenseParentCoaId || page.expenseParentOptions[0]?.id || "";
   const selectedExpenseParentAccount = useMemo(
-    () =>
-      page.expenseParentOptions.find((account) => account.id === selectedExpenseParentId) ?? null,
+    () => page.expenseParentOptions.find((account) => account.id === selectedExpenseParentId) ?? null,
     [page.expenseParentOptions, selectedExpenseParentId],
   );
-  const nextExpenseSubAccountLevel = getExpenseSubAccountLevel(
-    selectedExpenseParentAccount?.accountLevel,
-  );
+  const nextExpenseSubAccountLevel = getExpenseSubAccountLevel(selectedExpenseParentAccount?.accountLevel);
   const canAddExpenseTypeSubAccount =
     !page.isReadonly &&
     permissions.canCreate &&
@@ -109,11 +82,7 @@ function DefaultAccountDrawerPanel({
         submitLabel={mode === "edit" ? "Update Default Account" : "Save Default Account"}
         title={copy.title}
       >
-        <form
-          id={DefaultAccountDrawerFormId}
-          onSubmit={page.handleSubmit}
-          className="grid gap-5 px-6 py-5"
-        >
+        <form id={DefaultAccountDrawerFormId} onSubmit={page.handleSubmit} className="grid gap-5 px-6 py-5">
           <label className="grid gap-2">
             <span className="text-sm font-semibold text-darknavy">
               Default Account Name <span className="text-coralpink">*</span>
@@ -127,9 +96,7 @@ function DefaultAccountDrawerPanel({
               className="h-11 rounded-md border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-4 focus:ring-skyblue/15 disabled:cursor-not-allowed disabled:bg-darknavy/5"
             />
             {page.errors.defaultAccountName ? (
-              <span className="text-xs font-semibold text-coralpink">
-                {page.errors.defaultAccountName}
-              </span>
+              <span className="text-xs font-semibold text-coralpink">{page.errors.defaultAccountName}</span>
             ) : null}
           </label>
           <label className="grid gap-2">
@@ -164,13 +131,13 @@ function DefaultAccountDrawerPanel({
           </label>
           {page.values.type === "EXPENSE" ? (
             <label className="grid gap-2">
-              <span className="text-sm font-semibold text-darknavy">Expense Type</span>
+              <span className="text-sm font-semibold text-darknavy">Service Type</span>
               <AppAdvancedDropdown
                 value={page.values.expenseParentCoaId}
                 disabled={page.isReadonly || page.isLoadingExpenseParentOptions}
                 addAction={{
                   disabled: !canAddExpenseTypeSubAccount,
-                  label: nextExpenseSubAccountLevel ? "Add Sub Account" : "Add Expense Type",
+                  label: nextExpenseSubAccountLevel ? "Add Sub Account" : "Add Service Type",
                   onClick: () => {
                     if (selectedExpenseParentAccount && nextExpenseSubAccountLevel) {
                       setExpenseSubAccountDialog({
@@ -181,12 +148,8 @@ function DefaultAccountDrawerPanel({
                   },
                 }}
                 options={expenseParentOptions}
-                placeholder={
-                  page.isLoadingExpenseParentOptions
-                    ? "Loading expense accounts..."
-                    : "--Select Expense Type--"
-                }
-                searchPlaceholder="Search expense types"
+                placeholder={page.isLoadingExpenseParentOptions ? "Loading service accounts..." : "--Select Service Type--"}
+                searchPlaceholder="Search service types"
                 onChange={page.handleExpenseParentChange}
               />
             </label>
@@ -210,9 +173,7 @@ function DefaultAccountDrawerPanel({
                     key={`${account.role}-${account.chartAccountId}`}
                     className="rounded-md border border-darknavy/10 bg-darknavy/[0.02] p-3"
                   >
-                    <p className="text-xs font-semibold uppercase tracking-wide text-darknavy/45">
-                      {account.role.replaceAll("_", " ")}
-                    </p>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-darknavy/45">{account.role.replaceAll("_", " ")}</p>
                     <p className="mt-1 text-sm font-semibold text-darknavy">
                       {account.accountCode} - {account.accountTitle}
                     </p>
@@ -306,12 +267,12 @@ function ExpenseSubAccountDialog({
     const trimmedName = accountName.trim();
 
     if (!trimmedName) {
-      setError("Expense Type Name is required.");
+      setError("Service Type Name is required.");
       return;
     }
 
     if (!parentAccount || !accountLevel) {
-      setError("Select an expense parent before adding a sub account.");
+      setError("Select a service parent before adding a sub account.");
       return;
     }
 
@@ -329,9 +290,9 @@ function ExpenseSubAccountDialog({
       );
 
       await onSaved(savedAccount.id);
-      toast.success("Expense type saved.");
+      toast.success("Service type saved.");
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Could not save the expense sub account."));
+      setError(getErrorMessage(caughtError, "Could not save the service sub account."));
     } finally {
       setIsSaving(false);
     }
@@ -347,13 +308,13 @@ function ExpenseSubAccountDialog({
       isOpen={isOpen}
       isPending={isPending}
       saveDisabled={!accountCode}
-      title="Add Expense Type"
+      title="Add Service Type"
       onClose={onClose}
       onSave={handleSave}
     >
       <label className="grid gap-2">
         <span className="text-sm font-semibold text-darknavy">
-          Expense Type Name <span className="text-coralpink">*</span>
+          Service Type Name <span className="text-coralpink">*</span>
         </span>
         <input
           value={accountName}

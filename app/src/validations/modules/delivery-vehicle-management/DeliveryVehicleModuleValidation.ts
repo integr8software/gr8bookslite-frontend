@@ -5,6 +5,9 @@ export function validateDeliveryVehicleModuleRecord(
   fields: readonly DeliveryVehicleField[],
   values: Record<string, string>,
 ) {
+  const normalizedValues = Object.fromEntries(
+    fields.map((field) => [field.key, values[field.key] ?? ""]),
+  );
   const shape = Object.fromEntries(
     fields.map((field) => [
       field.key,
@@ -13,7 +16,7 @@ export function validateDeliveryVehicleModuleRecord(
         : z.string(),
     ]),
   ) as Record<string, z.ZodType<string>>;
-  const result = z.object(shape).safeParse(values);
+  const result = z.object(shape).safeParse(normalizedValues);
 
   if (result.success) {
     return {};

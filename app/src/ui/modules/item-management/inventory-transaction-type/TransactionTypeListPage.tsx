@@ -15,7 +15,6 @@ import {
 	type ModuleStatisticCardItem,
 } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import { TransactionTypeFilters } from "@/app/src/ui/modules/item-management/inventory-transaction-type/TransactionTypeFilters";
 import { TransactionTypeHeaderActions } from "@/app/src/ui/modules/item-management/inventory-transaction-type/TransactionTypeHeaderActions";
 import { TransactionTypeTable } from "@/app/src/ui/modules/item-management/inventory-transaction-type/TransactionTypeTable";
 import { TransactionTypeDrawer } from "@/app/src/ui/modules/item-management/inventory-transaction-type/TransactionTypeDrawer";
@@ -89,21 +88,23 @@ export function TransactionTypeListPage() {
 			/>
 
 			<TransactionTypeTable
+				filteredTransactionTypes={page.filteredTransactionTypes}
+				hasActiveFilters={page.hasActiveFilters}
 				isLoading={page.isLoading}
+				isRefreshing={page.isRefreshing}
+				isSyncing={page.isRefreshing || page.isMutating}
 				lastSyncedAt={page.lastSyncedAt}
-				transactionTypes={page.filteredTransactionTypes}
-				toolbar={
-					<TransactionTypeFilters
-						moduleFilter={page.moduleFilter}
-						moduleFilterOptions={page.moduleFilterOptions}
-						searchTerm={page.searchTerm}
-						statusFilter={page.statusFilter}
-						onModuleFilterChange={page.setModuleFilter}
-						onSearchTermChange={page.setSearchTerm}
-						onStatusFilterChange={page.setStatusFilter}
-					/>
-				}
+				moduleFilter={page.moduleFilter}
+				moduleFilterOptions={page.moduleFilterOptions}
+				searchTerm={page.searchTerm}
+				statusFilter={page.statusFilter}
+				table={page.table}
+				transactionTypes={page.transactionTypes}
 				onEdit={(transactionType) => setDrawerState({ mode: "edit", transactionType })}
+				onModuleFilterChange={page.setModuleFilter}
+				onRefresh={page.refreshTransactionTypes}
+				onSearchTermChange={page.setSearchTerm}
+				onStatusFilterChange={page.setStatusFilter}
 				onToggleStatus={page.setPendingStatusTransactionType}
 				onView={(transactionType) => setDrawerState({ mode: "view", transactionType })}
 			/>

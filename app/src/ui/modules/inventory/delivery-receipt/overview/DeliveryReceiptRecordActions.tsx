@@ -1,5 +1,8 @@
 import { Ban, CheckCircle2, Edit3, Eye, ThumbsDown, Undo2 } from "lucide-react";
-import { DeliveryReceiptHref } from "@/app/src/constants/modules/inventory/delivery-receipt/DeliveryReceiptConstants";
+import {
+	DeliveryReceiptHref,
+	DeliveryReceiptStatuses,
+} from "@/app/src/constants/modules/inventory/delivery-receipt/DeliveryReceiptConstants";
 import type {
 	DeliveryReceiptRecord,
 	DeliveryReceiptStatus,
@@ -24,19 +27,21 @@ export function DeliveryReceiptRecordActions({
 	) => void;
 	record: DeliveryReceiptRecord;
 }) {
-	const isApproved = record.status === "Approved";
-	const isDisapproved = record.status === "Disapproved";
-	const isCancelled = record.status === "Cancelled";
+	const isPosted = record.status === DeliveryReceiptStatuses.posted;
+	const isDisapproved = record.status === DeliveryReceiptStatuses.disapproved;
+	const isCancelled = record.status === DeliveryReceiptStatuses.cancelled;
 	const canEdit = canEditDeliveryReceiptStatus(record.status);
-	const undoStatus: DeliveryReceiptStatus = "Active";
-	const cancelStatus: DeliveryReceiptStatus = isCancelled ? "Draft" : "Cancelled";
+	const undoStatus: DeliveryReceiptStatus = DeliveryReceiptStatuses.draft;
+	const cancelStatus: DeliveryReceiptStatus = isCancelled
+		? DeliveryReceiptStatuses.draft
+		: DeliveryReceiptStatuses.cancelled;
 	const overflowItems: ModuleActionMenuItem[] = [
 		{
-			disabled: !canApproveDeliveryReceiptStatus(record.status),
-			icon: isApproved ? Undo2 : CheckCircle2,
-			label: isApproved ? "Undo Approved" : "Approve",
+			disabled: !canPostDeliveryReceiptStatus(record.status),
+			icon: isPosted ? Undo2 : CheckCircle2,
+			label: isPosted ? "Undo Posted" : "Post",
 			onSelect: () =>
-				onUpdateStatus(record, isApproved ? undoStatus : "Approved"),
+				onUpdateStatus(record, isPosted ? undoStatus : DeliveryReceiptStatuses.posted),
 			type: "button",
 		},
 		{
@@ -44,7 +49,10 @@ export function DeliveryReceiptRecordActions({
 			icon: isDisapproved ? Undo2 : ThumbsDown,
 			label: isDisapproved ? "Undo Disapproved" : "Disapprove",
 			onSelect: () =>
-				onUpdateStatus(record, isDisapproved ? undoStatus : "Disapproved"),
+				onUpdateStatus(
+					record,
+					isDisapproved ? undoStatus : DeliveryReceiptStatuses.disapproved,
+				),
 			tone: isDisapproved ? "default" : "danger",
 			type: "button",
 		},
@@ -94,27 +102,28 @@ export function DeliveryReceiptRecordActions({
 }
 
 function canEditDeliveryReceiptStatus(status: DeliveryReceiptStatus) {
-	return status === "Active" || status === "Draft" || status === "Pending";
+	return (
+		status === DeliveryReceiptStatuses.draft ||
+		status === DeliveryReceiptStatuses.forApproval
+	);
 }
 
-function canApproveDeliveryReceiptStatus(status: DeliveryReceiptStatus) {
+function canPostDeliveryReceiptStatus(status: DeliveryReceiptStatus) {
 	return (
-		status === "Active" ||
-		status === "Draft" ||
-		status === "Pending" ||
-		status === "Approved"
+		status === DeliveryReceiptStatuses.draft ||
+		status === DeliveryReceiptStatuses.forApproval ||
+		status === DeliveryReceiptStatuses.posted
 	);
 }
 
 function canDisapproveDeliveryReceiptStatus(status: DeliveryReceiptStatus) {
 	return (
-		status === "Active" ||
-		status === "Draft" ||
-		status === "Pending" ||
-		status === "Disapproved"
+		status === DeliveryReceiptStatuses.draft ||
+		status === DeliveryReceiptStatuses.forApproval ||
+		status === DeliveryReceiptStatuses.disapproved
 	);
 }
 
 function canCancelDeliveryReceiptStatus(status: DeliveryReceiptStatus) {
-	return status !== "Closed";
+	return status !== DeliveryReceiptStatuses.posted;
 }

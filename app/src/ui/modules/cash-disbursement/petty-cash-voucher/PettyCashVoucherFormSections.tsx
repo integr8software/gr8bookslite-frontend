@@ -51,21 +51,11 @@ export function PettyCashVoucherDetailsFields({
 					placeholder="Enter account code"
 				/>
 				<Field label="Status" error={page.errors.status}>
-					<select
+					<input
 						value={page.values.status}
-						disabled={page.isReadonly}
-						onChange={(event) =>
-							page.updateField(
-								"status",
-								event.target.value as PettyCashVoucherFormValues["status"],
-							)
-						}
+						readOnly
 						className={`${inputClassName} app-select-control`}
-					>
-						<option>Pending</option>
-						<option>Approved</option>
-						<option>Cancelled</option>
-					</select>
+					/>
 				</Field>
 				<TextField
 					page={page}

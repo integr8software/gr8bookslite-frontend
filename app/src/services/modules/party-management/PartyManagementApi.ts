@@ -1,18 +1,25 @@
-import { PartyManagementApiPath } from "@/app/src/constants/modules/party-management/PartyManagementConstants";
 import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
-import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import {
+  partyMaintenanceControllerCreateV1,
+  partyMaintenanceControllerFindAccountingOptionsV1,
+  partyMaintenanceControllerFindAllV1,
+  partyMaintenanceControllerFindOptionsV1,
+  partyMaintenanceControllerImportPartiesV1,
+  partyMaintenanceControllerUpdateV1,
+} from "@/app/src/generated/api/party-maintenance/party-maintenance";
 import type {
-  ApiParty,
-  ApiPartyAddress,
-  ApiPartyAccountingOptionsResponse,
-  ApiPartyClassification,
-  ApiPartyImportResponse,
-  ApiPartyListResponse,
-  ApiPartyOptionsResponse,
-  ApiPartyPayload,
-  ApiPartySaveResponse,
-  ApiPartyStatus,
-  ApiPartyType,
+  CreatePartyAddressDto,
+  CreatePartyDto,
+  CreatePartyDtoClassification,
+  CreatePartyDtoPartyTypes,
+  CreatePartyDtoStatus,
+  PartyAddressResponseDto,
+  PartyResponseDto,
+  PartyResponseDtoClassification,
+  PartyResponseDtoPartyTypes,
+  PartyResponseDtoStatus,
+} from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
+import type {
   PartyAddress,
   PartyClassification,
   PartyInformationRecord,
@@ -50,20 +57,21 @@ export async function fetchPartyManagementRecords(): Promise<{
   statistics: PartyManagementStatistics;
   totalRows: number;
 }> {
-  const response = await ApiClient.get<ApiPartyListResponse>(PartyManagementApiPath, {
-    params: {
-      page: 1,
-      pageSize: 500,
-      sortBy: "name",
-      sortDirection: "asc",
-    },
+  const response = await partyMaintenanceControllerFindAllV1({
+    page: 1,
+    pageSize: 500,
+    sortBy: "name",
+    sortDirection: "asc",
   });
 
   return {
-    permissions: response.data.permissions ?? EmptyPartyPermissions,
-    records: response.data.parties.map(mapApiParty),
-    statistics: response.data.statistics ?? EmptyPartyStatistics,
-    totalRows: response.data.totalRows,
+    permissions: {
+      ...EmptyPartyPermissions,
+      ...response.permissions,
+    },
+    records: response.parties.map(mapApiParty),
+    statistics: response.statistics ?? EmptyPartyStatistics,
+    totalRows: response.totalRows,
   };
 }
 
@@ -71,54 +79,39 @@ export async function createPartyManagementRecord(
   record: PartyInformationRecord,
   options: { branchUnitId?: number | null } = {},
 ): Promise<PartyInformationRecord> {
-  const response = await ApiClient.post<ApiPartySaveResponse>(
-    PartyManagementApiPath,
-    toApiPartyPayload(record, options),
-  );
+  const response = await partyMaintenanceControllerCreateV1(toApiPartyPayload(record, options));
 
-  return mapApiParty(response.data.party);
+  return mapApiParty(response.party);
 }
 
 export async function updatePartyManagementRecord(
   record: PartyInformationRecord,
 ): Promise<PartyInformationRecord> {
-  const response = await ApiClient.patch<ApiPartySaveResponse>(
-    `${PartyManagementApiPath}/${record.id}`,
-    toApiPartyPayload(record),
-  );
+  const response = await partyMaintenanceControllerUpdateV1(record.id, toApiPartyPayload(record));
 
-  return mapApiParty(response.data.party);
+  return mapApiParty(response.party);
 }
 
 export async function importPartyManagementRecords(
   records: PartyInformationRecord[],
   options: { branchUnitId?: number | null } = {},
 ): Promise<PartyInformationRecord[]> {
-  const response = await ApiClient.post<ApiPartyImportResponse>(
-    `${PartyManagementApiPath}/import`,
-    {
-      branchUnitId: options.branchUnitId ?? undefined,
-      parties: records.map((record) => toApiPartyPayload(record, options)),
-    },
-  );
+  const response = await partyMaintenanceControllerImportPartiesV1({
+    branchUnitId: options.branchUnitId ?? undefined,
+    parties: records.map((record) => toApiPartyPayload(record, options)),
+  });
 
-  return response.data.parties.map(mapApiParty);
+  return response.parties.map(mapApiParty);
 }
 
 export async function fetchPartyManagementAccountingOptions() {
-  const response = await ApiClient.get<ApiPartyAccountingOptionsResponse>(
-    `${PartyManagementApiPath}/accounting-options`,
-  );
-
-  return response.data;
+  return partyMaintenanceControllerFindAccountingOptionsV1();
 }
 
 export async function fetchPartyOptions(partyType: PartyType): Promise<ItemSupplierRecord[]> {
-  const response = await ApiClient.get<ApiPartyOptionsResponse>(
-    `${PartyManagementApiPath}/options/${mapPartyTypeToApi(partyType)}`,
-  );
+  const response = await partyMaintenanceControllerFindOptionsV1(mapPartyTypeToApi(partyType));
 
-  return response.data.parties.map((party) => ({
+  return response.parties.map((party) => ({
     id: party.id,
     code: party.partyCodeNo,
     name: party.name,
@@ -175,7 +168,7 @@ export async function GetPartyManagementRecordsPage({
   };
 }
 
-function mapApiParty(party: ApiParty): PartyInformationRecord {
+function mapApiParty(party: PartyResponseDto): PartyInformationRecord {
   const addresses = (
     party.addresses.length > 0 ? party.addresses : party.address ? [party.address] : []
   ).map(mapApiPartyAddress);
@@ -226,11 +219,11 @@ function mapApiParty(party: ApiParty): PartyInformationRecord {
     createdBy: party.createdBy ?? "",
     createdAt: party.createdAt,
     updatedBy: party.updatedBy ?? "",
-    updatedAt: party.updatedAt,
+    updatedAt: party.updatedAt ?? "",
   };
 }
 
-function mapApiPartyAddress(address: ApiPartyAddress): PartyAddress {
+function mapApiPartyAddress(address: PartyAddressResponseDto): PartyAddress {
   return {
     id: address.id ?? crypto.randomUUID(),
     addressName: address.addressName,
@@ -256,7 +249,7 @@ function mapApiPartyAddress(address: ApiPartyAddress): PartyAddress {
 function toApiPartyPayload(
   record: PartyInformationRecord,
   options: { branchUnitId?: number | null } = {},
-): ApiPartyPayload {
+): CreatePartyDto {
   return {
     branchUnitId: options.branchUnitId ?? undefined,
     partyCodeNo: record.partyCodeNo.trim(),
@@ -344,7 +337,7 @@ function toApiPartyPayload(
   };
 }
 
-function toApiPartyAddressPayload(address: PartyAddress): ApiPartyAddress {
+function toApiPartyAddressPayload(address: PartyAddress): CreatePartyAddressDto {
   return {
     addressName: address.addressName.trim() || "Address",
     addressLine1: address.addressLine1.trim(),
@@ -465,11 +458,11 @@ function getPartyAddressByRole(
   });
 }
 
-function mapClassificationFromApi(value: ApiPartyClassification): PartyClassification {
+function mapClassificationFromApi(value: PartyResponseDtoClassification): PartyClassification {
   return value === "INDIVIDUAL" ? "Individual" : "Non-Individual";
 }
 
-function mapClassificationToApi(value: PartyClassification): ApiPartyClassification {
+function mapClassificationToApi(value: PartyClassification): CreatePartyDtoClassification {
   return value === "Individual" ? "INDIVIDUAL" : "NON_INDIVIDUAL";
 }
 
@@ -481,25 +474,25 @@ function mapPartyEntityTypeToApi(value: string): string | null {
   return normalizeOptionalText(value);
 }
 
-function mapPartyTypeFromApi(value: ApiPartyType): PartyType {
+function mapPartyTypeFromApi(value: PartyResponseDtoPartyTypes): PartyType {
   if (value === "CUSTOMER") return "Customer";
   if (value === "EMPLOYEE") return "Employee";
   if (value === "MEMBER") return "Member";
   return "Vendor";
 }
 
-function mapPartyTypeToApi(value: PartyType): ApiPartyType {
+function mapPartyTypeToApi(value: PartyType): CreatePartyDtoPartyTypes {
   if (value === "Customer") return "CUSTOMER";
   if (value === "Employee") return "EMPLOYEE";
   if (value === "Member") return "MEMBER";
   return "VENDOR";
 }
 
-function mapStatusFromApi(value: ApiPartyStatus): PartyInformationStatus {
+function mapStatusFromApi(value: PartyResponseDtoStatus): PartyInformationStatus {
   return value === "ACTIVE" ? "Active" : "Inactive";
 }
 
-function mapStatusToApi(value: PartyInformationStatus): ApiPartyStatus {
+function mapStatusToApi(value: PartyInformationStatus): CreatePartyDtoStatus {
   return value === "Active" ? "ACTIVE" : "INACTIVE";
 }
 

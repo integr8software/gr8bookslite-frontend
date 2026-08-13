@@ -2,15 +2,187 @@ import {
   createDeliveryVehicleMockRecord as mock,
   createDeliveryVehicleModuleRecord,
 } from "@/app/src/data/modules/delivery-vehicle-management/DeliveryVehicleModuleData";
+import {
+  DeliveryVehicleDefaultStatus,
+  DeliveryVehicleStatuses,
+} from "@/app/src/constants/modules/delivery-vehicle-management/delivery-vehicles/DeliveryVehiclesConstants";
 import type { DeliveryVehicleRecord } from "@/app/src/types/modules/delivery-vehicle-management/delivery-vehicles/DeliveryVehiclesTypes";
 
 export const DeliveryVehiclesMockData: DeliveryVehicleRecord[] = [
-  mock("dve-1", "FLEET-014", "Isuzu N-Series", "Active", { plateNumber: "NCR 8214", vehicleType: "Light Truck", makeModel: "Isuzu N-Series 2024", baseWarehouse: "Pasig Distribution Hub", registrationExpiry: "2027-03-14", insuranceExpiry: "2027-01-30", odometer: "48,220 km", ownership: "Company owned" }, { progress: 71 }),
-  mock("dve-2", "FLEET-021", "Toyota HiAce", "Active", { plateNumber: "NCR 5931", vehicleType: "Delivery Van", makeModel: "Toyota HiAce 2023", baseWarehouse: "Makati Fulfillment Center", registrationExpiry: "2026-08-09", insuranceExpiry: "2026-08-02", odometer: "65,410 km", ownership: "Leased" }, { progress: 64, alert: "Insurance expires in 8 days." }),
-  mock("dve-3", "FLEET-044", "Mitsubishi L300", "Inactive", { plateNumber: "NCR 1187", vehicleType: "Delivery Van", makeModel: "Mitsubishi L300 2020", baseWarehouse: "Cebu Central Warehouse", registrationExpiry: "2026-05-19", insuranceExpiry: "2026-06-02", odometer: "132,608 km", ownership: "Company owned" }, { alert: "Registration and insurance expired." }),
+  mock(
+    "dve-1",
+    "FLEET-014",
+    "Isuzu N-Series",
+    DeliveryVehicleStatuses.active,
+    {
+      plateNumber: "NCR 8214",
+      vehicleType: "Light Truck",
+      baseWarehouse: "Pasig Distribution Hub",
+      deliveryStatus: "For Dispatch",
+      registrationExpiry: "2027-03-14",
+      insuranceExpiry: "2027-01-30",
+      ownership: "Company Owned",
+      description: "Primary Metro Manila route vehicle assigned to palletized deliveries.",
+    },
+    {
+      createdAt: "2026-07-01T09:10:00+08:00",
+      progress: 78,
+      updatedAt: "2026-07-25T08:30:00+08:00",
+    },
+  ),
+  mock(
+    "dve-2",
+    "FLEET-021",
+    "Toyota HiAce",
+    DeliveryVehicleStatuses.active,
+    {
+      plateNumber: "NCR 5931",
+      vehicleType: "Delivery Van",
+      baseWarehouse: "Makati Fulfillment Center",
+      deliveryStatus: "In Transit",
+      registrationExpiry: "2026-08-09",
+      insuranceExpiry: "2026-08-02",
+      ownership: "Leased",
+      description: "Leased van used for Makati fulfillment and branch replenishment.",
+    },
+    {
+      alert: "Insurance expires in 8 days.",
+      createdAt: "2026-07-03T10:40:00+08:00",
+      progress: 64,
+      updatedAt: "2026-07-25T09:05:00+08:00",
+    },
+  ),
+  mock(
+    "dve-3",
+    "FLEET-032",
+    "Hino 500",
+    DeliveryVehicleStatuses.active,
+    {
+      plateNumber: "NCR 7742",
+      vehicleType: "Heavy Truck",
+      baseWarehouse: "Pasig Distribution Hub",
+      deliveryStatus: "Scheduled",
+      registrationExpiry: "2027-01-18",
+      insuranceExpiry: "2026-12-22",
+      ownership: "Company Owned",
+      description: "Heavy truck reserved for scheduled provincial replenishment routes.",
+    },
+    {
+      createdAt: "2026-06-20T15:20:00+08:00",
+      progress: 42,
+      updatedAt: "2026-07-24T14:10:00+08:00",
+    },
+  ),
+  mock(
+    "dve-4",
+    "FLEET-044",
+    "Mitsubishi L300",
+    DeliveryVehicleStatuses.inactive,
+    {
+      plateNumber: "NCR 1187",
+      vehicleType: "Delivery Van",
+      baseWarehouse: "Cebu Central Warehouse",
+      deliveryStatus: "On Hold",
+      registrationExpiry: "2026-05-19",
+      insuranceExpiry: "2026-06-02",
+      ownership: "Company Owned",
+      description: "On hold while compliance renewal and inspection are completed.",
+    },
+    {
+      alert: "Registration and insurance expired.",
+      createdAt: "2026-05-02T11:15:00+08:00",
+      progress: 18,
+      updatedAt: "2026-07-21T16:20:00+08:00",
+    },
+  ),
+  mock(
+    "dve-5",
+    "FLEET-057",
+    "Yamaha Mio Gear",
+    DeliveryVehicleStatuses.active,
+    {
+      plateNumber: "NCR 2905",
+      vehicleType: "Motorcycle",
+      baseWarehouse: "Makati Fulfillment Center",
+      deliveryStatus: "Pending",
+      registrationExpiry: "2027-05-28",
+      insuranceExpiry: "2027-05-12",
+      ownership: "Company Owned",
+      description: "Motorcycle unit for same-day small parcel dispatch coverage.",
+    },
+    {
+      createdAt: "2026-07-10T08:50:00+08:00",
+      progress: 20,
+      updatedAt: "2026-07-25T07:45:00+08:00",
+    },
+  ),
+  mock(
+    "dve-6",
+    "FLEET-063",
+    "Hyundai H-100",
+    DeliveryVehicleStatuses.active,
+    {
+      plateNumber: "NCR 4409",
+      vehicleType: "Light Truck",
+      baseWarehouse: "Cebu Central Warehouse",
+      deliveryStatus: "Delivered",
+      registrationExpiry: "2026-11-04",
+      insuranceExpiry: "2026-10-18",
+      ownership: "Third Party",
+      description: "Third-party vehicle used for completed Cebu delivery routes.",
+    },
+    {
+      createdAt: "2026-06-12T13:25:00+08:00",
+      progress: 100,
+      updatedAt: "2026-07-24T18:30:00+08:00",
+    },
+  ),
+  mock(
+    "dve-7",
+    "FLEET-071",
+    "Foton Tornado",
+    DeliveryVehicleStatuses.active,
+    {
+      plateNumber: "NCR 6081",
+      vehicleType: "Refrigerated Van",
+      baseWarehouse: "Pasig Distribution Hub",
+      deliveryStatus: "Returned",
+      registrationExpiry: "2027-04-07",
+      insuranceExpiry: "2027-03-26",
+      ownership: "Leased",
+      description: "Returned cold-chain vehicle pending inspection before next assignment.",
+    },
+    {
+      alert: "Returned load requires cold-chain inspection.",
+      createdAt: "2026-07-08T12:05:00+08:00",
+      progress: 88,
+      updatedAt: "2026-07-25T10:05:00+08:00",
+    },
+  ),
+  mock(
+    "dve-8",
+    "FLEET-082",
+    "Suzuki Carry",
+    DeliveryVehicleStatuses.inactive,
+    {
+      plateNumber: "NCR 7310",
+      vehicleType: "Light Truck",
+      baseWarehouse: "Makati Fulfillment Center",
+      deliveryStatus: "Cancelled",
+      registrationExpiry: "2026-02-11",
+      insuranceExpiry: "2026-02-01",
+      ownership: "Company Owned",
+      description: "Inactive vehicle pending disposal review and final clearance.",
+    },
+    {
+      alert: "Vehicle is inactive pending disposal review.",
+      createdAt: "2026-03-09T09:30:00+08:00",
+      progress: 0,
+      updatedAt: "2026-07-19T15:15:00+08:00",
+    },
+  ),
 ];
 
 export function createDeliveryVehicleRecord(values: Record<string, string>, status: string) {
-  return createDeliveryVehicleModuleRecord("delivery-vehicles", "FLEET", values, status);
+  return createDeliveryVehicleModuleRecord("delivery-vehicles", "FLEET", values, status || DeliveryVehicleDefaultStatus);
 }
-

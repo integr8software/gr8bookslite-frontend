@@ -16,8 +16,10 @@ import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import type {
   PurchaseRequestFormErrors,
   PurchaseRequestFormValues,
+  PurchaseRequestAccountingEntry,
   PurchaseRequestItem,
   PurchaseRequestFormMode,
+  PurchaseRequestRecord,
 } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
 import type { AiAssistantPurchaseRequestPrefill } from "@/app/src/types/shared/ai-assistant/AiAssistantTypes";
 import { validatePurchaseRequestForm } from "@/app/src/validations/modules/purchasing/purchase-request/PurchaseRequestValidation";
@@ -37,7 +39,7 @@ export function usePurchaseRequestFormPage() {
   const activeBranchName = useAppStore((state) => state.activeBranchName);
   const mode = getPurchaseRequestFormMode(pathname);
   const isReadonly = mode === "view";
-  const existingRequest = requests.find((request) => request.id === params.recordId);
+  const existingRequest = findPurchaseRequestByRouteId(requests, params.recordId);
   const assistantPrefill =
     mode === "add" && searchParams.get("assistant") === "1"
       ? loadAssistantPurchaseRequestPrefill()
@@ -115,6 +117,14 @@ export function usePurchaseRequestFormPage() {
 
     setValues((current) => ({ ...current, items }));
     setErrors((current) => ({ ...current, items: undefined }));
+  }
+
+  function updateAccountingEntries(accountingEntries: PurchaseRequestAccountingEntry[]) {
+    if (isReadonly) {
+      return;
+    }
+
+    setValues((current) => ({ ...current, accountingEntries }));
   }
 
   function addItem() {
@@ -254,6 +264,7 @@ export function usePurchaseRequestFormPage() {
     setShowPreview,
     showPreview,
     updateField,
+    updateAccountingEntries,
     updateItem,
     updateItems,
     values,
@@ -270,6 +281,28 @@ function getPurchaseRequestFormMode(pathname: string): PurchaseRequestFormMode {
   }
 
   return "add";
+}
+
+function findPurchaseRequestByRouteId(
+  requests: PurchaseRequestRecord[],
+  routeId?: string,
+) {
+  if (!routeId) {
+    return undefined;
+  }
+
+  const normalizedRouteId = routeId.trim().toLowerCase();
+
+  return requests.find((request) => {
+    const normalizedId = request.id.trim().toLowerCase();
+    const normalizedTransNo = request.transNo.trim().toLowerCase();
+
+    return (
+      normalizedId === normalizedRouteId ||
+      normalizedTransNo === normalizedRouteId ||
+      `pr-${normalizedTransNo}` === normalizedRouteId
+    );
+  });
 }
 
 function loadAssistantPurchaseRequestPrefill() {

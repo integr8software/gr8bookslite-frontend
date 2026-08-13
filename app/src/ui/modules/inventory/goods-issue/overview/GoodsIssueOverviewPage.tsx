@@ -18,7 +18,6 @@ import {
 	formatGoodsIssueCurrency,
 	formatGoodsIssueDate,
 	formatGoodsIssuePercentage,
-	isGoodsIssueActiveStatus,
 } from "@/app/src/data/modules/inventory/goods-issue/GoodsIssueData";
 import {
 	GoodsIssueHref,
@@ -188,13 +187,11 @@ const GoodsIssueOverflowItems = [
 ] satisfies ModuleActionMenuItem[];
 
 function GoodsIssueMetrics({ records }: { records: GoodsIssueRecord[] }) {
-	const activeCount = records.filter((record) =>
-		isGoodsIssueActiveStatus(record.status),
-	).length;
-	const approvedCount = countGoodsIssuesByStatus(records, "Approved");
+	const draftCount = countGoodsIssuesByStatus(records, "Draft");
+	const postedCount = countGoodsIssuesByStatus(records, "Posted");
 	const disapprovedCount = countGoodsIssuesByStatus(records, "Disapproved");
-	const pendingCount = countGoodsIssuesByStatus(records, "Pending");
-	const closedCount = countGoodsIssuesByStatus(records, "Closed");
+	const forApprovalCount = countGoodsIssuesByStatus(records, "For Approval");
+	const cancelledCount = countGoodsIssuesByStatus(records, "Cancelled");
 
 	return (
 		<ModuleStatisticCards
@@ -208,23 +205,23 @@ function GoodsIssueMetrics({ records }: { records: GoodsIssueRecord[] }) {
 					iconClassName: "bg-skyblue/20 text-skyblue",
 				},
 				{
-					label: "Active",
-					value: activeCount,
-					summary: formatGoodsIssuePercentage(activeCount, records.length),
-					icon: CheckCircle2,
+					label: "Draft",
+					value: draftCount,
+					summary: formatGoodsIssuePercentage(draftCount, records.length),
+					icon: Clock3,
 					iconClassName: "bg-emerald-50 text-emerald-700",
 				},
 				{
-					label: "Pending",
-					value: pendingCount,
-					summary: formatGoodsIssuePercentage(pendingCount, records.length),
+					label: "For Approval",
+					value: forApprovalCount,
+					summary: formatGoodsIssuePercentage(forApprovalCount, records.length),
 					icon: Clock3,
 					iconClassName: "bg-offwhite text-darknavy",
 				},
 				{
-					label: "Approved",
-					value: approvedCount,
-					summary: formatGoodsIssuePercentage(approvedCount, records.length),
+					label: "Posted",
+					value: postedCount,
+					summary: formatGoodsIssuePercentage(postedCount, records.length),
 					icon: CheckCircle2,
 					iconClassName: "bg-citron/25 text-darknavy",
 				},
@@ -236,10 +233,10 @@ function GoodsIssueMetrics({ records }: { records: GoodsIssueRecord[] }) {
 					iconClassName: "bg-coralpink/15 text-coralpink",
 				},
 				{
-					label: "Closed",
-					value: closedCount,
-					summary: formatGoodsIssuePercentage(closedCount, records.length),
-					icon: PackageCheck,
+					label: "Cancelled",
+					value: cancelledCount,
+					summary: formatGoodsIssuePercentage(cancelledCount, records.length),
+					icon: Ban,
 					iconClassName: "bg-skyblue/15 text-skyblue",
 				},
 			]}
@@ -264,21 +261,17 @@ function GoodsIssueStatusBadge({ status }: { status: GoodsIssueStatus }) {
 }
 
 const statusIconByStatus = {
-	Active: CheckCircle2,
-	Approved: CheckCircle2,
 	Cancelled: Ban,
-	Closed: PackageCheck,
 	Disapproved: XCircle,
 	Draft: Clock3,
-	Pending: Clock3,
+	"For Approval": Clock3,
+	Posted: PackageCheck,
 } satisfies Record<GoodsIssueStatus, typeof CheckCircle2>;
 
 const statusClassNameByStatus = {
-	Active: "bg-citron/25 text-darknavy",
-	Approved: "bg-citron/25 text-darknavy",
 	Cancelled: "bg-darknavy/10 text-darknavy/70",
-	Closed: "bg-skyblue/20 text-darknavy",
 	Disapproved: "bg-coralpink/15 text-coralpink",
 	Draft: "bg-offwhite text-darknavy/70",
-	Pending: "bg-offwhite text-darknavy",
+	"For Approval": "bg-offwhite text-darknavy",
+	Posted: "bg-citron/25 text-darknavy",
 } satisfies Record<GoodsIssueStatus, string>;

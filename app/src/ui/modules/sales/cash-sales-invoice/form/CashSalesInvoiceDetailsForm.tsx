@@ -19,7 +19,7 @@ import {
   FieldShell,
   SelectField,
   TextField,
-} from "@/app/src/ui/modules/sales/billing-invoice/action/BillingInvoiceFieldControls";
+} from "@/app/src/ui/modules/sales/billing-invoice/form/BillingInvoiceFieldControls";
 
 type CashSalesInvoiceDetailsFormProps = {
   isReadonly: boolean;

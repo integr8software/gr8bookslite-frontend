@@ -156,7 +156,7 @@ export function BillingCustomerFields({ isReadonly, onUpdateField, values }: Bil
         </FieldShell>
       </div>
       <div className="grid min-w-0 content-start gap-3">
-        <FieldShell controlId="billing-invoice-no" label="B No.">
+        <FieldShell controlId="billing-invoice-no" label="Billing No.">
           <input
             id="billing-invoice-no"
             value={values.invoiceNo}
@@ -165,7 +165,7 @@ export function BillingCustomerFields({ isReadonly, onUpdateField, values }: Bil
             className={FieldClassName}
           />
         </FieldShell>
-        <FieldShell controlId="billing-document-date" label="B Date" isRequired>
+        <FieldShell controlId="billing-document-date" label="Billing Date" isRequired>
           <input
             id="billing-document-date"
             type="date"
@@ -175,7 +175,7 @@ export function BillingCustomerFields({ isReadonly, onUpdateField, values }: Bil
             className={FieldClassName}
           />
         </FieldShell>
-        <FieldShell controlId="billing-so-no" label="SO No.">
+        <FieldShell controlId="billing-so-no" label="SQ No.">
           <input
             id="billing-so-no"
             value={values.soNo}
@@ -184,7 +184,7 @@ export function BillingCustomerFields({ isReadonly, onUpdateField, values }: Bil
             className={FieldClassName}
           />
         </FieldShell>
-        <FieldShell controlId="billing-customer-po-no" label="PO No.">
+        <FieldShell controlId="billing-customer-po-no" label="Customer PO Number">
           <input
             id="billing-customer-po-no"
             value={values.poNo}

@@ -1,3 +1,5 @@
+import type { ModuleFileAttachment } from "@/app/src/types/shared/module/ModuleFileAttachmentTypes";
+
 export type BillingActionMode = "add" | "edit" | "view";
 
 export type BillingStatus =
@@ -73,8 +75,11 @@ export type BillingAccountingEntry = {
 	refNo: string;
 };
 
+export type BillingAttachment = ModuleFileAttachment;
+
 export type BillingFormValues = {
 	address: string;
+	attachments: BillingAttachment[];
 	billToName: string;
 	code: string;
 	name: string;

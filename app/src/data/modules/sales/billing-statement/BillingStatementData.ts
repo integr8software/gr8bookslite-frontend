@@ -70,6 +70,7 @@ export const billingStatementSeedRecords: BillingStatementRecord[] = [
     status: "Draft",
     projectRef: "",
     projectName: "",
+    attachments: [],
     accountingEntries: [createBlankBillingStatementAccountingEntry()],
     items: [{ ...emptyBillingStatementItem, id: "bs-000001-item-1" }],
   },
@@ -83,6 +84,7 @@ export function createBillingStatementFormValues(
 
     return {
       ...normalizedRecord,
+      attachments: normalizedRecord.attachments.map((attachment) => ({ ...attachment })),
       accountingEntries: normalizedRecord.accountingEntries.map((entry) => ({ ...entry })),
       items: normalizedRecord.items.map((item) => ({ ...item })),
     };
@@ -129,6 +131,7 @@ export function createBillingStatementFormValues(
     status: "Draft",
     projectRef: "",
     projectName: "",
+    attachments: [],
     accountingEntries: [createBlankBillingStatementAccountingEntry({ refNo: transNo })],
     items: [createBlankBillingStatementItem()],
   };
@@ -146,6 +149,7 @@ export function createBillingStatementRecord(
     ...values,
     status: normalizeBillingStatementStatus(values.status),
     ...totals,
+    attachments: values.attachments.map((attachment) => ({ ...attachment })),
     exchangeRate: Number(values.exchangeRate) || 1,
     recoupment: Number(values.recoupment) || 0,
     retention: Number(values.retention) || 0,
@@ -314,6 +318,7 @@ function normalizeBillingStatementRecordDefaults(
     retention: Number(record.retention) || 0,
     donation: Number(record.donation) || 0,
     status: normalizeBillingStatementStatus(record.status),
+    attachments: record.attachments?.map((attachment) => ({ ...attachment })) ?? fallback.attachments,
     accountingEntries:
       record.accountingEntries?.map((entry) =>
         createBlankBillingStatementAccountingEntry({

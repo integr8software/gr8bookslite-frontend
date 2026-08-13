@@ -171,6 +171,7 @@ export function createBillingFormValues(): BillingFormValues {
 
 	const values = {
 		address: "",
+		attachments: [],
 		billToName: "",
 		code: "",
 		name: "",
@@ -229,6 +230,10 @@ export function createBillingFormValuesFromRecord(
 		const formValues = {
 			...defaultValues,
 			...record.formValues,
+			attachments:
+				record.formValues.attachments?.map((attachment) => ({
+					...attachment,
+				})) ?? [],
 			lineEntries: record.formValues.lineEntries.map((entry) => ({ ...entry })),
 		};
 
@@ -282,6 +287,9 @@ export function createBillingRecordFromForm(
 		documentDate: values.documentDate,
 		formValues: {
 			...values,
+			attachments: values.attachments.map((attachment) => ({
+				...attachment,
+			})),
 			lineEntries: values.lineEntries.map((entry) => ({ ...entry })),
 		},
 		invoiceNo: values.invoiceNo || values.transactionNo,

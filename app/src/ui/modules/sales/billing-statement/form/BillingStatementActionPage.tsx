@@ -1,7 +1,10 @@
 "use client";
 
+"use client";
+
 import { Suspense } from "react";
 import Link from "next/link";
+import { useState } from "react";
 import { ArrowLeft, FileText, Save } from "lucide-react";
 import {
   BillingStatementFormPageCopy,
@@ -9,12 +12,16 @@ import {
 } from "@/app/src/constants/modules/sales/billing-statement/BillingStatementConstants";
 import { useBillingStatementFormPage } from "@/app/src/hooks/modules/sales/billing-statement/useBillingStatementFormPage";
 import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
-import { BillingStatementDetailsForm } from "@/app/src/ui/modules/sales/billing-statement/form/BillingStatementDetailsForm";
+import {
+  BillingStatementDetailsForm,
+  type BillingStatementDetailsSection,
+} from "@/app/src/ui/modules/sales/billing-statement/form/BillingStatementDetailsForm";
 import { BillingStatementEntrySection } from "@/app/src/ui/modules/sales/billing-statement/entries/BillingStatementEntrySection";
 import {
   AppCopyFromDropdown,
   type AppCopyFromRecord,
 } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
+import { ModuleTabs, type ModuleTabItem } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 
 export function BillingStatementActionPage() {
   return (
@@ -27,6 +34,7 @@ export function BillingStatementActionPage() {
 function BillingStatementActionPageInner() {
   const page = useBillingStatementFormPage();
   const title = getBillingStatementTitle(page.mode, page.existingStatement?.transNo);
+  const [activeTab, setActiveTab] = useState<BillingStatementDetailsSection>("customer");
 
   if (page.needsRecord && !page.existingStatement) {
     return <BillingStatementNotFound />;
@@ -49,9 +57,11 @@ function BillingStatementActionPageInner() {
       />
 
       <div className="grid min-w-0 gap-5">
+        <ModuleTabs activeTab={activeTab} ariaLabel="Billing statement sections" tabs={BillingStatementTabs} onTabChange={setActiveTab} />
         <BillingStatementDetailsForm
           errors={page.errors}
           isReadonly={page.isReadonly}
+          section={activeTab}
           values={page.values}
           onUpdateField={page.updateField}
         />
@@ -86,7 +96,7 @@ function BillingStatementHeaderActions({ page }: { page: BillingStatementFormPag
         <>
           <AppCopyFromDropdown
             records={BillingStatementCopyFromRecords}
-            sources={["Sales Quotation"]}
+            sources={["SQ"]}
             onApply={() => undefined}
           />
           <button
@@ -140,3 +150,8 @@ function getBillingStatementTitle(mode: string, transNo?: string) {
 }
 
 const BillingStatementCopyFromRecords: AppCopyFromRecord[] = [];
+
+const BillingStatementTabs = [
+  { id: "customer", label: "Customer / Billing" },
+  { id: "attachment", label: "File Attachment" },
+] satisfies ModuleTabItem<BillingStatementDetailsSection>[];

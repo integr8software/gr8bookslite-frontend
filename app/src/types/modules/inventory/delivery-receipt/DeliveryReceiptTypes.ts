@@ -1,4 +1,5 @@
 import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
+import type { ModuleFileAttachment } from "@/app/src/types/shared/module/ModuleFileAttachmentTypes";
 
 export type DeliveryReceiptActionMode = "add" | "edit" | "view";
 
@@ -74,14 +75,7 @@ export type DeliveryReceiptAccountingEntry = {
 	refNo: string;
 };
 
-export type DeliveryReceiptAttachment = {
-	id: string;
-	name: string;
-	size: number;
-	type: string;
-	lastModified: number;
-	dataUrl?: string;
-};
+export type DeliveryReceiptAttachment = ModuleFileAttachment;
 
 export type DeliveryReceiptFormValues = {
 	vceCode: string;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ChangeEvent, type FormEvent } from "react";
+import { useMemo, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import {
@@ -23,6 +23,7 @@ import {
 	useWorkspaceCompanyRecord,
 	useWorkspaceCompanyRouteParams,
 } from "@/app/src/hooks/workspace/companies/useWorkspaceCompanyManagement";
+import { useOnboardingReferenceData } from "@/app/src/hooks/onboarding/useOnboardingReferenceData";
 import { ApiClientError } from "@/app/src/services/shared/api/ApiClient";
 import { validateWorkspaceCompanyForm } from "@/app/src/validations/workspace/companies/WorkspaceCompanyValidation";
 import type {
@@ -84,6 +85,8 @@ export function useWorkspaceCompanyFormPage() {
 		(state) => state.isLoading,
 	);
 	const companyQuery = useWorkspaceCompanyRecord(params.companyId);
+	const referenceData = useOnboardingReferenceData();
+	const baseCurrencyWasManuallySelectedRef = useRef(false);
 	const mode: WorkspaceCompanyFormMode = pathname.includes("/edit")
 		? "edit"
 		: "add";
@@ -107,6 +110,30 @@ export function useWorkspaceCompanyFormPage() {
 	const cancelHref = mode === "edit" ? companyHref : WorkspaceCompaniesHref;
 
 	function updateField(field: keyof WorkspaceCompanyFormValues, value: string) {
+		if (field === "countryCode") {
+			const country = referenceData.countries.find(
+				(record) => record.code === value,
+			);
+
+			setDraftValues((current) => ({
+				...(current ?? baseValues),
+				countryCode: value,
+				...(baseCurrencyWasManuallySelectedRef.current
+					? {}
+					: { baseCurrencyCode: country?.defaultCurrencyCode ?? "" }),
+			}));
+			setErrors((current) => ({
+				...current,
+				countryCode: undefined,
+				baseCurrencyCode: undefined,
+			}));
+			return;
+		}
+
+		if (field === "baseCurrencyCode") {
+			baseCurrencyWasManuallySelectedRef.current = true;
+		}
+
 		if (field === "reportStartDate") {
 			setDraftValues((current) => ({
 				...(current ?? baseValues),
@@ -302,18 +329,22 @@ export function useWorkspaceCompanyFormPage() {
 
 	return {
 		cancelHref,
+		countries: referenceData.countries,
+		currencies: referenceData.currencies,
 		errors,
 		existingCompany,
 		handleInputChange,
 		handleSubmit,
 		isLoading:
 			isLoading ||
+			(mode === "edit" && referenceData.isLoading) ||
 			Boolean(
 				mode === "edit" &&
 					params.companyId &&
 					!existingCompany &&
 					(companyQuery.isLoading || companyQuery.isFetching),
 			),
+		isReferenceLoading: referenceData.isLoading,
 		isMutating,
 		mode,
 		needsRecord: mode === "edit",

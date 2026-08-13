@@ -29,8 +29,10 @@ import type {
 import { MapWorkspaceUserApiRecord } from "@/app/src/services/workspace/users/WorkspaceUserApi";
 
 type WorkspaceCompanyApiLike =
-	| WorkspaceCompanyApiRecord
-	| WorkspaceCompanyResponseDto;
+	(WorkspaceCompanyApiRecord | WorkspaceCompanyResponseDto) & {
+		countryCode?: string;
+		baseCurrencyCode?: string;
+	};
 
 type WorkspaceCompanyUnitApiLike =
 	| WorkspaceCompanyUnitApiRecord
@@ -153,8 +155,10 @@ function MapWorkspaceCompanyApiRecord(
 	return {
 		address: company.address ?? "",
 		branches: company.units?.map(MapWorkspaceCompanyUnitApiRecord) ?? [],
+		baseCurrencyCode: company.baseCurrencyCode ?? "PHP",
 		companyType: GetWorkspaceCompanyType(company),
 		contactNumber: company.contactNumber ?? "",
+		countryCode: company.countryCode ?? "PH",
 		createdByUser: company.createdByUser
 			? {
 					email: company.createdByUser.email,
@@ -341,7 +345,9 @@ function MapWorkspaceCompanyFormToUpdateRequest(
 	const trimmedValues = TrimCompanyFormValues(values);
 	const request: UpdateWorkspaceCompanyApiRequest = {
 		address: trimmedValues.address,
+		baseCurrencyCode: trimmedValues.baseCurrencyCode,
 		contactNumber: trimmedValues.contactNumber,
+		countryCode: trimmedValues.countryCode,
 		email: trimmedValues.email.toLowerCase(),
 		reportEndDate: trimmedValues.reportEndDate,
 		reportStartDate: trimmedValues.reportStartDate,
@@ -488,6 +494,8 @@ function TrimCompanyFormValues(values: WorkspaceCompanyFormValues) {
 		billingPaymentMethodId: values.billingPaymentMethodId.trim(),
 		billingPlanCode: values.billingPlanCode.trim(),
 		billingCycle: values.billingCycle,
+		countryCode: values.countryCode.trim().toUpperCase(),
+		baseCurrencyCode: values.baseCurrencyCode.trim().toUpperCase(),
 		companyName: values.companyName.trim(),
 		contactNumber: values.contactNumber.trim(),
 		email: values.email.trim(),

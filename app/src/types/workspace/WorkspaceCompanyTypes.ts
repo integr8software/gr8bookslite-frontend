@@ -23,6 +23,8 @@ export type WorkspaceCompanyRecord = {
   companyType: WorkspaceCompanyType;
   plan: WorkspaceCompanyPlan;
   status: WorkspaceCompanyStatus;
+  countryCode: string;
+  baseCurrencyCode: string;
   email: string;
   contactNumber: string;
   address: string;
@@ -66,6 +68,8 @@ export type WorkspaceCompanyFormValues = {
   billingPaymentMethodId: string;
   billingPlanCode: string;
   billingCycle: "MONTHLY" | "YEARLY";
+  countryCode: string;
+  baseCurrencyCode: string;
   companyName: string;
   contactNumber: string;
   email: string;
@@ -239,6 +243,8 @@ export type WorkspaceCompanyApiRecord = {
   slug: string;
   legalName: string | null;
   companyCode: string | null;
+  countryCode: string;
+  baseCurrencyCode: string;
   taxpayerType: WorkspaceCompanyApiTaxpayerType;
   ownerLastName: string | null;
   ownerFirstName: string | null;
@@ -315,4 +321,7 @@ export type CreateWorkspaceCompanyApiRequest = {
 
 export type UpdateWorkspaceCompanyApiRequest = Partial<
   Omit<CreateWorkspaceCompanyApiRequest, "billing">
->;
+> & {
+  countryCode?: string;
+  baseCurrencyCode?: string;
+};

@@ -22,7 +22,11 @@ import type {
 } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
 import { MapWorkspaceUserApiRecord } from "@/app/src/services/workspace/users/WorkspaceUserApi";
 
-type WorkspaceCompanyApiLike = WorkspaceCompanyApiRecord | WorkspaceCompanyResponseDto;
+type WorkspaceCompanyApiLike =
+  (WorkspaceCompanyApiRecord | WorkspaceCompanyResponseDto) & {
+    countryCode?: string;
+    baseCurrencyCode?: string;
+  };
 
 type WorkspaceCompanyUnitApiLike = WorkspaceCompanyUnitApiRecord | WorkspaceCompanyUnitResponseDto;
 
@@ -125,8 +129,10 @@ function MapWorkspaceCompanyApiRecord(company: WorkspaceCompanyApiLike): Workspa
   return {
     address: company.address ?? "",
     branches: company.units?.map(MapWorkspaceCompanyUnitApiRecord) ?? [],
+    baseCurrencyCode: company.baseCurrencyCode ?? "PHP",
     companyType: GetWorkspaceCompanyType(company),
     contactNumber: company.contactNumber ?? "",
+    countryCode: company.countryCode ?? "PH",
     createdByUser: company.createdByUser
       ? {
           email: company.createdByUser.email,
@@ -239,7 +245,9 @@ function MapWorkspaceCompanyFormToCreateRequest(
   const trimmedValues = TrimCompanyFormValues(values);
   const request: CreateWorkspaceCompanyApiRequest = {
     address: trimmedValues.address,
+    baseCurrencyCode: trimmedValues.baseCurrencyCode,
     contactNumber: trimmedValues.contactNumber,
+    countryCode: trimmedValues.countryCode,
     email: trimmedValues.email.toLowerCase(),
     reportEndDate: trimmedValues.reportEndDate,
     reportStartDate: trimmedValues.reportStartDate,
@@ -286,7 +294,9 @@ function MapWorkspaceCompanyFormToUpdateRequest(values: WorkspaceCompanyFormValu
   const trimmedValues = TrimCompanyFormValues(values);
   const request: UpdateWorkspaceCompanyApiRequest = {
     address: trimmedValues.address,
+    baseCurrencyCode: trimmedValues.baseCurrencyCode,
     contactNumber: trimmedValues.contactNumber,
+    countryCode: trimmedValues.countryCode,
     email: trimmedValues.email.toLowerCase(),
     reportEndDate: trimmedValues.reportEndDate,
     reportStartDate: trimmedValues.reportStartDate,
@@ -412,6 +422,7 @@ function GetDateInputValue(value: string | null) {
 function TrimCompanyFormValues(values: WorkspaceCompanyFormValues) {
   return {
     address: values.address.trim(),
+    baseCurrencyCode: values.baseCurrencyCode.trim().toUpperCase(),
     billingCardNumber: values.billingCardNumber.trim(),
     billingEmail: values.billingEmail.trim(),
     billingExpiryMonth: values.billingExpiryMonth.trim(),
@@ -422,6 +433,7 @@ function TrimCompanyFormValues(values: WorkspaceCompanyFormValues) {
     billingCycle: values.billingCycle,
     companyName: values.companyName.trim(),
     contactNumber: values.contactNumber.trim(),
+    countryCode: values.countryCode.trim().toUpperCase(),
     email: values.email.trim(),
     firstName: values.firstName.trim(),
     lastName: values.lastName.trim(),

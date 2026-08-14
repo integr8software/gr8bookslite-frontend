@@ -8,11 +8,6 @@ import { getModuleRoute, MODULE_ROUTE_FALLBACK } from "@/app/src/data/shared/mod
 import type { AuthUserModuleItem } from "@/app/src/types/auth/AuthTypes";
 
 const HiddenModuleKeys = new Set(["system-administration-approver-setup"]);
-const HiddenModuleLabels = new Set([
-  "Approver Setup",
-  "Approval Setup",
-  "Approval Transactions",
-]);
 const ApprovalManagementHref = "/system-administration/approval-management";
 
 const SectionAccess: Record<string, MainAccessKey> = {
@@ -135,7 +130,7 @@ function mapItem(item: AuthUserModuleItem): MainNavigationItem {
 }
 
 function isHiddenModuleItem(item: AuthUserModuleItem) {
-  return HiddenModuleKeys.has(item.key) || HiddenModuleLabels.has(item.label);
+  return HiddenModuleKeys.has(item.key);
 }
 
 function findFirstLink(item: AuthUserModuleItem): AuthUserModuleItem | undefined {

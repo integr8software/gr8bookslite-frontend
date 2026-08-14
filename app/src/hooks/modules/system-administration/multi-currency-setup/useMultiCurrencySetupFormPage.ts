@@ -12,7 +12,6 @@ import { MultiCurrencySetupHref } from "@/app/src/constants/modules/system-admin
 import {
 	MultiCurrencySetupInitialFormValues,
 	createMultiCurrencyCatalogFromFetchedRates,
-	createMultiCurrencySetupFormValues,
 	createMultiCurrencySetupRecord,
 	createMultiCurrencySetupRecordFromFetchedRate,
 	findFetchedRate,
@@ -21,6 +20,7 @@ import {
 } from "@/app/src/data/modules/system-administration/multi-currency-setup/MultiCurrencySetupData";
 import { useMultiCurrencySetupRates } from "@/app/src/hooks/modules/system-administration/multi-currency-setup/useMultiCurrencySetupRates";
 import { useMultiCurrencySetupStore } from "@/app/src/hooks/modules/system-administration/multi-currency-setup/useMultiCurrencySetup";
+import { useOnboardingReferenceData } from "@/app/src/hooks/onboarding/useOnboardingReferenceData";
 import type {
 	MultiCurrencySetupActionMode,
 	MultiCurrencySetupFormErrors,
@@ -48,11 +48,17 @@ export function useMultiCurrencySetupFormPage() {
 	const [errors, setErrors] = useState<MultiCurrencySetupFormErrors>({});
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 	const isReadonly = mode === "view";
+	const referenceData = useOnboardingReferenceData();
 	const ratesQuery = useMultiCurrencySetupRates(values.baseCurrencyCode);
-	const fetchedRates = ratesQuery.data ?? [];
+	const fetchedRates = useMemo(() => ratesQuery.data ?? [], [ratesQuery.data]);
 	const currencyOptions = useMemo(
-		() => createMultiCurrencyCatalogFromFetchedRates(fetchedRates),
-		[fetchedRates],
+		() =>
+			createMultiCurrencyCatalogFromFetchedRates(
+				fetchedRates,
+				referenceData.currencies,
+				values.baseCurrencyCode,
+			),
+		[fetchedRates, referenceData.currencies, values.baseCurrencyCode],
 	);
 	const fetchedRate = findFetchedRate(
 		fetchedRates,

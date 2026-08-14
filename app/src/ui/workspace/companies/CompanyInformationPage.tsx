@@ -13,6 +13,7 @@ import {
 	useWorkspaceCompanyContext,
 	useWorkspaceCompanyManagementStore,
 } from "@/app/src/hooks/workspace/companies/useWorkspaceCompanyManagement";
+import { useOnboardingReferenceData } from "@/app/src/hooks/onboarding/useOnboardingReferenceData";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import {
 	ModuleHeader,
@@ -30,6 +31,7 @@ import { CompanyBranchManagementPanel } from "@/app/src/ui/workspace/companies/C
 export function CompanyInformationPage() {
 	const router = useRouter();
 	const { company, companyBranches } = useWorkspaceCompanyContext();
+	const referenceData = useOnboardingReferenceData();
 	const deactivateCompany = useWorkspaceCompanyManagementStore(
 		(state) => state.deactivateCompany,
 	);
@@ -49,6 +51,15 @@ export function CompanyInformationPage() {
 			/>
 		);
 	}
+
+	const countryLabel = getCountryLabel(
+		company.countryCode,
+		referenceData.countries,
+	);
+	const baseCurrencyLabel = getCurrencyLabel(
+		company.baseCurrencyCode,
+		referenceData.currencies,
+	);
 
 	async function handleDeactivateCompany() {
 		if (!company) {
@@ -131,6 +142,11 @@ export function CompanyInformationPage() {
 									value={company.contactNumber}
 								/>
 								<Detail label="TIN" value={company.tin} />
+								<Detail label="Country" value={countryLabel} />
+								<Detail
+									label="Base Currency"
+									value={baseCurrencyLabel}
+								/>
 								<Detail
 									label="Taxpayer Type"
 									value={formatTaxpayerType(
@@ -217,4 +233,20 @@ function formatTaxpayerType(value?: "individual" | "non-individual") {
 	}
 
 	return undefined;
+}
+
+function getCountryLabel(
+	code: string,
+	countries: { code: string; name: string }[],
+) {
+	return countries.find((country) => country.code === code)?.name ?? code;
+}
+
+function getCurrencyLabel(
+	code: string,
+	currencies: { code: string; name: string }[],
+) {
+	const currency = currencies.find((record) => record.code === code);
+
+	return currency ? `${currency.code} - ${currency.name}` : code;
 }

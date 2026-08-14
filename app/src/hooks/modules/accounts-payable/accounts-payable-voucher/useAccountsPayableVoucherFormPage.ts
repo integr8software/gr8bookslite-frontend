@@ -42,6 +42,12 @@ import { useTaxDefinitionOptions } from "@/app/src/hooks/shared/tax/useTaxDefini
 import { useTaxes } from "@/app/src/hooks/shared/tax/useTaxOptions";
 import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+import { useOnboardingReferenceData } from "@/app/src/hooks/onboarding/useOnboardingReferenceData";
+import { useMultiCurrencySetupRates } from "@/app/src/hooks/modules/system-administration/multi-currency-setup/useMultiCurrencySetupRates";
+import {
+  createCurrencyCatalogFromReferencesAndRates,
+  resolveFetchedExchangeRate,
+} from "@/app/src/data/shared/currency/CurrencyOptionsData";
 import { FetchMultiCurrencyRates } from "@/app/src/services/modules/system-administration/multi-currency-setup/MultiCurrencySetupService";
 import type {
   AccountsPayableVoucherAccountingEntry,
@@ -115,6 +121,17 @@ export function useAccountsPayableVoucherFormPage() {
   const recordQuery = useAccountsPayableVoucherRecord(recordId);
   const numberSuggestionQuery = useAccountsPayableVoucherNumberSuggestion(mode === AccountsPayableVoucherAddMode);
   const existingRecord = recordQuery.data ?? records.find((record) => record.id === recordId);
+  const referenceData = useOnboardingReferenceData();
+  const ratesQuery = useMultiCurrencySetupRates(baseCurrencyCode);
+  const currencyOptions = useMemo(
+    () =>
+      createCurrencyCatalogFromReferencesAndRates(referenceData.currencies, ratesQuery.data ?? [], baseCurrencyCode).map((currency) => ({
+        label: currency.isDefault ? `${currency.name} | Default` : `${currency.code} - ${currency.name}`,
+        name: currency.code,
+        value: currency.code,
+      })),
+    [baseCurrencyCode, ratesQuery.data, referenceData.currencies],
+  );
   const isReadonly =
     mode === AccountsPayableVoucherViewMode ||
     (mode === AccountsPayableVoucherEditMode && (!existingRecord || !canEditAccountsPayableVoucherStatus(existingRecord.status)));
@@ -273,20 +290,20 @@ export function useAccountsPayableVoucherFormPage() {
     setIsExchangeRateLoading(true);
 
     try {
-      const rates = await FetchMultiCurrencyRates(currencyCode);
-      const baseRate = rates.find((rate) => rate.targetCurrencyCode === baseCurrencyCode);
+      const rates = ratesQuery.data ?? (await FetchMultiCurrencyRates(baseCurrencyCode));
+      const exchangeRate = resolveFetchedExchangeRate(rates, baseCurrencyCode, currencyCode);
 
       if (exchangeRateRequestIdRef.current !== requestId) {
         return;
       }
 
-      if (!baseRate) {
-        throw new Error(`No ${baseCurrencyCode} exchange rate returned.`);
+      if (exchangeRate == null) {
+        throw new Error(`No ${currencyCode} exchange rate returned.`);
       }
 
       setValues((current) => ({
         ...current,
-        exchangeRate: normalizeExchangeRate(baseRate.exchangeRate),
+        exchangeRate: normalizeExchangeRate(exchangeRate),
       }));
     } catch {
       if (exchangeRateRequestIdRef.current === requestId) {
@@ -807,6 +824,7 @@ export function useAccountsPayableVoucherFormPage() {
     updateExpenseLine,
     updateHeaderField,
     baseCurrencyCode,
+    currencyOptions,
     values: displayValues,
   };
 }

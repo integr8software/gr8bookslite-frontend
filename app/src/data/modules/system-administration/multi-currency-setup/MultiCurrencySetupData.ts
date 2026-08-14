@@ -1,5 +1,12 @@
 import type {
-	MultiCurrencyCatalogItem,
+	CurrencyReference,
+} from "@/app/src/types/shared/reference/ReferenceTypes";
+import {
+	createCurrencyCatalogFromReferencesAndRates,
+	getCurrencyDisplayLabel,
+	StableCurrencyReferences,
+} from "@/app/src/data/shared/currency/CurrencyOptionsData";
+import type {
 	MultiCurrencyFetchedRate,
 	MultiCurrencySetupFormValues,
 	MultiCurrencySetupRecord,
@@ -8,9 +15,11 @@ import type {
 
 export const DefaultPreferredBaseCurrencyCode = "PHP";
 export const DefaultWantedCurrencyCode = "USD";
-
-export const MultiCurrencyCatalog: MultiCurrencyCatalogItem[] =
-	createRuntimeCurrencyCatalog();
+export const MultiCurrencyCatalog = createCurrencyCatalogFromReferencesAndRates(
+	StableCurrencyReferences,
+	[],
+	DefaultPreferredBaseCurrencyCode,
+);
 
 export const MultiCurrencySourceSummary = {
 	autoUpdate: true,
@@ -42,7 +51,9 @@ export function createMultiCurrencySetupFormValues(
 }
 
 export function findCurrencyByCode(code: string) {
-	return MultiCurrencyCatalog.find((currency) => currency.code === code);
+	return createCurrencyCatalogFromReferencesAndRates([], [], code).find(
+		(currency) => currency.code === code,
+	);
 }
 
 export function findFetchedRate(
@@ -77,23 +88,18 @@ export function createMultiCurrencySetupRecordsFromFetchedRates(
 
 export function createMultiCurrencyCatalogFromFetchedRates(
 	rates: MultiCurrencyFetchedRate[],
+	currencies: CurrencyReference[] = [],
+	baseCurrencyCode?: string,
 ) {
-	const codes = new Set<string>();
-
-	rates.forEach((rate) => {
-		codes.add(rate.baseCurrencyCode);
-		codes.add(rate.targetCurrencyCode);
-	});
-
-	return Array.from(codes)
-		.sort()
-		.map(createCurrencyCatalogItem);
+	return createCurrencyCatalogFromReferencesAndRates(
+		currencies,
+		rates,
+		baseCurrencyCode,
+	);
 }
 
-export function getCurrencyLabel(code: string) {
-	const currency = findCurrencyByCode(code);
-
-	return currency ? `${currency.code} - ${currency.name}` : `${code} - ${getCurrencyName(code)}`;
+export function getCurrencyLabel(code: string, currencies: CurrencyReference[] = []) {
+	return getCurrencyDisplayLabel(code, currencies);
 }
 
 export function createMultiCurrencySetupRecord(
@@ -213,28 +219,6 @@ export function formatVariancePercent(variancePercent: number) {
 	}).format(variancePercent)}%`;
 }
 
-function createRuntimeCurrencyCatalog() {
-	const supportedCurrencyCodes =
-		typeof Intl.supportedValuesOf === "function"
-			? Intl.supportedValuesOf("currency")
-			: [DefaultPreferredBaseCurrencyCode, DefaultWantedCurrencyCode];
-
-	return supportedCurrencyCodes.map(createCurrencyCatalogItem);
-}
-
-function createCurrencyCatalogItem(code: string): MultiCurrencyCatalogItem {
-	return {
-		code,
-		country: "",
-		decimalPlaces: getCurrencyDecimalPlaces(code),
-		isDefault: code === DefaultPreferredBaseCurrencyCode,
-		isEnabled: true,
-		name: getCurrencyName(code),
-		source: "API",
-		symbol: getCurrencySymbol(code),
-	};
-}
-
 function getCurrencyName(code: string) {
 	try {
 		return (
@@ -256,17 +240,6 @@ function getCurrencySymbol(code: string) {
 		return parts.find((part) => part.type === "currency")?.value ?? code;
 	} catch {
 		return code;
-	}
-}
-
-function getCurrencyDecimalPlaces(code: string) {
-	try {
-		return new Intl.NumberFormat("en-US", {
-			currency: code,
-			style: "currency",
-		}).resolvedOptions().maximumFractionDigits ?? 2;
-	} catch {
-		return 2;
 	}
 }
 

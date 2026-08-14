@@ -1,5 +1,8 @@
 import { useEffect } from "react";
-import { ApproverSetupAllApproversCondition } from "@/app/src/constants/modules/system-administration/user-management/approver-setup/ApproverSetupConstants";
+import {
+  ApproverSetupAllApproversCondition,
+  ApproverSetupMaxApprovers,
+} from "@/app/src/constants/modules/system-administration/user-management/approver-setup/ApproverSetupConstants";
 import type {
   ApproverCondition,
   ApproverSetupUser,
@@ -31,7 +34,9 @@ export function ApproverSetupUserSelectList({
       return;
     }
 
-    const allUserIds = users.map((user) => user.id);
+    const allUserIds = users
+      .slice(0, ApproverSetupMaxApprovers)
+      .map((user) => user.id);
     const hasSameSelection =
       selectedUserIds.length === allUserIds.length &&
       allUserIds.every((userId) => selectedUserIds.includes(userId));
@@ -56,7 +61,7 @@ export function ApproverSetupUserSelectList({
           No company users available.
         </div>
       ) : requiresAllApprovers ? (
-        <AllApproversSummary users={users} />
+        <AllApproversSummary users={users.slice(0, ApproverSetupMaxApprovers)} />
       ) : (
         <div className="grid gap-3">
           {Array.from({ length: visibleSlotCount }).map((_, slotIndex) => (

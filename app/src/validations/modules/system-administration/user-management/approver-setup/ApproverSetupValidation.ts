@@ -3,6 +3,10 @@ import type {
 	ApproverSetupFormValues,
 	ApproverSetupUser,
 } from "@/app/src/types/modules/system-administration/user-management/approver-setup/ApproverSetupTypes";
+import {
+	ApproverConditionLabels,
+	ApproverSetupMaxApprovers,
+} from "@/app/src/constants/modules/system-administration/user-management/approver-setup/ApproverSetupConstants";
 
 export function getApproverConditionLimit(
 	condition: ApproverCondition,
@@ -16,7 +20,7 @@ export function getApproverConditionLimit(
 		return 2;
 	}
 
-	return users.length;
+	return Math.min(users.length, ApproverSetupMaxApprovers);
 }
 
 export function normalizeSelectedApproverIds(
@@ -25,7 +29,7 @@ export function normalizeSelectedApproverIds(
 	users: ApproverSetupUser[] = [],
 ) {
 	if (condition === "All approvers") {
-		return users.map((user) => user.id);
+		return users.slice(0, ApproverSetupMaxApprovers).map((user) => user.id);
 	}
 
 	return userIds.slice(0, getApproverConditionLimit(condition, users));
@@ -42,13 +46,13 @@ export function getApproverSelectionError(
 	const requiredCount = getApproverConditionLimit(values.condition, users);
 
 	if (values.condition === "All approvers") {
-		return values.userIds.length === users.length
+		return values.userIds.length === requiredCount
 			? ""
-			: "All approvers must be selected for this condition.";
+			: `Select all ${requiredCount} approvers for this condition.`;
 	}
 
 	if (values.userIds.length !== requiredCount) {
-		return `${values.condition} requires exactly ${requiredCount} selected approver${requiredCount === 1 ? "" : "s"}.`;
+		return `${ApproverConditionLabels[values.condition]} requires exactly ${requiredCount} selected approver${requiredCount === 1 ? "" : "s"}.`;
 	}
 
 	return "";
@@ -59,7 +63,7 @@ export function getApproverConditionHelpText(
 	users: ApproverSetupUser[] = [],
 ) {
 	if (condition === "All approvers") {
-		return "All users are automatically selected for this condition.";
+		return `Up to ${ApproverSetupMaxApprovers} users are automatically selected for this condition.`;
 	}
 
 	return `Select exactly ${getApproverConditionLimit(condition, users)} approver${condition === "Any one approver" ? "" : "s"} for this condition.`;

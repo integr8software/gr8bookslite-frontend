@@ -327,7 +327,10 @@ export function createServiceInvoiceAccountingEntries({
 	const receivableAmount = Math.max(0, totals.grossAmount);
 	const discountAmount = Math.max(0, totals.discountAmount);
 	const vatAmount = Math.max(0, totals.vatAmount);
-	const serviceAmount = Math.max(0, totals.netAmount);
+	const serviceAmount = Math.max(
+		0,
+		receivableAmount + discountAmount - vatAmount,
+	);
 
 	return [
 		{

@@ -40,7 +40,9 @@ export function useCustomizeReportPdfPreview({
         fileName: `${selectedReport.documentPrefix}-custom-report-preview`,
         page: {
           format: pageSetup.format,
+          height: pageSetup.height,
           landscape: pageSetup.orientation === "landscape",
+          width: pageSetup.width,
         },
       });
       const pdfUrl = URL.createObjectURL(pdfBlob);

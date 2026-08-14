@@ -33,7 +33,8 @@ import { useCustomizeReportPdfPreview } from "@/app/src/hooks/modules/system-adm
 import type {
   AlignmentGuide,
   AlignDistributionAction,
-  CanvasPanState,
+  CanvasSelectionRect,
+  CanvasSelectionState,
   DragState,
   LayoutHistory,
   SelectedElementKey,
@@ -44,7 +45,6 @@ import type {
   CustomizeReportLine,
   CustomizeReportMarginSetup,
   CustomizeReportPageSetup,
-  CustomizeReportPaperFormat,
   CustomizeReportTableColumn,
   CustomizeReportTableColumnKey,
   CustomizeReportTableSetup,
@@ -56,7 +56,7 @@ import {
   getFieldBounds,
   getLineBounds,
   getMarginSetupWithDefaults,
-  getPageSetup,
+  getPageSetupWithDefaults,
   getReportData,
   getReportStorageKey,
   getSelectedElementKey,
@@ -83,6 +83,19 @@ const CustomizeReportLineOrientations = {
 } as const;
 
 type CustomizeReportElementType = (typeof CustomizeReportElementTypes)[keyof typeof CustomizeReportElementTypes];
+type ClipboardElement =
+  | {
+      type: "field";
+      value: CustomizeReportField;
+    }
+  | {
+      type: "line";
+      value: CustomizeReportLine;
+    }
+  | {
+      type: "table";
+      value: CustomizeReportTableSetup;
+    };
 
 export function useCustomizeReportDesigner() {
   const [fields, setFields] = useState<CustomizeReportField[]>(CustomizeReportFields);
@@ -102,17 +115,19 @@ export function useCustomizeReportDesigner() {
   const [snapToGrid, setSnapToGrid] = useState(true);
   const [gridSize, setGridSize] = useState(DefaultGridSize);
   const [zoom, setZoom] = useState(100);
-  const [isCanvasPanning, setIsCanvasPanning] = useState(false);
   const [isElementsPanelOpen, setIsElementsPanelOpen] = useState(true);
   const [isToolsDialogOpen, setIsToolsDialogOpen] = useState(false);
+  const [isPageSetupDialogOpen, setIsPageSetupDialogOpen] = useState(false);
   const [deleteTargetType, setDeleteTargetType] = useState<CustomizeReportElementType | null>(null);
+  const [clipboardElement, setClipboardElement] = useState<ClipboardElement | null>(null);
   const [layoutHistory, setLayoutHistory] = useState<LayoutHistory>({
     past: [],
     future: [],
   });
   const dragStateRef = useRef<DragState | null>(null);
-  const canvasPanStateRef = useRef<CanvasPanState | null>(null);
+  const canvasSelectionStateRef = useRef<CanvasSelectionState | null>(null);
   const canvasScrollRef = useRef<HTMLDivElement | null>(null);
+  const [canvasSelectionRect, setCanvasSelectionRect] = useState<CanvasSelectionRect | null>(null);
 
   const canUndo = layoutHistory.past.length > 0;
   const canRedo = layoutHistory.future.length > 0;
@@ -143,7 +158,7 @@ export function useCustomizeReportDesigner() {
 
     setFields(nextLayout.fields);
     setLines(nextLayout.lines);
-    setPageSetup(nextLayout.pageSetup);
+    setPageSetup(getPageSetupWithDefaults(nextLayout.pageSetup));
     setTableSetup(getTableSetupWithDefaults(nextLayout.tableSetup));
     setMarginSetup(getMarginSetupWithDefaults(nextLayout.marginSetup));
     setAlignmentGuides([]);
@@ -205,7 +220,7 @@ export function useCustomizeReportDesigner() {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- Restore the selected report layout from localStorage when the report changes.
       setFields(CustomizeReportFields);
       setLines(CustomizeReportLines);
-      setPageSetup(CustomizeReportDefaultPageSetup);
+      setPageSetup(getPageSetupWithDefaults(CustomizeReportDefaultPageSetup));
       setTableSetup(DefaultTableSetup);
       setMarginSetup(DefaultMarginSetup);
       setSelectedFieldId(CustomizeReportFields[0].id);
@@ -221,8 +236,8 @@ export function useCustomizeReportDesigner() {
       const nextFields = isSavedLayout(parsedLayout) ? parsedLayout.fields : parsedLayout;
       const nextLines = isSavedLayout(parsedLayout) ? parsedLayout.lines : CustomizeReportLines;
       const nextPageSetup = isSavedLayout(parsedLayout)
-        ? parsedLayout.pageSetup || CustomizeReportDefaultPageSetup
-        : CustomizeReportDefaultPageSetup;
+        ? getPageSetupWithDefaults(parsedLayout.pageSetup)
+        : getPageSetupWithDefaults(CustomizeReportDefaultPageSetup);
       const nextTableSetup = isSavedLayout(parsedLayout) ? getTableSetupWithDefaults(parsedLayout.tableSetup) : DefaultTableSetup;
       const nextMarginSetup = isSavedLayout(parsedLayout) ? getMarginSetupWithDefaults(parsedLayout.marginSetup) : DefaultMarginSetup;
 
@@ -290,79 +305,371 @@ export function useCustomizeReportDesigner() {
     templatePreview,
   });
 
+  function handleSelectAllElements() {
+    const visibleFieldKeys = fields
+      .filter((field) => field.visible)
+      .map((field) => getSelectedElementKey(CustomizeReportElementTypes.Field, field.id));
+    const visibleLineKeys = lines
+      .filter((line) => line.visible)
+      .map((line) => getSelectedElementKey(CustomizeReportElementTypes.Line, line.id));
+    const tableKey = getSelectedElementKey(CustomizeReportElementTypes.Table, CustomizeReportTableElementId);
+    const nextSelectedElementKeys = [...visibleFieldKeys, ...visibleLineKeys, tableKey];
+    const firstVisibleField = fields.find((field) => field.visible);
+    const firstVisibleLine = lines.find((line) => line.visible);
+
+    if (nextSelectedElementKeys.length === 0) {
+      return;
+    }
+
+    if (firstVisibleField) {
+      setSelectedFieldId(firstVisibleField.id);
+      setSelectedLineId(null);
+      setSelectedElementType(CustomizeReportElementTypes.Field);
+    } else if (firstVisibleLine) {
+      setSelectedLineId(firstVisibleLine.id);
+      setSelectedElementType(CustomizeReportElementTypes.Line);
+    } else {
+      setSelectedLineId(null);
+      setSelectedElementType(CustomizeReportElementTypes.Table);
+    }
+
+    setSelectedElementKeys(nextSelectedElementKeys);
+  }
+
+  function nudgeSelectedElements(deltaX: number, deltaY: number) {
+    const movableElements = selectedElements.filter((element) => {
+      if (element.type === CustomizeReportElementTypes.Field) {
+        return !fields.find((field) => field.id === element.id)?.locked;
+      }
+
+      if (element.type === CustomizeReportElementTypes.Line) {
+        return !lines.find((line) => line.id === element.id)?.locked;
+      }
+
+      return true;
+    });
+
+    if (movableElements.length === 0) {
+      return;
+    }
+
+    const minX = Math.min(...movableElements.map((element) => element.bounds.x));
+    const minY = Math.min(...movableElements.map((element) => element.bounds.y));
+    const maxX = Math.max(...movableElements.map((element) => element.bounds.x + element.bounds.width));
+    const maxY = Math.max(...movableElements.map((element) => element.bounds.y + element.bounds.height));
+    const nextDeltaX = clamp(deltaX, -minX, pageSetup.width - maxX);
+    const nextDeltaY = clamp(deltaY, -minY, pageSetup.height - maxY);
+    const nextPositions = new Map<string, { x: number; y: number }>();
+
+    for (const element of movableElements) {
+      nextPositions.set(element.key, {
+        x: element.bounds.x + nextDeltaX,
+        y: element.bounds.y + nextDeltaY,
+      });
+    }
+
+    pushUndoSnapshot();
+    setFields((currentFields) =>
+      currentFields.map((field) => {
+        const position = nextPositions.get(getSelectedElementKey(CustomizeReportElementTypes.Field, field.id));
+
+        return position ? { ...field, x: position.x, y: position.y } : field;
+      }),
+    );
+    setLines((currentLines) =>
+      currentLines.map((line) => {
+        const position = nextPositions.get(getSelectedElementKey(CustomizeReportElementTypes.Line, line.id));
+
+        return position ? { ...line, x: position.x, y: position.y } : line;
+      }),
+    );
+
+    const tablePosition = nextPositions.get(getSelectedElementKey(CustomizeReportElementTypes.Table, CustomizeReportTableElementId));
+
+    if (tablePosition) {
+      setTableSetup((currentSetup) => ({ ...currentSetup, x: tablePosition.x, y: tablePosition.y }));
+    }
+  }
+
+  function copySelectedElement() {
+    if (selectedElementType === CustomizeReportElementTypes.Line && selectedLine) {
+      setClipboardElement({ type: "line", value: { ...selectedLine } });
+      return;
+    }
+
+    if (selectedElementType === CustomizeReportElementTypes.Table) {
+      setClipboardElement({
+        type: "table",
+        value: {
+          ...tableSetup,
+          borderSetup: { ...tableSetup.borderSetup },
+          columns: tableSetup.columns.map((column) => ({ ...column })),
+        },
+      });
+      return;
+    }
+
+    if (selectedField) {
+      setClipboardElement({ type: "field", value: { ...selectedField } });
+    }
+  }
+
+  function pasteClipboardElement() {
+    if (!clipboardElement) {
+      toast.error("Copy an element first.");
+      return;
+    }
+
+    pushUndoSnapshot();
+
+    if (clipboardElement.type === "line") {
+      const sourceLine = clipboardElement.value;
+      const width = sourceLine.orientation === CustomizeReportLineOrientations.Horizontal ? sourceLine.length : sourceLine.thickness;
+      const height = sourceLine.orientation === CustomizeReportLineOrientations.Horizontal ? sourceLine.thickness : sourceLine.length;
+      const nextLine: CustomizeReportLine = {
+        ...sourceLine,
+        id: `line-${Date.now()}`,
+        label: `${sourceLine.label} Copy`,
+        x: clamp(sourceLine.x + 16, 0, pageSetup.width - width),
+        y: clamp(sourceLine.y + 16, 0, pageSetup.height - height),
+        locked: false,
+      };
+
+      setLines((currentLines) => [...currentLines, nextLine]);
+      selectElement(CustomizeReportElementTypes.Line, nextLine.id);
+      return;
+    }
+
+    if (clipboardElement.type === "table") {
+      setTableSetup(
+        getTableSetupWithDefaults({
+          ...clipboardElement.value,
+          x: clamp(clipboardElement.value.x + 16, 0, pageSetup.width - clipboardElement.value.width),
+          y: clamp(clipboardElement.value.y + 16, 0, pageSetup.height - getTableBounds(clipboardElement.value).height),
+          columns: clipboardElement.value.columns.map((column) => ({ ...column })),
+          borderSetup: { ...clipboardElement.value.borderSetup },
+        }),
+      );
+      selectElement(CustomizeReportElementTypes.Table, CustomizeReportTableElementId);
+      return;
+    }
+
+    const sourceField = clipboardElement.value;
+    const nextField: CustomizeReportField = {
+      ...sourceField,
+      id: `${sourceField.id}-copy-${Date.now()}`,
+      label: `${sourceField.label} Copy`,
+      x: clamp(sourceField.x + 16, 0, pageSetup.width - sourceField.width),
+      y: clamp(sourceField.y + 16, 0, pageSetup.height - sourceField.height),
+      locked: false,
+    };
+
+    setFields((currentFields) => [...currentFields, nextField]);
+    selectElement(CustomizeReportElementTypes.Field, nextField.id);
+  }
+
+  function deleteSelectedElement() {
+    if (selectedElementType === CustomizeReportElementTypes.Line) {
+      handleDeleteSelectedLine();
+      return;
+    }
+
+    if (selectedElementType === CustomizeReportElementTypes.Table) {
+      toast.error("The items table cannot be deleted.");
+      return;
+    }
+
+    handleDeleteSelectedField();
+  }
+
+  function updateSelectedTextField(updater: (field: CustomizeReportField) => CustomizeReportField) {
+    if (!selectedField || selectedElementType !== CustomizeReportElementTypes.Field || selectedField.type === "image") {
+      return;
+    }
+
+    updateSelectedField(updater);
+  }
+
   useEffect(() => {
     function handleUndoRedoShortcut(event: KeyboardEvent) {
       const key = event.key.toLowerCase();
+      const isModifierPressed = event.ctrlKey || event.metaKey;
+      const isAltPressed = event.altKey;
 
       if (isEditableElement(event.target)) {
         return;
       }
 
-      if (!(event.ctrlKey || event.metaKey)) {
-        if (!["arrowup", "arrowdown", "arrowleft", "arrowright"].includes(key)) {
-          return;
-        }
-
+      if (key === "escape") {
         event.preventDefault();
+        const fallbackField = fields.find((field) => field.visible) || fields[0];
+        if (fallbackField) {
+          selectElement(CustomizeReportElementTypes.Field, fallbackField.id);
+        }
+        return;
+      }
 
-        const nudgeAmount = event.shiftKey ? 10 : 1;
+      if (key === "delete" || key === "backspace") {
+        event.preventDefault();
+        deleteSelectedElement();
+        return;
+      }
+
+      if (["arrowup", "arrowdown", "arrowleft", "arrowright"].includes(key)) {
+        event.preventDefault();
+        const nudgeAmount = isModifierPressed ? 50 : event.shiftKey ? 10 : 1;
         const deltaX = key === "arrowleft" ? -nudgeAmount : key === "arrowright" ? nudgeAmount : 0;
         const deltaY = key === "arrowup" ? -nudgeAmount : key === "arrowdown" ? nudgeAmount : 0;
 
-        if (selectedElementType === CustomizeReportElementTypes.Table) {
-          pushUndoSnapshot();
-          setTableSetup((currentSetup) => ({
-            ...currentSetup,
-            x: clamp(currentSetup.x + deltaX, 0, pageSetup.width - currentSetup.width),
-            y: clamp(currentSetup.y + deltaY, 0, pageSetup.height - currentSetup.rowHeight),
-          }));
-          return;
-        }
+        nudgeSelectedElements(deltaX, deltaY);
+        return;
+      }
 
-        if (selectedElementType === CustomizeReportElementTypes.Line && selectedLine) {
-          if (selectedLine.locked) {
-            return;
-          }
+      if (isModifierPressed && key === "0") {
+        event.preventDefault();
+        setZoom(100);
+        return;
+      }
 
-          pushUndoSnapshot();
-          setLines((currentLines) =>
-            currentLines.map((line) => {
-              if (line.id !== selectedLine.id) {
-                return line;
-              }
+      if (isModifierPressed && (key === "=" || key === "+")) {
+        event.preventDefault();
+        setZoom((currentZoom) => clamp(currentZoom + ZoomStep, MinZoom, MaxZoom));
+        return;
+      }
 
-              const width = line.orientation === CustomizeReportLineOrientations.Horizontal ? line.length : line.thickness;
-              const height = line.orientation === CustomizeReportLineOrientations.Horizontal ? line.thickness : line.length;
+      if (isModifierPressed && key === "-") {
+        event.preventDefault();
+        setZoom((currentZoom) => clamp(currentZoom - ZoomStep, MinZoom, MaxZoom));
+        return;
+      }
 
-              return {
-                ...line,
-                x: clamp(line.x + deltaX, 0, pageSetup.width - width),
-                y: clamp(line.y + deltaY, 0, pageSetup.height - height),
-              };
-            }),
-          );
-          return;
-        }
+      if (isAltPressed && key === "arrowleft") {
+        event.preventDefault();
+        handleLayerSelectedElement("backward");
+        return;
+      }
 
-        if (selectedField) {
-          if (selectedField.locked) {
-            return;
-          }
+      if (isAltPressed && key === "arrowright") {
+        event.preventDefault();
+        handleLayerSelectedElement("forward");
+        return;
+      }
 
-          pushUndoSnapshot();
-          setFields((currentFields) =>
-            currentFields.map((field) =>
-              field.id === selectedField.id
-                ? {
-                    ...field,
-                    x: clamp(field.x + deltaX, 0, pageSetup.width - field.width),
-                    y: clamp(field.y + deltaY, 0, pageSetup.height - field.height),
-                  }
-                : field,
-            ),
-          );
-        }
+      if (!isModifierPressed) {
+        return;
+      }
 
+      if (key === "a") {
+        event.preventDefault();
+        handleSelectAllElements();
+        return;
+      }
+
+      if (key === "s") {
+        event.preventDefault();
+        handleSaveLayout();
+        return;
+      }
+
+      if (key === "p") {
+        event.preventDefault();
+        handlePreviewPdf();
+        return;
+      }
+
+      if (key === "c") {
+        event.preventDefault();
+        copySelectedElement();
+        return;
+      }
+
+      if (event.shiftKey && (key === "[" || key === "{")) {
+        event.preventDefault();
+        handleLayerSelectedElement("back");
+        return;
+      }
+
+      if (event.shiftKey && (key === "]" || key === "}")) {
+        event.preventDefault();
+        handleLayerSelectedElement("front");
+        return;
+      }
+
+      if (event.shiftKey && key === "l") {
+        event.preventDefault();
+        updateSelectedTextField((field) => ({ ...field, align: "left" }));
+        return;
+      }
+
+      if (event.shiftKey && key === "e") {
+        event.preventDefault();
+        updateSelectedTextField((field) => ({ ...field, align: "center" }));
+        return;
+      }
+
+      if (event.shiftKey && key === "r") {
+        event.preventDefault();
+        updateSelectedTextField((field) => ({ ...field, align: "right" }));
+        return;
+      }
+
+      if (event.shiftKey && key === "h") {
+        event.preventDefault();
+        handleAlignDistributeSelected("distribute-horizontal");
+        return;
+      }
+
+      if (event.shiftKey && key === "v") {
+        event.preventDefault();
+        handleAlignDistributeSelected("distribute-vertical");
+        return;
+      }
+
+      if (key === "v") {
+        event.preventDefault();
+        pasteClipboardElement();
+        return;
+      }
+
+      if (key === "d") {
+        event.preventDefault();
+        handleDuplicateSelectedElement();
+        return;
+      }
+
+      if (key === "l") {
+        event.preventDefault();
+        handleToggleSelectedLock();
+        return;
+      }
+
+      if (key === "b") {
+        event.preventDefault();
+        updateSelectedTextField((field) => ({ ...field, bold: !field.bold }));
+        return;
+      }
+
+      if (key === "i") {
+        event.preventDefault();
+        updateSelectedTextField((field) => ({ ...field, italic: !field.italic }));
+        return;
+      }
+
+      if (key === "u") {
+        event.preventDefault();
+        updateSelectedTextField((field) => ({ ...field, underline: !field.underline }));
+        return;
+      }
+
+      if (key === "[") {
+        event.preventDefault();
+        updateSelectedTextField((field) => ({ ...field, fontSize: clamp(field.fontSize - 1, 6, 96) }));
+        return;
+      }
+
+      if (key === "]") {
+        event.preventDefault();
+        updateSelectedTextField((field) => ({ ...field, fontSize: clamp(field.fontSize + 1, 6, 96) }));
         return;
       }
 
@@ -839,6 +1146,85 @@ export function useCustomizeReportDesigner() {
     setAlignmentGuides([]);
   }
 
+  function getCanvasPoint(event: ReactPointerEvent<HTMLDivElement>) {
+    const canvasScrollElement = canvasScrollRef.current;
+    const pageElement = canvasScrollElement?.querySelector("[data-customize-report-page='true']");
+
+    if (!(pageElement instanceof HTMLElement)) {
+      return null;
+    }
+
+    const pageRect = pageElement.getBoundingClientRect();
+    const zoomScale = zoom / 100;
+
+    return {
+      x: clamp((event.clientX - pageRect.left) / zoomScale, 0, pageSetup.width),
+      y: clamp((event.clientY - pageRect.top) / zoomScale, 0, pageSetup.height),
+    };
+  }
+
+  function getSelectionRectFromState(selectionState: CanvasSelectionState): CanvasSelectionRect {
+    const x = Math.min(selectionState.startX, selectionState.currentX);
+    const y = Math.min(selectionState.startY, selectionState.currentY);
+
+    return {
+      x,
+      y,
+      width: Math.abs(selectionState.currentX - selectionState.startX),
+      height: Math.abs(selectionState.currentY - selectionState.startY),
+    };
+  }
+
+  function boundsIntersectSelection(bounds: { x: number; y: number; width: number; height: number }, selectionRect: CanvasSelectionRect) {
+    return (
+      bounds.x < selectionRect.x + selectionRect.width &&
+      bounds.x + bounds.width > selectionRect.x &&
+      bounds.y < selectionRect.y + selectionRect.height &&
+      bounds.y + bounds.height > selectionRect.y
+    );
+  }
+
+  function updateSelectionFromRect(selectionRect: CanvasSelectionRect, additive: boolean) {
+    const minSelectionSize = 3;
+
+    if (selectionRect.width < minSelectionSize && selectionRect.height < minSelectionSize) {
+      return;
+    }
+
+    const fieldKeys = fields
+      .filter((field) => field.visible && boundsIntersectSelection(getFieldBounds(field), selectionRect))
+      .map((field) => getSelectedElementKey(CustomizeReportElementTypes.Field, field.id));
+    const lineKeys = lines
+      .filter((line) => line.visible && boundsIntersectSelection(getLineBounds(line), selectionRect))
+      .map((line) => getSelectedElementKey(CustomizeReportElementTypes.Line, line.id));
+    const tableKey = getSelectedElementKey(CustomizeReportElementTypes.Table, CustomizeReportTableElementId);
+    const tableKeys = boundsIntersectSelection(getTableBounds(tableSetup), selectionRect) ? [tableKey] : [];
+    const nextKeys = [...fieldKeys, ...lineKeys, ...tableKeys];
+
+    setSelectedElementKeys((currentKeys) => {
+      const combinedKeys = additive ? [...currentKeys, ...nextKeys] : nextKeys;
+      return [...new Set(combinedKeys)];
+    });
+
+    const firstKey = nextKeys[0] || (additive ? selectedElementKeys[0] : null);
+
+    if (!firstKey) {
+      return;
+    }
+
+    const { type, id } = parseSelectedElementKey(firstKey);
+    setSelectedElementType(type);
+
+    if (type === CustomizeReportElementTypes.Field) {
+      setSelectedFieldId(id);
+      setSelectedLineId(null);
+    } else if (type === CustomizeReportElementTypes.Line) {
+      setSelectedLineId(id);
+    } else {
+      setSelectedLineId(null);
+    }
+  }
+
   function handleCanvasPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
     if (event.button !== 0 || isEditableElement(event.target)) {
       return;
@@ -851,35 +1237,49 @@ export function useCustomizeReportDesigner() {
     }
 
     event.currentTarget.setPointerCapture(event.pointerId);
-    canvasPanStateRef.current = {
-      startX: event.clientX,
-      startY: event.clientY,
-      scrollLeft: event.currentTarget.scrollLeft,
-      scrollTop: event.currentTarget.scrollTop,
+    const point = getCanvasPoint(event);
+
+    if (!point) {
+      return;
+    }
+
+    canvasSelectionStateRef.current = {
+      additive: event.shiftKey,
+      startX: point.x,
+      startY: point.y,
+      currentX: point.x,
+      currentY: point.y,
     };
-    setIsCanvasPanning(true);
+    setCanvasSelectionRect({ x: point.x, y: point.y, width: 0, height: 0 });
     event.preventDefault();
   }
 
   function handleCanvasPointerMove(event: ReactPointerEvent<HTMLDivElement>) {
-    const panState = canvasPanStateRef.current;
+    const selectionState = canvasSelectionStateRef.current;
 
-    if (!panState) {
+    if (selectionState) {
+      const point = getCanvasPoint(event);
+
+      if (!point) {
+        return;
+      }
+
+      selectionState.currentX = point.x;
+      selectionState.currentY = point.y;
+      const nextSelectionRect = getSelectionRectFromState(selectionState);
+      setCanvasSelectionRect(nextSelectionRect);
+      updateSelectionFromRect(nextSelectionRect, selectionState.additive);
       return;
     }
-
-    event.currentTarget.scrollLeft = panState.scrollLeft + panState.startX - event.clientX;
-    event.currentTarget.scrollTop = panState.scrollTop + panState.startY - event.clientY;
   }
 
   function handleCanvasPointerUp(event: ReactPointerEvent<HTMLDivElement>) {
-    if (!canvasPanStateRef.current) {
+    if (canvasSelectionStateRef.current) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+      canvasSelectionStateRef.current = null;
+      setCanvasSelectionRect(null);
       return;
     }
-
-    event.currentTarget.releasePointerCapture(event.pointerId);
-    canvasPanStateRef.current = null;
-    setIsCanvasPanning(false);
   }
 
   function handleSaveLayout() {
@@ -1323,14 +1723,9 @@ export function useCustomizeReportDesigner() {
     selectElement(CustomizeReportElementTypes.Line, lineId);
   }
 
-  function handlePageFormatChange(format: CustomizeReportPaperFormat) {
+  function updatePageSetup(updater: (setup: CustomizeReportPageSetup) => CustomizeReportPageSetup) {
     pushUndoSnapshot();
-    setPageSetup((currentSetup) => getPageSetup(format, currentSetup.orientation));
-  }
-
-  function handlePageOrientationChange(orientation: CustomizeReportPageSetup["orientation"]) {
-    pushUndoSnapshot();
-    setPageSetup((currentSetup) => getPageSetup(currentSetup.format, orientation));
+    setPageSetup((currentSetup) => getPageSetupWithDefaults(updater(currentSetup)));
   }
 
   function updateTableSetup(updater: (setup: CustomizeReportTableSetup) => CustomizeReportTableSetup) {
@@ -1402,6 +1797,7 @@ export function useCustomizeReportDesigner() {
     canvasScrollRef,
     canRedo,
     canUndo,
+    canvasSelectionRect,
     deleteTargetType,
     fields,
     gridSize,
@@ -1419,8 +1815,6 @@ export function useCustomizeReportDesigner() {
     handleLayerSelectedElement,
     handleLinePointerDown,
     handleLogoUpload,
-    handlePageFormatChange,
-    handlePageOrientationChange,
     handlePointerDown,
     handlePointerMove,
     handlePointerUp,
@@ -1436,8 +1830,8 @@ export function useCustomizeReportDesigner() {
     handleToggleSelectedLock,
     handleUndoLayout,
     hasMultiSelection,
-    isCanvasPanning,
     isElementsPanelOpen,
+    isPageSetupDialogOpen,
     isRendering,
     isToolsDialogOpen,
     lines,
@@ -1457,6 +1851,7 @@ export function useCustomizeReportDesigner() {
     setDeleteTargetType,
     setGridSize,
     setIsElementsPanelOpen,
+    setIsPageSetupDialogOpen,
     setIsToolsDialogOpen,
     setSelectedPresetTemplateId,
     setSelectedReportId,
@@ -1466,6 +1861,7 @@ export function useCustomizeReportDesigner() {
     tableSetup,
     templatePreview,
     updateMarginSetup,
+    updatePageSetup,
     updateSelectedField,
     updateSelectedLine,
     updateTableColumn,

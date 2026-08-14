@@ -11,10 +11,31 @@ type CustomizeReportRenderPdfPayload = {
   fileName?: string;
   page?: {
     format?: CustomizeReportPaperFormat;
+    height?: number;
     landscape?: boolean;
+    width?: number;
   };
   template: string;
 };
+
+const ChromePdfFormats: CustomizeReportPaperFormat[] = [
+  "A3",
+  "A4",
+  "A5",
+  "B4",
+  "B5",
+  "Legal",
+  "Letter",
+  "Tabloid",
+];
+
+const SupportedPdfFormats: CustomizeReportPaperFormat[] = [
+  ...ChromePdfFormats,
+  "Custom",
+  "Executive",
+  "Folio",
+  "Statement",
+];
 
 type JsreportInstance = {
   init: () => Promise<void>;
@@ -77,9 +98,11 @@ function parseRenderRequest(value: unknown): CustomizeReportRenderPdfPayload | n
 
   const page = isRecord(value.page) ? value.page : {};
   const format = page.format;
+  const height = page.height;
   const landscape = page.landscape;
+  const width = page.width;
 
-  if (format !== undefined && !["A4", "Letter", "Legal"].includes(String(format))) {
+  if (format !== undefined && !SupportedPdfFormats.includes(String(format) as CustomizeReportPaperFormat)) {
     return null;
   }
 
@@ -87,15 +110,27 @@ function parseRenderRequest(value: unknown): CustomizeReportRenderPdfPayload | n
     return null;
   }
 
+  if (height !== undefined && (typeof height !== "number" || !Number.isFinite(height) || height <= 0)) {
+    return null;
+  }
+
+  if (width !== undefined && (typeof width !== "number" || !Number.isFinite(width) || width <= 0)) {
+    return null;
+  }
+
   const parsedFormat =
-    typeof format === "string" && ["A4", "Letter", "Legal"].includes(format) ? (format as CustomizeReportPaperFormat) : undefined;
+    typeof format === "string" && SupportedPdfFormats.includes(format as CustomizeReportPaperFormat)
+      ? (format as CustomizeReportPaperFormat)
+      : undefined;
 
   return {
     data: isRecord(value.data) ? value.data : undefined,
     fileName: typeof value.fileName === "string" ? value.fileName : undefined,
     page: {
       format: parsedFormat,
+      height,
       landscape,
+      width,
     },
     template: value.template,
   };
@@ -110,13 +145,16 @@ export async function POST(request: Request) {
     }
 
     const reporter = await getReporter();
+    const useNamedFormat = body.page?.format && ChromePdfFormats.includes(body.page.format);
     const report = await reporter.render({
       template: {
         content: body.template,
         engine: "handlebars",
         recipe: "chrome-pdf",
         chrome: {
-          format: body.page?.format || "A4",
+          ...(useNamedFormat ? { format: body.page?.format } : {}),
+          ...(!useNamedFormat && body.page?.width ? { width: `${body.page.width}px` } : {}),
+          ...(!useNamedFormat && body.page?.height ? { height: `${body.page.height}px` } : {}),
           landscape: body.page?.landscape || false,
           marginTop: "0in",
           marginRight: "0in",

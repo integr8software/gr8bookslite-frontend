@@ -5,6 +5,7 @@ import { CustomizeReportDesignerCanvas } from "@/app/src/ui/modules/system-admin
 import { CustomizeReportDesignerHeader } from "@/app/src/ui/modules/system-administration/customized-reports/components/CustomizeReportDesignerHeader";
 import { CustomizeReportElementsPanel } from "@/app/src/ui/modules/system-administration/customized-reports/components/CustomizeReportElementsPanel";
 import { CustomizeReportInspectorPanel } from "@/app/src/ui/modules/system-administration/customized-reports/components/CustomizeReportInspectorPanel";
+import { CustomizeReportPageSetupDialog } from "@/app/src/ui/modules/system-administration/customized-reports/components/CustomizeReportPageSetupDialog";
 import { CustomizeReportToolsDialog } from "@/app/src/ui/modules/system-administration/customized-reports/components/CustomizeReportToolsDialog";
 import { CustomizedReportNotFound } from "@/app/src/ui/modules/system-administration/customized-reports/components/CustomizedReportNotFound";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
@@ -13,6 +14,7 @@ export function CustomizeReportPage() {
   const {
     alignmentGuides,
     canvasScrollRef,
+    canvasSelectionRect,
     canRedo,
     canUndo,
     deleteTargetType,
@@ -32,8 +34,6 @@ export function CustomizeReportPage() {
     handleLayerSelectedElement,
     handleLinePointerDown,
     handleLogoUpload,
-    handlePageFormatChange,
-    handlePageOrientationChange,
     handlePointerDown,
     handlePointerMove,
     handlePointerUp,
@@ -49,8 +49,8 @@ export function CustomizeReportPage() {
     handleToggleSelectedLock,
     handleUndoLayout,
     hasMultiSelection,
-    isCanvasPanning,
     isElementsPanelOpen,
+    isPageSetupDialogOpen,
     isRendering,
     isToolsDialogOpen,
     lines,
@@ -69,6 +69,7 @@ export function CustomizeReportPage() {
     setDeleteTargetType,
     setGridSize,
     setIsElementsPanelOpen,
+    setIsPageSetupDialogOpen,
     setIsToolsDialogOpen,
     setSelectedPresetTemplateId,
     setSelectedReportId,
@@ -78,6 +79,7 @@ export function CustomizeReportPage() {
     tableSetup,
     templatePreview,
     updateMarginSetup,
+    updatePageSetup,
     updateSelectedField,
     updateSelectedLine,
     updateTableColumn,
@@ -105,9 +107,8 @@ export function CustomizeReportPage() {
         canRedo={canRedo}
         canUndo={canUndo}
         isRendering={isRendering}
+        onOpenPageSetup={() => setIsPageSetupDialogOpen(true)}
         onOpenTools={() => setIsToolsDialogOpen(true)}
-        onPageFormatChange={handlePageFormatChange}
-        onPageOrientationChange={handlePageOrientationChange}
         onPresetTemplateApply={handleApplyPresetTemplate}
         onPreviewPdf={handlePreviewPdf}
         onRedoLayout={handleRedoLayout}
@@ -127,15 +128,21 @@ export function CustomizeReportPage() {
       <CustomizeReportToolsDialog
         gridSize={gridSize}
         isOpen={isToolsDialogOpen}
-        marginSetup={marginSetup}
         onAddLine={handleAddLine}
         onAddStaticText={handleAddStaticText}
         onClose={() => setIsToolsDialogOpen(false)}
         onGridSizeChange={setGridSize}
         onLogoUpload={handleLogoUpload}
-        onMarginSetupChange={updateMarginSetup}
         onSnapToGridChange={setSnapToGrid}
         snapToGrid={snapToGrid}
+      />
+      <CustomizeReportPageSetupDialog
+        isOpen={isPageSetupDialogOpen}
+        marginSetup={marginSetup}
+        onClose={() => setIsPageSetupDialogOpen(false)}
+        onMarginSetupChange={updateMarginSetup}
+        onPageSetupChange={updatePageSetup}
+        pageSetup={pageSetup}
       />
       <section
         className={`grid gap-4 ${
@@ -157,9 +164,9 @@ export function CustomizeReportPage() {
         <CustomizeReportDesignerCanvas
           alignmentGuides={alignmentGuides}
           canvasScrollRef={canvasScrollRef}
+          canvasSelectionRect={canvasSelectionRect}
           fields={fields}
           gridSize={gridSize}
-          isCanvasPanning={isCanvasPanning}
           lines={lines}
           marginSetup={marginSetup}
           onCanvasPointerDown={handleCanvasPointerDown}

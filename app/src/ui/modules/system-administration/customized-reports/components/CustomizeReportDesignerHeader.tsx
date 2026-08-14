@@ -1,5 +1,6 @@
 import {
   FileText,
+  FileCog,
   LayoutTemplate,
   Redo2,
   RefreshCcw,
@@ -25,7 +26,6 @@ import {
 import type {
   CustomizeReportModuleOption,
   CustomizeReportPageSetup,
-  CustomizeReportPaperFormat,
 } from "@/app/src/types/modules/system-administration/customized-reports/CustomizeReportTypes";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
 import { clamp } from "@/app/src/ui/modules/system-administration/customized-reports/utils/CustomizeReportDesignerUtils";
@@ -40,8 +40,7 @@ type CustomizeReportDesignerHeaderProps = {
   selectedReportId: string;
   zoom: number;
   onOpenTools: () => void;
-  onPageFormatChange: (format: CustomizeReportPaperFormat) => void;
-  onPageOrientationChange: (orientation: CustomizeReportPageSetup["orientation"]) => void;
+  onOpenPageSetup: () => void;
   onPresetTemplateApply: () => void;
   onPreviewPdf: () => void;
   onRedoLayout: () => void;
@@ -58,8 +57,7 @@ export function CustomizeReportDesignerHeader({
   canUndo,
   isRendering,
   onOpenTools,
-  onPageFormatChange,
-  onPageOrientationChange,
+  onOpenPageSetup,
   onPresetTemplateApply,
   onPreviewPdf,
   onRedoLayout,
@@ -133,6 +131,10 @@ export function CustomizeReportDesignerHeader({
             <SlidersHorizontal className="h-4 w-4" />
             Tools
           </button>
+          <button className={ToolbarButtonClassName} onClick={onOpenPageSetup} type="button">
+            <FileCog className="h-4 w-4" />
+            Page Setup
+          </button>
           <button className={ToolbarButtonClassName} onClick={onResetLayout} type="button">
             <RefreshCcw className="h-4 w-4" />
             Reset
@@ -153,7 +155,7 @@ export function CustomizeReportDesignerHeader({
         </div>
       </div>
 
-      <div className="grid gap-3 border-t border-slate-100 bg-slate-50/70 px-4 py-3 sm:grid-cols-2 xl:grid-cols-[minmax(13rem,1.2fr)_minmax(13rem,1fr)_minmax(10rem,0.75fr)_minmax(10rem,0.75fr)]">
+      <div className="grid gap-3 border-t border-slate-100 bg-slate-50/70 px-4 py-3 sm:grid-cols-2 xl:grid-cols-[minmax(13rem,1.2fr)_minmax(13rem,1fr)_minmax(10rem,0.75fr)]">
         <label className="flex min-w-0 flex-col gap-1">
           <span className="text-xs font-semibold uppercase text-slate-500">Report Module</span>
           <select
@@ -202,31 +204,14 @@ export function CustomizeReportDesignerHeader({
             </button>
           </span>
         </label>
-        <label className="flex min-w-0 flex-col gap-1">
-          <span className="text-xs font-semibold uppercase text-slate-500">Paper</span>
-          <select
-            className={`${ReportToolbarSelectClassName} w-full`}
-            onChange={(event) => onPageFormatChange(event.target.value as CustomizeReportPaperFormat)}
-            value={pageSetup.format}
-          >
-            <option value="A4">A4</option>
-            <option value="Letter">Letter</option>
-            <option value="Legal">Legal</option>
-          </select>
-        </label>
-        <label className="flex min-w-0 flex-col gap-1">
-          <span className="text-xs font-semibold uppercase text-slate-500">Orientation</span>
-          <select
-            className={`${ReportToolbarSelectClassName} w-full`}
-            onChange={(event) =>
-              onPageOrientationChange(event.target.value as CustomizeReportPageSetup["orientation"])
-            }
-            value={pageSetup.orientation}
-          >
-            <option value="portrait">Portrait</option>
-            <option value="landscape">Landscape</option>
-          </select>
-        </label>
+        <button
+          className={`${ToolbarButtonClassName} h-full min-h-14 justify-start`}
+          onClick={onOpenPageSetup}
+          type="button"
+        >
+          <FileCog className="h-4 w-4" />
+          {pageSetup.format} / {pageSetup.orientation}
+        </button>
       </div>
     </section>
   );

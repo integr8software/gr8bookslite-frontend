@@ -2,6 +2,7 @@ import {
   AlignmentGuideThreshold,
   DefaultFieldColor,
   DefaultFontFamily,
+  DefaultTableBorderSetup,
   DefaultMarginSetup,
   DefaultTableColumns,
   DefaultTableSetup,
@@ -25,6 +26,7 @@ import type {
   CustomizeReportPageSetup,
   CustomizeReportPaperFormat,
   CustomizeReportSampleData as CustomizeReportSampleDataType,
+  CustomizeReportTableBorderSetup,
   CustomizeReportTableSetup,
 } from "@/app/src/types/modules/system-administration/customized-reports/CustomizeReportTypes";
 export function clamp(value: number, min: number, max: number) {
@@ -35,10 +37,11 @@ export function cloneLayout(layout: CustomizeReportLayout): CustomizeReportLayou
   return {
     fields: layout.fields.map((field) => ({ ...field })),
     lines: layout.lines.map((line) => ({ ...line })),
-    pageSetup: { ...layout.pageSetup },
+    pageSetup: getPageSetupWithDefaults(layout.pageSetup),
     tableSetup: layout.tableSetup
       ? {
           ...layout.tableSetup,
+          borderSetup: getTableBorderSetup(layout.tableSetup),
           columns: layout.tableSetup.columns.map((column) => ({ ...column })),
         }
       : undefined,
@@ -48,6 +51,8 @@ export function cloneLayout(layout: CustomizeReportLayout): CustomizeReportLayou
 
 export function getTableSetupWithDefaults(tableSetup?: CustomizeReportTableSetup) {
   const configuredColumns = tableSetup?.columns || [];
+  const fallbackBorderValue = tableSetup?.showBorders ?? DefaultTableSetup.showBorders;
+  const fallbackBorderSetup = createUniformTableBorderSetup(fallbackBorderValue);
   const defaultColumns = DefaultTableColumns.map((defaultColumn) => ({
     ...defaultColumn,
     ...(configuredColumns.find((column) => column.key === defaultColumn.key) || {}),
@@ -59,7 +64,41 @@ export function getTableSetupWithDefaults(tableSetup?: CustomizeReportTableSetup
   return {
     ...(tableSetup || DefaultTableSetup),
     previewRows: tableSetup?.previewRows ?? DefaultTableSetup.previewRows,
+    showHeader: tableSetup?.showHeader ?? DefaultTableSetup.showHeader,
+    borderSetup: {
+      ...fallbackBorderSetup,
+      ...(tableSetup?.borderSetup || {}),
+    },
     columns: [...defaultColumns, ...customColumns],
+  };
+}
+
+export function getPageSetupWithDefaults(pageSetup?: CustomizeReportPageSetup): CustomizeReportPageSetup {
+  return {
+    ...getPageSetup(pageSetup?.format || "Letter", pageSetup?.orientation || "portrait"),
+    ...(pageSetup || {}),
+    applyTo: pageSetup?.applyTo || "whole-document",
+    firstPageSource: pageSetup?.firstPageSource || "Default tray",
+    otherPagesSource: pageSetup?.otherPagesSource || "Default tray",
+  };
+}
+
+export function createUniformTableBorderSetup(isVisible: boolean): CustomizeReportTableBorderSetup {
+  return {
+    top: isVisible,
+    right: isVisible,
+    bottom: isVisible,
+    left: isVisible,
+    insideHorizontal: isVisible,
+    insideVertical: isVisible,
+  };
+}
+
+export function getTableBorderSetup(tableSetup: CustomizeReportTableSetup) {
+  return {
+    ...DefaultTableBorderSetup,
+    ...createUniformTableBorderSetup(tableSetup.showBorders),
+    ...tableSetup.borderSetup,
   };
 }
 
@@ -128,7 +167,7 @@ export function getTableBounds(tableSetup: CustomizeReportTableSetup): ReportEle
     x: tableSetup.x,
     y: tableSetup.y,
     width: tableSetup.width,
-    height: tableSetup.rowHeight * ((tableSetup.previewRows ?? DefaultTableSetup.previewRows) + 1),
+    height: tableSetup.rowHeight * ((tableSetup.previewRows ?? DefaultTableSetup.previewRows) + (tableSetup.showHeader ? 1 : 0)),
   };
 }
 
@@ -288,17 +327,26 @@ export function getReportStorageKey(reportId: string) {
 }
 
 export function getReportData(data: CustomizeReportSampleDataType, report: CustomizeReportModuleOption) {
+  const isDisbursementVoucher = report.id === "cash-disbursement-disbursement-voucher";
+
   return {
     ...data,
-    documentNo: `${report.documentPrefix}-2026-0001`,
-    reportTitle: report.reportTitle,
+    documentNo: isDisbursementVoucher ? data.documentNo : `${report.documentPrefix}-2026-0001`,
+    reportTitle: isDisbursementVoucher ? data.reportTitle : report.reportTitle,
     totalAmount: formatCurrency(data.totalAmount),
+    totalCredit: formatCurrency(data.totalCredit),
     items: data.items.map((item) => ({
       ...item,
-      unitCost: formatCurrency(item.unitCost),
-      amount: formatCurrency(item.amount),
+      amount: formatMoneyCellValue(item.amount),
+      credit: formatMoneyCellValue(item.credit),
+      debit: formatMoneyCellValue(item.debit),
+      unitCost: formatMoneyCellValue(item.unitCost),
     })),
   };
+}
+
+function formatMoneyCellValue(value: number | string | undefined) {
+  return typeof value === "number" ? formatCurrency(value) : value;
 }
 
 export function isSavedLayout(value: unknown): value is CustomizeReportLayout {
@@ -321,6 +369,9 @@ export function getPageSetup(
     orientation,
     width: orientation === "landscape" ? paperSize.height : paperSize.width,
     height: orientation === "landscape" ? paperSize.width : paperSize.height,
+    applyTo: "whole-document",
+    firstPageSource: "Default tray",
+    otherPagesSource: "Default tray",
   };
 }
 
@@ -331,6 +382,7 @@ export function buildReportTemplate(
   tableSetup: CustomizeReportTableSetup,
 ) {
   const visibleColumns = tableSetup.columns.filter((column) => column.visible);
+  const tableBorderCss = getTableBorderCss(tableSetup);
   const positionedFields = fields
     .filter((field) => field.visible)
     .map((field) => {
@@ -376,17 +428,18 @@ export function buildReportTemplate(
 <head>
 	<meta charset="utf-8" />
 	<style>
-		@page { size: ${pageSetup.format} ${pageSetup.orientation}; margin: 0; }
+		@page { size: ${pageSetup.width}px ${pageSetup.height}px; margin: 0; }
 		* { box-sizing: border-box; }
 		body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: #0f172a; background: #fff; }
 		.report-page { position: relative; width: ${pageSetup.width}px; height: ${pageSetup.height}px; overflow: hidden; background: #fff; }
 		.report-field { position: absolute; overflow: hidden; line-height: 1.25; white-space: pre-wrap; }
 		.report-image { position: absolute; object-fit: contain; }
 		.report-line { position: absolute; }
-		.items-table { position: absolute; left: ${tableSetup.x}px; top: ${tableSetup.y}px; width: ${tableSetup.width}px; border-collapse: collapse; font-size: ${tableSetup.fontSize}px; }
-		.items-table th { ${tableSetup.showBorders ? "border: 1px solid #cbd5e1;" : ""} background: #f8fafc; height: ${tableSetup.rowHeight}px; padding: 0 8px; font-weight: 700; }
-		.items-table td { ${tableSetup.showBorders ? "border: 1px solid #e2e8f0;" : ""} height: ${tableSetup.rowHeight}px; padding: 0 8px; }
+		.items-table { position: absolute; left: ${tableSetup.x}px; top: ${tableSetup.y}px; width: ${tableSetup.width}px; border-collapse: separate; border-spacing: 0; font-size: ${tableSetup.fontSize}px; }
+		.items-table th { background: #f8fafc; height: ${tableSetup.rowHeight}px; padding: 0 8px; font-weight: 700; }
+		.items-table td { height: ${tableSetup.rowHeight}px; padding: 0 8px; }
 		.items-table .number { text-align: right; }
+		${tableBorderCss}
 		.signature-line { position: absolute; bottom: 94px; width: 220px; border-top: 1px solid #334155; }
 		.signature-line.left { left: 42px; }
 		.signature-line.right { right: 68px; }
@@ -397,11 +450,15 @@ export function buildReportTemplate(
 		${positionedLines}
 		${positionedFields}
 		<table class="items-table">
-			<thead>
+			${
+        tableSetup.showHeader
+          ? `<thead>
 				<tr>
 					${tableHeaderCells}
 				</tr>
-			</thead>
+			</thead>`
+          : ""
+      }
 			<tbody>
 				{{#each items}}
 					<tr>
@@ -413,5 +470,27 @@ export function buildReportTemplate(
 	</div>
 </body>
 </html>`;
+}
+
+function getTableBorderCss(tableSetup: CustomizeReportTableSetup) {
+  const borderSetup = getTableBorderSetup(tableSetup);
+  const borderRules = [
+    borderSetup.left ? ".items-table tr > *:first-child { border-left: 1px solid #cbd5e1; }" : "",
+    borderSetup.right ? ".items-table tr > *:last-child { border-right: 1px solid #cbd5e1; }" : "",
+    borderSetup.insideVertical ? ".items-table tr > *:not(:last-child) { border-right: 1px solid #cbd5e1; }" : "",
+    borderSetup.bottom ? ".items-table tbody tr:last-child > * { border-bottom: 1px solid #cbd5e1; }" : "",
+    borderSetup.insideHorizontal ? ".items-table tbody tr:not(:last-child) > * { border-bottom: 1px solid #e2e8f0; }" : "",
+  ];
+
+  if (tableSetup.showHeader) {
+    borderRules.push(
+      borderSetup.top ? ".items-table thead tr:first-child > * { border-top: 1px solid #cbd5e1; }" : "",
+      borderSetup.insideHorizontal ? ".items-table thead tr:last-child > * { border-bottom: 1px solid #cbd5e1; }" : "",
+    );
+  } else {
+    borderRules.push(borderSetup.top ? ".items-table tbody tr:first-child > * { border-top: 1px solid #cbd5e1; }" : "");
+  }
+
+  return borderRules.filter(Boolean).join("\n\t\t");
 }
 

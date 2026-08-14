@@ -9,11 +9,16 @@ import type {
   CustomizeReportAlign,
   CustomizeReportMarginSetup,
   CustomizeReportPageSetup,
+  CustomizeReportTableBorderSetup,
   CustomizeReportTableColumn,
   CustomizeReportTableColumnKey,
   CustomizeReportTableSetup,
 } from "@/app/src/types/modules/system-administration/customized-reports/CustomizeReportTypes";
-import { clamp } from "@/app/src/ui/modules/system-administration/customized-reports/utils/CustomizeReportDesignerUtils";
+import {
+  clamp,
+  createUniformTableBorderSetup,
+  getTableBorderSetup,
+} from "@/app/src/ui/modules/system-administration/customized-reports/utils/CustomizeReportDesignerUtils";
 
 type CustomizeReportTableInspectorProps = {
   marginSetup: CustomizeReportMarginSetup;
@@ -78,6 +83,9 @@ function CustomizeReportTableDesignerDialog({
   pageSetup,
   tableSetup,
 }: CustomizeReportTableInspectorProps & { onClose: () => void }) {
+  const borderSetup = getTableBorderSetup(tableSetup);
+  const allBordersVisible = Object.values(borderSetup).every(Boolean);
+
   function fitTableToMargins() {
     onTableSetupChange((currentSetup) => {
       const left = marginSetup.visible ? marginSetup.left : currentSetup.x;
@@ -214,17 +222,61 @@ function CustomizeReportTableDesignerDialog({
 
               <label className="mt-4 flex items-center gap-2 text-sm font-semibold text-slate-700">
                 <input
-                  checked={tableSetup.showBorders}
+                  checked={allBordersVisible}
                   className="h-4 w-4 accent-orange-500"
                   onChange={(event) =>
                     onTableSetupChange((currentSetup) => ({
                       ...currentSetup,
                       showBorders: event.target.checked,
+                      borderSetup: createUniformTableBorderSetup(event.target.checked),
                     }))
                   }
                   type="checkbox"
                 />
-                Show table borders
+                All border lines
+              </label>
+              <div className="mt-3 rounded-md border border-slate-200 bg-slate-50 p-3">
+                <p className="mb-2 text-xs font-semibold uppercase text-slate-500">Border Lines</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {TableBorderOptions.map((option) => (
+                    <label key={option.key} className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                      <input
+                        checked={borderSetup[option.key]}
+                        className="h-4 w-4 accent-orange-500"
+                        onChange={(event) =>
+                          onTableSetupChange((currentSetup) => {
+                            const nextBorderSetup = {
+                              ...getTableBorderSetup(currentSetup),
+                              [option.key]: event.target.checked,
+                            };
+
+                            return {
+                              ...currentSetup,
+                              showBorders: Object.values(nextBorderSetup).some(Boolean),
+                              borderSetup: nextBorderSetup,
+                            };
+                          })
+                        }
+                        type="checkbox"
+                      />
+                      {option.label}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <label className="mt-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
+                <input
+                  checked={tableSetup.showHeader}
+                  className="h-4 w-4 accent-orange-500"
+                  onChange={(event) =>
+                    onTableSetupChange((currentSetup) => ({
+                      ...currentSetup,
+                      showHeader: event.target.checked,
+                    }))
+                  }
+                  type="checkbox"
+                />
+                Show table header
               </label>
             </section>
 
@@ -324,3 +376,15 @@ function CustomizeReportTableDesignerDialog({
     </div>
   );
 }
+
+const TableBorderOptions: Array<{
+  key: keyof CustomizeReportTableBorderSetup;
+  label: string;
+}> = [
+  { key: "top", label: "Top" },
+  { key: "right", label: "Right" },
+  { key: "bottom", label: "Bottom" },
+  { key: "left", label: "Left" },
+  { key: "insideHorizontal", label: "Inside horizontal" },
+  { key: "insideVertical", label: "Inside vertical" },
+];

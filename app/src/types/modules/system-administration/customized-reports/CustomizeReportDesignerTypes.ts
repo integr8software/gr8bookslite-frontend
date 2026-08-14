@@ -20,11 +20,19 @@ export type DragState = {
   }>;
 };
 
-export type CanvasPanState = {
+export type CanvasSelectionState = {
+  additive: boolean;
   startX: number;
   startY: number;
-  scrollLeft: number;
-  scrollTop: number;
+  currentX: number;
+  currentY: number;
+};
+
+export type CanvasSelectionRect = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 };
 
 export type ReportElementBounds = {

@@ -34,7 +34,6 @@ type OnboardingDraftApiResult = {
 type OnboardingBillingApiResult = {
   message: string;
   billing: OnboardingBilling;
-  pendingProviderActivation?: boolean;
   paymentSetupState?: OnboardingPaymentSetupState;
   paymentIntent?: OnboardingPaymentIntent | null;
   nextStep: string;

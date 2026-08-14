@@ -1,41 +1,31 @@
 import { Plus, Type, Upload, X } from "lucide-react";
 import type { ChangeEvent } from "react";
-import { FieldNumberControl } from "@/app/src/ui/modules/system-administration/customized-reports/components/CustomizeReportFormControls";
 import {
   InspectorNumberInputClassName,
   ToolbarButtonClassName,
 } from "@/app/src/ui/modules/system-administration/customized-reports/constants/CustomizeReportDesignerConstants";
-import type {
-  CustomizeReportMarginSetup,
-} from "@/app/src/types/modules/system-administration/customized-reports/CustomizeReportTypes";
 import { clamp } from "@/app/src/ui/modules/system-administration/customized-reports/utils/CustomizeReportDesignerUtils";
 
 type CustomizeReportToolsDialogProps = {
   gridSize: number;
   isOpen: boolean;
-  marginSetup: CustomizeReportMarginSetup;
   snapToGrid: boolean;
   onAddLine: () => void;
   onAddStaticText: () => void;
   onClose: () => void;
   onGridSizeChange: (gridSize: number) => void;
   onLogoUpload: (event: ChangeEvent<HTMLInputElement>) => void;
-  onMarginSetupChange: (
-    updater: (setup: CustomizeReportMarginSetup) => CustomizeReportMarginSetup,
-  ) => void;
   onSnapToGridChange: (snapToGrid: boolean) => void;
 };
 
 export function CustomizeReportToolsDialog({
   gridSize,
   isOpen,
-  marginSetup,
   onAddLine,
   onAddStaticText,
   onClose,
   onGridSizeChange,
   onLogoUpload,
-  onMarginSetupChange,
   onSnapToGridChange,
   snapToGrid,
 }: CustomizeReportToolsDialogProps) {
@@ -87,39 +77,6 @@ export function CustomizeReportToolsDialog({
                 value={gridSize}
               />
             </label>
-          </div>
-
-          <div className="rounded-md border border-slate-200 p-3">
-            <p className="mb-3 text-sm font-semibold text-slate-800">Safe Print Area</p>
-            <label className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
-              <input
-                checked={marginSetup.visible}
-                className="h-4 w-4 accent-orange-500"
-                onChange={(event) =>
-                  onMarginSetupChange((currentSetup) => ({
-                    ...currentSetup,
-                    visible: event.target.checked,
-                  }))
-                }
-                type="checkbox"
-              />
-              Show margin guide
-            </label>
-            <div className="grid grid-cols-4 gap-2">
-              {(["top", "right", "bottom", "left"] as const).map((side) => (
-                <FieldNumberControl
-                  key={side}
-                  label={side}
-                  value={marginSetup[side]}
-                  onChange={(value) =>
-                    onMarginSetupChange((currentSetup) => ({
-                      ...currentSetup,
-                      [side]: clamp(value, 0, 240),
-                    }))
-                  }
-                />
-              ))}
-            </div>
           </div>
 
           <div className="grid grid-cols-3 gap-2">

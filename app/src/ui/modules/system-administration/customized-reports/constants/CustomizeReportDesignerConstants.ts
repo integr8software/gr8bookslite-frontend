@@ -1,6 +1,7 @@
 import type {
   CustomizeReportMarginSetup,
   CustomizeReportTableColumn,
+  CustomizeReportTableBorderSetup,
   CustomizeReportTableSetup,
 } from "@/app/src/types/modules/system-administration/customized-reports/CustomizeReportTypes";
 export const AlignmentGuideThreshold = 6;
@@ -21,21 +22,36 @@ export const MinZoom = 50;
 export const MaxZoom = 150;
 export const ZoomStep = 10;
 export const DefaultTableColumns: CustomizeReportTableColumn[] = [
-  { key: "itemCode", label: "Item Code", width: 116, visible: true, align: "left" },
-  { key: "description", label: "Description", width: 144, visible: true, align: "left" },
-  { key: "qty", label: "Qty", width: 48, visible: true, align: "right" },
-  { key: "uom", label: "UOM", width: 58, visible: true, align: "left" },
-  { key: "unitCost", label: "Unit Cost", width: 84, visible: true, align: "right" },
-  { key: "amount", label: "Amount", width: 96, visible: true, align: "right" },
+  { key: "account", label: "Account", width: 190, visible: true, align: "left" },
+  { key: "payee", label: "Payee", width: 145, visible: true, align: "left" },
+  { key: "particulars", label: "Particulars", width: 170, visible: true, align: "left" },
+  { key: "costCenter", label: "Cost Center", width: 105, visible: true, align: "left" },
+  { key: "debit", label: "Debit", width: 90, visible: true, align: "right" },
+  { key: "credit", label: "Credit", width: 90, visible: true, align: "right" },
 ];
+export const DefaultTableBorderSetup: CustomizeReportTableBorderSetup = {
+  top: true,
+  right: true,
+  bottom: true,
+  left: true,
+  insideHorizontal: true,
+  insideVertical: true,
+};
 export const DefaultTableSetup: CustomizeReportTableSetup = {
-  x: 42,
-  y: 238,
-  width: 686,
-  fontSize: 11,
-  previewRows: 2,
-  rowHeight: 26,
+  x: 20,
+  y: 316,
+  width: 754,
+  fontSize: 8,
+  fontFamily: DefaultFontFamily,
+  color: DefaultFieldColor,
+  bold: false,
+  italic: false,
+  underline: false,
+  previewRows: 4,
+  rowHeight: 48,
   showBorders: true,
+  showHeader: true,
+  borderSetup: DefaultTableBorderSetup,
   columns: DefaultTableColumns,
 };
 export const DefaultMarginSetup: CustomizeReportMarginSetup = {
@@ -58,7 +74,7 @@ export const PrimaryButtonClassName =
 export const ReportToolbarSelectClassName =
   "h-9 rounded-md border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-100";
 
-export const DefaultCustomizeReportModuleId = "inventory-receiving-report";
+export const DefaultCustomizeReportModuleId = "cash-disbursement-disbursement-voucher";
 
 export const CustomizeReportModuleCategories = [
   "Cash Receipt",

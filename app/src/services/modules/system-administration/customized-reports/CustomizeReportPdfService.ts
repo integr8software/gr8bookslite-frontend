@@ -6,7 +6,9 @@ type CustomizeReportRenderPdfPayload = {
   fileName?: string;
   page?: {
     format?: CustomizeReportPaperFormat;
+    height?: number;
     landscape?: boolean;
+    width?: number;
   };
   template: string;
 };

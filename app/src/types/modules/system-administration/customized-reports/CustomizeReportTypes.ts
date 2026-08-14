@@ -21,6 +21,7 @@ export type CustomizeReportField = {
   italic?: boolean;
   underline?: boolean;
   visible: boolean;
+  groupId?: string;
   locked?: boolean;
   zIndex?: number;
 };
@@ -37,17 +38,36 @@ export type CustomizeReportLine = {
   orientation: CustomizeReportLineOrientation;
   color: string;
   visible: boolean;
+  groupId?: string;
   locked?: boolean;
   zIndex?: number;
 };
 
-export type CustomizeReportPaperFormat = "A4" | "Letter" | "Legal";
+export type CustomizeReportPaperFormat =
+  | "A3"
+  | "A4"
+  | "A5"
+  | "B4"
+  | "B5"
+  | "Executive"
+  | "Folio"
+  | "Legal"
+  | "Letter"
+  | "Statement"
+  | "Tabloid"
+  | "Custom";
 
 export type CustomizeReportPageSetup = {
   format: CustomizeReportPaperFormat;
   orientation: "portrait" | "landscape";
   width: number;
   height: number;
+  applyTo?: "whole-document" | "this-section";
+  firstPageSource?: string;
+  footerHeight?: number;
+  headerHeight?: number;
+  otherPagesSource?: string;
+  showSectionGuides?: boolean;
 };
 
 export type CustomizeReportTableColumnKey = string;
@@ -60,14 +80,30 @@ export type CustomizeReportTableColumn = {
   align: CustomizeReportAlign;
 };
 
+export type CustomizeReportTableBorderSetup = {
+  top: boolean;
+  right: boolean;
+  bottom: boolean;
+  left: boolean;
+  insideHorizontal: boolean;
+  insideVertical: boolean;
+};
+
 export type CustomizeReportTableSetup = {
   x: number;
   y: number;
   width: number;
   fontSize: number;
+  fontFamily?: string;
+  color?: string;
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
   previewRows: number;
   rowHeight: number;
   showBorders: boolean;
+  showHeader: boolean;
+  borderSetup: CustomizeReportTableBorderSetup;
   columns: CustomizeReportTableColumn[];
 };
 
@@ -104,23 +140,28 @@ export type CustomizeReportModuleOption = {
 };
 
 export type CustomizeReportDataRow = {
-  itemCode: string;
-  description: string;
-  qty: number;
-  uom: string;
-  unitCost: number;
-  amount: number;
+  [key: string]: number | string;
 };
 
 export type CustomizeReportSampleData = {
   companyName: string;
+  vatRegTin: string;
+  companyAddress: string;
+  telephoneNo: string;
   reportTitle: string;
   documentNo: string;
   documentDate: string;
+  checkVoucherDate: string;
+  checkDmNo: string;
+  refNo: string;
   partyName: string;
+  amountInWords: string;
+  purpose: string;
   warehouse: string;
   preparedBy: string;
+  verifiedBy: string;
   approvedBy: string;
   totalAmount: number;
+  totalCredit: number;
   items: CustomizeReportDataRow[];
 };

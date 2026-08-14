@@ -9,8 +9,6 @@ import {
 } from "@/app/src/generated/api/workspace-companies/workspace-companies";
 import type { WorkspaceCompanyResponseDto, WorkspaceCompanyUnitResponseDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import type {
-  CreateWorkspaceCompanyApiRequest,
-  UpdateWorkspaceCompanyApiRequest,
   WorkspaceCompanyApiRecord,
   WorkspaceCompanyBranchRecord,
   WorkspaceCompanyFormValues,
@@ -32,6 +30,47 @@ type WorkspaceCompanyUnitApiLike = WorkspaceCompanyUnitApiRecord | WorkspaceComp
 
 const CompanyCreateTimeoutMs = 60000;
 const CompanyLogoUploadTimeoutMs = 60000;
+
+type CreateWorkspaceCompanyBillingApiPayload = {
+  planCode?: string;
+  billingCycle?: "MONTHLY" | "YEARLY";
+  billingMode?: "MANUAL" | "AUTO";
+  billingEmail?: string;
+  paymentMethodId?: string;
+  paymentAttemptId?: number;
+  cardBrand?: string;
+  cardLast4?: string;
+  cardExpiryMonth?: number;
+  cardExpiryYear?: number;
+};
+
+type CreateWorkspaceCompanyApiPayload = {
+  taxpayerType: "individual" | "non-individual";
+  lastName?: string;
+  firstName?: string;
+  middleName?: string;
+  companyName?: string;
+  nonIndividualType?: string;
+  nonIndividualTypeOther?: string;
+  logoFileName?: string;
+  logoMimeType?: string;
+  logoStoragePath?: string;
+  logoPublicUrl?: string;
+  address: string;
+  countryCode: string;
+  baseCurrencyCode: string;
+  tin: string;
+  email: string;
+  contactNumber: string;
+  reportStartDate: string;
+  reportEndDate: string;
+  website?: string;
+  billing?: CreateWorkspaceCompanyBillingApiPayload;
+};
+
+type UpdateWorkspaceCompanyApiPayload = Partial<
+  Omit<CreateWorkspaceCompanyApiPayload, "billing">
+>;
 
 export async function GetWorkspaceCompanies() {
   const response = await workspaceCompaniesControllerFindAllV1();
@@ -100,7 +139,7 @@ export async function DeactivateWorkspaceCompany(companyId: string): Promise<Wor
   return MapWorkspaceCompanyApiRecord(response);
 }
 
-export async function CreateWorkspaceCompanyFromRequest(payload: CreateWorkspaceCompanyApiRequest): Promise<WorkspaceCompanyRecord> {
+export async function CreateWorkspaceCompanyFromRequest(payload: CreateWorkspaceCompanyApiPayload): Promise<WorkspaceCompanyRecord> {
   const response = await workspaceCompaniesControllerCreateV1(payload, {
     timeout: CompanyCreateTimeoutMs,
   });
@@ -181,7 +220,7 @@ function MapWorkspaceCompanyUnitApiRecord(unit: WorkspaceCompanyUnitApiLike): Wo
   };
 }
 
-async function RecoverCreatedCompanyAfterTimeout(payload: CreateWorkspaceCompanyApiRequest) {
+async function RecoverCreatedCompanyAfterTimeout(payload: CreateWorkspaceCompanyApiPayload) {
   for (let attempt = 0; attempt < 8; attempt += 1) {
     if (attempt > 0) {
       await Wait(1500);
@@ -204,7 +243,7 @@ function IsRequestTimeout(error: unknown) {
   );
 }
 
-function IsMatchingCreatedCompany(company: WorkspaceCompanyRecord, payload: CreateWorkspaceCompanyApiRequest) {
+function IsMatchingCreatedCompany(company: WorkspaceCompanyRecord, payload: CreateWorkspaceCompanyApiPayload) {
   return (
     NormalizeText(company.name) === NormalizeText(GetCreateRequestName(payload)) &&
     NormalizeText(company.email) === NormalizeText(payload.email) &&
@@ -212,7 +251,7 @@ function IsMatchingCreatedCompany(company: WorkspaceCompanyRecord, payload: Crea
   );
 }
 
-function GetCreateRequestName(payload: CreateWorkspaceCompanyApiRequest) {
+function GetCreateRequestName(payload: CreateWorkspaceCompanyApiPayload) {
   if (payload.taxpayerType === "individual") {
     return [payload.firstName, payload.middleName, payload.lastName].filter(Boolean).join(" ");
   }
@@ -241,9 +280,9 @@ function GetWorkspaceCompanyBranchType(type: WorkspaceCompanyUnitApiLike["type"]
 function MapWorkspaceCompanyFormToCreateRequest(
   values: WorkspaceCompanyFormValues,
   options: { paymentAttemptId?: string | number | null } = {},
-): CreateWorkspaceCompanyApiRequest {
+): CreateWorkspaceCompanyApiPayload {
   const trimmedValues = TrimCompanyFormValues(values);
-  const request: CreateWorkspaceCompanyApiRequest = {
+  const request: CreateWorkspaceCompanyApiPayload = {
     address: trimmedValues.address,
     baseCurrencyCode: trimmedValues.baseCurrencyCode,
     contactNumber: trimmedValues.contactNumber,
@@ -290,9 +329,9 @@ function MapWorkspaceCompanyFormToCreateRequest(
   return request;
 }
 
-function MapWorkspaceCompanyFormToUpdateRequest(values: WorkspaceCompanyFormValues): UpdateWorkspaceCompanyApiRequest {
+function MapWorkspaceCompanyFormToUpdateRequest(values: WorkspaceCompanyFormValues): UpdateWorkspaceCompanyApiPayload {
   const trimmedValues = TrimCompanyFormValues(values);
-  const request: UpdateWorkspaceCompanyApiRequest = {
+  const request: UpdateWorkspaceCompanyApiPayload = {
     address: trimmedValues.address,
     baseCurrencyCode: trimmedValues.baseCurrencyCode,
     contactNumber: trimmedValues.contactNumber,

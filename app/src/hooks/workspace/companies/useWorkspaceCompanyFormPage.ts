@@ -38,6 +38,9 @@ function formatCardNumber(value: string) {
 }
 
 const CompanyNameTakenMessage = "Company name is already taken.";
+const AutoBillingMode = "AUTO";
+const ManualBillingMode = "MANUAL";
+const NewPayMongoCardPaymentMethodId = "new-paymongo-card";
 
 function normalizeCompanyName(value: string) {
   return value.trim().replace(/\s+/g, " ").toLowerCase();
@@ -239,7 +242,7 @@ export function useWorkspaceCompanyFormPage() {
     let didCreatePaymentMethod = false;
 
     try {
-      if (values.billingMode === "MANUAL") {
+      if (values.billingMode === ManualBillingMode) {
         const checkout = await CreateManualCheckout({
           billingCycle: values.billingCycle,
           companyName: getCompanyDisplayName(values),
@@ -259,7 +262,7 @@ export function useWorkspaceCompanyFormPage() {
       }
 
       const valuesToSave = await createTokenizedCompanyValues(values);
-      didCreatePaymentMethod = values.billingPaymentMethodId === "new-paymongo-card";
+      didCreatePaymentMethod = values.billingPaymentMethodId === NewPayMongoCardPaymentMethodId;
 
       await addCompany(valuesToSave);
       router.push(WorkspaceCompaniesHref);
@@ -276,7 +279,7 @@ export function useWorkspaceCompanyFormPage() {
         return;
       }
 
-      if (values.billingPaymentMethodId === "new-paymongo-card") {
+      if (values.billingPaymentMethodId === NewPayMongoCardPaymentMethodId) {
         toast.error(error instanceof Error ? error.message : "We could not create the PayMongo payment method right now.");
       }
     }
@@ -307,7 +310,7 @@ export function useWorkspaceCompanyFormPage() {
 }
 
 async function createTokenizedCompanyValues(values: WorkspaceCompanyFormValues): Promise<WorkspaceCompanyFormValues> {
-  if (values.billingMode !== "AUTO" || values.billingPaymentMethodId !== "new-paymongo-card") {
+  if (values.billingMode !== AutoBillingMode || values.billingPaymentMethodId !== NewPayMongoCardPaymentMethodId) {
     return values;
   }
 

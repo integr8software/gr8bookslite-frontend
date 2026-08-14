@@ -31,8 +31,11 @@ const SetupLaterPaymentMethod = {
 	id: "setup-later",
 	label: "Set up billing after creating company",
 };
+const AutoBillingMode = "AUTO";
+const CardholderNameAutoComplete = "cc-name";
+const NewPayMongoCardPaymentMethodId = "new-paymongo-card";
 const NewPayMongoCardPaymentMethod = {
-	id: "new-paymongo-card",
+	id: NewPayMongoCardPaymentMethodId,
 	label: "Add new PayMongo card",
 };
 export function CompanyDetailsFields({
@@ -485,7 +488,7 @@ export function CompanyDetailsFields({
 									</p>
 								</div>
 							</div>
-							{values.billingMode === "AUTO" ? (
+							{values.billingMode === AutoBillingMode ? (
 								<div className="grid gap-4 lg:grid-cols-2">
 									<WorkspaceManagementField
 										label="Payment Method"
@@ -523,9 +526,9 @@ export function CompanyDetailsFields({
 							)}
 						</div>
 
-						{values.billingMode === "AUTO" &&
+						{values.billingMode === AutoBillingMode &&
 						values.billingPaymentMethodId ===
-						"new-paymongo-card" ? (
+						NewPayMongoCardPaymentMethodId ? (
 							<div className="grid gap-4 rounded-xl border border-darknavy/10 bg-white p-4 lg:grid-cols-2">
 								<WorkspaceManagementField
 									label="Cardholder Name"
@@ -536,7 +539,7 @@ export function CompanyDetailsFields({
 										name="billingCardholderName"
 										value={values.billingCardholderName}
 										onChange={onInputChange}
-										autoComplete="cc-name"
+										autoComplete={CardholderNameAutoComplete}
 										className={
 											WorkspaceManagementFieldClassName
 										}

@@ -151,15 +151,6 @@ export type WorkspaceCompanyUserApiRequest = {
   companyAssignments: WorkspaceCompanyUserApiAssignment[];
 };
 
-export type WorkspaceCompanyUserResendInvitationResponse = {
-  message: string;
-};
-
-export type WorkspaceCompanyUserCancelInvitationResponse = {
-  id: number;
-  message: string;
-};
-
 export type WorkspaceCompanyBranchKind = "Head Office" | "Branch" | "Satellite";
 
 export type WorkspaceCompanyBranchRecord = {
@@ -260,44 +251,3 @@ export type WorkspaceCompanyApiRecord = {
   createdAt: string;
   updatedAt: string;
 };
-
-export type CreateWorkspaceCompanyBillingApiRequest = {
-  planCode?: string;
-  billingCycle?: "MONTHLY" | "YEARLY";
-  billingMode?: "MANUAL" | "AUTO";
-  billingEmail?: string;
-  paymentMethodId?: string;
-  paymentAttemptId?: number;
-  cardBrand?: string;
-  cardLast4?: string;
-  cardExpiryMonth?: number;
-  cardExpiryYear?: number;
-};
-
-export type CreateWorkspaceCompanyApiRequest = {
-  taxpayerType: "individual" | "non-individual";
-  lastName?: string;
-  firstName?: string;
-  middleName?: string;
-  companyName?: string;
-  nonIndividualType?: string;
-  nonIndividualTypeOther?: string;
-  logoFileName?: string;
-  logoMimeType?: string;
-  logoStoragePath?: string;
-  logoPublicUrl?: string;
-  address: string;
-  countryCode: string;
-  baseCurrencyCode: string;
-  tin: string;
-  email: string;
-  contactNumber: string;
-  reportStartDate: string;
-  reportEndDate: string;
-  website?: string;
-  billing?: CreateWorkspaceCompanyBillingApiRequest;
-};
-
-export type UpdateWorkspaceCompanyApiRequest = Partial<
-  Omit<CreateWorkspaceCompanyApiRequest, "billing">
->;

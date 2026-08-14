@@ -5,7 +5,11 @@ import {
   workspaceUsersControllerResendInvitationV1,
   workspaceUsersControllerUpdateV1,
 } from "@/app/src/generated/api/workspace-users/workspace-users";
-import type { WorkspaceUserResponseDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
+import type {
+  WorkspaceUserCancelInvitationResponseDto,
+  WorkspaceUserMessageResponseDto,
+  WorkspaceUserResponseDto,
+} from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import type {
   WorkspaceCompanyBranchRecord,
   WorkspaceCompanyStatus,
@@ -13,8 +17,6 @@ import type {
   WorkspaceCompanyUserAssignedUnitApiRecord,
   WorkspaceCompanyUserApiRecord,
   WorkspaceCompanyUserApiRequest,
-  WorkspaceCompanyUserCancelInvitationResponse,
-  WorkspaceCompanyUserResendInvitationResponse,
   WorkspaceCompanyUserFormValues,
   WorkspaceCompanyUserRecord,
   WorkspaceUserStatus,
@@ -63,13 +65,13 @@ export async function UpdateWorkspaceUser(
 export async function ResendWorkspaceUserInvitation(userId: string) {
   return workspaceUsersControllerResendInvitationV1(
     Number(userId),
-  ) as Promise<WorkspaceCompanyUserResendInvitationResponse>;
+  ) as Promise<WorkspaceUserMessageResponseDto>;
 }
 
 export async function CancelWorkspaceUserInvitation(userId: string) {
   return workspaceUsersControllerCancelInvitationV1(
     Number(userId),
-  ) as Promise<WorkspaceCompanyUserCancelInvitationResponse>;
+  ) as Promise<WorkspaceUserCancelInvitationResponseDto>;
 }
 
 function MapWorkspaceUserFormToRequest(

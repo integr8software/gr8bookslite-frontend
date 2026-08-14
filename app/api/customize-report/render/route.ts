@@ -37,6 +37,20 @@ const SupportedPdfFormats: CustomizeReportPaperFormat[] = [
   "Statement",
 ];
 
+const PageNumberFooterTemplate = `
+  <div style="
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0 22px 6px 22px;
+    color: #475569;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 8px;
+    text-align: right;
+  ">
+    Page <span class="pageNumber"></span> of <span class="totalPages"></span>
+  </div>
+`;
+
 type JsreportInstance = {
   init: () => Promise<void>;
   render: (request: { template: Record<string, unknown>; data?: Record<string, unknown> }) => Promise<{ content: Buffer }>;
@@ -155,10 +169,13 @@ export async function POST(request: Request) {
           ...(useNamedFormat ? { format: body.page?.format } : {}),
           ...(!useNamedFormat && body.page?.width ? { width: `${body.page.width}px` } : {}),
           ...(!useNamedFormat && body.page?.height ? { height: `${body.page.height}px` } : {}),
+          displayHeaderFooter: true,
+          footerTemplate: PageNumberFooterTemplate,
+          headerTemplate: "<div></div>",
           landscape: body.page?.landscape || false,
           marginTop: "0in",
           marginRight: "0in",
-          marginBottom: "0in",
+          marginBottom: "0.22in",
           marginLeft: "0in",
           printBackground: true,
           waitForNetworkIdle: false,

@@ -291,6 +291,15 @@ export function useCustomizeReportDesigner() {
   );
 
   const hasMultiSelection = selectedElements.length > 1;
+  const selectedGroupIds = useMemo(() => {
+    const groupIds = selectedElements
+      .map((element) => getElementGroupId(element.type, element.id))
+      .filter((groupId): groupId is string => Boolean(groupId));
+
+    return [...new Set(groupIds)];
+  }, [fields, lines, selectedElements]);
+  const canGroupSelection = selectedElements.filter((element) => element.type !== CustomizeReportElementTypes.Table).length > 1;
+  const canUngroupSelection = selectedGroupIds.length > 0;
 
   const reportData = useMemo(
     () => (selectedReport ? getReportData(CustomizeReportSampleData, selectedReport) : CustomizeReportSampleData),
@@ -637,6 +646,18 @@ export function useCustomizeReportDesigner() {
         return;
       }
 
+      if (event.shiftKey && key === "g") {
+        event.preventDefault();
+        handleUngroupSelectedElements();
+        return;
+      }
+
+      if (key === "g") {
+        event.preventDefault();
+        handleGroupSelectedElements();
+        return;
+      }
+
       if (key === "l") {
         event.preventDefault();
         handleToggleSelectedLock();
@@ -698,32 +719,6 @@ export function useCustomizeReportDesigner() {
     };
   });
 
-  useEffect(() => {
-    const canvasScrollElement = canvasScrollRef.current;
-
-    if (!canvasScrollElement) {
-      return;
-    }
-
-    function handleCanvasWheel(event: WheelEvent) {
-      if (!event.ctrlKey && !event.metaKey) {
-        return;
-      }
-
-      event.preventDefault();
-      event.stopPropagation();
-      setZoom((currentZoom) => clamp(currentZoom + (event.deltaY < 0 ? ZoomStep : -ZoomStep), MinZoom, MaxZoom));
-    }
-
-    canvasScrollElement.addEventListener("wheel", handleCanvasWheel, {
-      passive: false,
-    });
-
-    return () => {
-      canvasScrollElement.removeEventListener("wheel", handleCanvasWheel);
-    };
-  }, []);
-
   function updateSelectedField(updater: (field: CustomizeReportField) => CustomizeReportField) {
     if (selectedField?.locked) {
       toast.error("Unlock this element before editing.");
@@ -732,6 +727,34 @@ export function useCustomizeReportDesigner() {
 
     pushUndoSnapshot();
     setFields((currentFields) => currentFields.map((field) => (field.id === selectedField.id ? updater(field) : field)));
+  }
+
+  function handleFieldInlineEditStart(field: CustomizeReportField) {
+    if (field.type === "image") {
+      return;
+    }
+
+    if (field.locked) {
+      toast.error("Unlock this element before editing.");
+      selectElement(CustomizeReportElementTypes.Field, field.id);
+      return;
+    }
+
+    selectElement(CustomizeReportElementTypes.Field, field.id);
+    pushUndoSnapshot();
+  }
+
+  function updateFieldInlineText(fieldId: string, value: string) {
+    setFields((currentFields) =>
+      currentFields.map((field) =>
+        field.id === fieldId
+          ? {
+              ...field,
+              value,
+            }
+          : field,
+      ),
+    );
   }
 
   function updateSelectedLine(updater: (line: CustomizeReportLine) => CustomizeReportLine) {
@@ -751,6 +774,8 @@ export function useCustomizeReportDesigner() {
   function selectElement(type: CustomizeReportElementType, id: string, additive = false) {
     const key = getSelectedElementKey(type, id);
     const allowAdditiveSelection = additive && type !== CustomizeReportElementTypes.Table;
+    const groupKeys = getElementGroupSelectionKeys(type, id);
+    const nextElementKeys = groupKeys.length > 0 ? groupKeys : [key];
 
     setSelectedElementType(type);
     if (type === CustomizeReportElementTypes.Field) {
@@ -764,16 +789,50 @@ export function useCustomizeReportDesigner() {
 
     setSelectedElementKeys((currentKeys) => {
       if (!allowAdditiveSelection) {
-        return [key];
+        return nextElementKeys;
       }
 
-      if (currentKeys.includes(key)) {
-        const nextKeys = currentKeys.filter((currentKey) => currentKey !== key);
+      if (nextElementKeys.every((nextKey) => currentKeys.includes(nextKey))) {
+        const nextKeys = currentKeys.filter((currentKey) => !nextElementKeys.includes(currentKey));
         return nextKeys.length > 0 ? nextKeys : [key];
       }
 
-      return [...currentKeys, key];
+      return [...new Set([...currentKeys, ...nextElementKeys])];
     });
+  }
+
+  function getElementGroupId(type: CustomizeReportElementType, id: string) {
+    if (type === CustomizeReportElementTypes.Field) {
+      return fields.find((field) => field.id === id)?.groupId || null;
+    }
+
+    if (type === CustomizeReportElementTypes.Line) {
+      return lines.find((line) => line.id === id)?.groupId || null;
+    }
+
+    return null;
+  }
+
+  function getElementGroupSelectionKeys(type: CustomizeReportElementType, id: string) {
+    const groupId = getElementGroupId(type, id);
+
+    if (!groupId) {
+      return [];
+    }
+
+    return [
+      ...fields
+        .filter((field) => field.groupId === groupId)
+        .map((field) => getSelectedElementKey(CustomizeReportElementTypes.Field, field.id)),
+      ...lines
+        .filter((line) => line.groupId === groupId)
+        .map((line) => getSelectedElementKey(CustomizeReportElementTypes.Line, line.id)),
+    ];
+  }
+
+  function clearSelectedElements() {
+    setSelectedLineId(null);
+    setSelectedElementKeys([]);
   }
 
   function handleElementSelect(event: ReactMouseEvent<HTMLElement>, type: CustomizeReportElementType, id: string) {
@@ -781,7 +840,14 @@ export function useCustomizeReportDesigner() {
   }
 
   function getSelectedGroupOrigins(activeKey: SelectedElementKey) {
-    const keys = selectedElementKeys.includes(activeKey) ? selectedElementKeys : [activeKey];
+    const { type, id } = parseSelectedElementKey(activeKey);
+    const groupedKeys = getElementGroupSelectionKeys(type, id);
+    const keys =
+      selectedElementKeys.includes(activeKey) || groupedKeys.length === 0
+        ? selectedElementKeys.includes(activeKey)
+          ? selectedElementKeys
+          : [activeKey]
+        : groupedKeys;
 
     return keys
       .map((key) => {
@@ -1274,10 +1340,20 @@ export function useCustomizeReportDesigner() {
   }
 
   function handleCanvasPointerUp(event: ReactPointerEvent<HTMLDivElement>) {
-    if (canvasSelectionStateRef.current) {
+    const selectionState = canvasSelectionStateRef.current;
+
+    if (selectionState) {
+      const selectionRect = getSelectionRectFromState(selectionState);
+      const minSelectionSize = 3;
+
       event.currentTarget.releasePointerCapture(event.pointerId);
       canvasSelectionStateRef.current = null;
       setCanvasSelectionRect(null);
+
+      if (!selectionState.additive && selectionRect.width < minSelectionSize && selectionRect.height < minSelectionSize) {
+        clearSelectedElements();
+      }
+
       return;
     }
   }
@@ -1475,6 +1551,87 @@ export function useCustomizeReportDesigner() {
   }
 
   function handleDuplicateSelectedElement() {
+    if (selectedElements.length > 1) {
+      const selectedFieldElements = selectedElements.filter((element) => element.type === CustomizeReportElementTypes.Field);
+      const selectedLineElements = selectedElements.filter((element) => element.type === CustomizeReportElementTypes.Line);
+      const selectedFields = selectedFieldElements
+        .map((element) => fields.find((field) => field.id === element.id))
+        .filter((field): field is CustomizeReportField => Boolean(field));
+      const selectedLines = selectedLineElements
+        .map((element) => lines.find((line) => line.id === element.id))
+        .filter((line): line is CustomizeReportLine => Boolean(line));
+
+      if (selectedFields.length + selectedLines.length === 0) {
+        toast.error("The items table cannot be duplicated.");
+        return;
+      }
+
+      pushUndoSnapshot();
+
+      const duplicatedGroupMap = new Map<string, string>();
+      const getDuplicatedGroupId = (groupId?: string) => {
+        if (!groupId) {
+          return undefined;
+        }
+
+        const existingGroupId = duplicatedGroupMap.get(groupId);
+
+        if (existingGroupId) {
+          return existingGroupId;
+        }
+
+        const nextGroupId = `group-${Date.now()}-${duplicatedGroupMap.size}`;
+        duplicatedGroupMap.set(groupId, nextGroupId);
+        return nextGroupId;
+      };
+      const fieldZIndexBase = Math.max(1, ...fields.map((field) => field.zIndex ?? 1));
+      const lineZIndexBase = Math.max(1, ...lines.map((line) => line.zIndex ?? 1));
+      const nextFields = selectedFields.map((field, index) => ({
+        ...field,
+        id: `${field.id}-copy-${Date.now()}-${index}`,
+        label: `${field.label} Copy`,
+        x: clamp(field.x + 16, 0, pageSetup.width - field.width),
+        y: clamp(field.y + 16, 0, pageSetup.height - field.height),
+        groupId: getDuplicatedGroupId(field.groupId),
+        locked: false,
+        zIndex: fieldZIndexBase + index + 1,
+      }));
+      const nextLines = selectedLines.map((line, index) => {
+        const bounds = getLineBounds(line);
+
+        return {
+          ...line,
+          id: `line-${Date.now()}-${index}`,
+          label: `${line.label} Copy`,
+          x: clamp(line.x + 16, 0, pageSetup.width - bounds.width),
+          y: clamp(line.y + 16, 0, pageSetup.height - bounds.height),
+          groupId: getDuplicatedGroupId(line.groupId),
+          locked: false,
+          zIndex: lineZIndexBase + index + 1,
+        };
+      });
+      const nextSelectedKeys = [
+        ...nextFields.map((field) => getSelectedElementKey(CustomizeReportElementTypes.Field, field.id)),
+        ...nextLines.map((line) => getSelectedElementKey(CustomizeReportElementTypes.Line, line.id)),
+      ];
+
+      setFields((currentFields) => [...currentFields, ...nextFields]);
+      setLines((currentLines) => [...currentLines, ...nextLines]);
+      setSelectedElementKeys(nextSelectedKeys);
+
+      if (nextFields[0]) {
+        setSelectedFieldId(nextFields[0].id);
+        setSelectedLineId(null);
+        setSelectedElementType(CustomizeReportElementTypes.Field);
+      } else if (nextLines[0]) {
+        setSelectedLineId(nextLines[0].id);
+        setSelectedElementType(CustomizeReportElementTypes.Line);
+      }
+
+      toast.success("Selection duplicated.");
+      return;
+    }
+
     pushUndoSnapshot();
 
     if (selectedElementType === CustomizeReportElementTypes.Line && selectedLine) {
@@ -1485,16 +1642,22 @@ export function useCustomizeReportDesigner() {
       const nextLine: CustomizeReportLine = {
         ...selectedLine,
         id: `line-${Date.now()}`,
-        label: `${selectedLine.label} Copy`,
-        x: clamp(selectedLine.x + 16, 0, pageSetup.width - lineWidth),
-        y: clamp(selectedLine.y + 16, 0, pageSetup.height - lineHeight),
-        locked: false,
-        zIndex: Math.max(1, ...lines.map((line) => line.zIndex ?? 1)) + 1,
+      label: `${selectedLine.label} Copy`,
+      x: clamp(selectedLine.x + 16, 0, pageSetup.width - lineWidth),
+      y: clamp(selectedLine.y + 16, 0, pageSetup.height - lineHeight),
+      groupId: undefined,
+      locked: false,
+      zIndex: Math.max(1, ...lines.map((line) => line.zIndex ?? 1)) + 1,
       };
 
       setLines((currentLines) => [...currentLines, nextLine]);
       selectElement(CustomizeReportElementTypes.Line, nextLine.id);
       toast.success("Line duplicated.");
+      return;
+    }
+
+    if (selectedElementType === CustomizeReportElementTypes.Table) {
+      toast.error("The items table cannot be duplicated.");
       return;
     }
 
@@ -1508,6 +1671,7 @@ export function useCustomizeReportDesigner() {
       label: `${selectedField.label} Copy`,
       x: clamp(selectedField.x + 16, 0, pageSetup.width - selectedField.width),
       y: clamp(selectedField.y + 16, 0, pageSetup.height - selectedField.height),
+      groupId: undefined,
       locked: false,
       zIndex: Math.max(1, ...fields.map((field) => field.zIndex ?? 1)) + 1,
     };
@@ -1517,8 +1681,77 @@ export function useCustomizeReportDesigner() {
     toast.success("Element duplicated.");
   }
 
+  function handleGroupSelectedElements() {
+    const groupableElements = selectedElements.filter((element) => element.type !== CustomizeReportElementTypes.Table);
+
+    if (groupableElements.length < 2) {
+      toast.error("Select at least two labels or lines to group.");
+      return;
+    }
+
+    const groupId = `group-${Date.now()}`;
+    const selectedFieldIds = new Set(
+      groupableElements.filter((element) => element.type === CustomizeReportElementTypes.Field).map((element) => element.id),
+    );
+    const selectedLineIds = new Set(
+      groupableElements.filter((element) => element.type === CustomizeReportElementTypes.Line).map((element) => element.id),
+    );
+
+    pushUndoSnapshot();
+    setFields((currentFields) =>
+      currentFields.map((field) => (selectedFieldIds.has(field.id) ? { ...field, groupId } : field)),
+    );
+    setLines((currentLines) =>
+      currentLines.map((line) => (selectedLineIds.has(line.id) ? { ...line, groupId } : line)),
+    );
+    setSelectedElementKeys(groupableElements.map((element) => element.key));
+    toast.success("Elements grouped.");
+  }
+
+  function handleUngroupSelectedElements() {
+    if (selectedGroupIds.length === 0) {
+      toast.error("Select a grouped element first.");
+      return;
+    }
+
+    const groupIdSet = new Set(selectedGroupIds);
+
+    pushUndoSnapshot();
+    setFields((currentFields) =>
+      currentFields.map((field) => (field.groupId && groupIdSet.has(field.groupId) ? { ...field, groupId: undefined } : field)),
+    );
+    setLines((currentLines) =>
+      currentLines.map((line) => (line.groupId && groupIdSet.has(line.groupId) ? { ...line, groupId: undefined } : line)),
+    );
+    toast.success("Elements ungrouped.");
+  }
+
   function handleToggleSelectedLock() {
     pushUndoSnapshot();
+
+    if (selectedElements.length > 1) {
+      const selectedFieldIds = new Set(
+        selectedElements.filter((element) => element.type === CustomizeReportElementTypes.Field).map((element) => element.id),
+      );
+      const selectedLineIds = new Set(
+        selectedElements.filter((element) => element.type === CustomizeReportElementTypes.Line).map((element) => element.id),
+      );
+      const selectedFieldLockStates = fields
+        .filter((field) => selectedFieldIds.has(field.id))
+        .map((field) => Boolean(field.locked));
+      const selectedLineLockStates = lines
+        .filter((line) => selectedLineIds.has(line.id))
+        .map((line) => Boolean(line.locked));
+      const shouldLock = [...selectedFieldLockStates, ...selectedLineLockStates].some((isLocked) => !isLocked);
+
+      setFields((currentFields) =>
+        currentFields.map((field) => (selectedFieldIds.has(field.id) ? { ...field, locked: shouldLock } : field)),
+      );
+      setLines((currentLines) =>
+        currentLines.map((line) => (selectedLineIds.has(line.id) ? { ...line, locked: shouldLock } : line)),
+      );
+      return;
+    }
 
     if (selectedElementType === CustomizeReportElementTypes.Line && selectedLine) {
       setLines((currentLines) =>
@@ -1796,7 +2029,9 @@ export function useCustomizeReportDesigner() {
     alignmentGuides,
     canvasScrollRef,
     canRedo,
+    canGroupSelection,
     canUndo,
+    canUngroupSelection,
     canvasSelectionRect,
     deleteTargetType,
     fields,
@@ -1812,6 +2047,8 @@ export function useCustomizeReportDesigner() {
     handleConfirmDeleteSelectedElement,
     handleDuplicateSelectedElement,
     handleElementSelect,
+    handleFieldInlineEditStart,
+    handleGroupSelectedElements,
     handleLayerSelectedElement,
     handleLinePointerDown,
     handleLogoUpload,
@@ -1828,6 +2065,7 @@ export function useCustomizeReportDesigner() {
     handleToggleFieldVisibility,
     handleToggleLineVisibility,
     handleToggleSelectedLock,
+    handleUngroupSelectedElements,
     handleUndoLayout,
     hasMultiSelection,
     isElementsPanelOpen,
@@ -1861,6 +2099,7 @@ export function useCustomizeReportDesigner() {
     tableSetup,
     templatePreview,
     updateMarginSetup,
+    updateFieldInlineText,
     updatePageSetup,
     updateSelectedField,
     updateSelectedLine,

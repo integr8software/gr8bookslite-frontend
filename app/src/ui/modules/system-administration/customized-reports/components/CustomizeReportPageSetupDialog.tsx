@@ -207,7 +207,10 @@ function PaperSetup({
                   ...getPageSetup(format, currentSetup.orientation),
                   applyTo: currentSetup.applyTo,
                   firstPageSource: currentSetup.firstPageSource,
+                  footerHeight: currentSetup.footerHeight,
+                  headerHeight: currentSetup.headerHeight,
                   otherPagesSource: currentSetup.otherPagesSource,
+                  showSectionGuides: currentSetup.showSectionGuides,
                 }));
               }}
               value={pageSetup.format}
@@ -312,7 +315,10 @@ function LayoutSetup({
                 ...getPageSetup(currentSetup.format, orientation),
                 applyTo: currentSetup.applyTo,
                 firstPageSource: currentSetup.firstPageSource,
+                footerHeight: currentSetup.footerHeight,
+                headerHeight: currentSetup.headerHeight,
                 otherPagesSource: currentSetup.otherPagesSource,
+                showSectionGuides: currentSetup.showSectionGuides,
               }));
             }}
             value={pageSetup.orientation}
@@ -337,6 +343,54 @@ function LayoutSetup({
             <option value="this-section">This section</option>
           </select>
         </label>
+        <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+          <input
+            checked={pageSetup.showSectionGuides ?? true}
+            className="h-4 w-4 accent-orange-500"
+            onChange={(event) =>
+              onPageSetupChange((currentSetup) => ({
+                ...currentSetup,
+                showSectionGuides: event.target.checked,
+              }))
+            }
+            type="checkbox"
+          />
+          Show header/footer guides
+        </label>
+        <div className="grid grid-cols-2 gap-3">
+          <label className="space-y-1">
+            <span className="text-xs font-semibold uppercase text-slate-500">Header height</span>
+            <input
+              className={InspectorNumberInputClassName}
+              min={0}
+              onChange={(event) =>
+                onPageSetupChange((currentSetup) => ({
+                  ...currentSetup,
+                  headerHeight: inchesToPixels(clamp(Number(event.target.value), 0, 4)),
+                }))
+              }
+              step={0.1}
+              type="number"
+              value={pixelsToInches(pageSetup.headerHeight ?? 104)}
+            />
+          </label>
+          <label className="space-y-1">
+            <span className="text-xs font-semibold uppercase text-slate-500">Footer height</span>
+            <input
+              className={InspectorNumberInputClassName}
+              min={0}
+              onChange={(event) =>
+                onPageSetupChange((currentSetup) => ({
+                  ...currentSetup,
+                  footerHeight: inchesToPixels(clamp(Number(event.target.value), 0, 4)),
+                }))
+              }
+              step={0.1}
+              type="number"
+              value={pixelsToInches(pageSetup.footerHeight ?? 96)}
+            />
+          </label>
+        </div>
       </div>
       <PageSetupPreview marginSetup={marginSetup} pageSetup={pageSetup} />
     </div>
@@ -402,6 +456,24 @@ function PageSetupPreview({
                 inset: `${marginSetup.top * scale}px ${marginSetup.right * scale}px ${marginSetup.bottom * scale}px ${marginSetup.left * scale}px`,
               }}
             />
+          ) : null}
+          {pageSetup.showSectionGuides ? (
+            <>
+              <div
+                className="absolute left-0 w-full border-b border-dashed border-sky-400/80 bg-sky-50/30"
+                style={{
+                  top: 0,
+                  height: (pageSetup.headerHeight ?? 104) * scale,
+                }}
+              />
+              <div
+                className="absolute left-0 w-full border-t border-dashed border-emerald-400/80 bg-emerald-50/30"
+                style={{
+                  bottom: 0,
+                  height: (pageSetup.footerHeight ?? 96) * scale,
+                }}
+              />
+            </>
           ) : null}
           {Array.from({ length: 8 }, (_, index) => (
             <span

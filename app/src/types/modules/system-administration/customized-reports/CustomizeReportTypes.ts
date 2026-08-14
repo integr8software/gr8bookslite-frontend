@@ -21,6 +21,7 @@ export type CustomizeReportField = {
   italic?: boolean;
   underline?: boolean;
   visible: boolean;
+  groupId?: string;
   locked?: boolean;
   zIndex?: number;
 };
@@ -37,6 +38,7 @@ export type CustomizeReportLine = {
   orientation: CustomizeReportLineOrientation;
   color: string;
   visible: boolean;
+  groupId?: string;
   locked?: boolean;
   zIndex?: number;
 };
@@ -62,7 +64,10 @@ export type CustomizeReportPageSetup = {
   height: number;
   applyTo?: "whole-document" | "this-section";
   firstPageSource?: string;
+  footerHeight?: number;
+  headerHeight?: number;
   otherPagesSource?: string;
+  showSectionGuides?: boolean;
 };
 
 export type CustomizeReportTableColumnKey = string;
@@ -89,6 +94,11 @@ export type CustomizeReportTableSetup = {
   y: number;
   width: number;
   fontSize: number;
+  fontFamily?: string;
+  color?: string;
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
   previewRows: number;
   rowHeight: number;
   showBorders: boolean;

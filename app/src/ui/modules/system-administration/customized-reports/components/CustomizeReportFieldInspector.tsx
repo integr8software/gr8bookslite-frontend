@@ -12,7 +12,10 @@ import type {
   CustomizeReportField,
   CustomizeReportPageSetup,
 } from "@/app/src/types/modules/system-administration/customized-reports/CustomizeReportTypes";
-import { clamp } from "@/app/src/ui/modules/system-administration/customized-reports/utils/CustomizeReportDesignerUtils";
+import {
+  clamp,
+  getFieldPreviewValue,
+} from "@/app/src/ui/modules/system-administration/customized-reports/utils/CustomizeReportDesignerUtils";
 export function CustomizeReportFieldInspector({
   field,
   onDelete,
@@ -21,6 +24,7 @@ export function CustomizeReportFieldInspector({
   onToggleLock,
   onUpdate,
   pageSetup,
+  reportData,
 }: {
   field: CustomizeReportField;
   onDelete: () => void;
@@ -29,7 +33,10 @@ export function CustomizeReportFieldInspector({
   onToggleLock: () => void;
   onUpdate: (updater: (field: CustomizeReportField) => CustomizeReportField) => void;
   pageSetup: CustomizeReportPageSetup;
+  reportData: Record<string, unknown>;
 }) {
+  const editableTextValue = field.value ?? getFieldPreviewValue(field, reportData);
+
   return (
     <>
       <ElementActionPanel
@@ -95,7 +102,7 @@ export function CustomizeReportFieldInspector({
         ) : null}
       </div>
 
-      {field.value !== undefined ? (
+      {field.type !== "image" ? (
         <div className="mt-4 space-y-3">
           <TextControl
             label="Label"
@@ -108,6 +115,7 @@ export function CustomizeReportFieldInspector({
             value={field.label}
           />
           <TextControl
+            multiline
             label="Text"
             onChange={(value) =>
               onUpdate((currentField) => ({
@@ -115,7 +123,7 @@ export function CustomizeReportFieldInspector({
                 value,
               }))
             }
-            value={field.value}
+            value={editableTextValue}
           />
         </div>
       ) : null}

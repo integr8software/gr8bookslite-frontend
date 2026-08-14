@@ -23,10 +23,7 @@ import {
   CustomizeReportModuleOptions,
   CustomizeReportPresetTemplates,
 } from "@/app/src/data/modules/system-administration/customized-reports/CustomizeReportData";
-import type {
-  CustomizeReportModuleOption,
-  CustomizeReportPageSetup,
-} from "@/app/src/types/modules/system-administration/customized-reports/CustomizeReportTypes";
+import type { CustomizeReportModuleOption } from "@/app/src/types/modules/system-administration/customized-reports/CustomizeReportTypes";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
 import { clamp } from "@/app/src/ui/modules/system-administration/customized-reports/utils/CustomizeReportDesignerUtils";
 
@@ -34,7 +31,6 @@ type CustomizeReportDesignerHeaderProps = {
   canRedo: boolean;
   canUndo: boolean;
   isRendering: boolean;
-  pageSetup: CustomizeReportPageSetup;
   selectedPresetTemplateId: string;
   selectedReport: CustomizeReportModuleOption;
   selectedReportId: string;
@@ -67,7 +63,6 @@ export function CustomizeReportDesignerHeader({
   onSelectedReportIdChange,
   onUndoLayout,
   onZoomChange,
-  pageSetup,
   selectedPresetTemplateId,
   selectedReport,
   selectedReportId,
@@ -155,7 +150,7 @@ export function CustomizeReportDesignerHeader({
         </div>
       </div>
 
-      <div className="grid gap-3 border-t border-slate-100 bg-slate-50/70 px-4 py-3 sm:grid-cols-2 xl:grid-cols-[minmax(13rem,1.2fr)_minmax(13rem,1fr)_minmax(10rem,0.75fr)]">
+      <div className="grid gap-3 border-t border-slate-100 bg-slate-50/70 px-4 py-3 sm:grid-cols-2">
         <label className="flex min-w-0 flex-col gap-1">
           <span className="text-xs font-semibold uppercase text-slate-500">Report Module</span>
           <select
@@ -204,14 +199,6 @@ export function CustomizeReportDesignerHeader({
             </button>
           </span>
         </label>
-        <button
-          className={`${ToolbarButtonClassName} h-full min-h-14 justify-start`}
-          onClick={onOpenPageSetup}
-          type="button"
-        >
-          <FileCog className="h-4 w-4" />
-          {pageSetup.format} / {pageSetup.orientation}
-        </button>
       </div>
     </section>
   );

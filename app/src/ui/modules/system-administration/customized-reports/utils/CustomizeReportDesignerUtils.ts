@@ -63,6 +63,11 @@ export function getTableSetupWithDefaults(tableSetup?: CustomizeReportTableSetup
 
   return {
     ...(tableSetup || DefaultTableSetup),
+    fontFamily: tableSetup?.fontFamily ?? DefaultTableSetup.fontFamily,
+    color: tableSetup?.color ?? DefaultTableSetup.color,
+    bold: tableSetup?.bold ?? DefaultTableSetup.bold,
+    italic: tableSetup?.italic ?? DefaultTableSetup.italic,
+    underline: tableSetup?.underline ?? DefaultTableSetup.underline,
     previewRows: tableSetup?.previewRows ?? DefaultTableSetup.previewRows,
     showHeader: tableSetup?.showHeader ?? DefaultTableSetup.showHeader,
     borderSetup: {
@@ -79,7 +84,10 @@ export function getPageSetupWithDefaults(pageSetup?: CustomizeReportPageSetup): 
     ...(pageSetup || {}),
     applyTo: pageSetup?.applyTo || "whole-document",
     firstPageSource: pageSetup?.firstPageSource || "Default tray",
+    footerHeight: pageSetup?.footerHeight ?? 96,
+    headerHeight: pageSetup?.headerHeight ?? 104,
     otherPagesSource: pageSetup?.otherPagesSource || "Default tray",
+    showSectionGuides: pageSetup?.showSectionGuides ?? true,
   };
 }
 
@@ -309,7 +317,7 @@ export function getFieldPreviewValue(field: CustomizeReportField, data: Record<s
     return field.label;
   }
 
-  if (field.value) {
+  if (field.value !== undefined) {
     return field.value;
   }
 
@@ -371,7 +379,10 @@ export function getPageSetup(
     height: orientation === "landscape" ? paperSize.width : paperSize.height,
     applyTo: "whole-document",
     firstPageSource: "Default tray",
+    footerHeight: 96,
+    headerHeight: 104,
     otherPagesSource: "Default tray",
+    showSectionGuides: true,
   };
 }
 
@@ -382,6 +393,8 @@ export function buildReportTemplate(
   tableSetup: CustomizeReportTableSetup,
 ) {
   const visibleColumns = tableSetup.columns.filter((column) => column.visible);
+  const pdfFooterReservedHeight = 22;
+  const printablePageHeight = Math.max(1, pageSetup.height - pdfFooterReservedHeight);
   const tableBorderCss = getTableBorderCss(tableSetup);
   const positionedFields = fields
     .filter((field) => field.visible)
@@ -392,12 +405,10 @@ export function buildReportTemplate(
 			`;
       }
 
-      const content = field.value ? escapeHtml(field.value) : `{{${field.binding}}}`;
+      const content = field.value !== undefined ? escapeHtml(field.value) : `{{${field.binding}}}`;
 
       return `
-				<div class="report-field" style="left:${field.x}px;top:${field.y}px;width:${field.width}px;height:${field.height}px;font-family:${field.fontFamily || DefaultFontFamily};font-size:${field.fontSize}px;color:${field.color || DefaultFieldColor};text-align:${field.align};font-weight:${field.bold ? 700 : 400};font-style:${field.italic ? "italic" : "normal"};text-decoration:${field.underline ? "underline" : "none"};z-index:${field.zIndex ?? 1};">
-					${content}
-				</div>`;
+				<div class="report-field" style="left:${field.x}px;top:${field.y}px;width:${field.width}px;height:${field.height}px;font-family:${field.fontFamily || DefaultFontFamily};font-size:${field.fontSize}px;color:${field.color || DefaultFieldColor};text-align:${field.align};font-weight:${field.bold ? 700 : 400};font-style:${field.italic ? "italic" : "normal"};text-decoration:${field.underline ? "underline" : "none"};z-index:${field.zIndex ?? 1};">${content}</div>`;
     })
     .join("");
   const tableHeaderCells = visibleColumns
@@ -431,12 +442,16 @@ export function buildReportTemplate(
 		@page { size: ${pageSetup.width}px ${pageSetup.height}px; margin: 0; }
 		* { box-sizing: border-box; }
 		body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: #0f172a; background: #fff; }
-		.report-page { position: relative; width: ${pageSetup.width}px; height: ${pageSetup.height}px; overflow: hidden; background: #fff; }
+		.report-page { position: relative; width: ${pageSetup.width}px; min-height: ${printablePageHeight}px; overflow: visible; background: #fff; }
 		.report-field { position: absolute; overflow: hidden; line-height: 1.25; white-space: pre-wrap; }
 		.report-image { position: absolute; object-fit: contain; }
 		.report-line { position: absolute; }
-		.items-table { position: absolute; left: ${tableSetup.x}px; top: ${tableSetup.y}px; width: ${tableSetup.width}px; border-collapse: separate; border-spacing: 0; font-size: ${tableSetup.fontSize}px; }
-		.items-table th { background: #f8fafc; height: ${tableSetup.rowHeight}px; padding: 0 8px; font-weight: 700; }
+		.items-table-anchor { height: ${tableSetup.y}px; }
+		.items-table { position: relative; margin-left: ${tableSetup.x}px; width: ${tableSetup.width}px; border-collapse: separate; border-spacing: 0; break-inside: auto; page-break-inside: auto; font-family: ${tableSetup.fontFamily || DefaultFontFamily}; font-size: ${tableSetup.fontSize}px; color: ${tableSetup.color || DefaultFieldColor}; font-style: ${tableSetup.italic ? "italic" : "normal"}; font-weight: ${tableSetup.bold ? 700 : 400}; text-decoration: ${tableSetup.underline ? "underline" : "none"}; }
+		.items-table thead { display: table-header-group; }
+		.items-table tbody { display: table-row-group; }
+		.items-table tr { break-inside: avoid; page-break-inside: avoid; }
+		.items-table th { background: #f8fafc; height: ${tableSetup.rowHeight}px; padding: 0 8px; font-weight: ${tableSetup.bold ? 700 : 600}; }
 		.items-table td { height: ${tableSetup.rowHeight}px; padding: 0 8px; }
 		.items-table .number { text-align: right; }
 		${tableBorderCss}
@@ -449,6 +464,7 @@ export function buildReportTemplate(
 	<div class="report-page">
 		${positionedLines}
 		${positionedFields}
+		<div class="items-table-anchor"></div>
 		<table class="items-table">
 			${
         tableSetup.showHeader

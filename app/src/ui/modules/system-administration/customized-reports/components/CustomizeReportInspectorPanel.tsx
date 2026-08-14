@@ -1,9 +1,10 @@
-import { Eye, EyeOff } from "lucide-react";
+import { Copy, Eye, EyeOff, Group, Ungroup } from "lucide-react";
 import { useState } from "react";
 import { AlignDistributePanel } from "@/app/src/ui/modules/system-administration/customized-reports/components/CustomizeReportAlignDistributePanel";
 import { CustomizeReportFieldInspector } from "@/app/src/ui/modules/system-administration/customized-reports/components/CustomizeReportFieldInspector";
 import { CustomizeReportLineInspector } from "@/app/src/ui/modules/system-administration/customized-reports/components/CustomizeReportLineInspector";
 import { CustomizeReportTableInspector } from "@/app/src/ui/modules/system-administration/customized-reports/components/CustomizeReportTableInspector";
+import { ToolbarButtonClassName } from "@/app/src/ui/modules/system-administration/customized-reports/constants/CustomizeReportDesignerConstants";
 import type {
   AlignDistributionAction,
   ReportElementBounds,
@@ -27,9 +28,12 @@ type SelectedReportElement = {
 };
 
 type CustomizeReportInspectorPanelProps = {
+  canGroupSelection: boolean;
+  canUngroupSelection: boolean;
   hasMultiSelection: boolean;
   marginSetup: CustomizeReportMarginSetup;
   pageSetup: CustomizeReportPageSetup;
+  reportData: Record<string, unknown>;
   selectedElementType: "field" | "line" | "table";
   selectedElements: SelectedReportElement[];
   selectedField: CustomizeReportField;
@@ -41,6 +45,7 @@ type CustomizeReportInspectorPanelProps = {
   onDeleteField: () => void;
   onDeleteLine: () => void;
   onDuplicate: () => void;
+  onGroup: () => void;
   onLayer: (action: "backward" | "forward" | "back" | "front") => void;
   onRemoveTableColumn: (columnKey: CustomizeReportTableColumnKey) => void;
   onTableColumnChange: (
@@ -51,11 +56,14 @@ type CustomizeReportInspectorPanelProps = {
     updater: (setup: CustomizeReportTableSetup) => CustomizeReportTableSetup,
   ) => void;
   onToggleLock: () => void;
+  onUngroup: () => void;
   onUpdateField: (updater: (field: CustomizeReportField) => CustomizeReportField) => void;
   onUpdateLine: (updater: (line: CustomizeReportLine) => CustomizeReportLine) => void;
 };
 
 export function CustomizeReportInspectorPanel({
+  canGroupSelection,
+  canUngroupSelection,
   hasMultiSelection,
   marginSetup,
   onAddTableColumn,
@@ -63,14 +71,17 @@ export function CustomizeReportInspectorPanel({
   onDeleteField,
   onDeleteLine,
   onDuplicate,
+  onGroup,
   onLayer,
   onRemoveTableColumn,
   onTableColumnChange,
   onTableSetupChange,
   onToggleLock,
+  onUngroup,
   onUpdateField,
   onUpdateLine,
   pageSetup,
+  reportData,
   selectedElementType,
   selectedElements,
   selectedField,
@@ -95,9 +106,21 @@ export function CustomizeReportInspectorPanel({
         </p>
       </div>
 
+      {hasMultiSelection ? (
+        <MultiSelectionActionPanel
+          canGroup={canGroupSelection}
+          canUngroup={canUngroupSelection}
+          onDuplicate={onDuplicate}
+          onGroup={onGroup}
+          onUngroup={onUngroup}
+        />
+      ) : canUngroupSelection ? (
+        <SingleGroupActionPanel onUngroup={onUngroup} />
+      ) : null}
+
       {hasMultiSelection ? <AlignDistributePanel onAction={onAlignDistribute} /> : null}
 
-      {selectedElementType === "table" ? (
+      {hasMultiSelection ? null : selectedElementType === "table" ? (
         <CustomizeReportTableInspector
           marginSetup={marginSetup}
           onAddColumn={onAddTableColumn}
@@ -125,6 +148,7 @@ export function CustomizeReportInspectorPanel({
           onLayer={onLayer}
           onToggleLock={onToggleLock}
           pageSetup={pageSetup}
+          reportData={reportData}
           onUpdate={onUpdateField}
         />
       )}
@@ -154,5 +178,60 @@ export function CustomizeReportInspectorPanel({
         )}
       </div>
     </aside>
+  );
+}
+
+function MultiSelectionActionPanel({
+  canGroup,
+  canUngroup,
+  onDuplicate,
+  onGroup,
+  onUngroup,
+}: {
+  canGroup: boolean;
+  canUngroup: boolean;
+  onDuplicate: () => void;
+  onGroup: () => void;
+  onUngroup: () => void;
+}) {
+  return (
+    <div className="mb-4 rounded-md border border-slate-200 bg-slate-50 p-3">
+      <p className="mb-2 text-xs font-semibold uppercase text-slate-500">Selection</p>
+      <div className="grid grid-cols-3 gap-2">
+        <button className={`${ToolbarButtonClassName} px-2`} onClick={onDuplicate} type="button">
+          <Copy className="h-4 w-4" />
+          Copy
+        </button>
+        <button
+          className={`${ToolbarButtonClassName} px-2`}
+          disabled={!canGroup}
+          onClick={onGroup}
+          type="button"
+        >
+          <Group className="h-4 w-4" />
+          Group
+        </button>
+        <button
+          className={`${ToolbarButtonClassName} px-2`}
+          disabled={!canUngroup}
+          onClick={onUngroup}
+          type="button"
+        >
+          <Ungroup className="h-4 w-4" />
+          Ungroup
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function SingleGroupActionPanel({ onUngroup }: { onUngroup: () => void }) {
+  return (
+    <div className="mb-4 rounded-md border border-slate-200 bg-slate-50 p-3">
+      <button className={`${ToolbarButtonClassName} w-full justify-center px-2`} onClick={onUngroup} type="button">
+        <Ungroup className="h-4 w-4" />
+        Ungroup
+      </button>
+    </div>
   );
 }

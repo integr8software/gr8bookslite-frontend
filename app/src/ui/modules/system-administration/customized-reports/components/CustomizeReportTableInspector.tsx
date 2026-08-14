@@ -2,6 +2,9 @@ import { Maximize2, Plus, Table2, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { FieldNumberControl } from "@/app/src/ui/modules/system-administration/customized-reports/components/CustomizeReportFormControls";
 import {
+  DefaultFieldColor,
+  DefaultFontFamily,
+  FontFamilyOptions,
   InspectorNumberInputClassName,
   ToolbarButtonClassName,
 } from "@/app/src/ui/modules/system-administration/customized-reports/constants/CustomizeReportDesignerConstants";
@@ -61,6 +64,102 @@ export function CustomizeReportTableInspector(props: CustomizeReportTableInspect
           <Table2 className="h-4 w-4" />
           Table Designer
         </button>
+      </div>
+
+      <div className="mt-3 rounded-md border border-slate-200 bg-slate-50 p-3">
+        <p className="mb-3 text-xs font-semibold uppercase text-slate-500">Text Style</p>
+        <label className="block space-y-1">
+          <span className="text-xs font-semibold uppercase text-slate-500">Font Family</span>
+          <select
+            className={InspectorNumberInputClassName}
+            onChange={(event) =>
+              props.onTableSetupChange((currentSetup) => ({
+                ...currentSetup,
+                fontFamily: event.target.value,
+              }))
+            }
+            value={props.tableSetup.fontFamily || DefaultFontFamily}
+          >
+            {FontFamilyOptions.map((fontFamily) => (
+              <option key={fontFamily} value={fontFamily}>
+                {fontFamily.split(",")[0]}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="mt-3 block space-y-1">
+          <span className="text-xs font-semibold uppercase text-slate-500">Text Color</span>
+          <input
+            className="h-9 w-full rounded-md border border-slate-200 bg-white px-2 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
+            onChange={(event) =>
+              props.onTableSetupChange((currentSetup) => ({
+                ...currentSetup,
+                color: event.target.value,
+              }))
+            }
+            type="color"
+            value={props.tableSetup.color || DefaultFieldColor}
+          />
+        </label>
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          <button
+            className={`${ToolbarButtonClassName} justify-center ${props.tableSetup.bold ? "border-orange-300 text-orange-600" : ""}`}
+            onClick={() =>
+              props.onTableSetupChange((currentSetup) => ({
+                ...currentSetup,
+                bold: !currentSetup.bold,
+              }))
+            }
+            type="button"
+          >
+            Bold
+          </button>
+          <button
+            className={`${ToolbarButtonClassName} justify-center ${props.tableSetup.italic ? "border-orange-300 text-orange-600" : ""}`}
+            onClick={() =>
+              props.onTableSetupChange((currentSetup) => ({
+                ...currentSetup,
+                italic: !currentSetup.italic,
+              }))
+            }
+            type="button"
+          >
+            Italic
+          </button>
+          <button
+            className={`${ToolbarButtonClassName} justify-center ${props.tableSetup.underline ? "border-orange-300 text-orange-600" : ""}`}
+            onClick={() =>
+              props.onTableSetupChange((currentSetup) => ({
+                ...currentSetup,
+                underline: !currentSetup.underline,
+              }))
+            }
+            type="button"
+          >
+            Underline
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-3 rounded-md border border-slate-200 bg-slate-50 p-3">
+        <p className="mb-3 text-xs font-semibold uppercase text-slate-500">Column Labels</p>
+        <div className="space-y-2">
+          {props.tableSetup.columns.map((column) => (
+            <label key={column.key} className="block space-y-1">
+              <span className="text-xs font-semibold text-slate-500">{column.key}</span>
+              <input
+                className={InspectorNumberInputClassName}
+                onChange={(event) =>
+                  props.onTableColumnChange(column.key, (currentColumn) => ({
+                    ...currentColumn,
+                    label: event.target.value,
+                  }))
+                }
+                value={column.label}
+              />
+            </label>
+          ))}
+        </div>
       </div>
 
       {isDesignerOpen ? (

@@ -16,7 +16,9 @@ export function CustomizeReportPage() {
     canvasScrollRef,
     canvasSelectionRect,
     canRedo,
+    canGroupSelection,
     canUndo,
+    canUngroupSelection,
     deleteTargetType,
     fields,
     gridSize,
@@ -31,6 +33,8 @@ export function CustomizeReportPage() {
     handleConfirmDeleteSelectedElement,
     handleDuplicateSelectedElement,
     handleElementSelect,
+    handleFieldInlineEditStart,
+    handleGroupSelectedElements,
     handleLayerSelectedElement,
     handleLinePointerDown,
     handleLogoUpload,
@@ -47,6 +51,7 @@ export function CustomizeReportPage() {
     handleToggleFieldVisibility,
     handleToggleLineVisibility,
     handleToggleSelectedLock,
+    handleUngroupSelectedElements,
     handleUndoLayout,
     hasMultiSelection,
     isElementsPanelOpen,
@@ -79,6 +84,7 @@ export function CustomizeReportPage() {
     tableSetup,
     templatePreview,
     updateMarginSetup,
+    updateFieldInlineText,
     updatePageSetup,
     updateSelectedField,
     updateSelectedLine,
@@ -118,7 +124,6 @@ export function CustomizeReportPage() {
         onSelectedReportIdChange={setSelectedReportId}
         onUndoLayout={handleUndoLayout}
         onZoomChange={setZoom}
-        pageSetup={pageSetup}
         selectedPresetTemplateId={selectedPresetTemplateId}
         selectedReport={selectedReport}
         selectedReportId={selectedReportId}
@@ -173,12 +178,16 @@ export function CustomizeReportPage() {
           onCanvasPointerMove={handleCanvasPointerMove}
           onCanvasPointerUp={handleCanvasPointerUp}
           onElementSelect={handleElementSelect}
+          onFieldInlineEditStart={handleFieldInlineEditStart}
+          onFieldInlineTextChange={updateFieldInlineText}
           onFieldPointerDown={handlePointerDown}
           onLinePointerDown={handleLinePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           onResizePointerDown={handleResizePointerDown}
+          onTableColumnChange={updateTableColumn}
           onTablePointerDown={handleTablePointerDown}
+          onZoomChange={setZoom}
           pageSetup={pageSetup}
           reportData={reportData}
           selectedElementSet={selectedElementSet}
@@ -190,20 +199,25 @@ export function CustomizeReportPage() {
         />
         <CustomizeReportInspectorPanel
           hasMultiSelection={hasMultiSelection}
+          canGroupSelection={canGroupSelection}
+          canUngroupSelection={canUngroupSelection}
           marginSetup={marginSetup}
           onAddTableColumn={handleAddTableColumn}
           onAlignDistribute={handleAlignDistributeSelected}
           onDeleteField={() => setDeleteTargetType("field")}
           onDeleteLine={() => setDeleteTargetType("line")}
           onDuplicate={handleDuplicateSelectedElement}
+          onGroup={handleGroupSelectedElements}
           onLayer={handleLayerSelectedElement}
           onRemoveTableColumn={handleRemoveTableColumn}
           onToggleLock={handleToggleSelectedLock}
+          onUngroup={handleUngroupSelectedElements}
           onTableColumnChange={updateTableColumn}
           onTableSetupChange={updateTableSetup}
           onUpdateField={updateSelectedField}
           onUpdateLine={updateSelectedLine}
           pageSetup={pageSetup}
+          reportData={reportData}
           selectedElementType={selectedElementType}
           selectedElements={selectedElements}
           selectedField={selectedField}

@@ -1,7 +1,18 @@
-import type { CSSProperties, MouseEvent, PointerEvent, RefObject } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type MouseEvent,
+  type PointerEvent,
+  type RefObject,
+} from "react";
 import {
   DefaultFieldColor,
   DefaultFontFamily,
+  MaxZoom,
+  MinZoom,
+  ZoomStep,
 } from "@/app/src/ui/modules/system-administration/customized-reports/constants/CustomizeReportDesignerConstants";
 import { CustomizeReportSampleData } from "@/app/src/data/modules/system-administration/customized-reports/CustomizeReportData";
 import type {
@@ -14,6 +25,8 @@ import type {
   CustomizeReportLine,
   CustomizeReportMarginSetup,
   CustomizeReportPageSetup,
+  CustomizeReportTableColumn,
+  CustomizeReportTableColumnKey,
   CustomizeReportTableSetup,
 } from "@/app/src/types/modules/system-administration/customized-reports/CustomizeReportTypes";
 import {
@@ -41,6 +54,7 @@ type CustomizeReportDesignerCanvasProps = {
   snapToGrid: boolean;
   tableSetup: CustomizeReportTableSetup;
   zoom: number;
+  onZoomChange: (updater: (currentZoom: number) => number) => void;
   onCanvasPointerDown: (event: PointerEvent<HTMLDivElement>) => void;
   onCanvasPointerMove: (event: PointerEvent<HTMLDivElement>) => void;
   onCanvasPointerUp: (event: PointerEvent<HTMLDivElement>) => void;
@@ -48,6 +62,12 @@ type CustomizeReportDesignerCanvasProps = {
     event: MouseEvent<HTMLElement>,
     type: "field" | "line" | "table",
     id: string,
+  ) => void;
+  onFieldInlineEditStart: (field: CustomizeReportField) => void;
+  onFieldInlineTextChange: (fieldId: string, value: string) => void;
+  onTableColumnChange: (
+    columnKey: CustomizeReportTableColumnKey,
+    updater: (column: CustomizeReportTableColumn) => CustomizeReportTableColumn,
   ) => void;
   onFieldPointerDown: (
     event: PointerEvent<HTMLDivElement>,
@@ -79,12 +99,16 @@ export function CustomizeReportDesignerCanvas({
   onCanvasPointerMove,
   onCanvasPointerUp,
   onElementSelect,
+  onFieldInlineEditStart,
+  onFieldInlineTextChange,
   onFieldPointerDown,
   onLinePointerDown,
   onPointerMove,
   onPointerUp,
   onResizePointerDown,
+  onTableColumnChange,
   onTablePointerDown,
+  onZoomChange,
   pageSetup,
   reportData,
   selectedElementSet,
@@ -94,6 +118,58 @@ export function CustomizeReportDesignerCanvas({
   tableSetup,
   zoom,
 }: CustomizeReportDesignerCanvasProps) {
+  const [editingFieldId, setEditingFieldId] = useState<string | null>(null);
+  const [editingTableColumnKey, setEditingTableColumnKey] = useState<CustomizeReportTableColumnKey | null>(null);
+
+  useEffect(() => {
+    const scrollElement = canvasScrollRef.current;
+
+    if (!scrollElement) {
+      return;
+    }
+
+    const scrollContainer = scrollElement;
+
+    function handleWheel(event: WheelEvent) {
+      if (!event.ctrlKey && !event.metaKey) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      const canvasRect = scrollContainer.getBoundingClientRect();
+      const pointerX = event.clientX - canvasRect.left;
+      const pointerY = event.clientY - canvasRect.top;
+
+      onZoomChange((currentZoom) => {
+        const nextZoom = Math.min(Math.max(currentZoom + (event.deltaY < 0 ? ZoomStep : -ZoomStep), MinZoom), MaxZoom);
+
+        if (nextZoom === currentZoom) {
+          return currentZoom;
+        }
+
+        const currentScale = currentZoom / 100;
+        const nextScale = nextZoom / 100;
+        const contentX = (scrollContainer.scrollLeft + pointerX) / currentScale;
+        const contentY = (scrollContainer.scrollTop + pointerY) / currentScale;
+
+        window.requestAnimationFrame(() => {
+          scrollContainer.scrollLeft = contentX * nextScale - pointerX;
+          scrollContainer.scrollTop = contentY * nextScale - pointerY;
+        });
+
+        return nextZoom;
+      });
+    }
+
+    scrollContainer.addEventListener("wheel", handleWheel, { passive: false });
+
+    return () => {
+      scrollContainer.removeEventListener("wheel", handleWheel);
+    };
+  }, [canvasScrollRef, onZoomChange]);
+
   return (
     <div
       className="h-[calc(100vh-15rem)] min-h-[32rem] cursor-crosshair overflow-auto overscroll-contain rounded-md border border-slate-200 bg-slate-200 p-4 shadow-sm"
@@ -136,11 +212,16 @@ export function CustomizeReportDesignerCanvas({
               }}
             />
           ) : null}
+          {pageSetup.showSectionGuides ? <HeaderFooterGuides pageSetup={pageSetup} /> : null}
 
           <ReportItemsPreview
+            editingColumnKey={editingTableColumnKey}
             onElementSelect={onElementSelect}
+            onHeaderEditEnd={() => setEditingTableColumnKey(null)}
+            onHeaderEditStart={setEditingTableColumnKey}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
+            onTableColumnChange={onTableColumnChange}
             onTablePointerDown={onTablePointerDown}
             selectedElementSet={selectedElementSet}
             tableSetup={tableSetup}
@@ -168,7 +249,18 @@ export function CustomizeReportDesignerCanvas({
               <ReportFieldElement
                 key={field.id}
                 field={field}
+                isEditing={editingFieldId === field.id}
                 onElementSelect={onElementSelect}
+                onFieldInlineEditEnd={() => setEditingFieldId(null)}
+                onFieldInlineEditStart={(targetField) => {
+                  if (targetField.locked || targetField.type === "image") {
+                    return;
+                  }
+
+                  onFieldInlineEditStart(targetField);
+                  setEditingFieldId(targetField.id);
+                }}
+                onFieldInlineTextChange={onFieldInlineTextChange}
                 onFieldPointerDown={onFieldPointerDown}
                 onPointerMove={onPointerMove}
                 onPointerUp={onPointerUp}
@@ -182,6 +274,40 @@ export function CustomizeReportDesignerCanvas({
         </div>
       </div>
     </div>
+  );
+}
+
+function HeaderFooterGuides({ pageSetup }: { pageSetup: CustomizeReportPageSetup }) {
+  const headerHeight = pageSetup.headerHeight ?? 104;
+  const footerHeight = pageSetup.footerHeight ?? 96;
+
+  return (
+    <>
+      <div
+        className="pointer-events-none absolute left-0 top-0 border-b border-dashed border-sky-400/80 bg-sky-50/25"
+        style={{
+          width: pageSetup.width,
+          height: headerHeight,
+          zIndex: 0,
+        }}
+      >
+        <span className="absolute right-2 top-1 rounded-sm bg-white/80 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-sky-600">
+          Header
+        </span>
+      </div>
+      <div
+        className="pointer-events-none absolute bottom-0 left-0 border-t border-dashed border-emerald-400/80 bg-emerald-50/25"
+        style={{
+          width: pageSetup.width,
+          height: footerHeight,
+          zIndex: 0,
+        }}
+      >
+        <span className="absolute right-2 top-1 rounded-sm bg-white/80 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-emerald-600">
+          Footer
+        </span>
+      </div>
+    </>
   );
 }
 
@@ -200,20 +326,31 @@ function SelectionMarquee({ selectionRect }: { selectionRect: CanvasSelectionRec
 }
 
 function ReportItemsPreview({
+  editingColumnKey,
   onElementSelect,
+  onHeaderEditEnd,
+  onHeaderEditStart,
   onPointerMove,
   onPointerUp,
+  onTableColumnChange,
   onTablePointerDown,
   selectedElementSet,
   tableSetup,
 }: {
+  editingColumnKey: CustomizeReportTableColumnKey | null;
   onElementSelect: (
     event: MouseEvent<HTMLElement>,
     type: "field" | "line" | "table",
     id: string,
   ) => void;
+  onHeaderEditEnd: () => void;
+  onHeaderEditStart: (columnKey: CustomizeReportTableColumnKey) => void;
   onPointerMove: (event: PointerEvent<HTMLButtonElement | HTMLDivElement>) => void;
   onPointerUp: (event: PointerEvent<HTMLButtonElement | HTMLDivElement>) => void;
+  onTableColumnChange: (
+    columnKey: CustomizeReportTableColumnKey,
+    updater: (column: CustomizeReportTableColumn) => CustomizeReportTableColumn,
+  ) => void;
   onTablePointerDown: (event: PointerEvent<HTMLDivElement>) => void;
   selectedElementSet: Set<SelectedElementKey>;
   tableSetup: CustomizeReportTableSetup;
@@ -247,30 +384,34 @@ function ReportItemsPreview({
       tabIndex={0}
       title="Items Table"
     >
-      <table className="w-full border-separate border-spacing-0" style={{ fontSize: tableSetup.fontSize }}>
+      <table
+        className="w-full border-separate border-spacing-0"
+        style={{
+          color: tableSetup.color || DefaultFieldColor,
+          fontFamily: tableSetup.fontFamily || DefaultFontFamily,
+          fontSize: tableSetup.fontSize,
+          fontStyle: tableSetup.italic ? "italic" : "normal",
+          fontWeight: tableSetup.bold ? 700 : 400,
+          textDecoration: tableSetup.underline ? "underline" : "none",
+        }}
+      >
         {tableSetup.showHeader ? (
           <thead className="bg-slate-50">
             <tr>
               {visibleColumns.map((column, columnIndex) => (
-                <th
+                <TableHeaderCell
                   key={column.key}
-                  className="px-2"
-                  style={{
-                    ...getTableCellBorderStyle({
-                      borderColor: "#cbd5e1",
-                      borderSetup,
-                      columnIndex,
-                      rowIndex: 0,
-                      totalColumns: visibleColumns.length,
-                      totalRows: visibleRowCount,
-                    }),
-                    width: column.width,
-                    height: tableSetup.rowHeight,
-                    textAlign: column.align,
-                  }}
-                >
-                  {column.label}
-                </th>
+                  borderSetup={borderSetup}
+                  column={column}
+                  columnIndex={columnIndex}
+                  isEditing={editingColumnKey === column.key}
+                  onEditEnd={onHeaderEditEnd}
+                  onEditStart={onHeaderEditStart}
+                  onTableColumnChange={onTableColumnChange}
+                  tableSetup={tableSetup}
+                  totalColumns={visibleColumns.length}
+                  totalRows={visibleRowCount}
+                />
               ))}
             </tr>
           </thead>
@@ -304,6 +445,102 @@ function ReportItemsPreview({
         </tbody>
       </table>
     </div>
+  );
+}
+
+function TableHeaderCell({
+  borderSetup,
+  column,
+  columnIndex,
+  isEditing,
+  onEditEnd,
+  onEditStart,
+  onTableColumnChange,
+  tableSetup,
+  totalColumns,
+  totalRows,
+}: {
+  borderSetup: CustomizeReportTableSetup["borderSetup"];
+  column: CustomizeReportTableColumn;
+  columnIndex: number;
+  isEditing: boolean;
+  onEditEnd: () => void;
+  onEditStart: (columnKey: CustomizeReportTableColumnKey) => void;
+  onTableColumnChange: (
+    columnKey: CustomizeReportTableColumnKey,
+    updater: (column: CustomizeReportTableColumn) => CustomizeReportTableColumn,
+  ) => void;
+  tableSetup: CustomizeReportTableSetup;
+  totalColumns: number;
+  totalRows: number;
+}) {
+  const editorRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (!isEditing) {
+      return;
+    }
+
+    editorRef.current?.focus();
+    editorRef.current?.select();
+  }, [isEditing]);
+
+  return (
+    <th
+      className={`relative cursor-text px-2 transition ${
+        isEditing ? "bg-orange-100 ring-2 ring-inset ring-orange-300" : "hover:bg-orange-50 hover:ring-1 hover:ring-inset hover:ring-orange-200"
+      }`}
+      onDoubleClick={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        onEditStart(column.key);
+      }}
+      onPointerDown={(event) => {
+        event.stopPropagation();
+      }}
+      style={{
+        ...getTableCellBorderStyle({
+          borderColor: "#cbd5e1",
+          borderSetup,
+          columnIndex,
+          rowIndex: 0,
+          totalColumns,
+          totalRows,
+        }),
+        width: column.width,
+        height: tableSetup.rowHeight,
+        textAlign: column.align,
+      }}
+      title="Double-click to edit column label"
+    >
+      {isEditing ? (
+        <input
+          ref={editorRef}
+          className="absolute inset-1 z-20 h-[calc(100%-0.5rem)] w-[calc(100%-0.5rem)] rounded-sm border border-orange-400 bg-white px-1 text-inherit outline-none ring-2 ring-orange-200"
+          onBlur={onEditEnd}
+          onChange={(event) =>
+            onTableColumnChange(column.key, (currentColumn) => ({
+              ...currentColumn,
+              label: event.target.value,
+            }))
+          }
+          onClick={(event) => event.stopPropagation()}
+          onDoubleClick={(event) => event.stopPropagation()}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === "Escape") {
+              event.currentTarget.blur();
+            }
+          }}
+          onPointerDown={(event) => event.stopPropagation()}
+          style={{
+            textAlign: column.align,
+          }}
+          value={column.label}
+        />
+      ) : (
+        column.label
+      )}
+    </th>
   );
 }
 
@@ -452,7 +689,11 @@ function ReportLineElement({
 
 function ReportFieldElement({
   field,
+  isEditing,
   onElementSelect,
+  onFieldInlineEditEnd,
+  onFieldInlineEditStart,
+  onFieldInlineTextChange,
   onFieldPointerDown,
   onPointerMove,
   onPointerUp,
@@ -463,11 +704,15 @@ function ReportFieldElement({
   selectedFieldId,
 }: {
   field: CustomizeReportField;
+  isEditing: boolean;
   onElementSelect: (
     event: MouseEvent<HTMLElement>,
     type: "field" | "line",
     id: string,
   ) => void;
+  onFieldInlineEditEnd: () => void;
+  onFieldInlineEditStart: (field: CustomizeReportField) => void;
+  onFieldInlineTextChange: (fieldId: string, value: string) => void;
   onFieldPointerDown: (
     event: PointerEvent<HTMLDivElement>,
     field: CustomizeReportField,
@@ -486,16 +731,32 @@ function ReportFieldElement({
 }) {
   const previewValue = getFieldPreviewValue(field, reportData);
   const fieldLineHeight = String(previewValue).includes("\n") ? `${Math.round(field.fontSize * 1.2)}px` : `${field.height}px`;
+  const isSelected = selectedElementSet.has(getSelectedElementKey("field", field.id));
+  const editorRef = useRef<HTMLTextAreaElement | null>(null);
+
+  useEffect(() => {
+    if (!isEditing) {
+      return;
+    }
+
+    editorRef.current?.focus();
+    editorRef.current?.select();
+  }, [isEditing]);
 
   return (
     <div
       data-report-element="true"
       className={`absolute overflow-visible rounded-sm border text-slate-900 transition ${
-        selectedElementSet.has(getSelectedElementKey("field", field.id))
+        isSelected
           ? "border-orange-400 bg-orange-50/80 ring-2 ring-orange-200"
           : "border-sky-200 bg-sky-50/70 hover:border-sky-400"
       } ${field.locked ? "cursor-not-allowed opacity-80" : "cursor-move"}`}
       onClick={(event) => onElementSelect(event, "field", field.id)}
+      onDoubleClick={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        onFieldInlineEditStart(field);
+      }}
       onPointerDown={(event) => onFieldPointerDown(event, field)}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
@@ -526,12 +787,39 @@ function ReportFieldElement({
           draggable={false}
           src={field.src}
         />
+      ) : isEditing ? (
+        <textarea
+          ref={editorRef}
+          className="absolute inset-0 z-50 h-full w-full resize-none border border-orange-400 bg-white px-1 outline-none ring-2 ring-orange-200"
+          onBlur={onFieldInlineEditEnd}
+          onChange={(event) => onFieldInlineTextChange(field.id, event.target.value)}
+          onClick={(event) => event.stopPropagation()}
+          onDoubleClick={(event) => event.stopPropagation()}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              event.currentTarget.blur();
+            }
+          }}
+          onPointerDown={(event) => event.stopPropagation()}
+          style={{
+            color: field.color || DefaultFieldColor,
+            fontFamily: field.fontFamily || DefaultFontFamily,
+            fontSize: field.fontSize,
+            fontStyle: field.italic ? "italic" : "normal",
+            fontWeight: field.bold ? 700 : 400,
+            lineHeight: fieldLineHeight,
+            textAlign: field.align,
+            textDecoration: field.underline ? "underline" : "none",
+          }}
+          value={String(previewValue)}
+        />
       ) : (
         <div className="h-full w-full overflow-hidden whitespace-pre-wrap px-1">
           {previewValue}
         </div>
       )}
-      {field.id === selectedFieldId &&
+      {isSelected &&
+        field.id === selectedFieldId &&
         selectedElementType === "field" &&
         !field.locked &&
         (["nw", "ne", "sw", "se"] as const).map((resizeHandle) => (

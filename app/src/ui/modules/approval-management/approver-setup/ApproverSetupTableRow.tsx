@@ -1,6 +1,7 @@
 import { CircleOff, Pencil, RefreshCcw, Trash2 } from "lucide-react";
 import {
   ApproverAssignmentToneByType,
+  ApproverConditionLabels,
   ApproverSetupTemporaryType,
   ApproverStatusToneByStatus,
 } from "@/app/src/constants/modules/system-administration/user-management/approver-setup/ApproverSetupConstants";
@@ -72,7 +73,9 @@ export function ApproverSetupTableRow({
         <div className="mt-1 text-xs font-medium text-darknavy/55">{record.moduleScope}</div>
       </td>
       <td className="px-4 py-4 align-center">
-        <div className="text-sm font-medium text-darknavy">{record.condition}</div>
+        <div className="text-sm font-medium text-darknavy">
+          {ApproverConditionLabels[record.condition]}
+        </div>
       </td>
       <td className="px-4 py-4 align-center">
         {isTemporary ? (

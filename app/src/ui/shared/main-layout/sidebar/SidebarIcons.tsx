@@ -127,6 +127,7 @@ const SidebarItemIcons: Record<string, LucideIcon> = {
 	"workspace-audit": Activity,
 	"workspace-subscriptions": WalletCards,
 	"workspace-billing-and-subscription": WalletCards,
+	"workspace-billing-and-transactions": ReceiptText,
 	"workspace-invoices": FileText,
 	"workspace-vouchers-and-coupons": BadgePercent,
 	"workspace-modules-features": ListTree,

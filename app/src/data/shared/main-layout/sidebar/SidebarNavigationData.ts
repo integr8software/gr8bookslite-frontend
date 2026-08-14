@@ -40,6 +40,14 @@ export const MainWorkspaceNavigationSections: MainNavigationSection[] = [
     "workspace-billing-and-subscription",
   ),
   directSection(
+    "workspace-billing-and-transactions-section",
+    "Billing & Transactions",
+    "/workspace/billing-and-transactions",
+    "invoice",
+    "workspace.billing.invoices",
+    "workspace-billing-and-transactions",
+  ),
+  directSection(
     "workspace-vouchers-and-coupons-section",
     "Vouchers and Coupons",
     "/workspace/vouchers-and-coupons",

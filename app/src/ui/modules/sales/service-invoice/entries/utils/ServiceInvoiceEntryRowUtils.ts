@@ -12,40 +12,32 @@ import { parseMoneyNumberInput } from "@/app/src/ui/shared/money/MoneyNumberFiel
 
 export function recalculateServiceInvoiceEntry(
 	entry: ServiceInvoiceLineEntry,
-	updates: Partial<ServiceInvoiceLineEntry> = {},
+	_updates: Partial<ServiceInvoiceLineEntry> = {},
 ): ServiceInvoiceLineEntry {
 	const amount = parseMoneyNumberInput(entry.amount);
 	const quantity = parseMoneyNumberInput(entry.quantity);
-	const baseAmount = amount * Math.max(quantity, 0);
-	const isVatInclusive = entry.vatInclusive.toLowerCase() === "true";
-	const shouldRecalculateVat =
-		"amount" in updates ||
-		"quantity" in updates ||
-		("vatInclusive" in updates && isVatInclusive);
-	const vatAmount = !isVatInclusive
-		? 0
-		: shouldRecalculateVat
-			? baseAmount * 0.12
-			: parseMoneyNumberInput(entry.vatAmount);
-	const vatInclusiveAmount = baseAmount + vatAmount;
+	const grossAmount = amount * Math.max(quantity, 0);
 	const discountPercent = parseMoneyNumberInput(entry.discountPercent);
-	const enteredDiscountAmount = parseMoneyNumberInput(entry.discountAmount);
-	const shouldRecalculateDiscount =
-		"amount" in updates ||
-		"quantity" in updates ||
-		"vatAmount" in updates ||
-		"vatInclusive" in updates ||
-		"discountPercent" in updates;
-	const computedDiscountAmount = shouldRecalculateDiscount
-		? vatInclusiveAmount * (Math.max(discountPercent, 0) / 100)
-		: enteredDiscountAmount;
-	const computedNetAmount = vatInclusiveAmount - computedDiscountAmount;
+	const discountAmount =
+		grossAmount * (Math.max(discountPercent, 0) / 100);
+	const grossAfterDiscount = Math.max(grossAmount - discountAmount, 0);
+	const isVatable = entry.vatable.toLowerCase() === "true";
+	const isVatInclusive =
+		isVatable && entry.vatInclusive.toLowerCase() === "true";
+	const vatAmount = !isVatable
+		? 0
+		: isVatInclusive
+			? (grossAfterDiscount / 1.12) * 0.12
+			: grossAfterDiscount * 0.12;
+	const netAmount = isVatable && !isVatInclusive
+		? grossAfterDiscount + vatAmount
+		: grossAfterDiscount;
 
 	return {
 		...entry,
-		discountAmount: computedDiscountAmount.toFixed(2),
-		grossAmount: Math.max(computedNetAmount, 0).toFixed(2),
-		netAmount: baseAmount.toFixed(2),
+		discountAmount: discountAmount.toFixed(2),
+		grossAmount: netAmount.toFixed(2),
+		netAmount: grossAmount.toFixed(2),
 		vatAmount: vatAmount.toFixed(2),
 	};
 }

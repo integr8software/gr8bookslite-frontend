@@ -5,13 +5,7 @@ export type WorkspaceUserStatus = WorkspaceCompanyStatus | "Suspended";
 export type WorkspaceCompanyPlan = string;
 
 export type WorkspaceCompanyType =
-  | "Individual"
-  | "Corporation"
-  | "Partnership"
-  | "Association"
-  | "Non Stock"
-  | "Non Profit Organization"
-  | "Others";
+  "Individual" | "Corporation" | "Partnership" | "Association" | "Non Stock" | "Non Profit Organization" | "Others";
 
 export type WorkspaceCompanyFormMode = "add" | "edit" | "view";
 
@@ -86,9 +80,7 @@ export type WorkspaceCompanyFormValues = {
   website: string;
 };
 
-export type WorkspaceCompanyFormErrors = Partial<
-  Record<keyof WorkspaceCompanyFormValues, string>
->;
+export type WorkspaceCompanyFormErrors = Partial<Record<keyof WorkspaceCompanyFormValues, string>>;
 
 export type WorkspaceUserCompanyAssignment = {
   companyId: string;
@@ -116,9 +108,7 @@ export type WorkspaceCompanyUserFormValues = {
   name: string;
 };
 
-export type WorkspaceCompanyUserFormErrors = Partial<
-  Record<keyof WorkspaceCompanyUserFormValues, string>
->;
+export type WorkspaceCompanyUserFormErrors = Partial<Record<keyof WorkspaceCompanyUserFormValues, string>>;
 
 export type WorkspaceCompanyUserApiAssignment = {
   companyId: number;
@@ -135,10 +125,7 @@ export type WorkspaceCompanyUserAssignedUnitApiRecord = {
   isActive: boolean;
 };
 
-export type WorkspaceCompanyUserApiStatus =
-  | "ACTIVE"
-  | "PENDING_VERIFICATION"
-  | "SUSPENDED";
+export type WorkspaceCompanyUserApiStatus = "ACTIVE" | "PENDING_VERIFICATION" | "SUSPENDED";
 
 export type WorkspaceCompanyUserApiRecord = {
   id: number;
@@ -186,10 +173,7 @@ export type WorkspaceCompanyBranchRecord = {
   linkedMainBranchId?: string;
 };
 
-export type WorkspaceCompanyUnitApiType =
-  | "HEAD_OFFICE"
-  | "BRANCH"
-  | "SATELLITE";
+export type WorkspaceCompanyUnitApiType = "HEAD_OFFICE" | "BRANCH" | "SATELLITE";
 
 export type WorkspaceCompanyUnitApiRecord = {
   id: number;
@@ -221,17 +205,9 @@ export type WorkspaceCompanyTableColumnKey = keyof Pick<
   "name" | "totalBranches" | "totalUsers" | "companyType" | "plan" | "status"
 >;
 
-export type WorkspaceCompanyApiStatus =
-  | "ACTIVE"
-  | "FAILED"
-  | "PENDING"
-  | "PROVISIONING"
-  | "SUSPENDED";
+export type WorkspaceCompanyApiStatus = "ACTIVE" | "FAILED" | "PENDING" | "PROVISIONING" | "SUSPENDED";
 
-export type WorkspaceCompanyApiTaxpayerType =
-  | "INDIVIDUAL"
-  | "NON_INDIVIDUAL"
-  | null;
+export type WorkspaceCompanyApiTaxpayerType = "INDIVIDUAL" | "NON_INDIVIDUAL" | null;
 
 export type WorkspaceCompanyApiRecord = {
   id: number;
@@ -285,6 +261,7 @@ export type CreateWorkspaceCompanyBillingApiRequest = {
   billingMode?: "MANUAL" | "AUTO";
   billingEmail?: string;
   paymentMethodId?: string;
+  paymentAttemptId?: number;
   cardBrand?: string;
   cardLast4?: string;
   cardExpiryMonth?: number;
@@ -313,6 +290,4 @@ export type CreateWorkspaceCompanyApiRequest = {
   billing?: CreateWorkspaceCompanyBillingApiRequest;
 };
 
-export type UpdateWorkspaceCompanyApiRequest = Partial<
-  Omit<CreateWorkspaceCompanyApiRequest, "billing">
->;
+export type UpdateWorkspaceCompanyApiRequest = Partial<Omit<CreateWorkspaceCompanyApiRequest, "billing">>;

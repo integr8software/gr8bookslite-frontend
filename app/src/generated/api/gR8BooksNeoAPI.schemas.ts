@@ -555,7 +555,6 @@ export interface AttachPaymentMethodResponseDto {
   message: string;
   subscription: CompanySubscriptionResponseDto;
   paymentIntent: PaymentIntentResponseDto;
-  pendingProviderActivation?: boolean;
 }
 
 export interface CancelCompanySubscriptionDto {

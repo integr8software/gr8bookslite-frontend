@@ -10,6 +10,10 @@ import type {
 	WorkspaceCompanyFormErrors,
 	WorkspaceCompanyFormValues,
 } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
+import type {
+	CountryReference,
+	CurrencyReference,
+} from "@/app/src/types/shared/reference/ReferenceTypes";
 import {
 	DefaultPhilippineContactNumber,
 	FormatPhilippineContactNumber,
@@ -27,13 +31,19 @@ const SetupLaterPaymentMethod = {
 	id: "setup-later",
 	label: "Set up billing after creating company",
 };
+const AutoBillingMode = "AUTO";
+const CardholderNameAutoComplete = "cc-name";
+const NewPayMongoCardPaymentMethodId = "new-paymongo-card";
 const NewPayMongoCardPaymentMethod = {
-	id: "new-paymongo-card",
+	id: NewPayMongoCardPaymentMethodId,
 	label: "Add new PayMongo card",
 };
 export function CompanyDetailsFields({
 	errors,
 	formId,
+	countries,
+	currencies,
+	isReferenceLoading,
 	isLoadingPaymentMethods,
 	isLoadingPlans,
 	paymentMethodOptions,
@@ -47,6 +57,9 @@ export function CompanyDetailsFields({
 }: {
 	errors: WorkspaceCompanyFormErrors;
 	formId: string;
+	countries: CountryReference[];
+	currencies: CurrencyReference[];
+	isReferenceLoading: boolean;
 	isLoadingPaymentMethods: boolean;
 	isLoadingPlans: boolean;
 	paymentMethodOptions: { id: string; label: string }[];
@@ -270,6 +283,58 @@ export function CompanyDetailsFields({
 							/>
 						</WorkspaceManagementField>
 					</div>
+					<div className="grid gap-4 lg:grid-cols-2">
+						<WorkspaceManagementField
+							label="Country"
+							error={errors.countryCode}
+							required
+						>
+							<select
+								name="countryCode"
+								value={values.countryCode}
+								onChange={onInputChange}
+								disabled={isReferenceLoading}
+								className={WorkspaceManagementFieldClassName}
+							>
+								<option value="">
+									Select country
+								</option>
+								{countries.map((country) => (
+									<option
+										key={country.code}
+										value={country.code}
+									>
+										{country.name}
+									</option>
+								))}
+							</select>
+						</WorkspaceManagementField>
+						<WorkspaceManagementField
+							label="Base Currency"
+							error={errors.baseCurrencyCode}
+							required
+						>
+							<select
+								name="baseCurrencyCode"
+								value={values.baseCurrencyCode}
+								onChange={onInputChange}
+								disabled={isReferenceLoading}
+								className={WorkspaceManagementFieldClassName}
+							>
+								<option value="">
+									Select base currency
+								</option>
+								{currencies.map((currency) => (
+									<option
+										key={currency.code}
+										value={currency.code}
+									>
+										{currency.code} - {currency.name}
+									</option>
+								))}
+							</select>
+						</WorkspaceManagementField>
+					</div>
 				</div>
 			</WorkspaceManagementSection>
 
@@ -421,7 +486,7 @@ export function CompanyDetailsFields({
 									</p>
 								</div>
 							</div>
-							{values.billingMode === "AUTO" ? (
+							{values.billingMode === AutoBillingMode ? (
 								<div className="grid gap-4 lg:grid-cols-2">
 									<WorkspaceManagementField
 										label="Payment Method"
@@ -459,9 +524,9 @@ export function CompanyDetailsFields({
 							)}
 						</div>
 
-						{values.billingMode === "AUTO" &&
+						{values.billingMode === AutoBillingMode &&
 						values.billingPaymentMethodId ===
-						"new-paymongo-card" ? (
+						NewPayMongoCardPaymentMethodId ? (
 							<div className="grid gap-4 rounded-xl border border-darknavy/10 bg-white p-4 lg:grid-cols-2">
 								<WorkspaceManagementField
 									label="Cardholder Name"
@@ -472,7 +537,7 @@ export function CompanyDetailsFields({
 										name="billingCardholderName"
 										value={values.billingCardholderName}
 										onChange={onInputChange}
-										autoComplete="cc-name"
+										autoComplete={CardholderNameAutoComplete}
 										className={
 											WorkspaceManagementFieldClassName
 										}

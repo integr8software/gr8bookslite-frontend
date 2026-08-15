@@ -11,6 +11,7 @@ import {
 	formatExchangeRate,
 } from "@/app/src/data/modules/system-administration/multi-currency-setup/MultiCurrencySetupData";
 import { useMultiCurrencySetupRates } from "@/app/src/hooks/modules/system-administration/multi-currency-setup/useMultiCurrencySetupRates";
+import { useOnboardingReferenceData } from "@/app/src/hooks/onboarding/useOnboardingReferenceData";
 
 export function useMultiCurrencySetupListPage() {
 	const [preferredBaseCurrencyCode, setPreferredBaseCurrencyCode] = useState(
@@ -20,6 +21,7 @@ export function useMultiCurrencySetupListPage() {
 		DefaultWantedCurrencyCode,
 	);
 	const [query, setQuery] = useState("");
+	const referenceData = useOnboardingReferenceData();
 	const ratesQuery = useMultiCurrencySetupRates(preferredBaseCurrencyCode);
 	const fetchedRates = useMemo(
 		() => ratesQuery.data ?? [],
@@ -61,8 +63,13 @@ export function useMultiCurrencySetupListPage() {
 		? formatExchangeRate(wantedRate.inverseExchangeRate)
 		: "0.000000";
 	const enabledCurrencies = useMemo(
-		() => createMultiCurrencyCatalogFromFetchedRates(fetchedRates),
-		[fetchedRates],
+		() =>
+			createMultiCurrencyCatalogFromFetchedRates(
+				fetchedRates,
+				referenceData.currencies,
+				preferredBaseCurrencyCode,
+			),
+		[fetchedRates, preferredBaseCurrencyCode, referenceData.currencies],
 	);
 	const defaultCurrency = enabledCurrencies.find(
 		(currency) => currency.code === preferredBaseCurrencyCode,

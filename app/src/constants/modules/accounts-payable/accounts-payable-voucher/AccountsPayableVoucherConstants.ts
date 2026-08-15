@@ -108,13 +108,6 @@ export function canCancelAccountsPayableVoucherStatus(
   return status === "Draft" || status === "For Approval" || status === "Cancelled";
 }
 
-export const AccountsPayableVoucherCurrencyOptions = [
-  "PHP",
-  "USD",
-  "EUR",
-  "JPY",
-] as const;
-
 export const AccountsPayableVoucherBaseCurrencyCode = "PHP";
 export const AccountsPayableVoucherPurchaseTransactionType = "Purchases";
 export const AccountsPayableVoucherAccountingCreditSide = "credit";

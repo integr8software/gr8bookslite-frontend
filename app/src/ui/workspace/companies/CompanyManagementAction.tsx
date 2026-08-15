@@ -97,8 +97,11 @@ export function CompanyManagementAction() {
 			</div>
 			<div data-spotlight-id="workspace-company-add-form">
 				<CompanyDetailsFields
+					countries={form.countries}
+					currencies={form.currencies}
 					errors={form.errors}
 					formId={CompanyFormId}
+					isReferenceLoading={form.isReferenceLoading}
 					isLoadingPaymentMethods={paymentMethodsQuery.isLoading}
 					isLoadingPlans={plansQuery.isLoading}
 					paymentMethodOptions={paymentMethodOptions}

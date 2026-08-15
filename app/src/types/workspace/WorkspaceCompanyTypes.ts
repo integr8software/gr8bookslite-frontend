@@ -5,13 +5,7 @@ export type WorkspaceUserStatus = WorkspaceCompanyStatus | "Suspended";
 export type WorkspaceCompanyPlan = string;
 
 export type WorkspaceCompanyType =
-  | "Individual"
-  | "Corporation"
-  | "Partnership"
-  | "Association"
-  | "Non Stock"
-  | "Non Profit Organization"
-  | "Others";
+  "Individual" | "Corporation" | "Partnership" | "Association" | "Non Stock" | "Non Profit Organization" | "Others";
 
 export type WorkspaceCompanyFormMode = "add" | "edit" | "view";
 
@@ -23,6 +17,8 @@ export type WorkspaceCompanyRecord = {
   companyType: WorkspaceCompanyType;
   plan: WorkspaceCompanyPlan;
   status: WorkspaceCompanyStatus;
+  countryCode: string;
+  baseCurrencyCode: string;
   email: string;
   contactNumber: string;
   address: string;
@@ -66,6 +62,8 @@ export type WorkspaceCompanyFormValues = {
   billingPaymentMethodId: string;
   billingPlanCode: string;
   billingCycle: "MONTHLY" | "YEARLY";
+  countryCode: string;
+  baseCurrencyCode: string;
   companyName: string;
   contactNumber: string;
   email: string;
@@ -86,9 +84,7 @@ export type WorkspaceCompanyFormValues = {
   website: string;
 };
 
-export type WorkspaceCompanyFormErrors = Partial<
-  Record<keyof WorkspaceCompanyFormValues, string>
->;
+export type WorkspaceCompanyFormErrors = Partial<Record<keyof WorkspaceCompanyFormValues, string>>;
 
 export type WorkspaceUserCompanyAssignment = {
   companyId: string;
@@ -116,9 +112,7 @@ export type WorkspaceCompanyUserFormValues = {
   name: string;
 };
 
-export type WorkspaceCompanyUserFormErrors = Partial<
-  Record<keyof WorkspaceCompanyUserFormValues, string>
->;
+export type WorkspaceCompanyUserFormErrors = Partial<Record<keyof WorkspaceCompanyUserFormValues, string>>;
 
 export type WorkspaceCompanyUserApiAssignment = {
   companyId: number;
@@ -135,10 +129,7 @@ export type WorkspaceCompanyUserAssignedUnitApiRecord = {
   isActive: boolean;
 };
 
-export type WorkspaceCompanyUserApiStatus =
-  | "ACTIVE"
-  | "PENDING_VERIFICATION"
-  | "SUSPENDED";
+export type WorkspaceCompanyUserApiStatus = "ACTIVE" | "PENDING_VERIFICATION" | "SUSPENDED";
 
 export type WorkspaceCompanyUserApiRecord = {
   id: number;
@@ -151,22 +142,6 @@ export type WorkspaceCompanyUserApiRecord = {
   companyAssignments: WorkspaceCompanyUserApiAssignment[];
   createdAt: string;
   updatedAt: string | null;
-};
-
-export type WorkspaceCompanyUserApiRequest = {
-  name: string;
-  email: string;
-  contactNumber?: string;
-  companyAssignments: WorkspaceCompanyUserApiAssignment[];
-};
-
-export type WorkspaceCompanyUserResendInvitationResponse = {
-  message: string;
-};
-
-export type WorkspaceCompanyUserCancelInvitationResponse = {
-  id: number;
-  message: string;
 };
 
 export type WorkspaceCompanyBranchKind = "Head Office" | "Branch" | "Satellite";
@@ -186,10 +161,7 @@ export type WorkspaceCompanyBranchRecord = {
   linkedMainBranchId?: string;
 };
 
-export type WorkspaceCompanyUnitApiType =
-  | "HEAD_OFFICE"
-  | "BRANCH"
-  | "SATELLITE";
+export type WorkspaceCompanyUnitApiType = "HEAD_OFFICE" | "BRANCH" | "SATELLITE";
 
 export type WorkspaceCompanyUnitApiRecord = {
   id: number;
@@ -221,17 +193,9 @@ export type WorkspaceCompanyTableColumnKey = keyof Pick<
   "name" | "totalBranches" | "totalUsers" | "companyType" | "plan" | "status"
 >;
 
-export type WorkspaceCompanyApiStatus =
-  | "ACTIVE"
-  | "FAILED"
-  | "PENDING"
-  | "PROVISIONING"
-  | "SUSPENDED";
+export type WorkspaceCompanyApiStatus = "ACTIVE" | "FAILED" | "PENDING" | "PROVISIONING" | "SUSPENDED";
 
-export type WorkspaceCompanyApiTaxpayerType =
-  | "INDIVIDUAL"
-  | "NON_INDIVIDUAL"
-  | null;
+export type WorkspaceCompanyApiTaxpayerType = "INDIVIDUAL" | "NON_INDIVIDUAL" | null;
 
 export type WorkspaceCompanyApiRecord = {
   id: number;
@@ -239,6 +203,8 @@ export type WorkspaceCompanyApiRecord = {
   slug: string;
   legalName: string | null;
   companyCode: string | null;
+  countryCode: string;
+  baseCurrencyCode: string;
   taxpayerType: WorkspaceCompanyApiTaxpayerType;
   ownerLastName: string | null;
   ownerFirstName: string | null;
@@ -278,41 +244,3 @@ export type WorkspaceCompanyApiRecord = {
   createdAt: string;
   updatedAt: string;
 };
-
-export type CreateWorkspaceCompanyBillingApiRequest = {
-  planCode?: string;
-  billingCycle?: "MONTHLY" | "YEARLY";
-  billingMode?: "MANUAL" | "AUTO";
-  billingEmail?: string;
-  paymentMethodId?: string;
-  cardBrand?: string;
-  cardLast4?: string;
-  cardExpiryMonth?: number;
-  cardExpiryYear?: number;
-};
-
-export type CreateWorkspaceCompanyApiRequest = {
-  taxpayerType: "individual" | "non-individual";
-  lastName?: string;
-  firstName?: string;
-  middleName?: string;
-  companyName?: string;
-  nonIndividualType?: string;
-  nonIndividualTypeOther?: string;
-  logoFileName?: string;
-  logoMimeType?: string;
-  logoStoragePath?: string;
-  logoPublicUrl?: string;
-  address: string;
-  tin: string;
-  email: string;
-  contactNumber: string;
-  reportStartDate: string;
-  reportEndDate: string;
-  website?: string;
-  billing?: CreateWorkspaceCompanyBillingApiRequest;
-};
-
-export type UpdateWorkspaceCompanyApiRequest = Partial<
-  Omit<CreateWorkspaceCompanyApiRequest, "billing">
->;

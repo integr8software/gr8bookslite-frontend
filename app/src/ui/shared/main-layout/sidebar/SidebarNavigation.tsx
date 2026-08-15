@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
+import { useApprovalAlertStore } from "@/app/src/hooks/modules/approval-management/useApprovalAlertStore";
 import type {
 	MainNavigationItem,
 	MainNavigationSection,
@@ -94,6 +95,9 @@ export function SidebarSection({
 	onNavigateFromSidebar,
 	onToggleExpandedKey,
 }: SidebarSectionProps) {
+	const pendingApprovalCount = useApprovalAlertStore(
+		(state) => state.pendingApprovalCount,
+	);
 	const Icon = MainIcons[section.icon];
 	const directItem =
 		section.href &&
@@ -134,6 +138,8 @@ export function SidebarSection({
 			isExpanded,
 		);
 	const visibleSectionItems = section.items.slice(0, sectionVisibleCount);
+	const showPendingApprovalCount =
+		section.key === "approval-management" && pendingApprovalCount > 0;
 
 	if (directItem) {
 		return (
@@ -195,6 +201,9 @@ export function SidebarSection({
 					aria-hidden="true"
 				/>
 				<span className="min-w-0 flex-1 truncate">{section.title}</span>
+				{showPendingApprovalCount ? (
+					<PendingApprovalBadge count={pendingApprovalCount} />
+				) : null}
 				<ChevronRight
 					className={joinClasses(
 						"h-4 w-4 shrink-0 transition",
@@ -264,6 +273,12 @@ export function SidebarItem({
 	onNavigateFromSidebar,
 	onToggleExpandedKey,
 }: SidebarItemProps) {
+	const pendingApprovalCount = useApprovalAlertStore(
+		(state) => state.pendingApprovalCount,
+	);
+	const showPendingApprovalCount =
+		item.key === "approval-management-transactions" &&
+		pendingApprovalCount > 0;
 	const hasChildren = Boolean(item.children?.length);
 	const hasNoIcon = item.iconName === null;
 	const shouldShowDefaultFolder = hasNoIcon && hasChildren;
@@ -432,7 +447,21 @@ export function SidebarItem({
 				<SidebarModuleDot isActive={isActive} />
 			) : null}
 			<span className="min-w-0 flex-1 truncate">{item.label}</span>
+			{showPendingApprovalCount ? (
+				<PendingApprovalBadge count={pendingApprovalCount} />
+			) : null}
 		</Link>
+	);
+}
+
+function PendingApprovalBadge({ count }: { count: number }) {
+	return (
+		<span
+			className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-coralpink px-1.5 text-[10px] font-bold leading-none text-white shadow-[0_0_0_3px_rgb(var(--coralpink-rgb)/0.14)]"
+			aria-label={`${count} pending approvals`}
+		>
+			{count > 99 ? "99+" : count}
+		</span>
 	);
 }
 

@@ -1,5 +1,6 @@
 import {
 	ApproverAssignmentTypeOptions,
+	ApproverConditionLabels,
 	ApproverConditionOptions,
 	ApproverCoverageStatusOptions,
 	ApproverLevelOptions,
@@ -25,6 +26,8 @@ import {
 } from "./ApproverSetupFields";
 import { ApproverSetupUserSelectList } from "./ApproverSetupUserSelectList";
 
+const SelectAllModulesValue = "__all_modules__";
+
 type ApproverSetupDrawerProps = {
 	formValues: ApproverSetupFormValues;
 	isOpen: boolean;
@@ -33,6 +36,8 @@ type ApproverSetupDrawerProps = {
 	onChange: (values: ApproverSetupFormValues) => void;
 	onClose: () => void;
 	onSave: () => void;
+	selectedModuleScopes: string[];
+	onSelectedModuleScopesChange: (moduleScopes: string[]) => void;
 	users: ApproverSetupUser[];
 	validationMessage: string;
 };
@@ -45,18 +50,23 @@ export function ApproverSetupDrawer({
 	onChange,
 	onClose,
 	onSave,
+	onSelectedModuleScopesChange,
+	selectedModuleScopes,
 	users,
 	validationMessage,
 }: ApproverSetupDrawerProps) {
 	const title =
 		mode === "edit" ? "Edit Approver Assignment" : "Assign Approver";
-	const moduleSelectOptions = moduleOptions.map<AppAdvancedDropdownOption>(
-		(module) => ({
+	const moduleSelectOptions = [
+		...(mode === "add"
+			? [{ name: "Select all modules", value: SelectAllModulesValue }]
+			: []),
+		...moduleOptions.map<AppAdvancedDropdownOption>((module) => ({
 			description: module.code,
 			name: module.name,
 			value: module.code,
-		}),
-	);
+		})),
+	];
 
 	function updateField<TKey extends keyof ApproverSetupFormValues>(
 		key: TKey,
@@ -112,7 +122,7 @@ export function ApproverSetupDrawer({
 						updateField("condition", value as ApproverCondition)
 					}
 					options={ApproverConditionOptions.map((condition) => ({
-						label: condition,
+						label: ApproverConditionLabels[condition],
 						value: condition,
 					}))}
 				/>
@@ -179,11 +189,24 @@ export function ApproverSetupDrawer({
 						disabled={moduleOptions.length === 0}
 						emptyMessage="No approver setup modules found."
 						options={moduleSelectOptions}
-						placeholder="Select module"
+						placeholder={mode === "add" ? "Select modules" : "Select module"}
 						searchPlaceholder="Search module"
-						value={formValues.moduleScope}
+						selectionMode={mode === "add" ? "multiple" : "single"}
+						value={mode === "add" ? selectedModuleScopes : formValues.moduleScope}
 						onChange={(value) => {
+							if (Array.isArray(value)) {
+								const selectedValues = value.map(String);
+								const moduleScopes = selectedValues.includes(
+									SelectAllModulesValue,
+								)
+									? moduleOptions.map((module) => module.code)
+									: selectedValues;
+								onSelectedModuleScopesChange(moduleScopes);
+								updateField("moduleScope", moduleScopes[0] ?? "");
+								return;
+							}
 							if (typeof value === "string") {
+								onSelectedModuleScopesChange(value ? [value] : []);
 								updateField("moduleScope", value);
 							}
 						}}

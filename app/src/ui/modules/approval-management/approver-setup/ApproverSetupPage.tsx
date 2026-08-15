@@ -117,6 +117,8 @@ export function ApproverSetupPage() {
 				onChange={page.setFormValues}
 				onClose={page.closeDrawer}
 				onSave={page.saveAssignment}
+				selectedModuleScopes={page.selectedModuleScopes}
+				onSelectedModuleScopesChange={page.setSelectedModuleScopes}
 				users={page.approverUsers}
 				validationMessage={page.drawerError}
 			/>

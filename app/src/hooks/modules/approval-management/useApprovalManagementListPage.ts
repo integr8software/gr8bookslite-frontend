@@ -54,6 +54,7 @@ import type {
 } from "@/app/src/types/modules/system-administration/user-management/approver-setup/ApproverSetupTypes";
 import { validateApprovalManagementForm } from "@/app/src/validations/modules/system-administration/approval-management/ApprovalManagementValidation";
 import { useApprovalManagementStore } from "@/app/src/hooks/modules/approval-management/useApprovalManagement";
+import { useApprovalAlertStore } from "@/app/src/hooks/modules/approval-management/useApprovalAlertStore";
 
 export function useApprovalManagementListPage() {
 	const {
@@ -116,8 +117,9 @@ export function useApprovalManagementListPage() {
 	const activeWorkflowCount = workflowRecords.filter(
 		(workflow) => workflow.status === "Active",
 	).length;
-	const [selectedWorkflowId, setSelectedWorkflowId] = useState<string | null>(
-		() => workflowRecords[0]?.id ?? null,
+	const [selectedModuleCode, setSelectedModuleCode] =
+		useState<ApprovalManagementModuleCode | null>(
+			() => workflowRecords[0]?.moduleCode ?? null,
 	);
 	const [query, setQuery] = useState("");
 	const [statusFilter, setStatusFilter] = useState<
@@ -136,7 +138,9 @@ export function useApprovalManagementListPage() {
 		{ id: "moduleName", desc: false },
 	]);
 	const selectedWorkflow =
-		workflowRecords.find((workflow) => workflow.id === selectedWorkflowId) ??
+		workflowRecords.find(
+			(workflow) => workflow.moduleCode === selectedModuleCode,
+		) ??
 		workflowRecords[0];
 	const [values, setValues] = useState<ApprovalManagementFormValues>(() =>
 		selectedWorkflow
@@ -258,7 +262,7 @@ export function useApprovalManagementListPage() {
 
 	useEffect(() => {
 		if (!selectedWorkflow && workflowRecords[0]) {
-			setSelectedWorkflowId(workflowRecords[0].id);
+			setSelectedModuleCode(workflowRecords[0].moduleCode);
 			return;
 		}
 
@@ -328,7 +332,11 @@ export function useApprovalManagementListPage() {
 	}
 
 	function handleSelectWorkflow(workflowId: string) {
-		setSelectedWorkflowId(workflowId);
+		const workflow = workflowRecords.find((record) => record.id === workflowId);
+
+		if (workflow) {
+			setSelectedModuleCode(workflow.moduleCode);
+		}
 	}
 
 	function updateField<TKey extends keyof ApprovalManagementFormValues>(
@@ -537,6 +545,10 @@ export function useApprovalManagementListPage() {
 		if (!selectedWorkflow) {
 			return;
 		}
+		if (!selectedApproverType) {
+			toast.error("Select an approver type before saving approval rules.");
+			return;
+		}
 
 		const existingWorkflow = workflowByModuleCode.get(selectedWorkflow.moduleCode);
 		const nextErrors = validateApprovalManagementForm({
@@ -548,6 +560,12 @@ export function useApprovalManagementListPage() {
 		if (Object.keys(nextErrors).length > 0) {
 			setErrors(nextErrors);
 			toast.error("Please fix the highlighted approval workflow fields.");
+			return;
+		}
+
+		if (visibleApproverSetupRecords.length === 0) {
+			toast.error(`${selectedWorkflow.moduleName} needs an approver setup first.`);
+			useApprovalAlertStore.getState().setActiveTab("approver-setup");
 			return;
 		}
 

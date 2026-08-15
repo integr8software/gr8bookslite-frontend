@@ -38,10 +38,11 @@ import {
   updateVisibleColumnIds,
 } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherDataEntryTableHelpers";
 import { formatAccountsPayableVoucherAmount } from "@/app/src/data/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherData";
-import { getModuleChartAccounts } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import type { useAccountsPayableVoucherFormPage } from "@/app/src/hooks/modules/accounts-payable/accounts-payable-voucher/useAccountsPayableVoucherFormPage";
 import {
+  useAccountsPayableVoucherExpenseTypeOptions,
   useAccountsPayableVoucherPartyOptions,
+  useAccountsPayableVoucherPostingAccountOptions,
   useAccountsPayableVoucherResponsibilityCenterOptions,
 } from "@/app/src/hooks/modules/accounts-payable/accounts-payable-voucher/useAccountsPayableVoucher";
 import { useTaxes } from "@/app/src/hooks/shared/tax/useTaxOptions";
@@ -52,6 +53,7 @@ import type {
   AccountsPayableVoucherExpenseColumnId,
   AccountsPayableVoucherExpenseLine,
   AccountsPayableVoucherExpenseLineField,
+  AccountsPayableVoucherLookupAccount,
   AccountsPayableVoucherLookupParty,
 } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
 import {
@@ -163,13 +165,25 @@ function AccountsPayableVoucherExpenseTable({
     Record<AccountsPayableVoucherExpenseColumnId, number>
   >({ ...AccountsPayableVoucherExpenseColumnWidths });
   const partyOptionsQuery = useAccountsPayableVoucherPartyOptions();
+  const expenseTypeOptionsQuery = useAccountsPayableVoucherExpenseTypeOptions();
   const responsibilityCenterOptionsQuery = useAccountsPayableVoucherResponsibilityCenterOptions();
   const partyRecords = useMemo(() => partyOptionsQuery.data ?? [], [partyOptionsQuery.data]);
   const responsibilityCenters = useMemo(
     () => responsibilityCenterOptionsQuery.data ?? [],
     [responsibilityCenterOptionsQuery.data],
   );
-  const chartAccounts = useMemo(() => getModuleChartAccounts(), []);
+  const expenseTypeAccounts = useMemo(
+    () =>
+      mergeLookupAccountOptions(
+        expenseTypeOptionsQuery.data ?? [],
+        page.values.expenseLines.map(createExpenseLineLookupAccount),
+      ),
+    [expenseTypeOptionsQuery.data, page.values.expenseLines],
+  );
+  const expenseTypeEmptyMessage = getLookupAccountEmptyMessage(
+    expenseTypeOptionsQuery,
+    "No default-account expense types found.",
+  );
   const taxCodesQuery = useTaxes(PurchaseTaxCodeQuery);
   const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
   const vatOptions = useMemo(() => createVatOptions(taxCodes), [taxCodes]);
@@ -209,7 +223,8 @@ function AccountsPayableVoucherExpenseTable({
           page,
           line,
           columnId,
-          chartAccounts,
+          expenseTypeAccounts,
+          expenseTypeEmptyMessage,
           partyOptions,
           partyRecords,
           responsibilityCenterOptions,
@@ -383,13 +398,25 @@ function AccountsPayableVoucherAccountingTable({
   >({ ...AccountsPayableVoucherAccountingColumnWidths });
   const isReadonly = page.isAccountingEntriesReadonly;
   const partyOptionsQuery = useAccountsPayableVoucherPartyOptions();
+  const postingAccountOptionsQuery = useAccountsPayableVoucherPostingAccountOptions();
   const responsibilityCenterOptionsQuery = useAccountsPayableVoucherResponsibilityCenterOptions();
   const partyRecords = useMemo(() => partyOptionsQuery.data ?? [], [partyOptionsQuery.data]);
   const responsibilityCenters = useMemo(
     () => responsibilityCenterOptionsQuery.data ?? [],
     [responsibilityCenterOptionsQuery.data],
   );
-  const chartAccounts = useMemo(() => getModuleChartAccounts(), []);
+  const postingAccounts = useMemo(
+    () =>
+      mergeLookupAccountOptions(
+        postingAccountOptionsQuery.data ?? [],
+        page.values.accountingEntries.map(createAccountingEntryLookupAccount),
+      ),
+    [page.values.accountingEntries, postingAccountOptionsQuery.data],
+  );
+  const postingAccountEmptyMessage = getLookupAccountEmptyMessage(
+    postingAccountOptionsQuery,
+    "No posting accounts found.",
+  );
   const taxCodesQuery = useTaxes(PurchaseTaxCodeQuery);
   const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
   const vatOptions = useMemo(() => createVatOptions(taxCodes), [taxCodes]);
@@ -433,7 +460,8 @@ function AccountsPayableVoucherAccountingTable({
           page,
           entry,
           columnId,
-          chartAccounts,
+          postingAccounts,
+          postingAccountEmptyMessage,
           partyOptions,
           partyRecords,
           responsibilityCenterOptions,
@@ -586,11 +614,126 @@ function AccountsPayableVoucherAccountingTable({
   );
 }
 
+function mergeLookupAccountOptions(
+  ...groups: Array<Array<AccountsPayableVoucherLookupAccount | null>>
+) {
+  const accounts: AccountsPayableVoucherLookupAccount[] = [];
+  const accountByKey = new Map<string, AccountsPayableVoucherLookupAccount>();
+
+  groups.flat().forEach((account) => {
+    if (!account) {
+      return;
+    }
+
+    const keys = getLookupAccountKeys(account);
+
+    if (keys.length === 0 || keys.some((key) => accountByKey.has(key))) {
+      return;
+    }
+
+    accounts.push(account);
+    keys.forEach((key) => accountByKey.set(key, account));
+  });
+
+  return accounts;
+}
+
+function getLookupAccountKeys(account: AccountsPayableVoucherLookupAccount) {
+  return [account.id, account.accountNumber, account.accountName]
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
+function createExpenseLineLookupAccount(
+  line: AccountsPayableVoucherExpenseLine,
+): AccountsPayableVoucherLookupAccount | null {
+  const accountNumber = line.expenseAccountCode.trim();
+  const accountName = line.expenseType.trim();
+
+  if (!accountNumber && !accountName) {
+    return null;
+  }
+
+  return createFallbackLookupAccount({
+    accountName,
+    accountNumber,
+    accountType: "Expenses",
+    id: line.expenseAccountId?.trim() || accountNumber || accountName,
+    normalBalance: "Debit",
+    statementGroup: "Income Statement",
+  });
+}
+
+function createAccountingEntryLookupAccount(
+  entry: AccountsPayableVoucherAccountingEntry,
+): AccountsPayableVoucherLookupAccount | null {
+  const accountNumber = entry.accountCode.trim();
+  const accountName = entry.accountTitle.trim();
+
+  if (!accountNumber && !accountName) {
+    return null;
+  }
+
+  return createFallbackLookupAccount({
+    accountName,
+    accountNumber,
+    accountType: "",
+    id: entry.accountId?.trim() || accountNumber || accountName,
+    normalBalance: Number(entry.credit || 0) > 0 ? "Credit" : "Debit",
+    statementGroup: "",
+  });
+}
+
+function createFallbackLookupAccount({
+  accountName,
+  accountNumber,
+  accountType,
+  id,
+  normalBalance,
+  statementGroup,
+}: {
+  accountName: string;
+  accountNumber: string;
+  accountType: string;
+  id: string;
+  normalBalance: "Credit" | "Debit";
+  statementGroup: string;
+}): AccountsPayableVoucherLookupAccount {
+  return {
+    accountCategory: "Detail",
+    accountName: accountName || accountNumber,
+    accountNumber,
+    accountType,
+    description: accountName || accountNumber,
+    id,
+    normalBalance,
+    statementGroup,
+    statementSection: statementGroup,
+    status: "Active",
+  };
+}
+
+function getLookupAccountEmptyMessage(
+  query: { isError: boolean; isFetching: boolean; isLoading: boolean },
+  emptyMessage: string,
+) {
+  if (query.isLoading || query.isFetching) {
+    return "Loading accounts...";
+  }
+
+  if (query.isError) {
+    return "Could not load accounts.";
+  }
+
+  return emptyMessage;
+}
+
 function renderExpenseCell(
   page: ReturnType<typeof useAccountsPayableVoucherFormPage>,
   line: AccountsPayableVoucherExpenseLine,
   columnId: AccountsPayableVoucherExpenseColumnId,
-  chartAccounts: ReturnType<typeof getModuleChartAccounts>,
+  expenseTypeAccounts: AccountsPayableVoucherLookupAccount[],
+  expenseTypeEmptyMessage: string,
   partyOptions: AppAdvancedDropdownOption[],
   partyRecords: AccountsPayableVoucherLookupParty[],
   responsibilityCenterOptions: AppAdvancedDropdownOption[],
@@ -606,14 +749,15 @@ function renderExpenseCell(
     case "expenseType":
       return (
         <ChartAccountDropdown
-          accounts={chartAccounts}
+          accounts={expenseTypeAccounts}
           value={line.expenseType}
           valueField="accountName"
           readOnly={isReadonly}
           isClearable
           className={entryDropdownClassName(lineErrors.expenseType)}
           ariaInvalid={Boolean(lineErrors.expenseType)}
-          placeholder="Enter payable type"
+          emptyMessage={expenseTypeEmptyMessage}
+          placeholder="Select payable type"
           searchPlaceholder="Search payable type"
           onChange={() => undefined}
           onSelectAccount={(account) => {
@@ -740,7 +884,8 @@ function renderAccountingCell(
   page: ReturnType<typeof useAccountsPayableVoucherFormPage>,
   entry: AccountsPayableVoucherAccountingEntry,
   columnId: AccountsPayableVoucherAccountingColumnId,
-  chartAccounts: ReturnType<typeof getModuleChartAccounts>,
+  postingAccounts: AccountsPayableVoucherLookupAccount[],
+  postingAccountEmptyMessage: string,
   partyOptions: AppAdvancedDropdownOption[],
   partyRecords: AccountsPayableVoucherLookupParty[],
   responsibilityCenterOptions: AppAdvancedDropdownOption[],
@@ -766,13 +911,14 @@ function renderAccountingCell(
     case "accountTitle":
       return (
         <ChartAccountDropdown
-          accounts={chartAccounts}
+          accounts={postingAccounts}
           value={entry.accountTitle}
           valueField="accountName"
           readOnly={isReadonly || isGeneratedTaxEntry}
           isClearable
           className={entryDropdownClassName(entryErrors.accountTitle)}
           ariaInvalid={Boolean(entryErrors.accountTitle)}
+          emptyMessage={postingAccountEmptyMessage}
           placeholder="Select account title"
           searchPlaceholder="Search account title"
           onChange={() => undefined}

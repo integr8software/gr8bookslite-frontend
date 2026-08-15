@@ -13,6 +13,14 @@ import {
 import { GetManualPaymentAttemptStatus } from "@/app/src/services/billing/ManualBillingApi";
 import { CreateWorkspaceCompany } from "@/app/src/services/workspace/companies/WorkspaceCompanyApi";
 
+const ManualPaymentStatus = {
+  cancelled: "cancelled",
+  expired: "expired",
+  failed: "failed",
+  pending: "pending",
+  success: "success",
+} as const satisfies Record<ManualBillingCheckoutStatus, ManualBillingCheckoutStatus>;
+
 const StatusCopy: Record<
   ManualBillingCheckoutStatus,
   {
@@ -23,35 +31,35 @@ const StatusCopy: Record<
     toneClass: string;
   }
 > = {
-  cancelled: {
+  [ManualPaymentStatus.cancelled]: {
     eyebrow: "Payment cancelled",
     helper: "The checkout session was cancelled. No payment method was saved and no automatic renewal was enabled.",
     icon: XCircle,
     title: "Manual payment was cancelled",
     toneClass: "bg-coralpink/12 text-coralpink",
   },
-  expired: {
+  [ManualPaymentStatus.expired]: {
     eyebrow: "Payment expired",
     helper: "The checkout session expired before payment was confirmed. Start a new manual payment when ready.",
     icon: AlertCircle,
     title: "Checkout session expired",
     toneClass: "bg-citron/25 text-darknavy",
   },
-  failed: {
+  [ManualPaymentStatus.failed]: {
     eyebrow: "Payment failed",
     helper: "PayMongo did not confirm the payment. You can retry manual checkout or choose auto renewal.",
     icon: XCircle,
     title: "Manual payment failed",
     toneClass: "bg-coralpink/12 text-coralpink",
   },
-  pending: {
+  [ManualPaymentStatus.pending]: {
     eyebrow: "Payment pending",
     helper: "The payment is waiting for provider confirmation. Access will activate after PayMongo confirms the payment.",
     icon: Clock3,
     title: "Payment confirmation is pending",
     toneClass: "bg-skyblue/14 text-darknavy",
   },
-  success: {
+  [ManualPaymentStatus.success]: {
     eyebrow: "Payment successful",
     helper: "PayMongo returned from hosted checkout. If payment is confirmed, access activation may continue in the background.",
     icon: CheckCircle2,
@@ -63,11 +71,11 @@ const StatusCopy: Record<
 function NormalizeStatus(value: string | string[] | undefined): ManualBillingCheckoutStatus {
   const status = Array.isArray(value) ? value[0] : value;
 
-  if (status === "success" || status === "failed" || status === "pending" || status === "cancelled" || status === "expired") {
-    return status;
+  if (Object.values(ManualPaymentStatus).includes(status as ManualBillingCheckoutStatus)) {
+    return status as ManualBillingCheckoutStatus;
   }
 
-  return "pending";
+  return ManualPaymentStatus.pending;
 }
 
 function IsOnboardingReturnUrl(value: string) {
@@ -79,7 +87,7 @@ function GetAppliedReturnUrl(value: string) {
     return value;
   }
 
-  return "/onboarding?manualBillingStatus=success";
+  return `/onboarding?manualBillingStatus=${ManualPaymentStatus.success}`;
 }
 
 export default function ManualPaymentResultPage() {
@@ -108,7 +116,10 @@ export default function ManualPaymentResultPage() {
   const isPayMongoTerminal =
     providerStatus === "FAILED" || providerStatus === "EXPIRED" || providerStatus === "CANCELED" || providerStatus === "CANCELLED";
   const shouldWaitForOnboardingApplication =
-    isOnboardingReturn && (status === "success" || status === "pending") && !isApplied && !isPayMongoTerminal;
+    isOnboardingReturn &&
+    (status === ManualPaymentStatus.success || status === ManualPaymentStatus.pending) &&
+    !isApplied &&
+    !isPayMongoTerminal;
 
   useEffect(() => {
     if (!paymentAttemptId) {
@@ -139,7 +150,7 @@ export default function ManualPaymentResultPage() {
 
     void refreshPaymentAttemptStatus();
 
-    if (status === "success" || status === "pending") {
+    if (status === ManualPaymentStatus.success || status === ManualPaymentStatus.pending) {
       intervalId = window.setInterval(() => {
         void refreshPaymentAttemptStatus();
       }, 2500);
@@ -158,12 +169,17 @@ export default function ManualPaymentResultPage() {
       return;
     }
 
-    if (status === "failed" || status === "cancelled" || status === "expired" || isPayMongoTerminal) {
+    if (
+      status === ManualPaymentStatus.failed ||
+      status === ManualPaymentStatus.cancelled ||
+      status === ManualPaymentStatus.expired ||
+      isPayMongoTerminal
+    ) {
       ClearPendingAdditionalCompanyManualCheckoutDraft();
       return;
     }
 
-    if (status !== "success" && status !== "pending") {
+    if (status !== ManualPaymentStatus.success && status !== ManualPaymentStatus.pending) {
       return;
     }
 
@@ -216,7 +232,7 @@ export default function ManualPaymentResultPage() {
             is applied to your onboarding draft.
           </p>
         ) : null}
-        {isAdditionalCompanyReturn && (status === "success" || status === "pending") ? (
+        {isAdditionalCompanyReturn && (status === ManualPaymentStatus.success || status === ManualPaymentStatus.pending) ? (
           <p className="mx-auto mt-3 max-w-2xl rounded-2xl border border-skyblue/30 bg-skyblue/10 px-4 py-3 text-sm leading-6 text-darknavy/70">
             {companyCreationStatus === "created"
               ? "Payment is confirmed and the company has been created."
@@ -239,7 +255,7 @@ export default function ManualPaymentResultPage() {
         </dl>
 
         <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-          {status === "success" || status === "pending" ? (
+          {status === ManualPaymentStatus.success || status === ManualPaymentStatus.pending ? (
             shouldWaitForOnboardingApplication ? (
               <button
                 type="button"

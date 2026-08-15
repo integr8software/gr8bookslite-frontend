@@ -7,7 +7,11 @@ import {
   workspaceCompaniesControllerGetManagementSummaryV1,
   workspaceCompaniesControllerUpdateV1,
 } from "@/app/src/generated/api/workspace-companies/workspace-companies";
-import type { WorkspaceCompanyResponseDto, WorkspaceCompanyUnitResponseDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
+import type {
+  CreateWorkspaceCompanyDto,
+  WorkspaceCompanyResponseDto,
+  WorkspaceCompanyUnitResponseDto,
+} from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import type {
   WorkspaceCompanyApiRecord,
   WorkspaceCompanyBranchRecord,
@@ -44,32 +48,17 @@ type CreateWorkspaceCompanyBillingApiPayload = {
   cardExpiryYear?: number;
 };
 
-type CreateWorkspaceCompanyApiPayload = {
-  taxpayerType: "individual" | "non-individual";
-  lastName?: string;
-  firstName?: string;
-  middleName?: string;
-  companyName?: string;
-  nonIndividualType?: string;
-  nonIndividualTypeOther?: string;
-  logoFileName?: string;
-  logoMimeType?: string;
-  logoStoragePath?: string;
-  logoPublicUrl?: string;
-  address: string;
+type CreateWorkspaceCompanyApiPayload = Omit<CreateWorkspaceCompanyDto, "billing"> & {
   countryCode: string;
   baseCurrencyCode: string;
-  tin: string;
-  email: string;
-  contactNumber: string;
-  reportStartDate: string;
-  reportEndDate: string;
-  website?: string;
   billing?: CreateWorkspaceCompanyBillingApiPayload;
 };
 
 type UpdateWorkspaceCompanyApiPayload = Partial<
-  Omit<CreateWorkspaceCompanyApiPayload, "billing">
+  Omit<CreateWorkspaceCompanyApiPayload, "billing"> & {
+    countryCode: string;
+    baseCurrencyCode: string;
+  }
 >;
 
 export async function GetWorkspaceCompanies() {

@@ -6,6 +6,7 @@ import {
   workspaceUsersControllerUpdateV1,
 } from "@/app/src/generated/api/workspace-users/workspace-users";
 import type {
+  CreateWorkspaceUserDto,
   WorkspaceUserCancelInvitationResponseDto,
   WorkspaceUserMessageResponseDto,
   WorkspaceUserResponseDto,
@@ -16,7 +17,6 @@ import type {
   WorkspaceCompanyUnitApiType,
   WorkspaceCompanyUserAssignedUnitApiRecord,
   WorkspaceCompanyUserApiRecord,
-  WorkspaceCompanyUserApiRequest,
   WorkspaceCompanyUserFormValues,
   WorkspaceCompanyUserRecord,
   WorkspaceUserStatus,
@@ -76,7 +76,7 @@ export async function CancelWorkspaceUserInvitation(userId: string) {
 
 function MapWorkspaceUserFormToRequest(
   values: WorkspaceCompanyUserFormValues,
-): WorkspaceCompanyUserApiRequest {
+): CreateWorkspaceUserDto {
   const contactNumber = values.contactNumber.trim();
 
   return {

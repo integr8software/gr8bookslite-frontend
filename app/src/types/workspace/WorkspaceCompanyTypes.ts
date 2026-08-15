@@ -144,13 +144,6 @@ export type WorkspaceCompanyUserApiRecord = {
   updatedAt: string | null;
 };
 
-export type WorkspaceCompanyUserApiRequest = {
-  name: string;
-  email: string;
-  contactNumber?: string;
-  companyAssignments: WorkspaceCompanyUserApiAssignment[];
-};
-
 export type WorkspaceCompanyBranchKind = "Head Office" | "Branch" | "Satellite";
 
 export type WorkspaceCompanyBranchRecord = {

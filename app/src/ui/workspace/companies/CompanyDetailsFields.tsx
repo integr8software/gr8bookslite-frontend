@@ -283,60 +283,58 @@ export function CompanyDetailsFields({
 							/>
 						</WorkspaceManagementField>
 					</div>
-					{showBillingDetails ? null : (
-						<div className="grid gap-4 lg:grid-cols-2">
-							<WorkspaceManagementField
-								label="Country"
-								error={errors.countryCode}
-								required
+					<div className="grid gap-4 lg:grid-cols-2">
+						<WorkspaceManagementField
+							label="Country"
+							error={errors.countryCode}
+							required
+						>
+							<select
+								name="countryCode"
+								value={values.countryCode}
+								onChange={onInputChange}
+								disabled={isReferenceLoading}
+								className={WorkspaceManagementFieldClassName}
 							>
-								<select
-									name="countryCode"
-									value={values.countryCode}
-									onChange={onInputChange}
-									disabled={isReferenceLoading}
-									className={WorkspaceManagementFieldClassName}
-								>
-									<option value="">
-										Select country
+								<option value="">
+									Select country
+								</option>
+								{countries.map((country) => (
+									<option
+										key={country.code}
+										value={country.code}
+									>
+										{country.name}
 									</option>
-									{countries.map((country) => (
-										<option
-											key={country.code}
-											value={country.code}
-										>
-											{country.name}
-										</option>
-									))}
-								</select>
-							</WorkspaceManagementField>
-							<WorkspaceManagementField
-								label="Base Currency"
-								error={errors.baseCurrencyCode}
-								required
+								))}
+							</select>
+						</WorkspaceManagementField>
+						<WorkspaceManagementField
+							label="Base Currency"
+							error={errors.baseCurrencyCode}
+							required
+						>
+							<select
+								name="baseCurrencyCode"
+								value={values.baseCurrencyCode}
+								onChange={onInputChange}
+								disabled={isReferenceLoading}
+								className={WorkspaceManagementFieldClassName}
 							>
-								<select
-									name="baseCurrencyCode"
-									value={values.baseCurrencyCode}
-									onChange={onInputChange}
-									disabled={isReferenceLoading}
-									className={WorkspaceManagementFieldClassName}
-								>
-									<option value="">
-										Select base currency
+								<option value="">
+									Select base currency
+								</option>
+								{currencies.map((currency) => (
+									<option
+										key={currency.code}
+										value={currency.code}
+									>
+										{currency.code} - {currency.name}
 									</option>
-									{currencies.map((currency) => (
-										<option
-											key={currency.code}
-											value={currency.code}
-										>
-											{currency.code} - {currency.name}
-										</option>
-									))}
-								</select>
-							</WorkspaceManagementField>
-						</div>
-					)}
+								))}
+							</select>
+						</WorkspaceManagementField>
+					</div>
 				</div>
 			</WorkspaceManagementSection>
 

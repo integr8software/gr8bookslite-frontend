@@ -63,6 +63,8 @@ const StatusToApi: Record<
 	Posted: "POSTED",
 };
 
+const ZeroMoneyValue = "0.00";
+
 export async function fetchBillings(
 	query: BillingListQuery = {},
 ): Promise<BillingListData> {
@@ -180,7 +182,7 @@ function createFormValuesFromApi(
 		defaultAccount: invoice.receivableAccountTitle,
 		description: lineEntries[0]?.description ?? "",
 		discountAmount: invoice.discountAmount.toFixed(2),
-		donation: "0.00",
+		donation: ZeroMoneyValue,
 		documentDate: invoice.documentDate,
 		dueDate: invoice.dueDate,
 		ewtAmount: invoice.ewtAmount.toFixed(2),
@@ -198,7 +200,7 @@ function createFormValuesFromApi(
 		projectCode: invoice.projectCode ?? "",
 		projectName: invoice.projectName ?? "",
 		projectRef: invoice.projectRef ?? "",
-		recoupment: "0.00",
+		recoupment: ZeroMoneyValue,
 		referenceNo: invoice.referenceNo ?? "",
 		remarks: invoice.remarks ?? "",
 		residentCustomerCode: "",
@@ -364,11 +366,11 @@ function createFormValuesFromRecord(
 		currency: "PHP",
 		defaultAccount: "",
 		description: "",
-		discountAmount: "0.00",
-		donation: "0.00",
+		discountAmount: ZeroMoneyValue,
+		donation: ZeroMoneyValue,
 		documentDate: record.documentDate,
 		dueDate: today,
-		ewtAmount: "0.00",
+		ewtAmount: ZeroMoneyValue,
 		exchangeRate: "1.0000",
 		expirationDate: today,
 		grossAmount: record.amount.toFixed(2),
@@ -383,7 +385,7 @@ function createFormValuesFromRecord(
 		projectCode: "",
 		projectName: "",
 		projectRef: "",
-		recoupment: "0.00",
+		recoupment: ZeroMoneyValue,
 		referenceNo: record.referenceNo,
 		remarks: "",
 		residentCustomerCode: "",
@@ -396,8 +398,8 @@ function createFormValuesFromRecord(
 		teamAssigned: "",
 		terms: "",
 		transactionNo: record.transactionNo,
-		vatAmount: "0.00",
-		wvatAmount: "0.00",
+		vatAmount: ZeroMoneyValue,
+		wvatAmount: ZeroMoneyValue,
 	};
 }
 

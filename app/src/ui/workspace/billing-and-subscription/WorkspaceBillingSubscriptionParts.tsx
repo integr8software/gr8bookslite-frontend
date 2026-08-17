@@ -1,5 +1,4 @@
 import { CreditCard, Lock, X, type LucideIcon } from "lucide-react";
-import type { ChangeEvent } from "react";
 import type {
   BillingPaymentFormErrors,
   BillingPaymentFormValues,
@@ -12,7 +11,6 @@ import {
 import type {
   WorkspaceBillingAddOnQuote,
   WorkspaceBillingCompanyAccount,
-  WorkspaceBillingPaymentMethodRecord,
   WorkspaceBillingPromotionOption,
 } from "@/app/src/types/workspace/billing-and-subscription/WorkspaceBillingSubscriptionTypes";
 import { AppAdvancedDropdown, type AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";

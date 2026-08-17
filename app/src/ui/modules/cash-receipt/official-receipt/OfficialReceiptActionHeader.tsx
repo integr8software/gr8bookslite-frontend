@@ -4,20 +4,18 @@ import {
   OfficialReceiptCopyFromRecords,
   OfficialReceiptCopySources,
 } from "@/app/src/data/modules/cash-receipt/official-receipt/OfficialReceiptData";
-import { OfficialReceiptHref } from "@/app/src/constants/modules/cash-receipt/official-receipt/OfficialReceiptConstants";
 import type {
   OfficialReceiptActionMode,
   OfficialReceiptFormValues,
 } from "@/app/src/types/modules/cash-receipt/official-receipt/OfficialReceiptTypes";
-import {
-  ModuleHeader,
-  moduleHeaderActionClassNames,
-} from "@/app/src/ui/shared/module/ModuleHeader";
+import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 import { AppCopyFromDropdown } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
 
 type OfficialReceiptActionHeaderProps = {
+  baseHref: string;
   mode: OfficialReceiptActionMode;
+  receiptLabel?: string;
   values: OfficialReceiptFormValues;
   onCopyFrom: (recordIds: string[]) => void;
   onPreview: () => void;
@@ -25,24 +23,26 @@ type OfficialReceiptActionHeaderProps = {
 };
 
 export function OfficialReceiptActionHeader({
+  baseHref,
   mode,
   onCopyFrom,
   onPreview,
   onSubmit,
+  receiptLabel = "Official Receipt",
   values,
 }: OfficialReceiptActionHeaderProps) {
   const title =
     mode === "view"
-      ? `View Official Receipt | ${values.receiptNo}`
+      ? `View ${receiptLabel} | ${values.receiptNo}`
       : mode === "edit"
-        ? `Edit Official Receipt | ${values.receiptNo}`
-        : "Add Official Receipt";
+        ? `Edit ${receiptLabel} | ${values.receiptNo}`
+        : `Add ${receiptLabel}`;
 
   return (
     <ModuleHeader
       variant="panel"
       titleAs="h1"
-      eyebrow={values.referenceNo || "Official receipt"}
+      eyebrow={values.referenceNo || receiptLabel}
       title={title}
       description={
         mode === "view"
@@ -52,27 +52,19 @@ export function OfficialReceiptActionHeader({
       actionsClassName="items-center gap-1"
       actions={
         <>
-          <Link href={OfficialReceiptHref} className={moduleHeaderActionClassNames.secondary}>
+          <Link href={baseHref} className={moduleHeaderActionClassNames.secondary}>
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Back
           </Link>
           <ReportPreviewAction onPreview={onPreview} />
           {mode === "view" ? null : (
             <>
-              <Link href={OfficialReceiptHref} className={moduleHeaderActionClassNames.secondary}>
+              <Link href={baseHref} className={moduleHeaderActionClassNames.secondary}>
                 <X className="h-4 w-4" aria-hidden="true" />
                 Cancel
               </Link>
-              <AppCopyFromDropdown
-                records={OfficialReceiptCopyFromRecords}
-                sources={OfficialReceiptCopySources}
-                onApply={onCopyFrom}
-              />
-              <button
-                type="button"
-                onClick={onSubmit}
-                className={moduleHeaderActionClassNames.primary}
-              >
+              <AppCopyFromDropdown records={OfficialReceiptCopyFromRecords} sources={OfficialReceiptCopySources} onApply={onCopyFrom} />
+              <button type="button" onClick={onSubmit} className={moduleHeaderActionClassNames.primary}>
                 <Save className="h-4 w-4" aria-hidden="true" />
                 Save
               </button>

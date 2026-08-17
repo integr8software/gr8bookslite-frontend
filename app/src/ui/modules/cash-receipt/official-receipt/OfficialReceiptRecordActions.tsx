@@ -1,33 +1,34 @@
 import { Ban, CheckCircle2, Edit3, Eye, ThumbsDown, Undo2 } from "lucide-react";
-import { OfficialReceiptHref } from "@/app/src/constants/modules/cash-receipt/official-receipt/OfficialReceiptConstants";
+import {
+  EditableOfficialReceiptStatuses,
+  OfficialReceiptStatuses,
+} from "@/app/src/constants/modules/cash-receipt/official-receipt/OfficialReceiptConstants";
 import type {
   OfficialReceiptRecord,
   OfficialReceiptStatus,
 } from "@/app/src/types/modules/cash-receipt/official-receipt/OfficialReceiptTypes";
-import {
-  ModuleActionMenu,
-  type ModuleActionMenuItem,
-} from "@/app/src/ui/shared/module/ModuleActionMenu";
+import { ModuleActionMenu, type ModuleActionMenuItem } from "@/app/src/ui/shared/module/ModuleActionMenu";
 import { ModuleTableActions } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
 export function OfficialReceiptRecordActions({
+  baseHref,
+  receiptLabel = "official receipt",
   record,
   onUpdateStatus,
 }: {
+  baseHref: string;
+  receiptLabel?: string;
   record: OfficialReceiptRecord;
-  onUpdateStatus: (
-    record: OfficialReceiptRecord,
-    status: OfficialReceiptStatus,
-  ) => void;
+  onUpdateStatus: (record: OfficialReceiptRecord, status: OfficialReceiptStatus) => void;
 }) {
-  const isApproved = record.status === "Approved";
-  const isDisapproved = record.status === "Disapproved";
-  const isCancelled = record.status === "Cancelled";
-  const undoStatus: OfficialReceiptStatus = "Active";
-  const cancelStatus: OfficialReceiptStatus = isCancelled ? "Draft" : "Cancelled";
+  const isApproved = record.status === OfficialReceiptStatuses.Approved;
+  const isDisapproved = record.status === OfficialReceiptStatuses.Disapproved;
+  const isCancelled = record.status === OfficialReceiptStatuses.Cancelled;
+  const undoStatus: OfficialReceiptStatus = OfficialReceiptStatuses.Active;
+  const cancelStatus: OfficialReceiptStatus = isCancelled ? OfficialReceiptStatuses.Draft : OfficialReceiptStatuses.Cancelled;
   const items: ModuleActionMenuItem[] = [
     {
-      href: `${OfficialReceiptHref}/view/${record.id}`,
+      href: `${baseHref}/view/${record.id}`,
       icon: Eye,
       label: "View",
       type: "link",
@@ -35,7 +36,7 @@ export function OfficialReceiptRecordActions({
     ...(canEditOfficialReceiptStatus(record.status)
       ? [
           {
-            href: `${OfficialReceiptHref}/edit/${record.id}`,
+            href: `${baseHref}/edit/${record.id}`,
             icon: Edit3,
             label: "Edit",
             type: "link",
@@ -46,15 +47,14 @@ export function OfficialReceiptRecordActions({
       disabled: !canApproveOfficialReceiptStatus(record.status),
       icon: isApproved ? Undo2 : CheckCircle2,
       label: isApproved ? "Undo Approved" : "Approve",
-      onSelect: () => onUpdateStatus(record, isApproved ? undoStatus : "Approved"),
+      onSelect: () => onUpdateStatus(record, isApproved ? undoStatus : OfficialReceiptStatuses.Approved),
       type: "button",
     },
     {
       disabled: !canDisapproveOfficialReceiptStatus(record.status),
       icon: isDisapproved ? Undo2 : ThumbsDown,
       label: isDisapproved ? "Undo Disapproved" : "Disapprove",
-      onSelect: () =>
-        onUpdateStatus(record, isDisapproved ? undoStatus : "Disapproved"),
+      onSelect: () => onUpdateStatus(record, isDisapproved ? undoStatus : OfficialReceiptStatuses.Disapproved),
       tone: isDisapproved ? "default" : "danger",
       type: "button",
     },
@@ -70,26 +70,23 @@ export function OfficialReceiptRecordActions({
 
   return (
     <ModuleTableActions className="!justify-center">
-      <ModuleActionMenu
-        items={items}
-        label={`Actions for official receipt ${record.receiptNo}`}
-      />
+      <ModuleActionMenu items={items} label={`Actions for ${receiptLabel} ${record.receiptNo}`} />
     </ModuleTableActions>
   );
 }
 
 function canEditOfficialReceiptStatus(status: OfficialReceiptStatus) {
-  return status === "Active" || status === "Draft" || status === "Pending";
+  return EditableOfficialReceiptStatuses.includes(status);
 }
 
 function canApproveOfficialReceiptStatus(status: OfficialReceiptStatus) {
-  return status === "Active" || status === "Draft" || status === "Pending" || status === "Approved";
+  return canEditOfficialReceiptStatus(status) || status === OfficialReceiptStatuses.Approved;
 }
 
 function canDisapproveOfficialReceiptStatus(status: OfficialReceiptStatus) {
-  return status === "Active" || status === "Draft" || status === "Pending" || status === "Disapproved";
+  return canEditOfficialReceiptStatus(status) || status === OfficialReceiptStatuses.Disapproved;
 }
 
 function canCancelOfficialReceiptStatus(status: OfficialReceiptStatus) {
-  return status !== "Closed";
+  return status !== OfficialReceiptStatuses.Closed;
 }

@@ -2,20 +2,14 @@ export type AcknowledgementReceiptActionMode = "add" | "edit" | "view";
 
 export type AcknowledgementReceiptEntryView = "collection" | "accounting";
 
-export type AcknowledgementReceiptStatus =
-  | "Active"
-  | "Approved"
-  | "Cancelled"
-  | "Closed"
-  | "Disapproved"
-  | "Draft"
-  | "Pending";
+export type AcknowledgementReceiptStatus = "Active" | "Approved" | "Cancelled" | "Closed" | "Disapproved" | "Draft" | "Pending";
 
 export type AcknowledgementReceiptRecord = {
   id: string;
   amount: number;
   collectionType: string;
   customerName: string;
+  partyCode: string;
   formValues?: AcknowledgementReceiptFormValues;
   receiptDate: string;
   receiptNo: string;
@@ -29,6 +23,7 @@ export type AcknowledgementReceiptLineEntry = {
   accountTitle: string;
   collectionType: string;
   customerName: string;
+  partyCode: string;
   grossReceipt: string;
   vatExempt: string;
   vat: string;
@@ -43,6 +38,7 @@ export type AcknowledgementReceiptFormValues = {
   receiptDate: string;
   referenceNo: string;
   customerName: string;
+  partyCode: string;
   paymentType: string;
   currency: string;
   exchangeRate: string;

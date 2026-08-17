@@ -718,6 +718,24 @@ give the Currency control the same `id` so the label is associated with the
 select. The labeled row uses the same label width and gap as standard
 transaction fields; do not override its alignment in a feature module.
 
+When Currency is rendered in the same row as Exchange Rate, keep the Currency
+control within its assigned grid track but give its `AppAdvancedDropdown` menu
+an extended minimum width with `menuMinWidth={320}`. The options menu may be
+wider than the closed control and must use the shared portal positioning, which
+clamps it to the available viewport. This width must leave enough room to show
+the currency code first and the currency name or description second without the
+premature truncation caused by the narrow row control. Do not widen the Exchange
+Rate field or the complete `CurrencyExchangeRateRow` merely to widen the menu.
+
+```tsx
+<AppAdvancedDropdown
+  menuMinWidth={320}
+  options={currencyOptions}
+  searchPlaceholder="Search Currency"
+  // ...currency field props
+/>
+```
+
 Build transaction Currency options from the shared currency references and
 configured multi-currency rates. Use the active company's base currency as the
 default; do not hardcode feature-local lists or assume a particular base
@@ -788,6 +806,24 @@ manual decimal input consistently across transaction forms.
   `text-sm font-semibold text-darknavy`. Keep the generated entry count on the
   left and the shared row actions on the right; do not shrink, pad, or position
   these footer areas per feature.
+- Use the centered `footerDetails` content according to the active Data Entry
+  view. A detail, item, expense, service, or equivalent transaction view shows
+  `Total Amount`. An `Accounting Entries` view shows `Variance`, calculated as
+  the absolute difference between total Debit and total Credit. Do not show
+  `Total Amount` in the Accounting Entries footer or use `Variance` as the
+  detail-view footer label.
+- The Accounting Entries variance is stateful feedback. Render zero variance
+  with the success color (`text-emerald-700`) and any non-zero variance with
+  the error/accent color (`text-coralpink`). Use the same currency formatter
+  and precision as Debit and Credit, and use a small tolerance such as `0.001`
+  when testing whether the calculated variance is zero.
+- A valid Accounting Entries set must always balance: total Debit must equal
+  total Credit and Variance must be zero. Keep Debit and Credit totals in the
+  shared summary row, calculate balance in the feature hook or data layer, and
+  enforce it in the feature validation. Full Save, Update, Submit, Approve,
+  Post, and equivalent completion actions must not proceed while the entries
+  are out of balance. The documented Save As Draft validation exception still
+  applies to incomplete work in progress.
 
 `<ModuleName>EntryTabs.tsx`
 
@@ -806,6 +842,33 @@ manual decimal input consistently across transaction forms.
 - Small editable and readonly cell renderers.
 - Examples: item selector, account selector, quantity input, unit price input,
   tax selector, debit/credit input, and row note input.
+- Lookup cells must follow the same advanced-dropdown and permission behavior
+  as lookup fields in the transaction header. Use `AppAdvancedDropdown` from
+  `app/src/ui/shared/advanced-dropdown/` for Party Name, Responsibility Center,
+  Project Name, Terms, and the other maintenance-backed lookups listed under
+  `<ModuleName>FieldControls.tsx`. Use it for VAT Type and EWT lookups as well;
+  do not render these fields as plain text inputs or native selects.
+- When a Data Entry lookup is backed by a maintenance module, expose the
+  dropdown `addAction` only in editable modes and only when the current user has
+  Create access to that maintenance module. The Add action opens the same
+  right-side maintenance drawer used by the corresponding header lookup and
+  selects the newly created record into the active row after a successful save.
+  Do not show a non-functional or unauthorized Add action.
+- Every maintenance-backed Data Entry lookup must keep both the selected record
+  code and name in the row model. In advanced-dropdown options and search
+  results, present `Code` first and `Name` second. In the grid, keep the paired
+  Code column immediately before its Name column in the canonical column order,
+  but hide Code columns by default. Users may reveal them through the shared
+  Column Visibility control. Selecting or clearing the Name lookup must update
+  or clear its paired Code value in the same state change.
+- Use the shared `ModuleDataEntryCheckboxCell` in
+  `app/src/ui/shared/module/module-data-entry/ModuleDataEntryCheckboxCell.tsx`
+  for boolean Data Entry cells. Use it for the `VATable` and `VATInc` columns
+  instead of creating feature-local checkbox markup. It must
+  provide an accessible label from the column and row context, use the standard
+  Data Entry control sizing and focus treatment, center the checkbox in its
+  cell, call a typed boolean change handler, and render a clearly readonly,
+  non-interactive state in View mode.
 - Every Data Entry column whose canonical label is `Remarks` must use the
   shared `ModuleDataEntryRemarksCell`. Keep the value visible as a truncated,
   single-line cell input with a fixed ellipsis button. The ellipsis button opens
@@ -1198,6 +1261,8 @@ columns.
   `app/src/ui/shared/module/module-data-entry/ModuleDataEntry.tsx`.
 - Entry Remarks cell:
   `app/src/ui/shared/module/module-data-entry/ModuleDataEntryRemarksCell.tsx`.
+- Entry boolean checkbox cell:
+  `app/src/ui/shared/module/module-data-entry/ModuleDataEntryCheckboxCell.tsx`.
 - Reports: `app/src/ui/shared/reports/*`.
 - Reusable inputs: `app/src/ui/shared/transaction-setup/*`,
   `advanced-dropdown`, `tag-input`, `media`, and shared money/date controls.

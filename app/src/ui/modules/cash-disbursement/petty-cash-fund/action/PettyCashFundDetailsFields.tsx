@@ -136,6 +136,7 @@ export function PettyCashFundDetailsFields({
                 value={page.values.currency}
                 readOnly={page.isReadonly}
                 isClearable={false}
+                menuMinWidth={320}
                 options={page.currencyOptions}
                 placeholder="Currency"
                 searchPlaceholder="Search Currency"

@@ -1,4 +1,8 @@
-import { RevolvingFundResponsibilityCenterOptions } from "@/app/src/constants/modules/cash-disbursement/revolving-fund/RevolvingFundConstants";
+import {
+  RevolvingFundEntryTypeOptions,
+  RevolvingFundEntryVatTypeOptions,
+  RevolvingFundResponsibilityCenterOptions,
+} from "@/app/src/constants/modules/cash-disbursement/revolving-fund/RevolvingFundConstants";
 import type { RevolvingFundActionPageState } from "@/app/src/hooks/modules/cash-disbursement/revolving-fund/useRevolvingFundActionPage";
 import type {
   RevolvingFundAccountingColumnId,
@@ -6,11 +10,13 @@ import type {
   RevolvingFundItem,
   RevolvingFundItemColumnId,
 } from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import {
+  RevolvingFundEntryDropdown,
   RevolvingFundEntryInput,
-  RevolvingFundEntrySelect,
 } from "@/app/src/ui/modules/cash-disbursement/revolving-fund/entries/RevolvingFundEntryCellControls";
 import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import { ModuleDataEntryCheckboxCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryCheckboxCell";
 
 export function createRevolvingFundItemColumns(
   page: RevolvingFundActionPageState,
@@ -37,9 +43,9 @@ export function createRevolvingFundItemColumns(
       />
     ),
   });
-  const select = (
+  const dropdown = (
     id: RevolvingFundItemColumnId,
-    options: readonly string[],
+    options: AppAdvancedDropdownOption[],
   ): ModuleDataEntryColumn<RevolvingFundItem> => ({
     header: labels[id],
     id,
@@ -47,13 +53,32 @@ export function createRevolvingFundItemColumns(
     widthMode: "fixed",
     widthClassName: "w-auto",
     renderCell: (row, _index, context) => (
-      <RevolvingFundEntrySelect
+      <RevolvingFundEntryDropdown
         id={context.fieldId}
         name={context.fieldName}
         value={String(row[id])}
         readOnly={page.isReadonly}
         options={options}
         onChange={(value) => page.updateItem(row.id, { [id]: value })}
+      />
+    ),
+  });
+  const checkbox = (
+    id: "vatable" | "vatInclusive",
+  ): ModuleDataEntryColumn<RevolvingFundItem> => ({
+    header: labels[id],
+    id,
+    width: widths[id],
+    widthMode: "fixed",
+    widthClassName: "w-auto",
+    renderCell: (row, index, context) => (
+      <ModuleDataEntryCheckboxCell
+        checked={row[id] === "True"}
+        inputId={context.fieldId}
+        inputName={context.fieldName}
+        isReadonly={page.isReadonly}
+        label={`${labels[id]} for row ${index + 1}`}
+        onChange={(checked) => page.updateItem(row.id, { [id]: checked ? "True" : "False" })}
       />
     ),
   });
@@ -67,12 +92,12 @@ export function createRevolvingFundItemColumns(
     amount: text("amount"),
     netAmount: text("netAmount"),
     vatAmount: text("vatAmount"),
-    type: select("type", ["Expense", "Asset", "Other"]),
-    vatType: select("vatType", ["VAT 12%", "Zero Rated", "Exempt"]),
-    vatable: select("vatable", ["False", "True"]),
-    vatInclusive: select("vatInclusive", ["False", "True"]),
+    type: dropdown("type", RevolvingFundEntryTypeOptions),
+    vatType: dropdown("vatType", RevolvingFundEntryVatTypeOptions),
+    vatable: checkbox("vatable"),
+    vatInclusive: checkbox("vatInclusive"),
     grossAmount: text("grossAmount"),
-    responsibilityCenter: select("responsibilityCenter", RevolvingFundResponsibilityCenterOptions),
+    responsibilityCenter: dropdown("responsibilityCenter", RevolvingFundResponsibilityCenterOptions),
   };
 }
 
@@ -104,4 +129,3 @@ export function createRevolvingFundAccountingColumns(
     particulars: column("particulars"),
   };
 }
-

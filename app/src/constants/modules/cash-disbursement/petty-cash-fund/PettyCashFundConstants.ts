@@ -99,7 +99,7 @@ export const PettyCashFundItemColumnLabels: Record<PettyCashFundItemColumnId, st
   type: "Type",
   vatType: "VAT Type",
   vatable: "VATable",
-  vatInclusive: "VAT Inc",
+  vatInclusive: "VATInc",
   grossAmount: "Gross Amount",
   responsibilityCenter: "Responsibility Center",
 };
@@ -173,7 +173,21 @@ export const PettyCashFundResponsibilityCenterLookupOptions: AppAdvancedDropdown
   { label: "RC-OPS", name: "Operations", value: "RC-OPS" },
   { label: "RC-SAL", name: "Sales", value: "RC-SAL" },
 ];
-export const PettyCashFundResponsibilityCenterOptions = ["Administration", "Operations", "Sales"];
+export const PettyCashFundEntryTypeOptions: AppAdvancedDropdownOption[] = [
+  { name: "Expense", value: "Expense" },
+  { name: "Asset", value: "Asset" },
+  { name: "Other", value: "Other" },
+];
+export const PettyCashFundEntryVatTypeOptions: AppAdvancedDropdownOption[] = [
+  { name: "VAT 12%", value: "VAT 12%" },
+  { name: "Zero Rated", value: "Zero Rated" },
+  { name: "Exempt", value: "Exempt" },
+];
+export const PettyCashFundResponsibilityCenterOptions: AppAdvancedDropdownOption[] = [
+  { label: "RC-ADM", name: "Administration", value: "Administration" },
+  { label: "RC-OPS", name: "Operations", value: "Operations" },
+  { label: "RC-SAL", name: "Sales", value: "Sales" },
+];
 
 export function canEditPettyCashFund(status: PettyCashFundStatus) {
   return (

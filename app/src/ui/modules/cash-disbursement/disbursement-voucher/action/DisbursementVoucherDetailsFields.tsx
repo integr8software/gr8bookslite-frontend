@@ -211,7 +211,7 @@ function DisbursementVoucherHeaderFields({
                   value={values.currency}
                   readOnly={isReadonly}
                   isClearable={false}
-                  menuMinWidth={260}
+                  menuMinWidth={320}
                   options={currencyOptions}
                   placeholder="Currency"
                   searchPlaceholder="Search currency"

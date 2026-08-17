@@ -99,7 +99,7 @@ export const RevolvingFundItemColumnLabels: Record<RevolvingFundItemColumnId, st
   type: "Type",
   vatType: "VAT Type",
   vatable: "VATable",
-  vatInclusive: "VAT Inc",
+  vatInclusive: "VATInc",
   grossAmount: "Gross Amount",
   responsibilityCenter: "Responsibility Center",
 };
@@ -173,7 +173,21 @@ export const RevolvingFundResponsibilityCenterLookupOptions: AppAdvancedDropdown
   { label: "RC-OPS", name: "Operations", value: "RC-OPS" },
   { label: "RC-SAL", name: "Sales", value: "RC-SAL" },
 ];
-export const RevolvingFundResponsibilityCenterOptions = ["Administration", "Operations", "Sales"];
+export const RevolvingFundEntryTypeOptions: AppAdvancedDropdownOption[] = [
+  { name: "Expense", value: "Expense" },
+  { name: "Asset", value: "Asset" },
+  { name: "Other", value: "Other" },
+];
+export const RevolvingFundEntryVatTypeOptions: AppAdvancedDropdownOption[] = [
+  { name: "VAT 12%", value: "VAT 12%" },
+  { name: "Zero Rated", value: "Zero Rated" },
+  { name: "Exempt", value: "Exempt" },
+];
+export const RevolvingFundResponsibilityCenterOptions: AppAdvancedDropdownOption[] = [
+  { label: "RC-ADM", name: "Administration", value: "Administration" },
+  { label: "RC-OPS", name: "Operations", value: "Operations" },
+  { label: "RC-SAL", name: "Sales", value: "Sales" },
+];
 
 export function canEditRevolvingFund(status: RevolvingFundStatus) {
   return (

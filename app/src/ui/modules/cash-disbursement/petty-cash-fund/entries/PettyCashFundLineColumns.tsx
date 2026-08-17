@@ -1,4 +1,8 @@
-import { PettyCashFundResponsibilityCenterOptions } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund/PettyCashFundConstants";
+import {
+  PettyCashFundEntryTypeOptions,
+  PettyCashFundEntryVatTypeOptions,
+  PettyCashFundResponsibilityCenterOptions,
+} from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund/PettyCashFundConstants";
 import type { PettyCashFundActionPageState } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-fund/usePettyCashFundActionPage";
 import type {
   PettyCashFundAccountingColumnId,
@@ -6,11 +10,13 @@ import type {
   PettyCashFundItem,
   PettyCashFundItemColumnId,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import {
+  PettyCashFundEntryDropdown,
   PettyCashFundEntryInput,
-  PettyCashFundEntrySelect,
 } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund/entries/PettyCashFundEntryCellControls";
 import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import { ModuleDataEntryCheckboxCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryCheckboxCell";
 
 export function createPettyCashFundItemColumns(
   page: PettyCashFundActionPageState,
@@ -37,9 +43,9 @@ export function createPettyCashFundItemColumns(
       />
     ),
   });
-  const select = (
+  const dropdown = (
     id: PettyCashFundItemColumnId,
-    options: readonly string[],
+    options: AppAdvancedDropdownOption[],
   ): ModuleDataEntryColumn<PettyCashFundItem> => ({
     header: labels[id],
     id,
@@ -47,13 +53,32 @@ export function createPettyCashFundItemColumns(
     widthMode: "fixed",
     widthClassName: "w-auto",
     renderCell: (row, _index, context) => (
-      <PettyCashFundEntrySelect
+      <PettyCashFundEntryDropdown
         id={context.fieldId}
         name={context.fieldName}
         value={String(row[id])}
         readOnly={page.isReadonly}
         options={options}
         onChange={(value) => page.updateItem(row.id, { [id]: value })}
+      />
+    ),
+  });
+  const checkbox = (
+    id: "vatable" | "vatInclusive",
+  ): ModuleDataEntryColumn<PettyCashFundItem> => ({
+    header: labels[id],
+    id,
+    width: widths[id],
+    widthMode: "fixed",
+    widthClassName: "w-auto",
+    renderCell: (row, index, context) => (
+      <ModuleDataEntryCheckboxCell
+        checked={row[id] === "True"}
+        inputId={context.fieldId}
+        inputName={context.fieldName}
+        isReadonly={page.isReadonly}
+        label={`${labels[id]} for row ${index + 1}`}
+        onChange={(checked) => page.updateItem(row.id, { [id]: checked ? "True" : "False" })}
       />
     ),
   });
@@ -67,12 +92,12 @@ export function createPettyCashFundItemColumns(
     amount: text("amount"),
     netAmount: text("netAmount"),
     vatAmount: text("vatAmount"),
-    type: select("type", ["Expense", "Asset", "Other"]),
-    vatType: select("vatType", ["VAT 12%", "Zero Rated", "Exempt"]),
-    vatable: select("vatable", ["False", "True"]),
-    vatInclusive: select("vatInclusive", ["False", "True"]),
+    type: dropdown("type", PettyCashFundEntryTypeOptions),
+    vatType: dropdown("vatType", PettyCashFundEntryVatTypeOptions),
+    vatable: checkbox("vatable"),
+    vatInclusive: checkbox("vatInclusive"),
     grossAmount: text("grossAmount"),
-    responsibilityCenter: select("responsibilityCenter", PettyCashFundResponsibilityCenterOptions),
+    responsibilityCenter: dropdown("responsibilityCenter", PettyCashFundResponsibilityCenterOptions),
   };
 }
 

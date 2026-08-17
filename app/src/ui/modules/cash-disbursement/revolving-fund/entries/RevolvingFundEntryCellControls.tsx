@@ -1,4 +1,6 @@
 import { RevolvingFundEntryInputClassName } from "@/app/src/constants/modules/cash-disbursement/revolving-fund/RevolvingFundConstants";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
+import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 
 export function RevolvingFundEntryInput({
   id,
@@ -28,7 +30,7 @@ export function RevolvingFundEntryInput({
   );
 }
 
-export function RevolvingFundEntrySelect({
+export function RevolvingFundEntryDropdown({
   id,
   name,
   onChange,
@@ -39,22 +41,24 @@ export function RevolvingFundEntrySelect({
   id: string;
   name: string;
   onChange: (value: string) => void;
-  options: readonly string[];
+  options: AppAdvancedDropdownOption[];
   readOnly: boolean;
   value: string;
 }) {
   return (
-    <select
+    <AppAdvancedDropdown
       id={id}
       name={name}
       value={value}
-      disabled={readOnly}
-      onChange={(event) => onChange(event.target.value)}
-      className={`${RevolvingFundEntryInputClassName} app-select-control`}
-    >
-      <option value="">Select</option>
-      {options.map((option) => <option key={option}>{option}</option>)}
-    </select>
+      readOnly={readOnly}
+      options={options}
+      placeholder=""
+      searchPlaceholder="Search Options"
+      className={EntryDropdownClassName}
+      onChange={(nextValue) => onChange(String(nextValue))}
+    />
   );
 }
 
+const EntryDropdownClassName =
+  "[&_.app-advanced-dropdown-control]:h-10 [&_.app-advanced-dropdown-control]:rounded-none [&_.app-advanced-dropdown-control]:border-0 [&_.app-advanced-dropdown-control]:bg-transparent [&_.app-advanced-dropdown-control]:px-3 [&_.app-advanced-dropdown-control]:shadow-none [&_.app-advanced-dropdown-control]:focus:ring-2 [&_.app-advanced-dropdown-control]:focus:ring-inset [&_.app-advanced-dropdown-control]:focus:ring-skyblue/35";

@@ -378,7 +378,7 @@ function CashAdvancePrimaryFields({
                 value={form.values.currency}
                 readOnly={isReadonly}
                 isClearable={false}
-                menuMinWidth={300}
+                menuMinWidth={320}
                 options={currencyOptions}
                 placeholder="Currency"
                 searchPlaceholder="Search currency"

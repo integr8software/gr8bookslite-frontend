@@ -22,7 +22,6 @@ import {
   DisbursementVoucherStatuses,
   DisbursementVoucherTransactionStorageKey,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
-import { MultiCurrencyCatalog } from "@/app/src/data/modules/system-administration/multi-currency-setup/MultiCurrencySetupData";
 
 export type DisbursementVoucherDisplayStatus = DisbursementVoucherStatus;
 
@@ -117,18 +116,6 @@ export function writeStoredDisbursementVouchers(vouchers: DisbursementVoucherRec
   window.localStorage.setItem(DisbursementVoucherRecordStorageKey, JSON.stringify(vouchers.map(sanitizeDisbursementVoucherRecord)));
 }
 
-export function createVoucherCurrencyOptions() {
-  return MultiCurrencyCatalog.filter((currency) => currency.isEnabled);
-}
-
-export function getVoucherCurrencyExchangeRate(currencyCode: string) {
-  if (!currencyCode || currencyCode === "PHP") {
-    return "1.00";
-  }
-
-  return "1.00";
-}
-
 export const DisbursementVoucherInitialEntryDraft: DisbursementVoucherEntryDraft = {
   accountCode: "",
   accountName: "",
@@ -212,24 +199,24 @@ export const DisbursementVoucherBankAccounts: DisbursementVoucherBankAccount[] =
 
 export const DisbursementVoucherPartyOptions = [
   {
-    label: "VCE-001",
+    label: "PARTY-001",
     name: "North Harbor Office Depot",
-    value: "VCE-001",
+    value: "PARTY-001",
   },
   {
-    label: "VCE-002",
+    label: "PARTY-002",
     name: "Metro Utilities Services",
-    value: "VCE-002",
+    value: "PARTY-002",
   },
   {
-    label: "VCE-003",
+    label: "PARTY-003",
     name: "Santos and Velasco Legal",
-    value: "VCE-003",
+    value: "PARTY-003",
   },
   {
-    label: "VCE-004",
+    label: "PARTY-004",
     name: "Global Freight Movers",
-    value: "VCE-004",
+    value: "PARTY-004",
   },
   {
     label: "EMP-001",
@@ -237,9 +224,9 @@ export const DisbursementVoucherPartyOptions = [
     value: "EMP-001",
   },
   {
-    label: "VCE-005",
+    label: "PARTY-005",
     name: "TechPro Infrastructure",
-    value: "VCE-005",
+    value: "PARTY-005",
   },
 ] as const;
 
@@ -412,7 +399,7 @@ export const MockDisbursementTransactions: DisbursementTransactionRecord[] = [
     currency: "PHP",
     paymentMethod: "Bank Transfer",
     disbursementType: "Vendor Payment",
-    status: DisbursementVoucherStatuses.forApproval,
+    status: DisbursementVoucherStatuses.draft,
     costCenter: "CC-ADM-001",
     createdBy: "Maria Dizon",
     createdAt: "2026-05-14T08:15:00.000Z",
@@ -432,7 +419,7 @@ export const MockDisbursementTransactions: DisbursementTransactionRecord[] = [
     currency: "PHP",
     paymentMethod: "InstaPay",
     disbursementType: "Operating Expense",
-    status: DisbursementVoucherStatuses.forApproval,
+    status: DisbursementVoucherStatuses.cancelled,
     costCenter: "CC-FAC-014",
     createdBy: "Jasper Co",
     createdAt: "2026-05-10T10:05:00.000Z",
@@ -512,7 +499,7 @@ export const MockDisbursementTransactions: DisbursementTransactionRecord[] = [
     currency: "PHP",
     paymentMethod: "Bank Transfer",
     disbursementType: "Capital Expenditure",
-    status: DisbursementVoucherStatuses.forApproval,
+    status: DisbursementVoucherStatuses.draft,
     costCenter: "CC-IT-305",
     createdBy: "Ivan Flores",
     createdAt: "2026-04-15T10:30:00.000Z",
@@ -532,7 +519,7 @@ export const MockDisbursementVouchers: DisbursementVoucherRecord[] = [
     currency: "PHP",
     fxRate: "1.00",
     costCenter: "CC-ADM-001",
-    partyCode: "VCE-OD-204",
+    partyCode: "PARTY-OD-204",
     partyName: "North Harbor Office Depot",
     amount: 18450,
     taxRate: "0%",
@@ -600,7 +587,7 @@ export const MockDisbursementVouchers: DisbursementVoucherRecord[] = [
     currency: "PHP",
     fxRate: "1.00",
     costCenter: "CC-LGL-201",
-    partyCode: "VCE-LAW-108",
+    partyCode: "PARTY-LAW-108",
     partyName: "Santos and Velasco Legal",
     amount: 22500,
     taxRate: "12%",
@@ -789,12 +776,13 @@ export function sanitizeDisbursementVoucherRecord(voucher: DisbursementVoucherRe
 
 export const DisbursementVoucherCopySources: DisbursementVoucherCopySource[] = [
   "Account Payable Voucher",
-  "Advances to Supplier",
+  "Advances to Suppliers",
   "Cash Advance",
   "Cash Advance Liquidation",
-  "Petty Cash Advance Excess",
-  "Petty Cash Replenishment",
-  "Petty Cash Fund Replenishment",
+  "Cash Advance ",
+  "Cash Advance Multiple Entry",
+  "Revolving Fund",
+  "Revolving Fund Replenishment",
   "Purchase Order",
   "Purchase Journal",
   "Receiving Report",
@@ -805,15 +793,15 @@ export const DisbursementVoucherCopyFromRecords: DisbursementVoucherCopyFromReco
     "copy-dv-1001",
     "Account Payable Voucher",
     "APV-2026-0041",
-    "VCE-OD-204",
+    "PARTY-OD-204",
     MockDisbursementTransactions[0],
     MockDisbursementVouchers[0],
   ),
   createDisbursementVoucherCopyFromRecord(
     "copy-dv-1002",
-    "Advances to Supplier",
+    "Advances to Suppliers",
     "ATS-2026-0017",
-    "VCE-MUS-118",
+    "PARTY-MUS-118",
     MockDisbursementTransactions[1],
   ),
   createDisbursementVoucherCopyFromRecord(
@@ -826,37 +814,30 @@ export const DisbursementVoucherCopyFromRecords: DisbursementVoucherCopyFromReco
   ),
   createDisbursementVoucherCopyFromRecord(
     "copy-dv-1004",
-    "Cash Advance Liquidation",
-    "CAL-2026-0015",
+    "Cash Advance Multiple Entry",
+    "CAME-2026-0015",
     "EMP-044",
     MockDisbursementTransactions[4],
   ),
   createDisbursementVoucherCopyFromRecord(
     "copy-dv-1005",
-    "Petty Cash Advance Excess",
-    "PCAE-2026-0007",
+    "Revolving Fund",
+    "RF-2026-0007",
     "EMP-044",
     MockDisbursementTransactions[4],
   ),
   createDisbursementVoucherCopyFromRecord(
-    "copy-dv-1006",
-    "Petty Cash Replenishment",
-    "PCR-2026-0019",
-    "VCE-GFM-077",
-    MockDisbursementTransactions[3],
-  ),
-  createDisbursementVoucherCopyFromRecord(
     "copy-dv-1007",
-    "Petty Cash Fund Replenishment",
+    "Revolving Fund Replenishment",
     "PCFR-2026-0012",
-    "VCE-TPI-611",
+    "PARTY-TPI-611",
     MockDisbursementTransactions[5],
   ),
   createDisbursementVoucherCopyFromRecord(
     "copy-dv-1008",
     "Purchase Order",
     "PO-2026-0322",
-    "VCE-LAW-108",
+    "PARTY-LAW-108",
     MockDisbursementTransactions[2],
     MockDisbursementVouchers[1],
   ),
@@ -864,14 +845,14 @@ export const DisbursementVoucherCopyFromRecords: DisbursementVoucherCopyFromReco
     "copy-dv-1009",
     "Purchase Journal",
     "PJ-2026-0088",
-    "VCE-MUS-118",
+    "PARTY-MUS-118",
     MockDisbursementTransactions[1],
   ),
   createDisbursementVoucherCopyFromRecord(
     "copy-dv-1010",
     "Receiving Report",
     "RR-2026-0144",
-    "VCE-GFM-077",
+    "PARTY-GFM-077",
     MockDisbursementTransactions[3],
   ),
 ];

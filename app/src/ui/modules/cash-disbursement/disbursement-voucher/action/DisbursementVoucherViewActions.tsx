@@ -42,7 +42,7 @@ export function DisbursementVoucherViewActions({
   const recordLabel =
     voucher?.voucherNo ?? transaction?.transactionNo ?? "this disbursement voucher";
   const statusDialogCopy = statusToConfirm
-    ? getDisbursementVoucherStatusDialogCopy(statusToConfirm, recordLabel)
+    ? getDisbursementVoucherStatusDialogCopy(statusToConfirm, recordLabel, voucher?.status ?? transaction?.status)
     : null;
   const actions = createDisbursementVoucherViewActionItems({
     onRequestStatusConfirmation: setStatusToConfirm,
@@ -124,14 +124,9 @@ function createDisbursementVoucherViewActionItems({
         !onUpdateStatus || !canApproveDisbursementVoucherStatus(status),
       icon: isPosted ? Undo2 : ThumbsUp,
       label: isPosted ? "Undo Approved" : "Approve",
-      onSelect: () => {
-        if (isPosted) {
-          onUpdateStatus?.(approvalUndoStatus);
-          return;
-        }
-
-        onRequestStatusConfirmation(DisbursementVoucherStatuses.posted);
-      },
+      onSelect: () => onRequestStatusConfirmation(
+        isPosted ? approvalUndoStatus : DisbursementVoucherStatuses.posted,
+      ),
       type: "button",
     },
     {
@@ -139,14 +134,9 @@ function createDisbursementVoucherViewActionItems({
         !onUpdateStatus || !canDisapproveDisbursementVoucherStatus(status),
       icon: isDisapproved ? Undo2 : ThumbsDown,
       label: isDisapproved ? "Undo Disapproved" : "Disapprove",
-      onSelect: () => {
-        if (isDisapproved) {
-          onUpdateStatus?.(approvalUndoStatus);
-          return;
-        }
-
-        onRequestStatusConfirmation(DisbursementVoucherStatuses.disapproved);
-      },
+      onSelect: () => onRequestStatusConfirmation(
+        isDisapproved ? approvalUndoStatus : DisbursementVoucherStatuses.disapproved,
+      ),
       tone: isDisapproved ? "default" : "danger",
       type: "button",
     },
@@ -155,14 +145,7 @@ function createDisbursementVoucherViewActionItems({
         !onUpdateStatus || !canCancelDisbursementVoucherStatus(status),
       icon: isCancelled ? Undo2 : Ban,
       label: isCancelled ? "Undo Cancelled" : "Cancel",
-      onSelect: () => {
-        if (isCancelled) {
-          onUpdateStatus?.(cancelStatus);
-          return;
-        }
-
-        onRequestStatusConfirmation(cancelStatus);
-      },
+      onSelect: () => onRequestStatusConfirmation(cancelStatus),
       tone: isCancelled ? "default" : "danger",
       type: "button",
     },

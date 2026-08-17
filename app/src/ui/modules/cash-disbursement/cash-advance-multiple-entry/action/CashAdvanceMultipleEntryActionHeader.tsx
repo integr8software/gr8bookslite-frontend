@@ -53,7 +53,7 @@ export function CashAdvanceMultipleEntryActionHeader({
       variant="panel"
       titleAs="h1"
       title={title}
-      description="Record party-level cash advances with multiple entry lines, accounting entries, approvals, and file attachments."
+      description="Record party-level cash advances with entries, accounting, approvals, and attachments."
       actionsClassName="items-center justify-end gap-2"
       actions={
         <>

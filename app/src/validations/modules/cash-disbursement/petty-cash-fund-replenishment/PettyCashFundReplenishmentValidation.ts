@@ -1,79 +1,54 @@
 import { z } from "zod";
 import type {
-  PettyCashFundReplenishmentEntry,
   PettyCashFundReplenishmentFormErrors,
   PettyCashFundReplenishmentFormValues,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentTypes";
+import { parseAmount } from "@/app/src/utils/number.util";
 
-const requiredText = (message: string) => z.string().trim().min(1, message);
-const amount = z.preprocess(
-  (value) => (typeof value === "string" ? value.replace(/,/g, "") : value),
-  z.coerce.number().finite().min(0, "Enter a valid amount."),
-);
-
-export const PettyCashFundReplenishmentEntryValidationSchema = z.object({
-  code: z.string(),
-  id: z.string(),
-  name: z.string(),
-  netAmount: amount,
-  pettyCashDate: z.string(),
-  pettyCashNo: z.string(),
-  remarks: z.string(),
-  totalAmount: amount,
-  vatAmount: amount,
-});
-
-export const PettyCashFundReplenishmentFormValidationSchema = z.object({
-  documentDate: requiredText("Select a document date."),
-  entries: z.array(PettyCashFundReplenishmentEntryValidationSchema).min(1),
-  projectName: z.string(),
-  projectRef: z.string(),
-  remarks: z.string(),
-  status: z.enum(["Active", "Pending", "Closed"]),
-  transNo: requiredText("Enter a transaction number."),
-  vceCode: requiredText("Enter a VCE code."),
-  vceName: requiredText("Enter a VCE name."),
-}).superRefine((values, context) => {
-  const hasValidEntry = values.entries.some(
-    (entry) =>
-      entry.pettyCashNo.trim() &&
-      entry.code.trim() &&
-      entry.name.trim() &&
-      Number(entry.totalAmount) > 0,
-  );
-
-  if (!hasValidEntry) {
-    context.addIssue({
-      code: "custom",
-      message: "Add at least one entry with reference, code, name, and amount.",
-      path: ["entries"],
-    });
-  }
+const schema = z.object({
+  transactionNo: z.string().regex(/^PCFR-\d{6}$/, "A valid petty cash fund replenishment number is required."),
+  documentDate: z.string().min(1, "Select a document date."),
+  partyCode: z.string().trim().min(1, "Select a party."),
+  partyName: z.string().trim().min(1, "Select a party."),
+  accountCode: z.string().trim().min(1, "Select a default account."),
+  accountTitle: z.string().trim().min(1, "Select a default account."),
 });
 
 export function validatePettyCashFundReplenishmentForm(
   values: PettyCashFundReplenishmentFormValues,
-  entries: PettyCashFundReplenishmentEntry[],
 ): PettyCashFundReplenishmentFormErrors {
-  const result = PettyCashFundReplenishmentFormValidationSchema.safeParse({
-    ...values,
-    entries,
-  });
-
-  if (result.success) {
-    return {};
+  const errors: PettyCashFundReplenishmentFormErrors = {};
+  const result = schema.safeParse(values);
+  if (!result.success) {
+    for (const issue of result.error.issues) {
+      errors[issue.path[0] as keyof PettyCashFundReplenishmentFormValues] ??=
+        issue.message;
+    }
   }
-
-  return result.error.issues.reduce<PettyCashFundReplenishmentFormErrors>(
-    (errors, issue) => {
-      const field = issue.path[0] as keyof PettyCashFundReplenishmentFormErrors;
-
-      if (field && !errors[field]) {
-        errors[field] = issue.message;
-      }
-
-      return errors;
-    },
-    {},
-  );
+  if (
+    values.entries.length === 0 ||
+    values.entries.every(
+      (entry) => !entry.pettyCashNo.trim() && (parseAmount(entry.totalAmount) ?? 0) <= 0,
+    )
+  ) {
+    errors.entries = "Add at least one petty cash voucher entry.";
+  } else if (
+    values.entries.some(
+      (entry) =>
+        !entry.pettyCashNo.trim() ||
+        !entry.accountCode.trim() ||
+        !entry.accountTitle.trim() ||
+        (parseAmount(entry.totalAmount) ?? 0) <= 0,
+    )
+  ) {
+    errors.entries =
+      "Each entry needs a petty cash voucher, account, and amount greater than zero.";
+  }
+  const voucherNumbers = values.entries
+    .map((entry) => entry.pettyCashNo.trim().toLowerCase())
+    .filter(Boolean);
+  if (new Set(voucherNumbers).size !== voucherNumbers.length) {
+    errors.entries = "Petty cash voucher numbers must be unique.";
+  }
+  return errors;
 }

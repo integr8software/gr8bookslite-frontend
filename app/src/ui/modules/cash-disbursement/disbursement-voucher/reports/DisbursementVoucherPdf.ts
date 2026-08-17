@@ -179,7 +179,7 @@ function createEntriesTable(values: DisbursementVoucherFormValues): TableCell {
     [
       headerCell("Account"),
       headerCell("Payee"),
-      headerCell("Particulars"),
+      headerCell("Remarks"),
       headerCell("Cost Center"),
       headerCell("Debit", "right"),
       headerCell("Credit", "right"),

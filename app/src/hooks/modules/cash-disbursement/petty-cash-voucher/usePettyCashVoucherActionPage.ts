@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, usePathname } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
@@ -27,10 +27,12 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import { validatePettyCashVoucherForm } from "@/app/src/validations/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherValidation";
 import { PettyCashVoucherQueryKeys } from "@/app/src/services/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherService";
+import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
 
 export function usePettyCashVoucherActionPage(
   options: PettyCashVoucherActionPageOptions = {},
 ) {
+  const transactionCurrency = useTransactionCurrency();
   const queryClient = useQueryClient();
   const pathname = usePathname();
   const params = useParams<{ recordId?: string }>();
@@ -42,7 +44,7 @@ export function usePettyCashVoucherActionPage(
   const [values, setValues] = useState<PettyCashVoucherFormValues>(() =>
     existingVoucher
       ? createPettyCashVoucherFormValues(existingVoucher)
-      : createPettyCashVoucherInitialFormValues(),
+      : createPettyCashVoucherInitialFormValues(transactionCurrency.baseCurrencyCode),
   );
   const [errors, setErrors] = useState<PettyCashVoucherFormErrors>({});
   const [activeTab, setActiveTab] =
@@ -50,8 +52,21 @@ export function usePettyCashVoucherActionPage(
   const [isPartyDrawerOpen, setIsPartyDrawerOpen] = useState(false);
   const [isResponsibilityCenterDrawerOpen, setIsResponsibilityCenterDrawerOpen] =
     useState(false);
+  const hasEditedCurrencyRef = useRef(false);
   const partyStore = usePartyManagementStore();
   const responsibilityCenterStore = useResponsibilityCenterStore();
+
+  useEffect(() => {
+    if (mode !== "add" || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) {
+      return;
+    }
+
+    setValues((current) => ({
+      ...current,
+      currency: transactionCurrency.baseCurrencyCode,
+      exchangeRate: "1.00",
+    }));
+  }, [mode, transactionCurrency.baseCurrencyCode, transactionCurrency.isBaseCurrencyResolved]);
 
   function updateField<TKey extends keyof PettyCashVoucherFormValues>(
     field: TKey,
@@ -81,6 +96,23 @@ export function usePettyCashVoucherActionPage(
       netAmount: undefined,
       vatAmount: undefined,
     }));
+  }
+
+  async function updateCurrency(currencyCode: string) {
+    hasEditedCurrencyRef.current = true;
+    updateField("currency", currencyCode);
+    setErrors((current) => ({ ...current, currency: undefined, exchangeRate: undefined }));
+
+    try {
+      const exchangeRate = await transactionCurrency.loadExchangeRate(currencyCode);
+
+      if (exchangeRate != null) {
+        updateField("exchangeRate", formatLoadedExchangeRate(exchangeRate));
+      }
+    } catch {
+      setErrors((current) => ({ ...current, exchangeRate: "Could not load the exchange rate." }));
+      toast.error("Could not load the exchange rate for the selected currency.");
+    }
   }
 
   function updateVATable(value: PettyCashVoucherFormValues["vatable"]) {
@@ -226,6 +258,7 @@ export function usePettyCashVoucherActionPage(
     activeTab,
     closePartyDrawer,
     closeResponsibilityCenterDrawer,
+    currencyOptions: transactionCurrency.currencyOptions,
     errors,
     existingVoucher,
     handleCreateParty,
@@ -235,6 +268,7 @@ export function usePettyCashVoucherActionPage(
     handleSubmit,
     handleUpdateStatus,
     isPartyDrawerOpen,
+    isExchangeRateLoading: transactionCurrency.isExchangeRateLoading,
     isReadonly,
     isResponsibilityCenterDrawerOpen,
     mode,
@@ -245,6 +279,7 @@ export function usePettyCashVoucherActionPage(
     responsibilityCenterStore,
     setActiveTab,
     updateAmount,
+    updateCurrency,
     updateField,
     updateVATable,
     values,

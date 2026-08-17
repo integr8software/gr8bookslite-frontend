@@ -13,69 +13,6 @@ import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 type VoucherAttachment = DisbursementVoucherFormValues["attachments"][number];
 
-export function ParticularsViewDialog({
-  viewedParticulars,
-  onClose,
-}: {
-  viewedParticulars: { rowNo: number; value: string } | null;
-  onClose: () => void;
-}) {
-  if (!viewedParticulars) {
-    return null;
-  }
-
-  const text = viewedParticulars.value.trim();
-
-  return (
-    <div
-      role="presentation"
-      className="fixed inset-0 z-[130] flex items-end justify-center bg-slate-950/45 px-3 py-3 backdrop-blur-sm sm:items-center sm:px-4 sm:py-6"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) {
-          onClose();
-        }
-      }}
-    >
-      <section
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="particulars-view-title"
-        className="flex max-h-[min(80vh,620px)] w-full max-w-3xl flex-col overflow-hidden rounded-[20px] border border-darknavy/10 bg-white shadow-[0_18px_60px_rgba(33,39,56,0.18)]"
-      >
-        <div className="flex items-start justify-between gap-4 border-b border-darknavy/10 px-5 py-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-skyblue">Particulars</p>
-            <h2 id="particulars-view-title" className="mt-1 text-xl font-semibold text-darknavy">
-              Row {viewedParticulars.rowNo}
-            </h2>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-darknavy/60 transition hover:bg-darknavy/6 hover:text-darknavy"
-          >
-            <X className="h-4 w-4" aria-hidden="true" />
-          </button>
-        </div>
-        <div className="min-h-0 overflow-y-auto px-5 py-5">
-          <p className="app-theme-field-readonly whitespace-pre-wrap break-words rounded-lg border p-4 text-sm leading-7">
-            {text || "No particulars entered yet."}
-          </p>
-        </div>
-        <div className="flex justify-end border-t border-darknavy/10 px-5 py-4">
-          <button
-            type="button"
-            onClick={onClose}
-            className="inline-flex h-10 items-center justify-center rounded-xl border border-darknavy/12 bg-white px-5 text-sm font-semibold text-darknavy transition hover:border-skyblue/35 hover:bg-skyblue/8"
-          >
-            Close
-          </button>
-        </div>
-      </section>
-    </div>
-  );
-}
-
 export function GridPreviewDialog({
   entries,
   isBalanced,

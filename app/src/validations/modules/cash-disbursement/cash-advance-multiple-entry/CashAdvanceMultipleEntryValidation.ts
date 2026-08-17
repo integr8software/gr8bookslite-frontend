@@ -3,7 +3,9 @@ import type { CashAdvanceMultipleEntryFormValues } from "@/app/src/types/modules
 
 const CashAdvanceMultipleEntrySchema = z.object({
   accountCode: z.string().trim().min(1, "Default Account is required."),
+  currency: z.string().trim().min(1, "Currency is required."),
   documentDate: z.string().trim().min(1, "Document Date is required."),
+  exchangeRate: z.string().trim().refine((value) => Number(value) > 0, "Exchange Rate must be greater than zero."),
   items: z.array(
     z.object({
       amount: z.string().trim(),

@@ -2,17 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import {
-  Ban,
-  Edit3,
-  Eye,
-  Plus,
-  ReceiptText,
-  Search,
-  ThumbsDown,
-  ThumbsUp,
-  Undo2,
-} from "lucide-react";
+import { Ban, Edit3, Eye, Plus, ReceiptText, Search, ThumbsDown, ThumbsUp, Undo2 } from "lucide-react";
 import {
   CashAdvanceMultipleEntryHref,
   CashAdvanceMultipleEntryStatusFilterOptions,
@@ -33,15 +23,9 @@ import type { CashAdvanceStatus } from "@/app/src/types/modules/cash-disbursemen
 import { formatCashAdvanceCurrency, formatCashAdvanceDate } from "@/app/src/data/modules/cash-disbursement/cash-advance/CashAdvanceData";
 import { AmountRangePicker } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import { DateRangePicker } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
-import {
-  ModuleActionMenu,
-  type ModuleActionMenuItem,
-} from "@/app/src/ui/shared/module/ModuleActionMenu";
+import { ModuleActionMenu, type ModuleActionMenuItem } from "@/app/src/ui/shared/module/ModuleActionMenu";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import {
-  ModuleHeader,
-  moduleHeaderActionClassNames,
-} from "@/app/src/ui/shared/module/ModuleHeader";
+import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import {
   getModuleStatusMetricIcon,
@@ -49,10 +33,7 @@ import {
   ModuleStatusBadge,
 } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
-import {
-  getColumnMetaClassName,
-  joinClasses,
-} from "@/app/src/ui/shared/module/module-table/utils";
+import { getColumnMetaClassName, joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import {
   ModuleTableColumnVisibilityButton,
   ModuleTableFilterSelect,
@@ -88,72 +69,64 @@ export function CashAdvanceMultipleEntryOverviewPage() {
         onStatusFilterChange={tableState.setStatusFilter}
       />
 
-      <ModuleTable
-        emptyDescription="Try another cash advance entry no., remarks, date range, amount range, or status."
-        emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
-        emptyTitle="No Cash Advance Multiple Entry Transaction Found."
-        minWidthClassName={getCashAdvanceMultipleEntryTableMinWidthClassName(
-          tableState.table.getVisibleLeafColumns().length,
-        )}
-        paginationLabel="entries"
-        paginationStorageKey={CashAdvanceMultipleEntryTablePaginationStorageKey}
-        lastSyncedAt={lastSyncedAt}
-        pageSizeOptions={[5, 10, 15, 20, 25, 50]}
-        table={tableState.table}
-        tableTitle="Cash Advances Multiple Entries"
-        toolbar={
-          <ModuleTableToolbar className="!grid-cols-1 !gap-2 !p-3 sm:!gap-2 sm:!p-3 xl:!grid-cols-[minmax(0,1fr)_auto]">
-            <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-[minmax(18rem,2fr)_minmax(14rem,1fr)_minmax(14rem,1fr)_minmax(12rem,1fr)]">
-              <ModuleTableSearch
-                label="Search Cash Advances Multiple Entries"
+      <div data-spotlight-id="maintenance-table">
+        <ModuleTable
+          emptyDescription="Try another cash advance entry no., remarks, date range, amount range, or status."
+          emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
+          emptyTitle="No Cash Advance Multiple Entry Transaction Found."
+          minWidthClassName={getCashAdvanceMultipleEntryTableMinWidthClassName(tableState.table.getVisibleLeafColumns().length)}
+          paginationLabel="entries"
+          paginationStorageKey={CashAdvanceMultipleEntryTablePaginationStorageKey}
+          lastSyncedAt={lastSyncedAt}
+          pageSizeOptions={[5, 10, 15, 20, 25, 50]}
+          table={tableState.table}
+          tableTitle="Cash Advances Multiple Entries"
+          useColumnSizing
+          toolbar={
+            <ModuleTableToolbar
+              className="!grid-cols-1 !gap-2 !p-3 sm:!gap-2 sm:!p-3 2xl:!grid-cols-[minmax(0,1fr)_auto]"
+              data-spotlight-id="maintenance-table-filters"
+            >
+              <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 2xl:grid-cols-[minmax(18rem,2fr)_minmax(14rem,1fr)_minmax(14rem,1fr)]">
+                <div className="sm:col-span-2 2xl:col-span-1">
+                  <ModuleTableSearch
+                    label="Search Cash Advances Multiple Entries"
                     placeholder="Search by Cash Advance Multiple Entry No., Party Name, account, or remarks"
-                value={tableState.query}
-                onChange={tableState.setQuery}
-              />
-              <DateRangePicker label="Date Range" value={tableState.dateRange} onChange={tableState.setDateRange} />
-              <AmountRangePicker label="Total Amount" value={tableState.amountRange} onChange={tableState.setAmountRange} />
-              <ModuleTableFilterSelect
-                label="Status"
-                value={tableState.statusFilter}
-                options={CashAdvanceMultipleEntryStatusFilterOptions}
-                onChange={(value) =>
-                  tableState.setStatusFilter(
-                    value as Parameters<typeof tableState.setStatusFilter>[0],
-                  )
-                }
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-2 xl:w-[7rem]">
-              <ModuleTableColumnVisibilityButton table={tableState.table} />
-              <ModuleTableResetButton
-                className="px-2"
-                onClick={tableState.resetFilters}
+                    value={tableState.query}
+                    onChange={tableState.setQuery}
+                  />
+                </div>
+                <DateRangePicker label="Date Range" value={tableState.dateRange} onChange={tableState.setDateRange} />
+                <AmountRangePicker label="Total Amount" value={tableState.amountRange} onChange={tableState.setAmountRange} />
+              </div>
+              <div
+                className="grid grid-cols-[2fr_1fr_1fr] gap-2 md:grid-cols-[minmax(0,1fr)_3.25rem_3.25rem] 2xl:w-[21.5rem]"
+                data-spotlight-id="maintenance-table-options"
               >
-                <span className="sr-only">Reset filters</span>
-              </ModuleTableResetButton>
-            </div>
-          </ModuleTableToolbar>
-        }
-        renderRow={(row) => (
-          <tr key={row.id} className="module-table-row border-b border-darknavy/8 last:border-b-0">
-            {row.getVisibleCells().map((cell) => (
-              <td
-                key={cell.id}
-                className={joinClasses(
-                  "px-4 py-4 align-middle",
-                  getColumnMetaClassName(cell.column.columnDef.meta),
-                )}
-              >
-                <CashAdvanceMultipleEntryCellContent
-                  columnId={cell.column.id}
-                  record={row.original}
-                  onUpdateStatus={updateEntryStatus}
+                <ModuleTableFilterSelect
+                  label="Status"
+                  value={tableState.statusFilter}
+                  options={CashAdvanceMultipleEntryStatusFilterOptions}
+                  onChange={(value) => tableState.setStatusFilter(value as Parameters<typeof tableState.setStatusFilter>[0])}
                 />
-              </td>
-            ))}
-          </tr>
-        )}
-      />
+                <ModuleTableColumnVisibilityButton table={tableState.table} />
+                <ModuleTableResetButton className="px-2" onClick={tableState.resetFilters}>
+                  <span className="sr-only">Reset filters</span>
+                </ModuleTableResetButton>
+              </div>
+            </ModuleTableToolbar>
+          }
+          renderRow={(row) => (
+            <tr key={row.id} className="module-table-row border-b border-darknavy/8 last:border-b-0">
+              {row.getVisibleCells().map((cell) => (
+                <td key={cell.id} className={joinClasses("px-4 py-4 align-middle", getColumnMetaClassName(cell.column.columnDef.meta))}>
+                  <CashAdvanceMultipleEntryCellContent columnId={cell.column.id} record={row.original} onUpdateStatus={updateEntryStatus} />
+                </td>
+              ))}
+            </tr>
+          )}
+        />
+      </div>
     </section>
   );
 }
@@ -179,15 +152,15 @@ function CashAdvanceMultipleEntryCellContent({
     case "documentDate":
       return formatCashAdvanceDate(record.documentDate);
     case "partyName":
-      return <span className="font-semibold text-darknavy">{record.partyName}</span>;
+      return record.partyName;
     case "partyCode":
-      return <span className="font-semibold text-darknavy">{record.partyCode}</span>;
+      return record.partyCode;
     case "accountCode":
-      return <span className="font-semibold text-darknavy">{record.accountCode || "-"}</span>;
+      return record.accountCode || "";
     case "accountTitle":
-      return <span className="text-darknavy">{record.accountTitle || "-"}</span>;
+      return record.accountTitle || "";
     case "remarks":
-      return <span className="line-clamp-2 text-sm text-darknavy/80">{record.remarks || "-"}</span>;
+      return <span className="line-clamp-2 text-sm text-darknavy/80">{record.remarks || ""}</span>;
     case "amount":
       return <span className="font-semibold text-darknavy">{formatCashAdvanceCurrency(record.amount)}</span>;
     case "createdBy":
@@ -229,12 +202,8 @@ function CashAdvanceMultipleEntryRecordActions({
   const isDisapproved = status === CashAdvanceMultipleEntryStatuses.disapproved;
   const isCancelled = status === CashAdvanceMultipleEntryStatuses.cancelled;
   const approvalUndoStatus: CashAdvanceStatus = CashAdvanceMultipleEntryStatuses.forApproval;
-  const cancelStatus: CashAdvanceStatus = isCancelled
-    ? CashAdvanceMultipleEntryStatuses.draft
-    : CashAdvanceMultipleEntryStatuses.cancelled;
-  const statusDialogCopy = statusToConfirm
-    ? getCashAdvanceMultipleEntryStatusDialogCopy(statusToConfirm, recordLabel)
-    : null;
+  const cancelStatus: CashAdvanceStatus = isCancelled ? CashAdvanceMultipleEntryStatuses.draft : CashAdvanceMultipleEntryStatuses.cancelled;
+  const statusDialogCopy = statusToConfirm ? getCashAdvanceMultipleEntryStatusDialogCopy(statusToConfirm, recordLabel) : null;
   const items: ModuleActionMenuItem[] = [
     {
       href: `${CashAdvanceMultipleEntryHref}/view/${record.id}`,
@@ -301,10 +270,7 @@ function CashAdvanceMultipleEntryRecordActions({
   return (
     <>
       <ModuleTableActions className="!justify-center">
-        <ModuleActionMenu
-          items={items}
-          label={`Actions for Cash Advance Multiple Entry ${recordLabel}`}
-        />
+        <ModuleActionMenu items={items} label={`Actions for Cash Advance Multiple Entry ${recordLabel}`} />
       </ModuleTableActions>
       {statusDialogCopy ? (
         <AppDialog
@@ -332,24 +298,15 @@ function CashAdvanceMultipleEntryRecordActions({
 }
 
 function canEditCashAdvanceMultipleEntryStatus(status: CashAdvanceStatus) {
-  return (
-    status === CashAdvanceMultipleEntryStatuses.draft ||
-    status === CashAdvanceMultipleEntryStatuses.forApproval
-  );
+  return status === CashAdvanceMultipleEntryStatuses.draft || status === CashAdvanceMultipleEntryStatuses.forApproval;
 }
 
 function canApproveCashAdvanceMultipleEntryStatus(status: CashAdvanceStatus) {
-  return (
-    status === CashAdvanceMultipleEntryStatuses.forApproval ||
-    status === CashAdvanceMultipleEntryStatuses.posted
-  );
+  return status === CashAdvanceMultipleEntryStatuses.forApproval || status === CashAdvanceMultipleEntryStatuses.posted;
 }
 
 function canDisapproveCashAdvanceMultipleEntryStatus(status: CashAdvanceStatus) {
-  return (
-    status === CashAdvanceMultipleEntryStatuses.forApproval ||
-    status === CashAdvanceMultipleEntryStatuses.disapproved
-  );
+  return status === CashAdvanceMultipleEntryStatuses.forApproval || status === CashAdvanceMultipleEntryStatuses.disapproved;
 }
 
 function canCancelCashAdvanceMultipleEntryStatus(status: CashAdvanceStatus) {
@@ -395,7 +352,11 @@ function getCashAdvanceMultipleEntryStatusDialogCopy(status: CashAdvanceStatus, 
 
 function CashAdvanceMultipleEntryListHeaderActions() {
   return (
-    <Link href={`${CashAdvanceMultipleEntryHref}/add`} className={moduleHeaderActionClassNames.primary}>
+    <Link
+      href={`${CashAdvanceMultipleEntryHref}/add`}
+      className={moduleHeaderActionClassNames.primary}
+      data-spotlight-id="maintenance-create-record"
+    >
       <Plus className="h-4 w-4" aria-hidden="true" />
       Start New Cash Advance Multiple Entry
     </Link>

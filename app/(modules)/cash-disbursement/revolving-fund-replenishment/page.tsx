@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { RevolvingFundReplenishmentListPage } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentListPage";
+import { RevolvingFundReplenishmentOverviewPage } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/overview/RevolvingFundReplenishmentOverviewPage";
 
 const PageTitle = "Revolving Fund Replenishment";
 
@@ -10,5 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function CashDisbursementRevolvingFundReplenishmentPage() {
-  return <RevolvingFundReplenishmentListPage />;
+  return <RevolvingFundReplenishmentOverviewPage />;
 }

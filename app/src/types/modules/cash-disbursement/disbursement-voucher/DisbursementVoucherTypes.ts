@@ -1,6 +1,7 @@
 import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 import type { TransactionAttachment } from "@/app/src/types/shared/transaction-setup/TransactionAttachmentTypes";
 import type { PaymentTypeRecord as AppPaymentTypeRecord } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 
 export type DisbursementVoucherStatus = "Open" | "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled" | "Closed";
 
@@ -48,11 +49,10 @@ export type DisbursementVoucherHistoryEntry = {
 
 export type DisbursementVoucherCopySource =
   | "Account Payable Voucher"
-  | "Advances to Supplier"
+  | "Advances to Suppliers"
   | "Cash Advance"
-  | "Cash Advance Liquidation"
-  | "Petty Cash Advance Excess"
-  | "Petty Cash Replenishment"
+  | "Cash Advance Multiple Entry"
+  | "Revolving Fund"
   | "Petty Cash Fund Replenishment"
   | "Purchase Order"
   | "Purchase Journal"
@@ -294,6 +294,8 @@ export type DisbursementVoucherDetailsFormProps = {
   canAddPaymentType: boolean;
   canAddProjectName: boolean;
   errors: DisbursementVoucherFormErrors;
+  currencyOptions: AppAdvancedDropdownOption[];
+  isExchangeRateLoading: boolean;
   isReadonly: boolean;
   paymentTypeRecords: AppPaymentTypeRecord[];
   values: DisbursementVoucherFormValues;
@@ -301,6 +303,7 @@ export type DisbursementVoucherDetailsFormProps = {
   onOpenPaymentTypeDrawer: () => void;
   onOpenProjectNameDialog: () => void;
   onPartyChange: (partyCode: string, partyName: string) => void;
+  onCurrencyChange: (currencyCode: string) => void;
   onPaymentTypeChange: (paymentMethod: string) => void;
   onUpdateField: DisbursementVoucherFieldUpdater<DisbursementVoucherFormValues>;
 };

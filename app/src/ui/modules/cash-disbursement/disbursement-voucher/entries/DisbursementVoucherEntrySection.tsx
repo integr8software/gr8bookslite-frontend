@@ -53,7 +53,6 @@ import { clampColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/u
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import { createEwtOptions, createVatOptions } from "@/app/src/ui/shared/transaction-setup/AppTaxRateDialog";
 import {
-  ParticularsEditorDialog,
   calculateDisbursementEntryColumnFitWidth,
   estimateDisbursementEntryTextWidth,
   formatAccountingAmount,
@@ -92,7 +91,6 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
     totalDebit,
   } = props;
   const variance = Math.abs(totalDebit - totalCredit);
-  const [particularsEditorEntryId, setParticularsEditorEntryId] = useState<string | null>(null);
   const [entryView, setEntryView] = useState<DisbursementEntryView>(ExpenseEntryView);
   const taxCodesQuery = useAlphanumericTaxCodes();
   const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
@@ -164,7 +162,6 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
 
     return [...options, ...customOptions];
   }, [entries]);
-  const particularsEditorEntry = entries.find((entry) => entry.id === particularsEditorEntryId) ?? null;
 
   const updateExpenseEntryFields = useCallback(
     (entryId: string, updates: Partial<DisbursementLineEntry>) => {
@@ -203,7 +200,6 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
         isReadonly,
         onAddPartyName,
         onAddResponsibilityCenter,
-        onOpenParticulars: setParticularsEditorEntryId,
         onUpdateEntry,
         onUpdateEntryFields,
         partyOptions,
@@ -224,7 +220,6 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
       onUpdateEntryFields,
       partyOptions,
       responsibilityCenterOptions,
-      setParticularsEditorEntryId,
       vatOptions,
     ],
   );
@@ -390,6 +385,21 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
     setVisibleColumnIds((currentVisibleIds) => updateVisibleEntryColumns(currentVisibleIds, columnOrder, columnId, isVisible));
   }
 
+  function resetColumns() {
+    if (entryView === ExpenseEntryView) {
+      setExpenseColumnOrder([...DefaultExpenseEntryColumnOrder]);
+      setVisibleExpenseColumnIds([...DefaultVisibleExpenseEntryColumnOrder]);
+      setExpenseColumnWidths({ ...DefaultExpenseEntryColumnWidths });
+      setExpenseColumnLabels({ ...ExpenseEntryColumnLabels });
+      return;
+    }
+
+    setColumnOrder([...DefaultDisbursementEntryColumnOrder]);
+    setVisibleColumnIds([...DefaultVisibleDisbursementEntryColumnOrder]);
+    setColumnWidths({ ...DefaultDisbursementEntryColumnWidths });
+    setColumnLabels({ ...DisbursementEntryColumnLabels });
+  }
+
   return (
     <section className="min-w-0">
       <div className="min-w-0">
@@ -461,25 +471,12 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
           onMoveColumn={moveColumn}
           onMoveRow={onMoveEntry}
           onRemoveRow={onRemoveEntry}
+          onResetColumns={resetColumns}
           onToggleColumnVisibility={toggleColumnVisibility}
           onUpdateColumnHeader={updateColumnHeader}
           onUpdateColumnWidth={updateColumnWidth}
         />
       </div>
-      <ParticularsEditorDialog
-        key={particularsEditorEntry?.id ?? "closed"}
-        entry={particularsEditorEntry}
-        isReadonly={isReadonly}
-        onClose={() => setParticularsEditorEntryId(null)}
-        onSave={(value) => {
-          if (!particularsEditorEntry) {
-            return;
-          }
-
-          onUpdateEntry(particularsEditorEntry.id, "particulars", value);
-          setParticularsEditorEntryId(null);
-        }}
-      />
     </section>
   );
 }

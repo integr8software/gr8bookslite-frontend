@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   getCoreRowModel,
   getPaginationRowModel,
@@ -25,6 +25,7 @@ import {
   writeStoredCashAdvanceMultipleEntries,
 } from "@/app/src/data/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryData";
 import {
+  CashAdvanceMultipleEntryOverviewColumnWidths,
   CashAdvanceMultipleEntryStatusFilters,
   CashAdvanceMultipleEntryStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryConstants";
@@ -39,6 +40,7 @@ import type {
 import { validateCashAdvanceMultipleEntryForm } from "@/app/src/validations/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryValidation";
 import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
+import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
 
 type CashAdvanceMultipleEntryStoreState = {
   entries: CashAdvanceMultipleEntryRecord[];
@@ -124,6 +126,7 @@ export function useCashAdvanceMultipleEntryActionForm(
   recordId?: string,
   onSaved?: (record: CashAdvanceMultipleEntryRecord) => void,
 ) {
+  const transactionCurrency = useTransactionCurrency();
   const initialRecord =
     mode === "add"
       ? null
@@ -132,8 +135,21 @@ export function useCashAdvanceMultipleEntryActionForm(
   const [values, setValues] = useState<CashAdvanceMultipleEntryFormValues>(() =>
     initialRecord
       ? createCashAdvanceMultipleEntryFormValuesFromRecord(initialRecord)
-      : createCashAdvanceMultipleEntryFormValues(),
+      : createCashAdvanceMultipleEntryFormValues(transactionCurrency.baseCurrencyCode),
   );
+  const hasEditedCurrencyRef = useRef(false);
+
+  useEffect(() => {
+    if (mode !== "add" || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) {
+      return;
+    }
+
+    setValues((current) => ({
+      ...current,
+      currency: transactionCurrency.baseCurrencyCode,
+      exchangeRate: "1.00",
+    }));
+  }, [mode, transactionCurrency.baseCurrencyCode, transactionCurrency.isBaseCurrencyResolved]);
 
   function updateField<Key extends keyof CashAdvanceMultipleEntryFormValues>(
     key: Key,
@@ -148,6 +164,21 @@ export function useCashAdvanceMultipleEntryActionForm(
     );
 
     setValues((current) => ({ ...current, items, totalAmount }));
+  }
+
+  async function updateCurrency(currencyCode: string) {
+    hasEditedCurrencyRef.current = true;
+    updateField("currency", currencyCode);
+
+    try {
+      const exchangeRate = await transactionCurrency.loadExchangeRate(currencyCode);
+
+      if (exchangeRate != null) {
+        updateField("exchangeRate", formatLoadedExchangeRate(exchangeRate));
+      }
+    } catch {
+      toast.error("Could not load the exchange rate for the selected currency.");
+    }
   }
 
   function updateAccountingEntries(accountingEntries: CashAdvanceMultipleEntryAccountingEntry[]) {
@@ -218,12 +249,15 @@ export function useCashAdvanceMultipleEntryActionForm(
   return {
     addAccountingEntries,
     addItems,
+    currencyOptions: transactionCurrency.currencyOptions,
+    isExchangeRateLoading: transactionCurrency.isExchangeRateLoading,
     isRecordMissing: mode !== "add" && !initialRecord,
     record: loadedRecord,
     submitEntry,
     updateAccountingEntries,
     updateEntryStatus,
     updateField,
+    updateCurrency,
     updateItems,
     values,
   };
@@ -286,20 +320,20 @@ export function useCashAdvanceMultipleEntryTable(records: CashAdvanceMultipleEnt
   }, [amountRange, dateRange, query, records, statusFilter]);
   const columns = useMemo<ColumnDef<CashAdvanceMultipleEntryRecord>[]>(
     () => [
-      { accessorKey: "transNo", id: "transNo", header: "Cash Advance Multiple Entry No.", meta: { className: "w-[16rem]", label: "Cash Advance Multiple Entry No." } },
-      { accessorKey: "documentDate", id: "documentDate", header: "Document Date", meta: { className: "w-[9rem]", label: "Document Date" } },
-      { accessorKey: "partyCode", id: "partyCode", header: "Party Code", meta: { className: "w-[10rem]", label: "Party Code" } },
-      { accessorKey: "partyName", id: "partyName", header: "Party Name", meta: { className: "w-[18rem]", label: "Party Name" } },
-      { accessorKey: "accountCode", id: "accountCode", header: "Default Account Code", meta: { className: "w-[12rem]", label: "Default Account Code" } },
-      { accessorKey: "accountTitle", id: "accountTitle", header: "Default Account Title", meta: { className: "w-[15rem]", label: "Default Account Title" } },
-      { accessorKey: "amount", id: "amount", header: "Total Amount", meta: { className: "w-[9rem]", label: "Total Amount" } },
-      { accessorKey: "remarks", id: "remarks", header: "Remarks", meta: { className: "w-[18rem]", label: "Remarks" } },
-      { accessorKey: "createdBy", id: "createdBy", header: "Created By", meta: { className: "w-[14rem]", label: "Created By" } },
-      { accessorKey: "createdAt", id: "createdAt", header: "Date Created", sortingFn: "datetime", meta: { className: "w-[16rem]", label: "Date Created" } },
-      { accessorKey: "updatedBy", id: "updatedBy", header: "Updated By", meta: { className: "w-[14rem]", label: "Updated By" } },
-      { accessorKey: "updatedAt", id: "updatedAt", header: "Date Modified", sortingFn: "datetime", meta: { className: "w-[16rem]", label: "Date Modified" } },
-      { accessorKey: "status", id: "status", header: "Status", meta: { className: "w-[8rem] text-center", label: "Status" } },
-      { id: "actions", enableSorting: false, enableHiding: false, header: "Action", meta: { className: "w-[9rem] text-center", label: "Action" } },
+      { accessorKey: "transNo", id: "transNo", header: "Cash Advance Multiple Entry No.", size: CashAdvanceMultipleEntryOverviewColumnWidths.transactionNumber, meta: { label: "Cash Advance Multiple Entry No." } },
+      { accessorKey: "documentDate", id: "documentDate", header: "Document Date", size: CashAdvanceMultipleEntryOverviewColumnWidths.documentDate, meta: { label: "Document Date" } },
+      { accessorKey: "partyCode", id: "partyCode", header: "Party Code", size: CashAdvanceMultipleEntryOverviewColumnWidths.partyCode, meta: { label: "Party Code" } },
+      { accessorKey: "partyName", id: "partyName", header: "Party Name", size: CashAdvanceMultipleEntryOverviewColumnWidths.partyName, meta: { label: "Party Name" } },
+      { accessorKey: "accountCode", id: "accountCode", header: "Default Account Code", size: CashAdvanceMultipleEntryOverviewColumnWidths.accountCode, meta: { label: "Default Account Code" } },
+      { accessorKey: "accountTitle", id: "accountTitle", header: "Default Account Title", size: CashAdvanceMultipleEntryOverviewColumnWidths.accountTitle, meta: { label: "Default Account Title" } },
+      { accessorKey: "amount", id: "amount", header: "Total Amount", size: CashAdvanceMultipleEntryOverviewColumnWidths.amount, meta: { label: "Total Amount" } },
+      { accessorKey: "remarks", id: "remarks", header: "Remarks", size: CashAdvanceMultipleEntryOverviewColumnWidths.remarks, meta: { label: "Remarks" } },
+      { accessorKey: "createdBy", id: "createdBy", header: "Created By", size: CashAdvanceMultipleEntryOverviewColumnWidths.auditUser, meta: { label: "Created By" } },
+      { accessorKey: "createdAt", id: "createdAt", header: "Date Created", size: CashAdvanceMultipleEntryOverviewColumnWidths.auditDate, sortingFn: "datetime", meta: { label: "Date Created" } },
+      { accessorKey: "updatedBy", id: "updatedBy", header: "Updated By", size: CashAdvanceMultipleEntryOverviewColumnWidths.auditUser, meta: { label: "Updated By" } },
+      { accessorKey: "updatedAt", id: "updatedAt", header: "Date Modified", size: CashAdvanceMultipleEntryOverviewColumnWidths.auditDate, sortingFn: "datetime", meta: { label: "Date Modified" } },
+      { accessorKey: "status", id: "status", header: "Status", size: CashAdvanceMultipleEntryOverviewColumnWidths.status, meta: { className: "text-center", label: "Status" } },
+      { id: "actions", enableSorting: false, enableHiding: false, header: "Action", size: CashAdvanceMultipleEntryOverviewColumnWidths.actions, meta: { className: "text-center", label: "Action" } },
     ],
     [],
   );

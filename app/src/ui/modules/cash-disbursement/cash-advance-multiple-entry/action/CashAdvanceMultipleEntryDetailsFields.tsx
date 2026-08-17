@@ -15,19 +15,27 @@ import type {
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
+import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { CashAdvanceMultipleEntryFieldShell } from "@/app/src/ui/modules/cash-disbursement/cash-advance-multiple-entry/action/CashAdvanceMultipleEntryFieldControls";
+import { formatExchangeRateInput } from "@/app/src/utils/number.util";
 
 export function CashAdvanceMultipleEntryDetailsFields({
+  currencyOptions,
+  isExchangeRateLoading,
   isReadonly,
   onOpenPartyDialog,
   onOpenProjectDrawer,
+  onUpdateCurrency,
   onUpdateField,
   projectOptions,
   values,
 }: {
+  currencyOptions: AppAdvancedDropdownOption[];
+  isExchangeRateLoading: boolean;
   isReadonly: boolean;
   onOpenPartyDialog: () => void;
   onOpenProjectDrawer: () => void;
+  onUpdateCurrency: (currencyCode: string) => void;
   values: CashAdvanceMultipleEntryFormValues;
   projectOptions: AppAdvancedDropdownOption[];
   onUpdateField: ReturnType<typeof useCashAdvanceMultipleEntryActionForm>["updateField"];
@@ -150,6 +158,36 @@ export function CashAdvanceMultipleEntryDetailsFields({
             readOnly
             value={values.accountCode}
             className={CashAdvanceMultipleEntryReadOnlyFieldClassName}
+          />
+        </CashAdvanceMultipleEntryFieldShell>
+        <CashAdvanceMultipleEntryFieldShell controlId="came-currency" label="Currency" isRequired>
+          <CurrencyExchangeRateRow
+            exchangeRateControlId="came-exchange-rate"
+            currencyControl={
+              <AppAdvancedDropdown
+                id="came-currency"
+                className="w-full min-w-0"
+                value={values.currency}
+                readOnly={isReadonly}
+                isClearable={false}
+                options={currencyOptions}
+                placeholder="Currency"
+                searchPlaceholder="Search currency"
+                onChange={(value) => onUpdateCurrency(String(value))}
+              />
+            }
+            exchangeRateControl={
+              <input
+                id="came-exchange-rate"
+                type="text"
+                inputMode="decimal"
+                value={values.exchangeRate}
+                readOnly={isReadonly}
+                disabled={isReadonly || isExchangeRateLoading}
+                onChange={(event) => onUpdateField("exchangeRate", formatExchangeRateInput(event.target.value))}
+                className={`${CashAdvanceMultipleEntryFieldClassName} text-right tabular-nums`}
+              />
+            }
           />
         </CashAdvanceMultipleEntryFieldShell>
       </div>

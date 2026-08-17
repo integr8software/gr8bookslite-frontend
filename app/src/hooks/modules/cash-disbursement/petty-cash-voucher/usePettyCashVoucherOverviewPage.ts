@@ -31,6 +31,8 @@ import type { ModuleStatisticCardItem } from "@/app/src/ui/shared/module/ModuleS
 import { coerceDate } from "@/app/src/utils/date.util";
 import { parseAmount } from "@/app/src/utils/number.util";
 import { formatPartOfTotalPercentage } from "@/app/src/utils/percentage.util";
+import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
+import { CashDisbursementOverviewActionColumnWidth } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 
 const columnHelper = createColumnHelper<PettyCashVoucherRecord>();
 const AllStatusFilter = "All";
@@ -141,59 +143,73 @@ export function usePettyCashVoucherOverviewPage() {
     () => [
       columnHelper.accessor("voucherNo", {
         header: PettyCashVoucherColumnLabels.voucherNo,
+        size: TransactionOverviewColumnWidths.transactionNumber,
         meta: { label: PettyCashVoucherColumnLabels.voucherNo },
       }),
       columnHelper.accessor("documentDate", {
         header: PettyCashVoucherColumnLabels.documentDate,
+        size: TransactionOverviewColumnWidths.documentDate,
         meta: { label: PettyCashVoucherColumnLabels.documentDate },
       }),
       columnHelper.accessor("partyCode", {
         header: PettyCashVoucherColumnLabels.partyCode,
+        size: TransactionOverviewColumnWidths.partyCode,
         meta: { label: PettyCashVoucherColumnLabels.partyCode },
       }),
       columnHelper.accessor("partyName", {
         header: PettyCashVoucherColumnLabels.partyName,
+        size: TransactionOverviewColumnWidths.partyName,
         meta: { label: PettyCashVoucherColumnLabels.partyName },
       }),
       columnHelper.accessor("accountCode", {
         header: PettyCashVoucherColumnLabels.accountCode,
+        size: TransactionOverviewColumnWidths.accountCode,
         meta: { label: PettyCashVoucherColumnLabels.accountCode },
       }),
       columnHelper.accessor("accountTitle", {
         header: PettyCashVoucherColumnLabels.accountTitle,
+        size: TransactionOverviewColumnWidths.accountTitle,
         meta: { label: PettyCashVoucherColumnLabels.accountTitle },
       }),
       columnHelper.accessor("amount", {
         header: PettyCashVoucherColumnLabels.amount,
+        size: TransactionOverviewColumnWidths.amount,
         meta: { label: PettyCashVoucherColumnLabels.amount },
       }),
       columnHelper.accessor("remarks", {
         header: PettyCashVoucherColumnLabels.remarks,
+        size: TransactionOverviewColumnWidths.remarks,
         meta: { label: PettyCashVoucherColumnLabels.remarks },
       }),
       columnHelper.accessor("createdBy", {
         header: PettyCashVoucherColumnLabels.createdBy,
+        size: TransactionOverviewColumnWidths.auditUser,
         meta: { label: PettyCashVoucherColumnLabels.createdBy },
       }),
       columnHelper.accessor("dateCreated", {
         header: PettyCashVoucherColumnLabels.dateCreated,
+        size: TransactionOverviewColumnWidths.auditDate,
         meta: { label: PettyCashVoucherColumnLabels.dateCreated },
       }),
       columnHelper.accessor("updatedBy", {
         header: PettyCashVoucherColumnLabels.updatedBy,
+        size: TransactionOverviewColumnWidths.auditUser,
         meta: { label: PettyCashVoucherColumnLabels.updatedBy },
       }),
       columnHelper.accessor("dateModified", {
         header: PettyCashVoucherColumnLabels.dateModified,
+        size: TransactionOverviewColumnWidths.auditDate,
         meta: { label: PettyCashVoucherColumnLabels.dateModified },
       }),
       columnHelper.accessor("status", {
         header: PettyCashVoucherColumnLabels.status,
+        size: TransactionOverviewColumnWidths.status,
         meta: { className: "text-center", label: PettyCashVoucherColumnLabels.status },
       }),
       columnHelper.display({
         id: "actions",
         header: PettyCashVoucherColumnLabels.actions,
+        size: CashDisbursementOverviewActionColumnWidth,
         meta: { className: "text-center", label: PettyCashVoucherColumnLabels.actions },
       }),
     ],
@@ -241,7 +257,10 @@ export function usePettyCashVoucherOverviewPage() {
         ...PettyCashVoucherRecordStatuses.map(statusMetric),
       ].map((item) => ({
         ...item,
-        isActive: item.label === statusFilter,
+        isActive:
+          item.label === "Total Entries"
+            ? statusFilter === AllStatusFilter
+            : item.label === statusFilter,
         onClick:
           item.label === "Total Entries"
             ? () => setStatusFilter(AllStatusFilter)

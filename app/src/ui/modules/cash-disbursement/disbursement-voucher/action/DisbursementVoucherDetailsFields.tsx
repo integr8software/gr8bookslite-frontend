@@ -2,12 +2,9 @@ import { useMemo } from "react";
 import {
   DisbursementVoucherPartyOptions,
   DisbursementVoucherProjectOptions,
-  createVoucherCurrencyOptions,
-  getVoucherCurrencyExchangeRate,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import type {
   DisbursementVoucherDetailsFormProps,
-  DisbursementVoucherFormValues,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import type { PaymentTypeRecord as AppPaymentTypeRecord } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
@@ -22,11 +19,14 @@ export function DisbursementVoucherDetailsFields({
   canAddPartyName,
   canAddPaymentType,
   canAddProjectName,
+  currencyOptions,
   errors,
+  isExchangeRateLoading,
   isReadonly,
   onOpenPartyNameDialog,
   onOpenPaymentTypeDrawer,
   onOpenProjectNameDialog,
+  onCurrencyChange,
   onPartyChange,
   onPaymentTypeChange,
   onUpdateField,
@@ -39,11 +39,14 @@ export function DisbursementVoucherDetailsFields({
         canAddPartyName={canAddPartyName}
         canAddPaymentType={canAddPaymentType}
         canAddProjectName={canAddProjectName}
+        currencyOptions={currencyOptions}
         errors={errors}
+        isExchangeRateLoading={isExchangeRateLoading}
         isReadonly={isReadonly}
         onOpenPartyNameDialog={onOpenPartyNameDialog}
         onOpenPaymentTypeDrawer={onOpenPaymentTypeDrawer}
         onOpenProjectNameDialog={onOpenProjectNameDialog}
+        onCurrencyChange={onCurrencyChange}
         onPartyChange={onPartyChange}
         onPaymentTypeChange={onPaymentTypeChange}
         onUpdateField={onUpdateField}
@@ -58,11 +61,14 @@ function DisbursementVoucherHeaderFields({
   canAddPartyName,
   canAddPaymentType,
   canAddProjectName,
+  currencyOptions,
   errors,
+  isExchangeRateLoading,
   isReadonly,
   onOpenPartyNameDialog,
   onOpenPaymentTypeDrawer,
   onOpenProjectNameDialog,
+  onCurrencyChange,
   onPartyChange,
   onPaymentTypeChange,
   onUpdateField,
@@ -92,36 +98,11 @@ function DisbursementVoucherHeaderFields({
       }),
     [paymentTypeRecords],
   );
-  const currencyOptions = useMemo(() => createVoucherCurrencyDropdownOptions(), []);
-
-  function updateCurrency(nextCurrency: string) {
-    onUpdateField("currency", nextCurrency as DisbursementVoucherFormValues["currency"]);
-    onUpdateField("fxRate", getVoucherCurrencyExchangeRate(nextCurrency));
-  }
 
   return (
     <>
       <div className="grid min-w-0 gap-x-8 gap-y-5 xl:grid-cols-3">
         <div className="grid min-w-0 content-start gap-4">
-          <FieldShell controlId="disbursement-voucher-payment-type" label="Payment Type" error={errors.paymentMethod} isRequired>
-            <AppAdvancedDropdown
-              id="disbursement-voucher-payment-type"
-              value={values.paymentMethod}
-              readOnly={isReadonly}
-              addAction={
-                !isReadonly && canAddPaymentType
-                  ? {
-                      label: "Add Payment Type",
-                      onClick: onOpenPaymentTypeDrawer,
-                    }
-                  : undefined
-              }
-              options={paymentTypeOptions}
-              placeholder="Select Payment Type"
-              searchPlaceholder="Search payment type"
-              onChange={(value) => onPaymentTypeChange(String(value))}
-            />
-          </FieldShell>
           <FieldShell controlId="disbursement-voucher-party" label="Party Name" error={errors.partyName} isRequired>
             <AppAdvancedDropdown
               id="disbursement-voucher-party"
@@ -172,36 +153,6 @@ function DisbursementVoucherHeaderFields({
               }}
             />
           </FieldShell>
-          <FieldShell controlId="disbursement-voucher-currency" label="Currency" error={errors.currency}>
-            <CurrencyExchangeRateRow
-              exchangeRateControlId="disbursement-voucher-fx-rate"
-              currencyControl={
-                <AppAdvancedDropdown
-                  id="disbursement-voucher-currency"
-                  className="w-full min-w-0"
-                  value={values.currency}
-                  readOnly={isReadonly}
-                  isClearable={false}
-                  menuMinWidth={260}
-                  options={currencyOptions}
-                  placeholder="Currency"
-                  searchPlaceholder="Search currency"
-                  onChange={(value) => updateCurrency(String(value))}
-                />
-              }
-              exchangeRateControl={
-                <input
-                  id="disbursement-voucher-fx-rate"
-                  type="text"
-                  inputMode="decimal"
-                  value={values.fxRate}
-                  readOnly={isReadonly}
-                  onChange={(event) => onUpdateField("fxRate", formatExchangeRateInput(event.target.value))}
-                  className={`${DisbursementVoucherFieldClassName} text-right`}
-                />
-              }
-            />
-          </FieldShell>
           <FieldShell controlId="disbursement-voucher-remarks" label="Remarks" error={errors.remarks}>
             <AppLimitedTextarea
               id="disbursement-voucher-remarks"
@@ -229,6 +180,56 @@ function DisbursementVoucherHeaderFields({
               value={values.costCenter}
               readOnly
               className={DisbursementVoucherFieldClassName}
+            />
+          </FieldShell>
+          <FieldShell controlId="disbursement-voucher-payment-type" label="Payment Type" error={errors.paymentMethod} isRequired>
+            <AppAdvancedDropdown
+              id="disbursement-voucher-payment-type"
+              value={values.paymentMethod}
+              readOnly={isReadonly}
+              addAction={
+                !isReadonly && canAddPaymentType
+                  ? {
+                      label: "Add Payment Type",
+                      onClick: onOpenPaymentTypeDrawer,
+                    }
+                  : undefined
+              }
+              options={paymentTypeOptions}
+              placeholder="Select Payment Type"
+              searchPlaceholder="Search payment type"
+              onChange={(value) => onPaymentTypeChange(String(value))}
+            />
+          </FieldShell>
+          <FieldShell controlId="disbursement-voucher-currency" label="Currency" error={errors.currency || errors.fxRate}>
+            <CurrencyExchangeRateRow
+              exchangeRateControlId="disbursement-voucher-fx-rate"
+              currencyControl={
+                <AppAdvancedDropdown
+                  id="disbursement-voucher-currency"
+                  className="w-full min-w-0"
+                  value={values.currency}
+                  readOnly={isReadonly}
+                  isClearable={false}
+                  menuMinWidth={260}
+                  options={currencyOptions}
+                  placeholder="Currency"
+                  searchPlaceholder="Search currency"
+                  onChange={(value) => onCurrencyChange(String(value))}
+                />
+              }
+              exchangeRateControl={
+                <input
+                  id="disbursement-voucher-fx-rate"
+                  type="text"
+                  inputMode="decimal"
+                  value={values.fxRate}
+                  readOnly={isReadonly}
+                  disabled={isReadonly || isExchangeRateLoading}
+                  onChange={(event) => onUpdateField("fxRate", formatExchangeRateInput(event.target.value))}
+                  className={`${DisbursementVoucherFieldClassName} text-right`}
+                />
+              }
             />
           </FieldShell>
         </div>
@@ -265,14 +266,6 @@ function DisbursementVoucherHeaderFields({
       </div>
     </>
   );
-}
-
-function createVoucherCurrencyDropdownOptions(): AppAdvancedDropdownOption[] {
-  return createVoucherCurrencyOptions().map((currency) => ({
-    label: currency.isDefault ? `${currency.name} | Default` : currency.name,
-    name: currency.code,
-    value: currency.code,
-  }));
 }
 
 function createVoucherPaymentTypeOptions({

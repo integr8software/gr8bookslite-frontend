@@ -56,7 +56,7 @@ export function DisbursementVoucherRecordActions({
 			: DisbursementVoucherStatuses.forApproval
 		: DisbursementVoucherStatuses.cancelled;
 	const statusDialogCopy = statusToConfirm
-		? getDisbursementVoucherStatusDialogCopy(statusToConfirm, recordLabel)
+		? getDisbursementVoucherStatusDialogCopy(statusToConfirm, recordLabel, status)
 		: null;
 	const items: ModuleActionMenuItem[] = [
 		{
@@ -79,28 +79,18 @@ export function DisbursementVoucherRecordActions({
 			disabled: !canApproveDisbursementVoucherStatus(status),
 			icon: isPosted ? Undo2 : ThumbsUp,
 			label: isPosted ? "Undo Approved" : "Approve",
-			onSelect: () => {
-				if (isPosted) {
-					onUpdateStatus(row, approvalUndoStatus);
-					return;
-				}
-
-				setStatusToConfirm(DisbursementVoucherStatuses.posted);
-			},
+			onSelect: () => setStatusToConfirm(
+				isPosted ? approvalUndoStatus : DisbursementVoucherStatuses.posted,
+			),
 			type: "button",
 		},
 		{
 			disabled: !canDisapproveDisbursementVoucherStatus(status),
 			icon: isDisapproved ? Undo2 : ThumbsDown,
 			label: isDisapproved ? "Undo Disapproved" : "Disapprove",
-			onSelect: () => {
-				if (isDisapproved) {
-					onUpdateStatus(row, approvalUndoStatus);
-					return;
-				}
-
-				setStatusToConfirm(DisbursementVoucherStatuses.disapproved);
-			},
+			onSelect: () => setStatusToConfirm(
+				isDisapproved ? approvalUndoStatus : DisbursementVoucherStatuses.disapproved,
+			),
 			tone: isDisapproved ? "default" : "danger",
 			type: "button",
 		},
@@ -108,14 +98,7 @@ export function DisbursementVoucherRecordActions({
 			disabled: !canCancelDisbursementVoucherStatus(status),
 			icon: isCancelled ? Undo2 : Ban,
 			label: isCancelled ? "Undo Cancelled" : "Cancel",
-			onSelect: () => {
-				if (isCancelled) {
-					onUpdateStatus(row, cancelStatus);
-					return;
-				}
-
-				setStatusToConfirm(DisbursementVoucherStatuses.cancelled);
-			},
+			onSelect: () => setStatusToConfirm(cancelStatus),
 			tone: isCancelled ? "default" : "danger",
 			type: "button",
 		},

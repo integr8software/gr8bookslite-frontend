@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   getCoreRowModel,
   getPaginationRowModel,
@@ -40,6 +40,10 @@ import { validateCashAdvanceForm } from "@/app/src/validations/modules/cash-disb
 import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
 import type { AppTaxRateDialogValue } from "@/app/src/ui/shared/transaction-setup/AppTaxRateDialog";
+import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
+import { normalizeLowercaseWhitespace } from "@/app/src/utils/string.util";
+import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
+import { CashDisbursementOverviewActionColumnWidth } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 
 type CashAdvanceStoreState = {
   advances: CashAdvanceRecord[];
@@ -95,6 +99,7 @@ export function useCashAdvanceActionForm(
   recordId?: string,
   onSaved?: (record: CashAdvanceRecord) => void,
 ) {
+  const transactionCurrency = useTransactionCurrency();
   const initialRecord =
     mode === "add"
       ? null
@@ -105,8 +110,21 @@ export function useCashAdvanceActionForm(
   const [values, setValues] = useState<CashAdvanceFormValues>(() =>
     initialRecord
       ? createCashAdvanceFormValuesFromRecord(initialRecord)
-      : createCashAdvanceFormValues(),
+      : createCashAdvanceFormValues(transactionCurrency.baseCurrencyCode),
   );
+  const hasEditedCurrencyRef = useRef(false);
+
+  useEffect(() => {
+    if (mode !== "add" || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) {
+      return;
+    }
+
+    setValues((current) => ({
+      ...current,
+      currency: transactionCurrency.baseCurrencyCode,
+      fxRate: "1.00",
+    }));
+  }, [mode, transactionCurrency.baseCurrencyCode, transactionCurrency.isBaseCurrencyResolved]);
 
   function updateField<Key extends keyof CashAdvanceFormValues>(
     key: Key,
@@ -128,6 +146,21 @@ export function useCashAdvanceActionForm(
         ),
       },
     }));
+  }
+
+  async function updateCurrency(currencyCode: string) {
+    hasEditedCurrencyRef.current = true;
+    updateField("currency", currencyCode);
+
+    try {
+      const exchangeRate = await transactionCurrency.loadExchangeRate(currencyCode);
+
+      if (exchangeRate != null) {
+        updateField("fxRate", formatLoadedExchangeRate(exchangeRate));
+      }
+    } catch {
+      toast.error("Could not load the exchange rate for the selected currency.");
+    }
   }
 
   function updateReferenceField(field: CashAdvanceReferenceField, value: string) {
@@ -203,11 +236,14 @@ export function useCashAdvanceActionForm(
   }
 
   return {
+    currencyOptions: transactionCurrency.currencyOptions,
+    isExchangeRateLoading: transactionCurrency.isExchangeRateLoading,
     isRecordMissing: mode !== "add" && !initialRecord,
     record: loadedRecord,
     submitAdvance,
     updateAdvanceStatus,
     updateAmount,
+    updateCurrency,
     updateField,
     updateReferenceField,
     updateTaxValue,
@@ -237,7 +273,7 @@ export function useCashAdvanceTable(advances: CashAdvanceRecord[]) {
     (typeof CashAdvanceStatusFilters)[number]
   >("all");
   const filteredRows = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
+    const normalizedQuery = normalizeLowercaseWhitespace(query);
 
     return advances.filter((record) => {
       const matchesStatus =
@@ -250,20 +286,19 @@ export function useCashAdvanceTable(advances: CashAdvanceRecord[]) {
         (!amountRange.to || record.amount <= Number(amountRange.to));
       const matchesQuery =
         normalizedQuery.length === 0 ||
-        [
-          record.transNo,
-          record.partyCode,
-          record.partyName,
-          record.accountCode,
-          record.costCenter,
-          record.formValues?.currency,
-          record.remarks,
-          record.createdBy,
-          record.updatedBy,
-        ]
-          .join(" ")
-          .toLowerCase()
-          .includes(normalizedQuery);
+        normalizeLowercaseWhitespace(
+          [
+            record.transNo,
+            record.partyCode,
+            record.partyName,
+            record.accountCode,
+            record.costCenter,
+            record.formValues?.currency,
+            record.remarks,
+            record.createdBy,
+            record.updatedBy,
+          ].join(" "),
+        ).includes(normalizedQuery);
 
       return matchesStatus && matchesDateRange && matchesAmountRange && matchesQuery;
     });
@@ -274,88 +309,102 @@ export function useCashAdvanceTable(advances: CashAdvanceRecord[]) {
         accessorKey: "transNo",
         id: "transNo",
         header: "Cash Advance No.",
-        meta: { className: "w-[12rem]", label: "Cash Advance No." },
+        size: TransactionOverviewColumnWidths.transactionNumber,
+        meta: { label: "Cash Advance No." },
       },
       {
         accessorKey: "documentDate",
         id: "documentDate",
         header: "Document Date",
-        meta: { className: "w-[9rem]", label: "Document Date" },
+        size: TransactionOverviewColumnWidths.documentDate,
+        meta: { label: "Document Date" },
       },
       {
         accessorKey: "partyCode",
         id: "partyCode",
         header: "Party Code",
-        meta: { className: "w-[10rem]", label: "Party Code" },
+        size: TransactionOverviewColumnWidths.partyCode,
+        meta: { label: "Party Code" },
       },
       {
         accessorKey: "partyName",
         id: "partyName",
         header: "Party Name",
-        meta: { className: "w-[16rem]", label: "Party Name" },
+        size: TransactionOverviewColumnWidths.partyName,
+        meta: { label: "Party Name" },
       },
       {
         accessorKey: "accountCode",
         id: "accountCode",
         header: "Account Code",
-        meta: { className: "w-[10rem]", label: "Account Code" },
+        size: TransactionOverviewColumnWidths.accountCode,
+        meta: { label: "Account Code" },
       },
       {
         accessorFn: (record) => record.accountCode,
         id: "accountTitle",
         header: "Account Title",
-        meta: { className: "w-[14rem]", label: "Account Title" },
+        size: TransactionOverviewColumnWidths.accountTitle,
+        meta: { label: "Account Title" },
       },
       {
         accessorFn: (record) => record.formValues?.currency ?? "PHP",
         id: "currency",
         header: "Currency",
-        meta: { className: "w-[8rem]", label: "Currency" },
+        size: TransactionOverviewColumnWidths.currency,
+        meta: { label: "Currency" },
       },
       {
         accessorKey: "amount",
         id: "amount",
         header: "Total Amount",
-        meta: { className: "w-[9rem]", label: "Total Amount" },
+        size: TransactionOverviewColumnWidths.amount,
+        meta: { label: "Total Amount" },
       },
       {
         accessorKey: "remarks",
         id: "remarks",
         header: "Remarks",
-        meta: { className: "w-[18rem]", label: "Remarks" },
+        size: TransactionOverviewColumnWidths.remarks,
+        meta: { label: "Remarks" },
       },
       {
         accessorKey: "createdBy",
         id: "createdBy",
         header: "Created By",
-        meta: { className: "w-[14rem]", label: "Created By" },
+        size: TransactionOverviewColumnWidths.auditUser,
+        meta: { label: "Created By" },
       },
       {
         accessorKey: "createdAt",
         id: "createdAt",
         header: "Date Created",
         sortingFn: "datetime",
-        meta: { className: "w-[16rem]", label: "Date Created" },
+        size: TransactionOverviewColumnWidths.auditDate,
+        meta: { label: "Date Created" },
       },
       {
         accessorKey: "updatedBy",
         id: "updatedBy",
         header: "Updated By",
-        meta: { className: "w-[14rem]", label: "Updated By" },
+        size: TransactionOverviewColumnWidths.auditUser,
+        meta: { label: "Updated By" },
       },
       {
         accessorKey: "updatedAt",
         id: "updatedAt",
         header: "Date Modified",
         sortingFn: "datetime",
-        meta: { className: "w-[16rem]", label: "Date Modified" },
+        size: TransactionOverviewColumnWidths.auditDate,
+        meta: { label: "Date Modified" },
       },
       {
         accessorKey: "status",
         id: "status",
         header: "Status",
+        size: TransactionOverviewColumnWidths.status,
         meta: {
-          className: "w-[9rem] text-center",
+          className: "text-center",
           label: "Status",
         },
       },
@@ -364,8 +413,9 @@ export function useCashAdvanceTable(advances: CashAdvanceRecord[]) {
         enableSorting: false,
         enableHiding: false,
         header: "Action",
+        size: CashDisbursementOverviewActionColumnWidth,
         meta: {
-          className: "w-[5.5rem] px-3 text-center last:pr-3",
+          className: "px-3 text-center last:pr-3",
           label: "Action",
         },
       },

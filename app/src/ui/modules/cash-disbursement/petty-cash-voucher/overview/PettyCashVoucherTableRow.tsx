@@ -28,7 +28,6 @@ export function PettyCashVoucherTableRow({
 					key={cell.id}
 					className={joinClasses(
 						tableCellClassName,
-						"text-darknavy/70",
 						getColumnMetaClassName(cell.column.columnDef.meta),
 					)}
 				>

@@ -18,10 +18,6 @@ import {
 	canDisapprovePettyCashVoucherStatus,
 	getPettyCashVoucherStatusDialogCopy,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
-import {
-	PettyCashVoucherCopyFromRecords,
-	PettyCashVoucherCopySources,
-} from "@/app/src/data/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherData";
 import type { PettyCashVoucherActionPageState } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-voucher/usePettyCashVoucherActionPage";
 import type { PettyCashVoucherStatus } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
@@ -31,7 +27,6 @@ import {
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleSaveButton } from "@/app/src/ui/shared/module/ModuleSaveButton";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
-import { AppCopyFromDropdown } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
 import { PettyCashVoucherActionHistory } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/action/PettyCashVoucherActionHistory";
 
 type PettyCashVoucherConfirmation =
@@ -117,14 +112,6 @@ function PettyCashVoucherHeaderActions({
 				Back
 			</Link>
 			<ReportPreviewAction onPreview={() => undefined} />
-			{page.mode === "add" ? (
-				<AppCopyFromDropdown
-					records={PettyCashVoucherCopyFromRecords}
-					selectionMode="single"
-					sources={[...PettyCashVoucherCopySources]}
-					onApply={page.handleCopyFrom}
-				/>
-			) : null}
 			{page.mode === "view" ? (
 				<PettyCashVoucherActionHistory page={page} />
 			) : null}
@@ -201,15 +188,15 @@ function runConfirmedAction(
 	page: PettyCashVoucherActionPageState,
 	confirmation: PettyCashVoucherConfirmation,
 ) {
+	if (confirmation.action === "status") {
+		return page.handleUpdateStatus(confirmation.status);
+	}
+
 	if (confirmation.action === "submit") {
 		return page.handleSubmit();
 	}
 
-	if (confirmation.action === "draft") {
-		return page.handleSaveAsDraft();
-	}
-
-	return page.handleUpdateStatus(confirmation.status);
+	return page.handleSaveAsDraft();
 }
 
 function getSaveDialogCopy(

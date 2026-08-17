@@ -28,6 +28,11 @@ export const PettyCashVoucherFormValidationSchema = z.object({
     "Enter an amount.",
   ),
   documentDate: requiredText("Select a petty cash voucher date."),
+  currency: requiredText("Select a currency."),
+  exchangeRate: requiredText("Enter an exchange rate.").refine(
+    (value) => Number(value) > 0,
+    "Exchange rate must be greater than zero.",
+  ),
   netAmount: amount,
   remarks: z.string().max(500, "Remarks can only be up to 500 characters."),
   responsibilityCenter: z.string(),

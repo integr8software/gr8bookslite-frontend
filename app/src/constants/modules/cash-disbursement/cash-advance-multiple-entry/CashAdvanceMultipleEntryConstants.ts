@@ -3,6 +3,8 @@ import {
   CashAdvanceAccountOptions,
   CashAdvanceCostCenterOptions,
 } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
+import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
+import { CashDisbursementOverviewActionColumnWidth } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import type {
   CashAdvanceMultipleEntryDetailsTab,
   CashAdvanceMultipleEntryTab,
@@ -12,6 +14,14 @@ export const CashAdvanceMultipleEntryHref = getModuleRoute("CAME");
 
 export const CashAdvanceMultipleEntryTablePaginationStorageKey =
   "cash-disbursement-cash-advance-multiple-entry";
+
+export const CashAdvanceMultipleEntryOverviewColumnWidths = {
+  ...TransactionOverviewColumnWidths,
+  transactionNumber: 280,
+  amount: 210,
+  status: 120,
+  actions: CashDisbursementOverviewActionColumnWidth,
+} as const;
 
 export const CashAdvanceMultipleEntryStatuses = {
   cancelled: "Cancelled",

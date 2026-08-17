@@ -3,7 +3,7 @@ import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 
 export const TransactionFieldClassName = [
 	"app-data-entry-field h-11 w-full rounded-lg border border-darknavy/10 bg-white px-3",
-	"text-sm text-darknavy outline-none transition focus:border-skyblue",
+	"text-sm font-medium text-darknavy outline-none transition focus:border-skyblue",
 	"placeholder:text-darknavy/35 focus:ring-2 focus:ring-skyblue/20",
 ].join(" ");
 
@@ -22,7 +22,7 @@ export function TransactionField({
 }: TransactionFieldProps) {
 	return (
 		<label className="grid min-w-0 gap-2 sm:grid-cols-[9rem_minmax(0,1fr)] sm:items-start">
-			<span className="pt-2 text-sm font-semibold text-darknavy/70">
+			<span className="pt-2 text-sm font-semibold text-darknavy">
 				{label}
 				{isRequired ? <span className="ml-1 text-coralpink">*</span> : null}
 			</span>

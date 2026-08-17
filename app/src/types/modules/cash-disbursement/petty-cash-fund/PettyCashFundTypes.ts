@@ -1,4 +1,3 @@
-import type { Row } from "@tanstack/react-table";
 import type { TransactionAttachment } from "@/app/src/types/shared/transaction-setup/TransactionAttachmentTypes";
 
 export type PettyCashFundStatus = "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled";
@@ -27,13 +26,16 @@ export type PettyCashFundItem = {
   responsibilityCenter: string;
 };
 
+export type PettyCashFundItemColumnId = Exclude<keyof PettyCashFundItem, "id">;
+
 export type PettyCashFundFormValues = {
   transactionNo: string;
   documentDate: string;
   status: PettyCashFundFormStatus;
   partyCode: string;
   partyName: string;
-  costCenter: string;
+  responsibilityCenter: string;
+  responsibilityCenterCode: string;
   currency: string;
   exchangeRate: string;
   accountCode: string;
@@ -56,6 +58,8 @@ export type PettyCashFundAccountingEntry = {
   particulars: string;
 };
 
+export type PettyCashFundAccountingColumnId = Exclude<keyof PettyCashFundAccountingEntry, "id">;
+
 export type PettyCashFundRecord = {
   id: string;
   transactionNo: string;
@@ -76,7 +80,3 @@ export type PettyCashFundRecord = {
 
 export type PettyCashFundFormErrors = Partial<Record<keyof PettyCashFundFormValues | "items", string>>;
 export type PettyCashFundUpdateStatusHandler = (record: PettyCashFundRecord, status: PettyCashFundStatus) => void;
-export type PettyCashFundTableRowProps = {
-  row: Row<PettyCashFundRecord>;
-  onUpdateStatus: PettyCashFundUpdateStatusHandler;
-};

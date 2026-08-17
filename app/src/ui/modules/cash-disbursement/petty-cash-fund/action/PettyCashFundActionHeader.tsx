@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowLeft, Ban, Copy, Edit3, FileText, ThumbsDown, ThumbsUp } from "lucide-react";
+import { ArrowLeft, Ban, Edit3, FileText, ThumbsDown, ThumbsUp } from "lucide-react";
 import {
   PettyCashFundHref,
   PettyCashFundStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund/PettyCashFundConstants";
-import type { PettyCashFundActionPageState } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-fund/usePettyCashFund";
+import type { PettyCashFundActionPageState } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-fund/usePettyCashFundActionPage";
+import { PettyCashFundActionHistory } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund/action/PettyCashFundActionHistory";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleSaveButton } from "@/app/src/ui/shared/module/ModuleSaveButton";
@@ -48,12 +49,7 @@ export function PettyCashFundActionHeader({ onPreview, page }: { onPreview: () =
               <FileText className="h-4 w-4" aria-hidden="true" />
               Preview
             </button>
-            {page.mode === "add" ? (
-              <button type="button" onClick={page.copyFrom} className={moduleHeaderActionClassNames.secondary}>
-                <Copy className="h-4 w-4" aria-hidden="true" />
-                Copy From
-              </button>
-            ) : null}
+            {page.mode !== "add" ? <PettyCashFundActionHistory record={page.record} /> : null}
             {page.mode === "view" && page.record ? (
               <>
                 <button

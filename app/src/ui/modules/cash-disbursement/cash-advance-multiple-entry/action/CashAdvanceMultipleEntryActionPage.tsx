@@ -125,6 +125,8 @@ export function CashAdvanceMultipleEntryActionPage() {
         />
         {activeDetailsTab === "details" ? (
           <CashAdvanceMultipleEntryDetailsFields
+            currencyOptions={form.currencyOptions}
+            isExchangeRateLoading={form.isExchangeRateLoading}
             isReadonly={isReadonly}
             projectOptions={projectOptions}
             values={form.values}
@@ -133,6 +135,7 @@ export function CashAdvanceMultipleEntryActionPage() {
               setIsPartyDialogOpen(true);
             }}
             onOpenProjectDrawer={() => setIsProjectDrawerOpen(true)}
+            onUpdateCurrency={form.updateCurrency}
             onUpdateField={form.updateField}
           />
         ) : (
@@ -257,6 +260,7 @@ export function CashAdvanceMultipleEntryActionPage() {
       />
       <CashAdvanceMultipleEntryReportPreview
         isOpen={isReportPreviewOpen}
+        responsibilityCenterOptions={responsibilityCenterOptions}
         values={form.values}
         onClose={() => setIsReportPreviewOpen(false)}
       />

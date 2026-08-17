@@ -32,6 +32,7 @@ import {
   writeStoredDisbursementVouchers,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import { DisbursementVoucherQueryKeys } from "@/app/src/services/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherQueryKeys";
+import { normalizeLowercaseWhitespace } from "@/app/src/utils/string.util";
 import type {
   DisbursementVoucherPreviewRow,
   DisbursementVoucherRecord,
@@ -160,7 +161,7 @@ export function useDisbursementVoucherStore<
     mutationFn: async (voucher: DisbursementVoucherRecord) => voucher,
     onSuccess: (voucher) => {
       updateCachedVouchers((vouchers) => [...vouchers, voucher]);
-      toast.success("Disbursement voucher created.");
+      toast.success("Disbursement Voucher Created.");
     },
     onError: () => {
       toast.error("Could not create disbursement voucher. Please try again.");
@@ -280,6 +281,7 @@ export function useDisbursementVoucherPreviewTable(
     (typeof DisbursementVoucherStatusFilters)[number]
   >("all");
   const deferredQuery = useDeferredValue(query);
+  const normalizedQuery = normalizeLowercaseWhitespace(deferredQuery);
   const filteredRows = useMemo(
     () =>
       previewRows.filter((row) => {
@@ -295,8 +297,7 @@ export function useDisbursementVoucherPreviewTable(
           row.voucher?.currency ?? row.transaction.currency,
         ]
           .filter(Boolean)
-          .join(" ")
-          .toLowerCase();
+          .join(" ");
         const rowStatus = getDisbursementVoucherDisplayStatus(
           row.voucher?.status ?? row.transaction.status,
         );
@@ -304,14 +305,14 @@ export function useDisbursementVoucherPreviewTable(
         const rowAmount = row.voucher?.amount ?? row.transaction.amount;
 
         return (
-          searchable.includes(deferredQuery.toLowerCase()) &&
+          normalizeLowercaseWhitespace(searchable).includes(normalizedQuery) &&
           (statusFilter === "all" ||
             rowStatus === statusFilter) &&
           isDateInRange(rowDate, dateRange) &&
           isAmountInRange(rowAmount, amountRange)
         );
       }),
-    [amountRange, dateRange, deferredQuery, previewRows, statusFilter],
+    [amountRange, dateRange, normalizedQuery, previewRows, statusFilter],
   );
   const columns = useMemo<ColumnDef<DisbursementVoucherPreviewRow>[]>(
     () =>
@@ -322,6 +323,7 @@ export function useDisbursementVoucherPreviewTable(
             header: column.label,
             enableHiding: false,
             enableSorting: false,
+            size: column.size,
             meta: { className: column.className, label: column.label },
           };
         }
@@ -330,6 +332,7 @@ export function useDisbursementVoucherPreviewTable(
           column.key,
           column.label,
           column.className,
+          column.size,
         );
       }),
     [],
@@ -441,11 +444,13 @@ function createDisbursementVoucherColumn(
   key: DisbursementVoucherTableColumnKey,
   header: string,
   className: string,
+  size: number,
 ): ColumnDef<DisbursementVoucherPreviewRow> {
   return {
     id: key,
     accessorFn: (row) => getDisbursementVoucherColumnValue(row, key),
     header,
+    size,
     sortingFn:
       key === "documentDate" || key === "createdAt" || key === "updatedAt"
         ? "datetime"

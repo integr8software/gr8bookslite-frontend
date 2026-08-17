@@ -2,17 +2,19 @@ import {
   PettyCashFundAccountOptions,
   PettyCashFundPartyOptions,
   PettyCashFundProjectOptions,
-} from "@/app/src/data/modules/cash-disbursement/petty-cash-fund/PettyCashFundData";
-import type { PettyCashFundActionPageState } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-fund/usePettyCashFund";
-import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+  PettyCashFundResponsibilityCenterLookupOptions,
+} from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund/PettyCashFundConstants";
+import type { PettyCashFundActionPageState } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-fund/usePettyCashFundActionPage";
+import { PettyCashFundLookupField } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund/action/PettyCashFundFieldControls";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
+import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import {
   TransactionField,
   TransactionFieldClassName,
   TransactionTextField,
 } from "@/app/src/ui/shared/transaction-setup/TransactionFormFields";
-import { formatPettyCashFundAmount } from "@/app/src/data/modules/cash-disbursement/petty-cash-fund/PettyCashFundData";
+import { formatExchangeRateInput } from "@/app/src/utils/number.util";
 
 export function PettyCashFundDetailsFields({
   onOpenPartyDrawer,
@@ -27,69 +29,57 @@ export function PettyCashFundDetailsFields({
     <section className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
       <div className="grid gap-5 xl:grid-cols-3">
         <div className="grid min-w-0 content-start gap-5">
-          <TransactionField label="Custodian Name" error={page.errors.partyName} isRequired>
-            <AppAdvancedDropdown
+          <TransactionField label="Party Name" error={page.errors.partyName} isRequired>
+            <PettyCashFundLookupField
               value={page.values.partyCode}
               options={PettyCashFundPartyOptions}
               readOnly={page.isReadonly}
-              placeholder="Select Custodian Name"
-              searchPlaceholder="Search Custodian Name"
+              placeholder="Select Party Name"
+              searchPlaceholder="Search Party Name"
               addAction={!page.isReadonly ? { label: "Add Party Name", onClick: onOpenPartyDrawer } : undefined}
-              onChange={(value) => {
-                const option = PettyCashFundPartyOptions.find((item) => item.value === String(value));
-                page.updateField("partyCode", String(value));
-                page.updateField("partyName", option?.name ?? "");
+              onChange={(code, name) => {
+                page.updateField("partyCode", code);
+                page.updateField("partyName", name);
               }}
             />
           </TransactionField>
-          <TransactionField label="Cost Center">
-            <select
-              value={page.values.costCenter}
-              disabled={page.isReadonly}
-              onChange={(event) => page.updateField("costCenter", event.target.value)}
-              className={`${TransactionFieldClassName} app-select-control`}
-            >
-              <option value="">Select Cost Center</option>
-              <option>Main Office</option>
-              <option>Branch Office</option>
-            </select>
+          <TransactionField label="Responsibility Center">
+            <PettyCashFundLookupField
+              value={page.values.responsibilityCenterCode}
+              options={PettyCashFundResponsibilityCenterLookupOptions}
+              readOnly={page.isReadonly}
+              placeholder="Select Responsibility Center"
+              searchPlaceholder="Search Responsibility Center"
+              onChange={(code, name) => {
+                page.updateField("responsibilityCenterCode", code);
+                page.updateField("responsibilityCenter", name);
+              }}
+            />
           </TransactionField>
-          <CurrencyExchangeRateRow
-            currencyLabel="Currency"
-            currencyControl={
-              <select
-                aria-label="Currency"
-                value={page.values.currency}
-                disabled={page.isReadonly}
-                onChange={(event) => page.updateField("currency", event.target.value)}
-                className={`${TransactionFieldClassName} app-select-control`}
-              >
-                <option>PHP</option>
-                <option>USD</option>
-              </select>
-            }
-            exchangeRateControlId="pcf-exchange-rate"
-            exchangeRateControl={
-              <input
-                id="pcf-exchange-rate"
-                value={page.values.exchangeRate}
-                readOnly={page.isReadonly || page.values.currency === "PHP"}
-                onChange={(event) => page.updateField("exchangeRate", event.target.value)}
-                className={`${TransactionFieldClassName} text-right tabular-nums`}
-              />
-            }
-          />
-          <TransactionField label="Default Account" error={page.errors.accountTitle} isRequired>
-            <AppAdvancedDropdown
+          <TransactionField label="Project Name">
+            <PettyCashFundLookupField
+              value={page.values.projectCode}
+              options={PettyCashFundProjectOptions}
+              readOnly={page.isReadonly}
+              placeholder="Select Project Name"
+              searchPlaceholder="Search Project"
+              addAction={!page.isReadonly ? { label: "Add Project", onClick: onOpenProjectDrawer } : undefined}
+              onChange={(code, name) => {
+                page.updateField("projectCode", code);
+                page.updateField("projectName", name);
+              }}
+            />
+          </TransactionField>
+          <TransactionField label="Default Account Title" error={page.errors.accountTitle} isRequired>
+            <PettyCashFundLookupField
               value={page.values.accountCode}
               options={PettyCashFundAccountOptions}
               readOnly={page.isReadonly}
               placeholder="Select Default Account"
               searchPlaceholder="Search Account"
-              onChange={(value) => {
-                const option = PettyCashFundAccountOptions.find((item) => item.value === String(value));
-                page.updateField("accountCode", String(value));
-                page.updateField("accountTitle", option?.name ?? "");
+              onChange={(code, name) => {
+                page.updateField("accountCode", code);
+                page.updateField("accountTitle", name);
               }}
             />
           </TransactionField>
@@ -109,10 +99,24 @@ export function PettyCashFundDetailsFields({
             value={page.values.partyCode}
             isReadonly
             isRequired
-            label="Custodian Code"
+            label="Party Code"
             error={page.errors.partyCode}
             onValueChange={(value) => page.updateField("partyCode", value)}
-            placeholder="Custodian Code"
+            placeholder="Party Code"
+          />
+          <TransactionTextField
+            value={page.values.responsibilityCenterCode}
+            isReadonly
+            label="Responsibility Center Code"
+            onValueChange={(value) => page.updateField("responsibilityCenterCode", value)}
+            placeholder="Responsibility Center Code"
+          />
+          <TransactionTextField
+            value={page.values.projectCode}
+            isReadonly
+            label="Project Code"
+            onValueChange={(value) => page.updateField("projectCode", value)}
+            placeholder="Project Code"
           />
           <TransactionTextField
             value={page.values.accountCode}
@@ -123,48 +127,36 @@ export function PettyCashFundDetailsFields({
             onValueChange={(value) => page.updateField("accountCode", value)}
             placeholder="Account Code"
           />
-          <TransactionField label="Project Name">
-            <AppAdvancedDropdown
-              value={page.values.projectCode}
-              options={PettyCashFundProjectOptions}
-              readOnly={page.isReadonly}
-              placeholder="Select Project Name"
-              searchPlaceholder="Search Project"
-              addAction={!page.isReadonly ? { label: "Add Project", onClick: onOpenProjectDrawer } : undefined}
-              onChange={(value) => {
-                const option = PettyCashFundProjectOptions.find((item) => item.value === String(value));
-                page.updateField("projectCode", String(value));
-                page.updateField("projectName", option?.name ?? "");
-              }}
-            />
-          </TransactionField>
-          <TransactionTextField
-            value={page.values.projectCode}
-            isReadonly
-            label="Project Code"
-            onValueChange={(value) => page.updateField("projectCode", value)}
-            placeholder="Project Code"
-          />
-          <TransactionTextField
-            value={formatPettyCashFundAmount(page.totals.amount)}
-            isReadonly
-            isMoney
-            label="Amount"
-            onValueChange={() => undefined}
-          />
-          <TransactionTextField
-            value={formatPettyCashFundAmount(page.totals.vatAmount)}
-            isReadonly
-            isMoney
-            label="VAT Amount"
-            onValueChange={() => undefined}
-          />
-          <TransactionTextField
-            value={formatPettyCashFundAmount(page.totals.netAmount)}
-            isReadonly
-            isMoney
-            label="Net Amount"
-            onValueChange={() => undefined}
+          <CurrencyExchangeRateRow
+            currencyControlId="pcf-currency"
+            currencyLabel="Currency"
+            currencyControl={
+              <AppAdvancedDropdown
+                id="pcf-currency"
+                value={page.values.currency}
+                readOnly={page.isReadonly}
+                isClearable={false}
+                options={page.currencyOptions}
+                placeholder="Currency"
+                searchPlaceholder="Search Currency"
+                onChange={(value) => page.updateCurrency(String(value))}
+              />
+            }
+            exchangeRateControlId="pcf-exchange-rate"
+            exchangeRateControl={
+              <input
+                id="pcf-exchange-rate"
+                type="text"
+                inputMode="decimal"
+                value={page.values.exchangeRate}
+                readOnly={page.isReadonly}
+                disabled={page.isReadonly || page.isExchangeRateLoading}
+                onChange={(event) =>
+                  page.updateField("exchangeRate", formatExchangeRateInput(event.target.value))
+                }
+                className={`${TransactionFieldClassName} text-right tabular-nums`}
+              />
+            }
           />
         </div>
         <div className="grid min-w-0 content-start gap-5">
@@ -186,13 +178,6 @@ export function PettyCashFundDetailsFields({
             onValueChange={(value) => page.updateField("documentDate", value)}
           />
           <TransactionTextField value={page.values.status} isReadonly label="Status" onValueChange={() => undefined} />
-          <TransactionTextField
-            value={formatPettyCashFundAmount(page.totals.grossAmount)}
-            isReadonly
-            isMoney
-            label="Petty Cash Fund"
-            onValueChange={() => undefined}
-          />
         </div>
       </div>
     </section>

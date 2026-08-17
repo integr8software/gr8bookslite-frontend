@@ -25,3 +25,15 @@ export function parseAmount(value: string) {
   const amount = Number.parseFloat(value.replace(/,/g, ""));
   return Number.isFinite(amount) ? amount : null;
 }
+
+export function parseFiniteNumber(
+  value: number | string,
+  fallbackValue = 0,
+) {
+  const numericValue =
+    typeof value === "number"
+      ? value
+      : Number(value.replace(/,/g, "").trim());
+
+  return Number.isFinite(numericValue) ? numericValue : fallbackValue;
+}

@@ -28,9 +28,16 @@ export const DefaultExpenseEntryColumnOrder: ExpenseEntryColumnId[] = [
   "checkDate",
 ];
 
-export const DefaultVisibleExpenseEntryColumnOrder = DefaultExpenseEntryColumnOrder.filter(
-  (columnId): columnId is ExpenseEntryColumnId => columnId !== "partyCode",
-);
+export const DefaultVisibleExpenseEntryColumnOrder: ExpenseEntryColumnId[] = [
+  "expenseType",
+  "amount",
+  "vatCode",
+  "ewtCode",
+  "totalAmountDue",
+  "partyName",
+  "particulars",
+  "refId",
+];
 
 export const ProtectedExpenseEntryColumnIds = new Set<ExpenseEntryColumnId>(["expenseType", "amount"]);
 
@@ -57,7 +64,7 @@ export const DefaultDisbursementAccountingGridColumnLabels: Record<DisbursementA
   accountName: "Account Name",
   credit: "Credit",
   debit: "Debit",
-  particulars: "Particulars",
+  particulars: "Remarks",
   taxRate: "Tax Rate",
 };
 
@@ -70,7 +77,7 @@ export const DefaultDisbursementAccountingGridColumnWidths: Record<DisbursementA
   taxRate: 150,
 };
 
-export const DisbursementAccountingImportTemplateHeaders = ["Account Code", "Account Name", "Particulars", "Tax Rate", "Debit", "Credit"];
+export const DisbursementAccountingImportTemplateHeaders = ["Account Code", "Account Name", "Remarks", "Tax Rate", "Debit", "Credit"];
 
 export const DisbursementAccountingImportTemplateRows = [
   ["2010-003", "Accounts Payable", "Settlement of approved office depot payable", "0%", "", "18450.00"],

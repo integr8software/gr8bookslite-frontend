@@ -21,6 +21,8 @@ export type PettyCashVoucherRecord = {
   accountTitle: string;
   amount: number;
   documentDate: string;
+  currency?: string;
+  exchangeRate?: string;
   remarks: string;
   createdBy: string;
   dateCreated: string;
@@ -35,6 +37,8 @@ export type PettyCashVoucherFormValues = {
   amount: string;
   attachments: TransactionAttachment[];
   documentDate: string;
+  currency: string;
+  exchangeRate: string;
   netAmount: string;
   remarks: string;
   responsibilityCenter: string;

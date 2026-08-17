@@ -11,6 +11,7 @@ import type { DisbursementLineEntry } from "@/app/src/types/modules/cash-disburs
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
 import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import { ModuleDataEntryRemarksCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryRemarksCell";
 import { parseMoneyNumberInput } from "@/app/src/ui/shared/money/MoneyNumberField";
 import {
   getEwtPercentFromCode,
@@ -23,7 +24,6 @@ import {
   EntryInput,
   EntryNumberInput,
   ExpenseDetailValue,
-  ParticularsCell,
   accountingCellControlClassName,
 } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/DisbursementVoucherEntryCellControls";
 
@@ -37,7 +37,6 @@ export function createDisbursementAccountingEntryColumns({
   isReadonly,
   onAddPartyName,
   onAddResponsibilityCenter,
-  onOpenParticulars,
   onUpdateEntry,
   onUpdateEntryFields,
   partyOptions,
@@ -65,8 +64,8 @@ export function createDisbursementAccountingEntryColumns({
           readOnly={isReadonly}
           isClearable
           className={AccountingDropdownClassName}
-          placeholder="Select account title"
-          searchPlaceholder="Search account title"
+          placeholder="Select Account Title"
+          searchPlaceholder="Search Account Title"
           onChange={() => undefined}
           onSelectAccount={(account) =>
             onUpdateEntryFields(entry.id, {
@@ -145,12 +144,15 @@ export function createDisbursementAccountingEntryColumns({
       id: "particulars",
       width: columnWidths.particulars,
       widthClassName: "w-[22rem]",
-      renderCell: (entry) => (
-        <ParticularsCell
-          entry={entry}
+      renderCell: (entry, _index, context) => (
+        <ModuleDataEntryRemarksCell
+          inputId={context.fieldId}
+          inputName={context.fieldName}
           isReadonly={isReadonly}
-          onOpen={() => onOpenParticulars(entry.id)}
-          onUpdate={(value) => onUpdateEntry(entry.id, "particulars", value)}
+          value={entry.particulars}
+          subtitle={entry.accountName || "Accounting entry"}
+          textareaId={`${context.fieldId}-dialog`}
+          onChange={(value) => onUpdateEntry(entry.id, "particulars", value)}
         />
       ),
     },
@@ -199,15 +201,15 @@ export function createDisbursementAccountingEntryColumns({
             !isReadonly && canAddResponsibilityCenter
               ? {
                   label: "Add Responsibility Center",
-                  onClick: onAddResponsibilityCenter,
+                  onClick: () => onAddResponsibilityCenter(entry.id),
                 }
               : undefined
           }
           value={entry.responsibilityCenter ?? ""}
           readOnly={isReadonly}
           options={responsibilityCenterOptions}
-          placeholder="Select responsibility center"
-          searchPlaceholder="Search responsibility center"
+          placeholder="Select Responsibility Center"
+          searchPlaceholder="Search Responsibility Center"
           className={AccountingDropdownClassName}
           onChange={(value) => onUpdateEntry(entry.id, "responsibilityCenter", String(value))}
         />
@@ -241,7 +243,7 @@ export function createDisbursementAccountingEntryColumns({
             isClearable
             options={vatOptions}
             placeholder="Select VAT"
-            searchPlaceholder="Search VAT rate or description"
+            searchPlaceholder="Search VAT Rate or Description"
             className={AccountingDropdownClassName}
             onChange={(value) => onUpdateEntry(entry.id, "vatType", String(value))}
           />
@@ -260,7 +262,7 @@ export function createDisbursementAccountingEntryColumns({
           isClearable
           options={ewtOptions}
           placeholder="Select EWT"
-          searchPlaceholder="Search EWT code, rate, or description"
+          searchPlaceholder="Search EWT Code, Rate, or Description"
           className={AccountingDropdownClassName}
           onChange={(value) => onUpdateEntry(entry.id, "atcCode", String(value))}
         />
@@ -297,8 +299,8 @@ export function createDisbursementExpenseEntryColumns({
           readOnly={isReadonly}
           isClearable
           className={AccountingDropdownClassName}
-          placeholder="Enter expense type"
-          searchPlaceholder="Search expense type"
+          placeholder="Select Expense Type"
+          searchPlaceholder="Search Expense Type"
           onChange={() => undefined}
           onSelectAccount={(account) =>
             updateExpenseEntryFields(entry.id, {
@@ -366,7 +368,7 @@ export function createDisbursementExpenseEntryColumns({
           isClearable
           options={vatOptions}
           placeholder="Select VAT"
-          searchPlaceholder="Search VAT rate or description"
+          searchPlaceholder="Search VAT Rate or Description"
           className={AccountingDropdownClassName}
           onChange={(value) => {
             const vatCode = String(value);
@@ -414,7 +416,7 @@ export function createDisbursementExpenseEntryColumns({
           isClearable
           options={ewtOptions}
           placeholder="Select EWT"
-          searchPlaceholder="Search EWT code, rate, or description"
+          searchPlaceholder="Search EWT Code, Rate, or Description"
           className={AccountingDropdownClassName}
           onChange={(value) => {
             const ewtCode = String(value);

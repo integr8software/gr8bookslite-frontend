@@ -1,150 +1,169 @@
+import { PettyCashFundReplenishmentStatuses } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentConstants";
+import { formatMoneyNumberDisplayValue, parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import type {
-  PettyCashFundReplenishmentCopyFromRecord,
   PettyCashFundReplenishmentEntry,
   PettyCashFundReplenishmentFormValues,
   PettyCashFundReplenishmentRecord,
+  PettyCashFundReplenishmentStatus,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentTypes";
-import { parseAmount } from "@/app/src/utils/number.util";
+import { todayDateValue } from "@/app/src/utils/date.util";
 
-export const PettyCashFundReplenishmentRecords: PettyCashFundReplenishmentRecord[] = [
-  {
-    id: "1",
-    replenishmentNo: "PCR-2026-001",
-    vceCode: "VCE-1081",
-    vceName: "Metro Supplies Inc.",
-    documentDate: "2026-05-21",
-    totalAmount: "18,750.00",
-    status: "Active",
-  },
-  {
-    id: "2",
-    replenishmentNo: "PCR-2026-002",
-    vceCode: "VCE-1143",
-    vceName: "Northfield Traders",
-    documentDate: "2026-05-18",
-    totalAmount: "9,420.50",
-    status: "Closed",
-  },
-  {
-    id: "3",
-    replenishmentNo: "PCR-2026-003",
-    vceCode: "VCE-1195",
-    vceName: "Oceanic Logistics",
-    documentDate: "2026-05-14",
-    totalAmount: "12,500.00",
-    status: "Pending",
-  },
+export const PettyCashFundReplenishmentSeedRecords: PettyCashFundReplenishmentRecord[] = [
+  createSeed("1", "PCFR-000063", "2026-02-23", "E000102", "Raymark B. Arsicolo", 12500, "February office replenishment", "For Approval"),
+  createSeed("2", "PCFR-000062", "2026-02-18", "E000117", "Maria L. Dela Cruz", 15000, "Field operations replenishment", "Posted"),
+  createSeed("3", "PCFR-000061", "2026-02-12", "E000145", "Jose P. Santos", 8500, "Branch replenishment", "Draft"),
+  createSeed("4", "PCFR-000060", "2026-02-08", "E000117", "Maria L. Dela Cruz", 4200, "Office expense replenishment", "Disapproved"),
+  createSeed("5", "PCFR-000059", "2026-02-02", "E000102", "Raymark B. Arsicolo", 3000, "Cancelled replenishment", "Cancelled"),
 ];
 
-export const PettyCashFundReplenishmentInitialFormValues: PettyCashFundReplenishmentFormValues =
-  {
-    documentDate: "2026-05-21",
-    projectName: "",
-    projectRef: "",
-    remarks: "",
-    status: "Active",
-    transNo: "",
-    vceCode: "",
-    vceName: "",
-  };
-
-export const PettyCashFundReplenishmentInitialEntries: PettyCashFundReplenishmentEntry[] =
-  [
-    {
-      id: "1",
-      pettyCashDate: "2026-05-21",
-      pettyCashNo: "PC-001",
-      code: "101-300",
-      name: "Office Supplies",
-      totalAmount: "8,750.00",
-      netAmount: "8,000.00",
-      vatAmount: "750.00",
-      remarks: "Stationery and printer ink",
-    },
-  ];
-
-export function createPettyCashFundReplenishmentFormValues(
-  record: PettyCashFundReplenishmentRecord,
-): PettyCashFundReplenishmentFormValues {
+export function createBlankPettyCashFundReplenishmentEntry(): PettyCashFundReplenishmentEntry {
   return {
-    ...PettyCashFundReplenishmentInitialFormValues,
-    documentDate: record.documentDate,
-    status: record.status,
-    transNo: record.replenishmentNo,
-    vceCode: record.vceCode,
-    vceName: record.vceName,
+    id: `pcfr-entry-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    pettyCashDate: todayDateValue(),
+    pettyCashNo: "",
+    accountCode: "",
+    accountTitle: "",
+    totalAmount: "",
+    netAmount: "",
+    vatAmount: "0.00",
+    remarks: "",
   };
 }
 
-export const PettyCashFundReplenishmentCopyFromRecords: PettyCashFundReplenishmentCopyFromRecord[] =
-  [
-    {
-      id: "1",
-      voucherNo: "PCV-2026-001",
-      vceCode: "VCE-1098",
-      vceName: "Waldo Enterprises",
-      amount: "12,500.00",
-      documentDate: "2026-05-21",
-    },
-    {
-      id: "2",
-      voucherNo: "PCV-2026-002",
-      vceCode: "VCE-1134",
-      vceName: "Pacific Supplies",
-      amount: "8,320.50",
-      documentDate: "2026-05-18",
-    },
-    {
-      id: "3",
-      voucherNo: "PCV-2026-003",
-      vceCode: "VCE-1210",
-      vceName: "Greenfield Logistics",
-      amount: "4,200.00",
-      documentDate: "2026-05-14",
-    },
-    {
-      id: "4",
-      voucherNo: "PCV-2026-004",
-      vceCode: "VCE-1156",
-      vceName: "Summit Trading Co.",
-      amount: "15,600.00",
-      documentDate: "2026-05-10",
-    },
-  ];
-
-export function createEmptyPettyCashFundReplenishmentEntry(): PettyCashFundReplenishmentEntry {
+export function createPettyCashFundReplenishmentFormValues(
+  record?: PettyCashFundReplenishmentRecord,
+  transactionNo = "PCFR-000001",
+  baseCurrencyCode = "PHP",
+): PettyCashFundReplenishmentFormValues {
+  if (record?.formValues) {
+    return {
+      ...record.formValues,
+      entries: record.formValues.entries.map((entry) => ({ ...entry })),
+      attachments: record.formValues.attachments.map((attachment) => ({ ...attachment })),
+    };
+  }
+  if (record) {
+    const amount = formatPettyCashFundReplenishmentAmount(record.amount);
+    return {
+      transactionNo: record.transactionNo,
+      documentDate: record.documentDate,
+      status: record.status,
+      partyCode: record.partyCode,
+      partyName: record.partyName,
+      responsibilityCenter: "Administration",
+      responsibilityCenterCode: "RC-ADM",
+      projectCode: "",
+      projectName: "",
+      accountCode: record.accountCode,
+      accountTitle: record.accountTitle,
+      currency: baseCurrencyCode,
+      exchangeRate: "1.00",
+      remarks: record.remarks,
+      entries: [{
+        ...createBlankPettyCashFundReplenishmentEntry(),
+        pettyCashDate: record.documentDate,
+        pettyCashNo: "PCV-000084",
+        accountCode: "610-100",
+        accountTitle: "Office Supplies Expense",
+        totalAmount: amount,
+        netAmount: amount,
+        remarks: record.remarks,
+      }],
+      attachments: [],
+    };
+  }
   return {
-    id: String(Date.now()),
-    pettyCashDate: "",
-    pettyCashNo: "",
-    code: "",
-    name: "",
-    totalAmount: "0.00",
-    netAmount: "0.00",
-    vatAmount: "0.00",
+    transactionNo,
+    documentDate: todayDateValue(),
+    status: PettyCashFundReplenishmentStatuses.open,
+    partyCode: "",
+    partyName: "",
+    responsibilityCenter: "",
+    responsibilityCenterCode: "",
+    projectCode: "",
+    projectName: "",
+    accountCode: "",
+    accountTitle: "",
+    currency: baseCurrencyCode,
+    exchangeRate: "1.00",
     remarks: "",
+    entries: [createBlankPettyCashFundReplenishmentEntry()],
+    attachments: [],
   };
 }
 
 export function calculatePettyCashFundReplenishmentTotals(
   entries: PettyCashFundReplenishmentEntry[],
 ) {
-  const totalAmount = entries.reduce(
-    (sum, entry) => sum + (parseAmount(entry.totalAmount) ?? 0),
-    0,
+  return entries.reduce(
+    (totals, entry) => ({
+      totalAmount: totals.totalAmount + parseMoneyNumberInput(entry.totalAmount),
+      netAmount: totals.netAmount + parseMoneyNumberInput(entry.netAmount),
+      vatAmount: totals.vatAmount + parseMoneyNumberInput(entry.vatAmount),
+    }),
+    { totalAmount: 0, netAmount: 0, vatAmount: 0 },
   );
-  const vatAmount = entries.reduce(
-    (sum, entry) => sum + (parseAmount(entry.vatAmount) ?? 0),
-    0,
-  );
-  const netAmount = entries.reduce(
-    (sum, entry) => sum + (parseAmount(entry.netAmount) ?? 0),
-    0,
-  );
+}
 
+export function createPettyCashFundReplenishmentRecord(
+  values: PettyCashFundReplenishmentFormValues,
+  status: PettyCashFundReplenishmentStatus,
+  existing?: PettyCashFundReplenishmentRecord,
+): PettyCashFundReplenishmentRecord {
+  const now = new Date().toISOString();
+  const nextValues = {
+    ...values,
+    status,
+    entries: values.entries.map((entry) => ({ ...entry })),
+    attachments: values.attachments.map((attachment) => ({ ...attachment })),
+  };
   return {
-    totalAmount: totalAmount.toFixed(2),
-    vatAmount: vatAmount.toFixed(2),
-    netAmount: netAmount.toFixed(2),
+    id: existing?.id ?? `pcfr-${values.transactionNo.toLowerCase()}`,
+    transactionNo: values.transactionNo,
+    documentDate: values.documentDate,
+    partyCode: values.partyCode,
+    partyName: values.partyName,
+    accountCode: values.accountCode,
+    accountTitle: values.accountTitle,
+    amount: calculatePettyCashFundReplenishmentTotals(values.entries).totalAmount,
+    remarks: values.remarks,
+    status,
+    createdBy: existing?.createdBy ?? "Current User",
+    createdAt: existing?.createdAt ?? now,
+    updatedBy: "Current User",
+    updatedAt: now,
+    formValues: nextValues,
+  };
+}
+
+export function formatPettyCashFundReplenishmentAmount(value: number) {
+  return formatMoneyNumberDisplayValue(value.toFixed(2));
+}
+
+function createSeed(
+  id: string,
+  transactionNo: string,
+  documentDate: string,
+  partyCode: string,
+  partyName: string,
+  amount: number,
+  remarks: string,
+  status: PettyCashFundReplenishmentStatus,
+): PettyCashFundReplenishmentRecord {
+  return {
+    id,
+    transactionNo,
+    documentDate,
+    partyCode,
+    partyName,
+    accountCode: "101-200",
+    accountTitle: "Petty Cash Fund",
+    amount,
+    remarks,
+    status,
+    createdBy: "Maria Santos",
+    createdAt: `${documentDate}T09:00:00`,
+    updatedBy: "Maria Santos",
+    updatedAt: `${documentDate}T09:00:00`,
   };
 }

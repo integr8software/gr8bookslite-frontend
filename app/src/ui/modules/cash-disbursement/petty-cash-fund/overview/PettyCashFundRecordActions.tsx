@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Ban, Edit3, Eye, ThumbsDown, ThumbsUp } from "lucide-react";
+import { Ban, Edit3, Eye, ThumbsDown, ThumbsUp, Undo2 } from "lucide-react";
 import {
   PettyCashFundHref,
   PettyCashFundStatuses,
@@ -24,6 +24,9 @@ export function PettyCashFundRecordActions({
   record: PettyCashFundRecord;
 }) {
   const [status, setStatus] = useState<PettyCashFundStatus | null>(null);
+  const isPosted = record.status === PettyCashFundStatuses.posted;
+  const isDisapproved = record.status === PettyCashFundStatuses.disapproved;
+  const isCancelled = record.status === PettyCashFundStatuses.cancelled;
   const items: ModuleActionMenuItem[] = [
     { type: "link", href: `${PettyCashFundHref}/view/${record.id}`, icon: Eye, label: "View" },
     ...(canEditPettyCashFund(record.status)
@@ -31,26 +34,32 @@ export function PettyCashFundRecordActions({
       : []),
     {
       type: "button",
-      icon: ThumbsUp,
-      label: "Approve",
-      disabled: record.status !== PettyCashFundStatuses.forApproval,
-      onSelect: () => setStatus(PettyCashFundStatuses.posted),
+      icon: isPosted ? Undo2 : ThumbsUp,
+      label: isPosted ? "Undo Approved" : "Approve",
+      disabled: record.status !== PettyCashFundStatuses.forApproval && !isPosted,
+      onSelect: () => isPosted
+        ? onUpdateStatus(record, PettyCashFundStatuses.forApproval)
+        : setStatus(PettyCashFundStatuses.posted),
     },
     {
       type: "button",
-      icon: ThumbsDown,
-      label: "Disapprove",
-      disabled: record.status !== PettyCashFundStatuses.forApproval,
-      tone: "danger",
-      onSelect: () => setStatus(PettyCashFundStatuses.disapproved),
+      icon: isDisapproved ? Undo2 : ThumbsDown,
+      label: isDisapproved ? "Undo Disapproved" : "Disapprove",
+      disabled: record.status !== PettyCashFundStatuses.forApproval && !isDisapproved,
+      tone: isDisapproved ? "default" : "danger",
+      onSelect: () => isDisapproved
+        ? onUpdateStatus(record, PettyCashFundStatuses.forApproval)
+        : setStatus(PettyCashFundStatuses.disapproved),
     },
     {
       type: "button",
-      icon: Ban,
-      label: "Cancel",
-      disabled: record.status === PettyCashFundStatuses.posted || record.status === PettyCashFundStatuses.cancelled,
-      tone: "danger",
-      onSelect: () => setStatus(PettyCashFundStatuses.cancelled),
+      icon: isCancelled ? Undo2 : Ban,
+      label: isCancelled ? "Undo Cancelled" : "Cancel",
+      disabled: record.status === PettyCashFundStatuses.posted || record.status === PettyCashFundStatuses.disapproved,
+      tone: isCancelled ? "default" : "danger",
+      onSelect: () => isCancelled
+        ? onUpdateStatus(record, PettyCashFundStatuses.draft)
+        : setStatus(PettyCashFundStatuses.cancelled),
     },
   ];
   return (

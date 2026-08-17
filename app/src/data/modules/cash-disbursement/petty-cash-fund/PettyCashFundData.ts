@@ -1,7 +1,5 @@
 import {
   PettyCashFundStatuses,
-  PettyCashFundStorageKey,
-  PettyCashFundTransactionPrefix,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund/PettyCashFundConstants";
 import type {
   PettyCashFundFormValues,
@@ -9,29 +7,46 @@ import type {
   PettyCashFundRecord,
   PettyCashFundStatus,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";
-import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
+import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 import { formatMoneyNumberDisplayValue, parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import { todayDateValue } from "@/app/src/utils/date.util";
 
-export const PettyCashFundPartyOptions: AppAdvancedDropdownOption[] = [
-  { label: "E000102", name: "ARSICOLO, RAYMARK B", value: "E000102" },
-  { label: "E000117", name: "DELA CRUZ, MARIA L", value: "E000117" },
-  { label: "E000145", name: "SANTOS, JOSE P", value: "E000145" },
+export const PettyCashFundSeedRecords: PettyCashFundRecord[] = [
+  createSeed("1", "PCF-000063", "2026-02-23", "E000102", "Raymark B. Arsicolo", 120, "Initial petty cash fund", "For Approval"),
+  createSeed("2", "PCF-000062", "2026-02-18", "E000117", "Maria L. Dela Cruz", 15000, "Field operations fund", "Posted"),
+  createSeed("3", "PCF-000061", "2026-02-12", "E000145", "Jose P. Santos", 8500, "Branch petty cash", "Draft"),
+  createSeed("4", "PCF-000060", "2026-02-08", "E000117", "Maria L. Dela Cruz", 4200, "Disapproved office fund", "Disapproved"),
+  createSeed("5", "PCF-000059", "2026-02-02", "E000102", "Raymark B. Arsicolo", 3000, "Cancelled field fund", "Cancelled"),
 ];
-export const PettyCashFundAccountOptions: AppAdvancedDropdownOption[] = [
-  { label: "101-200", name: "Petty Cash Fund", value: "101-200" },
-  { label: "101-210", name: "Cash on Hand", value: "101-210" },
-];
-export const PettyCashFundProjectOptions: AppAdvancedDropdownOption[] = [
-  { label: "PRJ-001", name: "Main Office Operations", value: "PRJ-001" },
-  { label: "PRJ-002", name: "Branch Expansion", value: "PRJ-002" },
-];
-export const PettyCashFundResponsibilityCenterOptions = ["Administration", "Operations", "Sales"];
 
-const seedRecords: PettyCashFundRecord[] = [
-  createSeed("1", "PCF-000063", "2026-02-23", "E000102", "ARSICOLO, RAYMARK B", 120, "Initial petty cash fund", "For Approval"),
-  createSeed("2", "PCF-000062", "2026-02-18", "E000117", "DELA CRUZ, MARIA L", 15000, "Field operations fund", "Posted"),
-  createSeed("3", "PCF-000061", "2026-02-12", "E000145", "SANTOS, JOSE P", 8500, "Branch petty cash", "Draft"),
+export const PettyCashFundCopyFromRecords: AppCopyFromRecord[] = [
+  {
+    amount: "3,250.00",
+    documentDate: "2026-02-24",
+    id: "pcv-copy-000084",
+    partyName: "Raymark B. Arsicolo",
+    remarks: "Office pantry and operating supplies",
+    source: "Petty Cash Voucher",
+    sourceNo: "PCV-000084",
+  },
+  {
+    amount: "1,875.50",
+    documentDate: "2026-02-20",
+    id: "pcv-copy-000083",
+    partyName: "Maria L. Dela Cruz",
+    remarks: "Local transportation and courier expenses",
+    source: "Petty Cash Voucher",
+    sourceNo: "PCV-000083",
+  },
+  {
+    amount: "4,500.00",
+    documentDate: "2026-02-16",
+    id: "pcv-copy-000082",
+    partyName: "Jose P. Santos",
+    remarks: "Branch operating expenses",
+    source: "Petty Cash Voucher",
+    sourceNo: "PCV-000082",
+  },
 ];
 
 export function createBlankPettyCashFundItem(): PettyCashFundItem {
@@ -55,7 +70,11 @@ export function createBlankPettyCashFundItem(): PettyCashFundItem {
   };
 }
 
-export function createPettyCashFundFormValues(record?: PettyCashFundRecord): PettyCashFundFormValues {
+export function createPettyCashFundFormValues(
+  record?: PettyCashFundRecord,
+  transactionNo = "PCF-000001",
+  baseCurrencyCode = "PHP",
+): PettyCashFundFormValues {
   if (record?.formValues) {
     return {
       ...record.formValues,
@@ -71,9 +90,10 @@ export function createPettyCashFundFormValues(record?: PettyCashFundRecord): Pet
       status: record.status,
       partyCode: record.partyCode,
       partyName: record.partyName,
-      costCenter: "",
+      responsibilityCenter: "",
+      responsibilityCenterCode: "",
       currency: "PHP",
-      exchangeRate: "1.0000",
+      exchangeRate: "1.00",
       accountCode: record.accountCode,
       accountTitle: record.accountTitle,
       projectCode: "",
@@ -84,7 +104,7 @@ export function createPettyCashFundFormValues(record?: PettyCashFundRecord): Pet
           ...createBlankPettyCashFundItem(),
           date: record.documentDate,
           payeeCode: "V100006",
-          payeeName: "ALL4U RESTAURANT",
+          payeeName: "All4U Restaurant",
           tinNo: "488-860-327-000",
           amount,
           netAmount: amount,
@@ -95,14 +115,15 @@ export function createPettyCashFundFormValues(record?: PettyCashFundRecord): Pet
     };
   }
   return {
-    transactionNo: createNextPettyCashFundNumber(),
+    transactionNo,
     documentDate: todayDateValue(),
     status: PettyCashFundStatuses.open,
     partyCode: "",
     partyName: "",
-    costCenter: "",
-    currency: "PHP",
-    exchangeRate: "1.0000",
+    responsibilityCenter: "",
+    responsibilityCenterCode: "",
+    currency: baseCurrencyCode,
+    exchangeRate: "1.00",
     accountCode: "",
     accountTitle: "",
     projectCode: "",
@@ -156,35 +177,10 @@ export function createPettyCashFundRecord(
   };
 }
 
-export function getPettyCashFundRecords() {
-  if (typeof window === "undefined") return seedRecords;
-  try {
-    const stored = window.localStorage.getItem(PettyCashFundStorageKey);
-    return stored ? (JSON.parse(stored) as PettyCashFundRecord[]) : seedRecords;
-  } catch {
-    return seedRecords;
-  }
-}
-export function writePettyCashFundRecords(records: PettyCashFundRecord[]) {
-  if (typeof window !== "undefined") window.localStorage.setItem(PettyCashFundStorageKey, JSON.stringify(records));
-}
-export function upsertPettyCashFundRecord(record: PettyCashFundRecord) {
-  const records = getPettyCashFundRecords();
-  return records.some((item) => item.id === record.id)
-    ? records.map((item) => (item.id === record.id ? record : item))
-    : [record, ...records];
-}
 export function formatPettyCashFundAmount(value: number) {
   return formatMoneyNumberDisplayValue(value.toFixed(2));
 }
 
-function createNextPettyCashFundNumber() {
-  const highest = getPettyCashFundRecords().reduce(
-    (value, record) => Math.max(value, Number(record.transactionNo.match(/(\d+)$/)?.[1] ?? 0)),
-    0,
-  );
-  return `${PettyCashFundTransactionPrefix}-${String(highest + 1).padStart(6, "0")}`;
-}
 function createSeed(
   id: string,
   transactionNo: string,

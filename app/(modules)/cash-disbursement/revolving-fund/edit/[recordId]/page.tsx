@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { RevolvingFundActionPage } from "@/app/src/ui/modules/cash-disbursement/revolving-fund/RevolvingFundActionPage";
+import { RevolvingFundActionPage } from "@/app/src/ui/modules/cash-disbursement/revolving-fund/action/RevolvingFundActionPage";
 
 const PageTitle = "Edit Revolving Fund";
 

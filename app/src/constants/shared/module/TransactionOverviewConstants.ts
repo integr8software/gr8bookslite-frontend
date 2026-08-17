@@ -1,0 +1,16 @@
+export const TransactionOverviewColumnWidths = {
+  transactionNumber: 200,
+  documentDate: 170,
+  partyCode: 150,
+  partyName: 360,
+  accountCode: 180,
+  accountTitle: 300,
+  paymentType: 190,
+  currency: 120,
+  amount: 260,
+  remarks: 320,
+  auditUser: 190,
+  auditDate: 190,
+  status: 150,
+  actions: 112,
+} as const;

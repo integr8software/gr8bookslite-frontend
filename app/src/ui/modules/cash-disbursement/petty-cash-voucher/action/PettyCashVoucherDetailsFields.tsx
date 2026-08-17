@@ -1,3 +1,4 @@
+import { PettyCashVoucherVATableOptions } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
 import type { PettyCashVoucherFormValues } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import {
 	createPettyCashVoucherAccountOptions,
@@ -7,11 +8,13 @@ import {
 import type { PettyCashVoucherActionPageState } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-voucher/usePettyCashVoucherActionPage";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
+import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import {
 	TransactionField,
 	TransactionFieldClassName,
 	TransactionTextField,
 } from "@/app/src/ui/shared/transaction-setup/TransactionFormFields";
+import { formatExchangeRateInput } from "@/app/src/utils/number.util";
 
 export function PettyCashVoucherDetailsFields({
 	canAddParty = true,
@@ -72,34 +75,6 @@ export function PettyCashVoucherDetailsFields({
 							}}
 						/>
 					</TransactionField>
-					<TransactionField
-						label="Account Title"
-						error={page.errors.accountTitle}
-						isRequired
-					>
-						<AppAdvancedDropdown
-							value={page.values.accountTitle}
-							readOnly={page.isReadonly}
-							options={accountOptions}
-							placeholder="Enter Account Title"
-							searchPlaceholder="Search Account Title"
-							onChange={(nextValue) => {
-								const selectedValue = String(nextValue);
-								const selectedOption = accountOptions.find(
-									(option) => option.value === selectedValue,
-								);
-
-								if (selectedOption) {
-									page.updateField("accountTitle", selectedOption.value);
-									page.updateField("accountCode", selectedOption.label ?? "");
-									return;
-								}
-
-								page.updateField("accountTitle", "");
-								page.updateField("accountCode", "");
-							}}
-						/>
-					</TransactionField>
 					<TransactionField label="Responsibility Center">
 						<AppAdvancedDropdown
 							value={page.values.responsibilityCenterCode}
@@ -137,6 +112,34 @@ export function PettyCashVoucherDetailsFields({
 							}}
 						/>
 					</TransactionField>
+					<TransactionField
+						label="Default Account Title"
+						error={page.errors.accountTitle}
+						isRequired
+					>
+						<AppAdvancedDropdown
+							value={page.values.accountTitle}
+							readOnly={page.isReadonly}
+							options={accountOptions}
+							placeholder="Enter Default Account Title"
+							searchPlaceholder="Search Default Account Title"
+							onChange={(nextValue) => {
+								const selectedValue = String(nextValue);
+								const selectedOption = accountOptions.find(
+									(option) => option.value === selectedValue,
+								);
+
+								if (selectedOption) {
+									page.updateField("accountTitle", selectedOption.value);
+									page.updateField("accountCode", selectedOption.label ?? "");
+									return;
+								}
+
+								page.updateField("accountTitle", "");
+								page.updateField("accountCode", "");
+							}}
+						/>
+					</TransactionField>
 					<TransactionTextField
 						value={page.values.amount}
 						error={page.errors.amount}
@@ -171,15 +174,6 @@ export function PettyCashVoucherDetailsFields({
 						placeholder="Enter Party Code"
 					/>
 					<TransactionTextField
-						value={page.values.accountCode}
-						error={page.errors.accountCode}
-						isRequired
-						isReadonly
-						label="Account Code"
-						onValueChange={(value) => page.updateField("accountCode", value)}
-						placeholder="Enter Account Code"
-					/>
-					<TransactionTextField
 						value={page.values.responsibilityCenterCode}
 						error={page.errors.responsibilityCenterCode}
 						isReadonly
@@ -189,8 +183,47 @@ export function PettyCashVoucherDetailsFields({
 						}
 						placeholder="Enter Responsibility Center Code"
 					/>
+					<TransactionTextField
+						value={page.values.accountCode}
+						error={page.errors.accountCode}
+						isRequired
+						isReadonly
+						label="Default Account Code"
+						onValueChange={(value) => page.updateField("accountCode", value)}
+						placeholder="Enter Default Account Code"
+					/>
+					<CurrencyExchangeRateRow
+						currencyControlId="petty-cash-voucher-currency"
+						currencyLabel="Currency"
+						currencyControl={
+							<AppAdvancedDropdown
+								id="petty-cash-voucher-currency"
+								value={page.values.currency}
+								readOnly={page.isReadonly}
+								isClearable={false}
+								options={page.currencyOptions}
+								placeholder="Currency"
+								searchPlaceholder="Search Currency"
+								onChange={(value) => page.updateCurrency(String(value))}
+							/>
+						}
+						exchangeRateControlId="petty-cash-voucher-exchange-rate"
+						exchangeRateControl={
+							<input
+								id="petty-cash-voucher-exchange-rate"
+								type="text"
+								inputMode="decimal"
+								value={page.values.exchangeRate}
+								readOnly={page.isReadonly}
+								disabled={page.isReadonly || page.isExchangeRateLoading}
+								onChange={(event) => page.updateField("exchangeRate", formatExchangeRateInput(event.target.value))}
+								className={`${TransactionFieldClassName} text-right tabular-nums`}
+							/>
+						}
+					/>
 					<TransactionField label="VATable" error={page.errors.vatable}>
 						<select
+							id="petty-cash-voucher-vatable"
 							value={page.values.vatable}
 							disabled={page.isReadonly}
 							onChange={(event) =>
@@ -200,8 +233,11 @@ export function PettyCashVoucherDetailsFields({
 							}
 							className={`${TransactionFieldClassName} app-select-control`}
 						>
-							<option>False</option>
-							<option>True</option>
+							{PettyCashVoucherVATableOptions.map((option) => (
+								<option key={option} value={option}>
+									{option}
+								</option>
+							))}
 						</select>
 					</TransactionField>
 					<TransactionTextField

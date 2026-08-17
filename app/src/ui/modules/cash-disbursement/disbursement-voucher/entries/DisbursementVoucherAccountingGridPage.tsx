@@ -37,7 +37,6 @@ import { AccountingImportDialog } from "@/app/src/ui/modules/cash-disbursement/d
 import {
   GridEntryInput,
   GridPreviewDialog,
-  ParticularsViewDialog,
   SummaryCard,
   VoucherAccountingGridHeader,
   gridCellControlClassName,
@@ -68,10 +67,12 @@ import {
 } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/utils/DisbursementVoucherAccountingGridImportUtils";
 import {
   ModuleDataEntry,
+  type ModuleDataEntryCellContext,
   type ModuleDataEntryClearAction,
   type ModuleDataEntryColumn,
   type ModuleDataEntryColumnOption,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import { ModuleDataEntryRemarksCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryRemarksCell";
 import { MoneyNumberField, formatMoneyNumberInput } from "@/app/src/ui/shared/money/MoneyNumberField";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
@@ -103,10 +104,6 @@ export function DisbursementVoucherAccountingGridPage() {
   const [pasteText, setPasteText] = useState("");
   const [pendingImportAttachment, setPendingImportAttachment] = useState<VoucherAttachment | null>(null);
   const [importedImportAttachment, setImportedImportAttachment] = useState<VoucherAttachment | null>(null);
-  const [viewedParticulars, setViewedParticulars] = useState<{
-    rowNo: number;
-    value: string;
-  } | null>(null);
 
   useEffect(() => {
     const nextSession = readAccountingGridSession();
@@ -158,7 +155,7 @@ export function DisbursementVoucherAccountingGridPage() {
     header: columnLabels[columnId],
     id: columnId,
     isRemovable: !ProtectedDisbursementAccountingGridColumnIds.has(columnId),
-    renderCell: (row) => renderGridCell(row, columnId),
+    renderCell: (row, _index, context) => renderGridCell(row, columnId, context),
     width: resolvedColumnWidths[columnId],
     widthClassName: "",
     widthMode: autoWidthColumnIds.includes(columnId) ? "auto" : "fixed",
@@ -372,7 +369,7 @@ export function DisbursementVoucherAccountingGridPage() {
     });
   }
 
-  function renderGridCell(row: EditableGridRow, columnId: GridColumnId) {
+  function renderGridCell(row: EditableGridRow, columnId: GridColumnId, context: ModuleDataEntryCellContext) {
     if (columnId === "taxRate") {
       return (
         <select
@@ -403,24 +400,16 @@ export function DisbursementVoucherAccountingGridPage() {
     }
 
     if (columnId === "particulars") {
-      const rowNo = rows.findIndex((currentRow) => currentRow.id === row.id) + 1;
-
       return (
-        <div className="flex items-center gap-2">
-          <GridEntryInput value={row.particulars} onChange={(value) => updateRow(row.id, "particulars", value)} />
-          <button
-            type="button"
-            onClick={() =>
-              setViewedParticulars({
-                rowNo: rowNo > 0 ? rowNo : 1,
-                value: row.particulars,
-              })
-            }
-            className="mr-2 inline-flex h-8 shrink-0 items-center justify-center rounded-md border border-skyblue/25 bg-skyblue/8 px-3 text-xs font-semibold text-skyblue transition hover:bg-skyblue/14"
-          >
-            View
-          </button>
-        </div>
+        <ModuleDataEntryRemarksCell
+          inputId={context.fieldId}
+          inputName={context.fieldName}
+          isReadonly={false}
+          value={row.particulars}
+          subtitle={row.accountName || "Accounting entry"}
+          textareaId={`${context.fieldId}-dialog`}
+          onChange={(value) => updateRow(row.id, "particulars", value)}
+        />
       );
     }
 
@@ -742,7 +731,6 @@ export function DisbursementVoucherAccountingGridPage() {
           }
         }}
       />
-      <ParticularsViewDialog viewedParticulars={viewedParticulars} onClose={() => setViewedParticulars(null)} />
     </section>
   );
 }

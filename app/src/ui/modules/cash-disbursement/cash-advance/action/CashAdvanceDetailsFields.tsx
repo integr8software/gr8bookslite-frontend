@@ -5,8 +5,6 @@ import { useMemo, useState } from "react";
 import {
   DisbursementVoucherPartyOptions,
   DisbursementVoucherProjectOptions,
-  createVoucherCurrencyOptions,
-  getVoucherCurrencyExchangeRate,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import {
   CashAdvanceAccountOptions,
@@ -84,7 +82,6 @@ export function CashAdvanceDetailsForm({
       ),
     [responsibilityCenterStore.classifications, responsibilityCenterStore.types],
   );
-  const currencyOptions = useMemo(() => createCashAdvanceCurrencyDropdownOptions(), []);
   const partyOptions = useMemo(
     () =>
       createCashAdvancePartyOptions({
@@ -116,11 +113,6 @@ export function CashAdvanceDetailsForm({
   );
   const isReadonly = mode === "view";
 
-  function updateCurrency(nextCurrency: string) {
-    form.updateField("currency", nextCurrency);
-    form.updateField("fxRate", getVoucherCurrencyExchangeRate(nextCurrency));
-  }
-
   return (
     <>
       <section className="grid min-w-0 gap-5 overflow-visible">
@@ -137,7 +129,7 @@ export function CashAdvanceDetailsForm({
               <CashAdvancePrimaryFields
                 accountOptions={accountOptions}
                 costCenterOptions={costCenterOptions}
-                currencyOptions={currencyOptions}
+                currencyOptions={form.currencyOptions}
                 form={form}
                 isReadonly={isReadonly}
                 partyOptions={partyOptions}
@@ -145,7 +137,7 @@ export function CashAdvanceDetailsForm({
                 onOpenCostCenterDrawer={() => setIsCostCenterDrawerOpen(true)}
                 onOpenPartyDialog={() => setIsPartyDialogOpen(true)}
                 onOpenProjectDrawer={() => setIsProjectDrawerOpen(true)}
-                onUpdateCurrency={updateCurrency}
+                onUpdateCurrency={form.updateCurrency}
               />
             </form>
           </>
@@ -331,52 +323,6 @@ function CashAdvancePrimaryFields({
             }}
           />
         </FieldShell>
-        <FieldShell controlId="cash-advance-currency" label="Currency">
-          <CurrencyExchangeRateRow
-            exchangeRateControlId="cash-advance-fx-rate"
-            currencyControl={
-              <AppAdvancedDropdown
-                id="cash-advance-currency"
-                className="w-full min-w-0"
-                value={form.values.currency}
-                readOnly={isReadonly}
-                isClearable={false}
-                menuMinWidth={300}
-                options={currencyOptions}
-                placeholder="Currency"
-                searchPlaceholder="Search currency"
-                onChange={(value) => onUpdateCurrency(String(value))}
-              />
-            }
-            exchangeRateControl={
-              <input
-                id="cash-advance-fx-rate"
-                type="text"
-                inputMode="decimal"
-                value={form.values.fxRate}
-                readOnly={isReadonly}
-                onChange={(event) =>
-                  form.updateField(
-                    "fxRate",
-                    formatExchangeRateInput(event.target.value),
-                  )
-                }
-                className={`${FieldClassName} text-right`}
-              />
-            }
-          />
-        </FieldShell>
-        <FieldShell controlId="cash-advance-amount" label="Amount" isRequired>
-          <MoneyNumberField
-            id="cash-advance-amount"
-            min="0"
-            value={form.values.amount}
-            onValueChange={form.updateAmount}
-            placeholder="0.00"
-            readOnly={isReadonly}
-            className={`${FieldClassName} text-right tabular-nums`}
-          />
-        </FieldShell>
         <FieldShell controlId="cash-advance-remarks" label="Remarks">
           <AppLimitedTextarea
             id="cash-advance-remarks"
@@ -422,6 +368,53 @@ function CashAdvancePrimaryFields({
             className={ReadOnlyFieldClassName}
           />
         </FieldShell>
+        <FieldShell controlId="cash-advance-currency" label="Currency">
+          <CurrencyExchangeRateRow
+            exchangeRateControlId="cash-advance-fx-rate"
+            currencyControl={
+              <AppAdvancedDropdown
+                id="cash-advance-currency"
+                className="w-full min-w-0"
+                value={form.values.currency}
+                readOnly={isReadonly}
+                isClearable={false}
+                menuMinWidth={300}
+                options={currencyOptions}
+                placeholder="Currency"
+                searchPlaceholder="Search currency"
+                onChange={(value) => onUpdateCurrency(String(value))}
+              />
+            }
+            exchangeRateControl={
+              <input
+                id="cash-advance-fx-rate"
+                type="text"
+                inputMode="decimal"
+                value={form.values.fxRate}
+                readOnly={isReadonly}
+                disabled={isReadonly || form.isExchangeRateLoading}
+                onChange={(event) =>
+                  form.updateField(
+                    "fxRate",
+                    formatExchangeRateInput(event.target.value),
+                  )
+                }
+                className={`${FieldClassName} text-right`}
+              />
+            }
+          />
+        </FieldShell>
+        <FieldShell controlId="cash-advance-amount" label="Amount" isRequired>
+          <MoneyNumberField
+            id="cash-advance-amount"
+            min="0"
+            value={form.values.amount}
+            onValueChange={form.updateAmount}
+            placeholder="0.00"
+            readOnly={isReadonly}
+            className={`${FieldClassName} text-right tabular-nums`}
+          />
+        </FieldShell>
       </div>
 
       <div className="grid min-w-0 content-start gap-4">
@@ -457,14 +450,6 @@ function CashAdvancePrimaryFields({
       </div>
     </>
   );
-}
-
-function createCashAdvanceCurrencyDropdownOptions(): AppAdvancedDropdownOption[] {
-  return createVoucherCurrencyOptions().map((currency) => ({
-    label: currency.isDefault ? `${currency.name} | Default` : currency.name,
-    name: currency.code,
-    value: currency.code,
-  }));
 }
 
 function createCashAdvanceSelectDropdownOptions(

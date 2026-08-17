@@ -16,14 +16,17 @@ import { DefaultAccountDrawer } from "@/app/src/ui/modules/financial-maintenance
 import { PaymentTypeDrawer } from "@/app/src/ui/modules/financial-maintenance/payment-type/PaymentTypeDrawer";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
 import { ProjectNameDialog } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ProjectNameDialog";
+import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
 import { DisbursementVoucherActionHeader } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherActionHeader";
 import { DisbursementVoucherBankInformationFields } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherBankInformationFields";
+import { getPaymentTypeDetailKind } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherPaymentFields";
 import { DisbursementVoucherEntrySection } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/DisbursementVoucherEntrySection";
 import { DisbursementVoucherDetailsFields } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherDetailsFields";
 import { DisbursementVoucherFileAttachmentFields } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherFileAttachmentFields";
 import { DisbursementVoucherNotFound } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherNotFound";
 import { openDisbursementVoucherPdf } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/reports/DisbursementVoucherPdf";
 import { DisbursementVoucherReportPreview } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/reports/DisbursementVoucherReportPreview";
+import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { AppSkeleton, AppSkeletonCard } from "@/app/src/ui/shared/app/AppSkeleton";
 import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 
@@ -73,6 +76,14 @@ function DisbursementVoucherActionShell({
 }
 
 function DisbursementVoucherActionContent({ voucherAction }: { voucherAction: DisbursementVoucherActionState }) {
+  const paymentTypeDetailKind = getPaymentTypeDetailKind(
+    voucherAction.values.paymentMethod,
+    voucherAction.selectedPaymentTypeRecord,
+  );
+  const actionTabs = DisbursementVoucherActionTabs.filter(
+    (tab) => tab.id !== "bank-information" || (paymentTypeDetailKind !== "" && paymentTypeDetailKind !== "cash"),
+  );
+
   return (
     <>
       <DisbursementVoucherActionHeader
@@ -84,14 +95,14 @@ function DisbursementVoucherActionContent({ voucherAction }: { voucherAction: Di
         voucher={voucherAction.existingVoucher}
         onCopyFrom={voucherAction.handleCopyFrom}
         onPreview={() => voucherAction.setIsReportPreviewOpen(true)}
-        onSaveDraft={() => voucherAction.submitDisbursementVoucher(DisbursementVoucherStatuses.draft)}
-        onSubmit={() => voucherAction.submitDisbursementVoucher(DisbursementVoucherStatuses.forApproval)}
+        onSaveDraft={() => voucherAction.requestDisbursementVoucherSubmit(DisbursementVoucherStatuses.draft)}
+        onSubmit={() => voucherAction.requestDisbursementVoucherSubmit(DisbursementVoucherStatuses.forApproval)}
         onUpdateStatus={voucherAction.handleUpdateStatus}
       />
       <ModuleTabs
         activeTab={voucherAction.activeTab}
         ariaLabel="Disbursement voucher sections"
-        tabs={DisbursementVoucherActionTabs}
+        tabs={actionTabs}
         onTabChange={voucherAction.setActiveTab}
       />
       {voucherAction.activeTab === "details" ? (
@@ -130,13 +141,16 @@ function DisbursementVoucherDetailsSection({ voucherAction }: { voucherAction: D
         canAddPartyName={voucherAction.partyStore.permissions.canCreate}
         canAddPaymentType={voucherAction.paymentTypeStore.permissions.canCreate}
         canAddProjectName
+        currencyOptions={voucherAction.currencyOptions}
         errors={voucherAction.errors}
+        isExchangeRateLoading={voucherAction.isExchangeRateLoading}
         isReadonly={voucherAction.isReadonly}
         paymentTypeRecords={voucherAction.paymentTypeStore.paymentTypes}
         values={values}
         onOpenPartyNameDialog={() => voucherAction.setIsPartyNameDrawerOpen(true)}
         onOpenPaymentTypeDrawer={() => voucherAction.setIsPaymentTypeDrawerOpen(true)}
         onOpenProjectNameDialog={() => voucherAction.setIsProjectNameDialogOpen(true)}
+        onCurrencyChange={voucherAction.handleCurrencyChange}
         onPartyChange={voucherAction.handlePartyChange}
         onPaymentTypeChange={voucherAction.handlePaymentTypeChange}
         onUpdateField={voucherAction.updateField}
@@ -145,7 +159,7 @@ function DisbursementVoucherDetailsSection({ voucherAction }: { voucherAction: D
         bankAccount={voucherAction.selectedBankAccount}
         canAddExpenseType={voucherAction.defaultAccountStore.permissions.canCreate}
         canAddPartyName={voucherAction.partyStore.permissions.canCreate}
-        canAddResponsibilityCenter={false}
+        canAddResponsibilityCenter={voucherAction.responsibilityCenterStore.permissions.canCreate}
         defaultAccounts={voucherAction.defaultAccounts}
         entries={values.lineEntries}
         errors={voucherAction.errors}
@@ -160,7 +174,7 @@ function DisbursementVoucherDetailsSection({ voucherAction }: { voucherAction: D
         onAddEntries={voucherAction.handleAddEntries}
         onAddExpenseType={() => voucherAction.setIsDefaultAccountDrawerOpen(true)}
         onAddPartyName={() => voucherAction.setIsPartyNameDrawerOpen(true)}
-        onAddResponsibilityCenter={() => undefined}
+        onAddResponsibilityCenter={voucherAction.handleOpenResponsibilityCenterDrawer}
         onClearEntries={voucherAction.handleClearEntries}
         onDuplicateEntry={voucherAction.handleDuplicateEntry}
         onInsertEntry={voucherAction.handleInsertEntry}
@@ -175,8 +189,22 @@ function DisbursementVoucherDetailsSection({ voucherAction }: { voucherAction: D
 }
 
 function DisbursementVoucherActionDialogs({ voucherAction }: { voucherAction: DisbursementVoucherActionState }) {
+  const isDraftSave = voucherAction.pendingSubmitStatus === DisbursementVoucherStatuses.draft;
+  const actionLabel = voucherAction.mode === "edit" ? "Update" : isDraftSave ? "Save As Draft" : "Save";
+
   return (
     <>
+      <AppDialog
+        isOpen={voucherAction.pendingSubmitStatus !== null}
+        title={`${actionLabel} Disbursement Voucher?`}
+        description={`Confirm that you want to ${actionLabel.toLowerCase()} this Disbursement Voucher.`}
+        confirmLabel={actionLabel}
+        cancelLabel="Continue Editing"
+        pendingLabel={voucherAction.mode === "edit" ? "Updating..." : "Saving..."}
+        tone="question"
+        onCancel={voucherAction.cancelDisbursementVoucherSubmit}
+        onConfirm={voucherAction.confirmDisbursementVoucherSubmit}
+      />
       <DisbursementVoucherReportPreview
         isOpen={voucherAction.isReportPreviewOpen}
         values={voucherAction.values}
@@ -206,6 +234,12 @@ function DisbursementVoucherActionDialogs({ voucherAction }: { voucherAction: Di
         isOpen={!voucherAction.isReadonly && voucherAction.isProjectNameDialogOpen}
         onClose={() => voucherAction.setIsProjectNameDialogOpen(false)}
         onCreateProject={voucherAction.handleCreateProject}
+      />
+      <ResponsibilityCenterDrawer
+        isOpen={!voucherAction.isReadonly && voucherAction.isResponsibilityCenterDrawerOpen}
+        mode="add"
+        onClose={voucherAction.handleCloseResponsibilityCenterDrawer}
+        onSaved={voucherAction.handleCreateResponsibilityCenter}
       />
       <DefaultAccountDrawer
         isOpen={!voucherAction.isReadonly && voucherAction.isDefaultAccountDrawerOpen}

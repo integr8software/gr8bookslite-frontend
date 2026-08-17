@@ -56,8 +56,9 @@ export function PettyCashVoucherOverviewPage() {
             paginationLabel="vouchers"
             paginationStorageKey={PettyCashVoucherPaginationStorageKey}
             table={page.table}
-            tableTitle="Petty cash vouchers"
+            tableTitle="Petty Cash Vouchers"
             toolbar={<PettyCashVoucherListFilters page={page} />}
+            useColumnSizing
             renderRow={(row) => (
               <PettyCashVoucherTableRow
                 key={row.id}

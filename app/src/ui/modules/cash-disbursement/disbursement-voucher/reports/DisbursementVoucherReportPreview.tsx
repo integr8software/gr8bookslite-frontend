@@ -117,7 +117,7 @@ function DisbursementVoucherReportDocument({ values }: { values: DisbursementVou
             <tr>
               <ReportTableHeader>Account</ReportTableHeader>
               <ReportTableHeader>Payee</ReportTableHeader>
-              <ReportTableHeader>Particulars</ReportTableHeader>
+              <ReportTableHeader>Remarks</ReportTableHeader>
               <ReportTableHeader>Cost Center</ReportTableHeader>
               <ReportTableHeader>Debit</ReportTableHeader>
               <ReportTableHeader>Credit</ReportTableHeader>

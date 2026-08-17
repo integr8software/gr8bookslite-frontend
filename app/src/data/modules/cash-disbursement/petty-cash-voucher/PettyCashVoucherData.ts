@@ -182,6 +182,8 @@ export const PettyCashVoucherInitialFormValues: PettyCashVoucherFormValues = {
   amount: "",
   attachments: [],
   documentDate: todayDateValue(),
+  currency: "PHP",
+  exchangeRate: "1.00",
   netAmount: "",
   remarks: "",
   responsibilityCenter: "",
@@ -194,9 +196,10 @@ export const PettyCashVoucherInitialFormValues: PettyCashVoucherFormValues = {
   partyName: "",
 };
 
-export function createPettyCashVoucherInitialFormValues(): PettyCashVoucherFormValues {
+export function createPettyCashVoucherInitialFormValues(baseCurrencyCode = "PHP"): PettyCashVoucherFormValues {
   return {
     ...PettyCashVoucherInitialFormValues,
+    currency: baseCurrencyCode,
     transactionNo: createNextPettyCashVoucherNumber(),
   };
 }
@@ -210,6 +213,8 @@ export function createPettyCashVoucherFormValues(
     accountTitle: record.accountTitle,
     amount: formatMoneyNumberDisplayValue(String(record.amount)),
     documentDate: record.documentDate,
+    currency: record.currency ?? "PHP",
+    exchangeRate: record.exchangeRate ?? "1.00",
     netAmount: formatMoneyNumberDisplayValue(String(record.amount)),
     remarks: record.remarks,
     status: record.status,
@@ -234,6 +239,8 @@ export function createPettyCashVoucherRecord(
     dateCreated: existingRecord?.dateCreated ?? updatedAt,
     dateModified: updatedAt,
     documentDate: values.documentDate,
+    currency: values.currency,
+    exchangeRate: values.exchangeRate,
     id: existingRecord?.id ?? `pcv-${values.transactionNo.toLowerCase()}`,
     partyCode: values.partyCode.trim(),
     partyName: values.partyName.trim(),

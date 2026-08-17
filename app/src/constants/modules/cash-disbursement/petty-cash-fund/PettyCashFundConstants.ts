@@ -1,14 +1,50 @@
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type {
   PettyCashFundActionTab,
+  PettyCashFundAccountingColumnId,
   PettyCashFundEntryTab,
+  PettyCashFundItemColumnId,
   PettyCashFundStatus,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 
 export const PettyCashFundHref = getModuleRoute("PCF");
 export const PettyCashFundStorageKey = "cash-disbursement-petty-cash-fund-records";
 export const PettyCashFundPaginationStorageKey = "cash-disbursement-petty-cash-fund-table";
 export const PettyCashFundTransactionPrefix = "PCF";
+export const PettyCashFundCopyFromSources = ["Petty Cash Voucher"] as const;
+export const PettyCashFundColumnLabels = {
+  transactionNo: "Petty Cash Fund No.",
+  documentDate: "Document Date",
+  partyCode: "Party Code",
+  partyName: "Party Name",
+  accountCode: "Default Account Code",
+  accountTitle: "Default Account Title",
+  amount: "Total Amount",
+  remarks: "Remarks",
+  createdBy: "Created By",
+  createdAt: "Date Created",
+  updatedBy: "Updated By",
+  updatedAt: "Date Modified",
+  status: "Status",
+  actions: "Action",
+} as const;
+export const PettyCashFundDefaultVisibleColumnIds = [
+  "transactionNo",
+  "documentDate",
+  "partyName",
+  "amount",
+  "status",
+  "actions",
+] as const;
+export const PettyCashFundDefaultColumnVisibility = Object.fromEntries(
+  Object.keys(PettyCashFundColumnLabels).map((columnId) => [
+    columnId,
+    PettyCashFundDefaultVisibleColumnIds.includes(
+      columnId as (typeof PettyCashFundDefaultVisibleColumnIds)[number],
+    ),
+  ]),
+);
 export const PettyCashFundStatuses = {
   cancelled: "Cancelled",
   disapproved: "Disapproved",
@@ -33,7 +69,7 @@ export const PettyCashFundEntryTabs: { id: PettyCashFundEntryTab; label: string 
   { id: "items", label: "Items" },
   { id: "accounting", label: "Accounting Entries" },
 ];
-export const PettyCashFundDefaultItemColumnIds = [
+export const PettyCashFundDefaultItemColumnIds: PettyCashFundItemColumnId[] = [
   "date",
   "payeeCode",
   "payeeName",
@@ -50,8 +86,94 @@ export const PettyCashFundDefaultItemColumnIds = [
   "grossAmount",
   "responsibilityCenter",
 ];
+export const PettyCashFundItemColumnLabels: Record<PettyCashFundItemColumnId, string> = {
+  date: "Date",
+  payeeCode: "Payee Code",
+  payeeName: "Payee",
+  orNo: "OR No.",
+  tinNo: "TIN No.",
+  particulars: "Particulars",
+  amount: "Amount",
+  netAmount: "Net Amount",
+  vatAmount: "VAT Amount",
+  type: "Type",
+  vatType: "VAT Type",
+  vatable: "VATable",
+  vatInclusive: "VAT Inc",
+  grossAmount: "Gross Amount",
+  responsibilityCenter: "Responsibility Center",
+};
+export const PettyCashFundItemColumnWidths: Record<PettyCashFundItemColumnId, number> = {
+  date: 145,
+  payeeCode: 140,
+  payeeName: 220,
+  orNo: 135,
+  tinNo: 160,
+  particulars: 260,
+  amount: 140,
+  netAmount: 140,
+  vatAmount: 140,
+  type: 150,
+  vatType: 150,
+  vatable: 125,
+  vatInclusive: 125,
+  grossAmount: 150,
+  responsibilityCenter: 210,
+};
+export const PettyCashFundProtectedItemColumnIds = new Set<PettyCashFundItemColumnId>(["date", "amount"]);
+export const PettyCashFundDefaultAccountingColumnIds: PettyCashFundAccountingColumnId[] = [
+  "accountCode",
+  "accountTitle",
+  "debit",
+  "credit",
+  "partyCode",
+  "partyName",
+  "particulars",
+];
+export const PettyCashFundAccountingColumnLabels: Record<PettyCashFundAccountingColumnId, string> = {
+  accountCode: "Account Code",
+  accountTitle: "Account Title",
+  debit: "Debit",
+  credit: "Credit",
+  partyCode: "Party Code",
+  partyName: "Party Name",
+  particulars: "Particulars",
+};
+export const PettyCashFundAccountingColumnWidths: Record<PettyCashFundAccountingColumnId, number> = {
+  accountCode: 150,
+  accountTitle: 240,
+  debit: 140,
+  credit: 140,
+  partyCode: 150,
+  partyName: 220,
+  particulars: 260,
+};
+export const PettyCashFundProtectedAccountingColumnIds = new Set<PettyCashFundAccountingColumnId>([
+  "accountCode",
+  "debit",
+  "credit",
+]);
 export const PettyCashFundEntryInputClassName =
-  "h-10 w-full min-w-0 border-0 bg-transparent px-3 text-sm text-darknavy outline-none placeholder:text-darknavy/35 focus:ring-2 focus:ring-inset focus:ring-skyblue/35 read-only:bg-darknavy/[0.03]";
+  "h-10 w-full min-w-0 border-0 bg-transparent px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:ring-2 focus:ring-inset focus:ring-skyblue/35 read-only:bg-darknavy/[0.03] read-only:text-darknavy";
+export const PettyCashFundPartyOptions: AppAdvancedDropdownOption[] = [
+  { label: "E000102", name: "Raymark B. Arsicolo", value: "E000102" },
+  { label: "E000117", name: "Maria L. Dela Cruz", value: "E000117" },
+  { label: "E000145", name: "Jose P. Santos", value: "E000145" },
+];
+export const PettyCashFundAccountOptions: AppAdvancedDropdownOption[] = [
+  { label: "101-200", name: "Petty Cash Fund", value: "101-200" },
+  { label: "101-210", name: "Cash on Hand", value: "101-210" },
+];
+export const PettyCashFundProjectOptions: AppAdvancedDropdownOption[] = [
+  { label: "PRJ-001", name: "Main Office Operations", value: "PRJ-001" },
+  { label: "PRJ-002", name: "Branch Expansion", value: "PRJ-002" },
+];
+export const PettyCashFundResponsibilityCenterLookupOptions: AppAdvancedDropdownOption[] = [
+  { label: "RC-ADM", name: "Administration", value: "RC-ADM" },
+  { label: "RC-OPS", name: "Operations", value: "RC-OPS" },
+  { label: "RC-SAL", name: "Sales", value: "RC-SAL" },
+];
+export const PettyCashFundResponsibilityCenterOptions = ["Administration", "Operations", "Sales"];
 
 export function canEditPettyCashFund(status: PettyCashFundStatus) {
   return (

@@ -7,7 +7,7 @@ export function ModuleDataEntryHeader({
 	title,
 }: {
 	actions?: ReactNode;
-	description: string;
+	description?: string;
 	entryCountLabel: string;
 	title: ReactNode;
 }) {

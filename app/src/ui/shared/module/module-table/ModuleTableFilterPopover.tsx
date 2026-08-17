@@ -164,7 +164,8 @@ export function ModuleTableFilterPopover({
 			<div ref={rootRef} className={joinClasses("relative min-w-0", className)}>
 				<span
 					id={labelId}
-					className="absolute -top-2 left-3 z-10 bg-white px-1 text-xs font-semibold text-darknavy/70"
+					title={label}
+					className="absolute -top-2 left-3 z-10 max-w-[calc(100%_-_1.5rem)] truncate whitespace-nowrap bg-white px-1 text-xs font-semibold text-darknavy/70"
 				>
 					{label}
 				</span>

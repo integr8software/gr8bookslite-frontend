@@ -33,7 +33,9 @@ export type CashAdvanceMultipleEntryFormValues = {
   accountTitle: string;
   attachments: DisbursementAttachment[];
   costCenter: string;
+  currency: string;
   documentDate: string;
+  exchangeRate: string;
   items: CashAdvanceMultipleEntryItem[];
   accountingEntries: CashAdvanceMultipleEntryAccountingEntry[];
   partyCode: string;

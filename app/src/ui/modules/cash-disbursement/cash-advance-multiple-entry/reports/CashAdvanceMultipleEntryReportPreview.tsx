@@ -6,21 +6,23 @@ import {
 } from "@/app/src/data/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryData";
 import { formatCashAdvanceDate } from "@/app/src/data/modules/cash-disbursement/cash-advance/CashAdvanceData";
 import type {
-  CashAdvanceMultipleEntryAccountingEntry,
   CashAdvanceMultipleEntryFormValues,
   CashAdvanceMultipleEntryItem,
 } from "@/app/src/types/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryTypes";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { ReportPreviewDrawer } from "@/app/src/ui/shared/reports/Reports";
 
 type CashAdvanceMultipleEntryReportPreviewProps = {
   isOpen: boolean;
   onClose: () => void;
+  responsibilityCenterOptions: AppAdvancedDropdownOption[];
   values: CashAdvanceMultipleEntryFormValues;
 };
 
 export function CashAdvanceMultipleEntryReportPreview({
   isOpen,
   onClose,
+  responsibilityCenterOptions,
   values,
 }: CashAdvanceMultipleEntryReportPreviewProps) {
   return (
@@ -28,22 +30,29 @@ export function CashAdvanceMultipleEntryReportPreview({
       isOpen={isOpen}
       eyebrow="Cash disbursement"
       title="Cash Advance Multiple Entry Preview"
-      description="Review the cash advance request with item and accounting entries."
+      description="Review the cash advance request and cash advance entries."
       onClose={onClose}
     >
-      <CashAdvanceMultipleEntryReportDocument values={values} />
+      <CashAdvanceMultipleEntryReportDocument
+        responsibilityCenterOptions={responsibilityCenterOptions}
+        values={values}
+      />
     </ReportPreviewDrawer>
   );
 }
 
 function CashAdvanceMultipleEntryReportDocument({
+  responsibilityCenterOptions,
   values,
 }: {
+  responsibilityCenterOptions: AppAdvancedDropdownOption[];
   values: CashAdvanceMultipleEntryFormValues;
 }) {
   const totalAmount = calculateCashAdvanceMultipleEntryTotal(values.items);
-  const totalDebit = sumAccountingAmount(values.accountingEntries, "debit");
-  const totalCredit = sumAccountingAmount(values.accountingEntries, "credit");
+  const responsibilityCenterNames = getResponsibilityCenterNames(
+    values.items,
+    responsibilityCenterOptions,
+  );
 
   return (
     <div className="mx-auto min-w-[68rem] max-w-[68rem] bg-white p-6 text-[12px] leading-normal text-black shadow-sm">
@@ -72,14 +81,12 @@ function CashAdvanceMultipleEntryReportDocument({
 
         <div className="grid grid-cols-4 border-b-2 border-black">
           <PreviewField label="Entry No." value={values.transNo} />
-          <PreviewField label="Party" value={values.partyName || values.partyCode} />
+          <PreviewField label="Party Name" value={values.partyName} />
           <PreviewField label="Project" value={values.projectRef || values.projectCode} />
           <PreviewField label="Total Amount" value={formatCashAdvanceMultipleEntryAmount(totalAmount)} />
         </div>
-        <div className="grid grid-cols-4 border-b-2 border-black">
-          <PreviewField label="Default Account" value={joinValues(values.accountCode, values.accountTitle)} />
-          <PreviewField label="Responsibility Center" value={values.costCenter} />
-          <PreviewField label="Contract No." value={values.contractNo} />
+        <div className="grid grid-cols-2 border-b-2 border-black">
+          <PreviewField label="Responsibility Center" value={responsibilityCenterNames} />
           <PreviewField label="Status" value={values.status} />
         </div>
         <div className="min-h-12 border-b-2 border-black px-2 py-1">
@@ -92,7 +99,7 @@ function CashAdvanceMultipleEntryReportDocument({
           <thead>
             <tr className="border-b-2 border-black text-[11px] uppercase">
               <TableHeader className="w-10 text-center">#</TableHeader>
-              <TableHeader>Party</TableHeader>
+              <TableHeader>Party Name</TableHeader>
               <TableHeader>Responsibility Center</TableHeader>
               <TableHeader>Particulars</TableHeader>
               <TableHeader className="w-32 text-right">Amount</TableHeader>
@@ -100,39 +107,18 @@ function CashAdvanceMultipleEntryReportDocument({
           </thead>
           <tbody>
             {values.items.map((row, index) => (
-              <ItemRow key={row.id} index={index} row={row} />
+              <ItemRow
+                key={row.id}
+                index={index}
+                responsibilityCenterOptions={responsibilityCenterOptions}
+                row={row}
+              />
             ))}
             <tr className="border-t-2 border-black font-bold">
               <td className="px-2 py-2" colSpan={4}>
                 Total
               </td>
               <td className="px-2 py-2 text-right">{formatCashAdvanceMultipleEntryAmount(totalAmount)}</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <ReportSectionTitle title="Accounting Entries" />
-        <table className="w-full table-fixed text-left">
-          <thead>
-            <tr className="border-b-2 border-black text-[11px] uppercase">
-              <TableHeader className="w-10 text-center">#</TableHeader>
-              <TableHeader>Account</TableHeader>
-              <TableHeader>Party</TableHeader>
-              <TableHeader>Particulars</TableHeader>
-              <TableHeader className="w-28 text-right">Debit</TableHeader>
-              <TableHeader className="w-28 text-right">Credit</TableHeader>
-            </tr>
-          </thead>
-          <tbody>
-            {values.accountingEntries.map((row, index) => (
-              <AccountingRow key={row.id} index={index} row={row} />
-            ))}
-            <tr className="border-t-2 border-black font-bold">
-              <td className="px-2 py-2" colSpan={4}>
-                Totals
-              </td>
-              <td className="px-2 py-2 text-right">{formatCashAdvanceMultipleEntryAmount(totalDebit)}</td>
-              <td className="px-2 py-2 text-right">{formatCashAdvanceMultipleEntryAmount(totalCredit)}</td>
             </tr>
           </tbody>
         </table>
@@ -170,50 +156,32 @@ function TableHeader({
   return <th className={`border-r-2 border-black px-2 py-1 last:border-r-0 ${className}`}>{children}</th>;
 }
 
-function ItemRow({ index, row }: { index: number; row: CashAdvanceMultipleEntryItem }) {
-  return (
-    <tr className="border-b border-black/45">
-      <td className="border-r border-black/45 px-2 py-2 text-center">{index + 1}</td>
-      <td className="border-r border-black/45 px-2 py-2">{joinValues(row.partyCode, row.partyName) || "\u00a0"}</td>
-      <td className="border-r border-black/45 px-2 py-2">{row.responsibilityCenter || "\u00a0"}</td>
-      <td className="border-r border-black/45 px-2 py-2">{row.particulars || "\u00a0"}</td>
-      <td className="px-2 py-2 text-right">{formatCashAdvanceMultipleEntryAmount(Number(row.amount || 0))}</td>
-    </tr>
-  );
-}
-
-function AccountingRow({
+function ItemRow({
   index,
+  responsibilityCenterOptions,
   row,
 }: {
   index: number;
-  row: CashAdvanceMultipleEntryAccountingEntry;
+  responsibilityCenterOptions: AppAdvancedDropdownOption[];
+  row: CashAdvanceMultipleEntryItem;
 }) {
   return (
     <tr className="border-b border-black/45">
       <td className="border-r border-black/45 px-2 py-2 text-center">{index + 1}</td>
+      <td className="border-r border-black/45 px-2 py-2">{row.partyName || "\u00a0"}</td>
       <td className="border-r border-black/45 px-2 py-2">
-        {joinValues(row.accountCode, row.accountTitle) || "\u00a0"}
+        {getResponsibilityCenterName(row.responsibilityCenter, responsibilityCenterOptions) || "\u00a0"}
       </td>
-      <td className="border-r border-black/45 px-2 py-2">{joinValues(row.partyCode, row.partyName) || "\u00a0"}</td>
       <td className="border-r border-black/45 px-2 py-2">{row.particulars || "\u00a0"}</td>
-      <td className="border-r border-black/45 px-2 py-2 text-right">
-        {formatCashAdvanceMultipleEntryAmount(Number(row.debit || 0))}
+      <td className="px-2 py-2 text-right">
+        {formatCashAdvanceMultipleEntryAmount(row.amount)}
       </td>
-      <td className="px-2 py-2 text-right">{formatCashAdvanceMultipleEntryAmount(Number(row.credit || 0))}</td>
     </tr>
   );
 }
 
 function SignatureBox({ label }: { label: string }) {
   return <div className="border-r-2 border-black px-2 py-1 last:border-r-0">{label}</div>;
-}
-
-function sumAccountingAmount(
-  rows: CashAdvanceMultipleEntryAccountingEntry[],
-  key: "credit" | "debit",
-) {
-  return rows.reduce((total, row) => total + Number(row[key] || 0), 0);
 }
 
 function formatCompactDate(value: string) {
@@ -226,6 +194,30 @@ function formatCompactDate(value: string) {
   return year && month && day ? `${month}/${day}/${year}` : formatCashAdvanceDate(value);
 }
 
-function joinValues(...values: string[]) {
-  return values.filter(Boolean).join(" - ");
+function getResponsibilityCenterNames(
+  rows: CashAdvanceMultipleEntryItem[],
+  options: AppAdvancedDropdownOption[],
+) {
+  return Array.from(
+    new Set(
+      rows
+        .map((row) => getResponsibilityCenterName(row.responsibilityCenter, options))
+        .filter(Boolean),
+    ),
+  ).join(", ");
+}
+
+function getResponsibilityCenterName(
+  value: string,
+  options: AppAdvancedDropdownOption[],
+) {
+  if (!value) {
+    return "";
+  }
+
+  return (
+    options.find(
+      (option) => option.value === value || option.label === value || option.name === value,
+    )?.name ?? value
+  );
 }

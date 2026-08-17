@@ -34,7 +34,7 @@ export const MockCashAdvanceRecords: CashAdvanceRecord[] = [
     documentDate: "2026-06-11",
     id: "ca-001",
     remarks: "Project site travel and meal allowance.",
-    status: CashAdvanceStatuses.draft,
+    status: CashAdvanceStatuses.cancelled,
     partyCode: "EMP-0017",
     partyName: "Maria Santos",
     transNo: "CA-000005",
@@ -107,7 +107,7 @@ export const MockCashAdvanceRecords: CashAdvanceRecord[] = [
   },
 ];
 
-export function createCashAdvanceFormValues(): CashAdvanceFormValues {
+export function createCashAdvanceFormValues(baseCurrencyCode = "PHP"): CashAdvanceFormValues {
   const today = new Date().toISOString().slice(0, 10);
 
   return {
@@ -115,7 +115,7 @@ export function createCashAdvanceFormValues(): CashAdvanceFormValues {
     amount: "",
     attachments: [],
     costCenter: "",
-    currency: "PHP",
+    currency: baseCurrencyCode,
     documentDate: today,
     fxRate: "1.00",
     partyCode: "",

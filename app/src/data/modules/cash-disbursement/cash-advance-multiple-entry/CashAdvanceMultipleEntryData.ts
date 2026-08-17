@@ -16,6 +16,7 @@ import type {
   ResponsibilityCenterTypeOption,
 } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
+import { parseFiniteNumber } from "@/app/src/utils/number.util";
 
 export const CashAdvanceMultipleEntryStorageKey =
   "gr8books.cash-advance-multiple-entry.records";
@@ -27,7 +28,7 @@ export const CashAdvanceMultipleEntryPartyOptions = [
   { label: "EMP-0017", name: "Maria Santos", value: "EMP-0017" },
   { label: "EMP-0042", name: "Jose Ramirez", value: "EMP-0042" },
   { label: "EMP-0025", name: "Angela Cruz", value: "EMP-0025" },
-  { label: "V000099", name: "ARJAY CAPILI", value: "V000099" },
+  { label: "V000099", name: "Arjay Capili", value: "V000099" },
   { label: "00002", name: "Archipelago Phil Seafarers Training Institute", value: "00002" },
 ];
 
@@ -56,6 +57,78 @@ export const MockCashAdvanceMultipleEntryRecords: CashAdvanceMultipleEntryRecord
     transNo: "CAME-000001",
     updatedAt: "2026-01-22T08:00:00.000Z",
     updatedBy: "Current User",
+  },
+  {
+    accountCode: "1130-CA",
+    accountTitle: "Cash Advance",
+    amount: 12500,
+    costCenter: "Operations",
+    createdAt: "2026-01-21T08:00:00.000Z",
+    createdBy: "Maria Santos",
+    documentDate: "2026-01-21",
+    id: "came-002",
+    partyCode: "EMP-0017",
+    partyName: "Maria Santos",
+    projectCode: "",
+    remarks: "Project site travel and meal allowance.",
+    status: CashAdvanceMultipleEntryStatuses.draft,
+    transNo: "CAME-000002",
+    updatedAt: "2026-01-21T08:00:00.000Z",
+    updatedBy: "Maria Santos",
+  },
+  {
+    accountCode: "1130-CA",
+    accountTitle: "Cash Advance",
+    amount: 8200,
+    costCenter: "Admin",
+    createdAt: "2026-01-20T08:00:00.000Z",
+    createdBy: "Jose Ramirez",
+    documentDate: "2026-01-20",
+    id: "came-003",
+    partyCode: "EMP-0042",
+    partyName: "Jose Ramirez",
+    projectCode: "",
+    remarks: "Office supplies purchase advance.",
+    status: CashAdvanceMultipleEntryStatuses.posted,
+    transNo: "CAME-000003",
+    updatedAt: "2026-01-20T10:30:00.000Z",
+    updatedBy: "Finance Reviewer",
+  },
+  {
+    accountCode: "1135-OA",
+    accountTitle: "Other Advances",
+    amount: 30000,
+    costCenter: "Sales",
+    createdAt: "2026-01-19T08:00:00.000Z",
+    createdBy: "Angela Cruz",
+    documentDate: "2026-01-19",
+    id: "came-004",
+    partyCode: "EMP-0025",
+    partyName: "Angela Cruz",
+    projectCode: "",
+    remarks: "Client visit representation budget.",
+    status: CashAdvanceMultipleEntryStatuses.disapproved,
+    transNo: "CAME-000004",
+    updatedAt: "2026-01-19T11:15:00.000Z",
+    updatedBy: "Finance Reviewer",
+  },
+  {
+    accountCode: "1135-OA",
+    accountTitle: "Other Advances",
+    amount: 4500,
+    costCenter: "Operations",
+    createdAt: "2026-01-18T08:00:00.000Z",
+    createdBy: "Arjay Capili",
+    documentDate: "2026-01-18",
+    id: "came-005",
+    partyCode: "V000099",
+    partyName: "Arjay Capili",
+    projectCode: "",
+    remarks: "Cancelled local transport advance.",
+    status: CashAdvanceMultipleEntryStatuses.cancelled,
+    transNo: "CAME-000005",
+    updatedAt: "2026-01-18T09:45:00.000Z",
+    updatedBy: "Finance Reviewer",
   },
 ];
 
@@ -90,7 +163,7 @@ export function createBlankCashAdvanceMultipleEntryAccountingEntry(
   };
 }
 
-export function createCashAdvanceMultipleEntryFormValues(): CashAdvanceMultipleEntryFormValues {
+export function createCashAdvanceMultipleEntryFormValues(baseCurrencyCode = "PHP"): CashAdvanceMultipleEntryFormValues {
   const today = new Date().toISOString().slice(0, 10);
 
   return {
@@ -100,7 +173,9 @@ export function createCashAdvanceMultipleEntryFormValues(): CashAdvanceMultipleE
     attachments: [],
     contractNo: "",
     costCenter: "",
+    currency: baseCurrencyCode,
     documentDate: today,
+    exchangeRate: "1.00",
     items: [createBlankCashAdvanceMultipleEntryItem()],
     partyCode: "",
     partyName: "",
@@ -180,11 +255,14 @@ export function createCashAdvanceMultipleEntryRecordFromForm(
 export function calculateCashAdvanceMultipleEntryTotal(
   rows: CashAdvanceMultipleEntryItem[],
 ) {
-  return rows.reduce((total, row) => total + Number(row.amount || 0), 0);
+  return rows.reduce(
+    (total, row) => total + parseFiniteNumber(row.amount),
+    0,
+  );
 }
 
-export function formatCashAdvanceMultipleEntryAmount(value: number) {
-  return value.toFixed(2);
+export function formatCashAdvanceMultipleEntryAmount(value: number | string) {
+  return parseFiniteNumber(value).toFixed(2);
 }
 
 export function getInitialCashAdvanceMultipleEntries() {

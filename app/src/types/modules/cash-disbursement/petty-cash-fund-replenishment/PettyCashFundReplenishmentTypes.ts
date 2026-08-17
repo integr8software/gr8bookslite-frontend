@@ -1,59 +1,92 @@
-export type PettyCashFundReplenishmentStatus = "Active" | "Pending" | "Closed";
+import type { TransactionAttachment } from "@/app/src/types/shared/transaction-setup/TransactionAttachmentTypes";
 
-export type PettyCashFundReplenishmentRecord = {
-  id: string;
-  replenishmentNo: string;
-  vceCode: string;
-  vceName: string;
-  documentDate: string;
-  totalAmount: string;
-  status: PettyCashFundReplenishmentStatus;
-};
+export type PettyCashFundReplenishmentStatus =
+  | "Draft"
+  | "For Approval"
+  | "Posted"
+  | "Disapproved"
+  | "Cancelled";
+export type PettyCashFundReplenishmentFormStatus =
+  | "Open"
+  | PettyCashFundReplenishmentStatus;
+export type PettyCashFundReplenishmentActionMode = "add" | "edit" | "view";
+export type PettyCashFundReplenishmentActionTab = "details" | "attachments";
+export type PettyCashFundReplenishmentEntryTab = "vouchers" | "accounting";
 
 export type PettyCashFundReplenishmentEntry = {
   id: string;
   pettyCashDate: string;
   pettyCashNo: string;
-  code: string;
-  name: string;
+  accountCode: string;
+  accountTitle: string;
   totalAmount: string;
   netAmount: string;
   vatAmount: string;
   remarks: string;
 };
 
+export type PettyCashFundReplenishmentEntryColumnId = Exclude<
+  keyof PettyCashFundReplenishmentEntry,
+  "id"
+>;
+
+export type PettyCashFundReplenishmentAccountingEntry = {
+  id: string;
+  accountCode: string;
+  accountTitle: string;
+  debit: string;
+  credit: string;
+  partyCode: string;
+  partyName: string;
+  particulars: string;
+};
+
+export type PettyCashFundReplenishmentAccountingColumnId = Exclude<
+  keyof PettyCashFundReplenishmentAccountingEntry,
+  "id"
+>;
+
 export type PettyCashFundReplenishmentFormValues = {
+  transactionNo: string;
   documentDate: string;
+  status: PettyCashFundReplenishmentFormStatus;
+  partyCode: string;
+  partyName: string;
+  responsibilityCenter: string;
+  responsibilityCenterCode: string;
+  projectCode: string;
   projectName: string;
-  projectRef: string;
+  accountCode: string;
+  accountTitle: string;
+  currency: string;
+  exchangeRate: string;
+  remarks: string;
+  entries: PettyCashFundReplenishmentEntry[];
+  attachments: TransactionAttachment[];
+};
+
+export type PettyCashFundReplenishmentRecord = {
+  id: string;
+  transactionNo: string;
+  documentDate: string;
+  partyCode: string;
+  partyName: string;
+  accountCode: string;
+  accountTitle: string;
+  amount: number;
   remarks: string;
   status: PettyCashFundReplenishmentStatus;
-  transNo: string;
-  vceCode: string;
-  vceName: string;
+  createdBy: string;
+  createdAt: string;
+  updatedBy: string;
+  updatedAt: string;
+  formValues?: PettyCashFundReplenishmentFormValues;
 };
 
 export type PettyCashFundReplenishmentFormErrors = Partial<
   Record<keyof PettyCashFundReplenishmentFormValues | "entries", string>
 >;
-
-export type PettyCashFundReplenishmentTotals = {
-  netAmount: string;
-  totalAmount: string;
-  vatAmount: string;
-};
-
-export type PettyCashFundReplenishmentCopyFromRecord = {
-  amount: string;
-  documentDate: string;
-  id: string;
-  vceCode: string;
-  vceName: string;
-  voucherNo: string;
-};
-
-export type PettyCashFundReplenishmentCopySource =
-  | "Petty Cash Voucher"
-  | "Petty Cash Fund";
-
-export type PettyCashFundReplenishmentFormMode = "add" | "edit" | "view";
+export type PettyCashFundReplenishmentUpdateStatusHandler = (
+  record: PettyCashFundReplenishmentRecord,
+  status: PettyCashFundReplenishmentStatus,
+) => void;

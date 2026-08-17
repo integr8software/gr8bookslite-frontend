@@ -164,7 +164,7 @@ export function ModuleTableHeader<TData>({
 								setDropIndicator(null);
 							}}
 							className={joinClasses(
-								"group relative bg-slate-50 whitespace-nowrap px-5 py-3 first:pl-6 last:pr-6",
+								"group relative overflow-hidden bg-slate-50 whitespace-nowrap px-5 py-3 first:pl-6 last:pr-6",
 								isCenteredHeader(header) ? "text-center" : "text-left",
 								draggedColumnId === header.column.id &&
 									"bg-skyblue/10 opacity-75",
@@ -213,8 +213,9 @@ export function ModuleTableHeader<TData>({
 										/>
 									) : (
 										<span
+											title={getHeaderTitle(header)}
 											className={joinClasses(
-												"truncate",
+												"block min-w-0 max-w-full truncate",
 												isCenteredHeader(header) ? "text-center" : "text-left",
 											)}
 										>
@@ -274,15 +275,16 @@ function ModuleTableSortButton<TData>({
 			type="button"
 			onClick={header.column.getToggleSortingHandler()}
 			aria-label={sortLabel}
+			title={getHeaderTitle(header)}
 			className={joinClasses(
-				"inline-flex max-w-full items-center gap-2 rounded-md transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-2",
+				"inline-flex min-w-0 max-w-full items-center gap-2 overflow-hidden rounded-md transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-2",
 				align === "center" ? "justify-center text-center" : "justify-start text-left",
 				moduleAccentClassNames.focusRing,
 			)}
 		>
 			<span
 				className={joinClasses(
-					"truncate",
+					"min-w-0 truncate",
 					align === "center" ? "text-center" : "text-left",
 				)}
 			>
@@ -299,4 +301,14 @@ function ModuleTableSortButton<TData>({
 			/>
 		</button>
 	);
+}
+
+function getHeaderTitle<TData>(header: Header<TData, unknown>) {
+	const value = header.column.columnDef.header;
+
+	if (typeof value === "string" || typeof value === "number") {
+		return String(value);
+	}
+
+	return undefined;
 }

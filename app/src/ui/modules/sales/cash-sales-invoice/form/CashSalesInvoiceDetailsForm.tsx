@@ -69,17 +69,6 @@ export function CashSalesInvoiceDetailsForm({
             readOnly={isReadonly}
             onChange={(value) => onUpdateField("contactNo", value)}
           />
-          <FieldShell controlId="cash-sales-invoice-remarks" label="Remarks">
-            <AppLimitedTextarea
-              id="cash-sales-invoice-remarks"
-              value={values.remarks}
-              readOnly={isReadonly}
-              onChange={(event) => onUpdateField("remarks", event.target.value)}
-              className={`${FieldClassName} min-h-20 py-3`}
-              counterMode="remaining"
-              maxLength={250}
-            />
-          </FieldShell>
           <FieldShell controlId="cash-sales-invoice-warehouse" label="Warehouse" isRequired>
             <SelectField
               value={values.warehouse}
@@ -140,19 +129,30 @@ export function CashSalesInvoiceDetailsForm({
               onChange={(value) => onUpdateField("responsibilityCenter", value)}
             />
           </FieldShell>
+          <FieldShell controlId="cash-sales-invoice-remarks" label="Remarks">
+            <AppLimitedTextarea
+              id="cash-sales-invoice-remarks"
+              value={values.remarks}
+              readOnly={isReadonly}
+              onChange={(event) => onUpdateField("remarks", event.target.value)}
+              className={`${FieldClassName} min-h-20 py-3`}
+              counterMode="remaining"
+              maxLength={250}
+            />
+          </FieldShell>
         </div>
 
         <div className="grid min-w-0 content-start gap-3">
           <TextField
             id="cash-sales-invoice-trans-no"
-            label="Trans No."
+            label="CSI No."
             value={values.transNo}
             readOnly={isReadonly}
             onChange={(value) => onUpdateField("transNo", value)}
           />
           <DateField
             id="cash-sales-invoice-document-date"
-            label="Document Date"
+            label="CSI Date"
             value={values.documentDate}
             readOnly={isReadonly}
             onChange={(value) => onUpdateField("documentDate", value)}
@@ -163,13 +163,6 @@ export function CashSalesInvoiceDetailsForm({
             value={values.sjNo}
             readOnly={isReadonly}
             onChange={(value) => onUpdateField("sjNo", value)}
-          />
-          <TextField
-            id="cash-sales-invoice-dr-no"
-            label="DR No."
-            value={values.drNo}
-            readOnly={isReadonly}
-            onChange={(value) => onUpdateField("drNo", value)}
           />
           <FieldShell controlId="cash-sales-invoice-status" label="Status">
             <AppAdvancedDropdown

@@ -64,7 +64,7 @@ export function CashSalesInvoiceListPage() {
       <CashSalesInvoiceMetrics records={invoices} />
 
       <ModuleTable
-        emptyDescription="Try another transaction number, party, SJ no., DR no., or status."
+        emptyDescription="Try another CSI number, party, SJ no., or status."
         emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
         emptyTitle="No cash sales invoices matched"
         minWidthClassName="min-w-[88rem]"
@@ -79,7 +79,7 @@ export function CashSalesInvoiceListPage() {
               label="Search cash sales invoices"
               value={tableState.query}
               onChange={tableState.setQuery}
-              placeholder="Search by trans no., party, SJ no., or DR no."
+              placeholder="Search by CSI no., party, or SJ no."
             />
             <DateRangePicker
               label="Date Range"
@@ -108,7 +108,6 @@ export function CashSalesInvoiceListPage() {
               <div className="text-xs text-darknavy/55">{original.customerCode}</div>
             </td>
             <td className="px-4 py-4">{original.sjNo || "-"}</td>
-            <td className="px-4 py-4">{original.drNo || "-"}</td>
             <td className="px-4 py-4">
               <CashSalesInvoiceStatusBadge status={original.status} />
             </td>

@@ -12,29 +12,33 @@ import { parseMoneyNumberInput } from "@/app/src/ui/shared/money/MoneyNumberFiel
 
 export function recalculateBillingEntry(
 	entry: BillingLineEntry,
+	_updates: Partial<BillingLineEntry> = {},
 ): BillingLineEntry {
 	const amount = parseMoneyNumberInput(entry.amount);
 	const quantity = parseMoneyNumberInput(entry.quantity);
-	const discountAmount = parseMoneyNumberInput(entry.discountAmount);
-	const baseAmount = amount * Math.max(quantity, 0);
-	const vatAmount = baseAmount * 0.12;
-	const vatInclusiveAmount = baseAmount + vatAmount;
-	const computedDiscountAmount =
-		discountAmount > 0 ? discountAmount : vatInclusiveAmount * 0.05;
-	const computedNetAmount = vatInclusiveAmount - computedDiscountAmount;
+	const grossAmount = amount * Math.max(quantity, 0);
+	const discountPercent = parseMoneyNumberInput(entry.discountPercent);
+	const discountAmount =
+		grossAmount * (Math.max(discountPercent, 0) / 100);
+	const grossAfterDiscount = Math.max(grossAmount - discountAmount, 0);
+	const isVatable = entry.vatable.toLowerCase() === "true";
+	const isVatInclusive =
+		isVatable && entry.vatInclusive.toLowerCase() === "true";
+	const vatAmount = !isVatable
+		? 0
+		: isVatInclusive
+			? (grossAfterDiscount / 1.12) * 0.12
+			: grossAfterDiscount * 0.12;
+	const netAmount = isVatable && !isVatInclusive
+		? grossAfterDiscount + vatAmount
+		: grossAfterDiscount;
 
 	return {
 		...entry,
-		discountAmount:
-			vatInclusiveAmount > 0
-				? computedDiscountAmount.toFixed(2)
-				: entry.discountAmount,
-		grossAmount:
-			computedNetAmount > 0 ? computedNetAmount.toFixed(2) : entry.grossAmount,
-		netAmount: baseAmount > 0 ? baseAmount.toFixed(2) : entry.netAmount,
-		vatAmount: vatAmount > 0 ? vatAmount.toFixed(2) : entry.vatAmount,
-		wvatAmount:
-			vatInclusiveAmount > 0 ? vatInclusiveAmount.toFixed(2) : entry.wvatAmount,
+		discountAmount: discountAmount.toFixed(2),
+		grossAmount: netAmount.toFixed(2),
+		netAmount: grossAmount.toFixed(2),
+		vatAmount: vatAmount.toFixed(2),
 	};
 }
 

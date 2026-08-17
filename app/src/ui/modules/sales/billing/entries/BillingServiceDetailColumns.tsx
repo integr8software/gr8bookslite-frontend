@@ -12,7 +12,11 @@ import {
 	BillingEntryTextInput,
 } from "@/app/src/ui/modules/sales/billing/entries/BillingEntryCellControls";
 
-type BillingServiceDetailColumnKind = "amount" | "dropdown" | "text";
+type BillingServiceDetailColumnKind =
+	| "amount"
+	| "boolean"
+	| "dropdown"
+	| "text";
 
 type BillingServiceDetailColumnConfig = {
 	header: string;
@@ -31,6 +35,10 @@ type BillingServiceDetailUpdater = (
 export function createBillingServiceDetailColumns(
 	isReadonly: boolean,
 	onUpdateEntry: BillingServiceDetailUpdater,
+	lineErrors: Record<
+		string,
+		Partial<Record<keyof BillingLineEntry, string>>
+	> = {},
 ): ModuleDataEntryColumn<BillingLineEntry>[] {
 	return BillingServiceDetailColumnConfigs.map((column) => ({
 		header: column.header,
@@ -42,6 +50,7 @@ export function createBillingServiceDetailColumns(
 				column={column}
 				fieldId={context.fieldId}
 				fieldName={context.fieldName}
+				isInvalid={Boolean(lineErrors[row.id]?.[column.id])}
 				isReadonly={isReadonly}
 				row={row}
 				onUpdateEntry={onUpdateEntry}
@@ -54,6 +63,7 @@ function BillingEntryCell({
 	column,
 	fieldId,
 	fieldName,
+	isInvalid,
 	isReadonly,
 	onUpdateEntry,
 	row,
@@ -62,10 +72,46 @@ function BillingEntryCell({
 	fieldId: string;
 	fieldName: string;
 	isReadonly: boolean;
+	isInvalid: boolean;
 	onUpdateEntry: BillingServiceDetailUpdater;
 	row: BillingLineEntry;
 }) {
 	const value = String(row[column.id]);
+
+	if (column.kind === "boolean") {
+		const isVatInclusive = column.id === "vatInclusive";
+		const isVatInclusiveDisabled =
+			isVatInclusive && row.vatable.toLowerCase() !== "true";
+
+		return (
+			<AppAdvancedDropdown
+				id={fieldId}
+				name={fieldName}
+				className={EntryDropdownClassName}
+				value={value}
+				options={BooleanOptions}
+				placeholder=""
+				isClearable={false}
+				isSearchable={false}
+				readOnly={isReadonly || isVatInclusiveDisabled}
+				onChange={(nextValue) => {
+					const booleanValue = String(nextValue) === "True" ? "True" : "False";
+
+					if (column.id === "vatable") {
+						onUpdateEntry(row.id, {
+							vatable: booleanValue,
+							...(booleanValue === "False"
+								? { vatInclusive: "False" }
+								: {}),
+						});
+						return;
+					}
+
+					onUpdateEntry(row.id, { [column.id]: booleanValue });
+				}}
+			/>
+		);
+	}
 
 	if (column.kind === "dropdown") {
 		return (
@@ -83,12 +129,19 @@ function BillingEntryCell({
 	}
 
 	if (column.kind === "amount") {
+		const isCalculatedAmount =
+			column.id === "netAmount" ||
+			column.id === "vatAmount" ||
+			column.id === "discountAmount" ||
+			column.id === "grossAmount";
+
 		return (
 			<EntryAmountInput
 				id={fieldId}
 				name={fieldName}
 				value={value}
-				readOnly={isReadonly}
+				readOnly={isReadonly || isCalculatedAmount}
+				isInvalid={isInvalid}
 				onValueChange={(nextValue) =>
 					onUpdateEntry(row.id, { [column.id]: nextValue })
 				}
@@ -102,6 +155,7 @@ function BillingEntryCell({
 			name={fieldName}
 			value={value}
 			readOnly={isReadonly}
+			isInvalid={isInvalid}
 			onChange={(nextValue) => onUpdateEntry(row.id, { [column.id]: nextValue })}
 		/>
 	);
@@ -138,12 +192,14 @@ function EntryDropdown({
 
 function EntryAmountInput({
 	id,
+	isInvalid,
 	name,
 	onValueChange,
 	readOnly,
 	value,
 }: {
 	id: string;
+	isInvalid: boolean;
 	name: string;
 	onValueChange: (value: string) => void;
 	readOnly: boolean;
@@ -155,6 +211,7 @@ function EntryAmountInput({
 			name={name}
 			value={value}
 			readOnly={readOnly}
+			isInvalid={isInvalid}
 			onValueChange={onValueChange}
 		/>
 	);
@@ -162,20 +219,33 @@ function EntryAmountInput({
 
 const BillingServiceDetailColumnConfigs = [
 	column(
-		"Billing Type",
+		"Professional Service Type",
 		"description",
 		"dropdown",
 		260,
 		"w-[16.25rem]",
 		BillingDescriptionOptions,
 	),
-	column("Rate", "amount", "amount", 120, "w-[7.5rem]"),
-	column("Qty", "quantity", "amount", 100, "w-[6.25rem]"),
-	column("Amount", "netAmount", "amount", 130, "w-[8rem]"),
-	column("VAT", "vatAmount", "amount", 120, "w-[7.5rem]"),
-	column("VAT Inc.", "wvatAmount", "amount", 130, "w-[8rem]"),
-	column("Disct", "discountAmount", "amount", 120, "w-[7.5rem]"),
-	column("Net Amt", "grossAmount", "amount", 130, "w-[8rem]"),
+	column("Amount", "amount", "amount", 120, "w-[7.5rem]"),
+	column("QTY", "quantity", "amount", 100, "w-[6.25rem]"),
+	column("Gross Amount", "netAmount", "amount", 140, "w-[8.75rem]"),
+	column("VAT Amount", "vatAmount", "amount", 130, "w-[8.125rem]"),
+	column("VATable", "vatable", "boolean", 110, "w-[6.875rem]"),
+	column("VAT Inc.", "vatInclusive", "boolean", 110, "w-[6.875rem]"),
+	column(
+		"Discount Maintenance",
+		"discountPercent",
+		"amount",
+		180,
+		"w-[11.25rem]",
+	),
+	column("Total Discount", "discountAmount", "amount", 145, "w-[9.0625rem]"),
+	column("Net Amount", "grossAmount", "amount", 140, "w-[8.75rem]"),
+];
+
+const BooleanOptions: AppAdvancedDropdownOption[] = [
+	{ name: "True", value: "True" },
+	{ name: "False", value: "False" },
 ];
 
 function column(

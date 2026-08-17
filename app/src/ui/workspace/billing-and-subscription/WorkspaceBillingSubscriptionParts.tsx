@@ -1,4 +1,8 @@
-import { X, type LucideIcon } from "lucide-react";
+import { CreditCard, Lock, X, type LucideIcon } from "lucide-react";
+import type {
+  BillingPaymentFormErrors,
+  BillingPaymentFormValues,
+} from "@/app/src/data/billing/BillingTypes";
 import {
   formatWorkspaceBillingCurrency,
   formatWorkspaceBillingPromotionExpiry,
@@ -12,6 +16,8 @@ import type {
 import { AppAdvancedDropdown, type AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { ModuleInfoTooltip as InfoTooltip } from "@/app/src/ui/shared/module/ModuleInfoTooltip";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+
+export const NewPayMongoCardPaymentMethodId = "new-paymongo-card";
 
 type BillingDetailBadgeTone = "neutral" | "discount" | "percent";
 
@@ -280,6 +286,191 @@ export function PromotionCodeForm({
       </label>
       {error ? <p className="text-xs font-semibold text-coralpink">{error}</p> : null}
     </form>
+  );
+}
+
+export function BillingPaymentCardForm({
+  errors,
+  values,
+  onChange,
+}: {
+  errors: BillingPaymentFormErrors;
+  values: BillingPaymentFormValues;
+  onChange: (field: keyof BillingPaymentFormValues, value: string) => void;
+}) {
+  const fieldClassName =
+    "h-10 w-full rounded-md border border-darknavy/10 bg-white px-3 text-sm font-semibold text-darknavy shadow-sm outline-none transition placeholder:text-darknavy/35 placeholder:font-normal focus:border-skyblue focus:ring-4 focus:ring-skyblue/15";
+
+  return (
+    <div className="rounded-lg border border-darknavy/10 bg-offwhite/50 p-4">
+      <div className="mb-3 flex items-center gap-2">
+        <CreditCard className="h-4 w-4 text-skyblue" aria-hidden="true" />
+        <p className="text-xs font-bold uppercase tracking-wider text-darknavy/70">Card Details (PayMongo)</p>
+        <span className="ml-auto inline-flex items-center gap-1 text-[0.7rem] text-darknavy/45">
+          <Lock className="h-3 w-3" /> Secure tokenization
+        </span>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <BillingFormField
+          label="Cardholder Name"
+          error={errors.cardholderName?.[0]}
+          required
+        >
+          <input
+            name="cardholderName"
+            value={values.cardholderName}
+            onChange={(e) => onChange("cardholderName", e.target.value)}
+            placeholder="John Doe"
+            autoComplete="cc-name"
+            className={fieldClassName}
+          />
+        </BillingFormField>
+
+        <BillingFormField
+          label="Billing Email"
+          error={errors.billingEmail?.[0]}
+          required
+        >
+          <input
+            name="billingEmail"
+            type="email"
+            value={values.billingEmail}
+            onChange={(e) => onChange("billingEmail", e.target.value)}
+            placeholder="billing@company.com"
+            autoComplete="email"
+            className={fieldClassName}
+          />
+        </BillingFormField>
+
+        <div className="sm:col-span-2">
+          <BillingFormField
+            label="Card Number"
+            error={errors.cardNumber?.[0]}
+            required
+          >
+            <input
+              name="cardNumber"
+              value={values.cardNumber}
+              onChange={(e) => onChange("cardNumber", e.target.value)}
+              placeholder="1234 5678 9012 3456"
+              inputMode="numeric"
+              maxLength={23}
+              autoComplete="cc-number"
+              className={fieldClassName}
+            />
+          </BillingFormField>
+        </div>
+
+        <BillingFormField
+          label="Expiry Month"
+          error={errors.expiryMonth?.[0]}
+          required
+        >
+          <input
+            name="expiryMonth"
+            value={values.expiryMonth}
+            onChange={(e) => onChange("expiryMonth", e.target.value)}
+            placeholder="MM"
+            inputMode="numeric"
+            maxLength={2}
+            autoComplete="cc-exp-month"
+            className={fieldClassName}
+          />
+        </BillingFormField>
+
+        <BillingFormField
+          label="Expiry Year"
+          error={errors.expiryYear?.[0]}
+          required
+        >
+          <input
+            name="expiryYear"
+            value={values.expiryYear}
+            onChange={(e) => onChange("expiryYear", e.target.value)}
+            placeholder="YYYY"
+            inputMode="numeric"
+            maxLength={4}
+            autoComplete="cc-exp-year"
+            className={fieldClassName}
+          />
+        </BillingFormField>
+
+        <BillingFormField
+          label="CVC"
+          error={errors.cvc?.[0]}
+          required
+        >
+          <input
+            name="cvc"
+            value={values.cvc}
+            onChange={(e) => onChange("cvc", e.target.value)}
+            placeholder="123"
+            inputMode="numeric"
+            maxLength={4}
+            autoComplete="cc-csc"
+            className={fieldClassName}
+          />
+        </BillingFormField>
+
+        <BillingFormField
+          label="Contact Number"
+          error={errors.contactNumber?.[0]}
+          required
+        >
+          <input
+            name="contactNumber"
+            value={values.contactNumber}
+            onChange={(e) => onChange("contactNumber", e.target.value)}
+            placeholder="+63 912 345 6789"
+            autoComplete="tel"
+            className={fieldClassName}
+          />
+        </BillingFormField>
+
+        <div className="sm:col-span-2">
+          <BillingFormField
+            label="Billing Address"
+            error={errors.billingAddress?.[0]}
+            required
+          >
+            <input
+              name="billingAddress"
+              value={values.billingAddress}
+              onChange={(e) => onChange("billingAddress", e.target.value)}
+              placeholder="123 Business St, Bonifacio Global City, Taguig"
+              autoComplete="street-address"
+              className={fieldClassName}
+            />
+          </BillingFormField>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BillingFormField({
+  children,
+  error,
+  label,
+  required = false,
+}: {
+  children: React.ReactNode;
+  error?: string;
+  label: string;
+  required?: boolean;
+}) {
+  return (
+    <label className="block">
+      <span className="mb-1 flex items-center justify-between text-xs font-semibold text-darknavy/70">
+        <span>
+          {label}
+          {required ? <span className="ml-0.5 text-coralpink">*</span> : null}
+        </span>
+      </span>
+      {children}
+      {error ? <p className="mt-1 text-xs font-semibold text-coralpink">{error}</p> : null}
+    </label>
   );
 }
 

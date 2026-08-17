@@ -1,18 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-  Ban,
-  CheckCircle2,
-  Clock3,
-  Download,
-  PackageCheck,
-  Plus,
-  ReceiptText,
-  Search,
-  Upload,
-  XCircle,
-} from "lucide-react";
+import { Ban, CheckCircle2, Clock3, Download, PackageCheck, Plus, ReceiptText, Search, Upload, XCircle } from "lucide-react";
 import {
   countAcknowledgementReceiptsByStatus,
   formatAcknowledgementReceiptCurrency,
@@ -35,10 +24,7 @@ import type {
 } from "@/app/src/types/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptTypes";
 import { AmountRangePicker } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import { DateRangePicker } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
-import {
-  ModuleHeader,
-  moduleHeaderActionClassNames,
-} from "@/app/src/ui/shared/module/ModuleHeader";
+import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import { AcknowledgementReceiptRecordActions } from "@/app/src/ui/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptRecordActions";
@@ -51,8 +37,7 @@ import {
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 export function AcknowledgementReceiptListPage() {
-  const { lastSyncedAt, receipts, updateReceiptStatus } =
-    useAcknowledgementReceiptStore();
+  const { lastSyncedAt, receipts, updateReceiptStatus } = useAcknowledgementReceiptStore();
   const tableState = useAcknowledgementReceiptTable(receipts);
 
   return (
@@ -107,25 +92,13 @@ export function AcknowledgementReceiptListPage() {
               onChange={tableState.setQuery}
               placeholder="Search by receipt no., reference no., customer, or collection type"
             />
-            <DateRangePicker
-              label="Date Range"
-              value={tableState.dateRange}
-              onChange={tableState.setDateRange}
-            />
-            <AmountRangePicker
-              label="Total Amount"
-              value={tableState.amountRange}
-              onChange={tableState.setAmountRange}
-            />
+            <DateRangePicker label="Date Range" value={tableState.dateRange} onChange={tableState.setDateRange} />
+            <AmountRangePicker label="Total Amount" value={tableState.amountRange} onChange={tableState.setAmountRange} />
             <ModuleTableFilterSelect
               label="Status"
               value={tableState.statusFilter}
               options={AcknowledgementReceiptStatusFilterOptions}
-              onChange={(value) =>
-                tableState.setStatusFilter(
-                  value as Parameters<typeof tableState.setStatusFilter>[0],
-                )
-              }
+              onChange={(value) => tableState.setStatusFilter(value as Parameters<typeof tableState.setStatusFilter>[0])}
             />
             <ModuleTableResetButton onClick={tableState.resetFilters} />
           </ModuleTableToolbar>
@@ -134,20 +107,16 @@ export function AcknowledgementReceiptListPage() {
           <tr key={id} className="module-table-row border-b border-darknavy/8 last:border-b-0">
             <td className="px-4 py-4 font-semibold text-skyblue">{original.receiptNo}</td>
             <td className="px-4 py-4">{formatAcknowledgementReceiptDate(original.receiptDate)}</td>
+            <td className="px-4 py-4">{original.partyCode}</td>
             <td className="px-4 py-4">{original.customerName}</td>
             <td className="px-4 py-4">{original.collectionType}</td>
             <td className="px-4 py-4">{original.referenceNo}</td>
-            <td className="px-4 py-4 font-semibold text-darknavy">
-              {formatAcknowledgementReceiptCurrency(original.amount)}
-            </td>
+            <td className="px-4 py-4 font-semibold text-darknavy">{formatAcknowledgementReceiptCurrency(original.amount)}</td>
             <td className="px-4 py-4">
               <AcknowledgementReceiptStatusBadge status={original.status} />
             </td>
             <td className="px-4 py-4 text-center">
-              <AcknowledgementReceiptRecordActions
-                record={original}
-                onUpdateStatus={updateReceiptStatus}
-              />
+              <AcknowledgementReceiptRecordActions record={original} onUpdateStatus={updateReceiptStatus} />
             </td>
           </tr>
         )}
@@ -156,14 +125,8 @@ export function AcknowledgementReceiptListPage() {
   );
 }
 
-function AcknowledgementReceiptMetrics({
-  records,
-}: {
-  records: AcknowledgementReceiptRecord[];
-}) {
-  const activeCount = records.filter((record) =>
-    isAcknowledgementReceiptActiveStatus(record.status),
-  ).length;
+function AcknowledgementReceiptMetrics({ records }: { records: AcknowledgementReceiptRecord[] }) {
+  const activeCount = records.filter((record) => isAcknowledgementReceiptActiveStatus(record.status)).length;
   const approvedCount = countAcknowledgementReceiptsByStatus(records, "Approved");
   const disapprovedCount = countAcknowledgementReceiptsByStatus(records, "Disapproved");
   const pendingCount = countAcknowledgementReceiptsByStatus(records, "Pending");
@@ -204,10 +167,7 @@ function AcknowledgementReceiptMetrics({
         {
           label: "Disapproved",
           value: disapprovedCount,
-          summary: formatAcknowledgementReceiptPercentage(
-            disapprovedCount,
-            records.length,
-          ),
+          summary: formatAcknowledgementReceiptPercentage(disapprovedCount, records.length),
           icon: XCircle,
           iconClassName: "bg-coralpink/15 text-coralpink",
         },
@@ -223,11 +183,7 @@ function AcknowledgementReceiptMetrics({
   );
 }
 
-function AcknowledgementReceiptStatusBadge({
-  status,
-}: {
-  status: AcknowledgementReceiptStatus;
-}) {
+function AcknowledgementReceiptStatusBadge({ status }: { status: AcknowledgementReceiptStatus }) {
   const Icon = statusIconByStatus[status];
 
   return (

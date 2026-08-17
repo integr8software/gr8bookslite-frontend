@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { ProvisionalReceiptAction } from "@/app/src/ui/modules/cash-receipt/provisional-receipt/Action";
+import { ProvisionalReceiptActionPage } from "@/app/src/ui/modules/cash-receipt/provisional-receipt/ProvisionalReceiptActionPage";
 
 const PageTitle = "Add Provisional Receipt";
 
@@ -10,7 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function CashReceiptProvisionalReceiptAddPage() {
-  return <ProvisionalReceiptAction />;
+  return <ProvisionalReceiptActionPage />;
 }
-
-

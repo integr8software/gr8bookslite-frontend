@@ -1,18 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-  Ban,
-  CheckCircle2,
-  Clock3,
-  Download,
-  PackageCheck,
-  Plus,
-  ReceiptText,
-  Search,
-  Upload,
-  XCircle,
-} from "lucide-react";
+import { Ban, CheckCircle2, Clock3, Download, PackageCheck, Plus, ReceiptText, Search, Upload, XCircle } from "lucide-react";
 import {
   countOfficialReceiptsByStatus,
   formatOfficialReceiptCurrency,
@@ -26,6 +15,7 @@ import {
   OfficialReceiptTablePaginationStorageKey,
 } from "@/app/src/constants/modules/cash-receipt/official-receipt/OfficialReceiptConstants";
 import {
+  type OfficialReceiptModuleConfig,
   useOfficialReceiptStore,
   useOfficialReceiptTable,
 } from "@/app/src/hooks/modules/cash-receipt/official-receipt/useOfficialReceipt";
@@ -35,10 +25,7 @@ import type {
 } from "@/app/src/types/modules/cash-receipt/official-receipt/OfficialReceiptTypes";
 import { AmountRangePicker } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import { DateRangePicker } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
-import {
-  ModuleHeader,
-  moduleHeaderActionClassNames,
-} from "@/app/src/ui/shared/module/ModuleHeader";
+import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import { OfficialReceiptRecordActions } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptRecordActions";
@@ -50,9 +37,28 @@ import {
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
-export function OfficialReceiptListPage() {
-  const { lastSyncedAt, receipts, updateReceiptStatus } =
-    useOfficialReceiptStore();
+type OfficialReceiptListPageProps = OfficialReceiptModuleConfig & {
+  baseHref?: string;
+  description?: string;
+  receiptLabel?: string;
+  startNewLabel?: string;
+  tableTitle?: string;
+};
+
+export function OfficialReceiptListPage({
+  baseHref = OfficialReceiptHref,
+  description = "Search collection sources, preview linked official receipts, and create or update receipt entries.",
+  fallbackReceipts,
+  receiptLabel = "Official Receipt",
+  startNewLabel,
+  storageKey,
+  tableTitle = "Receipt entries",
+}: OfficialReceiptListPageProps = {}) {
+  const { lastSyncedAt, receipts, updateReceiptStatus } = useOfficialReceiptStore(undefined, {
+    fallbackReceipts,
+    receiptLabel: receiptLabel.toLowerCase(),
+    storageKey,
+  });
   const tableState = useOfficialReceiptTable(receipts);
 
   return (
@@ -60,8 +66,8 @@ export function OfficialReceiptListPage() {
       <ModuleHeader
         variant="panel"
         titleAs="h1"
-        title="Official Receipt"
-        description="Search collection sources, preview linked official receipts, and create or update receipt entries."
+        title={receiptLabel}
+        description={description}
         eyebrow={
           <>
             <ReceiptText className="h-3.5 w-3.5" aria-hidden="true" />
@@ -78,9 +84,9 @@ export function OfficialReceiptListPage() {
               <Download className="h-4 w-4" aria-hidden="true" />
               Export
             </button>
-            <Link href={`${OfficialReceiptHref}/add`} className={moduleHeaderActionClassNames.primary}>
+            <Link href={`${baseHref}/add`} className={moduleHeaderActionClassNames.primary}>
               <Plus className="h-4 w-4" aria-hidden="true" />
-              Start New Official Receipt
+              {startNewLabel ?? `Start New ${receiptLabel}`}
             </Link>
           </>
         }
@@ -94,38 +100,26 @@ export function OfficialReceiptListPage() {
         emptyTitle="No receipts matched"
         minWidthClassName="min-w-[87rem]"
         paginationLabel="entries"
-        paginationStorageKey={OfficialReceiptTablePaginationStorageKey}
+        paginationStorageKey={storageKey ?? OfficialReceiptTablePaginationStorageKey}
         lastSyncedAt={lastSyncedAt}
         pageSizeOptions={[5, 10, 15, 20, 25, 50]}
         table={tableState.table}
-        tableTitle="Receipt entries"
+        tableTitle={tableTitle}
         toolbar={
           <ModuleTableToolbar className="xl:grid-cols-[minmax(18rem,2fr)_minmax(14rem,1fr)_minmax(14rem,1fr)_minmax(12rem,1fr)_auto]">
             <ModuleTableSearch
-              label="Search official receipts"
+              label={`Search ${receiptLabel.toLowerCase()}s`}
               value={tableState.query}
               onChange={tableState.setQuery}
               placeholder="Search by receipt no., reference no., customer, or collection type"
             />
-            <DateRangePicker
-              label="Date Range"
-              value={tableState.dateRange}
-              onChange={tableState.setDateRange}
-            />
-            <AmountRangePicker
-              label="Total Amount"
-              value={tableState.amountRange}
-              onChange={tableState.setAmountRange}
-            />
+            <DateRangePicker label="Date Range" value={tableState.dateRange} onChange={tableState.setDateRange} />
+            <AmountRangePicker label="Total Amount" value={tableState.amountRange} onChange={tableState.setAmountRange} />
             <ModuleTableFilterSelect
               label="Status"
               value={tableState.statusFilter}
               options={OfficialReceiptStatusFilterOptions}
-              onChange={(value) =>
-                tableState.setStatusFilter(
-                  value as Parameters<typeof tableState.setStatusFilter>[0],
-                )
-              }
+              onChange={(value) => tableState.setStatusFilter(value as Parameters<typeof tableState.setStatusFilter>[0])}
             />
             <ModuleTableResetButton onClick={tableState.resetFilters} />
           </ModuleTableToolbar>
@@ -134,17 +128,18 @@ export function OfficialReceiptListPage() {
           <tr key={id} className="module-table-row border-b border-darknavy/8 last:border-b-0">
             <td className="px-4 py-4 font-semibold text-skyblue">{original.receiptNo}</td>
             <td className="px-4 py-4">{formatOfficialReceiptDate(original.receiptDate)}</td>
+            <td className="px-4 py-4">{original.partyCode}</td>
             <td className="px-4 py-4">{original.customerName}</td>
             <td className="px-4 py-4">{original.collectionType}</td>
             <td className="px-4 py-4">{original.referenceNo}</td>
-            <td className="px-4 py-4 font-semibold text-darknavy">
-              {formatOfficialReceiptCurrency(original.amount)}
-            </td>
+            <td className="px-4 py-4 font-semibold text-darknavy">{formatOfficialReceiptCurrency(original.amount)}</td>
             <td className="px-4 py-4">
               <OfficialReceiptStatusBadge status={original.status} />
             </td>
             <td className="px-4 py-4 text-center">
               <OfficialReceiptRecordActions
+                baseHref={baseHref}
+                receiptLabel={receiptLabel.toLowerCase()}
                 record={original}
                 onUpdateStatus={updateReceiptStatus}
               />
@@ -156,14 +151,8 @@ export function OfficialReceiptListPage() {
   );
 }
 
-function OfficialReceiptMetrics({
-  records,
-}: {
-  records: OfficialReceiptRecord[];
-}) {
-  const activeCount = records.filter((record) =>
-    isOfficialReceiptActiveStatus(record.status),
-  ).length;
+function OfficialReceiptMetrics({ records }: { records: OfficialReceiptRecord[] }) {
+  const activeCount = records.filter((record) => isOfficialReceiptActiveStatus(record.status)).length;
   const approvedCount = countOfficialReceiptsByStatus(records, "Approved");
   const disapprovedCount = countOfficialReceiptsByStatus(records, "Disapproved");
   const pendingCount = countOfficialReceiptsByStatus(records, "Pending");
@@ -204,10 +193,7 @@ function OfficialReceiptMetrics({
         {
           label: "Disapproved",
           value: disapprovedCount,
-          summary: formatOfficialReceiptPercentage(
-            disapprovedCount,
-            records.length,
-          ),
+          summary: formatOfficialReceiptPercentage(disapprovedCount, records.length),
           icon: XCircle,
           iconClassName: "bg-coralpink/15 text-coralpink",
         },
@@ -223,11 +209,7 @@ function OfficialReceiptMetrics({
   );
 }
 
-function OfficialReceiptStatusBadge({
-  status,
-}: {
-  status: OfficialReceiptStatus;
-}) {
+function OfficialReceiptStatusBadge({ status }: { status: OfficialReceiptStatus }) {
   const Icon = statusIconByStatus[status];
 
   return (

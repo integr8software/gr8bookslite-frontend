@@ -36,7 +36,7 @@ export function CashSalesInvoiceFormHeader({
     <ModuleHeader
       variant="panel"
       titleAs="h1"
-      eyebrow={values.drNo || "Cash Sales Invoice"}
+      eyebrow="Cash Sales Invoice"
       title={title}
       description={
         mode === "view"

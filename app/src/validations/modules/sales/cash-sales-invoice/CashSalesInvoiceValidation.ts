@@ -11,15 +11,11 @@ export function validateCashSalesInvoiceForm(values: CashSalesInvoiceFormValues)
   }
 
   if (!values.transNo.trim()) {
-    return { isValid: false, message: "Enter a transaction number." };
+    return { isValid: false, message: "Enter a CSI number." };
   }
 
   if (!values.sjNo.trim()) {
     return { isValid: false, message: "Enter an SJ number." };
-  }
-
-  if (!values.drNo.trim()) {
-    return { isValid: false, message: "Enter a DR number." };
   }
 
   if (!values.warehouse.trim()) {

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
-import type { BillingMode } from "@/app/src/data/billing/BillingTypes";
+import type { BillingMode, BillingPaymentFormValues } from "@/app/src/data/billing/BillingTypes";
 import {
   findWorkspaceBillingPromotionByCode,
   formatWorkspaceBillingCurrency,
@@ -16,16 +16,20 @@ import {
   getWorkspaceBillingSummary,
 } from "@/app/src/data/workspace/billing-and-subscription/WorkspaceBillingSubscriptionData";
 import { CreateManualCheckout } from "@/app/src/services/billing/ManualBillingApi";
+import { CreatePaymongoCardPaymentMethod } from "@/app/src/services/billing/PaymongoClient";
 import type {
   WorkspaceBillingCompanyTab,
   WorkspaceBillingInvoiceRecord,
+  WorkspaceBillingPaymentMethodRecord,
   WorkspaceBillingRecordStatus,
 } from "@/app/src/types/workspace/billing-and-subscription/WorkspaceBillingSubscriptionTypes";
+import { NewPayMongoCardPaymentMethodId } from "@/app/src/ui/workspace/billing-and-subscription/WorkspaceBillingSubscriptionParts";
 import { validateWorkspacePromotionCode } from "@/app/src/validations/workspace/billing-and-subscription/WorkspaceBillingSubscriptionValidation";
 
 type WorkspaceBillingRenewalFilter = "All" | "Needs attention" | "Scheduled";
 
 export function useWorkspaceBillingSubscriptionPage() {
+  const [customPaymentMethods, setCustomPaymentMethods] = useState<WorkspaceBillingPaymentMethodRecord[]>([]);
   const [selectedPaymentMethodIdsByCompany, setSelectedPaymentMethodIdsByCompany] = useState<Record<string, string>>({});
   const [selectedBillingModesByCompany, setSelectedBillingModesByCompany] = useState<Record<string, BillingMode>>({});
   const [appliedPromotionIdsByCompany, setAppliedPromotionIdsByCompany] = useState<Record<string, string | undefined>>({});
@@ -307,6 +311,77 @@ export function useWorkspaceBillingSubscriptionPage() {
     );
   }
 
+  const allPaymentMethods = useMemo(
+    () => [...customPaymentMethods, ...WorkspaceBillingPaymentMethods],
+    [customPaymentMethods],
+  );
+
+  async function saveCompanyBillingMethod({
+    companyId,
+    billingMode,
+    paymentMethodId,
+    newCardValues,
+  }: {
+    companyId: string;
+    billingMode: BillingMode;
+    paymentMethodId?: string;
+    newCardValues?: BillingPaymentFormValues;
+  }) {
+    const account = accounts.find((current) => current.id === companyId);
+    if (!account) {
+      return;
+    }
+
+    if (billingMode === "AUTO") {
+      if (paymentMethodId === NewPayMongoCardPaymentMethodId && newCardValues) {
+        const result = await CreatePaymongoCardPaymentMethod(newCardValues);
+        const cleanCardNumber = newCardValues.cardNumber.replace(/\s+/g, "");
+        const last4 = cleanCardNumber.slice(-4) || "0000";
+        const newMethod: WorkspaceBillingPaymentMethodRecord = {
+          id: result.paymentMethodId,
+          brand: "PayMongo Card",
+          last4,
+          isDefault: false,
+          holderName: newCardValues.cardholderName,
+          label: `PayMongo card ending ${last4}`,
+          expiryLabel: `${newCardValues.expiryMonth}/${newCardValues.expiryYear}`,
+        };
+
+        setCustomPaymentMethods((current) => [newMethod, ...current]);
+        setSelectedPaymentMethodIdsByCompany((current) => ({
+          ...current,
+          [companyId]: result.paymentMethodId,
+        }));
+        setSelectedBillingModesByCompany((current) => ({
+          ...current,
+          [companyId]: "AUTO",
+        }));
+        toast.success(`Card ending ${last4} attached and auto renewal activated for ${account.name}.`);
+        return;
+      }
+
+      if (paymentMethodId) {
+        setSelectedPaymentMethodIdsByCompany((current) => ({
+          ...current,
+          [companyId]: paymentMethodId,
+        }));
+        setSelectedBillingModesByCompany((current) => ({
+          ...current,
+          [companyId]: "AUTO",
+        }));
+        const matched = allPaymentMethods.find((m) => m.id === paymentMethodId);
+        toast.success(`Auto renewal activated with ${matched?.label ?? "selected card"} for ${account.name}.`);
+        return;
+      }
+    }
+
+    setSelectedBillingModesByCompany((current) => ({
+      ...current,
+      [companyId]: "MANUAL",
+    }));
+    toast.success(`Billing mode updated to manual hosted checkout for ${account.name}.`);
+  }
+
   return {
     accounts,
     filteredAccounts,
@@ -320,7 +395,7 @@ export function useWorkspaceBillingSubscriptionPage() {
     getTransactionQuery,
     getTransactionStatusFilter,
     getWorkspaceBillingOutstandingAmount,
-    paymentMethods: WorkspaceBillingPaymentMethods,
+    paymentMethods: allPaymentMethods,
     query,
     renewalFilter,
     renewalFilterOptions: ["All", "Needs attention", "Scheduled"] as const satisfies readonly WorkspaceBillingRenewalFilter[],
@@ -332,6 +407,7 @@ export function useWorkspaceBillingSubscriptionPage() {
     cancelSubscription,
     clearPromotion,
     payCompany,
+    saveCompanyBillingMethod,
     selectedInvoice,
     setSelectedInvoice,
     updateActiveCompanyTab,

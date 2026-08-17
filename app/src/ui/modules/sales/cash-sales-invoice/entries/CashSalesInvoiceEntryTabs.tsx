@@ -42,7 +42,7 @@ export function CashSalesInvoiceEntryTabs({
 }
 
 const CashSalesInvoiceTabs = [
-  { id: "details", label: "Details" },
+  { id: "inventory", label: "Inventory Entries" },
   { id: "accounting", label: "Accounting Entries" },
 ] as const satisfies readonly {
   id: CashSalesInvoiceEntryTab;

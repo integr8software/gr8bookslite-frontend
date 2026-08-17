@@ -17,7 +17,6 @@ import {
   createOfficialReceiptFormValues,
   createOfficialReceiptRecordFromForm,
   getInitialReceiptsByKey,
-  getInitialOfficialReceipts,
   MockOfficialReceipts,
   OfficialReceiptStorageKey,
   writeStoredReceiptsByKey,

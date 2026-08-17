@@ -57,15 +57,18 @@ export function useApproverSetupPage() {
 		queryFn: FetchApproverSetups,
 	});
 	const createApproverSetupMutation = useMutation({
-		mutationFn: CreateApproverSetup,
-		onSuccess: (record) => {
+		mutationFn: (payloads: Parameters<typeof CreateApproverSetup>[0][]) =>
+			Promise.all(payloads.map(CreateApproverSetup)),
+		onSuccess: (createdRecords) => {
 			queryClient.setQueryData<ApproverSetupRecord[]>(
 				ApproverSetupQueryKeys.records(),
-				(current = []) => [record, ...current],
+				(current = []) => [...createdRecords, ...current],
 			);
-			setRecords((current) => [record, ...current]);
+			setRecords((current) => [...createdRecords, ...current]);
 			invalidateConnectedApprovalData();
-			toast.success("Approver setup created.");
+			toast.success(
+				`${createdRecords.length} approver ${createdRecords.length === 1 ? "setup" : "setups"} created.`,
+			);
 		},
 		onError: () => {
 			toast.error("Could not create approver setup.");
@@ -139,6 +142,7 @@ export function useApproverSetupPage() {
 	const [formValues, setFormValues] = useState<ApproverSetupFormValues>(
 		createApproverSetupFormValues(),
 	);
+	const [selectedModuleScopes, setSelectedModuleScopes] = useState<string[]>([]);
 	const [pendingDelete, setPendingDelete] =
 		useState<ApproverSetupRecord | null>(null);
 	const [drawerError, setDrawerError] = useState("");
@@ -232,8 +236,14 @@ export function useApproverSetupPage() {
 	});
 
 	function openAddDrawer() {
-		setFormValues(
-			createApproverSetupFormValues(null, approverUsers, moduleOptions),
+		const initialValues = createApproverSetupFormValues(
+			null,
+			approverUsers,
+			moduleOptions,
+		);
+		setFormValues(initialValues);
+		setSelectedModuleScopes(
+			initialValues.moduleScope ? [initialValues.moduleScope] : [],
 		);
 		setDrawerError("");
 		setDrawerState({ mode: "add", record: null });
@@ -241,12 +251,14 @@ export function useApproverSetupPage() {
 
 	function openEditDrawer(record: ApproverSetupRecord) {
 		setFormValues(createApproverSetupFormValues(record));
+		setSelectedModuleScopes([record.moduleScope]);
 		setDrawerError("");
 		setDrawerState({ mode: "edit", record });
 	}
 
 	function closeDrawer() {
 		setDrawerState(null);
+		setSelectedModuleScopes([]);
 		setFormValues(
 			createApproverSetupFormValues(null, approverUsers, moduleOptions),
 		);
@@ -264,7 +276,12 @@ export function useApproverSetupPage() {
 			return;
 		}
 
-		if (!formValues.moduleScope.trim()) {
+		const moduleScopes =
+			drawerState?.mode === "edit"
+				? [formValues.moduleScope]
+				: selectedModuleScopes;
+
+		if (moduleScopes.length === 0) {
 			setDrawerError("Select a module scope.");
 			return;
 		}
@@ -311,7 +328,12 @@ export function useApproverSetupPage() {
 			return;
 		}
 
-		createApproverSetupMutation.mutate(payload);
+		createApproverSetupMutation.mutate(
+			moduleScopes.map((moduleScope) => ({
+				...payload,
+				moduleScope,
+			})),
+		);
 		closeDrawer();
 	}
 
@@ -356,7 +378,9 @@ export function useApproverSetupPage() {
 		query,
 		records,
 		saveAssignment,
+		selectedModuleScopes,
 		setFormValues,
+		setSelectedModuleScopes,
 		setPendingDelete,
 		setQuery,
 		setStatusFilter,

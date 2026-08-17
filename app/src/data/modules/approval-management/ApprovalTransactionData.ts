@@ -52,7 +52,9 @@ export function mapApprovalTransactionRow(
 		ruleName: transaction.ruleName || "Approval rule",
 		statusLabel: isDone
 			? DoneStatus
-			: `Waiting for ${currentApprover?.name ?? transaction.blockerName ?? "approver"}`,
+			: transaction.isSequential
+				? `Waiting for ${currentApprover?.name ?? transaction.blockerName ?? "approver"}`
+				: "Waiting for anyone",
 		transaction,
 	};
 }

@@ -9,6 +9,13 @@ export const ApproverSetupAllStatusesFilter = "All statuses";
 export const ApproverSetupCurrentDate = new Date("2026-07-08T00:00:00");
 export const ApproverSetupTemporaryType = "Temporary";
 export const ApproverSetupAllApproversCondition = "All approvers";
+export const ApproverSetupMaxApprovers = 5;
+
+export const ApproverConditionLabels: Record<ApproverCondition, string> = {
+  "Any one approver": "One Approver",
+  "Any two approvers": "Two Approver",
+  "All approvers": "All Approvers",
+};
 
 export const ApproverConditionOptions: ApproverCondition[] = [
   "Any one approver",

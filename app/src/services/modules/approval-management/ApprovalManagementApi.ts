@@ -42,6 +42,7 @@ export type ApprovalTransactionApiRecord = {
 	}>;
 	blockerName?: string | null;
 	canUpdateStatus: boolean;
+	isSequential: boolean;
 	currentApproverId?: number | null;
 	id: string;
 	moduleName: string;

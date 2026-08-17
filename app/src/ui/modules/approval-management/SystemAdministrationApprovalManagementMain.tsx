@@ -1,11 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { Route, ShieldCheck } from "lucide-react";
+import { useApprovalAlertStore, type ApprovalManagementTab } from "@/app/src/hooks/modules/approval-management/useApprovalAlertStore";
 import { ApproverSetupPage } from "@/app/src/ui/modules/approval-management/approver-setup/ApproverSetupPage";
 import { ApprovalManagementShell } from "@/app/src/ui/modules/approval-management/approval-rules/ApprovalManagementShell";
-
-type ApprovalManagementTab = "approver-setup" | "approval-rules";
 
 const ApprovalManagementTabs: Array<{
   id: ApprovalManagementTab;
@@ -17,7 +15,8 @@ const ApprovalManagementTabs: Array<{
 ];
 
 export function SystemAdministrationApprovalManagementMain() {
-  const [activeTab, setActiveTab] = useState<ApprovalManagementTab>("approver-setup");
+  const activeTab = useApprovalAlertStore((state) => state.activeTab);
+  const setActiveTab = useApprovalAlertStore((state) => state.setActiveTab);
 
   return (
     <section className="grid min-h-0 gap-4">

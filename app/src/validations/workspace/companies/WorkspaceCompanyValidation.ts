@@ -141,6 +141,14 @@ const BaseWorkspaceCompanySchema = z.object({
 	billingPaymentMethodId: z.string().trim(),
 	billingPlanCode: z.string().trim(),
 	billingCycle: z.enum(["MONTHLY", "YEARLY"]),
+	countryCode: z
+		.string()
+		.trim()
+		.regex(/^[A-Z]{2}$/, "Select a valid company country."),
+	baseCurrencyCode: z
+		.string()
+		.trim()
+		.regex(/^[A-Z]{3}$/, "Select a valid base currency."),
 	companyName: z.string().trim(),
 	contactNumber: ContactNumberSchema,
 	email: EmailSchema,

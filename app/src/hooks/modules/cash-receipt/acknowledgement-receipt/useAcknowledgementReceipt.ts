@@ -37,21 +37,15 @@ type AcknowledgementReceiptStoreState = {
   isLoading: boolean;
   lastSyncedAt: number;
   receipts: AcknowledgementReceiptRecord[];
-  updateReceiptStatus: (
-    receipt: AcknowledgementReceiptRecord,
-    status: AcknowledgementReceiptStatus,
-  ) => void;
+  updateReceiptStatus: (receipt: AcknowledgementReceiptRecord, status: AcknowledgementReceiptStatus) => void;
 };
 
-export function useAcknowledgementReceiptStore<
-  TSelected = AcknowledgementReceiptStoreState,
->(selector?: (state: AcknowledgementReceiptStoreState) => TSelected) {
+export function useAcknowledgementReceiptStore<TSelected = AcknowledgementReceiptStoreState>(
+  selector?: (state: AcknowledgementReceiptStoreState) => TSelected,
+) {
   const [receipts, setReceipts] = useState(getInitialAcknowledgementReceipts);
   const [lastSyncedAt] = useState(() => Date.now());
-  const updateReceiptStatus = useCallback((
-    receipt: AcknowledgementReceiptRecord,
-    status: AcknowledgementReceiptStatus,
-  ) => {
+  const updateReceiptStatus = useCallback((receipt: AcknowledgementReceiptRecord, status: AcknowledgementReceiptStatus) => {
     setReceipts((currentReceipts) =>
       persistAcknowledgementReceipts(
         currentReceipts.map((currentReceipt) =>
@@ -91,27 +85,15 @@ export function useAcknowledgementReceiptActionForm(
   recordId?: string,
   onSaved?: (record: AcknowledgementReceiptRecord) => void,
 ) {
-  const initialRecord =
-    mode === "add"
-      ? null
-      : getInitialAcknowledgementReceipts().find(
-          (receipt) => receipt.id === recordId,
-        ) ?? null;
-  const [entryView, setEntryView] =
-    useState<AcknowledgementReceiptEntryView>("collection");
-  const [loadedRecord, setLoadedRecord] =
-    useState<AcknowledgementReceiptRecord | null>(initialRecord);
-  const [values, setValues] = useState<AcknowledgementReceiptFormValues>(
-    () =>
-      initialRecord
-        ? createAcknowledgementReceiptFormValuesFromRecord(initialRecord)
-        : createAcknowledgementReceiptFormValues(),
+  const initialRecord = mode === "add" ? null : (getInitialAcknowledgementReceipts().find((receipt) => receipt.id === recordId) ?? null);
+  const isNotFound = mode !== "add" && !initialRecord;
+  const [entryView, setEntryView] = useState<AcknowledgementReceiptEntryView>("collection");
+  const [loadedRecord, setLoadedRecord] = useState<AcknowledgementReceiptRecord | null>(initialRecord);
+  const [values, setValues] = useState<AcknowledgementReceiptFormValues>(() =>
+    initialRecord ? createAcknowledgementReceiptFormValuesFromRecord(initialRecord) : createAcknowledgementReceiptFormValues(),
   );
 
-  function updateField<Key extends keyof AcknowledgementReceiptFormValues>(
-    key: Key,
-    value: AcknowledgementReceiptFormValues[Key],
-  ) {
+  function updateField<Key extends keyof AcknowledgementReceiptFormValues>(key: Key, value: AcknowledgementReceiptFormValues[Key]) {
     setValues((current) => ({ ...current, [key]: value }));
   }
 
@@ -121,8 +103,7 @@ export function useAcknowledgementReceiptActionForm(
 
   function updateFirstLineEntry(updates: Partial<AcknowledgementReceiptLineEntry>) {
     setValues((current) => {
-      const firstLineEntry =
-        current.lineEntries[0] ?? createBlankAcknowledgementReceiptLineEntry();
+      const firstLineEntry = current.lineEntries[0] ?? createBlankAcknowledgementReceiptLineEntry();
       const remainingLineEntries = current.lineEntries.slice(1);
 
       return {
@@ -146,9 +127,7 @@ export function useAcknowledgementReceiptActionForm(
     setValues((current) => ({
       ...current,
       referenceNo: recordIds[0] ?? current.referenceNo,
-      lineEntries: current.lineEntries.length
-        ? current.lineEntries
-        : [createBlankAcknowledgementReceiptLineEntry()],
+      lineEntries: current.lineEntries.length ? current.lineEntries : [createBlankAcknowledgementReceiptLineEntry()],
     }));
     toast.success("Copied receipt source details.");
   }
@@ -161,25 +140,19 @@ export function useAcknowledgementReceiptActionForm(
       return;
     }
 
-    const nextRecord = createAcknowledgementReceiptRecordFromForm(
-      values,
-      mode === "edit" ? loadedRecord ?? undefined : undefined,
-    );
+    const nextRecord = createAcknowledgementReceiptRecordFromForm(values, mode === "edit" ? (loadedRecord ?? undefined) : undefined);
     const nextReceipts = upsertAcknowledgementReceiptRecord(nextRecord);
 
     writeStoredAcknowledgementReceipts(nextReceipts);
     setLoadedRecord(nextRecord);
-    toast.success(
-      mode === "edit"
-        ? "Acknowledgement Receipt updated."
-        : "Acknowledgement Receipt saved.",
-    );
+    toast.success(mode === "edit" ? "Acknowledgement Receipt updated." : "Acknowledgement Receipt saved.");
     onSaved?.(nextRecord);
   }
 
   return {
     applyCopyFrom,
     entryView,
+    isNotFound,
     setEntryView,
     submitReceipt,
     updateFirstLineEntry,
@@ -189,30 +162,22 @@ export function useAcknowledgementReceiptActionForm(
   };
 }
 
-function persistAcknowledgementReceipts(
-  receipts: AcknowledgementReceiptRecord[],
-) {
+function persistAcknowledgementReceipts(receipts: AcknowledgementReceiptRecord[]) {
   writeStoredAcknowledgementReceipts(receipts);
 
   return receipts;
 }
 
-function upsertAcknowledgementReceiptRecord(
-  record: AcknowledgementReceiptRecord,
-) {
+function upsertAcknowledgementReceiptRecord(record: AcknowledgementReceiptRecord) {
   const currentReceipts = getInitialAcknowledgementReceipts();
-  const existingIndex = currentReceipts.findIndex(
-    (receipt) => receipt.id === record.id,
-  );
+  const existingIndex = currentReceipts.findIndex((receipt) => receipt.id === record.id);
 
   if (existingIndex === -1) {
     return persistAcknowledgementReceipts([record, ...currentReceipts]);
   }
 
   return persistAcknowledgementReceipts(
-    currentReceipts.map((currentReceipt) =>
-      currentReceipt.id === record.id ? record : currentReceipt,
-    ),
+    currentReceipts.map((currentReceipt) => (currentReceipt.id === record.id ? record : currentReceipt)),
   );
 }
 
@@ -230,22 +195,13 @@ export function useAcknowledgementReceiptTable(receipts: AcknowledgementReceiptR
     from: "",
     to: "",
   });
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: "receiptDate", desc: true },
-  ]);
-  const [statusFilter, setStatusFilterState] = useState<
-    (typeof AcknowledgementReceiptStatusFilters)[number]
-  >("all");
+  const [sorting, setSorting] = useState<SortingState>([{ id: "receiptDate", desc: true }]);
+  const [statusFilter, setStatusFilterState] = useState<(typeof AcknowledgementReceiptStatusFilters)[number]>("all");
   const deferredQuery = useDeferredValue(query);
   const filteredRows = useMemo(
     () =>
       receipts.filter((receipt) => {
-        const searchable = [
-          receipt.receiptNo,
-          receipt.referenceNo,
-          receipt.customerName,
-          receipt.collectionType,
-        ]
+        const searchable = [receipt.receiptNo, receipt.referenceNo, receipt.partyCode, receipt.customerName, receipt.collectionType]
           .join(" ")
           .toLowerCase();
 
@@ -275,9 +231,16 @@ export function useAcknowledgementReceiptTable(receipts: AcknowledgementReceiptR
         meta: { className: "w-[10rem]" },
       },
       {
+        id: "partyCode",
+        accessorKey: "partyCode",
+        header: "Party Code",
+        sortingFn: "alphanumeric",
+        meta: { className: "w-[12rem]" },
+      },
+      {
         id: "customerName",
         accessorKey: "customerName",
-        header: "Customer Name",
+        header: "Party Name",
         sortingFn: "alphanumeric",
         meta: { className: "w-[18rem]" },
       },
@@ -339,9 +302,7 @@ export function useAcknowledgementReceiptTable(receipts: AcknowledgementReceiptR
     table.setPageIndex(0);
   }
 
-  function setStatusFilter(
-    value: (typeof AcknowledgementReceiptStatusFilters)[number],
-  ) {
+  function setStatusFilter(value: (typeof AcknowledgementReceiptStatusFilters)[number]) {
     setStatusFilterState(value);
     table.setPageIndex(0);
   }
@@ -380,9 +341,7 @@ export function useAcknowledgementReceiptTable(receipts: AcknowledgementReceiptR
 
 function isAmountInRange(value: number, range: AmountRangeValue) {
   const fromAmount = range.from.trim() ? parseMoneyNumberInput(range.from) : 0;
-  const toAmount = range.to.trim()
-    ? parseMoneyNumberInput(range.to)
-    : Number.MAX_SAFE_INTEGER;
+  const toAmount = range.to.trim() ? parseMoneyNumberInput(range.to) : Number.MAX_SAFE_INTEGER;
 
   return value >= fromAmount && value <= toAmount;
 }
@@ -396,8 +355,5 @@ function isDateInRange(value: string, range: DateRangeValue) {
   const fromTime = range.from ? new Date(range.from).setHours(0, 0, 0, 0) : null;
   const toTime = range.to ? new Date(range.to).setHours(0, 0, 0, 0) : null;
 
-  return !(
-    (fromTime !== null && dateTime < fromTime) ||
-    (toTime !== null && dateTime > toTime)
-  );
+  return !((fromTime !== null && dateTime < fromTime) || (toTime !== null && dateTime > toTime));
 }

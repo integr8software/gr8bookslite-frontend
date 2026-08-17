@@ -1,5 +1,9 @@
 import { Ban, CheckCircle2, Edit3, Eye, ThumbsDown, Undo2 } from "lucide-react";
-import { AcknowledgementReceiptHref } from "@/app/src/constants/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptConstants";
+import {
+  AcknowledgementReceiptHref,
+  AcknowledgementReceiptStatuses,
+  EditableAcknowledgementReceiptStatuses,
+} from "@/app/src/constants/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptConstants";
 import type {
   AcknowledgementReceiptRecord,
   AcknowledgementReceiptStatus,
@@ -20,11 +24,13 @@ export function AcknowledgementReceiptRecordActions({
     status: AcknowledgementReceiptStatus,
   ) => void;
 }) {
-  const isApproved = record.status === "Approved";
-  const isDisapproved = record.status === "Disapproved";
-  const isCancelled = record.status === "Cancelled";
-  const undoStatus: AcknowledgementReceiptStatus = "Active";
-  const cancelStatus: AcknowledgementReceiptStatus = isCancelled ? "Draft" : "Cancelled";
+  const isApproved = record.status === AcknowledgementReceiptStatuses.Approved;
+  const isDisapproved = record.status === AcknowledgementReceiptStatuses.Disapproved;
+  const isCancelled = record.status === AcknowledgementReceiptStatuses.Cancelled;
+  const undoStatus: AcknowledgementReceiptStatus = AcknowledgementReceiptStatuses.Active;
+  const cancelStatus: AcknowledgementReceiptStatus = isCancelled
+    ? AcknowledgementReceiptStatuses.Draft
+    : AcknowledgementReceiptStatuses.Cancelled;
   const items: ModuleActionMenuItem[] = [
     {
       href: `${AcknowledgementReceiptHref}/view/${record.id}`,
@@ -46,7 +52,11 @@ export function AcknowledgementReceiptRecordActions({
       disabled: !canApproveAcknowledgementReceiptStatus(record.status),
       icon: isApproved ? Undo2 : CheckCircle2,
       label: isApproved ? "Undo Approved" : "Approve",
-      onSelect: () => onUpdateStatus(record, isApproved ? undoStatus : "Approved"),
+      onSelect: () =>
+        onUpdateStatus(
+          record,
+          isApproved ? undoStatus : AcknowledgementReceiptStatuses.Approved,
+        ),
       type: "button",
     },
     {
@@ -54,7 +64,10 @@ export function AcknowledgementReceiptRecordActions({
       icon: isDisapproved ? Undo2 : ThumbsDown,
       label: isDisapproved ? "Undo Disapproved" : "Disapprove",
       onSelect: () =>
-        onUpdateStatus(record, isDisapproved ? undoStatus : "Disapproved"),
+        onUpdateStatus(
+          record,
+          isDisapproved ? undoStatus : AcknowledgementReceiptStatuses.Disapproved,
+        ),
       tone: isDisapproved ? "default" : "danger",
       type: "button",
     },
@@ -79,17 +92,23 @@ export function AcknowledgementReceiptRecordActions({
 }
 
 function canEditAcknowledgementReceiptStatus(status: AcknowledgementReceiptStatus) {
-  return status === "Active" || status === "Draft" || status === "Pending";
+  return EditableAcknowledgementReceiptStatuses.includes(status);
 }
 
 function canApproveAcknowledgementReceiptStatus(status: AcknowledgementReceiptStatus) {
-  return status === "Active" || status === "Draft" || status === "Pending" || status === "Approved";
+  return (
+    canEditAcknowledgementReceiptStatus(status) ||
+    status === AcknowledgementReceiptStatuses.Approved
+  );
 }
 
 function canDisapproveAcknowledgementReceiptStatus(status: AcknowledgementReceiptStatus) {
-  return status === "Active" || status === "Draft" || status === "Pending" || status === "Disapproved";
+  return (
+    canEditAcknowledgementReceiptStatus(status) ||
+    status === AcknowledgementReceiptStatuses.Disapproved
+  );
 }
 
 function canCancelAcknowledgementReceiptStatus(status: AcknowledgementReceiptStatus) {
-  return status !== "Closed";
+  return status !== AcknowledgementReceiptStatuses.Closed;
 }

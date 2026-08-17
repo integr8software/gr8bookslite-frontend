@@ -2,20 +2,14 @@ export type OfficialReceiptActionMode = "add" | "edit" | "view";
 
 export type OfficialReceiptEntryView = "collection" | "accounting";
 
-export type OfficialReceiptStatus =
-  | "Active"
-  | "Approved"
-  | "Cancelled"
-  | "Closed"
-  | "Disapproved"
-  | "Draft"
-  | "Pending";
+export type OfficialReceiptStatus = "Active" | "Approved" | "Cancelled" | "Closed" | "Disapproved" | "Draft" | "Pending";
 
 export type OfficialReceiptRecord = {
   id: string;
   amount: number;
   collectionType: string;
   customerName: string;
+  partyCode: string;
   formValues?: OfficialReceiptFormValues;
   receiptDate: string;
   receiptNo: string;
@@ -29,6 +23,7 @@ export type OfficialReceiptLineEntry = {
   accountTitle: string;
   collectionType: string;
   customerName: string;
+  partyCode: string;
   grossReceipt: string;
   vatExempt: string;
   vat: string;
@@ -43,6 +38,7 @@ export type OfficialReceiptFormValues = {
   receiptDate: string;
   referenceNo: string;
   customerName: string;
+  partyCode: string;
   paymentType: string;
   currency: string;
   exchangeRate: string;

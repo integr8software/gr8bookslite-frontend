@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { WorkspaceBillingSubscriptionCompanyPage } from "@/app/src/ui/workspace/billing-and-subscription/WorkspaceBillingSubscriptionPage";
+import { WorkspaceBillingSubscriptionCompanyPage } from "@/app/src/ui/workspace/billing-and-subscription/WorkspaceBillingSubscriptionCompanyPage";
 
 export const metadata: Metadata = {
   title: `Company Billing | ${AppName}`,

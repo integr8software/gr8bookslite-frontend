@@ -13,6 +13,7 @@ export const MockOfficialReceipts: OfficialReceiptRecord[] = [
     receiptNo: "OR-2026-0001",
     receiptDate: "2026-07-03",
     customerName: "Aster Foods Corporation",
+    partyCode: "PTY-0001",
     collectionType: "Customer payment",
     referenceNo: "SI-2026-0188",
     amount: 184500,
@@ -23,6 +24,7 @@ export const MockOfficialReceipts: OfficialReceiptRecord[] = [
     receiptNo: "OR-2026-0002",
     receiptDate: "2026-07-04",
     customerName: "Northline Retail Group",
+    partyCode: "PTY-0002",
     collectionType: "Service income",
     referenceNo: "SOA-2026-0042",
     amount: 76250,
@@ -33,6 +35,7 @@ export const MockOfficialReceipts: OfficialReceiptRecord[] = [
     receiptNo: "OR-2026-0003",
     receiptDate: "2026-07-05",
     customerName: "Bluecrest Trading",
+    partyCode: "PTY-0003",
     collectionType: "Advance deposit",
     referenceNo: "DEP-2026-0015",
     amount: 52000,
@@ -43,6 +46,7 @@ export const MockOfficialReceipts: OfficialReceiptRecord[] = [
     receiptNo: "OR-2026-0004",
     receiptDate: "2026-07-06",
     customerName: "Mendoza and Lee Partners",
+    partyCode: "PTY-0004",
     collectionType: "Rental collection",
     referenceNo: "LS-2026-0091",
     amount: 128900,
@@ -53,6 +57,7 @@ export const MockOfficialReceipts: OfficialReceiptRecord[] = [
     receiptNo: "OR-2026-0005",
     receiptDate: "2026-07-07",
     customerName: "Harborview Logistics",
+    partyCode: "PTY-0005",
     collectionType: "Customer payment",
     referenceNo: "SI-2026-0204",
     amount: 214300,
@@ -60,8 +65,7 @@ export const MockOfficialReceipts: OfficialReceiptRecord[] = [
   },
 ];
 
-export const OfficialReceiptStorageKey =
-  "gr8books.official-receipt.receipts";
+export const OfficialReceiptStorageKey = "gr8books.official-receipt.receipts";
 
 export const OfficialReceiptPaymentTypeOptions = [
   { name: "Cash", value: "Cash" },
@@ -108,20 +112,16 @@ export const OfficialReceiptCopyFromRecords = [
   },
 ];
 
-export const OfficialReceiptCopySources = [
-  "Sales invoice",
-  "Statement of account",
-];
+export const OfficialReceiptCopySources = ["Sales invoice", "Statement of account"];
 
-export function createBlankOfficialReceiptLineEntry(
-  overrides: Partial<OfficialReceiptLineEntry> = {},
-): OfficialReceiptLineEntry {
+export function createBlankOfficialReceiptLineEntry(overrides: Partial<OfficialReceiptLineEntry> = {}): OfficialReceiptLineEntry {
   return {
     id: `or-line-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     accountCode: "",
     accountTitle: "",
     collectionType: "",
     customerName: "",
+    partyCode: "",
     grossReceipt: "0.0000",
     vatExempt: "0.0000",
     vat: "0.0000",
@@ -139,6 +139,7 @@ export function createOfficialReceiptFormValues(): OfficialReceiptFormValues {
     receiptDate: "2026-07-08",
     referenceNo: "",
     customerName: "",
+    partyCode: "",
     paymentType: "",
     currency: "PHP",
     exchangeRate: "1.0000",
@@ -153,9 +154,7 @@ export function createOfficialReceiptFormValues(): OfficialReceiptFormValues {
   };
 }
 
-export function createOfficialReceiptFormValuesFromRecord(
-  record: OfficialReceiptRecord,
-): OfficialReceiptFormValues {
+export function createOfficialReceiptFormValuesFromRecord(record: OfficialReceiptRecord): OfficialReceiptFormValues {
   if (record.formValues) {
     return {
       ...record.formValues,
@@ -169,11 +168,13 @@ export function createOfficialReceiptFormValuesFromRecord(
     receiptDate: record.receiptDate,
     referenceNo: record.referenceNo,
     customerName: record.customerName,
+    partyCode: record.partyCode ?? "",
     status: record.status,
     lineEntries: [
       createBlankOfficialReceiptLineEntry({
         collectionType: record.collectionType,
         customerName: record.customerName,
+        partyCode: record.partyCode ?? "",
         credit: record.amount.toFixed(2),
         grossReceipt: record.amount.toFixed(4),
         referenceNo: record.referenceNo,
@@ -195,6 +196,7 @@ export function createOfficialReceiptRecordFromForm(
     amount,
     collectionType: firstEntry?.collectionType || "Customer payment",
     customerName: values.customerName || firstEntry?.customerName || "",
+    partyCode: values.partyCode || firstEntry?.partyCode || "",
     formValues: {
       ...values,
       lineEntries: values.lineEntries.map((entry) => ({ ...entry })),
@@ -207,11 +209,15 @@ export function createOfficialReceiptRecordFromForm(
 }
 
 export function readStoredOfficialReceipts() {
+  return readStoredReceiptsByKey(OfficialReceiptStorageKey);
+}
+
+export function readStoredReceiptsByKey(storageKey: string) {
   if (typeof window === "undefined") {
     return null;
   }
 
-  const storedReceipts = window.localStorage.getItem(OfficialReceiptStorageKey);
+  const storedReceipts = window.localStorage.getItem(storageKey);
 
   if (!storedReceipts) {
     return null;
@@ -227,30 +233,32 @@ export function readStoredOfficialReceipts() {
 }
 
 export function writeStoredOfficialReceipts(receipts: OfficialReceiptRecord[]) {
+  writeStoredReceiptsByKey(OfficialReceiptStorageKey, receipts);
+}
+
+export function writeStoredReceiptsByKey(storageKey: string, receipts: OfficialReceiptRecord[]) {
   if (typeof window === "undefined") {
     return;
   }
 
-  window.localStorage.setItem(
-    OfficialReceiptStorageKey,
-    JSON.stringify(receipts),
-  );
+  window.localStorage.setItem(storageKey, JSON.stringify(receipts));
 }
 
 export function getInitialOfficialReceipts() {
   return readStoredOfficialReceipts() ?? MockOfficialReceipts;
 }
 
-export function calculateOfficialReceiptTotals(
-  entries: OfficialReceiptLineEntry[],
-): OfficialReceiptTotals {
+export function getInitialReceiptsByKey(storageKey: string, fallbackReceipts: OfficialReceiptRecord[]) {
+  return readStoredReceiptsByKey(storageKey) ?? fallbackReceipts;
+}
+
+export function calculateOfficialReceiptTotals(entries: OfficialReceiptLineEntry[]): OfficialReceiptTotals {
   return entries.reduce(
     (summary, entry) => ({
       credit: summary.credit + parseMoneyNumberInput(entry.credit),
       debit: summary.debit + parseMoneyNumberInput(entry.debit),
       ewt: summary.ewt + parseMoneyNumberInput(entry.ewt),
-      grossReceipt:
-        summary.grossReceipt + parseMoneyNumberInput(entry.grossReceipt),
+      grossReceipt: summary.grossReceipt + parseMoneyNumberInput(entry.grossReceipt),
       vat: summary.vat + parseMoneyNumberInput(entry.vat),
       vatExempt: summary.vatExempt + parseMoneyNumberInput(entry.vatExempt),
     }),
@@ -287,10 +295,7 @@ export function formatOfficialReceiptDate(value: string) {
   }).format(new Date(value));
 }
 
-export function countOfficialReceiptsByStatus(
-  receipts: OfficialReceiptRecord[],
-  status: OfficialReceiptStatus,
-) {
+export function countOfficialReceiptsByStatus(receipts: OfficialReceiptRecord[], status: OfficialReceiptStatus) {
   return receipts.filter((receipt) => receipt.status === status).length;
 }
 
@@ -326,24 +331,12 @@ export function officialReceiptEntryIsComplete(entry: OfficialReceiptLineEntry) 
   return (
     entry.collectionType.trim() !== "" &&
     entry.customerName.trim() !== "" &&
-    (parseMoneyNumberInput(entry.grossReceipt) > 0 ||
-      parseMoneyNumberInput(entry.debit) > 0 ||
-      parseMoneyNumberInput(entry.credit) > 0)
+    (parseMoneyNumberInput(entry.grossReceipt) > 0 || parseMoneyNumberInput(entry.debit) > 0 || parseMoneyNumberInput(entry.credit) > 0)
   );
 }
 
 function normalizeOfficialReceiptStatus(value: string): OfficialReceiptStatus {
-  const statuses: OfficialReceiptStatus[] = [
-    "Active",
-    "Approved",
-    "Cancelled",
-    "Closed",
-    "Disapproved",
-    "Draft",
-    "Pending",
-  ];
+  const statuses: OfficialReceiptStatus[] = ["Active", "Approved", "Cancelled", "Closed", "Disapproved", "Draft", "Pending"];
 
-  return statuses.includes(value as OfficialReceiptStatus)
-    ? (value as OfficialReceiptStatus)
-    : "Draft";
+  return statuses.includes(value as OfficialReceiptStatus) ? (value as OfficialReceiptStatus) : "Draft";
 }

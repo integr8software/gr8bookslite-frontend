@@ -13,9 +13,11 @@ import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 type OfficialReceiptDetailsFormProps = {
   isReadonly: boolean;
+  receiptCodeLabel?: string;
   values: OfficialReceiptFormValues;
   onOpenPartyDrawer: () => void;
   onOpenPaymentTypeDialog: () => void;
+  onPartyNameChange?: (partyName: string) => void;
   onUpdateField: <Key extends keyof OfficialReceiptFormValues>(key: Key, value: OfficialReceiptFormValues[Key]) => void;
 };
 
@@ -23,13 +25,30 @@ export function OfficialReceiptDetailsForm({
   isReadonly,
   onOpenPartyDrawer,
   onOpenPaymentTypeDialog,
+  onPartyNameChange,
   onUpdateField,
+  receiptCodeLabel = "OR",
   values,
 }: OfficialReceiptDetailsFormProps) {
   return (
     <section className="min-w-0 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
       <div className="grid min-w-0 gap-x-8 gap-y-5 xl:grid-cols-2">
         <div className="grid min-w-0 gap-4">
+          <FieldShell controlId="official-receipt-party" label="Party Name" isRequired>
+            <AttachedDropdown
+              id="official-receipt-party"
+              value={values.customerName}
+              readOnly={isReadonly}
+              options={OfficialReceiptPartyOptions}
+              placeholder="Select Party Name"
+              searchPlaceholder="Search Party Name"
+              onAdd={onOpenPartyDrawer}
+              onChange={(value) => {
+                onUpdateField("customerName", value);
+                onPartyNameChange?.(value);
+              }}
+            />
+          </FieldShell>
           <FieldShell controlId="official-receipt-payment-type" label="Payment Type" isRequired>
             <AttachedDropdown
               id="official-receipt-payment-type"
@@ -40,18 +59,6 @@ export function OfficialReceiptDetailsForm({
               searchPlaceholder="Search payment type"
               onAdd={onOpenPaymentTypeDialog}
               onChange={(value) => onUpdateField("paymentType", value)}
-            />
-          </FieldShell>
-          <FieldShell controlId="official-receipt-party" label="Party Name" isRequired>
-            <AttachedDropdown
-              id="official-receipt-party"
-              value={values.customerName}
-              readOnly={isReadonly}
-              options={OfficialReceiptPartyOptions}
-              placeholder="Select Party Name"
-              searchPlaceholder="Search Party Name"
-              onAdd={onOpenPartyDrawer}
-              onChange={(value) => onUpdateField("customerName", value)}
             />
           </FieldShell>
           <FieldShell controlId="official-receipt-currency" label="Currency">
@@ -94,7 +101,16 @@ export function OfficialReceiptDetailsForm({
         </div>
 
         <div className="grid min-w-0 content-start gap-4">
-          <FieldShell controlId="official-receipt-transaction-no" label="Transaction No." isRequired>
+          <FieldShell controlId="official-receipt-party-code" label="Party Code">
+            <input
+              id="official-receipt-party-code"
+              value={values.partyCode}
+              readOnly={isReadonly}
+              onChange={(event) => onUpdateField("partyCode", event.target.value)}
+              className={FieldClassName}
+            />
+          </FieldShell>
+          <FieldShell controlId="official-receipt-transaction-no" label={`${receiptCodeLabel} No.`} isRequired>
             <input
               id="official-receipt-transaction-no"
               value={values.receiptNo}
@@ -103,7 +119,7 @@ export function OfficialReceiptDetailsForm({
               className={FieldClassName}
             />
           </FieldShell>
-          <FieldShell controlId="official-receipt-document-date" label="Document Date" isRequired>
+          <FieldShell controlId="official-receipt-document-date" label={`${receiptCodeLabel} Date`} isRequired>
             <input
               id="official-receipt-document-date"
               type="date"

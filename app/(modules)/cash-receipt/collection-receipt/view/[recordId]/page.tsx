@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { CollectionReceiptAction } from "@/app/src/ui/modules/cash-receipt/collection-receipt/Action";
+import { CollectionReceiptActionPage } from "@/app/src/ui/modules/cash-receipt/collection-receipt/CollectionReceiptActionPage";
 
 const PageTitle = "View Collection Receipt";
 
@@ -10,7 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function CashReceiptCollectionReceiptViewPage() {
-  return <CollectionReceiptAction />;
+  return <CollectionReceiptActionPage />;
 }
-
-

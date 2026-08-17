@@ -13,27 +13,25 @@ import { getPartyDisplayName } from "@/app/src/data/modules/party-management/Par
 import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
 import { usePaymentTypeStore } from "@/app/src/hooks/modules/financial-maintenance/payment-type/usePaymentType";
 import type { AcknowledgementReceiptActionMode } from "@/app/src/types/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptTypes";
-import type { DisbursementPaymentMethod, DisbursementType } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+import type {
+  DisbursementPaymentMethod,
+  DisbursementType,
+} from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import { AcknowledgementReceiptActionHeader } from "@/app/src/ui/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptActionHeader";
 import { AcknowledgementReceiptDetailsForm } from "@/app/src/ui/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptDetailsForm";
 import { AcknowledgementReceiptEntries } from "@/app/src/ui/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptEntries";
+import { AcknowledgementReceiptNotFound } from "@/app/src/ui/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptNotFound";
 import { openAcknowledgementReceiptPdf } from "@/app/src/ui/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptPdf";
 import { AcknowledgementReceiptReportPreview } from "@/app/src/ui/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptReportPreview";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
 
 const AppPaymentTypeDialog = dynamic(
-  () =>
-    import("@/app/src/ui/shared/transaction-setup/AppPaymentTypeDialog").then(
-      (module) => module.AppPaymentTypeDialog,
-    ),
+  () => import("@/app/src/ui/shared/transaction-setup/AppPaymentTypeDialog").then((module) => module.AppPaymentTypeDialog),
   { ssr: false },
 );
 
 const AppDisbursementTypeDialog = dynamic(
-  () =>
-    import("@/app/src/ui/shared/transaction-setup/AppDisbursementTypeDialog").then(
-      (module) => module.AppDisbursementTypeDialog,
-    ),
+  () => import("@/app/src/ui/shared/transaction-setup/AppDisbursementTypeDialog").then((module) => module.AppDisbursementTypeDialog),
   { ssr: false },
 );
 
@@ -52,11 +50,12 @@ export function AcknowledgementReceiptActionPage() {
   const [isPaymentTypeDialogOpen, setIsPaymentTypeDialogOpen] = useState(false);
   const [isPartyDrawerOpen, setIsPartyDrawerOpen] = useState(false);
   const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
-  const [isCollectionTypeDialogOpen, setIsCollectionTypeDialogOpen] =
-    useState(false);
-  const [collectionTypeRecords, setCollectionTypeRecords] = useState(
-    InitialAppDisbursementTypeRecords,
-  );
+  const [isCollectionTypeDialogOpen, setIsCollectionTypeDialogOpen] = useState(false);
+  const [collectionTypeRecords, setCollectionTypeRecords] = useState(InitialAppDisbursementTypeRecords);
+
+  if (receiptForm.isNotFound) {
+    return <AcknowledgementReceiptNotFound />;
+  }
 
   function createCollectionType(record: AppDisbursementTypeRecord) {
     setCollectionTypeRecords((currentRecords) => [record, ...currentRecords]);
@@ -66,12 +65,16 @@ export function AcknowledgementReceiptActionPage() {
 
   function updateCollectionType(record: AppDisbursementTypeRecord) {
     setCollectionTypeRecords((currentRecords) =>
-      currentRecords.map((currentRecord) =>
-        currentRecord.id === record.id ? record : currentRecord,
-      ),
+      currentRecords.map((currentRecord) => (currentRecord.id === record.id ? record : currentRecord)),
     );
 
     return record;
+  }
+
+  function updatePartyFromName(partyName: string) {
+    const selectedParty = partyStore.records.find((record) => getPartyDisplayName(record) === partyName);
+
+    receiptForm.updateField("partyCode", selectedParty?.partyCodeNo ?? "");
   }
 
   return (
@@ -89,6 +92,7 @@ export function AcknowledgementReceiptActionPage() {
           values={receiptForm.values}
           onOpenPartyDrawer={() => setIsPartyDrawerOpen(true)}
           onOpenPaymentTypeDialog={() => setIsPaymentTypeDialogOpen(true)}
+          onPartyNameChange={updatePartyFromName}
           onUpdateField={receiptForm.updateField}
         />
         <AcknowledgementReceiptEntries
@@ -131,6 +135,7 @@ export function AcknowledgementReceiptActionPage() {
         onClose={() => setIsPartyDrawerOpen(false)}
         onCreateParty={(record) => {
           receiptForm.updateField("customerName", getPartyDisplayName(record));
+          receiptForm.updateField("partyCode", record.partyCodeNo);
           setIsPartyDrawerOpen(false);
         }}
       />

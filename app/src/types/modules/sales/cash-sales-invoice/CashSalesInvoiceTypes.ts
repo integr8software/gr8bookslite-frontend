@@ -2,7 +2,7 @@ import type { PurchasingAccountingEntry } from "@/app/src/types/modules/purchasi
 
 export type CashSalesInvoiceStatus = "Cancelled" | "Draft" | "Posted";
 export type CashSalesInvoiceActionMode = "add" | "edit" | "view";
-export type CashSalesInvoiceEntryTab = "accounting" | "details";
+export type CashSalesInvoiceEntryTab = "accounting" | "inventory";
 
 export type CashSalesInvoiceFieldUpdater<TValues> = <Key extends keyof TValues>(
   key: Key,
@@ -46,7 +46,6 @@ export type CashSalesInvoiceFormValues = {
   transNo: string;
   documentDate: string;
   sjNo: string;
-  drNo: string;
   status: CashSalesInvoiceStatus;
   lineEntries: CashSalesInvoiceLineEntry[];
   accountingEntries: CashSalesInvoiceAccountingEntry[];
@@ -58,7 +57,6 @@ export type CashSalesInvoiceRecord = {
   customerCode: string;
   customerName: string;
   documentDate: string;
-  drNo: string;
   sjNo: string;
   status: CashSalesInvoiceStatus;
   transactionNo: string;

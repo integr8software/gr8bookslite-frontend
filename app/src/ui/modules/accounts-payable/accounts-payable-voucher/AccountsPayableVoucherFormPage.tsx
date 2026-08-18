@@ -3,28 +3,46 @@
 import { useMemo, useState, type ChangeEventHandler, type ReactNode } from "react";
 import { AccountsPayableVoucherPurchaseTransactionType } from "@/app/src/constants/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherConstants";
 import { calculateAccountsPayableVoucherDueDate } from "@/app/src/data/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherData";
+import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
 import { findModuleChartAccount, getModuleChartAccounts } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import { useAccountsPayableVoucherFormPage } from "@/app/src/hooks/modules/accounts-payable/accounts-payable-voucher/useAccountsPayableVoucherFormPage";
 import {
   useAccountsPayableVoucherPartyOptions,
   useAccountsPayableVoucherPayableAccountOptions,
+  useAccountsPayableVoucherResponsibilityCenterOptions,
   useAccountsPayableVoucherTermOptions,
 } from "@/app/src/hooks/modules/accounts-payable/accounts-payable-voucher/useAccountsPayableVoucher";
+import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenter";
+import { useTermsMaintenanceStore } from "@/app/src/hooks/modules/financial-maintenance/terms-maintenance/useTermsMaintenance";
+import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
 import { useTaxes } from "@/app/src/hooks/shared/tax/useTaxOptions";
 import type {
   AccountsPayableVoucherLookupAccount,
   AccountsPayableVoucherLookupParty,
+  AccountsPayableVoucherLookupResponsibilityCenter,
   AccountsPayableVoucherLookupTerm,
 } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
+import type { ResponsibilityCenter } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
 import type { TermsMaintenance } from "@/app/src/types/modules/financial-maintenance/terms-maintenance/TermsMaintenanceTypes";
+import type { PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";
 import type { Tax } from "@/app/src/types/shared/tax/TaxTypes";
 import { AppAdvancedDropdown, type AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
-import { AccountsPayableVoucherDataEntryTables } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherDataEntryTables";
+import {
+  AccountsPayableVoucherDataEntryTables,
+  type AccountsPayableVoucherPartyAddTarget,
+} from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherDataEntryTables";
+import {
+  applyAccountingEntryPartyTaxDefaults,
+  applyExpenseLinePartyTaxDefaults,
+} from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherDataEntryTableHelpers";
 import { AccountsPayableVoucherHeaderPage } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherHeaderPage";
 import { AccountsPayableVoucherNotFound } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherNotFound";
 import { openAccountsPayableVoucherPdf } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherPdf";
 import { AccountsPayableVoucherReportPreview } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherReportPreview";
+import { ProjectNameDialog } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ProjectNameDialog";
+import { TermsMaintenanceQuickAddDialog } from "@/app/src/ui/modules/financial-maintenance/terms-maintenance/TermsMaintenanceQuickAddDialog";
+import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
@@ -45,14 +63,24 @@ const PurchaseTaxCodeQuery = {
 
 export function AccountsPayableVoucherFormPage() {
   const page = useAccountsPayableVoucherFormPage();
+  const partyStore = usePartyManagementStore();
+  const responsibilityCenterStore = useResponsibilityCenterStore();
+  const termsMaintenanceStore = useTermsMaintenanceStore();
   const partyOptionsQuery = useAccountsPayableVoucherPartyOptions();
   const payableAccountOptionsQuery = useAccountsPayableVoucherPayableAccountOptions();
+  const projectOptionsQuery = useAccountsPayableVoucherResponsibilityCenterOptions();
   const termOptionsQuery = useAccountsPayableVoucherTermOptions();
   const taxCodesQuery = useTaxes(PurchaseTaxCodeQuery);
+  const [partyAddTarget, setPartyAddTarget] = useState<
+    "header" | AccountsPayableVoucherPartyAddTarget | null
+  >(null);
+  const [isProjectNameDialogOpen, setIsProjectNameDialogOpen] = useState(false);
   const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
+  const [isTermsDialogOpen, setIsTermsDialogOpen] = useState(false);
   const chartAccounts = useMemo(() => getModuleChartAccounts(), []);
   const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
   const partyRecords = useMemo(() => partyOptionsQuery.data ?? [], [partyOptionsQuery.data]);
+  const projectRecords = useMemo(() => projectOptionsQuery.data ?? [], [projectOptionsQuery.data]);
   const termRecords = useMemo(() => termOptionsQuery.data ?? [], [termOptionsQuery.data]);
   const defaultPayableAccounts = useMemo(
     () =>
@@ -65,6 +93,10 @@ export function AccountsPayableVoucherFormPage() {
   const partyOptions = useMemo<AppAdvancedDropdownOption[]>(
     () => createPartyOptions(partyRecords, page.values.partyCode, page.values.partyName),
     [page.values.partyCode, page.values.partyName, partyRecords],
+  );
+  const projectOptions = useMemo<AppAdvancedDropdownOption[]>(
+    () => createProjectOptions(projectRecords, page.values.projectCode, page.values.projectName),
+    [page.values.projectCode, page.values.projectName, projectRecords],
   );
   const termOptions = useMemo<AppAdvancedDropdownOption[]>(
     () => createTermOptions(createLookupTermOptions(termRecords), page.values.termId, page.values.terms),
@@ -116,6 +148,37 @@ export function AccountsPayableVoucherFormPage() {
         calculateAccountsPayableVoucherDueDate(page.values.documentDate, mapLookupTermToMaintenanceTerm(term)),
       );
     }
+  }
+
+  function handleCreateParty(record: PartyInformationRecord) {
+    const lookupParty = mapPartyRecordToLookupParty(record);
+
+    if (partyAddTarget === "header" || partyAddTarget === null) {
+      selectParty(lookupParty);
+    } else if (partyAddTarget.kind === "expense") {
+      page.updateExpenseLine(partyAddTarget.id, "partyCode", lookupParty.partyCodeNo);
+      page.updateExpenseLine(partyAddTarget.id, "partyName", lookupParty.name);
+      applyExpenseLinePartyTaxDefaults(page, partyAddTarget.id, lookupParty, taxCodes);
+    } else {
+      page.updateAccountingEntry(partyAddTarget.id, "partyCode", lookupParty.partyCodeNo);
+      page.updateAccountingEntry(partyAddTarget.id, "partyName", lookupParty.name);
+      applyAccountingEntryPartyTaxDefaults(page, partyAddTarget.id, lookupParty, taxCodes);
+    }
+
+    setPartyAddTarget(null);
+  }
+
+  function handleCreateProject(project: ResponsibilityCenter) {
+    page.updateHeaderField("projectCode", project.code);
+    page.updateHeaderField("projectName", project.name);
+    setIsProjectNameDialogOpen(false);
+  }
+
+  function handleCreateTerm(term: TermsMaintenance) {
+    page.updateHeaderField("termId", term.id);
+    page.updateHeaderField("terms", term.name);
+    page.updateHeaderField("dueDate", calculateAccountsPayableVoucherDueDate(page.values.documentDate, term));
+    setIsTermsDialogOpen(false);
   }
 
   function applyPartyPurchaseTaxDefaults(
@@ -180,6 +243,13 @@ export function AccountsPayableVoucherFormPage() {
     page.updateHeaderField("dueDate", calculateAccountsPayableVoucherDueDate(documentDate, mapLookupTermToMaintenanceTerm(term)));
   }
 
+  function selectProject(projectName: string) {
+    const project = projectOptions.find((option) => option.value === projectName);
+
+    page.updateHeaderField("projectName", projectName);
+    page.updateHeaderField("projectCode", projectName ? (project?.label ?? page.values.projectCode) : "");
+  }
+
   return (
     <>
       <form onSubmit={page.handleSubmit} className="grid gap-5">
@@ -195,6 +265,14 @@ export function AccountsPayableVoucherFormPage() {
                     className={AttachedDropdownClassName}
                     value={page.values.partyCode}
                     readOnly={page.isReadonly}
+                    addAction={
+                      !page.isReadonly && partyStore.permissions.canCreate
+                        ? {
+                            label: "Add Party Name",
+                            onClick: () => setPartyAddTarget("header"),
+                          }
+                        : undefined
+                    }
                     options={partyOptions}
                     placeholder="Select Party Name"
                     searchPlaceholder="Search Party Name"
@@ -238,14 +316,27 @@ export function AccountsPayableVoucherFormPage() {
                 onChange={page.handleInputChange}
               />
 
-              <TextField
-                label="Project Name"
-                name="projectName"
-                value={page.values.projectName}
-                error={page.errors.projectName}
-                disabled={page.isReadonly}
-                onChange={page.handleInputChange}
-              />
+              <FieldShell controlId="accounts-payable-voucher-projectName" label="Project Name" error={page.errors.projectName}>
+                <AppAdvancedDropdown
+                  id="accounts-payable-voucher-projectName"
+                  className={AttachedDropdownClassName}
+                  value={page.values.projectName}
+                  readOnly={page.isReadonly}
+                  addAction={
+                    !page.isReadonly && responsibilityCenterStore.permissions.canCreate
+                      ? {
+                          label: "Add Project",
+                          onClick: () => setIsProjectNameDialogOpen(true),
+                        }
+                      : undefined
+                  }
+                  options={projectOptions}
+                  placeholder="Select Project Name"
+                  searchPlaceholder="Search Project Name"
+                  emptyMessage={getProjectDropdownEmptyMessage(projectOptionsQuery)}
+                  onChange={(value) => selectProject(String(value))}
+                />
+              </FieldShell>
 
               <TextareaField
                 label="Remarks"
@@ -269,9 +360,18 @@ export function AccountsPayableVoucherFormPage() {
                   id="accounts-payable-voucher-terms"
                   value={page.values.termId}
                   readOnly={page.isReadonly}
+                  addAction={
+                    !page.isReadonly && termsMaintenanceStore.permissions.canCreate
+                      ? {
+                          label: "Add Terms",
+                          onClick: () => setIsTermsDialogOpen(true),
+                        }
+                      : undefined
+                  }
                   options={termOptions}
                   placeholder="Select Terms of Payment"
                   searchPlaceholder="Search Terms of Payment"
+                  emptyMessage={getTermDropdownEmptyMessage(termOptionsQuery)}
                   showSelectedDetails
                   onChange={(value) => selectTerm(String(value))}
                 />
@@ -383,7 +483,11 @@ export function AccountsPayableVoucherFormPage() {
           </div>
         </section>
 
-        <AccountsPayableVoucherDataEntryTables page={page} />
+        <AccountsPayableVoucherDataEntryTables
+          canAddPartyName={partyStore.permissions.canCreate}
+          onAddPartyName={setPartyAddTarget}
+          page={page}
+        />
       </form>
 
       <AppDialog
@@ -413,6 +517,28 @@ export function AccountsPayableVoucherFormPage() {
         values={page.values}
         onClose={() => setIsReportPreviewOpen(false)}
         onGeneratePdf={() => openAccountsPayableVoucherPdf(page.values)}
+      />
+
+      <PartyManagementDrawer
+        isOpen={!page.isReadonly && partyAddTarget !== null}
+        isPending={partyStore.isMutating}
+        records={partyStore.records}
+        title="Add Party Name"
+        onAddRecord={partyStore.addRecord}
+        onClose={() => setPartyAddTarget(null)}
+        onCreateParty={handleCreateParty}
+      />
+
+      <TermsMaintenanceQuickAddDialog
+        isOpen={!page.isReadonly && isTermsDialogOpen}
+        onClose={() => setIsTermsDialogOpen(false)}
+        onSaved={handleCreateTerm}
+      />
+
+      <ProjectNameDialog
+        isOpen={!page.isReadonly && isProjectNameDialogOpen}
+        onClose={() => setIsProjectNameDialogOpen(false)}
+        onCreateProject={handleCreateProject}
       />
     </>
   );
@@ -576,6 +702,29 @@ function getPrimaryPartyAddress(record: AccountsPayableVoucherLookupParty) {
   return record.addresses.find((address) => address.isDefault) ?? record.addresses[0] ?? record.address;
 }
 
+function mapPartyRecordToLookupParty(record: PartyInformationRecord): AccountsPayableVoucherLookupParty {
+  return {
+    id: record.id,
+    address: record.address,
+    addresses: record.addresses,
+    classification: record.classification,
+    contactNo: record.contactNo,
+    contactPerson: record.contactPerson,
+    defaultPayableAccount: record.defaultPayableAccount || record.employeePayableAccount,
+    defaultPurchaseEwtTaxSourceKey: record.defaultPurchaseEwtTaxSourceKey,
+    defaultPurchaseFwtTaxSourceKey: record.defaultPurchaseFwtTaxSourceKey,
+    defaultPurchaseInputVatTaxSourceKey: record.defaultPurchaseInputVatTaxSourceKey,
+    defaultPurchaseWvatTaxSourceKey: record.defaultPurchaseWvatTaxSourceKey,
+    email: record.email,
+    name: getPartyDisplayName(record),
+    partyCodeNo: record.partyCodeNo,
+    partyTypes: record.partyTypes,
+    status: "Active",
+    termId: record.termId,
+    termName: record.termName,
+  };
+}
+
 function createPartyOptions(
   partyRecords: AccountsPayableVoucherLookupParty[],
   currentPartyCode: string,
@@ -602,6 +751,32 @@ function createPartyOptions(
   return options;
 }
 
+function createProjectOptions(
+  projectRecords: AccountsPayableVoucherLookupResponsibilityCenter[],
+  currentProjectCode: string,
+  currentProjectName: string,
+): AppAdvancedDropdownOption[] {
+  const options = projectRecords
+    .filter((project) => isActiveStatus(project.status) && isProjectResponsibilityCenter(project))
+    .map((project) => ({
+      description: project.typeName,
+      label: project.code,
+      name: project.name,
+      value: project.name,
+    }));
+
+  if (currentProjectName.trim()) {
+    addUniqueDropdownOption(options, {
+      description: "Current voucher value",
+      label: currentProjectCode || "Current project",
+      name: currentProjectName,
+      value: currentProjectName,
+    });
+  }
+
+  return options;
+}
+
 function createTermOptions(options: AppAdvancedDropdownOption[], currentTermId: string, currentTerms: string): AppAdvancedDropdownOption[] {
   const nextOptions = [...options];
 
@@ -614,6 +789,18 @@ function createTermOptions(options: AppAdvancedDropdownOption[], currentTermId: 
   }
 
   return nextOptions;
+}
+
+function addUniqueDropdownOption(options: AppAdvancedDropdownOption[], option: AppAdvancedDropdownOption) {
+  if (!option.value.trim()) {
+    return;
+  }
+
+  if (options.some((currentOption) => currentOption.value === option.value)) {
+    return;
+  }
+
+  options.push(option);
 }
 
 function createLookupTermOptions(terms: AccountsPayableVoucherLookupTerm[]): AppAdvancedDropdownOption[] {
@@ -668,6 +855,34 @@ function getPartyDropdownEmptyMessage(query: { isError: boolean; isFetching: boo
   }
 
   return "No active vendors or employees found.";
+}
+
+function getTermDropdownEmptyMessage(query: { isError: boolean; isFetching: boolean; isLoading: boolean }) {
+  if (query.isLoading || query.isFetching) {
+    return "Loading terms...";
+  }
+
+  if (query.isError) {
+    return "Could not load terms.";
+  }
+
+  return "No active terms found.";
+}
+
+function getProjectDropdownEmptyMessage(query: { isError: boolean; isFetching: boolean; isLoading: boolean }) {
+  if (query.isLoading || query.isFetching) {
+    return "Loading projects...";
+  }
+
+  if (query.isError) {
+    return "Could not load projects.";
+  }
+
+  return "No active projects found.";
+}
+
+function isProjectResponsibilityCenter(project: AccountsPayableVoucherLookupResponsibilityCenter) {
+  return project.typeName.trim().toLowerCase() === "project";
 }
 
 function isIndividualParty(record: AccountsPayableVoucherLookupParty | null) {

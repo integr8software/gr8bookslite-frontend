@@ -6,9 +6,11 @@ import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import {
   createAccountsPayableVoucher,
   fetchAccountsPayableVoucher,
+  fetchAccountsPayableVoucherExpenseTypeOptions,
   fetchAccountsPayableVoucherNumberSuggestion,
   fetchAccountsPayableVoucherPartyOptions,
   fetchAccountsPayableVoucherPayableAccountOptions,
+  fetchAccountsPayableVoucherPostingAccountOptions,
   fetchAccountsPayableVoucherResponsibilityCenterOptions,
   fetchAccountsPayableVoucherTermOptions,
   fetchAccountsPayableVouchers,
@@ -259,6 +261,7 @@ export function useAccountsPayableVoucherPartyOptions() {
       activeBranchId,
     ),
     refetchOnMount: "always",
+    refetchOnWindowFocus: "always",
     retry: false,
     staleTime: 0,
   });
@@ -276,8 +279,10 @@ export function useAccountsPayableVoucherTermOptions() {
       activeCompanyId,
       activeBranchId,
     ),
+    refetchOnMount: "always",
+    refetchOnWindowFocus: "always",
     retry: false,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
   });
 }
 
@@ -290,6 +295,42 @@ export function useAccountsPayableVoucherResponsibilityCenterOptions() {
     queryFn: fetchAccountsPayableVoucherResponsibilityCenterOptions,
     queryKey: AccountsPayableVoucherQueryKeys.lookup(
       "responsibility-centers",
+      activeCompanyId,
+      activeBranchId,
+    ),
+    refetchOnMount: "always",
+    refetchOnWindowFocus: "always",
+    retry: false,
+    staleTime: 0,
+  });
+}
+
+export function useAccountsPayableVoucherExpenseTypeOptions() {
+  const activeBranchId = useAppStore((state) => state.activeBranchId);
+  const activeCompanyId = useAppStore((state) => state.activeCompanyId);
+
+  return useQuery({
+    enabled: activeCompanyId !== null,
+    queryFn: fetchAccountsPayableVoucherExpenseTypeOptions,
+    queryKey: AccountsPayableVoucherQueryKeys.lookup(
+      "expense-types",
+      activeCompanyId,
+      activeBranchId,
+    ),
+    retry: false,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useAccountsPayableVoucherPostingAccountOptions() {
+  const activeBranchId = useAppStore((state) => state.activeBranchId);
+  const activeCompanyId = useAppStore((state) => state.activeCompanyId);
+
+  return useQuery({
+    enabled: activeCompanyId !== null,
+    queryFn: fetchAccountsPayableVoucherPostingAccountOptions,
+    queryKey: AccountsPayableVoucherQueryKeys.lookup(
+      "posting-accounts",
       activeCompanyId,
       activeBranchId,
     ),

@@ -120,7 +120,9 @@ export function useDisbursementVoucherActionPage() {
   const totalCredit = useMemo(() => values.lineEntries.reduce((sum, entry) => sum + entry.credit, 0), [values.lineEntries]);
   const selectedBankAccount = bankAccounts.find((account) => account.accountCode === values.paymentDetails.bankAccountCode) ?? null;
   const selectedPaymentTypeRecord = paymentTypeStore.paymentTypes.find((record) => record.paymentType === values.paymentMethod) ?? null;
-  const isRecordMissing = (!selectedTransaction && mode !== "add") || (mode === "edit" && !existingVoucher);
+  const routePaymentMethod = existingVoucher?.paymentMethod ?? selectedTransaction?.paymentMethod ?? "";
+  const isCashVoucherRoute = (mode !== "add" || Boolean(routeTransactionId)) && routePaymentMethod === "Cash";
+  const isRecordMissing = (!selectedTransaction && mode !== "add") || (mode === "edit" && !existingVoucher) || isCashVoucherRoute;
 
   useEffect(() => {
     clearAccountingGridSession();
@@ -183,13 +185,10 @@ export function useDisbursementVoucherActionPage() {
     } = {},
   ) {
     const nextPaymentMethod = overrides.paymentMethod ?? values.paymentMethod;
-    const paymentTypeRecord = paymentTypeStore.paymentTypes.find((record) => record.paymentType === nextPaymentMethod) ?? null;
-    const isCashPayment = paymentTypeRecord?.type === "Cash" || nextPaymentMethod.trim().toLowerCase() === "cash";
     const bankAccount = overrides.bankAccount !== undefined ? overrides.bankAccount : selectedBankAccount;
 
     return createAutomaticAccountingEntries(entries, {
       bankAccount,
-      isCashPayment,
       paymentMethod: nextPaymentMethod,
     });
   }
@@ -229,14 +228,11 @@ export function useDisbursementVoucherActionPage() {
     }));
   }
 
-  function syncCashEntriesForPaymentType(paymentMethod: string) {
-    const paymentTypeRecord = paymentTypeStore.paymentTypes.find((record) => record.paymentType === paymentMethod) ?? null;
-    const isCashPayment = paymentTypeRecord?.type === "Cash" || paymentMethod.trim().toLowerCase() === "cash";
-
+  function syncEntriesForPaymentType(paymentMethod: string) {
     updateField(
       DisbursementVoucherLineEntriesField,
       createAutomaticEntriesForPayment(values.lineEntries, {
-        bankAccount: isCashPayment ? null : selectedBankAccount,
+        bankAccount: selectedBankAccount,
         paymentMethod,
       }),
     );
@@ -254,7 +250,7 @@ export function useDisbursementVoucherActionPage() {
       transferTo: "",
       transferToBank: "",
     });
-    syncCashEntriesForPaymentType(paymentMethod);
+    syncEntriesForPaymentType(paymentMethod);
   }
 
   function handleBankAccountChange(accountCode: string) {

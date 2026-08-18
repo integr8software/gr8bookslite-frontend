@@ -779,6 +779,12 @@ manual decimal input consistently across transaction forms.
   context. Add a description only when the grid needs essential instructions
   that are not already communicated by those elements. Do not add generic
   explanatory copy that merely restates what users enter in the table.
+- Treat the Remarks editor subtitle or description as optional. Omit it by
+  default, especially generic copy such as `Accounting entry`; show a subtitle
+  only when it adds row-specific context that is not already clear from the
+  dialog title and field label. When the dialog title is `Remarks`, do not add
+  a redundant `Details` field label; render the visible title itself as the
+  textarea's `<label>` with a matching `htmlFor`/`id` relationship.
 - Pass a singular semantic `emptyRowLabel` using the itemization module name.
   The shared Data Entry count formatter renders the header badge and footer
   count in title case and pluralizes it when needed, following the generic
@@ -1264,6 +1270,12 @@ columns.
 `<ModuleName>Validation.ts`
 
 - Zod schemas and validation helpers.
+- Use Zod as the default validation mechanism whenever the rule can be
+  represented by a schema or refinement. This includes required fields,
+  conditional and cross-field rules, row completeness, duplicate detection,
+  and debit/credit balancing. Do not replace applicable Zod validation with
+  ad hoc condition chains in hooks, UI, or data files; use manual validation
+  only for a rule that cannot be expressed reasonably in Zod, and document why.
 - Includes required fields, duplicate line checks, debit/credit balancing,
   conditional requirements, incomplete row checks, and mapping Zod errors to the
   feature error shape.

@@ -16,7 +16,7 @@ export const DisbursementVoucherQueryKeys = {
 
 export const DisbursementVoucherTablePaginationStorageKey = "cash-disbursement-disbursement-voucher";
 
-export const DisbursementVoucherTablePreferencesStorageKey = "gr8booksneo:disbursement-voucher:table-preferences:v2";
+export const DisbursementVoucherTablePreferencesStorageKey = "gr8booksneo:disbursement-voucher:table-preferences";
 export const DisbursementVoucherTablePreferencesModuleKey = "cash-disbursement:disbursement-voucher";
 export const DisbursementVoucherTransactionStorageKey = "gr8books.disbursement-voucher.transactions";
 export const DisbursementVoucherRecordStorageKey = "gr8books.disbursement-voucher.vouchers";

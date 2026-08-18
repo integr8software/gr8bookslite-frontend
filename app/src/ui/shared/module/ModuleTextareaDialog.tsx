@@ -1,16 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 
 type ModuleTextareaDialogProps = {
-  detailLabel?: string;
+  detailLabel?: string | null;
   isOpen: boolean;
   isReadonly: boolean;
   onClose: () => void;
   onSave: (value: string) => void;
-  subtitle: string;
+  subtitle?: string;
   textareaId: string;
   title: string;
   value: string;
@@ -34,10 +35,16 @@ export function ModuleTextareaDialog({
     return null;
   }
 
-  return (
+  const portalElement = typeof document === "undefined" ? null : document.body;
+
+  if (!portalElement) {
+    return null;
+  }
+
+  return createPortal(
     <div
       role="presentation"
-      className="fixed inset-0 z-80 flex items-center justify-center bg-slate-950/35 px-4 py-6 backdrop-blur-sm"
+      className="fixed inset-0 z-[150] flex items-center justify-center bg-slate-950/35 px-4 py-6 backdrop-blur-sm"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
           onClose();
@@ -52,10 +59,16 @@ export function ModuleTextareaDialog({
       >
         <div className="flex items-start justify-between gap-4 border-b border-darknavy/10 px-5 py-4">
           <div className="min-w-0">
-            <h2 id={titleId} className="text-lg font-semibold text-darknavy">
-              {title}
-            </h2>
-            <p className="mt-1 truncate text-sm text-darknavy/55">{subtitle}</p>
+            {detailLabel ? (
+              <h2 id={titleId} className="text-lg font-semibold text-darknavy">
+                {title}
+              </h2>
+            ) : (
+              <label id={titleId} htmlFor={textareaId} className="block text-lg font-semibold text-darknavy">
+                {title}
+              </label>
+            )}
+            {subtitle ? <p className="mt-1 truncate text-sm text-darknavy/55">{subtitle}</p> : null}
           </div>
           <button
             type="button"
@@ -67,15 +80,17 @@ export function ModuleTextareaDialog({
           </button>
         </div>
         <div className="min-h-0 overflow-y-auto px-5 py-4">
-          <label htmlFor={textareaId} className="text-sm font-semibold text-darknavy">
-            {detailLabel}
-          </label>
-          <AppLimitedTextarea
-            id={textareaId}
-            value={draft}
+          {detailLabel ? (
+            <label htmlFor={textareaId} className="text-sm font-semibold text-darknavy">
+              {detailLabel}
+            </label>
+          ) : null}
+            <AppLimitedTextarea
+              id={textareaId}
+              value={draft}
             readOnly={isReadonly}
             onChange={(event) => setDraft(event.target.value)}
-            className="mt-2 min-h-48 w-full rounded-lg border border-darknavy/12 bg-white px-3 py-3 text-sm text-darknavy outline-none transition focus:border-skyblue/45 focus:ring-2 focus:ring-skyblue/20 read-only:bg-offwhite/65"
+            className={`${detailLabel ? "mt-2 " : ""}min-h-48 w-full rounded-lg border border-darknavy/12 bg-white px-3 py-3 text-sm text-darknavy outline-none transition focus:border-skyblue/45 focus:ring-2 focus:ring-skyblue/20 read-only:bg-offwhite/65`}
             counterMode="used"
           />
         </div>
@@ -110,6 +125,7 @@ export function ModuleTextareaDialog({
           </div>
         </div>
       </section>
-    </div>
+    </div>,
+    portalElement,
   );
 }

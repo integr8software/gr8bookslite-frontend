@@ -262,7 +262,7 @@ function createVoucherPaymentTypeOptions({
   paymentTypeRecords: AppPaymentTypeRecord[];
 }): AppAdvancedDropdownOption[] {
   return paymentTypeRecords
-    .filter((record) => record.status === "Active")
+    .filter((record) => record.status === "Active" && (record.type === "Bank Transfer" || record.type === "Check"))
     .map((record) => ({
       label: record.type,
       name: record.paymentType,

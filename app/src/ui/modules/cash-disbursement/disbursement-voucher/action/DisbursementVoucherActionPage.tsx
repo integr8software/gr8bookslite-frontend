@@ -83,7 +83,7 @@ function DisbursementVoucherActionContent({ voucherAction }: { voucherAction: Di
   return (
     <>
       <DisbursementVoucherActionHeader
-        copyFromRecords={DisbursementVoucherCopyFromRecords}
+        copyFromRecords={DisbursementVoucherCopyFromRecords.filter((record) => record.templateValues.paymentMethod !== "Cash")}
         copyFromSources={DisbursementVoucherCopySources}
         mode={voucherAction.isReadonly ? "view" : voucherAction.mode}
         returnHref={voucherAction.returnHref}

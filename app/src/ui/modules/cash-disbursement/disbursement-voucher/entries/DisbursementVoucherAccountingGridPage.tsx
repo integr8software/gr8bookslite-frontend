@@ -402,7 +402,6 @@ export function DisbursementVoucherAccountingGridPage() {
           inputName={context.fieldName}
           isReadonly={false}
           value={row.particulars}
-          subtitle={row.accountName || "Accounting entry"}
           textareaId={`${context.fieldId}-dialog`}
           onChange={(value) => updateRow(row.id, "particulars", value)}
         />

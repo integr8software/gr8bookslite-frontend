@@ -3,8 +3,6 @@ import { getModuleChartAccounts } from "@/app/src/data/shared/accounts/ModuleCha
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import {
   AccountingPartyFallbackValuePrefix,
-  CashInHandAccountCode,
-  CashInHandAccountName,
   DefaultDisbursementEntryColumnOrder,
   DefaultExpenseEntryColumnOrder,
   ExpandedWithholdingTaxAccountCode,
@@ -133,17 +131,8 @@ export function isExpenseEntryColumnId(columnId: string): columnId is ExpenseEnt
   return DefaultExpenseEntryColumnOrder.includes(columnId as ExpenseEntryColumnId);
 }
 
-export function isCashInHandEntry(entry: DisbursementLineEntry) {
-  return entry.accountCode === CashInHandAccountCode || entry.accountName.trim().toLowerCase() === CashInHandAccountName.toLowerCase();
-}
-
 export function isPaymentCreditEntry(entry: DisbursementLineEntry) {
-  return (
-    isCashInHandEntry(entry) ||
-    entry.id.startsWith("auto-credit-") ||
-    entry.id.startsWith("payment-credit-") ||
-    entry.id.startsWith("cash-in-hand-")
-  );
+  return entry.id.startsWith("auto-credit-") || entry.id.startsWith("payment-credit-");
 }
 
 export function isGeneratedVatEntry(entry: DisbursementLineEntry) {
@@ -189,7 +178,6 @@ export function createAutomaticAccountingEntries(
   entries: DisbursementLineEntry[],
   options: {
     bankAccount?: DisbursementVoucherBankAccount | null;
-    isCashPayment: boolean;
     paymentMethod: string;
   },
 ) {
@@ -278,23 +266,14 @@ export function createAutomaticAccountingEntries(
     });
   }
 
-  if (hasNonZeroAccountingAmount(totalDisbursementAmount) && (options.isCashPayment || options.bankAccount)) {
-    const creditAccount = options.isCashPayment
-      ? {
-          accountCode: CashInHandAccountCode,
-          accountName: CashInHandAccountName,
-        }
-      : {
-          accountCode: options.bankAccount?.accountCode ?? "",
-          accountName: options.bankAccount?.accountTitle ?? "",
-        };
+  if (hasNonZeroAccountingAmount(totalDisbursementAmount) && options.bankAccount) {
     const paymentEntryAmounts = getSignedAccountingEntryAmounts(totalDisbursementAmount, "credit");
 
     generatedEntries.push({
       ...createBlankDisbursementLineEntry(),
       ...commonFields,
-      accountCode: creditAccount.accountCode,
-      accountName: creditAccount.accountName,
+      accountCode: options.bankAccount.accountCode,
+      accountName: options.bankAccount.accountTitle,
       debit: paymentEntryAmounts.debit,
       credit: paymentEntryAmounts.credit,
       id: "auto-credit-current",

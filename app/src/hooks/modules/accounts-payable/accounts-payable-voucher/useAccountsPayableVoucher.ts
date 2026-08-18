@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+import { AccountsPayableVoucherrefetchOnMount } from "@/app/src/constants/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherConstants";
 import {
   createAccountsPayableVoucher,
   fetchAccountsPayableVoucher,
@@ -260,8 +261,8 @@ export function useAccountsPayableVoucherPartyOptions() {
       activeCompanyId,
       activeBranchId,
     ),
-    refetchOnMount: "always",
-    refetchOnWindowFocus: "always",
+    refetchOnMount: AccountsPayableVoucherrefetchOnMount[0],
+    refetchOnWindowFocus: AccountsPayableVoucherrefetchOnMount[0],
     retry: false,
     staleTime: 0,
   });
@@ -279,8 +280,8 @@ export function useAccountsPayableVoucherTermOptions() {
       activeCompanyId,
       activeBranchId,
     ),
-    refetchOnMount: "always",
-    refetchOnWindowFocus: "always",
+    refetchOnMount: AccountsPayableVoucherrefetchOnMount[0],
+    refetchOnWindowFocus: AccountsPayableVoucherrefetchOnMount[0],
     retry: false,
     staleTime: 0,
   });
@@ -298,8 +299,8 @@ export function useAccountsPayableVoucherResponsibilityCenterOptions() {
       activeCompanyId,
       activeBranchId,
     ),
-    refetchOnMount: "always",
-    refetchOnWindowFocus: "always",
+    refetchOnMount: AccountsPayableVoucherrefetchOnMount[0],
+    refetchOnWindowFocus: AccountsPayableVoucherrefetchOnMount[0],
     retry: false,
     staleTime: 0,
   });

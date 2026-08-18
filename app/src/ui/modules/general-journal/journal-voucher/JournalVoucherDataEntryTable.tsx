@@ -8,6 +8,7 @@ import {
   JournalVoucherLineColumnWidths,
   JournalVoucherProtectedLineColumnIds,
   JournalVoucherVatTypeOptions,
+  JournalVoucherDefaultStatus,
 } from "@/app/src/constants/modules/general-journal/journal-voucher/JournalVoucherConstants";
 import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import { formatJournalVoucherAmount } from "@/app/src/data/modules/general-journal/journal-voucher/JournalVoucherData";
@@ -64,7 +65,7 @@ export function JournalVoucherDataEntryTable({
         normalBalance: "Debit" as const,
         statementGroup: "",
         statementSection: account.accountNature,
-        status: account.status === "ACTIVE" ? ("Active" as const) : ("Inactive" as const),
+        status: account.status === JournalVoucherDefaultStatus[0] ? ("Active" as const) : ("Inactive" as const),
       })),
     [journalVoucherLookups.data?.accounts],
   );

@@ -2,6 +2,7 @@ import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
 import type {
   JournalVoucherRecord,
   JournalVoucherStatus,
+  JournalVoucherLookupAccount,
 } from "@/app/src/types/modules/general-journal/journal-voucher/JournalVoucherTypes";
 
 export type JournalVoucherListQuery = {
@@ -179,14 +180,7 @@ export async function fetchJournalVoucherNumberSuggestion(branchUnitId?: number 
   return response.data;
 }
 
-export type JournalVoucherLookupAccount = {
-  accountCode: string;
-  accountNature: string;
-  accountTitle: string;
-  accountType: string;
-  id: string;
-  status: string;
-};
+
 
 export type JournalVoucherLookupParty = {
   id: string;

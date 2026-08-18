@@ -67,7 +67,7 @@ import {
   insertDisbursementEntryRow,
   moveDisbursementEntryRow,
   removeDisbursementEntryRow,
-} from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/utils/DisbursementVoucherEntryRowUtils";
+} from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherEntryRowData";
 
 export function useDisbursementVoucherActionPage() {
   const router = useRouter();
@@ -100,7 +100,7 @@ export function useDisbursementVoucherActionPage() {
   const [isDefaultAccountDrawerOpen, setIsDefaultAccountDrawerOpen] = useState(false);
   const [isPartyNameDrawerOpen, setIsPartyNameDrawerOpen] = useState(false);
   const [isPaymentTypeDrawerOpen, setIsPaymentTypeDrawerOpen] = useState(false);
-  const [isProjectNameDialogOpen, setIsProjectNameDialogOpen] = useState(false);
+  const [isProjectNameDrawerOpen, setIsProjectNameDrawerOpen] = useState(false);
   const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
   const [isResponsibilityCenterDrawerOpen, setIsResponsibilityCenterDrawerOpen] = useState(false);
   const [pendingResponsibilityCenterEntryId, setPendingResponsibilityCenterEntryId] = useState<string | null>(null);
@@ -314,17 +314,12 @@ export function useDisbursementVoucherActionPage() {
   function replaceEntriesWithAutomaticRows(nextEntries: DisbursementLineEntry[]) {
     updateField(
       DisbursementVoucherLineEntriesField,
-      createAutomaticEntriesForPayment(
-        nextEntries.length > 0 ? nextEntries : [createBlankEntry()],
-      ),
+      createAutomaticEntriesForPayment(nextEntries.length > 0 ? nextEntries : [createBlankEntry()]),
     );
   }
 
   function handleAddEntries(count = 1) {
-    updateField(DisbursementVoucherLineEntriesField, [
-      ...values.lineEntries,
-      ...createDisbursementEntryRows(count, createBlankEntry),
-    ]);
+    updateField(DisbursementVoucherLineEntriesField, [...values.lineEntries, ...createDisbursementEntryRows(count, createBlankEntry)]);
     setErrors((current) => ({
       ...current,
       entryDraft: undefined,
@@ -372,39 +367,20 @@ export function useDisbursementVoucherActionPage() {
   }
 
   function handleInsertEntry(entryId: string, position: "above" | "below") {
-    updateField(
-      DisbursementVoucherLineEntriesField,
-      insertDisbursementEntryRow(
-        values.lineEntries,
-        entryId,
-        position,
-        createBlankEntry,
-      ),
-    );
+    updateField(DisbursementVoucherLineEntriesField, insertDisbursementEntryRow(values.lineEntries, entryId, position, createBlankEntry));
     setErrors((current) => ({ ...current, lineEntries: undefined }));
   }
 
   function handleDuplicateEntry(entryId: string) {
     updateField(
       DisbursementVoucherLineEntriesField,
-      duplicateDisbursementEntryRow(
-        values.lineEntries,
-        entryId,
-        () => `line-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      ),
+      duplicateDisbursementEntryRow(values.lineEntries, entryId, () => `line-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`),
     );
     setErrors((current) => ({ ...current, lineEntries: undefined }));
   }
 
   function handleMoveEntry(fromEntryId: string, toEntryId: string) {
-    updateField(
-      DisbursementVoucherLineEntriesField,
-      moveDisbursementEntryRow(
-        values.lineEntries,
-        fromEntryId,
-        toEntryId,
-      ),
-    );
+    updateField(DisbursementVoucherLineEntriesField, moveDisbursementEntryRow(values.lineEntries, fromEntryId, toEntryId));
     setErrors((current) => ({ ...current, lineEntries: undefined }));
   }
 
@@ -434,12 +410,8 @@ export function useDisbursementVoucherActionPage() {
       transactionId: values.transactionId.trim() || createManualDisbursementTransactionId(),
     };
     const shouldValidate = status !== DisbursementVoucherStatuses.draft;
-    const detailsErrors = shouldValidate
-      ? validateDisbursementVoucherDetails(valuesForSubmit)
-      : {};
-    const entryErrors = shouldValidate
-      ? validateDisbursementVoucherEntries(valuesForSubmit)
-      : {};
+    const detailsErrors = shouldValidate ? validateDisbursementVoucherDetails(valuesForSubmit) : {};
+    const entryErrors = shouldValidate ? validateDisbursementVoucherEntries(valuesForSubmit) : {};
     const nextErrors = { ...detailsErrors, ...entryErrors };
 
     if (Object.keys(nextErrors).length > 0) {
@@ -533,7 +505,7 @@ export function useDisbursementVoucherActionPage() {
   function handleCreateProject(project: ResponsibilityCenter) {
     updateField("projectName", project.name);
     updateField("costCenter", project.code);
-    setIsProjectNameDialogOpen(false);
+    setIsProjectNameDrawerOpen(false);
   }
 
   function handleOpenResponsibilityCenterDrawer(entryId: string) {
@@ -572,7 +544,7 @@ export function useDisbursementVoucherActionPage() {
     isExchangeRateLoading: transactionCurrency.isExchangeRateLoading,
     isPartyNameDrawerOpen,
     isPaymentTypeDrawerOpen,
-    isProjectNameDialogOpen,
+    isProjectNameDrawerOpen,
     isReadonly,
     isRecordMissing,
     isReportPreviewOpen,
@@ -614,7 +586,7 @@ export function useDisbursementVoucherActionPage() {
     setIsDefaultAccountDrawerOpen,
     setIsPartyNameDrawerOpen,
     setIsPaymentTypeDrawerOpen,
-    setIsProjectNameDialogOpen,
+    setIsProjectNameDrawerOpen,
     setIsReportPreviewOpen,
     handleCloseResponsibilityCenterDrawer,
     cancelDisbursementVoucherSubmit,
@@ -625,3 +597,5 @@ export function useDisbursementVoucherActionPage() {
     updatePaymentDetails,
   };
 }
+
+export type { DisbursementVoucherActionPageState } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";

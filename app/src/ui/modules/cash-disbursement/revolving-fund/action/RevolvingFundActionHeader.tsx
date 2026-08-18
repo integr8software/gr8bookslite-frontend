@@ -8,16 +8,15 @@ import {
   RevolvingFundStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/revolving-fund/RevolvingFundConstants";
 import type { RevolvingFundActionPageState } from "@/app/src/hooks/modules/cash-disbursement/revolving-fund/useRevolvingFundActionPage";
+import type { RevolvingFundConfirmationAction } from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";
 import { RevolvingFundActionHistory } from "@/app/src/ui/modules/cash-disbursement/revolving-fund/action/RevolvingFundActionHistory";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleSaveButton } from "@/app/src/ui/shared/module/ModuleSaveButton";
 import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 
-type Confirmation = "save" | "draft" | "approve" | "disapprove" | "cancel";
-
 export function RevolvingFundActionHeader({ onPreview, page }: { onPreview: () => void; page: RevolvingFundActionPageState }) {
-  const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
+  const [confirmation, setConfirmation] = useState<RevolvingFundConfirmationAction | null>(null);
   const transactionNo = page.record?.transactionNo ?? page.values.transactionNo;
   const title =
     page.mode === "add" ? (
@@ -117,7 +116,7 @@ export function RevolvingFundActionHeader({ onPreview, page }: { onPreview: () =
   );
 }
 
-function getDialogTitle(action: Confirmation) {
+function getDialogTitle(action: RevolvingFundConfirmationAction) {
   return action === "save"
     ? "Save revolving fund?"
     : action === "draft"
@@ -128,9 +127,9 @@ function getDialogTitle(action: Confirmation) {
           ? "Disapprove revolving fund?"
           : "Cancel revolving fund?";
 }
-function getDialogDescription(action: Confirmation, recordLabel: string) {
+function getDialogDescription(action: RevolvingFundConfirmationAction, recordLabel: string) {
   return `This will ${action === "save" ? "save and submit" : action} ${recordLabel}.`;
 }
-function getConfirmLabel(action: Confirmation) {
+function getConfirmLabel(action: RevolvingFundConfirmationAction) {
   return action === "save" ? "Save and Submit" : action === "draft" ? "Save as Draft" : action.charAt(0).toUpperCase() + action.slice(1);
 }

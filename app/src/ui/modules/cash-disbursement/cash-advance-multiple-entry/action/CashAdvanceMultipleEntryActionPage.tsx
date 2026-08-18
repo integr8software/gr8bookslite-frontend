@@ -15,25 +15,25 @@ import {
   createCashAdvanceMultipleEntryResponsibilityCenterDropdownOptions,
   createCashAdvanceMultipleEntryResponsibilityCenterInitialValues,
 } from "@/app/src/data/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryData";
+import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
 import {
   replaceCashAdvanceMultipleEntryRow,
   useCashAdvanceMultipleEntryActionForm,
 } from "@/app/src/hooks/modules/cash-disbursement/cash-advance-multiple-entry/useCashAdvanceMultipleEntry";
 import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenter";
+import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
 import type {
   CashAdvanceMultipleEntryActionMode,
   CashAdvanceMultipleEntryDetailsTab,
 } from "@/app/src/types/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryTypes";
+import type { PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";
 import { CashAdvanceMultipleEntryDetailsFields } from "@/app/src/ui/modules/cash-disbursement/cash-advance-multiple-entry/action/CashAdvanceMultipleEntryDetailsFields";
 import { CashAdvanceMultipleEntryActionHeader } from "@/app/src/ui/modules/cash-disbursement/cash-advance-multiple-entry/action/CashAdvanceMultipleEntryActionHeader";
 import { CashAdvanceMultipleEntryEntrySection } from "@/app/src/ui/modules/cash-disbursement/cash-advance-multiple-entry/entries/CashAdvanceMultipleEntryEntrySection";
 import { CashAdvanceMultipleEntryReportPreview } from "@/app/src/ui/modules/cash-disbursement/cash-advance-multiple-entry/reports/CashAdvanceMultipleEntryReportPreview";
 import { CashAdvanceMultipleEntryFileAttachmentFields } from "@/app/src/ui/modules/cash-disbursement/cash-advance-multiple-entry/action/CashAdvanceMultipleEntryFileAttachmentFields";
 import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
-import {
-  AppPartyDialog,
-  mapPartyRecordToPartyValue,
-} from "@/app/src/ui/shared/transaction-setup/AppPartyDialog";
+import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
 import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 
@@ -43,15 +43,12 @@ export function CashAdvanceMultipleEntryActionPage() {
   const router = useRouter();
   const mode = getActionMode(pathname);
   const recordId = typeof params.recordId === "string" ? params.recordId : undefined;
-  const [activeDetailsTab, setActiveDetailsTab] =
-    useState<CashAdvanceMultipleEntryDetailsTab>("details");
-  const [isPartyDialogOpen, setIsPartyDialogOpen] = useState(false);
+  const [activeDetailsTab, setActiveDetailsTab] = useState<CashAdvanceMultipleEntryDetailsTab>("details");
+  const [isPartyDrawerOpen, setIsPartyDrawerOpen] = useState(false);
   const [isResponsibilityCenterDrawerOpen, setIsResponsibilityCenterDrawerOpen] = useState(false);
   const [pendingAccountingPartyRowId, setPendingAccountingPartyRowId] = useState<string | null>(null);
-  const [pendingAccountingResponsibilityCenterRowId, setPendingAccountingResponsibilityCenterRowId] =
-    useState<string | null>(null);
-  const [pendingItemResponsibilityCenterRowId, setPendingItemResponsibilityCenterRowId] =
-    useState<string | null>(null);
+  const [pendingAccountingResponsibilityCenterRowId, setPendingAccountingResponsibilityCenterRowId] = useState<string | null>(null);
+  const [pendingItemResponsibilityCenterRowId, setPendingItemResponsibilityCenterRowId] = useState<string | null>(null);
   const [pendingItemPartyRowId, setPendingItemPartyRowId] = useState<string | null>(null);
   const [isProjectDrawerOpen, setIsProjectDrawerOpen] = useState(false);
   const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
@@ -59,6 +56,7 @@ export function CashAdvanceMultipleEntryActionPage() {
     router.push(CashAdvanceMultipleEntryHref);
   });
   const responsibilityCenterStore = useResponsibilityCenterStore();
+  const partyStore = usePartyManagementStore();
   const projectOptions = useMemo(
     () =>
       createCashAdvanceMultipleEntryProjectOptions({
@@ -69,11 +67,7 @@ export function CashAdvanceMultipleEntryActionPage() {
     [form.values.projectCode, form.values.projectRef, responsibilityCenterStore.centers],
   );
   const projectInitialValues = useMemo(
-    () =>
-      createCashAdvanceMultipleEntryProjectInitialValues(
-        responsibilityCenterStore.classifications,
-        responsibilityCenterStore.types,
-      ),
+    () => createCashAdvanceMultipleEntryProjectInitialValues(responsibilityCenterStore.classifications, responsibilityCenterStore.types),
     [responsibilityCenterStore.classifications, responsibilityCenterStore.types],
   );
   const responsibilityCenterOptions = useMemo(
@@ -130,9 +124,9 @@ export function CashAdvanceMultipleEntryActionPage() {
             isReadonly={isReadonly}
             projectOptions={projectOptions}
             values={form.values}
-            onOpenPartyDialog={() => {
+            onOpenPartyDrawer={() => {
               setPendingItemPartyRowId(null);
-              setIsPartyDialogOpen(true);
+              setIsPartyDrawerOpen(true);
             }}
             onOpenProjectDrawer={() => setIsProjectDrawerOpen(true)}
             onUpdateCurrency={form.updateCurrency}
@@ -153,9 +147,9 @@ export function CashAdvanceMultipleEntryActionPage() {
             onAddAccountingRows={form.addAccountingEntries}
             onAddRows={form.addItems}
             onAccountingRowsChange={form.updateAccountingEntries}
-            onOpenAccountingPartyDialog={(rowId) => {
+            onOpenAccountingPartyDrawer={(rowId) => {
               setPendingAccountingPartyRowId(rowId);
-              setIsPartyDialogOpen(true);
+              setIsPartyDrawerOpen(true);
             }}
             onOpenAccountingResponsibilityCenterDrawer={(rowId) => {
               setPendingAccountingResponsibilityCenterRowId(rowId);
@@ -167,53 +161,57 @@ export function CashAdvanceMultipleEntryActionPage() {
               setPendingItemResponsibilityCenterRowId(rowId);
               setIsResponsibilityCenterDrawerOpen(true);
             }}
-            onOpenItemPartyDialog={(rowId) => {
+            onOpenItemPartyDrawer={(rowId) => {
               setPendingItemPartyRowId(rowId);
-              setIsPartyDialogOpen(true);
+              setIsPartyDrawerOpen(true);
             }}
             responsibilityCenterOptions={responsibilityCenterOptions}
             onRowsChange={form.updateItems}
           />
         ) : null}
       </section>
-      <AppPartyDialog
-        isOpen={!isReadonly && isPartyDialogOpen}
-        onClose={() => {
-          setPendingAccountingPartyRowId(null);
-          setPendingItemPartyRowId(null);
-          setIsPartyDialogOpen(false);
-        }}
-        onSelect={(record) => {
-          const partyValue = mapPartyRecordToPartyValue(record);
+      {!isReadonly && isPartyDrawerOpen ? (
+        <PartyManagementDrawer
+          isOpen
+          isPending={partyStore.isMutating}
+          records={partyStore.records}
+          suggestedPartyType="Employee"
+          title="Add Employee"
+          onAddRecord={partyStore.addRecord}
+          onClose={() => {
+            setPendingAccountingPartyRowId(null);
+            setPendingItemPartyRowId(null);
+            setIsPartyDrawerOpen(false);
+          }}
+          onCreateParty={(record: PartyInformationRecord) => {
+            const partyName = getPartyDisplayName(record);
 
-          if (pendingAccountingPartyRowId) {
-            form.updateAccountingEntries(
-              replaceCashAdvanceMultipleEntryRow(
-                form.values.accountingEntries,
-                pendingAccountingPartyRowId,
-                {
-                  partyCode: partyValue.partyCode,
-                  partyName: partyValue.partyName,
-                },
-              ),
-            );
-          } else if (pendingItemPartyRowId) {
-            form.updateItems(
-              replaceCashAdvanceMultipleEntryRow(form.values.items, pendingItemPartyRowId, {
-                partyCode: partyValue.partyCode,
-                partyName: partyValue.partyName,
-              }),
-            );
-          } else {
-            form.updateField("partyCode", partyValue.partyCode);
-            form.updateField("partyName", partyValue.partyName);
-          }
+            if (pendingAccountingPartyRowId) {
+              form.updateAccountingEntries(
+                replaceCashAdvanceMultipleEntryRow(form.values.accountingEntries, pendingAccountingPartyRowId, {
+                  partyCode: record.partyCodeNo,
+                  partyName,
+                }),
+              );
+            } else if (pendingItemPartyRowId) {
+              form.updateItems(
+                replaceCashAdvanceMultipleEntryRow(form.values.items, pendingItemPartyRowId, {
+                  partyCode: record.partyCodeNo,
+                  partyName,
+                  cashAdvanceBalance: record.cashAdvanceLimit ?? "",
+                }),
+              );
+            } else {
+              form.updateField("partyCode", record.partyCodeNo);
+              form.updateField("partyName", partyName);
+            }
 
-          setPendingAccountingPartyRowId(null);
-          setPendingItemPartyRowId(null);
-          setIsPartyDialogOpen(false);
-        }}
-      />
+            setPendingAccountingPartyRowId(null);
+            setPendingItemPartyRowId(null);
+            setIsPartyDrawerOpen(false);
+          }}
+        />
+      ) : null}
       <ResponsibilityCenterDrawer
         initialValues={projectInitialValues}
         isOpen={!isReadonly && isProjectDrawerOpen}
@@ -237,19 +235,15 @@ export function CashAdvanceMultipleEntryActionPage() {
         onSaved={(center) => {
           if (pendingAccountingResponsibilityCenterRowId) {
             form.updateAccountingEntries(
-              replaceCashAdvanceMultipleEntryRow(
-                form.values.accountingEntries,
-                pendingAccountingResponsibilityCenterRowId,
-                { responsibilityCenter: center.name },
-              ),
+              replaceCashAdvanceMultipleEntryRow(form.values.accountingEntries, pendingAccountingResponsibilityCenterRowId, {
+                responsibilityCenter: center.name,
+              }),
             );
           } else if (pendingItemResponsibilityCenterRowId) {
             form.updateItems(
-              replaceCashAdvanceMultipleEntryRow(
-                form.values.items,
-                pendingItemResponsibilityCenterRowId,
-                { responsibilityCenter: center.name },
-              ),
+              replaceCashAdvanceMultipleEntryRow(form.values.items, pendingItemResponsibilityCenterRowId, {
+                responsibilityCenter: center.name,
+              }),
             );
           }
 

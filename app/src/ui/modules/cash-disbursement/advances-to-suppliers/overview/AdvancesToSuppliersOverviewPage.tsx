@@ -109,7 +109,10 @@ function AdvancesToSuppliersToolbar({ page }: { page: AdvancesToSuppliersOvervie
         <DateRangePicker label="Date Range" value={page.dateRange} onChange={page.setDateRange} />
         <AmountRangePicker label="Total Amount" value={page.amountRange} onChange={page.setAmountRange} />
       </div>
-      <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 md:grid-cols-[minmax(0,1fr)_3.25rem_3.25rem] 2xl:w-[21.5rem]" data-spotlight-id="maintenance-table-options">
+      <div
+        className="grid grid-cols-[2fr_1fr_1fr] gap-2 md:grid-cols-[minmax(0,1fr)_3.25rem_3.25rem] 2xl:w-[21.5rem]"
+        data-spotlight-id="maintenance-table-options"
+      >
         <ModuleTableFilterSelect
           label="Status"
           value={page.statusFilter}

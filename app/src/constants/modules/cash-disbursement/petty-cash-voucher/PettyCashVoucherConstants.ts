@@ -8,42 +8,59 @@ import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData"
 
 export const PettyCashVoucherHref = getModuleRoute("PCV");
 
-export const PettyCashVoucherPaginationStorageKey =
-  "petty-cash-voucher-table";
+export const PettyCashVoucherQueryKeys = {
+  vouchers: () => ["cash-disbursement", "petty-cash-voucher", "vouchers"] as const,
+};
+
+export const PettyCashVoucherPaginationStorageKey = "petty-cash-voucher-table";
 
 export const PettyCashVoucherTransactionPrefix = "PCV";
 
 export const PettyCashVoucherTransactionNumberPadding = 6;
 
-export const PettyCashVoucherDefaultFormStatus: PettyCashVoucherFormStatus =
-  "Open";
+export const PettyCashVoucherDefaultFormStatus: PettyCashVoucherFormStatus = "Open";
 
 export const PettyCashVoucherDefaultVATable: PettyCashVoucherVATable = "False";
 
 export const PettyCashVoucherVatRate = 0.12;
 
+export const PettyCashVoucherStatuses = {
+  cancelled: "Cancelled",
+  disapproved: "Disapproved",
+  draft: "Draft",
+  forApproval: "For Approval",
+  open: "Open",
+  posted: "Posted",
+} as const;
+
 export const PettyCashVoucherRecordStatuses = [
-  "Draft",
-  "For Approval",
-  "Posted",
-  "Disapproved",
-  "Cancelled",
+  PettyCashVoucherStatuses.draft,
+  PettyCashVoucherStatuses.forApproval,
+  PettyCashVoucherStatuses.posted,
+  PettyCashVoucherStatuses.disapproved,
+  PettyCashVoucherStatuses.cancelled,
 ] as const satisfies readonly PettyCashVoucherStatus[];
 
-export const PettyCashVoucherStatusOptions = [
-  "All",
-  ...PettyCashVoucherRecordStatuses,
-] as const satisfies readonly ("All" | PettyCashVoucherStatus)[];
+export const PettyCashVoucherStatusOptions = ["All", ...PettyCashVoucherRecordStatuses] as const satisfies readonly (
+  "All" | PettyCashVoucherStatus
+)[];
+
+export const PettyCashVoucherAllStatusFilter = "All";
+
+export const PettyCashVoucherStatusMetricTones = {
+  [PettyCashVoucherStatuses.draft]: "blue",
+  [PettyCashVoucherStatuses.forApproval]: "amber",
+  [PettyCashVoucherStatuses.posted]: "emerald",
+  [PettyCashVoucherStatuses.disapproved]: "red",
+  [PettyCashVoucherStatuses.cancelled]: "slate",
+} as const;
 
 export const PettyCashVoucherFormStatusOptions = [
   "Open",
   ...PettyCashVoucherRecordStatuses,
 ] as const satisfies readonly PettyCashVoucherFormStatus[];
 
-export const PettyCashVoucherVATableOptions = [
-  "False",
-  "True",
-] as const satisfies readonly PettyCashVoucherVATable[];
+export const PettyCashVoucherVATableOptions = ["False", "True"] as const satisfies readonly PettyCashVoucherVATable[];
 
 export const PettyCashVoucherActionTabs: {
   id: PettyCashVoucherActionTab;
@@ -70,14 +87,14 @@ export const PettyCashVoucherColumnLabels = {
   actions: "Action",
 } as const;
 
-export const PettyCashVoucherDefaultVisibleColumnIds = [
-  "voucherNo",
-  "documentDate",
-  "partyName",
-  "amount",
-  "status",
-  "actions",
-] as const;
+export const PettyCashVoucherDefaultVisibleColumnIds = ["voucherNo", "documentDate", "partyName", "amount", "status", "actions"] as const;
+
+export const PettyCashVoucherDefaultColumnVisibility = Object.fromEntries(
+  Object.keys(PettyCashVoucherColumnLabels).map((columnId) => [
+    columnId,
+    PettyCashVoucherDefaultVisibleColumnIds.includes(columnId as (typeof PettyCashVoucherDefaultVisibleColumnIds)[number]),
+  ]),
+);
 
 export const PettyCashVoucherActionButtonClassNames = {
   approve:
@@ -90,24 +107,35 @@ export const PettyCashVoucherActionButtonClassNames = {
     "theme-accent-contrast-text inline-flex h-10 items-center justify-center gap-2 rounded-md bg-skyblue px-4 text-sm font-semibold transition hover:bg-skyblue/85 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20",
 } as const;
 
+export const PettyCashVoucherTableCellClassName = "px-4 py-4 align-middle text-sm text-darknavy";
+
 export function canEditPettyCashVoucherStatus(status: PettyCashVoucherStatus) {
-  return status === "Draft" || status === "For Approval" || status === "Disapproved";
+  return (
+    status === PettyCashVoucherStatuses.draft ||
+    status === PettyCashVoucherStatuses.forApproval ||
+    status === PettyCashVoucherStatuses.disapproved
+  );
 }
 
 export function canApprovePettyCashVoucherStatus(status: PettyCashVoucherFormStatus) {
-  return status === "For Approval" || status === "Posted";
+  return status === PettyCashVoucherStatuses.forApproval || status === PettyCashVoucherStatuses.posted;
 }
 
 export function canDisapprovePettyCashVoucherStatus(status: PettyCashVoucherFormStatus) {
-  return status === "For Approval" || status === "Disapproved";
+  return status === PettyCashVoucherStatuses.forApproval || status === PettyCashVoucherStatuses.disapproved;
 }
 
 export function canCancelPettyCashVoucherStatus(status: PettyCashVoucherFormStatus) {
-  return status === "Draft" || status === "For Approval" || status === "Disapproved" || status === "Cancelled";
+  return (
+    status === PettyCashVoucherStatuses.draft ||
+    status === PettyCashVoucherStatuses.forApproval ||
+    status === PettyCashVoucherStatuses.disapproved ||
+    status === PettyCashVoucherStatuses.cancelled
+  );
 }
 
 export function getPettyCashVoucherStatusDialogCopy(status: PettyCashVoucherStatus, recordLabel: string) {
-  if (status === "Posted") {
+  if (status === PettyCashVoucherStatuses.posted) {
     return {
       confirmLabel: "Approve Voucher",
       description: `This will approve ${recordLabel} and update its status to Posted.`,
@@ -118,7 +146,7 @@ export function getPettyCashVoucherStatusDialogCopy(status: PettyCashVoucherStat
     };
   }
 
-  if (status === "Disapproved") {
+  if (status === PettyCashVoucherStatuses.disapproved) {
     return {
       confirmLabel: "Disapprove Voucher",
       description: `This will mark ${recordLabel} as Disapproved.`,
@@ -129,7 +157,7 @@ export function getPettyCashVoucherStatusDialogCopy(status: PettyCashVoucherStat
     };
   }
 
-  if (status === "Cancelled") {
+  if (status === PettyCashVoucherStatuses.cancelled) {
     return {
       confirmLabel: "Cancel Voucher",
       description: `This will mark ${recordLabel} as Cancelled.`,

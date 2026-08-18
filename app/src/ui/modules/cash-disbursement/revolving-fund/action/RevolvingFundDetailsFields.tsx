@@ -152,9 +152,7 @@ export function RevolvingFundDetailsFields({
                 value={page.values.exchangeRate}
                 readOnly={page.isReadonly}
                 disabled={page.isReadonly || page.isExchangeRateLoading}
-                onChange={(event) =>
-                  page.updateField("exchangeRate", formatExchangeRateInput(event.target.value))
-                }
+                onChange={(event) => page.updateField("exchangeRate", formatExchangeRateInput(event.target.value))}
                 className={`${TransactionFieldClassName} text-right tabular-nums`}
               />
             }

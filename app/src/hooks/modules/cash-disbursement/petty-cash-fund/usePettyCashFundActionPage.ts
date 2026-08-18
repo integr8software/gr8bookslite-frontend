@@ -38,14 +38,8 @@ export function usePettyCashFundActionPage(options: { onSaved?: () => void } = {
   const transactionCurrency = useTransactionCurrency();
   const pathname = usePathname();
   const params = useParams<{ recordId?: string }>();
-  const mode: PettyCashFundActionMode = pathname.includes("/view/")
-    ? "view"
-    : pathname.includes("/edit/")
-      ? "edit"
-      : "add";
-  const initialRecord = mode === "add"
-    ? undefined
-    : getPettyCashFundRecords().find((record) => record.id === params.recordId);
+  const mode: PettyCashFundActionMode = pathname.includes("/view/") ? "view" : pathname.includes("/edit/") ? "edit" : "add";
+  const initialRecord = mode === "add" ? undefined : getPettyCashFundRecords().find((record) => record.id === params.recordId);
   const [record, setRecord] = useState(initialRecord);
   const [values, setValues] = useState<PettyCashFundFormValues>(() =>
     createPettyCashFundFormValues(initialRecord, createNextPettyCashFundNumber(), transactionCurrency.baseCurrencyCode),
@@ -69,10 +63,7 @@ export function usePettyCashFundActionPage(options: { onSaved?: () => void } = {
     }));
   }, [mode, transactionCurrency.baseCurrencyCode, transactionCurrency.isBaseCurrencyResolved]);
 
-  function updateField<TKey extends keyof PettyCashFundFormValues>(
-    field: TKey,
-    value: PettyCashFundFormValues[TKey],
-  ) {
+  function updateField<TKey extends keyof PettyCashFundFormValues>(field: TKey, value: PettyCashFundFormValues[TKey]) {
     if (isReadonly) return;
     setValues((current) => ({ ...current, [field]: value }));
     setErrors((current) => ({ ...current, [field]: undefined }));
@@ -181,11 +172,7 @@ export function usePettyCashFundActionPage(options: { onSaved?: () => void } = {
     savePettyCashFundRecords(upsertPettyCashFundRecord(nextRecord));
     setRecord(nextRecord);
     setValues(createPettyCashFundFormValues(nextRecord));
-    toast.success(
-      status === PettyCashFundStatuses.draft
-        ? "Petty cash fund saved as draft."
-        : "Petty cash fund submitted for approval.",
-    );
+    toast.success(status === PettyCashFundStatuses.draft ? "Petty cash fund saved as draft." : "Petty cash fund submitted for approval.");
     options.onSaved?.();
     return true;
   }
@@ -244,4 +231,4 @@ function calculateItem(item: PettyCashFundItem): PettyCashFundItem {
   };
 }
 
-export type PettyCashFundActionPageState = ReturnType<typeof usePettyCashFundActionPage>;
+export type { PettyCashFundActionPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";

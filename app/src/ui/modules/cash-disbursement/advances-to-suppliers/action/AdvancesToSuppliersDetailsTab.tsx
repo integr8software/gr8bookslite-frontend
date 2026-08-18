@@ -12,5 +12,12 @@ export function AdvancesToSuppliersDetailsTab({
   onOpenResponsibilityCenterDrawer: () => void;
   page: AdvancesToSuppliersActionPageState;
 }) {
-  return <AdvancesToSuppliersDetailsFields page={page} onOpenPartyDrawer={onOpenPartyDrawer} onOpenProjectDrawer={onOpenProjectDrawer} onOpenResponsibilityCenterDrawer={onOpenResponsibilityCenterDrawer} />;
+  return (
+    <AdvancesToSuppliersDetailsFields
+      page={page}
+      onOpenPartyDrawer={onOpenPartyDrawer}
+      onOpenProjectDrawer={onOpenProjectDrawer}
+      onOpenResponsibilityCenterDrawer={onOpenResponsibilityCenterDrawer}
+    />
+  );
 }

@@ -1,16 +1,14 @@
 import type { TransactionAttachment } from "@/app/src/types/shared/transaction-setup/TransactionAttachmentTypes";
+import type { useRevolvingFundReplenishmentActionPage } from "@/app/src/hooks/modules/cash-disbursement/revolving-fund-replenishment/useRevolvingFundReplenishmentActionPage";
+import type { useRevolvingFundReplenishmentOverviewPage } from "@/app/src/hooks/modules/cash-disbursement/revolving-fund-replenishment/useRevolvingFundReplenishmentOverviewPage";
 
-export type RevolvingFundReplenishmentStatus =
-  | "Draft"
-  | "For Approval"
-  | "Posted"
-  | "Disapproved"
-  | "Cancelled";
-export type RevolvingFundReplenishmentFormStatus =
-  | "Open"
-  | RevolvingFundReplenishmentStatus;
+export type RevolvingFundReplenishmentStatus = "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled";
+export type RevolvingFundReplenishmentFormStatus = "Open" | RevolvingFundReplenishmentStatus;
 export type RevolvingFundReplenishmentActionMode = "add" | "edit" | "view";
 export type RevolvingFundReplenishmentActionTab = "details" | "attachments";
+export type RevolvingFundReplenishmentConfirmationAction = "save" | "draft" | "approve" | "disapprove" | "cancel";
+export type RevolvingFundReplenishmentActionPageState = ReturnType<typeof useRevolvingFundReplenishmentActionPage>;
+export type RevolvingFundReplenishmentOverviewPageState = ReturnType<typeof useRevolvingFundReplenishmentOverviewPage>;
 export type RevolvingFundReplenishmentEntryTab = "vouchers" | "accounting";
 
 export type RevolvingFundReplenishmentEntry = {
@@ -25,10 +23,7 @@ export type RevolvingFundReplenishmentEntry = {
   remarks: string;
 };
 
-export type RevolvingFundReplenishmentEntryColumnId = Exclude<
-  keyof RevolvingFundReplenishmentEntry,
-  "id"
->;
+export type RevolvingFundReplenishmentEntryColumnId = Exclude<keyof RevolvingFundReplenishmentEntry, "id">;
 
 export type RevolvingFundReplenishmentAccountingEntry = {
   id: string;
@@ -41,10 +36,7 @@ export type RevolvingFundReplenishmentAccountingEntry = {
   particulars: string;
 };
 
-export type RevolvingFundReplenishmentAccountingColumnId = Exclude<
-  keyof RevolvingFundReplenishmentAccountingEntry,
-  "id"
->;
+export type RevolvingFundReplenishmentAccountingColumnId = Exclude<keyof RevolvingFundReplenishmentAccountingEntry, "id">;
 
 export type RevolvingFundReplenishmentFormValues = {
   transactionNo: string;
@@ -83,11 +75,8 @@ export type RevolvingFundReplenishmentRecord = {
   formValues?: RevolvingFundReplenishmentFormValues;
 };
 
-export type RevolvingFundReplenishmentFormErrors = Partial<
-  Record<keyof RevolvingFundReplenishmentFormValues | "entries", string>
->;
+export type RevolvingFundReplenishmentFormErrors = Partial<Record<keyof RevolvingFundReplenishmentFormValues | "entries", string>>;
 export type RevolvingFundReplenishmentUpdateStatusHandler = (
   record: RevolvingFundReplenishmentRecord,
   status: RevolvingFundReplenishmentStatus,
 ) => void;
-

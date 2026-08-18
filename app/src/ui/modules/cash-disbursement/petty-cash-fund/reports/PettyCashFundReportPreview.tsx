@@ -59,9 +59,7 @@ export function PettyCashFundReportPreview({
                   <td className="px-3 py-2">{formatDate(item.date)}</td>
                   <td className="px-3 py-2">{item.payeeName}</td>
                   <td className="px-3 py-2">{item.particulars}</td>
-                  <td className="px-3 py-2 text-right tabular-nums">
-                    {formatCurrency(Number(item.grossAmount.replace(/,/g, "")) || 0)}
-                  </td>
+                  <td className="px-3 py-2 text-right tabular-nums">{formatCurrency(Number(item.grossAmount.replace(/,/g, "")) || 0)}</td>
                 </tr>
               ))}
             </tbody>

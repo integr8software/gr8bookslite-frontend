@@ -79,6 +79,22 @@ export const PartyInformationFormSchema = z
     vendorAdvanceAccount: z.string().trim(),
     employeeAdvanceAccount: z.string().trim(),
     employeePayableAccount: z.string().trim(),
+    cashAdvanceLimit: z
+      .string()
+      .trim()
+      .refine(
+        (value) => {
+          const normalizedValue = value.replaceAll(",", "");
+
+          return (
+            !normalizedValue ||
+            (/^\d+(?:\.\d{1,2})?$/.test(normalizedValue) && Number(normalizedValue) >= 0)
+          );
+        },
+        {
+          message: "Enter a non-negative cash advance limit with up to 2 decimal places.",
+        },
+      ),
     termId: z.string().trim(),
     termName: z.string().trim(),
     tin: z
@@ -447,6 +463,8 @@ export function validatePartyInformationForm(
       errors.employeeAdvanceAccount = issue.message;
     } else if (field === "employeePayableAccount" && !errors.employeePayableAccount) {
       errors.employeePayableAccount = issue.message;
+    } else if (field === "cashAdvanceLimit" && !errors.cashAdvanceLimit) {
+      errors.cashAdvanceLimit = issue.message;
     } else if (field === "termId" && !errors.termId) {
       errors.termId = issue.message;
     }

@@ -14,22 +14,17 @@ const schema = z.object({
   accountTitle: z.string().trim().min(1, "Select a default account."),
 });
 
-export function validateRevolvingFundReplenishmentForm(
-  values: RevolvingFundReplenishmentFormValues,
-): RevolvingFundReplenishmentFormErrors {
+export function validateRevolvingFundReplenishmentForm(values: RevolvingFundReplenishmentFormValues): RevolvingFundReplenishmentFormErrors {
   const errors: RevolvingFundReplenishmentFormErrors = {};
   const result = schema.safeParse(values);
   if (!result.success) {
     for (const issue of result.error.issues) {
-      errors[issue.path[0] as keyof RevolvingFundReplenishmentFormValues] ??=
-        issue.message;
+      errors[issue.path[0] as keyof RevolvingFundReplenishmentFormValues] ??= issue.message;
     }
   }
   if (
     values.entries.length === 0 ||
-    values.entries.every(
-      (entry) => !entry.revolvingFundNo.trim() && (parseAmount(entry.totalAmount) ?? 0) <= 0,
-    )
+    values.entries.every((entry) => !entry.revolvingFundNo.trim() && (parseAmount(entry.totalAmount) ?? 0) <= 0)
   ) {
     errors.entries = "Add at least one revolving fund voucher entry.";
   } else if (
@@ -41,12 +36,9 @@ export function validateRevolvingFundReplenishmentForm(
         (parseAmount(entry.totalAmount) ?? 0) <= 0,
     )
   ) {
-    errors.entries =
-      "Each entry needs a revolving fund voucher, account, and amount greater than zero.";
+    errors.entries = "Each entry needs a revolving fund voucher, account, and amount greater than zero.";
   }
-  const voucherNumbers = values.entries
-    .map((entry) => entry.revolvingFundNo.trim().toLowerCase())
-    .filter(Boolean);
+  const voucherNumbers = values.entries.map((entry) => entry.revolvingFundNo.trim().toLowerCase()).filter(Boolean);
   if (new Set(voucherNumbers).size !== voucherNumbers.length) {
     errors.entries = "Revolving fund numbers must be unique.";
   }

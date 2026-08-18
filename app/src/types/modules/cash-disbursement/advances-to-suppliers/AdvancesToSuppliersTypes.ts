@@ -1,14 +1,14 @@
 import type { TransactionAttachment } from "@/app/src/types/shared/transaction-setup/TransactionAttachmentTypes";
+import type { useAdvancesToSuppliersActionPage } from "@/app/src/hooks/modules/cash-disbursement/advances-to-suppliers/useAdvancesToSuppliersActionPage";
+import type { useAdvancesToSuppliersOverviewPage } from "@/app/src/hooks/modules/cash-disbursement/advances-to-suppliers/useAdvancesToSuppliersOverviewPage";
 
-export type AdvancesToSuppliersStatus =
-  | "Draft"
-  | "For Approval"
-  | "Posted"
-  | "Disapproved"
-  | "Cancelled";
+export type AdvancesToSuppliersStatus = "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled";
 export type AdvancesToSuppliersFormStatus = "Open" | AdvancesToSuppliersStatus;
 export type AdvancesToSuppliersActionMode = "add" | "edit" | "view";
 export type AdvancesToSuppliersActionTab = "details" | "attachments";
+export type AdvancesToSuppliersConfirmationAction = "save" | "draft" | "approve" | "disapprove" | "cancel";
+export type AdvancesToSuppliersActionPageState = ReturnType<typeof useAdvancesToSuppliersActionPage>;
+export type AdvancesToSuppliersOverviewPageState = ReturnType<typeof useAdvancesToSuppliersOverviewPage>;
 
 export type AdvancesToSuppliersFormValues = {
   transactionNo: string;
@@ -53,10 +53,5 @@ export type AdvancesToSuppliersRecord = {
   formValues?: AdvancesToSuppliersFormValues;
 };
 
-export type AdvancesToSuppliersFormErrors = Partial<
-  Record<keyof AdvancesToSuppliersFormValues, string>
->;
-export type AdvancesToSuppliersUpdateStatusHandler = (
-  record: AdvancesToSuppliersRecord,
-  status: AdvancesToSuppliersStatus,
-) => void;
+export type AdvancesToSuppliersFormErrors = Partial<Record<keyof AdvancesToSuppliersFormValues, string>>;
+export type AdvancesToSuppliersUpdateStatusHandler = (record: AdvancesToSuppliersRecord, status: AdvancesToSuppliersStatus) => void;

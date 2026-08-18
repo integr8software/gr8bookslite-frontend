@@ -36,7 +36,12 @@ export function PettyCashFundActionPage() {
     <>
       <section className="grid gap-5">
         <PettyCashFundActionHeader page={page} onPreview={() => page.setIsPreviewOpen(true)} />
-        <ModuleTabs activeTab={page.activeTab} ariaLabel="Petty cash fund sections" tabs={PettyCashFundActionTabs} onTabChange={page.setActiveTab} />
+        <ModuleTabs
+          activeTab={page.activeTab}
+          ariaLabel="Petty cash fund sections"
+          tabs={PettyCashFundActionTabs}
+          onTabChange={page.setActiveTab}
+        />
         {page.activeTab === "details" ? (
           <PettyCashFundDetailsTab
             page={page}

@@ -28,16 +28,9 @@ import type {
 import type { DefaultAccount } from "@/app/src/types/modules/financial-maintenance/default-account/DefaultAccountTypes";
 import type { ModuleDataEntryClearAction } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 
-export function createAccountingChartAccountOptions(
-  entries: DisbursementLineEntry[],
-): ModuleChartAccount[] {
+export function createAccountingChartAccountOptions(entries: DisbursementLineEntry[]): ModuleChartAccount[] {
   const chartAccounts = getModuleChartAccounts();
-  const accountKeys = new Set(
-    chartAccounts.flatMap((account) => [
-      account.accountName.toLowerCase(),
-      account.accountNumber,
-    ]),
-  );
+  const accountKeys = new Set(chartAccounts.flatMap((account) => [account.accountName.toLowerCase(), account.accountNumber]));
   const customAccounts: ModuleChartAccount[] = [];
 
   entries.forEach((entry) => {
@@ -66,21 +59,14 @@ export function createAccountingChartAccountOptions(
   return [...chartAccounts, ...customAccounts];
 }
 
-export function createDefaultAccountExpenseOptions(
-  defaultAccounts: DefaultAccount[],
-): ModuleChartAccount[] {
+export function createDefaultAccountExpenseOptions(defaultAccounts: DefaultAccount[]): ModuleChartAccount[] {
   return defaultAccounts
     .filter((account) => account.status === "Active" && account.type === "EXPENSE")
     .flatMap((account) =>
       account.generatedAccounts
-        .filter(
-          (generatedAccount) =>
-            generatedAccount.role === "EXPENSE" &&
-            generatedAccount.status === "ACTIVE",
-        )
+        .filter((generatedAccount) => generatedAccount.role === "EXPENSE" && generatedAccount.status === "ACTIVE")
         .map<ModuleChartAccount>((generatedAccount) => ({
-          accountCategory:
-            generatedAccount.accountNature ?? generatedAccount.role,
+          accountCategory: generatedAccount.accountNature ?? generatedAccount.role,
           accountName: generatedAccount.accountTitle,
           accountNumber: generatedAccount.accountCode,
           accountType: generatedAccount.accountType ?? "Expenses",
@@ -88,16 +74,13 @@ export function createDefaultAccountExpenseOptions(
           id: generatedAccount.chartAccountId,
           normalBalance: "Debit",
           statementGroup: "Income Statement",
-          statementSection:
-            generatedAccount.accountNature ?? "Default Account Expense",
+          statementSection: generatedAccount.accountNature ?? "Default Account Expense",
           status: "Active",
         })),
     );
 }
 
-export function normalizeDisbursementLineEntryFields(
-  entry: DisbursementLineEntry,
-): DisbursementLineEntry {
+export function normalizeDisbursementLineEntryFields(entry: DisbursementLineEntry): DisbursementLineEntry {
   const taxDetails = entry.taxDetails ?? createTaxDetails(0, "0%");
 
   return {
@@ -106,25 +89,20 @@ export function normalizeDisbursementLineEntryFields(
     partyCode: entry.partyCode ?? "",
     partyName: entry.partyName ?? "",
     refId: entry.refId ?? taxDetails.refId ?? "",
-    responsibilityCenter:
-      entry.responsibilityCenter ?? taxDetails.responsibilityCenter ?? "",
+    responsibilityCenter: entry.responsibilityCenter ?? taxDetails.responsibilityCenter ?? "",
     taxDetails,
     vatType: entry.vatType ?? taxDetails.vatType ?? "",
   };
 }
 
-export function syncDisbursementLineEntryTaxDetails(
-  entry: DisbursementLineEntry,
-): DisbursementLineEntry {
-  const amount =
-    parseMoneyNumberInput(entry.debit) || parseMoneyNumberInput(entry.credit);
+export function syncDisbursementLineEntryTaxDetails(entry: DisbursementLineEntry): DisbursementLineEntry {
+  const amount = parseMoneyNumberInput(entry.debit) || parseMoneyNumberInput(entry.credit);
   const taxDetails = syncTaxDetailsAmount(
     {
       ...entry.taxDetails,
       atcCode: entry.atcCode ?? entry.taxDetails.atcCode,
       refId: entry.refId ?? entry.taxDetails.refId,
-      responsibilityCenter:
-        entry.responsibilityCenter ?? entry.taxDetails.responsibilityCenter,
+      responsibilityCenter: entry.responsibilityCenter ?? entry.taxDetails.responsibilityCenter,
       vatType: entry.vatType ?? entry.taxDetails.vatType,
     },
     amount,
@@ -144,32 +122,19 @@ export function syncDisbursementLineEntryTaxDetails(
 export function getAccountingPartyFallbackValue(partyName: string) {
   const normalizedPartyName = partyName.trim().toLowerCase();
 
-  return normalizedPartyName
-    ? `${AccountingPartyFallbackValuePrefix}${normalizedPartyName}`
-    : "";
+  return normalizedPartyName ? `${AccountingPartyFallbackValuePrefix}${normalizedPartyName}` : "";
 }
 
-export function isDisbursementEntryColumnId(
-  columnId: string,
-): columnId is DisbursementEntryColumnId {
-  return DefaultDisbursementEntryColumnOrder.includes(
-    columnId as DisbursementEntryColumnId,
-  );
+export function isDisbursementEntryColumnId(columnId: string): columnId is DisbursementEntryColumnId {
+  return DefaultDisbursementEntryColumnOrder.includes(columnId as DisbursementEntryColumnId);
 }
 
-export function isExpenseEntryColumnId(
-  columnId: string,
-): columnId is ExpenseEntryColumnId {
-  return DefaultExpenseEntryColumnOrder.includes(
-    columnId as ExpenseEntryColumnId,
-  );
+export function isExpenseEntryColumnId(columnId: string): columnId is ExpenseEntryColumnId {
+  return DefaultExpenseEntryColumnOrder.includes(columnId as ExpenseEntryColumnId);
 }
 
 export function isCashInHandEntry(entry: DisbursementLineEntry) {
-  return (
-    entry.accountCode === CashInHandAccountCode ||
-    entry.accountName.trim().toLowerCase() === CashInHandAccountName.toLowerCase()
-  );
+  return entry.accountCode === CashInHandAccountCode || entry.accountName.trim().toLowerCase() === CashInHandAccountName.toLowerCase();
 }
 
 export function isPaymentCreditEntry(entry: DisbursementLineEntry) {
@@ -182,40 +147,22 @@ export function isPaymentCreditEntry(entry: DisbursementLineEntry) {
 }
 
 export function isGeneratedVatEntry(entry: DisbursementLineEntry) {
-  return (
-    entry.id.startsWith("auto-input-vat-") ||
-    entry.accountName.trim().toLowerCase() === "input vat"
-  );
+  return entry.id.startsWith("auto-input-vat-") || entry.accountName.trim().toLowerCase() === "input vat";
 }
 
 export function isGeneratedEwtEntry(entry: DisbursementLineEntry) {
-  return (
-    entry.id.startsWith("auto-ewt-") ||
-    entry.accountName.trim().toLowerCase() === "expanded withholding tax"
-  );
+  return entry.id.startsWith("auto-ewt-") || entry.accountName.trim().toLowerCase() === "expanded withholding tax";
 }
 
 export function isGeneratedAccountingEntry(entry: DisbursementLineEntry) {
-  return (
-    isPaymentCreditEntry(entry) ||
-    isGeneratedVatEntry(entry) ||
-    isGeneratedEwtEntry(entry)
-  );
+  return isPaymentCreditEntry(entry) || isGeneratedVatEntry(entry) || isGeneratedEwtEntry(entry);
 }
 
-export function shouldSyncDisbursementEntryParty(
-  entry: DisbursementLineEntry,
-  previousPartyCode: string,
-  previousPartyName: string,
-) {
+export function shouldSyncDisbursementEntryParty(entry: DisbursementLineEntry, previousPartyCode: string, previousPartyName: string) {
   const entryPartyCode = (entry.partyCode ?? "").trim();
   const entryPartyName = (entry.partyName ?? "").trim();
 
-  return (
-    (!entryPartyCode && !entryPartyName) ||
-    entryPartyCode === previousPartyCode ||
-    entryPartyName === previousPartyName
-  );
+  return (!entryPartyCode && !entryPartyName) || entryPartyCode === previousPartyCode || entryPartyName === previousPartyName;
 }
 
 export function applyVoucherPartyToEntryUpdates(
@@ -225,14 +172,9 @@ export function applyVoucherPartyToEntryUpdates(
   partyName: string,
 ) {
   const hasAccountUpdate =
-    Object.prototype.hasOwnProperty.call(updates, "accountCode") ||
-    Object.prototype.hasOwnProperty.call(updates, "accountName");
+    Object.prototype.hasOwnProperty.call(updates, "accountCode") || Object.prototype.hasOwnProperty.call(updates, "accountName");
 
-  if (
-    !hasAccountUpdate ||
-    (entry?.partyCode ?? "").trim() ||
-    (entry?.partyName ?? "").trim()
-  ) {
+  if (!hasAccountUpdate || (entry?.partyCode ?? "").trim() || (entry?.partyName ?? "").trim()) {
     return updates;
   }
 
@@ -258,10 +200,7 @@ export function createAutomaticAccountingEntries(
         ...entry,
         credit: 0,
       });
-      const netEntryAmounts = getSignedAccountingEntryAmounts(
-        normalizedEntry.taxDetails.netAmount,
-        "debit",
-      );
+      const netEntryAmounts = getSignedAccountingEntryAmounts(normalizedEntry.taxDetails.netAmount, "debit");
 
       return {
         ...normalizedEntry,
@@ -281,20 +220,10 @@ export function createAutomaticAccountingEntries(
     return editableExpenseEntries;
   }
 
-  const referenceEntry =
-    expenseEntriesWithAmount[0] ?? editableExpenseEntries[0];
-  const totalVatAmount = expenseEntriesWithAmount.reduce(
-    (sum, entry) => sum + Number(entry.taxDetails.vatAmount || 0),
-    0,
-  );
-  const totalEwtAmount = expenseEntriesWithAmount.reduce(
-    (sum, entry) => sum + Number(entry.taxDetails.ewtAmount || 0),
-    0,
-  );
-  const totalDisbursementAmount = expenseEntriesWithAmount.reduce(
-    (sum, entry) => sum + Number(entry.taxDetails.amount || 0),
-    0,
-  );
+  const referenceEntry = expenseEntriesWithAmount[0] ?? editableExpenseEntries[0];
+  const totalVatAmount = expenseEntriesWithAmount.reduce((sum, entry) => sum + Number(entry.taxDetails.vatAmount || 0), 0);
+  const totalEwtAmount = expenseEntriesWithAmount.reduce((sum, entry) => sum + Number(entry.taxDetails.ewtAmount || 0), 0);
+  const totalDisbursementAmount = expenseEntriesWithAmount.reduce((sum, entry) => sum + Number(entry.taxDetails.amount || 0), 0);
   const commonFields = {
     partyCode: referenceEntry?.partyCode ?? "",
     partyName: referenceEntry?.partyName ?? "",
@@ -349,10 +278,7 @@ export function createAutomaticAccountingEntries(
     });
   }
 
-  if (
-    hasNonZeroAccountingAmount(totalDisbursementAmount) &&
-    (options.isCashPayment || options.bankAccount)
-  ) {
+  if (hasNonZeroAccountingAmount(totalDisbursementAmount) && (options.isCashPayment || options.bankAccount)) {
     const creditAccount = options.isCashPayment
       ? {
           accountCode: CashInHandAccountCode,
@@ -362,10 +288,7 @@ export function createAutomaticAccountingEntries(
           accountCode: options.bankAccount?.accountCode ?? "",
           accountName: options.bankAccount?.accountTitle ?? "",
         };
-    const paymentEntryAmounts = getSignedAccountingEntryAmounts(
-      totalDisbursementAmount,
-      "credit",
-    );
+    const paymentEntryAmounts = getSignedAccountingEntryAmounts(totalDisbursementAmount, "credit");
 
     generatedEntries.push({
       ...createBlankDisbursementLineEntry(),
@@ -389,14 +312,10 @@ export function createAutomaticAccountingEntries(
   return [...editableExpenseEntries, ...generatedEntries];
 }
 
-export function getSignedAccountingEntryAmounts(
-  value: number,
-  positiveSide: "credit" | "debit",
-) {
+export function getSignedAccountingEntryAmounts(value: number, positiveSide: "credit" | "debit") {
   const roundedValue = roundAccountingAmount(value);
   const amount = Math.abs(roundedValue);
-  const isDebitSide =
-    roundedValue >= 0 ? positiveSide === "debit" : positiveSide === "credit";
+  const isDebitSide = roundedValue >= 0 ? positiveSide === "debit" : positiveSide === "credit";
 
   return {
     credit: isDebitSide ? 0 : amount,
@@ -438,10 +357,7 @@ export function getExpenseEntryColumnTotal(
   }, 0);
 }
 
-export function getDisbursementEntryExportCell(
-  entry: DisbursementLineEntry,
-  columnId: DisbursementEntryColumnId,
-) {
+export function getDisbursementEntryExportCell(entry: DisbursementLineEntry, columnId: DisbursementEntryColumnId) {
   switch (columnId) {
     case "accountCode":
       return entry.accountCode ?? "";
@@ -476,11 +392,7 @@ export function getDisbursementEntryExportCell(
   }
 }
 
-export function moveEntryColumn<TColumnId extends string>(
-  currentOrder: TColumnId[],
-  fromColumnId: TColumnId,
-  toColumnId: TColumnId,
-) {
+export function moveEntryColumn<TColumnId extends string>(currentOrder: TColumnId[], fromColumnId: TColumnId, toColumnId: TColumnId) {
   const fromIndex = currentOrder.indexOf(fromColumnId);
   const toIndex = currentOrder.indexOf(toColumnId);
 
@@ -504,24 +416,17 @@ export function updateVisibleEntryColumns<TColumnId extends string>(
   if (isVisible) {
     const nextVisibleIds = new Set([...currentVisibleIds, columnId]);
 
-    return columnOrder.filter((currentColumnId) =>
-      nextVisibleIds.has(currentColumnId),
-    );
+    return columnOrder.filter((currentColumnId) => nextVisibleIds.has(currentColumnId));
   }
 
   if (currentVisibleIds.length <= 1) {
     return currentVisibleIds;
   }
 
-  return currentVisibleIds.filter(
-    (currentColumnId) => currentColumnId !== columnId,
-  );
+  return currentVisibleIds.filter((currentColumnId) => currentColumnId !== columnId);
 }
 
-export function shouldClearEntry(
-  entry: DisbursementLineEntry,
-  action: Exclude<ModuleDataEntryClearAction, "all">,
-) {
+export function shouldClearEntry(entry: DisbursementLineEntry, action: Exclude<ModuleDataEntryClearAction, "all">) {
   if (action === "with-data") {
     return disbursementEntryHasData(entry);
   }
@@ -557,11 +462,7 @@ export function disbursementEntryIsComplete(entry: DisbursementLineEntry) {
   return (
     entry.accountCode.trim() !== "" &&
     entry.accountName.trim() !== "" &&
-    (parseMoneyNumberInput(entry.debit) > 0 ||
-      parseMoneyNumberInput(entry.credit) > 0) &&
-    !(
-      parseMoneyNumberInput(entry.debit) > 0 &&
-      parseMoneyNumberInput(entry.credit) > 0
-    )
+    (parseMoneyNumberInput(entry.debit) > 0 || parseMoneyNumberInput(entry.credit) > 0) &&
+    !(parseMoneyNumberInput(entry.debit) > 0 && parseMoneyNumberInput(entry.credit) > 0)
   );
 }

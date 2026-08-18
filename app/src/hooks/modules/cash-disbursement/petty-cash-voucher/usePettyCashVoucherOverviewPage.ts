@@ -2,32 +2,27 @@
 
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  createColumnHelper,
-  getCoreRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
+import { createColumnHelper, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { ReceiptText } from "lucide-react";
 import toast from "react-hot-toast";
 import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
-import {
-  getModuleStatusMetricIcon,
-  getModuleStatusMetricIconClassName,
-} from "@/app/src/ui/shared/module/ModuleStatusBadge";
+import type { ModuleStatisticCardItem } from "@/app/src/ui/shared/module/ModuleStatisticCards";
+import { getModuleStatusMetricIcon, getModuleStatusMetricIconClassName } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import {
   PettyCashVoucherColumnLabels,
-  PettyCashVoucherDefaultVisibleColumnIds,
+  PettyCashVoucherAllStatusFilter,
+  PettyCashVoucherDefaultColumnVisibility,
   PettyCashVoucherRecordStatuses,
+  PettyCashVoucherStatusMetricTones,
   PettyCashVoucherStatusOptions,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
 import { PettyCashVoucherRecords } from "@/app/src/data/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherData";
-import { PettyCashVoucherQueryKeys } from "@/app/src/services/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherService";
+import { PettyCashVoucherQueryKeys } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
 import type {
   PettyCashVoucherRecord,
   PettyCashVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
-import type { ModuleStatisticCardItem } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { coerceDate } from "@/app/src/utils/date.util";
 import { parseAmount } from "@/app/src/utils/number.util";
 import { formatPartOfTotalPercentage } from "@/app/src/utils/percentage.util";
@@ -35,27 +30,8 @@ import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/modu
 import { CashDisbursementOverviewActionColumnWidth } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 
 const columnHelper = createColumnHelper<PettyCashVoucherRecord>();
-const AllStatusFilter = "All";
 const EmptyDateRange: DateRangeValue = { from: "", to: "" };
 const EmptyAmountRange: AmountRangeValue = { from: "", to: "" };
-const PettyCashVoucherStatusMetricTones = {
-  Draft: "blue",
-  "For Approval": "amber",
-  Posted: "emerald",
-  Disapproved: "red",
-  Cancelled: "slate",
-} satisfies Record<
-  PettyCashVoucherStatus,
-  ModuleStatisticCardItem["tone"]
->;
-const PettyCashVoucherDefaultColumnVisibility = Object.fromEntries(
-  Object.keys(PettyCashVoucherColumnLabels).map((columnId) => [
-    columnId,
-    PettyCashVoucherDefaultVisibleColumnIds.includes(
-      columnId as (typeof PettyCashVoucherDefaultVisibleColumnIds)[number],
-    ),
-  ]),
-);
 
 export function usePettyCashVoucherOverviewPage() {
   const queryClient = useQueryClient();
@@ -65,30 +41,17 @@ export function usePettyCashVoucherOverviewPage() {
     initialData: PettyCashVoucherRecords,
   });
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<
-    typeof AllStatusFilter | PettyCashVoucherStatus
-  >(AllStatusFilter);
-  const [dateRange, setDateRange] = useState<DateRangeValue>(EmptyDateRange);
-  const [amountRange, setAmountRange] =
-    useState<AmountRangeValue>(EmptyAmountRange);
-  const [columnVisibility, setColumnVisibility] = useState(() =>
-    PettyCashVoucherDefaultColumnVisibility,
+  const [statusFilter, setStatusFilter] = useState<typeof PettyCashVoucherAllStatusFilter | PettyCashVoucherStatus>(
+    PettyCashVoucherAllStatusFilter,
   );
+  const [dateRange, setDateRange] = useState<DateRangeValue>(EmptyDateRange);
+  const [amountRange, setAmountRange] = useState<AmountRangeValue>(EmptyAmountRange);
+  const [columnVisibility, setColumnVisibility] = useState(() => PettyCashVoucherDefaultColumnVisibility);
   const updateStatusMutation = useMutation({
-    mutationFn: async ({
-      status,
-      voucherId,
-    }: {
-      status: PettyCashVoucherStatus;
-      voucherId: string;
-    }) => ({ status, voucherId }),
+    mutationFn: async ({ status, voucherId }: { status: PettyCashVoucherStatus; voucherId: string }) => ({ status, voucherId }),
     onSuccess: ({ status, voucherId }) => {
-      queryClient.setQueryData<PettyCashVoucherRecord[]>(
-        PettyCashVoucherQueryKeys.vouchers(),
-        (current = PettyCashVoucherRecords) =>
-          current.map((voucher) =>
-            voucher.id === voucherId ? { ...voucher, status } : voucher,
-          ),
+      queryClient.setQueryData<PettyCashVoucherRecord[]>(PettyCashVoucherQueryKeys.vouchers(), (current = PettyCashVoucherRecords) =>
+        current.map((voucher) => (voucher.id === voucherId ? { ...voucher, status } : voucher)),
       );
       toast.success(`Petty cash voucher marked as ${status}.`);
     },
@@ -113,31 +76,15 @@ export function usePettyCashVoucherOverviewPage() {
         voucher.accountCode.toLowerCase().includes(query) ||
         voucher.accountTitle.toLowerCase().includes(query);
 
-      const matchesStatus =
-        statusFilter === AllStatusFilter || voucher.status === statusFilter;
+      const matchesStatus = statusFilter === PettyCashVoucherAllStatusFilter || voucher.status === statusFilter;
       const matchesDateFrom = !dateFrom || !documentDate || documentDate >= dateFrom;
       const matchesDateTo = !dateTo || !documentDate || documentDate <= dateTo;
       const matchesAmountFrom = amountFrom === null || voucher.amount >= amountFrom;
       const matchesAmountTo = amountTo === null || voucher.amount <= amountTo;
 
-      return (
-        matchesSearch &&
-        matchesStatus &&
-        matchesDateFrom &&
-        matchesDateTo &&
-        matchesAmountFrom &&
-        matchesAmountTo
-      );
+      return matchesSearch && matchesStatus && matchesDateFrom && matchesDateTo && matchesAmountFrom && matchesAmountTo;
     });
-  }, [
-    amountRange.from,
-    amountRange.to,
-    dateRange.from,
-    dateRange.to,
-    searchQuery,
-    statusFilter,
-    vouchersQuery.data,
-  ]);
+  }, [amountRange.from, amountRange.to, dateRange.from, dateRange.to, searchQuery, statusFilter, vouchersQuery.data]);
 
   const columns = useMemo(
     () => [
@@ -230,63 +177,53 @@ export function usePettyCashVoucherOverviewPage() {
     },
   });
 
-  const statisticCards = useMemo<ModuleStatisticCardItem[]>(
-    () => {
-      function statusMetric(status: PettyCashVoucherStatus) {
-        const value = vouchersQuery.data.filter((voucher) => voucher.status === status)
-          .length;
+  const statisticCards = useMemo<ModuleStatisticCardItem[]>(() => {
+    function statusMetric(status: PettyCashVoucherStatus) {
+      const value = vouchersQuery.data.filter((voucher) => voucher.status === status).length;
 
-        return {
-          icon: getModuleStatusMetricIcon(status),
-          iconClassName: getModuleStatusMetricIconClassName(status),
-          label: status,
-          summary: formatPartOfTotalPercentage(value, vouchersQuery.data.length),
-          tone: PettyCashVoucherStatusMetricTones[status],
-          value,
-        };
-      }
+      return {
+        icon: getModuleStatusMetricIcon(status),
+        iconClassName: getModuleStatusMetricIconClassName(status),
+        label: status,
+        summary: formatPartOfTotalPercentage(value, vouchersQuery.data.length),
+        tone: PettyCashVoucherStatusMetricTones[status],
+        value,
+      };
+    }
 
-      return [
-        {
-          icon: ReceiptText,
-          label: "Total Entries",
-          summary: "All time",
-          tone: "violet" as const,
-          value: vouchersQuery.data.length,
-        },
-        ...PettyCashVoucherRecordStatuses.map(statusMetric),
-      ].map((item) => ({
-        ...item,
-        isActive:
-          item.label === "Total Entries"
-            ? statusFilter === AllStatusFilter
-            : item.label === statusFilter,
-        onClick:
-          item.label === "Total Entries"
-            ? () => setStatusFilter(AllStatusFilter)
-            : () => setStatusFilter(item.label as PettyCashVoucherStatus),
-      }));
-    },
-    [statusFilter, vouchersQuery.data],
-  );
+    return [
+      {
+        icon: ReceiptText,
+        label: "Total Entries",
+        summary: "All time",
+        tone: "violet" as const,
+        value: vouchersQuery.data.length,
+      },
+      ...PettyCashVoucherRecordStatuses.map(statusMetric),
+    ].map((item) => ({
+      ...item,
+      isActive: item.label === "Total Entries" ? statusFilter === PettyCashVoucherAllStatusFilter : item.label === statusFilter,
+      onClick:
+        item.label === "Total Entries"
+          ? () => setStatusFilter(PettyCashVoucherAllStatusFilter)
+          : () => setStatusFilter(item.label as PettyCashVoucherStatus),
+    }));
+  }, [statusFilter, vouchersQuery.data]);
 
   function resetFilters() {
     setSearchQuery("");
-    setStatusFilter(AllStatusFilter);
+    setStatusFilter(PettyCashVoucherAllStatusFilter);
     setDateRange(EmptyDateRange);
     setAmountRange(EmptyAmountRange);
   }
 
   function updateStatusFilter(value: string) {
     if (PettyCashVoucherStatusOptions.includes(value as PettyCashVoucherStatus)) {
-      setStatusFilter(value as typeof AllStatusFilter | PettyCashVoucherStatus);
+      setStatusFilter(value as typeof PettyCashVoucherAllStatusFilter | PettyCashVoucherStatus);
     }
   }
 
-  function handleUpdateStatus(
-    voucher: PettyCashVoucherRecord,
-    status: PettyCashVoucherStatus,
-  ) {
+  function handleUpdateStatus(voucher: PettyCashVoucherRecord, status: PettyCashVoucherStatus) {
     return updateStatusMutation
       .mutateAsync({ status, voucherId: voucher.id })
       .then(() => undefined)
@@ -311,3 +248,5 @@ export function usePettyCashVoucherOverviewPage() {
     table,
   };
 }
+
+export type { PettyCashVoucherOverviewPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";

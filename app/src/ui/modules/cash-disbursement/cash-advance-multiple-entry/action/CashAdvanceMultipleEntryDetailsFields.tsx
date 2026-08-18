@@ -9,9 +9,7 @@ import {
   createCashAdvanceMultipleEntrySelectOptions,
 } from "@/app/src/data/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryData";
 import { useCashAdvanceMultipleEntryActionForm } from "@/app/src/hooks/modules/cash-disbursement/cash-advance-multiple-entry/useCashAdvanceMultipleEntry";
-import type {
-  CashAdvanceMultipleEntryFormValues,
-} from "@/app/src/types/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryTypes";
+import type { CashAdvanceMultipleEntryFormValues } from "@/app/src/types/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
@@ -23,7 +21,7 @@ export function CashAdvanceMultipleEntryDetailsFields({
   currencyOptions,
   isExchangeRateLoading,
   isReadonly,
-  onOpenPartyDialog,
+  onOpenPartyDrawer,
   onOpenProjectDrawer,
   onUpdateCurrency,
   onUpdateField,
@@ -33,7 +31,7 @@ export function CashAdvanceMultipleEntryDetailsFields({
   currencyOptions: AppAdvancedDropdownOption[];
   isExchangeRateLoading: boolean;
   isReadonly: boolean;
-  onOpenPartyDialog: () => void;
+  onOpenPartyDrawer: () => void;
   onOpenProjectDrawer: () => void;
   onUpdateCurrency: (currencyCode: string) => void;
   values: CashAdvanceMultipleEntryFormValues;
@@ -44,10 +42,7 @@ export function CashAdvanceMultipleEntryDetailsFields({
     () => createCashAdvanceMultipleEntryPartyOptions(values.partyCode, values.partyName),
     [values.partyCode, values.partyName],
   );
-  const accountOptions = useMemo(
-    () => createCashAdvanceMultipleEntrySelectOptions(CashAdvanceMultipleEntryAccountOptions),
-    [],
-  );
+  const accountOptions = useMemo(() => createCashAdvanceMultipleEntrySelectOptions(CashAdvanceMultipleEntryAccountOptions), []);
 
   return (
     <form className="grid min-w-0 gap-5 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5 xl:grid-cols-3">
@@ -59,7 +54,7 @@ export function CashAdvanceMultipleEntryDetailsFields({
               !isReadonly
                 ? {
                     label: "Add Party Name",
-                    onClick: onOpenPartyDialog,
+                    onClick: onOpenPartyDrawer,
                   }
                 : undefined
             }
@@ -100,10 +95,7 @@ export function CashAdvanceMultipleEntryDetailsFields({
               const project = projectOptions.find((option) => option.value === projectName);
 
               onUpdateField("projectRef", projectName);
-              onUpdateField(
-                "projectCode",
-                project?.label === projectName ? "" : project?.label ?? "",
-              );
+              onUpdateField("projectCode", project?.label === projectName ? "" : (project?.label ?? ""));
             }}
           />
         </CashAdvanceMultipleEntryFieldShell>
@@ -137,28 +129,13 @@ export function CashAdvanceMultipleEntryDetailsFields({
       </div>
       <div className="grid min-w-0 content-start gap-4">
         <CashAdvanceMultipleEntryFieldShell controlId="came-party-code" label="Party Code">
-          <input
-            id="came-party-code"
-            readOnly
-            value={values.partyCode}
-            className={CashAdvanceMultipleEntryReadOnlyFieldClassName}
-          />
+          <input id="came-party-code" readOnly value={values.partyCode} className={CashAdvanceMultipleEntryReadOnlyFieldClassName} />
         </CashAdvanceMultipleEntryFieldShell>
         <CashAdvanceMultipleEntryFieldShell controlId="came-project-code" label="Project Code">
-          <input
-            id="came-project-code"
-            readOnly
-            value={values.projectCode}
-            className={CashAdvanceMultipleEntryReadOnlyFieldClassName}
-          />
+          <input id="came-project-code" readOnly value={values.projectCode} className={CashAdvanceMultipleEntryReadOnlyFieldClassName} />
         </CashAdvanceMultipleEntryFieldShell>
         <CashAdvanceMultipleEntryFieldShell controlId="came-account-code" label="Default Account Code">
-          <input
-            id="came-account-code"
-            readOnly
-            value={values.accountCode}
-            className={CashAdvanceMultipleEntryReadOnlyFieldClassName}
-          />
+          <input id="came-account-code" readOnly value={values.accountCode} className={CashAdvanceMultipleEntryReadOnlyFieldClassName} />
         </CashAdvanceMultipleEntryFieldShell>
         <CashAdvanceMultipleEntryFieldShell controlId="came-currency" label="Currency" isRequired>
           <CurrencyExchangeRateRow
@@ -213,12 +190,7 @@ export function CashAdvanceMultipleEntryDetailsFields({
           />
         </CashAdvanceMultipleEntryFieldShell>
         <CashAdvanceMultipleEntryFieldShell controlId="came-status" label="Status">
-          <input
-            id="came-status"
-            readOnly
-            value={values.status}
-            className={CashAdvanceMultipleEntryReadOnlyFieldClassName}
-          />
+          <input id="came-status" readOnly value={values.status} className={CashAdvanceMultipleEntryReadOnlyFieldClassName} />
         </CashAdvanceMultipleEntryFieldShell>
       </div>
     </form>

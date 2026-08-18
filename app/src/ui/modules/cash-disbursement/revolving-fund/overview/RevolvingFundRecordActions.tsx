@@ -37,9 +37,7 @@ export function RevolvingFundRecordActions({
       icon: isPosted ? Undo2 : ThumbsUp,
       label: isPosted ? "Undo Approved" : "Approve",
       disabled: record.status !== RevolvingFundStatuses.forApproval && !isPosted,
-      onSelect: () => isPosted
-        ? onUpdateStatus(record, RevolvingFundStatuses.forApproval)
-        : setStatus(RevolvingFundStatuses.posted),
+      onSelect: () => (isPosted ? onUpdateStatus(record, RevolvingFundStatuses.forApproval) : setStatus(RevolvingFundStatuses.posted)),
     },
     {
       type: "button",
@@ -47,9 +45,8 @@ export function RevolvingFundRecordActions({
       label: isDisapproved ? "Undo Disapproved" : "Disapprove",
       disabled: record.status !== RevolvingFundStatuses.forApproval && !isDisapproved,
       tone: isDisapproved ? "default" : "danger",
-      onSelect: () => isDisapproved
-        ? onUpdateStatus(record, RevolvingFundStatuses.forApproval)
-        : setStatus(RevolvingFundStatuses.disapproved),
+      onSelect: () =>
+        isDisapproved ? onUpdateStatus(record, RevolvingFundStatuses.forApproval) : setStatus(RevolvingFundStatuses.disapproved),
     },
     {
       type: "button",
@@ -57,9 +54,7 @@ export function RevolvingFundRecordActions({
       label: isCancelled ? "Undo Cancelled" : "Cancel",
       disabled: record.status === RevolvingFundStatuses.posted || record.status === RevolvingFundStatuses.disapproved,
       tone: isCancelled ? "default" : "danger",
-      onSelect: () => isCancelled
-        ? onUpdateStatus(record, RevolvingFundStatuses.draft)
-        : setStatus(RevolvingFundStatuses.cancelled),
+      onSelect: () => (isCancelled ? onUpdateStatus(record, RevolvingFundStatuses.draft) : setStatus(RevolvingFundStatuses.cancelled)),
     },
   ];
   return (
@@ -84,4 +79,3 @@ export function RevolvingFundRecordActions({
     </>
   );
 }
-

@@ -8,9 +8,7 @@ export function CashAdvanceMultipleEntryFileAttachmentFields({
 }: {
   attachments: CashAdvanceMultipleEntryFormValues["attachments"];
   isReadonly: boolean;
-  onAttachmentsChange: (
-    attachments: CashAdvanceMultipleEntryFormValues["attachments"],
-  ) => void;
+  onAttachmentsChange: (attachments: CashAdvanceMultipleEntryFormValues["attachments"]) => void;
 }) {
   return (
     <TransactionFileAttachmentFields

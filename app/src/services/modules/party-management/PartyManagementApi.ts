@@ -30,7 +30,9 @@ import type {
   PartyManagementStatistics,
   PartyType,
 } from "@/app/src/types/modules/party-management/PartyManagementTypes";
+import type { CashAdvanceEmployeeOption } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 import type { ItemSupplierRecord } from "@/app/src/types/modules/item-management/items/ItemManagementTypes";
+import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 
 const EmptyPartyStatistics: PartyManagementStatistics = {
   activeParties: 0,
@@ -121,6 +123,17 @@ export async function fetchPartyOptions(partyType: PartyType): Promise<ItemSuppl
   }));
 }
 
+export async function fetchCashAdvanceEmployeeOptions(): Promise<CashAdvanceEmployeeOption[]> {
+  const response = await partyMaintenanceControllerFindOptionsV1("EMPLOYEE");
+
+  return response.parties.map((party) => ({
+    cashAdvanceBalance: party.cashAdvanceBalance ?? party.cashAdvanceLimit ?? "",
+    cashAdvanceLimit: party.cashAdvanceLimit ?? "",
+    partyCode: party.partyCodeNo,
+    partyName: party.name,
+  }));
+}
+
 export async function GetPartyManagementRecordsPage({
   query,
   records,
@@ -201,6 +214,7 @@ function mapApiParty(party: PartyResponseDto): PartyInformationRecord {
     vendorAdvanceAccount: party.vendorAdvanceAccount ?? "",
     employeeAdvanceAccount: party.employeeAdvanceAccount ?? "",
     employeePayableAccount: party.employeePayableAccount ?? "",
+    cashAdvanceLimit: party.cashAdvanceLimit ?? "",
     termId: party.termId ?? "",
     termName: party.termName ?? "",
     tin: party.tin ?? "",
@@ -306,6 +320,10 @@ function toApiPartyPayload(
     employeePayableAccount: record.partyTypes.includes("Employee")
       ? normalizeOptionalText(record.employeePayableAccount)
       : null,
+    cashAdvanceLimit:
+      record.partyTypes.includes("Employee") && record.cashAdvanceLimit
+        ? parseMoneyNumberInput(record.cashAdvanceLimit)
+        : null,
     termId: normalizeOptionalText(record.termId),
     tin: normalizeOptionalText(record.tin),
     atcCode: normalizeOptionalText(record.atcCode),

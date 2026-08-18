@@ -27,10 +27,7 @@ export const AdvancesToSuppliersColumnLabels = {
   status: "Status",
   actions: "Action",
 } as const;
-export const AdvancesToSuppliersOverviewColumnWidths: Record<
-  keyof typeof AdvancesToSuppliersColumnLabels,
-  number
-> = {
+export const AdvancesToSuppliersOverviewColumnWidths: Record<keyof typeof AdvancesToSuppliersColumnLabels, number> = {
   transactionNo: TransactionOverviewColumnWidths.transactionNumber,
   documentDate: TransactionOverviewColumnWidths.documentDate,
   partyCode: TransactionOverviewColumnWidths.partyCode,
@@ -47,14 +44,17 @@ export const AdvancesToSuppliersOverviewColumnWidths: Record<
   actions: CashDisbursementOverviewActionColumnWidth,
 };
 export const AdvancesToSuppliersDefaultVisibleColumnIds = [
-  "transactionNo", "documentDate", "partyName", "amount", "status", "actions",
+  "transactionNo",
+  "documentDate",
+  "partyName",
+  "amount",
+  "status",
+  "actions",
 ] as const;
 export const AdvancesToSuppliersDefaultColumnVisibility = Object.fromEntries(
   Object.keys(AdvancesToSuppliersColumnLabels).map((columnId) => [
     columnId,
-    AdvancesToSuppliersDefaultVisibleColumnIds.includes(
-      columnId as (typeof AdvancesToSuppliersDefaultVisibleColumnIds)[number],
-    ),
+    AdvancesToSuppliersDefaultVisibleColumnIds.includes(columnId as (typeof AdvancesToSuppliersDefaultVisibleColumnIds)[number]),
   ]),
 );
 export const AdvancesToSuppliersStatuses = {
@@ -66,11 +66,13 @@ export const AdvancesToSuppliersStatuses = {
   posted: "Posted",
 } as const;
 export const AdvancesToSuppliersRecordStatuses = [
-  "Draft", "For Approval", "Posted", "Disapproved", "Cancelled",
+  "Draft",
+  "For Approval",
+  "Posted",
+  "Disapproved",
+  "Cancelled",
 ] as const satisfies readonly AdvancesToSuppliersStatus[];
-export const AdvancesToSuppliersStatusOptions = [
-  "All", ...AdvancesToSuppliersRecordStatuses,
-] as const;
+export const AdvancesToSuppliersStatusOptions = ["All", ...AdvancesToSuppliersRecordStatuses] as const;
 export const AdvancesToSuppliersActionTabs: {
   id: AdvancesToSuppliersActionTab;
   label: string;

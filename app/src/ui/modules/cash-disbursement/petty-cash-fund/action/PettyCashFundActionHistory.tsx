@@ -31,9 +31,7 @@ export function PettyCashFundActionHistory({ record }: { record?: PettyCashFundR
   );
 }
 
-function createPettyCashFundHistory(
-  record?: PettyCashFundRecord,
-): ModuleHistoryEntry<PettyCashFundRecord["status"]>[] {
+function createPettyCashFundHistory(record?: PettyCashFundRecord): ModuleHistoryEntry<PettyCashFundRecord["status"]>[] {
   if (!record) return [];
   const history: ModuleHistoryEntry<PettyCashFundRecord["status"]>[] = [
     {

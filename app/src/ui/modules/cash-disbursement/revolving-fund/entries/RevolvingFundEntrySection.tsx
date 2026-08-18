@@ -25,10 +25,7 @@ import {
   createRevolvingFundAccountingColumns,
   createRevolvingFundItemColumns,
 } from "@/app/src/ui/modules/cash-disbursement/revolving-fund/entries/RevolvingFundLineColumns";
-import {
-  ModuleDataEntry,
-  type ModuleDataEntryColumnOption,
-} from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import { ModuleDataEntry, type ModuleDataEntryColumnOption } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { clampColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/utils";
 
 export function RevolvingFundEntrySection({ page }: { page: RevolvingFundActionPageState }) {
@@ -49,9 +46,7 @@ export function RevolvingFundEntrySection({ page }: { page: RevolvingFundActionP
     () => createRevolvingFundItemColumns(page, itemColumnLabels, itemColumnWidths),
     [itemColumnLabels, itemColumnWidths, page],
   );
-  const columns = itemColumnOrder
-    .filter((columnId) => visibleItemColumnIds.includes(columnId))
-    .map((columnId) => allItemColumns[columnId]);
+  const columns = itemColumnOrder.filter((columnId) => visibleItemColumnIds.includes(columnId)).map((columnId) => allItemColumns[columnId]);
   const accountingRows = useMemo<RevolvingFundAccountingEntry[]>(() => {
     const total = page.totals.grossAmount;
     return [
@@ -76,7 +71,14 @@ export function RevolvingFundEntrySection({ page }: { page: RevolvingFundActionP
         particulars: page.values.remarks,
       },
     ];
-  }, [page.totals.grossAmount, page.values.accountCode, page.values.accountTitle, page.values.partyCode, page.values.partyName, page.values.remarks]);
+  }, [
+    page.totals.grossAmount,
+    page.values.accountCode,
+    page.values.accountTitle,
+    page.values.partyCode,
+    page.values.partyName,
+    page.values.remarks,
+  ]);
   const allAccountingColumns = useMemo(
     () => createRevolvingFundAccountingColumns(accountingColumnLabels, accountingColumnWidths),
     [accountingColumnLabels, accountingColumnWidths],
@@ -170,9 +172,7 @@ export function RevolvingFundEntrySection({ page }: { page: RevolvingFundActionP
         title={title}
         emptyRowLabel="accounting entry"
         footerDetails={
-          <span className="text-sm font-semibold text-darknavy">
-            Total Amount: {formatRevolvingFundAmount(page.totals.grossAmount)}
-          </span>
+          <span className="text-sm font-semibold text-darknavy">Total Amount: {formatRevolvingFundAmount(page.totals.grossAmount)}</span>
         }
         columns={accountingColumns}
         columnOptions={accountingColumnOptions}
@@ -206,9 +206,7 @@ export function RevolvingFundEntrySection({ page }: { page: RevolvingFundActionP
       emptyRowLabel="revolving fund item"
       error={page.errors.items}
       footerDetails={
-        <span className="text-sm font-semibold text-darknavy">
-          Total Amount: {formatRevolvingFundAmount(page.totals.amount)}
-        </span>
+        <span className="text-sm font-semibold text-darknavy">Total Amount: {formatRevolvingFundAmount(page.totals.amount)}</span>
       }
       columns={columns}
       columnOptions={itemColumnOptions}
@@ -267,9 +265,6 @@ function updateVisibleColumnIds<TColumnId extends string>(
 }
 
 function calculateFitWidth<TRow, TColumnId extends keyof TRow & string>(label: string, rows: TRow[], columnId: TColumnId) {
-  const longestValueLength = rows.reduce(
-    (length, row) => Math.max(length, String(row[columnId] ?? "").length),
-    label.length,
-  );
+  const longestValueLength = rows.reduce((length, row) => Math.max(length, String(row[columnId] ?? "").length), label.length);
   return clampColumnWidth(longestValueLength * 8 + 76);
 }

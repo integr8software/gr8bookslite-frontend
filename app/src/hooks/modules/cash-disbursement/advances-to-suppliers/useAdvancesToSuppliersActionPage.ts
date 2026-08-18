@@ -32,27 +32,15 @@ import type {
 import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 import { validateAdvancesToSuppliersForm } from "@/app/src/validations/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersValidation";
 
-export function useAdvancesToSuppliersActionPage(
-  options: { onSaved?: () => void } = {},
-) {
+export function useAdvancesToSuppliersActionPage(options: { onSaved?: () => void } = {}) {
   const transactionCurrency = useTransactionCurrency();
   const pathname = usePathname();
   const params = useParams<{ recordId?: string }>();
-  const mode: AdvancesToSuppliersActionMode = pathname.includes("/view/")
-    ? "view"
-    : pathname.includes("/edit/")
-      ? "edit"
-      : "add";
-  const initialRecord = mode === "add"
-    ? undefined
-    : getAdvancesToSuppliersRecords().find((item) => item.id === params.recordId);
+  const mode: AdvancesToSuppliersActionMode = pathname.includes("/view/") ? "view" : pathname.includes("/edit/") ? "edit" : "add";
+  const initialRecord = mode === "add" ? undefined : getAdvancesToSuppliersRecords().find((item) => item.id === params.recordId);
   const [record, setRecord] = useState(initialRecord);
   const [values, setValues] = useState<AdvancesToSuppliersFormValues>(() =>
-    createAdvancesToSuppliersFormValues(
-      initialRecord,
-      createNextAdvancesToSuppliersNumber(),
-      transactionCurrency.baseCurrencyCode,
-    ),
+    createAdvancesToSuppliersFormValues(initialRecord, createNextAdvancesToSuppliersNumber(), transactionCurrency.baseCurrencyCode),
   );
   const [errors, setErrors] = useState<AdvancesToSuppliersFormErrors>({});
   const [activeTab, setActiveTab] = useState<AdvancesToSuppliersActionTab>("details");
@@ -62,7 +50,7 @@ export function useAdvancesToSuppliersActionPage(
   const purchaseOrderCopyRecords = useMemo<AppCopyFromRecord[]>(
     () =>
       loadPurchaseOrders()
-        .filter((order) => order.status !== "Cancelled")
+        .filter((order) => order.status !== AdvancesToSuppliersStatuses.cancelled)
         .map((order) => {
           const party = getPurchaseOrderParty(order);
 
@@ -88,10 +76,7 @@ export function useAdvancesToSuppliersActionPage(
     }));
   }, [mode, transactionCurrency.baseCurrencyCode, transactionCurrency.isBaseCurrencyResolved]);
 
-  function updateField<TKey extends keyof AdvancesToSuppliersFormValues>(
-    field: TKey,
-    value: AdvancesToSuppliersFormValues[TKey],
-  ) {
+  function updateField<TKey extends keyof AdvancesToSuppliersFormValues>(field: TKey, value: AdvancesToSuppliersFormValues[TKey]) {
     if (isReadonly) return;
     setValues((current) => {
       const next = { ...current, [field]: value };
@@ -105,9 +90,7 @@ export function useAdvancesToSuppliersActionPage(
     setErrors((current) => ({
       ...current,
       [field]: undefined,
-      ...(field === "totalPoAmount" || field === "advancePaymentPercentage"
-        ? { advancePaymentAmount: undefined }
-        : {}),
+      ...(field === "totalPoAmount" || field === "advancePaymentPercentage" ? { advancePaymentAmount: undefined } : {}),
     }));
   }
 
@@ -133,9 +116,7 @@ export function useAdvancesToSuppliersActionPage(
       return;
     }
 
-    const totalPoAmount = formatAdvancesToSuppliersAmount(
-      getPurchaseOrderTotals(order).netAmount,
-    );
+    const totalPoAmount = formatAdvancesToSuppliersAmount(getPurchaseOrderTotals(order).netAmount);
     const party = getPurchaseOrderParty(order);
     hasEditedCurrencyRef.current = true;
     setValues((current) => ({
@@ -148,9 +129,7 @@ export function useAdvancesToSuppliersActionPage(
       exchangeRate: formatLoadedExchangeRate(order.exchangeRate || 1),
       poReference: order.transNo,
       totalPoAmount,
-      advancePaymentAmount: formatAdvancesToSuppliersAmount(
-        calculateAdvancePayment(totalPoAmount, current.advancePaymentPercentage),
-      ),
+      advancePaymentAmount: formatAdvancesToSuppliersAmount(calculateAdvancePayment(totalPoAmount, current.advancePaymentPercentage)),
       remarks: order.remarks || current.remarks,
     }));
     setErrors((current) => ({
@@ -169,19 +148,13 @@ export function useAdvancesToSuppliersActionPage(
   }
 
   function save(status: AdvancesToSuppliersStatus) {
-    const nextErrors = status === AdvancesToSuppliersStatuses.draft
-      ? {}
-      : validateAdvancesToSuppliersForm(values);
+    const nextErrors = status === AdvancesToSuppliersStatuses.draft ? {} : validateAdvancesToSuppliersForm(values);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) {
       toast.error("Please fix the highlighted Advances to Suppliers fields.");
       return false;
     }
-    const nextRecord = createAdvancesToSuppliersRecord(
-      values,
-      status,
-      mode === "edit" ? record : undefined,
-    );
+    const nextRecord = createAdvancesToSuppliersRecord(values, status, mode === "edit" ? record : undefined);
     saveAdvancesToSuppliersRecords(upsertAdvancesToSuppliersRecord(nextRecord));
     setRecord(nextRecord);
     setValues(createAdvancesToSuppliersFormValues(nextRecord));
@@ -226,6 +199,4 @@ export function useAdvancesToSuppliersActionPage(
   };
 }
 
-export type AdvancesToSuppliersActionPageState = ReturnType<
-  typeof useAdvancesToSuppliersActionPage
->;
+export type { AdvancesToSuppliersActionPageState } from "@/app/src/types/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersTypes";

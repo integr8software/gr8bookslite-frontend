@@ -1,6 +1,4 @@
-import {
-  RevolvingFundStatuses,
-} from "@/app/src/constants/modules/cash-disbursement/revolving-fund/RevolvingFundConstants";
+import { RevolvingFundStatuses } from "@/app/src/constants/modules/cash-disbursement/revolving-fund/RevolvingFundConstants";
 import type {
   RevolvingFundFormValues,
   RevolvingFundItem,
@@ -12,11 +10,38 @@ import { formatMoneyNumberDisplayValue, parseMoneyNumberInput } from "@/app/src/
 import { todayDateValue } from "@/app/src/utils/date.util";
 
 export const RevolvingFundSeedRecords: RevolvingFundRecord[] = [
-  createSeed("1", "RF-000063", "2026-02-23", "E000102", "Raymark B. Arsicolo", 120, "Initial revolving fund", "For Approval"),
-  createSeed("2", "RF-000062", "2026-02-18", "E000117", "Maria L. Dela Cruz", 15000, "Field operations fund", "Posted"),
-  createSeed("3", "RF-000061", "2026-02-12", "E000145", "Jose P. Santos", 8500, "Branch operations fund", "Draft"),
-  createSeed("4", "RF-000060", "2026-02-08", "E000117", "Maria L. Dela Cruz", 4200, "Disapproved office fund", "Disapproved"),
-  createSeed("5", "RF-000059", "2026-02-02", "E000102", "Raymark B. Arsicolo", 3000, "Cancelled field fund", "Cancelled"),
+  createSeed(
+    "1",
+    "RF-000063",
+    "2026-02-23",
+    "E000102",
+    "Raymark B. Arsicolo",
+    120,
+    "Initial revolving fund",
+    RevolvingFundStatuses.forApproval,
+  ),
+  createSeed("2", "RF-000062", "2026-02-18", "E000117", "Maria L. Dela Cruz", 15000, "Field operations fund", RevolvingFundStatuses.posted),
+  createSeed("3", "RF-000061", "2026-02-12", "E000145", "Jose P. Santos", 8500, "Branch operations fund", RevolvingFundStatuses.draft),
+  createSeed(
+    "4",
+    "RF-000060",
+    "2026-02-08",
+    "E000117",
+    "Maria L. Dela Cruz",
+    4200,
+    "Disapproved office fund",
+    RevolvingFundStatuses.disapproved,
+  ),
+  createSeed(
+    "5",
+    "RF-000059",
+    "2026-02-02",
+    "E000102",
+    "Raymark B. Arsicolo",
+    3000,
+    "Cancelled field fund",
+    RevolvingFundStatuses.cancelled,
+  ),
 ];
 
 export const RevolvingFundCopyFromRecords: AppCopyFromRecord[] = [

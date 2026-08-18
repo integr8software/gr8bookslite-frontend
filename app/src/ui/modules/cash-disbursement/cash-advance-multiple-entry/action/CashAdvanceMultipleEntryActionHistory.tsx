@@ -8,11 +8,7 @@ import type { CashAdvanceMultipleEntryRecord } from "@/app/src/types/modules/cas
 import type { ModuleHistoryEntry } from "@/app/src/types/shared/module/ModuleHistoryTypes";
 import { ModuleHistoryDialog } from "@/app/src/ui/shared/module/ModuleHistoryDialog";
 
-export function CashAdvanceMultipleEntryActionHistory({
-  record,
-}: {
-  record?: CashAdvanceMultipleEntryRecord | null;
-}) {
+export function CashAdvanceMultipleEntryActionHistory({ record }: { record?: CashAdvanceMultipleEntryRecord | null }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -38,9 +34,7 @@ export function CashAdvanceMultipleEntryActionHistory({
   );
 }
 
-function createCashAdvanceMultipleEntryHistory(
-  record?: CashAdvanceMultipleEntryRecord | null,
-): ModuleHistoryEntry<CashAdvanceStatus>[] {
+function createCashAdvanceMultipleEntryHistory(record?: CashAdvanceMultipleEntryRecord | null): ModuleHistoryEntry<CashAdvanceStatus>[] {
   if (!record) {
     return [];
   }

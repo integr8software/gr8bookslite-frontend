@@ -1,5 +1,6 @@
 import { ReceiptText } from "lucide-react";
 import {
+  DisbursementVoucherAllStatusFilter,
   DisbursementVoucherStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import { getDisbursementVoucherDisplayStatus } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
@@ -8,10 +9,7 @@ import type {
   DisbursementVoucherStatusFilter,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
-import {
-  getModuleStatusMetricIcon,
-  getModuleStatusMetricIconClassName,
-} from "@/app/src/ui/shared/module/ModuleStatusBadge";
+import { getModuleStatusMetricIcon, getModuleStatusMetricIconClassName } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import { formatPartOfTotalPercentage } from "@/app/src/utils/percentage.util";
 
 export function DisbursementVoucherMetrics({
@@ -35,8 +33,8 @@ export function DisbursementVoucherMetrics({
       summary: "All time",
       icon: ReceiptText,
       tone: "violet" as const,
-      isActive: statusFilter === "all",
-      onClick: () => onStatusFilterChange("all"),
+      isActive: statusFilter === DisbursementVoucherAllStatusFilter,
+      onClick: () => onStatusFilterChange(DisbursementVoucherAllStatusFilter),
     },
     {
       label: DisbursementVoucherStatuses.draft,
@@ -49,7 +47,7 @@ export function DisbursementVoucherMetrics({
       onClick: () => onStatusFilterChange(DisbursementVoucherStatuses.draft),
     },
     {
-      label: "For Approval",
+      label: DisbursementVoucherStatuses.forApproval,
       value: forApprovalCount,
       summary: formatPartOfTotalPercentage(forApprovalCount, previewRows.length),
       icon: getModuleStatusMetricIcon(DisbursementVoucherStatuses.forApproval),
@@ -59,7 +57,7 @@ export function DisbursementVoucherMetrics({
       onClick: () => onStatusFilterChange(DisbursementVoucherStatuses.forApproval),
     },
     {
-      label: "Posted",
+      label: DisbursementVoucherStatuses.posted,
       value: postedCount,
       summary: formatPartOfTotalPercentage(postedCount, previewRows.length),
       icon: getModuleStatusMetricIcon(DisbursementVoucherStatuses.posted),
@@ -69,7 +67,7 @@ export function DisbursementVoucherMetrics({
       onClick: () => onStatusFilterChange(DisbursementVoucherStatuses.posted),
     },
     {
-      label: "Disapproved",
+      label: DisbursementVoucherStatuses.disapproved,
       value: disapprovedCount,
       summary: formatPartOfTotalPercentage(disapprovedCount, previewRows.length),
       icon: getModuleStatusMetricIcon(DisbursementVoucherStatuses.disapproved),
@@ -79,7 +77,7 @@ export function DisbursementVoucherMetrics({
       onClick: () => onStatusFilterChange(DisbursementVoucherStatuses.disapproved),
     },
     {
-      label: "Cancelled",
+      label: DisbursementVoucherStatuses.cancelled,
       value: cancelledCount,
       summary: formatPartOfTotalPercentage(cancelledCount, previewRows.length),
       icon: getModuleStatusMetricIcon(DisbursementVoucherStatuses.cancelled),

@@ -2,10 +2,7 @@
 
 import { useState } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
-import {
-  CashAdvanceHref,
-  CashAdvanceStatuses,
-} from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
+import { CashAdvanceHref, CashAdvanceStatuses } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
 import { useCashAdvanceActionForm } from "@/app/src/hooks/modules/cash-disbursement/cash-advance/useCashAdvance";
 import type { CashAdvanceActionMode } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 import { CashAdvanceDetailsForm } from "@/app/src/ui/modules/cash-disbursement/cash-advance/action/CashAdvanceDetailsFields";
@@ -35,11 +32,7 @@ export function CashAdvanceActionPage() {
         <CashAdvanceActionHeader
           mode={mode}
           onPreview={() => setIsReportPreviewOpen(true)}
-          onSaveDraft={
-            mode === "add"
-              ? () => advanceForm.submitAdvance(CashAdvanceStatuses.draft)
-              : undefined
-          }
+          onSaveDraft={mode === "add" ? () => advanceForm.submitAdvance(CashAdvanceStatuses.draft) : undefined}
           onSubmit={() => advanceForm.submitAdvance(CashAdvanceStatuses.forApproval)}
           onUpdateStatus={advanceForm.updateAdvanceStatus}
           record={advanceForm.record}

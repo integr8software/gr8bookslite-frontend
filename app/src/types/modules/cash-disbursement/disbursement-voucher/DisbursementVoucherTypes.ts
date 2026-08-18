@@ -2,8 +2,11 @@ import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup
 import type { TransactionAttachment } from "@/app/src/types/shared/transaction-setup/TransactionAttachmentTypes";
 import type { PaymentTypeRecord as AppPaymentTypeRecord } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
+import type { useDisbursementVoucherActionPage } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucherActionPage";
 
 export type DisbursementVoucherStatus = "Open" | "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled" | "Closed";
+
+export type DisbursementVoucherDisplayStatus = DisbursementVoucherStatus;
 
 export type DisbursementVoucherTableColumnKey =
   | "voucherNo"
@@ -32,11 +35,11 @@ export type WorkflowStep = "details" | "entries" | "review";
 
 export type DisbursementVoucherActionMode = "add" | "edit" | "view";
 
+export type DisbursementVoucherActionPageState = ReturnType<typeof useDisbursementVoucherActionPage>;
+
 export type DisbursementVoucherActionTab = "details" | "bank-information" | "attachments";
 
-export type DisbursementVoucherStatusFilter =
-  | "all"
-  | Exclude<DisbursementVoucherStatus, "Open">;
+export type DisbursementVoucherStatusFilter = "all" | Exclude<DisbursementVoucherStatus, "Open">;
 
 export type DisbursementVoucherHistoryEntry = {
   id: string;
@@ -207,6 +210,20 @@ export type DisbursementVoucherPreviewRow = {
   voucher?: DisbursementVoucherRecord;
 };
 
+export type DisbursementVoucherStoreState = {
+  previewRows: DisbursementVoucherPreviewRow[];
+  transactions: DisbursementTransactionRecord[];
+  vouchers: DisbursementVoucherRecord[];
+  addTransaction: (transaction: DisbursementTransactionRecord) => void;
+  updateTransaction: (transaction: DisbursementTransactionRecord) => void;
+  addVoucher: (voucher: DisbursementVoucherRecord) => void;
+  updateVoucher: (voucher: DisbursementVoucherRecord) => void;
+  deleteVoucher: (voucherId: string) => void;
+  isLoading: boolean;
+  lastSyncedAt: number;
+  isMutating: boolean;
+};
+
 export type DisbursementVoucherFormValues = {
   transactionId: string;
   voucherNo: string;
@@ -299,9 +316,9 @@ export type DisbursementVoucherDetailsFormProps = {
   isReadonly: boolean;
   paymentTypeRecords: AppPaymentTypeRecord[];
   values: DisbursementVoucherFormValues;
-  onOpenPartyNameDialog: () => void;
+  onOpenPartyNameDrawer: () => void;
   onOpenPaymentTypeDrawer: () => void;
-  onOpenProjectNameDialog: () => void;
+  onOpenProjectNameDrawer: () => void;
   onPartyChange: (partyCode: string, partyName: string) => void;
   onCurrencyChange: (currencyCode: string) => void;
   onPaymentTypeChange: (paymentMethod: string) => void;

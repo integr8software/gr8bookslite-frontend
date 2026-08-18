@@ -7,6 +7,29 @@ import type { ModuleDataEntryClearAction } from "@/app/src/types/shared/module/m
 
 export const DisbursementVoucherLineEntriesField = "lineEntries";
 
+export const DisbursementVoucherAccountingDropdownClassName =
+  "[&_.app-advanced-dropdown-control]:h-10 [&_.app-advanced-dropdown-control]:rounded-none [&_.app-advanced-dropdown-control]:border-0 [&_.app-advanced-dropdown-control]:bg-transparent [&_.app-advanced-dropdown-control]:px-3 [&_.app-advanced-dropdown-control]:shadow-none [&_.app-advanced-dropdown-control]:focus:ring-2 [&_.app-advanced-dropdown-control]:focus:ring-inset [&_.app-advanced-dropdown-control]:focus:ring-skyblue/35";
+
+export const DisbursementAccountingDebitColumnId: DisbursementAccountingGridColumnId = "debit";
+export const DisbursementAccountingCreditColumnId: DisbursementAccountingGridColumnId = "credit";
+export const DisbursementAccountingAmountColumnIds = new Set<DisbursementAccountingGridColumnId>([
+  DisbursementAccountingDebitColumnId,
+  DisbursementAccountingCreditColumnId,
+]);
+
+export const DisbursementAccountingWorksheetBorderColorArgb = "FFE5E7EB";
+
+export const DisbursementAccountingPdfGridLayout = {
+  hLineColor: () => "#E5E7EB",
+  hLineWidth: () => 0.6,
+  paddingBottom: () => 0,
+  paddingLeft: () => 0,
+  paddingRight: () => 0,
+  paddingTop: () => 0,
+  vLineColor: () => "#E5E7EB",
+  vLineWidth: () => 0.6,
+};
+
 export const DefaultExpenseEntryColumnOrder: ExpenseEntryColumnId[] = [
   "expenseType",
   "amount",

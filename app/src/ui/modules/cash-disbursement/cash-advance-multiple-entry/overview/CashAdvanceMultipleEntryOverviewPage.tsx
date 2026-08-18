@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Ban, Edit3, Eye, Plus, ReceiptText, Search, ThumbsDown, ThumbsUp, Undo2 } from "lucide-react";
 import {
   CashAdvanceMultipleEntryHref,
+  CashAdvanceMultipleEntryAllStatusFilter,
   CashAdvanceMultipleEntryStatusFilterOptions,
   CashAdvanceMultipleEntryStatusFilters,
   CashAdvanceMultipleEntryStatuses,
@@ -388,8 +389,8 @@ function CashAdvanceMultipleEntryMetrics({
           summary: "All time",
           icon: ReceiptText,
           tone: "violet",
-          isActive: statusFilter === "all",
-          onClick: () => onStatusFilterChange("all"),
+          isActive: statusFilter === CashAdvanceMultipleEntryAllStatusFilter,
+          onClick: () => onStatusFilterChange(CashAdvanceMultipleEntryAllStatusFilter),
         },
         {
           label: CashAdvanceMultipleEntryStatuses.draft,

@@ -9,18 +9,45 @@ import type {
 
 export const DisbursementVoucherHref = getModuleRoute("DV");
 
+export const DisbursementVoucherQueryKeys = {
+  transactions: () => ["cash-disbursement", "disbursement-voucher", "transactions"] as const,
+  vouchers: () => ["cash-disbursement", "disbursement-voucher", "vouchers"] as const,
+};
+
 export const DisbursementVoucherTablePaginationStorageKey = "cash-disbursement-disbursement-voucher";
 
 export const DisbursementVoucherTablePreferencesStorageKey = "gr8booksneo:disbursement-voucher:table-preferences:v2";
 export const DisbursementVoucherTablePreferencesModuleKey = "cash-disbursement:disbursement-voucher";
 export const DisbursementVoucherTransactionStorageKey = "gr8books.disbursement-voucher.transactions";
 export const DisbursementVoucherRecordStorageKey = "gr8books.disbursement-voucher.vouchers";
+export const DisbursementVoucherAccountingGridSessionStorageKey = "gr8books.disbursementVoucher.accountingGrid";
 
 export const DisbursementVoucherBankSelectPlaceholder = "--Select Bank--";
 export const DisbursementVoucherBankSearchPlaceholder = "Search bank";
 
 export const DisbursementVoucherFieldClassName =
   "app-data-entry-field h-11 min-w-0 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15 read-only:bg-white read-only:text-darknavy disabled:bg-white disabled:text-darknavy";
+
+export const DisbursementVoucherPdfNoBordersLayout = {
+  hLineWidth: () => 0,
+  vLineWidth: () => 0,
+  paddingLeft: () => 0,
+  paddingRight: () => 0,
+  paddingTop: () => 0,
+  paddingBottom: () => 0,
+};
+
+export const DisbursementVoucherPdfOuterLayout = {
+  ...DisbursementVoucherPdfNoBordersLayout,
+  hLineWidth: () => 1,
+  vLineWidth: () => 1,
+};
+
+export const DisbursementVoucherPdfThinGridLayout = {
+  ...DisbursementVoucherPdfNoBordersLayout,
+  hLineWidth: () => 0.35,
+  vLineWidth: () => 0.35,
+};
 
 export const DisbursementVoucherNotFoundCopy = {
   actionLabel: "Return to Disbursement Vouchers",
@@ -47,6 +74,8 @@ export const DisbursementVoucherStatuses = {
   posted: "Posted",
 } as const;
 
+export const DisbursementVoucherAllStatusFilter = "all";
+
 export const DisbursementVoucherWorkflowSteps = [
   {
     id: "details",
@@ -66,7 +95,7 @@ export const DisbursementVoucherWorkflowSteps = [
 ] as const;
 
 export const DisbursementVoucherStatusFilters = [
-  "all",
+  DisbursementVoucherAllStatusFilter,
   DisbursementVoucherStatuses.draft,
   DisbursementVoucherStatuses.forApproval,
   DisbursementVoucherStatuses.posted,
@@ -76,7 +105,7 @@ export const DisbursementVoucherStatusFilters = [
 ] as const;
 
 export const DisbursementVoucherStatusFilterOptions = [
-  { label: "All statuses", value: "all" },
+  { label: "All statuses", value: DisbursementVoucherAllStatusFilter },
   {
     label: DisbursementVoucherStatuses.draft,
     value: DisbursementVoucherStatuses.draft,
@@ -230,10 +259,7 @@ export function getDisbursementVoucherStatusDialogCopy(
   recordLabel: string,
   currentStatus?: DisbursementVoucherStatus,
 ) {
-  if (
-    status === DisbursementVoucherStatuses.forApproval &&
-    currentStatus === DisbursementVoucherStatuses.posted
-  ) {
+  if (status === DisbursementVoucherStatuses.forApproval && currentStatus === DisbursementVoucherStatuses.posted) {
     return {
       confirmLabel: "Undo Approved",
       description: `This will undo the approval of ${recordLabel} and return it to For Approval.`,
@@ -244,10 +270,7 @@ export function getDisbursementVoucherStatusDialogCopy(
     };
   }
 
-  if (
-    status === DisbursementVoucherStatuses.forApproval &&
-    currentStatus === DisbursementVoucherStatuses.disapproved
-  ) {
+  if (status === DisbursementVoucherStatuses.forApproval && currentStatus === DisbursementVoucherStatuses.disapproved) {
     return {
       confirmLabel: "Undo Disapproved",
       description: `This will undo the disapproval of ${recordLabel} and return it to For Approval.`,

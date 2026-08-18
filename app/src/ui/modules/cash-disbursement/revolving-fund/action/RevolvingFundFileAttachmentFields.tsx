@@ -13,4 +13,3 @@ export function RevolvingFundFileAttachmentFields({ page }: { page: RevolvingFun
     />
   );
 }
-

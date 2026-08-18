@@ -39,17 +39,58 @@ export function RevolvingFundReplenishmentActionPage() {
     <>
       <section className="grid gap-5">
         <RevolvingFundReplenishmentActionHeader page={page} onPreview={() => page.setIsPreviewOpen(true)} />
-        <ModuleTabs activeTab={page.activeTab} ariaLabel="Revolving fund replenishment sections" tabs={RevolvingFundReplenishmentActionTabs} onTabChange={page.setActiveTab} />
+        <ModuleTabs
+          activeTab={page.activeTab}
+          ariaLabel="Revolving fund replenishment sections"
+          tabs={RevolvingFundReplenishmentActionTabs}
+          onTabChange={page.setActiveTab}
+        />
         {page.activeTab === "details" ? (
-          <RevolvingFundReplenishmentDetailsTab page={page} onOpenPartyDrawer={() => setIsPartyDrawerOpen(true)} onOpenProjectDrawer={() => setIsProjectDrawerOpen(true)} onOpenResponsibilityCenterDrawer={() => setIsResponsibilityCenterDrawerOpen(true)} />
+          <RevolvingFundReplenishmentDetailsTab
+            page={page}
+            onOpenPartyDrawer={() => setIsPartyDrawerOpen(true)}
+            onOpenProjectDrawer={() => setIsProjectDrawerOpen(true)}
+            onOpenResponsibilityCenterDrawer={() => setIsResponsibilityCenterDrawerOpen(true)}
+          />
         ) : (
           <RevolvingFundReplenishmentAttachmentsTab page={page} />
         )}
       </section>
-      <PartyManagementDrawer isOpen={!page.isReadonly && isPartyDrawerOpen} isPending={partyStore.isMutating} records={partyStore.records} title="Add Party" onAddRecord={partyStore.addRecord} onClose={() => setIsPartyDrawerOpen(false)} onCreateParty={handleCreateParty} />
-      <ResponsibilityCenterDrawer isOpen={!page.isReadonly && isResponsibilityCenterDrawerOpen} mode="add" onClose={() => setIsResponsibilityCenterDrawerOpen(false)} onSaved={(center) => { page.updateField("responsibilityCenterCode", center.code); page.updateField("responsibilityCenter", center.name); setIsResponsibilityCenterDrawerOpen(false); }} />
-      <ResponsibilityCenterDrawer isOpen={!page.isReadonly && isProjectDrawerOpen} mode="add" onClose={() => setIsProjectDrawerOpen(false)} onSaved={(center) => { page.updateField("projectCode", center.code); page.updateField("projectName", center.name); setIsProjectDrawerOpen(false); }} />
-      <RevolvingFundReplenishmentReportPreview isOpen={page.isPreviewOpen} onClose={() => page.setIsPreviewOpen(false)} onGeneratePdf={() => openRevolvingFundReplenishmentPdf(page.values)} page={page} />
+      <PartyManagementDrawer
+        isOpen={!page.isReadonly && isPartyDrawerOpen}
+        isPending={partyStore.isMutating}
+        records={partyStore.records}
+        title="Add Party"
+        onAddRecord={partyStore.addRecord}
+        onClose={() => setIsPartyDrawerOpen(false)}
+        onCreateParty={handleCreateParty}
+      />
+      <ResponsibilityCenterDrawer
+        isOpen={!page.isReadonly && isResponsibilityCenterDrawerOpen}
+        mode="add"
+        onClose={() => setIsResponsibilityCenterDrawerOpen(false)}
+        onSaved={(center) => {
+          page.updateField("responsibilityCenterCode", center.code);
+          page.updateField("responsibilityCenter", center.name);
+          setIsResponsibilityCenterDrawerOpen(false);
+        }}
+      />
+      <ResponsibilityCenterDrawer
+        isOpen={!page.isReadonly && isProjectDrawerOpen}
+        mode="add"
+        onClose={() => setIsProjectDrawerOpen(false)}
+        onSaved={(center) => {
+          page.updateField("projectCode", center.code);
+          page.updateField("projectName", center.name);
+          setIsProjectDrawerOpen(false);
+        }}
+      />
+      <RevolvingFundReplenishmentReportPreview
+        isOpen={page.isPreviewOpen}
+        onClose={() => page.setIsPreviewOpen(false)}
+        onGeneratePdf={() => openRevolvingFundReplenishmentPdf(page.values)}
+        page={page}
+      />
     </>
   );
 }

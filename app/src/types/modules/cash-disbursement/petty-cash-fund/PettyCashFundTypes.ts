@@ -1,9 +1,14 @@
 import type { TransactionAttachment } from "@/app/src/types/shared/transaction-setup/TransactionAttachmentTypes";
+import type { usePettyCashFundActionPage } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-fund/usePettyCashFundActionPage";
+import type { usePettyCashFundOverviewPage } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-fund/usePettyCashFundOverviewPage";
 
 export type PettyCashFundStatus = "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled";
 export type PettyCashFundFormStatus = "Open" | PettyCashFundStatus;
 export type PettyCashFundActionMode = "add" | "edit" | "view";
 export type PettyCashFundActionTab = "details" | "attachments";
+export type PettyCashFundConfirmationAction = "save" | "draft" | "approve" | "disapprove" | "cancel";
+export type PettyCashFundActionPageState = ReturnType<typeof usePettyCashFundActionPage>;
+export type PettyCashFundOverviewPageState = ReturnType<typeof usePettyCashFundOverviewPage>;
 export type PettyCashFundEntryTab = "items" | "accounting";
 export type PettyCashFundBoolean = "False" | "True";
 

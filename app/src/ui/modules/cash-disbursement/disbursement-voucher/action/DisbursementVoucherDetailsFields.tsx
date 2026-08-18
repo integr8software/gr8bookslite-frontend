@@ -3,9 +3,7 @@ import {
   DisbursementVoucherPartyOptions,
   DisbursementVoucherProjectOptions,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
-import type {
-  DisbursementVoucherDetailsFormProps,
-} from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+import type { DisbursementVoucherDetailsFormProps } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import type { PaymentTypeRecord as AppPaymentTypeRecord } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
@@ -23,9 +21,9 @@ export function DisbursementVoucherDetailsFields({
   errors,
   isExchangeRateLoading,
   isReadonly,
-  onOpenPartyNameDialog,
+  onOpenPartyNameDrawer,
   onOpenPaymentTypeDrawer,
-  onOpenProjectNameDialog,
+  onOpenProjectNameDrawer,
   onCurrencyChange,
   onPartyChange,
   onPaymentTypeChange,
@@ -43,9 +41,9 @@ export function DisbursementVoucherDetailsFields({
         errors={errors}
         isExchangeRateLoading={isExchangeRateLoading}
         isReadonly={isReadonly}
-        onOpenPartyNameDialog={onOpenPartyNameDialog}
+        onOpenPartyNameDrawer={onOpenPartyNameDrawer}
         onOpenPaymentTypeDrawer={onOpenPaymentTypeDrawer}
-        onOpenProjectNameDialog={onOpenProjectNameDialog}
+        onOpenProjectNameDrawer={onOpenProjectNameDrawer}
         onCurrencyChange={onCurrencyChange}
         onPartyChange={onPartyChange}
         onPaymentTypeChange={onPaymentTypeChange}
@@ -65,9 +63,9 @@ function DisbursementVoucherHeaderFields({
   errors,
   isExchangeRateLoading,
   isReadonly,
-  onOpenPartyNameDialog,
+  onOpenPartyNameDrawer,
   onOpenPaymentTypeDrawer,
-  onOpenProjectNameDialog,
+  onOpenProjectNameDrawer,
   onCurrencyChange,
   onPartyChange,
   onPaymentTypeChange,
@@ -110,7 +108,7 @@ function DisbursementVoucherHeaderFields({
                 !isReadonly && canAddPartyName
                   ? {
                       label: "Add Party Name",
-                      onClick: onOpenPartyNameDialog,
+                      onClick: onOpenPartyNameDrawer,
                     }
                   : undefined
               }
@@ -137,7 +135,7 @@ function DisbursementVoucherHeaderFields({
                 !isReadonly && canAddProjectName
                   ? {
                       label: "Add Project",
-                      onClick: onOpenProjectNameDialog,
+                      onClick: onOpenProjectNameDrawer,
                     }
                   : undefined
               }
@@ -149,7 +147,7 @@ function DisbursementVoucherHeaderFields({
                 const project = projectOptions.find((option) => option.value === projectName);
 
                 onUpdateField("projectName", projectName);
-                onUpdateField("costCenter", project?.label === projectName ? "" : project?.label ?? "");
+                onUpdateField("costCenter", project?.label === projectName ? "" : (project?.label ?? ""));
               }}
             />
           </FieldShell>
@@ -167,12 +165,7 @@ function DisbursementVoucherHeaderFields({
 
         <div className="grid min-w-0 content-start gap-4">
           <FieldShell controlId="disbursement-voucher-party-code" label="Party Code">
-            <input
-              id="disbursement-voucher-party-code"
-              value={values.partyCode}
-              readOnly
-              className={DisbursementVoucherFieldClassName}
-            />
+            <input id="disbursement-voucher-party-code" value={values.partyCode} readOnly className={DisbursementVoucherFieldClassName} />
           </FieldShell>
           <FieldShell controlId="disbursement-voucher-project-code" label="Project Code">
             <input
@@ -255,12 +248,7 @@ function DisbursementVoucherHeaderFields({
             />
           </FieldShell>
           <FieldShell controlId="disbursement-voucher-status" label="Status" error={errors.status}>
-            <input
-              id="disbursement-voucher-status"
-              value={values.status}
-              readOnly
-              className={DisbursementVoucherFieldClassName}
-            />
+            <input id="disbursement-voucher-status" value={values.status} readOnly className={DisbursementVoucherFieldClassName} />
           </FieldShell>
         </div>
       </div>

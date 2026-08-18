@@ -19,13 +19,11 @@ import {
   getInitialCashAdvances,
   writeStoredCashAdvances,
 } from "@/app/src/data/modules/cash-disbursement/cash-advance/CashAdvanceData";
-import {
-  formatMoneyNumberDisplayValue,
-  parseMoneyNumberInput,
-} from "@/app/src/data/shared/money/MoneyNumberData";
+import { formatMoneyNumberDisplayValue, parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import { syncTaxDetailsAmount } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import {
   CashAdvanceDefaultColumnVisibility,
+  CashAdvanceAllStatusFilter,
   CashAdvanceStatusFilters,
   CashAdvanceStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
@@ -35,8 +33,12 @@ import type {
   CashAdvanceRecord,
   CashAdvanceReferenceField,
   CashAdvanceStatus,
+  CashAdvanceStoreState,
 } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
-import { validateCashAdvanceForm } from "@/app/src/validations/modules/cash-disbursement/cash-advance/CashAdvanceValidation";
+import {
+  validateCashAdvanceAmountWithinBalance,
+  validateCashAdvanceForm,
+} from "@/app/src/validations/modules/cash-disbursement/cash-advance/CashAdvanceValidation";
 import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
 import type { AppTaxRateDialogValue } from "@/app/src/ui/shared/transaction-setup/AppTaxRateDialog";
@@ -45,16 +47,7 @@ import { normalizeLowercaseWhitespace } from "@/app/src/utils/string.util";
 import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
 import { CashDisbursementOverviewActionColumnWidth } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 
-type CashAdvanceStoreState = {
-  advances: CashAdvanceRecord[];
-  isLoading: boolean;
-  lastSyncedAt: number;
-  updateAdvanceStatus: (record: CashAdvanceRecord, status: CashAdvanceStatus) => void;
-};
-
-export function useCashAdvanceStore<TSelected = CashAdvanceStoreState>(
-  selector?: (state: CashAdvanceStoreState) => TSelected,
-) {
+export function useCashAdvanceStore<TSelected = CashAdvanceStoreState>(selector?: (state: CashAdvanceStoreState) => TSelected) {
   const [advances, setAdvances] = useState(getInitialCashAdvances);
   const [lastSyncedAt, setLastSyncedAt] = useState(() => Date.now());
   const updateAdvanceStatus = useCallback((record: CashAdvanceRecord, status: CashAdvanceStatus) => {
@@ -64,9 +57,7 @@ export function useCashAdvanceStore<TSelected = CashAdvanceStoreState>(
         currentRecord.id === record.id
           ? {
               ...currentRecord,
-              formValues: currentRecord.formValues
-                ? { ...currentRecord.formValues, status }
-                : currentRecord.formValues,
+              formValues: currentRecord.formValues ? { ...currentRecord.formValues, status } : currentRecord.formValues,
               status,
               updatedAt,
               updatedBy: "Current User",
@@ -94,19 +85,10 @@ export function useCashAdvanceStore<TSelected = CashAdvanceStoreState>(
   return selector ? selector(state) : (state as TSelected);
 }
 
-export function useCashAdvanceActionForm(
-  mode: CashAdvanceActionMode,
-  recordId?: string,
-  onSaved?: (record: CashAdvanceRecord) => void,
-) {
+export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?: string, onSaved?: (record: CashAdvanceRecord) => void) {
   const transactionCurrency = useTransactionCurrency();
-  const initialRecord =
-    mode === "add"
-      ? null
-      : getInitialCashAdvances().find((advance) => advance.id === recordId) ?? null;
-  const [loadedRecord, setLoadedRecord] = useState<CashAdvanceRecord | null>(
-    initialRecord,
-  );
+  const initialRecord = mode === "add" ? null : (getInitialCashAdvances().find((advance) => advance.id === recordId) ?? null);
+  const [loadedRecord, setLoadedRecord] = useState<CashAdvanceRecord | null>(initialRecord);
   const [values, setValues] = useState<CashAdvanceFormValues>(() =>
     initialRecord
       ? createCashAdvanceFormValuesFromRecord(initialRecord)
@@ -126,26 +108,25 @@ export function useCashAdvanceActionForm(
     }));
   }, [mode, transactionCurrency.baseCurrencyCode, transactionCurrency.isBaseCurrencyResolved]);
 
-  function updateField<Key extends keyof CashAdvanceFormValues>(
-    key: Key,
-    value: CashAdvanceFormValues[Key],
-  ) {
+  function updateField<Key extends keyof CashAdvanceFormValues>(key: Key, value: CashAdvanceFormValues[Key]) {
     setValues((current) => ({ ...current, [key]: value }));
   }
 
   function updateAmount(amount: string) {
-    setValues((current) => ({
-      ...current,
-      amount,
-      taxValue: {
-        ...current.taxValue,
-        taxDetails: syncTaxDetailsAmount(
-          current.taxValue.taxDetails,
-          parseMoneyNumberInput(amount),
-          current.taxValue.taxRate,
-        ),
-      },
-    }));
+    setValues((current) => {
+      const balance = parseMoneyNumberInput(current.cashAdvanceBalance);
+      const nextAmount =
+        current.cashAdvanceBalance.trim() && parseMoneyNumberInput(amount) > balance ? formatMoneyNumberDisplayValue(balance) : amount;
+
+      return {
+        ...current,
+        amount: nextAmount,
+        taxValue: {
+          ...current.taxValue,
+          taxDetails: syncTaxDetailsAmount(current.taxValue.taxDetails, parseMoneyNumberInput(nextAmount), current.taxValue.taxRate),
+        },
+      };
+    });
   }
 
   async function updateCurrency(currencyCode: string) {
@@ -184,19 +165,19 @@ export function useCashAdvanceActionForm(
   function submitAdvance(status: CashAdvanceStatus = CashAdvanceStatuses.forApproval) {
     const nextValues = { ...values, status };
     const shouldValidate = status !== CashAdvanceStatuses.draft;
-    const validation = shouldValidate
-      ? validateCashAdvanceForm(nextValues)
-      : { isValid: true, message: null };
+    const balanceValidation = validateCashAdvanceAmountWithinBalance(nextValues);
+    const validation = !balanceValidation.isValid
+      ? balanceValidation
+      : shouldValidate
+        ? validateCashAdvanceForm(nextValues)
+        : { isValid: true, message: null };
 
     if (!validation.isValid) {
       toast.error(validation.message ?? "Review the cash advance details.");
       return;
     }
 
-    const nextRecord = createCashAdvanceRecordFromForm(
-      nextValues,
-      mode === "edit" ? loadedRecord ?? undefined : undefined,
-    );
+    const nextRecord = createCashAdvanceRecordFromForm(nextValues, mode === "edit" ? (loadedRecord ?? undefined) : undefined);
     const nextAdvances = upsertCashAdvanceRecord(nextRecord);
 
     writeStoredCashAdvances(nextAdvances);
@@ -266,24 +247,17 @@ export function useCashAdvanceTable(advances: CashAdvanceRecord[]) {
     to: "",
   });
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
-    CashAdvanceDefaultColumnVisibility,
-  );
-  const [statusFilter, setStatusFilterState] = useState<
-    (typeof CashAdvanceStatusFilters)[number]
-  >("all");
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(CashAdvanceDefaultColumnVisibility);
+  const [statusFilter, setStatusFilterState] = useState<(typeof CashAdvanceStatusFilters)[number]>(CashAdvanceAllStatusFilter);
   const filteredRows = useMemo(() => {
     const normalizedQuery = normalizeLowercaseWhitespace(query);
 
     return advances.filter((record) => {
-      const matchesStatus =
-        statusFilter === "all" || record.status === statusFilter;
+      const matchesStatus = statusFilter === CashAdvanceAllStatusFilter || record.status === statusFilter;
       const matchesDateRange =
-        (!dateRange.from || record.documentDate >= dateRange.from) &&
-        (!dateRange.to || record.documentDate <= dateRange.to);
+        (!dateRange.from || record.documentDate >= dateRange.from) && (!dateRange.to || record.documentDate <= dateRange.to);
       const matchesAmountRange =
-        (!amountRange.from || record.amount >= Number(amountRange.from)) &&
-        (!amountRange.to || record.amount <= Number(amountRange.to));
+        (!amountRange.from || record.amount >= Number(amountRange.from)) && (!amountRange.to || record.amount <= Number(amountRange.to));
       const matchesQuery =
         normalizedQuery.length === 0 ||
         normalizeLowercaseWhitespace(
@@ -463,7 +437,7 @@ export function useCashAdvanceTable(advances: CashAdvanceRecord[]) {
     setAmountRangeState({ from: "", to: "" });
     setDateRangeState({ from: "", to: "" });
     setQueryState("");
-    setStatusFilterState("all");
+    setStatusFilterState(CashAdvanceAllStatusFilter);
     table.setPageIndex(0);
   }
 
@@ -483,15 +457,11 @@ export function useCashAdvanceTable(advances: CashAdvanceRecord[]) {
 
 function upsertCashAdvanceRecord(record: CashAdvanceRecord) {
   const currentAdvances = getInitialCashAdvances();
-  const existingIndex = currentAdvances.findIndex(
-    (advance) => advance.id === record.id,
-  );
+  const existingIndex = currentAdvances.findIndex((advance) => advance.id === record.id);
 
   if (existingIndex === -1) {
     return [record, ...currentAdvances];
   }
 
-  return currentAdvances.map((advance) =>
-    advance.id === record.id ? record : advance,
-  );
+  return currentAdvances.map((advance) => (advance.id === record.id ? record : advance));
 }

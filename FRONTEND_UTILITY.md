@@ -1,6 +1,6 @@
 # Gr8Books Neo Frontend Utility Map
 
-Last updated: 2026-08-12
+Last updated: 2026-08-18
 
 Use this file before adding a shared helper. The app already has focused
 utilities in `app/src/utils/`; import from these files before creating a new
@@ -16,7 +16,7 @@ contain feature-specific business workflows.
 Use the `@/` alias:
 
 ```ts
-import { formatCurrency } from "@/app/src/utils/currency.util";
+import { formatAmount, formatCurrency } from "@/app/src/utils/currency.util";
 import { formatDateTime } from "@/app/src/utils/date.util";
 import { normalizeWhitespace } from "@/app/src/utils/string.util";
 ```
@@ -39,9 +39,12 @@ Import from `@/app/src/utils/currency.util`.
 
 - `formatCurrency(value, currencyCode = "PHP")`: formats a number using
   `Intl.NumberFormat` and caches formatters by currency code.
+- `formatAmount(value)`: formats a numeric amount with `en-US` grouping and
+  exactly two decimal places, without adding a currency symbol.
 
-Use this for currency display instead of creating local peso, amount, or
-currency formatter functions.
+Use `formatCurrency` for currency display and `formatAmount` for balances,
+totals, validation messages, and other two-decimal amounts without a currency
+symbol. Do not create local peso, amount, balance, or currency formatters.
 
 ### `date.util.ts`
 

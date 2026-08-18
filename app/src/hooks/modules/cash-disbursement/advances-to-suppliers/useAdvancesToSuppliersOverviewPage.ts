@@ -18,6 +18,7 @@ import {
   AdvancesToSuppliersDefaultColumnVisibility,
   AdvancesToSuppliersOverviewColumnWidths,
   AdvancesToSuppliersRecordStatuses,
+  AdvancesToSuppliersStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersConstants";
 import {
   getAdvancesToSuppliersRecords,
@@ -29,10 +30,7 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersTypes";
 import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
-import {
-  getModuleStatusMetricIcon,
-  getModuleStatusMetricIconClassName,
-} from "@/app/src/ui/shared/module/ModuleStatusBadge";
+import { getModuleStatusMetricIcon, getModuleStatusMetricIconClassName } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import type { ModuleStatisticCardItem } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { formatPartOfTotalPercentage } from "@/app/src/utils/percentage.util";
 import { normalizeLowercaseWhitespace } from "@/app/src/utils/string.util";
@@ -49,9 +47,7 @@ export function useAdvancesToSuppliersOverviewPage() {
   const [amountRange, setAmountRange] = useState<AmountRangeValue>(emptyAmountRange);
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 5 });
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
-    () => AdvancesToSuppliersDefaultColumnVisibility,
-  );
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => AdvancesToSuppliersDefaultColumnVisibility);
   const [lastSyncedAt, setLastSyncedAt] = useState(() => Date.now());
   const filteredRecords = useMemo(() => {
     const needle = normalizeLowercaseWhitespace(query);
@@ -79,20 +75,77 @@ export function useAdvancesToSuppliersOverviewPage() {
   }, [amountRange, dateRange, query, records, statusFilter]);
   const columns = useMemo(
     () => [
-      columnHelper.accessor("transactionNo", { header: AdvancesToSuppliersColumnLabels.transactionNo, size: AdvancesToSuppliersOverviewColumnWidths.transactionNo, meta: { label: AdvancesToSuppliersColumnLabels.transactionNo } }),
-      columnHelper.accessor("documentDate", { header: AdvancesToSuppliersColumnLabels.documentDate, size: AdvancesToSuppliersOverviewColumnWidths.documentDate, meta: { label: AdvancesToSuppliersColumnLabels.documentDate } }),
-      columnHelper.accessor("partyCode", { header: AdvancesToSuppliersColumnLabels.partyCode, size: AdvancesToSuppliersOverviewColumnWidths.partyCode, meta: { label: AdvancesToSuppliersColumnLabels.partyCode } }),
-      columnHelper.accessor("partyName", { header: AdvancesToSuppliersColumnLabels.partyName, size: AdvancesToSuppliersOverviewColumnWidths.partyName, meta: { label: AdvancesToSuppliersColumnLabels.partyName } }),
-      columnHelper.accessor("accountCode", { header: AdvancesToSuppliersColumnLabels.accountCode, size: AdvancesToSuppliersOverviewColumnWidths.accountCode, meta: { label: AdvancesToSuppliersColumnLabels.accountCode } }),
-      columnHelper.accessor("accountTitle", { header: AdvancesToSuppliersColumnLabels.accountTitle, size: AdvancesToSuppliersOverviewColumnWidths.accountTitle, meta: { label: AdvancesToSuppliersColumnLabels.accountTitle } }),
-      columnHelper.accessor("amount", { header: AdvancesToSuppliersColumnLabels.amount, size: AdvancesToSuppliersOverviewColumnWidths.amount, meta: { label: AdvancesToSuppliersColumnLabels.amount } }),
-      columnHelper.accessor("remarks", { header: AdvancesToSuppliersColumnLabels.remarks, size: AdvancesToSuppliersOverviewColumnWidths.remarks, meta: { label: AdvancesToSuppliersColumnLabels.remarks } }),
-      columnHelper.accessor("createdBy", { header: AdvancesToSuppliersColumnLabels.createdBy, size: AdvancesToSuppliersOverviewColumnWidths.createdBy, meta: { label: AdvancesToSuppliersColumnLabels.createdBy } }),
-      columnHelper.accessor("createdAt", { header: AdvancesToSuppliersColumnLabels.createdAt, size: AdvancesToSuppliersOverviewColumnWidths.createdAt, meta: { label: AdvancesToSuppliersColumnLabels.createdAt } }),
-      columnHelper.accessor("updatedBy", { header: AdvancesToSuppliersColumnLabels.updatedBy, size: AdvancesToSuppliersOverviewColumnWidths.updatedBy, meta: { label: AdvancesToSuppliersColumnLabels.updatedBy } }),
-      columnHelper.accessor("updatedAt", { header: AdvancesToSuppliersColumnLabels.updatedAt, size: AdvancesToSuppliersOverviewColumnWidths.updatedAt, meta: { label: AdvancesToSuppliersColumnLabels.updatedAt } }),
-      columnHelper.accessor("status", { header: AdvancesToSuppliersColumnLabels.status, size: AdvancesToSuppliersOverviewColumnWidths.status, meta: { className: "text-center", label: AdvancesToSuppliersColumnLabels.status } }),
-      columnHelper.display({ id: "actions", header: AdvancesToSuppliersColumnLabels.actions, size: AdvancesToSuppliersOverviewColumnWidths.actions, meta: { className: "text-center", label: AdvancesToSuppliersColumnLabels.actions } }),
+      columnHelper.accessor("transactionNo", {
+        header: AdvancesToSuppliersColumnLabels.transactionNo,
+        size: AdvancesToSuppliersOverviewColumnWidths.transactionNo,
+        meta: { label: AdvancesToSuppliersColumnLabels.transactionNo },
+      }),
+      columnHelper.accessor("documentDate", {
+        header: AdvancesToSuppliersColumnLabels.documentDate,
+        size: AdvancesToSuppliersOverviewColumnWidths.documentDate,
+        meta: { label: AdvancesToSuppliersColumnLabels.documentDate },
+      }),
+      columnHelper.accessor("partyCode", {
+        header: AdvancesToSuppliersColumnLabels.partyCode,
+        size: AdvancesToSuppliersOverviewColumnWidths.partyCode,
+        meta: { label: AdvancesToSuppliersColumnLabels.partyCode },
+      }),
+      columnHelper.accessor("partyName", {
+        header: AdvancesToSuppliersColumnLabels.partyName,
+        size: AdvancesToSuppliersOverviewColumnWidths.partyName,
+        meta: { label: AdvancesToSuppliersColumnLabels.partyName },
+      }),
+      columnHelper.accessor("accountCode", {
+        header: AdvancesToSuppliersColumnLabels.accountCode,
+        size: AdvancesToSuppliersOverviewColumnWidths.accountCode,
+        meta: { label: AdvancesToSuppliersColumnLabels.accountCode },
+      }),
+      columnHelper.accessor("accountTitle", {
+        header: AdvancesToSuppliersColumnLabels.accountTitle,
+        size: AdvancesToSuppliersOverviewColumnWidths.accountTitle,
+        meta: { label: AdvancesToSuppliersColumnLabels.accountTitle },
+      }),
+      columnHelper.accessor("amount", {
+        header: AdvancesToSuppliersColumnLabels.amount,
+        size: AdvancesToSuppliersOverviewColumnWidths.amount,
+        meta: { label: AdvancesToSuppliersColumnLabels.amount },
+      }),
+      columnHelper.accessor("remarks", {
+        header: AdvancesToSuppliersColumnLabels.remarks,
+        size: AdvancesToSuppliersOverviewColumnWidths.remarks,
+        meta: { label: AdvancesToSuppliersColumnLabels.remarks },
+      }),
+      columnHelper.accessor("createdBy", {
+        header: AdvancesToSuppliersColumnLabels.createdBy,
+        size: AdvancesToSuppliersOverviewColumnWidths.createdBy,
+        meta: { label: AdvancesToSuppliersColumnLabels.createdBy },
+      }),
+      columnHelper.accessor("createdAt", {
+        header: AdvancesToSuppliersColumnLabels.createdAt,
+        size: AdvancesToSuppliersOverviewColumnWidths.createdAt,
+        meta: { label: AdvancesToSuppliersColumnLabels.createdAt },
+      }),
+      columnHelper.accessor("updatedBy", {
+        header: AdvancesToSuppliersColumnLabels.updatedBy,
+        size: AdvancesToSuppliersOverviewColumnWidths.updatedBy,
+        meta: { label: AdvancesToSuppliersColumnLabels.updatedBy },
+      }),
+      columnHelper.accessor("updatedAt", {
+        header: AdvancesToSuppliersColumnLabels.updatedAt,
+        size: AdvancesToSuppliersOverviewColumnWidths.updatedAt,
+        meta: { label: AdvancesToSuppliersColumnLabels.updatedAt },
+      }),
+      columnHelper.accessor("status", {
+        header: AdvancesToSuppliersColumnLabels.status,
+        size: AdvancesToSuppliersOverviewColumnWidths.status,
+        meta: { className: "text-center", label: AdvancesToSuppliersColumnLabels.status },
+      }),
+      columnHelper.display({
+        id: "actions",
+        header: AdvancesToSuppliersColumnLabels.actions,
+        size: AdvancesToSuppliersOverviewColumnWidths.actions,
+        meta: { className: "text-center", label: AdvancesToSuppliersColumnLabels.actions },
+      }),
     ],
     [],
   );
@@ -109,31 +162,37 @@ export function useAdvancesToSuppliersOverviewPage() {
     onSortingChange: setSorting,
     state: { columnVisibility, pagination, sorting },
   });
-  const statisticCards = useMemo<ModuleStatisticCardItem[]>(() => [
-    { icon: ReceiptText, label: "Total Entries", value: records.length, summary: "All time", tone: "violet", onClick: () => setStatusFilter("All"), isActive: statusFilter === "All" },
-    ...AdvancesToSuppliersRecordStatuses.map((status) => {
-      const count = records.filter((record) => record.status === status).length;
-      return {
-        icon: getModuleStatusMetricIcon(status),
-        iconClassName: getModuleStatusMetricIconClassName(status),
-        label: status,
-        value: count,
-        summary: formatPartOfTotalPercentage(count, records.length),
-        tone: getMetricTone(status),
-        onClick: () => setStatusFilter(status),
-        isActive: statusFilter === status,
-      };
-    }),
-  ], [records, statusFilter]);
+  const statisticCards = useMemo<ModuleStatisticCardItem[]>(
+    () => [
+      {
+        icon: ReceiptText,
+        label: "Total Entries",
+        value: records.length,
+        summary: "All time",
+        tone: "violet",
+        onClick: () => setStatusFilter("All"),
+        isActive: statusFilter === "All",
+      },
+      ...AdvancesToSuppliersRecordStatuses.map((status) => {
+        const count = records.filter((record) => record.status === status).length;
+        return {
+          icon: getModuleStatusMetricIcon(status),
+          iconClassName: getModuleStatusMetricIconClassName(status),
+          label: status,
+          value: count,
+          summary: formatPartOfTotalPercentage(count, records.length),
+          tone: getMetricTone(status),
+          onClick: () => setStatusFilter(status),
+          isActive: statusFilter === status,
+        };
+      }),
+    ],
+    [records, statusFilter],
+  );
 
-  function updateStatus(
-    record: AdvancesToSuppliersRecord,
-    status: AdvancesToSuppliersStatus,
-  ) {
+  function updateStatus(record: AdvancesToSuppliersRecord, status: AdvancesToSuppliersStatus) {
     const next = records.map((item) =>
-      item.id === record.id
-        ? { ...item, status, updatedAt: new Date().toISOString(), updatedBy: "Current User" }
-        : item,
+      item.id === record.id ? { ...item, status, updatedAt: new Date().toISOString(), updatedBy: "Current User" } : item,
     );
     setRecords(next);
     saveAdvancesToSuppliersRecords(next);
@@ -146,17 +205,30 @@ export function useAdvancesToSuppliersOverviewPage() {
     setLastSyncedAt(Date.now());
   }
 
-  return { amountRange, dateRange, isLoading: false, lastSyncedAt, query, refreshRecords, setAmountRange, setDateRange, setQuery, setStatusFilter, statisticCards, statusFilter, table, updateStatus };
+  return {
+    amountRange,
+    dateRange,
+    isLoading: false,
+    lastSyncedAt,
+    query,
+    refreshRecords,
+    setAmountRange,
+    setDateRange,
+    setQuery,
+    setStatusFilter,
+    statisticCards,
+    statusFilter,
+    table,
+    updateStatus,
+  };
 }
 
 function getMetricTone(status: AdvancesToSuppliersStatus) {
-  if (status === "Posted") return "emerald" as const;
-  if (status === "For Approval") return "amber" as const;
-  if (status === "Disapproved") return "red" as const;
-  if (status === "Cancelled") return "slate" as const;
+  if (status === AdvancesToSuppliersStatuses.posted) return "emerald" as const;
+  if (status === AdvancesToSuppliersStatuses.forApproval) return "amber" as const;
+  if (status === AdvancesToSuppliersStatuses.disapproved) return "red" as const;
+  if (status === AdvancesToSuppliersStatuses.cancelled) return "slate" as const;
   return "blue" as const;
 }
 
-export type AdvancesToSuppliersOverviewPageState = ReturnType<
-  typeof useAdvancesToSuppliersOverviewPage
->;
+export type { AdvancesToSuppliersOverviewPageState } from "@/app/src/types/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersTypes";

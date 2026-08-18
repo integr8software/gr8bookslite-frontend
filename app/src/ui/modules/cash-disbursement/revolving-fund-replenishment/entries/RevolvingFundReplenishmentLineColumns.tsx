@@ -5,7 +5,10 @@ import type {
   RevolvingFundReplenishmentEntry,
   RevolvingFundReplenishmentEntryColumnId,
 } from "@/app/src/types/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentTypes";
-import { RevolvingFundReplenishmentEntryInput, RevolvingFundReplenishmentMoneyInput } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/entries/RevolvingFundReplenishmentEntryCellControls";
+import {
+  RevolvingFundReplenishmentEntryInput,
+  RevolvingFundReplenishmentMoneyInput,
+} from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/entries/RevolvingFundReplenishmentEntryCellControls";
 import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { ModuleDataEntryRemarksCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryRemarksCell";
 
@@ -17,10 +20,7 @@ export function createRevolvingFundReplenishmentLineColumns({
   columnLabels: Record<RevolvingFundReplenishmentEntryColumnId, string>;
   columnWidths: Record<RevolvingFundReplenishmentEntryColumnId, number>;
   page: RevolvingFundReplenishmentActionPageState;
-}): Record<
-  RevolvingFundReplenishmentEntryColumnId,
-  ModuleDataEntryColumn<RevolvingFundReplenishmentEntry>
-> {
+}): Record<RevolvingFundReplenishmentEntryColumnId, ModuleDataEntryColumn<RevolvingFundReplenishmentEntry>> {
   const text = (
     id: RevolvingFundReplenishmentEntryColumnId,
     type: "text" | "date" = "text",
@@ -42,9 +42,7 @@ export function createRevolvingFundReplenishmentLineColumns({
       />
     ),
   });
-  const money = (
-    id: "totalAmount" | "netAmount" | "vatAmount",
-  ): ModuleDataEntryColumn<RevolvingFundReplenishmentEntry> => ({
+  const money = (id: "totalAmount" | "netAmount" | "vatAmount"): ModuleDataEntryColumn<RevolvingFundReplenishmentEntry> => ({
     header: columnLabels[id],
     id,
     width: columnWidths[id],
@@ -96,22 +94,15 @@ export function createRevolvingFundReplenishmentAccountingColumns({
 }: {
   columnLabels: Record<RevolvingFundReplenishmentAccountingColumnId, string>;
   columnWidths: Record<RevolvingFundReplenishmentAccountingColumnId, number>;
-}): Record<
-  RevolvingFundReplenishmentAccountingColumnId,
-  ModuleDataEntryColumn<RevolvingFundReplenishmentAccountingEntry>
-> {
-  const column = (
-    id: RevolvingFundReplenishmentAccountingColumnId,
-  ): ModuleDataEntryColumn<RevolvingFundReplenishmentAccountingEntry> => ({
+}): Record<RevolvingFundReplenishmentAccountingColumnId, ModuleDataEntryColumn<RevolvingFundReplenishmentAccountingEntry>> {
+  const column = (id: RevolvingFundReplenishmentAccountingColumnId): ModuleDataEntryColumn<RevolvingFundReplenishmentAccountingEntry> => ({
     header: columnLabels[id],
     id,
     width: columnWidths[id],
     widthClassName: "w-auto",
     widthMode: "fixed",
     renderCell: (row) => (
-      <span className={`block px-3 ${id === "debit" || id === "credit" ? "text-right tabular-nums" : ""}`}>
-        {row[id]}
-      </span>
+      <span className={`block px-3 ${id === "debit" || id === "credit" ? "text-right tabular-nums" : ""}`}>{row[id]}</span>
     ),
   });
 

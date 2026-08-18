@@ -23,10 +23,7 @@ export function createRevolvingFundItemColumns(
   labels: Record<RevolvingFundItemColumnId, string>,
   widths: Record<RevolvingFundItemColumnId, number>,
 ): Record<RevolvingFundItemColumnId, ModuleDataEntryColumn<RevolvingFundItem>> {
-  const text = (
-    id: RevolvingFundItemColumnId,
-    type: "text" | "date" = "text",
-  ): ModuleDataEntryColumn<RevolvingFundItem> => ({
+  const text = (id: RevolvingFundItemColumnId, type: "text" | "date" = "text"): ModuleDataEntryColumn<RevolvingFundItem> => ({
     header: labels[id],
     id,
     width: widths[id],
@@ -43,10 +40,7 @@ export function createRevolvingFundItemColumns(
       />
     ),
   });
-  const dropdown = (
-    id: RevolvingFundItemColumnId,
-    options: AppAdvancedDropdownOption[],
-  ): ModuleDataEntryColumn<RevolvingFundItem> => ({
+  const dropdown = (id: RevolvingFundItemColumnId, options: AppAdvancedDropdownOption[]): ModuleDataEntryColumn<RevolvingFundItem> => ({
     header: labels[id],
     id,
     width: widths[id],
@@ -63,9 +57,7 @@ export function createRevolvingFundItemColumns(
       />
     ),
   });
-  const checkbox = (
-    id: "vatable" | "vatInclusive",
-  ): ModuleDataEntryColumn<RevolvingFundItem> => ({
+  const checkbox = (id: "vatable" | "vatInclusive"): ModuleDataEntryColumn<RevolvingFundItem> => ({
     header: labels[id],
     id,
     width: widths[id],
@@ -105,19 +97,13 @@ export function createRevolvingFundAccountingColumns(
   labels: Record<RevolvingFundAccountingColumnId, string>,
   widths: Record<RevolvingFundAccountingColumnId, number>,
 ): Record<RevolvingFundAccountingColumnId, ModuleDataEntryColumn<RevolvingFundAccountingEntry>> {
-  const column = (
-    id: RevolvingFundAccountingColumnId,
-  ): ModuleDataEntryColumn<RevolvingFundAccountingEntry> => ({
+  const column = (id: RevolvingFundAccountingColumnId): ModuleDataEntryColumn<RevolvingFundAccountingEntry> => ({
     header: labels[id],
     id,
     width: widths[id],
     widthMode: "fixed",
     widthClassName: "w-auto",
-    renderCell: (row) => (
-      <span className={`block ${id === "debit" || id === "credit" ? "text-right tabular-nums" : ""}`}>
-        {row[id]}
-      </span>
-    ),
+    renderCell: (row) => <span className={`block ${id === "debit" || id === "credit" ? "text-right tabular-nums" : ""}`}>{row[id]}</span>,
   });
   return {
     accountCode: column("accountCode"),

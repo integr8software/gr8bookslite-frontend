@@ -13,11 +13,7 @@ export function PettyCashFundDetailsTab({
 }) {
   return (
     <>
-      <PettyCashFundDetailsFields
-        page={page}
-        onOpenPartyDrawer={onOpenPartyDrawer}
-        onOpenProjectDrawer={onOpenProjectDrawer}
-      />
+      <PettyCashFundDetailsFields page={page} onOpenPartyDrawer={onOpenPartyDrawer} onOpenProjectDrawer={onOpenProjectDrawer} />
       <PettyCashFundEntrySection page={page} />
     </>
   );

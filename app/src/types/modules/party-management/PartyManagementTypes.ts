@@ -70,6 +70,7 @@ export type PartyInformationRecord = {
   vendorAdvanceAccount: string;
   employeeAdvanceAccount: string;
   employeePayableAccount: string;
+  cashAdvanceLimit?: string;
   termId: string;
   termName: string;
   tin: string;
@@ -117,6 +118,7 @@ export type PartyInformationFormValues = {
   vendorAdvanceAccount: string;
   employeeAdvanceAccount: string;
   employeePayableAccount: string;
+  cashAdvanceLimit: string;
   termId: string;
   termName: string;
   tin: string;
@@ -169,6 +171,7 @@ export type PartyInformationFormErrors = Partial<{
   vendorAdvanceAccount: string;
   employeeAdvanceAccount: string;
   employeePayableAccount: string;
+  cashAdvanceLimit: string;
   termId: string;
   tin: string;
   contactPerson: string;
@@ -371,6 +374,7 @@ export type PartyManagementDrawerProps = {
   onClose: () => void;
   onCreateParty: (record: PartyInformationRecord) => void;
   records: PartyInformationRecord[];
+  suggestedPartyType?: PartyType;
   title?: string;
 };
 
@@ -486,6 +490,7 @@ export type ApiPartyPayload = {
   vendorAdvanceAccount?: string | null;
   employeeAdvanceAccount?: string | null;
   employeePayableAccount?: string | null;
+  cashAdvanceLimit?: number | null;
   termId?: string | null;
   tin?: string | null;
   atcCode?: string | null;
@@ -530,6 +535,8 @@ export type ApiPartyOption = {
   email: string;
   contactNo: string;
   status: ApiPartyStatus;
+  cashAdvanceLimit?: string;
+  cashAdvanceBalance?: string;
 };
 
 export type ApiPartyOptionsResponse = {
@@ -638,7 +645,8 @@ export type PartyImportColumnId =
   | "defaultPayableAccount"
   | "vendorAdvanceAccount"
   | "employeeAdvanceAccount"
-  | "employeePayableAccount";
+  | "employeePayableAccount"
+  | "cashAdvanceLimit";
 
 export type PartyImportColumnHeader = {
   className: string;

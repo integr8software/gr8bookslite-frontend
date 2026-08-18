@@ -10,6 +10,9 @@ import {
   DefaultDisbursementAccountingGridColumnLabels,
   DefaultDisbursementAccountingGridColumnOrder,
   DefaultDisbursementAccountingGridColumnWidths,
+  DisbursementAccountingAmountColumnIds,
+  DisbursementAccountingCreditColumnId,
+  DisbursementAccountingDebitColumnId,
   DisbursementAccountingExportColumnWidths,
   DisbursementAccountingGridTaxRateOptions,
   ProtectedDisbursementAccountingGridColumnIds,
@@ -22,12 +25,12 @@ import {
 import { useDisbursementVoucherStore } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucher";
 import { validateDisbursementVoucherEntries } from "@/app/src/validations/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherValidation";
 import type {
-  DisbursementAccountingGridColumnId,
-  EditableDisbursementAccountingGridRow,
+  DisbursementAccountingGridColumnId as GridColumnId,
+  EditableDisbursementAccountingGridRow as EditableGridRow,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryTypes";
 import type {
+  DisbursementAttachment as VoucherAttachment,
   DisbursementVoucherAccountingGridSession,
-  DisbursementVoucherFormValues,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import {
   readAccountingGridSession,
@@ -46,7 +49,7 @@ import {
   createAccountingWorkbook,
   getAccountingExportTheme,
   readAccountingImportFilePreviewText,
-} from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/utils/DisbursementVoucherAccountingGridExportUtils";
+} from "@/app/src/services/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingExportService";
 import {
   buildLineEntries,
   calculateGridColumnFitWidth,
@@ -64,7 +67,7 @@ import {
   parseTabularText,
   shouldClearRow,
   withAccountingImportAttachment,
-} from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/utils/DisbursementVoucherAccountingGridImportUtils";
+} from "@/app/src/services/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingImportService";
 import {
   ModuleDataEntry,
   type ModuleDataEntryCellContext,
@@ -77,14 +80,6 @@ import { MoneyNumberField, formatMoneyNumberInput } from "@/app/src/ui/shared/mo
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 pdfMake.addVirtualFileSystem(pdfFonts);
-
-type EditableGridRow = EditableDisbursementAccountingGridRow;
-type GridColumnId = DisbursementAccountingGridColumnId;
-type VoucherAttachment = DisbursementVoucherFormValues["attachments"][number];
-
-const AccountingDebitColumnId: GridColumnId = "debit";
-const AccountingCreditColumnId: GridColumnId = "credit";
-const AccountingAmountColumnIds = new Set<GridColumnId>([AccountingDebitColumnId, AccountingCreditColumnId]);
 
 export function DisbursementVoucherAccountingGridPage() {
   const router = useRouter();
@@ -179,7 +174,7 @@ export function DisbursementVoucherAccountingGridPage() {
     : null;
 
   function updateRow(rowId: string, field: keyof Omit<EditableGridRow, "id" | "taxDetails">, value: string) {
-    const nextValue = AccountingAmountColumnIds.has(field as GridColumnId) ? formatMoneyNumberInput(value) : value;
+    const nextValue = DisbursementAccountingAmountColumnIds.has(field as GridColumnId) ? formatMoneyNumberInput(value) : value;
 
     setRows((currentRows) =>
       currentRows.map((row) => {
@@ -189,7 +184,7 @@ export function DisbursementVoucherAccountingGridPage() {
 
         const nextRow = { ...row, [field]: nextValue };
 
-        if (AccountingAmountColumnIds.has(field as GridColumnId) || field === "taxRate") {
+        if (DisbursementAccountingAmountColumnIds.has(field as GridColumnId) || field === "taxRate") {
           const amount = normalizeAmount(nextRow.debit || nextRow.credit);
 
           nextRow.taxDetails = syncTaxDetailsAmount(nextRow.taxDetails, amount, nextRow.taxRate);
@@ -386,8 +381,9 @@ export function DisbursementVoucherAccountingGridPage() {
       );
     }
 
-    if (AccountingAmountColumnIds.has(columnId)) {
-      const oppositeColumnId = columnId === AccountingDebitColumnId ? AccountingCreditColumnId : AccountingDebitColumnId;
+    if (DisbursementAccountingAmountColumnIds.has(columnId)) {
+      const oppositeColumnId =
+        columnId === DisbursementAccountingDebitColumnId ? DisbursementAccountingCreditColumnId : DisbursementAccountingDebitColumnId;
 
       return (
         <MoneyNumberField
@@ -498,7 +494,7 @@ export function DisbursementVoucherAccountingGridPage() {
     ];
     const amountColumnIndexes = new Set(
       exportColumnIds
-        .map((columnId, columnIndex) => (AccountingAmountColumnIds.has(columnId) ? columnIndex : null))
+        .map((columnId, columnIndex) => (DisbursementAccountingAmountColumnIds.has(columnId) ? columnIndex : null))
         .filter((columnIndex): columnIndex is number => columnIndex !== null),
     );
 

@@ -9,11 +9,56 @@ import type {
 import { todayDateValue } from "@/app/src/utils/date.util";
 
 export const RevolvingFundReplenishmentSeedRecords: RevolvingFundReplenishmentRecord[] = [
-  createSeed("1", "RFR-000063", "2026-02-23", "E000102", "Raymark B. Arsicolo", 12500, "February office replenishment", "For Approval"),
-  createSeed("2", "RFR-000062", "2026-02-18", "E000117", "Maria L. Dela Cruz", 15000, "Field operations replenishment", "Posted"),
-  createSeed("3", "RFR-000061", "2026-02-12", "E000145", "Jose P. Santos", 8500, "Branch replenishment", "Draft"),
-  createSeed("4", "RFR-000060", "2026-02-08", "E000117", "Maria L. Dela Cruz", 4200, "Office expense replenishment", "Disapproved"),
-  createSeed("5", "RFR-000059", "2026-02-02", "E000102", "Raymark B. Arsicolo", 3000, "Cancelled replenishment", "Cancelled"),
+  createSeed(
+    "1",
+    "RFR-000063",
+    "2026-02-23",
+    "E000102",
+    "Raymark B. Arsicolo",
+    12500,
+    "February office replenishment",
+    RevolvingFundReplenishmentStatuses.forApproval,
+  ),
+  createSeed(
+    "2",
+    "RFR-000062",
+    "2026-02-18",
+    "E000117",
+    "Maria L. Dela Cruz",
+    15000,
+    "Field operations replenishment",
+    RevolvingFundReplenishmentStatuses.posted,
+  ),
+  createSeed(
+    "3",
+    "RFR-000061",
+    "2026-02-12",
+    "E000145",
+    "Jose P. Santos",
+    8500,
+    "Branch replenishment",
+    RevolvingFundReplenishmentStatuses.draft,
+  ),
+  createSeed(
+    "4",
+    "RFR-000060",
+    "2026-02-08",
+    "E000117",
+    "Maria L. Dela Cruz",
+    4200,
+    "Office expense replenishment",
+    RevolvingFundReplenishmentStatuses.disapproved,
+  ),
+  createSeed(
+    "5",
+    "RFR-000059",
+    "2026-02-02",
+    "E000102",
+    "Raymark B. Arsicolo",
+    3000,
+    "Cancelled replenishment",
+    RevolvingFundReplenishmentStatuses.cancelled,
+  ),
 ];
 
 export function createBlankRevolvingFundReplenishmentEntry(): RevolvingFundReplenishmentEntry {
@@ -59,16 +104,18 @@ export function createRevolvingFundReplenishmentFormValues(
       currency: baseCurrencyCode,
       exchangeRate: "1.00",
       remarks: record.remarks,
-      entries: [{
-        ...createBlankRevolvingFundReplenishmentEntry(),
-        revolvingFundDate: record.documentDate,
-        revolvingFundNo: "RFV-000084",
-        accountCode: "610-100",
-        accountTitle: "Office Supplies Expense",
-        totalAmount: amount,
-        netAmount: amount,
-        remarks: record.remarks,
-      }],
+      entries: [
+        {
+          ...createBlankRevolvingFundReplenishmentEntry(),
+          revolvingFundDate: record.documentDate,
+          revolvingFundNo: "RFV-000084",
+          accountCode: "610-100",
+          accountTitle: "Office Supplies Expense",
+          totalAmount: amount,
+          netAmount: amount,
+          remarks: record.remarks,
+        },
+      ],
       attachments: [],
     };
   }
@@ -92,9 +139,7 @@ export function createRevolvingFundReplenishmentFormValues(
   };
 }
 
-export function calculateRevolvingFundReplenishmentTotals(
-  entries: RevolvingFundReplenishmentEntry[],
-) {
+export function calculateRevolvingFundReplenishmentTotals(entries: RevolvingFundReplenishmentEntry[]) {
   return entries.reduce(
     (totals, entry) => ({
       totalAmount: totals.totalAmount + parseMoneyNumberInput(entry.totalAmount),

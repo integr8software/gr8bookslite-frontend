@@ -2,16 +2,16 @@
 
 import { type ReactNode, useState } from "react";
 import { Eye, FileText, X } from "lucide-react";
+import { DisbursementVoucherStatuses } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import { formatCurrency, formatDateLabel } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import type {
+  DisbursementAttachment as VoucherAttachment,
   DisbursementLineEntry,
   DisbursementTransactionRecord,
   DisbursementVoucherFormValues,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import { parseMoneyNumberInput } from "@/app/src/ui/shared/money/MoneyNumberField";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
-
-type VoucherAttachment = DisbursementVoucherFormValues["attachments"][number];
 
 export function GridPreviewDialog({
   entries,
@@ -356,7 +356,7 @@ export function VoucherAccountingGridHeader({
   const headerFields = [
     {
       label: "Voucher No.",
-      value: values.voucherNo || "Draft",
+      value: values.voucherNo || DisbursementVoucherStatuses.draft,
     },
     {
       label: "Voucher Date",
@@ -389,7 +389,7 @@ export function VoucherAccountingGridHeader({
         </div>
         <div className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-skyblue/20 bg-skyblue/8 px-4 py-2 text-sm font-semibold text-skyblue sm:w-auto">
           <FileText className="h-4 w-4" aria-hidden="true" />
-          {values.status || selectedTransaction?.status || "Draft"}
+          {values.status || selectedTransaction?.status || DisbursementVoucherStatuses.draft}
         </div>
       </div>
       <div className="grid gap-px bg-darknavy/10 sm:grid-cols-2 xl:grid-cols-3">

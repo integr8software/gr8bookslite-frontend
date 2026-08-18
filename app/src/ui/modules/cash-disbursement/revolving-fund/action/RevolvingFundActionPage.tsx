@@ -36,7 +36,12 @@ export function RevolvingFundActionPage() {
     <>
       <section className="grid gap-5">
         <RevolvingFundActionHeader page={page} onPreview={() => page.setIsPreviewOpen(true)} />
-        <ModuleTabs activeTab={page.activeTab} ariaLabel="Revolving fund sections" tabs={RevolvingFundActionTabs} onTabChange={page.setActiveTab} />
+        <ModuleTabs
+          activeTab={page.activeTab}
+          ariaLabel="Revolving fund sections"
+          tabs={RevolvingFundActionTabs}
+          onTabChange={page.setActiveTab}
+        />
         {page.activeTab === "details" ? (
           <RevolvingFundDetailsTab
             page={page}

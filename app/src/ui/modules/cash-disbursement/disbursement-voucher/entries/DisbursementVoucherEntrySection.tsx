@@ -52,10 +52,10 @@ import {
 import { clampColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/utils";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import { createEwtOptions, createVatOptions } from "@/app/src/ui/shared/transaction-setup/AppTaxRateDialog";
+import { formatAmount } from "@/app/src/utils/currency.util";
 import {
   calculateDisbursementEntryColumnFitWidth,
   estimateDisbursementEntryTextWidth,
-  formatAccountingAmount,
 } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/DisbursementVoucherEntryCellControls";
 
 const ExpenseEntryView: DisbursementEntryView = "expense";
@@ -412,21 +412,21 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
           summaryCells={
             entryView === "accounting"
               ? {
-                  credit: formatAccountingAmount(totalCredit),
-                  debit: formatAccountingAmount(totalDebit),
+                  credit: formatAmount(totalCredit),
+                  debit: formatAmount(totalDebit),
                 }
               : {
-                  amount: formatAccountingAmount(getExpenseEntryColumnTotal(expenseRows, "amount")),
-                  ewtAmount: formatAccountingAmount(getExpenseEntryColumnTotal(expenseRows, "ewtAmount")),
-                  netAmount: formatAccountingAmount(getExpenseEntryColumnTotal(expenseRows, "netAmount")),
-                  totalAmountDue: formatAccountingAmount(getExpenseEntryColumnTotal(expenseRows, "totalAmountDue")),
-                  vatAmount: formatAccountingAmount(getExpenseEntryColumnTotal(expenseRows, "vatAmount")),
+                  amount: formatAmount(getExpenseEntryColumnTotal(expenseRows, "amount")),
+                  ewtAmount: formatAmount(getExpenseEntryColumnTotal(expenseRows, "ewtAmount")),
+                  netAmount: formatAmount(getExpenseEntryColumnTotal(expenseRows, "netAmount")),
+                  totalAmountDue: formatAmount(getExpenseEntryColumnTotal(expenseRows, "totalAmountDue")),
+                  vatAmount: formatAmount(getExpenseEntryColumnTotal(expenseRows, "vatAmount")),
                 }
           }
           summaryRowHeader="Totals"
           footerDetails={
             <span className={joinClasses("text-sm font-semibold", variance < 0.001 ? "text-emerald-700" : "text-coralpink")}>
-              Variance: {formatAccountingAmount(variance)}
+              Variance: {formatAmount(variance)}
             </span>
           }
           isDraggable

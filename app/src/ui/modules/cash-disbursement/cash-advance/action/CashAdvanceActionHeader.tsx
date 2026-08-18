@@ -8,10 +8,7 @@ import type {
   CashAdvanceRecord,
   CashAdvanceStatus,
 } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
-import {
-  ModuleHeader,
-  moduleHeaderActionClassNames,
-} from "@/app/src/ui/shared/module/ModuleHeader";
+import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleSaveButton } from "@/app/src/ui/shared/module/ModuleSaveButton";
 import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
@@ -61,9 +58,7 @@ export function CashAdvanceActionHeader({
           </Link>
           {onPreview ? <ReportPreviewAction onPreview={onPreview} /> : null}
           {mode !== "add" ? <CashAdvanceActionHistory record={record} /> : null}
-          {mode !== "add" ? (
-            <CashAdvanceViewActions record={record} onUpdateStatus={onUpdateStatus} />
-          ) : null}
+          {mode !== "add" ? <CashAdvanceViewActions record={record} onUpdateStatus={onUpdateStatus} /> : null}
           {mode === "view" ? null : (
             <ModuleSaveButton
               onSave={onSubmit}

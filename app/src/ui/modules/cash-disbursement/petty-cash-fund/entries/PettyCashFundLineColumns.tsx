@@ -23,10 +23,7 @@ export function createPettyCashFundItemColumns(
   labels: Record<PettyCashFundItemColumnId, string>,
   widths: Record<PettyCashFundItemColumnId, number>,
 ): Record<PettyCashFundItemColumnId, ModuleDataEntryColumn<PettyCashFundItem>> {
-  const text = (
-    id: PettyCashFundItemColumnId,
-    type: "text" | "date" = "text",
-  ): ModuleDataEntryColumn<PettyCashFundItem> => ({
+  const text = (id: PettyCashFundItemColumnId, type: "text" | "date" = "text"): ModuleDataEntryColumn<PettyCashFundItem> => ({
     header: labels[id],
     id,
     width: widths[id],
@@ -43,10 +40,7 @@ export function createPettyCashFundItemColumns(
       />
     ),
   });
-  const dropdown = (
-    id: PettyCashFundItemColumnId,
-    options: AppAdvancedDropdownOption[],
-  ): ModuleDataEntryColumn<PettyCashFundItem> => ({
+  const dropdown = (id: PettyCashFundItemColumnId, options: AppAdvancedDropdownOption[]): ModuleDataEntryColumn<PettyCashFundItem> => ({
     header: labels[id],
     id,
     width: widths[id],
@@ -63,9 +57,7 @@ export function createPettyCashFundItemColumns(
       />
     ),
   });
-  const checkbox = (
-    id: "vatable" | "vatInclusive",
-  ): ModuleDataEntryColumn<PettyCashFundItem> => ({
+  const checkbox = (id: "vatable" | "vatInclusive"): ModuleDataEntryColumn<PettyCashFundItem> => ({
     header: labels[id],
     id,
     width: widths[id],
@@ -105,19 +97,13 @@ export function createPettyCashFundAccountingColumns(
   labels: Record<PettyCashFundAccountingColumnId, string>,
   widths: Record<PettyCashFundAccountingColumnId, number>,
 ): Record<PettyCashFundAccountingColumnId, ModuleDataEntryColumn<PettyCashFundAccountingEntry>> {
-  const column = (
-    id: PettyCashFundAccountingColumnId,
-  ): ModuleDataEntryColumn<PettyCashFundAccountingEntry> => ({
+  const column = (id: PettyCashFundAccountingColumnId): ModuleDataEntryColumn<PettyCashFundAccountingEntry> => ({
     header: labels[id],
     id,
     width: widths[id],
     widthMode: "fixed",
     widthClassName: "w-auto",
-    renderCell: (row) => (
-      <span className={`block ${id === "debit" || id === "credit" ? "text-right tabular-nums" : ""}`}>
-        {row[id]}
-      </span>
-    ),
+    renderCell: (row) => <span className={`block ${id === "debit" || id === "credit" ? "text-right tabular-nums" : ""}`}>{row[id]}</span>,
   });
   return {
     accountCode: column("accountCode"),

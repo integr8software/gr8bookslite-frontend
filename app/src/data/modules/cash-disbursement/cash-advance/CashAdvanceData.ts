@@ -2,20 +2,20 @@ import {
   createTaxDetails,
   syncTaxDetailsAmount,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
+import { formatMoneyNumberDisplayValue, parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import {
-  formatMoneyNumberDisplayValue,
-  parseMoneyNumberInput,
-} from "@/app/src/data/shared/money/MoneyNumberData";
-import { CashAdvanceStatuses } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
+  CashAdvanceStatuses,
+  CashAdvanceStorageKey,
+  CashAdvanceTransactionNumberPadding,
+  CashAdvanceTransactionNumberPrefix,
+} from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
 import type {
   CashAdvanceFormValues,
   CashAdvanceRecord,
   CashAdvanceStatus,
 } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
+import { formatCurrency } from "@/app/src/utils/currency.util";
 
-export const CashAdvanceStorageKey = "gr8books.cash-advance.records";
-const CashAdvanceTransNoPrefix = "CA-";
-const CashAdvanceTransNoPadding = 6;
 const LegacyMockCashAdvanceTransNoById: Record<string, string> = {
   "ca-001": "CA-000005",
   "ca-002": "CA-000004",
@@ -115,6 +115,7 @@ export function createCashAdvanceFormValues(baseCurrencyCode = "PHP"): CashAdvan
     amount: "",
     attachments: [],
     costCenter: "",
+    cashAdvanceBalance: "",
     currency: baseCurrencyCode,
     documentDate: today,
     fxRate: "1.00",
@@ -139,9 +140,7 @@ export function createCashAdvanceFormValues(baseCurrencyCode = "PHP"): CashAdvan
   };
 }
 
-export function createCashAdvanceFormValuesFromRecord(
-  record: CashAdvanceRecord,
-): CashAdvanceFormValues {
+export function createCashAdvanceFormValuesFromRecord(record: CashAdvanceRecord): CashAdvanceFormValues {
   if (record.formValues) {
     return {
       ...createCashAdvanceFormValues(),
@@ -171,10 +170,7 @@ export function createCashAdvanceFormValuesFromRecord(
   };
 }
 
-export function createCashAdvanceRecordFromForm(
-  values: CashAdvanceFormValues,
-  existingRecord?: CashAdvanceRecord,
-): CashAdvanceRecord {
+export function createCashAdvanceRecordFromForm(values: CashAdvanceFormValues, existingRecord?: CashAdvanceRecord): CashAdvanceRecord {
   const amount = parseMoneyNumberInput(values.amount);
   const now = new Date().toISOString();
   const actor = "Current User";
@@ -211,10 +207,7 @@ export function getInitialCashAdvances() {
   return readStoredCashAdvances() ?? MockCashAdvanceRecords;
 }
 
-function createCashAdvanceTransNo(
-  value: string,
-  existingRecord?: CashAdvanceRecord,
-) {
+function createCashAdvanceTransNo(value: string, existingRecord?: CashAdvanceRecord) {
   const normalizedValue = value.trim();
 
   if (normalizedValue && normalizedValue !== "Auto-generated on save") {
@@ -241,10 +234,7 @@ function parseCashAdvanceTransNoSequence(value: string) {
 }
 
 function formatCashAdvanceTransNo(sequence: number) {
-  return `${CashAdvanceTransNoPrefix}${String(sequence).padStart(
-    CashAdvanceTransNoPadding,
-    "0",
-  )}`;
+  return `${CashAdvanceTransactionNumberPrefix}${String(sequence).padStart(CashAdvanceTransactionNumberPadding, "0")}`;
 }
 
 export function readStoredCashAdvances() {
@@ -261,9 +251,7 @@ export function readStoredCashAdvances() {
   try {
     const parsedRecords = JSON.parse(storedRecords) as CashAdvanceRecord[];
 
-    return Array.isArray(parsedRecords)
-      ? parsedRecords.map(normalizeStoredCashAdvanceRecord)
-      : null;
+    return Array.isArray(parsedRecords) ? parsedRecords.map(normalizeStoredCashAdvanceRecord) : null;
   } catch {
     return null;
   }
@@ -277,20 +265,12 @@ export function writeStoredCashAdvances(records: CashAdvanceRecord[]) {
   window.localStorage.setItem(CashAdvanceStorageKey, JSON.stringify(records));
 }
 
-export function countCashAdvancesByStatus(
-  records: CashAdvanceRecord[],
-  status: CashAdvanceStatus,
-) {
+export function countCashAdvancesByStatus(records: CashAdvanceRecord[], status: CashAdvanceStatus) {
   return records.filter((record) => record.status === status).length;
 }
 
 export function formatCashAdvanceCurrency(value: number) {
-  return value.toLocaleString("en-US", {
-    currency: "PHP",
-    maximumFractionDigits: 2,
-    minimumFractionDigits: 2,
-    style: "currency",
-  });
+  return formatCurrency(value);
 }
 
 export function formatCashAdvanceDate(value: string) {
@@ -314,7 +294,7 @@ export function getCashAdvanceStatusLabel(status: CashAdvanceStatus) {
 }
 
 function normalizeCashAdvanceStatus(value: string): CashAdvanceStatus {
-  if (value === "Open") {
+  if (value === CashAdvanceStatuses.open) {
     return CashAdvanceStatuses.draft;
   }
 
@@ -338,14 +318,10 @@ function normalizeCashAdvanceStatus(value: string): CashAdvanceStatus {
     CashAdvanceStatuses.posted,
   ];
 
-  return statuses.includes(value as CashAdvanceStatus)
-    ? (value as CashAdvanceStatus)
-    : CashAdvanceStatuses.draft;
+  return statuses.includes(value as CashAdvanceStatus) ? (value as CashAdvanceStatus) : CashAdvanceStatuses.draft;
 }
 
-function normalizeStoredCashAdvanceRecord(
-  record: CashAdvanceRecord,
-): CashAdvanceRecord {
+function normalizeStoredCashAdvanceRecord(record: CashAdvanceRecord): CashAdvanceRecord {
   const status = normalizeCashAdvanceStatus(record.status);
   const transNo = getNormalizedStoredCashAdvanceTransNo(record);
 

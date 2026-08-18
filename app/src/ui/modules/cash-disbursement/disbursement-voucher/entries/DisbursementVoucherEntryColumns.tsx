@@ -20,12 +20,12 @@ import {
   normalizeVatDropdownValue,
 } from "@/app/src/ui/shared/transaction-setup/AppTaxRateDialog";
 import {
-  AccountingDropdownClassName,
   EntryInput,
   EntryNumberInput,
   ExpenseDetailValue,
   accountingCellControlClassName,
 } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/DisbursementVoucherEntryCellControls";
+import { DisbursementVoucherAccountingDropdownClassName } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryConstants";
 
 export function createDisbursementAccountingEntryColumns({
   canAddPartyName,
@@ -63,7 +63,7 @@ export function createDisbursementAccountingEntryColumns({
           valueField="accountName"
           readOnly={isReadonly}
           isClearable
-          className={AccountingDropdownClassName}
+          className={DisbursementVoucherAccountingDropdownClassName}
           placeholder="Select Account Title"
           searchPlaceholder="Search Account Title"
           onChange={() => undefined}
@@ -176,7 +176,7 @@ export function createDisbursementAccountingEntryColumns({
           options={partyOptions}
           placeholder="Select Party Name"
           searchPlaceholder="Search Party Name"
-          className={AccountingDropdownClassName}
+          className={DisbursementVoucherAccountingDropdownClassName}
           onChange={(value) => {
             const selectedValue = String(value);
             const party = partyOptions.find((option) => option.value === selectedValue);
@@ -210,7 +210,7 @@ export function createDisbursementAccountingEntryColumns({
           options={responsibilityCenterOptions}
           placeholder="Select Responsibility Center"
           searchPlaceholder="Search Responsibility Center"
-          className={AccountingDropdownClassName}
+          className={DisbursementVoucherAccountingDropdownClassName}
           onChange={(value) => onUpdateEntry(entry.id, "responsibilityCenter", String(value))}
         />
       ),
@@ -244,7 +244,7 @@ export function createDisbursementAccountingEntryColumns({
             options={vatOptions}
             placeholder="Select VAT"
             searchPlaceholder="Search VAT Rate or Description"
-            className={AccountingDropdownClassName}
+            className={DisbursementVoucherAccountingDropdownClassName}
             onChange={(value) => onUpdateEntry(entry.id, "vatType", String(value))}
           />
         );
@@ -263,7 +263,7 @@ export function createDisbursementAccountingEntryColumns({
           options={ewtOptions}
           placeholder="Select EWT"
           searchPlaceholder="Search EWT Code, Rate, or Description"
-          className={AccountingDropdownClassName}
+          className={DisbursementVoucherAccountingDropdownClassName}
           onChange={(value) => onUpdateEntry(entry.id, "atcCode", String(value))}
         />
       ),
@@ -298,7 +298,7 @@ export function createDisbursementExpenseEntryColumns({
           valueField="accountName"
           readOnly={isReadonly}
           isClearable
-          className={AccountingDropdownClassName}
+          className={DisbursementVoucherAccountingDropdownClassName}
           placeholder="Select Expense Type"
           searchPlaceholder="Search Expense Type"
           onChange={() => undefined}
@@ -369,7 +369,7 @@ export function createDisbursementExpenseEntryColumns({
           options={vatOptions}
           placeholder="Select VAT"
           searchPlaceholder="Search VAT Rate or Description"
-          className={AccountingDropdownClassName}
+          className={DisbursementVoucherAccountingDropdownClassName}
           onChange={(value) => {
             const vatCode = String(value);
             const taxRate = getVatRateFromCode(vatCode, taxCodes);
@@ -417,7 +417,7 @@ export function createDisbursementExpenseEntryColumns({
           options={ewtOptions}
           placeholder="Select EWT"
           searchPlaceholder="Search EWT Code, Rate, or Description"
-          className={AccountingDropdownClassName}
+          className={DisbursementVoucherAccountingDropdownClassName}
           onChange={(value) => {
             const ewtCode = String(value);
 

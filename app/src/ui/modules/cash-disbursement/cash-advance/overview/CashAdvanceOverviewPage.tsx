@@ -11,6 +11,7 @@ import {
 } from "@/app/src/data/modules/cash-disbursement/cash-advance/CashAdvanceData";
 import {
   CashAdvanceAccountOptions,
+  CashAdvanceAllStatusFilter,
   CashAdvanceHref,
   CashAdvanceStatusFilterOptions,
   CashAdvanceStatusFilters,
@@ -229,8 +230,8 @@ function CashAdvanceMetrics({
           summary: "All time",
           tone: "violet",
           value: records.length,
-          isActive: statusFilter === "all",
-          onClick: () => onStatusFilterChange("all"),
+          isActive: statusFilter === CashAdvanceAllStatusFilter,
+          onClick: () => onStatusFilterChange(CashAdvanceAllStatusFilter),
         },
         {
           icon: getModuleStatusMetricIcon(CashAdvanceStatuses.draft),

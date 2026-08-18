@@ -8,6 +8,7 @@ import type {
   DisbursementLineEntry,
   DisbursementVoucherPaymentDetails,
   DisbursementVoucherStatus,
+  DisbursementVoucherDisplayStatus,
   DisbursementTaxDetails,
   DisbursementTransactionRecord,
   DisbursementVoucherEntryDraft,
@@ -22,8 +23,7 @@ import {
   DisbursementVoucherStatuses,
   DisbursementVoucherTransactionStorageKey,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
-
-export type DisbursementVoucherDisplayStatus = DisbursementVoucherStatus;
+import { formatCurrency as formatCurrencyValue } from "@/app/src/utils/currency.util";
 
 const CashInHandAccount = {
   accountCode: "1001111",
@@ -819,13 +819,7 @@ export const DisbursementVoucherCopyFromRecords: DisbursementVoucherCopyFromReco
     "EMP-044",
     MockDisbursementTransactions[4],
   ),
-  createDisbursementVoucherCopyFromRecord(
-    "copy-dv-1005",
-    "Revolving Fund",
-    "RF-2026-0007",
-    "EMP-044",
-    MockDisbursementTransactions[4],
-  ),
+  createDisbursementVoucherCopyFromRecord("copy-dv-1005", "Revolving Fund", "RF-2026-0007", "EMP-044", MockDisbursementTransactions[4]),
   createDisbursementVoucherCopyFromRecord(
     "copy-dv-1007",
     "Revolving Fund Replenishment",
@@ -1413,11 +1407,7 @@ export function createAttachmentPlaceholders(): DisbursementAttachment[] {
 }
 
 export function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("en-PH", {
-    style: "currency",
-    currency: "PHP",
-    minimumFractionDigits: 2,
-  }).format(amount);
+  return formatCurrencyValue(amount);
 }
 
 export function formatDateLabel(value: string) {
@@ -1429,7 +1419,7 @@ export function formatDateLabel(value: string) {
 }
 
 export function getDisbursementVoucherDisplayStatus(status: string): DisbursementVoucherDisplayStatus {
-  if (status === "Draft" || status === "Open") {
+  if (status === DisbursementVoucherStatuses.draft || status === DisbursementVoucherStatuses.open) {
     return DisbursementVoucherStatuses.draft;
   }
 
@@ -1514,23 +1504,23 @@ function createDisbursementVoucherHistoryDate(voucherDate: string, hour: number)
 
 function getDisbursementVoucherHistoryAction(status: DisbursementVoucherStatus) {
   if (status === DisbursementVoucherStatuses.posted) {
-    return "Posted";
+    return DisbursementVoucherStatuses.posted;
   }
 
   if (status === DisbursementVoucherStatuses.disapproved) {
-    return "Disapproved";
+    return DisbursementVoucherStatuses.disapproved;
   }
 
   if (status === DisbursementVoucherStatuses.cancelled) {
-    return "Cancelled";
+    return DisbursementVoucherStatuses.cancelled;
   }
 
   if (status === DisbursementVoucherStatuses.closed) {
-    return "Closed";
+    return DisbursementVoucherStatuses.closed;
   }
 
   if (status === DisbursementVoucherStatuses.forApproval) {
-    return "For Approval";
+    return DisbursementVoucherStatuses.forApproval;
   }
 
   return "Updated";

@@ -25,11 +25,7 @@ import {
   ModuleTableSearch,
   ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
-import {
-  getColumnMetaClassName,
-  joinClasses,
-  moduleAccentClassNames,
-} from "@/app/src/ui/shared/module/module-table/utils";
+import { getColumnMetaClassName, joinClasses, moduleAccentClassNames } from "@/app/src/ui/shared/module/module-table/utils";
 import { formatCurrency } from "@/app/src/utils/currency.util";
 import { formatDate } from "@/app/src/utils/date.util";
 
@@ -42,7 +38,12 @@ export function PettyCashFundOverviewPage() {
         title="Petty Cash Fund"
         titleAs="h1"
         description="Manage petty cash fund parties, balances, detailed transactions, and accounting entries."
-        eyebrow={<><Home className="h-3.5 w-3.5" aria-hidden="true" />Cash disbursement</>}
+        eyebrow={
+          <>
+            <Home className="h-3.5 w-3.5" aria-hidden="true" />
+            Cash disbursement
+          </>
+        }
         actions={
           <Link
             data-spotlight-id="maintenance-create-record"
@@ -74,7 +75,10 @@ export function PettyCashFundOverviewPage() {
               {row.getVisibleCells().map((cell) => (
                 <td
                   key={cell.id}
-                  className={joinClasses("px-4 py-4 align-middle text-sm text-darknavy", getColumnMetaClassName(cell.column.columnDef.meta))}
+                  className={joinClasses(
+                    "px-4 py-4 align-middle text-sm text-darknavy",
+                    getColumnMetaClassName(cell.column.columnDef.meta),
+                  )}
                 >
                   {renderCell(cell.column.id, row.original, page) ?? flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </td>
@@ -105,7 +109,10 @@ function PettyCashFundToolbar({ page }: { page: PettyCashFundOverviewPageState }
         <DateRangePicker label="Date Range" value={page.dateRange} onChange={page.setDateRange} />
         <AmountRangePicker label="Total Amount" value={page.amountRange} onChange={page.setAmountRange} />
       </div>
-      <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 md:grid-cols-[minmax(0,1fr)_3.25rem_3.25rem] 2xl:w-[21.5rem]" data-spotlight-id="maintenance-table-options">
+      <div
+        className="grid grid-cols-[2fr_1fr_1fr] gap-2 md:grid-cols-[minmax(0,1fr)_3.25rem_3.25rem] 2xl:w-[21.5rem]"
+        data-spotlight-id="maintenance-table-options"
+      >
         <ModuleTableFilterSelect
           label="Status"
           value={page.statusFilter}
@@ -128,7 +135,11 @@ function renderCell(columnId: string, record: PettyCashFundRecord, page: PettyCa
     return formatDate(record[columnId as "documentDate" | "createdAt" | "updatedAt"], { emptyValue: "" });
   }
   if (columnId === "status") {
-    return <div className="flex w-full justify-center"><ModuleStatusBadge status={record.status} /></div>;
+    return (
+      <div className="flex w-full justify-center">
+        <ModuleStatusBadge status={record.status} />
+      </div>
+    );
   }
   if (columnId === "actions") return <PettyCashFundRecordActions record={record} onUpdateStatus={page.updateStatus} />;
   return null;

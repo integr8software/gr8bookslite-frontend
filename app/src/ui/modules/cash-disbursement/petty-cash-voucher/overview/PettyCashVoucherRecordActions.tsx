@@ -1,16 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Ban,
-  Edit3,
-  Eye,
-  ThumbsDown,
-  ThumbsUp,
-  Undo2,
-} from "lucide-react";
+import { Ban, Edit3, Eye, ThumbsDown, ThumbsUp, Undo2 } from "lucide-react";
 import {
   PettyCashVoucherHref,
+  PettyCashVoucherStatuses,
   canApprovePettyCashVoucherStatus,
   canCancelPettyCashVoucherStatus,
   canDisapprovePettyCashVoucherStatus,
@@ -22,21 +16,15 @@ import type {
   PettyCashVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import {
-  ModuleActionMenu,
-  type ModuleActionMenuItem,
-} from "@/app/src/ui/shared/module/ModuleActionMenu";
+import { ModuleActionMenu, type ModuleActionMenuItem } from "@/app/src/ui/shared/module/ModuleActionMenu";
 import { ModuleTableActions } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
-export function PettyCashVoucherRecordActions({
-  onUpdateStatus,
-  record,
-}: PettyCashVoucherRecordActionsProps) {
+export function PettyCashVoucherRecordActions({ onUpdateStatus, record }: PettyCashVoucherRecordActionsProps) {
   const [statusToConfirm, setStatusToConfirm] = useState<PettyCashVoucherStatus | null>(null);
-  const isPosted = record.status === "Posted";
-  const isDisapproved = record.status === "Disapproved";
-  const isCancelled = record.status === "Cancelled";
-  const undoStatus: PettyCashVoucherStatus = "For Approval";
+  const isPosted = record.status === PettyCashVoucherStatuses.posted;
+  const isDisapproved = record.status === PettyCashVoucherStatuses.disapproved;
+  const isCancelled = record.status === PettyCashVoucherStatuses.cancelled;
+  const undoStatus: PettyCashVoucherStatus = PettyCashVoucherStatuses.forApproval;
   const actionItems: ModuleActionMenuItem[] = [
     {
       href: `${PettyCashVoucherHref}/view/${record.id}`,
@@ -58,14 +46,14 @@ export function PettyCashVoucherRecordActions({
       disabled: !canApprovePettyCashVoucherStatus(record.status),
       icon: isPosted ? Undo2 : ThumbsUp,
       label: isPosted ? "Undo Approved" : "Approve",
-      onSelect: () => setStatusToConfirm(isPosted ? undoStatus : "Posted"),
+      onSelect: () => setStatusToConfirm(isPosted ? undoStatus : PettyCashVoucherStatuses.posted),
       type: "button",
     },
     {
       disabled: !canDisapprovePettyCashVoucherStatus(record.status),
       icon: isDisapproved ? Undo2 : ThumbsDown,
       label: isDisapproved ? "Undo Disapproved" : "Disapprove",
-      onSelect: () => setStatusToConfirm(isDisapproved ? undoStatus : "Disapproved"),
+      onSelect: () => setStatusToConfirm(isDisapproved ? undoStatus : PettyCashVoucherStatuses.disapproved),
       tone: isDisapproved ? "default" : "danger",
       type: "button",
     },
@@ -73,22 +61,17 @@ export function PettyCashVoucherRecordActions({
       disabled: !canCancelPettyCashVoucherStatus(record.status),
       icon: isCancelled ? Undo2 : Ban,
       label: isCancelled ? "Undo Cancelled" : "Cancel",
-      onSelect: () => setStatusToConfirm(isCancelled ? undoStatus : "Cancelled"),
+      onSelect: () => setStatusToConfirm(isCancelled ? undoStatus : PettyCashVoucherStatuses.cancelled),
       tone: isCancelled ? "default" : "danger",
       type: "button",
     },
   ];
-  const dialogCopy = statusToConfirm
-    ? getPettyCashVoucherStatusDialogCopy(statusToConfirm, record.voucherNo)
-    : null;
+  const dialogCopy = statusToConfirm ? getPettyCashVoucherStatusDialogCopy(statusToConfirm, record.voucherNo) : null;
 
   return (
     <>
       <ModuleTableActions className="w-full !justify-center">
-        <ModuleActionMenu
-          items={actionItems}
-          label={`Actions for petty cash voucher ${record.voucherNo}`}
-        />
+        <ModuleActionMenu items={actionItems} label={`Actions for petty cash voucher ${record.voucherNo}`} />
       </ModuleTableActions>
       {dialogCopy && statusToConfirm ? (
         <AppDialog

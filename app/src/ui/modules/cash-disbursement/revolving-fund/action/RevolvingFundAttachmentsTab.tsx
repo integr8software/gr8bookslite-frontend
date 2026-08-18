@@ -4,4 +4,3 @@ import { RevolvingFundFileAttachmentFields } from "@/app/src/ui/modules/cash-dis
 export function RevolvingFundAttachmentsTab({ page }: { page: RevolvingFundActionPageState }) {
   return <RevolvingFundFileAttachmentFields page={page} />;
 }
-

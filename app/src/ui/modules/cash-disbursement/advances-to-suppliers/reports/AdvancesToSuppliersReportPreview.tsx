@@ -17,7 +17,14 @@ export function AdvancesToSuppliersReportPreview({
   const amount = Number(page.values.advancePaymentAmount.replace(/,/g, "")) || 0;
   const totalPoAmount = Number(page.values.totalPoAmount.replace(/,/g, "")) || 0;
   return (
-    <ReportPreviewDrawer isOpen={isOpen} eyebrow="Cash disbursement" title="Advances to Suppliers Preview" description="Review the supplier advance details before printing." onClose={onClose} onGeneratePdf={onGeneratePdf}>
+    <ReportPreviewDrawer
+      isOpen={isOpen}
+      eyebrow="Cash disbursement"
+      title="Advances to Suppliers Preview"
+      description="Review the supplier advance details before printing."
+      onClose={onClose}
+      onGeneratePdf={onGeneratePdf}
+    >
       <article className="mx-auto min-w-[48rem] max-w-4xl bg-white p-12 text-darknavy shadow-sm">
         <div className="text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-darknavy/55">Gr8Books</p>
@@ -41,5 +48,10 @@ export function AdvancesToSuppliersReportPreview({
 }
 
 function ReportValue({ label, value }: { label: string; value: string }) {
-  return <div><dt className="text-xs font-semibold uppercase text-darknavy/45">{label}</dt><dd className="mt-1 font-semibold">{value}</dd></div>;
+  return (
+    <div>
+      <dt className="text-xs font-semibold uppercase text-darknavy/45">{label}</dt>
+      <dd className="mt-1 font-semibold">{value}</dd>
+    </div>
+  );
 }

@@ -13,13 +13,8 @@ export function RevolvingFundDetailsTab({
 }) {
   return (
     <>
-      <RevolvingFundDetailsFields
-        page={page}
-        onOpenPartyDrawer={onOpenPartyDrawer}
-        onOpenProjectDrawer={onOpenProjectDrawer}
-      />
+      <RevolvingFundDetailsFields page={page} onOpenPartyDrawer={onOpenPartyDrawer} onOpenProjectDrawer={onOpenProjectDrawer} />
       <RevolvingFundEntrySection page={page} />
     </>
   );
 }
-

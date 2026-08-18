@@ -9,11 +9,56 @@ import type {
 import { todayDateValue } from "@/app/src/utils/date.util";
 
 export const PettyCashFundReplenishmentSeedRecords: PettyCashFundReplenishmentRecord[] = [
-  createSeed("1", "PCFR-000063", "2026-02-23", "E000102", "Raymark B. Arsicolo", 12500, "February office replenishment", "For Approval"),
-  createSeed("2", "PCFR-000062", "2026-02-18", "E000117", "Maria L. Dela Cruz", 15000, "Field operations replenishment", "Posted"),
-  createSeed("3", "PCFR-000061", "2026-02-12", "E000145", "Jose P. Santos", 8500, "Branch replenishment", "Draft"),
-  createSeed("4", "PCFR-000060", "2026-02-08", "E000117", "Maria L. Dela Cruz", 4200, "Office expense replenishment", "Disapproved"),
-  createSeed("5", "PCFR-000059", "2026-02-02", "E000102", "Raymark B. Arsicolo", 3000, "Cancelled replenishment", "Cancelled"),
+  createSeed(
+    "1",
+    "PCFR-000063",
+    "2026-02-23",
+    "E000102",
+    "Raymark B. Arsicolo",
+    12500,
+    "February office replenishment",
+    PettyCashFundReplenishmentStatuses.forApproval,
+  ),
+  createSeed(
+    "2",
+    "PCFR-000062",
+    "2026-02-18",
+    "E000117",
+    "Maria L. Dela Cruz",
+    15000,
+    "Field operations replenishment",
+    PettyCashFundReplenishmentStatuses.posted,
+  ),
+  createSeed(
+    "3",
+    "PCFR-000061",
+    "2026-02-12",
+    "E000145",
+    "Jose P. Santos",
+    8500,
+    "Branch replenishment",
+    PettyCashFundReplenishmentStatuses.draft,
+  ),
+  createSeed(
+    "4",
+    "PCFR-000060",
+    "2026-02-08",
+    "E000117",
+    "Maria L. Dela Cruz",
+    4200,
+    "Office expense replenishment",
+    PettyCashFundReplenishmentStatuses.disapproved,
+  ),
+  createSeed(
+    "5",
+    "PCFR-000059",
+    "2026-02-02",
+    "E000102",
+    "Raymark B. Arsicolo",
+    3000,
+    "Cancelled replenishment",
+    PettyCashFundReplenishmentStatuses.cancelled,
+  ),
 ];
 
 export function createBlankPettyCashFundReplenishmentEntry(): PettyCashFundReplenishmentEntry {
@@ -59,16 +104,18 @@ export function createPettyCashFundReplenishmentFormValues(
       currency: baseCurrencyCode,
       exchangeRate: "1.00",
       remarks: record.remarks,
-      entries: [{
-        ...createBlankPettyCashFundReplenishmentEntry(),
-        pettyCashDate: record.documentDate,
-        pettyCashNo: "PCV-000084",
-        accountCode: "610-100",
-        accountTitle: "Office Supplies Expense",
-        totalAmount: amount,
-        netAmount: amount,
-        remarks: record.remarks,
-      }],
+      entries: [
+        {
+          ...createBlankPettyCashFundReplenishmentEntry(),
+          pettyCashDate: record.documentDate,
+          pettyCashNo: "PCV-000084",
+          accountCode: "610-100",
+          accountTitle: "Office Supplies Expense",
+          totalAmount: amount,
+          netAmount: amount,
+          remarks: record.remarks,
+        },
+      ],
       attachments: [],
     };
   }
@@ -92,9 +139,7 @@ export function createPettyCashFundReplenishmentFormValues(
   };
 }
 
-export function calculatePettyCashFundReplenishmentTotals(
-  entries: PettyCashFundReplenishmentEntry[],
-) {
+export function calculatePettyCashFundReplenishmentTotals(entries: PettyCashFundReplenishmentEntry[]) {
   return entries.reduce(
     (totals, entry) => ({
       totalAmount: totals.totalAmount + parseMoneyNumberInput(entry.totalAmount),

@@ -1,6 +1,11 @@
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import type { TableCell, TDocumentDefinitions } from "pdfmake/interfaces";
+import {
+  DisbursementVoucherPdfNoBordersLayout,
+  DisbursementVoucherPdfOuterLayout,
+  DisbursementVoucherPdfThinGridLayout,
+} from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import { formatCurrency } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import type {
   DisbursementLineEntry,
@@ -40,7 +45,7 @@ function createDisbursementVoucherPdfDefinition(values: DisbursementVoucherFormV
             [createPaymentReceivedRow()],
           ],
         },
-        layout: outerLayout,
+        layout: DisbursementVoucherPdfOuterLayout,
       },
     ],
   };
@@ -92,7 +97,7 @@ function createHeaderTable(): TableCell {
         ],
       ],
     },
-    layout: noBordersLayout,
+    layout: DisbursementVoucherPdfNoBordersLayout,
   };
 }
 
@@ -115,7 +120,7 @@ function createTitleAndDateRow(values: DisbursementVoucherFormValues): TableCell
         ],
       ],
     },
-    layout: thinGridLayout,
+    layout: DisbursementVoucherPdfThinGridLayout,
   };
 }
 
@@ -156,7 +161,7 @@ function createTwoColumnInfoRow(leftText: DisbursementVoucherPdfText, rightText:
         ],
       ],
     },
-    layout: thinGridLayout,
+    layout: DisbursementVoucherPdfThinGridLayout,
   };
 }
 
@@ -217,7 +222,7 @@ function createEntriesTable(values: DisbursementVoucherFormValues): TableCell {
       widths: [145, 110, "*", 80, 70, 70],
       body,
     },
-    layout: thinGridLayout,
+    layout: DisbursementVoucherPdfThinGridLayout,
   };
 }
 
@@ -258,7 +263,7 @@ function createApprovalTable(values: DisbursementVoucherFormValues): TableCell {
         ],
       ],
     },
-    layout: thinGridLayout,
+    layout: DisbursementVoucherPdfThinGridLayout,
   };
 }
 
@@ -439,30 +444,3 @@ function getVoucherNumberFontSize(value: string) {
 
   return 20;
 }
-
-const noBordersLayout = {
-  hLineWidth: () => 0,
-  vLineWidth: () => 0,
-  paddingLeft: () => 0,
-  paddingRight: () => 0,
-  paddingTop: () => 0,
-  paddingBottom: () => 0,
-};
-
-const outerLayout = {
-  hLineWidth: () => 1,
-  vLineWidth: () => 1,
-  paddingLeft: () => 0,
-  paddingRight: () => 0,
-  paddingTop: () => 0,
-  paddingBottom: () => 0,
-};
-
-const thinGridLayout = {
-  hLineWidth: () => 0.35,
-  vLineWidth: () => 0.35,
-  paddingLeft: () => 0,
-  paddingRight: () => 0,
-  paddingTop: () => 0,
-  paddingBottom: () => 0,
-};

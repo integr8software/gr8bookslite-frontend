@@ -691,6 +691,7 @@ function syncPartyImportRow(
     memberRegistrationDate: partyTypes.includes("Member")
       ? party.memberRegistrationDate || todayDateValue()
       : "",
+    cashAdvanceLimit: partyTypes.includes("Employee") ? party.cashAdvanceLimit ?? "" : "",
     address,
     addresses,
   };

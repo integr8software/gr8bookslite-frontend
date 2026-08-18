@@ -9,28 +9,19 @@ export function getPettyCashFundReplenishmentRecords(): PettyCashFundReplenishme
   if (typeof window === "undefined") return PettyCashFundReplenishmentSeedRecords;
   try {
     const stored = window.localStorage.getItem(PettyCashFundReplenishmentStorageKey);
-    return stored
-      ? (JSON.parse(stored) as PettyCashFundReplenishmentRecord[])
-      : PettyCashFundReplenishmentSeedRecords;
+    return stored ? (JSON.parse(stored) as PettyCashFundReplenishmentRecord[]) : PettyCashFundReplenishmentSeedRecords;
   } catch {
     return PettyCashFundReplenishmentSeedRecords;
   }
 }
 
-export function savePettyCashFundReplenishmentRecords(
-  records: PettyCashFundReplenishmentRecord[],
-) {
+export function savePettyCashFundReplenishmentRecords(records: PettyCashFundReplenishmentRecord[]) {
   if (typeof window !== "undefined") {
-    window.localStorage.setItem(
-      PettyCashFundReplenishmentStorageKey,
-      JSON.stringify(records),
-    );
+    window.localStorage.setItem(PettyCashFundReplenishmentStorageKey, JSON.stringify(records));
   }
 }
 
-export function upsertPettyCashFundReplenishmentRecord(
-  record: PettyCashFundReplenishmentRecord,
-) {
+export function upsertPettyCashFundReplenishmentRecord(record: PettyCashFundReplenishmentRecord) {
   const records = getPettyCashFundReplenishmentRecords();
   return records.some((item) => item.id === record.id)
     ? records.map((item) => (item.id === record.id ? record : item))
@@ -39,8 +30,7 @@ export function upsertPettyCashFundReplenishmentRecord(
 
 export function createNextPettyCashFundReplenishmentNumber() {
   const highest = getPettyCashFundReplenishmentRecords().reduce(
-    (value, record) =>
-      Math.max(value, Number(record.transactionNo.match(/(\d+)$/)?.[1] ?? 0)),
+    (value, record) => Math.max(value, Number(record.transactionNo.match(/(\d+)$/)?.[1] ?? 0)),
     0,
   );
   return `${PettyCashFundReplenishmentTransactionPrefix}-${String(highest + 1).padStart(6, "0")}`;

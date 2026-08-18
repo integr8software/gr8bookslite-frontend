@@ -27,20 +27,12 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentTypes";
 import { validatePettyCashFundReplenishmentForm } from "@/app/src/validations/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentValidation";
 
-export function usePettyCashFundReplenishmentActionPage(
-  options: { onSaved?: () => void } = {},
-) {
+export function usePettyCashFundReplenishmentActionPage(options: { onSaved?: () => void } = {}) {
   const transactionCurrency = useTransactionCurrency();
   const pathname = usePathname();
   const params = useParams<{ recordId?: string }>();
-  const mode: PettyCashFundReplenishmentActionMode = pathname.includes("/view/")
-    ? "view"
-    : pathname.includes("/edit/")
-      ? "edit"
-      : "add";
-  const initialRecord = mode === "add"
-    ? undefined
-    : getPettyCashFundReplenishmentRecords().find((item) => item.id === params.recordId);
+  const mode: PettyCashFundReplenishmentActionMode = pathname.includes("/view/") ? "view" : pathname.includes("/edit/") ? "edit" : "add";
+  const initialRecord = mode === "add" ? undefined : getPettyCashFundReplenishmentRecords().find((item) => item.id === params.recordId);
   const [record, setRecord] = useState(initialRecord);
   const [values, setValues] = useState<PettyCashFundReplenishmentFormValues>(() =>
     createPettyCashFundReplenishmentFormValues(
@@ -54,10 +46,7 @@ export function usePettyCashFundReplenishmentActionPage(
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const hasEditedCurrencyRef = useRef(false);
   const isReadonly = mode === "view";
-  const totals = useMemo(
-    () => calculatePettyCashFundReplenishmentTotals(values.entries),
-    [values.entries],
-  );
+  const totals = useMemo(() => calculatePettyCashFundReplenishmentTotals(values.entries), [values.entries]);
 
   useEffect(() => {
     if (mode !== "add" || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) return;
@@ -90,10 +79,7 @@ export function usePettyCashFundReplenishmentActionPage(
   }
 
   function addEntries(count: number) {
-    updateEntries([
-      ...values.entries,
-      ...Array.from({ length: count }, createBlankPettyCashFundReplenishmentEntry),
-    ]);
+    updateEntries([...values.entries, ...Array.from({ length: count }, createBlankPettyCashFundReplenishmentEntry)]);
   }
 
   function removeEntry(rowId: string) {
@@ -105,10 +91,7 @@ export function usePettyCashFundReplenishmentActionPage(
   function duplicateEntry(rowId: string) {
     const entry = values.entries.find((item) => item.id === rowId);
     if (entry) {
-      updateEntries([
-        ...values.entries,
-        { ...entry, id: createBlankPettyCashFundReplenishmentEntry().id },
-      ]);
+      updateEntries([...values.entries, { ...entry, id: createBlankPettyCashFundReplenishmentEntry().id }]);
     }
   }
 
@@ -116,11 +99,7 @@ export function usePettyCashFundReplenishmentActionPage(
     const index = values.entries.findIndex((entry) => entry.id === rowId);
     if (index < 0) return;
     const next = [...values.entries];
-    next.splice(
-      position === "above" ? index : index + 1,
-      0,
-      createBlankPettyCashFundReplenishmentEntry(),
-    );
+    next.splice(position === "above" ? index : index + 1, 0, createBlankPettyCashFundReplenishmentEntry());
     updateEntries(next);
   }
 
@@ -148,22 +127,14 @@ export function usePettyCashFundReplenishmentActionPage(
   }
 
   function save(status: PettyCashFundReplenishmentStatus) {
-    const nextErrors = status === PettyCashFundReplenishmentStatuses.draft
-      ? {}
-      : validatePettyCashFundReplenishmentForm(values);
+    const nextErrors = status === PettyCashFundReplenishmentStatuses.draft ? {} : validatePettyCashFundReplenishmentForm(values);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) {
       toast.error("Please fix the highlighted petty cash fund replenishment fields.");
       return false;
     }
-    const nextRecord = createPettyCashFundReplenishmentRecord(
-      values,
-      status,
-      mode === "edit" ? record : undefined,
-    );
-    savePettyCashFundReplenishmentRecords(
-      upsertPettyCashFundReplenishmentRecord(nextRecord),
-    );
+    const nextRecord = createPettyCashFundReplenishmentRecord(values, status, mode === "edit" ? record : undefined);
+    savePettyCashFundReplenishmentRecords(upsertPettyCashFundReplenishmentRecord(nextRecord));
     setRecord(nextRecord);
     setValues(createPettyCashFundReplenishmentFormValues(nextRecord));
     toast.success(
@@ -178,9 +149,7 @@ export function usePettyCashFundReplenishmentActionPage(
   function updateStatus(status: PettyCashFundReplenishmentStatus) {
     if (!record) return false;
     const nextRecord = createPettyCashFundReplenishmentRecord(values, status, record);
-    savePettyCashFundReplenishmentRecords(
-      upsertPettyCashFundReplenishmentRecord(nextRecord),
-    );
+    savePettyCashFundReplenishmentRecords(upsertPettyCashFundReplenishmentRecord(nextRecord));
     setRecord(nextRecord);
     setValues(createPettyCashFundReplenishmentFormValues(nextRecord));
     toast.success(`Petty cash fund replenishment marked as ${status}.`);
@@ -215,6 +184,4 @@ export function usePettyCashFundReplenishmentActionPage(
   };
 }
 
-export type PettyCashFundReplenishmentActionPageState = ReturnType<
-  typeof usePettyCashFundReplenishmentActionPage
->;
+export type { PettyCashFundReplenishmentActionPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentTypes";

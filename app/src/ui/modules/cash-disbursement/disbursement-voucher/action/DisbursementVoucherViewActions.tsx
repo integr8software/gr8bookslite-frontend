@@ -1,10 +1,6 @@
 import { useState } from "react";
-import {
-  Ban,
-  ThumbsDown,
-  ThumbsUp,
-  Undo2,
-} from "lucide-react";
+import { Ban, ThumbsDown, ThumbsUp, Undo2 } from "lucide-react";
+import { CashDisbursementViewActionButtonClassName } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import {
   DisbursementVoucherStatuses,
   canApproveDisbursementVoucherStatus,
@@ -18,10 +14,7 @@ import type {
   DisbursementVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import {
-  ModuleActionMenu,
-  type ModuleActionMenuItem,
-} from "@/app/src/ui/shared/module/ModuleActionMenu";
+import { ModuleActionMenu, type ModuleActionMenuItem } from "@/app/src/ui/shared/module/ModuleActionMenu";
 import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 import { DisbursementVoucherActionHistory } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherActionHistory";
@@ -37,10 +30,8 @@ export function DisbursementVoucherViewActions({
   transaction?: DisbursementTransactionRecord;
   voucher?: DisbursementVoucherRecord;
 }) {
-  const [statusToConfirm, setStatusToConfirm] =
-    useState<DisbursementVoucherStatus | null>(null);
-  const recordLabel =
-    voucher?.voucherNo ?? transaction?.transactionNo ?? "this disbursement voucher";
+  const [statusToConfirm, setStatusToConfirm] = useState<DisbursementVoucherStatus | null>(null);
+  const recordLabel = voucher?.voucherNo ?? transaction?.transactionNo ?? "this disbursement voucher";
   const statusDialogCopy = statusToConfirm
     ? getDisbursementVoucherStatusDialogCopy(statusToConfirm, recordLabel, voucher?.status ?? transaction?.status)
     : null;
@@ -55,10 +46,7 @@ export function DisbursementVoucherViewActions({
       <div className="flex items-center gap-2 lg:hidden">
         {onPreview ? <ReportPreviewAction onPreview={onPreview} /> : null}
         <DisbursementVoucherActionHistory transaction={transaction} voucher={voucher} />
-        <ModuleActionMenu
-          items={actions}
-          label="Disbursement voucher actions"
-        />
+        <ModuleActionMenu items={actions} label="Disbursement voucher actions" />
       </div>
       <div className="hidden flex-wrap gap-2 lg:flex">
         {onPreview ? <ReportPreviewAction onPreview={onPreview} /> : null}
@@ -111,8 +99,7 @@ function createDisbursementVoucherViewActionItems({
   const isPosted = status === DisbursementVoucherStatuses.posted;
   const isDisapproved = status === DisbursementVoucherStatuses.disapproved;
   const isCancelled = status === DisbursementVoucherStatuses.cancelled;
-  const approvalUndoStatus: DisbursementVoucherStatus =
-    DisbursementVoucherStatuses.forApproval;
+  const approvalUndoStatus: DisbursementVoucherStatus = DisbursementVoucherStatuses.forApproval;
   const cancelStatus: DisbursementVoucherStatus = isCancelled
     ? voucher
       ? DisbursementVoucherStatuses.draft
@@ -120,29 +107,22 @@ function createDisbursementVoucherViewActionItems({
     : DisbursementVoucherStatuses.cancelled;
   const actions: ModuleActionMenuItem[] = [
     {
-      disabled:
-        !onUpdateStatus || !canApproveDisbursementVoucherStatus(status),
+      disabled: !onUpdateStatus || !canApproveDisbursementVoucherStatus(status),
       icon: isPosted ? Undo2 : ThumbsUp,
       label: isPosted ? "Undo Approved" : "Approve",
-      onSelect: () => onRequestStatusConfirmation(
-        isPosted ? approvalUndoStatus : DisbursementVoucherStatuses.posted,
-      ),
+      onSelect: () => onRequestStatusConfirmation(isPosted ? approvalUndoStatus : DisbursementVoucherStatuses.posted),
       type: "button",
     },
     {
-      disabled:
-        !onUpdateStatus || !canDisapproveDisbursementVoucherStatus(status),
+      disabled: !onUpdateStatus || !canDisapproveDisbursementVoucherStatus(status),
       icon: isDisapproved ? Undo2 : ThumbsDown,
       label: isDisapproved ? "Undo Disapproved" : "Disapprove",
-      onSelect: () => onRequestStatusConfirmation(
-        isDisapproved ? approvalUndoStatus : DisbursementVoucherStatuses.disapproved,
-      ),
+      onSelect: () => onRequestStatusConfirmation(isDisapproved ? approvalUndoStatus : DisbursementVoucherStatuses.disapproved),
       tone: isDisapproved ? "default" : "danger",
       type: "button",
     },
     {
-      disabled:
-        !onUpdateStatus || !canCancelDisbursementVoucherStatus(status),
+      disabled: !onUpdateStatus || !canCancelDisbursementVoucherStatus(status),
       icon: isCancelled ? Undo2 : Ban,
       label: isCancelled ? "Undo Cancelled" : "Cancel",
       onSelect: () => onRequestStatusConfirmation(cancelStatus),
@@ -154,55 +134,37 @@ function createDisbursementVoucherViewActionItems({
   return actions;
 }
 
-function HeaderActionButton({
-  action,
-}: {
-  action: Extract<ModuleActionMenuItem, { type: "button" }>;
-}) {
+function HeaderActionButton({ action }: { action: Extract<ModuleActionMenuItem, { type: "button" }> }) {
   const Icon = action.icon;
   const className = getViewActionButtonClassName(action);
 
   return (
-    <button
-      type="button"
-      disabled={action.disabled}
-      onClick={action.onSelect}
-      className={className}
-    >
+    <button type="button" disabled={action.disabled} onClick={action.onSelect} className={className}>
       <Icon className="h-4 w-4" aria-hidden="true" />
       {action.label}
     </button>
   );
 }
 
-function getViewActionButtonClassName(
-  action: Extract<ModuleActionMenuItem, { type: "button" }>,
-) {
-  const baseClassName =
-    "inline-flex h-10 items-center justify-center gap-2 rounded-md border px-4 text-sm font-semibold shadow-sm shadow-darknavy/5 transition focus-visible:outline-none focus-visible:ring-4 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-white";
-
+function getViewActionButtonClassName(action: Extract<ModuleActionMenuItem, { type: "button" }>) {
   if (action.label === "Approve") {
-    return `${baseClassName} border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50 focus-visible:ring-emerald-500/15`;
+    return `${CashDisbursementViewActionButtonClassName} border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50 focus-visible:ring-emerald-500/15`;
   }
 
   if (action.label === "Disapprove") {
-    return `${baseClassName} border-red-200 bg-white text-red-600 hover:bg-red-50 focus-visible:ring-red-500/15`;
+    return `${CashDisbursementViewActionButtonClassName} border-red-200 bg-white text-red-600 hover:bg-red-50 focus-visible:ring-red-500/15`;
   }
 
   if (action.label === "Cancel") {
-    return `${baseClassName} border-amber-200 bg-white text-amber-700 hover:bg-amber-50 focus-visible:ring-amber-500/15`;
+    return `${CashDisbursementViewActionButtonClassName} border-amber-200 bg-white text-amber-700 hover:bg-amber-50 focus-visible:ring-amber-500/15`;
   }
 
-  if (
-    action.label === "Undo Approved" ||
-    action.label === "Undo Disapproved" ||
-    action.label === "Undo Cancelled"
-  ) {
-    return `${baseClassName} border-skyblue/35 bg-skyblue/10 text-skyblue hover:bg-skyblue/15 focus-visible:ring-skyblue/20`;
+  if (action.label === "Undo Approved" || action.label === "Undo Disapproved" || action.label === "Undo Cancelled") {
+    return `${CashDisbursementViewActionButtonClassName} border-skyblue/35 bg-skyblue/10 text-skyblue hover:bg-skyblue/15 focus-visible:ring-skyblue/20`;
   }
 
   if (action.tone === "danger") {
-    return `${baseClassName} border-coralpink/45 bg-coralpink/5 text-coralpink hover:bg-coralpink/10 focus-visible:ring-coralpink/20`;
+    return `${CashDisbursementViewActionButtonClassName} border-coralpink/45 bg-coralpink/5 text-coralpink hover:bg-coralpink/10 focus-visible:ring-coralpink/20`;
   }
 
   return moduleHeaderActionClassNames.secondary;

@@ -3,10 +3,7 @@
 import { useState } from "react";
 import { History } from "lucide-react";
 import { CashAdvanceStatuses } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
-import type {
-  CashAdvanceRecord,
-  CashAdvanceStatus,
-} from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
+import type { CashAdvanceRecord, CashAdvanceStatus } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 import type { ModuleHistoryEntry } from "@/app/src/types/shared/module/ModuleHistoryTypes";
 import { ModuleHistoryDialog } from "@/app/src/ui/shared/module/ModuleHistoryDialog";
 
@@ -36,9 +33,7 @@ export function CashAdvanceActionHistory({ record }: { record?: CashAdvanceRecor
   );
 }
 
-function createCashAdvanceHistory(
-  record?: CashAdvanceRecord | null,
-): ModuleHistoryEntry<CashAdvanceStatus>[] {
+function createCashAdvanceHistory(record?: CashAdvanceRecord | null): ModuleHistoryEntry<CashAdvanceStatus>[] {
   if (!record) {
     return [];
   }

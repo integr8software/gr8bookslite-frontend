@@ -9,7 +9,9 @@ import {
   createCashAdvanceMultipleEntrySelectOptions,
 } from "@/app/src/data/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryData";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
+import type { CashAdvanceEmployeeOption } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 
 export function EntryAccountDropdown({
   id,
@@ -35,9 +37,7 @@ export function EntryAccountDropdown({
       value={value}
       onChange={(nextValue) => {
         const accountCode = String(nextValue);
-        const account = CashAdvanceMultipleEntryAccountOptions.find(
-          (option) => option.value === accountCode,
-        );
+        const account = CashAdvanceMultipleEntryAccountOptions.find((option) => option.value === accountCode);
 
         onChange(accountCode, account?.label ?? "");
       }}
@@ -51,14 +51,16 @@ export function EntryPartyDropdown({
   onAddParty,
   onChange,
   optionDisplay = "name",
+  options,
   readOnly,
   value,
 }: {
   id: string;
   name: string;
   onAddParty: () => void;
-  onChange: (partyCode: string, partyName: string) => void;
+  onChange: (partyCode: string, partyName: string, cashAdvanceBalance: string) => void;
   optionDisplay?: "code" | "name";
+  options?: CashAdvanceEmployeeOption[];
   readOnly: boolean;
   value: string;
 }) {
@@ -75,17 +77,16 @@ export function EntryPartyDropdown({
           : undefined
       }
       className={CashAdvanceMultipleEntryEntryDropdownClassName}
-      options={createEntryPartyOptions(optionDisplay)}
+      options={createEntryPartyOptions(optionDisplay, options)}
       placeholder=""
       readOnly={readOnly}
       value={value}
       onChange={(nextValue) => {
         const partyCode = String(nextValue);
-        const party = CashAdvanceMultipleEntryPartyOptions.find(
-          (option) => option.value === partyCode,
-        );
+        const employee = options?.find((option) => option.partyCode === partyCode);
+        const party = CashAdvanceMultipleEntryPartyOptions.find((option) => option.value === partyCode);
 
-        onChange(partyCode, party?.name ?? "");
+        onChange(partyCode, employee?.partyName ?? party?.name ?? "", employee?.cashAdvanceBalance ?? "");
       }}
     />
   );
@@ -161,6 +162,19 @@ export function EntryNumberInput(props: Parameters<typeof EntryTextInput>[0]) {
   return <EntryTextInput {...props} />;
 }
 
+export function EntryMoneyNumberInput({ id, name, readOnly, value }: Omit<Parameters<typeof EntryTextInput>[0], "onChange">) {
+  return (
+    <MoneyNumberField
+      id={id}
+      name={name}
+      className={`${CashAdvanceMultipleEntryEntryInputClassName} text-right tabular-nums`}
+      readOnly={readOnly}
+      value={value}
+      onValueChange={() => undefined}
+    />
+  );
+}
+
 export function CashAdvanceMultipleEntryFieldShell({
   children,
   controlId,
@@ -193,8 +207,19 @@ export function CashAdvanceMultipleEntryFieldShell({
   );
 }
 
-function createEntryPartyOptions(optionDisplay: "code" | "name"): AppAdvancedDropdownOption[] {
-  return CashAdvanceMultipleEntryPartyOptions.map((option) => ({
+function createEntryPartyOptions(
+  optionDisplay: "code" | "name",
+  employeeOptions?: CashAdvanceEmployeeOption[],
+): AppAdvancedDropdownOption[] {
+  const options = employeeOptions?.length
+    ? employeeOptions.map((employee) => ({
+        label: employee.partyCode,
+        name: employee.partyName,
+        value: employee.partyCode,
+      }))
+    : CashAdvanceMultipleEntryPartyOptions;
+
+  return options.map((option) => ({
     description: optionDisplay === "code" ? option.name : undefined,
     label: optionDisplay === "code" ? option.name : option.label,
     name: optionDisplay === "code" ? option.label : option.name,

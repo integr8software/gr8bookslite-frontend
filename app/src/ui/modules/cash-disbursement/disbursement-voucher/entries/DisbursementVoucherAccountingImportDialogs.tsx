@@ -6,16 +6,14 @@ import {
   DisbursementAccountingImportClearActions,
   DisbursementAccountingImportTemplateHeaders,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryConstants";
-import type { DisbursementVoucherFormValues } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+import type { DisbursementAttachment as VoucherAttachment } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import { type ModuleDataEntryClearAction } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
-import { downloadAccountingImportTemplate } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/utils/DisbursementVoucherAccountingGridExportUtils";
+import { downloadAccountingImportTemplate } from "@/app/src/services/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingExportService";
 import {
   formatRowsAsTabularText,
   parseImportPreviewRows,
-} from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/utils/DisbursementVoucherAccountingGridImportUtils";
-
-type VoucherAttachment = DisbursementVoucherFormValues["attachments"][number];
+} from "@/app/src/services/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingImportService";
 
 export function AccountingImportPanel({
   canClearTable,

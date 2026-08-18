@@ -8,16 +8,15 @@ import {
   PettyCashFundStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund/PettyCashFundConstants";
 import type { PettyCashFundActionPageState } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-fund/usePettyCashFundActionPage";
+import type { PettyCashFundConfirmationAction } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";
 import { PettyCashFundActionHistory } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund/action/PettyCashFundActionHistory";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleSaveButton } from "@/app/src/ui/shared/module/ModuleSaveButton";
 import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 
-type Confirmation = "save" | "draft" | "approve" | "disapprove" | "cancel";
-
 export function PettyCashFundActionHeader({ onPreview, page }: { onPreview: () => void; page: PettyCashFundActionPageState }) {
-  const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
+  const [confirmation, setConfirmation] = useState<PettyCashFundConfirmationAction | null>(null);
   const transactionNo = page.record?.transactionNo ?? page.values.transactionNo;
   const title =
     page.mode === "add" ? (
@@ -117,7 +116,7 @@ export function PettyCashFundActionHeader({ onPreview, page }: { onPreview: () =
   );
 }
 
-function getDialogTitle(action: Confirmation) {
+function getDialogTitle(action: PettyCashFundConfirmationAction) {
   return action === "save"
     ? "Save petty cash fund?"
     : action === "draft"
@@ -128,9 +127,9 @@ function getDialogTitle(action: Confirmation) {
           ? "Disapprove petty cash fund?"
           : "Cancel petty cash fund?";
 }
-function getDialogDescription(action: Confirmation, recordLabel: string) {
+function getDialogDescription(action: PettyCashFundConfirmationAction, recordLabel: string) {
   return `This will ${action === "save" ? "save and submit" : action} ${recordLabel}.`;
 }
-function getConfirmLabel(action: Confirmation) {
+function getConfirmLabel(action: PettyCashFundConfirmationAction) {
   return action === "save" ? "Save and Submit" : action === "draft" ? "Save as Draft" : action.charAt(0).toUpperCase() + action.slice(1);
 }

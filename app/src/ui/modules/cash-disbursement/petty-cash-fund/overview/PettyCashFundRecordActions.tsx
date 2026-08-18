@@ -37,9 +37,7 @@ export function PettyCashFundRecordActions({
       icon: isPosted ? Undo2 : ThumbsUp,
       label: isPosted ? "Undo Approved" : "Approve",
       disabled: record.status !== PettyCashFundStatuses.forApproval && !isPosted,
-      onSelect: () => isPosted
-        ? onUpdateStatus(record, PettyCashFundStatuses.forApproval)
-        : setStatus(PettyCashFundStatuses.posted),
+      onSelect: () => (isPosted ? onUpdateStatus(record, PettyCashFundStatuses.forApproval) : setStatus(PettyCashFundStatuses.posted)),
     },
     {
       type: "button",
@@ -47,9 +45,8 @@ export function PettyCashFundRecordActions({
       label: isDisapproved ? "Undo Disapproved" : "Disapprove",
       disabled: record.status !== PettyCashFundStatuses.forApproval && !isDisapproved,
       tone: isDisapproved ? "default" : "danger",
-      onSelect: () => isDisapproved
-        ? onUpdateStatus(record, PettyCashFundStatuses.forApproval)
-        : setStatus(PettyCashFundStatuses.disapproved),
+      onSelect: () =>
+        isDisapproved ? onUpdateStatus(record, PettyCashFundStatuses.forApproval) : setStatus(PettyCashFundStatuses.disapproved),
     },
     {
       type: "button",
@@ -57,9 +54,7 @@ export function PettyCashFundRecordActions({
       label: isCancelled ? "Undo Cancelled" : "Cancel",
       disabled: record.status === PettyCashFundStatuses.posted || record.status === PettyCashFundStatuses.disapproved,
       tone: isCancelled ? "default" : "danger",
-      onSelect: () => isCancelled
-        ? onUpdateStatus(record, PettyCashFundStatuses.draft)
-        : setStatus(PettyCashFundStatuses.cancelled),
+      onSelect: () => (isCancelled ? onUpdateStatus(record, PettyCashFundStatuses.draft) : setStatus(PettyCashFundStatuses.cancelled)),
     },
   ];
   return (

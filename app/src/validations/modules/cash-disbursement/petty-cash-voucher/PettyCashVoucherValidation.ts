@@ -12,9 +12,7 @@ import {
 import { parseAmount } from "@/app/src/utils/number.util";
 
 const requiredText = (message: string) => z.string().trim().min(1, message);
-const transactionNumberPattern = new RegExp(
-  `^${PettyCashVoucherTransactionPrefix}-\\d{${PettyCashVoucherTransactionNumberPadding}}$`,
-);
+const transactionNumberPattern = new RegExp(`^${PettyCashVoucherTransactionPrefix}-\\d{${PettyCashVoucherTransactionNumberPadding}}$`);
 const amount = z.preprocess(
   (value) => (typeof value === "string" ? parseAmount(value) : value),
   z.coerce.number().finite().min(0, "Enter a valid amount."),
@@ -23,16 +21,10 @@ const amount = z.preprocess(
 export const PettyCashVoucherFormValidationSchema = z.object({
   accountCode: requiredText("Enter an account code."),
   accountTitle: requiredText("Enter an account title."),
-  amount: amount.refine(
-    (value) => value > 0,
-    "Enter an amount.",
-  ),
+  amount: amount.refine((value) => value > 0, "Enter an amount."),
   documentDate: requiredText("Select a petty cash voucher date."),
   currency: requiredText("Select a currency."),
-  exchangeRate: requiredText("Enter an exchange rate.").refine(
-    (value) => Number(value) > 0,
-    "Exchange rate must be greater than zero.",
-  ),
+  exchangeRate: requiredText("Enter an exchange rate.").refine((value) => Number(value) > 0, "Exchange rate must be greater than zero."),
   netAmount: amount,
   remarks: z.string().max(500, "Remarks can only be up to 500 characters."),
   responsibilityCenter: z.string(),
@@ -48,25 +40,20 @@ export const PettyCashVoucherFormValidationSchema = z.object({
   partyName: requiredText("Enter a party name."),
 });
 
-export function validatePettyCashVoucherForm(
-  values: PettyCashVoucherFormValues,
-): PettyCashVoucherFormErrors {
+export function validatePettyCashVoucherForm(values: PettyCashVoucherFormValues): PettyCashVoucherFormErrors {
   const result = PettyCashVoucherFormValidationSchema.safeParse(values);
 
   if (result.success) {
     return {};
   }
 
-  return result.error.issues.reduce<PettyCashVoucherFormErrors>(
-    (errors, issue) => {
-      const field = issue.path[0] as keyof PettyCashVoucherFormErrors;
+  return result.error.issues.reduce<PettyCashVoucherFormErrors>((errors, issue) => {
+    const field = issue.path[0] as keyof PettyCashVoucherFormErrors;
 
-      if (field && !errors[field]) {
-        errors[field] = issue.message;
-      }
+    if (field && !errors[field]) {
+      errors[field] = issue.message;
+    }
 
-      return errors;
-    },
-    {},
-  );
+    return errors;
+  }, {});
 }

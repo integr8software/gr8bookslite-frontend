@@ -4,4 +4,3 @@ import { RevolvingFundReplenishmentFileAttachmentFields } from "@/app/src/ui/mod
 export function RevolvingFundReplenishmentAttachmentsTab({ page }: { page: RevolvingFundReplenishmentActionPageState }) {
   return <RevolvingFundReplenishmentFileAttachmentFields page={page} />;
 }
-

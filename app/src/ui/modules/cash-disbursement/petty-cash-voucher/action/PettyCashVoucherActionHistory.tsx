@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { FileClock } from "lucide-react";
+import { PettyCashVoucherStatuses } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
 import type { PettyCashVoucherActionPageState } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-voucher/usePettyCashVoucherActionPage";
 import type { PettyCashVoucherStatus } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import type { ModuleHistoryEntry } from "@/app/src/types/shared/module/ModuleHistoryTypes";
@@ -28,16 +29,14 @@ export function PettyCashVoucherActionHistory({ page }: { page: PettyCashVoucher
   );
 }
 
-function createPettyCashVoucherHistory(
-  page: PettyCashVoucherActionPageState,
-): ModuleHistoryEntry<PettyCashVoucherStatus>[] {
+function createPettyCashVoucherHistory(page: PettyCashVoucherActionPageState): ModuleHistoryEntry<PettyCashVoucherStatus>[] {
   const record = page.existingVoucher;
 
   if (!record) {
     return [];
   }
 
-  const currentStatus = page.values.status === "Open" ? record.status : page.values.status;
+  const currentStatus = page.values.status === PettyCashVoucherStatuses.open ? record.status : page.values.status;
   const history: ModuleHistoryEntry<PettyCashVoucherStatus>[] = [
     {
       action: "Voucher created",
@@ -45,11 +44,11 @@ function createPettyCashVoucherHistory(
       createdAt: record.dateCreated,
       description: `${record.voucherNo} was created.`,
       id: `${record.id}-created`,
-      status: "Draft",
+      status: PettyCashVoucherStatuses.draft,
     },
   ];
 
-  if (record.dateModified !== record.dateCreated || currentStatus !== "Draft") {
+  if (record.dateModified !== record.dateCreated || currentStatus !== PettyCashVoucherStatuses.draft) {
     history.push({
       action: `Status changed to ${currentStatus}`,
       actor: record.updatedBy,

@@ -38,14 +38,8 @@ export function useRevolvingFundActionPage(options: { onSaved?: () => void } = {
   const transactionCurrency = useTransactionCurrency();
   const pathname = usePathname();
   const params = useParams<{ recordId?: string }>();
-  const mode: RevolvingFundActionMode = pathname.includes("/view/")
-    ? "view"
-    : pathname.includes("/edit/")
-      ? "edit"
-      : "add";
-  const initialRecord = mode === "add"
-    ? undefined
-    : getRevolvingFundRecords().find((record) => record.id === params.recordId);
+  const mode: RevolvingFundActionMode = pathname.includes("/view/") ? "view" : pathname.includes("/edit/") ? "edit" : "add";
+  const initialRecord = mode === "add" ? undefined : getRevolvingFundRecords().find((record) => record.id === params.recordId);
   const [record, setRecord] = useState(initialRecord);
   const [values, setValues] = useState<RevolvingFundFormValues>(() =>
     createRevolvingFundFormValues(initialRecord, createNextRevolvingFundNumber(), transactionCurrency.baseCurrencyCode),
@@ -69,10 +63,7 @@ export function useRevolvingFundActionPage(options: { onSaved?: () => void } = {
     }));
   }, [mode, transactionCurrency.baseCurrencyCode, transactionCurrency.isBaseCurrencyResolved]);
 
-  function updateField<TKey extends keyof RevolvingFundFormValues>(
-    field: TKey,
-    value: RevolvingFundFormValues[TKey],
-  ) {
+  function updateField<TKey extends keyof RevolvingFundFormValues>(field: TKey, value: RevolvingFundFormValues[TKey]) {
     if (isReadonly) return;
     setValues((current) => ({ ...current, [field]: value }));
     setErrors((current) => ({ ...current, [field]: undefined }));
@@ -181,11 +172,7 @@ export function useRevolvingFundActionPage(options: { onSaved?: () => void } = {
     saveRevolvingFundRecords(upsertRevolvingFundRecord(nextRecord));
     setRecord(nextRecord);
     setValues(createRevolvingFundFormValues(nextRecord));
-    toast.success(
-      status === RevolvingFundStatuses.draft
-        ? "Revolving fund saved as draft."
-        : "Revolving fund submitted for approval.",
-    );
+    toast.success(status === RevolvingFundStatuses.draft ? "Revolving fund saved as draft." : "Revolving fund submitted for approval.");
     options.onSaved?.();
     return true;
   }
@@ -244,4 +231,4 @@ function calculateItem(item: RevolvingFundItem): RevolvingFundItem {
   };
 }
 
-export type RevolvingFundActionPageState = ReturnType<typeof useRevolvingFundActionPage>;
+export type { RevolvingFundActionPageState } from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";

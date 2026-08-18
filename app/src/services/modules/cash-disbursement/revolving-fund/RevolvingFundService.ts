@@ -37,4 +37,3 @@ export function createNextRevolvingFundNumber() {
 
   return `${RevolvingFundTransactionPrefix}-${String(highest + 1).padStart(6, "0")}`;
 }
-

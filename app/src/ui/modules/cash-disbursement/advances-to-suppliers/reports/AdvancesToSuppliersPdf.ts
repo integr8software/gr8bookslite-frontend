@@ -21,9 +21,27 @@ function createPdfDefinition(values: AdvancesToSuppliersFormValues): TDocumentDe
     content: [
       { text: "ADVANCES TO SUPPLIERS", alignment: "center", bold: true, fontSize: 18 },
       { text: values.transactionNo, alignment: "center", margin: [0, 4, 0, 24] },
-      { columns: [{ text: [{ text: "Party: ", bold: true }, values.partyName] }, { text: [{ text: "Date: ", bold: true }, formatDate(values.documentDate)] }], margin: [0, 0, 0, 12] },
-      { columns: [{ text: [{ text: "PO Reference: ", bold: true }, values.poReference] }, { text: [{ text: "Status: ", bold: true }, values.status] }], margin: [0, 0, 0, 12] },
-      { columns: [{ text: [{ text: "Total PO Amount: ", bold: true }, formatCurrency(totalPoAmount)] }, { text: [{ text: "Advance Payment (%): ", bold: true }, `${values.advancePaymentPercentage}%`] }], margin: [0, 0, 0, 12] },
+      {
+        columns: [
+          { text: [{ text: "Party: ", bold: true }, values.partyName] },
+          { text: [{ text: "Date: ", bold: true }, formatDate(values.documentDate)] },
+        ],
+        margin: [0, 0, 0, 12],
+      },
+      {
+        columns: [
+          { text: [{ text: "PO Reference: ", bold: true }, values.poReference] },
+          { text: [{ text: "Status: ", bold: true }, values.status] },
+        ],
+        margin: [0, 0, 0, 12],
+      },
+      {
+        columns: [
+          { text: [{ text: "Total PO Amount: ", bold: true }, formatCurrency(totalPoAmount)] },
+          { text: [{ text: "Advance Payment (%): ", bold: true }, `${values.advancePaymentPercentage}%`] },
+        ],
+        margin: [0, 0, 0, 12],
+      },
       { text: [{ text: "Amount of Advance Payment: ", bold: true }, formatCurrency(advancePaymentAmount)], margin: [0, 0, 0, 12] },
       { text: [{ text: "Default Account: ", bold: true }, `${values.accountTitle} (${values.accountCode})`], margin: [0, 0, 0, 12] },
       { text: [{ text: "Remarks: ", bold: true }, values.remarks], margin: [0, 8, 0, 0] },

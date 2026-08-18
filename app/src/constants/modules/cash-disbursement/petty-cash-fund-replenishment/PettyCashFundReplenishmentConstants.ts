@@ -11,10 +11,8 @@ import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/modu
 import { CashDisbursementOverviewActionColumnWidth } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 
 export const PettyCashFundReplenishmentHref = getModuleRoute("PCFR");
-export const PettyCashFundReplenishmentStorageKey =
-  "cash-disbursement-petty-cash-fund-replenishment-records";
-export const PettyCashFundReplenishmentPaginationStorageKey =
-  "cash-disbursement-petty-cash-fund-replenishment-table";
+export const PettyCashFundReplenishmentStorageKey = "cash-disbursement-petty-cash-fund-replenishment-records";
+export const PettyCashFundReplenishmentPaginationStorageKey = "cash-disbursement-petty-cash-fund-replenishment-table";
 export const PettyCashFundReplenishmentTransactionPrefix = "PCFR";
 export const PettyCashFundReplenishmentColumnLabels = {
   transactionNo: "Petty Cash Fund Replenishment No.",
@@ -32,10 +30,7 @@ export const PettyCashFundReplenishmentColumnLabels = {
   status: "Status",
   actions: "Action",
 } as const;
-export const PettyCashFundReplenishmentOverviewColumnWidths: Record<
-  keyof typeof PettyCashFundReplenishmentColumnLabels,
-  number
-> = {
+export const PettyCashFundReplenishmentOverviewColumnWidths: Record<keyof typeof PettyCashFundReplenishmentColumnLabels, number> = {
   transactionNo: TransactionOverviewColumnWidths.transactionNumber,
   documentDate: TransactionOverviewColumnWidths.documentDate,
   partyCode: TransactionOverviewColumnWidths.partyCode,
@@ -82,10 +77,7 @@ export const PettyCashFundReplenishmentRecordStatuses = [
   "Disapproved",
   "Cancelled",
 ] as const satisfies readonly PettyCashFundReplenishmentStatus[];
-export const PettyCashFundReplenishmentStatusOptions = [
-  "All",
-  ...PettyCashFundReplenishmentRecordStatuses,
-] as const;
+export const PettyCashFundReplenishmentStatusOptions = ["All", ...PettyCashFundReplenishmentRecordStatuses] as const;
 export const PettyCashFundReplenishmentActionTabs: {
   id: PettyCashFundReplenishmentActionTab;
   label: string;
@@ -109,10 +101,7 @@ export const PettyCashFundReplenishmentEntryColumnOrder: PettyCashFundReplenishm
   "vatAmount",
   "remarks",
 ];
-export const PettyCashFundReplenishmentEntryColumnLabels: Record<
-  PettyCashFundReplenishmentEntryColumnId,
-  string
-> = {
+export const PettyCashFundReplenishmentEntryColumnLabels: Record<PettyCashFundReplenishmentEntryColumnId, string> = {
   pettyCashDate: "Petty Cash Date",
   pettyCashNo: "Petty Cash No.",
   accountCode: "Account Code",
@@ -122,10 +111,7 @@ export const PettyCashFundReplenishmentEntryColumnLabels: Record<
   vatAmount: "VAT Amount",
   remarks: "Remarks",
 };
-export const PettyCashFundReplenishmentEntryColumnWidths: Record<
-  PettyCashFundReplenishmentEntryColumnId,
-  number
-> = {
+export const PettyCashFundReplenishmentEntryColumnWidths: Record<PettyCashFundReplenishmentEntryColumnId, number> = {
   pettyCashDate: 150,
   pettyCashNo: 180,
   accountCode: 160,
@@ -135,11 +121,10 @@ export const PettyCashFundReplenishmentEntryColumnWidths: Record<
   vatAmount: 160,
   remarks: 320,
 };
-export const PettyCashFundReplenishmentProtectedEntryColumnIds =
-  new Set<PettyCashFundReplenishmentEntryColumnId>([
-    "pettyCashDate",
-    "pettyCashNo",
-  ]);
+export const PettyCashFundReplenishmentProtectedEntryColumnIds = new Set<PettyCashFundReplenishmentEntryColumnId>([
+  "pettyCashDate",
+  "pettyCashNo",
+]);
 export const PettyCashFundReplenishmentAccountingColumnOrder: PettyCashFundReplenishmentAccountingColumnId[] = [
   "accountCode",
   "accountTitle",
@@ -149,10 +134,7 @@ export const PettyCashFundReplenishmentAccountingColumnOrder: PettyCashFundReple
   "partyName",
   "particulars",
 ];
-export const PettyCashFundReplenishmentAccountingColumnLabels: Record<
-  PettyCashFundReplenishmentAccountingColumnId,
-  string
-> = {
+export const PettyCashFundReplenishmentAccountingColumnLabels: Record<PettyCashFundReplenishmentAccountingColumnId, string> = {
   accountCode: "Account Code",
   accountTitle: "Account Title",
   debit: "Debit",
@@ -161,10 +143,7 @@ export const PettyCashFundReplenishmentAccountingColumnLabels: Record<
   partyName: "Party Name",
   particulars: "Particulars",
 };
-export const PettyCashFundReplenishmentAccountingColumnWidths: Record<
-  PettyCashFundReplenishmentAccountingColumnId,
-  number
-> = {
+export const PettyCashFundReplenishmentAccountingColumnWidths: Record<PettyCashFundReplenishmentAccountingColumnId, number> = {
   accountCode: 160,
   accountTitle: 260,
   debit: 160,
@@ -173,8 +152,11 @@ export const PettyCashFundReplenishmentAccountingColumnWidths: Record<
   partyName: 240,
   particulars: 320,
 };
-export const PettyCashFundReplenishmentProtectedAccountingColumnIds =
-  new Set<PettyCashFundReplenishmentAccountingColumnId>(["accountCode", "debit", "credit"]);
+export const PettyCashFundReplenishmentProtectedAccountingColumnIds = new Set<PettyCashFundReplenishmentAccountingColumnId>([
+  "accountCode",
+  "debit",
+  "credit",
+]);
 export const PettyCashFundReplenishmentPartyOptions: AppAdvancedDropdownOption[] = [
   { label: "E000102", name: "Raymark B. Arsicolo", value: "E000102" },
   { label: "E000117", name: "Maria L. Dela Cruz", value: "E000117" },
@@ -194,8 +176,6 @@ export const PettyCashFundReplenishmentResponsibilityCenterOptions: AppAdvancedD
   { label: "RC-SAL", name: "Sales", value: "RC-SAL" },
 ];
 
-export function canEditPettyCashFundReplenishment(
-  status: PettyCashFundReplenishmentStatus,
-) {
+export function canEditPettyCashFundReplenishment(status: PettyCashFundReplenishmentStatus) {
   return ["Draft", "For Approval", "Disapproved"].includes(status);
 }

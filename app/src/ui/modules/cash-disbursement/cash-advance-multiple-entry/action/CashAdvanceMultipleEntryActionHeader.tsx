@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import {
-  CashAdvanceMultipleEntryHref,
-} from "@/app/src/constants/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryConstants";
+import { CashAdvanceMultipleEntryHref } from "@/app/src/constants/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryConstants";
 import { createCashAdvanceMultipleEntryApprovalRecord } from "@/app/src/data/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryData";
 import type {
   CashAdvanceMultipleEntryActionMode,
@@ -11,10 +9,7 @@ import type {
 import { useCashAdvanceMultipleEntryActionForm } from "@/app/src/hooks/modules/cash-disbursement/cash-advance-multiple-entry/useCashAdvanceMultipleEntry";
 import { CashAdvanceViewActions } from "@/app/src/ui/modules/cash-disbursement/cash-advance/action/CashAdvanceViewActions";
 import { CashAdvanceMultipleEntryActionHistory } from "@/app/src/ui/modules/cash-disbursement/cash-advance-multiple-entry/action/CashAdvanceMultipleEntryActionHistory";
-import {
-  ModuleHeader,
-  moduleHeaderActionClassNames,
-} from "@/app/src/ui/shared/module/ModuleHeader";
+import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleSaveButton } from "@/app/src/ui/shared/module/ModuleSaveButton";
 import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
@@ -63,9 +58,7 @@ export function CashAdvanceMultipleEntryActionHeader({
           </Link>
           {onPreview ? <ReportPreviewAction onPreview={onPreview} /> : null}
           {mode !== "add" ? <CashAdvanceMultipleEntryActionHistory record={record} /> : null}
-          {mode !== "add" ? (
-            <CashAdvanceViewActions record={approvalRecord} onUpdateStatus={onUpdateStatus} />
-          ) : null}
+          {mode !== "add" ? <CashAdvanceViewActions record={approvalRecord} onUpdateStatus={onUpdateStatus} /> : null}
           {mode === "view" ? null : (
             <ModuleSaveButton
               onSave={onSubmit}

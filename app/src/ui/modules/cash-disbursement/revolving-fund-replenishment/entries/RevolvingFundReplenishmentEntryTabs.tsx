@@ -9,7 +9,11 @@ export function RevolvingFundReplenishmentEntryTabs({
   onTabChange: (tab: RevolvingFundReplenishmentEntryTab) => void;
 }) {
   return (
-    <div role="tablist" aria-label="Revolving fund replenishment entry sections" className="inline-flex rounded-lg border border-darknavy/10 bg-offwhite/70 p-1">
+    <div
+      role="tablist"
+      aria-label="Revolving fund replenishment entry sections"
+      className="inline-flex rounded-lg border border-darknavy/10 bg-offwhite/70 p-1"
+    >
       {EntryTabs.map((tab) => (
         <button
           key={tab.id}

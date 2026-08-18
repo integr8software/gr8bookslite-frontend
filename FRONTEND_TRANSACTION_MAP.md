@@ -452,6 +452,20 @@ Keep drawer open state in the transaction action page and pass an
 active transaction field and its aligned readonly code field before closing
 the drawer.
 
+#### Drawer-only Maintenance Add Rule
+
+This rule is mandatory for every transaction module, including all module
+header fields and Data Entry lookups. A maintenance-backed
+Add action must render the maintenance module's actual `*Drawer` component.
+Do not use `AppPartyDialog`, `ProjectNameDialog`, a feature-local quick-add
+modal, or any other centered dialog as a maintenance creation surface. Name
+the related state, callbacks, and props with `Drawer` as well, so the intended
+interaction cannot be mistaken for a modal during later maintenance.
+
+Dialogs remain appropriate for confirmation, import mapping/preview, report
+preview, attachment details, tax calculation, and expanded text editing. They
+must not be used to create maintenance records.
+
 - Keep the `AppAdvancedDropdown` remove/clear button enabled by default. When a
   name lookup clears, also clear its aligned readonly code field so placeholders
   appear muted and do not look like entered values.
@@ -1140,6 +1154,11 @@ child `<span>` with the accent token so the cell color does not override it.
 When a transaction table, detail display, report preview, or formatted helper
 has an empty value, render an empty string (`""`). Do not display `-` as the
 default empty placeholder.
+
+Format balances, totals, and other symbol-free two-decimal amounts with
+`formatAmount` from `@/app/src/utils/currency.util`. Use `formatCurrency` from
+the same utility when the currency symbol is part of the display. Do not add
+feature-local amount, balance, or currency formatter functions.
 
 For status cells, use the shared `ModuleStatusBadge` from
 `app/src/ui/shared/module/ModuleStatusBadge.tsx`, matching the

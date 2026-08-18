@@ -1,15 +1,19 @@
 import type { AppTaxRateDialogValue } from "@/app/src/ui/shared/transaction-setup/AppTaxRateDialog";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import type { DisbursementAttachment } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+import type { useCashAdvanceActionForm } from "@/app/src/hooks/modules/cash-disbursement/cash-advance/useCashAdvance";
 
 export type CashAdvanceActionMode = "add" | "edit" | "view";
 
-export type CashAdvanceStatus =
-  | "Cancelled"
-  | "Disapproved"
-  | "Draft"
-  | "For Approval"
-  | "Open"
-  | "Posted";
+export type CashAdvanceDetailsSection = "advance" | "attachment";
+
+export type CashAdvanceFormController = ReturnType<typeof useCashAdvanceActionForm>;
+
+export type CashAdvancePartyDropdownOption = AppAdvancedDropdownOption & {
+  cashAdvanceBalance?: string;
+};
+
+export type CashAdvanceStatus = "Cancelled" | "Disapproved" | "Draft" | "For Approval" | "Open" | "Posted";
 
 export type CashAdvanceRecord = {
   accountCode: string;
@@ -41,16 +45,14 @@ export type CashAdvanceReferenceFields = {
   importationRefNo: string;
 };
 
-export type CashAdvanceVisibleReferenceFields = Record<
-  CashAdvanceReferenceField,
-  boolean
->;
+export type CashAdvanceVisibleReferenceFields = Record<CashAdvanceReferenceField, boolean>;
 
 export type CashAdvanceFormValues = {
   accountCode: string;
   amount: string;
   attachments: DisbursementAttachment[];
   costCenter: string;
+  cashAdvanceBalance: string;
   currency: string;
   documentDate: string;
   fxRate: string;
@@ -61,6 +63,20 @@ export type CashAdvanceFormValues = {
   status: CashAdvanceStatus;
   taxValue: AppTaxRateDialogValue;
   transNo: string;
+};
+
+export type CashAdvanceStoreState = {
+  advances: CashAdvanceRecord[];
+  isLoading: boolean;
+  lastSyncedAt: number;
+  updateAdvanceStatus: (record: CashAdvanceRecord, status: CashAdvanceStatus) => void;
+};
+
+export type CashAdvanceEmployeeOption = {
+  cashAdvanceBalance: string;
+  cashAdvanceLimit: string;
+  partyCode: string;
+  partyName: string;
 };
 
 export type CashAdvanceReportPreviewProps = {

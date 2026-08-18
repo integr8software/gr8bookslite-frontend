@@ -26,20 +26,19 @@ import type {
   PettyCashVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import { validatePettyCashVoucherForm } from "@/app/src/validations/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherValidation";
-import { PettyCashVoucherQueryKeys } from "@/app/src/services/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherService";
+import {
+  PettyCashVoucherQueryKeys,
+  PettyCashVoucherStatuses,
+} from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
 import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
 
-export function usePettyCashVoucherActionPage(
-  options: PettyCashVoucherActionPageOptions = {},
-) {
+export function usePettyCashVoucherActionPage(options: PettyCashVoucherActionPageOptions = {}) {
   const transactionCurrency = useTransactionCurrency();
   const queryClient = useQueryClient();
   const pathname = usePathname();
   const params = useParams<{ recordId?: string }>();
   const mode = options.mode ?? getPettyCashVoucherFormMode(pathname);
-  const existingVoucher = options.existingVoucher ?? PettyCashVoucherRecords.find(
-    (record) => record.id === params.recordId,
-  );
+  const existingVoucher = options.existingVoucher ?? PettyCashVoucherRecords.find((record) => record.id === params.recordId);
   const isReadonly = mode === "view";
   const [values, setValues] = useState<PettyCashVoucherFormValues>(() =>
     existingVoucher
@@ -47,11 +46,9 @@ export function usePettyCashVoucherActionPage(
       : createPettyCashVoucherInitialFormValues(transactionCurrency.baseCurrencyCode),
   );
   const [errors, setErrors] = useState<PettyCashVoucherFormErrors>({});
-  const [activeTab, setActiveTab] =
-    useState<PettyCashVoucherActionTab>("details");
+  const [activeTab, setActiveTab] = useState<PettyCashVoucherActionTab>("details");
   const [isPartyDrawerOpen, setIsPartyDrawerOpen] = useState(false);
-  const [isResponsibilityCenterDrawerOpen, setIsResponsibilityCenterDrawerOpen] =
-    useState(false);
+  const [isResponsibilityCenterDrawerOpen, setIsResponsibilityCenterDrawerOpen] = useState(false);
   const hasEditedCurrencyRef = useRef(false);
   const partyStore = usePartyManagementStore();
   const responsibilityCenterStore = useResponsibilityCenterStore();
@@ -68,10 +65,7 @@ export function usePettyCashVoucherActionPage(
     }));
   }, [mode, transactionCurrency.baseCurrencyCode, transactionCurrency.isBaseCurrencyResolved]);
 
-  function updateField<TKey extends keyof PettyCashVoucherFormValues>(
-    field: TKey,
-    value: PettyCashVoucherFormValues[TKey],
-  ) {
+  function updateField<TKey extends keyof PettyCashVoucherFormValues>(field: TKey, value: PettyCashVoucherFormValues[TKey]) {
     if (isReadonly) {
       return;
     }
@@ -147,11 +141,9 @@ export function usePettyCashVoucherActionPage(
       return false;
     }
 
-    persistVoucher("For Approval");
+    persistVoucher(PettyCashVoucherStatuses.forApproval);
     toast.success(
-      mode === "edit"
-        ? "Petty cash voucher updated and submitted for approval."
-        : "Petty cash voucher created and submitted for approval.",
+      mode === "edit" ? "Petty cash voucher updated and submitted for approval." : "Petty cash voucher created and submitted for approval.",
     );
     options.onSaved?.();
     return true;
@@ -162,7 +154,7 @@ export function usePettyCashVoucherActionPage(
       return true;
     }
 
-    persistVoucher("Draft");
+    persistVoucher(PettyCashVoucherStatuses.draft);
     setErrors({});
     toast.success("Petty cash voucher saved as draft.");
     options.onSaved?.();
@@ -207,16 +199,11 @@ export function usePettyCashVoucherActionPage(
   function persistVoucher(status: PettyCashVoucherStatus) {
     const nextRecord = createPettyCashVoucherRecord(values, status, existingVoucher);
 
-    queryClient.setQueryData<PettyCashVoucherRecord[]>(
-      PettyCashVoucherQueryKeys.vouchers(),
-      (current = PettyCashVoucherRecords) => {
-        const hasExistingRecord = current.some((record) => record.id === nextRecord.id);
+    queryClient.setQueryData<PettyCashVoucherRecord[]>(PettyCashVoucherQueryKeys.vouchers(), (current = PettyCashVoucherRecords) => {
+      const hasExistingRecord = current.some((record) => record.id === nextRecord.id);
 
-        return hasExistingRecord
-          ? current.map((record) => (record.id === nextRecord.id ? nextRecord : record))
-          : [nextRecord, ...current];
-      },
-    );
+      return hasExistingRecord ? current.map((record) => (record.id === nextRecord.id ? nextRecord : record)) : [nextRecord, ...current];
+    });
     setValues((current) => ({ ...current, status }));
 
     return nextRecord;
@@ -298,6 +285,4 @@ function getPettyCashVoucherFormMode(pathname: string): PettyCashVoucherFormMode
   return "add";
 }
 
-export type PettyCashVoucherActionPageState = ReturnType<
-  typeof usePettyCashVoucherActionPage
->;
+export type { PettyCashVoucherActionPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";

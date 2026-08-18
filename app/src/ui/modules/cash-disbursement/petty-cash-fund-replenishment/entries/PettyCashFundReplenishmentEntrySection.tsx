@@ -9,7 +9,10 @@ import {
   PettyCashFundReplenishmentProtectedEntryColumnIds,
   PettyCashFundReplenishmentProtectedAccountingColumnIds,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentConstants";
-import { createBlankPettyCashFundReplenishmentEntry, formatPettyCashFundReplenishmentAmount } from "@/app/src/data/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentData";
+import {
+  createBlankPettyCashFundReplenishmentEntry,
+  formatPettyCashFundReplenishmentAmount,
+} from "@/app/src/data/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentData";
 import type { PettyCashFundReplenishmentActionPageState } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-fund-replenishment/usePettyCashFundReplenishmentActionPage";
 import type {
   PettyCashFundReplenishmentAccountingColumnId,
@@ -28,24 +31,16 @@ import { parseFiniteNumber } from "@/app/src/utils/number.util";
 
 export function PettyCashFundReplenishmentEntrySection({ page }: { page: PettyCashFundReplenishmentActionPageState }) {
   const [activeEntryTab, setActiveEntryTab] = useState<PettyCashFundReplenishmentEntryTab>("vouchers");
-  const [columnOrder, setColumnOrder] = useState([
-    ...PettyCashFundReplenishmentEntryColumnOrder,
-  ]);
-  const [visibleColumnIds, setVisibleColumnIds] = useState([
-    ...PettyCashFundReplenishmentEntryColumnOrder,
-  ]);
+  const [columnOrder, setColumnOrder] = useState([...PettyCashFundReplenishmentEntryColumnOrder]);
+  const [visibleColumnIds, setVisibleColumnIds] = useState([...PettyCashFundReplenishmentEntryColumnOrder]);
   const [columnWidths, setColumnWidths] = useState({
     ...PettyCashFundReplenishmentEntryColumnWidths,
   });
   const [columnLabels, setColumnLabels] = useState({
     ...PettyCashFundReplenishmentEntryColumnLabels,
   });
-  const [accountingColumnOrder, setAccountingColumnOrder] = useState([
-    ...PettyCashFundReplenishmentAccountingColumnOrder,
-  ]);
-  const [visibleAccountingColumnIds, setVisibleAccountingColumnIds] = useState([
-    ...PettyCashFundReplenishmentAccountingColumnOrder,
-  ]);
+  const [accountingColumnOrder, setAccountingColumnOrder] = useState([...PettyCashFundReplenishmentAccountingColumnOrder]);
+  const [visibleAccountingColumnIds, setVisibleAccountingColumnIds] = useState([...PettyCashFundReplenishmentAccountingColumnOrder]);
   const [accountingColumnWidths, setAccountingColumnWidths] = useState({
     ...PettyCashFundReplenishmentAccountingColumnWidths,
   });
@@ -62,10 +57,7 @@ export function PettyCashFundReplenishmentEntrySection({ page }: { page: PettyCa
     [columnLabels, columnWidths, page],
   );
   const columns = useMemo(
-    () =>
-      columnOrder
-        .filter((columnId) => visibleColumnIds.includes(columnId))
-        .map((columnId) => allColumns[columnId]),
+    () => columnOrder.filter((columnId) => visibleColumnIds.includes(columnId)).map((columnId) => allColumns[columnId]),
     [allColumns, columnOrder, visibleColumnIds],
   );
   const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
@@ -80,33 +72,45 @@ export function PettyCashFundReplenishmentEntrySection({ page }: { page: PettyCa
       })),
     [columnLabels, columnOrder, columnWidths, visibleColumnIds],
   );
-  const accountingRows = useMemo<PettyCashFundReplenishmentAccountingEntry[]>(() => [
-    ...page.values.entries.map((entry) => ({
-      id: `pcfr-accounting-debit-${entry.id}`,
-      accountCode: entry.accountCode,
-      accountTitle: entry.accountTitle,
-      debit: formatPettyCashFundReplenishmentAmount(parseFiniteNumber(entry.totalAmount)),
-      credit: "0.00",
-      partyCode: page.values.partyCode,
-      partyName: page.values.partyName,
-      particulars: entry.remarks,
-    })),
-    {
-      id: "pcfr-accounting-credit",
-      accountCode: page.values.accountCode,
-      accountTitle: page.values.accountTitle,
-      debit: "0.00",
-      credit: formatPettyCashFundReplenishmentAmount(page.totals.totalAmount),
-      partyCode: page.values.partyCode,
-      partyName: page.values.partyName,
-      particulars: page.values.remarks,
-    },
-  ], [page.totals.totalAmount, page.values.accountCode, page.values.accountTitle, page.values.entries, page.values.partyCode, page.values.partyName, page.values.remarks]);
+  const accountingRows = useMemo<PettyCashFundReplenishmentAccountingEntry[]>(
+    () => [
+      ...page.values.entries.map((entry) => ({
+        id: `pcfr-accounting-debit-${entry.id}`,
+        accountCode: entry.accountCode,
+        accountTitle: entry.accountTitle,
+        debit: formatPettyCashFundReplenishmentAmount(parseFiniteNumber(entry.totalAmount)),
+        credit: "0.00",
+        partyCode: page.values.partyCode,
+        partyName: page.values.partyName,
+        particulars: entry.remarks,
+      })),
+      {
+        id: "pcfr-accounting-credit",
+        accountCode: page.values.accountCode,
+        accountTitle: page.values.accountTitle,
+        debit: "0.00",
+        credit: formatPettyCashFundReplenishmentAmount(page.totals.totalAmount),
+        partyCode: page.values.partyCode,
+        partyName: page.values.partyName,
+        particulars: page.values.remarks,
+      },
+    ],
+    [
+      page.totals.totalAmount,
+      page.values.accountCode,
+      page.values.accountTitle,
+      page.values.entries,
+      page.values.partyCode,
+      page.values.partyName,
+      page.values.remarks,
+    ],
+  );
   const allAccountingColumns = useMemo(
-    () => createPettyCashFundReplenishmentAccountingColumns({
-      columnLabels: accountingColumnLabels,
-      columnWidths: accountingColumnWidths,
-    }),
+    () =>
+      createPettyCashFundReplenishmentAccountingColumns({
+        columnLabels: accountingColumnLabels,
+        columnWidths: accountingColumnWidths,
+      }),
     [accountingColumnLabels, accountingColumnWidths],
   );
   const accountingColumns = accountingColumnOrder
@@ -143,19 +147,13 @@ export function PettyCashFundReplenishmentEntrySection({ page }: { page: PettyCa
   }
 
   function toggleColumnVisibility(columnId: string, isVisible: boolean) {
-    if (
-      !isEntryColumnId(columnId) ||
-      (!isVisible && PettyCashFundReplenishmentProtectedEntryColumnIds.has(columnId))
-    ) {
+    if (!isEntryColumnId(columnId) || (!isVisible && PettyCashFundReplenishmentProtectedEntryColumnIds.has(columnId))) {
       return;
     }
 
     setVisibleColumnIds((currentIds) =>
       isVisible
-        ? columnOrder.filter(
-            (currentColumnId) =>
-              currentIds.includes(currentColumnId) || currentColumnId === columnId,
-          )
+        ? columnOrder.filter((currentColumnId) => currentIds.includes(currentColumnId) || currentColumnId === columnId)
         : currentIds.filter((currentColumnId) => currentColumnId !== columnId),
     );
   }
@@ -176,14 +174,8 @@ export function PettyCashFundReplenishmentEntrySection({ page }: { page: PettyCa
       return;
     }
 
-    const values = [
-      columnLabels[columnId],
-      ...page.values.entries.map((entry) => String(entry[columnId] ?? "")),
-    ];
-    updateColumnWidth(
-      columnId,
-      Math.max(...values.map((value) => value.trim().length * 7.5 + 76)),
-    );
+    const values = [columnLabels[columnId], ...page.values.entries.map((entry) => String(entry[columnId] ?? ""))];
+    updateColumnWidth(columnId, Math.max(...values.map((value) => value.trim().length * 7.5 + 76)));
   }
 
   function resetColumns() {
@@ -204,10 +196,7 @@ export function PettyCashFundReplenishmentEntrySection({ page }: { page: PettyCa
   }
 
   function toggleAccountingColumnVisibility(columnId: string, isVisible: boolean) {
-    if (
-      !isAccountingColumnId(columnId) ||
-      (!isVisible && PettyCashFundReplenishmentProtectedAccountingColumnIds.has(columnId))
-    ) return;
+    if (!isAccountingColumnId(columnId) || (!isVisible && PettyCashFundReplenishmentProtectedAccountingColumnIds.has(columnId))) return;
     setVisibleAccountingColumnIds((currentIds) => {
       const nextIds = new Set(currentIds);
       if (isVisible) nextIds.add(columnId);
@@ -226,10 +215,7 @@ export function PettyCashFundReplenishmentEntrySection({ page }: { page: PettyCa
 
   function fitAccountingColumnWidth(columnId: string) {
     if (!isAccountingColumnId(columnId)) return;
-    const values = [
-      accountingColumnLabels[columnId],
-      ...accountingRows.map((entry) => String(entry[columnId] ?? "")),
-    ];
+    const values = [accountingColumnLabels[columnId], ...accountingRows.map((entry) => String(entry[columnId] ?? ""))];
     updateAccountingColumnWidth(columnId, Math.max(...values.map((value) => value.trim().length * 7.5 + 76)));
   }
 
@@ -297,9 +283,7 @@ export function PettyCashFundReplenishmentEntrySection({ page }: { page: PettyCa
       isReadonly={page.isReadonly}
       onAddRows={page.addEntries}
       onAutoColumnWidth={fitColumnWidth}
-      onClearRows={() =>
-        page.updateEntries([createBlankPettyCashFundReplenishmentEntry()])
-      }
+      onClearRows={() => page.updateEntries([createBlankPettyCashFundReplenishmentEntry()])}
       onDuplicateRow={page.duplicateEntry}
       onFitColumnWidth={fitColumnWidth}
       onInsertRow={page.insertEntry}
@@ -327,18 +311,10 @@ export function PettyCashFundReplenishmentEntrySection({ page }: { page: PettyCa
   );
 }
 
-function isEntryColumnId(
-  columnId: string,
-): columnId is PettyCashFundReplenishmentEntryColumnId {
-  return PettyCashFundReplenishmentEntryColumnOrder.includes(
-    columnId as PettyCashFundReplenishmentEntryColumnId,
-  );
+function isEntryColumnId(columnId: string): columnId is PettyCashFundReplenishmentEntryColumnId {
+  return PettyCashFundReplenishmentEntryColumnOrder.includes(columnId as PettyCashFundReplenishmentEntryColumnId);
 }
 
-function isAccountingColumnId(
-  columnId: string,
-): columnId is PettyCashFundReplenishmentAccountingColumnId {
-  return PettyCashFundReplenishmentAccountingColumnOrder.includes(
-    columnId as PettyCashFundReplenishmentAccountingColumnId,
-  );
+function isAccountingColumnId(columnId: string): columnId is PettyCashFundReplenishmentAccountingColumnId {
+  return PettyCashFundReplenishmentAccountingColumnOrder.includes(columnId as PettyCashFundReplenishmentAccountingColumnId);
 }

@@ -1,16 +1,14 @@
 import type { TransactionAttachment } from "@/app/src/types/shared/transaction-setup/TransactionAttachmentTypes";
+import type { usePettyCashFundReplenishmentActionPage } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-fund-replenishment/usePettyCashFundReplenishmentActionPage";
+import type { usePettyCashFundReplenishmentOverviewPage } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-fund-replenishment/usePettyCashFundReplenishmentOverviewPage";
 
-export type PettyCashFundReplenishmentStatus =
-  | "Draft"
-  | "For Approval"
-  | "Posted"
-  | "Disapproved"
-  | "Cancelled";
-export type PettyCashFundReplenishmentFormStatus =
-  | "Open"
-  | PettyCashFundReplenishmentStatus;
+export type PettyCashFundReplenishmentStatus = "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled";
+export type PettyCashFundReplenishmentFormStatus = "Open" | PettyCashFundReplenishmentStatus;
 export type PettyCashFundReplenishmentActionMode = "add" | "edit" | "view";
 export type PettyCashFundReplenishmentActionTab = "details" | "attachments";
+export type PettyCashFundReplenishmentConfirmationAction = "save" | "draft" | "approve" | "disapprove" | "cancel";
+export type PettyCashFundReplenishmentActionPageState = ReturnType<typeof usePettyCashFundReplenishmentActionPage>;
+export type PettyCashFundReplenishmentOverviewPageState = ReturnType<typeof usePettyCashFundReplenishmentOverviewPage>;
 export type PettyCashFundReplenishmentEntryTab = "vouchers" | "accounting";
 
 export type PettyCashFundReplenishmentEntry = {
@@ -25,10 +23,7 @@ export type PettyCashFundReplenishmentEntry = {
   remarks: string;
 };
 
-export type PettyCashFundReplenishmentEntryColumnId = Exclude<
-  keyof PettyCashFundReplenishmentEntry,
-  "id"
->;
+export type PettyCashFundReplenishmentEntryColumnId = Exclude<keyof PettyCashFundReplenishmentEntry, "id">;
 
 export type PettyCashFundReplenishmentAccountingEntry = {
   id: string;
@@ -41,10 +36,7 @@ export type PettyCashFundReplenishmentAccountingEntry = {
   particulars: string;
 };
 
-export type PettyCashFundReplenishmentAccountingColumnId = Exclude<
-  keyof PettyCashFundReplenishmentAccountingEntry,
-  "id"
->;
+export type PettyCashFundReplenishmentAccountingColumnId = Exclude<keyof PettyCashFundReplenishmentAccountingEntry, "id">;
 
 export type PettyCashFundReplenishmentFormValues = {
   transactionNo: string;
@@ -83,9 +75,7 @@ export type PettyCashFundReplenishmentRecord = {
   formValues?: PettyCashFundReplenishmentFormValues;
 };
 
-export type PettyCashFundReplenishmentFormErrors = Partial<
-  Record<keyof PettyCashFundReplenishmentFormValues | "entries", string>
->;
+export type PettyCashFundReplenishmentFormErrors = Partial<Record<keyof PettyCashFundReplenishmentFormValues | "entries", string>>;
 export type PettyCashFundReplenishmentUpdateStatusHandler = (
   record: PettyCashFundReplenishmentRecord,
   status: PettyCashFundReplenishmentStatus,

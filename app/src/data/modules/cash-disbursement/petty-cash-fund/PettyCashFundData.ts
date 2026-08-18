@@ -1,6 +1,4 @@
-import {
-  PettyCashFundStatuses,
-} from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund/PettyCashFundConstants";
+import { PettyCashFundStatuses } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund/PettyCashFundConstants";
 import type {
   PettyCashFundFormValues,
   PettyCashFundItem,
@@ -12,11 +10,47 @@ import { formatMoneyNumberDisplayValue, parseMoneyNumberInput } from "@/app/src/
 import { todayDateValue } from "@/app/src/utils/date.util";
 
 export const PettyCashFundSeedRecords: PettyCashFundRecord[] = [
-  createSeed("1", "PCF-000063", "2026-02-23", "E000102", "Raymark B. Arsicolo", 120, "Initial petty cash fund", "For Approval"),
-  createSeed("2", "PCF-000062", "2026-02-18", "E000117", "Maria L. Dela Cruz", 15000, "Field operations fund", "Posted"),
-  createSeed("3", "PCF-000061", "2026-02-12", "E000145", "Jose P. Santos", 8500, "Branch petty cash", "Draft"),
-  createSeed("4", "PCF-000060", "2026-02-08", "E000117", "Maria L. Dela Cruz", 4200, "Disapproved office fund", "Disapproved"),
-  createSeed("5", "PCF-000059", "2026-02-02", "E000102", "Raymark B. Arsicolo", 3000, "Cancelled field fund", "Cancelled"),
+  createSeed(
+    "1",
+    "PCF-000063",
+    "2026-02-23",
+    "E000102",
+    "Raymark B. Arsicolo",
+    120,
+    "Initial petty cash fund",
+    PettyCashFundStatuses.forApproval,
+  ),
+  createSeed(
+    "2",
+    "PCF-000062",
+    "2026-02-18",
+    "E000117",
+    "Maria L. Dela Cruz",
+    15000,
+    "Field operations fund",
+    PettyCashFundStatuses.posted,
+  ),
+  createSeed("3", "PCF-000061", "2026-02-12", "E000145", "Jose P. Santos", 8500, "Branch petty cash", PettyCashFundStatuses.draft),
+  createSeed(
+    "4",
+    "PCF-000060",
+    "2026-02-08",
+    "E000117",
+    "Maria L. Dela Cruz",
+    4200,
+    "Disapproved office fund",
+    PettyCashFundStatuses.disapproved,
+  ),
+  createSeed(
+    "5",
+    "PCF-000059",
+    "2026-02-02",
+    "E000102",
+    "Raymark B. Arsicolo",
+    3000,
+    "Cancelled field fund",
+    PettyCashFundStatuses.cancelled,
+  ),
 ];
 
 export const PettyCashFundCopyFromRecords: AppCopyFromRecord[] = [

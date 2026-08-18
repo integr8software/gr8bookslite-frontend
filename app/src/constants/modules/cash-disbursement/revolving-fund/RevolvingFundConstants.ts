@@ -29,20 +29,11 @@ export const RevolvingFundColumnLabels = {
   status: "Status",
   actions: "Action",
 } as const;
-export const RevolvingFundDefaultVisibleColumnIds = [
-  "transactionNo",
-  "documentDate",
-  "partyName",
-  "amount",
-  "status",
-  "actions",
-] as const;
+export const RevolvingFundDefaultVisibleColumnIds = ["transactionNo", "documentDate", "partyName", "amount", "status", "actions"] as const;
 export const RevolvingFundDefaultColumnVisibility = Object.fromEntries(
   Object.keys(RevolvingFundColumnLabels).map((columnId) => [
     columnId,
-    RevolvingFundDefaultVisibleColumnIds.includes(
-      columnId as (typeof RevolvingFundDefaultVisibleColumnIds)[number],
-    ),
+    RevolvingFundDefaultVisibleColumnIds.includes(columnId as (typeof RevolvingFundDefaultVisibleColumnIds)[number]),
   ]),
 );
 export const RevolvingFundStatuses = {
@@ -148,11 +139,7 @@ export const RevolvingFundAccountingColumnWidths: Record<RevolvingFundAccounting
   partyName: 220,
   particulars: 260,
 };
-export const RevolvingFundProtectedAccountingColumnIds = new Set<RevolvingFundAccountingColumnId>([
-  "accountCode",
-  "debit",
-  "credit",
-]);
+export const RevolvingFundProtectedAccountingColumnIds = new Set<RevolvingFundAccountingColumnId>(["accountCode", "debit", "credit"]);
 export const RevolvingFundEntryInputClassName =
   "h-10 w-full min-w-0 border-0 bg-transparent px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:ring-2 focus:ring-inset focus:ring-skyblue/35 read-only:bg-darknavy/[0.03] read-only:text-darknavy";
 export const RevolvingFundPartyOptions: AppAdvancedDropdownOption[] = [
@@ -194,3 +181,5 @@ export function canEditRevolvingFund(status: RevolvingFundStatus) {
     status === RevolvingFundStatuses.draft || status === RevolvingFundStatuses.forApproval || status === RevolvingFundStatuses.disapproved
   );
 }
+export const RevolvingFundEntryDropdownClassName =
+  "[&_.app-advanced-dropdown-control]:h-10 [&_.app-advanced-dropdown-control]:rounded-none [&_.app-advanced-dropdown-control]:border-0 [&_.app-advanced-dropdown-control]:bg-transparent [&_.app-advanced-dropdown-control]:px-3 [&_.app-advanced-dropdown-control]:shadow-none [&_.app-advanced-dropdown-control]:focus:ring-2 [&_.app-advanced-dropdown-control]:focus:ring-inset [&_.app-advanced-dropdown-control]:focus:ring-skyblue/35";

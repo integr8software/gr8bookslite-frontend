@@ -1,4 +1,7 @@
-import { PettyCashFundEntryInputClassName } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund/PettyCashFundConstants";
+import {
+  PettyCashFundEntryDropdownClassName,
+  PettyCashFundEntryInputClassName,
+} from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund/PettyCashFundConstants";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 
@@ -54,11 +57,8 @@ export function PettyCashFundEntryDropdown({
       options={options}
       placeholder=""
       searchPlaceholder="Search Options"
-      className={EntryDropdownClassName}
+      className={PettyCashFundEntryDropdownClassName}
       onChange={(nextValue) => onChange(String(nextValue))}
     />
   );
 }
-
-const EntryDropdownClassName =
-  "[&_.app-advanced-dropdown-control]:h-10 [&_.app-advanced-dropdown-control]:rounded-none [&_.app-advanced-dropdown-control]:border-0 [&_.app-advanced-dropdown-control]:bg-transparent [&_.app-advanced-dropdown-control]:px-3 [&_.app-advanced-dropdown-control]:shadow-none [&_.app-advanced-dropdown-control]:focus:ring-2 [&_.app-advanced-dropdown-control]:focus:ring-inset [&_.app-advanced-dropdown-control]:focus:ring-skyblue/35";

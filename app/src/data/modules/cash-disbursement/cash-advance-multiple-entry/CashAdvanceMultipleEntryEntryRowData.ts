@@ -1,9 +1,7 @@
 import { CashAdvanceMultipleEntryResponsibilityCenterOptions } from "@/app/src/data/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryData";
 import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 
-export function getCashAdvanceMultipleEntryResponsibilityCenterCode(
-  responsibilityCenter: string,
-) {
+export function getCashAdvanceMultipleEntryResponsibilityCenterCode(responsibilityCenter: string) {
   return (
     CashAdvanceMultipleEntryResponsibilityCenterOptions.find(
       (option) => option.name === responsibilityCenter || option.value === responsibilityCenter,
@@ -11,11 +9,7 @@ export function getCashAdvanceMultipleEntryResponsibilityCenterCode(
   );
 }
 
-export function moveCashAdvanceMultipleEntryColumnId(
-  currentColumnIds: string[],
-  fromColumnId: string,
-  toColumnId: string,
-) {
+export function moveCashAdvanceMultipleEntryColumnId(currentColumnIds: string[], fromColumnId: string, toColumnId: string) {
   if (fromColumnId === toColumnId) {
     return currentColumnIds;
   }

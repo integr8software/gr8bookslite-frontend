@@ -8,15 +8,70 @@ import type {
 import { todayDateValue } from "@/app/src/utils/date.util";
 
 export const AdvancesToSuppliersSeedRecords: AdvancesToSuppliersRecord[] = [
-  createSeed("1", "ATS-000030", "2026-08-17", "S000041", "Pacific Office Solutions, Inc.", "PO-2026-0817", 120000, 30, "Office equipment advance", "For Approval"),
-  createSeed("2", "ATS-000029", "2026-08-12", "S000058", "Metro Industrial Trading", "PO-2026-0795", 85000, 25, "Materials reservation", "Posted"),
-  createSeed("3", "ATS-000028", "2026-08-08", "S000073", "Northstar Equipment Supply", "PO-2026-0761", 240000, 20, "Equipment procurement", "Draft"),
-  createSeed("4", "ATS-000027", "2026-08-03", "S000041", "Pacific Office Solutions, Inc.", "PO-2026-0724", 46000, 50, "Rush order advance", "Disapproved"),
-  createSeed("5", "ATS-000026", "2026-07-28", "S000058", "Metro Industrial Trading", "PO-2026-0699", 32000, 10, "Cancelled supplier deposit", "Cancelled"),
+  createSeed(
+    "1",
+    "ATS-000030",
+    "2026-08-17",
+    "S000041",
+    "Pacific Office Solutions, Inc.",
+    "PO-2026-0817",
+    120000,
+    30,
+    "Office equipment advance",
+    AdvancesToSuppliersStatuses.forApproval,
+  ),
+  createSeed(
+    "2",
+    "ATS-000029",
+    "2026-08-12",
+    "S000058",
+    "Metro Industrial Trading",
+    "PO-2026-0795",
+    85000,
+    25,
+    "Materials reservation",
+    AdvancesToSuppliersStatuses.posted,
+  ),
+  createSeed(
+    "3",
+    "ATS-000028",
+    "2026-08-08",
+    "S000073",
+    "Northstar Equipment Supply",
+    "PO-2026-0761",
+    240000,
+    20,
+    "Equipment procurement",
+    AdvancesToSuppliersStatuses.draft,
+  ),
+  createSeed(
+    "4",
+    "ATS-000027",
+    "2026-08-03",
+    "S000041",
+    "Pacific Office Solutions, Inc.",
+    "PO-2026-0724",
+    46000,
+    50,
+    "Rush order advance",
+    AdvancesToSuppliersStatuses.disapproved,
+  ),
+  createSeed(
+    "5",
+    "ATS-000026",
+    "2026-07-28",
+    "S000058",
+    "Metro Industrial Trading",
+    "PO-2026-0699",
+    32000,
+    10,
+    "Cancelled supplier deposit",
+    AdvancesToSuppliersStatuses.cancelled,
+  ),
 ];
 
 export function calculateAdvancePayment(totalPoAmount: string, percentage: string) {
-  return parseMoneyNumberInput(totalPoAmount) * parseMoneyNumberInput(percentage) / 100;
+  return (parseMoneyNumberInput(totalPoAmount) * parseMoneyNumberInput(percentage)) / 100;
 }
 
 export function createAdvancesToSuppliersFormValues(
@@ -137,7 +192,7 @@ function createSeed(
     poReference,
     totalPoAmount,
     advancePaymentPercentage,
-    amount: totalPoAmount * advancePaymentPercentage / 100,
+    amount: (totalPoAmount * advancePaymentPercentage) / 100,
     remarks,
     status,
     createdBy: "Maria Santos",

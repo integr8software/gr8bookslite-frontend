@@ -9,7 +9,10 @@ import {
   RevolvingFundReplenishmentProtectedEntryColumnIds,
   RevolvingFundReplenishmentProtectedAccountingColumnIds,
 } from "@/app/src/constants/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentConstants";
-import { createBlankRevolvingFundReplenishmentEntry, formatRevolvingFundReplenishmentAmount } from "@/app/src/data/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentData";
+import {
+  createBlankRevolvingFundReplenishmentEntry,
+  formatRevolvingFundReplenishmentAmount,
+} from "@/app/src/data/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentData";
 import type { RevolvingFundReplenishmentActionPageState } from "@/app/src/hooks/modules/cash-disbursement/revolving-fund-replenishment/useRevolvingFundReplenishmentActionPage";
 import type {
   RevolvingFundReplenishmentAccountingColumnId,
@@ -28,24 +31,16 @@ import { parseFiniteNumber } from "@/app/src/utils/number.util";
 
 export function RevolvingFundReplenishmentEntrySection({ page }: { page: RevolvingFundReplenishmentActionPageState }) {
   const [activeEntryTab, setActiveEntryTab] = useState<RevolvingFundReplenishmentEntryTab>("vouchers");
-  const [columnOrder, setColumnOrder] = useState([
-    ...RevolvingFundReplenishmentEntryColumnOrder,
-  ]);
-  const [visibleColumnIds, setVisibleColumnIds] = useState([
-    ...RevolvingFundReplenishmentEntryColumnOrder,
-  ]);
+  const [columnOrder, setColumnOrder] = useState([...RevolvingFundReplenishmentEntryColumnOrder]);
+  const [visibleColumnIds, setVisibleColumnIds] = useState([...RevolvingFundReplenishmentEntryColumnOrder]);
   const [columnWidths, setColumnWidths] = useState({
     ...RevolvingFundReplenishmentEntryColumnWidths,
   });
   const [columnLabels, setColumnLabels] = useState({
     ...RevolvingFundReplenishmentEntryColumnLabels,
   });
-  const [accountingColumnOrder, setAccountingColumnOrder] = useState([
-    ...RevolvingFundReplenishmentAccountingColumnOrder,
-  ]);
-  const [visibleAccountingColumnIds, setVisibleAccountingColumnIds] = useState([
-    ...RevolvingFundReplenishmentAccountingColumnOrder,
-  ]);
+  const [accountingColumnOrder, setAccountingColumnOrder] = useState([...RevolvingFundReplenishmentAccountingColumnOrder]);
+  const [visibleAccountingColumnIds, setVisibleAccountingColumnIds] = useState([...RevolvingFundReplenishmentAccountingColumnOrder]);
   const [accountingColumnWidths, setAccountingColumnWidths] = useState({
     ...RevolvingFundReplenishmentAccountingColumnWidths,
   });
@@ -62,10 +57,7 @@ export function RevolvingFundReplenishmentEntrySection({ page }: { page: Revolvi
     [columnLabels, columnWidths, page],
   );
   const columns = useMemo(
-    () =>
-      columnOrder
-        .filter((columnId) => visibleColumnIds.includes(columnId))
-        .map((columnId) => allColumns[columnId]),
+    () => columnOrder.filter((columnId) => visibleColumnIds.includes(columnId)).map((columnId) => allColumns[columnId]),
     [allColumns, columnOrder, visibleColumnIds],
   );
   const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
@@ -80,33 +72,45 @@ export function RevolvingFundReplenishmentEntrySection({ page }: { page: Revolvi
       })),
     [columnLabels, columnOrder, columnWidths, visibleColumnIds],
   );
-  const accountingRows = useMemo<RevolvingFundReplenishmentAccountingEntry[]>(() => [
-    ...page.values.entries.map((entry) => ({
-      id: `rfr-accounting-debit-${entry.id}`,
-      accountCode: entry.accountCode,
-      accountTitle: entry.accountTitle,
-      debit: formatRevolvingFundReplenishmentAmount(parseFiniteNumber(entry.totalAmount)),
-      credit: "0.00",
-      partyCode: page.values.partyCode,
-      partyName: page.values.partyName,
-      particulars: entry.remarks,
-    })),
-    {
-      id: "rfr-accounting-credit",
-      accountCode: page.values.accountCode,
-      accountTitle: page.values.accountTitle,
-      debit: "0.00",
-      credit: formatRevolvingFundReplenishmentAmount(page.totals.totalAmount),
-      partyCode: page.values.partyCode,
-      partyName: page.values.partyName,
-      particulars: page.values.remarks,
-    },
-  ], [page.totals.totalAmount, page.values.accountCode, page.values.accountTitle, page.values.entries, page.values.partyCode, page.values.partyName, page.values.remarks]);
+  const accountingRows = useMemo<RevolvingFundReplenishmentAccountingEntry[]>(
+    () => [
+      ...page.values.entries.map((entry) => ({
+        id: `rfr-accounting-debit-${entry.id}`,
+        accountCode: entry.accountCode,
+        accountTitle: entry.accountTitle,
+        debit: formatRevolvingFundReplenishmentAmount(parseFiniteNumber(entry.totalAmount)),
+        credit: "0.00",
+        partyCode: page.values.partyCode,
+        partyName: page.values.partyName,
+        particulars: entry.remarks,
+      })),
+      {
+        id: "rfr-accounting-credit",
+        accountCode: page.values.accountCode,
+        accountTitle: page.values.accountTitle,
+        debit: "0.00",
+        credit: formatRevolvingFundReplenishmentAmount(page.totals.totalAmount),
+        partyCode: page.values.partyCode,
+        partyName: page.values.partyName,
+        particulars: page.values.remarks,
+      },
+    ],
+    [
+      page.totals.totalAmount,
+      page.values.accountCode,
+      page.values.accountTitle,
+      page.values.entries,
+      page.values.partyCode,
+      page.values.partyName,
+      page.values.remarks,
+    ],
+  );
   const allAccountingColumns = useMemo(
-    () => createRevolvingFundReplenishmentAccountingColumns({
-      columnLabels: accountingColumnLabels,
-      columnWidths: accountingColumnWidths,
-    }),
+    () =>
+      createRevolvingFundReplenishmentAccountingColumns({
+        columnLabels: accountingColumnLabels,
+        columnWidths: accountingColumnWidths,
+      }),
     [accountingColumnLabels, accountingColumnWidths],
   );
   const accountingColumns = accountingColumnOrder
@@ -143,19 +147,13 @@ export function RevolvingFundReplenishmentEntrySection({ page }: { page: Revolvi
   }
 
   function toggleColumnVisibility(columnId: string, isVisible: boolean) {
-    if (
-      !isEntryColumnId(columnId) ||
-      (!isVisible && RevolvingFundReplenishmentProtectedEntryColumnIds.has(columnId))
-    ) {
+    if (!isEntryColumnId(columnId) || (!isVisible && RevolvingFundReplenishmentProtectedEntryColumnIds.has(columnId))) {
       return;
     }
 
     setVisibleColumnIds((currentIds) =>
       isVisible
-        ? columnOrder.filter(
-            (currentColumnId) =>
-              currentIds.includes(currentColumnId) || currentColumnId === columnId,
-          )
+        ? columnOrder.filter((currentColumnId) => currentIds.includes(currentColumnId) || currentColumnId === columnId)
         : currentIds.filter((currentColumnId) => currentColumnId !== columnId),
     );
   }
@@ -176,14 +174,8 @@ export function RevolvingFundReplenishmentEntrySection({ page }: { page: Revolvi
       return;
     }
 
-    const values = [
-      columnLabels[columnId],
-      ...page.values.entries.map((entry) => String(entry[columnId] ?? "")),
-    ];
-    updateColumnWidth(
-      columnId,
-      Math.max(...values.map((value) => value.trim().length * 7.5 + 76)),
-    );
+    const values = [columnLabels[columnId], ...page.values.entries.map((entry) => String(entry[columnId] ?? ""))];
+    updateColumnWidth(columnId, Math.max(...values.map((value) => value.trim().length * 7.5 + 76)));
   }
 
   function resetColumns() {
@@ -204,10 +196,7 @@ export function RevolvingFundReplenishmentEntrySection({ page }: { page: Revolvi
   }
 
   function toggleAccountingColumnVisibility(columnId: string, isVisible: boolean) {
-    if (
-      !isAccountingColumnId(columnId) ||
-      (!isVisible && RevolvingFundReplenishmentProtectedAccountingColumnIds.has(columnId))
-    ) return;
+    if (!isAccountingColumnId(columnId) || (!isVisible && RevolvingFundReplenishmentProtectedAccountingColumnIds.has(columnId))) return;
     setVisibleAccountingColumnIds((currentIds) => {
       const nextIds = new Set(currentIds);
       if (isVisible) nextIds.add(columnId);
@@ -226,10 +215,7 @@ export function RevolvingFundReplenishmentEntrySection({ page }: { page: Revolvi
 
   function fitAccountingColumnWidth(columnId: string) {
     if (!isAccountingColumnId(columnId)) return;
-    const values = [
-      accountingColumnLabels[columnId],
-      ...accountingRows.map((entry) => String(entry[columnId] ?? "")),
-    ];
+    const values = [accountingColumnLabels[columnId], ...accountingRows.map((entry) => String(entry[columnId] ?? ""))];
     updateAccountingColumnWidth(columnId, Math.max(...values.map((value) => value.trim().length * 7.5 + 76)));
   }
 
@@ -297,9 +283,7 @@ export function RevolvingFundReplenishmentEntrySection({ page }: { page: Revolvi
       isReadonly={page.isReadonly}
       onAddRows={page.addEntries}
       onAutoColumnWidth={fitColumnWidth}
-      onClearRows={() =>
-        page.updateEntries([createBlankRevolvingFundReplenishmentEntry()])
-      }
+      onClearRows={() => page.updateEntries([createBlankRevolvingFundReplenishmentEntry()])}
       onDuplicateRow={page.duplicateEntry}
       onFitColumnWidth={fitColumnWidth}
       onInsertRow={page.insertEntry}
@@ -327,19 +311,10 @@ export function RevolvingFundReplenishmentEntrySection({ page }: { page: Revolvi
   );
 }
 
-function isEntryColumnId(
-  columnId: string,
-): columnId is RevolvingFundReplenishmentEntryColumnId {
-  return RevolvingFundReplenishmentEntryColumnOrder.includes(
-    columnId as RevolvingFundReplenishmentEntryColumnId,
-  );
+function isEntryColumnId(columnId: string): columnId is RevolvingFundReplenishmentEntryColumnId {
+  return RevolvingFundReplenishmentEntryColumnOrder.includes(columnId as RevolvingFundReplenishmentEntryColumnId);
 }
 
-function isAccountingColumnId(
-  columnId: string,
-): columnId is RevolvingFundReplenishmentAccountingColumnId {
-  return RevolvingFundReplenishmentAccountingColumnOrder.includes(
-    columnId as RevolvingFundReplenishmentAccountingColumnId,
-  );
+function isAccountingColumnId(columnId: string): columnId is RevolvingFundReplenishmentAccountingColumnId {
+  return RevolvingFundReplenishmentAccountingColumnOrder.includes(columnId as RevolvingFundReplenishmentAccountingColumnId);
 }
-

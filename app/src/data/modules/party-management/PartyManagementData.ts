@@ -99,6 +99,7 @@ export const PartyInformationInitialFormValues: PartyInformationFormValues = {
   vendorAdvanceAccount: "",
   employeeAdvanceAccount: "",
   employeePayableAccount: "",
+  cashAdvanceLimit: "",
   termId: "",
   termName: "",
   tin: "",
@@ -156,6 +157,7 @@ export function createPartyInformationFormValues(
     vendorAdvanceAccount: accountingAccounts.vendorAdvanceAccount,
     employeeAdvanceAccount: accountingAccounts.employeeAdvanceAccount,
     employeePayableAccount: accountingAccounts.employeePayableAccount,
+    cashAdvanceLimit: record.cashAdvanceLimit ?? "",
     termId: record.termId ?? "",
     termName: record.termName ?? "",
     tin: record.tin,
@@ -231,6 +233,7 @@ export function createPartySubmitPayload(values: PartyInformationFormValues) {
     employeePayableAccount: partyTypes.includes("Employee")
       ? accountingAccounts.employeePayableAccount
       : "",
+    cashAdvanceLimit: partyTypes.includes("Employee") ? values.cashAdvanceLimit.trim() : "",
     termId: values.termId,
     termName: values.termName,
     tin: values.tin.trim(),
@@ -305,6 +308,7 @@ export function createPartyInformationRecordFromTableRecord(
     email: record.email,
     employeeAdvanceAccount: record.employeeAdvanceAccount,
     employeePayableAccount: record.employeePayableAccount,
+    cashAdvanceLimit: record.cashAdvanceLimit ?? "",
     firstName: record.firstName,
     id: record.id,
     lastName: record.lastName,
@@ -438,6 +442,7 @@ export function createBlankPartyImportRow(rowNumber: number): PartyImportPreview
       vendorAdvanceAccount: PartyDefaultAccountingAccounts.vendorAdvanceAccount,
       employeeAdvanceAccount: "",
       employeePayableAccount: "",
+      cashAdvanceLimit: "",
       termId: "",
       termName: "",
       tin: "",
@@ -531,6 +536,10 @@ export function normalizeImportedPartyCellValue(field: PartyImportColumnId, valu
 
   if (field === "atcCode") {
     return value ? normalizeAtcCode(value) : "";
+  }
+
+  if (field === "cashAdvanceLimit") {
+    return value.replaceAll(",", "").trim();
   }
 
   return value;
@@ -701,6 +710,9 @@ function createPartyImportPreviewRow(
     address,
     addresses,
     ...accountingAccounts,
+    cashAdvanceLimit: normalizedPartyTypes.includes("Employee")
+      ? getImportedPartyValue(row, indexes.cashAdvanceLimit).replaceAll(",", "").trim()
+      : "",
     termId: "",
     termName: getImportedPartyValue(row, indexes.termName),
     tin: formatImportedTin(getImportedPartyValue(row, indexes.tin)),
@@ -948,6 +960,15 @@ export function validatePartyImportRows(
       cellErrors.memberRegistrationDate = ["Member registration date must use YYYY-MM-DD."];
     }
 
+    if (
+      row.party.cashAdvanceLimit &&
+      !/^\d+(?:\.\d{1,2})?$/.test(row.party.cashAdvanceLimit)
+    ) {
+      cellErrors.cashAdvanceLimit = [
+        "Cash advance limit must be a non-negative amount with up to 2 decimal places.",
+      ];
+    }
+
     validateImportedPartyAddresses(row.party, cellErrors, cellWarnings);
 
     return { ...row, cellErrors, cellWarnings, rowErrors };
@@ -1165,6 +1186,7 @@ export function createPartyImportRecord(
     employeePayableAccount: partyTypes.includes("Employee")
       ? accountingAccounts.employeePayableAccount
       : "",
+    cashAdvanceLimit: partyTypes.includes("Employee") ? (party.cashAdvanceLimit ?? "").trim() : "",
     tin: party.tin.trim(),
     termId: party.termId,
     termName: party.termName.trim(),
@@ -1518,6 +1540,8 @@ function normalizePartyImportHeader(value: string): PartyImportColumnId | null {
     ].includes(normalized)
   )
     return "employeePayableAccount";
+  if (["cashadvancelimit", "employeecashadvancelimit"].includes(normalized))
+    return "cashAdvanceLimit";
   return null;
 }
 

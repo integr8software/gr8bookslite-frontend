@@ -76,10 +76,10 @@ export function DisbursementVoucherActionHeader({
                 menuItems={
                   mode === "add" && onSaveDraft
                     ? [
-                          {
-                            label: "Save As Draft",
-                            onSelect: onSaveDraft,
-                          },
+                        {
+                          label: "Save As Draft",
+                          onSelect: onSaveDraft,
+                        },
                       ]
                     : []
                 }

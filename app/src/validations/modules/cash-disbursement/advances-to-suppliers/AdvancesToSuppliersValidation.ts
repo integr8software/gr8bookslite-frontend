@@ -15,9 +15,7 @@ const AdvancesToSuppliersSchema = z.object({
   poReference: z.string().min(1, "PO Reference is required."),
 });
 
-export function validateAdvancesToSuppliersForm(
-  values: AdvancesToSuppliersFormValues,
-): AdvancesToSuppliersFormErrors {
+export function validateAdvancesToSuppliersForm(values: AdvancesToSuppliersFormValues): AdvancesToSuppliersFormErrors {
   const errors: AdvancesToSuppliersFormErrors = {};
   const result = AdvancesToSuppliersSchema.safeParse(values);
   if (!result.success) {

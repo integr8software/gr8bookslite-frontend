@@ -9,28 +9,19 @@ export function getAdvancesToSuppliersRecords(): AdvancesToSuppliersRecord[] {
   if (typeof window === "undefined") return AdvancesToSuppliersSeedRecords;
   try {
     const stored = window.localStorage.getItem(AdvancesToSuppliersStorageKey);
-    return stored
-      ? (JSON.parse(stored) as AdvancesToSuppliersRecord[])
-      : AdvancesToSuppliersSeedRecords;
+    return stored ? (JSON.parse(stored) as AdvancesToSuppliersRecord[]) : AdvancesToSuppliersSeedRecords;
   } catch {
     return AdvancesToSuppliersSeedRecords;
   }
 }
 
-export function saveAdvancesToSuppliersRecords(
-  records: AdvancesToSuppliersRecord[],
-) {
+export function saveAdvancesToSuppliersRecords(records: AdvancesToSuppliersRecord[]) {
   if (typeof window !== "undefined") {
-    window.localStorage.setItem(
-      AdvancesToSuppliersStorageKey,
-      JSON.stringify(records),
-    );
+    window.localStorage.setItem(AdvancesToSuppliersStorageKey, JSON.stringify(records));
   }
 }
 
-export function upsertAdvancesToSuppliersRecord(
-  record: AdvancesToSuppliersRecord,
-) {
+export function upsertAdvancesToSuppliersRecord(record: AdvancesToSuppliersRecord) {
   const records = getAdvancesToSuppliersRecords();
   return records.some((item) => item.id === record.id)
     ? records.map((item) => (item.id === record.id ? record : item))
@@ -39,11 +30,8 @@ export function upsertAdvancesToSuppliersRecord(
 
 export function createNextAdvancesToSuppliersNumber() {
   const highest = getAdvancesToSuppliersRecords().reduce(
-    (value, record) =>
-      Math.max(value, Number(record.transactionNo.match(/(\d+)$/)?.[1] ?? 0)),
+    (value, record) => Math.max(value, Number(record.transactionNo.match(/(\d+)$/)?.[1] ?? 0)),
     0,
   );
   return `${AdvancesToSuppliersTransactionPrefix}-${String(highest + 1).padStart(6, "0")}`;
 }
-
-

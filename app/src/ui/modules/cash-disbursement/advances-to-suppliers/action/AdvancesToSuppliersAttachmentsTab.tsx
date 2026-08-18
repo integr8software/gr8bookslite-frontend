@@ -4,5 +4,3 @@ import { AdvancesToSuppliersFileAttachmentFields } from "@/app/src/ui/modules/ca
 export function AdvancesToSuppliersAttachmentsTab({ page }: { page: AdvancesToSuppliersActionPageState }) {
   return <AdvancesToSuppliersFileAttachmentFields page={page} />;
 }
-
-

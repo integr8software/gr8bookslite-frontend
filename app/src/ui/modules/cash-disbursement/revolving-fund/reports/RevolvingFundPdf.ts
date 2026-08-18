@@ -39,14 +39,10 @@ function createRevolvingFundPdfDefinition(values: RevolvingFundFormValues): TDoc
         table: {
           headerRows: 1,
           widths: [65, "*", "*", 80],
-          body: [
-            ["Date", "Payee", "Particulars", "Gross Amount"],
-            ...itemRows,
-          ],
+          body: [["Date", "Payee", "Particulars", "Gross Amount"], ...itemRows],
         },
       },
       { text: [{ text: "Remarks: ", bold: true }, values.remarks], margin: [0, 16, 0, 0] },
     ],
   };
 }
-

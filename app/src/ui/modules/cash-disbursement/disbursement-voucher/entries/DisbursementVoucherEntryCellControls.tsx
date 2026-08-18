@@ -5,9 +5,7 @@ import type { DisbursementLineEntry } from "@/app/src/types/modules/cash-disburs
 import { clampColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/utils";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import { MoneyNumberField, formatMoneyNumberInput, parseMoneyNumberInput } from "@/app/src/ui/shared/money/MoneyNumberField";
-
-export const AccountingDropdownClassName =
-  "[&_.app-advanced-dropdown-control]:h-10 [&_.app-advanced-dropdown-control]:rounded-none [&_.app-advanced-dropdown-control]:border-0 [&_.app-advanced-dropdown-control]:bg-transparent [&_.app-advanced-dropdown-control]:px-3 [&_.app-advanced-dropdown-control]:shadow-none [&_.app-advanced-dropdown-control]:focus:ring-2 [&_.app-advanced-dropdown-control]:focus:ring-inset [&_.app-advanced-dropdown-control]:focus:ring-skyblue/35";
+import { formatAmount } from "@/app/src/utils/currency.util";
 
 export function EntryInput({
   disabled = false,
@@ -35,10 +33,7 @@ export function EntryInput({
 export function ExpenseDetailValue({ suffix = "", value }: { suffix?: string; value: number }) {
   return (
     <div className="flex h-10 w-full items-center justify-end bg-offwhite/45 px-3 text-sm font-medium tabular-nums text-darknavy/70">
-      {value.toLocaleString("en-US", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })}
+      {formatAmount(value)}
       {suffix}
     </div>
   );
@@ -111,11 +106,4 @@ export function accountingCellControlClassName(extraClassName?: string) {
     "h-10 w-full rounded-none border-0 bg-transparent px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:bg-skyblue/10 focus:ring-2 focus:ring-inset focus:ring-skyblue/35 disabled:cursor-not-allowed disabled:bg-offwhite/45 disabled:text-darknavy/35",
     extraClassName,
   );
-}
-
-export function formatAccountingAmount(amount: number) {
-  return amount.toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
 }

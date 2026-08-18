@@ -31,9 +31,7 @@ export function RevolvingFundActionHistory({ record }: { record?: RevolvingFundR
   );
 }
 
-function createRevolvingFundHistory(
-  record?: RevolvingFundRecord,
-): ModuleHistoryEntry<RevolvingFundRecord["status"]>[] {
+function createRevolvingFundHistory(record?: RevolvingFundRecord): ModuleHistoryEntry<RevolvingFundRecord["status"]>[] {
   if (!record) return [];
   const history: ModuleHistoryEntry<RevolvingFundRecord["status"]>[] = [
     {
@@ -57,4 +55,3 @@ function createRevolvingFundHistory(
   }
   return history;
 }
-

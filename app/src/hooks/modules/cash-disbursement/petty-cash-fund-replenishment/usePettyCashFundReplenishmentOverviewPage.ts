@@ -18,6 +18,7 @@ import {
   PettyCashFundReplenishmentDefaultColumnVisibility,
   PettyCashFundReplenishmentOverviewColumnWidths,
   PettyCashFundReplenishmentRecordStatuses,
+  PettyCashFundReplenishmentStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentConstants";
 import {
   getPettyCashFundReplenishmentRecords,
@@ -29,10 +30,7 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentTypes";
 import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
-import {
-  getModuleStatusMetricIcon,
-  getModuleStatusMetricIconClassName,
-} from "@/app/src/ui/shared/module/ModuleStatusBadge";
+import { getModuleStatusMetricIcon, getModuleStatusMetricIconClassName } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import type { ModuleStatisticCardItem } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { formatPartOfTotalPercentage } from "@/app/src/utils/percentage.util";
 import { normalizeLowercaseWhitespace } from "@/app/src/utils/string.util";
@@ -49,22 +47,13 @@ export function usePettyCashFundReplenishmentOverviewPage() {
   const [amountRange, setAmountRange] = useState<AmountRangeValue>(emptyAmountRange);
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 5 });
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
-    () => PettyCashFundReplenishmentDefaultColumnVisibility,
-  );
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => PettyCashFundReplenishmentDefaultColumnVisibility);
   const [lastSyncedAt, setLastSyncedAt] = useState(() => Date.now());
   const filteredRecords = useMemo(() => {
     const needle = normalizeLowercaseWhitespace(query);
     return records.filter((record) => {
       const searchableText = normalizeLowercaseWhitespace(
-        [
-          record.transactionNo,
-          record.partyCode,
-          record.partyName,
-          record.accountCode,
-          record.accountTitle,
-          record.remarks,
-        ].join(" "),
+        [record.transactionNo, record.partyCode, record.partyName, record.accountCode, record.accountTitle, record.remarks].join(" "),
       );
       return (
         (!needle || searchableText.includes(needle)) &&
@@ -78,20 +67,77 @@ export function usePettyCashFundReplenishmentOverviewPage() {
   }, [amountRange, dateRange, query, records, statusFilter]);
   const columns = useMemo(
     () => [
-      columnHelper.accessor("transactionNo", { header: PettyCashFundReplenishmentColumnLabels.transactionNo, size: PettyCashFundReplenishmentOverviewColumnWidths.transactionNo, meta: { label: PettyCashFundReplenishmentColumnLabels.transactionNo } }),
-      columnHelper.accessor("documentDate", { header: PettyCashFundReplenishmentColumnLabels.documentDate, size: PettyCashFundReplenishmentOverviewColumnWidths.documentDate, meta: { label: PettyCashFundReplenishmentColumnLabels.documentDate } }),
-      columnHelper.accessor("partyCode", { header: PettyCashFundReplenishmentColumnLabels.partyCode, size: PettyCashFundReplenishmentOverviewColumnWidths.partyCode, meta: { label: PettyCashFundReplenishmentColumnLabels.partyCode } }),
-      columnHelper.accessor("partyName", { header: PettyCashFundReplenishmentColumnLabels.partyName, size: PettyCashFundReplenishmentOverviewColumnWidths.partyName, meta: { label: PettyCashFundReplenishmentColumnLabels.partyName } }),
-      columnHelper.accessor("accountCode", { header: PettyCashFundReplenishmentColumnLabels.accountCode, size: PettyCashFundReplenishmentOverviewColumnWidths.accountCode, meta: { label: PettyCashFundReplenishmentColumnLabels.accountCode } }),
-      columnHelper.accessor("accountTitle", { header: PettyCashFundReplenishmentColumnLabels.accountTitle, size: PettyCashFundReplenishmentOverviewColumnWidths.accountTitle, meta: { label: PettyCashFundReplenishmentColumnLabels.accountTitle } }),
-      columnHelper.accessor("amount", { header: PettyCashFundReplenishmentColumnLabels.amount, size: PettyCashFundReplenishmentOverviewColumnWidths.amount, meta: { label: PettyCashFundReplenishmentColumnLabels.amount } }),
-      columnHelper.accessor("remarks", { header: PettyCashFundReplenishmentColumnLabels.remarks, size: PettyCashFundReplenishmentOverviewColumnWidths.remarks, meta: { label: PettyCashFundReplenishmentColumnLabels.remarks } }),
-      columnHelper.accessor("createdBy", { header: PettyCashFundReplenishmentColumnLabels.createdBy, size: PettyCashFundReplenishmentOverviewColumnWidths.createdBy, meta: { label: PettyCashFundReplenishmentColumnLabels.createdBy } }),
-      columnHelper.accessor("createdAt", { header: PettyCashFundReplenishmentColumnLabels.createdAt, size: PettyCashFundReplenishmentOverviewColumnWidths.createdAt, meta: { label: PettyCashFundReplenishmentColumnLabels.createdAt } }),
-      columnHelper.accessor("updatedBy", { header: PettyCashFundReplenishmentColumnLabels.updatedBy, size: PettyCashFundReplenishmentOverviewColumnWidths.updatedBy, meta: { label: PettyCashFundReplenishmentColumnLabels.updatedBy } }),
-      columnHelper.accessor("updatedAt", { header: PettyCashFundReplenishmentColumnLabels.updatedAt, size: PettyCashFundReplenishmentOverviewColumnWidths.updatedAt, meta: { label: PettyCashFundReplenishmentColumnLabels.updatedAt } }),
-      columnHelper.accessor("status", { header: PettyCashFundReplenishmentColumnLabels.status, size: PettyCashFundReplenishmentOverviewColumnWidths.status, meta: { className: "text-center", label: PettyCashFundReplenishmentColumnLabels.status } }),
-      columnHelper.display({ id: "actions", header: PettyCashFundReplenishmentColumnLabels.actions, size: PettyCashFundReplenishmentOverviewColumnWidths.actions, meta: { className: "text-center", label: PettyCashFundReplenishmentColumnLabels.actions } }),
+      columnHelper.accessor("transactionNo", {
+        header: PettyCashFundReplenishmentColumnLabels.transactionNo,
+        size: PettyCashFundReplenishmentOverviewColumnWidths.transactionNo,
+        meta: { label: PettyCashFundReplenishmentColumnLabels.transactionNo },
+      }),
+      columnHelper.accessor("documentDate", {
+        header: PettyCashFundReplenishmentColumnLabels.documentDate,
+        size: PettyCashFundReplenishmentOverviewColumnWidths.documentDate,
+        meta: { label: PettyCashFundReplenishmentColumnLabels.documentDate },
+      }),
+      columnHelper.accessor("partyCode", {
+        header: PettyCashFundReplenishmentColumnLabels.partyCode,
+        size: PettyCashFundReplenishmentOverviewColumnWidths.partyCode,
+        meta: { label: PettyCashFundReplenishmentColumnLabels.partyCode },
+      }),
+      columnHelper.accessor("partyName", {
+        header: PettyCashFundReplenishmentColumnLabels.partyName,
+        size: PettyCashFundReplenishmentOverviewColumnWidths.partyName,
+        meta: { label: PettyCashFundReplenishmentColumnLabels.partyName },
+      }),
+      columnHelper.accessor("accountCode", {
+        header: PettyCashFundReplenishmentColumnLabels.accountCode,
+        size: PettyCashFundReplenishmentOverviewColumnWidths.accountCode,
+        meta: { label: PettyCashFundReplenishmentColumnLabels.accountCode },
+      }),
+      columnHelper.accessor("accountTitle", {
+        header: PettyCashFundReplenishmentColumnLabels.accountTitle,
+        size: PettyCashFundReplenishmentOverviewColumnWidths.accountTitle,
+        meta: { label: PettyCashFundReplenishmentColumnLabels.accountTitle },
+      }),
+      columnHelper.accessor("amount", {
+        header: PettyCashFundReplenishmentColumnLabels.amount,
+        size: PettyCashFundReplenishmentOverviewColumnWidths.amount,
+        meta: { label: PettyCashFundReplenishmentColumnLabels.amount },
+      }),
+      columnHelper.accessor("remarks", {
+        header: PettyCashFundReplenishmentColumnLabels.remarks,
+        size: PettyCashFundReplenishmentOverviewColumnWidths.remarks,
+        meta: { label: PettyCashFundReplenishmentColumnLabels.remarks },
+      }),
+      columnHelper.accessor("createdBy", {
+        header: PettyCashFundReplenishmentColumnLabels.createdBy,
+        size: PettyCashFundReplenishmentOverviewColumnWidths.createdBy,
+        meta: { label: PettyCashFundReplenishmentColumnLabels.createdBy },
+      }),
+      columnHelper.accessor("createdAt", {
+        header: PettyCashFundReplenishmentColumnLabels.createdAt,
+        size: PettyCashFundReplenishmentOverviewColumnWidths.createdAt,
+        meta: { label: PettyCashFundReplenishmentColumnLabels.createdAt },
+      }),
+      columnHelper.accessor("updatedBy", {
+        header: PettyCashFundReplenishmentColumnLabels.updatedBy,
+        size: PettyCashFundReplenishmentOverviewColumnWidths.updatedBy,
+        meta: { label: PettyCashFundReplenishmentColumnLabels.updatedBy },
+      }),
+      columnHelper.accessor("updatedAt", {
+        header: PettyCashFundReplenishmentColumnLabels.updatedAt,
+        size: PettyCashFundReplenishmentOverviewColumnWidths.updatedAt,
+        meta: { label: PettyCashFundReplenishmentColumnLabels.updatedAt },
+      }),
+      columnHelper.accessor("status", {
+        header: PettyCashFundReplenishmentColumnLabels.status,
+        size: PettyCashFundReplenishmentOverviewColumnWidths.status,
+        meta: { className: "text-center", label: PettyCashFundReplenishmentColumnLabels.status },
+      }),
+      columnHelper.display({
+        id: "actions",
+        header: PettyCashFundReplenishmentColumnLabels.actions,
+        size: PettyCashFundReplenishmentOverviewColumnWidths.actions,
+        meta: { className: "text-center", label: PettyCashFundReplenishmentColumnLabels.actions },
+      }),
     ],
     [],
   );
@@ -108,31 +154,37 @@ export function usePettyCashFundReplenishmentOverviewPage() {
     onSortingChange: setSorting,
     state: { columnVisibility, pagination, sorting },
   });
-  const statisticCards = useMemo<ModuleStatisticCardItem[]>(() => [
-    { icon: ReceiptText, label: "Total Entries", value: records.length, summary: "All time", tone: "violet", onClick: () => setStatusFilter("All"), isActive: statusFilter === "All" },
-    ...PettyCashFundReplenishmentRecordStatuses.map((status) => {
-      const count = records.filter((record) => record.status === status).length;
-      return {
-        icon: getModuleStatusMetricIcon(status),
-        iconClassName: getModuleStatusMetricIconClassName(status),
-        label: status,
-        value: count,
-        summary: formatPartOfTotalPercentage(count, records.length),
-        tone: getMetricTone(status),
-        onClick: () => setStatusFilter(status),
-        isActive: statusFilter === status,
-      };
-    }),
-  ], [records, statusFilter]);
+  const statisticCards = useMemo<ModuleStatisticCardItem[]>(
+    () => [
+      {
+        icon: ReceiptText,
+        label: "Total Entries",
+        value: records.length,
+        summary: "All time",
+        tone: "violet",
+        onClick: () => setStatusFilter("All"),
+        isActive: statusFilter === "All",
+      },
+      ...PettyCashFundReplenishmentRecordStatuses.map((status) => {
+        const count = records.filter((record) => record.status === status).length;
+        return {
+          icon: getModuleStatusMetricIcon(status),
+          iconClassName: getModuleStatusMetricIconClassName(status),
+          label: status,
+          value: count,
+          summary: formatPartOfTotalPercentage(count, records.length),
+          tone: getMetricTone(status),
+          onClick: () => setStatusFilter(status),
+          isActive: statusFilter === status,
+        };
+      }),
+    ],
+    [records, statusFilter],
+  );
 
-  function updateStatus(
-    record: PettyCashFundReplenishmentRecord,
-    status: PettyCashFundReplenishmentStatus,
-  ) {
+  function updateStatus(record: PettyCashFundReplenishmentRecord, status: PettyCashFundReplenishmentStatus) {
     const next = records.map((item) =>
-      item.id === record.id
-        ? { ...item, status, updatedAt: new Date().toISOString(), updatedBy: "Current User" }
-        : item,
+      item.id === record.id ? { ...item, status, updatedAt: new Date().toISOString(), updatedBy: "Current User" } : item,
     );
     setRecords(next);
     savePettyCashFundReplenishmentRecords(next);
@@ -145,17 +197,30 @@ export function usePettyCashFundReplenishmentOverviewPage() {
     setLastSyncedAt(Date.now());
   }
 
-  return { amountRange, dateRange, isLoading: false, lastSyncedAt, query, refreshRecords, setAmountRange, setDateRange, setQuery, setStatusFilter, statisticCards, statusFilter, table, updateStatus };
+  return {
+    amountRange,
+    dateRange,
+    isLoading: false,
+    lastSyncedAt,
+    query,
+    refreshRecords,
+    setAmountRange,
+    setDateRange,
+    setQuery,
+    setStatusFilter,
+    statisticCards,
+    statusFilter,
+    table,
+    updateStatus,
+  };
 }
 
 function getMetricTone(status: PettyCashFundReplenishmentStatus) {
-  if (status === "Posted") return "emerald" as const;
-  if (status === "For Approval") return "amber" as const;
-  if (status === "Disapproved") return "red" as const;
-  if (status === "Cancelled") return "slate" as const;
+  if (status === PettyCashFundReplenishmentStatuses.posted) return "emerald" as const;
+  if (status === PettyCashFundReplenishmentStatuses.forApproval) return "amber" as const;
+  if (status === PettyCashFundReplenishmentStatuses.disapproved) return "red" as const;
+  if (status === PettyCashFundReplenishmentStatuses.cancelled) return "slate" as const;
   return "blue" as const;
 }
 
-export type PettyCashFundReplenishmentOverviewPageState = ReturnType<
-  typeof usePettyCashFundReplenishmentOverviewPage
->;
+export type { PettyCashFundReplenishmentOverviewPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentTypes";

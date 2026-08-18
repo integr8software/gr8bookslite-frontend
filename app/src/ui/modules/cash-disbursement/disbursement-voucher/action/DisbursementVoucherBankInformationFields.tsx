@@ -19,8 +19,7 @@ export function DisbursementVoucherBankInformationFields({
   paymentTypeRecords,
   values,
 }: DisbursementVoucherBankInformationFieldsProps) {
-  const selectedPaymentTypeRecord =
-    paymentTypeRecord ?? paymentTypeRecords.find((record) => record.paymentType === paymentType) ?? null;
+  const selectedPaymentTypeRecord = paymentTypeRecord ?? paymentTypeRecords.find((record) => record.paymentType === paymentType) ?? null;
   const paymentDetailKind = getPaymentTypeDetailKind(paymentType, selectedPaymentTypeRecord);
   const shouldShowCheckDetails = paymentDetailKind === "with-bank" && !isMultiCheckNumber;
   const doesNotRequireBankInformation = !paymentDetailKind || paymentDetailKind === "cash";
@@ -30,9 +29,7 @@ export function DisbursementVoucherBankInformationFields({
       {doesNotRequireBankInformation ? (
         <div className="rounded-lg border border-dashed border-darknavy/15 bg-darknavy/[0.02] px-4 py-10 text-center">
           <p className="text-sm font-semibold text-darknavy">No bank information required</p>
-          <p className="mt-1 text-sm text-darknavy/55">
-            Select a bank-based payment type in Voucher Details to enter bank information.
-          </p>
+          <p className="mt-1 text-sm text-darknavy/55">Select a bank-based payment type in Voucher Details to enter bank information.</p>
         </div>
       ) : (
         <div className="grid min-w-0 gap-x-8 gap-y-5 xl:grid-cols-2">

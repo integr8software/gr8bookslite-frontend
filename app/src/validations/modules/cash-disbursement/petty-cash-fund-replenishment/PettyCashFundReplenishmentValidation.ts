@@ -14,39 +14,28 @@ const schema = z.object({
   accountTitle: z.string().trim().min(1, "Select a default account."),
 });
 
-export function validatePettyCashFundReplenishmentForm(
-  values: PettyCashFundReplenishmentFormValues,
-): PettyCashFundReplenishmentFormErrors {
+export function validatePettyCashFundReplenishmentForm(values: PettyCashFundReplenishmentFormValues): PettyCashFundReplenishmentFormErrors {
   const errors: PettyCashFundReplenishmentFormErrors = {};
   const result = schema.safeParse(values);
   if (!result.success) {
     for (const issue of result.error.issues) {
-      errors[issue.path[0] as keyof PettyCashFundReplenishmentFormValues] ??=
-        issue.message;
+      errors[issue.path[0] as keyof PettyCashFundReplenishmentFormValues] ??= issue.message;
     }
   }
   if (
     values.entries.length === 0 ||
-    values.entries.every(
-      (entry) => !entry.pettyCashNo.trim() && (parseAmount(entry.totalAmount) ?? 0) <= 0,
-    )
+    values.entries.every((entry) => !entry.pettyCashNo.trim() && (parseAmount(entry.totalAmount) ?? 0) <= 0)
   ) {
     errors.entries = "Add at least one petty cash voucher entry.";
   } else if (
     values.entries.some(
       (entry) =>
-        !entry.pettyCashNo.trim() ||
-        !entry.accountCode.trim() ||
-        !entry.accountTitle.trim() ||
-        (parseAmount(entry.totalAmount) ?? 0) <= 0,
+        !entry.pettyCashNo.trim() || !entry.accountCode.trim() || !entry.accountTitle.trim() || (parseAmount(entry.totalAmount) ?? 0) <= 0,
     )
   ) {
-    errors.entries =
-      "Each entry needs a petty cash voucher, account, and amount greater than zero.";
+    errors.entries = "Each entry needs a petty cash voucher, account, and amount greater than zero.";
   }
-  const voucherNumbers = values.entries
-    .map((entry) => entry.pettyCashNo.trim().toLowerCase())
-    .filter(Boolean);
+  const voucherNumbers = values.entries.map((entry) => entry.pettyCashNo.trim().toLowerCase()).filter(Boolean);
   if (new Set(voucherNumbers).size !== voucherNumbers.length) {
     errors.entries = "Petty cash voucher numbers must be unique.";
   }

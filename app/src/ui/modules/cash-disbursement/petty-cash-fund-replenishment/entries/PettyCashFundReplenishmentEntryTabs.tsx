@@ -9,7 +9,11 @@ export function PettyCashFundReplenishmentEntryTabs({
   onTabChange: (tab: PettyCashFundReplenishmentEntryTab) => void;
 }) {
   return (
-    <div role="tablist" aria-label="Petty cash fund replenishment entry sections" className="inline-flex rounded-lg border border-darknavy/10 bg-offwhite/70 p-1">
+    <div
+      role="tablist"
+      aria-label="Petty cash fund replenishment entry sections"
+      className="inline-flex rounded-lg border border-darknavy/10 bg-offwhite/70 p-1"
+    >
       {EntryTabs.map((tab) => (
         <button
           key={tab.id}

@@ -8,16 +8,14 @@ import {
   PettyCashVoucherDefaultVATable,
   PettyCashVoucherTransactionNumberPadding,
   PettyCashVoucherTransactionPrefix,
+  PettyCashVoucherStatuses,
   PettyCashVoucherVatRate,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
 import {
   DisbursementVoucherDefaultAccounts,
   DisbursementVoucherResponsibilityCenterOptions,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
-import {
-  formatMoneyNumberDisplayValue,
-  parseMoneyNumberInput,
-} from "@/app/src/data/shared/money/MoneyNumberData";
+import { formatMoneyNumberDisplayValue, parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 import { todayDateValue } from "@/app/src/utils/date.util";
@@ -37,7 +35,7 @@ export const PettyCashVoucherRecords: PettyCashVoucherRecord[] = [
     dateCreated: "2026-05-21T09:00:00",
     updatedBy: "Jon Reyes",
     dateModified: "2026-05-21T10:15:00",
-    status: "For Approval",
+    status: PettyCashVoucherStatuses.forApproval,
   },
   {
     id: "2",
@@ -53,7 +51,7 @@ export const PettyCashVoucherRecords: PettyCashVoucherRecord[] = [
     dateCreated: "2026-05-18T14:20:00",
     updatedBy: "Lea Cruz",
     dateModified: "2026-05-19T08:30:00",
-    status: "Posted",
+    status: PettyCashVoucherStatuses.posted,
   },
   {
     id: "3",
@@ -69,7 +67,7 @@ export const PettyCashVoucherRecords: PettyCashVoucherRecord[] = [
     dateCreated: "2026-05-14T11:45:00",
     updatedBy: "Jon Reyes",
     dateModified: "2026-05-14T13:10:00",
-    status: "Cancelled",
+    status: PettyCashVoucherStatuses.cancelled,
   },
   {
     id: "4",
@@ -85,7 +83,7 @@ export const PettyCashVoucherRecords: PettyCashVoucherRecord[] = [
     dateCreated: "2026-05-22T08:45:00",
     updatedBy: "Lea Cruz",
     dateModified: "2026-05-22T08:45:00",
-    status: "Draft",
+    status: PettyCashVoucherStatuses.draft,
   },
   {
     id: "5",
@@ -101,7 +99,7 @@ export const PettyCashVoucherRecords: PettyCashVoucherRecord[] = [
     dateCreated: "2026-05-20T13:25:00",
     updatedBy: "Maria Santos",
     dateModified: "2026-05-20T16:40:00",
-    status: "Disapproved",
+    status: PettyCashVoucherStatuses.disapproved,
   },
   {
     id: "6",
@@ -117,7 +115,7 @@ export const PettyCashVoucherRecords: PettyCashVoucherRecord[] = [
     dateCreated: "2026-05-19T10:10:00",
     updatedBy: "Ana Lim",
     dateModified: "2026-05-19T10:55:00",
-    status: "For Approval",
+    status: PettyCashVoucherStatuses.forApproval,
   },
   {
     id: "7",
@@ -133,7 +131,7 @@ export const PettyCashVoucherRecords: PettyCashVoucherRecord[] = [
     dateCreated: "2026-05-17T15:05:00",
     updatedBy: "Jon Reyes",
     dateModified: "2026-05-18T09:35:00",
-    status: "Posted",
+    status: PettyCashVoucherStatuses.posted,
   },
   {
     id: "8",
@@ -149,7 +147,7 @@ export const PettyCashVoucherRecords: PettyCashVoucherRecord[] = [
     dateCreated: "2026-05-16T11:30:00",
     updatedBy: "Ana Lim",
     dateModified: "2026-05-16T11:30:00",
-    status: "Draft",
+    status: PettyCashVoucherStatuses.draft,
   },
 ];
 
@@ -204,9 +202,7 @@ export function createPettyCashVoucherInitialFormValues(baseCurrencyCode = "PHP"
   };
 }
 
-export function createPettyCashVoucherFormValues(
-  record: PettyCashVoucherRecord,
-): PettyCashVoucherFormValues {
+export function createPettyCashVoucherFormValues(record: PettyCashVoucherRecord): PettyCashVoucherFormValues {
   return {
     ...PettyCashVoucherInitialFormValues,
     accountCode: record.accountCode,
@@ -251,10 +247,7 @@ export function createPettyCashVoucherRecord(
   };
 }
 
-export function calculatePettyCashVoucherVatFields(
-  amountValue: string,
-  vatable: PettyCashVoucherFormValues["vatable"],
-) {
+export function calculatePettyCashVoucherVatFields(amountValue: string, vatable: PettyCashVoucherFormValues["vatable"]) {
   const amount = parseMoneyNumberInput(amountValue);
 
   if (vatable === "True") {
@@ -272,9 +265,7 @@ export function calculatePettyCashVoucherVatFields(
   };
 }
 
-export function createPettyCashVoucherPartyOptions(
-  values: PettyCashVoucherFormValues,
-): AppAdvancedDropdownOption[] {
+export function createPettyCashVoucherPartyOptions(values: PettyCashVoucherFormValues): AppAdvancedDropdownOption[] {
   return includeCurrentOption([...PettyCashVoucherPartyOptions], {
     label: values.partyCode,
     name: values.partyName,
@@ -282,9 +273,7 @@ export function createPettyCashVoucherPartyOptions(
   });
 }
 
-export function createPettyCashVoucherAccountOptions(
-  values: PettyCashVoucherFormValues,
-): AppAdvancedDropdownOption[] {
+export function createPettyCashVoucherAccountOptions(values: PettyCashVoucherFormValues): AppAdvancedDropdownOption[] {
   const options = DisbursementVoucherDefaultAccounts.flatMap((account) =>
     account.generatedAccounts.map((generatedAccount) => ({
       label: generatedAccount.accountCode,
@@ -300,9 +289,7 @@ export function createPettyCashVoucherAccountOptions(
   });
 }
 
-export function createPettyCashVoucherResponsibilityCenterOptions(
-  values: PettyCashVoucherFormValues,
-): AppAdvancedDropdownOption[] {
+export function createPettyCashVoucherResponsibilityCenterOptions(values: PettyCashVoucherFormValues): AppAdvancedDropdownOption[] {
   return includeCurrentOption([...DisbursementVoucherResponsibilityCenterOptions], {
     label: values.responsibilityCenterCode,
     name: values.responsibilityCenter,
@@ -310,10 +297,7 @@ export function createPettyCashVoucherResponsibilityCenterOptions(
   });
 }
 
-function includeCurrentOption(
-  options: AppAdvancedDropdownOption[],
-  currentOption: AppAdvancedDropdownOption,
-) {
+function includeCurrentOption(options: AppAdvancedDropdownOption[], currentOption: AppAdvancedDropdownOption) {
   if (!currentOption.value || !currentOption.name) {
     return options;
   }
@@ -332,18 +316,11 @@ function formatPettyCashVoucherAmount(value: number) {
 function createNextPettyCashVoucherNumber() {
   const nextSequence =
     PettyCashVoucherRecords.reduce((highestSequence, record) => {
-      const matchedParts = record.voucherNo.match(
-        new RegExp(`^${PettyCashVoucherTransactionPrefix}-(\\d+)$`),
-      );
+      const matchedParts = record.voucherNo.match(new RegExp(`^${PettyCashVoucherTransactionPrefix}-(\\d+)$`));
       const sequence = matchedParts ? Number.parseInt(matchedParts[1], 10) : 0;
 
-      return Number.isFinite(sequence)
-        ? Math.max(highestSequence, sequence)
-        : highestSequence;
+      return Number.isFinite(sequence) ? Math.max(highestSequence, sequence) : highestSequence;
     }, 0) + 1;
 
-  return `${PettyCashVoucherTransactionPrefix}-${String(nextSequence).padStart(
-    PettyCashVoucherTransactionNumberPadding,
-    "0",
-  )}`;
+  return `${PettyCashVoucherTransactionPrefix}-${String(nextSequence).padStart(PettyCashVoucherTransactionNumberPadding, "0")}`;
 }

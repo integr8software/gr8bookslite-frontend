@@ -1,4 +1,9 @@
-import { CashAdvanceMultipleEntryStatuses } from "@/app/src/constants/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryConstants";
+import {
+  CashAdvanceMultipleEntryStatuses,
+  CashAdvanceMultipleEntryStorageKey,
+  CashAdvanceMultipleEntryTransactionNumberPadding,
+  CashAdvanceMultipleEntryTransactionNumberPrefix,
+} from "@/app/src/constants/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryConstants";
 import { DisbursementVoucherProjectOptions } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import { ResponsibilityCenterInitialFormValues } from "@/app/src/data/modules/financial-maintenance/responsibility-center/ResponsibilityCenterData";
 import type {
@@ -17,12 +22,6 @@ import type {
 } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { parseFiniteNumber } from "@/app/src/utils/number.util";
-
-export const CashAdvanceMultipleEntryStorageKey =
-  "gr8books.cash-advance-multiple-entry.records";
-
-const TransNoPrefix = "CAME-";
-const TransNoPadding = 6;
 
 export const CashAdvanceMultipleEntryPartyOptions = [
   { label: "EMP-0017", name: "Maria Santos", value: "EMP-0017" },
@@ -132,11 +131,10 @@ export const MockCashAdvanceMultipleEntryRecords: CashAdvanceMultipleEntryRecord
   },
 ];
 
-export function createBlankCashAdvanceMultipleEntryItem(
-  values: Partial<CashAdvanceMultipleEntryItem> = {},
-): CashAdvanceMultipleEntryItem {
+export function createBlankCashAdvanceMultipleEntryItem(values: Partial<CashAdvanceMultipleEntryItem> = {}): CashAdvanceMultipleEntryItem {
   return {
     amount: "",
+    cashAdvanceBalance: "",
     id: `came-item-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     particulars: "",
     partyCode: "",
@@ -195,6 +193,10 @@ export function createCashAdvanceMultipleEntryFormValuesFromRecord(
     return {
       ...createCashAdvanceMultipleEntryFormValues(),
       ...record.formValues,
+      items: record.formValues.items.map((item) => ({
+        ...item,
+        cashAdvanceBalance: item.cashAdvanceBalance ?? "",
+      })),
       projectCode: record.formValues.projectCode ?? record.projectCode ?? "",
       status: normalizeCashAdvanceMultipleEntryStatus(record.formValues.status),
       transNo: record.formValues.transNo || record.transNo,
@@ -252,13 +254,8 @@ export function createCashAdvanceMultipleEntryRecordFromForm(
   };
 }
 
-export function calculateCashAdvanceMultipleEntryTotal(
-  rows: CashAdvanceMultipleEntryItem[],
-) {
-  return rows.reduce(
-    (total, row) => total + parseFiniteNumber(row.amount),
-    0,
-  );
+export function calculateCashAdvanceMultipleEntryTotal(rows: CashAdvanceMultipleEntryItem[]) {
+  return rows.reduce((total, row) => total + parseFiniteNumber(row.amount), 0);
 }
 
 export function formatCashAdvanceMultipleEntryAmount(value: number | string) {
@@ -283,9 +280,7 @@ export function readStoredCashAdvanceMultipleEntries() {
   try {
     const parsedRecords = JSON.parse(storedRecords) as CashAdvanceMultipleEntryRecord[];
 
-    return Array.isArray(parsedRecords)
-      ? parsedRecords.map(normalizeStoredCashAdvanceMultipleEntryRecord)
-      : null;
+    return Array.isArray(parsedRecords) ? parsedRecords.map(normalizeStoredCashAdvanceMultipleEntryRecord) : null;
   } catch {
     return null;
   }
@@ -299,10 +294,7 @@ export function writeStoredCashAdvanceMultipleEntries(records: CashAdvanceMultip
   window.localStorage.setItem(CashAdvanceMultipleEntryStorageKey, JSON.stringify(records));
 }
 
-export function countCashAdvanceMultipleEntriesByStatus(
-  records: CashAdvanceMultipleEntryRecord[],
-  status: CashAdvanceStatus,
-) {
+export function countCashAdvanceMultipleEntriesByStatus(records: CashAdvanceMultipleEntryRecord[], status: CashAdvanceStatus) {
   return records.filter((record) => record.status === status).length;
 }
 
@@ -383,9 +375,7 @@ export function createCashAdvanceMultipleEntryResponsibilityCenterDropdownOption
 }: {
   centers: ResponsibilityCenter[];
 }): AppAdvancedDropdownOption[] {
-  const options: AppAdvancedDropdownOption[] = [
-    ...CashAdvanceMultipleEntryResponsibilityCenterOptions,
-  ];
+  const options: AppAdvancedDropdownOption[] = [...CashAdvanceMultipleEntryResponsibilityCenterOptions];
 
   centers
     .filter((center) => center.status === "Active")
@@ -406,12 +396,8 @@ export function createCashAdvanceMultipleEntryProjectInitialValues(
   types: ResponsibilityCenterTypeOption[],
 ): ResponsibilityCenterFormValues {
   const projectType = types.find((type) => type.name === "Project");
-  const projectClassification = classifications.find(
-    (classification) => classification.id === projectType?.classificationId,
-  );
-  const costCenterClassification = classifications.find(
-    (classification) => classification.name === "Cost Center",
-  );
+  const projectClassification = classifications.find((classification) => classification.id === projectType?.classificationId);
+  const costCenterClassification = classifications.find((classification) => classification.name === "Cost Center");
   const classification = projectClassification ?? costCenterClassification;
 
   return {
@@ -428,11 +414,8 @@ export function createCashAdvanceMultipleEntryResponsibilityCenterInitialValues(
   types: ResponsibilityCenterTypeOption[],
 ): ResponsibilityCenterFormValues {
   const responsibilityCenterClassification =
-    classifications.find((classification) => classification.name === "Cost Center") ??
-    classifications[0];
-  const responsibilityCenterType = types.find(
-    (type) => type.classificationId === responsibilityCenterClassification?.id,
-  );
+    classifications.find((classification) => classification.name === "Cost Center") ?? classifications[0];
+  const responsibilityCenterType = types.find((type) => type.classificationId === responsibilityCenterClassification?.id);
 
   return {
     ...ResponsibilityCenterInitialFormValues,
@@ -442,9 +425,7 @@ export function createCashAdvanceMultipleEntryResponsibilityCenterInitialValues(
   };
 }
 
-export function createCashAdvanceMultipleEntryApprovalRecord(
-  record: CashAdvanceMultipleEntryRecord | null,
-): CashAdvanceRecord | null {
+export function createCashAdvanceMultipleEntryApprovalRecord(record: CashAdvanceMultipleEntryRecord | null): CashAdvanceRecord | null {
   if (!record) {
     return null;
   }
@@ -467,10 +448,7 @@ export function createCashAdvanceMultipleEntryApprovalRecord(
   };
 }
 
-function createCashAdvanceMultipleEntryTransNo(
-  value: string,
-  existingRecord?: CashAdvanceMultipleEntryRecord,
-) {
+function createCashAdvanceMultipleEntryTransNo(value: string, existingRecord?: CashAdvanceMultipleEntryRecord) {
   const normalizedValue = value.trim();
 
   if (normalizedValue) {
@@ -487,7 +465,7 @@ function createNextCashAdvanceMultipleEntryTransNo(excludedRecordId?: string) {
     .filter((sequence): sequence is number => sequence !== null);
   const nextSequence = Math.max(0, ...existingNumbers) + 1;
 
-  return `${TransNoPrefix}${String(nextSequence).padStart(TransNoPadding, "0")}`;
+  return `${CashAdvanceMultipleEntryTransactionNumberPrefix}${String(nextSequence).padStart(CashAdvanceMultipleEntryTransactionNumberPadding, "0")}`;
 }
 
 function parseCashAdvanceMultipleEntryTransNoSequence(value: string) {
@@ -496,9 +474,7 @@ function parseCashAdvanceMultipleEntryTransNoSequence(value: string) {
   return match ? Number(match[1]) : null;
 }
 
-function normalizeStoredCashAdvanceMultipleEntryRecord(
-  record: CashAdvanceMultipleEntryRecord,
-): CashAdvanceMultipleEntryRecord {
+function normalizeStoredCashAdvanceMultipleEntryRecord(record: CashAdvanceMultipleEntryRecord): CashAdvanceMultipleEntryRecord {
   return {
     ...record,
     projectCode: record.projectCode ?? record.formValues?.projectCode ?? "",
@@ -508,6 +484,10 @@ function normalizeStoredCashAdvanceMultipleEntryRecord(
       ? {
           ...record.formValues,
           attachments: record.formValues.attachments ?? [],
+          items: (record.formValues.items ?? []).map((item) => ({
+            ...item,
+            cashAdvanceBalance: item.cashAdvanceBalance ?? "",
+          })),
           projectCode: record.formValues.projectCode ?? record.projectCode ?? "",
           status: normalizeCashAdvanceMultipleEntryStatus(record.formValues.status),
         }
@@ -519,7 +499,7 @@ function normalizeStoredCashAdvanceMultipleEntryRecord(
 }
 
 function normalizeCashAdvanceMultipleEntryStatus(value: string): CashAdvanceStatus {
-  if (value === "Open") {
+  if (value === CashAdvanceMultipleEntryStatuses.open) {
     return CashAdvanceMultipleEntryStatuses.forApproval;
   }
 
@@ -531,15 +511,10 @@ function normalizeCashAdvanceMultipleEntryStatus(value: string): CashAdvanceStat
     CashAdvanceMultipleEntryStatuses.posted,
   ];
 
-  return statuses.includes(value as CashAdvanceStatus)
-    ? (value as CashAdvanceStatus)
-    : CashAdvanceMultipleEntryStatuses.forApproval;
+  return statuses.includes(value as CashAdvanceStatus) ? (value as CashAdvanceStatus) : CashAdvanceMultipleEntryStatuses.forApproval;
 }
 
-function addUniqueDropdownOption(
-  options: AppAdvancedDropdownOption[],
-  option: AppAdvancedDropdownOption,
-) {
+function addUniqueDropdownOption(options: AppAdvancedDropdownOption[], option: AppAdvancedDropdownOption) {
   if (!option.value.trim() || options.some((currentOption) => currentOption.value === option.value)) {
     return;
   }

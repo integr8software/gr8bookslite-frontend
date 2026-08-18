@@ -1,5 +1,7 @@
 import {
   DefaultDisbursementAccountingGridColumnOrder,
+  DisbursementAccountingCreditColumnId,
+  DisbursementAccountingDebitColumnId,
   DisbursementAccountingImportTemplateHeaders,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryConstants";
 import { DisbursementVoucherHref } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
@@ -9,22 +11,18 @@ import {
   syncTaxDetailsAmount,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import type {
-  DisbursementAccountingGridColumnId,
-  EditableDisbursementAccountingGridRow,
+  DisbursementAccountingGridColumnId as GridColumnId,
+  EditableDisbursementAccountingGridRow as EditableGridRow,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryTypes";
 import type {
+  DisbursementAttachment as VoucherAttachment,
   DisbursementLineEntry,
   DisbursementVoucherAccountingGridSession,
   DisbursementVoucherFormValues,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import { parseMoneyNumberInput } from "@/app/src/ui/shared/money/MoneyNumberField";
 import { type ModuleDataEntryClearAction } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
-
-type EditableGridRow = EditableDisbursementAccountingGridRow;
-type GridColumnId = DisbursementAccountingGridColumnId;
-type VoucherAttachment = DisbursementVoucherFormValues["attachments"][number];
-const AccountingDebitColumnId: GridColumnId = "debit";
-const AccountingCreditColumnId: GridColumnId = "credit";
+import { formatAmount } from "@/app/src/utils/currency.util";
 
 export function createInitialRows(entries: DisbursementLineEntry[]) {
   const mappedRows = entries.map(mapEntryToEditableRow);
@@ -40,8 +38,8 @@ function mapEntryToEditableRow(entry: DisbursementLineEntry): EditableGridRow {
   return {
     accountCode: entry.accountCode,
     accountName: entry.accountName,
-    credit: entry.credit > 0 ? formatAmountValue(entry.credit) : "",
-    debit: entry.debit > 0 ? formatAmountValue(entry.debit) : "",
+    credit: entry.credit > 0 ? formatAmount(entry.credit) : "",
+    debit: entry.debit > 0 ? formatAmount(entry.debit) : "",
     id: entry.id,
     particulars: entry.particulars,
     taxDetails: entry.taxDetails,
@@ -337,12 +335,12 @@ function normalizeImportHeader(value: string): GridColumnId | null {
     return "taxRate";
   }
 
-  if ([AccountingDebitColumnId, "dr"].includes(normalized)) {
-    return AccountingDebitColumnId;
+  if ([DisbursementAccountingDebitColumnId, "dr"].includes(normalized)) {
+    return DisbursementAccountingDebitColumnId;
   }
 
-  if ([AccountingCreditColumnId, "cr"].includes(normalized)) {
-    return AccountingCreditColumnId;
+  if ([DisbursementAccountingCreditColumnId, "cr"].includes(normalized)) {
+    return DisbursementAccountingCreditColumnId;
   }
 
   return null;
@@ -374,7 +372,7 @@ function normalizeImportedAmount(value: string) {
   const normalized = value.replace(/[₱,$\s]/g, "").replace(/,/g, "");
   const amount = Number(normalized || 0);
 
-  return Number.isFinite(amount) && amount > 0 ? formatAmountValue(amount) : "";
+  return Number.isFinite(amount) && amount > 0 ? formatAmount(amount) : "";
 }
 
 function normalizeTaxRate(value: string) {
@@ -537,13 +535,6 @@ export function isCompleteRow(row: EditableGridRow) {
 
 export function normalizeAmount(value: string) {
   return parseMoneyNumberInput(value);
-}
-
-export function formatAmountValue(value: number) {
-  return value.toLocaleString("en-US", {
-    maximumFractionDigits: 2,
-    minimumFractionDigits: 2,
-  });
 }
 
 export function getExportCellValue(row: EditableGridRow, columnId: GridColumnId) {

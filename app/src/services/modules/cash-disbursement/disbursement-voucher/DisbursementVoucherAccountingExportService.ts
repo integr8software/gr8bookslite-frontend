@@ -1,32 +1,30 @@
 import type { Content, TableCell, TDocumentDefinitions } from "pdfmake/interfaces";
 import {
+  DisbursementAccountingAmountColumnIds,
+  DisbursementAccountingCreditColumnId,
+  DisbursementAccountingDebitColumnId,
   DisbursementAccountingImportTemplateColumnWidths,
   DisbursementAccountingImportTemplateHeaders,
   DisbursementAccountingImportTemplateRows,
+  DisbursementAccountingPdfGridLayout,
+  DisbursementAccountingWorksheetBorderColorArgb,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryConstants";
 import { formatCurrency, formatDateLabel } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import type {
-  DisbursementAccountingExportTheme,
-  DisbursementAccountingGridColumnId,
+  DisbursementAccountingExportTheme as AccountingExportTheme,
+  DisbursementAccountingGridColumnId as GridColumnId,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryTypes";
 import type {
   DisbursementVoucherAccountingGridSession,
   DisbursementVoucherFormValues,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import { parseMoneyNumberInput } from "@/app/src/ui/shared/money/MoneyNumberField";
+import { formatAmount } from "@/app/src/utils/currency.util";
 import {
-  formatAmountValue,
   formatRowsAsTabularText,
   normalizeAmount,
   readXlsxAccountingRawRows,
-} from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/utils/DisbursementVoucherAccountingGridImportUtils";
-
-type GridColumnId = DisbursementAccountingGridColumnId;
-type AccountingExportTheme = DisbursementAccountingExportTheme;
-const AccountingDebitColumnId: GridColumnId = "debit";
-const AccountingCreditColumnId: GridColumnId = "credit";
-const AccountingAmountColumnIds = new Set<GridColumnId>([AccountingDebitColumnId, AccountingCreditColumnId]);
-const AccountingWorksheetBorderColorArgb = "FFE5E7EB";
+} from "@/app/src/services/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingImportService";
 
 export function downloadAccountingImportTemplate() {
   const workbookBytes = createAccountingImportTemplateWorkbook();
@@ -65,8 +63,8 @@ export function createAccountingPdfDefinition(
 ): TDocumentDefinitions {
   const [headers = [], ...bodyRows] = exportData.rows;
   const values = session?.values;
-  const debitTotal = getPdfColumnTotal(bodyRows, exportData.visibleColumnIds, AccountingDebitColumnId);
-  const creditTotal = getPdfColumnTotal(bodyRows, exportData.visibleColumnIds, AccountingCreditColumnId);
+  const debitTotal = getPdfColumnTotal(bodyRows, exportData.visibleColumnIds, DisbursementAccountingDebitColumnId);
+  const creditTotal = getPdfColumnTotal(bodyRows, exportData.visibleColumnIds, DisbursementAccountingCreditColumnId);
   const tableBody: TableCell[][] = [
     headers.map((header) => pdfHeaderCell(header, theme)),
     ...bodyRows.map((row) => row.map((value, columnIndex) => pdfBodyCell(value, exportData.amountColumnIndexes.has(columnIndex)))),
@@ -117,7 +115,7 @@ export function createAccountingPdfDefinition(
           widths: exportData.visibleColumnIds.map(getPdfColumnWidth),
           body: tableBody,
         },
-        layout: pdfGridLayout,
+        layout: DisbursementAccountingPdfGridLayout,
         margin: [0, 10, 0, 0],
       },
     ],
@@ -156,7 +154,7 @@ function createPdfVoucherDetails(values: DisbursementVoucherFormValues | undefin
         ],
       ],
     },
-    layout: pdfGridLayout,
+    layout: DisbursementAccountingPdfGridLayout,
   };
 }
 
@@ -208,11 +206,11 @@ function createPdfTotalsRow(columnCount: number, visibleColumnIds: GridColumnId[
       };
     }
 
-    if (columnId === AccountingDebitColumnId) {
+    if (columnId === DisbursementAccountingDebitColumnId) {
       return pdfTotalAmountCell(debitTotal);
     }
 
-    if (columnId === AccountingCreditColumnId) {
+    if (columnId === DisbursementAccountingCreditColumnId) {
       return pdfTotalAmountCell(creditTotal);
     }
 
@@ -226,7 +224,7 @@ function createPdfTotalsRow(columnCount: number, visibleColumnIds: GridColumnId[
 
 function pdfTotalAmountCell(total: number): TableCell {
   return {
-    text: formatAmountValue(total),
+    text: formatAmount(total),
     bold: true,
     alignment: "right",
     fillColor: "#F8FAFC",
@@ -253,7 +251,7 @@ function getPdfColumnWidth(columnId: GridColumnId) {
     return 120;
   }
 
-  if (AccountingAmountColumnIds.has(columnId)) {
+  if (DisbursementAccountingAmountColumnIds.has(columnId)) {
     return 74;
   }
 
@@ -263,17 +261,6 @@ function getPdfColumnWidth(columnId: GridColumnId) {
 
   return 78;
 }
-
-export const pdfGridLayout = {
-  hLineColor: () => "#E5E7EB",
-  hLineWidth: () => 0.6,
-  paddingBottom: () => 0,
-  paddingLeft: () => 0,
-  paddingRight: () => 0,
-  paddingTop: () => 0,
-  vLineColor: () => "#E5E7EB",
-  vLineWidth: () => 0.6,
-};
 
 export function getAccountingExportTheme(): AccountingExportTheme {
   const accentColor = getCssColorVariable("--skyblue", "#57C4E5");
@@ -468,7 +455,7 @@ function createAccountingTemplateStylesXml(theme: AccountingExportTheme) {
     "</fills>" +
     '<borders count="2">' +
     "<border><left/><right/><top/><bottom/><diagonal/></border>" +
-    `<border><left style="thin"><color rgb="${AccountingWorksheetBorderColorArgb}"/></left><right style="thin"><color rgb="${AccountingWorksheetBorderColorArgb}"/></right><top style="thin"><color rgb="${AccountingWorksheetBorderColorArgb}"/></top><bottom style="thin"><color rgb="${AccountingWorksheetBorderColorArgb}"/></bottom><diagonal/></border>` +
+    `<border><left style="thin"><color rgb="${DisbursementAccountingWorksheetBorderColorArgb}"/></left><right style="thin"><color rgb="${DisbursementAccountingWorksheetBorderColorArgb}"/></right><top style="thin"><color rgb="${DisbursementAccountingWorksheetBorderColorArgb}"/></top><bottom style="thin"><color rgb="${DisbursementAccountingWorksheetBorderColorArgb}"/></bottom><diagonal/></border>` +
     "</borders>" +
     '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>' +
     '<cellXfs count="4">' +

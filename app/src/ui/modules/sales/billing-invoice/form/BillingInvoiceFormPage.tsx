@@ -29,6 +29,10 @@ export function BillingInvoiceFormPage() {
 		router.push(BillingInvoiceHref);
 	});
 
+	if (invoiceForm.isLoading) {
+		return null;
+	}
+
 	if (invoiceForm.isRecordMissing) {
 		return <BillingInvoiceNotFound />;
 	}

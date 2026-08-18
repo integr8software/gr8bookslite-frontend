@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useDeferredValue, useMemo, useState } from "react";
+import { useCallback, useDeferredValue, useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
 	getCoreRowModel,
 	getPaginationRowModel,
@@ -16,9 +17,6 @@ import {
 	createBlankBillingInvoiceLineEntry,
 	createBillingInvoiceFormValues,
 	createBillingInvoiceFormValuesFromRecord,
-	createBillingInvoiceRecordFromForm,
-	getInitialBillingInvoices,
-	writeStoredBillingInvoices,
 } from "@/app/src/data/modules/sales/billing-invoice/BillingInvoiceData";
 import {
 	BillingInvoiceStatusFilters,
@@ -32,6 +30,7 @@ import type {
 	BillingInvoiceStatus,
 } from "@/app/src/types/modules/sales/billing-invoice/BillingInvoiceTypes";
 import { validateBillingInvoiceForm } from "@/app/src/validations/modules/sales/billing-invoice/BillingInvoiceValidation";
+import { createBillingInvoice, fetchBillingInvoice, updateBillingInvoice } from "@/app/src/services/modules/sales/billing-invoice/BillingInvoiceApi";
 import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
 
@@ -92,19 +91,26 @@ export function useBillingInvoiceActionForm(
 	recordId?: string,
 	onSaved?: (record: BillingInvoiceRecord) => void,
 ) {
-	const initialRecord =
-		mode === "add"
-			? null
-			: getInitialBillingInvoices().find((invoice) => invoice.id === recordId) ??
-				null;
-	const [loadedRecord, setLoadedRecord] = useState<BillingInvoiceRecord | null>(
-		initialRecord,
-	);
+	const isEditOrView = mode === "edit" || mode === "view";
+
+	const recordQuery = useQuery({
+		queryKey: ["billing-invoice", recordId],
+		queryFn: () => fetchBillingInvoice(recordId!),
+		enabled: isEditOrView && !!recordId,
+		retry: false,
+	});
+
+	const [loadedRecord, setLoadedRecord] = useState<BillingInvoiceRecord | null>(null);
 	const [values, setValues] = useState<BillingInvoiceFormValues>(() =>
-		initialRecord
-			? createBillingInvoiceFormValuesFromRecord(initialRecord)
-			: createBillingInvoiceFormValues(),
+		createBillingInvoiceFormValues(),
 	);
+
+	useEffect(() => {
+		if (recordQuery.data) {
+			setLoadedRecord(recordQuery.data);
+			setValues(createBillingInvoiceFormValuesFromRecord(recordQuery.data));
+		}
+	}, [recordQuery.data]);
 
 	function updateField<Key extends keyof BillingInvoiceFormValues>(
 		key: Key,
@@ -129,22 +135,32 @@ export function useBillingInvoiceActionForm(
 			return;
 		}
 
-		const nextRecord = createBillingInvoiceRecordFromForm(
-			values,
-			mode === "edit" ? loadedRecord ?? undefined : undefined,
-		);
-		const nextInvoices = upsertBillingInvoiceRecord(nextRecord);
-
-		writeStoredBillingInvoices(nextInvoices);
-		setLoadedRecord(nextRecord);
-		toast.success(
-			mode === "edit" ? "Billing invoice updated." : "Billing invoice saved.",
-		);
-		onSaved?.(nextRecord);
+		try {
+			const nextRecord =
+				mode === "edit" && recordId
+					? await updateBillingInvoice(recordId, valuesWithDefaultAccount)
+					: await createBillingInvoice(valuesWithDefaultAccount);
+			setLoadedRecord(nextRecord);
+			toast.success(
+				mode === "edit"
+					? "Billing invoice updated successfully."
+					: "Billing invoice saved to the database.",
+			);
+			onSaved?.(nextRecord);
+		} catch (error) {
+			toast.error(
+				error instanceof Error ? error.message : "Unable to save billing invoice.",
+			);
+		}
 	}
 
+	const isLoading = isEditOrView && recordQuery.isLoading;
+	const isRecordMissing =
+		isEditOrView && !recordQuery.isLoading && !recordQuery.data;
+
 	return {
-		isRecordMissing: mode !== "add" && !initialRecord,
+		isLoading,
+		isRecordMissing,
 		submitInvoice,
 		updateField,
 		updateLineEntries,

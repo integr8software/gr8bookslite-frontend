@@ -1,21 +1,39 @@
-import type { ReactNode } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
-	BillingInvoiceEntryExportOptions,
-	BillingInvoiceEntryTabs,
-} from "@/app/src/constants/modules/sales/billing-invoice/BillingInvoiceEntryConstants";
-import { formatBillingInvoiceAmount } from "@/app/src/data/modules/sales/billing-invoice/BillingInvoiceData";
-import {
-	useBillingInvoiceAccountEntries,
-	useBillingInvoiceEntryTabs,
-	useBillingInvoiceItemEntries,
-} from "@/app/src/hooks/modules/sales/billing-invoice/useBillingInvoiceEntries";
+	BillingInvoicePartyOptions,
+	BillingInvoiceResponsibilityCenterOptions,
+	BillingInvoiceTaxTypeOptions,
+	BillingInvoiceVatTypeOptions,
+	calculateBillingInvoiceTotals,
+	createBillingInvoiceAccountingEntries,
+	createBlankBillingInvoiceAccountEntry,
+	createBlankBillingInvoiceLineEntry,
+	formatBillingInvoiceAmount,
+} from "@/app/src/data/modules/sales/billing-invoice/BillingInvoiceData";
+import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import type {
 	BillingInvoiceAccountEntry,
 	BillingInvoiceEntriesTab,
 	BillingInvoiceLineEntry,
 } from "@/app/src/types/modules/sales/billing-invoice/BillingInvoiceTypes";
-import { ModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
-import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import { AccountingEntryTable } from "@/app/src/ui/shared/accounting-entry/AccountingEntryTable";
+import {
+	ModuleDataEntry,
+	type ModuleDataEntryClearAction,
+	type ModuleDataEntryColumn,
+	type ModuleDataEntryColumnOption,
+	type ModuleDataEntryExportOption,
+} from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import { createBillingInvoiceServiceDetailColumns } from "@/app/src/ui/modules/sales/billing-invoice/entries/BillingInvoiceServiceDetailColumns";
+import {
+	duplicateEntryRow,
+	insertEntryRow,
+	moveEntryRow,
+	recalculateServiceInvoiceEntry,
+	removeEntryRow,
+	shouldClearServiceInvoiceLineEntry,
+} from "@/app/src/ui/modules/sales/service-invoice/entries/utils/ServiceInvoiceEntryRowUtils";
+import type { ServiceInvoiceLineEntry } from "@/app/src/types/modules/sales/service-invoice/ServiceInvoiceTypes";
 
 type BillingInvoiceEntrySectionProps = {
 	accountRows: BillingInvoiceAccountEntry[];
@@ -32,31 +50,139 @@ export function BillingInvoiceEntrySection({
 	onRowsChange,
 	rows,
 }: BillingInvoiceEntrySectionProps) {
-	const [activeTab, setActiveTab] = useBillingInvoiceEntryTabs();
-	const tabs = (
-		<BillingInvoiceEntryTabsControl
-			activeTab={activeTab}
-			onTabChange={setActiveTab}
-		/>
+	const [activeTab, setActiveTab] = useState<BillingInvoiceEntriesTab>("items");
+	const accountingRows = hasAccountingRows(accountRows)
+		? accountRows
+		: createBillingInvoiceAccountingEntries({
+				defaultAccount: accountRows[0]?.accountTitle ?? "",
+				lineEntries: rows,
+			});
+	const updateLineEntry = useCallback(
+		(rowId: string, updates: Partial<BillingInvoiceLineEntry>) => {
+			onRowsChange(
+				rows.map((row) =>
+					row.id === rowId
+						? (recalculateServiceInvoiceEntry(
+								{ ...row, ...updates } as unknown as ServiceInvoiceLineEntry,
+								updates as unknown as Partial<ServiceInvoiceLineEntry>,
+							) as unknown as BillingInvoiceLineEntry)
+						: row,
+				),
+			);
+		},
+		[onRowsChange, rows],
+	);
+	const itemColumns = useMemo(
+		() => createBillingInvoiceServiceDetailColumns(isReadonly, updateLineEntry),
+		[isReadonly, updateLineEntry],
 	);
 
 	if (activeTab === "accounts") {
 		return (
-			<BillingInvoiceAccountEntries
+			<AccountingEntryTable
+				createBlankRow={createBlankBillingInvoiceAccountEntry}
+				description="Record billing invoice accounting distributions."
+				fieldOptions={{
+					partyName: BillingInvoicePartyOptions,
+					vatType: BillingInvoiceVatTypeOptions,
+					atcCode: BillingInvoiceTaxTypeOptions,
+					responsibilityCenter: BillingInvoiceResponsibilityCenterOptions,
+				}}
 				isReadonly={isReadonly}
-				rows={accountRows}
-				title={tabs}
+				readOnlyFields={["partyCode"]}
+				rows={accountingRows}
+				title={
+					<BillingInvoiceEntryTabsControl
+						activeTab={activeTab}
+						onTabChange={setActiveTab}
+					/>
+				}
+				onFieldChange={(row, columnId, value) => {
+					if (columnId !== "partyName") return undefined;
+
+					const selectedParty = BillingInvoicePartyOptions.find(
+						(option) => option.value === value,
+					);
+
+					return {
+						partyCode: selectedParty?.label ?? "",
+						partyName: value,
+					};
+				}}
 				onRowsChange={onAccountRowsChange}
 			/>
 		);
 	}
 
+	function addRows(count: number) {
+		onRowsChange([
+			...rows,
+			...Array.from({ length: count }, () =>
+				createBlankBillingInvoiceLineEntry(),
+			),
+		]);
+	}
+
+	function clearRows(action: ModuleDataEntryClearAction) {
+		if (action === "all") {
+			onRowsChange([createBlankBillingInvoiceLineEntry()]);
+			return;
+		}
+
+		const nextRows = rows.filter(
+			(row) =>
+				!shouldClearServiceInvoiceLineEntry(
+					row as unknown as ServiceInvoiceLineEntry,
+					action,
+				),
+		);
+		onRowsChange(nextRows.length > 0 ? nextRows : [createBlankBillingInvoiceLineEntry()]);
+	}
+
 	return (
-		<BillingInvoiceItemEntries
+		<ModuleDataEntry
+			columns={itemColumns}
+			columnOptions={createColumnOptions(itemColumns, [
+				"description",
+				"grossAmount",
+			])}
+			description=""
+			emptyRowLabel="item"
+			exportOptions={EntryExportOptions}
+			isDraggable
 			isReadonly={isReadonly}
 			rows={rows}
-			title={tabs}
-			onRowsChange={onRowsChange}
+			summaryCells={createBillingSummaryCells(rows)}
+			title={
+				<BillingInvoiceEntryTabsControl
+					activeTab={activeTab}
+					onTabChange={setActiveTab}
+				/>
+			}
+			onAddRows={addRows}
+			onAutoColumnWidth={() => undefined}
+			onClearRows={clearRows}
+			onDuplicateRow={(rowId) =>
+				onRowsChange(
+					duplicateEntryRow(rows, rowId, () => createBlankBillingInvoiceLineEntry().id),
+				)
+			}
+			onFitColumnWidth={() => undefined}
+			onImport={() => undefined}
+			onInsertRow={(rowId, position) =>
+				onRowsChange(
+					insertEntryRow(rows, rowId, position, createBlankBillingInvoiceLineEntry),
+				)
+			}
+			onMoveRow={(fromRowId, toRowId) =>
+				onRowsChange(moveEntryRow(rows, fromRowId, toRowId))
+			}
+			onRemoveRow={(rowId) =>
+				onRowsChange(removeEntryRow(rows, rowId, createBlankBillingInvoiceLineEntry))
+			}
+			onToggleColumnVisibility={() => undefined}
+			onUpdateColumnHeader={() => undefined}
+			onUpdateColumnWidth={() => undefined}
 		/>
 	);
 }
@@ -83,12 +209,12 @@ function BillingInvoiceEntryTabsControl({
 						type="button"
 						role="tab"
 						aria-selected={isActive}
-						className={joinClasses(
+						className={[
 							"h-7 rounded-md px-3 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coralpink/25",
 							isActive
 								? "bg-white text-coralpink shadow-sm ring-1 ring-darknavy/10"
 								: "text-darknavy/55 hover:bg-white/70 hover:text-darknavy",
-						)}
+						].join(" ")}
 						onClick={() => onTabChange(tab.id)}
 					>
 						{tab.label}
@@ -99,109 +225,52 @@ function BillingInvoiceEntryTabsControl({
 	);
 }
 
-function BillingInvoiceItemEntries({
-	isReadonly,
-	onRowsChange,
-	rows,
-	title,
-}: {
-	isReadonly: boolean;
-	rows: BillingInvoiceLineEntry[];
-	title: ReactNode;
-	onRowsChange: (rows: BillingInvoiceLineEntry[]) => void;
-}) {
-	const entryState = useBillingInvoiceItemEntries({
-		isReadonly,
-		onRowsChange,
-		rows,
-	});
+function createColumnOptions<TRow>(
+	columns: ModuleDataEntryColumn<TRow>[],
+	protectedColumnIds: string[] = [],
+): ModuleDataEntryColumnOption[] {
+	return columns.map((column) => ({
+		id: column.id,
+		isHideable: !protectedColumnIds.includes(column.id),
+		isVisible: true,
+		label: column.header,
+		width: column.width,
+		widthMode: column.widthMode,
+	}));
+}
 
-	return (
-		<ModuleDataEntry
-			columns={entryState.columns}
-			columnOptions={entryState.columnOptions}
-			description=""
-			emptyRowLabel="item"
-			exportOptions={BillingInvoiceEntryExportOptions}
-			isDraggable
-			isReadonly={isReadonly}
-			rows={rows}
-			title={title}
-			onAddRows={entryState.handleAddRows}
-			onAutoColumnWidth={() => undefined}
-			onClearRows={entryState.handleClearRows}
-			onDuplicateRow={entryState.handleDuplicateRow}
-			onFitColumnWidth={() => undefined}
-			onImport={() => undefined}
-			onInsertRow={entryState.handleInsertRow}
-			onMoveRow={entryState.handleMoveRow}
-			onRemoveRow={entryState.handleRemoveRow}
-			onToggleColumnVisibility={() => undefined}
-			onUpdateColumnHeader={() => undefined}
-			onUpdateColumnWidth={() => undefined}
-		/>
+function createBillingSummaryCells(rows: BillingInvoiceLineEntry[]) {
+	const totals = calculateBillingInvoiceTotals(rows);
+
+	return {
+		discountAmount: formatBillingInvoiceAmount(totals.discountAmount),
+		grossAmount: formatBillingInvoiceAmount(totals.grossAmount),
+		netAmount: formatBillingInvoiceAmount(totals.netAmount),
+		vatAmount: formatBillingInvoiceAmount(totals.vatAmount),
+		wvatAmount: formatBillingInvoiceAmount(totals.wvatAmount),
+	};
+}
+
+function hasAccountingRows(rows: BillingInvoiceAccountEntry[]) {
+	return rows.some(
+		(row) =>
+			row.accountCode.trim() !== "" ||
+			row.accountTitle.trim() !== "" ||
+			parseMoneyNumberInput(row.debit) > 0 ||
+			parseMoneyNumberInput(row.credit) > 0,
 	);
 }
 
-function BillingInvoiceAccountEntries({
-	isReadonly,
-	onRowsChange,
-	rows,
-	title,
-}: {
-	isReadonly: boolean;
-	rows: BillingInvoiceAccountEntry[];
-	title: ReactNode;
-	onRowsChange: (rows: BillingInvoiceAccountEntry[]) => void;
-}) {
-	const entryState = useBillingInvoiceAccountEntries({
-		isReadonly,
-		onRowsChange,
-		rows,
-	});
-	const isBalanced = entryState.totals.debit === entryState.totals.credit;
+const BillingInvoiceEntryTabs = [
+	{ id: "items", label: "Item Entry" },
+	{ id: "accounts", label: "Accounting Entries" },
+] satisfies Array<{
+	id: BillingInvoiceEntriesTab;
+	label: string;
+}>;
 
-	return (
-		<ModuleDataEntry
-			columns={entryState.columns}
-			columnOptions={entryState.columnOptions}
-			description=""
-			emptyRowLabel="account"
-			exportOptions={BillingInvoiceEntryExportOptions}
-			footerDetails={
-				<span
-					className={joinClasses(
-						"text-sm font-semibold",
-						isBalanced ? "text-emerald-700" : "text-red-600",
-					)}
-				>
-					Difference:{" "}
-					{formatBillingInvoiceAmount(
-						Math.abs(entryState.totals.debit - entryState.totals.credit),
-					)}
-				</span>
-			}
-			isDraggable
-			isReadonly={isReadonly}
-			rows={rows}
-			summaryCells={{
-				credit: formatBillingInvoiceAmount(entryState.totals.credit),
-				debit: formatBillingInvoiceAmount(entryState.totals.debit),
-			}}
-			summaryRowHeader="Totals"
-			title={title}
-			onAddRows={entryState.handleAddRows}
-			onAutoColumnWidth={() => undefined}
-			onClearRows={entryState.handleClearRows}
-			onDuplicateRow={entryState.handleDuplicateRow}
-			onFitColumnWidth={() => undefined}
-			onImport={() => undefined}
-			onInsertRow={entryState.handleInsertRow}
-			onMoveRow={entryState.handleMoveRow}
-			onRemoveRow={entryState.handleRemoveRow}
-			onToggleColumnVisibility={entryState.handleToggleColumnVisibility}
-			onUpdateColumnHeader={() => undefined}
-			onUpdateColumnWidth={() => undefined}
-		/>
-	);
-}
+const EntryExportOptions = [
+	{ id: "csv", label: "CSV", onSelect: () => undefined },
+	{ id: "excel", label: "Excel", onSelect: () => undefined },
+	{ id: "pdf", label: "PDF", onSelect: () => undefined },
+] satisfies ModuleDataEntryExportOption[];

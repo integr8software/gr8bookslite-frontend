@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useDeferredValue, useEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	getCoreRowModel,
 	getPaginationRowModel,
@@ -30,7 +30,7 @@ import type {
 	BillingInvoiceStatus,
 } from "@/app/src/types/modules/sales/billing-invoice/BillingInvoiceTypes";
 import { validateBillingInvoiceForm } from "@/app/src/validations/modules/sales/billing-invoice/BillingInvoiceValidation";
-import { createBillingInvoice, fetchBillingInvoice, updateBillingInvoice } from "@/app/src/services/modules/sales/billing-invoice/BillingInvoiceApi";
+import { createBillingInvoice, fetchBillingInvoice, fetchBillingInvoices, updateBillingInvoice } from "@/app/src/services/modules/sales/billing-invoice/BillingInvoiceApi";
 import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
 
@@ -47,8 +47,21 @@ type BillingInvoiceStoreState = {
 export function useBillingInvoiceStore<TSelected = BillingInvoiceStoreState>(
 	selector?: (state: BillingInvoiceStoreState) => TSelected,
 ) {
+	const queryClient = useQueryClient();
+	const invoicesQuery = useQuery({
+		queryKey: ["billing-invoices"],
+		queryFn: fetchBillingInvoices,
+	});
 	const [invoices, setInvoices] = useState<BillingInvoiceRecord[]>([]);
-	const [lastSyncedAt] = useState(() => Date.now());
+	const [lastSyncedAt, setLastSyncedAt] = useState(() => Date.now());
+
+	useEffect(() => {
+		if (invoicesQuery.data) {
+			setInvoices(invoicesQuery.data);
+			setLastSyncedAt(Date.now());
+		}
+	}, [invoicesQuery.data]);
+
 	const updateInvoiceStatus = useCallback(
 		(invoice: BillingInvoiceRecord, status: BillingInvoiceStatus) => {
 			setInvoices((currentInvoices) =>
@@ -73,12 +86,12 @@ export function useBillingInvoiceStore<TSelected = BillingInvoiceStoreState>(
 	);
 	const state = useMemo<BillingInvoiceStoreState>(
 		() => ({
-			isLoading: false,
-			invoices,
+			isLoading: invoicesQuery.isLoading,
+			invoices: invoicesQuery.data ?? invoices,
 			lastSyncedAt,
 			updateInvoiceStatus,
 		}),
-		[invoices, lastSyncedAt, updateInvoiceStatus],
+		[invoicesQuery.isLoading, invoicesQuery.data, invoices, lastSyncedAt, updateInvoiceStatus],
 	);
 
 	return selector ? selector(state) : (state as TSelected);
@@ -89,6 +102,7 @@ export function useBillingInvoiceActionForm(
 	recordId?: string,
 	onSaved?: (record: BillingInvoiceRecord) => void,
 ) {
+	const queryClient = useQueryClient();
 	const isEditOrView = mode === "edit" || mode === "view";
 
 	const recordQuery = useQuery({
@@ -151,6 +165,7 @@ export function useBillingInvoiceActionForm(
 					? await updateBillingInvoice(recordId, valuesWithDefaultAccount)
 					: await createBillingInvoice(valuesWithDefaultAccount);
 			setLoadedRecord(nextRecord);
+			void queryClient.invalidateQueries({ queryKey: ["billing-invoices"] });
 			toast.success(
 				mode === "edit"
 					? "Billing invoice updated successfully."

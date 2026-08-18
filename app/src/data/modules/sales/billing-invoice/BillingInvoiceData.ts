@@ -16,10 +16,30 @@ export const BillingInvoiceCurrencyOptions = [
 ];
 
 export const BillingInvoicePartyOptions = [
-	{ name: "North Harbor Office Depot", value: "North Harbor Office Depot" },
-	{ name: "Aster Foods Corporation", value: "Aster Foods Corporation" },
-	{ name: "Bluecrest Trading", value: "Bluecrest Trading" },
-	{ name: "Harborview Logistics", value: "Harborview Logistics" },
+	{
+		label: "CUST-001",
+		name: "North Harbor Office Depot",
+		selectedDetails: "CUST-001",
+		value: "North Harbor Office Depot",
+	},
+	{
+		label: "CUST-002",
+		name: "Aster Foods Corporation",
+		selectedDetails: "CUST-002",
+		value: "Aster Foods Corporation",
+	},
+	{
+		label: "CUST-003",
+		name: "Bluecrest Trading",
+		selectedDetails: "CUST-003",
+		value: "Bluecrest Trading",
+	},
+	{
+		label: "CUST-004",
+		name: "Harborview Logistics",
+		selectedDetails: "CUST-004",
+		value: "Harborview Logistics",
+	},
 ];
 
 export const BillingInvoiceTermOptions = [
@@ -82,42 +102,6 @@ export const BillingInvoiceResponsibilityCenterOptions = [
 	{ name: "CC-ADM-001", value: "CC-ADM-001" },
 	{ name: "CC-SLS-001", value: "CC-SLS-001" },
 	{ name: "CC-OPS-001", value: "CC-OPS-001" },
-];
-
-export const MockBillingInvoices: BillingInvoiceRecord[] = [
-	{
-		id: "bi-001",
-		amount: 18450,
-		customerCode: "CUST-001",
-		customerName: "North Harbor Office Depot",
-		documentDate: "2026-07-15",
-		invoiceNo: "BI-2026-0001",
-		referenceNo: "PO-2026-0192",
-		status: "Active",
-		transactionNo: "BI-2026-0001",
-	},
-	{
-		id: "bi-002",
-		amount: 62500,
-		customerCode: "CUST-002",
-		customerName: "Aster Foods Corporation",
-		documentDate: "2026-07-11",
-		invoiceNo: "BI-2026-0002",
-		referenceNo: "JO-2026-0048",
-		status: "Pending",
-		transactionNo: "BI-2026-0002",
-	},
-	{
-		id: "bi-003",
-		amount: 93800,
-		customerCode: "CUST-003",
-		customerName: "Harborview Logistics",
-		documentDate: "2026-07-08",
-		invoiceNo: "BI-2026-0003",
-		referenceNo: "SO-2026-0105",
-		status: "Approved",
-		transactionNo: "BI-2026-0003",
-	},
 ];
 
 export function createBlankBillingInvoiceLineEntry(
@@ -193,7 +177,7 @@ export function createBillingInvoiceFormValues(): BillingInvoiceFormValues {
 		drNo: "",
 		resCenter: "",
 		description: "",
-		defaultAccount: "",
+		defaultAccount: "Accounts Receivable - Trade",
 		teamAssigned: "",
 		startDate: today,
 		expirationDate: today,
@@ -335,8 +319,56 @@ export function calculateBillingInvoiceTotals(
 	);
 }
 
+export function createBillingInvoiceAccountingEntries({
+	defaultAccount,
+	lineEntries,
+}: Pick<
+	BillingInvoiceFormValues,
+	"defaultAccount" | "lineEntries"
+>): BillingInvoiceAccountEntry[] {
+	const totals = calculateBillingInvoiceTotals(lineEntries);
+	const receivableAmount = Math.max(0, totals.grossAmount);
+	const discountAmount = Math.max(0, totals.discountAmount);
+	const vatAmount = Math.max(0, totals.vatAmount);
+	const serviceAmount = Math.max(
+		0,
+		receivableAmount + discountAmount - vatAmount,
+	);
+
+	return [
+		createBlankBillingInvoiceAccountEntry({
+			id: "accounts-receivable",
+			accountCode: "AR-TRADE",
+			accountTitle: defaultAccount || "Accounts Receivable - Trade",
+			debit: receivableAmount.toFixed(2),
+			credit: "0.00",
+		}),
+		createBlankBillingInvoiceAccountEntry({
+			id: "sales-discount",
+			accountCode: "SALES-DISC",
+			accountTitle: "Sales Discount",
+			debit: discountAmount.toFixed(2),
+			credit: "0.00",
+		}),
+		createBlankBillingInvoiceAccountEntry({
+			id: "output-tax",
+			accountCode: "VAT-OUT",
+			accountTitle: "Output Tax",
+			debit: "0.00",
+			credit: vatAmount.toFixed(2),
+		}),
+		createBlankBillingInvoiceAccountEntry({
+			id: "service-fees",
+			accountCode: "SRV-FEE",
+			accountTitle: "Service Fees",
+			debit: "0.00",
+			credit: serviceAmount.toFixed(2),
+		}),
+	];
+}
+
 export function getInitialBillingInvoices() {
-	return readStoredBillingInvoices() ?? MockBillingInvoices;
+	return readStoredBillingInvoices() ?? [];
 }
 
 export function readStoredBillingInvoices() {

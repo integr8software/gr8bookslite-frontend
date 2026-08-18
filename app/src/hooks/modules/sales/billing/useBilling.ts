@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useDeferredValue, useMemo, useState } from "react";
+import { useEffect, useDeferredValue, useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	getCoreRowModel,
 	getPaginationRowModel,
@@ -17,11 +18,18 @@ import {
 	createBillingAccountingEntries,
 	createBillingFormValues,
 	createBillingFormValuesFromRecord,
-	createBillingRecordFromForm,
-	getInitialBillings,
-	writeStoredBillings,
 } from "@/app/src/data/modules/sales/billing/BillingData";
 import { BillingStatusFilters } from "@/app/src/constants/modules/sales/billing/BillingConstants";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+import {
+	createBilling,
+	fetchBilling,
+	fetchBillings,
+	updateBilling,
+	updateBillingStatus,
+	type BillingListData,
+} from "@/app/src/services/modules/sales/billing/BillingApi";
+import { BillingQueryKeys } from "@/app/src/services/modules/sales/billing/BillingQueryKeys";
 import type {
 	BillingActionMode,
 	BillingAccountingEntry,
@@ -30,7 +38,10 @@ import type {
 	BillingRecord,
 	BillingStatus,
 } from "@/app/src/types/modules/sales/billing/BillingTypes";
-import { validateBillingForm } from "@/app/src/validations/modules/sales/billing/BillingValidation";
+import {
+	validateBillingForm,
+	type BillingValidationResult,
+} from "@/app/src/validations/modules/sales/billing/BillingValidation";
 import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
 
@@ -47,40 +58,88 @@ type BillingStoreState = {
 export function useBillingStore<TSelected = BillingStoreState>(
 	selector?: (state: BillingStoreState) => TSelected,
 ) {
-	const [invoices, setInvoices] = useState(getInitialBillings);
-	const [lastSyncedAt] = useState(() => Date.now());
-	const updateInvoiceStatus = useCallback(
-		(invoice: BillingRecord, status: BillingStatus) => {
-			setInvoices((currentInvoices) =>
-				persistBillings(
-					currentInvoices.map((currentInvoice) =>
-						currentInvoice.id === invoice.id
-							? {
-									...currentInvoice,
-									formValues: currentInvoice.formValues
-										? {
-												...currentInvoice.formValues,
-												status,
-											}
-										: currentInvoice.formValues,
-									status,
-								}
-							: currentInvoice,
-					),
+	const queryClient = useQueryClient();
+	const activeBranchId = useAppStore((state) => state.activeBranchId);
+	const activeCompanyId = useAppStore((state) => state.activeCompanyId);
+	const recordsQuery = useQuery({
+		enabled: activeCompanyId !== null && activeBranchId !== null,
+		queryFn: () =>
+			fetchBillings({
+				branchUnitId: activeBranchId,
+				limit: 500,
+				sortBy: "documentDate",
+				sortDirection: "desc",
+			}),
+		queryKey: BillingQueryKeys.records(activeCompanyId, activeBranchId),
+		retry: false,
+	});
+	function refreshRecords() {
+		void queryClient.invalidateQueries({
+			queryKey: BillingQueryKeys.all(activeCompanyId, activeBranchId),
+		});
+	}
+	const statusMutation = useMutation({
+		mutationFn: ({
+			recordId,
+			status,
+		}: {
+			recordId: string;
+			status: BillingStatus;
+		}) => updateBillingStatus({ recordId, status }),
+		onSuccess: (record) => {
+			refreshRecords();
+			void queryClient.invalidateQueries({
+				queryKey: BillingQueryKeys.detail(
+					activeCompanyId,
+					activeBranchId,
+					record.id,
 				),
-			);
-			toast.success(`Billing marked as ${status}.`);
+			});
+			toast.success(`Billing marked as ${record.status}.`);
 		},
-		[],
-	);
+		onError: (error) => {
+			toast.error(
+				error instanceof Error
+					? error.message
+					: "Could not update Billing status. Please try again.",
+			);
+		},
+	});
+	const updateInvoiceStatus = (
+		invoice: BillingRecord,
+		status: BillingStatus,
+	) => {
+		statusMutation.mutate({ recordId: invoice.id, status });
+	};
 	const state = useMemo<BillingStoreState>(
 		() => ({
-			isLoading: false,
-			invoices,
-			lastSyncedAt,
+			isLoading: recordsQuery.isLoading,
+			invoices: recordsQuery.data?.invoices.map((invoice) => ({
+				amount: invoice.grossAmount,
+				customerCode: invoice.customerCode,
+				customerName: invoice.customerName,
+				documentDate: invoice.documentDate,
+				formValues: createBillingFormValuesFromRecord({
+					amount: invoice.grossAmount,
+					customerCode: invoice.customerCode,
+					customerName: invoice.customerName,
+					documentDate: invoice.documentDate,
+					id: invoice.id,
+					invoiceNo: invoice.invoiceNo ?? "",
+					referenceNo: invoice.referenceNo ?? "",
+					status: mapApiStatus(invoice.status),
+					transactionNo: invoice.transactionNo,
+				}),
+				id: invoice.id,
+				invoiceNo: invoice.invoiceNo ?? "",
+				referenceNo: invoice.referenceNo ?? "",
+				status: mapApiStatus(invoice.status),
+				transactionNo: invoice.transactionNo,
+			})) ?? [],
+			lastSyncedAt: recordsQuery.dataUpdatedAt,
 			updateInvoiceStatus,
 		}),
-		[invoices, lastSyncedAt, updateInvoiceStatus],
+		[recordsQuery.data?.invoices, recordsQuery.dataUpdatedAt, recordsQuery.isLoading],
 	);
 
 	return selector ? selector(state) : (state as TSelected);
@@ -91,11 +150,44 @@ export function useBillingActionForm(
 	recordId?: string,
 	onSaved?: (record: BillingRecord) => void,
 ) {
-	const initialRecord =
-		mode === "add"
-			? null
-			: getInitialBillings().find((invoice) => invoice.id === recordId) ??
-				null;
+	const queryClient = useQueryClient();
+	const activeBranchId = useAppStore((state) => state.activeBranchId);
+	const activeCompanyId = useAppStore((state) => state.activeCompanyId);
+	const recordQuery = useQuery({
+		enabled:
+			mode !== "add" &&
+			Boolean(recordId) &&
+			activeCompanyId !== null &&
+			activeBranchId !== null,
+		initialData: () =>
+			queryClient
+				.getQueryData<BillingListData>(
+					BillingQueryKeys.records(activeCompanyId, activeBranchId),
+				)
+				?.invoices.map((invoice) => ({
+					amount: invoice.grossAmount,
+					customerCode: invoice.customerCode,
+					customerName: invoice.customerName,
+					documentDate: invoice.documentDate,
+					id: invoice.id,
+					invoiceNo: invoice.invoiceNo ?? "",
+					referenceNo: invoice.referenceNo ?? "",
+					status: mapApiStatus(invoice.status),
+					transactionNo: invoice.transactionNo,
+				}))
+				.find((invoice) => invoice.id === recordId),
+		queryFn: () =>
+			fetchBilling(recordId ?? "", {
+				branchUnitId: activeBranchId,
+			}),
+		queryKey: BillingQueryKeys.detail(
+			activeCompanyId,
+			activeBranchId,
+			recordId ?? "missing",
+		),
+		retry: false,
+	});
+	const initialRecord = mode === "add" ? null : recordQuery.data ?? null;
 	const [loadedRecord, setLoadedRecord] = useState<BillingRecord | null>(
 		initialRecord,
 	);
@@ -104,15 +196,72 @@ export function useBillingActionForm(
 			? createBillingFormValuesFromRecord(initialRecord)
 			: createBillingFormValues(),
 	);
+	const [errors, setErrors] = useState<BillingValidationResult>({
+		isValid: true,
+	});
+	const saveMutation = useMutation({
+		mutationFn: (nextValues: BillingFormValues) => {
+			if (mode === "edit" && loadedRecord) {
+				return updateBilling(
+					{
+						...loadedRecord,
+						formValues: nextValues,
+					},
+					requireActiveBranchId(activeBranchId),
+				);
+			}
+
+			return createBilling(
+				nextValues,
+				requireActiveBranchId(activeBranchId),
+			);
+		},
+		onSuccess: (record) => {
+			void queryClient.invalidateQueries({
+				queryKey: BillingQueryKeys.all(activeCompanyId, activeBranchId),
+			});
+			void queryClient.invalidateQueries({
+				queryKey: BillingQueryKeys.detail(
+					activeCompanyId,
+					activeBranchId,
+					record.id,
+				),
+			});
+			setLoadedRecord(record);
+			toast.success(
+				mode === "edit" ? "Billing updated." : "Billing saved.",
+			);
+			onSaved?.(record);
+		},
+		onError: (error) => {
+			toast.error(
+				error instanceof Error
+					? error.message
+					: "Could not save Billing. Please try again.",
+			);
+		},
+	});
+
+	useEffect(() => {
+		if (!recordQuery.data) {
+			return;
+		}
+
+		setLoadedRecord(recordQuery.data);
+		setValues(createBillingFormValuesFromRecord(recordQuery.data));
+		setErrors({ isValid: true });
+	}, [recordQuery.data]);
 
 	function updateField<Key extends keyof BillingFormValues>(
 		key: Key,
 		value: BillingFormValues[Key],
 	) {
+		setErrors({ isValid: true });
 		setValues((current) => ({ ...current, [key]: value }));
 	}
 
 	function updateLineEntries(lineEntries: BillingLineEntry[]) {
+		setErrors({ isValid: true });
 		setValues((current) => ({
 			...current,
 			...calculateHeaderAmounts(lineEntries),
@@ -127,6 +276,7 @@ export function useBillingActionForm(
 	function updateAccountingEntries(
 		accountingEntries: BillingAccountingEntry[],
 	) {
+		setErrors({ isValid: true });
 		setValues((current) => ({
 			...current,
 			accountingEntries,
@@ -137,30 +287,26 @@ export function useBillingActionForm(
 		const validation = validateBillingForm(values);
 
 		if (!validation.isValid) {
-			toast.error(validation.message ?? "Review the billing details.");
+			setErrors(validation);
+			toast.error(validation.message ?? "Review the Billing details.");
 			return;
 		}
 
-		const nextRecord = createBillingRecordFromForm(
-			values,
-			mode === "edit" ? loadedRecord ?? undefined : undefined,
-		);
-		const nextInvoices = upsertBillingRecord(nextRecord);
-
-		writeStoredBillings(nextInvoices);
-		setLoadedRecord(nextRecord);
-		toast.success(
-			mode === "edit" ? "Billing updated." : "Billing saved.",
-		);
-		onSaved?.(nextRecord);
+		setErrors({ isValid: true });
+		saveMutation.mutate(values);
 	}
 
 	return {
-		isRecordMissing: mode !== "add" && !initialRecord,
+		isRecordMissing:
+			mode !== "add" &&
+			recordQuery.isFetched &&
+			!recordQuery.isLoading &&
+			!recordQuery.data,
 		submitInvoice,
 		updateAccountingEntries,
 		updateField,
 		updateLineEntries,
+		errors,
 		values,
 	};
 }
@@ -360,29 +506,6 @@ function calculateHeaderAmounts(lineEntries: BillingLineEntry[]) {
 	};
 }
 
-function persistBillings(invoices: BillingRecord[]) {
-	writeStoredBillings(invoices);
-
-	return invoices;
-}
-
-function upsertBillingRecord(record: BillingRecord) {
-	const currentInvoices = getInitialBillings();
-	const existingIndex = currentInvoices.findIndex(
-		(invoice) => invoice.id === record.id,
-	);
-
-	if (existingIndex === -1) {
-		return persistBillings([record, ...currentInvoices]);
-	}
-
-	return persistBillings(
-		currentInvoices.map((invoice) =>
-			invoice.id === record.id ? record : invoice,
-		),
-	);
-}
-
 function isAmountInRange(value: number, range: AmountRangeValue) {
 	const fromAmount = range.from.trim() ? parseMoneyNumberInput(range.from) : 0;
 	const toAmount = range.to.trim()
@@ -408,3 +531,23 @@ function isDateInRange(value: string, range: DateRangeValue) {
 }
 
 export { createBlankBillingLineEntry };
+
+function mapApiStatus(status: string): BillingStatus {
+	const statusMap: Record<string, BillingStatus> = {
+		CANCELLED: "Cancelled",
+		DISAPPROVED: "Disapproved",
+		DRAFT: "Draft",
+		FOR_APPROVAL: "For Approval",
+		POSTED: "Posted",
+	};
+
+	return statusMap[status] ?? "Draft";
+}
+
+function requireActiveBranchId(branchUnitId: number | null) {
+	if (branchUnitId === null) {
+		throw new Error("Select a branch before saving Billings.");
+	}
+
+	return branchUnitId;
+}

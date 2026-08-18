@@ -25,7 +25,7 @@ import type {
   PartyInformationRecord,
   PartyInformationStatus,
   PartyManagementListQuery,
-  PartyManagementListResponse,
+  PartyManagementListPage,
   PartyManagementPermissions,
   PartyManagementStatistics,
   PartyType,
@@ -52,6 +52,16 @@ const EmptyPartyPermissions: PartyManagementPermissions = {
   canExport: false,
   canImport: false,
 };
+
+const AllPartiesFilter = "All";
+const BillingAddressRole = "billing";
+const CustomerPartyType: PartyType = "Customer";
+const DeliveryAddressRole = "delivery";
+const EmployeeApiPartyType = "EMPLOYEE";
+const EmployeePartyType: PartyType = "Employee";
+const HomeAddressRole = "home";
+const IndividualClassification: PartyClassification = "Individual";
+const VendorPartyType: PartyType = "Vendor";
 
 export async function fetchPartyManagementRecords(): Promise<{
   permissions: PartyManagementPermissions;
@@ -86,9 +96,7 @@ export async function createPartyManagementRecord(
   return mapApiParty(response.party);
 }
 
-export async function updatePartyManagementRecord(
-  record: PartyInformationRecord,
-): Promise<PartyInformationRecord> {
+export async function updatePartyManagementRecord(record: PartyInformationRecord): Promise<PartyInformationRecord> {
   const response = await partyMaintenanceControllerUpdateV1(record.id, toApiPartyPayload(record));
 
   return mapApiParty(response.party);
@@ -124,7 +132,7 @@ export async function fetchPartyOptions(partyType: PartyType): Promise<ItemSuppl
 }
 
 export async function fetchCashAdvanceEmployeeOptions(): Promise<CashAdvanceEmployeeOption[]> {
-  const response = await partyMaintenanceControllerFindOptionsV1("EMPLOYEE");
+  const response = await partyMaintenanceControllerFindOptionsV1(EmployeeApiPartyType);
 
   return response.parties.map((party) => ({
     cashAdvanceBalance: party.cashAdvanceBalance ?? party.cashAdvanceLimit ?? "",
@@ -140,23 +148,19 @@ export async function GetPartyManagementRecordsPage({
 }: {
   query: PartyManagementListQuery;
   records: PartyInformationRecord[];
-}): Promise<PartyManagementListResponse> {
+}): Promise<PartyManagementListPage> {
   const normalizedQuery = query.query.trim().toLowerCase();
   const filteredRecords = records.filter((record) => {
     const name = getPartyDisplayName(record).toLowerCase();
     const address = formatPartyAddress(record.address).toLowerCase();
-    const billingAddress = formatPartyAddress(
-      getPartyAddressByRole(record, "billing"),
-    ).toLowerCase();
-    const homeAddress = formatPartyAddress(getPartyAddressByRole(record, "home")).toLowerCase();
-    const deliveryAddress = formatPartyAddress(
-      getPartyAddressByRole(record, "delivery"),
-    ).toLowerCase();
+    const billingAddress = formatPartyAddress(getPartyAddressByRole(record, BillingAddressRole)).toLowerCase();
+    const homeAddress = formatPartyAddress(getPartyAddressByRole(record, HomeAddressRole)).toLowerCase();
+    const deliveryAddress = formatPartyAddress(getPartyAddressByRole(record, DeliveryAddressRole)).toLowerCase();
 
     return (
-      (query.classification === "All" || record.classification === query.classification) &&
-      (query.partyType === "All" || record.partyTypes.includes(query.partyType)) &&
-      (query.status === "All" || record.status === query.status) &&
+      (query.classification === AllPartiesFilter || record.classification === query.classification) &&
+      (query.partyType === AllPartiesFilter || record.partyTypes.includes(query.partyType)) &&
+      (query.status === AllPartiesFilter || record.status === query.status) &&
       (!normalizedQuery ||
         name.includes(normalizedQuery) ||
         record.partyCodeNo.toLowerCase().includes(normalizedQuery) ||
@@ -182,11 +186,8 @@ export async function GetPartyManagementRecordsPage({
 }
 
 function mapApiParty(party: PartyResponseDto): PartyInformationRecord {
-  const addresses = (
-    party.addresses.length > 0 ? party.addresses : party.address ? [party.address] : []
-  ).map(mapApiPartyAddress);
-  const address =
-    addresses.find((current) => current.isDefault) ?? addresses[0] ?? createEmptyApiMappedAddress();
+  const addresses = (party.addresses.length > 0 ? party.addresses : party.address ? [party.address] : []).map(mapApiPartyAddress);
+  const address = addresses.find((current) => current.isDefault) ?? addresses[0] ?? createEmptyApiMappedAddress();
 
   return {
     id: party.id,
@@ -260,10 +261,7 @@ function mapApiPartyAddress(address: PartyAddressResponseDto): PartyAddress {
   };
 }
 
-function toApiPartyPayload(
-  record: PartyInformationRecord,
-  options: { branchUnitId?: number | null } = {},
-): CreatePartyDto {
+function toApiPartyPayload(record: PartyInformationRecord, options: { branchUnitId?: number | null } = {}): CreatePartyDto {
   return {
     branchUnitId: options.branchUnitId ?? undefined,
     partyCodeNo: record.partyCodeNo.trim(),
@@ -271,81 +269,49 @@ function toApiPartyPayload(
     partyEntityType: mapPartyEntityTypeToApi(record.partyEntityType),
     partyTypes: record.partyTypes.map(mapPartyTypeToApi),
     status: mapStatusToApi(record.status),
-    partyName:
-      record.classification === "Non-Individual" ? normalizeOptionalText(record.partyName) : null,
-    tradeName:
-      record.classification === "Non-Individual" ? normalizeOptionalText(record.tradeName) : null,
-    firstName:
-      record.classification === "Individual" ? normalizeOptionalText(record.firstName) : null,
-    middleName:
-      record.classification === "Individual" ? normalizeOptionalText(record.middleName) : null,
-    lastName:
-      record.classification === "Individual" ? normalizeOptionalText(record.lastName) : null,
-    suffixName:
-      record.classification === "Individual" ? normalizeOptionalText(record.suffixName) : null,
+    partyName: record.classification === "Non-Individual" ? normalizeOptionalText(record.partyName) : null,
+    tradeName: record.classification === "Non-Individual" ? normalizeOptionalText(record.tradeName) : null,
+    firstName: record.classification === IndividualClassification ? normalizeOptionalText(record.firstName) : null,
+    middleName: record.classification === IndividualClassification ? normalizeOptionalText(record.middleName) : null,
+    lastName: record.classification === IndividualClassification ? normalizeOptionalText(record.lastName) : null,
+    suffixName: record.classification === IndividualClassification ? normalizeOptionalText(record.suffixName) : null,
     honorific:
-      record.classification === "Individual"
-        ? normalizeOptionalText(normalizePartyHonorific(record.honorific ?? ""))
-        : null,
-    gender: hasPersonalInformationPartyType(record.partyTypes)
-      ? normalizeOptionalText(record.gender)
-      : null,
-    civilStatus: hasPersonalInformationPartyType(record.partyTypes)
-      ? normalizeOptionalText(record.civilStatus)
-      : null,
-    nationality: hasPersonalInformationPartyType(record.partyTypes)
-      ? normalizeOptionalText(record.nationality)
-      : null,
-    memberRegistrationDate: record.partyTypes.includes("Member")
-      ? normalizeOptionalText(record.memberRegistrationDate)
-      : null,
-    addresses: (record.addresses.length > 0 ? record.addresses : [record.address]).map(
-      toApiPartyAddressPayload,
-    ),
-    defaultReceivableAccount: record.partyTypes.includes("Customer")
-      ? normalizeOptionalText(record.defaultReceivableAccount)
-      : null,
-    customerAdvanceAccount: record.partyTypes.includes("Customer")
-      ? normalizeOptionalText(record.customerAdvanceAccount)
-      : null,
-    defaultPayableAccount: record.partyTypes.includes("Vendor")
-      ? normalizeOptionalText(record.defaultPayableAccount)
-      : null,
-    vendorAdvanceAccount: record.partyTypes.includes("Vendor")
-      ? normalizeOptionalText(record.vendorAdvanceAccount)
-      : null,
-    employeeAdvanceAccount: record.partyTypes.includes("Employee")
-      ? normalizeOptionalText(record.employeeAdvanceAccount)
-      : null,
-    employeePayableAccount: record.partyTypes.includes("Employee")
-      ? normalizeOptionalText(record.employeePayableAccount)
-      : null,
+      record.classification === IndividualClassification ? normalizeOptionalText(normalizePartyHonorific(record.honorific ?? "")) : null,
+    gender: hasPersonalInformationPartyType(record.partyTypes) ? normalizeOptionalText(record.gender) : null,
+    civilStatus: hasPersonalInformationPartyType(record.partyTypes) ? normalizeOptionalText(record.civilStatus) : null,
+    nationality: hasPersonalInformationPartyType(record.partyTypes) ? normalizeOptionalText(record.nationality) : null,
+    memberRegistrationDate: record.partyTypes.includes("Member") ? normalizeOptionalText(record.memberRegistrationDate) : null,
+    addresses: (record.addresses.length > 0 ? record.addresses : [record.address]).map(toApiPartyAddressPayload),
+    defaultReceivableAccount: record.partyTypes.includes(CustomerPartyType) ? normalizeOptionalText(record.defaultReceivableAccount) : null,
+    customerAdvanceAccount: record.partyTypes.includes(CustomerPartyType) ? normalizeOptionalText(record.customerAdvanceAccount) : null,
+    defaultPayableAccount: record.partyTypes.includes(VendorPartyType) ? normalizeOptionalText(record.defaultPayableAccount) : null,
+    vendorAdvanceAccount: record.partyTypes.includes(VendorPartyType) ? normalizeOptionalText(record.vendorAdvanceAccount) : null,
+    employeeAdvanceAccount: record.partyTypes.includes(EmployeePartyType) ? normalizeOptionalText(record.employeeAdvanceAccount) : null,
+    employeePayableAccount: record.partyTypes.includes(EmployeePartyType) ? normalizeOptionalText(record.employeePayableAccount) : null,
     cashAdvanceLimit:
-      record.partyTypes.includes("Employee") && record.cashAdvanceLimit
-        ? parseMoneyNumberInput(record.cashAdvanceLimit)
-        : null,
+      record.partyTypes.includes(EmployeePartyType) && record.cashAdvanceLimit ? parseMoneyNumberInput(record.cashAdvanceLimit) : null,
     termId: normalizeOptionalText(record.termId),
     tin: normalizeOptionalText(record.tin),
     atcCode: normalizeOptionalText(record.atcCode),
-    defaultPurchaseInputVatTaxSourceKey: record.partyTypes.includes("Vendor")
+    defaultPurchaseInputVatTaxSourceKey: record.partyTypes.includes(VendorPartyType)
       ? normalizeOptionalText(record.defaultPurchaseInputVatTaxSourceKey)
       : null,
-    defaultPurchaseEwtTaxSourceKey: record.partyTypes.includes("Vendor")
+    defaultPurchaseEwtTaxSourceKey: record.partyTypes.includes(VendorPartyType)
       ? normalizeOptionalText(record.defaultPurchaseEwtTaxSourceKey)
       : null,
-    defaultPurchaseFwtTaxSourceKey: record.partyTypes.includes("Vendor")
+    defaultPurchaseFwtTaxSourceKey: record.partyTypes.includes(VendorPartyType)
       ? normalizeOptionalText(record.defaultPurchaseFwtTaxSourceKey)
       : null,
-    defaultPurchaseWvatTaxSourceKey: record.partyTypes.includes("Vendor")
+    defaultPurchaseWvatTaxSourceKey: record.partyTypes.includes(VendorPartyType)
       ? normalizeOptionalText(record.defaultPurchaseWvatTaxSourceKey)
       : null,
-    defaultSalesOutputVatTaxSourceKey: record.partyTypes.includes("Customer")
+    defaultSalesOutputVatTaxSourceKey: record.partyTypes.includes(CustomerPartyType)
       ? normalizeOptionalText(record.defaultSalesOutputVatTaxSourceKey)
       : null,
-    defaultSalesCwtTaxSourceKey: record.partyTypes.includes("Customer")
+    defaultSalesCwtTaxSourceKey: record.partyTypes.includes(CustomerPartyType)
       ? normalizeOptionalText(record.defaultSalesCwtTaxSourceKey)
       : null,
-    defaultSalesWvatTaxSourceKey: record.partyTypes.includes("Customer")
+    defaultSalesWvatTaxSourceKey: record.partyTypes.includes(CustomerPartyType)
       ? normalizeOptionalText(record.defaultSalesWvatTaxSourceKey)
       : null,
     contactPerson: normalizeOptionalText(record.contactPerson),
@@ -377,10 +343,7 @@ function toApiPartyAddressPayload(address: PartyAddress): CreatePartyAddressDto 
   };
 }
 
-function sortPartyManagementRecords(
-  records: PartyInformationRecord[],
-  query: PartyManagementListQuery,
-) {
+function sortPartyManagementRecords(records: PartyInformationRecord[], query: PartyManagementListQuery) {
   const sort = query.sort;
 
   if (!sort || sort.id === "actions") {
@@ -399,13 +362,10 @@ function sortPartyManagementRecords(
   });
 }
 
-function getSortablePartyManagementValue(
-  record: PartyInformationRecord,
-  sortId: NonNullable<PartyManagementListQuery["sort"]>["id"],
-) {
+function getSortablePartyManagementValue(record: PartyInformationRecord, sortId: NonNullable<PartyManagementListQuery["sort"]>["id"]) {
   switch (sortId) {
     case "billingAddressLabel":
-      return formatPartyAddress(getPartyAddressByRole(record, "billing"));
+      return formatPartyAddress(getPartyAddressByRole(record, BillingAddressRole));
     case "classification":
       return record.classification;
     case "contactPerson":
@@ -419,7 +379,7 @@ function getSortablePartyManagementValue(
     case "email":
       return record.email;
     case "homeAddressLabel":
-      return formatPartyAddress(getPartyAddressByRole(record, "home"));
+      return formatPartyAddress(getPartyAddressByRole(record, HomeAddressRole));
     case "name":
       return getPartyDisplayName(record);
     case "partyTypesLabel":
@@ -429,7 +389,7 @@ function getSortablePartyManagementValue(
     case "partyCodeNo":
       return record.partyCodeNo;
     case "deliveryAddressLabel":
-      return formatPartyAddress(getPartyAddressByRole(record, "delivery"));
+      return formatPartyAddress(getPartyAddressByRole(record, DeliveryAddressRole));
     case "status":
       return record.status;
     case "tin":
@@ -449,39 +409,29 @@ function formatPartyAddress(address?: PartyInformationRecord["address"] | null) 
   }
 
   return (
-    [
-      address.addressLine1,
-      address.addressLine2,
-      address.barangay,
-      address.cityMunicipality,
-      address.province,
-      address.region,
-    ]
+    [address.addressLine1, address.addressLine2, address.barangay, address.cityMunicipality, address.province, address.region]
       .map((part) => part.trim())
       .filter(Boolean)
       .join(", ") || ""
   );
 }
 
-function getPartyAddressByRole(
-  record: PartyInformationRecord,
-  role: "billing" | "delivery" | "home",
-) {
+function getPartyAddressByRole(record: PartyInformationRecord, role: "billing" | "delivery" | "home") {
   const addresses = record.addresses.length > 0 ? record.addresses : [record.address];
 
   return addresses.find((address) => {
-    if (role === "billing") return address.isBilling;
-    if (role === "home") return address.isHome;
+    if (role === BillingAddressRole) return address.isBilling;
+    if (role === HomeAddressRole) return address.isHome;
     return address.isDelivery;
   });
 }
 
 function mapClassificationFromApi(value: PartyResponseDtoClassification): PartyClassification {
-  return value === "INDIVIDUAL" ? "Individual" : "Non-Individual";
+  return value === "INDIVIDUAL" ? IndividualClassification : "Non-Individual";
 }
 
 function mapClassificationToApi(value: PartyClassification): CreatePartyDtoClassification {
-  return value === "Individual" ? "INDIVIDUAL" : "NON_INDIVIDUAL";
+  return value === IndividualClassification ? "INDIVIDUAL" : "NON_INDIVIDUAL";
 }
 
 function mapPartyEntityTypeFromApi(value?: string | null): string {
@@ -494,14 +444,14 @@ function mapPartyEntityTypeToApi(value: string): string | null {
 
 function mapPartyTypeFromApi(value: PartyResponseDtoPartyTypes): PartyType {
   if (value === "CUSTOMER") return "Customer";
-  if (value === "EMPLOYEE") return "Employee";
+  if (value === EmployeeApiPartyType) return EmployeePartyType;
   if (value === "MEMBER") return "Member";
-  return "Vendor";
+  return VendorPartyType;
 }
 
 function mapPartyTypeToApi(value: PartyType): CreatePartyDtoPartyTypes {
-  if (value === "Customer") return "CUSTOMER";
-  if (value === "Employee") return "EMPLOYEE";
+  if (value === CustomerPartyType) return "CUSTOMER";
+  if (value === EmployeePartyType) return EmployeeApiPartyType;
   if (value === "Member") return "MEMBER";
   return "VENDOR";
 }
@@ -525,7 +475,7 @@ function normalizePartyHonorific(value: string) {
 }
 
 function hasPersonalInformationPartyType(partyTypes: PartyType[]) {
-  return partyTypes.includes("Employee") || partyTypes.includes("Member");
+  return partyTypes.includes(EmployeePartyType) || partyTypes.includes("Member");
 }
 
 function createEmptyApiMappedAddress(): PartyAddress {

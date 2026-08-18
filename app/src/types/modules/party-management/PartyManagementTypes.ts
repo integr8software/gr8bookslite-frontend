@@ -1,15 +1,14 @@
 import type { ChangeEventHandler, ReactNode } from "react";
 import type { Row, Table } from "@tanstack/react-table";
-import type {
-  AddressAutocompleteDetails,
-  AddressAutocompleteItem,
-} from "@/app/src/types/shared/address/AddressTypes";
+import type { AddressAutocompleteDetails, AddressAutocompleteItem } from "@/app/src/types/shared/address/AddressTypes";
 import type { ModuleTabItem } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 import type { PartyTaxDefaultOptions } from "@/app/src/types/shared/tax/TaxTypes";
 
 export type PartyClassification = "Individual" | "Non-Individual";
 
 export type PartyInformationStatus = "Active" | "Inactive";
+
+export type PartyManagementAllFilter = "All";
 
 export type PartyType = "Vendor" | "Customer" | "Employee" | "Member";
 
@@ -182,8 +181,7 @@ export type PartyInformationFormErrors = Partial<{
 
 export type PartyInformationActionMode = "add" | "edit" | "view";
 
-export type PartyInformationTabId =
-  "accounting-information" | "basic-information" | "contact-information" | "tax-information";
+export type PartyInformationTabId = "accounting-information" | "basic-information" | "contact-information" | "tax-information";
 
 export type PartyInformationTab = ModuleTabItem<PartyInformationTabId> & {
   content: ReactNode;
@@ -264,20 +262,20 @@ export type PartyInformationTableFiltersProps = {
   exportAllRows: PartyInformationTableRecord[];
   exportFilteredRows: PartyInformationTableRecord[];
   hasActiveFilters: boolean;
-  classificationFilter: PartyClassification | "All";
+  classificationFilter: PartyClassification | PartyManagementAllFilter;
   classificationOptions: readonly PartyClassification[];
-  partyTypeFilter: PartyType | "All";
+  partyTypeFilter: PartyType | PartyManagementAllFilter;
   partyTypeOptions: readonly PartyType[];
   query: string;
-  statusFilter: PartyInformationStatus | "All";
+  statusFilter: PartyInformationStatus | PartyManagementAllFilter;
   statusOptions: readonly PartyInformationStatus[];
   table: Table<PartyInformationTableRecord>;
   isRefreshing: boolean;
-  onClassificationFilterChange: (value: PartyClassification | "All") => void;
-  onPartyTypeFilterChange: (value: PartyType | "All") => void;
+  onClassificationFilterChange: (value: PartyClassification | PartyManagementAllFilter) => void;
+  onPartyTypeFilterChange: (value: PartyType | PartyManagementAllFilter) => void;
   onQueryChange: (value: string) => void;
   onRefresh: () => void;
-  onStatusFilterChange: (value: PartyInformationStatus | "All") => void;
+  onStatusFilterChange: (value: PartyInformationStatus | PartyManagementAllFilter) => void;
 };
 
 export type PartyAddressDropdownOption = {
@@ -316,15 +314,8 @@ export type PartyInformationDetailsFieldsProps = {
   onCopyAddress: (sourceAddressId: string, targetAddressId: string) => void;
   onInputChange: ChangeEventHandler<HTMLInputElement | HTMLSelectElement>;
   onPartyTypesChange: (value: string | string[]) => void;
-  onSelectAutocompleteAddress: (
-    address: AddressAutocompleteItem,
-    details?: AddressAutocompleteDetails,
-    addressId?: string,
-  ) => void;
-  onSyncAutocompleteAddressDetails?: (
-    details: AddressAutocompleteDetails,
-    addressId?: string,
-  ) => void;
+  onSelectAutocompleteAddress: (address: AddressAutocompleteItem, details?: AddressAutocompleteDetails, addressId?: string) => void;
+  onSyncAutocompleteAddressDetails?: (details: AddressAutocompleteDetails, addressId?: string) => void;
   onSelectBarangay: (value: string | string[], addressId?: string) => void;
   onSelectCityMunicipality: (value: string | string[], addressId?: string) => void;
   onSelectProvince: (value: string | string[], addressId?: string) => void;
@@ -340,30 +331,11 @@ export type PartyAddressContainerProps = {
   syncedAddressSources?: Record<string, string>;
   onAddressInputChange: ChangeEventHandler<HTMLInputElement>;
   onCopyAddress: (sourceAddressId: string, targetAddressId: string) => void;
-  onSelectAutocompleteAddress: (
-    address: AddressAutocompleteItem,
-    details?: AddressAutocompleteDetails,
-    addressId?: string,
-  ) => void;
-  onSelectBarangay: (
-    value: string | string[],
-    addressId?: string,
-    option?: PartyAddressDropdownOption,
-  ) => void;
-  onSelectCityMunicipality: (
-    value: string | string[],
-    addressId?: string,
-    option?: PartyAddressDropdownOption,
-  ) => void;
-  onSelectProvince: (
-    value: string | string[],
-    addressId?: string,
-    option?: PartyProvinceOption,
-  ) => void;
-  onSyncAutocompleteAddressDetails?: (
-    details: AddressAutocompleteDetails,
-    addressId?: string,
-  ) => void;
+  onSelectAutocompleteAddress: (address: AddressAutocompleteItem, details?: AddressAutocompleteDetails, addressId?: string) => void;
+  onSelectBarangay: (value: string | string[], addressId?: string, option?: PartyAddressDropdownOption) => void;
+  onSelectCityMunicipality: (value: string | string[], addressId?: string, option?: PartyAddressDropdownOption) => void;
+  onSelectProvince: (value: string | string[], addressId?: string, option?: PartyProvinceOption) => void;
+  onSyncAutocompleteAddressDetails?: (details: AddressAutocompleteDetails, addressId?: string) => void;
 };
 
 export type PartyManagementDrawerProps = {
@@ -398,16 +370,16 @@ export type PartyManagementListSort = {
 };
 
 export type PartyManagementListQuery = {
-  classification: PartyClassification | "All";
+  classification: PartyClassification | PartyManagementAllFilter;
   pageIndex: number;
   pageSize: number;
-  partyType: PartyType | "All";
+  partyType: PartyType | PartyManagementAllFilter;
   query: string;
   sort?: PartyManagementListSort;
-  status: PartyInformationStatus | "All";
+  status: PartyInformationStatus | PartyManagementAllFilter;
 };
 
-export type PartyManagementListResponse = {
+export type PartyManagementListPage = {
   records: PartyInformationRecord[];
   totalRows: number;
 };
@@ -444,105 +416,6 @@ export type PartyManagementStatisticCardsProps = {
   analytics: PartyManagementAnalytics;
 };
 
-export type ApiPartyAddress = {
-  id?: string;
-  addressName: string;
-  addressLine1: string;
-  addressLine2: string;
-  barangay?: string | null;
-  barangayCode?: string | null;
-  cityMunicipality?: string | null;
-  cityMunicipalityCode?: string | null;
-  isBilling: boolean;
-  isBuilding?: boolean;
-  isDefault: boolean;
-  isDelivery: boolean;
-  isForeign?: boolean;
-  isHome?: boolean;
-  province?: string | null;
-  provinceCode?: string | null;
-  region?: string | null;
-  regionCode?: string | null;
-};
-
-export type ApiPartyPayload = {
-  branchUnitId?: number;
-  partyCodeNo: string;
-  classification: ApiPartyClassification;
-  partyEntityType?: ApiPartyEntityType | null;
-  partyTypes: ApiPartyType[];
-  status?: ApiPartyStatus;
-  partyName?: string | null;
-  tradeName?: string | null;
-  firstName?: string | null;
-  middleName?: string | null;
-  lastName?: string | null;
-  suffixName?: string | null;
-  honorific?: string | null;
-  gender?: string | null;
-  civilStatus?: string | null;
-  nationality?: string | null;
-  memberRegistrationDate?: string | null;
-  addresses: ApiPartyAddress[];
-  defaultReceivableAccount?: string | null;
-  customerAdvanceAccount?: string | null;
-  defaultPayableAccount?: string | null;
-  vendorAdvanceAccount?: string | null;
-  employeeAdvanceAccount?: string | null;
-  employeePayableAccount?: string | null;
-  cashAdvanceLimit?: number | null;
-  termId?: string | null;
-  tin?: string | null;
-  atcCode?: string | null;
-  defaultPurchaseInputVatTaxSourceKey?: string | null;
-  defaultPurchaseEwtTaxSourceKey?: string | null;
-  defaultPurchaseFwtTaxSourceKey?: string | null;
-  defaultPurchaseWvatTaxSourceKey?: string | null;
-  defaultSalesOutputVatTaxSourceKey?: string | null;
-  defaultSalesCwtTaxSourceKey?: string | null;
-  defaultSalesWvatTaxSourceKey?: string | null;
-  contactPerson?: string | null;
-  email?: string | null;
-  contactNo?: string | null;
-  landline?: string | null;
-};
-
-export type ApiParty = ApiPartyPayload & {
-  id: string;
-  address?: ApiPartyAddress;
-  accountingAccounts?: {
-    customerAdvanceAccount: PartyAccountingAccountSummary | null;
-    defaultPayableAccount: PartyAccountingAccountSummary | null;
-    defaultReceivableAccount: PartyAccountingAccountSummary | null;
-    employeeAdvanceAccount: PartyAccountingAccountSummary | null;
-    employeePayableAccount: PartyAccountingAccountSummary | null;
-    vendorAdvanceAccount: PartyAccountingAccountSummary | null;
-  };
-  termName?: string | null;
-  createdBy?: string | null;
-  createdAt: string;
-  updatedBy?: string | null;
-  updatedAt: string;
-};
-
-export type ApiPartyOption = {
-  id: string;
-  partyCodeNo: string;
-  classification: ApiPartyClassification;
-  partyTypes: ApiPartyType[];
-  name: string;
-  contactPerson: string;
-  email: string;
-  contactNo: string;
-  status: ApiPartyStatus;
-  cashAdvanceLimit?: string;
-  cashAdvanceBalance?: string;
-};
-
-export type ApiPartyOptionsResponse = {
-  parties: ApiPartyOption[];
-};
-
 export type PartyAccountingAccountSummary = {
   id: string;
   accountCode: string;
@@ -572,30 +445,7 @@ export type PartyAccountingAccountOption = {
 
 export type PartyAccountingAccountIds = Record<PartyAccountingAccountField, string>;
 
-export type PartyAccountingAccountOptions = Record<
-  PartyAccountingAccountField,
-  PartyAccountingAccountOption[]
->;
-
-export type ApiPartyAccountingOptionsResponse = {
-  defaultAccounts: PartyAccountingAccountIds;
-  accountOptions: PartyAccountingAccountOptions;
-};
-
-export type ApiPartyListResponse = {
-  parties: ApiParty[];
-  totalRows: number;
-  statistics: PartyManagementStatistics;
-  permissions: PartyManagementPermissions;
-};
-
-export type ApiPartySaveResponse = {
-  party: ApiParty;
-};
-
-export type ApiPartyImportResponse = {
-  parties: ApiParty[];
-};
+export type PartyAccountingAccountOptions = Record<PartyAccountingAccountField, PartyAccountingAccountOption[]>;
 
 export type PartyImportColumnId =
   | "partyCodeNo"

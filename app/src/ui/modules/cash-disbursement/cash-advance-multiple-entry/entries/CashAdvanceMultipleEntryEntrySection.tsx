@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import {
   CashAdvanceMultipleEntryDefaultAccountingColumnIds,
   CashAdvanceMultipleEntryDefaultItemColumnIds,
@@ -20,7 +19,7 @@ import type {
   CashAdvanceMultipleEntryTab,
 } from "@/app/src/types/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryTypes";
 import type { CashAdvanceEmployeeOption } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
-import { fetchCashAdvanceEmployeeOptions } from "@/app/src/services/modules/party-management/PartyManagementApi";
+import { useCashAdvanceEmployeeOptions } from "@/app/src/hooks/modules/party-management/useCashAdvanceEmployeeOptions";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import {
@@ -70,11 +69,8 @@ export function CashAdvanceMultipleEntryEntrySection({
   onRowsChange: (rows: CashAdvanceMultipleEntryItem[]) => void;
 }) {
   const [activeTab, setActiveTab] = useState<CashAdvanceMultipleEntryTab>("items");
-  const employeeOptionsQuery = useQuery({
-    queryKey: ["party-management", "options", "employee", "cash-advance-multiple-entry"],
-    queryFn: fetchCashAdvanceEmployeeOptions,
-    retry: false,
-  });
+  const { employeeOptions, isEmployeeOptionsEmpty, isEmployeeOptionsError, isEmployeeOptionsLoading } =
+    useCashAdvanceEmployeeOptions("cash-advance-multiple-entry");
   const [visibleItemColumnIds, setVisibleItemColumnIds] = useState<string[]>(CashAdvanceMultipleEntryDefaultItemColumnIds);
   const [itemColumnWidths, setItemColumnWidths] = useState<Record<string, number>>({});
   const [visibleAccountingColumnIds, setVisibleAccountingColumnIds] = useState<string[]>(
@@ -90,9 +86,9 @@ export function CashAdvanceMultipleEntryEntrySection({
         (rowId, updates) => onRowsChange(replaceCashAdvanceMultipleEntryRow(rows, rowId, updates)),
         onOpenItemPartyDrawer,
         onOpenItemResponsibilityCenterDrawer,
-        employeeOptionsQuery.data ?? [],
+        employeeOptions,
       ),
-    [employeeOptionsQuery.data, isReadonly, onOpenItemPartyDrawer, onOpenItemResponsibilityCenterDrawer, onRowsChange, rows],
+    [employeeOptions, isReadonly, onOpenItemPartyDrawer, onOpenItemResponsibilityCenterDrawer, onRowsChange, rows],
   );
   const accountingColumns = useMemo<ModuleDataEntryColumn<CashAdvanceMultipleEntryAccountingEntry>[]>(
     () =>
@@ -102,7 +98,7 @@ export function CashAdvanceMultipleEntryEntrySection({
         onOpenAccountingPartyDrawer,
         onOpenAccountingResponsibilityCenterDrawer,
         responsibilityCenterOptions,
-        employeeOptionsQuery.data ?? [],
+        employeeOptions,
       ),
     [
       accountingRows,
@@ -111,7 +107,7 @@ export function CashAdvanceMultipleEntryEntrySection({
       onOpenAccountingPartyDrawer,
       onOpenAccountingResponsibilityCenterDrawer,
       responsibilityCenterOptions,
-      employeeOptionsQuery.data,
+      employeeOptions,
     ],
   );
   const visibleItemColumns = useMemo(
@@ -123,6 +119,13 @@ export function CashAdvanceMultipleEntryEntrySection({
       createVisibleColumns(accountingColumns, visibleAccountingColumnIds).map((column) => applyColumnWidth(column, accountingColumnWidths)),
     [accountingColumnWidths, accountingColumns, visibleAccountingColumnIds],
   );
+  const employeeOptionsState = isEmployeeOptionsLoading
+    ? "Loading employee lookup options…"
+    : isEmployeeOptionsError
+      ? "Employee lookup options could not be loaded."
+      : isEmployeeOptionsEmpty
+        ? "No employee lookup options are available."
+        : "";
 
   if (activeTab === "accounting") {
     return (
@@ -133,7 +136,7 @@ export function CashAdvanceMultipleEntryEntrySection({
           visibleAccountingColumnIds,
           CashAdvanceMultipleEntryDefaultAccountingColumnIds,
         )}
-        description=""
+        description={employeeOptionsState}
         emptyRowLabel="accounting entry"
         footerDetails={
           <span className="text-sm font-semibold text-darknavy">Total Amount: {formatCashAdvanceMultipleEntryAmount(totalAmount)}</span>
@@ -178,7 +181,7 @@ export function CashAdvanceMultipleEntryEntrySection({
     <ModuleDataEntry
       columns={visibleItemColumns}
       columnOptions={createColumnOptions(itemColumns, visibleItemColumnIds, CashAdvanceMultipleEntryDefaultItemColumnIds)}
-      description=""
+      description={employeeOptionsState}
       emptyRowLabel="item"
       footerDetails={
         <span className="text-sm font-semibold text-darknavy">Total Amount: {formatCashAdvanceMultipleEntryAmount(totalAmount)}</span>

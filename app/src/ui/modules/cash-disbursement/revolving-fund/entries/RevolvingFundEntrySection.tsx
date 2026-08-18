@@ -28,6 +28,8 @@ import {
 import { ModuleDataEntry, type ModuleDataEntryColumnOption } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { clampColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/utils";
 
+const AccountingEntryTab: RevolvingFundEntryTab = "accounting";
+
 export function RevolvingFundEntrySection({ page }: { page: RevolvingFundActionPageState }) {
   const [activeTab, setActiveTab] = useState<RevolvingFundEntryTab>("items");
   const [itemColumnOrder, setItemColumnOrder] = useState<RevolvingFundItemColumnId[]>([...RevolvingFundDefaultItemColumnIds]);
@@ -105,7 +107,7 @@ export function RevolvingFundEntrySection({ page }: { page: RevolvingFundActionP
   const title = <RevolvingFundEntryTabs activeTab={activeTab} onTabChange={setActiveTab} />;
 
   function moveColumn(fromColumnId: string, toColumnId: string) {
-    if (activeTab === "accounting") {
+    if (activeTab === AccountingEntryTab) {
       if (!isAccountingColumnId(fromColumnId) || !isAccountingColumnId(toColumnId)) return;
       setAccountingColumnOrder((order) => moveColumnId(order, fromColumnId, toColumnId));
       return;
@@ -116,7 +118,7 @@ export function RevolvingFundEntrySection({ page }: { page: RevolvingFundActionP
   }
 
   function toggleColumnVisibility(columnId: string, isVisible: boolean) {
-    if (activeTab === "accounting") {
+    if (activeTab === AccountingEntryTab) {
       if (!isAccountingColumnId(columnId) || (!isVisible && RevolvingFundProtectedAccountingColumnIds.has(columnId))) return;
       setVisibleAccountingColumnIds((ids) => updateVisibleColumnIds(ids, accountingColumnOrder, columnId, isVisible));
       return;
@@ -127,7 +129,7 @@ export function RevolvingFundEntrySection({ page }: { page: RevolvingFundActionP
   }
 
   function updateColumnHeader(columnId: string, header: string) {
-    if (activeTab === "accounting" && isAccountingColumnId(columnId)) {
+    if (activeTab === AccountingEntryTab && isAccountingColumnId(columnId)) {
       setAccountingColumnLabels((labels) => ({ ...labels, [columnId]: header }));
     } else if (activeTab === "items" && isItemColumnId(columnId)) {
       setItemColumnLabels((labels) => ({ ...labels, [columnId]: header }));
@@ -136,7 +138,7 @@ export function RevolvingFundEntrySection({ page }: { page: RevolvingFundActionP
 
   function updateColumnWidth(columnId: string, width: number) {
     const nextWidth = clampColumnWidth(width);
-    if (activeTab === "accounting" && isAccountingColumnId(columnId)) {
+    if (activeTab === AccountingEntryTab && isAccountingColumnId(columnId)) {
       setAccountingColumnWidths((widths) => ({ ...widths, [columnId]: nextWidth }));
     } else if (activeTab === "items" && isItemColumnId(columnId)) {
       setItemColumnWidths((widths) => ({ ...widths, [columnId]: nextWidth }));
@@ -144,7 +146,7 @@ export function RevolvingFundEntrySection({ page }: { page: RevolvingFundActionP
   }
 
   function fitColumnWidth(columnId: string) {
-    if (activeTab === "accounting" && isAccountingColumnId(columnId)) {
+    if (activeTab === AccountingEntryTab && isAccountingColumnId(columnId)) {
       updateColumnWidth(columnId, calculateFitWidth(accountingColumnLabels[columnId], accountingRows, columnId));
     } else if (activeTab === "items" && isItemColumnId(columnId)) {
       updateColumnWidth(columnId, calculateFitWidth(itemColumnLabels[columnId], page.values.items, columnId));
@@ -152,7 +154,7 @@ export function RevolvingFundEntrySection({ page }: { page: RevolvingFundActionP
   }
 
   function resetColumns() {
-    if (activeTab === "accounting") {
+    if (activeTab === AccountingEntryTab) {
       setAccountingColumnOrder([...RevolvingFundDefaultAccountingColumnIds]);
       setVisibleAccountingColumnIds([...RevolvingFundDefaultAccountingColumnIds]);
       setAccountingColumnWidths({ ...RevolvingFundAccountingColumnWidths });
@@ -166,7 +168,7 @@ export function RevolvingFundEntrySection({ page }: { page: RevolvingFundActionP
     setItemColumnLabels({ ...RevolvingFundItemColumnLabels });
   }
 
-  if (activeTab === "accounting") {
+  if (activeTab === AccountingEntryTab) {
     return (
       <ModuleDataEntry
         title={title}

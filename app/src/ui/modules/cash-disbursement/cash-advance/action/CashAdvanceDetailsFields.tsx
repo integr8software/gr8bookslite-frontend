@@ -2,7 +2,6 @@
 
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import {
   DisbursementVoucherPartyOptions,
   DisbursementVoucherProjectOptions,
@@ -19,6 +18,7 @@ import { ResponsibilityCenterInitialFormValues } from "@/app/src/data/modules/fi
 import { useCashAdvanceActionForm } from "@/app/src/hooks/modules/cash-disbursement/cash-advance/useCashAdvance";
 import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenter";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
+import { useCashAdvanceEmployeeOptions } from "@/app/src/hooks/modules/party-management/useCashAdvanceEmployeeOptions";
 import type {
   CashAdvanceActionMode,
   CashAdvanceDetailsSection,
@@ -27,7 +27,6 @@ import type {
   CashAdvancePartyDropdownOption,
 } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 import type { PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";
-import { fetchCashAdvanceEmployeeOptions } from "@/app/src/services/modules/party-management/PartyManagementApi";
 import type {
   ResponsibilityCenter,
   ResponsibilityCenterClassification,
@@ -66,11 +65,7 @@ export function CashAdvanceDetailsForm({ form, mode }: { form: CashAdvanceFormCo
   const [isProjectDrawerOpen, setIsProjectDrawerOpen] = useState(false);
   const responsibilityCenterStore = useResponsibilityCenterStore();
   const partyStore = usePartyManagementStore();
-  const employeeOptionsQuery = useQuery({
-    queryKey: ["party-management", "options", "employee", "cash-advance"],
-    queryFn: fetchCashAdvanceEmployeeOptions,
-    retry: false,
-  });
+  const { employeeOptions, isEmployeeOptionsError } = useCashAdvanceEmployeeOptions("cash-advance");
   const accountOptions = useMemo(() => createCashAdvanceSelectDropdownOptions(CashAdvanceAccountOptions), []);
   const costCenterOptions = useMemo(
     () =>
@@ -87,11 +82,11 @@ export function CashAdvanceDetailsForm({ form, mode }: { form: CashAdvanceFormCo
   const partyOptions = useMemo(
     () =>
       createCashAdvancePartyOptions({
-        employeeOptions: employeeOptionsQuery.data ?? [],
+        employeeOptions,
         currentPartyCode: form.values.partyCode,
         currentPartyName: form.values.partyName,
       }),
-    [employeeOptionsQuery.data, form.values.partyCode, form.values.partyName],
+    [employeeOptions, form.values.partyCode, form.values.partyName],
   );
   const projectOptions = useMemo(
     () =>
@@ -112,6 +107,12 @@ export function CashAdvanceDetailsForm({ form, mode }: { form: CashAdvanceFormCo
     <>
       <section className="grid min-w-0 gap-5 overflow-visible">
         <ModuleTabs activeTab={activeTab} ariaLabel="Cash advance sections" tabs={CashAdvanceTabs} onTabChange={setActiveTab} />
+
+        {isEmployeeOptionsError ? (
+          <p role="alert" className="rounded-lg border border-coralpink/30 bg-coralpink/5 px-4 py-3 text-sm text-darknavy">
+            Employee lookup options could not be loaded. You can retry by refreshing the page.
+          </p>
+        ) : null}
 
         {activeTab === "advance" ? (
           <>

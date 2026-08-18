@@ -161,14 +161,14 @@ export function BillingStatementCustomerFields({ errors, isReadonly, onUpdateFie
         />
         <PurchaseRequestTextField
           id="billing-statement-so-no"
-          label="SO No."
+          label="SQ No."
           readOnly={isReadonly}
           value={values.sqNo}
           onChange={(value) => onUpdateField("sqNo", value)}
         />
         <PurchaseRequestTextField
           id="billing-statement-po-no"
-          label="PO No."
+          label="Customer PO Number"
           readOnly={isReadonly}
           value={values.poNo}
           onChange={(value) => onUpdateField("poNo", value)}

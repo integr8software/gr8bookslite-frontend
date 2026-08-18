@@ -26,22 +26,32 @@ export function FieldNumberControl({
 
 export function TextControl({
   label,
+  multiline = false,
   onChange,
   value,
 }: {
   label: string;
+  multiline?: boolean;
   onChange: (value: string) => void;
   value: string;
 }) {
   return (
     <label className="space-y-1">
       <span className="text-xs font-semibold uppercase text-slate-500">{label}</span>
-      <input
-        className={InspectorNumberInputClassName}
-        onChange={(event) => onChange(event.target.value)}
-        type="text"
-        value={value}
-      />
+      {multiline ? (
+        <textarea
+          className={`${InspectorNumberInputClassName} min-h-20 resize-y py-2`}
+          onChange={(event) => onChange(event.target.value)}
+          value={value}
+        />
+      ) : (
+        <input
+          className={InspectorNumberInputClassName}
+          onChange={(event) => onChange(event.target.value)}
+          type="text"
+          value={value}
+        />
+      )}
     </label>
   );
 }

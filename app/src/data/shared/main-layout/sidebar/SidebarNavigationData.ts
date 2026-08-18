@@ -47,14 +47,7 @@ export const MainWorkspaceNavigationSections: MainNavigationSection[] = [
     "workspace.billing.promotions",
     "workspace-vouchers-and-coupons",
   ),
-  directSection(
-    "workspace-audit-logs-section",
-    "Audit Logs",
-    "/workspace/audit-logs",
-    "security",
-    "workspace.audit",
-    "workspace-audit",
-  ),
+  directSection("workspace-audit-logs-section", "Audit Logs", "/workspace/audit-logs", "security", "workspace.audit", "workspace-audit"),
   directSection(
     "workspace-system-settings-section",
     "System Settings",
@@ -66,14 +59,7 @@ export const MainWorkspaceNavigationSections: MainNavigationSection[] = [
 ];
 
 export const MainMasterNavigationSections: MainNavigationSection[] = [
-  directSection(
-    "master-dashboard-section",
-    "Dashboard",
-    "/master/dashboard",
-    "dashboard",
-    "workspace.dashboard",
-    "master-dashboard",
-  ),
+  directSection("master-dashboard-section", "Dashboard", "/master/dashboard", "dashboard", "workspace.dashboard", "master-dashboard"),
   directSection(
     "master-announcement-section",
     "Announcement",
@@ -99,6 +85,14 @@ export const MainMasterNavigationSections: MainNavigationSection[] = [
     "master-plan-and-packages",
   ),
   directSection(
+    "master-add-ons-section",
+    "Add-Ons",
+    "/master/add-ons",
+    "billing",
+    "workspace.billing.plans",
+    "master-add-ons",
+  ),
+  directSection(
     "master-module-systems-section",
     "System Maintenance",
     "/master/module-systems",
@@ -114,14 +108,7 @@ export const MainMasterNavigationSections: MainNavigationSection[] = [
     "workspace.billing.subscriptions",
     "master-subscriptions",
   ),
-  directSection(
-    "master-invoices-section",
-    "Invoices",
-    "/master/invoices",
-    "invoice",
-    "workspace.billing.invoices",
-    "master-invoices",
-  ),
+  directSection("master-invoices-section", "Invoices", "/master/invoices", "invoice", "workspace.billing.invoices", "master-invoices"),
   directSection(
     "master-promotions-section",
     "Promotions",
@@ -165,33 +152,13 @@ export const MainMasterNavigationSections: MainNavigationSection[] = [
 ];
 
 export const MainAccountNavigationSections: MainNavigationSection[] = [
-  directSection(
-    "account-profile-section",
-    "Profile",
-    "/account/profile",
-    "profile",
-    "profile",
-    "account-profile",
-  ),
-  directSection(
-    "account-settings-section",
-    "Settings",
-    "/account/settings",
-    "settings",
-    "profile",
-    "account-settings",
-  ),
+  directSection("account-profile-section", "Profile", "/account/profile", "profile", "profile", "account-profile"),
+  directSection("account-settings-section", "Settings", "/account/settings", "settings", "profile", "account-settings"),
 ];
 
-export const MainWorkspaceSearchItems = flattenSections(
-  MainWorkspaceNavigationSections,
-);
-export const MainAccountSearchItems = flattenSections(
-  MainAccountNavigationSections,
-);
-export const MainMasterSearchItems = flattenSections(
-  MainMasterNavigationSections,
-);
+export const MainWorkspaceSearchItems = flattenSections(MainWorkspaceNavigationSections);
+export const MainAccountSearchItems = flattenSections(MainAccountNavigationSections);
+export const MainMasterSearchItems = flattenSections(MainMasterNavigationSections);
 
 function directSection(
   key: string,

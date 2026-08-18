@@ -320,6 +320,7 @@ export const PartyInformationExportColumns: ModuleTableExportColumn<PartyInforma
   { header: "Default Vendor Advance Account", value: "vendorAdvanceAccount" },
   { header: "Default Employee Advance Account", value: "employeeAdvanceAccount" },
   { header: "Default Employee Payable Account", value: "employeePayableAccount" },
+  { header: "Cash Advance Limit", value: "cashAdvanceLimit" },
 ];
 
 export const PartyManagementFieldClassName =
@@ -379,6 +380,7 @@ export const PartyImportTemplateHeaders = [
   "Default Vendor Advance Account Title",
   "Default Employee Advance Account Title",
   "Default Employee Payable Account Title",
+  "Cash Advance Limit",
 ];
 
 export const PartyImportAcceptedFileExtensions = ".xlsx,.csv,.tsv,.txt";
@@ -429,6 +431,7 @@ export const PartyImportDefaultColumnIndexes: Partial<Record<PartyImportColumnId
   vendorAdvanceAccount: 40,
   employeeAdvanceAccount: 41,
   employeePayableAccount: 42,
+  cashAdvanceLimit: 43,
 };
 
 export const PartyImportFieldOrder: PartyImportColumnId[] = [
@@ -475,6 +478,7 @@ export const PartyImportFieldOrder: PartyImportColumnId[] = [
   "vendorAdvanceAccount",
   "employeeAdvanceAccount",
   "employeePayableAccount",
+  "cashAdvanceLimit",
 ];
 
 export const PartyImportSelectionColumnWidth = ModuleImportFixedColumnsWidth;
@@ -528,6 +532,7 @@ export const PartyImportDefaultColumnWidths: PartyImportColumnWidths = {
   vendorAdvanceAccount: 280,
   employeeAdvanceAccount: 280,
   employeePayableAccount: 280,
+  cashAdvanceLimit: 180,
 };
 
 export const PartyImportColumnHeaders: PartyImportColumnHeader[] = PartyImportFieldOrder.map((id, index) => ({

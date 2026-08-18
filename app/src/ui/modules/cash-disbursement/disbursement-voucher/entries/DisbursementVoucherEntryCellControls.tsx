@@ -1,15 +1,11 @@
 import { useState } from "react";
-import { MoreHorizontal } from "lucide-react";
 import { getDisbursementEntryExportCell } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingEntryData";
 import type { DisbursementEntryColumnId } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryTypes";
 import type { DisbursementLineEntry } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
-import { ModuleTextareaDialog } from "@/app/src/ui/shared/module/ModuleTextareaDialog";
 import { clampColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/utils";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import { MoneyNumberField, formatMoneyNumberInput, parseMoneyNumberInput } from "@/app/src/ui/shared/money/MoneyNumberField";
-
-export const AccountingDropdownClassName =
-  "[&_.app-advanced-dropdown-control]:h-10 [&_.app-advanced-dropdown-control]:rounded-none [&_.app-advanced-dropdown-control]:border-0 [&_.app-advanced-dropdown-control]:bg-transparent [&_.app-advanced-dropdown-control]:px-3 [&_.app-advanced-dropdown-control]:shadow-none [&_.app-advanced-dropdown-control]:focus:ring-2 [&_.app-advanced-dropdown-control]:focus:ring-inset [&_.app-advanced-dropdown-control]:focus:ring-skyblue/35";
+import { formatAmount } from "@/app/src/utils/currency.util";
 
 export function EntryInput({
   disabled = false,
@@ -37,63 +33,9 @@ export function EntryInput({
 export function ExpenseDetailValue({ suffix = "", value }: { suffix?: string; value: number }) {
   return (
     <div className="flex h-10 w-full items-center justify-end bg-offwhite/45 px-3 text-sm font-medium tabular-nums text-darknavy/70">
-      {value.toLocaleString("en-US", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })}
+      {formatAmount(value)}
       {suffix}
     </div>
-  );
-}
-
-export function ParticularsCell({
-  entry,
-  isReadonly,
-  onOpen,
-  onUpdate,
-}: {
-  entry: DisbursementLineEntry;
-  isReadonly: boolean;
-  onOpen: () => void;
-  onUpdate: (value: string) => void;
-}) {
-  return (
-    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_2.5rem]">
-      <EntryInput value={entry.particulars} onChange={onUpdate} readOnly={isReadonly} />
-      <button
-        type="button"
-        onClick={onOpen}
-        className="inline-flex h-10 items-center justify-center border-l border-darknavy/10 bg-white text-darknavy/65 transition hover:bg-skyblue/10 hover:text-darknavy focus:outline-none focus:ring-2 focus:ring-inset focus:ring-skyblue/35"
-        aria-label="Open remarks"
-      >
-        <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
-      </button>
-    </div>
-  );
-}
-
-export function ParticularsEditorDialog({
-  entry,
-  isReadonly,
-  onClose,
-  onSave,
-}: {
-  entry: DisbursementLineEntry | null;
-  isReadonly: boolean;
-  onClose: () => void;
-  onSave: (value: string) => void;
-}) {
-  return (
-    <ModuleTextareaDialog
-      isOpen={Boolean(entry)}
-      isReadonly={isReadonly}
-      title="Remarks"
-      subtitle={entry?.accountName || "Accounting entry"}
-      textareaId="disbursement-entry-remarks-dialog-text"
-      value={entry?.particulars ?? ""}
-      onClose={onClose}
-      onSave={onSave}
-    />
   );
 }
 
@@ -164,11 +106,4 @@ export function accountingCellControlClassName(extraClassName?: string) {
     "h-10 w-full rounded-none border-0 bg-transparent px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:bg-skyblue/10 focus:ring-2 focus:ring-inset focus:ring-skyblue/35 disabled:cursor-not-allowed disabled:bg-offwhite/45 disabled:text-darknavy/35",
     extraClassName,
   );
-}
-
-export function formatAccountingAmount(amount: number) {
-  return amount.toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
 }

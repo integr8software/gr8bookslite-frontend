@@ -1,8 +1,10 @@
 import type {
   FlattenedResponsibilityCenterTreeNode,
   ResponsibilityCenter,
+  ResponsibilityCenterClassification,
   ResponsibilityCenterFormValues,
   ResponsibilityCenterTreeNode,
+  ResponsibilityCenterTypeOption,
 } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
 import { cleanOptional } from "@/app/src/utils/string.util";
 
@@ -18,6 +20,28 @@ export const ResponsibilityCenterInitialFormValues: ResponsibilityCenterFormValu
   status: "Active",
   description: "",
 };
+
+export function createProjectResponsibilityCenterInitialValues(
+  classifications: ResponsibilityCenterClassification[],
+  types: ResponsibilityCenterTypeOption[],
+): ResponsibilityCenterFormValues {
+  const projectType = types.find((type) => type.name === "Project");
+  const projectClassification = classifications.find(
+    (classification) => classification.id === projectType?.classificationId,
+  );
+  const costCenterClassification = classifications.find(
+    (classification) => classification.name === "Cost Center",
+  );
+  const classification = projectClassification ?? costCenterClassification;
+
+  return {
+    ...ResponsibilityCenterInitialFormValues,
+    category: "Project",
+    classificationId: classification?.id ?? "",
+    financialType: classification?.name ?? "Cost Center",
+    typeId: projectType?.id ?? "",
+  };
+}
 
 export function buildResponsibilityCenterTree(centers: ResponsibilityCenter[]): ResponsibilityCenterTreeNode[] {
   const nodeById = new Map<string, ResponsibilityCenterTreeNode>();

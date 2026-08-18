@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   getCoreRowModel,
   getPaginationRowModel,
@@ -19,9 +19,11 @@ import {
   getInitialCashAdvances,
   writeStoredCashAdvances,
 } from "@/app/src/data/modules/cash-disbursement/cash-advance/CashAdvanceData";
+import { formatMoneyNumberDisplayValue, parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import { syncTaxDetailsAmount } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import {
   CashAdvanceDefaultColumnVisibility,
+  CashAdvanceAllStatusFilter,
   CashAdvanceStatusFilters,
   CashAdvanceStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
@@ -31,22 +33,21 @@ import type {
   CashAdvanceRecord,
   CashAdvanceReferenceField,
   CashAdvanceStatus,
+  CashAdvanceStoreState,
 } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
-import { validateCashAdvanceForm } from "@/app/src/validations/modules/cash-disbursement/cash-advance/CashAdvanceValidation";
+import {
+  validateCashAdvanceAmountWithinBalance,
+  validateCashAdvanceForm,
+} from "@/app/src/validations/modules/cash-disbursement/cash-advance/CashAdvanceValidation";
 import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
 import type { AppTaxRateDialogValue } from "@/app/src/ui/shared/transaction-setup/AppTaxRateDialog";
+import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
+import { normalizeLowercaseWhitespace } from "@/app/src/utils/string.util";
+import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
+import { CashDisbursementOverviewActionColumnWidth } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 
-type CashAdvanceStoreState = {
-  advances: CashAdvanceRecord[];
-  isLoading: boolean;
-  lastSyncedAt: number;
-  updateAdvanceStatus: (record: CashAdvanceRecord, status: CashAdvanceStatus) => void;
-};
-
-export function useCashAdvanceStore<TSelected = CashAdvanceStoreState>(
-  selector?: (state: CashAdvanceStoreState) => TSelected,
-) {
+export function useCashAdvanceStore<TSelected = CashAdvanceStoreState>(selector?: (state: CashAdvanceStoreState) => TSelected) {
   const [advances, setAdvances] = useState(getInitialCashAdvances);
   const [lastSyncedAt, setLastSyncedAt] = useState(() => Date.now());
   const updateAdvanceStatus = useCallback((record: CashAdvanceRecord, status: CashAdvanceStatus) => {
@@ -56,9 +57,7 @@ export function useCashAdvanceStore<TSelected = CashAdvanceStoreState>(
         currentRecord.id === record.id
           ? {
               ...currentRecord,
-              formValues: currentRecord.formValues
-                ? { ...currentRecord.formValues, status }
-                : currentRecord.formValues,
+              formValues: currentRecord.formValues ? { ...currentRecord.formValues, status } : currentRecord.formValues,
               status,
               updatedAt,
               updatedBy: "Current User",
@@ -86,50 +85,63 @@ export function useCashAdvanceStore<TSelected = CashAdvanceStoreState>(
   return selector ? selector(state) : (state as TSelected);
 }
 
-export function useCashAdvanceActionForm(
-  mode: CashAdvanceActionMode,
-  recordId?: string,
-  onSaved?: (record: CashAdvanceRecord) => void,
-) {
-  const initialRecord =
-    mode === "add"
-      ? null
-      : getInitialCashAdvances().find((advance) => advance.id === recordId) ?? null;
-  const [loadedRecord, setLoadedRecord] = useState<CashAdvanceRecord | null>(
-    initialRecord,
-  );
+export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?: string, onSaved?: (record: CashAdvanceRecord) => void) {
+  const transactionCurrency = useTransactionCurrency();
+  const initialRecord = mode === "add" ? null : (getInitialCashAdvances().find((advance) => advance.id === recordId) ?? null);
+  const [loadedRecord, setLoadedRecord] = useState<CashAdvanceRecord | null>(initialRecord);
   const [values, setValues] = useState<CashAdvanceFormValues>(() =>
     initialRecord
       ? createCashAdvanceFormValuesFromRecord(initialRecord)
-      : createCashAdvanceFormValues(),
+      : createCashAdvanceFormValues(transactionCurrency.baseCurrencyCode),
   );
-  const [visibleReferenceFields, setVisibleReferenceFields] = useState({
-    accountCode: false,
-    costCenterCode: false,
-    partyCode: false,
-    projectCode: false,
-  });
+  const hasEditedCurrencyRef = useRef(false);
 
-  function updateField<Key extends keyof CashAdvanceFormValues>(
-    key: Key,
-    value: CashAdvanceFormValues[Key],
-  ) {
+  useEffect(() => {
+    if (mode !== "add" || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) {
+      return;
+    }
+
+    setValues((current) => ({
+      ...current,
+      currency: transactionCurrency.baseCurrencyCode,
+      fxRate: "1.00",
+    }));
+  }, [mode, transactionCurrency.baseCurrencyCode, transactionCurrency.isBaseCurrencyResolved]);
+
+  function updateField<Key extends keyof CashAdvanceFormValues>(key: Key, value: CashAdvanceFormValues[Key]) {
     setValues((current) => ({ ...current, [key]: value }));
   }
 
   function updateAmount(amount: string) {
-    setValues((current) => ({
-      ...current,
-      amount,
-      taxValue: {
-        ...current.taxValue,
-        taxDetails: syncTaxDetailsAmount(
-          current.taxValue.taxDetails,
-          Number(amount || 0),
-          current.taxValue.taxRate,
-        ),
-      },
-    }));
+    setValues((current) => {
+      const balance = parseMoneyNumberInput(current.cashAdvanceBalance);
+      const nextAmount =
+        current.cashAdvanceBalance.trim() && parseMoneyNumberInput(amount) > balance ? formatMoneyNumberDisplayValue(balance) : amount;
+
+      return {
+        ...current,
+        amount: nextAmount,
+        taxValue: {
+          ...current.taxValue,
+          taxDetails: syncTaxDetailsAmount(current.taxValue.taxDetails, parseMoneyNumberInput(nextAmount), current.taxValue.taxRate),
+        },
+      };
+    });
+  }
+
+  async function updateCurrency(currencyCode: string) {
+    hasEditedCurrencyRef.current = true;
+    updateField("currency", currencyCode);
+
+    try {
+      const exchangeRate = await transactionCurrency.loadExchangeRate(currencyCode);
+
+      if (exchangeRate != null) {
+        updateField("fxRate", formatLoadedExchangeRate(exchangeRate));
+      }
+    } catch {
+      toast.error("Could not load the exchange rate for the selected currency.");
+    }
   }
 
   function updateReferenceField(field: CashAdvanceReferenceField, value: string) {
@@ -142,20 +154,10 @@ export function useCashAdvanceActionForm(
     }));
   }
 
-  function updateReferenceFieldVisibility(
-    field: CashAdvanceReferenceField,
-    isVisible: boolean,
-  ) {
-    setVisibleReferenceFields((current) => ({
-      ...current,
-      [field]: isVisible,
-    }));
-  }
-
   function updateTaxValue(taxValue: AppTaxRateDialogValue) {
     setValues((current) => ({
       ...current,
-      amount: String(taxValue.taxDetails.grossAmount || ""),
+      amount: formatMoneyNumberDisplayValue(taxValue.taxDetails.grossAmount || ""),
       taxValue,
     }));
   }
@@ -163,19 +165,19 @@ export function useCashAdvanceActionForm(
   function submitAdvance(status: CashAdvanceStatus = CashAdvanceStatuses.forApproval) {
     const nextValues = { ...values, status };
     const shouldValidate = status !== CashAdvanceStatuses.draft;
-    const validation = shouldValidate
-      ? validateCashAdvanceForm(nextValues)
-      : { isValid: true, message: null };
+    const balanceValidation = validateCashAdvanceAmountWithinBalance(nextValues);
+    const validation = !balanceValidation.isValid
+      ? balanceValidation
+      : shouldValidate
+        ? validateCashAdvanceForm(nextValues)
+        : { isValid: true, message: null };
 
     if (!validation.isValid) {
       toast.error(validation.message ?? "Review the cash advance details.");
       return;
     }
 
-    const nextRecord = createCashAdvanceRecordFromForm(
-      nextValues,
-      mode === "edit" ? loadedRecord ?? undefined : undefined,
-    );
+    const nextRecord = createCashAdvanceRecordFromForm(nextValues, mode === "edit" ? (loadedRecord ?? undefined) : undefined);
     const nextAdvances = upsertCashAdvanceRecord(nextRecord);
 
     writeStoredCashAdvances(nextAdvances);
@@ -215,17 +217,18 @@ export function useCashAdvanceActionForm(
   }
 
   return {
+    currencyOptions: transactionCurrency.currencyOptions,
+    isExchangeRateLoading: transactionCurrency.isExchangeRateLoading,
     isRecordMissing: mode !== "add" && !initialRecord,
     record: loadedRecord,
     submitAdvance,
     updateAdvanceStatus,
     updateAmount,
+    updateCurrency,
     updateField,
     updateReferenceField,
-    updateReferenceFieldVisibility,
     updateTaxValue,
     values,
-    visibleReferenceFields,
   };
 }
 
@@ -244,40 +247,32 @@ export function useCashAdvanceTable(advances: CashAdvanceRecord[]) {
     to: "",
   });
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
-    CashAdvanceDefaultColumnVisibility,
-  );
-  const [statusFilter, setStatusFilterState] = useState<
-    (typeof CashAdvanceStatusFilters)[number]
-  >("all");
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(CashAdvanceDefaultColumnVisibility);
+  const [statusFilter, setStatusFilterState] = useState<(typeof CashAdvanceStatusFilters)[number]>(CashAdvanceAllStatusFilter);
   const filteredRows = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
+    const normalizedQuery = normalizeLowercaseWhitespace(query);
 
     return advances.filter((record) => {
-      const matchesStatus =
-        statusFilter === "all" || record.status === statusFilter;
+      const matchesStatus = statusFilter === CashAdvanceAllStatusFilter || record.status === statusFilter;
       const matchesDateRange =
-        (!dateRange.from || record.documentDate >= dateRange.from) &&
-        (!dateRange.to || record.documentDate <= dateRange.to);
+        (!dateRange.from || record.documentDate >= dateRange.from) && (!dateRange.to || record.documentDate <= dateRange.to);
       const matchesAmountRange =
-        (!amountRange.from || record.amount >= Number(amountRange.from)) &&
-        (!amountRange.to || record.amount <= Number(amountRange.to));
+        (!amountRange.from || record.amount >= Number(amountRange.from)) && (!amountRange.to || record.amount <= Number(amountRange.to));
       const matchesQuery =
         normalizedQuery.length === 0 ||
-        [
-          record.transNo,
-          record.partyCode,
-          record.partyName,
-          record.accountCode,
-          record.costCenter,
-          record.formValues?.currency,
-          record.remarks,
-          record.createdBy,
-          record.updatedBy,
-        ]
-          .join(" ")
-          .toLowerCase()
-          .includes(normalizedQuery);
+        normalizeLowercaseWhitespace(
+          [
+            record.transNo,
+            record.partyCode,
+            record.partyName,
+            record.accountCode,
+            record.costCenter,
+            record.formValues?.currency,
+            record.remarks,
+            record.createdBy,
+            record.updatedBy,
+          ].join(" "),
+        ).includes(normalizedQuery);
 
       return matchesStatus && matchesDateRange && matchesAmountRange && matchesQuery;
     });
@@ -288,88 +283,102 @@ export function useCashAdvanceTable(advances: CashAdvanceRecord[]) {
         accessorKey: "transNo",
         id: "transNo",
         header: "Cash Advance No.",
-        meta: { className: "w-[12rem]", label: "Cash Advance No." },
+        size: TransactionOverviewColumnWidths.transactionNumber,
+        meta: { label: "Cash Advance No." },
       },
       {
         accessorKey: "documentDate",
         id: "documentDate",
         header: "Document Date",
-        meta: { className: "w-[9rem]", label: "Document Date" },
+        size: TransactionOverviewColumnWidths.documentDate,
+        meta: { label: "Document Date" },
       },
       {
         accessorKey: "partyCode",
         id: "partyCode",
         header: "Party Code",
-        meta: { className: "w-[10rem]", label: "Party Code" },
+        size: TransactionOverviewColumnWidths.partyCode,
+        meta: { label: "Party Code" },
       },
       {
         accessorKey: "partyName",
         id: "partyName",
         header: "Party Name",
-        meta: { className: "w-[16rem]", label: "Party Name" },
+        size: TransactionOverviewColumnWidths.partyName,
+        meta: { label: "Party Name" },
       },
       {
         accessorKey: "accountCode",
         id: "accountCode",
         header: "Account Code",
-        meta: { className: "w-[10rem]", label: "Account Code" },
+        size: TransactionOverviewColumnWidths.accountCode,
+        meta: { label: "Account Code" },
       },
       {
         accessorFn: (record) => record.accountCode,
         id: "accountTitle",
         header: "Account Title",
-        meta: { className: "w-[14rem]", label: "Account Title" },
+        size: TransactionOverviewColumnWidths.accountTitle,
+        meta: { label: "Account Title" },
       },
       {
         accessorFn: (record) => record.formValues?.currency ?? "PHP",
         id: "currency",
         header: "Currency",
-        meta: { className: "w-[8rem]", label: "Currency" },
+        size: TransactionOverviewColumnWidths.currency,
+        meta: { label: "Currency" },
       },
       {
         accessorKey: "amount",
         id: "amount",
-        header: "Amount",
-        meta: { className: "w-[9rem]", label: "Amount" },
+        header: "Total Amount",
+        size: TransactionOverviewColumnWidths.amount,
+        meta: { label: "Total Amount" },
       },
       {
         accessorKey: "remarks",
         id: "remarks",
         header: "Remarks",
-        meta: { className: "w-[18rem]", label: "Remarks" },
+        size: TransactionOverviewColumnWidths.remarks,
+        meta: { label: "Remarks" },
       },
       {
         accessorKey: "createdBy",
         id: "createdBy",
         header: "Created By",
-        meta: { className: "w-[14rem]", label: "Created By" },
+        size: TransactionOverviewColumnWidths.auditUser,
+        meta: { label: "Created By" },
       },
       {
         accessorKey: "createdAt",
         id: "createdAt",
         header: "Date Created",
         sortingFn: "datetime",
-        meta: { className: "w-[16rem]", label: "Date Created" },
+        size: TransactionOverviewColumnWidths.auditDate,
+        meta: { label: "Date Created" },
       },
       {
         accessorKey: "updatedBy",
         id: "updatedBy",
         header: "Updated By",
-        meta: { className: "w-[14rem]", label: "Updated By" },
+        size: TransactionOverviewColumnWidths.auditUser,
+        meta: { label: "Updated By" },
       },
       {
         accessorKey: "updatedAt",
         id: "updatedAt",
         header: "Date Modified",
         sortingFn: "datetime",
-        meta: { className: "w-[16rem]", label: "Date Modified" },
+        size: TransactionOverviewColumnWidths.auditDate,
+        meta: { label: "Date Modified" },
       },
       {
         accessorKey: "status",
         id: "status",
         header: "Status",
+        size: TransactionOverviewColumnWidths.status,
         meta: {
-          className: "w-[9rem]",
+          className: "text-center",
           label: "Status",
         },
       },
@@ -378,8 +387,9 @@ export function useCashAdvanceTable(advances: CashAdvanceRecord[]) {
         enableSorting: false,
         enableHiding: false,
         header: "Action",
+        size: CashDisbursementOverviewActionColumnWidth,
         meta: {
-          className: "w-[5.5rem] px-3 text-center last:pr-3",
+          className: "px-3 text-center last:pr-3",
           label: "Action",
         },
       },
@@ -427,7 +437,7 @@ export function useCashAdvanceTable(advances: CashAdvanceRecord[]) {
     setAmountRangeState({ from: "", to: "" });
     setDateRangeState({ from: "", to: "" });
     setQueryState("");
-    setStatusFilterState("all");
+    setStatusFilterState(CashAdvanceAllStatusFilter);
     table.setPageIndex(0);
   }
 
@@ -447,15 +457,11 @@ export function useCashAdvanceTable(advances: CashAdvanceRecord[]) {
 
 function upsertCashAdvanceRecord(record: CashAdvanceRecord) {
   const currentAdvances = getInitialCashAdvances();
-  const existingIndex = currentAdvances.findIndex(
-    (advance) => advance.id === record.id,
-  );
+  const existingIndex = currentAdvances.findIndex((advance) => advance.id === record.id);
 
   if (existingIndex === -1) {
     return [record, ...currentAdvances];
   }
 
-  return currentAdvances.map((advance) =>
-    advance.id === record.id ? record : advance,
-  );
+  return currentAdvances.map((advance) => (advance.id === record.id ? record : advance));
 }

@@ -2,25 +2,16 @@
 
 import Link from "next/link";
 import type { Row } from "@tanstack/react-table";
-import {
-  Ban,
-  CheckCircle2,
-  Clock3,
-  PackageCheck,
-  Plus,
-  ReceiptText,
-  Search,
-  XCircle,
-} from "lucide-react";
+import { Plus, ReceiptText, Search } from "lucide-react";
 import {
   countCashAdvancesByStatus,
   formatCashAdvanceCurrency,
   formatCashAdvanceDate,
   formatCashAdvancePercentage,
-  getCashAdvanceStatusLabel,
 } from "@/app/src/data/modules/cash-disbursement/cash-advance/CashAdvanceData";
 import {
   CashAdvanceAccountOptions,
+  CashAdvanceAllStatusFilter,
   CashAdvanceHref,
   CashAdvanceStatusFilterOptions,
   CashAdvanceStatusFilters,
@@ -28,26 +19,19 @@ import {
   CashAdvanceTablePaginationStorageKey,
   getCashAdvanceTableMinWidthClassName,
 } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
-import {
-  useCashAdvanceStore,
-  useCashAdvanceTable,
-} from "@/app/src/hooks/modules/cash-disbursement/cash-advance/useCashAdvance";
-import type {
-  CashAdvanceRecord,
-  CashAdvanceStatus,
-} from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
+import { useCashAdvanceStore, useCashAdvanceTable } from "@/app/src/hooks/modules/cash-disbursement/cash-advance/useCashAdvance";
+import type { CashAdvanceRecord, CashAdvanceStatus } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 import { AmountRangePicker } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import { DateRangePicker } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
-import {
-  ModuleHeader,
-  moduleHeaderActionClassNames,
-} from "@/app/src/ui/shared/module/ModuleHeader";
+import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
-import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import {
-  getColumnMetaClassName,
-  joinClasses,
-} from "@/app/src/ui/shared/module/module-table/utils";
+  getModuleStatusMetricIcon,
+  getModuleStatusMetricIconClassName,
+  ModuleStatusBadge,
+} from "@/app/src/ui/shared/module/ModuleStatusBadge";
+import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
+import { getColumnMetaClassName, joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import {
   ModuleTableColumnVisibilityButton,
   ModuleTableFilterSelect,
@@ -77,74 +61,58 @@ export function CashAdvanceOverviewPage() {
         actions={<CashAdvanceListHeaderActions />}
       />
 
-      <CashAdvanceMetrics
-        records={advances}
-        statusFilter={tableState.statusFilter}
-        onStatusFilterChange={tableState.setStatusFilter}
-      />
+      <CashAdvanceMetrics records={advances} statusFilter={tableState.statusFilter} onStatusFilterChange={tableState.setStatusFilter} />
 
-      <ModuleTable
-        emptyDescription="Try another cash advance no., remarks, date range, amount range, or status."
-        emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
-        emptyTitle="No Cash Advance Transaction Found."
-        minWidthClassName={getCashAdvanceTableMinWidthClassName(
-          tableState.table.getVisibleLeafColumns().length,
-        )}
-        paginationLabel="entries"
-        paginationStorageKey={CashAdvanceTablePaginationStorageKey}
-        lastSyncedAt={lastSyncedAt}
-        pageSizeOptions={[5, 10, 15, 20, 25, 50]}
-        table={tableState.table}
-        tableTitle="Cash Advances"
-        toolbar={
-          <ModuleTableToolbar className="!grid-cols-1 !gap-2 !p-3 sm:!gap-2 sm:!p-3 xl:!grid-cols-[minmax(0,1fr)_auto]">
-            <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-[minmax(18rem,2fr)_minmax(14rem,1fr)_minmax(14rem,1fr)_minmax(12rem,1fr)]">
-              <ModuleTableSearch
-                label="Search cash advances"
-                placeholder="Search by transaction no., party, account, or remarks"
-                value={tableState.query}
-                onChange={tableState.setQuery}
-              />
-              <DateRangePicker
-                label="Date Range"
-                value={tableState.dateRange}
-                onChange={tableState.setDateRange}
-              />
-              <AmountRangePicker
-                label="Total Amount"
-                value={tableState.amountRange}
-                onChange={tableState.setAmountRange}
-              />
-              <ModuleTableFilterSelect
-                label="Status"
-                value={tableState.statusFilter}
-                options={CashAdvanceStatusFilterOptions}
-                onChange={(value) =>
-                  tableState.setStatusFilter(
-                    value as Parameters<typeof tableState.setStatusFilter>[0],
-                  )
-                }
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-2 xl:w-[7rem]">
-              <ModuleTableColumnVisibilityButton table={tableState.table} />
-              <ModuleTableResetButton
-                className="px-2"
-                onClick={tableState.resetFilters}
+      <div data-spotlight-id="maintenance-table">
+        <ModuleTable
+          emptyDescription="Try another cash advance no., remarks, date range, amount range, or status."
+          emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
+          emptyTitle="No Cash Advance Transaction Found."
+          minWidthClassName={getCashAdvanceTableMinWidthClassName(tableState.table.getVisibleLeafColumns().length)}
+          paginationLabel="entries"
+          paginationStorageKey={CashAdvanceTablePaginationStorageKey}
+          lastSyncedAt={lastSyncedAt}
+          pageSizeOptions={[5, 10, 15, 20, 25, 50]}
+          table={tableState.table}
+          tableTitle="Cash Advances"
+          useColumnSizing
+          toolbar={
+            <ModuleTableToolbar
+              className="!grid-cols-1 !gap-2 !p-3 sm:!gap-2 sm:!p-3 2xl:!grid-cols-[minmax(0,1fr)_auto]"
+              data-spotlight-id="maintenance-table-filters"
+            >
+              <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 2xl:grid-cols-[minmax(18rem,2fr)_minmax(14rem,1fr)_minmax(14rem,1fr)]">
+                <div className="sm:col-span-2 2xl:col-span-1">
+                  <ModuleTableSearch
+                    label="Search cash advances"
+                    placeholder="Search by Cash Advance No., Party Name, Account Title, or Remarks"
+                    value={tableState.query}
+                    onChange={tableState.setQuery}
+                  />
+                </div>
+                <DateRangePicker label="Date Range" value={tableState.dateRange} onChange={tableState.setDateRange} />
+                <AmountRangePicker label="Total Amount" value={tableState.amountRange} onChange={tableState.setAmountRange} />
+              </div>
+              <div
+                className="grid grid-cols-[2fr_1fr_1fr] gap-2 md:grid-cols-[minmax(0,1fr)_3.25rem_3.25rem] 2xl:w-[21.5rem]"
+                data-spotlight-id="maintenance-table-options"
               >
-                <span className="sr-only">Reset filters</span>
-              </ModuleTableResetButton>
-            </div>
-          </ModuleTableToolbar>
-        }
-        renderRow={(row) => (
-          <CashAdvanceTableRow
-            key={row.id}
-            row={row}
-            onUpdateStatus={updateAdvanceStatus}
-          />
-        )}
-      />
+                <ModuleTableFilterSelect
+                  label="Status"
+                  value={tableState.statusFilter}
+                  options={CashAdvanceStatusFilterOptions}
+                  onChange={(value) => tableState.setStatusFilter(value as Parameters<typeof tableState.setStatusFilter>[0])}
+                />
+                <ModuleTableColumnVisibilityButton table={tableState.table} />
+                <ModuleTableResetButton className="px-2" onClick={tableState.resetFilters}>
+                  <span className="sr-only">Reset filters</span>
+                </ModuleTableResetButton>
+              </div>
+            </ModuleTableToolbar>
+          }
+          renderRow={(row) => <CashAdvanceTableRow key={row.id} row={row} onUpdateStatus={updateAdvanceStatus} />}
+        />
+      </div>
     </section>
   );
 }
@@ -159,18 +127,8 @@ function CashAdvanceTableRow({
   return (
     <tr className="module-table-row border-b border-darknavy/8 last:border-b-0">
       {row.getVisibleCells().map((cell) => (
-        <td
-          key={cell.id}
-          className={joinClasses(
-            "px-4 py-4 align-top",
-            getColumnMetaClassName(cell.column.columnDef.meta),
-          )}
-        >
-          <CashAdvanceCellContent
-            columnId={cell.column.id}
-            record={row.original}
-            onUpdateStatus={onUpdateStatus}
-          />
+        <td key={cell.id} className={joinClasses("px-4 py-4 align-top", getColumnMetaClassName(cell.column.columnDef.meta))}>
+          <CashAdvanceCellContent columnId={cell.column.id} record={row.original} onUpdateStatus={onUpdateStatus} />
         </td>
       ))}
     </tr>
@@ -192,11 +150,11 @@ function CashAdvanceCellContent({
     case "documentDate":
       return formatCashAdvanceDate(record.documentDate);
     case "partyName":
-      return <span className="font-semibold text-darknavy">{record.partyName}</span>;
+      return record.partyName;
     case "partyCode":
-      return <span className="font-semibold text-darknavy">{record.partyCode}</span>;
+      return record.partyCode;
     case "accountCode":
-      return <span className="font-semibold text-darknavy">{record.accountCode || "-"}</span>;
+      return record.accountCode || "";
     case "accountTitle":
       return (
         <div className="text-darknavy">
@@ -204,13 +162,17 @@ function CashAdvanceCellContent({
         </div>
       );
     case "remarks":
-      return <span className="line-clamp-2 text-sm text-darknavy/80">{record.remarks || "-"}</span>;
+      return <span className="line-clamp-2 text-sm text-darknavy/80">{record.remarks || ""}</span>;
     case "amount":
       return <span className="font-semibold text-darknavy">{formatCashAdvanceCurrency(record.amount)}</span>;
     case "currency":
-      return <span className="font-semibold text-darknavy">{record.formValues?.currency ?? "PHP"}</span>;
+      return record.formValues?.currency ?? "PHP";
     case "status":
-      return <CashAdvanceStatusBadge status={record.status} />;
+      return (
+        <div className="flex w-full justify-center">
+          <CashAdvanceStatusBadge status={record.status} />
+        </div>
+      );
     case "createdBy":
       return record.createdBy ?? "";
     case "createdAt":
@@ -236,7 +198,7 @@ function getCashAdvanceAccountTitle(accountCode: string) {
 
 function CashAdvanceListHeaderActions() {
   return (
-    <Link href={`${CashAdvanceHref}/add`} className={moduleHeaderActionClassNames.primary}>
+    <Link href={`${CashAdvanceHref}/add`} className={moduleHeaderActionClassNames.primary} data-spotlight-id="maintenance-create-record">
       <Plus className="h-4 w-4" aria-hidden="true" />
       Start New Cash Advance
     </Link>
@@ -264,15 +226,17 @@ function CashAdvanceMetrics({
       items={[
         {
           icon: ReceiptText,
-          label: "Total Transaction",
+          label: "Total Entries",
           summary: "All time",
+          tone: "violet",
           value: records.length,
-          isActive: statusFilter === "all",
-          onClick: () => onStatusFilterChange("all"),
+          isActive: statusFilter === CashAdvanceAllStatusFilter,
+          onClick: () => onStatusFilterChange(CashAdvanceAllStatusFilter),
         },
         {
-          icon: Clock3,
-          iconClassName: "bg-slate-100 text-slate-700",
+          icon: getModuleStatusMetricIcon(CashAdvanceStatuses.draft),
+          iconClassName: getModuleStatusMetricIconClassName(CashAdvanceStatuses.draft),
+          tone: "blue",
           label: CashAdvanceStatuses.draft,
           summary: formatCashAdvancePercentage(draftCount, records.length),
           value: draftCount,
@@ -280,8 +244,9 @@ function CashAdvanceMetrics({
           onClick: () => onStatusFilterChange(CashAdvanceStatuses.draft),
         },
         {
-          icon: Clock3,
-          iconClassName: "bg-skyblue/15 text-skyblue",
+          icon: getModuleStatusMetricIcon(CashAdvanceStatuses.forApproval),
+          iconClassName: getModuleStatusMetricIconClassName(CashAdvanceStatuses.forApproval),
+          tone: "amber",
           label: CashAdvanceStatuses.forApproval,
           summary: formatCashAdvancePercentage(forApprovalCount, records.length),
           value: forApprovalCount,
@@ -289,8 +254,9 @@ function CashAdvanceMetrics({
           onClick: () => onStatusFilterChange(CashAdvanceStatuses.forApproval),
         },
         {
-          icon: CheckCircle2,
-          iconClassName: "bg-emerald-50 text-emerald-700",
+          icon: getModuleStatusMetricIcon(CashAdvanceStatuses.posted),
+          iconClassName: getModuleStatusMetricIconClassName(CashAdvanceStatuses.posted),
+          tone: "emerald",
           label: CashAdvanceStatuses.posted,
           summary: formatCashAdvancePercentage(postedCount, records.length),
           value: postedCount,
@@ -298,8 +264,9 @@ function CashAdvanceMetrics({
           onClick: () => onStatusFilterChange(CashAdvanceStatuses.posted),
         },
         {
-          icon: XCircle,
-          iconClassName: "bg-coralpink/15 text-coralpink",
+          icon: getModuleStatusMetricIcon(CashAdvanceStatuses.disapproved),
+          iconClassName: getModuleStatusMetricIconClassName(CashAdvanceStatuses.disapproved),
+          tone: "red",
           label: CashAdvanceStatuses.disapproved,
           summary: formatCashAdvancePercentage(disapprovedCount, records.length),
           value: disapprovedCount,
@@ -307,8 +274,9 @@ function CashAdvanceMetrics({
           onClick: () => onStatusFilterChange(CashAdvanceStatuses.disapproved),
         },
         {
-          icon: Ban,
-          iconClassName: "bg-amber-50 text-amber-700",
+          icon: getModuleStatusMetricIcon(CashAdvanceStatuses.cancelled),
+          iconClassName: getModuleStatusMetricIconClassName(CashAdvanceStatuses.cancelled),
+          tone: "slate",
           label: CashAdvanceStatuses.cancelled,
           summary: formatCashAdvancePercentage(cancelledCount, records.length),
           value: cancelledCount,
@@ -321,33 +289,5 @@ function CashAdvanceMetrics({
 }
 
 function CashAdvanceStatusBadge({ status }: { status: CashAdvanceStatus }) {
-  const Icon = statusIconByStatus[status];
-
-  return (
-    <span
-      className={joinClasses(
-        "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold",
-        statusClassNameByStatus[status],
-      )}
-    >
-      <Icon className="h-3.5 w-3.5" aria-hidden="true" />
-      {getCashAdvanceStatusLabel(status)}
-    </span>
-  );
+  return <ModuleStatusBadge status={status} />;
 }
-
-const statusIconByStatus = {
-  [CashAdvanceStatuses.cancelled]: Ban,
-  [CashAdvanceStatuses.disapproved]: XCircle,
-  [CashAdvanceStatuses.draft]: Clock3,
-  [CashAdvanceStatuses.forApproval]: Clock3,
-  [CashAdvanceStatuses.posted]: PackageCheck,
-} satisfies Record<CashAdvanceStatus, typeof CheckCircle2>;
-
-const statusClassNameByStatus = {
-  [CashAdvanceStatuses.cancelled]: "bg-amber-50 text-amber-700",
-  [CashAdvanceStatuses.disapproved]: "bg-coralpink/15 text-coralpink",
-  [CashAdvanceStatuses.draft]: "bg-slate-100 text-slate-700",
-  [CashAdvanceStatuses.forApproval]: "bg-skyblue/15 text-skyblue",
-  [CashAdvanceStatuses.posted]: "bg-emerald-50 text-emerald-700",
-} satisfies Record<CashAdvanceStatus, string>;

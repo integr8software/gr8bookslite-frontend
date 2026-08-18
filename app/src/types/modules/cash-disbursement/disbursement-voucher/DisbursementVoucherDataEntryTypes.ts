@@ -62,7 +62,7 @@ export type VoucherDataEntryProps = {
   onAddEntries: (count: number) => void;
   onAddExpenseType: () => void;
   onAddPartyName: () => void;
-  onAddResponsibilityCenter: () => void;
+  onAddResponsibilityCenter: (entryId: string) => void;
   onClearEntries: (action: ModuleDataEntryClearAction) => void;
   onDuplicateEntry: (entryId: string) => void;
   onInsertEntry: (entryId: string, position: "above" | "below") => void;
@@ -92,8 +92,7 @@ export type DisbursementAccountingEntryColumnsParams = {
   ewtOptions: AppAdvancedDropdownOption[];
   isReadonly: boolean;
   onAddPartyName: () => void;
-  onAddResponsibilityCenter: () => void;
-  onOpenParticulars: (entryId: string) => void;
+  onAddResponsibilityCenter: (entryId: string) => void;
   onUpdateEntry: DisbursementEntryUpdater;
   onUpdateEntryFields: DisbursementEntryFieldsUpdater;
   partyOptions: AppAdvancedDropdownOption[];

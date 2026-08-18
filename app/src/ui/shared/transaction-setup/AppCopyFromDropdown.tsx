@@ -3,12 +3,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { getCoreRowModel, getPaginationRowModel, useReactTable, type ColumnDef, type PaginationState } from "@tanstack/react-table";
-import { ChevronDown, RefreshCw, Search } from "lucide-react";
+import { ChevronDown, Copy, RefreshCw, Search } from "lucide-react";
 import { AmountRangePicker, type AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import { DateRangePicker, type DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import { ModuleResizableDialog } from "@/app/src/ui/shared/module/ModuleResizableDialog";
+import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 export type { AppCopyFromRecord };
@@ -143,10 +144,11 @@ export function AppCopyFromDropdown({
         type="button"
         disabled={disabled || availableSources.length === 0}
         onClick={() => setIsMenuOpen((current) => !current)}
-        className="theme-accent-contrast-text inline-flex h-10 items-center justify-center gap-2 rounded-md bg-skyblue px-4 text-sm font-semibold transition hover:bg-skyblue/85 disabled:cursor-not-allowed disabled:opacity-45"
+        className={moduleHeaderActionClassNames.secondary}
         aria-expanded={isMenuOpen}
         aria-haspopup="menu"
       >
+        <Copy className="h-4 w-4" aria-hidden="true" />
         Copy From
         <ChevronDown className="h-4 w-4" aria-hidden="true" />
       </button>

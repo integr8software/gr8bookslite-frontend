@@ -3,12 +3,14 @@ import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 export function BillingEntryTextInput({
 	id,
+	isInvalid = false,
 	name,
 	onChange,
 	readOnly,
 	value,
 }: {
 	id: string;
+	isInvalid?: boolean;
 	name: string;
 	onChange: (value: string) => void;
 	readOnly: boolean;
@@ -22,19 +24,23 @@ export function BillingEntryTextInput({
 			value={value}
 			readOnly={readOnly}
 			onChange={(event) => onChange(event.target.value)}
-			className={billingEntryCellControlClassName()}
+			className={billingEntryCellControlClassName(
+				isInvalid ? "bg-red-50/70 ring-1 ring-inset ring-red-300" : "",
+			)}
 		/>
 	);
 }
 
 export function BillingEntryAmountInput({
 	id,
+	isInvalid = false,
 	name,
 	onValueChange,
 	readOnly,
 	value,
 }: {
 	id: string;
+	isInvalid?: boolean;
 	name: string;
 	onValueChange: (value: string) => void;
 	readOnly: boolean;
@@ -48,7 +54,10 @@ export function BillingEntryAmountInput({
 			readOnly={readOnly}
 			onValueChange={onValueChange}
 			className={billingEntryCellControlClassName(
-				"text-right tabular-nums",
+				joinClasses(
+					"text-right tabular-nums",
+					isInvalid ? "bg-red-50/70 ring-1 ring-inset ring-red-300" : "",
+				),
 			)}
 		/>
 	);

@@ -30,10 +30,8 @@ import type {
 	ModuleDataEntryColumn,
 	ModuleDataEntryColumnOption,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
-import {
-	createBillingInvoiceAccountEntryColumns,
-	createBillingInvoiceItemEntryColumns,
-} from "@/app/src/ui/modules/sales/billing-invoice/entries/BillingInvoiceEntryColumns";
+import { createBillingInvoiceAccountingEntryColumns } from "@/app/src/ui/modules/sales/billing-invoice/entries/BillingInvoiceAccountingEntryColumns";
+import { createBillingInvoiceServiceDetailColumns } from "@/app/src/ui/modules/sales/billing-invoice/entries/BillingInvoiceServiceDetailColumns";
 
 export function useBillingInvoiceEntryTabs() {
 	return useState<BillingInvoiceEntriesTab>("items");
@@ -61,7 +59,7 @@ export function useBillingInvoiceItemEntries({
 		[onRowsChange, rows],
 	);
 	const columns = useMemo<ModuleDataEntryColumn<BillingInvoiceLineEntry>[]>(
-		() => createBillingInvoiceItemEntryColumns(isReadonly, updateEntry),
+		() => createBillingInvoiceServiceDetailColumns(isReadonly, updateEntry),
 		[isReadonly, updateEntry],
 	);
 	const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
@@ -117,7 +115,7 @@ export function useBillingInvoiceAccountEntries({
 		[rows],
 	);
 	const allColumns = useMemo<ModuleDataEntryColumn<BillingInvoiceAccountEntry>[]>(
-		() => createBillingInvoiceAccountEntryColumns(isReadonly, updateEntry),
+		() => createBillingInvoiceAccountingEntryColumns(isReadonly, updateEntry),
 		[isReadonly, updateEntry],
 	);
 	const columns = useMemo(

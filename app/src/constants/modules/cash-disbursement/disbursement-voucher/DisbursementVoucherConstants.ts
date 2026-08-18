@@ -1,5 +1,7 @@
 import type { SortingState, VisibilityState } from "@tanstack/react-table";
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
+import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
+import { CashDisbursementOverviewActionColumnWidth } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import type {
   DisbursementVoucherActionTab,
   DisbursementVoucherStatus,
@@ -7,18 +9,45 @@ import type {
 
 export const DisbursementVoucherHref = getModuleRoute("DV");
 
+export const DisbursementVoucherQueryKeys = {
+  transactions: () => ["cash-disbursement", "disbursement-voucher", "transactions"] as const,
+  vouchers: () => ["cash-disbursement", "disbursement-voucher", "vouchers"] as const,
+};
+
 export const DisbursementVoucherTablePaginationStorageKey = "cash-disbursement-disbursement-voucher";
 
 export const DisbursementVoucherTablePreferencesStorageKey = "gr8booksneo:disbursement-voucher:table-preferences:v2";
 export const DisbursementVoucherTablePreferencesModuleKey = "cash-disbursement:disbursement-voucher";
 export const DisbursementVoucherTransactionStorageKey = "gr8books.disbursement-voucher.transactions";
 export const DisbursementVoucherRecordStorageKey = "gr8books.disbursement-voucher.vouchers";
+export const DisbursementVoucherAccountingGridSessionStorageKey = "gr8books.disbursementVoucher.accountingGrid";
 
 export const DisbursementVoucherBankSelectPlaceholder = "--Select Bank--";
 export const DisbursementVoucherBankSearchPlaceholder = "Search bank";
 
 export const DisbursementVoucherFieldClassName =
   "app-data-entry-field h-11 min-w-0 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15 read-only:bg-white read-only:text-darknavy disabled:bg-white disabled:text-darknavy";
+
+export const DisbursementVoucherPdfNoBordersLayout = {
+  hLineWidth: () => 0,
+  vLineWidth: () => 0,
+  paddingLeft: () => 0,
+  paddingRight: () => 0,
+  paddingTop: () => 0,
+  paddingBottom: () => 0,
+};
+
+export const DisbursementVoucherPdfOuterLayout = {
+  ...DisbursementVoucherPdfNoBordersLayout,
+  hLineWidth: () => 1,
+  vLineWidth: () => 1,
+};
+
+export const DisbursementVoucherPdfThinGridLayout = {
+  ...DisbursementVoucherPdfNoBordersLayout,
+  hLineWidth: () => 0.35,
+  vLineWidth: () => 0.35,
+};
 
 export const DisbursementVoucherNotFoundCopy = {
   actionLabel: "Return to Disbursement Vouchers",
@@ -31,6 +60,7 @@ export const DisbursementVoucherActionTabs: {
   label: string;
 }[] = [
   { id: "details", label: "Voucher Details" },
+  { id: "bank-information", label: "Bank Information" },
   { id: "attachments", label: "File Attachments" },
 ];
 
@@ -40,8 +70,11 @@ export const DisbursementVoucherStatuses = {
   disapproved: "Disapproved",
   draft: "Draft",
   forApproval: "For Approval",
+  open: "Open",
   posted: "Posted",
 } as const;
+
+export const DisbursementVoucherAllStatusFilter = "all";
 
 export const DisbursementVoucherWorkflowSteps = [
   {
@@ -62,7 +95,7 @@ export const DisbursementVoucherWorkflowSteps = [
 ] as const;
 
 export const DisbursementVoucherStatusFilters = [
-  "all",
+  DisbursementVoucherAllStatusFilter,
   DisbursementVoucherStatuses.draft,
   DisbursementVoucherStatuses.forApproval,
   DisbursementVoucherStatuses.posted,
@@ -72,7 +105,7 @@ export const DisbursementVoucherStatusFilters = [
 ] as const;
 
 export const DisbursementVoucherStatusFilterOptions = [
-  { label: "All statuses", value: "all" },
+  { label: "All statuses", value: DisbursementVoucherAllStatusFilter },
   {
     label: DisbursementVoucherStatuses.draft,
     value: DisbursementVoucherStatuses.draft,
@@ -103,71 +136,85 @@ export const DisbursementVoucherTableColumns = [
   {
     key: "voucherNo",
     label: "Voucher No.",
-    className: "w-[12rem]",
+    className: "",
+    size: TransactionOverviewColumnWidths.transactionNumber,
   },
   {
     key: "documentDate",
     label: "Document Date",
-    className: "w-[10rem]",
+    className: "",
+    size: TransactionOverviewColumnWidths.documentDate,
   },
   {
     key: "partyCode",
     label: "Party Code",
-    className: "w-[10rem]",
+    className: "",
+    size: TransactionOverviewColumnWidths.partyCode,
   },
   {
     key: "partyName",
     label: "Party Name",
-    className: "w-[18rem]",
+    className: "",
+    size: TransactionOverviewColumnWidths.partyName,
   },
   {
     key: "paymentType",
     label: "Payment Type",
-    className: "w-[12rem]",
+    className: "",
+    size: TransactionOverviewColumnWidths.paymentType,
   },
   {
     key: "currency",
     label: "Currency",
-    className: "w-[8rem]",
+    className: "",
+    size: TransactionOverviewColumnWidths.currency,
   },
   {
     key: "amount",
     label: "Amount",
-    className: "w-[11rem]",
+    className: "",
+    size: TransactionOverviewColumnWidths.amount,
   },
   {
     key: "remarks",
     label: "Remarks",
-    className: "w-[20rem]",
+    className: "",
+    size: TransactionOverviewColumnWidths.remarks,
   },
   {
     key: "createdBy",
     label: "Created By",
-    className: "w-[14rem]",
+    className: "",
+    size: TransactionOverviewColumnWidths.auditUser,
   },
   {
     key: "createdAt",
     label: "Date Created",
-    className: "w-[16rem]",
+    className: "",
+    size: TransactionOverviewColumnWidths.auditDate,
   },
   {
     key: "updatedBy",
     label: "Updated By",
-    className: "w-[14rem]",
+    className: "",
+    size: TransactionOverviewColumnWidths.auditUser,
   },
   {
     key: "updatedAt",
     label: "Date Modified",
-    className: "w-[16rem]",
+    className: "",
+    size: TransactionOverviewColumnWidths.auditDate,
   },
   {
     key: "status",
     label: "Status",
-    className: "w-[10rem]",
+    className: "text-center",
+    size: TransactionOverviewColumnWidths.status,
   },
   {
     label: "Action",
-    className: "w-[14rem] text-center",
+    className: "text-center",
+    size: CashDisbursementOverviewActionColumnWidth,
   },
 ] as const;
 
@@ -207,7 +254,44 @@ export function canCancelDisbursementVoucherStatus(status: DisbursementVoucherSt
   );
 }
 
-export function getDisbursementVoucherStatusDialogCopy(status: DisbursementVoucherStatus, recordLabel: string) {
+export function getDisbursementVoucherStatusDialogCopy(
+  status: DisbursementVoucherStatus,
+  recordLabel: string,
+  currentStatus?: DisbursementVoucherStatus,
+) {
+  if (status === DisbursementVoucherStatuses.forApproval && currentStatus === DisbursementVoucherStatuses.posted) {
+    return {
+      confirmLabel: "Undo Approved",
+      description: `This will undo the approval of ${recordLabel} and return it to For Approval.`,
+      iconTone: "question" as const,
+      pendingLabel: "Undoing Approval...",
+      title: "Undo Approved Disbursement Voucher?",
+      tone: "question" as const,
+    };
+  }
+
+  if (status === DisbursementVoucherStatuses.forApproval && currentStatus === DisbursementVoucherStatuses.disapproved) {
+    return {
+      confirmLabel: "Undo Disapproved",
+      description: `This will undo the disapproval of ${recordLabel} and return it to For Approval.`,
+      iconTone: "question" as const,
+      pendingLabel: "Undoing Disapproval...",
+      title: "Undo Disapproved Disbursement Voucher?",
+      tone: "question" as const,
+    };
+  }
+
+  if (currentStatus === DisbursementVoucherStatuses.cancelled) {
+    return {
+      confirmLabel: "Undo Cancelled",
+      description: `This will undo the cancellation of ${recordLabel}.`,
+      iconTone: "question" as const,
+      pendingLabel: "Undoing Cancellation...",
+      title: "Undo Cancelled Disbursement Voucher?",
+      tone: "question" as const,
+    };
+  }
+
   if (status === DisbursementVoucherStatuses.posted) {
     return {
       confirmLabel: "Approve Voucher",

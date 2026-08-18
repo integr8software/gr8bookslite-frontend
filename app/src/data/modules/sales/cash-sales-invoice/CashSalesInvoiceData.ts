@@ -59,7 +59,6 @@ export const MockCashSalesInvoices: CashSalesInvoiceRecord[] = [
     customerCode: "CUST-001",
     customerName: "North Harbor Office Depot",
     documentDate: "2026-08-07",
-    drNo: "DR-2026-0001",
     sjNo: "SJ-2026-0001",
     status: "Draft",
     transactionNo: "CSI-2026-0001",
@@ -111,7 +110,6 @@ export function createCashSalesInvoiceFormValues(): CashSalesInvoiceFormValues {
     transNo: "CSI-2026-0002",
     documentDate: today,
     sjNo: "",
-    drNo: "",
     status: "Draft" as CashSalesInvoiceStatus,
     lineEntries,
   };
@@ -139,7 +137,6 @@ export function createCashSalesInvoiceFormValuesFromRecord(
     partyCode: record.customerCode,
     partyName: record.customerName,
     documentDate: record.documentDate,
-    drNo: record.drNo,
     sjNo: record.sjNo,
     grossAmount: record.amount.toFixed(2),
     netAmount: record.amount.toFixed(2),
@@ -173,7 +170,6 @@ export function createCashSalesInvoiceRecordFromForm(
     customerCode: values.partyCode,
     customerName: values.partyName,
     documentDate: values.documentDate,
-    drNo: values.drNo,
     formValues: {
       ...values,
       lineEntries: values.lineEntries.map((entry) => ({ ...entry })),

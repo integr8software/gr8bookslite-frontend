@@ -1,0 +1,118 @@
+import type { RevolvingFundReplenishmentActionPageState } from "@/app/src/hooks/modules/cash-disbursement/revolving-fund-replenishment/useRevolvingFundReplenishmentActionPage";
+import type {
+  RevolvingFundReplenishmentAccountingColumnId,
+  RevolvingFundReplenishmentAccountingEntry,
+  RevolvingFundReplenishmentEntry,
+  RevolvingFundReplenishmentEntryColumnId,
+} from "@/app/src/types/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentTypes";
+import {
+  RevolvingFundReplenishmentEntryInput,
+  RevolvingFundReplenishmentMoneyInput,
+} from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/entries/RevolvingFundReplenishmentEntryCellControls";
+import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import { ModuleDataEntryRemarksCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryRemarksCell";
+
+export function createRevolvingFundReplenishmentLineColumns({
+  columnLabels,
+  columnWidths,
+  page,
+}: {
+  columnLabels: Record<RevolvingFundReplenishmentEntryColumnId, string>;
+  columnWidths: Record<RevolvingFundReplenishmentEntryColumnId, number>;
+  page: RevolvingFundReplenishmentActionPageState;
+}): Record<RevolvingFundReplenishmentEntryColumnId, ModuleDataEntryColumn<RevolvingFundReplenishmentEntry>> {
+  const text = (
+    id: RevolvingFundReplenishmentEntryColumnId,
+    type: "text" | "date" = "text",
+  ): ModuleDataEntryColumn<RevolvingFundReplenishmentEntry> => ({
+    header: columnLabels[id],
+    id,
+    width: columnWidths[id],
+    widthClassName: "w-auto",
+    widthMode: "fixed",
+    renderCell: (row, _index, context) => (
+      <RevolvingFundReplenishmentEntryInput
+        id={context.fieldId}
+        name={context.fieldName}
+        type={type}
+        value={String(row[id])}
+        readOnly={page.isReadonly}
+        placeholder={`Enter ${columnLabels[id]}`}
+        onChange={(value) => page.updateEntry(row.id, { [id]: value })}
+      />
+    ),
+  });
+  const money = (id: "totalAmount" | "netAmount" | "vatAmount"): ModuleDataEntryColumn<RevolvingFundReplenishmentEntry> => ({
+    header: columnLabels[id],
+    id,
+    width: columnWidths[id],
+    widthClassName: "w-auto",
+    widthMode: "fixed",
+    renderCell: (row, _index, context) => (
+      <RevolvingFundReplenishmentMoneyInput
+        id={context.fieldId}
+        name={context.fieldName}
+        value={row[id]}
+        readOnly={page.isReadonly}
+        onChange={(value) => page.updateEntry(row.id, { [id]: value })}
+      />
+    ),
+  });
+
+  return {
+    revolvingFundDate: text("revolvingFundDate", "date"),
+    revolvingFundNo: text("revolvingFundNo"),
+    accountCode: text("accountCode"),
+    accountTitle: text("accountTitle"),
+    totalAmount: money("totalAmount"),
+    netAmount: money("netAmount"),
+    vatAmount: money("vatAmount"),
+    remarks: {
+      header: columnLabels.remarks,
+      id: "remarks",
+      width: columnWidths.remarks,
+      widthClassName: "w-auto",
+      widthMode: "fixed",
+      renderCell: (row, _index, context) => (
+        <ModuleDataEntryRemarksCell
+          inputId={context.fieldId}
+          inputName={context.fieldName}
+          isReadonly={page.isReadonly}
+          value={row.remarks}
+          subtitle={row.revolvingFundNo || "Revolving fund entry"}
+          textareaId={`${context.fieldId}-dialog`}
+          onChange={(value) => page.updateEntry(row.id, { remarks: value })}
+        />
+      ),
+    },
+  };
+}
+
+export function createRevolvingFundReplenishmentAccountingColumns({
+  columnLabels,
+  columnWidths,
+}: {
+  columnLabels: Record<RevolvingFundReplenishmentAccountingColumnId, string>;
+  columnWidths: Record<RevolvingFundReplenishmentAccountingColumnId, number>;
+}): Record<RevolvingFundReplenishmentAccountingColumnId, ModuleDataEntryColumn<RevolvingFundReplenishmentAccountingEntry>> {
+  const column = (id: RevolvingFundReplenishmentAccountingColumnId): ModuleDataEntryColumn<RevolvingFundReplenishmentAccountingEntry> => ({
+    header: columnLabels[id],
+    id,
+    width: columnWidths[id],
+    widthClassName: "w-auto",
+    widthMode: "fixed",
+    renderCell: (row) => (
+      <span className={`block px-3 ${id === "debit" || id === "credit" ? "text-right tabular-nums" : ""}`}>{row[id]}</span>
+    ),
+  });
+
+  return {
+    accountCode: column("accountCode"),
+    accountTitle: column("accountTitle"),
+    debit: column("debit"),
+    credit: column("credit"),
+    partyCode: column("partyCode"),
+    partyName: column("partyName"),
+    particulars: column("particulars"),
+  };
+}

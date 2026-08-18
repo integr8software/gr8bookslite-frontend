@@ -13,7 +13,7 @@ import { ApproverSetupQueryKeys } from "@/app/src/services/modules/system-admini
 import type { ApprovalManagementRecord } from "@/app/src/types/modules/approval-management/ApprovalManagementTypes";
 import type { ApproverSetupRecord } from "@/app/src/types/modules/system-administration/user-management/approver-setup/ApproverSetupTypes";
 
-type ApprovalManagementState = {
+	type ApprovalManagementState = {
 	addWorkflow: (workflow: ApprovalManagementRecord) => void;
 	inactivateWorkflow: (workflowId: string) => void;
 	isLoading: boolean;

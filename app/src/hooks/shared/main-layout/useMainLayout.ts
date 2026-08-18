@@ -2,7 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useApprovalAlertStore } from "@/app/src/hooks/modules/approval-management/useApprovalAlertStore";
+import { GetApprovalTransactions } from "@/app/src/services/modules/approval-management/ApprovalManagementApi";
+import { ApprovalManagementQueryKeys } from "@/app/src/services/modules/approval-management/ApprovalManagementQueryKeys";
 import { getWorkspaceCompanyBranchesHref } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
 import {
   MasterSubscriberManagementHref,
@@ -182,6 +185,17 @@ export function useMainLayout() {
     ? (searchParams.get("companyId") ?? undefined)
     : undefined;
   const accessToken = storedAccessToken;
+  const setApprovalTransactions = useApprovalAlertStore(
+    (state) => state.setApprovalTransactions,
+  );
+  const approvalTransactionsQuery = useQuery({
+    queryKey: ApprovalManagementQueryKeys.transactions(),
+    queryFn: GetApprovalTransactions,
+    enabled: Boolean(accessToken) && isAuthSessionReady,
+    placeholderData: [],
+    refetchInterval: 60_000,
+    retry: false,
+  });
   const {
     data: authProfile,
     error: authProfileError,
@@ -232,6 +246,44 @@ export function useMainLayout() {
   const profileActiveCompanyId = authProfile ? GetAuthProfileCompanyId(authProfile) : null;
   const [activeCompanyId, setActiveCompanyId] = useState("");
   const [notifications, setNotifications] = useState<MainNotification[]>(MainLayoutInitialNotifications);
+
+  useEffect(() => {
+    const transactions = approvalTransactionsQuery.data ?? [];
+    const pendingTransactions = transactions.filter((transaction) => {
+      const status = transaction.status.trim().toUpperCase();
+
+      return status !== "APPROVED" && status !== "DISAPPROVED";
+    });
+
+    setApprovalTransactions(transactions);
+    setNotifications((current) => {
+      const notificationId = "pending-approval-transactions";
+      const existing = current.find(
+        (notification) => notification.id === notificationId,
+      );
+      const withoutApprovalNotification = current.filter(
+        (notification) => notification.id !== notificationId,
+      );
+
+      if (pendingTransactions.length === 0) {
+        return withoutApprovalNotification;
+      }
+
+      const body = `${pendingTransactions.length} approval ${pendingTransactions.length === 1 ? "transaction needs" : "transactions need"} your attention.`;
+
+      return [
+        {
+          id: notificationId,
+          title: "Pending approvals",
+          body,
+          href: "/system-administration/approval-management/approval-transactions",
+          time: "Now",
+          isRead: existing?.body === body ? existing.isRead : false,
+        },
+        ...withoutApprovalNotification,
+      ];
+    });
+  }, [approvalTransactionsQuery.data, setApprovalTransactions]);
   const query = queryState.pathname === pathname ? queryState.value : "";
   const isSearchOpen = searchOpenPath === pathname;
   const isNotificationsOpen = notificationsOpenPath === pathname;

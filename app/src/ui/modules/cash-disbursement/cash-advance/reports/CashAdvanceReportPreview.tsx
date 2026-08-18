@@ -1,21 +1,13 @@
 "use client";
 
-import {
-  formatCashAdvanceCurrency,
-  formatCashAdvanceDate,
-} from "@/app/src/data/modules/cash-disbursement/cash-advance/CashAdvanceData";
+import { formatCashAdvanceCurrency, formatCashAdvanceDate } from "@/app/src/data/modules/cash-disbursement/cash-advance/CashAdvanceData";
 import type {
   CashAdvanceFormValues,
   CashAdvanceReportPreviewProps,
 } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 import { ReportPreviewDrawer } from "@/app/src/ui/shared/reports/Reports";
 
-export function CashAdvanceReportPreview({
-  isOpen,
-  onClose,
-  onGeneratePdf,
-  values,
-}: CashAdvanceReportPreviewProps) {
+export function CashAdvanceReportPreview({ isOpen, onClose, onGeneratePdf, values }: CashAdvanceReportPreviewProps) {
   return (
     <ReportPreviewDrawer
       isOpen={isOpen}
@@ -40,9 +32,7 @@ function CashAdvanceReportDocument({ values }: { values: CashAdvanceFormValues }
     <div className="mx-auto min-w-[56rem] max-w-[56rem] bg-white p-6 text-[13px] leading-normal text-black shadow-sm">
       <div className="border-2 border-black">
         <div className="grid min-h-36 grid-cols-[10rem_1fr_10rem] items-start px-7 py-4">
-          <div className="grid h-24 w-28 place-items-center text-4xl font-black tracking-tighter text-skyblue">
-            integr8
-          </div>
+          <div className="grid h-24 w-28 place-items-center text-4xl font-black tracking-tighter text-skyblue">integr8</div>
           <div className="text-center">
             <p className="text-lg font-bold">Your Company Name Here</p>
             <p className="mt-2">VAT REG TIN : 000-000-000</p>
@@ -55,8 +45,7 @@ function CashAdvanceReportDocument({ values }: { values: CashAdvanceFormValues }
         <div className="grid grid-cols-[1fr_21rem] items-end border-b-2 border-black px-3 pb-1">
           <h2 className="text-3xl font-black uppercase tracking-tight">Cash Advance Request Form</h2>
           <p className="pb-0.5 font-bold">
-            Cash Advance Date:{" "}
-            <span className="font-normal">{formatCompactDate(values.documentDate)}</span>
+            Cash Advance Date: <span className="font-normal">{formatCompactDate(values.documentDate)}</span>
           </p>
         </div>
 
@@ -83,15 +72,7 @@ function CashAdvanceReportDocument({ values }: { values: CashAdvanceFormValues }
   );
 }
 
-function RequestLine({
-  label,
-  minHeightClassName = "min-h-7",
-  value,
-}: {
-  label: string;
-  minHeightClassName?: string;
-  value?: string;
-}) {
+function RequestLine({ label, minHeightClassName = "min-h-7", value }: { label: string; minHeightClassName?: string; value?: string }) {
   return (
     <div className={`border-b-2 border-black px-2 py-1 ${minHeightClassName}`}>
       <span className="font-bold uppercase">{label}: </span>

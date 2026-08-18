@@ -21,7 +21,7 @@ export function CashSalesInvoiceActionPage() {
   const mode = getModeFromPathname(pathname);
   const isReadonly = mode === "view";
   const recordId = typeof params.recordId === "string" ? params.recordId : undefined;
-  const [activeTab, setActiveTab] = useState<CashSalesInvoiceEntryTab>("details");
+  const [activeTab, setActiveTab] = useState<CashSalesInvoiceEntryTab>("inventory");
   const invoiceForm = useCashSalesInvoiceActionForm(mode, recordId, () => {
     router.push(CashSalesInvoiceHref);
   });

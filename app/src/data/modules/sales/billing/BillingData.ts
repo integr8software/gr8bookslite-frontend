@@ -101,41 +101,7 @@ export const BillingTaxTypeOptions = [
 	{ name: "5.00", value: "5.00" },
 ];
 
-export const MockBillings: BillingRecord[] = [
-	{
-		id: "b-001",
-		amount: 18450,
-		customerCode: "CUST-001",
-		customerName: "North Harbor Office Depot",
-		documentDate: "2026-07-15",
-		invoiceNo: "B-2026-0001",
-		referenceNo: "PO-2026-0192",
-		status: "Draft",
-		transactionNo: "B-2026-0001",
-	},
-	{
-		id: "b-002",
-		amount: 62500,
-		customerCode: "CUST-002",
-		customerName: "Aster Foods Corporation",
-		documentDate: "2026-07-11",
-		invoiceNo: "B-2026-0002",
-		referenceNo: "JO-2026-0048",
-		status: "For Approval",
-		transactionNo: "B-2026-0002",
-	},
-	{
-		id: "b-003",
-		amount: 93800,
-		customerCode: "CUST-003",
-		customerName: "Harborview Logistics",
-		documentDate: "2026-07-08",
-		invoiceNo: "B-2026-0003",
-		referenceNo: "SO-2026-0105",
-		status: "Posted",
-		transactionNo: "B-2026-0003",
-	},
-];
+export const MockBillings: BillingRecord[] = [];
 
 export function createBlankBillingLineEntry(
 	overrides: Partial<BillingLineEntry> = {},
@@ -171,6 +137,7 @@ export function createBillingFormValues(): BillingFormValues {
 
 	const values = {
 		address: "",
+		attachments: [],
 		billToName: "",
 		code: "",
 		name: "",
@@ -229,6 +196,10 @@ export function createBillingFormValuesFromRecord(
 		const formValues = {
 			...defaultValues,
 			...record.formValues,
+			attachments:
+				record.formValues.attachments?.map((attachment) => ({
+					...attachment,
+				})) ?? [],
 			lineEntries: record.formValues.lineEntries.map((entry) => ({ ...entry })),
 		};
 
@@ -282,6 +253,9 @@ export function createBillingRecordFromForm(
 		documentDate: values.documentDate,
 		formValues: {
 			...values,
+			attachments: values.attachments.map((attachment) => ({
+				...attachment,
+			})),
 			lineEntries: values.lineEntries.map((entry) => ({ ...entry })),
 		},
 		invoiceNo: values.invoiceNo || values.transactionNo,
@@ -327,7 +301,10 @@ export function createBillingAccountingEntries({
 	const receivableAmount = Math.max(0, totals.grossAmount);
 	const discountAmount = Math.max(0, totals.discountAmount);
 	const vatAmount = Math.max(0, totals.vatAmount);
-	const serviceAmount = Math.max(0, totals.netAmount);
+	const serviceAmount = Math.max(
+		0,
+		receivableAmount + discountAmount - vatAmount,
+	);
 
 	return [
 		{
@@ -390,7 +367,7 @@ export function createBillingAccountingEntries({
 }
 
 export function getInitialBillings() {
-	return readStoredBillings() ?? MockBillings;
+	return readStoredBillings() ?? [];
 }
 
 export function readStoredBillings() {

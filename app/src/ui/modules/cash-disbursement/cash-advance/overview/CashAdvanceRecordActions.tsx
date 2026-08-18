@@ -11,15 +11,9 @@ import {
   canEditCashAdvanceStatus,
   getCashAdvanceStatusDialogCopy,
 } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
-import type {
-  CashAdvanceRecord,
-  CashAdvanceStatus,
-} from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
+import type { CashAdvanceRecord, CashAdvanceStatus } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import {
-  ModuleActionMenu,
-  type ModuleActionMenuItem,
-} from "@/app/src/ui/shared/module/ModuleActionMenu";
+import { ModuleActionMenu, type ModuleActionMenuItem } from "@/app/src/ui/shared/module/ModuleActionMenu";
 import { ModuleTableActions } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
 export function CashAdvanceRecordActions({
@@ -104,10 +98,7 @@ export function CashAdvanceRecordActions({
   return (
     <>
       <ModuleTableActions className="!justify-center">
-        <ModuleActionMenu
-          items={items}
-          label={`Actions for cash advance ${record.transNo}`}
-        />
+        <ModuleActionMenu items={items} label={`Actions for cash advance ${record.transNo}`} />
       </ModuleTableActions>
       {statusDialogCopy ? (
         <AppDialog

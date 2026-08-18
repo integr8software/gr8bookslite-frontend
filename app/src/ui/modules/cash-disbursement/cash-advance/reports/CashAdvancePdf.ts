@@ -2,9 +2,10 @@ import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import type { Content, TableCell, TDocumentDefinitions } from "pdfmake/interfaces";
 import {
-  formatCashAdvanceCurrency,
-  formatCashAdvanceDate,
-} from "@/app/src/data/modules/cash-disbursement/cash-advance/CashAdvanceData";
+  CashAdvancePdfNoBordersLayout,
+  CashAdvancePdfRequestFormLayout,
+} from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
+import { formatCashAdvanceCurrency, formatCashAdvanceDate } from "@/app/src/data/modules/cash-disbursement/cash-advance/CashAdvanceData";
 import type { CashAdvanceFormValues } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 
 pdfMake.addVirtualFileSystem(pdfFonts);
@@ -13,9 +14,7 @@ export function openCashAdvancePdf(values: CashAdvanceFormValues) {
   pdfMake.createPdf(createCashAdvancePdfDefinition(values)).open();
 }
 
-function createCashAdvancePdfDefinition(
-  values: CashAdvanceFormValues,
-): TDocumentDefinitions {
+function createCashAdvancePdfDefinition(values: CashAdvanceFormValues): TDocumentDefinitions {
   const amount = Number(values.amount || 0);
   const accountTitle = getCashAdvanceAccountTitle(values.accountCode);
   const purpose = [accountTitle, values.remarks].filter(Boolean).join(" - ");
@@ -65,7 +64,7 @@ function createCashAdvancePdfDefinition(
                     ],
                   ],
                 },
-                layout: noBordersLayout,
+                layout: CashAdvancePdfNoBordersLayout,
               },
               { text: "" },
               { text: "" },
@@ -79,10 +78,7 @@ function createCashAdvancePdfDefinition(
               },
               {
                 colSpan: 2,
-                text: [
-                  { text: "Cash Advance Date: ", bold: true },
-                  formatCompactDate(values.documentDate),
-                ],
+                text: [{ text: "Cash Advance Date: ", bold: true }, formatCompactDate(values.documentDate)],
                 margin: [0, 11, 0, 0],
               },
               { text: "" },
@@ -106,7 +102,7 @@ function createCashAdvancePdfDefinition(
             ],
           ],
         },
-        layout: requestFormLayout,
+        layout: CashAdvancePdfRequestFormLayout,
       },
       horizontalLine(547, [0, 10, 0, 6]),
       {
@@ -122,10 +118,7 @@ function requestRow(label: string, value?: string, height = 16): TableCell[] {
   return [
     {
       colSpan: 3,
-      text: [
-        { text: `${label.toUpperCase()}: `, bold: true },
-        value || " ",
-      ],
+      text: [{ text: `${label.toUpperCase()}: `, bold: true }, value || " "],
       margin: [4, 4, 4, height - 12],
     },
     { text: "" },
@@ -218,23 +211,3 @@ function integerToWords(value: number): string {
 
   return `${integerToWords(Math.floor(value / 1000000))} Million${value % 1000000 ? ` ${integerToWords(value % 1000000)}` : ""}`;
 }
-
-const noBordersLayout = {
-  hLineWidth: () => 0,
-  vLineWidth: () => 0,
-  paddingLeft: () => 0,
-  paddingRight: () => 0,
-  paddingTop: () => 0,
-  paddingBottom: () => 0,
-};
-
-const requestFormLayout = {
-  hLineWidth: () => 1,
-  vLineWidth: () => 1,
-  hLineColor: () => "#000000",
-  vLineColor: () => "#000000",
-  paddingLeft: () => 0,
-  paddingRight: () => 0,
-  paddingTop: () => 0,
-  paddingBottom: () => 0,
-};

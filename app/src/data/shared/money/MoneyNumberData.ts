@@ -21,6 +21,21 @@ export function formatMoneyNumberInput(value: string, allowNegative = false) {
 	return `${sign}${formattedWholePart || "0"}.${decimalPart}`;
 }
 
+export function formatMoneyNumberDisplayValue(
+	value: string | number | null | undefined,
+	allowNegative = false,
+) {
+	const formattedValue = formatMoneyNumberInput(String(value ?? ""), allowNegative);
+
+	if (!formattedValue || formattedValue === "-") {
+		return formattedValue;
+	}
+
+	const [wholePart, decimalPart = ""] = formattedValue.split(".");
+
+	return `${wholePart}.${decimalPart.padEnd(2, "0")}`;
+}
+
 export function parseMoneyNumberInput(value: string | number | null | undefined) {
 	if (typeof value === "number") {
 		return Number.isFinite(value) ? value : 0;

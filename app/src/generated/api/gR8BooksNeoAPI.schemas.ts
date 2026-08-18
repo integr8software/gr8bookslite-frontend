@@ -555,7 +555,6 @@ export interface AttachPaymentMethodResponseDto {
   message: string;
   subscription: CompanySubscriptionResponseDto;
   paymentIntent: PaymentIntentResponseDto;
-  pendingProviderActivation?: boolean;
 }
 
 export interface CancelCompanySubscriptionDto {
@@ -3581,6 +3580,7 @@ export interface PartyResponseDto {
   vendorAdvanceAccount: string;
   employeeAdvanceAccount: string;
   employeePayableAccount: string;
+  cashAdvanceLimit: string;
   accountingAccounts: PartyAccountingAccountsResponseDto;
   termId: string;
   termName: string;
@@ -3665,6 +3665,8 @@ export interface PartyOptionResponseDto {
   email: string;
   contactNo: string;
   status: PartyResponseDtoStatus;
+  cashAdvanceLimit?: string;
+  cashAdvanceBalance?: string;
 }
 
 export interface PartyOptionsResponseDto {
@@ -3810,6 +3812,7 @@ export interface CreatePartyDto {
   employeeAdvanceAccount?: string | null;
   /** @maxLength 80 */
   employeePayableAccount?: string | null;
+  cashAdvanceLimit?: number | null;
   termId?: string | null;
   tin?: string | null;
   /** @maxLength 40 */
@@ -3862,6 +3865,7 @@ export interface UpdatePartyDto {
   vendorAdvanceAccount?: string | null;
   employeeAdvanceAccount?: string | null;
   employeePayableAccount?: string | null;
+  cashAdvanceLimit?: number | null;
   termId?: string | null;
   tin?: string | null;
   atcCode?: string | null;
@@ -5027,3 +5031,82 @@ export type ServiceInvoiceControllerSuggestTransactionNumberV1Params =
 
 export type ServiceInvoiceControllerFindOneV1Params =
   ServiceInvoiceControllerFindAllV1Params;
+
+export type BillingDetailResponseDto = ServiceInvoiceDetailResponseDto;
+export type BillingJournalEntryResponseDto =
+  ServiceInvoiceJournalEntryResponseDto;
+export type BillingResponseDtoStatus = ServiceInvoiceResponseDtoStatus;
+export const BillingResponseDtoStatus = ServiceInvoiceResponseDtoStatus;
+export type BillingResponseDto = ServiceInvoiceResponseDto;
+export type BillingStatisticsResponseDto = ServiceInvoiceStatisticsResponseDto;
+export type BillingPaginationResponseDto = ServiceInvoicePaginationResponseDto;
+export type BillingPermissionsResponseDto = ServiceInvoicePermissionsResponseDto;
+export type BillingListResponseDto = ServiceInvoiceListResponseDto;
+export type BillingContainerResponseDto = ServiceInvoiceContainerResponseDto;
+export type SaveBillingResponseDto = SaveServiceInvoiceResponseDto;
+export type BillingNumberSuggestionResponseDto =
+  ServiceInvoiceNumberSuggestionResponseDto;
+export type BillingDetailDto = ServiceInvoiceDetailDto;
+export type BillingJournalEntryDtoReferenceType = "BILL";
+export const BillingJournalEntryDtoReferenceType = {
+  BILL: "BILL",
+} as const;
+export type BillingJournalEntryDto = Omit<
+  ServiceInvoiceJournalEntryDto,
+  "referenceType"
+> & {
+  referenceType?: BillingJournalEntryDtoReferenceType;
+};
+export type CreateBillingDto = Omit<
+  CreateServiceInvoiceDto,
+  "details" | "journalEntries"
+> & {
+  details: BillingDetailDto[];
+  journalEntries: BillingJournalEntryDto[];
+};
+export interface UpdateBillingDto extends Partial<CreateBillingDto> {}
+export type UpdateBillingStatusDtoStatus = UpdateServiceInvoiceStatusDtoStatus;
+export const UpdateBillingStatusDtoStatus = UpdateServiceInvoiceStatusDtoStatus;
+export type UpdateBillingStatusDto = UpdateServiceInvoiceStatusDto;
+export type BillingControllerFindAllV1Status =
+  ServiceInvoiceControllerFindAllV1Status;
+export const BillingControllerFindAllV1Status =
+  ServiceInvoiceControllerFindAllV1Status;
+export type BillingControllerFindAllV1SortBy =
+  ServiceInvoiceControllerFindAllV1SortBy;
+export const BillingControllerFindAllV1SortBy =
+  ServiceInvoiceControllerFindAllV1SortBy;
+export type BillingControllerFindAllV1SortDirection =
+  ServiceInvoiceControllerFindAllV1SortDirection;
+export const BillingControllerFindAllV1SortDirection =
+  ServiceInvoiceControllerFindAllV1SortDirection;
+export type BillingControllerFindAllV1Params =
+  ServiceInvoiceControllerFindAllV1Params;
+export type BillingControllerSuggestTransactionNumberV1Status =
+  BillingControllerFindAllV1Status;
+export const BillingControllerSuggestTransactionNumberV1Status =
+  BillingControllerFindAllV1Status;
+export type BillingControllerSuggestTransactionNumberV1SortBy =
+  BillingControllerFindAllV1SortBy;
+export const BillingControllerSuggestTransactionNumberV1SortBy =
+  BillingControllerFindAllV1SortBy;
+export type BillingControllerSuggestTransactionNumberV1SortDirection =
+  BillingControllerFindAllV1SortDirection;
+export const BillingControllerSuggestTransactionNumberV1SortDirection =
+  BillingControllerFindAllV1SortDirection;
+export type BillingControllerSuggestTransactionNumberV1Params =
+  BillingControllerFindAllV1Params;
+export type BillingControllerFindOneV1Status = BillingControllerFindAllV1Status;
+export const BillingControllerFindOneV1Status =
+  BillingControllerFindAllV1Status;
+export type BillingControllerFindOneV1SortBy = BillingControllerFindAllV1SortBy;
+export const BillingControllerFindOneV1SortBy =
+  BillingControllerFindAllV1SortBy;
+export type BillingControllerFindOneV1SortDirection =
+  BillingControllerFindAllV1SortDirection;
+export const BillingControllerFindOneV1SortDirection =
+  BillingControllerFindAllV1SortDirection;
+export type BillingControllerFindOneV1Params = BillingControllerFindAllV1Params;
+export type CreateManualCheckoutSessionDto = { [key: string]: unknown };
+export type ManualCheckoutSessionResponseDto = { [key: string]: unknown };
+export type BillingPaymentAttemptResponseDto = { [key: string]: unknown };

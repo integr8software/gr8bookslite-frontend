@@ -7,6 +7,29 @@ import type { ModuleDataEntryClearAction } from "@/app/src/types/shared/module/m
 
 export const DisbursementVoucherLineEntriesField = "lineEntries";
 
+export const DisbursementVoucherAccountingDropdownClassName =
+  "[&_.app-advanced-dropdown-control]:h-10 [&_.app-advanced-dropdown-control]:rounded-none [&_.app-advanced-dropdown-control]:border-0 [&_.app-advanced-dropdown-control]:bg-transparent [&_.app-advanced-dropdown-control]:px-3 [&_.app-advanced-dropdown-control]:shadow-none [&_.app-advanced-dropdown-control]:focus:ring-2 [&_.app-advanced-dropdown-control]:focus:ring-inset [&_.app-advanced-dropdown-control]:focus:ring-skyblue/35";
+
+export const DisbursementAccountingDebitColumnId: DisbursementAccountingGridColumnId = "debit";
+export const DisbursementAccountingCreditColumnId: DisbursementAccountingGridColumnId = "credit";
+export const DisbursementAccountingAmountColumnIds = new Set<DisbursementAccountingGridColumnId>([
+  DisbursementAccountingDebitColumnId,
+  DisbursementAccountingCreditColumnId,
+]);
+
+export const DisbursementAccountingWorksheetBorderColorArgb = "FFE5E7EB";
+
+export const DisbursementAccountingPdfGridLayout = {
+  hLineColor: () => "#E5E7EB",
+  hLineWidth: () => 0.6,
+  paddingBottom: () => 0,
+  paddingLeft: () => 0,
+  paddingRight: () => 0,
+  paddingTop: () => 0,
+  vLineColor: () => "#E5E7EB",
+  vLineWidth: () => 0.6,
+};
+
 export const DefaultExpenseEntryColumnOrder: ExpenseEntryColumnId[] = [
   "expenseType",
   "amount",
@@ -28,9 +51,16 @@ export const DefaultExpenseEntryColumnOrder: ExpenseEntryColumnId[] = [
   "checkDate",
 ];
 
-export const DefaultVisibleExpenseEntryColumnOrder = DefaultExpenseEntryColumnOrder.filter(
-  (columnId): columnId is ExpenseEntryColumnId => columnId !== "partyCode",
-);
+export const DefaultVisibleExpenseEntryColumnOrder: ExpenseEntryColumnId[] = [
+  "expenseType",
+  "amount",
+  "vatCode",
+  "ewtCode",
+  "totalAmountDue",
+  "partyName",
+  "particulars",
+  "refId",
+];
 
 export const ProtectedExpenseEntryColumnIds = new Set<ExpenseEntryColumnId>(["expenseType", "amount"]);
 
@@ -57,7 +87,7 @@ export const DefaultDisbursementAccountingGridColumnLabels: Record<DisbursementA
   accountName: "Account Name",
   credit: "Credit",
   debit: "Debit",
-  particulars: "Particulars",
+  particulars: "Remarks",
   taxRate: "Tax Rate",
 };
 
@@ -70,7 +100,7 @@ export const DefaultDisbursementAccountingGridColumnWidths: Record<DisbursementA
   taxRate: 150,
 };
 
-export const DisbursementAccountingImportTemplateHeaders = ["Account Code", "Account Name", "Particulars", "Tax Rate", "Debit", "Credit"];
+export const DisbursementAccountingImportTemplateHeaders = ["Account Code", "Account Name", "Remarks", "Tax Rate", "Debit", "Credit"];
 
 export const DisbursementAccountingImportTemplateRows = [
   ["2010-003", "Accounts Payable", "Settlement of approved office depot payable", "0%", "", "18450.00"],

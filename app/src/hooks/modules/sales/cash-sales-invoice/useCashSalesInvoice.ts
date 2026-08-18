@@ -176,7 +176,6 @@ export function useCashSalesInvoiceTable(invoices: CashSalesInvoiceRecord[]) {
           invoice.customerCode,
           invoice.customerName,
           invoice.sjNo,
-          invoice.drNo,
         ]
           .join(" ")
           .toLowerCase();
@@ -191,11 +190,10 @@ export function useCashSalesInvoiceTable(invoices: CashSalesInvoiceRecord[]) {
   );
   const columns = useMemo<ColumnDef<CashSalesInvoiceRecord>[]>(
     () => [
-      createColumn("transactionNo", "Trans No.", "w-[12rem]"),
-      createColumn("documentDate", "Document Date", "w-[10rem]"),
+      createColumn("transactionNo", "CSI No.", "w-[12rem]"),
+      createColumn("documentDate", "CSI Date", "w-[10rem]"),
       createColumn("customerName", "Party Name", "w-[18rem]"),
       createColumn("sjNo", "SJ No.", "w-[12rem]"),
-      createColumn("drNo", "DR No.", "w-[12rem]"),
       createColumn("status", "Status", "w-[10rem]"),
       {
         id: "actions",

@@ -87,7 +87,7 @@ function BillingHeaderActions({
 				<>
 					<AppCopyFromDropdown
 						records={BillingCopyFromRecords}
-						sources={["Sales Quotation"]}
+						sources={["SQ"]}
 						onApply={() => undefined}
 					/>
 					<div className="flex lg:hidden">

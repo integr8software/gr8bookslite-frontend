@@ -1,0 +1,9 @@
+export type {
+  OfficialReceiptActionMode as CollectionReceiptActionMode,
+  OfficialReceiptEntryView as CollectionReceiptEntryView,
+  OfficialReceiptFormValues as CollectionReceiptFormValues,
+  OfficialReceiptLineEntry as CollectionReceiptLineEntry,
+  OfficialReceiptRecord as CollectionReceiptRecord,
+  OfficialReceiptStatus as CollectionReceiptStatus,
+  OfficialReceiptTotals as CollectionReceiptTotals,
+} from "@/app/src/types/modules/cash-receipt/official-receipt/OfficialReceiptTypes";

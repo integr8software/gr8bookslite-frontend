@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState, type ChangeEventHandler, type ReactNode } from "react";
-import { MultiCurrencyCatalog } from "@/app/src/data/modules/system-administration/multi-currency-setup/MultiCurrencySetupData";
 import { AccountsPayableVoucherPurchaseTransactionType } from "@/app/src/constants/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherConstants";
 import { calculateAccountsPayableVoucherDueDate } from "@/app/src/data/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherData";
 import { findModuleChartAccount, getModuleChartAccounts } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
@@ -71,11 +70,6 @@ export function AccountsPayableVoucherFormPage() {
     () => createTermOptions(createLookupTermOptions(termRecords), page.values.termId, page.values.terms),
     [page.values.termId, page.values.terms, termRecords],
   );
-  const currencyOptions = useMemo(
-    () => createAccountsPayableVoucherCurrencyDropdownOptions(page.baseCurrencyCode),
-    [page.baseCurrencyCode],
-  );
-
   if (page.needsRecord && page.isRecordLoading) {
     return (
       <section className="grid min-h-[22rem] place-items-center rounded-md border border-darknavy/10 bg-white p-8 text-center shadow-sm shadow-darknavy/5">
@@ -304,7 +298,7 @@ export function AccountsPayableVoucherFormPage() {
                       value={page.values.currency}
                       readOnly={page.isReadonly}
                       isClearable={false}
-                      options={currencyOptions}
+                      options={page.currencyOptions}
                       placeholder="Currency"
                       searchPlaceholder="Search currency"
                       onChange={(value) => page.updateCurrency(String(value))}
@@ -535,24 +529,6 @@ function FieldShell({
       </div>
     </div>
   );
-}
-
-function createAccountsPayableVoucherCurrencyOptions() {
-  return MultiCurrencyCatalog.filter((currency) => currency.isEnabled);
-}
-
-function createAccountsPayableVoucherCurrencyDropdownOptions(baseCurrencyCode = "PHP"): AppAdvancedDropdownOption[] {
-  const currencies = createAccountsPayableVoucherCurrencyOptions();
-  const baseCurrency = MultiCurrencyCatalog.find((currency) => currency.code === baseCurrencyCode);
-  const options = baseCurrency && !currencies.some((currency) => currency.code === baseCurrencyCode)
-    ? [...currencies, baseCurrency]
-    : currencies;
-
-  return options.map((currency) => ({
-    label: currency.isDefault ? `${currency.name} | Default` : currency.name,
-    name: currency.code,
-    value: currency.code,
-  }));
 }
 
 function findPayableAccount(value: string, accounts: AccountsPayableVoucherLookupAccount[]) {

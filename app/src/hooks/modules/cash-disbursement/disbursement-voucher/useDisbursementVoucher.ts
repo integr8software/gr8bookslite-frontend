@@ -15,10 +15,12 @@ import {
   DisbursementVoucherDefaultColumnOrder,
   DisbursementVoucherDefaultColumnVisibility,
   DisbursementVoucherDefaultSorting,
+  DisbursementVoucherAllStatusFilter,
   DisbursementVoucherStatusFilters,
   DisbursementVoucherTableColumns,
   DisbursementVoucherTablePreferencesModuleKey,
   DisbursementVoucherTablePreferencesStorageKey,
+  DisbursementVoucherQueryKeys,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import {
   getSeedDisbursementTransactions,
@@ -31,31 +33,18 @@ import {
   writeStoredDisbursementTransactions,
   writeStoredDisbursementVouchers,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
-import { DisbursementVoucherQueryKeys } from "@/app/src/services/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherQueryKeys";
+import { normalizeLowercaseWhitespace } from "@/app/src/utils/string.util";
 import type {
   DisbursementVoucherPreviewRow,
   DisbursementVoucherRecord,
   DisbursementTransactionRecord,
   DisbursementVoucherTableColumnKey,
+  DisbursementVoucherStoreState,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
 import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import { useTablePreferences } from "@/app/src/hooks/shared/table-preferences/useTablePreferences";
-
-type DisbursementVoucherStoreState = {
-  previewRows: DisbursementVoucherPreviewRow[];
-  transactions: DisbursementTransactionRecord[];
-  vouchers: DisbursementVoucherRecord[];
-  addTransaction: (transaction: DisbursementTransactionRecord) => void;
-  updateTransaction: (transaction: DisbursementTransactionRecord) => void;
-  addVoucher: (voucher: DisbursementVoucherRecord) => void;
-  updateVoucher: (voucher: DisbursementVoucherRecord) => void;
-  deleteVoucher: (voucherId: string) => void;
-  isLoading: boolean;
-  lastSyncedAt: number;
-  isMutating: boolean;
-};
 
 function getInitialTransactions() {
   return readStoredDisbursementTransactions() ?? getSeedDisbursementTransactions();
@@ -65,9 +54,9 @@ function getInitialVouchers() {
   return readStoredDisbursementVouchers() ?? getSeedDisbursementVouchers();
 }
 
-export function useDisbursementVoucherStore<
-  TSelected = DisbursementVoucherStoreState,
->(selector?: (state: DisbursementVoucherStoreState) => TSelected) {
+export function useDisbursementVoucherStore<TSelected = DisbursementVoucherStoreState>(
+  selector?: (state: DisbursementVoucherStoreState) => TSelected,
+) {
   const queryClient = useQueryClient();
   const transactionsQuery = useQuery({
     queryKey: DisbursementVoucherQueryKeys.transactions(),
@@ -80,15 +69,11 @@ export function useDisbursementVoucherStore<
     initialData: getInitialVouchers,
   });
 
-  function updateCachedVouchers(
-    updater: (vouchers: DisbursementVoucherRecord[]) => DisbursementVoucherRecord[],
-  ) {
+  function updateCachedVouchers(updater: (vouchers: DisbursementVoucherRecord[]) => DisbursementVoucherRecord[]) {
     queryClient.setQueryData<DisbursementVoucherRecord[]>(
       DisbursementVoucherQueryKeys.vouchers(),
       (currentVouchers = getInitialVouchers()) => {
-        const nextVouchers = updater(
-          currentVouchers.map(sanitizeDisbursementVoucherRecord),
-        ).map(sanitizeDisbursementVoucherRecord);
+        const nextVouchers = updater(currentVouchers.map(sanitizeDisbursementVoucherRecord)).map(sanitizeDisbursementVoucherRecord);
 
         writeStoredDisbursementVouchers(nextVouchers);
 
@@ -97,11 +82,7 @@ export function useDisbursementVoucherStore<
     );
   }
 
-  function updateCachedTransactions(
-    updater: (
-      transactions: DisbursementTransactionRecord[],
-    ) => DisbursementTransactionRecord[],
-  ) {
+  function updateCachedTransactions(updater: (transactions: DisbursementTransactionRecord[]) => DisbursementTransactionRecord[]) {
     queryClient.setQueryData<DisbursementTransactionRecord[]>(
       DisbursementVoucherQueryKeys.transactions(),
       (currentTransactions = getInitialTransactions()) => {
@@ -115,20 +96,11 @@ export function useDisbursementVoucherStore<
   }
 
   const addTransactionMutation = useMutation({
-    mutationFn: async (transaction: DisbursementTransactionRecord) =>
-      transaction,
+    mutationFn: async (transaction: DisbursementTransactionRecord) => transaction,
     onSuccess: (transaction) => {
       updateCachedTransactions((transactions) => {
-        if (
-          transactions.some(
-            (currentTransaction) => currentTransaction.id === transaction.id,
-          )
-        ) {
-          return transactions.map((currentTransaction) =>
-            currentTransaction.id === transaction.id
-              ? transaction
-              : currentTransaction,
-          );
+        if (transactions.some((currentTransaction) => currentTransaction.id === transaction.id)) {
+          return transactions.map((currentTransaction) => (currentTransaction.id === transaction.id ? transaction : currentTransaction));
         }
 
         return [transaction, ...transactions];
@@ -140,15 +112,10 @@ export function useDisbursementVoucherStore<
   });
 
   const updateTransactionMutation = useMutation({
-    mutationFn: async (transaction: DisbursementTransactionRecord) =>
-      transaction,
+    mutationFn: async (transaction: DisbursementTransactionRecord) => transaction,
     onSuccess: (transaction) => {
       updateCachedTransactions((transactions) =>
-        transactions.map((currentTransaction) =>
-          currentTransaction.id === transaction.id
-            ? transaction
-            : currentTransaction,
-        ),
+        transactions.map((currentTransaction) => (currentTransaction.id === transaction.id ? transaction : currentTransaction)),
       );
     },
     onError: () => {
@@ -160,7 +127,7 @@ export function useDisbursementVoucherStore<
     mutationFn: async (voucher: DisbursementVoucherRecord) => voucher,
     onSuccess: (voucher) => {
       updateCachedVouchers((vouchers) => [...vouchers, voucher]);
-      toast.success("Disbursement voucher created.");
+      toast.success("Disbursement Voucher Created.");
     },
     onError: () => {
       toast.error("Could not create disbursement voucher. Please try again.");
@@ -170,11 +137,7 @@ export function useDisbursementVoucherStore<
   const updateVoucherMutation = useMutation({
     mutationFn: async (voucher: DisbursementVoucherRecord) => voucher,
     onSuccess: (voucher) => {
-      updateCachedVouchers((vouchers) =>
-        vouchers.map((currentVoucher) =>
-          currentVoucher.id === voucher.id ? voucher : currentVoucher,
-        ),
-      );
+      updateCachedVouchers((vouchers) => vouchers.map((currentVoucher) => (currentVoucher.id === voucher.id ? voucher : currentVoucher)));
       toast.success("Disbursement voucher updated.");
     },
     onError: () => {
@@ -185,9 +148,7 @@ export function useDisbursementVoucherStore<
   const deleteVoucherMutation = useMutation({
     mutationFn: async (voucherId: string) => voucherId,
     onSuccess: (voucherId) => {
-      updateCachedVouchers((vouchers) =>
-        vouchers.filter((voucher) => voucher.id !== voucherId),
-      );
+      updateCachedVouchers((vouchers) => vouchers.filter((voucher) => voucher.id !== voucherId));
       toast.success("Disbursement voucher deleted.");
     },
     onError: () => {
@@ -196,11 +157,7 @@ export function useDisbursementVoucherStore<
   });
 
   const previewRows = useMemo(
-    () =>
-      buildDisbursementVoucherPreviewRows(
-        transactionsQuery.data,
-        vouchersQuery.data.map(sanitizeDisbursementVoucherRecord),
-      ),
+    () => buildDisbursementVoucherPreviewRows(transactionsQuery.data, vouchersQuery.data.map(sanitizeDisbursementVoucherRecord)),
     [transactionsQuery.data, vouchersQuery.data],
   );
 
@@ -210,16 +167,12 @@ export function useDisbursementVoucherStore<
       transactions: transactionsQuery.data,
       vouchers: vouchersQuery.data.map(sanitizeDisbursementVoucherRecord),
       addTransaction: (transaction) => addTransactionMutation.mutate(transaction),
-      updateTransaction: (transaction) =>
-        updateTransactionMutation.mutate(transaction),
+      updateTransaction: (transaction) => updateTransactionMutation.mutate(transaction),
       addVoucher: (voucher) => addVoucherMutation.mutate(voucher),
       updateVoucher: (voucher) => updateVoucherMutation.mutate(voucher),
       deleteVoucher: (voucherId) => deleteVoucherMutation.mutate(voucherId),
       isLoading: transactionsQuery.isLoading || vouchersQuery.isLoading,
-      lastSyncedAt: Math.max(
-        transactionsQuery.dataUpdatedAt,
-        vouchersQuery.dataUpdatedAt,
-      ),
+      lastSyncedAt: Math.max(transactionsQuery.dataUpdatedAt, vouchersQuery.dataUpdatedAt),
       isMutating:
         addTransactionMutation.isPending ||
         addVoucherMutation.isPending ||
@@ -246,9 +199,7 @@ export function useDisbursementVoucherStore<
   return selector ? selector(state) : (state as TSelected);
 }
 
-export function useDisbursementVoucherPreviewTable(
-  previewRows: DisbursementVoucherPreviewRow[],
-) {
+export function useDisbursementVoucherPreviewTable(previewRows: DisbursementVoucherPreviewRow[]) {
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 5,
@@ -262,24 +213,17 @@ export function useDisbursementVoucherPreviewTable(
     from: "",
     to: "",
   });
-  const {
-    columnOrder,
-    columnVisibility,
-    sorting,
-    setColumnOrder,
-    setColumnVisibility,
-    setSorting,
-  } = useTablePreferences({
+  const { columnOrder, columnVisibility, sorting, setColumnOrder, setColumnVisibility, setSorting } = useTablePreferences({
     defaultColumnOrder: DisbursementVoucherDefaultColumnOrder,
     defaultColumnVisibility: DisbursementVoucherDefaultColumnVisibility,
     defaultSorting: DisbursementVoucherDefaultSorting,
     moduleKey: DisbursementVoucherTablePreferencesModuleKey,
     storageKey: DisbursementVoucherTablePreferencesStorageKey,
   });
-  const [statusFilter, setStatusFilterState] = useState<
-    (typeof DisbursementVoucherStatusFilters)[number]
-  >("all");
+  const [statusFilter, setStatusFilterState] =
+    useState<(typeof DisbursementVoucherStatusFilters)[number]>(DisbursementVoucherAllStatusFilter);
   const deferredQuery = useDeferredValue(query);
+  const normalizedQuery = normalizeLowercaseWhitespace(deferredQuery);
   const filteredRows = useMemo(
     () =>
       previewRows.filter((row) => {
@@ -295,23 +239,19 @@ export function useDisbursementVoucherPreviewTable(
           row.voucher?.currency ?? row.transaction.currency,
         ]
           .filter(Boolean)
-          .join(" ")
-          .toLowerCase();
-        const rowStatus = getDisbursementVoucherDisplayStatus(
-          row.voucher?.status ?? row.transaction.status,
-        );
+          .join(" ");
+        const rowStatus = getDisbursementVoucherDisplayStatus(row.voucher?.status ?? row.transaction.status);
         const rowDate = row.voucher?.voucherDate ?? row.transaction.transactionDate;
         const rowAmount = row.voucher?.amount ?? row.transaction.amount;
 
         return (
-          searchable.includes(deferredQuery.toLowerCase()) &&
-          (statusFilter === "all" ||
-            rowStatus === statusFilter) &&
+          normalizeLowercaseWhitespace(searchable).includes(normalizedQuery) &&
+          (statusFilter === DisbursementVoucherAllStatusFilter || rowStatus === statusFilter) &&
           isDateInRange(rowDate, dateRange) &&
           isAmountInRange(rowAmount, amountRange)
         );
       }),
-    [amountRange, dateRange, deferredQuery, previewRows, statusFilter],
+    [amountRange, dateRange, normalizedQuery, previewRows, statusFilter],
   );
   const columns = useMemo<ColumnDef<DisbursementVoucherPreviewRow>[]>(
     () =>
@@ -322,15 +262,12 @@ export function useDisbursementVoucherPreviewTable(
             header: column.label,
             enableHiding: false,
             enableSorting: false,
+            size: column.size,
             meta: { className: column.className, label: column.label },
           };
         }
 
-        return createDisbursementVoucherColumn(
-          column.key,
-          column.label,
-          column.className,
-        );
+        return createDisbursementVoucherColumn(column.key, column.label, column.className, column.size);
       }),
     [],
   );
@@ -364,9 +301,7 @@ export function useDisbursementVoucherPreviewTable(
     table.setPageIndex(0);
   }
 
-  function setStatusFilter(
-    value: (typeof DisbursementVoucherStatusFilters)[number],
-  ) {
+  function setStatusFilter(value: (typeof DisbursementVoucherStatusFilters)[number]) {
     setStatusFilterState(value);
     table.setPageIndex(0);
   }
@@ -385,7 +320,7 @@ export function useDisbursementVoucherPreviewTable(
     setQueryState("");
     setDateRangeState({ from: "", to: "" });
     setAmountRangeState({ from: "", to: "" });
-    setStatusFilterState("all");
+    setStatusFilterState(DisbursementVoucherAllStatusFilter);
     table.setPageIndex(0);
   }
 
@@ -406,9 +341,7 @@ export function useDisbursementVoucherPreviewTable(
 
 function isAmountInRange(value: number, range: AmountRangeValue) {
   const fromAmount = range.from.trim() ? parseMoneyNumberInput(range.from) : 0;
-  const toAmount = range.to.trim()
-    ? parseMoneyNumberInput(range.to)
-    : Number.MAX_SAFE_INTEGER;
+  const toAmount = range.to.trim() ? parseMoneyNumberInput(range.to) : Number.MAX_SAFE_INTEGER;
 
   return value >= fromAmount && value <= toAmount;
 }
@@ -441,25 +374,20 @@ function createDisbursementVoucherColumn(
   key: DisbursementVoucherTableColumnKey,
   header: string,
   className: string,
+  size: number,
 ): ColumnDef<DisbursementVoucherPreviewRow> {
   return {
     id: key,
     accessorFn: (row) => getDisbursementVoucherColumnValue(row, key),
     header,
+    size,
     sortingFn:
-      key === "documentDate" || key === "createdAt" || key === "updatedAt"
-        ? "datetime"
-        : key === "amount"
-          ? "basic"
-          : "alphanumeric",
+      key === "documentDate" || key === "createdAt" || key === "updatedAt" ? "datetime" : key === "amount" ? "basic" : "alphanumeric",
     meta: { className, label: header },
   };
 }
 
-function getDisbursementVoucherColumnValue(
-  row: DisbursementVoucherPreviewRow,
-  key: DisbursementVoucherTableColumnKey,
-) {
+function getDisbursementVoucherColumnValue(row: DisbursementVoucherPreviewRow, key: DisbursementVoucherTableColumnKey) {
   switch (key) {
     case "voucherNo":
       return row.voucher?.voucherNo ?? row.transaction.transactionNo;
@@ -478,9 +406,7 @@ function getDisbursementVoucherColumnValue(
     case "amount":
       return row.voucher?.amount ?? row.transaction.amount;
     case "status":
-      return getDisbursementVoucherDisplayStatus(
-        row.voucher?.status ?? row.transaction.status,
-      );
+      return getDisbursementVoucherDisplayStatus(row.voucher?.status ?? row.transaction.status);
     case "createdBy":
       return row.voucher?.createdBy ?? row.transaction.createdBy ?? "";
     case "createdAt":
@@ -495,11 +421,5 @@ function getDisbursementVoucherColumnValue(
 }
 
 function getDisbursementVoucherPaymentType(row: DisbursementVoucherPreviewRow) {
-  return (
-    row.voucher?.disbursementType ||
-    row.transaction.disbursementType ||
-    row.voucher?.paymentMethod ||
-    row.transaction.paymentMethod
-  );
+  return row.voucher?.disbursementType || row.transaction.disbursementType || row.voucher?.paymentMethod || row.transaction.paymentMethod;
 }
-

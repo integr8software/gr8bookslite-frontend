@@ -216,5 +216,12 @@ function pluralizeEntryLabel(label: string) {
 }
 
 function toTitleCase(value: string) {
-	return value.slice(0, 1).toUpperCase() + value.slice(1);
+	return value
+		.split(/(\s+)/)
+		.map((word) =>
+			/^\s+$/.test(word)
+				? word
+				: word.slice(0, 1).toUpperCase() + word.slice(1),
+		)
+		.join("");
 }

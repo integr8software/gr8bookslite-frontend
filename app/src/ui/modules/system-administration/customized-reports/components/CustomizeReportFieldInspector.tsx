@@ -12,7 +12,13 @@ import type {
   CustomizeReportField,
   CustomizeReportPageSetup,
 } from "@/app/src/types/modules/system-administration/customized-reports/CustomizeReportTypes";
-import { clamp } from "@/app/src/ui/modules/system-administration/customized-reports/utils/CustomizeReportDesignerUtils";
+import {
+  clamp,
+  getFieldPreviewValue,
+} from "@/app/src/ui/modules/system-administration/customized-reports/utils/CustomizeReportDesignerUtils";
+
+const ImageFieldType = "image";
+
 export function CustomizeReportFieldInspector({
   field,
   onDelete,
@@ -21,6 +27,7 @@ export function CustomizeReportFieldInspector({
   onToggleLock,
   onUpdate,
   pageSetup,
+  reportData,
 }: {
   field: CustomizeReportField;
   onDelete: () => void;
@@ -29,7 +36,10 @@ export function CustomizeReportFieldInspector({
   onToggleLock: () => void;
   onUpdate: (updater: (field: CustomizeReportField) => CustomizeReportField) => void;
   pageSetup: CustomizeReportPageSetup;
+  reportData: Record<string, unknown>;
 }) {
+  const editableTextValue = field.value ?? getFieldPreviewValue(field, reportData);
+
   return (
     <>
       <ElementActionPanel
@@ -81,7 +91,7 @@ export function CustomizeReportFieldInspector({
             }))
           }
         />
-        {field.type !== "image" ? (
+        {field.type !== ImageFieldType ? (
           <FieldNumberControl
             label="Font"
             value={field.fontSize}
@@ -95,7 +105,7 @@ export function CustomizeReportFieldInspector({
         ) : null}
       </div>
 
-      {field.value !== undefined ? (
+      {field.type !== ImageFieldType ? (
         <div className="mt-4 space-y-3">
           <TextControl
             label="Label"
@@ -108,6 +118,7 @@ export function CustomizeReportFieldInspector({
             value={field.label}
           />
           <TextControl
+            multiline
             label="Text"
             onChange={(value) =>
               onUpdate((currentField) => ({
@@ -115,12 +126,12 @@ export function CustomizeReportFieldInspector({
                 value,
               }))
             }
-            value={field.value}
+            value={editableTextValue}
           />
         </div>
       ) : null}
 
-      {field.type !== "image" ? (
+      {field.type !== ImageFieldType ? (
         <div className="mt-4 space-y-3">
           <label className="space-y-1">
             <span className="text-xs font-semibold uppercase text-slate-500">Font Family</span>
@@ -158,7 +169,7 @@ export function CustomizeReportFieldInspector({
         </div>
       ) : null}
 
-      {field.type !== "image" ? (
+      {field.type !== ImageFieldType ? (
         <div className="mt-4">
           <p className="mb-2 text-xs font-semibold uppercase text-slate-500">Alignment</p>
           <div className="grid grid-cols-3 overflow-hidden rounded-md border border-slate-200">
@@ -197,7 +208,7 @@ export function CustomizeReportFieldInspector({
       ) : null}
 
       <div className="mt-4 grid grid-cols-2 gap-2">
-        {field.type !== "image" ? (
+        {field.type !== ImageFieldType ? (
           <>
             <button
               className={`${ToolbarButtonClassName} justify-center ${

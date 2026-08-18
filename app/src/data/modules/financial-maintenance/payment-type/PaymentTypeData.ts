@@ -19,7 +19,7 @@ import { downloadBlob } from "@/app/src/ui/shared/module/module-table/ModuleTabl
 import { formatFileSize } from "@/app/src/utils/file.util";
 import { isModuleImportOptionValue } from "@/app/src/utils/module-import.util";
 
-export const PaymentTypeOptions: PaymentTypeClassification[] = ["Cash", "Bank Transfer", "Check", "Digital Wallet", "Non-Cash Settlement"];
+export const PaymentTypeOptions: PaymentTypeClassification[] = ["Bank Transfer", "Check", "Digital Wallet"];
 
 export const PaymentTypeInitialFormValues: PaymentTypeFormValues = {
   description: "",
@@ -50,7 +50,7 @@ export function createPaymentTypeFromForm(values: PaymentTypeFormValues): Paymen
     paymentType: values.paymentType.trim(),
     sortOrder: normalizePaymentTypeSortOrder(values.sortOrder),
     status: values.status,
-    type: values.type || "Cash",
+    type: values.type || "Bank Transfer",
   };
 }
 
@@ -81,7 +81,7 @@ export function createBlankPaymentTypeImportRow(rowNumber: number): PaymentTypeI
       paymentType: "",
       status: "Active",
       sortOrder: 0,
-      type: "Cash",
+      type: "Bank Transfer",
     },
   };
 }
@@ -397,7 +397,6 @@ export function normalizeImportedPaymentTypeClassification(value: string): Payme
     .toLowerCase()
     .replace(/[^a-z0-9]/g, "");
 
-  if (normalized === "cash") return "Cash";
   if (normalized === "banktransfer") return "Bank Transfer";
   if (normalized === "check" || normalized === "withbank") return "Check";
   if (normalized === "multiplecheck" || normalized === "multiplechecks") {
@@ -406,10 +405,6 @@ export function normalizeImportedPaymentTypeClassification(value: string): Payme
   if (normalized === "digitalwallet" || normalized === "ewallet") {
     return "Digital Wallet";
   }
-  if (normalized === "noncashsettlement" || normalized === "debit" || normalized === "debitmemo") {
-    return "Non-Cash Settlement";
-  }
-
   return value as PaymentTypeClassification;
 }
 

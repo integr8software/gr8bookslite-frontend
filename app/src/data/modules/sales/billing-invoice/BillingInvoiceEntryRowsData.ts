@@ -14,20 +14,31 @@ import type { ModuleDataEntryClearAction } from "@/app/src/ui/shared/module/modu
 export function recalculateBillingInvoiceLineEntry(
 	entry: BillingInvoiceLineEntry,
 ): BillingInvoiceLineEntry {
-	const unitPrice = parseMoneyNumberInput(entry.amount);
+	const amount = parseMoneyNumberInput(entry.amount);
 	const quantity = parseMoneyNumberInput(entry.quantity);
-	const discountAmount = parseMoneyNumberInput(entry.discountAmount);
-	const netAmount =
-		unitPrice > 0
-			? unitPrice * Math.max(quantity, 1)
-			: parseMoneyNumberInput(entry.netAmount);
-	const vatAmount = parseMoneyNumberInput(entry.vatAmount);
-	const grossAmount = Math.max(netAmount + vatAmount - discountAmount, 0);
+	const netAmount = amount * Math.max(quantity, 0);
+	const discountPercent = parseMoneyNumberInput(entry.discountPercent);
+	const discountAmount = netAmount * (Math.max(discountPercent, 0) / 100);
+	const grossAfterDiscount = Math.max(netAmount - discountAmount, 0);
+	const isVatable = entry.vatable.toLowerCase() === "true";
+	const isVatInclusive =
+		isVatable && entry.vatInclusive.toLowerCase() === "true";
+	const vatAmount = !isVatable
+		? 0
+		: isVatInclusive
+			? (grossAfterDiscount / 1.12) * 0.12
+			: grossAfterDiscount * 0.12;
+	const grossAmount =
+		isVatable && !isVatInclusive
+			? grossAfterDiscount + vatAmount
+			: grossAfterDiscount;
 
 	return {
 		...entry,
+		discountAmount: discountAmount.toFixed(2),
 		grossAmount: grossAmount.toFixed(2),
 		netAmount: netAmount.toFixed(2),
+		vatAmount: vatAmount.toFixed(2),
 	};
 }
 

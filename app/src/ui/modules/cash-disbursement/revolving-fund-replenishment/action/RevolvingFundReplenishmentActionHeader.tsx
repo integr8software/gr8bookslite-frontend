@@ -1,0 +1,134 @@
+"use client";
+
+import Link from "next/link";
+import { useState } from "react";
+import { ArrowLeft, Ban, Edit3, FileText, ThumbsDown, ThumbsUp } from "lucide-react";
+import {
+  RevolvingFundReplenishmentHref,
+  RevolvingFundReplenishmentStatuses,
+} from "@/app/src/constants/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentConstants";
+import type { RevolvingFundReplenishmentActionPageState } from "@/app/src/hooks/modules/cash-disbursement/revolving-fund-replenishment/useRevolvingFundReplenishmentActionPage";
+import type { RevolvingFundReplenishmentConfirmationAction } from "@/app/src/types/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentTypes";
+import { RevolvingFundReplenishmentActionHistory } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/action/RevolvingFundReplenishmentActionHistory";
+import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
+import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
+import { ModuleSaveButton } from "@/app/src/ui/shared/module/ModuleSaveButton";
+import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
+
+export function RevolvingFundReplenishmentActionHeader({
+  onPreview,
+  page,
+}: {
+  onPreview: () => void;
+  page: RevolvingFundReplenishmentActionPageState;
+}) {
+  const [confirmation, setConfirmation] = useState<RevolvingFundReplenishmentConfirmationAction | null>(null);
+  const transactionNo = page.record?.transactionNo ?? page.values.transactionNo;
+  const title =
+    page.mode === "add" ? (
+      "Add Revolving Fund Replenishment"
+    ) : (
+      <span className="inline-flex flex-wrap items-center gap-2">
+        {page.mode === "view" ? "View" : "Edit"} Revolving Fund Replenishment | {transactionNo}
+        <ModuleStatusBadge status={page.values.status} />
+      </span>
+    );
+  return (
+    <>
+      <ModuleHeader
+        variant="panel"
+        title={title}
+        titleAs="h1"
+        description={
+          page.mode === "view"
+            ? "Review replenishment details, entries, and supporting files."
+            : "Prepare revolving fund voucher entries for fund replenishment."
+        }
+        actions={
+          <>
+            <Link href={RevolvingFundReplenishmentHref} className={moduleHeaderActionClassNames.secondary}>
+              <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+              Back
+            </Link>
+            <button type="button" onClick={onPreview} className={moduleHeaderActionClassNames.secondary}>
+              <FileText className="h-4 w-4" aria-hidden="true" />
+              Preview
+            </button>
+            {page.mode !== "add" ? <RevolvingFundReplenishmentActionHistory record={page.record} /> : null}
+            {page.mode === "view" && page.record ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setConfirmation("approve")}
+                  className="inline-flex h-10 items-center gap-2 rounded-md border border-emerald-200 bg-white px-4 text-sm font-semibold text-emerald-700 hover:bg-emerald-50"
+                >
+                  <ThumbsUp className="h-4 w-4" aria-hidden="true" />
+                  Approve
+                </button>
+                <button type="button" onClick={() => setConfirmation("disapprove")} className={moduleHeaderActionClassNames.danger}>
+                  <ThumbsDown className="h-4 w-4" aria-hidden="true" />
+                  Disapprove
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmation("cancel")}
+                  className="inline-flex h-10 items-center gap-2 rounded-md border border-amber-200 bg-white px-4 text-sm font-semibold text-amber-700 hover:bg-amber-50"
+                >
+                  <Ban className="h-4 w-4" aria-hidden="true" />
+                  Cancel
+                </button>
+                <Link href={`${RevolvingFundReplenishmentHref}/edit/${page.record.id}`} className={moduleHeaderActionClassNames.primary}>
+                  <Edit3 className="h-4 w-4" aria-hidden="true" />
+                  Edit
+                </Link>
+              </>
+            ) : null}
+            {page.mode !== "view" ? (
+              <ModuleSaveButton
+                label={page.mode === "edit" ? "Update" : "Save"}
+                onSave={() => setConfirmation("save")}
+                menuItems={page.mode === "add" ? [{ label: "Save As Draft", onSelect: () => setConfirmation("draft") }] : []}
+              />
+            ) : null}
+          </>
+        }
+      />
+      {confirmation ? (
+        <AppDialog
+          isOpen
+          title={getDialogTitle(confirmation)}
+          description={`This will ${confirmation === "save" ? "save and submit" : confirmation} ${transactionNo}.`}
+          confirmLabel={
+            confirmation === "save"
+              ? "Save and Submit"
+              : confirmation === "draft"
+                ? "Save as Draft"
+                : confirmation.charAt(0).toUpperCase() + confirmation.slice(1)
+          }
+          tone={
+            confirmation === "approve" || confirmation === "save"
+              ? "success"
+              : confirmation === "disapprove" || confirmation === "cancel"
+                ? "danger"
+                : "default"
+          }
+          onCancel={() => setConfirmation(null)}
+          onConfirm={() => {
+            if (confirmation === "save") page.save(RevolvingFundReplenishmentStatuses.forApproval);
+            else if (confirmation === "draft") page.save(RevolvingFundReplenishmentStatuses.draft);
+            else if (confirmation === "approve") page.updateStatus(RevolvingFundReplenishmentStatuses.posted);
+            else if (confirmation === "disapprove") page.updateStatus(RevolvingFundReplenishmentStatuses.disapproved);
+            else page.updateStatus(RevolvingFundReplenishmentStatuses.cancelled);
+            setConfirmation(null);
+          }}
+        />
+      ) : null}
+    </>
+  );
+}
+
+function getDialogTitle(action: RevolvingFundReplenishmentConfirmationAction) {
+  if (action === "save") return "Save revolving fund replenishment?";
+  if (action === "draft") return "Save as draft?";
+  return `${action.charAt(0).toUpperCase() + action.slice(1)} revolving fund replenishment?`;
+}

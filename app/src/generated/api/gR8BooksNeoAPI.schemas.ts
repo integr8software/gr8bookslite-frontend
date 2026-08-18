@@ -3580,6 +3580,7 @@ export interface PartyResponseDto {
   vendorAdvanceAccount: string;
   employeeAdvanceAccount: string;
   employeePayableAccount: string;
+  cashAdvanceLimit: string;
   accountingAccounts: PartyAccountingAccountsResponseDto;
   termId: string;
   termName: string;
@@ -3664,6 +3665,8 @@ export interface PartyOptionResponseDto {
   email: string;
   contactNo: string;
   status: PartyResponseDtoStatus;
+  cashAdvanceLimit?: string;
+  cashAdvanceBalance?: string;
 }
 
 export interface PartyOptionsResponseDto {
@@ -3809,6 +3812,7 @@ export interface CreatePartyDto {
   employeeAdvanceAccount?: string | null;
   /** @maxLength 80 */
   employeePayableAccount?: string | null;
+  cashAdvanceLimit?: number | null;
   termId?: string | null;
   tin?: string | null;
   /** @maxLength 40 */
@@ -3861,6 +3865,7 @@ export interface UpdatePartyDto {
   vendorAdvanceAccount?: string | null;
   employeeAdvanceAccount?: string | null;
   employeePayableAccount?: string | null;
+  cashAdvanceLimit?: number | null;
   termId?: string | null;
   tin?: string | null;
   atcCode?: string | null;

@@ -32,6 +32,7 @@ import type { PartyTaxDefaultClassificationKey } from "@/app/src/types/shared/ta
 import { isPartyEntityTypeWithholdingDefaultEnabled } from "@/app/src/data/modules/party-management/PartyManagementData";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
+import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 import { PartyAddressContainer } from "@/app/src/ui/modules/party-management/PartyAddressContainer";
 import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
@@ -150,6 +151,7 @@ export function PartyInformationDetailsFields({
     "vendorAdvanceAccount",
     "employeeAdvanceAccount",
     "employeePayableAccount",
+    "cashAdvanceLimit",
   ]);
 
   const tabs: PartyInformationTab[] = [
@@ -849,6 +851,18 @@ function AccountFields({
             valueField="id"
             value={values.employeePayableAccount}
             onChange={(value) => onUpdateField("employeePayableAccount", value)}
+          />
+        </Field>
+      ) : null}
+      {isEmployee ? (
+        <Field label="Cash Advance Limit" error={errors.cashAdvanceLimit}>
+          <MoneyNumberField
+            name="cashAdvanceLimit"
+            value={values.cashAdvanceLimit}
+            onValueChange={(value) => onUpdateField("cashAdvanceLimit", value)}
+            readOnly={disabled}
+            className={`${PartyManagementFieldClassName} text-right tabular-nums`}
+            placeholder="0.00"
           />
         </Field>
       ) : null}

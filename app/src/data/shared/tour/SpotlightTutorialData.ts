@@ -3,12 +3,9 @@ import { ChartsOfAccountsHref } from "@/app/src/constants/modules/financial-main
 
 export const MaintenanceSpotlightTutorialOpenEvent = "gr8booksneo:maintenance-spotlight-open";
 
-export const MaintenanceAddSpotlightTutorialOpenEvent =
-  "gr8booksneo:maintenance-add-spotlight-open";
-export const MaintenanceAddDrawerSpotlightTutorialOpenEvent =
-  "gr8booksneo:module-drawer-spotlight-open";
-export const MaintenanceAddDrawerSpotlightTutorialCloseEvent =
-  "gr8booksneo:module-drawer-spotlight-close";
+export const MaintenanceAddSpotlightTutorialOpenEvent = "gr8booksneo:maintenance-add-spotlight-open";
+export const MaintenanceAddDrawerSpotlightTutorialOpenEvent = "gr8booksneo:module-drawer-spotlight-open";
+export const MaintenanceAddDrawerSpotlightTutorialCloseEvent = "gr8booksneo:module-drawer-spotlight-close";
 
 type MaintenanceSpotlightTutorialConfig = {
   readonly addMode: "drawer" | "none" | "route";
@@ -126,9 +123,19 @@ export const MaintenanceSpotlightTutorialConfigs: readonly MaintenanceSpotlightT
     label: "Cash advance",
   },
   {
+    href: "/cash-disbursement/cash-advance-multiple-entry",
+    addMode: "none",
+    label: "Cash advance multiple entry",
+  },
+  {
     href: "/cash-disbursement/petty-cash-voucher",
     addMode: "none",
     label: "Petty cash voucher",
+  },
+  {
+    href: "/cash-disbursement/petty-cash-fund",
+    addMode: "none",
+    label: "Petty cash fund",
   },
   {
     href: "/cash-disbursement/petty-cash-fund-replenishment",
@@ -136,11 +143,19 @@ export const MaintenanceSpotlightTutorialConfigs: readonly MaintenanceSpotlightT
     label: "Petty cash fund replenishment",
   },
   {
-    href: "/cash-disbursement/petty-cash-advance-replenishment",
+    href: "/cash-disbursement/revolving-fund",
     addMode: "none",
-    includeFiltersStep: false,
-    includeTableStep: false,
-    label: "Petty cash advance replenishment",
+    label: "Revolving fund",
+  },
+  {
+    href: "/cash-disbursement/revolving-fund-replenishment",
+    addMode: "none",
+    label: "Revolving fund replenishment",
+  },
+  {
+    href: "/cash-disbursement/advances-to-suppliers",
+    addMode: "none",
+    label: "Advances to suppliers",
   },
   {
     href: "/sales/sales-journal",
@@ -180,24 +195,21 @@ export const MaintenanceSpotlightTutorialConfigs: readonly MaintenanceSpotlightT
   },
 ];
 
-export const MaintenanceAddSpotlightTutorialConfigs: readonly MaintenanceSpotlightTutorialConfig[] =
-  [
-    ...MaintenanceSpotlightTutorialConfigs.filter((config) => config.addMode !== "none"),
-    {
-      href: ChartsOfAccountsHref,
-      addMode: "route",
-      label: "Chart of accounts",
-    },
-  ];
+export const MaintenanceAddSpotlightTutorialConfigs: readonly MaintenanceSpotlightTutorialConfig[] = [
+  ...MaintenanceSpotlightTutorialConfigs.filter((config) => config.addMode !== "none"),
+  {
+    href: ChartsOfAccountsHref,
+    addMode: "route",
+    label: "Chart of accounts",
+  },
+];
 
 export function getMaintenanceSpotlightTutorialConfig(href: string) {
   return MaintenanceSpotlightTutorialConfigs.find((config) => config.href === href) ?? null;
 }
 
 export function getMaintenanceAddSpotlightTutorialConfig(href: string) {
-  return (
-    MaintenanceAddSpotlightTutorialConfigs.find((config) => href === `${config.href}/add`) ?? null
-  );
+  return MaintenanceAddSpotlightTutorialConfigs.find((config) => href === `${config.href}/add`) ?? null;
 }
 
 export function createMaintenanceSpotlightTutorialStorageKey(href: string) {
@@ -219,9 +231,8 @@ export function createMaintenanceSpotlightTutorialSteps(
     {
       key: "header",
       title: `Start with ${label}`,
-      description:
-        "Use this page to review the module purpose and keep its main actions close at hand.",
-      selectors: ["main h1"],
+      description: "Use this page to review the module purpose and keep its main actions close at hand.",
+      selectors: ["main h1", "main"],
     },
   ];
 
@@ -229,8 +240,7 @@ export function createMaintenanceSpotlightTutorialSteps(
     steps.push({
       key: "create",
       title: "Start a new record",
-      description:
-        "Use the primary action to add another record when your operational setup changes.",
+      description: "Use the primary action to add another record when your operational setup changes.",
       selectors: [
         "[data-spotlight-id='maintenance-create-record']",
         "main a[href$='/add']",
@@ -245,12 +255,8 @@ export function createMaintenanceSpotlightTutorialSteps(
     steps.push({
       key: "import",
       title: "Import existing records",
-      description:
-        "Use Import when you need to bring in prepared records from a spreadsheet or copied table data.",
-      selectors: [
-        "[data-spotlight-id='maintenance-import-records']",
-        "main button[aria-label='Import']",
-      ],
+      description: "Use Import when you need to bring in prepared records from a spreadsheet or copied table data.",
+      selectors: ["[data-spotlight-id='maintenance-import-records']", "main button[aria-label='Import']"],
     });
   }
 
@@ -259,18 +265,13 @@ export function createMaintenanceSpotlightTutorialSteps(
       key: "filters",
       title: "Narrow the records quickly",
       description: "Use search and filters to focus the list before reviewing or updating records.",
-      selectors: [
-        "[data-spotlight-id='maintenance-table-filters']",
-        "main input[type='search']",
-        "main select",
-      ],
+      selectors: ["[data-spotlight-id='maintenance-table-filters']", "main input[type='search']", "main select"],
     });
 
     steps.push({
       key: "table-options",
       title: "Use additional table options",
-      description:
-        "Save column visibility preferences, export records, or refresh the list when you need the latest setup data.",
+      description: "Save column visibility preferences, export records, or refresh the list when you need the latest setup data.",
       selectors: [
         "[data-spotlight-id='maintenance-table-options']",
         "main button[aria-label='Columns']",
@@ -284,9 +285,8 @@ export function createMaintenanceSpotlightTutorialSteps(
     steps.push({
       key: "table",
       title: "Manage records from the table",
-      description:
-        "Review the available setup records and use their actions to open, edit, or update the entries you need.",
-      selectors: ["main table"],
+      description: "Review the available setup records and use their actions to open, edit, or update the entries you need.",
+      selectors: ["[data-spotlight-id='maintenance-table']", "main table"],
     });
   }
 
@@ -296,10 +296,7 @@ export function createMaintenanceSpotlightTutorialSteps(
         key: "record-view",
         title: "Review a record",
         description: "Use View to inspect an existing record without changing its saved details.",
-        selectors: [
-          "[data-spotlight-id='maintenance-record-view']",
-          "[data-spotlight-id='maintenance-record-actions']",
-        ],
+        selectors: ["[data-spotlight-id='maintenance-record-view']", "[data-spotlight-id='maintenance-record-actions']"],
       });
 
       if (hasRecordEditAction) {
@@ -307,10 +304,7 @@ export function createMaintenanceSpotlightTutorialSteps(
           key: "record-edit",
           title: "Edit an existing record",
           description: "Use Edit when the selected record needs updated setup details.",
-          selectors: [
-            "[data-spotlight-id='maintenance-record-edit']",
-            "[data-spotlight-id='maintenance-record-actions']",
-          ],
+          selectors: ["[data-spotlight-id='maintenance-record-edit']", "[data-spotlight-id='maintenance-record-actions']"],
         });
       }
 
@@ -320,10 +314,7 @@ export function createMaintenanceSpotlightTutorialSteps(
           title: "Activate or deactivate records",
           description:
             "Use the status action to activate records that should be available, or deactivate records that should no longer be selected.",
-          selectors: [
-            "[data-spotlight-id='maintenance-record-status']",
-            "[data-spotlight-id='maintenance-record-actions']",
-          ],
+          selectors: ["[data-spotlight-id='maintenance-record-status']", "[data-spotlight-id='maintenance-record-actions']"],
         });
       }
     } else {
@@ -345,36 +336,30 @@ export function createMaintenanceSpotlightTutorialSteps(
   return steps;
 }
 
-export function createMaintenanceAddSpotlightTutorialSteps(
-  label: string,
-): readonly SpotlightTourStep[] {
+export function createMaintenanceAddSpotlightTutorialSteps(label: string): readonly SpotlightTourStep[] {
   return [
     {
       key: "header",
       title: `Add a new ${label} record`,
-      description:
-        "Use this form to create another maintenance record and keep your operational setup complete.",
+      description: "Use this form to create another maintenance record and keep your operational setup complete.",
       selectors: ["main h1", "main h2"],
     },
     {
       key: "form",
       title: "Complete the setup details",
-      description:
-        "Fill in the required fields and review the available options before saving the new record.",
+      description: "Fill in the required fields and review the available options before saving the new record.",
       selectors: ["main form"],
     },
     {
       key: "fields",
       title: "Review the important fields",
-      description:
-        "Use the available inputs, selections, and notes to capture the information needed by this module.",
+      description: "Use the available inputs, selections, and notes to capture the information needed by this module.",
       selectors: ["main form input", "main form select", "main form textarea"],
     },
     {
       key: "save",
       title: "Save the new record",
-      description:
-        "Submit the form when the setup details are ready. You can return to the list afterward to review the new entry.",
+      description: "Submit the form when the setup details are ready. You can return to the list afterward to review the new entry.",
       selectors: ["main button[type='submit']", "main form button[type='submit']"],
     },
   ];
@@ -404,9 +389,7 @@ export function createMaintenanceDrawerSpotlightTutorialSteps(
   ];
 }
 
-export function createMaintenanceAddDrawerSpotlightTutorialSteps(
-  label: string,
-): readonly SpotlightTourStep[] {
+export function createMaintenanceAddDrawerSpotlightTutorialSteps(label: string): readonly SpotlightTourStep[] {
   return [
     {
       key: "add-drawer",
@@ -418,15 +401,13 @@ export function createMaintenanceAddDrawerSpotlightTutorialSteps(
     {
       key: "add-drawer-fields",
       title: "Complete the setup details",
-      description:
-        "Fill in the required fields and review the available options for the new maintenance record.",
+      description: "Fill in the required fields and review the available options for the new maintenance record.",
       selectors: ["[data-spotlight-id='module-drawer-fields']"],
     },
     {
       key: "add-drawer-save",
       title: "Save the new record",
-      description:
-        "Save the drawer when the setup information is ready. The new entry will appear back in the maintenance list.",
+      description: "Save the drawer when the setup information is ready. The new entry will appear back in the maintenance list.",
       selectors: ["[data-spotlight-id='module-drawer-save']"],
     },
   ];

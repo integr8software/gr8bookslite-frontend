@@ -247,6 +247,15 @@ export function getPurchaseOrderTotals(
 	};
 }
 
+export function getPurchaseOrderParty(
+	record: Pick<PurchaseOrderRecord, "vceCode" | "vceName">,
+) {
+	return {
+		partyCode: record.vceCode,
+		partyName: record.vceName,
+	};
+}
+
 export function formatPurchaseOrderAmount(amount: number) {
 	return amount.toLocaleString("en-US", {
 		minimumFractionDigits: 2,

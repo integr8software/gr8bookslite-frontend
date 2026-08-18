@@ -21,7 +21,10 @@ import {
   normalizePartyEntityTypeForClassification,
   normalizePartyTypesForClassification,
 } from "@/app/src/data/modules/party-management/PartyManagementData";
-import { FormatPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
+import {
+  DefaultPhilippineContactNumber,
+  FormatPhilippineContactNumber,
+} from "@/app/src/data/shared/contact/ContactData";
 import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import { useAddressOptions } from "@/app/src/hooks/shared/address/useAddressOptions";
 import { useTermDropdownOptions } from "@/app/src/hooks/modules/financial-maintenance/terms-maintenance/useTermDropdownOptions";
@@ -44,6 +47,7 @@ import type {
   PartyInformationRecord,
   PartyManagementDrawerProps,
   PartyProvinceOption,
+  PartyType,
 } from "@/app/src/types/modules/party-management/PartyManagementTypes";
 import {
   PartyInformationRequiredFieldsToastMessage,
@@ -69,9 +73,12 @@ export function PartyManagementDrawer({
   onClose,
   onCreateParty,
   records,
+  suggestedPartyType,
   title = "Add Party Code",
 }: PartyManagementDrawerProps) {
-  const [values, setValues] = useState<PartyInformationFormValues>(() => createPartyDrawerInitialValues(records));
+  const [values, setValues] = useState<PartyInformationFormValues>(() =>
+    createPartyDrawerInitialValues(records, suggestedPartyType),
+  );
   const [syncedAddressSources, setSyncedAddressSources] = useState<Record<string, string>>({});
   const activeBranchId = useAppStore((state) => state.activeBranchId);
   const partyAccountOptions = usePartyManagementAccountOptions();
@@ -601,10 +608,29 @@ type ChartAccountQuickAddDialogState = {
   parentAccount: ChartAccount;
 } | null;
 
-function createPartyDrawerInitialValues(records: PartyInformationRecord[]): PartyInformationFormValues {
+function createPartyDrawerInitialValues(
+  records: PartyInformationRecord[],
+  suggestedPartyType?: PartyType,
+): PartyInformationFormValues {
+  const classification = suggestedPartyType
+    ? suggestedPartyType === "Employee" || suggestedPartyType === "Member"
+      ? "Individual"
+      : "Non-Individual"
+    : "";
+  const partyTypes = suggestedPartyType ? [suggestedPartyType] : [];
+
   return {
     ...PartyInformationInitialFormValues,
+    addresses: clearAddressRolesForPartyTypes(
+      PartyInformationInitialFormValues.addresses,
+      partyTypes,
+      classification,
+    ),
+    classification,
+    contactNo: DefaultPhilippineContactNumber,
+    nationality: suggestedPartyType === "Member" ? PartyDefaultNationality : "",
     partyCodeNo: createNextPartyCode(records),
+    partyTypes,
     status: "Active",
   };
 }

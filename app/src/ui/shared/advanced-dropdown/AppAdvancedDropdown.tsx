@@ -624,8 +624,9 @@ export function AppAdvancedDropdown({
 							)
 						) : (
 							<span
+								title={placeholder}
 								className={joinClasses(
-									"app-advanced-dropdown-placeholder px-0.5 text-darknavy/35",
+									"app-advanced-dropdown-placeholder block truncate px-0.5 text-darknavy/35",
 									isMultiple ? "py-1.5" : "py-1",
 									disabled && "text-darknavy/32",
 								)}

@@ -74,7 +74,7 @@ export type ModuleDataEntryProps<TRow extends { id: string }> = {
   addMenuActions?: ModuleDataEntryAddMenuAction[];
   columnResetLabel?: string;
   columns: ModuleDataEntryColumn<TRow>[];
-  description: string;
+  description?: string;
   emptyRowLabel?: string;
   error?: string;
   exportOptions?: ModuleDataEntryExportOption[];

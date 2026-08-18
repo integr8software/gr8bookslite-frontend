@@ -10,6 +10,9 @@ import {
   DefaultDisbursementAccountingGridColumnLabels,
   DefaultDisbursementAccountingGridColumnOrder,
   DefaultDisbursementAccountingGridColumnWidths,
+  DisbursementAccountingAmountColumnIds,
+  DisbursementAccountingCreditColumnId,
+  DisbursementAccountingDebitColumnId,
   DisbursementAccountingExportColumnWidths,
   DisbursementAccountingGridTaxRateOptions,
   ProtectedDisbursementAccountingGridColumnIds,
@@ -22,12 +25,12 @@ import {
 import { useDisbursementVoucherStore } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucher";
 import { validateDisbursementVoucherEntries } from "@/app/src/validations/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherValidation";
 import type {
-  DisbursementAccountingGridColumnId,
-  EditableDisbursementAccountingGridRow,
+  DisbursementAccountingGridColumnId as GridColumnId,
+  EditableDisbursementAccountingGridRow as EditableGridRow,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryTypes";
 import type {
+  DisbursementAttachment as VoucherAttachment,
   DisbursementVoucherAccountingGridSession,
-  DisbursementVoucherFormValues,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import {
   readAccountingGridSession,
@@ -37,7 +40,6 @@ import { AccountingImportDialog } from "@/app/src/ui/modules/cash-disbursement/d
 import {
   GridEntryInput,
   GridPreviewDialog,
-  ParticularsViewDialog,
   SummaryCard,
   VoucherAccountingGridHeader,
   gridCellControlClassName,
@@ -47,7 +49,7 @@ import {
   createAccountingWorkbook,
   getAccountingExportTheme,
   readAccountingImportFilePreviewText,
-} from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/utils/DisbursementVoucherAccountingGridExportUtils";
+} from "@/app/src/services/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingExportService";
 import {
   buildLineEntries,
   calculateGridColumnFitWidth,
@@ -65,25 +67,19 @@ import {
   parseTabularText,
   shouldClearRow,
   withAccountingImportAttachment,
-} from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/utils/DisbursementVoucherAccountingGridImportUtils";
+} from "@/app/src/services/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingImportService";
 import {
   ModuleDataEntry,
+  type ModuleDataEntryCellContext,
   type ModuleDataEntryClearAction,
   type ModuleDataEntryColumn,
   type ModuleDataEntryColumnOption,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import { ModuleDataEntryRemarksCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryRemarksCell";
 import { MoneyNumberField, formatMoneyNumberInput } from "@/app/src/ui/shared/money/MoneyNumberField";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 pdfMake.addVirtualFileSystem(pdfFonts);
-
-type EditableGridRow = EditableDisbursementAccountingGridRow;
-type GridColumnId = DisbursementAccountingGridColumnId;
-type VoucherAttachment = DisbursementVoucherFormValues["attachments"][number];
-
-const AccountingDebitColumnId: GridColumnId = "debit";
-const AccountingCreditColumnId: GridColumnId = "credit";
-const AccountingAmountColumnIds = new Set<GridColumnId>([AccountingDebitColumnId, AccountingCreditColumnId]);
 
 export function DisbursementVoucherAccountingGridPage() {
   const router = useRouter();
@@ -103,10 +99,6 @@ export function DisbursementVoucherAccountingGridPage() {
   const [pasteText, setPasteText] = useState("");
   const [pendingImportAttachment, setPendingImportAttachment] = useState<VoucherAttachment | null>(null);
   const [importedImportAttachment, setImportedImportAttachment] = useState<VoucherAttachment | null>(null);
-  const [viewedParticulars, setViewedParticulars] = useState<{
-    rowNo: number;
-    value: string;
-  } | null>(null);
 
   useEffect(() => {
     const nextSession = readAccountingGridSession();
@@ -158,7 +150,7 @@ export function DisbursementVoucherAccountingGridPage() {
     header: columnLabels[columnId],
     id: columnId,
     isRemovable: !ProtectedDisbursementAccountingGridColumnIds.has(columnId),
-    renderCell: (row) => renderGridCell(row, columnId),
+    renderCell: (row, _index, context) => renderGridCell(row, columnId, context),
     width: resolvedColumnWidths[columnId],
     widthClassName: "",
     widthMode: autoWidthColumnIds.includes(columnId) ? "auto" : "fixed",
@@ -182,7 +174,7 @@ export function DisbursementVoucherAccountingGridPage() {
     : null;
 
   function updateRow(rowId: string, field: keyof Omit<EditableGridRow, "id" | "taxDetails">, value: string) {
-    const nextValue = AccountingAmountColumnIds.has(field as GridColumnId) ? formatMoneyNumberInput(value) : value;
+    const nextValue = DisbursementAccountingAmountColumnIds.has(field as GridColumnId) ? formatMoneyNumberInput(value) : value;
 
     setRows((currentRows) =>
       currentRows.map((row) => {
@@ -192,7 +184,7 @@ export function DisbursementVoucherAccountingGridPage() {
 
         const nextRow = { ...row, [field]: nextValue };
 
-        if (AccountingAmountColumnIds.has(field as GridColumnId) || field === "taxRate") {
+        if (DisbursementAccountingAmountColumnIds.has(field as GridColumnId) || field === "taxRate") {
           const amount = normalizeAmount(nextRow.debit || nextRow.credit);
 
           nextRow.taxDetails = syncTaxDetailsAmount(nextRow.taxDetails, amount, nextRow.taxRate);
@@ -372,7 +364,7 @@ export function DisbursementVoucherAccountingGridPage() {
     });
   }
 
-  function renderGridCell(row: EditableGridRow, columnId: GridColumnId) {
+  function renderGridCell(row: EditableGridRow, columnId: GridColumnId, context: ModuleDataEntryCellContext) {
     if (columnId === "taxRate") {
       return (
         <select
@@ -389,8 +381,9 @@ export function DisbursementVoucherAccountingGridPage() {
       );
     }
 
-    if (AccountingAmountColumnIds.has(columnId)) {
-      const oppositeColumnId = columnId === AccountingDebitColumnId ? AccountingCreditColumnId : AccountingDebitColumnId;
+    if (DisbursementAccountingAmountColumnIds.has(columnId)) {
+      const oppositeColumnId =
+        columnId === DisbursementAccountingDebitColumnId ? DisbursementAccountingCreditColumnId : DisbursementAccountingDebitColumnId;
 
       return (
         <MoneyNumberField
@@ -403,24 +396,16 @@ export function DisbursementVoucherAccountingGridPage() {
     }
 
     if (columnId === "particulars") {
-      const rowNo = rows.findIndex((currentRow) => currentRow.id === row.id) + 1;
-
       return (
-        <div className="flex items-center gap-2">
-          <GridEntryInput value={row.particulars} onChange={(value) => updateRow(row.id, "particulars", value)} />
-          <button
-            type="button"
-            onClick={() =>
-              setViewedParticulars({
-                rowNo: rowNo > 0 ? rowNo : 1,
-                value: row.particulars,
-              })
-            }
-            className="mr-2 inline-flex h-8 shrink-0 items-center justify-center rounded-md border border-skyblue/25 bg-skyblue/8 px-3 text-xs font-semibold text-skyblue transition hover:bg-skyblue/14"
-          >
-            View
-          </button>
-        </div>
+        <ModuleDataEntryRemarksCell
+          inputId={context.fieldId}
+          inputName={context.fieldName}
+          isReadonly={false}
+          value={row.particulars}
+          subtitle={row.accountName || "Accounting entry"}
+          textareaId={`${context.fieldId}-dialog`}
+          onChange={(value) => updateRow(row.id, "particulars", value)}
+        />
       );
     }
 
@@ -509,7 +494,7 @@ export function DisbursementVoucherAccountingGridPage() {
     ];
     const amountColumnIndexes = new Set(
       exportColumnIds
-        .map((columnId, columnIndex) => (AccountingAmountColumnIds.has(columnId) ? columnIndex : null))
+        .map((columnId, columnIndex) => (DisbursementAccountingAmountColumnIds.has(columnId) ? columnIndex : null))
         .filter((columnIndex): columnIndex is number => columnIndex !== null),
     );
 
@@ -742,7 +727,6 @@ export function DisbursementVoucherAccountingGridPage() {
           }
         }}
       />
-      <ParticularsViewDialog viewedParticulars={viewedParticulars} onClose={() => setViewedParticulars(null)} />
     </section>
   );
 }

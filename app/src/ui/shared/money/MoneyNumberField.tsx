@@ -9,9 +9,13 @@ import {
 	type FocusEvent,
 	type ComponentPropsWithoutRef,
 } from "react";
-import { formatMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
+import {
+	formatMoneyNumberDisplayValue,
+	formatMoneyNumberInput,
+} from "@/app/src/data/shared/money/MoneyNumberData";
 
 export {
+	formatMoneyNumberDisplayValue,
 	formatMoneyNumberInput,
 	parseMoneyNumberInput,
 } from "@/app/src/data/shared/money/MoneyNumberData";
@@ -34,7 +38,9 @@ export function MoneyNumberField({
 }: MoneyNumberFieldProps) {
 	const inputRef = useRef<HTMLInputElement>(null);
 	const nextSelectionRef = useRef<number | null>(null);
-	const [displayValue, setDisplayValue] = useState(value);
+	const [displayValue, setDisplayValue] = useState(() =>
+		formatMoneyNumberDisplayValue(value, allowNegative),
+	);
 
 	useEffect(() => {
 		const input = inputRef.current;
@@ -43,8 +49,8 @@ export function MoneyNumberField({
 			return;
 		}
 
-		setDisplayValue(value);
-	}, [value]);
+		setDisplayValue(formatMoneyNumberDisplayValue(value, allowNegative));
+	}, [allowNegative, value]);
 
 	useLayoutEffect(() => {
 		const input = inputRef.current;
@@ -76,7 +82,13 @@ export function MoneyNumberField({
 	}
 
 	function handleBlur(event: FocusEvent<HTMLInputElement>) {
-		setDisplayValue(formatMoneyNumberInput(event.target.value, allowNegative));
+		const formattedValue = formatMoneyNumberDisplayValue(
+			event.target.value,
+			allowNegative,
+		);
+
+		setDisplayValue(formattedValue);
+		onValueChange(formattedValue);
 		props.onBlur?.(event);
 	}
 

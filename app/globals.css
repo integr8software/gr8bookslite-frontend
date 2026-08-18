@@ -313,6 +313,173 @@ label.permission-neutral-control:hover {
 	box-shadow: var(--shadow-dark-lg) !important;
 }
 
+:root[data-app-theme="midnight-dark"] .module-statistic-card {
+	--module-statistic-card-tone-rgb: var(--skyblue-rgb);
+	position: relative;
+	overflow: hidden;
+	background:
+		linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 62%),
+		var(--surface-primary) !important;
+	border-color: color-mix(
+		in srgb,
+		var(--surface-border-strong) 72%,
+		transparent
+	) !important;
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.04),
+		0 14px 34px rgba(0, 0, 0, 0.24) !important;
+}
+
+:root[data-app-theme="midnight-dark"] .module-statistic-card::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	border-radius: inherit;
+	background: linear-gradient(
+		135deg,
+		rgb(var(--module-statistic-card-tone-rgb) / 0.1),
+		transparent 42%
+	);
+	opacity: 0;
+	transition: opacity 180ms ease;
+}
+
+:root[data-app-theme="midnight-dark"] .module-statistic-card > * {
+	position: relative;
+	z-index: 1;
+}
+
+:root[data-app-theme="midnight-dark"] button.module-statistic-card:hover {
+	border-color: rgb(var(--module-statistic-card-tone-rgb) / 0.46) !important;
+	background:
+		linear-gradient(
+			180deg,
+			rgb(var(--module-statistic-card-tone-rgb) / 0.07),
+			transparent 72%
+		),
+		var(--surface-primary) !important;
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.05),
+		0 18px 44px rgba(0, 0, 0, 0.32) !important;
+}
+
+:root[data-app-theme="midnight-dark"] button.module-statistic-card:hover::before,
+:root[data-app-theme="midnight-dark"] .module-statistic-card[aria-pressed="true"]::before {
+	opacity: 1;
+}
+
+:root[data-app-theme="midnight-dark"] .module-statistic-card[aria-pressed="true"] {
+	border-color: rgb(var(--module-statistic-card-tone-rgb) / 0.62) !important;
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.06),
+		0 0 0 1px rgb(var(--module-statistic-card-tone-rgb) / 0.26),
+		0 18px 44px rgba(0, 0, 0, 0.32) !important;
+}
+
+:root[data-app-theme="midnight-dark"] .module-statistic-card-tone-total {
+	--module-statistic-card-tone-rgb: 139 92 246;
+}
+
+:root[data-app-theme="midnight-dark"] .module-statistic-card-tone-draft {
+	--module-statistic-card-tone-rgb: 59 130 246;
+}
+
+:root[data-app-theme="midnight-dark"] .module-statistic-card-tone-warning {
+	--module-statistic-card-tone-rgb: 210 153 34;
+}
+
+:root[data-app-theme="midnight-dark"] .module-statistic-card-tone-success {
+	--module-statistic-card-tone-rgb: 46 160 67;
+}
+
+:root[data-app-theme="midnight-dark"] .module-statistic-card-tone-danger {
+	--module-statistic-card-tone-rgb: 248 81 73;
+}
+
+:root[data-app-theme="midnight-dark"] .module-statistic-card-tone-neutral {
+	--module-statistic-card-tone-rgb: 139 148 158;
+}
+
+:root[data-app-theme="midnight-dark"] .module-statistic-card-tone-cyan {
+	--module-statistic-card-tone-rgb: 6 182 212;
+}
+
+:root[data-app-theme="midnight-dark"] .module-statistic-card-label,
+:root[data-app-theme="midnight-dark"] .module-statistic-card-value {
+	color: #f0f6fc !important;
+}
+
+:root[data-app-theme="midnight-dark"] .module-statistic-card-summary {
+	color: #8b949e !important;
+}
+
+:root[data-app-theme="midnight-dark"] .module-statistic-card-icon {
+	box-shadow:
+		inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+		0 10px 24px rgba(0, 0, 0, 0.24);
+}
+
+:root[data-app-theme="midnight-dark"] .module-status-metric-icon-total {
+	background-color: rgba(139, 92, 246, 0.2) !important;
+	color: #c4b5fd !important;
+}
+
+:root[data-app-theme="midnight-dark"] .module-status-metric-icon-draft {
+	background-color: rgba(59, 130, 246, 0.18) !important;
+	color: #93c5fd !important;
+}
+
+:root[data-app-theme="midnight-dark"] .module-status-metric-icon-warning {
+	background-color: rgba(210, 153, 34, 0.18) !important;
+	color: #f2cc60 !important;
+}
+
+:root[data-app-theme="midnight-dark"] .module-status-metric-icon-success {
+	background-color: rgba(46, 160, 67, 0.18) !important;
+	color: #56d364 !important;
+}
+
+:root[data-app-theme="midnight-dark"] .module-status-metric-icon-danger {
+	background-color: rgba(248, 81, 73, 0.18) !important;
+	color: #ff7b72 !important;
+}
+
+:root[data-app-theme="midnight-dark"] .module-status-metric-icon-neutral {
+	background-color: rgba(139, 148, 158, 0.16) !important;
+	color: #c9d1d9 !important;
+}
+
+:root[data-app-theme="midnight-dark"] .module-status-badge-draft {
+	background-color: rgba(59, 130, 246, 0.13) !important;
+	border-color: rgba(59, 130, 246, 0.36) !important;
+	color: #93c5fd !important;
+}
+
+:root[data-app-theme="midnight-dark"] .module-status-badge-warning {
+	background-color: rgba(210, 153, 34, 0.14) !important;
+	border-color: rgba(210, 153, 34, 0.42) !important;
+	color: #f2cc60 !important;
+}
+
+:root[data-app-theme="midnight-dark"] .module-status-badge-success {
+	background-color: rgba(46, 160, 67, 0.14) !important;
+	border-color: rgba(46, 160, 67, 0.42) !important;
+	color: #56d364 !important;
+}
+
+:root[data-app-theme="midnight-dark"] .module-status-badge-danger {
+	background-color: rgba(248, 81, 73, 0.14) !important;
+	border-color: rgba(248, 81, 73, 0.42) !important;
+	color: #ff7b72 !important;
+}
+
+:root[data-app-theme="midnight-dark"] .module-status-badge-neutral {
+	background-color: rgba(139, 148, 158, 0.12) !important;
+	border-color: rgba(139, 148, 158, 0.34) !important;
+	color: #c9d1d9 !important;
+}
+
 :root[data-app-theme="midnight-dark"] input,
 :root[data-app-theme="midnight-dark"] select,
 :root[data-app-theme="midnight-dark"] textarea {
@@ -421,6 +588,13 @@ select:-webkit-autofill:focus {
 	padding-right: 2.5rem !important;
 }
 
+select.app-select-control:not(:disabled) {
+	background-color: var(--input-surface-focus) !important;
+	color: var(--input-text) !important;
+	opacity: 1 !important;
+	-webkit-text-fill-color: var(--input-text) !important;
+}
+
 .app-select-control option {
 	background-color: #ffffff;
 	color: #212738;
@@ -434,12 +608,19 @@ select:-webkit-autofill:focus {
 }
 
 .app-select-control:disabled {
+	background-color: var(--input-surface-readonly) !important;
+	color: var(--input-text-muted) !important;
+	-webkit-text-fill-color: var(--input-text-muted) !important;
 	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5 7.5L10 12.5L15 7.5' stroke='%2394A3B8' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 
 :root[data-app-theme="midnight-dark"] .app-select-control {
 	color-scheme: dark;
 	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5 7.5L10 12.5L15 7.5' stroke='%238B949E' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+:root[data-app-theme="midnight-dark"] .app-select-control:not(:disabled) {
+	background-color: var(--input-surface) !important;
 }
 
 :root[data-app-theme="midnight-dark"] .app-select-control option {
@@ -464,6 +645,11 @@ select:-webkit-autofill:focus {
 	background-color: #ffffff;
 	border-color: rgba(33, 39, 56, 0.1);
 	color: #212738;
+}
+
+.app-advanced-dropdown-control:not([aria-disabled="true"]):not([aria-readonly="true"]) {
+	background-color: var(--input-surface-focus) !important;
+	color: var(--input-text) !important;
 }
 
 .app-advanced-dropdown-control[aria-disabled="true"] {
@@ -556,10 +742,16 @@ select:-webkit-autofill:focus {
 
 .app-data-entry-field:read-only,
 .app-data-entry-field:disabled {
-	background-color: #ffffff !important;
-	color: #212738 !important;
+	background-color: var(--input-surface-readonly) !important;
+	border-color: var(--input-border) !important;
+	color: var(--input-text-muted) !important;
 	opacity: 1 !important;
-	-webkit-text-fill-color: #212738 !important;
+	-webkit-text-fill-color: var(--input-text-muted) !important;
+}
+
+.transaction-readonly-placeholder::placeholder {
+	color: rgba(33, 39, 56, 0.35) !important;
+	-webkit-text-fill-color: rgba(33, 39, 56, 0.35) !important;
 }
 
 :root[data-app-theme="midnight-dark"] .app-data-entry-field {
@@ -570,11 +762,17 @@ select:-webkit-autofill:focus {
 
 :root[data-app-theme="midnight-dark"] .app-data-entry-field:read-only,
 :root[data-app-theme="midnight-dark"] .app-data-entry-field:disabled {
-	background-color: var(--surface-primary) !important;
-	border-color: #30363d !important;
-	color: #c9d1d9 !important;
+	background-color: var(--input-surface-readonly) !important;
+	border-color: var(--input-border) !important;
+	color: var(--input-text-muted) !important;
 	opacity: 1 !important;
-	-webkit-text-fill-color: #c9d1d9 !important;
+	-webkit-text-fill-color: var(--input-text-muted) !important;
+}
+
+:root[data-app-theme="midnight-dark"]
+	.transaction-readonly-placeholder::placeholder {
+	color: #6e7681 !important;
+	-webkit-text-fill-color: #6e7681 !important;
 }
 
 .app-confirm-dialog-backdrop {
@@ -621,9 +819,12 @@ select:-webkit-autofill:focus {
 }
 
 .app-dialog-status-icon--activate,
-.app-dialog-status-icon--approve,
 .app-dialog-status-icon--success {
 	color: #93d47d;
+}
+
+.app-dialog-status-icon--approve {
+	color: #16a34a;
 }
 
 .app-dialog-status-icon--cancel,
@@ -733,7 +934,7 @@ select:-webkit-autofill:focus {
 }
 
 .app-dialog-status-icon--disapprove .app-dialog-status-icon-symbol {
-	transform: translateY(2px) scale(1);
+	transform: translateY(4px) scale(1);
 }
 
 .app-dialog-status-icon--cancel .app-dialog-status-icon-symbol {
@@ -752,7 +953,7 @@ select:-webkit-autofill:focus {
 
 .app-dialog-status-icon--disapprove[data-animated="true"]
 	.app-dialog-status-icon-symbol {
-	transform: translateY(2px) scale(0.72);
+	transform: translateY(4px) scale(0.72);
 	animation: app-dialog-action-symbol-rise 280ms ease-out 190ms forwards;
 }
 
@@ -819,11 +1020,11 @@ select:-webkit-autofill:focus {
 @keyframes app-dialog-action-symbol-rise {
 	0% {
 		opacity: 0;
-		transform: translateY(8px) scale(0.8);
+		transform: translateY(10px) scale(0.8);
 	}
 	100% {
 		opacity: 1;
-		transform: translateY(2px) scale(1);
+		transform: translateY(4px) scale(1);
 	}
 }
 
@@ -934,9 +1135,12 @@ select:-webkit-autofill:focus {
 }
 
 :root[data-app-theme="midnight-dark"] .app-dialog-status-icon--activate,
-:root[data-app-theme="midnight-dark"] .app-dialog-status-icon--approve,
 :root[data-app-theme="midnight-dark"] .app-dialog-status-icon--success {
 	color: #86efac;
+}
+
+:root[data-app-theme="midnight-dark"] .app-dialog-status-icon--approve {
+	color: #4ade80;
 }
 
 :root[data-app-theme="midnight-dark"] .app-dialog-status-icon--cancel,

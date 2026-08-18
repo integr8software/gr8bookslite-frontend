@@ -6,16 +6,14 @@ import {
   DisbursementAccountingImportClearActions,
   DisbursementAccountingImportTemplateHeaders,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryConstants";
-import type { DisbursementVoucherFormValues } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+import type { DisbursementAttachment as VoucherAttachment } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import { type ModuleDataEntryClearAction } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
-import { downloadAccountingImportTemplate } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/utils/DisbursementVoucherAccountingGridExportUtils";
+import { downloadAccountingImportTemplate } from "@/app/src/services/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingExportService";
 import {
   formatRowsAsTabularText,
   parseImportPreviewRows,
-} from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/utils/DisbursementVoucherAccountingGridImportUtils";
-
-type VoucherAttachment = DisbursementVoucherFormValues["attachments"][number];
+} from "@/app/src/services/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingImportService";
 
 export function AccountingImportPanel({
   canClearTable,
@@ -259,12 +257,12 @@ export function AccountingImportPanel({
                   value={pasteText}
                   onChange={(event) => onPasteTextChange(event.target.value)}
                   className="app-theme-field min-h-24 resize-y rounded-lg border px-3 py-2 text-sm outline-none transition focus:border-skyblue/45"
-                  placeholder={"Account Code\tAccount Name\tParticulars\tTax Rate\tDebit\tCredit"}
+                  placeholder={"Account Code\tAccount Name\tRemarks\tTax Rate\tDebit\tCredit"}
                 />
               )}
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <p className="text-xs leading-5 text-darknavy/55">
-                  First row may be headers. Columns can be named Account Code, Account Name, Particulars, Tax Rate, Debit, and Credit.
+                  First row may be headers. Columns can be named Account Code, Account Name, Remarks, Tax Rate, Debit, and Credit.
                 </p>
                 <button
                   type="button"

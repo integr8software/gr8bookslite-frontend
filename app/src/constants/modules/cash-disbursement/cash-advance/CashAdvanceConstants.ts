@@ -1,19 +1,57 @@
 import type { VisibilityState } from "@tanstack/react-table";
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
-import type { CashAdvanceStatus } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
+import type { CashAdvanceDetailsSection, CashAdvanceStatus } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
+import type { ModuleTabItem } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 
 export const CashAdvanceHref = getModuleRoute("CA");
+export const CashAdvanceStorageKey = "gr8books.cash-advance.records";
+export const CashAdvanceTransactionNumberPrefix = "CA-";
+export const CashAdvanceTransactionNumberPadding = 6;
+
+export const CashAdvanceTabs = [
+  { id: "advance", label: "Cash Advance Details" },
+  { id: "attachment", label: "File Attachments" },
+] satisfies ModuleTabItem<CashAdvanceDetailsSection>[];
+
+export const CashAdvanceFieldClassName =
+  "app-data-entry-field h-11 min-w-0 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15 read-only:bg-white read-only:text-darknavy disabled:bg-white disabled:text-darknavy";
+
+export const CashAdvanceReadOnlyFieldClassName =
+  "app-data-entry-field transaction-readonly-placeholder h-11 min-w-0 w-full rounded-lg border border-darknavy/10 bg-darknavy/5 px-3 text-sm font-medium text-darknavy/60 outline-none placeholder:text-darknavy/35";
+
+export const CashAdvancePdfNoBordersLayout = {
+  hLineWidth: () => 0,
+  vLineWidth: () => 0,
+  paddingLeft: () => 0,
+  paddingRight: () => 0,
+  paddingTop: () => 0,
+  paddingBottom: () => 0,
+};
+
+export const CashAdvancePdfRequestFormLayout = {
+  hLineWidth: () => 1,
+  vLineWidth: () => 1,
+  hLineColor: () => "#000000",
+  vLineColor: () => "#000000",
+  paddingLeft: () => 0,
+  paddingRight: () => 0,
+  paddingTop: () => 0,
+  paddingBottom: () => 0,
+};
 
 export const CashAdvanceStatuses = {
   cancelled: "Cancelled",
   disapproved: "Disapproved",
   draft: "Draft",
   forApproval: "For Approval",
+  open: "Open",
   posted: "Posted",
 } as const;
 
+export const CashAdvanceAllStatusFilter = "all";
+
 export const CashAdvanceStatusFilterOptions = [
-  { label: "All statuses", value: "all" },
+  { label: "All statuses", value: CashAdvanceAllStatusFilter },
   { label: CashAdvanceStatuses.draft, value: CashAdvanceStatuses.draft },
   {
     label: CashAdvanceStatuses.forApproval,
@@ -31,7 +69,7 @@ export const CashAdvanceStatusFilterOptions = [
 ] as const;
 
 export const CashAdvanceStatusFilters = [
-  "all",
+  CashAdvanceAllStatusFilter,
   CashAdvanceStatuses.draft,
   CashAdvanceStatuses.forApproval,
   CashAdvanceStatuses.posted,
@@ -39,8 +77,7 @@ export const CashAdvanceStatusFilters = [
   CashAdvanceStatuses.cancelled,
 ] as const;
 
-export const CashAdvanceTablePaginationStorageKey =
-  "cash-disbursement-cash-advance";
+export const CashAdvanceTablePaginationStorageKey = "cash-disbursement-cash-advance";
 
 export const CashAdvanceDefaultColumnVisibility: VisibilityState = {
   accountCode: false,
@@ -86,11 +123,7 @@ export function canDisapproveCashAdvanceStatus(status: CashAdvanceStatus) {
 }
 
 export function canCancelCashAdvanceStatus(status: CashAdvanceStatus) {
-  return (
-    status === CashAdvanceStatuses.draft ||
-    status === CashAdvanceStatuses.forApproval ||
-    status === CashAdvanceStatuses.cancelled
-  );
+  return status === CashAdvanceStatuses.draft || status === CashAdvanceStatuses.forApproval || status === CashAdvanceStatuses.cancelled;
 }
 
 export function getCashAdvanceStatusDialogCopy(status: CashAdvanceStatus, recordLabel: string) {

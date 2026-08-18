@@ -126,8 +126,7 @@ export function ModuleTable<TData>({
       <div ref={scrollContainerRef} className={joinClasses(maxHeightClassName, scrollContainerClassName)}>
         <table
           className={joinClasses(
-            "w-full border-collapse text-left text-sm text-darknavy",
-            useColumnSizing && "table-fixed",
+            "w-full table-fixed border-collapse text-left text-sm text-darknavy",
             minWidthClassName,
           )}
           style={useColumnSizing ? { minWidth: table.getTotalSize() } : undefined}

@@ -3,6 +3,8 @@
 import {
 	type ComponentPropsWithoutRef,
 	type ReactNode,
+	useEffect,
+	useState,
 } from "react";
 import { RefreshCw, Search } from "lucide-react";
 import { ModuleTooltip } from "@/app/src/ui/shared/module/ModuleTooltip";
@@ -58,7 +60,7 @@ export function ModuleTableToolbar({
 	return (
 		<div
 			className={joinClasses(
-				"grid gap-4 bg-white p-4 sm:gap-5 sm:p-5 lg:grid-cols-[minmax(24rem,2.5fr)_repeat(auto-fit,minmax(11rem,1fr))]",
+				"grid items-stretch gap-4 bg-white p-4 sm:gap-5 sm:p-5 lg:grid-cols-[minmax(18rem,2fr)_repeat(auto-fit,minmax(12rem,1fr))] [&>*]:min-w-0",
 				className,
 			)}
 			{...props}
@@ -77,7 +79,7 @@ export function ModuleTableSearch({
 	...props
 }: ModuleTableSearchProps) {
 	return (
-		<label className="relative block min-w-0">
+		<label className="relative block w-full min-w-0">
 			<span className="sr-only">{label}</span>
 			<Search
 				className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/45"
@@ -111,7 +113,7 @@ export function ModuleTableFilterSelect({
 }: ModuleTableFilterSelectProps) {
 	return (
 		<ModuleTableFilterPopover
-			className={className}
+			className={joinClasses("w-full min-w-0", className)}
 			disabled={disabled}
 			label={label}
 			value={value}
@@ -129,12 +131,24 @@ export function ModuleTableResetButton({
 	...props
 }: ModuleTableResetButtonProps) {
 	const tooltipTitle = typeof children === "string" ? children : "Refresh";
+	const [isAnimating, setIsAnimating] = useState(false);
+	const { onClick, ...buttonProps } = props;
+	const shouldAnimate = isRefreshing || isAnimating;
+
+	useEffect(() => {
+		if (!isAnimating) return;
+
+		const timeoutId = window.setTimeout(() => setIsAnimating(false), 600);
+
+		return () => window.clearTimeout(timeoutId);
+	}, [isAnimating]);
 
 	return (
 		<ModuleTooltip className="w-full" title={tooltipTitle} position="top">
 			<button
 				type={type}
-				aria-label={props["aria-label"] ?? tooltipTitle}
+				aria-busy={shouldAnimate}
+				aria-label={buttonProps["aria-label"] ?? tooltipTitle}
 				className={joinClasses(
 					"inline-flex h-12 w-full items-center justify-center rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-semibold text-darknavy/70 shadow-sm shadow-darknavy/5 transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-4",
 					moduleAccentClassNames.hoverBorder,
@@ -142,10 +156,14 @@ export function ModuleTableResetButton({
 					moduleAccentClassNames.focusRing,
 					className,
 				)}
-				{...props}
+				{...buttonProps}
+				onClick={(event) => {
+					setIsAnimating(true);
+					onClick?.(event);
+				}}
 			>
 				<RefreshCw
-					className={joinClasses("h-4 w-4", isRefreshing && "animate-spin")}
+					className={joinClasses("h-4 w-4", shouldAnimate && "animate-spin")}
 					aria-hidden="true"
 				/>
 				<span className="sr-only">{tooltipTitle}</span>

@@ -1,4 +1,6 @@
 import { z } from "zod";
+
+const AddressesField = "addresses";
 import {
   PartyClassificationOptions,
   PartyEntityTypeOptions,
@@ -8,16 +10,12 @@ import {
 import { getPartyEntityTypeOption } from "@/app/src/data/modules/party-management/PartyManagementData";
 import { DefaultPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
 import { isAtcCodeLike } from "@/app/src/data/shared/tax/AtcCode";
-import type {
-  PartyInformationFormErrors,
-  PartyInformationFormValues,
-} from "@/app/src/types/modules/party-management/PartyManagementTypes";
+import type { PartyInformationFormErrors, PartyInformationFormValues } from "@/app/src/types/modules/party-management/PartyManagementTypes";
 
 const PhilippineContactNumberPattern = /^\+63 \d{3} \d{3} \d{4}$/;
 const PhilippineTinPattern = /^\d{3}-\d{3}-\d{3}-\d{3}$/;
 
-export const PartyInformationRequiredFieldsToastMessage =
-  "Please fill up the required party fields.";
+export const PartyInformationRequiredFieldsToastMessage = "Please fill up the required party fields.";
 
 const PartyInformationAddressSchema = z.object({
   id: z.string().trim().min(1),
@@ -68,10 +66,7 @@ export const PartyInformationFormSchema = z
         message: "Enter a valid member registration date.",
       }),
     address: z.any().optional(),
-    addresses: z
-      .array(PartyInformationAddressSchema)
-      .min(1, "Add at least one address.")
-      .max(3, "Add only one address per address type."),
+    addresses: z.array(PartyInformationAddressSchema).min(1, "Add at least one address.").max(3, "Add only one address per address type."),
     activeAddressId: z.string().trim(),
     defaultReceivableAccount: z.string().trim(),
     customerAdvanceAccount: z.string().trim(),
@@ -79,6 +74,19 @@ export const PartyInformationFormSchema = z
     vendorAdvanceAccount: z.string().trim(),
     employeeAdvanceAccount: z.string().trim(),
     employeePayableAccount: z.string().trim(),
+    cashAdvanceLimit: z
+      .string()
+      .trim()
+      .refine(
+        (value) => {
+          const normalizedValue = value.replaceAll(",", "");
+
+          return !normalizedValue || (/^\d+(?:\.\d{1,2})?$/.test(normalizedValue) && Number(normalizedValue) >= 0);
+        },
+        {
+          message: "Enter a non-negative cash advance limit with up to 2 decimal places.",
+        },
+      ),
     termId: z.string().trim(),
     termName: z.string().trim(),
     tin: z
@@ -151,14 +159,11 @@ export const PartyInformationFormSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Set exactly one default address.",
-        path: ["addresses"],
+        path: [AddressesField],
       });
     }
 
-    if (
-      values.classification === "Non-Individual" &&
-      (values.partyTypes.includes("Employee") || values.partyTypes.includes("Member"))
-    ) {
+    if (values.classification === "Non-Individual" && (values.partyTypes.includes("Employee") || values.partyTypes.includes("Member"))) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Employee and Member are only available for individual parties.",
@@ -178,10 +183,7 @@ export const PartyInformationFormSchema = z
         message: "Select a party entity type.",
         path: ["partyEntityType"],
       });
-    } else if (
-      values.partyEntityType.trim() &&
-      !PartyEntityTypeOptions.some((option) => option.name === values.partyEntityType)
-    ) {
+    } else if (values.partyEntityType.trim() && !PartyEntityTypeOptions.some((option) => option.name === values.partyEntityType)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Choose a valid party entity type.",
@@ -189,8 +191,7 @@ export const PartyInformationFormSchema = z
       });
     } else if (
       values.classification === "Non-Individual" &&
-      getPartyEntityTypeOption(values.partyEntityType)?.classificationScope !==
-        values.classification
+      getPartyEntityTypeOption(values.partyEntityType)?.classificationScope !== values.classification
     ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -295,15 +296,13 @@ export const PartyInformationFormSchema = z
     ] as const;
 
     addressRoleChecks.forEach((role) => {
-      const selectedCount = values.addresses.filter((address) =>
-        Boolean(address[role.field]),
-      ).length;
+      const selectedCount = values.addresses.filter((address) => Boolean(address[role.field])).length;
 
       if (selectedCount > 1) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: `Select only one ${role.label} address.`,
-          path: ["addresses"],
+          path: [AddressesField],
         });
       }
 
@@ -311,7 +310,7 @@ export const PartyInformationFormSchema = z
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: `Complete the ${role.label} address.`,
-          path: ["addresses"],
+          path: [AddressesField],
         });
       }
 
@@ -319,7 +318,7 @@ export const PartyInformationFormSchema = z
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: `Remove the ${role.label} address role for this party type.`,
-          path: ["addresses"],
+          path: [AddressesField],
         });
       }
     });
@@ -330,7 +329,7 @@ export const PartyInformationFormSchema = z
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: "Enter the complete foreign address.",
-            path: ["addresses", index, "addressLine1"],
+            path: [AddressesField, index, "addressLine1"],
           });
         }
 
@@ -341,7 +340,7 @@ export const PartyInformationFormSchema = z
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Select a region.",
-          path: ["addresses", index, "regionCode"],
+          path: [AddressesField, index, "regionCode"],
         });
       }
 
@@ -349,7 +348,7 @@ export const PartyInformationFormSchema = z
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Select a province.",
-          path: ["addresses", index, "provinceCode"],
+          path: [AddressesField, index, "provinceCode"],
         });
       }
 
@@ -357,7 +356,7 @@ export const PartyInformationFormSchema = z
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Select a city or municipality.",
-          path: ["addresses", index, "cityMunicipalityCode"],
+          path: [AddressesField, index, "cityMunicipalityCode"],
         });
       }
 
@@ -365,15 +364,13 @@ export const PartyInformationFormSchema = z
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Select a barangay.",
-          path: ["addresses", index, "barangayCode"],
+          path: [AddressesField, index, "barangayCode"],
         });
       }
     });
   });
 
-export function validatePartyInformationForm(
-  values: PartyInformationFormValues,
-): PartyInformationFormErrors {
+export function validatePartyInformationForm(values: PartyInformationFormValues): PartyInformationFormErrors {
   const parsed = PartyInformationFormSchema.safeParse(values);
 
   if (parsed.success) {
@@ -411,7 +408,7 @@ export function validatePartyInformationForm(
       errors.firstName = issue.message;
     } else if (field === "lastName" && !errors.lastName) {
       errors.lastName = issue.message;
-    } else if (field === "addresses" && !errors.addresses) {
+    } else if (field === AddressesField && !errors.addresses) {
       errors.addresses = issue.message;
     } else if (field === "addressLine1" && !errors.addressLine1) {
       errors.addressLine1 = issue.message;
@@ -447,6 +444,8 @@ export function validatePartyInformationForm(
       errors.employeeAdvanceAccount = issue.message;
     } else if (field === "employeePayableAccount" && !errors.employeePayableAccount) {
       errors.employeePayableAccount = issue.message;
+    } else if (field === "cashAdvanceLimit" && !errors.cashAdvanceLimit) {
+      errors.cashAdvanceLimit = issue.message;
     } else if (field === "termId" && !errors.termId) {
       errors.termId = issue.message;
     }
@@ -462,8 +461,5 @@ function isValidEmail(value: string) {
 function isValidContactNo(value: string) {
   const contactNo = value.trim();
 
-  return (
-    contactNo === DefaultPhilippineContactNumber.trim() ||
-    PhilippineContactNumberPattern.test(contactNo)
-  );
+  return contactNo === DefaultPhilippineContactNumber.trim() || PhilippineContactNumberPattern.test(contactNo);
 }

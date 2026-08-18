@@ -1,15 +1,10 @@
-import { billingInvoiceControllerCreateV1, billingInvoiceControllerFindAllV1, billingInvoiceControllerFindOneV1, billingInvoiceControllerUpdateV1 } from "@/app/src/generated/api/billing-invoice/billing-invoice";
-import type { BillingInvoiceDetailResponseDto, BillingInvoiceJournalEntryResponseDto, CreateBillingInvoiceDto, SalesBillingInvoiceResponseDto, UpdateBillingInvoiceDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
+import { billingControllerCreateV1, billingControllerFindAllV1, billingControllerFindOneV1, billingControllerUpdateV1 } from "@/app/src/generated/api/billing/billing";
+import type { BillingDetailResponseDto, BillingJournalEntryResponseDto, CreateBillingDto, BillingResponseDto, UpdateBillingDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import type { BillingInvoiceAccountEntry, BillingInvoiceFormValues, BillingInvoiceLineEntry, BillingInvoiceRecord, BillingInvoiceStatus } from "@/app/src/types/modules/sales/billing-invoice/BillingInvoiceTypes";
 import { createBlankBillingInvoiceAccountEntry, createBlankBillingInvoiceLineEntry } from "@/app/src/data/modules/sales/billing-invoice/BillingInvoiceData";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import { createServiceInvoiceAccountingEntries } from "@/app/src/data/modules/sales/service-invoice/ServiceInvoiceData";
 import type { ServiceInvoiceLineEntry } from "@/app/src/types/modules/sales/service-invoice/ServiceInvoiceTypes";
-
-const apiOptions = {
-	baseURL: "/api/backend",
-	url: "/sales/billing-invoice",
-};
 
 function optional(value: string) {
 	return value.trim() || null;
@@ -19,8 +14,8 @@ function boolean(value: string) {
 	return value.toLowerCase() === "true";
 }
 
-function mapStatus(status: SalesBillingInvoiceResponseDto["status"]): BillingInvoiceStatus {
-	const statusMap: Record<SalesBillingInvoiceResponseDto["status"], BillingInvoiceStatus> = {
+function mapStatus(status: BillingResponseDto["status"]): BillingInvoiceStatus {
+	const statusMap: Record<BillingResponseDto["status"], BillingInvoiceStatus> = {
 		DRAFT: "Draft",
 		FOR_APPROVAL: "Pending",
 		DISAPPROVED: "Disapproved",
@@ -30,7 +25,7 @@ function mapStatus(status: SalesBillingInvoiceResponseDto["status"]): BillingInv
 	return statusMap[status];
 }
 
-function mapLineEntry(detail: BillingInvoiceDetailResponseDto): BillingInvoiceLineEntry {
+function mapLineEntry(detail: BillingDetailResponseDto): BillingInvoiceLineEntry {
 	return createBlankBillingInvoiceLineEntry({
 		id: detail.id,
 		description: detail.description,
@@ -55,7 +50,7 @@ function mapLineEntry(detail: BillingInvoiceDetailResponseDto): BillingInvoiceLi
 	});
 }
 
-function mapAccountEntry(entry: BillingInvoiceJournalEntryResponseDto): BillingInvoiceAccountEntry {
+function mapAccountEntry(entry: BillingJournalEntryResponseDto): BillingInvoiceAccountEntry {
 	return createBlankBillingInvoiceAccountEntry({
 		id: entry.id,
 		accountCode: entry.accountCode,
@@ -72,7 +67,7 @@ function mapAccountEntry(entry: BillingInvoiceJournalEntryResponseDto): BillingI
 	});
 }
 
-function mapBillingInvoice(invoice: SalesBillingInvoiceResponseDto): BillingInvoiceRecord {
+function mapBillingInvoice(invoice: BillingResponseDto): BillingInvoiceRecord {
 	return {
 		id: invoice.id,
 		amount: invoice.grossAmount,
@@ -86,7 +81,7 @@ function mapBillingInvoice(invoice: SalesBillingInvoiceResponseDto): BillingInvo
 	};
 }
 
-function mapBillingInvoiceWithDetails(invoice: SalesBillingInvoiceResponseDto): BillingInvoiceRecord {
+function mapBillingInvoiceWithDetails(invoice: BillingResponseDto): BillingInvoiceRecord {
 	const lineEntries = invoice.details?.length
 		? invoice.details.map(mapLineEntry)
 		: [createBlankBillingInvoiceLineEntry()];
@@ -169,16 +164,16 @@ function mapBillingInvoiceWithDetails(invoice: SalesBillingInvoiceResponseDto): 
 }
 
 export async function fetchBillingInvoices(): Promise<BillingInvoiceRecord[]> {
-	const response = await billingInvoiceControllerFindAllV1(undefined, apiOptions);
-	return response.data.invoices.map(mapBillingInvoice);
+	const response = await billingControllerFindAllV1();
+	return response.invoices.map(mapBillingInvoice);
 }
 
 export async function fetchBillingInvoice(id: string): Promise<BillingInvoiceRecord> {
-	const response = await billingInvoiceControllerFindOneV1(id, undefined, apiOptions);
-	return mapBillingInvoiceWithDetails(response.data.invoice);
+	const response = await billingControllerFindOneV1(id);
+	return mapBillingInvoiceWithDetails(response.invoice);
 }
 
-function toBillingInvoicePayload(values: BillingInvoiceFormValues): CreateBillingInvoiceDto & UpdateBillingInvoiceDto {
+function toBillingInvoicePayload(values: BillingInvoiceFormValues): CreateBillingDto & UpdateBillingDto {
 	const exchangeRate = parseMoneyNumberInput(values.exchangeRate) || 1;
 	const accountEntriesWithValues = values.accountEntries.filter(
 		(entry) => parseMoneyNumberInput(entry.debit) > 0 || parseMoneyNumberInput(entry.credit) > 0,
@@ -260,19 +255,19 @@ function toBillingInvoicePayload(values: BillingInvoiceFormValues): CreateBillin
 			atcCode: optional(entry.atcCode),
 			responsibilityCenter: optional(entry.responsibilityCenter),
 			refNo: optional(entry.refNo),
-			referenceType: "BI",
+			referenceType: "BILL",
 		})),
 	};
 }
 
 export async function createBillingInvoice(values: BillingInvoiceFormValues): Promise<BillingInvoiceRecord> {
 	const payload = toBillingInvoicePayload(values);
-	const response = await billingInvoiceControllerCreateV1(payload, apiOptions);
-	return mapBillingInvoiceWithDetails(response.data.invoice);
+	const response = await billingControllerCreateV1(payload);
+	return mapBillingInvoiceWithDetails(response.invoice);
 }
 
 export async function updateBillingInvoice(id: string, values: BillingInvoiceFormValues): Promise<BillingInvoiceRecord> {
 	const payload = toBillingInvoicePayload(values);
-	const response = await billingInvoiceControllerUpdateV1(id, payload, apiOptions);
-	return mapBillingInvoiceWithDetails(response.data.invoice);
+	const response = await billingControllerUpdateV1(id, payload);
+	return mapBillingInvoiceWithDetails(response.invoice);
 }

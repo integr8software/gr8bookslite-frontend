@@ -47,26 +47,24 @@ type BillingInvoiceStoreState = {
 export function useBillingInvoiceStore<TSelected = BillingInvoiceStoreState>(
 	selector?: (state: BillingInvoiceStoreState) => TSelected,
 ) {
-	const [invoices, setInvoices] = useState(getInitialBillingInvoices);
+	const [invoices, setInvoices] = useState<BillingInvoiceRecord[]>([]);
 	const [lastSyncedAt] = useState(() => Date.now());
 	const updateInvoiceStatus = useCallback(
 		(invoice: BillingInvoiceRecord, status: BillingInvoiceStatus) => {
 			setInvoices((currentInvoices) =>
-				persistBillingInvoices(
-					currentInvoices.map((currentInvoice) =>
-						currentInvoice.id === invoice.id
-							? {
-									...currentInvoice,
-									formValues: currentInvoice.formValues
-										? {
-												...currentInvoice.formValues,
-												status,
-											}
-										: currentInvoice.formValues,
-									status,
-								}
-							: currentInvoice,
-					),
+				currentInvoices.map((currentInvoice) =>
+					currentInvoice.id === invoice.id
+						? {
+								...currentInvoice,
+								formValues: currentInvoice.formValues
+									? {
+											...currentInvoice.formValues,
+											status,
+										}
+									: currentInvoice.formValues,
+								status,
+							}
+						: currentInvoice,
 				),
 			);
 			toast.success(`Billing invoice marked as ${status}.`);
@@ -127,8 +125,20 @@ export function useBillingInvoiceActionForm(
 		}));
 	}
 
-	function submitInvoice() {
-		const validation = validateBillingInvoiceForm(values);
+	async function submitInvoice() {
+		const firstDebitAccount = values.accountEntries.find(
+			(entry) => parseMoneyNumberInput(entry.debit) > 0,
+		);
+		const valuesWithDefaultAccount = values.defaultAccount.trim()
+			? values
+			: {
+					...values,
+					defaultAccount:
+						firstDebitAccount?.accountTitle ||
+						firstDebitAccount?.accountCode ||
+						"Accounts Receivable - Trade",
+				};
+		const validation = validateBillingInvoiceForm(valuesWithDefaultAccount);
 
 		if (!validation.isValid) {
 			toast.error(validation.message ?? "Review the billing invoice details.");
@@ -302,28 +312,6 @@ function calculateHeaderAmounts(lineEntries: BillingInvoiceLineEntry[]) {
 	};
 }
 
-function persistBillingInvoices(invoices: BillingInvoiceRecord[]) {
-	writeStoredBillingInvoices(invoices);
-
-	return invoices;
-}
-
-function upsertBillingInvoiceRecord(record: BillingInvoiceRecord) {
-	const currentInvoices = getInitialBillingInvoices();
-	const existingIndex = currentInvoices.findIndex(
-		(invoice) => invoice.id === record.id,
-	);
-
-	if (existingIndex === -1) {
-		return persistBillingInvoices([record, ...currentInvoices]);
-	}
-
-	return persistBillingInvoices(
-		currentInvoices.map((invoice) =>
-			invoice.id === record.id ? record : invoice,
-		),
-	);
-}
 
 function isAmountInRange(value: number, range: AmountRangeValue) {
 	const fromAmount = range.from.trim() ? parseMoneyNumberInput(range.from) : 0;

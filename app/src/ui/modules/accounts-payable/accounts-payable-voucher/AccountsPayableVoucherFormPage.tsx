@@ -3,6 +3,7 @@
 import { useMemo, useState, type ChangeEventHandler, type ReactNode } from "react";
 import { AccountsPayableVoucherPurchaseTransactionType } from "@/app/src/constants/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherConstants";
 import { calculateAccountsPayableVoucherDueDate } from "@/app/src/data/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherData";
+import { createProjectResponsibilityCenterInitialValues } from "@/app/src/data/modules/financial-maintenance/responsibility-center/ResponsibilityCenterData";
 import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
 import { findModuleChartAccount, getModuleChartAccounts } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import { useAccountsPayableVoucherFormPage } from "@/app/src/hooks/modules/accounts-payable/accounts-payable-voucher/useAccountsPayableVoucherFormPage";
@@ -40,7 +41,7 @@ import { AccountsPayableVoucherHeaderPage } from "@/app/src/ui/modules/accounts-
 import { AccountsPayableVoucherNotFound } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherNotFound";
 import { openAccountsPayableVoucherPdf } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherPdf";
 import { AccountsPayableVoucherReportPreview } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherReportPreview";
-import { ProjectNameDialog } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ProjectNameDialog";
+import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
 import { TermsMaintenanceQuickAddDialog } from "@/app/src/ui/modules/financial-maintenance/terms-maintenance/TermsMaintenanceQuickAddDialog";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
@@ -101,6 +102,14 @@ export function AccountsPayableVoucherFormPage() {
   const termOptions = useMemo<AppAdvancedDropdownOption[]>(
     () => createTermOptions(createLookupTermOptions(termRecords), page.values.termId, page.values.terms),
     [page.values.termId, page.values.terms, termRecords],
+  );
+  const projectInitialValues = useMemo(
+    () =>
+      createProjectResponsibilityCenterInitialValues(
+        responsibilityCenterStore.classifications,
+        responsibilityCenterStore.types,
+      ),
+    [responsibilityCenterStore.classifications, responsibilityCenterStore.types],
   );
   if (page.needsRecord && page.isRecordLoading) {
     return (
@@ -535,10 +544,12 @@ export function AccountsPayableVoucherFormPage() {
         onSaved={handleCreateTerm}
       />
 
-      <ProjectNameDialog
+      <ResponsibilityCenterDrawer
+        initialValues={projectInitialValues}
         isOpen={!page.isReadonly && isProjectNameDialogOpen}
+        mode="add"
         onClose={() => setIsProjectNameDialogOpen(false)}
-        onCreateProject={handleCreateProject}
+        onSaved={handleCreateProject}
       />
     </>
   );

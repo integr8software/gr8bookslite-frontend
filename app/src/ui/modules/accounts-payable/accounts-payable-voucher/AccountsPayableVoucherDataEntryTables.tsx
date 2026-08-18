@@ -7,9 +7,9 @@ import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import type {
   AccountsPayableVoucherDataEntryTablesProps,
   AccountsPayableVoucherEntryView,
-} from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherDataEntryTableTypes";
+} from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherDataEntryTableTypes";
 
-export type { AccountsPayableVoucherPartyAddTarget } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherDataEntryTableTypes";
+export type { AccountsPayableVoucherPartyAddTarget } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherDataEntryTableTypes";
 
 export function AccountsPayableVoucherDataEntryTables({
   canAddPartyName,

@@ -45,3 +45,12 @@ export type JournalVoucherFormErrors = Partial<Record<keyof JournalVoucherFormVa
 export type JournalVoucherActionMode = "add" | "edit" | "view";
 
 export type JournalVoucherLineColumnId = (typeof JournalVoucherLineColumnIds)[number];
+
+export type JournalVoucherLookupAccount = {
+  accountCode: string;
+  accountNature: string;
+  accountTitle: string;
+  accountType: string;
+  id: string;
+  status: string;
+};

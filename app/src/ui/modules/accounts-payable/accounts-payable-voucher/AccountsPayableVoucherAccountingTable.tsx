@@ -58,7 +58,7 @@ import {
   getSelectableLookupAccountId,
   mergeLookupAccountOptions,
 } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherDataEntryTableLookups";
-import type { AccountsPayableVoucherDataEntryPanelProps } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherDataEntryTableTypes";
+import type { AccountsPayableVoucherDataEntryPanelProps } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherDataEntryTableTypes";
 
 const PurchaseTaxCodeQuery = {
   transactionType: AccountsPayableVoucherPurchaseTransactionType,

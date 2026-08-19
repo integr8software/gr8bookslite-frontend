@@ -149,13 +149,17 @@ export function findPartyRecordByCode(
 }
 
 export function PartyDropdown({
+  canAddPartyName,
   isReadonly,
+  onAddPartyName,
   onSelect,
   options,
   partyCode,
   partyName,
 }: {
+  canAddPartyName: boolean;
   isReadonly: boolean;
+  onAddPartyName: () => void;
   onSelect: (partyCode: string, partyName: string) => void;
   options: AppAdvancedDropdownOption[];
   partyCode: string;
@@ -163,12 +167,21 @@ export function PartyDropdown({
 }) {
   return (
     <AppAdvancedDropdown
+      addAction={
+        !isReadonly && canAddPartyName
+          ? {
+              label: "Add Party Name",
+              onClick: onAddPartyName,
+            }
+          : undefined
+      }
       value={partyCode || getPartyFallbackValue(partyName)}
       readOnly={isReadonly}
       options={options}
       placeholder="Select Party Name"
       searchPlaceholder="Search Party Name"
       className={entryDropdownClassName()}
+      showSelectedDetails
       onChange={(value) => {
         const selectedValue = String(value);
         const party = options.find((option) => option.value === selectedValue);

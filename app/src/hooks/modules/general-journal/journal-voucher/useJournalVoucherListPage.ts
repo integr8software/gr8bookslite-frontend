@@ -22,8 +22,7 @@ import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/A
 import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
 
 export function useJournalVoucherListPage() {
-  const { isLoading, isMutating, lastSyncedAt, records, updateStatus } =
-    useJournalVoucherStore();
+  const { isLoading, isMutating, lastSyncedAt, permissions, records, updateStatus } = useJournalVoucherStore();
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 5,
@@ -37,25 +36,19 @@ export function useJournalVoucherListPage() {
     from: "",
     to: "",
   });
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: "documentDate", desc: true },
-  ]);
-  const [statusFilter, setStatusFilterState] = useState<
-    (typeof JournalVoucherStatusFilters)[number]
-  >("all");
+  const [sorting, setSorting] = useState<SortingState>([{ id: "documentDate", desc: true }]);
+  const [statusFilter, setStatusFilterState] = useState<(typeof JournalVoucherStatusFilters)[number]>("all");
   const deferredQuery = useDeferredValue(query);
 
   const filteredRecords = useMemo(() => {
     const normalizedQuery = deferredQuery.trim().toLowerCase();
 
-    return records.filter((record) =>
-      [record.transactionNo, record.remarks]
-        .join(" ")
-        .toLowerCase()
-        .includes(normalizedQuery) &&
-      (statusFilter === "all" || record.status === statusFilter) &&
-      isDateInRange(record.documentDate, dateRange) &&
-      isAmountInRange(getJournalVoucherTotals(record.lines).totalDebit, amountRange),
+    return records.filter(
+      (record) =>
+        [record.transactionNo, record.remarks].join(" ").toLowerCase().includes(normalizedQuery) &&
+        (statusFilter === "all" || record.status === statusFilter) &&
+        isDateInRange(record.documentDate, dateRange) &&
+        isAmountInRange(getJournalVoucherTotals(record.lines, record).totalDebit, amountRange),
     );
   }, [amountRange, dateRange, deferredQuery, records, statusFilter]);
 
@@ -68,14 +61,14 @@ export function useJournalVoucherListPage() {
       {
         id: "totalDebit",
         header: "Debit",
-        accessorFn: (record) => getJournalVoucherTotals(record.lines).totalDebit,
+        accessorFn: (record) => getJournalVoucherTotals(record.lines, record).totalDebit,
         sortingFn: "basic",
         meta: { className: "w-[11rem] text-right" },
       },
       {
         id: "totalCredit",
         header: "Credit",
-        accessorFn: (record) => getJournalVoucherTotals(record.lines).totalCredit,
+        accessorFn: (record) => getJournalVoucherTotals(record.lines, record).totalCredit,
         sortingFn: "basic",
         meta: { className: "w-[11rem] text-right" },
       },
@@ -133,10 +126,7 @@ export function useJournalVoucherListPage() {
     table.setPageIndex(0);
   }
 
-  function handleUpdateStatus(
-    record: JournalVoucherRecord,
-    status: JournalVoucherStatus,
-  ) {
+  function handleUpdateStatus(record: JournalVoucherRecord, status: JournalVoucherStatus) {
     updateStatus(record.id, status);
   }
 
@@ -148,6 +138,7 @@ export function useJournalVoucherListPage() {
     isLoading,
     isMutating,
     lastSyncedAt,
+    permissions,
     query,
     records,
     resetFilters,
@@ -159,11 +150,7 @@ export function useJournalVoucherListPage() {
   };
 }
 
-function createColumn(
-  key: keyof JournalVoucherRecord,
-  header: string,
-  className: string,
-): ColumnDef<JournalVoucherRecord> {
+function createColumn(key: keyof JournalVoucherRecord, header: string, className: string): ColumnDef<JournalVoucherRecord> {
   return {
     accessorKey: key,
     header,
@@ -174,9 +161,7 @@ function createColumn(
 
 function isAmountInRange(value: number, range: AmountRangeValue) {
   const fromAmount = range.from.trim() ? parseMoneyNumberInput(range.from) : 0;
-  const toAmount = range.to.trim()
-    ? parseMoneyNumberInput(range.to)
-    : Number.MAX_SAFE_INTEGER;
+  const toAmount = range.to.trim() ? parseMoneyNumberInput(range.to) : Number.MAX_SAFE_INTEGER;
 
   return value >= fromAmount && value <= toAmount;
 }

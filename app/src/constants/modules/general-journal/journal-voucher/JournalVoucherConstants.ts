@@ -146,3 +146,7 @@ export const JournalVoucherLineColumnWidths: Record<
 
 
 export const JournalVoucherBaseCurrencyCode = "PHP";
+
+export const JournalVoucherDefaultStatus = [
+  "ACTIVE",
+] as const;

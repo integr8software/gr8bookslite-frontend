@@ -1,4 +1,4 @@
-import type { PurchasingAccountingEntry } from "@/app/src/types/modules/purchasing/PurchasingAccountingTypes";
+import type { AccountingEntry } from "@/app/src/types/shared/accounting/AccountingEntryTypes";
 import type { ModuleFileAttachment } from "@/app/src/types/shared/module/ModuleFileAttachmentTypes";
 
 export type BillingStatementFieldUpdater<TValues> = <Key extends keyof TValues>(
@@ -81,7 +81,7 @@ export type BillingStatementRecord = {
 };
 
 export type BillingStatementFormValues = Omit<BillingStatementRecord, "id">;
-export type BillingStatementAccountingEntry = PurchasingAccountingEntry;
+export type BillingStatementAccountingEntry = AccountingEntry;
 export type BillingStatementAttachment = ModuleFileAttachment;
 export type BillingStatementFormMode = "add" | "edit" | "view";
 

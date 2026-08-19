@@ -13,9 +13,6 @@ export function validateBillingStatementForm(
   if (!values.name.trim()) errors.name = "Enter a customer name.";
   if (!values.transNo.trim()) errors.transNo = "Enter a transaction number.";
   if (!values.documentDate.trim()) errors.documentDate = "Select a document date.";
-  if (!values.defaultAccount.trim() || values.defaultAccount.startsWith("--Select")) {
-    errors.defaultAccount = "Select a default account.";
-  }
   if (!values.items.some(billingStatementItemIsComplete)) {
     errors.items = "Add at least one billing line with description, amount, and quantity.";
   }
@@ -26,7 +23,8 @@ export function validateBillingStatementForm(
 function billingStatementItemIsComplete(item: BillingStatementItem) {
   return Boolean(
     item.description.trim() &&
-      (Number(item.amount) > 0 || Number(item.netAmount) > 0) &&
+      item.description !== "--Select Description--" &&
+      (Number(item.amount) > 0 || Number(item.grossAmount) > 0 || Number(item.netAmount) > 0) &&
       Number(item.quantity) >= 0,
   );
 }

@@ -1,5 +1,10 @@
 import { useCallback, useMemo, useState } from "react";
 import {
+  BillingStatementPartyOptions,
+  BillingStatementResponsibilityCenterOptions,
+} from "@/app/src/constants/modules/sales/billing-statement/BillingStatementConstants";
+import {
+  calculateBillingStatementTotals,
   createBillingStatementId,
   createBlankBillingStatementAccountingEntry,
   createBlankBillingStatementItem,
@@ -9,21 +14,15 @@ import type {
   BillingStatementAccountingEntry,
   BillingStatementItem,
 } from "@/app/src/types/modules/sales/billing-statement/BillingStatementTypes";
-import type {
-  PurchasingAccountingColumnId,
-  PurchasingEntryTab,
-} from "@/app/src/types/modules/purchasing/PurchasingAccountingTypes";
+import type { PurchasingEntryTab } from "@/app/src/types/modules/purchasing/PurchasingAccountingTypes";
+import { AccountingEntryTable } from "@/app/src/ui/shared/accounting-entry/AccountingEntryTable";
 import {
   ModuleDataEntry,
   type ModuleDataEntryClearAction,
+  type ModuleDataEntryColumn,
   type ModuleDataEntryColumnOption,
   type ModuleDataEntryExportOption,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
-import {
-  createPurchasingAccountingEntryColumns,
-  PurchasingAccountingDefaultVisibleColumnIds,
-  PurchasingAccountingProtectedColumnIds,
-} from "@/app/src/ui/modules/purchasing/shared/PurchasingAccountingEntryColumns";
 import { PurchasingEntryTabs } from "@/app/src/ui/modules/purchasing/shared/PurchasingEntryTabs";
 import { createBillingStatementLineColumns } from "@/app/src/ui/modules/sales/billing-statement/entries/BillingStatementLineColumns";
 
@@ -45,67 +44,52 @@ export function BillingStatementEntrySection({
   rows,
 }: BillingStatementEntrySectionProps) {
   const [activeTab, setActiveTab] = useState<PurchasingEntryTab>("details");
-  const [visibleAccountingColumnIds, setVisibleAccountingColumnIds] = useState<
-    PurchasingAccountingColumnId[]
-  >([...PurchasingAccountingDefaultVisibleColumnIds]);
 
   const updateEntry = useCallback(
     (rowId: string, updates: Partial<BillingStatementItem>) => {
-      onRowsChange(rows.map((row) => (row.id === rowId ? normalizeEntry({ ...row, ...updates }) : row)));
-    },
-    [onRowsChange, rows],
-  );
-
-  const updateAccountingEntry = useCallback(
-    (rowId: string, updates: Partial<Omit<BillingStatementAccountingEntry, "id">>) => {
-      onAccountingRowsChange(
-        accountingRows.map((row) => (row.id === rowId ? { ...row, ...updates } : row)),
+      onRowsChange(
+        rows.map((row) =>
+          row.id === rowId ? normalizeEntry({ ...row, ...updates }, updates) : row,
+        ),
       );
     },
-    [accountingRows, onAccountingRowsChange],
+    [onRowsChange, rows],
   );
 
   const columns = useMemo(
     () => createBillingStatementLineColumns(isReadonly, updateEntry),
     [isReadonly, updateEntry],
   );
-  const accountingColumns = useMemo(
-    () => createPurchasingAccountingEntryColumns(isReadonly, updateAccountingEntry),
-    [isReadonly, updateAccountingEntry],
-  );
-  const visibleAccountingColumns = useMemo(
-    () =>
-      accountingColumns.filter((column) =>
-        visibleAccountingColumnIds.includes(column.id as PurchasingAccountingColumnId),
-      ),
-    [accountingColumns, visibleAccountingColumnIds],
-  );
+
   const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
-    () =>
-      columns.map((column) => ({
-        id: column.id,
-        isHideable: !["description", "amount", "quantity"].includes(column.id),
-        isVisible: true,
-        label: column.header,
-        width: column.width,
-        widthMode: column.widthMode,
-      })),
+    () => createColumnOptions(columns, ["description", "grossAmount"]),
     [columns],
   );
 
   if (activeTab === "accounting") {
     return (
-      <ModuleDataEntry
-        columns={visibleAccountingColumns}
-        columnOptions={createAccountingColumnOptions(accountingColumns, visibleAccountingColumnIds)}
-        description=""
-        emptyRowLabel="accounting entry"
+      <AccountingEntryTable
+        createBlankRow={createBlankBillingStatementAccountingEntry}
+        description="Record billing statement accounting distributions."
         error={error}
-        exportOptions={EntryExportOptions}
-        isDraggable
+        fieldOptions={{
+          partyName: BillingStatementPartyOptions,
+          vatType: [
+            { name: "VAT (12%)", value: "VAT (12%)" },
+            { name: "Zero-rated", value: "Zero-rated" },
+            { name: "VAT Exempt", value: "VAT Exempt" },
+          ],
+          atcCode: [
+            { name: "0.00", value: "0.00" },
+            { name: "1.00", value: "1.00" },
+            { name: "2.00", value: "2.00" },
+            { name: "5.00", value: "5.00" },
+          ],
+          responsibilityCenter: BillingStatementResponsibilityCenterOptions,
+        }}
         isReadonly={isReadonly}
+        readOnlyFields={["partyCode"]}
         rows={accountingRows}
-        summaryCells={createAccountingSummaryCells(accountingRows)}
         title={
           <PurchasingEntryTabs
             activeTab={activeTab}
@@ -113,37 +97,19 @@ export function BillingStatementEntrySection({
             onTabChange={setActiveTab}
           />
         }
-        onAddRows={(count) =>
-          onAccountingRowsChange([
-            ...accountingRows,
-            ...Array.from({ length: count }, () => createBlankBillingStatementAccountingEntry()),
-          ])
-        }
-        onAutoColumnWidth={() => undefined}
-        onClearRows={(action) =>
-          onAccountingRowsChange(clearRows(accountingRows, action, createBlankBillingStatementAccountingEntry))
-        }
-        onDuplicateRow={(rowId) =>
-          onAccountingRowsChange(duplicateRow(accountingRows, rowId, () => createBillingStatementId("accounting")))
-        }
-        onFitColumnWidth={() => undefined}
-        onImport={() => undefined}
-        onInsertRow={(rowId, position) =>
-          onAccountingRowsChange(insertRow(accountingRows, rowId, position, createBlankBillingStatementAccountingEntry))
-        }
-        onMoveRow={(fromRowId, toRowId) =>
-          onAccountingRowsChange(moveRow(accountingRows, fromRowId, toRowId))
-        }
-        onRemoveRow={(rowId) =>
-          onAccountingRowsChange(removeRow(accountingRows, rowId, createBlankBillingStatementAccountingEntry))
-        }
-        onToggleColumnVisibility={(columnId, isVisible) =>
-          setVisibleAccountingColumnIds((current) =>
-            toggleAccountingColumnVisibility(current, columnId as PurchasingAccountingColumnId, isVisible),
-          )
-        }
-        onUpdateColumnHeader={() => undefined}
-        onUpdateColumnWidth={() => undefined}
+        onFieldChange={(row, columnId, value) => {
+          if (columnId !== "partyName") return undefined;
+
+          const selectedParty = BillingStatementPartyOptions.find(
+            (option) => option.value === value,
+          );
+
+          return {
+            partyCode: selectedParty?.label ?? "",
+            partyName: value,
+          };
+        }}
+        onRowsChange={onAccountingRowsChange}
       />
     );
   }
@@ -181,7 +147,9 @@ export function BillingStatementEntrySection({
         onRowsChange(insertRow(rows, rowId, position, createBlankBillingStatementItem))
       }
       onMoveRow={(fromRowId, toRowId) => onRowsChange(moveRow(rows, fromRowId, toRowId))}
-      onRemoveRow={(rowId) => onRowsChange(removeRow(rows, rowId, createBlankBillingStatementItem))}
+      onRemoveRow={(rowId) =>
+        onRowsChange(removeRow(rows, rowId, createBlankBillingStatementItem))
+      }
       onToggleColumnVisibility={() => undefined}
       onUpdateColumnHeader={() => undefined}
       onUpdateColumnWidth={() => undefined}
@@ -189,146 +157,138 @@ export function BillingStatementEntrySection({
   );
 }
 
-function createAccountingColumnOptions(
-  columns: { id: string; header: string; width?: number; widthMode?: "auto" | "fixed" }[],
-  visibleColumnIds: PurchasingAccountingColumnId[],
-) {
+function createColumnOptions<TRow>(
+  columns: ModuleDataEntryColumn<TRow>[],
+  protectedColumnIds: string[] = [],
+): ModuleDataEntryColumnOption[] {
   return columns.map((column) => ({
     id: column.id,
-    isHideable: !PurchasingAccountingProtectedColumnIds.has(column.id as PurchasingAccountingColumnId),
-    isVisible: visibleColumnIds.includes(column.id as PurchasingAccountingColumnId),
+    isHideable: !protectedColumnIds.includes(column.id),
+    isVisible: true,
     label: column.header,
     width: column.width,
     widthMode: column.widthMode,
   }));
 }
 
-function toggleAccountingColumnVisibility(
-  current: PurchasingAccountingColumnId[],
-  columnId: PurchasingAccountingColumnId,
-  isVisible: boolean,
-) {
-  if (PurchasingAccountingProtectedColumnIds.has(columnId)) return current;
-  if (isVisible) return current.includes(columnId) ? current : [...current, columnId];
-  return current.filter((currentColumnId) => currentColumnId !== columnId);
-}
+const EntryExportOptions: ModuleDataEntryExportOption[] = [
+  { id: "csv", label: "CSV", onSelect: () => undefined },
+  { id: "excel", label: "Excel", onSelect: () => undefined },
+  { id: "pdf", label: "PDF", onSelect: () => undefined },
+];
 
-function createAccountingSummaryCells(rows: BillingStatementAccountingEntry[]) {
-  const totals = rows.reduce(
-    (summary, entry) => ({
-      credit: summary.credit + entry.credit,
-      debit: summary.debit + entry.debit,
-    }),
-    { credit: 0, debit: 0 },
-  );
+function createItemSummaryCells(rows: BillingStatementItem[]) {
+  const totals = calculateBillingStatementTotals(rows);
 
   return {
-    accountTitle: "Totals",
-    credit: formatBillingStatementCurrency(totals.credit),
-    debit: formatBillingStatementCurrency(totals.debit),
+    amount: formatBillingStatementCurrency(
+      rows.reduce((sum, r) => sum + Number(r.amount || 0), 0),
+    ),
+    discountAmount: formatBillingStatementCurrency(totals.discountAmount),
+    grossAmount: formatBillingStatementCurrency(totals.grossAmount),
+    netAmount: formatBillingStatementCurrency(totals.netAmount),
+    quantity: rows.reduce((sum, r) => sum + Number(r.quantity || 0), 0).toFixed(2),
+    vatAmount: formatBillingStatementCurrency(totals.vatAmount),
   };
 }
 
-function createItemSummaryCells(rows: BillingStatementItem[]) {
-  const totals = rows.reduce(
-    (summary, row) => ({
-      grossAmount: summary.grossAmount + row.grossAmount,
-      netAmount: summary.netAmount + row.netAmount,
-      vatAmount: summary.vatAmount + row.vatAmount,
-    }),
-    { grossAmount: 0, netAmount: 0, vatAmount: 0 },
-  );
+function normalizeEntry(
+  entry: BillingStatementItem,
+  updates?: Partial<BillingStatementItem>,
+): BillingStatementItem {
+  const amount = Number(entry.amount) || 0;
+  const quantity = Number(entry.quantity) || 0;
+  const grossAmount =
+    updates && ("amount" in updates || "quantity" in updates || !("grossAmount" in updates))
+      ? amount * quantity
+      : Number(entry.grossAmount) || amount * quantity;
+
+  const discountPercent = Number(entry.discountPercent) || 0;
+  const discountAmount =
+    updates &&
+    ("discountPercent" in updates ||
+      "amount" in updates ||
+      "quantity" in updates ||
+      !("discountAmount" in updates))
+      ? grossAmount * (Math.max(discountPercent, 0) / 100)
+      : Number(entry.discountAmount) || grossAmount * (Math.max(discountPercent, 0) / 100);
+
+  const grossAfterDiscount = Math.max(grossAmount - discountAmount, 0);
+  const isVatable = String(entry.vatable ?? "").toLowerCase() === "true";
+  const isVatInclusive = isVatable && String(entry.vatInclusive ?? "").toLowerCase() === "true";
+  const vatAmount = !isVatable
+    ? 0
+    : isVatInclusive
+      ? (grossAfterDiscount / 1.12) * 0.12
+      : grossAfterDiscount * 0.12;
+  const netAmount =
+    isVatable && !isVatInclusive ? grossAfterDiscount + vatAmount : grossAfterDiscount;
 
   return {
-    description: "Totals",
-    grossAmount: formatBillingStatementCurrency(totals.grossAmount),
-    netAmount: formatBillingStatementCurrency(totals.netAmount),
-    vatAmount: formatBillingStatementCurrency(totals.vatAmount),
+    ...entry,
+    amount: Math.round(amount * 100) / 100,
+    discountAmount: Math.round(discountAmount * 100) / 100,
+    grossAmount: Math.round(grossAmount * 100) / 100,
+    netAmount: Math.round(netAmount * 100) / 100,
+    quantity,
+    vatAmount: Math.round(vatAmount * 100) / 100,
   };
 }
 
 function clearRows<TRow extends { id: string }>(
   rows: TRow[],
   action: ModuleDataEntryClearAction,
-  createFallbackRow: () => TRow,
-) {
-  if (action === "all") return [createFallbackRow()];
-  const nextRows = rows.filter((row) => {
-    const hasData = rowHasData(row);
-    if (action === "with-data") return !hasData;
-    if (action === "no-data") return hasData;
-    return true;
-  });
-  return nextRows.length > 0 ? nextRows : [createFallbackRow()];
+  factory: () => TRow,
+): TRow[] {
+  if (action === "all") {
+    return [factory()];
+  }
+  return rows.length > 0 ? rows : [factory()];
 }
 
-function duplicateRow<TRow extends { id: string }>(rows: TRow[], rowId: string, createId: () => string) {
-  const rowIndex = rows.findIndex((row) => row.id === rowId);
-  const row = rows[rowIndex];
-  if (!row) return rows;
-  const nextRows = [...rows];
-  nextRows.splice(rowIndex + 1, 0, { ...row, id: createId() });
-  return nextRows;
+function duplicateRow<TRow extends { id: string }>(
+  rows: TRow[],
+  rowId: string,
+  idFactory: () => string,
+): TRow[] {
+  const index = rows.findIndex((row) => row.id === rowId);
+  if (index === -1) return rows;
+  const target = rows[index];
+  const duplicate = { ...target, id: idFactory() };
+  const next = [...rows];
+  next.splice(index + 1, 0, duplicate);
+  return next;
 }
 
 function insertRow<TRow extends { id: string }>(
   rows: TRow[],
   rowId: string,
   position: "above" | "below",
-  createRow: () => TRow,
-) {
-  const rowIndex = rows.findIndex((row) => row.id === rowId);
-  const insertIndex = rowIndex < 0 ? rows.length : rowIndex + (position === "below" ? 1 : 0);
-  const nextRows = [...rows];
-  nextRows.splice(insertIndex, 0, createRow());
-  return nextRows;
+  factory: () => TRow,
+): TRow[] {
+  const index = rows.findIndex((row) => row.id === rowId);
+  if (index === -1) return [...rows, factory()];
+  const insertIndex = position === "above" ? index : index + 1;
+  const next = [...rows];
+  next.splice(insertIndex, 0, factory());
+  return next;
 }
 
-function moveRow<TRow extends { id: string }>(rows: TRow[], fromRowId: string, toRowId: string) {
-  const fromIndex = rows.findIndex((row) => row.id === fromRowId);
-  const toIndex = rows.findIndex((row) => row.id === toRowId);
-  if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) return rows;
-  const nextRows = [...rows];
-  const [movedRow] = nextRows.splice(fromIndex, 1);
-  if (!movedRow) return rows;
-  nextRows.splice(toIndex, 0, movedRow);
-  return nextRows;
+function moveRow<TRow extends { id: string }>(rows: TRow[], fromId: string, toId: string): TRow[] {
+  const fromIndex = rows.findIndex((row) => row.id === fromId);
+  const toIndex = rows.findIndex((row) => row.id === toId);
+  if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) return rows;
+  const next = [...rows];
+  const [removed] = next.splice(fromIndex, 1);
+  next.splice(toIndex, 0, removed);
+  return next;
 }
 
-function removeRow<TRow extends { id: string }>(rows: TRow[], rowId: string, createFallbackRow: () => TRow) {
-  const nextRows = rows.filter((row) => row.id !== rowId);
-  return nextRows.length > 0 ? nextRows : [createFallbackRow()];
-}
-
-const EntryExportOptions = [
-  { id: "csv", label: "CSV", onSelect: () => undefined },
-  { id: "excel", label: "Excel", onSelect: () => undefined },
-  { id: "pdf", label: "PDF", onSelect: () => undefined },
-] satisfies ModuleDataEntryExportOption[];
-
-function normalizeEntry(entry: BillingStatementItem): BillingStatementItem {
-  const amount = Number(entry.amount) || 0;
-  const quantity = Number(entry.quantity) || 0;
-  const discountAmount = Number(entry.discountAmount) || 0;
-  const grossAmount = Number(entry.grossAmount) || amount * quantity;
-
-  return {
-    ...entry,
-    amount,
-    quantity,
-    discountAmount,
-    ewtAmount: Number(entry.ewtAmount) || 0,
-    grossAmount,
-    netAmount: Number(entry.netAmount) || Math.max(grossAmount - discountAmount, 0),
-    vatAmount: Number(entry.vatAmount) || 0,
-    wvatAmount: Number(entry.wvatAmount) || 0,
-  };
-}
-
-function rowHasData(row: { id: string }) {
-  return Object.entries(row).some(([key, value]) => {
-    if (key === "id") return false;
-    if (typeof value === "number") return value !== 0;
-    return Boolean(String(value ?? "").trim());
-  });
+function removeRow<TRow extends { id: string }>(
+  rows: TRow[],
+  rowId: string,
+  factory: () => TRow,
+): TRow[] {
+  const next = rows.filter((row) => row.id !== rowId);
+  return next.length > 0 ? next : [factory()];
 }

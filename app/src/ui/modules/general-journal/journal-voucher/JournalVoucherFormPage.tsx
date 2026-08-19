@@ -1,14 +1,18 @@
 "use client";
 
-import { useMemo, type ChangeEventHandler, type ReactNode } from "react";
+import { useMemo, useState, type ChangeEventHandler, type ReactNode } from "react";
 import { MultiCurrencyCatalog } from "@/app/src/data/modules/system-administration/multi-currency-setup/MultiCurrencySetupData";
 import { useJournalVoucherFormPage } from "@/app/src/hooks/modules/general-journal/journal-voucher/useJournalVoucherFormPage";
+import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
+import type { PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";
 import { JournalVoucherDataEntryTable } from "@/app/src/ui/modules/general-journal/journal-voucher/JournalVoucherDataEntryTable";
 import { JournalVoucherHeaderPage } from "@/app/src/ui/modules/general-journal/journal-voucher/JournalVoucherHeaderPage";
 import { JournalVoucherNotFound } from "@/app/src/ui/modules/general-journal/journal-voucher/JournalVoucherNotFound";
+import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
 import { AppAdvancedDropdown, type AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
+import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
 
 const fieldClassName =
   "app-data-entry-field h-11 min-w-0 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15 disabled:cursor-not-allowed disabled:bg-white disabled:text-darknavy disabled:opacity-60";
@@ -19,10 +23,29 @@ const errorClassName = "mt-1.5 block text-xs font-semibold text-coralpink";
 
 export function JournalVoucherFormPage() {
   const page = useJournalVoucherFormPage();
+  const partyStore = usePartyManagementStore();
+  const [partyAddLineId, setPartyAddLineId] = useState<string | null>(null);
   const currencyOptions = useMemo(() => createJournalVoucherCurrencyDropdownOptions(), []);
+
+  if (page.isRecordLoading) {
+    return (
+      <section className="rounded-lg border border-darknavy/10 bg-white p-6 text-sm font-medium text-darknavy/60 shadow-sm">
+        Loading journal voucher...
+      </section>
+    );
+  }
 
   if (page.needsRecord && !page.existingRecord) {
     return <JournalVoucherNotFound />;
+  }
+
+  function handleCreateParty(record: PartyInformationRecord) {
+    if (partyAddLineId) {
+      page.updateLine(partyAddLineId, "partyCode", record.partyCodeNo);
+      page.updateLine(partyAddLineId, "partyName", getPartyDisplayName(record));
+    }
+
+    setPartyAddLineId(null);
   }
 
   return (
@@ -113,7 +136,11 @@ export function JournalVoucherFormPage() {
           </div>
         </section>
 
-        <JournalVoucherDataEntryTable page={page} />
+        <JournalVoucherDataEntryTable
+          canAddPartyName={partyStore.permissions.canCreate}
+          onAddPartyName={setPartyAddLineId}
+          page={page}
+        />
       </form>
 
       <AppDialog
@@ -125,6 +152,16 @@ export function JournalVoucherFormPage() {
         tone="danger"
         onCancel={() => page.setIsCancelDialogOpen(false)}
         onConfirm={page.handleConfirmCancelVoucher}
+      />
+
+      <PartyManagementDrawer
+        isOpen={!page.isReadonly && partyAddLineId !== null}
+        isPending={partyStore.isMutating}
+        records={partyStore.records}
+        title="Add Party Name"
+        onAddRecord={partyStore.addRecord}
+        onClose={() => setPartyAddLineId(null)}
+        onCreateParty={handleCreateParty}
       />
     </>
   );

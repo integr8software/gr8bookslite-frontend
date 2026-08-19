@@ -1,16 +1,24 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { BillingStatementHref } from "@/app/src/constants/modules/sales/billing-statement/BillingStatementConstants";
 import {
   calculateBillingStatementTotals,
+  createBillingStatementAccountingEntries,
   createBillingStatementFormValues,
   createBillingStatementRecord,
 } from "@/app/src/data/modules/sales/billing-statement/BillingStatementData";
-import { useBillingStatementStore } from "@/app/src/hooks/modules/sales/billing-statement/useBillingStatement";
 import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+import {
+  createBillingStatement,
+  fetchBillingStatement,
+  updateBillingStatement,
+} from "@/app/src/services/modules/sales/billing-statement/BillingStatementApi";
+import { BillingStatementQueryKeys } from "@/app/src/services/modules/sales/billing-statement/BillingStatementQueryKeys";
 import type {
   BillingStatementAccountingEntry,
   BillingStatementFormErrors,
@@ -25,16 +33,90 @@ export function useBillingStatementFormPage() {
   const router = useRouter();
   const pathname = usePathname();
   const params = useParams<{ recordId?: string }>();
-  const { addStatement, statements, updateStatement } = useBillingStatementStore();
+  const queryClient = useQueryClient();
+  const activeBranchId = useAppStore((state) => state.activeBranchId);
+  const activeCompanyId = useAppStore((state) => state.activeCompanyId);
   const mode = getBillingStatementFormMode(pathname);
   const isReadonly = mode === "view";
-  const existingStatement = findBillingStatementByRouteId(statements, params.recordId);
+  const recordQuery = useQuery({
+    enabled:
+      mode !== "add" &&
+      Boolean(params.recordId) &&
+      activeCompanyId !== null &&
+      activeBranchId !== null,
+    queryFn: () =>
+      fetchBillingStatement(params.recordId ?? "", {
+        branchUnitId: activeBranchId,
+      }),
+    queryKey: BillingStatementQueryKeys.detail(
+      activeCompanyId,
+      activeBranchId,
+      params.recordId ?? "missing",
+    ),
+    retry: false,
+  });
+  const existingStatement = mode === "add" ? undefined : recordQuery.data ?? undefined;
   const [values, setValues] = useState<BillingStatementFormValues>(() =>
     createBillingStatementFormValues(existingStatement),
   );
   const [errors, setErrors] = useState<BillingStatementFormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isSubmittingRef = useRef(false);
+  const saveMutation = useMutation({
+    mutationFn: (nextValues: BillingStatementFormValues) => {
+      if (mode === "edit" && existingStatement) {
+        return updateBillingStatement(
+          createBillingStatementRecord(nextValues, existingStatement.id),
+          requireActiveBranchId(activeBranchId),
+        );
+      }
+
+      return createBillingStatement(nextValues, requireActiveBranchId(activeBranchId));
+    },
+    onSuccess: (statement) => {
+      void queryClient.invalidateQueries({
+        queryKey: BillingStatementQueryKeys.all(activeCompanyId, activeBranchId),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: BillingStatementQueryKeys.detail(
+          activeCompanyId,
+          activeBranchId,
+          statement.id,
+        ),
+      });
+      toast.success(
+        mode === "edit" ? "Billing statement updated." : "Billing statement created.",
+      );
+      router.push(`${BillingStatementHref}/view/${statement.id}`);
+    },
+    onError: (error) => {
+      const axiosError = error as {
+        response?: { data?: { message?: string | string[] } };
+        message?: string;
+      };
+      const responseMessage = axiosError.response?.data?.message;
+      const displayMessage = Array.isArray(responseMessage)
+        ? responseMessage.join(", ")
+        : typeof responseMessage === "string"
+          ? responseMessage
+          : error instanceof Error
+            ? error.message
+            : "Could not save billing statement.";
+
+      toast.error(displayMessage);
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+    },
+  });
+
+  useEffect(() => {
+    if (!existingStatement) {
+      return;
+    }
+
+    setValues(createBillingStatementFormValues(existingStatement));
+    setErrors({});
+  }, [existingStatement]);
 
   const previewRecord = useMemo(
     () => createBillingStatementRecord(values, params.recordId ?? "preview"),
@@ -46,7 +128,27 @@ export function useBillingStatementFormPage() {
     value: BillingStatementFormValues[TKey],
   ) {
     if (isReadonly) return;
-    setValues((current) => ({ ...current, [field]: value }));
+    setValues((current) => {
+      const nextValues = { ...current, [field]: value };
+      if (
+        field === "name" ||
+        field === "code" ||
+        field === "transNo" ||
+        field === "defaultAccount"
+      ) {
+        return {
+          ...nextValues,
+          accountingEntries: createBillingStatementAccountingEntries({
+            defaultAccount: nextValues.defaultAccount,
+            items: nextValues.items,
+            partyCode: nextValues.code,
+            partyName: nextValues.name,
+            refNo: nextValues.transNo,
+          }),
+        };
+      }
+      return nextValues;
+    });
     setErrors((current) => ({ ...current, [field]: undefined }));
   }
 
@@ -55,7 +157,18 @@ export function useBillingStatementFormPage() {
     setValues((current) => {
       const normalizedRecord = createBillingStatementRecord({ ...current, items }, "preview");
       const totals = calculateBillingStatementTotals(normalizedRecord.items);
-      return { ...current, ...totals, items: normalizedRecord.items };
+      return {
+        ...current,
+        ...totals,
+        accountingEntries: createBillingStatementAccountingEntries({
+          defaultAccount: current.defaultAccount,
+          items: normalizedRecord.items,
+          partyCode: current.code,
+          partyName: current.name,
+          refNo: current.transNo,
+        }),
+        items: normalizedRecord.items,
+      };
     });
     setErrors((current) => ({ ...current, items: undefined }));
   }
@@ -80,24 +193,19 @@ export function useBillingStatementFormPage() {
 
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
-      toast.error("Please complete the required billing statement fields.");
+      const firstErrorMessage = Object.values(nextErrors).find(Boolean);
+      toast.error(
+        firstErrorMessage || "Please complete the required billing statement fields.",
+      );
       isSubmittingRef.current = false;
       setIsSubmitting(false);
       releaseSubmitLock();
       return;
     }
 
-    const nextStatement = createBillingStatementRecord(values, params.recordId);
-
-    if (mode === "edit") {
-      updateStatement(nextStatement);
-      toast.success("Billing statement updated.");
-    } else {
-      addStatement(nextStatement);
-      toast.success("Billing statement created.");
-    }
-
-    router.push(`${BillingStatementHref}/view/${nextStatement.id}`);
+    saveMutation.mutate(values, {
+      onSettled: () => releaseSubmitLock(),
+    });
   }
 
   return {
@@ -107,7 +215,10 @@ export function useBillingStatementFormPage() {
     isSubmitting,
     isReadonly,
     mode,
-    needsRecord: mode === "edit" || mode === "view",
+    needsRecord:
+      (mode === "edit" || mode === "view") &&
+      recordQuery.isFetched &&
+      !recordQuery.isLoading,
     previewRecord,
     updateAccountingEntries,
     updateField,
@@ -122,21 +233,10 @@ function getBillingStatementFormMode(pathname: string): BillingStatementFormMode
   return "add";
 }
 
-function findBillingStatementByRouteId(
-  statements: BillingStatementRecord[],
-  routeId?: string,
-) {
-  if (!routeId) return undefined;
-  const normalizedRouteId = routeId.trim().toLowerCase();
+function requireActiveBranchId(branchUnitId: number | null) {
+  if (branchUnitId === null) {
+    throw new Error("Select a branch before saving billing statements.");
+  }
 
-  return statements.find((statement) => {
-    const normalizedId = statement.id.trim().toLowerCase();
-    const normalizedTransNo = statement.transNo.trim().toLowerCase();
-
-    return (
-      normalizedId === normalizedRouteId ||
-      normalizedTransNo === normalizedRouteId ||
-      `bs-${normalizedTransNo}` === normalizedRouteId
-    );
-  });
+  return branchUnitId;
 }

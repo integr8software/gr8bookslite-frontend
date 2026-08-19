@@ -5110,3 +5110,727 @@ export type BillingControllerFindOneV1Params = BillingControllerFindAllV1Params;
 export type CreateManualCheckoutSessionDto = { [key: string]: unknown };
 export type ManualCheckoutSessionResponseDto = { [key: string]: unknown };
 export type BillingPaymentAttemptResponseDto = { [key: string]: unknown };
+
+export interface BillingStatementDetailResponseDto {
+  id: string;
+  lineNumber: number;
+  description: string;
+  /** @nullable */
+  particulars?: string | null;
+  quantity: number;
+  amount: number;
+  netAmount: number;
+  vatAmount: number;
+  wvatAmount: number;
+  ewtAmount: number;
+  discountPercent: number;
+  discountAmount: number;
+  grossAmount: number;
+  /** @nullable */
+  vatType?: string | null;
+  vatable: boolean;
+  vatInclusive: boolean;
+  withWvat: boolean;
+  /** @nullable */
+  wvatType?: string | null;
+  withEwt: boolean;
+  /** @nullable */
+  ewtType?: string | null;
+  /** @nullable */
+  responsibilityCenterId?: string | null;
+  /** @nullable */
+  responsibilityCenter?: string | null;
+}
+
+export interface BillingStatementJournalEntryResponseDto {
+  id: string;
+  referenceType: string;
+  referenceId: string;
+  lineNumber: number;
+  accountId: string;
+  accountCode: string;
+  accountTitle: string;
+  currencyCode: string;
+  exchangeRate: number;
+  /** @nullable */
+  particulars?: string | null;
+  debit: number;
+  credit: number;
+  /** @nullable */
+  vatType?: string | null;
+  /** @nullable */
+  atcCode?: string | null;
+  /** @nullable */
+  partyCode?: string | null;
+  /** @nullable */
+  partyName?: string | null;
+  /** @nullable */
+  responsibilityCenterId?: string | null;
+  /** @nullable */
+  responsibilityCenter?: string | null;
+  /** @nullable */
+  refNo?: string | null;
+}
+
+export type BillingStatementResponseDtoStatus = typeof BillingStatementResponseDtoStatus[keyof typeof BillingStatementResponseDtoStatus];
+
+export const BillingStatementResponseDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export interface BillingStatementResponseDto {
+  id: string;
+  transactionNo: string;
+  documentDate: string;
+  dueDate: string;
+  /** @nullable */
+  invoiceNo?: string | null;
+  /** @nullable */
+  referenceNo?: string | null;
+  /** @nullable */
+  partyId?: string | null;
+  customerCode: string;
+  customerName: string;
+  /** @nullable */
+  billToName?: string | null;
+  /** @nullable */
+  address?: string | null;
+  /** @nullable */
+  contactPerson?: string | null;
+  /** @nullable */
+  contactNo?: string | null;
+  /** @nullable */
+  businessStyle?: string | null;
+  /** @nullable */
+  projectCode?: string | null;
+  /** @nullable */
+  projectName?: string | null;
+  /** @nullable */
+  projectRef?: string | null;
+  /** @nullable */
+  salesAssociate?: string | null;
+  /** @nullable */
+  teamAssigned?: string | null;
+  currency: string;
+  exchangeRate: number;
+  netAmount: number;
+  vatAmount: number;
+  wvatAmount: number;
+  ewtAmount: number;
+  discountAmount: number;
+  grossAmount: number;
+  /** @nullable */
+  termId?: string | null;
+  /** @nullable */
+  terms?: string | null;
+  receivableAccountId: string;
+  receivableAccountCode: string;
+  receivableAccountTitle: string;
+  /** @nullable */
+  remarks?: string | null;
+  status: BillingStatementResponseDtoStatus;
+  details: BillingStatementDetailResponseDto[];
+  journalEntries: BillingStatementJournalEntryResponseDto[];
+  /** @nullable */
+  createdBy?: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedBy?: string | null;
+  updatedAt: string;
+}
+
+export interface BillingStatementStatisticsResponseDto {
+  cancelledInvoices: number;
+  disapprovedInvoices: number;
+  draftInvoices: number;
+  forApprovalInvoices: number;
+  postedInvoices: number;
+  totalInvoices: number;
+}
+
+export interface BillingStatementPaginationResponseDto {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface BillingStatementPermissionsResponseDto {
+  canApprove: boolean;
+  canCancel: boolean;
+  canCreate: boolean;
+  canDisapprove: boolean;
+  canExport: boolean;
+  canPost: boolean;
+  canUpdate: boolean;
+  canView: boolean;
+}
+
+export interface BillingStatementListResponseDto {
+  invoices: BillingStatementResponseDto[];
+  statistics: BillingStatementStatisticsResponseDto;
+  pagination: BillingStatementPaginationResponseDto;
+  permissions: BillingStatementPermissionsResponseDto;
+}
+
+export interface BillingStatementNumberSuggestionResponseDto {
+  branchUnitId: number;
+  inputMode: string;
+  transactionNo: string;
+}
+
+export interface BillingStatementContainerResponseDto {
+  invoice: BillingStatementResponseDto;
+  permissions: BillingStatementPermissionsResponseDto;
+}
+
+export interface BillingStatementDetailDto {
+  /** @minimum 1 */
+  lineNumber: number;
+  /** @maxLength 250 */
+  description: string;
+  /**
+   * @maxLength 500
+   * @nullable
+   */
+  particulars?: string | null;
+  /** @minimum 0 */
+  quantity: number;
+  amount: number;
+  netAmount: number;
+  vatAmount: number;
+  wvatAmount: number;
+  ewtAmount: number;
+  /** @minimum 0 */
+  discountPercent: number;
+  discountAmount: number;
+  grossAmount: number;
+  /**
+   * @maxLength 80
+   * @nullable
+   */
+  vatType?: string | null;
+  vatable: boolean;
+  vatInclusive: boolean;
+  withWvat: boolean;
+  /**
+   * @maxLength 80
+   * @nullable
+   */
+  wvatType?: string | null;
+  withEwt: boolean;
+  /**
+   * @maxLength 80
+   * @nullable
+   */
+  ewtType?: string | null;
+  /**
+   * @maxLength 40
+   * @nullable
+   */
+  responsibilityCenterId?: string | null;
+  /**
+   * @maxLength 150
+   * @nullable
+   */
+  responsibilityCenter?: string | null;
+}
+
+export type BillingStatementJournalEntryDtoReferenceType = typeof BillingStatementJournalEntryDtoReferenceType[keyof typeof BillingStatementJournalEntryDtoReferenceType];
+
+export const BillingStatementJournalEntryDtoReferenceType = {
+  BS: 'BS',
+} as const;
+
+export interface BillingStatementJournalEntryDto {
+  referenceType?: BillingStatementJournalEntryDtoReferenceType;
+  /** @minimum 1 */
+  lineNumber: number;
+  /**
+   * @maxLength 40
+   * @nullable
+   */
+  accountId?: string | null;
+  /** @maxLength 20 */
+  accountCode: string;
+  /** @maxLength 250 */
+  accountTitle: string;
+  /** @maxLength 10 */
+  currencyCode: string;
+  /** @minimum 0.000001 */
+  exchangeRate: number;
+  /**
+   * @maxLength 500
+   * @nullable
+   */
+  particulars?: string | null;
+  /** @minimum 0 */
+  debit: number;
+  /** @minimum 0 */
+  credit: number;
+  /**
+   * @maxLength 80
+   * @nullable
+   */
+  vatType?: string | null;
+  /**
+   * @maxLength 80
+   * @nullable
+   */
+  atcCode?: string | null;
+  /**
+   * @maxLength 80
+   * @nullable
+   */
+  partyCode?: string | null;
+  /**
+   * @maxLength 255
+   * @nullable
+   */
+  partyName?: string | null;
+  /**
+   * @maxLength 40
+   * @nullable
+   */
+  responsibilityCenterId?: string | null;
+  /**
+   * @maxLength 150
+   * @nullable
+   */
+  responsibilityCenter?: string | null;
+  /**
+   * @maxLength 120
+   * @nullable
+   */
+  refNo?: string | null;
+}
+
+export interface CreateBillingStatementDto {
+  /** @minimum 1 */
+  branchUnitId?: number;
+  /**
+   * @maxLength 80
+   * @nullable
+   */
+  transactionNo?: string | null;
+  documentDate: string;
+  dueDate: string;
+  /**
+   * @maxLength 120
+   * @nullable
+   */
+  invoiceNo?: string | null;
+  /**
+   * @maxLength 120
+   * @nullable
+   */
+  referenceNo?: string | null;
+  /**
+   * @maxLength 40
+   * @nullable
+   */
+  partyId?: string | null;
+  /** @maxLength 80 */
+  customerCode: string;
+  /** @maxLength 255 */
+  customerName: string;
+  /**
+   * @maxLength 255
+   * @nullable
+   */
+  billToName?: string | null;
+  /**
+   * @maxLength 500
+   * @nullable
+   */
+  address?: string | null;
+  /**
+   * @maxLength 255
+   * @nullable
+   */
+  contactPerson?: string | null;
+  /**
+   * @maxLength 40
+   * @nullable
+   */
+  contactNo?: string | null;
+  /**
+   * @maxLength 120
+   * @nullable
+   */
+  businessStyle?: string | null;
+  /**
+   * @maxLength 80
+   * @nullable
+   */
+  projectCode?: string | null;
+  /**
+   * @maxLength 255
+   * @nullable
+   */
+  projectName?: string | null;
+  /**
+   * @maxLength 120
+   * @nullable
+   */
+  projectRef?: string | null;
+  /**
+   * @maxLength 150
+   * @nullable
+   */
+  salesAssociate?: string | null;
+  /**
+   * @maxLength 150
+   * @nullable
+   */
+  teamAssigned?: string | null;
+  /** @maxLength 10 */
+  currency: string;
+  /** @minimum 0.000001 */
+  exchangeRate: number;
+  netAmount: number;
+  vatAmount: number;
+  wvatAmount: number;
+  ewtAmount: number;
+  discountAmount: number;
+  grossAmount: number;
+  /**
+   * @maxLength 40
+   * @nullable
+   */
+  termId?: string | null;
+  /**
+   * @maxLength 150
+   * @nullable
+   */
+  terms?: string | null;
+  /**
+   * @maxLength 40
+   * @nullable
+   */
+  receivableAccountId?: string | null;
+  /** @maxLength 20 */
+  receivableAccountCode: string;
+  /** @maxLength 250 */
+  receivableAccountTitle: string;
+  /**
+   * @maxLength 500
+   * @nullable
+   */
+  remarks?: string | null;
+  /** @minItems 1 */
+  details: BillingStatementDetailDto[];
+  /** @minItems 2 */
+  journalEntries: BillingStatementJournalEntryDto[];
+}
+
+export interface SaveBillingStatementResponseDto {
+  invoice: BillingStatementResponseDto;
+  permissions: BillingStatementPermissionsResponseDto;
+  message: string;
+}
+
+export interface UpdateBillingStatementDto {
+  /** @minimum 1 */
+  branchUnitId?: number;
+  /**
+   * @maxLength 80
+   * @nullable
+   */
+  transactionNo?: string | null;
+  documentDate?: string;
+  dueDate?: string;
+  /**
+   * @maxLength 120
+   * @nullable
+   */
+  invoiceNo?: string | null;
+  /**
+   * @maxLength 120
+   * @nullable
+   */
+  referenceNo?: string | null;
+  /**
+   * @maxLength 40
+   * @nullable
+   */
+  partyId?: string | null;
+  /** @maxLength 80 */
+  customerCode?: string;
+  /** @maxLength 255 */
+  customerName?: string;
+  /**
+   * @maxLength 255
+   * @nullable
+   */
+  billToName?: string | null;
+  /**
+   * @maxLength 500
+   * @nullable
+   */
+  address?: string | null;
+  /**
+   * @maxLength 255
+   * @nullable
+   */
+  contactPerson?: string | null;
+  /**
+   * @maxLength 40
+   * @nullable
+   */
+  contactNo?: string | null;
+  /**
+   * @maxLength 120
+   * @nullable
+   */
+  businessStyle?: string | null;
+  /**
+   * @maxLength 80
+   * @nullable
+   */
+  projectCode?: string | null;
+  /**
+   * @maxLength 255
+   * @nullable
+   */
+  projectName?: string | null;
+  /**
+   * @maxLength 120
+   * @nullable
+   */
+  projectRef?: string | null;
+  /**
+   * @maxLength 150
+   * @nullable
+   */
+  salesAssociate?: string | null;
+  /**
+   * @maxLength 150
+   * @nullable
+   */
+  teamAssigned?: string | null;
+  /** @maxLength 10 */
+  currency?: string;
+  /** @minimum 0.000001 */
+  exchangeRate?: number;
+  netAmount?: number;
+  vatAmount?: number;
+  wvatAmount?: number;
+  ewtAmount?: number;
+  discountAmount?: number;
+  grossAmount?: number;
+  /**
+   * @maxLength 40
+   * @nullable
+   */
+  termId?: string | null;
+  /**
+   * @maxLength 150
+   * @nullable
+   */
+  terms?: string | null;
+  /**
+   * @maxLength 40
+   * @nullable
+   */
+  receivableAccountId?: string | null;
+  /** @maxLength 20 */
+  receivableAccountCode?: string;
+  /** @maxLength 250 */
+  receivableAccountTitle?: string;
+  /**
+   * @maxLength 500
+   * @nullable
+   */
+  remarks?: string | null;
+  /** @minItems 1 */
+  details?: BillingStatementDetailDto[];
+  /** @minItems 2 */
+  journalEntries?: BillingStatementJournalEntryDto[];
+}
+
+export type UpdateBillingStatementStatusDtoStatus = typeof UpdateBillingStatementStatusDtoStatus[keyof typeof UpdateBillingStatementStatusDtoStatus];
+
+export const UpdateBillingStatementStatusDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
+  Draft: 'Draft',
+  For_Approval: 'For Approval',
+  Disapproved: 'Disapproved',
+  Posted: 'Posted',
+  Cancelled: 'Cancelled',
+} as const;
+
+export interface UpdateBillingStatementStatusDto {
+  status: UpdateBillingStatementStatusDtoStatus;
+}
+
+export type BillingStatementControllerFindAllV1Params = {
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ */
+limit?: number;
+search?: string;
+status?: BillingStatementControllerFindAllV1Status;
+documentDateFrom?: string;
+documentDateTo?: string;
+amountFrom?: number;
+amountTo?: number;
+sortBy?: BillingStatementControllerFindAllV1SortBy;
+sortDirection?: BillingStatementControllerFindAllV1SortDirection;
+};
+
+export type BillingStatementControllerFindAllV1Status = typeof BillingStatementControllerFindAllV1Status[keyof typeof BillingStatementControllerFindAllV1Status];
+
+export const BillingStatementControllerFindAllV1Status = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type BillingStatementControllerFindAllV1SortBy = typeof BillingStatementControllerFindAllV1SortBy[keyof typeof BillingStatementControllerFindAllV1SortBy];
+
+export const BillingStatementControllerFindAllV1SortBy = {
+  transactionNo: 'transactionNo',
+  documentDate: 'documentDate',
+  customerName: 'customerName',
+  invoiceNo: 'invoiceNo',
+  referenceNo: 'referenceNo',
+  grossAmount: 'grossAmount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type BillingStatementControllerFindAllV1SortDirection = typeof BillingStatementControllerFindAllV1SortDirection[keyof typeof BillingStatementControllerFindAllV1SortDirection];
+
+export const BillingStatementControllerFindAllV1SortDirection = {
+  asc: 'asc',
+  desc: 'desc',
+} as const;
+
+export type BillingStatementControllerSuggestTransactionNumberV1Params = {
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ */
+limit?: number;
+search?: string;
+status?: BillingStatementControllerSuggestTransactionNumberV1Status;
+documentDateFrom?: string;
+documentDateTo?: string;
+amountFrom?: number;
+amountTo?: number;
+sortBy?: BillingStatementControllerSuggestTransactionNumberV1SortBy;
+sortDirection?: BillingStatementControllerSuggestTransactionNumberV1SortDirection;
+};
+
+export type BillingStatementControllerSuggestTransactionNumberV1Status = typeof BillingStatementControllerSuggestTransactionNumberV1Status[keyof typeof BillingStatementControllerSuggestTransactionNumberV1Status];
+
+export const BillingStatementControllerSuggestTransactionNumberV1Status = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type BillingStatementControllerSuggestTransactionNumberV1SortBy = typeof BillingStatementControllerSuggestTransactionNumberV1SortBy[keyof typeof BillingStatementControllerSuggestTransactionNumberV1SortBy];
+
+export const BillingStatementControllerSuggestTransactionNumberV1SortBy = {
+  transactionNo: 'transactionNo',
+  documentDate: 'documentDate',
+  customerName: 'customerName',
+  invoiceNo: 'invoiceNo',
+  referenceNo: 'referenceNo',
+  grossAmount: 'grossAmount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type BillingStatementControllerSuggestTransactionNumberV1SortDirection = typeof BillingStatementControllerSuggestTransactionNumberV1SortDirection[keyof typeof BillingStatementControllerSuggestTransactionNumberV1SortDirection];
+
+export const BillingStatementControllerSuggestTransactionNumberV1SortDirection = {
+  asc: 'asc',
+  desc: 'desc',
+} as const;
+
+export type BillingStatementControllerFindOneV1Params = {
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ */
+limit?: number;
+search?: string;
+status?: BillingStatementControllerFindOneV1Status;
+documentDateFrom?: string;
+documentDateTo?: string;
+amountFrom?: number;
+amountTo?: number;
+sortBy?: BillingStatementControllerFindOneV1SortBy;
+sortDirection?: BillingStatementControllerFindOneV1SortDirection;
+};
+
+export type BillingStatementControllerFindOneV1Status = typeof BillingStatementControllerFindOneV1Status[keyof typeof BillingStatementControllerFindOneV1Status];
+
+export const BillingStatementControllerFindOneV1Status = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type BillingStatementControllerFindOneV1SortBy = typeof BillingStatementControllerFindOneV1SortBy[keyof typeof BillingStatementControllerFindOneV1SortBy];
+
+export const BillingStatementControllerFindOneV1SortBy = {
+  transactionNo: 'transactionNo',
+  documentDate: 'documentDate',
+  customerName: 'customerName',
+  invoiceNo: 'invoiceNo',
+  referenceNo: 'referenceNo',
+  grossAmount: 'grossAmount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type BillingStatementControllerFindOneV1SortDirection = typeof BillingStatementControllerFindOneV1SortDirection[keyof typeof BillingStatementControllerFindOneV1SortDirection];
+
+export const BillingStatementControllerFindOneV1SortDirection = {
+  asc: 'asc',
+  desc: 'desc',
+} as const;
+

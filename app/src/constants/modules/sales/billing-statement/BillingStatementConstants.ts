@@ -2,17 +2,57 @@ import type { BillingStatementStatus } from "@/app/src/types/modules/sales/billi
 
 export const BillingStatementHref = "/sales/billing-statement";
 
-export const BillingStatementStorageKey = "gr8books.billingStatements";
-
 export const BillingStatementTablePaginationStorageKey = "sales.billing-statement";
 
 export const BillingStatementCurrencyOptions = ["PHP", "USD", "JPY", "EUR"] as const;
 
+export const BillingStatementPartyOptions = [
+  {
+    label: "CUST-001",
+    name: "North Harbor Office Depot",
+    selectedDetails: "CUST-001",
+    value: "North Harbor Office Depot",
+  },
+  {
+    label: "CUST-002",
+    name: "Aster Foods Corporation",
+    selectedDetails: "CUST-002",
+    value: "Aster Foods Corporation",
+  },
+  {
+    label: "CUST-003",
+    name: "Bluecrest Trading",
+    selectedDetails: "CUST-003",
+    value: "Bluecrest Trading",
+  },
+  {
+    label: "CUST-004",
+    name: "Harborview Logistics",
+    selectedDetails: "CUST-004",
+    value: "Harborview Logistics",
+  },
+];
+
+export const BillingStatementResponsibilityCenterOptions = [
+  { name: "CC-ADM-001", value: "CC-ADM-001" },
+  { name: "CC-SLS-001", value: "CC-SLS-001" },
+  { name: "CC-OPS-001", value: "CC-OPS-001" },
+];
+
+export const BillingStatementSalesPersonnelOptions = [
+  { name: "--Select Sales Personnel--", value: "" },
+  { name: "John Doe", value: "John Doe" },
+  { name: "Jane Smith", value: "Jane Smith" },
+  { name: "Michael Tan", value: "Michael Tan" },
+  { name: "Sarah Lee", value: "Sarah Lee" },
+  { name: "Sales Team", value: "Sales Team" },
+  { name: "Operations", value: "Operations" },
+  { name: "Admin", value: "Admin" },
+];
+
 export const BillingStatementBooleanOptions = ["False", "True"] as const;
 
 export const BillingStatementDiscountOptions = ["", "0", "5", "10", "15", "20"] as const;
-
-export const BillingStatementTypeOptions = ["", "VATable", "Zero Rated", "Exempt"] as const;
 
 export const BillingStatementTermsOptions = [
   "--Select Terms--",

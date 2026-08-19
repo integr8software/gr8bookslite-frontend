@@ -19,12 +19,14 @@ const DisbursementVoucherLineEntryValidationSchema = z.object({
   credit: z.number(),
 });
 
+const CUSTOM_ISSUE_CODE = z.ZodIssueCode.custom;
+
 export const DisbursementVoucherEntriesValidationSchema = z
   .array(DisbursementVoucherLineEntryValidationSchema)
   .superRefine((entries, context) => {
     if (entries.length < 2) {
       context.addIssue({
-        code: "custom",
+        code: CUSTOM_ISSUE_CODE,
         message: "Add at least two line entries.",
       });
       return;
@@ -36,7 +38,7 @@ export const DisbursementVoucherEntriesValidationSchema = z
 
     if (hasIncompleteEntry) {
       context.addIssue({
-        code: "custom",
+        code: CUSTOM_ISSUE_CODE,
         message: "Each line needs an account title, account code, and either a debit or credit amount.",
       });
       return;
@@ -44,7 +46,7 @@ export const DisbursementVoucherEntriesValidationSchema = z
 
     if (entries.some((entry) => entry.debit > 0 && entry.credit > 0)) {
       context.addIssue({
-        code: "custom",
+        code: CUSTOM_ISSUE_CODE,
         message: "Each line can only carry a debit or a credit amount.",
       });
       return;
@@ -55,7 +57,7 @@ export const DisbursementVoucherEntriesValidationSchema = z
 
     if (totalDebit <= 0 || totalCredit <= 0) {
       context.addIssue({
-        code: "custom",
+        code: CUSTOM_ISSUE_CODE,
         message: "Entries must include both debit and credit values.",
       });
       return;
@@ -63,7 +65,7 @@ export const DisbursementVoucherEntriesValidationSchema = z
 
     if (Math.abs(totalDebit - totalCredit) > 0.001) {
       context.addIssue({
-        code: "custom",
+        code: CUSTOM_ISSUE_CODE,
         message: "Debit and credit totals must balance before review.",
       });
     }
@@ -82,7 +84,7 @@ export const DisbursementVoucherEntryDraftValidationSchema = z
 
     if (debit <= 0 && credit <= 0) {
       context.addIssue({
-        code: "custom",
+        code: CUSTOM_ISSUE_CODE,
         message: "Enter a debit or credit amount.",
       });
       return;
@@ -90,7 +92,7 @@ export const DisbursementVoucherEntryDraftValidationSchema = z
 
     if (debit > 0 && credit > 0) {
       context.addIssue({
-        code: "custom",
+        code: CUSTOM_ISSUE_CODE,
         message: "Each line can only carry a debit or a credit amount.",
       });
     }

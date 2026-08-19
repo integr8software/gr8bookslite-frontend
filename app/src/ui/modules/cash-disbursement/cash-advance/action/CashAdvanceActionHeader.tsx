@@ -25,6 +25,7 @@ import { CashAdvanceViewActions } from "@/app/src/ui/modules/cash-disbursement/c
 
 export function CashAdvanceActionHeader({
   mode,
+  isSubmitting,
   onPreview,
   onSaveDraft,
   onSubmit,
@@ -32,6 +33,7 @@ export function CashAdvanceActionHeader({
   record,
 }: {
   mode: CashAdvanceActionMode;
+  isSubmitting?: boolean;
   onPreview?: () => void;
   onSaveDraft?: () => void;
   onSubmit: () => void;
@@ -82,6 +84,8 @@ export function CashAdvanceActionHeader({
           ) : null}
           {mode === "view" ? null : (
             <ModuleActionButton
+              disabled={isSubmitting}
+              label={isSubmitting ? "Saving..." : "Save"}
               onAction={() => setSubmitConfirmation("save")}
               menuItems={
                 onSaveDraft

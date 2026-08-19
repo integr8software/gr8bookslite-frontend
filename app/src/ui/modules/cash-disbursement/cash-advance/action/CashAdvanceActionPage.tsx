@@ -29,6 +29,7 @@ export function CashAdvanceActionPage({ mode }: { mode: CashAdvanceActionMode })
       <section className="grid gap-5">
         <CashAdvanceActionHeader
           mode={mode}
+          isSubmitting={advanceForm.isSubmitting}
           onPreview={() => setIsReportPreviewOpen(true)}
           onSaveDraft={mode === "add" ? () => advanceForm.submitAdvance(CashAdvanceStatuses.draft) : undefined}
           onSubmit={() => advanceForm.submitAdvance(CashAdvanceStatuses.forApproval)}

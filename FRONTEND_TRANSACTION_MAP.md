@@ -36,6 +36,10 @@ existing transaction feature using this structure.
 - Feature-specific entry row utilities stay in `entries/utils/`.
 - Check [FRONTEND_UTILITY.md](FRONTEND_UTILITY.md) before adding or duplicating
   a helper.
+- Read
+  [ModuleInteractionSafetyPatterns.md](app/src/agents/modules/deduplication%20&%20optimistic/ModuleInteractionSafetyPatterns.md)
+  for guidance on request deduplication, action submit locks, dirty checking,
+  optimistic updates, and draft autosaving.
 
 ## Transaction Runtime Graph
 
@@ -1396,6 +1400,40 @@ columns.
   current transaction module.
 - Utility inventory: read [FRONTEND_UTILITY.md](FRONTEND_UTILITY.md) before
   creating a helper with a purpose that may already exist.
+- Module interaction patterns: read
+  [ModuleInteractionSafetyPatterns.md](app/src/agents/modules/deduplication%20&%20optimistic/ModuleInteractionSafetyPatterns.md)
+  for shared action locking, request deduplication, optimistic updates, dirty
+  checking, and draft autosaving patterns.
+
+## Module Interaction Safety Patterns
+
+Refer to
+[ModuleInteractionSafetyPatterns.md](app/src/agents/modules/deduplication%20&%20optimistic/ModuleInteractionSafetyPatterns.md)
+in `app/src/agents/modules/deduplication & optimistic/` for patterns when
+adding or refactoring transactional modules with user-triggered actions:
+
+- **Request Deduplication**: Global deduplication of identical in-flight API
+  requests (`ApiRequestDeduper.ts`, `ApiClient.ts`, `OrvalApiClient.ts`). Dedupe
+  keys match method, URL, params, body, and FormData field names/files so fast
+  clicks and repeated triggers do not duplicate network fetches.
+- **Submit Lock**: Use `acquireModuleActionLock` from
+  `app/src/hooks/shared/module/ModuleActionLock.ts` for actions like Save,
+  Submit, Approve, Delete, Close, and Post. Acquire the lock before validation
+  or saving, release it on validation or save errors, and allow lock TTL to
+  expire on successful navigation to prevent double submissions.
+- **Dirty Checking**: Compare current form values against initial values
+  (`JSON.stringify` or a stable serializer) to prevent no-change saves on edit
+  forms.
+- **Optimistic Updates**: Apply optimistic mutations selectively
+  (`useOptimisticModuleListMutation` for safe list row deletions and
+  `useOptimisticModuleMutation` for local state). Do not use optimistic updates
+  for accounting postings, inventory stock movements, disbursements, or
+  backend-generated sequence numbers.
+- **Draft Autosave**: Form autosaving via `useModuleDraft`, clearing the draft
+  only after a successful save.
+- **Testing Checklist**: Run verification checks for rapid click prevention,
+  lock release on validation/save failure, single navigation, network fetch
+  deduplication, and optimistic delete rollback.
 
 ## Old Folder Shapes
 
@@ -1481,6 +1519,10 @@ Docs-only changes do not require lint or build.
 - Read [FRONTEND_UTILITY.md](FRONTEND_UTILITY.md) before adding helper
   functions; import existing utilities from `app/src/utils/` to avoid redundant
   helpers.
+- Read
+  [ModuleInteractionSafetyPatterns.md](app/src/agents/modules/deduplication%20&%20optimistic/ModuleInteractionSafetyPatterns.md)
+  for shared module action locking, request deduplication, optimistic updates,
+  dirty checking, and draft autosaving patterns.
 - Prefer the current transaction structure for new transaction work.
 - Keep older folder structures stable unless the task is explicitly a
   transaction module refactor.

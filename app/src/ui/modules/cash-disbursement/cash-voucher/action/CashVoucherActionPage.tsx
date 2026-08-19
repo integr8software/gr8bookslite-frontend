@@ -76,6 +76,7 @@ function CashVoucherActionContent({ voucherAction }: { voucherAction: CashVouche
         copyFromRecords={CashVoucherCopyFromRecords}
         copyFromSources={CashVoucherCopySources}
         mode={voucherAction.isReadonly ? "view" : voucherAction.mode}
+        isSubmitting={voucherAction.isSubmitting}
         pendingSubmitStatus={voucherAction.pendingSubmitStatus}
         returnLink={voucherAction.returnLink}
         transaction={voucherAction.selectedTransaction}

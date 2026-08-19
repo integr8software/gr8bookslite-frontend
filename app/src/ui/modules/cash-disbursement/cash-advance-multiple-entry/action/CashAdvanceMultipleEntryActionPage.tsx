@@ -103,6 +103,7 @@ export function CashAdvanceMultipleEntryActionPage({ mode }: { mode: CashAdvance
       <section className="grid gap-5">
         <CashAdvanceMultipleEntryActionHeader
           mode={mode}
+          isSubmitting={form.isSubmitting}
           record={form.record}
           onPreview={() => setIsReportPreviewOpen(true)}
           onSaveDraft={() => form.submitEntry(CashAdvanceMultipleEntryStatuses.draft)}

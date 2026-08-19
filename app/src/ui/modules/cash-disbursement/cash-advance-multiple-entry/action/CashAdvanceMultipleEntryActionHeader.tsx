@@ -27,6 +27,7 @@ import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 
 export function CashAdvanceMultipleEntryActionHeader({
   mode,
+  isSubmitting,
   onPreview,
   onSaveDraft,
   onSubmit,
@@ -34,6 +35,7 @@ export function CashAdvanceMultipleEntryActionHeader({
   record,
 }: {
   mode: CashAdvanceMultipleEntryActionMode;
+  isSubmitting?: boolean;
   onPreview?: () => void;
   onSaveDraft?: () => void;
   onSubmit: () => void;
@@ -85,6 +87,8 @@ export function CashAdvanceMultipleEntryActionHeader({
           ) : null}
           {mode === "view" ? null : (
             <ModuleActionButton
+              disabled={isSubmitting}
+              label={isSubmitting ? "Saving..." : "Save"}
               onAction={() => setSubmitConfirmation("save")}
               menuItems={
                 mode === "add" && onSaveDraft

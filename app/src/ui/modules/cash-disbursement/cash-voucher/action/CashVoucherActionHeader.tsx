@@ -22,6 +22,7 @@ import { CashVoucherViewActions } from "@/app/src/ui/modules/cash-disbursement/c
 
 export function CashVoucherActionHeader({
   mode,
+  isSubmitting,
   pendingSubmitStatus,
   transaction,
   voucher,
@@ -94,6 +95,8 @@ export function CashVoucherActionHeader({
                 <AppCopyFromDropdown records={copyFromRecords} sources={copyFromSources} onApply={onCopyFrom} />
               ) : null}
               <ModuleActionButton
+                disabled={isSubmitting}
+                label={isSubmitting ? "Saving..." : "Save"}
                 onAction={onSubmit}
                 menuItems={
                   mode === "add" && onSaveDraft

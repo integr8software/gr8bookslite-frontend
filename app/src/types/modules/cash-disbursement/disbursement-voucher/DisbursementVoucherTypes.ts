@@ -297,6 +297,7 @@ export type DisbursementVoucherActionHeaderProps = {
   copyFromRecords?: AppCopyFromRecord[];
   copyFromSources?: string[];
   mode: DisbursementVoucherActionMode;
+  isSubmitting?: boolean;
   returnLink?: string;
   transaction?: DisbursementTransactionRecord;
   voucher?: DisbursementVoucherRecord;

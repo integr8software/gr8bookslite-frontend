@@ -30,6 +30,8 @@ import {
   PettyCashVoucherStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
 import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
+import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
+import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 
 export function usePettyCashVoucherActionPage(options: PettyCashVoucherActionPageOptions) {
   const transactionCurrency = useTransactionCurrency();
@@ -48,6 +50,20 @@ export function usePettyCashVoucherActionPage(options: PettyCashVoucherActionPag
   const [isPartyDrawerOpen, setIsPartyDrawerOpen] = useState(false);
   const [isResponsibilityCenterDrawerOpen, setIsResponsibilityCenterDrawerOpen] = useState(false);
   const hasEditedCurrencyRef = useRef(false);
+  const isSubmittingRef = useRef(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [initialValues] = useState(values);
+  const isDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
+  const draft = useModuleDraft({
+    enabled: !isReadonly,
+    key: createModuleDraftKey({
+      mode,
+      moduleId: "cash-disbursement:petty-cash-voucher",
+      recordId: params.recordId,
+    }),
+    setValues,
+    values,
+  });
   const partyStore = usePartyManagementStore();
   const responsibilityCenterStore = useResponsibilityCenterStore();
 
@@ -126,9 +142,17 @@ export function usePettyCashVoucherActionPage(options: PettyCashVoucherActionPag
   }
 
   function handleSubmit() {
-    if (isReadonly) {
-      return true;
+    if (isReadonly || isSubmittingRef.current) return false;
+    if (mode === "edit" && !isDirty) {
+      toast.error("No changes to save.");
+      return false;
     }
+    const releaseSubmitLock = acquireModuleActionLock(
+      `cash-disbursement:petty-cash-voucher:submit:${mode}:${params.recordId ?? values.transactionNo}`,
+    );
+    if (!releaseSubmitLock) return false;
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
 
     const nextErrors = validatePettyCashVoucherForm(values);
 
@@ -136,37 +160,68 @@ export function usePettyCashVoucherActionPage(options: PettyCashVoucherActionPag
 
     if (Object.keys(nextErrors).length > 0) {
       toast.error("Please fix the highlighted voucher fields.");
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+      releaseSubmitLock();
       return false;
     }
 
-    persistVoucher(PettyCashVoucherStatuses.forApproval);
-    toast.success(
-      mode === "edit" ? "Petty cash voucher updated and submitted for approval." : "Petty cash voucher created and submitted for approval.",
-    );
-    options.onSaved?.();
-    return true;
+    try {
+      persistVoucher(PettyCashVoucherStatuses.forApproval);
+      draft.clearDraft();
+      toast.success(
+        mode === "edit" ? "Petty cash voucher updated and submitted for approval." : "Petty cash voucher created and submitted for approval.",
+      );
+      options.onSaved?.();
+      return true;
+    } catch {
+      toast.error("Could not save the petty cash voucher. Please try again.");
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+      releaseSubmitLock();
+      return false;
+    }
   }
 
   function handleSaveAsDraft() {
-    if (isReadonly) {
+    if (isReadonly || isSubmittingRef.current) return false;
+    const releaseSubmitLock = acquireModuleActionLock(
+      `cash-disbursement:petty-cash-voucher:save-draft:${mode}:${params.recordId ?? values.transactionNo}`,
+    );
+    if (!releaseSubmitLock) return false;
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
+    try {
+      persistVoucher(PettyCashVoucherStatuses.draft);
+      setErrors({});
+      draft.clearDraft();
+      toast.success("Petty cash voucher saved as draft.");
+      options.onSaved?.();
       return true;
+    } catch {
+      toast.error("Could not save the petty cash voucher draft. Please try again.");
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+      releaseSubmitLock();
+      return false;
     }
-
-    persistVoucher(PettyCashVoucherStatuses.draft);
-    setErrors({});
-    toast.success("Petty cash voucher saved as draft.");
-    options.onSaved?.();
-    return true;
   }
 
   function handleUpdateStatus(status: PettyCashVoucherStatus) {
     if (!existingVoucher) {
       return false;
     }
-
-    persistVoucher(status);
-    toast.success(`Petty cash voucher marked as ${status}.`);
-    return true;
+    const releaseActionLock = acquireModuleActionLock(`cash-disbursement:petty-cash-voucher:status:${existingVoucher.id}:${status}`);
+    if (!releaseActionLock) return false;
+    try {
+      persistVoucher(status);
+      toast.success(`Petty cash voucher marked as ${status}.`);
+      return true;
+    } catch {
+      toast.error("Could not update the petty cash voucher. Please try again.");
+      releaseActionLock();
+      return false;
+    }
   }
 
   function handleCopyFrom(recordIds: string[]) {
@@ -254,6 +309,7 @@ export function usePettyCashVoucherActionPage(options: PettyCashVoucherActionPag
     handleUpdateStatus,
     isPartyDrawerOpen,
     isExchangeRateLoading: transactionCurrency.isExchangeRateLoading,
+    isSubmitting,
     isReadonly,
     isResponsibilityCenterDrawerOpen,
     mode,

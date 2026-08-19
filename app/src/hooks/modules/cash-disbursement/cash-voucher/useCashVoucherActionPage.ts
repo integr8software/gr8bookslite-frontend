@@ -56,6 +56,8 @@ import type { ResponsibilityCenter } from "@/app/src/types/modules/financial-mai
 import type { ModuleDataEntryClearAction } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 import { useCashVoucherStore } from "@/app/src/hooks/modules/cash-disbursement/cash-voucher/useCashVoucher";
 import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
+import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
+import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import {
   clearCashVoucherEntryRows,
   createCashVoucherEntryRows,
@@ -97,6 +99,9 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   const [isResponsibilityCenterDrawerOpen, setIsResponsibilityCenterDrawerOpen] = useState(false);
   const [pendingResponsibilityCenterEntryId, setPendingResponsibilityCenterEntryId] = useState<string | null>(null);
   const hasEditedCurrencyRef = useRef(false);
+  const isSubmittingRef = useRef(false);
+  const submitLockReleaseRef = useRef<null | (() => void)>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const defaultAccountStore = useDefaultAccountStore();
   const partyStore = usePartyManagementStore();
   const responsibilityCenterStore = useResponsibilityCenterStore();
@@ -108,6 +113,14 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   const totalDebit = useMemo(() => values.lineEntries.reduce((sum, entry) => sum + entry.debit, 0), [values.lineEntries]);
   const totalCredit = useMemo(() => values.lineEntries.reduce((sum, entry) => sum + entry.credit, 0), [values.lineEntries]);
   const isRecordMissing = (!selectedTransaction && mode !== "add") || (mode === "edit" && !existingVoucher);
+  const [initialValues] = useState(values);
+  const isDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
+  const draft = useModuleDraft({
+    enabled: !isReadonly,
+    key: createModuleDraftKey({ mode, moduleId: "cash-disbursement:cash-voucher", recordId: params.recordId }),
+    setValues,
+    values,
+  });
 
   useEffect(() => {
     clearAccountingGridSession();
@@ -311,9 +324,18 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   }
 
   function requestCashVoucherSubmit(status: CashVoucherStatus) {
-    if (isReadonly) {
+    if (isReadonly || isSubmittingRef.current) return;
+    if (mode === "edit" && !isDirty) {
+      toast.error("No changes to save.");
       return;
     }
+    const releaseSubmitLock = acquireModuleActionLock(
+      `cash-disbursement:cash-voucher:submit:${mode}:${params.recordId ?? values.transactionId}`,
+    );
+    if (!releaseSubmitLock) return;
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
+    submitLockReleaseRef.current = releaseSubmitLock;
 
     const valuesForSubmit = {
       ...values,
@@ -328,6 +350,10 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
       toast.error("Please Fill Up the Required Fields!");
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+      submitLockReleaseRef.current = null;
+      releaseSubmitLock();
       return;
     }
 
@@ -341,21 +367,35 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
       return;
     }
 
-    if (mode === "edit" && existingVoucher) {
-      updateVoucher(updateCashVoucherFromForm(existingVoucher, pendingSubmitValues));
-    } else {
-      if (!selectedTransaction) {
-        addTransaction(createCashVoucherTransactionFromForm(pendingSubmitValues));
+    try {
+      if (mode === "edit" && existingVoucher) {
+        updateVoucher(updateCashVoucherFromForm(existingVoucher, pendingSubmitValues));
+      } else {
+        if (!selectedTransaction) {
+          addTransaction(createCashVoucherTransactionFromForm(pendingSubmitValues));
+        }
+        addVoucher(createCashVoucherFromForm(pendingSubmitValues));
       }
-      addVoucher(createCashVoucherFromForm(pendingSubmitValues));
+      draft.clearDraft();
+      setPendingSubmitValues(null);
+      submitLockReleaseRef.current = null;
+      router.push(returnLink);
+    } catch {
+      toast.error("Could not save the cash voucher. Please try again.");
+      setPendingSubmitValues(null);
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+      submitLockReleaseRef.current?.();
+      submitLockReleaseRef.current = null;
     }
-
-    setPendingSubmitValues(null);
-    router.push(returnLink);
   }
 
   function cancelCashVoucherSubmit() {
     setPendingSubmitValues(null);
+    isSubmittingRef.current = false;
+    setIsSubmitting(false);
+    submitLockReleaseRef.current?.();
+    submitLockReleaseRef.current = null;
   }
 
   function handleSubmit(event?: FormEvent<HTMLFormElement>) {
@@ -367,29 +407,28 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
     if (!canUpdateCashVoucherStatus(currentStatus, status)) {
       return;
     }
+    const actionRecordId = existingVoucher?.id ?? selectedTransaction?.id;
+    if (!actionRecordId) return;
+    const releaseActionLock = acquireModuleActionLock(`cash-disbursement:cash-voucher:status:${actionRecordId}:${status}`);
+    if (!releaseActionLock) return;
 
-    const updatedAt = new Date().toISOString();
-
-    setValues((currentValues) => ({ ...currentValues, status }));
-
-    if (existingVoucher) {
-      updateVoucher({
-        ...existingVoucher,
-        status,
-        updatedBy: "Current User",
-        updatedAt,
-        history: [...(existingVoucher.history ?? []), createCashVoucherStatusHistoryEntry(status, existingVoucher.voucherNo)],
-      });
-      return;
-    }
-
-    if (selectedTransaction) {
-      updateTransaction({
-        ...selectedTransaction,
-        status,
-        updatedBy: "Current User",
-        updatedAt,
-      });
+    try {
+      const updatedAt = new Date().toISOString();
+      setValues((currentValues) => ({ ...currentValues, status }));
+      if (existingVoucher) {
+        updateVoucher({
+          ...existingVoucher,
+          status,
+          updatedBy: "Current User",
+          updatedAt,
+          history: [...(existingVoucher.history ?? []), createCashVoucherStatusHistoryEntry(status, existingVoucher.voucherNo)],
+        });
+        return;
+      }
+      updateTransaction({ ...selectedTransaction!, status, updatedBy: "Current User", updatedAt });
+    } catch {
+      toast.error("Could not update the cash voucher. Please try again.");
+      releaseActionLock();
     }
   }
 
@@ -456,6 +495,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
     isReadonly,
     isRecordMissing,
     isReportPreviewOpen,
+    isSubmitting,
     isResponsibilityCenterDrawerOpen,
     mode,
     partyStore,

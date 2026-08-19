@@ -295,6 +295,7 @@ export type CashVoucherActionHeaderProps = {
   copyFromRecords?: AppCopyFromRecord[];
   copyFromSources?: string[];
   mode: CashVoucherActionMode;
+  isSubmitting?: boolean;
   returnLink?: string;
   transaction?: CashVoucherTransactionRecord;
   voucher?: CashVoucherRecord;

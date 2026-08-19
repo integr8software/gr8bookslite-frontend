@@ -88,7 +88,8 @@ export function PettyCashFundActionHeader({ onPreview, page }: { onPreview: () =
             ) : null}
             {page.mode !== "view" ? (
               <ModuleActionButton
-                label={page.mode === "edit" ? "Update" : "Save"}
+                disabled={page.isSubmitting}
+                label={page.isSubmitting ? "Saving..." : page.mode === "edit" ? "Update" : "Save"}
                 onAction={() => setConfirmation("save")}
                 menuItems={page.mode === "add" ? [{ label: "Save As Draft", onSelect: () => setConfirmation("draft") }] : []}
               />

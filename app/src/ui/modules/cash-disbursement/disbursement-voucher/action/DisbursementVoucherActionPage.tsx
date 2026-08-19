@@ -85,6 +85,7 @@ function DisbursementVoucherActionContent({ voucherAction }: { voucherAction: Di
         copyFromRecords={DisbursementVoucherCopyFromRecords.filter((record) => record.templateValues.paymentMethod !== "Cash")}
         copyFromSources={DisbursementVoucherCopySources}
         mode={voucherAction.isReadonly ? "view" : voucherAction.mode}
+        isSubmitting={voucherAction.isSubmitting}
         pendingSubmitStatus={voucherAction.pendingSubmitStatus}
         returnLink={voucherAction.returnLink}
         transaction={voucherAction.selectedTransaction}

@@ -89,7 +89,8 @@ export function AdvancesToSuppliersActionHeader({ onPreview, page }: { onPreview
             ) : null}
             {page.mode !== "view" ? (
               <ModuleActionButton
-                label={page.mode === "edit" ? "Update" : "Save Advances to Supplier"}
+                disabled={page.isSubmitting}
+                label={page.isSubmitting ? "Saving..." : page.mode === "edit" ? "Update" : "Save Advances to Supplier"}
                 onAction={() => setConfirmation("save")}
                 menuItems={page.mode === "add" ? [{ label: "Save As Draft", onSelect: () => setConfirmation("draft") }] : []}
               />

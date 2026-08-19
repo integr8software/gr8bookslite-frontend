@@ -102,6 +102,8 @@ function PettyCashVoucherHeaderActions({
       ) : null}
       {page.isReadonly ? null : (
         <ModuleActionButton
+          disabled={page.isSubmitting}
+          label={page.isSubmitting ? "Saving..." : "Save"}
           onAction={() => onRequestConfirmation({ action: "submit" })}
           menuItems={
             page.mode === "add"

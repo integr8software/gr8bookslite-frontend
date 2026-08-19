@@ -16,6 +16,8 @@ import {
   loadPurchaseOrders,
 } from "@/app/src/data/modules/purchasing/purchase-order/PurchaseOrderData";
 import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
+import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
+import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import {
   createNextAdvancesToSuppliersNumber,
   getAdvancesToSuppliersRecords,
@@ -45,7 +47,21 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
   const [activeTab, setActiveTab] = useState<AdvancesToSuppliersActionTab>("details");
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const hasEditedCurrencyRef = useRef(false);
+  const isSubmittingRef = useRef(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const isReadonly = mode === "view";
+  const [initialValues] = useState(values);
+  const isDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
+  const draft = useModuleDraft({
+    enabled: !isReadonly,
+    key: createModuleDraftKey({
+      mode,
+      moduleId: "cash-disbursement:advances-to-suppliers",
+      recordId: params.recordId,
+    }),
+    setValues,
+    values,
+  });
   const purchaseOrderCopyRecords = useMemo<AppCopyFromRecord[]>(
     () =>
       loadPurchaseOrders()
@@ -147,33 +163,64 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
   }
 
   function save(status: AdvancesToSuppliersStatus) {
+    if (isReadonly || isSubmittingRef.current) return false;
+    if (mode === "edit" && !isDirty) {
+      toast.error("No changes to save.");
+      return false;
+    }
+    const releaseSubmitLock = acquireModuleActionLock(
+      `cash-disbursement:advances-to-suppliers:save:${mode}:${params.recordId ?? values.transactionNo}`,
+    );
+    if (!releaseSubmitLock) return false;
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
     const nextErrors = status === AdvancesToSuppliersStatuses.draft ? {} : validateAdvancesToSuppliersForm(values);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) {
       toast.error("Please fix the highlighted Advances to Suppliers fields.");
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+      releaseSubmitLock();
       return false;
     }
-    const nextRecord = createAdvancesToSuppliersRecord(values, status, mode === "edit" ? record : undefined);
-    saveAdvancesToSuppliersRecords(upsertAdvancesToSuppliersRecord(nextRecord));
-    setRecord(nextRecord);
-    setValues(createAdvancesToSuppliersFormValues(nextRecord));
-    toast.success(
-      status === AdvancesToSuppliersStatuses.draft
-        ? "Advances to Suppliers saved as draft."
-        : "Advances to Suppliers submitted for approval.",
-    );
-    options.onSaved?.();
-    return true;
+    try {
+      const nextRecord = createAdvancesToSuppliersRecord(values, status, mode === "edit" ? record : undefined);
+      saveAdvancesToSuppliersRecords(upsertAdvancesToSuppliersRecord(nextRecord));
+      setRecord(nextRecord);
+      setValues(createAdvancesToSuppliersFormValues(nextRecord));
+      draft.clearDraft();
+      toast.success(
+        status === AdvancesToSuppliersStatuses.draft
+          ? "Advances to Suppliers saved as draft."
+          : "Advances to Suppliers submitted for approval.",
+      );
+      options.onSaved?.();
+      return true;
+    } catch {
+      toast.error("Could not save Advances to Suppliers. Please try again.");
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+      releaseSubmitLock();
+      return false;
+    }
   }
 
   function updateStatus(status: AdvancesToSuppliersStatus) {
     if (!record) return false;
-    const nextRecord = createAdvancesToSuppliersRecord(values, status, record);
-    saveAdvancesToSuppliersRecords(upsertAdvancesToSuppliersRecord(nextRecord));
-    setRecord(nextRecord);
-    setValues(createAdvancesToSuppliersFormValues(nextRecord));
-    toast.success(`Advances to Suppliers marked as ${status}.`);
-    return true;
+    const releaseActionLock = acquireModuleActionLock(`cash-disbursement:advances-to-suppliers:status:${record.id}:${status}`);
+    if (!releaseActionLock) return false;
+    try {
+      const nextRecord = createAdvancesToSuppliersRecord(values, status, record);
+      saveAdvancesToSuppliersRecords(upsertAdvancesToSuppliersRecord(nextRecord));
+      setRecord(nextRecord);
+      setValues(createAdvancesToSuppliersFormValues(nextRecord));
+      toast.success(`Advances to Suppliers marked as ${status}.`);
+      return true;
+    } catch {
+      toast.error("Could not update Advances to Suppliers. Please try again.");
+      releaseActionLock();
+      return false;
+    }
   }
 
   return {
@@ -182,6 +229,7 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
     errors,
     isExchangeRateLoading: transactionCurrency.isExchangeRateLoading,
     isPreviewOpen,
+    isSubmitting,
     isReadonly,
     isRecordMissing: mode !== "add" && !initialRecord,
     mode,

@@ -60,6 +60,8 @@ import type { ResponsibilityCenter } from "@/app/src/types/modules/financial-mai
 import type { ModuleDataEntryClearAction } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 import { useDisbursementVoucherStore } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucher";
 import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
+import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
+import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import {
   clearDisbursementEntryRows,
   createDisbursementEntryRows,
@@ -103,6 +105,9 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   const [isResponsibilityCenterDrawerOpen, setIsResponsibilityCenterDrawerOpen] = useState(false);
   const [pendingResponsibilityCenterEntryId, setPendingResponsibilityCenterEntryId] = useState<string | null>(null);
   const hasEditedCurrencyRef = useRef(false);
+  const isSubmittingRef = useRef(false);
+  const submitLockReleaseRef = useRef<null | (() => void)>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const bankMasterfileStore = useBankMasterfileStore();
   const defaultAccountStore = useDefaultAccountStore();
   const paymentTypeStore = usePaymentTypeStore();
@@ -121,6 +126,14 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   const routePaymentMethod = existingVoucher?.paymentMethod ?? selectedTransaction?.paymentMethod ?? "";
   const isCashVoucherRoute = (mode !== "add" || Boolean(routeTransactionId)) && routePaymentMethod === "Cash";
   const isRecordMissing = (!selectedTransaction && mode !== "add") || (mode === "edit" && !existingVoucher) || isCashVoucherRoute;
+  const [initialValues] = useState(values);
+  const isDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
+  const draft = useModuleDraft({
+    enabled: !isReadonly,
+    key: createModuleDraftKey({ mode, moduleId: "cash-disbursement:disbursement-voucher", recordId: params.recordId }),
+    setValues,
+    values,
+  });
 
   useEffect(() => {
     clearAccountingGridSession();
@@ -394,9 +407,18 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   }
 
   function requestDisbursementVoucherSubmit(status: DisbursementVoucherStatus) {
-    if (isReadonly) {
+    if (isReadonly || isSubmittingRef.current) return;
+    if (mode === "edit" && !isDirty) {
+      toast.error("No changes to save.");
       return;
     }
+    const releaseSubmitLock = acquireModuleActionLock(
+      `cash-disbursement:disbursement-voucher:submit:${mode}:${params.recordId ?? values.transactionId}`,
+    );
+    if (!releaseSubmitLock) return;
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
+    submitLockReleaseRef.current = releaseSubmitLock;
 
     const valuesForSubmit = {
       ...values,
@@ -411,6 +433,10 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
       toast.error("Please Fill Up the Required Fields!");
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+      submitLockReleaseRef.current = null;
+      releaseSubmitLock();
       return;
     }
 
@@ -424,21 +450,35 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
       return;
     }
 
-    if (mode === "edit" && existingVoucher) {
-      updateVoucher(updateDisbursementVoucherFromForm(existingVoucher, pendingSubmitValues));
-    } else {
-      if (!selectedTransaction) {
-        addTransaction(createDisbursementTransactionFromForm(pendingSubmitValues));
+    try {
+      if (mode === "edit" && existingVoucher) {
+        updateVoucher(updateDisbursementVoucherFromForm(existingVoucher, pendingSubmitValues));
+      } else {
+        if (!selectedTransaction) {
+          addTransaction(createDisbursementTransactionFromForm(pendingSubmitValues));
+        }
+        addVoucher(createDisbursementVoucherFromForm(pendingSubmitValues));
       }
-      addVoucher(createDisbursementVoucherFromForm(pendingSubmitValues));
+      draft.clearDraft();
+      setPendingSubmitValues(null);
+      submitLockReleaseRef.current = null;
+      router.push(returnLink);
+    } catch {
+      toast.error("Could not save the disbursement voucher. Please try again.");
+      setPendingSubmitValues(null);
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+      submitLockReleaseRef.current?.();
+      submitLockReleaseRef.current = null;
     }
-
-    setPendingSubmitValues(null);
-    router.push(returnLink);
   }
 
   function cancelDisbursementVoucherSubmit() {
     setPendingSubmitValues(null);
+    isSubmittingRef.current = false;
+    setIsSubmitting(false);
+    submitLockReleaseRef.current?.();
+    submitLockReleaseRef.current = null;
   }
 
   function handleSubmit(event?: FormEvent<HTMLFormElement>) {
@@ -450,29 +490,28 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     if (!canUpdateDisbursementVoucherStatus(currentStatus, status)) {
       return;
     }
+    const actionRecordId = existingVoucher?.id ?? selectedTransaction?.id;
+    if (!actionRecordId) return;
+    const releaseActionLock = acquireModuleActionLock(`cash-disbursement:disbursement-voucher:status:${actionRecordId}:${status}`);
+    if (!releaseActionLock) return;
 
-    const updatedAt = new Date().toISOString();
-
-    setValues((currentValues) => ({ ...currentValues, status }));
-
-    if (existingVoucher) {
-      updateVoucher({
-        ...existingVoucher,
-        status,
-        updatedBy: "Current User",
-        updatedAt,
-        history: [...(existingVoucher.history ?? []), createDisbursementVoucherStatusHistoryEntry(status, existingVoucher.voucherNo)],
-      });
-      return;
-    }
-
-    if (selectedTransaction) {
-      updateTransaction({
-        ...selectedTransaction,
-        status,
-        updatedBy: "Current User",
-        updatedAt,
-      });
+    try {
+      const updatedAt = new Date().toISOString();
+      setValues((currentValues) => ({ ...currentValues, status }));
+      if (existingVoucher) {
+        updateVoucher({
+          ...existingVoucher,
+          status,
+          updatedBy: "Current User",
+          updatedAt,
+          history: [...(existingVoucher.history ?? []), createDisbursementVoucherStatusHistoryEntry(status, existingVoucher.voucherNo)],
+        });
+        return;
+      }
+      updateTransaction({ ...selectedTransaction!, status, updatedBy: "Current User", updatedAt });
+    } catch {
+      toast.error("Could not update the disbursement voucher. Please try again.");
+      releaseActionLock();
     }
   }
 
@@ -542,6 +581,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     isReadonly,
     isRecordMissing,
     isReportPreviewOpen,
+    isSubmitting,
     isResponsibilityCenterDrawerOpen,
     mode,
     partyStore,

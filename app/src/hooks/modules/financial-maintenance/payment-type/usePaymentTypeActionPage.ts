@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
+import toast from "react-hot-toast";
 import {
   PaymentTypeInitialFormValues,
   createPaymentTypeFormValues,
@@ -8,6 +9,8 @@ import {
   updatePaymentTypeFromForm,
 } from "@/app/src/data/modules/financial-maintenance/payment-type/PaymentTypeData";
 import { usePaymentTypeStore } from "@/app/src/hooks/modules/financial-maintenance/payment-type/usePaymentType";
+import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
+import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import type {
   PaymentTypeActionMode,
   PaymentTypeFormErrors,
@@ -27,16 +30,28 @@ export function usePaymentTypeActionPage({
 }) {
   const { addPaymentType, isMutating, paymentTypes, updatePaymentType } = usePaymentTypeStore();
   const isReadonly = mode === "view";
-  const [values, setValues] = useState<PaymentTypeFormValues>(() =>
-    existingPaymentType
-      ? createPaymentTypeFormValues(existingPaymentType)
-      : {
-          ...PaymentTypeInitialFormValues,
-          sortOrder: String(getNextPaymentTypeSortOrder(paymentTypes)),
-        },
-  );
+  const initialValues: PaymentTypeFormValues = existingPaymentType
+    ? createPaymentTypeFormValues(existingPaymentType)
+    : {
+        ...PaymentTypeInitialFormValues,
+        sortOrder: String(getNextPaymentTypeSortOrder(paymentTypes)),
+      };
+  const initialValuesRef = useRef<PaymentTypeFormValues>(initialValues);
+  const [values, setValues] = useState<PaymentTypeFormValues>(initialValues);
   const [errors, setErrors] = useState<PaymentTypeFormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false);
+
+  const draft = useModuleDraft({
+    enabled: !isReadonly,
+    key: createModuleDraftKey({
+      mode,
+      moduleId: "financial-maintenance:payment-type",
+      recordId: existingPaymentType?.id,
+    }),
+    setValues,
+    values,
+  });
 
   function handleInputChange<TKey extends keyof PaymentTypeFormValues>(field: TKey, value: PaymentTypeFormValues[TKey]) {
     if (isReadonly || isSubmitting) {
@@ -66,11 +81,33 @@ export function usePaymentTypeActionPage({
       return;
     }
 
-    if (!validateBeforeSubmit()) {
+    if (isSubmittingRef.current) {
       return;
     }
 
+    const isDirty = JSON.stringify(values) !== JSON.stringify(initialValuesRef.current);
+    if (mode === "edit" && !isDirty) {
+      toast.error("No changes to save.");
+      return;
+    }
+
+    const releaseSubmitLock = acquireModuleActionLock(
+      `financial-maintenance:payment-type:submit:${mode}:${existingPaymentType?.id ?? values.code ?? "new"}`,
+    );
+
+    if (!releaseSubmitLock) {
+      return;
+    }
+
+    isSubmittingRef.current = true;
     setIsSubmitting(true);
+
+    if (!validateBeforeSubmit()) {
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+      releaseSubmitLock();
+      return;
+    }
 
     try {
       if (mode === "edit" && existingPaymentType) {
@@ -79,11 +116,12 @@ export function usePaymentTypeActionPage({
         await addPaymentType(createPaymentTypeFromForm(values));
       }
 
+      draft.clearDraft();
       onSaved();
     } catch {
-      return;
-    } finally {
+      isSubmittingRef.current = false;
       setIsSubmitting(false);
+      releaseSubmitLock();
     }
   }
 

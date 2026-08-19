@@ -35,6 +35,7 @@ import type {
   ImportProgress,
 } from "@/app/src/types/modules/financial-maintenance/discount-maintenance/DiscountMaintenanceTypes";
 import { reorderModuleImportRows } from "@/app/src/utils/module-import.util";
+import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 
 export function useDiscountMaintenanceImportDialog({
   existingDiscounts,
@@ -324,10 +325,14 @@ export function useDiscountMaintenanceImportDialog({
   }
 
   async function handleImport(mode = importMode) {
+    const releaseLock = acquireModuleActionLock(`financial-maintenance:discount-maintenance:import:${mode}`);
+    if (!releaseLock) return;
+
     const rowsToImport = mode === "selected-valid" ? validSelectedRows : mode === "all-valid" ? validRows : validatedRows;
 
     if (mode === "selected-valid" && selectedRowIds.size === 0) {
       setImportError("Select at least one valid row to import.");
+      releaseLock();
       return;
     }
 
@@ -336,15 +341,20 @@ export function useDiscountMaintenanceImportDialog({
       setImportError(
         `Fix or remove ${actualInvalidRows.length} incorrect ${actualInvalidRows.length === 1 ? "row" : "rows"} before importing. No rows were imported.`,
       );
+      releaseLock();
       return;
     }
 
     if (mode === "selected-valid" && rowsToImport.length === 0) {
       setImportError("Selected rows have errors. Fix them or choose valid rows.");
+      releaseLock();
       return;
     }
 
-    if (!canImport) return;
+    if (!canImport) {
+      releaseLock();
+      return;
+    }
 
     const importedRowIds = new Set(rowsToImport.map((row) => row.id));
     const discountsToImport = rowsToImport.map((row, index) => ({
@@ -361,6 +371,7 @@ export function useDiscountMaintenanceImportDialog({
         await onImportDiscounts(batch);
       } catch {
         setProgress(null);
+        releaseLock();
         return;
       }
       setProgress({

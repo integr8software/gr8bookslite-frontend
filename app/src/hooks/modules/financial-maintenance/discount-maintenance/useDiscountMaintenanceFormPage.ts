@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ChangeEvent, type FormEvent } from "react";
+import { useMemo, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { DiscountMaintenanceHref } from "@/app/src/constants/modules/financial-maintenance/discount-maintenance/DiscountMaintenanceConstants";
@@ -13,6 +13,9 @@ import {
   getDiscountAccountTitle,
   updateDiscountFromForm,
 } from "@/app/src/data/modules/financial-maintenance/discount-maintenance/DiscountMaintenanceData";
+import { useDiscountMaintenanceStore } from "@/app/src/hooks/modules/financial-maintenance/discount-maintenance/useDiscountMaintenance";
+import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
+import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import type {
   DiscountMaintenanceActionMode,
   Discount,
@@ -20,7 +23,6 @@ import type {
   DiscountMaintenanceFormValues,
 } from "@/app/src/types/modules/financial-maintenance/discount-maintenance/DiscountMaintenanceTypes";
 import { validateDiscountMaintenanceForm } from "@/app/src/validations/modules/financial-maintenance/discount-maintenance/DiscountMaintenanceValidation";
-import { useDiscountMaintenanceStore } from "@/app/src/hooks/modules/financial-maintenance/discount-maintenance/useDiscountMaintenance";
 
 type DiscountMaintenanceFormPageOptions = {
   existingDiscount?: Discount;
@@ -35,11 +37,25 @@ export function useDiscountMaintenanceFormPage(options: DiscountMaintenanceFormP
   const { addDiscount, discounts, isMutating, updateDiscount } = useDiscountMaintenanceStore();
   const mode = options.mode ?? getActionMode(pathname);
   const existingDiscount = options.existingDiscount ?? discounts.find((discount) => discount.id === params.recordId);
-  const [values, setValues] = useState<DiscountMaintenanceFormValues>(() =>
-    existingDiscount ? createDiscountMaintenanceFormValues(existingDiscount) : DiscountMaintenanceInitialFormValues,
-  );
-  const [errors, setErrors] = useState<DiscountMaintenanceFormErrors>({});
   const isReadonly = mode === "view";
+  const initialValues = existingDiscount ? createDiscountMaintenanceFormValues(existingDiscount) : DiscountMaintenanceInitialFormValues;
+  const initialValuesRef = useRef<DiscountMaintenanceFormValues>(initialValues);
+  const [values, setValues] = useState<DiscountMaintenanceFormValues>(initialValues);
+  const [errors, setErrors] = useState<DiscountMaintenanceFormErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false);
+
+  const draft = useModuleDraft({
+    enabled: !isReadonly,
+    key: createModuleDraftKey({
+      mode,
+      moduleId: "financial-maintenance:discount-maintenance",
+      recordId: params.recordId ?? existingDiscount?.id,
+    }),
+    setValues,
+    values,
+  });
+
   const generatedAccount = useMemo(
     () => ({
       accountCode: getDiscountAccountCode(values.type, values.name),
@@ -83,21 +99,55 @@ export function useDiscountMaintenanceFormPage(options: DiscountMaintenanceFormP
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
+    if (isReadonly || isSubmittingRef.current) {
+      return;
+    }
+
+    const isDirty = JSON.stringify(values) !== JSON.stringify(initialValuesRef.current);
+    if (mode === "edit" && !isDirty) {
+      toast.error("No changes to save.");
+      return;
+    }
+
+    const releaseSubmitLock = acquireModuleActionLock(
+      `financial-maintenance:discount-maintenance:submit:${mode}:${existingDiscount?.id ?? values.name ?? "new"}`,
+    );
+
+    if (!releaseSubmitLock) {
+      return;
+    }
+
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
+
     if (!validateBeforeSubmit()) {
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+      releaseSubmitLock();
       return;
     }
 
-    if (mode === "edit" && existingDiscount) {
-      await updateDiscount(updateDiscountFromForm(existingDiscount, values));
-    } else if (mode === "edit") {
-      toast.error("Could not find the discount to update.");
-      return;
-    } else {
-      await addDiscount(createDiscountFromForm(values));
-    }
+    try {
+      if (mode === "edit" && existingDiscount) {
+        await updateDiscount(updateDiscountFromForm(existingDiscount, values));
+      } else if (mode === "edit") {
+        toast.error("Could not find the discount to update.");
+        isSubmittingRef.current = false;
+        setIsSubmitting(false);
+        releaseSubmitLock();
+        return;
+      } else {
+        await addDiscount(createDiscountFromForm(values));
+      }
 
-    options.onSaved?.();
-    if (!options.onSaved) router.push(DiscountMaintenanceHref);
+      draft.clearDraft();
+      options.onSaved?.();
+      if (!options.onSaved) router.push(DiscountMaintenanceHref);
+    } catch {
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+      releaseSubmitLock();
+    }
   }
 
   return {
@@ -107,7 +157,7 @@ export function useDiscountMaintenanceFormPage(options: DiscountMaintenanceFormP
     handleInputChange,
     handleStatusChange: (status: DiscountMaintenanceFormValues["status"]) => updateField("status", status),
     handleSubmit,
-    isMutating,
+    isMutating: isSubmitting || isMutating,
     isReadonly,
     mode,
     needsRecord: mode === "edit" || mode === "view",

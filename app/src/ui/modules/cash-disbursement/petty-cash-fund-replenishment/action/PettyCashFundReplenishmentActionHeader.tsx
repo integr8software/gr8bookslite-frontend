@@ -1,18 +1,27 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { ArrowLeft, Ban, Edit3, FileText, ThumbsDown, ThumbsUp } from "lucide-react";
 import {
-  PettyCashFundReplenishmentHref,
+  useState } from "react";
+import { ArrowLeft,
+  Ban,
+  Edit3,
+  FileText,
+  ThumbsDown,
+  ThumbsUp } from "lucide-react";
+import {
+  PettyCashFundReplenishmentConfirmationDialogConfirmLabels,
+  PettyCashFundReplenishmentConfirmationDialogTitles,
+  PettyCashFundReplenishmentLink,
   PettyCashFundReplenishmentStatuses,
+  getPettyCashFundReplenishmentEditLink,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentConstants";
 import type { PettyCashFundReplenishmentActionPageState } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-fund-replenishment/usePettyCashFundReplenishmentActionPage";
 import type { PettyCashFundReplenishmentConfirmationAction } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentTypes";
 import { PettyCashFundReplenishmentActionHistory } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund-replenishment/action/PettyCashFundReplenishmentActionHistory";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ModuleSaveButton } from "@/app/src/ui/shared/module/ModuleSaveButton";
+import { ModuleActionButton } from "@/app/src/ui/shared/module/ModuleActionButton";
 import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 
 export function PettyCashFundReplenishmentActionHeader({
@@ -46,7 +55,7 @@ export function PettyCashFundReplenishmentActionHeader({
         }
         actions={
           <>
-            <Link href={PettyCashFundReplenishmentHref} className={moduleHeaderActionClassNames.secondary}>
+            <Link href={PettyCashFundReplenishmentLink} className={moduleHeaderActionClassNames.secondary}>
               <ArrowLeft className="h-4 w-4" aria-hidden="true" />
               Back
             </Link>
@@ -77,16 +86,17 @@ export function PettyCashFundReplenishmentActionHeader({
                   <Ban className="h-4 w-4" aria-hidden="true" />
                   Cancel
                 </button>
-                <Link href={`${PettyCashFundReplenishmentHref}/edit/${page.record.id}`} className={moduleHeaderActionClassNames.primary}>
+                <Link href={getPettyCashFundReplenishmentEditLink(page.record.id)} className={moduleHeaderActionClassNames.primary}>
                   <Edit3 className="h-4 w-4" aria-hidden="true" />
                   Edit
                 </Link>
               </>
             ) : null}
             {page.mode !== "view" ? (
-              <ModuleSaveButton
-                label={page.mode === "edit" ? "Update" : "Save"}
-                onSave={() => setConfirmation("save")}
+              <ModuleActionButton
+                disabled={page.isSubmitting}
+                label={page.isSubmitting ? "Saving..." : page.mode === "edit" ? "Update" : "Save"}
+                onAction={() => setConfirmation("save")}
                 menuItems={page.mode === "add" ? [{ label: "Save As Draft", onSelect: () => setConfirmation("draft") }] : []}
               />
             ) : null}
@@ -96,15 +106,9 @@ export function PettyCashFundReplenishmentActionHeader({
       {confirmation ? (
         <AppDialog
           isOpen
-          title={getDialogTitle(confirmation)}
+          title={PettyCashFundReplenishmentConfirmationDialogTitles[confirmation]}
           description={`This will ${confirmation === "save" ? "save and submit" : confirmation} ${transactionNo}.`}
-          confirmLabel={
-            confirmation === "save"
-              ? "Save and Submit"
-              : confirmation === "draft"
-                ? "Save as Draft"
-                : confirmation.charAt(0).toUpperCase() + confirmation.slice(1)
-          }
+          confirmLabel={PettyCashFundReplenishmentConfirmationDialogConfirmLabels[confirmation]}
           tone={
             confirmation === "approve" || confirmation === "save"
               ? "success"
@@ -125,10 +129,4 @@ export function PettyCashFundReplenishmentActionHeader({
       ) : null}
     </>
   );
-}
-
-function getDialogTitle(action: PettyCashFundReplenishmentConfirmationAction) {
-  if (action === "save") return "Save petty cash fund replenishment?";
-  if (action === "draft") return "Save as draft?";
-  return `${action.charAt(0).toUpperCase() + action.slice(1)} petty cash fund replenishment?`;
 }

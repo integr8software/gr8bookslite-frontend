@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useParams, usePathname } from "next/navigation";
+import { useParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { PettyCashFundReplenishmentStatuses } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentConstants";
 import {
@@ -11,6 +11,8 @@ import {
   createPettyCashFundReplenishmentRecord,
 } from "@/app/src/data/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentData";
 import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
+import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
+import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import {
   createNextPettyCashFundReplenishmentNumber,
   getPettyCashFundReplenishmentRecords,
@@ -27,11 +29,10 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentTypes";
 import { validatePettyCashFundReplenishmentForm } from "@/app/src/validations/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentValidation";
 
-export function usePettyCashFundReplenishmentActionPage(options: { onSaved?: () => void } = {}) {
+export function usePettyCashFundReplenishmentActionPage(options: { mode: PettyCashFundReplenishmentActionMode; onSaved?: () => void }) {
   const transactionCurrency = useTransactionCurrency();
-  const pathname = usePathname();
   const params = useParams<{ recordId?: string }>();
-  const mode: PettyCashFundReplenishmentActionMode = pathname.includes("/view/") ? "view" : pathname.includes("/edit/") ? "edit" : "add";
+  const { mode } = options;
   const initialRecord = mode === "add" ? undefined : getPettyCashFundReplenishmentRecords().find((item) => item.id === params.recordId);
   const [record, setRecord] = useState(initialRecord);
   const [values, setValues] = useState<PettyCashFundReplenishmentFormValues>(() =>
@@ -45,7 +46,17 @@ export function usePettyCashFundReplenishmentActionPage(options: { onSaved?: () 
   const [activeTab, setActiveTab] = useState<PettyCashFundReplenishmentActionTab>("details");
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const hasEditedCurrencyRef = useRef(false);
+  const isSubmittingRef = useRef(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const isReadonly = mode === "view";
+  const [initialValues] = useState(values);
+  const isDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
+  const draft = useModuleDraft({
+    enabled: !isReadonly,
+    key: createModuleDraftKey({ mode, moduleId: "cash-disbursement:petty-cash-fund-replenishment", recordId: params.recordId }),
+    setValues,
+    values,
+  });
   const totals = useMemo(() => calculatePettyCashFundReplenishmentTotals(values.entries), [values.entries]);
 
   useEffect(() => {
@@ -127,33 +138,64 @@ export function usePettyCashFundReplenishmentActionPage(options: { onSaved?: () 
   }
 
   function save(status: PettyCashFundReplenishmentStatus) {
+    if (isReadonly || isSubmittingRef.current) return false;
+    if (mode === "edit" && !isDirty) {
+      toast.error("No changes to save.");
+      return false;
+    }
+    const releaseSubmitLock = acquireModuleActionLock(
+      `cash-disbursement:petty-cash-fund-replenishment:save:${mode}:${params.recordId ?? values.transactionNo}`,
+    );
+    if (!releaseSubmitLock) return false;
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
     const nextErrors = status === PettyCashFundReplenishmentStatuses.draft ? {} : validatePettyCashFundReplenishmentForm(values);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) {
       toast.error("Please fix the highlighted petty cash fund replenishment fields.");
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+      releaseSubmitLock();
       return false;
     }
-    const nextRecord = createPettyCashFundReplenishmentRecord(values, status, mode === "edit" ? record : undefined);
-    savePettyCashFundReplenishmentRecords(upsertPettyCashFundReplenishmentRecord(nextRecord));
-    setRecord(nextRecord);
-    setValues(createPettyCashFundReplenishmentFormValues(nextRecord));
-    toast.success(
-      status === PettyCashFundReplenishmentStatuses.draft
-        ? "Petty cash fund replenishment saved as draft."
-        : "Petty cash fund replenishment submitted for approval.",
-    );
-    options.onSaved?.();
-    return true;
+    try {
+      const nextRecord = createPettyCashFundReplenishmentRecord(values, status, mode === "edit" ? record : undefined);
+      savePettyCashFundReplenishmentRecords(upsertPettyCashFundReplenishmentRecord(nextRecord));
+      setRecord(nextRecord);
+      setValues(createPettyCashFundReplenishmentFormValues(nextRecord));
+      draft.clearDraft();
+      toast.success(
+        status === PettyCashFundReplenishmentStatuses.draft
+          ? "Petty cash fund replenishment saved as draft."
+          : "Petty cash fund replenishment submitted for approval.",
+      );
+      options.onSaved?.();
+      return true;
+    } catch {
+      toast.error("Could not save the petty cash fund replenishment. Please try again.");
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+      releaseSubmitLock();
+      return false;
+    }
   }
 
   function updateStatus(status: PettyCashFundReplenishmentStatus) {
     if (!record) return false;
-    const nextRecord = createPettyCashFundReplenishmentRecord(values, status, record);
-    savePettyCashFundReplenishmentRecords(upsertPettyCashFundReplenishmentRecord(nextRecord));
-    setRecord(nextRecord);
-    setValues(createPettyCashFundReplenishmentFormValues(nextRecord));
-    toast.success(`Petty cash fund replenishment marked as ${status}.`);
-    return true;
+    const releaseActionLock = acquireModuleActionLock(`cash-disbursement:petty-cash-fund-replenishment:status:${record.id}:${status}`);
+    if (!releaseActionLock) return false;
+    try {
+      const nextRecord = createPettyCashFundReplenishmentRecord(values, status, record);
+      savePettyCashFundReplenishmentRecords(upsertPettyCashFundReplenishmentRecord(nextRecord));
+      setRecord(nextRecord);
+      setValues(createPettyCashFundReplenishmentFormValues(nextRecord));
+      toast.success(`Petty cash fund replenishment marked as ${status}.`);
+      return true;
+    } catch {
+      toast.error("Could not update the petty cash fund replenishment. Please try again.");
+      releaseActionLock();
+      return false;
+    }
   }
 
   return {
@@ -165,6 +207,7 @@ export function usePettyCashFundReplenishmentActionPage(options: { onSaved?: () 
     insertEntry,
     isExchangeRateLoading: transactionCurrency.isExchangeRateLoading,
     isPreviewOpen,
+    isSubmitting,
     isReadonly,
     isRecordMissing: mode !== "add" && !initialRecord,
     mode,

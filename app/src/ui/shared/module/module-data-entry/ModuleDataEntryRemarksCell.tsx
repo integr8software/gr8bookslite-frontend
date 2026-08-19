@@ -20,7 +20,7 @@ export function ModuleDataEntryRemarksCell({
   isReadonly: boolean;
   onChange: (value: string) => void;
   placeholder?: string;
-  subtitle: string;
+  subtitle?: string;
   textareaId: string;
   value: string;
 }) {
@@ -53,6 +53,7 @@ export function ModuleDataEntryRemarksCell({
       </div>
       {isEditorOpen ? (
         <ModuleTextareaDialog
+          detailLabel={null}
           isOpen
           isReadonly={isReadonly}
           title="Remarks"

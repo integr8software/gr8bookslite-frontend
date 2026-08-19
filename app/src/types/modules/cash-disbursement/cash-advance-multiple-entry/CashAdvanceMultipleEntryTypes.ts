@@ -3,6 +3,7 @@ import type { DisbursementAttachment } from "@/app/src/types/modules/cash-disbur
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 
 export type CashAdvanceMultipleEntryActionMode = "add" | "edit" | "view";
+export type CashAdvanceMultipleEntrySubmitConfirmationAction = "save" | "draft";
 
 export type CashAdvanceMultipleEntryReportPreviewProps = {
   isOpen: boolean;

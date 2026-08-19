@@ -58,11 +58,9 @@ export const PaymentTypeExportColumns: ModuleTableExportColumn<PaymentTypeRecord
 );
 
 export const PaymentTypeClassificationOptions = [
-  "Cash",
   "Bank Transfer",
   "Check",
   "Digital Wallet",
-  "Non-Cash Settlement",
 ] as const satisfies readonly PaymentTypeClassification[];
 
 export const PaymentTypeStatusOptions = ["Active", "Inactive"] as const satisfies readonly PaymentTypeStatus[];

@@ -4,11 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   AdvancesToSuppliersActionTabs,
-  AdvancesToSuppliersHref,
+  AdvancesToSuppliersLink,
 } from "@/app/src/constants/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersConstants";
 import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
 import { useAdvancesToSuppliersActionPage } from "@/app/src/hooks/modules/cash-disbursement/advances-to-suppliers/useAdvancesToSuppliersActionPage";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
+import type { AdvancesToSuppliersActionMode } from "@/app/src/types/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersTypes";
 import type { PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";
 import { AdvancesToSuppliersActionHeader } from "@/app/src/ui/modules/cash-disbursement/advances-to-suppliers/action/AdvancesToSuppliersActionHeader";
 import { AdvancesToSuppliersAttachmentsTab } from "@/app/src/ui/modules/cash-disbursement/advances-to-suppliers/action/AdvancesToSuppliersAttachmentsTab";
@@ -20,14 +21,15 @@ import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/Par
 import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
 import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 
-export function AdvancesToSuppliersActionPage() {
+export function AdvancesToSuppliersActionPage({ mode }: { mode: AdvancesToSuppliersActionMode }) {
   const router = useRouter();
   const [isPartyDrawerOpen, setIsPartyDrawerOpen] = useState(false);
   const [isResponsibilityCenterDrawerOpen, setIsResponsibilityCenterDrawerOpen] = useState(false);
   const [isProjectDrawerOpen, setIsProjectDrawerOpen] = useState(false);
   const partyStore = usePartyManagementStore();
   const page = useAdvancesToSuppliersActionPage({
-    onSaved: () => router.push(AdvancesToSuppliersHref),
+    mode,
+    onSaved: () => router.push(AdvancesToSuppliersLink),
   });
   if (page.isRecordMissing) return <AdvancesToSuppliersNotFound />;
   function handleCreateParty(record: PartyInformationRecord) {

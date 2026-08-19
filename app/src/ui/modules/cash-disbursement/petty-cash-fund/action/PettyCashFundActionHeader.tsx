@@ -1,18 +1,27 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { ArrowLeft, Ban, Edit3, FileText, ThumbsDown, ThumbsUp } from "lucide-react";
 import {
-  PettyCashFundHref,
+  useState } from "react";
+import { ArrowLeft,
+  Ban,
+  Edit3,
+  FileText,
+  ThumbsDown,
+  ThumbsUp } from "lucide-react";
+import {
+  PettyCashFundConfirmationDialogConfirmLabels,
+  PettyCashFundConfirmationDialogTitles,
+  PettyCashFundLink,
   PettyCashFundStatuses,
+  getPettyCashFundEditLink,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund/PettyCashFundConstants";
 import type { PettyCashFundActionPageState } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-fund/usePettyCashFundActionPage";
 import type { PettyCashFundConfirmationAction } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";
 import { PettyCashFundActionHistory } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund/action/PettyCashFundActionHistory";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ModuleSaveButton } from "@/app/src/ui/shared/module/ModuleSaveButton";
+import { ModuleActionButton } from "@/app/src/ui/shared/module/ModuleActionButton";
 import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 
 export function PettyCashFundActionHeader({ onPreview, page }: { onPreview: () => void; page: PettyCashFundActionPageState }) {
@@ -40,7 +49,7 @@ export function PettyCashFundActionHeader({ onPreview, page }: { onPreview: () =
         }
         actions={
           <>
-            <Link href={PettyCashFundHref} className={moduleHeaderActionClassNames.secondary}>
+            <Link href={PettyCashFundLink} className={moduleHeaderActionClassNames.secondary}>
               <ArrowLeft className="h-4 w-4" aria-hidden="true" />
               Back
             </Link>
@@ -71,16 +80,17 @@ export function PettyCashFundActionHeader({ onPreview, page }: { onPreview: () =
                   <Ban className="h-4 w-4" aria-hidden="true" />
                   Cancel
                 </button>
-                <Link href={`${PettyCashFundHref}/edit/${page.record.id}`} className={moduleHeaderActionClassNames.primary}>
+                <Link href={getPettyCashFundEditLink(page.record.id)} className={moduleHeaderActionClassNames.primary}>
                   <Edit3 className="h-4 w-4" aria-hidden="true" />
                   Edit
                 </Link>
               </>
             ) : null}
             {page.mode !== "view" ? (
-              <ModuleSaveButton
-                label={page.mode === "edit" ? "Update" : "Save"}
-                onSave={() => setConfirmation("save")}
+              <ModuleActionButton
+                disabled={page.isSubmitting}
+                label={page.isSubmitting ? "Saving..." : page.mode === "edit" ? "Update" : "Save"}
+                onAction={() => setConfirmation("save")}
                 menuItems={page.mode === "add" ? [{ label: "Save As Draft", onSelect: () => setConfirmation("draft") }] : []}
               />
             ) : null}
@@ -90,9 +100,9 @@ export function PettyCashFundActionHeader({ onPreview, page }: { onPreview: () =
       {confirmation ? (
         <AppDialog
           isOpen
-          title={getDialogTitle(confirmation)}
-          description={getDialogDescription(confirmation, transactionNo)}
-          confirmLabel={getConfirmLabel(confirmation)}
+          title={PettyCashFundConfirmationDialogTitles[confirmation]}
+          description={`This will ${confirmation === "save" ? "save and submit" : confirmation} ${transactionNo}.`}
+          confirmLabel={PettyCashFundConfirmationDialogConfirmLabels[confirmation]}
           pendingLabel="Saving..."
           tone={
             confirmation === "approve" || confirmation === "save"
@@ -114,22 +124,4 @@ export function PettyCashFundActionHeader({ onPreview, page }: { onPreview: () =
       ) : null}
     </>
   );
-}
-
-function getDialogTitle(action: PettyCashFundConfirmationAction) {
-  return action === "save"
-    ? "Save petty cash fund?"
-    : action === "draft"
-      ? "Save as draft?"
-      : action === "approve"
-        ? "Approve petty cash fund?"
-        : action === "disapprove"
-          ? "Disapprove petty cash fund?"
-          : "Cancel petty cash fund?";
-}
-function getDialogDescription(action: PettyCashFundConfirmationAction, recordLabel: string) {
-  return `This will ${action === "save" ? "save and submit" : action} ${recordLabel}.`;
-}
-function getConfirmLabel(action: PettyCashFundConfirmationAction) {
-  return action === "save" ? "Save and Submit" : action === "draft" ? "Save as Draft" : action.charAt(0).toUpperCase() + action.slice(1);
 }

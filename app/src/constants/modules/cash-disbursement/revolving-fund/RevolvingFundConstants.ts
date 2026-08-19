@@ -1,6 +1,7 @@
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type {
   RevolvingFundActionTab,
+  RevolvingFundConfirmationAction,
   RevolvingFundAccountingColumnId,
   RevolvingFundEntryTab,
   RevolvingFundItemColumnId,
@@ -8,7 +9,10 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 
-export const RevolvingFundHref = getModuleRoute("RF");
+export const RevolvingFundLink = getModuleRoute("RF");
+export const RevolvingFundAddLink = `${RevolvingFundLink}/add`;
+export const getRevolvingFundEditLink = (recordId: string) => `${RevolvingFundLink}/edit/${recordId}`;
+export const getRevolvingFundViewLink = (recordId: string) => `${RevolvingFundLink}/view/${recordId}`;
 export const RevolvingFundStorageKey = "cash-disbursement-revolving-fund-records";
 export const RevolvingFundPaginationStorageKey = "cash-disbursement-revolving-fund-table";
 export const RevolvingFundTransactionPrefix = "RF";
@@ -27,7 +31,7 @@ export const RevolvingFundColumnLabels = {
   updatedBy: "Updated By",
   updatedAt: "Date Modified",
   status: "Status",
-  actions: "Action",
+  actions: "Actions",
 } as const;
 export const RevolvingFundDefaultVisibleColumnIds = ["transactionNo", "documentDate", "partyName", "amount", "status", "actions"] as const;
 export const RevolvingFundDefaultColumnVisibility = Object.fromEntries(
@@ -44,6 +48,20 @@ export const RevolvingFundStatuses = {
   open: "Open",
   posted: "Posted",
 } as const;
+export const RevolvingFundConfirmationDialogTitles: Record<RevolvingFundConfirmationAction, string> = {
+  save: "Save Revolving Fund?",
+  draft: "Save as Draft?",
+  approve: "Approve Revolving Fund?",
+  disapprove: "Disapprove Revolving Fund?",
+  cancel: "Cancel Revolving Fund?",
+};
+export const RevolvingFundConfirmationDialogConfirmLabels: Record<RevolvingFundConfirmationAction, string> = {
+  save: "Save and Submit",
+  draft: "Save as Draft",
+  approve: "Approve",
+  disapprove: "Disapprove",
+  cancel: "Cancel",
+};
 export const RevolvingFundRecordStatuses = [
   "Draft",
   "For Approval",

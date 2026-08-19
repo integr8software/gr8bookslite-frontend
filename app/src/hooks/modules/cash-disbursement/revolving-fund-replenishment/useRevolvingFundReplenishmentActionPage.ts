@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useParams, usePathname } from "next/navigation";
+import { useParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { RevolvingFundReplenishmentStatuses } from "@/app/src/constants/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentConstants";
 import {
@@ -11,6 +11,8 @@ import {
   createRevolvingFundReplenishmentRecord,
 } from "@/app/src/data/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentData";
 import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
+import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
+import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import {
   createNextRevolvingFundReplenishmentNumber,
   getRevolvingFundReplenishmentRecords,
@@ -27,11 +29,10 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentTypes";
 import { validateRevolvingFundReplenishmentForm } from "@/app/src/validations/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentValidation";
 
-export function useRevolvingFundReplenishmentActionPage(options: { onSaved?: () => void } = {}) {
+export function useRevolvingFundReplenishmentActionPage(options: { mode: RevolvingFundReplenishmentActionMode; onSaved?: () => void }) {
   const transactionCurrency = useTransactionCurrency();
-  const pathname = usePathname();
   const params = useParams<{ recordId?: string }>();
-  const mode: RevolvingFundReplenishmentActionMode = pathname.includes("/view/") ? "view" : pathname.includes("/edit/") ? "edit" : "add";
+  const { mode } = options;
   const initialRecord = mode === "add" ? undefined : getRevolvingFundReplenishmentRecords().find((item) => item.id === params.recordId);
   const [record, setRecord] = useState(initialRecord);
   const [values, setValues] = useState<RevolvingFundReplenishmentFormValues>(() =>
@@ -45,7 +46,17 @@ export function useRevolvingFundReplenishmentActionPage(options: { onSaved?: () 
   const [activeTab, setActiveTab] = useState<RevolvingFundReplenishmentActionTab>("details");
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const hasEditedCurrencyRef = useRef(false);
+  const isSubmittingRef = useRef(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const isReadonly = mode === "view";
+  const [initialValues] = useState(values);
+  const isDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
+  const draft = useModuleDraft({
+    enabled: !isReadonly,
+    key: createModuleDraftKey({ mode, moduleId: "cash-disbursement:revolving-fund-replenishment", recordId: params.recordId }),
+    setValues,
+    values,
+  });
   const totals = useMemo(() => calculateRevolvingFundReplenishmentTotals(values.entries), [values.entries]);
 
   useEffect(() => {
@@ -127,33 +138,64 @@ export function useRevolvingFundReplenishmentActionPage(options: { onSaved?: () 
   }
 
   function save(status: RevolvingFundReplenishmentStatus) {
+    if (isReadonly || isSubmittingRef.current) return false;
+    if (mode === "edit" && !isDirty) {
+      toast.error("No changes to save.");
+      return false;
+    }
+    const releaseSubmitLock = acquireModuleActionLock(
+      `cash-disbursement:revolving-fund-replenishment:save:${mode}:${params.recordId ?? values.transactionNo}`,
+    );
+    if (!releaseSubmitLock) return false;
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
     const nextErrors = status === RevolvingFundReplenishmentStatuses.draft ? {} : validateRevolvingFundReplenishmentForm(values);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) {
       toast.error("Please fix the highlighted revolving fund replenishment fields.");
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+      releaseSubmitLock();
       return false;
     }
-    const nextRecord = createRevolvingFundReplenishmentRecord(values, status, mode === "edit" ? record : undefined);
-    saveRevolvingFundReplenishmentRecords(upsertRevolvingFundReplenishmentRecord(nextRecord));
-    setRecord(nextRecord);
-    setValues(createRevolvingFundReplenishmentFormValues(nextRecord));
-    toast.success(
-      status === RevolvingFundReplenishmentStatuses.draft
-        ? "Revolving fund replenishment saved as draft."
-        : "Revolving fund replenishment submitted for approval.",
-    );
-    options.onSaved?.();
-    return true;
+    try {
+      const nextRecord = createRevolvingFundReplenishmentRecord(values, status, mode === "edit" ? record : undefined);
+      saveRevolvingFundReplenishmentRecords(upsertRevolvingFundReplenishmentRecord(nextRecord));
+      setRecord(nextRecord);
+      setValues(createRevolvingFundReplenishmentFormValues(nextRecord));
+      draft.clearDraft();
+      toast.success(
+        status === RevolvingFundReplenishmentStatuses.draft
+          ? "Revolving fund replenishment saved as draft."
+          : "Revolving fund replenishment submitted for approval.",
+      );
+      options.onSaved?.();
+      return true;
+    } catch {
+      toast.error("Could not save the revolving fund replenishment. Please try again.");
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+      releaseSubmitLock();
+      return false;
+    }
   }
 
   function updateStatus(status: RevolvingFundReplenishmentStatus) {
     if (!record) return false;
-    const nextRecord = createRevolvingFundReplenishmentRecord(values, status, record);
-    saveRevolvingFundReplenishmentRecords(upsertRevolvingFundReplenishmentRecord(nextRecord));
-    setRecord(nextRecord);
-    setValues(createRevolvingFundReplenishmentFormValues(nextRecord));
-    toast.success(`Revolving fund replenishment marked as ${status}.`);
-    return true;
+    const releaseActionLock = acquireModuleActionLock(`cash-disbursement:revolving-fund-replenishment:status:${record.id}:${status}`);
+    if (!releaseActionLock) return false;
+    try {
+      const nextRecord = createRevolvingFundReplenishmentRecord(values, status, record);
+      saveRevolvingFundReplenishmentRecords(upsertRevolvingFundReplenishmentRecord(nextRecord));
+      setRecord(nextRecord);
+      setValues(createRevolvingFundReplenishmentFormValues(nextRecord));
+      toast.success(`Revolving fund replenishment marked as ${status}.`);
+      return true;
+    } catch {
+      toast.error("Could not update the revolving fund replenishment. Please try again.");
+      releaseActionLock();
+      return false;
+    }
   }
 
   return {
@@ -165,6 +207,7 @@ export function useRevolvingFundReplenishmentActionPage(options: { onSaved?: () 
     insertEntry,
     isExchangeRateLoading: transactionCurrency.isExchangeRateLoading,
     isPreviewOpen,
+    isSubmitting,
     isReadonly,
     isRecordMissing: mode !== "add" && !initialRecord,
     mode,

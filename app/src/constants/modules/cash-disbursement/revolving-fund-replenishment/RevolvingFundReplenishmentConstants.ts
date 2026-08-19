@@ -1,6 +1,7 @@
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type {
   RevolvingFundReplenishmentActionTab,
+  RevolvingFundReplenishmentConfirmationAction,
   RevolvingFundReplenishmentAccountingColumnId,
   RevolvingFundReplenishmentEntryColumnId,
   RevolvingFundReplenishmentEntryTab,
@@ -10,10 +11,27 @@ import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-
 import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
 import { CashDisbursementOverviewActionColumnWidth } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 
-export const RevolvingFundReplenishmentHref = getModuleRoute("RFR");
+export const RevolvingFundReplenishmentLink = getModuleRoute("RFR");
+export const RevolvingFundReplenishmentAddLink = `${RevolvingFundReplenishmentLink}/add`;
+export const getRevolvingFundReplenishmentEditLink = (recordId: string) => `${RevolvingFundReplenishmentLink}/edit/${recordId}`;
+export const getRevolvingFundReplenishmentViewLink = (recordId: string) => `${RevolvingFundReplenishmentLink}/view/${recordId}`;
 export const RevolvingFundReplenishmentStorageKey = "cash-disbursement-revolving-fund-replenishment-records";
 export const RevolvingFundReplenishmentPaginationStorageKey = "cash-disbursement-revolving-fund-replenishment-table";
 export const RevolvingFundReplenishmentTransactionPrefix = "RFR";
+export const RevolvingFundReplenishmentConfirmationDialogTitles: Record<RevolvingFundReplenishmentConfirmationAction, string> = {
+  save: "Save Revolving Fund Replenishment?",
+  draft: "Save as Draft?",
+  approve: "Approve Revolving Fund Replenishment?",
+  disapprove: "Disapprove Revolving Fund Replenishment?",
+  cancel: "Cancel Revolving Fund Replenishment?",
+};
+export const RevolvingFundReplenishmentConfirmationDialogConfirmLabels: Record<RevolvingFundReplenishmentConfirmationAction, string> = {
+  save: "Save and Submit",
+  draft: "Save as Draft",
+  approve: "Approve",
+  disapprove: "Disapprove",
+  cancel: "Cancel",
+};
 export const RevolvingFundReplenishmentColumnLabels = {
   transactionNo: "Revolving Fund Replenishment No.",
   documentDate: "Document Date",
@@ -28,7 +46,7 @@ export const RevolvingFundReplenishmentColumnLabels = {
   updatedBy: "Updated By",
   updatedAt: "Date Modified",
   status: "Status",
-  actions: "Action",
+  actions: "Actions",
 } as const;
 export const RevolvingFundReplenishmentOverviewColumnWidths: Record<keyof typeof RevolvingFundReplenishmentColumnLabels, number> = {
   transactionNo: TransactionOverviewColumnWidths.transactionNumber,

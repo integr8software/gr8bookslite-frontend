@@ -13,34 +13,36 @@ import {
   moduleAccentClassNames,
 } from "@/app/src/ui/shared/module/module-table/utils";
 
-export type ModuleSaveButtonMenuItem = {
+export type ModuleActionButtonMenuItem = {
   disabled?: boolean;
   icon?: LucideIcon;
   label: string;
   onSelect?: () => void;
 };
 
-type ModuleSaveButtonProps = {
+type ModuleActionButtonProps = {
   className?: string;
   disabled?: boolean;
   icon?: LucideIcon;
   label?: string;
-  menuItems?: ModuleSaveButtonMenuItem[];
+  menuItems?: ModuleActionButtonMenuItem[];
   menuLabel?: string;
-  onSave?: () => void;
+  onAction?: () => void;
   type?: ButtonHTMLAttributes<HTMLButtonElement>["type"];
+  variant?: "primary" | "secondary";
 };
 
-export function ModuleSaveButton({
+export function ModuleActionButton({
   className,
   disabled = false,
   icon: SaveIcon = Save,
   label = "Save",
   menuItems = [],
-  menuLabel = "Open save options",
-  onSave,
+  menuLabel = "Open action options",
+  onAction,
   type = "button",
-}: ModuleSaveButtonProps) {
+  variant = "primary",
+}: ModuleActionButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
@@ -79,10 +81,10 @@ export function ModuleSaveButton({
       <button
         type={type}
         disabled={disabled}
-        onClick={onSave}
+        onClick={onAction}
         className={joinClasses(
           "inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold shadow-sm transition focus-visible:outline-none focus-visible:ring-4 disabled:cursor-not-allowed disabled:opacity-55",
-          moduleAccentClassNames.button,
+          getModuleActionButtonToneClassName(variant),
           className,
         )}
       >
@@ -100,10 +102,11 @@ export function ModuleSaveButton({
       <button
         type={type}
         disabled={disabled}
-        onClick={onSave}
+        onClick={onAction}
         className={joinClasses(
-          "inline-flex h-10 items-center justify-center gap-2 rounded-l-md rounded-r-none border border-r-white/20 px-4 text-sm font-semibold shadow-sm transition focus-visible:z-10 focus-visible:outline-none focus-visible:ring-4 disabled:cursor-not-allowed disabled:opacity-55",
-          moduleAccentClassNames.button,
+          "inline-flex h-10 items-center justify-center gap-2 rounded-l-md rounded-r-none border px-4 text-sm font-semibold shadow-sm transition focus-visible:z-10 focus-visible:outline-none focus-visible:ring-4 disabled:cursor-not-allowed disabled:opacity-55",
+          variant === "primary" ? "border-r-white/20" : "border-r-darknavy/10",
+          getModuleActionButtonToneClassName(variant),
         )}
       >
         <SaveIcon className="h-4 w-4" aria-hidden="true" />
@@ -118,8 +121,9 @@ export function ModuleSaveButton({
         disabled={disabled}
         onClick={() => setIsOpen((current) => !current)}
         className={joinClasses(
-          "inline-flex h-10 w-10 items-center justify-center rounded-l-none rounded-r-md border border-l-white/20 shadow-sm transition focus-visible:z-10 focus-visible:outline-none focus-visible:ring-4 disabled:cursor-not-allowed disabled:opacity-55",
-          moduleAccentClassNames.button,
+          "inline-flex h-10 w-10 items-center justify-center rounded-l-none rounded-r-md border shadow-sm transition focus-visible:z-10 focus-visible:outline-none focus-visible:ring-4 disabled:cursor-not-allowed disabled:opacity-55",
+          variant === "primary" ? "border-l-white/20" : "border-l-darknavy/10",
+          getModuleActionButtonToneClassName(variant),
         )}
       >
         <ChevronDown
@@ -137,7 +141,7 @@ export function ModuleSaveButton({
           className="absolute right-0 top-[calc(100%+0.375rem)] z-30 grid w-44 gap-1 rounded-lg border border-darknavy/10 bg-white p-1.5 text-left shadow-[0_18px_46px_rgba(33,39,56,0.18)]"
         >
           {menuItems.map((item) => (
-            <ModuleSaveButtonMenuItemView
+            <ModuleActionButtonMenuItemView
               key={item.label}
               item={item}
               onClose={() => setIsOpen(false)}
@@ -149,11 +153,24 @@ export function ModuleSaveButton({
   );
 }
 
-function ModuleSaveButtonMenuItemView({
+function getModuleActionButtonToneClassName(variant: "primary" | "secondary") {
+  if (variant === "primary") {
+    return moduleAccentClassNames.button;
+  }
+
+  return joinClasses(
+    "border-darknavy/10 bg-white text-darknavy/75 shadow-darknavy/5 hover:text-darknavy",
+    moduleAccentClassNames.hoverBorder,
+    moduleAccentClassNames.hoverSoftBackground,
+    moduleAccentClassNames.focusRing,
+  );
+}
+
+function ModuleActionButtonMenuItemView({
   item,
   onClose,
 }: {
-  item: ModuleSaveButtonMenuItem;
+  item: ModuleActionButtonMenuItem;
   onClose: () => void;
 }) {
   const ItemIcon = item.icon;

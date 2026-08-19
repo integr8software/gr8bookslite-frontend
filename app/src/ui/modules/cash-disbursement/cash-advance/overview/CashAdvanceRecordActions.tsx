@@ -1,20 +1,31 @@
 "use client";
 
-import { useState } from "react";
-import { Ban, Eye, Pencil, ThumbsDown, ThumbsUp, Undo2 } from "lucide-react";
 import {
-  CashAdvanceHref,
+  useState } from "react";
+import { Ban,
+  Edit3,
+  Eye,
+  ThumbsDown,
+  ThumbsUp,
+  Undo2 } from "lucide-react";
+import {
   CashAdvanceStatuses,
   canApproveCashAdvanceStatus,
   canCancelCashAdvanceStatus,
   canDisapproveCashAdvanceStatus,
   canEditCashAdvanceStatus,
   getCashAdvanceStatusDialogCopy,
+  getCashAdvanceEditLink,
+  getCashAdvanceViewLink,
 } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
 import type { CashAdvanceRecord, CashAdvanceStatus } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleActionMenu, type ModuleActionMenuItem } from "@/app/src/ui/shared/module/ModuleActionMenu";
-import { ModuleTableActions } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
+import {
+  ModuleTableActionButton,
+  ModuleTableActionLink,
+  ModuleTableActions,
+} from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
 export function CashAdvanceRecordActions({
   onUpdateStatus,
@@ -32,23 +43,8 @@ export function CashAdvanceRecordActions({
   const approvalUndoStatus: CashAdvanceStatus = CashAdvanceStatuses.forApproval;
   const cancelStatus: CashAdvanceStatus = isCancelled ? CashAdvanceStatuses.draft : CashAdvanceStatuses.cancelled;
   const statusDialogCopy = statusToConfirm ? getCashAdvanceStatusDialogCopy(statusToConfirm, recordLabel) : null;
+  const canEdit = canEditCashAdvanceStatus(status);
   const items: ModuleActionMenuItem[] = [
-    {
-      href: `${CashAdvanceHref}/view/${record.id}`,
-      icon: Eye,
-      label: "View",
-      type: "link",
-    },
-    ...(canEditCashAdvanceStatus(status)
-      ? [
-          {
-            href: `${CashAdvanceHref}/edit/${record.id}`,
-            icon: Pencil,
-            label: "Edit",
-            type: "link",
-          } satisfies ModuleActionMenuItem,
-        ]
-      : []),
     {
       disabled: !canApproveCashAdvanceStatus(status),
       icon: isPosted ? Undo2 : ThumbsUp,
@@ -98,7 +94,35 @@ export function CashAdvanceRecordActions({
   return (
     <>
       <ModuleTableActions className="!justify-center">
-        <ModuleActionMenu items={items} label={`Actions for cash advance ${record.transNo}`} />
+        <ModuleTableActionLink
+          href={getCashAdvanceViewLink(record.id)}
+          icon={Eye}
+          label={`View cash advance ${recordLabel}`}
+          title="View"
+          variant="view"
+        />
+        {canEdit ? (
+          <ModuleTableActionLink
+            href={getCashAdvanceEditLink(record.id)}
+            icon={Edit3}
+            label={`Edit cash advance ${recordLabel}`}
+            title="Edit"
+            variant="edit"
+          />
+        ) : (
+          <ModuleTableActionButton
+            disabled
+            icon={Edit3}
+            label={`Edit cash advance ${recordLabel}`}
+            title="Edit"
+            variant="edit"
+          />
+        )}
+        <ModuleActionMenu
+          className="[&>button]:h-9 [&>button]:w-9"
+          items={items}
+          label={`More actions for cash advance ${recordLabel}`}
+        />
       </ModuleTableActions>
       {statusDialogCopy ? (
         <AppDialog

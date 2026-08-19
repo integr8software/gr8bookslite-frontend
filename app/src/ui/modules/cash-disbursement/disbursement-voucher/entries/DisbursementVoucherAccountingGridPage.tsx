@@ -58,7 +58,7 @@ import {
   createGridRowId,
   createImportSourceAttachment,
   createInitialRows,
-  createVoucherActionReturnHref,
+  createVoucherActionReturnLink,
   downloadBytesFile,
   getExportCellValue,
   hasRowData,
@@ -402,7 +402,6 @@ export function DisbursementVoucherAccountingGridPage() {
           inputName={context.fieldName}
           isReadonly={false}
           value={row.particulars}
-          subtitle={row.accountName || "Accounting entry"}
           textareaId={`${context.fieldId}-dialog`}
           onChange={(value) => updateRow(row.id, "particulars", value)}
         />
@@ -521,7 +520,7 @@ export function DisbursementVoucherAccountingGridPage() {
         importedImportAttachment,
       ),
     });
-    router.push(createVoucherActionReturnHref(session));
+    router.push(createVoucherActionReturnLink(session));
   }
 
   function handleSaveAndContinue() {
@@ -559,7 +558,7 @@ export function DisbursementVoucherAccountingGridPage() {
         importedImportAttachment,
       ),
     });
-    router.push(createVoucherActionReturnHref(session));
+    router.push(createVoucherActionReturnLink(session));
   }
 
   if (!isLoaded) {

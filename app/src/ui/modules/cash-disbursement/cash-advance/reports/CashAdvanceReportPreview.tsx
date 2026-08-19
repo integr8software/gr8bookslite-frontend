@@ -1,11 +1,12 @@
 "use client";
 
-import { formatCashAdvanceCurrency, formatCashAdvanceDate } from "@/app/src/data/modules/cash-disbursement/cash-advance/CashAdvanceData";
+import { formatCashAdvanceCurrency } from "@/app/src/data/modules/cash-disbursement/cash-advance/CashAdvanceData";
 import type {
   CashAdvanceFormValues,
   CashAdvanceReportPreviewProps,
 } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 import { ReportPreviewDrawer } from "@/app/src/ui/shared/reports/Reports";
+import { formatDate } from "@/app/src/utils/date.util";
 
 export function CashAdvanceReportPreview({ isOpen, onClose, onGeneratePdf, values }: CashAdvanceReportPreviewProps) {
   return (
@@ -88,7 +89,7 @@ function formatCompactDate(value: string) {
 
   const [year, month, day] = value.split("-");
 
-  return year && month && day ? `${month}/${day}/${year}` : formatCashAdvanceDate(value);
+  return year && month && day ? `${month}/${day}/${year}` : formatDate(value, { locale: "en-US" });
 }
 
 function getCashAdvanceAccountTitle(accountCode: string) {

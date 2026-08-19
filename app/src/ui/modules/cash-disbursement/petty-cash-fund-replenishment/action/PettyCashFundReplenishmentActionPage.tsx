@@ -4,11 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   PettyCashFundReplenishmentActionTabs,
-  PettyCashFundReplenishmentHref,
+  PettyCashFundReplenishmentLink,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentConstants";
 import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
 import { usePettyCashFundReplenishmentActionPage } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-fund-replenishment/usePettyCashFundReplenishmentActionPage";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
+import type { PettyCashFundReplenishmentActionMode } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentTypes";
 import type { PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";
 import { PettyCashFundReplenishmentActionHeader } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund-replenishment/action/PettyCashFundReplenishmentActionHeader";
 import { PettyCashFundReplenishmentAttachmentsTab } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund-replenishment/action/PettyCashFundReplenishmentAttachmentsTab";
@@ -20,14 +21,15 @@ import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/Par
 import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
 import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 
-export function PettyCashFundReplenishmentActionPage() {
+export function PettyCashFundReplenishmentActionPage({ mode }: { mode: PettyCashFundReplenishmentActionMode }) {
   const router = useRouter();
   const [isPartyDrawerOpen, setIsPartyDrawerOpen] = useState(false);
   const [isResponsibilityCenterDrawerOpen, setIsResponsibilityCenterDrawerOpen] = useState(false);
   const [isProjectDrawerOpen, setIsProjectDrawerOpen] = useState(false);
   const partyStore = usePartyManagementStore();
   const page = usePettyCashFundReplenishmentActionPage({
-    onSaved: () => router.push(PettyCashFundReplenishmentHref),
+    mode,
+    onSaved: () => router.push(PettyCashFundReplenishmentLink),
   });
   if (page.isRecordMissing) return <PettyCashFundReplenishmentNotFound />;
   function handleCreateParty(record: PartyInformationRecord) {

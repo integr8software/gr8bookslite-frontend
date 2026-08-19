@@ -5,12 +5,15 @@ import { useState } from "react";
 import { ArrowLeft, Ban, CreditCard, ThumbsDown, ThumbsUp, Undo2 } from "lucide-react";
 import {
   PettyCashVoucherActionButtonClassNames,
-  PettyCashVoucherHref,
+  PettyCashVoucherActionDescriptions,
+  PettyCashVoucherLink,
   PettyCashVoucherStatuses,
   canApprovePettyCashVoucherStatus,
   canCancelPettyCashVoucherStatus,
   canDisapprovePettyCashVoucherStatus,
   getPettyCashVoucherStatusDialogCopy,
+  getPettyCashVoucherActionTitle,
+  getPettyCashVoucherSaveDialogCopy,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
 import type { PettyCashVoucherActionPageState } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-voucher/usePettyCashVoucherActionPage";
 import type {
@@ -19,7 +22,7 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ModuleSaveButton } from "@/app/src/ui/shared/module/ModuleSaveButton";
+import { ModuleActionButton } from "@/app/src/ui/shared/module/ModuleActionButton";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 import { PettyCashVoucherActionHistory } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/action/PettyCashVoucherActionHistory";
 
@@ -29,7 +32,7 @@ export function PettyCashVoucherActionHeader({ page }: { page: PettyCashVoucherA
   const dialogCopy = confirmation
     ? confirmation.action === "status"
       ? getPettyCashVoucherStatusDialogCopy(confirmation.status, recordLabel)
-      : getSaveDialogCopy(confirmation.action, page.mode, recordLabel)
+      : getPettyCashVoucherSaveDialogCopy(confirmation.action, page.mode, recordLabel)
     : null;
 
   return (
@@ -37,8 +40,8 @@ export function PettyCashVoucherActionHeader({ page }: { page: PettyCashVoucherA
       <ModuleHeader
         variant="panel"
         titleAs="h1"
-        title={getActionTitle(page)}
-        description={getActionDescription(page.mode)}
+        title={getPettyCashVoucherActionTitle(page.mode, page.existingVoucher?.voucherNo)}
+        description={PettyCashVoucherActionDescriptions[page.mode]}
         actionsClassName="items-center justify-end gap-2"
         eyebrow={<PettyCashVoucherHeaderEyebrow />}
         actions={<PettyCashVoucherHeaderActions page={page} onRequestConfirmation={setConfirmation} />}
@@ -85,7 +88,7 @@ function PettyCashVoucherHeaderActions({
 }) {
   return (
     <span className="contents">
-      <Link href={PettyCashVoucherHref} className={moduleHeaderActionClassNames.secondary}>
+      <Link href={PettyCashVoucherLink} className={moduleHeaderActionClassNames.secondary}>
         <ArrowLeft className="h-4 w-4" aria-hidden="true" />
         Back
       </Link>
@@ -98,8 +101,10 @@ function PettyCashVoucherHeaderActions({
         />
       ) : null}
       {page.isReadonly ? null : (
-        <ModuleSaveButton
-          onSave={() => onRequestConfirmation({ action: "submit" })}
+        <ModuleActionButton
+          disabled={page.isSubmitting}
+          label={page.isSubmitting ? "Saving..." : "Save"}
+          onAction={() => onRequestConfirmation({ action: "submit" })}
           menuItems={
             page.mode === "add"
               ? [
@@ -170,48 +175,4 @@ function runConfirmedAction(page: PettyCashVoucherActionPageState, confirmation:
   }
 
   return page.handleSaveAsDraft();
-}
-
-function getSaveDialogCopy(action: "submit" | "draft", mode: PettyCashVoucherActionPageState["mode"], recordLabel: string) {
-  if (action === "draft") {
-    return {
-      confirmLabel: "Save as Draft",
-      description: `This will save the current information for ${recordLabel} without submitting it for approval.`,
-      iconTone: false as const,
-      pendingLabel: "Saving...",
-      title: "Save petty cash voucher as draft?",
-      tone: "default" as const,
-    };
-  }
-
-  return {
-    confirmLabel: mode === "edit" ? "Update and Submit" : "Submit Voucher",
-    description: `This will save ${recordLabel} and submit it for approval.`,
-    iconTone: "approve" as const,
-    pendingLabel: mode === "edit" ? "Updating..." : "Submitting...",
-    title: mode === "edit" ? "Update petty cash voucher?" : "Submit petty cash voucher?",
-    tone: "success" as const,
-  };
-}
-
-function getActionTitle(page: PettyCashVoucherActionPageState) {
-  const voucherNo = page.existingVoucher?.voucherNo;
-
-  if (page.mode === "view") {
-    return voucherNo ? `View Petty Cash Voucher | ${voucherNo}` : "View Petty Cash Voucher";
-  }
-
-  if (page.mode === "edit") {
-    return voucherNo ? `Edit Petty Cash Voucher | ${voucherNo}` : "Edit Petty Cash Voucher";
-  }
-
-  return "Add Petty Cash Voucher";
-}
-
-function getActionDescription(mode: "add" | "edit" | "view") {
-  if (mode === "view") {
-    return "Review the voucher details and supporting attachments.";
-  }
-
-  return "Complete the voucher header on one page before saving.";
 }

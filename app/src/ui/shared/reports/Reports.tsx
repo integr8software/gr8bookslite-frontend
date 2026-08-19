@@ -2,8 +2,10 @@
 
 import type { ReactNode } from "react";
 import { ChevronDown, FileText, Printer } from "lucide-react";
+import type { VoucherReportPreviewFormat } from "@/app/src/types/shared/reports/ReportTypes";
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
+import { ModuleActionButton } from "@/app/src/ui/shared/module/ModuleActionButton";
 
 type ReportPreviewActionProps = {
 	label?: string;
@@ -23,6 +25,27 @@ export function ReportPreviewAction({
 			<FileText className="h-4 w-4" aria-hidden="true" />
 			{label}
 		</button>
+	);
+}
+
+type VoucherReportPreviewActionProps = {
+	onPreview: (format: VoucherReportPreviewFormat) => void;
+};
+
+export function VoucherReportPreviewAction({ onPreview }: VoucherReportPreviewActionProps) {
+	return (
+		<ModuleActionButton
+			icon={FileText}
+			label="Preview"
+			menuLabel="Open preview options"
+			variant="secondary"
+			onAction={() => onPreview("standard")}
+			menuItems={[
+				{ label: "Summary", onSelect: () => onPreview("summary") },
+				{ label: "2306", onSelect: () => onPreview("2306") },
+				{ label: "2307", onSelect: () => onPreview("2307") },
+			]}
+		/>
 	);
 }
 

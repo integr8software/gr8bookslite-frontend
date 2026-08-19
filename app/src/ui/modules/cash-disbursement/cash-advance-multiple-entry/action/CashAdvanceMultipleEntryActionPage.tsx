@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { useParams, usePathname, useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import {
   CashAdvanceMultipleEntryDetailsTabs,
-  CashAdvanceMultipleEntryHref,
+  CashAdvanceMultipleEntryLink,
   CashAdvanceMultipleEntryStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryConstants";
 import {
@@ -37,11 +37,9 @@ import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/Par
 import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 
-export function CashAdvanceMultipleEntryActionPage() {
+export function CashAdvanceMultipleEntryActionPage({ mode }: { mode: CashAdvanceMultipleEntryActionMode }) {
   const params = useParams<{ recordId?: string }>();
-  const pathname = usePathname();
   const router = useRouter();
-  const mode = getActionMode(pathname);
   const recordId = typeof params.recordId === "string" ? params.recordId : undefined;
   const [activeDetailsTab, setActiveDetailsTab] = useState<CashAdvanceMultipleEntryDetailsTab>("details");
   const [isPartyDrawerOpen, setIsPartyDrawerOpen] = useState(false);
@@ -53,7 +51,7 @@ export function CashAdvanceMultipleEntryActionPage() {
   const [isProjectDrawerOpen, setIsProjectDrawerOpen] = useState(false);
   const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
   const form = useCashAdvanceMultipleEntryActionForm(mode, recordId, () => {
-    router.push(CashAdvanceMultipleEntryHref);
+    router.push(CashAdvanceMultipleEntryLink);
   });
   const responsibilityCenterStore = useResponsibilityCenterStore();
   const partyStore = usePartyManagementStore();
@@ -90,7 +88,7 @@ export function CashAdvanceMultipleEntryActionPage() {
     return (
       <section className="grid gap-4 rounded-lg border border-darknavy/10 bg-white p-5">
         <h1 className="text-xl font-semibold text-darknavy">Cash advance multiple entry not found</h1>
-        <Link href={CashAdvanceMultipleEntryHref} className={moduleHeaderActionClassNames.secondary}>
+        <Link href={CashAdvanceMultipleEntryLink} className={moduleHeaderActionClassNames.secondary}>
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           Back
         </Link>
@@ -105,6 +103,7 @@ export function CashAdvanceMultipleEntryActionPage() {
       <section className="grid gap-5">
         <CashAdvanceMultipleEntryActionHeader
           mode={mode}
+          isSubmitting={form.isSubmitting}
           record={form.record}
           onPreview={() => setIsReportPreviewOpen(true)}
           onSaveDraft={() => form.submitEntry(CashAdvanceMultipleEntryStatuses.draft)}
@@ -260,16 +259,4 @@ export function CashAdvanceMultipleEntryActionPage() {
       />
     </>
   );
-}
-
-function getActionMode(pathname: string): CashAdvanceMultipleEntryActionMode {
-  if (pathname.includes("/view/")) {
-    return "view";
-  }
-
-  if (pathname.includes("/edit/")) {
-    return "edit";
-  }
-
-  return "add";
 }

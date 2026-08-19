@@ -10,5 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function CashDisbursementDisbursementVoucherEditPage() {
-  return <DisbursementVoucherActionPage />;
+  return <DisbursementVoucherActionPage mode="edit" />;
 }

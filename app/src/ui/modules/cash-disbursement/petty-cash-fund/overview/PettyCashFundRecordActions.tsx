@@ -1,11 +1,18 @@
 "use client";
 
-import { useState } from "react";
-import { Ban, Edit3, Eye, ThumbsDown, ThumbsUp, Undo2 } from "lucide-react";
 import {
-  PettyCashFundHref,
+  useState } from "react";
+import { Ban,
+  Edit3,
+  Eye,
+  ThumbsDown,
+  ThumbsUp,
+  Undo2 } from "lucide-react";
+import {
   PettyCashFundStatuses,
   canEditPettyCashFund,
+  getPettyCashFundEditLink,
+  getPettyCashFundViewLink,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund/PettyCashFundConstants";
 import type {
   PettyCashFundRecord,
@@ -14,7 +21,11 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleActionMenu, type ModuleActionMenuItem } from "@/app/src/ui/shared/module/ModuleActionMenu";
-import { ModuleTableActions } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
+import {
+  ModuleTableActionButton,
+  ModuleTableActionLink,
+  ModuleTableActions,
+} from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
 export function PettyCashFundRecordActions({
   onUpdateStatus,
@@ -27,11 +38,8 @@ export function PettyCashFundRecordActions({
   const isPosted = record.status === PettyCashFundStatuses.posted;
   const isDisapproved = record.status === PettyCashFundStatuses.disapproved;
   const isCancelled = record.status === PettyCashFundStatuses.cancelled;
+  const canEdit = canEditPettyCashFund(record.status);
   const items: ModuleActionMenuItem[] = [
-    { type: "link", href: `${PettyCashFundHref}/view/${record.id}`, icon: Eye, label: "View" },
-    ...(canEditPettyCashFund(record.status)
-      ? [{ type: "link" as const, href: `${PettyCashFundHref}/edit/${record.id}`, icon: Edit3, label: "Edit" }]
-      : []),
     {
       type: "button",
       icon: isPosted ? Undo2 : ThumbsUp,
@@ -60,7 +68,35 @@ export function PettyCashFundRecordActions({
   return (
     <>
       <ModuleTableActions className="w-full !justify-center">
-        <ModuleActionMenu items={items} label={`Actions for petty cash fund ${record.transactionNo}`} />
+        <ModuleTableActionLink
+          href={getPettyCashFundViewLink(record.id)}
+          icon={Eye}
+          label={`View petty cash fund ${record.transactionNo}`}
+          title="View"
+          variant="view"
+        />
+        {canEdit ? (
+          <ModuleTableActionLink
+            href={getPettyCashFundEditLink(record.id)}
+            icon={Edit3}
+            label={`Edit petty cash fund ${record.transactionNo}`}
+            title="Edit"
+            variant="edit"
+          />
+        ) : (
+          <ModuleTableActionButton
+            disabled
+            icon={Edit3}
+            label={`Edit petty cash fund ${record.transactionNo}`}
+            title="Edit"
+            variant="edit"
+          />
+        )}
+        <ModuleActionMenu
+          className="[&>button]:h-9 [&>button]:w-9"
+          items={items}
+          label={`More actions for petty cash fund ${record.transactionNo}`}
+        />
       </ModuleTableActions>
       {status ? (
         <AppDialog

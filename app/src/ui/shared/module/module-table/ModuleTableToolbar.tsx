@@ -8,12 +8,13 @@ import {
 } from "react";
 import { RefreshCw, Search } from "lucide-react";
 import { ModuleTooltip } from "@/app/src/ui/shared/module/ModuleTooltip";
+import { ModuleTableColumnVisibilityButton } from "@/app/src/ui/shared/module/module-table/ModuleTableColumnVisibilityButton";
 import {
 	joinClasses,
 	moduleAccentClassNames,
 } from "@/app/src/ui/shared/module/module-table/utils";
 import { ModuleTableFilterPopover } from "@/app/src/ui/shared/module/module-table/ModuleTableFilterPopover";
-export { ModuleTableColumnVisibilityButton } from "@/app/src/ui/shared/module/module-table/ModuleTableColumnVisibilityButton";
+export { ModuleTableColumnVisibilityButton };
 export {
 	ModuleTableExportButton,
 	type ModuleTableExportColumn,

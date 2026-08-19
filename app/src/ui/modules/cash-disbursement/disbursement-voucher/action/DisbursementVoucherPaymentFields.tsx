@@ -10,7 +10,7 @@ import {
   DisbursementVoucherFieldClassName,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
-import { FieldShell } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherFieldControls";
+import { TransactionField } from "@/app/src/ui/shared/transaction-setup/TransactionFormFields";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
 
@@ -35,7 +35,7 @@ export function DisbursementVoucherPaymentFields({
   if (kind === "bank-transfer") {
     return (
       <div className="grid min-w-0 gap-4">
-        <FieldShell controlId="disbursement-voucher-from-bank" label="From Bank">
+        <TransactionField controlId="disbursement-voucher-from-bank" label="From Bank">
           <BankAccountDropdown
             bankAccounts={bankAccounts}
             id="disbursement-voucher-from-bank"
@@ -52,8 +52,8 @@ export function DisbursementVoucherPaymentFields({
             value={values.paymentDetails.bankAccountCode}
             onChange={onUpdateBankAccount}
           />
-        </FieldShell>
-        <FieldShell controlId="disbursement-voucher-to-bank" label="To Bank">
+        </TransactionField>
+        <TransactionField controlId="disbursement-voucher-to-bank" label="To Bank">
           <ToBankDropdown
             bankAccounts={bankAccounts}
             id="disbursement-voucher-to-bank"
@@ -70,8 +70,8 @@ export function DisbursementVoucherPaymentFields({
             accountNo={values.paymentDetails.transferAccountNo ?? ""}
             onChange={(nextDetails) => onUpdatePaymentDetails(nextDetails)}
           />
-        </FieldShell>
-        <FieldShell controlId="disbursement-voucher-transfer-account-no" label="Account No.">
+        </TransactionField>
+        <TransactionField controlId="disbursement-voucher-transfer-account-no" label="Account No.">
           <input
             id="disbursement-voucher-transfer-account-no"
             value={values.paymentDetails.transferAccountNo ?? ""}
@@ -79,16 +79,14 @@ export function DisbursementVoucherPaymentFields({
             onChange={(event) => onUpdatePaymentDetails({ transferAccountNo: event.target.value })}
             className={DisbursementVoucherFieldClassName}
           />
-        </FieldShell>
+        </TransactionField>
       </div>
     );
   }
 
-  const isCheckPayment = kind === "with-bank";
-
   return (
     <div className="grid min-w-0 gap-4">
-      <FieldShell controlId="disbursement-voucher-payment-bank" label="Bank">
+      <TransactionField controlId="disbursement-voucher-payment-bank" label="Bank">
         <BankAccountDropdown
           bankAccounts={bankAccounts}
           id="disbursement-voucher-payment-bank"
@@ -104,8 +102,8 @@ export function DisbursementVoucherPaymentFields({
           value={values.paymentDetails.bankAccountCode}
           onChange={onUpdateBankAccount}
         />
-      </FieldShell>
-      <FieldShell controlId="disbursement-voucher-payment-payee" label="Payee">
+      </TransactionField>
+      <TransactionField controlId="disbursement-voucher-payment-payee" label="Payee">
         <input
           id="disbursement-voucher-payment-payee"
           value={values.paymentDetails.payee ?? values.partyName}
@@ -113,35 +111,31 @@ export function DisbursementVoucherPaymentFields({
           onChange={(event) => onUpdatePaymentDetails({ payee: event.target.value })}
           className={DisbursementVoucherFieldClassName}
         />
-      </FieldShell>
-      {isCheckPayment ? (
-        <FieldShell label="Multi Check No.">
-          <AppSwitch
+      </TransactionField>
+      <TransactionField label="Multi Check No.">
+        <AppSwitch
+          readOnly={isReadonly}
+          value={isMultiCheckNumber}
+          falseOption={{ label: "No", value: false }}
+          trueOption={{ label: "Yes", value: true }}
+          onChange={(isMultiCheckNumber) =>
+            onUpdatePaymentDetails({
+              checkNo: isMultiCheckNumber ? "" : values.paymentDetails.checkNo,
+              isMultiCheckNumber,
+            })
+          }
+        />
+      </TransactionField>
+      {!isMultiCheckNumber ? (
+        <TransactionField controlId="disbursement-voucher-payment-document-no" label="Check No.">
+          <input
+            id="disbursement-voucher-payment-document-no"
+            value={values.paymentDetails.checkNo}
             readOnly={isReadonly}
-            value={isMultiCheckNumber}
-            falseOption={{ label: "No", value: false }}
-            trueOption={{ label: "Yes", value: true }}
-            onChange={(isMultiCheckNumber) =>
-              onUpdatePaymentDetails({
-                checkNo: isMultiCheckNumber ? "" : values.paymentDetails.checkNo,
-                isMultiCheckNumber,
-              })
-            }
+            onChange={(event) => onUpdatePaymentDetails({ checkNo: event.target.value })}
+            className={DisbursementVoucherFieldClassName}
           />
-        </FieldShell>
-      ) : null}
-      {!isCheckPayment || !isMultiCheckNumber ? (
-        <>
-          <FieldShell controlId="disbursement-voucher-payment-document-no" label={isCheckPayment ? "Check No." : "Debit Memo No."}>
-            <input
-              id="disbursement-voucher-payment-document-no"
-              value={values.paymentDetails.checkNo}
-              readOnly={isReadonly}
-              onChange={(event) => onUpdatePaymentDetails({ checkNo: event.target.value })}
-              className={DisbursementVoucherFieldClassName}
-            />
-          </FieldShell>
-        </>
+        </TransactionField>
       ) : null}
     </div>
   );
@@ -309,10 +303,6 @@ export function getPaymentTypeDetailKind(paymentType: string, paymentTypeRecord?
     return "bank-transfer";
   }
 
-  if (paymentTypeRecord?.type === "Non-Cash Settlement") {
-    return "debit-memo";
-  }
-
   const normalizedPaymentType = paymentType.trim().toLowerCase();
 
   if (!normalizedPaymentType) {
@@ -321,10 +311,6 @@ export function getPaymentTypeDetailKind(paymentType: string, paymentTypeRecord?
 
   if (normalizedPaymentType.includes("bank transfer") || normalizedPaymentType.includes("wire") || normalizedPaymentType === "transfer") {
     return "bank-transfer";
-  }
-
-  if (normalizedPaymentType.includes("debit memo") || normalizedPaymentType.includes("debit")) {
-    return "debit-memo";
   }
 
   if (normalizedPaymentType.includes("check")) {

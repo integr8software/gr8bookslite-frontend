@@ -4,11 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   RevolvingFundActionTabs,
-  RevolvingFundHref,
+  RevolvingFundLink,
 } from "@/app/src/constants/modules/cash-disbursement/revolving-fund/RevolvingFundConstants";
 import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
 import { useRevolvingFundActionPage } from "@/app/src/hooks/modules/cash-disbursement/revolving-fund/useRevolvingFundActionPage";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
+import type { RevolvingFundActionMode } from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";
 import type { PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
 import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
@@ -20,12 +21,12 @@ import { RevolvingFundNotFound } from "@/app/src/ui/modules/cash-disbursement/re
 import { RevolvingFundReportPreview } from "@/app/src/ui/modules/cash-disbursement/revolving-fund/reports/RevolvingFundReportPreview";
 import { openRevolvingFundPdf } from "@/app/src/ui/modules/cash-disbursement/revolving-fund/reports/RevolvingFundPdf";
 
-export function RevolvingFundActionPage() {
+export function RevolvingFundActionPage({ mode }: { mode: RevolvingFundActionMode }) {
   const router = useRouter();
   const [isPartyDrawerOpen, setIsPartyDrawerOpen] = useState(false);
   const [isProjectDrawerOpen, setIsProjectDrawerOpen] = useState(false);
   const partyStore = usePartyManagementStore();
-  const page = useRevolvingFundActionPage({ onSaved: () => router.push(RevolvingFundHref) });
+  const page = useRevolvingFundActionPage({ mode, onSaved: () => router.push(RevolvingFundLink) });
   if (page.isRecordMissing) return <RevolvingFundNotFound />;
   function handleCreateParty(record: PartyInformationRecord) {
     page.updateField("partyCode", record.partyCodeNo);

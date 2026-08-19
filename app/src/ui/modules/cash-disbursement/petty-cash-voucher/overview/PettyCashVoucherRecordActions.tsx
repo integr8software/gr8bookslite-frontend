@@ -1,15 +1,22 @@
 "use client";
 
-import { useState } from "react";
-import { Ban, Edit3, Eye, ThumbsDown, ThumbsUp, Undo2 } from "lucide-react";
 import {
-  PettyCashVoucherHref,
+  useState } from "react";
+import { Ban,
+  Edit3,
+  Eye,
+  ThumbsDown,
+  ThumbsUp,
+  Undo2 } from "lucide-react";
+import {
   PettyCashVoucherStatuses,
   canApprovePettyCashVoucherStatus,
   canCancelPettyCashVoucherStatus,
   canDisapprovePettyCashVoucherStatus,
   canEditPettyCashVoucherStatus,
   getPettyCashVoucherStatusDialogCopy,
+  getPettyCashVoucherEditLink,
+  getPettyCashVoucherViewLink,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
 import type {
   PettyCashVoucherRecordActionsProps,
@@ -17,7 +24,11 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleActionMenu, type ModuleActionMenuItem } from "@/app/src/ui/shared/module/ModuleActionMenu";
-import { ModuleTableActions } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
+import {
+  ModuleTableActionButton,
+  ModuleTableActionLink,
+  ModuleTableActions,
+} from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
 export function PettyCashVoucherRecordActions({ onUpdateStatus, record }: PettyCashVoucherRecordActionsProps) {
   const [statusToConfirm, setStatusToConfirm] = useState<PettyCashVoucherStatus | null>(null);
@@ -25,23 +36,8 @@ export function PettyCashVoucherRecordActions({ onUpdateStatus, record }: PettyC
   const isDisapproved = record.status === PettyCashVoucherStatuses.disapproved;
   const isCancelled = record.status === PettyCashVoucherStatuses.cancelled;
   const undoStatus: PettyCashVoucherStatus = PettyCashVoucherStatuses.forApproval;
+  const canEdit = canEditPettyCashVoucherStatus(record.status);
   const actionItems: ModuleActionMenuItem[] = [
-    {
-      href: `${PettyCashVoucherHref}/view/${record.id}`,
-      icon: Eye,
-      label: "View",
-      type: "link",
-    },
-    ...(canEditPettyCashVoucherStatus(record.status)
-      ? [
-          {
-            href: `${PettyCashVoucherHref}/edit/${record.id}`,
-            icon: Edit3,
-            label: "Edit",
-            type: "link",
-          } satisfies ModuleActionMenuItem,
-        ]
-      : []),
     {
       disabled: !canApprovePettyCashVoucherStatus(record.status),
       icon: isPosted ? Undo2 : ThumbsUp,
@@ -71,7 +67,35 @@ export function PettyCashVoucherRecordActions({ onUpdateStatus, record }: PettyC
   return (
     <>
       <ModuleTableActions className="w-full !justify-center">
-        <ModuleActionMenu items={actionItems} label={`Actions for petty cash voucher ${record.voucherNo}`} />
+        <ModuleTableActionLink
+          href={getPettyCashVoucherViewLink(record.id)}
+          icon={Eye}
+          label={`View petty cash voucher ${record.voucherNo}`}
+          title="View"
+          variant="view"
+        />
+        {canEdit ? (
+          <ModuleTableActionLink
+            href={getPettyCashVoucherEditLink(record.id)}
+            icon={Edit3}
+            label={`Edit petty cash voucher ${record.voucherNo}`}
+            title="Edit"
+            variant="edit"
+          />
+        ) : (
+          <ModuleTableActionButton
+            disabled
+            icon={Edit3}
+            label={`Edit petty cash voucher ${record.voucherNo}`}
+            title="Edit"
+            variant="edit"
+          />
+        )}
+        <ModuleActionMenu
+          className="[&>button]:h-9 [&>button]:w-9"
+          items={actionItems}
+          label={`More actions for petty cash voucher ${record.voucherNo}`}
+        />
       </ModuleTableActions>
       {dialogCopy && statusToConfirm ? (
         <AppDialog

@@ -43,6 +43,8 @@ import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/A
 import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
 import type { AppTaxRateDialogValue } from "@/app/src/ui/shared/transaction-setup/AppTaxRateDialog";
 import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
+import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
+import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import { normalizeLowercaseWhitespace } from "@/app/src/utils/string.util";
 import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
 import { CashDisbursementOverviewActionColumnWidth } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
@@ -95,6 +97,16 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
       : createCashAdvanceFormValues(transactionCurrency.baseCurrencyCode),
   );
   const hasEditedCurrencyRef = useRef(false);
+  const isSubmittingRef = useRef(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [initialValues] = useState(values);
+  const isDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
+  const draft = useModuleDraft({
+    enabled: mode !== "view",
+    key: createModuleDraftKey({ mode, moduleId: "cash-disbursement:cash-advance", recordId }),
+    setValues,
+    values,
+  });
 
   useEffect(() => {
     if (mode !== "add" || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) {
@@ -163,6 +175,17 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
   }
 
   function submitAdvance(status: CashAdvanceStatus = CashAdvanceStatuses.forApproval) {
+    if (mode === "view" || isSubmittingRef.current) return false;
+    if (mode === "edit" && !isDirty) {
+      toast.error("No changes to save.");
+      return false;
+    }
+    const releaseSubmitLock = acquireModuleActionLock(
+      `cash-disbursement:cash-advance:submit:${mode}:${recordId ?? values.transNo}`,
+    );
+    if (!releaseSubmitLock) return false;
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
     const nextValues = { ...values, status };
     const shouldValidate = status !== CashAdvanceStatuses.draft;
     const balanceValidation = validateCashAdvanceAmountWithinBalance(nextValues);
@@ -174,51 +197,70 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
 
     if (!validation.isValid) {
       toast.error(validation.message ?? "Review the cash advance details.");
-      return;
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+      releaseSubmitLock();
+      return false;
     }
 
-    const nextRecord = createCashAdvanceRecordFromForm(nextValues, mode === "edit" ? (loadedRecord ?? undefined) : undefined);
-    const nextAdvances = upsertCashAdvanceRecord(nextRecord);
-
-    writeStoredCashAdvances(nextAdvances);
-    setLoadedRecord(nextRecord);
-    setValues(nextValues);
-    toast.success(mode === "edit" ? "Cash advance updated." : "Cash advance saved.");
-    onSaved?.(nextRecord);
+    try {
+      const nextRecord = createCashAdvanceRecordFromForm(nextValues, mode === "edit" ? (loadedRecord ?? undefined) : undefined);
+      const nextAdvances = upsertCashAdvanceRecord(nextRecord);
+      writeStoredCashAdvances(nextAdvances);
+      setLoadedRecord(nextRecord);
+      setValues(nextValues);
+      draft.clearDraft();
+      toast.success(mode === "edit" ? "Cash advance updated." : "Cash advance saved.");
+      onSaved?.(nextRecord);
+      return true;
+    } catch {
+      toast.error("Could not save the cash advance. Please try again.");
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+      releaseSubmitLock();
+      return false;
+    }
   }
 
   function updateAdvanceStatus(status: CashAdvanceStatus) {
     if (!loadedRecord) {
       return;
     }
+    const releaseActionLock = acquireModuleActionLock(`cash-disbursement:cash-advance:status:${loadedRecord.id}:${status}`);
+    if (!releaseActionLock) return;
 
-    const updatedAt = new Date().toISOString();
-    const nextValues = { ...values, status };
-    const nextRecord: CashAdvanceRecord = {
-      ...loadedRecord,
-      formValues: {
-        ...nextValues,
-        attachments: nextValues.attachments.map((attachment) => ({ ...attachment })),
-        taxValue: {
-          ...nextValues.taxValue,
-          taxDetails: { ...nextValues.taxValue.taxDetails },
+    try {
+      const updatedAt = new Date().toISOString();
+      const nextValues = { ...values, status };
+      const nextRecord: CashAdvanceRecord = {
+        ...loadedRecord,
+        formValues: {
+          ...nextValues,
+          attachments: nextValues.attachments.map((attachment) => ({ ...attachment })),
+          taxValue: {
+            ...nextValues.taxValue,
+            taxDetails: { ...nextValues.taxValue.taxDetails },
+          },
         },
-      },
-      status,
-      updatedAt,
-      updatedBy: "Current User",
-    };
-    const nextAdvances = upsertCashAdvanceRecord(nextRecord);
-
-    writeStoredCashAdvances(nextAdvances);
-    setLoadedRecord(nextRecord);
-    setValues(nextValues);
-    toast.success(`Cash advance marked as ${status}.`);
+        status,
+        updatedAt,
+        updatedBy: "Current User",
+      };
+      const nextAdvances = upsertCashAdvanceRecord(nextRecord);
+      writeStoredCashAdvances(nextAdvances);
+      setLoadedRecord(nextRecord);
+      setValues(nextValues);
+      toast.success(`Cash advance marked as ${status}.`);
+    } catch {
+      toast.error("Could not update the cash advance. Please try again.");
+      releaseActionLock();
+    }
   }
 
   return {
     currencyOptions: transactionCurrency.currencyOptions,
     isExchangeRateLoading: transactionCurrency.isExchangeRateLoading,
+    isSubmitting,
     isRecordMissing: mode !== "add" && !initialRecord,
     record: loadedRecord,
     submitAdvance,
@@ -386,11 +428,11 @@ export function useCashAdvanceTable(advances: CashAdvanceRecord[]) {
         id: "actions",
         enableSorting: false,
         enableHiding: false,
-        header: "Action",
+        header: "Actions",
         size: CashDisbursementOverviewActionColumnWidth,
         meta: {
           className: "px-3 text-center last:pr-3",
-          label: "Action",
+          label: "Actions",
         },
       },
     ],

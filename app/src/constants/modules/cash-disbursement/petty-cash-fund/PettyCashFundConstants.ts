@@ -1,6 +1,7 @@
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type {
   PettyCashFundActionTab,
+  PettyCashFundConfirmationAction,
   PettyCashFundAccountingColumnId,
   PettyCashFundEntryTab,
   PettyCashFundItemColumnId,
@@ -8,7 +9,10 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 
-export const PettyCashFundHref = getModuleRoute("PCF");
+export const PettyCashFundLink = getModuleRoute("PCF");
+export const PettyCashFundAddLink = `${PettyCashFundLink}/add`;
+export const getPettyCashFundEditLink = (recordId: string) => `${PettyCashFundLink}/edit/${recordId}`;
+export const getPettyCashFundViewLink = (recordId: string) => `${PettyCashFundLink}/view/${recordId}`;
 export const PettyCashFundStorageKey = "cash-disbursement-petty-cash-fund-records";
 export const PettyCashFundPaginationStorageKey = "cash-disbursement-petty-cash-fund-table";
 export const PettyCashFundTransactionPrefix = "PCF";
@@ -27,7 +31,7 @@ export const PettyCashFundColumnLabels = {
   updatedBy: "Updated By",
   updatedAt: "Date Modified",
   status: "Status",
-  actions: "Action",
+  actions: "Actions",
 } as const;
 export const PettyCashFundDefaultVisibleColumnIds = ["transactionNo", "documentDate", "partyName", "amount", "status", "actions"] as const;
 export const PettyCashFundDefaultColumnVisibility = Object.fromEntries(
@@ -44,6 +48,20 @@ export const PettyCashFundStatuses = {
   open: "Open",
   posted: "Posted",
 } as const;
+export const PettyCashFundConfirmationDialogTitles: Record<PettyCashFundConfirmationAction, string> = {
+  save: "Save Petty Cash Fund?",
+  draft: "Save as Draft?",
+  approve: "Approve Petty Cash Fund?",
+  disapprove: "Disapprove Petty Cash Fund?",
+  cancel: "Cancel Petty Cash Fund?",
+};
+export const PettyCashFundConfirmationDialogConfirmLabels: Record<PettyCashFundConfirmationAction, string> = {
+  save: "Save and Submit",
+  draft: "Save as Draft",
+  approve: "Approve",
+  disapprove: "Disapprove",
+  cancel: "Cancel",
+};
 export const PettyCashFundRecordStatuses = [
   "Draft",
   "For Approval",

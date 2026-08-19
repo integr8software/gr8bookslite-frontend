@@ -4,11 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   RevolvingFundReplenishmentActionTabs,
-  RevolvingFundReplenishmentHref,
+  RevolvingFundReplenishmentLink,
 } from "@/app/src/constants/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentConstants";
 import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
 import { useRevolvingFundReplenishmentActionPage } from "@/app/src/hooks/modules/cash-disbursement/revolving-fund-replenishment/useRevolvingFundReplenishmentActionPage";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
+import type { RevolvingFundReplenishmentActionMode } from "@/app/src/types/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentTypes";
 import type { PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";
 import { RevolvingFundReplenishmentActionHeader } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/action/RevolvingFundReplenishmentActionHeader";
 import { RevolvingFundReplenishmentAttachmentsTab } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/action/RevolvingFundReplenishmentAttachmentsTab";
@@ -20,14 +21,15 @@ import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/Par
 import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
 import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 
-export function RevolvingFundReplenishmentActionPage() {
+export function RevolvingFundReplenishmentActionPage({ mode }: { mode: RevolvingFundReplenishmentActionMode }) {
   const router = useRouter();
   const [isPartyDrawerOpen, setIsPartyDrawerOpen] = useState(false);
   const [isResponsibilityCenterDrawerOpen, setIsResponsibilityCenterDrawerOpen] = useState(false);
   const [isProjectDrawerOpen, setIsProjectDrawerOpen] = useState(false);
   const partyStore = usePartyManagementStore();
   const page = useRevolvingFundReplenishmentActionPage({
-    onSaved: () => router.push(RevolvingFundReplenishmentHref),
+    mode,
+    onSaved: () => router.push(RevolvingFundReplenishmentLink),
   });
   if (page.isRecordMissing) return <RevolvingFundReplenishmentNotFound />;
   function handleCreateParty(record: PartyInformationRecord) {

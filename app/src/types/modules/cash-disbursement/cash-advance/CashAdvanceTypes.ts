@@ -4,6 +4,7 @@ import type { DisbursementAttachment } from "@/app/src/types/modules/cash-disbur
 import type { useCashAdvanceActionForm } from "@/app/src/hooks/modules/cash-disbursement/cash-advance/useCashAdvance";
 
 export type CashAdvanceActionMode = "add" | "edit" | "view";
+export type CashAdvanceSubmitConfirmationAction = "save" | "draft";
 
 export type CashAdvanceDetailsSection = "advance" | "attachment";
 

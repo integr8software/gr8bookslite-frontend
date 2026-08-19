@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default function CashDisbursementAdvancesToSuppliersAddPage() {
-  return <AdvancesToSuppliersActionPage />;
+  return <AdvancesToSuppliersActionPage mode="add" />;
 }
 
 

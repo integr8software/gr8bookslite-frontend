@@ -5,8 +5,8 @@ import {
   RevolvingFundReplenishmentResponsibilityCenterOptions,
 } from "@/app/src/constants/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentConstants";
 import type { RevolvingFundReplenishmentActionPageState } from "@/app/src/hooks/modules/cash-disbursement/revolving-fund-replenishment/useRevolvingFundReplenishmentActionPage";
-import { RevolvingFundReplenishmentLookupField } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/action/RevolvingFundReplenishmentFieldControls";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { AppLookupDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppLookupDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import {
@@ -32,7 +32,7 @@ export function RevolvingFundReplenishmentDetailsFields({
       <div className="grid gap-5 xl:grid-cols-3">
         <div className="grid min-w-0 content-start gap-5">
           <TransactionField label="Party Name" error={page.errors.partyName} isRequired>
-            <RevolvingFundReplenishmentLookupField
+            <AppLookupDropdown
               value={page.values.partyCode}
               options={RevolvingFundReplenishmentPartyOptions}
               readOnly={page.isReadonly}
@@ -46,7 +46,7 @@ export function RevolvingFundReplenishmentDetailsFields({
             />
           </TransactionField>
           <TransactionField label="Responsibility Center">
-            <RevolvingFundReplenishmentLookupField
+            <AppLookupDropdown
               value={page.values.responsibilityCenterCode}
               options={RevolvingFundReplenishmentResponsibilityCenterOptions}
               readOnly={page.isReadonly}
@@ -60,7 +60,7 @@ export function RevolvingFundReplenishmentDetailsFields({
             />
           </TransactionField>
           <TransactionField label="Project Name">
-            <RevolvingFundReplenishmentLookupField
+            <AppLookupDropdown
               value={page.values.projectCode}
               options={RevolvingFundReplenishmentProjectOptions}
               readOnly={page.isReadonly}
@@ -74,7 +74,7 @@ export function RevolvingFundReplenishmentDetailsFields({
             />
           </TransactionField>
           <TransactionField label="Default Account Title" error={page.errors.accountTitle} isRequired>
-            <RevolvingFundReplenishmentLookupField
+            <AppLookupDropdown
               value={page.values.accountCode}
               options={RevolvingFundReplenishmentAccountOptions}
               readOnly={page.isReadonly}

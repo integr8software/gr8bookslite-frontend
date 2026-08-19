@@ -1,5 +1,4 @@
 import type { TransactionAttachment } from "@/app/src/types/shared/transaction-setup/TransactionAttachmentTypes";
-import type { Row } from "@tanstack/react-table";
 import type { usePettyCashVoucherActionPage } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-voucher/usePettyCashVoucherActionPage";
 import type { usePettyCashVoucherOverviewPage } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-voucher/usePettyCashVoucherOverviewPage";
 
@@ -65,7 +64,7 @@ export type PettyCashVoucherOverviewPageState = ReturnType<typeof usePettyCashVo
 
 export type PettyCashVoucherActionPageOptions = {
   existingVoucher?: PettyCashVoucherRecord;
-  mode?: PettyCashVoucherFormMode;
+  mode: PettyCashVoucherFormMode;
   onSaved?: () => void;
 };
 
@@ -74,9 +73,4 @@ export type PettyCashVoucherUpdateStatusHandler = (record: PettyCashVoucherRecor
 export type PettyCashVoucherRecordActionsProps = {
   onUpdateStatus: PettyCashVoucherUpdateStatusHandler;
   record: PettyCashVoucherRecord;
-};
-
-export type PettyCashVoucherTableRowProps = {
-  onUpdateStatus: PettyCashVoucherUpdateStatusHandler;
-  row: Row<PettyCashVoucherRecord>;
 };

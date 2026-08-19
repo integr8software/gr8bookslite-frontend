@@ -10,5 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function CashDisbursementRevolvingFundReplenishmentAddPage() {
-  return <RevolvingFundReplenishmentActionPage />;
+  return <RevolvingFundReplenishmentActionPage mode="add" />;
 }

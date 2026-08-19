@@ -8,10 +8,15 @@ import { CashDisbursementOverviewActionColumnWidth } from "@/app/src/constants/m
 import type { ColumnOrderState, VisibilityState } from "@tanstack/react-table";
 import type {
   CashAdvanceMultipleEntryDetailsTab,
+  CashAdvanceMultipleEntrySubmitConfirmationAction,
   CashAdvanceMultipleEntryTab,
 } from "@/app/src/types/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryTypes";
+import type { CashAdvanceStatus } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 
-export const CashAdvanceMultipleEntryHref = getModuleRoute("CAME");
+export const CashAdvanceMultipleEntryLink = getModuleRoute("CAME");
+export const CashAdvanceMultipleEntryAddLink = `${CashAdvanceMultipleEntryLink}/add`;
+export const getCashAdvanceMultipleEntryEditLink = (recordId: string) => `${CashAdvanceMultipleEntryLink}/edit/${recordId}`;
+export const getCashAdvanceMultipleEntryViewLink = (recordId: string) => `${CashAdvanceMultipleEntryLink}/view/${recordId}`;
 export const CashAdvanceMultipleEntryStorageKey = "gr8books.cash-advance-multiple-entry.records";
 export const CashAdvanceMultipleEntryTransactionNumberPrefix = "CAME-";
 export const CashAdvanceMultipleEntryTransactionNumberPadding = 6;
@@ -34,6 +39,95 @@ export const CashAdvanceMultipleEntryStatuses = {
   open: "Open",
   posted: "Posted",
 } as const;
+
+export const CashAdvanceMultipleEntrySubmitConfirmationDialogTitles: Record<
+  CashAdvanceMultipleEntrySubmitConfirmationAction,
+  string
+> = {
+  save: "Save Cash Advance Multiple Entry?",
+  draft: "Save as Draft?",
+};
+
+export const CashAdvanceMultipleEntrySubmitConfirmationDialogConfirmLabels: Record<
+  CashAdvanceMultipleEntrySubmitConfirmationAction,
+  string
+> = {
+  save: "Save and Submit",
+  draft: "Save as Draft",
+};
+
+export function getCashAdvanceMultipleEntryStatusDialogCopy(
+  status: CashAdvanceStatus,
+  recordLabel: string,
+  currentStatus?: CashAdvanceStatus,
+) {
+  if (status === CashAdvanceMultipleEntryStatuses.forApproval && currentStatus === CashAdvanceMultipleEntryStatuses.posted) {
+    return {
+      confirmLabel: "Undo Approved",
+      description: `This will undo the approval of ${recordLabel} and return it to For Approval.`,
+      iconTone: "question" as const,
+      pendingLabel: "Undoing Approval...",
+      title: "Undo Approved Cash Advance Multiple Entry?",
+      tone: "question" as const,
+    };
+  }
+
+  if (
+    status === CashAdvanceMultipleEntryStatuses.forApproval &&
+    currentStatus === CashAdvanceMultipleEntryStatuses.disapproved
+  ) {
+    return {
+      confirmLabel: "Undo Disapproved",
+      description: `This will undo the disapproval of ${recordLabel} and return it to For Approval.`,
+      iconTone: "question" as const,
+      pendingLabel: "Undoing Disapproval...",
+      title: "Undo Disapproved Cash Advance Multiple Entry?",
+      tone: "question" as const,
+    };
+  }
+
+  if (currentStatus === CashAdvanceMultipleEntryStatuses.cancelled) {
+    return {
+      confirmLabel: "Undo Cancelled",
+      description: `This will undo the cancellation of ${recordLabel}.`,
+      iconTone: "question" as const,
+      pendingLabel: "Undoing Cancellation...",
+      title: "Undo Cancelled Cash Advance Multiple Entry?",
+      tone: "question" as const,
+    };
+  }
+
+  if (status === CashAdvanceMultipleEntryStatuses.posted) {
+    return {
+      confirmLabel: "Approve Entry",
+      description: `This will approve ${recordLabel} and update its status to Posted.`,
+      iconTone: "approve" as const,
+      pendingLabel: "Approving...",
+      title: "Approve Cash Advance Multiple Entry?",
+      tone: "success" as const,
+    };
+  }
+
+  if (status === CashAdvanceMultipleEntryStatuses.disapproved) {
+    return {
+      confirmLabel: "Disapprove Entry",
+      description: `This will mark ${recordLabel} as Disapproved.`,
+      iconTone: "disapprove" as const,
+      pendingLabel: "Disapproving...",
+      title: "Disapprove Cash Advance Multiple Entry?",
+      tone: "danger" as const,
+    };
+  }
+
+  return {
+    confirmLabel: "Mark as Cancelled",
+    description: `This will mark ${recordLabel} as Cancelled.`,
+    iconTone: "cancel" as const,
+    pendingLabel: "Cancelling...",
+    title: "Make Cash Advance Multiple Entry as Cancelled",
+    tone: "danger" as const,
+  };
+}
 
 export const CashAdvanceMultipleEntryAllStatusFilter = "all";
 

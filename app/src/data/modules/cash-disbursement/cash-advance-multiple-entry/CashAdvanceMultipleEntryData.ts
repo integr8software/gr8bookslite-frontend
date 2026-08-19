@@ -298,14 +298,6 @@ export function countCashAdvanceMultipleEntriesByStatus(records: CashAdvanceMult
   return records.filter((record) => record.status === status).length;
 }
 
-export function formatCashAdvanceMultipleEntryPercentage(value: number, total: number) {
-  if (total === 0) {
-    return "0.00% of total";
-  }
-
-  return `${((value / total) * 100).toFixed(2)}% of total`;
-}
-
 export function createCashAdvanceMultipleEntryPartyOptions(
   currentPartyCode: string,
   currentPartyName: string,

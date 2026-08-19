@@ -55,6 +55,7 @@ export const MODULE_ROUTE_MAP = {
   PVR: "/cash-receipt/provisional-receipt",
   BR: "/cash-receipt/bank-reconciliation",
   PDCW: "/cash-receipt/post-dated-check-registry",
+  CV: "/cash-disbursement/cash-voucher",
   DV: "/cash-disbursement/disbursement-voucher",
   CA: "/cash-disbursement/cash-advance",
   CAME: "/cash-disbursement/cash-advance-multiple-entry",
@@ -174,6 +175,7 @@ export const MainModuleCatalogHelperText: Record<string, string> = {
     "Register and monitor customer post-dated checks and their current status.",
   "cash-disbursement-disbursement-voucher": "Prepare and track payment vouchers.",
   "cash-disbursement-voucher": "Prepare and track payment vouchers.",
+  "cash-disbursement-cash-voucher": "Prepare and track cash payment vouchers.",
   "cash-disbursement-cash-advance": "Record employee cash advances.",
   "cash-disbursement-cash-advance-multiple-entry": "Record cash advances across multiple entries.",
   "cash-disbursement-cash-advance-multiple": "Record cash advances across multiple entries.",
@@ -400,6 +402,12 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
     "cashOut",
     "cashDisbursement",
     [
+      moduleItem(
+        "cash-disbursement-cash-voucher",
+        "Cash Voucher",
+        "CV",
+        "cashDisbursement",
+      ),
       moduleItem(
         "cash-disbursement-disbursement-voucher",
         "Disbursement Voucher",

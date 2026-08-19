@@ -167,7 +167,6 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
     (entryId: string, updates: Partial<DisbursementLineEntry>) => {
       const currentEntry = entries.find((entry) => entry.id === entryId);
       const nextUpdates = applyVoucherPartyToEntryUpdates(currentEntry, updates, partyCode, partyName);
-      const isCashPayment = paymentTypeRecord?.type === "Cash" || paymentMethod.trim().toLowerCase() === "cash";
       const updatedEntries = entries.map((entry) =>
         entry.id === entryId
           ? syncDisbursementLineEntryTaxDetails({
@@ -180,12 +179,11 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
       onReplaceEntries(
         createAutomaticAccountingEntries(updatedEntries, {
           bankAccount,
-          isCashPayment,
           paymentMethod,
         }),
       );
     },
-    [bankAccount, entries, onReplaceEntries, partyCode, partyName, paymentMethod, paymentTypeRecord?.type],
+    [bankAccount, entries, onReplaceEntries, partyCode, partyName, paymentMethod],
   );
 
   const allColumns = useMemo(

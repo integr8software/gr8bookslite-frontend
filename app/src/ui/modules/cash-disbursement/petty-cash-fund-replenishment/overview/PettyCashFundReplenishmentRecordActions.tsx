@@ -1,11 +1,18 @@
 "use client";
 
-import { useState } from "react";
-import { Ban, Edit3, Eye, ThumbsDown, ThumbsUp, Undo2 } from "lucide-react";
 import {
-  PettyCashFundReplenishmentHref,
+  useState } from "react";
+import { Ban,
+  Edit3,
+  Eye,
+  ThumbsDown,
+  ThumbsUp,
+  Undo2 } from "lucide-react";
+import {
   PettyCashFundReplenishmentStatuses,
   canEditPettyCashFundReplenishment,
+  getPettyCashFundReplenishmentEditLink,
+  getPettyCashFundReplenishmentViewLink,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentConstants";
 import type {
   PettyCashFundReplenishmentRecord,
@@ -14,7 +21,11 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleActionMenu, type ModuleActionMenuItem } from "@/app/src/ui/shared/module/ModuleActionMenu";
-import { ModuleTableActions } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
+import {
+  ModuleTableActionButton,
+  ModuleTableActionLink,
+  ModuleTableActions,
+} from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
 export function PettyCashFundReplenishmentRecordActions({
   onUpdateStatus,
@@ -27,11 +38,8 @@ export function PettyCashFundReplenishmentRecordActions({
   const isPosted = record.status === PettyCashFundReplenishmentStatuses.posted;
   const isDisapproved = record.status === PettyCashFundReplenishmentStatuses.disapproved;
   const isCancelled = record.status === PettyCashFundReplenishmentStatuses.cancelled;
+  const canEdit = canEditPettyCashFundReplenishment(record.status);
   const items: ModuleActionMenuItem[] = [
-    { type: "link", href: `${PettyCashFundReplenishmentHref}/view/${record.id}`, icon: Eye, label: "View" },
-    ...(canEditPettyCashFundReplenishment(record.status)
-      ? [{ type: "link" as const, href: `${PettyCashFundReplenishmentHref}/edit/${record.id}`, icon: Edit3, label: "Edit" }]
-      : []),
     {
       type: "button",
       icon: isPosted ? Undo2 : ThumbsUp,
@@ -68,7 +76,35 @@ export function PettyCashFundReplenishmentRecordActions({
   return (
     <>
       <ModuleTableActions className="w-full !justify-center">
-        <ModuleActionMenu items={items} label={`Actions for petty cash fund replenishment ${record.transactionNo}`} />
+        <ModuleTableActionLink
+          href={getPettyCashFundReplenishmentViewLink(record.id)}
+          icon={Eye}
+          label={`View petty cash fund replenishment ${record.transactionNo}`}
+          title="View"
+          variant="view"
+        />
+        {canEdit ? (
+          <ModuleTableActionLink
+            href={getPettyCashFundReplenishmentEditLink(record.id)}
+            icon={Edit3}
+            label={`Edit petty cash fund replenishment ${record.transactionNo}`}
+            title="Edit"
+            variant="edit"
+          />
+        ) : (
+          <ModuleTableActionButton
+            disabled
+            icon={Edit3}
+            label={`Edit petty cash fund replenishment ${record.transactionNo}`}
+            title="Edit"
+            variant="edit"
+          />
+        )}
+        <ModuleActionMenu
+          className="[&>button]:h-9 [&>button]:w-9"
+          items={items}
+          label={`More actions for petty cash fund replenishment ${record.transactionNo}`}
+        />
       </ModuleTableActions>
       {status ? (
         <AppDialog

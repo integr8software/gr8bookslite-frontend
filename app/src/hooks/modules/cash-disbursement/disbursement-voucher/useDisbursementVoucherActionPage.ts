@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
-import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import {
   DisbursementVoucherBankAccounts,
@@ -21,8 +21,7 @@ import {
   canUpdateDisbursementVoucherStatus,
   createInitialDisbursementVoucherFormValues,
   createManualDisbursementTransactionId,
-  createVoucherActionReturnHref,
-  getDisbursementVoucherActionMode,
+  createVoucherActionReturnLink,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherActionData";
 import {
   createAutomaticAccountingEntries,
@@ -33,7 +32,7 @@ import {
   syncDisbursementLineEntryTaxDetails,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingEntryData";
 import {
-  DisbursementVoucherHref,
+  DisbursementVoucherLink,
   DisbursementVoucherStatuses,
   canEditDisbursementVoucherStatus,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
@@ -50,6 +49,7 @@ import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/financial-
 import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
 import type {
   DisbursementLineEntry,
+  DisbursementVoucherActionMode,
   DisbursementVoucherActionTab,
   DisbursementVoucherBankAccount,
   DisbursementVoucherFormErrors,
@@ -69,12 +69,10 @@ import {
   removeDisbursementEntryRow,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherEntryRowData";
 
-export function useDisbursementVoucherActionPage() {
+export function useDisbursementVoucherActionPage(mode: DisbursementVoucherActionMode) {
   const router = useRouter();
-  const pathname = usePathname();
   const params = useParams<{ recordId?: string }>();
   const searchParams = useSearchParams();
-  const mode = getDisbursementVoucherActionMode(pathname);
   const transactions = useDisbursementVoucherStore((state) => state.transactions);
   const vouchers = useDisbursementVoucherStore((state) => state.vouchers);
   const addTransaction = useDisbursementVoucherStore((state) => state.addTransaction);
@@ -84,7 +82,7 @@ export function useDisbursementVoucherActionPage() {
   const routeTransactionId = mode === "add" ? (searchParams.get("transactionId") ?? "") : (params.recordId ?? "");
   const routeTransaction = transactions.find((transaction) => transaction.id === routeTransactionId);
   const routeVoucher = vouchers.find((voucher) => voucher.transactionId === routeTransactionId);
-  const returnHref = createVoucherActionReturnHref(searchParams.get("from"), routeTransactionId);
+  const returnLink = createVoucherActionReturnLink(searchParams.get("from"), routeTransactionId);
   const transactionCurrency = useTransactionCurrency();
   const [values, setValues] = useState<DisbursementVoucherFormValues>(() =>
     createInitialDisbursementVoucherFormValues({
@@ -436,7 +434,7 @@ export function useDisbursementVoucherActionPage() {
     }
 
     setPendingSubmitValues(null);
-    router.push(returnHref);
+    router.push(returnLink);
   }
 
   function cancelDisbursementVoucherSubmit() {
@@ -549,7 +547,7 @@ export function useDisbursementVoucherActionPage() {
     partyStore,
     paymentTypeStore,
     responsibilityCenterStore,
-    returnHref: isRecordMissing ? DisbursementVoucherHref : returnHref,
+    returnLink: isRecordMissing ? DisbursementVoucherLink : returnLink,
     selectedBankAccount,
     selectedPaymentTypeRecord,
     selectedTransaction,

@@ -6,5 +6,5 @@ const PageTitle = "Edit Cash Voucher";
 export const metadata: Metadata = { title: PageTitle };
 
 export default function Page() {
-  return <CashVoucherActionPage />;
+  return <CashVoucherActionPage mode="edit" />;
 }

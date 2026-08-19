@@ -1,9 +1,10 @@
 import {
-  CashVoucherHref,
+  CashVoucherLink,
   CashVoucherStatuses,
   canApproveCashVoucherStatus,
   canCancelCashVoucherStatus,
   canDisapproveCashVoucherStatus,
+  getCashVoucherViewLink,
 } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherConstants";
 import { readAccountingGridSession } from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherAccountingGridSessionData";
 import { createCashVoucherFormValues } from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherData";
@@ -13,18 +14,6 @@ import type {
   CashVoucherRecord,
   CashVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
-
-export function getCashVoucherActionMode(pathname: string): CashVoucherActionMode {
-  if (pathname.includes("/view/")) {
-    return "view";
-  }
-
-  if (pathname.includes("/edit/")) {
-    return "edit";
-  }
-
-  return "add";
-}
 
 export function createInitialCashVoucherFormValues({
   mode,
@@ -90,12 +79,12 @@ export function canUpdateCashVoucherStatus(currentStatus: CashVoucherStatus, nex
   return false;
 }
 
-export function createVoucherActionReturnHref(from: string | null, transactionId?: string) {
+export function createVoucherActionReturnLink(from: string | null, transactionId?: string) {
   if (from === "view" && transactionId) {
-    return `${CashVoucherHref}/view/${transactionId}`;
+    return getCashVoucherViewLink(transactionId);
   }
 
-  return CashVoucherHref;
+  return CashVoucherLink;
 }
 
 export function createManualCashVoucherTransactionId() {

@@ -1,6 +1,7 @@
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type {
   PettyCashFundReplenishmentActionTab,
+  PettyCashFundReplenishmentConfirmationAction,
   PettyCashFundReplenishmentAccountingColumnId,
   PettyCashFundReplenishmentEntryColumnId,
   PettyCashFundReplenishmentEntryTab,
@@ -10,10 +11,27 @@ import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-
 import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
 import { CashDisbursementOverviewActionColumnWidth } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 
-export const PettyCashFundReplenishmentHref = getModuleRoute("PCFR");
+export const PettyCashFundReplenishmentLink = getModuleRoute("PCFR");
+export const PettyCashFundReplenishmentAddLink = `${PettyCashFundReplenishmentLink}/add`;
+export const getPettyCashFundReplenishmentEditLink = (recordId: string) => `${PettyCashFundReplenishmentLink}/edit/${recordId}`;
+export const getPettyCashFundReplenishmentViewLink = (recordId: string) => `${PettyCashFundReplenishmentLink}/view/${recordId}`;
 export const PettyCashFundReplenishmentStorageKey = "cash-disbursement-petty-cash-fund-replenishment-records";
 export const PettyCashFundReplenishmentPaginationStorageKey = "cash-disbursement-petty-cash-fund-replenishment-table";
 export const PettyCashFundReplenishmentTransactionPrefix = "PCFR";
+export const PettyCashFundReplenishmentConfirmationDialogTitles: Record<PettyCashFundReplenishmentConfirmationAction, string> = {
+  save: "Save Petty Cash Fund Replenishment?",
+  draft: "Save as Draft?",
+  approve: "Approve Petty Cash Fund Replenishment?",
+  disapprove: "Disapprove Petty Cash Fund Replenishment?",
+  cancel: "Cancel Petty Cash Fund Replenishment?",
+};
+export const PettyCashFundReplenishmentConfirmationDialogConfirmLabels: Record<PettyCashFundReplenishmentConfirmationAction, string> = {
+  save: "Save and Submit",
+  draft: "Save as Draft",
+  approve: "Approve",
+  disapprove: "Disapprove",
+  cancel: "Cancel",
+};
 export const PettyCashFundReplenishmentColumnLabels = {
   transactionNo: "Petty Cash Fund Replenishment No.",
   documentDate: "Document Date",
@@ -28,7 +46,7 @@ export const PettyCashFundReplenishmentColumnLabels = {
   updatedBy: "Updated By",
   updatedAt: "Date Modified",
   status: "Status",
-  actions: "Action",
+  actions: "Actions",
 } as const;
 export const PettyCashFundReplenishmentOverviewColumnWidths: Record<keyof typeof PettyCashFundReplenishmentColumnLabels, number> = {
   transactionNo: TransactionOverviewColumnWidths.transactionNumber,

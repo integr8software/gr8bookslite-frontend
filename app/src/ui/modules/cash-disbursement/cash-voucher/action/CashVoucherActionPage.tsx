@@ -12,7 +12,7 @@ import {
 } from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherData";
 import { createProjectResponsibilityCenterInitialValues } from "@/app/src/data/modules/financial-maintenance/responsibility-center/ResponsibilityCenterData";
 import { useCashVoucherActionPage } from "@/app/src/hooks/modules/cash-disbursement/cash-voucher/useCashVoucherActionPage";
-import type { CashVoucherActionPageState } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
+import type { CashVoucherActionMode, CashVoucherActionPageState } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
 import { DefaultAccountDrawer } from "@/app/src/ui/modules/financial-maintenance/default-account/DefaultAccountDrawer";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
 import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
@@ -23,20 +23,19 @@ import { CashVoucherFileAttachmentFields } from "@/app/src/ui/modules/cash-disbu
 import { CashVoucherNotFound } from "@/app/src/ui/modules/cash-disbursement/cash-voucher/action/CashVoucherNotFound";
 import { openCashVoucherPdf } from "@/app/src/ui/modules/cash-disbursement/cash-voucher/reports/CashVoucherPdf";
 import { CashVoucherReportPreview } from "@/app/src/ui/modules/cash-disbursement/cash-voucher/reports/CashVoucherReportPreview";
-import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { AppSkeleton, AppSkeletonCard } from "@/app/src/ui/shared/app/AppSkeleton";
 import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 
-export function CashVoucherActionPage() {
+export function CashVoucherActionPage({ mode }: { mode: CashVoucherActionMode }) {
   return (
     <Suspense fallback={<CashVoucherActionSkeleton />}>
-      <CashVoucherActionInner />
+      <CashVoucherActionInner mode={mode} />
     </Suspense>
   );
 }
 
-function CashVoucherActionInner() {
-  const voucherAction = useCashVoucherActionPage();
+function CashVoucherActionInner({ mode }: { mode: CashVoucherActionMode }) {
+  const voucherAction = useCashVoucherActionPage(mode);
 
   if (voucherAction.isRecordMissing) {
     return <CashVoucherNotFound />;
@@ -77,9 +76,12 @@ function CashVoucherActionContent({ voucherAction }: { voucherAction: CashVouche
         copyFromRecords={CashVoucherCopyFromRecords}
         copyFromSources={CashVoucherCopySources}
         mode={voucherAction.isReadonly ? "view" : voucherAction.mode}
-        returnHref={voucherAction.returnHref}
+        pendingSubmitStatus={voucherAction.pendingSubmitStatus}
+        returnLink={voucherAction.returnLink}
         transaction={voucherAction.selectedTransaction}
         voucher={voucherAction.existingVoucher}
+        onCancelSubmit={voucherAction.cancelCashVoucherSubmit}
+        onConfirmSubmit={voucherAction.confirmCashVoucherSubmit}
         onCopyFrom={voucherAction.handleCopyFrom}
         onPreview={() => voucherAction.setIsReportPreviewOpen(true)}
         onSaveDraft={() => voucherAction.requestCashVoucherSubmit(CashVoucherStatuses.draft)}
@@ -154,8 +156,6 @@ function CashVoucherDetailsSection({ voucherAction }: { voucherAction: CashVouch
 }
 
 function CashVoucherActionDialogs({ voucherAction }: { voucherAction: CashVoucherActionPageState }) {
-  const isDraftSave = voucherAction.pendingSubmitStatus === CashVoucherStatuses.draft;
-  const actionLabel = voucherAction.mode === "edit" ? "Update" : isDraftSave ? "Save As Draft" : "Save";
   const projectInitialValues = useMemo(
     () =>
       createProjectResponsibilityCenterInitialValues(
@@ -167,17 +167,6 @@ function CashVoucherActionDialogs({ voucherAction }: { voucherAction: CashVouche
 
   return (
     <>
-      <AppDialog
-        isOpen={voucherAction.pendingSubmitStatus !== null}
-        title={`${actionLabel} Cash Voucher?`}
-        description={`Confirm that you want to ${actionLabel.toLowerCase()} this Cash Voucher.`}
-        confirmLabel={actionLabel}
-        cancelLabel="Continue Editing"
-        pendingLabel={voucherAction.mode === "edit" ? "Updating..." : "Saving..."}
-        tone="question"
-        onCancel={voucherAction.cancelCashVoucherSubmit}
-        onConfirm={voucherAction.confirmCashVoucherSubmit}
-      />
       <CashVoucherReportPreview
         isOpen={voucherAction.isReportPreviewOpen}
         values={voucherAction.values}

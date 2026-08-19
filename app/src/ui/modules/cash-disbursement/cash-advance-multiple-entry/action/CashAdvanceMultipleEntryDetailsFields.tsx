@@ -14,7 +14,7 @@ import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
-import { CashAdvanceMultipleEntryFieldShell } from "@/app/src/ui/modules/cash-disbursement/cash-advance-multiple-entry/action/CashAdvanceMultipleEntryFieldControls";
+import { TransactionField } from "@/app/src/ui/shared/transaction-setup/TransactionFormFields";
 import { formatExchangeRateInput } from "@/app/src/utils/number.util";
 
 export function CashAdvanceMultipleEntryDetailsFields({
@@ -47,7 +47,7 @@ export function CashAdvanceMultipleEntryDetailsFields({
   return (
     <form className="grid min-w-0 gap-5 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5 xl:grid-cols-3">
       <div className="grid min-w-0 content-start gap-4">
-        <CashAdvanceMultipleEntryFieldShell controlId="came-party-name" label="Party Name" isRequired>
+        <TransactionField controlId="came-party-name" label="Party Name" isRequired>
           <AppAdvancedDropdown
             id="came-party-name"
             addAction={
@@ -72,8 +72,8 @@ export function CashAdvanceMultipleEntryDetailsFields({
               onUpdateField("partyName", party?.name ?? "");
             }}
           />
-        </CashAdvanceMultipleEntryFieldShell>
-        <CashAdvanceMultipleEntryFieldShell controlId="came-project-name" label="Project Name">
+        </TransactionField>
+        <TransactionField controlId="came-project-name" label="Project Name">
           <AppAdvancedDropdown
             id="came-project-name"
             addAction={
@@ -98,8 +98,8 @@ export function CashAdvanceMultipleEntryDetailsFields({
               onUpdateField("projectCode", project?.label === projectName ? "" : (project?.label ?? ""));
             }}
           />
-        </CashAdvanceMultipleEntryFieldShell>
-        <CashAdvanceMultipleEntryFieldShell controlId="came-account" label="Default Account" isRequired>
+        </TransactionField>
+        <TransactionField controlId="came-account" label="Default Account" isRequired>
           <AppAdvancedDropdown
             id="came-account"
             menuMinWidth={320}
@@ -115,8 +115,8 @@ export function CashAdvanceMultipleEntryDetailsFields({
               onUpdateField("accountTitle", account?.name ?? "");
             }}
           />
-        </CashAdvanceMultipleEntryFieldShell>
-        <CashAdvanceMultipleEntryFieldShell controlId="came-remarks" label="Remarks">
+        </TransactionField>
+        <TransactionField controlId="came-remarks" label="Remarks">
           <AppLimitedTextarea
             id="came-remarks"
             className={`${CashAdvanceMultipleEntryFieldClassName} min-h-24 py-3`}
@@ -125,19 +125,19 @@ export function CashAdvanceMultipleEntryDetailsFields({
             value={values.remarks}
             onChange={(event) => onUpdateField("remarks", event.target.value)}
           />
-        </CashAdvanceMultipleEntryFieldShell>
+        </TransactionField>
       </div>
       <div className="grid min-w-0 content-start gap-4">
-        <CashAdvanceMultipleEntryFieldShell controlId="came-party-code" label="Party Code">
+        <TransactionField controlId="came-party-code" label="Party Code">
           <input id="came-party-code" readOnly value={values.partyCode} className={CashAdvanceMultipleEntryReadOnlyFieldClassName} />
-        </CashAdvanceMultipleEntryFieldShell>
-        <CashAdvanceMultipleEntryFieldShell controlId="came-project-code" label="Project Code">
+        </TransactionField>
+        <TransactionField controlId="came-project-code" label="Project Code">
           <input id="came-project-code" readOnly value={values.projectCode} className={CashAdvanceMultipleEntryReadOnlyFieldClassName} />
-        </CashAdvanceMultipleEntryFieldShell>
-        <CashAdvanceMultipleEntryFieldShell controlId="came-account-code" label="Default Account Code">
+        </TransactionField>
+        <TransactionField controlId="came-account-code" label="Default Account Code">
           <input id="came-account-code" readOnly value={values.accountCode} className={CashAdvanceMultipleEntryReadOnlyFieldClassName} />
-        </CashAdvanceMultipleEntryFieldShell>
-        <CashAdvanceMultipleEntryFieldShell controlId="came-currency" label="Currency" isRequired>
+        </TransactionField>
+        <TransactionField controlId="came-currency" label="Currency" isRequired>
           <CurrencyExchangeRateRow
             exchangeRateControlId="came-exchange-rate"
             currencyControl={
@@ -167,10 +167,10 @@ export function CashAdvanceMultipleEntryDetailsFields({
               />
             }
           />
-        </CashAdvanceMultipleEntryFieldShell>
+        </TransactionField>
       </div>
       <div className="grid min-w-0 content-start gap-4">
-        <CashAdvanceMultipleEntryFieldShell controlId="came-trans-no" label="Cash Advance Multiple Entry No." isRequired>
+        <TransactionField controlId="came-trans-no" label="Cash Advance Multiple Entry No." isRequired>
           <input
             id="came-trans-no"
             readOnly
@@ -178,8 +178,8 @@ export function CashAdvanceMultipleEntryDetailsFields({
             placeholder="Auto Generated Cash Advance Multiple Entry Transaction Number"
             className={CashAdvanceMultipleEntryReadOnlyFieldClassName}
           />
-        </CashAdvanceMultipleEntryFieldShell>
-        <CashAdvanceMultipleEntryFieldShell controlId="came-document-date" label="Cash Advance Multiple Entry Date">
+        </TransactionField>
+        <TransactionField controlId="came-document-date" label="Cash Advance Multiple Entry Date">
           <input
             id="came-document-date"
             type="date"
@@ -188,10 +188,10 @@ export function CashAdvanceMultipleEntryDetailsFields({
             className={CashAdvanceMultipleEntryFieldClassName}
             onChange={(event) => onUpdateField("documentDate", event.target.value)}
           />
-        </CashAdvanceMultipleEntryFieldShell>
-        <CashAdvanceMultipleEntryFieldShell controlId="came-status" label="Status">
+        </TransactionField>
+        <TransactionField controlId="came-status" label="Status">
           <input id="came-status" readOnly value={values.status} className={CashAdvanceMultipleEntryReadOnlyFieldClassName} />
-        </CashAdvanceMultipleEntryFieldShell>
+        </TransactionField>
       </div>
     </form>
   );

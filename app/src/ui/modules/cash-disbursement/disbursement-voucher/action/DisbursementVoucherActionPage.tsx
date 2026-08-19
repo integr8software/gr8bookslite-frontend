@@ -12,7 +12,7 @@ import {
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import { createProjectResponsibilityCenterInitialValues } from "@/app/src/data/modules/financial-maintenance/responsibility-center/ResponsibilityCenterData";
 import { useDisbursementVoucherActionPage } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucherActionPage";
-import type { DisbursementVoucherActionPageState } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+import type { DisbursementVoucherActionMode, DisbursementVoucherActionPageState } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import { BankMasterfileDrawer } from "@/app/src/ui/modules/financial-maintenance/bank-masterfile/BankMasterfileDrawer";
 import { DefaultAccountDrawer } from "@/app/src/ui/modules/financial-maintenance/default-account/DefaultAccountDrawer";
 import { PaymentTypeDrawer } from "@/app/src/ui/modules/financial-maintenance/payment-type/PaymentTypeDrawer";
@@ -27,20 +27,19 @@ import { DisbursementVoucherFileAttachmentFields } from "@/app/src/ui/modules/ca
 import { DisbursementVoucherNotFound } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherNotFound";
 import { openDisbursementVoucherPdf } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/reports/DisbursementVoucherPdf";
 import { DisbursementVoucherReportPreview } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/reports/DisbursementVoucherReportPreview";
-import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { AppSkeleton, AppSkeletonCard } from "@/app/src/ui/shared/app/AppSkeleton";
 import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 
-export function DisbursementVoucherActionPage() {
+export function DisbursementVoucherActionPage({ mode }: { mode: DisbursementVoucherActionMode }) {
   return (
     <Suspense fallback={<DisbursementVoucherActionSkeleton />}>
-      <DisbursementVoucherActionInner />
+      <DisbursementVoucherActionInner mode={mode} />
     </Suspense>
   );
 }
 
-function DisbursementVoucherActionInner() {
-  const voucherAction = useDisbursementVoucherActionPage();
+function DisbursementVoucherActionInner({ mode }: { mode: DisbursementVoucherActionMode }) {
+  const voucherAction = useDisbursementVoucherActionPage(mode);
 
   if (voucherAction.isRecordMissing) {
     return <DisbursementVoucherNotFound />;
@@ -86,9 +85,12 @@ function DisbursementVoucherActionContent({ voucherAction }: { voucherAction: Di
         copyFromRecords={DisbursementVoucherCopyFromRecords.filter((record) => record.templateValues.paymentMethod !== "Cash")}
         copyFromSources={DisbursementVoucherCopySources}
         mode={voucherAction.isReadonly ? "view" : voucherAction.mode}
-        returnHref={voucherAction.returnHref}
+        pendingSubmitStatus={voucherAction.pendingSubmitStatus}
+        returnLink={voucherAction.returnLink}
         transaction={voucherAction.selectedTransaction}
         voucher={voucherAction.existingVoucher}
+        onCancelSubmit={voucherAction.cancelDisbursementVoucherSubmit}
+        onConfirmSubmit={voucherAction.confirmDisbursementVoucherSubmit}
         onCopyFrom={voucherAction.handleCopyFrom}
         onPreview={() => voucherAction.setIsReportPreviewOpen(true)}
         onSaveDraft={() => voucherAction.requestDisbursementVoucherSubmit(DisbursementVoucherStatuses.draft)}
@@ -185,8 +187,6 @@ function DisbursementVoucherDetailsSection({ voucherAction }: { voucherAction: D
 }
 
 function DisbursementVoucherActionDialogs({ voucherAction }: { voucherAction: DisbursementVoucherActionPageState }) {
-  const isDraftSave = voucherAction.pendingSubmitStatus === DisbursementVoucherStatuses.draft;
-  const actionLabel = voucherAction.mode === "edit" ? "Update" : isDraftSave ? "Save As Draft" : "Save";
   const projectInitialValues = useMemo(
     () =>
       createProjectResponsibilityCenterInitialValues(
@@ -198,17 +198,6 @@ function DisbursementVoucherActionDialogs({ voucherAction }: { voucherAction: Di
 
   return (
     <>
-      <AppDialog
-        isOpen={voucherAction.pendingSubmitStatus !== null}
-        title={`${actionLabel} Disbursement Voucher?`}
-        description={`Confirm that you want to ${actionLabel.toLowerCase()} this Disbursement Voucher.`}
-        confirmLabel={actionLabel}
-        cancelLabel="Continue Editing"
-        pendingLabel={voucherAction.mode === "edit" ? "Updating..." : "Saving..."}
-        tone="question"
-        onCancel={voucherAction.cancelDisbursementVoucherSubmit}
-        onConfirm={voucherAction.confirmDisbursementVoucherSubmit}
-      />
       <DisbursementVoucherReportPreview
         isOpen={voucherAction.isReportPreviewOpen}
         values={voucherAction.values}

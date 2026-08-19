@@ -5,8 +5,8 @@ import {
   AdvancesToSuppliersResponsibilityCenterOptions,
 } from "@/app/src/constants/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersConstants";
 import type { AdvancesToSuppliersActionPageState } from "@/app/src/hooks/modules/cash-disbursement/advances-to-suppliers/useAdvancesToSuppliersActionPage";
-import { AdvancesToSuppliersLookupField } from "@/app/src/ui/modules/cash-disbursement/advances-to-suppliers/action/AdvancesToSuppliersFieldControls";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { AppLookupDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppLookupDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
@@ -16,7 +16,6 @@ import {
   TransactionTextField,
 } from "@/app/src/ui/shared/transaction-setup/TransactionFormFields";
 import { formatExchangeRateInput } from "@/app/src/utils/number.util";
-import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 
 export function AdvancesToSuppliersDetailsFields({
   onOpenPartyDrawer,
@@ -34,9 +33,9 @@ export function AdvancesToSuppliersDetailsFields({
       <div className="grid gap-5 xl:grid-cols-3">
         <div className="grid min-w-0 content-start gap-5">
           <TransactionField label="Party Name" error={page.errors.partyName} isRequired>
-            <AdvancesToSuppliersLookupField
+            <AppLookupDropdown
               value={page.values.partyCode}
-              options={withCurrentLookupOption(AdvancesToSuppliersPartyOptions, page.values.partyCode, page.values.partyName)}
+              options={AdvancesToSuppliersPartyOptions}
               readOnly={page.isReadonly}
               placeholder="Select Party Name"
               searchPlaceholder="Search Party Name"
@@ -48,7 +47,7 @@ export function AdvancesToSuppliersDetailsFields({
             />
           </TransactionField>
           <TransactionField label="Responsibility Center">
-            <AdvancesToSuppliersLookupField
+            <AppLookupDropdown
               value={page.values.responsibilityCenterCode}
               options={AdvancesToSuppliersResponsibilityCenterOptions}
               readOnly={page.isReadonly}
@@ -62,9 +61,9 @@ export function AdvancesToSuppliersDetailsFields({
             />
           </TransactionField>
           <TransactionField label="Project Name">
-            <AdvancesToSuppliersLookupField
+            <AppLookupDropdown
               value={page.values.projectCode}
-              options={withCurrentLookupOption(AdvancesToSuppliersProjectOptions, page.values.projectCode, page.values.projectName)}
+              options={AdvancesToSuppliersProjectOptions}
               readOnly={page.isReadonly}
               placeholder="Select Project Name"
               searchPlaceholder="Search Project Name"
@@ -76,7 +75,7 @@ export function AdvancesToSuppliersDetailsFields({
             />
           </TransactionField>
           <TransactionField label="Default Account Title" error={page.errors.accountTitle} isRequired>
-            <AdvancesToSuppliersLookupField
+            <AppLookupDropdown
               value={page.values.accountCode}
               options={AdvancesToSuppliersAccountOptions}
               readOnly={page.isReadonly}
@@ -228,19 +227,4 @@ export function AdvancesToSuppliersDetailsFields({
       </div>
     </section>
   );
-}
-
-function withCurrentLookupOption(options: AppAdvancedDropdownOption[], code: string, name: string) {
-  if (!code.trim() || options.some((option) => option.value === code)) {
-    return options;
-  }
-
-  return [
-    ...options,
-    {
-      label: code,
-      name: name || code,
-      value: code,
-    },
-  ];
 }

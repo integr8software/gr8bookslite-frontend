@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useParams, usePathname } from "next/navigation";
+import { useParams } from "next/navigation";
 import toast from "react-hot-toast";
 import {
   RevolvingFundPartyOptions,
@@ -34,11 +34,10 @@ import { validateRevolvingFundForm } from "@/app/src/validations/modules/cash-di
 import { parseAmount } from "@/app/src/utils/number.util";
 import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
 
-export function useRevolvingFundActionPage(options: { onSaved?: () => void } = {}) {
+export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionMode; onSaved?: () => void }) {
   const transactionCurrency = useTransactionCurrency();
-  const pathname = usePathname();
   const params = useParams<{ recordId?: string }>();
-  const mode: RevolvingFundActionMode = pathname.includes("/view/") ? "view" : pathname.includes("/edit/") ? "edit" : "add";
+  const { mode } = options;
   const initialRecord = mode === "add" ? undefined : getRevolvingFundRecords().find((record) => record.id === params.recordId);
   const [record, setRecord] = useState(initialRecord);
   const [values, setValues] = useState<RevolvingFundFormValues>(() =>

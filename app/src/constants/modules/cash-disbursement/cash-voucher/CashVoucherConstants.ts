@@ -3,11 +3,27 @@ import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData"
 import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
 import { CashDisbursementOverviewActionColumnWidth } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import type {
+  CashVoucherActionMode,
   CashVoucherActionTab,
   CashVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
 
-export const CashVoucherHref = getModuleRoute("CV");
+export function getCashVoucherSubmitDialogCopy(mode: CashVoucherActionMode, status: CashVoucherStatus) {
+  const isDraft = status === CashVoucherStatuses.draft;
+  const confirmLabel = mode === "edit" ? "Update" : isDraft ? "Save as Draft" : "Save and Submit";
+
+  return {
+    confirmLabel,
+    description: `Confirm that you want to ${confirmLabel.toLowerCase()} this Cash Voucher.`,
+    pendingLabel: mode === "edit" ? "Updating..." : "Saving...",
+    title: `${confirmLabel} Cash Voucher?`,
+  };
+}
+
+export const CashVoucherLink = getModuleRoute("CV");
+export const CashVoucherAddLink = `${CashVoucherLink}/add`;
+export const getCashVoucherEditLink = (recordId: string) => `${CashVoucherLink}/edit/${recordId}`;
+export const getCashVoucherViewLink = (recordId: string) => `${CashVoucherLink}/view/${recordId}`;
 
 export const CashVoucherQueryKeys = {
   transactions: () => ["cash-disbursement", "cash-voucher", "transactions"] as const,
@@ -205,7 +221,7 @@ export const CashVoucherTableColumns = [
     size: TransactionOverviewColumnWidths.status,
   },
   {
-    label: "Action",
+    label: "Actions",
     className: "text-center",
     size: CashDisbursementOverviewActionColumnWidth,
   },
@@ -291,7 +307,7 @@ export function getCashVoucherStatusDialogCopy(
       description: `This will approve ${recordLabel} and update its status to Posted.`,
       iconTone: "approve" as const,
       pendingLabel: "Approving...",
-      title: "Approve cash voucher?",
+      title: "Approve Cash Voucher?",
       tone: "success" as const,
     };
   }
@@ -302,7 +318,7 @@ export function getCashVoucherStatusDialogCopy(
       description: `This will mark ${recordLabel} as Disapproved.`,
       iconTone: "disapprove" as const,
       pendingLabel: "Disapproving...",
-      title: "Disapprove cash voucher?",
+      title: "Disapprove Cash Voucher?",
       tone: "danger" as const,
     };
   }

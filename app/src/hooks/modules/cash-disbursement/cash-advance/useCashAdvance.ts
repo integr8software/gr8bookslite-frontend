@@ -386,11 +386,11 @@ export function useCashAdvanceTable(advances: CashAdvanceRecord[]) {
         id: "actions",
         enableSorting: false,
         enableHiding: false,
-        header: "Action",
+        header: "Actions",
         size: CashDisbursementOverviewActionColumnWidth,
         meta: {
           className: "px-3 text-center last:pr-3",
-          label: "Action",
+          label: "Actions",
         },
       },
     ],

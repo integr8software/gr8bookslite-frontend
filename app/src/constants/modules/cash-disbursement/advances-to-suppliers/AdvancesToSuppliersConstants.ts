@@ -3,11 +3,15 @@ import { CashDisbursementOverviewActionColumnWidth } from "@/app/src/constants/m
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type {
   AdvancesToSuppliersActionTab,
+  AdvancesToSuppliersConfirmationAction,
   AdvancesToSuppliersStatus,
 } from "@/app/src/types/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 
-export const AdvancesToSuppliersHref = getModuleRoute("ATS");
+export const AdvancesToSuppliersLink = getModuleRoute("ATS");
+export const AdvancesToSuppliersAddLink = `${AdvancesToSuppliersLink}/add`;
+export const getAdvancesToSuppliersEditLink = (recordId: string) => `${AdvancesToSuppliersLink}/edit/${recordId}`;
+export const getAdvancesToSuppliersViewLink = (recordId: string) => `${AdvancesToSuppliersLink}/view/${recordId}`;
 export const AdvancesToSuppliersStorageKey = "cash-disbursement-advances-to-suppliers-records";
 export const AdvancesToSuppliersPaginationStorageKey = "cash-disbursement-advances-to-suppliers-table";
 export const AdvancesToSuppliersTransactionPrefix = "ATS";
@@ -25,7 +29,7 @@ export const AdvancesToSuppliersColumnLabels = {
   updatedBy: "Updated By",
   updatedAt: "Date Modified",
   status: "Status",
-  actions: "Action",
+  actions: "Actions",
 } as const;
 export const AdvancesToSuppliersOverviewColumnWidths: Record<keyof typeof AdvancesToSuppliersColumnLabels, number> = {
   transactionNo: TransactionOverviewColumnWidths.transactionNumber,
@@ -73,6 +77,20 @@ export const AdvancesToSuppliersRecordStatuses = [
   "Cancelled",
 ] as const satisfies readonly AdvancesToSuppliersStatus[];
 export const AdvancesToSuppliersStatusOptions = ["All", ...AdvancesToSuppliersRecordStatuses] as const;
+export const AdvancesToSuppliersConfirmationDialogTitles: Record<AdvancesToSuppliersConfirmationAction, string> = {
+  save: "Save Advances to Supplier?",
+  draft: "Save as Draft?",
+  approve: "Approve Advances to Supplier?",
+  disapprove: "Disapprove Advances to Supplier?",
+  cancel: "Cancel Advances to Supplier?",
+};
+export const AdvancesToSuppliersConfirmationDialogConfirmLabels: Record<AdvancesToSuppliersConfirmationAction, string> = {
+  save: "Save and Submit",
+  draft: "Save as Draft",
+  approve: "Approve",
+  disapprove: "Disapprove",
+  cancel: "Cancel",
+};
 export const AdvancesToSuppliersActionTabs: {
   id: AdvancesToSuppliersActionTab;
   label: string;

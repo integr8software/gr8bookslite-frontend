@@ -58,7 +58,7 @@ import {
   createGridRowId,
   createImportSourceAttachment,
   createInitialRows,
-  createVoucherActionReturnHref,
+  createVoucherActionReturnLink,
   downloadBytesFile,
   getExportCellValue,
   hasRowData,
@@ -520,7 +520,7 @@ export function CashVoucherAccountingGridPage() {
         importedImportAttachment,
       ),
     });
-    router.push(createVoucherActionReturnHref(session));
+    router.push(createVoucherActionReturnLink(session));
   }
 
   function handleSaveAndContinue() {
@@ -558,7 +558,7 @@ export function CashVoucherAccountingGridPage() {
         importedImportAttachment,
       ),
     });
-    router.push(createVoucherActionReturnHref(session));
+    router.push(createVoucherActionReturnLink(session));
   }
 
   if (!isLoaded) {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useParams, usePathname } from "next/navigation";
+import { useParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { AdvancesToSuppliersStatuses } from "@/app/src/constants/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersConstants";
 import {
@@ -32,11 +32,10 @@ import type {
 import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 import { validateAdvancesToSuppliersForm } from "@/app/src/validations/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersValidation";
 
-export function useAdvancesToSuppliersActionPage(options: { onSaved?: () => void } = {}) {
+export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSuppliersActionMode; onSaved?: () => void }) {
   const transactionCurrency = useTransactionCurrency();
-  const pathname = usePathname();
   const params = useParams<{ recordId?: string }>();
-  const mode: AdvancesToSuppliersActionMode = pathname.includes("/view/") ? "view" : pathname.includes("/edit/") ? "edit" : "add";
+  const { mode } = options;
   const initialRecord = mode === "add" ? undefined : getAdvancesToSuppliersRecords().find((item) => item.id === params.recordId);
   const [record, setRecord] = useState(initialRecord);
   const [values, setValues] = useState<AdvancesToSuppliersFormValues>(() =>

@@ -1,15 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { Plus, ReceiptText } from "lucide-react";
+import { Plus, ReceiptText, Search } from "lucide-react";
 import {
-  DisbursementVoucherHref,
+  DisbursementVoucherAllStatusFilter,
+  DisbursementVoucherTablePaginationStorageKey,
   DisbursementVoucherStatuses,
-  DisbursementVoucherStatusFilterOptions,
   canApproveDisbursementVoucherStatus,
   canCancelDisbursementVoucherStatus,
   canDisapproveDisbursementVoucherStatus,
+  DisbursementVoucherAddLink,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
+import { getDisbursementVoucherDisplayStatus } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import {
   useDisbursementVoucherPreviewTable,
   useDisbursementVoucherStore,
@@ -17,19 +19,17 @@ import {
 import type {
   DisbursementVoucherPreviewRow,
   DisbursementVoucherStatus,
+  DisbursementVoucherStatusFilter,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
-import { DisbursementVoucherTable } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/overview/DisbursementVoucherTable";
+import { DisbursementVoucherRecordActions } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/overview/DisbursementVoucherRecordActions";
+import { renderDisbursementVoucherTableCell } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/overview/DisbursementVoucherTableCell";
+import { DisbursementVoucherTableToolbar } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/overview/DisbursementVoucherTableToolbar";
 import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
-import {
-  ModuleTableColumnVisibilityButton,
-  ModuleTableResetButton,
-  ModuleTableFilterSelect,
-  ModuleTableSearch,
-  ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
-import { DisbursementVoucherMetrics } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/overview/DisbursementVoucherMetrics";
-import { DateRangePicker } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
-import { AmountRangePicker } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
+import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
+import { getModuleStatusMetricIcon, getModuleStatusMetricIconClassName } from "@/app/src/ui/shared/module/ModuleStatusBadge";
+import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
+import { getColumnMetaClassName, joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import { formatPartOfTotalPercentage } from "@/app/src/utils/percentage.util";
 
 export function DisbursementVoucherOverviewPage() {
   const previewRows = useDisbursementVoucherStore((state) => state.previewRows);
@@ -80,7 +80,7 @@ export function DisbursementVoucherOverviewPage() {
         }
         actions={
           <Link
-            href={`${DisbursementVoucherHref}/add`}
+            href={DisbursementVoucherAddLink}
             className={moduleHeaderActionClassNames.primary}
             data-spotlight-id="maintenance-create-record"
           >
@@ -97,45 +97,88 @@ export function DisbursementVoucherOverviewPage() {
       />
 
       <div data-spotlight-id="maintenance-table">
-        <DisbursementVoucherTable
+        <ModuleTable
+          emptyDescription="Try another voucher no., remarks, date range, amount range, or status."
+          emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
+          emptyTitle="No Disbursement Voucher Transaction Found."
+          minWidthClassName="min-w-full"
+          paginationLabel="entries"
+          paginationStorageKey={DisbursementVoucherTablePaginationStorageKey}
           lastSyncedAt={lastSyncedAt}
+          pageSizeOptions={[5, 10, 15, 20, 25, 50]}
           table={previewTable.table}
-          toolbar={
-            <ModuleTableToolbar
-              className="!grid-cols-1 !gap-2 rounded-none border-x-0 border-t-0 !p-3 shadow-none sm:!gap-2 sm:!p-3 2xl:!grid-cols-[minmax(0,1fr)_auto]"
-              data-spotlight-id="maintenance-table-filters"
-            >
-              <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 2xl:grid-cols-[minmax(18rem,2fr)_minmax(14rem,1fr)_minmax(14rem,1fr)]">
-                <div className="sm:col-span-2 2xl:col-span-1">
-                  <ModuleTableSearch
-                    label="Search disbursement vouchers"
-                    value={previewTable.query}
-                    onChange={previewTable.setQuery}
-                    placeholder="Search by Voucher No., Transaction No., Payee, or Remarks"
-                  />
-                </div>
-                <DateRangePicker label="Date Range" value={previewTable.dateRange} onChange={previewTable.setDateRange} />
-                <AmountRangePicker label="Total Amount" value={previewTable.amountRange} onChange={previewTable.setAmountRange} />
-              </div>
-              <div
-                className="grid grid-cols-[2fr_1fr_1fr] gap-2 md:grid-cols-[minmax(0,1fr)_3.25rem_3.25rem] 2xl:w-[21.5rem]"
-                data-spotlight-id="maintenance-table-options"
-              >
-                <ModuleTableFilterSelect
-                  label="Status"
-                  value={previewTable.statusFilter}
-                  options={DisbursementVoucherStatusFilterOptions}
-                  onChange={(value) => previewTable.setStatusFilter(value as (typeof previewTable.statusOptions)[number])}
-                />
-                <ModuleTableColumnVisibilityButton table={previewTable.table} />
-                <ModuleTableResetButton className="px-2" onClick={previewTable.resetFilters} />
-              </div>
-            </ModuleTableToolbar>
-          }
-          onUpdateStatus={updatePreviewRowStatus}
+          tableTitle="Disbursement Voucher Entries"
+          toolbar={<DisbursementVoucherTableToolbar previewTable={previewTable} />}
+          useColumnSizing
+          renderRow={(row) => (
+            <tr key={row.id} className="module-table-row border-b border-darknavy/8 last:border-b-0">
+              {row.getVisibleCells().map((cell) => (
+                <td
+                  key={cell.id}
+                  className={joinClasses("px-4 py-4 align-middle", getColumnMetaClassName(cell.column.columnDef.meta))}
+                >
+                  {renderDisbursementVoucherTableCell(cell.column.id, row.original, () => (
+                    <DisbursementVoucherRecordActions row={row.original} onUpdateStatus={updatePreviewRowStatus} />
+                  ))}
+                </td>
+              ))}
+            </tr>
+          )}
         />
       </div>
     </section>
+  );
+}
+
+function DisbursementVoucherMetrics({
+  onStatusFilterChange,
+  previewRows,
+  statusFilter,
+}: {
+  onStatusFilterChange: (status: DisbursementVoucherStatusFilter) => void;
+  previewRows: DisbursementVoucherPreviewRow[];
+  statusFilter: DisbursementVoucherStatusFilter;
+}) {
+  const statusCounts = Object.fromEntries(
+    Object.values(DisbursementVoucherStatuses).map((status) => [
+      status,
+      previewRows.filter(
+        (row) => getDisbursementVoucherDisplayStatus(row.voucher?.status ?? row.transaction.status) === status,
+      ).length,
+    ]),
+  ) as Record<DisbursementVoucherStatus, number>;
+
+  return (
+    <ModuleStatisticCards
+      className="2xl:grid-cols-6"
+      items={[
+        {
+          label: "Total Entries",
+          value: previewRows.length,
+          summary: "All time",
+          icon: ReceiptText,
+          tone: "violet",
+          isActive: statusFilter === DisbursementVoucherAllStatusFilter,
+          onClick: () => onStatusFilterChange(DisbursementVoucherAllStatusFilter),
+        },
+        ...[
+          DisbursementVoucherStatuses.draft,
+          DisbursementVoucherStatuses.forApproval,
+          DisbursementVoucherStatuses.posted,
+          DisbursementVoucherStatuses.disapproved,
+          DisbursementVoucherStatuses.cancelled,
+        ].map((status, index) => ({
+          label: status,
+          value: statusCounts[status],
+          summary: formatPartOfTotalPercentage(statusCounts[status], previewRows.length),
+          icon: getModuleStatusMetricIcon(status),
+          iconClassName: getModuleStatusMetricIconClassName(status),
+          tone: (["blue", "amber", "emerald", "red", "slate"] as const)[index],
+          isActive: statusFilter === status,
+          onClick: () => onStatusFilterChange(status),
+        })),
+      ]}
+    />
   );
 }
 

@@ -1,19 +1,30 @@
-import { useState } from "react";
-import { Ban, Edit3, Eye, ThumbsDown, ThumbsUp, Undo2 } from "lucide-react";
 import {
-  CashVoucherHref,
+  useState } from "react";
+import { Ban,
+  Edit3,
+  Eye,
+  ThumbsDown,
+  ThumbsUp,
+  Undo2 } from "lucide-react";
+import {
   CashVoucherStatuses,
   canApproveCashVoucherStatus,
   canCancelCashVoucherStatus,
   canDisapproveCashVoucherStatus,
   canEditCashVoucherStatus,
   getCashVoucherStatusDialogCopy,
+  getCashVoucherEditLink,
+  getCashVoucherViewLink,
 } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherConstants";
 import type {
   CashVoucherPreviewRow,
   CashVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
-import { ModuleTableActions } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
+import {
+  ModuleTableActionButton,
+  ModuleTableActionLink,
+  ModuleTableActions,
+} from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 import { ModuleActionMenu, type ModuleActionMenuItem } from "@/app/src/ui/shared/module/ModuleActionMenu";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 
@@ -40,22 +51,6 @@ export function CashVoucherRecordActions({
     : CashVoucherStatuses.cancelled;
   const statusDialogCopy = statusToConfirm ? getCashVoucherStatusDialogCopy(statusToConfirm, recordLabel, status) : null;
   const items: ModuleActionMenuItem[] = [
-    {
-      href: `${CashVoucherHref}/view/${transactionId}`,
-      icon: Eye,
-      label: "View",
-      type: "link",
-    },
-    ...(canEdit
-      ? [
-          {
-            href: `${CashVoucherHref}/edit/${transactionId}`,
-            icon: Edit3,
-            label: "Edit",
-            type: "link",
-          } satisfies ModuleActionMenuItem,
-        ]
-      : []),
     {
       disabled: !canApproveCashVoucherStatus(status),
       icon: isPosted ? Undo2 : ThumbsUp,
@@ -84,7 +79,35 @@ export function CashVoucherRecordActions({
   return (
     <>
       <ModuleTableActions className="!justify-center">
-        <ModuleActionMenu items={items} label={`Actions for cash voucher ${recordLabel}`} />
+        <ModuleTableActionLink
+          href={getCashVoucherViewLink(transactionId)}
+          icon={Eye}
+          label={`View cash voucher ${recordLabel}`}
+          title="View"
+          variant="view"
+        />
+        {canEdit ? (
+          <ModuleTableActionLink
+            href={getCashVoucherEditLink(transactionId)}
+            icon={Edit3}
+            label={`Edit cash voucher ${recordLabel}`}
+            title="Edit"
+            variant="edit"
+          />
+        ) : (
+          <ModuleTableActionButton
+            disabled
+            icon={Edit3}
+            label={`Edit cash voucher ${recordLabel}`}
+            title="Edit"
+            variant="edit"
+          />
+        )}
+        <ModuleActionMenu
+          className="[&>button]:h-9 [&>button]:w-9"
+          items={items}
+          label={`More actions for cash voucher ${recordLabel}`}
+        />
       </ModuleTableActions>
       {statusDialogCopy ? (
         <AppDialog

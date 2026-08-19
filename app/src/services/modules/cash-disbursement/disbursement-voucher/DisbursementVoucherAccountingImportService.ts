@@ -3,8 +3,11 @@ import {
   DisbursementAccountingCreditColumnId,
   DisbursementAccountingDebitColumnId,
   DisbursementAccountingImportTemplateHeaders,
-} from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryConstants";
-import { DisbursementVoucherHref } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
+  } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryConstants";
+import { DisbursementVoucherLink,
+  DisbursementVoucherAddLink,
+  getDisbursementVoucherEditLink,
+} from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import {
   createBlankDisbursementLineEntry,
   createTaxDetails,
@@ -645,16 +648,16 @@ export function buildLineEntries(rows: EditableGridRow[]): DisbursementLineEntry
   return entries.length > 0 ? entries : [createBlankDisbursementLineEntry()];
 }
 
-export function createVoucherActionReturnHref(session: DisbursementVoucherAccountingGridSession | null) {
+export function createVoucherActionReturnLink(session: DisbursementVoucherAccountingGridSession | null) {
   if (!session) {
-    return DisbursementVoucherHref;
+    return DisbursementVoucherLink;
   }
 
   if (session.mode === "edit") {
-    return `${DisbursementVoucherHref}/edit/${session.values.transactionId}`;
+    return getDisbursementVoucherEditLink(session.values.transactionId);
   }
 
   const transactionQuery = session.values.transactionId ? `?transactionId=${encodeURIComponent(session.values.transactionId)}` : "";
 
-  return `${DisbursementVoucherHref}/add${transactionQuery}`;
+  return `${DisbursementVoucherAddLink}${transactionQuery}`;
 }

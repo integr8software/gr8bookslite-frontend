@@ -1,6 +1,6 @@
 import { SearchX } from "lucide-react";
 import {
-  CashVoucherHref,
+  CashVoucherLink,
   CashVoucherNotFoundCopy,
 } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherConstants";
 import { ModuleNotFound } from "@/app/src/ui/shared/module/ModuleNotFound";
@@ -9,7 +9,7 @@ export function CashVoucherNotFound() {
   return (
     <ModuleNotFound
       align="center"
-      actionHref={CashVoucherHref}
+      actionHref={CashVoucherLink}
       actionLabel={CashVoucherNotFoundCopy.actionLabel}
       className="rounded-[28px] p-8 shadow-[0_24px_60px_rgba(33,39,56,0.08)]"
       description={CashVoucherNotFoundCopy.description}

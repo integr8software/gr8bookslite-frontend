@@ -1,6 +1,3 @@
-"use client";
-
-import { useState } from "react";
 import { Ban, ThumbsDown, ThumbsUp, Undo2 } from "lucide-react";
 import { CashDisbursementViewActionButtonClassName } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import {
@@ -8,25 +5,22 @@ import {
   canApproveCashAdvanceStatus,
   canCancelCashAdvanceStatus,
   canDisapproveCashAdvanceStatus,
-  getCashAdvanceStatusDialogCopy,
 } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
 import type { CashAdvanceRecord, CashAdvanceStatus } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
-import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleActionMenu, type ModuleActionMenuItem } from "@/app/src/ui/shared/module/ModuleActionMenu";
 import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 
 export function CashAdvanceViewActions({
+  onRequestStatusConfirmation,
   onUpdateStatus,
   record,
 }: {
+  onRequestStatusConfirmation: (status: CashAdvanceStatus) => void;
   onUpdateStatus?: (status: CashAdvanceStatus) => void;
   record?: CashAdvanceRecord | null;
 }) {
-  const [statusToConfirm, setStatusToConfirm] = useState<CashAdvanceStatus | null>(null);
-  const recordLabel = record?.transNo ?? "this cash advance";
-  const statusDialogCopy = statusToConfirm ? getCashAdvanceStatusDialogCopy(statusToConfirm, recordLabel) : null;
   const actions = createCashAdvanceViewActionItems({
-    onRequestStatusConfirmation: setStatusToConfirm,
+    onRequestStatusConfirmation,
     onUpdateStatus,
     record,
   });
@@ -45,27 +39,6 @@ export function CashAdvanceViewActions({
           return null;
         })}
       </div>
-      {statusDialogCopy ? (
-        <AppDialog
-          isOpen
-          title={statusDialogCopy.title}
-          description={statusDialogCopy.description}
-          cancelLabel="Keep Current Status"
-          confirmLabel={statusDialogCopy.confirmLabel}
-          iconTone={statusDialogCopy.iconTone}
-          pendingLabel={statusDialogCopy.pendingLabel}
-          tone={statusDialogCopy.tone}
-          onCancel={() => setStatusToConfirm(null)}
-          onConfirm={() => {
-            if (!statusToConfirm) {
-              return;
-            }
-
-            onUpdateStatus?.(statusToConfirm);
-            setStatusToConfirm(null);
-          }}
-        />
-      ) : null}
     </>
   );
 }
@@ -90,28 +63,14 @@ function createCashAdvanceViewActionItems({
       disabled: !onUpdateStatus || !canApproveCashAdvanceStatus(status),
       icon: isPosted ? Undo2 : ThumbsUp,
       label: isPosted ? "Undo Approved" : "Approve",
-      onSelect: () => {
-        if (isPosted) {
-          onUpdateStatus?.(approvalUndoStatus);
-          return;
-        }
-
-        onRequestStatusConfirmation(CashAdvanceStatuses.posted);
-      },
+      onSelect: () => onRequestStatusConfirmation(isPosted ? approvalUndoStatus : CashAdvanceStatuses.posted),
       type: "button",
     },
     {
       disabled: !onUpdateStatus || !canDisapproveCashAdvanceStatus(status),
       icon: isDisapproved ? Undo2 : ThumbsDown,
       label: isDisapproved ? "Undo Disapproved" : "Disapprove",
-      onSelect: () => {
-        if (isDisapproved) {
-          onUpdateStatus?.(approvalUndoStatus);
-          return;
-        }
-
-        onRequestStatusConfirmation(CashAdvanceStatuses.disapproved);
-      },
+      onSelect: () => onRequestStatusConfirmation(isDisapproved ? approvalUndoStatus : CashAdvanceStatuses.disapproved),
       tone: isDisapproved ? "default" : "danger",
       type: "button",
     },
@@ -119,14 +78,7 @@ function createCashAdvanceViewActionItems({
       disabled: !onUpdateStatus || !canCancelCashAdvanceStatus(status),
       icon: isCancelled ? Undo2 : Ban,
       label: isCancelled ? "Undo Cancelled" : "Cancel",
-      onSelect: () => {
-        if (isCancelled) {
-          onUpdateStatus?.(cancelStatus);
-          return;
-        }
-
-        onRequestStatusConfirmation(cancelStatus);
-      },
+      onSelect: () => onRequestStatusConfirmation(cancelStatus),
       tone: isCancelled ? "default" : "danger",
       type: "button",
     },

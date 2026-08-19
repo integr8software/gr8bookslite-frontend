@@ -3,9 +3,10 @@
 import { useRouter } from "next/navigation";
 import {
   PettyCashVoucherActionTabs,
-  PettyCashVoucherHref,
+  PettyCashVoucherLink,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
 import { usePettyCashVoucherActionPage } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-voucher/usePettyCashVoucherActionPage";
+import type { PettyCashVoucherFormMode } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
 import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
@@ -14,10 +15,10 @@ import { PettyCashVoucherDetailsFields } from "@/app/src/ui/modules/cash-disburs
 import { PettyCashVoucherFileAttachmentFields } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/action/PettyCashVoucherFileAttachmentFields";
 import { PettyCashVoucherNotFound } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/action/PettyCashVoucherNotFound";
 
-export function PettyCashVoucherActionPage() {
+export function PettyCashVoucherActionPage({ mode }: { mode: PettyCashVoucherFormMode }) {
   const router = useRouter();
-  const closePage = () => router.push(PettyCashVoucherHref);
-  const page = usePettyCashVoucherActionPage({ onSaved: closePage });
+  const closePage = () => router.push(PettyCashVoucherLink);
+  const page = usePettyCashVoucherActionPage({ mode, onSaved: closePage });
 
   if (page.needsRecord && !page.existingVoucher) {
     return <PettyCashVoucherNotFound />;

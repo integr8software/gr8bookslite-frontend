@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Ban, ThumbsDown, ThumbsUp, Undo2 } from "lucide-react";
 import { CashDisbursementViewActionButtonClassName } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import {
@@ -6,37 +5,33 @@ import {
   canApproveDisbursementVoucherStatus,
   canCancelDisbursementVoucherStatus,
   canDisapproveDisbursementVoucherStatus,
-  getDisbursementVoucherStatusDialogCopy,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import type {
   DisbursementTransactionRecord,
   DisbursementVoucherRecord,
   DisbursementVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
-import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
+import type { VoucherReportPreviewFormat } from "@/app/src/types/shared/reports/ReportTypes";
 import { ModuleActionMenu, type ModuleActionMenuItem } from "@/app/src/ui/shared/module/ModuleActionMenu";
 import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
+import { VoucherReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 import { DisbursementVoucherActionHistory } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherActionHistory";
 
 export function DisbursementVoucherViewActions({
+  onRequestStatusConfirmation,
   onUpdateStatus,
   onPreview,
   transaction,
   voucher,
 }: {
+  onRequestStatusConfirmation: (status: DisbursementVoucherStatus) => void;
   onUpdateStatus?: (status: DisbursementVoucherStatus) => void;
-  onPreview?: () => void;
+  onPreview?: (format: VoucherReportPreviewFormat) => void;
   transaction?: DisbursementTransactionRecord;
   voucher?: DisbursementVoucherRecord;
 }) {
-  const [statusToConfirm, setStatusToConfirm] = useState<DisbursementVoucherStatus | null>(null);
-  const recordLabel = voucher?.voucherNo ?? transaction?.transactionNo ?? "this disbursement voucher";
-  const statusDialogCopy = statusToConfirm
-    ? getDisbursementVoucherStatusDialogCopy(statusToConfirm, recordLabel, voucher?.status ?? transaction?.status)
-    : null;
   const actions = createDisbursementVoucherViewActionItems({
-    onRequestStatusConfirmation: setStatusToConfirm,
+    onRequestStatusConfirmation,
     onUpdateStatus,
     transaction,
     voucher,
@@ -44,12 +39,12 @@ export function DisbursementVoucherViewActions({
   return (
     <>
       <div className="flex items-center gap-2 lg:hidden">
-        {onPreview ? <ReportPreviewAction onPreview={onPreview} /> : null}
+        {onPreview ? <VoucherReportPreviewAction onPreview={onPreview} /> : null}
         <DisbursementVoucherActionHistory transaction={transaction} voucher={voucher} />
         <ModuleActionMenu items={actions} label="Disbursement voucher actions" />
       </div>
       <div className="hidden flex-wrap gap-2 lg:flex">
-        {onPreview ? <ReportPreviewAction onPreview={onPreview} /> : null}
+        {onPreview ? <VoucherReportPreviewAction onPreview={onPreview} /> : null}
         <DisbursementVoucherActionHistory transaction={transaction} voucher={voucher} />
         {actions.map((action) => {
           if (action.type === "button") {
@@ -59,27 +54,6 @@ export function DisbursementVoucherViewActions({
           return null;
         })}
       </div>
-      {statusDialogCopy ? (
-        <AppDialog
-          isOpen
-          title={statusDialogCopy.title}
-          description={statusDialogCopy.description}
-          cancelLabel="Keep Current Status"
-          confirmLabel={statusDialogCopy.confirmLabel}
-          iconTone={statusDialogCopy.iconTone}
-          pendingLabel={statusDialogCopy.pendingLabel}
-          tone={statusDialogCopy.tone}
-          onCancel={() => setStatusToConfirm(null)}
-          onConfirm={() => {
-            if (!statusToConfirm) {
-              return;
-            }
-
-            onUpdateStatus?.(statusToConfirm);
-            setStatusToConfirm(null);
-          }}
-        />
-      ) : null}
     </>
   );
 }

@@ -1,6 +1,7 @@
 import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 import type { TransactionAttachment } from "@/app/src/types/shared/transaction-setup/TransactionAttachmentTypes";
 import type { PaymentTypeRecord as AppPaymentTypeRecord } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
+import type { VoucherReportPreviewFormat } from "@/app/src/types/shared/reports/ReportTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import type { useDisbursementVoucherActionPage } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucherActionPage";
 
@@ -296,11 +297,14 @@ export type DisbursementVoucherActionHeaderProps = {
   copyFromRecords?: AppCopyFromRecord[];
   copyFromSources?: string[];
   mode: DisbursementVoucherActionMode;
-  returnHref?: string;
+  returnLink?: string;
   transaction?: DisbursementTransactionRecord;
   voucher?: DisbursementVoucherRecord;
+  pendingSubmitStatus: DisbursementVoucherStatus | null;
+  onCancelSubmit: () => void;
+  onConfirmSubmit: () => void;
   onCopyFrom?: (recordIds: string[]) => void;
-  onPreview?: () => void;
+  onPreview?: (format: VoucherReportPreviewFormat) => void;
   onSaveDraft?: () => void;
   onSubmit?: () => void;
   onUpdateStatus?: (status: DisbursementVoucherStatus) => void;

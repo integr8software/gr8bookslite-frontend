@@ -3,8 +3,11 @@ import {
   CashVoucherAccountingCreditColumnId,
   CashVoucherAccountingDebitColumnId,
   CashVoucherAccountingImportTemplateHeaders,
-} from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherDataEntryConstants";
-import { CashVoucherHref } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherConstants";
+  } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherDataEntryConstants";
+import { CashVoucherLink,
+  CashVoucherAddLink,
+  getCashVoucherEditLink,
+} from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherConstants";
 import {
   createBlankCashVoucherLineEntry,
   createTaxDetails,
@@ -645,18 +648,18 @@ export function buildLineEntries(rows: EditableGridRow[]): CashVoucherLineEntry[
   return entries.length > 0 ? entries : [createBlankCashVoucherLineEntry()];
 }
 
-export function createVoucherActionReturnHref(session: CashVoucherAccountingGridSession | null) {
+export function createVoucherActionReturnLink(session: CashVoucherAccountingGridSession | null) {
   if (!session) {
-    return CashVoucherHref;
+    return CashVoucherLink;
   }
 
   if (session.mode === "edit") {
-    return `${CashVoucherHref}/edit/${session.values.transactionId}`;
+    return getCashVoucherEditLink(session.values.transactionId);
   }
 
   const transactionQuery = session.values.transactionId ? `?transactionId=${encodeURIComponent(session.values.transactionId)}` : "";
 
-  return `${CashVoucherHref}/add${transactionQuery}`;
+  return `${CashVoucherAddLink}${transactionQuery}`;
 }
 
 

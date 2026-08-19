@@ -1,6 +1,5 @@
 "use client";
 
-import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 import {
   DisbursementVoucherPartyOptions,
@@ -36,6 +35,7 @@ import type {
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { formatExchangeRateInput } from "@/app/src/utils/number.util";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { TransactionField } from "@/app/src/ui/shared/transaction-setup/TransactionFormFields";
 import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
@@ -214,7 +214,7 @@ function CashAdvancePrimaryFields({
   return (
     <>
       <div className="grid min-w-0 content-start gap-4">
-        <FieldShell controlId="cash-advance-party" label="Party Name" isRequired>
+        <TransactionField controlId="cash-advance-party" label="Party Name" isRequired>
           <AppAdvancedDropdown
             id="cash-advance-party"
             addAction={
@@ -241,8 +241,8 @@ function CashAdvancePrimaryFields({
               form.updateReferenceField("partyCode", code);
             }}
           />
-        </FieldShell>
-        <FieldShell controlId="cash-advance-account-code" label="Account Title" isRequired>
+        </TransactionField>
+        <TransactionField controlId="cash-advance-account-code" label="Account Title" isRequired>
           <AppAdvancedDropdown
             id="cash-advance-account-code"
             value={form.values.accountCode}
@@ -258,8 +258,8 @@ function CashAdvancePrimaryFields({
               form.updateReferenceField("accountCode", accountCode);
             }}
           />
-        </FieldShell>
-        <FieldShell controlId="cash-advance-cost-center" label="Responsibility Center">
+        </TransactionField>
+        <TransactionField controlId="cash-advance-cost-center" label="Responsibility Center">
           <AppAdvancedDropdown
             id="cash-advance-cost-center"
             value={form.values.costCenter}
@@ -284,8 +284,8 @@ function CashAdvancePrimaryFields({
               form.updateReferenceField("costCenterCode", option?.label === costCenter ? "" : (option?.label ?? ""));
             }}
           />
-        </FieldShell>
-        <FieldShell controlId="cash-advance-project-name" label="Project Name">
+        </TransactionField>
+        <TransactionField controlId="cash-advance-project-name" label="Project Name">
           <AppAdvancedDropdown
             id="cash-advance-project-name"
             value={form.values.referenceFields.projectRef}
@@ -310,8 +310,8 @@ function CashAdvancePrimaryFields({
               form.updateReferenceField("projectCode", project?.label === projectName ? "" : (project?.label ?? ""));
             }}
           />
-        </FieldShell>
-        <FieldShell controlId="cash-advance-remarks" label="Remarks">
+        </TransactionField>
+        <TransactionField controlId="cash-advance-remarks" label="Remarks">
           <AppLimitedTextarea
             id="cash-advance-remarks"
             value={form.values.remarks}
@@ -320,38 +320,38 @@ function CashAdvancePrimaryFields({
             className={`${CashAdvanceFieldClassName} min-h-24 py-3`}
             counterMode="used"
           />
-        </FieldShell>
+        </TransactionField>
       </div>
 
       <div className="grid min-w-0 content-start gap-4">
-        <FieldShell controlId="cash-advance-party-code" label="Party Code">
+        <TransactionField controlId="cash-advance-party-code" label="Party Code">
           <input id="cash-advance-party-code" value={form.values.partyCode} readOnly className={CashAdvanceReadOnlyFieldClassName} />
-        </FieldShell>
-        <FieldShell controlId="cash-advance-account-code-reference" label="Account Code">
+        </TransactionField>
+        <TransactionField controlId="cash-advance-account-code-reference" label="Account Code">
           <input
             id="cash-advance-account-code-reference"
             value={form.values.accountCode}
             readOnly
             className={CashAdvanceReadOnlyFieldClassName}
           />
-        </FieldShell>
-        <FieldShell controlId="cash-advance-cost-center-code" label="Responsibility Center Code">
+        </TransactionField>
+        <TransactionField controlId="cash-advance-cost-center-code" label="Responsibility Center Code">
           <input
             id="cash-advance-cost-center-code"
             value={form.values.referenceFields.costCenterCode}
             readOnly
             className={CashAdvanceReadOnlyFieldClassName}
           />
-        </FieldShell>
-        <FieldShell controlId="cash-advance-project-code" label="Project Code">
+        </TransactionField>
+        <TransactionField controlId="cash-advance-project-code" label="Project Code">
           <input
             id="cash-advance-project-code"
             value={form.values.referenceFields.projectCode}
             readOnly
             className={CashAdvanceReadOnlyFieldClassName}
           />
-        </FieldShell>
-        <FieldShell controlId="cash-advance-currency" label="Currency">
+        </TransactionField>
+        <TransactionField controlId="cash-advance-currency" label="Currency">
           <CurrencyExchangeRateRow
             exchangeRateControlId="cash-advance-fx-rate"
             currencyControl={
@@ -381,8 +381,8 @@ function CashAdvancePrimaryFields({
               />
             }
           />
-        </FieldShell>
-        <FieldShell controlId="cash-advance-balance" label="Cash Advance Balance">
+        </TransactionField>
+        <TransactionField controlId="cash-advance-balance" label="Cash Advance Balance">
           <MoneyNumberField
             id="cash-advance-balance"
             value={form.values.cashAdvanceBalance}
@@ -391,8 +391,8 @@ function CashAdvancePrimaryFields({
             className={`${CashAdvanceReadOnlyFieldClassName} text-right tabular-nums`}
             placeholder="0.00"
           />
-        </FieldShell>
-        <FieldShell controlId="cash-advance-amount" label="Amount" isRequired>
+        </TransactionField>
+        <TransactionField controlId="cash-advance-amount" label="Amount" isRequired>
           <MoneyNumberField
             id="cash-advance-amount"
             min="0"
@@ -402,11 +402,11 @@ function CashAdvancePrimaryFields({
             readOnly={isReadonly}
             className={`${CashAdvanceFieldClassName} text-right tabular-nums`}
           />
-        </FieldShell>
+        </TransactionField>
       </div>
 
       <div className="grid min-w-0 content-start gap-4">
-        <FieldShell controlId="cash-advance-trans-no" label="Cash Advance No." isRequired>
+        <TransactionField controlId="cash-advance-trans-no" label="Cash Advance No." isRequired>
           <input
             id="cash-advance-trans-no"
             value={form.values.transNo}
@@ -414,8 +414,8 @@ function CashAdvancePrimaryFields({
             readOnly
             className={CashAdvanceReadOnlyFieldClassName}
           />
-        </FieldShell>
-        <FieldShell controlId="cash-advance-document-date" label="Cash Advance Date">
+        </TransactionField>
+        <TransactionField controlId="cash-advance-document-date" label="Cash Advance Date">
           <input
             id="cash-advance-document-date"
             type="date"
@@ -424,10 +424,10 @@ function CashAdvancePrimaryFields({
             onChange={(event) => form.updateField("documentDate", event.target.value)}
             className={CashAdvanceFieldClassName}
           />
-        </FieldShell>
-        <FieldShell controlId="cash-advance-status" label="Status">
+        </TransactionField>
+        <TransactionField controlId="cash-advance-status" label="Status">
           <input id="cash-advance-status" readOnly value={form.values.status} className={CashAdvanceReadOnlyFieldClassName} />
-        </FieldShell>
+        </TransactionField>
       </div>
     </>
   );
@@ -577,38 +577,6 @@ function createCashAdvancePartyOptions({
   }
 
   return options;
-}
-
-function FieldShell({
-  children,
-  controlId,
-  isRequired = false,
-  label,
-}: {
-  children: ReactNode;
-  controlId?: string;
-  isRequired?: boolean;
-  label: string;
-}) {
-  const labelContent = (
-    <>
-      {label}
-      {isRequired ? <span className="ml-1 text-coralpink">*</span> : null}
-    </>
-  );
-
-  return (
-    <div className="grid min-w-0 gap-2 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-start">
-      {controlId ? (
-        <label htmlFor={controlId} className="pt-2 text-sm font-semibold text-darknavy">
-          {labelContent}
-        </label>
-      ) : (
-        <span className="pt-2 text-sm font-semibold text-darknavy">{labelContent}</span>
-      )}
-      <div className="min-w-0">{children}</div>
-    </div>
-  );
 }
 
 function addUniqueDropdownOption(options: AppAdvancedDropdownOption[], option: AppAdvancedDropdownOption) {

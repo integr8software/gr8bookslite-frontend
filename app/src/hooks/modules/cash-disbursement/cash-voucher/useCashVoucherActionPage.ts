@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
-import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import {
   CashVoucherCopyFromRecords,
@@ -20,8 +20,7 @@ import {
   canUpdateCashVoucherStatus,
   createInitialCashVoucherFormValues,
   createManualCashVoucherTransactionId,
-  createVoucherActionReturnHref,
-  getCashVoucherActionMode,
+  createVoucherActionReturnLink,
 } from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherActionData";
 import {
   createAutomaticAccountingEntries,
@@ -32,7 +31,7 @@ import {
   syncCashVoucherLineEntryTaxDetails,
 } from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherAccountingEntryData";
 import {
-  CashVoucherHref,
+  CashVoucherLink,
   CashVoucherStatuses,
   canEditCashVoucherStatus,
 } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherConstants";
@@ -47,6 +46,7 @@ import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/financial-
 import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
 import type {
   CashVoucherLineEntry,
+  CashVoucherActionMode,
   CashVoucherActionTab,
   CashVoucherFormErrors,
   CashVoucherFormValues,
@@ -65,12 +65,10 @@ import {
   removeCashVoucherEntryRow,
 } from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherEntryRowData";
 
-export function useCashVoucherActionPage() {
+export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   const router = useRouter();
-  const pathname = usePathname();
   const params = useParams<{ recordId?: string }>();
   const searchParams = useSearchParams();
-  const mode = getCashVoucherActionMode(pathname);
   const transactions = useCashVoucherStore((state) => state.transactions);
   const vouchers = useCashVoucherStore((state) => state.vouchers);
   const addTransaction = useCashVoucherStore((state) => state.addTransaction);
@@ -80,7 +78,7 @@ export function useCashVoucherActionPage() {
   const routeTransactionId = mode === "add" ? (searchParams.get("transactionId") ?? "") : (params.recordId ?? "");
   const routeTransaction = transactions.find((transaction) => transaction.id === routeTransactionId);
   const routeVoucher = vouchers.find((voucher) => voucher.transactionId === routeTransactionId);
-  const returnHref = createVoucherActionReturnHref(searchParams.get("from"), routeTransactionId);
+  const returnLink = createVoucherActionReturnLink(searchParams.get("from"), routeTransactionId);
   const transactionCurrency = useTransactionCurrency();
   const [values, setValues] = useState<CashVoucherFormValues>(() =>
     createInitialCashVoucherFormValues({
@@ -353,7 +351,7 @@ export function useCashVoucherActionPage() {
     }
 
     setPendingSubmitValues(null);
-    router.push(returnHref);
+    router.push(returnLink);
   }
 
   function cancelCashVoucherSubmit() {
@@ -462,7 +460,7 @@ export function useCashVoucherActionPage() {
     mode,
     partyStore,
     responsibilityCenterStore,
-    returnHref: isRecordMissing ? CashVoucherHref : returnHref,
+    returnLink: isRecordMissing ? CashVoucherLink : returnLink,
     selectedTransaction,
     totalCredit,
     totalDebit,

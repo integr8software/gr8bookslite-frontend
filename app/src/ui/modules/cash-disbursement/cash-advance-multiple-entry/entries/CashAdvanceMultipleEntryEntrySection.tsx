@@ -34,7 +34,7 @@ import {
   EntryNumberInput,
   EntryPartyDropdown,
   EntryTextInput,
-} from "@/app/src/ui/modules/cash-disbursement/cash-advance-multiple-entry/action/CashAdvanceMultipleEntryFieldControls";
+} from "@/app/src/ui/modules/cash-disbursement/cash-advance-multiple-entry/entries/CashAdvanceMultipleEntryEntryControls";
 import {
   getCashAdvanceMultipleEntryResponsibilityCenterCode,
   moveCashAdvanceMultipleEntryColumnId,

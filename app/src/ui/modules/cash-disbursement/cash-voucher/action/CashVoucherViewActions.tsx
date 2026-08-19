@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Ban, ThumbsDown, ThumbsUp, Undo2 } from "lucide-react";
 import { CashDisbursementViewActionButtonClassName } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import {
@@ -6,37 +5,33 @@ import {
   canApproveCashVoucherStatus,
   canCancelCashVoucherStatus,
   canDisapproveCashVoucherStatus,
-  getCashVoucherStatusDialogCopy,
 } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherConstants";
 import type {
   CashVoucherTransactionRecord,
   CashVoucherRecord,
   CashVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
-import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
+import type { VoucherReportPreviewFormat } from "@/app/src/types/shared/reports/ReportTypes";
 import { ModuleActionMenu, type ModuleActionMenuItem } from "@/app/src/ui/shared/module/ModuleActionMenu";
 import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
+import { VoucherReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 import { CashVoucherActionHistory } from "@/app/src/ui/modules/cash-disbursement/cash-voucher/action/CashVoucherActionHistory";
 
 export function CashVoucherViewActions({
+  onRequestStatusConfirmation,
   onUpdateStatus,
   onPreview,
   transaction,
   voucher,
 }: {
+  onRequestStatusConfirmation: (status: CashVoucherStatus) => void;
   onUpdateStatus?: (status: CashVoucherStatus) => void;
-  onPreview?: () => void;
+  onPreview?: (format: VoucherReportPreviewFormat) => void;
   transaction?: CashVoucherTransactionRecord;
   voucher?: CashVoucherRecord;
 }) {
-  const [statusToConfirm, setStatusToConfirm] = useState<CashVoucherStatus | null>(null);
-  const recordLabel = voucher?.voucherNo ?? transaction?.transactionNo ?? "this cash voucher";
-  const statusDialogCopy = statusToConfirm
-    ? getCashVoucherStatusDialogCopy(statusToConfirm, recordLabel, voucher?.status ?? transaction?.status)
-    : null;
   const actions = createCashVoucherViewActionItems({
-    onRequestStatusConfirmation: setStatusToConfirm,
+    onRequestStatusConfirmation,
     onUpdateStatus,
     transaction,
     voucher,
@@ -44,12 +39,12 @@ export function CashVoucherViewActions({
   return (
     <>
       <div className="flex items-center gap-2 lg:hidden">
-        {onPreview ? <ReportPreviewAction onPreview={onPreview} /> : null}
+        {onPreview ? <VoucherReportPreviewAction onPreview={onPreview} /> : null}
         <CashVoucherActionHistory transaction={transaction} voucher={voucher} />
         <ModuleActionMenu items={actions} label="CashVoucher voucher actions" />
       </div>
       <div className="hidden flex-wrap gap-2 lg:flex">
-        {onPreview ? <ReportPreviewAction onPreview={onPreview} /> : null}
+        {onPreview ? <VoucherReportPreviewAction onPreview={onPreview} /> : null}
         <CashVoucherActionHistory transaction={transaction} voucher={voucher} />
         {actions.map((action) => {
           if (action.type === "button") {
@@ -59,27 +54,6 @@ export function CashVoucherViewActions({
           return null;
         })}
       </div>
-      {statusDialogCopy ? (
-        <AppDialog
-          isOpen
-          title={statusDialogCopy.title}
-          description={statusDialogCopy.description}
-          cancelLabel="Keep Current Status"
-          confirmLabel={statusDialogCopy.confirmLabel}
-          iconTone={statusDialogCopy.iconTone}
-          pendingLabel={statusDialogCopy.pendingLabel}
-          tone={statusDialogCopy.tone}
-          onCancel={() => setStatusToConfirm(null)}
-          onConfirm={() => {
-            if (!statusToConfirm) {
-              return;
-            }
-
-            onUpdateStatus?.(statusToConfirm);
-            setStatusToConfirm(null);
-          }}
-        />
-      ) : null}
     </>
   );
 }

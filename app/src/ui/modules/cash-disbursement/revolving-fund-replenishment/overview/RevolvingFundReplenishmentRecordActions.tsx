@@ -1,11 +1,18 @@
 "use client";
 
-import { useState } from "react";
-import { Ban, Edit3, Eye, ThumbsDown, ThumbsUp, Undo2 } from "lucide-react";
 import {
-  RevolvingFundReplenishmentHref,
+  useState } from "react";
+import { Ban,
+  Edit3,
+  Eye,
+  ThumbsDown,
+  ThumbsUp,
+  Undo2 } from "lucide-react";
+import {
   RevolvingFundReplenishmentStatuses,
   canEditRevolvingFundReplenishment,
+  getRevolvingFundReplenishmentEditLink,
+  getRevolvingFundReplenishmentViewLink,
 } from "@/app/src/constants/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentConstants";
 import type {
   RevolvingFundReplenishmentRecord,
@@ -14,7 +21,11 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleActionMenu, type ModuleActionMenuItem } from "@/app/src/ui/shared/module/ModuleActionMenu";
-import { ModuleTableActions } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
+import {
+  ModuleTableActionButton,
+  ModuleTableActionLink,
+  ModuleTableActions,
+} from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
 export function RevolvingFundReplenishmentRecordActions({
   onUpdateStatus,
@@ -27,11 +38,8 @@ export function RevolvingFundReplenishmentRecordActions({
   const isPosted = record.status === RevolvingFundReplenishmentStatuses.posted;
   const isDisapproved = record.status === RevolvingFundReplenishmentStatuses.disapproved;
   const isCancelled = record.status === RevolvingFundReplenishmentStatuses.cancelled;
+  const canEdit = canEditRevolvingFundReplenishment(record.status);
   const items: ModuleActionMenuItem[] = [
-    { type: "link", href: `${RevolvingFundReplenishmentHref}/view/${record.id}`, icon: Eye, label: "View" },
-    ...(canEditRevolvingFundReplenishment(record.status)
-      ? [{ type: "link" as const, href: `${RevolvingFundReplenishmentHref}/edit/${record.id}`, icon: Edit3, label: "Edit" }]
-      : []),
     {
       type: "button",
       icon: isPosted ? Undo2 : ThumbsUp,
@@ -68,7 +76,35 @@ export function RevolvingFundReplenishmentRecordActions({
   return (
     <>
       <ModuleTableActions className="w-full !justify-center">
-        <ModuleActionMenu items={items} label={`Actions for revolving fund replenishment ${record.transactionNo}`} />
+        <ModuleTableActionLink
+          href={getRevolvingFundReplenishmentViewLink(record.id)}
+          icon={Eye}
+          label={`View revolving fund replenishment ${record.transactionNo}`}
+          title="View"
+          variant="view"
+        />
+        {canEdit ? (
+          <ModuleTableActionLink
+            href={getRevolvingFundReplenishmentEditLink(record.id)}
+            icon={Edit3}
+            label={`Edit revolving fund replenishment ${record.transactionNo}`}
+            title="Edit"
+            variant="edit"
+          />
+        ) : (
+          <ModuleTableActionButton
+            disabled
+            icon={Edit3}
+            label={`Edit revolving fund replenishment ${record.transactionNo}`}
+            title="Edit"
+            variant="edit"
+          />
+        )}
+        <ModuleActionMenu
+          className="[&>button]:h-9 [&>button]:w-9"
+          items={items}
+          label={`More actions for revolving fund replenishment ${record.transactionNo}`}
+        />
       </ModuleTableActions>
       {status ? (
         <AppDialog

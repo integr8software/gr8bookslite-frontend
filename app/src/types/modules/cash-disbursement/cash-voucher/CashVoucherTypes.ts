@@ -1,4 +1,5 @@
 import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
+import type { VoucherReportPreviewFormat } from "@/app/src/types/shared/reports/ReportTypes";
 import type { TransactionAttachment } from "@/app/src/types/shared/transaction-setup/TransactionAttachmentTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import type { useCashVoucherActionPage } from "@/app/src/hooks/modules/cash-disbursement/cash-voucher/useCashVoucherActionPage";
@@ -294,11 +295,14 @@ export type CashVoucherActionHeaderProps = {
   copyFromRecords?: AppCopyFromRecord[];
   copyFromSources?: string[];
   mode: CashVoucherActionMode;
-  returnHref?: string;
+  returnLink?: string;
   transaction?: CashVoucherTransactionRecord;
   voucher?: CashVoucherRecord;
+  pendingSubmitStatus: CashVoucherStatus | null;
+  onCancelSubmit: () => void;
+  onConfirmSubmit: () => void;
   onCopyFrom?: (recordIds: string[]) => void;
-  onPreview?: () => void;
+  onPreview?: (format: VoucherReportPreviewFormat) => void;
   onSaveDraft?: () => void;
   onSubmit?: () => void;
   onUpdateStatus?: (status: CashVoucherStatus) => void;

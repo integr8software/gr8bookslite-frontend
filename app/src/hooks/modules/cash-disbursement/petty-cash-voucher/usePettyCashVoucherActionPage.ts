@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useParams, usePathname } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
@@ -18,7 +18,6 @@ import type { ResponsibilityCenter } from "@/app/src/types/modules/financial-mai
 import type { PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";
 import type {
   PettyCashVoucherActionPageOptions,
-  PettyCashVoucherFormMode,
   PettyCashVoucherFormErrors,
   PettyCashVoucherFormValues,
   PettyCashVoucherActionTab,
@@ -32,12 +31,11 @@ import {
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
 import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
 
-export function usePettyCashVoucherActionPage(options: PettyCashVoucherActionPageOptions = {}) {
+export function usePettyCashVoucherActionPage(options: PettyCashVoucherActionPageOptions) {
   const transactionCurrency = useTransactionCurrency();
   const queryClient = useQueryClient();
-  const pathname = usePathname();
   const params = useParams<{ recordId?: string }>();
-  const mode = options.mode ?? getPettyCashVoucherFormMode(pathname);
+  const { mode } = options;
   const existingVoucher = options.existingVoucher ?? PettyCashVoucherRecords.find((record) => record.id === params.recordId);
   const isReadonly = mode === "view";
   const [values, setValues] = useState<PettyCashVoucherFormValues>(() =>
@@ -271,18 +269,6 @@ export function usePettyCashVoucherActionPage(options: PettyCashVoucherActionPag
     updateVATable,
     values,
   };
-}
-
-function getPettyCashVoucherFormMode(pathname: string): PettyCashVoucherFormMode {
-  if (pathname.includes("/view/")) {
-    return "view";
-  }
-
-  if (pathname.includes("/edit/")) {
-    return "edit";
-  }
-
-  return "add";
 }
 
 export type { PettyCashVoucherActionPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";

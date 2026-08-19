@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import {
   CashAdvanceMultipleEntryAccountOptions,
   CashAdvanceMultipleEntryEntryDropdownClassName,
@@ -172,38 +171,6 @@ export function EntryMoneyNumberInput({ id, name, readOnly, value }: Omit<Parame
       value={value}
       onValueChange={() => undefined}
     />
-  );
-}
-
-export function CashAdvanceMultipleEntryFieldShell({
-  children,
-  controlId,
-  isRequired = false,
-  label,
-}: {
-  children: ReactNode;
-  controlId?: string;
-  isRequired?: boolean;
-  label: string;
-}) {
-  const labelContent = (
-    <>
-      {label}
-      {isRequired ? <span className="ml-1 text-coralpink">*</span> : null}
-    </>
-  );
-
-  return (
-    <div className="grid min-w-0 gap-2 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-start">
-      {controlId ? (
-        <label htmlFor={controlId} className="pt-2 text-sm font-semibold text-darknavy">
-          {labelContent}
-        </label>
-      ) : (
-        <span className="pt-2 text-sm font-semibold text-darknavy">{labelContent}</span>
-      )}
-      <div className="min-w-0">{children}</div>
-    </div>
   );
 }
 

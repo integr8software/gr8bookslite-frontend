@@ -11,7 +11,7 @@ import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { DisbursementVoucherFieldClassName } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import { formatExchangeRateInput } from "@/app/src/utils/number.util";
-import { FieldShell } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherFieldControls";
+import { TransactionField } from "@/app/src/ui/shared/transaction-setup/TransactionFormFields";
 
 export function DisbursementVoucherDetailsFields({
   canAddPartyName,
@@ -101,7 +101,7 @@ function DisbursementVoucherHeaderFields({
     <>
       <div className="grid min-w-0 gap-x-8 gap-y-5 xl:grid-cols-3">
         <div className="grid min-w-0 content-start gap-4">
-          <FieldShell controlId="disbursement-voucher-party" label="Party Name" error={errors.partyName} isRequired>
+          <TransactionField controlId="disbursement-voucher-party" label="Party Name" error={errors.partyName} isRequired>
             <AppAdvancedDropdown
               id="disbursement-voucher-party"
               addAction={
@@ -125,8 +125,8 @@ function DisbursementVoucherHeaderFields({
                 onPartyChange(code, partyName);
               }}
             />
-          </FieldShell>
-          <FieldShell controlId="disbursement-voucher-project-name" label="Project Name">
+          </TransactionField>
+          <TransactionField controlId="disbursement-voucher-project-name" label="Project Name">
             <AppAdvancedDropdown
               id="disbursement-voucher-project-name"
               value={values.projectName}
@@ -150,8 +150,8 @@ function DisbursementVoucherHeaderFields({
                 onUpdateField("costCenter", project?.label === projectName ? "" : (project?.label ?? ""));
               }}
             />
-          </FieldShell>
-          <FieldShell controlId="disbursement-voucher-remarks" label="Remarks" error={errors.remarks}>
+          </TransactionField>
+          <TransactionField controlId="disbursement-voucher-remarks" label="Remarks" error={errors.remarks}>
             <AppLimitedTextarea
               id="disbursement-voucher-remarks"
               value={values.remarks}
@@ -160,22 +160,22 @@ function DisbursementVoucherHeaderFields({
               className={`${DisbursementVoucherFieldClassName} min-h-24 py-3`}
               counterMode="used"
             />
-          </FieldShell>
+          </TransactionField>
         </div>
 
         <div className="grid min-w-0 content-start gap-4">
-          <FieldShell controlId="disbursement-voucher-party-code" label="Party Code">
+          <TransactionField controlId="disbursement-voucher-party-code" label="Party Code">
             <input id="disbursement-voucher-party-code" value={values.partyCode} readOnly className={DisbursementVoucherFieldClassName} />
-          </FieldShell>
-          <FieldShell controlId="disbursement-voucher-project-code" label="Project Code">
+          </TransactionField>
+          <TransactionField controlId="disbursement-voucher-project-code" label="Project Code">
             <input
               id="disbursement-voucher-project-code"
               value={values.costCenter}
               readOnly
               className={DisbursementVoucherFieldClassName}
             />
-          </FieldShell>
-          <FieldShell controlId="disbursement-voucher-payment-type" label="Payment Type" error={errors.paymentMethod} isRequired>
+          </TransactionField>
+          <TransactionField controlId="disbursement-voucher-payment-type" label="Payment Type" error={errors.paymentMethod} isRequired>
             <AppAdvancedDropdown
               id="disbursement-voucher-payment-type"
               value={values.paymentMethod}
@@ -193,8 +193,8 @@ function DisbursementVoucherHeaderFields({
               searchPlaceholder="Search payment type"
               onChange={(value) => onPaymentTypeChange(String(value))}
             />
-          </FieldShell>
-          <FieldShell controlId="disbursement-voucher-currency" label="Currency" error={errors.currency || errors.fxRate}>
+          </TransactionField>
+          <TransactionField controlId="disbursement-voucher-currency" label="Currency" error={errors.currency || errors.fxRate}>
             <CurrencyExchangeRateRow
               exchangeRateControlId="disbursement-voucher-fx-rate"
               currencyControl={
@@ -224,11 +224,11 @@ function DisbursementVoucherHeaderFields({
                 />
               }
             />
-          </FieldShell>
+          </TransactionField>
         </div>
 
         <div className="grid min-w-0 content-start gap-4">
-          <FieldShell controlId="disbursement-voucher-no" label="Disbursement Voucher No." error={errors.voucherNo} isRequired>
+          <TransactionField controlId="disbursement-voucher-no" label="Disbursement Voucher No." error={errors.voucherNo} isRequired>
             <input
               id="disbursement-voucher-no"
               value={values.voucherNo}
@@ -236,8 +236,8 @@ function DisbursementVoucherHeaderFields({
               placeholder="Auto Generated Disbursement Voucher Transaction Number"
               className={DisbursementVoucherFieldClassName}
             />
-          </FieldShell>
-          <FieldShell controlId="disbursement-voucher-dv-date" label="Disbursement Voucher Date" error={errors.voucherDate} isRequired>
+          </TransactionField>
+          <TransactionField controlId="disbursement-voucher-dv-date" label="Disbursement Voucher Date" error={errors.voucherDate} isRequired>
             <input
               id="disbursement-voucher-dv-date"
               type="date"
@@ -246,10 +246,10 @@ function DisbursementVoucherHeaderFields({
               onChange={(event) => onUpdateField("voucherDate", event.target.value)}
               className={DisbursementVoucherFieldClassName}
             />
-          </FieldShell>
-          <FieldShell controlId="disbursement-voucher-status" label="Status" error={errors.status}>
+          </TransactionField>
+          <TransactionField controlId="disbursement-voucher-status" label="Status" error={errors.status}>
             <input id="disbursement-voucher-status" value={values.status} readOnly className={DisbursementVoucherFieldClassName} />
-          </FieldShell>
+          </TransactionField>
         </div>
       </div>
     </>

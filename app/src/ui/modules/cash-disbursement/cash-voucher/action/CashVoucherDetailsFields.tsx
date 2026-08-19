@@ -10,7 +10,7 @@ import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { CashVoucherFieldClassName } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherConstants";
 import { formatExchangeRateInput } from "@/app/src/utils/number.util";
-import { FieldShell } from "@/app/src/ui/modules/cash-disbursement/cash-voucher/action/CashVoucherFieldControls";
+import { TransactionField } from "@/app/src/ui/shared/transaction-setup/TransactionFormFields";
 
 export function CashVoucherDetailsFields({
   canAddPartyName,
@@ -80,7 +80,7 @@ function CashVoucherHeaderFields({
     <>
       <div className="grid min-w-0 gap-x-8 gap-y-5 xl:grid-cols-3">
         <div className="grid min-w-0 content-start gap-4">
-          <FieldShell controlId="cash-voucher-party" label="Party Name" error={errors.partyName} isRequired>
+          <TransactionField controlId="cash-voucher-party" label="Party Name" error={errors.partyName} isRequired>
             <AppAdvancedDropdown
               id="cash-voucher-party"
               addAction={
@@ -104,8 +104,8 @@ function CashVoucherHeaderFields({
                 onPartyChange(code, partyName);
               }}
             />
-          </FieldShell>
-          <FieldShell controlId="cash-voucher-project-name" label="Project Name">
+          </TransactionField>
+          <TransactionField controlId="cash-voucher-project-name" label="Project Name">
             <AppAdvancedDropdown
               id="cash-voucher-project-name"
               value={values.projectName}
@@ -129,8 +129,8 @@ function CashVoucherHeaderFields({
                 onUpdateField("costCenter", project?.label === projectName ? "" : (project?.label ?? ""));
               }}
             />
-          </FieldShell>
-          <FieldShell controlId="cash-voucher-remarks" label="Remarks" error={errors.remarks}>
+          </TransactionField>
+          <TransactionField controlId="cash-voucher-remarks" label="Remarks" error={errors.remarks}>
             <AppLimitedTextarea
               id="cash-voucher-remarks"
               value={values.remarks}
@@ -139,22 +139,22 @@ function CashVoucherHeaderFields({
               className={`${CashVoucherFieldClassName} min-h-24 py-3`}
               counterMode="used"
             />
-          </FieldShell>
+          </TransactionField>
         </div>
 
         <div className="grid min-w-0 content-start gap-4">
-          <FieldShell controlId="cash-voucher-party-code" label="Party Code">
+          <TransactionField controlId="cash-voucher-party-code" label="Party Code">
             <input id="cash-voucher-party-code" value={values.partyCode} readOnly className={CashVoucherFieldClassName} />
-          </FieldShell>
-          <FieldShell controlId="cash-voucher-project-code" label="Project Code">
+          </TransactionField>
+          <TransactionField controlId="cash-voucher-project-code" label="Project Code">
             <input
               id="cash-voucher-project-code"
               value={values.costCenter}
               readOnly
               className={CashVoucherFieldClassName}
             />
-          </FieldShell>
-          <FieldShell controlId="cash-voucher-currency" label="Currency" error={errors.currency || errors.fxRate}>
+          </TransactionField>
+          <TransactionField controlId="cash-voucher-currency" label="Currency" error={errors.currency || errors.fxRate}>
             <CurrencyExchangeRateRow
               exchangeRateControlId="cash-voucher-fx-rate"
               currencyControl={
@@ -184,11 +184,11 @@ function CashVoucherHeaderFields({
                 />
               }
             />
-          </FieldShell>
+          </TransactionField>
         </div>
 
         <div className="grid min-w-0 content-start gap-4">
-          <FieldShell controlId="cash-voucher-no" label="Cash Voucher No." error={errors.voucherNo} isRequired>
+          <TransactionField controlId="cash-voucher-no" label="Cash Voucher No." error={errors.voucherNo} isRequired>
             <input
               id="cash-voucher-no"
               value={values.voucherNo}
@@ -196,8 +196,8 @@ function CashVoucherHeaderFields({
               placeholder="Auto Generated Cash Voucher Transaction Number"
               className={CashVoucherFieldClassName}
             />
-          </FieldShell>
-          <FieldShell controlId="cash-voucher-cv-date" label="Cash Voucher Date" error={errors.voucherDate} isRequired>
+          </TransactionField>
+          <TransactionField controlId="cash-voucher-cv-date" label="Cash Voucher Date" error={errors.voucherDate} isRequired>
             <input
               id="cash-voucher-cv-date"
               type="date"
@@ -206,10 +206,10 @@ function CashVoucherHeaderFields({
               onChange={(event) => onUpdateField("voucherDate", event.target.value)}
               className={CashVoucherFieldClassName}
             />
-          </FieldShell>
-          <FieldShell controlId="cash-voucher-status" label="Status" error={errors.status}>
+          </TransactionField>
+          <TransactionField controlId="cash-voucher-status" label="Status" error={errors.status}>
             <input id="cash-voucher-status" value={values.status} readOnly className={CashVoucherFieldClassName} />
-          </FieldShell>
+          </TransactionField>
         </div>
       </div>
     </>

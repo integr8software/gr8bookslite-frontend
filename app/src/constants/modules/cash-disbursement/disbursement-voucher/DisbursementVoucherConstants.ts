@@ -3,11 +3,30 @@ import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData"
 import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
 import { CashDisbursementOverviewActionColumnWidth } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import type {
+  DisbursementVoucherActionMode,
   DisbursementVoucherActionTab,
   DisbursementVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 
-export const DisbursementVoucherHref = getModuleRoute("DV");
+export function getDisbursementVoucherSubmitDialogCopy(
+  mode: DisbursementVoucherActionMode,
+  status: DisbursementVoucherStatus,
+) {
+  const isDraft = status === DisbursementVoucherStatuses.draft;
+  const confirmLabel = mode === "edit" ? "Update" : isDraft ? "Save as Draft" : "Save and Submit";
+
+  return {
+    confirmLabel,
+    description: `Confirm that you want to ${confirmLabel.toLowerCase()} this Disbursement Voucher.`,
+    pendingLabel: mode === "edit" ? "Updating..." : "Saving...",
+    title: `${confirmLabel} Disbursement Voucher?`,
+  };
+}
+
+export const DisbursementVoucherLink = getModuleRoute("DV");
+export const DisbursementVoucherAddLink = `${DisbursementVoucherLink}/add`;
+export const getDisbursementVoucherEditLink = (recordId: string) => `${DisbursementVoucherLink}/edit/${recordId}`;
+export const getDisbursementVoucherViewLink = (recordId: string) => `${DisbursementVoucherLink}/view/${recordId}`;
 
 export const DisbursementVoucherQueryKeys = {
   transactions: () => ["cash-disbursement", "disbursement-voucher", "transactions"] as const,
@@ -212,7 +231,7 @@ export const DisbursementVoucherTableColumns = [
     size: TransactionOverviewColumnWidths.status,
   },
   {
-    label: "Action",
+    label: "Actions",
     className: "text-center",
     size: CashDisbursementOverviewActionColumnWidth,
   },
@@ -298,7 +317,7 @@ export function getDisbursementVoucherStatusDialogCopy(
       description: `This will approve ${recordLabel} and update its status to Posted.`,
       iconTone: "approve" as const,
       pendingLabel: "Approving...",
-      title: "Approve disbursement voucher?",
+      title: "Approve Disbursement Voucher?",
       tone: "success" as const,
     };
   }
@@ -309,7 +328,7 @@ export function getDisbursementVoucherStatusDialogCopy(
       description: `This will mark ${recordLabel} as Disapproved.`,
       iconTone: "disapprove" as const,
       pendingLabel: "Disapproving...",
-      title: "Disapprove disbursement voucher?",
+      title: "Disapprove Disbursement Voucher?",
       tone: "danger" as const,
     };
   }

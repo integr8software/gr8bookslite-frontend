@@ -5,10 +5,10 @@ import {
   PettyCashFundResponsibilityCenterLookupOptions,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund/PettyCashFundConstants";
 import type { PettyCashFundActionPageState } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-fund/usePettyCashFundActionPage";
-import { PettyCashFundLookupField } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund/action/PettyCashFundFieldControls";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { AppLookupDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppLookupDropdown";
 import {
   TransactionField,
   TransactionFieldClassName,
@@ -30,7 +30,7 @@ export function PettyCashFundDetailsFields({
       <div className="grid gap-5 xl:grid-cols-3">
         <div className="grid min-w-0 content-start gap-5">
           <TransactionField label="Party Name" error={page.errors.partyName} isRequired>
-            <PettyCashFundLookupField
+            <AppLookupDropdown
               value={page.values.partyCode}
               options={PettyCashFundPartyOptions}
               readOnly={page.isReadonly}
@@ -44,7 +44,7 @@ export function PettyCashFundDetailsFields({
             />
           </TransactionField>
           <TransactionField label="Responsibility Center">
-            <PettyCashFundLookupField
+            <AppLookupDropdown
               value={page.values.responsibilityCenterCode}
               options={PettyCashFundResponsibilityCenterLookupOptions}
               readOnly={page.isReadonly}
@@ -57,7 +57,7 @@ export function PettyCashFundDetailsFields({
             />
           </TransactionField>
           <TransactionField label="Project Name">
-            <PettyCashFundLookupField
+            <AppLookupDropdown
               value={page.values.projectCode}
               options={PettyCashFundProjectOptions}
               readOnly={page.isReadonly}
@@ -71,7 +71,7 @@ export function PettyCashFundDetailsFields({
             />
           </TransactionField>
           <TransactionField label="Default Account Title" error={page.errors.accountTitle} isRequired>
-            <PettyCashFundLookupField
+            <AppLookupDropdown
               value={page.values.accountCode}
               options={PettyCashFundAccountOptions}
               readOnly={page.isReadonly}

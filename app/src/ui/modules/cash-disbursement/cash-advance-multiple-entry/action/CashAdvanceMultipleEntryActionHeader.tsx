@@ -1,17 +1,28 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { CashAdvanceMultipleEntryHref } from "@/app/src/constants/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryConstants";
+import {
+  CashAdvanceMultipleEntryLink,
+  CashAdvanceMultipleEntrySubmitConfirmationDialogConfirmLabels,
+  CashAdvanceMultipleEntrySubmitConfirmationDialogTitles,
+  getCashAdvanceMultipleEntryStatusDialogCopy,
+} from "@/app/src/constants/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryConstants";
 import { createCashAdvanceMultipleEntryApprovalRecord } from "@/app/src/data/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryData";
 import type {
   CashAdvanceMultipleEntryActionMode,
   CashAdvanceMultipleEntryRecord,
+  CashAdvanceMultipleEntrySubmitConfirmationAction,
 } from "@/app/src/types/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryTypes";
+import type { CashAdvanceStatus } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 import { useCashAdvanceMultipleEntryActionForm } from "@/app/src/hooks/modules/cash-disbursement/cash-advance-multiple-entry/useCashAdvanceMultipleEntry";
 import { CashAdvanceViewActions } from "@/app/src/ui/modules/cash-disbursement/cash-advance/action/CashAdvanceViewActions";
 import { CashAdvanceMultipleEntryActionHistory } from "@/app/src/ui/modules/cash-disbursement/cash-advance-multiple-entry/action/CashAdvanceMultipleEntryActionHistory";
 import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ModuleSaveButton } from "@/app/src/ui/shared/module/ModuleSaveButton";
+import { ModuleActionButton } from "@/app/src/ui/shared/module/ModuleActionButton";
 import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
+import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 
 export function CashAdvanceMultipleEntryActionHeader({
@@ -29,6 +40,8 @@ export function CashAdvanceMultipleEntryActionHeader({
   onUpdateStatus: ReturnType<typeof useCashAdvanceMultipleEntryActionForm>["updateEntryStatus"];
   record: CashAdvanceMultipleEntryRecord | null;
 }) {
+  const [submitConfirmation, setSubmitConfirmation] = useState<CashAdvanceMultipleEntrySubmitConfirmationAction | null>(null);
+  const [statusToConfirm, setStatusToConfirm] = useState<CashAdvanceStatus | null>(null);
   const titleLabel =
     mode === "view"
       ? `View Cash Advance Multiple Entry${record?.transNo ? ` | ${record.transNo}` : ""}`
@@ -42,9 +55,14 @@ export function CashAdvanceMultipleEntryActionHeader({
     </span>
   );
   const approvalRecord = createCashAdvanceMultipleEntryApprovalRecord(record);
+  const recordLabel = record?.transNo ?? "this cash advance multiple entry";
+  const statusDialogCopy = statusToConfirm
+    ? getCashAdvanceMultipleEntryStatusDialogCopy(statusToConfirm, recordLabel, approvalRecord?.status)
+    : null;
 
   return (
-    <ModuleHeader
+    <>
+      <ModuleHeader
       variant="panel"
       titleAs="h1"
       title={title}
@@ -52,22 +70,28 @@ export function CashAdvanceMultipleEntryActionHeader({
       actionsClassName="items-center justify-end gap-2"
       actions={
         <>
-          <Link href={CashAdvanceMultipleEntryHref} className={moduleHeaderActionClassNames.secondary}>
+          <Link href={CashAdvanceMultipleEntryLink} className={moduleHeaderActionClassNames.secondary}>
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Back
           </Link>
           {onPreview ? <ReportPreviewAction onPreview={onPreview} /> : null}
           {mode !== "add" ? <CashAdvanceMultipleEntryActionHistory record={record} /> : null}
-          {mode !== "add" ? <CashAdvanceViewActions record={approvalRecord} onUpdateStatus={onUpdateStatus} /> : null}
+          {mode !== "add" ? (
+            <CashAdvanceViewActions
+              record={approvalRecord}
+              onRequestStatusConfirmation={setStatusToConfirm}
+              onUpdateStatus={onUpdateStatus}
+            />
+          ) : null}
           {mode === "view" ? null : (
-            <ModuleSaveButton
-              onSave={onSubmit}
+            <ModuleActionButton
+              onAction={() => setSubmitConfirmation("save")}
               menuItems={
                 mode === "add" && onSaveDraft
                   ? [
                       {
                         label: "Save As Draft",
-                        onSelect: onSaveDraft,
+                        onSelect: () => setSubmitConfirmation("draft"),
                       },
                     ]
                   : []
@@ -76,6 +100,39 @@ export function CashAdvanceMultipleEntryActionHeader({
           )}
         </>
       }
-    />
+      />
+      {submitConfirmation ? (
+        <AppDialog
+          isOpen
+          title={CashAdvanceMultipleEntrySubmitConfirmationDialogTitles[submitConfirmation]}
+          description={`This will ${submitConfirmation === "save" ? "save and submit" : "save as draft"} ${recordLabel}.`}
+          confirmLabel={CashAdvanceMultipleEntrySubmitConfirmationDialogConfirmLabels[submitConfirmation]}
+          tone={submitConfirmation === "save" ? "success" : "default"}
+          onCancel={() => setSubmitConfirmation(null)}
+          onConfirm={() => {
+            if (submitConfirmation === "save") onSubmit();
+            else onSaveDraft?.();
+            setSubmitConfirmation(null);
+          }}
+        />
+      ) : null}
+      {statusDialogCopy ? (
+        <AppDialog
+          isOpen
+          title={statusDialogCopy.title}
+          description={statusDialogCopy.description}
+          cancelLabel="Keep Current Status"
+          confirmLabel={statusDialogCopy.confirmLabel}
+          iconTone={statusDialogCopy.iconTone}
+          pendingLabel={statusDialogCopy.pendingLabel}
+          tone={statusDialogCopy.tone}
+          onCancel={() => setStatusToConfirm(null)}
+          onConfirm={() => {
+            if (statusToConfirm) onUpdateStatus(statusToConfirm);
+            setStatusToConfirm(null);
+          }}
+        />
+      ) : null}
+    </>
   );
 }

@@ -1,11 +1,5 @@
-import {
-  useState } from "react";
-import { Ban,
-  Edit3,
-  Eye,
-  ThumbsDown,
-  ThumbsUp,
-  Undo2 } from "lucide-react";
+import { useState } from "react";
+import { Ban, Edit3, Eye, ThumbsDown, ThumbsUp, Undo2 } from "lucide-react";
 import {
   CashVoucherStatuses,
   canApproveCashVoucherStatus,
@@ -133,5 +127,3 @@ export function CashVoucherRecordActions({
     </>
   );
 }
-
-

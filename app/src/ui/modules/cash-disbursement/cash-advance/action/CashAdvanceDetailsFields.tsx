@@ -9,8 +9,6 @@ import { getPartyDisplayName } from "@/app/src/data/modules/party-management/Par
 import {
   CashAdvanceAccountOptions,
   CashAdvanceCostCenterOptions,
-  CashAdvanceFieldClassName,
-  CashAdvanceReadOnlyFieldClassName,
   CashAdvanceTabs,
 } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
 import { ResponsibilityCenterInitialFormValues } from "@/app/src/data/modules/financial-maintenance/responsibility-center/ResponsibilityCenterData";
@@ -35,7 +33,12 @@ import type {
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { formatExchangeRateInput } from "@/app/src/utils/number.util";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
-import { TransactionField } from "@/app/src/ui/shared/transaction-setup/TransactionFormFields";
+import { AppLookupDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppLookupDropdown";
+import {
+  TransactionField,
+  TransactionFieldClassName,
+  TransactionTextField,
+} from "@/app/src/ui/shared/transaction-setup/TransactionFormFields";
 import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
@@ -115,23 +118,21 @@ export function CashAdvanceDetailsForm({ form, mode }: { form: CashAdvanceFormCo
         ) : null}
 
         {activeTab === "advance" ? (
-          <>
-            <form className="grid min-w-0 gap-x-8 gap-y-5 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5 xl:grid-cols-3">
-              <CashAdvancePrimaryFields
-                accountOptions={accountOptions}
-                costCenterOptions={costCenterOptions}
-                currencyOptions={form.currencyOptions}
-                form={form}
-                isReadonly={isReadonly}
-                partyOptions={partyOptions}
-                projectOptions={projectOptions}
-                onOpenCostCenterDrawer={() => setIsCostCenterDrawerOpen(true)}
-                onOpenPartyDrawer={() => setIsPartyDrawerOpen(true)}
-                onOpenProjectDrawer={() => setIsProjectDrawerOpen(true)}
-                onUpdateCurrency={form.updateCurrency}
-              />
-            </form>
-          </>
+          <section className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
+            <CashAdvancePrimaryFields
+              accountOptions={accountOptions}
+              costCenterOptions={costCenterOptions}
+              currencyOptions={form.currencyOptions}
+              form={form}
+              isReadonly={isReadonly}
+              partyOptions={partyOptions}
+              projectOptions={projectOptions}
+              onOpenCostCenterDrawer={() => setIsCostCenterDrawerOpen(true)}
+              onOpenPartyDrawer={() => setIsPartyDrawerOpen(true)}
+              onOpenProjectDrawer={() => setIsProjectDrawerOpen(true)}
+              onUpdateCurrency={form.updateCurrency}
+            />
+          </section>
         ) : (
           <CashAdvanceFileAttachmentFields
             attachments={form.values.attachments}
@@ -212,72 +213,51 @@ function CashAdvancePrimaryFields({
   projectOptions: AppAdvancedDropdownOption[];
 }) {
   return (
-    <>
-      <div className="grid min-w-0 content-start gap-4">
-        <TransactionField controlId="cash-advance-party" label="Party Name" isRequired>
-          <AppAdvancedDropdown
-            id="cash-advance-party"
-            addAction={
-              !isReadonly
-                ? {
-                    label: "Add Party Name",
-                    onClick: onOpenPartyDrawer,
-                  }
-                : undefined
-            }
-            options={partyOptions}
-            menuMinWidth={320}
-            placeholder="Select Party Name"
-            readOnly={isReadonly}
-            searchPlaceholder="Search Party Name"
+    <div className="grid gap-5 xl:grid-cols-3">
+      {/* Column 1: Name & Lookup Fields */}
+      <div className="grid min-w-0 content-start gap-5">
+        <TransactionField label="Party Name" isRequired>
+          <AppLookupDropdown
             value={form.values.partyCode}
-            onChange={(value) => {
-              const code = String(value);
+            options={partyOptions}
+            readOnly={isReadonly}
+            placeholder="Select Party Name"
+            searchPlaceholder="Search Party Name"
+            addAction={!isReadonly ? { label: "Add Party Name", onClick: onOpenPartyDrawer } : undefined}
+            onChange={(code, name) => {
               const party = partyOptions.find((option) => option.value === code);
 
               form.updateField("partyCode", code);
-              form.updateField("partyName", party?.name ?? "");
+              form.updateField("partyName", name);
               form.updateField("cashAdvanceBalance", party?.cashAdvanceBalance ?? "");
               form.updateReferenceField("partyCode", code);
             }}
           />
         </TransactionField>
-        <TransactionField controlId="cash-advance-account-code" label="Account Title" isRequired>
-          <AppAdvancedDropdown
-            id="cash-advance-account-code"
-            value={form.values.accountCode}
-            readOnly={isReadonly}
-            menuMinWidth={300}
-            options={accountOptions}
-            placeholder="Select Account Title"
-            searchPlaceholder="Search account title"
-            onChange={(value) => {
-              const accountCode = String(value);
 
-              form.updateField("accountCode", accountCode);
-              form.updateReferenceField("accountCode", accountCode);
+        <TransactionField label="Account Title" isRequired>
+          <AppLookupDropdown
+            value={form.values.accountCode}
+            options={accountOptions}
+            readOnly={isReadonly}
+            placeholder="Select Account Title"
+            searchPlaceholder="Search Account Title"
+            onChange={(code) => {
+              form.updateField("accountCode", code);
+              form.updateReferenceField("accountCode", code);
             }}
           />
         </TransactionField>
-        <TransactionField controlId="cash-advance-cost-center" label="Responsibility Center">
-          <AppAdvancedDropdown
-            id="cash-advance-cost-center"
+
+        <TransactionField label="Responsibility Center">
+          <AppLookupDropdown
             value={form.values.costCenter}
-            addAction={
-              !isReadonly
-                ? {
-                    label: "Add Responsibility Center",
-                    onClick: onOpenCostCenterDrawer,
-                  }
-                : undefined
-            }
-            readOnly={isReadonly}
-            menuMinWidth={300}
             options={costCenterOptions}
+            readOnly={isReadonly}
             placeholder="Select Responsibility Center"
-            searchPlaceholder="Search responsibility center"
-            onChange={(value) => {
-              const costCenter = String(value);
+            searchPlaceholder="Search Responsibility Center"
+            addAction={!isReadonly ? { label: "Add Responsibility Center", onClick: onOpenCostCenterDrawer } : undefined}
+            onChange={(costCenter) => {
               const option = costCenterOptions.find((currentOption) => currentOption.value === costCenter);
 
               form.updateField("costCenter", costCenter);
@@ -285,25 +265,16 @@ function CashAdvancePrimaryFields({
             }}
           />
         </TransactionField>
-        <TransactionField controlId="cash-advance-project-name" label="Project Name">
-          <AppAdvancedDropdown
-            id="cash-advance-project-name"
+
+        <TransactionField label="Project Name">
+          <AppLookupDropdown
             value={form.values.referenceFields.projectRef}
-            addAction={
-              !isReadonly
-                ? {
-                    label: "Add Project Name",
-                    onClick: onOpenProjectDrawer,
-                  }
-                : undefined
-            }
-            readOnly={isReadonly}
-            menuMinWidth={320}
             options={projectOptions}
+            readOnly={isReadonly}
             placeholder="Select Project Name"
-            searchPlaceholder="Search project name"
-            onChange={(value) => {
-              const projectName = String(value);
+            searchPlaceholder="Search Project Name"
+            addAction={!isReadonly ? { label: "Add Project Name", onClick: onOpenProjectDrawer } : undefined}
+            onChange={(projectName) => {
               const project = projectOptions.find((option) => option.value === projectName);
 
               form.updateReferenceField("projectRef", projectName);
@@ -311,125 +282,131 @@ function CashAdvancePrimaryFields({
             }}
           />
         </TransactionField>
-        <TransactionField controlId="cash-advance-remarks" label="Remarks">
+
+        <TransactionField label="Remarks">
           <AppLimitedTextarea
-            id="cash-advance-remarks"
             value={form.values.remarks}
             onChange={(event) => form.updateField("remarks", event.target.value)}
             readOnly={isReadonly}
-            className={`${CashAdvanceFieldClassName} min-h-24 py-3`}
+            className={`${TransactionFieldClassName} min-h-28 max-w-full resize py-3`}
             counterMode="used"
+            placeholder="Optional Remarks"
           />
         </TransactionField>
       </div>
 
-      <div className="grid min-w-0 content-start gap-4">
-        <TransactionField controlId="cash-advance-party-code" label="Party Code">
-          <input id="cash-advance-party-code" value={form.values.partyCode} readOnly className={CashAdvanceReadOnlyFieldClassName} />
-        </TransactionField>
-        <TransactionField controlId="cash-advance-account-code-reference" label="Account Code">
-          <input
-            id="cash-advance-account-code-reference"
-            value={form.values.accountCode}
-            readOnly
-            className={CashAdvanceReadOnlyFieldClassName}
-          />
-        </TransactionField>
-        <TransactionField controlId="cash-advance-cost-center-code" label="Responsibility Center Code">
-          <input
-            id="cash-advance-cost-center-code"
-            value={form.values.referenceFields.costCenterCode}
-            readOnly
-            className={CashAdvanceReadOnlyFieldClassName}
-          />
-        </TransactionField>
-        <TransactionField controlId="cash-advance-project-code" label="Project Code">
-          <input
-            id="cash-advance-project-code"
-            value={form.values.referenceFields.projectCode}
-            readOnly
-            className={CashAdvanceReadOnlyFieldClassName}
-          />
-        </TransactionField>
-        <TransactionField controlId="cash-advance-currency" label="Currency">
-          <CurrencyExchangeRateRow
-            exchangeRateControlId="cash-advance-fx-rate"
-            currencyControl={
-              <AppAdvancedDropdown
-                id="cash-advance-currency"
-                className="w-full min-w-0"
-                value={form.values.currency}
-                readOnly={isReadonly}
-                isClearable={false}
-                menuMinWidth={320}
-                options={currencyOptions}
-                placeholder="Currency"
-                searchPlaceholder="Search currency"
-                onChange={(value) => onUpdateCurrency(String(value))}
-              />
-            }
-            exchangeRateControl={
-              <input
-                id="cash-advance-fx-rate"
-                type="text"
-                inputMode="decimal"
-                value={form.values.fxRate}
-                readOnly={isReadonly}
-                disabled={isReadonly || form.isExchangeRateLoading}
-                onChange={(event) => form.updateField("fxRate", formatExchangeRateInput(event.target.value))}
-                className={`${CashAdvanceFieldClassName} text-right`}
-              />
-            }
-          />
-        </TransactionField>
-        <TransactionField controlId="cash-advance-balance" label="Cash Advance Balance">
+      {/* Column 2: Aligned Code & Financial Fields */}
+      <div className="grid min-w-0 content-start gap-5">
+        <TransactionTextField
+          value={form.values.partyCode}
+          isReadonly
+          isRequired
+          label="Party Code"
+          onValueChange={(value) => form.updateField("partyCode", value)}
+          placeholder="Party Code"
+        />
+
+        <TransactionTextField
+          value={form.values.accountCode}
+          isReadonly
+          isRequired
+          label="Account Code"
+          onValueChange={(value) => form.updateField("accountCode", value)}
+          placeholder="Account Code"
+        />
+
+        <TransactionTextField
+          value={form.values.referenceFields.costCenterCode}
+          isReadonly
+          label="Responsibility Center Code"
+          onValueChange={(value) => form.updateReferenceField("costCenterCode", value)}
+          placeholder="Responsibility Center Code"
+        />
+
+        <TransactionTextField
+          value={form.values.referenceFields.projectCode}
+          isReadonly
+          label="Project Code"
+          onValueChange={(value) => form.updateReferenceField("projectCode", value)}
+          placeholder="Project Code"
+        />
+
+        <CurrencyExchangeRateRow
+          currencyControlId="cash-advance-currency"
+          currencyLabel="Currency"
+          currencyControl={
+            <AppAdvancedDropdown
+              id="cash-advance-currency"
+              value={form.values.currency}
+              readOnly={isReadonly}
+              isClearable={false}
+              menuMinWidth={320}
+              options={currencyOptions}
+              placeholder="Currency"
+              searchPlaceholder="Search Currency"
+              onChange={(value) => onUpdateCurrency(String(value))}
+            />
+          }
+          exchangeRateControlId="cash-advance-fx-rate"
+          exchangeRateControl={
+            <input
+              id="cash-advance-fx-rate"
+              type="text"
+              inputMode="decimal"
+              value={form.values.fxRate}
+              readOnly={isReadonly}
+              disabled={isReadonly || form.isExchangeRateLoading}
+              onChange={(event) => form.updateField("fxRate", formatExchangeRateInput(event.target.value))}
+              className={`${TransactionFieldClassName} text-right tabular-nums`}
+            />
+          }
+        />
+
+        <TransactionField label="Cash Advance Balance">
           <MoneyNumberField
-            id="cash-advance-balance"
             value={form.values.cashAdvanceBalance}
             onValueChange={() => undefined}
             readOnly
-            className={`${CashAdvanceReadOnlyFieldClassName} text-right tabular-nums`}
+            className={`${TransactionFieldClassName} text-right tabular-nums`}
             placeholder="0.00"
           />
         </TransactionField>
-        <TransactionField controlId="cash-advance-amount" label="Amount" isRequired>
+
+        <TransactionField label="Amount" isRequired>
           <MoneyNumberField
-            id="cash-advance-amount"
             min="0"
             value={form.values.amount}
             onValueChange={form.updateAmount}
             placeholder="0.00"
             readOnly={isReadonly}
-            className={`${CashAdvanceFieldClassName} text-right tabular-nums`}
+            className={`${TransactionFieldClassName} text-right tabular-nums`}
           />
         </TransactionField>
       </div>
 
-      <div className="grid min-w-0 content-start gap-4">
-        <TransactionField controlId="cash-advance-trans-no" label="Cash Advance No." isRequired>
-          <input
-            id="cash-advance-trans-no"
-            value={form.values.transNo}
-            placeholder="Auto Generated Cash Advance Transaction Number"
-            readOnly
-            className={CashAdvanceReadOnlyFieldClassName}
-          />
-        </TransactionField>
-        <TransactionField controlId="cash-advance-document-date" label="Cash Advance Date">
-          <input
-            id="cash-advance-document-date"
-            type="date"
-            readOnly={isReadonly}
-            value={form.values.documentDate}
-            onChange={(event) => form.updateField("documentDate", event.target.value)}
-            className={CashAdvanceFieldClassName}
-          />
-        </TransactionField>
-        <TransactionField controlId="cash-advance-status" label="Status">
-          <input id="cash-advance-status" readOnly value={form.values.status} className={CashAdvanceReadOnlyFieldClassName} />
-        </TransactionField>
+      {/* Column 3: Transaction Details & Status */}
+      <div className="grid min-w-0 content-start gap-5">
+        <TransactionTextField
+          value={form.values.transNo}
+          isReadonly
+          isRequired
+          label="Cash Advance No."
+          onValueChange={(value) => form.updateField("transNo", value)}
+          placeholder="Auto Generated Cash Advance Transaction Number"
+        />
+
+        <TransactionTextField
+          value={form.values.documentDate}
+          isReadonly={isReadonly}
+          isRequired
+          label="Cash Advance Date"
+          type="date"
+          onValueChange={(value) => form.updateField("documentDate", value)}
+        />
+
+        <TransactionTextField value={form.values.status} isReadonly label="Status" onValueChange={() => undefined} />
       </div>
-    </>
+    </div>
   );
 }
 

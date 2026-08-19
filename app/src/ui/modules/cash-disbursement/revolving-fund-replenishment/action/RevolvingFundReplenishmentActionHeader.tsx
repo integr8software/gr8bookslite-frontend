@@ -1,14 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import {
-  useState } from "react";
-import { ArrowLeft,
-  Ban,
-  Edit3,
-  FileText,
-  ThumbsDown,
-  ThumbsUp } from "lucide-react";
+import { ArrowLeft, Ban, Edit3, FileText, ThumbsDown, ThumbsUp } from "lucide-react";
 import {
   RevolvingFundReplenishmentConfirmationDialogConfirmLabels,
   RevolvingFundReplenishmentConfirmationDialogTitles,
@@ -42,6 +36,7 @@ export function RevolvingFundReplenishmentActionHeader({
         <ModuleStatusBadge status={page.values.status} />
       </span>
     );
+
   return (
     <>
       <ModuleHeader

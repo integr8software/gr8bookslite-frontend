@@ -1,14 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import {
-  useState } from "react";
-import { ArrowLeft,
-  Ban,
-  Edit3,
-  FileText,
-  ThumbsDown,
-  ThumbsUp } from "lucide-react";
+import { ArrowLeft, Ban, Edit3, FileText, ThumbsDown, ThumbsUp } from "lucide-react";
 import {
   PettyCashFundConfirmationDialogConfirmLabels,
   PettyCashFundConfirmationDialogTitles,
@@ -36,6 +30,7 @@ export function PettyCashFundActionHeader({ onPreview, page }: { onPreview: () =
         <ModuleStatusBadge status={page.values.status} />
       </span>
     );
+
   return (
     <>
       <ModuleHeader

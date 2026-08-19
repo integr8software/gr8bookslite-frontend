@@ -1,15 +1,4 @@
-import {
-  Ban,
-  CalendarDays,
-  CheckCircle2,
-  Clock3,
-  Edit3,
-  Eye,
-  PackageCheck,
-  ThumbsDown,
-  Undo2,
-  XCircle,
-} from "lucide-react";
+import { Ban, CalendarDays, CheckCircle2, Clock3, Edit3, Eye, PackageCheck, ThumbsDown, Undo2, XCircle } from "lucide-react";
 import {
   JournalVoucherHref,
   canApproveJournalVoucherStatus,
@@ -25,35 +14,24 @@ import type {
   JournalVoucherRecord,
   JournalVoucherStatus,
 } from "@/app/src/types/modules/general-journal/journal-voucher/JournalVoucherTypes";
-import {
-  ModuleActionMenu,
-  type ModuleActionMenuItem,
-} from "@/app/src/ui/shared/module/ModuleActionMenu";
-import {
-  ModuleTableActions,
-} from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
+import type { JournalVoucherPermissions } from "@/app/src/services/modules/general-journal/journal-voucher/JournalVoucherService";
+import { ModuleActionMenu, type ModuleActionMenuItem } from "@/app/src/ui/shared/module/ModuleActionMenu";
+import { ModuleTableActions } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 type JournalVoucherTableRowProps = {
+  permissions: JournalVoucherPermissions;
   record: JournalVoucherRecord;
-  onUpdateStatus: (
-    record: JournalVoucherRecord,
-    status: JournalVoucherStatus,
-  ) => void;
+  onUpdateStatus: (record: JournalVoucherRecord, status: JournalVoucherStatus) => void;
 };
 
-export function JournalVoucherTableRow({
-  record,
-  onUpdateStatus,
-}: JournalVoucherTableRowProps) {
-  const totals = getJournalVoucherTotals(record.lines);
+export function JournalVoucherTableRow({ permissions, record, onUpdateStatus }: JournalVoucherTableRowProps) {
+  const totals = getJournalVoucherTotals(record.lines, record);
   const isPosted = record.status === "Posted";
   const isDisapproved = record.status === "Disapproved";
   const isCancelled = record.status === "Cancelled";
   const approvalUndoStatus: JournalVoucherStatus = "For Approval";
-  const cancelStatus: JournalVoucherStatus = isCancelled
-    ? "For Approval"
-    : "Cancelled";
+  const cancelStatus: JournalVoucherStatus = isCancelled ? "For Approval" : "Cancelled";
   const actionItems: ModuleActionMenuItem[] = [
     {
       href: `${JournalVoucherHref}/view/${record.id}`,
@@ -61,7 +39,7 @@ export function JournalVoucherTableRow({
       label: "View",
       type: "link",
     },
-    ...(canEditJournalVoucherStatus(record.status)
+    ...(permissions.canUpdate && canEditJournalVoucherStatus(record.status)
       ? [
           {
             href: `${JournalVoucherHref}/edit/${record.id}`,
@@ -71,28 +49,35 @@ export function JournalVoucherTableRow({
           } satisfies ModuleActionMenuItem,
         ]
       : []),
+    ...(record.status === "Draft"
+      ? [
+          {
+            disabled: !permissions.canSubmitForApproval,
+            icon: Clock3,
+            label: "Submit for Approval",
+            onSelect: () => onUpdateStatus(record, "For Approval"),
+            type: "button",
+          } satisfies ModuleActionMenuItem,
+        ]
+      : []),
     {
-      disabled: !canApproveJournalVoucherStatus(record.status),
+      disabled: !permissions.canPost || !canApproveJournalVoucherStatus(record.status),
       icon: isPosted ? Undo2 : PackageCheck,
       label: isPosted ? "Undo Posted" : "Approve",
-      onSelect: () =>
-        onUpdateStatus(record, isPosted ? approvalUndoStatus : "Posted"),
+      onSelect: () => onUpdateStatus(record, isPosted ? approvalUndoStatus : "Posted"),
       type: "button",
     },
     {
-      disabled: !canDisapproveJournalVoucherStatus(record.status),
+      disabled: !permissions.canDisapprove || !canDisapproveJournalVoucherStatus(record.status),
       icon: isDisapproved ? Undo2 : ThumbsDown,
       label: isDisapproved ? "Undo Disapproved" : "Disapprove",
-      onSelect: () =>
-        onUpdateStatus(
-          record,
-          isDisapproved ? approvalUndoStatus : "Disapproved",
-        ),
+      onSelect: () => onUpdateStatus(record, isDisapproved ? approvalUndoStatus : "Disapproved"),
       tone: isDisapproved ? "default" : "danger",
       type: "button",
     },
     {
-      disabled: !canCancelJournalVoucherStatus(record.status),
+      disabled:
+        record.status === "Cancelled" ? !permissions.canUncancel : !permissions.canCancel || !canCancelJournalVoucherStatus(record.status),
       icon: isCancelled ? Undo2 : Ban,
       label: isCancelled ? "Uncancelled" : "Cancel",
       onSelect: () => onUpdateStatus(record, cancelStatus),
@@ -111,42 +96,27 @@ export function JournalVoucherTableRow({
         </span>
       </td>
       <td className="px-4 py-4">
-        <p className="line-clamp-2 max-w-[22rem] text-sm text-darknavy/75">
-          {record.remarks || "No remarks"}
-        </p>
+        <p className="line-clamp-2 max-w-[22rem] text-sm text-darknavy/75">{record.remarks || "No remarks"}</p>
       </td>
       <td className="px-4 py-4">
         <div className="font-medium">{record.currencyType}</div>
-        <div className="text-xs text-darknavy/55">
-          Exchange Rate {formatJournalVoucherAmount(record.currencyRate)}
-        </div>
+        <div className="text-xs text-darknavy/55">Exchange Rate {formatJournalVoucherAmount(record.currencyRate)}</div>
       </td>
-      <td className="px-4 py-4 text-right font-semibold tabular-nums">
-        {formatJournalVoucherAmount(totals.totalDebit)}
-      </td>
-      <td className="px-4 py-4 text-right font-semibold tabular-nums">
-        {formatJournalVoucherAmount(totals.totalCredit)}
-      </td>
+      <td className="px-4 py-4 text-right font-semibold tabular-nums">{formatJournalVoucherAmount(totals.totalDebit)}</td>
+      <td className="px-4 py-4 text-right font-semibold tabular-nums">{formatJournalVoucherAmount(totals.totalCredit)}</td>
       <td className="px-4 py-4">
         <JournalVoucherStatusBadge status={record.status} />
       </td>
       <td className="px-4 py-4">
         <ModuleTableActions className="w-full !justify-center">
-          <ModuleActionMenu
-            items={actionItems}
-            label={`Actions for journal voucher ${record.transactionNo}`}
-          />
+          <ModuleActionMenu items={actionItems} label={`Actions for journal voucher ${record.transactionNo}`} />
         </ModuleTableActions>
       </td>
     </tr>
   );
 }
 
-function JournalVoucherStatusBadge({
-  status,
-}: {
-  status: JournalVoucherStatus;
-}) {
+function JournalVoucherStatusBadge({ status }: { status: JournalVoucherStatus }) {
   const Icon = statusIconByStatus[status];
 
   return (

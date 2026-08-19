@@ -13,6 +13,7 @@ import type {
   UpdateBillingStatementStatusDto,
 } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import { createBillingStatementAccountingEntries } from "@/app/src/data/modules/sales/billing-statement/BillingStatementData";
+import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import type {
   BillingStatementAccountingEntry,
   BillingStatementFormValues,
@@ -249,7 +250,7 @@ function toApiBillingStatementPayload(
   values: BillingStatementFormValues,
   branchUnitId?: number | null,
 ): CreateBillingStatementDto {
-  const exchangeRate = Number(values.exchangeRate) || 1;
+  const exchangeRate = toExchangeRate(values.exchangeRate);
   const currency = values.currency.trim() || "PHP";
 
   return {
@@ -369,8 +370,15 @@ function toBoolean(value: string) {
 }
 
 function toNumber(value: number | string | null | undefined, fallback = 0) {
-  const numberValue = Number(value);
-  return Number.isFinite(numberValue) ? numberValue : fallback;
+  const parsed = parseMoneyNumberInput(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.round(parsed * 100) / 100;
+}
+
+function toExchangeRate(value: number | string | null | undefined, fallback = 1) {
+  const parsed = parseMoneyNumberInput(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
+  return Math.round(parsed * 1000000) / 1000000;
 }
 
 function normalizeDateValue(value?: string | null): string {

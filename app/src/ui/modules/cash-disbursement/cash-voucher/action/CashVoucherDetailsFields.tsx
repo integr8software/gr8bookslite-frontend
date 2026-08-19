@@ -6,47 +6,17 @@ import {
 import type { CashVoucherDetailsFormProps } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { AppLookupDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppLookupDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
-import { CashVoucherFieldClassName } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherConstants";
+import {
+  TransactionField,
+  TransactionFieldClassName,
+  TransactionTextField,
+} from "@/app/src/ui/shared/transaction-setup/TransactionFormFields";
 import { formatExchangeRateInput } from "@/app/src/utils/number.util";
-import { TransactionField } from "@/app/src/ui/shared/transaction-setup/TransactionFormFields";
 
 export function CashVoucherDetailsFields({
-  canAddPartyName,
-  canAddProjectName,
-  currencyOptions,
-  errors,
-  isExchangeRateLoading,
-  isReadonly,
-  onOpenPartyNameDrawer,
-  onOpenProjectNameDrawer,
-  onCurrencyChange,
-  onPartyChange,
-  onUpdateField,
-  values,
-}: CashVoucherDetailsFormProps) {
-  return (
-    <section className="min-w-0 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
-      <CashVoucherHeaderFields
-        canAddPartyName={canAddPartyName}
-        canAddProjectName={canAddProjectName}
-        currencyOptions={currencyOptions}
-        errors={errors}
-        isExchangeRateLoading={isExchangeRateLoading}
-        isReadonly={isReadonly}
-        onOpenPartyNameDrawer={onOpenPartyNameDrawer}
-        onOpenProjectNameDrawer={onOpenProjectNameDrawer}
-        onCurrencyChange={onCurrencyChange}
-        onPartyChange={onPartyChange}
-        onUpdateField={onUpdateField}
-        values={values}
-      />
-    </section>
-  );
-}
-
-function CashVoucherHeaderFields({
   canAddPartyName,
   canAddProjectName,
   currencyOptions,
@@ -68,6 +38,7 @@ function CashVoucherHeaderFields({
       }),
     [values.partyCode, values.partyName],
   );
+
   const projectOptions = useMemo<AppAdvancedDropdownOption[]>(
     () =>
       createVoucherProjectOptions({
@@ -76,13 +47,19 @@ function CashVoucherHeaderFields({
       }),
     [values.costCenter, values.projectName],
   );
+
   return (
-    <>
-      <div className="grid min-w-0 gap-x-8 gap-y-5 xl:grid-cols-3">
-        <div className="grid min-w-0 content-start gap-4">
-          <TransactionField controlId="cash-voucher-party" label="Party Name" error={errors.partyName} isRequired>
-            <AppAdvancedDropdown
-              id="cash-voucher-party"
+    <section className="min-w-0 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
+      <div className="grid min-w-0 gap-5 xl:grid-cols-3">
+        {/* Column 1: Name & Lookup Fields */}
+        <div className="grid min-w-0 content-start gap-5">
+          <TransactionField label="Party Name" error={errors.partyName} isRequired>
+            <AppLookupDropdown
+              value={values.partyCode}
+              options={partyOptions}
+              readOnly={isReadonly}
+              placeholder="Select Party Name"
+              searchPlaceholder="Search Party Name"
               addAction={
                 !isReadonly && canAddPartyName
                   ? {
@@ -91,128 +68,133 @@ function CashVoucherHeaderFields({
                     }
                   : undefined
               }
-              options={partyOptions}
-              placeholder="Select Party Name"
-              readOnly={isReadonly}
-              searchPlaceholder="Search Party Name"
-              value={values.partyCode}
-              onChange={(value) => {
-                const code = String(value);
+              onChange={(code, name) => {
                 const party = partyOptions.find((option) => option.value === code);
-                const partyName = party?.name ?? values.partyName;
-
+                const partyName = party?.name ?? name ?? values.partyName;
                 onPartyChange(code, partyName);
               }}
             />
           </TransactionField>
-          <TransactionField controlId="cash-voucher-project-name" label="Project Name">
-            <AppAdvancedDropdown
-              id="cash-voucher-project-name"
+
+          <TransactionField label="Project Name">
+            <AppLookupDropdown
               value={values.projectName}
+              options={projectOptions}
               readOnly={isReadonly}
+              placeholder="Select Project Name"
+              searchPlaceholder="Search Project Name"
               addAction={
                 !isReadonly && canAddProjectName
                   ? {
-                      label: "Add Project",
+                      label: "Add Project Name",
                       onClick: onOpenProjectNameDrawer,
                     }
                   : undefined
               }
-              options={projectOptions}
-              placeholder="Select Project Name"
-              searchPlaceholder="Search Project Name"
-              onChange={(value) => {
-                const projectName = String(value);
+              onChange={(projectName) => {
                 const project = projectOptions.find((option) => option.value === projectName);
-
                 onUpdateField("projectName", projectName);
                 onUpdateField("costCenter", project?.label === projectName ? "" : (project?.label ?? ""));
               }}
             />
           </TransactionField>
-          <TransactionField controlId="cash-voucher-remarks" label="Remarks" error={errors.remarks}>
+
+          <TransactionField label="Remarks" error={errors.remarks}>
             <AppLimitedTextarea
-              id="cash-voucher-remarks"
               value={values.remarks}
               readOnly={isReadonly}
               onChange={(event) => onUpdateField("remarks", event.target.value)}
-              className={`${CashVoucherFieldClassName} min-h-24 py-3`}
+              className={`${TransactionFieldClassName} min-h-28 max-w-full resize py-3`}
               counterMode="used"
+              placeholder="Optional Remarks"
             />
           </TransactionField>
         </div>
 
-        <div className="grid min-w-0 content-start gap-4">
-          <TransactionField controlId="cash-voucher-party-code" label="Party Code">
-            <input id="cash-voucher-party-code" value={values.partyCode} readOnly className={CashVoucherFieldClassName} />
-          </TransactionField>
-          <TransactionField controlId="cash-voucher-project-code" label="Project Code">
-            <input
-              id="cash-voucher-project-code"
-              value={values.costCenter}
-              readOnly
-              className={CashVoucherFieldClassName}
-            />
-          </TransactionField>
-          <TransactionField controlId="cash-voucher-currency" label="Currency" error={errors.currency || errors.fxRate}>
-            <CurrencyExchangeRateRow
-              exchangeRateControlId="cash-voucher-fx-rate"
-              currencyControl={
-                <AppAdvancedDropdown
-                  id="cash-voucher-currency"
-                  className="w-full min-w-0"
-                  value={values.currency}
-                  readOnly={isReadonly}
-                  isClearable={false}
-                  menuMinWidth={320}
-                  options={currencyOptions}
-                  placeholder="Currency"
-                  searchPlaceholder="Search currency"
-                  onChange={(value) => onCurrencyChange(String(value))}
-                />
-              }
-              exchangeRateControl={
-                <input
-                  id="cash-voucher-fx-rate"
-                  type="text"
-                  inputMode="decimal"
-                  value={values.fxRate}
-                  readOnly={isReadonly}
-                  disabled={isReadonly || isExchangeRateLoading}
-                  onChange={(event) => onUpdateField("fxRate", formatExchangeRateInput(event.target.value))}
-                  className={`${CashVoucherFieldClassName} text-right`}
-                />
-              }
-            />
-          </TransactionField>
+        {/* Column 2: Aligned Code & Currency Fields */}
+        <div className="grid min-w-0 content-start gap-5">
+          <TransactionTextField
+            value={values.partyCode}
+            isReadonly
+            isRequired
+            label="Party Code"
+            error={errors.partyCode}
+            onValueChange={(value) => onPartyChange(value, values.partyName)}
+            placeholder="Party Code"
+          />
+
+          <TransactionTextField
+            value={values.costCenter}
+            isReadonly
+            label="Project Code"
+            onValueChange={(value) => onUpdateField("costCenter", value)}
+            placeholder="Project Code"
+          />
+
+          <CurrencyExchangeRateRow
+            currencyControlId="cash-voucher-currency"
+            currencyLabel="Currency"
+            currencyControl={
+              <AppAdvancedDropdown
+                id="cash-voucher-currency"
+                value={values.currency}
+                readOnly={isReadonly}
+                isClearable={false}
+                menuMinWidth={320}
+                options={currencyOptions}
+                placeholder="Currency"
+                searchPlaceholder="Search Currency"
+                onChange={(value) => onCurrencyChange(String(value))}
+              />
+            }
+            exchangeRateControlId="cash-voucher-fx-rate"
+            exchangeRateControl={
+              <input
+                id="cash-voucher-fx-rate"
+                type="text"
+                inputMode="decimal"
+                value={values.fxRate}
+                readOnly={isReadonly}
+                disabled={isReadonly || isExchangeRateLoading}
+                onChange={(event) => onUpdateField("fxRate", formatExchangeRateInput(event.target.value))}
+                className={`${TransactionFieldClassName} text-right tabular-nums`}
+              />
+            }
+          />
         </div>
 
-        <div className="grid min-w-0 content-start gap-4">
-          <TransactionField controlId="cash-voucher-no" label="Cash Voucher No." error={errors.voucherNo} isRequired>
-            <input
-              id="cash-voucher-no"
-              value={values.voucherNo}
-              readOnly
-              placeholder="Auto Generated Cash Voucher Transaction Number"
-              className={CashVoucherFieldClassName}
-            />
-          </TransactionField>
-          <TransactionField controlId="cash-voucher-cv-date" label="Cash Voucher Date" error={errors.voucherDate} isRequired>
-            <input
-              id="cash-voucher-cv-date"
-              type="date"
-              value={values.voucherDate}
-              readOnly={isReadonly}
-              onChange={(event) => onUpdateField("voucherDate", event.target.value)}
-              className={CashVoucherFieldClassName}
-            />
-          </TransactionField>
-          <TransactionField controlId="cash-voucher-status" label="Status" error={errors.status}>
-            <input id="cash-voucher-status" value={values.status} readOnly className={CashVoucherFieldClassName} />
-          </TransactionField>
+        {/* Column 3: Transaction Identity & Status */}
+        <div className="grid min-w-0 content-start gap-5">
+          <TransactionTextField
+            value={values.voucherNo}
+            isReadonly
+            isRequired
+            label="Cash Voucher No."
+            error={errors.voucherNo}
+            onValueChange={(value) => onUpdateField("voucherNo", value)}
+            placeholder="Auto Generated Cash Voucher Transaction Number"
+          />
+
+          <TransactionTextField
+            value={values.voucherDate}
+            isReadonly={isReadonly}
+            isRequired
+            label="Cash Voucher Date"
+            error={errors.voucherDate}
+            type="date"
+            onValueChange={(value) => onUpdateField("voucherDate", value)}
+          />
+
+          <TransactionTextField
+            value={values.status}
+            isReadonly
+            label="Status"
+            error={errors.status}
+            onValueChange={() => undefined}
+          />
         </div>
       </div>
-    </>
+    </section>
   );
 }
 
@@ -268,5 +250,3 @@ function addUniqueDropdownOption(options: AppAdvancedDropdownOption[], option: A
 
   options.push(option);
 }
-
-

@@ -1,13 +1,7 @@
 "use client";
 
-import {
-  useState } from "react";
-import { Ban,
-  Edit3,
-  Eye,
-  ThumbsDown,
-  ThumbsUp,
-  Undo2 } from "lucide-react";
+import { useState } from "react";
+import { Ban, Edit3, Eye, ThumbsDown, ThumbsUp, Undo2 } from "lucide-react";
 import {
   RevolvingFundStatuses,
   canEditRevolvingFund,
@@ -65,6 +59,7 @@ export function RevolvingFundRecordActions({
       onSelect: () => (isCancelled ? onUpdateStatus(record, RevolvingFundStatuses.draft) : setStatus(RevolvingFundStatuses.cancelled)),
     },
   ];
+
   return (
     <>
       <ModuleTableActions className="w-full !justify-center">

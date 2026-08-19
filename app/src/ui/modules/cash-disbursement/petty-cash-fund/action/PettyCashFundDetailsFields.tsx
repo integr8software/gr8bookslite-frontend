@@ -28,6 +28,7 @@ export function PettyCashFundDetailsFields({
   return (
     <section className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
       <div className="grid gap-5 xl:grid-cols-3">
+        {/* Column 1: Name & Lookup Fields */}
         <div className="grid min-w-0 content-start gap-5">
           <TransactionField label="Party Name" error={page.errors.partyName} isRequired>
             <AppLookupDropdown
@@ -43,6 +44,7 @@ export function PettyCashFundDetailsFields({
               }}
             />
           </TransactionField>
+
           <TransactionField label="Responsibility Center">
             <AppLookupDropdown
               value={page.values.responsibilityCenterCode}
@@ -56,6 +58,7 @@ export function PettyCashFundDetailsFields({
               }}
             />
           </TransactionField>
+
           <TransactionField label="Project Name">
             <AppLookupDropdown
               value={page.values.projectCode}
@@ -70,6 +73,7 @@ export function PettyCashFundDetailsFields({
               }}
             />
           </TransactionField>
+
           <TransactionField label="Default Account Title" error={page.errors.accountTitle} isRequired>
             <AppLookupDropdown
               value={page.values.accountCode}
@@ -83,6 +87,7 @@ export function PettyCashFundDetailsFields({
               }}
             />
           </TransactionField>
+
           <TransactionField label="Remarks">
             <AppLimitedTextarea
               value={page.values.remarks}
@@ -94,6 +99,8 @@ export function PettyCashFundDetailsFields({
             />
           </TransactionField>
         </div>
+
+        {/* Column 2: Aligned Code & Financial Fields */}
         <div className="grid min-w-0 content-start gap-5">
           <TransactionTextField
             value={page.values.partyCode}
@@ -104,6 +111,7 @@ export function PettyCashFundDetailsFields({
             onValueChange={(value) => page.updateField("partyCode", value)}
             placeholder="Party Code"
           />
+
           <TransactionTextField
             value={page.values.responsibilityCenterCode}
             isReadonly
@@ -111,6 +119,7 @@ export function PettyCashFundDetailsFields({
             onValueChange={(value) => page.updateField("responsibilityCenterCode", value)}
             placeholder="Responsibility Center Code"
           />
+
           <TransactionTextField
             value={page.values.projectCode}
             isReadonly
@@ -118,6 +127,7 @@ export function PettyCashFundDetailsFields({
             onValueChange={(value) => page.updateField("projectCode", value)}
             placeholder="Project Code"
           />
+
           <TransactionTextField
             value={page.values.accountCode}
             isReadonly
@@ -127,6 +137,7 @@ export function PettyCashFundDetailsFields({
             onValueChange={(value) => page.updateField("accountCode", value)}
             placeholder="Account Code"
           />
+
           <CurrencyExchangeRateRow
             currencyControlId="pcf-currency"
             currencyLabel="Currency"
@@ -158,6 +169,8 @@ export function PettyCashFundDetailsFields({
             }
           />
         </div>
+
+        {/* Column 3: Transaction Identity & Status */}
         <div className="grid min-w-0 content-start gap-5">
           <TransactionTextField
             value={page.values.transactionNo}
@@ -168,6 +181,7 @@ export function PettyCashFundDetailsFields({
             onValueChange={(value) => page.updateField("transactionNo", value)}
             placeholder="Auto Generated Petty Cash Fund Transaction Number"
           />
+
           <TransactionTextField
             value={page.values.documentDate}
             isReadonly={page.isReadonly}
@@ -176,6 +190,7 @@ export function PettyCashFundDetailsFields({
             type="date"
             onValueChange={(value) => page.updateField("documentDate", value)}
           />
+
           <TransactionTextField value={page.values.status} isReadonly label="Status" onValueChange={() => undefined} />
         </div>
       </div>

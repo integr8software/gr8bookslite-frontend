@@ -1,15 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-  CheckCircle2,
-  Clock3,
-  FileText,
-  PackageCheck,
-  Plus,
-  Search,
-  XCircle,
-} from "lucide-react";
+import { CheckCircle2, Clock3, FileText, PackageCheck, Plus, Search, XCircle } from "lucide-react";
 import {
   JournalVoucherHref,
   JournalVoucherStatusFilters,
@@ -21,10 +13,7 @@ import type { JournalVoucherRecord } from "@/app/src/types/modules/general-journ
 import { JournalVoucherTableRow } from "@/app/src/ui/modules/general-journal/journal-voucher/JournalVoucherTableRow";
 import { AmountRangePicker } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import { DateRangePicker } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
-import {
-  ModuleHeader,
-  moduleHeaderActionClassNames,
-} from "@/app/src/ui/shared/module/ModuleHeader";
+import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import {
@@ -44,6 +33,7 @@ export function JournalVoucherListPage() {
     handleUpdateStatus,
     isLoading,
     lastSyncedAt,
+    permissions,
     query,
     records,
     resetFilters,
@@ -70,7 +60,13 @@ export function JournalVoucherListPage() {
         actions={
           <Link
             href={`${JournalVoucherHref}/add`}
+            aria-disabled={!permissions.canCreate}
             className={moduleHeaderActionClassNames.primary}
+            onClick={(event) => {
+              if (!permissions.canCreate) {
+                event.preventDefault();
+              }
+            }}
           >
             <Plus className="h-4 w-4" aria-hidden="true" />
             Create New Journal Voucher
@@ -78,11 +74,7 @@ export function JournalVoucherListPage() {
         }
       />
 
-      <JournalVoucherMetrics
-        records={records}
-        statusFilter={statusFilter}
-        onStatusFilterChange={setStatusFilter}
-      />
+      <JournalVoucherMetrics records={records} statusFilter={statusFilter} onStatusFilterChange={setStatusFilter} />
 
       <div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
         <ModuleTable
@@ -104,33 +96,19 @@ export function JournalVoucherListPage() {
                 onChange={handleQueryChange}
                 placeholder="Search by voucher no. or remarks"
               />
-              <DateRangePicker
-                label="Date Range"
-                value={dateRange}
-                onChange={setDateRange}
-              />
-              <AmountRangePicker
-                label="Amount Range"
-                value={amountRange}
-                onChange={setAmountRange}
-              />
+              <DateRangePicker label="Date Range" value={dateRange} onChange={setDateRange} />
+              <AmountRangePicker label="Amount Range" value={amountRange} onChange={setAmountRange} />
               <ModuleTableFilterSelect
                 label="Status"
                 value={statusFilter}
                 options={JournalVoucherStatusFilterOptions}
-                onChange={(value) =>
-                  setStatusFilter(value as (typeof JournalVoucherStatusFilters)[number])
-                }
+                onChange={(value) => setStatusFilter(value as (typeof JournalVoucherStatusFilters)[number])}
               />
               <ModuleTableResetButton onClick={resetFilters} />
             </ModuleTableToolbar>
           }
           renderRow={({ id, original }) => (
-            <JournalVoucherTableRow
-              key={id}
-              record={original}
-              onUpdateStatus={handleUpdateStatus}
-            />
+            <JournalVoucherTableRow key={id} record={original} permissions={permissions} onUpdateStatus={handleUpdateStatus} />
           )}
         />
       </div>
@@ -212,10 +190,7 @@ function JournalVoucherMetrics({
   return <ModuleStatisticCards items={cards} className="2xl:grid-cols-6" />;
 }
 
-function countRecordsByStatus(
-  records: JournalVoucherRecord[],
-  status: JournalVoucherRecord["status"],
-) {
+function countRecordsByStatus(records: JournalVoucherRecord[], status: JournalVoucherRecord["status"]) {
   return records.filter((record) => record.status === status).length;
 }
 

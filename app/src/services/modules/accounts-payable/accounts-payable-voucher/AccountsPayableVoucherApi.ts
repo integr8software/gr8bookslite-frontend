@@ -20,6 +20,7 @@ import {
 } from "@/app/src/generated/api/accounts-payable-voucher/accounts-payable-voucher";
 import type {
   AccountsPayableVoucherFormValues,
+  AccountsPayableVoucherLookupAccount,
   AccountsPayableVoucherLookupParty,
   AccountsPayableVoucherListData,
   AccountsPayableVoucherNumberSuggestion,
@@ -51,6 +52,12 @@ type AccountsPayableVoucherListQuery = {
   sortDirection?: "asc" | "desc";
   status?: AccountsPayableVoucherStatus | "all" | null;
 };
+
+type AccountsPayableVoucherAccountOptionsResponse = {
+  accounts: AccountsPayableVoucherLookupAccount[];
+};
+
+const AccountsPayableVoucherLookupApiPath = "/accounts-payable/accounts-payable-voucher/lookups";
 
 const StatusFromApi: Record<string, AccountsPayableVoucherStatus> = {
   APPROVED: "For Approval",
@@ -165,6 +172,22 @@ export async function fetchAccountsPayableVoucherResponsibilityCenterOptions() {
     await accountsPayableVoucherControllerFindResponsibilityCenterOptionsV1();
 
   return response.responsibilityCenters;
+}
+
+export async function fetchAccountsPayableVoucherExpenseTypeOptions() {
+  const response = await ApiClient.get<AccountsPayableVoucherAccountOptionsResponse>(
+    `${AccountsPayableVoucherLookupApiPath}/expense-types`,
+  );
+
+  return response.data.accounts;
+}
+
+export async function fetchAccountsPayableVoucherPostingAccountOptions() {
+  const response = await ApiClient.get<AccountsPayableVoucherAccountOptionsResponse>(
+    `${AccountsPayableVoucherLookupApiPath}/posting-accounts`,
+  );
+
+  return response.data.accounts;
 }
 
 export async function fetchAccountsPayableVoucherPayableAccountOptions() {

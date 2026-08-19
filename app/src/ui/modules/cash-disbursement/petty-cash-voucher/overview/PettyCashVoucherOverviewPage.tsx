@@ -1,17 +1,21 @@
 "use client";
 
 import Link from "next/link";
+import { flexRender } from "@tanstack/react-table";
 import { Home, Plus, Search } from "lucide-react";
 import {
-  PettyCashVoucherHref,
+  PettyCashVoucherTableCellClassName,
   PettyCashVoucherPaginationStorageKey,
+  PettyCashVoucherAddLink,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
 import { usePettyCashVoucherOverviewPage } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-voucher/usePettyCashVoucherOverviewPage";
 import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
-import { PettyCashVoucherListFilters } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/overview/PettyCashVoucherListFilters";
-import { PettyCashVoucherTableRow } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/overview/PettyCashVoucherTableRow";
+import { getColumnMetaClassName, joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import { PettyCashVoucherRecordActions } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/overview/PettyCashVoucherRecordActions";
+import { renderPettyCashVoucherTableCell } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/overview/PettyCashVoucherTableCell";
+import { PettyCashVoucherTableToolbar } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/overview/PettyCashVoucherTableToolbar";
 
 export function PettyCashVoucherOverviewPage() {
   const page = usePettyCashVoucherOverviewPage();
@@ -47,9 +51,25 @@ export function PettyCashVoucherOverviewPage() {
           paginationStorageKey={PettyCashVoucherPaginationStorageKey}
           table={page.table}
           tableTitle="Petty Cash Vouchers"
-          toolbar={<PettyCashVoucherListFilters page={page} />}
+          toolbar={<PettyCashVoucherTableToolbar page={page} />}
           useColumnSizing
-          renderRow={(row) => <PettyCashVoucherTableRow key={row.id} row={row} onUpdateStatus={page.handleUpdateStatus} />}
+          renderRow={(row) => (
+            <tr key={row.id} className="module-table-row border-b border-darknavy/8 text-darknavy last:border-b-0">
+              {row.getVisibleCells().map((cell) => (
+                <td
+                  key={cell.id}
+                  className={joinClasses(
+                    PettyCashVoucherTableCellClassName,
+                    getColumnMetaClassName(cell.column.columnDef.meta),
+                  )}
+                >
+                  {renderPettyCashVoucherTableCell(cell.column.id, row.original, () => (
+                    <PettyCashVoucherRecordActions record={row.original} onUpdateStatus={page.handleUpdateStatus} />
+                  )) ?? flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </td>
+              ))}
+            </tr>
+          )}
         />
       </div>
     </section>
@@ -60,7 +80,7 @@ function PettyCashVoucherHeaderActions() {
   return (
     <Link
       data-spotlight-id="maintenance-create-record"
-      href={`${PettyCashVoucherHref}/add`}
+      href={PettyCashVoucherAddLink}
       className={moduleHeaderActionClassNames.primary}
     >
       <Plus className="h-4 w-4" aria-hidden="true" />

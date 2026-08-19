@@ -44,8 +44,21 @@ export function useWorkspaceBillingSubscriptionPage() {
   const [transactionStatusFiltersByCompany, setTransactionStatusFiltersByCompany] = useState<
     Record<string, WorkspaceBillingRecordStatus | "all">
   >({});
+  const [cancelledCompanyIds, setCancelledCompanyIds] = useState<string[]>([]);
   const [selectedInvoice, setSelectedInvoice] = useState<WorkspaceBillingInvoiceRecord | null>(null);
-  const accounts = useMemo(() => createWorkspaceBillingCompanyAccounts(appliedPromotionIdsByCompany), [appliedPromotionIdsByCompany]);
+  const baseAccounts = useMemo(() => createWorkspaceBillingCompanyAccounts(appliedPromotionIdsByCompany), [appliedPromotionIdsByCompany]);
+  const accounts = useMemo(() => {
+    return baseAccounts.map((account) => {
+      if (cancelledCompanyIds.includes(account.id)) {
+        return {
+          ...account,
+          renewalState: "Scheduled" as const,
+          renewalStatusLabel: "Cancels at period end",
+        };
+      }
+      return account;
+    });
+  }, [baseAccounts, cancelledCompanyIds]);
   const filteredAccounts = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
@@ -269,6 +282,10 @@ export function useWorkspaceBillingSubscriptionPage() {
     }));
   }
 
+  function isCompanyCancelled(companyId: string) {
+    return cancelledCompanyIds.includes(companyId);
+  }
+
   function cancelSubscription(companyId: string) {
     const account = accounts.find((current) => current.id === companyId);
 
@@ -276,7 +293,68 @@ export function useWorkspaceBillingSubscriptionPage() {
       return;
     }
 
-    toast.success(`${account.name} cancellation review is ready.`);
+    setCancelledCompanyIds((current) => (current.includes(companyId) ? current : [...current, companyId]));
+    setSelectedBillingModesByCompany((current) => ({
+      ...current,
+      [companyId]: ManualBillingMode,
+    }));
+    toast.success(`Subscription for ${account.name} cancelled. Access remains active until ${account.renewalDate}.`);
+  }
+
+  function reactivateSubscription(companyId: string) {
+    const account = accounts.find((current) => current.id === companyId);
+
+    if (!account) {
+      return;
+    }
+
+    setCancelledCompanyIds((current) => current.filter((id) => id !== companyId));
+    toast.success(`Subscription for ${account.name} reactivated.`);
+  }
+
+  function unlinkCompanyPaymentMethod(companyId: string) {
+    const account = accounts.find((current) => current.id === companyId);
+
+    if (!account) {
+      return;
+    }
+
+    setSelectedPaymentMethodIdsByCompany((current) => ({
+      ...current,
+      [companyId]: "",
+    }));
+    setSelectedBillingModesByCompany((current) => ({
+      ...current,
+      [companyId]: ManualBillingMode,
+    }));
+    toast.success(`Payment card unlinked from ${account.name}. Switched to manual billing.`);
+  }
+
+  async function renewSubscription(companyId: string) {
+    const account = accounts.find((current) => current.id === companyId);
+
+    if (!account) {
+      return;
+    }
+
+    const currentMode = getSelectedBillingMode(companyId);
+    if (currentMode === ManualBillingMode) {
+      await payCompany(companyId);
+      return;
+    }
+
+    const paymentMethodId = getSelectedPaymentMethodId(companyId);
+    const paymentMethod = allPaymentMethods.find((method) => method.id === paymentMethodId);
+
+    if (!paymentMethod) {
+      toast.error("Please attach a valid payment card first.");
+      return;
+    }
+
+    setCancelledCompanyIds((current) => current.filter((id) => id !== companyId));
+    toast.success(
+      `Subscription for ${account.name} renewed successfully. ${formatWorkspaceBillingCurrency(account.totalDue)} charged to ${paymentMethod.brand} ending in ${paymentMethod.last4}.`,
+    );
   }
 
   async function payCompany(companyId: string) {
@@ -397,6 +475,7 @@ export function useWorkspaceBillingSubscriptionPage() {
     getTransactionQuery,
     getTransactionStatusFilter,
     getWorkspaceBillingOutstandingAmount,
+    isCompanyCancelled,
     paymentMethods: allPaymentMethods,
     query,
     renewalFilter,
@@ -409,9 +488,12 @@ export function useWorkspaceBillingSubscriptionPage() {
     cancelSubscription,
     clearPromotion,
     payCompany,
+    reactivateSubscription,
+    renewSubscription,
     saveCompanyBillingMethod,
     selectedInvoice,
     setSelectedInvoice,
+    unlinkCompanyPaymentMethod,
     updateActiveCompanyTab,
     setQuery,
     setRenewalFilter,

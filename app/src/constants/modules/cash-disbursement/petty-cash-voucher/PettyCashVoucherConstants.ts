@@ -1,12 +1,16 @@
 import type {
   PettyCashVoucherActionTab,
+  PettyCashVoucherFormMode,
   PettyCashVoucherFormStatus,
   PettyCashVoucherStatus,
   PettyCashVoucherVATable,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 
-export const PettyCashVoucherHref = getModuleRoute("PCV");
+export const PettyCashVoucherLink = getModuleRoute("PCV");
+export const PettyCashVoucherAddLink = `${PettyCashVoucherLink}/add`;
+export const getPettyCashVoucherEditLink = (recordId: string) => `${PettyCashVoucherLink}/edit/${recordId}`;
+export const getPettyCashVoucherViewLink = (recordId: string) => `${PettyCashVoucherLink}/view/${recordId}`;
 
 export const PettyCashVoucherQueryKeys = {
   vouchers: () => ["cash-disbursement", "petty-cash-voucher", "vouchers"] as const,
@@ -84,7 +88,7 @@ export const PettyCashVoucherColumnLabels = {
   updatedBy: "Updated By",
   dateModified: "Date Modified",
   status: "Status",
-  actions: "Action",
+  actions: "Actions",
 } as const;
 
 export const PettyCashVoucherDefaultVisibleColumnIds = ["voucherNo", "documentDate", "partyName", "amount", "status", "actions"] as const;
@@ -141,7 +145,7 @@ export function getPettyCashVoucherStatusDialogCopy(status: PettyCashVoucherStat
       description: `This will approve ${recordLabel} and update its status to Posted.`,
       iconTone: "approve" as const,
       pendingLabel: "Approving...",
-      title: "Approve petty cash voucher?",
+      title: "Approve Petty Cash Voucher?",
       tone: "success" as const,
     };
   }
@@ -152,7 +156,7 @@ export function getPettyCashVoucherStatusDialogCopy(status: PettyCashVoucherStat
       description: `This will mark ${recordLabel} as Disapproved.`,
       iconTone: "disapprove" as const,
       pendingLabel: "Disapproving...",
-      title: "Disapprove petty cash voucher?",
+      title: "Disapprove Petty Cash Voucher?",
       tone: "danger" as const,
     };
   }
@@ -163,7 +167,7 @@ export function getPettyCashVoucherStatusDialogCopy(status: PettyCashVoucherStat
       description: `This will mark ${recordLabel} as Cancelled.`,
       iconTone: "cancel" as const,
       pendingLabel: "Cancelling...",
-      title: "Cancel petty cash voucher?",
+      title: "Cancel Petty Cash Voucher?",
       tone: "danger" as const,
     };
   }
@@ -173,7 +177,45 @@ export function getPettyCashVoucherStatusDialogCopy(status: PettyCashVoucherStat
     description: `This will return ${recordLabel} to For Approval.`,
     iconTone: "approve" as const,
     pendingLabel: "Restoring...",
-    title: "Restore petty cash voucher?",
+    title: "Restore Petty Cash Voucher?",
     tone: "default" as const,
   };
 }
+
+export function getPettyCashVoucherSaveDialogCopy(
+  action: "submit" | "draft",
+  mode: PettyCashVoucherFormMode,
+  recordLabel: string,
+) {
+  if (action === "draft") {
+    return {
+      confirmLabel: "Save as Draft",
+      description: `This will save the current information for ${recordLabel} without submitting it for approval.`,
+      iconTone: false as const,
+      pendingLabel: "Saving...",
+      title: "Save Petty Cash Voucher as Draft?",
+      tone: "default" as const,
+    };
+  }
+
+  return {
+    confirmLabel: mode === "edit" ? "Update and Submit" : "Submit Voucher",
+    description: `This will save ${recordLabel} and submit it for approval.`,
+    iconTone: "approve" as const,
+    pendingLabel: mode === "edit" ? "Updating..." : "Submitting...",
+    title: mode === "edit" ? "Update Petty Cash Voucher?" : "Submit Petty Cash Voucher?",
+    tone: "success" as const,
+  };
+}
+
+export function getPettyCashVoucherActionTitle(mode: PettyCashVoucherFormMode, voucherNo?: string) {
+  if (mode === "view") return voucherNo ? `View Petty Cash Voucher | ${voucherNo}` : "View Petty Cash Voucher";
+  if (mode === "edit") return voucherNo ? `Edit Petty Cash Voucher | ${voucherNo}` : "Edit Petty Cash Voucher";
+  return "Add Petty Cash Voucher";
+}
+
+export const PettyCashVoucherActionDescriptions: Record<PettyCashVoucherFormMode, string> = {
+  add: "Complete the voucher header on one page before saving.",
+  edit: "Complete the voucher header on one page before saving.",
+  view: "Review the voucher details and supporting attachments.",
+};

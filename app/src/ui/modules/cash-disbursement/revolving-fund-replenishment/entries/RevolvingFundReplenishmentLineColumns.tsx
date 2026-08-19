@@ -79,7 +79,6 @@ export function createRevolvingFundReplenishmentLineColumns({
           inputName={context.fieldName}
           isReadonly={page.isReadonly}
           value={row.remarks}
-          subtitle={row.revolvingFundNo || "Revolving fund entry"}
           textareaId={`${context.fieldId}-dialog`}
           onChange={(value) => page.updateEntry(row.id, { remarks: value })}
         />

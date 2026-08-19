@@ -1,17 +1,12 @@
 "use client";
 
-import {
-  useMemo,
-  useRef,
-  useState,
-  type ChangeEvent,
-  type FormEvent,
-} from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { JournalVoucherHref,
-         JournalVoucherBaseCurrencyCode,
- } from "@/app/src/constants/modules/general-journal/journal-voucher/JournalVoucherConstants";
+import {
+  JournalVoucherHref,
+  JournalVoucherBaseCurrencyCode,
+} from "@/app/src/constants/modules/general-journal/journal-voucher/JournalVoucherConstants";
 import {
   createJournalVoucherFormValues,
   createJournalVoucherFromForm,
@@ -20,7 +15,11 @@ import {
   renumberJournalVoucherLines,
   updateJournalVoucherFromForm,
 } from "@/app/src/data/modules/general-journal/journal-voucher/JournalVoucherData";
-import { useJournalVoucherStore } from "@/app/src/hooks/modules/general-journal/journal-voucher/useJournalVoucher";
+import {
+  useJournalVoucherDetail,
+  useJournalVoucherNumberSuggestion,
+  useJournalVoucherStore,
+} from "@/app/src/hooks/modules/general-journal/journal-voucher/useJournalVoucher";
 import { FetchMultiCurrencyRates } from "@/app/src/services/modules/system-administration/multi-currency-setup/MultiCurrencySetupService";
 import type {
   JournalVoucherActionMode,
@@ -42,20 +41,45 @@ export function useJournalVoucherFormPage() {
   const updateStatus = useJournalVoucherStore((state) => state.updateStatus);
   const isMutating = useJournalVoucherStore((state) => state.isMutating);
   const mode = getActionMode(pathname);
-  const existingRecord = records.find((record) => record.id === params.recordId);
+  const detailQuery = useJournalVoucherDetail(params.recordId);
+  const numberSuggestionQuery = useJournalVoucherNumberSuggestion(mode === "add");
+  const existingRecord = detailQuery.data ?? records.find((record) => record.id === params.recordId);
   const isReadonly = mode === "view" || existingRecord?.status === "Posted";
-  const [values, setValues] = useState<JournalVoucherFormValues>(() =>
-    createJournalVoucherFormValues(existingRecord),
-  );
+  const [values, setValues] = useState<JournalVoucherFormValues>(() => createJournalVoucherFormValues(existingRecord));
   const [errors, setErrors] = useState<JournalVoucherFormErrors>({});
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [isExchangeRateLoading, setIsExchangeRateLoading] = useState(false);
   const exchangeRateRequestIdRef = useRef(0);
+  const hasAppliedNumberSuggestionRef = useRef(false);
+  const hydratedRecordIdRef = useRef<string | null>(null);
   const totals = useMemo(() => getJournalVoucherTotals(values.lines), [values.lines]);
 
-  function handleInputChange(
-    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
-  ) {
+  useEffect(() => {
+    if (!detailQuery.data || hydratedRecordIdRef.current === detailQuery.data.id) {
+      return;
+    }
+
+    hydratedRecordIdRef.current = detailQuery.data.id;
+    setValues(createJournalVoucherFormValues(detailQuery.data));
+    setErrors({});
+  }, [detailQuery.data]);
+
+  useEffect(() => {
+    const suggestedTransactionNo = numberSuggestionQuery.data?.transactionNo;
+
+    if (mode !== "add" || !suggestedTransactionNo || hasAppliedNumberSuggestionRef.current || values.transactionNo.trim() !== "") {
+      return;
+    }
+
+    setValues((current) => (current.transactionNo.trim() === "" ? { ...current, transactionNo: suggestedTransactionNo } : current));
+    hasAppliedNumberSuggestionRef.current = true;
+  }, [mode, numberSuggestionQuery.data?.transactionNo, values.transactionNo]);
+
+  useEffect(() => {
+    hasAppliedNumberSuggestionRef.current = false;
+  }, [mode]);
+
+  function handleInputChange(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
     if (isReadonly) {
       return;
     }
@@ -68,10 +92,7 @@ export function useJournalVoucherFormPage() {
       return;
     }
 
-    const value =
-      field === "currencyRate"
-        ? Number(fieldValue || 0)
-        : fieldValue;
+    const value = field === "currencyRate" ? Number(fieldValue || 0) : fieldValue;
 
     setValues((current) => ({
       ...current,
@@ -141,22 +162,14 @@ export function useJournalVoucherFormPage() {
     void updateCurrencyFromExchangeRates(currencyCode);
   }
 
-  function updateLine(
-    lineId: string,
-    field: JournalVoucherLineField,
-    value: string | number,
-  ) {
+  function updateLine(lineId: string, field: JournalVoucherLineField, value: string | number) {
     if (isReadonly) {
       return;
     }
 
     setValues((current) => ({
       ...current,
-      lines: current.lines.map((line) =>
-        line.id === lineId
-          ? normalizeJournalVoucherLineUpdate(line, field, value)
-          : line,
-      ),
+      lines: current.lines.map((line) => (line.id === lineId ? normalizeJournalVoucherLineUpdate(line, field, value) : line)),
     }));
     clearLineError(lineId, field);
   }
@@ -168,12 +181,7 @@ export function useJournalVoucherFormPage() {
 
     setValues((current) => ({
       ...current,
-      lines: [
-        ...current.lines,
-        ...Array.from({ length: count }, (_, index) =>
-          createJournalVoucherLine(current.lines.length + index + 1),
-        ),
-      ],
+      lines: [...current.lines, ...Array.from({ length: count }, (_, index) => createJournalVoucherLine(current.lines.length + index + 1))],
     }));
     setErrors((current) => ({ ...current, lines: undefined }));
   }
@@ -188,9 +196,7 @@ export function useJournalVoucherFormPage() {
 
       return {
         ...current,
-        lines: renumberJournalVoucherLines(
-          nextLines.length > 0 ? nextLines : [createJournalVoucherLine(1)],
-        ),
+        lines: renumberJournalVoucherLines(nextLines.length > 0 ? nextLines : [createJournalVoucherLine(1)]),
       };
     });
     setErrors((current) => ({ ...current, balance: undefined, lines: undefined }));
@@ -203,10 +209,7 @@ export function useJournalVoucherFormPage() {
 
     setValues((current) => {
       const rowIndex = current.lines.findIndex((line) => line.id === lineId);
-      const insertIndex =
-        rowIndex === -1
-          ? current.lines.length
-          : rowIndex + (position === "below" ? 1 : 0);
+      const insertIndex = rowIndex === -1 ? current.lines.length : rowIndex + (position === "below" ? 1 : 0);
       const nextLines = [...current.lines];
 
       nextLines.splice(insertIndex, 0, createJournalVoucherLine(insertIndex + 1));
@@ -278,16 +281,11 @@ export function useJournalVoucherFormPage() {
     }
 
     setValues((current) => {
-      const nextLines =
-        action === "all"
-          ? []
-          : current.lines.filter((line) => !shouldClearLine(line, action));
+      const nextLines = action === "all" ? [] : current.lines.filter((line) => !shouldClearLine(line, action));
 
       return {
         ...current,
-        lines: renumberJournalVoucherLines(
-          nextLines.length > 0 ? nextLines : [createJournalVoucherLine(1)],
-        ),
+        lines: renumberJournalVoucherLines(nextLines.length > 0 ? nextLines : [createJournalVoucherLine(1)]),
       };
     });
     setErrors((current) => ({ ...current, balance: undefined, lines: undefined }));
@@ -332,8 +330,7 @@ export function useJournalVoucherFormPage() {
   }
 
   function clearLineError(lineId: string, field: JournalVoucherLineField) {
-    const fieldsToClear: JournalVoucherLineField[] =
-      field === "debit" || field === "credit" ? ["debit", "credit"] : [field];
+    const fieldsToClear: JournalVoucherLineField[] = field === "debit" || field === "credit" ? ["debit", "credit"] : [field];
 
     setErrors((current) => ({
       ...current,
@@ -365,6 +362,7 @@ export function useJournalVoucherFormPage() {
     isExchangeRateLoading,
     isMutating,
     isReadonly,
+    isRecordLoading: (mode === "edit" || mode === "view") && !existingRecord && detailQuery.isLoading,
     mode,
     moveLine,
     needsRecord: mode === "edit" || mode === "view",
@@ -389,15 +387,10 @@ function getActionMode(pathname: string): JournalVoucherActionMode {
   return "add";
 }
 
-function normalizeJournalVoucherLineUpdate(
-  line: JournalVoucherLine,
-  field: JournalVoucherLineField,
-  value: string | number,
-) {
+function normalizeJournalVoucherLineUpdate(line: JournalVoucherLine, field: JournalVoucherLineField, value: string | number) {
   const nextLine = {
     ...line,
-    [field]:
-      field === "debit" || field === "credit" ? Number(value || 0) : value,
+    [field]: field === "debit" || field === "credit" ? Number(value || 0) : value,
   };
 
   if (field === "debit" && Number(nextLine.debit || 0) > 0) {
@@ -419,10 +412,7 @@ function normalizeExchangeRate(value: number) {
   return Number(value.toFixed(6));
 }
 
-function shouldClearLine(
-  line: JournalVoucherLine,
-  action: Exclude<ModuleDataEntryClearAction, "all">,
-) {
+function shouldClearLine(line: JournalVoucherLine, action: Exclude<ModuleDataEntryClearAction, "all">) {
   if (action === "with-data") {
     return journalVoucherLineHasData(line);
   }
@@ -454,10 +444,5 @@ function journalVoucherLineIsComplete(line: JournalVoucherLine) {
   const hasDebit = Number(line.debit || 0) > 0;
   const hasCredit = Number(line.credit || 0) > 0;
 
-  return (
-    line.accountCode.trim() !== "" &&
-    line.accountTitle.trim() !== "" &&
-    (hasDebit || hasCredit) &&
-    !(hasDebit && hasCredit)
-  );
+  return line.accountCode.trim() !== "" && line.accountTitle.trim() !== "" && (hasDebit || hasCredit) && !(hasDebit && hasCredit);
 }

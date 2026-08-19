@@ -6,6 +6,7 @@ export type AppAdvancedDropdownOption = {
 	label?: string;
 	name: string;
 	selectedDetails?: string;
+	/** Stable record ID or business code. Never use the display name. */
 	value: string;
 };
 
@@ -49,4 +50,14 @@ export type AppAdvancedDropdownProps = {
 	value: string | string[];
 	onChange: (value: string | string[]) => void;
 	onSelectOption?: (option: AppAdvancedDropdownOption) => void;
+};
+
+export type AppLookupDropdownProps = {
+	addAction?: AppAdvancedDropdownAddAction;
+	onChange: (idOrCode: string, name: string) => void;
+	options: AppAdvancedDropdownOption[];
+	placeholder: string;
+	readOnly?: boolean;
+	searchPlaceholder: string;
+	value: string;
 };

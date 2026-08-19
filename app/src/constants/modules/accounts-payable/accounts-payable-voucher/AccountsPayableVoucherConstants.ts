@@ -284,3 +284,7 @@ export const AccountsPayableVoucherAccountingColumnWidths: Record<
   responsibilityCenter: 220,
   refNo: 160,
 };
+
+export const AccountsPayableVoucherrefetchOnMount = [
+  "always",
+] as const;

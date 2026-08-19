@@ -1,9 +1,10 @@
 import {
-  DisbursementVoucherHref,
+  DisbursementVoucherLink,
   DisbursementVoucherStatuses,
   canApproveDisbursementVoucherStatus,
   canCancelDisbursementVoucherStatus,
   canDisapproveDisbursementVoucherStatus,
+  getDisbursementVoucherViewLink,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import { readAccountingGridSession } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingGridSessionData";
 import { createDisbursementVoucherFormValues } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
@@ -13,18 +14,6 @@ import type {
   DisbursementVoucherRecord,
   DisbursementVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
-
-export function getDisbursementVoucherActionMode(pathname: string): DisbursementVoucherActionMode {
-  if (pathname.includes("/view/")) {
-    return "view";
-  }
-
-  if (pathname.includes("/edit/")) {
-    return "edit";
-  }
-
-  return "add";
-}
 
 export function createInitialDisbursementVoucherFormValues({
   mode,
@@ -90,12 +79,12 @@ export function canUpdateDisbursementVoucherStatus(currentStatus: DisbursementVo
   return false;
 }
 
-export function createVoucherActionReturnHref(from: string | null, transactionId?: string) {
+export function createVoucherActionReturnLink(from: string | null, transactionId?: string) {
   if (from === "view" && transactionId) {
-    return `${DisbursementVoucherHref}/view/${transactionId}`;
+    return getDisbursementVoucherViewLink(transactionId);
   }
 
-  return DisbursementVoucherHref;
+  return DisbursementVoucherLink;
 }
 
 export function createManualDisbursementTransactionId() {

@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { Ban, Edit3, Eye, ThumbsDown, ThumbsUp, Undo2 } from "lucide-react";
 import {
-  AdvancesToSuppliersHref,
+  getAdvancesToSuppliersEditLink,
+  getAdvancesToSuppliersViewLink,
   AdvancesToSuppliersStatuses,
   canEditAdvancesToSuppliers,
 } from "@/app/src/constants/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersConstants";
@@ -14,7 +15,11 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleActionMenu, type ModuleActionMenuItem } from "@/app/src/ui/shared/module/ModuleActionMenu";
-import { ModuleTableActions } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
+import {
+  ModuleTableActionButton,
+  ModuleTableActionLink,
+  ModuleTableActions,
+} from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
 export function AdvancesToSuppliersRecordActions({
   onUpdateStatus,
@@ -27,11 +32,8 @@ export function AdvancesToSuppliersRecordActions({
   const isPosted = record.status === AdvancesToSuppliersStatuses.posted;
   const isDisapproved = record.status === AdvancesToSuppliersStatuses.disapproved;
   const isCancelled = record.status === AdvancesToSuppliersStatuses.cancelled;
+  const canEdit = canEditAdvancesToSuppliers(record.status);
   const items: ModuleActionMenuItem[] = [
-    { type: "link", href: `${AdvancesToSuppliersHref}/view/${record.id}`, icon: Eye, label: "View" },
-    ...(canEditAdvancesToSuppliers(record.status)
-      ? [{ type: "link" as const, href: `${AdvancesToSuppliersHref}/edit/${record.id}`, icon: Edit3, label: "Edit" }]
-      : []),
     {
       type: "button",
       icon: isPosted ? Undo2 : ThumbsUp,
@@ -64,7 +66,35 @@ export function AdvancesToSuppliersRecordActions({
   return (
     <>
       <ModuleTableActions className="w-full !justify-center">
-        <ModuleActionMenu items={items} label={`Actions for advances to suppliers ${record.transactionNo}`} />
+        <ModuleTableActionLink
+          href={getAdvancesToSuppliersViewLink(record.id)}
+          icon={Eye}
+          label={`View advances to suppliers ${record.transactionNo}`}
+          title="View"
+          variant="view"
+        />
+        {canEdit ? (
+          <ModuleTableActionLink
+            href={getAdvancesToSuppliersEditLink(record.id)}
+            icon={Edit3}
+            label={`Edit advances to suppliers ${record.transactionNo}`}
+            title="Edit"
+            variant="edit"
+          />
+        ) : (
+          <ModuleTableActionButton
+            disabled
+            icon={Edit3}
+            label={`Edit advances to suppliers ${record.transactionNo}`}
+            title="Edit"
+            variant="edit"
+          />
+        )}
+        <ModuleActionMenu
+          className="[&>button]:h-9 [&>button]:w-9"
+          items={items}
+          label={`More actions for advances to suppliers ${record.transactionNo}`}
+        />
       </ModuleTableActions>
       {status ? (
         <AppDialog

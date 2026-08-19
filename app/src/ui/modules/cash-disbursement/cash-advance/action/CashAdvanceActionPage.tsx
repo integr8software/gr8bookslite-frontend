@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useParams, usePathname, useRouter } from "next/navigation";
-import { CashAdvanceHref, CashAdvanceStatuses } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
+import { useParams, useRouter } from "next/navigation";
+import { CashAdvanceLink, CashAdvanceStatuses } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
 import { useCashAdvanceActionForm } from "@/app/src/hooks/modules/cash-disbursement/cash-advance/useCashAdvance";
 import type { CashAdvanceActionMode } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 import { CashAdvanceDetailsForm } from "@/app/src/ui/modules/cash-disbursement/cash-advance/action/CashAdvanceDetailsFields";
@@ -11,15 +11,13 @@ import { CashAdvanceNotFound } from "@/app/src/ui/modules/cash-disbursement/cash
 import { openCashAdvancePdf } from "@/app/src/ui/modules/cash-disbursement/cash-advance/reports/CashAdvancePdf";
 import { CashAdvanceReportPreview } from "@/app/src/ui/modules/cash-disbursement/cash-advance/reports/CashAdvanceReportPreview";
 
-export function CashAdvanceActionPage() {
+export function CashAdvanceActionPage({ mode }: { mode: CashAdvanceActionMode }) {
   const params = useParams<{ recordId?: string }>();
-  const pathname = usePathname();
   const router = useRouter();
-  const mode = getActionMode(pathname);
   const recordId = typeof params.recordId === "string" ? params.recordId : undefined;
   const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
   const advanceForm = useCashAdvanceActionForm(mode, recordId, () => {
-    router.push(CashAdvanceHref);
+    router.push(CashAdvanceLink);
   });
 
   if (advanceForm.isRecordMissing) {
@@ -31,6 +29,7 @@ export function CashAdvanceActionPage() {
       <section className="grid gap-5">
         <CashAdvanceActionHeader
           mode={mode}
+          isSubmitting={advanceForm.isSubmitting}
           onPreview={() => setIsReportPreviewOpen(true)}
           onSaveDraft={mode === "add" ? () => advanceForm.submitAdvance(CashAdvanceStatuses.draft) : undefined}
           onSubmit={() => advanceForm.submitAdvance(CashAdvanceStatuses.forApproval)}
@@ -47,16 +46,4 @@ export function CashAdvanceActionPage() {
       />
     </>
   );
-}
-
-function getActionMode(pathname: string): CashAdvanceActionMode {
-  if (pathname.includes("/view/")) {
-    return "view";
-  }
-
-  if (pathname.includes("/edit/")) {
-    return "edit";
-  }
-
-  return "add";
 }

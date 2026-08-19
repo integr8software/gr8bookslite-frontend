@@ -3,7 +3,17 @@
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { MockJournalVouchers } from "@/app/src/data/modules/general-journal/journal-voucher/JournalVoucherData";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+import {
+  createJournalVoucher,
+  fetchJournalVoucher,
+  fetchJournalVoucherLookups,
+  fetchJournalVoucherNumberSuggestion,
+  fetchJournalVouchers,
+  type JournalVoucherPermissions,
+  updateJournalVoucher,
+  updateJournalVoucherStatus,
+} from "@/app/src/services/modules/general-journal/journal-voucher/JournalVoucherService";
 import { JournalVoucherQueryKeys } from "@/app/src/services/modules/general-journal/journal-voucher/JournalVoucherQueryKeys";
 import type {
   JournalVoucherRecord,
@@ -15,35 +25,50 @@ type JournalVoucherStoreState = {
   addRecord: (record: JournalVoucherRecord) => void;
   updateRecord: (record: JournalVoucherRecord) => void;
   updateStatus: (recordId: string, status: JournalVoucherStatus) => void;
-  deleteRecord: (recordId: string) => void;
+  permissions: JournalVoucherPermissions;
   isLoading: boolean;
   lastSyncedAt: number;
   isMutating: boolean;
 };
 
-export function useJournalVoucherStore<TSelected = JournalVoucherStoreState>(
-  selector?: (state: JournalVoucherStoreState) => TSelected,
-) {
+const EmptyJournalVoucherPermissions: JournalVoucherPermissions = {
+  canApprove: false,
+  canCancel: false,
+  canCreate: false,
+  canDisapprove: false,
+  canExport: false,
+  canPost: false,
+  canSubmitForApproval: false,
+  canUncancel: false,
+  canUpdate: false,
+  canView: false,
+};
+
+export function useJournalVoucherStore<TSelected = JournalVoucherStoreState>(selector?: (state: JournalVoucherStoreState) => TSelected) {
   const queryClient = useQueryClient();
+  const activeCompanyId = useAppStore((state) => state.activeCompanyId);
+  const activeBranchId = useAppStore((state) => state.activeBranchId);
+  const queryKey = JournalVoucherQueryKeys.records(activeCompanyId, activeBranchId);
+
   const recordsQuery = useQuery({
-    queryKey: JournalVoucherQueryKeys.records(),
-    queryFn: async () => MockJournalVouchers,
-    initialData: MockJournalVouchers,
+    queryKey,
+    queryFn: () =>
+      fetchJournalVouchers({
+        branchUnitId: activeBranchId,
+      }),
+    enabled: activeCompanyId !== null,
   });
 
-  function updateCachedRecords(
-    updater: (records: JournalVoucherRecord[]) => JournalVoucherRecord[],
-  ) {
-    queryClient.setQueryData<JournalVoucherRecord[]>(
-      JournalVoucherQueryKeys.records(),
-      (currentRecords = MockJournalVouchers) => updater(currentRecords),
-    );
+  function invalidateJournalVoucherQueries() {
+    return queryClient.invalidateQueries({
+      queryKey: JournalVoucherQueryKeys.all(activeCompanyId, activeBranchId),
+    });
   }
 
   const addRecordMutation = useMutation({
-    mutationFn: async (record: JournalVoucherRecord) => record,
-    onSuccess: (record) => {
-      updateCachedRecords((records) => [...records, record]);
+    mutationFn: (record: JournalVoucherRecord) => createJournalVoucher(record, activeBranchId),
+    onSuccess: async () => {
+      await invalidateJournalVoucherQueries();
       toast.success("Journal voucher saved.");
     },
     onError: () => {
@@ -52,13 +77,9 @@ export function useJournalVoucherStore<TSelected = JournalVoucherStoreState>(
   });
 
   const updateRecordMutation = useMutation({
-    mutationFn: async (record: JournalVoucherRecord) => record,
-    onSuccess: (record) => {
-      updateCachedRecords((records) =>
-        records.map((currentRecord) =>
-          currentRecord.id === record.id ? record : currentRecord,
-        ),
-      );
+    mutationFn: (record: JournalVoucherRecord) => updateJournalVoucher(record, activeBranchId),
+    onSuccess: async () => {
+      await invalidateJournalVoucherQueries();
       toast.success("Journal voucher updated.");
     },
     onError: () => {
@@ -67,25 +88,9 @@ export function useJournalVoucherStore<TSelected = JournalVoucherStoreState>(
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: async ({
-      recordId,
-      status,
-    }: {
-      recordId: string;
-      status: JournalVoucherStatus;
-    }) => ({ recordId, status }),
-    onSuccess: ({ recordId, status }) => {
-      updateCachedRecords((records) =>
-        records.map((record) =>
-          record.id === recordId
-            ? {
-                ...record,
-                status,
-                updatedAt: new Date().toISOString(),
-              }
-            : record,
-        ),
-      );
+    mutationFn: (input: { recordId: string; status: JournalVoucherStatus }) => updateJournalVoucherStatus(input),
+    onSuccess: async () => {
+      await invalidateJournalVoucherQueries();
       toast.success("Journal voucher status updated.");
     },
     onError: () => {
@@ -93,45 +98,54 @@ export function useJournalVoucherStore<TSelected = JournalVoucherStoreState>(
     },
   });
 
-  const deleteRecordMutation = useMutation({
-    mutationFn: async (recordId: string) => recordId,
-    onSuccess: (recordId) => {
-      updateCachedRecords((records) =>
-        records.filter((record) => record.id !== recordId),
-      );
-      toast.success("Journal voucher deleted.");
-    },
-    onError: () => {
-      toast.error("Could not delete journal voucher. Please try again.");
-    },
-  });
-
   const state = useMemo<JournalVoucherStoreState>(
     () => ({
-      records: recordsQuery.data,
+      records: recordsQuery.data?.records ?? [],
       addRecord: (record) => addRecordMutation.mutate(record),
       updateRecord: (record) => updateRecordMutation.mutate(record),
-      updateStatus: (recordId, status) =>
-        updateStatusMutation.mutate({ recordId, status }),
-      deleteRecord: (recordId) => deleteRecordMutation.mutate(recordId),
+      updateStatus: (recordId, status) => updateStatusMutation.mutate({ recordId, status }),
+      permissions: recordsQuery.data?.permissions ?? EmptyJournalVoucherPermissions,
       isLoading: recordsQuery.isLoading,
       lastSyncedAt: recordsQuery.dataUpdatedAt,
-      isMutating:
-        addRecordMutation.isPending ||
-        updateStatusMutation.isPending ||
-        updateRecordMutation.isPending ||
-        deleteRecordMutation.isPending,
+      isMutating: addRecordMutation.isPending || updateRecordMutation.isPending || updateStatusMutation.isPending,
     }),
-    [
-      addRecordMutation,
-      deleteRecordMutation,
-      recordsQuery.data,
-      recordsQuery.dataUpdatedAt,
-      recordsQuery.isLoading,
-      updateRecordMutation,
-      updateStatusMutation,
-    ],
+    [addRecordMutation, recordsQuery.data, recordsQuery.dataUpdatedAt, recordsQuery.isLoading, updateRecordMutation, updateStatusMutation],
   );
 
   return selector ? selector(state) : (state as TSelected);
+}
+
+export function useJournalVoucherDetail(recordId?: string) {
+  const activeCompanyId = useAppStore((state) => state.activeCompanyId);
+  const activeBranchId = useAppStore((state) => state.activeBranchId);
+
+  return useQuery({
+    queryKey: recordId
+      ? JournalVoucherQueryKeys.detail(activeCompanyId, activeBranchId, recordId)
+      : JournalVoucherQueryKeys.all(activeCompanyId, activeBranchId),
+    queryFn: () => fetchJournalVoucher(recordId as string, activeBranchId),
+    enabled: activeCompanyId !== null && Boolean(recordId),
+  });
+}
+
+export function useJournalVoucherNumberSuggestion(enabled = true) {
+  const activeCompanyId = useAppStore((state) => state.activeCompanyId);
+  const activeBranchId = useAppStore((state) => state.activeBranchId);
+
+  return useQuery({
+    queryKey: JournalVoucherQueryKeys.numberSuggestion(activeCompanyId, activeBranchId),
+    queryFn: () => fetchJournalVoucherNumberSuggestion(activeBranchId),
+    enabled: enabled && activeCompanyId !== null,
+  });
+}
+
+export function useJournalVoucherLookups() {
+  const activeCompanyId = useAppStore((state) => state.activeCompanyId);
+  const activeBranchId = useAppStore((state) => state.activeBranchId);
+
+  return useQuery({
+    queryKey: JournalVoucherQueryKeys.lookups(activeCompanyId, activeBranchId),
+    queryFn: fetchJournalVoucherLookups,
+    enabled: activeCompanyId !== null,
+  });
 }

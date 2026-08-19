@@ -1,18 +1,21 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
+import Link from "next/link";
 import { ArrowLeft, Ban, Edit3, FileText, ThumbsDown, ThumbsUp } from "lucide-react";
 import {
-  RevolvingFundHref,
+  RevolvingFundConfirmationDialogConfirmLabels,
+  RevolvingFundConfirmationDialogTitles,
+  RevolvingFundLink,
   RevolvingFundStatuses,
+  getRevolvingFundEditLink,
 } from "@/app/src/constants/modules/cash-disbursement/revolving-fund/RevolvingFundConstants";
 import type { RevolvingFundActionPageState } from "@/app/src/hooks/modules/cash-disbursement/revolving-fund/useRevolvingFundActionPage";
 import type { RevolvingFundConfirmationAction } from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";
 import { RevolvingFundActionHistory } from "@/app/src/ui/modules/cash-disbursement/revolving-fund/action/RevolvingFundActionHistory";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ModuleSaveButton } from "@/app/src/ui/shared/module/ModuleSaveButton";
+import { ModuleActionButton } from "@/app/src/ui/shared/module/ModuleActionButton";
 import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 
 export function RevolvingFundActionHeader({ onPreview, page }: { onPreview: () => void; page: RevolvingFundActionPageState }) {
@@ -27,6 +30,7 @@ export function RevolvingFundActionHeader({ onPreview, page }: { onPreview: () =
         <ModuleStatusBadge status={page.values.status} />
       </span>
     );
+
   return (
     <>
       <ModuleHeader
@@ -40,7 +44,7 @@ export function RevolvingFundActionHeader({ onPreview, page }: { onPreview: () =
         }
         actions={
           <>
-            <Link href={RevolvingFundHref} className={moduleHeaderActionClassNames.secondary}>
+            <Link href={RevolvingFundLink} className={moduleHeaderActionClassNames.secondary}>
               <ArrowLeft className="h-4 w-4" aria-hidden="true" />
               Back
             </Link>
@@ -71,16 +75,17 @@ export function RevolvingFundActionHeader({ onPreview, page }: { onPreview: () =
                   <Ban className="h-4 w-4" aria-hidden="true" />
                   Cancel
                 </button>
-                <Link href={`${RevolvingFundHref}/edit/${page.record.id}`} className={moduleHeaderActionClassNames.primary}>
+                <Link href={getRevolvingFundEditLink(page.record.id)} className={moduleHeaderActionClassNames.primary}>
                   <Edit3 className="h-4 w-4" aria-hidden="true" />
                   Edit
                 </Link>
               </>
             ) : null}
             {page.mode !== "view" ? (
-              <ModuleSaveButton
-                label={page.mode === "edit" ? "Update" : "Save"}
-                onSave={() => setConfirmation("save")}
+              <ModuleActionButton
+                disabled={page.isSubmitting}
+                label={page.isSubmitting ? "Saving..." : page.mode === "edit" ? "Update" : "Save"}
+                onAction={() => setConfirmation("save")}
                 menuItems={page.mode === "add" ? [{ label: "Save As Draft", onSelect: () => setConfirmation("draft") }] : []}
               />
             ) : null}
@@ -90,9 +95,9 @@ export function RevolvingFundActionHeader({ onPreview, page }: { onPreview: () =
       {confirmation ? (
         <AppDialog
           isOpen
-          title={getDialogTitle(confirmation)}
-          description={getDialogDescription(confirmation, transactionNo)}
-          confirmLabel={getConfirmLabel(confirmation)}
+          title={RevolvingFundConfirmationDialogTitles[confirmation]}
+          description={`This will ${confirmation === "save" ? "save and submit" : confirmation} ${transactionNo}.`}
+          confirmLabel={RevolvingFundConfirmationDialogConfirmLabels[confirmation]}
           pendingLabel="Saving..."
           tone={
             confirmation === "approve" || confirmation === "save"
@@ -114,22 +119,4 @@ export function RevolvingFundActionHeader({ onPreview, page }: { onPreview: () =
       ) : null}
     </>
   );
-}
-
-function getDialogTitle(action: RevolvingFundConfirmationAction) {
-  return action === "save"
-    ? "Save revolving fund?"
-    : action === "draft"
-      ? "Save as draft?"
-      : action === "approve"
-        ? "Approve revolving fund?"
-        : action === "disapprove"
-          ? "Disapprove revolving fund?"
-          : "Cancel revolving fund?";
-}
-function getDialogDescription(action: RevolvingFundConfirmationAction, recordLabel: string) {
-  return `This will ${action === "save" ? "save and submit" : action} ${recordLabel}.`;
-}
-function getConfirmLabel(action: RevolvingFundConfirmationAction) {
-  return action === "save" ? "Save and Submit" : action === "draft" ? "Save as Draft" : action.charAt(0).toUpperCase() + action.slice(1);
 }

@@ -1,5 +1,7 @@
 import {
   BillingStatementCurrencyOptions,
+  BillingStatementPartyOptions,
+  BillingStatementResponsibilityCenterOptions,
   BillingStatementTermsOptions,
 } from "@/app/src/constants/modules/sales/billing-statement/BillingStatementConstants";
 import type {
@@ -29,14 +31,25 @@ export function BillingStatementCustomerFields({ errors, isReadonly, onUpdateFie
   return (
     <div className="grid min-w-0 content-start gap-x-8 gap-y-3 xl:grid-cols-2 2xl:grid-cols-3">
       <div className="grid min-w-0 content-start gap-3">
-        <PurchaseRequestTextField
-          id="billing-statement-name"
-          label="Party Name"
-          isRequired
-          readOnly={isReadonly}
-          value={values.name}
-          onChange={(value) => onUpdateField("name", value)}
-        />
+        <PurchaseRequestFieldShell controlId="billing-statement-name" label="Party Name" isRequired>
+          <AppAdvancedDropdown
+            id="billing-statement-name"
+            value={values.name}
+            readOnly={isReadonly}
+            options={BillingStatementPartyOptions}
+            placeholder=""
+            searchPlaceholder="Search customer"
+            onChange={(value) => {
+              const partyName = String(value);
+              const selectedParty = BillingStatementPartyOptions.find((option) => option.value === partyName);
+
+              onUpdateField("name", partyName);
+              if (selectedParty?.label) {
+                onUpdateField("code", selectedParty.label);
+              }
+            }}
+          />
+        </PurchaseRequestFieldShell>
         <FieldError error={errors.name} />
         <PurchaseRequestTextField
           id="billing-statement-address"
@@ -133,13 +146,17 @@ export function BillingStatementCustomerFields({ errors, isReadonly, onUpdateFie
             }
           />
         </PurchaseRequestFieldShell>
-        <PurchaseRequestTextField
-          id="billing-statement-res-center"
-          label="Responsibility Center"
-          readOnly={isReadonly}
-          value={values.resCustomerCode}
-          onChange={(value) => onUpdateField("resCustomerCode", value)}
-        />
+        <PurchaseRequestFieldShell controlId="billing-statement-res-center" label="Responsibility Center">
+          <AppAdvancedDropdown
+            id="billing-statement-res-center"
+            value={values.resCustomerCode}
+            readOnly={isReadonly}
+            options={BillingStatementResponsibilityCenterOptions}
+            placeholder="--Select Responsibility Center--"
+            searchPlaceholder="Search responsibility center"
+            onChange={(value) => onUpdateField("resCustomerCode", String(value))}
+          />
+        </PurchaseRequestFieldShell>
       </div>
 
       <div className="grid min-w-0 content-start gap-3">

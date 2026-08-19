@@ -150,7 +150,6 @@ export function createDisbursementAccountingEntryColumns({
           inputName={context.fieldName}
           isReadonly={isReadonly}
           value={entry.particulars}
-          subtitle={entry.accountName || "Accounting entry"}
           textareaId={`${context.fieldId}-dialog`}
           onChange={(value) => onUpdateEntry(entry.id, "particulars", value)}
         />

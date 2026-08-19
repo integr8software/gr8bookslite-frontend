@@ -41,14 +41,14 @@ const ExpandedWithholdingTaxAccount = {
 } as const;
 
 export function getSeedDisbursementTransactions() {
-  return MockDisbursementTransactions.map((transaction) => ({
+  return MockDisbursementTransactions.filter((transaction) => transaction.paymentMethod !== "Cash").map((transaction) => ({
     ...transaction,
     status: getDisbursementVoucherDisplayStatus(transaction.status),
   }));
 }
 
 export function getSeedDisbursementVouchers() {
-  return MockDisbursementVouchers.map(sanitizeDisbursementVoucherRecord);
+  return MockDisbursementVouchers.filter((voucher) => voucher.paymentMethod !== "Cash").map(sanitizeDisbursementVoucherRecord);
 }
 
 export function readStoredDisbursementTransactions() {
@@ -854,10 +854,12 @@ export const DisbursementVoucherCopyFromRecords: DisbursementVoucherCopyFromReco
 export function buildDisbursementVoucherPreviewRows(transactions: DisbursementTransactionRecord[], vouchers: DisbursementVoucherRecord[]) {
   const voucherByTransactionId = new Map(vouchers.map((voucher) => [voucher.transactionId, voucher]));
 
-  return transactions.map((transaction) => ({
-    transaction,
-    voucher: voucherByTransactionId.get(transaction.id),
-  }));
+  return transactions
+    .filter((transaction) => (voucherByTransactionId.get(transaction.id)?.paymentMethod ?? transaction.paymentMethod) !== "Cash")
+    .map((transaction) => ({
+      transaction,
+      voucher: voucherByTransactionId.get(transaction.id),
+    }));
 }
 
 export function createDisbursementVoucherFormValues(

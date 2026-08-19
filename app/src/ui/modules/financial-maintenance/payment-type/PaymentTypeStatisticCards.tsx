@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { Banknote, CheckCircle2, CirclePause, CreditCard, Landmark, ReceiptText, WalletCards } from "lucide-react";
+import { CreditCard, Landmark, ReceiptText, WalletCards } from "lucide-react";
 import type { PaymentTypeStatisticCardsProps } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
 import { ModuleStatisticCards, type ModuleStatisticCardItem } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 
@@ -11,29 +11,8 @@ export function PaymentTypeStatisticCards({ isLoading, statistics }: PaymentType
       {
         helper: "All payment types",
         icon: CreditCard,
-        label: "Total Types",
+        label: "Total",
         value: statistics.totalPaymentTypes,
-      },
-      {
-        helper: "Available for vouchers",
-        icon: CheckCircle2,
-        label: "Active Types",
-        tone: "emerald",
-        value: statistics.activePaymentTypes,
-      },
-      {
-        helper: "Currently inactive",
-        icon: CirclePause,
-        label: "Inactive Types",
-        tone: "amber",
-        value: statistics.inactivePaymentTypes,
-      },
-      {
-        helper: "Cash payment types",
-        icon: Banknote,
-        label: "Cash",
-        tone: "cyan",
-        value: statistics.cashPaymentTypes,
       },
       {
         helper: "Bank transfer types",
@@ -55,13 +34,6 @@ export function PaymentTypeStatisticCards({ isLoading, statistics }: PaymentType
         label: "Digital Wallet",
         tone: "cyan",
         value: statistics.digitalWalletPaymentTypes,
-      },
-      {
-        helper: "Non-cash settlement types",
-        icon: CreditCard,
-        label: "Non-Cash",
-        tone: "violet",
-        value: statistics.nonCashSettlementPaymentTypes,
       },
     ],
     [statistics],

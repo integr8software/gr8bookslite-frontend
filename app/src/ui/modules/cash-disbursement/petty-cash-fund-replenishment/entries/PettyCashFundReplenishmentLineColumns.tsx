@@ -79,7 +79,6 @@ export function createPettyCashFundReplenishmentLineColumns({
           inputName={context.fieldName}
           isReadonly={page.isReadonly}
           value={row.remarks}
-          subtitle={row.pettyCashNo || "Petty cash voucher entry"}
           textareaId={`${context.fieldId}-dialog`}
           onChange={(value) => page.updateEntry(row.id, { remarks: value })}
         />

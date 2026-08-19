@@ -113,6 +113,11 @@ export const MaintenanceSpotlightTutorialConfigs: readonly MaintenanceSpotlightT
     label: "Warehouse inventory stock",
   },
   {
+    href: "/cash-disbursement/cash-voucher",
+    addMode: "none",
+    label: "Cash voucher",
+  },
+  {
     href: "/cash-disbursement/disbursement-voucher",
     addMode: "none",
     label: "Disbursement voucher",

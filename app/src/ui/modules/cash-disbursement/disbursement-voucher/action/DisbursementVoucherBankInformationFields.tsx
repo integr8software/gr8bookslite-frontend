@@ -1,6 +1,6 @@
 import { DisbursementVoucherFieldClassName } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import type { DisbursementVoucherBankInformationFieldsProps } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
-import { FieldShell } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherFieldControls";
+import { TransactionField } from "@/app/src/ui/shared/transaction-setup/TransactionFormFields";
 import {
   DisbursementVoucherPaymentFields,
   getPaymentTypeDetailKind,
@@ -47,15 +47,15 @@ export function DisbursementVoucherBankInformationFields({
           />
           {shouldShowCheckDetails ? (
             <div className="grid min-w-0 content-start gap-4">
-              <FieldShell controlId="disbursement-voucher-payment-check-status" label="Check Status">
+              <TransactionField controlId="disbursement-voucher-payment-check-status" label="Check Status">
                 <input
                   id="disbursement-voucher-payment-check-status"
                   value={values.paymentDetails.checkStatus ?? ""}
                   readOnly
                   className={`${DisbursementVoucherFieldClassName} !bg-darknavy/5 text-darknavy/60`}
                 />
-              </FieldShell>
-              <FieldShell controlId="disbursement-voucher-payment-check-date" label="Check Date">
+              </TransactionField>
+              <TransactionField controlId="disbursement-voucher-payment-check-date" label="Check Date">
                 <input
                   id="disbursement-voucher-payment-check-date"
                   type="date"
@@ -64,7 +64,7 @@ export function DisbursementVoucherBankInformationFields({
                   onChange={(event) => onUpdatePaymentDetails({ checkDate: event.target.value })}
                   className={DisbursementVoucherFieldClassName}
                 />
-              </FieldShell>
+              </TransactionField>
             </div>
           ) : null}
         </div>

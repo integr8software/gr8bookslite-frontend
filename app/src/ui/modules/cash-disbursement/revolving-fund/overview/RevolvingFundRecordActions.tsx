@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { Ban, Edit3, Eye, ThumbsDown, ThumbsUp, Undo2 } from "lucide-react";
 import {
-  RevolvingFundHref,
   RevolvingFundStatuses,
   canEditRevolvingFund,
+  getRevolvingFundEditLink,
+  getRevolvingFundViewLink,
 } from "@/app/src/constants/modules/cash-disbursement/revolving-fund/RevolvingFundConstants";
 import type {
   RevolvingFundRecord,
@@ -14,7 +15,11 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleActionMenu, type ModuleActionMenuItem } from "@/app/src/ui/shared/module/ModuleActionMenu";
-import { ModuleTableActions } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
+import {
+  ModuleTableActionButton,
+  ModuleTableActionLink,
+  ModuleTableActions,
+} from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
 export function RevolvingFundRecordActions({
   onUpdateStatus,
@@ -27,11 +32,8 @@ export function RevolvingFundRecordActions({
   const isPosted = record.status === RevolvingFundStatuses.posted;
   const isDisapproved = record.status === RevolvingFundStatuses.disapproved;
   const isCancelled = record.status === RevolvingFundStatuses.cancelled;
+  const canEdit = canEditRevolvingFund(record.status);
   const items: ModuleActionMenuItem[] = [
-    { type: "link", href: `${RevolvingFundHref}/view/${record.id}`, icon: Eye, label: "View" },
-    ...(canEditRevolvingFund(record.status)
-      ? [{ type: "link" as const, href: `${RevolvingFundHref}/edit/${record.id}`, icon: Edit3, label: "Edit" }]
-      : []),
     {
       type: "button",
       icon: isPosted ? Undo2 : ThumbsUp,
@@ -57,10 +59,39 @@ export function RevolvingFundRecordActions({
       onSelect: () => (isCancelled ? onUpdateStatus(record, RevolvingFundStatuses.draft) : setStatus(RevolvingFundStatuses.cancelled)),
     },
   ];
+
   return (
     <>
       <ModuleTableActions className="w-full !justify-center">
-        <ModuleActionMenu items={items} label={`Actions for revolving fund ${record.transactionNo}`} />
+        <ModuleTableActionLink
+          href={getRevolvingFundViewLink(record.id)}
+          icon={Eye}
+          label={`View revolving fund ${record.transactionNo}`}
+          title="View"
+          variant="view"
+        />
+        {canEdit ? (
+          <ModuleTableActionLink
+            href={getRevolvingFundEditLink(record.id)}
+            icon={Edit3}
+            label={`Edit revolving fund ${record.transactionNo}`}
+            title="Edit"
+            variant="edit"
+          />
+        ) : (
+          <ModuleTableActionButton
+            disabled
+            icon={Edit3}
+            label={`Edit revolving fund ${record.transactionNo}`}
+            title="Edit"
+            variant="edit"
+          />
+        )}
+        <ModuleActionMenu
+          className="[&>button]:h-9 [&>button]:w-9"
+          items={items}
+          label={`More actions for revolving fund ${record.transactionNo}`}
+        />
       </ModuleTableActions>
       {status ? (
         <AppDialog

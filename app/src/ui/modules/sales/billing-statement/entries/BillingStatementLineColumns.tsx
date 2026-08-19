@@ -1,7 +1,7 @@
 import {
   BillingStatementBooleanOptions,
+  BillingStatementDescriptionOptions,
   BillingStatementDiscountOptions,
-  BillingStatementTypeOptions,
 } from "@/app/src/constants/modules/sales/billing-statement/BillingStatementConstants";
 import type { BillingStatementItem } from "@/app/src/types/modules/sales/billing-statement/BillingStatementTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
@@ -13,7 +13,7 @@ import {
 import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
-type BillingStatementLineColumnKind = "amount" | "boolean" | "discount" | "select" | "text";
+type BillingStatementLineColumnKind = "amount" | "boolean" | "discount" | "select" | "service" | "text";
 
 type BillingStatementLineColumnConfig = {
   header: string;
@@ -67,13 +67,32 @@ function BillingStatementLineCell({
 }) {
   const value = String(row[column.id] ?? "");
 
+  if (column.kind === "service" || column.id === "description") {
+    return (
+      <AppAdvancedDropdown
+        id={fieldId}
+        name={fieldName}
+        value={value}
+        readOnly={isReadonly}
+        options={BillingStatementDescriptionOptions.map((option) => ({
+          name: option,
+          value: option === "--Select Description--" ? "" : option,
+        }))}
+        placeholder="--Select Description--"
+        searchPlaceholder="Search description"
+        className={EntryDropdownClassName}
+        onChange={(nextValue) => onUpdateEntry(row.id, { [column.id]: String(nextValue) })}
+      />
+    );
+  }
+
   if (column.kind === "boolean" || column.kind === "discount" || column.kind === "select") {
     const options =
       column.kind === "boolean"
         ? BillingStatementBooleanOptions
         : column.kind === "discount"
           ? BillingStatementDiscountOptions
-          : BillingStatementTypeOptions;
+          : ["VAT (12%)", "Zero-rated", "VAT Exempt"];
 
     return (
       <AppAdvancedDropdown
@@ -128,25 +147,16 @@ function entryCellControlClassName(extraClassName?: string) {
 }
 
 const BillingStatementLineColumnConfigs = [
-  column("Description", "description", "text", 300, "w-[18.75rem]"),
-  column("Particulars", "particulars", "text", 300, "w-[18.75rem]"),
+  column("Professional Service Type", "description", "service", 260, "w-[16.25rem]"),
   column("Amount", "amount", "amount", 150, "w-[9.5rem]"),
-  column("Qty", "quantity", "amount", 130, "w-[8rem]"),
-  column("Net Amount", "netAmount", "amount", 150, "w-[9.5rem]"),
-  column("VAT Amount", "vatAmount", "amount", 150, "w-[9.5rem]"),
-  column("WVAT Amount", "wvatAmount", "amount", 150, "w-[9.5rem]"),
-  column("EWT Amount", "ewtAmount", "amount", 150, "w-[9.5rem]"),
-  column("Discount %", "discountPercent", "discount", 140, "w-[8.75rem]"),
-  column("Discount Amount", "discountAmount", "amount", 170, "w-[10.5rem]"),
+  column("QTY", "quantity", "amount", 130, "w-[8rem]"),
   column("Gross Amount", "grossAmount", "amount", 170, "w-[10.5rem]"),
-  column("VAT Type", "vatType", "select", 150, "w-[9.5rem]"),
+  column("VAT Amount", "vatAmount", "amount", 150, "w-[9.5rem]"),
   column("VATable", "vatable", "boolean", 130, "w-[8rem]"),
   column("VAT Inc.", "vatInclusive", "boolean", 130, "w-[8rem]"),
-  column("With WVAT", "withWvat", "boolean", 140, "w-[8.75rem]"),
-  column("WVAT Type", "wvatType", "discount", 140, "w-[8.75rem]"),
-  column("With EWT", "withEwt", "boolean", 140, "w-[8.75rem]"),
-  column("EWT Type", "ewtType", "discount", 140, "w-[8.75rem]"),
-  column("Res. Center", "responsibilityCenter", "text", 220, "w-[13.75rem]"),
+  column("Discount Maintenance", "discountPercent", "discount", 190, "w-[11.75rem]"),
+  column("Total Discount", "discountAmount", "amount", 170, "w-[10.5rem]"),
+  column("Net Amount", "netAmount", "amount", 150, "w-[9.5rem]"),
 ] satisfies BillingStatementLineColumnConfig[];
 
 function column(

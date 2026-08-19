@@ -1,9 +1,16 @@
 import type { VisibilityState } from "@tanstack/react-table";
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
-import type { CashAdvanceDetailsSection, CashAdvanceStatus } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
+import type {
+  CashAdvanceDetailsSection,
+  CashAdvanceStatus,
+  CashAdvanceSubmitConfirmationAction,
+} from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 import type { ModuleTabItem } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 
-export const CashAdvanceHref = getModuleRoute("CA");
+export const CashAdvanceLink = getModuleRoute("CA");
+export const CashAdvanceAddLink = `${CashAdvanceLink}/add`;
+export const getCashAdvanceEditLink = (recordId: string) => `${CashAdvanceLink}/edit/${recordId}`;
+export const getCashAdvanceViewLink = (recordId: string) => `${CashAdvanceLink}/view/${recordId}`;
 export const CashAdvanceStorageKey = "gr8books.cash-advance.records";
 export const CashAdvanceTransactionNumberPrefix = "CA-";
 export const CashAdvanceTransactionNumberPadding = 6;
@@ -47,6 +54,16 @@ export const CashAdvanceStatuses = {
   open: "Open",
   posted: "Posted",
 } as const;
+
+export const CashAdvanceSubmitConfirmationDialogTitles: Record<CashAdvanceSubmitConfirmationAction, string> = {
+  save: "Save Cash Advance?",
+  draft: "Save as Draft?",
+};
+
+export const CashAdvanceSubmitConfirmationDialogConfirmLabels: Record<CashAdvanceSubmitConfirmationAction, string> = {
+  save: "Save and Submit",
+  draft: "Save as Draft",
+};
 
 export const CashAdvanceAllStatusFilter = "all";
 
@@ -126,14 +143,51 @@ export function canCancelCashAdvanceStatus(status: CashAdvanceStatus) {
   return status === CashAdvanceStatuses.draft || status === CashAdvanceStatuses.forApproval || status === CashAdvanceStatuses.cancelled;
 }
 
-export function getCashAdvanceStatusDialogCopy(status: CashAdvanceStatus, recordLabel: string) {
+export function getCashAdvanceStatusDialogCopy(
+  status: CashAdvanceStatus,
+  recordLabel: string,
+  currentStatus?: CashAdvanceStatus,
+) {
+  if (status === CashAdvanceStatuses.forApproval && currentStatus === CashAdvanceStatuses.posted) {
+    return {
+      confirmLabel: "Undo Approved",
+      description: `This will undo the approval of ${recordLabel} and return it to For Approval.`,
+      iconTone: "question" as const,
+      pendingLabel: "Undoing Approval...",
+      title: "Undo Approved Cash Advance?",
+      tone: "question" as const,
+    };
+  }
+
+  if (status === CashAdvanceStatuses.forApproval && currentStatus === CashAdvanceStatuses.disapproved) {
+    return {
+      confirmLabel: "Undo Disapproved",
+      description: `This will undo the disapproval of ${recordLabel} and return it to For Approval.`,
+      iconTone: "question" as const,
+      pendingLabel: "Undoing Disapproval...",
+      title: "Undo Disapproved Cash Advance?",
+      tone: "question" as const,
+    };
+  }
+
+  if (currentStatus === CashAdvanceStatuses.cancelled) {
+    return {
+      confirmLabel: "Undo Cancelled",
+      description: `This will undo the cancellation of ${recordLabel}.`,
+      iconTone: "question" as const,
+      pendingLabel: "Undoing Cancellation...",
+      title: "Undo Cancelled Cash Advance?",
+      tone: "question" as const,
+    };
+  }
+
   if (status === CashAdvanceStatuses.posted) {
     return {
       confirmLabel: "Approve Cash Advance",
       description: `This will approve ${recordLabel} and update its status to Posted.`,
       iconTone: "approve" as const,
       pendingLabel: "Approving...",
-      title: "Approve cash advance?",
+      title: "Approve Cash Advance?",
       tone: "success" as const,
     };
   }
@@ -144,7 +198,7 @@ export function getCashAdvanceStatusDialogCopy(status: CashAdvanceStatus, record
       description: `This will mark ${recordLabel} as Disapproved.`,
       iconTone: "disapprove" as const,
       pendingLabel: "Disapproving...",
-      title: "Disapprove cash advance?",
+      title: "Disapprove Cash Advance?",
       tone: "danger" as const,
     };
   }

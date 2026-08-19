@@ -48,6 +48,8 @@ import {
 import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
 import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
+import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
+import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 
 export function useCashAdvanceMultipleEntryStore<TSelected = CashAdvanceMultipleEntryStoreState>(
   selector?: (state: CashAdvanceMultipleEntryStoreState) => TSelected,
@@ -103,6 +105,16 @@ export function useCashAdvanceMultipleEntryActionForm(
       : createCashAdvanceMultipleEntryFormValues(transactionCurrency.baseCurrencyCode),
   );
   const hasEditedCurrencyRef = useRef(false);
+  const isSubmittingRef = useRef(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [initialValues] = useState(values);
+  const isDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
+  const draft = useModuleDraft({
+    enabled: mode !== "view",
+    key: createModuleDraftKey({ mode, moduleId: "cash-disbursement:cash-advance-multiple-entry", recordId }),
+    setValues,
+    values,
+  });
 
   useEffect(() => {
     if (mode !== "add" || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) {
@@ -154,6 +166,17 @@ export function useCashAdvanceMultipleEntryActionForm(
   }
 
   function submitEntry(status: CashAdvanceStatus = CashAdvanceMultipleEntryStatuses.forApproval) {
+    if (mode === "view" || isSubmittingRef.current) return false;
+    if (mode === "edit" && !isDirty) {
+      toast.error("No changes to save.");
+      return false;
+    }
+    const releaseSubmitLock = acquireModuleActionLock(
+      `cash-disbursement:cash-advance-multiple-entry:submit:${mode}:${recordId ?? values.transNo}`,
+    );
+    if (!releaseSubmitLock) return false;
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
     const nextValues = { ...values, status };
     const balanceValidation = validateCashAdvanceMultipleEntryAmountsWithinBalances(nextValues);
     const validation = !balanceValidation.isValid
@@ -164,42 +187,60 @@ export function useCashAdvanceMultipleEntryActionForm(
 
     if (!validation.isValid) {
       toast.error(validation.message ?? "Review the cash advance multiple entry details.");
-      return;
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+      releaseSubmitLock();
+      return false;
     }
 
-    const nextRecord = createCashAdvanceMultipleEntryRecordFromForm(nextValues, mode === "edit" ? (loadedRecord ?? undefined) : undefined);
-    const nextEntries = upsertCashAdvanceMultipleEntryRecord(nextRecord);
-
-    writeStoredCashAdvanceMultipleEntries(nextEntries);
-    setLoadedRecord(nextRecord);
-    setValues(createCashAdvanceMultipleEntryFormValuesFromRecord(nextRecord));
-    toast.success(mode === "edit" ? "Cash advance multiple entry updated." : "Cash advance multiple entry saved.");
-    onSaved?.(nextRecord);
+    try {
+      const nextRecord = createCashAdvanceMultipleEntryRecordFromForm(nextValues, mode === "edit" ? (loadedRecord ?? undefined) : undefined);
+      const nextEntries = upsertCashAdvanceMultipleEntryRecord(nextRecord);
+      writeStoredCashAdvanceMultipleEntries(nextEntries);
+      setLoadedRecord(nextRecord);
+      setValues(createCashAdvanceMultipleEntryFormValuesFromRecord(nextRecord));
+      draft.clearDraft();
+      toast.success(mode === "edit" ? "Cash advance multiple entry updated." : "Cash advance multiple entry saved.");
+      onSaved?.(nextRecord);
+      return true;
+    } catch {
+      toast.error("Could not save the cash advance multiple entry. Please try again.");
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+      releaseSubmitLock();
+      return false;
+    }
   }
 
   function updateEntryStatus(status: CashAdvanceStatus) {
     if (!loadedRecord) {
       return;
     }
+    const releaseActionLock = acquireModuleActionLock(`cash-disbursement:cash-advance-multiple-entry:status:${loadedRecord.id}:${status}`);
+    if (!releaseActionLock) return;
 
-    const updatedAt = new Date().toISOString();
-    const nextValues = { ...values, status };
-    const nextRecord: CashAdvanceMultipleEntryRecord = {
-      ...loadedRecord,
-      formValues: {
-        ...nextValues,
-        attachments: nextValues.attachments.map((attachment) => ({ ...attachment })),
-      },
-      status,
-      updatedAt,
-      updatedBy: "Current User",
-    };
-    const nextEntries = upsertCashAdvanceMultipleEntryRecord(nextRecord);
-
-    writeStoredCashAdvanceMultipleEntries(nextEntries);
-    setLoadedRecord(nextRecord);
-    setValues(nextValues);
-    toast.success(`Cash advance multiple entry marked as ${status}.`);
+    try {
+      const updatedAt = new Date().toISOString();
+      const nextValues = { ...values, status };
+      const nextRecord: CashAdvanceMultipleEntryRecord = {
+        ...loadedRecord,
+        formValues: {
+          ...nextValues,
+          attachments: nextValues.attachments.map((attachment) => ({ ...attachment })),
+        },
+        status,
+        updatedAt,
+        updatedBy: "Current User",
+      };
+      const nextEntries = upsertCashAdvanceMultipleEntryRecord(nextRecord);
+      writeStoredCashAdvanceMultipleEntries(nextEntries);
+      setLoadedRecord(nextRecord);
+      setValues(nextValues);
+      toast.success(`Cash advance multiple entry marked as ${status}.`);
+    } catch {
+      toast.error("Could not update the cash advance multiple entry. Please try again.");
+      releaseActionLock();
+    }
   }
 
   return {
@@ -207,6 +248,7 @@ export function useCashAdvanceMultipleEntryActionForm(
     addItems,
     currencyOptions: transactionCurrency.currencyOptions,
     isExchangeRateLoading: transactionCurrency.isExchangeRateLoading,
+    isSubmitting,
     isRecordMissing: mode !== "add" && !initialRecord,
     record: loadedRecord,
     submitEntry,
@@ -367,9 +409,9 @@ export function useCashAdvanceMultipleEntryTable(records: CashAdvanceMultipleEnt
         id: "actions",
         enableSorting: false,
         enableHiding: false,
-        header: "Action",
+        header: "Actions",
         size: CashAdvanceMultipleEntryOverviewColumnWidths.actions,
-        meta: { className: "text-center", label: "Action" },
+        meta: { className: "text-center", label: "Actions" },
       },
     ],
     [],

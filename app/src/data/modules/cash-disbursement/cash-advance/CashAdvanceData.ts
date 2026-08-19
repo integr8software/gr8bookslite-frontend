@@ -273,22 +273,6 @@ export function formatCashAdvanceCurrency(value: number) {
   return formatCurrency(value);
 }
 
-export function formatCashAdvanceDate(value: string) {
-  return new Intl.DateTimeFormat("en-US", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(value));
-}
-
-export function formatCashAdvancePercentage(value: number, total: number) {
-  if (total === 0) {
-    return "0.00% of total";
-  }
-
-  return `${((value / total) * 100).toFixed(2)}% of total`;
-}
-
 export function getCashAdvanceStatusLabel(status: CashAdvanceStatus) {
   return status;
 }

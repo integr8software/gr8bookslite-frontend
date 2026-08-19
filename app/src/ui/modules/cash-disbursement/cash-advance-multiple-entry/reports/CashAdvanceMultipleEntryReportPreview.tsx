@@ -4,7 +4,6 @@ import {
   calculateCashAdvanceMultipleEntryTotal,
   formatCashAdvanceMultipleEntryAmount,
 } from "@/app/src/data/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryData";
-import { formatCashAdvanceDate } from "@/app/src/data/modules/cash-disbursement/cash-advance/CashAdvanceData";
 import type {
   CashAdvanceMultipleEntryFormValues,
   CashAdvanceMultipleEntryItem,
@@ -12,6 +11,7 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { ReportPreviewDrawer } from "@/app/src/ui/shared/reports/Reports";
+import { formatDate } from "@/app/src/utils/date.util";
 
 export function CashAdvanceMultipleEntryReportPreview({
   isOpen,
@@ -162,7 +162,7 @@ function formatCompactDate(value: string) {
 
   const [year, month, day] = value.split("-");
 
-  return year && month && day ? `${month}/${day}/${year}` : formatCashAdvanceDate(value);
+  return year && month && day ? `${month}/${day}/${year}` : formatDate(value, { locale: "en-US" });
 }
 
 function getResponsibilityCenterNames(rows: CashAdvanceMultipleEntryItem[], options: AppAdvancedDropdownOption[]) {

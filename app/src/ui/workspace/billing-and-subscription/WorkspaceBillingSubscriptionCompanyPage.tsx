@@ -2,13 +2,16 @@
 
 import { useState } from "react";
 import {
+  AlertTriangle,
   ArrowLeft,
   CalendarClock,
   CreditCard,
   Download,
   GitBranch,
   ReceiptText,
+  RotateCw,
   Search,
+  Unlink,
 } from "lucide-react";
 import Link from "next/link";
 import { WorkspaceBillingSubscriptionHref } from "@/app/src/constants/workspace/billing-and-subscription/WorkspaceBillingSubscriptionConstants";
@@ -52,6 +55,7 @@ import {
 import { validateBillingPaymentForm } from "@/app/src/validations/billing/BillingValidation";
 
 const AutoBillingMode = "AUTO";
+const ManualBillingMode = "MANUAL";
 const AllTransactionStatusFilter = "all";
 const TransactionStatusOptions = ["PAID", "OPEN", "PENDING", "FAILED", "CANCELED", "REFUNDED"] as const;
 
@@ -109,16 +113,21 @@ export function WorkspaceBillingSubscriptionCompanyPage({ companyId }: { company
         account={account}
         activeTab={page.getActiveCompanyTab(account.id)}
         invoices={page.getFilteredInvoices(account.id)}
+        isCancelled={page.isCompanyCancelled(account.id)}
         paymentMethods={page.paymentMethods}
         selectedBillingMode={page.getSelectedBillingMode(account.id)}
         selectedPaymentMethod={selectedPaymentMethod}
         payments={page.getFilteredPayments(account.id)}
+        onCancelSubscription={() => page.cancelSubscription(account.id)}
         onPayNow={() => page.payCompany(account.id)}
+        onReactivateSubscription={() => page.reactivateSubscription(account.id)}
+        onRenewSubscription={() => page.renewSubscription(account.id)}
         onSaveBillingMethod={page.saveCompanyBillingMethod}
         onSelectInvoice={page.setSelectedInvoice}
         onTabChange={(tab) => page.updateActiveCompanyTab(account.id, tab)}
         onTransactionQueryChange={(query) => page.updateTransactionQuery(account.id, query)}
         onTransactionStatusFilterChange={(status) => page.updateTransactionStatusFilter(account.id, status)}
+        onUnlinkPaymentMethod={() => page.unlinkCompanyPaymentMethod(account.id)}
         outstandingAmount={page.getWorkspaceBillingOutstandingAmount(account.id)}
         transactionQuery={page.getTransactionQuery(account.id)}
         transactionStatusFilter={page.getTransactionStatusFilter(account.id)}
@@ -132,11 +141,15 @@ type ExpandedCompanyBillingProps = {
   activeTab: WorkspaceBillingCompanyTab;
   account: WorkspaceBillingCompanyAccount;
   invoices: WorkspaceBillingInvoiceRecord[];
+  isCancelled: boolean;
   payments: WorkspaceBillingPaymentRecord[];
   paymentMethods: WorkspaceBillingPaymentMethodRecord[];
   selectedBillingMode: BillingMode;
   selectedPaymentMethod?: WorkspaceBillingPaymentMethodRecord;
+  onCancelSubscription: () => void;
   onPayNow: () => void;
+  onReactivateSubscription: () => void;
+  onRenewSubscription: () => Promise<void> | void;
   onSaveBillingMethod: (payload: {
     companyId: string;
     billingMode: BillingMode;
@@ -147,6 +160,7 @@ type ExpandedCompanyBillingProps = {
   onTabChange: (tab: WorkspaceBillingCompanyTab) => void;
   onTransactionQueryChange: (query: string) => void;
   onTransactionStatusFilterChange: (status: WorkspaceBillingStatusFilterValue) => void;
+  onUnlinkPaymentMethod: () => void;
   outstandingAmount: number;
   transactionQuery: string;
   transactionStatusFilter: WorkspaceBillingStatusFilterValue;
@@ -156,16 +170,21 @@ export function ExpandedCompanyBilling({
   activeTab,
   account,
   invoices,
+  isCancelled,
   payments,
   paymentMethods,
   selectedBillingMode,
   selectedPaymentMethod,
+  onCancelSubscription,
   onPayNow,
+  onReactivateSubscription,
+  onRenewSubscription,
   onSaveBillingMethod,
   onSelectInvoice,
   onTabChange,
   onTransactionQueryChange,
   onTransactionStatusFilterChange,
+  onUnlinkPaymentMethod,
   outstandingAmount,
   transactionQuery,
   transactionStatusFilter,
@@ -227,11 +246,16 @@ export function ExpandedCompanyBilling({
       {activeTab === "subscription" ? (
         <CompanySubscriptionTab
           account={account}
+          isCancelled={isCancelled}
           paymentMethods={paymentMethods}
           selectedBillingMode={selectedBillingMode}
           selectedPaymentMethod={selectedPaymentMethod}
+          onCancelSubscription={onCancelSubscription}
           onPayNow={onPayNow}
+          onReactivateSubscription={onReactivateSubscription}
+          onRenewSubscription={onRenewSubscription}
           onSaveBillingMethod={onSaveBillingMethod}
+          onUnlinkPaymentMethod={onUnlinkPaymentMethod}
         />
       ) : null}
     </div>
@@ -504,23 +528,33 @@ export function CompanyPaymentsTab({
 
 export function CompanySubscriptionTab({
   account,
+  isCancelled,
   paymentMethods,
   selectedBillingMode,
   selectedPaymentMethod,
+  onCancelSubscription,
   onPayNow,
+  onReactivateSubscription,
+  onRenewSubscription,
   onSaveBillingMethod,
+  onUnlinkPaymentMethod,
 }: {
   account: WorkspaceBillingCompanyAccount;
+  isCancelled: boolean;
   paymentMethods: WorkspaceBillingPaymentMethodRecord[];
   selectedBillingMode: BillingMode;
   selectedPaymentMethod?: WorkspaceBillingPaymentMethodRecord;
+  onCancelSubscription: () => void;
   onPayNow: () => void;
+  onReactivateSubscription: () => void;
+  onRenewSubscription: () => Promise<void> | void;
   onSaveBillingMethod: (payload: {
     companyId: string;
     billingMode: BillingMode;
     paymentMethodId?: string;
     newCardValues?: BillingPaymentFormValues;
   }) => Promise<void>;
+  onUnlinkPaymentMethod: () => void;
 }) {
   const [stagedBillingMode, setStagedBillingMode] = useState<BillingMode>(selectedBillingMode);
   const [stagedPaymentMethodId, setStagedPaymentMethodId] = useState<string>(
@@ -529,8 +563,13 @@ export function CompanySubscriptionTab({
   const [newCardValues, setNewCardValues] = useState<BillingPaymentFormValues>(InitialBillingPaymentFormValues);
   const [newCardErrors, setNewCardErrors] = useState<BillingPaymentFormErrors>({});
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [isUnlinkDialogOpen, setIsUnlinkDialogOpen] = useState(false);
+  const [isRenewDialogOpen, setIsRenewDialogOpen] = useState(false);
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isRenewing, setIsRenewing] = useState(false);
 
+  const isExpired = account.status === "Past Due" || account.renewalState === "Overdue";
   const isAddingNewCard = stagedBillingMode === AutoBillingMode && stagedPaymentMethodId === NewPayMongoCardPaymentMethodId;
 
   function handleStagedModeChange(mode: BillingMode) {
@@ -574,6 +613,27 @@ export function CompanySubscriptionTab({
     } finally {
       setIsSaving(false);
     }
+  }
+
+  function handleConfirmUnlink() {
+    onUnlinkPaymentMethod();
+    setStagedBillingMode(ManualBillingMode);
+    setIsUnlinkDialogOpen(false);
+  }
+
+  async function handleConfirmRenew() {
+    setIsRenewing(true);
+    try {
+      await onRenewSubscription();
+      setIsRenewDialogOpen(false);
+    } finally {
+      setIsRenewing(false);
+    }
+  }
+
+  function handleConfirmCancel() {
+    onCancelSubscription();
+    setIsCancelDialogOpen(false);
   }
 
   const selectedSavedCard = paymentMethods.find((m) => m.id === stagedPaymentMethodId);
@@ -625,11 +685,21 @@ export function CompanySubscriptionTab({
                 onChange={handleNewCardFieldChange}
               />
             ) : selectedSavedCard ? (
-              <div className="rounded-lg border border-darknavy/10 bg-offwhite/50 p-3.5 text-xs text-darknavy/65">
-                <p className="font-semibold text-darknavy">Active Card On File</p>
-                <p className="mt-0.5">
-                  {selectedSavedCard.brand} ending in {selectedSavedCard.last4} · Expires {selectedSavedCard.expiryLabel}
-                </p>
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-darknavy/10 bg-offwhite/50 p-3.5 text-xs text-darknavy/65">
+                <div>
+                  <p className="font-semibold text-darknavy">Active Card On File</p>
+                  <p className="mt-0.5">
+                    {selectedSavedCard.brand} ending in {selectedSavedCard.last4} · Expires {selectedSavedCard.expiryLabel}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsUnlinkDialogOpen(true)}
+                  className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-md border border-coralpink/30 bg-white px-3 text-xs font-semibold text-coralpink shadow-sm transition hover:bg-coralpink/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coralpink/20"
+                >
+                  <Unlink className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  <span>Unlink card</span>
+                </button>
               </div>
             ) : null}
           </div>
@@ -663,6 +733,43 @@ export function CompanySubscriptionTab({
         </div>
       </section>
 
+      {/* Subscription Renewal Section (Only shown if expired, past due, or cancelled) */}
+      {isExpired || isCancelled ? (
+        <section className="rounded-xl border border-darknavy/10 bg-white p-5 shadow-sm shadow-darknavy/[0.04]">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <SectionTitle icon={RotateCw} title="Subscription Renewal" />
+              <p className="mt-1 text-xs text-darknavy/55">
+                {isCancelled
+                  ? `Subscription cancellation is scheduled for ${formatWorkspaceBillingDate(account.renewalDate)}. Renew now to restore uninterrupted access.`
+                  : `Your subscription expired on ${formatWorkspaceBillingDate(account.renewalDate)}. Renew now to reactivate workspace access for ${formatWorkspaceBillingCurrency(account.totalDue)} (${account.billingCycle}).`}
+              </p>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              {isCancelled ? (
+                <button
+                  type="button"
+                  onClick={onReactivateSubscription}
+                  className="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-md bg-citron/40 px-4 text-xs font-semibold text-darknavy shadow-sm transition hover:bg-citron/60 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-citron/20"
+                >
+                  <RotateCw className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  <span>Reactivate Subscription</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsRenewDialogOpen(true)}
+                  className="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-md bg-darknavy px-4 text-xs font-semibold text-offwhite shadow-sm transition hover:bg-skyblue hover:text-darknavy focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20"
+                >
+                  <RotateCw className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  <span>Renew Subscription</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       {/* Usage and Add-ons Section */}
       <section className="rounded-xl border border-darknavy/10 bg-white p-5 shadow-sm shadow-darknavy/[0.04]">
         <SectionTitle icon={GitBranch} title="Usage and add-ons" />
@@ -673,7 +780,34 @@ export function CompanySubscriptionTab({
         </div>
       </section>
 
-      {/* Confirmation Dialog */}
+      {/* Cancel Subscription Section */}
+      <section className="rounded-xl border border-coralpink/20 bg-coralpink/[0.03] p-5 shadow-sm shadow-darknavy/[0.04]">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="flex items-center gap-2 text-sm font-semibold text-coralpink">
+              <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+              <span>Cancel Subscription</span>
+            </div>
+            <p className="mt-1 text-xs text-darknavy/60">
+              {isCancelled
+                ? `Subscription cancellation has been scheduled. Your workspace for ${account.name} remains active until ${formatWorkspaceBillingDate(account.renewalDate)}.`
+                : `Cancelling will disable auto-renewal for ${account.name}. Your workspace remains active until the end of your billing cycle on ${formatWorkspaceBillingDate(account.renewalDate)}.`}
+            </p>
+          </div>
+          {!isCancelled ? (
+            <button
+              type="button"
+              onClick={() => setIsCancelDialogOpen(true)}
+              className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-md border border-coralpink/30 bg-white px-4 text-xs font-semibold text-coralpink shadow-sm transition hover:bg-coralpink/10 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coralpink/15"
+            >
+              <AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              <span>Cancel Subscription</span>
+            </button>
+          ) : null}
+        </div>
+      </section>
+
+      {/* Save Billing Method Dialog */}
       <AppDialog
         isOpen={isConfirmDialogOpen}
         isPending={isSaving}
@@ -682,6 +816,41 @@ export function CompanySubscriptionTab({
         confirmLabel={stagedBillingMode === "MANUAL" ? "Confirm & Set Manual" : "Confirm & Save Card"}
         onCancel={() => setIsConfirmDialogOpen(false)}
         onConfirm={handleConfirmSave}
+      />
+
+      {/* Unlink Card Dialog */}
+      <AppDialog
+        isOpen={isUnlinkDialogOpen}
+        title="Unlink card from subscription?"
+        description={`This will remove ${selectedSavedCard?.brand ?? "your card"} ending in ${selectedSavedCard?.last4 ?? ""} from ${account.name} and switch the billing mode to Manual Hosted Checkout. Automatic renewals will be disabled.`}
+        confirmLabel="Unlink Card"
+        onCancel={() => setIsUnlinkDialogOpen(false)}
+        onConfirm={handleConfirmUnlink}
+      />
+
+      {/* Renew Subscription Dialog */}
+      <AppDialog
+        isOpen={isRenewDialogOpen}
+        isPending={isRenewing}
+        title={`Renew subscription for ${account.name}?`}
+        description={
+          stagedBillingMode === AutoBillingMode && selectedSavedCard
+            ? `This will charge ${formatWorkspaceBillingCurrency(account.totalDue)} to ${selectedSavedCard.brand} ending in ${selectedSavedCard.last4} and extend access for ${account.name}.`
+            : `This will launch PayMongo hosted checkout to settle the renewal payment of ${formatWorkspaceBillingCurrency(account.totalDue)} for ${account.name}.`
+        }
+        confirmLabel={stagedBillingMode === AutoBillingMode ? "Confirm & Renew" : "Proceed to Hosted Checkout"}
+        onCancel={() => setIsRenewDialogOpen(false)}
+        onConfirm={handleConfirmRenew}
+      />
+
+      {/* Cancel Subscription Dialog */}
+      <AppDialog
+        isOpen={isCancelDialogOpen}
+        title={`Cancel subscription for ${account.name}?`}
+        description={`Are you sure you want to cancel the subscription for ${account.name}? Your company will retain full access until the current billing period ends on ${formatWorkspaceBillingDate(account.renewalDate)}. After this date, company access will be suspended unless renewed.`}
+        confirmLabel="Yes, Cancel Subscription"
+        onCancel={() => setIsCancelDialogOpen(false)}
+        onConfirm={handleConfirmCancel}
       />
     </div>
   );

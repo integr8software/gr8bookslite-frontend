@@ -133,6 +133,8 @@ function BillingEntryCell({
 			column.id === "netAmount" ||
 			column.id === "vatAmount" ||
 			column.id === "discountAmount" ||
+			column.id === "grossAfterDiscount" ||
+			column.id === "netOfVatAmount" ||
 			column.id === "grossAmount";
 
 		return (
@@ -228,18 +230,26 @@ const BillingServiceDetailColumnConfigs = [
 	),
 	column("Amount", "amount", "amount", 120, "w-[7.5rem]"),
 	column("QTY", "quantity", "amount", 100, "w-[6.25rem]"),
-	column("Gross Amount", "netAmount", "amount", 140, "w-[8.75rem]"),
-	column("VAT Amount", "vatAmount", "amount", 130, "w-[8.125rem]"),
-	column("VATable", "vatable", "boolean", 110, "w-[6.875rem]"),
-	column("VAT Inc.", "vatInclusive", "boolean", 110, "w-[6.875rem]"),
+	column("Gross", "netAmount", "amount", 140, "w-[8.75rem]"),
+	column("Discount Rate", "discountPercent", "amount", 150, "w-[9.375rem]"),
+	column("Discount Amount", "discountAmount", "amount", 160, "w-[10rem]"),
 	column(
-		"Discount Maintenance",
-		"discountPercent",
+		"Gross After Discount",
+		"grossAfterDiscount",
 		"amount",
 		180,
 		"w-[11.25rem]",
 	),
-	column("Total Discount", "discountAmount", "amount", 145, "w-[9.0625rem]"),
+	column("VAT Amount", "vatAmount", "amount", 130, "w-[8.125rem]"),
+	column("VATable", "vatable", "boolean", 110, "w-[6.875rem]"),
+	column("VATInc", "vatInclusive", "boolean", 110, "w-[6.875rem]"),
+	column(
+		"Net of VAT Amount",
+		"netOfVatAmount",
+		"amount",
+		180,
+		"w-[11.25rem]",
+	),
 	column("Net Amount", "grossAmount", "amount", 140, "w-[8.75rem]"),
 ];
 

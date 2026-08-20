@@ -47,6 +47,8 @@ export type ServiceInvoiceLineEntry = {
 	ewtAmount: string;
 	discountPercent: string;
 	discountAmount: string;
+	grossAfterDiscount: string;
+	netOfVatAmount: string;
 	grossAmount: string;
 	vatType: string;
 	vatable: string;

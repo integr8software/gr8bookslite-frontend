@@ -221,15 +221,20 @@ function normalizeEntry(
     : isVatInclusive
       ? (grossAfterDiscount / 1.12) * 0.12
       : grossAfterDiscount * 0.12;
-  const netAmount =
+  const netOfVatAmount =
+    isVatable && isVatInclusive ? Math.max(grossAfterDiscount - vatAmount, 0) : grossAfterDiscount;
+  const netAmount = amount * Math.max(quantity, 0);
+  const totalAmount =
     isVatable && !isVatInclusive ? grossAfterDiscount + vatAmount : grossAfterDiscount;
 
   return {
     ...entry,
     amount: Math.round(amount * 100) / 100,
     discountAmount: Math.round(discountAmount * 100) / 100,
-    grossAmount: Math.round(grossAmount * 100) / 100,
+    grossAfterDiscount: Math.round(grossAfterDiscount * 100) / 100,
+    grossAmount: Math.round(totalAmount * 100) / 100,
     netAmount: Math.round(netAmount * 100) / 100,
+    netOfVatAmount: Math.round(netOfVatAmount * 100) / 100,
     quantity,
     vatAmount: Math.round(vatAmount * 100) / 100,
   };

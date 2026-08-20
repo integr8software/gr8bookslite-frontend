@@ -28,6 +28,10 @@ export function recalculateBillingInvoiceLineEntry(
 		: isVatInclusive
 			? (grossAfterDiscount / 1.12) * 0.12
 			: grossAfterDiscount * 0.12;
+	const netOfVatAmount =
+		isVatable && isVatInclusive
+			? Math.max(grossAfterDiscount - vatAmount, 0)
+			: grossAfterDiscount;
 	const grossAmount =
 		isVatable && !isVatInclusive
 			? grossAfterDiscount + vatAmount
@@ -37,7 +41,9 @@ export function recalculateBillingInvoiceLineEntry(
 		...entry,
 		discountAmount: discountAmount.toFixed(2),
 		grossAmount: grossAmount.toFixed(2),
+		grossAfterDiscount: grossAfterDiscount.toFixed(2),
 		netAmount: netAmount.toFixed(2),
+		netOfVatAmount: netOfVatAmount.toFixed(2),
 		vatAmount: vatAmount.toFixed(2),
 	};
 }

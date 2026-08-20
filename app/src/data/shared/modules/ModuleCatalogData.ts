@@ -103,6 +103,7 @@ export const MODULE_ROUTE_MAP = {
   FS: "/system-administration/form-signatory",
   MM: "/system-administration/mail-maintenance",
   CRPT: "/system-administration/customized-reports",
+  FM: "/system-administration/field-management",
 } as const;
 
 export const MainModuleCatalogHelperText: Record<string, string> = {
@@ -166,6 +167,7 @@ export const MainModuleCatalogHelperText: Record<string, string> = {
   "system-administration-form-signatory": "Manage authorized signatories for official documents.",
   "system-administration-customized-reports":
     "Customize printable report templates, fields, headers, footers, and signatories.",
+  "system-administration-field-management": "Configure module field visibility and requirements.",
   "cash-receipt-official-receipt": "Record official customer payments.",
   "cash-receipt-collection-receipt": "Record collections received from customers.",
   "cash-receipt-acknowledgement-receipt": "Acknowledge received payments before official posting.",
@@ -554,6 +556,7 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
         "CRPT",
         "settings",
       ),
+      moduleItem("system-administration-field-management", "Field Management", "FM", "settings"),
       moduleItem("maintenance-mail", "Mail Maintenance", "MM", "maintenance.mail"),
     ],
   ),

@@ -8,11 +8,17 @@ import {
   type AppDisbursementTypeRecord,
 } from "@/app/src/ui/shared/transaction-setup/AppDisbursementTypeDialog";
 import { useAcknowledgementReceiptActionForm } from "@/app/src/hooks/modules/cash-receipt/acknowledgement-receipt/useAcknowledgementReceipt";
-import { AcknowledgementReceiptHref } from "@/app/src/constants/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptConstants";
+import {
+  AcknowledgementReceiptActionTabs,
+  AcknowledgementReceiptHref,
+} from "@/app/src/constants/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptConstants";
 import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
 import { usePaymentTypeStore } from "@/app/src/hooks/modules/financial-maintenance/payment-type/usePaymentType";
-import type { AcknowledgementReceiptActionMode } from "@/app/src/types/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptTypes";
+import type {
+  AcknowledgementReceiptActionMode,
+  AcknowledgementReceiptActionTab,
+} from "@/app/src/types/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptTypes";
 import type {
   DisbursementPaymentMethod,
   DisbursementType,
@@ -23,7 +29,9 @@ import { AcknowledgementReceiptEntries } from "@/app/src/ui/modules/cash-receipt
 import { AcknowledgementReceiptNotFound } from "@/app/src/ui/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptNotFound";
 import { openAcknowledgementReceiptPdf } from "@/app/src/ui/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptPdf";
 import { AcknowledgementReceiptReportPreview } from "@/app/src/ui/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptReportPreview";
+import { ReceiptFileAttachmentFields } from "@/app/src/ui/modules/cash-receipt/shared/ReceiptFileAttachmentFields";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
+import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 
 const AppPaymentTypeDialog = dynamic(
   () => import("@/app/src/ui/shared/transaction-setup/AppPaymentTypeDialog").then((module) => module.AppPaymentTypeDialog),
@@ -42,6 +50,7 @@ export function AcknowledgementReceiptActionPage() {
   const mode = getModeFromPathname(pathname);
   const isReadonly = mode === "view";
   const recordId = typeof params.recordId === "string" ? params.recordId : undefined;
+  const [activeTab, setActiveTab] = useState<AcknowledgementReceiptActionTab>("details");
   const receiptForm = useAcknowledgementReceiptActionForm(mode, recordId, () => {
     router.push(AcknowledgementReceiptHref);
   });
@@ -88,22 +97,41 @@ export function AcknowledgementReceiptActionPage() {
           onPreview={() => setIsReportPreviewOpen(true)}
           onSubmit={receiptForm.submitReceipt}
         />
-        <AcknowledgementReceiptDetailsForm
-          isReadonly={isReadonly}
-          values={receiptForm.values}
-          onOpenPartyDrawer={() => setIsPartyDrawerOpen(true)}
-          onOpenPaymentTypeDialog={() => setIsPaymentTypeDialogOpen(true)}
-          onPartyNameChange={updatePartyFromName}
-          onUpdateField={receiptForm.updateField}
+        <ModuleTabs
+          activeTab={activeTab}
+          ariaLabel="Acknowledgement Receipt sections"
+          tabs={AcknowledgementReceiptActionTabs}
+          onTabChange={setActiveTab}
         />
-        <AcknowledgementReceiptEntries
-          entryView={receiptForm.entryView}
-          isReadonly={isReadonly}
-          rows={receiptForm.values.lineEntries}
-          onEntryViewChange={receiptForm.setEntryView}
-          onOpenCollectionTypeDialog={() => setIsCollectionTypeDialogOpen(true)}
-          onRowsChange={receiptForm.updateLineEntries}
-        />
+        {activeTab === "details" ? (
+          <>
+            <AcknowledgementReceiptDetailsForm
+              isReadonly={isReadonly}
+              values={receiptForm.values}
+              onOpenPartyDrawer={() => setIsPartyDrawerOpen(true)}
+              onOpenPaymentTypeDialog={() => setIsPaymentTypeDialogOpen(true)}
+              onPartyNameChange={updatePartyFromName}
+              onUpdateField={receiptForm.updateField}
+            />
+            <AcknowledgementReceiptEntries
+              entryView={receiptForm.entryView}
+              isReadonly={isReadonly}
+              rows={receiptForm.values.lineEntries}
+              onEntryViewChange={receiptForm.setEntryView}
+              onOpenCollectionTypeDialog={() => setIsCollectionTypeDialogOpen(true)}
+              onRowsChange={receiptForm.updateLineEntries}
+            />
+          </>
+        ) : (
+          <ReceiptFileAttachmentFields
+            attachments={receiptForm.values.attachments}
+            inputId="acknowledgement-receipt-file-attachments"
+            inputName="acknowledgementReceiptAttachments"
+            isReadonly={isReadonly}
+            uploadTitle="Upload Acknowledgement Receipt Documents"
+            onAttachmentsChange={(attachments) => receiptForm.updateField("attachments", attachments)}
+          />
+        )}
       </section>
 
       <AcknowledgementReceiptReportPreview

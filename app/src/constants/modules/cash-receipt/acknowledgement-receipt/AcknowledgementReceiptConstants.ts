@@ -40,3 +40,9 @@ export const AcknowledgementReceiptStatusFilters = [
 
 export const AcknowledgementReceiptTablePaginationStorageKey =
   "cash-receipt-acknowledgement-receipt";
+
+export const AcknowledgementReceiptActionTabs = [
+  { id: "details", label: "Details" },
+  { id: "attachments", label: "Attachments" },
+] as const;
+

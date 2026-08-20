@@ -1,4 +1,9 @@
+import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
+import type { TransactionAttachment } from "@/app/src/types/shared/transaction-setup/TransactionAttachmentTypes";
+
 export type OfficialReceiptActionMode = "add" | "edit" | "view";
+
+export type OfficialReceiptActionTab = "details" | "attachments";
 
 export type OfficialReceiptEntryView = "collection" | "accounting";
 
@@ -45,6 +50,7 @@ export type OfficialReceiptFormValues = {
   status: string;
   remarks: string;
   lineEntries: OfficialReceiptLineEntry[];
+  attachments?: TransactionAttachment[];
 };
 
 export type OfficialReceiptTotals = {
@@ -54,4 +60,22 @@ export type OfficialReceiptTotals = {
   grossReceipt: number;
   vat: number;
   vatExempt: number;
+};
+
+export type OfficialReceiptCopyFromRecord = AppCopyFromRecord & {
+  customerName?: string;
+  partyCode?: string;
+  paymentType?: string;
+  currency?: string;
+  exchangeRate?: string;
+  collectionType?: string;
+  grossReceipt?: string;
+  vatExempt?: string;
+  vat?: string;
+  ewt?: string;
+  debit?: string;
+  credit?: string;
+  accountCode?: string;
+  accountTitle?: string;
+  lineEntries?: OfficialReceiptLineEntry[];
 };

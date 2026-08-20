@@ -10,11 +10,18 @@ import {
 } from "@/app/src/ui/shared/transaction-setup/AppDisbursementTypeDialog";
 import { useOfficialReceiptActionForm } from "@/app/src/hooks/modules/cash-receipt/official-receipt/useOfficialReceipt";
 import type { OfficialReceiptModuleConfig } from "@/app/src/hooks/modules/cash-receipt/official-receipt/useOfficialReceipt";
-import { OfficialReceiptHref } from "@/app/src/constants/modules/cash-receipt/official-receipt/OfficialReceiptConstants";
+import {
+  OfficialReceiptActionTabs,
+  OfficialReceiptHref,
+} from "@/app/src/constants/modules/cash-receipt/official-receipt/OfficialReceiptConstants";
 import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
 import { usePaymentTypeStore } from "@/app/src/hooks/modules/financial-maintenance/payment-type/usePaymentType";
-import type { OfficialReceiptActionMode } from "@/app/src/types/modules/cash-receipt/official-receipt/OfficialReceiptTypes";
+import type {
+  OfficialReceiptActionMode,
+  OfficialReceiptActionTab,
+  OfficialReceiptCopyFromRecord,
+} from "@/app/src/types/modules/cash-receipt/official-receipt/OfficialReceiptTypes";
 import type {
   DisbursementPaymentMethod,
   DisbursementType,
@@ -25,7 +32,9 @@ import { OfficialReceiptEntries } from "@/app/src/ui/modules/cash-receipt/offici
 import { OfficialReceiptNotFound } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptNotFound";
 import { openOfficialReceiptPdf } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptPdf";
 import { OfficialReceiptReportPreview } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptReportPreview";
+import { ReceiptFileAttachmentFields } from "@/app/src/ui/modules/cash-receipt/shared/ReceiptFileAttachmentFields";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
+import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 
 const AppPaymentTypeDialog = dynamic(
   () => import("@/app/src/ui/shared/transaction-setup/AppPaymentTypeDialog").then((module) => module.AppPaymentTypeDialog),
@@ -39,6 +48,8 @@ const AppDisbursementTypeDialog = dynamic(
 
 type OfficialReceiptActionPageProps = OfficialReceiptModuleConfig & {
   baseHref?: string;
+  copyFromRecords?: OfficialReceiptCopyFromRecord[];
+  copyFromSources?: string[];
   notFoundFallback?: ReactNode;
   receiptCodeLabel?: string;
   receiptLabel?: string;
@@ -46,6 +57,8 @@ type OfficialReceiptActionPageProps = OfficialReceiptModuleConfig & {
 
 export function OfficialReceiptActionPage({
   baseHref = OfficialReceiptHref,
+  copyFromRecords,
+  copyFromSources,
   fallbackReceipts,
   notFoundFallback,
   receiptCodeLabel = "OR",
@@ -58,6 +71,7 @@ export function OfficialReceiptActionPage({
   const mode = getModeFromPathname(pathname);
   const isReadonly = mode === "view";
   const recordId = typeof params.recordId === "string" ? params.recordId : undefined;
+  const [activeTab, setActiveTab] = useState<OfficialReceiptActionTab>("details");
   const receiptForm = useOfficialReceiptActionForm(
     mode,
     recordId,
@@ -65,6 +79,7 @@ export function OfficialReceiptActionPage({
       router.push(baseHref);
     },
     {
+      copyFromRecords,
       fallbackReceipts,
       receiptLabel: receiptLabel.toLowerCase(),
       storageKey,
@@ -107,6 +122,8 @@ export function OfficialReceiptActionPage({
       <section className="grid gap-5">
         <OfficialReceiptActionHeader
           baseHref={baseHref}
+          copyFromRecords={copyFromRecords}
+          copyFromSources={copyFromSources}
           mode={mode}
           recordId={recordId}
           receiptLabel={receiptLabel}
@@ -115,23 +132,42 @@ export function OfficialReceiptActionPage({
           onPreview={() => setIsReportPreviewOpen(true)}
           onSubmit={receiptForm.submitReceipt}
         />
-        <OfficialReceiptDetailsForm
-          isReadonly={isReadonly}
-          receiptCodeLabel={receiptCodeLabel}
-          values={receiptForm.values}
-          onOpenPartyDrawer={() => setIsPartyDrawerOpen(true)}
-          onOpenPaymentTypeDialog={() => setIsPaymentTypeDialogOpen(true)}
-          onPartyNameChange={updatePartyFromName}
-          onUpdateField={receiptForm.updateField}
+        <ModuleTabs
+          activeTab={activeTab}
+          ariaLabel={`${receiptLabel} sections`}
+          tabs={OfficialReceiptActionTabs}
+          onTabChange={setActiveTab}
         />
-        <OfficialReceiptEntries
-          entryView={receiptForm.entryView}
-          isReadonly={isReadonly}
-          rows={receiptForm.values.lineEntries}
-          onEntryViewChange={receiptForm.setEntryView}
-          onOpenCollectionTypeDialog={() => setIsCollectionTypeDialogOpen(true)}
-          onRowsChange={receiptForm.updateLineEntries}
-        />
+        {activeTab === "details" ? (
+          <>
+            <OfficialReceiptDetailsForm
+              isReadonly={isReadonly}
+              receiptCodeLabel={receiptCodeLabel}
+              values={receiptForm.values}
+              onOpenPartyDrawer={() => setIsPartyDrawerOpen(true)}
+              onOpenPaymentTypeDialog={() => setIsPaymentTypeDialogOpen(true)}
+              onPartyNameChange={updatePartyFromName}
+              onUpdateField={receiptForm.updateField}
+            />
+            <OfficialReceiptEntries
+              entryView={receiptForm.entryView}
+              isReadonly={isReadonly}
+              rows={receiptForm.values.lineEntries}
+              onEntryViewChange={receiptForm.setEntryView}
+              onOpenCollectionTypeDialog={() => setIsCollectionTypeDialogOpen(true)}
+              onRowsChange={receiptForm.updateLineEntries}
+            />
+          </>
+        ) : (
+          <ReceiptFileAttachmentFields
+            attachments={receiptForm.values.attachments}
+            inputId={`${receiptCodeLabel.toLowerCase()}-file-attachments`}
+            inputName={`${receiptCodeLabel.toLowerCase()}Attachments`}
+            isReadonly={isReadonly}
+            uploadTitle={`Upload ${receiptLabel} Documents`}
+            onAttachmentsChange={(attachments) => receiptForm.updateField("attachments", attachments)}
+          />
+        )}
       </section>
 
       <OfficialReceiptReportPreview

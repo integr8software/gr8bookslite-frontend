@@ -6,6 +6,7 @@ import {
 } from "@/app/src/data/modules/cash-receipt/official-receipt/OfficialReceiptData";
 import type {
   OfficialReceiptActionMode,
+  OfficialReceiptCopyFromRecord,
   OfficialReceiptFormValues,
 } from "@/app/src/types/modules/cash-receipt/official-receipt/OfficialReceiptTypes";
 import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
@@ -14,6 +15,8 @@ import { AppCopyFromDropdown } from "@/app/src/ui/shared/transaction-setup/AppCo
 
 type OfficialReceiptActionHeaderProps = {
   baseHref: string;
+  copyFromRecords?: OfficialReceiptCopyFromRecord[];
+  copyFromSources?: string[];
   mode: OfficialReceiptActionMode;
   recordId?: string;
   receiptLabel?: string;
@@ -25,6 +28,8 @@ type OfficialReceiptActionHeaderProps = {
 
 export function OfficialReceiptActionHeader({
   baseHref,
+  copyFromRecords = OfficialReceiptCopyFromRecords,
+  copyFromSources = OfficialReceiptCopySources,
   mode,
   onCopyFrom,
   onPreview,
@@ -71,7 +76,7 @@ export function OfficialReceiptActionHeader({
                 <X className="h-4 w-4" aria-hidden="true" />
                 Cancel
               </Link>
-              <AppCopyFromDropdown records={OfficialReceiptCopyFromRecords} sources={OfficialReceiptCopySources} onApply={onCopyFrom} />
+              <AppCopyFromDropdown records={copyFromRecords} sources={copyFromSources} onApply={onCopyFrom} />
               <button type="button" onClick={onSubmit} className={moduleHeaderActionClassNames.primary}>
                 <Save className="h-4 w-4" aria-hidden="true" />
                 Save

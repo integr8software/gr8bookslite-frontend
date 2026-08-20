@@ -6,10 +6,17 @@ import {
   AccountThemeRoutePrefixes,
 } from "@/app/src/constants/shared/account/AccountThemeRoutes";
 
+const InitialAppThemeConfig = {
+  preferencesStorageKey: AccountPreferencesStorageKey,
+  themeCookieName: AccountThemeCookieName,
+  themeRoutePrefixes: AccountThemeRoutePrefixes,
+};
+
 const InitialAppThemeScript = `
 try {
   var pathname = window.location.pathname;
-  var isThemeRoute = ${JSON.stringify(AccountThemeRoutePrefixes)}.some(function (prefix) {
+  var config = ${JSON.stringify(InitialAppThemeConfig)};
+  var isThemeRoute = config.themeRoutePrefixes.some(function (prefix) {
     return pathname === prefix || pathname.indexOf(prefix + "/") === 0;
   });
   var systemTheme = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
@@ -24,7 +31,7 @@ try {
   };
 
   if (isThemeRoute) {
-    var storedPreferences = window.localStorage.getItem("${AccountPreferencesStorageKey}");
+    var storedPreferences = window.localStorage.getItem(config.preferencesStorageKey);
     var preferences = storedPreferences ? JSON.parse(storedPreferences) : null;
     var preferenceTheme = preferences && preferences.state && preferences.state.theme
       ? preferences.state.theme
@@ -41,9 +48,7 @@ try {
   }
 
   document.documentElement.setAttribute("data-app-theme", theme);
-  document.documentElement.setAttribute("data-app-font-size", fontSize);
-  document.documentElement.style.setProperty("--app-root-font-size", fontSizePercent[fontSize]);
-  document.cookie = "${AccountThemeCookieName}=" + theme + "; path=/; max-age=31536000; samesite=lax";
+  document.cookie = config.themeCookieName + "=" + theme + "; path=/; max-age=31536000; samesite=lax";
 } catch {
   document.documentElement.setAttribute("data-app-theme", "classic-light");
   document.documentElement.setAttribute("data-app-font-size", "comfortable");

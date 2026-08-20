@@ -1,5 +1,6 @@
 import type {
   AccountAccentColor,
+  AccountFontSize,
   AccountNotificationPreference,
   AccountTheme,
 } from "@/app/src/types/shared/account/AccountTypes";
@@ -78,6 +79,34 @@ export const AccountNotificationPreferenceOptions: Array<{
     value: "none",
     label: "Muted",
     description: "Silence optional notices for this device until you change it back.",
+  },
+];
+
+export const DefaultAccountFontSize: AccountFontSize = "comfortable";
+
+export const AccountFontSizeOptions: Array<{
+  value: AccountFontSize;
+  label: string;
+  description: string;
+  previewClassName: string;
+}> = [
+  {
+    value: "compact",
+    label: "Compact",
+    description: "Slightly smaller text for denser workspaces.",
+    previewClassName: "text-xs",
+  },
+  {
+    value: "comfortable",
+    label: "Comfortable",
+    description: "Balanced sizing for everyday use.",
+    previewClassName: "text-sm",
+  },
+  {
+    value: "large",
+    label: "Large",
+    description: "A little more readable while keeping controls stable.",
+    previewClassName: "text-base",
   },
 ];
 

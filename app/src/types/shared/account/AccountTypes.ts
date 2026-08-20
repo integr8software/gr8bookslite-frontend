@@ -1,27 +1,14 @@
 export type AccountVisibilityRole = "SUPER_ADMIN" | "ADMIN" | "USER";
 
-export type AccountProfileFieldKey =
-  | "avatar"
-  | "fullName"
-  | "email"
-  | "contactNumber";
+export type AccountProfileFieldKey = "avatar" | "fullName" | "email" | "contactNumber";
 
-export type AccountSettingsItemKey =
-  | "changePassword"
-  | "theme"
-  | "accentColor"
-  | "notificationPreference";
+export type AccountSettingsItemKey = "changePassword" | "theme" | "fontSize" | "accentColor" | "notificationPreference";
 
 export type AccountTheme = "system" | "classic-light" | "midnight-dark";
 
-export type AccountAccentColor =
-  | "#57c4e5"
-  | "#3b82f6"
-  | "#14b8a6"
-  | "#22c55e"
-  | "#f97068"
-  | "#f59e0b"
-  | "#a855f7";
+export type AccountFontSize = "compact" | "comfortable" | "large";
+
+export type AccountAccentColor = "#57c4e5" | "#3b82f6" | "#14b8a6" | "#22c55e" | "#f97068" | "#f59e0b" | "#a855f7";
 
 export type AccountNotificationPreference = "all" | "important" | "none";
 

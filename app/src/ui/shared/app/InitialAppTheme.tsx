@@ -16,6 +16,12 @@ try {
     ? "midnight-dark"
     : "classic-light";
   var theme = "classic-light";
+  var fontSize = "comfortable";
+  var fontSizePercent = {
+    compact: "85%",
+    comfortable: "90%",
+    large: "100%"
+  };
 
   if (isThemeRoute) {
     var storedPreferences = window.localStorage.getItem("${AccountPreferencesStorageKey}");
@@ -23,26 +29,28 @@ try {
     var preferenceTheme = preferences && preferences.state && preferences.state.theme
       ? preferences.state.theme
       : "system";
+    var preferenceFontSize = preferences && preferences.state && preferences.state.fontSize
+      ? preferences.state.fontSize
+      : "comfortable";
     theme = preferenceTheme === "system"
       ? systemTheme
       : preferenceTheme === "midnight-dark"
         ? "midnight-dark"
         : "classic-light";
+    fontSize = fontSizePercent[preferenceFontSize] ? preferenceFontSize : "comfortable";
   }
 
   document.documentElement.setAttribute("data-app-theme", theme);
+  document.documentElement.setAttribute("data-app-font-size", fontSize);
+  document.documentElement.style.setProperty("--app-root-font-size", fontSizePercent[fontSize]);
   document.cookie = "${AccountThemeCookieName}=" + theme + "; path=/; max-age=31536000; samesite=lax";
 } catch {
   document.documentElement.setAttribute("data-app-theme", "classic-light");
+  document.documentElement.setAttribute("data-app-font-size", "comfortable");
+  document.documentElement.style.setProperty("--app-root-font-size", "90%");
 }
 `;
 
 export function InitialAppTheme() {
-  return (
-    <Script
-      id="initial-app-theme"
-      strategy="beforeInteractive"
-      dangerouslySetInnerHTML={{ __html: InitialAppThemeScript }}
-    />
-  );
+  return <Script id="initial-app-theme" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: InitialAppThemeScript }} />;
 }

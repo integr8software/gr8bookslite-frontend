@@ -7,6 +7,7 @@ import {
 import { AcknowledgementReceiptHref } from "@/app/src/constants/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptConstants";
 import type {
   AcknowledgementReceiptActionMode,
+  AcknowledgementReceiptCopyFromRecord,
   AcknowledgementReceiptFormValues,
 } from "@/app/src/types/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptTypes";
 import {
@@ -17,6 +18,8 @@ import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 import { AppCopyFromDropdown } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
 
 type AcknowledgementReceiptActionHeaderProps = {
+  copyFromRecords?: AcknowledgementReceiptCopyFromRecord[];
+  copyFromSources?: string[];
   mode: AcknowledgementReceiptActionMode;
   values: AcknowledgementReceiptFormValues;
   onCopyFrom: (recordIds: string[]) => void;
@@ -25,6 +28,8 @@ type AcknowledgementReceiptActionHeaderProps = {
 };
 
 export function AcknowledgementReceiptActionHeader({
+  copyFromRecords = AcknowledgementReceiptCopyFromRecords,
+  copyFromSources = AcknowledgementReceiptCopySources,
   mode,
   onCopyFrom,
   onPreview,
@@ -64,8 +69,8 @@ export function AcknowledgementReceiptActionHeader({
                 Cancel
               </Link>
               <AppCopyFromDropdown
-                records={AcknowledgementReceiptCopyFromRecords}
-                sources={AcknowledgementReceiptCopySources}
+                records={copyFromRecords}
+                sources={copyFromSources}
                 onApply={onCopyFrom}
               />
               <button

@@ -12,12 +12,14 @@ import {
 } from "@tanstack/react-table";
 import toast from "react-hot-toast";
 import {
+  applyCopyFromRecordsToOfficialReceiptForm,
   createBlankOfficialReceiptLineEntry,
   createOfficialReceiptFormValuesFromRecord,
   createOfficialReceiptFormValues,
   createOfficialReceiptRecordFromForm,
   getInitialReceiptsByKey,
   MockOfficialReceipts,
+  OfficialReceiptCopyFromRecords,
   OfficialReceiptStorageKey,
   writeStoredReceiptsByKey,
   writeStoredOfficialReceipts,
@@ -26,6 +28,7 @@ import { OfficialReceiptStatusFilters } from "@/app/src/constants/modules/cash-r
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import type {
   OfficialReceiptActionMode,
+  OfficialReceiptCopyFromRecord,
   OfficialReceiptEntryView,
   OfficialReceiptFormValues,
   OfficialReceiptLineEntry,
@@ -44,6 +47,7 @@ type OfficialReceiptStoreState = {
 };
 
 export type OfficialReceiptModuleConfig = {
+  copyFromRecords?: OfficialReceiptCopyFromRecord[];
   fallbackReceipts?: OfficialReceiptRecord[];
   receiptLabel?: string;
   storageKey?: string;
@@ -146,11 +150,18 @@ export function useOfficialReceiptActionForm(
       return;
     }
 
-    setValues((current) => ({
-      ...current,
-      referenceNo: recordIds[0] ?? current.referenceNo,
-      lineEntries: current.lineEntries.length ? current.lineEntries : [createBlankOfficialReceiptLineEntry()],
-    }));
+    const availableCopyRecords = config.copyFromRecords ?? OfficialReceiptCopyFromRecords;
+    const selectedRecords = availableCopyRecords.filter((record) => recordIds.includes(record.id));
+
+    if (selectedRecords.length > 0) {
+      setValues((current) => applyCopyFromRecordsToOfficialReceiptForm(current, selectedRecords));
+    } else {
+      setValues((current) => ({
+        ...current,
+        referenceNo: recordIds.join(", "),
+        lineEntries: current.lineEntries.length ? current.lineEntries : [createBlankOfficialReceiptLineEntry()],
+      }));
+    }
     toast.success("Copied receipt source details.");
   }
 

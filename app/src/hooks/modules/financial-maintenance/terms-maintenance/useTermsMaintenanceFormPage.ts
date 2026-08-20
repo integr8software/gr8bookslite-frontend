@@ -105,7 +105,7 @@ export function useTermsMaintenanceFormPage(options: TermsMaintenanceFormPageOpt
     }
 
     const releaseSubmitLock = acquireModuleActionLock(
-      `financial-maintenance:terms-maintenance:submit:${mode}:${existingTerm?.id ?? values.termsCode ?? "new"}`,
+      `financial-maintenance:terms-maintenance:submit:${mode}:${existingTerm?.id ?? values.name ?? "new"}`,
     );
 
     if (!releaseSubmitLock) {

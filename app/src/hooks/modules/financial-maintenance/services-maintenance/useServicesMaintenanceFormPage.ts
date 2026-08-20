@@ -102,7 +102,7 @@ export function useServicesMaintenanceFormPage(options: ServicesMaintenanceFormP
     }
 
     const releaseSubmitLock = acquireModuleActionLock(
-      `financial-maintenance:services-maintenance:submit:${mode}:${existingService?.id ?? values.serviceCode ?? "new"}`,
+      `financial-maintenance:services-maintenance:submit:${mode}:${existingService?.id ?? values.serviceName ?? "new"}`,
     );
 
     if (!releaseSubmitLock) return;

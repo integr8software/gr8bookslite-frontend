@@ -92,7 +92,7 @@ export function usePaymentTypeActionPage({
     }
 
     const releaseSubmitLock = acquireModuleActionLock(
-      `financial-maintenance:payment-type:submit:${mode}:${existingPaymentType?.id ?? values.code ?? "new"}`,
+      `financial-maintenance:payment-type:submit:${mode}:${existingPaymentType?.id ?? values.paymentType ?? "new"}`,
     );
 
     if (!releaseSubmitLock) {

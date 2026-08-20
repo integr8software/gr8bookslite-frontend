@@ -32,6 +32,7 @@ import type {
   ServicesMaintenanceImportProgress,
 } from "@/app/src/types/modules/financial-maintenance/services-maintenance/ServicesMaintenanceTypes";
 import { reorderModuleImportRows } from "@/app/src/utils/module-import.util";
+import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 
 export function useServicesMaintenanceImportDialog({
   existingServices,
@@ -258,10 +259,14 @@ export function useServicesMaintenanceImportDialog({
   }
 
   async function handleImport(mode = importMode) {
+    const releaseLock = acquireModuleActionLock(`financial-maintenance:services-maintenance:import:${mode}`);
+    if (!releaseLock) return;
+
     const rowsToImport = mode === "selected-valid" ? validSelectedRows : mode === "all-valid" ? validRows : validatedRows;
 
     if (mode === "selected-valid" && selectedRowIds.size === 0) {
       setImportError("Select at least one valid row to import.");
+      releaseLock();
       return;
     }
     if (mode === "all-rows" && actualInvalidRows.length > 0) {
@@ -269,13 +274,18 @@ export function useServicesMaintenanceImportDialog({
       setImportError(
         `Fix or remove ${actualInvalidRows.length} incorrect ${actualInvalidRows.length === 1 ? "row" : "rows"} before importing. No rows were imported.`,
       );
+      releaseLock();
       return;
     }
     if (mode === "selected-valid" && rowsToImport.length === 0) {
       setImportError("Selected rows have errors. Fix them or choose valid rows.");
+      releaseLock();
       return;
     }
-    if (rowsToImport.length === 0 || isBusy) return;
+    if (rowsToImport.length === 0 || isBusy) {
+      releaseLock();
+      return;
+    }
 
     const importedRowIds = new Set(rowsToImport.map((row) => row.id));
     setProgress({ imported: 0, total: rowsToImport.length });
@@ -301,6 +311,7 @@ export function useServicesMaintenanceImportDialog({
       if (nextRows.length === 0) onClose();
     } catch (error) {
       setImportError(error instanceof Error ? error.message : "Services could not be imported.");
+      releaseLock();
     } finally {
       setProgress(null);
     }

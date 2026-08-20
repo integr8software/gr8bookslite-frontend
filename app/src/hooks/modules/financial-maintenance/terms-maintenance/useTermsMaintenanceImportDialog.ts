@@ -35,6 +35,7 @@ import type {
   TermsMaintenanceImportDialogProps,
 } from "@/app/src/types/modules/financial-maintenance/terms-maintenance/TermsMaintenanceTypes";
 import { reorderModuleImportRows } from "@/app/src/utils/module-import.util";
+import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 
 export function useTermsMaintenanceImportDialog({
   existingTerms,
@@ -372,10 +373,14 @@ export function useTermsMaintenanceImportDialog({
   }
 
   async function handleImport(mode = importMode) {
+    const releaseLock = acquireModuleActionLock(`financial-maintenance:terms-maintenance:import:${mode}`);
+    if (!releaseLock) return;
+
     const rowsToImport = mode === "selected-valid" ? validSelectedRows : mode === "all-valid" ? validRows : validatedRows;
 
     if (mode === "selected-valid" && selectedRowIds.size === 0) {
       setImportError("Select at least one valid row to import.");
+      releaseLock();
       return;
     }
 
@@ -384,15 +389,18 @@ export function useTermsMaintenanceImportDialog({
       setImportError(
         `Fix or remove ${actualInvalidRows.length} incorrect ${actualInvalidRows.length === 1 ? "row" : "rows"} before importing. No rows were imported.`,
       );
+      releaseLock();
       return;
     }
 
     if (mode === "selected-valid" && rowsToImport.length === 0) {
       setImportError("Selected rows have errors. Fix them or choose valid rows.");
+      releaseLock();
       return;
     }
 
     if (!canImport) {
+      releaseLock();
       return;
     }
 
@@ -411,6 +419,7 @@ export function useTermsMaintenanceImportDialog({
         await onImportTerms(batch);
       } catch {
         setProgress(null);
+        releaseLock();
         return;
       }
       setProgress({

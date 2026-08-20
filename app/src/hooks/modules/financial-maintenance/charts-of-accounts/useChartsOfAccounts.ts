@@ -36,6 +36,7 @@ import { ChartsOfAccountsQueryKeys } from "@/app/src/services/modules/financial-
 import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { useTablePreferences } from "@/app/src/hooks/shared/table-preferences/useTablePreferences";
+import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import { ResolveAuthProfileEffectiveRole } from "@/app/src/services/auth/AuthProfileAccess";
 import type {
   AccountStatus,
@@ -354,17 +355,36 @@ export function useChartsOfAccounts() {
 
   const saveAccount = useCallback(
     (values: ChartAccountFormValues) => {
-      saveAccountMutation.mutate(values);
+      const releaseLock = acquireModuleActionLock(
+        `financial-maintenance:charts-of-accounts:submit:${drawerMode}:${drawerAccount?.id ?? values.accountNumber ?? "new"}`,
+      );
+      if (!releaseLock) return;
+
+      saveAccountMutation.mutate(values, {
+        onError: () => {
+          releaseLock();
+        },
+      });
     },
-    [saveAccountMutation],
+    [drawerAccount?.id, drawerMode, saveAccountMutation],
   );
 
   const updateAccountStatus = useCallback(
     (account: ChartAccount) => {
-      updateStatusMutation.mutate({
-        accountId: account.id,
-        status: account.status === "Active" ? "Inactive" : "Active",
-      });
+      const releaseLock = acquireModuleActionLock(`financial-maintenance:charts-of-accounts:status:${account.id}`);
+      if (!releaseLock) return;
+
+      updateStatusMutation.mutate(
+        {
+          accountId: account.id,
+          status: account.status === "Active" ? "Inactive" : "Active",
+        },
+        {
+          onError: () => {
+            releaseLock();
+          },
+        },
+      );
     },
     [updateStatusMutation],
   );

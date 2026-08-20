@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { TermsMaintenanceHref } from "@/app/src/constants/modules/financial-maintenance/terms-maintenance/TermsMaintenanceConstants";
@@ -9,6 +9,9 @@ import {
   createTermsMaintenanceFormValues,
   updateTermsMaintenanceFromForm,
 } from "@/app/src/data/modules/financial-maintenance/terms-maintenance/TermsMaintenanceData";
+import { useTermsMaintenanceStore } from "@/app/src/hooks/modules/financial-maintenance/terms-maintenance/useTermsMaintenance";
+import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
+import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import type {
   TermsMaintenanceActionMode,
   TermsMaintenance,
@@ -17,7 +20,6 @@ import type {
   TermsMaintenanceStatus,
 } from "@/app/src/types/modules/financial-maintenance/terms-maintenance/TermsMaintenanceTypes";
 import { validateTermsMaintenanceForm } from "@/app/src/validations/modules/financial-maintenance/terms-maintenance/TermsMaintenanceValidation";
-import { useTermsMaintenanceStore } from "@/app/src/hooks/modules/financial-maintenance/terms-maintenance/useTermsMaintenance";
 
 type TermsMaintenanceFormPageOptions = {
   existingTerm?: TermsMaintenance;
@@ -34,17 +36,29 @@ export function useTermsMaintenanceFormPage(options: TermsMaintenanceFormPageOpt
   const mode = options.mode ?? getActionMode(pathname);
   const existingTerm = options.existingTerm ?? terms.find((term) => term.id === params.recordId);
   const isReadonly = mode === "view";
-  const [values, setValues] = useState<TermsMaintenanceFormValues>(() =>
-    options.initialValues
-      ? options.initialValues
-      : existingTerm
-        ? createTermsMaintenanceFormValues(existingTerm)
-        : TermsMaintenanceInitialFormValues,
-  );
+  const initialValues: TermsMaintenanceFormValues = options.initialValues
+    ? options.initialValues
+    : existingTerm
+      ? createTermsMaintenanceFormValues(existingTerm)
+      : TermsMaintenanceInitialFormValues;
+  const initialValuesRef = useRef<TermsMaintenanceFormValues>(initialValues);
+  const [values, setValues] = useState<TermsMaintenanceFormValues>(initialValues);
   const [errors, setErrors] = useState<TermsMaintenanceFormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false);
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
   const nextStatus: TermsMaintenanceStatus = existingTerm?.status === "Active" ? "Inactive" : "Active";
+
+  const draft = useModuleDraft({
+    enabled: !isReadonly,
+    key: createModuleDraftKey({
+      mode,
+      moduleId: "financial-maintenance:terms-maintenance",
+      recordId: params.recordId ?? existingTerm?.id,
+    }),
+    setValues,
+    values,
+  });
 
   function updateField(field: keyof TermsMaintenanceFormValues, value: TermsMaintenanceFormValues[keyof TermsMaintenanceFormValues]) {
     if (isReadonly) {
@@ -80,21 +94,46 @@ export function useTermsMaintenanceFormPage(options: TermsMaintenanceFormPageOpt
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!validateBeforeSubmit()) {
+    if (isReadonly || isSubmittingRef.current) {
       return;
     }
 
-    void saveTerm();
-  }
+    const isDirty = JSON.stringify(values) !== JSON.stringify(initialValuesRef.current);
+    if (mode === "edit" && !isDirty) {
+      toast.error("No changes to save.");
+      return;
+    }
 
-  async function saveTerm() {
+    const releaseSubmitLock = acquireModuleActionLock(
+      `financial-maintenance:terms-maintenance:submit:${mode}:${existingTerm?.id ?? values.name ?? "new"}`,
+    );
+
+    if (!releaseSubmitLock) {
+      return;
+    }
+
+    isSubmittingRef.current = true;
     setIsSubmitting(true);
 
+    if (!validateBeforeSubmit()) {
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+      releaseSubmitLock();
+      return;
+    }
+
+    void saveTerm(releaseSubmitLock);
+  }
+
+  async function saveTerm(releaseSubmitLock: () => void) {
     try {
       if (mode === "edit" && existingTerm) {
         await updateTerm(updateTermsMaintenanceFromForm(existingTerm, values));
       } else if (mode === "edit") {
         toast.error("Could not find the term definition to update.");
+        isSubmittingRef.current = false;
+        setIsSubmitting(false);
+        releaseSubmitLock();
         return;
       } else {
         await addTerm(values);
@@ -102,12 +141,13 @@ export function useTermsMaintenanceFormPage(options: TermsMaintenanceFormPageOpt
         setErrors({});
       }
 
+      draft.clearDraft();
       options.onSaved?.();
       if (!options.onSaved) router.push(TermsMaintenanceHref);
     } catch {
-      return;
-    } finally {
+      isSubmittingRef.current = false;
       setIsSubmitting(false);
+      releaseSubmitLock();
     }
   }
 

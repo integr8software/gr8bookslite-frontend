@@ -367,17 +367,21 @@ export function DisbursementVoucherAccountingGridPage() {
   function renderGridCell(row: EditableGridRow, columnId: GridColumnId, context: ModuleDataEntryCellContext) {
     if (columnId === "taxRate") {
       return (
-        <select
-          value={row.taxRate}
-          onChange={(event) => updateRow(row.id, "taxRate", event.target.value)}
-          className={gridCellControlClassName("app-select-control")}
-        >
-          {DisbursementAccountingGridTaxRateOptions.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
+        <>
+          <label htmlFor={context.fieldId} className="sr-only">{columnLabels[columnId]}</label>
+          <select
+            id={context.fieldId}
+            value={row.taxRate}
+            onChange={(event) => updateRow(row.id, "taxRate", event.target.value)}
+            className={gridCellControlClassName("app-select-control")}
+          >
+            {DisbursementAccountingGridTaxRateOptions.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </>
       );
     }
 
@@ -386,12 +390,16 @@ export function DisbursementVoucherAccountingGridPage() {
         columnId === DisbursementAccountingDebitColumnId ? DisbursementAccountingCreditColumnId : DisbursementAccountingDebitColumnId;
 
       return (
-        <MoneyNumberField
-          value={row[columnId]}
-          onValueChange={(value) => updateRow(row.id, columnId, value)}
-          disabled={normalizeAmount(row[oppositeColumnId]) > 0}
-          className={gridCellControlClassName("text-right")}
-        />
+        <>
+          <label htmlFor={context.fieldId} className="sr-only">{columnLabels[columnId]}</label>
+          <MoneyNumberField
+            id={context.fieldId}
+            value={row[columnId]}
+            onValueChange={(value) => updateRow(row.id, columnId, value)}
+            disabled={normalizeAmount(row[oppositeColumnId]) > 0}
+            className={gridCellControlClassName("text-right")}
+          />
+        </>
       );
     }
 
@@ -408,7 +416,7 @@ export function DisbursementVoucherAccountingGridPage() {
       );
     }
 
-    return <GridEntryInput value={row[columnId]} onChange={(value) => updateRow(row.id, columnId, value)} />;
+    return <GridEntryInput id={context.fieldId} label={columnLabels[columnId]} value={row[columnId]} onChange={(value) => updateRow(row.id, columnId, value)} />;
   }
 
   async function handleImportFile(file: File) {

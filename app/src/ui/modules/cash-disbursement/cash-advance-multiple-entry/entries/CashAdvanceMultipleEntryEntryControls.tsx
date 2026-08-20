@@ -146,14 +146,10 @@ export function EntryTextInput({
   value: string;
 }) {
   return (
-    <input
-      id={id}
-      name={name}
-      className={CashAdvanceMultipleEntryEntryInputClassName}
-      readOnly={readOnly}
-      value={value}
-      onChange={(event) => onChange(event.target.value)}
-    />
+    <>
+      <label htmlFor={id} className="sr-only">{name}</label>
+      <input id={id} name={name} className={CashAdvanceMultipleEntryEntryInputClassName} readOnly={readOnly} value={value} onChange={(event) => onChange(event.target.value)} />
+    </>
   );
 }
 
@@ -163,14 +159,10 @@ export function EntryNumberInput(props: Parameters<typeof EntryTextInput>[0]) {
 
 export function EntryMoneyNumberInput({ id, name, readOnly, value }: Omit<Parameters<typeof EntryTextInput>[0], "onChange">) {
   return (
-    <MoneyNumberField
-      id={id}
-      name={name}
-      className={`${CashAdvanceMultipleEntryEntryInputClassName} text-right tabular-nums`}
-      readOnly={readOnly}
-      value={value}
-      onValueChange={() => undefined}
-    />
+    <>
+      <label htmlFor={id} className="sr-only">{name}</label>
+      <MoneyNumberField id={id} name={name} className={`${CashAdvanceMultipleEntryEntryInputClassName} text-right tabular-nums`} readOnly={readOnly} value={value} onValueChange={() => undefined} />
+    </>
   );
 }
 

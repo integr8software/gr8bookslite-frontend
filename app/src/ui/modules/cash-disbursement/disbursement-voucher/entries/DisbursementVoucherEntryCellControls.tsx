@@ -9,24 +9,32 @@ import { formatAmount } from "@/app/src/utils/currency.util";
 
 export function EntryInput({
   disabled = false,
+  id,
+  label,
   onChange,
   readOnly = false,
   value,
 }: {
   disabled?: boolean;
+  id: string;
+  label: string;
   onChange: (value: string) => void;
   readOnly?: boolean;
   value: string;
 }) {
   return (
-    <input
-      type="text"
-      value={value}
-      onChange={(event) => onChange(event.target.value)}
-      disabled={disabled}
-      readOnly={readOnly}
-      className={accountingCellControlClassName()}
-    />
+    <>
+      <label htmlFor={id} className="sr-only">{label}</label>
+      <input
+        id={id}
+        type="text"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        disabled={disabled}
+        readOnly={readOnly}
+        className={accountingCellControlClassName()}
+      />
+    </>
   );
 }
 
@@ -65,11 +73,15 @@ export function estimateDisbursementEntryTextWidth(value: string, padding: numbe
 export function EntryNumberInput({
   allowNegative = false,
   disabled = false,
+  id,
+  label,
   onChange,
   value,
 }: {
   allowNegative?: boolean;
   disabled?: boolean;
+  id: string;
+  label: string;
   onChange: (value: number) => void;
   value: number;
 }) {
@@ -83,21 +95,25 @@ export function EntryNumberInput({
   }
 
   return (
-    <MoneyNumberField
-      allowNegative={allowNegative}
-      value={displayValue}
-      onValueChange={handleValueChange}
-      onFocus={() => {
-        setDraftValue(displayValue);
-        setIsEditing(true);
-      }}
-      onBlur={() => {
-        setDraftValue("");
-        setIsEditing(false);
-      }}
-      disabled={disabled}
-      className={accountingCellControlClassName("text-right")}
-    />
+    <>
+      <label htmlFor={id} className="sr-only">{label}</label>
+      <MoneyNumberField
+        id={id}
+        allowNegative={allowNegative}
+        value={displayValue}
+        onValueChange={handleValueChange}
+        onFocus={() => {
+          setDraftValue(displayValue);
+          setIsEditing(true);
+        }}
+        onBlur={() => {
+          setDraftValue("");
+          setIsEditing(false);
+        }}
+        disabled={disabled}
+        className={accountingCellControlClassName("text-right")}
+      />
+    </>
   );
 }
 

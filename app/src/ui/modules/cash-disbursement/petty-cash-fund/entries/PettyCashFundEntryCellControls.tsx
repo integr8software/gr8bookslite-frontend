@@ -21,15 +21,18 @@ export function PettyCashFundEntryInput({
   value: string;
 }) {
   return (
-    <input
-      id={id}
-      name={name}
-      type={type}
-      value={value}
-      readOnly={readOnly}
-      onChange={(event) => onChange(event.target.value)}
-      className={PettyCashFundEntryInputClassName}
-    />
+    <>
+      <label htmlFor={id} className="sr-only">{name}</label>
+      <input
+        id={id}
+        name={name}
+        type={type}
+        value={value}
+        readOnly={readOnly}
+        onChange={(event) => onChange(event.target.value)}
+        className={PettyCashFundEntryInputClassName}
+      />
+    </>
   );
 }
 

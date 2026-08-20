@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { ChevronDown, ClipboardPaste, Download, FileText, LayoutGrid, Upload, X } from "lucide-react";
 import {
   CashVoucherAccountingImportClearActions,
@@ -134,6 +134,7 @@ export function AccountingImportPanel({
         ) : (
           <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
             <label
+              htmlFor="cash-voucher-accounting-import-file"
               className={joinClasses(
                 "app-theme-field-readonly flex min-h-40 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed px-4 py-5 text-center transition",
                 isDragActive ? "border-skyblue bg-skyblue/12" : "hover:border-skyblue/45 hover:bg-skyblue/8",
@@ -163,6 +164,7 @@ export function AccountingImportPanel({
                 Supports .xlsx, .csv, .tsv, and text copied from spreadsheets.
               </span>
               <input
+                id="cash-voucher-accounting-import-file"
                 key={fileInputKey}
                 type="file"
                 accept=".xlsx,.csv,.tsv,.txt"
@@ -253,12 +255,16 @@ export function AccountingImportPanel({
               {hasPreviewRows ? (
                 <AccountingImportPreviewTable maxHeightClassName="max-h-40" rows={previewRows} onCellChange={handlePreviewCellChange} />
               ) : (
-                <textarea
-                  value={pasteText}
-                  onChange={(event) => onPasteTextChange(event.target.value)}
-                  className="app-theme-field min-h-24 resize-y rounded-lg border px-3 py-2 text-sm outline-none transition focus:border-skyblue/45"
-                  placeholder={"Account Code\tAccount Name\tRemarks\tTax Rate\tDebit\tCredit"}
-                />
+                <>
+                  <label htmlFor="cash-voucher-accounting-import-paste" className="sr-only">Paste accounting rows from Excel</label>
+                  <textarea
+                    id="cash-voucher-accounting-import-paste"
+                    value={pasteText}
+                    onChange={(event) => onPasteTextChange(event.target.value)}
+                    className="app-theme-field min-h-24 resize-y rounded-lg border px-3 py-2 text-sm outline-none transition focus:border-skyblue/45"
+                    placeholder={"Account Code\tAccount Name\tRemarks\tTax Rate\tDebit\tCredit"}
+                  />
+                </>
               )}
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <p className="text-xs leading-5 text-darknavy/55">
@@ -297,6 +303,8 @@ function AccountingImportPreviewTable({
   rows: string[][];
   onCellChange: (rowIndex: number, columnIndex: number, value: string) => void;
 }) {
+  const tableId = useId();
+
   return (
     <div className={joinClasses("app-theme-field overflow-auto rounded-lg border", maxHeightClassName)}>
       <table className="min-w-[680px] table-fixed border-collapse text-left text-xs text-darknavy">
@@ -316,7 +324,9 @@ function AccountingImportPreviewTable({
             >
               {CashVoucherAccountingImportTemplateHeaders.map((header, columnIndex) => (
                 <td key={`${header}-${columnIndex}`} className="border-r border-darknavy/10 last:border-r-0">
+                  <label htmlFor={`${tableId}-${rowIndex}-${columnIndex}`} className="sr-only">{`${header} row ${rowIndex + 1}`}</label>
                   <input
+                    id={`${tableId}-${rowIndex}-${columnIndex}`}
                     value={row[columnIndex] ?? ""}
                     onChange={(event) => onCellChange(rowIndex, columnIndex, event.target.value)}
                     className={joinClasses(

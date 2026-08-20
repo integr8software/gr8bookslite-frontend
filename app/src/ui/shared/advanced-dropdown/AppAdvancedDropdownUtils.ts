@@ -158,14 +158,6 @@ export function getOptionIndentStyle(view: AppAdvancedDropdownOptionView, level:
 		: undefined;
 }
 
-export function escapeCssIdentifier(value: string) {
-	if (typeof CSS !== "undefined" && CSS.escape) {
-		return CSS.escape(value);
-	}
-
-	return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
-}
-
 export function joinClasses(...classes: Array<string | false | undefined>) {
 	return classes.filter(Boolean).join(" ");
 }

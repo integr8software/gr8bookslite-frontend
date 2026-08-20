@@ -30,7 +30,6 @@ import {
 	ViewToggle,
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdownParts";
 import {
-	escapeCssIdentifier,
 	filterOptions,
 	flattenOptions,
 	getInitialActiveOptionValue,
@@ -92,6 +91,7 @@ export function AppAdvancedDropdown({
 	const menuInteractionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const isMenuInteractionActiveRef = useRef(false);
 	const isMenuPointerDownRef = useRef(false);
+	const controlRef = useRef<HTMLDivElement>(null);
 	const rootRef = useRef<HTMLDivElement>(null);
 	const selectedValues = useMemo(
 		() => (Array.isArray(value) ? value : value ? [value] : []),
@@ -194,8 +194,8 @@ export function AppAdvancedDropdown({
 			return;
 		}
 
-		const labels = Array.from(
-			document.querySelectorAll<HTMLLabelElement>(`label[for="${escapeCssIdentifier(controlId)}"]`),
+		const labels = Array.from(document.querySelectorAll<HTMLLabelElement>("label[for]")).filter(
+			(label) => label.htmlFor === controlId,
 		);
 
 		if (labels.length === 0) {
@@ -208,7 +208,7 @@ export function AppAdvancedDropdown({
 			}
 
 			event.preventDefault();
-			rootRef.current?.querySelector<HTMLElement>(".app-advanced-dropdown-control")?.focus();
+			controlRef.current?.focus();
 		}
 
 		labels.forEach((label) => {
@@ -565,6 +565,7 @@ export function AppAdvancedDropdown({
 				<input type="hidden" name={name} value={Array.isArray(value) ? value.join(",") : value} />
 			) : null}
 			<div
+				ref={controlRef}
 				id={controlId}
 				role="combobox"
 				aria-controls={listboxId}

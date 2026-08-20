@@ -183,7 +183,7 @@ export function PettyCashVoucherDetailsFields({
             }
           />
 
-          <TransactionField label="VATable" error={page.errors.vatable}>
+          <TransactionField controlId="petty-cash-voucher-vatable" label="VATable" error={page.errors.vatable}>
             <select
               id="petty-cash-voucher-vatable"
               value={page.values.vatable}

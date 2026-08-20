@@ -19,17 +19,10 @@ export function PettyCashFundReplenishmentEntryInput({
   value: string;
 }) {
   return (
-    <input
-      id={id}
-      name={name}
-      type={type}
-      value={value}
-      readOnly={readOnly}
-      placeholder={placeholder}
-      title={placeholder}
-      onChange={(event) => onChange(event.target.value)}
-      className={PettyCashFundReplenishmentEntryInputClassName}
-    />
+    <>
+      <label htmlFor={id} className="sr-only">{name}</label>
+      <input id={id} name={name} type={type} value={value} readOnly={readOnly} placeholder={placeholder} title={placeholder} onChange={(event) => onChange(event.target.value)} className={PettyCashFundReplenishmentEntryInputClassName} />
+    </>
   );
 }
 
@@ -47,13 +40,9 @@ export function PettyCashFundReplenishmentMoneyInput({
   value: string;
 }) {
   return (
-    <MoneyNumberField
-      id={id}
-      name={name}
-      value={value}
-      readOnly={readOnly}
-      onValueChange={onChange}
-      className={`${PettyCashFundReplenishmentEntryInputClassName} text-right tabular-nums`}
-    />
+    <>
+      <label htmlFor={id} className="sr-only">{name}</label>
+      <MoneyNumberField id={id} name={name} value={value} readOnly={readOnly} onValueChange={onChange} className={`${PettyCashFundReplenishmentEntryInputClassName} text-right tabular-nums`} />
+    </>
   );
 }

@@ -1,4 +1,4 @@
-import type { InputHTMLAttributes, ReactNode } from "react";
+import { cloneElement, isValidElement, useId, type InputHTMLAttributes, type ReactNode } from "react";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 
 export const TransactionFieldClassName = [
@@ -19,11 +19,19 @@ export type TransactionFieldProps = {
 export function TransactionField({
 	children,
 	compact = false,
-	controlId,
+	controlId: providedControlId,
 	error,
 	isRequired = false,
 	label,
 }: TransactionFieldProps) {
+	const generatedId = useId();
+	const isLabelableChild =
+		isValidElement(children) &&
+		(typeof children.type !== "string" || ["button", "input", "select", "textarea"].includes(children.type));
+	const controlId = providedControlId ?? (isLabelableChild ? generatedId : undefined);
+	const fieldControl = controlId && isValidElement<{ id?: string }>(children)
+		? cloneElement(children, { id: children.props.id ?? controlId })
+		: children;
 	const labelContent = (
 		<>
 			{label}
@@ -41,7 +49,7 @@ export function TransactionField({
 				) : (
 					<span className="text-sm font-semibold text-darknavy">{labelContent}</span>
 				)}
-				{children}
+				{fieldControl}
 				{error ? <span className="text-xs font-medium text-coralpink">{error}</span> : null}
 			</div>
 		);
@@ -57,7 +65,7 @@ export function TransactionField({
 				<span className="pt-2 text-sm font-semibold text-darknavy">{labelContent}</span>
 			)}
 			<div className="min-w-0">
-				{children}
+				{fieldControl}
 				{error ? <span className="mt-1.5 block text-xs font-semibold text-coralpink">{error}</span> : null}
 			</div>
 		</div>
@@ -89,6 +97,8 @@ export function TransactionTextField({
 	value,
 	...inputProps
 }: TransactionTextFieldProps) {
+	const generatedId = useId();
+	const controlId = inputProps.id ?? generatedId;
 	const className = [
 		TransactionFieldClassName,
 		isMoney ? "text-right tabular-nums" : "",
@@ -98,10 +108,11 @@ export function TransactionTextField({
 		.join(" ");
 
 	return (
-		<TransactionField controlId={inputProps.id} label={label} error={error} isRequired={isRequired}>
+		<TransactionField controlId={controlId} label={label} error={error} isRequired={isRequired}>
 			{isMoney ? (
 				<MoneyNumberField
 					{...inputProps}
+					id={controlId}
 					value={value}
 					readOnly={isReadonly}
 					onValueChange={onValueChange}
@@ -111,6 +122,7 @@ export function TransactionTextField({
 			) : (
 				<input
 					{...inputProps}
+					id={controlId}
 					type={type}
 					value={value}
 					readOnly={isReadonly}

@@ -428,28 +428,36 @@ function getPaymentHeaderBankLabel(values: DisbursementVoucherFormValues) {
 export function GridEntryInput({
   disabled = false,
   extraClassName,
+  id,
   inputMode,
+  label,
   onChange,
   type = "text",
   value,
 }: {
   disabled?: boolean;
   extraClassName?: string;
+  id: string;
   inputMode?: "decimal" | "numeric" | "text";
+  label: string;
   onChange: (value: string) => void;
   type?: "number" | "text";
   value: string;
 }) {
   return (
-    <input
-      type={type}
-      inputMode={inputMode}
-      min={type === "number" ? "0" : undefined}
-      value={value}
-      onChange={(event) => onChange(event.target.value)}
-      disabled={disabled}
-      className={gridCellControlClassName(extraClassName)}
-    />
+    <>
+      <label htmlFor={id} className="sr-only">{label}</label>
+      <input
+        id={id}
+        type={type}
+        inputMode={inputMode}
+        min={type === "number" ? "0" : undefined}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        disabled={disabled}
+        className={gridCellControlClassName(extraClassName)}
+      />
+    </>
   );
 }
 

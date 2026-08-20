@@ -49,7 +49,9 @@ export function createCashVoucherAccountingEntryColumns({
       id: "accountCode",
       width: columnWidths.accountCode,
       widthClassName: "w-[12rem]",
-      renderCell: (entry) => <EntryInput value={entry.accountCode ?? ""} onChange={() => undefined} readOnly />,
+      renderCell: (entry, rowIndex, context) => (
+        <EntryInput id={context.fieldId} label={`${columnLabels.accountCode} row ${rowIndex + 1}`} value={entry.accountCode ?? ""} onChange={() => undefined} readOnly />
+      ),
     },
     accountName: {
       header: columnLabels.accountName,
@@ -81,8 +83,10 @@ export function createCashVoucherAccountingEntryColumns({
       id: "debit",
       width: columnWidths.debit,
       widthClassName: "w-[11rem]",
-      renderCell: (entry) => (
+      renderCell: (entry, rowIndex, context) => (
         <EntryNumberInput
+          id={context.fieldId}
+          label={`${columnLabels.debit} row ${rowIndex + 1}`}
           value={entry.debit}
           onChange={(value) => onUpdateEntry(entry.id, "debit", value)}
           disabled={isReadonly || parseMoneyNumberInput(entry.credit) > 0}
@@ -94,8 +98,10 @@ export function createCashVoucherAccountingEntryColumns({
       id: "credit",
       width: columnWidths.credit,
       widthClassName: "w-[11rem]",
-      renderCell: (entry) => (
+      renderCell: (entry, rowIndex, context) => (
         <EntryNumberInput
+          id={context.fieldId}
+          label={`${columnLabels.credit} row ${rowIndex + 1}`}
           value={entry.credit}
           onChange={(value) => onUpdateEntry(entry.id, "credit", value)}
           disabled={isReadonly || parseMoneyNumberInput(entry.debit) > 0}
@@ -107,8 +113,8 @@ export function createCashVoucherAccountingEntryColumns({
       id: "checkNo",
       width: columnWidths.checkNo,
       widthClassName: "w-[12rem]",
-      renderCell: (entry) => (
-        <EntryInput value={entry.checkNo ?? ""} onChange={(value) => onUpdateEntry(entry.id, "checkNo", value)} disabled={isReadonly} />
+      renderCell: (entry, rowIndex, context) => (
+        <EntryInput id={context.fieldId} label={`${columnLabels.checkNo} row ${rowIndex + 1}`} value={entry.checkNo ?? ""} onChange={(value) => onUpdateEntry(entry.id, "checkNo", value)} disabled={isReadonly} />
       ),
     },
     checkStatus: {
@@ -116,8 +122,10 @@ export function createCashVoucherAccountingEntryColumns({
       id: "checkStatus",
       width: columnWidths.checkStatus,
       widthClassName: "w-[11rem]",
-      renderCell: (entry) => (
+      renderCell: (entry, rowIndex, context) => (
         <EntryInput
+          id={context.fieldId}
+          label={`${columnLabels.checkStatus} row ${rowIndex + 1}`}
           value={entry.checkStatus ?? ""}
           onChange={(value) => onUpdateEntry(entry.id, "checkStatus", value)}
           disabled={isReadonly}
@@ -129,14 +137,18 @@ export function createCashVoucherAccountingEntryColumns({
       id: "checkDate",
       width: columnWidths.checkDate,
       widthClassName: "w-[10rem]",
-      renderCell: (entry) => (
-        <input
-          type="date"
-          value={entry.checkDate ?? ""}
-          disabled={isReadonly}
-          onChange={(event) => onUpdateEntry(entry.id, "checkDate", event.target.value)}
-          className={accountingCellControlClassName()}
-        />
+      renderCell: (entry, rowIndex, context) => (
+        <>
+          <label htmlFor={context.fieldId} className="sr-only">{`${columnLabels.checkDate} row ${rowIndex + 1}`}</label>
+          <input
+            id={context.fieldId}
+            type="date"
+            value={entry.checkDate ?? ""}
+            disabled={isReadonly}
+            onChange={(event) => onUpdateEntry(entry.id, "checkDate", event.target.value)}
+            className={accountingCellControlClassName()}
+          />
+        </>
       ),
     },
     remarks: {
@@ -160,7 +172,9 @@ export function createCashVoucherAccountingEntryColumns({
       id: "partyCode",
       width: columnWidths.partyCode,
       widthClassName: "w-[12rem]",
-      renderCell: (entry) => <EntryInput value={entry.partyCode ?? ""} onChange={() => undefined} readOnly />,
+      renderCell: (entry, rowIndex, context) => (
+        <EntryInput id={context.fieldId} label={`${columnLabels.partyCode} row ${rowIndex + 1}`} value={entry.partyCode ?? ""} onChange={() => undefined} readOnly />
+      ),
     },
     partyName: {
       header: columnLabels.partyName,
@@ -219,8 +233,8 @@ export function createCashVoucherAccountingEntryColumns({
       id: "refId",
       width: columnWidths.refId,
       widthClassName: "w-[12rem]",
-      renderCell: (entry) => (
-        <EntryInput value={entry.refId ?? ""} onChange={(value) => onUpdateEntry(entry.id, "refId", value)} disabled={isReadonly} />
+      renderCell: (entry, rowIndex, context) => (
+        <EntryInput id={context.fieldId} label={`${columnLabels.refId} row ${rowIndex + 1}`} value={entry.refId ?? ""} onChange={(value) => onUpdateEntry(entry.id, "refId", value)} disabled={isReadonly} />
       ),
     },
     vatType: {
@@ -228,11 +242,11 @@ export function createCashVoucherAccountingEntryColumns({
       id: "vatType",
       width: columnWidths.vatType,
       widthClassName: "w-[12rem]",
-      renderCell: (entry) => {
+      renderCell: (entry, rowIndex, context) => {
         const vatType = entry.vatType ?? "";
 
         if (vatType && !vatOptions.some((option) => option.value === vatType)) {
-          return <EntryInput value={vatType} onChange={(value) => onUpdateEntry(entry.id, "vatType", value)} disabled={isReadonly} />;
+          return <EntryInput id={context.fieldId} label={`${columnLabels.vatType} row ${rowIndex + 1}`} value={vatType} onChange={(value) => onUpdateEntry(entry.id, "vatType", value)} disabled={isReadonly} />;
         }
 
         return (
@@ -315,8 +329,10 @@ export function createCashVoucherExpenseEntryColumns({
       id: "amount",
       width: expenseColumnWidths.amount,
       widthClassName: "w-[10rem]",
-      renderCell: (entry) => (
+      renderCell: (entry, rowIndex, context) => (
         <EntryNumberInput
+          id={context.fieldId}
+          label={`${expenseColumnLabels.amount} row ${rowIndex + 1}`}
           allowNegative
           value={entry.taxDetails.grossAmount}
           onChange={(value) =>

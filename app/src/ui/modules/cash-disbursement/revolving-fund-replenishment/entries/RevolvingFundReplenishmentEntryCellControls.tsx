@@ -19,17 +19,10 @@ export function RevolvingFundReplenishmentEntryInput({
   value: string;
 }) {
   return (
-    <input
-      id={id}
-      name={name}
-      type={type}
-      value={value}
-      readOnly={readOnly}
-      placeholder={placeholder}
-      title={placeholder}
-      onChange={(event) => onChange(event.target.value)}
-      className={RevolvingFundReplenishmentEntryInputClassName}
-    />
+    <>
+      <label htmlFor={id} className="sr-only">{name}</label>
+      <input id={id} name={name} type={type} value={value} readOnly={readOnly} placeholder={placeholder} title={placeholder} onChange={(event) => onChange(event.target.value)} className={RevolvingFundReplenishmentEntryInputClassName} />
+    </>
   );
 }
 
@@ -47,13 +40,9 @@ export function RevolvingFundReplenishmentMoneyInput({
   value: string;
 }) {
   return (
-    <MoneyNumberField
-      id={id}
-      name={name}
-      value={value}
-      readOnly={readOnly}
-      onValueChange={onChange}
-      className={`${RevolvingFundReplenishmentEntryInputClassName} text-right tabular-nums`}
-    />
+    <>
+      <label htmlFor={id} className="sr-only">{name}</label>
+      <MoneyNumberField id={id} name={name} value={value} readOnly={readOnly} onValueChange={onChange} className={`${RevolvingFundReplenishmentEntryInputClassName} text-right tabular-nums`} />
+    </>
   );
 }

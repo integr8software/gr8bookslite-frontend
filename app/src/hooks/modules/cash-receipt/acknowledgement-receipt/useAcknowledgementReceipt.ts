@@ -12,6 +12,8 @@ import {
 } from "@tanstack/react-table";
 import toast from "react-hot-toast";
 import {
+  AcknowledgementReceiptCopyFromRecords,
+  applyCopyFromRecordsToAcknowledgementReceiptForm,
   createBlankAcknowledgementReceiptLineEntry,
   createAcknowledgementReceiptFormValuesFromRecord,
   createAcknowledgementReceiptFormValues,
@@ -23,6 +25,7 @@ import { AcknowledgementReceiptStatusFilters } from "@/app/src/constants/modules
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import type {
   AcknowledgementReceiptActionMode,
+  AcknowledgementReceiptCopyFromRecord,
   AcknowledgementReceiptEntryView,
   AcknowledgementReceiptFormValues,
   AcknowledgementReceiptLineEntry,
@@ -124,11 +127,17 @@ export function useAcknowledgementReceiptActionForm(
       return;
     }
 
-    setValues((current) => ({
-      ...current,
-      referenceNo: recordIds[0] ?? current.referenceNo,
-      lineEntries: current.lineEntries.length ? current.lineEntries : [createBlankAcknowledgementReceiptLineEntry()],
-    }));
+    const selectedRecords = AcknowledgementReceiptCopyFromRecords.filter((record) => recordIds.includes(record.id));
+
+    if (selectedRecords.length > 0) {
+      setValues((current) => applyCopyFromRecordsToAcknowledgementReceiptForm(current, selectedRecords));
+    } else {
+      setValues((current) => ({
+        ...current,
+        referenceNo: recordIds.join(", "),
+        lineEntries: current.lineEntries.length ? current.lineEntries : [createBlankAcknowledgementReceiptLineEntry()],
+      }));
+    }
     toast.success("Copied receipt source details.");
   }
 

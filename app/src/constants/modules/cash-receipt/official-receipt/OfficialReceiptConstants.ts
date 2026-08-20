@@ -40,3 +40,9 @@ export const OfficialReceiptStatusFilters = [
 
 export const OfficialReceiptTablePaginationStorageKey =
   "cash-receipt-official-receipt";
+
+export const OfficialReceiptActionTabs = [
+  { id: "details", label: "Details" },
+  { id: "attachments", label: "Attachments" },
+] as const;
+

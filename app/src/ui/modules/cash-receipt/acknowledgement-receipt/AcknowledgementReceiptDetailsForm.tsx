@@ -5,11 +5,10 @@ import {
   AcknowledgementReceiptPaymentTypeOptions,
 } from "@/app/src/data/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptData";
 import type { AcknowledgementReceiptFormValues } from "@/app/src/types/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptTypes";
-import { AppAdvancedDropdown, type AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
-import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 type AcknowledgementReceiptDetailsFormProps = {
   isReadonly: boolean;
@@ -33,30 +32,30 @@ export function AcknowledgementReceiptDetailsForm({
       <div className="grid min-w-0 gap-x-8 gap-y-5 xl:grid-cols-2">
         <div className="grid min-w-0 gap-4">
           <FieldShell controlId="acknowledgement-receipt-party" label="Party Name" isRequired>
-            <AttachedDropdown
+            <AppAdvancedDropdown
               id="acknowledgement-receipt-party"
               value={values.customerName}
               readOnly={isReadonly}
               options={AcknowledgementReceiptPartyOptions}
               placeholder="Select Party Name"
               searchPlaceholder="Search Party Name"
-              onAdd={onOpenPartyDrawer}
+              addAction={!isReadonly ? { label: "Add Party Name", onClick: onOpenPartyDrawer } : undefined}
               onChange={(value) => {
-                onUpdateField("customerName", value);
-                onPartyNameChange?.(value);
+                onUpdateField("customerName", String(value));
+                onPartyNameChange?.(String(value));
               }}
             />
           </FieldShell>
           <FieldShell controlId="acknowledgement-receipt-payment-type" label="Payment Type" isRequired>
-            <AttachedDropdown
+            <AppAdvancedDropdown
               id="acknowledgement-receipt-payment-type"
               value={values.paymentType}
               readOnly={isReadonly}
               options={AcknowledgementReceiptPaymentTypeOptions}
               placeholder="Select payment type"
               searchPlaceholder="Search payment type"
-              onAdd={onOpenPaymentTypeDialog}
-              onChange={(value) => onUpdateField("paymentType", value)}
+              addAction={!isReadonly ? { label: "Add Payment Type", onClick: onOpenPaymentTypeDialog } : undefined}
+              onChange={(value) => onUpdateField("paymentType", String(value))}
             />
           </FieldShell>
           <FieldShell controlId="acknowledgement-receipt-currency" label="Currency">
@@ -150,44 +149,6 @@ export function AcknowledgementReceiptDetailsForm({
   );
 }
 
-function AttachedDropdown({
-  id,
-  onChange,
-  onAdd,
-  options,
-  placeholder,
-  readOnly,
-  searchPlaceholder,
-  value,
-}: {
-  id: string;
-  onChange: (value: string) => void;
-  onAdd: () => void;
-  options: AppAdvancedDropdownOption[];
-  placeholder: string;
-  readOnly: boolean;
-  searchPlaceholder: string;
-  value: string;
-}) {
-  return (
-    <div className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-0">
-      <AppAdvancedDropdown
-        className={AttachedDropdownClassName}
-        id={id}
-        value={value}
-        readOnly={readOnly}
-        options={options}
-        placeholder={placeholder}
-        searchPlaceholder={searchPlaceholder}
-        onChange={(nextValue) => onChange(String(nextValue))}
-      />
-      <button type="button" disabled={readOnly} onClick={onAdd} className={AttachedAddButtonClassName}>
-        Add
-      </button>
-    </div>
-  );
-}
-
 function FieldShell({
   children,
   controlId,
@@ -212,9 +173,3 @@ function FieldShell({
 
 const FieldClassName =
   "app-data-entry-field h-11 min-w-0 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15 read-only:bg-white read-only:text-darknavy disabled:bg-white disabled:text-darknavy";
-
-const AttachedDropdownClassName = "sm:[&_.app-advanced-dropdown-control]:rounded-r-none";
-
-const AttachedAddButtonClassName = joinClasses(
-  "inline-flex h-11 w-20 shrink-0 items-center justify-center gap-2 rounded-lg border border-darknavy/10 border-l-darknavy/20 bg-skyblue/8 px-3 text-sm font-semibold text-skyblue transition hover:border-skyblue/25 hover:bg-skyblue/12 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/15 disabled:cursor-not-allowed disabled:opacity-45 sm:rounded-l-none",
-);

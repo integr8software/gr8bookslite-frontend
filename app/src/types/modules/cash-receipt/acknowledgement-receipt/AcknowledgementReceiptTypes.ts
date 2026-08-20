@@ -1,4 +1,9 @@
+import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
+import type { TransactionAttachment } from "@/app/src/types/shared/transaction-setup/TransactionAttachmentTypes";
+
 export type AcknowledgementReceiptActionMode = "add" | "edit" | "view";
+
+export type AcknowledgementReceiptActionTab = "details" | "attachments";
 
 export type AcknowledgementReceiptEntryView = "collection" | "accounting";
 
@@ -45,6 +50,7 @@ export type AcknowledgementReceiptFormValues = {
   status: string;
   remarks: string;
   lineEntries: AcknowledgementReceiptLineEntry[];
+  attachments?: TransactionAttachment[];
 };
 
 export type AcknowledgementReceiptTotals = {
@@ -54,4 +60,22 @@ export type AcknowledgementReceiptTotals = {
   grossReceipt: number;
   vat: number;
   vatExempt: number;
+};
+
+export type AcknowledgementReceiptCopyFromRecord = AppCopyFromRecord & {
+  customerName?: string;
+  partyCode?: string;
+  paymentType?: string;
+  currency?: string;
+  exchangeRate?: string;
+  collectionType?: string;
+  grossReceipt?: string;
+  vatExempt?: string;
+  vat?: string;
+  ewt?: string;
+  debit?: string;
+  credit?: string;
+  accountCode?: string;
+  accountTitle?: string;
+  lineEntries?: AcknowledgementReceiptLineEntry[];
 };

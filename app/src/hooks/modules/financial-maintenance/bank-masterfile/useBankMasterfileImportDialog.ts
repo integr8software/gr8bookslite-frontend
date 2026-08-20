@@ -36,6 +36,7 @@ import {
 } from "@/app/src/validations/modules/financial-maintenance/bank-masterfile/BankMasterfileValidation";
 import { clampImportColumnWidth } from "@/app/src/ui/shared/module/ModuleImportResizableColumnHeader";
 import { reorderModuleImportRows } from "@/app/src/utils/module-import.util";
+import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 
 export function useBankMasterfileImportDialog({
   existingBanks,
@@ -307,10 +308,14 @@ export function useBankMasterfileImportDialog({
   }
 
   async function handleImport(mode = importMode) {
+    const releaseLock = acquireModuleActionLock(`financial-maintenance:bank-masterfile:import:${mode}`);
+    if (!releaseLock) return;
+
     const rowsToImport = mode === "selected-valid" ? validSelectedRows : mode === "all-valid" ? validRows : nonBlankRows;
 
     if (mode === "selected-valid" && selectedRowIds.size === 0) {
       setImportError("Select at least one valid row to import.");
+      releaseLock();
       return;
     }
 
@@ -319,15 +324,20 @@ export function useBankMasterfileImportDialog({
       setImportError(
         `Fix or remove ${actualInvalidRows.length} incorrect ${actualInvalidRows.length === 1 ? "row" : "rows"} before importing. No rows were imported.`,
       );
+      releaseLock();
       return;
     }
 
     if (mode === "selected-valid" && rowsToImport.length === 0) {
       setImportError("Selected rows have errors. Fix them or choose valid rows.");
+      releaseLock();
       return;
     }
 
-    if (rowsToImport.length === 0 || isBusy) return;
+    if (rowsToImport.length === 0 || isBusy) {
+      releaseLock();
+      return;
+    }
 
     const importedIds = new Set(rowsToImport.map((row) => row.id));
     setProgress({ imported: 0, total: rowsToImport.length });
@@ -361,6 +371,7 @@ export function useBankMasterfileImportDialog({
       if (nextRows.length === 0) onClose();
     } catch (error) {
       setImportError(error instanceof Error ? error.message : "Bank accounts could not be imported.");
+      releaseLock();
     } finally {
       setProgress(null);
     }

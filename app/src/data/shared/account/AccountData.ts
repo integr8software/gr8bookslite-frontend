@@ -22,6 +22,7 @@ export const AccountProfileFieldVisibility: Array<AccountVisibilityConfig<Accoun
 export const AccountSettingsItemVisibility: Array<AccountVisibilityConfig<AccountSettingsItemKey>> = [
   { key: "changePassword", visibleTo: AllRoles },
   { key: "theme", visibleTo: AllRoles },
+  { key: "fontSize", visibleTo: AllRoles },
   { key: "accentColor", visibleTo: AllRoles },
   { key: "notificationPreference", visibleTo: AllRoles },
 ];

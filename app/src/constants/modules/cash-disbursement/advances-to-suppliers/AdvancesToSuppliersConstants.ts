@@ -70,9 +70,9 @@ export const AdvancesToSuppliersStatuses = {
   posted: "Posted",
 } as const;
 export const AdvancesToSuppliersRecordStatuses = [
-  "Draft",
-  "For Approval",
   "Posted",
+  "For Approval",
+  "Draft",
   "Disapproved",
   "Cancelled",
 ] as const satisfies readonly AdvancesToSuppliersStatus[];

@@ -31,6 +31,7 @@ import { CashAdvanceMultipleEntryDetailsFields } from "@/app/src/ui/modules/cash
 import { CashAdvanceMultipleEntryActionHeader } from "@/app/src/ui/modules/cash-disbursement/cash-advance-multiple-entry/action/CashAdvanceMultipleEntryActionHeader";
 import { CashAdvanceMultipleEntryEntrySection } from "@/app/src/ui/modules/cash-disbursement/cash-advance-multiple-entry/entries/CashAdvanceMultipleEntryEntrySection";
 import { CashAdvanceMultipleEntryReportPreview } from "@/app/src/ui/modules/cash-disbursement/cash-advance-multiple-entry/reports/CashAdvanceMultipleEntryReportPreview";
+import { openCashAdvanceMultipleEntryPdf } from "@/app/src/ui/modules/cash-disbursement/cash-advance-multiple-entry/reports/CashAdvanceMultipleEntryPdf";
 import { CashAdvanceMultipleEntryFileAttachmentFields } from "@/app/src/ui/modules/cash-disbursement/cash-advance-multiple-entry/action/CashAdvanceMultipleEntryFileAttachmentFields";
 import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
@@ -256,6 +257,7 @@ export function CashAdvanceMultipleEntryActionPage({ mode }: { mode: CashAdvance
         responsibilityCenterOptions={responsibilityCenterOptions}
         values={form.values}
         onClose={() => setIsReportPreviewOpen(false)}
+        onGeneratePdf={() => openCashAdvanceMultipleEntryPdf(form.values, responsibilityCenterOptions)}
       />
     </>
   );

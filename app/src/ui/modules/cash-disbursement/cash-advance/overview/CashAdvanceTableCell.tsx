@@ -14,7 +14,7 @@ export function renderCashAdvanceTableCell(
     case "transNo":
       return <span className="font-semibold text-skyblue">{record.transNo}</span>;
     case "documentDate":
-      return formatDate(record.documentDate, { locale: "en-US" });
+      return formatDate(record.documentDate);
     case "partyName":
       return record.partyName;
     case "partyCode":
@@ -34,20 +34,16 @@ export function renderCashAdvanceTableCell(
     case "createdBy":
       return record.createdBy ?? "";
     case "createdAt":
-      return formatAuditDate(record.createdAt);
+      return formatDate(record.createdAt);
     case "updatedBy":
       return record.updatedBy ?? "";
     case "updatedAt":
-      return formatAuditDate(record.updatedAt);
+      return formatDate(record.updatedAt);
     case "actions":
       return renderActions();
     default:
       return null;
   }
-}
-
-function formatAuditDate(value?: string) {
-  return formatDate(value, { locale: "en-US" });
 }
 
 function getCashAdvanceAccountTitle(accountCode: string) {

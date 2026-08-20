@@ -25,7 +25,7 @@ function createPdfDefinition(values: RevolvingFundReplenishmentFormValues): TDoc
     pageMargins: [32, 32, 32, 32],
     defaultStyle: { font: "Roboto", fontSize: 9 },
     content: [
-      { text: "PETTY CASH FUND REPLENISHMENT", alignment: "center", bold: true, fontSize: 18 },
+      { text: "REVOLVING FUND REPLENISHMENT", alignment: "center", bold: true, fontSize: 18 },
       { text: values.transactionNo, alignment: "center", margin: [0, 4, 0, 20] },
       {
         columns: [

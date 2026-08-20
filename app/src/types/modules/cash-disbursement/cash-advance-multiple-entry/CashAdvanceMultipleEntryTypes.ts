@@ -8,6 +8,7 @@ export type CashAdvanceMultipleEntrySubmitConfirmationAction = "save" | "draft";
 export type CashAdvanceMultipleEntryReportPreviewProps = {
   isOpen: boolean;
   onClose: () => void;
+  onGeneratePdf?: () => void;
   responsibilityCenterOptions: AppAdvancedDropdownOption[];
   values: CashAdvanceMultipleEntryFormValues;
 };

@@ -12,6 +12,7 @@ import {
   type VisibilityState,
 } from "@tanstack/react-table";
 import toast from "react-hot-toast";
+import { ReceiptText } from "lucide-react";
 import {
   createCashAdvanceFormValues,
   createCashAdvanceFormValuesFromRecord,
@@ -21,6 +22,9 @@ import {
 } from "@/app/src/data/modules/cash-disbursement/cash-advance/CashAdvanceData";
 import { formatMoneyNumberDisplayValue, parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import { syncTaxDetailsAmount } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
+import { getModuleStatusMetricIcon, getModuleStatusMetricIconClassName } from "@/app/src/ui/shared/module/ModuleStatusBadge";
+import type { ModuleStatisticCardItem } from "@/app/src/ui/shared/module/ModuleStatisticCards";
+import { formatPartOfTotalPercentage } from "@/app/src/utils/percentage.util";
 import {
   CashAdvanceDefaultColumnVisibility,
   CashAdvanceAllStatusFilter,
@@ -277,7 +281,7 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
 export function useCashAdvanceTable(advances: CashAdvanceRecord[]) {
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
-    pageSize: 5,
+    pageSize: 10,
   });
   const [query, setQueryState] = useState("");
   const [amountRange, setAmountRangeState] = useState<AmountRangeValue>({
@@ -470,10 +474,10 @@ export function useCashAdvanceTable(advances: CashAdvanceRecord[]) {
     table.setPageIndex(0);
   }
 
-  function setStatusFilter(value: (typeof CashAdvanceStatusFilters)[number]) {
+  const setStatusFilter = useCallback((value: (typeof CashAdvanceStatusFilters)[number]) => {
     setStatusFilterState(value);
     table.setPageIndex(0);
-  }
+  }, [table]);
 
   function resetFilters() {
     setAmountRangeState({ from: "", to: "" });
@@ -482,6 +486,76 @@ export function useCashAdvanceTable(advances: CashAdvanceRecord[]) {
     setStatusFilterState(CashAdvanceAllStatusFilter);
     table.setPageIndex(0);
   }
+
+  const statisticCards = useMemo<ModuleStatisticCardItem[]>(() => {
+    const postedCount = advances.filter((record) => record.status === CashAdvanceStatuses.posted).length;
+    const forApprovalCount = advances.filter((record) => record.status === CashAdvanceStatuses.forApproval).length;
+    const draftCount = advances.filter((record) => record.status === CashAdvanceStatuses.draft).length;
+    const disapprovedCount = advances.filter((record) => record.status === CashAdvanceStatuses.disapproved).length;
+    const cancelledCount = advances.filter((record) => record.status === CashAdvanceStatuses.cancelled).length;
+
+    return [
+      {
+        icon: ReceiptText,
+        tone: "violet",
+        label: "Total Entries",
+        summary: "All time",
+        value: advances.length,
+        isActive: statusFilter === CashAdvanceAllStatusFilter,
+        onClick: () => setStatusFilter(CashAdvanceAllStatusFilter),
+      },
+      {
+        icon: getModuleStatusMetricIcon(CashAdvanceStatuses.posted),
+        iconClassName: getModuleStatusMetricIconClassName(CashAdvanceStatuses.posted),
+        tone: "emerald",
+        label: CashAdvanceStatuses.posted,
+        summary: formatPartOfTotalPercentage(postedCount, advances.length),
+        value: postedCount,
+        isActive: statusFilter === CashAdvanceStatuses.posted,
+        onClick: () => setStatusFilter(CashAdvanceStatuses.posted),
+      },
+      {
+        icon: getModuleStatusMetricIcon(CashAdvanceStatuses.forApproval),
+        iconClassName: getModuleStatusMetricIconClassName(CashAdvanceStatuses.forApproval),
+        tone: "amber",
+        label: CashAdvanceStatuses.forApproval,
+        summary: formatPartOfTotalPercentage(forApprovalCount, advances.length),
+        value: forApprovalCount,
+        isActive: statusFilter === CashAdvanceStatuses.forApproval,
+        onClick: () => setStatusFilter(CashAdvanceStatuses.forApproval),
+      },
+      {
+        icon: getModuleStatusMetricIcon(CashAdvanceStatuses.draft),
+        iconClassName: getModuleStatusMetricIconClassName(CashAdvanceStatuses.draft),
+        tone: "blue",
+        label: CashAdvanceStatuses.draft,
+        summary: formatPartOfTotalPercentage(draftCount, advances.length),
+        value: draftCount,
+        isActive: statusFilter === CashAdvanceStatuses.draft,
+        onClick: () => setStatusFilter(CashAdvanceStatuses.draft),
+      },
+      {
+        icon: getModuleStatusMetricIcon(CashAdvanceStatuses.disapproved),
+        iconClassName: getModuleStatusMetricIconClassName(CashAdvanceStatuses.disapproved),
+        tone: "red",
+        label: CashAdvanceStatuses.disapproved,
+        summary: formatPartOfTotalPercentage(disapprovedCount, advances.length),
+        value: disapprovedCount,
+        isActive: statusFilter === CashAdvanceStatuses.disapproved,
+        onClick: () => setStatusFilter(CashAdvanceStatuses.disapproved),
+      },
+      {
+        icon: getModuleStatusMetricIcon(CashAdvanceStatuses.cancelled),
+        iconClassName: getModuleStatusMetricIconClassName(CashAdvanceStatuses.cancelled),
+        tone: "slate",
+        label: CashAdvanceStatuses.cancelled,
+        summary: formatPartOfTotalPercentage(cancelledCount, advances.length),
+        value: cancelledCount,
+        isActive: statusFilter === CashAdvanceStatuses.cancelled,
+        onClick: () => setStatusFilter(CashAdvanceStatuses.cancelled),
+      },
+    ];
+  }, [advances, setStatusFilter, statusFilter]);
 
   return {
     amountRange,
@@ -492,6 +566,7 @@ export function useCashAdvanceTable(advances: CashAdvanceRecord[]) {
     setDateRange,
     setQuery,
     setStatusFilter,
+    statisticCards,
     statusFilter,
     table,
   };

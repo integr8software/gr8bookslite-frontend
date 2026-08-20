@@ -45,7 +45,7 @@ export function usePettyCashFundReplenishmentOverviewPage() {
   const [statusFilter, setStatusFilter] = useState<string>("All");
   const [dateRange, setDateRange] = useState<DateRangeValue>(emptyDateRange);
   const [amountRange, setAmountRange] = useState<AmountRangeValue>(emptyAmountRange);
-  const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 5 });
+  const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => PettyCashFundReplenishmentDefaultColumnVisibility);
   const [lastSyncedAt, setLastSyncedAt] = useState(() => Date.now());

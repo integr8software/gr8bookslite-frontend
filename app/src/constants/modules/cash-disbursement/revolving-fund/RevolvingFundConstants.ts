@@ -63,9 +63,9 @@ export const RevolvingFundConfirmationDialogConfirmLabels: Record<RevolvingFundC
   cancel: "Cancel",
 };
 export const RevolvingFundRecordStatuses = [
-  "Draft",
-  "For Approval",
   "Posted",
+  "For Approval",
+  "Draft",
   "Disapproved",
   "Cancelled",
 ] as const satisfies readonly RevolvingFundStatus[];

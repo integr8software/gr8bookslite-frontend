@@ -16,6 +16,7 @@ import { formatDate } from "@/app/src/utils/date.util";
 export function CashAdvanceMultipleEntryReportPreview({
   isOpen,
   onClose,
+  onGeneratePdf,
   responsibilityCenterOptions,
   values,
 }: CashAdvanceMultipleEntryReportPreviewProps) {
@@ -26,6 +27,7 @@ export function CashAdvanceMultipleEntryReportPreview({
       title="Cash Advance Multiple Entry Preview"
       description="Review the cash advance request and cash advance entries."
       onClose={onClose}
+      onGeneratePdf={onGeneratePdf}
     >
       <CashAdvanceMultipleEntryReportDocument responsibilityCenterOptions={responsibilityCenterOptions} values={values} />
     </ReportPreviewDrawer>

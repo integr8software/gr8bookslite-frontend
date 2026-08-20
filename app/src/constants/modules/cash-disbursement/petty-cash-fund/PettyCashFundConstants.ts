@@ -63,9 +63,9 @@ export const PettyCashFundConfirmationDialogConfirmLabels: Record<PettyCashFundC
   cancel: "Cancel",
 };
 export const PettyCashFundRecordStatuses = [
-  "Draft",
-  "For Approval",
   "Posted",
+  "For Approval",
+  "Draft",
   "Disapproved",
   "Cancelled",
 ] as const satisfies readonly PettyCashFundStatus[];

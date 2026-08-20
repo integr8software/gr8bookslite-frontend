@@ -1,6 +1,6 @@
 "use client";
 
-import { useDeferredValue, useMemo, useState } from "react";
+import { useCallback, useDeferredValue, useMemo, useState } from "react";
 import {
   getCoreRowModel,
   getPaginationRowModel,
@@ -11,17 +11,22 @@ import {
 } from "@tanstack/react-table";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import { ReceiptText } from "lucide-react";
 import {
   DisbursementVoucherDefaultColumnOrder,
   DisbursementVoucherDefaultColumnVisibility,
   DisbursementVoucherDefaultSorting,
   DisbursementVoucherAllStatusFilter,
   DisbursementVoucherStatusFilters,
+  DisbursementVoucherStatuses,
   DisbursementVoucherTableColumns,
   DisbursementVoucherTablePreferencesModuleKey,
   DisbursementVoucherTablePreferencesStorageKey,
   DisbursementVoucherQueryKeys,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
+import { getModuleStatusMetricIcon, getModuleStatusMetricIconClassName } from "@/app/src/ui/shared/module/ModuleStatusBadge";
+import type { ModuleStatisticCardItem } from "@/app/src/ui/shared/module/ModuleStatisticCards";
+import { formatPartOfTotalPercentage } from "@/app/src/utils/percentage.util";
 import {
   getSeedDisbursementTransactions,
   getSeedDisbursementVouchers,
@@ -37,6 +42,7 @@ import { normalizeLowercaseWhitespace } from "@/app/src/utils/string.util";
 import type {
   DisbursementVoucherPreviewRow,
   DisbursementVoucherRecord,
+  DisbursementVoucherStatus,
   DisbursementTransactionRecord,
   DisbursementVoucherTableColumnKey,
   DisbursementVoucherStoreState,
@@ -202,7 +208,7 @@ export function useDisbursementVoucherStore<TSelected = DisbursementVoucherStore
 export function useDisbursementVoucherPreviewTable(previewRows: DisbursementVoucherPreviewRow[]) {
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
-    pageSize: 5,
+    pageSize: 10,
   });
   const [query, setQueryState] = useState("");
   const [dateRange, setDateRangeState] = useState<DateRangeValue>({
@@ -301,10 +307,10 @@ export function useDisbursementVoucherPreviewTable(previewRows: DisbursementVouc
     table.setPageIndex(0);
   }
 
-  function setStatusFilter(value: (typeof DisbursementVoucherStatusFilters)[number]) {
+  const setStatusFilter = useCallback((value: (typeof DisbursementVoucherStatusFilters)[number]) => {
     setStatusFilterState(value);
     table.setPageIndex(0);
-  }
+  }, [table]);
 
   function setDateRange(value: DateRangeValue) {
     setDateRangeState(value);
@@ -324,6 +330,45 @@ export function useDisbursementVoucherPreviewTable(previewRows: DisbursementVouc
     table.setPageIndex(0);
   }
 
+  const statisticCards = useMemo<ModuleStatisticCardItem[]>(() => {
+    const statusCounts = Object.fromEntries(
+      Object.values(DisbursementVoucherStatuses).map((status) => [
+        status,
+        previewRows.filter(
+          (row) => getDisbursementVoucherDisplayStatus(row.voucher?.status ?? row.transaction.status) === status,
+        ).length,
+      ]),
+    ) as Record<DisbursementVoucherStatus, number>;
+
+    return [
+      {
+        label: "Total Entries",
+        value: previewRows.length,
+        summary: "All time",
+        icon: ReceiptText,
+        tone: "violet",
+        isActive: statusFilter === DisbursementVoucherAllStatusFilter,
+        onClick: () => setStatusFilter(DisbursementVoucherAllStatusFilter),
+      },
+      ...[
+        DisbursementVoucherStatuses.posted,
+        DisbursementVoucherStatuses.forApproval,
+        DisbursementVoucherStatuses.draft,
+        DisbursementVoucherStatuses.disapproved,
+        DisbursementVoucherStatuses.cancelled,
+      ].map((status, index) => ({
+        label: status,
+        value: statusCounts[status] ?? 0,
+        summary: formatPartOfTotalPercentage(statusCounts[status] ?? 0, previewRows.length),
+        icon: getModuleStatusMetricIcon(status),
+        iconClassName: getModuleStatusMetricIconClassName(status),
+        tone: (["emerald", "amber", "blue", "red", "slate"] as const)[index],
+        isActive: statusFilter === status,
+        onClick: () => setStatusFilter(status),
+      })),
+    ];
+  }, [previewRows, setStatusFilter, statusFilter]);
+
   return {
     amountRange,
     dateRange,
@@ -333,6 +378,7 @@ export function useDisbursementVoucherPreviewTable(previewRows: DisbursementVouc
     setDateRange,
     setQuery,
     setStatusFilter,
+    statisticCards,
     statusFilter,
     statusOptions: DisbursementVoucherStatusFilters,
     table,

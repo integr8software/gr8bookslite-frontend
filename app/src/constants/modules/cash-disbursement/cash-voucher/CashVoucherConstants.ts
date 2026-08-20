@@ -111,9 +111,9 @@ export const CashVoucherWorkflowSteps = [
 
 export const CashVoucherStatusFilters = [
   CashVoucherAllStatusFilter,
-  CashVoucherStatuses.draft,
-  CashVoucherStatuses.forApproval,
   CashVoucherStatuses.posted,
+  CashVoucherStatuses.forApproval,
+  CashVoucherStatuses.draft,
   CashVoucherStatuses.disapproved,
   CashVoucherStatuses.cancelled,
   CashVoucherStatuses.closed,
@@ -122,16 +122,16 @@ export const CashVoucherStatusFilters = [
 export const CashVoucherStatusFilterOptions = [
   { label: "All statuses", value: CashVoucherAllStatusFilter },
   {
-    label: CashVoucherStatuses.draft,
-    value: CashVoucherStatuses.draft,
+    label: CashVoucherStatuses.posted,
+    value: CashVoucherStatuses.posted,
   },
   {
     label: CashVoucherStatuses.forApproval,
     value: CashVoucherStatuses.forApproval,
   },
   {
-    label: CashVoucherStatuses.posted,
-    value: CashVoucherStatuses.posted,
+    label: CashVoucherStatuses.draft,
+    value: CashVoucherStatuses.draft,
   },
   {
     label: CashVoucherStatuses.disapproved,

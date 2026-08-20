@@ -49,6 +49,7 @@ export function usePettyCashVoucherActionPage(options: PettyCashVoucherActionPag
   const [activeTab, setActiveTab] = useState<PettyCashVoucherActionTab>("details");
   const [isPartyDrawerOpen, setIsPartyDrawerOpen] = useState(false);
   const [isResponsibilityCenterDrawerOpen, setIsResponsibilityCenterDrawerOpen] = useState(false);
+  const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
   const hasEditedCurrencyRef = useRef(false);
   const isSubmittingRef = useRef(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -309,12 +310,15 @@ export function usePettyCashVoucherActionPage(options: PettyCashVoucherActionPag
     handleUpdateStatus,
     isPartyDrawerOpen,
     isExchangeRateLoading: transactionCurrency.isExchangeRateLoading,
+    isReportPreviewOpen,
     isSubmitting,
     isReadonly,
     isResponsibilityCenterDrawerOpen,
     mode,
     needsRecord: mode === "edit" || mode === "view",
     openPartyDrawer,
+    openReportPreview: () => setIsReportPreviewOpen(true),
+    closeReportPreview: () => setIsReportPreviewOpen(false),
     openResponsibilityCenterDrawer,
     partyStore,
     responsibilityCenterStore,

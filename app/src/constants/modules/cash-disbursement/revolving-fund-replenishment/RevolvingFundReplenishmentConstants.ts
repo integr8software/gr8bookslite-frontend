@@ -89,9 +89,9 @@ export const RevolvingFundReplenishmentStatuses = {
   posted: "Posted",
 } as const;
 export const RevolvingFundReplenishmentRecordStatuses = [
-  "Draft",
-  "For Approval",
   "Posted",
+  "For Approval",
+  "Draft",
   "Disapproved",
   "Cancelled",
 ] as const satisfies readonly RevolvingFundReplenishmentStatus[];

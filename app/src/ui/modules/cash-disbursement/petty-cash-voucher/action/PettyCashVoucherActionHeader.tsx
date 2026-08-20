@@ -92,7 +92,7 @@ function PettyCashVoucherHeaderActions({
         <ArrowLeft className="h-4 w-4" aria-hidden="true" />
         Back
       </Link>
-      <ReportPreviewAction onPreview={() => undefined} />
+      <ReportPreviewAction onPreview={page.openReportPreview} />
       {page.mode === "view" ? <PettyCashVoucherActionHistory page={page} /> : null}
       {page.mode !== "add" ? (
         <PettyCashVoucherStatusActions

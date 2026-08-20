@@ -89,9 +89,9 @@ export const PettyCashFundReplenishmentStatuses = {
   posted: "Posted",
 } as const;
 export const PettyCashFundReplenishmentRecordStatuses = [
-  "Draft",
-  "For Approval",
   "Posted",
+  "For Approval",
+  "Draft",
   "Disapproved",
   "Cancelled",
 ] as const satisfies readonly PettyCashFundReplenishmentStatus[];

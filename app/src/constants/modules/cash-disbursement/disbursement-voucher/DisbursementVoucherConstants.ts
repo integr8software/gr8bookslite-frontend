@@ -115,9 +115,9 @@ export const DisbursementVoucherWorkflowSteps = [
 
 export const DisbursementVoucherStatusFilters = [
   DisbursementVoucherAllStatusFilter,
-  DisbursementVoucherStatuses.draft,
-  DisbursementVoucherStatuses.forApproval,
   DisbursementVoucherStatuses.posted,
+  DisbursementVoucherStatuses.forApproval,
+  DisbursementVoucherStatuses.draft,
   DisbursementVoucherStatuses.disapproved,
   DisbursementVoucherStatuses.cancelled,
   DisbursementVoucherStatuses.closed,
@@ -126,16 +126,16 @@ export const DisbursementVoucherStatusFilters = [
 export const DisbursementVoucherStatusFilterOptions = [
   { label: "All statuses", value: DisbursementVoucherAllStatusFilter },
   {
-    label: DisbursementVoucherStatuses.draft,
-    value: DisbursementVoucherStatuses.draft,
+    label: DisbursementVoucherStatuses.posted,
+    value: DisbursementVoucherStatuses.posted,
   },
   {
     label: DisbursementVoucherStatuses.forApproval,
     value: DisbursementVoucherStatuses.forApproval,
   },
   {
-    label: DisbursementVoucherStatuses.posted,
-    value: DisbursementVoucherStatuses.posted,
+    label: DisbursementVoucherStatuses.draft,
+    value: DisbursementVoucherStatuses.draft,
   },
   {
     label: DisbursementVoucherStatuses.disapproved,

@@ -1056,10 +1056,10 @@ hover, focus, and active outlines should follow the metric tone color, not the
 current module/theme accent.
 
 ```txt
-Total Entries   # tone="violet", receipt/list icon
-Draft           # tone="blue", getModuleStatusMetricIcon -> Clock
-For Approval    # tone="amber", getModuleStatusMetricIcon -> Clock
+Total Transaction / Total Entries   # tone="violet", receipt/list icon
 Posted          # tone="emerald", getModuleStatusMetricIcon -> CheckCircle2
+For Approval    # tone="amber", getModuleStatusMetricIcon -> Clock
+Draft           # tone="blue", getModuleStatusMetricIcon -> Clock
 Disapproved     # tone="red", getModuleStatusMetricIcon -> XCircle
 Cancelled       # tone="slate", getModuleStatusMetricIcon -> Ban
 ```
@@ -1085,9 +1085,9 @@ For the Total Entries card, pass `tone="violet"` instead of a custom
 Use this standard status-to-tone mapping for transaction metric cards:
 
 ```txt
-Draft           # blue
-For Approval    # amber
 Posted          # emerald
+For Approval    # amber
+Draft           # blue
 Disapproved     # red
 Cancelled       # slate
 ```
@@ -1307,6 +1307,11 @@ The Column Visibility menu's `Default` button calls TanStack
 `table.resetColumnVisibility()`. Without `initialState.columnVisibility`, it
 will reset to all columns visible instead of the documented default visible
 columns.
+### Table Pagination And Frame Sizing
+
+- **Default rows per module / page size**: The initial row count across transaction overview modules is **10** (`pageSize: 10`). Initialize pagination state in hooks with `{ pageIndex: 0, pageSize: 10 }`.
+- **Page size options**: `ModuleTable` defaults to `pageSizeOptions={[5, 10, 15, 20, 25, 50]}` internally. Do not pass `pageSizeOptions={[5, 10, 15, 20, 25, 50]}` explicitly in overview pages unless a non-standard set is required.
+- **Outer table frame & wrapper**: Standardize list tables by wrapping `ModuleTable` with `<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm" data-spotlight-id="maintenance-table">` and using `variant="embedded"`.
 
 ## Reports Folder
 
@@ -1392,10 +1397,12 @@ columns.
 - Currency/exchange rate row:
   `app/src/ui/shared/app/CurrencyExchangeRateRow.tsx`.
 - Utilities: strictly use `app/src/utils/` for shared pure utilities.
-- Use `formatDate` from `app/src/utils/date.util.ts` for transaction dates and
-  `formatPartOfTotalPercentage` from `app/src/utils/percentage.util.ts` for
-  status-count summaries. Do not create feature-prefixed wrappers that only
-  repeat these shared formatters.
+- Use `formatDate` from `app/src/utils/date.util.ts` for transaction dates,
+  document dates, and audit dates (`createdAt`, `updatedAt`, `dateCreated`, `dateModified`),
+  and `formatPartOfTotalPercentage` from `app/src/utils/percentage.util.ts` for
+  status-count summaries. Do not create feature-local or component-level date
+  wrappers (such as `formatAuditDate`, `formatDateLabel`, or custom `Intl` functions)
+  that only repeat or wrap `formatDate`.
 - Entry row utilities: use `entries/utils/` only for helpers specific to the
   current transaction module.
 - Utility inventory: read [FRONTEND_UTILITY.md](FRONTEND_UTILITY.md) before

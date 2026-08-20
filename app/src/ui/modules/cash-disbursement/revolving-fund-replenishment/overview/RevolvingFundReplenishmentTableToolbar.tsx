@@ -6,7 +6,7 @@ import { ModuleTableColumnVisibilityButton, ModuleTableFilterSelect, ModuleTable
 
 export function RevolvingFundReplenishmentTableToolbar({ page }: { page: RevolvingFundReplenishmentOverviewPageState }) {
   return (
-    <ModuleTableToolbar className="!grid-cols-1 !gap-2 rounded-none border-x-0 border-t-0 !p-3 shadow-none 2xl:!grid-cols-[minmax(0,1fr)_auto]" data-spotlight-id="maintenance-table-filters">
+    <ModuleTableToolbar className="!grid-cols-1 !gap-2 rounded-none border-x-0 border-t-0 !p-3 shadow-none sm:!gap-2 sm:!p-3 2xl:!grid-cols-[minmax(0,1fr)_auto]" data-spotlight-id="maintenance-table-filters">
       <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 2xl:grid-cols-[minmax(18rem,2fr)_minmax(14rem,1fr)_minmax(14rem,1fr)]">
         <div className="sm:col-span-2 2xl:col-span-1">
           <ModuleTableSearch label="Search revolving fund replenishments" value={page.query} onChange={page.setQuery} placeholder="Search by Replenishment No., Party Name, Account Title, or Remarks" />
@@ -17,7 +17,7 @@ export function RevolvingFundReplenishmentTableToolbar({ page }: { page: Revolvi
       <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 md:grid-cols-[minmax(0,1fr)_3.25rem_3.25rem] 2xl:w-[21.5rem]" data-spotlight-id="maintenance-table-options">
         <ModuleTableFilterSelect label="Status" value={page.statusFilter} options={RevolvingFundReplenishmentStatusOptions.map((status) => ({ label: status, value: status }))} onChange={page.setStatusFilter} />
         <ModuleTableColumnVisibilityButton table={page.table} />
-        <ModuleTableResetButton onClick={page.refreshRecords} />
+        <ModuleTableResetButton className="px-2" onClick={page.refreshRecords} />
       </div>
     </ModuleTableToolbar>
   );

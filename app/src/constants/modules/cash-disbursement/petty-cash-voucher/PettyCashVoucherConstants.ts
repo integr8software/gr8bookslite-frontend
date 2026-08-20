@@ -38,9 +38,9 @@ export const PettyCashVoucherStatuses = {
 } as const;
 
 export const PettyCashVoucherRecordStatuses = [
-  PettyCashVoucherStatuses.draft,
-  PettyCashVoucherStatuses.forApproval,
   PettyCashVoucherStatuses.posted,
+  PettyCashVoucherStatuses.forApproval,
+  PettyCashVoucherStatuses.draft,
   PettyCashVoucherStatuses.disapproved,
   PettyCashVoucherStatuses.cancelled,
 ] as const satisfies readonly PettyCashVoucherStatus[];

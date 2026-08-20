@@ -160,15 +160,15 @@ export const CashAdvanceMultipleEntryDefaultColumnOrder: ColumnOrderState = [
 
 export const CashAdvanceMultipleEntryStatusFilterOptions = [
   { label: "All statuses", value: CashAdvanceMultipleEntryAllStatusFilter },
-  {
-    label: CashAdvanceMultipleEntryStatuses.draft,
-    value: CashAdvanceMultipleEntryStatuses.draft,
-  },
+  { label: CashAdvanceMultipleEntryStatuses.posted, value: CashAdvanceMultipleEntryStatuses.posted },
   {
     label: CashAdvanceMultipleEntryStatuses.forApproval,
     value: CashAdvanceMultipleEntryStatuses.forApproval,
   },
-  { label: CashAdvanceMultipleEntryStatuses.posted, value: CashAdvanceMultipleEntryStatuses.posted },
+  {
+    label: CashAdvanceMultipleEntryStatuses.draft,
+    value: CashAdvanceMultipleEntryStatuses.draft,
+  },
   {
     label: CashAdvanceMultipleEntryStatuses.disapproved,
     value: CashAdvanceMultipleEntryStatuses.disapproved,
@@ -181,9 +181,9 @@ export const CashAdvanceMultipleEntryStatusFilterOptions = [
 
 export const CashAdvanceMultipleEntryStatusFilters = [
   CashAdvanceMultipleEntryAllStatusFilter,
-  CashAdvanceMultipleEntryStatuses.draft,
-  CashAdvanceMultipleEntryStatuses.forApproval,
   CashAdvanceMultipleEntryStatuses.posted,
+  CashAdvanceMultipleEntryStatuses.forApproval,
+  CashAdvanceMultipleEntryStatuses.draft,
   CashAdvanceMultipleEntryStatuses.disapproved,
   CashAdvanceMultipleEntryStatuses.cancelled,
 ] as const;
@@ -225,6 +225,12 @@ export const CashAdvanceMultipleEntryEntryInputClassName =
 
 export const CashAdvanceMultipleEntryEntryDropdownClassName =
   "[&_.app-advanced-dropdown-control]:h-10 [&_.app-advanced-dropdown-control]:rounded-none [&_.app-advanced-dropdown-control]:border-0 [&_.app-advanced-dropdown-control]:bg-transparent [&_.app-advanced-dropdown-control]:px-3 [&_.app-advanced-dropdown-control]:shadow-none [&_.app-advanced-dropdown-control]:focus:ring-2 [&_.app-advanced-dropdown-control]:focus:ring-inset [&_.app-advanced-dropdown-control]:focus:ring-skyblue/35";
+
+export function getCashAdvanceMultipleEntryTableMinWidthClassName(visibleColumnCount: number) {
+  if (visibleColumnCount >= 13) return "min-w-[158rem]";
+  if (visibleColumnCount >= 10) return "min-w-[126rem]";
+  return "min-w-[82rem]";
+}
 
 export {
   CashAdvanceAccountOptions as CashAdvanceMultipleEntryAccountOptions,

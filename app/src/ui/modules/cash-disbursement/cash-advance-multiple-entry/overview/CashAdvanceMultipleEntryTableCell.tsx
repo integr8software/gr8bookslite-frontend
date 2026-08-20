@@ -13,7 +13,7 @@ export function renderCashAdvanceMultipleEntryTableCell(
     case "transNo":
       return <span className="font-semibold text-skyblue">{record.transNo}</span>;
     case "documentDate":
-      return formatDate(record.documentDate, { locale: "en-US" });
+      return formatDate(record.documentDate);
     case "partyName":
       return record.partyName;
     case "partyCode":
@@ -29,11 +29,11 @@ export function renderCashAdvanceMultipleEntryTableCell(
     case "createdBy":
       return record.createdBy ?? "";
     case "createdAt":
-      return formatAuditDate(record.createdAt);
+      return formatDate(record.createdAt);
     case "updatedBy":
       return record.updatedBy ?? "";
     case "updatedAt":
-      return formatAuditDate(record.updatedAt);
+      return formatDate(record.updatedAt);
     case "status":
       return <div className="flex w-full justify-center"><ModuleStatusBadge status={record.status} /></div>;
     case "actions":
@@ -41,8 +41,4 @@ export function renderCashAdvanceMultipleEntryTableCell(
     default:
       return null;
   }
-}
-
-function formatAuditDate(value?: string) {
-  return formatDate(value, { locale: "en-US" });
 }

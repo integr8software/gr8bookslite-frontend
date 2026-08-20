@@ -69,12 +69,12 @@ export const CashAdvanceAllStatusFilter = "all";
 
 export const CashAdvanceStatusFilterOptions = [
   { label: "All statuses", value: CashAdvanceAllStatusFilter },
-  { label: CashAdvanceStatuses.draft, value: CashAdvanceStatuses.draft },
+  { label: CashAdvanceStatuses.posted, value: CashAdvanceStatuses.posted },
   {
     label: CashAdvanceStatuses.forApproval,
     value: CashAdvanceStatuses.forApproval,
   },
-  { label: CashAdvanceStatuses.posted, value: CashAdvanceStatuses.posted },
+  { label: CashAdvanceStatuses.draft, value: CashAdvanceStatuses.draft },
   {
     label: CashAdvanceStatuses.disapproved,
     value: CashAdvanceStatuses.disapproved,
@@ -87,9 +87,9 @@ export const CashAdvanceStatusFilterOptions = [
 
 export const CashAdvanceStatusFilters = [
   CashAdvanceAllStatusFilter,
-  CashAdvanceStatuses.draft,
-  CashAdvanceStatuses.forApproval,
   CashAdvanceStatuses.posted,
+  CashAdvanceStatuses.forApproval,
+  CashAdvanceStatuses.draft,
   CashAdvanceStatuses.disapproved,
   CashAdvanceStatuses.cancelled,
 ] as const;

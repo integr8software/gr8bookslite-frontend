@@ -8,7 +8,7 @@ import type {
   PettyCashFundReplenishmentStatus,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
-import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
+import { CashDisbursementOverviewColumnWidths } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import { CashDisbursementOverviewActionColumnWidth } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 
 export const PettyCashFundReplenishmentLink = getModuleRoute("PCFR");
@@ -33,8 +33,8 @@ export const PettyCashFundReplenishmentConfirmationDialogConfirmLabels: Record<P
   cancel: "Cancel",
 };
 export const PettyCashFundReplenishmentColumnLabels = {
-  transactionNo: "Petty Cash Fund Replenishment No.",
-  documentDate: "Document Date",
+  transactionNo: "PCFR No.",
+  documentDate: "PCFR Date",
   partyCode: "Party Code",
   partyName: "Party Name",
   accountCode: "Default Account Code",
@@ -49,19 +49,19 @@ export const PettyCashFundReplenishmentColumnLabels = {
   actions: "Actions",
 } as const;
 export const PettyCashFundReplenishmentOverviewColumnWidths: Record<keyof typeof PettyCashFundReplenishmentColumnLabels, number> = {
-  transactionNo: TransactionOverviewColumnWidths.transactionNumber,
-  documentDate: TransactionOverviewColumnWidths.documentDate,
-  partyCode: TransactionOverviewColumnWidths.partyCode,
-  partyName: TransactionOverviewColumnWidths.partyName,
-  accountCode: TransactionOverviewColumnWidths.accountCode,
-  accountTitle: TransactionOverviewColumnWidths.accountTitle,
-  amount: TransactionOverviewColumnWidths.amount,
-  remarks: TransactionOverviewColumnWidths.remarks,
-  createdBy: TransactionOverviewColumnWidths.auditUser,
-  createdAt: TransactionOverviewColumnWidths.auditDate,
-  updatedBy: TransactionOverviewColumnWidths.auditUser,
-  updatedAt: TransactionOverviewColumnWidths.auditDate,
-  status: TransactionOverviewColumnWidths.status,
+  transactionNo: CashDisbursementOverviewColumnWidths.transactionNumber,
+  documentDate: CashDisbursementOverviewColumnWidths.documentDate,
+  partyCode: CashDisbursementOverviewColumnWidths.partyCode,
+  partyName: CashDisbursementOverviewColumnWidths.partyName,
+  accountCode: CashDisbursementOverviewColumnWidths.accountCode,
+  accountTitle: CashDisbursementOverviewColumnWidths.accountTitle,
+  amount: CashDisbursementOverviewColumnWidths.amount,
+  remarks: CashDisbursementOverviewColumnWidths.remarks,
+  createdBy: CashDisbursementOverviewColumnWidths.auditUser,
+  createdAt: CashDisbursementOverviewColumnWidths.auditDate,
+  updatedBy: CashDisbursementOverviewColumnWidths.auditUser,
+  updatedAt: CashDisbursementOverviewColumnWidths.auditDate,
+  status: CashDisbursementOverviewColumnWidths.status,
   actions: CashDisbursementOverviewActionColumnWidth,
 };
 export const PettyCashFundReplenishmentDefaultVisibleColumnIds = [
@@ -120,8 +120,8 @@ export const PettyCashFundReplenishmentEntryColumnOrder: PettyCashFundReplenishm
   "remarks",
 ];
 export const PettyCashFundReplenishmentEntryColumnLabels: Record<PettyCashFundReplenishmentEntryColumnId, string> = {
-  pettyCashDate: "Petty Cash Date",
-  pettyCashNo: "Petty Cash No.",
+  pettyCashDate: "PCF Date",
+  pettyCashNo: "PCF No.",
   accountCode: "Account Code",
   accountTitle: "Account Title",
   totalAmount: "Total Amount",
@@ -130,14 +130,14 @@ export const PettyCashFundReplenishmentEntryColumnLabels: Record<PettyCashFundRe
   remarks: "Remarks",
 };
 export const PettyCashFundReplenishmentEntryColumnWidths: Record<PettyCashFundReplenishmentEntryColumnId, number> = {
-  pettyCashDate: 150,
-  pettyCashNo: 180,
-  accountCode: 160,
-  accountTitle: 260,
-  totalAmount: 160,
-  netAmount: 160,
-  vatAmount: 160,
-  remarks: 320,
+  pettyCashDate: 135,
+  pettyCashNo: 155,
+  accountCode: 140,
+  accountTitle: 220,
+  totalAmount: 140,
+  netAmount: 140,
+  vatAmount: 140,
+  remarks: 260,
 };
 export const PettyCashFundReplenishmentProtectedEntryColumnIds = new Set<PettyCashFundReplenishmentEntryColumnId>([
   "pettyCashDate",
@@ -150,7 +150,7 @@ export const PettyCashFundReplenishmentAccountingColumnOrder: PettyCashFundReple
   "credit",
   "partyCode",
   "partyName",
-  "particulars",
+  "remarks",
 ];
 export const PettyCashFundReplenishmentAccountingColumnLabels: Record<PettyCashFundReplenishmentAccountingColumnId, string> = {
   accountCode: "Account Code",
@@ -159,16 +159,16 @@ export const PettyCashFundReplenishmentAccountingColumnLabels: Record<PettyCashF
   credit: "Credit",
   partyCode: "Party Code",
   partyName: "Party Name",
-  particulars: "Particulars",
+  remarks: "Remarks",
 };
 export const PettyCashFundReplenishmentAccountingColumnWidths: Record<PettyCashFundReplenishmentAccountingColumnId, number> = {
-  accountCode: 160,
-  accountTitle: 260,
-  debit: 160,
-  credit: 160,
-  partyCode: 160,
-  partyName: 240,
-  particulars: 320,
+  accountCode: 140,
+  accountTitle: 220,
+  debit: 140,
+  credit: 140,
+  partyCode: 140,
+  partyName: 200,
+  remarks: 260,
 };
 export const PettyCashFundReplenishmentProtectedAccountingColumnIds = new Set<PettyCashFundReplenishmentAccountingColumnId>([
   "accountCode",

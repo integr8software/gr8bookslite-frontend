@@ -13,7 +13,7 @@ import {
   createBlankPettyCashFundReplenishmentEntry,
   formatPettyCashFundReplenishmentAmount,
 } from "@/app/src/data/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentData";
-import type { PettyCashFundReplenishmentActionPageState } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-fund-replenishment/usePettyCashFundReplenishmentActionPage";
+import type { PettyCashFundReplenishmentActionPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentTypes";
 import type {
   PettyCashFundReplenishmentAccountingColumnId,
   PettyCashFundReplenishmentAccountingEntry,
@@ -82,7 +82,7 @@ export function PettyCashFundReplenishmentEntrySection({ page }: { page: PettyCa
         credit: "0.00",
         partyCode: page.values.partyCode,
         partyName: page.values.partyName,
-        particulars: entry.remarks,
+        remarks: entry.remarks,
       })),
       {
         id: "pcfr-accounting-credit",
@@ -92,7 +92,7 @@ export function PettyCashFundReplenishmentEntrySection({ page }: { page: PettyCa
         credit: formatPettyCashFundReplenishmentAmount(page.totals.totalAmount),
         partyCode: page.values.partyCode,
         partyName: page.values.partyName,
-        particulars: page.values.remarks,
+        remarks: page.values.remarks,
       },
     ],
     [

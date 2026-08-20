@@ -18,7 +18,7 @@ export type CashVoucherEntryColumnId =
   | "checkStatus"
   | "partyCode"
   | "partyName"
-  | "particulars"
+  | "remarks"
   | "refId"
   | "responsibilityCenter"
   | "vatType"
@@ -43,7 +43,7 @@ export type ExpenseEntryColumnId =
   | "totalAmountDue"
   | "partyCode"
   | "partyName"
-  | "particulars"
+  | "remarks"
   | "responsibilityCenter"
   | "refId";
 
@@ -114,12 +114,12 @@ export type EditableCashVoucherAccountingGridRow = {
   credit: string;
   debit: string;
   id: string;
-  particulars: string;
+  remarks: string;
   taxDetails: CashVoucherTaxDetails;
   taxRate: string;
 };
 
-export type CashVoucherAccountingGridColumnId = "accountCode" | "accountName" | "particulars" | "taxRate" | "debit" | "credit";
+export type CashVoucherAccountingGridColumnId = "accountCode" | "accountName" | "remarks" | "taxRate" | "debit" | "credit";
 
 export type CashVoucherAccountingExportTheme = {
   accentColor: string;

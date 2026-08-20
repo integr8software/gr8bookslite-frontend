@@ -91,7 +91,7 @@ export function createBlankPettyCashFundItem(): PettyCashFundItem {
     payeeName: "",
     orNo: "",
     tinNo: "",
-    particulars: "",
+    remarks: "",
     amount: "",
     netAmount: "",
     vatAmount: "0.00",

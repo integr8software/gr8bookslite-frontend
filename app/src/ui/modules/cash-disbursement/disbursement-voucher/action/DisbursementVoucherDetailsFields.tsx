@@ -201,17 +201,17 @@ export function DisbursementVoucherDetailsFields({
             value={values.voucherNo}
             isReadonly
             isRequired
-            label="Disbursement Voucher No."
+            label="DV No."
             error={errors.voucherNo}
             onValueChange={(value) => onUpdateField("voucherNo", value)}
-            placeholder="Auto Generated Disbursement Voucher Transaction Number"
+            placeholder="Auto Generated DV Transaction Number"
           />
 
           <TransactionTextField
             value={values.voucherDate}
             isReadonly={isReadonly}
             isRequired
-            label="Disbursement Voucher Date"
+            label="DV Date"
             error={errors.voucherDate}
             type="date"
             onValueChange={(value) => onUpdateField("voucherDate", value)}

@@ -3,7 +3,7 @@ import {
   PettyCashFundEntryVatTypeOptions,
   PettyCashFundResponsibilityCenterOptions,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund/PettyCashFundConstants";
-import type { PettyCashFundActionPageState } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-fund/usePettyCashFundActionPage";
+import type { PettyCashFundActionPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";
 import type {
   PettyCashFundAccountingColumnId,
   PettyCashFundAccountingEntry,
@@ -80,7 +80,7 @@ export function createPettyCashFundItemColumns(
     payeeName: text("payeeName"),
     orNo: text("orNo"),
     tinNo: text("tinNo"),
-    particulars: text("particulars"),
+    remarks: text("remarks"),
     amount: text("amount"),
     netAmount: text("netAmount"),
     vatAmount: text("vatAmount"),
@@ -112,6 +112,6 @@ export function createPettyCashFundAccountingColumns(
     credit: column("credit"),
     partyCode: column("partyCode"),
     partyName: column("partyName"),
-    particulars: column("particulars"),
+    remarks: column("remarks"),
   };
 }

@@ -6,8 +6,8 @@ import type {
 import { parseAmount } from "@/app/src/utils/number.util";
 
 const schema = z.object({
-  transactionNo: z.string().regex(/^RFR-\d{6}$/, "A valid revolving fund replenishment number is required."),
-  documentDate: z.string().min(1, "Select a document date."),
+  transactionNo: z.string().regex(/^RFR-\d{6}$/, "A valid RFR No. is required."),
+  documentDate: z.string().min(1, "Select an RFR Date."),
   partyCode: z.string().trim().min(1, "Select a party."),
   partyName: z.string().trim().min(1, "Select a party."),
   accountCode: z.string().trim().min(1, "Select a default account."),
@@ -40,7 +40,7 @@ export function validateRevolvingFundReplenishmentForm(values: RevolvingFundRepl
   }
   const voucherNumbers = values.entries.map((entry) => entry.revolvingFundNo.trim().toLowerCase()).filter(Boolean);
   if (new Set(voucherNumbers).size !== voucherNumbers.length) {
-    errors.entries = "Revolving fund numbers must be unique.";
+    errors.entries = "RF numbers must be unique.";
   }
   return errors;
 }

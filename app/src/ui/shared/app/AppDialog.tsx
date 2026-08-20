@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Ban, LoaderCircle, Power, PowerOff, ThumbsDown, ThumbsUp } from "lucide-react";
+import { Ban, FilePenLine, LoaderCircle, Power, PowerOff, RotateCcw, Save, ThumbsDown, ThumbsUp } from "lucide-react";
 import type { AppDialogIconTone, AppDialogProps, AppDialogTone } from "@/app/src/types/shared/app/AppDialogTypes";
 
 const AppDialogSuccessTone = "success";
@@ -186,11 +186,17 @@ function AppDialogStatusIcon({ animate, tone }: { animate: boolean; tone: AppDia
         ? ThumbsUp
         : tone === "cancel"
           ? Ban
-          : tone === AppDialogDeactivateTone
-            ? PowerOff
-            : tone === "disapprove"
-              ? ThumbsDown
-              : null;
+          : tone === "undo"
+            ? RotateCcw
+            : tone === "save"
+              ? Save
+              : tone === "update"
+                ? FilePenLine
+                : tone === AppDialogDeactivateTone
+                  ? PowerOff
+                  : tone === "disapprove"
+                    ? ThumbsDown
+                    : null;
 
   return (
     <span

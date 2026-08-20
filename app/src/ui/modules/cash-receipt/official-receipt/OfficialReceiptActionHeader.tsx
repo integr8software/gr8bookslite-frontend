@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, Save, X } from "lucide-react";
+import { ArrowLeft, Edit3, Save, X } from "lucide-react";
 import {
   OfficialReceiptCopyFromRecords,
   OfficialReceiptCopySources,
@@ -15,6 +15,7 @@ import { AppCopyFromDropdown } from "@/app/src/ui/shared/transaction-setup/AppCo
 type OfficialReceiptActionHeaderProps = {
   baseHref: string;
   mode: OfficialReceiptActionMode;
+  recordId?: string;
   receiptLabel?: string;
   values: OfficialReceiptFormValues;
   onCopyFrom: (recordIds: string[]) => void;
@@ -28,6 +29,7 @@ export function OfficialReceiptActionHeader({
   onCopyFrom,
   onPreview,
   onSubmit,
+  recordId,
   receiptLabel = "Official Receipt",
   values,
 }: OfficialReceiptActionHeaderProps) {
@@ -57,6 +59,12 @@ export function OfficialReceiptActionHeader({
             Back
           </Link>
           <ReportPreviewAction onPreview={onPreview} />
+          {mode === "view" && recordId && values.status === "Draft" ? (
+            <Link href={`${baseHref}/edit/${recordId}`} className={moduleHeaderActionClassNames.primary}>
+              <Edit3 className="h-4 w-4" aria-hidden="true" />
+              Edit
+            </Link>
+          ) : null}
           {mode === "view" ? null : (
             <>
               <Link href={baseHref} className={moduleHeaderActionClassNames.secondary}>

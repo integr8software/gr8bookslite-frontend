@@ -1,4 +1,4 @@
-import type { AdvancesToSuppliersActionPageState } from "@/app/src/hooks/modules/cash-disbursement/advances-to-suppliers/useAdvancesToSuppliersActionPage";
+import type { AdvancesToSuppliersActionPageState } from "@/app/src/types/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersTypes";
 import { ReportPreviewDrawer } from "@/app/src/ui/shared/reports/Reports";
 import { formatCurrency } from "@/app/src/utils/currency.util";
 import { formatDate } from "@/app/src/utils/date.util";
@@ -33,10 +33,11 @@ export function AdvancesToSuppliersReportPreview({
         </div>
         <dl className="mt-10 grid grid-cols-2 gap-x-8 gap-y-5 border-y border-darknavy/10 py-6 text-sm">
           <ReportValue label="Party" value={`${page.values.partyName} (${page.values.partyCode})`} />
-          <ReportValue label="Document Date" value={formatDate(page.values.documentDate)} />
+          <ReportValue label="ATS Date" value={formatDate(page.values.documentDate)} />
           <ReportValue label="PO Reference" value={page.values.poReference} />
           <ReportValue label="Default Account" value={`${page.values.accountTitle} (${page.values.accountCode})`} />
           <ReportValue label="Total PO Amount" value={formatCurrency(totalPoAmount)} />
+          <ReportValue label="Advance Payment Type" value={page.values.advancePaymentType || "Percentage"} />
           <ReportValue label="Advance Payment (%)" value={`${page.values.advancePaymentPercentage || "0.00"}%`} />
           <ReportValue label="Amount of Advance Payment" value={formatCurrency(amount)} />
           <ReportValue label="Status" value={page.values.status} />

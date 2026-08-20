@@ -13,7 +13,7 @@ import {
   createBlankRevolvingFundReplenishmentEntry,
   formatRevolvingFundReplenishmentAmount,
 } from "@/app/src/data/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentData";
-import type { RevolvingFundReplenishmentActionPageState } from "@/app/src/hooks/modules/cash-disbursement/revolving-fund-replenishment/useRevolvingFundReplenishmentActionPage";
+import type { RevolvingFundReplenishmentActionPageState } from "@/app/src/types/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentTypes";
 import type {
   RevolvingFundReplenishmentAccountingColumnId,
   RevolvingFundReplenishmentAccountingEntry,
@@ -82,7 +82,7 @@ export function RevolvingFundReplenishmentEntrySection({ page }: { page: Revolvi
         credit: "0.00",
         partyCode: page.values.partyCode,
         partyName: page.values.partyName,
-        particulars: entry.remarks,
+        remarks: entry.remarks,
       })),
       {
         id: "rfr-accounting-credit",
@@ -92,7 +92,7 @@ export function RevolvingFundReplenishmentEntrySection({ page }: { page: Revolvi
         credit: formatRevolvingFundReplenishmentAmount(page.totals.totalAmount),
         partyCode: page.values.partyCode,
         partyName: page.values.partyName,
-        particulars: page.values.remarks,
+        remarks: page.values.remarks,
       },
     ],
     [

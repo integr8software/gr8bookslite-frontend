@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import {
   RevolvingFundAccountingColumnLabels,
   RevolvingFundAccountingColumnWidths,
+  RevolvingFundAccountingEntryTab,
   RevolvingFundDefaultAccountingColumnIds,
   RevolvingFundDefaultItemColumnIds,
   RevolvingFundItemColumnLabels,
@@ -13,8 +14,8 @@ import {
   createBlankRevolvingFundItem,
   formatRevolvingFundAmount,
 } from "@/app/src/data/modules/cash-disbursement/revolving-fund/RevolvingFundData";
-import type { RevolvingFundActionPageState } from "@/app/src/hooks/modules/cash-disbursement/revolving-fund/useRevolvingFundActionPage";
 import type {
+  RevolvingFundActionPageState,
   RevolvingFundAccountingColumnId,
   RevolvingFundAccountingEntry,
   RevolvingFundEntryTab,
@@ -27,8 +28,6 @@ import {
 } from "@/app/src/ui/modules/cash-disbursement/revolving-fund/entries/RevolvingFundLineColumns";
 import { ModuleDataEntry, type ModuleDataEntryColumnOption } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { clampColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/utils";
-
-const AccountingEntryTab: RevolvingFundEntryTab = "accounting";
 
 export function RevolvingFundEntrySection({ page }: { page: RevolvingFundActionPageState }) {
   const [activeTab, setActiveTab] = useState<RevolvingFundEntryTab>("items");
@@ -60,7 +59,7 @@ export function RevolvingFundEntrySection({ page }: { page: RevolvingFundActionP
         credit: "0.00",
         partyCode: page.values.partyCode,
         partyName: page.values.partyName,
-        particulars: page.values.remarks,
+        remarks: page.values.remarks,
       },
       {
         id: "rf-accounting-credit",
@@ -70,7 +69,7 @@ export function RevolvingFundEntrySection({ page }: { page: RevolvingFundActionP
         credit: formatRevolvingFundAmount(total),
         partyCode: page.values.partyCode,
         partyName: page.values.partyName,
-        particulars: page.values.remarks,
+        remarks: page.values.remarks,
       },
     ];
   }, [
@@ -107,7 +106,7 @@ export function RevolvingFundEntrySection({ page }: { page: RevolvingFundActionP
   const title = <RevolvingFundEntryTabs activeTab={activeTab} onTabChange={setActiveTab} />;
 
   function moveColumn(fromColumnId: string, toColumnId: string) {
-    if (activeTab === AccountingEntryTab) {
+    if (activeTab === RevolvingFundAccountingEntryTab) {
       if (!isAccountingColumnId(fromColumnId) || !isAccountingColumnId(toColumnId)) return;
       setAccountingColumnOrder((order) => moveColumnId(order, fromColumnId, toColumnId));
       return;
@@ -118,7 +117,7 @@ export function RevolvingFundEntrySection({ page }: { page: RevolvingFundActionP
   }
 
   function toggleColumnVisibility(columnId: string, isVisible: boolean) {
-    if (activeTab === AccountingEntryTab) {
+    if (activeTab === RevolvingFundAccountingEntryTab) {
       if (!isAccountingColumnId(columnId) || (!isVisible && RevolvingFundProtectedAccountingColumnIds.has(columnId))) return;
       setVisibleAccountingColumnIds((ids) => updateVisibleColumnIds(ids, accountingColumnOrder, columnId, isVisible));
       return;
@@ -129,7 +128,7 @@ export function RevolvingFundEntrySection({ page }: { page: RevolvingFundActionP
   }
 
   function updateColumnHeader(columnId: string, header: string) {
-    if (activeTab === AccountingEntryTab && isAccountingColumnId(columnId)) {
+    if (activeTab === RevolvingFundAccountingEntryTab && isAccountingColumnId(columnId)) {
       setAccountingColumnLabels((labels) => ({ ...labels, [columnId]: header }));
     } else if (activeTab === "items" && isItemColumnId(columnId)) {
       setItemColumnLabels((labels) => ({ ...labels, [columnId]: header }));
@@ -138,7 +137,7 @@ export function RevolvingFundEntrySection({ page }: { page: RevolvingFundActionP
 
   function updateColumnWidth(columnId: string, width: number) {
     const nextWidth = clampColumnWidth(width);
-    if (activeTab === AccountingEntryTab && isAccountingColumnId(columnId)) {
+    if (activeTab === RevolvingFundAccountingEntryTab && isAccountingColumnId(columnId)) {
       setAccountingColumnWidths((widths) => ({ ...widths, [columnId]: nextWidth }));
     } else if (activeTab === "items" && isItemColumnId(columnId)) {
       setItemColumnWidths((widths) => ({ ...widths, [columnId]: nextWidth }));
@@ -146,7 +145,7 @@ export function RevolvingFundEntrySection({ page }: { page: RevolvingFundActionP
   }
 
   function fitColumnWidth(columnId: string) {
-    if (activeTab === AccountingEntryTab && isAccountingColumnId(columnId)) {
+    if (activeTab === RevolvingFundAccountingEntryTab && isAccountingColumnId(columnId)) {
       updateColumnWidth(columnId, calculateFitWidth(accountingColumnLabels[columnId], accountingRows, columnId));
     } else if (activeTab === "items" && isItemColumnId(columnId)) {
       updateColumnWidth(columnId, calculateFitWidth(itemColumnLabels[columnId], page.values.items, columnId));
@@ -154,7 +153,7 @@ export function RevolvingFundEntrySection({ page }: { page: RevolvingFundActionP
   }
 
   function resetColumns() {
-    if (activeTab === AccountingEntryTab) {
+    if (activeTab === RevolvingFundAccountingEntryTab) {
       setAccountingColumnOrder([...RevolvingFundDefaultAccountingColumnIds]);
       setVisibleAccountingColumnIds([...RevolvingFundDefaultAccountingColumnIds]);
       setAccountingColumnWidths({ ...RevolvingFundAccountingColumnWidths });
@@ -168,7 +167,7 @@ export function RevolvingFundEntrySection({ page }: { page: RevolvingFundActionP
     setItemColumnLabels({ ...RevolvingFundItemColumnLabels });
   }
 
-  if (activeTab === AccountingEntryTab) {
+  if (activeTab === RevolvingFundAccountingEntryTab) {
     return (
       <ModuleDataEntry
         title={title}

@@ -3,11 +3,13 @@ import type { TransactionAttachment } from "@/app/src/types/shared/transaction-s
 import type { PaymentTypeRecord as AppPaymentTypeRecord } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
 import type { VoucherReportPreviewFormat } from "@/app/src/types/shared/reports/ReportTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
+import type { useDisbursementVoucherPreviewTable } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucher";
 import type { useDisbursementVoucherActionPage } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucherActionPage";
 
 export type DisbursementVoucherStatus = "Open" | "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled" | "Closed";
 
 export type DisbursementVoucherDisplayStatus = DisbursementVoucherStatus;
+export type DisbursementVoucherPreviewTableState = ReturnType<typeof useDisbursementVoucherPreviewTable>;
 
 export type DisbursementVoucherTableColumnKey =
   | "voucherNo"
@@ -52,12 +54,17 @@ export type DisbursementVoucherHistoryEntry = {
 };
 
 export type DisbursementVoucherCopySource =
-  | "Account Payable Voucher"
+  | "Accounts Payable Voucher"
   | "Advances to Suppliers"
   | "Cash Advance"
+  | "Cash Advance Liquidation"
   | "Cash Advance Multiple Entry"
-  | "Revolving Fund"
+  | "Multiple Entry Liquidation"
+  | "Petty Cash Fund"
   | "Petty Cash Fund Replenishment"
+  | "Revolving Fund"
+  | "Revolving Fund Replenishment"
+  | "Revolving Fund Return"
   | "Purchase Order"
   | "Purchase Journal"
   | "Receiving Report"
@@ -137,7 +144,7 @@ export type DisbursementLineEntry = {
   refId?: string;
   vatType?: string;
   atcCode?: string;
-  particulars: string;
+  remarks: string;
   debit: number;
   credit: number;
   taxRate: string;
@@ -261,7 +268,7 @@ export type DisbursementVoucherEntryDraft = {
   refId?: string;
   vatType?: string;
   atcCode?: string;
-  particulars: string;
+  remarks: string;
   debit: string;
   credit: string;
   taxRate: string;

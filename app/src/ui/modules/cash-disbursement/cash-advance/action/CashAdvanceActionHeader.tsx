@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Edit3 } from "lucide-react";
 import {
   CashAdvanceLink,
+  canEditCashAdvanceStatus,
+  getCashAdvanceEditLink,
   CashAdvanceSubmitConfirmationDialogConfirmLabels,
   CashAdvanceSubmitConfirmationDialogTitles,
   getCashAdvanceStatusDialogCopy,
@@ -21,7 +23,7 @@ import { ModuleActionButton } from "@/app/src/ui/shared/module/ModuleActionButto
 import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 import { CashAdvanceActionHistory } from "@/app/src/ui/modules/cash-disbursement/cash-advance/action/CashAdvanceActionHistory";
-import { CashAdvanceViewActions } from "@/app/src/ui/modules/cash-disbursement/cash-advance/action/CashAdvanceViewActions";
+import { CashAdvanceStatusActions } from "@/app/src/ui/modules/cash-disbursement/cash-advance/action/CashAdvanceStatusActions";
 
 export function CashAdvanceActionHeader({
   mode,
@@ -43,9 +45,7 @@ export function CashAdvanceActionHeader({
   const [submitConfirmation, setSubmitConfirmation] = useState<CashAdvanceSubmitConfirmationAction | null>(null);
   const [statusToConfirm, setStatusToConfirm] = useState<CashAdvanceStatus | null>(null);
   const recordLabel = record?.transNo ?? "this cash advance";
-  const statusDialogCopy = statusToConfirm
-    ? getCashAdvanceStatusDialogCopy(statusToConfirm, recordLabel, record?.status)
-    : null;
+  const statusDialogCopy = statusToConfirm ? getCashAdvanceStatusDialogCopy(statusToConfirm, recordLabel, record?.status) : null;
   const titleLabel =
     mode === "view"
       ? `View Cash Advance${record?.transNo ? ` | ${record.transNo}` : ""}`
@@ -62,45 +62,47 @@ export function CashAdvanceActionHeader({
   return (
     <>
       <ModuleHeader
-      variant="panel"
-      titleAs="h1"
-      title={title}
-      description="Record the payee, account, amount, and supporting details for a cash advance."
-      actionsClassName="items-center justify-end gap-2"
-      actions={
-        <>
-          <Link href={CashAdvanceLink} className={moduleHeaderActionClassNames.secondary}>
-            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-            Back
-          </Link>
-          {onPreview ? <ReportPreviewAction onPreview={onPreview} /> : null}
-          {mode !== "add" ? <CashAdvanceActionHistory record={record} /> : null}
-          {mode !== "add" ? (
-            <CashAdvanceViewActions
-              record={record}
-              onRequestStatusConfirmation={setStatusToConfirm}
-              onUpdateStatus={onUpdateStatus}
-            />
-          ) : null}
-          {mode === "view" ? null : (
-            <ModuleActionButton
-              disabled={isSubmitting}
-              label={isSubmitting ? "Saving..." : "Save"}
-              onAction={() => setSubmitConfirmation("save")}
-              menuItems={
-                onSaveDraft
-                  ? [
-                      {
-                        label: "Save As Draft",
-                        onSelect: () => setSubmitConfirmation("draft"),
-                      },
-                    ]
-                  : []
-              }
-            />
-          )}
-        </>
-      }
+        variant="panel"
+        titleAs="h1"
+        title={title}
+        description="Record the payee, account, amount, and supporting details for a cash advance."
+        actionsClassName="items-center justify-end gap-2"
+        actions={
+          <>
+            <Link href={CashAdvanceLink} className={moduleHeaderActionClassNames.secondary}>
+              <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+              Back
+            </Link>
+            {onPreview ? <ReportPreviewAction onPreview={onPreview} /> : null}
+            {mode !== "add" ? <CashAdvanceActionHistory record={record} /> : null}
+            {mode !== "add" ? (
+              <CashAdvanceStatusActions record={record} onRequestStatusConfirmation={setStatusToConfirm} onUpdateStatus={onUpdateStatus} />
+            ) : null}
+            {mode === "view" && record && canEditCashAdvanceStatus(record.status) ? (
+              <Link href={getCashAdvanceEditLink(record.id)} className={moduleHeaderActionClassNames.primary}>
+                <Edit3 className="h-4 w-4" aria-hidden="true" />
+                Edit
+              </Link>
+            ) : null}
+            {mode === "view" ? null : (
+              <ModuleActionButton
+                disabled={isSubmitting}
+                label={isSubmitting ? "Saving..." : "Save"}
+                onAction={() => setSubmitConfirmation("save")}
+                menuItems={
+                  onSaveDraft
+                    ? [
+                        {
+                          label: "Save As Draft",
+                          onSelect: () => setSubmitConfirmation("draft"),
+                        },
+                      ]
+                    : []
+                }
+              />
+            )}
+          </>
+        }
       />
       {submitConfirmation ? (
         <AppDialog
@@ -108,6 +110,7 @@ export function CashAdvanceActionHeader({
           title={CashAdvanceSubmitConfirmationDialogTitles[submitConfirmation]}
           description={`This will ${submitConfirmation === "save" ? "save and submit" : "save as draft"} ${recordLabel}.`}
           confirmLabel={CashAdvanceSubmitConfirmationDialogConfirmLabels[submitConfirmation]}
+          iconTone={mode === "edit" ? "update" : "save"}
           tone={submitConfirmation === "save" ? "success" : "default"}
           onCancel={() => setSubmitConfirmation(null)}
           onConfirm={() => {

@@ -330,12 +330,6 @@ export const PartyManagementSelectClassName = `app-select-control ${PartyManagem
 
 export const PartyManagementFieldControlSelector = '[role="combobox"], input:not([type="hidden"]), select, textarea, button';
 
-export const PartyManagementDrawerSecondaryActionClassName =
-  "inline-flex h-10 items-center justify-center rounded-md border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy/70 shadow-sm transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/15";
-
-export const PartyManagementDrawerPrimaryActionClassName =
-  "theme-accent-contrast-text inline-flex h-10 items-center justify-center rounded-md bg-skyblue px-4 text-sm font-semibold shadow-sm transition hover:bg-skyblue/90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20 disabled:cursor-not-allowed disabled:opacity-45";
-
 export const PartyImportTemplateHeaders = [
   "Party Code",
   "Classification",

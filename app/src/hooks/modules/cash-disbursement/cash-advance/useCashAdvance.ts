@@ -50,7 +50,7 @@ import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hook
 import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import { normalizeLowercaseWhitespace } from "@/app/src/utils/string.util";
-import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
+import { CashDisbursementOverviewColumnWidths as TransactionOverviewColumnWidths } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import { CashDisbursementOverviewActionColumnWidth } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 
 export function useCashAdvanceStore<TSelected = CashAdvanceStoreState>(selector?: (state: CashAdvanceStoreState) => TSelected) {
@@ -75,7 +75,7 @@ export function useCashAdvanceStore<TSelected = CashAdvanceStoreState>(selector?
       return nextAdvances;
     });
     setLastSyncedAt(Date.now());
-    toast.success(`Cash advance marked as ${status}.`);
+    toast.success(`Cash Advance Marked as ${status}.`);
   }, []);
 
   const state = useMemo<CashAdvanceStoreState>(
@@ -214,7 +214,7 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
       setLoadedRecord(nextRecord);
       setValues(nextValues);
       draft.clearDraft();
-      toast.success(mode === "edit" ? "Cash advance updated." : "Cash advance saved.");
+      toast.success(mode === "edit" ? "Cash Advance Updated." : "Cash Advance Saved.");
       onSaved?.(nextRecord);
       return true;
     } catch {
@@ -254,7 +254,7 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
       writeStoredCashAdvances(nextAdvances);
       setLoadedRecord(nextRecord);
       setValues(nextValues);
-      toast.success(`Cash advance marked as ${status}.`);
+      toast.success(`Cash Advance Marked as ${status}.`);
     } catch {
       toast.error("Could not update the cash advance. Please try again.");
       releaseActionLock();
@@ -328,16 +328,16 @@ export function useCashAdvanceTable(advances: CashAdvanceRecord[]) {
       {
         accessorKey: "transNo",
         id: "transNo",
-        header: "Cash Advance No.",
+        header: "CA No.",
         size: TransactionOverviewColumnWidths.transactionNumber,
-        meta: { label: "Cash Advance No." },
+        meta: { label: "CA No." },
       },
       {
         accessorKey: "documentDate",
         id: "documentDate",
-        header: "Document Date",
+        header: "CA Date",
         size: TransactionOverviewColumnWidths.documentDate,
-        meta: { label: "Document Date" },
+        meta: { label: "CA Date" },
       },
       {
         accessorKey: "partyCode",

@@ -8,7 +8,7 @@ import type {
   RevolvingFundReplenishmentStatus,
 } from "@/app/src/types/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
-import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
+import { CashDisbursementOverviewColumnWidths } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import { CashDisbursementOverviewActionColumnWidth } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 
 export const RevolvingFundReplenishmentLink = getModuleRoute("RFR");
@@ -33,8 +33,8 @@ export const RevolvingFundReplenishmentConfirmationDialogConfirmLabels: Record<R
   cancel: "Cancel",
 };
 export const RevolvingFundReplenishmentColumnLabels = {
-  transactionNo: "Revolving Fund Replenishment No.",
-  documentDate: "Document Date",
+  transactionNo: "RFR No.",
+  documentDate: "RFR Date",
   partyCode: "Party Code",
   partyName: "Party Name",
   accountCode: "Default Account Code",
@@ -49,19 +49,19 @@ export const RevolvingFundReplenishmentColumnLabels = {
   actions: "Actions",
 } as const;
 export const RevolvingFundReplenishmentOverviewColumnWidths: Record<keyof typeof RevolvingFundReplenishmentColumnLabels, number> = {
-  transactionNo: TransactionOverviewColumnWidths.transactionNumber,
-  documentDate: TransactionOverviewColumnWidths.documentDate,
-  partyCode: TransactionOverviewColumnWidths.partyCode,
-  partyName: TransactionOverviewColumnWidths.partyName,
-  accountCode: TransactionOverviewColumnWidths.accountCode,
-  accountTitle: TransactionOverviewColumnWidths.accountTitle,
-  amount: TransactionOverviewColumnWidths.amount,
-  remarks: TransactionOverviewColumnWidths.remarks,
-  createdBy: TransactionOverviewColumnWidths.auditUser,
-  createdAt: TransactionOverviewColumnWidths.auditDate,
-  updatedBy: TransactionOverviewColumnWidths.auditUser,
-  updatedAt: TransactionOverviewColumnWidths.auditDate,
-  status: TransactionOverviewColumnWidths.status,
+  transactionNo: CashDisbursementOverviewColumnWidths.transactionNumber,
+  documentDate: CashDisbursementOverviewColumnWidths.documentDate,
+  partyCode: CashDisbursementOverviewColumnWidths.partyCode,
+  partyName: CashDisbursementOverviewColumnWidths.partyName,
+  accountCode: CashDisbursementOverviewColumnWidths.accountCode,
+  accountTitle: CashDisbursementOverviewColumnWidths.accountTitle,
+  amount: CashDisbursementOverviewColumnWidths.amount,
+  remarks: CashDisbursementOverviewColumnWidths.remarks,
+  createdBy: CashDisbursementOverviewColumnWidths.auditUser,
+  createdAt: CashDisbursementOverviewColumnWidths.auditDate,
+  updatedBy: CashDisbursementOverviewColumnWidths.auditUser,
+  updatedAt: CashDisbursementOverviewColumnWidths.auditDate,
+  status: CashDisbursementOverviewColumnWidths.status,
   actions: CashDisbursementOverviewActionColumnWidth,
 };
 export const RevolvingFundReplenishmentDefaultVisibleColumnIds = [
@@ -120,8 +120,8 @@ export const RevolvingFundReplenishmentEntryColumnOrder: RevolvingFundReplenishm
   "remarks",
 ];
 export const RevolvingFundReplenishmentEntryColumnLabels: Record<RevolvingFundReplenishmentEntryColumnId, string> = {
-  revolvingFundDate: "Revolving Fund Date",
-  revolvingFundNo: "Revolving Fund No.",
+  revolvingFundDate: "RF Date",
+  revolvingFundNo: "RF No.",
   accountCode: "Account Code",
   accountTitle: "Account Title",
   totalAmount: "Total Amount",
@@ -130,14 +130,14 @@ export const RevolvingFundReplenishmentEntryColumnLabels: Record<RevolvingFundRe
   remarks: "Remarks",
 };
 export const RevolvingFundReplenishmentEntryColumnWidths: Record<RevolvingFundReplenishmentEntryColumnId, number> = {
-  revolvingFundDate: 150,
-  revolvingFundNo: 180,
-  accountCode: 160,
-  accountTitle: 260,
-  totalAmount: 160,
-  netAmount: 160,
-  vatAmount: 160,
-  remarks: 320,
+  revolvingFundDate: 135,
+  revolvingFundNo: 155,
+  accountCode: 140,
+  accountTitle: 220,
+  totalAmount: 140,
+  netAmount: 140,
+  vatAmount: 140,
+  remarks: 260,
 };
 export const RevolvingFundReplenishmentProtectedEntryColumnIds = new Set<RevolvingFundReplenishmentEntryColumnId>([
   "revolvingFundDate",
@@ -150,7 +150,7 @@ export const RevolvingFundReplenishmentAccountingColumnOrder: RevolvingFundReple
   "credit",
   "partyCode",
   "partyName",
-  "particulars",
+  "remarks",
 ];
 export const RevolvingFundReplenishmentAccountingColumnLabels: Record<RevolvingFundReplenishmentAccountingColumnId, string> = {
   accountCode: "Account Code",
@@ -159,16 +159,16 @@ export const RevolvingFundReplenishmentAccountingColumnLabels: Record<RevolvingF
   credit: "Credit",
   partyCode: "Party Code",
   partyName: "Party Name",
-  particulars: "Particulars",
+  remarks: "Remarks",
 };
 export const RevolvingFundReplenishmentAccountingColumnWidths: Record<RevolvingFundReplenishmentAccountingColumnId, number> = {
-  accountCode: 160,
-  accountTitle: 260,
-  debit: 160,
-  credit: 160,
-  partyCode: 160,
-  partyName: 240,
-  particulars: 320,
+  accountCode: 140,
+  accountTitle: 220,
+  debit: 140,
+  credit: 140,
+  partyCode: 140,
+  partyName: 200,
+  remarks: 260,
 };
 export const RevolvingFundReplenishmentProtectedAccountingColumnIds = new Set<RevolvingFundReplenishmentAccountingColumnId>([
   "accountCode",

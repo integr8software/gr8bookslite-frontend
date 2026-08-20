@@ -90,7 +90,7 @@ export function DisbursementVoucherOverviewPage() {
       <div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm" data-spotlight-id="maintenance-table">
         <ModuleTable
           variant="embedded"
-          emptyDescription="Try another voucher no., remarks, date range, amount range, or status."
+          emptyDescription="Try another DV No., remarks, date range, amount range, or status."
           emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
           emptyTitle="No Disbursement Voucher Transaction Found."
           minWidthClassName="min-w-full"

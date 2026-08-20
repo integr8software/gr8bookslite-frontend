@@ -7,6 +7,7 @@ import {
   DefaultVisibleCashVoucherEntryColumnOrder,
   DefaultVisibleExpenseEntryColumnOrder,
   CashVoucherEntryColumnLabels,
+  CashVoucherExpenseEntryView,
   ExpenseEntryColumnLabels,
   MultiCheckColumnIds,
   ProtectedCashVoucherEntryColumnIds,
@@ -57,8 +58,6 @@ import {
   estimateCashVoucherEntryTextWidth,
 } from "@/app/src/ui/modules/cash-disbursement/cash-voucher/entries/CashVoucherEntryCellControls";
 
-const ExpenseEntryView: CashVoucherEntryView = "expense";
-
 export function CashVoucherEntrySection(props: VoucherDataEntryProps) {
   const {
     canAddExpenseType,
@@ -86,7 +85,7 @@ export function CashVoucherEntrySection(props: VoucherDataEntryProps) {
     totalDebit,
   } = props;
   const variance = Math.abs(totalDebit - totalCredit);
-  const [entryView, setEntryView] = useState<CashVoucherEntryView>(ExpenseEntryView);
+  const [entryView, setEntryView] = useState<CashVoucherEntryView>(CashVoucherExpenseEntryView);
   const taxCodesQuery = useAlphanumericTaxCodes();
   const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
   const vatOptions = useMemo(() => createVatOptions(taxCodes), [taxCodes]);
@@ -254,8 +253,8 @@ export function CashVoucherEntrySection(props: VoucherDataEntryProps) {
     () => visibleExpenseColumnOrder.map((columnId) => allExpenseColumns[columnId]),
     [allExpenseColumns, visibleExpenseColumnOrder],
   );
-  const activeColumns = entryView === ExpenseEntryView ? expenseColumns : columns;
-  const activeRows = entryView === ExpenseEntryView ? expenseRows : entries;
+  const activeColumns = entryView === CashVoucherExpenseEntryView ? expenseColumns : columns;
+  const activeRows = entryView === CashVoucherExpenseEntryView ? expenseRows : entries;
   const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
     () =>
       columnOrder
@@ -286,7 +285,7 @@ export function CashVoucherEntrySection(props: VoucherDataEntryProps) {
   );
 
   function updateColumnHeader(columnId: string, header: string) {
-    if (entryView === ExpenseEntryView && isExpenseEntryColumnId(columnId)) {
+    if (entryView === CashVoucherExpenseEntryView && isExpenseEntryColumnId(columnId)) {
       setExpenseColumnLabels((currentLabels) => ({
         ...currentLabels,
         [columnId]: header,
@@ -305,7 +304,7 @@ export function CashVoucherEntrySection(props: VoucherDataEntryProps) {
   }
 
   function updateColumnWidth(columnId: string, width: number) {
-    if (entryView === ExpenseEntryView && isExpenseEntryColumnId(columnId)) {
+    if (entryView === CashVoucherExpenseEntryView && isExpenseEntryColumnId(columnId)) {
       setExpenseColumnWidths((currentWidths) => ({
         ...currentWidths,
         [columnId]: clampColumnWidth(width),
@@ -324,7 +323,7 @@ export function CashVoucherEntrySection(props: VoucherDataEntryProps) {
   }
 
   function fitColumnWidth(columnId: string) {
-    if (entryView === ExpenseEntryView && isExpenseEntryColumnId(columnId)) {
+    if (entryView === CashVoucherExpenseEntryView && isExpenseEntryColumnId(columnId)) {
       updateColumnWidth(columnId, estimateCashVoucherEntryTextWidth(expenseColumnLabels[columnId], 76));
       return;
     }
@@ -344,7 +343,7 @@ export function CashVoucherEntrySection(props: VoucherDataEntryProps) {
   }
 
   function moveColumn(fromColumnId: string, toColumnId: string) {
-    if (entryView === ExpenseEntryView && isExpenseEntryColumnId(fromColumnId) && isExpenseEntryColumnId(toColumnId)) {
+    if (entryView === CashVoucherExpenseEntryView && isExpenseEntryColumnId(fromColumnId) && isExpenseEntryColumnId(toColumnId)) {
       setExpenseColumnOrder((currentOrder) => moveEntryColumn(currentOrder, fromColumnId, toColumnId));
       return;
     }
@@ -357,7 +356,7 @@ export function CashVoucherEntrySection(props: VoucherDataEntryProps) {
   }
 
   function toggleColumnVisibility(columnId: string, isVisible: boolean) {
-    if (entryView === ExpenseEntryView && isExpenseEntryColumnId(columnId)) {
+    if (entryView === CashVoucherExpenseEntryView && isExpenseEntryColumnId(columnId)) {
       if (!isVisible && ProtectedExpenseEntryColumnIds.has(columnId)) {
         return;
       }
@@ -380,7 +379,7 @@ export function CashVoucherEntrySection(props: VoucherDataEntryProps) {
   }
 
   function resetColumns() {
-    if (entryView === ExpenseEntryView) {
+    if (entryView === CashVoucherExpenseEntryView) {
       setExpenseColumnOrder([...DefaultExpenseEntryColumnOrder]);
       setVisibleExpenseColumnIds([...DefaultVisibleExpenseEntryColumnOrder]);
       setExpenseColumnWidths({ ...DefaultExpenseEntryColumnWidths });
@@ -402,7 +401,7 @@ export function CashVoucherEntrySection(props: VoucherDataEntryProps) {
           description=""
           emptyRowLabel="entry"
           error={errors.lineEntries}
-          columnOptions={entryView === ExpenseEntryView ? expenseColumnOptions : columnOptions}
+          columnOptions={entryView === CashVoucherExpenseEntryView ? expenseColumnOptions : columnOptions}
           summaryCells={
             entryView === "accounting"
               ? {
@@ -430,7 +429,7 @@ export function CashVoucherEntrySection(props: VoucherDataEntryProps) {
             <div role="tablist" aria-label="Entry view" className="inline-flex rounded-lg border border-darknavy/10 bg-offwhite/70 p-1">
               {(
                 [
-                  [ExpenseEntryView, "Expense Details"],
+                  [CashVoucherExpenseEntryView, "Expense Details"],
                   ["accounting", "Accounting Entries"],
                 ] as const
               ).map(([view, label]) => {

@@ -2,11 +2,13 @@ import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup
 import type { VoucherReportPreviewFormat } from "@/app/src/types/shared/reports/ReportTypes";
 import type { TransactionAttachment } from "@/app/src/types/shared/transaction-setup/TransactionAttachmentTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
+import type { useCashVoucherPreviewTable } from "@/app/src/hooks/modules/cash-disbursement/cash-voucher/useCashVoucher";
 import type { useCashVoucherActionPage } from "@/app/src/hooks/modules/cash-disbursement/cash-voucher/useCashVoucherActionPage";
 
 export type CashVoucherStatus = "Open" | "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled" | "Closed";
 
 export type CashVoucherDisplayStatus = CashVoucherStatus;
+export type CashVoucherPreviewTableState = ReturnType<typeof useCashVoucherPreviewTable>;
 
 export type CashVoucherTableColumnKey =
   | "voucherNo"
@@ -50,12 +52,17 @@ export type CashVoucherHistoryEntry = {
 };
 
 export type CashVoucherCopySource =
-  | "Account Payable Voucher"
+  | "Accounts Payable Voucher"
   | "Advances to Suppliers"
   | "Cash Advance"
+  | "Cash Advance Liquidation"
   | "Cash Advance Multiple Entry"
-  | "Revolving Fund"
+  | "Multiple Entry Liquidation"
+  | "Petty Cash Fund"
   | "Petty Cash Fund Replenishment"
+  | "Revolving Fund"
+  | "Revolving Fund Replenishment"
+  | "Revolving Fund Return"
   | "Purchase Order"
   | "Purchase Journal"
   | "Receiving Report"
@@ -135,7 +142,7 @@ export type CashVoucherLineEntry = {
   refId?: string;
   vatType?: string;
   atcCode?: string;
-  particulars: string;
+  remarks: string;
   debit: number;
   credit: number;
   taxRate: string;
@@ -259,7 +266,7 @@ export type CashVoucherEntryDraft = {
   refId?: string;
   vatType?: string;
   atcCode?: string;
-  particulars: string;
+  remarks: string;
   debit: string;
   credit: string;
   taxRate: string;

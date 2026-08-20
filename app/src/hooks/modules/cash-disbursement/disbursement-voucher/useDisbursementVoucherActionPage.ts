@@ -632,4 +632,3 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   };
 }
 
-export type { DisbursementVoucherActionPageState } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";

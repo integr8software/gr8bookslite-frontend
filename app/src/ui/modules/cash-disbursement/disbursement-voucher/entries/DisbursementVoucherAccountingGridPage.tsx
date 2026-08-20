@@ -395,15 +395,15 @@ export function DisbursementVoucherAccountingGridPage() {
       );
     }
 
-    if (columnId === "particulars") {
+    if (columnId === "remarks") {
       return (
         <ModuleDataEntryRemarksCell
           inputId={context.fieldId}
           inputName={context.fieldName}
           isReadonly={false}
-          value={row.particulars}
+          value={row.remarks}
           textareaId={`${context.fieldId}-dialog`}
-          onChange={(value) => updateRow(row.id, "particulars", value)}
+          onChange={(value) => updateRow(row.id, "remarks", value)}
         />
       );
     }

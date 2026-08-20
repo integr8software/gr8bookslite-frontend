@@ -15,8 +15,9 @@ import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/Par
 import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
 import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 import { PettyCashFundActionHeader } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund/action/PettyCashFundActionHeader";
-import { PettyCashFundDetailsTab } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund/action/PettyCashFundDetailsTab";
-import { PettyCashFundAttachmentsTab } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund/action/PettyCashFundAttachmentsTab";
+import { PettyCashFundDetailsFields } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund/action/PettyCashFundDetailsFields";
+import { PettyCashFundFileAttachmentFields } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund/action/PettyCashFundFileAttachmentFields";
+import { PettyCashFundEntrySection } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund/entries/PettyCashFundEntrySection";
 import { PettyCashFundNotFound } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund/action/PettyCashFundNotFound";
 import { PettyCashFundReportPreview } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund/reports/PettyCashFundReportPreview";
 import { openPettyCashFundPdf } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund/reports/PettyCashFundPdf";
@@ -44,13 +45,16 @@ export function PettyCashFundActionPage({ mode }: { mode: PettyCashFundActionMod
           onTabChange={page.setActiveTab}
         />
         {page.activeTab === "details" ? (
-          <PettyCashFundDetailsTab
-            page={page}
-            onOpenPartyDrawer={() => setIsPartyDrawerOpen(true)}
-            onOpenProjectDrawer={() => setIsProjectDrawerOpen(true)}
-          />
+          <>
+            <PettyCashFundDetailsFields
+              page={page}
+              onOpenPartyDrawer={() => setIsPartyDrawerOpen(true)}
+              onOpenProjectDrawer={() => setIsProjectDrawerOpen(true)}
+            />
+            <PettyCashFundEntrySection page={page} />
+          </>
         ) : (
-          <PettyCashFundAttachmentsTab page={page} />
+          <PettyCashFundFileAttachmentFields page={page} />
         )}
       </section>
       <PartyManagementDrawer

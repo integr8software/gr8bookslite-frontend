@@ -13,6 +13,7 @@ import {
 } from "@tanstack/react-table";
 import { ReceiptText } from "lucide-react";
 import toast from "react-hot-toast";
+import { CashDisbursementEmptyRange } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import {
   AdvancesToSuppliersColumnLabels,
   AdvancesToSuppliersDefaultColumnVisibility,
@@ -36,15 +37,13 @@ import { formatPartOfTotalPercentage } from "@/app/src/utils/percentage.util";
 import { normalizeLowercaseWhitespace } from "@/app/src/utils/string.util";
 
 const columnHelper = createColumnHelper<AdvancesToSuppliersRecord>();
-const emptyDateRange: DateRangeValue = { from: "", to: "" };
-const emptyAmountRange: AmountRangeValue = { from: "", to: "" };
 
 export function useAdvancesToSuppliersOverviewPage() {
   const [records, setRecords] = useState(getAdvancesToSuppliersRecords);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("All");
-  const [dateRange, setDateRange] = useState<DateRangeValue>(emptyDateRange);
-  const [amountRange, setAmountRange] = useState<AmountRangeValue>(emptyAmountRange);
+  const [dateRange, setDateRange] = useState<DateRangeValue>(CashDisbursementEmptyRange);
+  const [amountRange, setAmountRange] = useState<AmountRangeValue>(CashDisbursementEmptyRange);
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => AdvancesToSuppliersDefaultColumnVisibility);
@@ -197,7 +196,7 @@ export function useAdvancesToSuppliersOverviewPage() {
     setRecords(next);
     saveAdvancesToSuppliersRecords(next);
     setLastSyncedAt(Date.now());
-    toast.success(`Advances to Suppliers marked as ${status}.`);
+    toast.success(`Advances to Suppliers Marked as ${status}.`);
   }
 
   function refreshRecords() {
@@ -231,4 +230,3 @@ function getMetricTone(status: AdvancesToSuppliersStatus) {
   return "blue" as const;
 }
 
-export type { AdvancesToSuppliersOverviewPageState } from "@/app/src/types/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersTypes";

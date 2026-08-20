@@ -3,7 +3,7 @@ import {
   RevolvingFundEntryVatTypeOptions,
   RevolvingFundResponsibilityCenterOptions,
 } from "@/app/src/constants/modules/cash-disbursement/revolving-fund/RevolvingFundConstants";
-import type { RevolvingFundActionPageState } from "@/app/src/hooks/modules/cash-disbursement/revolving-fund/useRevolvingFundActionPage";
+import type { RevolvingFundActionPageState } from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";
 import type {
   RevolvingFundAccountingColumnId,
   RevolvingFundAccountingEntry,
@@ -80,7 +80,7 @@ export function createRevolvingFundItemColumns(
     payeeName: text("payeeName"),
     orNo: text("orNo"),
     tinNo: text("tinNo"),
-    particulars: text("particulars"),
+    remarks: text("remarks"),
     amount: text("amount"),
     netAmount: text("netAmount"),
     vatAmount: text("vatAmount"),
@@ -112,6 +112,6 @@ export function createRevolvingFundAccountingColumns(
     credit: column("credit"),
     partyCode: column("partyCode"),
     partyName: column("partyName"),
-    particulars: column("particulars"),
+    remarks: column("remarks"),
   };
 }

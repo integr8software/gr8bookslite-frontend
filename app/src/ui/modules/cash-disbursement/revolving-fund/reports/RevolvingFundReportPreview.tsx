@@ -1,4 +1,4 @@
-import type { RevolvingFundActionPageState } from "@/app/src/hooks/modules/cash-disbursement/revolving-fund/useRevolvingFundActionPage";
+import type { RevolvingFundActionPageState } from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";
 import { ReportPreviewDrawer } from "@/app/src/ui/shared/reports/Reports";
 import { formatCurrency } from "@/app/src/utils/currency.util";
 import { formatDate } from "@/app/src/utils/date.util";
@@ -35,7 +35,7 @@ export function RevolvingFundReportPreview({
             <dd className="mt-1 font-semibold">{page.values.partyName}</dd>
           </div>
           <div>
-            <dt className="text-xs font-semibold uppercase text-darknavy/45">Document Date</dt>
+            <dt className="text-xs font-semibold uppercase text-darknavy/45">RF Date</dt>
             <dd className="mt-1 font-semibold">{formatDate(page.values.documentDate)}</dd>
           </div>
           <div>
@@ -49,7 +49,7 @@ export function RevolvingFundReportPreview({
               <tr>
                 <th className="px-3 py-2 text-left">Date</th>
                 <th className="px-3 py-2 text-left">Payee</th>
-                <th className="px-3 py-2 text-left">Particulars</th>
+                <th className="px-3 py-2 text-left">Remarks</th>
                 <th className="px-3 py-2 text-right">Gross Amount</th>
               </tr>
             </thead>
@@ -58,7 +58,7 @@ export function RevolvingFundReportPreview({
                 <tr key={item.id} className="border-t border-darknavy/10">
                   <td className="px-3 py-2">{formatDate(item.date)}</td>
                   <td className="px-3 py-2">{item.payeeName}</td>
-                  <td className="px-3 py-2">{item.particulars}</td>
+                  <td className="px-3 py-2">{item.remarks}</td>
                   <td className="px-3 py-2 text-right tabular-nums">{formatCurrency(Number(item.grossAmount.replace(/,/g, "")) || 0)}</td>
                 </tr>
               ))}

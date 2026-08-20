@@ -171,7 +171,7 @@ export function usePettyCashVoucherActionPage(options: PettyCashVoucherActionPag
       persistVoucher(PettyCashVoucherStatuses.forApproval);
       draft.clearDraft();
       toast.success(
-        mode === "edit" ? "Petty cash voucher updated and submitted for approval." : "Petty cash voucher created and submitted for approval.",
+        mode === "edit" ? "Petty Cash Voucher Updated and Submitted for Approval." : "Petty Cash Voucher Created and Submitted for Approval.",
       );
       options.onSaved?.();
       return true;
@@ -196,7 +196,7 @@ export function usePettyCashVoucherActionPage(options: PettyCashVoucherActionPag
       persistVoucher(PettyCashVoucherStatuses.draft);
       setErrors({});
       draft.clearDraft();
-      toast.success("Petty cash voucher saved as draft.");
+      toast.success("Petty Cash Voucher Saved as Draft.");
       options.onSaved?.();
       return true;
     } catch {
@@ -216,7 +216,7 @@ export function usePettyCashVoucherActionPage(options: PettyCashVoucherActionPag
     if (!releaseActionLock) return false;
     try {
       persistVoucher(status);
-      toast.success(`Petty cash voucher marked as ${status}.`);
+      toast.success(`Petty Cash Voucher Marked as ${status}.`);
       return true;
     } catch {
       toast.error("Could not update the petty cash voucher. Please try again.");
@@ -247,7 +247,7 @@ export function usePettyCashVoucherActionPage(options: PettyCashVoucherActionPag
       transactionNo: current.transactionNo,
     }));
     setErrors({});
-    toast.success(`Copied details from ${sourceRecord.voucherNo}.`);
+    toast.success(`Copied Details from ${sourceRecord.voucherNo}.`);
   }
 
   function persistVoucher(status: PettyCashVoucherStatus) {
@@ -331,4 +331,3 @@ export function usePettyCashVoucherActionPage(options: PettyCashVoucherActionPag
   };
 }
 
-export type { PettyCashVoucherActionPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";

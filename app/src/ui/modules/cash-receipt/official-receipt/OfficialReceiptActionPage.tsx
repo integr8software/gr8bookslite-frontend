@@ -108,6 +108,7 @@ export function OfficialReceiptActionPage({
         <OfficialReceiptActionHeader
           baseHref={baseHref}
           mode={mode}
+          recordId={recordId}
           receiptLabel={receiptLabel}
           values={receiptForm.values}
           onCopyFrom={receiptForm.applyCopyFrom}

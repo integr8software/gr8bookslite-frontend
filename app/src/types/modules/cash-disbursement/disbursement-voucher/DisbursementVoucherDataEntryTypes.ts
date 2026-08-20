@@ -20,7 +20,7 @@ export type DisbursementEntryColumnId =
   | "checkStatus"
   | "partyCode"
   | "partyName"
-  | "particulars"
+  | "remarks"
   | "refId"
   | "responsibilityCenter"
   | "vatType"
@@ -45,7 +45,7 @@ export type ExpenseEntryColumnId =
   | "totalAmountDue"
   | "partyCode"
   | "partyName"
-  | "particulars"
+  | "remarks"
   | "responsibilityCenter"
   | "refId";
 
@@ -120,12 +120,12 @@ export type EditableDisbursementAccountingGridRow = {
   credit: string;
   debit: string;
   id: string;
-  particulars: string;
+  remarks: string;
   taxDetails: DisbursementTaxDetails;
   taxRate: string;
 };
 
-export type DisbursementAccountingGridColumnId = "accountCode" | "accountName" | "particulars" | "taxRate" | "debit" | "credit";
+export type DisbursementAccountingGridColumnId = "accountCode" | "accountName" | "remarks" | "taxRate" | "debit" | "credit";
 
 export type DisbursementAccountingExportTheme = {
   accentColor: string;

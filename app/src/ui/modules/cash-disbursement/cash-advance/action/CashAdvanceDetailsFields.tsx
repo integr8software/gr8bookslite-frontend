@@ -12,6 +12,10 @@ import {
   CashAdvanceTabs,
 } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
 import { ResponsibilityCenterInitialFormValues } from "@/app/src/data/modules/financial-maintenance/responsibility-center/ResponsibilityCenterData";
+import {
+  calculatePostedCashAdvanceTotalByParty,
+  getInitialCashAdvances,
+} from "@/app/src/data/modules/cash-disbursement/cash-advance/CashAdvanceData";
 import { useCashAdvanceActionForm } from "@/app/src/hooks/modules/cash-disbursement/cash-advance/useCashAdvance";
 import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenter";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
@@ -104,6 +108,10 @@ export function CashAdvanceDetailsForm({ form, mode }: { form: CashAdvanceFormCo
     () => createProjectInitialValues(responsibilityCenterStore.classifications, responsibilityCenterStore.types),
     [responsibilityCenterStore.classifications, responsibilityCenterStore.types],
   );
+  const totalAdvanced = useMemo(
+    () => calculatePostedCashAdvanceTotalByParty(getInitialCashAdvances(), form.values.partyCode),
+    [form.values.partyCode],
+  );
   const isReadonly = mode === "view";
 
   return (
@@ -127,6 +135,7 @@ export function CashAdvanceDetailsForm({ form, mode }: { form: CashAdvanceFormCo
               isReadonly={isReadonly}
               partyOptions={partyOptions}
               projectOptions={projectOptions}
+              totalAdvanced={totalAdvanced}
               onOpenCostCenterDrawer={() => setIsCostCenterDrawerOpen(true)}
               onOpenPartyDrawer={() => setIsPartyDrawerOpen(true)}
               onOpenProjectDrawer={() => setIsProjectDrawerOpen(true)}
@@ -156,6 +165,7 @@ export function CashAdvanceDetailsForm({ form, mode }: { form: CashAdvanceFormCo
             form.updateField("partyCode", record.partyCodeNo);
             form.updateField("partyName", partyName);
             form.updateField("cashAdvanceBalance", record.cashAdvanceLimit ?? "");
+            form.updateField("cashAdvanceLimit", record.cashAdvanceLimit ?? "");
             form.updateReferenceField("partyCode", record.partyCodeNo);
             setIsPartyDrawerOpen(false);
           }}
@@ -199,6 +209,7 @@ function CashAdvancePrimaryFields({
   onUpdateCurrency,
   partyOptions,
   projectOptions,
+  totalAdvanced,
 }: {
   accountOptions: AppAdvancedDropdownOption[];
   costCenterOptions: AppAdvancedDropdownOption[];
@@ -211,6 +222,7 @@ function CashAdvancePrimaryFields({
   onUpdateCurrency: (value: string) => void;
   partyOptions: CashAdvancePartyDropdownOption[];
   projectOptions: AppAdvancedDropdownOption[];
+  totalAdvanced: number;
 }) {
   return (
     <div className="grid gap-5 xl:grid-cols-3">
@@ -230,6 +242,7 @@ function CashAdvancePrimaryFields({
               form.updateField("partyCode", code);
               form.updateField("partyName", name);
               form.updateField("cashAdvanceBalance", party?.cashAdvanceBalance ?? "");
+              form.updateField("cashAdvanceLimit", party?.cashAdvanceLimit ?? "");
               form.updateReferenceField("partyCode", code);
             }}
           />
@@ -362,15 +375,11 @@ function CashAdvancePrimaryFields({
           }
         />
 
-        <TransactionField label="Cash Advance Balance">
-          <MoneyNumberField
-            value={form.values.cashAdvanceBalance}
-            onValueChange={() => undefined}
-            readOnly
-            className={`${TransactionFieldClassName} text-right tabular-nums`}
-            placeholder="0.00"
-          />
-        </TransactionField>
+        <CashAdvanceMetricField label="Cash Advance Limit" value={form.values.cashAdvanceLimit} emptyLabel="No limit" />
+
+        <CashAdvanceMetricField label="Available Balance" value={form.values.cashAdvanceBalance} emptyLabel="No limit" />
+
+        <CashAdvanceMetricField label="Total Advanced" value={String(totalAdvanced)} />
 
         <TransactionField label="Amount" isRequired>
           <MoneyNumberField
@@ -390,16 +399,16 @@ function CashAdvancePrimaryFields({
           value={form.values.transNo}
           isReadonly
           isRequired
-          label="Cash Advance No."
+          label="CA No."
           onValueChange={(value) => form.updateField("transNo", value)}
-          placeholder="Auto Generated Cash Advance Transaction Number"
+          placeholder="Auto Generated CA Transaction Number"
         />
 
         <TransactionTextField
           value={form.values.documentDate}
           isReadonly={isReadonly}
           isRequired
-          label="Cash Advance Date"
+          label="CA Date"
           type="date"
           onValueChange={(value) => form.updateField("documentDate", value)}
         />
@@ -532,6 +541,7 @@ function createCashAdvancePartyOptions({
 }): CashAdvancePartyDropdownOption[] {
   const options: CashAdvancePartyDropdownOption[] = employeeOptions.map((employee) => ({
     cashAdvanceBalance: employee.cashAdvanceBalance,
+    cashAdvanceLimit: employee.cashAdvanceLimit,
     description: employee.cashAdvanceLimit
       ? `Cash advance limit: ${formatMoneyNumberDisplayValue(employee.cashAdvanceLimit)}`
       : "No cash advance limit",
@@ -554,6 +564,24 @@ function createCashAdvancePartyOptions({
   }
 
   return options;
+}
+
+function CashAdvanceMetricField({
+  emptyLabel = "0.00",
+  label,
+  value,
+}: {
+  emptyLabel?: string;
+  label: string;
+  value: string;
+}) {
+  return (
+    <TransactionField label={label}>
+      <div className={`${TransactionFieldClassName} flex items-center justify-end tabular-nums text-darknavy`}>
+        {value.trim() ? formatMoneyNumberDisplayValue(value) : emptyLabel}
+      </div>
+    </TransactionField>
+  );
 }
 
 function addUniqueDropdownOption(options: AppAdvancedDropdownOption[], option: AppAdvancedDropdownOption) {

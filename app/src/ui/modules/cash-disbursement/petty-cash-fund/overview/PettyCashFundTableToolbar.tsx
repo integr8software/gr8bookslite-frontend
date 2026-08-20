@@ -1,5 +1,5 @@
 import { PettyCashFundStatusOptions } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund/PettyCashFundConstants";
-import type { PettyCashFundOverviewPageState } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-fund/usePettyCashFundOverviewPage";
+import type { PettyCashFundOverviewPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";
 import { AmountRangePicker } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import { DateRangePicker } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
 import {
@@ -22,7 +22,7 @@ export function PettyCashFundTableToolbar({ page }: { page: PettyCashFundOvervie
             label="Search petty cash funds"
             value={page.query}
             onChange={page.setQuery}
-            placeholder="Search by Petty Cash Fund No., Party, or Account"
+            placeholder="Search by PCF No., Party, or Account"
           />
         </div>
         <DateRangePicker label="Date Range" value={page.dateRange} onChange={page.setDateRange} />

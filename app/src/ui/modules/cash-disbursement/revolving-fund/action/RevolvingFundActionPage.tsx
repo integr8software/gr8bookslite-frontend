@@ -15,8 +15,9 @@ import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/Par
 import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
 import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 import { RevolvingFundActionHeader } from "@/app/src/ui/modules/cash-disbursement/revolving-fund/action/RevolvingFundActionHeader";
-import { RevolvingFundDetailsTab } from "@/app/src/ui/modules/cash-disbursement/revolving-fund/action/RevolvingFundDetailsTab";
-import { RevolvingFundAttachmentsTab } from "@/app/src/ui/modules/cash-disbursement/revolving-fund/action/RevolvingFundAttachmentsTab";
+import { RevolvingFundDetailsFields } from "@/app/src/ui/modules/cash-disbursement/revolving-fund/action/RevolvingFundDetailsFields";
+import { RevolvingFundFileAttachmentFields } from "@/app/src/ui/modules/cash-disbursement/revolving-fund/action/RevolvingFundFileAttachmentFields";
+import { RevolvingFundEntrySection } from "@/app/src/ui/modules/cash-disbursement/revolving-fund/entries/RevolvingFundEntrySection";
 import { RevolvingFundNotFound } from "@/app/src/ui/modules/cash-disbursement/revolving-fund/action/RevolvingFundNotFound";
 import { RevolvingFundReportPreview } from "@/app/src/ui/modules/cash-disbursement/revolving-fund/reports/RevolvingFundReportPreview";
 import { openRevolvingFundPdf } from "@/app/src/ui/modules/cash-disbursement/revolving-fund/reports/RevolvingFundPdf";
@@ -44,13 +45,16 @@ export function RevolvingFundActionPage({ mode }: { mode: RevolvingFundActionMod
           onTabChange={page.setActiveTab}
         />
         {page.activeTab === "details" ? (
-          <RevolvingFundDetailsTab
-            page={page}
-            onOpenPartyDrawer={() => setIsPartyDrawerOpen(true)}
-            onOpenProjectDrawer={() => setIsProjectDrawerOpen(true)}
-          />
+          <>
+            <RevolvingFundDetailsFields
+              page={page}
+              onOpenPartyDrawer={() => setIsPartyDrawerOpen(true)}
+              onOpenProjectDrawer={() => setIsProjectDrawerOpen(true)}
+            />
+            <RevolvingFundEntrySection page={page} />
+          </>
         ) : (
-          <RevolvingFundAttachmentsTab page={page} />
+          <RevolvingFundFileAttachmentFields page={page} />
         )}
       </section>
       <PartyManagementDrawer

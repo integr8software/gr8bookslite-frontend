@@ -538,6 +538,5 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   };
 }
 
-export type { CashVoucherActionPageState } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
 
 

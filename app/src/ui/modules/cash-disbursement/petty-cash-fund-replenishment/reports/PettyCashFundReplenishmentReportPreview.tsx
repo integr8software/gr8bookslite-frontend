@@ -1,4 +1,4 @@
-import type { PettyCashFundReplenishmentActionPageState } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-fund-replenishment/usePettyCashFundReplenishmentActionPage";
+import type { PettyCashFundReplenishmentActionPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentTypes";
 import { ReportPreviewDrawer } from "@/app/src/ui/shared/reports/Reports";
 import { formatCurrency } from "@/app/src/utils/currency.util";
 import { formatDate } from "@/app/src/utils/date.util";
@@ -35,7 +35,7 @@ export function PettyCashFundReplenishmentReportPreview({
             <dd className="mt-1 font-semibold">{page.values.partyName}</dd>
           </div>
           <div>
-            <dt className="text-xs font-semibold uppercase text-darknavy/45">Document Date</dt>
+            <dt className="text-xs font-semibold uppercase text-darknavy/45">PCFR Date</dt>
             <dd className="mt-1 font-semibold">{formatDate(page.values.documentDate)}</dd>
           </div>
           <div>
@@ -47,8 +47,8 @@ export function PettyCashFundReplenishmentReportPreview({
           <table className="w-full text-sm">
             <thead className="bg-offwhite">
               <tr>
-                <th className="px-3 py-2 text-left">Date</th>
-                <th className="px-3 py-2 text-left">Petty Cash No.</th>
+                <th className="px-3 py-2 text-left">PCF Date</th>
+                <th className="px-3 py-2 text-left">PCF No.</th>
                 <th className="px-3 py-2 text-left">Account Title</th>
                 <th className="px-3 py-2 text-right">Total Amount</th>
               </tr>

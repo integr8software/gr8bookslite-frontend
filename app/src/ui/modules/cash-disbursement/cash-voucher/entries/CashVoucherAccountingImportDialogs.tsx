@@ -299,14 +299,14 @@ function AccountingImportPreviewTable({
 }) {
   return (
     <div className={joinClasses("app-theme-field overflow-auto rounded-lg border", maxHeightClassName)}>
-      <table className="min-w-[780px] table-fixed border-collapse text-left text-xs text-darknavy">
+      <table className="min-w-[680px] table-fixed border-collapse text-left text-xs text-darknavy">
         <colgroup>
-          <col className="w-[9rem]" />
-          <col className="w-[13rem]" />
-          <col className="w-[20rem]" />
-          <col className="w-[7rem]" />
-          <col className="w-[9rem]" />
-          <col className="w-[9rem]" />
+          <col className="w-[7.5rem]" />
+          <col className="w-[10rem]" />
+          <col className="w-[14rem]" />
+          <col className="w-[6rem]" />
+          <col className="w-[7.5rem]" />
+          <col className="w-[7.5rem]" />
         </colgroup>
         <tbody>
           {rows.map((row, rowIndex) => (

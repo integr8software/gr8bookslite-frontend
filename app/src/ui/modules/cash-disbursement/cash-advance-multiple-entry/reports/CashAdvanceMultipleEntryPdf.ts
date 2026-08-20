@@ -38,7 +38,7 @@ function createCashAdvanceMultipleEntryPdfDefinition(
     { text: String(index + 1), alignment: "center" },
     { text: row.partyName || "-" },
     { text: getResponsibilityCenterName(row.responsibilityCenter, responsibilityCenterOptions) || "-" },
-    { text: row.particulars || "-" },
+    { text: row.remarks || "-" },
     { text: formatCashAdvanceMultipleEntryAmount(row.amount), alignment: "right" },
   ]);
 
@@ -100,7 +100,7 @@ function createCashAdvanceMultipleEntryPdfDefinition(
       {
         columns: [
           { text: [{ text: "Party Name: ", bold: true }, values.partyName || "-"] },
-          { text: [{ text: "Document Date: ", bold: true }, formatDate(values.documentDate)] },
+          { text: [{ text: "CAME Date: ", bold: true }, formatDate(values.documentDate)] },
         ],
         margin: [0, 0, 0, 8],
       },
@@ -137,7 +137,7 @@ function createCashAdvanceMultipleEntryPdfDefinition(
               { text: "#", bold: true, alignment: "center" },
               { text: "Party Name", bold: true },
               { text: "Responsibility Center", bold: true },
-              { text: "Particulars", bold: true },
+              { text: "Remarks", bold: true },
               { text: "Amount", bold: true, alignment: "right" },
             ],
             ...itemRows,

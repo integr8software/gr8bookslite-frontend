@@ -18,8 +18,8 @@ export const PettyCashFundPaginationStorageKey = "cash-disbursement-petty-cash-f
 export const PettyCashFundTransactionPrefix = "PCF";
 export const PettyCashFundCopyFromSources = ["Petty Cash Voucher"] as const;
 export const PettyCashFundColumnLabels = {
-  transactionNo: "Petty Cash Fund No.",
-  documentDate: "Document Date",
+  transactionNo: "PCF No.",
+  documentDate: "PCF Date",
   partyCode: "Party Code",
   partyName: "Party Name",
   accountCode: "Default Account Code",
@@ -78,13 +78,14 @@ export const PettyCashFundEntryTabs: { id: PettyCashFundEntryTab; label: string 
   { id: "items", label: "Items" },
   { id: "accounting", label: "Accounting Entries" },
 ];
+export const PettyCashFundAccountingEntryTab: PettyCashFundEntryTab = "accounting";
 export const PettyCashFundDefaultItemColumnIds: PettyCashFundItemColumnId[] = [
   "date",
   "payeeCode",
   "payeeName",
   "orNo",
   "tinNo",
-  "particulars",
+  "remarks",
   "amount",
   "netAmount",
   "vatAmount",
@@ -101,7 +102,7 @@ export const PettyCashFundItemColumnLabels: Record<PettyCashFundItemColumnId, st
   payeeName: "Payee",
   orNo: "OR No.",
   tinNo: "TIN No.",
-  particulars: "Particulars",
+  remarks: "Remarks",
   amount: "Amount",
   netAmount: "Net Amount",
   vatAmount: "VAT Amount",
@@ -113,21 +114,21 @@ export const PettyCashFundItemColumnLabels: Record<PettyCashFundItemColumnId, st
   responsibilityCenter: "Responsibility Center",
 };
 export const PettyCashFundItemColumnWidths: Record<PettyCashFundItemColumnId, number> = {
-  date: 145,
-  payeeCode: 140,
-  payeeName: 220,
-  orNo: 135,
-  tinNo: 160,
-  particulars: 260,
-  amount: 140,
-  netAmount: 140,
-  vatAmount: 140,
-  type: 150,
-  vatType: 150,
-  vatable: 125,
-  vatInclusive: 125,
-  grossAmount: 150,
-  responsibilityCenter: 210,
+  date: 130,
+  payeeCode: 125,
+  payeeName: 190,
+  orNo: 120,
+  tinNo: 140,
+  remarks: 220,
+  amount: 125,
+  netAmount: 125,
+  vatAmount: 125,
+  type: 130,
+  vatType: 130,
+  vatable: 110,
+  vatInclusive: 110,
+  grossAmount: 130,
+  responsibilityCenter: 180,
 };
 export const PettyCashFundProtectedItemColumnIds = new Set<PettyCashFundItemColumnId>(["date", "amount"]);
 export const PettyCashFundDefaultAccountingColumnIds: PettyCashFundAccountingColumnId[] = [
@@ -137,7 +138,7 @@ export const PettyCashFundDefaultAccountingColumnIds: PettyCashFundAccountingCol
   "credit",
   "partyCode",
   "partyName",
-  "particulars",
+  "remarks",
 ];
 export const PettyCashFundAccountingColumnLabels: Record<PettyCashFundAccountingColumnId, string> = {
   accountCode: "Account Code",
@@ -146,16 +147,16 @@ export const PettyCashFundAccountingColumnLabels: Record<PettyCashFundAccounting
   credit: "Credit",
   partyCode: "Party Code",
   partyName: "Party Name",
-  particulars: "Particulars",
+  remarks: "Remarks",
 };
 export const PettyCashFundAccountingColumnWidths: Record<PettyCashFundAccountingColumnId, number> = {
-  accountCode: 150,
-  accountTitle: 240,
-  debit: 140,
-  credit: 140,
-  partyCode: 150,
-  partyName: 220,
-  particulars: 260,
+  accountCode: 135,
+  accountTitle: 210,
+  debit: 125,
+  credit: 125,
+  partyCode: 130,
+  partyName: 190,
+  remarks: 220,
 };
 export const PettyCashFundProtectedAccountingColumnIds = new Set<PettyCashFundAccountingColumnId>(["accountCode", "debit", "credit"]);
 export const PettyCashFundEntryInputClassName =

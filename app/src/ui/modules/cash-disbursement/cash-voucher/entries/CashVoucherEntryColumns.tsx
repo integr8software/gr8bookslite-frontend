@@ -139,19 +139,19 @@ export function createCashVoucherAccountingEntryColumns({
         />
       ),
     },
-    particulars: {
-      header: columnLabels.particulars,
-      id: "particulars",
-      width: columnWidths.particulars,
+    remarks: {
+      header: columnLabels.remarks,
+      id: "remarks",
+      width: columnWidths.remarks,
       widthClassName: "w-[22rem]",
       renderCell: (entry, _index, context) => (
         <ModuleDataEntryRemarksCell
           inputId={context.fieldId}
           inputName={context.fieldName}
           isReadonly={isReadonly}
-          value={entry.particulars}
+          value={entry.remarks}
           textareaId={`${context.fieldId}-dialog`}
-          onChange={(value) => onUpdateEntry(entry.id, "particulars", value)}
+          onChange={(value) => onUpdateEntry(entry.id, "remarks", value)}
         />
       ),
     },
@@ -468,11 +468,11 @@ export function createCashVoucherExpenseEntryColumns({
       id: "partyCode",
       width: expenseColumnWidths.partyCode,
     },
-    particulars: {
-      ...accountingColumns.particulars,
-      header: expenseColumnLabels.particulars,
-      id: "particulars",
-      width: expenseColumnWidths.particulars,
+    remarks: {
+      ...accountingColumns.remarks,
+      header: expenseColumnLabels.remarks,
+      id: "remarks",
+      width: expenseColumnWidths.remarks,
     },
     responsibilityCenter: {
       ...accountingColumns.responsibilityCenter,

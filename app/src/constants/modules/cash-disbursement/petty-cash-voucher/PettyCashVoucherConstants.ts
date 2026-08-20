@@ -75,8 +75,8 @@ export const PettyCashVoucherActionTabs: {
 ];
 
 export const PettyCashVoucherColumnLabels = {
-  voucherNo: "Petty Cash Voucher No.",
-  documentDate: "Document Date",
+  voucherNo: "PCV No.",
+  documentDate: "PCV Date",
   partyCode: "Party Code",
   partyName: "Party Name",
   accountCode: "Default Account Code",
@@ -175,7 +175,7 @@ export function getPettyCashVoucherStatusDialogCopy(status: PettyCashVoucherStat
   return {
     confirmLabel: "Restore Voucher",
     description: `This will return ${recordLabel} to For Approval.`,
-    iconTone: "approve" as const,
+    iconTone: "undo" as const,
     pendingLabel: "Restoring...",
     title: "Restore Petty Cash Voucher?",
     tone: "default" as const,
@@ -191,7 +191,7 @@ export function getPettyCashVoucherSaveDialogCopy(
     return {
       confirmLabel: "Save as Draft",
       description: `This will save the current information for ${recordLabel} without submitting it for approval.`,
-      iconTone: false as const,
+      iconTone: "save" as const,
       pendingLabel: "Saving...",
       title: "Save Petty Cash Voucher as Draft?",
       tone: "default" as const,
@@ -201,7 +201,7 @@ export function getPettyCashVoucherSaveDialogCopy(
   return {
     confirmLabel: mode === "edit" ? "Update and Submit" : "Submit Voucher",
     description: `This will save ${recordLabel} and submit it for approval.`,
-    iconTone: "approve" as const,
+    iconTone: mode === "edit" ? ("update" as const) : ("save" as const),
     pendingLabel: mode === "edit" ? "Updating..." : "Submitting...",
     title: mode === "edit" ? "Update Petty Cash Voucher?" : "Submit Petty Cash Voucher?",
     tone: "success" as const,

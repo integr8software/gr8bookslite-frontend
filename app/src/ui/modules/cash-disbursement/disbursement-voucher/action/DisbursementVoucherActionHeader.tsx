@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Edit3 } from "lucide-react";
 import {
   DisbursementVoucherLink,
+  canEditDisbursementVoucherStatus,
+  getDisbursementVoucherEditLink,
   getDisbursementVoucherStatusDialogCopy,
   getDisbursementVoucherSubmitDialogCopy,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
@@ -18,7 +20,7 @@ import { ModuleActionButton } from "@/app/src/ui/shared/module/ModuleActionButto
 import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import { VoucherReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 import { AppCopyFromDropdown } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
-import { DisbursementVoucherViewActions } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherViewActions";
+import { DisbursementVoucherStatusActions } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherStatusActions";
 
 export function DisbursementVoucherActionHeader({
   mode,
@@ -83,18 +85,26 @@ export function DisbursementVoucherActionHeader({
             Back
           </Link>
           {mode === "view" ? (
-            <DisbursementVoucherViewActions
-              transaction={transaction}
-              voucher={voucher}
-              onRequestStatusConfirmation={setStatusToConfirm}
-              onUpdateStatus={onUpdateStatus}
-              onPreview={onPreview}
-            />
+            <>
+              <DisbursementVoucherStatusActions
+                transaction={transaction}
+                voucher={voucher}
+                onRequestStatusConfirmation={setStatusToConfirm}
+                onUpdateStatus={onUpdateStatus}
+                onPreview={onPreview}
+              />
+              {transaction && voucher && canEditDisbursementVoucherStatus(voucher.status) ? (
+                <Link href={getDisbursementVoucherEditLink(transaction.id)} className={moduleHeaderActionClassNames.primary}>
+                  <Edit3 className="h-4 w-4" aria-hidden="true" />
+                  Edit
+                </Link>
+              ) : null}
+            </>
           ) : (
             <span className="inline-flex shrink-0 items-center gap-2">
               {onPreview ? <VoucherReportPreviewAction onPreview={onPreview} /> : null}
               {mode === "add" && onCopyFrom ? (
-                <AppCopyFromDropdown records={copyFromRecords} sources={copyFromSources} onApply={onCopyFrom} />
+                <AppCopyFromDropdown enableSourceSearch records={copyFromRecords} sources={copyFromSources} onApply={onCopyFrom} />
               ) : null}
               <ModuleActionButton
                 disabled={isSubmitting}
@@ -123,6 +133,7 @@ export function DisbursementVoucherActionHeader({
           description={submitDialogCopy.description}
           confirmLabel={submitDialogCopy.confirmLabel}
           cancelLabel="Continue Editing"
+          iconTone={submitDialogCopy.iconTone}
           pendingLabel={submitDialogCopy.pendingLabel}
           tone="question"
           onCancel={onCancelSubmit}

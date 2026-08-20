@@ -1,6 +1,6 @@
 import type { SortingState, VisibilityState } from "@tanstack/react-table";
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
-import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
+import { CashDisbursementOverviewColumnWidths } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import { CashDisbursementOverviewActionColumnWidth } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import type {
   DisbursementVoucherActionMode,
@@ -18,6 +18,7 @@ export function getDisbursementVoucherSubmitDialogCopy(
   return {
     confirmLabel,
     description: `Confirm that you want to ${confirmLabel.toLowerCase()} this Disbursement Voucher.`,
+    iconTone: mode === "edit" ? ("update" as const) : ("save" as const),
     pendingLabel: mode === "edit" ? "Updating..." : "Saving...",
     title: `${confirmLabel} Disbursement Voucher?`,
   };
@@ -154,81 +155,81 @@ export const DisbursementVoucherStatusFilterOptions = [
 export const DisbursementVoucherTableColumns = [
   {
     key: "voucherNo",
-    label: "Voucher No.",
+    label: "DV No.",
     className: "",
-    size: TransactionOverviewColumnWidths.transactionNumber,
+    size: CashDisbursementOverviewColumnWidths.transactionNumber,
   },
   {
     key: "documentDate",
-    label: "Document Date",
+    label: "DV Date",
     className: "",
-    size: TransactionOverviewColumnWidths.documentDate,
+    size: CashDisbursementOverviewColumnWidths.documentDate,
   },
   {
     key: "partyCode",
     label: "Party Code",
     className: "",
-    size: TransactionOverviewColumnWidths.partyCode,
+    size: CashDisbursementOverviewColumnWidths.partyCode,
   },
   {
     key: "partyName",
     label: "Party Name",
     className: "",
-    size: TransactionOverviewColumnWidths.partyName,
+    size: CashDisbursementOverviewColumnWidths.partyName,
   },
   {
     key: "paymentType",
     label: "Payment Type",
     className: "",
-    size: TransactionOverviewColumnWidths.paymentType,
+    size: CashDisbursementOverviewColumnWidths.paymentType,
   },
   {
     key: "currency",
     label: "Currency",
     className: "",
-    size: TransactionOverviewColumnWidths.currency,
+    size: CashDisbursementOverviewColumnWidths.currency,
   },
   {
     key: "amount",
     label: "Amount",
     className: "",
-    size: TransactionOverviewColumnWidths.amount,
+    size: CashDisbursementOverviewColumnWidths.amount,
   },
   {
     key: "remarks",
     label: "Remarks",
     className: "",
-    size: TransactionOverviewColumnWidths.remarks,
+    size: CashDisbursementOverviewColumnWidths.remarks,
   },
   {
     key: "createdBy",
     label: "Created By",
     className: "",
-    size: TransactionOverviewColumnWidths.auditUser,
+    size: CashDisbursementOverviewColumnWidths.auditUser,
   },
   {
     key: "createdAt",
     label: "Date Created",
     className: "",
-    size: TransactionOverviewColumnWidths.auditDate,
+    size: CashDisbursementOverviewColumnWidths.auditDate,
   },
   {
     key: "updatedBy",
     label: "Updated By",
     className: "",
-    size: TransactionOverviewColumnWidths.auditUser,
+    size: CashDisbursementOverviewColumnWidths.auditUser,
   },
   {
     key: "updatedAt",
     label: "Date Modified",
     className: "",
-    size: TransactionOverviewColumnWidths.auditDate,
+    size: CashDisbursementOverviewColumnWidths.auditDate,
   },
   {
     key: "status",
     label: "Status",
     className: "text-center",
-    size: TransactionOverviewColumnWidths.status,
+    size: CashDisbursementOverviewColumnWidths.status,
   },
   {
     label: "Actions",
@@ -282,7 +283,7 @@ export function getDisbursementVoucherStatusDialogCopy(
     return {
       confirmLabel: "Undo Approved",
       description: `This will undo the approval of ${recordLabel} and return it to For Approval.`,
-      iconTone: "question" as const,
+      iconTone: "undo" as const,
       pendingLabel: "Undoing Approval...",
       title: "Undo Approved Disbursement Voucher?",
       tone: "question" as const,
@@ -293,7 +294,7 @@ export function getDisbursementVoucherStatusDialogCopy(
     return {
       confirmLabel: "Undo Disapproved",
       description: `This will undo the disapproval of ${recordLabel} and return it to For Approval.`,
-      iconTone: "question" as const,
+      iconTone: "undo" as const,
       pendingLabel: "Undoing Disapproval...",
       title: "Undo Disapproved Disbursement Voucher?",
       tone: "question" as const,
@@ -304,7 +305,7 @@ export function getDisbursementVoucherStatusDialogCopy(
     return {
       confirmLabel: "Undo Cancelled",
       description: `This will undo the cancellation of ${recordLabel}.`,
-      iconTone: "question" as const,
+      iconTone: "undo" as const,
       pendingLabel: "Undoing Cancellation...",
       title: "Undo Cancelled Disbursement Voucher?",
       tone: "question" as const,

@@ -1,4 +1,4 @@
-import type { PettyCashFundReplenishmentActionPageState } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-fund-replenishment/usePettyCashFundReplenishmentActionPage";
+import type { PettyCashFundReplenishmentActionPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentTypes";
 import type {
   PettyCashFundReplenishmentAccountingColumnId,
   PettyCashFundReplenishmentAccountingEntry,
@@ -112,6 +112,6 @@ export function createPettyCashFundReplenishmentAccountingColumns({
     credit: column("credit"),
     partyCode: column("partyCode"),
     partyName: column("partyName"),
-    particulars: column("particulars"),
+    remarks: column("remarks"),
   };
 }

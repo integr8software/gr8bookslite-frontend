@@ -270,8 +270,8 @@ function createItemColumns(
     {
       header: "Party Code",
       id: "partyCode",
-      width: 140,
-      widthClassName: "w-[8.75rem]",
+      width: 125,
+      widthClassName: "w-[7.75rem]",
       renderCell: (row, _index, context) => (
         <EntryTextInput id={context.fieldId} name={context.fieldName} onChange={() => undefined} readOnly value={row.partyCode} />
       ),
@@ -279,8 +279,8 @@ function createItemColumns(
     {
       header: "Party Name",
       id: "partyName",
-      width: 260,
-      widthClassName: "w-[16rem]",
+      width: 220,
+      widthClassName: "w-[13.75rem]",
       renderCell: (row, _index, context) => (
         <EntryPartyDropdown
           id={context.fieldId}
@@ -305,8 +305,8 @@ function createItemColumns(
     {
       header: "Amount",
       id: "amount",
-      width: 160,
-      widthClassName: "w-[10rem]",
+      width: 140,
+      widthClassName: "w-[8.75rem]",
       renderCell: (row, _index, context) => (
         <EntryNumberInput
           id={context.fieldId}
@@ -324,8 +324,8 @@ function createItemColumns(
     {
       header: "Cash Advance Balance",
       id: "cashAdvanceBalance",
-      width: 180,
-      widthClassName: "w-[11.25rem]",
+      width: 155,
+      widthClassName: "w-[9.75rem]",
       renderCell: (row, _index, context) => (
         <EntryMoneyNumberInput id={context.fieldId} name={context.fieldName} readOnly value={row.cashAdvanceBalance} />
       ),
@@ -333,8 +333,8 @@ function createItemColumns(
     {
       header: "Responsibility Center Code",
       id: "responsibilityCenterCode",
-      width: 180,
-      widthClassName: "w-[11.25rem]",
+      width: 155,
+      widthClassName: "w-[9.75rem]",
       renderCell: (row, _index, context) => (
         <EntryTextInput
           id={context.fieldId}
@@ -348,8 +348,8 @@ function createItemColumns(
     {
       header: "Responsibility Center",
       id: "responsibilityCenter",
-      width: 190,
-      widthClassName: "w-[12rem]",
+      width: 165,
+      widthClassName: "w-[10.25rem]",
       renderCell: (row, _index, context) => (
         <EntryDropdown
           id={context.fieldId}
@@ -363,7 +363,7 @@ function createItemColumns(
         />
       ),
     },
-    textColumn("Remarks", "particulars", 300, isReadonly, onUpdateEntry),
+    textColumn("Remarks", "remarks", 300, isReadonly, onUpdateEntry),
   ];
 }
 
@@ -408,8 +408,8 @@ function createAccountingColumns(
     {
       header: "Account Code",
       id: "accountCode",
-      width: 160,
-      widthClassName: "w-[10rem]",
+      width: 140,
+      widthClassName: "w-[8.75rem]",
       renderCell: (row, _index, context) => (
         <EntryTextInput id={context.fieldId} name={context.fieldName} onChange={() => undefined} readOnly value={row.accountCode} />
       ),
@@ -417,8 +417,8 @@ function createAccountingColumns(
     {
       header: "Account Title",
       id: "accountTitle",
-      width: 260,
-      widthClassName: "w-[16.25rem]",
+      width: 220,
+      widthClassName: "w-[13.75rem]",
       renderCell: (row, _index, context) => (
         <EntryAccountDropdown
           id={context.fieldId}
@@ -434,8 +434,8 @@ function createAccountingColumns(
     {
       header: "Party Code",
       id: "partyCode",
-      width: 150,
-      widthClassName: "w-[9.375rem]",
+      width: 130,
+      widthClassName: "w-[8.125rem]",
       renderCell: (row, _index, context) => (
         <EntryTextInput id={context.fieldId} name={context.fieldName} onChange={() => undefined} readOnly value={row.partyCode} />
       ),
@@ -443,8 +443,8 @@ function createAccountingColumns(
     {
       header: "Party Name",
       id: "partyName",
-      width: 240,
-      widthClassName: "w-[15rem]",
+      width: 200,
+      widthClassName: "w-[12.5rem]",
       renderCell: (row, _index, context) => (
         <EntryPartyDropdown
           id={context.fieldId}
@@ -461,8 +461,8 @@ function createAccountingColumns(
     {
       header: "Responsibility Center Code",
       id: "responsibilityCenterCode",
-      width: 180,
-      widthClassName: "w-[11.25rem]",
+      width: 155,
+      widthClassName: "w-[9.75rem]",
       renderCell: (row, _index, context) => (
         <EntryTextInput
           id={context.fieldId}
@@ -476,8 +476,8 @@ function createAccountingColumns(
     {
       header: "Responsibility Center",
       id: "responsibilityCenter",
-      width: 210,
-      widthClassName: "w-[13.125rem]",
+      width: 180,
+      widthClassName: "w-[11.25rem]",
       renderCell: (row, _index, context) => (
         <EntryDropdown
           id={context.fieldId}
@@ -491,7 +491,7 @@ function createAccountingColumns(
         />
       ),
     },
-    textColumn("Remarks", "particulars", 260, isReadonly, onUpdateEntry),
+    textColumn("Remarks", "remarks", 260, isReadonly, onUpdateEntry),
   ];
 }
 

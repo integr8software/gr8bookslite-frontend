@@ -120,7 +120,7 @@ export const DisbursementVoucherInitialEntryDraft: DisbursementVoucherEntryDraft
   accountCode: "",
   accountName: "",
   atcCode: "",
-  particulars: "",
+  remarks: "",
   partyCode: "",
   partyName: "",
   refId: "",
@@ -146,7 +146,7 @@ export function createBlankDisbursementLineEntry(overrides: Partial<Disbursement
     credit: 0,
     debit: 0,
     id: `line-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    particulars: "",
+    remarks: "",
     partyCode: "",
     partyName: "",
     refId,
@@ -525,7 +525,7 @@ export const MockDisbursementVouchers: DisbursementVoucherRecord[] = [
     taxRate: "0%",
     taxDetails: createTaxDetails(18450, "0%"),
     remarks: "Rush replenishment approved for Q2 workspace consumables.",
-    referenceModule: "Account Payable Voucher",
+    referenceModule: "Accounts Payable Voucher",
     voucherReferenceNo: "DVR-2026-0094",
     invoiceReferenceNo: "INV-OFF-5521",
     paymentDueDate: "2026-05-21",
@@ -546,7 +546,7 @@ export const MockDisbursementVouchers: DisbursementVoucherRecord[] = [
         id: "entry-1001",
         accountCode: "5010-001",
         accountName: "Office Supplies Expense",
-        particulars: "Replenishment of paper, toner, and pantry labels",
+        remarks: "Replenishment of paper, toner, and pantry labels",
         debit: 18450,
         credit: 0,
         taxRate: "0%",
@@ -557,7 +557,7 @@ export const MockDisbursementVouchers: DisbursementVoucherRecord[] = [
         id: "entry-1002",
         accountCode: "1010102001",
         accountName: "Cash in Bank - BDO Operating",
-        particulars: "Settlement via BDO operating bank account",
+        remarks: "Settlement via BDO operating bank account",
         debit: 0,
         credit: 18450,
         taxRate: "0%",
@@ -620,7 +620,7 @@ export const MockDisbursementVouchers: DisbursementVoucherRecord[] = [
         id: "entry-1003",
         accountCode: "6080-011",
         accountName: "Professional Fees",
-        particulars: "Corporate legal retainer for May",
+        remarks: "Corporate legal retainer for May",
         debit: 22000,
         credit: 0,
         taxRate: "12%",
@@ -637,7 +637,7 @@ export const MockDisbursementVouchers: DisbursementVoucherRecord[] = [
         id: "entry-1004-vat",
         accountCode: "2010002011",
         accountName: "Input VAT",
-        particulars: "Input VAT - Corporate legal retainer for May",
+        remarks: "Input VAT - Corporate legal retainer for May",
         debit: 3000,
         credit: 0,
         taxRate: "0%",
@@ -649,7 +649,7 @@ export const MockDisbursementVouchers: DisbursementVoucherRecord[] = [
         id: "entry-1004-ewt",
         accountCode: "2010002002",
         accountName: "Expanded Withholding Tax",
-        particulars: "EWT - Corporate legal retainer for May",
+        remarks: "EWT - Corporate legal retainer for May",
         debit: 0,
         credit: 2500,
         taxRate: "0%",
@@ -662,7 +662,7 @@ export const MockDisbursementVouchers: DisbursementVoucherRecord[] = [
         id: "entry-1004",
         accountCode: "1010102002",
         accountName: "Cash in Bank - Metrobank Checking",
-        particulars: "Release of legal retainer through Metrobank checking account",
+        remarks: "Release of legal retainer through Metrobank checking account",
         debit: 0,
         credit: 22500,
         taxRate: "0%",
@@ -709,7 +709,7 @@ export const MockDisbursementVouchers: DisbursementVoucherRecord[] = [
         id: "entry-1005",
         accountCode: "6150-017",
         accountName: "Travel and Transportation",
-        particulars: "Field travel reimbursement",
+        remarks: "Field travel reimbursement",
         debit: 3200,
         credit: 0,
         taxRate: "0%",
@@ -720,7 +720,7 @@ export const MockDisbursementVouchers: DisbursementVoucherRecord[] = [
         id: "entry-1006",
         accountCode: "1001111",
         accountName: "Cash in Hand",
-        particulars: "Cash reimbursement release",
+        remarks: "Cash reimbursement release",
         debit: 0,
         credit: 3200,
         taxRate: "0%",
@@ -775,81 +775,74 @@ export function sanitizeDisbursementVoucherRecord(voucher: DisbursementVoucherRe
 }
 
 export const DisbursementVoucherCopySources: DisbursementVoucherCopySource[] = [
-  "Account Payable Voucher",
+  "Accounts Payable Voucher",
   "Advances to Suppliers",
   "Cash Advance",
   "Cash Advance Liquidation",
-  "Cash Advance ",
   "Cash Advance Multiple Entry",
+  "Multiple Entry Liquidation",
+  "Petty Cash Fund",
+  "Petty Cash Fund Replenishment",
   "Revolving Fund",
   "Revolving Fund Replenishment",
+  "Revolving Fund Return",
   "Purchase Order",
   "Purchase Journal",
   "Receiving Report",
 ];
 
-export const DisbursementVoucherCopyFromRecords: DisbursementVoucherCopyFromRecord[] = [
-  createDisbursementVoucherCopyFromRecord(
-    "copy-dv-1001",
-    "Account Payable Voucher",
-    "APV-2026-0041",
-    "PARTY-OD-204",
-    MockDisbursementTransactions[0],
-    MockDisbursementVouchers[0],
-  ),
-  createDisbursementVoucherCopyFromRecord(
-    "copy-dv-1002",
-    "Advances to Suppliers",
-    "ATS-2026-0017",
-    "PARTY-MUS-118",
-    MockDisbursementTransactions[1],
-  ),
-  createDisbursementVoucherCopyFromRecord(
-    "copy-dv-1003",
-    "Cash Advance",
-    "CA-2026-0021",
-    "EMP-044",
-    MockDisbursementTransactions[4],
-    MockDisbursementVouchers[2],
-  ),
-  createDisbursementVoucherCopyFromRecord(
-    "copy-dv-1004",
-    "Cash Advance Multiple Entry",
-    "CAME-2026-0015",
-    "EMP-044",
-    MockDisbursementTransactions[4],
-  ),
-  createDisbursementVoucherCopyFromRecord("copy-dv-1005", "Revolving Fund", "RF-2026-0007", "EMP-044", MockDisbursementTransactions[4]),
-  createDisbursementVoucherCopyFromRecord(
-    "copy-dv-1007",
-    "Revolving Fund Replenishment",
-    "PCFR-2026-0012",
-    "PARTY-TPI-611",
-    MockDisbursementTransactions[5],
-  ),
-  createDisbursementVoucherCopyFromRecord(
-    "copy-dv-1008",
-    "Purchase Order",
-    "PO-2026-0322",
-    "PARTY-LAW-108",
-    MockDisbursementTransactions[2],
-    MockDisbursementVouchers[1],
-  ),
-  createDisbursementVoucherCopyFromRecord(
-    "copy-dv-1009",
-    "Purchase Journal",
-    "PJ-2026-0088",
-    "PARTY-MUS-118",
-    MockDisbursementTransactions[1],
-  ),
-  createDisbursementVoucherCopyFromRecord(
-    "copy-dv-1010",
-    "Receiving Report",
-    "RR-2026-0144",
-    "PARTY-GFM-077",
-    MockDisbursementTransactions[3],
-  ),
+const DisbursementVoucherCopySourceMockDefinitions: Array<{
+  amount: number;
+  partyCode: string;
+  payee: string;
+  prefix: string;
+  purpose: string;
+  source: DisbursementVoucherCopySource;
+}> = [
+  { source: "Accounts Payable Voucher", prefix: "APV", partyCode: "PARTY-OD-204", payee: "North Harbor Office Depot", amount: 18450, purpose: "Approved supplier payable" },
+  { source: "Advances to Suppliers", prefix: "ATS", partyCode: "PARTY-MUS-118", payee: "Metro Utilities Services", amount: 12500, purpose: "Supplier mobilization advance" },
+  { source: "Cash Advance", prefix: "CA", partyCode: "EMP-044", payee: "Juan dela Cruz", amount: 3200, purpose: "Employee field cash advance" },
+  { source: "Cash Advance Liquidation", prefix: "CAL", partyCode: "EMP-071", payee: "Maria Santos", amount: 4875, purpose: "Liquidated travel expenses" },
+  { source: "Cash Advance Multiple Entry", prefix: "CAME", partyCode: "EMP-102", payee: "Jose Ramirez", amount: 8800, purpose: "Department cash advances" },
+  { source: "Multiple Entry Liquidation", prefix: "MEL", partyCode: "EMP-117", payee: "Angela Cruz", amount: 7650, purpose: "Multiple advance liquidation" },
+  { source: "Petty Cash Fund", prefix: "PCF", partyCode: "EMP-128", payee: "Arjay Capili", amount: 5000, purpose: "Petty cash fund establishment" },
+  { source: "Petty Cash Fund Replenishment", prefix: "PCFR", partyCode: "EMP-136", payee: "Finance Cashier", amount: 9450, purpose: "Petty cash replenishment" },
+  { source: "Revolving Fund", prefix: "RF", partyCode: "EMP-145", payee: "Operations Custodian", amount: 15000, purpose: "Revolving fund release" },
+  { source: "Revolving Fund Replenishment", prefix: "RFR", partyCode: "EMP-152", payee: "Branch Cashier", amount: 11250, purpose: "Revolving fund replenishment" },
+  { source: "Revolving Fund Return", prefix: "RFRET", partyCode: "EMP-166", payee: "Regional Custodian", amount: 6250, purpose: "Unused revolving fund return" },
+  { source: "Purchase Order", prefix: "PO", partyCode: "PARTY-LAW-108", payee: "Santos and Velasco Legal", amount: 25000, purpose: "Approved purchase order" },
+  { source: "Purchase Journal", prefix: "PJ", partyCode: "PARTY-TPI-611", payee: "TechPro Infrastructure", amount: 56000, purpose: "Posted purchase journal" },
+  { source: "Receiving Report", prefix: "RR", partyCode: "PARTY-GFM-077", payee: "Global Freight Movers", amount: 13800, purpose: "Accepted receiving report" },
 ];
+
+export const DisbursementVoucherCopyFromRecords: DisbursementVoucherCopyFromRecord[] =
+  DisbursementVoucherCopySourceMockDefinitions.flatMap((definition, sourceIndex) =>
+    Array.from({ length: 3 }, (_, recordIndex) => {
+      const sequence = 41 + sourceIndex * 3 + recordIndex;
+      const documentDay = String(2 + sourceIndex * 2 + recordIndex).padStart(2, "0");
+      const sourceNo = `${definition.prefix}-2026-${String(sequence).padStart(4, "0")}`;
+      const baseTransaction = MockDisbursementTransactions[sourceIndex % MockDisbursementTransactions.length];
+      const transaction: DisbursementTransactionRecord = {
+        ...baseTransaction,
+        id: `copy-dv-transaction-${sourceIndex + 1}-${recordIndex + 1}`,
+        transactionNo: `TXN-2026-DV-${String(sequence).padStart(4, "0")}`,
+        payee: definition.payee,
+        purpose: `${definition.purpose} batch ${recordIndex + 1}.`,
+        transactionDate: `2026-07-${documentDay}`,
+        paymentDueDate: `2026-08-${String(2 + sourceIndex).padStart(2, "0")}`,
+        amount: definition.amount + recordIndex * 125,
+        paymentMethod: "Bank Transfer",
+      };
+
+      return createDisbursementVoucherCopyFromRecord(
+        `copy-dv-${sourceIndex + 1}-${recordIndex + 1}`,
+        definition.source,
+        sourceNo,
+        definition.partyCode,
+        transaction,
+      );
+    }),
+  );
 
 export function buildDisbursementVoucherPreviewRows(transactions: DisbursementTransactionRecord[], vouchers: DisbursementVoucherRecord[]) {
   const voucherByTransactionId = new Map(vouchers.map((voucher) => [voucher.transactionId, voucher]));
@@ -1136,7 +1129,7 @@ export function createDisbursementLineEntry(draft: DisbursementVoucherEntryDraft
     accountCode: draft.accountCode.trim(),
     accountName: draft.accountName.trim(),
     atcCode: taxDetails.atcCode,
-    particulars: draft.particulars.trim(),
+    remarks: draft.remarks.trim(),
     partyCode: draft.partyCode?.trim() ?? "",
     partyName: draft.partyName?.trim() ?? "",
     refId: taxDetails.refId,
@@ -1164,7 +1157,7 @@ export function createAutoDisbursementLineEntries(
     amount,
     ...taxProfile,
   });
-  const creditParticulars = createCreditParticulars(transaction, bankPaymentAccount, paymentAccount);
+  const creditRemarks = createCreditRemarks(transaction, bankPaymentAccount, paymentAccount);
   const refId = transaction.transactionNo || transaction.id;
   const commonFields = {
     partyCode: getDisbursementVoucherPartyCode(transaction.payee),
@@ -1178,7 +1171,7 @@ export function createAutoDisbursementLineEntries(
       accountCode: debitAccount.accountCode,
       accountName: debitAccount.accountName,
       atcCode: "",
-      particulars: transaction.purpose,
+      remarks: transaction.purpose,
       ...commonFields,
       debit: taxDetails.netAmount,
       credit: 0,
@@ -1198,7 +1191,7 @@ export function createAutoDisbursementLineEntries(
       accountCode: InputVatAccount.accountCode,
       accountName: InputVatAccount.accountName,
       atcCode: "",
-      particulars: `Input VAT - ${transaction.purpose}`,
+      remarks: `Input VAT - ${transaction.purpose}`,
       ...commonFields,
       debit: taxDetails.vatAmount,
       credit: 0,
@@ -1218,7 +1211,7 @@ export function createAutoDisbursementLineEntries(
       accountCode: ExpandedWithholdingTaxAccount.accountCode,
       accountName: ExpandedWithholdingTaxAccount.accountName,
       atcCode: taxDetails.ewtCode,
-      particulars: `EWT - ${transaction.purpose}`,
+      remarks: `EWT - ${transaction.purpose}`,
       ...commonFields,
       debit: 0,
       credit: taxDetails.ewtAmount,
@@ -1237,7 +1230,7 @@ export function createAutoDisbursementLineEntries(
     accountCode: creditAccount.accountCode,
     accountName: creditAccount.accountName,
     atcCode: "",
-    particulars: creditParticulars,
+    remarks: creditRemarks,
     ...commonFields,
     debit: 0,
     credit: taxDetails.amount,
@@ -1291,7 +1284,7 @@ export function applyBankAccountToDisbursementLineEntries(
           ...entry,
           accountCode: bankAccount.accountCode,
           accountName: bankAccount.accountTitle,
-          particulars: createCreditParticulars(undefined, bankAccount, paymentAccount),
+          remarks: createCreditRemarks(undefined, bankAccount, paymentAccount),
         }
       : entry,
   );
@@ -1697,7 +1690,7 @@ function createDefaultCashInBankCreditAccount() {
   };
 }
 
-function createCreditParticulars(
+function createCreditRemarks(
   transaction?: DisbursementTransactionRecord,
   bankAccount?: DisbursementVoucherBankAccount | null,
   paymentAccount?: DisbursementVoucherPaymentAccount | null,

@@ -3,7 +3,19 @@ import type { ReactNode } from "react";
 export type AppDialogTone = "default" | "danger" | "success" | "warning" | "info" | "question" | "activate" | "deactivate";
 
 export type AppDialogIconTone =
-  "approve" | "activate" | "cancel" | "deactivate" | "disapprove" | "error" | "info" | "question" | "success" | "warning";
+  | "approve"
+  | "activate"
+  | "cancel"
+  | "deactivate"
+  | "disapprove"
+  | "error"
+  | "info"
+  | "question"
+  | "save"
+  | "success"
+  | "undo"
+  | "update"
+  | "warning";
 
 export type AppDialogProps = {
   animateIcon?: boolean;

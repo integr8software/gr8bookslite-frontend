@@ -144,7 +144,7 @@ export function useDisbursementVoucherStore<TSelected = DisbursementVoucherStore
     mutationFn: async (voucher: DisbursementVoucherRecord) => voucher,
     onSuccess: (voucher) => {
       updateCachedVouchers((vouchers) => vouchers.map((currentVoucher) => (currentVoucher.id === voucher.id ? voucher : currentVoucher)));
-      toast.success("Disbursement voucher updated.");
+      toast.success("Disbursement Voucher Updated.");
     },
     onError: () => {
       toast.error("Could not update disbursement voucher. Please try again.");
@@ -155,7 +155,7 @@ export function useDisbursementVoucherStore<TSelected = DisbursementVoucherStore
     mutationFn: async (voucherId: string) => voucherId,
     onSuccess: (voucherId) => {
       updateCachedVouchers((vouchers) => vouchers.filter((voucher) => voucher.id !== voucherId));
-      toast.success("Disbursement voucher deleted.");
+      toast.success("Disbursement Voucher Deleted.");
     },
     onError: () => {
       toast.error("Could not delete disbursement voucher. Please try again.");

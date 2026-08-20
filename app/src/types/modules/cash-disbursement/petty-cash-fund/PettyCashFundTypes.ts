@@ -19,7 +19,7 @@ export type PettyCashFundItem = {
   payeeName: string;
   orNo: string;
   tinNo: string;
-  particulars: string;
+  remarks: string;
   amount: string;
   netAmount: string;
   vatAmount: string;
@@ -60,7 +60,7 @@ export type PettyCashFundAccountingEntry = {
   credit: string;
   partyCode: string;
   partyName: string;
-  particulars: string;
+  remarks: string;
 };
 
 export type PettyCashFundAccountingColumnId = Exclude<keyof PettyCashFundAccountingEntry, "id">;

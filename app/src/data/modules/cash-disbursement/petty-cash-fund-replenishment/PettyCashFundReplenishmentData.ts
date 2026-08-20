@@ -1,11 +1,14 @@
 import { PettyCashFundReplenishmentStatuses } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentConstants";
+import { calculatePettyCashFundTotals } from "@/app/src/data/modules/cash-disbursement/petty-cash-fund/PettyCashFundData";
 import { formatMoneyNumberDisplayValue, parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
+import type { PettyCashFundRecord } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";
 import type {
   PettyCashFundReplenishmentEntry,
   PettyCashFundReplenishmentFormValues,
   PettyCashFundReplenishmentRecord,
   PettyCashFundReplenishmentStatus,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentTypes";
+import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 import { todayDateValue } from "@/app/src/utils/date.util";
 
 export const PettyCashFundReplenishmentSeedRecords: PettyCashFundReplenishmentRecord[] = [
@@ -150,6 +153,54 @@ export function calculatePettyCashFundReplenishmentTotals(entries: PettyCashFund
   );
 }
 
+export function createPettyCashFundReplenishmentCopyFromRecords(records: PettyCashFundRecord[]): AppCopyFromRecord[] {
+  return records.map((record) => ({
+    amount: formatPettyCashFundReplenishmentAmount(getPettyCashFundReplenishmentSourceTotals(record).totalAmount),
+    documentDate: record.documentDate,
+    id: record.id,
+    partyName: record.partyName,
+    remarks: record.remarks,
+    source: "Petty Cash Fund",
+    sourceNo: record.transactionNo,
+  }));
+}
+
+export function applyPettyCashFundToReplenishmentForm(
+  values: PettyCashFundReplenishmentFormValues,
+  source: PettyCashFundRecord,
+): PettyCashFundReplenishmentFormValues {
+  const totals = getPettyCashFundReplenishmentSourceTotals(source);
+  const sourceValues = source.formValues;
+
+  return {
+    ...values,
+    accountCode: source.accountCode,
+    accountTitle: source.accountTitle,
+    currency: sourceValues?.currency ?? values.currency,
+    exchangeRate: sourceValues?.exchangeRate ?? values.exchangeRate,
+    partyCode: source.partyCode,
+    partyName: source.partyName,
+    projectCode: sourceValues?.projectCode ?? "",
+    projectName: sourceValues?.projectName ?? "",
+    remarks: source.remarks,
+    responsibilityCenter: sourceValues?.responsibilityCenter ?? "",
+    responsibilityCenterCode: sourceValues?.responsibilityCenterCode ?? "",
+    entries: [
+      {
+        ...createBlankPettyCashFundReplenishmentEntry(),
+        accountCode: source.accountCode,
+        accountTitle: source.accountTitle,
+        netAmount: formatPettyCashFundReplenishmentAmount(totals.netAmount),
+        pettyCashDate: source.documentDate,
+        pettyCashNo: source.transactionNo,
+        remarks: source.remarks,
+        totalAmount: formatPettyCashFundReplenishmentAmount(totals.totalAmount),
+        vatAmount: formatPettyCashFundReplenishmentAmount(totals.vatAmount),
+      },
+    ],
+  };
+}
+
 export function createPettyCashFundReplenishmentRecord(
   values: PettyCashFundReplenishmentFormValues,
   status: PettyCashFundReplenishmentStatus,
@@ -183,6 +234,24 @@ export function createPettyCashFundReplenishmentRecord(
 
 export function formatPettyCashFundReplenishmentAmount(value: number) {
   return formatMoneyNumberDisplayValue(value.toFixed(2));
+}
+
+function getPettyCashFundReplenishmentSourceTotals(record: PettyCashFundRecord) {
+  if (!record.formValues) {
+    return {
+      netAmount: record.amount,
+      totalAmount: record.amount,
+      vatAmount: 0,
+    };
+  }
+
+  const totals = calculatePettyCashFundTotals(record.formValues.items);
+
+  return {
+    netAmount: totals.netAmount,
+    totalAmount: totals.grossAmount,
+    vatAmount: totals.vatAmount,
+  };
 }
 
 function createSeed(

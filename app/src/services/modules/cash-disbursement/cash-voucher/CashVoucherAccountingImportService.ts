@@ -23,8 +23,8 @@ import type {
   CashVoucherAccountingGridSession,
   CashVoucherFormValues,
 } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
-import { parseMoneyNumberInput } from "@/app/src/ui/shared/money/MoneyNumberField";
-import { type ModuleDataEntryClearAction } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
+import type { ModuleDataEntryClearAction } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 import { formatAmount } from "@/app/src/utils/currency.util";
 
 export function createInitialRows(entries: CashVoucherLineEntry[]) {
@@ -44,7 +44,7 @@ function mapEntryToEditableRow(entry: CashVoucherLineEntry): EditableGridRow {
     credit: entry.credit > 0 ? formatAmount(entry.credit) : "",
     debit: entry.debit > 0 ? formatAmount(entry.debit) : "",
     id: entry.id,
-    particulars: entry.particulars,
+    remarks: entry.remarks,
     taxDetails: entry.taxDetails,
     taxRate: entry.taxRate || "0%",
   };
@@ -57,7 +57,7 @@ export function createBlankEditableRow(): EditableGridRow {
     credit: "",
     debit: "",
     id: createGridRowId(),
-    particulars: "",
+    remarks: "",
     taxDetails: createTaxDetails(0, "0%"),
     taxRate: "0%",
   };
@@ -291,7 +291,7 @@ function mapImportedRows(rawRows: string[][]) {
   const indexes = headerIndexes ?? {
     accountCode: 0,
     accountName: 1,
-    particulars: 2,
+    remarks: 2,
     taxRate: 3,
     debit: 4,
     credit: 5,
@@ -330,8 +330,8 @@ function normalizeImportHeader(value: string): GridColumnId | null {
     return "accountName";
   }
 
-  if (["particulars", "particular", "description", "remarks", "memo"].includes(normalized)) {
-    return "particulars";
+  if (["remarks", "particulars", "particular", "description", "memo"].includes(normalized)) {
+    return "remarks";
   }
 
   if (["taxrate", "tax", "vat", "vatrate"].includes(normalized)) {
@@ -361,7 +361,7 @@ function createImportedGridRow(row: string[], indexes: Partial<Record<GridColumn
     credit,
     debit,
     id: createGridRowId(),
-    particulars: getImportedValue(row, indexes.particulars),
+    remarks: getImportedValue(row, indexes.remarks),
     taxDetails: createTaxDetails(amount, taxRate),
     taxRate,
   };
@@ -498,7 +498,7 @@ export function hasRowValue(row: EditableGridRow) {
   return Boolean(
     row.accountCode.trim() ||
     row.accountName.trim() ||
-    row.particulars.trim() ||
+    row.remarks.trim() ||
     normalizeAmount(row.debit) > 0 ||
     normalizeAmount(row.credit) > 0,
   );
@@ -520,7 +520,7 @@ export function hasRowData(row: EditableGridRow) {
   return (
     row.accountCode.trim() !== "" ||
     row.accountName.trim() !== "" ||
-    row.particulars.trim() !== "" ||
+    row.remarks.trim() !== "" ||
     normalizeAmount(row.debit) > 0 ||
     normalizeAmount(row.credit) > 0 ||
     row.taxRate !== "0%"
@@ -531,7 +531,7 @@ export function isCompleteRow(row: EditableGridRow) {
   return (
     row.accountCode.trim() !== "" &&
     row.accountName.trim() !== "" &&
-    row.particulars.trim() !== "" &&
+    row.remarks.trim() !== "" &&
     (normalizeAmount(row.debit) > 0 || normalizeAmount(row.credit) > 0)
   );
 }
@@ -638,7 +638,7 @@ export function buildLineEntries(rows: EditableGridRow[]): CashVoucherLineEntry[
       credit,
       debit,
       id: row.id,
-      particulars: row.particulars.trim(),
+      remarks: row.remarks.trim(),
       status: "Pending",
       taxDetails: syncTaxDetailsAmount(row.taxDetails, amount, row.taxRate),
       taxRate: row.taxRate || "0%",

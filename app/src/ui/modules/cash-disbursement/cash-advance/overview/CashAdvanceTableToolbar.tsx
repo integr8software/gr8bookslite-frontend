@@ -1,5 +1,5 @@
 import { CashAdvanceStatusFilterOptions } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
-import type { useCashAdvanceTable } from "@/app/src/hooks/modules/cash-disbursement/cash-advance/useCashAdvance";
+import type { CashAdvanceTableState } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 import { AmountRangePicker } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import { DateRangePicker } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
 import {
@@ -9,8 +9,6 @@ import {
   ModuleTableSearch,
   ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
-
-type CashAdvanceTableState = ReturnType<typeof useCashAdvanceTable>;
 
 export function CashAdvanceTableToolbar({ tableState }: { tableState: CashAdvanceTableState }) {
   return (
@@ -22,7 +20,7 @@ export function CashAdvanceTableToolbar({ tableState }: { tableState: CashAdvanc
         <div className="sm:col-span-2 2xl:col-span-1">
           <ModuleTableSearch
             label="Search cash advances"
-            placeholder="Search by Cash Advance No., Party Name, Account Title, or Remarks"
+            placeholder="Search by CA No., Party Name, Account Title, or Remarks"
             value={tableState.query}
             onChange={tableState.setQuery}
           />

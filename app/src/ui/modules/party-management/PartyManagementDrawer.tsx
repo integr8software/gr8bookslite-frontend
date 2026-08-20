@@ -3,9 +3,7 @@
 import { useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import toast from "react-hot-toast";
 import {
-  PartyManagementDrawerPrimaryActionClassName,
   PartyManagementDrawerFormId,
-  PartyManagementDrawerSecondaryActionClassName,
   PartyAccountingAccountFieldLabels,
   PartyDefaultNationality,
   PartyTypeOptions,
@@ -53,9 +51,7 @@ import {
   PartyInformationRequiredFieldsToastMessage,
   validatePartyInformationForm,
 } from "@/app/src/validations/modules/party-management/PartyManagementValidation";
-import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
-import { ModuleSavingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { PartyInformationDetailsFields } from "@/app/src/ui/modules/party-management/PartyInformationDetailsFields";
 import { ChartAccountQuickAddDialog } from "@/app/src/ui/modules/financial-maintenance/charts-of-accounts/ChartAccountQuickAddDialog";
 import { TermsMaintenanceQuickAddDialog } from "@/app/src/ui/modules/financial-maintenance/terms-maintenance/TermsMaintenanceQuickAddDialog";
@@ -74,7 +70,7 @@ export function PartyManagementDrawer({
   onCreateParty,
   records,
   suggestedPartyType,
-  title = "Add Party Code",
+  title = "Add Party",
 }: PartyManagementDrawerProps) {
   const [values, setValues] = useState<PartyInformationFormValues>(() =>
     createPartyDrawerInitialValues(records, suggestedPartyType),
@@ -86,8 +82,6 @@ export function PartyManagementDrawer({
   const termDropdown = useTermDropdownOptions();
   const transactionNumberSetup = useTransactionNumberSetupStore();
   const [errors, setErrors] = useState<PartyInformationFormErrors>({});
-  const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
-  const [isSaveConfirmPending, setIsSaveConfirmPending] = useState(false);
   const [accountTitleDialog, setAccountTitleDialog] = useState<ChartAccountQuickAddDialogState>(null);
   const [isTermDialogOpen, setIsTermDialogOpen] = useState(false);
   const activeAddress = values.addresses.find((address) => address.id === values.activeAddressId) ?? values.addresses[0] ?? values.address;
@@ -102,7 +96,6 @@ export function PartyManagementDrawer({
     regionName: activeAddress.region,
   });
   const isClassificationSelected = Boolean(values.classification);
-  const canSave = isClassificationSelected && values.partyTypes.length > 0;
   const partyNumberSetup = useMemo(
     () => getPartyManagementNumberSetup(transactionNumberSetup.setups, activeBranchId),
     [activeBranchId, transactionNumberSetup.setups],
@@ -481,7 +474,7 @@ export function PartyManagementDrawer({
     return true;
   }
 
-  function handleSubmit(event?: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event?: FormEvent<HTMLFormElement>) {
     event?.preventDefault();
 
     if (!validateBeforeSubmit()) {
@@ -490,62 +483,30 @@ export function PartyManagementDrawer({
 
     const record = createPartyInformationRecord(effectiveValues);
 
-    onAddRecord(record);
-    onCreateParty(record);
-    onClose();
+    try {
+      const savedRecord = await onAddRecord(record);
+
+      onCreateParty(savedRecord);
+      onClose();
+    } catch {
+      // The mutation owns its error feedback. Keep the drawer open so the user can retry.
+    }
   }
 
   return (
     <ModuleDrawer
       description={description}
-      footer={
-        <div className="flex flex-wrap justify-end gap-2">
-          <button type="button" onClick={onClose} className={PartyManagementDrawerSecondaryActionClassName}>
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              if (validateBeforeSubmit()) {
-                setIsSaveDialogOpen(true);
-              }
-            }}
-            disabled={isPending || !canSave}
-            className={PartyManagementDrawerPrimaryActionClassName}
-          >
-            Save Party
-          </button>
-        </div>
-      }
+      eyebrow="Party Management"
+      formId={PartyManagementDrawerFormId}
       isOpen={isOpen}
+      isSaving={isPending}
       maxWidthClassName="max-w-5xl"
+      onBeforeSaveConfirm={validateBeforeSubmit}
       onClose={onClose}
+      submitLabel="Save Party"
       title={title}
     >
-      <AppDialog
-        confirmLabel="Confirm"
-        description="This will create a new party using the details you entered."
-        iconTone="question"
-        isOpen={isSaveDialogOpen}
-        isPending={isPending || isSaveConfirmPending}
-        pendingLabel={ModuleSavingLabel}
-        title="Save this party?"
-        tone="success"
-        onCancel={() => {
-          if (!isPending && !isSaveConfirmPending) {
-            setIsSaveDialogOpen(false);
-          }
-        }}
-        onConfirm={() => {
-          setIsSaveConfirmPending(true);
-          handleSubmit();
-          window.setTimeout(() => {
-            setIsSaveConfirmPending(false);
-            setIsSaveDialogOpen(false);
-          }, 700);
-        }}
-      />
-      <div id={PartyManagementDrawerFormId} className="px-6 py-5">
+      <form id={PartyManagementDrawerFormId} onSubmit={handleSubmit} className="px-6 py-5">
         <PartyInformationDetailsFields
           accountOptions={partyAccountOptions.accountOptions}
           errors={errors}
@@ -575,7 +536,7 @@ export function PartyManagementDrawer({
           onSelectTerm={selectTerm}
           onUpdateField={updateField}
         />
-      </div>
+      </form>
       <ChartAccountQuickAddDialog
         accountLabel={accountTitleDialog ? PartyAccountingAccountFieldLabels[accountTitleDialog.field] : "Account"}
         isOpen={Boolean(accountTitleDialog)}

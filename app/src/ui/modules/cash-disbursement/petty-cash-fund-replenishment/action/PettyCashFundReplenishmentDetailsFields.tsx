@@ -4,7 +4,7 @@ import {
   PettyCashFundReplenishmentProjectOptions,
   PettyCashFundReplenishmentResponsibilityCenterOptions,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentConstants";
-import type { PettyCashFundReplenishmentActionPageState } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-fund-replenishment/usePettyCashFundReplenishmentActionPage";
+import type { PettyCashFundReplenishmentActionPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLookupDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppLookupDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
@@ -166,16 +166,16 @@ export function PettyCashFundReplenishmentDetailsFields({
             value={page.values.transactionNo}
             isReadonly
             isRequired
-            label="Petty Cash Fund Replenishment No."
+            label="PCFR No."
             error={page.errors.transactionNo}
             onValueChange={(value) => page.updateField("transactionNo", value)}
-            placeholder="Auto Generated Petty Cash Fund Replenishment Transaction Number"
+            placeholder="Auto Generated PCFR Transaction Number"
           />
           <TransactionTextField
             value={page.values.documentDate}
             isReadonly={page.isReadonly}
             isRequired
-            label="Petty Cash Fund Replenishment Date"
+            label="PCFR Date"
             error={page.errors.documentDate}
             type="date"
             onValueChange={(value) => page.updateField("documentDate", value)}

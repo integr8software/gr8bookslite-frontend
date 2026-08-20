@@ -33,7 +33,7 @@ export type RevolvingFundReplenishmentAccountingEntry = {
   credit: string;
   partyCode: string;
   partyName: string;
-  particulars: string;
+  remarks: string;
 };
 
 export type RevolvingFundReplenishmentAccountingColumnId = Exclude<keyof RevolvingFundReplenishmentAccountingEntry, "id">;

@@ -13,6 +13,7 @@ import {
 } from "@tanstack/react-table";
 import { ReceiptText } from "lucide-react";
 import toast from "react-hot-toast";
+import { CashDisbursementEmptyRange } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import {
   PettyCashFundReplenishmentColumnLabels,
   PettyCashFundReplenishmentDefaultColumnVisibility,
@@ -36,15 +37,13 @@ import { formatPartOfTotalPercentage } from "@/app/src/utils/percentage.util";
 import { normalizeLowercaseWhitespace } from "@/app/src/utils/string.util";
 
 const columnHelper = createColumnHelper<PettyCashFundReplenishmentRecord>();
-const emptyDateRange: DateRangeValue = { from: "", to: "" };
-const emptyAmountRange: AmountRangeValue = { from: "", to: "" };
 
 export function usePettyCashFundReplenishmentOverviewPage() {
   const [records, setRecords] = useState(getPettyCashFundReplenishmentRecords);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("All");
-  const [dateRange, setDateRange] = useState<DateRangeValue>(emptyDateRange);
-  const [amountRange, setAmountRange] = useState<AmountRangeValue>(emptyAmountRange);
+  const [dateRange, setDateRange] = useState<DateRangeValue>(CashDisbursementEmptyRange);
+  const [amountRange, setAmountRange] = useState<AmountRangeValue>(CashDisbursementEmptyRange);
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => PettyCashFundReplenishmentDefaultColumnVisibility);
@@ -189,7 +188,7 @@ export function usePettyCashFundReplenishmentOverviewPage() {
     setRecords(next);
     savePettyCashFundReplenishmentRecords(next);
     setLastSyncedAt(Date.now());
-    toast.success(`Petty cash fund replenishment marked as ${status}.`);
+    toast.success(`Petty Cash Fund Replenishment Marked as ${status}.`);
   }
 
   function refreshRecords() {
@@ -223,4 +222,3 @@ function getMetricTone(status: PettyCashFundReplenishmentStatus) {
   return "blue" as const;
 }
 
-export type { PettyCashFundReplenishmentOverviewPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentTypes";

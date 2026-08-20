@@ -7,6 +7,7 @@ import {
   DefaultVisibleDisbursementEntryColumnOrder,
   DefaultVisibleExpenseEntryColumnOrder,
   DisbursementEntryColumnLabels,
+  DisbursementVoucherExpenseEntryView,
   ExpenseEntryColumnLabels,
   MultiCheckColumnIds,
   ProtectedDisbursementEntryColumnIds,
@@ -58,8 +59,6 @@ import {
   estimateDisbursementEntryTextWidth,
 } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/DisbursementVoucherEntryCellControls";
 
-const ExpenseEntryView: DisbursementEntryView = "expense";
-
 export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
   const {
     bankAccount,
@@ -91,7 +90,7 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
     totalDebit,
   } = props;
   const variance = Math.abs(totalDebit - totalCredit);
-  const [entryView, setEntryView] = useState<DisbursementEntryView>(ExpenseEntryView);
+  const [entryView, setEntryView] = useState<DisbursementEntryView>(DisbursementVoucherExpenseEntryView);
   const taxCodesQuery = useAlphanumericTaxCodes();
   const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
   const vatOptions = useMemo(() => createVatOptions(taxCodes), [taxCodes]);
@@ -258,8 +257,8 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
     () => visibleExpenseColumnOrder.map((columnId) => allExpenseColumns[columnId]),
     [allExpenseColumns, visibleExpenseColumnOrder],
   );
-  const activeColumns = entryView === ExpenseEntryView ? expenseColumns : columns;
-  const activeRows = entryView === ExpenseEntryView ? expenseRows : entries;
+  const activeColumns = entryView === DisbursementVoucherExpenseEntryView ? expenseColumns : columns;
+  const activeRows = entryView === DisbursementVoucherExpenseEntryView ? expenseRows : entries;
   const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
     () =>
       columnOrder
@@ -290,7 +289,7 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
   );
 
   function updateColumnHeader(columnId: string, header: string) {
-    if (entryView === ExpenseEntryView && isExpenseEntryColumnId(columnId)) {
+    if (entryView === DisbursementVoucherExpenseEntryView && isExpenseEntryColumnId(columnId)) {
       setExpenseColumnLabels((currentLabels) => ({
         ...currentLabels,
         [columnId]: header,
@@ -309,7 +308,7 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
   }
 
   function updateColumnWidth(columnId: string, width: number) {
-    if (entryView === ExpenseEntryView && isExpenseEntryColumnId(columnId)) {
+    if (entryView === DisbursementVoucherExpenseEntryView && isExpenseEntryColumnId(columnId)) {
       setExpenseColumnWidths((currentWidths) => ({
         ...currentWidths,
         [columnId]: clampColumnWidth(width),
@@ -328,7 +327,7 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
   }
 
   function fitColumnWidth(columnId: string) {
-    if (entryView === ExpenseEntryView && isExpenseEntryColumnId(columnId)) {
+    if (entryView === DisbursementVoucherExpenseEntryView && isExpenseEntryColumnId(columnId)) {
       updateColumnWidth(columnId, estimateDisbursementEntryTextWidth(expenseColumnLabels[columnId], 76));
       return;
     }
@@ -348,7 +347,7 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
   }
 
   function moveColumn(fromColumnId: string, toColumnId: string) {
-    if (entryView === ExpenseEntryView && isExpenseEntryColumnId(fromColumnId) && isExpenseEntryColumnId(toColumnId)) {
+    if (entryView === DisbursementVoucherExpenseEntryView && isExpenseEntryColumnId(fromColumnId) && isExpenseEntryColumnId(toColumnId)) {
       setExpenseColumnOrder((currentOrder) => moveEntryColumn(currentOrder, fromColumnId, toColumnId));
       return;
     }
@@ -361,7 +360,7 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
   }
 
   function toggleColumnVisibility(columnId: string, isVisible: boolean) {
-    if (entryView === ExpenseEntryView && isExpenseEntryColumnId(columnId)) {
+    if (entryView === DisbursementVoucherExpenseEntryView && isExpenseEntryColumnId(columnId)) {
       if (!isVisible && ProtectedExpenseEntryColumnIds.has(columnId)) {
         return;
       }
@@ -384,7 +383,7 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
   }
 
   function resetColumns() {
-    if (entryView === ExpenseEntryView) {
+    if (entryView === DisbursementVoucherExpenseEntryView) {
       setExpenseColumnOrder([...DefaultExpenseEntryColumnOrder]);
       setVisibleExpenseColumnIds([...DefaultVisibleExpenseEntryColumnOrder]);
       setExpenseColumnWidths({ ...DefaultExpenseEntryColumnWidths });
@@ -406,7 +405,7 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
           description=""
           emptyRowLabel="entry"
           error={errors.lineEntries}
-          columnOptions={entryView === ExpenseEntryView ? expenseColumnOptions : columnOptions}
+          columnOptions={entryView === DisbursementVoucherExpenseEntryView ? expenseColumnOptions : columnOptions}
           summaryCells={
             entryView === "accounting"
               ? {
@@ -434,7 +433,7 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
             <div role="tablist" aria-label="Entry view" className="inline-flex rounded-lg border border-darknavy/10 bg-offwhite/70 p-1">
               {(
                 [
-                  [ExpenseEntryView, "Expense Details"],
+                  [DisbursementVoucherExpenseEntryView, "Expense Details"],
                   ["accounting", "Accounting Entries"],
                 ] as const
               ).map(([view, label]) => {

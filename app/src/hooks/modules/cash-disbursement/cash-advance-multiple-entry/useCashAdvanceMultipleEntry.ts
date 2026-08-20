@@ -80,7 +80,7 @@ export function useCashAdvanceMultipleEntryStore<TSelected = CashAdvanceMultiple
       return nextEntries;
     });
     setLastSyncedAt(Date.now());
-    toast.success(`Cash advance multiple entry marked as ${status}.`);
+    toast.success(`Cash Advance Multiple Entry Marked as ${status}.`);
   }, []);
   const state = useMemo<CashAdvanceMultipleEntryStoreState>(
     () => ({
@@ -204,7 +204,7 @@ export function useCashAdvanceMultipleEntryActionForm(
       setLoadedRecord(nextRecord);
       setValues(createCashAdvanceMultipleEntryFormValuesFromRecord(nextRecord));
       draft.clearDraft();
-      toast.success(mode === "edit" ? "Cash advance multiple entry updated." : "Cash advance multiple entry saved.");
+      toast.success(mode === "edit" ? "Cash Advance Multiple Entry Updated." : "Cash Advance Multiple Entry Saved.");
       onSaved?.(nextRecord);
       return true;
     } catch {
@@ -240,7 +240,7 @@ export function useCashAdvanceMultipleEntryActionForm(
       writeStoredCashAdvanceMultipleEntries(nextEntries);
       setLoadedRecord(nextRecord);
       setValues(nextValues);
-      toast.success(`Cash advance multiple entry marked as ${status}.`);
+      toast.success(`Cash Advance Multiple Entry Marked as ${status}.`);
     } catch {
       toast.error("Could not update the cash advance multiple entry. Please try again.");
       releaseActionLock();
@@ -319,16 +319,16 @@ export function useCashAdvanceMultipleEntryTable(records: CashAdvanceMultipleEnt
       {
         accessorKey: "transNo",
         id: "transNo",
-        header: "Cash Advance Multiple Entry No.",
+        header: "CAME No.",
         size: CashAdvanceMultipleEntryOverviewColumnWidths.transactionNumber,
-        meta: { label: "Cash Advance Multiple Entry No." },
+        meta: { label: "CAME No." },
       },
       {
         accessorKey: "documentDate",
         id: "documentDate",
-        header: "Document Date",
+        header: "CAME Date",
         size: CashAdvanceMultipleEntryOverviewColumnWidths.documentDate,
-        meta: { label: "Document Date" },
+        meta: { label: "CAME Date" },
       },
       {
         accessorKey: "partyCode",

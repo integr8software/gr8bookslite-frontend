@@ -30,13 +30,13 @@ function createPdfDefinition(values: PettyCashFundReplenishmentFormValues): TDoc
       {
         columns: [
           { text: [{ text: "Party: ", bold: true }, values.partyName] },
-          { text: [{ text: "Document Date: ", bold: true }, formatDate(values.documentDate)] },
+          { text: [{ text: "PCFR Date: ", bold: true }, formatDate(values.documentDate)] },
           { text: [{ text: "Total Amount: ", bold: true }, formatCurrency(totals.totalAmount)] },
         ],
         margin: [0, 0, 0, 16],
       },
       {
-        table: { headerRows: 1, widths: [65, 100, "*", 80], body: [["Date", "Petty Cash No.", "Account Title", "Total Amount"], ...rows] },
+        table: { headerRows: 1, widths: [65, 100, "*", 80], body: [["PCF Date", "PCF No.", "Account Title", "Total Amount"], ...rows] },
       },
       { text: [{ text: "Remarks: ", bold: true }, values.remarks], margin: [0, 16, 0, 0] },
     ],

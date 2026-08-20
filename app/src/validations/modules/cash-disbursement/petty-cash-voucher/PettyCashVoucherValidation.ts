@@ -22,7 +22,7 @@ export const PettyCashVoucherFormValidationSchema = z.object({
   accountCode: requiredText("Enter an account code."),
   accountTitle: requiredText("Enter an account title."),
   amount: amount.refine((value) => value > 0, "Enter an amount."),
-  documentDate: requiredText("Select a petty cash voucher date."),
+  documentDate: requiredText("Select a PCV Date."),
   currency: requiredText("Select a currency."),
   exchangeRate: requiredText("Enter an exchange rate.").refine((value) => Number(value) > 0, "Exchange rate must be greater than zero."),
   netAmount: amount,
@@ -30,9 +30,9 @@ export const PettyCashVoucherFormValidationSchema = z.object({
   responsibilityCenter: z.string(),
   responsibilityCenterCode: z.string(),
   status: z.enum(PettyCashVoucherFormStatusOptions),
-  transactionNo: requiredText("Generate a petty cash voucher number.").regex(
+  transactionNo: requiredText("Generate a PCV No.").regex(
     transactionNumberPattern,
-    "Use the generated petty cash voucher number format.",
+    "Use the generated PCV number format.",
   ),
   vatable: z.enum(PettyCashVoucherVATableOptions),
   vatAmount: amount,

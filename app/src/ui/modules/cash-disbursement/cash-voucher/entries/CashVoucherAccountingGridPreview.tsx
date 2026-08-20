@@ -89,7 +89,7 @@ export function GridPreviewDialog({
                 title={values.voucherNo}
               >
                 <div className="grid gap-5">
-                  <PreviewInfoLine label="Voucher Date" value={formatDateLabel(values.voucherDate)} />
+                  <PreviewInfoLine label="CV Date" value={formatDateLabel(values.voucherDate)} />
                   <PreviewInfoLine label="Prepared By" value={values.preparedBy || "-"} />
                   <PreviewInfoLine label="Status" value={values.status || "-"} />
                   <PreviewInfoLine label="Remarks" value={values.remarks || "-"} />
@@ -126,7 +126,7 @@ export function GridPreviewDialog({
                         <p className="text-sm font-semibold text-darknavy">
                           {entry.accountCode} - {entry.accountName}
                         </p>
-                        <p className="mt-1 text-sm text-darknavy/58">{entry.particulars}</p>
+                        <p className="mt-1 text-sm text-darknavy/58">{entry.remarks}</p>
                         <p className="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/40">{entry.taxRate || "0%"}</p>
                       </div>
                       <div className="text-right text-sm font-semibold text-darknavy">
@@ -354,11 +354,11 @@ export function VoucherAccountingGridHeader({
 }) {
   const headerFields = [
     {
-      label: "Voucher No.",
+      label: "CV No.",
       value: values.voucherNo || CashVoucherStatuses.draft,
     },
     {
-      label: "Voucher Date",
+      label: "CV Date",
       value: values.voucherDate ? formatDateLabel(values.voucherDate) : "-",
     },
     {

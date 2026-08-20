@@ -24,7 +24,7 @@ function createPdfDefinition(values: AdvancesToSuppliersFormValues): TDocumentDe
       {
         columns: [
           { text: [{ text: "Party: ", bold: true }, values.partyName] },
-          { text: [{ text: "Date: ", bold: true }, formatDate(values.documentDate)] },
+          { text: [{ text: "ATS Date: ", bold: true }, formatDate(values.documentDate)] },
         ],
         margin: [0, 0, 0, 12],
       },
@@ -38,11 +38,17 @@ function createPdfDefinition(values: AdvancesToSuppliersFormValues): TDocumentDe
       {
         columns: [
           { text: [{ text: "Total PO Amount: ", bold: true }, formatCurrency(totalPoAmount)] },
-          { text: [{ text: "Advance Payment (%): ", bold: true }, `${values.advancePaymentPercentage}%`] },
+          { text: [{ text: "Advance Payment Type: ", bold: true }, values.advancePaymentType || "Percentage"] },
         ],
         margin: [0, 0, 0, 12],
       },
-      { text: [{ text: "Amount of Advance Payment: ", bold: true }, formatCurrency(advancePaymentAmount)], margin: [0, 0, 0, 12] },
+      {
+        columns: [
+          { text: [{ text: "Advance Payment (%): ", bold: true }, `${values.advancePaymentPercentage}%`] },
+          { text: [{ text: "Amount of Advance Payment: ", bold: true }, formatCurrency(advancePaymentAmount)] },
+        ],
+        margin: [0, 0, 0, 12],
+      },
       { text: [{ text: "Default Account: ", bold: true }, `${values.accountTitle} (${values.accountCode})`], margin: [0, 0, 0, 12] },
       { text: [{ text: "Remarks: ", bold: true }, values.remarks], margin: [0, 8, 0, 0] },
     ],

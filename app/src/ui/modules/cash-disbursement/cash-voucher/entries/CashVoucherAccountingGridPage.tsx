@@ -395,15 +395,15 @@ export function CashVoucherAccountingGridPage() {
       );
     }
 
-    if (columnId === "particulars") {
+    if (columnId === "remarks") {
       return (
         <ModuleDataEntryRemarksCell
           inputId={context.fieldId}
           inputName={context.fieldName}
           isReadonly={false}
-          value={row.particulars}
+          value={row.remarks}
           textareaId={`${context.fieldId}-dialog`}
-          onChange={(value) => updateRow(row.id, "particulars", value)}
+          onChange={(value) => updateRow(row.id, "remarks", value)}
         />
       );
     }
@@ -570,7 +570,7 @@ export function CashVoucherAccountingGridPage() {
       <section className="-mx-3 -my-4 min-h-[calc(100dvh-5rem)] bg-white text-darknavy sm:-mx-5 lg:-mx-6">
         <main className="grid min-h-[calc(100dvh-5rem)] content-start gap-5 p-4 sm:p-6">
           <div className="rounded-xl border border-darknavy/10 bg-white p-5 shadow-sm shadow-darknavy/5 sm:p-8">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-skyblue">Cash CashVoucher Setup</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-skyblue">Cash Voucher Setup</p>
             <h1 className="mt-2 text-2xl font-semibold text-darknavy sm:text-3xl">Accounting Grid View</h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-darknavy/58">
               No voucher is available yet. Select a cash voucher first, then click Data Grid View from Accounting Entries.
@@ -595,7 +595,7 @@ export function CashVoucherAccountingGridPage() {
           <div className="min-w-0 p-4 sm:p-6 lg:p-8">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-skyblue">Cash CashVoucher Setup</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-skyblue">Cash Voucher Setup</p>
                 <h1 className="mt-2 text-2xl font-semibold text-darknavy sm:text-3xl">Accounting Grid View</h1>
                 <p className="mt-3 max-w-3xl text-sm leading-6 text-darknavy/58">
                   Encode accounting entries in a dedicated grid page, then save and return to the voucher preview for final checking before

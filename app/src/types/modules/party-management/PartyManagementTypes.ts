@@ -342,7 +342,7 @@ export type PartyManagementDrawerProps = {
   description?: string;
   isOpen: boolean;
   isPending: boolean;
-  onAddRecord: (record: PartyInformationRecord) => void;
+  onAddRecord: (record: PartyInformationRecord) => Promise<PartyInformationRecord>;
   onClose: () => void;
   onCreateParty: (record: PartyInformationRecord) => void;
   records: PartyInformationRecord[];

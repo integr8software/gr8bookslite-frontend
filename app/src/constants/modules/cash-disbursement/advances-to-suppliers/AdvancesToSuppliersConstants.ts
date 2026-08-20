@@ -1,9 +1,10 @@
-import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
 import { CashDisbursementOverviewActionColumnWidth } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
+import { CashDisbursementOverviewColumnWidths } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type {
   AdvancesToSuppliersActionTab,
   AdvancesToSuppliersConfirmationAction,
+  AdvancesToSuppliersPaymentType,
   AdvancesToSuppliersStatus,
 } from "@/app/src/types/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
@@ -16,8 +17,8 @@ export const AdvancesToSuppliersStorageKey = "cash-disbursement-advances-to-supp
 export const AdvancesToSuppliersPaginationStorageKey = "cash-disbursement-advances-to-suppliers-table";
 export const AdvancesToSuppliersTransactionPrefix = "ATS";
 export const AdvancesToSuppliersColumnLabels = {
-  transactionNo: "Advances to Suppliers No.",
-  documentDate: "Document Date",
+  transactionNo: "ATS No.",
+  documentDate: "ATS Date",
   partyCode: "Party Code",
   partyName: "Party Name",
   accountCode: "Default Account Code",
@@ -32,19 +33,19 @@ export const AdvancesToSuppliersColumnLabels = {
   actions: "Actions",
 } as const;
 export const AdvancesToSuppliersOverviewColumnWidths: Record<keyof typeof AdvancesToSuppliersColumnLabels, number> = {
-  transactionNo: TransactionOverviewColumnWidths.transactionNumber,
-  documentDate: TransactionOverviewColumnWidths.documentDate,
-  partyCode: TransactionOverviewColumnWidths.partyCode,
-  partyName: TransactionOverviewColumnWidths.partyName,
-  accountCode: TransactionOverviewColumnWidths.accountCode,
-  accountTitle: TransactionOverviewColumnWidths.accountTitle,
-  amount: TransactionOverviewColumnWidths.amount,
-  remarks: TransactionOverviewColumnWidths.remarks,
-  createdBy: TransactionOverviewColumnWidths.auditUser,
-  createdAt: TransactionOverviewColumnWidths.auditDate,
-  updatedBy: TransactionOverviewColumnWidths.auditUser,
-  updatedAt: TransactionOverviewColumnWidths.auditDate,
-  status: TransactionOverviewColumnWidths.status,
+  transactionNo: CashDisbursementOverviewColumnWidths.transactionNumber,
+  documentDate: CashDisbursementOverviewColumnWidths.documentDate,
+  partyCode: CashDisbursementOverviewColumnWidths.partyCode,
+  partyName: CashDisbursementOverviewColumnWidths.partyName,
+  accountCode: CashDisbursementOverviewColumnWidths.accountCode,
+  accountTitle: CashDisbursementOverviewColumnWidths.accountTitle,
+  amount: CashDisbursementOverviewColumnWidths.amount,
+  remarks: CashDisbursementOverviewColumnWidths.remarks,
+  createdBy: CashDisbursementOverviewColumnWidths.auditUser,
+  createdAt: CashDisbursementOverviewColumnWidths.auditDate,
+  updatedBy: CashDisbursementOverviewColumnWidths.auditUser,
+  updatedAt: CashDisbursementOverviewColumnWidths.auditDate,
+  status: CashDisbursementOverviewColumnWidths.status,
   actions: CashDisbursementOverviewActionColumnWidth,
 };
 export const AdvancesToSuppliersDefaultVisibleColumnIds = [
@@ -77,6 +78,14 @@ export const AdvancesToSuppliersRecordStatuses = [
   "Cancelled",
 ] as const satisfies readonly AdvancesToSuppliersStatus[];
 export const AdvancesToSuppliersStatusOptions = ["All", ...AdvancesToSuppliersRecordStatuses] as const;
+export const AdvancesToSuppliersPaymentTypeOptions = [
+  "Percentage",
+  "Fixed Amount",
+] as const satisfies readonly AdvancesToSuppliersPaymentType[];
+export const AdvancesToSuppliersPaymentTypeDropdownOptions: AppAdvancedDropdownOption[] = [
+  { label: "Percentage", name: "Percentage", value: "Percentage" },
+  { label: "Fixed Amount", name: "Fixed Amount", value: "Fixed Amount" },
+];
 export const AdvancesToSuppliersConfirmationDialogTitles: Record<AdvancesToSuppliersConfirmationAction, string> = {
   save: "Save Advances to Supplier?",
   draft: "Save as Draft?",

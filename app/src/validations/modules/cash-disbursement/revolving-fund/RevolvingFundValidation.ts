@@ -6,8 +6,8 @@ import type {
 import { parseAmount } from "@/app/src/utils/number.util";
 
 const schema = z.object({
-  transactionNo: z.string().regex(/^RF-\d{6}$/, "A valid revolving fund number is required."),
-  documentDate: z.string().min(1, "Select a document date."),
+  transactionNo: z.string().regex(/^RF-\d{6}$/, "A valid RF No. is required."),
+  documentDate: z.string().min(1, "Select an RF Date."),
   partyCode: z.string().trim().min(1, "Select a custodian."),
   partyName: z.string().trim().min(1, "Select a custodian."),
   accountCode: z.string().trim().min(1, "Select a default account."),

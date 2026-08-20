@@ -6,8 +6,8 @@ import type {
 import { parseAmount } from "@/app/src/utils/number.util";
 
 const schema = z.object({
-  transactionNo: z.string().regex(/^PCF-\d{6}$/, "A valid petty cash fund number is required."),
-  documentDate: z.string().min(1, "Select a document date."),
+  transactionNo: z.string().regex(/^PCF-\d{6}$/, "A valid PCF No. is required."),
+  documentDate: z.string().min(1, "Select a PCF Date."),
   partyCode: z.string().trim().min(1, "Select a custodian."),
   partyName: z.string().trim().min(1, "Select a custodian."),
   accountCode: z.string().trim().min(1, "Select a default account."),

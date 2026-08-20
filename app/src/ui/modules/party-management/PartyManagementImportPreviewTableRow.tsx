@@ -44,7 +44,14 @@ export function PartyManagementImportPreviewTableRow({
         </td>
         <ModuleImportRowNumberCell rowId={row.id} rowNumber={row.rowNumber} onMoveRow={onMoveRow} />
         {PartyImportFieldOrder.map((field) => (
-          <td key={field} className="px-3 py-2 align-middle">
+          <td
+            key={field}
+            className={joinClasses(
+              "px-3 py-2 align-middle",
+              field === PartyImportFieldOrder[0] && "module-import-first-data-column sticky z-10",
+              field === PartyImportFieldOrder[0] && stickyCellBackground,
+            )}
+          >
             {field === "classification" ? (
               <ModuleImportEditableSelect
                 value={row.party.classification}

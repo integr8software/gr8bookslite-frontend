@@ -1,6 +1,6 @@
 # Gr8Books Neo Frontend Transaction Map
 
-Last updated: 2026-08-19
+Last updated: 2026-08-20
 
 Use this file as the first stop before changing transactional frontend modules.
 It repeats the useful structure from `FRONTEND_MAP.md`, but narrows the guidance
@@ -152,6 +152,26 @@ graph TD
 - `app/src/utils/...`: generic, pure formatting and normalization helpers shared
   across unrelated modules.
 
+Keep one canonical constant for each value within a module. Do not create a
+second constant that only aliases an existing constant from the same module,
+as this adds another name without introducing a distinct value or contract.
+Import and use the canonical constant directly. If the original name is too
+specific for all of its uses, rename it to an accurate shared name and update
+its consumers instead of adding an identical alias.
+
+```ts
+// Avoid: both names represent exactly the same value in the same module.
+export const StatusActionButtonClassName = "...";
+export const ViewActionButtonClassName = StatusActionButtonClassName;
+
+// Prefer: consumers use the single canonical constant directly.
+export const StatusActionButtonClassName = "...";
+```
+
+Only keep an alias when it is an intentional, temporary compatibility boundary
+for external consumers or a rename migration; document why it exists and when
+it can be removed.
+
 Route link constants must come from the module catalog. Import
 `getModuleRoute` from `app/src/data/shared/modules/ModuleCatalogData.ts`, then
 export the feature href from the matching module code instead of duplicating the
@@ -181,9 +201,10 @@ current utility list.
 
 Follow this structure strictly for transactional modules. Create only the files
 the transaction actually uses, but do not add alternative folders or rename the
-standard folders. The only allowed UI expansion is inside `action/`: if the
-transaction form has multiple tabs, create one separate ActionPage tab file per
-tab.
+standard folders. Tab panels are composed directly in `<ModuleName>ActionPage.tsx`
+using their respective `<ModuleName>[TabName]Fields.tsx` components (e.g.,
+`<ModuleName>DetailsFields.tsx`, `<ModuleName>FileAttachmentFields.tsx`). Do not
+create separate `<ModuleName><TabName>Tab.tsx` wrapper files.
 
 ```txt
 app/src/ui/modules/<domain>/<feature>/
@@ -191,11 +212,12 @@ app/src/ui/modules/<domain>/<feature>/
     <ModuleName>ActionPage.tsx
     <ModuleName>ActionHeader.tsx
     <ModuleName>ActionHistory.tsx
+    <ModuleName>StatusActions.tsx
     <ModuleName>DetailsFields.tsx
     <ModuleName>FileAttachmentFields.tsx
     <ModuleName>NotFound.tsx
-    # Only when the form has multiple tabs:
-    <ModuleName><TabName>Tab.tsx
+    # When the form has additional tabs/sections:
+    <ModuleName><TabName>Fields.tsx
   entries/
     utils/
       <ModuleName>EntryRowUtils.ts
@@ -242,6 +264,13 @@ Use the module display name in UI labels with each word capitalized. For
 example, `<ModuleName>` in code becomes a readable label such as
 `Cash Advance Multiple Entry` in headings, buttons, filters, empty states, and
 table labels.
+
+Transaction number and transaction date labels are the exception. Use the
+module's short transaction prefix as `[ModulePrefix]`, so the visible labels
+are `[ModulePrefix] No.` and `[ModulePrefix] Date`. Use the display prefix
+without a trailing separator; when a configured numbering prefix includes a
+trailing separator, omit that separator from the label. Keep the full readable
+module name for headings, buttons, messages, and other labels.
 
 For transaction UI and frontend source code, use Party terminology exclusively.
 Do not use VCE in visible copy or in transaction module code, including labels,
@@ -306,8 +335,9 @@ to its hook. Do not call `usePathname`, inspect route strings, or define a
 - Does not define header button groups, action title helpers, action
   description helpers, or status action controls; put those in
   `<ModuleName>ActionHeader.tsx`.
-- When the form has multiple tabs, composes tab files from the same `action/`
-  folder instead of placing all tab content in `ActionPage`.
+- When the form has multiple tabs, composes the appropriate `<ModuleName>[TabName]Fields.tsx`
+  components (e.g., `<ModuleName>DetailsFields.tsx`, `<ModuleName>FileAttachmentFields.tsx`)
+  directly in `ActionPage.tsx` based on `activeTab`.
 - Starts new unsaved transactions with the placeholder status `Open`.
 - Uses `action/<ModuleName>NotFound.tsx` for missing records in edit/view mode.
 
@@ -329,14 +359,21 @@ to its hook. Do not call `usePathname`, inspect route strings, or define a
   free from these header details.
 - Owns the confirmation state and renders `AppDialog` for Save, Save as Draft,
   Update, and lifecycle/status actions. Hooks may own validated pending values
-  and persistence callbacks, but `ActionPage` and lifecycle `ViewActions`
+  and persistence callbacks, but `ActionPage` and lifecycle `StatusActions`
   components must not render these confirmation dialogs.
-- Keep lifecycle `ViewActions` presentational: it may build responsive action
+- Keep lifecycle `StatusActions` presentational: it may build responsive action
   buttons and menus, but it reports the requested status back to
   `ActionHeader`, which opens and resolves the confirmation dialog.
 - Keep confirmation titles, labels, and other reusable action copy in the
   feature constants or data layer. Do not define pure copy-building helpers
   such as `getDialogTitle` inside `ActionHeader`.
+
+`<ModuleName>StatusActions.tsx`
+
+- Owns view-mode lifecycle and status transition action controls (Approve, Disapprove, Cancel, Undo, etc.).
+- Renders responsive action options: `ModuleActionMenu` on mobile (< `lg`) and action buttons on desktop (`lg:flex`).
+- Standardized styling via `CashDisbursementStatusActionButtonClassName` (or domain-specific status button classes).
+- Presentational: triggers requested status callbacks back to `<ModuleName>ActionHeader.tsx`, which triggers the confirmation dialog.
 
 `<ModuleName>ActionHistory.tsx`
 
@@ -350,9 +387,9 @@ to its hook. Do not call `usePathname`, inspect route strings, or define a
   History component.
 - Compose it from `<ModuleName>ActionHeader.tsx` for edit/view modes where a
   record exists. Do not embed history dialog state or history-entry builders in
-  `ActionHeader`, `ActionPage`, or lifecycle `ViewActions` components.
+  `ActionHeader`, `ActionPage`, or lifecycle `StatusActions` components.
 
-`<ModuleName>DetailsFields.tsx`
+`<ModuleName>DetailsFields.tsx` / `<ModuleName>[TabName]Fields.tsx`
 
 - Header/detail fields such as party, warehouse, date, terms, reference,
   currency, project, branch, responsibility center, and remarks.
@@ -399,12 +436,13 @@ to its hook. Do not call `usePathname`, inspect route strings, or define a
   the field identity or visible label with a classification name.
 - Align name/code pairs by row. For example, `Party Name` aligns with
   `Party Code`, and `Account Title` aligns with `Account Code`.
-- The Transaction column contains `[ModuleName] No.`, `[ModuleName] Date`, and
-  `Status`. Do not label the number field with the module code or generic
-  `Transaction No.` in the UI.
+- The Transaction column contains `[ModulePrefix] No.`, `[ModulePrefix] Date`,
+  and `Status`. Use the module's short transaction prefix for both labels; do
+  not repeat the full module name or use generic `Transaction No.` and
+  `Transaction Date` labels.
 - Transaction number behavior depends on the module's transaction-number
   setup. When the module is configured for automatic numbering, generate the
-  `[ModuleName] No.` value from the module prefix plus a six-digit padded
+  `[ModulePrefix] No.` value from the configured prefix plus a six-digit padded
   sequence, such as `<MODULE_PREFIX>-000001`, and render the field readonly.
   When the module is configured for manual numbering, do not generate a default
   value and render the field editable so the user can enter the number.
@@ -413,9 +451,9 @@ to its hook. Do not call `usePathname`, inspect route strings, or define a
   date-only UI values. Use `formatDateTime` only when the UI intentionally
   needs time. Keep ISO values such as `2026-01-22` only for native date inputs,
   API payloads, and internal form values.
-- For the `[ModuleName] No.` input placeholder, use title case. Use
-  `Auto Generated [ModuleName] Transaction Number` for automatic numbering and
-  `Enter [ModuleName] Transaction Number` for manual numbering.
+- For the `[ModulePrefix] No.` input placeholder, use title case. Use
+  `Auto Generated [ModulePrefix] Transaction Number` for automatic numbering
+  and `Enter [ModulePrefix] Transaction Number` for manual numbering.
 - Render action-page Status as a readonly input/display field. Do not use a
   dropdown for Status in the transaction detail form; lifecycle changes belong
   in the header actions or approval controls.
@@ -536,7 +574,7 @@ value is assigned, and let the backend or configured transaction-number service
 own the final sequence assignment.
 
 For manual numbering, do not generate a transaction number in defaults or form
-initializers. Start with an empty value, keep the `[ModuleName] No.` field
+initializers. Start with an empty value, keep the `[ModulePrefix] No.` field
 editable in add/edit modes, and validate it as a required user-entered field.
 
 ### Status
@@ -550,7 +588,7 @@ until the user saves the transaction as draft.
 View and edit action pages should use this title format:
 
 ```txt
-[Action] [ModuleName] | [[ModuleName] No.] [Status Badge]
+[Action] [ModuleName] | [[ModulePrefix] No.] [Status Badge]
 ```
 
 Use the existing shared transaction status badge for `[Status Badge]`.
@@ -769,9 +807,10 @@ local `uploadTitle`, `inputId`, `inputName`, `attachments`, `isReadonly`, and
 `onAttachmentsChange`. Use `formatFileSize` from `app/src/utils/file.util` for
 any attachment size display instead of adding local file-size formatting.
 
-Transactions may add more tabs when needed. If the form has more than these
-standard tabs, create one separate `action/<ModuleName><TabName>Tab.tsx` file
-per tab and compose the tab files in `<ModuleName>ActionPage.tsx`.
+Transactions may add more tabs when needed. When rendering tab panels, compose
+the respective `<ModuleName>[TabName]Fields.tsx` components directly in
+`<ModuleName>ActionPage.tsx`. Do not create intermediate `<ModuleName><TabName>Tab.tsx`
+wrapper files.
 
 ### Currency And Exchange Rate
 
@@ -952,12 +991,15 @@ manual decimal input consistently across transaction forms.
   readonly mode, keep the ellipsis available for reading the complete value and
   show only the dialog Close action. Do not render a plain text input or allow
   the Remarks cell to grow the Data Entry row height.
-- Use `Remarks` as the canonical user-facing label for transaction-entry notes.
-  Legacy models, APIs, imports, or stored records may retain an internal field
-  key such as `particulars`, but the Data Entry header, placeholder, modal,
-  preview, PDF, and export/import template must display `Remarks`. A legacy
-  Particulars field must use `ModuleDataEntryRemarksCell`; do not maintain a
-  feature-specific particulars editor or view dialog.
+- Use `Remarks` as the canonical label and `remarks` as the canonical internal
+  field/column key for transaction-entry notes. Headers, placeholders, dialogs,
+  previews, PDFs, import/export templates, row models, types, constants, data,
+  hooks, validations, and services must use the Remarks naming.
+- All Cash Disbursement modules must use `remarks` throughout their Data Entry
+  and accounting-entry implementation. Do not introduce a `particular` or
+  `particulars` field, column ID, label, or feature-specific editor. Import
+  parsers may accept `Particular` and `Particulars` only as legacy inbound
+  header aliases and must map them immediately to `remarks`.
 - Does not mutate row state directly; call typed handlers from props.
 
 `utils/<ModuleName>EntryRowUtils.ts`
@@ -1109,7 +1151,7 @@ Status
 
 Render the Search filter with the shared `ModuleTableSearch`. Use a concise
 module-specific placeholder based on canonical table labels, following
-`Search by [ModuleName] No., Party Name, Account Title, or Remarks` when those
+`Search by [ModulePrefix] No., Party Name, Account Title, or Remarks` when those
 fields apply. Search matching must be case-insensitive and whitespace-tolerant:
 normalize both the entered query and the combined searchable record text with
 `normalizeLowercaseWhitespace` from `app/src/utils/string.util.ts` before
@@ -1171,8 +1213,8 @@ Start New <ModuleName>
 The full transaction column visibility list is:
 
 ```txt
-[ModuleName] No.
-Document Date
+[ModulePrefix] No.
+[ModulePrefix] Date
 Party Code
 Party Name
 Account Code or Default Account Code
@@ -1220,7 +1262,7 @@ controls, define a feature-level 160px Actions width in
 `<ModuleName>Constants.ts` to accommodate the complete control group.
 Keep the standard transaction-number width based on typical transaction values,
 not the longest module name. Before truncating an unusually long
-`[ModuleName] No.` header, reclaim visibly unused width from Status and other
+`[ModulePrefix] No.` header, reclaim visibly unused width from Status and other
 short-value columns while preserving enough room for the complete status badge.
 Use a narrow feature-specific width override only when that reallocation is
 needed; do not widen the shared transaction-number default for every module.
@@ -1239,7 +1281,7 @@ Use TanStack column `meta.className` for header alignment, and apply the same
 alignment in the row renderer. Do not right-align `Total Amount` unless a
 specific module has an approved business exception.
 
-Render the `[ModuleName] No.` value in every transaction overview row using
+Render the `[ModulePrefix] No.` value in every transaction overview row using
 the active theme accent color (`text-[var(--skyblue)]`). Prefer the shared
 `moduleAccentClassNames.iconText` token so the transaction number follows theme
 changes instead of using a fixed brand color or neutral text color. When the
@@ -1278,8 +1320,8 @@ Cancelled       # gray/neutral
 The default visible columns are:
 
 ```txt
-[ModuleName] No.
-Document Date
+[ModulePrefix] No.
+[ModulePrefix] Date
 Party Name
 Total Amount
 Status
@@ -1480,9 +1522,9 @@ Do not rename an old module opportunistically during an unrelated fix.
 - Add action-page history: create
   `action/<ModuleName>ActionHistory.tsx` and compose it from the module's
   `ActionHeader` while reusing `ModuleHistoryDialog`.
-- Add multiple form tabs: create one separate
-  `action/<ModuleName><TabName>Tab.tsx` file for each tab and compose those
-  files in `ActionPage`.
+- Add multiple form tabs: create `<ModuleName>[TabName]Fields.tsx` components
+  (e.g., `<ModuleName>DetailsFields.tsx`, `<ModuleName>FileAttachmentFields.tsx`)
+  and call them out in `<ModuleName>ActionPage.tsx`. Do not create `<ModuleName><TabName>Tab.tsx` files.
 - Add currency and exchange rate fields: always use
   `CurrencyExchangeRateRow` from
   `@/app/src/ui/shared/app/CurrencyExchangeRateRow`, and display the base

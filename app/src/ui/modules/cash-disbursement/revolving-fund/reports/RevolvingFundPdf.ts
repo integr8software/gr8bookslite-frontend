@@ -17,7 +17,7 @@ function createRevolvingFundPdfDefinition(values: RevolvingFundFormValues): TDoc
   const itemRows: TableCell[][] = values.items.map((item) => [
     formatDate(item.date),
     item.payeeName,
-    item.particulars,
+    item.remarks,
     { text: formatCurrency(Number(item.grossAmount.replace(/,/g, "")) || 0), alignment: "right" },
   ]);
   return {
@@ -30,7 +30,7 @@ function createRevolvingFundPdfDefinition(values: RevolvingFundFormValues): TDoc
       {
         columns: [
           { text: [{ text: "Party: ", bold: true }, values.partyName] },
-          { text: [{ text: "Document Date: ", bold: true }, formatDate(values.documentDate)] },
+          { text: [{ text: "RF Date: ", bold: true }, formatDate(values.documentDate)] },
           { text: [{ text: "Total Amount: ", bold: true }, formatCurrency(totals.grossAmount)] },
         ],
         margin: [0, 0, 0, 16],
@@ -39,7 +39,7 @@ function createRevolvingFundPdfDefinition(values: RevolvingFundFormValues): TDoc
         table: {
           headerRows: 1,
           widths: [65, "*", "*", 80],
-          body: [["Date", "Payee", "Particulars", "Gross Amount"], ...itemRows],
+          body: [["Date", "Payee", "Remarks", "Gross Amount"], ...itemRows],
         },
       },
       { text: [{ text: "Remarks: ", bold: true }, values.remarks], margin: [0, 16, 0, 0] },

@@ -30,7 +30,7 @@ function createPdfDefinition(values: RevolvingFundReplenishmentFormValues): TDoc
       {
         columns: [
           { text: [{ text: "Party: ", bold: true }, values.partyName] },
-          { text: [{ text: "Document Date: ", bold: true }, formatDate(values.documentDate)] },
+          { text: [{ text: "RFR Date: ", bold: true }, formatDate(values.documentDate)] },
           { text: [{ text: "Total Amount: ", bold: true }, formatCurrency(totals.totalAmount)] },
         ],
         margin: [0, 0, 0, 16],
@@ -39,7 +39,7 @@ function createPdfDefinition(values: RevolvingFundReplenishmentFormValues): TDoc
         table: {
           headerRows: 1,
           widths: [65, 100, "*", 80],
-          body: [["Date", "Revolving Fund No.", "Account Title", "Total Amount"], ...rows],
+          body: [["RF Date", "RF No.", "Account Title", "Total Amount"], ...rows],
         },
       },
       { text: [{ text: "Remarks: ", bold: true }, values.remarks], margin: [0, 16, 0, 0] },

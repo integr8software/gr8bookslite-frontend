@@ -12,8 +12,8 @@ import { usePartyManagementStore } from "@/app/src/hooks/modules/party-managemen
 import type { RevolvingFundReplenishmentActionMode } from "@/app/src/types/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentTypes";
 import type { PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";
 import { RevolvingFundReplenishmentActionHeader } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/action/RevolvingFundReplenishmentActionHeader";
-import { RevolvingFundReplenishmentAttachmentsTab } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/action/RevolvingFundReplenishmentAttachmentsTab";
-import { RevolvingFundReplenishmentDetailsTab } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/action/RevolvingFundReplenishmentDetailsTab";
+import { RevolvingFundReplenishmentFileAttachmentFields } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/action/RevolvingFundReplenishmentFileAttachmentFields";
+import { RevolvingFundReplenishmentDetailsFields } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/action/RevolvingFundReplenishmentDetailsFields";
 import { RevolvingFundReplenishmentNotFound } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/action/RevolvingFundReplenishmentNotFound";
 import { RevolvingFundReplenishmentReportPreview } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/reports/RevolvingFundReplenishmentReportPreview";
 import { openRevolvingFundReplenishmentPdf } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/reports/RevolvingFundReplenishmentPdf";
@@ -48,14 +48,14 @@ export function RevolvingFundReplenishmentActionPage({ mode }: { mode: Revolving
           onTabChange={page.setActiveTab}
         />
         {page.activeTab === "details" ? (
-          <RevolvingFundReplenishmentDetailsTab
+          <RevolvingFundReplenishmentDetailsFields
             page={page}
             onOpenPartyDrawer={() => setIsPartyDrawerOpen(true)}
             onOpenProjectDrawer={() => setIsProjectDrawerOpen(true)}
             onOpenResponsibilityCenterDrawer={() => setIsResponsibilityCenterDrawerOpen(true)}
           />
         ) : (
-          <RevolvingFundReplenishmentAttachmentsTab page={page} />
+          <RevolvingFundReplenishmentFileAttachmentFields page={page} />
         )}
       </section>
       <PartyManagementDrawer

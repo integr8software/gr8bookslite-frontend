@@ -1,4 +1,4 @@
-import type { RevolvingFundReplenishmentActionPageState } from "@/app/src/hooks/modules/cash-disbursement/revolving-fund-replenishment/useRevolvingFundReplenishmentActionPage";
+import type { RevolvingFundReplenishmentActionPageState } from "@/app/src/types/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentTypes";
 import type {
   RevolvingFundReplenishmentAccountingColumnId,
   RevolvingFundReplenishmentAccountingEntry,
@@ -112,6 +112,6 @@ export function createRevolvingFundReplenishmentAccountingColumns({
     credit: column("credit"),
     partyCode: column("partyCode"),
     partyName: column("partyName"),
-    particulars: column("particulars"),
+    remarks: column("remarks"),
   };
 }

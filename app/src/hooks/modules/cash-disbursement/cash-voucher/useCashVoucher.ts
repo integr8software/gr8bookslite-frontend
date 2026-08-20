@@ -144,7 +144,7 @@ export function useCashVoucherStore<TSelected = CashVoucherStoreState>(
     mutationFn: async (voucher: CashVoucherRecord) => voucher,
     onSuccess: (voucher) => {
       updateCachedVouchers((vouchers) => vouchers.map((currentVoucher) => (currentVoucher.id === voucher.id ? voucher : currentVoucher)));
-      toast.success("CashVoucher voucher updated.");
+      toast.success("Cash Voucher Updated.");
     },
     onError: () => {
       toast.error("Could not update cash voucher. Please try again.");
@@ -155,7 +155,7 @@ export function useCashVoucherStore<TSelected = CashVoucherStoreState>(
     mutationFn: async (voucherId: string) => voucherId,
     onSuccess: (voucherId) => {
       updateCachedVouchers((vouchers) => vouchers.filter((voucher) => voucher.id !== voucherId));
-      toast.success("CashVoucher voucher deleted.");
+      toast.success("Cash Voucher Deleted.");
     },
     onError: () => {
       toast.error("Could not delete cash voucher. Please try again.");

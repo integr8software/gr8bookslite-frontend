@@ -3,8 +3,10 @@ import {
   CashAdvanceAccountOptions,
   CashAdvanceCostCenterOptions,
 } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
-import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
-import { CashDisbursementOverviewActionColumnWidth } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
+import {
+  CashDisbursementOverviewActionColumnWidth,
+  CashDisbursementOverviewColumnWidths,
+} from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import type { ColumnOrderState, VisibilityState } from "@tanstack/react-table";
 import type {
   CashAdvanceMultipleEntryDetailsTab,
@@ -24,10 +26,9 @@ export const CashAdvanceMultipleEntryTransactionNumberPadding = 6;
 export const CashAdvanceMultipleEntryTablePaginationStorageKey = "cash-disbursement-cash-advance-multiple-entry";
 
 export const CashAdvanceMultipleEntryOverviewColumnWidths = {
-  ...TransactionOverviewColumnWidths,
-  transactionNumber: 280,
-  amount: 210,
-  status: 120,
+  ...CashDisbursementOverviewColumnWidths,
+  partyName: 300,
+  accountTitle: 230,
   actions: CashDisbursementOverviewActionColumnWidth,
 } as const;
 
@@ -65,7 +66,7 @@ export function getCashAdvanceMultipleEntryStatusDialogCopy(
     return {
       confirmLabel: "Undo Approved",
       description: `This will undo the approval of ${recordLabel} and return it to For Approval.`,
-      iconTone: "question" as const,
+      iconTone: "undo" as const,
       pendingLabel: "Undoing Approval...",
       title: "Undo Approved Cash Advance Multiple Entry?",
       tone: "question" as const,
@@ -79,7 +80,7 @@ export function getCashAdvanceMultipleEntryStatusDialogCopy(
     return {
       confirmLabel: "Undo Disapproved",
       description: `This will undo the disapproval of ${recordLabel} and return it to For Approval.`,
-      iconTone: "question" as const,
+      iconTone: "undo" as const,
       pendingLabel: "Undoing Disapproval...",
       title: "Undo Disapproved Cash Advance Multiple Entry?",
       tone: "question" as const,
@@ -90,7 +91,7 @@ export function getCashAdvanceMultipleEntryStatusDialogCopy(
     return {
       confirmLabel: "Undo Cancelled",
       description: `This will undo the cancellation of ${recordLabel}.`,
-      iconTone: "question" as const,
+      iconTone: "undo" as const,
       pendingLabel: "Undoing Cancellation...",
       title: "Undo Cancelled Cash Advance Multiple Entry?",
       tone: "question" as const,
@@ -209,7 +210,7 @@ export const CashAdvanceMultipleEntryDefaultItemColumnIds = [
   "amount",
   "cashAdvanceBalance",
   "responsibilityCenter",
-  "particulars",
+  "remarks",
 ];
 
 export const CashAdvanceMultipleEntryDefaultAccountingColumnIds = ["accountTitle", "credit", "debit", "partyName"];

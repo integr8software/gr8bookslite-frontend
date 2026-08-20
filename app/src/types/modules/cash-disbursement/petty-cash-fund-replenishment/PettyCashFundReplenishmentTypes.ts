@@ -33,7 +33,7 @@ export type PettyCashFundReplenishmentAccountingEntry = {
   credit: string;
   partyCode: string;
   partyName: string;
-  particulars: string;
+  remarks: string;
 };
 
 export type PettyCashFundReplenishmentAccountingColumnId = Exclude<keyof PettyCashFundReplenishmentAccountingEntry, "id">;

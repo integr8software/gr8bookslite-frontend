@@ -12,8 +12,8 @@ import { usePartyManagementStore } from "@/app/src/hooks/modules/party-managemen
 import type { PettyCashFundReplenishmentActionMode } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentTypes";
 import type { PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";
 import { PettyCashFundReplenishmentActionHeader } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund-replenishment/action/PettyCashFundReplenishmentActionHeader";
-import { PettyCashFundReplenishmentAttachmentsTab } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund-replenishment/action/PettyCashFundReplenishmentAttachmentsTab";
-import { PettyCashFundReplenishmentDetailsTab } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund-replenishment/action/PettyCashFundReplenishmentDetailsTab";
+import { PettyCashFundReplenishmentFileAttachmentFields } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund-replenishment/action/PettyCashFundReplenishmentFileAttachmentFields";
+import { PettyCashFundReplenishmentDetailsFields } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund-replenishment/action/PettyCashFundReplenishmentDetailsFields";
 import { PettyCashFundReplenishmentNotFound } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund-replenishment/action/PettyCashFundReplenishmentNotFound";
 import { PettyCashFundReplenishmentReportPreview } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund-replenishment/reports/PettyCashFundReplenishmentReportPreview";
 import { openPettyCashFundReplenishmentPdf } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund-replenishment/reports/PettyCashFundReplenishmentPdf";
@@ -48,14 +48,14 @@ export function PettyCashFundReplenishmentActionPage({ mode }: { mode: PettyCash
           onTabChange={page.setActiveTab}
         />
         {page.activeTab === "details" ? (
-          <PettyCashFundReplenishmentDetailsTab
+          <PettyCashFundReplenishmentDetailsFields
             page={page}
             onOpenPartyDrawer={() => setIsPartyDrawerOpen(true)}
             onOpenProjectDrawer={() => setIsProjectDrawerOpen(true)}
             onOpenResponsibilityCenterDrawer={() => setIsResponsibilityCenterDrawerOpen(true)}
           />
         ) : (
-          <PettyCashFundReplenishmentAttachmentsTab page={page} />
+          <PettyCashFundReplenishmentFileAttachmentFields page={page} />
         )}
       </section>
       <PartyManagementDrawer

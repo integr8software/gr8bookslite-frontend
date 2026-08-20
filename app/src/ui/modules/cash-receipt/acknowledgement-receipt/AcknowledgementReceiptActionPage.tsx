@@ -82,6 +82,7 @@ export function AcknowledgementReceiptActionPage() {
       <section className="grid gap-5">
         <AcknowledgementReceiptActionHeader
           mode={mode}
+          recordId={recordId}
           values={receiptForm.values}
           onCopyFrom={receiptForm.applyCopyFrom}
           onPreview={() => setIsReportPreviewOpen(true)}

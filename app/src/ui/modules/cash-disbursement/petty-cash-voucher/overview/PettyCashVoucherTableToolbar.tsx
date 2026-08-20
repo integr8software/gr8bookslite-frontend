@@ -1,5 +1,5 @@
 import { PettyCashVoucherStatusOptions } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
-import type { PettyCashVoucherOverviewPageState } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-voucher/usePettyCashVoucherOverviewPage";
+import type { PettyCashVoucherOverviewPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import { AmountRangePicker } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import { DateRangePicker } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
 import {
@@ -22,7 +22,7 @@ export function PettyCashVoucherTableToolbar({ page }: { page: PettyCashVoucherO
             label="Search Petty Cash Vouchers"
             value={page.searchQuery}
             onChange={page.setSearchQuery}
-            placeholder="Search Voucher Number, Party, Or Account Code"
+            placeholder="Search by PCV No., Party, or Account Code"
           />
         </div>
         <DateRangePicker label="Date Range" value={page.dateRange} onChange={page.setDateRange} />

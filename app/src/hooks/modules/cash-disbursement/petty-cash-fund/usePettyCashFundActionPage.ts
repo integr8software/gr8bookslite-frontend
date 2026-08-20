@@ -162,14 +162,14 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
           date: source.documentDate ?? current.documentDate,
           grossAmount: amount,
           netAmount: amount,
-          particulars: source.remarks ?? "",
+          remarks: source.remarks ?? "",
           payeeCode: String(party?.value ?? ""),
           payeeName: source.partyName ?? "",
         },
       ],
     }));
     setErrors({});
-    toast.success(`Copied details from ${source.sourceNo}.`);
+    toast.success(`Copied Details from ${source.sourceNo}.`);
   }
 
   function save(status: PettyCashFundStatus) {
@@ -199,7 +199,7 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
       setRecord(nextRecord);
       setValues(createPettyCashFundFormValues(nextRecord));
       draft.clearDraft();
-      toast.success(status === PettyCashFundStatuses.draft ? "Petty cash fund saved as draft." : "Petty cash fund submitted for approval.");
+      toast.success(status === PettyCashFundStatuses.draft ? "Petty Cash Fund Saved as Draft." : "Petty Cash Fund Submitted for Approval.");
       options.onSaved?.();
       return true;
     } catch {
@@ -220,7 +220,7 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
       savePettyCashFundRecords(upsertPettyCashFundRecord(nextRecord));
       setRecord(nextRecord);
       setValues(createPettyCashFundFormValues(nextRecord));
-      toast.success(`Petty cash fund marked as ${status}.`);
+      toast.success(`Petty Cash Fund Marked as ${status}.`);
       return true;
     } catch {
       toast.error("Could not update the petty cash fund. Please try again.");
@@ -274,4 +274,3 @@ function calculateItem(item: PettyCashFundItem): PettyCashFundItem {
   };
 }
 
-export type { PettyCashFundActionPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";

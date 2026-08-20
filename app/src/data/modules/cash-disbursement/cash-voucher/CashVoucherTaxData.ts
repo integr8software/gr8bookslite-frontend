@@ -1,7 +1,7 @@
 import { createTaxDetails } from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherData";
 import type { CashVoucherTaxDetails } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
 import type { AlphanumericTaxCode } from "@/app/src/types/shared/tax/AlphanumericTaxCodeTypes";
-import type { AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 
 export function getVatPercentFromRate(taxRate: string) {
   return createTaxDetails(0, taxRate).vatPercent;

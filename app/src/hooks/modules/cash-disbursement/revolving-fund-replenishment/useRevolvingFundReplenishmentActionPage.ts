@@ -166,8 +166,8 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
       draft.clearDraft();
       toast.success(
         status === RevolvingFundReplenishmentStatuses.draft
-          ? "Revolving fund replenishment saved as draft."
-          : "Revolving fund replenishment submitted for approval.",
+          ? "Revolving Fund Replenishment Saved as Draft."
+          : "Revolving Fund Replenishment Submitted for Approval.",
       );
       options.onSaved?.();
       return true;
@@ -189,7 +189,7 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
       saveRevolvingFundReplenishmentRecords(upsertRevolvingFundReplenishmentRecord(nextRecord));
       setRecord(nextRecord);
       setValues(createRevolvingFundReplenishmentFormValues(nextRecord));
-      toast.success(`Revolving fund replenishment marked as ${status}.`);
+      toast.success(`Revolving Fund Replenishment Marked as ${status}.`);
       return true;
     } catch {
       toast.error("Could not update the revolving fund replenishment. Please try again.");
@@ -227,4 +227,3 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
   };
 }
 
-export type { RevolvingFundReplenishmentActionPageState } from "@/app/src/types/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentTypes";

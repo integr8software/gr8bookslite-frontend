@@ -19,7 +19,7 @@ export type RevolvingFundItem = {
   payeeName: string;
   orNo: string;
   tinNo: string;
-  particulars: string;
+  remarks: string;
   amount: string;
   netAmount: string;
   vatAmount: string;
@@ -60,7 +60,7 @@ export type RevolvingFundAccountingEntry = {
   credit: string;
   partyCode: string;
   partyName: string;
-  particulars: string;
+  remarks: string;
 };
 
 export type RevolvingFundAccountingColumnId = Exclude<keyof RevolvingFundAccountingEntry, "id">;

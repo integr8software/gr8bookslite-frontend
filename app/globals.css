@@ -852,6 +852,12 @@ select.app-select-control:not(:disabled) {
 	color: #87adbd;
 }
 
+.app-dialog-status-icon--save,
+.app-dialog-status-icon--undo,
+.app-dialog-status-icon--update {
+	color: rgb(var(--skyblue-rgb));
+}
+
 .app-dialog-status-icon--success .app-dialog-status-icon-mark {
 	position: absolute;
 	left: 50%;

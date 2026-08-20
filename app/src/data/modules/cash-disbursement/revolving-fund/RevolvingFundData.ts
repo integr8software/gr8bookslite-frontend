@@ -82,7 +82,7 @@ export function createBlankRevolvingFundItem(): RevolvingFundItem {
     payeeName: "",
     orNo: "",
     tinNo: "",
-    particulars: "",
+    remarks: "",
     amount: "",
     netAmount: "",
     vatAmount: "0.00",

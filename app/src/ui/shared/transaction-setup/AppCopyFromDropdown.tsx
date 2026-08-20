@@ -31,12 +31,14 @@ const CopyFromPageSizeOptions = [5, 10, 15, 20, 25, 50];
 
 export function AppCopyFromDropdown({
   disabled = false,
+  enableSourceSearch = false,
   records,
   selectionMode = "multiple",
   sources,
   onApply,
 }: {
   disabled?: boolean;
+  enableSourceSearch?: boolean;
   records: AppCopyFromRecord[];
   selectionMode?: "multiple" | "single";
   sources: string[];
@@ -45,6 +47,7 @@ export function AppCopyFromDropdown({
   const availableSources = useMemo(() => sources.filter((source) => source.trim() !== ""), [sources]);
   const menuRef = useRef<HTMLDivElement>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [sourceQuery, setSourceQuery] = useState("");
   const [activeSource, setActiveSource] = useState("");
   const [filters, setFilters] = useState<AppCopyFromFiltersValue>(EmptyCopyFromFilters);
   const [pagination, setPagination] = useState<PaginationState>({
@@ -53,6 +56,13 @@ export function AppCopyFromDropdown({
   });
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const availableSourceSet = useMemo(() => new Set(availableSources), [availableSources]);
+  const filteredSources = useMemo(() => {
+    const normalizedQuery = sourceQuery.trim().toLowerCase();
+
+    return enableSourceSearch && normalizedQuery
+      ? availableSources.filter((source) => source.toLowerCase().includes(normalizedQuery))
+      : availableSources;
+  }, [availableSources, enableSourceSearch, sourceQuery]);
   const isDialogOpen = activeSource !== "";
   const sourceRecords = useMemo(
     () => records.filter((record) => availableSourceSet.has(record.source) && record.source === activeSource),
@@ -143,7 +153,10 @@ export function AppCopyFromDropdown({
       <button
         type="button"
         disabled={disabled || availableSources.length === 0}
-        onClick={() => setIsMenuOpen((current) => !current)}
+        onClick={() => {
+          setSourceQuery("");
+          setIsMenuOpen((current) => !current);
+        }}
         className={moduleHeaderActionClassNames.secondary}
         aria-expanded={isMenuOpen}
         aria-haspopup="menu"
@@ -155,19 +168,38 @@ export function AppCopyFromDropdown({
       {isMenuOpen ? (
         <div
           role="menu"
-          className="absolute right-0 z-[120] mt-2 grid w-72 gap-1 rounded-lg border border-darknavy/10 bg-white p-1.5 text-sm shadow-[0_18px_46px_rgba(33,39,56,0.18)]"
+          className="absolute right-0 z-[120] mt-2 grid w-80 gap-1 rounded-lg border border-darknavy/10 bg-white p-1.5 text-sm shadow-[0_18px_46px_rgba(33,39,56,0.18)]"
         >
-          {availableSources.map((source) => (
-            <button
-              key={source}
-              type="button"
-              role="menuitem"
-              onClick={() => openSource(source)}
-              className="flex min-h-10 items-center justify-between gap-3 rounded-md px-3 text-left font-semibold text-darknavy transition hover:bg-skyblue/10 hover:text-darknavy"
-            >
-              <span className="min-w-0 truncate">{source}</span>
-            </button>
-          ))}
+          {enableSourceSearch ? (
+            <label className="flex h-10 items-center gap-2 rounded-md border border-darknavy/10 bg-white px-3 focus-within:border-skyblue/45 focus-within:ring-2 focus-within:ring-skyblue/15">
+              <Search className="h-4 w-4 shrink-0 text-darknavy/35" aria-hidden="true" />
+              <span className="sr-only">Search Copy From modules</span>
+              <input
+                autoFocus
+                value={sourceQuery}
+                onChange={(event) => setSourceQuery(event.target.value)}
+                placeholder="Search modules"
+                className="min-w-0 flex-1 bg-transparent text-sm font-medium text-darknavy outline-none placeholder:text-darknavy/35"
+              />
+            </label>
+          ) : null}
+          <div className="max-h-80 overflow-y-auto">
+            {filteredSources.length > 0 ? (
+              filteredSources.map((source) => (
+                <button
+                  key={source}
+                  type="button"
+                  role="menuitem"
+                  onClick={() => openSource(source)}
+                  className="flex min-h-10 w-full items-center justify-between gap-3 rounded-md px-3 text-left font-semibold text-darknavy transition hover:bg-skyblue/10 hover:text-darknavy"
+                >
+                  <span className="min-w-0 truncate">{source}</span>
+                </button>
+              ))
+            ) : (
+              <p className="px-3 py-4 text-center text-xs font-medium text-darknavy/50">No modules found.</p>
+            )}
+          </div>
         </div>
       ) : null}
       <AppCopyFromSourceDialog
@@ -225,10 +257,18 @@ export function AppCopyFromSourceDialog({
       {
         id: "selection",
         enableSorting: false,
+        size: 56,
+        minSize: 56,
+        maxSize: 56,
         meta: {
-          className: "sticky left-0 z-30 w-12 bg-slate-50 text-center shadow-[6px_0_12px_rgba(33,39,56,0.08)]",
+          className:
+            "sticky left-0 z-30 !w-14 bg-slate-50 !px-0 text-center first:!pl-0 last:!pr-0 shadow-[6px_0_12px_rgba(33,39,56,0.08)]",
         },
         header: ({ table }) => {
+          if (selectionMode === "single") {
+            return <span className="sr-only">Select one transaction</span>;
+          }
+
           const visibleRecordIds = table.getRowModel().rows.map((row) => row.original.id);
           const hasVisibleRows = visibleRecordIds.length > 0;
           const isAllVisibleSelected = hasVisibleRows && visibleRecordIds.every((recordId) => selectedIds.includes(recordId));
@@ -246,13 +286,6 @@ export function AppCopyFromSourceDialog({
               disabled={!hasVisibleRows}
               onChange={() => {
                 if (!hasVisibleRows) {
-                  return;
-                }
-
-                if (selectionMode === "single") {
-                  const firstRecordId = visibleRecordIds[0];
-
-                  onToggleRecord(firstRecordId);
                   return;
                 }
 
@@ -327,7 +360,11 @@ export function AppCopyFromSourceDialog({
       actions={<AppCopyFromDialogActions lastRefreshedAt={lastRefreshedAt} />}
       bodyClassName="flex min-h-0 flex-col p-0"
       closeLabel="Close copy from dialog"
-      description="Select source transactions to copy into this voucher."
+      description={
+        selectionMode === "single"
+          ? "Select one source transaction to copy into this voucher."
+          : "Select one or more source transactions to copy into this voucher."
+      }
       footer={<AppCopyFromFooter selectedCount={selectedIds.length} selectedTotalAmount={selectedTotalAmount} onApply={onApply} />}
       footerClassName="px-5 py-4"
       isOpen={isOpen}
@@ -357,24 +394,28 @@ export function AppCopyFromSourceDialog({
             >
               <td
                 className={joinClasses(
-                  "sticky left-0 z-20 w-12 text-center shadow-[6px_0_12px_rgba(33,39,56,0.08)]",
+                  "sticky left-0 z-20 !w-14 !p-0 text-center shadow-[6px_0_12px_rgba(33,39,56,0.08)]",
                   isSelected ? "bg-skyblue/10" : "bg-white",
                 )}
               >
                 <input
-                  type="checkbox"
+                  type={selectionMode === "single" ? "radio" : "checkbox"}
+                  name={selectionMode === "single" ? `copy-from-${activeSource}-selection` : undefined}
                   checked={isSelected}
                   onChange={() => onToggleRecord(original.id)}
-                  className="h-4 w-4 rounded border-darknavy/20 text-skyblue focus:ring-skyblue/35"
+                  className={joinClasses(
+                    "h-4 w-4 border-darknavy/20 text-skyblue focus:ring-skyblue/35",
+                    selectionMode === "single" ? "rounded-full" : "rounded",
+                  )}
                   aria-label={`Select ${original.sourceNo}`}
                 />
               </td>
               <td className="font-semibold text-darknavy">{original.sourceNo}</td>
               <td>{formatCopyFromDate(original.documentDate)}</td>
-              <td>{original.partyName || "-"}</td>
-              <td className="text-right font-semibold text-darknavy">{formatCopyFromAmount(original.amount)}</td>
+              <td>{formatCopyFromText(original.partyName)}</td>
+              <td className="text-right font-semibold text-darknavy">{formatCopyFromTableAmount(original.amount)}</td>
               <td className="max-w-md text-darknavy/65">
-                <span className="line-clamp-2">{original.remarks || "-"}</span>
+                <span className="line-clamp-2">{formatCopyFromText(original.remarks)}</span>
               </td>
             </tr>
           );
@@ -547,9 +588,17 @@ function formatCopyFromLiveTime(value: Date) {
 }
 
 function formatCopyFromDate(value: string | undefined) {
-  if (!value) {
-    return "-";
+  return formatCopyFromText(value);
+}
+
+function formatCopyFromText(value: string | undefined) {
+  return value?.trim() ?? "";
+}
+
+function formatCopyFromTableAmount(value: number | string | undefined) {
+  if (value === undefined || (typeof value === "string" && value.trim() === "")) {
+    return "";
   }
 
-  return value;
+  return formatCopyFromAmount(value);
 }

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, Save, X } from "lucide-react";
+import { ArrowLeft, Edit3, Save, X } from "lucide-react";
 import {
   AcknowledgementReceiptCopyFromRecords,
   AcknowledgementReceiptCopySources,
@@ -18,6 +18,7 @@ import { AppCopyFromDropdown } from "@/app/src/ui/shared/transaction-setup/AppCo
 
 type AcknowledgementReceiptActionHeaderProps = {
   mode: AcknowledgementReceiptActionMode;
+  recordId?: string;
   values: AcknowledgementReceiptFormValues;
   onCopyFrom: (recordIds: string[]) => void;
   onPreview: () => void;
@@ -29,6 +30,7 @@ export function AcknowledgementReceiptActionHeader({
   onCopyFrom,
   onPreview,
   onSubmit,
+  recordId,
   values,
 }: AcknowledgementReceiptActionHeaderProps) {
   const title =
@@ -57,6 +59,12 @@ export function AcknowledgementReceiptActionHeader({
             Back
           </Link>
           <ReportPreviewAction onPreview={onPreview} />
+          {mode === "view" && recordId && values.status === "Draft" ? (
+            <Link href={`${AcknowledgementReceiptHref}/edit/${recordId}`} className={moduleHeaderActionClassNames.primary}>
+              <Edit3 className="h-4 w-4" aria-hidden="true" />
+              Edit
+            </Link>
+          ) : null}
           {mode === "view" ? null : (
             <>
               <Link href={AcknowledgementReceiptHref} className={moduleHeaderActionClassNames.secondary}>

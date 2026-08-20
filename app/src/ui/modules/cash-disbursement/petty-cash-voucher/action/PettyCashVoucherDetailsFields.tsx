@@ -5,7 +5,7 @@ import {
   createPettyCashVoucherPartyOptions,
   createPettyCashVoucherResponsibilityCenterOptions,
 } from "@/app/src/data/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherData";
-import type { PettyCashVoucherActionPageState } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-voucher/usePettyCashVoucherActionPage";
+import type { PettyCashVoucherActionPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLookupDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppLookupDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
@@ -227,9 +227,9 @@ export function PettyCashVoucherDetailsFields({
             error={page.errors.transactionNo}
             isRequired
             isReadonly
-            label="Petty Cash Voucher No."
+            label="PCV No."
             onValueChange={(value) => page.updateField("transactionNo", value)}
-            placeholder="Auto Generated Petty Cash Voucher Transaction Number"
+            placeholder="Auto Generated PCV Transaction Number"
           />
 
           <TransactionTextField
@@ -237,7 +237,7 @@ export function PettyCashVoucherDetailsFields({
             error={page.errors.documentDate}
             isReadonly={page.isReadonly}
             isRequired
-            label="Petty Cash Voucher Date"
+            label="PCV Date"
             onValueChange={(value) => page.updateField("documentDate", value)}
             type="date"
           />

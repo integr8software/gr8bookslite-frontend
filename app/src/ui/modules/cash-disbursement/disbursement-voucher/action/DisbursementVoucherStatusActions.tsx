@@ -1,5 +1,5 @@
 import { Ban, ThumbsDown, ThumbsUp, Undo2 } from "lucide-react";
-import { CashDisbursementViewActionButtonClassName } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
+import { CashDisbursementStatusActionButtonClassName } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import {
   DisbursementVoucherStatuses,
   canApproveDisbursementVoucherStatus,
@@ -17,7 +17,7 @@ import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleH
 import { VoucherReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 import { DisbursementVoucherActionHistory } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherActionHistory";
 
-export function DisbursementVoucherViewActions({
+export function DisbursementVoucherStatusActions({
   onRequestStatusConfirmation,
   onUpdateStatus,
   onPreview,
@@ -30,7 +30,7 @@ export function DisbursementVoucherViewActions({
   transaction?: DisbursementTransactionRecord;
   voucher?: DisbursementVoucherRecord;
 }) {
-  const actions = createDisbursementVoucherViewActionItems({
+  const actions = createDisbursementVoucherStatusActionItems({
     onRequestStatusConfirmation,
     onUpdateStatus,
     transaction,
@@ -58,7 +58,7 @@ export function DisbursementVoucherViewActions({
   );
 }
 
-function createDisbursementVoucherViewActionItems({
+function createDisbursementVoucherStatusActionItems({
   onRequestStatusConfirmation,
   onUpdateStatus,
   transaction,
@@ -110,7 +110,7 @@ function createDisbursementVoucherViewActionItems({
 
 function HeaderActionButton({ action }: { action: Extract<ModuleActionMenuItem, { type: "button" }> }) {
   const Icon = action.icon;
-  const className = getViewActionButtonClassName(action);
+  const className = getStatusActionButtonClassName(action);
 
   return (
     <button type="button" disabled={action.disabled} onClick={action.onSelect} className={className}>
@@ -120,25 +120,25 @@ function HeaderActionButton({ action }: { action: Extract<ModuleActionMenuItem, 
   );
 }
 
-function getViewActionButtonClassName(action: Extract<ModuleActionMenuItem, { type: "button" }>) {
+function getStatusActionButtonClassName(action: Extract<ModuleActionMenuItem, { type: "button" }>) {
   if (action.label === "Approve") {
-    return `${CashDisbursementViewActionButtonClassName} border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50 focus-visible:ring-emerald-500/15`;
+    return `${CashDisbursementStatusActionButtonClassName} border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50 focus-visible:ring-emerald-500/15`;
   }
 
   if (action.label === "Disapprove") {
-    return `${CashDisbursementViewActionButtonClassName} border-red-200 bg-white text-red-600 hover:bg-red-50 focus-visible:ring-red-500/15`;
+    return `${CashDisbursementStatusActionButtonClassName} border-red-200 bg-white text-red-600 hover:bg-red-50 focus-visible:ring-red-500/15`;
   }
 
   if (action.label === "Cancel") {
-    return `${CashDisbursementViewActionButtonClassName} border-amber-200 bg-white text-amber-700 hover:bg-amber-50 focus-visible:ring-amber-500/15`;
+    return `${CashDisbursementStatusActionButtonClassName} border-amber-200 bg-white text-amber-700 hover:bg-amber-50 focus-visible:ring-amber-500/15`;
   }
 
   if (action.label === "Undo Approved" || action.label === "Undo Disapproved" || action.label === "Undo Cancelled") {
-    return `${CashDisbursementViewActionButtonClassName} border-skyblue/35 bg-skyblue/10 text-skyblue hover:bg-skyblue/15 focus-visible:ring-skyblue/20`;
+    return `${CashDisbursementStatusActionButtonClassName} border-skyblue/35 bg-skyblue/10 text-skyblue hover:bg-skyblue/15 focus-visible:ring-skyblue/20`;
   }
 
   if (action.tone === "danger") {
-    return `${CashDisbursementViewActionButtonClassName} border-coralpink/45 bg-coralpink/5 text-coralpink hover:bg-coralpink/10 focus-visible:ring-coralpink/20`;
+    return `${CashDisbursementStatusActionButtonClassName} border-coralpink/45 bg-coralpink/5 text-coralpink hover:bg-coralpink/10 focus-visible:ring-coralpink/20`;
   }
 
   return moduleHeaderActionClassNames.secondary;

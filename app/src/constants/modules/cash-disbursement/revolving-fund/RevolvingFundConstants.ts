@@ -18,8 +18,8 @@ export const RevolvingFundPaginationStorageKey = "cash-disbursement-revolving-fu
 export const RevolvingFundTransactionPrefix = "RF";
 export const RevolvingFundCopyFromSources = ["Disbursement Voucher"] as const;
 export const RevolvingFundColumnLabels = {
-  transactionNo: "Revolving Fund No.",
-  documentDate: "Document Date",
+  transactionNo: "RF No.",
+  documentDate: "RF Date",
   partyCode: "Party Code",
   partyName: "Party Name",
   accountCode: "Default Account Code",
@@ -78,13 +78,14 @@ export const RevolvingFundEntryTabs: { id: RevolvingFundEntryTab; label: string 
   { id: "items", label: "Items" },
   { id: "accounting", label: "Accounting Entries" },
 ];
+export const RevolvingFundAccountingEntryTab: RevolvingFundEntryTab = "accounting";
 export const RevolvingFundDefaultItemColumnIds: RevolvingFundItemColumnId[] = [
   "date",
   "payeeCode",
   "payeeName",
   "orNo",
   "tinNo",
-  "particulars",
+  "remarks",
   "amount",
   "netAmount",
   "vatAmount",
@@ -101,7 +102,7 @@ export const RevolvingFundItemColumnLabels: Record<RevolvingFundItemColumnId, st
   payeeName: "Payee",
   orNo: "OR No.",
   tinNo: "TIN No.",
-  particulars: "Particulars",
+  remarks: "Remarks",
   amount: "Amount",
   netAmount: "Net Amount",
   vatAmount: "VAT Amount",
@@ -113,21 +114,21 @@ export const RevolvingFundItemColumnLabels: Record<RevolvingFundItemColumnId, st
   responsibilityCenter: "Responsibility Center",
 };
 export const RevolvingFundItemColumnWidths: Record<RevolvingFundItemColumnId, number> = {
-  date: 145,
-  payeeCode: 140,
-  payeeName: 220,
-  orNo: 135,
-  tinNo: 160,
-  particulars: 260,
-  amount: 140,
-  netAmount: 140,
-  vatAmount: 140,
-  type: 150,
-  vatType: 150,
-  vatable: 125,
-  vatInclusive: 125,
-  grossAmount: 150,
-  responsibilityCenter: 210,
+  date: 130,
+  payeeCode: 125,
+  payeeName: 190,
+  orNo: 120,
+  tinNo: 140,
+  remarks: 220,
+  amount: 125,
+  netAmount: 125,
+  vatAmount: 125,
+  type: 130,
+  vatType: 130,
+  vatable: 110,
+  vatInclusive: 110,
+  grossAmount: 130,
+  responsibilityCenter: 180,
 };
 export const RevolvingFundProtectedItemColumnIds = new Set<RevolvingFundItemColumnId>(["date", "amount"]);
 export const RevolvingFundDefaultAccountingColumnIds: RevolvingFundAccountingColumnId[] = [
@@ -137,7 +138,7 @@ export const RevolvingFundDefaultAccountingColumnIds: RevolvingFundAccountingCol
   "credit",
   "partyCode",
   "partyName",
-  "particulars",
+  "remarks",
 ];
 export const RevolvingFundAccountingColumnLabels: Record<RevolvingFundAccountingColumnId, string> = {
   accountCode: "Account Code",
@@ -146,16 +147,16 @@ export const RevolvingFundAccountingColumnLabels: Record<RevolvingFundAccounting
   credit: "Credit",
   partyCode: "Party Code",
   partyName: "Party Name",
-  particulars: "Particulars",
+  remarks: "Remarks",
 };
 export const RevolvingFundAccountingColumnWidths: Record<RevolvingFundAccountingColumnId, number> = {
-  accountCode: 150,
-  accountTitle: 240,
-  debit: 140,
-  credit: 140,
-  partyCode: 150,
-  partyName: 220,
-  particulars: 260,
+  accountCode: 135,
+  accountTitle: 210,
+  debit: 125,
+  credit: 125,
+  partyCode: 130,
+  partyName: 190,
+  remarks: 220,
 };
 export const RevolvingFundProtectedAccountingColumnIds = new Set<RevolvingFundAccountingColumnId>(["accountCode", "debit", "credit"]);
 export const RevolvingFundEntryInputClassName =

@@ -1,10 +1,11 @@
 import {
   AdvancesToSuppliersAccountOptions,
   AdvancesToSuppliersPartyOptions,
+  AdvancesToSuppliersPaymentTypeDropdownOptions,
   AdvancesToSuppliersProjectOptions,
   AdvancesToSuppliersResponsibilityCenterOptions,
 } from "@/app/src/constants/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersConstants";
-import type { AdvancesToSuppliersActionPageState } from "@/app/src/hooks/modules/cash-disbursement/advances-to-suppliers/useAdvancesToSuppliersActionPage";
+import type { AdvancesToSuppliersActionPageState } from "@/app/src/types/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLookupDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppLookupDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
@@ -28,6 +29,8 @@ export function AdvancesToSuppliersDetailsFields({
   onOpenResponsibilityCenterDrawer: () => void;
   page: AdvancesToSuppliersActionPageState;
 }) {
+  const isFixedAmount = page.values.advancePaymentType === "Fixed Amount";
+
   return (
     <section className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
       <div className="grid gap-5 xl:grid-cols-3">
@@ -179,16 +182,16 @@ export function AdvancesToSuppliersDetailsFields({
             value={page.values.transactionNo}
             isReadonly
             isRequired
-            label="Advances to Suppliers No."
+            label="ATS No."
             error={page.errors.transactionNo}
             onValueChange={(value) => page.updateField("transactionNo", value)}
-            placeholder="Auto Generated Advances to Suppliers Transaction Number"
+            placeholder="Auto Generated ATS Transaction Number"
           />
           <TransactionTextField
             value={page.values.documentDate}
             isReadonly={page.isReadonly}
             isRequired
-            label="Advances to Suppliers Date"
+            label="ATS Date"
             error={page.errors.documentDate}
             type="date"
             onValueChange={(value) => page.updateField("documentDate", value)}
@@ -202,23 +205,36 @@ export function AdvancesToSuppliersDetailsFields({
             onValueChange={(value) => page.updateField("poReference", value)}
             placeholder="Enter Purchase Order Reference"
           />
+          <TransactionField label="Advance Payment Type" isRequired>
+            <AppAdvancedDropdown
+              id="ats-advance-payment-type"
+              value={page.values.advancePaymentType}
+              readOnly={page.isReadonly}
+              isClearable={false}
+              options={AdvancesToSuppliersPaymentTypeDropdownOptions}
+              placeholder="Select Advance Payment Type"
+              searchPlaceholder="Search Payment Type"
+              onChange={(value) => page.updateField("advancePaymentType", value as "Percentage" | "Fixed Amount")}
+            />
+          </TransactionField>
           <TransactionField label="Advance Payment (%)" error={page.errors.advancePaymentPercentage} isRequired>
             <MoneyNumberField
               value={page.values.advancePaymentPercentage}
               min="0"
               max="100"
-              readOnly={page.isReadonly}
+              readOnly={page.isReadonly || isFixedAmount}
               onValueChange={(value) => page.updateField("advancePaymentPercentage", value)}
-              className={`${TransactionFieldClassName} text-right tabular-nums`}
+              className={`${TransactionFieldClassName} text-right tabular-nums${isFixedAmount ? " transaction-readonly-placeholder" : ""}`}
               placeholder="0.00"
             />
           </TransactionField>
           <TransactionField label="Amount of Advance Payment" error={page.errors.advancePaymentAmount} isRequired>
             <MoneyNumberField
               value={page.values.advancePaymentAmount}
-              readOnly
-              onValueChange={() => undefined}
-              className={`${TransactionFieldClassName} text-right tabular-nums`}
+              min="0"
+              readOnly={page.isReadonly || !isFixedAmount}
+              onValueChange={(value) => page.updateField("advancePaymentAmount", value)}
+              className={`${TransactionFieldClassName} text-right tabular-nums${!isFixedAmount ? " transaction-readonly-placeholder" : ""}`}
               placeholder="0.00"
             />
           </TransactionField>

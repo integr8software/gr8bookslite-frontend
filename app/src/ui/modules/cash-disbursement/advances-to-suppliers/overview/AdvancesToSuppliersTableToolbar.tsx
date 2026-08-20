@@ -1,5 +1,5 @@
 import { AdvancesToSuppliersStatusOptions } from "@/app/src/constants/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersConstants";
-import type { AdvancesToSuppliersOverviewPageState } from "@/app/src/hooks/modules/cash-disbursement/advances-to-suppliers/useAdvancesToSuppliersOverviewPage";
+import type { AdvancesToSuppliersOverviewPageState } from "@/app/src/types/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersTypes";
 import { AmountRangePicker } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import { DateRangePicker } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
 import {
@@ -22,7 +22,7 @@ export function AdvancesToSuppliersTableToolbar({ page }: { page: AdvancesToSupp
             label="Search Advances to Suppliers"
             value={page.query}
             onChange={page.setQuery}
-            placeholder="Search by Advances to Suppliers No., Party Name, Account Title, PO Reference, or Remarks"
+            placeholder="Search by ATS No., Party Name, Account Title, PO Reference, or Remarks"
           />
         </div>
         <DateRangePicker label="Date Range" value={page.dateRange} onChange={page.setDateRange} />

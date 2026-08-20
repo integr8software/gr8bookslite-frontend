@@ -79,7 +79,7 @@ function createCashAdvancePdfDefinition(values: CashAdvanceFormValues): TDocumen
               },
               {
                 colSpan: 2,
-                text: [{ text: "Cash Advance Date: ", bold: true }, formatCompactDate(values.documentDate)],
+                text: [{ text: "CA Date: ", bold: true }, formatCompactDate(values.documentDate)],
                 margin: [0, 11, 0, 0],
               },
               { text: "" },

@@ -162,14 +162,14 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
           date: source.documentDate ?? current.documentDate,
           grossAmount: amount,
           netAmount: amount,
-          particulars: source.remarks ?? "",
+          remarks: source.remarks ?? "",
           payeeCode: String(party?.value ?? ""),
           payeeName: source.partyName ?? "",
         },
       ],
     }));
     setErrors({});
-    toast.success(`Copied details from ${source.sourceNo}.`);
+    toast.success(`Copied Details from ${source.sourceNo}.`);
   }
 
   function save(status: RevolvingFundStatus) {
@@ -199,7 +199,7 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
       setRecord(nextRecord);
       setValues(createRevolvingFundFormValues(nextRecord));
       draft.clearDraft();
-      toast.success(status === RevolvingFundStatuses.draft ? "Revolving fund saved as draft." : "Revolving fund submitted for approval.");
+      toast.success(status === RevolvingFundStatuses.draft ? "Revolving Fund Saved as Draft." : "Revolving Fund Submitted for Approval.");
       options.onSaved?.();
       return true;
     } catch {
@@ -220,7 +220,7 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
       saveRevolvingFundRecords(upsertRevolvingFundRecord(nextRecord));
       setRecord(nextRecord);
       setValues(createRevolvingFundFormValues(nextRecord));
-      toast.success(`Revolving fund marked as ${status}.`);
+      toast.success(`Revolving Fund Marked as ${status}.`);
       return true;
     } catch {
       toast.error("Could not update the revolving fund. Please try again.");
@@ -274,4 +274,3 @@ function calculateItem(item: RevolvingFundItem): RevolvingFundItem {
   };
 }
 
-export type { RevolvingFundActionPageState } from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";

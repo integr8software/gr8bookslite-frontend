@@ -29,19 +29,20 @@ import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateR
 import { getModuleStatusMetricIcon, getModuleStatusMetricIconClassName } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import type { ModuleStatisticCardItem } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { formatPartOfTotalPercentage } from "@/app/src/utils/percentage.util";
-import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
-import { CashDisbursementOverviewActionColumnWidth } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
+import { CashDisbursementOverviewColumnWidths as TransactionOverviewColumnWidths } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
+import {
+  CashDisbursementEmptyRange,
+  CashDisbursementOverviewActionColumnWidth,
+} from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 
 const columnHelper = createColumnHelper<RevolvingFundRecord>();
-const emptyDateRange: DateRangeValue = { from: "", to: "" };
-const emptyAmountRange: AmountRangeValue = { from: "", to: "" };
 
 export function useRevolvingFundOverviewPage() {
   const [records, setRecords] = useState(getRevolvingFundRecords);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("All");
-  const [dateRange, setDateRange] = useState<DateRangeValue>(emptyDateRange);
-  const [amountRange, setAmountRange] = useState<AmountRangeValue>(emptyAmountRange);
+  const [dateRange, setDateRange] = useState<DateRangeValue>(CashDisbursementEmptyRange);
+  const [amountRange, setAmountRange] = useState<AmountRangeValue>(CashDisbursementEmptyRange);
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => RevolvingFundDefaultColumnVisibility);
@@ -189,7 +190,7 @@ export function useRevolvingFundOverviewPage() {
     setRecords(next);
     saveRevolvingFundRecords(next);
     setLastSyncedAt(Date.now());
-    toast.success(`Revolving fund marked as ${status}.`);
+    toast.success(`Revolving Fund Marked as ${status}.`);
   }
 
   function refreshRecords() {
@@ -223,4 +224,3 @@ function getMetricTone(status: RevolvingFundStatus) {
   return "blue" as const;
 }
 
-export type { RevolvingFundOverviewPageState } from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";

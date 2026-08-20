@@ -1,9 +1,15 @@
 import type { CashAdvanceStatus } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 import type { DisbursementAttachment } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
+import type {
+  useCashAdvanceMultipleEntryActionForm,
+  useCashAdvanceMultipleEntryTable,
+} from "@/app/src/hooks/modules/cash-disbursement/cash-advance-multiple-entry/useCashAdvanceMultipleEntry";
 
 export type CashAdvanceMultipleEntryActionMode = "add" | "edit" | "view";
 export type CashAdvanceMultipleEntrySubmitConfirmationAction = "save" | "draft";
+export type CashAdvanceMultipleEntryFormController = ReturnType<typeof useCashAdvanceMultipleEntryActionForm>;
+export type CashAdvanceMultipleEntryTableState = ReturnType<typeof useCashAdvanceMultipleEntryTable>;
 
 export type CashAdvanceMultipleEntryReportPreviewProps = {
   isOpen: boolean;
@@ -22,7 +28,7 @@ export type CashAdvanceMultipleEntryItem = {
   partyCode: string;
   partyName: string;
   cashAdvanceBalance: string;
-  particulars: string;
+  remarks: string;
   amount: string;
   responsibilityCenter: string;
 };
@@ -35,7 +41,7 @@ export type CashAdvanceMultipleEntryAccountingEntry = {
   credit: string;
   partyCode: string;
   partyName: string;
-  particulars: string;
+  remarks: string;
   responsibilityCenter: string;
 };
 

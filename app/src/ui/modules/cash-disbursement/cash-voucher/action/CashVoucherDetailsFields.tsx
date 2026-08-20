@@ -169,17 +169,17 @@ export function CashVoucherDetailsFields({
             value={values.voucherNo}
             isReadonly
             isRequired
-            label="Cash Voucher No."
+            label="CV No."
             error={errors.voucherNo}
             onValueChange={(value) => onUpdateField("voucherNo", value)}
-            placeholder="Auto Generated Cash Voucher Transaction Number"
+            placeholder="Auto Generated CV Transaction Number"
           />
 
           <TransactionTextField
             value={values.voucherDate}
             isReadonly={isReadonly}
             isRequired
-            label="Cash Voucher Date"
+            label="CV Date"
             error={errors.voucherDate}
             type="date"
             onValueChange={(value) => onUpdateField("voucherDate", value)}

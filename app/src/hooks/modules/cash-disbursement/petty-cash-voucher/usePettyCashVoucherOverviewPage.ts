@@ -26,12 +26,13 @@ import type {
 import { coerceDate } from "@/app/src/utils/date.util";
 import { parseAmount } from "@/app/src/utils/number.util";
 import { formatPartOfTotalPercentage } from "@/app/src/utils/percentage.util";
-import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
-import { CashDisbursementOverviewActionColumnWidth } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
+import { CashDisbursementOverviewColumnWidths as TransactionOverviewColumnWidths } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
+import {
+  CashDisbursementEmptyRange,
+  CashDisbursementOverviewActionColumnWidth,
+} from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 
 const columnHelper = createColumnHelper<PettyCashVoucherRecord>();
-const EmptyDateRange: DateRangeValue = { from: "", to: "" };
-const EmptyAmountRange: AmountRangeValue = { from: "", to: "" };
 
 export function usePettyCashVoucherOverviewPage() {
   const queryClient = useQueryClient();
@@ -44,8 +45,8 @@ export function usePettyCashVoucherOverviewPage() {
   const [statusFilter, setStatusFilter] = useState<typeof PettyCashVoucherAllStatusFilter | PettyCashVoucherStatus>(
     PettyCashVoucherAllStatusFilter,
   );
-  const [dateRange, setDateRange] = useState<DateRangeValue>(EmptyDateRange);
-  const [amountRange, setAmountRange] = useState<AmountRangeValue>(EmptyAmountRange);
+  const [dateRange, setDateRange] = useState<DateRangeValue>(CashDisbursementEmptyRange);
+  const [amountRange, setAmountRange] = useState<AmountRangeValue>(CashDisbursementEmptyRange);
   const [columnVisibility, setColumnVisibility] = useState(() => PettyCashVoucherDefaultColumnVisibility);
   const updateStatusMutation = useMutation({
     mutationFn: async ({ status, voucherId }: { status: PettyCashVoucherStatus; voucherId: string }) => ({ status, voucherId }),
@@ -53,7 +54,7 @@ export function usePettyCashVoucherOverviewPage() {
       queryClient.setQueryData<PettyCashVoucherRecord[]>(PettyCashVoucherQueryKeys.vouchers(), (current = PettyCashVoucherRecords) =>
         current.map((voucher) => (voucher.id === voucherId ? { ...voucher, status } : voucher)),
       );
-      toast.success(`Petty cash voucher marked as ${status}.`);
+      toast.success(`Petty Cash Voucher Marked as ${status}.`);
     },
     onError: () => {
       toast.error("Could not update the voucher status. Please try again.");
@@ -213,8 +214,8 @@ export function usePettyCashVoucherOverviewPage() {
   function resetFilters() {
     setSearchQuery("");
     setStatusFilter(PettyCashVoucherAllStatusFilter);
-    setDateRange(EmptyDateRange);
-    setAmountRange(EmptyAmountRange);
+    setDateRange(CashDisbursementEmptyRange);
+    setAmountRange(CashDisbursementEmptyRange);
   }
 
   function updateStatusFilter(value: string) {
@@ -249,4 +250,3 @@ export function usePettyCashVoucherOverviewPage() {
   };
 }
 
-export type { PettyCashVoucherOverviewPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";

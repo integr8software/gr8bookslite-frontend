@@ -17,7 +17,7 @@ const CashAdvanceFormSchema = z.object({
       }, "Enter an amount greater than zero.")
       .transform((value) => Number(value.replace(/,/g, ""))),
   ),
-  documentDate: z.string().trim().min(1, "Select a document date."),
+  documentDate: z.string().trim().min(1, "Select a CA Date."),
   partyName: z.string().trim().min(1, "Select a party."),
 });
 

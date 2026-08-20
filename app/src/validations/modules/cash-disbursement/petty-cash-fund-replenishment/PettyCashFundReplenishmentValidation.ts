@@ -6,8 +6,8 @@ import type {
 import { parseAmount } from "@/app/src/utils/number.util";
 
 const schema = z.object({
-  transactionNo: z.string().regex(/^PCFR-\d{6}$/, "A valid petty cash fund replenishment number is required."),
-  documentDate: z.string().min(1, "Select a document date."),
+  transactionNo: z.string().regex(/^PCFR-\d{6}$/, "A valid PCFR No. is required."),
+  documentDate: z.string().min(1, "Select a PCFR Date."),
   partyCode: z.string().trim().min(1, "Select a party."),
   partyName: z.string().trim().min(1, "Select a party."),
   accountCode: z.string().trim().min(1, "Select a default account."),
@@ -37,7 +37,7 @@ export function validatePettyCashFundReplenishmentForm(values: PettyCashFundRepl
   }
   const voucherNumbers = values.entries.map((entry) => entry.pettyCashNo.trim().toLowerCase()).filter(Boolean);
   if (new Set(voucherNumbers).size !== voucherNumbers.length) {
-    errors.entries = "Petty cash voucher numbers must be unique.";
+    errors.entries = "PCF numbers must be unique.";
   }
   return errors;
 }

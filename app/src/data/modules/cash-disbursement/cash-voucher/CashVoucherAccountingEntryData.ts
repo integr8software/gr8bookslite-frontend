@@ -243,7 +243,7 @@ export function createAutomaticAccountingEntries(
       debit: vatEntryAmounts.debit,
       credit: vatEntryAmounts.credit,
       id: "auto-input-vat-current",
-      particulars: "Input VAT",
+      remarks: "Input VAT",
       taxDetails: {
         ...createTaxDetails(totalVatAmount, "0%"),
         ...commonFields,
@@ -266,7 +266,7 @@ export function createAutomaticAccountingEntries(
       debit: ewtEntryAmounts.debit,
       credit: ewtEntryAmounts.credit,
       id: "auto-ewt-current",
-      particulars: "Expanded Withholding Tax",
+      remarks: "Expanded Withholding Tax",
       taxDetails: {
         ...createTaxDetails(totalEwtAmount, "0%"),
         ...commonFields,
@@ -298,7 +298,7 @@ export function createAutomaticAccountingEntries(
       debit: paymentEntryAmounts.debit,
       credit: paymentEntryAmounts.credit,
       id: "auto-credit-current",
-      particulars: `Settlement via ${options.paymentMethod || "payment"}`,
+      remarks: `Settlement via ${options.paymentMethod || "payment"}`,
       taxDetails: {
         ...createTaxDetails(totalCashVoucherAmount, "0%"),
         ...commonFields,
@@ -371,8 +371,8 @@ export function getCashVoucherEntryExportCell(entry: CashVoucherLineEntry, colum
       return entry.checkStatus ?? "";
     case "checkDate":
       return entry.checkDate ?? "";
-    case "particulars":
-      return entry.particulars ?? "";
+    case "remarks":
+      return entry.remarks ?? "";
     case "partyCode":
       return entry.partyCode ?? "";
     case "partyName":
@@ -451,7 +451,7 @@ export function disbursementEntryHasData(entry: CashVoucherLineEntry) {
     (entry.refId ?? "").trim() !== "" ||
     (entry.vatType ?? "").trim() !== "" ||
     (entry.atcCode ?? "").trim() !== "" ||
-    entry.particulars.trim() !== "" ||
+    entry.remarks.trim() !== "" ||
     parseMoneyNumberInput(entry.debit) > 0 ||
     parseMoneyNumberInput(entry.credit) > 0 ||
     entry.taxRate !== "0%"

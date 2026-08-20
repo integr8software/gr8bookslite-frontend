@@ -150,28 +150,34 @@ function invoiceToRecord(
     expirationDate: invoice.dueDate,
     grossAmount: invoice.grossAmount,
     invoiceNo: invoice.invoiceNo ?? "",
-    items: invoice.details.map((detail) => ({
-      amount: detail.amount,
-      description: detail.description,
-      discountAmount: detail.discountAmount,
-      discountPercent: detail.discountPercent.toString(),
-      ewtAmount: detail.ewtAmount,
-      ewtType: detail.ewtType ?? "",
-      grossAmount: detail.grossAmount,
-      id: detail.id,
-      netAmount: detail.netAmount,
-      particulars: detail.particulars ?? "",
-      quantity: detail.quantity,
-      responsibilityCenter: detail.responsibilityCenter ?? "",
-      vatAmount: detail.vatAmount,
-      vatInclusive: detail.vatInclusive ? "True" : "False",
-      vatable: detail.vatable ? "True" : "False",
-      vatType: detail.vatType ?? "",
-      withEwt: detail.withEwt ? "True" : "False",
-      withWvat: detail.withWvat ? "True" : "False",
-      wvatAmount: detail.wvatAmount,
-      wvatType: detail.wvatType ?? "",
-    })),
+    items: invoice.details.map((detail) => {
+      const derivedAmounts = getDerivedBillingStatementDetailAmounts(detail);
+
+      return {
+        amount: detail.amount,
+        description: detail.description,
+        discountAmount: detail.discountAmount,
+        discountPercent: detail.discountPercent.toString(),
+        ewtAmount: detail.ewtAmount,
+        ewtType: detail.ewtType ?? "",
+        grossAmount: detail.grossAmount,
+        grossAfterDiscount: derivedAmounts.grossAfterDiscount,
+        id: detail.id,
+        netAmount: detail.netAmount,
+        netOfVatAmount: derivedAmounts.netOfVatAmount,
+        particulars: detail.particulars ?? "",
+        quantity: detail.quantity,
+        responsibilityCenter: detail.responsibilityCenter ?? "",
+        vatAmount: detail.vatAmount,
+        vatInclusive: detail.vatInclusive ? "True" : "False",
+        vatable: detail.vatable ? "True" : "False",
+        vatType: detail.vatType ?? "",
+        withEwt: detail.withEwt ? "True" : "False",
+        withWvat: detail.withWvat ? "True" : "False",
+        wvatAmount: detail.wvatAmount,
+        wvatType: detail.wvatType ?? "",
+      };
+    }),
     joNo: "",
     name: invoice.customerName,
     netAmount: invoice.netAmount,
@@ -195,6 +201,20 @@ function invoiceToRecord(
     vatAmount: invoice.vatAmount,
     wvatAmount: invoice.wvatAmount,
   };
+}
+
+function getDerivedBillingStatementDetailAmounts(
+  detail: Awaited<ReturnType<typeof fetchBillingStatements>>["invoices"][number]["details"][number],
+) {
+  const grossAmount = detail.amount * Math.max(detail.quantity, 0);
+  const discountAmount = grossAmount * (Math.max(detail.discountPercent, 0) / 100);
+  const grossAfterDiscount = Math.max(grossAmount - discountAmount, 0);
+  const netOfVatAmount =
+    detail.vatable && detail.vatInclusive
+      ? Math.max(grossAfterDiscount - detail.vatAmount, 0)
+      : grossAfterDiscount;
+
+  return { grossAfterDiscount, netOfVatAmount };
 }
 
 function mapApiStatus(status: string): BillingStatementStatus {

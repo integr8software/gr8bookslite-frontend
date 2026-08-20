@@ -18,6 +18,8 @@ export const emptyBillingStatementItem: BillingStatementItem = {
   ewtAmount: 0,
   discountPercent: "",
   discountAmount: 0,
+  grossAfterDiscount: 0,
+  netOfVatAmount: 0,
   grossAmount: 0,
   vatType: "",
   vatable: "False",
@@ -311,7 +313,10 @@ function normalizeBillingStatementItem(item: Partial<BillingStatementItem>) {
     : isVatInclusive
       ? (grossAfterDiscount / 1.12) * 0.12
       : grossAfterDiscount * 0.12;
-  const netAmount = isVatable && !isVatInclusive ? grossAfterDiscount + vatAmount : grossAfterDiscount;
+  const netOfVatAmount =
+    isVatable && isVatInclusive ? Math.max(grossAfterDiscount - vatAmount, 0) : grossAfterDiscount;
+  const netAmount = amount * Math.max(quantity, 0);
+  const totalAmount = isVatable && !isVatInclusive ? grossAfterDiscount + vatAmount : grossAfterDiscount;
 
   return {
     ...emptyBillingStatementItem,
@@ -320,8 +325,10 @@ function normalizeBillingStatementItem(item: Partial<BillingStatementItem>) {
     amount,
     quantity,
     discountAmount: roundMoney(discountAmount),
-    grossAmount: roundMoney(grossAmount),
+    grossAfterDiscount: roundMoney(grossAfterDiscount),
+    grossAmount: roundMoney(totalAmount),
     netAmount: roundMoney(netAmount),
+    netOfVatAmount: roundMoney(netOfVatAmount),
     vatAmount: roundMoney(vatAmount),
     wvatAmount: Number(item.wvatAmount) || 0,
     ewtAmount: Number(item.ewtAmount) || 0,

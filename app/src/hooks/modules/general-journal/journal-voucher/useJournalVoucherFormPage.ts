@@ -6,6 +6,10 @@ import toast from "react-hot-toast";
 import {
   JournalVoucherHref,
   JournalVoucherBaseCurrencyCode,
+  JournalVoucherInputVatTaxType,
+  JournalVoucherOutputVatTaxType,
+  JournalVoucherEwtTaxType,
+  JournalVoucherCwtTaxType,
 } from "@/app/src/constants/modules/general-journal/journal-voucher/JournalVoucherConstants";
 import {
   createJournalVoucherFormValues,
@@ -502,8 +506,20 @@ function createJournalVoucherGeneratedTaxLines(
   }
 
   return [
-    createJournalVoucherGeneratedTaxLine(values, sourceLine, sourceLine.vatType, ["INPUT VAT", "OUTPUT VAT"], taxAccountingContext),
-    createJournalVoucherGeneratedTaxLine(values, sourceLine, sourceLine.atcCode, ["EWT", "CWT"], taxAccountingContext),
+    createJournalVoucherGeneratedTaxLine(
+      values,
+      sourceLine,
+      sourceLine.vatType,
+      [JournalVoucherInputVatTaxType, JournalVoucherOutputVatTaxType],
+      taxAccountingContext,
+    ),
+    createJournalVoucherGeneratedTaxLine(
+      values,
+      sourceLine,
+      sourceLine.atcCode,
+      [JournalVoucherEwtTaxType, JournalVoucherCwtTaxType],
+      taxAccountingContext,
+    ),
   ].filter((line): line is JournalVoucherLine => Boolean(line));
 }
 
@@ -576,14 +592,14 @@ function createJournalVoucherGeneratedTaxLine(
 
 function getJournalVoucherGeneratedTaxVatTypeLabel(taxCode: JournalVoucherLookupTax) {
   switch (taxCode.taxType) {
-    case "INPUT VAT":
+    case JournalVoucherInputVatTaxType:
       return "Input VAT";
-    case "OUTPUT VAT":
+    case JournalVoucherOutputVatTaxType:
       return "Output VAT";
-    case "EWT":
-      return "EWT";
-    case "CWT":
-      return "CWT";
+    case JournalVoucherEwtTaxType:
+      return JournalVoucherEwtTaxType;
+    case JournalVoucherCwtTaxType:
+      return JournalVoucherCwtTaxType;
     default:
       return taxCode.taxType;
   }
@@ -591,7 +607,7 @@ function getJournalVoucherGeneratedTaxVatTypeLabel(taxCode: JournalVoucherLookup
 
 function getJournalVoucherGeneratedTaxLineConfig(taxCode: JournalVoucherLookupTax): JournalVoucherGeneratedTaxLineConfig {
   switch (taxCode.taxType) {
-    case "INPUT VAT":
+    case JournalVoucherInputVatTaxType:
       return {
         accountCandidates: [
           { accountCode: "1010104003", accountTitle: "Input VAT" },
@@ -602,7 +618,7 @@ function getJournalVoucherGeneratedTaxLineConfig(taxCode: JournalVoucherLookupTa
         side: "debit",
         type: "vat",
       };
-    case "OUTPUT VAT":
+    case JournalVoucherOutputVatTaxType:
       return {
         accountCandidates: [
           { accountCode: "2010002005", accountTitle: "Output VAT" },
@@ -613,7 +629,7 @@ function getJournalVoucherGeneratedTaxLineConfig(taxCode: JournalVoucherLookupTa
         side: "credit",
         type: "vat",
       };
-    case "CWT":
+    case JournalVoucherCwtTaxType:
       return {
         accountCandidates: [
           { accountCode: "1010104008", accountTitle: "Creditable Withholding Tax" },
@@ -749,8 +765,8 @@ function findJournalVoucherTaxCode(taxCodes: JournalVoucherLookupTax[], taxValue
 }
 
 function normalizeJournalVoucherSourceLineTaxValues(line: JournalVoucherLine, taxCodes: JournalVoucherLookupTax[]) {
-  const vatTaxCode = findJournalVoucherTaxCode(taxCodes, line.vatType, ["INPUT VAT", "OUTPUT VAT"]);
-  const withholdingTaxCode = findJournalVoucherTaxCode(taxCodes, line.atcCode, ["EWT", "CWT"]);
+  const vatTaxCode = findJournalVoucherTaxCode(taxCodes, line.vatType, [JournalVoucherInputVatTaxType, JournalVoucherOutputVatTaxType]);
+  const withholdingTaxCode = findJournalVoucherTaxCode(taxCodes, line.atcCode, [JournalVoucherEwtTaxType, JournalVoucherCwtTaxType]);
 
   return {
     ...line,

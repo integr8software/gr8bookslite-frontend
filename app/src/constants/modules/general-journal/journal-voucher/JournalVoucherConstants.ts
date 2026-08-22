@@ -146,4 +146,9 @@ export const JournalVoucherLineColumnWidths: Record<JournalVoucherLineColumnId, 
 
 export const JournalVoucherBaseCurrencyCode = "PHP";
 
+export const JournalVoucherInputVatTaxType = "INPUT VAT";
+export const JournalVoucherOutputVatTaxType = "OUTPUT VAT";
+export const JournalVoucherEwtTaxType = "EWT";
+export const JournalVoucherCwtTaxType = "CWT";
+
 export const JournalVoucherDefaultStatus = ["ACTIVE"] as const;

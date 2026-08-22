@@ -39,16 +39,7 @@ type AccountsPayableVoucherListQuery = {
   limit?: number;
   page?: number;
   search?: string | null;
-  sortBy?:
-    | "transactionNo"
-    | "documentDate"
-    | "partyName"
-    | "payableType"
-    | "amount"
-    | "currency"
-    | "status"
-    | "createdAt"
-    | "updatedAt";
+  sortBy?: "transactionNo" | "documentDate" | "partyName" | "payableType" | "amount" | "currency" | "status" | "createdAt" | "updatedAt";
   sortDirection?: "asc" | "desc";
   status?: AccountsPayableVoucherStatus | "all" | null;
 };
@@ -85,10 +76,7 @@ const PayableTypeFromApi: Record<string, AccountsPayableVoucherPayableType> = {
   TRADE_PAYABLE: "Trade Payable",
 };
 
-const PayableTypeToApi: Record<
-  AccountsPayableVoucherPayableType,
-  ApiAccountsPayableVoucherPayableType
-> = {
+const PayableTypeToApi: Record<AccountsPayableVoucherPayableType, ApiAccountsPayableVoucherPayableType> = {
   "Accrued Payable": "ACCRUED_PAYABLE",
   "Employee Payable": "EMPLOYEE_PAYABLE",
   "Non-Trade Payable": "NON_TRADE_PAYABLE",
@@ -96,9 +84,7 @@ const PayableTypeToApi: Record<
   "Trade Payable": "TRADE_PAYABLE",
 };
 
-export async function fetchAccountsPayableVouchers(
-  query: AccountsPayableVoucherListQuery = {},
-): Promise<AccountsPayableVoucherListData> {
+export async function fetchAccountsPayableVouchers(query: AccountsPayableVoucherListQuery = {}): Promise<AccountsPayableVoucherListData> {
   const response = await accountsPayableVoucherControllerFindAllV1(
     cleanQueryParams({
       amountFrom: query.amountFrom,
@@ -140,9 +126,7 @@ export async function fetchAccountsPayableVoucher(
 export async function fetchAccountsPayableVoucherNumberSuggestion(
   branchUnitId?: number | null,
 ): Promise<AccountsPayableVoucherNumberSuggestion> {
-  const response = await accountsPayableVoucherControllerSuggestTransactionNumberV1(
-    cleanQueryParams({ branchUnitId }),
-  );
+  const response = await accountsPayableVoucherControllerSuggestTransactionNumberV1(cleanQueryParams({ branchUnitId }));
 
   return response;
 }
@@ -168,8 +152,7 @@ export async function fetchAccountsPayableVoucherTermOptions() {
 }
 
 export async function fetchAccountsPayableVoucherResponsibilityCenterOptions() {
-  const response =
-    await accountsPayableVoucherControllerFindResponsibilityCenterOptionsV1();
+  const response = await accountsPayableVoucherControllerFindResponsibilityCenterOptionsV1();
 
   return response.responsibilityCenters;
 }
@@ -199,12 +182,8 @@ export async function fetchAccountsPayableVoucherPayableAccountOptions() {
 async function fetchAccountsPayableVoucherSharedPartyOptions() {
   const partiesById = new Map<string, AccountsPayableVoucherLookupParty>();
   const lookupResults = await Promise.allSettled([
-    ApiClient.get<AccountsPayableVoucherPartyLookupResponse>(
-      "/maintenance/party-maintenance/options/VENDOR",
-    ),
-    ApiClient.get<AccountsPayableVoucherPartyLookupResponse>(
-      "/maintenance/party-maintenance/options/EMPLOYEE",
-    ),
+    ApiClient.get<AccountsPayableVoucherPartyLookupResponse>("/maintenance/party-maintenance/options/VENDOR"),
+    ApiClient.get<AccountsPayableVoucherPartyLookupResponse>("/maintenance/party-maintenance/options/EMPLOYEE"),
   ]);
 
   lookupResults.forEach((result) => {
@@ -241,25 +220,20 @@ async function fetchAccountsPayableVoucherFullPartyFallback() {
           suffixName?: string | null;
         }
       >;
-    }>(
-      "/maintenance/party-maintenance",
-      {
-        params: {
-          page: 1,
-          pageSize: 500,
-          sortBy: "name",
-          sortDirection: "asc",
-        },
+    }>("/maintenance/party-maintenance", {
+      params: {
+        page: 1,
+        pageSize: 500,
+        sortBy: "name",
+        sortDirection: "asc",
       },
-    );
+    });
 
     return response.data.parties
       .filter(
         (party) =>
           normalizeStatus(party.status) === "ACTIVE" &&
-          (party.partyTypes ?? []).some((partyType) =>
-            ["VENDOR", "EMPLOYEE"].includes(String(partyType).toUpperCase()),
-          ),
+          (party.partyTypes ?? []).some((partyType) => ["VENDOR", "EMPLOYEE"].includes(String(partyType).toUpperCase())),
       )
       .map((party) => normalizeLookupParty(party));
   } catch {
@@ -341,9 +315,7 @@ export async function createAccountsPayableVoucher(
   values: AccountsPayableVoucherFormValues,
   branchUnitId?: number | null,
 ): Promise<AccountsPayableVoucherRecord> {
-  const response = await accountsPayableVoucherControllerCreateV1(
-    toApiAccountsPayableVoucherPayload(values, branchUnitId),
-  );
+  const response = await accountsPayableVoucherControllerCreateV1(toApiAccountsPayableVoucherPayload(values, branchUnitId));
 
   return mapApiAccountsPayableVoucher(response.voucher);
 }
@@ -352,10 +324,7 @@ export async function updateAccountsPayableVoucher(
   record: AccountsPayableVoucherRecord,
   branchUnitId?: number | null,
 ): Promise<AccountsPayableVoucherRecord> {
-  const response = await accountsPayableVoucherControllerUpdateV1(
-    record.id,
-    toApiAccountsPayableVoucherPayload(record, branchUnitId),
-  );
+  const response = await accountsPayableVoucherControllerUpdateV1(record.id, toApiAccountsPayableVoucherPayload(record, branchUnitId));
 
   return mapApiAccountsPayableVoucher(response.voucher);
 }
@@ -364,21 +333,18 @@ export async function updateAccountsPayableVoucherStatus(input: {
   recordId: string;
   status: AccountsPayableVoucherStatus;
 }): Promise<AccountsPayableVoucherRecord> {
-  const response = await accountsPayableVoucherControllerUpdateStatusV1(
-    input.recordId,
-    {
-      status: mapStatusToApi(input.status),
-    },
-  );
+  const response = await accountsPayableVoucherControllerUpdateStatusV1(input.recordId, {
+    status: mapStatusToApi(input.status),
+  });
 
   return mapApiAccountsPayableVoucher(response.voucher);
 }
 
-function mapApiAccountsPayableVoucher(
-  voucher: ApiAccountsPayableVoucher,
-): AccountsPayableVoucherRecord {
+function mapApiAccountsPayableVoucher(voucher: ApiAccountsPayableVoucher): AccountsPayableVoucherRecord {
+  const remarks = voucher.remarks ?? "";
+
   return {
-    accountingEntries: voucher.journalEntries.map(mapApiJournalEntry),
+    accountingEntries: voucher.journalEntries.map((entry) => mapApiJournalEntry(entry, remarks)),
     address: voucher.address ?? "",
     amount: toNumber(voucher.amount),
     branchUnitId: voucher.branchUnitId,
@@ -392,7 +358,7 @@ function mapApiAccountsPayableVoucher(
     documentDate: voucher.documentDate,
     dueDate: voucher.dueDate,
     exchangeRate: toExchangeRate(voucher.exchangeRate),
-    expenseLines: voucher.details.map(mapApiAccountsPayableVoucherDetails),
+    expenseLines: voucher.details.map((detail) => mapApiAccountsPayableVoucherDetails(detail, remarks)),
     id: voucher.id,
     partyCode: voucher.partyCode,
     partyId: voucher.partyId ?? undefined,
@@ -401,7 +367,7 @@ function mapApiAccountsPayableVoucher(
     projectCode: voucher.projectCode ?? "",
     projectName: voucher.projectName ?? "",
     referenceNo: voucher.referenceNo ?? "",
-    remarks: voucher.remarks ?? "",
+    remarks,
     status: mapStatusFromApi(voucher.status),
     termId: voucher.termId ?? "",
     terms: voucher.terms ?? "",
@@ -410,7 +376,7 @@ function mapApiAccountsPayableVoucher(
   };
 }
 
-function mapApiAccountsPayableVoucherDetails(detail: ApiAccountsPayableVoucherDetails) {
+function mapApiAccountsPayableVoucherDetails(detail: ApiAccountsPayableVoucherDetails, remarks = "") {
   return {
     amount: toNumber(detail.amount),
     branchUnitId: detail.branchUnitId,
@@ -426,7 +392,7 @@ function mapApiAccountsPayableVoucherDetails(detail: ApiAccountsPayableVoucherDe
     id: detail.id,
     lineNumber: detail.lineNumber,
     netAmount: toNumber(detail.netAmount),
-    particulars: detail.particulars ?? "",
+    particulars: getParticularsWithRemarksFallback(detail.particulars, remarks),
     partyCode: detail.partyCode ?? "",
     partyId: detail.partyId ?? undefined,
     partyName: detail.partyName ?? "",
@@ -440,7 +406,7 @@ function mapApiAccountsPayableVoucherDetails(detail: ApiAccountsPayableVoucherDe
   };
 }
 
-function mapApiJournalEntry(entry: ApiJournalEntry) {
+function mapApiJournalEntry(entry: ApiJournalEntry, remarks = "") {
   return {
     accountCode: entry.accountCode,
     accountId: entry.accountId ?? undefined,
@@ -452,7 +418,7 @@ function mapApiJournalEntry(entry: ApiJournalEntry) {
     exchangeRate: toExchangeRate(entry.exchangeRate),
     id: entry.id,
     lineNumber: entry.lineNumber,
-    particulars: entry.particulars ?? "",
+    particulars: getParticularsWithRemarksFallback(entry.particulars, remarks),
     partyCode: entry.partyCode ?? "",
     partyName: entry.partyName ?? "",
     referenceId: entry.referenceId ?? undefined,
@@ -470,6 +436,7 @@ function toApiAccountsPayableVoucherPayload(
 ): AccountsPayableVoucherPayload {
   const currencyCode = values.currency.trim();
   const exchangeRate = toExchangeRate(values.exchangeRate);
+  const remarks = cleanOptional(values.remarks);
 
   return {
     amount: toNumber(values.amount),
@@ -492,7 +459,7 @@ function toApiAccountsPayableVoucherPayload(
       expenseType: line.expenseType.trim(),
       lineNumber: line.lineNumber,
       netAmount: toNumber(line.netAmount),
-      particulars: cleanOptional(line.particulars),
+      particulars: cleanOptionalWithFallback(line.particulars, remarks),
       partyCode: cleanOptional(line.partyCode),
       partyId: cleanOptional(line.partyId),
       partyName: cleanOptional(line.partyName),
@@ -517,7 +484,7 @@ function toApiAccountsPayableVoucherPayload(
       debit: toNumber(entry.debit),
       exchangeRate: toExchangeRate(entry.exchangeRate ?? exchangeRate),
       lineNumber: entry.lineNumber,
-      particulars: cleanOptional(entry.particulars),
+      particulars: cleanOptionalWithFallback(entry.particulars, remarks),
       partyCode: cleanOptional(entry.partyCode),
       partyName: cleanOptional(entry.partyName),
       referenceType: cleanOptional(entry.referenceType) ?? "APV",
@@ -533,7 +500,7 @@ function toApiAccountsPayableVoucherPayload(
     projectCode: cleanOptional(values.projectCode),
     projectName: cleanOptional(values.projectName),
     referenceNo: cleanOptional(values.referenceNo),
-    remarks: cleanOptional(values.remarks),
+    remarks,
     termId: values.termId.trim(),
     terms: cleanOptional(values.terms),
     transactionNo: cleanOptional(values.transactionNo),
@@ -556,15 +523,21 @@ function cleanOptional(value?: string | null) {
   return normalized || null;
 }
 
-function mapPayableTypeFromApi(
-  value: ApiAccountsPayableVoucherPayableType,
-): AccountsPayableVoucherPayableType {
+function cleanOptionalWithFallback(value: string | null | undefined, fallback: string | null) {
+  return cleanOptional(value) ?? fallback;
+}
+
+function getParticularsWithRemarksFallback(particulars: string | null | undefined, remarks: string) {
+  const normalizedParticulars = particulars?.trim() ?? "";
+
+  return normalizedParticulars || remarks.trim();
+}
+
+function mapPayableTypeFromApi(value: ApiAccountsPayableVoucherPayableType): AccountsPayableVoucherPayableType {
   return PayableTypeFromApi[value] ?? (value as AccountsPayableVoucherPayableType);
 }
 
-function mapPayableTypeToApi(
-  value: AccountsPayableVoucherPayableType,
-): ApiAccountsPayableVoucherPayableType {
+function mapPayableTypeToApi(value: AccountsPayableVoucherPayableType): ApiAccountsPayableVoucherPayableType {
   return PayableTypeToApi[value] ?? value;
 }
 

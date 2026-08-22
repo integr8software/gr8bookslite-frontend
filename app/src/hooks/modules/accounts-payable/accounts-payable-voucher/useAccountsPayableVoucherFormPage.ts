@@ -384,7 +384,7 @@ export function useAccountsPayableVoucherFormPage() {
         {
           ...current,
           expenseLines: renumberAccountsPayableVoucherExpenseLines(
-            nextLines.length > 0 ? nextLines : [createAccountsPayableVoucherExpenseLine(1)],
+            nextLines.length > 0 ? nextLines : [createAccountsPayableVoucherExpenseLine(1, { particulars: current.remarks })],
           ),
         },
         taxAccountingContext,
@@ -495,7 +495,7 @@ export function useAccountsPayableVoucherFormPage() {
         {
           ...current,
           expenseLines: renumberAccountsPayableVoucherExpenseLines(
-            nextLines.length > 0 ? nextLines : [createAccountsPayableVoucherExpenseLine(1)],
+            nextLines.length > 0 ? nextLines : [createAccountsPayableVoucherExpenseLine(1, { particulars: current.remarks })],
           ),
         },
         taxAccountingContext,
@@ -1074,7 +1074,7 @@ function createManualInputVatAccountingEntry(
     atcCode: "",
     credit: vatEntryAmounts.credit,
     debit: vatEntryAmounts.debit,
-    particulars: createManualAccountingTaxParticulars(AccountsPayableVoucherInputVatTaxLabel, sourceEntry),
+    particulars: createManualAccountingTaxParticulars(sourceEntry),
     vatType: AccountsPayableVoucherInputVatTaxLabel,
   });
 }
@@ -1108,7 +1108,7 @@ function createManualEwtAccountingEntry(
     atcCode: sourceEntry.atcCode,
     credit: ewtEntryAmounts.credit,
     debit: ewtEntryAmounts.debit,
-    particulars: createManualAccountingTaxParticulars(AccountsPayableVoucherEwtTaxLabel, sourceEntry),
+    particulars: createManualAccountingTaxParticulars(sourceEntry),
     vatType: AccountsPayableVoucherEwtTaxLabel,
   });
 }
@@ -1197,7 +1197,7 @@ function createAccountsPayableVoucherGeneratedAccountingEntries(
           atcCode: "",
           credit: vatEntryAmounts.credit,
           debit: vatEntryAmounts.debit,
-          particulars: createGeneratedTaxParticulars(AccountsPayableVoucherInputVatTaxLabel, values, line),
+          particulars: createGeneratedTaxParticulars(values, line),
           vatType: AccountsPayableVoucherInputVatTaxLabel,
         }),
       );
@@ -1215,7 +1215,7 @@ function createAccountsPayableVoucherGeneratedAccountingEntries(
           atcCode: line.ewt,
           credit: ewtEntryAmounts.credit,
           debit: ewtEntryAmounts.debit,
-          particulars: createGeneratedTaxParticulars(AccountsPayableVoucherEwtTaxLabel, values, line),
+          particulars: createGeneratedTaxParticulars(values, line),
           vatType: AccountsPayableVoucherEwtTaxLabel,
         }),
       );
@@ -1261,12 +1261,8 @@ function createGeneratedAccountingCommonFields(values: AccountsPayableVoucherFor
   };
 }
 
-function createGeneratedTaxParticulars(
-  taxLabel: "EWT" | "Input VAT",
-  values: AccountsPayableVoucherFormValues,
-  line: AccountsPayableVoucherExpenseLine,
-) {
-  return [taxLabel, getGeneratedLineParticulars(values, line) || line.expenseType].filter(Boolean).join(" - ");
+function createGeneratedTaxParticulars(values: AccountsPayableVoucherFormValues, line: AccountsPayableVoucherExpenseLine) {
+  return getGeneratedLineParticulars(values, line) || line.expenseType.trim();
 }
 
 function getGeneratedLineParticulars(values: AccountsPayableVoucherFormValues, line: AccountsPayableVoucherExpenseLine) {
@@ -1413,8 +1409,8 @@ function createManualAccountingTaxCommonFields(sourceEntry: AccountsPayableVouch
   };
 }
 
-function createManualAccountingTaxParticulars(taxLabel: "EWT" | "Input VAT", sourceEntry: AccountsPayableVoucherAccountingEntry) {
-  return [taxLabel, sourceEntry.particulars.trim() || sourceEntry.accountTitle].filter(Boolean).join(" - ");
+function createManualAccountingTaxParticulars(sourceEntry: AccountsPayableVoucherAccountingEntry) {
+  return sourceEntry.particulars.trim() || sourceEntry.accountTitle.trim();
 }
 
 function getManualAccountingVatPercent(vatType: string, context: AccountsPayableVoucherTaxAccountingContext) {

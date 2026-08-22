@@ -8,12 +8,20 @@ import {
   useReactTable,
   type ColumnDef,
   type PaginationState,
-  type SortingState,
 } from "@tanstack/react-table";
-import { JournalVoucherStatusFilters } from "@/app/src/constants/modules/general-journal/journal-voucher/JournalVoucherConstants";
+import {
+  JournalVoucherDefaultColumnOrder,
+  JournalVoucherDefaultColumnVisibility,
+  JournalVoucherDefaultSorting,
+  JournalVoucherStatusFilters,
+  JournalVoucherTableColumns,
+  JournalVoucherTablePreferencesModuleKey,
+  JournalVoucherTablePreferencesStorageKey,
+} from "@/app/src/constants/modules/general-journal/journal-voucher/JournalVoucherConstants";
 import { getJournalVoucherTotals } from "@/app/src/data/modules/general-journal/journal-voucher/JournalVoucherData";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import { useJournalVoucherStore } from "@/app/src/hooks/modules/general-journal/journal-voucher/useJournalVoucher";
+import { useTablePreferences } from "@/app/src/hooks/shared/table-preferences/useTablePreferences";
 import type {
   JournalVoucherRecord,
   JournalVoucherStatus,
@@ -22,7 +30,8 @@ import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/A
 import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
 
 export function useJournalVoucherListPage() {
-  const { isLoading, isMutating, lastSyncedAt, permissions, records, updateStatus } = useJournalVoucherStore();
+  const { isLoading, isMutating, isRefreshing, lastSyncedAt, permissions, records, refreshRecords, statistics, updateStatus } =
+    useJournalVoucherStore();
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 5,
@@ -36,8 +45,14 @@ export function useJournalVoucherListPage() {
     from: "",
     to: "",
   });
-  const [sorting, setSorting] = useState<SortingState>([{ id: "documentDate", desc: true }]);
   const [statusFilter, setStatusFilterState] = useState<(typeof JournalVoucherStatusFilters)[number]>("all");
+  const { columnOrder, columnVisibility, sorting, setColumnOrder, setColumnVisibility, setSorting } = useTablePreferences({
+    defaultColumnOrder: JournalVoucherDefaultColumnOrder,
+    defaultColumnVisibility: JournalVoucherDefaultColumnVisibility,
+    defaultSorting: JournalVoucherDefaultSorting,
+    moduleKey: JournalVoucherTablePreferencesModuleKey,
+    storageKey: JournalVoucherTablePreferencesStorageKey,
+  });
   const deferredQuery = useDeferredValue(query);
 
   const filteredRecords = useMemo(() => {
@@ -53,33 +68,29 @@ export function useJournalVoucherListPage() {
   }, [amountRange, dateRange, deferredQuery, records, statusFilter]);
 
   const columns = useMemo<ColumnDef<JournalVoucherRecord>[]>(
-    () => [
-      createColumn("transactionNo", "Voucher No.", "w-[12rem]"),
-      createColumn("documentDate", "Document Date", "w-[11rem]"),
-      createColumn("remarks", "Remarks", "w-[22rem]"),
-      createColumn("currencyType", "Currency", "w-[8rem]"),
-      {
-        id: "totalDebit",
-        header: "Debit",
-        accessorFn: (record) => getJournalVoucherTotals(record.lines, record).totalDebit,
-        sortingFn: "basic",
-        meta: { className: "w-[11rem] text-right" },
-      },
-      {
-        id: "totalCredit",
-        header: "Credit",
-        accessorFn: (record) => getJournalVoucherTotals(record.lines, record).totalCredit,
-        sortingFn: "basic",
-        meta: { className: "w-[11rem] text-right" },
-      },
-      createColumn("status", "Status", "w-[9rem]"),
-      {
-        id: "actions",
-        header: "Actions",
-        enableSorting: false,
-        meta: { className: "w-[9rem]" },
-      },
-    ],
+    () =>
+      JournalVoucherTableColumns.map((column) => {
+        if (!("key" in column)) {
+          return {
+            id: "actions",
+            header: column.label,
+            enableSorting: false,
+            meta: { className: column.className, label: column.label },
+          };
+        }
+
+        if (column.key === "totalDebit" || column.key === "totalCredit") {
+          return {
+            id: column.key,
+            header: column.label,
+            accessorFn: (record) => getJournalVoucherTotals(record.lines, record)[column.key],
+            sortingFn: "basic",
+            meta: { className: column.className, label: column.label },
+          };
+        }
+
+        return createColumn(column.key, column.label, column.className);
+      }),
     [],
   );
 
@@ -87,10 +98,19 @@ export function useJournalVoucherListPage() {
   const table = useReactTable({
     data: filteredRecords,
     columns,
+    initialState: {
+      columnOrder: JournalVoucherDefaultColumnOrder,
+      columnVisibility: JournalVoucherDefaultColumnVisibility,
+      sorting: JournalVoucherDefaultSorting,
+    },
     state: {
+      columnOrder,
+      columnVisibility,
       pagination,
       sorting,
     },
+    onColumnOrderChange: setColumnOrder,
+    onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
@@ -137,15 +157,18 @@ export function useJournalVoucherListPage() {
     handleUpdateStatus,
     isLoading,
     isMutating,
+    isRefreshing,
     lastSyncedAt,
     permissions,
     query,
     records,
+    refreshRecords,
     resetFilters,
     setAmountRange,
     setDateRange,
     setStatusFilter,
     statusFilter,
+    statistics,
     table,
   };
 }
@@ -155,7 +178,7 @@ function createColumn(key: keyof JournalVoucherRecord, header: string, className
     accessorKey: key,
     header,
     sortingFn: key === "documentDate" ? "datetime" : "alphanumeric",
-    meta: { className },
+    meta: { className, label: header },
   };
 }
 

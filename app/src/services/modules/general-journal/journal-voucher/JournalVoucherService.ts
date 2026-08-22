@@ -1,8 +1,10 @@
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
 import type {
+  JournalVoucherLookups,
   JournalVoucherRecord,
   JournalVoucherStatus,
   JournalVoucherLookupAccount,
+  JournalVoucherStatistics,
 } from "@/app/src/types/modules/general-journal/journal-voucher/JournalVoucherTypes";
 
 export type JournalVoucherListQuery = {
@@ -30,15 +32,6 @@ export type JournalVoucherPermissions = {
   canUncancel: boolean;
   canUpdate: boolean;
   canView: boolean;
-};
-
-export type JournalVoucherStatistics = {
-  cancelledVouchers: number;
-  disapprovedVouchers: number;
-  draftVouchers: number;
-  forApprovalVouchers: number;
-  postedVouchers: number;
-  totalVouchers: number;
 };
 
 export type JournalVoucherListData = {
@@ -180,38 +173,17 @@ export async function fetchJournalVoucherNumberSuggestion(branchUnitId?: number 
   return response.data;
 }
 
-
-
-export type JournalVoucherLookupParty = {
-  id: string;
-  name: string;
-  partyCodeNo: string;
-  partyTypes: string[];
-  status: string;
-};
-
-export type JournalVoucherLookupResponsibilityCenter = {
-  code: string;
-  id: string;
-  name: string;
-  status: string;
-  typeName: string;
-};
-
-export type JournalVoucherLookups = {
-  accounts: JournalVoucherLookupAccount[];
-  parties: JournalVoucherLookupParty[];
-  responsibilityCenters: JournalVoucherLookupResponsibilityCenter[];
-};
-
 export async function fetchJournalVoucherLookups(): Promise<JournalVoucherLookups> {
-  const response = await ApiClient.get<{
-    accounts: JournalVoucherLookupAccount[];
-    parties: JournalVoucherLookupParty[];
-    responsibilityCenters: JournalVoucherLookupResponsibilityCenter[];
-  }>(`${JournalVoucherApiPath}/lookups`);
+  const response = await ApiClient.get<Partial<JournalVoucherLookups> & { accounts: JournalVoucherLookupAccount[] }>(
+    `${JournalVoucherApiPath}/lookups`,
+  );
 
-  return response.data;
+  return {
+    accounts: response.data.accounts,
+    parties: response.data.parties ?? [],
+    responsibilityCenters: response.data.responsibilityCenters ?? [],
+    taxCodes: response.data.taxCodes ?? [],
+  };
 }
 
 export async function createJournalVoucher(record: JournalVoucherRecord, branchUnitId?: number | null) {
@@ -256,6 +228,8 @@ function mapApiJournalVoucherListItem(voucher: ApiJournalVoucherListItem): Journ
 }
 
 function mapApiJournalVoucher(voucher: ApiJournalVoucher): JournalVoucherRecord {
+  const remarks = voucher.remarks ?? "";
+
   return {
     branchUnitId: voucher.branchUnitId,
     createdAt: voucher.createdAt,
@@ -271,14 +245,14 @@ function mapApiJournalVoucher(voucher: ApiJournalVoucher): JournalVoucherRecord 
       debit: toNumber(line.debit),
       id: line.id,
       lineNumber: line.lineNumber,
-      particulars: line.particulars ?? "",
+      particulars: getParticularsWithRemarksFallback(line.particulars, remarks),
       partyCode: line.partyCode ?? "",
       partyName: line.partyName ?? "",
       refNo: line.refNo ?? "",
       responsibilityCenter: line.responsibilityCenter ?? "",
       vatType: line.vatType ?? "",
     })),
-    remarks: voucher.remarks ?? "",
+    remarks,
     status: mapStatusFromApi(voucher.status),
     totalCredit: toNumber(voucher.totalCredit),
     totalDebit: toNumber(voucher.totalDebit),
@@ -288,6 +262,8 @@ function mapApiJournalVoucher(voucher: ApiJournalVoucher): JournalVoucherRecord 
 }
 
 function toApiJournalVoucherPayload(record: JournalVoucherRecord, branchUnitId?: number | null) {
+  const remarks = cleanOptional(record.remarks);
+
   return {
     branchUnitId: branchUnitId ?? record.branchUnitId ?? null,
     currencyCode: record.currencyType.trim(),
@@ -300,14 +276,14 @@ function toApiJournalVoucherPayload(record: JournalVoucherRecord, branchUnitId?:
       credit: toNumber(line.credit),
       debit: toNumber(line.debit),
       lineNumber: line.lineNumber,
-      particulars: cleanOptional(line.particulars),
+      particulars: cleanOptionalWithFallback(line.particulars, remarks),
       partyCode: cleanOptional(line.partyCode),
       partyName: cleanOptional(line.partyName),
       refNo: cleanOptional(line.refNo),
       responsibilityCenter: cleanOptional(line.responsibilityCenter),
       vatType: cleanOptional(line.vatType),
     })),
-    remarks: cleanOptional(record.remarks),
+    remarks,
     transactionNo: cleanOptional(record.transactionNo),
   };
 }
@@ -326,6 +302,16 @@ function cleanOptional(value?: string | null) {
   const normalized = value?.trim() ?? "";
 
   return normalized || null;
+}
+
+function cleanOptionalWithFallback(value: string | null | undefined, fallback: string | null) {
+  return cleanOptional(value) ?? fallback;
+}
+
+function getParticularsWithRemarksFallback(particulars: string | null | undefined, remarks: string) {
+  const normalizedParticulars = particulars?.trim() ?? "";
+
+  return normalizedParticulars || remarks.trim();
 }
 
 function mapStatusFromApi(value: ApiJournalVoucherStatus): JournalVoucherStatus {

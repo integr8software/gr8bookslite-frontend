@@ -218,6 +218,8 @@ function createFormValuesFromApi(
 function mapApiServiceInvoiceDetail(
 	detail: ServiceInvoiceResponseDto["details"][number],
 ): ServiceInvoiceLineEntry {
+	const derivedAmounts = getDerivedServiceInvoiceDetailAmounts(detail);
+
 	return {
 		amount: detail.amount.toFixed(2),
 		description: detail.description,
@@ -226,8 +228,10 @@ function mapApiServiceInvoiceDetail(
 		ewtAmount: detail.ewtAmount.toFixed(2),
 		ewtType: detail.ewtType ?? "",
 		grossAmount: detail.grossAmount.toFixed(2),
+		grossAfterDiscount: derivedAmounts.grossAfterDiscount.toFixed(2),
 		id: detail.id,
 		netAmount: detail.netAmount.toFixed(2),
+		netOfVatAmount: derivedAmounts.netOfVatAmount.toFixed(2),
 		particulars: detail.particulars ?? "",
 		quantity: detail.quantity.toFixed(2),
 		responsibilityCenter: detail.responsibilityCenter ?? "",
@@ -240,6 +244,21 @@ function mapApiServiceInvoiceDetail(
 		wvatAmount: detail.wvatAmount.toFixed(2),
 		wvatType: detail.wvatType ?? "",
 	};
+}
+
+function getDerivedServiceInvoiceDetailAmounts(
+	detail: ServiceInvoiceResponseDto["details"][number],
+) {
+	const grossAmount = detail.amount * Math.max(detail.quantity, 0);
+	const discountAmount =
+		grossAmount * (Math.max(detail.discountPercent, 0) / 100);
+	const grossAfterDiscount = Math.max(grossAmount - discountAmount, 0);
+	const netOfVatAmount =
+		detail.vatable && detail.vatInclusive
+			? Math.max(grossAfterDiscount - detail.vatAmount, 0)
+			: grossAfterDiscount;
+
+	return { grossAfterDiscount, netOfVatAmount };
 }
 
 function mapApiJournalEntry(

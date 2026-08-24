@@ -203,6 +203,8 @@ function createFormValuesFromApi(
 function mapApiBillingStatementDetail(
   detail: BillingStatementResponseDto["details"][number],
 ): BillingStatementItem {
+  const derivedAmounts = getDerivedBillingStatementDetailAmounts(detail);
+
   return {
     amount: detail.amount,
     description: detail.description,
@@ -211,8 +213,10 @@ function mapApiBillingStatementDetail(
     ewtAmount: detail.ewtAmount,
     ewtType: detail.ewtType ?? "",
     grossAmount: detail.grossAmount,
+    grossAfterDiscount: derivedAmounts.grossAfterDiscount,
     id: detail.id,
     netAmount: detail.netAmount,
+    netOfVatAmount: derivedAmounts.netOfVatAmount,
     particulars: detail.particulars ?? "",
     quantity: detail.quantity,
     responsibilityCenter: detail.responsibilityCenter ?? "",
@@ -225,6 +229,20 @@ function mapApiBillingStatementDetail(
     wvatAmount: detail.wvatAmount,
     wvatType: detail.wvatType ?? "",
   };
+}
+
+function getDerivedBillingStatementDetailAmounts(
+  detail: BillingStatementResponseDto["details"][number],
+) {
+  const grossAmount = detail.amount * Math.max(detail.quantity, 0);
+  const discountAmount = grossAmount * (Math.max(detail.discountPercent, 0) / 100);
+  const grossAfterDiscount = Math.max(grossAmount - discountAmount, 0);
+  const netOfVatAmount =
+    detail.vatable && detail.vatInclusive
+      ? Math.max(grossAfterDiscount - detail.vatAmount, 0)
+      : grossAfterDiscount;
+
+  return { grossAfterDiscount, netOfVatAmount };
 }
 
 function mapApiJournalEntry(

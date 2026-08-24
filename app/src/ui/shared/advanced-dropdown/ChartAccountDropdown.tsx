@@ -43,12 +43,9 @@ export function ChartAccountDropdown({
 			),
 		[flatAccounts],
 	);
-	const accountOptions = useMemo(
-		() => createAccountOptions(flatAccounts, valueField),
-		[flatAccounts, valueField],
-	);
+	const accountOptions = useMemo(() => createAccountOptions(flatAccounts), [flatAccounts]);
 	const selectedAccount = accountByValue.get(value);
-	const normalizedValue = selectedAccount?.[valueField] ?? value;
+	const normalizedValue = selectedAccount?.id ?? value;
 
 	function handleChange(nextValue: string | string[]) {
 		const accountValue = Array.isArray(nextValue)
@@ -74,10 +71,7 @@ export function ChartAccountDropdown({
 	);
 }
 
-function createAccountOptions(
-	accounts: ModuleChartAccount[],
-	valueField: "accountName" | "accountNumber" | "id",
-): AppAdvancedDropdownOption[] {
+function createAccountOptions(accounts: ModuleChartAccount[]): AppAdvancedDropdownOption[] {
 	return accounts
 		.filter(isAccountSelectable)
 		.map((account) => {
@@ -91,7 +85,7 @@ function createAccountOptions(
 				description,
 				label: account.accountNumber,
 				name: account.accountName,
-				value: account[valueField],
+				value: account.id,
 			};
 		});
 }

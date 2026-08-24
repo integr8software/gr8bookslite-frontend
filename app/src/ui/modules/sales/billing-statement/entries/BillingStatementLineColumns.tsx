@@ -1,7 +1,6 @@
 import {
   BillingStatementBooleanOptions,
   BillingStatementDescriptionOptions,
-  BillingStatementDiscountOptions,
 } from "@/app/src/constants/modules/sales/billing-statement/BillingStatementConstants";
 import type { BillingStatementItem } from "@/app/src/types/modules/sales/billing-statement/BillingStatementTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
@@ -13,7 +12,7 @@ import {
 import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
-type BillingStatementLineColumnKind = "amount" | "boolean" | "discount" | "select" | "service" | "text";
+type BillingStatementLineColumnKind = "amount" | "boolean" | "select" | "service" | "text";
 
 type BillingStatementLineColumnConfig = {
   header: string;
@@ -86,35 +85,58 @@ function BillingStatementLineCell({
     );
   }
 
-  if (column.kind === "boolean" || column.kind === "discount" || column.kind === "select") {
+  if (column.kind === "boolean" || column.kind === "select") {
     const options =
       column.kind === "boolean"
         ? BillingStatementBooleanOptions
-        : column.kind === "discount"
-          ? BillingStatementDiscountOptions
-          : ["VAT (12%)", "Zero-rated", "VAT Exempt"];
+        : ["VAT (12%)", "Zero-rated", "VAT Exempt"];
+    const isVatInclusive = column.id === "vatInclusive";
+    const isVatInclusiveDisabled =
+      isVatInclusive && String(row.vatable).toLowerCase() !== "true";
 
     return (
       <AppAdvancedDropdown
         id={fieldId}
         name={fieldName}
         value={value}
-        readOnly={isReadonly}
+        readOnly={isReadonly || isVatInclusiveDisabled}
         options={options.map((option) => ({ name: option || " ", value: option }))}
         placeholder=""
         className={EntryDropdownClassName}
-        onChange={(nextValue) => onUpdateEntry(row.id, { [column.id]: String(nextValue) })}
+        onChange={(nextValue) => {
+          const stringValue = String(nextValue);
+
+          if (column.id === "vatable") {
+            onUpdateEntry(row.id, {
+              vatable: stringValue,
+              ...(stringValue.toLowerCase() !== "true"
+                ? { vatInclusive: "False" }
+                : {}),
+            });
+            return;
+          }
+
+          onUpdateEntry(row.id, { [column.id]: stringValue });
+        }}
       />
     );
   }
 
   if (column.kind === "amount") {
+    const isCalculatedAmount =
+      column.id === "discountAmount" ||
+      column.id === "grossAmount" ||
+      column.id === "grossAfterDiscount" ||
+      column.id === "netAmount" ||
+      column.id === "netOfVatAmount" ||
+      column.id === "vatAmount";
+
     return (
       <MoneyNumberField
         id={fieldId}
         name={fieldName}
         value={formatMoneyNumberInput(value)}
-        readOnly={isReadonly}
+        readOnly={isReadonly || isCalculatedAmount}
         onValueChange={(nextValue) =>
           onUpdateEntry(row.id, { [column.id]: parseMoneyNumberInput(nextValue) })
         }
@@ -150,13 +172,15 @@ const BillingStatementLineColumnConfigs = [
   column("Professional Service Type", "description", "service", 260, "w-[16.25rem]"),
   column("Amount", "amount", "amount", 150, "w-[9.5rem]"),
   column("QTY", "quantity", "amount", 130, "w-[8rem]"),
-  column("Gross Amount", "grossAmount", "amount", 170, "w-[10.5rem]"),
+  column("Gross", "netAmount", "amount", 150, "w-[9.5rem]"),
+  column("Discount Rate", "discountPercent", "amount", 160, "w-[10rem]"),
+  column("Discount Amount", "discountAmount", "amount", 170, "w-[10.5rem]"),
+  column("Gross After Discount", "grossAfterDiscount", "amount", 190, "w-[11.75rem]"),
   column("VAT Amount", "vatAmount", "amount", 150, "w-[9.5rem]"),
   column("VATable", "vatable", "boolean", 130, "w-[8rem]"),
-  column("VAT Inc.", "vatInclusive", "boolean", 130, "w-[8rem]"),
-  column("Discount Maintenance", "discountPercent", "discount", 190, "w-[11.75rem]"),
-  column("Total Discount", "discountAmount", "amount", 170, "w-[10.5rem]"),
-  column("Net Amount", "netAmount", "amount", 150, "w-[9.5rem]"),
+  column("VATInc", "vatInclusive", "boolean", 130, "w-[8rem]"),
+  column("Net of VAT Amount", "netOfVatAmount", "amount", 190, "w-[11.75rem]"),
+  column("Net Amount", "grossAmount", "amount", 150, "w-[9.5rem]"),
 ] satisfies BillingStatementLineColumnConfig[];
 
 function column(

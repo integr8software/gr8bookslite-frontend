@@ -1,4 +1,5 @@
 import type { JournalVoucherLineColumnIds } from "@/app/src/constants/modules/general-journal/journal-voucher/JournalVoucherConstants";
+import type { Tax } from "@/app/src/types/shared/tax/TaxTypes";
 
 export type JournalVoucherStatus = "Draft" | "For Approval" | "Disapproved" | "Posted" | "Cancelled";
 
@@ -34,6 +35,15 @@ export type JournalVoucherRecord = {
   updatedAt: string;
 };
 
+export type JournalVoucherStatistics = {
+  cancelledVouchers: number;
+  disapprovedVouchers: number;
+  draftVouchers: number;
+  forApprovalVouchers: number;
+  postedVouchers: number;
+  totalVouchers: number;
+};
+
 export type JournalVoucherFormValues = Omit<JournalVoucherRecord, "id" | "createdAt" | "updatedAt">;
 
 export type JournalVoucherLineField = keyof JournalVoucherLine;
@@ -53,4 +63,33 @@ export type JournalVoucherLookupAccount = {
   accountType: string;
   id: string;
   status: string;
+};
+
+export type JournalVoucherLookupParty = {
+  defaultPurchaseEwtTaxSourceKey?: string;
+  defaultPurchaseInputVatTaxSourceKey?: string;
+  defaultSalesCwtTaxSourceKey?: string;
+  defaultSalesOutputVatTaxSourceKey?: string;
+  id: string;
+  name: string;
+  partyCodeNo: string;
+  partyTypes: string[];
+  status: string;
+};
+
+export type JournalVoucherLookupResponsibilityCenter = {
+  code: string;
+  id: string;
+  name: string;
+  status: string;
+  typeName: string;
+};
+
+export type JournalVoucherLookupTax = Tax;
+
+export type JournalVoucherLookups = {
+  accounts: JournalVoucherLookupAccount[];
+  parties: JournalVoucherLookupParty[];
+  responsibilityCenters: JournalVoucherLookupResponsibilityCenter[];
+  taxCodes: JournalVoucherLookupTax[];
 };

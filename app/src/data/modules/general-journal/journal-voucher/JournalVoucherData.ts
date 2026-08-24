@@ -4,6 +4,17 @@ import type {
   JournalVoucherRecord,
 } from "@/app/src/types/modules/general-journal/journal-voucher/JournalVoucherTypes";
 
+export const JournalVoucherGeneratedInputVatLineIdPrefix = "jv-line-generated-input-vat-";
+export const JournalVoucherGeneratedOutputVatLineIdPrefix = "jv-line-generated-output-vat-";
+export const JournalVoucherGeneratedEwtLineIdPrefix = "jv-line-generated-ewt-";
+export const JournalVoucherGeneratedCwtLineIdPrefix = "jv-line-generated-cwt-";
+export const JournalVoucherGeneratedTaxLineIdPrefixes = [
+  JournalVoucherGeneratedInputVatLineIdPrefix,
+  JournalVoucherGeneratedOutputVatLineIdPrefix,
+  JournalVoucherGeneratedEwtLineIdPrefix,
+  JournalVoucherGeneratedCwtLineIdPrefix,
+] as const;
+
 export function createJournalVoucherInitialFormValues(): JournalVoucherFormValues {
   return {
     transactionNo: "",
@@ -27,7 +38,7 @@ export function createJournalVoucherLine(lineNumber: number, overrides: Partial<
     partyName: "",
     responsibilityCenter: "",
     refNo: "",
-    vatType: "VATable",
+    vatType: "",
     atcCode: "",
     debit: 0,
     credit: 0,
@@ -35,43 +46,51 @@ export function createJournalVoucherLine(lineNumber: number, overrides: Partial<
   };
 }
 
+export function isJournalVoucherGeneratedTaxLine(lineOrId: Pick<JournalVoucherLine, "id"> | string) {
+  const id = typeof lineOrId === "string" ? lineOrId : lineOrId.id;
+
+  return JournalVoucherGeneratedTaxLineIdPrefixes.some((prefix) => id.startsWith(prefix));
+}
+
 export function createJournalVoucherFormValues(record?: JournalVoucherRecord): JournalVoucherFormValues {
   if (!record) {
     return createJournalVoucherInitialFormValues();
   }
 
+  const remarks = record.remarks.trim();
+
   return {
     transactionNo: record.transactionNo,
     documentDate: record.documentDate,
-    remarks: record.remarks,
+    remarks,
     currencyType: record.currencyType,
     currencyRate: record.currencyRate,
     status: record.status,
-    lines: record.lines.map((line) => ({ ...line })),
+    lines: record.lines.map((line) => ({
+      ...line,
+      particulars: getParticularsWithRemarksFallback(line.particulars, remarks),
+    })),
   };
 }
 
 export function createJournalVoucherFromForm(values: JournalVoucherFormValues): JournalVoucherRecord {
   const now = new Date().toISOString();
+  const normalizedValues = normalizeJournalVoucherFormValues(values);
 
   return {
     id: `jv-${Date.now()}`,
-    ...values,
-    transactionNo: values.transactionNo.trim(),
-    remarks: values.remarks.trim(),
-    lines: renumberJournalVoucherLines(values.lines),
+    ...normalizedValues,
     createdAt: now,
     updatedAt: now,
   };
 }
 
 export function updateJournalVoucherFromForm(record: JournalVoucherRecord, values: JournalVoucherFormValues): JournalVoucherRecord {
+  const normalizedValues = normalizeJournalVoucherFormValues(values);
+
   return {
     ...record,
-    ...values,
-    transactionNo: values.transactionNo.trim(),
-    remarks: values.remarks.trim(),
-    lines: renumberJournalVoucherLines(values.lines),
+    ...normalizedValues,
     updatedAt: new Date().toISOString(),
   };
 }
@@ -106,4 +125,35 @@ export function formatJournalVoucherAmount(value: number) {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(value);
+}
+
+function normalizeJournalVoucherFormValues(values: JournalVoucherFormValues): JournalVoucherFormValues {
+  const remarks = values.remarks.trim();
+
+  return {
+    ...values,
+    transactionNo: values.transactionNo.trim(),
+    remarks,
+    currencyType: values.currencyType.trim(),
+    lines: renumberJournalVoucherLines(
+      values.lines.map((line) => ({
+        ...line,
+        accountCode: line.accountCode.trim(),
+        accountTitle: line.accountTitle.trim(),
+        atcCode: line.atcCode.trim(),
+        particulars: getParticularsWithRemarksFallback(line.particulars, remarks),
+        partyCode: line.partyCode.trim(),
+        partyName: line.partyName.trim(),
+        refNo: line.refNo.trim(),
+        responsibilityCenter: line.responsibilityCenter.trim(),
+        vatType: line.vatType.trim(),
+      })),
+    ),
+  };
+}
+
+function getParticularsWithRemarksFallback(particulars: string | null | undefined, remarks: string) {
+  const normalizedParticulars = particulars?.trim() ?? "";
+
+  return normalizedParticulars || remarks;
 }

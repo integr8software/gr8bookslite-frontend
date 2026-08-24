@@ -132,10 +132,10 @@ export function createAdvancesToSuppliersFormValues(
     currency: baseCurrencyCode,
     exchangeRate: "1.00",
     poReference: "",
-    totalPoAmount: "0.00",
+    totalPoAmount: "",
     advancePaymentType: "Percentage",
-    advancePaymentPercentage: "0.00",
-    advancePaymentAmount: "0.00",
+    advancePaymentPercentage: "",
+    advancePaymentAmount: "",
     remarks: "",
     attachments: [],
   };

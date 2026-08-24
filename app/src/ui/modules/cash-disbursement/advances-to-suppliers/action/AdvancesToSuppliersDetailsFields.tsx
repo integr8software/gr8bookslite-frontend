@@ -193,12 +193,12 @@ export function AdvancesToSuppliersDetailsFields({
           />
           <TransactionTextField
             value={page.values.poReference}
-            isReadonly={page.isReadonly}
+            isReadonly
             isRequired
             label="Purchase Order Reference"
             error={page.errors.poReference}
             onValueChange={(value) => page.updateField("poReference", value)}
-            placeholder="Enter Purchase Order Reference"
+            placeholder="Purchase Order Reference"
           />
           <TransactionField label="Advance Payment Type" isRequired>
             <AppAdvancedDropdown

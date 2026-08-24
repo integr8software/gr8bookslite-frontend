@@ -6,6 +6,7 @@ import type { MasterInvoiceRecord } from "@/app/src/types/master/invoices/Master
 import {
 	MasterInvoicePaymentMethodBadge,
 	MasterInvoiceStatusBadge,
+	MasterInvoiceTransactionTypeBadge,
 } from "@/app/src/ui/master/invoices/MasterInvoiceBadges";
 
 type MasterInvoiceTableRowProps = {
@@ -34,6 +35,11 @@ export function MasterInvoiceTableRow({ record }: MasterInvoiceTableRowProps) {
 				</div>
 			</td>
 			<td className="px-4 py-4">
+				<MasterInvoiceTransactionTypeBadge
+					transactionType={record.transactionType}
+				/>
+			</td>
+			<td className="px-4 py-4">
 				<p className="line-clamp-2 text-sm font-semibold text-darknavy">
 					{record.availedItem}
 				</p>
@@ -58,3 +64,4 @@ export function MasterInvoiceTableRow({ record }: MasterInvoiceTableRowProps) {
 		</tr>
 	);
 }
+

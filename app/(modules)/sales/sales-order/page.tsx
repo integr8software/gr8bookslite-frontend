@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { SalesOrderMain } from "@/app/src/ui/modules/sales/sales-order/Main";
+import { SalesOrderOverviewPage } from "@/app/src/ui/modules/sales/sales-order/overview/SalesOrderOverviewPage";
 
 const PageTitle = "Sales Order";
 
@@ -10,7 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function SalesSalesOrderPage() {
-  return <SalesOrderMain />;
+  return <SalesOrderOverviewPage />;
 }
-
-

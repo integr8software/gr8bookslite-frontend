@@ -12,7 +12,6 @@ import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLookupDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppLookupDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
-import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import {
   TransactionField,
   TransactionFieldClassName,
@@ -137,36 +136,33 @@ export function CashAdvanceMultipleEntryDetailsFields({
             placeholder="Default Account Code"
           />
 
-          <CurrencyExchangeRateRow
-            currencyControlId="came-currency"
-            currencyLabel="Currency"
-            currencyControl={
-              <AppAdvancedDropdown
-                id="came-currency"
-                value={values.currency}
-                readOnly={isReadonly}
-                isClearable={false}
-                menuMinWidth={320}
-                options={currencyOptions}
-                placeholder="Currency"
-                searchPlaceholder="Search Currency"
-                onChange={(value) => onUpdateCurrency(String(value))}
-              />
-            }
-            exchangeRateControlId="came-exchange-rate"
-            exchangeRateControl={
-              <input
-                id="came-exchange-rate"
-                type="text"
-                inputMode="decimal"
-                value={values.exchangeRate}
-                readOnly={isReadonly}
-                disabled={isReadonly || isExchangeRateLoading}
-                onChange={(event) => onUpdateField("exchangeRate", formatExchangeRateInput(event.target.value))}
-                className={`${TransactionFieldClassName} text-right tabular-nums`}
-              />
-            }
-          />
+          <TransactionField label="Currency">
+            <AppAdvancedDropdown
+              id="came-currency"
+              value={values.currency}
+              readOnly={isReadonly}
+              isClearable={false}
+              menuMinWidth={320}
+              options={currencyOptions}
+              placeholder="Currency"
+              searchPlaceholder="Search Currency"
+              onChange={(value) => onUpdateCurrency(String(value))}
+            />
+          </TransactionField>
+
+          <TransactionField label="Exchange Rate">
+            <input
+              id="came-exchange-rate"
+              type="text"
+              inputMode="decimal"
+              value={values.exchangeRate}
+              readOnly={isReadonly}
+              disabled={isReadonly || isExchangeRateLoading}
+              onChange={(event) => onUpdateField("exchangeRate", formatExchangeRateInput(event.target.value))}
+              className={`${TransactionFieldClassName} text-right tabular-nums${isReadonly || isExchangeRateLoading ? " transaction-readonly-placeholder" : ""}`}
+              placeholder="0.00"
+            />
+          </TransactionField>
         </div>
 
         {/* Column 3: Transaction Identity & Status */}

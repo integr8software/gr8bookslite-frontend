@@ -9,7 +9,6 @@ import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLookupDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppLookupDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
-import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import {
   TransactionField,
   TransactionFieldClassName,
@@ -163,36 +162,33 @@ export function DisbursementVoucherDetailsFields({
             placeholder="Project Code"
           />
 
-          <CurrencyExchangeRateRow
-            currencyControlId="disbursement-voucher-currency"
-            currencyLabel="Currency"
-            currencyControl={
-              <AppAdvancedDropdown
-                id="disbursement-voucher-currency"
-                value={values.currency}
-                readOnly={isReadonly}
-                isClearable={false}
-                menuMinWidth={320}
-                options={currencyOptions}
-                placeholder="Currency"
-                searchPlaceholder="Search Currency"
-                onChange={(value) => onCurrencyChange(String(value))}
-              />
-            }
-            exchangeRateControlId="disbursement-voucher-fx-rate"
-            exchangeRateControl={
-              <input
-                id="disbursement-voucher-fx-rate"
-                type="text"
-                inputMode="decimal"
-                value={values.fxRate}
-                readOnly={isReadonly}
-                disabled={isReadonly || isExchangeRateLoading}
-                onChange={(event) => onUpdateField("fxRate", formatExchangeRateInput(event.target.value))}
-                className={`${TransactionFieldClassName} text-right tabular-nums`}
-              />
-            }
-          />
+          <TransactionField label="Currency" error={errors.currency}>
+            <AppAdvancedDropdown
+              id="disbursement-voucher-currency"
+              value={values.currency}
+              readOnly={isReadonly}
+              isClearable={false}
+              menuMinWidth={320}
+              options={currencyOptions}
+              placeholder="Currency"
+              searchPlaceholder="Search Currency"
+              onChange={(value) => onCurrencyChange(String(value))}
+            />
+          </TransactionField>
+
+          <TransactionField label="Exchange Rate" error={errors.fxRate}>
+            <input
+              id="disbursement-voucher-fx-rate"
+              type="text"
+              inputMode="decimal"
+              value={values.fxRate}
+              readOnly={isReadonly}
+              disabled={isReadonly || isExchangeRateLoading}
+              onChange={(event) => onUpdateField("fxRate", formatExchangeRateInput(event.target.value))}
+              className={`${TransactionFieldClassName} text-right tabular-nums${isReadonly || isExchangeRateLoading ? " transaction-readonly-placeholder" : ""}`}
+              placeholder="0.00"
+            />
+          </TransactionField>
         </div>
 
         {/* Column 3: Transaction Identity & Status */}

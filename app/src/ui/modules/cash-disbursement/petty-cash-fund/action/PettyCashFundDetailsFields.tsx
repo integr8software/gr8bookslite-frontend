@@ -6,7 +6,6 @@ import {
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund/PettyCashFundConstants";
 import type { PettyCashFundActionPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
-import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLookupDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppLookupDropdown";
 import {
@@ -138,36 +137,33 @@ export function PettyCashFundDetailsFields({
             placeholder="Account Code"
           />
 
-          <CurrencyExchangeRateRow
-            currencyControlId="pcf-currency"
-            currencyLabel="Currency"
-            currencyControl={
-              <AppAdvancedDropdown
-                id="pcf-currency"
-                value={page.values.currency}
-                readOnly={page.isReadonly}
-                isClearable={false}
-                menuMinWidth={320}
-                options={page.currencyOptions}
-                placeholder="Currency"
-                searchPlaceholder="Search Currency"
-                onChange={(value) => page.updateCurrency(String(value))}
-              />
-            }
-            exchangeRateControlId="pcf-exchange-rate"
-            exchangeRateControl={
-              <input
-                id="pcf-exchange-rate"
-                type="text"
-                inputMode="decimal"
-                value={page.values.exchangeRate}
-                readOnly={page.isReadonly}
-                disabled={page.isReadonly || page.isExchangeRateLoading}
-                onChange={(event) => page.updateField("exchangeRate", formatExchangeRateInput(event.target.value))}
-                className={`${TransactionFieldClassName} text-right tabular-nums`}
-              />
-            }
-          />
+          <TransactionField label="Currency" error={page.errors.currency}>
+            <AppAdvancedDropdown
+              id="pcf-currency"
+              value={page.values.currency}
+              readOnly={page.isReadonly}
+              isClearable={false}
+              menuMinWidth={320}
+              options={page.currencyOptions}
+              placeholder="Currency"
+              searchPlaceholder="Search Currency"
+              onChange={(value) => page.updateCurrency(String(value))}
+            />
+          </TransactionField>
+
+          <TransactionField label="Exchange Rate" error={page.errors.exchangeRate}>
+            <input
+              id="pcf-exchange-rate"
+              type="text"
+              inputMode="decimal"
+              value={page.values.exchangeRate}
+              readOnly={page.isReadonly}
+              disabled={page.isReadonly || page.isExchangeRateLoading}
+              onChange={(event) => page.updateField("exchangeRate", formatExchangeRateInput(event.target.value))}
+              className={`${TransactionFieldClassName} text-right tabular-nums${page.isReadonly || page.isExchangeRateLoading ? " transaction-readonly-placeholder" : ""}`}
+              placeholder="0.00"
+            />
+          </TransactionField>
         </div>
 
         {/* Column 3: Transaction Identity & Status */}

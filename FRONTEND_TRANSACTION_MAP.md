@@ -814,49 +814,43 @@ wrapper files.
 
 ### Currency And Exchange Rate
 
-Always use `CurrencyExchangeRateRow` for currency and exchange-rate field rows:
+Do not use `CurrencyExchangeRateRow` in transaction detail forms. Instead, each module renders separate `TransactionField` controls for Currency and Exchange Rate:
 
 ```tsx
-import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
+<TransactionField label="Currency" error={errors.currency}>
+  <AppAdvancedDropdown
+    id="<prefix>-currency"
+    value={values.currency}
+    readOnly={isReadonly}
+    isClearable={false}
+    menuMinWidth={320}
+    options={currencyOptions}
+    placeholder="Currency"
+    searchPlaceholder="Search Currency"
+    onChange={(value) => onCurrencyChange(String(value))}
+  />
+</TransactionField>
+
+<TransactionField label="Exchange Rate" error={errors.exchangeRate}>
+  <input
+    id="<prefix>-exchange-rate"
+    type="text"
+    inputMode="decimal"
+    value={values.exchangeRate}
+    readOnly={isReadonly}
+    disabled={isReadonly || isExchangeRateLoading}
+    onChange={(event) => onUpdateField("exchangeRate", formatExchangeRateInput(event.target.value))}
+    className={`${TransactionFieldClassName} text-right tabular-nums${isReadonly || isExchangeRateLoading ? " transaction-readonly-placeholder" : ""}`}
+    placeholder="0.00"
+  />
+</TransactionField>
 ```
 
-When the shared row renders the Currency label, pass `currencyControlId` and
-give the Currency control the same `id` so the label is associated with the
-select. The labeled row uses the same label width and gap as standard
-transaction fields; do not override its alignment in a feature module.
+Give the `AppAdvancedDropdown` menu an extended minimum width with `menuMinWidth={320}`. The options menu may be wider than the closed control and must use the shared portal positioning, which clamps it to the available viewport. This width leaves enough room to show the currency code first and the currency name or description second without premature truncation.
 
-When Currency is rendered in the same row as Exchange Rate, keep the Currency
-control within its assigned grid track but give its `AppAdvancedDropdown` menu
-an extended minimum width with `menuMinWidth={320}`. The options menu may be
-wider than the closed control and must use the shared portal positioning, which
-clamps it to the available viewport. This width must leave enough room to show
-the currency code first and the currency name or description second without the
-premature truncation caused by the narrow row control. Do not widen the Exchange
-Rate field or the complete `CurrencyExchangeRateRow` merely to widen the menu.
+Build transaction Currency options from the shared currency references and configured multi-currency rates. Use the active company's base currency as the default; do not hardcode feature-local lists or assume a particular base currency. Map the catalog records to readable dropdown options and identify the configured default currency in the option details.
 
-```tsx
-<AppAdvancedDropdown
-  menuMinWidth={320}
-  options={currencyOptions}
-  searchPlaceholder="Search Currency"
-  // ...currency field props
-/>
-```
-
-Build transaction Currency options from the shared currency references and
-configured multi-currency rates. Use the active company's base currency as the
-default; do not hardcode feature-local lists or assume a particular base
-currency. Map the catalog records to readable dropdown options and identify the
-configured default currency in the option details.
-
-Selecting a Currency should resolve its configured Exchange Rate against the
-active company's base currency. Display and initialize the base currency rate
-as `1.00`, disable the rate control while a selected rate is loading, and show
-a field error plus a toast when the rate cannot be loaded. Ignore stale
-responses when users change the selection quickly. Keep Exchange Rate editable
-in add and edit modes and make it readonly only in view mode. Use
-`formatExchangeRateInput` from `app/src/utils/number.util.ts` to normalize
-manual decimal input consistently across transaction forms.
+Selecting a Currency should resolve its configured Exchange Rate against the active company's base currency. Display and initialize the base currency rate as `1.00`, disable the rate control while a selected rate is loading, and show a field error plus a toast when the rate cannot be loaded. Ignore stale responses when users change the selection quickly. Keep Exchange Rate editable in add and edit modes and make it readonly only in view mode. Use `formatExchangeRateInput` from `app/src/utils/number.util.ts` to normalize manual decimal input consistently across transaction forms.
 
 ## Entries Folder
 
@@ -1436,8 +1430,8 @@ columns.
   `advanced-dropdown`, `tag-input`, `media`, and shared money/date controls.
 - Transaction file attachments:
   `app/src/ui/shared/transaction-setup/TransactionFileAttachmentFields.tsx`.
-- Currency/exchange rate row:
-  `app/src/ui/shared/app/CurrencyExchangeRateRow.tsx`.
+- Currency/exchange rate fields: separate `TransactionField` controls per module
+  (`app/src/ui/shared/app/CurrencyExchangeRateRow.tsx` is deprecated).
 - Utilities: strictly use `app/src/utils/` for shared pure utilities.
 - Use `formatDate` from `app/src/utils/date.util.ts` for transaction dates,
   document dates, and audit dates (`createdAt`, `updatedAt`, `dateCreated`, `dateModified`),
@@ -1525,10 +1519,9 @@ Do not rename an old module opportunistically during an unrelated fix.
 - Add multiple form tabs: create `<ModuleName>[TabName]Fields.tsx` components
   (e.g., `<ModuleName>DetailsFields.tsx`, `<ModuleName>FileAttachmentFields.tsx`)
   and call them out in `<ModuleName>ActionPage.tsx`. Do not create `<ModuleName><TabName>Tab.tsx` files.
-- Add currency and exchange rate fields: always use
-  `CurrencyExchangeRateRow` from
-  `@/app/src/ui/shared/app/CurrencyExchangeRateRow`, and display the base
-  currency's default rate as `1.00`.
+- Add currency and exchange rate fields: render separate `TransactionField`
+  controls for Currency (`AppAdvancedDropdown`) and Exchange Rate (`<input ... />`)
+  instead of `CurrencyExchangeRateRow`, and display the base currency's default rate as `1.00`.
 - Add entry rows: use `ModuleDataEntry`; keep row state in hooks, defaults in
   data, columns in UI/constants, and validation in validations.
 - Add API access: use `ApiClient`; keep query keys and API wrappers in the

@@ -82,15 +82,15 @@ export function ModuleHeader<TTitleElement extends ElementType = "h2">({
 
 export const moduleHeaderActionClassNames = {
 	danger:
-		"inline-flex h-10 items-center justify-center gap-2 rounded-md border border-red-200 bg-white px-4 text-sm font-semibold text-red-600 shadow-sm shadow-darknavy/5 transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-500/15",
+		"inline-flex h-10 min-w-24 items-center justify-center gap-2 rounded-md border border-red-200 bg-white px-4 text-sm font-semibold text-red-600 shadow-sm shadow-darknavy/5 transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-500/15",
 	primary:
 		joinClasses(
-			"inline-flex h-10 items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold !text-[var(--skyblue-contrast)] shadow-sm transition focus-visible:outline-none focus-visible:ring-4",
+			"inline-flex h-10 min-w-24 items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold !text-[var(--skyblue-contrast)] shadow-sm transition focus-visible:outline-none focus-visible:ring-4",
 			moduleAccentClassNames.button,
 		),
 	secondary:
 		joinClasses(
-			"inline-flex h-10 items-center justify-center gap-2 rounded-md border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy/75 shadow-sm shadow-darknavy/5 transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-4",
+			"inline-flex h-10 min-w-24 items-center justify-center gap-2 rounded-md border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy/75 shadow-sm shadow-darknavy/5 transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-4",
 			moduleAccentClassNames.hoverBorder,
 			moduleAccentClassNames.hoverSoftBackground,
 			moduleAccentClassNames.focusRing,

@@ -8,7 +8,6 @@ import type { RevolvingFundReplenishmentActionPageState } from "@/app/src/types/
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLookupDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppLookupDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
-import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import {
   TransactionField,
   TransactionFieldClassName,
@@ -130,36 +129,32 @@ export function RevolvingFundReplenishmentDetailsFields({
             onValueChange={(value) => page.updateField("accountCode", value)}
             placeholder="Default Account Code"
           />
-          <CurrencyExchangeRateRow
-            currencyControlId="rfr-currency"
-            currencyLabel="Currency"
-            currencyControl={
-              <AppAdvancedDropdown
-                id="rfr-currency"
-                value={page.values.currency}
-                readOnly={page.isReadonly}
-                isClearable={false}
-                menuMinWidth={320}
-                options={page.currencyOptions}
-                placeholder="Currency"
-                searchPlaceholder="Search Currency"
-                onChange={(value) => page.updateCurrency(String(value))}
-              />
-            }
-            exchangeRateControlId="rfr-exchange-rate"
-            exchangeRateControl={
-              <input
-                id="rfr-exchange-rate"
-                type="text"
-                inputMode="decimal"
-                value={page.values.exchangeRate}
-                readOnly={page.isReadonly}
-                disabled={page.isReadonly || page.isExchangeRateLoading}
-                onChange={(event) => page.updateField("exchangeRate", formatExchangeRateInput(event.target.value))}
-                className={`${TransactionFieldClassName} text-right tabular-nums`}
-              />
-            }
-          />
+          <TransactionField label="Currency" error={page.errors.currency}>
+            <AppAdvancedDropdown
+              id="rfr-currency"
+              value={page.values.currency}
+              readOnly={page.isReadonly}
+              isClearable={false}
+              menuMinWidth={320}
+              options={page.currencyOptions}
+              placeholder="Currency"
+              searchPlaceholder="Search Currency"
+              onChange={(value) => page.updateCurrency(String(value))}
+            />
+          </TransactionField>
+          <TransactionField label="Exchange Rate" error={page.errors.exchangeRate}>
+            <input
+              id="rfr-exchange-rate"
+              type="text"
+              inputMode="decimal"
+              value={page.values.exchangeRate}
+              readOnly={page.isReadonly}
+              disabled={page.isReadonly || page.isExchangeRateLoading}
+              onChange={(event) => page.updateField("exchangeRate", formatExchangeRateInput(event.target.value))}
+              className={`${TransactionFieldClassName} text-right tabular-nums${page.isReadonly || page.isExchangeRateLoading ? " transaction-readonly-placeholder" : ""}`}
+              placeholder="0.00"
+            />
+          </TransactionField>
         </div>
         <div className="grid min-w-0 content-start gap-5">
           <TransactionTextField

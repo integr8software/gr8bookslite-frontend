@@ -12,10 +12,7 @@ import {
   getPettyCashVoucherActionTitle,
   getPettyCashVoucherSaveDialogCopy,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
-import type { PettyCashVoucherActionPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
-import type {
-  PettyCashVoucherConfirmation,
-} from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
+import type { PettyCashVoucherActionPageState, PettyCashVoucherConfirmation } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleActionButton } from "@/app/src/ui/shared/module/ModuleActionButton";

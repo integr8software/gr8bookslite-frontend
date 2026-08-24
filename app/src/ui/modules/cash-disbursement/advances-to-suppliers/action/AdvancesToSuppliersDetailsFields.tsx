@@ -9,7 +9,6 @@ import type { AdvancesToSuppliersActionPageState } from "@/app/src/types/modules
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLookupDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppLookupDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
-import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 import {
   TransactionField,
@@ -135,36 +134,32 @@ export function AdvancesToSuppliersDetailsFields({
             onValueChange={(value) => page.updateField("accountCode", value)}
             placeholder="Default Account Code"
           />
-          <CurrencyExchangeRateRow
-            currencyControlId="ats-currency"
-            currencyLabel="Currency"
-            currencyControl={
-              <AppAdvancedDropdown
-                id="ats-currency"
-                value={page.values.currency}
-                readOnly={page.isReadonly}
-                isClearable={false}
-                menuMinWidth={320}
-                options={page.currencyOptions}
-                placeholder="Currency"
-                searchPlaceholder="Search Currency"
-                onChange={(value) => page.updateCurrency(String(value))}
-              />
-            }
-            exchangeRateControlId="ats-exchange-rate"
-            exchangeRateControl={
-              <input
-                id="ats-exchange-rate"
-                type="text"
-                inputMode="decimal"
-                value={page.values.exchangeRate}
-                readOnly={page.isReadonly}
-                disabled={page.isReadonly || page.isExchangeRateLoading}
-                onChange={(event) => page.updateField("exchangeRate", formatExchangeRateInput(event.target.value))}
-                className={`${TransactionFieldClassName} text-right tabular-nums`}
-              />
-            }
-          />
+          <TransactionField label="Currency">
+            <AppAdvancedDropdown
+              id="ats-currency"
+              value={page.values.currency}
+              readOnly={page.isReadonly}
+              isClearable={false}
+              menuMinWidth={320}
+              options={page.currencyOptions}
+              placeholder="Currency"
+              searchPlaceholder="Search Currency"
+              onChange={(value) => page.updateCurrency(String(value))}
+            />
+          </TransactionField>
+          <TransactionField label="Exchange Rate">
+            <input
+              id="ats-exchange-rate"
+              type="text"
+              inputMode="decimal"
+              value={page.values.exchangeRate}
+              readOnly={page.isReadonly}
+              disabled={page.isReadonly || page.isExchangeRateLoading}
+              onChange={(event) => page.updateField("exchangeRate", formatExchangeRateInput(event.target.value))}
+              className={`${TransactionFieldClassName} text-right tabular-nums${page.isReadonly || page.isExchangeRateLoading ? " transaction-readonly-placeholder" : ""}`}
+              placeholder="0.00"
+            />
+          </TransactionField>
           <TransactionField label="Total Amount" error={page.errors.totalPoAmount} isRequired>
             <MoneyNumberField
               value={page.values.totalPoAmount}

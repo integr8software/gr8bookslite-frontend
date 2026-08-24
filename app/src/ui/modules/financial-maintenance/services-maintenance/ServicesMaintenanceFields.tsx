@@ -1,5 +1,6 @@
 import { isValidElement, useId } from "react";
 import { ServicesMaintenanceFieldClassName } from "@/app/src/constants/modules/financial-maintenance/services-maintenance/ServicesMaintenanceConstants";
+import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
 import type {
   ServicesMaintenanceFieldsProps,
   ServicesMaintenanceFormFieldProps,
@@ -43,7 +44,7 @@ export function FormField({ children, className, error, helper, label, required 
     <div className={className}>
       <label htmlFor={fieldId} className="mb-2 block text-sm font-semibold text-darknavy">
         {label}
-        {required ? <span className="text-coralpink"> *</span> : null}
+        <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired={required} label={label} leadingSpace />
       </label>
       {children}
       {error ? (

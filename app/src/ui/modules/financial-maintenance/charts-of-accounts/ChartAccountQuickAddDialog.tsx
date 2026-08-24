@@ -11,6 +11,7 @@ import type {
   ChartAccount,
   ChartAccountFormValues,
 } from "@/app/src/types/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsTypes";
+import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
 import { QuickAddDialog } from "@/app/src/ui/shared/module/QuickAddDialog";
 
 type ChartAccountQuickAddDialogProps = {
@@ -105,7 +106,8 @@ export function ChartAccountQuickAddDialog({
     >
       <label className="grid gap-2">
         <span className="text-sm font-semibold text-darknavy">
-          {accountLabel} Title <span className="text-coralpink">*</span>
+          {accountLabel} Title
+          <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired label={`${accountLabel} Title`} leadingSpace />
         </span>
         <input
           value={accountName}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
@@ -17,16 +17,20 @@ import {
 import { JournalVoucherQueryKeys } from "@/app/src/services/modules/general-journal/journal-voucher/JournalVoucherQueryKeys";
 import type {
   JournalVoucherRecord,
+  JournalVoucherStatistics,
   JournalVoucherStatus,
 } from "@/app/src/types/modules/general-journal/journal-voucher/JournalVoucherTypes";
 
 type JournalVoucherStoreState = {
   records: JournalVoucherRecord[];
+  refreshRecords: () => void;
   addRecord: (record: JournalVoucherRecord) => void;
   updateRecord: (record: JournalVoucherRecord) => void;
   updateStatus: (recordId: string, status: JournalVoucherStatus) => void;
   permissions: JournalVoucherPermissions;
+  statistics: JournalVoucherStatistics;
   isLoading: boolean;
+  isRefreshing: boolean;
   lastSyncedAt: number;
   isMutating: boolean;
 };
@@ -44,6 +48,15 @@ const EmptyJournalVoucherPermissions: JournalVoucherPermissions = {
   canView: false,
 };
 
+const EmptyJournalVoucherStatistics: JournalVoucherStatistics = {
+  cancelledVouchers: 0,
+  disapprovedVouchers: 0,
+  draftVouchers: 0,
+  forApprovalVouchers: 0,
+  postedVouchers: 0,
+  totalVouchers: 0,
+};
+
 export function useJournalVoucherStore<TSelected = JournalVoucherStoreState>(selector?: (state: JournalVoucherStoreState) => TSelected) {
   const queryClient = useQueryClient();
   const activeCompanyId = useAppStore((state) => state.activeCompanyId);
@@ -55,15 +68,24 @@ export function useJournalVoucherStore<TSelected = JournalVoucherStoreState>(sel
     queryFn: () =>
       fetchJournalVouchers({
         branchUnitId: activeBranchId,
+        limit: 500,
+        sortBy: "documentDate",
+        sortDirection: "desc",
       }),
-    enabled: activeCompanyId !== null,
+    enabled: activeCompanyId !== null && activeBranchId !== null,
+    retry: false,
   });
 
-  function invalidateJournalVoucherQueries() {
-    return queryClient.invalidateQueries({
-      queryKey: JournalVoucherQueryKeys.all(activeCompanyId, activeBranchId),
-    });
-  }
+  const invalidateJournalVoucherQueries = useCallback(
+    () =>
+      queryClient.invalidateQueries({
+        queryKey: JournalVoucherQueryKeys.all(activeCompanyId, activeBranchId),
+      }),
+    [activeBranchId, activeCompanyId, queryClient],
+  );
+  const refreshRecords = useCallback(() => {
+    void invalidateJournalVoucherQueries();
+  }, [invalidateJournalVoucherQueries]);
 
   const addRecordMutation = useMutation({
     mutationFn: (record: JournalVoucherRecord) => createJournalVoucher(record, activeBranchId),
@@ -101,15 +123,27 @@ export function useJournalVoucherStore<TSelected = JournalVoucherStoreState>(sel
   const state = useMemo<JournalVoucherStoreState>(
     () => ({
       records: recordsQuery.data?.records ?? [],
+      refreshRecords,
       addRecord: (record) => addRecordMutation.mutate(record),
       updateRecord: (record) => updateRecordMutation.mutate(record),
       updateStatus: (recordId, status) => updateStatusMutation.mutate({ recordId, status }),
       permissions: recordsQuery.data?.permissions ?? EmptyJournalVoucherPermissions,
+      statistics: recordsQuery.data?.statistics ?? EmptyJournalVoucherStatistics,
       isLoading: recordsQuery.isLoading,
+      isRefreshing: recordsQuery.isFetching && !recordsQuery.isLoading,
       lastSyncedAt: recordsQuery.dataUpdatedAt,
       isMutating: addRecordMutation.isPending || updateRecordMutation.isPending || updateStatusMutation.isPending,
     }),
-    [addRecordMutation, recordsQuery.data, recordsQuery.dataUpdatedAt, recordsQuery.isLoading, updateRecordMutation, updateStatusMutation],
+    [
+      addRecordMutation,
+      refreshRecords,
+      recordsQuery.data,
+      recordsQuery.dataUpdatedAt,
+      recordsQuery.isFetching,
+      recordsQuery.isLoading,
+      updateRecordMutation,
+      updateStatusMutation,
+    ],
   );
 
   return selector ? selector(state) : (state as TSelected);

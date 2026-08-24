@@ -1,15 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-  CheckCircle2,
-  Clock3,
-  FileText,
-  PackageCheck,
-  Plus,
-  Search,
-  XCircle,
-} from "lucide-react";
+import { CheckCircle2, Clock3, FileText, PackageCheck, Plus, Search, XCircle } from "lucide-react";
 import {
   AccountsPayableVoucherHref,
   AccountsPayableVoucherStatusFilterOptions,
@@ -21,10 +13,7 @@ import type { AccountsPayableVoucherStatistics } from "@/app/src/types/modules/a
 import { AccountsPayableVoucherTableRow } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTableRow";
 import { AmountRangePicker } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import { DateRangePicker } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
-import {
-  ModuleHeader,
-  moduleHeaderActionClassNames,
-} from "@/app/src/ui/shared/module/ModuleHeader";
+import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import {
@@ -35,8 +24,7 @@ import {
   ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
-type AccountsPayableVoucherStatusFilter =
-  (typeof AccountsPayableVoucherStatusFilters)[number];
+type AccountsPayableVoucherStatusFilter = (typeof AccountsPayableVoucherStatusFilters)[number];
 
 export function AccountsPayableVoucherListPage() {
   const {
@@ -71,10 +59,7 @@ export function AccountsPayableVoucherListPage() {
           </>
         }
         actions={
-          <Link
-            href={`${AccountsPayableVoucherHref}/add`}
-            className={moduleHeaderActionClassNames.primary}
-          >
+          <Link href={`${AccountsPayableVoucherHref}/add`} className={moduleHeaderActionClassNames.primary}>
             <Plus className="h-4 w-4" aria-hidden="true" />
             Create New Accounts Payable Voucher
           </Link>
@@ -110,46 +95,24 @@ export function AccountsPayableVoucherListPage() {
                   onChange={handleQueryChange}
                   placeholder="Search by voucher no. or remarks"
                 />
-                <DateRangePicker
-                  label="Date Range"
-                  value={dateRange}
-                  onChange={setDateRange}
-                />
-                <AmountRangePicker
-                  label="Amount Range"
-                  value={amountRange}
-                  onChange={setAmountRange}
-                />
+                <DateRangePicker label="Date Range" value={dateRange} onChange={setDateRange} />
+                <AmountRangePicker label="Amount Range" value={amountRange} onChange={setAmountRange} />
                 <ModuleTableFilterSelect
                   label="Status"
                   value={statusFilter}
                   options={AccountsPayableVoucherStatusFilterOptions}
-                  onChange={(value) =>
-                    setStatusFilter(
-                      value as (typeof AccountsPayableVoucherStatusFilters)[number],
-                    )
-                  }
+                  onChange={(value) => setStatusFilter(value as (typeof AccountsPayableVoucherStatusFilters)[number])}
                 />
               </div>
               <div className="grid grid-cols-2 gap-2 xl:w-[7rem]">
                 <ModuleTableColumnVisibilityButton table={table} />
-                <ModuleTableResetButton
-                  className="px-2"
-                  isRefreshing={isRefreshing}
-                  onClick={refreshRecords}
-                >
+                <ModuleTableResetButton className="px-2" isRefreshing={isRefreshing} onClick={refreshRecords}>
                   <span className="sr-only">Refresh</span>
                 </ModuleTableResetButton>
               </div>
             </ModuleTableToolbar>
           }
-          renderRow={(row) => (
-            <AccountsPayableVoucherTableRow
-              key={row.id}
-              row={row}
-              onUpdateStatus={handleUpdateStatus}
-            />
-          )}
+          renderRow={(row) => <AccountsPayableVoucherTableRow key={row.id} row={row} onUpdateStatus={handleUpdateStatus} />}
         />
       </div>
     </section>
@@ -179,6 +142,15 @@ function AccountsPayableVoucherMetrics({
       onClick: () => onStatusFilterChange("all"),
     },
     {
+      label: "Posted",
+      value: statistics.postedVouchers,
+      summary: formatPercentage(statistics.postedVouchers, totalCount),
+      icon: PackageCheck,
+      iconClassName: "bg-skyblue/20 text-darknavy",
+      isActive: statusFilter === "Posted",
+      onClick: () => onStatusFilterChange("Posted"),
+    },
+    {
       label: "Draft",
       value: statistics.draftVouchers,
       summary: formatPercentage(statistics.draftVouchers, totalCount),
@@ -195,15 +167,6 @@ function AccountsPayableVoucherMetrics({
       iconClassName: "bg-emerald-50 text-emerald-700",
       isActive: statusFilter === "For Approval",
       onClick: () => onStatusFilterChange("For Approval"),
-    },
-    {
-      label: "Posted",
-      value: statistics.postedVouchers,
-      summary: formatPercentage(statistics.postedVouchers, totalCount),
-      icon: PackageCheck,
-      iconClassName: "bg-skyblue/20 text-darknavy",
-      isActive: statusFilter === "Posted",
-      onClick: () => onStatusFilterChange("Posted"),
     },
     {
       label: "Disapproved",
@@ -225,13 +188,7 @@ function AccountsPayableVoucherMetrics({
     },
   ];
 
-  return (
-    <ModuleStatisticCards
-      items={cards}
-      isLoading={isLoading}
-      className="2xl:grid-cols-6"
-    />
-  );
+  return <ModuleStatisticCards items={cards} isLoading={isLoading} className="2xl:grid-cols-6" />;
 }
 
 function formatPercentage(value: number, total: number) {

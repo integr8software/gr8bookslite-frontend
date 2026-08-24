@@ -7,11 +7,13 @@ import {
   JournalVoucherLineColumnLabels,
   JournalVoucherLineColumnWidths,
   JournalVoucherProtectedLineColumnIds,
-  JournalVoucherVatTypeOptions,
   JournalVoucherDefaultStatus,
 } from "@/app/src/constants/modules/general-journal/journal-voucher/JournalVoucherConstants";
 import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
-import { formatJournalVoucherAmount } from "@/app/src/data/modules/general-journal/journal-voucher/JournalVoucherData";
+import {
+  formatJournalVoucherAmount,
+  isJournalVoucherGeneratedTaxLine,
+} from "@/app/src/data/modules/general-journal/journal-voucher/JournalVoucherData";
 import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
 import { useJournalVoucherLookups } from "@/app/src/hooks/modules/general-journal/journal-voucher/useJournalVoucher";
 import type { useJournalVoucherFormPage } from "@/app/src/hooks/modules/general-journal/journal-voucher/useJournalVoucherFormPage";
@@ -21,6 +23,8 @@ import type {
   JournalVoucherLine,
   JournalVoucherLineColumnId,
   JournalVoucherLineField,
+  JournalVoucherLookupParty,
+  JournalVoucherLookupTax,
 } from "@/app/src/types/modules/general-journal/journal-voucher/JournalVoucherTypes";
 import type { PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";
 import type { ResponsibilityCenter } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
@@ -41,18 +45,19 @@ type JournalVoucherDataEntryTableProps = {
   page: ReturnType<typeof useJournalVoucherFormPage>;
 };
 
-export function JournalVoucherDataEntryTable({
-  canAddPartyName,
-  onAddPartyName,
-  page,
-}: JournalVoucherDataEntryTableProps) {
+export function JournalVoucherDataEntryTable({ canAddPartyName, onAddPartyName, page }: JournalVoucherDataEntryTableProps) {
   const [columnOrder, setColumnOrder] = useState<JournalVoucherLineColumnId[]>([...JournalVoucherLineColumnIds]);
   const [visibleColumnIds, setVisibleColumnIds] = useState<JournalVoucherLineColumnId[]>([...JournalVoucherLineDefaultVisibleColumnIds]);
   const [columnLabels, setColumnLabels] = useState<Record<JournalVoucherLineColumnId, string>>({ ...JournalVoucherLineColumnLabels });
   const [columnWidths, setColumnWidths] = useState<Record<JournalVoucherLineColumnId, number>>({ ...JournalVoucherLineColumnWidths });
-  const partyRecords = usePartyManagementStore((state) => state.records);
+  const partyManagementRecords = usePartyManagementStore((state) => state.records);
   const responsibilityCenters = useResponsibilityCenterStore((state) => state.centers);
   const journalVoucherLookups = useJournalVoucherLookups();
+  const partyRecords = useMemo(
+    () => mergeJournalVoucherPartyRecords(journalVoucherLookups.data?.parties ?? [], partyManagementRecords),
+    [journalVoucherLookups.data?.parties, partyManagementRecords],
+  );
+  const taxCodes = useMemo(() => journalVoucherLookups.data?.taxCodes ?? [], [journalVoucherLookups.data?.taxCodes]);
   const chartAccounts = useMemo(
     () =>
       (journalVoucherLookups.data?.accounts ?? []).map((account) => ({
@@ -69,6 +74,8 @@ export function JournalVoucherDataEntryTable({
       })),
     [journalVoucherLookups.data?.accounts],
   );
+  const vatOptions = useMemo(() => createJournalVoucherVatOptions(taxCodes), [taxCodes]);
+  const ewtOptions = useMemo(() => createJournalVoucherEwtOptions(taxCodes), [taxCodes]);
   const partyOptions = useMemo<AppAdvancedDropdownOption[]>(
     () => createPartyOptions(partyRecords, page.values.lines),
     [page.values.lines, partyRecords],
@@ -88,8 +95,12 @@ export function JournalVoucherDataEntryTable({
         line,
         columnId,
         chartAccounts,
+        partyRecords,
         partyOptions,
         responsibilityCenterOptions,
+        vatOptions,
+        ewtOptions,
+        taxCodes,
         canAddPartyName,
         onAddPartyName,
       ),
@@ -287,13 +298,19 @@ function renderLineCell(
   line: JournalVoucherLine,
   columnId: JournalVoucherLineColumnId,
   chartAccounts: ModuleChartAccount[],
+  partyRecords: JournalVoucherLookupParty[],
   partyOptions: AppAdvancedDropdownOption[],
   responsibilityCenterOptions: AppAdvancedDropdownOption[],
+  vatOptions: AppAdvancedDropdownOption[],
+  ewtOptions: AppAdvancedDropdownOption[],
+  taxCodes: JournalVoucherLookupTax[],
   canAddPartyName: boolean,
   onAddPartyName: (lineId: string) => void,
 ) {
   const lineErrors = page.errors.lineErrors?.[line.id] ?? {};
   const isReadonly = page.isReadonly;
+  const isGeneratedTaxLine = isJournalVoucherGeneratedTaxLine(line);
+  const isCellReadonly = isReadonly || isGeneratedTaxLine;
 
   switch (columnId) {
     case "accountCode":
@@ -304,7 +321,7 @@ function renderLineCell(
           accounts={chartAccounts}
           value={line.accountTitle}
           valueField="accountName"
-          readOnly={isReadonly}
+          readOnly={isCellReadonly}
           isClearable
           className={accountingDropdownClassName(lineErrors.accountTitle)}
           ariaInvalid={Boolean(lineErrors.accountTitle)}
@@ -323,7 +340,7 @@ function renderLineCell(
       return (
         <AppAdvancedDropdown
           addAction={
-            !isReadonly && canAddPartyName
+            !isCellReadonly && canAddPartyName
               ? {
                   label: "Add Party Name",
                   onClick: () => onAddPartyName(line.id),
@@ -331,7 +348,7 @@ function renderLineCell(
               : undefined
           }
           value={line.partyCode || getJournalVoucherPartyFallbackValue(line.partyName ?? "")}
-          readOnly={isReadonly}
+          readOnly={isCellReadonly}
           options={partyOptions}
           placeholder="Select Party Name"
           searchPlaceholder="Search Party Name"
@@ -340,10 +357,12 @@ function renderLineCell(
           onChange={(value) => {
             const selectedValue = String(value);
             const party = partyOptions.find((option) => option.value === selectedValue);
+            const partyRecord = findPartyRecordByCode(partyRecords, selectedValue);
             const isFallbackValue = selectedValue.startsWith(JournalVoucherPartyFallbackValuePrefix);
 
             page.updateLine(line.id, "partyCode", isFallbackValue ? "" : selectedValue);
             page.updateLine(line.id, "partyName", party?.name ?? "");
+            applyJournalVoucherLinePartyTaxDefaults(page, line.id, partyRecord, taxCodes);
           }}
         />
       );
@@ -351,7 +370,7 @@ function renderLineCell(
       return (
         <AppAdvancedDropdown
           value={line.responsibilityCenter}
-          readOnly={isReadonly}
+          readOnly={isCellReadonly}
           options={responsibilityCenterOptions}
           placeholder="Select responsibility center"
           searchPlaceholder="Search responsibility center"
@@ -363,25 +382,60 @@ function renderLineCell(
     case "credit":
       return (
         <LineAmountInput
-          disabled={isReadonly}
+          disabled={isCellReadonly}
           error={lineErrors[columnId]}
           value={line[columnId]}
           onChange={(value) => page.updateLine(line.id, columnId, value)}
         />
       );
     case "vatType":
+      if (line.vatType && !vatOptions.some((option) => option.value === line.vatType)) {
+        return (
+          <LineInput disabled={isCellReadonly} value={line.vatType} onChange={(value) => page.updateLine(line.id, "vatType", value)} />
+        );
+      }
+
       return (
-        <LineSelect
-          disabled={isReadonly}
+        <AppAdvancedDropdown
           value={line.vatType}
-          options={JournalVoucherVatTypeOptions}
-          onChange={(value) => page.updateLine(line.id, "vatType", value)}
+          readOnly={isCellReadonly}
+          isClearable
+          options={vatOptions}
+          placeholder="Select VAT"
+          searchPlaceholder="Search VAT code, rate, or description"
+          className={accountingDropdownClassName()}
+          onChange={(value) => page.updateLine(line.id, "vatType", String(value))}
+        />
+      );
+    case "atcCode":
+      if (line.atcCode && !ewtOptions.some((option) => option.value === line.atcCode)) {
+        return (
+          <LineInput
+            disabled={isCellReadonly}
+            error={lineErrors.atcCode}
+            value={line.atcCode}
+            onChange={(value) => page.updateLine(line.id, "atcCode", value)}
+          />
+        );
+      }
+
+      return (
+        <AppAdvancedDropdown
+          value={line.atcCode}
+          readOnly={isCellReadonly}
+          isClearable
+          options={ewtOptions}
+          placeholder="Select EWT"
+          searchPlaceholder="Search EWT code, rate, or description"
+          className={accountingDropdownClassName(lineErrors.atcCode)}
+          ariaInvalid={Boolean(lineErrors.atcCode)}
+          onChange={(value) => page.updateLine(line.id, "atcCode", String(value))}
         />
       );
     default:
       return (
         <LineInput
-          disabled={isReadonly}
+          disabled={isCellReadonly}
           error={lineErrors[columnId as keyof typeof lineErrors]}
           value={String(line[columnId] ?? "")}
           onChange={(value) => page.updateLine(line.id, columnId as JournalVoucherLineField, value)}
@@ -413,33 +467,6 @@ function LineInput({
       title={error}
       className={accountingCellControlClassName(error ? "ring-2 ring-inset ring-red-500/45" : "")}
     />
-  );
-}
-
-function LineSelect({
-  disabled,
-  onChange,
-  options,
-  value,
-}: {
-  disabled: boolean;
-  onChange: (value: string) => void;
-  options: readonly string[];
-  value: string;
-}) {
-  return (
-    <select
-      className={accountingCellControlClassName()}
-      disabled={disabled}
-      onChange={(event) => onChange(event.target.value)}
-      value={value}
-    >
-      {options.map((option) => (
-        <option key={option} value={option}>
-          {option}
-        </option>
-      ))}
-    </select>
   );
 }
 
@@ -501,11 +528,226 @@ function getJournalVoucherPartyFallbackValue(partyName: string) {
   return normalizedPartyName ? `${JournalVoucherPartyFallbackValuePrefix}${normalizedPartyName}` : "";
 }
 
-function createPartyOptions(partyRecords: PartyInformationRecord[], lines: JournalVoucherLine[]): AppAdvancedDropdownOption[] {
+export function applyJournalVoucherLinePartyTaxDefaults(
+  page: ReturnType<typeof useJournalVoucherFormPage>,
+  lineId: string,
+  party: JournalVoucherPartyTaxDefaults | undefined,
+  taxCodes: JournalVoucherLookupTax[],
+) {
+  if (!party) {
+    return;
+  }
+
+  const vatSourceKey = getPartyVatDefaultSourceKey(party);
+  const ewtSourceKey = getPartyEwtDefaultSourceKey(party);
+  const vatCode = getTaxCodeBySourceKey(taxCodes, vatSourceKey, ["INPUT VAT", "OUTPUT VAT"]);
+  const ewtCode = getTaxCodeBySourceKey(taxCodes, ewtSourceKey, ["EWT", "CWT"]);
+
+  if (!vatSourceKey || vatCode) {
+    page.updateLine(lineId, "vatType", vatCode);
+  }
+
+  if (!ewtSourceKey || ewtCode) {
+    page.updateLine(lineId, "atcCode", ewtCode);
+  }
+}
+
+function createJournalVoucherVatOptions(taxCodes: JournalVoucherLookupTax[]): AppAdvancedDropdownOption[] {
+  return createJournalVoucherTaxOptions(
+    taxCodes,
+    (taxCode) =>
+      isJournalVoucherTaxMatch(taxCode, [
+        { transactionType: "Purchases", taxType: "INPUT VAT" },
+        { transactionType: "Sales", taxType: "OUTPUT VAT" },
+      ]),
+    {
+      getName: getJournalVoucherTaxOptionName,
+    },
+  );
+}
+
+function createJournalVoucherEwtOptions(taxCodes: JournalVoucherLookupTax[]): AppAdvancedDropdownOption[] {
+  return createJournalVoucherTaxOptions(
+    taxCodes,
+    (taxCode) =>
+      isJournalVoucherTaxMatch(taxCode, [
+        { transactionType: "Purchases", taxType: "EWT" },
+        { transactionType: "Sales", taxType: "CWT" },
+      ]),
+    {
+      getDescription: getJournalVoucherEwtOptionDescription,
+      getName: getJournalVoucherEwtOptionName,
+    },
+  );
+}
+
+function createJournalVoucherTaxOptions(
+  taxCodes: JournalVoucherLookupTax[],
+  predicate: (taxCode: JournalVoucherLookupTax) => boolean,
+  formatters: {
+    getDescription?: (taxCode: JournalVoucherLookupTax, category: string) => string;
+    getName: (taxCode: JournalVoucherLookupTax) => string;
+  },
+): AppAdvancedDropdownOption[] {
+  const optionsByTaxCode = new Map<string, AppAdvancedDropdownOption>();
+
+  taxCodes
+    .filter((taxCode) => taxCode.status?.trim().toUpperCase() !== "INACTIVE" && predicate(taxCode))
+    .forEach((taxCode) => {
+      const taxValue = getJournalVoucherTaxOptionValue(taxCode);
+
+      if (!taxValue) {
+        return;
+      }
+
+      const category = `${taxCode.transactionType} / ${taxCode.taxType}`;
+      const description = formatters.getDescription?.(taxCode, category) ?? category;
+      const rate = formatTaxRate(taxCode.taxRate);
+      const currentOption = optionsByTaxCode.get(taxValue);
+
+      if (currentOption) {
+        optionsByTaxCode.set(taxValue, {
+          ...currentOption,
+          description: [currentOption.description, description].filter(Boolean).join("; "),
+        });
+        return;
+      }
+
+      optionsByTaxCode.set(taxValue, {
+        description,
+        label: rate,
+        name: formatters.getName(taxCode),
+        selectedDetails: [taxCode.taxCode, rate, category].filter(Boolean).join(" | "),
+        value: taxValue,
+      });
+    });
+
+  return Array.from(optionsByTaxCode.values());
+}
+
+function getJournalVoucherTaxOptionName(taxCode: JournalVoucherLookupTax) {
+  const description = taxCode.taxDescription.trim();
+  const name = stripJournalVoucherTaxCodePrefix(description)
+    .replace(/\s*\(?\d+(?:\.\d+)?%\)?\s*$/u, "")
+    .trim();
+
+  return name || taxCode.taxAlias?.trim() || taxCode.natureOfIncome?.trim() || taxCode.taxCode.trim();
+}
+
+function getJournalVoucherEwtOptionName(taxCode: JournalVoucherLookupTax) {
+  return taxCode.officialAtcCode?.trim() || taxCode.taxCode.trim() || getJournalVoucherTaxOptionName(taxCode);
+}
+
+function getJournalVoucherEwtOptionDescription(taxCode: JournalVoucherLookupTax, category: string) {
+  return [getJournalVoucherTaxOptionName(taxCode), category].filter(Boolean).join(" | ");
+}
+
+function getJournalVoucherTaxOptionValue(taxCode: JournalVoucherLookupTax) {
+  return taxCode.sourceKey.trim() || taxCode.id.trim() || taxCode.taxCode.trim();
+}
+
+function stripJournalVoucherTaxCodePrefix(value: string) {
+  return value.replace(/^[A-Z]{1,4}\s*\d{0,5}(?:\.\d+)?\s*\|\s*/iu, "").trim();
+}
+
+function isJournalVoucherTaxMatch(taxCode: JournalVoucherLookupTax, filters: Array<{ transactionType: string; taxType: string }>) {
+  return filters.some((filter) => taxCode.transactionType === filter.transactionType && taxCode.taxType === filter.taxType);
+}
+
+function getTaxCodeBySourceKey(taxCodes: JournalVoucherLookupTax[], sourceKey: string, taxTypes: string[]) {
+  const normalizedSourceKey = sourceKey.trim();
+
+  if (!normalizedSourceKey) {
+    return "";
+  }
+
+  const taxCode = taxCodes.find((row) => row.sourceKey === normalizedSourceKey && taxTypes.includes(row.taxType));
+
+  return taxCode ? getJournalVoucherTaxOptionValue(taxCode) : "";
+}
+
+function getPartyVatDefaultSourceKey(party: JournalVoucherPartyTaxDefaults) {
+  if (hasPartyType(party, "VENDOR") && party.defaultPurchaseInputVatTaxSourceKey) {
+    return party.defaultPurchaseInputVatTaxSourceKey;
+  }
+
+  if (hasPartyType(party, "CUSTOMER") && party.defaultSalesOutputVatTaxSourceKey) {
+    return party.defaultSalesOutputVatTaxSourceKey;
+  }
+
+  return party.defaultPurchaseInputVatTaxSourceKey ?? party.defaultSalesOutputVatTaxSourceKey ?? "";
+}
+
+function getPartyEwtDefaultSourceKey(party: JournalVoucherPartyTaxDefaults) {
+  if (hasPartyType(party, "VENDOR") && party.defaultPurchaseEwtTaxSourceKey) {
+    return party.defaultPurchaseEwtTaxSourceKey;
+  }
+
+  if (hasPartyType(party, "CUSTOMER") && party.defaultSalesCwtTaxSourceKey) {
+    return party.defaultSalesCwtTaxSourceKey;
+  }
+
+  return party.defaultPurchaseEwtTaxSourceKey ?? party.defaultSalesCwtTaxSourceKey ?? "";
+}
+
+function hasPartyType(party: Pick<JournalVoucherLookupParty, "partyTypes">, partyType: string) {
+  return party.partyTypes.some((currentType) => currentType.trim().toUpperCase() === partyType);
+}
+
+function formatTaxRate(value: string | number | null | undefined) {
+  const numericValue = Number(value ?? 0);
+
+  return Number.isFinite(numericValue) ? `${numericValue}%` : "";
+}
+
+function findPartyRecordByCode(partyRecords: JournalVoucherLookupParty[], partyCode: string) {
+  const normalizedPartyCode = partyCode.trim().toLowerCase();
+
+  return partyRecords.find((party) => party.partyCodeNo.trim().toLowerCase() === normalizedPartyCode);
+}
+
+function mergeJournalVoucherPartyRecords(lookupParties: JournalVoucherLookupParty[], partyManagementRecords: PartyInformationRecord[]) {
+  const partiesByCode = new Map<string, JournalVoucherLookupParty>();
+
+  lookupParties.forEach((party) => {
+    partiesByCode.set(party.partyCodeNo.trim().toLowerCase(), party);
+  });
+
+  partyManagementRecords.forEach((party) => {
+    partiesByCode.set(party.partyCodeNo.trim().toLowerCase(), mapPartyManagementRecordToJournalVoucherParty(party));
+  });
+
+  return Array.from(partiesByCode.values());
+}
+
+function mapPartyManagementRecordToJournalVoucherParty(party: PartyInformationRecord): JournalVoucherLookupParty {
+  return {
+    defaultPurchaseEwtTaxSourceKey: party.defaultPurchaseEwtTaxSourceKey,
+    defaultPurchaseInputVatTaxSourceKey: party.defaultPurchaseInputVatTaxSourceKey,
+    defaultSalesCwtTaxSourceKey: party.defaultSalesCwtTaxSourceKey,
+    defaultSalesOutputVatTaxSourceKey: party.defaultSalesOutputVatTaxSourceKey,
+    id: party.id,
+    name: getPartyDisplayName(party),
+    partyCodeNo: party.partyCodeNo,
+    partyTypes: party.partyTypes,
+    status: party.status,
+  };
+}
+
+type JournalVoucherPartyTaxDefaults = Pick<
+  JournalVoucherLookupParty,
+  | "defaultPurchaseEwtTaxSourceKey"
+  | "defaultPurchaseInputVatTaxSourceKey"
+  | "defaultSalesCwtTaxSourceKey"
+  | "defaultSalesOutputVatTaxSourceKey"
+  | "partyTypes"
+>;
+
+function createPartyOptions(partyRecords: JournalVoucherLookupParty[], lines: JournalVoucherLine[]): AppAdvancedDropdownOption[] {
   const options = partyRecords.map((party) => ({
     description: party.partyTypes.join(", "),
     label: party.partyCodeNo,
-    name: getPartyDisplayName(party),
+    name: party.name,
     value: party.partyCodeNo,
   }));
   const optionNames = new Set(options.map((option) => option.name.toLowerCase()));

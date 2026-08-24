@@ -118,6 +118,8 @@ export function createBlankBillingLineEntry(
 		ewtAmount: "0.00",
 		discountPercent: "",
 		discountAmount: "0.00",
+		grossAfterDiscount: "0.00",
+		netOfVatAmount: "0.00",
 		grossAmount: "0.00",
 		vatType: "VAT (12%)",
 		vatable: "True",

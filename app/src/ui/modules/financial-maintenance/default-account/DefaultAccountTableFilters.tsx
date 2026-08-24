@@ -50,14 +50,22 @@ export function DefaultAccountTableFilters({
           }}
         />
       </div>
-      <ModuleTableToolbar className="!grid-cols-1 !gap-2 rounded-none border-x-0 border-t-0 !p-3 shadow-none sm:!gap-2 sm:!p-3 md:!grid-cols-[minmax(0,1fr)_auto]">
-        <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(13rem,1.35fr)_minmax(7rem,0.7fr)]">
-          <ModuleTableSearch
-            label="Search default accounts"
-            value={query}
-            onChange={onQueryChange}
-            placeholder="Search by name, description, type, status, or account"
-          />
+      <ModuleTableToolbar
+        className="min-w-0 !grid-cols-1 !gap-2 rounded-none border-x-0 border-t-0 !p-3 shadow-none sm:!gap-2 sm:!p-3"
+        data-spotlight-id="default-account-filters"
+      >
+        <div
+          data-spotlight-id="maintenance-table-filters"
+          className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_auto] lg:grid-cols-[minmax(13rem,1.35fr)_minmax(7rem,0.7fr)_auto]"
+        >
+          <div className="col-span-1 sm:col-span-2 lg:col-span-1">
+            <ModuleTableSearch
+              label="Search default accounts"
+              value={query}
+              onChange={onQueryChange}
+              placeholder="Search by name, description, type, status, or account"
+            />
+          </div>
           <ModuleTableFilterSelect
             label="Status"
             value={statusFilter}
@@ -70,25 +78,28 @@ export function DefaultAccountTableFilters({
             ]}
             onChange={(value) => onStatusFilterChange(value as DefaultAccountStatusFilter)}
           />
-        </div>
-        <div className="grid grid-cols-3 gap-2 md:w-[10.75rem]">
-          <ModuleTableColumnVisibilityButton table={table} />
-          {permissions.canExport ? (
-            <ModuleTableExportButton
-              allRows={exportAllRows}
-              columns={DefaultAccountExportColumns}
-              fileName="default-account"
-              filteredRows={exportFilteredRows}
-              isFiltered={hasActiveFilters}
-              table={table}
-              title="Default Accounts"
-            />
-          ) : (
-            <span aria-hidden="true" />
-          )}
-          <ModuleTableResetButton className="px-2" isRefreshing={isRefreshing} onClick={onRefresh}>
-            <span className="sr-only">Refresh</span>
-          </ModuleTableResetButton>
+          <div
+            data-spotlight-id="maintenance-table-options"
+            className="grid w-full grid-cols-3 gap-2 sm:w-[10.75rem] sm:self-end"
+          >
+            <ModuleTableColumnVisibilityButton table={table} />
+            {permissions.canExport ? (
+              <ModuleTableExportButton
+                allRows={exportAllRows}
+                columns={DefaultAccountExportColumns}
+                fileName="default-account"
+                filteredRows={exportFilteredRows}
+                isFiltered={hasActiveFilters}
+                table={table}
+                title="Default Accounts"
+              />
+            ) : (
+              <span aria-hidden="true" />
+            )}
+            <ModuleTableResetButton className="px-2" isRefreshing={isRefreshing} onClick={onRefresh}>
+              <span className="sr-only">Refresh</span>
+            </ModuleTableResetButton>
+          </div>
         </div>
       </ModuleTableToolbar>
     </div>

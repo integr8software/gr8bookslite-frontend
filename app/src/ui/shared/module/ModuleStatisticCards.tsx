@@ -13,6 +13,7 @@ type ModuleStatisticCardTone =
 	| "violet";
 
 export type ModuleStatisticCardItem = {
+	className?: string;
 	helper?: ReactNode;
 	icon: LucideIcon;
 	iconClassName?: string;
@@ -47,7 +48,10 @@ export function ModuleStatisticCards({
 		>
 			{items.map((item) =>
 				isLoading ? (
-					<ModuleStatisticCardSkeleton key={String(item.label)} />
+					<ModuleStatisticCardSkeleton
+						className={item.className}
+						key={String(item.label)}
+					/>
 				) : (
 					<ModuleStatisticCard item={item} key={String(item.label)} />
 				),
@@ -70,6 +74,7 @@ function ModuleStatisticCard({ item }: { item: ModuleStatisticCardItem }) {
 	const cardClassName = joinClasses(
 		"module-statistic-card rounded-lg border border-darknavy/10 bg-white p-5 text-left shadow-sm shadow-darknavy/5 transition",
 		moduleStatisticCardToneClassNames[tone],
+		item.className,
 		item.onClick &&
 			"cursor-pointer hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
 		item.isActive && "ring-2",
@@ -135,9 +140,14 @@ function ModuleStatisticCard({ item }: { item: ModuleStatisticCardItem }) {
 	);
 }
 
-function ModuleStatisticCardSkeleton() {
+function ModuleStatisticCardSkeleton({ className }: { className?: string }) {
 	return (
-		<div className="module-statistic-card rounded-lg border border-darknavy/10 bg-white p-5 shadow-sm shadow-darknavy/5">
+		<div
+			className={joinClasses(
+				"module-statistic-card rounded-lg border border-darknavy/10 bg-white p-5 shadow-sm shadow-darknavy/5",
+				className,
+			)}
+		>
 			<div className="flex items-center justify-between gap-4">
 				<div className="min-w-0 flex-1">
 					<AppSkeleton className="h-4 w-24 rounded-md" />

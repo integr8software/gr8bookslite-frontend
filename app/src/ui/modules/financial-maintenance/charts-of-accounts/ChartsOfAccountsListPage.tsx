@@ -8,7 +8,6 @@ import { ChartsOfAccountsHeader } from "@/app/src/ui/modules/financial-maintenan
 import { ChartsOfAccountsStatisticCards } from "@/app/src/ui/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsStatisticCards";
 import { ChartsOfAccountsTable } from "@/app/src/ui/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsTable";
 import { ChartsOfAccountsSpotlightTutorial } from "@/app/src/ui/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsSpotlightTutorial";
-import { Card } from "@/app/src/ui/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsControls";
 import { useChartsOfAccounts } from "@/app/src/hooks/modules/financial-maintenance/charts-of-accounts/useChartsOfAccounts";
 import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/useMaintenanceAddDrawerSpotlight";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
@@ -30,54 +29,50 @@ export function ChartsOfAccountsListPage() {
   }
 
   return (
-    <section className="-mx-3 -my-4 min-h-[calc(100dvh-5rem)] min-w-0 overflow-x-hidden bg-white text-darknavy sm:-mx-5 lg:-mx-6">
+    <section className="grid gap-5">
       <ChartsOfAccountsSpotlightTutorial />
-      <main className="grid min-h-[calc(100dvh-5rem)] min-w-0 content-start gap-5 p-4 sm:p-6">
-        <ChartsOfAccountsHeader canCreate={coa.permissions.canCreate} onAddAccount={() => coa.openAddDrawer()} />
+      <ChartsOfAccountsHeader canCreate={coa.permissions.canCreate} onAddAccount={() => coa.openAddDrawer()} />
 
-        <ChartsOfAccountsStatisticCards flatAccounts={coa.flatAccounts} isLoading={coa.isLoading} />
+      <ChartsOfAccountsStatisticCards flatAccounts={coa.flatAccounts} isLoading={coa.isLoading} />
 
-        <Card className="min-w-0 overflow-hidden rounded-lg bg-white" data-spotlight-id="charts-of-accounts-table">
-          <ChartsOfAccountsTable
-            accounts={accountOptions}
-            expandedIds={coa.expandedIds}
-            isLoading={coa.isLoading}
+      <ChartsOfAccountsTable
+        accounts={accountOptions}
+        expandedIds={coa.expandedIds}
+        isLoading={coa.isLoading}
+        isRefreshing={coa.isRefreshing}
+        lastSyncedAt={coa.lastSyncedAt}
+        permissions={coa.permissions}
+        table={coa.table}
+        toolbar={
+          <ChartsOfAccountsFilters
+            accountTypeFilter={coa.accountTypeFilter}
+            activeTab={coa.activeTab}
+            exportAllRows={coa.flatAccounts}
+            exportFilteredRows={coa.visibleAccounts}
             isRefreshing={coa.isRefreshing}
-            lastSyncedAt={coa.lastSyncedAt}
             permissions={coa.permissions}
+            searchQuery={coa.searchQuery}
+            statusFilter={coa.statusFilter}
+            structureFilter={coa.structureFilter}
             table={coa.table}
-            toolbar={
-              <ChartsOfAccountsFilters
-                accountTypeFilter={coa.accountTypeFilter}
-                activeTab={coa.activeTab}
-                exportAllRows={coa.flatAccounts}
-                exportFilteredRows={coa.visibleAccounts}
-                isRefreshing={coa.isRefreshing}
-                permissions={coa.permissions}
-                searchQuery={coa.searchQuery}
-                statusFilter={coa.statusFilter}
-                structureFilter={coa.structureFilter}
-                table={coa.table}
-                onAccountTypeChange={coa.setAccountTypeFilter}
-                onRefresh={coa.refreshAccounts}
-                onSearchChange={coa.setSearchQuery}
-                onStatusChange={coa.setStatusFilter}
-                onStructureChange={coa.setStructureFilter}
-                onTabChange={coa.setActiveTab}
-              />
-            }
-            canDragRows={canDragRows}
-            showHierarchyGuides={coa.structureFilter !== "Without Submodules"}
-            showParentColumn={false}
-            onAddChild={coa.openAddDrawer}
-            onEdit={coa.openEditDrawer}
-            onReorderAccount={coa.reorderAccount}
-            onStatusChange={setPendingStatusAccount}
-            onToggleExpanded={coa.toggleExpanded}
-            onView={coa.openViewDrawer}
+            onAccountTypeChange={coa.setAccountTypeFilter}
+            onRefresh={coa.refreshAccounts}
+            onSearchChange={coa.setSearchQuery}
+            onStatusChange={coa.setStatusFilter}
+            onStructureChange={coa.setStructureFilter}
+            onTabChange={coa.setActiveTab}
           />
-        </Card>
-      </main>
+        }
+        canDragRows={canDragRows}
+        showHierarchyGuides={coa.structureFilter !== "Without Submodules"}
+        showParentColumn={false}
+        onAddChild={coa.openAddDrawer}
+        onEdit={coa.openEditDrawer}
+        onReorderAccount={coa.reorderAccount}
+        onStatusChange={setPendingStatusAccount}
+        onToggleExpanded={coa.toggleExpanded}
+        onView={coa.openViewDrawer}
+      />
 
       <ChartsOfAccountsDrawer
         account={coa.drawerAccount}

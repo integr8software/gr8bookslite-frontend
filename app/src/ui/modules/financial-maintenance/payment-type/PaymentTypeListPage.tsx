@@ -37,6 +37,7 @@ export function PaymentTypeListPage() {
         titleAs="h1"
         title="Payment Type"
         description="Maintain payment type names, categories, and active status for cash disbursement workflows."
+        actionsClassName="w-full justify-start sm:ml-auto sm:w-auto sm:justify-end sm:self-start"
         eyebrow={
           <>
             <CreditCard className="h-3.5 w-3.5" aria-hidden="true" />

@@ -41,7 +41,6 @@ export function ChartsOfAccountsFilters({
   onAccountTypeChange,
   onRefresh,
   onSearchChange,
-  onResetFilters,
   onStatusChange,
   onStructureChange,
   onTabChange,
@@ -148,10 +147,7 @@ export function ChartsOfAccountsFilters({
             <ModuleTableResetButton
               className="px-2"
               isRefreshing={isRefreshing}
-              onClick={() => {
-                onResetFilters();
-                onRefresh();
-              }}
+              onClick={onRefresh}
             >
               <span className="sr-only">Refresh</span>
             </ModuleTableResetButton>

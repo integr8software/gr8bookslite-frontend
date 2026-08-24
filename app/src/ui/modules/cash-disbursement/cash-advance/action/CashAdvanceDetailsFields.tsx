@@ -224,6 +224,12 @@ function CashAdvancePrimaryFields({
   projectOptions: AppAdvancedDropdownOption[];
   totalAdvanced: number;
 }) {
+  const cashAdvanceLimit = form.values.cashAdvanceLimit?.trim();
+  const cashAdvanceBalance = form.values.cashAdvanceBalance?.trim();
+  const cashAdvanceLimitDisplay = cashAdvanceLimit ? formatMoneyNumberDisplayValue(cashAdvanceLimit) : "No limit";
+  const cashAdvanceBalanceDisplay = cashAdvanceBalance ? formatMoneyNumberDisplayValue(cashAdvanceBalance) : "No limit";
+  const totalCashAdvancedDisplay = formatMoneyNumberDisplayValue(String(totalAdvanced));
+
   return (
     <div className="grid gap-5 xl:grid-cols-3">
       {/* Column 1: Name & Lookup Fields */}
@@ -377,12 +383,6 @@ function CashAdvancePrimaryFields({
           }
         />
 
-        <CashAdvanceMetricField label="Cash Advance Limit" value={form.values.cashAdvanceLimit} emptyLabel="No limit" />
-
-        <CashAdvanceMetricField label="Available Balance" value={form.values.cashAdvanceBalance} emptyLabel="No limit" />
-
-        <CashAdvanceMetricField label="Total Advanced" value={String(totalAdvanced)} />
-
         <TransactionField label="Amount" isRequired>
           <MoneyNumberField
             min="0"
@@ -414,6 +414,30 @@ function CashAdvancePrimaryFields({
           type="date"
           onValueChange={(value) => form.updateField("documentDate", value)}
         />
+
+        <TransactionField label="Cash Advance Limit">
+          <input
+            className={`${TransactionFieldClassName} transaction-readonly-placeholder text-right tabular-nums`}
+            value={cashAdvanceLimitDisplay}
+            readOnly
+          />
+        </TransactionField>
+
+        <TransactionField label="Cash Advance Balance">
+          <input
+            className={`${TransactionFieldClassName} transaction-readonly-placeholder text-right tabular-nums`}
+            value={cashAdvanceBalanceDisplay}
+            readOnly
+          />
+        </TransactionField>
+
+        <TransactionField label="Total Cash Advanced">
+          <input
+            className={`${TransactionFieldClassName} transaction-readonly-placeholder text-right tabular-nums`}
+            value={totalCashAdvancedDisplay}
+            readOnly
+          />
+        </TransactionField>
 
         <TransactionTextField value={form.values.status} isReadonly label="Status" onValueChange={() => undefined} />
       </div>
@@ -566,16 +590,6 @@ function createCashAdvancePartyOptions({
   }
 
   return options;
-}
-
-function CashAdvanceMetricField({ emptyLabel = "0.00", label, value }: { emptyLabel?: string; label: string; value?: string | null }) {
-  const displayValue = value?.trim() ? formatMoneyNumberDisplayValue(value) : emptyLabel;
-
-  return (
-    <TransactionField label={label}>
-      <div className={`${TransactionFieldClassName} flex items-center justify-end tabular-nums text-darknavy`}>{displayValue}</div>
-    </TransactionField>
-  );
 }
 
 function addUniqueDropdownOption(options: AppAdvancedDropdownOption[], option: AppAdvancedDropdownOption) {

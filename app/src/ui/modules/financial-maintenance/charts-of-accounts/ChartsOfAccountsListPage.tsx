@@ -60,7 +60,6 @@ export function ChartsOfAccountsListPage() {
                 table={coa.table}
                 onAccountTypeChange={coa.setAccountTypeFilter}
                 onRefresh={coa.refreshAccounts}
-                onResetFilters={coa.resetFilters}
                 onSearchChange={coa.setSearchQuery}
                 onStatusChange={coa.setStatusFilter}
                 onStructureChange={coa.setStructureFilter}

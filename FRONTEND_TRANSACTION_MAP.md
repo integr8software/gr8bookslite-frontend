@@ -1192,6 +1192,40 @@ mock/local data and also honors its `isRefreshing` prop when a real query or
 API refresh state is available. Do not create a static feature-local Refresh
 button.
 
+#### Refresh Wiring Pattern
+
+The refresh action flows through three layers:
+
+1. **Hook** — `use<ModuleName>OverviewPage` (or `use<ModuleName>Store`)
+   exposes a `refreshRecords` function that re-reads data and updates the sync
+   timestamp:
+
+   ```ts
+   function refreshRecords() {
+     setRecords(get<ModuleName>Records());
+     setLastSyncedAt(Date.now());
+   }
+   ```
+
+2. **Overview page** — `<ModuleName>OverviewPage` passes `refreshRecords` to
+   the toolbar via an explicit `onRefresh` prop:
+
+   ```tsx
+   <ModuleNameTableToolbar onRefresh={page.refreshRecords} /* ...other props */ />
+   ```
+
+3. **Toolbar** — `<ModuleName>TableToolbar` declares `onRefresh: () => void`
+   in its props and forwards it to the shared button:
+
+   ```tsx
+   <ModuleTableResetButton className="px-2" onClick={onRefresh} />
+   ```
+
+Keep `onRefresh` as an explicit callback prop on every `TableToolbar`. Do not
+read refresh behavior from a page object or store inside the toolbar; the
+toolbar receives the callback and passes it directly to
+`ModuleTableResetButton`'s `onClick`.
+
 Column Visibility and Refresh should sit in predictable toolbar tracks so their
 icon-only buttons align consistently with other modules. Use proportional
 tracks on small screens and restore the compact fixed utility widths from the

@@ -7,7 +7,7 @@ export type OfficialReceiptActionTab = "details" | "attachments";
 
 export type OfficialReceiptEntryView = "collection" | "accounting";
 
-export type OfficialReceiptStatus = "Active" | "Approved" | "Cancelled" | "Closed" | "Disapproved" | "Draft" | "Pending";
+export type OfficialReceiptStatus = "Cancelled" | "Disapproved" | "Draft" | "For Approval" | "Posted";
 
 export type OfficialReceiptRecord = {
   id: string;

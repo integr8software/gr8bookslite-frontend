@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useDeferredValue, useMemo, useState } from "react";
+import { useCallback, useDeferredValue, useEffect, useMemo, useState } from "react";
 import {
   getCoreRowModel,
   getPaginationRowModel,
@@ -38,6 +38,14 @@ import type {
 import { validateOfficialReceiptForm } from "@/app/src/validations/modules/cash-receipt/official-receipt/OfficialReceiptValidation";
 import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
+import {
+  createOfficialReceipt,
+  fetchOfficialReceipt,
+  fetchOfficialReceipts,
+  mapApiOfficialReceipt,
+  updateOfficialReceipt,
+  updateOfficialReceiptStatus,
+} from "@/app/src/services/modules/cash-receipt/official-receipt/OfficialReceiptApi";
 
 type OfficialReceiptStoreState = {
   isLoading: boolean;
@@ -61,41 +69,62 @@ export function useOfficialReceiptStore<TSelected = OfficialReceiptStoreState>(
   const fallbackReceipts = config.fallbackReceipts ?? MockOfficialReceipts;
   const receiptLabel = config.receiptLabel ?? "Official receipt";
   const [receipts, setReceipts] = useState(() => getInitialReceiptsByKey(storageKey, fallbackReceipts));
-  const [lastSyncedAt] = useState(() => Date.now());
+  const [isLoading, setIsLoading] = useState(true);
+  const [lastSyncedAt, setLastSyncedAt] = useState(() => Date.now());
+
+  useEffect(() => {
+    let isMounted = true;
+
+    fetchOfficialReceipts()
+      .then((data) => {
+        if (!isMounted) return;
+        setReceipts(data.receipts.map(mapApiOfficialReceipt));
+        setLastSyncedAt(Date.now());
+      })
+      .catch(() => {
+        if (isMounted) {
+          toast.error(`Could not load ${receiptLabel.toLowerCase()} records from the backend.`);
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [receiptLabel]);
+
   const updateReceiptStatus = useCallback(
     (receipt: OfficialReceiptRecord, status: OfficialReceiptStatus) => {
-      setReceipts((currentReceipts) =>
-        persistOfficialReceipts(
-          currentReceipts.map((currentReceipt) =>
-            currentReceipt.id === receipt.id
-              ? {
-                  ...currentReceipt,
-                  formValues: currentReceipt.formValues
-                    ? {
-                        ...currentReceipt.formValues,
-                        status,
-                      }
-                    : currentReceipt.formValues,
-                  status,
-                }
-              : currentReceipt,
-          ),
-          storageKey,
-        ),
-      );
-      toast.success(`${receiptLabel} marked as ${status}.`);
+      updateOfficialReceiptStatus({ recordId: receipt.id, status })
+        .then((updatedReceipt) => {
+          setReceipts((currentReceipts) =>
+            persistOfficialReceipts(
+              currentReceipts.map((currentReceipt) => (currentReceipt.id === receipt.id ? updatedReceipt : currentReceipt)),
+              storageKey,
+            ),
+          );
+          setLastSyncedAt(Date.now());
+          toast.success(`${receiptLabel} marked as ${status}.`);
+        })
+        .catch(() => {
+          toast.error(`Could not update ${receiptLabel.toLowerCase()} status.`);
+        });
     },
     [receiptLabel, storageKey],
   );
 
   const state = useMemo<OfficialReceiptStoreState>(
     () => ({
-      isLoading: false,
+      isLoading,
       lastSyncedAt,
       receipts,
       updateReceiptStatus,
     }),
-    [lastSyncedAt, receipts, updateReceiptStatus],
+    [isLoading, lastSyncedAt, receipts, updateReceiptStatus],
   );
 
   return selector ? selector(state) : (state as TSelected);
@@ -112,12 +141,38 @@ export function useOfficialReceiptActionForm(
   const receiptLabel = config.receiptLabel ?? "Official receipt";
   const initialReceipts = getInitialReceiptsByKey(storageKey, fallbackReceipts);
   const initialRecord = mode === "add" ? null : (initialReceipts.find((receipt) => receipt.id === recordId) ?? null);
-  const isNotFound = mode !== "add" && !initialRecord;
+  const [isNotFound, setIsNotFound] = useState(mode !== "add" && !recordId);
   const [entryView, setEntryView] = useState<OfficialReceiptEntryView>("collection");
   const [loadedRecord, setLoadedRecord] = useState<OfficialReceiptRecord | null>(initialRecord);
   const [values, setValues] = useState<OfficialReceiptFormValues>(() =>
     initialRecord ? createOfficialReceiptFormValuesFromRecord(initialRecord) : createOfficialReceiptFormValues(),
   );
+
+  useEffect(() => {
+    if (mode === "add" || !recordId) {
+      return;
+    }
+
+    let isMounted = true;
+
+    fetchOfficialReceipt(recordId)
+      .then((record) => {
+        if (!isMounted) return;
+        setIsNotFound(false);
+        setLoadedRecord(record);
+        setValues(createOfficialReceiptFormValuesFromRecord(record));
+      })
+      .catch(() => {
+        if (isMounted) {
+          setIsNotFound(true);
+          toast.error(`Could not load ${receiptLabel}.`);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [mode, receiptLabel, recordId]);
 
   function updateField<Key extends keyof OfficialReceiptFormValues>(key: Key, value: OfficialReceiptFormValues[Key]) {
     setValues((current) => ({ ...current, [key]: value }));
@@ -173,13 +228,26 @@ export function useOfficialReceiptActionForm(
       return;
     }
 
-    const nextRecord = createOfficialReceiptRecordFromForm(values, mode === "edit" ? (loadedRecord ?? undefined) : undefined);
-    const nextReceipts = upsertOfficialReceiptRecord(nextRecord, storageKey, fallbackReceipts);
+    const saveRequest =
+      mode === "edit" && loadedRecord
+        ? updateOfficialReceipt({
+            ...loadedRecord,
+            formValues: values,
+          })
+        : createOfficialReceipt(values);
 
-    writeStoredReceiptsByKey(storageKey, nextReceipts);
-    setLoadedRecord(nextRecord);
-    toast.success(mode === "edit" ? `${receiptLabel} updated.` : `${receiptLabel} saved.`);
-    onSaved?.(nextRecord);
+    saveRequest
+      .then((nextRecord) => {
+        const nextReceipts = upsertOfficialReceiptRecord(nextRecord, storageKey, fallbackReceipts);
+
+        writeStoredReceiptsByKey(storageKey, nextReceipts);
+        setLoadedRecord(nextRecord);
+        toast.success(mode === "edit" ? `${receiptLabel} updated.` : `${receiptLabel} saved.`);
+        onSaved?.(nextRecord);
+      })
+      .catch(() => {
+        toast.error(`Could not save ${receiptLabel}.`);
+      });
   }
 
   return {

@@ -18,7 +18,7 @@ export const MockOfficialReceipts: OfficialReceiptRecord[] = [
     collectionType: "Customer payment",
     referenceNo: "SI-2026-0188",
     amount: 184500,
-    status: "Approved",
+    status: "Posted",
   },
   {
     id: "or-002",
@@ -29,7 +29,7 @@ export const MockOfficialReceipts: OfficialReceiptRecord[] = [
     collectionType: "Service income",
     referenceNo: "SOA-2026-0042",
     amount: 76250,
-    status: "Pending",
+    status: "For Approval",
   },
   {
     id: "or-003",
@@ -40,7 +40,7 @@ export const MockOfficialReceipts: OfficialReceiptRecord[] = [
     collectionType: "Advance deposit",
     referenceNo: "DEP-2026-0015",
     amount: 52000,
-    status: "Active",
+    status: "Draft",
   },
   {
     id: "or-004",
@@ -62,7 +62,7 @@ export const MockOfficialReceipts: OfficialReceiptRecord[] = [
     collectionType: "Customer payment",
     referenceNo: "SI-2026-0204",
     amount: 214300,
-    status: "Closed",
+    status: "Posted",
   },
 ];
 
@@ -529,7 +529,7 @@ export function countOfficialReceiptsByStatus(receipts: OfficialReceiptRecord[],
 }
 
 export function isOfficialReceiptActiveStatus(status: OfficialReceiptStatus) {
-  return status === "Active" || status === "Approved";
+  return status === "For Approval" || status === "Posted";
 }
 
 export function formatOfficialReceiptPercentage(value: number, total: number) {
@@ -568,7 +568,7 @@ export function officialReceiptEntryIsComplete(entry: OfficialReceiptLineEntry) 
 }
 
 function normalizeOfficialReceiptStatus(value: string): OfficialReceiptStatus {
-  const statuses: OfficialReceiptStatus[] = ["Active", "Approved", "Cancelled", "Closed", "Disapproved", "Draft", "Pending"];
+  const statuses: OfficialReceiptStatus[] = ["Cancelled", "Disapproved", "Draft", "For Approval", "Posted"];
 
   return statuses.includes(value as OfficialReceiptStatus) ? (value as OfficialReceiptStatus) : "Draft";
 }

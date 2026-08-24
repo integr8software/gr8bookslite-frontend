@@ -12,7 +12,7 @@ export function CurrencyExchangeRateRow({
 }: CurrencyExchangeRateRowProps) {
   if (currencyLabel) {
     return (
-      <div className="grid min-w-0 grid-cols-[10rem_minmax(0,1fr)_10rem_minmax(0,1fr)] items-start gap-2 max-[640px]:grid-cols-1 min-[640px]:max-[768px]:grid-cols-[10rem_minmax(0,1fr)] min-[1280px]:max-[1700px]:grid-cols-[10rem_minmax(0,1fr)]">
+      <div className="grid min-w-0 grid-cols-[10rem_minmax(0,1fr)_max-content_6.5rem] items-start gap-2 max-[640px]:grid-cols-1 min-[640px]:max-[768px]:grid-cols-[10rem_minmax(0,1fr)] min-[768px]:max-[1280px]:grid-cols-[10rem_minmax(0,1fr)_10rem_minmax(0,1fr)] min-[1280px]:max-[1700px]:grid-cols-[10rem_minmax(0,1fr)]">
         {currencyControlId ? (
           <label htmlFor={currencyControlId} className="pt-2 text-sm font-semibold text-darknavy">
             {currencyLabel}

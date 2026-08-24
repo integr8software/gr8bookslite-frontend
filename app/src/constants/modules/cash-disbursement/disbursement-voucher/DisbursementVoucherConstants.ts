@@ -79,7 +79,7 @@ export const DisbursementVoucherActionTabs: {
   label: string;
 }[] = [
   { id: "details", label: "Voucher Details" },
-  { id: "bank-information", label: "Bank Information" },
+  { id: "payment-information", label: "Payment Information" },
   { id: "attachments", label: "File Attachments" },
 ];
 

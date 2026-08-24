@@ -75,7 +75,7 @@ export function AccountingEntryTable<TRow extends AccountingEntry>({
         options: fieldOptions,
         readOnlyFields,
       }),
-    [isReadonly, fieldOptions, onFieldChange, readOnlyFields, updateEntry],
+    [highlightedAmountRowIds, isReadonly, fieldOptions, onFieldChange, readOnlyFields, updateEntry],
   );
   const displayedColumns = useMemo(
     () => columns.filter((column) => visibleColumns.has(column.id as AccountingEntryColumnId)),

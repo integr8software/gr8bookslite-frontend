@@ -40,7 +40,7 @@ export type DisbursementVoucherActionMode = "add" | "edit" | "view";
 
 export type DisbursementVoucherActionPageState = ReturnType<typeof useDisbursementVoucherActionPage>;
 
-export type DisbursementVoucherActionTab = "details" | "bank-information" | "attachments";
+export type DisbursementVoucherActionTab = "details" | "payment-information" | "attachments";
 
 export type DisbursementVoucherStatusFilter = "all" | Exclude<DisbursementVoucherStatus, "Open">;
 

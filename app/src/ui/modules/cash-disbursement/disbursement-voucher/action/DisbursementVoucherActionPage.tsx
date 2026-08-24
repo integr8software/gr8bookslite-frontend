@@ -76,7 +76,7 @@ function DisbursementVoucherActionShell({
 function DisbursementVoucherActionContent({ voucherAction }: { voucherAction: DisbursementVoucherActionPageState }) {
   const paymentTypeDetailKind = getPaymentTypeDetailKind(voucherAction.values.paymentMethod, voucherAction.selectedPaymentTypeRecord);
   const actionTabs = DisbursementVoucherActionTabs.filter(
-    (tab) => tab.id !== "bank-information" || (paymentTypeDetailKind !== "" && paymentTypeDetailKind !== "cash"),
+    (tab) => tab.id !== "payment-information" || (paymentTypeDetailKind !== "" && paymentTypeDetailKind !== "cash"),
   );
 
   return (
@@ -106,7 +106,7 @@ function DisbursementVoucherActionContent({ voucherAction }: { voucherAction: Di
       />
       {voucherAction.activeTab === "details" ? (
         <DisbursementVoucherDetailsSection voucherAction={voucherAction} />
-      ) : voucherAction.activeTab === "bank-information" ? (
+      ) : voucherAction.activeTab === "payment-information" ? (
         <DisbursementVoucherBankInformationFields
           bankAccounts={voucherAction.bankAccounts}
           canAddBankAccount={voucherAction.bankMasterfileStore.permissions.canCreate}

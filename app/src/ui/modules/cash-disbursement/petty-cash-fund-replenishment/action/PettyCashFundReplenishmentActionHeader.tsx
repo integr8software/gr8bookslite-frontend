@@ -100,11 +100,13 @@ export function PettyCashFundReplenishmentActionHeader({
           confirmLabel={PettyCashFundReplenishmentConfirmationDialogConfirmLabels[confirmation]}
           iconTone={confirmation === "save" ? (page.mode === "edit" ? "update" : "save") : confirmation === "draft" ? "save" : undefined}
           tone={
-            confirmation === "approve" || confirmation === "save"
+            confirmation === "approve"
               ? "success"
-              : confirmation === "disapprove" || confirmation === "cancel"
+              : confirmation === "disapprove"
                 ? "danger"
-                : "default"
+                : confirmation === "cancel"
+                  ? "warning"
+                  : "default"
           }
           onCancel={() => setConfirmation(null)}
           onConfirm={() => {

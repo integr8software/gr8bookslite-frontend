@@ -1,6 +1,5 @@
 import { Ban, ThumbsDown, ThumbsUp, Undo2 } from "lucide-react";
 import {
-  PettyCashVoucherActionButtonClassNames,
   PettyCashVoucherStatuses,
   canApprovePettyCashVoucherStatus,
   canCancelPettyCashVoucherStatus,
@@ -11,6 +10,7 @@ import type {
   PettyCashVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import { ModuleActionMenu, type ModuleActionMenuItem } from "@/app/src/ui/shared/module/ModuleActionMenu";
+import { moduleStatusActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 
 export function PettyCashVoucherStatusActions({
   status,
@@ -98,13 +98,17 @@ function HeaderActionButton({
 }
 
 function getActionButtonClassName(action: Extract<ModuleActionMenuItem, { type: "button" }>) {
-  if (action.label === "Approve" || action.label === "Undo Approved") {
-    return PettyCashVoucherActionButtonClassNames.approve;
+  if (action.label === "Approve") {
+    return moduleStatusActionClassNames.approve;
   }
 
-  if (action.label === "Disapprove" || action.label === "Undo Disapproved") {
-    return PettyCashVoucherActionButtonClassNames.disapprove;
+  if (action.label === "Disapprove") {
+    return moduleStatusActionClassNames.disapprove;
   }
 
-  return PettyCashVoucherActionButtonClassNames.cancel;
+  if (action.label === "Cancel") {
+    return moduleStatusActionClassNames.cancel;
+  }
+
+  return moduleStatusActionClassNames.undo;
 }

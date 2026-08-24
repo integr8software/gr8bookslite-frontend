@@ -86,11 +86,13 @@ export function RevolvingFundActionHeader({ onPreview, page }: { onPreview: () =
           iconTone={confirmation === "save" ? (page.mode === "edit" ? "update" : "save") : confirmation === "draft" ? "save" : undefined}
           pendingLabel="Saving..."
           tone={
-            confirmation === "approve" || confirmation === "save"
+            confirmation === "approve"
               ? "success"
-              : confirmation === "disapprove" || confirmation === "cancel"
+              : confirmation === "disapprove"
                 ? "danger"
-                : "default"
+                : confirmation === "cancel"
+                  ? "warning"
+                  : "default"
           }
           onCancel={() => setConfirmation(null)}
           onConfirm={() => {

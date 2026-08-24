@@ -97,6 +97,17 @@ export const moduleHeaderActionClassNames = {
 		),
 };
 
+const moduleStatusActionButtonClassName =
+	"inline-flex h-10 min-w-24 items-center justify-center gap-2 rounded-md border bg-white px-4 text-sm font-semibold shadow-sm shadow-darknavy/5 transition focus-visible:outline-none focus-visible:ring-4 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-white";
+
+export const moduleStatusActionClassNames = {
+	approve: `${moduleStatusActionButtonClassName} border-emerald-200 text-emerald-700 hover:bg-emerald-50 focus-visible:ring-emerald-500/15`,
+	cancel: `${moduleStatusActionButtonClassName} border-amber-200 text-amber-700 hover:bg-amber-50 focus-visible:ring-amber-500/15`,
+	danger: `${moduleStatusActionButtonClassName} border-coralpink/45 text-coralpink hover:bg-coralpink/10 focus-visible:ring-coralpink/20`,
+	disapprove: `${moduleStatusActionButtonClassName} border-red-200 text-red-600 hover:bg-red-50 focus-visible:ring-red-500/15`,
+	undo: `${moduleStatusActionButtonClassName} border-skyblue/35 text-skyblue hover:bg-skyblue/15 focus-visible:ring-skyblue/20`,
+} as const;
+
 const moduleHeaderVariantClassNames = {
 	card: "flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between",
 	panel: "flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between",

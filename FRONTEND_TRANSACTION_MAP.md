@@ -1,6 +1,6 @@
 # Gr8Books Neo Frontend Transaction Map
 
-Last updated: 2026-08-20
+Last updated: 2026-08-24
 
 Use this file as the first stop before changing transactional frontend modules.
 It repeats the useful structure from `FRONTEND_MAP.md`, but narrows the guidance
@@ -372,7 +372,9 @@ to its hook. Do not call `usePathname`, inspect route strings, or define a
 
 - Owns view-mode lifecycle and status transition action controls (Approve, Disapprove, Cancel, Undo, etc.).
 - Renders responsive action options: `ModuleActionMenu` on mobile (< `lg`) and action buttons on desktop (`lg:flex`).
-- Standardized styling via `CashDisbursementStatusActionButtonClassName` (or domain-specific status button classes).
+- Uses the shared semantic styles from `moduleStatusActionClassNames` in
+  `app/src/ui/shared/module/ModuleHeader.tsx`. Do not create domain-specific
+  copies of the same Approve, Disapprove, Cancel, Undo, or danger classes.
 - Presentational: triggers requested status callbacks back to `<ModuleName>ActionHeader.tsx`, which triggers the confirmation dialog.
 
 `<ModuleName>ActionHistory.tsx`
@@ -641,6 +643,14 @@ icon, and `onAction` callback for actions such as Preview. When an action needs
 related options such as Save As Draft or alternate preview formats, pass them
 through `menuItems` instead of creating a separate custom split button.
 
+All visible text actions in transaction headers use a minimum width of `6rem`
+(`min-w-24`) through the shared `moduleHeaderActionClassNames`,
+`moduleStatusActionClassNames`, and `ModuleActionButton` styles. This applies to
+every transaction domain. The primary segment of a split Save button uses the
+same minimum width; its chevron segment remains the standard square icon
+button. Do not add feature-specific widths for Save, Update, Back, Edit, or
+lifecycle actions. Icon-only responsive controls are exempt.
+
 #### Copy From
 
 Use the shared Copy From control for transaction action headers:
@@ -703,6 +713,22 @@ Cancel, Delete, Void, Close, Reopen, Undo Approved, Undo Disapproved, Undo
 Cancelled, and equivalent lifecycle or status-reversal actions. Undo actions
 must follow the same confirmation requirement as their forward actions. Do not
 execute the action directly from its button or menu item.
+
+The confirmation button must preserve the initiating action's semantic color
+across every transaction domain:
+
+```txt
+Save / Save as Draft / Update  # default module-primary accent
+Approve / Post                 # success green
+Disapprove / Reject / Delete   # danger red/coral
+Cancel / Void / Close          # warning amber
+Undo / Reopen / Restore        # default module-primary accent
+```
+
+Use `tone="default"`, `tone="success"`, `tone="danger"`, and
+`tone="warning"` accordingly. `AppDialog` owns the confirm-button styling; do
+not add feature-local dialog button classes. Keep its neutral Cancel button and
+confirm button at the shared equal minimum width.
 
 Always follow this order: **Validation First, then AppDialog Confirmation**.
 When an action requires validation, run its applicable validation before
@@ -1249,11 +1275,10 @@ Allocate width by content priority rather than dividing the table equally:
 `Party Name`, account-title, and Remarks columns receive the most room; amount,
 transaction-number, and date columns receive practical reading widths; Status
 stays compact around its badge; and Actions stays sized to its controls. The
-standard menu-only Actions width is 112px so the complete `Actions` header
-remains visible beside its drag handle; do not reduce it until the label becomes
-an ellipsis. When an overview includes centered View, Edit, and lifecycle-menu
-controls, define a feature-level 160px Actions width in
-`<ModuleName>Constants.ts` to accommodate the complete control group.
+shared Actions width is 160px so the complete `Actions` header remains visible
+beside its drag handle and centered View, Edit, and lifecycle-menu controls.
+Use `TransactionOverviewColumnWidths.actions` directly; do not derive or
+declare a domain- or feature-level action-column width.
 Keep the standard transaction-number width based on typical transaction values,
 not the longest module name. Before truncating an unusually long
 `[ModulePrefix] No.` header, reclaim visibly unused width from Status and other
@@ -1264,6 +1289,10 @@ Do not allow Status or Actions to consume the same default width as Party Name
 or other primary business data. Optional columns must use the same semantic
 width scale when they become visible, with horizontal scrolling when their
 combined configured width exceeds the table container.
+
+Initialize date-range and amount-range filter state with their direct default
+values (`{ from: "", to: "" }`). Do not declare a domain-level shared empty
+range constant for these independent filter values.
 
 Status alignment is mandatory for every transaction overview: add
 `text-center` to the Status column's TanStack `meta.className`, and wrap the

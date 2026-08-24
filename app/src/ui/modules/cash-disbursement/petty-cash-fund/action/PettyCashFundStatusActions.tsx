@@ -1,12 +1,11 @@
 import { Ban, ThumbsDown, ThumbsUp } from "lucide-react";
-import { CashDisbursementStatusActionButtonClassName } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import { PettyCashFundStatuses } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund/PettyCashFundConstants";
 import type {
   PettyCashFundConfirmationAction,
   PettyCashFundRecord,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";
 import { ModuleActionMenu, type ModuleActionMenuItem } from "@/app/src/ui/shared/module/ModuleActionMenu";
-import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
+import { moduleHeaderActionClassNames, moduleStatusActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 
 export function PettyCashFundStatusActions({
   onRequestConfirmation,
@@ -91,19 +90,19 @@ function HeaderActionButton({ action }: { action: Extract<ModuleActionMenuItem, 
 
 function getStatusActionButtonClassName(action: Extract<ModuleActionMenuItem, { type: "button" }>) {
   if (action.label === "Approve") {
-    return `${CashDisbursementStatusActionButtonClassName} border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50 focus-visible:ring-emerald-500/15`;
+    return moduleStatusActionClassNames.approve;
   }
 
   if (action.label === "Disapprove") {
-    return `${CashDisbursementStatusActionButtonClassName} border-red-200 bg-white text-red-600 hover:bg-red-50 focus-visible:ring-red-500/15`;
+    return moduleStatusActionClassNames.disapprove;
   }
 
   if (action.label === "Cancel") {
-    return `${CashDisbursementStatusActionButtonClassName} border-amber-200 bg-white text-amber-700 hover:bg-amber-50 focus-visible:ring-amber-500/15`;
+    return moduleStatusActionClassNames.cancel;
   }
 
   if (action.tone === "danger") {
-    return `${CashDisbursementStatusActionButtonClassName} border-coralpink/45 bg-coralpink/5 text-coralpink hover:bg-coralpink/10 focus-visible:ring-coralpink/20`;
+    return moduleStatusActionClassNames.danger;
   }
 
   return moduleHeaderActionClassNames.secondary;

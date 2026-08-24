@@ -111,7 +111,7 @@ export function CashAdvanceActionHeader({
           description={`This will ${submitConfirmation === "save" ? "save and submit" : "save as draft"} ${recordLabel}.`}
           confirmLabel={CashAdvanceSubmitConfirmationDialogConfirmLabels[submitConfirmation]}
           iconTone={mode === "edit" ? "update" : "save"}
-          tone={submitConfirmation === "save" ? "success" : "default"}
+          tone="default"
           onCancel={() => setSubmitConfirmation(null)}
           onConfirm={() => {
             if (submitConfirmation === "save") onSubmit();

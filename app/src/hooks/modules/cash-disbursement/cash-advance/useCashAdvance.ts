@@ -50,8 +50,7 @@ import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hook
 import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import { normalizeLowercaseWhitespace } from "@/app/src/utils/string.util";
-import { CashDisbursementOverviewColumnWidths as TransactionOverviewColumnWidths } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
-import { CashDisbursementOverviewActionColumnWidth } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
+import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
 
 export function useCashAdvanceStore<TSelected = CashAdvanceStoreState>(selector?: (state: CashAdvanceStoreState) => TSelected) {
   const [advances, setAdvances] = useState(getInitialCashAdvances);
@@ -433,7 +432,7 @@ export function useCashAdvanceTable(advances: CashAdvanceRecord[]) {
         enableSorting: false,
         enableHiding: false,
         header: "Actions",
-        size: CashDisbursementOverviewActionColumnWidth,
+        size: TransactionOverviewColumnWidths.actions,
         meta: {
           className: "px-3 text-center last:pr-3",
           label: "Actions",

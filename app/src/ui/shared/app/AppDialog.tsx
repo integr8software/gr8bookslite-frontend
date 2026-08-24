@@ -4,9 +4,21 @@ import { useCallback, useEffect, useState } from "react";
 import { Ban, FilePenLine, LoaderCircle, Power, PowerOff, RotateCcw, Save, ThumbsDown, ThumbsUp } from "lucide-react";
 import type { AppDialogIconTone, AppDialogProps, AppDialogTone } from "@/app/src/types/shared/app/AppDialogTypes";
 
-const AppDialogSuccessTone = "success";
 const AppDialogActivateTone = "activate";
+const AppDialogApproveTone = "approve";
+const AppDialogCancelTone = "cancel";
+const AppDialogDangerTone = "danger";
+const AppDialogDefaultTone = "default";
 const AppDialogDeactivateTone = "deactivate";
+const AppDialogDisapproveTone = "disapprove";
+const AppDialogErrorTone = "error";
+const AppDialogInfoTone = "info";
+const AppDialogQuestionTone = "question";
+const AppDialogSaveTone = "save";
+const AppDialogSuccessTone = "success";
+const AppDialogUndoTone = "undo";
+const AppDialogUpdateTone = "update";
+const AppDialogWarningTone = "warning";
 
 export function AppDialog({
   animateIcon = true,
@@ -24,7 +36,7 @@ export function AppDialog({
   pendingLabel,
   showCancel = true,
   title,
-  tone = "default",
+  tone = AppDialogDefaultTone,
   onCancel,
   onConfirm,
 }: AppDialogProps) {
@@ -178,23 +190,23 @@ export function AnimatedPendingLabel({ label }: { label: string }) {
 }
 
 function AppDialogStatusIcon({ animate, tone }: { animate: boolean; tone: AppDialogIconTone }) {
-  const isDoubleMark = tone === "error";
+  const isDoubleMark = tone === AppDialogErrorTone;
   const StatusIcon =
     tone === AppDialogActivateTone
       ? Power
-      : tone === "approve"
+      : tone === AppDialogApproveTone
         ? ThumbsUp
-        : tone === "cancel"
+        : tone === AppDialogCancelTone
           ? Ban
-          : tone === "undo"
+          : tone === AppDialogUndoTone
             ? RotateCcw
-            : tone === "save"
+            : tone === AppDialogSaveTone
               ? Save
-              : tone === "update"
+              : tone === AppDialogUpdateTone
                 ? FilePenLine
                 : tone === AppDialogDeactivateTone
                   ? PowerOff
-                  : tone === "disapprove"
+                  : tone === AppDialogDisapproveTone
                     ? ThumbsDown
                     : null;
 
@@ -225,24 +237,24 @@ function getDefaultIconTone(tone: AppDialogTone): AppDialogIconTone | null {
     return AppDialogDeactivateTone;
   }
 
-  if (tone === "danger") {
-    return "error";
+  if (tone === AppDialogDangerTone) {
+    return AppDialogErrorTone;
   }
 
   if (tone === AppDialogSuccessTone) {
     return AppDialogSuccessTone;
   }
 
-  if (tone === "warning") {
-    return "warning";
+  if (tone === AppDialogWarningTone) {
+    return AppDialogWarningTone;
   }
 
-  if (tone === "info") {
-    return "info";
+  if (tone === AppDialogInfoTone) {
+    return AppDialogInfoTone;
   }
 
-  if (tone === "question") {
-    return "question";
+  if (tone === AppDialogQuestionTone) {
+    return AppDialogQuestionTone;
   }
 
   return null;
@@ -266,7 +278,7 @@ function getConfirmButtonClassName({ isDisabled, isPending, tone }: { isDisabled
   const disabledClassName = isDisabled && !isPending ? "cursor-not-allowed opacity-55" : "";
   const pendingClassName = isPending ? "cursor-wait opacity-100" : "";
 
-  if (tone === "danger") {
+  if (tone === AppDialogDangerTone) {
     return `${baseClassName} ${disabledClassName} ${pendingClassName} bg-coralpink text-white hover:bg-coralpink/90 focus-visible:ring-coralpink/35`;
   }
 
@@ -280,6 +292,10 @@ function getConfirmButtonClassName({ isDisabled, isPending, tone }: { isDisabled
 
   if (tone === AppDialogDeactivateTone) {
     return `${baseClassName} ${disabledClassName} ${pendingClassName} bg-coralpink text-white hover:bg-coralpink/90 focus-visible:ring-coralpink/35`;
+  }
+
+  if (tone === AppDialogWarningTone) {
+    return `${baseClassName} ${disabledClassName} ${pendingClassName} bg-amber-500 text-white hover:bg-amber-500/90 focus-visible:ring-amber-500/35`;
   }
 
   return `${baseClassName} ${disabledClassName} ${pendingClassName} app-dialog-primary-button`;

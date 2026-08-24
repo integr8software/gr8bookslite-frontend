@@ -135,7 +135,7 @@ export function DisbursementVoucherActionHeader({
           cancelLabel="Continue Editing"
           iconTone={submitDialogCopy.iconTone}
           pendingLabel={submitDialogCopy.pendingLabel}
-          tone="question"
+          tone="default"
           onCancel={onCancelSubmit}
           onConfirm={onConfirmSubmit}
         />

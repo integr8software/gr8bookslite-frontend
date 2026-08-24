@@ -1,7 +1,6 @@
 import type { SortingState, VisibilityState } from "@tanstack/react-table";
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
-import { CashDisbursementOverviewColumnWidths } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
-import { CashDisbursementOverviewActionColumnWidth } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
+import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
 import type {
   DisbursementVoucherActionMode,
   DisbursementVoucherActionTab,
@@ -157,84 +156,84 @@ export const DisbursementVoucherTableColumns = [
     key: "voucherNo",
     label: "DV No.",
     className: "",
-    size: CashDisbursementOverviewColumnWidths.transactionNumber,
+    size: TransactionOverviewColumnWidths.transactionNumber,
   },
   {
     key: "documentDate",
     label: "DV Date",
     className: "",
-    size: CashDisbursementOverviewColumnWidths.documentDate,
+    size: TransactionOverviewColumnWidths.documentDate,
   },
   {
     key: "partyCode",
     label: "Party Code",
     className: "",
-    size: CashDisbursementOverviewColumnWidths.partyCode,
+    size: TransactionOverviewColumnWidths.partyCode,
   },
   {
     key: "partyName",
     label: "Party Name",
     className: "",
-    size: CashDisbursementOverviewColumnWidths.partyName,
+    size: TransactionOverviewColumnWidths.partyName,
   },
   {
     key: "paymentType",
     label: "Payment Type",
     className: "",
-    size: CashDisbursementOverviewColumnWidths.paymentType,
+    size: TransactionOverviewColumnWidths.paymentType,
   },
   {
     key: "currency",
     label: "Currency",
     className: "",
-    size: CashDisbursementOverviewColumnWidths.currency,
+    size: TransactionOverviewColumnWidths.currency,
   },
   {
     key: "amount",
     label: "Amount",
     className: "",
-    size: CashDisbursementOverviewColumnWidths.amount,
+    size: TransactionOverviewColumnWidths.amount,
   },
   {
     key: "remarks",
     label: "Remarks",
     className: "",
-    size: CashDisbursementOverviewColumnWidths.remarks,
+    size: TransactionOverviewColumnWidths.remarks,
   },
   {
     key: "createdBy",
     label: "Created By",
     className: "",
-    size: CashDisbursementOverviewColumnWidths.auditUser,
+    size: TransactionOverviewColumnWidths.auditUser,
   },
   {
     key: "createdAt",
     label: "Date Created",
     className: "",
-    size: CashDisbursementOverviewColumnWidths.auditDate,
+    size: TransactionOverviewColumnWidths.auditDate,
   },
   {
     key: "updatedBy",
     label: "Updated By",
     className: "",
-    size: CashDisbursementOverviewColumnWidths.auditUser,
+    size: TransactionOverviewColumnWidths.auditUser,
   },
   {
     key: "updatedAt",
     label: "Date Modified",
     className: "",
-    size: CashDisbursementOverviewColumnWidths.auditDate,
+    size: TransactionOverviewColumnWidths.auditDate,
   },
   {
     key: "status",
     label: "Status",
     className: "text-center",
-    size: CashDisbursementOverviewColumnWidths.status,
+    size: TransactionOverviewColumnWidths.status,
   },
   {
     label: "Actions",
     className: "text-center",
-    size: CashDisbursementOverviewActionColumnWidth,
+    size: TransactionOverviewColumnWidths.actions,
   },
 ] as const;
 
@@ -340,6 +339,6 @@ export function getDisbursementVoucherStatusDialogCopy(
     iconTone: "cancel" as const,
     pendingLabel: "Cancelling...",
     title: "Make Disbursement Voucher as Cancelled",
-    tone: "danger" as const,
+    tone: "warning" as const,
   };
 }

@@ -1,5 +1,4 @@
-import { CashDisbursementOverviewActionColumnWidth } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
-import { CashDisbursementOverviewColumnWidths } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
+import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type {
   AdvancesToSuppliersActionTab,
@@ -33,20 +32,20 @@ export const AdvancesToSuppliersColumnLabels = {
   actions: "Actions",
 } as const;
 export const AdvancesToSuppliersOverviewColumnWidths: Record<keyof typeof AdvancesToSuppliersColumnLabels, number> = {
-  transactionNo: CashDisbursementOverviewColumnWidths.transactionNumber,
-  documentDate: CashDisbursementOverviewColumnWidths.documentDate,
-  partyCode: CashDisbursementOverviewColumnWidths.partyCode,
-  partyName: CashDisbursementOverviewColumnWidths.partyName,
-  accountCode: CashDisbursementOverviewColumnWidths.accountCode,
-  accountTitle: CashDisbursementOverviewColumnWidths.accountTitle,
-  amount: CashDisbursementOverviewColumnWidths.amount,
-  remarks: CashDisbursementOverviewColumnWidths.remarks,
-  createdBy: CashDisbursementOverviewColumnWidths.auditUser,
-  createdAt: CashDisbursementOverviewColumnWidths.auditDate,
-  updatedBy: CashDisbursementOverviewColumnWidths.auditUser,
-  updatedAt: CashDisbursementOverviewColumnWidths.auditDate,
-  status: CashDisbursementOverviewColumnWidths.status,
-  actions: CashDisbursementOverviewActionColumnWidth,
+  transactionNo: TransactionOverviewColumnWidths.transactionNumber,
+  documentDate: TransactionOverviewColumnWidths.documentDate,
+  partyCode: TransactionOverviewColumnWidths.partyCode,
+  partyName: TransactionOverviewColumnWidths.partyName,
+  accountCode: TransactionOverviewColumnWidths.accountCode,
+  accountTitle: TransactionOverviewColumnWidths.accountTitle,
+  amount: TransactionOverviewColumnWidths.amount,
+  remarks: TransactionOverviewColumnWidths.remarks,
+  createdBy: TransactionOverviewColumnWidths.auditUser,
+  createdAt: TransactionOverviewColumnWidths.auditDate,
+  updatedBy: TransactionOverviewColumnWidths.auditUser,
+  updatedAt: TransactionOverviewColumnWidths.auditDate,
+  status: TransactionOverviewColumnWidths.status,
+  actions: TransactionOverviewColumnWidths.actions,
 };
 export const AdvancesToSuppliersDefaultVisibleColumnIds = [
   "transactionNo",

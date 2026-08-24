@@ -32,11 +32,7 @@ import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateR
 import { getModuleStatusMetricIcon, getModuleStatusMetricIconClassName } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import type { ModuleStatisticCardItem } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { formatPartOfTotalPercentage } from "@/app/src/utils/percentage.util";
-import { CashDisbursementOverviewColumnWidths as TransactionOverviewColumnWidths } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
-import {
-  CashDisbursementEmptyRange,
-  CashDisbursementOverviewActionColumnWidth,
-} from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
+import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
 
 const columnHelper = createColumnHelper<PettyCashFundRecord>();
 
@@ -44,8 +40,8 @@ export function usePettyCashFundOverviewPage() {
   const [records, setRecords] = useState(getPettyCashFundRecords);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("All");
-  const [dateRange, setDateRange] = useState<DateRangeValue>(CashDisbursementEmptyRange);
-  const [amountRange, setAmountRange] = useState<AmountRangeValue>(CashDisbursementEmptyRange);
+  const [dateRange, setDateRange] = useState<DateRangeValue>({ from: "", to: "" });
+  const [amountRange, setAmountRange] = useState<AmountRangeValue>({ from: "", to: "" });
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => PettyCashFundDefaultColumnVisibility);
@@ -139,7 +135,7 @@ export function usePettyCashFundOverviewPage() {
       columnHelper.display({
         id: "actions",
         header: PettyCashFundColumnLabels.actions,
-        size: CashDisbursementOverviewActionColumnWidth,
+        size: TransactionOverviewColumnWidths.actions,
         meta: { className: "text-center", label: PettyCashFundColumnLabels.actions },
       }),
     ],

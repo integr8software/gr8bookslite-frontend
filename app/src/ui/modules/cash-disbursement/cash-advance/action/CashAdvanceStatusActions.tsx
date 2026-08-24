@@ -1,5 +1,4 @@
 import { Ban, ThumbsDown, ThumbsUp, Undo2 } from "lucide-react";
-import { CashDisbursementStatusActionButtonClassName } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import {
   CashAdvanceStatuses,
   canApproveCashAdvanceStatus,
@@ -8,7 +7,7 @@ import {
 } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
 import type { CashAdvanceRecord, CashAdvanceStatus } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 import { ModuleActionMenu, type ModuleActionMenuItem } from "@/app/src/ui/shared/module/ModuleActionMenu";
-import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
+import { moduleHeaderActionClassNames, moduleStatusActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 
 export function CashAdvanceStatusActions({
   onRequestStatusConfirmation,
@@ -101,23 +100,23 @@ function HeaderActionButton({ action }: { action: Extract<ModuleActionMenuItem, 
 
 function getStatusActionButtonClassName(action: Extract<ModuleActionMenuItem, { type: "button" }>) {
   if (action.label === "Approve") {
-    return `${CashDisbursementStatusActionButtonClassName} border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50 focus-visible:ring-emerald-500/15`;
+    return moduleStatusActionClassNames.approve;
   }
 
   if (action.label === "Disapprove") {
-    return `${CashDisbursementStatusActionButtonClassName} border-red-200 bg-white text-red-600 hover:bg-red-50 focus-visible:ring-red-500/15`;
+    return moduleStatusActionClassNames.disapprove;
   }
 
   if (action.label === "Cancel") {
-    return `${CashDisbursementStatusActionButtonClassName} border-amber-200 bg-white text-amber-700 hover:bg-amber-50 focus-visible:ring-amber-500/15`;
+    return moduleStatusActionClassNames.cancel;
   }
 
   if (action.label === "Undo Approved" || action.label === "Undo Disapproved" || action.label === "Undo Cancelled") {
-    return `${CashDisbursementStatusActionButtonClassName} border-skyblue/35 bg-skyblue/10 text-skyblue hover:bg-skyblue/15 focus-visible:ring-skyblue/20`;
+    return moduleStatusActionClassNames.undo;
   }
 
   if (action.tone === "danger") {
-    return `${CashDisbursementStatusActionButtonClassName} border-coralpink/45 bg-coralpink/5 text-coralpink hover:bg-coralpink/10 focus-visible:ring-coralpink/20`;
+    return moduleStatusActionClassNames.danger;
   }
 
   return moduleHeaderActionClassNames.secondary;

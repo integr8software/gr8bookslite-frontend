@@ -209,6 +209,6 @@ export function getCashAdvanceStatusDialogCopy(
     iconTone: "cancel" as const,
     pendingLabel: "Cancelling...",
     title: "Make Cash Advance as Cancelled",
-    tone: "danger" as const,
+    tone: "warning" as const,
   };
 }

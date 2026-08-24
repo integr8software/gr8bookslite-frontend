@@ -13,7 +13,6 @@ import {
 } from "@tanstack/react-table";
 import { ReceiptText } from "lucide-react";
 import toast from "react-hot-toast";
-import { CashDisbursementEmptyRange } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import {
   RevolvingFundReplenishmentColumnLabels,
   RevolvingFundReplenishmentDefaultColumnVisibility,
@@ -42,8 +41,8 @@ export function useRevolvingFundReplenishmentOverviewPage() {
   const [records, setRecords] = useState(getRevolvingFundReplenishmentRecords);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("All");
-  const [dateRange, setDateRange] = useState<DateRangeValue>(CashDisbursementEmptyRange);
-  const [amountRange, setAmountRange] = useState<AmountRangeValue>(CashDisbursementEmptyRange);
+  const [dateRange, setDateRange] = useState<DateRangeValue>({ from: "", to: "" });
+  const [amountRange, setAmountRange] = useState<AmountRangeValue>({ from: "", to: "" });
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => RevolvingFundReplenishmentDefaultColumnVisibility);

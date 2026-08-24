@@ -100,17 +100,6 @@ export const PettyCashVoucherDefaultColumnVisibility = Object.fromEntries(
   ]),
 );
 
-export const PettyCashVoucherActionButtonClassNames = {
-  approve:
-    "inline-flex h-10 items-center justify-center gap-2 rounded-md border border-emerald-200 bg-white px-4 text-sm font-semibold text-emerald-700 shadow-sm shadow-darknavy/5 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-500/15 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-white",
-  disapprove:
-    "inline-flex h-10 items-center justify-center gap-2 rounded-md border border-red-200 bg-white px-4 text-sm font-semibold text-red-600 shadow-sm shadow-darknavy/5 transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-500/15 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-white",
-  cancel:
-    "inline-flex h-10 items-center justify-center gap-2 rounded-md border border-amber-200 bg-white px-4 text-sm font-semibold text-amber-700 shadow-sm shadow-darknavy/5 transition hover:bg-amber-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-500/15 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-white",
-  copyFrom:
-    "theme-accent-contrast-text inline-flex h-10 items-center justify-center gap-2 rounded-md bg-skyblue px-4 text-sm font-semibold transition hover:bg-skyblue/85 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20",
-} as const;
-
 export const PettyCashVoucherTableCellClassName = "px-4 py-4 align-middle text-sm text-darknavy";
 
 export function canEditPettyCashVoucherStatus(status: PettyCashVoucherStatus) {
@@ -168,7 +157,7 @@ export function getPettyCashVoucherStatusDialogCopy(status: PettyCashVoucherStat
       iconTone: "cancel" as const,
       pendingLabel: "Cancelling...",
       title: "Cancel Petty Cash Voucher?",
-      tone: "danger" as const,
+      tone: "warning" as const,
     };
   }
 
@@ -204,7 +193,7 @@ export function getPettyCashVoucherSaveDialogCopy(
     iconTone: mode === "edit" ? ("update" as const) : ("save" as const),
     pendingLabel: mode === "edit" ? "Updating..." : "Submitting...",
     title: mode === "edit" ? "Update Petty Cash Voucher?" : "Submit Petty Cash Voucher?",
-    tone: "success" as const,
+    tone: "default" as const,
   };
 }
 

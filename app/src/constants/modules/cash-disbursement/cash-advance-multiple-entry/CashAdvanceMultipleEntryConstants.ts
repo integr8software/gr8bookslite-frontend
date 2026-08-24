@@ -3,10 +3,7 @@ import {
   CashAdvanceAccountOptions,
   CashAdvanceCostCenterOptions,
 } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
-import {
-  CashDisbursementOverviewActionColumnWidth,
-  CashDisbursementOverviewColumnWidths,
-} from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
+import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
 import type { ColumnOrderState, VisibilityState } from "@tanstack/react-table";
 import type {
   CashAdvanceMultipleEntryDetailsTab,
@@ -26,10 +23,10 @@ export const CashAdvanceMultipleEntryTransactionNumberPadding = 6;
 export const CashAdvanceMultipleEntryTablePaginationStorageKey = "cash-disbursement-cash-advance-multiple-entry";
 
 export const CashAdvanceMultipleEntryOverviewColumnWidths = {
-  ...CashDisbursementOverviewColumnWidths,
+  ...TransactionOverviewColumnWidths,
   partyName: 300,
   accountTitle: 230,
-  actions: CashDisbursementOverviewActionColumnWidth,
+  actions: TransactionOverviewColumnWidths.actions,
 } as const;
 
 export const CashAdvanceMultipleEntryStatuses = {
@@ -126,7 +123,7 @@ export function getCashAdvanceMultipleEntryStatusDialogCopy(
     iconTone: "cancel" as const,
     pendingLabel: "Cancelling...",
     title: "Make Cash Advance Multiple Entry as Cancelled",
-    tone: "danger" as const,
+    tone: "warning" as const,
   };
 }
 

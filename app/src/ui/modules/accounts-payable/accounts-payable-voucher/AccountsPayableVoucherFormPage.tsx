@@ -505,7 +505,8 @@ export function AccountsPayableVoucherFormPage() {
         title="Save accounts payable voucher?"
         description="Are you sure you want to save?"
         confirmLabel="Save"
-        tone="question"
+        iconTone="save"
+        tone="default"
         onCancel={page.handleCancelSaveVoucher}
         onConfirm={page.handleConfirmSaveVoucher}
       />

@@ -325,28 +325,6 @@ export function AccountsPayableVoucherFormPage() {
                 onChange={page.handleInputChange}
               />
 
-              <FieldShell controlId="accounts-payable-voucher-projectName" label="Project Name" error={page.errors.projectName}>
-                <AppAdvancedDropdown
-                  id="accounts-payable-voucher-projectName"
-                  className={AttachedDropdownClassName}
-                  value={page.values.projectName}
-                  readOnly={page.isReadonly}
-                  addAction={
-                    !page.isReadonly && responsibilityCenterStore.permissions.canCreate
-                      ? {
-                          label: "Add Project",
-                          onClick: () => setIsProjectNameDialogOpen(true),
-                        }
-                      : undefined
-                  }
-                  options={projectOptions}
-                  placeholder="Select Project Name"
-                  searchPlaceholder="Search Project Name"
-                  emptyMessage={getProjectDropdownEmptyMessage(projectOptionsQuery)}
-                  onChange={(value) => selectProject(String(value))}
-                />
-              </FieldShell>
-
               <TextareaField
                 label="Remarks"
                 name="remarks"
@@ -479,6 +457,27 @@ export function AccountsPayableVoucherFormPage() {
                 isRequired
                 onChange={(event) => updateDocumentDate(event.target.value)}
               />
+              <FieldShell controlId="accounts-payable-voucher-projectName" label="Project Name" error={page.errors.projectName}>
+                <AppAdvancedDropdown
+                  id="accounts-payable-voucher-projectName"
+                  className={AttachedDropdownClassName}
+                  value={page.values.projectName}
+                  readOnly={page.isReadonly}
+                  addAction={
+                    !page.isReadonly && responsibilityCenterStore.permissions.canCreate
+                      ? {
+                          label: "Add Project",
+                          onClick: () => setIsProjectNameDialogOpen(true),
+                        }
+                      : undefined
+                  }
+                  options={projectOptions}
+                  placeholder="Select Project Name"
+                  searchPlaceholder="Search Project Name"
+                  emptyMessage={getProjectDropdownEmptyMessage(projectOptionsQuery)}
+                  onChange={(value) => selectProject(String(value))}
+                />
+              </FieldShell>
               <TextField
                 label="Status"
                 name="status"

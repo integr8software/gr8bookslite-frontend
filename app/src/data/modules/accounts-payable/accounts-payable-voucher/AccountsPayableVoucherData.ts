@@ -6,9 +6,7 @@ import type {
 } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
 import type { TermsMaintenance } from "@/app/src/types/modules/financial-maintenance/terms-maintenance/TermsMaintenanceTypes";
 
-export function createAccountsPayableVoucherInitialFormValues(
-  baseCurrencyCode = "PHP",
-): AccountsPayableVoucherFormValues {
+export function createAccountsPayableVoucherInitialFormValues(baseCurrencyCode = "PHP"): AccountsPayableVoucherFormValues {
   return {
     transactionNo: "",
     documentDate: new Date().toISOString().slice(0, 10),
@@ -32,10 +30,7 @@ export function createAccountsPayableVoucherInitialFormValues(
     remarks: "",
     status: "Draft",
     expenseLines: [createAccountsPayableVoucherExpenseLine(1)],
-    accountingEntries: [
-      createAccountsPayableVoucherAccountingEntry(1),
-      createAccountsPayableVoucherAccountingEntry(2),
-    ],
+    accountingEntries: [createAccountsPayableVoucherAccountingEntry(1), createAccountsPayableVoucherAccountingEntry(2)],
   };
 }
 
@@ -96,6 +91,8 @@ export function createAccountsPayableVoucherFormValues(
     return createAccountsPayableVoucherInitialFormValues(baseCurrencyCode);
   }
 
+  const remarks = record.remarks.trim();
+
   return syncAccountsPayableVoucherExpenseLinesAndAmount({
     transactionNo: record.transactionNo,
     documentDate: record.documentDate,
@@ -116,18 +113,19 @@ export function createAccountsPayableVoucherFormValues(
     creditAccountCode: record.creditAccountCode,
     creditAccountTitle: record.creditAccountTitle,
     payableType: record.payableType,
-    remarks: record.remarks,
+    remarks,
     status: record.status,
     expenseLines: record.expenseLines.map((line) =>
-      createAccountsPayableVoucherExpenseLine(line.lineNumber, line),
+      createAccountsPayableVoucherExpenseLine(line.lineNumber, {
+        ...line,
+        particulars: getParticularsWithRemarksFallback(line.particulars, remarks),
+      }),
     ),
     accountingEntries: record.accountingEntries.map((entry) => ({ ...entry })),
   });
 }
 
-export function createAccountsPayableVoucherFromForm(
-  values: AccountsPayableVoucherFormValues,
-): AccountsPayableVoucherRecord {
+export function createAccountsPayableVoucherFromForm(values: AccountsPayableVoucherFormValues): AccountsPayableVoucherRecord {
   const now = new Date().toISOString();
 
   return {
@@ -149,18 +147,14 @@ export function updateAccountsPayableVoucherFromForm(
   };
 }
 
-export function renumberAccountsPayableVoucherExpenseLines(
-  lines: AccountsPayableVoucherExpenseLine[],
-) {
+export function renumberAccountsPayableVoucherExpenseLines(lines: AccountsPayableVoucherExpenseLine[]) {
   return lines.map((line, index) => ({
     ...line,
     lineNumber: index + 1,
   }));
 }
 
-export function renumberAccountsPayableVoucherAccountingEntries(
-  entries: AccountsPayableVoucherAccountingEntry[],
-) {
+export function renumberAccountsPayableVoucherAccountingEntries(entries: AccountsPayableVoucherAccountingEntry[]) {
   return entries.map((entry, index) => ({
     ...entry,
     lineNumber: index + 1,
@@ -190,9 +184,7 @@ export function getAccountsPayableVoucherExpenseTotals(lines: AccountsPayableVou
   );
 }
 
-export function syncAccountsPayableVoucherExpenseTaxAmounts(
-  line: AccountsPayableVoucherExpenseLine,
-): AccountsPayableVoucherExpenseLine {
+export function syncAccountsPayableVoucherExpenseTaxAmounts(line: AccountsPayableVoucherExpenseLine): AccountsPayableVoucherExpenseLine {
   const amount = roundCurrency(Number(line.amount || 0));
   const sign = amount < 0 ? -1 : 1;
   const absoluteAmount = Math.abs(amount);
@@ -231,9 +223,7 @@ export function syncAccountsPayableVoucherExpenseLinesAndAmount(
   };
 }
 
-export function getAccountsPayableVoucherAccountingTotals(
-  entries: AccountsPayableVoucherAccountingEntry[],
-) {
+export function getAccountsPayableVoucherAccountingTotals(entries: AccountsPayableVoucherAccountingEntry[]) {
   const totalDebit = entries.reduce((sum, entry) => sum + Number(entry.debit || 0), 0);
   const totalCredit = entries.reduce((sum, entry) => sum + Number(entry.credit || 0), 0);
   const variance = totalDebit - totalCredit;
@@ -242,8 +232,7 @@ export function getAccountsPayableVoucherAccountingTotals(
     totalCredit,
     totalDebit,
     variance,
-    isBalanced:
-      entries.length > 1 && totalDebit > 0 && totalCredit > 0 && Math.abs(variance) < 0.001,
+    isBalanced: entries.length > 1 && totalDebit > 0 && totalCredit > 0 && Math.abs(variance) < 0.001,
   };
 }
 
@@ -254,9 +243,7 @@ export function formatAccountsPayableVoucherAmount(value: number) {
   }).format(value);
 }
 
-export function accountsPayableVoucherExpenseLinesHaveItems(
-  lines: AccountsPayableVoucherExpenseLine[],
-) {
+export function accountsPayableVoucherExpenseLinesHaveItems(lines: AccountsPayableVoucherExpenseLine[]) {
   return lines.some(accountsPayableVoucherExpenseLineHasItem);
 }
 
@@ -278,9 +265,7 @@ export function accountsPayableVoucherExpenseLineHasItem(line: AccountsPayableVo
   );
 }
 
-function normalizeAccountsPayableVoucherFormValues(
-  values: AccountsPayableVoucherFormValues,
-): AccountsPayableVoucherFormValues {
+function normalizeAccountsPayableVoucherFormValues(values: AccountsPayableVoucherFormValues): AccountsPayableVoucherFormValues {
   const syncedValues = syncAccountsPayableVoucherExpenseLinesAndAmount(values);
 
   return {
@@ -308,21 +293,16 @@ function normalizeAccountsPayableVoucherFormValues(
         expenseType: line.expenseType.trim(),
         partyCode: line.partyCode.trim(),
         partyName: line.partyName.trim(),
-        particulars: line.particulars.trim(),
+        particulars: getParticularsWithRemarksFallback(line.particulars, syncedValues.remarks),
         responsibilityCenter: line.responsibilityCenter.trim(),
         referenceNo: line.referenceNo.trim(),
       })),
     ),
-    accountingEntries: renumberAccountsPayableVoucherAccountingEntries(
-      syncedValues.accountingEntries,
-    ),
+    accountingEntries: renumberAccountsPayableVoucherAccountingEntries(syncedValues.accountingEntries),
   };
 }
 
-export function calculateAccountsPayableVoucherDueDate(
-  documentDate: string,
-  term?: Pick<TermsMaintenance, "datemode" | "period"> | null,
-) {
+export function calculateAccountsPayableVoucherDueDate(documentDate: string, term?: Pick<TermsMaintenance, "datemode" | "period"> | null) {
   if (!documentDate) {
     return "";
   }
@@ -388,4 +368,10 @@ function roundCurrency(value: number) {
 
 function hasNonZeroAmount(value: number) {
   return Math.abs(Number(value || 0)) > 0;
+}
+
+function getParticularsWithRemarksFallback(particulars: string | null | undefined, remarks: string) {
+  const normalizedParticulars = particulars?.trim() ?? "";
+
+  return normalizedParticulars || remarks.trim();
 }

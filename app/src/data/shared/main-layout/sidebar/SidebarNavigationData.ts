@@ -108,7 +108,7 @@ export const MainMasterNavigationSections: MainNavigationSection[] = [
     "workspace.billing.subscriptions",
     "master-subscriptions",
   ),
-  directSection("master-invoices-section", "Invoices", "/master/invoices", "invoice", "workspace.billing.invoices", "master-invoices"),
+  directSection("master-invoices-section", "Revenue & Transactions", "/master/invoices", "invoice", "workspace.billing.invoices", "master-invoices"),
   directSection(
     "master-promotions-section",
     "Promotions",

@@ -18,7 +18,7 @@ export const RevolvingFundPaginationStorageKey = "cash-disbursement-revolving-fu
 export const RevolvingFundTransactionPrefix = "RF";
 export const RevolvingFundCopyFromSources = ["Disbursement Voucher"] as const;
 export const RevolvingFundColumnLabels = {
-  transactionNo: "RF No.",
+  transactionNo: "Fund No.",
   documentDate: "RF Date",
   partyCode: "Party Code",
   partyName: "Party Name",

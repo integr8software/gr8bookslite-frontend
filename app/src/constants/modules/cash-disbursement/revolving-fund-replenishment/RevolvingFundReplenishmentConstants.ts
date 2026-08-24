@@ -32,7 +32,7 @@ export const RevolvingFundReplenishmentConfirmationDialogConfirmLabels: Record<R
   cancel: "Cancel",
 };
 export const RevolvingFundReplenishmentColumnLabels = {
-  transactionNo: "RFR No.",
+  transactionNo: "Fund Replenishment No.",
   documentDate: "RFR Date",
   partyCode: "Party Code",
   partyName: "Party Name",

@@ -74,6 +74,12 @@ export function useCashVoucherStore<TSelected = CashVoucherStoreState>(
     queryFn: async () => getInitialVouchers(),
     initialData: getInitialVouchers,
   });
+  const refreshRecords = useCallback(() => {
+    void Promise.all([
+      queryClient.refetchQueries({ queryKey: CashVoucherQueryKeys.transactions(), exact: true }),
+      queryClient.refetchQueries({ queryKey: CashVoucherQueryKeys.vouchers(), exact: true }),
+    ]);
+  }, [queryClient]);
 
   function updateCachedVouchers(updater: (vouchers: CashVoucherRecord[]) => CashVoucherRecord[]) {
     queryClient.setQueryData<CashVoucherRecord[]>(
@@ -179,6 +185,7 @@ export function useCashVoucherStore<TSelected = CashVoucherStoreState>(
       deleteVoucher: (voucherId) => deleteVoucherMutation.mutate(voucherId),
       isLoading: transactionsQuery.isLoading || vouchersQuery.isLoading,
       lastSyncedAt: Math.max(transactionsQuery.dataUpdatedAt, vouchersQuery.dataUpdatedAt),
+      refreshRecords,
       isMutating:
         addTransactionMutation.isPending ||
         addVoucherMutation.isPending ||
@@ -191,6 +198,7 @@ export function useCashVoucherStore<TSelected = CashVoucherStoreState>(
       addTransactionMutation,
       deleteVoucherMutation,
       previewRows,
+      refreshRecords,
       transactionsQuery.data,
       transactionsQuery.dataUpdatedAt,
       transactionsQuery.isLoading,

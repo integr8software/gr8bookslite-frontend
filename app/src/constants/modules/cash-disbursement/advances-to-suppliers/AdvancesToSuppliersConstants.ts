@@ -16,7 +16,7 @@ export const AdvancesToSuppliersStorageKey = "cash-disbursement-advances-to-supp
 export const AdvancesToSuppliersPaginationStorageKey = "cash-disbursement-advances-to-suppliers-table";
 export const AdvancesToSuppliersTransactionPrefix = "ATS";
 export const AdvancesToSuppliersColumnLabels = {
-  transactionNo: "ATS No.",
+  transactionNo: "Advances To Suppliers No.",
   documentDate: "ATS Date",
   partyCode: "Party Code",
   partyName: "Party Name",

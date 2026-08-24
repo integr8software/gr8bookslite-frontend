@@ -10,7 +10,13 @@ import {
   ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
-export function AdvancesToSuppliersTableToolbar({ page }: { page: AdvancesToSuppliersOverviewPageState }) {
+export function AdvancesToSuppliersTableToolbar({
+  onRefresh,
+  page,
+}: {
+  onRefresh: () => void;
+  page: AdvancesToSuppliersOverviewPageState;
+}) {
   return (
     <ModuleTableToolbar
       className="!grid-cols-1 !gap-2 rounded-none border-x-0 border-t-0 !p-3 shadow-none 2xl:!grid-cols-[minmax(0,1fr)_auto]"
@@ -22,7 +28,7 @@ export function AdvancesToSuppliersTableToolbar({ page }: { page: AdvancesToSupp
             label="Search Advances to Suppliers"
             value={page.query}
             onChange={page.setQuery}
-            placeholder="Search by ATS No., Party Name, Account Title, PO Reference, or Remarks"
+            placeholder="Search by Advances To Suppliers No., Party Name, Account Title, PO Reference, or Remarks"
           />
         </div>
         <DateRangePicker label="Date Range" value={page.dateRange} onChange={page.setDateRange} />
@@ -39,7 +45,7 @@ export function AdvancesToSuppliersTableToolbar({ page }: { page: AdvancesToSupp
           onChange={page.setStatusFilter}
         />
         <ModuleTableColumnVisibilityButton table={page.table} />
-        <ModuleTableResetButton onClick={page.refreshRecords} />
+        <ModuleTableResetButton className="px-2" onClick={onRefresh} />
       </div>
     </ModuleTableToolbar>
   );

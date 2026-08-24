@@ -55,6 +55,10 @@ import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/modu
 export function useCashAdvanceStore<TSelected = CashAdvanceStoreState>(selector?: (state: CashAdvanceStoreState) => TSelected) {
   const [advances, setAdvances] = useState(getInitialCashAdvances);
   const [lastSyncedAt, setLastSyncedAt] = useState(() => Date.now());
+  const refreshRecords = useCallback(() => {
+    setAdvances(getInitialCashAdvances());
+    setLastSyncedAt(Date.now());
+  }, []);
   const updateAdvanceStatus = useCallback((record: CashAdvanceRecord, status: CashAdvanceStatus) => {
     const updatedAt = new Date().toISOString();
     setAdvances((currentAdvances) => {
@@ -82,9 +86,10 @@ export function useCashAdvanceStore<TSelected = CashAdvanceStoreState>(selector?
       advances,
       isLoading: false,
       lastSyncedAt,
+      refreshRecords,
       updateAdvanceStatus,
     }),
-    [advances, lastSyncedAt, updateAdvanceStatus],
+    [advances, lastSyncedAt, refreshRecords, updateAdvanceStatus],
   );
 
   return selector ? selector(state) : (state as TSelected);
@@ -327,9 +332,9 @@ export function useCashAdvanceTable(advances: CashAdvanceRecord[]) {
       {
         accessorKey: "transNo",
         id: "transNo",
-        header: "CA No.",
+        header: "Cash Advance No.",
         size: TransactionOverviewColumnWidths.transactionNumber,
-        meta: { label: "CA No." },
+        meta: { label: "Cash Advance No." },
       },
       {
         accessorKey: "documentDate",

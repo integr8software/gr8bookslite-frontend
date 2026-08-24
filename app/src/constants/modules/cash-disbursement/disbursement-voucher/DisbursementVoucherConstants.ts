@@ -154,7 +154,7 @@ export const DisbursementVoucherStatusFilterOptions = [
 export const DisbursementVoucherTableColumns = [
   {
     key: "voucherNo",
-    label: "DV No.",
+    label: "Voucher No.",
     className: "",
     size: TransactionOverviewColumnWidths.transactionNumber,
   },

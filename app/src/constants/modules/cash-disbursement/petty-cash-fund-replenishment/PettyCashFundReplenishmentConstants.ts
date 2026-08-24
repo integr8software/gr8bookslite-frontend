@@ -32,7 +32,7 @@ export const PettyCashFundReplenishmentConfirmationDialogConfirmLabels: Record<P
   cancel: "Cancel",
 };
 export const PettyCashFundReplenishmentColumnLabels = {
-  transactionNo: "PCFR No.",
+  transactionNo: "Fund Replenishment No.",
   documentDate: "PCFR Date",
   partyCode: "Party Code",
   partyName: "Party Name",

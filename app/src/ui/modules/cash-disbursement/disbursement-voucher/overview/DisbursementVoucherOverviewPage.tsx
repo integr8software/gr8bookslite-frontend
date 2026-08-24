@@ -29,6 +29,7 @@ import { getColumnMetaClassName, joinClasses } from "@/app/src/ui/shared/module/
 export function DisbursementVoucherOverviewPage() {
   const previewRows = useDisbursementVoucherStore((state) => state.previewRows);
   const lastSyncedAt = useDisbursementVoucherStore((state) => state.lastSyncedAt);
+  const refreshRecords = useDisbursementVoucherStore((state) => state.refreshRecords);
   const updateTransaction = useDisbursementVoucherStore((state) => state.updateTransaction);
   const updateVoucher = useDisbursementVoucherStore((state) => state.updateVoucher);
   const previewTable = useDisbursementVoucherPreviewTable(previewRows);
@@ -90,7 +91,7 @@ export function DisbursementVoucherOverviewPage() {
       <div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm" data-spotlight-id="maintenance-table">
         <ModuleTable
           variant="embedded"
-          emptyDescription="Try another DV No., remarks, date range, amount range, or status."
+          emptyDescription="Try another Voucher No., remarks, date range, amount range, or status."
           emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
           emptyTitle="No Disbursement Voucher Transaction Found."
           minWidthClassName="min-w-full"
@@ -99,7 +100,7 @@ export function DisbursementVoucherOverviewPage() {
           lastSyncedAt={lastSyncedAt}
           table={previewTable.table}
           tableTitle="Disbursement Voucher Entries"
-          toolbar={<DisbursementVoucherTableToolbar previewTable={previewTable} />}
+          toolbar={<DisbursementVoucherTableToolbar onRefresh={refreshRecords} previewTable={previewTable} />}
           useColumnSizing
           renderRow={(row) => (
             <tr key={row.id} className="module-table-row border-b border-darknavy/8 text-darknavy last:border-b-0">

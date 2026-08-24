@@ -21,7 +21,7 @@ import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable
 import { getColumnMetaClassName, joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 export function CashAdvanceMultipleEntryOverviewPage() {
-  const { entries, lastSyncedAt, updateEntryStatus } = useCashAdvanceMultipleEntryStore();
+  const { entries, lastSyncedAt, refreshRecords, updateEntryStatus } = useCashAdvanceMultipleEntryStore();
   const tableState = useCashAdvanceMultipleEntryTable(entries);
 
   return (
@@ -54,7 +54,7 @@ export function CashAdvanceMultipleEntryOverviewPage() {
       <div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm" data-spotlight-id="maintenance-table">
         <ModuleTable
           variant="embedded"
-          emptyDescription="Try another CAME No., remarks, date range, amount range, or status."
+          emptyDescription="Try another Multiple Cash Advance No., remarks, date range, amount range, or status."
           emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
           emptyTitle="No Cash Advance Multiple Entry Transaction Found."
           minWidthClassName={getCashAdvanceMultipleEntryTableMinWidthClassName(tableState.table.getVisibleLeafColumns().length)}
@@ -64,7 +64,7 @@ export function CashAdvanceMultipleEntryOverviewPage() {
           table={tableState.table}
           tableTitle="Cash Advances Multiple Entries"
           useColumnSizing
-          toolbar={<CashAdvanceMultipleEntryTableToolbar tableState={tableState} />}
+          toolbar={<CashAdvanceMultipleEntryTableToolbar onRefresh={refreshRecords} tableState={tableState} />}
           renderRow={(row) => (
             <tr key={row.id} className="module-table-row border-b border-darknavy/8 text-darknavy last:border-b-0">
               {row.getVisibleCells().map((cell) => (

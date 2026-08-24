@@ -4,13 +4,19 @@ import { AmountRangePicker } from "@/app/src/ui/shared/amount-range-picker/Amoun
 import { DateRangePicker } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
 import {
   ModuleTableColumnVisibilityButton,
-  ModuleTableResetButton,
   ModuleTableFilterSelect,
+  ModuleTableResetButton,
   ModuleTableSearch,
   ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
-export function PettyCashVoucherTableToolbar({ page }: { page: PettyCashVoucherOverviewPageState }) {
+export function PettyCashVoucherTableToolbar({
+  onRefresh,
+  page,
+}: {
+  onRefresh: () => void;
+  page: PettyCashVoucherOverviewPageState;
+}) {
   return (
     <ModuleTableToolbar
       className="!grid-cols-1 !gap-2 rounded-none border-x-0 border-t-0 !p-3 shadow-none sm:!gap-2 sm:!p-3 2xl:!grid-cols-[minmax(0,1fr)_auto]"
@@ -22,7 +28,7 @@ export function PettyCashVoucherTableToolbar({ page }: { page: PettyCashVoucherO
             label="Search Petty Cash Vouchers"
             value={page.searchQuery}
             onChange={page.setSearchQuery}
-            placeholder="Search by PCV No., Party, or Account Code"
+            placeholder="Search by Voucher No., Party, or Account Code"
           />
         </div>
         <DateRangePicker label="Date Range" value={page.dateRange} onChange={page.setDateRange} />
@@ -42,7 +48,7 @@ export function PettyCashVoucherTableToolbar({ page }: { page: PettyCashVoucherO
           onChange={(value) => page.setStatusFilter(value)}
         />
         <ModuleTableColumnVisibilityButton table={page.table} />
-        <ModuleTableResetButton className="px-2" onClick={page.resetFilters} />
+        <ModuleTableResetButton className="px-2" onClick={onRefresh} />
       </div>
     </ModuleTableToolbar>
   );

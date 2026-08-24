@@ -74,6 +74,12 @@ export function useDisbursementVoucherStore<TSelected = DisbursementVoucherStore
     queryFn: async () => getInitialVouchers(),
     initialData: getInitialVouchers,
   });
+  const refreshRecords = useCallback(() => {
+    void Promise.all([
+      queryClient.refetchQueries({ queryKey: DisbursementVoucherQueryKeys.transactions(), exact: true }),
+      queryClient.refetchQueries({ queryKey: DisbursementVoucherQueryKeys.vouchers(), exact: true }),
+    ]);
+  }, [queryClient]);
 
   function updateCachedVouchers(updater: (vouchers: DisbursementVoucherRecord[]) => DisbursementVoucherRecord[]) {
     queryClient.setQueryData<DisbursementVoucherRecord[]>(
@@ -179,6 +185,7 @@ export function useDisbursementVoucherStore<TSelected = DisbursementVoucherStore
       deleteVoucher: (voucherId) => deleteVoucherMutation.mutate(voucherId),
       isLoading: transactionsQuery.isLoading || vouchersQuery.isLoading,
       lastSyncedAt: Math.max(transactionsQuery.dataUpdatedAt, vouchersQuery.dataUpdatedAt),
+      refreshRecords,
       isMutating:
         addTransactionMutation.isPending ||
         addVoucherMutation.isPending ||
@@ -191,6 +198,7 @@ export function useDisbursementVoucherStore<TSelected = DisbursementVoucherStore
       addTransactionMutation,
       deleteVoucherMutation,
       previewRows,
+      refreshRecords,
       transactionsQuery.data,
       transactionsQuery.dataUpdatedAt,
       transactionsQuery.isLoading,

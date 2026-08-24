@@ -76,6 +76,7 @@ export type CashAdvanceStoreState = {
   advances: CashAdvanceRecord[];
   isLoading: boolean;
   lastSyncedAt: number;
+  refreshRecords: () => void;
   updateAdvanceStatus: (record: CashAdvanceRecord, status: CashAdvanceStatus) => void;
 };
 

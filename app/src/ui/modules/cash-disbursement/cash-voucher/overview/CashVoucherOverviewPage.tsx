@@ -29,6 +29,7 @@ import { getColumnMetaClassName, joinClasses } from "@/app/src/ui/shared/module/
 export function CashVoucherOverviewPage() {
   const previewRows = useCashVoucherStore((state) => state.previewRows);
   const lastSyncedAt = useCashVoucherStore((state) => state.lastSyncedAt);
+  const refreshRecords = useCashVoucherStore((state) => state.refreshRecords);
   const updateTransaction = useCashVoucherStore((state) => state.updateTransaction);
   const updateVoucher = useCashVoucherStore((state) => state.updateVoucher);
   const previewTable = useCashVoucherPreviewTable(previewRows);
@@ -90,7 +91,7 @@ export function CashVoucherOverviewPage() {
       <div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm" data-spotlight-id="maintenance-table">
         <ModuleTable
           variant="embedded"
-          emptyDescription="Try another CV No., remarks, date range, amount range, or status."
+          emptyDescription="Try another Voucher No., remarks, date range, amount range, or status."
           emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
           emptyTitle="No Cash Voucher Transaction Found."
           minWidthClassName="min-w-full"
@@ -99,7 +100,7 @@ export function CashVoucherOverviewPage() {
           lastSyncedAt={lastSyncedAt}
           table={previewTable.table}
           tableTitle="Cash Voucher Entries"
-          toolbar={<CashVoucherTableToolbar previewTable={previewTable} />}
+          toolbar={<CashVoucherTableToolbar onRefresh={refreshRecords} previewTable={previewTable} />}
           useColumnSizing
           renderRow={(row) => (
             <tr key={row.id} className="module-table-row border-b border-darknavy/8 text-darknavy last:border-b-0">

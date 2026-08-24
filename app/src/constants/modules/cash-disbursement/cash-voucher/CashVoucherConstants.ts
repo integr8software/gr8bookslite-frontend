@@ -150,7 +150,7 @@ export const CashVoucherStatusFilterOptions = [
 export const CashVoucherTableColumns = [
   {
     key: "voucherNo",
-    label: "CV No.",
+    label: "Voucher No.",
     className: "",
     size: TransactionOverviewColumnWidths.transactionNumber,
   },

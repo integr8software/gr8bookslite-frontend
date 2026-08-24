@@ -18,7 +18,7 @@ export const PettyCashFundPaginationStorageKey = "cash-disbursement-petty-cash-f
 export const PettyCashFundTransactionPrefix = "PCF";
 export const PettyCashFundCopyFromSources = ["Petty Cash Voucher"] as const;
 export const PettyCashFundColumnLabels = {
-  transactionNo: "PCF No.",
+  transactionNo: "Fund No.",
   documentDate: "PCF Date",
   partyCode: "Party Code",
   partyName: "Party Name",

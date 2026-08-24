@@ -57,7 +57,7 @@ export type CashVoucherCopySource =
   | "Cash Advance"
   | "Cash Advance Liquidation"
   | "Cash Advance Multiple Entry"
-  | "Multiple Entry Liquidation"
+  | "Cash Advance Multiple Entry Liquidation"
   | "Petty Cash Fund"
   | "Petty Cash Fund Replenishment"
   | "Revolving Fund"
@@ -228,6 +228,7 @@ export type CashVoucherStoreState = {
   isLoading: boolean;
   lastSyncedAt: number;
   isMutating: boolean;
+  refreshRecords: () => void;
 };
 
 export type CashVoucherFormValues = {

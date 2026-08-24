@@ -10,7 +10,13 @@ import {
   ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
-export function PettyCashFundTableToolbar({ page }: { page: PettyCashFundOverviewPageState }) {
+export function PettyCashFundTableToolbar({
+  onRefresh,
+  page,
+}: {
+  onRefresh: () => void;
+  page: PettyCashFundOverviewPageState;
+}) {
   return (
     <ModuleTableToolbar
       className="!grid-cols-1 !gap-2 rounded-none border-x-0 border-t-0 !p-3 shadow-none 2xl:!grid-cols-[minmax(0,1fr)_auto]"
@@ -22,7 +28,7 @@ export function PettyCashFundTableToolbar({ page }: { page: PettyCashFundOvervie
             label="Search petty cash funds"
             value={page.query}
             onChange={page.setQuery}
-            placeholder="Search by PCF No., Party, or Account"
+            placeholder="Search by Fund No., Party, or Account"
           />
         </div>
         <DateRangePicker label="Date Range" value={page.dateRange} onChange={page.setDateRange} />
@@ -31,7 +37,7 @@ export function PettyCashFundTableToolbar({ page }: { page: PettyCashFundOvervie
       <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 md:grid-cols-[minmax(0,1fr)_3.25rem_3.25rem] 2xl:w-[21.5rem]" data-spotlight-id="maintenance-table-options">
         <ModuleTableFilterSelect label="Status" value={page.statusFilter} options={PettyCashFundStatusOptions.map((status) => ({ label: status, value: status }))} onChange={page.setStatusFilter} />
         <ModuleTableColumnVisibilityButton table={page.table} />
-        <ModuleTableResetButton onClick={page.refreshRecords} />
+        <ModuleTableResetButton className="px-2" onClick={onRefresh} />
       </div>
     </ModuleTableToolbar>
   );

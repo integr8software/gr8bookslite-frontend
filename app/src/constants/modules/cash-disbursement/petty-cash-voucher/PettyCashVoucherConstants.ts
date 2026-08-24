@@ -75,7 +75,7 @@ export const PettyCashVoucherActionTabs: {
 ];
 
 export const PettyCashVoucherColumnLabels = {
-  voucherNo: "PCV No.",
+  voucherNo: "Voucher No.",
   documentDate: "PCV Date",
   partyCode: "Party Code",
   partyName: "Party Name",

@@ -265,12 +265,14 @@ example, `<ModuleName>` in code becomes a readable label such as
 `Cash Advance Multiple Entry` in headings, buttons, filters, empty states, and
 table labels.
 
-Transaction number and transaction date labels are the exception. Use the
-module's short transaction prefix as `[ModulePrefix]`, so the visible labels
-are `[ModulePrefix] No.` and `[ModulePrefix] Date`. Use the display prefix
-without a trailing separator; when a configured numbering prefix includes a
-trailing separator, omit that separator from the label. Keep the full readable
-module name for headings, buttons, messages, and other labels.
+On Overview/List pages, use a clear, human-friendly noun label for the
+transaction number column header (`[TransactionType] No.`) rather than abbreviated
+prefix codes. On Action pages, concise module prefix labels (e.g.
+`[ModulePrefix] No.` and `[ModulePrefix] Date`) or standard descriptive labels
+may be used. Use the display prefix without a trailing separator; when a
+configured numbering prefix includes a trailing separator, omit that separator
+from the label. Keep the full readable module name for headings, buttons,
+messages, and other labels.
 
 For transaction UI and frontend source code, use Party terminology exclusively.
 Do not use VCE in visible copy or in transaction module code, including labels,
@@ -1171,7 +1173,7 @@ Status
 
 Render the Search filter with the shared `ModuleTableSearch`. Use a concise
 module-specific placeholder based on canonical table labels, following
-`Search by [ModulePrefix] No., Party Name, Account Title, or Remarks` when those
+`Search by [TransactionType] No., Party Name, Account Title, or Remarks` when those
 fields apply. Search matching must be case-insensitive and whitespace-tolerant:
 normalize both the entered query and the combined searchable record text with
 `normalizeLowercaseWhitespace` from `app/src/utils/string.util.ts` before
@@ -1233,7 +1235,7 @@ Start New <ModuleName>
 The full transaction column visibility list is:
 
 ```txt
-[ModulePrefix] No.
+[TransactionType] No.
 [ModulePrefix] Date
 Party Code
 Party Name
@@ -1281,7 +1283,7 @@ Use `TransactionOverviewColumnWidths.actions` directly; do not derive or
 declare a domain- or feature-level action-column width.
 Keep the standard transaction-number width based on typical transaction values,
 not the longest module name. Before truncating an unusually long
-`[ModulePrefix] No.` header, reclaim visibly unused width from Status and other
+`[TransactionType] No.` header, reclaim visibly unused width from Status and other
 short-value columns while preserving enough room for the complete status badge.
 Use a narrow feature-specific width override only when that reallocation is
 needed; do not widen the shared transaction-number default for every module.
@@ -1304,7 +1306,7 @@ Use TanStack column `meta.className` for header alignment, and apply the same
 alignment in the row renderer. Do not right-align `Total Amount` unless a
 specific module has an approved business exception.
 
-Render the `[ModulePrefix] No.` value in every transaction overview row using
+Render the `[TransactionType] No.` value in every transaction overview row using
 the active theme accent color (`text-[var(--skyblue)]`). Prefer the shared
 `moduleAccentClassNames.iconText` token so the transaction number follows theme
 changes instead of using a fixed brand color or neutral text color. When the
@@ -1343,7 +1345,7 @@ Cancelled       # gray/neutral
 The default visible columns are:
 
 ```txt
-[ModulePrefix] No.
+[TransactionType] No.
 [ModulePrefix] Date
 Party Name
 Total Amount

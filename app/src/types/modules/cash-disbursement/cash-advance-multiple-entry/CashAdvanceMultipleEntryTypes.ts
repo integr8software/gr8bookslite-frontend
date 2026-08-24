@@ -90,5 +90,6 @@ export type CashAdvanceMultipleEntryStoreState = {
   entries: CashAdvanceMultipleEntryRecord[];
   isLoading: boolean;
   lastSyncedAt: number;
+  refreshRecords: () => void;
   updateEntryStatus: (record: CashAdvanceMultipleEntryRecord, status: CashAdvanceStatus) => void;
 };

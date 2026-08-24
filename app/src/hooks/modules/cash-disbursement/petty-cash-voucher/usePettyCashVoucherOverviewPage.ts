@@ -214,6 +214,10 @@ export function usePettyCashVoucherOverviewPage() {
     setAmountRange({ from: "", to: "" });
   }
 
+  function refreshRecords() {
+    void vouchersQuery.refetch();
+  }
+
   function updateStatusFilter(value: string) {
     if (PettyCashVoucherStatusOptions.includes(value as PettyCashVoucherStatus)) {
       setStatusFilter(value as typeof PettyCashVoucherAllStatusFilter | PettyCashVoucherStatus);
@@ -234,6 +238,7 @@ export function usePettyCashVoucherOverviewPage() {
     isLoading: vouchersQuery.isLoading,
     isMutating: updateStatusMutation.isPending,
     lastSyncedAt: vouchersQuery.dataUpdatedAt,
+    refreshRecords,
     searchQuery,
     resetFilters,
     setAmountRange,

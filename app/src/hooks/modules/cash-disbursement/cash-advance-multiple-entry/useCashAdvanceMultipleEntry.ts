@@ -60,6 +60,10 @@ export function useCashAdvanceMultipleEntryStore<TSelected = CashAdvanceMultiple
 ) {
   const [entries, setEntries] = useState(getInitialCashAdvanceMultipleEntries);
   const [lastSyncedAt, setLastSyncedAt] = useState(() => Date.now());
+  const refreshRecords = useCallback(() => {
+    setEntries(getInitialCashAdvanceMultipleEntries());
+    setLastSyncedAt(Date.now());
+  }, []);
   const updateEntryStatus = useCallback((record: CashAdvanceMultipleEntryRecord, status: CashAdvanceStatus) => {
     const updatedAt = new Date().toISOString();
 
@@ -87,9 +91,10 @@ export function useCashAdvanceMultipleEntryStore<TSelected = CashAdvanceMultiple
       entries,
       isLoading: false,
       lastSyncedAt,
+      refreshRecords,
       updateEntryStatus,
     }),
-    [entries, lastSyncedAt, updateEntryStatus],
+    [entries, lastSyncedAt, refreshRecords, updateEntryStatus],
   );
 
   return selector ? selector(state) : (state as TSelected);
@@ -319,9 +324,9 @@ export function useCashAdvanceMultipleEntryTable(records: CashAdvanceMultipleEnt
       {
         accessorKey: "transNo",
         id: "transNo",
-        header: "CAME No.",
+        header: "Multiple Cash Advance No.",
         size: CashAdvanceMultipleEntryOverviewColumnWidths.transactionNumber,
-        meta: { label: "CAME No." },
+        meta: { label: "Multiple Cash Advance No." },
       },
       {
         accessorKey: "documentDate",

@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import {
   calculateAcknowledgementReceiptTotals,
@@ -7,7 +7,6 @@ import {
   acknowledgementReceiptEntryHasData,
   acknowledgementReceiptEntryIsComplete,
   AcknowledgementReceiptCollectionTypeOptions,
-  AcknowledgementReceiptPartyOptions,
 } from "@/app/src/data/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptData";
 import type {
   AcknowledgementReceiptEntryView,
@@ -27,11 +26,63 @@ import {
   MoneyNumberField,
   parseMoneyNumberInput,
 } from "@/app/src/ui/shared/money/MoneyNumberField";
+import { clampColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/utils";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+
+const AcknowledgementReceiptAccountingColumnIds = [
+  "accountCode",
+  "accountTitle",
+  "debit",
+  "credit",
+  "collectionType",
+  "referenceNo",
+] as const;
+
+type AcknowledgementReceiptAccountingColumnId =
+  (typeof AcknowledgementReceiptAccountingColumnIds)[number];
+
+const AcknowledgementReceiptAccountingProtectedColumnIds =
+  new Set<AcknowledgementReceiptAccountingColumnId>([
+    "accountTitle",
+    "debit",
+    "credit",
+  ]);
+
+const AcknowledgementReceiptAccountingDefaultVisibleColumnIds = [
+  "accountTitle",
+  "debit",
+  "credit",
+  "collectionType",
+] as const satisfies readonly AcknowledgementReceiptAccountingColumnId[];
+
+const AcknowledgementReceiptAccountingColumnLabels: Record<
+  AcknowledgementReceiptAccountingColumnId,
+  string
+> = {
+  accountCode: "Account Code",
+  accountTitle: "Account Title",
+  collectionType: "Particulars",
+  referenceNo: "Reference No",
+  debit: "Debit",
+  credit: "Credit",
+};
+
+const AcknowledgementReceiptAccountingColumnWidths: Record<
+  AcknowledgementReceiptAccountingColumnId,
+  number
+> = {
+  accountCode: 160,
+  accountTitle: 260,
+  collectionType: 320,
+  referenceNo: 160,
+  debit: 160,
+  credit: 160,
+};
 
 type AcknowledgementReceiptEntriesProps = {
   entryView: AcknowledgementReceiptEntryView;
   isReadonly: boolean;
+  paymentType: string;
   rows: AcknowledgementReceiptLineEntry[];
   onEntryViewChange: (view: AcknowledgementReceiptEntryView) => void;
   onOpenCollectionTypeDialog: () => void;
@@ -44,8 +95,21 @@ export function AcknowledgementReceiptEntries({
   onEntryViewChange,
   onOpenCollectionTypeDialog,
   onRowsChange,
+  paymentType,
   rows,
 }: AcknowledgementReceiptEntriesProps) {
+  const [accountingColumnOrder, setAccountingColumnOrder] = useState<
+    AcknowledgementReceiptAccountingColumnId[]
+  >([...AcknowledgementReceiptAccountingColumnIds]);
+  const [visibleAccountingColumnIds, setVisibleAccountingColumnIds] = useState<
+    AcknowledgementReceiptAccountingColumnId[]
+  >([...AcknowledgementReceiptAccountingDefaultVisibleColumnIds]);
+  const [accountingColumnLabels, setAccountingColumnLabels] = useState<
+    Record<AcknowledgementReceiptAccountingColumnId, string>
+  >({ ...AcknowledgementReceiptAccountingColumnLabels });
+  const [accountingColumnWidths, setAccountingColumnWidths] = useState<
+    Record<AcknowledgementReceiptAccountingColumnId, number>
+  >({ ...AcknowledgementReceiptAccountingColumnWidths });
   const updateEntry = useCallback((
     rowId: string,
     updates: Partial<AcknowledgementReceiptLineEntry>,
@@ -59,23 +123,50 @@ export function AcknowledgementReceiptEntries({
   const columns = useMemo<ModuleDataEntryColumn<AcknowledgementReceiptLineEntry>[]>(
     () =>
       entryView === "collection"
-        ? createCollectionColumns(isReadonly, updateEntry)
-        : createAccountingColumns(isReadonly, updateEntry),
-    [entryView, isReadonly, updateEntry],
+        ? createCollectionColumns(isReadonly, updateEntry, isCheckPaymentType(paymentType))
+        : createAccountingColumns(
+            isReadonly,
+            updateEntry,
+            accountingColumnOrder,
+            visibleAccountingColumnIds,
+            accountingColumnLabels,
+            accountingColumnWidths,
+          ),
+    [
+      accountingColumnLabels,
+      accountingColumnOrder,
+      accountingColumnWidths,
+      entryView,
+      isReadonly,
+      paymentType,
+      updateEntry,
+      visibleAccountingColumnIds,
+    ],
   );
   const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
-    () =>
-      columns.map((column) => ({
-        id: column.id,
-        isHideable: !["collectionType", "accountCode", "accountTitle"].includes(
-          column.id,
+    () => {
+      if (entryView !== "accounting") {
+        return [];
+      }
+
+      return accountingColumnOrder.map((columnId) => ({
+        id: columnId,
+        isHideable: !AcknowledgementReceiptAccountingProtectedColumnIds.has(
+          columnId,
         ),
-        isVisible: true,
-        label: column.header,
-        width: column.width,
-        widthMode: column.widthMode,
-      })),
-    [columns],
+        isVisible: visibleAccountingColumnIds.includes(columnId),
+        label: accountingColumnLabels[columnId],
+        width: accountingColumnWidths[columnId],
+        widthMode: "fixed",
+      }));
+    },
+    [
+      accountingColumnLabels,
+      accountingColumnOrder,
+      accountingColumnWidths,
+      entryView,
+      visibleAccountingColumnIds,
+    ],
   );
 
   function addRows(count: number) {
@@ -151,17 +242,120 @@ export function AcknowledgementReceiptEntries({
     onRowsChange(nextRows.length > 0 ? nextRows : [createBlankAcknowledgementReceiptLineEntry()]);
   }
 
+  function updateAccountingColumnHeader(columnId: string, header: string) {
+    if (!isAcknowledgementReceiptAccountingColumnId(columnId)) {
+      return;
+    }
+
+    setAccountingColumnLabels((currentLabels) => ({
+      ...currentLabels,
+      [columnId]: header,
+    }));
+  }
+
+  function updateAccountingColumnWidth(columnId: string, width: number) {
+    if (!isAcknowledgementReceiptAccountingColumnId(columnId)) {
+      return;
+    }
+
+    setAccountingColumnWidths((currentWidths) => ({
+      ...currentWidths,
+      [columnId]: clampColumnWidth(width),
+    }));
+  }
+
+  function fitAccountingColumnWidth(columnId: string) {
+    if (!isAcknowledgementReceiptAccountingColumnId(columnId)) {
+      return;
+    }
+
+    updateAccountingColumnWidth(
+      columnId,
+      calculateAccountingColumnFitWidth({
+        columnId,
+        columnLabels: accountingColumnLabels,
+        rows,
+      }),
+    );
+  }
+
+  function moveAccountingColumn(fromColumnId: string, toColumnId: string) {
+    if (
+      !isAcknowledgementReceiptAccountingColumnId(fromColumnId) ||
+      !isAcknowledgementReceiptAccountingColumnId(toColumnId)
+    ) {
+      return;
+    }
+
+    setAccountingColumnOrder((currentOrder) =>
+      moveColumnId(currentOrder, fromColumnId, toColumnId),
+    );
+  }
+
+  function resetAccountingColumns() {
+    setAccountingColumnOrder([...AcknowledgementReceiptAccountingColumnIds]);
+    setVisibleAccountingColumnIds([
+      ...AcknowledgementReceiptAccountingDefaultVisibleColumnIds,
+    ]);
+    setAccountingColumnLabels({
+      ...AcknowledgementReceiptAccountingColumnLabels,
+    });
+    setAccountingColumnWidths({
+      ...AcknowledgementReceiptAccountingColumnWidths,
+    });
+  }
+
+  function toggleAccountingColumnVisibility(columnId: string, isVisible: boolean) {
+    if (!isAcknowledgementReceiptAccountingColumnId(columnId)) {
+      return;
+    }
+
+    if (
+      !isVisible &&
+      AcknowledgementReceiptAccountingProtectedColumnIds.has(columnId)
+    ) {
+      return;
+    }
+
+    setVisibleAccountingColumnIds((currentVisibleIds) =>
+      updateVisibleColumnIds(
+        currentVisibleIds,
+        accountingColumnOrder,
+        columnId,
+        isVisible,
+      ),
+    );
+  }
+
+  const accountingColumnHandlers =
+    entryView === "accounting"
+      ? {
+          onAutoColumnWidth: fitAccountingColumnWidth,
+          onFitColumnWidth: fitAccountingColumnWidth,
+          onMoveColumn: moveAccountingColumn,
+          onResetColumns: resetAccountingColumns,
+          onToggleColumnVisibility: toggleAccountingColumnVisibility,
+          onUpdateColumnHeader: updateAccountingColumnHeader,
+          onUpdateColumnWidth: updateAccountingColumnWidth,
+        }
+      : {};
+
   return (
     <ModuleDataEntry
       columns={columns}
+      columnResetLabel="Default"
       columnOptions={columnOptions}
       description=""
       emptyRowLabel="entry"
-      exportOptions={[
-        { id: "csv", label: "CSV", onSelect: () => undefined },
-        { id: "excel", label: "Excel", onSelect: () => undefined },
-        { id: "pdf", label: "PDF", onSelect: () => undefined },
-      ]}
+      exportOptions={
+        entryView === "collection"
+          ? [
+              { id: "csv", label: "CSV", onSelect: () => undefined },
+              { id: "excel", label: "Excel", onSelect: () => undefined },
+              { id: "pdf", label: "PDF", onSelect: () => undefined },
+            ]
+          : []
+      }
       footerDetails={
         <span
           className={joinClasses(
@@ -174,6 +368,7 @@ export function AcknowledgementReceiptEntries({
       }
       isDraggable
       isReadonly={isReadonly}
+      canConfigureColumnsWhenReadonly={entryView === "accounting"}
       rows={rows}
       summaryCells={
         entryView === "accounting"
@@ -183,29 +378,29 @@ export function AcknowledgementReceiptEntries({
             }
           : undefined
       }
-      toolbarActions={[
-        {
-          id: "add-collection-type",
-          icon: Plus,
-          label: "Add Collection Type",
-          onSelect: onOpenCollectionTypeDialog,
-        },
-      ]}
+      toolbarActions={
+        entryView === "collection"
+          ? [
+              {
+                id: "add-collection-type",
+                icon: Plus,
+                label: "Add Collection Type",
+                onSelect: onOpenCollectionTypeDialog,
+              },
+            ]
+          : []
+      }
       title={
         <EntryViewTabs entryView={entryView} onEntryViewChange={onEntryViewChange} />
       }
       onAddRows={addRows}
       onClearRows={clearRows}
       onDuplicateRow={duplicateRow}
-      onImport={() => undefined}
+      onImport={entryView === "collection" ? () => undefined : undefined}
       onInsertRow={insertRow}
       onMoveRow={moveRow}
       onRemoveRow={removeRow}
-      onAutoColumnWidth={() => undefined}
-      onFitColumnWidth={() => undefined}
-      onToggleColumnVisibility={() => undefined}
-      onUpdateColumnHeader={() => undefined}
-      onUpdateColumnWidth={() => undefined}
+      {...accountingColumnHandlers}
     />
   );
 }
@@ -257,7 +452,52 @@ function createCollectionColumns(
     rowId: string,
     updates: Partial<AcknowledgementReceiptLineEntry>,
   ) => void,
+  shouldShowCheckColumns: boolean,
 ): ModuleDataEntryColumn<AcknowledgementReceiptLineEntry>[] {
+  const checkColumns: ModuleDataEntryColumn<AcknowledgementReceiptLineEntry>[] = shouldShowCheckColumns
+    ? [
+        {
+          header: "Bank Name",
+          id: "bankName",
+          width: 190,
+          widthClassName: "w-[12rem]",
+          renderCell: (row) => (
+            <EntryInput
+              value={row.bankName}
+              readOnly={isReadonly}
+              onChange={(bankName) => onUpdateEntry(row.id, { bankName })}
+            />
+          ),
+        },
+        {
+          header: "Check No.",
+          id: "checkNo",
+          width: 160,
+          widthClassName: "w-[10rem]",
+          renderCell: (row) => (
+            <EntryInput
+              value={row.checkNo}
+              readOnly={isReadonly}
+              onChange={(checkNo) => onUpdateEntry(row.id, { checkNo })}
+            />
+          ),
+        },
+        {
+          header: "Check Date",
+          id: "checkDate",
+          width: 150,
+          widthClassName: "w-[9.5rem]",
+          renderCell: (row) => (
+            <EntryDateInput
+              value={row.checkDate}
+              readOnly={isReadonly}
+              onChange={(checkDate) => onUpdateEntry(row.id, { checkDate })}
+            />
+          ),
+        },
+      ]
+    : [];
+
   return [
     {
       header: "Collection Type",
@@ -341,21 +581,7 @@ function createCollectionColumns(
         </div>
       ),
     },
-    {
-      header: "VCE Name",
-      id: "customerName",
-      width: 220,
-      widthClassName: "w-[14rem]",
-      renderCell: (row) => (
-        <EntryDropdown
-          options={AcknowledgementReceiptPartyOptions}
-          placeholder="Select Party Name"
-          readOnly={isReadonly}
-          value={row.customerName}
-          onChange={(customerName) => onUpdateEntry(row.id, { customerName })}
-        />
-      ),
-    },
+    ...checkColumns,
     {
       header: "Reference No.",
       id: "referenceNo",
@@ -378,87 +604,85 @@ function createAccountingColumns(
     rowId: string,
     updates: Partial<AcknowledgementReceiptLineEntry>,
   ) => void,
+  columnOrder: AcknowledgementReceiptAccountingColumnId[],
+  visibleColumnIds: readonly AcknowledgementReceiptAccountingColumnId[],
+  columnLabels: Record<AcknowledgementReceiptAccountingColumnId, string>,
+  columnWidths: Record<AcknowledgementReceiptAccountingColumnId, number>,
 ): ModuleDataEntryColumn<AcknowledgementReceiptLineEntry>[] {
-  return [
-    {
-      header: "Account Code",
-      id: "accountCode",
-      width: 150,
-      widthClassName: "w-[9.5rem]",
-      renderCell: (row) => (
+  return columnOrder
+    .filter((columnId) => visibleColumnIds.includes(columnId))
+    .map((columnId) => ({
+      header: columnLabels[columnId],
+      id: columnId,
+      isRemovable: !AcknowledgementReceiptAccountingProtectedColumnIds.has(
+        columnId,
+      ),
+      width: columnWidths[columnId],
+      widthClassName: "",
+      widthMode: "fixed",
+      renderCell: (row) => renderAccountingCell(row, columnId, isReadonly, onUpdateEntry),
+    }));
+}
+
+function renderAccountingCell(
+  row: AcknowledgementReceiptLineEntry,
+  columnId: AcknowledgementReceiptAccountingColumnId,
+  isReadonly: boolean,
+  onUpdateEntry: (
+    rowId: string,
+    updates: Partial<AcknowledgementReceiptLineEntry>,
+  ) => void,
+) {
+  switch (columnId) {
+    case "accountCode":
+      return (
         <EntryInput
           value={row.accountCode}
           readOnly={isReadonly}
           onChange={(accountCode) => onUpdateEntry(row.id, { accountCode })}
         />
-      ),
-    },
-    {
-      header: "Account Title",
-      id: "accountTitle",
-      width: 240,
-      widthClassName: "w-[15rem]",
-      renderCell: (row) => (
+      );
+    case "accountTitle":
+      return (
         <EntryInput
           value={row.accountTitle}
           readOnly={isReadonly}
           onChange={(accountTitle) => onUpdateEntry(row.id, { accountTitle })}
         />
-      ),
-    },
-    {
-      header: "Particulars",
-      id: "collectionType",
-      width: 260,
-      widthClassName: "w-[16rem]",
-      renderCell: (row) => (
+      );
+    case "collectionType":
+      return (
         <EntryInput
           value={row.collectionType}
           readOnly={isReadonly}
           onChange={(collectionType) => onUpdateEntry(row.id, { collectionType })}
         />
-      ),
-    },
-    {
-      header: "Reference No.",
-      id: "referenceNo",
-      width: 160,
-      widthClassName: "w-[10rem]",
-      renderCell: (row) => (
+      );
+    case "referenceNo":
+      return (
         <EntryInput
           value={row.referenceNo}
           readOnly={isReadonly}
           onChange={(referenceNo) => onUpdateEntry(row.id, { referenceNo })}
         />
-      ),
-    },
-    {
-      header: "Debit",
-      id: "debit",
-      width: 150,
-      widthClassName: "w-[9.5rem]",
-      renderCell: (row) => (
+      );
+    case "debit":
+      return (
         <EntryAmountInput
           value={row.debit}
           readOnly={isReadonly}
           onValueChange={(debit) => onUpdateEntry(row.id, { debit })}
         />
-      ),
-    },
-    {
-      header: "Credit",
-      id: "credit",
-      width: 150,
-      widthClassName: "w-[9.5rem]",
-      renderCell: (row) => (
+      );
+    case "credit":
+      return (
         <EntryAmountInput
           value={row.credit}
           readOnly={isReadonly}
           onValueChange={(credit) => onUpdateEntry(row.id, { credit })}
         />
-      ),
-    },
-  ];
+      );
+  }
 }
 
 function EntryDropdown({
@@ -525,6 +749,26 @@ function EntryAmountInput({
   );
 }
 
+function EntryDateInput({
+  onChange,
+  readOnly,
+  value,
+}: {
+  onChange: (value: string) => void;
+  readOnly: boolean;
+  value: string;
+}) {
+  return (
+    <input
+      type="date"
+      value={value}
+      readOnly={readOnly}
+      onChange={(event) => onChange(event.target.value)}
+      className={entryCellControlClassName()}
+    />
+  );
+}
+
 function entryCellControlClassName(extraClassName?: string) {
   return joinClasses(
     "h-10 w-full rounded-none border-0 bg-transparent px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:bg-skyblue/10 focus:ring-2 focus:ring-inset focus:ring-skyblue/35 disabled:cursor-not-allowed disabled:bg-offwhite/45 disabled:text-darknavy/35",
@@ -550,5 +794,90 @@ function shouldClearEntry(
   return !acknowledgementReceiptEntryHasData(entry);
 }
 
+function isCheckPaymentType(paymentType: string) {
+  return paymentType.trim().toLowerCase().includes("check");
+}
+
 const EntryDropdownClassName =
   "[&_.app-advanced-dropdown-control]:h-10 [&_.app-advanced-dropdown-control]:rounded-none [&_.app-advanced-dropdown-control]:border-0 [&_.app-advanced-dropdown-control]:bg-transparent [&_.app-advanced-dropdown-control]:px-3 [&_.app-advanced-dropdown-control]:shadow-none [&_.app-advanced-dropdown-control]:focus:ring-2 [&_.app-advanced-dropdown-control]:focus:ring-inset [&_.app-advanced-dropdown-control]:focus:ring-skyblue/35";
+
+function isAcknowledgementReceiptAccountingColumnId(
+  columnId: string,
+): columnId is AcknowledgementReceiptAccountingColumnId {
+  return AcknowledgementReceiptAccountingColumnIds.includes(
+    columnId as AcknowledgementReceiptAccountingColumnId,
+  );
+}
+
+function getAccountingExportCell(
+  entry: AcknowledgementReceiptLineEntry,
+  columnId: AcknowledgementReceiptAccountingColumnId,
+) {
+  return String(entry[columnId] ?? "");
+}
+
+function calculateAccountingColumnFitWidth({
+  columnId,
+  columnLabels,
+  rows,
+}: {
+  columnId: AcknowledgementReceiptAccountingColumnId;
+  columnLabels: Record<AcknowledgementReceiptAccountingColumnId, string>;
+  rows: AcknowledgementReceiptLineEntry[];
+}) {
+  const headerWidth = estimateTextWidth(columnLabels[columnId], 76);
+  const contentWidth = rows.reduce(
+    (currentWidth, row) =>
+      Math.max(
+        currentWidth,
+        estimateTextWidth(getAccountingExportCell(row, columnId), 24),
+      ),
+    50,
+  );
+
+  return Math.max(headerWidth, contentWidth);
+}
+
+function estimateTextWidth(value: string, padding: number) {
+  return clampColumnWidth(value.trim().length * 7.5 + padding);
+}
+
+function moveColumnId<TColumnId extends string>(
+  columnOrder: TColumnId[],
+  fromColumnId: TColumnId,
+  toColumnId: TColumnId,
+) {
+  const fromIndex = columnOrder.indexOf(fromColumnId);
+  const toIndex = columnOrder.indexOf(toColumnId);
+
+  if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) {
+    return columnOrder;
+  }
+
+  const nextOrder = [...columnOrder];
+  const [movedColumn] = nextOrder.splice(fromIndex, 1);
+
+  nextOrder.splice(toIndex, 0, movedColumn);
+  return nextOrder;
+}
+
+function updateVisibleColumnIds<TColumnId extends string>(
+  visibleColumnIds: TColumnId[],
+  columnOrder: TColumnId[],
+  columnId: TColumnId,
+  isVisible: boolean,
+) {
+  if (isVisible) {
+    const nextVisibleIds = new Set([...visibleColumnIds, columnId]);
+
+    return columnOrder.filter((currentColumnId) =>
+      nextVisibleIds.has(currentColumnId),
+    );
+  }
+
+  if (visibleColumnIds.length <= 1) {
+    return visibleColumnIds;
+  }
+
+  return visibleColumnIds.filter((currentColumnId) => currentColumnId !== columnId);
+}

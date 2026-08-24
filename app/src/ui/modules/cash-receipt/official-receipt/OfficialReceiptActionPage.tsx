@@ -151,6 +151,7 @@ export function OfficialReceiptActionPage({
             <OfficialReceiptEntries
               entryView={receiptForm.entryView}
               isReadonly={isReadonly}
+              paymentType={receiptForm.values.paymentType}
               rows={receiptForm.values.lineEntries}
               onEntryViewChange={receiptForm.setEntryView}
               onOpenCollectionTypeDialog={() => setIsCollectionTypeDialogOpen(true)}

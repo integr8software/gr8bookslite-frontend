@@ -1,13 +1,11 @@
 import { useMemo } from "react";
-import {
-  CashVoucherPartyOptions,
-  CashVoucherProjectOptions,
-} from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherData";
+import { CashVoucherPartyOptions, CashVoucherProjectOptions } from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherData";
 import type { CashVoucherDetailsFormProps } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLookupDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppLookupDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
+import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import {
   TransactionField,
   TransactionFieldClassName,
@@ -130,33 +128,40 @@ export function CashVoucherDetailsFields({
             placeholder="Project Code"
           />
 
-          <TransactionField label="Currency" error={errors.currency}>
-            <AppAdvancedDropdown
-              id="cash-voucher-currency"
-              value={values.currency}
-              readOnly={isReadonly}
-              isClearable={false}
-              menuMinWidth={320}
-              options={currencyOptions}
-              placeholder="Currency"
-              searchPlaceholder="Search Currency"
-              onChange={(value) => onCurrencyChange(String(value))}
-            />
-          </TransactionField>
-
-          <TransactionField label="Exchange Rate" error={errors.fxRate}>
-            <input
-              id="cash-voucher-fx-rate"
-              type="text"
-              inputMode="decimal"
-              value={values.fxRate}
-              readOnly={isReadonly}
-              disabled={isReadonly || isExchangeRateLoading}
-              onChange={(event) => onUpdateField("fxRate", formatExchangeRateInput(event.target.value))}
-              className={`${TransactionFieldClassName} text-right tabular-nums${isReadonly || isExchangeRateLoading ? " transaction-readonly-placeholder" : ""}`}
-              placeholder="0.00"
-            />
-          </TransactionField>
+          <CurrencyExchangeRateRow
+            currencyLabel="Currency"
+            currencyControlId="cash-voucher-currency"
+            currencyError={errors.currency}
+            exchangeRateControlId="cash-voucher-fx-rate"
+            exchangeRateError={errors.fxRate}
+            currencyControl={
+              <AppAdvancedDropdown
+                id="cash-voucher-currency"
+                className="w-full min-w-0"
+                value={values.currency}
+                readOnly={isReadonly}
+                isClearable={false}
+                menuMinWidth={320}
+                options={currencyOptions}
+                placeholder="Currency"
+                searchPlaceholder="Search Currency"
+                onChange={(value) => onCurrencyChange(String(value))}
+              />
+            }
+            exchangeRateControl={
+              <input
+                id="cash-voucher-fx-rate"
+                type="text"
+                inputMode="decimal"
+                value={values.fxRate}
+                readOnly={isReadonly}
+                disabled={isReadonly || isExchangeRateLoading}
+                onChange={(event) => onUpdateField("fxRate", formatExchangeRateInput(event.target.value))}
+                className={`${TransactionFieldClassName} text-right tabular-nums${isReadonly || isExchangeRateLoading ? " transaction-readonly-placeholder" : ""}`}
+                placeholder="0.00"
+              />
+            }
+          />
         </div>
 
         {/* Column 3: Transaction Identity & Status */}
@@ -181,13 +186,7 @@ export function CashVoucherDetailsFields({
             onValueChange={(value) => onUpdateField("voucherDate", value)}
           />
 
-          <TransactionTextField
-            value={values.status}
-            isReadonly
-            label="Status"
-            error={errors.status}
-            onValueChange={() => undefined}
-          />
+          <TransactionTextField value={values.status} isReadonly label="Status" error={errors.status} onValueChange={() => undefined} />
         </div>
       </div>
     </section>

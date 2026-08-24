@@ -46,6 +46,7 @@ import {
 import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
+import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 import { formatMoneyNumberDisplayValue, MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 import { CashAdvanceFileAttachmentFields } from "@/app/src/ui/modules/cash-disbursement/cash-advance/action/CashAdvanceFileAttachmentFields";
@@ -343,33 +344,38 @@ function CashAdvancePrimaryFields({
           placeholder="Project Code"
         />
 
-        <TransactionField label="Currency">
-          <AppAdvancedDropdown
-            id="cash-advance-currency"
-            value={form.values.currency}
-            readOnly={isReadonly}
-            isClearable={false}
-            menuMinWidth={320}
-            options={currencyOptions}
-            placeholder="Currency"
-            searchPlaceholder="Search Currency"
-            onChange={(value) => onUpdateCurrency(String(value))}
-          />
-        </TransactionField>
-
-        <TransactionField label="Exchange Rate">
-          <input
-            id="cash-advance-fx-rate"
-            type="text"
-            inputMode="decimal"
-            value={form.values.fxRate}
-            readOnly={isReadonly}
-            disabled={isReadonly || form.isExchangeRateLoading}
-            onChange={(event) => form.updateField("fxRate", formatExchangeRateInput(event.target.value))}
-            className={`${TransactionFieldClassName} text-right tabular-nums${isReadonly || form.isExchangeRateLoading ? " transaction-readonly-placeholder" : ""}`}
-            placeholder="0.00"
-          />
-        </TransactionField>
+        <CurrencyExchangeRateRow
+          currencyLabel="Currency"
+          currencyControlId="cash-advance-currency"
+          exchangeRateControlId="cash-advance-fx-rate"
+          currencyControl={
+            <AppAdvancedDropdown
+              id="cash-advance-currency"
+              className="w-full min-w-0"
+              value={form.values.currency}
+              readOnly={isReadonly}
+              isClearable={false}
+              menuMinWidth={320}
+              options={currencyOptions}
+              placeholder="Currency"
+              searchPlaceholder="Search Currency"
+              onChange={(value) => onUpdateCurrency(String(value))}
+            />
+          }
+          exchangeRateControl={
+            <input
+              id="cash-advance-fx-rate"
+              type="text"
+              inputMode="decimal"
+              value={form.values.fxRate}
+              readOnly={isReadonly}
+              disabled={isReadonly || form.isExchangeRateLoading}
+              onChange={(event) => form.updateField("fxRate", formatExchangeRateInput(event.target.value))}
+              className={`${TransactionFieldClassName} text-right tabular-nums${isReadonly || form.isExchangeRateLoading ? " transaction-readonly-placeholder" : ""}`}
+              placeholder="0.00"
+            />
+          }
+        />
 
         <CashAdvanceMetricField label="Cash Advance Limit" value={form.values.cashAdvanceLimit} emptyLabel="No limit" />
 
@@ -562,20 +568,12 @@ function createCashAdvancePartyOptions({
   return options;
 }
 
-function CashAdvanceMetricField({
-  emptyLabel = "0.00",
-  label,
-  value,
-}: {
-  emptyLabel?: string;
-  label: string;
-  value: string;
-}) {
+function CashAdvanceMetricField({ emptyLabel = "0.00", label, value }: { emptyLabel?: string; label: string; value?: string | null }) {
+  const displayValue = value?.trim() ? formatMoneyNumberDisplayValue(value) : emptyLabel;
+
   return (
     <TransactionField label={label}>
-      <div className={`${TransactionFieldClassName} flex items-center justify-end tabular-nums text-darknavy`}>
-        {value.trim() ? formatMoneyNumberDisplayValue(value) : emptyLabel}
-      </div>
+      <div className={`${TransactionFieldClassName} flex items-center justify-end tabular-nums text-darknavy`}>{displayValue}</div>
     </TransactionField>
   );
 }

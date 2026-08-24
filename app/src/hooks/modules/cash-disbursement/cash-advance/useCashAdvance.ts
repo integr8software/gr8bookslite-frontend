@@ -112,6 +112,7 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
   const draft = useModuleDraft({
     enabled: mode !== "view",
     key: createModuleDraftKey({ mode, moduleId: "cash-disbursement:cash-advance", recordId }),
+    restoreValues: restoreCashAdvanceDraftValues,
     setValues,
     values,
   });
@@ -134,9 +135,10 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
 
   function updateAmount(amount: string) {
     setValues((current) => {
-      const balance = parseMoneyNumberInput(current.cashAdvanceBalance);
+      const cashAdvanceBalance = current.cashAdvanceBalance ?? "";
+      const balance = parseMoneyNumberInput(cashAdvanceBalance);
       const nextAmount =
-        current.cashAdvanceBalance.trim() && parseMoneyNumberInput(amount) > balance ? formatMoneyNumberDisplayValue(balance) : amount;
+        cashAdvanceBalance.trim() && parseMoneyNumberInput(amount) > balance ? formatMoneyNumberDisplayValue(balance) : amount;
 
       return {
         ...current,
@@ -188,9 +190,7 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
       toast.error("No changes to save.");
       return false;
     }
-    const releaseSubmitLock = acquireModuleActionLock(
-      `cash-disbursement:cash-advance:submit:${mode}:${recordId ?? values.transNo}`,
-    );
+    const releaseSubmitLock = acquireModuleActionLock(`cash-disbursement:cash-advance:submit:${mode}:${recordId ?? values.transNo}`);
     if (!releaseSubmitLock) return false;
     isSubmittingRef.current = true;
     setIsSubmitting(true);
@@ -279,6 +279,21 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
     updateReferenceField,
     updateTaxValue,
     values,
+  };
+}
+
+function restoreCashAdvanceDraftValues(draftValues: CashAdvanceFormValues, currentValues: CashAdvanceFormValues): CashAdvanceFormValues {
+  return {
+    ...currentValues,
+    ...draftValues,
+    attachments: draftValues.attachments ?? currentValues.attachments,
+    cashAdvanceBalance: draftValues.cashAdvanceBalance ?? "",
+    cashAdvanceLimit: draftValues.cashAdvanceLimit ?? "",
+    referenceFields: {
+      ...currentValues.referenceFields,
+      ...draftValues.referenceFields,
+    },
+    taxValue: draftValues.taxValue ?? currentValues.taxValue,
   };
 }
 
@@ -478,10 +493,13 @@ export function useCashAdvanceTable(advances: CashAdvanceRecord[]) {
     table.setPageIndex(0);
   }
 
-  const setStatusFilter = useCallback((value: (typeof CashAdvanceStatusFilters)[number]) => {
-    setStatusFilterState(value);
-    table.setPageIndex(0);
-  }, [table]);
+  const setStatusFilter = useCallback(
+    (value: (typeof CashAdvanceStatusFilters)[number]) => {
+      setStatusFilterState(value);
+      table.setPageIndex(0);
+    },
+    [table],
+  );
 
   function resetFilters() {
     setAmountRangeState({ from: "", to: "" });

@@ -8,6 +8,7 @@ import type { PettyCashFundReplenishmentActionPageState } from "@/app/src/types/
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLookupDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppLookupDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
+import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import {
   TransactionField,
   TransactionFieldClassName,
@@ -129,32 +130,40 @@ export function PettyCashFundReplenishmentDetailsFields({
             onValueChange={(value) => page.updateField("accountCode", value)}
             placeholder="Default Account Code"
           />
-          <TransactionField label="Currency" error={page.errors.currency}>
-            <AppAdvancedDropdown
-              id="pcfr-currency"
-              value={page.values.currency}
-              readOnly={page.isReadonly}
-              isClearable={false}
-              menuMinWidth={320}
-              options={page.currencyOptions}
-              placeholder="Currency"
-              searchPlaceholder="Search Currency"
-              onChange={(value) => page.updateCurrency(String(value))}
-            />
-          </TransactionField>
-          <TransactionField label="Exchange Rate" error={page.errors.exchangeRate}>
-            <input
-              id="pcfr-exchange-rate"
-              type="text"
-              inputMode="decimal"
-              value={page.values.exchangeRate}
-              readOnly={page.isReadonly}
-              disabled={page.isReadonly || page.isExchangeRateLoading}
-              onChange={(event) => page.updateField("exchangeRate", formatExchangeRateInput(event.target.value))}
-              className={`${TransactionFieldClassName} text-right tabular-nums${page.isReadonly || page.isExchangeRateLoading ? " transaction-readonly-placeholder" : ""}`}
-              placeholder="0.00"
-            />
-          </TransactionField>
+          <CurrencyExchangeRateRow
+            currencyLabel="Currency"
+            currencyControlId="pcfr-currency"
+            currencyError={page.errors.currency}
+            exchangeRateControlId="pcfr-exchange-rate"
+            exchangeRateError={page.errors.exchangeRate}
+            currencyControl={
+              <AppAdvancedDropdown
+                id="pcfr-currency"
+                className="w-full min-w-0"
+                value={page.values.currency}
+                readOnly={page.isReadonly}
+                isClearable={false}
+                menuMinWidth={320}
+                options={page.currencyOptions}
+                placeholder="Currency"
+                searchPlaceholder="Search Currency"
+                onChange={(value) => page.updateCurrency(String(value))}
+              />
+            }
+            exchangeRateControl={
+              <input
+                id="pcfr-exchange-rate"
+                type="text"
+                inputMode="decimal"
+                value={page.values.exchangeRate}
+                readOnly={page.isReadonly}
+                disabled={page.isReadonly || page.isExchangeRateLoading}
+                onChange={(event) => page.updateField("exchangeRate", formatExchangeRateInput(event.target.value))}
+                className={`${TransactionFieldClassName} text-right tabular-nums${page.isReadonly || page.isExchangeRateLoading ? " transaction-readonly-placeholder" : ""}`}
+                placeholder="0.00"
+              />
+            }
+          />
         </div>
         <div className="grid min-w-0 content-start gap-5">
           <TransactionTextField

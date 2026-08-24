@@ -35,7 +35,7 @@ export function validateCashAdvanceForm(values: CashAdvanceFormValues) {
 }
 
 export function validateCashAdvanceAmountWithinBalance(values: CashAdvanceFormValues) {
-  if (!values.cashAdvanceBalance.trim()) {
+  if (!values.cashAdvanceBalance?.trim()) {
     return { isValid: true, message: null };
   }
 

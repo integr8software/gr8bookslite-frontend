@@ -266,7 +266,7 @@ export function AppCopyFromSourceDialog({
         },
         header: ({ table }) => {
           if (selectionMode === "single") {
-            return <span className="sr-only">Select one transaction</span>;
+            return <span className="text-xs font-semibold text-darknavy/65">Choose</span>;
           }
 
           const visibleRecordIds = table.getRowModel().rows.map((row) => row.original.id);
@@ -390,7 +390,18 @@ export function AppCopyFromSourceDialog({
           return (
             <tr
               key={id}
-              className={joinClasses("module-table-row border-b border-darknavy/8 last:border-b-0", isSelected && "bg-skyblue/10")}
+              onClick={(event) => {
+                const target = event.target;
+                if (target instanceof HTMLElement && target.closest("input, button, a, select, textarea, label")) {
+                  return;
+                }
+
+                onToggleRecord(original.id);
+              }}
+              className={joinClasses(
+                "module-table-row cursor-pointer border-b border-darknavy/8 last:border-b-0",
+                isSelected && "bg-skyblue/10",
+              )}
             >
               <td
                 className={joinClasses(

@@ -9,6 +9,7 @@ import type { PettyCashVoucherActionPageState } from "@/app/src/types/modules/ca
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLookupDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppLookupDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
+import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 import {
   TransactionField,
@@ -151,33 +152,40 @@ export function PettyCashVoucherDetailsFields({
             placeholder="Default Account Code"
           />
 
-          <TransactionField label="Currency" error={page.errors.currency}>
-            <AppAdvancedDropdown
-              id="petty-cash-voucher-currency"
-              value={page.values.currency}
-              readOnly={page.isReadonly}
-              isClearable={false}
-              menuMinWidth={320}
-              options={page.currencyOptions}
-              placeholder="Currency"
-              searchPlaceholder="Search Currency"
-              onChange={(value) => page.updateCurrency(String(value))}
-            />
-          </TransactionField>
-
-          <TransactionField label="Exchange Rate" error={page.errors.exchangeRate}>
-            <input
-              id="petty-cash-voucher-exchange-rate"
-              type="text"
-              inputMode="decimal"
-              value={page.values.exchangeRate}
-              readOnly={page.isReadonly}
-              disabled={page.isReadonly || page.isExchangeRateLoading}
-              onChange={(event) => page.updateField("exchangeRate", formatExchangeRateInput(event.target.value))}
-              className={`${TransactionFieldClassName} text-right tabular-nums${page.isReadonly || page.isExchangeRateLoading ? " transaction-readonly-placeholder" : ""}`}
-              placeholder="0.00"
-            />
-          </TransactionField>
+          <CurrencyExchangeRateRow
+            currencyLabel="Currency"
+            currencyControlId="petty-cash-voucher-currency"
+            currencyError={page.errors.currency}
+            exchangeRateControlId="petty-cash-voucher-exchange-rate"
+            exchangeRateError={page.errors.exchangeRate}
+            currencyControl={
+              <AppAdvancedDropdown
+                id="petty-cash-voucher-currency"
+                className="w-full min-w-0"
+                value={page.values.currency}
+                readOnly={page.isReadonly}
+                isClearable={false}
+                menuMinWidth={320}
+                options={page.currencyOptions}
+                placeholder="Currency"
+                searchPlaceholder="Search Currency"
+                onChange={(value) => page.updateCurrency(String(value))}
+              />
+            }
+            exchangeRateControl={
+              <input
+                id="petty-cash-voucher-exchange-rate"
+                type="text"
+                inputMode="decimal"
+                value={page.values.exchangeRate}
+                readOnly={page.isReadonly}
+                disabled={page.isReadonly || page.isExchangeRateLoading}
+                onChange={(event) => page.updateField("exchangeRate", formatExchangeRateInput(event.target.value))}
+                className={`${TransactionFieldClassName} text-right tabular-nums${page.isReadonly || page.isExchangeRateLoading ? " transaction-readonly-placeholder" : ""}`}
+                placeholder="0.00"
+              />
+            }
+          />
 
           <TransactionField controlId="petty-cash-voucher-vatable" label="VATable" error={page.errors.vatable}>
             <select

@@ -429,7 +429,7 @@ export function CashVoucherEntrySection(props: VoucherDataEntryProps) {
             <div role="tablist" aria-label="Entry view" className="inline-flex rounded-lg border border-darknavy/10 bg-offwhite/70 p-1">
               {(
                 [
-                  [CashVoucherExpenseEntryView, "Expense Details"],
+                  [CashVoucherExpenseEntryView, "Disbursement Details"],
                   ["accounting", "Accounting Entries"],
                 ] as const
               ).map(([view, label]) => {

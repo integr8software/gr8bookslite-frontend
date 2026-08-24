@@ -23,6 +23,7 @@ export type DisbursementEntryColumnId =
   | "remarks"
   | "refId"
   | "responsibilityCenter"
+  | "responsibilityCenterCode"
   | "vatType"
   | "debit"
   | "credit";
@@ -30,6 +31,7 @@ export type DisbursementEntryColumnId =
 export type DisbursementEntryView = "accounting" | "expense";
 
 export type ExpenseEntryColumnId =
+  | "disbursementCode"
   | "expenseType"
   | "amount"
   | "checkDate"
@@ -47,6 +49,7 @@ export type ExpenseEntryColumnId =
   | "partyName"
   | "remarks"
   | "responsibilityCenter"
+  | "responsibilityCenterCode"
   | "refId";
 
 export type VoucherDataEntryProps = {

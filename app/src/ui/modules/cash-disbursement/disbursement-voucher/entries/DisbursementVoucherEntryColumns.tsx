@@ -228,6 +228,21 @@ export function createDisbursementAccountingEntryColumns({
         />
       ),
     },
+    responsibilityCenterCode: {
+      header: columnLabels.responsibilityCenterCode,
+      id: "responsibilityCenterCode",
+      width: columnWidths.responsibilityCenterCode,
+      widthClassName: "w-[14rem]",
+      renderCell: (entry, rowIndex, context) => (
+        <EntryInput
+          id={context.fieldId}
+          label={`${columnLabels.responsibilityCenterCode} row ${rowIndex + 1}`}
+          value={entry.responsibilityCenter ?? ""}
+          onChange={() => undefined}
+          readOnly
+        />
+      ),
+    },
     refId: {
       header: columnLabels.refId,
       id: "refId",
@@ -298,6 +313,12 @@ export function createDisbursementExpenseEntryColumns({
   vatOptions,
 }: DisbursementExpenseEntryColumnsParams): Record<ExpenseEntryColumnId, ModuleDataEntryColumn<DisbursementLineEntry>> {
   return {
+    disbursementCode: {
+      ...accountingColumns.accountCode,
+      header: expenseColumnLabels.disbursementCode,
+      id: "disbursementCode",
+      width: expenseColumnWidths.disbursementCode,
+    },
     expenseType: {
       header: expenseColumnLabels.expenseType,
       id: "expenseType",
@@ -305,15 +326,15 @@ export function createDisbursementExpenseEntryColumns({
       widthClassName: "w-[15rem]",
       renderCell: (entry) => (
         <ChartAccountDropdown
-          addAction={!isReadonly && canAddExpenseType ? { label: "Add Expense Type", onClick: onAddExpenseType } : undefined}
+          addAction={!isReadonly && canAddExpenseType ? { label: "Add Disbursement Type", onClick: onAddExpenseType } : undefined}
           accounts={expenseAccounts}
           value={entry.accountName}
           valueField="accountName"
           readOnly={isReadonly}
           isClearable
           className={DisbursementVoucherAccountingDropdownClassName}
-          placeholder="Select Expense Type"
-          searchPlaceholder="Search Expense Type"
+          placeholder="Select Disbursement Type"
+          searchPlaceholder="Search Disbursement Type"
           onChange={() => undefined}
           onSelectAccount={(account) =>
             updateExpenseEntryFields(entry.id, {
@@ -495,6 +516,12 @@ export function createDisbursementExpenseEntryColumns({
       header: expenseColumnLabels.responsibilityCenter,
       id: "responsibilityCenter",
       width: expenseColumnWidths.responsibilityCenter,
+    },
+    responsibilityCenterCode: {
+      ...accountingColumns.responsibilityCenterCode,
+      header: expenseColumnLabels.responsibilityCenterCode,
+      id: "responsibilityCenterCode",
+      width: expenseColumnWidths.responsibilityCenterCode,
     },
     refId: {
       ...accountingColumns.refId,

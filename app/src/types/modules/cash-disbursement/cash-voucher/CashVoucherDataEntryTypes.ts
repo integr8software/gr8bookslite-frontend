@@ -21,6 +21,7 @@ export type CashVoucherEntryColumnId =
   | "remarks"
   | "refId"
   | "responsibilityCenter"
+  | "responsibilityCenterCode"
   | "vatType"
   | "debit"
   | "credit";
@@ -28,6 +29,7 @@ export type CashVoucherEntryColumnId =
 export type CashVoucherEntryView = "accounting" | "expense";
 
 export type ExpenseEntryColumnId =
+  | "disbursementCode"
   | "expenseType"
   | "amount"
   | "checkDate"
@@ -45,6 +47,7 @@ export type ExpenseEntryColumnId =
   | "partyName"
   | "remarks"
   | "responsibilityCenter"
+  | "responsibilityCenterCode"
   | "refId";
 
 export type VoucherDataEntryProps = {

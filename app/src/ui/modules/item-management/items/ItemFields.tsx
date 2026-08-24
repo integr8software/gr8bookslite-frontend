@@ -1,22 +1,11 @@
-import {
-  useEffect,
-  useState,
-  type ChangeEventHandler,
-  type KeyboardEvent,
-  type ReactNode,
-} from "react";
+import { useEffect, useState, type ChangeEventHandler, type KeyboardEvent, type ReactNode } from "react";
 import { formatCurrency } from "@/app/src/utils/currency.util";
-import type {
-  ItemFormErrors,
-  ItemFormValues,
-} from "@/app/src/types/modules/item-management/items/ItemManagementTypes";
-import {
-  AppAdvancedDropdown,
-  type AppAdvancedDropdownOption,
-} from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import type { ItemFormErrors, ItemFormValues } from "@/app/src/types/modules/item-management/items/ItemManagementTypes";
+import { AppAdvancedDropdown, type AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
 import { ItemTagsInput } from "@/app/src/ui/modules/item-management/items/ItemTagsInput";
+import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
 
 export type ItemFieldsProps = {
   taxTreatmentOptions: Array<{ label: string; value: string; percentage: number }>;
@@ -28,10 +17,7 @@ export type ItemFieldsProps = {
   values: ItemFormValues;
   warehouseOptions: AppAdvancedDropdownOption[];
   onAddTag: (tag: string) => void;
-  onFieldChange: <TKey extends keyof ItemFormValues>(
-    field: TKey,
-    value: ItemFormValues[TKey],
-  ) => void;
+  onFieldChange: <TKey extends keyof ItemFormValues>(field: TKey, value: ItemFormValues[TKey]) => void;
   onInputChange: ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>;
   onRemoveTag: (tag: string) => void;
 };
@@ -168,12 +154,7 @@ export function ItemInformationFields({
         />
       </FormField>
       <FormField label="Tags" error={errors.tags} wide>
-        <ItemTagsInput
-          isReadonly={isReadonly}
-          tags={values.tags}
-          onAddTag={onAddTag}
-          onRemoveTag={onRemoveTag}
-        />
+        <ItemTagsInput isReadonly={isReadonly} tags={values.tags} onAddTag={onAddTag} onRemoveTag={onRemoveTag} />
       </FormField>
       <FormField label="Status" error={errors.status} required wide>
         <AppSwitch
@@ -188,18 +169,10 @@ export function ItemInformationFields({
   );
 }
 
-export function ItemPricingTaxFields({
-  errors,
-  isReadonly,
-  onFieldChange,
-  onInputChange,
-  taxTreatmentOptions,
-  values,
-}: ItemFieldsProps) {
+export function ItemPricingTaxFields({ errors, isReadonly, onFieldChange, onInputChange, taxTreatmentOptions, values }: ItemFieldsProps) {
   const selectedTax = taxTreatmentOptions.find((option) => option.value === values.taxTreatment);
   const suggestedSellingPrice = createSuggestedSellingPrice(values, selectedTax?.percentage);
-  const options =
-    taxTreatmentOptions.length > 0 ? taxTreatmentOptions : [];
+  const options = taxTreatmentOptions.length > 0 ? taxTreatmentOptions : [];
 
   return (
     <FieldPanel title="Pricing and Tax">
@@ -225,17 +198,9 @@ export function ItemPricingTaxFields({
         />
       </FormField>
       <FormField label="Tax Treatment" error={errors.taxTreatment}>
-        <select
-          name="taxTreatment"
-          value={values.taxTreatment}
-          onChange={onInputChange}
-          disabled={isReadonly}
-          className={fieldClassName}
-        >
+        <select name="taxTreatment" value={values.taxTreatment} onChange={onInputChange} disabled={isReadonly} className={fieldClassName}>
           <option value="" disabled>
-            {taxTreatmentOptions.length > 0
-              ? "Select tax type"
-              : "No active tax definitions"}
+            {taxTreatmentOptions.length > 0 ? "Select tax type" : "No active tax definitions"}
           </option>
           {options.map((taxTreatment) => (
             <option key={taxTreatment.value} value={taxTreatment.value}>
@@ -248,14 +213,7 @@ export function ItemPricingTaxFields({
   );
 }
 
-export function ItemInventoryFields({
-  errors,
-  isReadonly,
-  onFieldChange,
-  onInputChange,
-  values,
-  warehouseOptions,
-}: ItemFieldsProps) {
+export function ItemInventoryFields({ errors, isReadonly, onFieldChange, onInputChange, values, warehouseOptions }: ItemFieldsProps) {
   return (
     <FieldPanel title="Inventory">
       <FormField label="Default Warehouse" error={errors.defaultWarehouse}>
@@ -466,12 +424,10 @@ function FormField({
     <div className={wide ? "lg:col-span-2" : undefined}>
       <span className="mb-2 block text-sm font-semibold text-darknavy">
         {label}
-        {required ? <span className="text-coralpink"> *</span> : null}
+        <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired={required} label={label} leadingSpace />
       </span>
       {children}
-      {error ? (
-        <span className="mt-1 block text-xs font-medium text-coralpink">{error}</span>
-      ) : null}
+      {error ? <span className="mt-1 block text-xs font-medium text-coralpink">{error}</span> : null}
     </div>
   );
 }

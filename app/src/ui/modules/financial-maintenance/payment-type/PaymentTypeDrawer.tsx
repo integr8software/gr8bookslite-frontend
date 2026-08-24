@@ -12,6 +12,7 @@ import type {
   PaymentTypeDrawerProps,
 } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
+import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
@@ -69,7 +70,8 @@ function PaymentTypeDrawerPanel({ isOpen, mode, onClose, paymentType }: PaymentT
       <form id={PaymentTypeDrawerFormId} onSubmit={page.handleSubmit} className="grid gap-5 px-6 py-5">
         <label className="grid gap-2">
           <span className="text-sm font-semibold text-darknavy">
-            Payment Type Name <span className="text-coralpink">*</span>
+            Payment Type Name
+            <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired label="Payment Type Name" leadingSpace />
           </span>
           <input
             value={page.values.paymentType}
@@ -82,7 +84,8 @@ function PaymentTypeDrawerPanel({ isOpen, mode, onClose, paymentType }: PaymentT
 
         <label className="grid gap-2">
           <span className="text-sm font-semibold text-darknavy">
-            Category <span className="text-coralpink">*</span>
+            Category
+            <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired label="Category" leadingSpace />
           </span>
           <select
             value={page.values.type}
@@ -114,7 +117,8 @@ function PaymentTypeDrawerPanel({ isOpen, mode, onClose, paymentType }: PaymentT
 
         <label className="grid max-w-xs gap-2">
           <span className="text-sm font-semibold text-darknavy">
-            Status <span className="text-coralpink">*</span>
+            Status
+            <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired label="Status" leadingSpace />
           </span>
           <AppSwitch
             falseOption={MaintenanceInactiveStatusSwitchOption}

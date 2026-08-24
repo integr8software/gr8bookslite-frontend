@@ -7,49 +7,27 @@ import type {
   DeliveryVehicleModuleConfig,
   DeliveryVehicleModuleRecord,
 } from "@/app/src/types/modules/delivery-vehicle-management/DeliveryVehicleModuleTypes";
-import {
-  AppAdvancedDropdown,
-  type AppAdvancedDropdownOption,
-} from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { AppAdvancedDropdown, type AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
 import { getModuleSavePendingLabel, ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
+import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
 import { ModuleTooltip } from "@/app/src/ui/shared/module/ModuleTooltip";
-import {
-  MaintenanceActiveStatusSwitchOption,
-  MaintenanceInactiveStatusSwitchOption,
-} from "@/app/src/utils/status.util";
+import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/utils/status.util";
 
 type Props = {
   config: DeliveryVehicleModuleConfig;
   mode: "add" | "edit" | "view";
   record?: DeliveryVehicleModuleRecord;
   onClose: () => void;
-  onSave: (
-    values: Record<string, string>,
-    status: string,
-    category?: string,
-    existing?: DeliveryVehicleModuleRecord,
-  ) => void;
+  onSave: (values: Record<string, string>, status: string, category?: string, existing?: DeliveryVehicleModuleRecord) => void;
   validate: (values: Record<string, string>) => Record<string, string>;
 };
 
-export function DeliveryVehicleModuleRecordDialog({
-  config,
-  mode,
-  record,
-  onClose,
-  onSave,
-  validate,
-}: Props) {
+export function DeliveryVehicleModuleRecordDialog({ config, mode, record, onClose, onSave, validate }: Props) {
   const formId = `delivery-vehicle-${config.key}-drawer-form`;
   const [values, setValues] = useState<Record<string, string>>(() =>
-    Object.fromEntries(
-      config.fields.map((field) => [
-        field.key,
-        createInitialFieldValue(config.key, field, record),
-      ]),
-    ),
+    Object.fromEntries(config.fields.map((field) => [field.key, createInitialFieldValue(config.key, field, record)])),
   );
   const [status, setStatus] = useState(record?.status ?? config.statuses[0] ?? "Active");
   const [activeTab, setActiveTab] = useState(config.fieldTabs?.[0]?.label ?? "");
@@ -57,14 +35,9 @@ export function DeliveryVehicleModuleRecordDialog({
 
   const isView = mode === "view";
   const usesActiveInactiveSwitch =
-    config.statuses.length === 2 &&
-    config.statuses.includes("Active") &&
-    config.statuses.includes("Inactive");
-  const activeFieldKeys =
-    config.fieldTabs?.find((tab) => tab.label === activeTab)?.fieldKeys ??
-    config.fields.map((field) => field.key);
-  const activeTabDescription = config.fieldTabs?.find((tab) => tab.label === activeTab)
-    ?.description;
+    config.statuses.length === 2 && config.statuses.includes("Active") && config.statuses.includes("Inactive");
+  const activeFieldKeys = config.fieldTabs?.find((tab) => tab.label === activeTab)?.fieldKeys ?? config.fields.map((field) => field.key);
+  const activeTabDescription = config.fieldTabs?.find((tab) => tab.label === activeTab)?.description;
   const visibleFields = config.fields.filter((field) => activeFieldKeys.includes(field.key));
   const fieldByKey = new Map(visibleFields.map((field) => [field.key, field]));
   const title =
@@ -93,9 +66,7 @@ export function DeliveryVehicleModuleRecordDialog({
     const nextErrors = validate(values);
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
-      const firstErrorTab = config.fieldTabs?.find((tab) =>
-        tab.fieldKeys.some((fieldKey) => nextErrors[fieldKey]),
-      );
+      const firstErrorTab = config.fieldTabs?.find((tab) => tab.fieldKeys.some((fieldKey) => nextErrors[fieldKey]));
       if (firstErrorTab) {
         setActiveTab(firstErrorTab.label);
       }
@@ -109,8 +80,7 @@ export function DeliveryVehicleModuleRecordDialog({
       description={
         isView
           ? `Review the saved ${config.noun} details and operational references.`
-          : (config.formDescription ??
-            "Enter the required details, then set the current workflow status.")
+          : (config.formDescription ?? "Enter the required details, then set the current workflow status.")
       }
       eyebrow={config.title}
       formId={formId}
@@ -142,9 +112,7 @@ export function DeliveryVehicleModuleRecordDialog({
                 </button>
               ))}
             </div>
-            {activeTabDescription ? (
-              <p className="text-sm leading-6 text-darknavy/60">{activeTabDescription}</p>
-            ) : null}
+            {activeTabDescription ? <p className="text-sm leading-6 text-darknavy/60">{activeTabDescription}</p> : null}
           </div>
         ) : null}
         <div className="grid gap-4">
@@ -154,9 +122,7 @@ export function DeliveryVehicleModuleRecordDialog({
               fieldByKey={fieldByKey}
               isView={isView}
               values={values}
-              onChange={(fieldKey, value) =>
-                setValues((current) => ({ ...current, [fieldKey]: value }))
-              }
+              onChange={(fieldKey, value) => setValues((current) => ({ ...current, [fieldKey]: value }))}
             />
           ) : config.key === "delivery-vehicles" ? (
             <DeliveryVehicleFieldRows
@@ -165,9 +131,7 @@ export function DeliveryVehicleModuleRecordDialog({
               isView={isView}
               statusField={statusField}
               values={values}
-              onChange={(fieldKey, value) =>
-                setValues((current) => ({ ...current, [fieldKey]: value }))
-              }
+              onChange={(fieldKey, value) => setValues((current) => ({ ...current, [fieldKey]: value }))}
             />
           ) : config.key === "vehicle-repair-maintenance" ? (
             <VehicleRepairMaintenanceFieldRows
@@ -176,9 +140,7 @@ export function DeliveryVehicleModuleRecordDialog({
               isView={isView}
               statusField={statusField}
               values={values}
-              onChange={(fieldKey, value) =>
-                setValues((current) => ({ ...current, [fieldKey]: value }))
-              }
+              onChange={(fieldKey, value) => setValues((current) => ({ ...current, [fieldKey]: value }))}
             />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
@@ -194,10 +156,7 @@ export function DeliveryVehicleModuleRecordDialog({
               ))}
             </div>
           )}
-          {config.key === "delivery-vehicles" ||
-          config.key === "vehicle-repair-maintenance"
-            ? null
-            : statusField}
+          {config.key === "delivery-vehicles" || config.key === "vehicle-repair-maintenance" ? null : statusField}
         </div>
       </form>
     </ModuleDrawer>
@@ -299,11 +258,46 @@ function DeliveryVehicleFieldRows({
 }) {
   return (
     <>
-      <VehicleTypeFieldRow errors={errors} fieldByKey={fieldByKey} fieldKeys={["plateNumber"]} isView={isView} values={values} onChange={onChange} />
-      <VehicleTypeFieldRow errors={errors} fieldByKey={fieldByKey} fieldKeys={["vehicleType", "baseWarehouse"]} isView={isView} values={values} onChange={onChange} />
-      <VehicleTypeFieldRow errors={errors} fieldByKey={fieldByKey} fieldKeys={["ownership"]} isView={isView} values={values} onChange={onChange} />
-      <VehicleTypeFieldRow errors={errors} fieldByKey={fieldByKey} fieldKeys={["registrationExpiry", "insuranceExpiry"]} isView={isView} values={values} onChange={onChange} />
-      <VehicleTypeFieldRow errors={errors} fieldByKey={fieldByKey} fieldKeys={["description"]} isView={isView} values={values} onChange={onChange} />
+      <VehicleTypeFieldRow
+        errors={errors}
+        fieldByKey={fieldByKey}
+        fieldKeys={["plateNumber"]}
+        isView={isView}
+        values={values}
+        onChange={onChange}
+      />
+      <VehicleTypeFieldRow
+        errors={errors}
+        fieldByKey={fieldByKey}
+        fieldKeys={["vehicleType", "baseWarehouse"]}
+        isView={isView}
+        values={values}
+        onChange={onChange}
+      />
+      <VehicleTypeFieldRow
+        errors={errors}
+        fieldByKey={fieldByKey}
+        fieldKeys={["ownership"]}
+        isView={isView}
+        values={values}
+        onChange={onChange}
+      />
+      <VehicleTypeFieldRow
+        errors={errors}
+        fieldByKey={fieldByKey}
+        fieldKeys={["registrationExpiry", "insuranceExpiry"]}
+        isView={isView}
+        values={values}
+        onChange={onChange}
+      />
+      <VehicleTypeFieldRow
+        errors={errors}
+        fieldByKey={fieldByKey}
+        fieldKeys={["description"]}
+        isView={isView}
+        values={values}
+        onChange={onChange}
+      />
       <div className="grid gap-4 sm:grid-cols-2">
         <DeliveryVehicleModuleField
           error={errors.deliveryStatus}
@@ -333,11 +327,46 @@ function VehicleTypeFieldRows({
 }) {
   return (
     <>
-      <VehicleTypeFieldRow errors={errors} fieldByKey={fieldByKey} fieldKeys={["typeName"]} isView={isView} values={values} onChange={onChange} />
-      <VehicleTypeFieldRow errors={errors} fieldByKey={fieldByKey} fieldKeys={["brand", "model"]} isView={isView} values={values} onChange={onChange} />
-      <VehicleTypeFieldRow errors={errors} fieldByKey={fieldByKey} fieldKeys={["maxPayload", "cargoVolume"]} isView={isView} values={values} onChange={onChange} />
-      <VehicleTypeFieldRow errors={errors} fieldByKey={fieldByKey} fieldKeys={["palletCapacity", "handling"]} isView={isView} values={values} onChange={onChange} />
-      <VehicleTypeFieldRow errors={errors} fieldByKey={fieldByKey} fieldKeys={["description"]} isView={isView} values={values} onChange={onChange} />
+      <VehicleTypeFieldRow
+        errors={errors}
+        fieldByKey={fieldByKey}
+        fieldKeys={["typeName"]}
+        isView={isView}
+        values={values}
+        onChange={onChange}
+      />
+      <VehicleTypeFieldRow
+        errors={errors}
+        fieldByKey={fieldByKey}
+        fieldKeys={["brand", "model"]}
+        isView={isView}
+        values={values}
+        onChange={onChange}
+      />
+      <VehicleTypeFieldRow
+        errors={errors}
+        fieldByKey={fieldByKey}
+        fieldKeys={["maxPayload", "cargoVolume"]}
+        isView={isView}
+        values={values}
+        onChange={onChange}
+      />
+      <VehicleTypeFieldRow
+        errors={errors}
+        fieldByKey={fieldByKey}
+        fieldKeys={["palletCapacity", "handling"]}
+        isView={isView}
+        values={values}
+        onChange={onChange}
+      />
+      <VehicleTypeFieldRow
+        errors={errors}
+        fieldByKey={fieldByKey}
+        fieldKeys={["description"]}
+        isView={isView}
+        values={values}
+        onChange={onChange}
+      />
     </>
   );
 }
@@ -357,9 +386,7 @@ function VehicleTypeFieldRow({
   values: Record<string, string>;
   onChange: (fieldKey: string, value: string) => void;
 }) {
-  const fields = fieldKeys
-    .map((fieldKey) => fieldByKey.get(fieldKey))
-    .filter((field): field is DeliveryVehicleField => Boolean(field));
+  const fields = fieldKeys.map((fieldKey) => fieldByKey.get(fieldKey)).filter((field): field is DeliveryVehicleField => Boolean(field));
 
   if (fields.length === 0) {
     return null;
@@ -403,16 +430,12 @@ function DeliveryVehicleModuleField({
     name: field.key,
     value,
     disabled: isView,
-    onChange: (
-      event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
-    ) => onChange(event.target.value),
+    onChange: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => onChange(event.target.value),
   };
 
   return (
     <FormField
-      className={[field.type === "textarea" ? "sm:col-span-2" : "", className]
-        .filter(Boolean)
-        .join(" ")}
+      className={[field.type === "textarea" ? "sm:col-span-2" : "", className].filter(Boolean).join(" ")}
       error={error}
       helper={field.helper}
       label={field.label}
@@ -424,9 +447,7 @@ function DeliveryVehicleModuleField({
           {...common}
           maxLength={field.maxLength}
           placeholder={isView ? `No ${field.label}...` : (field.placeholder ?? `Enter ${field.label}...`)}
-          className={`${controlClassName(error)} min-h-24 resize-y py-3 ${
-            isView ? "placeholder:italic" : ""
-          }`}
+          className={`${controlClassName(error)} min-h-24 resize-y py-3 ${isView ? "placeholder:italic" : ""}`}
           counterMode="used"
         />
       ) : field.type === "select" ? (
@@ -462,9 +483,7 @@ function DeliveryVehicleModuleField({
   );
 }
 
-function createDeliveryVehicleDropdownOptions(
-  options: readonly string[] | undefined,
-): AppAdvancedDropdownOption[] {
+function createDeliveryVehicleDropdownOptions(options: readonly string[] | undefined): AppAdvancedDropdownOption[] {
   return (options ?? []).map((option) => ({
     name: option,
     value: option,
@@ -492,7 +511,7 @@ function FormField({
     <label className={className}>
       <span className="mb-2 block text-sm font-semibold text-darknavy">
         {label}
-        {required ? <span className="text-coralpink"> *</span> : null}
+        <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired={required} label={label} leadingSpace />
         {tooltip ? (
           <ModuleTooltip title={label} description={tooltip} position="top">
             <span
@@ -509,19 +528,13 @@ function FormField({
       {error ? (
         <span className="mt-1 block text-xs font-medium text-coralpink">{error}</span>
       ) : helper ? (
-        <span className="mt-1 block text-xs font-medium leading-5 text-darknavy/50">
-          {helper}
-        </span>
+        <span className="mt-1 block text-xs font-medium leading-5 text-darknavy/50">{helper}</span>
       ) : null}
     </label>
   );
 }
 
-function createInitialFieldValue(
-  configKey: string,
-  field: DeliveryVehicleField,
-  record?: DeliveryVehicleModuleRecord,
-) {
+function createInitialFieldValue(configKey: string, field: DeliveryVehicleField, record?: DeliveryVehicleModuleRecord) {
   const recordValue = record?.fields[field.key];
 
   if (recordValue !== undefined) {
@@ -536,7 +549,6 @@ function createInitialFieldValue(
     if (field.key === "workOrderDate") {
       return record?.createdAt ? formatDateInput(new Date(record.createdAt)) : formatDateInput(new Date());
     }
-
   }
 
   return field.defaultValue ?? "";
@@ -583,12 +595,7 @@ function renderStatusField({
           onChange={onStatusChange}
         />
       ) : (
-        <select
-          value={status}
-          disabled={isView}
-          onChange={(event) => onStatusChange(event.target.value)}
-          className={controlClassName()}
-        >
+        <select value={status} disabled={isView} onChange={(event) => onStatusChange(event.target.value)} className={controlClassName()}>
           {statuses.map((option) => (
             <option key={option}>{option}</option>
           ))}

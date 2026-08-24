@@ -9,6 +9,7 @@ import type {
   TermsMaintenanceDatemode,
   TermsMaintenanceFormValues,
 } from "@/app/src/types/modules/financial-maintenance/terms-maintenance/TermsMaintenanceTypes";
+import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
 import { QuickAddDialog } from "@/app/src/ui/shared/module/QuickAddDialog";
 import { validateTermsMaintenanceForm } from "@/app/src/validations/modules/financial-maintenance/terms-maintenance/TermsMaintenanceValidation";
 
@@ -72,7 +73,8 @@ export function TermsMaintenanceQuickAddDialog({ isOpen, onClose, onSaved }: Ter
     <QuickAddDialog error={error} isOpen={isOpen} isPending={isSaving} title="Add Terms" onClose={onClose} onSave={handleSave}>
       <label className="grid gap-2">
         <span className="text-sm font-semibold text-darknavy">
-          Term Name <span className="text-coralpink">*</span>
+          Term Name
+          <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired label="Term Name" leadingSpace />
         </span>
         <input
           value={values.name}

@@ -9,7 +9,9 @@ import type { SalesInvoiceFormValues } from "@/app/src/types/modules/sales/sales
 import { AppAdvancedDropdown, type AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
+import { useModuleFieldManagement } from "@/app/src/ui/shared/field-management/useModuleFieldManagement";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
+import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
 
 type SalesInvoiceDetailsFormProps = {
   isReadonly: boolean;
@@ -18,13 +20,15 @@ type SalesInvoiceDetailsFormProps = {
 };
 
 export function SalesInvoiceDetailsForm({ isReadonly, onUpdateField, values }: SalesInvoiceDetailsFormProps) {
+  const { isFieldRequired } = useModuleFieldManagement("SI");
+
   return (
     <section className="min-w-0 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
       <div className="grid min-w-0 gap-x-8 gap-y-4 xl:grid-cols-2 2xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(16rem,0.65fr)]">
         <div className="grid min-w-0 content-start gap-4">
           <TextField
             id="sales-invoice-party-name"
-            isRequired
+            isRequired={isFieldRequired("Party Name", true)}
             label="Party Name"
             readOnly={isReadonly}
             value={values.vceName}
@@ -32,6 +36,7 @@ export function SalesInvoiceDetailsForm({ isReadonly, onUpdateField, values }: S
           />
           <TextField
             id="sales-invoice-bill-to-name"
+            isRequired={isFieldRequired("Bill To Name")}
             label="Bill To Name"
             readOnly={isReadonly}
             value={values.billToName}
@@ -39,6 +44,7 @@ export function SalesInvoiceDetailsForm({ isReadonly, onUpdateField, values }: S
           />
           <TextField
             id="sales-invoice-address"
+            isRequired={isFieldRequired("Address")}
             label="Address"
             readOnly={isReadonly}
             value={values.address}
@@ -46,6 +52,7 @@ export function SalesInvoiceDetailsForm({ isReadonly, onUpdateField, values }: S
           />
           <TextField
             id="sales-invoice-contact-person"
+            isRequired={isFieldRequired("Contact Person")}
             label="Contact Person"
             readOnly={isReadonly}
             value={values.contactPerson}
@@ -53,6 +60,7 @@ export function SalesInvoiceDetailsForm({ isReadonly, onUpdateField, values }: S
           />
           <TextField
             id="sales-invoice-contact-no"
+            isRequired={isFieldRequired("Contact No")}
             label="Contact No"
             readOnly={isReadonly}
             value={values.contactNo}
@@ -60,6 +68,7 @@ export function SalesInvoiceDetailsForm({ isReadonly, onUpdateField, values }: S
           />
           <TextField
             id="sales-invoice-project-code"
+            isRequired={isFieldRequired("Project Code")}
             label="Project Code"
             readOnly={isReadonly}
             value={values.projectRef}
@@ -67,12 +76,13 @@ export function SalesInvoiceDetailsForm({ isReadonly, onUpdateField, values }: S
           />
           <TextField
             id="sales-invoice-project-name"
+            isRequired={isFieldRequired("Project Name")}
             label="Project Name"
             readOnly={isReadonly}
             value={values.projectName}
             onChange={(value) => onUpdateField("projectName", value)}
           />
-          <FieldShell controlId="sales-invoice-remarks" label="Remarks">
+          <FieldShell controlId="sales-invoice-remarks" isRequired={isFieldRequired("Remarks")} label="Remarks">
             <AppLimitedTextarea
               id="sales-invoice-remarks"
               className={`${FieldClassName} min-h-20 py-3`}
@@ -88,7 +98,7 @@ export function SalesInvoiceDetailsForm({ isReadonly, onUpdateField, values }: S
         <div className="grid min-w-0 content-start gap-4">
           <TextField
             id="sales-invoice-party-code"
-            isRequired
+            isRequired={isFieldRequired("Party Code", true)}
             label="Party Code"
             readOnly={isReadonly}
             value={values.vceCode}
@@ -96,6 +106,7 @@ export function SalesInvoiceDetailsForm({ isReadonly, onUpdateField, values }: S
           />
           <TextField
             id="sales-invoice-bill-to-code"
+            isRequired={isFieldRequired("Bill to Code")}
             label="Bill to Code"
             readOnly={isReadonly}
             value={values.billToCode}
@@ -103,6 +114,7 @@ export function SalesInvoiceDetailsForm({ isReadonly, onUpdateField, values }: S
           />
           <SelectField
             id="sales-invoice-terms"
+            isRequired={isFieldRequired("Terms of Payment")}
             label="Terms of Payment"
             options={SalesInvoiceTermOptions}
             placeholder="--Select Terms--"
@@ -112,13 +124,14 @@ export function SalesInvoiceDetailsForm({ isReadonly, onUpdateField, values }: S
           />
           <TextField
             id="sales-invoice-due-date"
+            isRequired={isFieldRequired("Due Date")}
             label="Due Date"
             readOnly={isReadonly}
             type="date"
             value={values.dueDate}
             onChange={(value) => onUpdateField("dueDate", value)}
           />
-          <FieldShell controlId="sales-invoice-currency" label="Currency">
+          <FieldShell controlId="sales-invoice-currency" isRequired={isFieldRequired("Currency")} label="Currency">
             <CurrencyExchangeRateRow
               exchangeRateControlId="sales-invoice-exchange-rate"
               currencyControl={
@@ -145,6 +158,7 @@ export function SalesInvoiceDetailsForm({ isReadonly, onUpdateField, values }: S
           </FieldShell>
           <SelectField
             id="sales-invoice-res-center"
+            isRequired={isFieldRequired("Res Center")}
             label="Res Center"
             options={SalesInvoiceResCenterOptions}
             placeholder="--Select Res. Center--"
@@ -157,7 +171,7 @@ export function SalesInvoiceDetailsForm({ isReadonly, onUpdateField, values }: S
         <div className="grid min-w-0 content-start gap-4">
           <TextField
             id="sales-invoice-trans-no"
-            isRequired
+            isRequired={isFieldRequired("SI No", true)}
             label="SI No"
             readOnly={isReadonly}
             value={values.transNo}
@@ -165,6 +179,7 @@ export function SalesInvoiceDetailsForm({ isReadonly, onUpdateField, values }: S
           />
           <TextField
             id="sales-invoice-document-date"
+            isRequired={isFieldRequired("SI Date")}
             label="SI Date"
             readOnly={isReadonly}
             type="date"
@@ -173,6 +188,7 @@ export function SalesInvoiceDetailsForm({ isReadonly, onUpdateField, values }: S
           />
           <TextField
             id="sales-invoice-dr-no"
+            isRequired={isFieldRequired("DR No.")}
             label="DR No."
             readOnly={isReadonly}
             value={values.drNo}
@@ -180,6 +196,7 @@ export function SalesInvoiceDetailsForm({ isReadonly, onUpdateField, values }: S
           />
           <TextField
             id="sales-invoice-sales-personnel"
+            isRequired={isFieldRequired("Sales Personnel")}
             label="Sales Personnel"
             readOnly={isReadonly}
             value={values.salesPersonnel}
@@ -187,6 +204,7 @@ export function SalesInvoiceDetailsForm({ isReadonly, onUpdateField, values }: S
           />
           <SelectField
             id="sales-invoice-status"
+            isRequired={isFieldRequired("Status")}
             label="Status"
             options={SalesInvoiceStatusOptions}
             placeholder="Select status"
@@ -233,6 +251,7 @@ function TextField({
 
 function SelectField({
   id,
+  isRequired = false,
   label,
   onChange,
   options,
@@ -241,6 +260,7 @@ function SelectField({
   value,
 }: {
   id: string;
+  isRequired?: boolean;
   label: string;
   onChange: (value: string) => void;
   options: AppAdvancedDropdownOption[];
@@ -249,7 +269,7 @@ function SelectField({
   value: string;
 }) {
   return (
-    <FieldShell controlId={id} label={label}>
+    <FieldShell controlId={id} isRequired={isRequired} label={label}>
       <AppAdvancedDropdown
         id={id}
         options={options}
@@ -278,7 +298,7 @@ function FieldShell({
     <div className="grid min-w-0 gap-2 sm:grid-cols-[8.5rem_minmax(0,1fr)] sm:items-start">
       <label htmlFor={controlId} className="pt-2 text-sm font-semibold text-darknavy">
         {label}
-        {isRequired ? <span className="ml-1 text-coralpink">*</span> : null}
+        <ModuleFieldRequiredMark fallbackRequired={isRequired} label={label} />
       </label>
       <div className="min-w-0">{children}</div>
     </div>

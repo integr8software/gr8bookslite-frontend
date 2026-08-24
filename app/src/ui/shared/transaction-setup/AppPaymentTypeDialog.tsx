@@ -1,14 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import {
-  ArrowUpDown,
-  ChevronDown,
-  ChevronUp,
-  Plus,
-  Search,
-  X,
-} from "lucide-react";
+import { ArrowUpDown, ChevronDown, ChevronUp, Plus, Search, X } from "lucide-react";
 import type { DisbursementPaymentMethod } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import {
   createPaymentTypeFromForm,
@@ -16,9 +9,7 @@ import {
   PaymentTypeOptions,
   updatePaymentTypeFromForm,
 } from "@/app/src/data/modules/financial-maintenance/payment-type/PaymentTypeData";
-import {
-  applyPaymentTypeListParams,
-} from "@/app/src/services/modules/financial-maintenance/payment-type/PaymentTypeService";
+import { applyPaymentTypeListParams } from "@/app/src/services/modules/financial-maintenance/payment-type/PaymentTypeService";
 import type {
   PaymentTypeClassification,
   PaymentTypeFormErrors,
@@ -28,6 +19,7 @@ import type {
   PaymentTypeStatus,
 } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
+import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
 import { validatePaymentTypeForm } from "@/app/src/validations/modules/financial-maintenance/payment-type/PaymentTypeValidation";
 
 type PaymentTypeDialogMode = "list" | "add" | "edit" | "view";
@@ -45,15 +37,9 @@ type AppPaymentTypeDialogProps = {
   isMutating?: boolean;
   records: PaymentTypeRecord[];
   onClose: () => void;
-  onCreateRecord: (
-    record: PaymentTypeRecord,
-    values: PaymentTypeFormValues,
-  ) => MaybePromise<PaymentTypeRecord | void>;
+  onCreateRecord: (record: PaymentTypeRecord, values: PaymentTypeFormValues) => MaybePromise<PaymentTypeRecord | void>;
   onSelect: (value: DisbursementPaymentMethod) => void;
-  onUpdateRecord: (
-    record: PaymentTypeRecord,
-    values: PaymentTypeFormValues,
-  ) => MaybePromise<PaymentTypeRecord | void>;
+  onUpdateRecord: (record: PaymentTypeRecord, values: PaymentTypeFormValues) => MaybePromise<PaymentTypeRecord | void>;
 };
 
 const EmptyDraft: PaymentTypeDraft = PaymentTypeInitialFormValues;
@@ -87,16 +73,12 @@ export function AppPaymentTypeDialog({
 }: AppPaymentTypeDialogProps) {
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<PaymentTypeFilterType>("");
-  const [statusFilter, setStatusFilter] =
-    useState<PaymentTypeFilterStatus>("Active");
+  const [statusFilter, setStatusFilter] = useState<PaymentTypeFilterStatus>("Active");
   const [sortBy, setSortBy] = useState<PaymentTypeSortKey>("sortOrder");
-  const [sortDirection, setSortDirection] =
-    useState<PaymentTypeSortDirection>("asc");
+  const [sortDirection, setSortDirection] = useState<PaymentTypeSortDirection>("asc");
   const [mode, setMode] = useState<PaymentTypeDialogMode>("list");
   const [activeRecordId, setActiveRecordId] = useState<string | null>(null);
-  const [draft, setDraft] = useState<PaymentTypeDraft>(() =>
-    createEmptyDraft(records),
-  );
+  const [draft, setDraft] = useState<PaymentTypeDraft>(() => createEmptyDraft(records));
   const [formErrors, setFormErrors] = useState<PaymentTypeFormErrors>({});
   const [formSubmitError, setFormSubmitError] = useState("");
   const [pageIndex, setPageIndex] = useState(0);
@@ -121,7 +103,7 @@ export function AppPaymentTypeDialog({
     setPageIndex(0);
     setPageSize(DefaultPageSizeOptions[0]);
     /* eslint-enable react-hooks/set-state-in-effect */
-  }, [isOpen]);
+  }, [isOpen, records]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -158,16 +140,10 @@ export function AppPaymentTypeDialog({
     });
   }, [query, records, sortBy, sortDirection, statusFilter, typeFilter]);
 
-  const activeRecord = useMemo(
-    () => records.find((record) => record.id === activeRecordId) ?? null,
-    [activeRecordId, records],
-  );
+  const activeRecord = useMemo(() => records.find((record) => record.id === activeRecordId) ?? null, [activeRecordId, records]);
   const totalPages = Math.max(1, Math.ceil(filteredRecords.length / pageSize));
   const safePageIndex = Math.min(pageIndex, totalPages - 1);
-  const paginatedRecords = filteredRecords.slice(
-    safePageIndex * pageSize,
-    safePageIndex * pageSize + pageSize,
-  );
+  const paginatedRecords = filteredRecords.slice(safePageIndex * pageSize, safePageIndex * pageSize + pageSize);
 
   function openRecord(record: PaymentTypeRecord, nextMode: "edit" | "view") {
     setDraft({
@@ -203,10 +179,7 @@ export function AppPaymentTypeDialog({
     setPageIndex(0);
   }
 
-  function updateDraftField<TKey extends keyof PaymentTypeDraft>(
-    field: TKey,
-    value: PaymentTypeDraft[TKey],
-  ) {
+  function updateDraftField<TKey extends keyof PaymentTypeDraft>(field: TKey, value: PaymentTypeDraft[TKey]) {
     setDraft((currentDraft) => ({ ...currentDraft, [field]: value }));
     setFormErrors((currentErrors) => ({
       ...currentErrors,
@@ -264,15 +237,10 @@ export function AppPaymentTypeDialog({
       >
         <div className="flex items-start justify-between gap-4 border-b border-darknavy/10 px-5 py-4">
           <div>
-            <h2
-              id="payment-type-dialog-title"
-              className="text-lg font-semibold text-darknavy"
-            >
+            <h2 id="payment-type-dialog-title" className="text-lg font-semibold text-darknavy">
               Payment Type Maintenance
             </h2>
-            <p className="mt-1 text-sm text-darknavy/55">
-              Maintain payment type name, category, and status.
-            </p>
+            <p className="mt-1 text-sm text-darknavy/55">Maintain payment type name, category, and status.</p>
           </div>
           <button
             type="button"
@@ -311,9 +279,7 @@ export function AppPaymentTypeDialog({
             onPageSizeChange={handlePageSizeChange}
             onSortChange={(nextSortBy) => {
               if (sortBy === nextSortBy) {
-                setSortDirection((currentDirection) =>
-                  currentDirection === "asc" ? "desc" : "asc",
-                );
+                setSortDirection((currentDirection) => (currentDirection === "asc" ? "desc" : "asc"));
                 return;
               }
 
@@ -322,19 +288,21 @@ export function AppPaymentTypeDialog({
             }}
             onStatusFilterChange={handleStatusFilterChange}
             onToggleStatus={(record) => {
-              const nextStatus =
-                record.status === "Active" ? "Inactive" : "Active";
+              const nextStatus = record.status === "Active" ? "Inactive" : "Active";
 
-              onUpdateRecord({
-                ...record,
-                status: nextStatus,
-              }, {
-                description: record.description,
-                paymentType: record.paymentType,
-                sortOrder: String(record.sortOrder),
-                status: nextStatus,
-                type: record.type,
-              });
+              onUpdateRecord(
+                {
+                  ...record,
+                  status: nextStatus,
+                },
+                {
+                  description: record.description,
+                  paymentType: record.paymentType,
+                  sortOrder: String(record.sortOrder),
+                  status: nextStatus,
+                  type: record.type,
+                },
+              );
             }}
             onTypeFilterChange={handleTypeFilterChange}
             onUse={onSelect}
@@ -416,24 +384,14 @@ function PaymentTypeListView({
   const typeFilterId = "payment-type-dialog-type-filter";
   const statusFilterId = "payment-type-dialog-status-filter";
   const pageSizeId = "payment-type-dialog-page-size";
-  const firstRecord =
-    filteredRecords.length === 0 ? 0 : pageIndex * pageSize + 1;
-  const lastRecord =
-    filteredRecords.length === 0
-      ? 0
-      : Math.min(
-        firstRecord + paginatedRecords.length - 1,
-        filteredRecords.length,
-      );
+  const firstRecord = filteredRecords.length === 0 ? 0 : pageIndex * pageSize + 1;
+  const lastRecord = filteredRecords.length === 0 ? 0 : Math.min(firstRecord + paginatedRecords.length - 1, filteredRecords.length);
 
   return (
     <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)_auto] p-5">
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_12rem_12rem_auto] lg:items-end">
         <div className="grid gap-1.5">
-          <label
-            htmlFor={searchInputId}
-            className="text-xs font-semibold uppercase text-darknavy/45"
-          >
+          <label htmlFor={searchInputId} className="text-xs font-semibold uppercase text-darknavy/45">
             Search
           </label>
           <span className="relative block">
@@ -449,18 +407,13 @@ function PaymentTypeListView({
           </span>
         </div>
         <div className="grid gap-1.5">
-          <label
-            htmlFor={typeFilterId}
-            className="text-xs font-semibold uppercase text-darknavy/45"
-          >
+          <label htmlFor={typeFilterId} className="text-xs font-semibold uppercase text-darknavy/45">
             Category
           </label>
           <select
             id={typeFilterId}
             value={typeFilter}
-            onChange={(event) =>
-              onTypeFilterChange(event.target.value as PaymentTypeFilterType)
-            }
+            onChange={(event) => onTypeFilterChange(event.target.value as PaymentTypeFilterType)}
             className={fieldClassName}
           >
             <option value="">All</option>
@@ -472,18 +425,13 @@ function PaymentTypeListView({
           </select>
         </div>
         <div className="grid gap-1.5">
-          <label
-            htmlFor={statusFilterId}
-            className="text-xs font-semibold uppercase text-darknavy/45"
-          >
+          <label htmlFor={statusFilterId} className="text-xs font-semibold uppercase text-darknavy/45">
             Status
           </label>
           <select
             id={statusFilterId}
             value={statusFilter}
-            onChange={(event) =>
-              onStatusFilterChange(event.target.value as PaymentTypeFilterStatus)
-            }
+            onChange={(event) => onStatusFilterChange(event.target.value as PaymentTypeFilterStatus)}
             className={fieldClassName}
           >
             <option value="">All</option>
@@ -491,11 +439,7 @@ function PaymentTypeListView({
             <option value="Inactive">Inactive</option>
           </select>
         </div>
-        <button
-          type="button"
-          onClick={onAdd}
-          className={`${accentPrimaryButtonClassName} h-11`}
-        >
+        <button type="button" onClick={onAdd} className={`${accentPrimaryButtonClassName} h-11`}>
           <Plus className="h-4 w-4" aria-hidden="true" />
           Add
         </button>
@@ -548,25 +492,15 @@ function PaymentTypeListView({
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td
-                    colSpan={5}
-                    className="px-4 py-12 text-center text-sm text-darknavy/55"
-                  >
+                  <td colSpan={5} className="px-4 py-12 text-center text-sm text-darknavy/55">
                     Loading payment types...
                   </td>
                 </tr>
               ) : filteredRecords.length > 0 ? (
                 paginatedRecords.map((record) => (
-                  <tr
-                    key={record.id}
-                    className="h-16 border-t border-darknavy/8 transition hover:bg-skyblue/5"
-                  >
-                    <td className="px-4 py-3 align-middle text-sm font-semibold text-darknavy/65">
-                      {record.sortOrder}
-                    </td>
-                    <td className="px-4 py-3 align-middle text-sm font-semibold text-darknavy">
-                      {record.paymentType}
-                    </td>
+                  <tr key={record.id} className="h-16 border-t border-darknavy/8 transition hover:bg-skyblue/5">
+                    <td className="px-4 py-3 align-middle text-sm font-semibold text-darknavy/65">{record.sortOrder}</td>
+                    <td className="px-4 py-3 align-middle text-sm font-semibold text-darknavy">{record.paymentType}</td>
                     <td className="px-4 py-3 align-middle">
                       <PaymentTypeBadge type={record.type} />
                     </td>
@@ -586,10 +520,7 @@ function PaymentTypeListView({
                 ))
               ) : (
                 <tr>
-                  <td
-                    colSpan={5}
-                    className="px-4 py-12 text-center text-sm text-darknavy/55"
-                  >
+                  <td colSpan={5} className="px-4 py-12 text-center text-sm text-darknavy/55">
                     No payment types matched the current filter.
                   </td>
                 </tr>
@@ -619,9 +550,7 @@ function PaymentTypeListView({
               ))}
             </select>
           </label>
-          <span className="text-darknavy/40">
-            {records.length} total
-          </span>
+          <span className="text-darknavy/40">{records.length} total</span>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
           <button
@@ -672,10 +601,7 @@ function PaymentTypeFormView({
   isMutating: boolean;
   mode: Exclude<PaymentTypeDialogMode, "list">;
   onBack: () => void;
-  onDraftFieldChange: <TKey extends keyof PaymentTypeDraft>(
-    field: TKey,
-    value: PaymentTypeDraft[TKey],
-  ) => void;
+  onDraftFieldChange: <TKey extends keyof PaymentTypeDraft>(field: TKey, value: PaymentTypeDraft[TKey]) => void;
   onSave: () => void;
 }) {
   const isReadonly = mode === "view";
@@ -692,38 +618,28 @@ function PaymentTypeFormView({
           <div className="grid gap-2">
             <label htmlFor={nameInputId} className="text-sm font-semibold text-darknavy">
               Name
-              <span className="ml-1 text-coralpink">*</span>
+              <ModuleFieldRequiredMark fallbackRequired label="Name" />
             </label>
             <input
               id={nameInputId}
               value={draft.paymentType}
               readOnly={isReadonly}
-              onChange={(event) =>
-                onDraftFieldChange("paymentType", event.target.value)
-              }
+              onChange={(event) => onDraftFieldChange("paymentType", event.target.value)}
               aria-invalid={Boolean(errors.paymentType)}
-              aria-describedby={
-                errors.paymentType ? `${nameInputId}-error` : undefined
-              }
+              aria-describedby={errors.paymentType ? `${nameInputId}-error` : undefined}
               className={fieldClassName}
             />
             {errors.paymentType ? (
-              <span
-                id={`${nameInputId}-error`}
-                className="text-xs font-semibold text-coralpink"
-              >
+              <span id={`${nameInputId}-error`} className="text-xs font-semibold text-coralpink">
                 {errors.paymentType}
               </span>
             ) : null}
           </div>
 
           <div className="grid gap-2">
-            <label
-              htmlFor={sortOrderInputId}
-              className="text-sm font-semibold text-darknavy"
-            >
+            <label htmlFor={sortOrderInputId} className="text-sm font-semibold text-darknavy">
               Order
-              <span className="ml-1 text-coralpink">*</span>
+              <ModuleFieldRequiredMark fallbackRequired label="Order" />
             </label>
             <input
               id={sortOrderInputId}
@@ -732,51 +648,34 @@ function PaymentTypeFormView({
               step={1}
               value={draft.sortOrder}
               readOnly={isReadonly}
-              onChange={(event) =>
-                onDraftFieldChange("sortOrder", event.target.value)
-              }
+              onChange={(event) => onDraftFieldChange("sortOrder", event.target.value)}
               aria-invalid={Boolean(errors.sortOrder)}
-              aria-describedby={
-                errors.sortOrder ? `${sortOrderInputId}-error` : undefined
-              }
+              aria-describedby={errors.sortOrder ? `${sortOrderInputId}-error` : undefined}
               className={fieldClassName}
             />
             {errors.sortOrder ? (
-              <span
-                id={`${sortOrderInputId}-error`}
-                className="text-xs font-semibold text-coralpink"
-              >
+              <span id={`${sortOrderInputId}-error`} className="text-xs font-semibold text-coralpink">
                 {errors.sortOrder}
               </span>
             ) : null}
           </div>
 
           <div className="grid gap-2">
-            <label
-              htmlFor={descriptionInputId}
-              className="text-sm font-semibold text-darknavy"
-            >
+            <label htmlFor={descriptionInputId} className="text-sm font-semibold text-darknavy">
               Description
             </label>
             <AppLimitedTextarea
               id={descriptionInputId}
               value={draft.description}
               readOnly={isReadonly}
-              onChange={(event) =>
-                onDraftFieldChange("description", event.target.value)
-              }
+              onChange={(event) => onDraftFieldChange("description", event.target.value)}
               aria-invalid={Boolean(errors.description)}
-              aria-describedby={
-                errors.description ? `${descriptionInputId}-error` : undefined
-              }
+              aria-describedby={errors.description ? `${descriptionInputId}-error` : undefined}
               className={`${fieldClassName} min-h-24 py-3`}
               counterMode="used"
             />
             {errors.description ? (
-              <span
-                id={`${descriptionInputId}-error`}
-                className="text-xs font-semibold text-coralpink"
-              >
+              <span id={`${descriptionInputId}-error`} className="text-xs font-semibold text-coralpink">
                 {errors.description}
               </span>
             ) : null}
@@ -785,22 +684,15 @@ function PaymentTypeFormView({
           <div className="grid gap-2">
             <label htmlFor={typeInputId} className="text-sm font-semibold text-darknavy">
               Category
-              <span className="ml-1 text-coralpink">*</span>
+              <ModuleFieldRequiredMark fallbackRequired label="Category" />
             </label>
             <select
               id={typeInputId}
               value={draft.type}
               disabled={isReadonly}
-              onChange={(event) =>
-                onDraftFieldChange(
-                  "type",
-                  event.target.value as PaymentTypeDraft["type"],
-                )
-              }
+              onChange={(event) => onDraftFieldChange("type", event.target.value as PaymentTypeDraft["type"])}
               aria-invalid={Boolean(errors.type)}
-              aria-describedby={
-                errors.type ? `${typeInputId}-error` : undefined
-              }
+              aria-describedby={errors.type ? `${typeInputId}-error` : undefined}
               className={fieldClassName}
             >
               <option value="">Select category</option>
@@ -811,10 +703,7 @@ function PaymentTypeFormView({
               ))}
             </select>
             {errors.type ? (
-              <span
-                id={`${typeInputId}-error`}
-                className="text-xs font-semibold text-coralpink"
-              >
+              <span id={`${typeInputId}-error`} className="text-xs font-semibold text-coralpink">
                 {errors.type}
               </span>
             ) : null}
@@ -823,52 +712,34 @@ function PaymentTypeFormView({
           <div className="grid gap-2">
             <label htmlFor={statusInputId} className="text-sm font-semibold text-darknavy">
               Status
-              <span className="ml-1 text-coralpink">*</span>
+              <ModuleFieldRequiredMark fallbackRequired label="Status" />
             </label>
             <select
               id={statusInputId}
               value={draft.status}
               disabled={isReadonly}
-              onChange={(event) =>
-                onDraftFieldChange(
-                  "status",
-                  event.target.value as PaymentTypeStatus,
-                )
-              }
+              onChange={(event) => onDraftFieldChange("status", event.target.value as PaymentTypeStatus)}
               aria-invalid={Boolean(errors.status)}
-              aria-describedby={
-                errors.status ? `${statusInputId}-error` : undefined
-              }
+              aria-describedby={errors.status ? `${statusInputId}-error` : undefined}
               className={fieldClassName}
             >
               <option value="Active">Active</option>
               <option value="Inactive">Inactive</option>
             </select>
             {errors.status ? (
-              <span
-                id={`${statusInputId}-error`}
-                className="text-xs font-semibold text-coralpink"
-              >
+              <span id={`${statusInputId}-error`} className="text-xs font-semibold text-coralpink">
                 {errors.status}
               </span>
             ) : null}
           </div>
-          {formError ? (
-            <p className="rounded-md bg-coralpink/10 px-3 py-2 text-sm font-semibold text-coralpink">
-              {formError}
-            </p>
-          ) : null}
+          {formError ? <p className="rounded-md bg-coralpink/10 px-3 py-2 text-sm font-semibold text-coralpink">{formError}</p> : null}
         </div>
       </div>
 
       <div className="shrink-0 border-t border-darknavy/10 px-5 py-4">
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
           {isReadonly ? (
-            <button
-              type="button"
-              onClick={onBack}
-              className={`${accentPrimaryButtonClassName} h-10 w-full sm:w-auto`}
-            >
+            <button type="button" onClick={onBack} className={`${accentPrimaryButtonClassName} h-10 w-full sm:w-auto`}>
               Back
             </button>
           ) : (
@@ -927,30 +798,21 @@ function SortHeader({
       ) : (
         <ArrowUpDown className="h-3.5 w-3.5 text-darknavy/30" aria-hidden="true" />
       )}
-      {isActive ? (
-        <span className="sr-only">
-          Sorted {direction === "asc" ? "ascending" : "descending"}
-        </span>
-      ) : null}
+      {isActive ? <span className="sr-only">Sorted {direction === "asc" ? "ascending" : "descending"}</span> : null}
     </button>
   );
 }
 
 function PaymentTypeBadge({ type }: { type: PaymentTypeClassification }) {
-  return (
-    <span className="inline-flex rounded-md bg-skyblue/10 px-2.5 py-1 text-xs font-semibold text-darknavy">
-      {type}
-    </span>
-  );
+  return <span className="inline-flex rounded-md bg-skyblue/10 px-2.5 py-1 text-xs font-semibold text-darknavy">{type}</span>;
 }
 
 function StatusBadge({ status }: { status: PaymentTypeStatus }) {
   return (
     <span
-      className={`inline-flex rounded-md px-2.5 py-1 text-xs font-semibold ${status === "Active"
-        ? "bg-citron/30 text-darknavy"
-        : "bg-coralpink/12 text-coralpink"
-        }`}
+      className={`inline-flex rounded-md px-2.5 py-1 text-xs font-semibold ${
+        status === "Active" ? "bg-citron/30 text-darknavy" : "bg-coralpink/12 text-coralpink"
+      }`}
     >
       {status}
     </span>
@@ -972,8 +834,7 @@ function PaymentTypeActionSelect({
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const canChoose = record.status === "Active";
-  const statusActionLabel =
-    record.status === "Active" ? "Set As Inactive" : "Set As Active";
+  const statusActionLabel = record.status === "Active" ? "Set As Inactive" : "Set As Active";
 
   function handleChoose() {
     if (canChoose) {
@@ -1005,10 +866,7 @@ function PaymentTypeActionSelect({
       onBlur={(event) => {
         const nextTarget = event.relatedTarget;
 
-        if (
-          !(nextTarget instanceof Node) ||
-          !event.currentTarget.contains(nextTarget)
-        ) {
+        if (!(nextTarget instanceof Node) || !event.currentTarget.contains(nextTarget)) {
           setIsMenuOpen(false);
         }
       }}
@@ -1039,28 +897,16 @@ function PaymentTypeActionSelect({
           role="menu"
           className="absolute right-0 top-full z-30 mt-2 w-44 rounded-lg border border-darknavy/10 bg-white p-1 text-left shadow-xl shadow-darknavy/15"
         >
-          <PaymentTypeActionMenuButton onClick={() => handleAction("view")}>
-            View
-          </PaymentTypeActionMenuButton>
-          <PaymentTypeActionMenuButton onClick={() => handleAction("edit")}>
-            Edit
-          </PaymentTypeActionMenuButton>
-          <PaymentTypeActionMenuButton onClick={() => handleAction("toggle")}>
-            {statusActionLabel}
-          </PaymentTypeActionMenuButton>
+          <PaymentTypeActionMenuButton onClick={() => handleAction("view")}>View</PaymentTypeActionMenuButton>
+          <PaymentTypeActionMenuButton onClick={() => handleAction("edit")}>Edit</PaymentTypeActionMenuButton>
+          <PaymentTypeActionMenuButton onClick={() => handleAction("toggle")}>{statusActionLabel}</PaymentTypeActionMenuButton>
         </div>
       ) : null}
     </div>
   );
 }
 
-function PaymentTypeActionMenuButton({
-  children,
-  onClick,
-}: {
-  children: string;
-  onClick: () => void;
-}) {
+function PaymentTypeActionMenuButton({ children, onClick }: { children: string; onClick: () => void }) {
   return (
     <button
       type="button"
@@ -1074,4 +920,3 @@ function PaymentTypeActionMenuButton({
 }
 
 const DefaultPageSizeOptions = [5, 10, 15, 20, 25, 50] as const;
-

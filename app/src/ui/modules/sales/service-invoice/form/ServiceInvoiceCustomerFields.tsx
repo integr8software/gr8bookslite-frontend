@@ -8,6 +8,7 @@ import type { ServiceInvoiceFormValues } from "@/app/src/types/modules/sales/ser
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
+import { useModuleFieldManagement } from "@/app/src/ui/shared/field-management/useModuleFieldManagement";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 import {
   FieldClassName,
@@ -22,10 +23,12 @@ type ServiceInvoiceCustomerFieldsProps = {
 };
 
 export function ServiceInvoiceCustomerFields({ isReadonly, onUpdateField, values }: ServiceInvoiceCustomerFieldsProps) {
+  const { isFieldRequired } = useModuleFieldManagement("SVI");
+
   return (
     <div className="grid min-w-0 content-start gap-x-8 gap-y-3 xl:grid-cols-2 2xl:grid-cols-3">
       <div className="grid min-w-0 content-start gap-3">
-        <FieldShell controlId="service-invoice-name" label="Party Name" isRequired>
+        <FieldShell controlId="service-invoice-name" isRequired={isFieldRequired("Party Name", true)} label="Party Name">
           <AppAdvancedDropdown
             id="service-invoice-name"
             value={values.name}
@@ -42,7 +45,7 @@ export function ServiceInvoiceCustomerFields({ isReadonly, onUpdateField, values
             }}
           />
         </FieldShell>
-        <FieldShell controlId="service-invoice-address" label="Address">
+        <FieldShell controlId="service-invoice-address" isRequired={isFieldRequired("Address")} label="Address">
           <input
             id="service-invoice-address"
             value={values.address}
@@ -51,7 +54,7 @@ export function ServiceInvoiceCustomerFields({ isReadonly, onUpdateField, values
             className={FieldClassName}
           />
         </FieldShell>
-        <FieldShell controlId="service-invoice-contact-person" label="Contact Person">
+        <FieldShell controlId="service-invoice-contact-person" isRequired={isFieldRequired("Contact Person")} label="Contact Person">
           <input
             id="service-invoice-contact-person"
             value={values.contactPerson}
@@ -60,7 +63,7 @@ export function ServiceInvoiceCustomerFields({ isReadonly, onUpdateField, values
             className={FieldClassName}
           />
         </FieldShell>
-        <FieldShell controlId="service-invoice-contact-no" label="Contact No.">
+        <FieldShell controlId="service-invoice-contact-no" isRequired={isFieldRequired("Contact No.")} label="Contact No.">
           <input
             id="service-invoice-contact-no"
             value={values.contactNo}
@@ -69,7 +72,7 @@ export function ServiceInvoiceCustomerFields({ isReadonly, onUpdateField, values
             className={FieldClassName}
           />
         </FieldShell>
-        <FieldShell controlId="service-invoice-project-name" label="Project Name">
+        <FieldShell controlId="service-invoice-project-name" isRequired={isFieldRequired("Project Name")} label="Project Name">
           <input
             id="service-invoice-project-name"
             value={values.projectName}
@@ -78,7 +81,7 @@ export function ServiceInvoiceCustomerFields({ isReadonly, onUpdateField, values
             className={FieldClassName}
           />
         </FieldShell>
-        <FieldShell controlId="service-invoice-remarks" label="Remarks">
+        <FieldShell controlId="service-invoice-remarks" isRequired={isFieldRequired("Remarks")} label="Remarks">
           <AppLimitedTextarea
             id="service-invoice-remarks"
             value={values.remarks}
@@ -91,7 +94,7 @@ export function ServiceInvoiceCustomerFields({ isReadonly, onUpdateField, values
         </FieldShell>
       </div>
       <div className="grid min-w-0 content-start gap-3">
-        <FieldShell controlId="service-invoice-code" label="Party Code">
+        <FieldShell controlId="service-invoice-code" isRequired={isFieldRequired("Party Code")} label="Party Code">
           <input
             id="service-invoice-code"
             value={values.code}
@@ -100,7 +103,7 @@ export function ServiceInvoiceCustomerFields({ isReadonly, onUpdateField, values
             className={FieldClassName}
           />
         </FieldShell>
-        <FieldShell controlId="service-invoice-terms" label="Terms of Payment">
+        <FieldShell controlId="service-invoice-terms" isRequired={isFieldRequired("Terms of Payment")} label="Terms of Payment">
           <AppAdvancedDropdown
             id="service-invoice-terms"
             value={values.terms}
@@ -111,7 +114,7 @@ export function ServiceInvoiceCustomerFields({ isReadonly, onUpdateField, values
             onChange={(value) => onUpdateField("terms", String(value))}
           />
         </FieldShell>
-        <FieldShell controlId="service-invoice-due-date" label="Due Date">
+        <FieldShell controlId="service-invoice-due-date" isRequired={isFieldRequired("Due Date")} label="Due Date">
           <input
             id="service-invoice-due-date"
             type="date"
@@ -121,7 +124,7 @@ export function ServiceInvoiceCustomerFields({ isReadonly, onUpdateField, values
             className={FieldClassName}
           />
         </FieldShell>
-        <FieldShell controlId="service-invoice-currency" label="Currency">
+        <FieldShell controlId="service-invoice-currency" isRequired={isFieldRequired("Currency")} label="Currency">
           <CurrencyExchangeRateRow
             exchangeRateControlId="service-invoice-exchange-rate"
             currencyControl={
@@ -148,7 +151,7 @@ export function ServiceInvoiceCustomerFields({ isReadonly, onUpdateField, values
             }
           />
         </FieldShell>
-        <FieldShell controlId="service-invoice-res-center" label="Res Center">
+        <FieldShell controlId="service-invoice-res-center" isRequired={isFieldRequired("Res Center")} label="Res Center">
           <AppAdvancedDropdown
             id="service-invoice-res-center"
             value={values.residentCustomerCode}
@@ -161,7 +164,7 @@ export function ServiceInvoiceCustomerFields({ isReadonly, onUpdateField, values
         </FieldShell>
       </div>
       <div className="grid min-w-0 content-start gap-3">
-        <FieldShell controlId="service-invoice-invoice-no" label="SI No.">
+        <FieldShell controlId="service-invoice-invoice-no" isRequired={isFieldRequired("SI No.")} label="SI No.">
           <input
             id="service-invoice-invoice-no"
             value={values.invoiceNo}
@@ -170,7 +173,7 @@ export function ServiceInvoiceCustomerFields({ isReadonly, onUpdateField, values
             className={FieldClassName}
           />
         </FieldShell>
-        <FieldShell controlId="service-invoice-document-date" label="SI Date" isRequired>
+        <FieldShell controlId="service-invoice-document-date" isRequired={isFieldRequired("SI Date", true)} label="SI Date">
           <input
             id="service-invoice-document-date"
             type="date"
@@ -180,7 +183,7 @@ export function ServiceInvoiceCustomerFields({ isReadonly, onUpdateField, values
             className={FieldClassName}
           />
         </FieldShell>
-        <FieldShell controlId="service-invoice-so-no" label="SO No.">
+        <FieldShell controlId="service-invoice-so-no" isRequired={isFieldRequired("SO No.")} label="SO No.">
           <input
             id="service-invoice-so-no"
             value={values.soNo}
@@ -189,7 +192,7 @@ export function ServiceInvoiceCustomerFields({ isReadonly, onUpdateField, values
             className={FieldClassName}
           />
         </FieldShell>
-        <FieldShell controlId="service-invoice-customer-po-no" label="PO No.">
+        <FieldShell controlId="service-invoice-customer-po-no" isRequired={isFieldRequired("PO No.")} label="PO No.">
           <input
             id="service-invoice-customer-po-no"
             value={values.poNo}
@@ -198,7 +201,7 @@ export function ServiceInvoiceCustomerFields({ isReadonly, onUpdateField, values
             className={FieldClassName}
           />
         </FieldShell>
-        <FieldShell controlId="service-invoice-sales-personnel" label="Sales Personnel">
+        <FieldShell controlId="service-invoice-sales-personnel" isRequired={isFieldRequired("Sales Personnel")} label="Sales Personnel">
           <input
             id="service-invoice-sales-personnel"
             value={values.teamAssigned}

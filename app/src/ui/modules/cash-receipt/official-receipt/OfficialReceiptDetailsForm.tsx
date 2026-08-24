@@ -9,6 +9,7 @@ import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAd
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
+import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
 
 type OfficialReceiptDetailsFormProps = {
   isReadonly: boolean;
@@ -166,7 +167,7 @@ function FieldShell({
     <div className="grid min-w-0 gap-2 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-start">
       <label htmlFor={controlId} className="pt-2 text-sm font-semibold text-darknavy">
         {label}
-        {isRequired ? <span className="ml-1 text-coralpink">*</span> : null}
+        <ModuleFieldRequiredMark fallbackRequired={isRequired} label={label} />
       </label>
       <div className="min-w-0">{children}</div>
     </div>

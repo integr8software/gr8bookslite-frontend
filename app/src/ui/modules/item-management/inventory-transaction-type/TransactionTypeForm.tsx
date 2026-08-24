@@ -1,146 +1,129 @@
 import * as React from "react";
+import { TransactionTypeFormProps } from "@/app/src/types/modules/item-management/inventory-transaction-type/TransactionTypeTypes";
 import {
-	TransactionTypeFormProps,
-} from "@/app/src/types/modules/item-management/inventory-transaction-type/TransactionTypeTypes";
-import {
-	TransactionTypeFieldClassName,
-	TransactionTypeModuleDescriptions,
-	TransactionTypeNamePlaceholder,
+  TransactionTypeFieldClassName,
+  TransactionTypeModuleDescriptions,
+  TransactionTypeNamePlaceholder,
 } from "@/app/src/constants/modules/item-management/inventory-transaction-type/TransactionTypeConstants";
 import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { AppRadioGroup } from "@/app/src/ui/shared/app/AppRadioGroup";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
 import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/utils/status.util";
+import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
 
 export function TransactionTypeForm({
-	accountOptions,
-	errors,
-	isReadonly,
-	moduleOptions,
-	values,
-	onAccountChange,
-	onInputChange,
-	onModuleChange,
-	onStatusChange,
+  accountOptions,
+  errors,
+  isReadonly,
+  moduleOptions,
+  values,
+  onAccountChange,
+  onInputChange,
+  onModuleChange,
+  onStatusChange,
 }: TransactionTypeFormProps) {
-	const moduleRadioOptions = moduleOptions.map((option) => ({
-		description:
-			TransactionTypeModuleDescriptions[
-				option.value as keyof typeof TransactionTypeModuleDescriptions
-			],
-		label: option.label,
-		value: option.value,
-	}));
+  const moduleRadioOptions = moduleOptions.map((option) => ({
+    description: TransactionTypeModuleDescriptions[option.value as keyof typeof TransactionTypeModuleDescriptions],
+    label: option.label,
+    value: option.value,
+  }));
 
-	return (
-		<div className="grid gap-4">
-			<FormField label="Inventory Transaction Type Name" error={errors.name} required>
-				<input
-					name="name"
-					value={values.name}
-					onChange={onInputChange}
-					readOnly={isReadonly}
-					className={TransactionTypeFieldClassName}
-					placeholder={TransactionTypeNamePlaceholder}
-				/>
-			</FormField>
+  return (
+    <div className="grid gap-4">
+      <FormField label="Inventory Transaction Type Name" error={errors.name} required>
+        <input
+          name="name"
+          value={values.name}
+          onChange={onInputChange}
+          readOnly={isReadonly}
+          className={TransactionTypeFieldClassName}
+          placeholder={TransactionTypeNamePlaceholder}
+        />
+      </FormField>
 
-			<FormField label="Description" error={errors.description}>
-				<AppLimitedTextarea
-					name="description"
-					value={values.description}
-					onChange={onInputChange}
-					readOnly={isReadonly}
-					className={`${TransactionTypeFieldClassName} min-h-24 py-3`}
-					counterMode="used"
-					placeholder="Enter description..."
-				/>
-			</FormField>
+      <FormField label="Description" error={errors.description}>
+        <AppLimitedTextarea
+          name="description"
+          value={values.description}
+          onChange={onInputChange}
+          readOnly={isReadonly}
+          className={`${TransactionTypeFieldClassName} min-h-24 py-3`}
+          counterMode="used"
+          placeholder="Enter description..."
+        />
+      </FormField>
 
-			<FormField
-				asFieldset
-				label="Goods Movement"
-				error={errors.moduleIds}
-				required
-			>
-				<AppRadioGroup
-					aria-label="Goods Movement"
-					name="moduleIds"
-					options={moduleRadioOptions}
-					readOnly={isReadonly}
-					value={values.moduleIds[0] ?? ""}
-					onChange={onModuleChange}
-				/>
-			</FormField>
+      <FormField asFieldset label="Goods Movement" error={errors.moduleIds} required>
+        <AppRadioGroup
+          aria-label="Goods Movement"
+          name="moduleIds"
+          options={moduleRadioOptions}
+          readOnly={isReadonly}
+          value={values.moduleIds[0] ?? ""}
+          onChange={onModuleChange}
+        />
+      </FormField>
 
-			<FormField label="Account Title" error={errors.accountId} required>
-				<ChartAccountDropdown
-					accounts={accountOptions}
-					placeholder="Search account by name or code"
-					readOnly={isReadonly}
-					value={values.accountId}
-					onChange={onAccountChange}
-				/>
-			</FormField>
+      <FormField label="Account Title" error={errors.accountId} required>
+        <ChartAccountDropdown
+          accounts={accountOptions}
+          placeholder="Search account by name or code"
+          readOnly={isReadonly}
+          value={values.accountId}
+          onChange={onAccountChange}
+        />
+      </FormField>
 
-			<FormField label="Status" error={errors.status} required>
-				<AppSwitch
-					falseOption={MaintenanceInactiveStatusSwitchOption}
-					value={values.status}
-					onChange={onStatusChange}
-					readOnly={isReadonly}
-					trueOption={MaintenanceActiveStatusSwitchOption}
-				/>
-			</FormField>
-		</div>
-	);
+      <FormField label="Status" error={errors.status} required>
+        <AppSwitch
+          falseOption={MaintenanceInactiveStatusSwitchOption}
+          value={values.status}
+          onChange={onStatusChange}
+          readOnly={isReadonly}
+          trueOption={MaintenanceActiveStatusSwitchOption}
+        />
+      </FormField>
+    </div>
+  );
 }
 
 function FormField({
-	asFieldset,
-	children,
-	className,
-	error,
-	label,
-	required,
+  asFieldset,
+  children,
+  className,
+  error,
+  label,
+  required,
 }: {
-	asFieldset?: boolean;
-	children: React.ReactNode;
-	className?: string;
-	error?: string;
-	label: string;
-	required?: boolean;
+  asFieldset?: boolean;
+  children: React.ReactNode;
+  className?: string;
+  error?: string;
+  label: string;
+  required?: boolean;
 }) {
-	if (asFieldset) {
-		return (
-			<fieldset className={className}>
-				<legend className="mb-2 block text-sm font-semibold text-darknavy">
-					{label}
-					{required ? <span className="text-coralpink"> *</span> : null}
-				</legend>
-				{children}
-				{error ? (
-					<span className="mt-1 block text-xs font-medium text-coralpink">
-						{error}
-					</span>
-				) : null}
-			</fieldset>
-		);
-	}
+  if (asFieldset) {
+    return (
+      <fieldset className={className}>
+        <legend className="mb-2 block text-sm font-semibold text-darknavy">
+          {label}
+          <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired={required} label={label} leadingSpace />
+        </legend>
+        {children}
+        {error ? <span className="mt-1 block text-xs font-medium text-coralpink">{error}</span> : null}
+      </fieldset>
+    );
+  }
 
-	return (
-		<label className={className}>
-			<span className="mb-2 block text-sm font-semibold text-darknavy">
-				{label}
-				{required ? <span className="text-coralpink"> *</span> : null}
-			</span>
-			{children}
-			{error ? (
-				<span className="mt-1 block text-xs font-medium text-coralpink">
-					{error}
-				</span>
-			) : null}
-		</label>
-	);
+  return (
+    <label className={className}>
+      <span className="mb-2 block text-sm font-semibold text-darknavy">
+        {label}
+        <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired={required} label={label} leadingSpace />
+      </span>
+      {children}
+      {error ? <span className="mt-1 block text-xs font-medium text-coralpink">{error}</span> : null}
+    </label>
+  );
 }

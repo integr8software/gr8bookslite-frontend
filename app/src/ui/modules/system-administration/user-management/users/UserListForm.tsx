@@ -1,14 +1,9 @@
 import type { ChangeEvent, FormEvent } from "react";
 import { UserListStatusOptions } from "@/app/src/constants/modules/user-management/UserListConstants";
-import type {
-  UserFormValues,
-  UserRoleRecord,
-} from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
-import {
-  DefaultPhilippineContactNumber,
-  PhilippineContactNumberPlaceholder,
-} from "@/app/src/data/shared/contact/ContactData";
+import type { UserFormValues, UserRoleRecord } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
+import { DefaultPhilippineContactNumber, PhilippineContactNumberPlaceholder } from "@/app/src/data/shared/contact/ContactData";
 import type { UserFormErrors } from "@/app/src/types/modules/user-management/UserManagementTypes";
+import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
 
 export function UserListForm({
   errors,
@@ -32,13 +27,7 @@ export function UserListForm({
       <div className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm sm:p-5">
         <div className="grid gap-4 lg:grid-cols-2">
           <UserListField label="Full Name" error={errors.name} required>
-            <input
-              name="name"
-              value={values.name}
-              onChange={onChange}
-              readOnly={isReadonly}
-              className={UserListFieldClassName}
-            />
+            <input name="name" value={values.name} onChange={onChange} readOnly={isReadonly} className={UserListFieldClassName} />
           </UserListField>
           <UserListField label="Email" error={errors.email} required>
             <input
@@ -50,11 +39,7 @@ export function UserListForm({
               className={UserListFieldClassName}
             />
           </UserListField>
-          <UserListField
-            label="Contact No."
-            error={errors.contactNumber}
-            required
-          >
+          <UserListField label="Contact No." error={errors.contactNumber} required>
             <input
               name="contactNumber"
               type="tel"
@@ -73,13 +58,7 @@ export function UserListForm({
             />
           </UserListField>
           <UserListField label="Status">
-            <select
-              name="status"
-              value={values.status}
-              onChange={onChange}
-              disabled={isReadonly}
-              className={UserListFieldClassName}
-            >
+            <select name="status" value={values.status} onChange={onChange} disabled={isReadonly} className={UserListFieldClassName}>
               {UserListStatusOptions.map((status) => (
                 <option key={status} value={status}>
                   {status}
@@ -123,14 +102,10 @@ function UserListField({
     <label>
       <span className="mb-2 block text-sm font-semibold text-darknavy">
         {label}
-        {required ? <span className="text-coralpink"> *</span> : null}
+        <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired={required} label={label} leadingSpace />
       </span>
       {children}
-      {error ? (
-        <span className="mt-1 block text-xs font-medium text-coralpink">
-          {error}
-        </span>
-      ) : null}
+      {error ? <span className="mt-1 block text-xs font-medium text-coralpink">{error}</span> : null}
     </label>
   );
 }

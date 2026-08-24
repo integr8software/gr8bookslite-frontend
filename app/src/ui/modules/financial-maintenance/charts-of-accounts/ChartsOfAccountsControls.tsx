@@ -8,6 +8,7 @@ import {
   BadgeVariantClasses,
 } from "@/app/src/constants/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsConstants";
 import type { ChartAccount } from "@/app/src/types/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsTypes";
+import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
 
 export function Card({ children, className, ...props }: ComponentProps<"div">) {
   return (
@@ -105,7 +106,7 @@ export function Field({
       <label htmlFor={htmlFor} className="text-sm font-semibold text-darknavy/70">
         <span>
           {label}
-          {required ? <span className="text-coralpink"> *</span> : null}
+          <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired={required} label={label} leadingSpace />
         </span>
       </label>
       {children}

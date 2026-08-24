@@ -1,8 +1,5 @@
 import { CreditCard, Lock, X, type LucideIcon } from "lucide-react";
-import type {
-  BillingPaymentFormErrors,
-  BillingPaymentFormValues,
-} from "@/app/src/data/billing/BillingTypes";
+import type { BillingPaymentFormErrors, BillingPaymentFormValues } from "@/app/src/data/billing/BillingTypes";
 import {
   formatWorkspaceBillingCurrency,
   formatWorkspaceBillingPromotionExpiry,
@@ -16,6 +13,7 @@ import type {
 import { AppAdvancedDropdown, type AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { ModuleInfoTooltip as InfoTooltip } from "@/app/src/ui/shared/module/ModuleInfoTooltip";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
 
 export const NewPayMongoCardPaymentMethodId = "new-paymongo-card";
 
@@ -312,11 +310,7 @@ export function BillingPaymentCardForm({
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <BillingFormField
-          label="Cardholder Name"
-          error={errors.cardholderName?.[0]}
-          required
-        >
+        <BillingFormField label="Cardholder Name" error={errors.cardholderName?.[0]} required>
           <input
             name="cardholderName"
             value={values.cardholderName}
@@ -327,11 +321,7 @@ export function BillingPaymentCardForm({
           />
         </BillingFormField>
 
-        <BillingFormField
-          label="Billing Email"
-          error={errors.billingEmail?.[0]}
-          required
-        >
+        <BillingFormField label="Billing Email" error={errors.billingEmail?.[0]} required>
           <input
             name="billingEmail"
             type="email"
@@ -344,11 +334,7 @@ export function BillingPaymentCardForm({
         </BillingFormField>
 
         <div className="sm:col-span-2">
-          <BillingFormField
-            label="Card Number"
-            error={errors.cardNumber?.[0]}
-            required
-          >
+          <BillingFormField label="Card Number" error={errors.cardNumber?.[0]} required>
             <input
               name="cardNumber"
               value={values.cardNumber}
@@ -362,11 +348,7 @@ export function BillingPaymentCardForm({
           </BillingFormField>
         </div>
 
-        <BillingFormField
-          label="Expiry Month"
-          error={errors.expiryMonth?.[0]}
-          required
-        >
+        <BillingFormField label="Expiry Month" error={errors.expiryMonth?.[0]} required>
           <input
             name="expiryMonth"
             value={values.expiryMonth}
@@ -379,11 +361,7 @@ export function BillingPaymentCardForm({
           />
         </BillingFormField>
 
-        <BillingFormField
-          label="Expiry Year"
-          error={errors.expiryYear?.[0]}
-          required
-        >
+        <BillingFormField label="Expiry Year" error={errors.expiryYear?.[0]} required>
           <input
             name="expiryYear"
             value={values.expiryYear}
@@ -396,11 +374,7 @@ export function BillingPaymentCardForm({
           />
         </BillingFormField>
 
-        <BillingFormField
-          label="CVC"
-          error={errors.cvc?.[0]}
-          required
-        >
+        <BillingFormField label="CVC" error={errors.cvc?.[0]} required>
           <input
             name="cvc"
             value={values.cvc}
@@ -413,11 +387,7 @@ export function BillingPaymentCardForm({
           />
         </BillingFormField>
 
-        <BillingFormField
-          label="Contact Number"
-          error={errors.contactNumber?.[0]}
-          required
-        >
+        <BillingFormField label="Contact Number" error={errors.contactNumber?.[0]} required>
           <input
             name="contactNumber"
             value={values.contactNumber}
@@ -429,11 +399,7 @@ export function BillingPaymentCardForm({
         </BillingFormField>
 
         <div className="sm:col-span-2">
-          <BillingFormField
-            label="Billing Address"
-            error={errors.billingAddress?.[0]}
-            required
-          >
+          <BillingFormField label="Billing Address" error={errors.billingAddress?.[0]} required>
             <input
               name="billingAddress"
               value={values.billingAddress}
@@ -465,7 +431,7 @@ function BillingFormField({
       <span className="mb-1 flex items-center justify-between text-xs font-semibold text-darknavy/70">
         <span>
           {label}
-          {required ? <span className="ml-0.5 text-coralpink">*</span> : null}
+          <ModuleFieldRequiredMark className="ml-0.5 text-coralpink" fallbackRequired={required} label={label} />
         </span>
       </span>
       {children}

@@ -19,6 +19,7 @@ import { AppAdvancedDropdown, type AppAdvancedDropdownOption } from "@/app/src/u
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
+import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
 
 const fieldClassName =
   "app-data-entry-field h-11 min-w-0 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15 disabled:cursor-not-allowed disabled:bg-white disabled:text-darknavy disabled:opacity-60";
@@ -290,7 +291,7 @@ function FieldShell({
   const labelContent = (
     <>
       {label}
-      {isRequired ? <span className="ml-1 text-coralpink">*</span> : null}
+      <ModuleFieldRequiredMark fallbackRequired={isRequired} label={label} />
     </>
   );
 

@@ -88,30 +88,28 @@ export type DisbursementEntryFieldsUpdater = (entryId: string, updates: Partial<
 
 export type DisbursementAccountingEntryColumnsParams = {
   canAddPartyName: boolean;
-  canAddResponsibilityCenter: boolean;
   chartAccounts: ModuleChartAccount[];
   columnLabels: Record<DisbursementEntryColumnId, string>;
   columnWidths: Record<DisbursementEntryColumnId, number>;
-  ewtOptions: AppAdvancedDropdownOption[];
   isReadonly: boolean;
   onAddPartyName: () => void;
-  onAddResponsibilityCenter: (entryId: string) => void;
   onUpdateEntry: DisbursementEntryUpdater;
   onUpdateEntryFields: DisbursementEntryFieldsUpdater;
   partyOptions: AppAdvancedDropdownOption[];
-  responsibilityCenterOptions: AppAdvancedDropdownOption[];
-  vatOptions: AppAdvancedDropdownOption[];
 };
 
 export type DisbursementExpenseEntryColumnsParams = {
   accountingColumns: Record<DisbursementEntryColumnId, ModuleDataEntryColumn<DisbursementLineEntry>>;
   canAddExpenseType: boolean;
+  canAddResponsibilityCenter: boolean;
   ewtOptions: AppAdvancedDropdownOption[];
   expenseAccounts: ModuleChartAccount[];
   expenseColumnLabels: Record<ExpenseEntryColumnId, string>;
   expenseColumnWidths: Record<ExpenseEntryColumnId, number>;
   isReadonly: boolean;
   onAddExpenseType: () => void;
+  onAddResponsibilityCenter: (entryId: string) => void;
+  responsibilityCenterOptions: AppAdvancedDropdownOption[];
   taxCodes: AlphanumericTaxCode[];
   updateExpenseEntryFields: DisbursementEntryFieldsUpdater;
   vatOptions: AppAdvancedDropdownOption[];

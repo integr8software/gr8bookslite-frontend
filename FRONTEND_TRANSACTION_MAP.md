@@ -1072,6 +1072,27 @@ Selecting a Currency should resolve its configured Exchange Rate against the act
   `particulars` field, column ID, label, or feature-specific editor. Import
   parsers may accept `Particular` and `Particulars` only as legacy inbound
   header aliases and must map them immediately to `remarks`.
+- Treat the transaction header `Remarks` value as the inherited default for
+  Data Entry Remarks, following the Accounts Payable Voucher particulars
+  behavior. Initialize every new, inserted, or replacement detail/expense row
+  with the current header Remarks instead of leaving the row empty.
+- When header Remarks changes, update a detail/expense row only when its Remarks
+  is empty or still equals the previous header Remarks after trimming. This
+  keeps inherited rows synchronized while preserving any row Remarks that the
+  user has independently overwritten. Do not use an unconditional effect that
+  replaces every row value, and do not implement inheritance only as a visual
+  input fallback; persist inherited Remarks in the transaction row state.
+- Generated accounting rows such as Input VAT, EWT, payable, bank, cash, or
+  settlement entries must inherit Remarks from their source detail/expense row.
+  If the source row is empty, fall back to the current header Remarks; use a
+  generated system description only when both values are empty. When a source
+  row Remarks override changes, regenerate the dependent accounting-row Remarks
+  using the same source relationship.
+- Remarks-only synchronization must not recalculate Gross Amount, VAT, EWT,
+  Debit, Credit, Amount Due, or other financial values. Preserve the source
+  row's existing tax details and amounts while refreshing inherited or generated
+  Remarks. Keep this orchestration in the feature hook/data layer rather than
+  inside the Remarks cell component.
 - Does not mutate row state directly; call typed handlers from props.
 
 `utils/<ModuleName>EntryRowUtils.ts`

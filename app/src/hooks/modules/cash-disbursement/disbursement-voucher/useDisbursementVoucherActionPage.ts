@@ -158,7 +158,33 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
       return;
     }
 
-    setValues((current) => ({ ...current, [field]: value }));
+    setValues((current) => {
+      const nextValues = { ...current, [field]: value };
+
+      if (field !== "remarks") {
+        return nextValues;
+      }
+
+      const nextRemarks = String(value ?? "");
+      const editableEntries = current.lineEntries
+        .filter((entry) => !isGeneratedAccountingEntry(entry))
+        .map((entry) =>
+          shouldEntryRemarksFollowHeader(entry.remarks, current.remarks)
+            ? { ...entry, remarks: nextRemarks }
+            : entry,
+        );
+      const bankAccount = bankAccounts.find(
+        (account) => account.accountCode === current.paymentDetails.bankAccountCode,
+      ) ?? null;
+
+      return {
+        ...nextValues,
+        lineEntries: createAutomaticAccountingEntries(editableEntries, {
+          bankAccount,
+          paymentMethod: current.paymentMethod,
+        }),
+      };
+    });
     setErrors((current) => ({ ...current, [field]: undefined }));
   }
 
@@ -311,6 +337,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
       partyCode: values.partyCode,
       partyName: values.partyName,
       refId,
+      remarks: values.remarks,
       responsibilityCenter,
       taxDetails: {
         ...createTaxDetails(0, "0%"),
@@ -345,28 +372,37 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   }
 
   function handleUpdateEntryFields(entryId: string, updates: Partial<DisbursementLineEntry>) {
+    const sourceEntry = values.lineEntries.find((entry) => entry.id === entryId);
+    const shouldRefreshGeneratedRemarks =
+      sourceEntry !== undefined &&
+      !isGeneratedAccountingEntry(sourceEntry) &&
+      Object.prototype.hasOwnProperty.call(updates, "remarks");
+    const nextEntries = values.lineEntries.map((entry) => {
+      if (entry.id !== entryId) {
+        return entry;
+      }
+
+      const nextEntry = normalizeDisbursementLineEntryFields({
+        ...entry,
+        ...updates,
+      });
+
+      if (Number(nextEntry.debit || 0) > 0) {
+        nextEntry.credit = 0;
+      }
+
+      if (Number(nextEntry.credit || 0) > 0) {
+        nextEntry.debit = 0;
+      }
+
+      return shouldRefreshGeneratedRemarks ? nextEntry : syncDisbursementLineEntryTaxDetails(nextEntry);
+    });
+
     updateField(
       DisbursementVoucherLineEntriesField,
-      values.lineEntries.map((entry) => {
-        if (entry.id !== entryId) {
-          return entry;
-        }
-
-        const nextEntry = normalizeDisbursementLineEntryFields({
-          ...entry,
-          ...updates,
-        });
-
-        if (Number(nextEntry.debit || 0) > 0) {
-          nextEntry.credit = 0;
-        }
-
-        if (Number(nextEntry.credit || 0) > 0) {
-          nextEntry.debit = 0;
-        }
-
-        return syncDisbursementLineEntryTaxDetails(nextEntry);
-      }),
+      shouldRefreshGeneratedRemarks
+        ? createAutomaticEntriesForPayment(nextEntries.filter((entry) => !isGeneratedAccountingEntry(entry)))
+        : nextEntries,
     );
     setErrors((current) => ({
       ...current,
@@ -635,5 +671,12 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     updateField,
     updatePaymentDetails,
   };
+}
+
+function shouldEntryRemarksFollowHeader(entryRemarks: string, previousHeaderRemarks: string) {
+  const normalizedEntryRemarks = entryRemarks.trim();
+  const normalizedHeaderRemarks = previousHeaderRemarks.trim();
+
+  return normalizedEntryRemarks === "" || (normalizedHeaderRemarks !== "" && normalizedEntryRemarks === normalizedHeaderRemarks);
 }
 

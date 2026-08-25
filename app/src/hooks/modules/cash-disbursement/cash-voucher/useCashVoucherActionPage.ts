@@ -145,7 +145,31 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
       return;
     }
 
-    setValues((current) => ({ ...current, [field]: value }));
+    setValues((current) => {
+      const nextValues = { ...current, [field]: value };
+
+      if (field !== "remarks") {
+        return nextValues;
+      }
+
+      const nextRemarks = String(value ?? "");
+      const editableEntries = current.lineEntries
+        .filter((entry) => !isGeneratedAccountingEntry(entry))
+        .map((entry) =>
+          shouldEntryRemarksFollowHeader(entry.remarks, current.remarks)
+            ? { ...entry, remarks: nextRemarks }
+            : entry,
+        );
+
+      return {
+        ...nextValues,
+        lineEntries: createAutomaticAccountingEntries(editableEntries, {
+          bankAccount: null,
+          isCashPayment: true,
+          paymentMethod: "Cash",
+        }),
+      };
+    });
     setErrors((current) => ({ ...current, [field]: undefined }));
   }
 
@@ -228,6 +252,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
       partyCode: values.partyCode,
       partyName: values.partyName,
       refId,
+      remarks: values.remarks,
       responsibilityCenter,
       taxDetails: {
         ...createTaxDetails(0, "0%"),
@@ -262,28 +287,37 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   }
 
   function handleUpdateEntryFields(entryId: string, updates: Partial<CashVoucherLineEntry>) {
+    const sourceEntry = values.lineEntries.find((entry) => entry.id === entryId);
+    const shouldRefreshGeneratedRemarks =
+      sourceEntry !== undefined &&
+      !isGeneratedAccountingEntry(sourceEntry) &&
+      Object.prototype.hasOwnProperty.call(updates, "remarks");
+    const nextEntries = values.lineEntries.map((entry) => {
+      if (entry.id !== entryId) {
+        return entry;
+      }
+
+      const nextEntry = normalizeCashVoucherLineEntryFields({
+        ...entry,
+        ...updates,
+      });
+
+      if (Number(nextEntry.debit || 0) > 0) {
+        nextEntry.credit = 0;
+      }
+
+      if (Number(nextEntry.credit || 0) > 0) {
+        nextEntry.debit = 0;
+      }
+
+      return shouldRefreshGeneratedRemarks ? nextEntry : syncCashVoucherLineEntryTaxDetails(nextEntry);
+    });
+
     updateField(
       CashVoucherLineEntriesField,
-      values.lineEntries.map((entry) => {
-        if (entry.id !== entryId) {
-          return entry;
-        }
-
-        const nextEntry = normalizeCashVoucherLineEntryFields({
-          ...entry,
-          ...updates,
-        });
-
-        if (Number(nextEntry.debit || 0) > 0) {
-          nextEntry.credit = 0;
-        }
-
-        if (Number(nextEntry.credit || 0) > 0) {
-          nextEntry.debit = 0;
-        }
-
-        return syncCashVoucherLineEntryTaxDetails(nextEntry);
-      }),
+      shouldRefreshGeneratedRemarks
+        ? createAutomaticEntriesForPayment(nextEntries.filter((entry) => !isGeneratedAccountingEntry(entry)))
+        : nextEntries,
     );
     setErrors((current) => ({
       ...current,
@@ -541,6 +575,13 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
     updateField,
     updatePaymentDetails,
   };
+}
+
+function shouldEntryRemarksFollowHeader(entryRemarks: string, previousHeaderRemarks: string) {
+  const normalizedEntryRemarks = entryRemarks.trim();
+  const normalizedHeaderRemarks = previousHeaderRemarks.trim();
+
+  return normalizedEntryRemarks === "" || (normalizedHeaderRemarks !== "" && normalizedEntryRemarks === normalizedHeaderRemarks);
 }
 
 

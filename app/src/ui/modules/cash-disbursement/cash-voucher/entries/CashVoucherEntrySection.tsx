@@ -24,7 +24,7 @@ import {
   isExpenseEntryColumnId,
   isGeneratedAccountingEntry,
   moveEntryColumn,
-  syncCashVoucherLineEntryTaxDetails,
+  normalizeCashVoucherLineEntryFields,
   updateVisibleEntryColumns,
 } from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherAccountingEntryData";
 import {
@@ -163,7 +163,7 @@ export function CashVoucherEntrySection(props: VoucherDataEntryProps) {
       const nextUpdates = applyVoucherPartyToEntryUpdates(currentEntry, updates, partyCode, partyName);
       const updatedEntries = entries.map((entry) =>
         entry.id === entryId
-          ? syncCashVoucherLineEntryTaxDetails({
+          ? normalizeCashVoucherLineEntryFields({
               ...entry,
               ...nextUpdates,
             })
@@ -185,35 +185,25 @@ export function CashVoucherEntrySection(props: VoucherDataEntryProps) {
     () =>
       createCashVoucherAccountingEntryColumns({
         canAddPartyName,
-        canAddResponsibilityCenter,
         chartAccounts,
         columnLabels,
         columnWidths,
-        ewtOptions,
         isReadonly,
         onAddPartyName,
-        onAddResponsibilityCenter,
         onUpdateEntry,
         onUpdateEntryFields,
         partyOptions,
-        responsibilityCenterOptions,
-        vatOptions,
       }),
     [
       canAddPartyName,
-      canAddResponsibilityCenter,
       chartAccounts,
       columnLabels,
       columnWidths,
-      ewtOptions,
       isReadonly,
       onAddPartyName,
-      onAddResponsibilityCenter,
       onUpdateEntry,
       onUpdateEntryFields,
       partyOptions,
-      responsibilityCenterOptions,
-      vatOptions,
     ],
   );
   const columns = useMemo<ModuleDataEntryColumn<CashVoucherLineEntry>[]>(
@@ -225,12 +215,15 @@ export function CashVoucherEntrySection(props: VoucherDataEntryProps) {
       createCashVoucherExpenseEntryColumns({
         accountingColumns: allColumns,
         canAddExpenseType,
+        canAddResponsibilityCenter,
         ewtOptions,
         expenseAccounts,
         expenseColumnLabels,
         expenseColumnWidths,
         isReadonly,
         onAddExpenseType,
+        onAddResponsibilityCenter,
+        responsibilityCenterOptions,
         taxCodes,
         updateExpenseEntryFields,
         vatOptions,
@@ -238,12 +231,15 @@ export function CashVoucherEntrySection(props: VoucherDataEntryProps) {
     [
       allColumns,
       canAddExpenseType,
+      canAddResponsibilityCenter,
       ewtOptions,
       expenseAccounts,
       expenseColumnLabels,
       expenseColumnWidths,
       isReadonly,
       onAddExpenseType,
+      onAddResponsibilityCenter,
+      responsibilityCenterOptions,
       taxCodes,
       updateExpenseEntryFields,
       vatOptions,

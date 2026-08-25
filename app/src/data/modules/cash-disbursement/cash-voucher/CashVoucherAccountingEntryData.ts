@@ -243,7 +243,7 @@ export function createAutomaticAccountingEntries(
       debit: vatEntryAmounts.debit,
       credit: vatEntryAmounts.credit,
       id: "auto-input-vat-current",
-      remarks: "Input VAT",
+      remarks: referenceEntry?.remarks.trim() || "Input VAT",
       taxDetails: {
         ...createTaxDetails(totalVatAmount, "0%"),
         ...commonFields,
@@ -266,7 +266,7 @@ export function createAutomaticAccountingEntries(
       debit: ewtEntryAmounts.debit,
       credit: ewtEntryAmounts.credit,
       id: "auto-ewt-current",
-      remarks: "Expanded Withholding Tax",
+      remarks: referenceEntry?.remarks.trim() || "Expanded Withholding Tax",
       taxDetails: {
         ...createTaxDetails(totalEwtAmount, "0%"),
         ...commonFields,
@@ -298,7 +298,7 @@ export function createAutomaticAccountingEntries(
       debit: paymentEntryAmounts.debit,
       credit: paymentEntryAmounts.credit,
       id: "auto-credit-current",
-      remarks: `Settlement via ${options.paymentMethod || "payment"}`,
+      remarks: referenceEntry?.remarks.trim() || `Settlement via ${options.paymentMethod || "payment"}`,
       taxDetails: {
         ...createTaxDetails(totalCashVoucherAmount, "0%"),
         ...commonFields,

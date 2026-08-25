@@ -82,30 +82,28 @@ export type CashVoucherEntryFieldsUpdater = (entryId: string, updates: Partial<C
 
 export type CashVoucherAccountingEntryColumnsParams = {
   canAddPartyName: boolean;
-  canAddResponsibilityCenter: boolean;
   chartAccounts: ModuleChartAccount[];
   columnLabels: Record<CashVoucherEntryColumnId, string>;
   columnWidths: Record<CashVoucherEntryColumnId, number>;
-  ewtOptions: AppAdvancedDropdownOption[];
   isReadonly: boolean;
   onAddPartyName: () => void;
-  onAddResponsibilityCenter: (entryId: string) => void;
   onUpdateEntry: CashVoucherEntryUpdater;
   onUpdateEntryFields: CashVoucherEntryFieldsUpdater;
   partyOptions: AppAdvancedDropdownOption[];
-  responsibilityCenterOptions: AppAdvancedDropdownOption[];
-  vatOptions: AppAdvancedDropdownOption[];
 };
 
 export type CashVoucherExpenseEntryColumnsParams = {
   accountingColumns: Record<CashVoucherEntryColumnId, ModuleDataEntryColumn<CashVoucherLineEntry>>;
   canAddExpenseType: boolean;
+  canAddResponsibilityCenter: boolean;
   ewtOptions: AppAdvancedDropdownOption[];
   expenseAccounts: ModuleChartAccount[];
   expenseColumnLabels: Record<ExpenseEntryColumnId, string>;
   expenseColumnWidths: Record<ExpenseEntryColumnId, number>;
   isReadonly: boolean;
   onAddExpenseType: () => void;
+  onAddResponsibilityCenter: (entryId: string) => void;
+  responsibilityCenterOptions: AppAdvancedDropdownOption[];
   taxCodes: AlphanumericTaxCode[];
   updateExpenseEntryFields: CashVoucherEntryFieldsUpdater;
   vatOptions: AppAdvancedDropdownOption[];

@@ -24,7 +24,7 @@ import {
   isExpenseEntryColumnId,
   isGeneratedAccountingEntry,
   moveEntryColumn,
-  syncDisbursementLineEntryTaxDetails,
+  normalizeDisbursementLineEntryFields,
   updateVisibleEntryColumns,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingEntryData";
 import {
@@ -168,7 +168,7 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
       const nextUpdates = applyVoucherPartyToEntryUpdates(currentEntry, updates, partyCode, partyName);
       const updatedEntries = entries.map((entry) =>
         entry.id === entryId
-          ? syncDisbursementLineEntryTaxDetails({
+          ? normalizeDisbursementLineEntryFields({
               ...entry,
               ...nextUpdates,
             })
@@ -189,35 +189,25 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
     () =>
       createDisbursementAccountingEntryColumns({
         canAddPartyName,
-        canAddResponsibilityCenter,
         chartAccounts,
         columnLabels,
         columnWidths,
-        ewtOptions,
         isReadonly,
         onAddPartyName,
-        onAddResponsibilityCenter,
         onUpdateEntry,
         onUpdateEntryFields,
         partyOptions,
-        responsibilityCenterOptions,
-        vatOptions,
       }),
     [
       canAddPartyName,
-      canAddResponsibilityCenter,
       chartAccounts,
       columnLabels,
       columnWidths,
-      ewtOptions,
       isReadonly,
       onAddPartyName,
-      onAddResponsibilityCenter,
       onUpdateEntry,
       onUpdateEntryFields,
       partyOptions,
-      responsibilityCenterOptions,
-      vatOptions,
     ],
   );
   const columns = useMemo<ModuleDataEntryColumn<DisbursementLineEntry>[]>(
@@ -229,12 +219,15 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
       createDisbursementExpenseEntryColumns({
         accountingColumns: allColumns,
         canAddExpenseType,
+        canAddResponsibilityCenter,
         ewtOptions,
         expenseAccounts,
         expenseColumnLabels,
         expenseColumnWidths,
         isReadonly,
         onAddExpenseType,
+        onAddResponsibilityCenter,
+        responsibilityCenterOptions,
         taxCodes,
         updateExpenseEntryFields,
         vatOptions,
@@ -242,12 +235,15 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
     [
       allColumns,
       canAddExpenseType,
+      canAddResponsibilityCenter,
       ewtOptions,
       expenseAccounts,
       expenseColumnLabels,
       expenseColumnWidths,
       isReadonly,
       onAddExpenseType,
+      onAddResponsibilityCenter,
+      responsibilityCenterOptions,
       taxCodes,
       updateExpenseEntryFields,
       vatOptions,

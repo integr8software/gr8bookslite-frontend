@@ -11,8 +11,8 @@ import type { CashVoucherLineEntry } from "@/app/src/types/modules/cash-disburse
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
 import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import { ModuleDataEntryReadonlyCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryReadonlyCell";
 import { ModuleDataEntryRemarksCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryRemarksCell";
-import { parseMoneyNumberInput } from "@/app/src/ui/shared/money/MoneyNumberField";
 import {
   getEwtPercentFromCode,
   getVatPercentFromRate,
@@ -26,22 +26,18 @@ import {
   accountingCellControlClassName,
 } from "@/app/src/ui/modules/cash-disbursement/cash-voucher/entries/CashVoucherEntryCellControls";
 import { CashVoucherAccountingDropdownClassName } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherDataEntryConstants";
+import { formatAmount } from "@/app/src/utils/currency.util";
 
 export function createCashVoucherAccountingEntryColumns({
   canAddPartyName,
-  canAddResponsibilityCenter,
   chartAccounts,
   columnLabels,
   columnWidths,
-  ewtOptions,
   isReadonly,
   onAddPartyName,
-  onAddResponsibilityCenter,
   onUpdateEntry,
   onUpdateEntryFields,
   partyOptions,
-  responsibilityCenterOptions,
-  vatOptions,
 }: CashVoucherAccountingEntryColumnsParams): Record<CashVoucherEntryColumnId, ModuleDataEntryColumn<CashVoucherLineEntry>> {
   return {
     accountCode: {
@@ -66,8 +62,8 @@ export function createCashVoucherAccountingEntryColumns({
           readOnly={isReadonly}
           isClearable
           className={CashVoucherAccountingDropdownClassName}
-          placeholder="Select Account Title"
-          searchPlaceholder="Search Account Title"
+          placeholder="Select Disbursement Type"
+          searchPlaceholder="Search Disbursement Type"
           onChange={() => undefined}
           onSelectAccount={(account) =>
             onUpdateEntryFields(entry.id, {
@@ -83,14 +79,8 @@ export function createCashVoucherAccountingEntryColumns({
       id: "debit",
       width: columnWidths.debit,
       widthClassName: "w-[11rem]",
-      renderCell: (entry, rowIndex, context) => (
-        <EntryNumberInput
-          id={context.fieldId}
-          label={`${columnLabels.debit} row ${rowIndex + 1}`}
-          value={entry.debit}
-          onChange={(value) => onUpdateEntry(entry.id, "debit", value)}
-          disabled={isReadonly || parseMoneyNumberInput(entry.credit) > 0}
-        />
+      renderCell: (entry) => (
+        <ModuleDataEntryReadonlyCell align="right" value={Number(entry.debit) !== 0 ? formatAmount(entry.debit) : ""} />
       ),
     },
     credit: {
@@ -98,14 +88,8 @@ export function createCashVoucherAccountingEntryColumns({
       id: "credit",
       width: columnWidths.credit,
       widthClassName: "w-[11rem]",
-      renderCell: (entry, rowIndex, context) => (
-        <EntryNumberInput
-          id={context.fieldId}
-          label={`${columnLabels.credit} row ${rowIndex + 1}`}
-          value={entry.credit}
-          onChange={(value) => onUpdateEntry(entry.id, "credit", value)}
-          disabled={isReadonly || parseMoneyNumberInput(entry.debit) > 0}
-        />
+      renderCell: (entry) => (
+        <ModuleDataEntryReadonlyCell align="right" value={Number(entry.credit) !== 0 ? formatAmount(entry.credit) : ""} />
       ),
     },
     checkNo: {
@@ -209,22 +193,9 @@ export function createCashVoucherAccountingEntryColumns({
       width: columnWidths.responsibilityCenter,
       widthClassName: "w-[18rem]",
       renderCell: (entry) => (
-        <AppAdvancedDropdown
-          addAction={
-            !isReadonly && canAddResponsibilityCenter
-              ? {
-                  label: "Add Responsibility Center",
-                  onClick: () => onAddResponsibilityCenter(entry.id),
-                }
-              : undefined
-          }
+        <ModuleDataEntryReadonlyCell
+          title={entry.responsibilityCenter || undefined}
           value={entry.responsibilityCenter ?? ""}
-          readOnly={isReadonly}
-          options={responsibilityCenterOptions}
-          placeholder="Select Responsibility Center"
-          searchPlaceholder="Search Responsibility Center"
-          className={CashVoucherAccountingDropdownClassName}
-          onChange={(value) => onUpdateEntry(entry.id, "responsibilityCenter", String(value))}
         />
       ),
     },
@@ -233,13 +204,10 @@ export function createCashVoucherAccountingEntryColumns({
       id: "responsibilityCenterCode",
       width: columnWidths.responsibilityCenterCode,
       widthClassName: "w-[14rem]",
-      renderCell: (entry, rowIndex, context) => (
-        <EntryInput
-          id={context.fieldId}
-          label={`${columnLabels.responsibilityCenterCode} row ${rowIndex + 1}`}
+      renderCell: (entry) => (
+        <ModuleDataEntryReadonlyCell
+          title={entry.responsibilityCenter || undefined}
           value={entry.responsibilityCenter ?? ""}
-          onChange={() => undefined}
-          readOnly
         />
       ),
     },
@@ -257,26 +225,9 @@ export function createCashVoucherAccountingEntryColumns({
       id: "vatType",
       width: columnWidths.vatType,
       widthClassName: "w-[12rem]",
-      renderCell: (entry, rowIndex, context) => {
-        const vatType = entry.vatType ?? "";
-
-        if (vatType && !vatOptions.some((option) => option.value === vatType)) {
-          return <EntryInput id={context.fieldId} label={`${columnLabels.vatType} row ${rowIndex + 1}`} value={vatType} onChange={(value) => onUpdateEntry(entry.id, "vatType", value)} disabled={isReadonly} />;
-        }
-
-        return (
-          <AppAdvancedDropdown
-            value={vatType}
-            readOnly={isReadonly}
-            isClearable
-            options={vatOptions}
-            placeholder="Select VAT"
-            searchPlaceholder="Search VAT Rate or Description"
-            className={CashVoucherAccountingDropdownClassName}
-            onChange={(value) => onUpdateEntry(entry.id, "vatType", String(value))}
-          />
-        );
-      },
+      renderCell: (entry) => (
+        <ModuleDataEntryReadonlyCell title={entry.vatType || undefined} value={entry.vatType ?? ""} />
+      ),
     },
     atcCode: {
       header: columnLabels.atcCode,
@@ -284,16 +235,7 @@ export function createCashVoucherAccountingEntryColumns({
       width: columnWidths.atcCode,
       widthClassName: "w-[12rem]",
       renderCell: (entry) => (
-        <AppAdvancedDropdown
-          value={entry.atcCode ?? ""}
-          readOnly={isReadonly}
-          isClearable
-          options={ewtOptions}
-          placeholder="Select EWT"
-          searchPlaceholder="Search EWT Code, Rate, or Description"
-          className={CashVoucherAccountingDropdownClassName}
-          onChange={(value) => onUpdateEntry(entry.id, "atcCode", String(value))}
-        />
+        <ModuleDataEntryReadonlyCell title={entry.atcCode || undefined} value={entry.atcCode ?? ""} />
       ),
     },
   };
@@ -302,12 +244,15 @@ export function createCashVoucherAccountingEntryColumns({
 export function createCashVoucherExpenseEntryColumns({
   accountingColumns,
   canAddExpenseType,
+  canAddResponsibilityCenter,
   ewtOptions,
   expenseAccounts,
   expenseColumnLabels,
   expenseColumnWidths,
   isReadonly,
   onAddExpenseType,
+  onAddResponsibilityCenter,
+  responsibilityCenterOptions,
   taxCodes,
   updateExpenseEntryFields,
   vatOptions,
@@ -512,10 +457,39 @@ export function createCashVoucherExpenseEntryColumns({
       width: expenseColumnWidths.remarks,
     },
     responsibilityCenter: {
-      ...accountingColumns.responsibilityCenter,
       header: expenseColumnLabels.responsibilityCenter,
       id: "responsibilityCenter",
       width: expenseColumnWidths.responsibilityCenter,
+      widthClassName: "w-[18rem]",
+      renderCell: (entry) => (
+        <AppAdvancedDropdown
+          addAction={
+            !isReadonly && canAddResponsibilityCenter
+              ? {
+                  label: "Add Responsibility Center",
+                  onClick: () => onAddResponsibilityCenter(entry.id),
+                }
+              : undefined
+          }
+          value={entry.responsibilityCenter ?? ""}
+          readOnly={isReadonly}
+          options={responsibilityCenterOptions}
+          placeholder="Select Responsibility Center"
+          searchPlaceholder="Search Responsibility Center"
+          className={CashVoucherAccountingDropdownClassName}
+          onChange={(value) => {
+            const responsibilityCenter = String(value);
+
+            updateExpenseEntryFields(entry.id, {
+              responsibilityCenter,
+              taxDetails: {
+                ...entry.taxDetails,
+                responsibilityCenter,
+              },
+            });
+          }}
+        />
+      ),
     },
     responsibilityCenterCode: {
       ...accountingColumns.responsibilityCenterCode,

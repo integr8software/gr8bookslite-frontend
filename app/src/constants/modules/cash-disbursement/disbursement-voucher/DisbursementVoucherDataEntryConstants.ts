@@ -149,26 +149,26 @@ export const ExpenseEntryColumnLabels: Record<ExpenseEntryColumnId, string> = {
 };
 
 export const DefaultExpenseEntryColumnWidths: Record<ExpenseEntryColumnId, number> = {
-  disbursementCode: 160,
-  expenseType: 200,
-  amount: 135,
-  checkDate: 135,
-  checkNo: 150,
-  checkStatus: 145,
-  netAmount: 130,
-  vatCode: 160,
-  vatPercent: 95,
-  vatAmount: 120,
-  ewtCode: 175,
-  ewtPercent: 95,
-  ewtAmount: 120,
-  totalAmountDue: 145,
-  partyCode: 130,
+  partyCode: 155,
   partyName: 220,
+  disbursementCode: 205,
+  expenseType: 205,
+  amount: 170,
+  checkDate: 155,
+  checkNo: 150,
+  checkStatus: 170,
+  netAmount: 155,
+  vatCode: 160,
+  vatPercent: 115,
+  vatAmount: 155,
+  ewtCode: 175,
+  ewtPercent: 115,
+  ewtAmount: 155,
+  totalAmountDue: 155,
+  responsibilityCenterCode: 240,
+  responsibilityCenter: 235,
   remarks: 260,
-  responsibilityCenter: 190,
-  responsibilityCenterCode: 190,
-  refId: 150,
+  refId: 170,
 };
 
 export const DefaultDisbursementEntryColumnOrder: DisbursementEntryColumnId[] = [
@@ -199,7 +199,7 @@ export const ProtectedDisbursementEntryColumnIds = new Set<DisbursementEntryColu
 
 export const DisbursementEntryColumnLabels: Record<DisbursementEntryColumnId, string> = {
   accountCode: "Disbursement Code",
-  accountName: "Disbursement Title",
+  accountName: "Disbursement Type",
   atcCode: "EWT Code",
   checkDate: "Check Date",
   checkNo: "Check No.",
@@ -216,21 +216,21 @@ export const DisbursementEntryColumnLabels: Record<DisbursementEntryColumnId, st
 };
 
 export const DefaultDisbursementEntryColumnWidths: Record<DisbursementEntryColumnId, number> = {
-  accountCode: 140,
+  partyCode: 155,
+  partyName: 220,
+  accountCode: 205,
   accountName: 220,
-  atcCode: 120,
-  checkDate: 135,
-  checkNo: 150,
-  checkStatus: 145,
-  credit: 140,
-  debit: 140,
+  debit: 135,
+  credit: 135,
+  vatType: 160,
+  atcCode: 175,
+  responsibilityCenterCode: 240,
+  responsibilityCenter: 235,
   remarks: 260,
-  partyCode: 130,
-  partyName: 190,
-  refId: 140,
-  responsibilityCenter: 190,
-  responsibilityCenterCode: 190,
-  vatType: 130,
+  refId: 170,
+  checkDate: 155,
+  checkNo: 150,
+  checkStatus: 170,
 };
 
 export const AccountingPartyFallbackValuePrefix = "entry-party:";

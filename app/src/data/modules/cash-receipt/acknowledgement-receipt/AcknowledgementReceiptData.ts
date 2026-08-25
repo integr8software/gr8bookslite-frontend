@@ -228,6 +228,9 @@ export function applyCopyFromRecordToAcknowledgementReceiptForm(
           accountCode: record.accountCode || "1010",
           accountTitle: record.accountTitle || "Cash in Bank",
           collectionType: record.collectionType || "Customer payment",
+          bankName: record.bankName || "",
+          checkNo: record.checkNo || "",
+          checkDate: record.checkDate || "",
           credit: record.credit || formattedAmount,
           customerName: partyName,
           debit: record.debit || formattedAmount,
@@ -297,6 +300,9 @@ export function applyCopyFromRecordsToAcknowledgementReceiptForm(
         accountCode: record.accountCode || "1010",
         accountTitle: record.accountTitle || "Cash in Bank",
         collectionType: record.collectionType || "Customer payment",
+        bankName: record.bankName || "",
+        checkNo: record.checkNo || "",
+        checkDate: record.checkDate || "",
         credit: record.credit || formattedAmount,
         customerName: record.partyName || record.customerName || partyName,
         debit: record.debit || formattedAmount,
@@ -333,6 +339,9 @@ export function createBlankAcknowledgementReceiptLineEntry(
     collectionType: "",
     customerName: "",
     partyCode: "",
+    bankName: "",
+    checkNo: "",
+    checkDate: "",
     grossReceipt: "0.0000",
     vatExempt: "0.0000",
     vat: "0.0000",
@@ -371,7 +380,12 @@ export function createAcknowledgementReceiptFormValuesFromRecord(record: Acknowl
     return {
       ...record.formValues,
       attachments: record.formValues.attachments ? [...record.formValues.attachments] : [],
-      lineEntries: record.formValues.lineEntries.map((entry) => ({ ...entry })),
+      lineEntries: record.formValues.lineEntries.map((entry) => ({
+        ...entry,
+        bankName: entry.bankName ?? "",
+        checkNo: entry.checkNo ?? "",
+        checkDate: entry.checkDate ?? "",
+      })),
     };
   }
 
@@ -389,6 +403,9 @@ export function createAcknowledgementReceiptFormValuesFromRecord(record: Acknowl
         collectionType: record.collectionType,
         customerName: record.customerName,
         partyCode: record.partyCode ?? "",
+        bankName: "",
+        checkNo: "",
+        checkDate: "",
         credit: record.amount.toFixed(2),
         grossReceipt: record.amount.toFixed(4),
         referenceNo: record.referenceNo,
@@ -519,6 +536,9 @@ export function acknowledgementReceiptEntryHasData(entry: AcknowledgementReceipt
     entry.accountTitle.trim() !== "" ||
     entry.collectionType.trim() !== "" ||
     entry.customerName.trim() !== "" ||
+    entry.bankName.trim() !== "" ||
+    entry.checkNo.trim() !== "" ||
+    entry.checkDate.trim() !== "" ||
     entry.referenceNo.trim() !== "" ||
     parseMoneyNumberInput(entry.grossReceipt) > 0 ||
     parseMoneyNumberInput(entry.vatExempt) > 0 ||

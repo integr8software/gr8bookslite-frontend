@@ -111,6 +111,7 @@ export type WorkspaceBillingRenewalState = "Overdue" | "Due today" | "Due soon" 
 export type WorkspaceBillingSubscriberAccount = {
   billingCycle: MasterSubscriptionBillingCycle;
   id: string;
+  issuedDate: string;
   name: string;
   ownerName: string;
   planName: string;
@@ -131,6 +132,7 @@ export type WorkspaceBillingCompanyAccount = {
   durationMonths: number;
   eligiblePromotions: WorkspaceBillingPromotionOption[];
   id: string;
+  issuedDate: string;
   name: string;
   ownerName: string;
   overageAmount: number;
@@ -154,6 +156,7 @@ export type WorkspaceBillingCompanyAccount = {
   trialStatusLabel: string | null;
   userCount: number;
 };
+
 
 export type WorkspacePromotionCodeFormValues = {
   code: string;

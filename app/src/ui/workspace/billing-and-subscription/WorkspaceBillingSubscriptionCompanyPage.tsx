@@ -336,9 +336,14 @@ export function CompanyOverviewTab({
               </p>
             </div>
             <div>
+              <p className="text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-darknavy/40">Plan Started</p>
+              <p className="mt-1 text-sm font-semibold text-darknavy">{formatWorkspaceBillingDate(account.issuedDate)}</p>
+            </div>
+            <div>
               <p className="text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-darknavy/40">Next Billing</p>
               <p className="mt-1 text-sm font-semibold text-darknavy">{formatWorkspaceBillingDate(account.renewalDate)}</p>
             </div>
+
             <div>
               <p className="text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-darknavy/40">Billing Mode</p>
               <div className="mt-1">

@@ -26,9 +26,9 @@ export type DisbursementVoucherTableColumnKey =
   | "updatedBy"
   | "updatedAt";
 
-export type DisbursementPaymentMethod = "Bank Transfer" | "Check" | "E-Wallet" | "InstaPay" | "Manager's Check" | "PESONet" | (string & {});
+export type DisbursementPaymentMethod = "Bank Transfer" | "Check" | "Debit Memo" | "E-Wallet" | "InstaPay" | "Manager's Check" | "PESONet" | (string & {});
 
-export type DisbursementPaymentClassification = "Cash" | "Bank Transfer" | "Check" | "Digital Wallet" | "Non-Cash Settlement";
+export type DisbursementPaymentClassification = "Bank Transfer" | "Check" | "Debit Memo" | "Digital Wallet";
 
 export type DisbursementType = "Vendor Payment" | "Operating Expense" | "Reimbursement" | "Capital Expenditure" | (string & {});
 

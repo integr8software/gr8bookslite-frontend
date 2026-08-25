@@ -19,7 +19,7 @@ import { downloadBlob } from "@/app/src/ui/shared/module/module-table/ModuleTabl
 import { formatFileSize } from "@/app/src/utils/file.util";
 import { isModuleImportOptionValue } from "@/app/src/utils/module-import.util";
 
-export const PaymentTypeOptions: PaymentTypeClassification[] = ["Bank Transfer", "Check", "Digital Wallet"];
+export const PaymentTypeOptions: PaymentTypeClassification[] = ["Bank Transfer", "Check", "Debit Memo", "Digital Wallet"];
 
 export const PaymentTypeInitialFormValues: PaymentTypeFormValues = {
   description: "",
@@ -404,6 +404,9 @@ export function normalizeImportedPaymentTypeClassification(value: string): Payme
   }
   if (normalized === "digitalwallet" || normalized === "ewallet") {
     return "Digital Wallet";
+  }
+  if (normalized === "debitmemo" || normalized === "dm") {
+    return "Debit Memo";
   }
   return value as PaymentTypeClassification;
 }

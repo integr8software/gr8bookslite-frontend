@@ -1654,12 +1654,6 @@ function getCreditAccountTemplate(
     };
   }
 
-  if (paymentAccount?.type === "Cash") {
-    return {
-      ...CashInHandAccount,
-    };
-  }
-
   if (transaction.paymentMethod === "Cash") {
     return {
       ...CashInHandAccount,

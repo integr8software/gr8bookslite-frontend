@@ -2078,11 +2078,10 @@ export type PaymentTypeResponseDtoClassification =
   (typeof PaymentTypeResponseDtoClassification)[keyof typeof PaymentTypeResponseDtoClassification];
 
 export const PaymentTypeResponseDtoClassification = {
-  CASH: "CASH",
   BANK_TRANSFER: "BANK_TRANSFER",
   CHECK: "CHECK",
   DIGITAL_WALLET: "DIGITAL_WALLET",
-  NON_CASH_SETTLEMENT: "NON_CASH_SETTLEMENT",
+  DEBIT_MEMO: "DEBIT_MEMO",
 } as const;
 
 export type PaymentTypeResponseDtoStatus =
@@ -2121,11 +2120,10 @@ export interface PaymentTypeStatisticsResponseDto {
   totalPaymentTypes: number;
   activePaymentTypes: number;
   inactivePaymentTypes: number;
-  cashPaymentTypes: number;
   bankTransferPaymentTypes: number;
   checkPaymentTypes: number;
   digitalWalletPaymentTypes: number;
-  nonCashSettlementPaymentTypes: number;
+  debitMemoPaymentTypes?: number;
 }
 
 export interface PaymentTypePermissionsResponseDto {

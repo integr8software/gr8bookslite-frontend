@@ -60,6 +60,7 @@ export const PaymentTypeExportColumns: ModuleTableExportColumn<PaymentTypeRecord
 export const PaymentTypeClassificationOptions = [
   "Bank Transfer",
   "Check",
+  "Debit Memo",
   "Digital Wallet",
 ] as const satisfies readonly PaymentTypeClassification[];
 

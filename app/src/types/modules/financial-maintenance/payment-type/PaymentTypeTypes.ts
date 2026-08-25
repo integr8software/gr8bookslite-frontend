@@ -113,11 +113,10 @@ export type PaymentTypeStatistics = {
   totalPaymentTypes: number;
   activePaymentTypes: number;
   inactivePaymentTypes: number;
-  cashPaymentTypes: number;
   bankTransferPaymentTypes: number;
   checkPaymentTypes: number;
   digitalWalletPaymentTypes: number;
-  nonCashSettlementPaymentTypes: number;
+  debitMemoPaymentTypes?: number;
 };
 
 export type PaymentTypeListResult = {

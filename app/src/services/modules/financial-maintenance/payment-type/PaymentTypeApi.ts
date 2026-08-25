@@ -140,19 +140,19 @@ function mapSortKeyToApi(sortBy?: PaymentTypeSortKey) {
 }
 
 function mapClassificationFromApi(value: PaymentTypeResponseDtoClassification): PaymentTypeClassification {
-  if (value === "CASH") return "Cash";
   if (value === "BANK_TRANSFER") return "Bank Transfer";
   if (value === "CHECK") return "Check";
   if (value === "DIGITAL_WALLET") return "Digital Wallet";
-  return "Non-Cash Settlement";
+  if (value === "DEBIT_MEMO") return "Debit Memo";
+  return "Bank Transfer";
 }
 
 function mapClassificationToApi(value: PaymentTypeClassification): CreatePaymentTypeDtoClassification {
-  if (value === "Cash") return "CASH";
   if (value === "Bank Transfer") return "BANK_TRANSFER";
   if (value === "Check") return "CHECK";
   if (value === "Digital Wallet") return "DIGITAL_WALLET";
-  return "NON_CASH_SETTLEMENT";
+  if (value === "Debit Memo") return "DEBIT_MEMO";
+  return "BANK_TRANSFER";
 }
 
 function mapStatusFromApi(value: PaymentTypeResponseDtoStatus): PaymentTypeStatus {

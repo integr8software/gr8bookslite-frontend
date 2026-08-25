@@ -55,11 +55,10 @@ const EmptyPaymentTypeStatistics: PaymentTypeStatistics = {
   totalPaymentTypes: 0,
   activePaymentTypes: 0,
   inactivePaymentTypes: 0,
-  cashPaymentTypes: 0,
   bankTransferPaymentTypes: 0,
   checkPaymentTypes: 0,
   digitalWalletPaymentTypes: 0,
-  nonCashSettlementPaymentTypes: 0,
+  debitMemoPaymentTypes: 0,
 };
 
 export function usePaymentTypeStore<TSelected = PaymentTypeStoreState>(

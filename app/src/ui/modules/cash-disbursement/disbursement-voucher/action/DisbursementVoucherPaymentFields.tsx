@@ -287,8 +287,8 @@ function formatBankBranchName(bankAccount: DisbursementVoucherBankAccount) {
 }
 
 export function getPaymentTypeDetailKind(paymentType: string, paymentTypeRecord?: AppPaymentTypeRecord | null) {
-  if (paymentTypeRecord?.type === "Cash") {
-    return "cash";
+  if (paymentTypeRecord?.type === "Debit Memo") {
+    return "";
   }
 
   if (paymentTypeRecord?.type === "Check") {

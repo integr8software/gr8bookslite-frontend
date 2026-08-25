@@ -1,7 +1,9 @@
+const PostDatedCheckQueryKeyScope = "post-dated-check";
+
 export const PostDatedCheckQueryKeys = {
-  all: ["post-dated-check"] as const,
-  list: (companyId?: number | null, branchId?: number | null) => ["post-dated-check", "list", companyId, branchId] as const,
+  all: [PostDatedCheckQueryKeyScope] as const,
+  list: (companyId?: number | null, branchId?: number | null) => [PostDatedCheckQueryKeyScope, "list", companyId, branchId] as const,
   detail: (id: string, companyId?: number | null, branchId?: number | null) =>
-    ["post-dated-check", "detail", id, companyId, branchId] as const,
-  parties: (companyId?: number | null) => ["post-dated-check", "parties", companyId] as const,
+    [PostDatedCheckQueryKeyScope, "detail", id, companyId, branchId] as const,
+  parties: (companyId?: number | null) => [PostDatedCheckQueryKeyScope, "parties", companyId] as const,
 };

@@ -2,24 +2,17 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ListTree, Save } from "lucide-react";
-import toast from "react-hot-toast";
-import {
-  createMasterModuleSystem,
-  saveMasterModuleSystemModules,
-  updateMasterModuleSystem,
-  type MasterModuleSystem,
-} from "@/app/src/services/master/module-systems/MasterModuleSystemApi";
+import { type MasterModuleSystem } from "@/app/src/services/master/module-systems/MasterModuleSystemApi";
 import {
   MasterModuleSystemsHref,
-  getMasterModuleSystemEditHref,
   getMasterModuleSystemSidebarHref,
 } from "@/app/src/constants/master/module-systems/MasterModuleSystemConstants";
-import { MasterModuleSystemQueryKeys } from "@/app/src/services/master/module-systems/MasterModuleSystemQueryKeys";
-import { useMasterModuleSystemModulesQuery } from "@/app/src/hooks/master/module-systems/useMasterModuleSystemsQuery";
-import { useMasterModuleSystemListPage } from "@/app/src/hooks/master/module-systems/useMasterModuleSystemListPage";
+import {
+  MasterModuleSystemStatuses,
+  useMasterModuleSystemFormPage,
+  type MasterModuleSystemDraft,
+} from "@/app/src/hooks/master/module-systems/useMasterModuleSystemFormPage";
 import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { AppSkeleton } from "@/app/src/ui/shared/app/AppSkeleton";
 import { ModuleNotFound } from "@/app/src/ui/shared/module/ModuleNotFound";
@@ -30,98 +23,21 @@ import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/Mo
 const ControlClassName =
   "h-10 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-semibold text-darknavy shadow-sm transition placeholder:text-darknavy/35 focus:border-skyblue focus:outline-none focus:ring-4 focus:ring-skyblue/15";
 
-type DraftSystem = {
-  code: string;
-  name: string;
-  description: string;
-  sortOrder: number;
-  status: "Active" | "Inactive" | "Draft";
-};
-
-const EmptyDraft: DraftSystem = {
-  code: "",
-  name: "",
-  description: "",
-  sortOrder: 0,
-  status: "Active",
-};
-
 export function MasterModuleSystemFormPage({ mode, recordId }: { mode: "add" | "edit"; recordId?: string }) {
-  const router = useRouter();
-  const queryClient = useQueryClient();
-  const systemsQuery = useMasterModuleSystemListPage();
-  const modulesQuery = useMasterModuleSystemModulesQuery();
-  const modules = modulesQuery.data?.modules ?? [];
-  const record = useMemo(
-    () => (recordId ? systemsQuery.records.find((candidate) => candidate.id === Number(recordId)) : null),
-    [recordId, systemsQuery.records],
-  );
-  const [metadataDraft, setMetadataDraft] = useState<DraftSystem>(EmptyDraft);
-  const [moduleDraft, setModuleDraft] = useState<Set<string>>(new Set());
-  const [isMetadataDirty, setIsMetadataDirty] = useState(false);
-  const [isModuleDraftDirty, setIsModuleDraftDirty] = useState(false);
-  const initialMetadataDraft = useMemo<DraftSystem>(
-    () =>
-      mode === "edit" && record
-        ? {
-            code: record.code,
-            name: record.name,
-            description: record.description,
-            sortOrder: record.sortOrder,
-            status: record.isActive ? "Active" : "Inactive",
-          }
-        : EmptyDraft,
-    [mode, record],
-  );
-  const initialModuleDraft = useMemo(
-    () => (mode === "edit" && record ? new Set(record.modules.map((module) => module.code)) : new Set<string>()),
-    [mode, record],
-  );
-  const effectiveMetadataDraft = isMetadataDirty ? metadataDraft : initialMetadataDraft;
-  const effectiveModuleDraft = isModuleDraftDirty ? moduleDraft : initialModuleDraft;
+  const {
+    effectiveMetadataDraft,
+    effectiveModuleDraft,
+    isRecordLoading,
+    modules,
+    modulesQuery,
+    record,
+    saveMutation,
+    toggleModule,
+    toggleModules,
+    updateMetadataDraft,
+  } = useMasterModuleSystemFormPage({ mode, recordId });
 
-  const saveMutation = useMutation({
-    mutationFn: async () => {
-      if (!effectiveMetadataDraft.code.trim() || !effectiveMetadataDraft.name.trim()) {
-        throw new Error("System code and name are required.");
-      }
-
-      if (mode === "add") {
-        const created = await createMasterModuleSystem({
-          code: effectiveMetadataDraft.code,
-          name: effectiveMetadataDraft.name,
-          description: effectiveMetadataDraft.description || null,
-          sortOrder: Math.max(0, effectiveMetadataDraft.sortOrder),
-          isActive: effectiveMetadataDraft.status === "Active",
-        });
-        if (effectiveModuleDraft.size > 0) {
-          await saveMasterModuleSystemModules(created.system.id, Array.from(effectiveModuleDraft));
-        }
-        return created.system;
-      }
-
-      if (!record) throw new Error("System not found.");
-      await updateMasterModuleSystem(record.id, {
-        code: effectiveMetadataDraft.code,
-        name: effectiveMetadataDraft.name,
-        description: effectiveMetadataDraft.description || null,
-        sortOrder: Math.max(0, effectiveMetadataDraft.sortOrder),
-        isActive: effectiveMetadataDraft.status === "Active",
-      });
-      await saveMasterModuleSystemModules(record.id, Array.from(effectiveModuleDraft));
-      return record;
-    },
-    onSuccess: async (system) => {
-      await queryClient.invalidateQueries({
-        queryKey: MasterModuleSystemQueryKeys.lists(),
-      });
-      toast.success(mode === "add" ? "System created." : "System saved.");
-      router.push(getMasterModuleSystemEditHref(system.id));
-    },
-    onError: (error: Error) => toast.error(error.message),
-  });
-
-  if (mode === "edit" && systemsQuery.isLoading) {
+  if (isRecordLoading) {
     return <ModuleSystemPageSkeleton />;
   }
 
@@ -171,42 +87,27 @@ export function MasterModuleSystemFormPage({ mode, recordId }: { mode: "add" | "
       <div className="grid gap-5 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
         <SystemDetailsPanel
           draft={effectiveMetadataDraft}
-          onUpdate={(draft) => {
-            setIsMetadataDirty(true);
-            setMetadataDraft(draft);
-          }}
+          onUpdate={updateMetadataDraft}
         />
         <AssignedModulesPanel
           isLoading={modulesQuery.isLoading}
           moduleDraft={effectiveModuleDraft}
           modules={modules}
-          onToggle={(moduleCode) => {
-            setIsModuleDraftDirty(true);
-            setModuleDraft((current) => {
-              const next = new Set(isModuleDraftDirty ? current : initialModuleDraft);
-              if (next.has(moduleCode)) next.delete(moduleCode);
-              else next.add(moduleCode);
-              return next;
-            });
-          }}
-          onToggleMany={(moduleCodes, shouldSelect) => {
-            setIsModuleDraftDirty(true);
-            setModuleDraft((current) => {
-              const next = new Set(isModuleDraftDirty ? current : initialModuleDraft);
-              for (const moduleCode of moduleCodes) {
-                if (shouldSelect) next.add(moduleCode);
-                else next.delete(moduleCode);
-              }
-              return next;
-            });
-          }}
+          onToggle={toggleModule}
+          onToggleMany={toggleModules}
         />
       </div>
     </section>
   );
 }
 
-function SystemDetailsPanel({ draft, onUpdate }: { draft: DraftSystem; onUpdate: (draft: DraftSystem) => void }) {
+function SystemDetailsPanel({
+  draft,
+  onUpdate,
+}: {
+  draft: MasterModuleSystemDraft;
+  onUpdate: (draft: MasterModuleSystemDraft) => void;
+}) {
   return (
     <section className="grid content-start gap-4 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm">
       <div>
@@ -249,14 +150,14 @@ function SystemDetailsPanel({ draft, onUpdate }: { draft: DraftSystem; onUpdate:
             onChange={(event) =>
               onUpdate({
                 ...draft,
-                status: event.target.value as DraftSystem["status"],
+                status: event.target.value as MasterModuleSystemDraft["status"],
               })
             }
             className={ControlClassName}
           >
-            <option value="Active">Active</option>
-            <option value="Inactive">Inactive</option>
-            <option value="Draft">Draft</option>
+            <option value={MasterModuleSystemStatuses.active}>{MasterModuleSystemStatuses.active}</option>
+            <option value={MasterModuleSystemStatuses.inactive}>{MasterModuleSystemStatuses.inactive}</option>
+            <option value={MasterModuleSystemStatuses.draft}>{MasterModuleSystemStatuses.draft}</option>
           </select>
         </label>
       </div>

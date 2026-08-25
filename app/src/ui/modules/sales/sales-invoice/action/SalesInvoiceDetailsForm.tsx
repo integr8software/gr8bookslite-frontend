@@ -9,7 +9,7 @@ import type { SalesInvoiceFormValues } from "@/app/src/types/modules/sales/sales
 import { AppAdvancedDropdown, type AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
-import { useModuleFieldManagement } from "@/app/src/ui/shared/field-management/useModuleFieldManagement";
+import { useModuleFieldManagement } from "@/app/src/hooks/shared/field-management/useModuleFieldManagement";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
 

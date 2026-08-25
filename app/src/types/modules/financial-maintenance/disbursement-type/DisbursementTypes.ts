@@ -1,6 +1,11 @@
 import type { DisbursementType } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 
-export type DisbursementTypeStatus = "Active" | "Inactive";
+export const DisbursementTypeStatuses = {
+  active: "Active",
+  inactive: "Inactive",
+} as const;
+
+export type DisbursementTypeStatus = (typeof DisbursementTypeStatuses)[keyof typeof DisbursementTypeStatuses];
 export type DisbursementTypeClassification =
   | "Vendor Payment"
   | "Operating Expense"

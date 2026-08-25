@@ -1,4 +1,5 @@
 import type { DisbursementType } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+import { DisbursementTypeStatuses } from "@/app/src/types/modules/financial-maintenance/disbursement-type/DisbursementTypes";
 import type {
   DisbursementTypeClassification,
   DisbursementTypeFormValues,
@@ -17,7 +18,7 @@ export const DisbursementTypeInitialFormValues: DisbursementTypeFormValues = {
   name: "",
   description: "",
   type: "",
-  status: "Active",
+  status: DisbursementTypeStatuses.active,
 };
 
 export const InitialAppDisbursementTypeRecords: DisbursementTypeRecord[] = [
@@ -26,28 +27,28 @@ export const InitialAppDisbursementTypeRecords: DisbursementTypeRecord[] = [
     name: "Vendor Payment",
     description: "Payment to suppliers and trade vendors.",
     type: "Vendor Payment",
-    status: "Active",
+    status: DisbursementTypeStatuses.active,
   },
   {
     id: "disbursement-type-operating-expense",
     name: "Operating Expense",
     description: "Regular operating expense settlement.",
     type: "Operating Expense",
-    status: "Active",
+    status: DisbursementTypeStatuses.active,
   },
   {
     id: "disbursement-type-reimbursement",
     name: "Reimbursement",
     description: "Employee or party reimbursement.",
     type: "Reimbursement",
-    status: "Active",
+    status: DisbursementTypeStatuses.active,
   },
   {
     id: "disbursement-type-capital-expenditure",
     name: "Capital Expenditure",
     description: "Asset and capital project disbursement.",
     type: "Capital Expenditure",
-    status: "Active",
+    status: DisbursementTypeStatuses.active,
   },
 ];
 
@@ -93,6 +94,6 @@ export function normalizeDisbursementTypeRecord(record: DisbursementTypeRecord):
     name: record.name ?? (record.description as DisbursementType),
     description: record.description ?? "",
     type: record.type ?? (record.name as DisbursementTypeClassification),
-    status: record.status ?? "Active",
+    status: record.status ?? DisbursementTypeStatuses.active,
   };
 }

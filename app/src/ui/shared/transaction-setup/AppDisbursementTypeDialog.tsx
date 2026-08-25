@@ -24,6 +24,7 @@ import type {
   DisbursementTypeStatus,
   DisbursementTypeStatusFilter,
 } from "@/app/src/types/modules/financial-maintenance/disbursement-type/DisbursementTypes";
+import { DisbursementTypeStatuses } from "@/app/src/types/modules/financial-maintenance/disbursement-type/DisbursementTypes";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
 import { validateDisbursementTypeForm } from "@/app/src/validations/modules/financial-maintenance/disbursement-type/DisbursementTypeValidation";
@@ -82,7 +83,7 @@ export function AppDisbursementTypeDialog({
 }: AppDisbursementTypeDialogProps) {
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<DisbursementTypeFilterType>("");
-  const [statusFilter, setStatusFilter] = useState<DisbursementTypeFilterStatus>("Active");
+  const [statusFilter, setStatusFilter] = useState<DisbursementTypeFilterStatus>(DisbursementTypeStatuses.active);
   const [sortBy, setSortBy] = useState<DisbursementTypeSortKey>("name");
   const [sortDirection, setSortDirection] = useState<DisbursementTypeSortDirection>("asc");
   const [mode, setMode] = useState<DisbursementTypeDialogMode>("list");
@@ -101,7 +102,7 @@ export function AppDisbursementTypeDialog({
     /* eslint-disable react-hooks/set-state-in-effect -- reset transient dialog state whenever this modal opens. */
     setQuery("");
     setTypeFilter("");
-    setStatusFilter("Active");
+    setStatusFilter(DisbursementTypeStatuses.active);
     setSortBy("name");
     setSortDirection("asc");
     setMode("list");
@@ -297,7 +298,8 @@ export function AppDisbursementTypeDialog({
             }}
             onStatusFilterChange={handleStatusFilterChange}
             onToggleStatus={(record) => {
-              const nextStatus = record.status === "Active" ? "Inactive" : "Active";
+              const nextStatus =
+                record.status === DisbursementTypeStatuses.active ? DisbursementTypeStatuses.inactive : DisbursementTypeStatuses.active;
 
               void onUpdateRecord(
                 {
@@ -449,8 +451,8 @@ function DisbursementTypeListView({
             className={fieldClassName}
           >
             <option value="">All</option>
-            <option value="Active">Active</option>
-            <option value="Inactive">Inactive</option>
+            <option value={DisbursementTypeStatuses.active}>{DisbursementTypeStatuses.active}</option>
+            <option value={DisbursementTypeStatuses.inactive}>{DisbursementTypeStatuses.inactive}</option>
           </select>
         </div>
         <button type="button" onClick={onAdd} className={`${accentPrimaryButtonClassName} h-11`}>
@@ -690,8 +692,8 @@ function DisbursementTypeFormView({
               aria-describedby={errors.status ? `${statusInputId}-error` : undefined}
               className={fieldClassName}
             >
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
+              <option value={DisbursementTypeStatuses.active}>{DisbursementTypeStatuses.active}</option>
+              <option value={DisbursementTypeStatuses.inactive}>{DisbursementTypeStatuses.inactive}</option>
             </select>
             {errors.status ? (
               <span id={`${statusInputId}-error`} className="text-xs font-semibold text-coralpink">
@@ -778,7 +780,7 @@ function StatusBadge({ status }: { status: DisbursementTypeStatus }) {
   return (
     <span
       className={`inline-flex rounded-md px-2.5 py-1 text-xs font-semibold ${
-        status === "Active" ? "bg-citron/30 text-darknavy" : "bg-coralpink/12 text-coralpink"
+        status === DisbursementTypeStatuses.active ? "bg-citron/30 text-darknavy" : "bg-coralpink/12 text-coralpink"
       }`}
     >
       {status}
@@ -800,8 +802,8 @@ function DisbursementTypeActionSelect({
   onView: (record: AppDisbursementTypeRecord) => void;
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const canChoose = record.status === "Active";
-  const statusActionLabel = record.status === "Active" ? "Set As Inactive" : "Set As Active";
+  const canChoose = record.status === DisbursementTypeStatuses.active;
+  const statusActionLabel = record.status === DisbursementTypeStatuses.active ? "Set As Inactive" : "Set As Active";
 
   function handleChoose() {
     if (canChoose) {

@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { usePathname } from "next/navigation";
-import { useModuleFieldManagement } from "@/app/src/ui/shared/field-management/useModuleFieldManagement";
+import { useModuleFieldManagement } from "@/app/src/hooks/shared/field-management/useModuleFieldManagement";
 import { joinClasses } from "@/app/src/ui/shared/main-layout/utils";
 
 type ModuleFieldRequiredMarkProps = {

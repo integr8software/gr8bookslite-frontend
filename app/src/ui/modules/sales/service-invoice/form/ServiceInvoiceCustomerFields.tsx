@@ -8,7 +8,7 @@ import type { ServiceInvoiceFormValues } from "@/app/src/types/modules/sales/ser
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
-import { useModuleFieldManagement } from "@/app/src/ui/shared/field-management/useModuleFieldManagement";
+import { useModuleFieldManagement } from "@/app/src/hooks/shared/field-management/useModuleFieldManagement";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 import {
   FieldClassName,

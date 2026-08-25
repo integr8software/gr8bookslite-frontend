@@ -302,12 +302,15 @@ export type CashVoucherFieldUpdater<TValues> = <TKey extends keyof TValues>(fiel
 export type CashVoucherActionHeaderProps = {
   copyFromRecords?: AppCopyFromRecord[];
   copyFromSources?: string[];
+  hasDiscardableChanges: boolean;
   mode: CashVoucherActionMode;
   isSubmitting?: boolean;
   returnLink?: string;
   transaction?: CashVoucherTransactionRecord;
   voucher?: CashVoucherRecord;
   pendingSubmitStatus: CashVoucherStatus | null;
+  onBack?: () => void;
+  onDiscard?: () => void;
   onCancelSubmit: () => void;
   onConfirmSubmit: () => void;
   onCopyFrom?: (recordIds: string[]) => void;

@@ -84,12 +84,15 @@ function DisbursementVoucherActionContent({ voucherAction }: { voucherAction: Di
       <DisbursementVoucherActionHeader
         copyFromRecords={DisbursementVoucherCopyFromRecords.filter((record) => record.templateValues.paymentMethod !== "Cash")}
         copyFromSources={DisbursementVoucherCopySources}
+        hasDiscardableChanges={voucherAction.hasDiscardableChanges}
         mode={voucherAction.isReadonly ? "view" : voucherAction.mode}
         isSubmitting={voucherAction.isSubmitting}
         pendingSubmitStatus={voucherAction.pendingSubmitStatus}
         returnLink={voucherAction.returnLink}
         transaction={voucherAction.selectedTransaction}
         voucher={voucherAction.existingVoucher}
+        onBack={voucherAction.saveDraft}
+        onDiscard={voucherAction.discardDraft}
         onCancelSubmit={voucherAction.cancelDisbursementVoucherSubmit}
         onConfirmSubmit={voucherAction.confirmDisbursementVoucherSubmit}
         onCopyFrom={voucherAction.handleCopyFrom}

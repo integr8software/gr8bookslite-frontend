@@ -56,6 +56,8 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
   const isDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
   const draft = useModuleDraft({
     enabled: !isReadonly,
+    initialValues,
+    isDirty,
     key: createModuleDraftKey({ mode, moduleId: "cash-disbursement:petty-cash-fund", recordId: params.recordId }),
     setValues,
     values,
@@ -230,6 +232,9 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
   }
 
   return {
+    discardDraft: draft.discardDraft,
+    hasDiscardableChanges: isDirty,
+    saveDraft: draft.saveDraft,
     activeTab,
     addItems,
     copyFrom,

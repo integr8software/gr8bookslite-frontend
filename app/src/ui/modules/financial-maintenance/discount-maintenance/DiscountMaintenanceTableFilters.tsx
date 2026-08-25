@@ -10,6 +10,7 @@ import type {
   DiscountMaintenanceTableFiltersProps,
   DiscountValueTypeFilter,
 } from "@/app/src/types/modules/financial-maintenance/discount-maintenance/DiscountMaintenanceTypes";
+import { ModuleTabs, type ModuleTabItem } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 import {
   ModuleTableColumnVisibilityButton,
   ModuleTableExportButton,
@@ -18,7 +19,11 @@ import {
   ModuleTableSearch,
   ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
-import { Tabs } from "@/app/src/ui/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsControls";
+
+const discountTypeTabs: readonly ModuleTabItem<DiscountTypeFilter>[] = DiscountMaintenanceTypeFilterOptions.map((option) => ({
+  id: option.value as DiscountTypeFilter,
+  label: option.label,
+}));
 
 export function DiscountMaintenanceTableFilters({
   discountTypeFilter,
@@ -37,14 +42,9 @@ export function DiscountMaintenanceTableFilters({
   onStatusFilterChange,
   onTypeFilterChange,
 }: DiscountMaintenanceTableFiltersProps) {
-  const typeFilterLabels = DiscountMaintenanceTypeFilterOptions.map((option) => option.label);
-  const activeTypeFilterLabel =
-    DiscountMaintenanceTypeFilterOptions.find((option) => option.value === typeFilter)?.label ??
-    DiscountMaintenanceTypeFilterOptions[0].label;
-
   return (
     <div>
-      <div className="grid gap-2 border-b border-darknavy/10 px-3 py-3 xl:flex xl:items-end xl:justify-between xl:pb-0 xl:pt-2">
+      <div className="grid gap-2 border-b border-darknavy/10 px-3 py-3 xl:flex xl:items-end xl:justify-between xl:pb-2 xl:pt-2">
         <div className="xl:hidden">
           <ModuleTableFilterSelect
             label="Type"
@@ -54,7 +54,12 @@ export function DiscountMaintenanceTableFilters({
           />
         </div>
         <div className="hidden xl:block">
-          <DiscountMaintenanceTypeTabs value={activeTypeFilterLabel} options={typeFilterLabels} onChange={onTypeFilterChange} />
+          <ModuleTabs
+            activeTab={typeFilter}
+            ariaLabel="Discount type tabs"
+            onTabChange={onTypeFilterChange}
+            tabs={discountTypeTabs}
+          />
         </div>
       </div>
       <ModuleTableToolbar
@@ -122,27 +127,5 @@ export function DiscountMaintenanceTableFilters({
         </div>
       </ModuleTableToolbar>
     </div>
-  );
-}
-
-function DiscountMaintenanceTypeTabs({
-  options,
-  value,
-  onChange,
-}: {
-  options: string[];
-  value: string;
-  onChange: (value: DiscountTypeFilter) => void;
-}) {
-  return (
-    <Tabs
-      value={value}
-      options={options}
-      onChange={(label) => {
-        const selectedOption = DiscountMaintenanceTypeFilterOptions.find((option) => option.label === label);
-
-        onChange((selectedOption?.value ?? "All") as DiscountTypeFilter);
-      }}
-    />
   );
 }

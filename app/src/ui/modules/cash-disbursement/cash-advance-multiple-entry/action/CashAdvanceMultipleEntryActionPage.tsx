@@ -1,9 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import {
   CashAdvanceMultipleEntryDetailsTabs,
   CashAdvanceMultipleEntryLink,
@@ -27,6 +25,7 @@ import type {
   CashAdvanceMultipleEntryDetailsTab,
 } from "@/app/src/types/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryTypes";
 import type { PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";
+import { CashAdvanceMultipleEntryNotFound } from "@/app/src/ui/modules/cash-disbursement/cash-advance-multiple-entry/action/CashAdvanceMultipleEntryNotFound";
 import { CashAdvanceMultipleEntryDetailsFields } from "@/app/src/ui/modules/cash-disbursement/cash-advance-multiple-entry/action/CashAdvanceMultipleEntryDetailsFields";
 import { CashAdvanceMultipleEntryActionHeader } from "@/app/src/ui/modules/cash-disbursement/cash-advance-multiple-entry/action/CashAdvanceMultipleEntryActionHeader";
 import { CashAdvanceMultipleEntryEntrySection } from "@/app/src/ui/modules/cash-disbursement/cash-advance-multiple-entry/entries/CashAdvanceMultipleEntryEntrySection";
@@ -35,7 +34,6 @@ import { openCashAdvanceMultipleEntryPdf } from "@/app/src/ui/modules/cash-disbu
 import { CashAdvanceMultipleEntryFileAttachmentFields } from "@/app/src/ui/modules/cash-disbursement/cash-advance-multiple-entry/action/CashAdvanceMultipleEntryFileAttachmentFields";
 import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
-import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 
 export function CashAdvanceMultipleEntryActionPage({ mode }: { mode: CashAdvanceMultipleEntryActionMode }) {
@@ -86,15 +84,7 @@ export function CashAdvanceMultipleEntryActionPage({ mode }: { mode: CashAdvance
   );
 
   if (form.isRecordMissing) {
-    return (
-      <section className="grid gap-4 rounded-lg border border-darknavy/10 bg-white p-5">
-        <h1 className="text-xl font-semibold text-darknavy">Cash advance multiple entry not found</h1>
-        <Link href={CashAdvanceMultipleEntryLink} className={moduleHeaderActionClassNames.secondary}>
-          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          Back
-        </Link>
-      </section>
-    );
+    return <CashAdvanceMultipleEntryNotFound />;
   }
 
   const isReadonly = mode === "view";
@@ -104,7 +94,10 @@ export function CashAdvanceMultipleEntryActionPage({ mode }: { mode: CashAdvance
       <section className="grid gap-5">
         <CashAdvanceMultipleEntryActionHeader
           mode={mode}
+          hasDiscardableChanges={form.hasDiscardableChanges}
           isSubmitting={form.isSubmitting}
+          onBack={form.saveDraft}
+          onDiscard={form.discardDraft}
           record={form.record}
           onPreview={() => setIsReportPreviewOpen(true)}
           onSaveDraft={() => form.submitEntry(CashAdvanceMultipleEntryStatuses.draft)}

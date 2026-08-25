@@ -18,7 +18,7 @@ import {
 } from "@/app/src/data/modules/financial-maintenance/payment-type/PaymentTypeData";
 import {
   applyPaymentTypeListParams,
-} from "@/app/src/services/modules/financial-maintenance/payment-type/PaymentTypeService";
+} from "@/app/src/services/modules/financial-maintenance/payment-type/PaymentTypeApi";
 import type {
   PaymentTypeClassification,
   PaymentTypeFormErrors,

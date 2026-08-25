@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Edit3, FileText } from "lucide-react";
+import { ArrowLeft, Edit3 } from "lucide-react";
 import {
   RevolvingFundReplenishmentConfirmationDialogConfirmLabels,
   RevolvingFundReplenishmentConfirmationDialogTitles,
@@ -11,14 +11,18 @@ import {
   canEditRevolvingFundReplenishment,
   getRevolvingFundReplenishmentEditLink,
 } from "@/app/src/constants/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentConstants";
-import type { RevolvingFundReplenishmentActionPageState } from "@/app/src/types/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentTypes";
-import type { RevolvingFundReplenishmentConfirmationAction } from "@/app/src/types/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentTypes";
+import type {
+  RevolvingFundReplenishmentActionPageState,
+  RevolvingFundReplenishmentConfirmationAction,
+} from "@/app/src/types/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentTypes";
 import { RevolvingFundReplenishmentActionHistory } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/action/RevolvingFundReplenishmentActionHistory";
 import { RevolvingFundReplenishmentStatusActions } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/action/RevolvingFundReplenishmentStatusActions";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleActionButton } from "@/app/src/ui/shared/module/ModuleActionButton";
+import { ModuleDraftDiscardAction } from "@/app/src/ui/shared/module/ModuleDraftDiscardAction";
+import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
+import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 
 export function RevolvingFundReplenishmentActionHeader({
   onPreview,
@@ -34,7 +38,9 @@ export function RevolvingFundReplenishmentActionHeader({
       "Add Revolving Fund Replenishment"
     ) : (
       <span className="inline-flex flex-wrap items-center gap-2">
-        {page.mode === "view" ? "View" : "Edit"} Revolving Fund Replenishment | {transactionNo}
+        <span>
+          {page.mode === "view" ? "View" : "Edit"} Revolving Fund Replenishment | {transactionNo}
+        </span>
         <ModuleStatusBadge status={page.values.status} />
       </span>
     );
@@ -50,16 +56,22 @@ export function RevolvingFundReplenishmentActionHeader({
             ? "Review replenishment details, entries, and supporting files."
             : "Prepare revolving fund voucher entries for fund replenishment."
         }
+        actionsClassName="items-center justify-end gap-2"
         actions={
           <>
-            <Link href={RevolvingFundReplenishmentLink} className={moduleHeaderActionClassNames.secondary}>
+            <Link href={RevolvingFundReplenishmentLink} className={moduleHeaderActionClassNames.secondary} onClick={page.saveDraft}>
               <ArrowLeft className="h-4 w-4" aria-hidden="true" />
               Back
             </Link>
-            <button type="button" onClick={onPreview} className={moduleHeaderActionClassNames.secondary}>
-              <FileText className="h-4 w-4" aria-hidden="true" />
-              Preview
-            </button>
+            {page.mode !== "view" ? (
+              <ModuleDraftDiscardAction
+                hasChanges={page.hasDiscardableChanges}
+                href={RevolvingFundReplenishmentLink}
+                mode={page.mode}
+                onDiscard={page.discardDraft}
+              />
+            ) : null}
+            <ReportPreviewAction onPreview={onPreview} />
             {page.mode !== "add" ? <RevolvingFundReplenishmentActionHistory record={page.record} /> : null}
             {page.mode === "view" && page.record ? (
               <>
@@ -90,6 +102,7 @@ export function RevolvingFundReplenishmentActionHeader({
           description={`This will ${confirmation === "save" ? "save and submit" : confirmation} ${transactionNo}.`}
           confirmLabel={RevolvingFundReplenishmentConfirmationDialogConfirmLabels[confirmation]}
           iconTone={confirmation === "save" ? (page.mode === "edit" ? "update" : "save") : confirmation === "draft" ? "save" : undefined}
+          pendingLabel="Saving..."
           tone={
             confirmation === "approve"
               ? "success"

@@ -18,8 +18,9 @@ import type {
   CashAdvanceSubmitConfirmationAction,
 } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleActionButton } from "@/app/src/ui/shared/module/ModuleActionButton";
+import { ModuleDraftDiscardAction } from "@/app/src/ui/shared/module/ModuleDraftDiscardAction";
+import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 import { CashAdvanceActionHistory } from "@/app/src/ui/modules/cash-disbursement/cash-advance/action/CashAdvanceActionHistory";
@@ -27,7 +28,10 @@ import { CashAdvanceStatusActions } from "@/app/src/ui/modules/cash-disbursement
 
 export function CashAdvanceActionHeader({
   mode,
+  hasDiscardableChanges,
   isSubmitting,
+  onBack,
+  onDiscard,
   onPreview,
   onSaveDraft,
   onSubmit,
@@ -35,7 +39,10 @@ export function CashAdvanceActionHeader({
   record,
 }: {
   mode: CashAdvanceActionMode;
+  hasDiscardableChanges: boolean;
   isSubmitting?: boolean;
+  onBack?: () => void;
+  onDiscard?: () => void;
   onPreview?: () => void;
   onSaveDraft?: () => void;
   onSubmit: () => void;
@@ -46,18 +53,17 @@ export function CashAdvanceActionHeader({
   const [statusToConfirm, setStatusToConfirm] = useState<CashAdvanceStatus | null>(null);
   const recordLabel = record?.transNo ?? "this cash advance";
   const statusDialogCopy = statusToConfirm ? getCashAdvanceStatusDialogCopy(statusToConfirm, recordLabel, record?.status) : null;
-  const titleLabel =
-    mode === "view"
-      ? `View Cash Advance${record?.transNo ? ` | ${record.transNo}` : ""}`
-      : mode === "edit"
-        ? `Edit Cash Advance${record?.transNo ? ` | ${record.transNo}` : ""}`
-        : "Add Cash Advance";
-  const title = (
-    <span className="inline-flex flex-wrap items-center gap-2">
-      <span>{titleLabel}</span>
-      {record?.status ? <ModuleStatusBadge status={record.status} /> : null}
-    </span>
-  );
+  const title =
+    mode === "add" ? (
+      "Add Cash Advance"
+    ) : (
+      <span className="inline-flex flex-wrap items-center gap-2">
+        <span>
+          {mode === "view" ? "View" : "Edit"} Cash Advance | {recordLabel}
+        </span>
+        {record?.status ? <ModuleStatusBadge status={record.status} /> : null}
+      </span>
+    );
 
   return (
     <>
@@ -69,10 +75,18 @@ export function CashAdvanceActionHeader({
         actionsClassName="items-center justify-end gap-2"
         actions={
           <>
-            <Link href={CashAdvanceLink} className={moduleHeaderActionClassNames.secondary}>
+            <Link href={CashAdvanceLink} className={moduleHeaderActionClassNames.secondary} onClick={onBack}>
               <ArrowLeft className="h-4 w-4" aria-hidden="true" />
               Back
             </Link>
+            {mode !== "view" && onDiscard ? (
+              <ModuleDraftDiscardAction
+                hasChanges={hasDiscardableChanges}
+                href={CashAdvanceLink}
+                mode={mode}
+                onDiscard={onDiscard}
+              />
+            ) : null}
             {onPreview ? <ReportPreviewAction onPreview={onPreview} /> : null}
             {mode !== "add" ? <CashAdvanceActionHistory record={record} /> : null}
             {mode !== "add" ? (
@@ -87,10 +101,10 @@ export function CashAdvanceActionHeader({
             {mode === "view" ? null : (
               <ModuleActionButton
                 disabled={isSubmitting}
-                label={isSubmitting ? "Saving..." : "Save"}
+                label={isSubmitting ? "Saving..." : mode === "edit" ? "Update" : "Save"}
                 onAction={() => setSubmitConfirmation("save")}
                 menuItems={
-                  onSaveDraft
+                  mode === "add" && onSaveDraft
                     ? [
                         {
                           label: "Save As Draft",
@@ -110,7 +124,8 @@ export function CashAdvanceActionHeader({
           title={CashAdvanceSubmitConfirmationDialogTitles[submitConfirmation]}
           description={`This will ${submitConfirmation === "save" ? "save and submit" : "save as draft"} ${recordLabel}.`}
           confirmLabel={CashAdvanceSubmitConfirmationDialogConfirmLabels[submitConfirmation]}
-          iconTone={mode === "edit" ? "update" : "save"}
+          iconTone={submitConfirmation === "save" ? (mode === "edit" ? "update" : "save") : "save"}
+          pendingLabel="Saving..."
           tone="default"
           onCancel={() => setSubmitConfirmation(null)}
           onConfirm={() => {

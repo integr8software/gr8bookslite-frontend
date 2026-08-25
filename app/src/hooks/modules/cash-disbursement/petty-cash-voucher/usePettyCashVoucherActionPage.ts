@@ -57,6 +57,8 @@ export function usePettyCashVoucherActionPage(options: PettyCashVoucherActionPag
   const isDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
   const draft = useModuleDraft({
     enabled: !isReadonly,
+    initialValues,
+    isDirty,
     key: createModuleDraftKey({
       mode,
       moduleId: "cash-disbursement:petty-cash-voucher",
@@ -296,6 +298,9 @@ export function usePettyCashVoucherActionPage(options: PettyCashVoucherActionPag
   }
 
   return {
+    discardDraft: draft.discardDraft,
+    hasDiscardableChanges: isDirty,
+    saveDraft: draft.saveDraft,
     activeTab,
     closePartyDrawer,
     closeResponsibilityCenterDrawer,

@@ -12,19 +12,19 @@ import { usePaymentTypeStore } from "@/app/src/hooks/modules/financial-maintenan
 import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import type {
-  PaymentTypeActionPageOptions,
   PaymentTypeFormErrors,
+  PaymentTypeFormPageOptions,
   PaymentTypeFormValues,
   PaymentTypeRecord,
 } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
 import { validatePaymentTypeForm } from "@/app/src/validations/modules/financial-maintenance/payment-type/PaymentTypeValidation";
 
-export function usePaymentTypeActionPage({
+export function usePaymentTypeFormPage({
   existingPaymentType,
   isOpen = true,
   mode,
   onSaved,
-}: PaymentTypeActionPageOptions) {
+}: PaymentTypeFormPageOptions) {
   const { addPaymentType, isMutating, paymentTypes, updatePaymentType } = usePaymentTypeStore();
   const isReadonly = mode === "view";
   const initialValues: PaymentTypeFormValues = existingPaymentType
@@ -141,3 +141,5 @@ export function usePaymentTypeActionPage({
 function getNextPaymentTypeSortOrder(paymentTypes: PaymentTypeRecord[]) {
   return Math.max(0, ...paymentTypes.map((paymentType) => paymentType.sortOrder)) + 10;
 }
+
+export const usePaymentTypeActionPage = usePaymentTypeFormPage;

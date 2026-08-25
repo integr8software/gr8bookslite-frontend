@@ -117,6 +117,8 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   const isDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
   const draft = useModuleDraft({
     enabled: !isReadonly,
+    initialValues,
+    isDirty,
     key: createModuleDraftKey({ mode, moduleId: "cash-disbursement:cash-voucher", recordId: params.recordId }),
     setValues,
     values,
@@ -481,6 +483,9 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   }
 
   return {
+    discardDraft: draft.discardDraft,
+    hasDiscardableChanges: isDirty,
+    saveDraft: draft.saveDraft,
     activeTab,
     currentStatus,
     currencyOptions: transactionCurrency.currencyOptions,

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Edit3, FileText } from "lucide-react";
+import { ArrowLeft, Edit3 } from "lucide-react";
 import {
   PettyCashFundReplenishmentConfirmationDialogConfirmLabels,
   PettyCashFundReplenishmentConfirmationDialogTitles,
@@ -11,15 +11,19 @@ import {
   canEditPettyCashFundReplenishment,
   getPettyCashFundReplenishmentEditLink,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentConstants";
-import type { PettyCashFundReplenishmentActionPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentTypes";
-import type { PettyCashFundReplenishmentConfirmationAction } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentTypes";
+import type {
+  PettyCashFundReplenishmentActionPageState,
+  PettyCashFundReplenishmentConfirmationAction,
+} from "@/app/src/types/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentTypes";
 import { PettyCashFundReplenishmentActionHistory } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund-replenishment/action/PettyCashFundReplenishmentActionHistory";
 import { PettyCashFundReplenishmentStatusActions } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund-replenishment/action/PettyCashFundReplenishmentStatusActions";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { AppCopyFromDropdown } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
-import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleActionButton } from "@/app/src/ui/shared/module/ModuleActionButton";
+import { ModuleDraftDiscardAction } from "@/app/src/ui/shared/module/ModuleDraftDiscardAction";
+import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
+import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 
 export function PettyCashFundReplenishmentActionHeader({
   onPreview,
@@ -35,7 +39,9 @@ export function PettyCashFundReplenishmentActionHeader({
       "Add Petty Cash Fund Replenishment"
     ) : (
       <span className="inline-flex flex-wrap items-center gap-2">
-        {page.mode === "view" ? "View" : "Edit"} Petty Cash Fund Replenishment | {transactionNo}
+        <span>
+          {page.mode === "view" ? "View" : "Edit"} Petty Cash Fund Replenishment | {transactionNo}
+        </span>
         <ModuleStatusBadge status={page.values.status} />
       </span>
     );
@@ -51,16 +57,22 @@ export function PettyCashFundReplenishmentActionHeader({
             ? "Review replenishment details, entries, and supporting files."
             : "Prepare petty cash voucher entries for fund replenishment."
         }
+        actionsClassName="items-center justify-end gap-2"
         actions={
           <>
-            <Link href={PettyCashFundReplenishmentLink} className={moduleHeaderActionClassNames.secondary}>
+            <Link href={PettyCashFundReplenishmentLink} className={moduleHeaderActionClassNames.secondary} onClick={page.saveDraft}>
               <ArrowLeft className="h-4 w-4" aria-hidden="true" />
               Back
             </Link>
-            <button type="button" onClick={onPreview} className={moduleHeaderActionClassNames.secondary}>
-              <FileText className="h-4 w-4" aria-hidden="true" />
-              Preview
-            </button>
+            {page.mode !== "view" ? (
+              <ModuleDraftDiscardAction
+                hasChanges={page.hasDiscardableChanges}
+                href={PettyCashFundReplenishmentLink}
+                mode={page.mode}
+                onDiscard={page.discardDraft}
+              />
+            ) : null}
+            <ReportPreviewAction onPreview={onPreview} />
             {page.mode === "add" ? (
               <AppCopyFromDropdown
                 records={page.pettyCashFundCopyFromRecords}
@@ -99,6 +111,7 @@ export function PettyCashFundReplenishmentActionHeader({
           description={`This will ${confirmation === "save" ? "save and submit" : confirmation} ${transactionNo}.`}
           confirmLabel={PettyCashFundReplenishmentConfirmationDialogConfirmLabels[confirmation]}
           iconTone={confirmation === "save" ? (page.mode === "edit" ? "update" : "save") : confirmation === "draft" ? "save" : undefined}
+          pendingLabel="Saving..."
           tone={
             confirmation === "approve"
               ? "success"

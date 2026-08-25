@@ -55,6 +55,8 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
   const isDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
   const draft = useModuleDraft({
     enabled: !isReadonly,
+    initialValues,
+    isDirty,
     key: createModuleDraftKey({
       mode,
       moduleId: "cash-disbursement:advances-to-suppliers",
@@ -266,6 +268,9 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
   }
 
   return {
+    discardDraft: draft.discardDraft,
+    hasDiscardableChanges: isDirty,
+    saveDraft: draft.saveDraft,
     activeTab,
     currencyOptions: transactionCurrency.currencyOptions,
     errors,

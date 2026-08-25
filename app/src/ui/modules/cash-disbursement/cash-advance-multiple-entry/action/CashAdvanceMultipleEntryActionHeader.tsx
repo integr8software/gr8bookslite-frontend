@@ -23,13 +23,17 @@ import { CashAdvanceMultipleEntryStatusActions } from "@/app/src/ui/modules/cash
 import { CashAdvanceMultipleEntryActionHistory } from "@/app/src/ui/modules/cash-disbursement/cash-advance-multiple-entry/action/CashAdvanceMultipleEntryActionHistory";
 import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleActionButton } from "@/app/src/ui/shared/module/ModuleActionButton";
+import { ModuleDraftDiscardAction } from "@/app/src/ui/shared/module/ModuleDraftDiscardAction";
 import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 
 export function CashAdvanceMultipleEntryActionHeader({
   mode,
+  hasDiscardableChanges,
   isSubmitting,
+  onBack,
+  onDiscard,
   onPreview,
   onSaveDraft,
   onSubmit,
@@ -37,7 +41,10 @@ export function CashAdvanceMultipleEntryActionHeader({
   record,
 }: {
   mode: CashAdvanceMultipleEntryActionMode;
+  hasDiscardableChanges: boolean;
   isSubmitting?: boolean;
+  onBack?: () => void;
+  onDiscard?: () => void;
   onPreview?: () => void;
   onSaveDraft?: () => void;
   onSubmit: () => void;
@@ -46,23 +53,22 @@ export function CashAdvanceMultipleEntryActionHeader({
 }) {
   const [submitConfirmation, setSubmitConfirmation] = useState<CashAdvanceMultipleEntrySubmitConfirmationAction | null>(null);
   const [statusToConfirm, setStatusToConfirm] = useState<CashAdvanceStatus | null>(null);
-  const titleLabel =
-    mode === "view"
-      ? `View Cash Advance Multiple Entry${record?.transNo ? ` | ${record.transNo}` : ""}`
-      : mode === "edit"
-        ? `Edit Cash Advance Multiple Entry${record?.transNo ? ` | ${record.transNo}` : ""}`
-        : "Add Cash Advance Multiple Entry";
-  const title = (
-    <span className="inline-flex flex-wrap items-center gap-2">
-      <span>{titleLabel}</span>
-      {record?.status ? <ModuleStatusBadge status={record.status} /> : null}
-    </span>
-  );
   const approvalRecord = createCashAdvanceMultipleEntryApprovalRecord(record);
   const recordLabel = record?.transNo ?? "this cash advance multiple entry";
   const statusDialogCopy = statusToConfirm
     ? getCashAdvanceMultipleEntryStatusDialogCopy(statusToConfirm, recordLabel, approvalRecord?.status)
     : null;
+  const title =
+    mode === "add" ? (
+      "Add Cash Advance Multiple Entry"
+    ) : (
+      <span className="inline-flex flex-wrap items-center gap-2">
+        <span>
+          {mode === "view" ? "View" : "Edit"} Cash Advance Multiple Entry | {recordLabel}
+        </span>
+        {record?.status ? <ModuleStatusBadge status={record.status} /> : null}
+      </span>
+    );
 
   return (
     <>
@@ -74,10 +80,18 @@ export function CashAdvanceMultipleEntryActionHeader({
         actionsClassName="items-center justify-end gap-2"
         actions={
           <>
-            <Link href={CashAdvanceMultipleEntryLink} className={moduleHeaderActionClassNames.secondary}>
+            <Link href={CashAdvanceMultipleEntryLink} className={moduleHeaderActionClassNames.secondary} onClick={onBack}>
               <ArrowLeft className="h-4 w-4" aria-hidden="true" />
               Back
             </Link>
+            {mode !== "view" && onDiscard ? (
+              <ModuleDraftDiscardAction
+                hasChanges={hasDiscardableChanges}
+                href={CashAdvanceMultipleEntryLink}
+                mode={mode}
+                onDiscard={onDiscard}
+              />
+            ) : null}
             {onPreview ? <ReportPreviewAction onPreview={onPreview} /> : null}
             {mode !== "add" ? <CashAdvanceMultipleEntryActionHistory record={record} /> : null}
             {mode !== "add" ? (
@@ -99,7 +113,7 @@ export function CashAdvanceMultipleEntryActionHeader({
             {mode === "view" ? null : (
               <ModuleActionButton
                 disabled={isSubmitting}
-                label={isSubmitting ? "Saving..." : "Save"}
+                label={isSubmitting ? "Saving..." : mode === "edit" ? "Update" : "Save"}
                 onAction={() => setSubmitConfirmation("save")}
                 menuItems={
                   mode === "add" && onSaveDraft
@@ -122,7 +136,8 @@ export function CashAdvanceMultipleEntryActionHeader({
           title={CashAdvanceMultipleEntrySubmitConfirmationDialogTitles[submitConfirmation]}
           description={`This will ${submitConfirmation === "save" ? "save and submit" : "save as draft"} ${recordLabel}.`}
           confirmLabel={CashAdvanceMultipleEntrySubmitConfirmationDialogConfirmLabels[submitConfirmation]}
-          iconTone={mode === "edit" ? "update" : "save"}
+          iconTone={submitConfirmation === "save" ? (mode === "edit" ? "update" : "save") : "save"}
+          pendingLabel="Saving..."
           tone="default"
           onCancel={() => setSubmitConfirmation(null)}
           onConfirm={() => {

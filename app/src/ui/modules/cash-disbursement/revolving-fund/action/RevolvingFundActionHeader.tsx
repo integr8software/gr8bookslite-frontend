@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Edit3, FileText } from "lucide-react";
+import { ArrowLeft, Edit3 } from "lucide-react";
 import {
   RevolvingFundConfirmationDialogConfirmLabels,
   RevolvingFundConfirmationDialogTitles,
@@ -11,14 +11,18 @@ import {
   canEditRevolvingFund,
   getRevolvingFundEditLink,
 } from "@/app/src/constants/modules/cash-disbursement/revolving-fund/RevolvingFundConstants";
-import type { RevolvingFundActionPageState } from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";
-import type { RevolvingFundConfirmationAction } from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";
+import type {
+  RevolvingFundActionPageState,
+  RevolvingFundConfirmationAction,
+} from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";
 import { RevolvingFundActionHistory } from "@/app/src/ui/modules/cash-disbursement/revolving-fund/action/RevolvingFundActionHistory";
 import { RevolvingFundStatusActions } from "@/app/src/ui/modules/cash-disbursement/revolving-fund/action/RevolvingFundStatusActions";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleActionButton } from "@/app/src/ui/shared/module/ModuleActionButton";
+import { ModuleDraftDiscardAction } from "@/app/src/ui/shared/module/ModuleDraftDiscardAction";
+import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
+import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 
 export function RevolvingFundActionHeader({ onPreview, page }: { onPreview: () => void; page: RevolvingFundActionPageState }) {
   const [confirmation, setConfirmation] = useState<RevolvingFundConfirmationAction | null>(null);
@@ -28,7 +32,9 @@ export function RevolvingFundActionHeader({ onPreview, page }: { onPreview: () =
       "Add Revolving Fund"
     ) : (
       <span className="inline-flex flex-wrap items-center gap-2">
-        {page.mode === "view" ? "View" : "Edit"} Revolving Fund | {transactionNo}
+        <span>
+          {page.mode === "view" ? "View" : "Edit"} Revolving Fund | {transactionNo}
+        </span>
         <ModuleStatusBadge status={page.values.status} />
       </span>
     );
@@ -44,16 +50,22 @@ export function RevolvingFundActionHeader({ onPreview, page }: { onPreview: () =
             ? "Review the fund details, entries, and supporting files."
             : "Set up a custodian, default account, and revolving fund transactions."
         }
+        actionsClassName="items-center justify-end gap-2"
         actions={
           <>
-            <Link href={RevolvingFundLink} className={moduleHeaderActionClassNames.secondary}>
+            <Link href={RevolvingFundLink} className={moduleHeaderActionClassNames.secondary} onClick={page.saveDraft}>
               <ArrowLeft className="h-4 w-4" aria-hidden="true" />
               Back
             </Link>
-            <button type="button" onClick={onPreview} className={moduleHeaderActionClassNames.secondary}>
-              <FileText className="h-4 w-4" aria-hidden="true" />
-              Preview
-            </button>
+            {page.mode !== "view" ? (
+              <ModuleDraftDiscardAction
+                hasChanges={page.hasDiscardableChanges}
+                href={RevolvingFundLink}
+                mode={page.mode}
+                onDiscard={page.discardDraft}
+              />
+            ) : null}
+            <ReportPreviewAction onPreview={onPreview} />
             {page.mode !== "add" ? <RevolvingFundActionHistory record={page.record} /> : null}
             {page.mode === "view" && page.record ? (
               <>

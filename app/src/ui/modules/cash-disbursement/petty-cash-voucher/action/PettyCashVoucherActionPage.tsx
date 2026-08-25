@@ -27,27 +27,29 @@ export function PettyCashVoucherActionPage({ mode }: { mode: PettyCashVoucherFor
   }
 
   return (
-    <section className="grid gap-5">
-      <PettyCashVoucherActionHeader page={page} />
+    <>
+      <section className="grid gap-5">
+        <PettyCashVoucherActionHeader page={page} />
 
-      <ModuleTabs
-        activeTab={page.activeTab}
-        ariaLabel="Petty cash voucher sections"
-        tabs={PettyCashVoucherActionTabs}
-        onTabChange={page.setActiveTab}
-      />
-
-      {page.activeTab === "details" ? (
-        <PettyCashVoucherDetailsFields
-          canAddParty={page.partyStore.permissions.canCreate}
-          canAddResponsibilityCenter={page.responsibilityCenterStore.permissions.canCreate}
-          page={page}
-          onOpenPartyDrawer={page.openPartyDrawer}
-          onOpenResponsibilityCenterDrawer={page.openResponsibilityCenterDrawer}
+        <ModuleTabs
+          activeTab={page.activeTab}
+          ariaLabel="Petty cash voucher sections"
+          tabs={PettyCashVoucherActionTabs}
+          onTabChange={page.setActiveTab}
         />
-      ) : (
-        <PettyCashVoucherFileAttachmentFields page={page} />
-      )}
+
+        {page.activeTab === "details" ? (
+          <PettyCashVoucherDetailsFields
+            canAddParty={page.partyStore.permissions.canCreate}
+            canAddResponsibilityCenter={page.responsibilityCenterStore.permissions.canCreate}
+            page={page}
+            onOpenPartyDrawer={page.openPartyDrawer}
+            onOpenResponsibilityCenterDrawer={page.openResponsibilityCenterDrawer}
+          />
+        ) : (
+          <PettyCashVoucherFileAttachmentFields page={page} />
+        )}
+      </section>
       <PartyManagementDrawer
         isOpen={!page.isReadonly && page.isPartyDrawerOpen}
         isPending={page.partyStore.isMutating}
@@ -69,6 +71,6 @@ export function PettyCashVoucherActionPage({ mode }: { mode: PettyCashVoucherFor
         onClose={page.closeReportPreview}
         onGeneratePdf={() => openPettyCashVoucherPdf(page.values)}
       />
-    </section>
+    </>
   );
 }

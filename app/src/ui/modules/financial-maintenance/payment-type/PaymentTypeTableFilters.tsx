@@ -2,6 +2,11 @@ import {
   PaymentTypeExportColumns,
   PaymentTypeStatusOptions,
 } from "@/app/src/constants/modules/financial-maintenance/payment-type/PaymentTypeConstants";
+import type {
+  PaymentTypeClassification,
+  PaymentTypeStatusFilter,
+  PaymentTypeTableFiltersProps,
+} from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
 import {
   ModuleTableColumnVisibilityButton,
   ModuleTableExportButton,
@@ -10,13 +15,8 @@ import {
   ModuleTableSearch,
   ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
-import type {
-  PaymentTypeClassification,
-  PaymentTypeStatusFilter,
-  PaymentTypeTableFiltersProps,
-} from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
 
-export function PaymentTypeFilters({
+export function PaymentTypeTableFilters({
   exportAllRows,
   exportFilteredRows,
   hasActiveFilters,
@@ -99,3 +99,5 @@ export function PaymentTypeFilters({
     </ModuleTableToolbar>
   );
 }
+
+export const PaymentTypeFilters = PaymentTypeTableFilters;

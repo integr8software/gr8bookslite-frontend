@@ -111,6 +111,8 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
   const isDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
   const draft = useModuleDraft({
     enabled: mode !== "view",
+    initialValues,
+    isDirty,
     key: createModuleDraftKey({ mode, moduleId: "cash-disbursement:cash-advance", recordId }),
     restoreValues: restoreCashAdvanceDraftValues,
     setValues,
@@ -266,6 +268,9 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
   }
 
   return {
+    discardDraft: draft.discardDraft,
+    hasDiscardableChanges: isDirty,
+    saveDraft: draft.saveDraft,
     currencyOptions: transactionCurrency.currencyOptions,
     isExchangeRateLoading: transactionCurrency.isExchangeRateLoading,
     isSubmitting,

@@ -130,6 +130,8 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   const isDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
   const draft = useModuleDraft({
     enabled: !isReadonly,
+    initialValues,
+    isDirty,
     key: createModuleDraftKey({ mode, moduleId: "cash-disbursement:disbursement-voucher", recordId: params.recordId }),
     setValues,
     values,
@@ -564,6 +566,9 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   }
 
   return {
+    discardDraft: draft.discardDraft,
+    hasDiscardableChanges: isDirty,
+    saveDraft: draft.saveDraft,
     activeTab,
     bankAccounts,
     currentStatus,

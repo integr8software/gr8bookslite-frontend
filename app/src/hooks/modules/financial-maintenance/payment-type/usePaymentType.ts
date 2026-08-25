@@ -11,7 +11,7 @@ import {
   fetchPaymentTypes,
   importPaymentTypes,
   updatePaymentType,
-} from "@/app/src/services/modules/financial-maintenance/payment-type/PaymentTypeService";
+} from "@/app/src/services/modules/financial-maintenance/payment-type/PaymentTypeApi";
 import { PaymentTypeQueryKeys } from "@/app/src/services/modules/financial-maintenance/payment-type/PaymentTypeQueryKeys";
 import type {
   PaymentTypePermissions,

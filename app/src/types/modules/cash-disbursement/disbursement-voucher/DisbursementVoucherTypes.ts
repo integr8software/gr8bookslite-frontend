@@ -304,12 +304,15 @@ export type DisbursementVoucherFieldUpdater<TValues> = <TKey extends keyof TValu
 export type DisbursementVoucherActionHeaderProps = {
   copyFromRecords?: AppCopyFromRecord[];
   copyFromSources?: string[];
+  hasDiscardableChanges: boolean;
   mode: DisbursementVoucherActionMode;
   isSubmitting?: boolean;
   returnLink?: string;
   transaction?: DisbursementTransactionRecord;
   voucher?: DisbursementVoucherRecord;
   pendingSubmitStatus: DisbursementVoucherStatus | null;
+  onBack?: () => void;
+  onDiscard?: () => void;
   onCancelSubmit: () => void;
   onConfirmSubmit: () => void;
   onCopyFrom?: (recordIds: string[]) => void;

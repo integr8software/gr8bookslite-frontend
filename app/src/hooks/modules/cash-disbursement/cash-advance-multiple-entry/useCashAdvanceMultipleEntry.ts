@@ -120,6 +120,8 @@ export function useCashAdvanceMultipleEntryActionForm(
   const isDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
   const draft = useModuleDraft({
     enabled: mode !== "view",
+    initialValues,
+    isDirty,
     key: createModuleDraftKey({ mode, moduleId: "cash-disbursement:cash-advance-multiple-entry", recordId }),
     setValues,
     values,
@@ -253,6 +255,9 @@ export function useCashAdvanceMultipleEntryActionForm(
   }
 
   return {
+    discardDraft: draft.discardDraft,
+    hasDiscardableChanges: isDirty,
+    saveDraft: draft.saveDraft,
     addAccountingEntries,
     addItems,
     currencyOptions: transactionCurrency.currencyOptions,

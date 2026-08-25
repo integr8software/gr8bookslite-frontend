@@ -8,7 +8,7 @@ import type {
   DefaultAccountTableFiltersProps,
   DefaultAccountTypeFilter,
 } from "@/app/src/types/modules/financial-maintenance/default-account/DefaultAccountTypes";
-import { Tabs } from "@/app/src/ui/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsControls";
+import { ModuleTabs, type ModuleTabItem } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 import {
   ModuleTableColumnVisibilityButton,
   ModuleTableExportButton,
@@ -17,6 +17,11 @@ import {
   ModuleTableSearch,
   ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
+
+const defaultAccountTabs: readonly ModuleTabItem<DefaultAccountTypeFilter>[] = DefaultAccountTypeFilterOptions.map((option) => ({
+  id: option.value as DefaultAccountTypeFilter,
+  label: option.label,
+}));
 
 export function DefaultAccountTableFilters({
   exportAllRows,
@@ -33,21 +38,14 @@ export function DefaultAccountTableFilters({
   onStatusFilterChange,
   onTypeFilterChange,
 }: DefaultAccountTableFiltersProps) {
-  const typeFilterLabels = DefaultAccountTypeFilterOptions.map((option) => option.label);
-  const activeTypeFilterLabel =
-    DefaultAccountTypeFilterOptions.find((option) => option.value === typeFilter)?.label ?? DefaultAccountTypeFilterOptions[0].label;
-
   return (
     <div>
-      <div className="border-b border-darknavy/10 px-3">
-        <Tabs
-          value={activeTypeFilterLabel}
-          options={typeFilterLabels}
-          onChange={(label) => {
-            const selectedOption = DefaultAccountTypeFilterOptions.find((option) => option.label === label);
-
-            onTypeFilterChange((selectedOption?.value ?? "") as DefaultAccountTypeFilter);
-          }}
+      <div className="border-b border-darknavy/10 px-3 py-2">
+        <ModuleTabs
+          activeTab={typeFilter}
+          ariaLabel="Default account type tabs"
+          onTabChange={onTypeFilterChange}
+          tabs={defaultAccountTabs}
         />
       </div>
       <ModuleTableToolbar

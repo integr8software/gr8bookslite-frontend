@@ -56,6 +56,8 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
   const isDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
   const draft = useModuleDraft({
     enabled: !isReadonly,
+    initialValues,
+    isDirty,
     key: createModuleDraftKey({ mode, moduleId: "cash-disbursement:revolving-fund", recordId: params.recordId }),
     setValues,
     values,
@@ -230,6 +232,9 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
   }
 
   return {
+    discardDraft: draft.discardDraft,
+    hasDiscardableChanges: isDirty,
+    saveDraft: draft.saveDraft,
     activeTab,
     addItems,
     copyFrom,

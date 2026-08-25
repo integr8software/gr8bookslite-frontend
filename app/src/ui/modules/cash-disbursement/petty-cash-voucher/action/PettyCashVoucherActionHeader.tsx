@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
+import Link from "next/link";
 import { ArrowLeft, CreditCard, Edit3 } from "lucide-react";
 import {
   PettyCashVoucherActionDescriptions,
@@ -12,10 +12,14 @@ import {
   getPettyCashVoucherActionTitle,
   getPettyCashVoucherSaveDialogCopy,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
-import type { PettyCashVoucherActionPageState, PettyCashVoucherConfirmation } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
+import type {
+  PettyCashVoucherActionPageState,
+  PettyCashVoucherConfirmation,
+} from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleActionButton } from "@/app/src/ui/shared/module/ModuleActionButton";
+import { ModuleDraftDiscardAction } from "@/app/src/ui/shared/module/ModuleDraftDiscardAction";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 import { PettyCashVoucherActionHistory } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/action/PettyCashVoucherActionHistory";
 import { PettyCashVoucherStatusActions } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/action/PettyCashVoucherStatusActions";
@@ -82,10 +86,18 @@ function PettyCashVoucherHeaderActions({
 }) {
   return (
     <span className="contents">
-      <Link href={PettyCashVoucherLink} className={moduleHeaderActionClassNames.secondary}>
+      <Link href={PettyCashVoucherLink} className={moduleHeaderActionClassNames.secondary} onClick={page.saveDraft}>
         <ArrowLeft className="h-4 w-4" aria-hidden="true" />
         Back
       </Link>
+      {page.mode !== "view" ? (
+        <ModuleDraftDiscardAction
+          hasChanges={page.hasDiscardableChanges}
+          href={PettyCashVoucherLink}
+          mode={page.mode}
+          onDiscard={page.discardDraft}
+        />
+      ) : null}
       <ReportPreviewAction onPreview={page.openReportPreview} />
       {page.mode === "view" ? <PettyCashVoucherActionHistory page={page} /> : null}
       {page.mode !== "add" ? (
@@ -103,7 +115,7 @@ function PettyCashVoucherHeaderActions({
       {page.isReadonly ? null : (
         <ModuleActionButton
           disabled={page.isSubmitting}
-          label={page.isSubmitting ? "Saving..." : "Save"}
+          label={page.isSubmitting ? "Saving..." : page.mode === "edit" ? "Update" : "Save"}
           onAction={() => onRequestConfirmation({ action: "submit" })}
           menuItems={
             page.mode === "add"

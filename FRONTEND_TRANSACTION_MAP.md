@@ -1,6 +1,6 @@
 # Gr8Books Neo Frontend Transaction Map
 
-Last updated: 2026-08-24
+Last updated: 2026-08-25
 
 Use this file as the first stop before changing transactional frontend modules.
 It repeats the useful structure from `FRONTEND_MAP.md`, but narrows the guidance
@@ -353,8 +353,8 @@ to its hook. Do not call `usePathname`, inspect route strings, or define a
 `<ModuleName>ActionHeader.tsx`
 
 - Transaction mode, document number, status, and primary actions.
-- Can include save, post, approve, void, print, preview, duplicate, and back
-  controls.
+- Can include save, discard changes, post, approve, void, print, preview,
+  duplicate, and back controls.
 - Use icon buttons with `ModuleTooltip` when labels are hidden.
 - Follows the default mode button sets and button tones described below.
 - Owns action button rendering and header-only icon imports. Keep `ActionPage`
@@ -603,6 +603,7 @@ Add mode header buttons:
 
 ```txt
 Back
+Discard
 Preview
 Copy From
 Save
@@ -626,12 +627,61 @@ Edit mode header buttons:
 
 ```txt
 Back
+Discard
 Preview
 Approve
 Disapprove
 Cancel
 Save
 ```
+
+#### Unsaved Changes And Discard
+
+Do not use `Draft` for two different concepts. A transaction with the persisted
+`Draft` status is a real saved transaction. Browser-cached, in-progress form
+values are **unsaved changes** in visible copy, including dialog titles,
+descriptions, confirmation labels, and toast messages. Do not label those
+values as a draft in the UI.
+
+Use `useModuleDraft` for browser autosaving and
+`ModuleDraftDiscardAction` from
+`app/src/ui/shared/module/ModuleDraftDiscardAction.tsx` for the shared Discard
+control. Follow this lifecycle:
+
+- Do not cache untouched initial/default values.
+- Recover cached unsaved changes only when the applicable form opens, and show
+  the recovery toast at that time.
+- `Back` preserves the current unsaved changes and flushes any pending
+  debounced browser save before navigating to the overview.
+- Show `Discard` only in Add and Edit modes. Do not show it in View mode.
+- Disable `Discard` while the form matches its initial baseline. Enable it
+  after the user modifies the form or recovered unsaved changes differ from
+  that baseline.
+- Render Discard as a neutral secondary header button with the shared
+  file-with-X icon treatment. It must not look like the lifecycle Delete or
+  Cancel actions.
+- Confirm Discard through `AppDialog` using `Discard unsaved changes?`, a
+  neutral gray status icon and confirm button, `Discard Changes` as the confirm
+  label, and `Keep Editing` as the dialog cancel label.
+- Include a `Return to list after discarding` checkbox above the dialog action
+  buttons. It is checked by default and its last choice persists in
+  `localStorage` through the shared discard-preference hook.
+- When the checkbox is checked, discard the cached changes, reset the form,
+  and navigate to the overview. When unchecked, discard and reset the form but
+  keep the action page open.
+- In Add mode, Discard removes browser-cached changes only. Because Add has not
+  persisted a transaction yet, it must not create a deletion record or mark a
+  transaction deleted.
+- In Edit mode, Discard removes only browser-cached edits and restores the
+  saved transaction baseline. It must never delete, cancel, void, or otherwise
+  mutate the existing transaction.
+- Clear browser-cached changes after a successful Save, Save as Draft, Update,
+  or Submit operation.
+
+`Keep Editing` only closes the discard confirmation. It does not clear cached
+changes, reset fields, or navigate. This dialog action is separate from the
+transaction lifecycle `Cancel` action, which changes a persisted transaction's
+status.
 
 Use the shared action control for transaction action headers:
 
@@ -1537,8 +1587,10 @@ adding or refactoring transactional modules with user-triggered actions:
   `useOptimisticModuleMutation` for local state). Do not use optimistic updates
   for accounting postings, inventory stock movements, disbursements, or
   backend-generated sequence numbers.
-- **Draft Autosave**: Form autosaving via `useModuleDraft`, clearing the draft
-  only after a successful save.
+- **Unsaved Changes Autosave**: Browser form autosaving via `useModuleDraft`.
+  Keep it distinct from a persisted transaction with `Draft` status, preserve
+  changes on Back, expose the shared disabled-when-clean Discard action in
+  Add/Edit, and clear the browser cache only after Discard or a successful save.
 - **Testing Checklist**: Run verification checks for rapid click prevention,
   lock release on validation/save failure, single navigation, network fetch
   deduplication, and optimistic delete rollback.

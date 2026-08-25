@@ -79,6 +79,9 @@ const OfficialReceiptAccountingColumnWidths: Record<
   credit: 160,
 };
 
+const OfficialReceiptCollectionEntryView: OfficialReceiptEntryView = "collection";
+const OfficialReceiptAccountingEntryView: OfficialReceiptEntryView = "accounting";
+
 type OfficialReceiptEntriesProps = {
   entryView: OfficialReceiptEntryView;
   isReadonly: boolean;
@@ -122,7 +125,7 @@ export function OfficialReceiptEntries({
   const variance = Math.abs(totals.debit - totals.credit);
   const columns = useMemo<ModuleDataEntryColumn<OfficialReceiptLineEntry>[]>(
     () =>
-      entryView === "collection"
+      entryView === OfficialReceiptCollectionEntryView
         ? createCollectionColumns(isReadonly, updateEntry, isCheckPaymentType(paymentType))
         : createAccountingColumns(
             isReadonly,
@@ -145,7 +148,7 @@ export function OfficialReceiptEntries({
   );
   const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
     () => {
-      if (entryView !== "accounting") {
+      if (entryView !== OfficialReceiptAccountingEntryView) {
         return [];
       }
 
@@ -319,7 +322,7 @@ export function OfficialReceiptEntries({
   }
 
   const accountingColumnHandlers =
-    entryView === "accounting"
+    entryView === OfficialReceiptAccountingEntryView
       ? {
           onAutoColumnWidth: fitAccountingColumnWidth,
           onFitColumnWidth: fitAccountingColumnWidth,
@@ -339,7 +342,7 @@ export function OfficialReceiptEntries({
       description=""
       emptyRowLabel="entry"
       exportOptions={
-        entryView === "collection"
+        entryView === OfficialReceiptCollectionEntryView
           ? [
               { id: "csv", label: "CSV", onSelect: () => undefined },
               { id: "excel", label: "Excel", onSelect: () => undefined },
@@ -359,10 +362,12 @@ export function OfficialReceiptEntries({
       }
       isDraggable
       isReadonly={isReadonly}
-      canConfigureColumnsWhenReadonly={entryView === "accounting"}
+      canConfigureColumnsWhenReadonly={
+        entryView === OfficialReceiptAccountingEntryView
+      }
       rows={rows}
       summaryCells={
-        entryView === "accounting"
+        entryView === OfficialReceiptAccountingEntryView
           ? {
               credit: formatOfficialReceiptAmount(totals.credit),
               debit: formatOfficialReceiptAmount(totals.debit),
@@ -370,7 +375,7 @@ export function OfficialReceiptEntries({
           : undefined
       }
       toolbarActions={
-        entryView === "collection"
+        entryView === OfficialReceiptCollectionEntryView
           ? [
               {
                 id: "add-collection-type",
@@ -387,7 +392,11 @@ export function OfficialReceiptEntries({
       onAddRows={addRows}
       onClearRows={clearRows}
       onDuplicateRow={duplicateRow}
-      onImport={entryView === "collection" ? () => undefined : undefined}
+      onImport={
+        entryView === OfficialReceiptCollectionEntryView
+          ? () => undefined
+          : undefined
+      }
       onInsertRow={insertRow}
       onMoveRow={moveRow}
       onRemoveRow={removeRow}
@@ -410,8 +419,8 @@ function EntryViewTabs({
       className="inline-flex rounded-lg border border-darknavy/10 bg-offwhite/70 p-1"
     >
       {([
-        ["collection", "Collection Details"],
-        ["accounting", "Accounting Entries"],
+        [OfficialReceiptCollectionEntryView, "Collection Details"],
+        [OfficialReceiptAccountingEntryView, "Accounting Entries"],
       ] as const).map(([view, label]) => {
         const isActive = entryView === view;
 

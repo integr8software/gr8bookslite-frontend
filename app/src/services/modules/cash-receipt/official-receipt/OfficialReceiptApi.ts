@@ -159,6 +159,9 @@ function createLineEntriesFromApi(receipt: OfficialReceiptResponseDto): Official
     return receipt.journalEntries.map((entry) => ({
       accountCode: entry.accountCode,
       accountTitle: entry.accountTitle,
+      bankName: "",
+      checkDate: "",
+      checkNo: "",
       collectionType: entry.particulars ?? "",
       credit: entry.credit.toFixed(2),
       customerName: entry.partyName ?? receipt.customerName,
@@ -182,6 +185,9 @@ function createLineEntriesFromApi(receipt: OfficialReceiptResponseDto): Official
     return {
       accountCode: accountEntry?.accountCode ?? "",
       accountTitle: accountEntry?.accountTitle ?? "",
+      bankName: "",
+      checkDate: "",
+      checkNo: "",
       collectionType: detail.description,
       credit: credit.toFixed(2),
       customerName: accountEntry?.partyName ?? receipt.customerName,

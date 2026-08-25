@@ -12,7 +12,7 @@ import { usePaymentTypeStore } from "@/app/src/hooks/modules/financial-maintenan
 import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import type {
-  PaymentTypeActionMode,
+  PaymentTypeActionPageOptions,
   PaymentTypeFormErrors,
   PaymentTypeFormValues,
   PaymentTypeRecord,
@@ -21,13 +21,10 @@ import { validatePaymentTypeForm } from "@/app/src/validations/modules/financial
 
 export function usePaymentTypeActionPage({
   existingPaymentType,
+  isOpen = true,
   mode,
   onSaved,
-}: {
-  existingPaymentType?: PaymentTypeRecord;
-  mode: PaymentTypeActionMode;
-  onSaved: () => void;
-}) {
+}: PaymentTypeActionPageOptions) {
   const { addPaymentType, isMutating, paymentTypes, updatePaymentType } = usePaymentTypeStore();
   const isReadonly = mode === "view";
   const initialValues: PaymentTypeFormValues = existingPaymentType
@@ -43,7 +40,8 @@ export function usePaymentTypeActionPage({
   const isSubmittingRef = useRef(false);
 
   const draft = useModuleDraft({
-    enabled: !isReadonly,
+    enabled: isOpen && !isReadonly,
+    initialValues,
     key: createModuleDraftKey({
       mode,
       moduleId: "financial-maintenance:payment-type",
@@ -126,6 +124,9 @@ export function usePaymentTypeActionPage({
   }
 
   return {
+    clearDraft: draft.clearDraft,
+    discardDraft: draft.discardDraft,
+    saveDraft: draft.saveDraft,
     errors,
     handleInputChange,
     handleSubmit,

@@ -47,10 +47,21 @@ export function PaymentTypeDrawer({ isOpen, mode, onClose, paymentType }: Paymen
 function PaymentTypeDrawerPanel({ isOpen, mode, onClose, paymentType }: PaymentTypeDrawerProps) {
   const page = usePaymentTypeActionPage({
     existingPaymentType: paymentType,
+    isOpen,
     mode,
     onSaved: onClose,
   });
   const copy = PaymentTypeActionCopy[mode];
+
+  function handleClose() {
+    page.saveDraft();
+    onClose();
+  }
+
+  function handleCancel() {
+    page.discardDraft();
+    onClose();
+  }
 
   return (
     <ModuleDrawer
@@ -61,7 +72,8 @@ function PaymentTypeDrawerPanel({ isOpen, mode, onClose, paymentType }: PaymentT
       isReadonly={page.isReadonly}
       isSaving={page.isSubmitting}
       onBeforeSaveConfirm={page.validateBeforeSubmit}
-      onClose={onClose}
+      onCancel={handleCancel}
+      onClose={handleClose}
       savingLabel={getModuleSavePendingLabel(mode)}
       submitLabel={mode === "edit" ? "Update Payment Type" : "Save Payment Type"}
       title={copy.title}

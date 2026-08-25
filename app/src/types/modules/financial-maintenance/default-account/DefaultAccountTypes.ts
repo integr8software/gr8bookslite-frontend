@@ -46,6 +46,14 @@ export type DefaultAccountFormValues = {
 export type DefaultAccountFormErrors = Partial<Record<keyof DefaultAccountFormValues, string>>;
 
 export type DefaultAccountActionMode = "add" | "edit" | "view";
+
+export type DefaultAccountFormPageOptions = {
+  existingDefaultAccount?: DefaultAccount;
+  isOpen?: boolean;
+  mode: DefaultAccountActionMode;
+  onSaved: () => void;
+};
+
 export type DefaultAccountStatusFilter = "" | DefaultAccountStatus;
 export type DefaultAccountTypeFilter = "" | DefaultAccountType;
 

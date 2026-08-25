@@ -14,19 +14,12 @@ import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleAct
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import type {
   TermsMaintenanceActionMode,
-  TermsMaintenance,
   TermsMaintenanceFormErrors,
+  TermsMaintenanceFormPageOptions,
   TermsMaintenanceFormValues,
   TermsMaintenanceStatus,
 } from "@/app/src/types/modules/financial-maintenance/terms-maintenance/TermsMaintenanceTypes";
 import { validateTermsMaintenanceForm } from "@/app/src/validations/modules/financial-maintenance/terms-maintenance/TermsMaintenanceValidation";
-
-type TermsMaintenanceFormPageOptions = {
-  existingTerm?: TermsMaintenance;
-  initialValues?: TermsMaintenanceFormValues;
-  mode?: TermsMaintenanceActionMode;
-  onSaved?: () => void;
-};
 
 export function useTermsMaintenanceFormPage(options: TermsMaintenanceFormPageOptions = {}) {
   const router = useRouter();
@@ -50,7 +43,8 @@ export function useTermsMaintenanceFormPage(options: TermsMaintenanceFormPageOpt
   const nextStatus: TermsMaintenanceStatus = existingTerm?.status === "Active" ? "Inactive" : "Active";
 
   const draft = useModuleDraft({
-    enabled: !isReadonly,
+    enabled: (options.isOpen ?? true) && !isReadonly,
+    initialValues,
     key: createModuleDraftKey({
       mode,
       moduleId: "financial-maintenance:terms-maintenance",
@@ -165,6 +159,9 @@ export function useTermsMaintenanceFormPage(options: TermsMaintenanceFormPageOpt
   }
 
   return {
+    clearDraft: draft.clearDraft,
+    discardDraft: draft.discardDraft,
+    saveDraft: draft.saveDraft,
     errors,
     existingTerm,
     handleConfirmStatusChange,

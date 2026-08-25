@@ -39,6 +39,13 @@ export type DiscountMaintenanceFormErrors = Partial<Record<keyof DiscountMainten
 
 export type DiscountMaintenanceActionMode = "add" | "edit" | "view";
 
+export type DiscountMaintenanceFormPageOptions = {
+  existingDiscount?: Discount;
+  isOpen?: boolean;
+  mode?: DiscountMaintenanceActionMode;
+  onSaved?: () => void;
+};
+
 export type DiscountMaintenanceDrawerState = {
   discount?: Discount;
   initialValues?: DiscountMaintenanceFormValues;

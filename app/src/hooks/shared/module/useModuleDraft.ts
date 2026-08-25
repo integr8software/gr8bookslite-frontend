@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 
 type ModuleDraftEnvelope<TValues> = {
@@ -12,7 +12,10 @@ type ModuleDraftEnvelope<TValues> = {
 type UseModuleDraftOptions<TValues> = {
 	debounceMs?: number;
 	enabled?: boolean;
+	initialValues?: TValues;
+	isDirty?: boolean;
 	key: string;
+	restoreValues?: (draftValues: TValues, currentValues: TValues) => TValues;
 	setValues: (updater: (current: TValues) => TValues) => void;
 	values: TValues;
 };
@@ -20,13 +23,55 @@ type UseModuleDraftOptions<TValues> = {
 export function useModuleDraft<TValues>({
 	debounceMs = 600,
 	enabled = true,
+	initialValues,
+	isDirty,
 	key,
+	restoreValues,
 	setValues,
 	values,
 }: UseModuleDraftOptions<TValues>) {
 	const hasLoadedDraftRef = useRef(false);
 	const skipNextSaveRef = useRef(false);
 	const hasShownSaveErrorRef = useRef(false);
+	const saveTimeoutIdRef = useRef<number | null>(null);
+
+	const cancelPendingSave = useCallback(() => {
+		if (saveTimeoutIdRef.current === null) {
+			return;
+		}
+
+		window.clearTimeout(saveTimeoutIdRef.current);
+		saveTimeoutIdRef.current = null;
+	}, []);
+
+	const isFormClean = useCallback(() => {
+		return (
+			isDirty === false ||
+			(isDirty === undefined &&
+				initialValues !== undefined &&
+				JSON.stringify(values) === JSON.stringify(initialValues))
+		);
+	}, [initialValues, isDirty, values]);
+
+	const removeStoredDraft = useCallback(() => {
+		window.localStorage.removeItem(key);
+	}, [key]);
+
+	const persistDraft = useCallback(() => {
+		if (isFormClean()) {
+			removeStoredDraft();
+			return;
+		}
+
+		const draft: ModuleDraftEnvelope<TValues> = {
+			updatedAt: Date.now(),
+			values,
+			version: 1,
+		};
+
+		window.localStorage.setItem(key, JSON.stringify(draft));
+		hasShownSaveErrorRef.current = false;
+	}, [isFormClean, key, removeStoredDraft, values]);
 
 	useEffect(() => {
 		if (!enabled || hasLoadedDraftRef.current) {
@@ -48,13 +93,23 @@ export function useModuleDraft<TValues>({
 				return;
 			}
 
+			if (
+				initialValues !== undefined &&
+				JSON.stringify(draft.values) === JSON.stringify(initialValues)
+			) {
+				window.localStorage.removeItem(key);
+				return;
+			}
+
 			skipNextSaveRef.current = true;
-			setValues(() => draft.values);
-			toast.success("Recovered unsaved draft.");
+			setValues((current) =>
+				restoreValues ? restoreValues(draft.values, current) : draft.values,
+			);
+			toast.success("Your unsaved changes have been restored.");
 		} catch {
 			toast.error("Could not recover the saved draft.");
 		}
-	}, [enabled, key, setValues]);
+	}, [enabled, initialValues, key, restoreValues, setValues]);
 
 	useEffect(() => {
 		if (!enabled || !hasLoadedDraftRef.current) {
@@ -66,16 +121,20 @@ export function useModuleDraft<TValues>({
 			return;
 		}
 
-		const timeoutId = window.setTimeout(() => {
+		if (isFormClean()) {
 			try {
-				const draft: ModuleDraftEnvelope<TValues> = {
-					updatedAt: Date.now(),
-					values,
-					version: 1,
-				};
+				removeStoredDraft();
+			} catch {
+				// Ignore storage errors on cleanup
+			}
+			return;
+		}
 
-				window.localStorage.setItem(key, JSON.stringify(draft));
-				hasShownSaveErrorRef.current = false;
+		const timeoutId = window.setTimeout(() => {
+			saveTimeoutIdRef.current = null;
+
+			try {
+				persistDraft();
 			} catch {
 				if (!hasShownSaveErrorRef.current) {
 					hasShownSaveErrorRef.current = true;
@@ -83,20 +142,49 @@ export function useModuleDraft<TValues>({
 				}
 			}
 		}, debounceMs);
+		saveTimeoutIdRef.current = timeoutId;
 
-		return () => window.clearTimeout(timeoutId);
-	}, [debounceMs, enabled, key, values]);
+		return () => {
+			window.clearTimeout(timeoutId);
+
+			if (saveTimeoutIdRef.current === timeoutId) {
+				saveTimeoutIdRef.current = null;
+			}
+		};
+	}, [debounceMs, enabled, isFormClean, persistDraft, removeStoredDraft]);
 
 	function clearDraft() {
 		try {
-			window.localStorage.removeItem(key);
+			cancelPendingSave();
+			removeStoredDraft();
 			skipNextSaveRef.current = true;
 		} catch {
 			toast.error("Could not clear the saved draft.");
 		}
 	}
 
-	return { clearDraft };
+	function discardDraft() {
+		clearDraft();
+
+		if (initialValues !== undefined) {
+			setValues(() => initialValues);
+		}
+	}
+
+	function saveDraft() {
+		if (!enabled) {
+			return;
+		}
+
+		try {
+			cancelPendingSave();
+			persistDraft();
+		} catch {
+			toast.error("Could not autosave this draft.");
+		}
+	}
+
+	return { clearDraft, discardDraft, saveDraft };
 }
 
 export function createModuleDraftKey({

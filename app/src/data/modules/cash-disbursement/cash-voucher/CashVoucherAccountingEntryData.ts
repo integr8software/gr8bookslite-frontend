@@ -3,8 +3,8 @@ import { getModuleChartAccounts } from "@/app/src/data/shared/accounts/ModuleCha
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import {
   AccountingPartyFallbackValuePrefix,
-  CashInHandAccountCode,
-  CashInHandAccountName,
+  CashOnHandAccountCode,
+  CashOnHandAccountName,
   DefaultCashVoucherEntryColumnOrder,
   DefaultExpenseEntryColumnOrder,
   ExpandedWithholdingTaxAccountCode,
@@ -133,13 +133,13 @@ export function isExpenseEntryColumnId(columnId: string): columnId is ExpenseEnt
   return DefaultExpenseEntryColumnOrder.includes(columnId as ExpenseEntryColumnId);
 }
 
-export function isCashInHandEntry(entry: CashVoucherLineEntry) {
-  return entry.accountCode === CashInHandAccountCode || entry.accountName.trim().toLowerCase() === CashInHandAccountName.toLowerCase();
+export function isCashOnHandEntry(entry: CashVoucherLineEntry) {
+  return entry.accountCode === CashOnHandAccountCode || entry.accountName.trim().toLowerCase() === CashOnHandAccountName.toLowerCase();
 }
 
 export function isPaymentCreditEntry(entry: CashVoucherLineEntry) {
   return (
-    isCashInHandEntry(entry) ||
+    isCashOnHandEntry(entry) ||
     entry.id.startsWith("auto-credit-") ||
     entry.id.startsWith("payment-credit-") ||
     entry.id.startsWith("cash-in-hand-")
@@ -281,8 +281,8 @@ export function createAutomaticAccountingEntries(
   if (hasNonZeroAccountingAmount(totalCashVoucherAmount) && (options.isCashPayment || options.bankAccount)) {
     const creditAccount = options.isCashPayment
       ? {
-          accountCode: CashInHandAccountCode,
-          accountName: CashInHandAccountName,
+          accountCode: CashOnHandAccountCode,
+          accountName: CashOnHandAccountName,
         }
       : {
           accountCode: options.bankAccount?.accountCode ?? "",

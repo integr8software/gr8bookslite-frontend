@@ -25,9 +25,9 @@ import {
 } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherConstants";
 import { formatCurrency as formatCurrencyValue } from "@/app/src/utils/currency.util";
 
-const CashInHandAccount = {
+const CashOnHandAccount = {
   accountCode: "1001111",
-  accountName: "Cash in Hand",
+  accountName: "Cash on Hand",
 } as const;
 
 const InputVatAccount = {
@@ -446,7 +446,7 @@ export const MockCashVouchers: CashVoucherRecord[] = [
       {
         id: "entry-1006",
         accountCode: "1001111",
-        accountName: "Cash in Hand",
+        accountName: "Cash on Hand",
         remarks: "Cash reimbursement release",
         debit: 0,
         credit: 3200,
@@ -1379,13 +1379,13 @@ function getCreditAccountTemplate(
 
   if (paymentAccount?.type === "Cash") {
     return {
-      ...CashInHandAccount,
+      ...CashOnHandAccount,
     };
   }
 
   if (transaction.paymentMethod === "Cash") {
     return {
-      ...CashInHandAccount,
+      ...CashOnHandAccount,
     };
   }
 

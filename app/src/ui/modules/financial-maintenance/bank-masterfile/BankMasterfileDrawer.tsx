@@ -36,6 +36,7 @@ function BankMasterfileDrawerPanel({
 }) {
   const page = useBankMasterfileFormPage({
     existingBank: bank,
+    isOpen,
     mode,
     onSaved: onClose,
   });
@@ -43,6 +44,16 @@ function BankMasterfileDrawerPanel({
   const copy = BankMasterfileActionCopy[mode];
   const accountCode = mode === "add" ? page.nextAccountCode : (bank?.accountCode ?? "");
   const currencyOptions = createBankCurrencyOptions(currencySetupRecords);
+
+  function handleClose() {
+    page.saveDraft();
+    onClose();
+  }
+
+  function handleCancel() {
+    page.discardDraft();
+    onClose();
+  }
 
   return (
     <ModuleDrawer
@@ -54,7 +65,8 @@ function BankMasterfileDrawerPanel({
       isSaving={page.isSubmitting}
       maxWidthClassName="max-w-4xl"
       onBeforeSaveConfirm={page.validateBeforeSubmit}
-      onClose={onClose}
+      onCancel={handleCancel}
+      onClose={handleClose}
       savingLabel={getModuleSavePendingLabel(mode)}
       submitLabel={mode === "edit" ? "Update Bank" : "Save Bank"}
       title={copy.title}

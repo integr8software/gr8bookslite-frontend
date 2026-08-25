@@ -18,17 +18,11 @@ import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleAct
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import type {
   DiscountMaintenanceActionMode,
-  Discount,
   DiscountMaintenanceFormErrors,
+  DiscountMaintenanceFormPageOptions,
   DiscountMaintenanceFormValues,
 } from "@/app/src/types/modules/financial-maintenance/discount-maintenance/DiscountMaintenanceTypes";
 import { validateDiscountMaintenanceForm } from "@/app/src/validations/modules/financial-maintenance/discount-maintenance/DiscountMaintenanceValidation";
-
-type DiscountMaintenanceFormPageOptions = {
-  existingDiscount?: Discount;
-  mode?: DiscountMaintenanceActionMode;
-  onSaved?: () => void;
-};
 
 export function useDiscountMaintenanceFormPage(options: DiscountMaintenanceFormPageOptions = {}) {
   const router = useRouter();
@@ -46,7 +40,8 @@ export function useDiscountMaintenanceFormPage(options: DiscountMaintenanceFormP
   const isSubmittingRef = useRef(false);
 
   const draft = useModuleDraft({
-    enabled: !isReadonly,
+    enabled: (options.isOpen ?? true) && !isReadonly,
+    initialValues,
     key: createModuleDraftKey({
       mode,
       moduleId: "financial-maintenance:discount-maintenance",
@@ -151,6 +146,9 @@ export function useDiscountMaintenanceFormPage(options: DiscountMaintenanceFormP
   }
 
   return {
+    clearDraft: draft.clearDraft,
+    discardDraft: draft.discardDraft,
+    saveDraft: draft.saveDraft,
     errors,
     existingDiscount,
     generatedAccount,

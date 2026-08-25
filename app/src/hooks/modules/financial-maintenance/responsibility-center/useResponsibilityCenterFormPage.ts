@@ -11,23 +11,15 @@ import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleAct
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import { fetchResponsibilityCenterCodeSuggestion } from "@/app/src/services/modules/financial-maintenance/responsibility-center/ResponsibilityCenterApi";
 import type {
-  ResponsibilityCenter,
-  ResponsibilityCenterActionMode,
   ResponsibilityCenterClassification,
   ResponsibilityCenterFormErrors,
+  ResponsibilityCenterFormPageOptions,
   ResponsibilityCenterFormValues,
   ResponsibilityCenterTypeOption,
 } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
 import { validateResponsibilityCenterForm } from "@/app/src/validations/modules/financial-maintenance/responsibility-center/ResponsibilityCenterValidation";
 
-type ResponsibilityCenterFormPageOptions = {
-  center?: ResponsibilityCenter;
-  initialValues?: ResponsibilityCenterFormValues;
-  mode: ResponsibilityCenterActionMode;
-  onSaved?: (center: ResponsibilityCenter) => void;
-};
-
-export function useResponsibilityCenterFormPage({ center, initialValues, mode, onSaved }: ResponsibilityCenterFormPageOptions) {
+export function useResponsibilityCenterFormPage({ center, initialValues, isOpen = true, mode, onSaved }: ResponsibilityCenterFormPageOptions) {
   const store = useResponsibilityCenterStore();
   const isReadonly = mode === "view";
   const defaultInitialValues = center ? createResponsibilityCenterFormValues(center) : (initialValues ?? ResponsibilityCenterInitialFormValues);
@@ -39,7 +31,8 @@ export function useResponsibilityCenterFormPage({ center, initialValues, mode, o
   const [hasManualCode, setHasManualCode] = useState(Boolean(center?.code));
 
   const draft = useModuleDraft({
-    enabled: !isReadonly,
+    enabled: isOpen && !isReadonly,
+    initialValues: defaultInitialValues,
     key: createModuleDraftKey({
       mode,
       moduleId: "financial-maintenance:responsibility-center",
@@ -197,6 +190,9 @@ export function useResponsibilityCenterFormPage({ center, initialValues, mode, o
   }
 
   return {
+    clearDraft: draft.clearDraft,
+    discardDraft: draft.discardDraft,
+    saveDraft: draft.saveDraft,
     errors,
     classifications: store.classifications,
     isReadonly,

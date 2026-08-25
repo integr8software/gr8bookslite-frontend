@@ -11,20 +11,13 @@ import { useServicesMaintenanceStore } from "@/app/src/hooks/modules/financial-m
 import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import type {
-  ServicesMaintenance,
   ServicesMaintenanceAccountSetupMode,
-  ServicesMaintenanceActionMode,
   ServicesMaintenanceFormErrors,
+  ServicesMaintenanceFormPageOptions,
   ServicesMaintenanceFormValues,
   ServicesMaintenanceStatus,
 } from "@/app/src/types/modules/financial-maintenance/services-maintenance/ServicesMaintenanceTypes";
 import { validateServicesMaintenanceForm } from "@/app/src/validations/modules/financial-maintenance/services-maintenance/ServicesMaintenanceValidation";
-
-type ServicesMaintenanceFormPageOptions = {
-  existingService?: ServicesMaintenance;
-  mode?: ServicesMaintenanceActionMode;
-  onSaved?: () => void;
-};
 
 export function useServicesMaintenanceFormPage(options: ServicesMaintenanceFormPageOptions = {}) {
   const {
@@ -48,7 +41,8 @@ export function useServicesMaintenanceFormPage(options: ServicesMaintenanceFormP
   const isSubmittingRef = useRef(false);
 
   const draft = useModuleDraft({
-    enabled: !isReadonly,
+    enabled: (options.isOpen ?? true) && !isReadonly,
+    initialValues,
     key: createModuleDraftKey({
       mode,
       moduleId: "financial-maintenance:services-maintenance",
@@ -147,6 +141,9 @@ export function useServicesMaintenanceFormPage(options: ServicesMaintenanceFormP
   }
 
   return {
+    clearDraft: draft.clearDraft,
+    discardDraft: draft.discardDraft,
+    saveDraft: draft.saveDraft,
     accountOptions,
     errors,
     existingService,

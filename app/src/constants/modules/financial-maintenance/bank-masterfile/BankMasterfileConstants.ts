@@ -73,7 +73,7 @@ export const BankMasterfileNotDefaultBankSwitchOption = {
   value: false,
 } as const;
 
-export const BankMasterfileAccountTypeOptions = ["Checking", "Savings", "Current"] as const;
+export const BankMasterfileAccountTypeOptions = ["Checking", "Savings", "Current", "Time Deposit", "Credit Card"] as const;
 
 export const BankMasterfileExportColumns: ModuleTableExportColumn<BankMasterfile>[] = [
   ...BankMasterfileTableColumns.flatMap((column) =>

@@ -234,8 +234,8 @@ export const DefaultCashVoucherEntryColumnWidths: Record<CashVoucherEntryColumnI
 };
 
 export const AccountingPartyFallbackValuePrefix = "entry-party:";
-export const CashInHandAccountCode = "1001111";
-export const CashInHandAccountName = "Cash in Hand";
+export const CashOnHandAccountCode = "1001111";
+export const CashOnHandAccountName = "Cash on Hand";
 export const InputVatAccountCode = "2010002011";
 export const InputVatAccountName = "Input VAT";
 export const ExpandedWithholdingTaxAccountCode = "2010002002";

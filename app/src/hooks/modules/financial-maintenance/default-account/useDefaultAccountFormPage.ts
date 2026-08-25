@@ -12,9 +12,8 @@ import { fetchDefaultAccountExpenseParentOptions } from "@/app/src/services/modu
 import { DefaultAccountQueryKeys } from "@/app/src/services/modules/financial-maintenance/default-account/DefaultAccountQueryKeys";
 import { ApiClientError } from "@/app/src/services/shared/api/ApiClient";
 import type {
-  DefaultAccount,
-  DefaultAccountActionMode,
   DefaultAccountFormErrors,
+  DefaultAccountFormPageOptions,
   DefaultAccountFormValues,
 } from "@/app/src/types/modules/financial-maintenance/default-account/DefaultAccountTypes";
 import { validateDefaultAccountForm } from "@/app/src/validations/modules/financial-maintenance/default-account/DefaultAccountValidation";
@@ -29,13 +28,10 @@ const EmptyDefaultAccountFormValues: DefaultAccountFormValues = {
 
 export function useDefaultAccountFormPage({
   existingDefaultAccount,
+  isOpen = true,
   mode,
   onSaved,
-}: {
-  existingDefaultAccount?: DefaultAccount;
-  mode: DefaultAccountActionMode;
-  onSaved: () => void;
-}) {
+}: DefaultAccountFormPageOptions) {
   const { addDefaultAccount, isMutating, updateDefaultAccount } = useDefaultAccountStore();
   const accessToken = useAppStore((state) => state.accessToken);
   const authProfileQuery = useAuthProfileQuery({ accessToken });
@@ -63,7 +59,8 @@ export function useDefaultAccountFormPage({
   const isReadonly = mode === "view";
 
   const draft = useModuleDraft({
-    enabled: !isReadonly,
+    enabled: isOpen && !isReadonly,
+    initialValues,
     key: createModuleDraftKey({
       mode,
       moduleId: "financial-maintenance:default-account",
@@ -171,6 +168,9 @@ export function useDefaultAccountFormPage({
   }
 
   return {
+    clearDraft: draft.clearDraft,
+    discardDraft: draft.discardDraft,
+    saveDraft: draft.saveDraft,
     errors,
     expenseParentOptions: expenseParentOptionsQuery.data ?? [],
     handleInputChange,

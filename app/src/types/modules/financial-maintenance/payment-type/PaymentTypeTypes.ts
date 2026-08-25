@@ -43,6 +43,13 @@ export type PaymentTypeFormErrors = Partial<Record<keyof PaymentTypeFormValues, 
 
 export type PaymentTypeActionMode = "add" | "edit" | "view";
 
+export type PaymentTypeActionPageOptions = {
+  existingPaymentType?: PaymentTypeRecord;
+  isOpen?: boolean;
+  mode: PaymentTypeActionMode;
+  onSaved: () => void;
+};
+
 export type DrawerState = { mode: "add" | "edit" | "view"; paymentType?: PaymentTypeRecord } | null;
 
 export type PaymentTypeDrawerState = DrawerState;

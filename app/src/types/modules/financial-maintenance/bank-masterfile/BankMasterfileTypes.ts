@@ -41,6 +41,13 @@ export type BankMasterfileFormErrors = Partial<Record<keyof BankMasterfileFormVa
 
 export type BankMasterfileActionMode = "add" | "edit" | "view";
 
+export type BankMasterfileFormPageOptions = {
+  existingBank?: BankMasterfile;
+  isOpen?: boolean;
+  mode?: BankMasterfileActionMode;
+  onSaved?: () => void;
+};
+
 export type BankMasterfileTableColumnKey =
   | "bankName"
   | "branch"

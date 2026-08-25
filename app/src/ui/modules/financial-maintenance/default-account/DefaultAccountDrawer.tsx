@@ -44,6 +44,7 @@ export function DefaultAccountDrawer({ defaultAccount, isOpen, mode, permissions
 function DefaultAccountDrawerPanel({ defaultAccount, isOpen, mode, permissions, onClose }: DefaultAccountDrawerProps) {
   const page = useDefaultAccountFormPage({
     existingDefaultAccount: defaultAccount,
+    isOpen,
     mode,
     onSaved: onClose,
   });
@@ -67,6 +68,16 @@ function DefaultAccountDrawerPanel({ defaultAccount, isOpen, mode, permissions, 
     page.values.type === "EXPENSE" &&
     Boolean(selectedExpenseParentAccount && nextExpenseSubAccountLevel);
 
+  function handleClose() {
+    page.saveDraft();
+    onClose();
+  }
+
+  function handleCancel() {
+    page.discardDraft();
+    onClose();
+  }
+
   return (
     <>
       <ModuleDrawer
@@ -77,7 +88,8 @@ function DefaultAccountDrawerPanel({ defaultAccount, isOpen, mode, permissions, 
         isReadonly={page.isReadonly}
         isSaving={page.isSubmitting}
         onBeforeSaveConfirm={page.validateBeforeSubmit}
-        onClose={onClose}
+        onCancel={handleCancel}
+        onClose={handleClose}
         savingLabel={getModuleSavePendingLabel(mode)}
         submitLabel={mode === "edit" ? "Update Default Account" : "Save Default Account"}
         title={copy.title}

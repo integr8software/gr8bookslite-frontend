@@ -3,35 +3,38 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrowUpDown, ChevronDown, ChevronUp, Plus, Search, X } from "lucide-react";
 import type { DisbursementType } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+import {
+  createDisbursementTypeFormValues,
+  createDisbursementTypeFromForm,
+  DisbursementTypeInitialFormValues,
+  DisbursementTypeOptions,
+  InitialAppDisbursementTypeRecords,
+  normalizeDisbursementTypeRecord,
+  updateDisbursementTypeFromForm,
+} from "@/app/src/data/modules/financial-maintenance/disbursement-type/DisbursementTypeData";
+import { applyDisbursementTypeListParams } from "@/app/src/services/modules/financial-maintenance/disbursement-type/DisbursementTypeService";
+import type {
+  DisbursementTypeClassification,
+  DisbursementTypeClassificationFilter,
+  DisbursementTypeFormErrors,
+  DisbursementTypeFormValues,
+  DisbursementTypeRecord,
+  DisbursementTypeSortDirection,
+  DisbursementTypeSortKey,
+  DisbursementTypeStatus,
+  DisbursementTypeStatusFilter,
+} from "@/app/src/types/modules/financial-maintenance/disbursement-type/DisbursementTypes";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
+import { validateDisbursementTypeForm } from "@/app/src/validations/modules/financial-maintenance/disbursement-type/DisbursementTypeValidation";
 
 type DisbursementTypeDialogMode = "list" | "add" | "edit" | "view";
-type DisbursementTypeStatus = "Active" | "Inactive";
-type DisbursementTypeSortKey = "name" | "type" | "status";
-type DisbursementTypeSortDirection = "asc" | "desc";
 type DisbursementTypeActionValue = "view" | "edit" | "toggle";
-type DisbursementTypeFilterStatus = "" | DisbursementTypeStatus;
-type DisbursementTypeFilterType = "" | DisbursementTypeClassification;
-
-export type DisbursementTypeClassification =
-  "Vendor Payment" | "Operating Expense" | "Reimbursement" | "Capital Expenditure" | "Other" | (string & {});
-
-export type AppDisbursementTypeRecord = {
-  id: string;
-  name: DisbursementType;
-  description: string;
-  type: DisbursementTypeClassification;
-  status: DisbursementTypeStatus;
-};
-
-type DisbursementTypeDraft = {
-  name: string;
-  description: string;
-  type: DisbursementTypeClassification | "";
-  status: DisbursementTypeStatus;
-};
-type DisbursementTypeFormErrors = Partial<Record<keyof DisbursementTypeDraft, string>>;
+type DisbursementTypeFilterStatus = DisbursementTypeStatusFilter;
+type DisbursementTypeFilterType = DisbursementTypeClassificationFilter;
+type DisbursementTypeDraft = DisbursementTypeFormValues;
+export type AppDisbursementTypeRecord = DisbursementTypeRecord;
+export type { DisbursementTypeClassification };
 type MaybePromise<T> = T | Promise<T>;
 
 type AppDisbursementTypeDialogProps = {
@@ -51,62 +54,15 @@ type AppDisbursementTypeDialogProps = {
   onSelect: (value: DisbursementType) => void;
 };
 
-export const DisbursementTypeOptions: DisbursementTypeClassification[] = [
-  "Vendor Payment",
-  "Operating Expense",
-  "Reimbursement",
-  "Capital Expenditure",
-  "Other",
-];
+export { DisbursementTypeOptions, InitialAppDisbursementTypeRecords };
 
-export const InitialAppDisbursementTypeRecords: AppDisbursementTypeRecord[] = [
-  {
-    id: "disbursement-type-vendor-payment",
-    name: "Vendor Payment",
-    description: "Payment to suppliers and trade vendors.",
-    type: "Vendor Payment",
-    status: "Active",
-  },
-  {
-    id: "disbursement-type-operating-expense",
-    name: "Operating Expense",
-    description: "Regular operating expense settlement.",
-    type: "Operating Expense",
-    status: "Active",
-  },
-  {
-    id: "disbursement-type-reimbursement",
-    name: "Reimbursement",
-    description: "Employee or party reimbursement.",
-    type: "Reimbursement",
-    status: "Active",
-  },
-  {
-    id: "disbursement-type-capital-expenditure",
-    name: "Capital Expenditure",
-    description: "Asset and capital project disbursement.",
-    type: "Capital Expenditure",
-    status: "Active",
-  },
-];
-
-const EmptyDraft: DisbursementTypeDraft = {
-  name: "",
-  description: "",
-  type: "",
-  status: "Active",
-};
+const EmptyDraft: DisbursementTypeDraft = DisbursementTypeInitialFormValues;
 
 const fieldClassName =
   "h-11 w-full rounded-lg border border-darknavy/12 bg-white px-3 text-sm text-darknavy outline-none transition focus:border-skyblue/45 focus:ring-2 focus:ring-skyblue/20 disabled:bg-darknavy/5";
 
 const accentPrimaryButtonClassName =
   "theme-accent-contrast-text inline-flex items-center justify-center gap-2 rounded-lg bg-skyblue px-4 text-sm font-semibold transition hover:bg-skyblue/85";
-
-const disbursementTypeCollator = new Intl.Collator(undefined, {
-  numeric: true,
-  sensitivity: "base",
-});
 
 export function AppDisbursementTypeDialog({
   isOpen,
@@ -202,12 +158,7 @@ export function AppDisbursementTypeDialog({
   const paginatedRecords = filteredRecords.slice(safePageIndex * pageSize, safePageIndex * pageSize + pageSize);
 
   function openRecord(record: AppDisbursementTypeRecord, nextMode: "edit" | "view") {
-    setDraft({
-      name: record.name,
-      description: record.description,
-      type: record.type,
-      status: record.status,
-    });
+    setDraft(createDisbursementTypeFormValues(record));
     setActiveRecordId(record.id);
     setFormErrors({});
     setFormSubmitError("");
@@ -254,9 +205,9 @@ export function AppDisbursementTypeDialog({
 
     try {
       if (mode === "edit" && activeRecord) {
-        await onUpdateRecord(updateDisbursementTypeFromDraft(activeRecord, draft), draft);
+        await onUpdateRecord(updateDisbursementTypeFromForm(activeRecord, draft), draft);
       } else {
-        await onCreateRecord(createDisbursementTypeFromDraft(draft), draft);
+        await onCreateRecord(createDisbursementTypeFromForm(draft), draft);
       }
     } catch {
       setFormSubmitError(saveErrorMessage);
@@ -933,88 +884,6 @@ function DisbursementTypeActionMenuButton({ children, onClick }: { children: str
       {children}
     </button>
   );
-}
-
-function createDisbursementTypeFromDraft(draft: DisbursementTypeDraft): AppDisbursementTypeRecord {
-  return {
-    id: `disbursement-type-${Date.now()}`,
-    name: draft.name.trim() as DisbursementType,
-    description: draft.description.trim(),
-    type: draft.type as DisbursementTypeClassification,
-    status: draft.status,
-  };
-}
-
-function updateDisbursementTypeFromDraft(record: AppDisbursementTypeRecord, draft: DisbursementTypeDraft): AppDisbursementTypeRecord {
-  return {
-    ...record,
-    name: draft.name.trim() as DisbursementType,
-    description: draft.description.trim(),
-    type: draft.type as DisbursementTypeClassification,
-    status: draft.status,
-  };
-}
-
-function validateDisbursementTypeForm(draft: DisbursementTypeDraft): DisbursementTypeFormErrors {
-  const errors: DisbursementTypeFormErrors = {};
-
-  if (!draft.name.trim()) {
-    errors.name = "Name is required.";
-  }
-
-  if (!draft.type) {
-    errors.type = "Type is required.";
-  }
-
-  if (!draft.status) {
-    errors.status = "Status is required.";
-  }
-
-  return errors;
-}
-
-function applyDisbursementTypeListParams(
-  records: AppDisbursementTypeRecord[],
-  params: {
-    search?: string;
-    sortBy?: DisbursementTypeSortKey;
-    sortDirection?: DisbursementTypeSortDirection;
-    status?: DisbursementTypeFilterStatus;
-    type?: DisbursementTypeFilterType;
-  } = {},
-) {
-  const normalizedSearch = params.search?.trim().toLowerCase() ?? "";
-  const sortBy = params.sortBy ?? "name";
-  const sortDirection = params.sortDirection ?? "asc";
-
-  return records
-    .filter((record) => {
-      const matchesSearch =
-        normalizedSearch.length === 0 ||
-        record.name.toLowerCase().includes(normalizedSearch) ||
-        record.description.toLowerCase().includes(normalizedSearch) ||
-        record.type.toLowerCase().includes(normalizedSearch) ||
-        record.status.toLowerCase().includes(normalizedSearch);
-      const matchesType = !params.type || record.type === params.type;
-      const matchesStatus = !params.status || record.status === params.status;
-
-      return matchesSearch && matchesType && matchesStatus;
-    })
-    .sort((left, right) => {
-      const result = disbursementTypeCollator.compare(left[sortBy], right[sortBy]);
-
-      return sortDirection === "asc" ? result : -result;
-    });
-}
-
-function normalizeDisbursementTypeRecord(record: AppDisbursementTypeRecord): AppDisbursementTypeRecord {
-  return {
-    ...record,
-    name: record.name ?? (record.description as DisbursementType),
-    description: record.description ?? "",
-    type: record.type ?? (record.name as DisbursementTypeClassification),
-    status: record.status ?? "Active",
-  };
 }
 
 const DefaultPageSizeOptions = [5, 10, 15, 20, 25, 50] as const;

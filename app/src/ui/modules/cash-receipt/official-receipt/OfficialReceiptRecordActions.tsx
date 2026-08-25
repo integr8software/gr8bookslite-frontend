@@ -21,10 +21,10 @@ export function OfficialReceiptRecordActions({
   record: OfficialReceiptRecord;
   onUpdateStatus: (record: OfficialReceiptRecord, status: OfficialReceiptStatus) => void;
 }) {
-  const isApproved = record.status === OfficialReceiptStatuses.Approved;
+  const isPosted = record.status === OfficialReceiptStatuses.Posted;
   const isDisapproved = record.status === OfficialReceiptStatuses.Disapproved;
   const isCancelled = record.status === OfficialReceiptStatuses.Cancelled;
-  const undoStatus: OfficialReceiptStatus = OfficialReceiptStatuses.Active;
+  const undoStatus: OfficialReceiptStatus = OfficialReceiptStatuses.Draft;
   const cancelStatus: OfficialReceiptStatus = isCancelled ? OfficialReceiptStatuses.Draft : OfficialReceiptStatuses.Cancelled;
   const items: ModuleActionMenuItem[] = [
     {
@@ -44,10 +44,10 @@ export function OfficialReceiptRecordActions({
         ]
       : []),
     {
-      disabled: !canApproveOfficialReceiptStatus(record.status),
-      icon: isApproved ? Undo2 : CheckCircle2,
-      label: isApproved ? "Undo Approved" : "Approve",
-      onSelect: () => onUpdateStatus(record, isApproved ? undoStatus : OfficialReceiptStatuses.Approved),
+      disabled: !canPostOfficialReceiptStatus(record.status),
+      icon: isPosted ? Undo2 : CheckCircle2,
+      label: isPosted ? "Undo Posted" : "Post",
+      onSelect: () => onUpdateStatus(record, isPosted ? undoStatus : OfficialReceiptStatuses.Posted),
       type: "button",
     },
     {
@@ -79,8 +79,8 @@ function canEditOfficialReceiptStatus(status: OfficialReceiptStatus) {
   return EditableOfficialReceiptStatuses.includes(status);
 }
 
-function canApproveOfficialReceiptStatus(status: OfficialReceiptStatus) {
-  return canEditOfficialReceiptStatus(status) || status === OfficialReceiptStatuses.Approved;
+function canPostOfficialReceiptStatus(status: OfficialReceiptStatus) {
+  return canEditOfficialReceiptStatus(status) || status === OfficialReceiptStatuses.Posted;
 }
 
 function canDisapproveOfficialReceiptStatus(status: OfficialReceiptStatus) {
@@ -88,5 +88,5 @@ function canDisapproveOfficialReceiptStatus(status: OfficialReceiptStatus) {
 }
 
 function canCancelOfficialReceiptStatus(status: OfficialReceiptStatus) {
-  return status !== OfficialReceiptStatuses.Closed;
+  return status !== OfficialReceiptStatuses.Posted;
 }

@@ -131,6 +131,10 @@ export type ResponsibilityCenterFormPageOptions = {
   onSaved?: (center: ResponsibilityCenter) => void;
 };
 
+export type ResponsibilityCenterStoreOptions = {
+  refetchOnMount?: boolean | "always";
+};
+
 export type ResponsibilityCenterTableColumnKey =
   | "name"
   | "code"

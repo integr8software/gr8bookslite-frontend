@@ -14,6 +14,7 @@ type ModuleTabsProps<TabId extends string> = {
 	onTabChange: (tab: TabId) => void;
 	tabClassName?: string;
 	tabs: readonly ModuleTabItem<TabId>[];
+	variant?: "filled" | "underline";
 };
 
 export function ModuleTabs<TabId extends string>({
@@ -22,10 +23,18 @@ export function ModuleTabs<TabId extends string>({
 	onTabChange,
 	tabClassName,
 	tabs,
+	variant = "filled",
 }: ModuleTabsProps<TabId>) {
+	const isUnderline = variant === "underline";
+
 	return (
-		<div className="overflow-x-auto rounded-lg border border-darknavy/10 bg-white p-1 shadow-sm shadow-darknavy/5 [scrollbar-color:rgb(var(--skyblue-rgb)_/_0.45)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-skyblue/45 hover:[&::-webkit-scrollbar-thumb]:bg-skyblue/70">
-			<div role="tablist" aria-label={ariaLabel} className="flex min-w-max gap-1">
+		<div
+			className={joinClasses(
+				"overflow-x-auto [scrollbar-color:rgb(var(--skyblue-rgb)_/_0.45)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-skyblue/45 hover:[&::-webkit-scrollbar-thumb]:bg-skyblue/70",
+				!isUnderline && "rounded-lg border border-darknavy/10 bg-white p-1 shadow-sm shadow-darknavy/5",
+			)}
+		>
+			<div role="tablist" aria-label={ariaLabel} className={joinClasses("flex min-w-max", !isUnderline && "gap-1")}>
 				{tabs.map((tab) => {
 					const isActive = activeTab === tab.id;
 
@@ -37,10 +46,14 @@ export function ModuleTabs<TabId extends string>({
 							aria-selected={isActive}
 							onClick={() => onTabChange(tab.id)}
 							className={joinClasses(
-								"inline-flex h-10 items-center gap-2 rounded-md px-4 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/25",
-								isActive
-									? "theme-accent-contrast-text bg-skyblue shadow-sm"
-									: "text-darknavy/65 hover:bg-[rgb(var(--skyblue-rgb)/0.06)] hover:text-darknavy",
+								"inline-flex items-center gap-2 px-4 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/25",
+								isUnderline
+									? "h-11 border-b-2 font-medium focus-visible:ring-inset"
+									: "h-10 rounded-md font-semibold",
+								isUnderline && isActive && "border-skyblue text-skyblue",
+								isUnderline && !isActive && "border-transparent text-darknavy/65 hover:border-darknavy/15 hover:text-darknavy",
+								!isUnderline && isActive && "theme-accent-contrast-text bg-skyblue shadow-sm",
+								!isUnderline && !isActive && "text-darknavy/65 hover:bg-[rgb(var(--skyblue-rgb)/0.06)] hover:text-darknavy",
 								tabClassName,
 							)}
 						>
@@ -49,8 +62,10 @@ export function ModuleTabs<TabId extends string>({
 								<span
 									className={joinClasses(
 										"inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold",
-										isActive
-											? "bg-white/20 text-[var(--skyblue-contrast)]"
+										isActive && isUnderline
+											? "bg-skyblue/10 text-skyblue"
+											: isActive
+												? "bg-white/20 text-[var(--skyblue-contrast)]"
 											: "bg-skyblue/10 text-skyblue",
 									)}
 								>

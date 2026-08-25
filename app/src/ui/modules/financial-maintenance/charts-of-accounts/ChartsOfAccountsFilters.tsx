@@ -77,6 +77,7 @@ export function ChartsOfAccountsFilters({
             ariaLabel="Charts of accounts navigation tabs"
             onTabChange={onTabChange}
             tabs={chartsOfAccountsTabs}
+            variant="underline"
           />
         </div>
 

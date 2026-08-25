@@ -18,7 +18,10 @@ import type {
 import { validateBankMasterfileForm } from "@/app/src/validations/modules/financial-maintenance/bank-masterfile/BankMasterfileValidation";
 
 export function useBankMasterfileFormPage(options: BankMasterfileFormPageOptions = {}) {
-  const { addBank, isNextAccountCodeLoading, nextAccountCode, refreshNextAccountCode, updateBank } = useBankMasterfileStore();
+  const { addBank, isNextAccountCodeLoading, nextAccountCode, refreshNextAccountCode, updateBank } = useBankMasterfileStore(
+    undefined,
+    { refetchOnMount: false },
+  );
   const mode = options.mode ?? "add";
   const existingBank = options.existingBank;
   const isReadonly = mode === "view";

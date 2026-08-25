@@ -32,7 +32,9 @@ export function useDefaultAccountFormPage({
   mode,
   onSaved,
 }: DefaultAccountFormPageOptions) {
-  const { addDefaultAccount, isMutating, updateDefaultAccount } = useDefaultAccountStore();
+  const { addDefaultAccount, isMutating, updateDefaultAccount } = useDefaultAccountStore(undefined, {
+    refetchOnMount: false,
+  });
   const accessToken = useAppStore((state) => state.accessToken);
   const authProfileQuery = useAuthProfileQuery({ accessToken });
   const companyId = authProfileQuery.data?.activeCompanyId ?? null;

@@ -46,6 +46,10 @@ export type DiscountMaintenanceFormPageOptions = {
   onSaved?: () => void;
 };
 
+export type DiscountStoreOptions = {
+  refetchOnMount?: boolean | "always";
+};
+
 export type DiscountMaintenanceDrawerState = {
   discount?: Discount;
   initialValues?: DiscountMaintenanceFormValues;

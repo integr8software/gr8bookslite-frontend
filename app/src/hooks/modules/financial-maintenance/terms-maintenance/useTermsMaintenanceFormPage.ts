@@ -25,7 +25,9 @@ export function useTermsMaintenanceFormPage(options: TermsMaintenanceFormPageOpt
   const router = useRouter();
   const pathname = usePathname();
   const params = useParams<{ recordId?: string }>();
-  const { addTerm, isMutating, terms, updateTerm } = useTermsMaintenanceStore();
+  const { addTerm, isMutating, terms, updateTerm } = useTermsMaintenanceStore(undefined, {
+    refetchOnMount: false,
+  });
   const mode = options.mode ?? getActionMode(pathname);
   const existingTerm = options.existingTerm ?? terms.find((term) => term.id === params.recordId);
   const isReadonly = mode === "view";

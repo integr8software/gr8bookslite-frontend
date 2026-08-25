@@ -59,6 +59,7 @@ export function DiscountMaintenanceTableFilters({
             ariaLabel="Discount type tabs"
             onTabChange={onTypeFilterChange}
             tabs={discountTypeTabs}
+            variant="underline"
           />
         </div>
       </div>

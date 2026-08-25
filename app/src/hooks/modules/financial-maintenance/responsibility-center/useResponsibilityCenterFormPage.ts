@@ -20,7 +20,7 @@ import type {
 import { validateResponsibilityCenterForm } from "@/app/src/validations/modules/financial-maintenance/responsibility-center/ResponsibilityCenterValidation";
 
 export function useResponsibilityCenterFormPage({ center, initialValues, isOpen = true, mode, onSaved }: ResponsibilityCenterFormPageOptions) {
-  const store = useResponsibilityCenterStore();
+  const store = useResponsibilityCenterStore(undefined, { refetchOnMount: false });
   const isReadonly = mode === "view";
   const defaultInitialValues = center ? createResponsibilityCenterFormValues(center) : (initialValues ?? ResponsibilityCenterInitialFormValues);
   const initialValuesRef = useRef<ResponsibilityCenterFormValues>(defaultInitialValues);

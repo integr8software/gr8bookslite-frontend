@@ -50,6 +50,10 @@ export type PaymentTypeFormPageOptions = {
   onSaved: () => void;
 };
 
+export type PaymentTypeStoreOptions = {
+  refetchOnMount?: boolean | "always";
+};
+
 export type PaymentTypeActionPageOptions = PaymentTypeFormPageOptions;
 
 export type DrawerState = { mode: "add" | "edit" | "view"; paymentType?: PaymentTypeRecord } | null;

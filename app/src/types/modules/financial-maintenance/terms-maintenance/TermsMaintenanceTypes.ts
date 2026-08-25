@@ -42,6 +42,10 @@ export type TermsMaintenanceFormPageOptions = {
   onSaved?: () => void;
 };
 
+export type TermsMaintenanceStoreOptions = {
+  refetchOnMount?: boolean | "always";
+};
+
 export type TermsMaintenanceDrawerState = {
   initialValues?: TermsMaintenanceFormValues;
   mode: TermsMaintenanceActionMode;

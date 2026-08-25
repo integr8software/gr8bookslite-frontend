@@ -41,6 +41,10 @@ export type ServicesMaintenanceFormPageOptions = {
   onSaved?: () => void;
 };
 
+export type ServicesMaintenanceStoreOptions = {
+  refetchOnMount?: boolean | "always";
+};
+
 export type ServicesMaintenanceStatusFilter = "" | ServicesMaintenanceStatus;
 export type ServicesMaintenanceSetupModeFilter = "" | ServicesMaintenanceAccountSetupMode;
 

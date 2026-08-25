@@ -25,7 +25,9 @@ export function usePaymentTypeFormPage({
   mode,
   onSaved,
 }: PaymentTypeFormPageOptions) {
-  const { addPaymentType, isMutating, paymentTypes, updatePaymentType } = usePaymentTypeStore();
+  const { addPaymentType, isMutating, paymentTypes, updatePaymentType } = usePaymentTypeStore(undefined, {
+    refetchOnMount: false,
+  });
   const isReadonly = mode === "view";
   const initialValues: PaymentTypeFormValues = existingPaymentType
     ? createPaymentTypeFormValues(existingPaymentType)

@@ -21,6 +21,7 @@ import type {
   ServicesMaintenanceFormValues,
   ServicesMaintenancePermissions,
   ServicesMaintenanceStatistics,
+  ServicesMaintenanceStoreOptions,
 } from "@/app/src/types/modules/financial-maintenance/services-maintenance/ServicesMaintenanceTypes";
 import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 
@@ -69,6 +70,7 @@ const EmptyStatistics: ServicesMaintenanceStatistics = {
 
 export function useServicesMaintenanceStore<TSelected = ServicesMaintenanceStoreState>(
   selector?: (state: ServicesMaintenanceStoreState) => TSelected,
+  options: ServicesMaintenanceStoreOptions = {},
 ) {
   const queryClient = useQueryClient();
   const accessToken = useAppStore((state) => state.accessToken);
@@ -78,18 +80,21 @@ export function useServicesMaintenanceStore<TSelected = ServicesMaintenanceStore
     queryKey: ServicesMaintenanceQueryKeys.services(companyId),
     queryFn: fetchServicesMaintenance,
     enabled: Boolean(companyId),
+    refetchOnMount: options.refetchOnMount,
     retry: false,
   });
   const accountOptionsQuery = useQuery({
     queryKey: ServicesMaintenanceQueryKeys.accountOptions(companyId),
     queryFn: fetchServicesMaintenanceAccountOptions,
     enabled: Boolean(companyId),
+    refetchOnMount: options.refetchOnMount,
     retry: false,
   });
   const nextAccountCodeQuery = useQuery({
     queryKey: ServicesMaintenanceQueryKeys.nextAccountCode(companyId),
     queryFn: fetchNextServiceRevenueAccountCode,
     enabled: Boolean(companyId),
+    refetchOnMount: options.refetchOnMount,
     retry: false,
   });
   const refreshServices = useCallback(() => {

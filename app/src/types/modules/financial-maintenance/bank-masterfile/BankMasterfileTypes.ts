@@ -48,6 +48,10 @@ export type BankMasterfileFormPageOptions = {
   onSaved?: () => void;
 };
 
+export type BankMasterfileStoreOptions = {
+  refetchOnMount?: boolean | "always";
+};
+
 export type BankMasterfileTableColumnKey =
   | "bankName"
   | "branch"

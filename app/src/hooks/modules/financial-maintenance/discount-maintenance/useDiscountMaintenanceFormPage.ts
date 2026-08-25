@@ -28,7 +28,9 @@ export function useDiscountMaintenanceFormPage(options: DiscountMaintenanceFormP
   const router = useRouter();
   const pathname = usePathname();
   const params = useParams<{ recordId?: string }>();
-  const { addDiscount, discounts, isMutating, updateDiscount } = useDiscountMaintenanceStore();
+  const { addDiscount, discounts, isMutating, updateDiscount } = useDiscountMaintenanceStore(undefined, {
+    refetchOnMount: false,
+  });
   const mode = options.mode ?? getActionMode(pathname);
   const existingDiscount = options.existingDiscount ?? discounts.find((discount) => discount.id === params.recordId);
   const isReadonly = mode === "view";

@@ -54,6 +54,10 @@ export type DefaultAccountFormPageOptions = {
   onSaved: () => void;
 };
 
+export type DefaultAccountStoreOptions = {
+  refetchOnMount?: boolean | "always";
+};
+
 export type DefaultAccountStatusFilter = "" | DefaultAccountStatus;
 export type DefaultAccountTypeFilter = "" | DefaultAccountType;
 

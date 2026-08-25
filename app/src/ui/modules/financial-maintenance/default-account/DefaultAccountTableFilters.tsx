@@ -46,6 +46,7 @@ export function DefaultAccountTableFilters({
           ariaLabel="Default account type tabs"
           onTabChange={onTypeFilterChange}
           tabs={defaultAccountTabs}
+          variant="underline"
         />
       </div>
       <ModuleTableToolbar

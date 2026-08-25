@@ -29,7 +29,7 @@ export function useServicesMaintenanceFormPage(options: ServicesMaintenanceFormP
     refreshSetup,
     services,
     updateService,
-  } = useServicesMaintenanceStore();
+  } = useServicesMaintenanceStore(undefined, { refetchOnMount: false });
   const mode = options.mode ?? "add";
   const existingService = options.existingService;
   const isReadonly = mode === "view";

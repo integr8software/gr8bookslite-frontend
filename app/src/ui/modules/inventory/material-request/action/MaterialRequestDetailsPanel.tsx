@@ -10,6 +10,7 @@ import type { WarehouseActionMode } from "@/app/src/types/modules/warehouse-mana
 import { AppAdvancedDropdown, type AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import { WarehouseDrawer } from "@/app/src/ui/modules/warehouse-management/warehouses/WarehouseDrawer";
+import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
 
 type MaterialRequestDetailsPanelProps = {
   errors: MaterialRequestFormErrors;
@@ -422,7 +423,7 @@ function FieldLabel({ children, htmlFor, id, isRequired }: { children: string; h
   return (
     <label id={id} htmlFor={htmlFor} className="pt-2 text-sm font-semibold text-darknavy">
       {children}
-      {isRequired ? <span className="ml-1 text-coralpink">*</span> : null}
+      <ModuleFieldRequiredMark fallbackRequired={isRequired} label={children} />
     </label>
   );
 }

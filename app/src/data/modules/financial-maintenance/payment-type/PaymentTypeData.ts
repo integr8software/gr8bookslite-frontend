@@ -43,6 +43,13 @@ export function createPaymentTypeFormValues(record?: PaymentTypeRecord): Payment
   };
 }
 
+export function createNextPaymentTypeFormValues(records: PaymentTypeRecord[]): PaymentTypeFormValues {
+  return {
+    ...PaymentTypeInitialFormValues,
+    sortOrder: String(getNextPaymentTypeSortOrder(records)),
+  };
+}
+
 export function createPaymentTypeFromForm(values: PaymentTypeFormValues): PaymentTypeRecord {
   return {
     description: values.description.trim(),
@@ -52,6 +59,10 @@ export function createPaymentTypeFromForm(values: PaymentTypeFormValues): Paymen
     status: values.status,
     type: values.type || "Bank Transfer",
   };
+}
+
+function getNextPaymentTypeSortOrder(records: PaymentTypeRecord[]) {
+  return Math.max(0, ...records.map((record) => record.sortOrder)) + 10;
 }
 
 export function updatePaymentTypeFromForm(record: PaymentTypeRecord, values: PaymentTypeFormValues): PaymentTypeRecord {

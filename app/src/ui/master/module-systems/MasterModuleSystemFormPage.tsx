@@ -114,8 +114,7 @@ function SystemDetailsPanel({
         <h2 className="text-base font-semibold text-darknavy">System Details</h2>
         <p className="mt-1 text-sm text-darknavy/52">Set the master-maintained identity for this module system.</p>
       </div>
-      <div className="grid gap-3 md:grid-cols-2">
-        <TextField isRequired label="Code" value={draft.code} onChange={(code) => onUpdate({ ...draft, code: code.toUpperCase() })} />
+      <div>
         <TextField isRequired label="Name" value={draft.name} onChange={(name) => onUpdate({ ...draft, name })} />
       </div>
       <label className="grid gap-1.5 text-sm font-semibold text-darknavy/58">

@@ -50,7 +50,7 @@ export type MasterModuleSystemSidebarResponse = {
 };
 
 export type SaveMasterModuleSystemRequest = {
-	code: string;
+	code?: string;
 	name: string;
 	description?: string | null;
 	sortOrder?: number;

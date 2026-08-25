@@ -6,6 +6,7 @@ import type {
 export type MasterPlanAndPackageApiStatus = "ACTIVE" | "DRAFT" | "INACTIVE";
 
 export type MasterPlanAndPackageApiScope =
+	| "ALL"
 	| "ONBOARDING"
 	| "ADDITIONAL_COMPANY";
 
@@ -85,13 +86,14 @@ export type MasterPlanAndPackagesResponse = {
 };
 
 export type CreateMasterPlanAndPackageRequest = {
-	code: string;
+	code?: string | null;
 	description: string | null;
 	discountTiers: MasterPlanAndPackageApiDiscountTier[];
 	systemCodes: string[];
 	name: string;
 	prices: MasterPlanAndPackageApiPrice[];
-	scope: MasterPlanAndPackageApiScope;
+	scope?: MasterPlanAndPackageApiScope;
+	scopes?: MasterPlanAndPackageApiScope[];
 	status: MasterPlanAndPackageApiStatus;
 	trialDays: number;
 	usageRules: MasterPlanAndPackageApiUsageRule[];

@@ -73,16 +73,29 @@ export function mapMasterPlanAndPackageRecord(
 export function mapCreateMasterPlanAndPackageRequest(
 	values: MasterPlanAndPackageFormValues,
 ): CreateMasterPlanAndPackageRequest {
+	const code = values.code?.trim()
+		? values.code.trim().toUpperCase().replace(/\s+/g, "_")
+		: null;
+
+	const scope =
+		values.scopes && values.scopes.length > 0
+			? values.scopes.includes("ALL") ||
+			  (values.scopes.includes("ONBOARDING") &&
+					values.scopes.includes("ADDITIONAL_COMPANY"))
+				? "ALL"
+				: values.scopes[0]
+			: values.scope ?? "ALL";
+
 	return {
-		code: values.code.trim().toUpperCase().replace(/\s+/g, "_"),
+		code,
 		description: values.description.trim() || null,
 		discountTiers: [
-			...values.branchReductionTiers.map((tier) => ({
+			...(values.branchReductionTiers ?? []).map((tier) => ({
 				discountPercent: tier.reductionPercent,
 				metric: "BRANCH" as const,
 				thresholdCount: tier.thresholdCount,
 			})),
-			...values.userReductionTiers.map((tier) => ({
+			...(values.userReductionTiers ?? []).map((tier) => ({
 				discountPercent: tier.reductionPercent,
 				metric: "USER" as const,
 				thresholdCount: tier.thresholdCount,
@@ -104,20 +117,28 @@ export function mapCreateMasterPlanAndPackageRequest(
 				percentOff: values.yearlyPercentOff,
 			}),
 		],
-		scope: values.scope,
+		scope,
 		status: ApiStatusByStatus[values.status],
 		trialDays: values.trialDays,
 		usageRules: [
-			{
-				freeCount: values.branchIncludedFree,
-				metric: "BRANCH",
-				unitPriceInCents: amountToCents(values.branchAddOnPrice),
-			},
-			{
-				freeCount: values.userIncludedFree,
-				metric: "USER",
-				unitPriceInCents: amountToCents(values.userAddOnPrice),
-			},
+			...(values.branchIncludedFree !== undefined || values.branchAddOnPrice !== undefined
+				? [
+						{
+							freeCount: values.branchIncludedFree ?? 0,
+							metric: "BRANCH" as const,
+							unitPriceInCents: amountToCents(values.branchAddOnPrice ?? 0),
+						},
+				  ]
+				: []),
+			...(values.userIncludedFree !== undefined || values.userAddOnPrice !== undefined
+				? [
+						{
+							freeCount: values.userIncludedFree ?? 0,
+							metric: "USER" as const,
+							unitPriceInCents: amountToCents(values.userAddOnPrice ?? 0),
+						},
+				  ]
+				: []),
 		],
 	};
 }

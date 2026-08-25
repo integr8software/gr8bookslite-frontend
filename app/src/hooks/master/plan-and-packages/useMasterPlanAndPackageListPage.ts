@@ -176,17 +176,6 @@ function createColumn(
 		};
 	}
 
-	if (key === "scalePricing") {
-		return {
-			id: key,
-			accessorFn: (record) =>
-				formatMasterPlanAndPackageScalePricing(record.scalePricing),
-			header: label,
-			enableSorting: false,
-			meta: { className },
-		};
-	}
-
 	return {
 		accessorKey: key,
 		header: label,

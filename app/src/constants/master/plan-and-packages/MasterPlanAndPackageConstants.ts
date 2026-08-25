@@ -28,6 +28,7 @@ export const MasterPlanAndPackageStatusOptions = [
 ] as const satisfies readonly MasterPlanAndPackageStatus[];
 
 export const MasterPlanAndPackageScopeOptions = [
+	"ALL",
 	"ONBOARDING",
 	"ADDITIONAL_COMPANY",
 ] as const satisfies readonly MasterPlanAndPackageScope[];
@@ -61,6 +62,7 @@ export const MasterPlanAndPackageScopeFilterOptions = [
 }[];
 
 export const MasterPlanAndPackageScopeLabels = {
+	ALL: "All",
 	ONBOARDING: "New user onboarding",
 	ADDITIONAL_COMPANY: "Additional company",
 } as const satisfies Record<MasterPlanAndPackageScope, string>;
@@ -86,10 +88,9 @@ export const MasterPlanAndPackageScaleUnitLabels = {
 } as const satisfies Record<MasterPlanAndPackageScaleUnit, string>;
 
 export const MasterPlanAndPackageTableColumns = [
-	{ key: "name", label: "Plan", className: "w-[24rem]" },
-	{ key: "status", label: "Status", className: "w-[9rem]" },
-	{ key: "pricing", label: "Pricing", className: "w-[18rem]" },
-	{ key: "scalePricing", label: "Scale Pricing", className: "w-[22rem]" },
+	{ key: "name", label: "Plan", className: "w-[28rem]" },
+	{ key: "status", label: "Status", className: "w-[10rem]" },
+	{ key: "pricing", label: "Pricing", className: "w-[24rem]" },
 	{ label: "Actions", className: "w-[6rem] text-center" },
 ] as const satisfies readonly (
 	| {

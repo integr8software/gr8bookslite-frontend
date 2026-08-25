@@ -4,7 +4,7 @@ export type MasterPlanAndPackageScalePeriod = "monthly" | "yearly";
 
 export type MasterPlanAndPackageScaleUnit = "branch" | "user";
 
-export type MasterPlanAndPackageScope = "ONBOARDING" | "ADDITIONAL_COMPANY";
+export type MasterPlanAndPackageScope = "ALL" | "ONBOARDING" | "ADDITIONAL_COMPANY";
 
 export type MasterPlanAndPackageReductionTier = {
 	reductionPercent: number;
@@ -52,22 +52,23 @@ export type MasterPlanAndPackageRecord = {
 };
 
 export type MasterPlanAndPackageFormValues = {
-	code: string;
+	code?: string;
 	description: string;
 	featureIds: string[];
 	id?: string;
-	branchAddOnPrice: number;
-	branchIncludedFree: number;
-	branchReductionTiers: MasterPlanAndPackageReductionTier[];
+	branchAddOnPrice?: number;
+	branchIncludedFree?: number;
+	branchReductionTiers?: MasterPlanAndPackageReductionTier[];
 	monthlyBasePrice: number;
 	monthlyPercentOff: number;
 	name: string;
 	scope: MasterPlanAndPackageScope;
+	scopes: MasterPlanAndPackageScope[];
 	status: MasterPlanAndPackageStatus;
 	trialDays: number;
-	userAddOnPrice: number;
-	userIncludedFree: number;
-	userReductionTiers: MasterPlanAndPackageReductionTier[];
+	userAddOnPrice?: number;
+	userIncludedFree?: number;
+	userReductionTiers?: MasterPlanAndPackageReductionTier[];
 	yearlyBasePrice: number;
 	yearlyPercentOff: number;
 };
@@ -79,5 +80,4 @@ export type MasterPlanAndPackageFormErrors = Partial<
 export type MasterPlanAndPackageTableColumnKey =
 	| "name"
 	| "status"
-	| "pricing"
-	| "scalePricing";
+	| "pricing";

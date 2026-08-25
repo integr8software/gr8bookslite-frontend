@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
   CalendarDays,
+  ChevronDown,
   GitBranch,
   Plus,
   Save,
@@ -140,28 +141,19 @@ function MasterPlanAndPackageForm({
     <div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
       <div className="grid gap-5 p-5">
         <div className="grid content-start gap-4">
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.15fr)_minmax(11rem,0.7fr)_minmax(8rem,0.55fr)_minmax(10rem,0.55fr)]">
-            <TextField
-              error={errors.code}
-              label="Plan code"
-              value={values.code}
-              onChange={(code) => onUpdate({ code: code.toUpperCase() })}
-            />
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1.3fr)_minmax(14rem,1fr)_minmax(8rem,0.55fr)_minmax(10rem,0.55fr)]">
             <TextField
               error={errors.name}
               label="Plan name"
               value={values.name}
               onChange={(name) => onUpdate({ name })}
             />
-            <SelectField
+            <MultiSelectScopeField
+              error={errors.scope}
               label="Plan scope"
-              value={values.scope}
-              options={MasterPlanAndPackageScopeOptions}
-              getOptionLabel={(scope) =>
-                MasterPlanAndPackageScopeLabels[scope as MasterPlanAndPackageScope]
-              }
-              onChange={(scope) =>
-                onUpdate({ scope: scope as MasterPlanAndPackageScope })
+              selectedScopes={values.scopes ?? (values.scope === "ALL" ? ["ALL"] : [values.scope])}
+              onChange={(scopes, primaryScope) =>
+                onUpdate({ scopes, scope: primaryScope })
               }
             />
             <NumberField
@@ -251,63 +243,6 @@ function MasterPlanAndPackageForm({
           </div>
         </section>
 
-        <section className="grid gap-5 rounded-lg border border-darknavy/10 bg-white p-5 shadow-sm">
-          <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-citron/35 text-darknavy">
-              <GitBranch className="h-4 w-4" aria-hidden="true" />
-            </span>
-            <div>
-              <h2 className="text-base font-semibold text-darknavy">
-                Usage Rules
-              </h2>
-              <p className="mt-1 text-sm font-medium text-darknavy/55">
-                Free counts, add-on prices, and reduction tiers apply to the
-                plan regardless of monthly or yearly billing.
-              </p>
-            </div>
-          </div>
-          <div className="grid gap-5 xl:grid-cols-2 xl:items-start">
-            <ScaleRuleSection
-              addOnPrice={values.branchAddOnPrice}
-              errors={{
-                addOnPrice: errors.branchAddOnPrice,
-                includedFree: errors.branchIncludedFree,
-                reductionTiers: errors.branchReductionTiers,
-              }}
-              icon={GitBranch}
-              includedFree={values.branchIncludedFree}
-              reductionTiers={values.branchReductionTiers}
-              unitLabel={MasterPlanAndPackageScaleUnitLabels.branch}
-              onUpdate={({ addOnPrice, includedFree, reductionTiers }) =>
-                onUpdate({
-                  branchAddOnPrice: addOnPrice,
-                  branchIncludedFree: includedFree,
-                  branchReductionTiers: reductionTiers,
-                })
-              }
-            />
-            <ScaleRuleSection
-              addOnPrice={values.userAddOnPrice}
-              errors={{
-                addOnPrice: errors.userAddOnPrice,
-                includedFree: errors.userIncludedFree,
-                reductionTiers: errors.userReductionTiers,
-              }}
-              icon={Users}
-              includedFree={values.userIncludedFree}
-              reductionTiers={values.userReductionTiers}
-              unitLabel={MasterPlanAndPackageScaleUnitLabels.user}
-              onUpdate={({ addOnPrice, includedFree, reductionTiers }) =>
-                onUpdate({
-                  userAddOnPrice: addOnPrice,
-                  userIncludedFree: includedFree,
-                  userReductionTiers: reductionTiers,
-                })
-              }
-            />
-          </div>
-        </section>
-
         <ModuleFeatureSelector
           error={errors.featureIds}
           featureOptions={systemOptions}
@@ -390,150 +325,6 @@ function BillingPeriodColumn({
           value={percentOff.value}
           onChange={percentOff.onChange}
         />
-      </div>
-    </div>
-  );
-}
-
-function ScaleRuleSection({
-  addOnPrice,
-  errors,
-  icon: UnitIcon,
-  includedFree,
-  reductionTiers,
-  unitLabel,
-  onUpdate,
-}: ScaleRuleSectionProps) {
-  function update(nextValues: Partial<ScaleRuleValues>) {
-    onUpdate({
-      addOnPrice,
-      includedFree,
-      reductionTiers,
-      ...nextValues,
-    });
-  }
-
-  function updateReductionTier(
-    tierIndex: number,
-    field: keyof MasterPlanAndPackageReductionTier,
-    value: number,
-  ) {
-    update({
-      reductionTiers: reductionTiers.map((tier, index) =>
-        index === tierIndex ? { ...tier, [field]: value } : tier,
-      ),
-    });
-  }
-
-  function addReductionTier() {
-    const lastTier = reductionTiers[reductionTiers.length - 1];
-    const suggestedTier = SuggestedReductionTiers[reductionTiers.length];
-
-    update({
-      reductionTiers: [
-        ...reductionTiers,
-        suggestedTier
-          ? { ...suggestedTier }
-          : {
-              reductionPercent: Math.min(
-                (lastTier?.reductionPercent ?? 0) + 5,
-                100,
-              ),
-              thresholdCount: (lastTier?.thresholdCount ?? 0) + 10,
-            },
-      ],
-    });
-  }
-
-  function removeReductionTier(tierIndex: number) {
-    update({
-      reductionTiers: reductionTiers.filter((_, index) => index !== tierIndex),
-    });
-  }
-
-  return (
-    <div className="grid content-start gap-3 border-b border-darknavy/10 pb-4 last:border-b-0 last:pb-0 xl:border-b-0 xl:pb-0">
-      <div className="flex items-center gap-2">
-        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-darknavy/4 text-darknavy/72">
-          <UnitIcon className="h-4 w-4" aria-hidden="true" />
-        </span>
-        <h4 className="text-sm font-bold text-darknavy">{unitLabel}</h4>
-      </div>
-      <div className="grid gap-3 md:grid-cols-2">
-        <NumberField
-          error={errors.includedFree}
-          label="Free Included"
-          value={includedFree}
-          onChange={(nextIncludedFree) =>
-            update({ includedFree: nextIncludedFree })
-          }
-        />
-        <NumberField
-          error={errors.addOnPrice}
-          label="Add-on price"
-          value={addOnPrice}
-          onChange={(nextAddOnPrice) => update({ addOnPrice: nextAddOnPrice })}
-        />
-      </div>
-      <div className="grid gap-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm font-bold text-darknavy/65">Reduction tiers</p>
-          <button
-            type="button"
-            onClick={addReductionTier}
-            className="inline-flex h-9 items-center gap-2 rounded-lg border border-skyblue/35 bg-skyblue/10 px-3 text-xs font-bold text-darknavy transition hover:border-skyblue hover:bg-skyblue/18"
-          >
-            <Plus className="h-3.5 w-3.5" aria-hidden="true" />
-            Add tier
-          </button>
-        </div>
-        {reductionTiers.length > 0 ? (
-          <div className="grid gap-2">
-            {reductionTiers.map((tier, index) => (
-              <div
-                key={`${tier.thresholdCount}-${index}`}
-                className="grid gap-2 rounded-lg bg-offwhite/55 p-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_2.75rem] md:items-end"
-              >
-                <NumberField
-                  label="Count reaches"
-                  value={tier.thresholdCount}
-                  onChange={(nextThresholdCount) =>
-                    updateReductionTier(
-                      index,
-                      "thresholdCount",
-                      nextThresholdCount,
-                    )
-                  }
-                />
-                <NumberField
-                  label="Reduction percent"
-                  value={tier.reductionPercent}
-                  onChange={(nextReductionPercent) =>
-                    updateReductionTier(
-                      index,
-                      "reductionPercent",
-                      nextReductionPercent,
-                    )
-                  }
-                />
-                <button
-                  type="button"
-                  title="Remove reduction tier"
-                  aria-label="Remove reduction tier"
-                  onClick={() => removeReductionTier(index)}
-                  className="inline-flex h-11 items-center justify-center rounded-lg border border-darknavy/10 bg-white text-darknavy/55 transition hover:border-coralpink/45 hover:text-coralpink"
-                >
-                  <Trash2 className="h-4 w-4" aria-hidden="true" />
-                </button>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="rounded-lg border border-dashed border-darknavy/16 bg-offwhite/55 px-3 py-4 text-sm font-semibold text-darknavy/48">
-            No reduction tiers
-          </div>
-        )}
-        <FieldError message={errors.reductionTiers} />
       </div>
     </div>
   );
@@ -919,6 +710,134 @@ function FieldError({ message }: { message?: string }) {
 
   return (
     <span className="text-xs font-semibold text-coralpink">{message}</span>
+  );
+}
+
+function MultiSelectScopeField({
+  error,
+  label,
+  selectedScopes,
+  onChange,
+}: {
+  error?: string;
+  label: string;
+  selectedScopes: MasterPlanAndPackageScope[];
+  onChange: (scopes: MasterPlanAndPackageScope[], primaryScope: MasterPlanAndPackageScope) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [isOpen]);
+
+  const isAll =
+    selectedScopes.includes("ALL") ||
+    (selectedScopes.includes("ONBOARDING") && selectedScopes.includes("ADDITIONAL_COMPANY"));
+
+  function toggleScope(scope: MasterPlanAndPackageScope) {
+    if (scope === "ALL") {
+      onChange(["ALL"], "ALL");
+      return;
+    }
+
+    let nextScopes: MasterPlanAndPackageScope[];
+    if (isAll) {
+      if (scope === "ONBOARDING") {
+        nextScopes = ["ADDITIONAL_COMPANY"];
+      } else {
+        nextScopes = ["ONBOARDING"];
+      }
+    } else if (selectedScopes.includes(scope)) {
+      nextScopes = selectedScopes.filter((s) => s !== scope && s !== "ALL");
+      if (nextScopes.length === 0) {
+        nextScopes = ["ALL"];
+      }
+    } else {
+      nextScopes = [...selectedScopes.filter((s) => s !== "ALL"), scope];
+      if (nextScopes.includes("ONBOARDING") && nextScopes.includes("ADDITIONAL_COMPANY")) {
+        nextScopes = ["ALL"];
+      }
+    }
+
+    const primaryScope: MasterPlanAndPackageScope =
+      nextScopes.includes("ALL") ||
+      (nextScopes.includes("ONBOARDING") && nextScopes.includes("ADDITIONAL_COMPANY"))
+        ? "ALL"
+        : nextScopes[0] ?? "ALL";
+
+    onChange(nextScopes, primaryScope);
+  }
+
+  const displayText = isAll
+    ? "All scopes"
+    : selectedScopes.map((s) => MasterPlanAndPackageScopeLabels[s] || s).join(", ") || "All scopes";
+
+  return (
+    <div ref={containerRef} className={FieldLabelClassName}>
+      <span>{label}</span>
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => setIsOpen((prev) => !prev)}
+          className={joinClasses(
+            ControlClassName,
+            "flex items-center justify-between text-left font-semibold cursor-pointer",
+          )}
+        >
+          <span className="truncate">{displayText}</span>
+          <ChevronDown
+            className={joinClasses(
+              "h-4 w-4 text-darknavy/45 transition-transform",
+              isOpen ? "rotate-180" : "",
+            )}
+            aria-hidden="true"
+          />
+        </button>
+        {isOpen && (
+          <div className="absolute left-0 top-full z-20 mt-1 w-full min-w-[14rem] rounded-lg border border-darknavy/10 bg-white p-2 shadow-lg">
+            <div className="grid gap-1">
+              <label className="flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm font-semibold text-darknavy hover:bg-skyblue/8">
+                <input
+                  type="checkbox"
+                  checked={isAll}
+                  onChange={() => toggleScope("ALL")}
+                  className="h-4 w-4 rounded border-darknavy/20 text-skyblue focus:ring-skyblue/20"
+                />
+                <span>All scopes</span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm font-semibold text-darknavy hover:bg-skyblue/8">
+                <input
+                  type="checkbox"
+                  checked={isAll || selectedScopes.includes("ONBOARDING")}
+                  onChange={() => toggleScope("ONBOARDING")}
+                  className="h-4 w-4 rounded border-darknavy/20 text-skyblue focus:ring-skyblue/20"
+                />
+                <span>New user onboarding</span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm font-semibold text-darknavy hover:bg-skyblue/8">
+                <input
+                  type="checkbox"
+                  checked={isAll || selectedScopes.includes("ADDITIONAL_COMPANY")}
+                  onChange={() => toggleScope("ADDITIONAL_COMPANY")}
+                  className="h-4 w-4 rounded border-darknavy/20 text-skyblue focus:ring-skyblue/20"
+                />
+                <span>Additional company</span>
+              </label>
+            </div>
+          </div>
+        )}
+      </div>
+      <FieldError message={error} />
+    </div>
   );
 }
 

@@ -21,7 +21,7 @@ export const MasterModuleSystemStatuses = {
 export type MasterModuleSystemStatus = (typeof MasterModuleSystemStatuses)[keyof typeof MasterModuleSystemStatuses];
 
 export type MasterModuleSystemDraft = {
-  code: string;
+  code?: string;
   name: string;
   description: string;
   sortOrder: number;
@@ -72,13 +72,13 @@ export function useMasterModuleSystemFormPage({ mode, recordId }: { mode: "add" 
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      if (!effectiveMetadataDraft.code.trim() || !effectiveMetadataDraft.name.trim()) {
-        throw new Error("System code and name are required.");
+      if (!effectiveMetadataDraft.name.trim()) {
+        throw new Error("System name is required.");
       }
 
       if (mode === "add") {
         const created = await createMasterModuleSystem({
-          code: effectiveMetadataDraft.code,
+          code: effectiveMetadataDraft.code?.trim() || undefined,
           name: effectiveMetadataDraft.name,
           description: effectiveMetadataDraft.description || null,
           sortOrder: Math.max(0, effectiveMetadataDraft.sortOrder),
@@ -92,7 +92,7 @@ export function useMasterModuleSystemFormPage({ mode, recordId }: { mode: "add" 
 
       if (!record) throw new Error("System not found.");
       await updateMasterModuleSystem(record.id, {
-        code: effectiveMetadataDraft.code,
+        code: effectiveMetadataDraft.code?.trim() || undefined,
         name: effectiveMetadataDraft.name,
         description: effectiveMetadataDraft.description || null,
         sortOrder: Math.max(0, effectiveMetadataDraft.sortOrder),

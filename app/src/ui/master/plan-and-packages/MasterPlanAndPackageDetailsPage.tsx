@@ -90,7 +90,6 @@ export function MasterPlanAndPackageDetailsPage({
 			<div className="grid gap-5 xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
 				<div className="grid content-start gap-4">
 					<DetailPanel title="Plan Details">
-						<DetailLine label="Plan code" value={record.code} />
 						<DetailLine
 							label="Plan scope"
 							value={formatMasterPlanAndPackageScope(record.scope)}
@@ -114,16 +113,6 @@ export function MasterPlanAndPackageDetailsPage({
 								record.pricing,
 							)}
 							value={formatMasterPlanAndPackagePricing(record.pricing)}
-						/>
-					</DetailPanel>
-					<DetailPanel title="Scale Pricing">
-						<DetailLine
-							label={getMasterPlanAndPackageScaleSupportingText(
-								record.scalePricing,
-							)}
-							value={formatMasterPlanAndPackageScalePricing(
-								record.scalePricing,
-							)}
 						/>
 					</DetailPanel>
 				</div>

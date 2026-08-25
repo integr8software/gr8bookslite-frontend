@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { SalesQuotationFormPage } from "@/app/src/ui/modules/sales/sales-quotation/action/SalesQuotationFormPage";
+import { SalesQuotationActionPage } from "@/app/src/ui/modules/sales/sales-quotation/action/SalesQuotationActionPage";
 
 const PageTitle = "Add Sales Quotation";
 
@@ -10,7 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function SalesSalesQuotationAddPage() {
-  return <SalesQuotationFormPage />;
+  return <SalesQuotationActionPage />;
 }
-
-

@@ -29,6 +29,9 @@ export type OfficialReceiptLineEntry = {
   collectionType: string;
   customerName: string;
   partyCode: string;
+  bankName: string;
+  checkNo: string;
+  checkDate: string;
   grossReceipt: string;
   vatExempt: string;
   vat: string;
@@ -66,6 +69,9 @@ export type OfficialReceiptCopyFromRecord = AppCopyFromRecord & {
   customerName?: string;
   partyCode?: string;
   paymentType?: string;
+  bankName?: string;
+  checkNo?: string;
+  checkDate?: string;
   currency?: string;
   exchangeRate?: string;
   collectionType?: string;

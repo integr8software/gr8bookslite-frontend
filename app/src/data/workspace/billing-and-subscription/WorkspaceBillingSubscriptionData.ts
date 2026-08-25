@@ -41,6 +41,7 @@ type WorkspaceBillingCompanyUsageRecord = {
   baseMonthlyListAmount: number;
   branchCount: number;
   id: string;
+  issuedDate: string;
   name: string;
   planDisplayName: string;
   planId: string;
@@ -66,6 +67,7 @@ const WorkspaceBillingCompanyUsageRecords: WorkspaceBillingCompanyUsageRecord[] 
     baseMonthlyListAmount: 798,
     branchCount: 8,
     id: "company-gr8books-hq",
+    issuedDate: "2025-06-01",
     name: "Gr8Books HQ",
     planDisplayName: "Accounting + Inventory",
     planId: "plan-launch-upgrade",
@@ -78,6 +80,7 @@ const WorkspaceBillingCompanyUsageRecords: WorkspaceBillingCompanyUsageRecord[] 
     baseMonthlyListAmount: 399,
     branchCount: 2,
     id: "company-gr8books-bgc",
+    issuedDate: "2026-05-22",
     name: "BGC Sales Office",
     planDisplayName: "Accounting",
     planId: "plan-accounting-monthly",
@@ -91,6 +94,7 @@ const WorkspaceBillingCompanyUsageRecords: WorkspaceBillingCompanyUsageRecord[] 
     baseMonthlyListAmount: 399,
     branchCount: 1,
     id: "company-gr8books-cebu",
+    issuedDate: "2026-03-12",
     name: "Cebu Services",
     planDisplayName: "Inventory",
     planId: "plan-inventory-quarter",
@@ -103,6 +107,7 @@ const WorkspaceBillingCompanyUsageRecords: WorkspaceBillingCompanyUsageRecord[] 
     baseMonthlyListAmount: 399,
     branchCount: 1,
     id: "company-gr8books-davao",
+    issuedDate: "2026-04-24",
     name: "Davao Demo Books",
     planDisplayName: "Accounting",
     planId: "plan-accounting-monthly",
@@ -115,6 +120,7 @@ const WorkspaceBillingCompanyUsageRecords: WorkspaceBillingCompanyUsageRecord[] 
     baseMonthlyListAmount: 399,
     branchCount: 3,
     id: "company-gr8books-north",
+    issuedDate: "2026-03-18",
     name: "North Luzon Trading",
     planDisplayName: "Inventory",
     planId: "plan-inventory-quarter",
@@ -123,6 +129,7 @@ const WorkspaceBillingCompanyUsageRecords: WorkspaceBillingCompanyUsageRecord[] 
     userCount: 6,
   },
 ];
+
 
 const WorkspaceBillingPromotionPossessionSeeds: WorkspaceBillingPromotionPossessionSeed[] = [
   {
@@ -335,6 +342,7 @@ export const WorkspaceBillingPaymentRecords: WorkspaceBillingPaymentRecord[] = [
 export const WorkspaceBillingCurrentSubscriber: WorkspaceBillingSubscriberAccount = {
   billingCycle: CurrentSubscriberFallback.billingCycle,
   id: CurrentSubscriberFallback.id,
+  issuedDate: "2025-06-01",
   name: CurrentSubscriberFallback.name,
   ownerName: CurrentSubscriberFallback.ownerName,
   planName: "Mixed company plans",
@@ -405,6 +413,7 @@ export function createWorkspaceBillingCompanyAccounts(
       durationMonths: subscriber.durationMonths,
       eligiblePromotions,
       id: company.id,
+      issuedDate: company.issuedDate,
       name: company.name,
       ownerName: subscriber.ownerName,
       overageAmount: addOnTotal,
@@ -426,6 +435,7 @@ export function createWorkspaceBillingCompanyAccounts(
       subscriberName: subscriber.name,
       subtotal,
       totalDue: Math.max(0, subtotal - discountAmount),
+
       trialDaysRemaining: trial?.daysRemaining ?? null,
       trialEndsAt: company.trialEndsAt ?? null,
       trialStatusLabel: trial?.label ?? null,

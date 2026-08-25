@@ -14,7 +14,7 @@ export const DiscountMaintenanceFormValidationSchema = z
     name: z.string().trim().min(1, "Enter a discount name.").max(150, "Discount name must be 150 characters or fewer."),
     description: z.string().trim().max(500, "Description must be 500 characters or fewer."),
     type: z.enum(DiscountMaintenanceTypeOptions, {
-      message: "Select Purchase or Sales.",
+      message: "Select Purchases or Sales.",
     }),
     discountType: z.enum(DiscountMaintenanceValueTypeOptions, {
       message: "Select discount type.",

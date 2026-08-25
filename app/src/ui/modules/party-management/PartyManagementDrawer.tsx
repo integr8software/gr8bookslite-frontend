@@ -31,6 +31,7 @@ import { useChartsOfAccounts } from "@/app/src/hooks/modules/financial-maintenan
 import { useTransactionNumberSetupStore } from "@/app/src/hooks/modules/system-administration/transaction-number-setup/useTransactionNumberSetup";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { usePartyTaxDefaultOptions } from "@/app/src/hooks/shared/tax/useTaxOptions";
+import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import {
   getNextPartyCodePreview,
   getPartyManagementNumberSetup,
@@ -72,9 +73,11 @@ export function PartyManagementDrawer({
   suggestedPartyType,
   title = "Add Party",
 }: PartyManagementDrawerProps) {
-  const [values, setValues] = useState<PartyInformationFormValues>(() =>
+  const initialValues = useMemo<PartyInformationFormValues>(() =>
     createPartyDrawerInitialValues(records, suggestedPartyType),
+    [records, suggestedPartyType],
   );
+  const [values, setValues] = useState<PartyInformationFormValues>(initialValues);
   const [syncedAddressSources, setSyncedAddressSources] = useState<Record<string, string>>({});
   const activeBranchId = useAppStore((state) => state.activeBranchId);
   const partyAccountOptions = usePartyManagementAccountOptions();
@@ -115,6 +118,17 @@ export function PartyManagementDrawer({
     () => new Map(chartAccounts.flatAccounts.map(({ account }) => [account.id, account])),
     [chartAccounts.flatAccounts],
   );
+  const draft = useModuleDraft({
+    enabled: isOpen,
+    initialValues,
+    key: createModuleDraftKey({
+      mode: "add",
+      moduleId: "party-management:quick-add",
+      recordId: suggestedPartyType,
+    }),
+    setValues,
+    values,
+  });
 
   function updateField<TKey extends keyof PartyInformationFormValues>(field: TKey, value: PartyInformationFormValues[TKey]) {
     setValues((current) => {
@@ -486,11 +500,24 @@ export function PartyManagementDrawer({
     try {
       const savedRecord = await onAddRecord(record);
 
+      draft.clearDraft();
       onCreateParty(savedRecord);
       onClose();
     } catch {
       // The mutation owns its error feedback. Keep the drawer open so the user can retry.
     }
+  }
+
+  function handleClose() {
+    draft.saveDraft();
+    onClose();
+  }
+
+  function handleCancel() {
+    draft.discardDraft();
+    setErrors({});
+    setSyncedAddressSources({});
+    onClose();
   }
 
   return (
@@ -502,7 +529,8 @@ export function PartyManagementDrawer({
       isSaving={isPending}
       maxWidthClassName="max-w-5xl"
       onBeforeSaveConfirm={validateBeforeSubmit}
-      onClose={onClose}
+      onCancel={handleCancel}
+      onClose={handleClose}
       submitLabel="Save Party"
       title={title}
     >

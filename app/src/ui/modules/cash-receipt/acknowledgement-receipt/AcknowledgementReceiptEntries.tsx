@@ -79,6 +79,11 @@ const AcknowledgementReceiptAccountingColumnWidths: Record<
   credit: 160,
 };
 
+const AcknowledgementReceiptCollectionEntryView: AcknowledgementReceiptEntryView =
+  "collection";
+const AcknowledgementReceiptAccountingEntryView: AcknowledgementReceiptEntryView =
+  "accounting";
+
 type AcknowledgementReceiptEntriesProps = {
   entryView: AcknowledgementReceiptEntryView;
   isReadonly: boolean;
@@ -122,7 +127,7 @@ export function AcknowledgementReceiptEntries({
   const variance = Math.abs(totals.debit - totals.credit);
   const columns = useMemo<ModuleDataEntryColumn<AcknowledgementReceiptLineEntry>[]>(
     () =>
-      entryView === "collection"
+      entryView === AcknowledgementReceiptCollectionEntryView
         ? createCollectionColumns(isReadonly, updateEntry, isCheckPaymentType(paymentType))
         : createAccountingColumns(
             isReadonly,
@@ -145,7 +150,7 @@ export function AcknowledgementReceiptEntries({
   );
   const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
     () => {
-      if (entryView !== "accounting") {
+      if (entryView !== AcknowledgementReceiptAccountingEntryView) {
         return [];
       }
 
@@ -328,7 +333,7 @@ export function AcknowledgementReceiptEntries({
   }
 
   const accountingColumnHandlers =
-    entryView === "accounting"
+    entryView === AcknowledgementReceiptAccountingEntryView
       ? {
           onAutoColumnWidth: fitAccountingColumnWidth,
           onFitColumnWidth: fitAccountingColumnWidth,
@@ -348,7 +353,7 @@ export function AcknowledgementReceiptEntries({
       description=""
       emptyRowLabel="entry"
       exportOptions={
-        entryView === "collection"
+        entryView === AcknowledgementReceiptCollectionEntryView
           ? [
               { id: "csv", label: "CSV", onSelect: () => undefined },
               { id: "excel", label: "Excel", onSelect: () => undefined },
@@ -368,10 +373,12 @@ export function AcknowledgementReceiptEntries({
       }
       isDraggable
       isReadonly={isReadonly}
-      canConfigureColumnsWhenReadonly={entryView === "accounting"}
+      canConfigureColumnsWhenReadonly={
+        entryView === AcknowledgementReceiptAccountingEntryView
+      }
       rows={rows}
       summaryCells={
-        entryView === "accounting"
+        entryView === AcknowledgementReceiptAccountingEntryView
           ? {
               credit: formatAcknowledgementReceiptAmount(totals.credit),
               debit: formatAcknowledgementReceiptAmount(totals.debit),
@@ -379,7 +386,7 @@ export function AcknowledgementReceiptEntries({
           : undefined
       }
       toolbarActions={
-        entryView === "collection"
+        entryView === AcknowledgementReceiptCollectionEntryView
           ? [
               {
                 id: "add-collection-type",
@@ -396,7 +403,11 @@ export function AcknowledgementReceiptEntries({
       onAddRows={addRows}
       onClearRows={clearRows}
       onDuplicateRow={duplicateRow}
-      onImport={entryView === "collection" ? () => undefined : undefined}
+      onImport={
+        entryView === AcknowledgementReceiptCollectionEntryView
+          ? () => undefined
+          : undefined
+      }
       onInsertRow={insertRow}
       onMoveRow={moveRow}
       onRemoveRow={removeRow}
@@ -419,8 +430,8 @@ function EntryViewTabs({
       className="inline-flex rounded-lg border border-darknavy/10 bg-offwhite/70 p-1"
     >
       {([
-        ["collection", "Collection Details"],
-        ["accounting", "Accounting Entries"],
+        [AcknowledgementReceiptCollectionEntryView, "Collection Details"],
+        [AcknowledgementReceiptAccountingEntryView, "Accounting Entries"],
       ] as const).map(([view, label]) => {
         const isActive = entryView === view;
 

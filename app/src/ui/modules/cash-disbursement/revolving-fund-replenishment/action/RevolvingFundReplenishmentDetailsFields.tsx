@@ -179,7 +179,7 @@ export function RevolvingFundReplenishmentDetailsFields({
             value={page.values.documentDate}
             isReadonly={page.isReadonly}
             isRequired
-            label="RFR Date"
+            label="Document Date"
             error={page.errors.documentDate}
             type="date"
             onValueChange={(value) => page.updateField("documentDate", value)}

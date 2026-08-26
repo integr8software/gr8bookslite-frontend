@@ -17,7 +17,7 @@ export const AdvancesToSuppliersPaginationStorageKey = "cash-disbursement-advanc
 export const AdvancesToSuppliersTransactionPrefix = "ATS";
 export const AdvancesToSuppliersColumnLabels = {
   transactionNo: "Advances To Suppliers No.",
-  documentDate: "ATS Date",
+  documentDate: "Document Date",
   partyCode: "Party Code",
   partyName: "Party Name",
   accountCode: "Default Account Code",
@@ -86,11 +86,11 @@ export const AdvancesToSuppliersPaymentTypeDropdownOptions: AppAdvancedDropdownO
   { label: "Fixed Amount", name: "Fixed Amount", value: "Fixed Amount" },
 ];
 export const AdvancesToSuppliersConfirmationDialogTitles: Record<AdvancesToSuppliersConfirmationAction, string> = {
-  save: "Save Advances to Supplier?",
-  draft: "Save as Draft?",
-  approve: "Approve Advances to Supplier?",
-  disapprove: "Disapprove Advances to Supplier?",
-  cancel: "Cancel Advances to Supplier?",
+  save: "Save Advances to Suppliers?",
+  draft: "Save Advances to Suppliers as Draft?",
+  approve: "Approve Advances to Suppliers?",
+  disapprove: "Disapprove Advances to Suppliers?",
+  cancel: "Cancel Advances to Suppliers?",
 };
 export const AdvancesToSuppliersConfirmationDialogConfirmLabels: Record<AdvancesToSuppliersConfirmationAction, string> = {
   save: "Save and Submit",
@@ -126,5 +126,9 @@ export const AdvancesToSuppliersResponsibilityCenterOptions: AppAdvancedDropdown
 ];
 
 export function canEditAdvancesToSuppliers(status: AdvancesToSuppliersStatus) {
-  return ["Draft", "For Approval", "Disapproved"].includes(status);
+  return (
+    status === AdvancesToSuppliersStatuses.draft ||
+    status === AdvancesToSuppliersStatuses.forApproval ||
+    status === AdvancesToSuppliersStatuses.disapproved
+  );
 }

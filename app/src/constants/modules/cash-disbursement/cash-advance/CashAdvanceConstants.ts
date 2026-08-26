@@ -1,4 +1,4 @@
-import type { VisibilityState } from "@tanstack/react-table";
+﻿import type { VisibilityState } from "@tanstack/react-table";
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type {
   CashAdvanceDetailsSection,
@@ -57,7 +57,7 @@ export const CashAdvanceStatuses = {
 
 export const CashAdvanceSubmitConfirmationDialogTitles: Record<CashAdvanceSubmitConfirmationAction, string> = {
   save: "Save Cash Advance?",
-  draft: "Save as Draft?",
+  draft: "Save Cash Advance as Draft?",
 };
 
 export const CashAdvanceSubmitConfirmationDialogConfirmLabels: Record<CashAdvanceSubmitConfirmationAction, string> = {

@@ -37,6 +37,7 @@ export function CashAdvanceActionPage({ mode }: { mode: CashAdvanceActionMode })
           onSaveDraft={mode === "add" ? () => advanceForm.submitAdvance(CashAdvanceStatuses.draft) : undefined}
           onSubmit={() => advanceForm.submitAdvance(CashAdvanceStatuses.forApproval)}
           onUpdateStatus={advanceForm.updateAdvanceStatus}
+          onValidate={advanceForm.validateAdvance}
           record={advanceForm.record}
         />
         <CashAdvanceDetailsForm form={advanceForm} mode={mode} />

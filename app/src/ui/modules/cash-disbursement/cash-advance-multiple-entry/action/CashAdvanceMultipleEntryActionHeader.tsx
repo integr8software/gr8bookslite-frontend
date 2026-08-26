@@ -38,6 +38,7 @@ export function CashAdvanceMultipleEntryActionHeader({
   onSaveDraft,
   onSubmit,
   onUpdateStatus,
+  onValidate,
   record,
 }: {
   mode: CashAdvanceMultipleEntryActionMode;
@@ -46,9 +47,10 @@ export function CashAdvanceMultipleEntryActionHeader({
   onBack?: () => void;
   onDiscard?: () => void;
   onPreview?: () => void;
-  onSaveDraft?: () => void;
-  onSubmit: () => void;
+  onSaveDraft?: () => boolean | void;
+  onSubmit: () => boolean | void;
   onUpdateStatus: CashAdvanceMultipleEntryFormController["updateEntryStatus"];
+  onValidate?: (status?: CashAdvanceStatus) => boolean;
   record: CashAdvanceMultipleEntryRecord | null;
 }) {
   const [submitConfirmation, setSubmitConfirmation] = useState<CashAdvanceMultipleEntrySubmitConfirmationAction | null>(null);
@@ -113,14 +115,22 @@ export function CashAdvanceMultipleEntryActionHeader({
             {mode === "view" ? null : (
               <ModuleActionButton
                 disabled={isSubmitting}
-                label={isSubmitting ? "Saving..." : mode === "edit" ? "Update" : "Save"}
-                onAction={() => setSubmitConfirmation("save")}
+                label={mode === "edit" ? "Update" : "Save"}
+                onAction={() => {
+                  if (onValidate ? onValidate(CashAdvanceMultipleEntryStatuses.forApproval) : true) {
+                    setSubmitConfirmation("save");
+                  }
+                }}
                 menuItems={
                   mode === "add" && onSaveDraft
                     ? [
                         {
                           label: "Save As Draft",
-                          onSelect: () => setSubmitConfirmation("draft"),
+                          onSelect: () => {
+                            if (onValidate ? onValidate(CashAdvanceMultipleEntryStatuses.draft) : true) {
+                              setSubmitConfirmation("draft");
+                            }
+                          },
                         },
                       ]
                     : []
@@ -133,17 +143,37 @@ export function CashAdvanceMultipleEntryActionHeader({
       {submitConfirmation ? (
         <AppDialog
           isOpen
-          title={CashAdvanceMultipleEntrySubmitConfirmationDialogTitles[submitConfirmation]}
-          description={`This will ${submitConfirmation === "save" ? "save and submit" : "save as draft"} ${recordLabel}.`}
-          confirmLabel={CashAdvanceMultipleEntrySubmitConfirmationDialogConfirmLabels[submitConfirmation]}
+          title={
+            submitConfirmation === "save" && mode === "edit"
+              ? "Update Cash Advance Multiple Entry?"
+              : CashAdvanceMultipleEntrySubmitConfirmationDialogTitles[submitConfirmation]
+          }
+          description={
+            submitConfirmation === "save"
+              ? mode === "edit"
+                ? `This will update ${recordLabel}.`
+                : `This will save and submit ${recordLabel}.`
+              : `This will save ${recordLabel} as draft.`
+          }
+          confirmLabel={
+            submitConfirmation === "save" && mode === "edit"
+              ? "Update"
+              : CashAdvanceMultipleEntrySubmitConfirmationDialogConfirmLabels[submitConfirmation]
+          }
+          cancelLabel="Cancel"
           iconTone={submitConfirmation === "save" ? (mode === "edit" ? "update" : "save") : "save"}
-          pendingLabel="Saving..."
+          isPending={isSubmitting}
+          pendingLabel={mode === "edit" ? "Updating..." : "Saving..."}
           tone="default"
           onCancel={() => setSubmitConfirmation(null)}
           onConfirm={() => {
-            if (submitConfirmation === "save") onSubmit();
-            else onSaveDraft?.();
-            setSubmitConfirmation(null);
+            if (submitConfirmation === "save") {
+              const ok = onSubmit();
+              if (ok !== false) setSubmitConfirmation(null);
+            } else {
+              const ok = onSaveDraft?.();
+              if (ok !== false) setSubmitConfirmation(null);
+            }
           }}
         />
       ) : null}

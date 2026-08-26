@@ -4,22 +4,35 @@ import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/modu
 import type {
   DisbursementVoucherActionMode,
   DisbursementVoucherActionTab,
+  DisbursementVoucherPaymentErrorField,
   DisbursementVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 
 export function getDisbursementVoucherSubmitDialogCopy(
   mode: DisbursementVoucherActionMode,
   status: DisbursementVoucherStatus,
+  recordLabel = "this disbursement voucher",
 ) {
   const isDraft = status === DisbursementVoucherStatuses.draft;
-  const confirmLabel = mode === "edit" ? "Update" : isDraft ? "Save as Draft" : "Save and Submit";
+  const isEdit = mode === "edit";
+  const title = isEdit
+    ? "Update Disbursement Voucher?"
+    : isDraft
+      ? "Save Disbursement Voucher as Draft?"
+      : "Save Disbursement Voucher?";
+  const description = isEdit
+    ? `This will update ${recordLabel}.`
+    : isDraft
+      ? `This will save ${recordLabel} as draft.`
+      : `This will save and submit ${recordLabel}.`;
+  const confirmLabel = isEdit ? "Update" : isDraft ? "Save as Draft" : "Save and Submit";
 
   return {
     confirmLabel,
-    description: `Confirm that you want to ${confirmLabel.toLowerCase()} this Disbursement Voucher.`,
-    iconTone: mode === "edit" ? ("update" as const) : ("save" as const),
-    pendingLabel: mode === "edit" ? "Updating..." : "Saving...",
-    title: `${confirmLabel} Disbursement Voucher?`,
+    description,
+    iconTone: isEdit ? ("update" as const) : ("save" as const),
+    pendingLabel: isEdit ? "Updating..." : "Saving...",
+    title,
   };
 }
 
@@ -82,6 +95,15 @@ export const DisbursementVoucherActionTabs: {
   { id: "payment-information", label: "Payment Information" },
   { id: "attachments", label: "File Attachments" },
 ];
+
+export const DisbursementVoucherPaymentInformationErrorFields = [
+  "bankAccountCode",
+  "checkDate",
+  "checkNo",
+  "payee",
+  "transferAccountNo",
+  "transferToBank",
+] as const satisfies readonly DisbursementVoucherPaymentErrorField[];
 
 export const DisbursementVoucherStatuses = {
   cancelled: "Cancelled",
@@ -160,7 +182,7 @@ export const DisbursementVoucherTableColumns = [
   },
   {
     key: "documentDate",
-    label: "DV Date",
+    label: "Document Date",
     className: "",
     size: TransactionOverviewColumnWidths.documentDate,
   },

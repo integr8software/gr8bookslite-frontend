@@ -1,5 +1,6 @@
 import { DisbursementVoucherFieldClassName } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import type { DisbursementVoucherBankInformationFieldsProps } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
 import { TransactionField } from "@/app/src/ui/shared/transaction-setup/TransactionFormFields";
 import {
   DisbursementVoucherPaymentFields,
@@ -9,6 +10,7 @@ import {
 export function DisbursementVoucherBankInformationFields({
   bankAccounts,
   canAddBankAccount,
+  errors,
   isMultiCheckNumber,
   isReadonly,
   onOpenBankAccountDrawer,
@@ -21,7 +23,8 @@ export function DisbursementVoucherBankInformationFields({
 }: DisbursementVoucherBankInformationFieldsProps) {
   const selectedPaymentTypeRecord = paymentTypeRecord ?? paymentTypeRecords.find((record) => record.paymentType === paymentType) ?? null;
   const paymentDetailKind = getPaymentTypeDetailKind(paymentType, selectedPaymentTypeRecord);
-  const shouldShowCheckDetails = paymentDetailKind === "with-bank" && !isMultiCheckNumber;
+  const shouldShowCheckDetails = paymentDetailKind === "with-bank";
+  const isDebitMemo = selectedPaymentTypeRecord?.type === "Debit Memo" || paymentType.trim().toLowerCase().includes("debit memo");
   const doesNotRequireBankInformation = !paymentDetailKind || paymentDetailKind === "cash";
 
   return (
@@ -36,6 +39,7 @@ export function DisbursementVoucherBankInformationFields({
           <DisbursementVoucherPaymentFields
             bankAccounts={bankAccounts}
             canAddBankAccount={canAddBankAccount}
+            errors={errors}
             isReadonly={isReadonly}
             isMultiCheckNumber={isMultiCheckNumber}
             onOpenBankAccountDrawer={onOpenBankAccountDrawer}
@@ -55,7 +59,12 @@ export function DisbursementVoucherBankInformationFields({
                   className={`${DisbursementVoucherFieldClassName} !bg-darknavy/5 text-darknavy/60`}
                 />
               </TransactionField>
-              <TransactionField controlId="disbursement-voucher-payment-check-date" label="Check Date">
+              <TransactionField
+                controlId="disbursement-voucher-payment-check-date"
+                error={errors.checkDate}
+                isRequired
+                label="Check Date"
+              >
                 <input
                   id="disbursement-voucher-payment-check-date"
                   type="date"
@@ -63,6 +72,20 @@ export function DisbursementVoucherBankInformationFields({
                   readOnly={isReadonly}
                   onChange={(event) => onUpdatePaymentDetails({ checkDate: event.target.value })}
                   className={DisbursementVoucherFieldClassName}
+                />
+              </TransactionField>
+              <TransactionField label={isDebitMemo ? "Multi Debit Memo No." : "Multi Check No."}>
+                <AppSwitch
+                  readOnly={isReadonly}
+                  value={isMultiCheckNumber}
+                  falseOption={{ label: "No", value: false }}
+                  trueOption={{ label: "Yes", value: true }}
+                  onChange={(isMultiCheckNumber) =>
+                    onUpdatePaymentDetails({
+                      checkNo: isMultiCheckNumber ? "" : values.paymentDetails.checkNo,
+                      isMultiCheckNumber,
+                    })
+                  }
                 />
               </TransactionField>
             </div>

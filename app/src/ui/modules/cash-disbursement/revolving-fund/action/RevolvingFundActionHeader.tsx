@@ -81,9 +81,26 @@ export function RevolvingFundActionHeader({ onPreview, page }: { onPreview: () =
             {page.mode !== "view" ? (
               <ModuleActionButton
                 disabled={page.isSubmitting}
-                label={page.isSubmitting ? "Saving..." : page.mode === "edit" ? "Update" : "Save"}
-                onAction={() => setConfirmation("save")}
-                menuItems={page.mode === "add" ? [{ label: "Save As Draft", onSelect: () => setConfirmation("draft") }] : []}
+                label={page.mode === "edit" ? "Update" : "Save"}
+                onAction={() => {
+                  if (page.validate(RevolvingFundStatuses.forApproval)) {
+                    setConfirmation("save");
+                  }
+                }}
+                menuItems={
+                  page.mode === "add"
+                    ? [
+                        {
+                          label: "Save As Draft",
+                          onSelect: () => {
+                            if (page.validate(RevolvingFundStatuses.draft)) {
+                              setConfirmation("draft");
+                            }
+                          },
+                        },
+                      ]
+                    : []
+                }
               />
             ) : null}
           </>
@@ -92,11 +109,33 @@ export function RevolvingFundActionHeader({ onPreview, page }: { onPreview: () =
       {confirmation ? (
         <AppDialog
           isOpen
-          title={RevolvingFundConfirmationDialogTitles[confirmation]}
-          description={`This will ${confirmation === "save" ? "save and submit" : confirmation} ${transactionNo}.`}
-          confirmLabel={RevolvingFundConfirmationDialogConfirmLabels[confirmation]}
+          title={
+            confirmation === "save" && page.mode === "edit"
+              ? "Update Revolving Fund?"
+              : RevolvingFundConfirmationDialogTitles[confirmation]
+          }
+          description={
+            confirmation === "save"
+              ? page.mode === "edit"
+                ? `This will update ${transactionNo}.`
+                : `This will save and submit ${transactionNo}.`
+              : confirmation === "draft"
+                ? `This will save ${transactionNo} as draft.`
+                : confirmation === "approve"
+                  ? `This will approve ${transactionNo}.`
+                  : confirmation === "disapprove"
+                    ? `This will mark ${transactionNo} as disapproved.`
+                    : `This will mark ${transactionNo} as cancelled.`
+          }
+          confirmLabel={
+            confirmation === "save" && page.mode === "edit"
+              ? "Update"
+              : RevolvingFundConfirmationDialogConfirmLabels[confirmation]
+          }
+          cancelLabel="Cancel"
           iconTone={confirmation === "save" ? (page.mode === "edit" ? "update" : "save") : confirmation === "draft" ? "save" : undefined}
-          pendingLabel="Saving..."
+          isPending={page.isSubmitting}
+          pendingLabel={confirmation === "save" && page.mode === "edit" ? "Updating..." : "Saving..."}
           tone={
             confirmation === "approve"
               ? "success"
@@ -108,12 +147,22 @@ export function RevolvingFundActionHeader({ onPreview, page }: { onPreview: () =
           }
           onCancel={() => setConfirmation(null)}
           onConfirm={() => {
-            if (confirmation === "save") page.save(RevolvingFundStatuses.forApproval);
-            else if (confirmation === "draft") page.save(RevolvingFundStatuses.draft);
-            else if (confirmation === "approve") page.updateStatus(RevolvingFundStatuses.posted);
-            else if (confirmation === "disapprove") page.updateStatus(RevolvingFundStatuses.disapproved);
-            else page.updateStatus(RevolvingFundStatuses.cancelled);
-            setConfirmation(null);
+            if (confirmation === "save") {
+              const ok = page.save(RevolvingFundStatuses.forApproval);
+              if (ok) setConfirmation(null);
+            } else if (confirmation === "draft") {
+              const ok = page.save(RevolvingFundStatuses.draft);
+              if (ok) setConfirmation(null);
+            } else if (confirmation === "approve") {
+              const ok = page.updateStatus(RevolvingFundStatuses.posted);
+              if (ok) setConfirmation(null);
+            } else if (confirmation === "disapprove") {
+              const ok = page.updateStatus(RevolvingFundStatuses.disapproved);
+              if (ok) setConfirmation(null);
+            } else {
+              const ok = page.updateStatus(RevolvingFundStatuses.cancelled);
+              if (ok) setConfirmation(null);
+            }
           }}
         />
       ) : null}

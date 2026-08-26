@@ -43,7 +43,7 @@ export const CashAdvanceMultipleEntrySubmitConfirmationDialogTitles: Record<
   string
 > = {
   save: "Save Cash Advance Multiple Entry?",
-  draft: "Save as Draft?",
+  draft: "Save Cash Advance Multiple Entry as Draft?",
 };
 
 export const CashAdvanceMultipleEntrySubmitConfirmationDialogConfirmLabels: Record<

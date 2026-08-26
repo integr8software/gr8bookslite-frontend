@@ -7,16 +7,31 @@ import type {
   CashVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
 
-export function getCashVoucherSubmitDialogCopy(mode: CashVoucherActionMode, status: CashVoucherStatus) {
+export function getCashVoucherSubmitDialogCopy(
+  mode: CashVoucherActionMode,
+  status: CashVoucherStatus,
+  recordLabel = "this cash voucher",
+) {
   const isDraft = status === CashVoucherStatuses.draft;
-  const confirmLabel = mode === "edit" ? "Update" : isDraft ? "Save as Draft" : "Save and Submit";
+  const isEdit = mode === "edit";
+  const title = isEdit
+    ? "Update Cash Voucher?"
+    : isDraft
+      ? "Save Cash Voucher as Draft?"
+      : "Save Cash Voucher?";
+  const description = isEdit
+    ? `This will update ${recordLabel}.`
+    : isDraft
+      ? `This will save ${recordLabel} as draft.`
+      : `This will save and submit ${recordLabel}.`;
+  const confirmLabel = isEdit ? "Update" : isDraft ? "Save as Draft" : "Save and Submit";
 
   return {
     confirmLabel,
-    description: `Confirm that you want to ${confirmLabel.toLowerCase()} this Cash Voucher.`,
-    iconTone: mode === "edit" ? ("update" as const) : ("save" as const),
-    pendingLabel: mode === "edit" ? "Updating..." : "Saving...",
-    title: `${confirmLabel} Cash Voucher?`,
+    description,
+    iconTone: isEdit ? ("update" as const) : ("save" as const),
+    pendingLabel: isEdit ? "Updating..." : "Saving...",
+    title,
   };
 }
 
@@ -156,7 +171,7 @@ export const CashVoucherTableColumns = [
   },
   {
     key: "documentDate",
-    label: "CV Date",
+    label: "Document Date",
     className: "",
     size: TransactionOverviewColumnWidths.documentDate,
   },

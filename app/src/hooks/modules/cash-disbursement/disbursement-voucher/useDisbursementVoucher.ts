@@ -119,7 +119,7 @@ export function useDisbursementVoucherStore<TSelected = DisbursementVoucherStore
       });
     },
     onError: () => {
-      toast.error("Could not save disbursement transaction. Please try again.");
+      toast.error("Could not save Disbursement Voucher. Please try again.");
     },
   });
 
@@ -131,7 +131,7 @@ export function useDisbursementVoucherStore<TSelected = DisbursementVoucherStore
       );
     },
     onError: () => {
-      toast.error("Could not update disbursement transaction. Please try again.");
+      toast.error("Could not update Disbursement Voucher. Please try again.");
     },
   });
 
@@ -142,7 +142,7 @@ export function useDisbursementVoucherStore<TSelected = DisbursementVoucherStore
       toast.success("Disbursement Voucher Created.");
     },
     onError: () => {
-      toast.error("Could not create disbursement voucher. Please try again.");
+      toast.error("Could not create Disbursement Voucher. Please try again.");
     },
   });
 
@@ -153,7 +153,7 @@ export function useDisbursementVoucherStore<TSelected = DisbursementVoucherStore
       toast.success("Disbursement Voucher Updated.");
     },
     onError: () => {
-      toast.error("Could not update disbursement voucher. Please try again.");
+      toast.error("Could not update Disbursement Voucher. Please try again.");
     },
   });
 
@@ -164,7 +164,7 @@ export function useDisbursementVoucherStore<TSelected = DisbursementVoucherStore
       toast.success("Disbursement Voucher Deleted.");
     },
     onError: () => {
-      toast.error("Could not delete disbursement voucher. Please try again.");
+      toast.error("Could not delete Disbursement Voucher. Please try again.");
     },
   });
 

@@ -103,6 +103,7 @@ export function CashAdvanceMultipleEntryActionPage({ mode }: { mode: CashAdvance
           onSaveDraft={() => form.submitEntry(CashAdvanceMultipleEntryStatuses.draft)}
           onSubmit={() => form.submitEntry(CashAdvanceMultipleEntryStatuses.forApproval)}
           onUpdateStatus={form.updateEntryStatus}
+          onValidate={form.validateEntry}
         />
         <ModuleTabs
           activeTab={activeDetailsTab}

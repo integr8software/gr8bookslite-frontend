@@ -206,7 +206,7 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
         : { isValid: true, message: null };
 
     if (!validation.isValid) {
-      toast.error(validation.message ?? "Review the cash advance details.");
+      toast.error(validation.message ?? "Review the Cash Advance details.");
       isSubmittingRef.current = false;
       setIsSubmitting(false);
       releaseSubmitLock();
@@ -224,7 +224,7 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
       onSaved?.(nextRecord);
       return true;
     } catch {
-      toast.error("Could not save the cash advance. Please try again.");
+      toast.error("Could not save the Cash Advance. Please try again.");
       isSubmittingRef.current = false;
       setIsSubmitting(false);
       releaseSubmitLock();
@@ -262,9 +262,31 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
       setValues(nextValues);
       toast.success(`Cash Advance Marked as ${status}.`);
     } catch {
-      toast.error("Could not update the cash advance. Please try again.");
+      toast.error("Could not update the Cash Advance. Please try again.");
       releaseActionLock();
     }
+  }
+
+  function validateAdvance(status: CashAdvanceStatus = CashAdvanceStatuses.forApproval): boolean {
+    if (mode === "view" || isSubmittingRef.current) return false;
+    if (mode === "edit" && !isDirty) {
+      toast.error("No changes to save.");
+      return false;
+    }
+    const nextValues = { ...values, status };
+    const shouldValidate = status !== CashAdvanceStatuses.draft;
+    const balanceValidation = validateCashAdvanceAmountWithinBalance(nextValues);
+    const validation = !balanceValidation.isValid
+      ? balanceValidation
+      : shouldValidate
+        ? validateCashAdvanceForm(nextValues)
+        : { isValid: true, message: null };
+
+    if (!validation.isValid) {
+      toast.error(validation.message ?? "Review the Cash Advance details.");
+      return false;
+    }
+    return true;
   }
 
   return {
@@ -283,6 +305,7 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
     updateField,
     updateReferenceField,
     updateTaxValue,
+    validateAdvance,
     values,
   };
 }
@@ -359,9 +382,9 @@ export function useCashAdvanceTable(advances: CashAdvanceRecord[]) {
       {
         accessorKey: "documentDate",
         id: "documentDate",
-        header: "CA Date",
+        header: "Document Date",
         size: TransactionOverviewColumnWidths.documentDate,
-        meta: { label: "CA Date" },
+        meta: { label: "Document Date" },
       },
       {
         accessorKey: "partyCode",

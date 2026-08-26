@@ -189,7 +189,7 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
     const nextErrors = status === RevolvingFundStatuses.draft ? {} : validateRevolvingFundForm(values);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) {
-      toast.error("Please fix the highlighted revolving fund fields.");
+      toast.error("Please fix the highlighted Revolving Fund fields.");
       isSubmittingRef.current = false;
       setIsSubmitting(false);
       releaseSubmitLock();
@@ -205,7 +205,7 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
       options.onSaved?.();
       return true;
     } catch {
-      toast.error("Could not save the revolving fund. Please try again.");
+      toast.error("Could not save the Revolving Fund. Please try again.");
       isSubmittingRef.current = false;
       setIsSubmitting(false);
       releaseSubmitLock();
@@ -225,10 +225,25 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
       toast.success(`Revolving Fund Marked as ${status}.`);
       return true;
     } catch {
-      toast.error("Could not update the revolving fund. Please try again.");
+      toast.error("Could not update the Revolving Fund. Please try again.");
       releaseActionLock();
       return false;
     }
+  }
+
+  function validate(status: RevolvingFundStatus = RevolvingFundStatuses.forApproval): boolean {
+    if (isReadonly || isSubmittingRef.current) return false;
+    if (mode === "edit" && !isDirty) {
+      toast.error("No changes to save.");
+      return false;
+    }
+    const nextErrors = status === RevolvingFundStatuses.draft ? {} : validateRevolvingFundForm(values);
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) {
+      toast.error("Please fix the highlighted Revolving Fund fields.");
+      return false;
+    }
+    return true;
   }
 
   return {
@@ -260,6 +275,7 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
     updateItem,
     updateItems,
     updateStatus,
+    validate,
     values,
   };
 }

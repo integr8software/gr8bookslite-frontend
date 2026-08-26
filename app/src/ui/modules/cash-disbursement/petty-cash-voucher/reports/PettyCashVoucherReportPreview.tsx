@@ -35,7 +35,7 @@ export function PettyCashVoucherReportPreview({
         </div>
         <dl className="mt-10 grid grid-cols-2 gap-x-8 gap-y-5 border-y border-darknavy/10 py-6 text-sm">
           <ReportValue label="Party" value={`${page.values.partyName || "-"} (${page.values.partyCode || "-"})`} />
-          <ReportValue label="PCV Date" value={formatDate(page.values.documentDate)} />
+          <ReportValue label="Document Date" value={formatDate(page.values.documentDate)} />
           <ReportValue
             label="Responsibility Center"
             value={`${page.values.responsibilityCenter || "-"} (${page.values.responsibilityCenterCode || "-"})`}

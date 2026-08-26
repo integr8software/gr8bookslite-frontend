@@ -6,6 +6,7 @@ import { ArrowLeft, CreditCard, Edit3 } from "lucide-react";
 import {
   PettyCashVoucherActionDescriptions,
   PettyCashVoucherLink,
+  PettyCashVoucherStatuses,
   canEditPettyCashVoucherStatus,
   getPettyCashVoucherStatusDialogCopy,
   getPettyCashVoucherEditLink,
@@ -47,10 +48,11 @@ export function PettyCashVoucherActionHeader({ page }: { page: PettyCashVoucherA
       {dialogCopy && confirmation ? (
         <AppDialog
           isOpen
-          cancelLabel={confirmation.action === "status" ? "Keep Current Status" : "Continue Editing"}
+          cancelLabel="Cancel"
           confirmLabel={dialogCopy.confirmLabel}
           description={dialogCopy.description}
           iconTone={dialogCopy.iconTone}
+          isPending={page.isSubmitting}
           pendingLabel={dialogCopy.pendingLabel}
           title={dialogCopy.title}
           tone={dialogCopy.tone}
@@ -115,14 +117,22 @@ function PettyCashVoucherHeaderActions({
       {page.isReadonly ? null : (
         <ModuleActionButton
           disabled={page.isSubmitting}
-          label={page.isSubmitting ? "Saving..." : page.mode === "edit" ? "Update" : "Save"}
-          onAction={() => onRequestConfirmation({ action: "submit" })}
+          label={page.mode === "edit" ? "Update" : "Save"}
+          onAction={() => {
+            if (page.validate(PettyCashVoucherStatuses.forApproval)) {
+              onRequestConfirmation({ action: "submit" });
+            }
+          }}
           menuItems={
             page.mode === "add"
               ? [
                   {
                     label: "Save As Draft",
-                    onSelect: () => onRequestConfirmation({ action: "draft" }),
+                    onSelect: () => {
+                      if (page.validate(PettyCashVoucherStatuses.draft)) {
+                        onRequestConfirmation({ action: "draft" });
+                      }
+                    },
                   },
                 ]
               : []

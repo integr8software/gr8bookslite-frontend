@@ -33,7 +33,7 @@ export function AdvancesToSuppliersReportPreview({
         </div>
         <dl className="mt-10 grid grid-cols-2 gap-x-8 gap-y-5 border-y border-darknavy/10 py-6 text-sm">
           <ReportValue label="Party" value={`${page.values.partyName} (${page.values.partyCode})`} />
-          <ReportValue label="ATS Date" value={formatDate(page.values.documentDate)} />
+          <ReportValue label="Document Date" value={formatDate(page.values.documentDate)} />
           <ReportValue label="PO Reference" value={page.values.poReference} />
           <ReportValue label="Default Account" value={`${page.values.accountTitle} (${page.values.accountCode})`} />
           <ReportValue label="Total PO Amount" value={formatCurrency(totalPoAmount)} />

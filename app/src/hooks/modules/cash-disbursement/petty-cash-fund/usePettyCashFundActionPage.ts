@@ -189,7 +189,7 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
     const nextErrors = status === PettyCashFundStatuses.draft ? {} : validatePettyCashFundForm(values);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) {
-      toast.error("Please fix the highlighted petty cash fund fields.");
+      toast.error("Please fix the highlighted Petty Cash Fund fields.");
       isSubmittingRef.current = false;
       setIsSubmitting(false);
       releaseSubmitLock();
@@ -205,7 +205,7 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
       options.onSaved?.();
       return true;
     } catch {
-      toast.error("Could not save the petty cash fund. Please try again.");
+      toast.error("Could not save the Petty Cash Fund. Please try again.");
       isSubmittingRef.current = false;
       setIsSubmitting(false);
       releaseSubmitLock();
@@ -225,10 +225,25 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
       toast.success(`Petty Cash Fund Marked as ${status}.`);
       return true;
     } catch {
-      toast.error("Could not update the petty cash fund. Please try again.");
+      toast.error("Could not update the Petty Cash Fund. Please try again.");
       releaseActionLock();
       return false;
     }
+  }
+
+  function validate(status: PettyCashFundStatus = PettyCashFundStatuses.forApproval): boolean {
+    if (isReadonly || isSubmittingRef.current) return false;
+    if (mode === "edit" && !isDirty) {
+      toast.error("No changes to save.");
+      return false;
+    }
+    const nextErrors = status === PettyCashFundStatuses.draft ? {} : validatePettyCashFundForm(values);
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) {
+      toast.error("Please fix the highlighted Petty Cash Fund fields.");
+      return false;
+    }
+    return true;
   }
 
   return {
@@ -260,6 +275,7 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
     updateItem,
     updateItems,
     updateStatus,
+    validate,
     values,
   };
 }

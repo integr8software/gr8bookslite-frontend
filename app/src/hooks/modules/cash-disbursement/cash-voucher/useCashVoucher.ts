@@ -119,7 +119,7 @@ export function useCashVoucherStore<TSelected = CashVoucherStoreState>(
       });
     },
     onError: () => {
-      toast.error("Could not save disbursement transaction. Please try again.");
+      toast.error("Could not save Cash Voucher. Please try again.");
     },
   });
 
@@ -131,7 +131,7 @@ export function useCashVoucherStore<TSelected = CashVoucherStoreState>(
       );
     },
     onError: () => {
-      toast.error("Could not update disbursement transaction. Please try again.");
+      toast.error("Could not update Cash Voucher. Please try again.");
     },
   });
 
@@ -142,7 +142,7 @@ export function useCashVoucherStore<TSelected = CashVoucherStoreState>(
       toast.success("Cash Voucher Created.");
     },
     onError: () => {
-      toast.error("Could not create cash voucher. Please try again.");
+      toast.error("Could not create Cash Voucher. Please try again.");
     },
   });
 
@@ -153,7 +153,7 @@ export function useCashVoucherStore<TSelected = CashVoucherStoreState>(
       toast.success("Cash Voucher Updated.");
     },
     onError: () => {
-      toast.error("Could not update cash voucher. Please try again.");
+      toast.error("Could not update Cash Voucher. Please try again.");
     },
   });
 
@@ -164,7 +164,7 @@ export function useCashVoucherStore<TSelected = CashVoucherStoreState>(
       toast.success("Cash Voucher Deleted.");
     },
     onError: () => {
-      toast.error("Could not delete cash voucher. Please try again.");
+      toast.error("Could not delete Cash Voucher. Please try again.");
     },
   });
 

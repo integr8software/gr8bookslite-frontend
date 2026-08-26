@@ -154,7 +154,7 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
     const nextErrors = status === RevolvingFundReplenishmentStatuses.draft ? {} : validateRevolvingFundReplenishmentForm(values);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) {
-      toast.error("Please fix the highlighted revolving fund replenishment fields.");
+      toast.error("Please fix the highlighted Revolving Fund Replenishment fields.");
       isSubmittingRef.current = false;
       setIsSubmitting(false);
       releaseSubmitLock();
@@ -174,7 +174,7 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
       options.onSaved?.();
       return true;
     } catch {
-      toast.error("Could not save the revolving fund replenishment. Please try again.");
+      toast.error("Could not save the Revolving Fund Replenishment. Please try again.");
       isSubmittingRef.current = false;
       setIsSubmitting(false);
       releaseSubmitLock();
@@ -194,10 +194,25 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
       toast.success(`Revolving Fund Replenishment Marked as ${status}.`);
       return true;
     } catch {
-      toast.error("Could not update the revolving fund replenishment. Please try again.");
+      toast.error("Could not update the Revolving Fund Replenishment. Please try again.");
       releaseActionLock();
       return false;
     }
+  }
+
+  function validate(status: RevolvingFundReplenishmentStatus = RevolvingFundReplenishmentStatuses.forApproval): boolean {
+    if (isReadonly || isSubmittingRef.current) return false;
+    if (mode === "edit" && !isDirty) {
+      toast.error("No changes to save.");
+      return false;
+    }
+    const nextErrors = status === RevolvingFundReplenishmentStatuses.draft ? {} : validateRevolvingFundReplenishmentForm(values);
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) {
+      toast.error("Please fix the highlighted Revolving Fund Replenishment fields.");
+      return false;
+    }
+    return true;
   }
 
   return {
@@ -228,6 +243,7 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
     updateEntry,
     updateField,
     updateStatus,
+    validate,
     values,
   };
 }

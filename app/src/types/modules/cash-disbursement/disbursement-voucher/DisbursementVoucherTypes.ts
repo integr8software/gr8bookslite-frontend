@@ -282,8 +282,22 @@ export type DisbursementVoucherAccountingGridSession = {
   values: DisbursementVoucherFormValues;
 };
 
+export type DisbursementVoucherPaymentErrorField =
+  | "bankAccountCode"
+  | "checkDate"
+  | "checkNo"
+  | "payee"
+  | "transferAccountNo"
+  | "transferToBank";
+
 export type DisbursementVoucherFormErrors = Partial<
-  Record<keyof Omit<DisbursementVoucherFormValues, "lineEntries" | "attachments"> | "lineEntries" | "entryDraft", string>
+  Record<
+    | keyof Omit<DisbursementVoucherFormValues, "lineEntries" | "attachments">
+    | DisbursementVoucherPaymentErrorField
+    | "lineEntries"
+    | "entryDraft",
+    string
+  >
 >;
 
 export type DisbursementVoucherCopyFromRecord = {
@@ -344,6 +358,7 @@ export type DisbursementVoucherDetailsFormProps = {
 export type DisbursementVoucherPaymentFieldsProps = {
   bankAccounts: DisbursementVoucherBankAccount[];
   canAddBankAccount: boolean;
+  errors: DisbursementVoucherFormErrors;
   isMultiCheckNumber: boolean;
   isReadonly: boolean;
   paymentType: string;

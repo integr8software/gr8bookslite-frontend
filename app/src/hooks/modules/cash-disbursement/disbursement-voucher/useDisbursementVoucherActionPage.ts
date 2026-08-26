@@ -7,6 +7,7 @@ import {
   DisbursementVoucherBankAccounts,
   DisbursementVoucherCopyFromRecords,
   DisbursementVoucherDefaultAccounts,
+  createDisbursementVoucherPaymentTypeRecords,
   applyCopyFromRecordsToDisbursementVoucherForm,
   createBlankDisbursementLineEntry,
   createDisbursementTransactionFromForm,
@@ -111,6 +112,10 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   const bankMasterfileStore = useBankMasterfileStore();
   const defaultAccountStore = useDefaultAccountStore();
   const paymentTypeStore = usePaymentTypeStore();
+  const paymentTypeRecords = useMemo(
+    () => createDisbursementVoucherPaymentTypeRecords(paymentTypeStore.paymentTypes),
+    [paymentTypeStore.paymentTypes],
+  );
   const partyStore = usePartyManagementStore();
   const responsibilityCenterStore = useResponsibilityCenterStore();
   const bankAccounts = DisbursementVoucherBankAccounts;
@@ -122,7 +127,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   const totalDebit = useMemo(() => values.lineEntries.reduce((sum, entry) => sum + entry.debit, 0), [values.lineEntries]);
   const totalCredit = useMemo(() => values.lineEntries.reduce((sum, entry) => sum + entry.credit, 0), [values.lineEntries]);
   const selectedBankAccount = bankAccounts.find((account) => account.accountCode === values.paymentDetails.bankAccountCode) ?? null;
-  const selectedPaymentTypeRecord = paymentTypeStore.paymentTypes.find((record) => record.paymentType === values.paymentMethod) ?? null;
+  const selectedPaymentTypeRecord = paymentTypeRecords.find((record) => record.paymentType === values.paymentMethod) ?? null;
   const routePaymentMethod = existingVoucher?.paymentMethod ?? selectedTransaction?.paymentMethod ?? "";
   const isCashVoucherRoute = (mode !== "add" || Boolean(routeTransactionId)) && routePaymentMethod === "Cash";
   const isRecordMissing = (!selectedTransaction && mode !== "add") || (mode === "edit" && !existingVoucher) || isCashVoucherRoute;
@@ -192,6 +197,17 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     updateField("paymentDetails", {
       ...values.paymentDetails,
       ...nextDetails,
+    });
+    setErrors((current) => {
+      const nextErrors = { ...current };
+
+      for (const field of Object.keys(nextDetails) as Array<keyof typeof nextDetails>) {
+        if (field in nextErrors) {
+          delete nextErrors[field as keyof typeof nextErrors];
+        }
+      }
+
+      return nextErrors;
     });
   }
 
@@ -454,8 +470,6 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
       `cash-disbursement:disbursement-voucher:submit:${mode}:${params.recordId ?? values.transactionId}`,
     );
     if (!releaseSubmitLock) return;
-    isSubmittingRef.current = true;
-    setIsSubmitting(true);
     submitLockReleaseRef.current = releaseSubmitLock;
 
     const valuesForSubmit = {
@@ -464,15 +478,15 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
       transactionId: values.transactionId.trim() || createManualDisbursementTransactionId(),
     };
     const shouldValidate = status !== DisbursementVoucherStatuses.draft;
-    const detailsErrors = shouldValidate ? validateDisbursementVoucherDetails(valuesForSubmit) : {};
+    const detailsErrors = shouldValidate
+      ? validateDisbursementVoucherDetails(valuesForSubmit, selectedPaymentTypeRecord)
+      : {};
     const entryErrors = shouldValidate ? validateDisbursementVoucherEntries(valuesForSubmit) : {};
     const nextErrors = { ...detailsErrors, ...entryErrors };
 
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
       toast.error("Please Fill Up the Required Fields!");
-      isSubmittingRef.current = false;
-      setIsSubmitting(false);
       submitLockReleaseRef.current = null;
       releaseSubmitLock();
       return;
@@ -484,9 +498,12 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   }
 
   function confirmDisbursementVoucherSubmit() {
-    if (!pendingSubmitValues) {
+    if (!pendingSubmitValues || isSubmittingRef.current) {
       return;
     }
+
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
 
     try {
       if (mode === "edit" && existingVoucher) {
@@ -502,7 +519,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
       submitLockReleaseRef.current = null;
       router.push(returnLink);
     } catch {
-      toast.error("Could not save the disbursement voucher. Please try again.");
+      toast.error("Could not save the Disbursement Voucher. Please try again.");
       setPendingSubmitValues(null);
       isSubmittingRef.current = false;
       setIsSubmitting(false);
@@ -548,7 +565,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
       }
       updateTransaction({ ...selectedTransaction!, status, updatedBy: "Current User", updatedAt });
     } catch {
-      toast.error("Could not update the disbursement voucher. Please try again.");
+      toast.error("Could not update the Disbursement Voucher. Please try again.");
       releaseActionLock();
     }
   }
@@ -627,6 +644,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     mode,
     partyStore,
     paymentTypeStore,
+    paymentTypeRecords,
     responsibilityCenterStore,
     returnLink: isRecordMissing ? DisbursementVoucherLink : returnLink,
     selectedBankAccount,

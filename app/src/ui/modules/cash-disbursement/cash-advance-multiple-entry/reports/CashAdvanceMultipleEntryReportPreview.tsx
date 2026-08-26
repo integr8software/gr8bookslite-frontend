@@ -61,7 +61,7 @@ function CashAdvanceMultipleEntryReportDocument({
         <div className="grid grid-cols-[1fr_18rem] items-end border-y-2 border-black px-3 py-1">
           <h2 className="text-2xl font-black uppercase tracking-tight">Cash Advance Multiple Entry</h2>
           <p className="font-bold">
-            CAME Date: <span className="font-normal">{formatCompactDate(values.documentDate)}</span>
+            Document Date: <span className="font-normal">{formatCompactDate(values.documentDate)}</span>
           </p>
         </div>
 

@@ -179,7 +179,7 @@ export function PettyCashFundReplenishmentDetailsFields({
             value={page.values.documentDate}
             isReadonly={page.isReadonly}
             isRequired
-            label="PCFR Date"
+            label="Document Date"
             error={page.errors.documentDate}
             type="date"
             onValueChange={(value) => page.updateField("documentDate", value)}

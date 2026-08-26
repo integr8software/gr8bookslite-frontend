@@ -17,6 +17,7 @@ import type {
   DisbursementVoucherRecord,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import type { DefaultAccount } from "@/app/src/types/modules/financial-maintenance/default-account/DefaultAccountTypes";
+import type { PaymentTypeRecord } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import {
   DisbursementVoucherRecordStorageKey,
@@ -34,6 +35,28 @@ const InputVatAccount = {
   accountCode: "2010002011",
   accountName: "Input VAT",
 } as const;
+
+export const DisbursementVoucherMockPaymentTypes: PaymentTypeRecord[] = [
+  {
+    description: "Debit memo payment for disbursement voucher testing.",
+    id: "disbursement-voucher-mock-debit-memo",
+    paymentType: "Debit Memo",
+    sortOrder: 30,
+    status: "Active",
+    type: "Debit Memo",
+  },
+];
+
+export function createDisbursementVoucherPaymentTypeRecords(paymentTypes: PaymentTypeRecord[]) {
+  const existingPaymentTypes = new Set(paymentTypes.map((record) => record.paymentType.trim().toLowerCase()));
+
+  return [
+    ...paymentTypes,
+    ...DisbursementVoucherMockPaymentTypes.filter(
+      (record) => !existingPaymentTypes.has(record.paymentType.trim().toLowerCase()),
+    ),
+  ];
+}
 
 const ExpandedWithholdingTaxAccount = {
   accountCode: "2010002002",

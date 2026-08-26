@@ -61,7 +61,7 @@ export function CashVoucherActionHeader({
     mode === "view"
       ? "Review the transaction source and choose whether to create or update a voucher."
       : "Complete the voucher header and accounting entries on one page before saving.";
-  const submitDialogCopy = pendingSubmitStatus ? getCashVoucherSubmitDialogCopy(mode, pendingSubmitStatus) : null;
+  const submitDialogCopy = pendingSubmitStatus ? getCashVoucherSubmitDialogCopy(mode, pendingSubmitStatus, recordLabel) : null;
   const statusDialogCopy = statusToConfirm
     ? getCashVoucherStatusDialogCopy(statusToConfirm, recordLabel, voucher?.status ?? transaction?.status)
     : null;
@@ -113,7 +113,7 @@ export function CashVoucherActionHeader({
                 ) : null}
                 <ModuleActionButton
                   disabled={isSubmitting}
-                  label={isSubmitting ? "Saving..." : mode === "edit" ? "Update" : "Save"}
+                  label={mode === "edit" ? "Update" : "Save"}
                   onAction={onSubmit}
                   menuItems={
                     mode === "add" && onSaveDraft
@@ -137,8 +137,9 @@ export function CashVoucherActionHeader({
           title={submitDialogCopy.title}
           description={submitDialogCopy.description}
           confirmLabel={submitDialogCopy.confirmLabel}
-          cancelLabel="Continue Editing"
+          cancelLabel="Cancel"
           iconTone={submitDialogCopy.iconTone}
+          isPending={isSubmitting}
           pendingLabel={submitDialogCopy.pendingLabel}
           tone="default"
           onCancel={onCancelSubmit}

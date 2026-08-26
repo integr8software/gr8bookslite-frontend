@@ -24,7 +24,7 @@ function createPdfDefinition(values: AdvancesToSuppliersFormValues): TDocumentDe
       {
         columns: [
           { text: [{ text: "Party: ", bold: true }, values.partyName] },
-          { text: [{ text: "ATS Date: ", bold: true }, formatDate(values.documentDate)] },
+          { text: [{ text: "Document Date: ", bold: true }, formatDate(values.documentDate)] },
         ],
         margin: [0, 0, 0, 12],
       },

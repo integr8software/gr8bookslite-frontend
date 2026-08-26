@@ -19,7 +19,7 @@ export const RevolvingFundReplenishmentPaginationStorageKey = "cash-disbursement
 export const RevolvingFundReplenishmentTransactionPrefix = "RFR";
 export const RevolvingFundReplenishmentConfirmationDialogTitles: Record<RevolvingFundReplenishmentConfirmationAction, string> = {
   save: "Save Revolving Fund Replenishment?",
-  draft: "Save as Draft?",
+  draft: "Save Revolving Fund Replenishment as Draft?",
   approve: "Approve Revolving Fund Replenishment?",
   disapprove: "Disapprove Revolving Fund Replenishment?",
   cancel: "Cancel Revolving Fund Replenishment?",
@@ -33,7 +33,7 @@ export const RevolvingFundReplenishmentConfirmationDialogConfirmLabels: Record<R
 };
 export const RevolvingFundReplenishmentColumnLabels = {
   transactionNo: "Fund Replenishment No.",
-  documentDate: "RFR Date",
+  documentDate: "Document Date",
   partyCode: "Party Code",
   partyName: "Party Name",
   accountCode: "Default Account Code",
@@ -194,5 +194,9 @@ export const RevolvingFundReplenishmentResponsibilityCenterOptions: AppAdvancedD
 ];
 
 export function canEditRevolvingFundReplenishment(status: RevolvingFundReplenishmentStatus) {
-  return ["Draft", "For Approval", "Disapproved"].includes(status);
+  return (
+    status === RevolvingFundReplenishmentStatuses.draft ||
+    status === RevolvingFundReplenishmentStatuses.forApproval ||
+    status === RevolvingFundReplenishmentStatuses.disapproved
+  );
 }

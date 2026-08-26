@@ -19,7 +19,7 @@ export const PettyCashFundTransactionPrefix = "PCF";
 export const PettyCashFundCopyFromSources = ["Petty Cash Voucher"] as const;
 export const PettyCashFundColumnLabels = {
   transactionNo: "Fund No.",
-  documentDate: "PCF Date",
+  documentDate: "Document Date",
   partyCode: "Party Code",
   partyName: "Party Name",
   accountCode: "Default Account Code",
@@ -50,7 +50,7 @@ export const PettyCashFundStatuses = {
 } as const;
 export const PettyCashFundConfirmationDialogTitles: Record<PettyCashFundConfirmationAction, string> = {
   save: "Save Petty Cash Fund?",
-  draft: "Save as Draft?",
+  draft: "Save Petty Cash Fund as Draft?",
   approve: "Approve Petty Cash Fund?",
   disapprove: "Disapprove Petty Cash Fund?",
   cancel: "Cancel Petty Cash Fund?",

@@ -81,9 +81,26 @@ export function PettyCashFundActionHeader({ onPreview, page }: { onPreview: () =
             {page.mode !== "view" ? (
               <ModuleActionButton
                 disabled={page.isSubmitting}
-                label={page.isSubmitting ? "Saving..." : page.mode === "edit" ? "Update" : "Save"}
-                onAction={() => setConfirmation("save")}
-                menuItems={page.mode === "add" ? [{ label: "Save As Draft", onSelect: () => setConfirmation("draft") }] : []}
+                label={page.mode === "edit" ? "Update" : "Save"}
+                onAction={() => {
+                  if (page.validate(PettyCashFundStatuses.forApproval)) {
+                    setConfirmation("save");
+                  }
+                }}
+                menuItems={
+                  page.mode === "add"
+                    ? [
+                        {
+                          label: "Save As Draft",
+                          onSelect: () => {
+                            if (page.validate(PettyCashFundStatuses.draft)) {
+                              setConfirmation("draft");
+                            }
+                          },
+                        },
+                      ]
+                    : []
+                }
               />
             ) : null}
           </>
@@ -92,11 +109,33 @@ export function PettyCashFundActionHeader({ onPreview, page }: { onPreview: () =
       {confirmation ? (
         <AppDialog
           isOpen
-          title={PettyCashFundConfirmationDialogTitles[confirmation]}
-          description={`This will ${confirmation === "save" ? "save and submit" : confirmation} ${transactionNo}.`}
-          confirmLabel={PettyCashFundConfirmationDialogConfirmLabels[confirmation]}
+          title={
+            confirmation === "save" && page.mode === "edit"
+              ? "Update Petty Cash Fund?"
+              : PettyCashFundConfirmationDialogTitles[confirmation]
+          }
+          description={
+            confirmation === "save"
+              ? page.mode === "edit"
+                ? `This will update ${transactionNo}.`
+                : `This will save and submit ${transactionNo}.`
+              : confirmation === "draft"
+                ? `This will save ${transactionNo} as draft.`
+                : confirmation === "approve"
+                  ? `This will approve ${transactionNo}.`
+                  : confirmation === "disapprove"
+                    ? `This will mark ${transactionNo} as disapproved.`
+                    : `This will mark ${transactionNo} as cancelled.`
+          }
+          confirmLabel={
+            confirmation === "save" && page.mode === "edit"
+              ? "Update"
+              : PettyCashFundConfirmationDialogConfirmLabels[confirmation]
+          }
+          cancelLabel="Cancel"
           iconTone={confirmation === "save" ? (page.mode === "edit" ? "update" : "save") : confirmation === "draft" ? "save" : undefined}
-          pendingLabel="Saving..."
+          isPending={page.isSubmitting}
+          pendingLabel={confirmation === "save" && page.mode === "edit" ? "Updating..." : "Saving..."}
           tone={
             confirmation === "approve"
               ? "success"
@@ -108,12 +147,22 @@ export function PettyCashFundActionHeader({ onPreview, page }: { onPreview: () =
           }
           onCancel={() => setConfirmation(null)}
           onConfirm={() => {
-            if (confirmation === "save") page.save(PettyCashFundStatuses.forApproval);
-            else if (confirmation === "draft") page.save(PettyCashFundStatuses.draft);
-            else if (confirmation === "approve") page.updateStatus(PettyCashFundStatuses.posted);
-            else if (confirmation === "disapprove") page.updateStatus(PettyCashFundStatuses.disapproved);
-            else page.updateStatus(PettyCashFundStatuses.cancelled);
-            setConfirmation(null);
+            if (confirmation === "save") {
+              const ok = page.save(PettyCashFundStatuses.forApproval);
+              if (ok) setConfirmation(null);
+            } else if (confirmation === "draft") {
+              const ok = page.save(PettyCashFundStatuses.draft);
+              if (ok) setConfirmation(null);
+            } else if (confirmation === "approve") {
+              const ok = page.updateStatus(PettyCashFundStatuses.posted);
+              if (ok) setConfirmation(null);
+            } else if (confirmation === "disapprove") {
+              const ok = page.updateStatus(PettyCashFundStatuses.disapproved);
+              if (ok) setConfirmation(null);
+            } else {
+              const ok = page.updateStatus(PettyCashFundStatuses.cancelled);
+              if (ok) setConfirmation(null);
+            }
           }}
         />
       ) : null}

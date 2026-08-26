@@ -35,7 +35,7 @@ export function RevolvingFundReplenishmentReportPreview({
             <dd className="mt-1 font-semibold">{page.values.partyName}</dd>
           </div>
           <div>
-            <dt className="text-xs font-semibold uppercase text-darknavy/45">RFR Date</dt>
+            <dt className="text-xs font-semibold uppercase text-darknavy/45">Document Date</dt>
             <dd className="mt-1 font-semibold">{formatDate(page.values.documentDate)}</dd>
           </div>
           <div>

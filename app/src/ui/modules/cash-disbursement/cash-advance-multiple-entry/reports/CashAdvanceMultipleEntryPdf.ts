@@ -100,7 +100,7 @@ function createCashAdvanceMultipleEntryPdfDefinition(
       {
         columns: [
           { text: [{ text: "Party Name: ", bold: true }, values.partyName || "-"] },
-          { text: [{ text: "CAME Date: ", bold: true }, formatDate(values.documentDate)] },
+          { text: [{ text: "Document Date: ", bold: true }, formatDate(values.documentDate)] },
         ],
         margin: [0, 0, 0, 8],
       },

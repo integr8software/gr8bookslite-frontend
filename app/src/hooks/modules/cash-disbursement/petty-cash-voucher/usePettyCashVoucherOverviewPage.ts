@@ -53,7 +53,7 @@ export function usePettyCashVoucherOverviewPage() {
       toast.success(`Petty Cash Voucher Marked as ${status}.`);
     },
     onError: () => {
-      toast.error("Could not update the voucher status. Please try again.");
+      toast.error("Could not update the Petty Cash Voucher status. Please try again.");
     },
   });
 

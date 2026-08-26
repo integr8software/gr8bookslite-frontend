@@ -175,7 +175,7 @@ export function RevolvingFundDetailsFields({
           <TransactionTextField
             value={page.values.documentDate}
             isReadonly={page.isReadonly}
-            label="RF Date"
+            label="Document Date"
             error={page.errors.documentDate}
             type="date"
             onValueChange={(value) => page.updateField("documentDate", value)}

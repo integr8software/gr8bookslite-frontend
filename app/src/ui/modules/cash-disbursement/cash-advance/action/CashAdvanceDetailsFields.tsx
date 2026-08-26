@@ -410,7 +410,7 @@ function CashAdvancePrimaryFields({
           value={form.values.documentDate}
           isReadonly={isReadonly}
           isRequired
-          label="CA Date"
+          label="Document Date"
           type="date"
           onValueChange={(value) => form.updateField("documentDate", value)}
         />

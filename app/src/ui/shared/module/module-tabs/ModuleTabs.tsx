@@ -4,6 +4,7 @@ import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 export type ModuleTabItem<TabId extends string> = {
 	badge?: number;
+	hasError?: boolean;
 	id: TabId;
 	label: string;
 };
@@ -44,6 +45,7 @@ export function ModuleTabs<TabId extends string>({
 							type="button"
 							role="tab"
 							aria-selected={isActive}
+							data-has-error={tab.hasError || undefined}
 							onClick={() => onTabChange(tab.id)}
 							className={joinClasses(
 								"inline-flex items-center gap-2 px-4 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/25",
@@ -58,6 +60,15 @@ export function ModuleTabs<TabId extends string>({
 							)}
 						>
 							<span>{tab.label}</span>
+							{tab.hasError ? (
+								<span
+									className="text-base font-bold text-coralpink"
+									title="Contains validation errors"
+								>
+									<span aria-hidden="true">*</span>
+									<span className="sr-only"> Contains validation errors</span>
+								</span>
+							) : null}
 							{tab.badge ? (
 								<span
 									className={joinClasses(

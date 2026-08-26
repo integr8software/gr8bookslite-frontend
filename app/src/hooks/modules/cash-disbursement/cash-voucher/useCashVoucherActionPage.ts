@@ -369,8 +369,6 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
       `cash-disbursement:cash-voucher:submit:${mode}:${params.recordId ?? values.transactionId}`,
     );
     if (!releaseSubmitLock) return;
-    isSubmittingRef.current = true;
-    setIsSubmitting(true);
     submitLockReleaseRef.current = releaseSubmitLock;
 
     const valuesForSubmit = {
@@ -386,8 +384,6 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
       toast.error("Please Fill Up the Required Fields!");
-      isSubmittingRef.current = false;
-      setIsSubmitting(false);
       submitLockReleaseRef.current = null;
       releaseSubmitLock();
       return;
@@ -399,9 +395,12 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   }
 
   function confirmCashVoucherSubmit() {
-    if (!pendingSubmitValues) {
+    if (!pendingSubmitValues || isSubmittingRef.current) {
       return;
     }
+
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
 
     try {
       if (mode === "edit" && existingVoucher) {
@@ -417,7 +416,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
       submitLockReleaseRef.current = null;
       router.push(returnLink);
     } catch {
-      toast.error("Could not save the cash voucher. Please try again.");
+      toast.error("Could not save the Cash Voucher. Please try again.");
       setPendingSubmitValues(null);
       isSubmittingRef.current = false;
       setIsSubmitting(false);
@@ -463,7 +462,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
       }
       updateTransaction({ ...selectedTransaction!, status, updatedBy: "Current User", updatedAt });
     } catch {
-      toast.error("Could not update the cash voucher. Please try again.");
+      toast.error("Could not update the Cash Voucher. Please try again.");
       releaseActionLock();
     }
   }

@@ -19,7 +19,7 @@ export const PettyCashFundReplenishmentPaginationStorageKey = "cash-disbursement
 export const PettyCashFundReplenishmentTransactionPrefix = "PCFR";
 export const PettyCashFundReplenishmentConfirmationDialogTitles: Record<PettyCashFundReplenishmentConfirmationAction, string> = {
   save: "Save Petty Cash Fund Replenishment?",
-  draft: "Save as Draft?",
+  draft: "Save Petty Cash Fund Replenishment as Draft?",
   approve: "Approve Petty Cash Fund Replenishment?",
   disapprove: "Disapprove Petty Cash Fund Replenishment?",
   cancel: "Cancel Petty Cash Fund Replenishment?",
@@ -33,7 +33,7 @@ export const PettyCashFundReplenishmentConfirmationDialogConfirmLabels: Record<P
 };
 export const PettyCashFundReplenishmentColumnLabels = {
   transactionNo: "Fund Replenishment No.",
-  documentDate: "PCFR Date",
+  documentDate: "Document Date",
   partyCode: "Party Code",
   partyName: "Party Name",
   accountCode: "Default Account Code",
@@ -194,5 +194,9 @@ export const PettyCashFundReplenishmentResponsibilityCenterOptions: AppAdvancedD
 ];
 
 export function canEditPettyCashFundReplenishment(status: PettyCashFundReplenishmentStatus) {
-  return ["Draft", "For Approval", "Disapproved"].includes(status);
+  return (
+    status === PettyCashFundReplenishmentStatuses.draft ||
+    status === PettyCashFundReplenishmentStatuses.forApproval ||
+    status === PettyCashFundReplenishmentStatuses.disapproved
+  );
 }

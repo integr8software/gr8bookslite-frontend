@@ -241,7 +241,7 @@ export function PettyCashVoucherDetailsFields({
             error={page.errors.documentDate}
             isReadonly={page.isReadonly}
             isRequired
-            label="PCV Date"
+            label="Document Date"
             onValueChange={(value) => page.updateField("documentDate", value)}
             type="date"
           />

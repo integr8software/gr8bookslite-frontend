@@ -197,7 +197,7 @@ export function useCashAdvanceMultipleEntryActionForm(
         : validateCashAdvanceMultipleEntryForm(nextValues);
 
     if (!validation.isValid) {
-      toast.error(validation.message ?? "Review the cash advance multiple entry details.");
+      toast.error(validation.message ?? "Review the Cash Advance Multiple Entry details.");
       isSubmittingRef.current = false;
       setIsSubmitting(false);
       releaseSubmitLock();
@@ -215,7 +215,7 @@ export function useCashAdvanceMultipleEntryActionForm(
       onSaved?.(nextRecord);
       return true;
     } catch {
-      toast.error("Could not save the cash advance multiple entry. Please try again.");
+      toast.error("Could not save the Cash Advance Multiple Entry. Please try again.");
       isSubmittingRef.current = false;
       setIsSubmitting(false);
       releaseSubmitLock();
@@ -249,9 +249,30 @@ export function useCashAdvanceMultipleEntryActionForm(
       setValues(nextValues);
       toast.success(`Cash Advance Multiple Entry Marked as ${status}.`);
     } catch {
-      toast.error("Could not update the cash advance multiple entry. Please try again.");
+      toast.error("Could not update the Cash Advance Multiple Entry. Please try again.");
       releaseActionLock();
     }
+  }
+
+  function validateEntry(status: CashAdvanceStatus = CashAdvanceMultipleEntryStatuses.forApproval): boolean {
+    if (mode === "view" || isSubmittingRef.current) return false;
+    if (mode === "edit" && !isDirty) {
+      toast.error("No changes to save.");
+      return false;
+    }
+    const nextValues = { ...values, status };
+    const balanceValidation = validateCashAdvanceMultipleEntryAmountsWithinBalances(nextValues);
+    const validation = !balanceValidation.isValid
+      ? balanceValidation
+      : status === CashAdvanceMultipleEntryStatuses.draft
+        ? { isValid: true, message: null }
+        : validateCashAdvanceMultipleEntryForm(nextValues);
+
+    if (!validation.isValid) {
+      toast.error(validation.message ?? "Review the Cash Advance Multiple Entry details.");
+      return false;
+    }
+    return true;
   }
 
   return {
@@ -271,6 +292,7 @@ export function useCashAdvanceMultipleEntryActionForm(
     updateField,
     updateCurrency,
     updateItems,
+    validateEntry,
     values,
   };
 }
@@ -336,9 +358,9 @@ export function useCashAdvanceMultipleEntryTable(records: CashAdvanceMultipleEnt
       {
         accessorKey: "documentDate",
         id: "documentDate",
-        header: "CAME Date",
+        header: "Document Date",
         size: CashAdvanceMultipleEntryOverviewColumnWidths.documentDate,
-        meta: { label: "CAME Date" },
+        meta: { label: "Document Date" },
       },
       {
         accessorKey: "partyCode",

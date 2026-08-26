@@ -267,6 +267,21 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
     }
   }
 
+  function validate(status: AdvancesToSuppliersStatus = AdvancesToSuppliersStatuses.forApproval): boolean {
+    if (isReadonly || isSubmittingRef.current) return false;
+    if (mode === "edit" && !isDirty) {
+      toast.error("No changes to save.");
+      return false;
+    }
+    const nextErrors = status === AdvancesToSuppliersStatuses.draft ? {} : validateAdvancesToSuppliersForm(values);
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) {
+      toast.error("Please fix the highlighted Advances to Suppliers fields.");
+      return false;
+    }
+    return true;
+  }
+
   return {
     discardDraft: draft.discardDraft,
     hasDiscardableChanges: isDirty,
@@ -289,6 +304,7 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
     copyFromPurchaseOrder,
     updateField,
     updateStatus,
+    validate,
     values,
   };
 }

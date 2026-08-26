@@ -1,6 +1,6 @@
 # Gr8Books Neo Frontend Transaction Map
 
-Last updated: 2026-08-25
+Last updated: 2026-08-26
 
 Use this file as the first stop before changing transactional frontend modules.
 It repeats the useful structure from `FRONTEND_MAP.md`, but narrows the guidance
@@ -440,10 +440,12 @@ to its hook. Do not call `usePathname`, inspect route strings, or define a
   the field identity or visible label with a classification name.
 - Align name/code pairs by row. For example, `Party Name` aligns with
   `Party Code`, and `Account Title` aligns with `Account Code`.
-- The Transaction column contains `[ModulePrefix] No.`, `[ModulePrefix] Date`,
-  and `Status`. Use the module's short transaction prefix for both labels; do
-  not repeat the full module name or use generic `Transaction No.` and
-  `Transaction Date` labels.
+- The Transaction column contains `[ModulePrefix] No.`, `Document Date`, and
+  `Status`. Use the module's short transaction prefix for the document number,
+  but always use `Document Date` for the transaction's primary date across
+  action forms, overview columns, previews, exports, and reports. Keep specific
+  labels such as `Check Date`, `Due Date`, or a referenced source document's
+  date only when the field represents a distinct business date.
 - Transaction number behavior depends on the module's transaction-number
   setup. When the module is configured for automatic numbering, generate the
   `[ModulePrefix] No.` value from the configured prefix plus a six-digit padded
@@ -766,6 +768,42 @@ Cancelled, and equivalent lifecycle or status-reversal actions. Undo actions
 must follow the same confirmation requirement as their forward actions. Do not
 execute the action directly from its button or menu item.
 
+### Save, Draft, and Update Confirmation AppDialog Standards
+
+To ensure complete UI consistency across all transaction modules, adhere strictly
+to the following format for Save, Save as Draft, and Update confirmation dialogs:
+
+- **Title**:
+  - Add / Save mode: `Save <Module Display Name>?` (e.g. `Save Revolving Fund?`, `Save Cash Voucher?`)
+  - Draft mode: `Save <Module Display Name> as Draft?`
+  - Edit / Update mode: `Update <Module Display Name>?`
+- **Description**:
+  - Add / Save mode: `This will save and submit <transactionNo/recordLabel>.`
+  - Draft mode: `This will save <transactionNo/recordLabel> as draft.`
+  - Edit / Update mode: `This will update <transactionNo/recordLabel>.`
+- **Confirm Button Label**:
+  - Add / Save mode: `Save and Submit`
+  - Draft mode: `Save as Draft`
+  - Edit / Update mode: `Update`
+- **Cancel Button Label**:
+  - Always `Cancel` (avoid long phrases like `Continue Working` or `Keep Current Status` to ensure clean, equal button widths).
+- **Icon Tone**:
+  - Add / Save mode: `iconTone="save"`
+  - Draft mode: `iconTone="save"`
+  - Edit / Update mode: `iconTone="update"`
+- **Button Width**:
+  - Keep standard `min-w-32` symmetrical buttons provided by `AppDialog` without custom override classes.
+
+### Loading State Placement
+
+- **Header Action Button (`ModuleActionButton`)**:
+  - The label must remain static: `mode === "edit" ? "Update" : "Save"`.
+  - Do **not** change the header button text to `"Saving..."` or `"Updating..."`.
+  - Disable the button during submission using `disabled={isSubmitting}`.
+- **AppDialog**:
+  - Apply the loading state strictly on the `AppDialog` confirm button using `isPending={isSubmitting}` and `pendingLabel={mode === "edit" ? "Updating..." : "Saving..."}`.
+  - The animated loading spinner and pending indicator appear inside the active dialog confirm button while the operation is pending.
+
 The confirmation button must preserve the initiating action's semantic color
 across every transaction domain:
 
@@ -889,6 +927,16 @@ Transactions may add more tabs when needed. When rendering tab panels, compose
 the respective `<ModuleName>[TabName]Fields.tsx` components directly in
 `<ModuleName>ActionPage.tsx`. Do not create intermediate `<ModuleName><TabName>Tab.tsx`
 wrapper files.
+
+When an action page has more than the two standard Details and File Attachments
+tabs, use the shared `ModuleTabs` `hasError` item state to show a `*` only while
+the tab owns an active field, row, cross-field, or upload validation message.
+Do not show the tab indicator initially merely because the tab contains
+required fields. Map each form-error key to its owning tab so an error on a
+hidden panel is discoverable after validation, and clear `hasError` as soon as
+all errors owned by that tab are fixed. The shared component supplies the
+visible marker, error styling, tooltip, and screen-reader copy, so feature code
+must not append `*` directly to tab labels.
 
 ### Currency And Exchange Rate
 

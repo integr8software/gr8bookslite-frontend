@@ -189,7 +189,7 @@ export function PettyCashFundDetailsFields({
           <TransactionTextField
             value={page.values.documentDate}
             isReadonly={page.isReadonly}
-            label="PCF Date"
+            label="Document Date"
             error={page.errors.documentDate}
             type="date"
             onValueChange={(value) => page.updateField("documentDate", value)}

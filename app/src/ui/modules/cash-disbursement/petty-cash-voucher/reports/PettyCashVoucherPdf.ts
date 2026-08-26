@@ -26,7 +26,7 @@ function createPettyCashVoucherPdfDefinition(values: PettyCashVoucherFormValues)
       {
         columns: [
           { text: [{ text: "Party: ", bold: true }, `${values.partyName || "-"} (${values.partyCode || "-"})`] },
-          { text: [{ text: "PCV Date: ", bold: true }, formatDate(values.documentDate)] },
+          { text: [{ text: "Document Date: ", bold: true }, formatDate(values.documentDate)] },
         ],
         margin: [0, 0, 0, 10],
       },

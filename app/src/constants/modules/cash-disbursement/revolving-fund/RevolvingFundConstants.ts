@@ -19,7 +19,7 @@ export const RevolvingFundTransactionPrefix = "RF";
 export const RevolvingFundCopyFromSources = ["Disbursement Voucher"] as const;
 export const RevolvingFundColumnLabels = {
   transactionNo: "Fund No.",
-  documentDate: "RF Date",
+  documentDate: "Document Date",
   partyCode: "Party Code",
   partyName: "Party Name",
   accountCode: "Default Account Code",
@@ -50,7 +50,7 @@ export const RevolvingFundStatuses = {
 } as const;
 export const RevolvingFundConfirmationDialogTitles: Record<RevolvingFundConfirmationAction, string> = {
   save: "Save Revolving Fund?",
-  draft: "Save as Draft?",
+  draft: "Save Revolving Fund as Draft?",
   approve: "Approve Revolving Fund?",
   disapprove: "Disapprove Revolving Fund?",
   cancel: "Cancel Revolving Fund?",

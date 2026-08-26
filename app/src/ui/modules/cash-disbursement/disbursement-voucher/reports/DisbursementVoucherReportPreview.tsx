@@ -88,7 +88,7 @@ function DisbursementVoucherReportDocument({ values }: { values: DisbursementVou
           <div className="px-3 py-2">
             <h2 className="text-3xl font-black leading-none tracking-tight">DISBURSEMENT VOUCHER</h2>
           </div>
-          <MetaCell label="DV Date:" value={formatShortDateLabel(values.voucherDate)} />
+          <MetaCell label="Document Date:" value={formatShortDateLabel(values.voucherDate)} />
         </div>
 
         <div className="grid grid-cols-[1fr_20.25rem] border-t-2 border-black">

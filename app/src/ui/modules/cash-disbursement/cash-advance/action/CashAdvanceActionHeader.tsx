@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Edit3 } from "lucide-react";
 import {
   CashAdvanceLink,
+  CashAdvanceStatuses,
   canEditCashAdvanceStatus,
   getCashAdvanceEditLink,
   CashAdvanceSubmitConfirmationDialogConfirmLabels,
@@ -36,6 +37,7 @@ export function CashAdvanceActionHeader({
   onSaveDraft,
   onSubmit,
   onUpdateStatus,
+  onValidate,
   record,
 }: {
   mode: CashAdvanceActionMode;
@@ -44,9 +46,10 @@ export function CashAdvanceActionHeader({
   onBack?: () => void;
   onDiscard?: () => void;
   onPreview?: () => void;
-  onSaveDraft?: () => void;
-  onSubmit: () => void;
+  onSaveDraft?: () => boolean | void;
+  onSubmit: () => boolean | void;
   onUpdateStatus?: (status: CashAdvanceStatus) => void;
+  onValidate?: (status?: CashAdvanceStatus) => boolean;
   record?: CashAdvanceRecord | null;
 }) {
   const [submitConfirmation, setSubmitConfirmation] = useState<CashAdvanceSubmitConfirmationAction | null>(null);
@@ -101,14 +104,22 @@ export function CashAdvanceActionHeader({
             {mode === "view" ? null : (
               <ModuleActionButton
                 disabled={isSubmitting}
-                label={isSubmitting ? "Saving..." : mode === "edit" ? "Update" : "Save"}
-                onAction={() => setSubmitConfirmation("save")}
+                label={mode === "edit" ? "Update" : "Save"}
+                onAction={() => {
+                  if (onValidate ? onValidate(CashAdvanceStatuses.forApproval) : true) {
+                    setSubmitConfirmation("save");
+                  }
+                }}
                 menuItems={
                   mode === "add" && onSaveDraft
                     ? [
                         {
                           label: "Save As Draft",
-                          onSelect: () => setSubmitConfirmation("draft"),
+                          onSelect: () => {
+                            if (onValidate ? onValidate(CashAdvanceStatuses.draft) : true) {
+                              setSubmitConfirmation("draft");
+                            }
+                          },
                         },
                       ]
                     : []
@@ -121,17 +132,37 @@ export function CashAdvanceActionHeader({
       {submitConfirmation ? (
         <AppDialog
           isOpen
-          title={CashAdvanceSubmitConfirmationDialogTitles[submitConfirmation]}
-          description={`This will ${submitConfirmation === "save" ? "save and submit" : "save as draft"} ${recordLabel}.`}
-          confirmLabel={CashAdvanceSubmitConfirmationDialogConfirmLabels[submitConfirmation]}
+          title={
+            submitConfirmation === "save" && mode === "edit"
+              ? "Update Cash Advance?"
+              : CashAdvanceSubmitConfirmationDialogTitles[submitConfirmation]
+          }
+          description={
+            submitConfirmation === "save"
+              ? mode === "edit"
+                ? `This will update ${recordLabel}.`
+                : `This will save and submit ${recordLabel}.`
+              : `This will save ${recordLabel} as draft.`
+          }
+          confirmLabel={
+            submitConfirmation === "save" && mode === "edit"
+              ? "Update"
+              : CashAdvanceSubmitConfirmationDialogConfirmLabels[submitConfirmation]
+          }
+          cancelLabel="Cancel"
           iconTone={submitConfirmation === "save" ? (mode === "edit" ? "update" : "save") : "save"}
-          pendingLabel="Saving..."
+          isPending={isSubmitting}
+          pendingLabel={mode === "edit" ? "Updating..." : "Saving..."}
           tone="default"
           onCancel={() => setSubmitConfirmation(null)}
           onConfirm={() => {
-            if (submitConfirmation === "save") onSubmit();
-            else onSaveDraft?.();
-            setSubmitConfirmation(null);
+            if (submitConfirmation === "save") {
+              const ok = onSubmit();
+              if (ok !== false) setSubmitConfirmation(null);
+            } else {
+              const ok = onSaveDraft?.();
+              if (ok !== false) setSubmitConfirmation(null);
+            }
           }}
         />
       ) : null}

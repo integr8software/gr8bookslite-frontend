@@ -215,7 +215,7 @@ export function DisbursementVoucherDetailsFields({
             value={values.voucherDate}
             isReadonly={isReadonly}
             isRequired
-            label="DV Date"
+            label="Document Date"
             error={errors.voucherDate}
             type="date"
             onValueChange={(value) => onUpdateField("voucherDate", value)}
@@ -234,7 +234,11 @@ function createVoucherPaymentTypeOptions({
   paymentTypeRecords: AppPaymentTypeRecord[];
 }): AppAdvancedDropdownOption[] {
   return paymentTypeRecords
-    .filter((record) => record.status === "Active" && (record.type === "Bank Transfer" || record.type === "Check"))
+    .filter(
+      (record) =>
+        record.status === "Active" &&
+        (record.type === "Bank Transfer" || record.type === "Check" || record.type === "Debit Memo"),
+    )
     .map((record) => ({
       label: record.type,
       name: record.paymentType,

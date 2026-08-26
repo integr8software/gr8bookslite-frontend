@@ -162,7 +162,7 @@ export function usePettyCashVoucherActionPage(options: PettyCashVoucherActionPag
     setErrors(nextErrors);
 
     if (Object.keys(nextErrors).length > 0) {
-      toast.error("Please fix the highlighted voucher fields.");
+      toast.error("Please fix the highlighted Petty Cash Voucher fields.");
       isSubmittingRef.current = false;
       setIsSubmitting(false);
       releaseSubmitLock();
@@ -178,7 +178,7 @@ export function usePettyCashVoucherActionPage(options: PettyCashVoucherActionPag
       options.onSaved?.();
       return true;
     } catch {
-      toast.error("Could not save the petty cash voucher. Please try again.");
+      toast.error("Could not save the Petty Cash Voucher. Please try again.");
       isSubmittingRef.current = false;
       setIsSubmitting(false);
       releaseSubmitLock();
@@ -202,7 +202,7 @@ export function usePettyCashVoucherActionPage(options: PettyCashVoucherActionPag
       options.onSaved?.();
       return true;
     } catch {
-      toast.error("Could not save the petty cash voucher draft. Please try again.");
+      toast.error("Could not save the Petty Cash Voucher draft. Please try again.");
       isSubmittingRef.current = false;
       setIsSubmitting(false);
       releaseSubmitLock();
@@ -221,7 +221,7 @@ export function usePettyCashVoucherActionPage(options: PettyCashVoucherActionPag
       toast.success(`Petty Cash Voucher Marked as ${status}.`);
       return true;
     } catch {
-      toast.error("Could not update the petty cash voucher. Please try again.");
+      toast.error("Could not update the Petty Cash Voucher. Please try again.");
       releaseActionLock();
       return false;
     }
@@ -235,7 +235,7 @@ export function usePettyCashVoucherActionPage(options: PettyCashVoucherActionPag
     const sourceRecord = PettyCashVoucherRecords.find((record) => recordIds.includes(record.id));
 
     if (!sourceRecord) {
-      toast.error("Select a petty cash voucher to copy.");
+      toast.error("Select a Petty Cash Voucher to copy.");
       return;
     }
 
@@ -297,6 +297,21 @@ export function usePettyCashVoucherActionPage(options: PettyCashVoucherActionPag
     closeResponsibilityCenterDrawer();
   }
 
+  function validate(status: PettyCashVoucherStatus = PettyCashVoucherStatuses.forApproval): boolean {
+    if (isReadonly || isSubmittingRef.current) return false;
+    if (mode === "edit" && !isDirty) {
+      toast.error("No changes to save.");
+      return false;
+    }
+    const nextErrors = status === PettyCashVoucherStatuses.draft ? {} : validatePettyCashVoucherForm(values);
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) {
+      toast.error("Please fix the highlighted Petty Cash Voucher fields.");
+      return false;
+    }
+    return true;
+  }
+
   return {
     discardDraft: draft.discardDraft,
     hasDiscardableChanges: isDirty,
@@ -332,6 +347,7 @@ export function usePettyCashVoucherActionPage(options: PettyCashVoucherActionPag
     updateCurrency,
     updateField,
     updateVATable,
+    validate,
     values,
   };
 }

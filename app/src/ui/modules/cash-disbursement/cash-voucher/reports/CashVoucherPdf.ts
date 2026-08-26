@@ -114,7 +114,7 @@ function createTitleAndDateRow(values: CashVoucherFormValues): TableCell {
             margin: [6, 7, 0, 6],
           },
           {
-            text: [{ text: "CV Date: ", bold: true }, formatShortDateLabel(values.voucherDate)],
+            text: [{ text: "Document Date: ", bold: true }, formatShortDateLabel(values.voucherDate)],
             margin: [4, 8, 4, 4],
           },
         ],

@@ -193,7 +193,7 @@ export function AdvancesToSuppliersDetailsFields({
             value={page.values.documentDate}
             isReadonly={page.isReadonly}
             isRequired
-            label="ATS Date"
+            label="Document Date"
             error={page.errors.documentDate}
             type="date"
             onValueChange={(value) => page.updateField("documentDate", value)}

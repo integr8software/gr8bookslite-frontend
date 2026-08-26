@@ -14,15 +14,14 @@ import {
   moveEntryColumn,
   updateVisibleEntryColumns,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingEntryData";
+import { createBlankDisbursementLineEntry } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import type {
   DisbursementVoucherDetailEntryTableProps,
   ExpenseEntryColumnId,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryTypes";
 import { createDisbursementExpenseEntryColumns } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/DisbursementVoucherEntryColumns";
-import {
-  ModuleDataEntry,
-  type ModuleDataEntryColumnOption,
-} from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import { TabbedModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryTabs";
+import type { ModuleDataEntryColumnOption } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { clampColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/utils";
 import { formatAmount } from "@/app/src/utils/currency.util";
 
@@ -204,9 +203,10 @@ export function DisbursementVoucherDetailEntryTable({
   }
 
   return (
-    <ModuleDataEntry
+    <TabbedModuleDataEntry
+      addButtonLabel="Add Entry"
       title=""
-      emptyRowLabel="disbursement item"
+      emptyRowLabel="entry"
       error={errors.lineEntries}
       footerDetails={
         <span className="text-sm font-semibold text-darknavy">
@@ -219,6 +219,7 @@ export function DisbursementVoucherDetailEntryTable({
       isDraggable={!isReadonly}
       isReadonly={isReadonly}
       onAddRows={onAddEntries}
+      onClearRow={(rowId) => updateExpenseEntryFields(rowId, createBlankDisbursementLineEntry({ id: rowId }))}
       onClearRows={onClearEntries}
       onDuplicateRow={onDuplicateEntry}
       onInsertRow={onInsertEntry}

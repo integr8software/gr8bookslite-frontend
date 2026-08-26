@@ -53,6 +53,8 @@ export function createCashAdvanceMultipleEntryItemColumns({
           name={context.fieldName}
           readOnly={isReadonly}
           options={partySelectOptions}
+          placeholder="Select Party Name"
+          searchPlaceholder="Search Party Name"
           value={row.partyCode}
           addAction={!isReadonly ? { label: "Add Party Name", onClick: () => onOpenItemPartyDrawer(row.id) } : undefined}
           onChange={(nextValue) => {
@@ -79,12 +81,12 @@ export function createCashAdvanceMultipleEntryItemColumns({
       widthClassName: "w-[8.75rem]",
       widthMode: "fixed",
       renderCell: (row, _index, context) => (
-        <ModuleDataEntryInputCell
+        <ModuleDataEntryMoneyCell
           id={context.fieldId}
           name={context.fieldName}
           readOnly={isReadonly}
           value={row.amount}
-          align="right"
+          placeholder="0.00"
           onChange={(value) =>
             onUpdateEntry(row.id, {
               amount: limitCashAdvanceAmount(rows, row.id, value),
@@ -130,6 +132,8 @@ export function createCashAdvanceMultipleEntryItemColumns({
           name={context.fieldName}
           addAction={!isReadonly ? { label: "Add Responsibility Center", onClick: () => onOpenItemResponsibilityCenterDrawer(row.id) } : undefined}
           options={CashAdvanceMultipleEntryResponsibilityCenterOptions}
+          placeholder="Select Responsibility Center"
+          searchPlaceholder="Search Responsibility Center"
           readOnly={isReadonly}
           value={row.responsibilityCenter}
           onChange={(value) => onUpdateEntry(row.id, { responsibilityCenter: value })}
@@ -148,6 +152,7 @@ export function createCashAdvanceMultipleEntryItemColumns({
           name={context.fieldName}
           readOnly={isReadonly}
           value={row.remarks}
+          placeholder="Enter Remarks"
           onChange={(value) => onUpdateEntry(row.id, { remarks: value })}
         />
       ),
@@ -192,6 +197,8 @@ export function createCashAdvanceMultipleEntryAccountingColumns({
           name={context.fieldName}
           readOnly={isReadonly}
           options={accountSelectOptions}
+          placeholder="Select Account Title"
+          searchPlaceholder="Search Account Title"
           value={row.accountCode}
           onChange={(nextValue) => {
             const accountCode = String(nextValue);
@@ -208,12 +215,12 @@ export function createCashAdvanceMultipleEntryAccountingColumns({
       widthClassName: "w-[8.75rem]",
       widthMode: "fixed",
       renderCell: (row, _index, context) => (
-        <ModuleDataEntryInputCell
+        <ModuleDataEntryMoneyCell
           id={context.fieldId}
           name={context.fieldName}
           readOnly={isReadonly}
           value={row.credit}
-          align="right"
+          placeholder="0.00"
           onChange={(value) => onUpdateEntry(row.id, { credit: value })}
         />
       ),
@@ -225,12 +232,12 @@ export function createCashAdvanceMultipleEntryAccountingColumns({
       widthClassName: "w-[8.75rem]",
       widthMode: "fixed",
       renderCell: (row, _index, context) => (
-        <ModuleDataEntryInputCell
+        <ModuleDataEntryMoneyCell
           id={context.fieldId}
           name={context.fieldName}
           readOnly={isReadonly}
           value={row.debit}
-          align="right"
+          placeholder="0.00"
           onChange={(value) => onUpdateEntry(row.id, { debit: value })}
         />
       ),
@@ -256,6 +263,8 @@ export function createCashAdvanceMultipleEntryAccountingColumns({
           id={context.fieldId}
           name={context.fieldName}
           options={partySelectOptions}
+          placeholder="Select Party Name"
+          searchPlaceholder="Search Party Name"
           readOnly={isReadonly}
           value={row.partyCode}
           addAction={!isReadonly ? { label: "Add Party Name", onClick: () => onOpenAccountingPartyDrawer(row.id) } : undefined}
@@ -295,6 +304,8 @@ export function createCashAdvanceMultipleEntryAccountingColumns({
           name={context.fieldName}
           addAction={!isReadonly ? { label: "Add Responsibility Center", onClick: () => onOpenAccountingResponsibilityCenterDrawer(row.id) } : undefined}
           options={responsibilityCenterOptions}
+          placeholder="Select Responsibility Center"
+          searchPlaceholder="Search Responsibility Center"
           readOnly={isReadonly}
           value={row.responsibilityCenter}
           onChange={(value) => onUpdateEntry(row.id, { responsibilityCenter: value })}
@@ -313,6 +324,7 @@ export function createCashAdvanceMultipleEntryAccountingColumns({
           name={context.fieldName}
           readOnly={isReadonly}
           value={row.remarks}
+          placeholder="Enter Remarks"
           onChange={(value) => onUpdateEntry(row.id, { remarks: value })}
         />
       ),

@@ -119,6 +119,9 @@ export type DisbursementVoucherAccountingEntryTableProps = {
   accountingColumns: Record<DisbursementEntryColumnId, ModuleDataEntryColumn<DisbursementLineEntry>>;
   accountingRows: DisbursementLineEntry[];
   errors: DisbursementVoucherFormErrors;
+  isReadonly: boolean;
+  onAddEntries: (count: number) => void;
+  onClearEntries: VoucherDataEntryProps["onClearEntries"];
   totalCredit: number;
   totalDebit: number;
   variance: number;

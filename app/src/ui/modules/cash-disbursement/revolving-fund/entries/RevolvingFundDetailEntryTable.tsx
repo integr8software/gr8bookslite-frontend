@@ -14,7 +14,7 @@ import type {
   RevolvingFundItemColumnId,
 } from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";
 import { createRevolvingFundItemColumns } from "@/app/src/ui/modules/cash-disbursement/revolving-fund/entries/RevolvingFundEntryColumns";
-import { ModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import { TabbedModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryTabs";
 import {
   buildColumnOptions,
   calculateFitColumnWidth,
@@ -93,9 +93,10 @@ export function RevolvingFundDetailEntryTable({ page }: RevolvingFundDetailEntry
   }
 
   return (
-    <ModuleDataEntry
+    <TabbedModuleDataEntry
+      addButtonLabel="Add Entry"
       title=""
-      emptyRowLabel="revolving fund item"
+      emptyRowLabel="entry"
       error={page.errors.items}
       footerDetails={
         <span className="text-sm font-semibold text-darknavy">
@@ -108,6 +109,11 @@ export function RevolvingFundDetailEntryTable({ page }: RevolvingFundDetailEntry
       isDraggable={!page.isReadonly}
       isReadonly={page.isReadonly}
       onAddRows={page.addItems}
+      onClearRow={(rowId) =>
+        page.updateItems(
+          page.values.items.map((row) => (row.id === rowId ? { ...createBlankRevolvingFundItem(), id: rowId } : row)),
+        )
+      }
       onClearRows={() => page.updateItems([createBlankRevolvingFundItem()])}
       onDuplicateRow={page.duplicateItem}
       onInsertRow={page.insertItem}

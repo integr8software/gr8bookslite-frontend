@@ -116,7 +116,11 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
   }
 
   function removeItem(rowId: string) {
-    if (values.items.length > 1) updateItems(values.items.filter((item) => item.id !== rowId));
+    if (values.items.length > 1) {
+      updateItems(values.items.filter((item) => item.id !== rowId));
+    } else {
+      updateItems([createBlankRevolvingFundItem()]);
+    }
   }
 
   function duplicateItem(rowId: string) {

@@ -1,6 +1,9 @@
 import { useMemo, useState } from "react";
 import { CashAdvanceMultipleEntryDefaultAccountingColumnIds } from "@/app/src/constants/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryConstants";
-import { formatCashAdvanceMultipleEntryAmount } from "@/app/src/data/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryData";
+import {
+  createBlankCashAdvanceMultipleEntryAccountingEntry,
+  formatCashAdvanceMultipleEntryAmount,
+} from "@/app/src/data/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryData";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import { removeCashAdvanceMultipleEntryRow } from "@/app/src/hooks/modules/cash-disbursement/cash-advance-multiple-entry/useCashAdvanceMultipleEntry";
 import type {
@@ -8,15 +11,14 @@ import type {
   CashAdvanceMultipleEntryAccountingEntryTableProps,
 } from "@/app/src/types/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryTypes";
 import { createCashAdvanceMultipleEntryAccountingColumns } from "@/app/src/ui/modules/cash-disbursement/cash-advance-multiple-entry/entries/CashAdvanceMultipleEntryEntryColumns";
-import {
-  ModuleDataEntry,
-  type ModuleDataEntryColumn,
-  type ModuleDataEntryColumnOption,
+import { TabbedModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryTabs";
+import type {
+  ModuleDataEntryColumn,
+  ModuleDataEntryColumnOption,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { reorderColumnIds, toggleVisibleColumnId } from "@/app/src/ui/shared/module/module-data-entry/entryTableState.util";
 
 export function CashAdvanceMultipleEntryAccountingEntryTable({
-  description,
   employeeOptions,
   isReadonly,
   onAddRows,
@@ -30,6 +32,7 @@ export function CashAdvanceMultipleEntryAccountingEntryTable({
     CashAdvanceMultipleEntryDefaultAccountingColumnIds,
   );
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>({});
+  const [columnLabels, setColumnLabels] = useState<Record<string, string>>({});
   const allColumns = useMemo(
     () =>
       createCashAdvanceMultipleEntryAccountingColumns({
@@ -49,8 +52,12 @@ export function CashAdvanceMultipleEntryAccountingEntryTable({
       visibleColumnIds
         .map((columnId) => allColumns[columnId])
         .filter((column): column is ModuleDataEntryColumn<CashAdvanceMultipleEntryAccountingEntry> => Boolean(column))
-        .map((column) => (columnWidths[column.id] ? { ...column, width: columnWidths[column.id] } : column)),
-    [allColumns, columnWidths, visibleColumnIds],
+        .map((column) => ({
+          ...column,
+          header: columnLabels[column.id] ?? column.header,
+          width: columnWidths[column.id] ?? column.width,
+        })),
+    [allColumns, columnLabels, columnWidths, visibleColumnIds],
   );
   const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
     () =>
@@ -58,11 +65,11 @@ export function CashAdvanceMultipleEntryAccountingEntryTable({
         id: columnId,
         isHideable: !CashAdvanceMultipleEntryDefaultAccountingColumnIds.includes(columnId),
         isVisible: visibleColumnIds.includes(columnId),
-        label: allColumns[columnId].header,
+        label: columnLabels[columnId] ?? allColumns[columnId].header,
         width: columnWidths[columnId] ?? allColumns[columnId].width,
         widthMode: allColumns[columnId].widthMode,
       })),
-    [allColumns, columnOrder, columnWidths, visibleColumnIds],
+    [allColumns, columnLabels, columnOrder, columnWidths, visibleColumnIds],
   );
   const totals = useMemo(
     () =>
@@ -78,11 +85,13 @@ export function CashAdvanceMultipleEntryAccountingEntryTable({
   const variance = Math.abs(totals.debit - totals.credit);
 
   return (
-    <ModuleDataEntry
+    <TabbedModuleDataEntry
+      addButtonLabel="Add Entry"
       columns={columns}
       columnOptions={columnOptions}
-      description={description}
-      emptyRowLabel="accounting entry"
+      canConfigureColumnsWhenReadonly
+      canManageRowsWhenReadonly={!isReadonly}
+      emptyRowLabel="entry"
       footerDetails={
         <span className={`text-sm font-semibold ${variance < 0.001 ? "text-emerald-700" : "text-coralpink"}`}>
           Variance: {formatCashAdvanceMultipleEntryAmount(variance)}
@@ -97,17 +106,31 @@ export function CashAdvanceMultipleEntryAccountingEntryTable({
       summaryRowHeader="Totals"
       title="Accounting Entries"
       onAddRows={onAddRows}
-      onClearRows={() => onRowsChange(rows.slice(0, 1))}
+      onClearRow={(rowId) =>
+        onRowsChange(
+          rows.map((row) =>
+            row.id === rowId ? { ...createBlankCashAdvanceMultipleEntryAccountingEntry(), id: rowId } : row,
+          ),
+        )
+      }
+      onClearRows={() => onRowsChange([createBlankCashAdvanceMultipleEntryAccountingEntry()])}
       onDuplicateRow={(rowId) => {
         const row = rows.find((currentRow) => currentRow.id === rowId);
         if (row) onRowsChange([...rows, { ...row, id: `came-accounting-${Date.now()}` }]);
       }}
       onInsertRow={() => undefined}
       onMoveRow={() => undefined}
-      onRemoveRow={(rowId) => onRowsChange(removeCashAdvanceMultipleEntryRow(rows, rowId))}
+      onRemoveRow={(rowId) =>
+        onRowsChange(
+          rows.length > 1
+            ? removeCashAdvanceMultipleEntryRow(rows, rowId)
+            : [createBlankCashAdvanceMultipleEntryAccountingEntry()],
+        )
+      }
       onResetColumns={() => {
         setVisibleColumnIds(CashAdvanceMultipleEntryDefaultAccountingColumnIds);
         setColumnWidths({});
+        setColumnLabels({});
       }}
       onMoveColumn={(fromColumnId, toColumnId) =>
         setVisibleColumnIds((current) => reorderColumnIds(current, fromColumnId, toColumnId))
@@ -115,7 +138,9 @@ export function CashAdvanceMultipleEntryAccountingEntryTable({
       onToggleColumnVisibility={(columnId, isVisible) =>
         setVisibleColumnIds((current) => toggleVisibleColumnId(current, columnOrder, columnId, isVisible))
       }
-      onUpdateColumnHeader={() => undefined}
+      onUpdateColumnHeader={(columnId, header) =>
+        setColumnLabels((current) => ({ ...current, [columnId]: header }))
+      }
       onUpdateColumnWidth={(columnId, width) =>
         setColumnWidths((current) => ({ ...current, [columnId]: width }))
       }

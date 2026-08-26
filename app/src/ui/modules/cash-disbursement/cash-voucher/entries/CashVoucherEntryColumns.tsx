@@ -1,4 +1,5 @@
 import { AccountingPartyFallbackValuePrefix } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherDataEntryConstants";
+import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import { syncTaxDetailsAmount } from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherData";
 import type {
   CashVoucherAccountingEntryColumnsParams,
@@ -97,6 +98,7 @@ export function createCashVoucherAccountingEntryColumns({
           id={context.fieldId}
           name={context.fieldName}
           value={entry.checkNo ?? ""}
+          placeholder={`Enter ${columnLabels.checkNo}`}
           onChange={(value) => onUpdateEntry(entry.id, "checkNo", value)}
           readOnly={isReadonly}
         />
@@ -112,6 +114,7 @@ export function createCashVoucherAccountingEntryColumns({
           id={context.fieldId}
           name={context.fieldName}
           value={entry.checkStatus ?? ""}
+          placeholder={`Enter ${columnLabels.checkStatus}`}
           onChange={(value) => onUpdateEntry(entry.id, "checkStatus", value)}
           readOnly={isReadonly}
         />
@@ -128,6 +131,7 @@ export function createCashVoucherAccountingEntryColumns({
           name={context.fieldName}
           type="date"
           value={entry.checkDate ?? ""}
+          placeholder={`Select ${columnLabels.checkDate}`}
           readOnly={isReadonly}
           onChange={(value) => onUpdateEntry(entry.id, "checkDate", value)}
         />
@@ -217,6 +221,7 @@ export function createCashVoucherAccountingEntryColumns({
           id={context.fieldId}
           name={context.fieldName}
           value={entry.refId ?? ""}
+          placeholder={`Enter ${columnLabels.refId}`}
           onChange={(value) => onUpdateEntry(entry.id, "refId", value)}
           readOnly={isReadonly}
         />
@@ -331,14 +336,16 @@ export function createCashVoucherExpenseEntryColumns({
           id={context.fieldId}
           name={context.fieldName}
           value={entry.taxDetails.grossAmount}
+          placeholder="0.00"
           readOnly={isReadonly}
-          onChange={(value) =>
+          onChange={(value) => {
+            const numValue = parseMoneyNumberInput(value);
             updateExpenseEntryFields(entry.id, {
               credit: 0,
-              debit: Number(value || 0),
-              taxDetails: syncTaxDetailsAmount(entry.taxDetails, Number(value || 0), entry.taxRate),
-            })
-          }
+              debit: numValue,
+              taxDetails: syncTaxDetailsAmount(entry.taxDetails, numValue, entry.taxRate),
+            });
+          }}
         />
       ),
     },

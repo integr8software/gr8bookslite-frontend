@@ -14,7 +14,7 @@ import type {
   PettyCashFundItemColumnId,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";
 import { createPettyCashFundItemColumns } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund/entries/PettyCashFundEntryColumns";
-import { ModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import { TabbedModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryTabs";
 import {
   buildColumnOptions,
   calculateFitColumnWidth,
@@ -93,9 +93,10 @@ export function PettyCashFundDetailEntryTable({ page }: PettyCashFundDetailEntry
   }
 
   return (
-    <ModuleDataEntry
+    <TabbedModuleDataEntry
+      addButtonLabel="Add Entry"
       title=""
-      emptyRowLabel="petty cash item"
+      emptyRowLabel="entry"
       error={page.errors.items}
       footerDetails={
         <span className="text-sm font-semibold text-darknavy">
@@ -108,6 +109,11 @@ export function PettyCashFundDetailEntryTable({ page }: PettyCashFundDetailEntry
       isDraggable={!page.isReadonly}
       isReadonly={page.isReadonly}
       onAddRows={page.addItems}
+      onClearRow={(rowId) =>
+        page.updateItems(
+          page.values.items.map((row) => (row.id === rowId ? { ...createBlankPettyCashFundItem(), id: rowId } : row)),
+        )
+      }
       onClearRows={() => page.updateItems([createBlankPettyCashFundItem()])}
       onDuplicateRow={page.duplicateItem}
       onInsertRow={page.insertItem}

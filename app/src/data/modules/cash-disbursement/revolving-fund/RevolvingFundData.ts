@@ -85,7 +85,7 @@ export function createBlankRevolvingFundItem(): RevolvingFundItem {
     remarks: "",
     amount: "",
     netAmount: "",
-    vatAmount: "0.00",
+    vatAmount: "",
     type: "",
     vatType: "",
     vatable: "False",

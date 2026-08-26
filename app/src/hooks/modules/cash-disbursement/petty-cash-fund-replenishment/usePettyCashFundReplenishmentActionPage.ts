@@ -106,6 +106,8 @@ export function usePettyCashFundReplenishmentActionPage(options: { mode: PettyCa
   function removeEntry(rowId: string) {
     if (values.entries.length > 1) {
       updateEntries(values.entries.filter((entry) => entry.id !== rowId));
+    } else {
+      updateEntries([createBlankPettyCashFundReplenishmentEntry()]);
     }
   }
 

@@ -15,6 +15,7 @@ import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-da
 import { ModuleDataEntryCheckboxCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryCheckboxCell";
 import { ModuleDataEntryDropdownCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryDropdownCell";
 import { ModuleDataEntryInputCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryInputCell";
+import { ModuleDataEntryMoneyCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryMoneyCell";
 
 export function createPettyCashFundItemColumns(
   page: PettyCashFundActionPageState,
@@ -34,6 +35,25 @@ export function createPettyCashFundItemColumns(
         type={type}
         value={String(row[id])}
         readOnly={page.isReadonly}
+        placeholder={`Enter ${labels[id]}`}
+        onChange={(value) => page.updateItem(row.id, { [id]: value })}
+      />
+    ),
+  });
+
+  const money = (id: PettyCashFundItemColumnId): ModuleDataEntryColumn<PettyCashFundItem> => ({
+    header: labels[id],
+    id,
+    width: widths[id],
+    widthMode: "fixed",
+    widthClassName: "w-auto",
+    renderCell: (row, _index, context) => (
+      <ModuleDataEntryMoneyCell
+        id={context.fieldId}
+        name={context.fieldName}
+        value={row[id]}
+        readOnly={page.isReadonly}
+        placeholder="0.00"
         onChange={(value) => page.updateItem(row.id, { [id]: value })}
       />
     ),
@@ -55,6 +75,8 @@ export function createPettyCashFundItemColumns(
         value={String(row[id])}
         readOnly={page.isReadonly}
         options={options}
+        placeholder={`Select ${labels[id]}`}
+        searchPlaceholder={`Search ${labels[id]}`}
         onChange={(value) => page.updateItem(row.id, { [id]: value })}
       />
     ),
@@ -85,14 +107,14 @@ export function createPettyCashFundItemColumns(
     orNo: text("orNo"),
     tinNo: text("tinNo"),
     remarks: text("remarks"),
-    amount: text("amount"),
-    netAmount: text("netAmount"),
-    vatAmount: text("vatAmount"),
+    amount: money("amount"),
+    netAmount: money("netAmount"),
+    vatAmount: money("vatAmount"),
     type: dropdown("type", PettyCashFundEntryTypeOptions),
     vatType: dropdown("vatType", PettyCashFundEntryVatTypeOptions),
     vatable: checkbox("vatable"),
     vatInclusive: checkbox("vatInclusive"),
-    grossAmount: text("grossAmount"),
+    grossAmount: money("grossAmount"),
     responsibilityCenter: dropdown("responsibilityCenter", PettyCashFundResponsibilityCenterOptions),
   };
 }

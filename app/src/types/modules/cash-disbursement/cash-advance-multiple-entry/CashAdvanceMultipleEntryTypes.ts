@@ -113,7 +113,6 @@ export type CashAdvanceMultipleEntryEntrySectionProps = {
 };
 
 export type CashAdvanceMultipleEntryDetailEntryTableProps = {
-  description: string;
   employeeOptions: CashAdvanceEmployeeOption[];
   isReadonly: boolean;
   rows: CashAdvanceMultipleEntryItem[];
@@ -124,7 +123,6 @@ export type CashAdvanceMultipleEntryDetailEntryTableProps = {
 };
 
 export type CashAdvanceMultipleEntryAccountingEntryTableProps = {
-  description: string;
   employeeOptions: CashAdvanceEmployeeOption[];
   isReadonly: boolean;
   rows: CashAdvanceMultipleEntryAccountingEntry[];

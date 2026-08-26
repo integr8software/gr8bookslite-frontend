@@ -141,7 +141,7 @@ export function ModuleDataEntryTableBody<TRow extends { id: string }>({
 						{openMenuRowId === row.id && typeof document !== "undefined"
 							? createPortal(
 									<ModuleDataEntryRowActions
-										canRemove={rows.length > 1}
+										canRemove
 										rowLabel={`${emptyRowLabel} ${index + 1}`}
 										style={rowMenuStyle}
 										onAddAbove={() => {
@@ -156,16 +156,24 @@ export function ModuleDataEntryTableBody<TRow extends { id: string }>({
 											onDuplicateRow(row.id);
 											onOpenMenuRowChange(null);
 										}}
-										onClear={
-											onClearRow
-												? () => {
-														onClearRow(row.id);
-														onOpenMenuRowChange(null);
-													}
-												: undefined
-										}
+										onClear={() => {
+											if (onClearRow) {
+												onClearRow(row.id);
+											} else {
+												onRemoveRow(row.id);
+											}
+											onOpenMenuRowChange(null);
+										}}
 										onRemove={() => {
-											onRemoveRow(row.id);
+											if (rows.length === 1) {
+												if (onClearRow) {
+													onClearRow(row.id);
+												} else {
+													onRemoveRow(row.id);
+												}
+											} else {
+												onRemoveRow(row.id);
+											}
 											onOpenMenuRowChange(null);
 										}}
 									/>,

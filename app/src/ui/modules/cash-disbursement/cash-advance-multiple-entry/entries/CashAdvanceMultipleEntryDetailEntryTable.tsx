@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { CashAdvanceMultipleEntryDefaultItemColumnIds } from "@/app/src/constants/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryConstants";
 import {
   calculateCashAdvanceMultipleEntryTotal,
+  createBlankCashAdvanceMultipleEntryItem,
   formatCashAdvanceMultipleEntryAmount,
 } from "@/app/src/data/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryData";
 import {
@@ -13,15 +14,14 @@ import type {
   CashAdvanceMultipleEntryItem,
 } from "@/app/src/types/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryTypes";
 import { createCashAdvanceMultipleEntryItemColumns } from "@/app/src/ui/modules/cash-disbursement/cash-advance-multiple-entry/entries/CashAdvanceMultipleEntryEntryColumns";
-import {
-  ModuleDataEntry,
-  type ModuleDataEntryColumn,
-  type ModuleDataEntryColumnOption,
+import { TabbedModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryTabs";
+import type {
+  ModuleDataEntryColumn,
+  ModuleDataEntryColumnOption,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { reorderColumnIds, toggleVisibleColumnId } from "@/app/src/ui/shared/module/module-data-entry/entryTableState.util";
 
 export function CashAdvanceMultipleEntryDetailEntryTable({
-  description,
   employeeOptions,
   isReadonly,
   onAddRows,
@@ -69,11 +69,11 @@ export function CashAdvanceMultipleEntryDetailEntryTable({
   const totalAmount = useMemo(() => calculateCashAdvanceMultipleEntryTotal(rows), [rows]);
 
   return (
-    <ModuleDataEntry
+    <TabbedModuleDataEntry
+      addButtonLabel="Add Entry"
       columns={columns}
       columnOptions={columnOptions}
-      description={description}
-      emptyRowLabel="item"
+      emptyRowLabel="entry"
       footerDetails={
         <span className="text-sm font-semibold text-darknavy">
           Total Amount: {formatCashAdvanceMultipleEntryAmount(totalAmount)}
@@ -85,14 +85,25 @@ export function CashAdvanceMultipleEntryDetailEntryTable({
       summaryRowHeader="Totals"
       title="Line Entries"
       onAddRows={onAddRows}
-      onClearRows={() => onRowsChange(rows.slice(0, 1))}
+      onClearRow={(rowId) =>
+        onRowsChange(
+          rows.map((row) => (row.id === rowId ? { ...createBlankCashAdvanceMultipleEntryItem(), id: rowId } : row)),
+        )
+      }
+      onClearRows={() => onRowsChange([createBlankCashAdvanceMultipleEntryItem()])}
       onDuplicateRow={(rowId) => {
         const row = rows.find((currentRow) => currentRow.id === rowId);
         if (row) onRowsChange([...rows, { ...row, id: `came-item-${Date.now()}` }]);
       }}
       onInsertRow={() => undefined}
       onMoveRow={() => undefined}
-      onRemoveRow={(rowId) => onRowsChange(removeCashAdvanceMultipleEntryRow(rows, rowId))}
+      onRemoveRow={(rowId) =>
+        onRowsChange(
+          rows.length > 1
+            ? removeCashAdvanceMultipleEntryRow(rows, rowId)
+            : [createBlankCashAdvanceMultipleEntryItem()],
+        )
+      }
       onResetColumns={() => {
         setVisibleColumnIds(CashAdvanceMultipleEntryDefaultItemColumnIds);
         setColumnWidths({});

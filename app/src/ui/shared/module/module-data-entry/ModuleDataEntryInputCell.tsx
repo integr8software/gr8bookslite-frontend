@@ -31,6 +31,11 @@ export function ModuleDataEntryInputCell({
         ? "text-center"
         : "text-left";
 
+  const displayValue =
+    placeholder === "0.00" && (value === 0 || value === "0" || value === "0.00")
+      ? ""
+      : value;
+
   return (
     <>
       <label htmlFor={id} className="sr-only">
@@ -40,7 +45,7 @@ export function ModuleDataEntryInputCell({
         id={id}
         name={name}
         type={type}
-        value={value}
+        value={displayValue}
         readOnly={readOnly}
         placeholder={placeholder}
         title={placeholder}

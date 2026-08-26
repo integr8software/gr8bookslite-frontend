@@ -17,10 +17,8 @@ import type {
   CashVoucherAccountingEntryTableProps,
   CashVoucherEntryColumnId,
 } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherDataEntryTypes";
-import {
-  ModuleDataEntry,
-  type ModuleDataEntryColumnOption,
-} from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import { TabbedModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryTabs";
+import type { ModuleDataEntryColumnOption } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { clampColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/utils";
 import { formatAmount } from "@/app/src/utils/currency.util";
 
@@ -28,6 +26,9 @@ export function CashVoucherAccountingEntryTable({
   accountingColumns,
   accountingRows,
   errors,
+  isReadonly,
+  onAddEntries,
+  onClearEntries,
   totalCredit,
   totalDebit,
   variance,
@@ -45,8 +46,13 @@ export function CashVoucherAccountingEntryTable({
   );
 
   const columns = useMemo(
-    () => visibleColumnOrder.map((columnId) => accountingColumns[columnId]),
-    [accountingColumns, visibleColumnOrder],
+    () =>
+      visibleColumnOrder.map((columnId) => ({
+        ...accountingColumns[columnId],
+        header: columnLabels[columnId],
+        width: columnWidths[columnId],
+      })),
+    [accountingColumns, columnLabels, columnWidths, visibleColumnOrder],
   );
 
   const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
@@ -110,9 +116,10 @@ export function CashVoucherAccountingEntryTable({
   }
 
   return (
-    <ModuleDataEntry
+    <TabbedModuleDataEntry
+      addButtonLabel="Add Entry"
       title=""
-      emptyRowLabel="accounting entry"
+      emptyRowLabel="entry"
       error={errors.lineEntries}
       footerDetails={
         <span className={`text-sm font-semibold ${variance < 0.001 ? "text-emerald-700" : "text-coralpink"}`}>
@@ -121,10 +128,13 @@ export function CashVoucherAccountingEntryTable({
       }
       columns={columns}
       columnOptions={columnOptions}
+      canConfigureColumnsWhenReadonly
+      canManageRowsWhenReadonly={!isReadonly}
       rows={accountingRows}
       isDraggable={false}
       isReadonly
-      onAddRows={() => {}}
+      onAddRows={onAddEntries}
+      onClearRows={onClearEntries}
       onDuplicateRow={() => {}}
       onInsertRow={() => {}}
       onMoveRow={() => {}}

@@ -116,7 +116,11 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
   }
 
   function removeItem(rowId: string) {
-    if (values.items.length > 1) updateItems(values.items.filter((item) => item.id !== rowId));
+    if (values.items.length > 1) {
+      updateItems(values.items.filter((item) => item.id !== rowId));
+    } else {
+      updateItems([createBlankPettyCashFundItem()]);
+    }
   }
 
   function duplicateItem(rowId: string) {

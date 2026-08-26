@@ -5,7 +5,10 @@ import {
   PettyCashFundReplenishmentAccountingColumnWidths,
   PettyCashFundReplenishmentProtectedAccountingColumnIds,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentConstants";
-import { formatPettyCashFundReplenishmentAmount } from "@/app/src/data/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentData";
+import {
+  createBlankPettyCashFundReplenishmentEntry,
+  formatPettyCashFundReplenishmentAmount,
+} from "@/app/src/data/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentData";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import type {
   PettyCashFundReplenishmentAccountingColumnId,
@@ -13,7 +16,7 @@ import type {
   PettyCashFundReplenishmentAccountingEntryTableProps,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentTypes";
 import { createPettyCashFundReplenishmentAccountingColumns } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund-replenishment/entries/PettyCashFundReplenishmentEntryColumns";
-import { ModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import { TabbedModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryTabs";
 import {
   buildColumnOptions,
   calculateFitColumnWidth,
@@ -129,9 +132,10 @@ export function PettyCashFundReplenishmentAccountingEntryTable({
   }
 
   return (
-    <ModuleDataEntry
+    <TabbedModuleDataEntry
+      addButtonLabel="Add Entry"
       title=""
-      emptyRowLabel="accounting entry"
+      emptyRowLabel="entry"
       error={undefined}
       footerDetails={
         <span className="text-sm font-semibold text-emerald-700">
@@ -140,6 +144,8 @@ export function PettyCashFundReplenishmentAccountingEntryTable({
       }
       columns={columns}
       columnOptions={columnOptions}
+      canConfigureColumnsWhenReadonly
+      canManageRowsWhenReadonly={!page.isReadonly}
       rows={accountingRows}
       isDraggable={false}
       isReadonly
@@ -148,7 +154,8 @@ export function PettyCashFundReplenishmentAccountingEntryTable({
         debit: formatAmount(page.totals.totalAmount),
         credit: formatAmount(page.totals.totalAmount),
       }}
-      onAddRows={() => {}}
+      onAddRows={page.addEntries}
+      onClearRows={() => page.updateEntries([createBlankPettyCashFundReplenishmentEntry()])}
       onDuplicateRow={() => {}}
       onInsertRow={() => {}}
       onMoveRow={() => {}}

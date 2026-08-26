@@ -28,6 +28,7 @@ import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-
 import { CashVoucherAccountingEntryTable } from "@/app/src/ui/modules/cash-disbursement/cash-voucher/entries/CashVoucherAccountingEntryTable";
 import { createCashVoucherAccountingEntryColumns } from "@/app/src/ui/modules/cash-disbursement/cash-voucher/entries/CashVoucherEntryColumns";
 import { CashVoucherDetailEntryTable } from "@/app/src/ui/modules/cash-disbursement/cash-voucher/entries/CashVoucherDetailEntryTable";
+import { ModuleDataEntryTabs } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryTabs";
 
 const CashVoucherAccountingEntryView: CashVoucherEntryView = "accounting";
 const CashVoucherEntryTabs: { id: CashVoucherEntryView; label: string }[] = [
@@ -172,38 +173,20 @@ export function CashVoucherEntrySection(props: VoucherDataEntryProps) {
   );
 
   return (
-    <section className="grid gap-4">
-      <div className="flex items-center justify-between">
-        <div
-          role="tablist"
-          aria-label="Cash voucher lines"
-          className="inline-flex rounded-lg border border-darknavy/10 bg-offwhite/70 p-1"
-        >
-          {CashVoucherEntryTabs.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              role="tab"
-              aria-selected={entryView === tab.id}
-              onClick={() => setEntryView(tab.id as CashVoucherEntryView)}
-              className={[
-                "h-8 rounded-md px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coralpink/25",
-                entryView === tab.id
-                  ? "bg-white text-coralpink shadow-sm ring-1 ring-darknavy/10"
-                  : "text-darknavy/55 hover:bg-white/70 hover:text-darknavy",
-              ].join(" ")}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
+    <ModuleDataEntryTabs
+      activeTab={entryView}
+      ariaLabel="Cash voucher lines"
+      onTabChange={setEntryView}
+      tabs={CashVoucherEntryTabs}
+    >
       {entryView === CashVoucherAccountingEntryView ? (
         <CashVoucherAccountingEntryTable
           accountingColumns={accountingColumns}
           accountingRows={entries}
           errors={errors}
+          isReadonly={isReadonly}
+          onAddEntries={onAddEntries}
+          onClearEntries={onClearEntries}
           totalCredit={totalCredit}
           totalDebit={totalDebit}
           variance={variance}
@@ -232,6 +215,6 @@ export function CashVoucherEntrySection(props: VoucherDataEntryProps) {
           vatOptions={vatOptions}
         />
       )}
-    </section>
+    </ModuleDataEntryTabs>
   );
 }

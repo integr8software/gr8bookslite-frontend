@@ -113,6 +113,9 @@ export type CashVoucherAccountingEntryTableProps = {
   accountingColumns: Record<CashVoucherEntryColumnId, ModuleDataEntryColumn<CashVoucherLineEntry>>;
   accountingRows: CashVoucherLineEntry[];
   errors: CashVoucherFormErrors;
+  isReadonly: boolean;
+  onAddEntries: (count: number) => void;
+  onClearEntries: VoucherDataEntryProps["onClearEntries"];
   totalCredit: number;
   totalDebit: number;
   variance: number;

@@ -9,12 +9,13 @@ import {
   createBlankRevolvingFundReplenishmentEntry,
   formatRevolvingFundReplenishmentAmount,
 } from "@/app/src/data/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentData";
+
 import type {
   RevolvingFundReplenishmentDetailEntryTableProps,
   RevolvingFundReplenishmentEntryColumnId,
 } from "@/app/src/types/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentTypes";
 import { createRevolvingFundReplenishmentLineColumns } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/entries/RevolvingFundReplenishmentEntryColumns";
-import { ModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import { TabbedModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryTabs";
 import {
   buildColumnOptions,
   calculateFitColumnWidth,
@@ -103,9 +104,10 @@ export function RevolvingFundReplenishmentDetailEntryTable({
   }
 
   return (
-    <ModuleDataEntry
+    <TabbedModuleDataEntry
+      addButtonLabel="Add Entry"
       title=""
-      emptyRowLabel="voucher"
+      emptyRowLabel="entry"
       error={page.errors.entries}
       footerDetails={
         <span className="text-sm font-semibold text-darknavy">
@@ -118,6 +120,13 @@ export function RevolvingFundReplenishmentDetailEntryTable({
       isDraggable={!page.isReadonly}
       isReadonly={page.isReadonly}
       onAddRows={page.addEntries}
+      onClearRow={(rowId) =>
+        page.updateEntries(
+          page.values.entries.map((row) =>
+            row.id === rowId ? { ...createBlankRevolvingFundReplenishmentEntry(), id: rowId } : row,
+          ),
+        )
+      }
       onClearRows={() => page.updateEntries([createBlankRevolvingFundReplenishmentEntry()])}
       onDuplicateRow={page.duplicateEntry}
       onInsertRow={page.insertEntry}

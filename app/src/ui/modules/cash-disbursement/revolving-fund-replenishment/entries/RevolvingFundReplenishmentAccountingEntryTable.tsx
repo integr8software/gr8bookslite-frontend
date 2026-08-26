@@ -5,7 +5,10 @@ import {
   RevolvingFundReplenishmentAccountingColumnWidths,
   RevolvingFundReplenishmentProtectedAccountingColumnIds,
 } from "@/app/src/constants/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentConstants";
-import { formatRevolvingFundReplenishmentAmount } from "@/app/src/data/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentData";
+import {
+  createBlankRevolvingFundReplenishmentEntry,
+  formatRevolvingFundReplenishmentAmount,
+} from "@/app/src/data/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentData";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import type {
   RevolvingFundReplenishmentAccountingColumnId,
@@ -13,7 +16,7 @@ import type {
   RevolvingFundReplenishmentAccountingEntryTableProps,
 } from "@/app/src/types/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentTypes";
 import { createPettyCashFundReplenishmentAccountingColumns } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund-replenishment/entries/PettyCashFundReplenishmentEntryColumns";
-import { ModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import { TabbedModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryTabs";
 import {
   buildColumnOptions,
   calculateFitColumnWidth,
@@ -129,7 +132,8 @@ export function RevolvingFundReplenishmentAccountingEntryTable({
   }
 
   return (
-    <ModuleDataEntry
+    <TabbedModuleDataEntry
+      addButtonLabel="Add Entry"
       title=""
       emptyRowLabel="accounting entry"
       error={undefined}
@@ -140,6 +144,8 @@ export function RevolvingFundReplenishmentAccountingEntryTable({
       }
       columns={columns}
       columnOptions={columnOptions}
+      canConfigureColumnsWhenReadonly
+      canManageRowsWhenReadonly={!page.isReadonly}
       rows={accountingRows}
       isDraggable={false}
       isReadonly
@@ -148,7 +154,8 @@ export function RevolvingFundReplenishmentAccountingEntryTable({
         debit: formatAmount(page.totals.totalAmount),
         credit: formatAmount(page.totals.totalAmount),
       }}
-      onAddRows={() => {}}
+      onAddRows={page.addEntries}
+      onClearRows={() => page.updateEntries([createBlankRevolvingFundReplenishmentEntry()])}
       onDuplicateRow={() => {}}
       onInsertRow={() => {}}
       onMoveRow={() => {}}

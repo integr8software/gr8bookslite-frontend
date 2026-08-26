@@ -8,7 +8,7 @@ export function ModuleDataEntryMoneyCell({
   id,
   name,
   onChange,
-  placeholder,
+  placeholder = "0.00",
   readOnly,
   value,
 }: {
@@ -20,6 +20,11 @@ export function ModuleDataEntryMoneyCell({
   readOnly?: boolean;
   value: string | number;
 }) {
+  const displayValue =
+    value === 0 || value === "0" || value === "0.00" || value === null || value === undefined
+      ? ""
+      : String(value);
+
   return (
     <>
       <label htmlFor={id} className="sr-only">
@@ -28,7 +33,7 @@ export function ModuleDataEntryMoneyCell({
       <MoneyNumberField
         id={id}
         name={name}
-        value={String(value ?? "")}
+        value={displayValue}
         readOnly={readOnly}
         placeholder={placeholder}
         onValueChange={onChange ?? (() => undefined)}

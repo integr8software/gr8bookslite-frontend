@@ -94,7 +94,7 @@ export function createBlankPettyCashFundItem(): PettyCashFundItem {
     remarks: "",
     amount: "",
     netAmount: "",
-    vatAmount: "0.00",
+    vatAmount: "",
     type: "",
     vatType: "",
     vatable: "False",

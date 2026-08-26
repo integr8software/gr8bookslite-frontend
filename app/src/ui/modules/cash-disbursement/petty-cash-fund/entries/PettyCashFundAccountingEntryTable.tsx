@@ -7,6 +7,7 @@ import {
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund/PettyCashFundConstants";
 import {
   calculatePettyCashFundTotals,
+  createBlankPettyCashFundItem,
   formatPettyCashFundAmount,
 } from "@/app/src/data/modules/cash-disbursement/petty-cash-fund/PettyCashFundData";
 import type {
@@ -15,7 +16,7 @@ import type {
   PettyCashFundAccountingEntryTableProps,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";
 import { createPettyCashFundAccountingColumns } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund/entries/PettyCashFundEntryColumns";
-import { ModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import { TabbedModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryTabs";
 import {
   buildColumnOptions,
   calculateFitColumnWidth,
@@ -134,9 +135,10 @@ export function PettyCashFundAccountingEntryTable({ page }: PettyCashFundAccount
   }
 
   return (
-    <ModuleDataEntry
+    <TabbedModuleDataEntry
+      addButtonLabel="Add Entry"
       title=""
-      emptyRowLabel="accounting entry"
+      emptyRowLabel="entry"
       error={undefined}
       footerDetails={
         <span className="text-sm font-semibold text-emerald-700">
@@ -145,6 +147,8 @@ export function PettyCashFundAccountingEntryTable({ page }: PettyCashFundAccount
       }
       columns={columns}
       columnOptions={columnOptions}
+      canConfigureColumnsWhenReadonly
+      canManageRowsWhenReadonly={!page.isReadonly}
       rows={accountingRows}
       isDraggable={false}
       isReadonly
@@ -153,7 +157,8 @@ export function PettyCashFundAccountingEntryTable({ page }: PettyCashFundAccount
         debit: formatAmount(totalAmount),
         credit: formatAmount(totalAmount),
       }}
-      onAddRows={() => {}}
+      onAddRows={page.addItems}
+      onClearRows={() => page.updateItems([createBlankPettyCashFundItem()])}
       onDuplicateRow={() => {}}
       onInsertRow={() => {}}
       onMoveRow={() => {}}

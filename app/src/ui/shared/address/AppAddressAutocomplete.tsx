@@ -6,6 +6,7 @@ import { GetAddressAutocomplete } from "@/app/src/services/shared/address/Addres
 import type { AddressAutocompleteDetails, AddressAutocompleteItem } from "@/app/src/types/shared/address/AddressTypes";
 import { AppSearchSuggestions } from "@/app/src/ui/shared/search-suggestions/AppSearchSuggestions";
 import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
+import { useModuleFieldVisibility } from "@/app/src/hooks/shared/field-management/useCurrentModuleFieldManagement";
 
 export type AppAddressAutocompleteValue = {
   addressLine1?: string;
@@ -89,6 +90,7 @@ function StatefulAddressAutocomplete({
   const [isLoading, setIsLoading] = useState(false);
   const [isResultsOpen, setIsResultsOpen] = useState(false);
   const [error, setError] = useState("");
+  const isVisible = useModuleFieldVisibility([label, "Address", "Full Address"]);
   const query = isEditing ? editingQuery : formattedSelectedAddress || committedQuery;
   const searchQuery = (isEditing ? getAutocompleteSearchTerm(query) : value.cityMunicipality || value.province || query).trim();
   const sortedAddresses = useMemo(
@@ -139,7 +141,7 @@ function StatefulAddressAutocomplete({
     };
   }, [disabled, isResultsOpen, searchQuery]);
 
-  if (disabled) {
+  if (disabled || !isVisible) {
     return null;
   }
 

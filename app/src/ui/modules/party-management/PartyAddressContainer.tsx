@@ -18,6 +18,7 @@ import type { AddressAutocompleteDetails, AddressAutocompleteItem } from "@/app/
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { AppAddressAutocomplete } from "@/app/src/ui/shared/address/AppAddressAutocomplete";
 import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
+import { useModuleFieldVisibility } from "@/app/src/hooks/shared/field-management/useCurrentModuleFieldManagement";
 
 export function PartyAddressContainer({
   addresses,
@@ -133,8 +134,13 @@ function AddressSection({
     regionCode: address.regionCode,
     regionName: address.region,
   });
+  const isAddressSectionVisible = useModuleFieldVisibility([title, "Address"]);
   const isSyncedAddress = Boolean(syncedSourceAddressId);
   const areAddressFieldsDisabled = disabled || isSyncedAddress;
+
+  if (!isAddressSectionVisible) {
+    return null;
+  }
 
   return (
     <section className="grid gap-4">
@@ -445,12 +451,17 @@ function Field({
   labelId?: string;
   required?: boolean;
 }) {
+  const isVisible = useModuleFieldVisibility([label]);
   const labelContent = (
     <>
       {label}
       <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired={required} label={label} leadingSpace />
     </>
   );
+
+  if (!isVisible) {
+    return null;
+  }
 
   function handleFieldMouseDown(event: ReactMouseEvent<HTMLDivElement>) {
     const target = event.target;

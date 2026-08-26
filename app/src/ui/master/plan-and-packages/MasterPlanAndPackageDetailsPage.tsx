@@ -22,10 +22,7 @@ import {
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleNotFound } from "@/app/src/ui/shared/module/ModuleNotFound";
 import { MasterPlanAndPackageStatusBadge } from "@/app/src/ui/master/plan-and-packages/MasterPlanAndPackageBadges";
-
-type MasterPlanAndPackageDetailsPageProps = {
-	recordId: string;
-};
+import type { MasterPlanAndPackageDetailsPageProps } from "@/app/src/types/master/plan-and-packages/MasterPlanAndPackageTypes";
 
 export function MasterPlanAndPackageDetailsPage({
 	recordId,

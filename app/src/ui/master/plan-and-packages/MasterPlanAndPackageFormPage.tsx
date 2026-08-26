@@ -12,7 +12,6 @@ import {
   Search,
   Trash2,
   Users,
-  type LucideIcon,
 } from "lucide-react";
 import {
 	MasterPlanAndPackagesHref,
@@ -25,10 +24,12 @@ import { useMasterModuleSystemsQuery } from "@/app/src/hooks/master/module-syste
 import { useMasterPlanAndPackageFormPage } from "@/app/src/hooks/master/plan-and-packages/useMasterPlanAndPackageFormPage";
 import type {
 	MasterPlanAndPackageFormErrors,
+	MasterPlanAndPackageFormPageProps,
 	MasterPlanAndPackageFormValues,
 	MasterPlanAndPackageReductionTier,
 	MasterPlanAndPackageScope,
 	MasterPlanAndPackageStatus,
+	NumberFieldConfig,
 } from "@/app/src/types/master/plan-and-packages/MasterPlanAndPackageTypes";
 import {
   ModuleHeader,
@@ -47,11 +48,6 @@ const SuggestedReductionTiers = [
   { reductionPercent: 20, thresholdCount: 50 },
   { reductionPercent: 25, thresholdCount: 100 },
 ] as const satisfies readonly MasterPlanAndPackageReductionTier[];
-
-type MasterPlanAndPackageFormPageProps = {
-  mode: "add" | "edit";
-  recordId?: string;
-};
 
 export function MasterPlanAndPackageFormPage({
   mode,
@@ -266,25 +262,6 @@ function MasterPlanAndPackageForm({
     </div>
   );
 }
-
-type ScaleRuleValues = {
-  addOnPrice: number;
-  includedFree: number;
-  reductionTiers: MasterPlanAndPackageReductionTier[];
-};
-
-type ScaleRuleSectionProps = ScaleRuleValues & {
-  errors: Partial<Record<keyof ScaleRuleValues, string>>;
-  icon: LucideIcon;
-  unitLabel: string;
-  onUpdate: (values: ScaleRuleValues) => void;
-};
-
-type NumberFieldConfig = {
-  error?: string;
-  value: number;
-  onChange: (value: number) => void;
-};
 
 function BillingPeriodColumn({
   accentClassName,

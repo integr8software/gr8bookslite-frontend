@@ -52,29 +52,19 @@ import { ModuleNotFound } from "@/app/src/ui/shared/module/ModuleNotFound";
 import { ModuleSystemPageSkeleton } from "@/app/src/ui/master/module-systems/ModuleSystemPageSkeleton";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import { SidebarAllowedIcons } from "@/app/src/ui/shared/main-layout/sidebar/SidebarIcons";
+import type {
+	MasterModuleSystemSidebarPageProps,
+	SidebarDropPreview,
+	SidebarGap,
+} from "@/app/src/types/master/module-systems/MasterModuleSystemTypes";
 
 const SidebarGapPrefix = "module-system-sidebar-gap:";
 const MaxSidebarDepth = 3;
 const MaxSectionDepth = 2;
 
-type SidebarGap = {
-	depth: number;
-	index: number;
-	parentKey: string | null;
-};
-
-type SidebarDropPreview =
-	| {
-			mode: "gap";
-			targetKey: string;
-			gap: SidebarGap;
-	  }
-	| {
-			mode: "inside";
-			targetKey: string;
-	  };
-
-export function MasterModuleSystemSidebarPage({ recordId }: { recordId: string }) {
+export function MasterModuleSystemSidebarPage({
+	recordId,
+}: MasterModuleSystemSidebarPageProps) {
 	const queryClient = useQueryClient();
 	const systemsQuery = useMasterModuleSystemListPage();
 	const record = useMemo(

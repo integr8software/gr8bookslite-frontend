@@ -1,20 +1,8 @@
 "use client";
 
 import { Check, LoaderCircle, MoveRight } from "lucide-react";
-import {
-	type BillingCycle,
-	type PricingPlan,
-} from "@/app/src/data/pricing/PricingTypes";
 import { OnboardingPlanComparisonRows } from "@/app/src/data/onboarding/OnboardingData";
-
-type OnboardingPricingDesktopPlansProps = {
-	plans: PricingPlan[];
-	billingCycle: BillingCycle;
-	isSubmitting: boolean;
-	submittingPlanCode: string | null;
-	onReviewPlans: () => void;
-	onSelectPlan: (plan: PricingPlan, billingCycle: BillingCycle) => void;
-};
+import type { OnboardingPricingDesktopPlansProps } from "@/app/src/types/onboarding/OnboardingTypes";
 
 export function OnboardingPricingDesktopPlans({
 	plans,

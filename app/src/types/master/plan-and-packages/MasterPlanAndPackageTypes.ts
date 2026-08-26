@@ -81,3 +81,37 @@ export type MasterPlanAndPackageTableColumnKey =
 	| "name"
 	| "status"
 	| "pricing";
+
+export type MasterPlanAndPackageDetailsPageProps = {
+	recordId: string;
+};
+
+export type MasterPlanAndPackageFormPageProps = {
+	mode: "add" | "edit";
+	recordId?: string;
+};
+
+export type MasterPlanAndPackageTableRowProps = {
+	row: import("@tanstack/react-table").Row<MasterPlanAndPackageRecord>;
+	onToggleStatus: (recordId: string) => void;
+};
+
+export type ScaleRuleValues = {
+	addOnPrice: number;
+	includedFree: number;
+	reductionTiers: MasterPlanAndPackageReductionTier[];
+};
+
+export type ScaleRuleSectionProps = ScaleRuleValues & {
+	errors: Partial<Record<keyof ScaleRuleValues, string>>;
+	icon: import("lucide-react").LucideIcon;
+	unitLabel: string;
+	onUpdate: (values: ScaleRuleValues) => void;
+};
+
+export type NumberFieldConfig = {
+	error?: string;
+	value: number;
+	onChange: (value: number) => void;
+};
+

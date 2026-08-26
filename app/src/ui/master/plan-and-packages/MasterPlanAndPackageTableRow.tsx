@@ -1,5 +1,4 @@
 import Link from "next/link";
-import type { Row } from "@tanstack/react-table";
 import { getMasterPlanAndPackageViewHref } from "@/app/src/constants/master/plan-and-packages/MasterPlanAndPackageConstants";
 import {
 	formatMasterPlanAndPackagePricing,
@@ -7,14 +6,12 @@ import {
 	formatMasterPlanAndPackageScope,
 	getMasterPlanAndPackagePricingSupportingText,
 } from "@/app/src/data/master/plan-and-packages/MasterPlanAndPackageData";
-import type { MasterPlanAndPackageRecord } from "@/app/src/types/master/plan-and-packages/MasterPlanAndPackageTypes";
+import type {
+	MasterPlanAndPackageRecord,
+	MasterPlanAndPackageTableRowProps,
+} from "@/app/src/types/master/plan-and-packages/MasterPlanAndPackageTypes";
 import { MasterPlanAndPackageStatusBadge } from "@/app/src/ui/master/plan-and-packages/MasterPlanAndPackageBadges";
 import { MasterPlanAndPackageRecordActions } from "@/app/src/ui/master/plan-and-packages/MasterPlanAndPackageRecordActions";
-
-type MasterPlanAndPackageTableRowProps = {
-	row: Row<MasterPlanAndPackageRecord>;
-	onToggleStatus: (recordId: string) => void;
-};
 
 export function MasterPlanAndPackageTableRow({
 	row,

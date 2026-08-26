@@ -84,6 +84,24 @@ export type OnboardingBillingStepProps = {
   handleNext: () => void;
 };
 
+export type OnboardingPricingDesktopPlansProps = {
+  plans: PricingPlan[];
+  billingCycle: BillingCycle;
+  isSubmitting: boolean;
+  submittingPlanCode: string | null;
+  onReviewPlans: () => void;
+  onSelectPlan: (plan: PricingPlan, billingCycle: BillingCycle) => void;
+};
+
+export type OnboardingPricingMobilePlansProps = {
+  plans: PricingPlan[];
+  billingCycle: BillingCycle;
+  isSubmitting: boolean;
+  submittingPlanCode: string | null;
+  onReviewPlans: () => void;
+  onSelectPlan: (plan: PricingPlan, billingCycle: BillingCycle) => void;
+};
+
 const DefaultReportYear = GetCalendarYearReportDates();
 
 export const InitialOnboardingValues: OnboardingValues = {

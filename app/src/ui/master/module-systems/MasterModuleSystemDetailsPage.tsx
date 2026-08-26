@@ -15,8 +15,11 @@ import {
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleNotFound } from "@/app/src/ui/shared/module/ModuleNotFound";
 import { ModuleSystemPageSkeleton } from "@/app/src/ui/master/module-systems/ModuleSystemPageSkeleton";
+import type { MasterModuleSystemDetailsPageProps } from "@/app/src/types/master/module-systems/MasterModuleSystemTypes";
 
-export function MasterModuleSystemDetailsPage({ recordId }: { recordId: string }) {
+export function MasterModuleSystemDetailsPage({
+	recordId,
+}: MasterModuleSystemDetailsPageProps) {
 	const systemsQuery = useMasterModuleSystemListPage();
 	const record = useMemo(
 		() => systemsQuery.records.find((candidate) => candidate.id === Number(recordId)),

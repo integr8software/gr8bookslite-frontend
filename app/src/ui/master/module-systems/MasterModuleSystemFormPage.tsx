@@ -19,11 +19,12 @@ import { ModuleNotFound } from "@/app/src/ui/shared/module/ModuleNotFound";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import { ModuleSystemPageSkeleton } from "@/app/src/ui/master/module-systems/ModuleSystemPageSkeleton";
 import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
+import type { MasterModuleSystemFormPageProps } from "@/app/src/types/master/module-systems/MasterModuleSystemTypes";
 
 const ControlClassName =
   "h-10 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-semibold text-darknavy shadow-sm transition placeholder:text-darknavy/35 focus:border-skyblue focus:outline-none focus:ring-4 focus:ring-skyblue/15";
 
-export function MasterModuleSystemFormPage({ mode, recordId }: { mode: "add" | "edit"; recordId?: string }) {
+export function MasterModuleSystemFormPage({ mode, recordId }: MasterModuleSystemFormPageProps) {
   const {
     effectiveMetadataDraft,
     effectiveModuleDraft,

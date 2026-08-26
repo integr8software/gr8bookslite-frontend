@@ -19,17 +19,8 @@ import {
 
 export const FieldManagementQueryKey = ["system-administration", "field-management"] as const;
 export const FieldManagementTablePaginationStorageKey = "system-administration-field-management";
-export const FieldManagementTabIds = {
-  header: "header",
-  entries: "entries",
-} as const;
-export const FieldManagementTabs = [
-  { id: FieldManagementTabIds.header, label: "Header Fields" },
-  { id: FieldManagementTabIds.entries, label: "Entry Fields" },
-] as const;
 
 export type EditableField = FieldManagementField;
-export type FieldManagementTabId = (typeof FieldManagementTabs)[number]["id"];
 
 export function useFieldManagementPage() {
   const queryClient = useQueryClient();
@@ -42,7 +33,6 @@ export function useFieldManagementPage() {
   const [selectedModuleId, setSelectedModuleId] = useState<number | null>(null);
   const selectedModule = modules.find((module) => module.id === selectedModuleId) ?? modules[0];
   const [fields, setFields] = useState<EditableField[]>([]);
-  const [activeTab, setActiveTab] = useState<FieldManagementTabId>(FieldManagementTabIds.header);
   const [dirty, setDirty] = useState(false);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -86,13 +76,10 @@ export function useFieldManagementPage() {
     return modules.filter((module) => [module.code, module.name].join(" ").toLowerCase().includes(queryText));
   }, [moduleQuery, modules]);
 
-  const manageableFields = useMemo(() => fields.filter((field) => getFieldManagementTabId(field)), [fields]);
+  const manageableFields = useMemo(() => fields.filter(isHeaderField), [fields]);
   const visibleCount = manageableFields.filter((field) => field.isVisible).length;
   const requiredCount = manageableFields.filter((field) => field.isRequired).length;
-  const headerFields = useMemo(() => fields.filter((field) => getFieldManagementTabId(field) === FieldManagementTabIds.header), [fields]);
-  const entryFields = useMemo(() => fields.filter((field) => getFieldManagementTabId(field) === FieldManagementTabIds.entries), [fields]);
-  const activeFields = activeTab === FieldManagementTabIds.entries ? entryFields : headerFields;
-  const activeTabLabel = FieldManagementTabs.find((tab) => tab.id === activeTab)?.label ?? "Fields";
+  const headerFields = manageableFields;
   const save = useMutation({
     mutationFn: () =>
       SaveFieldManagementModuleFields(
@@ -116,7 +103,7 @@ export function useFieldManagementPage() {
 
   // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table owns table state handlers.
   const table = useReactTable({
-    data: activeFields,
+    data: headerFields,
     columns,
     state: {
       pagination,
@@ -152,21 +139,12 @@ export function useFieldManagementPage() {
     setSelectedModuleId(moduleId);
     const nextModule = modules.find((item) => item.id === moduleId);
     setFields(sortFieldsByLabel(nextModule?.fields ?? []));
-    setActiveTab(FieldManagementTabIds.header);
     setDirty(false);
     table.setPageIndex(0);
   }
 
-  function selectTab(tabId: FieldManagementTabId) {
-    setActiveTab(tabId);
-    table.setPageIndex(0);
-  }
-
   return {
-    activeTab,
-    activeTabLabel,
     dirty,
-    entryFields,
     error: query.error,
     filteredModules,
     headerFields,
@@ -180,7 +158,6 @@ export function useFieldManagementPage() {
     save,
     selectedModule,
     selectModule,
-    selectTab,
     setModuleQuery,
     table,
     updateField,
@@ -210,36 +187,22 @@ function sortFieldsByLabel(fields: EditableField[]) {
   });
 }
 
-export function getFieldManagementTabId(field: EditableField): FieldManagementTabId | null {
+export function isHeaderField(field: EditableField) {
   const sourcePath = (field.sourcePath ?? "").toLowerCase();
-  const fieldKey = field.fieldKey.toLowerCase();
-  const label = field.label.toLowerCase();
-  const combinedText = [sourcePath, fieldKey, label].join(" ");
 
   if (isIgnoredFieldManagementLabel(field)) {
-    return null;
-  }
-
-  if (
-    /\b(entries?|entry|line|lines|item-entry|account-entry|data-entry)\b/.test(combinedText) ||
-    sourcePath.includes("expensetable") ||
-    sourcePath.includes("itementry") ||
-    sourcePath.includes("accountentry") ||
-    sourcePath.includes("module-data-entry") ||
-    sourcePath.includes("#column-labels")
-  ) {
-    return FieldManagementTabIds.entries;
+    return false;
   }
 
   if (isHeaderFieldSource(sourcePath)) {
-    return FieldManagementTabIds.header;
+    return true;
   }
 
   if (sourcePath === "fallback") {
-    return FieldManagementTabIds.header;
+    return true;
   }
 
-  return null;
+  return false;
 }
 
 function isHeaderFieldSource(sourcePath: string) {

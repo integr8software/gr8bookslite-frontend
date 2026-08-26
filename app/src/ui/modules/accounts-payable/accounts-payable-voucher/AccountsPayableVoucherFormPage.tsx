@@ -50,6 +50,7 @@ import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { getEwtPercentFromCode, getVatPercentFromRate, getVatRateFromCode } from "@/app/src/ui/shared/transaction-setup/AppTaxRateDialog";
 import { isActiveStatus } from "@/app/src/utils/status.util";
 import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
+import { useModuleFieldVisibility } from "@/app/src/hooks/shared/field-management/useCurrentModuleFieldManagement";
 
 const fieldClassName =
   "app-data-entry-field h-11 min-w-0 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15 disabled:cursor-not-allowed disabled:bg-white disabled:text-darknavy disabled:opacity-60";
@@ -643,12 +644,17 @@ function FieldShell({
   isRequired?: boolean;
   label: string;
 }) {
+  const isVisible = useModuleFieldVisibility([label]);
   const labelContent = (
     <>
       {label}
       <ModuleFieldRequiredMark fallbackRequired={isRequired} label={label} />
     </>
   );
+
+  if (!isVisible) {
+    return null;
+  }
 
   return (
     <div className="grid min-w-0 gap-2 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-start">

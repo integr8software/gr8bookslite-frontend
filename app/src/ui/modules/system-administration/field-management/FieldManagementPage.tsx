@@ -3,9 +3,7 @@
 import { Check, Eye, EyeOff, RotateCcw, Save, Search, Settings2 } from "lucide-react";
 import {
   FieldManagementTablePaginationStorageKey,
-  FieldManagementTabIds,
-  FieldManagementTabs,
-  getFieldManagementTabId,
+  isHeaderField,
   useFieldManagementPage,
   type EditableField,
 } from "@/app/src/hooks/modules/system-administration/field-management/useFieldManagementPage";
@@ -15,10 +13,7 @@ import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable
 
 export function FieldManagementPage() {
   const {
-    activeTab,
-    activeTabLabel,
     dirty,
-    entryFields,
     error,
     filteredModules,
     headerFields,
@@ -31,7 +26,6 @@ export function FieldManagementPage() {
     save,
     selectedModule,
     selectModule,
-    selectTab,
     setModuleQuery,
     table,
     updateField,
@@ -117,7 +111,7 @@ export function FieldManagementPage() {
                   <span className="block text-xs text-darknavy/40">{module.code}</span>
                 </span>
                 <span className="rounded bg-darknavy/5 px-2 py-1 text-xs font-semibold text-darknavy/45">
-                  {module.fields.filter((field) => getFieldManagementTabId(field)).length}
+                  {module.fields.filter(isHeaderField).length}
                 </span>
               </button>
             ))}
@@ -125,42 +119,10 @@ export function FieldManagementPage() {
         </aside>
 
         <section className="min-h-0 overflow-hidden">
-          <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg border border-darknavy/10 bg-white p-2 shadow-sm shadow-darknavy/5">
-            {FieldManagementTabs.map((tab) => {
-              const tabFields = tab.id === FieldManagementTabIds.entries ? entryFields : headerFields;
-              const isActive = tab.id === activeTab;
-
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  className={joinClasses(
-                    "inline-flex h-9 items-center gap-2 rounded-md px-3 text-sm font-semibold transition",
-                    isActive ? "bg-skyblue/10 text-skyblue" : "text-darknavy/55 hover:bg-darknavy/[0.035] hover:text-darknavy",
-                  )}
-                  onClick={() => selectTab(tab.id)}
-                >
-                  {tab.label}
-                  <span
-                    className={joinClasses(
-                      "rounded px-2 py-0.5 text-xs font-semibold",
-                      isActive ? "bg-skyblue/12 text-skyblue" : "bg-darknavy/5 text-darknavy/45",
-                    )}
-                  >
-                    {tabFields.length}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
           <ModuleTable
-            emptyDescription={
-              activeTab === FieldManagementTabIds.entries
-                ? "No entry table fields were discovered for this module."
-                : "No header fields were discovered for this module."
-            }
+            emptyDescription="No header fields were discovered for this module."
             emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
-            emptyTitle={`No ${activeTabLabel.toLowerCase()} found`}
+            emptyTitle="No header fields found"
             enableColumnReorder={false}
             maxHeightClassName="max-h-[calc(100vh-21rem)]"
             minWidthClassName="min-w-[48rem]"
@@ -168,7 +130,7 @@ export function FieldManagementPage() {
             paginationLabel="fields"
             paginationStorageKey={FieldManagementTablePaginationStorageKey}
             table={table}
-            tableTitle={`${selectedModule.name} ${activeTabLabel.toLowerCase()}`}
+            tableTitle={`${selectedModule.name} header fields`}
             renderRow={({ id, original }) => <FieldManagementTableRow key={id} field={original} onUpdateField={updateField} />}
           />
         </section>

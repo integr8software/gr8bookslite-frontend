@@ -85,13 +85,13 @@ export function mapCreateMasterPlanAndPackageDto(
 			? values.scopes.includes(MasterPlanAndPackageScopes.ALL) ||
 			  (values.scopes.includes(MasterPlanAndPackageScopes.ONBOARDING) &&
 					values.scopes.includes(MasterPlanAndPackageScopes.ADDITIONAL_COMPANY))
-				? "ONBOARDING"
-				: values.scopes[0] === "ALL"
-				? "ONBOARDING"
+				? MasterPlanAndPackageScopes.ONBOARDING
+				: values.scopes[0] === MasterPlanAndPackageScopes.ALL
+				? MasterPlanAndPackageScopes.ONBOARDING
 				: values.scopes[0]
-			: values.scope === "ALL"
-			? "ONBOARDING"
-			: values.scope ?? "ONBOARDING";
+			: values.scope === MasterPlanAndPackageScopes.ALL
+			? MasterPlanAndPackageScopes.ONBOARDING
+			: values.scope ?? MasterPlanAndPackageScopes.ONBOARDING;
 
 	return {
 		code,

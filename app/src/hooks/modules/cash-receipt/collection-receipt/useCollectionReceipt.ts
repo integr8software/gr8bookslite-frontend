@@ -1,5 +1,12 @@
 import { CollectionReceiptStorageKey } from "@/app/src/constants/modules/cash-receipt/collection-receipt/CollectionReceiptConstants";
-import { CollectionReceiptFallbackRecords } from "@/app/src/data/modules/cash-receipt/collection-receipt/CollectionReceiptData";
+import {
+  createCollectionReceipt,
+  fetchCollectionReceipt,
+  fetchCollectionReceipts,
+  mapApiCollectionReceipt,
+  updateCollectionReceipt,
+  updateCollectionReceiptStatus,
+} from "@/app/src/services/modules/cash-receipt/collection-receipt/CollectionReceiptApi";
 import {
   useOfficialReceiptActionForm,
   useOfficialReceiptStore,
@@ -10,8 +17,15 @@ import type {
   CollectionReceiptRecord,
 } from "@/app/src/types/modules/cash-receipt/collection-receipt/CollectionReceiptTypes";
 
-const CollectionReceiptHookConfig = {
-  fallbackReceipts: CollectionReceiptFallbackRecords,
+export const CollectionReceiptHookConfig = {
+  api: {
+    createReceipt: createCollectionReceipt,
+    fetchReceipt: fetchCollectionReceipt,
+    fetchReceipts: fetchCollectionReceipts,
+    mapApiReceipt: mapApiCollectionReceipt,
+    updateReceipt: updateCollectionReceipt,
+    updateReceiptStatus: updateCollectionReceiptStatus,
+  },
   receiptLabel: "collection receipt",
   storageKey: CollectionReceiptStorageKey,
 };

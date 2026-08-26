@@ -8,64 +8,6 @@ import type {
   OfficialReceiptTotals,
 } from "@/app/src/types/modules/cash-receipt/official-receipt/OfficialReceiptTypes";
 
-export const MockOfficialReceipts: OfficialReceiptRecord[] = [
-  {
-    id: "or-001",
-    receiptNo: "OR-2026-0001",
-    receiptDate: "2026-07-03",
-    customerName: "Aster Foods Corporation",
-    partyCode: "PTY-0001",
-    collectionType: "Customer payment",
-    referenceNo: "SI-2026-0188",
-    amount: 184500,
-    status: "Posted",
-  },
-  {
-    id: "or-002",
-    receiptNo: "OR-2026-0002",
-    receiptDate: "2026-07-04",
-    customerName: "Northline Retail Group",
-    partyCode: "PTY-0002",
-    collectionType: "Service income",
-    referenceNo: "SOA-2026-0042",
-    amount: 76250,
-    status: "For Approval",
-  },
-  {
-    id: "or-003",
-    receiptNo: "OR-2026-0003",
-    receiptDate: "2026-07-05",
-    customerName: "Bluecrest Trading",
-    partyCode: "PTY-0003",
-    collectionType: "Advance deposit",
-    referenceNo: "DEP-2026-0015",
-    amount: 52000,
-    status: "Draft",
-  },
-  {
-    id: "or-004",
-    receiptNo: "OR-2026-0004",
-    receiptDate: "2026-07-06",
-    customerName: "Mendoza and Lee Partners",
-    partyCode: "PTY-0004",
-    collectionType: "Rental collection",
-    referenceNo: "LS-2026-0091",
-    amount: 128900,
-    status: "Draft",
-  },
-  {
-    id: "or-005",
-    receiptNo: "OR-2026-0005",
-    receiptDate: "2026-07-07",
-    customerName: "Harborview Logistics",
-    partyCode: "PTY-0005",
-    collectionType: "Customer payment",
-    referenceNo: "SI-2026-0204",
-    amount: 214300,
-    status: "Posted",
-  },
-];
-
 export const OfficialReceiptStorageKey = "gr8books.official-receipt.receipts";
 
 export const OfficialReceiptPaymentTypeOptions = [
@@ -435,50 +377,6 @@ export function createOfficialReceiptRecordFromForm(
     referenceNo: values.referenceNo || firstEntry?.referenceNo || "",
     status: normalizeOfficialReceiptStatus(values.status),
   };
-}
-
-export function readStoredOfficialReceipts() {
-  return readStoredReceiptsByKey(OfficialReceiptStorageKey);
-}
-
-export function readStoredReceiptsByKey(storageKey: string) {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  const storedReceipts = window.localStorage.getItem(storageKey);
-
-  if (!storedReceipts) {
-    return null;
-  }
-
-  try {
-    const parsedReceipts = JSON.parse(storedReceipts) as OfficialReceiptRecord[];
-
-    return Array.isArray(parsedReceipts) ? parsedReceipts : null;
-  } catch {
-    return null;
-  }
-}
-
-export function writeStoredOfficialReceipts(receipts: OfficialReceiptRecord[]) {
-  writeStoredReceiptsByKey(OfficialReceiptStorageKey, receipts);
-}
-
-export function writeStoredReceiptsByKey(storageKey: string, receipts: OfficialReceiptRecord[]) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  window.localStorage.setItem(storageKey, JSON.stringify(receipts));
-}
-
-export function getInitialOfficialReceipts() {
-  return readStoredOfficialReceipts() ?? MockOfficialReceipts;
-}
-
-export function getInitialReceiptsByKey(storageKey: string, fallbackReceipts: OfficialReceiptRecord[]) {
-  return readStoredReceiptsByKey(storageKey) ?? fallbackReceipts;
 }
 
 export function calculateOfficialReceiptTotals(entries: OfficialReceiptLineEntry[]): OfficialReceiptTotals {

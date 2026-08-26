@@ -1,5 +1,4 @@
 import { ProvisionalReceiptStorageKey } from "@/app/src/constants/modules/cash-receipt/provisional-receipt/ProvisionalReceiptConstants";
-import { ProvisionalReceiptFallbackRecords } from "@/app/src/data/modules/cash-receipt/provisional-receipt/ProvisionalReceiptData";
 import {
   useOfficialReceiptActionForm,
   useOfficialReceiptStore,
@@ -11,7 +10,6 @@ import type {
 } from "@/app/src/types/modules/cash-receipt/provisional-receipt/ProvisionalReceiptTypes";
 
 const ProvisionalReceiptHookConfig = {
-  fallbackReceipts: ProvisionalReceiptFallbackRecords,
   receiptLabel: "provisional receipt",
   storageKey: ProvisionalReceiptStorageKey,
 };

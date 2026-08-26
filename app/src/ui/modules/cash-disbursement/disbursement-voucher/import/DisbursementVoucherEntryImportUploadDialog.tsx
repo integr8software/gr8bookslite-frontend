@@ -3,19 +3,19 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { ChevronDown, ClipboardPaste, Download, FileText, LayoutGrid, Upload, X } from "lucide-react";
 import {
-  CashVoucherAccountingImportClearActions,
-  CashVoucherAccountingImportTemplateHeaders,
-} from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherDataEntryConstants";
-import type { CashVoucherAttachment as VoucherAttachment } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
+  DisbursementAccountingImportClearActions,
+  DisbursementAccountingImportTemplateHeaders,
+} from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryConstants";
+import type { DisbursementAttachment as VoucherAttachment } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import { type ModuleDataEntryClearAction } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
-import { downloadAccountingImportTemplate } from "@/app/src/services/modules/cash-disbursement/cash-voucher/CashVoucherAccountingExportService";
+import { downloadAccountingImportTemplate } from "@/app/src/services/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingExportService";
 import {
   formatRowsAsTabularText,
   parseImportPreviewRows,
-} from "@/app/src/services/modules/cash-disbursement/cash-voucher/CashVoucherAccountingImportService";
+} from "@/app/src/services/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingImportService";
 
-export function AccountingImportPanel({
+export function DisbursementVoucherEntryImportPanel({
   canClearTable,
   importAttachment,
   isDragActive,
@@ -134,7 +134,7 @@ export function AccountingImportPanel({
         ) : (
           <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
             <label
-              htmlFor="cash-voucher-accounting-import-file"
+              htmlFor="disbursement-voucher-accounting-import-file"
               className={joinClasses(
                 "app-theme-field-readonly flex min-h-40 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed px-4 py-5 text-center transition",
                 isDragActive ? "border-skyblue bg-skyblue/12" : "hover:border-skyblue/45 hover:bg-skyblue/8",
@@ -164,7 +164,7 @@ export function AccountingImportPanel({
                 Supports .xlsx, .csv, .tsv, and text copied from spreadsheets.
               </span>
               <input
-                id="cash-voucher-accounting-import-file"
+                id="disbursement-voucher-accounting-import-file"
                 key={fileInputKey}
                 type="file"
                 accept=".xlsx,.csv,.tsv,.txt"
@@ -221,7 +221,7 @@ export function AccountingImportPanel({
                         role="menu"
                         className="absolute right-0 top-[calc(100%+0.35rem)] z-[80] w-48 overflow-hidden rounded-lg border border-darknavy/10 bg-white p-1 shadow-[0_18px_45px_rgba(33,39,56,0.16)]"
                       >
-                        {CashVoucherAccountingImportClearActions.map((action) => (
+                        {DisbursementAccountingImportClearActions.map((action) => (
                           <button
                             key={action.value}
                             type="button"
@@ -256,9 +256,9 @@ export function AccountingImportPanel({
                 <AccountingImportPreviewTable maxHeightClassName="max-h-40" rows={previewRows} onCellChange={handlePreviewCellChange} />
               ) : (
                 <>
-                  <label htmlFor="cash-voucher-accounting-import-paste" className="sr-only">Paste accounting rows from Excel</label>
+                  <label htmlFor="disbursement-voucher-accounting-import-paste" className="sr-only">Paste accounting rows from Excel</label>
                   <textarea
-                    id="cash-voucher-accounting-import-paste"
+                    id="disbursement-voucher-accounting-import-paste"
                     value={pasteText}
                     onChange={(event) => onPasteTextChange(event.target.value)}
                     className="app-theme-field min-h-24 resize-y rounded-lg border px-3 py-2 text-sm outline-none transition focus:border-skyblue/45"
@@ -322,7 +322,7 @@ function AccountingImportPreviewTable({
               key={`preview-row-${rowIndex}`}
               className={joinClasses("border-b border-darknavy/10 last:border-b-0", rowIndex === 0 ? "bg-skyblue/8 font-semibold" : "")}
             >
-              {CashVoucherAccountingImportTemplateHeaders.map((header, columnIndex) => (
+              {DisbursementAccountingImportTemplateHeaders.map((header, columnIndex) => (
                 <td key={`${header}-${columnIndex}`} className="border-r border-darknavy/10 last:border-r-0">
                   <label htmlFor={`${tableId}-${rowIndex}-${columnIndex}`} className="sr-only">{`${header} row ${rowIndex + 1}`}</label>
                   <input
@@ -408,7 +408,7 @@ function AccountingImportPreviewDialog({
   );
 }
 
-export function AccountingImportDialog({
+export function DisbursementVoucherEntryImportUploadDialog({
   canClearTable,
   importAttachment,
   isDragActive,
@@ -471,7 +471,7 @@ export function AccountingImportDialog({
           </button>
         </div>
         <div className="min-h-0 overflow-y-auto px-5 py-5">
-          <AccountingImportPanel
+          <DisbursementVoucherEntryImportPanel
             canClearTable={canClearTable}
             importAttachment={importAttachment}
             isDragActive={isDragActive}
@@ -496,5 +496,3 @@ export function AccountingImportDialog({
     </div>
   );
 }
-
-

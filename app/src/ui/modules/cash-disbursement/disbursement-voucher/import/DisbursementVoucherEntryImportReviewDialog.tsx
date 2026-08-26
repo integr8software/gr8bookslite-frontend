@@ -2,18 +2,18 @@
 
 import { type ReactNode, useState } from "react";
 import { Eye, FileText, X } from "lucide-react";
-import { CashVoucherStatuses } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherConstants";
-import { formatCurrency, formatDateLabel } from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherData";
+import { DisbursementVoucherStatuses } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
+import { formatCurrency, formatDateLabel } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import type {
-  CashVoucherAttachment as VoucherAttachment,
-  CashVoucherLineEntry,
-  CashVoucherTransactionRecord,
-  CashVoucherFormValues,
-} from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
+  DisbursementAttachment as VoucherAttachment,
+  DisbursementLineEntry,
+  DisbursementTransactionRecord,
+  DisbursementVoucherFormValues,
+} from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import { parseMoneyNumberInput } from "@/app/src/ui/shared/money/MoneyNumberField";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
-export function GridPreviewDialog({
+export function DisbursementVoucherEntryImportReviewDialog({
   entries,
   isBalanced,
   isOpen,
@@ -25,13 +25,13 @@ export function GridPreviewDialog({
   onClose,
   onContinue,
 }: {
-  entries: CashVoucherLineEntry[];
+  entries: DisbursementLineEntry[];
   isBalanced: boolean;
   isOpen: boolean;
-  selectedTransaction?: CashVoucherTransactionRecord;
+  selectedTransaction?: DisbursementTransactionRecord;
   totalCredit: number;
   totalDebit: number;
-  values: CashVoucherFormValues;
+  values: DisbursementVoucherFormValues;
   variance: number;
   onClose: () => void;
   onContinue: () => void;
@@ -57,7 +57,7 @@ export function GridPreviewDialog({
         className="flex h-[min(100dvh-0.75rem,980px)] w-full max-w-7xl flex-col overflow-hidden rounded-[20px] border border-darknavy/10 bg-white shadow-[0_18px_60px_rgba(33,39,56,0.18)] sm:h-[min(86vh,980px)] sm:rounded-[28px]"
       >
         <div className="border-b border-darknavy/10 px-4 py-4 sm:px-6 sm:py-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-skyblue">Edit Cash Voucher</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-skyblue">Edit Disbursement Voucher</p>
           <h2 id="grid-preview-title" className="mt-2 text-xl font-semibold text-darknavy sm:text-2xl">
             {values.voucherNo}
           </h2>
@@ -349,13 +349,13 @@ export function VoucherAccountingGridHeader({
   selectedTransaction,
   values,
 }: {
-  selectedTransaction?: CashVoucherTransactionRecord;
-  values: CashVoucherFormValues;
+  selectedTransaction?: DisbursementTransactionRecord;
+  values: DisbursementVoucherFormValues;
 }) {
   const headerFields = [
     {
-      label: "CV No.",
-      value: values.voucherNo || CashVoucherStatuses.draft,
+      label: "DV No.",
+      value: values.voucherNo || DisbursementVoucherStatuses.draft,
     },
     {
       label: "Document Date",
@@ -379,12 +379,12 @@ export function VoucherAccountingGridHeader({
     <section className="mt-6 overflow-hidden rounded-lg border border-darknavy/10 bg-offwhite/45">
       <div className="flex flex-col gap-3 border-b border-darknavy/10 bg-white px-4 py-4 sm:px-5 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/45">Cash Voucher</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/45">Disbursement Voucher</p>
           <h2 className="mt-1 truncate text-xl font-semibold text-darknavy">{values.voucherNo || "New Voucher"} Accounting Entries</h2>
         </div>
         <div className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-skyblue/20 bg-skyblue/8 px-4 py-2 text-sm font-semibold text-skyblue sm:w-auto">
           <FileText className="h-4 w-4" aria-hidden="true" />
-          {values.status || selectedTransaction?.status || CashVoucherStatuses.draft}
+          {values.status || selectedTransaction?.status || DisbursementVoucherStatuses.draft}
         </div>
       </div>
       <div className="grid gap-px bg-darknavy/10 sm:grid-cols-2 xl:grid-cols-3">
@@ -441,5 +441,3 @@ export function gridCellControlClassName(extraClassName?: string) {
     extraClassName,
   );
 }
-
-

@@ -467,4 +467,26 @@ export function disbursementEntryIsComplete(entry: CashVoucherLineEntry) {
   );
 }
 
+export function estimateCashVoucherEntryTextWidth(value: string, padding: number) {
+  return Math.min(600, Math.max(50, value.trim().length * 7.5 + padding));
+}
+
+export function calculateCashVoucherEntryColumnFitWidth({
+  columnId,
+  columnLabels,
+  entries,
+}: {
+  columnId: CashVoucherEntryColumnId;
+  columnLabels: Record<CashVoucherEntryColumnId, string>;
+  entries: CashVoucherLineEntry[];
+}) {
+  const headerWidth = estimateCashVoucherEntryTextWidth(columnLabels[columnId], 76);
+  const contentWidth = entries.reduce(
+    (currentWidth, entry) =>
+      Math.max(currentWidth, estimateCashVoucherEntryTextWidth(String(getCashVoucherEntryExportCell(entry, columnId) ?? ""), 24)),
+    50,
+  );
+
+  return Math.max(headerWidth, contentWidth);
+}
 

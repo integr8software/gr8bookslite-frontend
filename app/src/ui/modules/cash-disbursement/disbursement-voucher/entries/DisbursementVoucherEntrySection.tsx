@@ -1,17 +1,8 @@
 import { useCallback, useMemo, useState } from "react";
 import {
-  DefaultDisbursementEntryColumnOrder,
   DefaultDisbursementEntryColumnWidths,
-  DefaultExpenseEntryColumnOrder,
-  DefaultExpenseEntryColumnWidths,
-  DefaultVisibleDisbursementEntryColumnOrder,
-  DefaultVisibleExpenseEntryColumnOrder,
   DisbursementEntryColumnLabels,
   DisbursementVoucherExpenseEntryView,
-  ExpenseEntryColumnLabels,
-  MultiCheckColumnIds,
-  ProtectedDisbursementEntryColumnIds,
-  ProtectedExpenseEntryColumnIds,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryConstants";
 import {
   applyVoucherPartyToEntryUpdates,
@@ -19,13 +10,8 @@ import {
   createAutomaticAccountingEntries,
   createDefaultAccountExpenseOptions,
   getAccountingPartyFallbackValue,
-  getExpenseEntryColumnTotal,
-  isDisbursementEntryColumnId,
-  isExpenseEntryColumnId,
   isGeneratedAccountingEntry,
-  moveEntryColumn,
   normalizeDisbursementLineEntryFields,
-  updateVisibleEntryColumns,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingEntryData";
 import {
   DisbursementVoucherPartyOptions,
@@ -33,31 +19,20 @@ import {
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import { useAlphanumericTaxCodes } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
 import type {
-  DisbursementEntryColumnId,
   DisbursementEntryView,
-  ExpenseEntryColumnId,
   VoucherDataEntryProps,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryTypes";
 import type { DisbursementLineEntry } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
-import { getPaymentTypeDetailKind } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherPaymentFields";
-import {
-  createDisbursementAccountingEntryColumns,
-  createDisbursementExpenseEntryColumns,
-} from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/DisbursementVoucherEntryColumns";
-import {
-  ModuleDataEntry,
-  type ModuleDataEntryColumn,
-  type ModuleDataEntryColumnOption,
-} from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
-import { clampColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/utils";
-import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import { DisbursementVoucherAccountingEntryTable } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/DisbursementVoucherAccountingEntryTable";
+import { createDisbursementAccountingEntryColumns } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/DisbursementVoucherEntryColumns";
+import { DisbursementVoucherDetailEntryTable } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/DisbursementVoucherDetailEntryTable";
 import { createEwtOptions, createVatOptions } from "@/app/src/ui/shared/transaction-setup/AppTaxRateDialog";
-import { formatAmount } from "@/app/src/utils/currency.util";
-import {
-  calculateDisbursementEntryColumnFitWidth,
-  estimateDisbursementEntryTextWidth,
-} from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/DisbursementVoucherEntryCellControls";
+
+const EntryTabs: { id: DisbursementEntryView; label: string }[] = [
+  { id: "expense", label: "Line Entries" },
+  { id: "accounting", label: "Accounting Entries" },
+];
 
 export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
   const {
@@ -68,7 +43,6 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
     defaultAccounts,
     entries,
     errors,
-    isMultiCheckNumber,
     isReadonly,
     onAddEntries,
     onAddExpenseType,
@@ -85,45 +59,32 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
     partyCode,
     partyName,
     paymentMethod,
-    paymentTypeRecord,
     totalCredit,
     totalDebit,
   } = props;
-  const variance = Math.abs(totalDebit - totalCredit);
+
   const [entryView, setEntryView] = useState<DisbursementEntryView>(DisbursementVoucherExpenseEntryView);
+  const variance = Math.abs(totalDebit - totalCredit);
   const taxCodesQuery = useAlphanumericTaxCodes();
   const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
   const vatOptions = useMemo(() => createVatOptions(taxCodes), [taxCodes]);
   const ewtOptions = useMemo(() => createEwtOptions(taxCodes), [taxCodes]);
-  const [columnOrder, setColumnOrder] = useState<DisbursementEntryColumnId[]>(DefaultDisbursementEntryColumnOrder);
-  const [visibleColumnIds, setVisibleColumnIds] = useState<DisbursementEntryColumnId[]>(DefaultVisibleDisbursementEntryColumnOrder);
-  const [columnWidths, setColumnWidths] = useState(DefaultDisbursementEntryColumnWidths);
-  const [columnLabels, setColumnLabels] = useState(DisbursementEntryColumnLabels);
-  const [expenseColumnOrder, setExpenseColumnOrder] = useState<ExpenseEntryColumnId[]>(DefaultExpenseEntryColumnOrder);
-  const [visibleExpenseColumnIds, setVisibleExpenseColumnIds] = useState<ExpenseEntryColumnId[]>(DefaultVisibleExpenseEntryColumnOrder);
-  const [expenseColumnWidths, setExpenseColumnWidths] = useState(DefaultExpenseEntryColumnWidths);
-  const [expenseColumnLabels, setExpenseColumnLabels] = useState(ExpenseEntryColumnLabels);
-  const hasMultiCheckNumberColumn = isMultiCheckNumber && getPaymentTypeDetailKind(paymentMethod, paymentTypeRecord) === "with-bank";
-  const visibleColumnOrder = columnOrder.filter((columnId) =>
-    MultiCheckColumnIds.has(columnId) ? hasMultiCheckNumberColumn : visibleColumnIds.includes(columnId),
-  );
-  const visibleExpenseColumnOrder = expenseColumnOrder.filter((columnId) =>
-    MultiCheckColumnIds.has(columnId) ? hasMultiCheckNumberColumn : visibleExpenseColumnIds.includes(columnId),
-  );
+
   const chartAccounts = useMemo(() => createAccountingChartAccountOptions(entries), [entries]);
   const expenseAccounts = useMemo(() => createDefaultAccountExpenseOptions(defaultAccounts), [defaultAccounts]);
-  const expenseRows = useMemo(() => entries.filter((entry) => !isGeneratedAccountingEntry(entry)), [entries]);
+  const expenseRows = useMemo(() => entries.filter((entry: DisbursementLineEntry) => !isGeneratedAccountingEntry(entry)), [entries]);
+
   const partyOptions = useMemo<AppAdvancedDropdownOption[]>(() => {
     const options: AppAdvancedDropdownOption[] = [...DisbursementVoucherPartyOptions];
     const optionNames = new Set(options.map((option) => option.name.toLowerCase()));
     const customValues = new Set(options.map((option) => option.value));
     const customOptions: AppAdvancedDropdownOption[] = [];
 
-    entries.forEach((entry) => {
-      const partyName = (entry.partyName ?? "").trim();
-      const value = getAccountingPartyFallbackValue(partyName);
+    entries.forEach((entry: DisbursementLineEntry) => {
+      const currentPartyName = (entry.partyName ?? "").trim();
+      const value = getAccountingPartyFallbackValue(currentPartyName);
 
-      if (!partyName || optionNames.has(partyName.toLowerCase()) || customValues.has(value)) {
+      if (!currentPartyName || optionNames.has(currentPartyName.toLowerCase()) || customValues.has(value)) {
         return;
       }
 
@@ -131,19 +92,20 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
       customOptions.push({
         description: "Copied entry party",
         label: entry.partyCode ?? "",
-        name: partyName,
+        name: currentPartyName,
         value,
       });
     });
 
     return [...options, ...customOptions];
   }, [entries]);
+
   const responsibilityCenterOptions = useMemo<AppAdvancedDropdownOption[]>(() => {
     const options: AppAdvancedDropdownOption[] = [...DisbursementVoucherResponsibilityCenterOptions];
     const optionValues = new Set(options.map((option) => option.value));
     const customOptions: AppAdvancedDropdownOption[] = [];
 
-    entries.forEach((entry) => {
+    entries.forEach((entry: DisbursementLineEntry) => {
       const responsibilityCenter = (entry.responsibilityCenter ?? "").trim();
 
       if (!responsibilityCenter || optionValues.has(responsibilityCenter)) {
@@ -164,9 +126,9 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
 
   const updateExpenseEntryFields = useCallback(
     (entryId: string, updates: Partial<DisbursementLineEntry>) => {
-      const currentEntry = entries.find((entry) => entry.id === entryId);
+      const currentEntry = entries.find((entry: DisbursementLineEntry) => entry.id === entryId);
       const nextUpdates = applyVoucherPartyToEntryUpdates(currentEntry, updates, partyCode, partyName);
-      const updatedEntries = entries.map((entry) =>
+      const updatedEntries = entries.map((entry: DisbursementLineEntry) =>
         entry.id === entryId
           ? normalizeDisbursementLineEntryFields({
               ...entry,
@@ -185,13 +147,13 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
     [bankAccount, entries, onReplaceEntries, partyCode, partyName, paymentMethod],
   );
 
-  const allColumns = useMemo(
+  const accountingColumns = useMemo(
     () =>
       createDisbursementAccountingEntryColumns({
         canAddPartyName,
         chartAccounts,
-        columnLabels,
-        columnWidths,
+        columnLabels: DisbursementEntryColumnLabels,
+        columnWidths: DefaultDisbursementEntryColumnWidths,
         isReadonly,
         onAddPartyName,
         onUpdateEntry,
@@ -201,8 +163,6 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
     [
       canAddPartyName,
       chartAccounts,
-      columnLabels,
-      columnWidths,
       isReadonly,
       onAddPartyName,
       onUpdateEntry,
@@ -210,266 +170,68 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
       partyOptions,
     ],
   );
-  const columns = useMemo<ModuleDataEntryColumn<DisbursementLineEntry>[]>(
-    () => visibleColumnOrder.map((columnId) => allColumns[columnId]),
-    [allColumns, visibleColumnOrder],
-  );
-  const allExpenseColumns = useMemo(
-    () =>
-      createDisbursementExpenseEntryColumns({
-        accountingColumns: allColumns,
-        canAddExpenseType,
-        canAddResponsibilityCenter,
-        ewtOptions,
-        expenseAccounts,
-        expenseColumnLabels,
-        expenseColumnWidths,
-        isReadonly,
-        onAddExpenseType,
-        onAddResponsibilityCenter,
-        responsibilityCenterOptions,
-        taxCodes,
-        updateExpenseEntryFields,
-        vatOptions,
-      }),
-    [
-      allColumns,
-      canAddExpenseType,
-      canAddResponsibilityCenter,
-      ewtOptions,
-      expenseAccounts,
-      expenseColumnLabels,
-      expenseColumnWidths,
-      isReadonly,
-      onAddExpenseType,
-      onAddResponsibilityCenter,
-      responsibilityCenterOptions,
-      taxCodes,
-      updateExpenseEntryFields,
-      vatOptions,
-    ],
-  );
-  const expenseColumns = useMemo<ModuleDataEntryColumn<DisbursementLineEntry>[]>(
-    () => visibleExpenseColumnOrder.map((columnId) => allExpenseColumns[columnId]),
-    [allExpenseColumns, visibleExpenseColumnOrder],
-  );
-  const activeColumns = entryView === DisbursementVoucherExpenseEntryView ? expenseColumns : columns;
-  const activeRows = entryView === DisbursementVoucherExpenseEntryView ? expenseRows : entries;
-  const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
-    () =>
-      columnOrder
-        .filter((columnId) => !MultiCheckColumnIds.has(columnId) || hasMultiCheckNumberColumn)
-        .map((columnId) => ({
-          id: columnId,
-          isHideable: MultiCheckColumnIds.has(columnId) ? false : !ProtectedDisbursementEntryColumnIds.has(columnId),
-          isVisible: MultiCheckColumnIds.has(columnId) || visibleColumnIds.includes(columnId),
-          label: columnLabels[columnId],
-          width: columnWidths[columnId],
-          widthMode: "fixed",
-        })),
-    [columnLabels, columnOrder, columnWidths, hasMultiCheckNumberColumn, visibleColumnIds],
-  );
-  const expenseColumnOptions = useMemo<ModuleDataEntryColumnOption[]>(
-    () =>
-      expenseColumnOrder
-        .filter((columnId) => !MultiCheckColumnIds.has(columnId) || hasMultiCheckNumberColumn)
-        .map((columnId) => ({
-          id: columnId,
-          isHideable: MultiCheckColumnIds.has(columnId) ? false : !ProtectedExpenseEntryColumnIds.has(columnId),
-          isVisible: MultiCheckColumnIds.has(columnId) || visibleExpenseColumnIds.includes(columnId),
-          label: expenseColumnLabels[columnId],
-          width: expenseColumnWidths[columnId],
-          widthMode: "fixed",
-        })),
-    [expenseColumnLabels, expenseColumnOrder, expenseColumnWidths, hasMultiCheckNumberColumn, visibleExpenseColumnIds],
-  );
-
-  function updateColumnHeader(columnId: string, header: string) {
-    if (entryView === DisbursementVoucherExpenseEntryView && isExpenseEntryColumnId(columnId)) {
-      setExpenseColumnLabels((currentLabels) => ({
-        ...currentLabels,
-        [columnId]: header,
-      }));
-      return;
-    }
-
-    if (!isDisbursementEntryColumnId(columnId)) {
-      return;
-    }
-
-    setColumnLabels((currentLabels) => ({
-      ...currentLabels,
-      [columnId]: header,
-    }));
-  }
-
-  function updateColumnWidth(columnId: string, width: number) {
-    if (entryView === DisbursementVoucherExpenseEntryView && isExpenseEntryColumnId(columnId)) {
-      setExpenseColumnWidths((currentWidths) => ({
-        ...currentWidths,
-        [columnId]: clampColumnWidth(width),
-      }));
-      return;
-    }
-
-    if (!isDisbursementEntryColumnId(columnId)) {
-      return;
-    }
-
-    setColumnWidths((currentWidths) => ({
-      ...currentWidths,
-      [columnId]: clampColumnWidth(width),
-    }));
-  }
-
-  function fitColumnWidth(columnId: string) {
-    if (entryView === DisbursementVoucherExpenseEntryView && isExpenseEntryColumnId(columnId)) {
-      updateColumnWidth(columnId, estimateDisbursementEntryTextWidth(expenseColumnLabels[columnId], 76));
-      return;
-    }
-
-    if (!isDisbursementEntryColumnId(columnId)) {
-      return;
-    }
-
-    updateColumnWidth(
-      columnId,
-      calculateDisbursementEntryColumnFitWidth({
-        columnId,
-        columnLabels,
-        entries,
-      }),
-    );
-  }
-
-  function moveColumn(fromColumnId: string, toColumnId: string) {
-    if (entryView === DisbursementVoucherExpenseEntryView && isExpenseEntryColumnId(fromColumnId) && isExpenseEntryColumnId(toColumnId)) {
-      setExpenseColumnOrder((currentOrder) => moveEntryColumn(currentOrder, fromColumnId, toColumnId));
-      return;
-    }
-
-    if (!isDisbursementEntryColumnId(fromColumnId) || !isDisbursementEntryColumnId(toColumnId)) {
-      return;
-    }
-
-    setColumnOrder((currentOrder) => moveEntryColumn(currentOrder, fromColumnId, toColumnId));
-  }
-
-  function toggleColumnVisibility(columnId: string, isVisible: boolean) {
-    if (entryView === DisbursementVoucherExpenseEntryView && isExpenseEntryColumnId(columnId)) {
-      if (!isVisible && ProtectedExpenseEntryColumnIds.has(columnId)) {
-        return;
-      }
-
-      setVisibleExpenseColumnIds((currentVisibleIds) =>
-        updateVisibleEntryColumns(currentVisibleIds, expenseColumnOrder, columnId, isVisible),
-      );
-      return;
-    }
-
-    if (!isDisbursementEntryColumnId(columnId)) {
-      return;
-    }
-
-    if (!isVisible && ProtectedDisbursementEntryColumnIds.has(columnId)) {
-      return;
-    }
-
-    setVisibleColumnIds((currentVisibleIds) => updateVisibleEntryColumns(currentVisibleIds, columnOrder, columnId, isVisible));
-  }
-
-  function resetColumns() {
-    if (entryView === DisbursementVoucherExpenseEntryView) {
-      setExpenseColumnOrder([...DefaultExpenseEntryColumnOrder]);
-      setVisibleExpenseColumnIds([...DefaultVisibleExpenseEntryColumnOrder]);
-      setExpenseColumnWidths({ ...DefaultExpenseEntryColumnWidths });
-      setExpenseColumnLabels({ ...ExpenseEntryColumnLabels });
-      return;
-    }
-
-    setColumnOrder([...DefaultDisbursementEntryColumnOrder]);
-    setVisibleColumnIds([...DefaultVisibleDisbursementEntryColumnOrder]);
-    setColumnWidths({ ...DefaultDisbursementEntryColumnWidths });
-    setColumnLabels({ ...DisbursementEntryColumnLabels });
-  }
 
   return (
-    <section className="min-w-0">
-      <div className="min-w-0">
-        <ModuleDataEntry
-          columns={activeColumns}
-          description=""
-          emptyRowLabel="entry"
-          error={errors.lineEntries}
-          columnOptions={entryView === DisbursementVoucherExpenseEntryView ? expenseColumnOptions : columnOptions}
-          summaryCells={
-            entryView === "accounting"
-              ? {
-                  credit: formatAmount(totalCredit),
-                  debit: formatAmount(totalDebit),
-                }
-              : {
-                  amount: formatAmount(getExpenseEntryColumnTotal(expenseRows, "amount")),
-                  ewtAmount: formatAmount(getExpenseEntryColumnTotal(expenseRows, "ewtAmount")),
-                  netAmount: formatAmount(getExpenseEntryColumnTotal(expenseRows, "netAmount")),
-                  totalAmountDue: formatAmount(getExpenseEntryColumnTotal(expenseRows, "totalAmountDue")),
-                  vatAmount: formatAmount(getExpenseEntryColumnTotal(expenseRows, "vatAmount")),
-                }
-          }
-          summaryRowHeader="Totals"
-          footerDetails={
-            <span className={joinClasses("text-sm font-semibold", variance < 0.001 ? "text-emerald-700" : "text-coralpink")}>
-              Variance: {formatAmount(variance)}
-            </span>
-          }
-          isDraggable
-          isReadonly={isReadonly}
-          rows={activeRows}
-          title={
-            <div role="tablist" aria-label="Entry view" className="inline-flex rounded-lg border border-darknavy/10 bg-offwhite/70 p-1">
-              {(
-                [
-                  [DisbursementVoucherExpenseEntryView, "Disbursement Details"],
-                  ["accounting", "Accounting Entries"],
-                ] as const
-              ).map(([view, label]) => {
-                const isActive = entryView === view;
-
-                return (
-                  <button
-                    key={view}
-                    type="button"
-                    role="tab"
-                    aria-selected={isActive}
-                    onClick={() => setEntryView(view)}
-                    className={joinClasses(
-                      "h-8 rounded-md px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coralpink/25",
-                      isActive
-                        ? "bg-white text-coralpink shadow-sm ring-1 ring-darknavy/10"
-                        : "text-darknavy/55 hover:bg-white/70 hover:text-darknavy",
-                    )}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
-          }
-          onAddRows={onAddEntries}
-          onAutoColumnWidth={fitColumnWidth}
-          onClearRows={onClearEntries}
-          onDuplicateRow={onDuplicateEntry}
-          onFitColumnWidth={fitColumnWidth}
-          onInsertRow={onInsertEntry}
-          onMoveColumn={moveColumn}
-          onMoveRow={onMoveEntry}
-          onRemoveRow={onRemoveEntry}
-          onResetColumns={resetColumns}
-          onToggleColumnVisibility={toggleColumnVisibility}
-          onUpdateColumnHeader={updateColumnHeader}
-          onUpdateColumnWidth={updateColumnWidth}
-        />
+    <section className="grid gap-4">
+      <div className="flex items-center justify-between">
+        <div
+          role="tablist"
+          aria-label="Disbursement voucher lines"
+          className="inline-flex rounded-lg border border-darknavy/10 bg-offwhite/70 p-1"
+        >
+          {EntryTabs.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              role="tab"
+              aria-selected={entryView === tab.id}
+              onClick={() => setEntryView(tab.id)}
+              className={[
+                "h-8 rounded-md px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coralpink/25",
+                entryView === tab.id
+                  ? "bg-white text-coralpink shadow-sm ring-1 ring-darknavy/10"
+                  : "text-darknavy/55 hover:bg-white/70 hover:text-darknavy",
+              ].join(" ")}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
+
+      {entryView === "accounting" ? (
+        <DisbursementVoucherAccountingEntryTable
+          accountingColumns={accountingColumns}
+          accountingRows={entries}
+          errors={errors}
+          totalCredit={totalCredit}
+          totalDebit={totalDebit}
+          variance={variance}
+        />
+      ) : (
+        <DisbursementVoucherDetailEntryTable
+          accountingColumns={accountingColumns}
+          canAddExpenseType={canAddExpenseType}
+          canAddResponsibilityCenter={canAddResponsibilityCenter}
+          errors={errors}
+          ewtOptions={ewtOptions}
+          expenseAccounts={expenseAccounts}
+          expenseRows={expenseRows}
+          isReadonly={isReadonly}
+          onAddEntries={onAddEntries}
+          onAddExpenseType={onAddExpenseType}
+          onAddResponsibilityCenter={onAddResponsibilityCenter}
+          onClearEntries={onClearEntries}
+          onDuplicateEntry={onDuplicateEntry}
+          onInsertEntry={onInsertEntry}
+          onMoveEntry={onMoveEntry}
+          onRemoveEntry={onRemoveEntry}
+          responsibilityCenterOptions={responsibilityCenterOptions}
+          taxCodes={taxCodes}
+          updateExpenseEntryFields={updateExpenseEntryFields}
+          vatOptions={vatOptions}
+        />
+      )}
     </section>
   );
 }

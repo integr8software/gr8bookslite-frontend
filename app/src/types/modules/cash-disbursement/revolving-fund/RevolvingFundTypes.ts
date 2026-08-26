@@ -8,6 +8,10 @@ export type RevolvingFundActionMode = "add" | "edit" | "view";
 export type RevolvingFundActionTab = "details" | "attachments";
 export type RevolvingFundConfirmationAction = "save" | "draft" | "approve" | "disapprove" | "cancel";
 export type RevolvingFundActionPageState = ReturnType<typeof useRevolvingFundActionPage>;
+
+export type RevolvingFundEntrySectionProps = { page: RevolvingFundActionPageState };
+export type RevolvingFundDetailEntryTableProps = { page: RevolvingFundActionPageState };
+export type RevolvingFundAccountingEntryTableProps = { page: RevolvingFundActionPageState };
 export type RevolvingFundOverviewPageState = ReturnType<typeof useRevolvingFundOverviewPage>;
 export type RevolvingFundEntryTab = "items" | "accounting";
 export type RevolvingFundBoolean = "False" | "True";

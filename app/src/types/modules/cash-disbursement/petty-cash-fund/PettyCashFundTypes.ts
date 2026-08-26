@@ -8,6 +8,10 @@ export type PettyCashFundActionMode = "add" | "edit" | "view";
 export type PettyCashFundActionTab = "details" | "attachments";
 export type PettyCashFundConfirmationAction = "save" | "draft" | "approve" | "disapprove" | "cancel";
 export type PettyCashFundActionPageState = ReturnType<typeof usePettyCashFundActionPage>;
+
+export type PettyCashFundEntrySectionProps = { page: PettyCashFundActionPageState };
+export type PettyCashFundDetailEntryTableProps = { page: PettyCashFundActionPageState };
+export type PettyCashFundAccountingEntryTableProps = { page: PettyCashFundActionPageState };
 export type PettyCashFundOverviewPageState = ReturnType<typeof usePettyCashFundOverviewPage>;
 export type PettyCashFundEntryTab = "items" | "accounting";
 export type PettyCashFundBoolean = "False" | "True";

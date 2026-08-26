@@ -115,6 +115,38 @@ export type DisbursementExpenseEntryColumnsParams = {
   vatOptions: AppAdvancedDropdownOption[];
 };
 
+export type DisbursementVoucherAccountingEntryTableProps = {
+  accountingColumns: Record<DisbursementEntryColumnId, ModuleDataEntryColumn<DisbursementLineEntry>>;
+  accountingRows: DisbursementLineEntry[];
+  errors: DisbursementVoucherFormErrors;
+  totalCredit: number;
+  totalDebit: number;
+  variance: number;
+};
+
+export type DisbursementVoucherDetailEntryTableProps = {
+  accountingColumns: Record<DisbursementEntryColumnId, ModuleDataEntryColumn<DisbursementLineEntry>>;
+  canAddExpenseType: boolean;
+  canAddResponsibilityCenter: boolean;
+  errors: DisbursementVoucherFormErrors;
+  ewtOptions: AppAdvancedDropdownOption[];
+  expenseAccounts: ModuleChartAccount[];
+  expenseRows: DisbursementLineEntry[];
+  isReadonly: boolean;
+  onAddEntries: (count: number) => void;
+  onAddExpenseType: () => void;
+  onAddResponsibilityCenter: (entryId: string) => void;
+  onClearEntries: VoucherDataEntryProps["onClearEntries"];
+  onDuplicateEntry: (entryId: string) => void;
+  onInsertEntry: (targetEntryId: string, position: "above" | "below") => void;
+  onMoveEntry: (sourceEntryId: string, targetEntryId: string) => void;
+  onRemoveEntry: (entryId: string) => void;
+  responsibilityCenterOptions: AppAdvancedDropdownOption[];
+  taxCodes: AlphanumericTaxCode[];
+  updateExpenseEntryFields: DisbursementEntryFieldsUpdater;
+  vatOptions: AppAdvancedDropdownOption[];
+};
+
 export type EditableDisbursementAccountingGridRow = {
   accountCode: string;
   accountName: string;

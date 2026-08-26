@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { DisbursementVoucherAccountingGridPage } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/DisbursementVoucherAccountingGridPage";
+import { DisbursementVoucherEntryImportPage } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/import/DisbursementVoucherEntryImportPage";
 
 const PageTitle = "Accounting Grid View";
 
@@ -10,5 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function CashDisbursementDisbursementVoucherAccountingGridPage() {
-  return <DisbursementVoucherAccountingGridPage />;
+  return <DisbursementVoucherEntryImportPage />;
 }

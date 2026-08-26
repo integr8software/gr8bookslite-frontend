@@ -8,6 +8,12 @@ export type RevolvingFundReplenishmentActionMode = "add" | "edit" | "view";
 export type RevolvingFundReplenishmentActionTab = "details" | "attachments";
 export type RevolvingFundReplenishmentConfirmationAction = "save" | "draft" | "approve" | "disapprove" | "cancel";
 export type RevolvingFundReplenishmentActionPageState = ReturnType<typeof useRevolvingFundReplenishmentActionPage>;
+
+export type RevolvingFundReplenishmentEntrySectionProps = { page: RevolvingFundReplenishmentActionPageState };
+export type RevolvingFundReplenishmentDetailEntryTableProps = { page: RevolvingFundReplenishmentActionPageState };
+export type RevolvingFundReplenishmentAccountingEntryTableProps = {
+  page: RevolvingFundReplenishmentActionPageState;
+};
 export type RevolvingFundReplenishmentOverviewPageState = ReturnType<typeof useRevolvingFundReplenishmentOverviewPage>;
 export type RevolvingFundReplenishmentEntryTab = "vouchers" | "accounting";
 
@@ -37,6 +43,17 @@ export type RevolvingFundReplenishmentAccountingEntry = {
 };
 
 export type RevolvingFundReplenishmentAccountingColumnId = Exclude<keyof RevolvingFundReplenishmentAccountingEntry, "id">;
+
+export type RevolvingFundReplenishmentDetailEntryColumnsParams = {
+  columnLabels: Record<RevolvingFundReplenishmentEntryColumnId, string>;
+  columnWidths: Record<RevolvingFundReplenishmentEntryColumnId, number>;
+  page: RevolvingFundReplenishmentActionPageState;
+};
+
+export type RevolvingFundReplenishmentAccountingEntryColumnsParams = {
+  columnLabels: Record<RevolvingFundReplenishmentAccountingColumnId, string>;
+  columnWidths: Record<RevolvingFundReplenishmentAccountingColumnId, number>;
+};
 
 export type RevolvingFundReplenishmentFormValues = {
   transactionNo: string;

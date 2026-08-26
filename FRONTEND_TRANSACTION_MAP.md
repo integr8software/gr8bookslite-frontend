@@ -33,7 +33,7 @@ existing transaction feature using this structure.
   `app/src/ui/shared/date-range-picker/DateRangePicker.tsx`.
 - Shared amount filters must use `AmountRangePicker` from
   `app/src/ui/shared/amount-range-picker/AmountRangePicker.tsx`.
-- Feature-specific entry row utilities stay in `entries/utils/`.
+- Feature-specific entry row utilities stay directly in `entries/`.
 - Check [FRONTEND_UTILITY.md](FRONTEND_UTILITY.md) before adding or duplicating
   a helper.
 - Read
@@ -192,7 +192,7 @@ Do not assemble route suffixes such as `/add`, `/edit/${recordId}`, or
 
 Do not put hooks, API calls, application state, validation rules, constants,
 types, or data mappers inside transaction UI folders. Feature-specific entry
-row UI helpers may live in `entries/utils/`. When utility logic is shared or
+row UI helpers may live directly in `entries/`. When utility logic is shared or
 reusable across modules, import an existing helper from `app/src/utils/` before
 adding a new one. See [FRONTEND_UTILITY.md](FRONTEND_UTILITY.md) for the
 current utility list.
@@ -219,12 +219,16 @@ app/src/ui/modules/<domain>/<feature>/
     # When the form has additional tabs/sections:
     <ModuleName><TabName>Fields.tsx
   entries/
-    utils/
-      <ModuleName>EntryRowUtils.ts
-    <ModuleName>EntryCellControls.tsx
+    <ModuleName>EntryRowUtils.ts
     <ModuleName>EntrySection.tsx
-    <ModuleName>EntryTabs.tsx
-    <ModuleName>LineColumns.tsx
+    <ModuleName>DetailEntryTable.tsx
+    <ModuleName>AccountingEntryTable.tsx
+    <ModuleName>EntryColumns.tsx
+  import/
+    # When the transaction supports Excel/CSV bulk import:
+    <ModuleName>EntryImportPage.tsx
+    <ModuleName>EntryImportUploadDialog.tsx
+    <ModuleName>EntryImportReviewDialog.tsx
   overview/
     <ModuleName>OverviewPage.tsx
     <ModuleName>RecordActions.tsx
@@ -1058,23 +1062,39 @@ Selecting a Currency should resolve its configured Exchange Rate against the act
   are out of balance. The documented Save As Draft validation exception still
   applies to incomplete work in progress.
 
-`<ModuleName>EntryTabs.tsx`
+`<ModuleName>EntrySection.tsx`
 
-- Tab control for multiple entry sets such as Items, Accounts, Taxes,
-  Attachments, or Allocations.
-- Keep tab ids and labels in constants when reused by hooks or validation.
+- Transaction entries orchestrator with integrated tab switcher (e.g., Items / Expenses vs Accounting Entries).
+- Manages active tab state and renders `<ModuleName>DetailEntryTable` or `<ModuleName>AccountingEntryTable`.
 
-`<ModuleName>LineColumns.tsx`
+`<ModuleName>DetailEntryTable.tsx` / `<ModuleName>AccountingEntryTable.tsx`
 
-- Column definitions for transaction entry rows.
-- Uses `EntryCellControls` for editable cells.
+- Dedicated entry table components for Line/Expense Details and Accounting Debit/Credit Entries.
+- Keeps row state, column reordering/visibility, and summary calculations isolated per table.
+- Use `app/src/ui/shared/module/module-data-entry/entryTableState.util.ts` for column reordering, visibility toggling, and width auto-fitting.
+
+`<ModuleName>EntryColumns.tsx`
+
+- Declarative column definitions and builders for transaction entry rows.
+- Uses shared Data Entry cell primitives directly from `app/src/ui/shared/module/module-data-entry/` (`ModuleDataEntryInputCell`, `ModuleDataEntryMoneyCell`, `ModuleDataEntryDropdownCell`, `ModuleDataEntryRemarksCell`, `ModuleDataEntryCheckboxCell`, `ModuleDataEntryReadonlyCell`).
 - Move reusable visible-column options and add-column options to constants.
 
-`<ModuleName>EntryCellControls.tsx`
+### Bulk Import Workspace (`import/`)
 
-- Small editable and readonly cell renderers.
-- Examples: item selector, account selector, quantity input, unit price input,
-  tax selector, debit/credit input, and row note input.
+For transaction modules that support spreadsheet import (e.g. Cash Voucher, Disbursement Voucher):
+- `<ModuleName>EntryImportPage.tsx`: Fullscreen spreadsheet staging editor and exporter (Excel/PDF).
+- `<ModuleName>EntryImportUploadDialog.tsx`: Modal for drag-and-drop file upload (`.xlsx`, `.csv`, `.tsv`, `.txt`) or pasting copied table cells.
+- `<ModuleName>EntryImportReviewDialog.tsx`: Pre-save review modal verifying debit/credit balances before committing imported entries back to the voucher form.
+
+### Shared Data Entry Cell Controls
+
+- Use standard cell renderers from `app/src/ui/shared/module/module-data-entry/` instead of creating per-module `EntryCellControls.tsx` duplicate files:
+  - `ModuleDataEntryInputCell`: accessible text, date, and number inputs.
+  - `ModuleDataEntryMoneyCell`: formatted tabular money inputs.
+  - `ModuleDataEntryDropdownCell`: accessible advanced dropdown select cells.
+  - `ModuleDataEntryRemarksCell`: multiline expand/dialog remarks cells.
+  - `ModuleDataEntryCheckboxCell`: toggle/checkbox cells.
+  - `ModuleDataEntryReadonlyCell`: formatted display cells.
 - Lookup cells must follow the same advanced-dropdown and permission behavior
   as lookup fields in the transaction header. Use `AppAdvancedDropdown` from
   `app/src/ui/shared/advanced-dropdown/` for Party Name, Responsibility Center,
@@ -1143,7 +1163,7 @@ Selecting a Currency should resolve its configured Exchange Rate against the act
   inside the Remarks cell component.
 - Does not mutate row state directly; call typed handlers from props.
 
-`utils/<ModuleName>EntryRowUtils.ts`
+`<ModuleName>EntryRowUtils.ts`
 
 - Feature-specific entry row helpers needed only by this transaction entry grid.
 - Good for focus movement, local display helpers, row-level UI calculations, and
@@ -1623,7 +1643,7 @@ columns.
   status-count summaries. Do not create feature-local or component-level date
   wrappers (such as `formatAuditDate`, `formatDateLabel`, or custom `Intl` functions)
   that only repeat or wrap `formatDate`.
-- Entry row utilities: use `entries/utils/` only for helpers specific to the
+- Entry row utilities: use `entries/<ModuleName>EntryRowUtils.ts` only for helpers specific to the
   current transaction module.
 - Utility inventory: read [FRONTEND_UTILITY.md](FRONTEND_UTILITY.md) before
   creating a helper with a purpose that may already exist.

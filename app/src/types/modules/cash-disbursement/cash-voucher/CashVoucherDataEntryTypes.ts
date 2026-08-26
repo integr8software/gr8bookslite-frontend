@@ -109,6 +109,38 @@ export type CashVoucherExpenseEntryColumnsParams = {
   vatOptions: AppAdvancedDropdownOption[];
 };
 
+export type CashVoucherAccountingEntryTableProps = {
+  accountingColumns: Record<CashVoucherEntryColumnId, ModuleDataEntryColumn<CashVoucherLineEntry>>;
+  accountingRows: CashVoucherLineEntry[];
+  errors: CashVoucherFormErrors;
+  totalCredit: number;
+  totalDebit: number;
+  variance: number;
+};
+
+export type CashVoucherDetailEntryTableProps = {
+  accountingColumns: Record<CashVoucherEntryColumnId, ModuleDataEntryColumn<CashVoucherLineEntry>>;
+  canAddExpenseType: boolean;
+  canAddResponsibilityCenter: boolean;
+  errors: CashVoucherFormErrors;
+  ewtOptions: AppAdvancedDropdownOption[];
+  expenseAccounts: ModuleChartAccount[];
+  expenseRows: CashVoucherLineEntry[];
+  isReadonly: boolean;
+  onAddEntries: (count: number) => void;
+  onAddExpenseType: () => void;
+  onAddResponsibilityCenter: (entryId: string) => void;
+  onClearEntries: VoucherDataEntryProps["onClearEntries"];
+  onDuplicateEntry: (entryId: string) => void;
+  onInsertEntry: (targetEntryId: string, position: "above" | "below") => void;
+  onMoveEntry: (sourceEntryId: string, targetEntryId: string) => void;
+  onRemoveEntry: (entryId: string) => void;
+  responsibilityCenterOptions: AppAdvancedDropdownOption[];
+  taxCodes: AlphanumericTaxCode[];
+  updateExpenseEntryFields: CashVoucherEntryFieldsUpdater;
+  vatOptions: AppAdvancedDropdownOption[];
+};
+
 export type EditableCashVoucherAccountingGridRow = {
   accountCode: string;
   accountName: string;

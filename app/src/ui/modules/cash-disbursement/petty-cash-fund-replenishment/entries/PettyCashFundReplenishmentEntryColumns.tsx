@@ -1,26 +1,24 @@
-import type { PettyCashFundReplenishmentActionPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentTypes";
 import type {
+  PettyCashFundReplenishmentAccountingEntryColumnsParams,
   PettyCashFundReplenishmentAccountingColumnId,
   PettyCashFundReplenishmentAccountingEntry,
+  PettyCashFundReplenishmentDetailEntryColumnsParams,
   PettyCashFundReplenishmentEntry,
   PettyCashFundReplenishmentEntryColumnId,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentTypes";
-import {
-  PettyCashFundReplenishmentEntryInput,
-  PettyCashFundReplenishmentMoneyInput,
-} from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund-replenishment/entries/PettyCashFundReplenishmentEntryCellControls";
 import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import { ModuleDataEntryInputCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryInputCell";
+import { ModuleDataEntryMoneyCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryMoneyCell";
 import { ModuleDataEntryRemarksCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryRemarksCell";
 
 export function createPettyCashFundReplenishmentLineColumns({
   columnLabels,
   columnWidths,
   page,
-}: {
-  columnLabels: Record<PettyCashFundReplenishmentEntryColumnId, string>;
-  columnWidths: Record<PettyCashFundReplenishmentEntryColumnId, number>;
-  page: PettyCashFundReplenishmentActionPageState;
-}): Record<PettyCashFundReplenishmentEntryColumnId, ModuleDataEntryColumn<PettyCashFundReplenishmentEntry>> {
+}: PettyCashFundReplenishmentDetailEntryColumnsParams): Record<
+  PettyCashFundReplenishmentEntryColumnId,
+  ModuleDataEntryColumn<PettyCashFundReplenishmentEntry>
+> {
   const text = (
     id: PettyCashFundReplenishmentEntryColumnId,
     type: "text" | "date" = "text",
@@ -31,7 +29,7 @@ export function createPettyCashFundReplenishmentLineColumns({
     widthClassName: "w-auto",
     widthMode: "fixed",
     renderCell: (row, _index, context) => (
-      <PettyCashFundReplenishmentEntryInput
+      <ModuleDataEntryInputCell
         id={context.fieldId}
         name={context.fieldName}
         type={type}
@@ -42,6 +40,7 @@ export function createPettyCashFundReplenishmentLineColumns({
       />
     ),
   });
+
   const money = (id: "totalAmount" | "netAmount" | "vatAmount"): ModuleDataEntryColumn<PettyCashFundReplenishmentEntry> => ({
     header: columnLabels[id],
     id,
@@ -49,7 +48,7 @@ export function createPettyCashFundReplenishmentLineColumns({
     widthClassName: "w-auto",
     widthMode: "fixed",
     renderCell: (row, _index, context) => (
-      <PettyCashFundReplenishmentMoneyInput
+      <ModuleDataEntryMoneyCell
         id={context.fieldId}
         name={context.fieldName}
         value={row[id]}
@@ -90,10 +89,10 @@ export function createPettyCashFundReplenishmentLineColumns({
 export function createPettyCashFundReplenishmentAccountingColumns({
   columnLabels,
   columnWidths,
-}: {
-  columnLabels: Record<PettyCashFundReplenishmentAccountingColumnId, string>;
-  columnWidths: Record<PettyCashFundReplenishmentAccountingColumnId, number>;
-}): Record<PettyCashFundReplenishmentAccountingColumnId, ModuleDataEntryColumn<PettyCashFundReplenishmentAccountingEntry>> {
+}: PettyCashFundReplenishmentAccountingEntryColumnsParams): Record<
+  PettyCashFundReplenishmentAccountingColumnId,
+  ModuleDataEntryColumn<PettyCashFundReplenishmentAccountingEntry>
+> {
   const column = (id: PettyCashFundReplenishmentAccountingColumnId): ModuleDataEntryColumn<PettyCashFundReplenishmentAccountingEntry> => ({
     header: columnLabels[id],
     id,

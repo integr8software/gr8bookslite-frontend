@@ -8,6 +8,12 @@ export type PettyCashFundReplenishmentActionMode = "add" | "edit" | "view";
 export type PettyCashFundReplenishmentActionTab = "details" | "attachments";
 export type PettyCashFundReplenishmentConfirmationAction = "save" | "draft" | "approve" | "disapprove" | "cancel";
 export type PettyCashFundReplenishmentActionPageState = ReturnType<typeof usePettyCashFundReplenishmentActionPage>;
+
+export type PettyCashFundReplenishmentEntrySectionProps = { page: PettyCashFundReplenishmentActionPageState };
+export type PettyCashFundReplenishmentDetailEntryTableProps = { page: PettyCashFundReplenishmentActionPageState };
+export type PettyCashFundReplenishmentAccountingEntryTableProps = {
+  page: PettyCashFundReplenishmentActionPageState;
+};
 export type PettyCashFundReplenishmentOverviewPageState = ReturnType<typeof usePettyCashFundReplenishmentOverviewPage>;
 export type PettyCashFundReplenishmentEntryTab = "vouchers" | "accounting";
 
@@ -37,6 +43,17 @@ export type PettyCashFundReplenishmentAccountingEntry = {
 };
 
 export type PettyCashFundReplenishmentAccountingColumnId = Exclude<keyof PettyCashFundReplenishmentAccountingEntry, "id">;
+
+export type PettyCashFundReplenishmentDetailEntryColumnsParams = {
+  columnLabels: Record<PettyCashFundReplenishmentEntryColumnId, string>;
+  columnWidths: Record<PettyCashFundReplenishmentEntryColumnId, number>;
+  page: PettyCashFundReplenishmentActionPageState;
+};
+
+export type PettyCashFundReplenishmentAccountingEntryColumnsParams = {
+  columnLabels: Record<PettyCashFundReplenishmentAccountingColumnId, string>;
+  columnWidths: Record<PettyCashFundReplenishmentAccountingColumnId, number>;
+};
 
 export type PettyCashFundReplenishmentFormValues = {
   transactionNo: string;

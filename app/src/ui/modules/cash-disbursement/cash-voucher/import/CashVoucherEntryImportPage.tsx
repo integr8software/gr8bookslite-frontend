@@ -7,49 +7,49 @@ import pdfFonts from "pdfmake/build/vfs_fonts";
 import { LayoutGrid, Save } from "lucide-react";
 import { AppMaxFileUploadSizeBytes, AppMaxFileUploadSizeLabel } from "@/app/src/constants/shared/app/AppConstants";
 import {
-  DefaultDisbursementAccountingGridColumnLabels,
-  DefaultDisbursementAccountingGridColumnOrder,
-  DefaultDisbursementAccountingGridColumnWidths,
-  DisbursementAccountingAmountColumnIds,
-  DisbursementAccountingCreditColumnId,
-  DisbursementAccountingDebitColumnId,
-  DisbursementAccountingExportColumnWidths,
-  DisbursementAccountingGridTaxRateOptions,
-  ProtectedDisbursementAccountingGridColumnIds,
-} from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryConstants";
+  DefaultCashVoucherAccountingGridColumnLabels,
+  DefaultCashVoucherAccountingGridColumnOrder,
+  DefaultCashVoucherAccountingGridColumnWidths,
+  CashVoucherAccountingAmountColumnIds,
+  CashVoucherAccountingCreditColumnId,
+  CashVoucherAccountingDebitColumnId,
+  CashVoucherAccountingExportColumnWidths,
+  CashVoucherAccountingGridTaxRateOptions,
+  ProtectedCashVoucherAccountingGridColumnIds,
+} from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherDataEntryConstants";
 import {
-  DisbursementVoucherInitialEntryDraft,
+  CashVoucherInitialEntryDraft,
   formatCurrency,
   syncTaxDetailsAmount,
-} from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
-import { useDisbursementVoucherStore } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucher";
-import { validateDisbursementVoucherEntries } from "@/app/src/validations/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherValidation";
+} from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherData";
+import { useCashVoucherStore } from "@/app/src/hooks/modules/cash-disbursement/cash-voucher/useCashVoucher";
+import { validateCashVoucherEntries } from "@/app/src/validations/modules/cash-disbursement/cash-voucher/CashVoucherValidation";
 import type {
-  DisbursementAccountingGridColumnId as GridColumnId,
-  EditableDisbursementAccountingGridRow as EditableGridRow,
-} from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryTypes";
+  CashVoucherAccountingGridColumnId as GridColumnId,
+  EditableCashVoucherAccountingGridRow as EditableGridRow,
+} from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherDataEntryTypes";
 import type {
-  DisbursementAttachment as VoucherAttachment,
-  DisbursementVoucherAccountingGridSession,
-} from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+  CashVoucherAttachment as VoucherAttachment,
+  CashVoucherAccountingGridSession,
+} from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
 import {
   readAccountingGridSession,
   writeAccountingGridSession,
-} from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingGridSessionData";
-import { AccountingImportDialog } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/DisbursementVoucherAccountingImportDialogs";
+} from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherAccountingGridSessionData";
+import { CashVoucherEntryImportUploadDialog } from "@/app/src/ui/modules/cash-disbursement/cash-voucher/import/CashVoucherEntryImportUploadDialog";
 import {
   GridEntryInput,
-  GridPreviewDialog,
+  CashVoucherEntryImportReviewDialog,
   SummaryCard,
   VoucherAccountingGridHeader,
   gridCellControlClassName,
-} from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/DisbursementVoucherAccountingGridPreview";
+} from "@/app/src/ui/modules/cash-disbursement/cash-voucher/import/CashVoucherEntryImportReviewDialog";
 import {
   createAccountingPdfDefinition,
   createAccountingWorkbook,
   getAccountingExportTheme,
   readAccountingImportFilePreviewText,
-} from "@/app/src/services/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingExportService";
+} from "@/app/src/services/modules/cash-disbursement/cash-voucher/CashVoucherAccountingExportService";
 import {
   buildLineEntries,
   calculateGridColumnFitWidth,
@@ -67,7 +67,7 @@ import {
   parseTabularText,
   shouldClearRow,
   withAccountingImportAttachment,
-} from "@/app/src/services/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingImportService";
+} from "@/app/src/services/modules/cash-disbursement/cash-voucher/CashVoucherAccountingImportService";
 import {
   ModuleDataEntry,
   type ModuleDataEntryCellContext,
@@ -76,20 +76,20 @@ import {
   type ModuleDataEntryColumnOption,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { ModuleDataEntryRemarksCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryRemarksCell";
-import { MoneyNumberField, formatMoneyNumberInput } from "@/app/src/ui/shared/money/MoneyNumberField";
+import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 pdfMake.addVirtualFileSystem(pdfFonts);
 
-export function DisbursementVoucherAccountingGridPage() {
+export function CashVoucherEntryImportPage() {
   const router = useRouter();
-  const transactions = useDisbursementVoucherStore((state) => state.transactions);
-  const [session, setSession] = useState<DisbursementVoucherAccountingGridSession | null>(null);
+  const transactions = useCashVoucherStore((state) => state.transactions);
+  const [session, setSession] = useState<CashVoucherAccountingGridSession | null>(null);
   const [rows, setRows] = useState<EditableGridRow[]>([]);
-  const [columnOrder, setColumnOrder] = useState<GridColumnId[]>(DefaultDisbursementAccountingGridColumnOrder);
-  const [visibleColumnIds, setVisibleColumnIds] = useState<GridColumnId[]>(DefaultDisbursementAccountingGridColumnOrder);
-  const [columnLabels, setColumnLabels] = useState(DefaultDisbursementAccountingGridColumnLabels);
-  const [columnWidths, setColumnWidths] = useState(DefaultDisbursementAccountingGridColumnWidths);
+  const [columnOrder, setColumnOrder] = useState<GridColumnId[]>(DefaultCashVoucherAccountingGridColumnOrder);
+  const [visibleColumnIds, setVisibleColumnIds] = useState<GridColumnId[]>(DefaultCashVoucherAccountingGridColumnOrder);
+  const [columnLabels, setColumnLabels] = useState(DefaultCashVoucherAccountingGridColumnLabels);
+  const [columnWidths, setColumnWidths] = useState(DefaultCashVoucherAccountingGridColumnWidths);
   const [autoWidthColumnIds, setAutoWidthColumnIds] = useState<GridColumnId[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -146,48 +146,20 @@ export function DisbursementVoucherAccountingGridPage() {
 
     return nextWidths;
   }, [autoWidthColumnIds, columnLabels, columnWidths, rows]);
-  const columns: ModuleDataEntryColumn<EditableGridRow>[] = visibleColumnOrder.map((columnId) => ({
-    header: columnLabels[columnId],
-    id: columnId,
-    isRemovable: !ProtectedDisbursementAccountingGridColumnIds.has(columnId),
-    renderCell: (row, _index, context) => renderGridCell(row, columnId, context),
-    width: resolvedColumnWidths[columnId],
-    widthClassName: "",
-    widthMode: autoWidthColumnIds.includes(columnId) ? "auto" : "fixed",
-  }));
-  const columnOptions: ModuleDataEntryColumnOption[] = columnOrder.map((columnId) => ({
-    id: columnId,
-    isHideable: !ProtectedDisbursementAccountingGridColumnIds.has(columnId),
-    isVisible: visibleColumnIds.includes(columnId),
-    label: columnLabels[columnId] || DefaultDisbursementAccountingGridColumnLabels[columnId],
-    width: resolvedColumnWidths[columnId],
-    widthMode: autoWidthColumnIds.includes(columnId) ? "auto" : "fixed",
-  }));
-  const previewValues = session
-    ? withAccountingImportAttachment(
-        {
-          ...session.values,
-          lineEntries: previewEntries,
-        },
-        importedImportAttachment,
-      )
-    : null;
 
-  function updateRow(rowId: string, field: keyof Omit<EditableGridRow, "id" | "taxDetails">, value: string) {
-    const nextValue = DisbursementAccountingAmountColumnIds.has(field as GridColumnId) ? formatMoneyNumberInput(value) : value;
-
+  function updateRowField(id: string, field: keyof EditableGridRow, value: string) {
     setRows((currentRows) =>
       currentRows.map((row) => {
-        if (row.id !== rowId) {
+        if (row.id !== id) {
           return row;
         }
 
-        const nextRow = { ...row, [field]: nextValue };
-
-        if (DisbursementAccountingAmountColumnIds.has(field as GridColumnId) || field === "taxRate") {
-          const amount = normalizeAmount(nextRow.debit || nextRow.credit);
-
-          nextRow.taxDetails = syncTaxDetailsAmount(nextRow.taxDetails, amount, nextRow.taxRate);
+        const nextRow = { ...row, [field]: value };
+        if (field === "debit" && value.trim()) {
+          nextRow.credit = "";
+        }
+        if (field === "credit" && value.trim()) {
+          nextRow.debit = "";
         }
 
         return nextRow;
@@ -197,66 +169,69 @@ export function DisbursementVoucherAccountingGridPage() {
   }
 
   function addBlankRows(count = 1) {
-    setRows((currentRows) => [...currentRows, ...Array.from({ length: count }, createBlankEditableRow)]);
+    setRows((currentRows) => [
+      ...currentRows,
+      ...Array.from({ length: count }, () => createBlankEditableRow()),
+    ]);
     setErrorMessage(null);
   }
 
-  function removeRow(rowId: string) {
+  function duplicateRow(id: string) {
     setRows((currentRows) => {
-      const nextRows = currentRows.filter((row) => row.id !== rowId);
-      return nextRows.length > 0 ? nextRows : [createBlankEditableRow()];
+      const rowIndex = currentRows.findIndex((row) => row.id === id);
+      if (rowIndex === -1) {
+        return currentRows;
+      }
+
+      const sourceRow = currentRows[rowIndex];
+      const duplicated: EditableGridRow = {
+        ...sourceRow,
+        id: createGridRowId(),
+        taxDetails: { ...sourceRow.taxDetails },
+      };
+
+      const nextRows = [...currentRows];
+      nextRows.splice(rowIndex + 1, 0, duplicated);
+      return nextRows;
     });
     setErrorMessage(null);
   }
 
-  function insertRow(rowId: string, position: "above" | "below") {
+  function insertRow(targetId: string, position: "above" | "below") {
     setRows((currentRows) => {
-      const rowIndex = currentRows.findIndex((row) => row.id === rowId);
-      const insertIndex = rowIndex === -1 ? currentRows.length : rowIndex + (position === "below" ? 1 : 0);
-      const nextRows = [...currentRows];
+      const rowIndex = currentRows.findIndex((row) => row.id === targetId);
+      if (rowIndex === -1) {
+        return currentRows;
+      }
 
+      const insertIndex = position === "above" ? rowIndex : rowIndex + 1;
+      const nextRows = [...currentRows];
       nextRows.splice(insertIndex, 0, createBlankEditableRow());
       return nextRows;
     });
     setErrorMessage(null);
   }
 
-  function duplicateRow(rowId: string) {
+  function removeRow(id: string) {
     setRows((currentRows) => {
-      const rowIndex = currentRows.findIndex((row) => row.id === rowId);
-      const sourceRow = currentRows[rowIndex];
-
-      if (!sourceRow) {
-        return currentRows;
-      }
-
-      const nextRows = [...currentRows];
-      nextRows.splice(rowIndex + 1, 0, {
-        ...sourceRow,
-        id: createGridRowId(),
-      });
-      return nextRows;
+      const remainingRows = currentRows.filter((row) => row.id !== id);
+      return remainingRows.length > 0 ? remainingRows : [createBlankEditableRow()];
     });
     setErrorMessage(null);
   }
 
-  function moveRow(fromRowId: string, toRowId: string) {
-    if (fromRowId === toRowId) {
-      return;
-    }
-
+  function moveRow(sourceId: string, targetId: string) {
     setRows((currentRows) => {
-      const fromIndex = currentRows.findIndex((row) => row.id === fromRowId);
-      const toIndex = currentRows.findIndex((row) => row.id === toRowId);
+      const sourceIndex = currentRows.findIndex((row) => row.id === sourceId);
+      const targetIndex = currentRows.findIndex((row) => row.id === targetId);
 
-      if (fromIndex === -1 || toIndex === -1) {
+      if (sourceIndex === -1 || targetIndex === -1 || sourceIndex === targetIndex) {
         return currentRows;
       }
 
       const nextRows = [...currentRows];
-      const [movedRow] = nextRows.splice(fromIndex, 1);
-
-      nextRows.splice(toIndex, 0, movedRow);
+      const [moved] = nextRows.splice(sourceIndex, 1);
+      nextRows.splice(targetIndex, 0, moved);
       return nextRows;
     });
     setErrorMessage(null);
@@ -264,18 +239,58 @@ export function DisbursementVoucherAccountingGridPage() {
 
   function clearRows(action: ModuleDataEntryClearAction) {
     setRows((currentRows) => {
-      const nextRows = action === "all" ? [] : currentRows.filter((row) => !shouldClearRow(row, action));
-
-      return nextRows.length > 0 ? nextRows : [createBlankEditableRow()];
+      const remainingRows =
+        action === "all" ? [] : currentRows.filter((row) => !shouldClearRow(row, action));
+      return remainingRows.length > 0 ? remainingRows : [createBlankEditableRow()];
     });
     setErrorMessage(null);
   }
 
+  function moveColumn(fromId: string, toId: string) {
+    if (!isGridColumnId(fromId) || !isGridColumnId(toId)) {
+      return;
+    }
+
+    setColumnOrder((currentOrder) => {
+      const fromIndex = currentOrder.indexOf(fromId);
+      const toIndex = currentOrder.indexOf(toId);
+
+      if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) {
+        return currentOrder;
+      }
+
+      const nextOrder = [...currentOrder];
+      const [moved] = nextOrder.splice(fromIndex, 1);
+      nextOrder.splice(toIndex, 0, moved);
+      return nextOrder;
+    });
+  }
+
+  function toggleColumnVisibility(columnId: string, isVisible: boolean) {
+    if (!isGridColumnId(columnId) || ProtectedCashVoucherAccountingGridColumnIds.has(columnId)) {
+      return;
+    }
+
+    setVisibleColumnIds((currentIds) => {
+      if (isVisible) {
+        const nextIds = new Set([...currentIds, columnId]);
+        return columnOrder.filter((id) => nextIds.has(id));
+      }
+
+      if (currentIds.length <= 1) {
+        return currentIds;
+      }
+
+      return currentIds.filter((id) => id !== columnId);
+    });
+  }
+
   function updateColumnHeader(columnId: string, header: string) {
-    setColumnLabels((currentLabels) => ({
-      ...currentLabels,
-      [columnId]: header,
-    }));
+    if (!isGridColumnId(columnId)) {
+      return;
+    }
+
+    setColumnLabels((currentLabels) => ({ ...currentLabels, [columnId]: header }));
   }
 
   function updateColumnWidth(columnId: string, width: number) {
@@ -283,10 +298,10 @@ export function DisbursementVoucherAccountingGridPage() {
       return;
     }
 
-    setAutoWidthColumnIds((currentColumnIds) => currentColumnIds.filter((currentColumnId) => currentColumnId !== columnId));
+    setAutoWidthColumnIds((current) => current.filter((id) => id !== columnId));
     setColumnWidths((currentWidths) => ({
       ...currentWidths,
-      [columnId]: Math.min(800, Math.max(50, Math.round(width))),
+      [columnId]: Math.max(72, Math.round(width)),
     }));
   }
 
@@ -295,7 +310,7 @@ export function DisbursementVoucherAccountingGridPage() {
       return;
     }
 
-    setAutoWidthColumnIds((currentColumnIds) => (currentColumnIds.includes(columnId) ? currentColumnIds : [...currentColumnIds, columnId]));
+    setAutoWidthColumnIds((current) => (current.includes(columnId) ? current : [...current, columnId]));
   }
 
   function fitColumnWidth(columnId: string) {
@@ -303,205 +318,232 @@ export function DisbursementVoucherAccountingGridPage() {
       return;
     }
 
-    updateColumnWidth(
-      columnId,
-      calculateGridColumnFitWidth({
+    setAutoWidthColumnIds((current) => current.filter((id) => id !== columnId));
+    setColumnWidths((currentWidths) => ({
+      ...currentWidths,
+      [columnId]: calculateGridColumnFitWidth({
         columnId,
         columnLabels,
         rows,
       }),
-    );
-  }
-
-  function moveColumn(fromColumnId: string, toColumnId: string) {
-    setColumnOrder((currentOrder) => {
-      const currentIndex = currentOrder.indexOf(fromColumnId as GridColumnId);
-      const nextIndex = currentOrder.indexOf(toColumnId as GridColumnId);
-
-      if (currentIndex === -1 || nextIndex === -1 || currentIndex === nextIndex) {
-        return currentOrder;
-      }
-
-      const nextOrder = [...currentOrder];
-      const [movedColumn] = nextOrder.splice(currentIndex, 1);
-
-      nextOrder.splice(nextIndex, 0, movedColumn);
-      return nextOrder;
-    });
+    }));
   }
 
   function removeColumn(columnId: string) {
-    if (!isGridColumnId(columnId) || ProtectedDisbursementAccountingGridColumnIds.has(columnId)) {
-      return;
+    toggleColumnVisibility(columnId, false);
+  }
+
+  const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
+    () =>
+      columnOrder.map((columnId) => ({
+        id: columnId,
+        isProtected: ProtectedCashVoucherAccountingGridColumnIds.has(columnId),
+        isVisible: visibleColumnIds.includes(columnId),
+        label: columnLabels[columnId],
+        width: resolvedColumnWidths[columnId],
+      })),
+    [columnLabels, columnOrder, resolvedColumnWidths, visibleColumnIds],
+  );
+
+  const previewValues = useMemo(() => {
+    if (!session) {
+      return null;
     }
 
-    setVisibleColumnIds((currentVisibleIds) =>
-      currentVisibleIds.length <= 1 ? currentVisibleIds : currentVisibleIds.filter((currentColumnId) => currentColumnId !== columnId),
+    return withAccountingImportAttachment(
+      {
+        ...session.values,
+        lineEntries: previewEntries,
+      },
+      pendingImportAttachment ?? importedImportAttachment,
     );
-  }
+  }, [importedImportAttachment, pendingImportAttachment, previewEntries, session]);
 
-  function toggleColumnVisibility(columnId: string, isVisible: boolean) {
-    if (!isGridColumnId(columnId)) {
-      return;
-    }
+  const columns = useMemo<ModuleDataEntryColumn<EditableGridRow>[]>(
+    () =>
+      visibleColumnOrder.map((columnId) => {
+        const renderCell = (row: EditableGridRow, rowIndex: number, context: ModuleDataEntryCellContext) => {
+          const fieldId = `${context.fieldId}-${columnId}`;
 
-    if (!isVisible && ProtectedDisbursementAccountingGridColumnIds.has(columnId)) {
-      return;
-    }
+          switch (columnId) {
+            case "accountCode":
+              return (
+                <GridEntryInput
+                  id={fieldId}
+                  label={`${columnLabels.accountCode} row ${rowIndex + 1}`}
+                  value={row.accountCode}
+                  onChange={(value) => updateRowField(row.id, "accountCode", value)}
+                />
+              );
+            case "accountName":
+              return (
+                <GridEntryInput
+                  id={fieldId}
+                  label={`${columnLabels.accountName} row ${rowIndex + 1}`}
+                  value={row.accountName}
+                  onChange={(value) => updateRowField(row.id, "accountName", value)}
+                />
+              );
+            case "taxRate":
+              return (
+                <>
+                  <label htmlFor={fieldId} className="sr-only">
+                    {columnLabels.taxRate} row {rowIndex + 1}
+                  </label>
+                  <select
+                    id={fieldId}
+                    value={row.taxRate}
+                    onChange={(event) => {
+                      const nextRate = event.target.value;
+                      setRows((currentRows) =>
+                        currentRows.map((currentRow) => {
+                          if (currentRow.id !== row.id) {
+                            return currentRow;
+                          }
 
-    setVisibleColumnIds((currentVisibleIds) => {
-      if (isVisible) {
-        const nextVisibleIds = new Set([...currentVisibleIds, columnId]);
+                          const grossAmount = normalizeAmount(currentRow.debit || currentRow.credit || "0");
+                          return {
+                            ...currentRow,
+                            taxDetails: syncTaxDetailsAmount(currentRow.taxDetails, grossAmount, nextRate),
+                            taxRate: nextRate,
+                          };
+                        }),
+                      );
+                      setErrorMessage(null);
+                    }}
+                    className={gridCellControlClassName("bg-white")}
+                  >
+                    {CashVoucherAccountingGridTaxRateOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </>
+              );
+            case "debit":
+              return (
+                <MoneyNumberField
+                  id={fieldId}
+                  name={fieldId}
+                  value={row.debit}
+                  onValueChange={(value) => updateRowField(row.id, "debit", value)}
+                  className={gridCellControlClassName("text-right tabular-nums")}
+                />
+              );
+            case "credit":
+              return (
+                <MoneyNumberField
+                  id={fieldId}
+                  name={fieldId}
+                  value={row.credit}
+                  onValueChange={(value) => updateRowField(row.id, "credit", value)}
+                  className={gridCellControlClassName("text-right tabular-nums")}
+                />
+              );
+            case "remarks":
+              return (
+                <ModuleDataEntryRemarksCell
+                  inputId={fieldId}
+                  inputName={fieldId}
+                  isReadonly={false}
+                  value={row.remarks}
+                  textareaId={`${fieldId}-dialog`}
+                  onChange={(value) => updateRowField(row.id, "remarks", value)}
+                />
+              );
+          }
+        };
 
-        return columnOrder.filter((currentColumnId) => nextVisibleIds.has(currentColumnId));
-      }
-
-      if (currentVisibleIds.length <= 1) {
-        return currentVisibleIds;
-      }
-
-      return currentVisibleIds.filter((currentColumnId) => currentColumnId !== columnId);
-    });
-  }
-
-  function renderGridCell(row: EditableGridRow, columnId: GridColumnId, context: ModuleDataEntryCellContext) {
-    if (columnId === "taxRate") {
-      return (
-        <>
-          <label htmlFor={context.fieldId} className="sr-only">{columnLabels[columnId]}</label>
-          <select
-            id={context.fieldId}
-            value={row.taxRate}
-            onChange={(event) => updateRow(row.id, "taxRate", event.target.value)}
-            className={gridCellControlClassName("app-select-control")}
-          >
-            {DisbursementAccountingGridTaxRateOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </>
-      );
-    }
-
-    if (DisbursementAccountingAmountColumnIds.has(columnId)) {
-      const oppositeColumnId =
-        columnId === DisbursementAccountingDebitColumnId ? DisbursementAccountingCreditColumnId : DisbursementAccountingDebitColumnId;
-
-      return (
-        <>
-          <label htmlFor={context.fieldId} className="sr-only">{columnLabels[columnId]}</label>
-          <MoneyNumberField
-            id={context.fieldId}
-            value={row[columnId]}
-            onValueChange={(value) => updateRow(row.id, columnId, value)}
-            disabled={normalizeAmount(row[oppositeColumnId]) > 0}
-            className={gridCellControlClassName("text-right")}
-          />
-        </>
-      );
-    }
-
-    if (columnId === "remarks") {
-      return (
-        <ModuleDataEntryRemarksCell
-          inputId={context.fieldId}
-          inputName={context.fieldName}
-          isReadonly={false}
-          value={row.remarks}
-          textareaId={`${context.fieldId}-dialog`}
-          onChange={(value) => updateRow(row.id, "remarks", value)}
-        />
-      );
-    }
-
-    return <GridEntryInput id={context.fieldId} label={columnLabels[columnId]} value={row[columnId]} onChange={(value) => updateRow(row.id, columnId, value)} />;
-  }
+        return {
+          header: columnLabels[columnId],
+          id: columnId,
+          renderCell,
+          width: resolvedColumnWidths[columnId],
+          widthClassName: "w-auto",
+        };
+      }),
+    [columnLabels, resolvedColumnWidths, visibleColumnOrder],
+  );
 
   async function handleImportFile(file: File) {
     if (file.size > AppMaxFileUploadSizeBytes) {
-      setErrorMessage(`Upload a file up to ${AppMaxFileUploadSizeLabel}.`);
+      setErrorMessage(`Import file size must be within ${AppMaxFileUploadSizeLabel}.`);
       return;
     }
 
     try {
       const previewText = await readAccountingImportFilePreviewText(file);
-
       setPasteText(previewText);
       setPendingImportAttachment(createImportSourceAttachment(file.name, file.size));
       setErrorMessage(null);
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Could not preview the selected accounting entries file.");
+    } catch {
+      setErrorMessage("Failed to read the imported file. Check that the format is valid.");
     }
   }
 
   function handleImportPastedRows() {
-    try {
-      const importedRows = parseTabularText(pasteText);
-      const sourceAttachment =
-        pendingImportAttachment ?? createImportSourceAttachment("pasted-accounting-entries.tsv", new Blob([pasteText]).size);
-
-      applyImportedRows(importedRows);
-      setImportedImportAttachment(sourceAttachment);
-      setPendingImportAttachment(null);
-      setPasteText("");
-      setIsImportDialogOpen(false);
-      setErrorMessage(null);
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Could not import the pasted accounting entries.");
+    if (!pasteText.trim()) {
+      return;
     }
-  }
 
-  function applyImportedRows(importedRows: EditableGridRow[]) {
-    if (importedRows.length === 0) {
-      throw new Error("No accounting rows were found to import.");
+    const parsedRows = parseTabularText(pasteText);
+    if (parsedRows.length === 0) {
+      setErrorMessage("No valid accounting rows found to import.");
+      return;
     }
 
     setRows((currentRows) => {
-      const populatedRows = currentRows.filter(hasRowData);
-
-      return populatedRows.length > 0 ? [...populatedRows, ...importedRows] : importedRows;
+      const existingRows = currentRows.filter(hasRowData);
+      return existingRows.length > 0 ? [...existingRows, ...parsedRows] : parsedRows;
     });
+    setImportedImportAttachment(pendingImportAttachment);
+    setPendingImportAttachment(null);
+    setPasteText("");
+    setIsImportDialogOpen(false);
+    setErrorMessage(null);
   }
 
   function handleExportRows() {
-    const { amountColumnIndexes, rows: workbookRows, visibleColumnIds } = createAccountingExportRows();
-    const exportTheme = getAccountingExportTheme();
-    const workbookBytes = createAccountingWorkbook({
-      amountColumnIndexes,
-      columnWidths: visibleColumnIds.map((columnId) => DisbursementAccountingExportColumnWidths[columnId]),
-      rows: workbookRows,
+    const exportData = prepareExportData();
+    const theme = getAccountingExportTheme();
+    const buffer = createAccountingWorkbook({
+      amountColumnIndexes: exportData.amountColumnIndexes,
+      columnWidths: exportData.visibleColumnIds.map((id) => CashVoucherAccountingExportColumnWidths[id]),
+      rows: exportData.rows,
       sheetName: "Accounting Entries",
-      theme: exportTheme,
+      theme,
     });
 
     downloadBytesFile(
-      "disbursement-voucher-accounting-entries.xlsx",
-      workbookBytes,
+      `${session?.values.voucherNo || "cash-voucher"}-accounting-entries.xlsx`,
+      buffer,
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     );
   }
 
   function handleExportPdfRows() {
-    const exportData = createAccountingExportRows();
-    const exportTheme = getAccountingExportTheme();
+    const exportData = prepareExportData();
+    const theme = getAccountingExportTheme();
+    const docDefinition = createAccountingPdfDefinition(exportData, session, theme);
 
-    pdfMake
-      .createPdf(createAccountingPdfDefinition(exportData, session, exportTheme))
-      .download("disbursement-voucher-accounting-entries.pdf");
+    pdfMake.createPdf(docDefinition).download(`${session?.values.voucherNo || "cash-voucher"}-accounting-entries.pdf`);
   }
 
-  function createAccountingExportRows() {
-    const exportColumnIds = visibleColumnOrder;
+  function prepareExportData() {
+    const exportColumnIds = visibleColumnOrder.filter(
+      (columnId) => columnId !== CashVoucherAccountingDebitColumnId && columnId !== CashVoucherAccountingCreditColumnId,
+    );
+    exportColumnIds.push(CashVoucherAccountingDebitColumnId, CashVoucherAccountingCreditColumnId);
+
     const exportRows = rows.filter(hasRowData);
     const workbookRows = [
-      exportColumnIds.map((columnId) => columnLabels[columnId] || DefaultDisbursementAccountingGridColumnLabels[columnId]),
+      exportColumnIds.map((columnId) => columnLabels[columnId]),
       ...exportRows.map((row) => exportColumnIds.map((columnId) => getExportCellValue(row, columnId))),
     ];
     const amountColumnIndexes = new Set(
       exportColumnIds
-        .map((columnId, columnIndex) => (DisbursementAccountingAmountColumnIds.has(columnId) ? columnIndex : null))
+        .map((columnId, columnIndex) => (CashVoucherAccountingAmountColumnIds.has(columnId) ? columnIndex : null))
         .filter((columnIndex): columnIndex is number => columnIndex !== null),
     );
 
@@ -514,7 +556,7 @@ export function DisbursementVoucherAccountingGridPage() {
 
   function handleBackToVoucherForm() {
     if (!session) {
-      router.push("/cash-disbursement/disbursement-voucher");
+      router.push("/cash-disbursement/cash-voucher");
       return;
     }
 
@@ -540,7 +582,7 @@ export function DisbursementVoucherAccountingGridPage() {
       ...session.values,
       lineEntries: previewEntries,
     };
-    const nextErrors = validateDisbursementVoucherEntries(nextValues);
+    const nextErrors = validateCashVoucherEntries(nextValues);
 
     if (nextErrors.lineEntries) {
       setErrorMessage(nextErrors.lineEntries);
@@ -557,7 +599,7 @@ export function DisbursementVoucherAccountingGridPage() {
 
     writeAccountingGridSession({
       ...session,
-      entryDraft: DisbursementVoucherInitialEntryDraft,
+      entryDraft: CashVoucherInitialEntryDraft,
       values: withAccountingImportAttachment(
         {
           ...session.values,
@@ -578,17 +620,17 @@ export function DisbursementVoucherAccountingGridPage() {
       <section className="-mx-3 -my-4 min-h-[calc(100dvh-5rem)] bg-white text-darknavy sm:-mx-5 lg:-mx-6">
         <main className="grid min-h-[calc(100dvh-5rem)] content-start gap-5 p-4 sm:p-6">
           <div className="rounded-xl border border-darknavy/10 bg-white p-5 shadow-sm shadow-darknavy/5 sm:p-8">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-skyblue">Cash Disbursement Setup</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-skyblue">Cash Voucher Setup</p>
             <h1 className="mt-2 text-2xl font-semibold text-darknavy sm:text-3xl">Accounting Grid View</h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-darknavy/58">
-              No voucher is available yet. Select a disbursement voucher first, then click Data Grid View from Accounting Entries.
+              No voucher is available yet. Select a cash voucher first, then click Data Grid View from Accounting Entries.
             </p>
             <button
               type="button"
-              onClick={() => router.push("/cash-disbursement/disbursement-voucher")}
+              onClick={() => router.push("/cash-disbursement/cash-voucher")}
               className="mt-6 inline-flex h-11 w-full items-center justify-center rounded-xl border border-darknavy/12 bg-white px-5 text-sm font-semibold text-darknavy transition hover:border-skyblue/35 sm:w-auto"
             >
-              Back to Disbursement Voucher
+              Back to Cash Voucher
             </button>
           </div>
         </main>
@@ -603,7 +645,7 @@ export function DisbursementVoucherAccountingGridPage() {
           <div className="min-w-0 p-4 sm:p-6 lg:p-8">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-skyblue">Cash Disbursement Setup</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-skyblue">Cash Voucher Setup</p>
                 <h1 className="mt-2 text-2xl font-semibold text-darknavy sm:text-3xl">Accounting Grid View</h1>
                 <p className="mt-3 max-w-3xl text-sm leading-6 text-darknavy/58">
                   Encode accounting entries in a dedicated grid page, then save and return to the voucher preview for final checking before
@@ -695,7 +737,7 @@ export function DisbursementVoucherAccountingGridPage() {
       </main>
 
       {previewValues ? (
-        <GridPreviewDialog
+        <CashVoucherEntryImportReviewDialog
           entries={previewEntries}
           isBalanced={totals.isBalanced}
           isOpen={isPreviewDialogOpen}
@@ -708,7 +750,7 @@ export function DisbursementVoucherAccountingGridPage() {
           onContinue={handleContinueToVoucherPreview}
         />
       ) : null}
-      <AccountingImportDialog
+      <CashVoucherEntryImportUploadDialog
         canClearTable={Boolean(pasteText.trim() || pendingImportAttachment)}
         importAttachment={pendingImportAttachment ?? importedImportAttachment}
         isDragActive={isDragActive}

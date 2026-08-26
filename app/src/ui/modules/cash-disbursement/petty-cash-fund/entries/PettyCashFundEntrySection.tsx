@@ -1,271 +1,48 @@
-import { useMemo, useState } from "react";
-import {
-  PettyCashFundAccountingColumnLabels,
-  PettyCashFundAccountingColumnWidths,
-  PettyCashFundAccountingEntryTab,
-  PettyCashFundDefaultAccountingColumnIds,
-  PettyCashFundDefaultItemColumnIds,
-  PettyCashFundItemColumnLabels,
-  PettyCashFundItemColumnWidths,
-  PettyCashFundProtectedAccountingColumnIds,
-  PettyCashFundProtectedItemColumnIds,
-} from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund/PettyCashFundConstants";
-import {
-  createBlankPettyCashFundItem,
-  formatPettyCashFundAmount,
-} from "@/app/src/data/modules/cash-disbursement/petty-cash-fund/PettyCashFundData";
+import { useState } from "react";
+import { PettyCashFundEntryTabs } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund/PettyCashFundConstants";
 import type {
-  PettyCashFundActionPageState,
-  PettyCashFundAccountingColumnId,
-  PettyCashFundAccountingEntry,
   PettyCashFundEntryTab,
-  PettyCashFundItemColumnId,
+  PettyCashFundEntrySectionProps,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";
-import { PettyCashFundEntryTabs } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund/entries/PettyCashFundEntryTabs";
-import {
-  createPettyCashFundAccountingColumns,
-  createPettyCashFundItemColumns,
-} from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund/entries/PettyCashFundLineColumns";
-import { ModuleDataEntry, type ModuleDataEntryColumnOption } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
-import { clampColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/utils";
+import { PettyCashFundAccountingEntryTable } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund/entries/PettyCashFundAccountingEntryTable";
+import { PettyCashFundDetailEntryTable } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund/entries/PettyCashFundDetailEntryTable";
 
-export function PettyCashFundEntrySection({ page }: { page: PettyCashFundActionPageState }) {
+export function PettyCashFundEntrySection({ page }: PettyCashFundEntrySectionProps) {
   const [activeTab, setActiveTab] = useState<PettyCashFundEntryTab>("items");
-  const [itemColumnOrder, setItemColumnOrder] = useState<PettyCashFundItemColumnId[]>([...PettyCashFundDefaultItemColumnIds]);
-  const [visibleItemColumnIds, setVisibleItemColumnIds] = useState<PettyCashFundItemColumnId[]>([...PettyCashFundDefaultItemColumnIds]);
-  const [itemColumnWidths, setItemColumnWidths] = useState({ ...PettyCashFundItemColumnWidths });
-  const [itemColumnLabels, setItemColumnLabels] = useState({ ...PettyCashFundItemColumnLabels });
-  const [accountingColumnOrder, setAccountingColumnOrder] = useState<PettyCashFundAccountingColumnId[]>([
-    ...PettyCashFundDefaultAccountingColumnIds,
-  ]);
-  const [visibleAccountingColumnIds, setVisibleAccountingColumnIds] = useState<PettyCashFundAccountingColumnId[]>([
-    ...PettyCashFundDefaultAccountingColumnIds,
-  ]);
-  const [accountingColumnWidths, setAccountingColumnWidths] = useState({ ...PettyCashFundAccountingColumnWidths });
-  const [accountingColumnLabels, setAccountingColumnLabels] = useState({ ...PettyCashFundAccountingColumnLabels });
-  const allItemColumns = useMemo(
-    () => createPettyCashFundItemColumns(page, itemColumnLabels, itemColumnWidths),
-    [itemColumnLabels, itemColumnWidths, page],
-  );
-  const columns = itemColumnOrder.filter((columnId) => visibleItemColumnIds.includes(columnId)).map((columnId) => allItemColumns[columnId]);
-  const accountingRows = useMemo<PettyCashFundAccountingEntry[]>(() => {
-    const total = page.totals.grossAmount;
-    return [
-      {
-        id: "pcf-accounting-debit",
-        accountCode: page.values.accountCode,
-        accountTitle: page.values.accountTitle,
-        debit: formatPettyCashFundAmount(total),
-        credit: "0.00",
-        partyCode: page.values.partyCode,
-        partyName: page.values.partyName,
-        remarks: page.values.remarks,
-      },
-      {
-        id: "pcf-accounting-credit",
-        accountCode: "101-100",
-        accountTitle: "Cash in Bank",
-        debit: "0.00",
-        credit: formatPettyCashFundAmount(total),
-        partyCode: page.values.partyCode,
-        partyName: page.values.partyName,
-        remarks: page.values.remarks,
-      },
-    ];
-  }, [
-    page.totals.grossAmount,
-    page.values.accountCode,
-    page.values.accountTitle,
-    page.values.partyCode,
-    page.values.partyName,
-    page.values.remarks,
-  ]);
-  const allAccountingColumns = useMemo(
-    () => createPettyCashFundAccountingColumns(accountingColumnLabels, accountingColumnWidths),
-    [accountingColumnLabels, accountingColumnWidths],
-  );
-  const accountingColumns = accountingColumnOrder
-    .filter((columnId) => visibleAccountingColumnIds.includes(columnId))
-    .map((columnId) => allAccountingColumns[columnId]);
-  const itemColumnOptions: ModuleDataEntryColumnOption[] = itemColumnOrder.map((columnId) => ({
-    id: columnId,
-    label: itemColumnLabels[columnId],
-    isVisible: visibleItemColumnIds.includes(columnId),
-    isHideable: !PettyCashFundProtectedItemColumnIds.has(columnId),
-    width: itemColumnWidths[columnId],
-    widthMode: "fixed",
-  }));
-  const accountingColumnOptions: ModuleDataEntryColumnOption[] = accountingColumnOrder.map((columnId) => ({
-    id: columnId,
-    label: accountingColumnLabels[columnId],
-    isVisible: visibleAccountingColumnIds.includes(columnId),
-    isHideable: !PettyCashFundProtectedAccountingColumnIds.has(columnId),
-    width: accountingColumnWidths[columnId],
-    widthMode: "fixed",
-  }));
-  const title = <PettyCashFundEntryTabs activeTab={activeTab} onTabChange={setActiveTab} />;
-
-  function moveColumn(fromColumnId: string, toColumnId: string) {
-    if (activeTab === PettyCashFundAccountingEntryTab) {
-      if (!isAccountingColumnId(fromColumnId) || !isAccountingColumnId(toColumnId)) return;
-      setAccountingColumnOrder((order) => moveColumnId(order, fromColumnId, toColumnId));
-      return;
-    }
-
-    if (!isItemColumnId(fromColumnId) || !isItemColumnId(toColumnId)) return;
-    setItemColumnOrder((order) => moveColumnId(order, fromColumnId, toColumnId));
-  }
-
-  function toggleColumnVisibility(columnId: string, isVisible: boolean) {
-    if (activeTab === PettyCashFundAccountingEntryTab) {
-      if (!isAccountingColumnId(columnId) || (!isVisible && PettyCashFundProtectedAccountingColumnIds.has(columnId))) return;
-      setVisibleAccountingColumnIds((ids) => updateVisibleColumnIds(ids, accountingColumnOrder, columnId, isVisible));
-      return;
-    }
-
-    if (!isItemColumnId(columnId) || (!isVisible && PettyCashFundProtectedItemColumnIds.has(columnId))) return;
-    setVisibleItemColumnIds((ids) => updateVisibleColumnIds(ids, itemColumnOrder, columnId, isVisible));
-  }
-
-  function updateColumnHeader(columnId: string, header: string) {
-    if (activeTab === PettyCashFundAccountingEntryTab && isAccountingColumnId(columnId)) {
-      setAccountingColumnLabels((labels) => ({ ...labels, [columnId]: header }));
-    } else if (activeTab === "items" && isItemColumnId(columnId)) {
-      setItemColumnLabels((labels) => ({ ...labels, [columnId]: header }));
-    }
-  }
-
-  function updateColumnWidth(columnId: string, width: number) {
-    const nextWidth = clampColumnWidth(width);
-    if (activeTab === PettyCashFundAccountingEntryTab && isAccountingColumnId(columnId)) {
-      setAccountingColumnWidths((widths) => ({ ...widths, [columnId]: nextWidth }));
-    } else if (activeTab === "items" && isItemColumnId(columnId)) {
-      setItemColumnWidths((widths) => ({ ...widths, [columnId]: nextWidth }));
-    }
-  }
-
-  function fitColumnWidth(columnId: string) {
-    if (activeTab === PettyCashFundAccountingEntryTab && isAccountingColumnId(columnId)) {
-      updateColumnWidth(columnId, calculateFitWidth(accountingColumnLabels[columnId], accountingRows, columnId));
-    } else if (activeTab === "items" && isItemColumnId(columnId)) {
-      updateColumnWidth(columnId, calculateFitWidth(itemColumnLabels[columnId], page.values.items, columnId));
-    }
-  }
-
-  function resetColumns() {
-    if (activeTab === PettyCashFundAccountingEntryTab) {
-      setAccountingColumnOrder([...PettyCashFundDefaultAccountingColumnIds]);
-      setVisibleAccountingColumnIds([...PettyCashFundDefaultAccountingColumnIds]);
-      setAccountingColumnWidths({ ...PettyCashFundAccountingColumnWidths });
-      setAccountingColumnLabels({ ...PettyCashFundAccountingColumnLabels });
-      return;
-    }
-
-    setItemColumnOrder([...PettyCashFundDefaultItemColumnIds]);
-    setVisibleItemColumnIds([...PettyCashFundDefaultItemColumnIds]);
-    setItemColumnWidths({ ...PettyCashFundItemColumnWidths });
-    setItemColumnLabels({ ...PettyCashFundItemColumnLabels });
-  }
-
-  if (activeTab === PettyCashFundAccountingEntryTab) {
-    return (
-      <ModuleDataEntry
-        title={title}
-        emptyRowLabel="accounting entry"
-        footerDetails={
-          <span className="text-sm font-semibold text-darknavy">Total Amount: {formatPettyCashFundAmount(page.totals.grossAmount)}</span>
-        }
-        columns={accountingColumns}
-        columnOptions={accountingColumnOptions}
-        rows={accountingRows}
-        isReadonly
-        canConfigureColumnsWhenReadonly={!page.isReadonly}
-        onAddRows={() => undefined}
-        onDuplicateRow={() => undefined}
-        onInsertRow={() => undefined}
-        onMoveRow={() => undefined}
-        onRemoveRow={() => undefined}
-        onAutoColumnWidth={fitColumnWidth}
-        onFitColumnWidth={fitColumnWidth}
-        onMoveColumn={moveColumn}
-        onResetColumns={resetColumns}
-        onToggleColumnVisibility={toggleColumnVisibility}
-        onUpdateColumnHeader={updateColumnHeader}
-        onUpdateColumnWidth={updateColumnWidth}
-        summaryRowHeader="Totals"
-        summaryCells={{
-          debit: formatPettyCashFundAmount(page.totals.grossAmount),
-          credit: formatPettyCashFundAmount(page.totals.grossAmount),
-        }}
-      />
-    );
-  }
 
   return (
-    <ModuleDataEntry
-      title={title}
-      emptyRowLabel="petty cash item"
-      error={page.errors.items}
-      footerDetails={
-        <span className="text-sm font-semibold text-darknavy">Total Amount: {formatPettyCashFundAmount(page.totals.amount)}</span>
-      }
-      columns={columns}
-      columnOptions={itemColumnOptions}
-      rows={page.values.items}
-      isDraggable={!page.isReadonly}
-      isReadonly={page.isReadonly}
-      onAddRows={page.addItems}
-      onClearRows={() => page.updateItems([createBlankPettyCashFundItem()])}
-      onDuplicateRow={page.duplicateItem}
-      onInsertRow={page.insertItem}
-      onMoveRow={page.moveItem}
-      onRemoveRow={page.removeItem}
-      onAutoColumnWidth={fitColumnWidth}
-      onFitColumnWidth={fitColumnWidth}
-      onMoveColumn={moveColumn}
-      onResetColumns={resetColumns}
-      onToggleColumnVisibility={toggleColumnVisibility}
-      onUpdateColumnHeader={updateColumnHeader}
-      onUpdateColumnWidth={updateColumnWidth}
-      summaryRowHeader="Totals"
-      summaryCells={{
-        amount: formatPettyCashFundAmount(page.totals.amount),
-        netAmount: formatPettyCashFundAmount(page.totals.netAmount),
-        vatAmount: formatPettyCashFundAmount(page.totals.vatAmount),
-        grossAmount: formatPettyCashFundAmount(page.totals.grossAmount),
-      }}
-    />
+    <section className="grid gap-4">
+      <div className="flex items-center justify-between">
+        <div
+          role="tablist"
+          aria-label="Petty cash fund lines"
+          className="inline-flex rounded-lg border border-darknavy/10 bg-offwhite/70 p-1"
+        >
+          {PettyCashFundEntryTabs.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              role="tab"
+              aria-selected={activeTab === tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={[
+                "h-8 rounded-md px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coralpink/25",
+                activeTab === tab.id
+                  ? "bg-white text-coralpink shadow-sm ring-1 ring-darknavy/10"
+                  : "text-darknavy/55 hover:bg-white/70 hover:text-darknavy",
+              ].join(" ")}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {activeTab === "accounting" ? (
+        <PettyCashFundAccountingEntryTable page={page} />
+      ) : (
+        <PettyCashFundDetailEntryTable page={page} />
+      )}
+    </section>
   );
-}
-
-function isItemColumnId(columnId: string): columnId is PettyCashFundItemColumnId {
-  return PettyCashFundDefaultItemColumnIds.includes(columnId as PettyCashFundItemColumnId);
-}
-
-function isAccountingColumnId(columnId: string): columnId is PettyCashFundAccountingColumnId {
-  return PettyCashFundDefaultAccountingColumnIds.includes(columnId as PettyCashFundAccountingColumnId);
-}
-
-function moveColumnId<TColumnId extends string>(order: TColumnId[], fromColumnId: TColumnId, toColumnId: TColumnId) {
-  const nextOrder = order.filter((columnId) => columnId !== fromColumnId);
-  const targetIndex = nextOrder.indexOf(toColumnId);
-  nextOrder.splice(targetIndex < 0 ? nextOrder.length : targetIndex, 0, fromColumnId);
-  return nextOrder;
-}
-
-function updateVisibleColumnIds<TColumnId extends string>(
-  visibleIds: TColumnId[],
-  order: TColumnId[],
-  columnId: TColumnId,
-  isVisible: boolean,
-) {
-  const nextIds = new Set(visibleIds);
-  if (isVisible) nextIds.add(columnId);
-  else nextIds.delete(columnId);
-  return order.filter((currentColumnId) => nextIds.has(currentColumnId));
-}
-
-function calculateFitWidth<TRow, TColumnId extends keyof TRow & string>(label: string, rows: TRow[], columnId: TColumnId) {
-  const longestValueLength = rows.reduce((length, row) => Math.max(length, String(row[columnId] ?? "").length), label.length);
-  return clampColumnWidth(longestValueLength * 8 + 76);
 }

@@ -1,36 +1,34 @@
 import {
-  RevolvingFundEntryTypeOptions,
-  RevolvingFundEntryVatTypeOptions,
-  RevolvingFundResponsibilityCenterOptions,
-} from "@/app/src/constants/modules/cash-disbursement/revolving-fund/RevolvingFundConstants";
-import type { RevolvingFundActionPageState } from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";
+  PettyCashFundEntryTypeOptions,
+  PettyCashFundEntryVatTypeOptions,
+  PettyCashFundResponsibilityCenterOptions,
+} from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund/PettyCashFundConstants";
 import type {
-  RevolvingFundAccountingColumnId,
-  RevolvingFundAccountingEntry,
-  RevolvingFundItem,
-  RevolvingFundItemColumnId,
-} from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";
+  PettyCashFundActionPageState,
+  PettyCashFundAccountingColumnId,
+  PettyCashFundAccountingEntry,
+  PettyCashFundItem,
+  PettyCashFundItemColumnId,
+} from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
-import {
-  RevolvingFundEntryDropdown,
-  RevolvingFundEntryInput,
-} from "@/app/src/ui/modules/cash-disbursement/revolving-fund/entries/RevolvingFundEntryCellControls";
 import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { ModuleDataEntryCheckboxCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryCheckboxCell";
+import { ModuleDataEntryDropdownCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryDropdownCell";
+import { ModuleDataEntryInputCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryInputCell";
 
-export function createRevolvingFundItemColumns(
-  page: RevolvingFundActionPageState,
-  labels: Record<RevolvingFundItemColumnId, string>,
-  widths: Record<RevolvingFundItemColumnId, number>,
-): Record<RevolvingFundItemColumnId, ModuleDataEntryColumn<RevolvingFundItem>> {
-  const text = (id: RevolvingFundItemColumnId, type: "text" | "date" = "text"): ModuleDataEntryColumn<RevolvingFundItem> => ({
+export function createPettyCashFundItemColumns(
+  page: PettyCashFundActionPageState,
+  labels: Record<PettyCashFundItemColumnId, string>,
+  widths: Record<PettyCashFundItemColumnId, number>,
+): Record<PettyCashFundItemColumnId, ModuleDataEntryColumn<PettyCashFundItem>> {
+  const text = (id: PettyCashFundItemColumnId, type: "text" | "date" = "text"): ModuleDataEntryColumn<PettyCashFundItem> => ({
     header: labels[id],
     id,
     width: widths[id],
     widthMode: "fixed",
     widthClassName: "w-auto",
     renderCell: (row, _index, context) => (
-      <RevolvingFundEntryInput
+      <ModuleDataEntryInputCell
         id={context.fieldId}
         name={context.fieldName}
         type={type}
@@ -40,14 +38,18 @@ export function createRevolvingFundItemColumns(
       />
     ),
   });
-  const dropdown = (id: RevolvingFundItemColumnId, options: AppAdvancedDropdownOption[]): ModuleDataEntryColumn<RevolvingFundItem> => ({
+
+  const dropdown = (
+    id: PettyCashFundItemColumnId,
+    options: AppAdvancedDropdownOption[],
+  ): ModuleDataEntryColumn<PettyCashFundItem> => ({
     header: labels[id],
     id,
     width: widths[id],
     widthMode: "fixed",
     widthClassName: "w-auto",
     renderCell: (row, _index, context) => (
-      <RevolvingFundEntryDropdown
+      <ModuleDataEntryDropdownCell
         id={context.fieldId}
         name={context.fieldName}
         value={String(row[id])}
@@ -57,7 +59,8 @@ export function createRevolvingFundItemColumns(
       />
     ),
   });
-  const checkbox = (id: "vatable" | "vatInclusive"): ModuleDataEntryColumn<RevolvingFundItem> => ({
+
+  const checkbox = (id: "vatable" | "vatInclusive"): ModuleDataEntryColumn<PettyCashFundItem> => ({
     header: labels[id],
     id,
     width: widths[id],
@@ -74,6 +77,7 @@ export function createRevolvingFundItemColumns(
       />
     ),
   });
+
   return {
     date: text("date", "date"),
     payeeCode: text("payeeCode"),
@@ -84,27 +88,32 @@ export function createRevolvingFundItemColumns(
     amount: text("amount"),
     netAmount: text("netAmount"),
     vatAmount: text("vatAmount"),
-    type: dropdown("type", RevolvingFundEntryTypeOptions),
-    vatType: dropdown("vatType", RevolvingFundEntryVatTypeOptions),
+    type: dropdown("type", PettyCashFundEntryTypeOptions),
+    vatType: dropdown("vatType", PettyCashFundEntryVatTypeOptions),
     vatable: checkbox("vatable"),
     vatInclusive: checkbox("vatInclusive"),
     grossAmount: text("grossAmount"),
-    responsibilityCenter: dropdown("responsibilityCenter", RevolvingFundResponsibilityCenterOptions),
+    responsibilityCenter: dropdown("responsibilityCenter", PettyCashFundResponsibilityCenterOptions),
   };
 }
 
-export function createRevolvingFundAccountingColumns(
-  labels: Record<RevolvingFundAccountingColumnId, string>,
-  widths: Record<RevolvingFundAccountingColumnId, number>,
-): Record<RevolvingFundAccountingColumnId, ModuleDataEntryColumn<RevolvingFundAccountingEntry>> {
-  const column = (id: RevolvingFundAccountingColumnId): ModuleDataEntryColumn<RevolvingFundAccountingEntry> => ({
+export function createPettyCashFundAccountingColumns(
+  labels: Record<PettyCashFundAccountingColumnId, string>,
+  widths: Record<PettyCashFundAccountingColumnId, number>,
+): Record<PettyCashFundAccountingColumnId, ModuleDataEntryColumn<PettyCashFundAccountingEntry>> {
+  const column = (id: PettyCashFundAccountingColumnId): ModuleDataEntryColumn<PettyCashFundAccountingEntry> => ({
     header: labels[id],
     id,
     width: widths[id],
     widthMode: "fixed",
     widthClassName: "w-auto",
-    renderCell: (row) => <span className={`block ${id === "debit" || id === "credit" ? "text-right tabular-nums" : ""}`}>{row[id]}</span>,
+    renderCell: (row) => (
+      <span className={`block ${id === "debit" || id === "credit" ? "text-right tabular-nums" : ""}`}>
+        {row[id]}
+      </span>
+    ),
   });
+
   return {
     accountCode: column("accountCode"),
     accountTitle: column("accountTitle"),

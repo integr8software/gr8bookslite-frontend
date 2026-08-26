@@ -1,5 +1,4 @@
 import { AccountingPartyFallbackValuePrefix } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryConstants";
-import { getAccountingPartyFallbackValue } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingEntryData";
 import { syncTaxDetailsAmount } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import type {
   DisbursementAccountingEntryColumnsParams,
@@ -11,6 +10,8 @@ import type { DisbursementLineEntry } from "@/app/src/types/modules/cash-disburs
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
 import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import { ModuleDataEntryInputCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryInputCell";
+import { ModuleDataEntryMoneyCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryMoneyCell";
 import { ModuleDataEntryReadonlyCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryReadonlyCell";
 import { ModuleDataEntryRemarksCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryRemarksCell";
 import {
@@ -19,12 +20,6 @@ import {
   getVatRateFromCode,
   normalizeVatDropdownValue,
 } from "@/app/src/ui/shared/transaction-setup/AppTaxRateDialog";
-import {
-  EntryInput,
-  EntryNumberInput,
-  ExpenseDetailValue,
-  accountingCellControlClassName,
-} from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/DisbursementVoucherEntryCellControls";
 import { DisbursementVoucherAccountingDropdownClassName } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryConstants";
 import { formatAmount } from "@/app/src/utils/currency.util";
 
@@ -45,8 +40,8 @@ export function createDisbursementAccountingEntryColumns({
       id: "accountCode",
       width: columnWidths.accountCode,
       widthClassName: "w-[12rem]",
-      renderCell: (entry, rowIndex, context) => (
-        <EntryInput id={context.fieldId} label={`${columnLabels.accountCode} row ${rowIndex + 1}`} value={entry.accountCode ?? ""} onChange={() => undefined} readOnly />
+      renderCell: (entry, _rowIndex, context) => (
+        <ModuleDataEntryInputCell id={context.fieldId} name={context.fieldName} value={entry.accountCode ?? ""} readOnly />
       ),
     },
     accountName: {
@@ -97,8 +92,14 @@ export function createDisbursementAccountingEntryColumns({
       id: "checkNo",
       width: columnWidths.checkNo,
       widthClassName: "w-[12rem]",
-      renderCell: (entry, rowIndex, context) => (
-        <EntryInput id={context.fieldId} label={`${columnLabels.checkNo} row ${rowIndex + 1}`} value={entry.checkNo ?? ""} onChange={(value) => onUpdateEntry(entry.id, "checkNo", value)} disabled={isReadonly} />
+      renderCell: (entry, _rowIndex, context) => (
+        <ModuleDataEntryInputCell
+          id={context.fieldId}
+          name={context.fieldName}
+          value={entry.checkNo ?? ""}
+          onChange={(value) => onUpdateEntry(entry.id, "checkNo", value)}
+          readOnly={isReadonly}
+        />
       ),
     },
     checkStatus: {
@@ -106,13 +107,13 @@ export function createDisbursementAccountingEntryColumns({
       id: "checkStatus",
       width: columnWidths.checkStatus,
       widthClassName: "w-[11rem]",
-      renderCell: (entry, rowIndex, context) => (
-        <EntryInput
+      renderCell: (entry, _rowIndex, context) => (
+        <ModuleDataEntryInputCell
           id={context.fieldId}
-          label={`${columnLabels.checkStatus} row ${rowIndex + 1}`}
+          name={context.fieldName}
           value={entry.checkStatus ?? ""}
           onChange={(value) => onUpdateEntry(entry.id, "checkStatus", value)}
-          disabled={isReadonly}
+          readOnly={isReadonly}
         />
       ),
     },
@@ -121,31 +122,28 @@ export function createDisbursementAccountingEntryColumns({
       id: "checkDate",
       width: columnWidths.checkDate,
       widthClassName: "w-[10rem]",
-      renderCell: (entry, rowIndex, context) => (
-        <>
-          <label htmlFor={context.fieldId} className="sr-only">{`${columnLabels.checkDate} row ${rowIndex + 1}`}</label>
-          <input
-            id={context.fieldId}
-            type="date"
-            value={entry.checkDate ?? ""}
-            disabled={isReadonly}
-            onChange={(event) => onUpdateEntry(entry.id, "checkDate", event.target.value)}
-            className={accountingCellControlClassName()}
-          />
-        </>
+      renderCell: (entry, _rowIndex, context) => (
+        <ModuleDataEntryInputCell
+          id={context.fieldId}
+          name={context.fieldName}
+          type="date"
+          value={entry.checkDate ?? ""}
+          readOnly={isReadonly}
+          onChange={(value) => onUpdateEntry(entry.id, "checkDate", value)}
+        />
       ),
     },
     remarks: {
       header: columnLabels.remarks,
       id: "remarks",
       width: columnWidths.remarks,
-      widthClassName: "w-[22rem]",
-      renderCell: (entry, _index, context) => (
+      widthClassName: "w-[16rem]",
+      renderCell: (entry, _rowIndex, context) => (
         <ModuleDataEntryRemarksCell
           inputId={context.fieldId}
           inputName={context.fieldName}
-          isReadonly={isReadonly}
           value={entry.remarks}
+          isReadonly={isReadonly}
           textareaId={`${context.fieldId}-dialog`}
           onChange={(value) => onUpdateEntry(entry.id, "remarks", value)}
         />
@@ -155,9 +153,9 @@ export function createDisbursementAccountingEntryColumns({
       header: columnLabels.partyCode,
       id: "partyCode",
       width: columnWidths.partyCode,
-      widthClassName: "w-[12rem]",
-      renderCell: (entry, rowIndex, context) => (
-        <EntryInput id={context.fieldId} label={`${columnLabels.partyCode} row ${rowIndex + 1}`} value={entry.partyCode ?? ""} onChange={() => undefined} readOnly />
+      widthClassName: "w-[10rem]",
+      renderCell: (entry, _rowIndex, context) => (
+        <ModuleDataEntryInputCell id={context.fieldId} name={context.fieldName} value={entry.partyCode ?? ""} readOnly />
       ),
     },
     partyName: {
@@ -165,37 +163,62 @@ export function createDisbursementAccountingEntryColumns({
       id: "partyName",
       width: columnWidths.partyName,
       widthClassName: "w-[18rem]",
-      renderCell: (entry) => (
-        <AppAdvancedDropdown
-          addAction={!isReadonly && canAddPartyName ? { label: "Add Party Name", onClick: onAddPartyName } : undefined}
-          value={entry.partyCode || getAccountingPartyFallbackValue(entry.partyName ?? "")}
-          readOnly={isReadonly}
-          options={partyOptions}
-          placeholder="Select Party Name"
-          searchPlaceholder="Search Party Name"
-          className={DisbursementVoucherAccountingDropdownClassName}
-          onChange={(value) => {
-            const selectedValue = String(value);
-            const party = partyOptions.find((option) => option.value === selectedValue);
-            const isFallbackValue = selectedValue.startsWith(AccountingPartyFallbackValuePrefix);
+      renderCell: (entry) => {
+        const partyName = (entry.partyName ?? "").trim();
+        const selectedOption = partyOptions.find(
+          (option) =>
+            option.name.toLowerCase() === partyName.toLowerCase() ||
+            (entry.partyCode && option.value === entry.partyCode),
+        );
+        const dropdownValue = selectedOption
+          ? selectedOption.value
+          : partyName
+            ? `${AccountingPartyFallbackValuePrefix}${partyName}`
+            : "";
 
-            onUpdateEntryFields(entry.id, {
-              partyCode: isFallbackValue ? "" : selectedValue,
-              partyName: party?.name ?? "",
-            });
-          }}
-        />
-      ),
+        return (
+          <AppAdvancedDropdown
+            addAction={
+              canAddPartyName && !isReadonly
+                ? {
+                    label: "Add Party Name",
+                    onClick: onAddPartyName,
+                  }
+                : undefined
+            }
+            className={DisbursementVoucherAccountingDropdownClassName}
+            isClearable
+            options={partyOptions}
+            placeholder="Select Party Name"
+            searchPlaceholder="Search Party Name"
+            readOnly={isReadonly}
+            value={dropdownValue}
+            onChange={(value) => {
+              const selectedParty = partyOptions.find((option) => option.value === value);
+
+              onUpdateEntryFields(entry.id, {
+                partyCode: selectedParty?.value.startsWith(AccountingPartyFallbackValuePrefix)
+                  ? ""
+                  : (selectedParty?.label ?? ""),
+                partyName: selectedParty?.name ?? "",
+              });
+            }}
+          />
+        );
+      },
     },
-    responsibilityCenter: {
-      header: columnLabels.responsibilityCenter,
-      id: "responsibilityCenter",
-      width: columnWidths.responsibilityCenter,
-      widthClassName: "w-[18rem]",
-      renderCell: (entry) => (
-        <ModuleDataEntryReadonlyCell
-          title={entry.responsibilityCenter || undefined}
-          value={entry.responsibilityCenter ?? ""}
+    refId: {
+      header: columnLabels.refId,
+      id: "refId",
+      width: columnWidths.refId,
+      widthClassName: "w-[10rem]",
+      renderCell: (entry, _rowIndex, context) => (
+        <ModuleDataEntryInputCell
+          id={context.fieldId}
+          name={context.fieldName}
+          value={entry.refId ?? ""}
+          onChange={(value) => onUpdateEntry(entry.id, "refId", value)}
+          readOnly={isReadonly}
         />
       ),
     },
@@ -203,40 +226,29 @@ export function createDisbursementAccountingEntryColumns({
       header: columnLabels.responsibilityCenterCode,
       id: "responsibilityCenterCode",
       width: columnWidths.responsibilityCenterCode,
-      widthClassName: "w-[14rem]",
-      renderCell: (entry) => (
-        <ModuleDataEntryReadonlyCell
-          title={entry.responsibilityCenter || undefined}
-          value={entry.responsibilityCenter ?? ""}
-        />
-      ),
+      widthClassName: "w-[11rem]",
+      renderCell: (entry) => <ModuleDataEntryReadonlyCell value={entry.responsibilityCenter ?? ""} />,
     },
-    refId: {
-      header: columnLabels.refId,
-      id: "refId",
-      width: columnWidths.refId,
-      widthClassName: "w-[12rem]",
-      renderCell: (entry, rowIndex, context) => (
-        <EntryInput id={context.fieldId} label={`${columnLabels.refId} row ${rowIndex + 1}`} value={entry.refId ?? ""} onChange={(value) => onUpdateEntry(entry.id, "refId", value)} disabled={isReadonly} />
-      ),
+    responsibilityCenter: {
+      header: columnLabels.responsibilityCenter,
+      id: "responsibilityCenter",
+      width: columnWidths.responsibilityCenter,
+      widthClassName: "w-[15rem]",
+      renderCell: (entry) => <ModuleDataEntryReadonlyCell value={entry.responsibilityCenter ?? ""} />,
     },
     vatType: {
       header: columnLabels.vatType,
       id: "vatType",
       width: columnWidths.vatType,
-      widthClassName: "w-[12rem]",
-      renderCell: (entry) => (
-        <ModuleDataEntryReadonlyCell title={entry.vatType || undefined} value={entry.vatType ?? ""} />
-      ),
+      widthClassName: "w-[10rem]",
+      renderCell: (entry) => <ModuleDataEntryReadonlyCell value={entry.vatType ?? ""} />,
     },
     atcCode: {
       header: columnLabels.atcCode,
       id: "atcCode",
       width: columnWidths.atcCode,
-      widthClassName: "w-[12rem]",
-      renderCell: (entry) => (
-        <ModuleDataEntryReadonlyCell title={entry.atcCode || undefined} value={entry.atcCode ?? ""} />
-      ),
+      widthClassName: "w-[10rem]",
+      renderCell: (entry) => <ModuleDataEntryReadonlyCell value={entry.atcCode ?? ""} />,
     },
   };
 }
@@ -258,6 +270,18 @@ export function createDisbursementExpenseEntryColumns({
   vatOptions,
 }: DisbursementExpenseEntryColumnsParams): Record<ExpenseEntryColumnId, ModuleDataEntryColumn<DisbursementLineEntry>> {
   return {
+    partyCode: {
+      ...accountingColumns.partyCode,
+      header: expenseColumnLabels.partyCode,
+      id: "partyCode",
+      width: expenseColumnWidths.partyCode,
+    },
+    partyName: {
+      ...accountingColumns.partyName,
+      header: expenseColumnLabels.partyName,
+      id: "partyName",
+      width: expenseColumnWidths.partyName,
+    },
     disbursementCode: {
       ...accountingColumns.accountCode,
       header: expenseColumnLabels.disbursementCode,
@@ -268,15 +292,22 @@ export function createDisbursementExpenseEntryColumns({
       header: expenseColumnLabels.expenseType,
       id: "expenseType",
       width: expenseColumnWidths.expenseType,
-      widthClassName: "w-[15rem]",
+      widthClassName: "w-[18rem]",
       renderCell: (entry) => (
         <ChartAccountDropdown
-          addAction={!isReadonly && canAddExpenseType ? { label: "Add Disbursement Type", onClick: onAddExpenseType } : undefined}
           accounts={expenseAccounts}
           value={entry.accountName}
           valueField="accountName"
           readOnly={isReadonly}
           isClearable
+          addAction={
+            canAddExpenseType && !isReadonly
+              ? {
+                  label: "Add Disbursement Type",
+                  onClick: onAddExpenseType,
+                }
+              : undefined
+          }
           className={DisbursementVoucherAccountingDropdownClassName}
           placeholder="Select Disbursement Type"
           searchPlaceholder="Search Disbursement Type"
@@ -295,20 +326,19 @@ export function createDisbursementExpenseEntryColumns({
       id: "amount",
       width: expenseColumnWidths.amount,
       widthClassName: "w-[10rem]",
-      renderCell: (entry, rowIndex, context) => (
-        <EntryNumberInput
+      renderCell: (entry, _rowIndex, context) => (
+        <ModuleDataEntryMoneyCell
           id={context.fieldId}
-          label={`${expenseColumnLabels.amount} row ${rowIndex + 1}`}
-          allowNegative
+          name={context.fieldName}
           value={entry.taxDetails.grossAmount}
+          readOnly={isReadonly}
           onChange={(value) =>
             updateExpenseEntryFields(entry.id, {
               credit: 0,
-              debit: value,
-              taxDetails: syncTaxDetailsAmount(entry.taxDetails, value, entry.taxRate),
+              debit: Number(value || 0),
+              taxDetails: syncTaxDetailsAmount(entry.taxDetails, Number(value || 0), entry.taxRate),
             })
           }
-          disabled={isReadonly}
         />
       ),
     },
@@ -335,7 +365,7 @@ export function createDisbursementExpenseEntryColumns({
       id: "netAmount",
       width: expenseColumnWidths.netAmount,
       widthClassName: "w-[9rem]",
-      renderCell: (entry) => <ExpenseDetailValue value={entry.taxDetails.netAmount} />,
+      renderCell: (entry) => <ModuleDataEntryReadonlyCell align="right" value={formatAmount(entry.taxDetails.netAmount)} />,
     },
     vatCode: {
       header: expenseColumnLabels.vatCode,
@@ -348,24 +378,27 @@ export function createDisbursementExpenseEntryColumns({
           readOnly={isReadonly}
           isClearable
           options={vatOptions}
-          placeholder="Select VAT"
-          searchPlaceholder="Search VAT Rate or Description"
+          placeholder="Select VAT Code"
+          searchPlaceholder="Search VAT Code"
           className={DisbursementVoucherAccountingDropdownClassName}
           onChange={(value) => {
-            const vatCode = String(value);
-            const taxRate = getVatRateFromCode(vatCode, taxCodes);
+            const nextVatCode = String(value ?? "");
+            const nextTaxRate = getVatRateFromCode(nextVatCode, taxCodes);
+            const nextVatPercent = getVatPercentFromRate(nextTaxRate);
+            const nextTaxDetails = syncTaxDetailsAmount(
+              {
+                ...entry.taxDetails,
+                vatCode: nextVatCode,
+                vatPercent: nextVatPercent,
+              },
+              entry.taxDetails.grossAmount,
+              nextTaxRate,
+            );
 
             updateExpenseEntryFields(entry.id, {
-              taxRate,
-              taxDetails: syncTaxDetailsAmount(
-                {
-                  ...entry.taxDetails,
-                  vatCode,
-                  vatPercent: getVatPercentFromRate(taxRate),
-                },
-                entry.taxDetails.grossAmount,
-                taxRate,
-              ),
+              taxDetails: nextTaxDetails,
+              taxRate: nextTaxRate,
+              vatType: nextVatCode,
             });
           }}
         />
@@ -375,43 +408,48 @@ export function createDisbursementExpenseEntryColumns({
       header: expenseColumnLabels.vatPercent,
       id: "vatPercent",
       width: expenseColumnWidths.vatPercent,
-      widthClassName: "w-[7rem]",
-      renderCell: (entry) => <ExpenseDetailValue value={entry.taxDetails.vatPercent} suffix="%" />,
+      widthClassName: "w-[8rem]",
+      renderCell: (entry) => (
+        <ModuleDataEntryReadonlyCell align="right" value={`${formatAmount(entry.taxDetails.vatPercent)}%`} />
+      ),
     },
     vatAmount: {
       header: expenseColumnLabels.vatAmount,
       id: "vatAmount",
       width: expenseColumnWidths.vatAmount,
       widthClassName: "w-[9rem]",
-      renderCell: (entry) => <ExpenseDetailValue value={entry.taxDetails.vatAmount} />,
+      renderCell: (entry) => <ModuleDataEntryReadonlyCell align="right" value={formatAmount(entry.taxDetails.vatAmount)} />,
     },
     ewtCode: {
       header: expenseColumnLabels.ewtCode,
       id: "ewtCode",
       width: expenseColumnWidths.ewtCode,
-      widthClassName: "w-[13rem]",
+      widthClassName: "w-[12rem]",
       renderCell: (entry) => (
         <AppAdvancedDropdown
           value={entry.taxDetails.ewtCode}
           readOnly={isReadonly}
           isClearable
           options={ewtOptions}
-          placeholder="Select EWT"
-          searchPlaceholder="Search EWT Code, Rate, or Description"
+          placeholder="Select EWT Code"
+          searchPlaceholder="Search EWT Code"
           className={DisbursementVoucherAccountingDropdownClassName}
           onChange={(value) => {
-            const ewtCode = String(value);
+            const nextEwtCode = String(value ?? "");
+            const nextEwtPercent = getEwtPercentFromCode(nextEwtCode, taxCodes);
+            const nextTaxDetails = syncTaxDetailsAmount(
+              {
+                ...entry.taxDetails,
+                ewtCode: nextEwtCode,
+                ewtPercent: nextEwtPercent,
+              },
+              entry.taxDetails.grossAmount,
+              entry.taxRate,
+            );
 
             updateExpenseEntryFields(entry.id, {
-              taxDetails: syncTaxDetailsAmount(
-                {
-                  ...entry.taxDetails,
-                  ewtCode,
-                  ewtPercent: getEwtPercentFromCode(ewtCode, taxCodes),
-                },
-                entry.taxDetails.grossAmount,
-                entry.taxRate,
-              ),
+              atcCode: nextEwtCode,
+              taxDetails: nextTaxDetails,
             });
           }}
         />
@@ -421,34 +459,24 @@ export function createDisbursementExpenseEntryColumns({
       header: expenseColumnLabels.ewtPercent,
       id: "ewtPercent",
       width: expenseColumnWidths.ewtPercent,
-      widthClassName: "w-[7rem]",
-      renderCell: (entry) => <ExpenseDetailValue value={entry.taxDetails.ewtPercent} suffix="%" />,
+      widthClassName: "w-[8rem]",
+      renderCell: (entry) => (
+        <ModuleDataEntryReadonlyCell align="right" value={`${formatAmount(entry.taxDetails.ewtPercent)}%`} />
+      ),
     },
     ewtAmount: {
       header: expenseColumnLabels.ewtAmount,
       id: "ewtAmount",
       width: expenseColumnWidths.ewtAmount,
       widthClassName: "w-[9rem]",
-      renderCell: (entry) => <ExpenseDetailValue value={entry.taxDetails.ewtAmount} />,
+      renderCell: (entry) => <ModuleDataEntryReadonlyCell align="right" value={formatAmount(entry.taxDetails.ewtAmount)} />,
     },
     totalAmountDue: {
       header: expenseColumnLabels.totalAmountDue,
       id: "totalAmountDue",
       width: expenseColumnWidths.totalAmountDue,
       widthClassName: "w-[10rem]",
-      renderCell: (entry) => <ExpenseDetailValue value={entry.taxDetails.amount} />,
-    },
-    partyName: {
-      ...accountingColumns.partyName,
-      header: expenseColumnLabels.partyName,
-      id: "partyName",
-      width: expenseColumnWidths.partyName,
-    },
-    partyCode: {
-      ...accountingColumns.partyCode,
-      header: expenseColumnLabels.partyCode,
-      id: "partyCode",
-      width: expenseColumnWidths.partyCode,
+      renderCell: (entry) => <ModuleDataEntryReadonlyCell align="right" value={formatAmount(entry.taxDetails.amount)} />,
     },
     remarks: {
       ...accountingColumns.remarks,
@@ -456,46 +484,41 @@ export function createDisbursementExpenseEntryColumns({
       id: "remarks",
       width: expenseColumnWidths.remarks,
     },
+    responsibilityCenterCode: {
+      ...accountingColumns.responsibilityCenterCode,
+      header: expenseColumnLabels.responsibilityCenterCode,
+      id: "responsibilityCenterCode",
+      width: expenseColumnWidths.responsibilityCenterCode,
+    },
     responsibilityCenter: {
       header: expenseColumnLabels.responsibilityCenter,
       id: "responsibilityCenter",
       width: expenseColumnWidths.responsibilityCenter,
-      widthClassName: "w-[18rem]",
+      widthClassName: "w-[15rem]",
       renderCell: (entry) => (
         <AppAdvancedDropdown
           addAction={
-            !isReadonly && canAddResponsibilityCenter
+            canAddResponsibilityCenter && !isReadonly
               ? {
                   label: "Add Responsibility Center",
                   onClick: () => onAddResponsibilityCenter(entry.id),
                 }
               : undefined
           }
-          value={entry.responsibilityCenter ?? ""}
-          readOnly={isReadonly}
+          className={DisbursementVoucherAccountingDropdownClassName}
+          isClearable
           options={responsibilityCenterOptions}
           placeholder="Select Responsibility Center"
           searchPlaceholder="Search Responsibility Center"
-          className={DisbursementVoucherAccountingDropdownClassName}
-          onChange={(value) => {
-            const responsibilityCenter = String(value);
-
+          readOnly={isReadonly}
+          value={entry.responsibilityCenter ?? ""}
+          onChange={(value) =>
             updateExpenseEntryFields(entry.id, {
-              responsibilityCenter,
-              taxDetails: {
-                ...entry.taxDetails,
-                responsibilityCenter,
-              },
-            });
-          }}
+              responsibilityCenter: String(value ?? ""),
+            })
+          }
         />
       ),
-    },
-    responsibilityCenterCode: {
-      ...accountingColumns.responsibilityCenterCode,
-      header: expenseColumnLabels.responsibilityCenterCode,
-      id: "responsibilityCenterCode",
-      width: expenseColumnWidths.responsibilityCenterCode,
     },
     refId: {
       ...accountingColumns.refId,

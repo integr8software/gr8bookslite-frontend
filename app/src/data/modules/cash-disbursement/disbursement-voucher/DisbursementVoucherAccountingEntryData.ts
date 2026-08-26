@@ -445,3 +445,26 @@ export function disbursementEntryIsComplete(entry: DisbursementLineEntry) {
     !(parseMoneyNumberInput(entry.debit) > 0 && parseMoneyNumberInput(entry.credit) > 0)
   );
 }
+
+export function estimateDisbursementEntryTextWidth(value: string, padding: number) {
+  return Math.min(600, Math.max(50, value.trim().length * 7.5 + padding));
+}
+
+export function calculateDisbursementEntryColumnFitWidth({
+  columnId,
+  columnLabels,
+  entries,
+}: {
+  columnId: DisbursementEntryColumnId;
+  columnLabels: Record<DisbursementEntryColumnId, string>;
+  entries: DisbursementLineEntry[];
+}) {
+  const headerWidth = estimateDisbursementEntryTextWidth(columnLabels[columnId], 76);
+  const contentWidth = entries.reduce(
+    (currentWidth, entry) =>
+      Math.max(currentWidth, estimateDisbursementEntryTextWidth(String(getDisbursementEntryExportCell(entry, columnId) ?? ""), 24)),
+    50,
+  );
+
+  return Math.max(headerWidth, contentWidth);
+}

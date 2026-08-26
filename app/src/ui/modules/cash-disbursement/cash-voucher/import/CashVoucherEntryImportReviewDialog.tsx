@@ -2,18 +2,18 @@
 
 import { type ReactNode, useState } from "react";
 import { Eye, FileText, X } from "lucide-react";
-import { DisbursementVoucherStatuses } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
-import { formatCurrency, formatDateLabel } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
+import { CashVoucherStatuses } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherConstants";
+import { formatCurrency, formatDateLabel } from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherData";
 import type {
-  DisbursementAttachment as VoucherAttachment,
-  DisbursementLineEntry,
-  DisbursementTransactionRecord,
-  DisbursementVoucherFormValues,
-} from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+  CashVoucherAttachment as VoucherAttachment,
+  CashVoucherLineEntry,
+  CashVoucherTransactionRecord,
+  CashVoucherFormValues,
+} from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
 import { parseMoneyNumberInput } from "@/app/src/ui/shared/money/MoneyNumberField";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
-export function GridPreviewDialog({
+export function CashVoucherEntryImportReviewDialog({
   entries,
   isBalanced,
   isOpen,
@@ -25,13 +25,13 @@ export function GridPreviewDialog({
   onClose,
   onContinue,
 }: {
-  entries: DisbursementLineEntry[];
+  entries: CashVoucherLineEntry[];
   isBalanced: boolean;
   isOpen: boolean;
-  selectedTransaction?: DisbursementTransactionRecord;
+  selectedTransaction?: CashVoucherTransactionRecord;
   totalCredit: number;
   totalDebit: number;
-  values: DisbursementVoucherFormValues;
+  values: CashVoucherFormValues;
   variance: number;
   onClose: () => void;
   onContinue: () => void;
@@ -57,7 +57,7 @@ export function GridPreviewDialog({
         className="flex h-[min(100dvh-0.75rem,980px)] w-full max-w-7xl flex-col overflow-hidden rounded-[20px] border border-darknavy/10 bg-white shadow-[0_18px_60px_rgba(33,39,56,0.18)] sm:h-[min(86vh,980px)] sm:rounded-[28px]"
       >
         <div className="border-b border-darknavy/10 px-4 py-4 sm:px-6 sm:py-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-skyblue">Edit Disbursement Voucher</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-skyblue">Edit Cash Voucher</p>
           <h2 id="grid-preview-title" className="mt-2 text-xl font-semibold text-darknavy sm:text-2xl">
             {values.voucherNo}
           </h2>
@@ -90,7 +90,6 @@ export function GridPreviewDialog({
               >
                 <div className="grid gap-5">
                   <PreviewInfoLine label="Document Date" value={formatDateLabel(values.voucherDate)} />
-                  <PreviewInfoLine label="Payment Method" value={values.paymentMethod || "-"} />
                   <PreviewInfoLine label="Prepared By" value={values.preparedBy || "-"} />
                   <PreviewInfoLine label="Status" value={values.status || "-"} />
                   <PreviewInfoLine label="Remarks" value={values.remarks || "-"} />
@@ -350,13 +349,13 @@ export function VoucherAccountingGridHeader({
   selectedTransaction,
   values,
 }: {
-  selectedTransaction?: DisbursementTransactionRecord;
-  values: DisbursementVoucherFormValues;
+  selectedTransaction?: CashVoucherTransactionRecord;
+  values: CashVoucherFormValues;
 }) {
   const headerFields = [
     {
-      label: "DV No.",
-      value: values.voucherNo || DisbursementVoucherStatuses.draft,
+      label: "CV No.",
+      value: values.voucherNo || CashVoucherStatuses.draft,
     },
     {
       label: "Document Date",
@@ -371,10 +370,6 @@ export function VoucherAccountingGridHeader({
       value: values.voucherReferenceNo || selectedTransaction?.transactionNo || "-",
     },
     {
-      label: "Payment",
-      value: formatPaymentHeaderValue(values, selectedTransaction),
-    },
-    {
       label: "Amount",
       value: formatCurrency(values.amount ? parseMoneyNumberInput(values.amount) : selectedTransaction?.amount || 0),
     },
@@ -384,12 +379,12 @@ export function VoucherAccountingGridHeader({
     <section className="mt-6 overflow-hidden rounded-lg border border-darknavy/10 bg-offwhite/45">
       <div className="flex flex-col gap-3 border-b border-darknavy/10 bg-white px-4 py-4 sm:px-5 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/45">Disbursement Voucher</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/45">Cash Voucher</p>
           <h2 className="mt-1 truncate text-xl font-semibold text-darknavy">{values.voucherNo || "New Voucher"} Accounting Entries</h2>
         </div>
         <div className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-skyblue/20 bg-skyblue/8 px-4 py-2 text-sm font-semibold text-skyblue sm:w-auto">
           <FileText className="h-4 w-4" aria-hidden="true" />
-          {values.status || selectedTransaction?.status || DisbursementVoucherStatuses.draft}
+          {values.status || selectedTransaction?.status || CashVoucherStatuses.draft}
         </div>
       </div>
       <div className="grid gap-px bg-darknavy/10 sm:grid-cols-2 xl:grid-cols-3">
@@ -402,27 +397,6 @@ export function VoucherAccountingGridHeader({
       </div>
     </section>
   );
-}
-
-function formatPaymentHeaderValue(values: DisbursementVoucherFormValues, selectedTransaction?: DisbursementTransactionRecord) {
-  const paymentMethod = values.paymentMethod || selectedTransaction?.paymentMethod || "";
-  const bankLabel = getPaymentHeaderBankLabel(values);
-
-  if (!paymentMethod) {
-    return bankLabel || "-";
-  }
-
-  return bankLabel ? `${paymentMethod} - ${bankLabel}` : paymentMethod;
-}
-
-function getPaymentHeaderBankLabel(values: DisbursementVoucherFormValues) {
-  const bankName = values.paymentDetails.bankName.trim();
-
-  if (bankName) {
-    return bankName;
-  }
-
-  return values.paymentDetails.bankAccountTitle.replace(/^Cash in Bank\s*-\s*/i, "").trim();
 }
 
 export function GridEntryInput({

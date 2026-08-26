@@ -1,26 +1,24 @@
-import type { RevolvingFundReplenishmentActionPageState } from "@/app/src/types/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentTypes";
 import type {
+  RevolvingFundReplenishmentAccountingEntryColumnsParams,
   RevolvingFundReplenishmentAccountingColumnId,
   RevolvingFundReplenishmentAccountingEntry,
+  RevolvingFundReplenishmentDetailEntryColumnsParams,
   RevolvingFundReplenishmentEntry,
   RevolvingFundReplenishmentEntryColumnId,
 } from "@/app/src/types/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentTypes";
-import {
-  RevolvingFundReplenishmentEntryInput,
-  RevolvingFundReplenishmentMoneyInput,
-} from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/entries/RevolvingFundReplenishmentEntryCellControls";
 import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import { ModuleDataEntryInputCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryInputCell";
+import { ModuleDataEntryMoneyCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryMoneyCell";
 import { ModuleDataEntryRemarksCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryRemarksCell";
 
 export function createRevolvingFundReplenishmentLineColumns({
   columnLabels,
   columnWidths,
   page,
-}: {
-  columnLabels: Record<RevolvingFundReplenishmentEntryColumnId, string>;
-  columnWidths: Record<RevolvingFundReplenishmentEntryColumnId, number>;
-  page: RevolvingFundReplenishmentActionPageState;
-}): Record<RevolvingFundReplenishmentEntryColumnId, ModuleDataEntryColumn<RevolvingFundReplenishmentEntry>> {
+}: RevolvingFundReplenishmentDetailEntryColumnsParams): Record<
+  RevolvingFundReplenishmentEntryColumnId,
+  ModuleDataEntryColumn<RevolvingFundReplenishmentEntry>
+> {
   const text = (
     id: RevolvingFundReplenishmentEntryColumnId,
     type: "text" | "date" = "text",
@@ -31,7 +29,7 @@ export function createRevolvingFundReplenishmentLineColumns({
     widthClassName: "w-auto",
     widthMode: "fixed",
     renderCell: (row, _index, context) => (
-      <RevolvingFundReplenishmentEntryInput
+      <ModuleDataEntryInputCell
         id={context.fieldId}
         name={context.fieldName}
         type={type}
@@ -42,6 +40,7 @@ export function createRevolvingFundReplenishmentLineColumns({
       />
     ),
   });
+
   const money = (id: "totalAmount" | "netAmount" | "vatAmount"): ModuleDataEntryColumn<RevolvingFundReplenishmentEntry> => ({
     header: columnLabels[id],
     id,
@@ -49,7 +48,7 @@ export function createRevolvingFundReplenishmentLineColumns({
     widthClassName: "w-auto",
     widthMode: "fixed",
     renderCell: (row, _index, context) => (
-      <RevolvingFundReplenishmentMoneyInput
+      <ModuleDataEntryMoneyCell
         id={context.fieldId}
         name={context.fieldName}
         value={row[id]}
@@ -90,10 +89,10 @@ export function createRevolvingFundReplenishmentLineColumns({
 export function createRevolvingFundReplenishmentAccountingColumns({
   columnLabels,
   columnWidths,
-}: {
-  columnLabels: Record<RevolvingFundReplenishmentAccountingColumnId, string>;
-  columnWidths: Record<RevolvingFundReplenishmentAccountingColumnId, number>;
-}): Record<RevolvingFundReplenishmentAccountingColumnId, ModuleDataEntryColumn<RevolvingFundReplenishmentAccountingEntry>> {
+}: RevolvingFundReplenishmentAccountingEntryColumnsParams): Record<
+  RevolvingFundReplenishmentAccountingColumnId,
+  ModuleDataEntryColumn<RevolvingFundReplenishmentAccountingEntry>
+> {
   const column = (id: RevolvingFundReplenishmentAccountingColumnId): ModuleDataEntryColumn<RevolvingFundReplenishmentAccountingEntry> => ({
     header: columnLabels[id],
     id,

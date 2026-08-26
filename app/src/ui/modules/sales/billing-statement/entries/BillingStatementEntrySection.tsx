@@ -9,6 +9,7 @@ import {
   createBlankBillingStatementAccountingEntry,
   createBlankBillingStatementItem,
   formatBillingStatementCurrency,
+  recalculateBillingStatementItem,
 } from "@/app/src/data/modules/sales/billing-statement/BillingStatementData";
 import type {
   BillingStatementAccountingEntry,
@@ -49,7 +50,7 @@ export function BillingStatementEntrySection({
     (rowId: string, updates: Partial<BillingStatementItem>) => {
       onRowsChange(
         rows.map((row) =>
-          row.id === rowId ? normalizeEntry({ ...row, ...updates }, updates) : row,
+          row.id === rowId ? recalculateBillingStatementItem({ ...row, ...updates }) : row,
         ),
       );
     },
@@ -189,54 +190,6 @@ function createItemSummaryCells(rows: BillingStatementItem[]) {
     netAmount: formatBillingStatementCurrency(totals.netAmount),
     quantity: rows.reduce((sum, r) => sum + Number(r.quantity || 0), 0).toFixed(2),
     vatAmount: formatBillingStatementCurrency(totals.vatAmount),
-  };
-}
-
-function normalizeEntry(
-  entry: BillingStatementItem,
-  updates?: Partial<BillingStatementItem>,
-): BillingStatementItem {
-  const amount = Number(entry.amount) || 0;
-  const quantity = Number(entry.quantity) || 0;
-  const grossAmount =
-    updates && ("amount" in updates || "quantity" in updates || !("grossAmount" in updates))
-      ? amount * quantity
-      : Number(entry.grossAmount) || amount * quantity;
-
-  const discountPercent = Number(entry.discountPercent) || 0;
-  const discountAmount =
-    updates &&
-    ("discountPercent" in updates ||
-      "amount" in updates ||
-      "quantity" in updates ||
-      !("discountAmount" in updates))
-      ? grossAmount * (Math.max(discountPercent, 0) / 100)
-      : Number(entry.discountAmount) || grossAmount * (Math.max(discountPercent, 0) / 100);
-
-  const grossAfterDiscount = Math.max(grossAmount - discountAmount, 0);
-  const isVatable = String(entry.vatable ?? "").toLowerCase() === "true";
-  const isVatInclusive = isVatable && String(entry.vatInclusive ?? "").toLowerCase() === "true";
-  const vatAmount = !isVatable
-    ? 0
-    : isVatInclusive
-      ? (grossAfterDiscount / 1.12) * 0.12
-      : grossAfterDiscount * 0.12;
-  const netOfVatAmount =
-    isVatable && isVatInclusive ? Math.max(grossAfterDiscount - vatAmount, 0) : grossAfterDiscount;
-  const netAmount = amount * Math.max(quantity, 0);
-  const totalAmount =
-    isVatable && !isVatInclusive ? grossAfterDiscount + vatAmount : grossAfterDiscount;
-
-  return {
-    ...entry,
-    amount: Math.round(amount * 100) / 100,
-    discountAmount: Math.round(discountAmount * 100) / 100,
-    grossAfterDiscount: Math.round(grossAfterDiscount * 100) / 100,
-    grossAmount: Math.round(totalAmount * 100) / 100,
-    netAmount: Math.round(netAmount * 100) / 100,
-    netOfVatAmount: Math.round(netOfVatAmount * 100) / 100,
-    quantity,
-    vatAmount: Math.round(vatAmount * 100) / 100,
   };
 }
 

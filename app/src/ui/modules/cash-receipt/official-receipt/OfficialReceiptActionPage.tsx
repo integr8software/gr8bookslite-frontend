@@ -56,10 +56,10 @@ type OfficialReceiptActionPageProps = OfficialReceiptModuleConfig & {
 };
 
 export function OfficialReceiptActionPage({
+  api,
   baseHref = OfficialReceiptHref,
   copyFromRecords,
   copyFromSources,
-  fallbackReceipts,
   notFoundFallback,
   receiptCodeLabel = "OR",
   receiptLabel = "Official Receipt",
@@ -79,8 +79,8 @@ export function OfficialReceiptActionPage({
       router.push(baseHref);
     },
     {
+      api,
       copyFromRecords,
-      fallbackReceipts,
       receiptLabel: receiptLabel.toLowerCase(),
       storageKey,
     },

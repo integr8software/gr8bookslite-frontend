@@ -46,16 +46,16 @@ type OfficialReceiptListPageProps = OfficialReceiptModuleConfig & {
 };
 
 export function OfficialReceiptListPage({
+  api,
   baseHref = OfficialReceiptHref,
   description = "Search collection sources, preview linked official receipts, and create or update receipt entries.",
-  fallbackReceipts,
   receiptLabel = "Official Receipt",
   startNewLabel,
   storageKey,
   tableTitle = "Receipt entries",
 }: OfficialReceiptListPageProps = {}) {
   const { lastSyncedAt, receipts, updateReceiptStatus } = useOfficialReceiptStore(undefined, {
-    fallbackReceipts,
+    api,
     receiptLabel: receiptLabel.toLowerCase(),
     storageKey,
   });

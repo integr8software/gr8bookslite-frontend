@@ -222,8 +222,6 @@ export function getFieldManagementTabId(field: EditableField): FieldManagementTa
 
   if (
     /\b(entries?|entry|line|lines|item-entry|account-entry|data-entry)\b/.test(combinedText) ||
-    sourcePath.includes("accounting-grid") ||
-    sourcePath.includes("accountingtable") ||
     sourcePath.includes("expensetable") ||
     sourcePath.includes("itementry") ||
     sourcePath.includes("accountentry") ||
@@ -263,6 +261,10 @@ function isIgnoredFieldManagementLabel(field: EditableField) {
 
   if (!label) return true;
 
+  if (isAccountingEntryField(sourcePath, fieldKey, label)) {
+    return true;
+  }
+
   if (
     sourcePath.includes("report") ||
     sourcePath.includes("pdf") ||
@@ -295,4 +297,17 @@ function isIgnoredFieldManagementLabel(field: EditableField) {
   }
 
   return false;
+}
+
+function isAccountingEntryField(sourcePath: string, fieldKey: string, label: string) {
+  const combinedText = [sourcePath, fieldKey, label].join(" ");
+
+  return (
+    sourcePath.includes("accounting-grid") ||
+    sourcePath.includes("accountingtable") ||
+    sourcePath.includes("accounting-entry") ||
+    sourcePath.includes("accountingentry") ||
+    sourcePath.includes("accountinggrid") ||
+    /\b(account code|account title|debit|credit|ewt|ewt amount|vat input|vat output|tax amount)\b/.test(combinedText)
+  );
 }

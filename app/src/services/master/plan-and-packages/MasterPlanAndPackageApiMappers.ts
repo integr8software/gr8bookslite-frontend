@@ -1,6 +1,6 @@
 import { MasterPlanAndPackageScopes } from "@/app/src/constants/master/plan-and-packages/MasterPlanAndPackageConstants";
+import type { CreateMasterPlanAndPackageDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import type {
-	CreateMasterPlanAndPackagePayload,
 	MasterPlanAndPackageApiMetric,
 	MasterPlanAndPackageApiPrice,
 	MasterPlanAndPackageApiRecord,
@@ -8,7 +8,7 @@ import type {
 	MasterPlanAndPackageFormValues,
 	MasterPlanAndPackageRecord,
 	MasterPlanAndPackageScaleRule,
-	MasterPlanAndPackagesApiData,
+	MasterPlanAndPackagesData,
 	MasterPlanAndPackageStatus,
 } from "@/app/src/types/master/plan-and-packages/MasterPlanAndPackageTypes";
 
@@ -34,7 +34,7 @@ const ApiStatusByStatus = {
 >;
 
 export function mapMasterPlanAndPackagesResponse(
-	response: MasterPlanAndPackagesApiData,
+	response: MasterPlanAndPackagesData,
 ) {
 	return {
 		plans: response.plans.map(mapMasterPlanAndPackageRecord),
@@ -73,21 +73,25 @@ export function mapMasterPlanAndPackageRecord(
 	};
 }
 
-export function mapCreateMasterPlanAndPackagePayload(
+export function mapCreateMasterPlanAndPackageDto(
 	values: MasterPlanAndPackageFormValues,
-): CreateMasterPlanAndPackagePayload {
+): CreateMasterPlanAndPackageDto {
 	const code = values.code?.trim()
 		? values.code.trim().toUpperCase().replace(/\s+/g, "_")
-		: null;
+		: values.name.trim().toUpperCase().replace(/\s+/g, "_");
 
 	const scope =
 		values.scopes && values.scopes.length > 0
 			? values.scopes.includes(MasterPlanAndPackageScopes.ALL) ||
 			  (values.scopes.includes(MasterPlanAndPackageScopes.ONBOARDING) &&
 					values.scopes.includes(MasterPlanAndPackageScopes.ADDITIONAL_COMPANY))
-				? MasterPlanAndPackageScopes.ALL
+				? "ONBOARDING"
+				: values.scopes[0] === "ALL"
+				? "ONBOARDING"
 				: values.scopes[0]
-			: values.scope ?? MasterPlanAndPackageScopes.ALL;
+			: values.scope === "ALL"
+			? "ONBOARDING"
+			: values.scope ?? "ONBOARDING";
 
 	return {
 		code,
@@ -104,7 +108,7 @@ export function mapCreateMasterPlanAndPackagePayload(
 				thresholdCount: tier.thresholdCount,
 			})),
 		],
-		systemCodes: values.featureIds,
+		moduleKeys: values.featureIds,
 		name: values.name.trim(),
 		prices: [
 			createPrice({
@@ -120,8 +124,8 @@ export function mapCreateMasterPlanAndPackagePayload(
 				percentOff: values.yearlyPercentOff,
 			}),
 		],
-		scope,
-		status: ApiStatusByStatus[values.status],
+		scope: scope as CreateMasterPlanAndPackageDto["scope"],
+		status: ApiStatusByStatus[values.status] as CreateMasterPlanAndPackageDto["status"],
 		trialDays: values.trialDays,
 		usageRules: [
 			...(values.branchIncludedFree !== undefined || values.branchAddOnPrice !== undefined

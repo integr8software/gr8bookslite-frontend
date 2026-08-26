@@ -6,6 +6,8 @@ import type {
 	MasterPlanAndPackageRecord,
 } from "@/app/src/types/master/plan-and-packages/MasterPlanAndPackageTypes";
 
+const CustomIssueCode = z.ZodIssueCode.custom;
+
 const ReductionTierSchema = z.object({
 	reductionPercent: z
 		.number()
@@ -72,7 +74,7 @@ const MasterPlanAndPackageFormSchema = z
 	.superRefine((values, context) => {
 		if (values.trialDays === 0 && values.monthlyBasePrice <= 0) {
 			context.addIssue({
-				code: "custom",
+				code: CustomIssueCode,
 				message: "Monthly base price must be greater than 0.",
 				path: ["monthlyBasePrice"],
 			});
@@ -80,7 +82,7 @@ const MasterPlanAndPackageFormSchema = z
 
 		if (values.trialDays === 0 && values.yearlyBasePrice <= 0) {
 			context.addIssue({
-				code: "custom",
+				code: CustomIssueCode,
 				message: "Yearly base price must be greater than 0.",
 				path: ["yearlyBasePrice"],
 			});
@@ -157,7 +159,7 @@ function validateReductionTiers({
 	reductionTiers.forEach((tier, index) => {
 		if (tier.reductionPercent <= 0) {
 			context.addIssue({
-				code: "custom",
+				code: CustomIssueCode,
 				message: `${name} reduction percent must be greater than 0.`,
 				path: [reductionTiersPath],
 			});
@@ -171,7 +173,7 @@ function validateReductionTiers({
 
 		if (tier.thresholdCount <= previousTier.thresholdCount) {
 			context.addIssue({
-				code: "custom",
+				code: CustomIssueCode,
 				message: `${name} reduction tiers must be ordered from lowest count to highest count.`,
 				path: [reductionTiersPath],
 			});
@@ -179,7 +181,7 @@ function validateReductionTiers({
 
 		if (tier.reductionPercent < previousTier.reductionPercent) {
 			context.addIssue({
-				code: "custom",
+				code: CustomIssueCode,
 				message: `${name} reduction percent should not decrease in later tiers.`,
 				path: [reductionTiersPath],
 			});

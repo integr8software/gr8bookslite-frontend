@@ -49,7 +49,7 @@ export type MasterModuleSystemSidebarData = {
 	sidebar: MasterModuleSystemSidebarItem[];
 };
 
-export type SaveMasterModuleSystemPayload = {
+export type MasterModuleSystemSaveInput = {
 	code?: string;
 	name: string;
 	description?: string | null;
@@ -87,7 +87,7 @@ export async function getMasterModuleSystemModules() {
 }
 
 export async function createMasterModuleSystem(
-	payload: SaveMasterModuleSystemPayload,
+	payload: MasterModuleSystemSaveInput,
 ) {
 	const response = await ApiClient.post<{ system: MasterModuleSystem }>(
 		"/master/module-systems",
@@ -99,7 +99,7 @@ export async function createMasterModuleSystem(
 
 export async function updateMasterModuleSystem(
 	systemId: number,
-	payload: SaveMasterModuleSystemPayload,
+	payload: MasterModuleSystemSaveInput,
 ) {
 	const response = await ApiClient.patch<{ system: MasterModuleSystem }>(
 		`/master/module-systems/${systemId}`,

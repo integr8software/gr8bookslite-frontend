@@ -194,25 +194,15 @@ export type MasterPlanAndPackageApiRecord = {
 	usageRules: MasterPlanAndPackageApiUsageRule[];
 };
 
-export type MasterPlanAndPackagesApiData = {
+import type { CreateMasterPlanAndPackageDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
+
+export type { CreateMasterPlanAndPackageDto };
+
+export type MasterPlanAndPackagesData = {
 	plans: MasterPlanAndPackageApiRecord[];
 };
 
-export type CreateMasterPlanAndPackagePayload = {
-	code?: string | null;
-	description: string | null;
-	discountTiers: MasterPlanAndPackageApiDiscountTier[];
-	systemCodes: string[];
-	name: string;
-	prices: MasterPlanAndPackageApiPrice[];
-	scope?: MasterPlanAndPackageApiScope;
-	scopes?: MasterPlanAndPackageApiScope[];
-	status: MasterPlanAndPackageApiStatus;
-	trialDays: number;
-	usageRules: MasterPlanAndPackageApiUsageRule[];
-};
-
-export type CreateMasterPlanAndPackageResult = {
+export type MasterPlanAndPackageCreateResult = {
 	message: string;
 	plan: MasterPlanAndPackageApiRecord;
 };
@@ -224,3 +214,4 @@ export type MasterPlanAndPackagesListModel = {
 export type MasterPlanAndPackageCreateModel = {
 	formValues: MasterPlanAndPackageFormValues;
 };
+

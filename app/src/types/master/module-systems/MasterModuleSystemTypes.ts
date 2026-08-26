@@ -1,6 +1,10 @@
 import type { Row } from "@tanstack/react-table";
 import type { useMasterModuleSystemListPage } from "@/app/src/hooks/master/module-systems/useMasterModuleSystemListPage";
-import type { MasterModuleSystem } from "@/app/src/services/master/module-systems/MasterModuleSystemApi";
+import type {
+	MasterModuleSystem,
+	MasterModuleSystemSidebarItem,
+} from "@/app/src/services/master/module-systems/MasterModuleSystemApi";
+import type { SidebarAllowedIcons } from "@/app/src/ui/shared/main-layout/sidebar/SidebarIcons";
 
 export type MasterModuleSystemDetailsPageProps = {
 	recordId: string;
@@ -55,31 +59,31 @@ export type SidebarDropPreview =
 
 export type SidebarIconPickerProps = {
 	defaultIconKind: "dot" | "folder";
-	icon: (typeof import("@/app/src/ui/shared/main-layout/sidebar/SidebarIcons").SidebarAllowedIcons)[string] | undefined;
+	icon: (typeof SidebarAllowedIcons)[string] | undefined;
 	label: string;
 	onChange: (value: string | null) => void;
 	value: string;
 };
 
 export type SidebarTemplatePanelProps = {
-	fallbackSidebar: import("@/app/src/services/master/module-systems/MasterModuleSystemApi").MasterModuleSystemSidebarItem[];
+	fallbackSidebar: MasterModuleSystemSidebarItem[];
 	isLoading: boolean;
 	isSaving: boolean;
-	items: import("@/app/src/services/master/module-systems/MasterModuleSystemApi").MasterModuleSystemSidebarItem[];
+	items: MasterModuleSystemSidebarItem[];
 	modules: MasterModuleSystem["modules"];
 	onSave: () => void;
-	onUpdate: (items: import("@/app/src/services/master/module-systems/MasterModuleSystemApi").MasterModuleSystemSidebarItem[]) => void;
+	onUpdate: (items: MasterModuleSystemSidebarItem[]) => void;
 };
 
 export type SidebarTreeProps = {
 	canAddSection: boolean;
 	depth?: number;
 	dropPreview: SidebarDropPreview | null;
-	items: import("@/app/src/services/master/module-systems/MasterModuleSystemApi").MasterModuleSystemSidebarItem[];
+	items: MasterModuleSystemSidebarItem[];
 	onAddSection: (index?: number, parentKey?: string | null) => void;
 	onPatchItem: (
 		key: string,
-		patch: Partial<import("@/app/src/services/master/module-systems/MasterModuleSystemApi").MasterModuleSystemSidebarItem>,
+		patch: Partial<MasterModuleSystemSidebarItem>,
 	) => void;
 	onRemove: (key: string) => void;
 	parentKey?: string | null;
@@ -88,11 +92,11 @@ export type SidebarTreeProps = {
 export type SidebarTreeRowProps = {
 	depth: number;
 	dropPreview: SidebarDropPreview | null;
-	item: import("@/app/src/services/master/module-systems/MasterModuleSystemApi").MasterModuleSystemSidebarItem;
+	item: MasterModuleSystemSidebarItem;
 	onAddSection: (index?: number, parentKey?: string | null) => void;
 	onPatchItem: (
 		key: string,
-		patch: Partial<import("@/app/src/services/master/module-systems/MasterModuleSystemApi").MasterModuleSystemSidebarItem>,
+		patch: Partial<MasterModuleSystemSidebarItem>,
 	) => void;
 	onRemove: (key: string) => void;
 };
@@ -105,4 +109,3 @@ export type SidebarDropGapProps = {
 	onAddSection: () => void;
 	parentKey: string | null;
 };
-

@@ -1,18 +1,18 @@
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
 import {
-	mapCreateMasterPlanAndPackagePayload,
+	mapCreateMasterPlanAndPackageDto,
 	mapMasterPlanAndPackageRecord,
 	mapMasterPlanAndPackagesResponse,
 } from "@/app/src/services/master/plan-and-packages/MasterPlanAndPackageApiMappers";
 import type {
-	CreateMasterPlanAndPackageResult,
 	MasterPlanAndPackageCreateModel,
-	MasterPlanAndPackagesApiData,
+	MasterPlanAndPackageCreateResult,
+	MasterPlanAndPackagesData,
 	MasterPlanAndPackagesListModel,
 } from "@/app/src/types/master/plan-and-packages/MasterPlanAndPackageTypes";
 
 export async function getMasterPlanAndPackages() {
-	const response = await ApiClient.get<MasterPlanAndPackagesApiData>(
+	const response = await ApiClient.get<MasterPlanAndPackagesData>(
 		"/master/plan-and-packages",
 	);
 
@@ -24,9 +24,9 @@ export async function getMasterPlanAndPackages() {
 export async function createMasterPlanAndPackage(
 	model: MasterPlanAndPackageCreateModel,
 ) {
-	const response = await ApiClient.post<CreateMasterPlanAndPackageResult>(
+	const response = await ApiClient.post<MasterPlanAndPackageCreateResult>(
 		"/master/plan-and-packages",
-		mapCreateMasterPlanAndPackagePayload(model.formValues),
+		mapCreateMasterPlanAndPackageDto(model.formValues),
 	);
 
 	return {

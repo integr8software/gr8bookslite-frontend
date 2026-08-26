@@ -215,7 +215,8 @@ export const InitialMasterPlanAndPackageFormValues: MasterPlanAndPackageFormValu
 		monthlyBasePrice: 0,
 		monthlyPercentOff: 0,
 		name: "",
-		scope: "ONBOARDING",
+		scope: "ALL",
+		scopes: ["ALL"],
 		status: "Active",
 		trialDays: 0,
 		userAddOnPrice: 0,
@@ -244,6 +245,7 @@ export function createMasterPlanAndPackageFormValues(
 		id: record.id,
 		name: record.name,
 		scope: record.scope,
+		scopes: record.scope === "ALL" ? ["ALL"] : [record.scope],
 		status: record.status,
 	};
 }
@@ -252,12 +254,15 @@ export function createMasterPlanAndPackageRecord(
 	values: MasterPlanAndPackageFormValues,
 ): MasterPlanAndPackageRecord {
 	const trimmedName = values.name.trim();
+	const code =
+		values.code?.trim().toUpperCase() ||
+		slugify(trimmedName).toUpperCase().replace(/-/g, "_");
 
 	return {
-		code: values.code.trim().toUpperCase(),
+		code,
 		description: values.description.trim(),
 		featureIds: [...values.featureIds],
-		id: values.id ?? `plan-${slugify(values.code.trim() || trimmedName)}`,
+		id: values.id ?? `plan-${slugify(code || trimmedName)}`,
 		name: trimmedName,
 		pricing: createPricingFromFormValues(values),
 		scalePricing: createScalePricingFromFormValues(values),
@@ -409,16 +414,16 @@ function createScalePricingFromFormValues(
 ): MasterPlanAndPackageScalePricing {
 	return {
 		branch: {
-			addOnPrice: values.branchAddOnPrice,
-			includedFreeCount: values.branchIncludedFree,
-			reductionTiers: values.branchReductionTiers.map((tier) => ({
+			addOnPrice: values.branchAddOnPrice ?? 0,
+			includedFreeCount: values.branchIncludedFree ?? 0,
+			reductionTiers: (values.branchReductionTiers ?? []).map((tier) => ({
 				...tier,
 			})),
 		},
 		user: {
-			addOnPrice: values.userAddOnPrice,
-			includedFreeCount: values.userIncludedFree,
-			reductionTiers: values.userReductionTiers.map((tier) => ({
+			addOnPrice: values.userAddOnPrice ?? 0,
+			includedFreeCount: values.userIncludedFree ?? 0,
+			reductionTiers: (values.userReductionTiers ?? []).map((tier) => ({
 				...tier,
 			})),
 		},

@@ -15,8 +15,11 @@ import {
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleNotFound } from "@/app/src/ui/shared/module/ModuleNotFound";
 import { ModuleSystemPageSkeleton } from "@/app/src/ui/master/module-systems/ModuleSystemPageSkeleton";
+import type { MasterModuleSystemDetailsPageProps } from "@/app/src/types/master/module-systems/MasterModuleSystemTypes";
 
-export function MasterModuleSystemDetailsPage({ recordId }: { recordId: string }) {
+export function MasterModuleSystemDetailsPage({
+	recordId,
+}: MasterModuleSystemDetailsPageProps) {
 	const systemsQuery = useMasterModuleSystemListPage();
 	const record = useMemo(
 		() => systemsQuery.records.find((candidate) => candidate.id === Number(recordId)),
@@ -72,7 +75,6 @@ export function MasterModuleSystemDetailsPage({ recordId }: { recordId: string }
 			/>
 			<div className="grid gap-5 xl:grid-cols-[minmax(0,0.75fr)_minmax(0,1.25fr)]">
 				<DetailPanel title="System Details">
-					<DetailLine label="Code" value={record.code} />
 					<DetailLine label="Sort order" value={String(record.sortOrder)} />
 					<DetailLine label="Status" value={record.isActive ? "Active" : "Inactive"} />
 					<DetailLine

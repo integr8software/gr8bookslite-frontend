@@ -10,6 +10,7 @@ import {
 } from "@tanstack/react-table";
 import toast from "react-hot-toast";
 import {
+	MasterPlanAndPackageAllFilterValue,
 	MasterPlanAndPackageTableColumns,
 	type MasterPlanAndPackageScopeFilterValue,
 	type MasterPlanAndPackageStatusFilterValue,
@@ -34,9 +35,9 @@ const InitialPagination: PaginationState = {
 export function useMasterPlanAndPackageListPage() {
 	const [query, setQuery] = useState("");
 	const [scopeFilter, setScopeFilter] =
-		useState<MasterPlanAndPackageScopeFilterValue>("ALL");
+		useState<MasterPlanAndPackageScopeFilterValue>(MasterPlanAndPackageAllFilterValue);
 	const [statusFilter, setStatusFilter] =
-		useState<MasterPlanAndPackageStatusFilterValue>("ALL");
+		useState<MasterPlanAndPackageStatusFilterValue>(MasterPlanAndPackageAllFilterValue);
 	const [pagination, setPagination] =
 		useState<PaginationState>(InitialPagination);
 	const plansQuery = useMasterPlanAndPackagesQuery();
@@ -45,8 +46,8 @@ export function useMasterPlanAndPackageListPage() {
 		const normalizedQuery = query.trim().toLowerCase();
 
 		return records.filter((record) =>
-			(statusFilter === "ALL" || record.status === statusFilter) &&
-			(scopeFilter === "ALL" || record.scope === scopeFilter) &&
+			(statusFilter === MasterPlanAndPackageAllFilterValue || record.status === statusFilter) &&
+			(scopeFilter === MasterPlanAndPackageAllFilterValue || record.scope === scopeFilter) &&
 			(!normalizedQuery ||
 				[
 					record.name,
@@ -132,8 +133,8 @@ export function useMasterPlanAndPackageListPage() {
 
 	function resetFilters() {
 		setQuery("");
-		setScopeFilter("ALL");
-		setStatusFilter("ALL");
+		setScopeFilter(MasterPlanAndPackageAllFilterValue);
+		setStatusFilter(MasterPlanAndPackageAllFilterValue);
 		setPagination((current) => ({ ...current, pageIndex: 0 }));
 	}
 
@@ -141,8 +142,8 @@ export function useMasterPlanAndPackageListPage() {
 		filteredRecords,
 		hasActiveFilters:
 			query.trim().length > 0 ||
-			scopeFilter !== "ALL" ||
-			statusFilter !== "ALL",
+			scopeFilter !== MasterPlanAndPackageAllFilterValue ||
+			statusFilter !== MasterPlanAndPackageAllFilterValue,
 		isLoading: plansQuery.isLoading,
 		isRefreshing: plansQuery.isFetching && !plansQuery.isLoading,
 		lastSyncedAt: plansQuery.dataUpdatedAt,
@@ -170,17 +171,6 @@ function createColumn(
 			id: key,
 			accessorFn: (record) =>
 				formatMasterPlanAndPackagePricing(record.pricing),
-			header: label,
-			enableSorting: false,
-			meta: { className },
-		};
-	}
-
-	if (key === "scalePricing") {
-		return {
-			id: key,
-			accessorFn: (record) =>
-				formatMasterPlanAndPackageScalePricing(record.scalePricing),
 			header: label,
 			enableSorting: false,
 			meta: { className },

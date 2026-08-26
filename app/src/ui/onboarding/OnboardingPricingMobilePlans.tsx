@@ -1,20 +1,8 @@
 "use client";
 
 import { Check, LoaderCircle, MoveRight } from "lucide-react";
-import {
-	type BillingCycle,
-	type PricingPlan,
-} from "@/app/src/data/pricing/PricingTypes";
 import { OnboardingPlanComparisonRows } from "@/app/src/data/onboarding/OnboardingData";
-
-type OnboardingPricingMobilePlansProps = {
-	plans: PricingPlan[];
-	billingCycle: BillingCycle;
-	isSubmitting: boolean;
-	submittingPlanCode: string | null;
-	onReviewPlans: () => void;
-	onSelectPlan: (plan: PricingPlan, billingCycle: BillingCycle) => void;
-};
+import type { OnboardingPricingMobilePlansProps } from "@/app/src/types/onboarding/OnboardingTypes";
 
 export function OnboardingPricingMobilePlans({
 	plans,
@@ -75,7 +63,7 @@ export function OnboardingPricingMobilePlans({
 						>
 							{isHighlighted ? (
 								<div
-									className="absolute right-4 top-0 flex h-16 w-12 flex-col items-center justify-center bg-citron pt-1 text-[10px] font-black uppercase leading-tight tracking-[0.08em] text-darknavy"
+									className="absolute right-3 top-0 flex h-13 w-10 flex-col items-center justify-center bg-citron pt-0.5 text-[9px] font-black uppercase leading-tight tracking-[0.06em] text-darknavy shadow-xs"
 									style={{
 										clipPath:
 											"polygon(0 0, 100% 0, 100% 85%, 50% 100%, 0 85%)",
@@ -85,13 +73,18 @@ export function OnboardingPricingMobilePlans({
 									<span>Off</span>
 								</div>
 							) : (
-								<div className="mb-6 h-10" />
+								<div className="mb-4 h-6" />
 							)}
 
 							<div className="mt-4 text-center">
-								<h4 className="text-2xl font-semibold text-darknavy">
+								<h4 className="px-7 text-2xl font-semibold text-darknavy">
 									{plan.name}
 								</h4>
+								{plan.description ? (
+									<p className="mt-2 text-xs leading-relaxed text-darknavy/60">
+										{plan.description}
+									</p>
+								) : null}
 								<div className="mt-4">
 									{compareAtPrice ? (
 										<p className="text-sm text-darknavy/35 line-through">
@@ -124,7 +117,11 @@ export function OnboardingPricingMobilePlans({
 
 							<div className="mt-6 space-y-3 rounded-2xl bg-offwhite/60 p-4 text-center">
 								{OnboardingPlanComparisonRows.map((row) => {
-									const value = row.values[planIndex];
+									const fallbackValue = row.values[planIndex];
+									const value =
+										row.label === "Best for" && plan.description
+											? plan.description
+											: fallbackValue;
 
 									return (
 										<div
@@ -146,7 +143,7 @@ export function OnboardingPricingMobilePlans({
 														</span>
 													)
 												) : (
-													value
+													value ?? "-"
 												)}
 											</span>
 										</div>

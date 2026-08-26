@@ -18,6 +18,8 @@ const PublicPathPrefixes = [
   LOGIN_PATH,
   "/pricing",
   "/privacy-policy",
+  "/refund-policy",
+  "/return-and-refund-policy",
   "/signup",
   "/terms-of-service",
 ] as const;
@@ -25,6 +27,8 @@ const UnrestrictedPublicPathPrefixes = [
   "/contact-us",
   "/faq",
   "/privacy-policy",
+  "/refund-policy",
+  "/return-and-refund-policy",
   "/terms-of-service",
 ] as const;
 

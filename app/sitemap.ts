@@ -7,6 +7,7 @@ const PublicRoutes = [
 	"/contact-us",
 	"/privacy-policy",
 	"/terms-of-service",
+	"/return-and-refund-policy",
 ] as const;
 
 export default function sitemap(): MetadataRoute.Sitemap {

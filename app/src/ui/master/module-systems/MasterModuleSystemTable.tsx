@@ -1,7 +1,6 @@
 "use client";
 
 import { Layers3 } from "lucide-react";
-import type { useMasterModuleSystemListPage } from "@/app/src/hooks/master/module-systems/useMasterModuleSystemListPage";
 import type { MasterModuleSystem } from "@/app/src/services/master/module-systems/MasterModuleSystemApi";
 import { MasterModuleSystemTableRow } from "@/app/src/ui/master/module-systems/MasterModuleSystemTableRow";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
@@ -21,21 +20,7 @@ const StatusOptions = [
 	{ label: "Inactive", value: "INACTIVE" },
 ];
 
-type MasterModuleSystemTableProps = Pick<
-	ReturnType<typeof useMasterModuleSystemListPage>,
-	| "isLoading"
-	| "isRefreshing"
-	| "lastSyncedAt"
-	| "query"
-	| "records"
-	| "refreshSystems"
-	| "resetFilters"
-	| "setQuery"
-	| "setStatusFilter"
-	| "statusFilter"
-	| "table"
-	| "toggleRecordStatus"
->;
+import type { MasterModuleSystemTableProps } from "@/app/src/types/master/module-systems/MasterModuleSystemTypes";
 
 export function MasterModuleSystemTable({
 	isLoading,

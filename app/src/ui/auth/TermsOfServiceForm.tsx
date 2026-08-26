@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
 import { LandingDocumentHeader } from "@/app/src/ui/shared/layout/DocumentHeader";
 
@@ -110,9 +111,34 @@ const TermsOfServiceForm = () => {
 						</h2>
 						<p className="mt-1">
 							Paid subscriptions are billed on a recurring basis.
-							You may cancel at any time, but refunds are not
-							provided for partial billing periods unless required
-							by law.
+							You may cancel at any time, subject to our{" "}
+							<Link
+								href="/return-and-refund-policy"
+								className="text-blue-600 hover:underline"
+							>
+								Return and Refund Policy
+							</Link>
+							. Refunds are not provided for partial billing
+							periods unless required by law or as expressly
+							stated in our refund terms.
+						</p>
+
+						<p className="mt-2">
+							By agreeing to recurring payments, the cardholder
+							authorizes PayMongo to automatically deduct payment
+							from the given credit/debit card account until
+							he/she revokes such authorization. The payments
+							shall be charged at the start of each billing cycle,
+							which shall be dependent on the agreed
+							products/plans. After the processing of payment, the
+							Merchant shall reach out to the cardholder if
+							his/her payment is successful or not. PayMongo shall
+							not be held liable for the Merchant&apos;s failure
+							to notify the cardholder regarding the payment
+							status. The cardholder further acknowledges and
+							agrees that the billing cycle and amount to be
+							deducted are dependent on the instructions made by
+							the Merchant to PayMongo.
 						</p>
 
 						{/* Warning box */}

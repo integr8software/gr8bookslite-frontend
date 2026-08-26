@@ -14,13 +14,15 @@ export function getMasterInvoiceSubscriberHref(subscriberId: string) {
 
 export const MasterInvoicePaginationStorageKey = "master-invoices";
 
+export const MasterInvoiceAllFilterValue = "All";
+
 export const MasterInvoiceStatusOptions = [
-	"All",
+	MasterInvoiceAllFilterValue,
 	"Paid",
 	"Pending",
 	"Failed",
 	"Refunded",
-] as const satisfies readonly ("All" | MasterInvoiceStatus)[];
+] as const satisfies readonly (typeof MasterInvoiceAllFilterValue | MasterInvoiceStatus)[];
 
 export const MasterInvoicePaymentMethodOptions = [
 	"All",

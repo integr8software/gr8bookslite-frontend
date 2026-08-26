@@ -19,11 +19,12 @@ import { ModuleNotFound } from "@/app/src/ui/shared/module/ModuleNotFound";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import { ModuleSystemPageSkeleton } from "@/app/src/ui/master/module-systems/ModuleSystemPageSkeleton";
 import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
+import type { MasterModuleSystemFormPageProps } from "@/app/src/types/master/module-systems/MasterModuleSystemTypes";
 
 const ControlClassName =
   "h-10 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-semibold text-darknavy shadow-sm transition placeholder:text-darknavy/35 focus:border-skyblue focus:outline-none focus:ring-4 focus:ring-skyblue/15";
 
-export function MasterModuleSystemFormPage({ mode, recordId }: { mode: "add" | "edit"; recordId?: string }) {
+export function MasterModuleSystemFormPage({ mode, recordId }: MasterModuleSystemFormPageProps) {
   const {
     effectiveMetadataDraft,
     effectiveModuleDraft,
@@ -114,8 +115,7 @@ function SystemDetailsPanel({
         <h2 className="text-base font-semibold text-darknavy">System Details</h2>
         <p className="mt-1 text-sm text-darknavy/52">Set the master-maintained identity for this module system.</p>
       </div>
-      <div className="grid gap-3 md:grid-cols-2">
-        <TextField isRequired label="Code" value={draft.code} onChange={(code) => onUpdate({ ...draft, code: code.toUpperCase() })} />
+      <div>
         <TextField isRequired label="Name" value={draft.name} onChange={(name) => onUpdate({ ...draft, name })} />
       </div>
       <label className="grid gap-1.5 text-sm font-semibold text-darknavy/58">

@@ -2,7 +2,6 @@ import Link from "next/link";
 import { getMasterPlanAndPackageViewHref } from "@/app/src/constants/master/plan-and-packages/MasterPlanAndPackageConstants";
 import {
 	formatMasterPlanAndPackagePricing,
-	formatMasterPlanAndPackageScalePricing,
 	formatMasterPlanAndPackageScope,
 	getMasterPlanAndPackagePricingSupportingText,
 } from "@/app/src/data/master/plan-and-packages/MasterPlanAndPackageData";

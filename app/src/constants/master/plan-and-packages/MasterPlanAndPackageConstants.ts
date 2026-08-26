@@ -27,10 +27,18 @@ export const MasterPlanAndPackageStatusOptions = [
 	"Inactive",
 ] as const satisfies readonly MasterPlanAndPackageStatus[];
 
+export const MasterPlanAndPackageScopes = {
+	ALL: "ALL",
+	ONBOARDING: "ONBOARDING",
+	ADDITIONAL_COMPANY: "ADDITIONAL_COMPANY",
+} as const satisfies Record<MasterPlanAndPackageScope, MasterPlanAndPackageScope>;
+
+export const MasterPlanAndPackageAllFilterValue = "ALL";
+
 export const MasterPlanAndPackageScopeOptions = [
-	"ALL",
-	"ONBOARDING",
-	"ADDITIONAL_COMPANY",
+	MasterPlanAndPackageScopes.ALL,
+	MasterPlanAndPackageScopes.ONBOARDING,
+	MasterPlanAndPackageScopes.ADDITIONAL_COMPANY,
 ] as const satisfies readonly MasterPlanAndPackageScope[];
 
 export type MasterPlanAndPackageStatusFilterValue =
@@ -42,7 +50,7 @@ export type MasterPlanAndPackageScopeFilterValue =
 	| MasterPlanAndPackageScope;
 
 export const MasterPlanAndPackageStatusFilterOptions = [
-	{ label: "All", value: "ALL" },
+	{ label: "All", value: MasterPlanAndPackageAllFilterValue },
 	...MasterPlanAndPackageStatusOptions.map((status) => ({
 		label: status,
 		value: status,

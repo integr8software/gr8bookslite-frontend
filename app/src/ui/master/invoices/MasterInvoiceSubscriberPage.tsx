@@ -27,7 +27,6 @@ import {
 } from "@/app/src/data/master/subscriptions/MasterSubscriptionData";
 import { useMasterInvoiceSubscriberPage } from "@/app/src/hooks/master/invoices/useMasterInvoiceSubscriberPage";
 import type {
-	MasterInvoiceRecord,
 	MasterInvoiceSubscriberTab,
 } from "@/app/src/types/master/invoices/MasterInvoiceTypes";
 import {

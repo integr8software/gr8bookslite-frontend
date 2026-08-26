@@ -6,18 +6,14 @@ import {
   ArrowLeft,
   CalendarDays,
   ChevronDown,
-  GitBranch,
-  Plus,
   Save,
   Search,
-  Trash2,
   Users,
 } from "lucide-react";
 import {
 	MasterPlanAndPackagesHref,
-	MasterPlanAndPackageScaleUnitLabels,
 	MasterPlanAndPackageScopeLabels,
-	MasterPlanAndPackageScopeOptions,
+	MasterPlanAndPackageScopes,
 	MasterPlanAndPackageStatusOptions,
 } from "@/app/src/constants/master/plan-and-packages/MasterPlanAndPackageConstants";
 import { useMasterModuleSystemsQuery } from "@/app/src/hooks/master/module-systems/useMasterModuleSystemsQuery";
@@ -26,7 +22,6 @@ import type {
 	MasterPlanAndPackageFormErrors,
 	MasterPlanAndPackageFormPageProps,
 	MasterPlanAndPackageFormValues,
-	MasterPlanAndPackageReductionTier,
 	MasterPlanAndPackageScope,
 	MasterPlanAndPackageStatus,
 	NumberFieldConfig,
@@ -42,12 +37,6 @@ const ControlClassName =
   "h-11 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-semibold text-darknavy shadow-sm transition placeholder:text-darknavy/35 focus:border-skyblue focus:outline-none focus:ring-4 focus:ring-skyblue/15";
 const FieldLabelClassName =
   "grid gap-1.5 text-sm font-semibold text-darknavy/58";
-const SuggestedReductionTiers = [
-  { reductionPercent: 5, thresholdCount: 10 },
-  { reductionPercent: 10, thresholdCount: 25 },
-  { reductionPercent: 20, thresholdCount: 50 },
-  { reductionPercent: 25, thresholdCount: 100 },
-] as const satisfies readonly MasterPlanAndPackageReductionTier[];
 
 export function MasterPlanAndPackageFormPage({
   mode,
@@ -147,7 +136,12 @@ function MasterPlanAndPackageForm({
             <MultiSelectScopeField
               error={errors.scope}
               label="Plan scope"
-              selectedScopes={values.scopes ?? (values.scope === "ALL" ? ["ALL"] : [values.scope])}
+              selectedScopes={
+                values.scopes ??
+                (values.scope === MasterPlanAndPackageScopes.ALL
+                  ? [MasterPlanAndPackageScopes.ALL]
+                  : [values.scope])
+              }
               onChange={(scopes, primaryScope) =>
                 onUpdate({ scopes, scope: primaryScope })
               }
@@ -717,39 +711,44 @@ function MultiSelectScopeField({
   }, [isOpen]);
 
   const isAll =
-    selectedScopes.includes("ALL") ||
-    (selectedScopes.includes("ONBOARDING") && selectedScopes.includes("ADDITIONAL_COMPANY"));
+    selectedScopes.includes(MasterPlanAndPackageScopes.ALL) ||
+    (selectedScopes.includes(MasterPlanAndPackageScopes.ONBOARDING) &&
+      selectedScopes.includes(MasterPlanAndPackageScopes.ADDITIONAL_COMPANY));
 
   function toggleScope(scope: MasterPlanAndPackageScope) {
-    if (scope === "ALL") {
-      onChange(["ALL"], "ALL");
+    if (scope === MasterPlanAndPackageScopes.ALL) {
+      onChange([MasterPlanAndPackageScopes.ALL], MasterPlanAndPackageScopes.ALL);
       return;
     }
 
     let nextScopes: MasterPlanAndPackageScope[];
     if (isAll) {
-      if (scope === "ONBOARDING") {
-        nextScopes = ["ADDITIONAL_COMPANY"];
+      if (scope === MasterPlanAndPackageScopes.ONBOARDING) {
+        nextScopes = [MasterPlanAndPackageScopes.ADDITIONAL_COMPANY];
       } else {
-        nextScopes = ["ONBOARDING"];
+        nextScopes = [MasterPlanAndPackageScopes.ONBOARDING];
       }
     } else if (selectedScopes.includes(scope)) {
-      nextScopes = selectedScopes.filter((s) => s !== scope && s !== "ALL");
+      nextScopes = selectedScopes.filter((s) => s !== scope && s !== MasterPlanAndPackageScopes.ALL);
       if (nextScopes.length === 0) {
-        nextScopes = ["ALL"];
+        nextScopes = [MasterPlanAndPackageScopes.ALL];
       }
     } else {
-      nextScopes = [...selectedScopes.filter((s) => s !== "ALL"), scope];
-      if (nextScopes.includes("ONBOARDING") && nextScopes.includes("ADDITIONAL_COMPANY")) {
-        nextScopes = ["ALL"];
+      nextScopes = [...selectedScopes.filter((s) => s !== MasterPlanAndPackageScopes.ALL), scope];
+      if (
+        nextScopes.includes(MasterPlanAndPackageScopes.ONBOARDING) &&
+        nextScopes.includes(MasterPlanAndPackageScopes.ADDITIONAL_COMPANY)
+      ) {
+        nextScopes = [MasterPlanAndPackageScopes.ALL];
       }
     }
 
     const primaryScope: MasterPlanAndPackageScope =
-      nextScopes.includes("ALL") ||
-      (nextScopes.includes("ONBOARDING") && nextScopes.includes("ADDITIONAL_COMPANY"))
-        ? "ALL"
-        : nextScopes[0] ?? "ALL";
+      nextScopes.includes(MasterPlanAndPackageScopes.ALL) ||
+      (nextScopes.includes(MasterPlanAndPackageScopes.ONBOARDING) &&
+        nextScopes.includes(MasterPlanAndPackageScopes.ADDITIONAL_COMPANY))
+        ? MasterPlanAndPackageScopes.ALL
+        : nextScopes[0] ?? MasterPlanAndPackageScopes.ALL;
 
     onChange(nextScopes, primaryScope);
   }
@@ -786,7 +785,7 @@ function MultiSelectScopeField({
                 <input
                   type="checkbox"
                   checked={isAll}
-                  onChange={() => toggleScope("ALL")}
+                  onChange={() => toggleScope(MasterPlanAndPackageScopes.ALL)}
                   className="h-4 w-4 rounded border-darknavy/20 text-skyblue focus:ring-skyblue/20"
                 />
                 <span>All scopes</span>
@@ -794,8 +793,8 @@ function MultiSelectScopeField({
               <label className="flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm font-semibold text-darknavy hover:bg-skyblue/8">
                 <input
                   type="checkbox"
-                  checked={isAll || selectedScopes.includes("ONBOARDING")}
-                  onChange={() => toggleScope("ONBOARDING")}
+                  checked={isAll || selectedScopes.includes(MasterPlanAndPackageScopes.ONBOARDING)}
+                  onChange={() => toggleScope(MasterPlanAndPackageScopes.ONBOARDING)}
                   className="h-4 w-4 rounded border-darknavy/20 text-skyblue focus:ring-skyblue/20"
                 />
                 <span>New user onboarding</span>
@@ -803,8 +802,8 @@ function MultiSelectScopeField({
               <label className="flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm font-semibold text-darknavy hover:bg-skyblue/8">
                 <input
                   type="checkbox"
-                  checked={isAll || selectedScopes.includes("ADDITIONAL_COMPANY")}
-                  onChange={() => toggleScope("ADDITIONAL_COMPANY")}
+                  checked={isAll || selectedScopes.includes(MasterPlanAndPackageScopes.ADDITIONAL_COMPANY)}
+                  onChange={() => toggleScope(MasterPlanAndPackageScopes.ADDITIONAL_COMPANY)}
                   className="h-4 w-4 rounded border-darknavy/20 text-skyblue focus:ring-skyblue/20"
                 />
                 <span>Additional company</span>

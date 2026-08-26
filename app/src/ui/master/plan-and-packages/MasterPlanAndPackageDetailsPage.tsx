@@ -8,12 +8,10 @@ import {
 	getMasterPlanAndPackageEditHref,
 } from "@/app/src/constants/master/plan-and-packages/MasterPlanAndPackageConstants";
 import {
-	formatMasterPlanAndPackageScalePricing,
 	formatMasterPlanAndPackagePricing,
 	formatMasterPlanAndPackageScope,
 	getMasterPlanAndPackageFeatureLabels,
 	getMasterPlanAndPackagePricingSupportingText,
-	getMasterPlanAndPackageScaleSupportingText,
 } from "@/app/src/data/master/plan-and-packages/MasterPlanAndPackageData";
 import { useMasterPlanAndPackagesQuery } from "@/app/src/hooks/master/plan-and-packages/useMasterPlanAndPackagesQuery";
 import {

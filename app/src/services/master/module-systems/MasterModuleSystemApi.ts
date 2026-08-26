@@ -36,20 +36,20 @@ export type MasterModuleSystem = {
 	sidebar: MasterModuleSystemSidebarItem[];
 };
 
-export type MasterModuleSystemsResponse = {
+export type MasterModuleSystemsData = {
 	systems: MasterModuleSystem[];
 };
 
-export type MasterAvailableModulesResponse = {
+export type MasterAvailableModulesData = {
 	modules: MasterModuleSystemModule[];
 };
 
-export type MasterModuleSystemSidebarResponse = {
+export type MasterModuleSystemSidebarData = {
 	fallbackSidebar: MasterModuleSystemSidebarItem[];
 	sidebar: MasterModuleSystemSidebarItem[];
 };
 
-export type SaveMasterModuleSystemRequest = {
+export type SaveMasterModuleSystemPayload = {
 	code?: string;
 	name: string;
 	description?: string | null;
@@ -58,7 +58,7 @@ export type SaveMasterModuleSystemRequest = {
 };
 
 export async function getMasterModuleSystems() {
-	const response = await ApiClient.get<MasterModuleSystemsResponse>(
+	const response = await ApiClient.get<MasterModuleSystemsData>(
 		"/master/module-systems",
 	);
 
@@ -83,11 +83,11 @@ export async function getMasterModuleSystemModules() {
 			iconKey: module.icon ?? null,
 			sortOrder: module.sortOrder ?? 0,
 		})),
-	} satisfies MasterAvailableModulesResponse;
+	} satisfies MasterAvailableModulesData;
 }
 
 export async function createMasterModuleSystem(
-	payload: SaveMasterModuleSystemRequest,
+	payload: SaveMasterModuleSystemPayload,
 ) {
 	const response = await ApiClient.post<{ system: MasterModuleSystem }>(
 		"/master/module-systems",
@@ -99,7 +99,7 @@ export async function createMasterModuleSystem(
 
 export async function updateMasterModuleSystem(
 	systemId: number,
-	payload: SaveMasterModuleSystemRequest,
+	payload: SaveMasterModuleSystemPayload,
 ) {
 	const response = await ApiClient.patch<{ system: MasterModuleSystem }>(
 		`/master/module-systems/${systemId}`,
@@ -134,7 +134,7 @@ export async function saveMasterModuleSystemModules(
 }
 
 export async function getMasterModuleSystemSidebar(systemId: number) {
-	const response = await ApiClient.get<MasterModuleSystemSidebarResponse>(
+	const response = await ApiClient.get<MasterModuleSystemSidebarData>(
 		`/master/module-systems/${systemId}/sidebar`,
 	);
 

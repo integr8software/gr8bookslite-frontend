@@ -1,16 +1,19 @@
+import { MasterPlanAndPackageScopes } from "@/app/src/constants/master/plan-and-packages/MasterPlanAndPackageConstants";
 import type {
-	MasterPlanAndPackageFormValues,
-	MasterPlanAndPackageRecord,
-	MasterPlanAndPackageScaleRule,
-	MasterPlanAndPackageStatus,
-} from "@/app/src/types/master/plan-and-packages/MasterPlanAndPackageTypes";
-import type {
-	CreateMasterPlanAndPackageRequest,
+	CreateMasterPlanAndPackagePayload,
+	MasterPlanAndPackageApiMetric,
 	MasterPlanAndPackageApiPrice,
 	MasterPlanAndPackageApiRecord,
 	MasterPlanAndPackageApiStatus,
-	MasterPlanAndPackagesResponse,
-} from "@/app/src/services/master/plan-and-packages/MasterPlanAndPackageApiTypes";
+	MasterPlanAndPackageFormValues,
+	MasterPlanAndPackageRecord,
+	MasterPlanAndPackageScaleRule,
+	MasterPlanAndPackagesApiData,
+	MasterPlanAndPackageStatus,
+} from "@/app/src/types/master/plan-and-packages/MasterPlanAndPackageTypes";
+
+const ScaleMetricBranch: MasterPlanAndPackageApiMetric = "BRANCH";
+const ScaleMetricUser: MasterPlanAndPackageApiMetric = "USER";
 
 const StatusByApiStatus = {
 	ACTIVE: "Active",
@@ -31,7 +34,7 @@ const ApiStatusByStatus = {
 >;
 
 export function mapMasterPlanAndPackagesResponse(
-	response: MasterPlanAndPackagesResponse,
+	response: MasterPlanAndPackagesApiData,
 ) {
 	return {
 		plans: response.plans.map(mapMasterPlanAndPackageRecord),
@@ -61,8 +64,8 @@ export function mapMasterPlanAndPackageRecord(
 			yearlyPercentOff: calculatePercentOff(yearlyPrice),
 		},
 		scalePricing: {
-			branch: mapScaleRule(plan, "BRANCH"),
-			user: mapScaleRule(plan, "USER"),
+			branch: mapScaleRule(plan, ScaleMetricBranch),
+			user: mapScaleRule(plan, ScaleMetricUser),
 		},
 		scope: plan.scope,
 		status: StatusByApiStatus[plan.status],
@@ -70,21 +73,21 @@ export function mapMasterPlanAndPackageRecord(
 	};
 }
 
-export function mapCreateMasterPlanAndPackageRequest(
+export function mapCreateMasterPlanAndPackagePayload(
 	values: MasterPlanAndPackageFormValues,
-): CreateMasterPlanAndPackageRequest {
+): CreateMasterPlanAndPackagePayload {
 	const code = values.code?.trim()
 		? values.code.trim().toUpperCase().replace(/\s+/g, "_")
 		: null;
 
 	const scope =
 		values.scopes && values.scopes.length > 0
-			? values.scopes.includes("ALL") ||
-			  (values.scopes.includes("ONBOARDING") &&
-					values.scopes.includes("ADDITIONAL_COMPANY"))
-				? "ALL"
+			? values.scopes.includes(MasterPlanAndPackageScopes.ALL) ||
+			  (values.scopes.includes(MasterPlanAndPackageScopes.ONBOARDING) &&
+					values.scopes.includes(MasterPlanAndPackageScopes.ADDITIONAL_COMPANY))
+				? MasterPlanAndPackageScopes.ALL
 				: values.scopes[0]
-			: values.scope ?? "ALL";
+			: values.scope ?? MasterPlanAndPackageScopes.ALL;
 
 	return {
 		code,
@@ -92,12 +95,12 @@ export function mapCreateMasterPlanAndPackageRequest(
 		discountTiers: [
 			...(values.branchReductionTiers ?? []).map((tier) => ({
 				discountPercent: tier.reductionPercent,
-				metric: "BRANCH" as const,
+				metric: ScaleMetricBranch,
 				thresholdCount: tier.thresholdCount,
 			})),
 			...(values.userReductionTiers ?? []).map((tier) => ({
 				discountPercent: tier.reductionPercent,
-				metric: "USER" as const,
+				metric: ScaleMetricUser,
 				thresholdCount: tier.thresholdCount,
 			})),
 		],
@@ -125,7 +128,7 @@ export function mapCreateMasterPlanAndPackageRequest(
 				? [
 						{
 							freeCount: values.branchIncludedFree ?? 0,
-							metric: "BRANCH" as const,
+							metric: ScaleMetricBranch,
 							unitPriceInCents: amountToCents(values.branchAddOnPrice ?? 0),
 						},
 				  ]
@@ -134,7 +137,7 @@ export function mapCreateMasterPlanAndPackageRequest(
 				? [
 						{
 							freeCount: values.userIncludedFree ?? 0,
-							metric: "USER" as const,
+							metric: ScaleMetricUser,
 							unitPriceInCents: amountToCents(values.userAddOnPrice ?? 0),
 						},
 				  ]
@@ -145,7 +148,7 @@ export function mapCreateMasterPlanAndPackageRequest(
 
 function mapScaleRule(
 	plan: MasterPlanAndPackageApiRecord,
-	metric: "BRANCH" | "USER",
+	metric: MasterPlanAndPackageApiMetric,
 ): MasterPlanAndPackageScaleRule {
 	const usageRule = plan.usageRules.find((rule) => rule.metric === metric);
 	const reductionTiers = plan.discountTiers

@@ -35,6 +35,12 @@ export function MainFooter() {
         >
           Privacy Policy
         </Link>
+        <Link
+          href="/return-and-refund-policy"
+          className="transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-darknavy/25"
+        >
+          Return & Refund Policy
+        </Link>
       </nav>
     </footer>
   );

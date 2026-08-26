@@ -24,6 +24,7 @@ import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import {
 	createBilling,
 	fetchBilling,
+	fetchBillingNumberSuggestion,
 	fetchBillings,
 	updateBilling,
 	updateBillingStatus,
@@ -187,6 +188,15 @@ export function useBillingActionForm(
 		),
 		retry: false,
 	});
+	const numberSuggestionQuery = useQuery({
+		enabled:
+			mode === "add" &&
+			activeCompanyId !== null &&
+			activeBranchId !== null,
+		queryFn: () => fetchBillingNumberSuggestion(activeBranchId),
+		queryKey: BillingQueryKeys.numberSuggestion(activeCompanyId, activeBranchId),
+		retry: false,
+	});
 	const initialRecord = mode === "add" ? null : recordQuery.data ?? null;
 	const [loadedRecord, setLoadedRecord] = useState<BillingRecord | null>(
 		initialRecord,
@@ -251,6 +261,22 @@ export function useBillingActionForm(
 		setValues(createBillingFormValuesFromRecord(recordQuery.data));
 		setErrors({ isValid: true });
 	}, [recordQuery.data]);
+
+	useEffect(() => {
+		if (mode !== "add" || !numberSuggestionQuery.data?.transactionNo) {
+			return;
+		}
+
+		const transactionNo = numberSuggestionQuery.data.transactionNo;
+
+		setValues((current) => ({
+			...current,
+			invoiceNo: current.invoiceNo.trim() ? current.invoiceNo : transactionNo,
+			transactionNo: current.transactionNo.trim()
+				? current.transactionNo
+				: transactionNo,
+		}));
+	}, [mode, numberSuggestionQuery.data?.transactionNo]);
 
 	function updateField<Key extends keyof BillingFormValues>(
 		key: Key,

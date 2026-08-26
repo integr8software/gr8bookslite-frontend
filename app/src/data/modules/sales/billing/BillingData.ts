@@ -168,7 +168,7 @@ export function createBillingFormValues(): BillingFormValues {
 		donation: "0.00",
 		partnersClientCode: "",
 		partnersClientName: "",
-		transactionNo: "B-2026-0004",
+		transactionNo: "",
 		documentDate: today,
 		sjNo: "",
 		joNo: "",

@@ -204,9 +204,10 @@ export const CashAdvanceMultipleEntryEntryTabs: {
 
 export const CashAdvanceMultipleEntryDefaultItemColumnIds = [
   "partyName",
-  "amount",
+  "cashAdvanceLimit",
   "cashAdvanceBalance",
-  "responsibilityCenter",
+  "totalCashAdvanced",
+  "amount",
   "remarks",
 ];
 

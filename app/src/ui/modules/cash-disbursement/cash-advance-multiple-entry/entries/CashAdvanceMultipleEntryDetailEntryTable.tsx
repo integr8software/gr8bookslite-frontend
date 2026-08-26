@@ -14,10 +14,10 @@ import type {
   CashAdvanceMultipleEntryItem,
 } from "@/app/src/types/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryTypes";
 import { createCashAdvanceMultipleEntryItemColumns } from "@/app/src/ui/modules/cash-disbursement/cash-advance-multiple-entry/entries/CashAdvanceMultipleEntryEntryColumns";
-import { TabbedModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryTabs";
-import type {
-  ModuleDataEntryColumn,
-  ModuleDataEntryColumnOption,
+import {
+  ModuleDataEntry,
+  type ModuleDataEntryColumn,
+  type ModuleDataEntryColumnOption,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { reorderColumnIds, toggleVisibleColumnId } from "@/app/src/ui/shared/module/module-data-entry/entryTableState.util";
 
@@ -69,7 +69,7 @@ export function CashAdvanceMultipleEntryDetailEntryTable({
   const totalAmount = useMemo(() => calculateCashAdvanceMultipleEntryTotal(rows), [rows]);
 
   return (
-    <TabbedModuleDataEntry
+    <ModuleDataEntry
       addButtonLabel="Add Entry"
       columns={columns}
       columnOptions={columnOptions}
@@ -83,7 +83,7 @@ export function CashAdvanceMultipleEntryDetailEntryTable({
       rows={rows}
       summaryCells={{ amount: formatCashAdvanceMultipleEntryAmount(totalAmount) }}
       summaryRowHeader="Totals"
-      title="Line Entries"
+      title=""
       onAddRows={onAddRows}
       onClearRow={(rowId) =>
         onRowsChange(

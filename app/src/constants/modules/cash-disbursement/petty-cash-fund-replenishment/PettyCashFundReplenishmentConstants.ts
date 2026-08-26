@@ -157,7 +157,7 @@ export const PettyCashFundReplenishmentAccountingColumnLabels: Record<PettyCashF
   debit: "Debit",
   credit: "Credit",
   partyCode: "Party Code",
-  partyName: "Party Name",
+  partyName: "Supplier Name",
   remarks: "Remarks",
 };
 export const PettyCashFundReplenishmentAccountingColumnWidths: Record<PettyCashFundReplenishmentAccountingColumnId, number> = {

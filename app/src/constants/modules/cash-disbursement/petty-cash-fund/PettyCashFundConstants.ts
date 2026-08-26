@@ -99,7 +99,7 @@ export const PettyCashFundDefaultItemColumnIds: PettyCashFundItemColumnId[] = [
 export const PettyCashFundItemColumnLabels: Record<PettyCashFundItemColumnId, string> = {
   date: "Date",
   payeeCode: "Payee Code",
-  payeeName: "Payee",
+  payeeName: "Supplier Name",
   orNo: "OR No.",
   tinNo: "TIN No.",
   remarks: "Remarks",
@@ -146,7 +146,7 @@ export const PettyCashFundAccountingColumnLabels: Record<PettyCashFundAccounting
   debit: "Debit",
   credit: "Credit",
   partyCode: "Party Code",
-  partyName: "Party Name",
+  partyName: "Supplier Name",
   remarks: "Remarks",
 };
 export const PettyCashFundAccountingColumnWidths: Record<PettyCashFundAccountingColumnId, number> = {

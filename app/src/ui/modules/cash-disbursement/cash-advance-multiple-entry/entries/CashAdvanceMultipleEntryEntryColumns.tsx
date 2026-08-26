@@ -4,6 +4,10 @@ import {
   createCashAdvanceMultipleEntrySelectOptions,
   formatCashAdvanceMultipleEntryAmount,
 } from "@/app/src/data/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryData";
+import {
+  calculatePostedCashAdvanceTotalByParty,
+  getInitialCashAdvances,
+} from "@/app/src/data/modules/cash-disbursement/cash-advance/CashAdvanceData";
 import { CashAdvanceMultipleEntryAccountOptions } from "@/app/src/constants/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryConstants";
 import { getCashAdvanceMultipleEntryResponsibilityCenterCode } from "@/app/src/data/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryEntryRowData";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
@@ -29,6 +33,7 @@ export function createCashAdvanceMultipleEntryItemColumns({
   rows,
 }: CashAdvanceMultipleEntryItemColumnsParams): Record<string, ModuleDataEntryColumn<CashAdvanceMultipleEntryItem>> {
   const partySelectOptions = createPartyOptions("name", employeeOptions);
+  const cashAdvanceRecords = getInitialCashAdvances();
 
   return {
     partyCode: {
@@ -63,13 +68,14 @@ export function createCashAdvanceMultipleEntryItemColumns({
             const party = CashAdvanceMultipleEntryPartyOptions.find((opt) => opt.value === partyCode);
             const partyName = employee?.partyName ?? party?.name ?? "";
             const cashAdvanceBalance = employee?.cashAdvanceBalance ?? "";
+            const cashAdvanceLimit = employee?.cashAdvanceLimit ?? "";
             const amount = limitCashAdvanceAmount(rows, row.id, row.amount, {
               cashAdvanceBalance,
               partyCode,
               partyName,
             });
 
-            onUpdateEntry(row.id, { amount, cashAdvanceBalance, partyCode, partyName });
+            onUpdateEntry(row.id, { amount, cashAdvanceBalance, cashAdvanceLimit, partyCode, partyName });
           }}
         />
       ),
@@ -95,6 +101,16 @@ export function createCashAdvanceMultipleEntryItemColumns({
         />
       ),
     },
+    cashAdvanceLimit: {
+      header: "Cash Advance Limit",
+      id: "cashAdvanceLimit",
+      width: 155,
+      widthClassName: "w-[9.75rem]",
+      widthMode: "fixed",
+      renderCell: (row, _index, context) => (
+        <ModuleDataEntryMoneyCell id={context.fieldId} name={context.fieldName} readOnly value={row.cashAdvanceLimit} />
+      ),
+    },
     cashAdvanceBalance: {
       header: "Cash Advance Balance",
       id: "cashAdvanceBalance",
@@ -103,6 +119,23 @@ export function createCashAdvanceMultipleEntryItemColumns({
       widthMode: "fixed",
       renderCell: (row, _index, context) => (
         <ModuleDataEntryMoneyCell id={context.fieldId} name={context.fieldName} readOnly value={row.cashAdvanceBalance} />
+      ),
+    },
+    totalCashAdvanced: {
+      header: "Total Cash Advanced",
+      id: "totalCashAdvanced",
+      width: 165,
+      widthClassName: "w-[10.25rem]",
+      widthMode: "fixed",
+      renderCell: (row, _index, context) => (
+        <ModuleDataEntryMoneyCell
+          id={context.fieldId}
+          name={context.fieldName}
+          readOnly
+          value={formatCashAdvanceMultipleEntryAmount(
+            calculatePostedCashAdvanceTotalByParty(cashAdvanceRecords, row.partyCode),
+          )}
+        />
       ),
     },
     responsibilityCenterCode: {

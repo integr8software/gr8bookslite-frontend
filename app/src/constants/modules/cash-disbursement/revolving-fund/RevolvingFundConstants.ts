@@ -99,7 +99,7 @@ export const RevolvingFundDefaultItemColumnIds: RevolvingFundItemColumnId[] = [
 export const RevolvingFundItemColumnLabels: Record<RevolvingFundItemColumnId, string> = {
   date: "Date",
   payeeCode: "Payee Code",
-  payeeName: "Payee",
+  payeeName: "Supplier Name",
   orNo: "OR No.",
   tinNo: "TIN No.",
   remarks: "Remarks",
@@ -146,7 +146,7 @@ export const RevolvingFundAccountingColumnLabels: Record<RevolvingFundAccounting
   debit: "Debit",
   credit: "Credit",
   partyCode: "Party Code",
-  partyName: "Party Name",
+  partyName: "Supplier Name",
   remarks: "Remarks",
 };
 export const RevolvingFundAccountingColumnWidths: Record<RevolvingFundAccountingColumnId, number> = {

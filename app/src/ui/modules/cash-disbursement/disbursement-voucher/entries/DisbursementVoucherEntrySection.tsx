@@ -31,7 +31,7 @@ import { ModuleDataEntryTabs } from "@/app/src/ui/shared/module/module-data-entr
 import { createEwtOptions, createVatOptions } from "@/app/src/ui/shared/transaction-setup/AppTaxRateDialog";
 
 const EntryTabs: { id: DisbursementEntryView; label: string }[] = [
-  { id: "expense", label: "Line Entries" },
+  { id: "expense", label: "Disbursement Details" },
   { id: "accounting", label: "Accounting Entries" },
 ];
 

@@ -193,6 +193,7 @@ export function CashAdvanceMultipleEntryActionPage({ mode }: { mode: CashAdvance
                   partyCode: record.partyCodeNo,
                   partyName,
                   cashAdvanceBalance: record.cashAdvanceLimit ?? "",
+                  cashAdvanceLimit: record.cashAdvanceLimit ?? "",
                 }),
               );
             } else {

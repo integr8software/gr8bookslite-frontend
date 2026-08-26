@@ -14,7 +14,7 @@ import type {
   PettyCashFundReplenishmentEntryColumnId,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentTypes";
 import { createPettyCashFundReplenishmentLineColumns } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund-replenishment/entries/PettyCashFundReplenishmentEntryColumns";
-import { TabbedModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryTabs";
+import { ModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import {
   buildColumnOptions,
   calculateFitColumnWidth,
@@ -103,7 +103,7 @@ export function PettyCashFundReplenishmentDetailEntryTable({
   }
 
   return (
-    <TabbedModuleDataEntry
+    <ModuleDataEntry
       addButtonLabel="Add Entry"
       title=""
       emptyRowLabel="entry"

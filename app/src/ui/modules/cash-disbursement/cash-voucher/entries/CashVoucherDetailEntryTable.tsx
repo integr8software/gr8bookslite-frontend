@@ -210,7 +210,7 @@ export function CashVoucherDetailEntryTable({
       error={errors.lineEntries}
       footerDetails={
         <span className="text-sm font-semibold text-darknavy">
-          Total Amount Due: {formatAmount(getExpenseEntryColumnTotal(expenseRows, "totalAmountDue"))}
+          Total Amount: {formatAmount(getExpenseEntryColumnTotal(expenseRows, "totalAmountDue"))}
         </span>
       }
       columns={expenseColumns}

@@ -191,8 +191,166 @@ Do not assemble route suffixes such as `/add`, `/edit/${recordId}`, or
 `/view/${recordId}` inside React components.
 
 Do not put hooks, API calls, application state, validation rules, constants,
+- Check [FRONTEND_UTILITY.md](FRONTEND_UTILITY.md) before adding or duplicating
+  a helper.
+- Read
+  [ModuleInteractionSafetyPatterns.md](app/src/agents/modules/deduplication%20&%20optimistic/ModuleInteractionSafetyPatterns.md)
+  for guidance on request deduplication, action submit locks, dirty checking,
+  optimistic updates, and draft autosaving.
+
+## Transaction Runtime Graph
+
+```mermaid
+graph TD
+  RoutePage["route page.tsx"] --> TransactionPage["Feature action or overview page"]
+  TransactionPage --> FeatureHook["feature hook"]
+  FeatureHook --> Constants["constants"]
+  FeatureHook --> DataMappers["data defaults and mappers"]
+  FeatureHook --> Validation["Zod validation"]
+  FeatureHook --> Services["feature services"]
+  Services --> ApiClient["shared ApiClient"]
+  ApiClient --> Backend["backend API"]
+  FeatureHook --> SharedUtils["shared pure utils"]
+  TransactionPage --> OverviewUi["overview components"]
+  TransactionPage --> ActionUi["action components"]
+  TransactionPage --> EntryUi["entry components"]
+  TransactionPage --> ReportUi["report preview/pdf"]
+  OverviewUi --> ModuleTable["ModuleTable"]
+  EntryUi --> ModuleDataEntry["ModuleDataEntry"]
+  ReportUi --> SharedReports["shared reports"]
+```
+
+## Top Actions And Quick Tour
+
+Do not duplicate global top-bar actions inside a transaction list header. If
+the main app header already provides Quick Tour, Import, Export, or similar
+module-level actions, the transaction overview header should not add a second
+copy of those buttons.
+
+For Quick Tour support, expose stable spotlight targets instead of adding a
+local Quick Tour button. Use these default ids on list pages:
+
+```txt
+data-spotlight-id="maintenance-create-record"  # primary add/start action
+data-spotlight-id="maintenance-table-filters"  # search and filters toolbar
+data-spotlight-id="maintenance-table-options"  # column visibility and refresh
+data-spotlight-id="maintenance-table"          # table wrapper
+```
+
+Register every transaction overview that supports the top-bar Module Guide in
+`app/src/data/shared/tour/SpotlightTutorialData.ts`. Add its canonical overview
+href to `MaintenanceSpotlightTutorialConfigs`; the shared registry then exposes
+the guide action without feature-local buttons or route components. Use
+`addMode: "none"` until a dedicated add-form guide has been authored. Register
+only modules with implemented overview UI and meaningful guide content. Do not
+register placeholder or empty modules merely to show an introduction. Once an
+overview is implemented, register it and provide the applicable stable targets
+above.
+
+## Route Areas
+
+Transactional features are usually inside these module domains:
+
+- `app/(modules)/sales/<feature>/`
+- `app/(modules)/purchasing/<feature>/`
+- `app/(modules)/inventory/<feature>/`
+- `app/(modules)/cash-receipt/<feature>/`
+- `app/(modules)/cash-disbursement/<feature>/`
+- `app/(modules)/accounts-payable/<feature>/`
+- `app/(modules)/general-journal/<feature>/`
+
+Route files stay thin. They should import and render UI from `app/src/ui/...`.
+
+```txt
+app/(modules)/<domain>/<feature>/
+  page.tsx
+  add/page.tsx
+  edit/[recordId]/page.tsx
+  view/[recordId]/page.tsx
+```
+
+Use `page.tsx` for the overview list. Use `add`, `edit/[recordId]`, and
+`view/[recordId]` for the shared transaction action screen. Never use
+`/add/new`.
+
+## Source Directory Graph
+
+```mermaid
+graph TD
+  Feature["transaction feature"] --> UI["app/src/ui/modules/<domain>/<feature>"]
+  Feature --> Hooks["app/src/hooks/modules/<domain>/<feature>"]
+  Feature --> Services["app/src/services/modules/<domain>/<feature>"]
+  Feature --> Data["app/src/data/modules/<domain>/<feature>"]
+  Feature --> Types["app/src/types/modules/<domain>/<feature>"]
+  Feature --> Constants["app/src/constants/modules/<domain>/<feature>"]
+  Feature --> Validations["app/src/validations/modules/<domain>/<feature>"]
+  UI --> Action["action"]
+  UI --> Entries["entries"]
+  UI --> Overview["overview"]
+  UI --> Reports["reports"]
+```
+
+### What Belongs Where
+
+- `app/src/ui/...`: React components only.
+- `app/src/hooks/...`: form state driven by the explicit route mode, table state, entry row state,
+  submit orchestration, upload orchestration, and navigation handlers.
+- `app/src/services/...`: API wrappers, query keys, server actions, upload and
+  download calls, and external operations.
+- `app/src/data/...`: initial values, mock/static records, row defaults, and
+  pure record/form mappers.
+- `app/src/types/...`: TypeScript-only record, form, entry, status, mode,
+  attachment, filter, and error types.
+- `app/src/constants/...`: hrefs, labels, status options, table columns,
+  pagination keys, entry tabs, visible-column options, and static select
+  options.
+- `app/src/validations/...`: Zod schemas, cross-field validation, required-row
+  checks, duplicate checks, debit/credit balance checks, and error mapping.
+- `app/src/utils/...`: generic, pure formatting and normalization helpers shared
+  across unrelated modules.
+
+Keep one canonical constant for each value within a module. Do not create a
+second constant that only aliases an existing constant from the same module,
+as this adds another name without introducing a distinct value or contract.
+Import and use the canonical constant directly. If the original name is too
+specific for all of its uses, rename it to an accurate shared name and update
+its consumers instead of adding an identical alias.
+
+```ts
+// Avoid: both names represent exactly the same value in the same module.
+export const StatusActionButtonClassName = "...";
+export const ViewActionButtonClassName = StatusActionButtonClassName;
+
+// Prefer: consumers use the single canonical constant directly.
+export const StatusActionButtonClassName = "...";
+```
+
+Only keep an alias when it is an intentional, temporary compatibility boundary
+for external consumers or a rename migration; document why it exists and when
+it can be removed.
+
+Route link constants must come from the module catalog. Import
+`getModuleRoute` from `app/src/data/shared/modules/ModuleCatalogData.ts`, then
+export the feature href from the matching module code instead of duplicating the
+route string:
+
+```ts
+import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
+
+export const <ModuleName>Link = getModuleRoute("<ModuleCode>");
+export const <ModuleName>AddLink = `${<ModuleName>Link}/add`;
+export const get<ModuleName>EditLink = (recordId: string) => `${<ModuleName>Link}/edit/${recordId}`;
+export const get<ModuleName>ViewLink = (recordId: string) => `${<ModuleName>Link}/view/${recordId}`;
+```
+
+Use the exported list, add, edit, and view link constants/builders in UI files.
+Do not assemble route suffixes such as `/add`, `/edit/${recordId}`, or
+`/view/${recordId}` inside React components.
+
+Do not put hooks, API calls, application state, validation rules, constants,
 types, or data mappers inside transaction UI folders. Feature-specific entry
-row UI helpers may live directly in `entries/`. When utility logic is shared or
+row UI helpers, table layouts, and import-related logic should reside in the
+`entries/` and `import/` folders. When utility logic is shared or
 reusable across modules, import an existing helper from `app/src/utils/` before
 adding a new one. See [FRONTEND_UTILITY.md](FRONTEND_UTILITY.md) for the
 current utility list.
@@ -222,6 +380,7 @@ app/src/ui/modules/<domain>/<feature>/
     <ModuleName>EntryRowUtils.ts
     <ModuleName>EntrySection.tsx
     <ModuleName>DetailEntryTable.tsx
+    # Only when the module actually has Accounting Entries:
     <ModuleName>AccountingEntryTable.tsx
     <ModuleName>EntryColumns.tsx
   import/
@@ -1064,12 +1223,14 @@ Selecting a Currency should resolve its configured Exchange Rate against the act
 
 `<ModuleName>EntrySection.tsx`
 
-- Transaction entries orchestrator with integrated tab switcher (e.g., Items / Expenses vs Accounting Entries).
-- Manages active tab state and renders `<ModuleName>DetailEntryTable` or `<ModuleName>AccountingEntryTable`.
+- Transaction entries orchestrator.
+- **For modules with Accounting Entries** (e.g. Cash Voucher, Disbursement Voucher): uses `ModuleDataEntryTabs` to manage the active tab state between Line/Item/Expense Details and Accounting Entries, rendering `<ModuleName>DetailEntryTable` or `<ModuleName>AccountingEntryTable`.
+- **For modules without Accounting Entries**: renders `<ModuleName>DetailEntryTable` directly without tabs or tab switching state.
 
 `<ModuleName>DetailEntryTable.tsx` / `<ModuleName>AccountingEntryTable.tsx`
 
 - Dedicated entry table components for Line/Expense Details and Accounting Debit/Credit Entries.
+- `<ModuleName>AccountingEntryTable.tsx` must ONLY be created if the transaction module actually requires Accounting Entries. If the module does not have Accounting Entries, do not create this file.
 - Keeps row state, column reordering/visibility, and summary calculations isolated per table.
 - Use `app/src/ui/shared/module/module-data-entry/entryTableState.util.ts` for column reordering, visibility toggling, and width auto-fitting.
 

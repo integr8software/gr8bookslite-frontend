@@ -125,7 +125,7 @@ export const DisbursementVoucherWorkflowSteps = [
   },
   {
     id: "entries",
-    title: "Line Entries",
+    title: "Disbursement Details",
     description: "Capture the debit and credit lines for the disbursement.",
   },
   {

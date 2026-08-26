@@ -32,7 +32,7 @@ import { ModuleDataEntryTabs } from "@/app/src/ui/shared/module/module-data-entr
 
 const CashVoucherAccountingEntryView: CashVoucherEntryView = "accounting";
 const CashVoucherEntryTabs: { id: CashVoucherEntryView; label: string }[] = [
-  { id: CashVoucherExpenseEntryView, label: "Line Entries" },
+  { id: CashVoucherExpenseEntryView, label: "Disbursement Details" },
   { id: CashVoucherAccountingEntryView, label: "Accounting Entries" },
 ];
 

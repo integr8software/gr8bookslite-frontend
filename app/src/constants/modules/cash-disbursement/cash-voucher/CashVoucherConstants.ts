@@ -38,6 +38,7 @@ export function getCashVoucherSubmitDialogCopy(
 export const CashVoucherLink = getModuleRoute("CV");
 export const CashVoucherAddLink = `${CashVoucherLink}/add`;
 export const getCashVoucherEditLink = (recordId: string) => `${CashVoucherLink}/edit/${recordId}`;
+
 export const getCashVoucherViewLink = (recordId: string) => `${CashVoucherLink}/view/${recordId}`;
 
 export const CashVoucherQueryKeys = {
@@ -114,7 +115,7 @@ export const CashVoucherWorkflowSteps = [
   },
   {
     id: "entries",
-    title: "Line Entries",
+    title: "Disbursement Details",
     description: "Capture the debit and credit lines for the disbursement.",
   },
   {

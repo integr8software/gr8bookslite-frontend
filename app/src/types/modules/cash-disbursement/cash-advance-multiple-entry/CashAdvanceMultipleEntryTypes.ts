@@ -31,6 +31,7 @@ export type CashAdvanceMultipleEntryItem = {
   partyCode: string;
   partyName: string;
   cashAdvanceBalance: string;
+  cashAdvanceLimit: string;
   remarks: string;
   amount: string;
   responsibilityCenter: string;
@@ -98,17 +99,17 @@ export type CashAdvanceMultipleEntryStoreState = {
 };
 
 export type CashAdvanceMultipleEntryEntrySectionProps = {
-  accountingRows: CashAdvanceMultipleEntryAccountingEntry[];
+  accountingRows?: CashAdvanceMultipleEntryAccountingEntry[];
   isReadonly: boolean;
   rows: CashAdvanceMultipleEntryItem[];
-  onAccountingRowsChange: (rows: CashAdvanceMultipleEntryAccountingEntry[]) => void;
-  onAddAccountingRows: (count: number) => void;
+  onAccountingRowsChange?: (rows: CashAdvanceMultipleEntryAccountingEntry[]) => void;
+  onAddAccountingRows?: (count: number) => void;
   onAddRows: (count: number) => void;
-  onOpenAccountingPartyDrawer: (rowId: string) => void;
-  onOpenAccountingResponsibilityCenterDrawer: (rowId: string) => void;
+  onOpenAccountingPartyDrawer?: (rowId: string) => void;
+  onOpenAccountingResponsibilityCenterDrawer?: (rowId: string) => void;
   onOpenItemResponsibilityCenterDrawer: (rowId: string) => void;
   onOpenItemPartyDrawer: (rowId: string) => void;
-  responsibilityCenterOptions: AppAdvancedDropdownOption[];
+  responsibilityCenterOptions?: AppAdvancedDropdownOption[];
   onRowsChange: (rows: CashAdvanceMultipleEntryItem[]) => void;
 };
 

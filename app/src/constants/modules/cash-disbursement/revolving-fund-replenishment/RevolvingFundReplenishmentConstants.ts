@@ -157,7 +157,7 @@ export const RevolvingFundReplenishmentAccountingColumnLabels: Record<RevolvingF
   debit: "Debit",
   credit: "Credit",
   partyCode: "Party Code",
-  partyName: "Party Name",
+  partyName: "Supplier Name",
   remarks: "Remarks",
 };
 export const RevolvingFundReplenishmentAccountingColumnWidths: Record<RevolvingFundReplenishmentAccountingColumnId, number> = {

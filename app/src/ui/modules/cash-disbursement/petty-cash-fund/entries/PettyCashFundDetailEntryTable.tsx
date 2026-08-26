@@ -14,7 +14,7 @@ import type {
   PettyCashFundItemColumnId,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";
 import { createPettyCashFundItemColumns } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund/entries/PettyCashFundEntryColumns";
-import { TabbedModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryTabs";
+import { ModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import {
   buildColumnOptions,
   calculateFitColumnWidth,
@@ -93,7 +93,7 @@ export function PettyCashFundDetailEntryTable({ page }: PettyCashFundDetailEntry
   }
 
   return (
-    <TabbedModuleDataEntry
+    <ModuleDataEntry
       addButtonLabel="Add Entry"
       title=""
       emptyRowLabel="entry"

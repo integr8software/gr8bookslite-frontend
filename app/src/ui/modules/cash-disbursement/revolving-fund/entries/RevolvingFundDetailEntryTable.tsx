@@ -14,7 +14,7 @@ import type {
   RevolvingFundItemColumnId,
 } from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";
 import { createRevolvingFundItemColumns } from "@/app/src/ui/modules/cash-disbursement/revolving-fund/entries/RevolvingFundEntryColumns";
-import { TabbedModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryTabs";
+import { ModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import {
   buildColumnOptions,
   calculateFitColumnWidth,
@@ -93,7 +93,7 @@ export function RevolvingFundDetailEntryTable({ page }: RevolvingFundDetailEntry
   }
 
   return (
-    <TabbedModuleDataEntry
+    <ModuleDataEntry
       addButtonLabel="Add Entry"
       title=""
       emptyRowLabel="entry"

@@ -21,6 +21,7 @@ import type {
   ResponsibilityCenterTypeOption,
 } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
+import { formatAmount } from "@/app/src/utils/currency.util";
 import { parseFiniteNumber } from "@/app/src/utils/number.util";
 
 export const CashAdvanceMultipleEntryPartyOptions = [
@@ -135,6 +136,7 @@ export function createBlankCashAdvanceMultipleEntryItem(values: Partial<CashAdva
   return {
     amount: "",
     cashAdvanceBalance: "",
+    cashAdvanceLimit: "",
     id: `came-item-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     remarks: "",
     partyCode: "",
@@ -259,7 +261,7 @@ export function calculateCashAdvanceMultipleEntryTotal(rows: CashAdvanceMultiple
 }
 
 export function formatCashAdvanceMultipleEntryAmount(value: number | string) {
-  return parseFiniteNumber(value).toFixed(2);
+  return formatAmount(parseFiniteNumber(value));
 }
 
 export function getInitialCashAdvanceMultipleEntries() {

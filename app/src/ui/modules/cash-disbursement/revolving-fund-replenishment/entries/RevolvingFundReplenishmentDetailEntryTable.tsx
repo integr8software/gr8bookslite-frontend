@@ -15,7 +15,7 @@ import type {
   RevolvingFundReplenishmentEntryColumnId,
 } from "@/app/src/types/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentTypes";
 import { createRevolvingFundReplenishmentLineColumns } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/entries/RevolvingFundReplenishmentEntryColumns";
-import { TabbedModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryTabs";
+import { ModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import {
   buildColumnOptions,
   calculateFitColumnWidth,
@@ -104,7 +104,7 @@ export function RevolvingFundReplenishmentDetailEntryTable({
   }
 
   return (
-    <TabbedModuleDataEntry
+    <ModuleDataEntry
       addButtonLabel="Add Entry"
       title=""
       emptyRowLabel="entry"

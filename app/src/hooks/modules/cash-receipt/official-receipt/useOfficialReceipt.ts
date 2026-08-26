@@ -16,13 +16,7 @@ import {
   createBlankOfficialReceiptLineEntry,
   createOfficialReceiptFormValuesFromRecord,
   createOfficialReceiptFormValues,
-  createOfficialReceiptRecordFromForm,
-  getInitialReceiptsByKey,
-  MockOfficialReceipts,
   OfficialReceiptCopyFromRecords,
-  OfficialReceiptStorageKey,
-  writeStoredReceiptsByKey,
-  writeStoredOfficialReceipts,
 } from "@/app/src/data/modules/cash-receipt/official-receipt/OfficialReceiptData";
 import { OfficialReceiptStatusFilters } from "@/app/src/constants/modules/cash-receipt/official-receipt/OfficialReceiptConstants";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
@@ -47,6 +41,24 @@ import {
   updateOfficialReceiptStatus,
 } from "@/app/src/services/modules/cash-receipt/official-receipt/OfficialReceiptApi";
 
+type OfficialReceiptApi = {
+  createReceipt: typeof createOfficialReceipt;
+  fetchReceipt: typeof fetchOfficialReceipt;
+  fetchReceipts: typeof fetchOfficialReceipts;
+  mapApiReceipt: typeof mapApiOfficialReceipt;
+  updateReceipt: typeof updateOfficialReceipt;
+  updateReceiptStatus: typeof updateOfficialReceiptStatus;
+};
+
+const DefaultOfficialReceiptApi: OfficialReceiptApi = {
+  createReceipt: createOfficialReceipt,
+  fetchReceipt: fetchOfficialReceipt,
+  fetchReceipts: fetchOfficialReceipts,
+  mapApiReceipt: mapApiOfficialReceipt,
+  updateReceipt: updateOfficialReceipt,
+  updateReceiptStatus: updateOfficialReceiptStatus,
+};
+
 type OfficialReceiptStoreState = {
   isLoading: boolean;
   lastSyncedAt: number;
@@ -55,8 +67,8 @@ type OfficialReceiptStoreState = {
 };
 
 export type OfficialReceiptModuleConfig = {
+  api?: OfficialReceiptApi;
   copyFromRecords?: OfficialReceiptCopyFromRecord[];
-  fallbackReceipts?: OfficialReceiptRecord[];
   receiptLabel?: string;
   storageKey?: string;
 };
@@ -65,20 +77,20 @@ export function useOfficialReceiptStore<TSelected = OfficialReceiptStoreState>(
   selector?: (state: OfficialReceiptStoreState) => TSelected,
   config: OfficialReceiptModuleConfig = {},
 ) {
-  const storageKey = config.storageKey ?? OfficialReceiptStorageKey;
-  const fallbackReceipts = config.fallbackReceipts ?? MockOfficialReceipts;
   const receiptLabel = config.receiptLabel ?? "Official receipt";
-  const [receipts, setReceipts] = useState(() => getInitialReceiptsByKey(storageKey, fallbackReceipts));
+  const api = config.api ?? DefaultOfficialReceiptApi;
+  const [receipts, setReceipts] = useState<OfficialReceiptRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [lastSyncedAt, setLastSyncedAt] = useState(() => Date.now());
 
   useEffect(() => {
     let isMounted = true;
 
-    fetchOfficialReceipts()
+    api
+      .fetchReceipts()
       .then((data) => {
         if (!isMounted) return;
-        setReceipts(data.receipts.map(mapApiOfficialReceipt));
+        setReceipts(data.receipts.map(api.mapApiReceipt));
         setLastSyncedAt(Date.now());
       })
       .catch(() => {
@@ -99,13 +111,11 @@ export function useOfficialReceiptStore<TSelected = OfficialReceiptStoreState>(
 
   const updateReceiptStatus = useCallback(
     (receipt: OfficialReceiptRecord, status: OfficialReceiptStatus) => {
-      updateOfficialReceiptStatus({ recordId: receipt.id, status })
+      api
+        .updateReceiptStatus({ recordId: receipt.id, status })
         .then((updatedReceipt) => {
           setReceipts((currentReceipts) =>
-            persistOfficialReceipts(
-              currentReceipts.map((currentReceipt) => (currentReceipt.id === receipt.id ? updatedReceipt : currentReceipt)),
-              storageKey,
-            ),
+            currentReceipts.map((currentReceipt) => (currentReceipt.id === receipt.id ? updatedReceipt : currentReceipt)),
           );
           setLastSyncedAt(Date.now());
           toast.success(`${receiptLabel} marked as ${status}.`);
@@ -114,7 +124,7 @@ export function useOfficialReceiptStore<TSelected = OfficialReceiptStoreState>(
           toast.error(`Could not update ${receiptLabel.toLowerCase()} status.`);
         });
     },
-    [receiptLabel, storageKey],
+    [api, receiptLabel],
   );
 
   const state = useMemo<OfficialReceiptStoreState>(
@@ -136,17 +146,12 @@ export function useOfficialReceiptActionForm(
   onSaved?: (record: OfficialReceiptRecord) => void,
   config: OfficialReceiptModuleConfig = {},
 ) {
-  const storageKey = config.storageKey ?? OfficialReceiptStorageKey;
-  const fallbackReceipts = config.fallbackReceipts ?? MockOfficialReceipts;
   const receiptLabel = config.receiptLabel ?? "Official receipt";
-  const initialReceipts = getInitialReceiptsByKey(storageKey, fallbackReceipts);
-  const initialRecord = mode === "add" ? null : (initialReceipts.find((receipt) => receipt.id === recordId) ?? null);
+  const api = config.api ?? DefaultOfficialReceiptApi;
   const [isNotFound, setIsNotFound] = useState(mode !== "add" && !recordId);
   const [entryView, setEntryView] = useState<OfficialReceiptEntryView>("collection");
-  const [loadedRecord, setLoadedRecord] = useState<OfficialReceiptRecord | null>(initialRecord);
-  const [values, setValues] = useState<OfficialReceiptFormValues>(() =>
-    initialRecord ? createOfficialReceiptFormValuesFromRecord(initialRecord) : createOfficialReceiptFormValues(),
-  );
+  const [loadedRecord, setLoadedRecord] = useState<OfficialReceiptRecord | null>(null);
+  const [values, setValues] = useState<OfficialReceiptFormValues>(() => createOfficialReceiptFormValues());
 
   useEffect(() => {
     if (mode === "add" || !recordId) {
@@ -155,7 +160,8 @@ export function useOfficialReceiptActionForm(
 
     let isMounted = true;
 
-    fetchOfficialReceipt(recordId)
+    api
+      .fetchReceipt(recordId)
       .then((record) => {
         if (!isMounted) return;
         setIsNotFound(false);
@@ -230,17 +236,14 @@ export function useOfficialReceiptActionForm(
 
     const saveRequest =
       mode === "edit" && loadedRecord
-        ? updateOfficialReceipt({
+        ? api.updateReceipt({
             ...loadedRecord,
             formValues: values,
           })
-        : createOfficialReceipt(values);
+        : api.createReceipt(values);
 
     saveRequest
       .then((nextRecord) => {
-        const nextReceipts = upsertOfficialReceiptRecord(nextRecord, storageKey, fallbackReceipts);
-
-        writeStoredReceiptsByKey(storageKey, nextReceipts);
         setLoadedRecord(nextRecord);
         toast.success(mode === "edit" ? `${receiptLabel} updated.` : `${receiptLabel} saved.`);
         onSaved?.(nextRecord);
@@ -261,34 +264,6 @@ export function useOfficialReceiptActionForm(
     updateLineEntries,
     values,
   };
-}
-
-function persistOfficialReceipts(receipts: OfficialReceiptRecord[], storageKey = OfficialReceiptStorageKey) {
-  if (storageKey === OfficialReceiptStorageKey) {
-    writeStoredOfficialReceipts(receipts);
-  } else {
-    writeStoredReceiptsByKey(storageKey, receipts);
-  }
-
-  return receipts;
-}
-
-function upsertOfficialReceiptRecord(
-  record: OfficialReceiptRecord,
-  storageKey = OfficialReceiptStorageKey,
-  fallbackReceipts = MockOfficialReceipts,
-) {
-  const currentReceipts = getInitialReceiptsByKey(storageKey, fallbackReceipts);
-  const existingIndex = currentReceipts.findIndex((receipt) => receipt.id === record.id);
-
-  if (existingIndex === -1) {
-    return persistOfficialReceipts([record, ...currentReceipts], storageKey);
-  }
-
-  return persistOfficialReceipts(
-    currentReceipts.map((currentReceipt) => (currentReceipt.id === record.id ? record : currentReceipt)),
-    storageKey,
-  );
 }
 
 export function useOfficialReceiptTable(receipts: OfficialReceiptRecord[]) {

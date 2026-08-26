@@ -1,3 +1,5 @@
+"use client";
+
 import {
   CollectionReceiptDescription,
   CollectionReceiptHref,
@@ -5,15 +7,15 @@ import {
   CollectionReceiptStorageKey,
   CollectionReceiptTableTitle,
 } from "@/app/src/constants/modules/cash-receipt/collection-receipt/CollectionReceiptConstants";
-import { CollectionReceiptFallbackRecords } from "@/app/src/data/modules/cash-receipt/collection-receipt/CollectionReceiptData";
+import { CollectionReceiptHookConfig } from "@/app/src/hooks/modules/cash-receipt/collection-receipt/useCollectionReceipt";
 import { OfficialReceiptListPage } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptListPage";
 
 export function CollectionReceiptListPage() {
   return (
     <OfficialReceiptListPage
+      api={CollectionReceiptHookConfig.api}
       baseHref={CollectionReceiptHref}
       description={CollectionReceiptDescription}
-      fallbackReceipts={CollectionReceiptFallbackRecords}
       receiptLabel={CollectionReceiptLabel}
       startNewLabel={`Start New ${CollectionReceiptLabel}`}
       storageKey={CollectionReceiptStorageKey}

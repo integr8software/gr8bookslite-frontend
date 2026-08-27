@@ -8,6 +8,7 @@ import {
   RevolvingFundStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/revolving-fund/RevolvingFundConstants";
 import {
+  calculateRevolvingFundItemTaxFields,
   calculateRevolvingFundTotals,
   createBlankRevolvingFundItem,
   createRevolvingFundFormValues,
@@ -24,14 +25,12 @@ import {
 import type {
   RevolvingFundActionMode,
   RevolvingFundActionTab,
-  RevolvingFundBoolean,
   RevolvingFundFormErrors,
   RevolvingFundFormValues,
   RevolvingFundItem,
   RevolvingFundStatus,
 } from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";
 import { validateRevolvingFundForm } from "@/app/src/validations/modules/cash-disbursement/revolving-fund/RevolvingFundValidation";
-import { parseAmount } from "@/app/src/utils/number.util";
 import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
 import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
@@ -56,6 +55,8 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
   const isDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
   const draft = useModuleDraft({
     enabled: !isReadonly,
+    initialValues,
+    isDirty,
     key: createModuleDraftKey({ mode, moduleId: "cash-disbursement:revolving-fund", recordId: params.recordId }),
     setValues,
     values,
@@ -114,7 +115,11 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
   }
 
   function removeItem(rowId: string) {
-    if (values.items.length > 1) updateItems(values.items.filter((item) => item.id !== rowId));
+    if (values.items.length > 1) {
+      updateItems(values.items.filter((item) => item.id !== rowId));
+    } else {
+      updateItems([createBlankRevolvingFundItem()]);
+    }
   }
 
   function duplicateItem(rowId: string) {
@@ -162,14 +167,14 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
           date: source.documentDate ?? current.documentDate,
           grossAmount: amount,
           netAmount: amount,
-          particulars: source.remarks ?? "",
-          payeeCode: String(party?.value ?? ""),
-          payeeName: source.partyName ?? "",
+          remarks: source.remarks ?? "",
+          supplierCode: String(party?.value ?? ""),
+          supplierName: source.partyName ?? "",
         },
       ],
     }));
     setErrors({});
-    toast.success(`Copied details from ${source.sourceNo}.`);
+    toast.success(`Copied Details from ${source.sourceNo}.`);
   }
 
   function save(status: RevolvingFundStatus) {
@@ -187,7 +192,7 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
     const nextErrors = status === RevolvingFundStatuses.draft ? {} : validateRevolvingFundForm(values);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) {
-      toast.error("Please fix the highlighted revolving fund fields.");
+      toast.error("Please fix the highlighted Revolving Fund fields.");
       isSubmittingRef.current = false;
       setIsSubmitting(false);
       releaseSubmitLock();
@@ -199,11 +204,11 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
       setRecord(nextRecord);
       setValues(createRevolvingFundFormValues(nextRecord));
       draft.clearDraft();
-      toast.success(status === RevolvingFundStatuses.draft ? "Revolving fund saved as draft." : "Revolving fund submitted for approval.");
+      toast.success(status === RevolvingFundStatuses.draft ? "Revolving Fund Saved as Draft." : "Revolving Fund Submitted for Approval.");
       options.onSaved?.();
       return true;
     } catch {
-      toast.error("Could not save the revolving fund. Please try again.");
+      toast.error("Could not save the Revolving Fund. Please try again.");
       isSubmittingRef.current = false;
       setIsSubmitting(false);
       releaseSubmitLock();
@@ -220,16 +225,34 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
       saveRevolvingFundRecords(upsertRevolvingFundRecord(nextRecord));
       setRecord(nextRecord);
       setValues(createRevolvingFundFormValues(nextRecord));
-      toast.success(`Revolving fund marked as ${status}.`);
+      toast.success(`Revolving Fund Marked as ${status}.`);
       return true;
     } catch {
-      toast.error("Could not update the revolving fund. Please try again.");
+      toast.error("Could not update the Revolving Fund. Please try again.");
       releaseActionLock();
       return false;
     }
   }
 
+  function validate(status: RevolvingFundStatus = RevolvingFundStatuses.forApproval): boolean {
+    if (isReadonly || isSubmittingRef.current) return false;
+    if (mode === "edit" && !isDirty) {
+      toast.error("No changes to save.");
+      return false;
+    }
+    const nextErrors = status === RevolvingFundStatuses.draft ? {} : validateRevolvingFundForm(values);
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) {
+      toast.error("Please fix the highlighted Revolving Fund fields.");
+      return false;
+    }
+    return true;
+  }
+
   return {
+    discardDraft: draft.discardDraft,
+    hasDiscardableChanges: isDirty,
+    saveDraft: draft.saveDraft,
     activeTab,
     addItems,
     copyFrom,
@@ -255,23 +278,15 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
     updateItem,
     updateItems,
     updateStatus,
+    validate,
     values,
   };
 }
 
 function calculateItem(item: RevolvingFundItem): RevolvingFundItem {
-  const amount = parseAmount(item.amount) ?? 0;
-  const rate = item.vatable === "True" ? 0.12 : 0;
-  const vat = rate ? (item.vatInclusive === "True" ? amount - amount / (1 + rate) : amount * rate) : 0;
-  const net = item.vatInclusive === "True" ? amount - vat : amount;
-  const gross = item.vatInclusive === "True" ? amount : amount + vat;
   return {
     ...item,
-    netAmount: formatRevolvingFundAmount(net),
-    vatAmount: formatRevolvingFundAmount(vat),
-    grossAmount: formatRevolvingFundAmount(gross),
-    vatable: item.vatable as RevolvingFundBoolean,
+    ...calculateRevolvingFundItemTaxFields(item.amount, item.vatType, item.ewtCode),
   };
 }
 
-export type { RevolvingFundActionPageState } from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";

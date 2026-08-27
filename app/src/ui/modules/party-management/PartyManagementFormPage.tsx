@@ -80,11 +80,11 @@ function PartyManagementFormPageInner() {
       >
         <PartyInformationActionHeader
           canSave={page.canSave}
-          cancelHref={page.cancelHref}
           editHref={page.editHref}
           isReadonly={page.isReadonly}
           mode={page.mode}
           nextStatus={page.existingRecord ? page.nextStatus : undefined}
+          onCancel={page.handleCancel}
           onSave={() => {
             if (page.validateBeforeSubmit()) {
               setIsSaveDialogOpen(true);

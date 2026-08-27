@@ -18,6 +18,7 @@ import type {
   TermsMaintenanceFormValues,
   TermsMaintenancePermissions,
   TermsMaintenanceStatistics,
+  TermsMaintenanceStoreOptions,
 } from "@/app/src/types/modules/financial-maintenance/terms-maintenance/TermsMaintenanceTypes";
 
 type TermsMaintenanceStoreState = {
@@ -62,6 +63,7 @@ const EmptyTermStatistics: TermsMaintenanceStatistics = {
 
 export function useTermsMaintenanceStore<TSelected = TermsMaintenanceStoreState>(
   selector?: (state: TermsMaintenanceStoreState) => TSelected,
+  options: TermsMaintenanceStoreOptions = {},
 ) {
   const queryClient = useQueryClient();
   const accessToken = useAppStore((state) => state.accessToken);
@@ -69,6 +71,7 @@ export function useTermsMaintenanceStore<TSelected = TermsMaintenanceStoreState>
   const termsQuery = useQuery({
     queryKey: TermsMaintenanceQueryKeys.terms(),
     queryFn: fetchTerms,
+    refetchOnMount: options.refetchOnMount,
     retry: false,
   });
   const refreshTerms = useCallback(() => {

@@ -20,6 +20,7 @@ import type {
   ResponsibilityCenterClassification,
   ResponsibilityCenterPermissions,
   ResponsibilityCenterStatistics,
+  ResponsibilityCenterStoreOptions,
   ResponsibilityCenterTypeOption,
 } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
 
@@ -57,6 +58,7 @@ const ReservedRoleResponsibilityCenterPermissions: ResponsibilityCenterPermissio
 
 export function useResponsibilityCenterStore<TSelected = ResponsibilityCenterStoreState>(
   selector?: (state: ResponsibilityCenterStoreState) => TSelected,
+  options: ResponsibilityCenterStoreOptions = {},
 ) {
   const queryClient = useQueryClient();
   const accessToken = useAppStore((state) => state.accessToken);
@@ -64,16 +66,19 @@ export function useResponsibilityCenterStore<TSelected = ResponsibilityCenterSto
   const centersQuery = useQuery({
     queryKey: ResponsibilityCenterQueryKeys.centers(),
     queryFn: fetchResponsibilityCenters,
+    refetchOnMount: options.refetchOnMount,
     retry: false,
   });
   const classificationsQuery = useQuery({
     queryKey: ResponsibilityCenterQueryKeys.classifications(),
     queryFn: fetchResponsibilityCenterClassifications,
+    refetchOnMount: options.refetchOnMount,
     retry: false,
   });
   const typesQuery = useQuery({
     queryKey: ResponsibilityCenterQueryKeys.types(),
     queryFn: () => fetchResponsibilityCenterTypes(),
+    refetchOnMount: options.refetchOnMount,
     retry: false,
   });
   const centers = centersQuery.data?.centers ?? EmptyResponsibilityCenters;

@@ -88,7 +88,7 @@ function CashVoucherReportDocument({ values }: { values: CashVoucherFormValues }
           <div className="px-3 py-2">
             <h2 className="text-3xl font-black leading-none tracking-tight">DISBURSEMENT VOUCHER</h2>
           </div>
-          <MetaCell label="Cash Voucher Date:" value={formatShortDateLabel(values.voucherDate)} />
+          <MetaCell label="Document Date:" value={formatShortDateLabel(values.voucherDate)} />
         </div>
 
         <div className="grid grid-cols-[1fr_20.25rem] border-t-2 border-black">
@@ -128,7 +128,7 @@ function CashVoucherReportDocument({ values }: { values: CashVoucherFormValues }
               <tr key={entry.id} className="align-top">
                 <ReportTableCell>{formatAccountLabel(entry.accountCode, entry.accountName)}</ReportTableCell>
                 <ReportTableCell>{entry.partyName || entry.partyCode || values.partyName || "-"}</ReportTableCell>
-                <ReportTableCell>{entry.particulars || "-"}</ReportTableCell>
+                <ReportTableCell>{entry.remarks || "-"}</ReportTableCell>
                 <ReportTableCell>{entry.responsibilityCenter || values.costCenter || "-"}</ReportTableCell>
                 <ReportTableCell align="right">{entry.debit ? formatCurrency(entry.debit) : ""}</ReportTableCell>
                 <ReportTableCell align="right">{entry.credit ? formatCurrency(entry.credit) : ""}</ReportTableCell>

@@ -5,11 +5,13 @@ import type {
   DisbursementVoucherFormErrors,
   DisbursementVoucherFormValues,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+import type { PaymentTypeRecord } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
 
 export const DisbursementVoucherDetailsValidationSchema = z.object({
   paymentMethod: z.string().trim().min(1, "Payment method is required."),
   partyCode: z.string().trim().min(1, "Party code is required."),
   partyName: z.string().trim().min(1, "Party name is required."),
+  voucherDate: z.string().trim().min(1, "Select a DV Date."),
 });
 
 const DisbursementVoucherLineEntryValidationSchema = z.object({
@@ -98,20 +100,59 @@ export const DisbursementVoucherEntryDraftValidationSchema = z
     }
   });
 
-export function validateDisbursementVoucherDetails(values: DisbursementVoucherFormValues) {
+export function validateDisbursementVoucherDetails(
+  values: DisbursementVoucherFormValues,
+  paymentTypeRecord?: PaymentTypeRecord | null,
+) {
   const errors: DisbursementVoucherFormErrors = {};
   const result = DisbursementVoucherDetailsValidationSchema.safeParse(values);
 
-  if (result.success) {
-    return errors;
+  if (!result.success) {
+    for (const issue of result.error.issues) {
+      const field = issue.path[0] as "paymentMethod" | "partyCode" | "partyName" | "voucherDate" | undefined;
+
+      if (field && !errors[field]) {
+        errors[field] = issue.message;
+      }
+    }
   }
 
-  for (const issue of result.error.issues) {
-    const field = issue.path[0] as "paymentMethod" | "partyCode" | "partyName" | undefined;
+  const paymentType = paymentTypeRecord?.type;
+  const normalizedPaymentMethod = values.paymentMethod.trim().toLowerCase();
+  const requiresCheckDetails =
+    paymentType === "Check" ||
+    paymentType === "Debit Memo" ||
+    normalizedPaymentMethod.includes("check") ||
+    normalizedPaymentMethod.includes("debit memo");
+  const requiresTransferDetails =
+    paymentType === "Bank Transfer" ||
+    paymentType === "Digital Wallet" ||
+    normalizedPaymentMethod.includes("bank transfer") ||
+    normalizedPaymentMethod.includes("wire") ||
+    normalizedPaymentMethod === "transfer" ||
+    normalizedPaymentMethod.includes("instapay") ||
+    normalizedPaymentMethod.includes("pesonet") ||
+    normalizedPaymentMethod.includes("peso net") ||
+    normalizedPaymentMethod.includes("ewallet") ||
+    normalizedPaymentMethod.includes("e-wallet") ||
+    normalizedPaymentMethod.includes("wallet") ||
+    normalizedPaymentMethod.includes("online");
 
-    if (field && !errors[field]) {
-      errors[field] = issue.message;
+  if (requiresCheckDetails) {
+    if (!values.paymentDetails.bankAccountCode.trim()) errors.bankAccountCode = "Bank is required.";
+    if (!(values.paymentDetails.payee ?? values.partyName).trim()) errors.payee = "Payee is required.";
+    if (!values.paymentDetails.isMultiCheckNumber && !values.paymentDetails.checkNo.trim()) {
+      errors.checkNo = paymentType === "Debit Memo" || normalizedPaymentMethod.includes("debit memo")
+        ? "Debit memo number is required."
+        : "Check number is required.";
     }
+    if (!(values.paymentDetails.checkDate || values.voucherDate).trim()) errors.checkDate = "Check date is required.";
+  }
+
+  if (requiresTransferDetails) {
+    if (!values.paymentDetails.bankAccountCode.trim()) errors.bankAccountCode = "From bank is required.";
+    if (!(values.paymentDetails.transferToBank ?? "").trim()) errors.transferToBank = "To bank is required.";
+    if (!(values.paymentDetails.transferAccountNo ?? "").trim()) errors.transferAccountNo = "Account number is required.";
   }
 
   return errors;

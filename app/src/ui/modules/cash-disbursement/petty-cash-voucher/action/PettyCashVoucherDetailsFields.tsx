@@ -1,11 +1,9 @@
-import { PettyCashVoucherVATableOptions } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
-import type { PettyCashVoucherFormValues } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import {
   createPettyCashVoucherAccountOptions,
   createPettyCashVoucherPartyOptions,
   createPettyCashVoucherResponsibilityCenterOptions,
 } from "@/app/src/data/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherData";
-import type { PettyCashVoucherActionPageState } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-voucher/usePettyCashVoucherActionPage";
+import type { PettyCashVoucherActionPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLookupDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppLookupDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
@@ -153,11 +151,15 @@ export function PettyCashVoucherDetailsFields({
           />
 
           <CurrencyExchangeRateRow
-            currencyControlId="petty-cash-voucher-currency"
             currencyLabel="Currency"
+            currencyControlId="petty-cash-voucher-currency"
+            currencyError={page.errors.currency}
+            exchangeRateControlId="petty-cash-voucher-exchange-rate"
+            exchangeRateError={page.errors.exchangeRate}
             currencyControl={
               <AppAdvancedDropdown
                 id="petty-cash-voucher-currency"
+                className="w-full min-w-0"
                 value={page.values.currency}
                 readOnly={page.isReadonly}
                 isClearable={false}
@@ -168,7 +170,6 @@ export function PettyCashVoucherDetailsFields({
                 onChange={(value) => page.updateCurrency(String(value))}
               />
             }
-            exchangeRateControlId="petty-cash-voucher-exchange-rate"
             exchangeRateControl={
               <input
                 id="petty-cash-voucher-exchange-rate"
@@ -178,44 +179,40 @@ export function PettyCashVoucherDetailsFields({
                 readOnly={page.isReadonly}
                 disabled={page.isReadonly || page.isExchangeRateLoading}
                 onChange={(event) => page.updateField("exchangeRate", formatExchangeRateInput(event.target.value))}
-                className={`${TransactionFieldClassName} text-right tabular-nums`}
+                className={`${TransactionFieldClassName} text-right tabular-nums${page.isReadonly || page.isExchangeRateLoading ? " transaction-readonly-placeholder" : ""}`}
+                placeholder="0.00"
               />
             }
           />
 
-          <TransactionField label="VATable" error={page.errors.vatable}>
-            <select
-              id="petty-cash-voucher-vatable"
-              value={page.values.vatable}
-              disabled={page.isReadonly}
-              onChange={(event) => page.updateVATable(event.target.value as PettyCashVoucherFormValues["vatable"])}
-              className={`${TransactionFieldClassName} app-select-control`}
-            >
-              {PettyCashVoucherVATableOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </TransactionField>
-
-          <TransactionField label="VAT Amount" error={page.errors.vatAmount}>
-            <MoneyNumberField
-              value={page.values.vatAmount}
-              readOnly
-              onValueChange={(value) => page.updateField("vatAmount", value)}
-              className={`${TransactionFieldClassName} text-right tabular-nums`}
-              placeholder="0.00"
+          <TransactionField controlId="petty-cash-voucher-vat-type" label="VAT Type" error={page.errors.vatType ?? page.errors.vatable}>
+            <AppAdvancedDropdown
+              id="petty-cash-voucher-vat-type"
+              className="w-full min-w-0"
+              value={page.values.vatType}
+              readOnly={page.isReadonly}
+              isClearable
+              menuMinWidth={320}
+              options={page.vatOptions}
+              placeholder="Select VAT Type"
+              searchPlaceholder="Search VAT Type"
+              onChange={(value) => page.updateVatType(String(value ?? ""))}
             />
           </TransactionField>
 
-          <TransactionField label="Net Amount" error={page.errors.netAmount}>
-            <MoneyNumberField
-              value={page.values.netAmount}
-              readOnly
-              onValueChange={(value) => page.updateField("netAmount", value)}
-              className={`${TransactionFieldClassName} text-right tabular-nums`}
-              placeholder="0.00"
+          <TransactionField controlId="petty-cash-voucher-ewt-code" label="EWT Code" error={page.errors.ewtCode}>
+            <AppAdvancedDropdown
+              id="petty-cash-voucher-ewt-code"
+              className="w-full min-w-0"
+              value={page.values.ewtCode}
+              readOnly={page.isReadonly}
+              isClearable
+              menuMinWidth={360}
+              options={page.ewtOptions}
+              optionViewToggle
+              placeholder="Select EWT Code"
+              searchPlaceholder="Search tax name, code, rate, or description"
+              onChange={(value) => page.updateEwtCode(String(value ?? ""))}
             />
           </TransactionField>
         </div>
@@ -227,9 +224,9 @@ export function PettyCashVoucherDetailsFields({
             error={page.errors.transactionNo}
             isRequired
             isReadonly
-            label="Petty Cash Voucher No."
+            label="PCV No."
             onValueChange={(value) => page.updateField("transactionNo", value)}
-            placeholder="Auto Generated Petty Cash Voucher Transaction Number"
+            placeholder="Auto Generated PCV Transaction Number"
           />
 
           <TransactionTextField
@@ -237,7 +234,7 @@ export function PettyCashVoucherDetailsFields({
             error={page.errors.documentDate}
             isReadonly={page.isReadonly}
             isRequired
-            label="Petty Cash Voucher Date"
+            label="PCV Date"
             onValueChange={(value) => page.updateField("documentDate", value)}
             type="date"
           />

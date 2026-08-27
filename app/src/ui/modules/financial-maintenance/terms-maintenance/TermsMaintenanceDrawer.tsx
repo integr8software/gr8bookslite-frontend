@@ -30,10 +30,22 @@ function TermsMaintenanceDrawerPanel({ initialValues, isOpen, mode, onClose, ter
   const page = useTermsMaintenanceFormPage({
     existingTerm: term,
     initialValues,
+    isOpen,
     mode,
     onSaved: onClose,
   });
   const copy = TermsMaintenanceActionCopy[mode];
+
+  function handleClose() {
+    page.saveDraft();
+    onClose();
+  }
+
+  function handleCancel() {
+    page.discardDraft();
+    onClose();
+  }
+
   return (
     <ModuleDrawer
       description={copy.description}
@@ -43,7 +55,8 @@ function TermsMaintenanceDrawerPanel({ initialValues, isOpen, mode, onClose, ter
       isReadonly={page.isReadonly}
       isSaving={page.isSubmitting}
       onBeforeSaveConfirm={page.validateBeforeSubmit}
-      onClose={onClose}
+      onCancel={handleCancel}
+      onClose={handleClose}
       savingLabel={getModuleSavePendingLabel(mode)}
       submitLabel={mode === "edit" ? "Update Term" : "Save Term"}
       title={copy.title}

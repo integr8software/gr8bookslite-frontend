@@ -6,8 +6,8 @@ import type {
 import { parseAmount } from "@/app/src/utils/number.util";
 
 const schema = z.object({
-  transactionNo: z.string().regex(/^RFR-\d{6}$/, "A valid revolving fund replenishment number is required."),
-  documentDate: z.string().min(1, "Select a document date."),
+  transactionNo: z.string().regex(/^RFR-\d{6}$/, "A valid RFR No. is required."),
+  documentDate: z.string().min(1, "Select an RFR Date."),
   partyCode: z.string().trim().min(1, "Select a party."),
   partyName: z.string().trim().min(1, "Select a party."),
   accountCode: z.string().trim().min(1, "Select a default account."),
@@ -24,23 +24,23 @@ export function validateRevolvingFundReplenishmentForm(values: RevolvingFundRepl
   }
   if (
     values.entries.length === 0 ||
-    values.entries.every((entry) => !entry.revolvingFundNo.trim() && (parseAmount(entry.totalAmount) ?? 0) <= 0)
+    values.entries.every((entry) => !entry.revolvingFundNo.trim() && (parseAmount(entry.amount) ?? 0) <= 0)
   ) {
     errors.entries = "Add at least one revolving fund voucher entry.";
   } else if (
     values.entries.some(
       (entry) =>
         !entry.revolvingFundNo.trim() ||
-        !entry.accountCode.trim() ||
-        !entry.accountTitle.trim() ||
-        (parseAmount(entry.totalAmount) ?? 0) <= 0,
+        !entry.supplierCode.trim() ||
+        !entry.supplierName.trim() ||
+        (parseAmount(entry.amount) ?? 0) <= 0,
     )
   ) {
-    errors.entries = "Each entry needs a revolving fund voucher, account, and amount greater than zero.";
+    errors.entries = "Each entry needs a revolving fund voucher, supplier, and amount greater than zero.";
   }
   const voucherNumbers = values.entries.map((entry) => entry.revolvingFundNo.trim().toLowerCase()).filter(Boolean);
   if (new Set(voucherNumbers).size !== voucherNumbers.length) {
-    errors.entries = "Revolving fund numbers must be unique.";
+    errors.entries = "Petty Cash numbers must be unique.";
   }
   return errors;
 }

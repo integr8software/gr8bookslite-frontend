@@ -8,6 +8,7 @@ import {
   PettyCashFundStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund/PettyCashFundConstants";
 import {
+  calculatePettyCashFundItemTaxFields,
   calculatePettyCashFundTotals,
   createBlankPettyCashFundItem,
   createPettyCashFundFormValues,
@@ -24,14 +25,12 @@ import {
 import type {
   PettyCashFundActionMode,
   PettyCashFundActionTab,
-  PettyCashFundBoolean,
   PettyCashFundFormErrors,
   PettyCashFundFormValues,
   PettyCashFundItem,
   PettyCashFundStatus,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";
 import { validatePettyCashFundForm } from "@/app/src/validations/modules/cash-disbursement/petty-cash-fund/PettyCashFundValidation";
-import { parseAmount } from "@/app/src/utils/number.util";
 import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
 import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
@@ -56,6 +55,8 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
   const isDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
   const draft = useModuleDraft({
     enabled: !isReadonly,
+    initialValues,
+    isDirty,
     key: createModuleDraftKey({ mode, moduleId: "cash-disbursement:petty-cash-fund", recordId: params.recordId }),
     setValues,
     values,
@@ -114,7 +115,11 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
   }
 
   function removeItem(rowId: string) {
-    if (values.items.length > 1) updateItems(values.items.filter((item) => item.id !== rowId));
+    if (values.items.length > 1) {
+      updateItems(values.items.filter((item) => item.id !== rowId));
+    } else {
+      updateItems([createBlankPettyCashFundItem()]);
+    }
   }
 
   function duplicateItem(rowId: string) {
@@ -162,14 +167,14 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
           date: source.documentDate ?? current.documentDate,
           grossAmount: amount,
           netAmount: amount,
-          particulars: source.remarks ?? "",
-          payeeCode: String(party?.value ?? ""),
-          payeeName: source.partyName ?? "",
+          remarks: source.remarks ?? "",
+          supplierCode: String(party?.value ?? ""),
+          supplierName: source.partyName ?? "",
         },
       ],
     }));
     setErrors({});
-    toast.success(`Copied details from ${source.sourceNo}.`);
+    toast.success(`Copied Details from ${source.sourceNo}.`);
   }
 
   function save(status: PettyCashFundStatus) {
@@ -187,7 +192,7 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
     const nextErrors = status === PettyCashFundStatuses.draft ? {} : validatePettyCashFundForm(values);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) {
-      toast.error("Please fix the highlighted petty cash fund fields.");
+      toast.error("Please fix the highlighted Petty Cash Fund fields.");
       isSubmittingRef.current = false;
       setIsSubmitting(false);
       releaseSubmitLock();
@@ -199,11 +204,11 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
       setRecord(nextRecord);
       setValues(createPettyCashFundFormValues(nextRecord));
       draft.clearDraft();
-      toast.success(status === PettyCashFundStatuses.draft ? "Petty cash fund saved as draft." : "Petty cash fund submitted for approval.");
+      toast.success(status === PettyCashFundStatuses.draft ? "Petty Cash Fund Saved as Draft." : "Petty Cash Fund Submitted for Approval.");
       options.onSaved?.();
       return true;
     } catch {
-      toast.error("Could not save the petty cash fund. Please try again.");
+      toast.error("Could not save the Petty Cash Fund. Please try again.");
       isSubmittingRef.current = false;
       setIsSubmitting(false);
       releaseSubmitLock();
@@ -220,16 +225,34 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
       savePettyCashFundRecords(upsertPettyCashFundRecord(nextRecord));
       setRecord(nextRecord);
       setValues(createPettyCashFundFormValues(nextRecord));
-      toast.success(`Petty cash fund marked as ${status}.`);
+      toast.success(`Petty Cash Fund Marked as ${status}.`);
       return true;
     } catch {
-      toast.error("Could not update the petty cash fund. Please try again.");
+      toast.error("Could not update the Petty Cash Fund. Please try again.");
       releaseActionLock();
       return false;
     }
   }
 
+  function validate(status: PettyCashFundStatus = PettyCashFundStatuses.forApproval): boolean {
+    if (isReadonly || isSubmittingRef.current) return false;
+    if (mode === "edit" && !isDirty) {
+      toast.error("No changes to save.");
+      return false;
+    }
+    const nextErrors = status === PettyCashFundStatuses.draft ? {} : validatePettyCashFundForm(values);
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) {
+      toast.error("Please fix the highlighted Petty Cash Fund fields.");
+      return false;
+    }
+    return true;
+  }
+
   return {
+    discardDraft: draft.discardDraft,
+    hasDiscardableChanges: isDirty,
+    saveDraft: draft.saveDraft,
     activeTab,
     addItems,
     copyFrom,
@@ -255,23 +278,15 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
     updateItem,
     updateItems,
     updateStatus,
+    validate,
     values,
   };
 }
 
 function calculateItem(item: PettyCashFundItem): PettyCashFundItem {
-  const amount = parseAmount(item.amount) ?? 0;
-  const rate = item.vatable === "True" ? 0.12 : 0;
-  const vat = rate ? (item.vatInclusive === "True" ? amount - amount / (1 + rate) : amount * rate) : 0;
-  const net = item.vatInclusive === "True" ? amount - vat : amount;
-  const gross = item.vatInclusive === "True" ? amount : amount + vat;
   return {
     ...item,
-    netAmount: formatPettyCashFundAmount(net),
-    vatAmount: formatPettyCashFundAmount(vat),
-    grossAmount: formatPettyCashFundAmount(gross),
-    vatable: item.vatable as PettyCashFundBoolean,
+    ...calculatePettyCashFundItemTaxFields(item.amount, item.vatType, item.ewtCode),
   };
 }
 
-export type { PettyCashFundActionPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";

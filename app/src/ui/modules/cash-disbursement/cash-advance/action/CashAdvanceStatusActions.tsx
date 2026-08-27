@@ -1,0 +1,123 @@
+import { Ban, ThumbsDown, ThumbsUp, Undo2 } from "lucide-react";
+import {
+  CashAdvanceStatuses,
+  canApproveCashAdvanceStatus,
+  canCancelCashAdvanceStatus,
+  canDisapproveCashAdvanceStatus,
+} from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
+import type { CashAdvanceRecord, CashAdvanceStatus } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
+import { ModuleActionMenu, type ModuleActionMenuItem } from "@/app/src/ui/shared/module/ModuleActionMenu";
+import { moduleHeaderActionClassNames, moduleStatusActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
+
+export function CashAdvanceStatusActions({
+  onRequestStatusConfirmation,
+  onUpdateStatus,
+  record,
+}: {
+  onRequestStatusConfirmation: (status: CashAdvanceStatus) => void;
+  onUpdateStatus?: (status: CashAdvanceStatus) => void;
+  record?: CashAdvanceRecord | null;
+}) {
+  const actions = createCashAdvanceStatusActionItems({
+    onRequestStatusConfirmation,
+    onUpdateStatus,
+    record,
+  });
+
+  return (
+    <>
+      <div className="flex items-center gap-2 lg:hidden">
+        <ModuleActionMenu items={actions} label="Cash advance actions" />
+      </div>
+      <div className="hidden flex-wrap gap-2 lg:flex">
+        {actions.map((action) => {
+          if (action.type === "button") {
+            return <HeaderActionButton key={action.label} action={action} />;
+          }
+
+          return null;
+        })}
+      </div>
+    </>
+  );
+}
+
+function createCashAdvanceStatusActionItems({
+  onRequestStatusConfirmation,
+  onUpdateStatus,
+  record,
+}: {
+  onRequestStatusConfirmation: (status: CashAdvanceStatus) => void;
+  onUpdateStatus?: (status: CashAdvanceStatus) => void;
+  record?: CashAdvanceRecord | null;
+}) {
+  const status = record?.status ?? CashAdvanceStatuses.draft;
+  const isPosted = status === CashAdvanceStatuses.posted;
+  const isDisapproved = status === CashAdvanceStatuses.disapproved;
+  const isCancelled = status === CashAdvanceStatuses.cancelled;
+  const approvalUndoStatus: CashAdvanceStatus = CashAdvanceStatuses.forApproval;
+  const cancelStatus: CashAdvanceStatus = isCancelled ? CashAdvanceStatuses.draft : CashAdvanceStatuses.cancelled;
+  const actions: ModuleActionMenuItem[] = [
+    {
+      disabled: !onUpdateStatus || !canApproveCashAdvanceStatus(status),
+      icon: isPosted ? Undo2 : ThumbsUp,
+      label: isPosted ? "Undo Approved" : "Approve",
+      onSelect: () => onRequestStatusConfirmation(isPosted ? approvalUndoStatus : CashAdvanceStatuses.posted),
+      type: "button",
+    },
+    {
+      disabled: !onUpdateStatus || !canDisapproveCashAdvanceStatus(status),
+      icon: isDisapproved ? Undo2 : ThumbsDown,
+      label: isDisapproved ? "Undo Disapproved" : "Disapprove",
+      onSelect: () => onRequestStatusConfirmation(isDisapproved ? approvalUndoStatus : CashAdvanceStatuses.disapproved),
+      tone: isDisapproved ? "default" : "danger",
+      type: "button",
+    },
+    {
+      disabled: !onUpdateStatus || !canCancelCashAdvanceStatus(status),
+      icon: isCancelled ? Undo2 : Ban,
+      label: isCancelled ? "Undo Cancelled" : "Cancel",
+      onSelect: () => onRequestStatusConfirmation(cancelStatus),
+      tone: isCancelled ? "default" : "danger",
+      type: "button",
+    },
+  ];
+
+  return actions;
+}
+
+function HeaderActionButton({ action }: { action: Extract<ModuleActionMenuItem, { type: "button" }> }) {
+  const Icon = action.icon;
+  const className = getStatusActionButtonClassName(action);
+
+  return (
+    <button type="button" disabled={action.disabled} onClick={action.onSelect} className={className}>
+      <Icon className="h-4 w-4" aria-hidden="true" />
+      {action.label}
+    </button>
+  );
+}
+
+function getStatusActionButtonClassName(action: Extract<ModuleActionMenuItem, { type: "button" }>) {
+  if (action.label === "Approve") {
+    return moduleStatusActionClassNames.approve;
+  }
+
+  if (action.label === "Disapprove") {
+    return moduleStatusActionClassNames.disapprove;
+  }
+
+  if (action.label === "Cancel") {
+    return moduleStatusActionClassNames.cancel;
+  }
+
+  if (action.label === "Undo Approved" || action.label === "Undo Disapproved" || action.label === "Undo Cancelled") {
+    return moduleStatusActionClassNames.undo;
+  }
+
+  if (action.tone === "danger") {
+    return moduleStatusActionClassNames.danger;
+  }
+
+  return moduleHeaderActionClassNames.secondary;
+}

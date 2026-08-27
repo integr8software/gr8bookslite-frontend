@@ -17,6 +17,7 @@ import type {
   DefaultAccountFormValues,
   DefaultAccountPermissions,
   DefaultAccountStatistics,
+  DefaultAccountStoreOptions,
 } from "@/app/src/types/modules/financial-maintenance/default-account/DefaultAccountTypes";
 
 type DefaultAccountStoreState = {
@@ -51,7 +52,10 @@ const EmptyStatistics: DefaultAccountStatistics = {
   collectionDefaultAccounts: 0,
 };
 
-export function useDefaultAccountStore<TSelected = DefaultAccountStoreState>(selector?: (state: DefaultAccountStoreState) => TSelected) {
+export function useDefaultAccountStore<TSelected = DefaultAccountStoreState>(
+  selector?: (state: DefaultAccountStoreState) => TSelected,
+  options: DefaultAccountStoreOptions = {},
+) {
   const queryClient = useQueryClient();
   const accessToken = useAppStore((state) => state.accessToken);
   const authProfileQuery = useAuthProfileQuery({ accessToken });
@@ -60,6 +64,7 @@ export function useDefaultAccountStore<TSelected = DefaultAccountStoreState>(sel
     queryKey: DefaultAccountQueryKeys.list(companyId),
     queryFn: fetchDefaultAccounts,
     enabled: Boolean(companyId),
+    refetchOnMount: options.refetchOnMount,
     retry: false,
   });
   const refreshDefaultAccounts = useCallback(() => {

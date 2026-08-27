@@ -189,11 +189,11 @@ export type PartyInformationTab = ModuleTabItem<PartyInformationTabId> & {
 
 export type PartyInformationActionHeaderProps = {
   canSave?: boolean;
-  cancelHref: string;
   editHref?: string;
   isReadonly: boolean;
   mode: PartyInformationActionMode;
   nextStatus?: PartyInformationStatus;
+  onCancel?: () => void;
   onSave?: () => void;
   onStatusChange?: () => void;
 };
@@ -342,7 +342,7 @@ export type PartyManagementDrawerProps = {
   description?: string;
   isOpen: boolean;
   isPending: boolean;
-  onAddRecord: (record: PartyInformationRecord) => void;
+  onAddRecord: (record: PartyInformationRecord) => Promise<PartyInformationRecord>;
   onClose: () => void;
   onCreateParty: (record: PartyInformationRecord) => void;
   records: PartyInformationRecord[];

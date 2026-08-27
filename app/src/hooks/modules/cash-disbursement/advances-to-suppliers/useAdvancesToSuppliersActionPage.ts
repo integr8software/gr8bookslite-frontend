@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { AdvancesToSuppliersStatuses } from "@/app/src/constants/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersConstants";
 import {
   calculateAdvancePayment,
+  calculateAdvancePaymentPercentage,
   createAdvancesToSuppliersFormValues,
   createAdvancesToSuppliersRecord,
   formatAdvancesToSuppliersAmount,
@@ -54,6 +55,8 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
   const isDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
   const draft = useModuleDraft({
     enabled: !isReadonly,
+    initialValues,
+    isDirty,
     key: createModuleDraftKey({
       mode,
       moduleId: "cash-disbursement:advances-to-suppliers",
@@ -95,9 +98,33 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
     if (isReadonly) return;
     setValues((current) => {
       const next = { ...current, [field]: value };
-      if (field === "totalPoAmount" || field === "advancePaymentPercentage") {
+      if (field === "advancePaymentType") {
+        if (value === "Percentage") {
+          next.advancePaymentAmount = formatAdvancesToSuppliersAmount(
+            calculateAdvancePayment(next.totalPoAmount, next.advancePaymentPercentage),
+          );
+        } else {
+          next.advancePaymentPercentage = formatAdvancesToSuppliersAmount(
+            calculateAdvancePaymentPercentage(next.totalPoAmount, next.advancePaymentAmount),
+          );
+        }
+      } else if (field === "totalPoAmount") {
+        if (next.advancePaymentType === "Percentage") {
+          next.advancePaymentAmount = formatAdvancesToSuppliersAmount(
+            calculateAdvancePayment(next.totalPoAmount, next.advancePaymentPercentage),
+          );
+        } else {
+          next.advancePaymentPercentage = formatAdvancesToSuppliersAmount(
+            calculateAdvancePaymentPercentage(next.totalPoAmount, next.advancePaymentAmount),
+          );
+        }
+      } else if (field === "advancePaymentPercentage") {
         next.advancePaymentAmount = formatAdvancesToSuppliersAmount(
           calculateAdvancePayment(next.totalPoAmount, next.advancePaymentPercentage),
+        );
+      } else if (field === "advancePaymentAmount") {
+        next.advancePaymentPercentage = formatAdvancesToSuppliersAmount(
+          calculateAdvancePaymentPercentage(next.totalPoAmount, next.advancePaymentAmount),
         );
       }
       return next;
@@ -105,7 +132,12 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
     setErrors((current) => ({
       ...current,
       [field]: undefined,
-      ...(field === "totalPoAmount" || field === "advancePaymentPercentage" ? { advancePaymentAmount: undefined } : {}),
+      ...(field === "totalPoAmount" ||
+      field === "advancePaymentPercentage" ||
+      field === "advancePaymentAmount" ||
+      field === "advancePaymentType"
+        ? { advancePaymentAmount: undefined, advancePaymentPercentage: undefined }
+        : {}),
     }));
   }
 
@@ -134,19 +166,30 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
     const totalPoAmount = formatAdvancesToSuppliersAmount(getPurchaseOrderTotals(order).netAmount);
     const party = getPurchaseOrderParty(order);
     hasEditedCurrencyRef.current = true;
-    setValues((current) => ({
-      ...current,
-      partyCode: party.partyCode || current.partyCode,
-      partyName: party.partyName || current.partyName,
-      projectCode: order.projectCode || current.projectCode,
-      projectName: order.projectName || current.projectName,
-      currency: order.currency || current.currency,
-      exchangeRate: formatLoadedExchangeRate(order.exchangeRate || 1),
-      poReference: order.transNo,
-      totalPoAmount,
-      advancePaymentAmount: formatAdvancesToSuppliersAmount(calculateAdvancePayment(totalPoAmount, current.advancePaymentPercentage)),
-      remarks: order.remarks || current.remarks,
-    }));
+    setValues((current) => {
+      const isPercentage = current.advancePaymentType === "Percentage";
+      const advancePaymentAmount = isPercentage
+        ? formatAdvancesToSuppliersAmount(calculateAdvancePayment(totalPoAmount, current.advancePaymentPercentage))
+        : current.advancePaymentAmount;
+      const advancePaymentPercentage = isPercentage
+        ? current.advancePaymentPercentage
+        : formatAdvancesToSuppliersAmount(calculateAdvancePaymentPercentage(totalPoAmount, current.advancePaymentAmount));
+
+      return {
+        ...current,
+        partyCode: party.partyCode || current.partyCode,
+        partyName: party.partyName || current.partyName,
+        projectCode: order.projectCode || current.projectCode,
+        projectName: order.projectName || current.projectName,
+        currency: order.currency || current.currency,
+        exchangeRate: formatLoadedExchangeRate(order.exchangeRate || 1),
+        poReference: order.transNo,
+        totalPoAmount,
+        advancePaymentAmount,
+        advancePaymentPercentage,
+        remarks: order.remarks || current.remarks,
+      };
+    });
     setErrors((current) => ({
       ...current,
       partyCode: undefined,
@@ -158,8 +201,9 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
       poReference: undefined,
       totalPoAmount: undefined,
       advancePaymentAmount: undefined,
+      advancePaymentPercentage: undefined,
     }));
-    toast.success("Purchase order details copied.");
+    toast.success("Purchase Order Details Copied.");
   }
 
   function save(status: AdvancesToSuppliersStatus) {
@@ -191,8 +235,8 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
       draft.clearDraft();
       toast.success(
         status === AdvancesToSuppliersStatuses.draft
-          ? "Advances to Suppliers saved as draft."
-          : "Advances to Suppliers submitted for approval.",
+          ? "Advances to Suppliers Saved as Draft."
+          : "Advances to Suppliers Submitted for Approval.",
       );
       options.onSaved?.();
       return true;
@@ -214,7 +258,7 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
       saveAdvancesToSuppliersRecords(upsertAdvancesToSuppliersRecord(nextRecord));
       setRecord(nextRecord);
       setValues(createAdvancesToSuppliersFormValues(nextRecord));
-      toast.success(`Advances to Suppliers marked as ${status}.`);
+      toast.success(`Advances to Suppliers Marked as ${status}.`);
       return true;
     } catch {
       toast.error("Could not update Advances to Suppliers. Please try again.");
@@ -223,7 +267,25 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
     }
   }
 
+  function validate(status: AdvancesToSuppliersStatus = AdvancesToSuppliersStatuses.forApproval): boolean {
+    if (isReadonly || isSubmittingRef.current) return false;
+    if (mode === "edit" && !isDirty) {
+      toast.error("No changes to save.");
+      return false;
+    }
+    const nextErrors = status === AdvancesToSuppliersStatuses.draft ? {} : validateAdvancesToSuppliersForm(values);
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) {
+      toast.error("Please fix the highlighted Advances to Suppliers fields.");
+      return false;
+    }
+    return true;
+  }
+
   return {
+    discardDraft: draft.discardDraft,
+    hasDiscardableChanges: isDirty,
+    saveDraft: draft.saveDraft,
     activeTab,
     currencyOptions: transactionCurrency.currencyOptions,
     errors,
@@ -242,8 +304,8 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
     copyFromPurchaseOrder,
     updateField,
     updateStatus,
+    validate,
     values,
   };
 }
 
-export type { AdvancesToSuppliersActionPageState } from "@/app/src/types/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersTypes";

@@ -83,7 +83,7 @@ export function ModuleActionButton({
         disabled={disabled}
         onClick={onAction}
         className={joinClasses(
-          "inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold shadow-sm transition focus-visible:outline-none focus-visible:ring-4 disabled:cursor-not-allowed disabled:opacity-55",
+          "inline-flex h-10 min-w-24 shrink-0 items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold shadow-sm transition focus-visible:outline-none focus-visible:ring-4 disabled:cursor-not-allowed disabled:opacity-55",
           getModuleActionButtonToneClassName(variant),
           className,
         )}
@@ -104,7 +104,7 @@ export function ModuleActionButton({
         disabled={disabled}
         onClick={onAction}
         className={joinClasses(
-          "inline-flex h-10 items-center justify-center gap-2 rounded-l-md rounded-r-none border px-4 text-sm font-semibold shadow-sm transition focus-visible:z-10 focus-visible:outline-none focus-visible:ring-4 disabled:cursor-not-allowed disabled:opacity-55",
+          "inline-flex h-10 min-w-24 items-center justify-center gap-2 rounded-l-md rounded-r-none border px-4 text-sm font-semibold shadow-sm transition focus-visible:z-10 focus-visible:outline-none focus-visible:ring-4 disabled:cursor-not-allowed disabled:opacity-55",
           variant === "primary" ? "border-r-white/20" : "border-r-darknavy/10",
           getModuleActionButtonToneClassName(variant),
         )}

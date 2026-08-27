@@ -5,7 +5,7 @@ import { Copy, Eraser, Plus, Trash2, type LucideIcon } from "lucide-react";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 export function ModuleDataEntryRowActions({
-	canRemove,
+	canRemove = true,
 	rowLabel,
 	style,
 	onAddAbove,
@@ -14,7 +14,7 @@ export function ModuleDataEntryRowActions({
 	onDuplicate,
 	onRemove,
 }: {
-	canRemove: boolean;
+	canRemove?: boolean;
 	rowLabel: string;
 	style: CSSProperties;
 	onAddAbove: () => void;
@@ -47,7 +47,7 @@ export function ModuleDataEntryRowActions({
 			{onClear ? (
 				<ModuleDataEntryRowActionButton
 					icon={Eraser}
-					label="Clear"
+					label="Clear Item"
 					onClick={onClear}
 					ariaLabel={`Clear ${rowLabel} values`}
 				/>

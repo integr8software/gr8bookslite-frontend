@@ -3,11 +3,13 @@ import type { TransactionAttachment } from "@/app/src/types/shared/transaction-s
 import type { PaymentTypeRecord as AppPaymentTypeRecord } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
 import type { VoucherReportPreviewFormat } from "@/app/src/types/shared/reports/ReportTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
+import type { useDisbursementVoucherPreviewTable } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucher";
 import type { useDisbursementVoucherActionPage } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucherActionPage";
 
 export type DisbursementVoucherStatus = "Open" | "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled" | "Closed";
 
 export type DisbursementVoucherDisplayStatus = DisbursementVoucherStatus;
+export type DisbursementVoucherPreviewTableState = ReturnType<typeof useDisbursementVoucherPreviewTable>;
 
 export type DisbursementVoucherTableColumnKey =
   | "voucherNo"
@@ -24,9 +26,9 @@ export type DisbursementVoucherTableColumnKey =
   | "updatedBy"
   | "updatedAt";
 
-export type DisbursementPaymentMethod = "Bank Transfer" | "Check" | "E-Wallet" | "InstaPay" | "Manager's Check" | "PESONet" | (string & {});
+export type DisbursementPaymentMethod = "Bank Transfer" | "Check" | "Debit Memo" | "E-Wallet" | "InstaPay" | "Manager's Check" | "PESONet" | (string & {});
 
-export type DisbursementPaymentClassification = "Cash" | "Bank Transfer" | "Check" | "Digital Wallet" | "Non-Cash Settlement";
+export type DisbursementPaymentClassification = "Bank Transfer" | "Check" | "Debit Memo" | "Digital Wallet";
 
 export type DisbursementType = "Vendor Payment" | "Operating Expense" | "Reimbursement" | "Capital Expenditure" | (string & {});
 
@@ -38,7 +40,7 @@ export type DisbursementVoucherActionMode = "add" | "edit" | "view";
 
 export type DisbursementVoucherActionPageState = ReturnType<typeof useDisbursementVoucherActionPage>;
 
-export type DisbursementVoucherActionTab = "details" | "bank-information" | "attachments";
+export type DisbursementVoucherActionTab = "details" | "payment-information" | "attachments";
 
 export type DisbursementVoucherStatusFilter = "all" | Exclude<DisbursementVoucherStatus, "Open">;
 
@@ -52,12 +54,17 @@ export type DisbursementVoucherHistoryEntry = {
 };
 
 export type DisbursementVoucherCopySource =
-  | "Account Payable Voucher"
+  | "Accounts Payable Voucher"
   | "Advances to Suppliers"
   | "Cash Advance"
+  | "Cash Advance Liquidation"
   | "Cash Advance Multiple Entry"
-  | "Revolving Fund"
+  | "Cash Advance Multiple Entry Liquidation"
+  | "Petty Cash Fund"
   | "Petty Cash Fund Replenishment"
+  | "Revolving Fund"
+  | "Revolving Fund Replenishment"
+  | "Revolving Fund Return"
   | "Purchase Order"
   | "Purchase Journal"
   | "Receiving Report"
@@ -136,8 +143,8 @@ export type DisbursementLineEntry = {
   responsibilityCenter?: string;
   refId?: string;
   vatType?: string;
-  atcCode?: string;
-  particulars: string;
+  ewtCode?: string;
+  remarks: string;
   debit: number;
   credit: number;
   taxRate: string;
@@ -151,7 +158,6 @@ export type DisbursementTaxDetails = {
   responsibilityCenter: string;
   refId: string;
   vatType: string;
-  atcCode: string;
   grossAmount: number;
   netAmount: number;
   vatCode: string;
@@ -223,6 +229,7 @@ export type DisbursementVoucherStoreState = {
   isLoading: boolean;
   lastSyncedAt: number;
   isMutating: boolean;
+  refreshRecords: () => void;
 };
 
 export type DisbursementVoucherFormValues = {
@@ -260,8 +267,8 @@ export type DisbursementVoucherEntryDraft = {
   responsibilityCenter?: string;
   refId?: string;
   vatType?: string;
-  atcCode?: string;
-  particulars: string;
+  ewtCode?: string;
+  remarks: string;
   debit: string;
   credit: string;
   taxRate: string;
@@ -274,8 +281,22 @@ export type DisbursementVoucherAccountingGridSession = {
   values: DisbursementVoucherFormValues;
 };
 
+export type DisbursementVoucherPaymentErrorField =
+  | "bankAccountCode"
+  | "checkDate"
+  | "checkNo"
+  | "payee"
+  | "transferAccountNo"
+  | "transferToBank";
+
 export type DisbursementVoucherFormErrors = Partial<
-  Record<keyof Omit<DisbursementVoucherFormValues, "lineEntries" | "attachments"> | "lineEntries" | "entryDraft", string>
+  Record<
+    | keyof Omit<DisbursementVoucherFormValues, "lineEntries" | "attachments">
+    | DisbursementVoucherPaymentErrorField
+    | "lineEntries"
+    | "entryDraft",
+    string
+  >
 >;
 
 export type DisbursementVoucherCopyFromRecord = {
@@ -296,12 +317,15 @@ export type DisbursementVoucherFieldUpdater<TValues> = <TKey extends keyof TValu
 export type DisbursementVoucherActionHeaderProps = {
   copyFromRecords?: AppCopyFromRecord[];
   copyFromSources?: string[];
+  hasDiscardableChanges: boolean;
   mode: DisbursementVoucherActionMode;
   isSubmitting?: boolean;
   returnLink?: string;
   transaction?: DisbursementTransactionRecord;
   voucher?: DisbursementVoucherRecord;
   pendingSubmitStatus: DisbursementVoucherStatus | null;
+  onBack?: () => void;
+  onDiscard?: () => void;
   onCancelSubmit: () => void;
   onConfirmSubmit: () => void;
   onCopyFrom?: (recordIds: string[]) => void;
@@ -333,6 +357,7 @@ export type DisbursementVoucherDetailsFormProps = {
 export type DisbursementVoucherPaymentFieldsProps = {
   bankAccounts: DisbursementVoucherBankAccount[];
   canAddBankAccount: boolean;
+  errors: DisbursementVoucherFormErrors;
   isMultiCheckNumber: boolean;
   isReadonly: boolean;
   paymentType: string;

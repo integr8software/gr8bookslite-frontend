@@ -164,11 +164,15 @@ export function DisbursementVoucherDetailsFields({
           />
 
           <CurrencyExchangeRateRow
-            currencyControlId="disbursement-voucher-currency"
             currencyLabel="Currency"
+            currencyControlId="disbursement-voucher-currency"
+            currencyError={errors.currency}
+            exchangeRateControlId="disbursement-voucher-fx-rate"
+            exchangeRateError={errors.fxRate}
             currencyControl={
               <AppAdvancedDropdown
                 id="disbursement-voucher-currency"
+                className="w-full min-w-0"
                 value={values.currency}
                 readOnly={isReadonly}
                 isClearable={false}
@@ -179,7 +183,6 @@ export function DisbursementVoucherDetailsFields({
                 onChange={(value) => onCurrencyChange(String(value))}
               />
             }
-            exchangeRateControlId="disbursement-voucher-fx-rate"
             exchangeRateControl={
               <input
                 id="disbursement-voucher-fx-rate"
@@ -189,7 +192,8 @@ export function DisbursementVoucherDetailsFields({
                 readOnly={isReadonly}
                 disabled={isReadonly || isExchangeRateLoading}
                 onChange={(event) => onUpdateField("fxRate", formatExchangeRateInput(event.target.value))}
-                className={`${TransactionFieldClassName} text-right tabular-nums`}
+                className={`${TransactionFieldClassName} text-right tabular-nums${isReadonly || isExchangeRateLoading ? " transaction-readonly-placeholder" : ""}`}
+                placeholder="0.00"
               />
             }
           />
@@ -201,29 +205,23 @@ export function DisbursementVoucherDetailsFields({
             value={values.voucherNo}
             isReadonly
             isRequired
-            label="Disbursement Voucher No."
+            label="DV No."
             error={errors.voucherNo}
             onValueChange={(value) => onUpdateField("voucherNo", value)}
-            placeholder="Auto Generated Disbursement Voucher Transaction Number"
+            placeholder="Auto Generated DV Transaction Number"
           />
 
           <TransactionTextField
             value={values.voucherDate}
             isReadonly={isReadonly}
             isRequired
-            label="Disbursement Voucher Date"
+            label="DV Date"
             error={errors.voucherDate}
             type="date"
             onValueChange={(value) => onUpdateField("voucherDate", value)}
           />
 
-          <TransactionTextField
-            value={values.status}
-            isReadonly
-            label="Status"
-            error={errors.status}
-            onValueChange={() => undefined}
-          />
+          <TransactionTextField value={values.status} isReadonly label="Status" error={errors.status} onValueChange={() => undefined} />
         </div>
       </div>
     </section>
@@ -236,7 +234,11 @@ function createVoucherPaymentTypeOptions({
   paymentTypeRecords: AppPaymentTypeRecord[];
 }): AppAdvancedDropdownOption[] {
   return paymentTypeRecords
-    .filter((record) => record.status === "Active" && (record.type === "Bank Transfer" || record.type === "Check"))
+    .filter(
+      (record) =>
+        record.status === "Active" &&
+        (record.type === "Bank Transfer" || record.type === "Check" || record.type === "Debit Memo"),
+    )
     .map((record) => ({
       label: record.type,
       name: record.paymentType,

@@ -4,7 +4,7 @@ import {
   PettyCashFundProjectOptions,
   PettyCashFundResponsibilityCenterLookupOptions,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund/PettyCashFundConstants";
-import type { PettyCashFundActionPageState } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-fund/usePettyCashFundActionPage";
+import type { PettyCashFundActionPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
@@ -19,10 +19,12 @@ import { formatExchangeRateInput } from "@/app/src/utils/number.util";
 export function PettyCashFundDetailsFields({
   onOpenPartyDrawer,
   onOpenProjectDrawer,
+  onOpenResponsibilityCenterDrawer,
   page,
 }: {
   onOpenPartyDrawer: () => void;
   onOpenProjectDrawer: () => void;
+  onOpenResponsibilityCenterDrawer: () => void;
   page: PettyCashFundActionPageState;
 }) {
   return (
@@ -52,6 +54,7 @@ export function PettyCashFundDetailsFields({
               readOnly={page.isReadonly}
               placeholder="Select Responsibility Center"
               searchPlaceholder="Search Responsibility Center"
+              addAction={!page.isReadonly ? { label: "Add Responsibility Center", onClick: onOpenResponsibilityCenterDrawer } : undefined}
               onChange={(code, name) => {
                 page.updateField("responsibilityCenterCode", code);
                 page.updateField("responsibilityCenter", name);
@@ -139,11 +142,15 @@ export function PettyCashFundDetailsFields({
           />
 
           <CurrencyExchangeRateRow
-            currencyControlId="pcf-currency"
             currencyLabel="Currency"
+            currencyControlId="pcf-currency"
+            currencyError={page.errors.currency}
+            exchangeRateControlId="pcf-exchange-rate"
+            exchangeRateError={page.errors.exchangeRate}
             currencyControl={
               <AppAdvancedDropdown
                 id="pcf-currency"
+                className="w-full min-w-0"
                 value={page.values.currency}
                 readOnly={page.isReadonly}
                 isClearable={false}
@@ -154,7 +161,6 @@ export function PettyCashFundDetailsFields({
                 onChange={(value) => page.updateCurrency(String(value))}
               />
             }
-            exchangeRateControlId="pcf-exchange-rate"
             exchangeRateControl={
               <input
                 id="pcf-exchange-rate"
@@ -164,7 +170,8 @@ export function PettyCashFundDetailsFields({
                 readOnly={page.isReadonly}
                 disabled={page.isReadonly || page.isExchangeRateLoading}
                 onChange={(event) => page.updateField("exchangeRate", formatExchangeRateInput(event.target.value))}
-                className={`${TransactionFieldClassName} text-right tabular-nums`}
+                className={`${TransactionFieldClassName} text-right tabular-nums${page.isReadonly || page.isExchangeRateLoading ? " transaction-readonly-placeholder" : ""}`}
+                placeholder="0.00"
               />
             }
           />
@@ -176,16 +183,17 @@ export function PettyCashFundDetailsFields({
             value={page.values.transactionNo}
             isReadonly
             isRequired
-            label="Petty Cash Fund No."
+            label="PCF No."
             error={page.errors.transactionNo}
             onValueChange={(value) => page.updateField("transactionNo", value)}
-            placeholder="Auto Generated Petty Cash Fund Transaction Number"
+            placeholder="Auto Generated PCF Transaction Number"
           />
 
           <TransactionTextField
             value={page.values.documentDate}
             isReadonly={page.isReadonly}
-            label="Petty Cash Fund Date"
+            isRequired
+            label="PCF Date"
             error={page.errors.documentDate}
             type="date"
             onValueChange={(value) => page.updateField("documentDate", value)}

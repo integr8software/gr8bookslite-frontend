@@ -89,7 +89,7 @@ export function OptionRow({
 	});
 	const content = (
 		<>
-			{showSelectionIndicator ? (
+			{showSelectionIndicator && view !== AppAdvancedDropdownOptionViewGrid ? (
 				<span className="flex h-5 w-5 shrink-0 items-center justify-center" aria-hidden="true">
 					{isSelected ? <Check className="h-4 w-4 text-skyblue" aria-hidden="true" /> : null}
 				</span>

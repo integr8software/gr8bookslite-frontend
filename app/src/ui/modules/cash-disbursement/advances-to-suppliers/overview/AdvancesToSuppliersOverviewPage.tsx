@@ -56,7 +56,7 @@ export function AdvancesToSuppliersOverviewPage() {
           table={page.table}
           tableTitle="Advances to Suppliers Transactions"
           toolbar={
-            <AdvancesToSuppliersTableToolbar page={page} />
+            <AdvancesToSuppliersTableToolbar onRefresh={page.refreshRecords} page={page} />
           }
           useColumnSizing
           renderRow={(row) => (

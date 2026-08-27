@@ -30,8 +30,6 @@ export function ModuleDataEntryColumnSettingsButton({
 		(column) => column.isVisible,
 	);
 	const hiddenColumns = columns.filter((column) => !column.isVisible);
-	const hasVisibleHideableColumns = visibleHideableColumns.length > 0;
-	const hasHiddenColumns = hiddenColumns.length > 0;
 	const isDefaultColumnsActive =
 		hideableColumns.length > 0 && visibleHideableColumns.length === 0;
 	const isShowAllColumnsActive = columns.length > 0 && hiddenColumns.length === 0;
@@ -61,9 +59,7 @@ export function ModuleDataEntryColumnSettingsButton({
     });
   }
 
-  function resetColumns() {
-    onResetColumns?.();
-  }
+
 
   useLayoutEffect(() => {
     if (!isOpen || !triggerRef.current) {
@@ -205,7 +201,7 @@ export function ModuleDataEntryColumnSettingsButton({
 											)}
 											aria-label="Restore default columns"
 										>
-											Default
+											{columnResetLabel}
 										</button>
 									</div>
 								</div>

@@ -169,7 +169,10 @@ export function BankMasterfileImportDialog({ existingBanks, isOpen, onClose, onI
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={11} className="module-import-empty-cell px-3 py-10 text-center font-medium text-darknavy/45">
+                    <td
+                      colSpan={TemplateHeaders.length + 2}
+                      className="module-import-empty-cell px-3 py-10 text-center font-medium text-darknavy/45"
+                    >
                       <ModuleImportEmptyDropzone
                         accept=".xlsx,.csv,.tsv,.txt"
                         acceptedFileLabel=".xlsx, .csv, .tsv, .txt"

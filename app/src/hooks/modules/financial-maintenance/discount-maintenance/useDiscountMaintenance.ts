@@ -19,6 +19,7 @@ import type {
   DiscountMaintenanceListResult,
   DiscountMaintenancePermissions,
   DiscountMaintenanceStatistics,
+  DiscountStoreOptions,
 } from "@/app/src/types/modules/financial-maintenance/discount-maintenance/DiscountMaintenanceTypes";
 
 type DiscountStoreState = {
@@ -60,13 +61,17 @@ const EmptyDiscountStatistics: DiscountMaintenanceStatistics = {
   percentageDiscounts: 0,
 };
 
-export function useDiscountMaintenanceStore<TSelected = DiscountStoreState>(selector?: (state: DiscountStoreState) => TSelected) {
+export function useDiscountMaintenanceStore<TSelected = DiscountStoreState>(
+  selector?: (state: DiscountStoreState) => TSelected,
+  options: DiscountStoreOptions = {},
+) {
   const queryClient = useQueryClient();
   const accessToken = useAppStore((state) => state.accessToken);
   const authProfileQuery = useAuthProfileQuery({ accessToken });
   const discountsQuery = useQuery({
     queryKey: DiscountMaintenanceQueryKeys.discounts(),
     queryFn: fetchDiscounts,
+    refetchOnMount: options.refetchOnMount,
     retry: false,
   });
   const refreshDiscounts = useCallback(() => {

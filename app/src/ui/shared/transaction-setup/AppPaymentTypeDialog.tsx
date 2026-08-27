@@ -9,7 +9,7 @@ import {
   createPaymentTypeFromForm,
   updatePaymentTypeFromForm,
 } from "@/app/src/data/modules/financial-maintenance/payment-type/PaymentTypeData";
-import { applyPaymentTypeListParams } from "@/app/src/services/modules/financial-maintenance/payment-type/PaymentTypeService";
+import { applyPaymentTypeListParams } from "@/app/src/services/modules/financial-maintenance/payment-type/PaymentTypeApi";
 import type {
   PaymentTypeClassificationFilter,
   PaymentTypeFormErrors,

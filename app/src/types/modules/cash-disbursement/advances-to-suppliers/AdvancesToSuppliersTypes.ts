@@ -10,6 +10,8 @@ export type AdvancesToSuppliersConfirmationAction = "save" | "draft" | "approve"
 export type AdvancesToSuppliersActionPageState = ReturnType<typeof useAdvancesToSuppliersActionPage>;
 export type AdvancesToSuppliersOverviewPageState = ReturnType<typeof useAdvancesToSuppliersOverviewPage>;
 
+export type AdvancesToSuppliersPaymentType = "Percentage" | "Fixed Amount";
+
 export type AdvancesToSuppliersFormValues = {
   transactionNo: string;
   documentDate: string;
@@ -26,6 +28,7 @@ export type AdvancesToSuppliersFormValues = {
   exchangeRate: string;
   poReference: string;
   totalPoAmount: string;
+  advancePaymentType: AdvancesToSuppliersPaymentType;
   advancePaymentPercentage: string;
   advancePaymentAmount: string;
   remarks: string;
@@ -42,6 +45,7 @@ export type AdvancesToSuppliersRecord = {
   accountTitle: string;
   poReference: string;
   totalPoAmount: number;
+  advancePaymentType?: AdvancesToSuppliersPaymentType;
   advancePaymentPercentage: number;
   amount: number;
   remarks: string;

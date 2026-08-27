@@ -1,106 +1,154 @@
 "use client";
 
-import type { ComponentType, CSSProperties, SVGProps } from "react";
-import { ReceiptText } from "lucide-react";
+import {
+  Calculator,
+  HandCoins,
+  Percent,
+  Receipt,
+  TrendingDown,
+  Wallet,
+} from "lucide-react";
+import {
+  ModuleSummaryCards,
+  type ModuleSummaryCardItem,
+} from "@/app/src/ui/shared/module/ModuleSummaryCards";
+import { formatAmount } from "@/app/src/utils/currency.util";
 
-export type TransactionSummaryCardTone = "blue" | "cyan" | "green" | "orange" | "purple";
-
-export type TransactionSummaryCardItem = {
-  icon: ComponentType<SVGProps<SVGSVGElement>>;
-  isHighlighted?: boolean;
-  label: string;
-  tone: TransactionSummaryCardTone;
-  value: string;
+export type TransactionSummaryCardsProps = {
+  className?: string;
+  cwtAmount?: number | string;
+  cwtRate?: number | string;
+  ewtAmount?: number | string;
+  ewtRate?: number | string;
+  grossAmount?: number | string;
+  netAmount?: number | string;
+  taxLabelType?: "EWT" | "CWT";
+  title?: string;
+  vatAmount?: number | string;
+  vatRate?: number | string;
 };
+
+function formatMoneyValue(value: number | string | undefined | null): string {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? formatAmount(value) : "0.00";
+  }
+  if (typeof value === "string") {
+    const cleaned = value.replace(/,/g, "").trim();
+    const parsed = Number(cleaned);
+    return Number.isFinite(parsed) ? formatAmount(parsed) : value || "0.00";
+  }
+  return "0.00";
+}
+
+function formatRateValue(rate: number | string | undefined | null): string {
+  if (rate === undefined || rate === null || rate === "") {
+    return "0.00%";
+  }
+  if (typeof rate === "number") {
+    return `${formatAmount(rate)}%`;
+  }
+  const str = String(rate).trim();
+  return str.endsWith("%") ? str : `${str}%`;
+}
+
+/**
+ * Predetermined 6-card summary surface for transaction modules that have header amounts
+ * (Gross Amount, VAT, EWT/CWT) and NO Data Entry grid.
+ *
+ * Total of 6 cards:
+ * 1. Gross Amount (Blue, Calculator)
+ * 2. VAT Rate (Cyan, Percent)
+ * 3. VAT Amount (Purple, Receipt)
+ * 4. EWT / CWT Rate (Orange, TrendingDown)
+ * 5. EWT / CWT Amount (Orange, HandCoins)
+ * 6. Net Amount (Green, Wallet, isHighlighted)
+ */
+export function createTransactionSummaryCardItems({
+  cwtAmount,
+  cwtRate,
+  ewtAmount,
+  ewtRate,
+  grossAmount = 0,
+  netAmount = 0,
+  taxLabelType = "EWT",
+  vatAmount = 0,
+  vatRate,
+}: Omit<TransactionSummaryCardsProps, "className" | "title">): ModuleSummaryCardItem[] {
+  const isCwt = taxLabelType === "CWT" || cwtAmount !== undefined || cwtRate !== undefined;
+  const withholdingLabel = isCwt ? "CWT" : "EWT";
+  const withholdingRate = cwtRate !== undefined ? cwtRate : ewtRate;
+  const withholdingAmount = cwtAmount !== undefined ? cwtAmount : (ewtAmount ?? 0);
+
+  return [
+    {
+      label: "Gross Amount",
+      value: formatMoneyValue(grossAmount),
+      tone: "green",
+      icon: Calculator,
+    },
+    {
+      label: "VAT Rate",
+      value: formatRateValue(vatRate),
+      tone: "cyan",
+      icon: Percent,
+    },
+    {
+      label: "VAT Amount",
+      value: formatMoneyValue(vatAmount),
+      tone: "purple",
+      icon: Receipt,
+    },
+    {
+      label: `${withholdingLabel} Rate`,
+      value: formatRateValue(withholdingRate),
+      tone: "slate",
+      icon: TrendingDown,
+    },
+    {
+      label: `${withholdingLabel} Amount`,
+      value: formatMoneyValue(withholdingAmount),
+      tone: "orange",
+      icon: HandCoins,
+    },
+    {
+      label: "Net Amount",
+      value: formatMoneyValue(netAmount),
+      tone: "blue",
+      icon: Wallet,
+    },
+  ];
+}
 
 export function TransactionSummaryCards({
-  items,
+  className,
+  cwtAmount,
+  cwtRate,
+  ewtAmount,
+  ewtRate,
+  grossAmount = 0,
+  netAmount = 0,
+  taxLabelType = "EWT",
   title = "Transaction Summary",
-}: {
-  items: TransactionSummaryCardItem[];
-  title?: string;
-}) {
-  return (
-    <div className="min-w-0 rounded-lg border border-darknavy/10 bg-white shadow-sm shadow-darknavy/5">
-      <div className="flex items-center gap-3 border-b border-darknavy/10 px-4 py-3">
-        <span className="flex h-7 w-7 items-center justify-center rounded bg-[rgb(var(--skyblue-rgb)/0.12)] text-[var(--skyblue)] ring-1 ring-[rgb(var(--skyblue-rgb)/0.25)]">
-          <ReceiptText className="h-4 w-4" aria-hidden="true" />
-        </span>
-        <h3 className="text-sm font-bold text-darknavy">{title}</h3>
-      </div>
-      <div className="grid min-w-0 grid-cols-[repeat(auto-fit,minmax(10rem,1fr))] gap-3 p-4">
-        {items.map((item) => (
-          <TransactionSummaryCard key={item.label} item={item} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function TransactionSummaryCard({ item }: { item: TransactionSummaryCardItem }) {
-  const Icon = item.icon;
-  const toneStyle = getTransactionSummaryCardToneStyle(item.tone, item.isHighlighted);
+  vatAmount = 0,
+  vatRate,
+}: TransactionSummaryCardsProps) {
+  const items = createTransactionSummaryCardItems({
+    cwtAmount,
+    cwtRate,
+    ewtAmount,
+    ewtRate,
+    grossAmount,
+    netAmount,
+    taxLabelType,
+    vatAmount,
+    vatRate,
+  });
 
   return (
-    <div
-      className={[
-        "group grid min-h-32 min-w-0 place-items-center gap-3 rounded-lg border bg-white px-3 py-4 text-center shadow-sm transition",
-        "hover:border-[var(--transaction-summary-tone)] hover:bg-[rgb(var(--transaction-summary-tone-rgb)/0.06)] hover:shadow-md hover:shadow-[rgb(var(--transaction-summary-tone-rgb)/0.12)]",
-        item.isHighlighted
-          ? "border-darknavy/10 bg-[rgb(var(--transaction-summary-tone-rgb)/0.06)] shadow-[rgb(var(--transaction-summary-tone-rgb)/0.12)]"
-          : "border-darknavy/10 shadow-darknavy/5",
-      ].join(" ")}
-      style={toneStyle}
-    >
-      <span
-        className={[
-          "flex h-11 w-11 items-center justify-center rounded-lg bg-[rgb(var(--transaction-summary-tone-rgb)/0.12)] text-[var(--transaction-summary-tone)] ring-1 ring-[rgb(var(--transaction-summary-tone-rgb)/0.22)] transition",
-          "group-hover:bg-[rgb(var(--transaction-summary-tone-rgb)/0.16)] group-hover:ring-[rgb(var(--transaction-summary-tone-rgb)/0.32)]",
-        ].join(" ")}
-      >
-        <Icon className="h-6 w-6" aria-hidden="true" />
-      </span>
-      <div className="grid gap-2">
-        <span className="text-xs font-bold text-darknavy">{item.label}</span>
-        <span
-          className={[
-            "text-xl font-black text-[var(--transaction-summary-tone)] transition",
-          ].join(" ")}
-        >
-          {item.value}
-        </span>
-      </div>
-    </div>
+    <ModuleSummaryCards
+      className={className}
+      items={items}
+      title={title}
+    />
   );
 }
-
-type TransactionSummaryCardStyle = CSSProperties & Record<`--${string}`, string>;
-
-function getTransactionSummaryCardToneStyle(
-  tone: TransactionSummaryCardTone,
-  isHighlighted = false,
-): TransactionSummaryCardStyle {
-  if (tone === "purple" || isHighlighted) {
-    return {
-      "--transaction-summary-tone": "var(--skyblue)",
-      "--transaction-summary-tone-rgb": "var(--skyblue-rgb)",
-    };
-  }
-
-  const toneRgb = TransactionSummaryCardToneRgb[tone];
-
-  return {
-    "--transaction-summary-tone": `rgb(${toneRgb})`,
-    "--transaction-summary-tone-rgb": toneRgb,
-  };
-}
-
-const TransactionSummaryCardToneRgb: Record<
-  Exclude<TransactionSummaryCardTone, "purple">,
-  string
-> = {
-  blue: "37 99 235",
-  cyan: "8 145 178",
-  green: "5 150 105",
-  orange: "234 88 12",
-};

@@ -12,8 +12,9 @@ import { usePartyManagementStore } from "@/app/src/hooks/modules/party-managemen
 import type { RevolvingFundReplenishmentActionMode } from "@/app/src/types/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentTypes";
 import type { PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";
 import { RevolvingFundReplenishmentActionHeader } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/action/RevolvingFundReplenishmentActionHeader";
-import { RevolvingFundReplenishmentAttachmentsTab } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/action/RevolvingFundReplenishmentAttachmentsTab";
-import { RevolvingFundReplenishmentDetailsTab } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/action/RevolvingFundReplenishmentDetailsTab";
+import { RevolvingFundReplenishmentFileAttachmentFields } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/action/RevolvingFundReplenishmentFileAttachmentFields";
+import { RevolvingFundReplenishmentDetailsFields } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/action/RevolvingFundReplenishmentDetailsFields";
+import { RevolvingFundReplenishmentEntrySection } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/entries/RevolvingFundReplenishmentEntrySection";
 import { RevolvingFundReplenishmentNotFound } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/action/RevolvingFundReplenishmentNotFound";
 import { RevolvingFundReplenishmentReportPreview } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/reports/RevolvingFundReplenishmentReportPreview";
 import { openRevolvingFundReplenishmentPdf } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/reports/RevolvingFundReplenishmentPdf";
@@ -24,6 +25,8 @@ import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 export function RevolvingFundReplenishmentActionPage({ mode }: { mode: RevolvingFundReplenishmentActionMode }) {
   const router = useRouter();
   const [isPartyDrawerOpen, setIsPartyDrawerOpen] = useState(false);
+  const [isSupplierDrawerOpen, setIsSupplierDrawerOpen] = useState(false);
+  const [pendingSupplierEntryId, setPendingSupplierEntryId] = useState<string | null>(null);
   const [isResponsibilityCenterDrawerOpen, setIsResponsibilityCenterDrawerOpen] = useState(false);
   const [isProjectDrawerOpen, setIsProjectDrawerOpen] = useState(false);
   const partyStore = usePartyManagementStore();
@@ -37,6 +40,20 @@ export function RevolvingFundReplenishmentActionPage({ mode }: { mode: Revolving
     page.updateField("partyName", getPartyDisplayName(record));
     setIsPartyDrawerOpen(false);
   }
+  function handleOpenSupplierDrawer(rowId: string) {
+    setPendingSupplierEntryId(rowId);
+    setIsSupplierDrawerOpen(true);
+  }
+  function handleCreateSupplier(record: PartyInformationRecord) {
+    if (pendingSupplierEntryId) {
+      page.updateEntry(pendingSupplierEntryId, {
+        supplierCode: record.partyCodeNo,
+        supplierName: getPartyDisplayName(record),
+      });
+    }
+    setPendingSupplierEntryId(null);
+    setIsSupplierDrawerOpen(false);
+  }
   return (
     <>
       <section className="grid gap-5">
@@ -48,14 +65,20 @@ export function RevolvingFundReplenishmentActionPage({ mode }: { mode: Revolving
           onTabChange={page.setActiveTab}
         />
         {page.activeTab === "details" ? (
-          <RevolvingFundReplenishmentDetailsTab
-            page={page}
-            onOpenPartyDrawer={() => setIsPartyDrawerOpen(true)}
-            onOpenProjectDrawer={() => setIsProjectDrawerOpen(true)}
-            onOpenResponsibilityCenterDrawer={() => setIsResponsibilityCenterDrawerOpen(true)}
-          />
+          <>
+            <RevolvingFundReplenishmentDetailsFields
+              page={page}
+              onOpenPartyDrawer={() => setIsPartyDrawerOpen(true)}
+              onOpenProjectDrawer={() => setIsProjectDrawerOpen(true)}
+              onOpenResponsibilityCenterDrawer={() => setIsResponsibilityCenterDrawerOpen(true)}
+            />
+            <RevolvingFundReplenishmentEntrySection
+              page={page}
+              onOpenSupplierDrawer={handleOpenSupplierDrawer}
+            />
+          </>
         ) : (
-          <RevolvingFundReplenishmentAttachmentsTab page={page} />
+          <RevolvingFundReplenishmentFileAttachmentFields page={page} />
         )}
       </section>
       <PartyManagementDrawer
@@ -66,6 +89,19 @@ export function RevolvingFundReplenishmentActionPage({ mode }: { mode: Revolving
         onAddRecord={partyStore.addRecord}
         onClose={() => setIsPartyDrawerOpen(false)}
         onCreateParty={handleCreateParty}
+      />
+      <PartyManagementDrawer
+        isOpen={!page.isReadonly && isSupplierDrawerOpen}
+        isPending={partyStore.isMutating}
+        records={partyStore.records}
+        suggestedPartyType="Vendor"
+        title="Add Vendor"
+        onAddRecord={partyStore.addRecord}
+        onClose={() => {
+          setPendingSupplierEntryId(null);
+          setIsSupplierDrawerOpen(false);
+        }}
+        onCreateParty={handleCreateSupplier}
       />
       <ResponsibilityCenterDrawer
         isOpen={!page.isReadonly && isResponsibilityCenterDrawerOpen}

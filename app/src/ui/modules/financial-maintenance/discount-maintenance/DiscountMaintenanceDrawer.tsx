@@ -23,8 +23,19 @@ export function DiscountMaintenanceDrawer({ discount, isOpen, mode, onClose }: D
 }
 
 function DiscountMaintenanceDrawerPanel({ discount, isOpen, mode, onClose }: DiscountMaintenanceDrawerProps) {
-  const page = useDiscountMaintenanceFormPage({ existingDiscount: discount, mode, onSaved: onClose });
+  const page = useDiscountMaintenanceFormPage({ existingDiscount: discount, isOpen, mode, onSaved: onClose });
   const copy = DiscountMaintenanceActionCopy[mode];
+
+  function handleClose() {
+    page.saveDraft();
+    onClose();
+  }
+
+  function handleCancel() {
+    page.discardDraft();
+    onClose();
+  }
+
   return (
     <ModuleDrawer
       description={copy.description}
@@ -34,7 +45,8 @@ function DiscountMaintenanceDrawerPanel({ discount, isOpen, mode, onClose }: Dis
       isReadonly={page.isReadonly}
       isSaving={page.isMutating}
       onBeforeSaveConfirm={page.validateBeforeSubmit}
-      onClose={onClose}
+      onCancel={handleCancel}
+      onClose={handleClose}
       savingLabel={getModuleSavePendingLabel(mode)}
       title={copy.title}
     >

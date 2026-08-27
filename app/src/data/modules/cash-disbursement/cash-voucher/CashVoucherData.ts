@@ -25,9 +25,9 @@ import {
 } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherConstants";
 import { formatCurrency as formatCurrencyValue } from "@/app/src/utils/currency.util";
 
-const CashInHandAccount = {
+const CashOnHandAccount = {
   accountCode: "1001111",
-  accountName: "Cash in Hand",
+  accountName: "Cash on Hand",
 } as const;
 
 const InputVatAccount = {
@@ -119,8 +119,8 @@ export function writeStoredCashVouchers(vouchers: CashVoucherRecord[]) {
 export const CashVoucherInitialEntryDraft: CashVoucherEntryDraft = {
   accountCode: "",
   accountName: "",
-  atcCode: "",
-  particulars: "",
+  ewtCode: "",
+  remarks: "",
   partyCode: "",
   partyName: "",
   refId: "",
@@ -139,14 +139,14 @@ export function createBlankCashVoucherLineEntry(overrides: Partial<CashVoucherLi
   return {
     accountCode: "",
     accountName: "",
-    atcCode: "",
+    ewtCode: "",
     checkDate: "",
     checkNo: "",
     checkStatus: "",
     credit: 0,
     debit: 0,
     id: `line-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    particulars: "",
+    remarks: "",
     partyCode: "",
     partyName: "",
     refId,
@@ -436,7 +436,7 @@ export const MockCashVouchers: CashVoucherRecord[] = [
         id: "entry-1005",
         accountCode: "6150-017",
         accountName: "Travel and Transportation",
-        particulars: "Field travel reimbursement",
+        remarks: "Field travel reimbursement",
         debit: 3200,
         credit: 0,
         taxRate: "0%",
@@ -446,8 +446,8 @@ export const MockCashVouchers: CashVoucherRecord[] = [
       {
         id: "entry-1006",
         accountCode: "1001111",
-        accountName: "Cash in Hand",
-        particulars: "Cash reimbursement release",
+        accountName: "Cash on Hand",
+        remarks: "Cash reimbursement release",
         debit: 0,
         credit: 3200,
         taxRate: "0%",
@@ -483,6 +483,7 @@ export function removeLegacyMockAttachments(attachments: CashVoucherAttachment[]
 export function sanitizeCashVoucherRecord(voucher: CashVoucherRecord): CashVoucherRecord {
   const createdAt = voucher.createdAt ?? voucher.history?.[0]?.createdAt ?? "";
   const updatedAt = voucher.updatedAt ?? voucher.history?.[voucher.history.length - 1]?.createdAt ?? createdAt;
+  const lineEntries = normalizeGeneratedCashVoucherRemarks(voucher.lineEntries ?? []);
 
   return {
     ...voucher,
@@ -496,87 +497,143 @@ export function sanitizeCashVoucherRecord(voucher: CashVoucherRecord): CashVouch
         : createInitialCashVoucherHistory(voucher),
     createdBy: voucher.createdBy ?? voucher.preparedBy ?? "",
     createdAt,
+    lineEntries,
     updatedBy: voucher.updatedBy ?? voucher.preparedBy ?? "",
     updatedAt,
   };
 }
 
+function normalizeGeneratedCashVoucherRemarks(entries: CashVoucherLineEntry[]) {
+  const sourceEntry = entries.find((entry) => !isGeneratedCashVoucherLineEntry(entry));
+  const sourceRemarks = sourceEntry?.remarks.trim() ?? "";
+  const sourceCreatedRemarks = sourceEntry?.accountName.trim() ?? "";
+  const hasUserRemarks = sourceRemarks !== "" && sourceRemarks !== sourceCreatedRemarks;
+
+  if (!hasUserRemarks) {
+    return entries;
+  }
+
+  return entries.map((entry) => {
+    if (!isGeneratedCashVoucherLineEntry(entry) || !hasGeneratedCashVoucherRemarkPrefix(entry.remarks)) {
+      return entry;
+    }
+
+    return {
+      ...entry,
+      remarks: stripGeneratedCashVoucherRemarkPrefix(entry.remarks, sourceRemarks),
+    };
+  });
+}
+
+function isGeneratedCashVoucherLineEntry(entry: CashVoucherLineEntry) {
+  const accountName = entry.accountName.trim().toLowerCase();
+
+  return (
+    entry.id.startsWith("auto-input-vat-") ||
+    entry.id.startsWith("auto-ewt-") ||
+    entry.id.startsWith("auto-credit-") ||
+    accountName === "input vat" ||
+    accountName === "expanded withholding tax" ||
+    accountName === "cash on hand" ||
+    accountName.startsWith("cash in bank")
+  );
+}
+
+function hasGeneratedCashVoucherRemarkPrefix(remarks: string) {
+  const trimmedRemarks = remarks.trim();
+
+  return getGeneratedCashVoucherRemarkPrefixPatterns().some((pattern) => pattern.test(trimmedRemarks));
+}
+
+function stripGeneratedCashVoucherRemarkPrefix(remarks: string, fallbackRemarks: string) {
+  const trimmedRemarks = remarks.trim();
+
+  for (const pattern of getGeneratedCashVoucherRemarkPrefixPatterns()) {
+    if (pattern.test(trimmedRemarks)) {
+      return trimmedRemarks.replace(pattern, "").trim() || fallbackRemarks;
+    }
+  }
+
+  return trimmedRemarks || fallbackRemarks;
+}
+
+function getGeneratedCashVoucherRemarkPrefixPatterns() {
+  return [
+    /^Input VAT\s*-\s*/i,
+    /^EWT\s*-\s*/i,
+    /^Expanded Withholding Tax\s*-\s*/i,
+    /^Settlement via .*?\s*-\s*/i,
+    /^Settlement(?:\s+for.*?)?(?:\s+via.*?)?$/i,
+  ];
+}
+
 export const CashVoucherCopySources: CashVoucherCopySource[] = [
-  "Account Payable Voucher",
+  "Accounts Payable Voucher",
   "Advances to Suppliers",
   "Cash Advance",
   "Cash Advance Liquidation",
-  "Cash Advance ",
   "Cash Advance Multiple Entry",
+  "Cash Advance Multiple Entry Liquidation",
+  "Petty Cash Fund",
+  "Petty Cash Fund Replenishment",
   "Revolving Fund",
   "Revolving Fund Replenishment",
+  "Revolving Fund Return",
   "Purchase Order",
   "Purchase Journal",
   "Receiving Report",
 ];
 
-export const CashVoucherCopyFromRecords: CashVoucherCopyFromRecord[] = [
-  createCashVoucherCopyFromRecord(
-    "copy-cv-1001",
-    "Account Payable Voucher",
-    "APV-2026-0041",
-    "PARTY-OD-204",
-    MockCashVoucherTransactions[0],
-    MockCashVouchers[0],
-  ),
-  createCashVoucherCopyFromRecord(
-    "copy-cv-1002",
-    "Advances to Suppliers",
-    "ATS-2026-0017",
-    "PARTY-MUS-118",
-    MockCashVoucherTransactions[0],
-  ),
-  createCashVoucherCopyFromRecord(
-    "copy-cv-1003",
-    "Cash Advance",
-    "CA-2026-0021",
-    "EMP-044",
-    MockCashVoucherTransactions[0],
-    MockCashVouchers[2],
-  ),
-  createCashVoucherCopyFromRecord(
-    "copy-cv-1004",
-    "Cash Advance Multiple Entry",
-    "CAME-2026-0015",
-    "EMP-044",
-    MockCashVoucherTransactions[0],
-  ),
-  createCashVoucherCopyFromRecord("copy-cv-1005", "Revolving Fund", "RF-2026-0007", "EMP-044", MockCashVoucherTransactions[0]),
-  createCashVoucherCopyFromRecord(
-    "copy-cv-1007",
-    "Revolving Fund Replenishment",
-    "PCFR-2026-0012",
-    "PARTY-TPI-611",
-    MockCashVoucherTransactions[0],
-  ),
-  createCashVoucherCopyFromRecord(
-    "copy-cv-1008",
-    "Purchase Order",
-    "PO-2026-0322",
-    "PARTY-LAW-108",
-    MockCashVoucherTransactions[0],
-    MockCashVouchers[1],
-  ),
-  createCashVoucherCopyFromRecord(
-    "copy-cv-1009",
-    "Purchase Journal",
-    "PJ-2026-0088",
-    "PARTY-MUS-118",
-    MockCashVoucherTransactions[0],
-  ),
-  createCashVoucherCopyFromRecord(
-    "copy-cv-1010",
-    "Receiving Report",
-    "RR-2026-0144",
-    "PARTY-GFM-077",
-    MockCashVoucherTransactions[0],
-  ),
+const CashVoucherCopySourceMockDefinitions: Array<{
+  amount: number;
+  partyCode: string;
+  payee: string;
+  prefix: string;
+  purpose: string;
+  source: CashVoucherCopySource;
+}> = [
+  { source: "Accounts Payable Voucher", prefix: "APV", partyCode: "PARTY-OD-204", payee: "North Harbor Office Depot", amount: 18450, purpose: "Approved supplier payable" },
+  { source: "Advances to Suppliers", prefix: "ATS", partyCode: "PARTY-MUS-118", payee: "Metro Utilities Services", amount: 12500, purpose: "Supplier mobilization advance" },
+  { source: "Cash Advance", prefix: "CA", partyCode: "EMP-044", payee: "Juan dela Cruz", amount: 3200, purpose: "Employee field cash advance" },
+  { source: "Cash Advance Liquidation", prefix: "CAL", partyCode: "EMP-071", payee: "Maria Santos", amount: 4875, purpose: "Liquidated travel expenses" },
+  { source: "Cash Advance Multiple Entry", prefix: "CAME", partyCode: "EMP-102", payee: "Jose Ramirez", amount: 8800, purpose: "Department cash advances" },
+  { source: "Cash Advance Multiple Entry Liquidation", prefix: "MEL", partyCode: "EMP-117", payee: "Angela Cruz", amount: 7650, purpose: "Multiple advance liquidation" },
+  { source: "Petty Cash Fund", prefix: "PCF", partyCode: "EMP-128", payee: "Arjay Capili", amount: 5000, purpose: "Petty cash fund establishment" },
+  { source: "Petty Cash Fund Replenishment", prefix: "PCFR", partyCode: "EMP-136", payee: "Finance Cashier", amount: 9450, purpose: "Petty cash replenishment" },
+  { source: "Revolving Fund", prefix: "RF", partyCode: "EMP-145", payee: "Operations Custodian", amount: 15000, purpose: "Revolving fund release" },
+  { source: "Revolving Fund Replenishment", prefix: "RFR", partyCode: "EMP-152", payee: "Branch Cashier", amount: 11250, purpose: "Revolving fund replenishment" },
+  { source: "Revolving Fund Return", prefix: "RFRET", partyCode: "EMP-166", payee: "Regional Custodian", amount: 6250, purpose: "Unused revolving fund return" },
+  { source: "Purchase Order", prefix: "PO", partyCode: "PARTY-LAW-108", payee: "Santos and Velasco Legal", amount: 25000, purpose: "Approved purchase order" },
+  { source: "Purchase Journal", prefix: "PJ", partyCode: "PARTY-TPI-611", payee: "TechPro Infrastructure", amount: 56000, purpose: "Posted purchase journal" },
+  { source: "Receiving Report", prefix: "RR", partyCode: "PARTY-GFM-077", payee: "Global Freight Movers", amount: 13800, purpose: "Accepted receiving report" },
 ];
+
+export const CashVoucherCopyFromRecords: CashVoucherCopyFromRecord[] = CashVoucherCopySourceMockDefinitions.flatMap(
+  (definition, sourceIndex) =>
+    Array.from({ length: 3 }, (_, recordIndex) => {
+      const sequence = 41 + sourceIndex * 3 + recordIndex;
+      const documentDay = String(2 + sourceIndex * 2 + recordIndex).padStart(2, "0");
+      const sourceNo = `${definition.prefix}-2026-${String(sequence).padStart(4, "0")}`;
+      const transaction: CashVoucherTransactionRecord = {
+        ...MockCashVoucherTransactions[0],
+        id: `copy-cv-transaction-${sourceIndex + 1}-${recordIndex + 1}`,
+        transactionNo: `TXN-2026-CV-${String(sequence).padStart(4, "0")}`,
+        payee: definition.payee,
+        purpose: `${definition.purpose} batch ${recordIndex + 1}.`,
+        transactionDate: `2026-07-${documentDay}`,
+        paymentDueDate: `2026-08-${String(2 + sourceIndex).padStart(2, "0")}`,
+        amount: definition.amount + recordIndex * 125,
+      };
+
+      return createCashVoucherCopyFromRecord(
+        `copy-cv-${sourceIndex + 1}-${recordIndex + 1}`,
+        definition.source,
+        sourceNo,
+        definition.partyCode,
+        transaction,
+      );
+    }),
+);
 
 export function buildCashVoucherPreviewRows(transactions: CashVoucherTransactionRecord[], vouchers: CashVoucherRecord[]) {
   const voucherByTransactionId = new Map(vouchers.map((voucher) => [voucher.transactionId, voucher]));
@@ -847,7 +904,7 @@ export function createCashVoucherLineEntry(draft: CashVoucherEntryDraft): CashVo
   const taxDetails = syncTaxDetailsAmount(
     {
       ...draft.taxDetails,
-      atcCode: draft.atcCode?.trim() ?? draft.taxDetails.atcCode,
+      ewtCode: draft.ewtCode?.trim() ?? draft.taxDetails.ewtCode,
       refId: draft.refId?.trim() ?? draft.taxDetails.refId,
       responsibilityCenter: draft.responsibilityCenter?.trim() ?? draft.taxDetails.responsibilityCenter,
       vatType: draft.vatType?.trim() ?? draft.taxDetails.vatType,
@@ -860,8 +917,8 @@ export function createCashVoucherLineEntry(draft: CashVoucherEntryDraft): CashVo
     id: `line-${Date.now()}`,
     accountCode: draft.accountCode.trim(),
     accountName: draft.accountName.trim(),
-    atcCode: taxDetails.atcCode,
-    particulars: draft.particulars.trim(),
+    ewtCode: taxDetails.ewtCode,
+    remarks: draft.remarks.trim(),
     partyCode: draft.partyCode?.trim() ?? "",
     partyName: draft.partyName?.trim() ?? "",
     refId: taxDetails.refId,
@@ -889,8 +946,12 @@ export function createAutoCashVoucherLineEntries(
     amount,
     ...taxProfile,
   });
-  const creditParticulars = createCreditParticulars(transaction, bankPaymentAccount, paymentAccount);
   const refId = transaction.transactionNo || transaction.id;
+  const generatedRemarks = createAutoCashVoucherGeneratedRemarks(
+    transaction.purpose,
+    debitAccount.accountName,
+    transaction.paymentMethod,
+  );
   const commonFields = {
     partyCode: getCashVoucherPartyCode(transaction.payee),
     partyName: transaction.payee,
@@ -902,8 +963,8 @@ export function createAutoCashVoucherLineEntries(
       id: `auto-expense-${transaction.id}`,
       accountCode: debitAccount.accountCode,
       accountName: debitAccount.accountName,
-      atcCode: "",
-      particulars: transaction.purpose,
+      ewtCode: "",
+      remarks: transaction.purpose || debitAccount.accountName,
       ...commonFields,
       debit: taxDetails.netAmount,
       credit: 0,
@@ -922,8 +983,8 @@ export function createAutoCashVoucherLineEntries(
       id: `auto-input-vat-${transaction.id}`,
       accountCode: InputVatAccount.accountCode,
       accountName: InputVatAccount.accountName,
-      atcCode: "",
-      particulars: `Input VAT - ${transaction.purpose}`,
+      ewtCode: "",
+      remarks: generatedRemarks.inputVat,
       ...commonFields,
       debit: taxDetails.vatAmount,
       credit: 0,
@@ -942,8 +1003,8 @@ export function createAutoCashVoucherLineEntries(
       id: `auto-ewt-${transaction.id}`,
       accountCode: ExpandedWithholdingTaxAccount.accountCode,
       accountName: ExpandedWithholdingTaxAccount.accountName,
-      atcCode: taxDetails.ewtCode,
-      particulars: `EWT - ${transaction.purpose}`,
+      ewtCode: taxDetails.ewtCode,
+      remarks: generatedRemarks.ewt,
       ...commonFields,
       debit: 0,
       credit: taxDetails.ewtAmount,
@@ -961,8 +1022,8 @@ export function createAutoCashVoucherLineEntries(
     id: `auto-credit-${transaction.id}`,
     accountCode: creditAccount.accountCode,
     accountName: creditAccount.accountName,
-    atcCode: "",
-    particulars: creditParticulars,
+    ewtCode: "",
+    remarks: generatedRemarks.settlement,
     ...commonFields,
     debit: 0,
     credit: taxDetails.amount,
@@ -976,6 +1037,27 @@ export function createAutoCashVoucherLineEntries(
   });
 
   return entries;
+}
+
+function createAutoCashVoucherGeneratedRemarks(headerRemarks: string, expenseName: string, paymentMethod: string) {
+  const remarks = headerRemarks.trim();
+
+  if (remarks) {
+    return {
+      ewt: remarks,
+      inputVat: remarks,
+      settlement: remarks,
+    };
+  }
+
+  const expenseSummary = expenseName.trim();
+  const settlementMethod = paymentMethod.trim() || "Cash";
+
+  return {
+    ewt: expenseSummary ? `EWT - ${expenseSummary}` : "EWT",
+    inputVat: expenseSummary ? `Input VAT - ${expenseSummary}` : "Input VAT",
+    settlement: expenseSummary ? `Settlement via ${settlementMethod} - ${expenseSummary}` : `Settlement via ${settlementMethod}`,
+  };
 }
 
 export function applyBankAccountToPaymentDetails(
@@ -1016,7 +1098,7 @@ export function applyBankAccountToCashVoucherLineEntries(
           ...entry,
           accountCode: bankAccount.accountCode,
           accountName: bankAccount.accountTitle,
-          particulars: createCreditParticulars(undefined, bankAccount, paymentAccount),
+          remarks: createCreditRemarks(undefined, bankAccount, paymentAccount),
         }
       : entry,
   );
@@ -1049,7 +1131,6 @@ export function createTaxDetails(amount: number, taxRate: string): CashVoucherTa
     responsibilityCenter: "",
     refId: "",
     vatType: "",
-    atcCode: "",
     grossAmount: roundedAmount,
     netAmount,
     vatCode: taxRate !== "0%" ? `VAT-${taxRate.replace("%", "")}` : "",
@@ -1109,7 +1190,6 @@ function createCashVoucherTaxDetails({
     responsibilityCenter: "",
     refId: "",
     vatType: vatCode,
-    atcCode: ewtCode,
     grossAmount: roundedAmount,
     netAmount: roundCurrency(sign * Math.max(absoluteAmount - Math.abs(vatAmount), 0)),
     vatCode,
@@ -1388,13 +1468,13 @@ function getCreditAccountTemplate(
 
   if (paymentAccount?.type === "Cash") {
     return {
-      ...CashInHandAccount,
+      ...CashOnHandAccount,
     };
   }
 
   if (transaction.paymentMethod === "Cash") {
     return {
-      ...CashInHandAccount,
+      ...CashOnHandAccount,
     };
   }
 
@@ -1422,7 +1502,7 @@ function createDefaultCashInBankCreditAccount() {
   };
 }
 
-function createCreditParticulars(
+function createCreditRemarks(
   transaction?: CashVoucherTransactionRecord,
   bankAccount?: CashVoucherBankAccount | null,
   paymentAccount?: CashVoucherPaymentAccount | null,

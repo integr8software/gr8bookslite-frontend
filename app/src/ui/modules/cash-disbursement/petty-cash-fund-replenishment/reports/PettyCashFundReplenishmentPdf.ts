@@ -17,11 +17,21 @@ function createPdfDefinition(values: PettyCashFundReplenishmentFormValues): TDoc
   const rows: TableCell[][] = values.entries.map((entry) => [
     formatDate(entry.pettyCashDate),
     entry.pettyCashNo,
-    entry.accountTitle,
-    { text: formatCurrency(Number(entry.totalAmount.replace(/,/g, "")) || 0), alignment: "right" },
+    entry.supplierCode,
+    entry.supplierName,
+    { text: formatCurrency(Number(entry.amount.replace(/,/g, "")) || 0), alignment: "right" },
+    { text: formatCurrency(Number(entry.netAmount.replace(/,/g, "")) || 0), alignment: "right" },
+    entry.vatType,
+    { text: entry.vatPercent, alignment: "right" },
+    { text: formatCurrency(Number(entry.vatAmount.replace(/,/g, "")) || 0), alignment: "right" },
+    entry.ewtCode,
+    { text: entry.ewtPercent, alignment: "right" },
+    { text: formatCurrency(Number(entry.ewtAmount.replace(/,/g, "")) || 0), alignment: "right" },
+    entry.remarks,
   ]);
   return {
     pageSize: "A4",
+    pageOrientation: "landscape",
     pageMargins: [32, 32, 32, 32],
     defaultStyle: { font: "Roboto", fontSize: 9 },
     content: [
@@ -36,7 +46,28 @@ function createPdfDefinition(values: PettyCashFundReplenishmentFormValues): TDoc
         margin: [0, 0, 0, 16],
       },
       {
-        table: { headerRows: 1, widths: [65, 100, "*", 80], body: [["Date", "Petty Cash No.", "Account Title", "Total Amount"], ...rows] },
+        table: {
+          headerRows: 1,
+          widths: [58, 68, 58, "*", 56, 56, 60, 36, 56, 54, 36, 56, "*"],
+          body: [
+            [
+              "Petty Cash Date",
+              "Petty Cash No.",
+              "Supplier Code",
+              "Supplier Name",
+              "Amount",
+              "Net Amount",
+              "VAT Type",
+              "VAT Rate",
+              "VAT Amount",
+              "EWT Code",
+              "EWT Rate",
+              "EWT Amount",
+              "Remarks",
+            ],
+            ...rows,
+          ],
+        },
       },
       { text: [{ text: "Remarks: ", bold: true }, values.remarks], margin: [0, 16, 0, 0] },
     ],

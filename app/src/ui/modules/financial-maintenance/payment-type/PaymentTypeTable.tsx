@@ -6,7 +6,7 @@ import { getPaymentTypeTableMinWidthClassName } from "@/app/src/data/modules/fin
 import { usePaymentTypeTable } from "@/app/src/hooks/modules/financial-maintenance/payment-type/usePaymentTypeTable";
 import type { PaymentTypeTableProps } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
-import { PaymentTypeFilters } from "@/app/src/ui/modules/financial-maintenance/payment-type/PaymentTypeFilters";
+import { PaymentTypeTableFilters } from "@/app/src/ui/modules/financial-maintenance/payment-type/PaymentTypeTableFilters";
 import { PaymentTypeTableRow } from "@/app/src/ui/modules/financial-maintenance/payment-type/PaymentTypeTableRow";
 
 export function PaymentTypeTable({
@@ -48,7 +48,7 @@ export function PaymentTypeTable({
         table={table}
         tableTitle="Payment Types"
         toolbar={
-          <PaymentTypeFilters
+          <PaymentTypeTableFilters
             exportAllRows={paymentTypes}
             exportFilteredRows={filteredPaymentTypes}
             hasActiveFilters={hasActiveFilters}

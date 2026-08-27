@@ -10,10 +10,13 @@ import type { PettyCashVoucherFormMode } from "@/app/src/types/modules/cash-disb
 import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
 import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
+import { TransactionSummaryCards } from "@/app/src/ui/shared/transaction-setup/TransactionSummaryCards";
 import { PettyCashVoucherActionHeader } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/action/PettyCashVoucherActionHeader";
 import { PettyCashVoucherDetailsFields } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/action/PettyCashVoucherDetailsFields";
 import { PettyCashVoucherFileAttachmentFields } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/action/PettyCashVoucherFileAttachmentFields";
 import { PettyCashVoucherNotFound } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/action/PettyCashVoucherNotFound";
+import { PettyCashVoucherReportPreview } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/reports/PettyCashVoucherReportPreview";
+import { openPettyCashVoucherPdf } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/reports/PettyCashVoucherPdf";
 
 export function PettyCashVoucherActionPage({ mode }: { mode: PettyCashVoucherFormMode }) {
   const router = useRouter();
@@ -25,27 +28,40 @@ export function PettyCashVoucherActionPage({ mode }: { mode: PettyCashVoucherFor
   }
 
   return (
-    <section className="grid gap-5">
-      <PettyCashVoucherActionHeader page={page} />
+    <>
+      <section className="grid gap-5">
+        <PettyCashVoucherActionHeader page={page} />
 
-      <ModuleTabs
-        activeTab={page.activeTab}
-        ariaLabel="Petty cash voucher sections"
-        tabs={PettyCashVoucherActionTabs}
-        onTabChange={page.setActiveTab}
-      />
-
-      {page.activeTab === "details" ? (
-        <PettyCashVoucherDetailsFields
-          canAddParty={page.partyStore.permissions.canCreate}
-          canAddResponsibilityCenter={page.responsibilityCenterStore.permissions.canCreate}
-          page={page}
-          onOpenPartyDrawer={page.openPartyDrawer}
-          onOpenResponsibilityCenterDrawer={page.openResponsibilityCenterDrawer}
+        <ModuleTabs
+          activeTab={page.activeTab}
+          ariaLabel="Petty cash voucher sections"
+          tabs={PettyCashVoucherActionTabs}
+          onTabChange={page.setActiveTab}
         />
-      ) : (
-        <PettyCashVoucherFileAttachmentFields page={page} />
-      )}
+
+        {page.activeTab === "details" ? (
+          <>
+            <PettyCashVoucherDetailsFields
+              canAddParty={page.partyStore.permissions.canCreate}
+              canAddResponsibilityCenter={page.responsibilityCenterStore.permissions.canCreate}
+              page={page}
+              onOpenPartyDrawer={page.openPartyDrawer}
+              onOpenResponsibilityCenterDrawer={page.openResponsibilityCenterDrawer}
+            />
+            <TransactionSummaryCards
+              grossAmount={page.values.amount}
+              vatRate={page.values.vatRate || "0.00%"}
+              vatAmount={page.values.vatAmount}
+              ewtRate={page.values.ewtRate || "0.00%"}
+              ewtAmount={page.values.ewtAmount}
+              netAmount={page.values.netAmount}
+              taxLabelType="EWT"
+            />
+          </>
+        ) : (
+          <PettyCashVoucherFileAttachmentFields page={page} />
+        )}
+      </section>
       <PartyManagementDrawer
         isOpen={!page.isReadonly && page.isPartyDrawerOpen}
         isPending={page.partyStore.isMutating}
@@ -61,6 +77,12 @@ export function PettyCashVoucherActionPage({ mode }: { mode: PettyCashVoucherFor
         onClose={page.closeResponsibilityCenterDrawer}
         onSaved={page.handleSaveResponsibilityCenter}
       />
-    </section>
+      <PettyCashVoucherReportPreview
+        isOpen={page.isReportPreviewOpen}
+        page={page}
+        onClose={page.closeReportPreview}
+        onGeneratePdf={() => openPettyCashVoucherPdf(page.values)}
+      />
+    </>
   );
 }

@@ -108,7 +108,7 @@ export function ModuleTable<TData>({
   return (
     <div
       className={joinClasses(
-        "overflow-hidden bg-white",
+        "isolate overflow-hidden bg-white",
         variant === "standalone" && "rounded-lg border border-darknavy/10 shadow-sm shadow-darknavy/5",
         rootClassName,
       )}

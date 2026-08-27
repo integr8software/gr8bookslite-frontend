@@ -1,6 +1,6 @@
 # Gr8Books Neo Frontend Transaction Map
 
-Last updated: 2026-08-19
+Last updated: 2026-08-26
 
 Use this file as the first stop before changing transactional frontend modules.
 It repeats the useful structure from `FRONTEND_MAP.md`, but narrows the guidance
@@ -33,7 +33,7 @@ existing transaction feature using this structure.
   `app/src/ui/shared/date-range-picker/DateRangePicker.tsx`.
 - Shared amount filters must use `AmountRangePicker` from
   `app/src/ui/shared/amount-range-picker/AmountRangePicker.tsx`.
-- Feature-specific entry row utilities stay in `entries/utils/`.
+- Feature-specific entry row utilities stay directly in `entries/`.
 - Check [FRONTEND_UTILITY.md](FRONTEND_UTILITY.md) before adding or duplicating
   a helper.
 - Read
@@ -152,6 +152,183 @@ graph TD
 - `app/src/utils/...`: generic, pure formatting and normalization helpers shared
   across unrelated modules.
 
+Keep one canonical constant for each value within a module. Do not create a
+second constant that only aliases an existing constant from the same module,
+as this adds another name without introducing a distinct value or contract.
+Import and use the canonical constant directly. If the original name is too
+specific for all of its uses, rename it to an accurate shared name and update
+its consumers instead of adding an identical alias.
+
+```ts
+// Avoid: both names represent exactly the same value in the same module.
+export const StatusActionButtonClassName = "...";
+export const ViewActionButtonClassName = StatusActionButtonClassName;
+
+// Prefer: consumers use the single canonical constant directly.
+export const StatusActionButtonClassName = "...";
+```
+
+Only keep an alias when it is an intentional, temporary compatibility boundary
+for external consumers or a rename migration; document why it exists and when
+it can be removed.
+
+Route link constants must come from the module catalog. Import
+`getModuleRoute` from `app/src/data/shared/modules/ModuleCatalogData.ts`, then
+export the feature href from the matching module code instead of duplicating the
+route string:
+
+```ts
+import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
+
+export const <ModuleName>Link = getModuleRoute("<ModuleCode>");
+export const <ModuleName>AddLink = `${<ModuleName>Link}/add`;
+export const get<ModuleName>EditLink = (recordId: string) => `${<ModuleName>Link}/edit/${recordId}`;
+export const get<ModuleName>ViewLink = (recordId: string) => `${<ModuleName>Link}/view/${recordId}`;
+```
+
+Use the exported list, add, edit, and view link constants/builders in UI files.
+Do not assemble route suffixes such as `/add`, `/edit/${recordId}`, or
+`/view/${recordId}` inside React components.
+
+Do not put hooks, API calls, application state, validation rules, constants,
+- Check [FRONTEND_UTILITY.md](FRONTEND_UTILITY.md) before adding or duplicating
+  a helper.
+- Read
+  [ModuleInteractionSafetyPatterns.md](app/src/agents/modules/deduplication%20&%20optimistic/ModuleInteractionSafetyPatterns.md)
+  for guidance on request deduplication, action submit locks, dirty checking,
+  optimistic updates, and draft autosaving.
+
+## Transaction Runtime Graph
+
+```mermaid
+graph TD
+  RoutePage["route page.tsx"] --> TransactionPage["Feature action or overview page"]
+  TransactionPage --> FeatureHook["feature hook"]
+  FeatureHook --> Constants["constants"]
+  FeatureHook --> DataMappers["data defaults and mappers"]
+  FeatureHook --> Validation["Zod validation"]
+  FeatureHook --> Services["feature services"]
+  Services --> ApiClient["shared ApiClient"]
+  ApiClient --> Backend["backend API"]
+  FeatureHook --> SharedUtils["shared pure utils"]
+  TransactionPage --> OverviewUi["overview components"]
+  TransactionPage --> ActionUi["action components"]
+  TransactionPage --> EntryUi["entry components"]
+  TransactionPage --> ReportUi["report preview/pdf"]
+  OverviewUi --> ModuleTable["ModuleTable"]
+  EntryUi --> ModuleDataEntry["ModuleDataEntry"]
+  ReportUi --> SharedReports["shared reports"]
+```
+
+## Top Actions And Quick Tour
+
+Do not duplicate global top-bar actions inside a transaction list header. If
+the main app header already provides Quick Tour, Import, Export, or similar
+module-level actions, the transaction overview header should not add a second
+copy of those buttons.
+
+For Quick Tour support, expose stable spotlight targets instead of adding a
+local Quick Tour button. Use these default ids on list pages:
+
+```txt
+data-spotlight-id="maintenance-create-record"  # primary add/start action
+data-spotlight-id="maintenance-table-filters"  # search and filters toolbar
+data-spotlight-id="maintenance-table-options"  # column visibility and refresh
+data-spotlight-id="maintenance-table"          # table wrapper
+```
+
+Register every transaction overview that supports the top-bar Module Guide in
+`app/src/data/shared/tour/SpotlightTutorialData.ts`. Add its canonical overview
+href to `MaintenanceSpotlightTutorialConfigs`; the shared registry then exposes
+the guide action without feature-local buttons or route components. Use
+`addMode: "none"` until a dedicated add-form guide has been authored. Register
+only modules with implemented overview UI and meaningful guide content. Do not
+register placeholder or empty modules merely to show an introduction. Once an
+overview is implemented, register it and provide the applicable stable targets
+above.
+
+## Route Areas
+
+Transactional features are usually inside these module domains:
+
+- `app/(modules)/sales/<feature>/`
+- `app/(modules)/purchasing/<feature>/`
+- `app/(modules)/inventory/<feature>/`
+- `app/(modules)/cash-receipt/<feature>/`
+- `app/(modules)/cash-disbursement/<feature>/`
+- `app/(modules)/accounts-payable/<feature>/`
+- `app/(modules)/general-journal/<feature>/`
+
+Route files stay thin. They should import and render UI from `app/src/ui/...`.
+
+```txt
+app/(modules)/<domain>/<feature>/
+  page.tsx
+  add/page.tsx
+  edit/[recordId]/page.tsx
+  view/[recordId]/page.tsx
+```
+
+Use `page.tsx` for the overview list. Use `add`, `edit/[recordId]`, and
+`view/[recordId]` for the shared transaction action screen. Never use
+`/add/new`.
+
+## Source Directory Graph
+
+```mermaid
+graph TD
+  Feature["transaction feature"] --> UI["app/src/ui/modules/<domain>/<feature>"]
+  Feature --> Hooks["app/src/hooks/modules/<domain>/<feature>"]
+  Feature --> Services["app/src/services/modules/<domain>/<feature>"]
+  Feature --> Data["app/src/data/modules/<domain>/<feature>"]
+  Feature --> Types["app/src/types/modules/<domain>/<feature>"]
+  Feature --> Constants["app/src/constants/modules/<domain>/<feature>"]
+  Feature --> Validations["app/src/validations/modules/<domain>/<feature>"]
+  UI --> Action["action"]
+  UI --> Entries["entries"]
+  UI --> Overview["overview"]
+  UI --> Reports["reports"]
+```
+
+### What Belongs Where
+
+- `app/src/ui/...`: React components only.
+- `app/src/hooks/...`: form state driven by the explicit route mode, table state, entry row state,
+  submit orchestration, upload orchestration, and navigation handlers.
+- `app/src/services/...`: API wrappers, query keys, server actions, upload and
+  download calls, and external operations.
+- `app/src/data/...`: initial values, mock/static records, row defaults, and
+  pure record/form mappers.
+- `app/src/types/...`: TypeScript-only record, form, entry, status, mode,
+  attachment, filter, and error types.
+- `app/src/constants/...`: hrefs, labels, status options, table columns,
+  pagination keys, entry tabs, visible-column options, and static select
+  options.
+- `app/src/validations/...`: Zod schemas, cross-field validation, required-row
+  checks, duplicate checks, debit/credit balance checks, and error mapping.
+- `app/src/utils/...`: generic, pure formatting and normalization helpers shared
+  across unrelated modules.
+
+Keep one canonical constant for each value within a module. Do not create a
+second constant that only aliases an existing constant from the same module,
+as this adds another name without introducing a distinct value or contract.
+Import and use the canonical constant directly. If the original name is too
+specific for all of its uses, rename it to an accurate shared name and update
+its consumers instead of adding an identical alias.
+
+```ts
+// Avoid: both names represent exactly the same value in the same module.
+export const StatusActionButtonClassName = "...";
+export const ViewActionButtonClassName = StatusActionButtonClassName;
+
+// Prefer: consumers use the single canonical constant directly.
+export const StatusActionButtonClassName = "...";
+```
+
+Only keep an alias when it is an intentional, temporary compatibility boundary
+for external consumers or a rename migration; document why it exists and when
+it can be removed.
+
 Route link constants must come from the module catalog. Import
 `getModuleRoute` from `app/src/data/shared/modules/ModuleCatalogData.ts`, then
 export the feature href from the matching module code instead of duplicating the
@@ -172,7 +349,8 @@ Do not assemble route suffixes such as `/add`, `/edit/${recordId}`, or
 
 Do not put hooks, API calls, application state, validation rules, constants,
 types, or data mappers inside transaction UI folders. Feature-specific entry
-row UI helpers may live in `entries/utils/`. When utility logic is shared or
+row UI helpers, table layouts, and import-related logic should reside in the
+`entries/` and `import/` folders. When utility logic is shared or
 reusable across modules, import an existing helper from `app/src/utils/` before
 adding a new one. See [FRONTEND_UTILITY.md](FRONTEND_UTILITY.md) for the
 current utility list.
@@ -181,9 +359,10 @@ current utility list.
 
 Follow this structure strictly for transactional modules. Create only the files
 the transaction actually uses, but do not add alternative folders or rename the
-standard folders. The only allowed UI expansion is inside `action/`: if the
-transaction form has multiple tabs, create one separate ActionPage tab file per
-tab.
+standard folders. Tab panels are composed directly in `<ModuleName>ActionPage.tsx`
+using their respective `<ModuleName>[TabName]Fields.tsx` components (e.g.,
+`<ModuleName>DetailsFields.tsx`, `<ModuleName>FileAttachmentFields.tsx`). Do not
+create separate `<ModuleName><TabName>Tab.tsx` wrapper files.
 
 ```txt
 app/src/ui/modules/<domain>/<feature>/
@@ -191,18 +370,24 @@ app/src/ui/modules/<domain>/<feature>/
     <ModuleName>ActionPage.tsx
     <ModuleName>ActionHeader.tsx
     <ModuleName>ActionHistory.tsx
+    <ModuleName>StatusActions.tsx
     <ModuleName>DetailsFields.tsx
     <ModuleName>FileAttachmentFields.tsx
     <ModuleName>NotFound.tsx
-    # Only when the form has multiple tabs:
-    <ModuleName><TabName>Tab.tsx
+    # When the form has additional tabs/sections:
+    <ModuleName><TabName>Fields.tsx
   entries/
-    utils/
-      <ModuleName>EntryRowUtils.ts
-    <ModuleName>EntryCellControls.tsx
+    <ModuleName>EntryRowUtils.ts
     <ModuleName>EntrySection.tsx
-    <ModuleName>EntryTabs.tsx
-    <ModuleName>LineColumns.tsx
+    <ModuleName>DetailEntryTable.tsx
+    # Only when the module actually has Accounting Entries:
+    <ModuleName>AccountingEntryTable.tsx
+    <ModuleName>EntryColumns.tsx
+  import/
+    # When the transaction supports Excel/CSV bulk import:
+    <ModuleName>EntryImportPage.tsx
+    <ModuleName>EntryImportUploadDialog.tsx
+    <ModuleName>EntryImportReviewDialog.tsx
   overview/
     <ModuleName>OverviewPage.tsx
     <ModuleName>RecordActions.tsx
@@ -242,6 +427,15 @@ Use the module display name in UI labels with each word capitalized. For
 example, `<ModuleName>` in code becomes a readable label such as
 `Cash Advance Multiple Entry` in headings, buttons, filters, empty states, and
 table labels.
+
+On Overview/List pages, use a clear, human-friendly noun label for the
+transaction number column header (`[TransactionType] No.`) rather than abbreviated
+prefix codes. On Action pages, concise module prefix labels (e.g.
+`[ModulePrefix] No.` and `[ModulePrefix] Date`) or standard descriptive labels
+may be used. Use the display prefix without a trailing separator; when a
+configured numbering prefix includes a trailing separator, omit that separator
+from the label. Keep the full readable module name for headings, buttons,
+messages, and other labels.
 
 For transaction UI and frontend source code, use Party terminology exclusively.
 Do not use VCE in visible copy or in transaction module code, including labels,
@@ -306,8 +500,9 @@ to its hook. Do not call `usePathname`, inspect route strings, or define a
 - Does not define header button groups, action title helpers, action
   description helpers, or status action controls; put those in
   `<ModuleName>ActionHeader.tsx`.
-- When the form has multiple tabs, composes tab files from the same `action/`
-  folder instead of placing all tab content in `ActionPage`.
+- When the form has multiple tabs, composes the appropriate `<ModuleName>[TabName]Fields.tsx`
+  components (e.g., `<ModuleName>DetailsFields.tsx`, `<ModuleName>FileAttachmentFields.tsx`)
+  directly in `ActionPage.tsx` based on `activeTab`.
 - Starts new unsaved transactions with the placeholder status `Open`.
 - Uses `action/<ModuleName>NotFound.tsx` for missing records in edit/view mode.
 
@@ -321,22 +516,31 @@ to its hook. Do not call `usePathname`, inspect route strings, or define a
 `<ModuleName>ActionHeader.tsx`
 
 - Transaction mode, document number, status, and primary actions.
-- Can include save, post, approve, void, print, preview, duplicate, and back
-  controls.
+- Can include save, discard changes, post, approve, void, print, preview,
+  duplicate, and back controls.
 - Use icon buttons with `ModuleTooltip` when labels are hidden.
 - Follows the default mode button sets and button tones described below.
 - Owns action button rendering and header-only icon imports. Keep `ActionPage`
   free from these header details.
 - Owns the confirmation state and renders `AppDialog` for Save, Save as Draft,
   Update, and lifecycle/status actions. Hooks may own validated pending values
-  and persistence callbacks, but `ActionPage` and lifecycle `ViewActions`
+  and persistence callbacks, but `ActionPage` and lifecycle `StatusActions`
   components must not render these confirmation dialogs.
-- Keep lifecycle `ViewActions` presentational: it may build responsive action
+- Keep lifecycle `StatusActions` presentational: it may build responsive action
   buttons and menus, but it reports the requested status back to
   `ActionHeader`, which opens and resolves the confirmation dialog.
 - Keep confirmation titles, labels, and other reusable action copy in the
   feature constants or data layer. Do not define pure copy-building helpers
   such as `getDialogTitle` inside `ActionHeader`.
+
+`<ModuleName>StatusActions.tsx`
+
+- Owns view-mode lifecycle and status transition action controls (Approve, Disapprove, Cancel, Undo, etc.).
+- Renders responsive action options: `ModuleActionMenu` on mobile (< `lg`) and action buttons on desktop (`lg:flex`).
+- Uses the shared semantic styles from `moduleStatusActionClassNames` in
+  `app/src/ui/shared/module/ModuleHeader.tsx`. Do not create domain-specific
+  copies of the same Approve, Disapprove, Cancel, Undo, or danger classes.
+- Presentational: triggers requested status callbacks back to `<ModuleName>ActionHeader.tsx`, which triggers the confirmation dialog.
 
 `<ModuleName>ActionHistory.tsx`
 
@@ -350,9 +554,9 @@ to its hook. Do not call `usePathname`, inspect route strings, or define a
   History component.
 - Compose it from `<ModuleName>ActionHeader.tsx` for edit/view modes where a
   record exists. Do not embed history dialog state or history-entry builders in
-  `ActionHeader`, `ActionPage`, or lifecycle `ViewActions` components.
+  `ActionHeader`, `ActionPage`, or lifecycle `StatusActions` components.
 
-`<ModuleName>DetailsFields.tsx`
+`<ModuleName>DetailsFields.tsx` / `<ModuleName>[TabName]Fields.tsx`
 
 - Header/detail fields such as party, warehouse, date, terms, reference,
   currency, project, branch, responsibility center, and remarks.
@@ -399,12 +603,15 @@ to its hook. Do not call `usePathname`, inspect route strings, or define a
   the field identity or visible label with a classification name.
 - Align name/code pairs by row. For example, `Party Name` aligns with
   `Party Code`, and `Account Title` aligns with `Account Code`.
-- The Transaction column contains `[ModuleName] No.`, `[ModuleName] Date`, and
-  `Status`. Do not label the number field with the module code or generic
-  `Transaction No.` in the UI.
+- The Transaction column contains `[ModulePrefix] No.`, `Document Date`, and
+  `Status`. Use the module's short transaction prefix for the document number,
+  but always use `Document Date` for the transaction's primary date across
+  action forms, overview columns, previews, exports, and reports. Keep specific
+  labels such as `Check Date`, `Due Date`, or a referenced source document's
+  date only when the field represents a distinct business date.
 - Transaction number behavior depends on the module's transaction-number
   setup. When the module is configured for automatic numbering, generate the
-  `[ModuleName] No.` value from the module prefix plus a six-digit padded
+  `[ModulePrefix] No.` value from the configured prefix plus a six-digit padded
   sequence, such as `<MODULE_PREFIX>-000001`, and render the field readonly.
   When the module is configured for manual numbering, do not generate a default
   value and render the field editable so the user can enter the number.
@@ -413,9 +620,9 @@ to its hook. Do not call `usePathname`, inspect route strings, or define a
   date-only UI values. Use `formatDateTime` only when the UI intentionally
   needs time. Keep ISO values such as `2026-01-22` only for native date inputs,
   API payloads, and internal form values.
-- For the `[ModuleName] No.` input placeholder, use title case. Use
-  `Auto Generated [ModuleName] Transaction Number` for automatic numbering and
-  `Enter [ModuleName] Transaction Number` for manual numbering.
+- For the `[ModulePrefix] No.` input placeholder, use title case. Use
+  `Auto Generated [ModulePrefix] Transaction Number` for automatic numbering
+  and `Enter [ModulePrefix] Transaction Number` for manual numbering.
 - Render action-page Status as a readonly input/display field. Do not use a
   dropdown for Status in the transaction detail form; lifecycle changes belong
   in the header actions or approval controls.
@@ -432,6 +639,16 @@ to its hook. Do not call `usePathname`, inspect route strings, or define a
   `app/src/ui/shared/money/MoneyNumberField.tsx`. Amount fields are
   right-aligned with tabular numbers, use money formatting, and display two
   decimal places by default, such as `.00`, after blur and for loaded values.
+- Transaction action pages that have header amounts (with VAT and EWT/CWT) and **NO Data Entry table** must use `TransactionSummaryCards` from `app/src/ui/shared/transaction-setup/TransactionSummaryCards.tsx`.
+  - `TransactionSummaryCards` provides 6 predetermined built-in cards:
+    1. **Gross Amount**: Blue (`Calculator` icon)
+    2. **VAT Rate**: Cyan (`Percent` icon)
+    3. **VAT Amount**: Purple (`Receipt` icon)
+    4. **EWT / CWT Rate**: Orange (`TrendingDown` icon)
+    5. **EWT / CWT Amount**: Orange (`HandCoins` icon)
+    6. **Net Amount**: Green (`Wallet` icon, highlighted as final net settlement)
+  - `ModuleSummaryCards` (from `app/src/ui/shared/module/ModuleSummaryCards.tsx`) is the underlying generic component adaptable to all modules for custom or non-tax summary cards.
+  - Modules that have a Data Entry table (e.g. Cash Voucher, Disbursement Voucher, Billing Invoice, Service Invoice) compute and display their derived tax totals directly in the Data Entry table footer and summary bar instead of rendering separate header summary cards.
 
 Shared transaction field controls
 
@@ -536,7 +753,7 @@ value is assigned, and let the backend or configured transaction-number service
 own the final sequence assignment.
 
 For manual numbering, do not generate a transaction number in defaults or form
-initializers. Start with an empty value, keep the `[ModuleName] No.` field
+initializers. Start with an empty value, keep the `[ModulePrefix] No.` field
 editable in add/edit modes, and validate it as a required user-entered field.
 
 ### Status
@@ -550,7 +767,7 @@ until the user saves the transaction as draft.
 View and edit action pages should use this title format:
 
 ```txt
-[Action] [ModuleName] | [[ModuleName] No.] [Status Badge]
+[Action] [ModuleName] | [[ModulePrefix] No.] [Status Badge]
 ```
 
 Use the existing shared transaction status badge for `[Status Badge]`.
@@ -561,6 +778,7 @@ Add mode header buttons:
 
 ```txt
 Back
+Discard
 Preview
 Copy From
 Save
@@ -584,12 +802,61 @@ Edit mode header buttons:
 
 ```txt
 Back
+Discard
 Preview
 Approve
 Disapprove
 Cancel
 Save
 ```
+
+#### Unsaved Changes And Discard
+
+Do not use `Draft` for two different concepts. A transaction with the persisted
+`Draft` status is a real saved transaction. Browser-cached, in-progress form
+values are **unsaved changes** in visible copy, including dialog titles,
+descriptions, confirmation labels, and toast messages. Do not label those
+values as a draft in the UI.
+
+Use `useModuleDraft` for browser autosaving and
+`ModuleDraftDiscardAction` from
+`app/src/ui/shared/module/ModuleDraftDiscardAction.tsx` for the shared Discard
+control. Follow this lifecycle:
+
+- Do not cache untouched initial/default values.
+- Recover cached unsaved changes only when the applicable form opens, and show
+  the recovery toast at that time.
+- `Back` preserves the current unsaved changes and flushes any pending
+  debounced browser save before navigating to the overview.
+- Show `Discard` only in Add and Edit modes. Do not show it in View mode.
+- Disable `Discard` while the form matches its initial baseline. Enable it
+  after the user modifies the form or recovered unsaved changes differ from
+  that baseline.
+- Render Discard as a neutral secondary header button with the shared
+  file-with-X icon treatment. It must not look like the lifecycle Delete or
+  Cancel actions.
+- Confirm Discard through `AppDialog` using `Discard unsaved changes?`, a
+  neutral gray status icon and confirm button, `Discard Changes` as the confirm
+  label, and `Keep Editing` as the dialog cancel label.
+- Include a `Return to list after discarding` checkbox above the dialog action
+  buttons. It is checked by default and its last choice persists in
+  `localStorage` through the shared discard-preference hook.
+- When the checkbox is checked, discard the cached changes, reset the form,
+  and navigate to the overview. When unchecked, discard and reset the form but
+  keep the action page open.
+- In Add mode, Discard removes browser-cached changes only. Because Add has not
+  persisted a transaction yet, it must not create a deletion record or mark a
+  transaction deleted.
+- In Edit mode, Discard removes only browser-cached edits and restores the
+  saved transaction baseline. It must never delete, cancel, void, or otherwise
+  mutate the existing transaction.
+- Clear browser-cached changes after a successful Save, Save as Draft, Update,
+  or Submit operation.
+
+`Keep Editing` only closes the discard confirmation. It does not clear cached
+changes, reset fields, or navigate. This dialog action is separate from the
+transaction lifecycle `Cancel` action, which changes a persisted transaction's
+status.
 
 Use the shared action control for transaction action headers:
 
@@ -602,6 +869,14 @@ defaults to the Save label and icon, but callers may supply another label,
 icon, and `onAction` callback for actions such as Preview. When an action needs
 related options such as Save As Draft or alternate preview formats, pass them
 through `menuItems` instead of creating a separate custom split button.
+
+All visible text actions in transaction headers use a minimum width of `6rem`
+(`min-w-24`) through the shared `moduleHeaderActionClassNames`,
+`moduleStatusActionClassNames`, and `ModuleActionButton` styles. This applies to
+every transaction domain. The primary segment of a split Save button uses the
+same minimum width; its chevron segment remains the standard square icon
+button. Do not add feature-specific widths for Save, Update, Back, Edit, or
+lifecycle actions. Icon-only responsive controls are exempt.
 
 #### Copy From
 
@@ -665,6 +940,58 @@ Cancel, Delete, Void, Close, Reopen, Undo Approved, Undo Disapproved, Undo
 Cancelled, and equivalent lifecycle or status-reversal actions. Undo actions
 must follow the same confirmation requirement as their forward actions. Do not
 execute the action directly from its button or menu item.
+
+### Save, Draft, and Update Confirmation AppDialog Standards
+
+To ensure complete UI consistency across all transaction modules, adhere strictly
+to the following format for Save, Save as Draft, and Update confirmation dialogs:
+
+- **Title**:
+  - Add / Save mode: `Save <Module Display Name>?` (e.g. `Save Revolving Fund?`, `Save Cash Voucher?`)
+  - Draft mode: `Save <Module Display Name> as Draft?`
+  - Edit / Update mode: `Update <Module Display Name>?`
+- **Description**:
+  - Add / Save mode: `This will save and submit <transactionNo/recordLabel>.`
+  - Draft mode: `This will save <transactionNo/recordLabel> as draft.`
+  - Edit / Update mode: `This will update <transactionNo/recordLabel>.`
+- **Confirm Button Label**:
+  - Add / Save mode: `Save and Submit`
+  - Draft mode: `Save as Draft`
+  - Edit / Update mode: `Update`
+- **Cancel Button Label**:
+  - Always `Cancel` (avoid long phrases like `Continue Working` or `Keep Current Status` to ensure clean, equal button widths).
+- **Icon Tone**:
+  - Add / Save mode: `iconTone="save"`
+  - Draft mode: `iconTone="save"`
+  - Edit / Update mode: `iconTone="update"`
+- **Button Width**:
+  - Keep standard `min-w-32` symmetrical buttons provided by `AppDialog` without custom override classes.
+
+### Loading State Placement
+
+- **Header Action Button (`ModuleActionButton`)**:
+  - The label must remain static: `mode === "edit" ? "Update" : "Save"`.
+  - Do **not** change the header button text to `"Saving..."` or `"Updating..."`.
+  - Disable the button during submission using `disabled={isSubmitting}`.
+- **AppDialog**:
+  - Apply the loading state strictly on the `AppDialog` confirm button using `isPending={isSubmitting}` and `pendingLabel={mode === "edit" ? "Updating..." : "Saving..."}`.
+  - The animated loading spinner and pending indicator appear inside the active dialog confirm button while the operation is pending.
+
+The confirmation button must preserve the initiating action's semantic color
+across every transaction domain:
+
+```txt
+Save / Save as Draft / Update  # default module-primary accent
+Approve / Post                 # success green
+Disapprove / Reject / Delete   # danger red/coral
+Cancel / Void / Close          # warning amber
+Undo / Reopen / Restore        # default module-primary accent
+```
+
+Use `tone="default"`, `tone="success"`, `tone="danger"`, and
+`tone="warning"` accordingly. `AppDialog` owns the confirm-button styling; do
+not add feature-local dialog button classes. Keep its neutral Cancel button and
+confirm button at the shared equal minimum width.
 
 Always follow this order: **Validation First, then AppDialog Confirmation**.
 When an action requires validation, run its applicable validation before
@@ -769,55 +1096,60 @@ local `uploadTitle`, `inputId`, `inputName`, `attachments`, `isReadonly`, and
 `onAttachmentsChange`. Use `formatFileSize` from `app/src/utils/file.util` for
 any attachment size display instead of adding local file-size formatting.
 
-Transactions may add more tabs when needed. If the form has more than these
-standard tabs, create one separate `action/<ModuleName><TabName>Tab.tsx` file
-per tab and compose the tab files in `<ModuleName>ActionPage.tsx`.
+Transactions may add more tabs when needed. When rendering tab panels, compose
+the respective `<ModuleName>[TabName]Fields.tsx` components directly in
+`<ModuleName>ActionPage.tsx`. Do not create intermediate `<ModuleName><TabName>Tab.tsx`
+wrapper files.
+
+When an action page has more than the two standard Details and File Attachments
+tabs, use the shared `ModuleTabs` `hasError` item state to show a `*` only while
+the tab owns an active field, row, cross-field, or upload validation message.
+Do not show the tab indicator initially merely because the tab contains
+required fields. Map each form-error key to its owning tab so an error on a
+hidden panel is discoverable after validation, and clear `hasError` as soon as
+all errors owned by that tab are fixed. The shared component supplies the
+visible marker, error styling, tooltip, and screen-reader copy, so feature code
+must not append `*` directly to tab labels.
 
 ### Currency And Exchange Rate
 
-Always use `CurrencyExchangeRateRow` for currency and exchange-rate field rows:
+Do not use `CurrencyExchangeRateRow` in transaction detail forms. Instead, each module renders separate `TransactionField` controls for Currency and Exchange Rate:
 
 ```tsx
-import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
+<TransactionField label="Currency" error={errors.currency}>
+  <AppAdvancedDropdown
+    id="<prefix>-currency"
+    value={values.currency}
+    readOnly={isReadonly}
+    isClearable={false}
+    menuMinWidth={320}
+    options={currencyOptions}
+    placeholder="Currency"
+    searchPlaceholder="Search Currency"
+    onChange={(value) => onCurrencyChange(String(value))}
+  />
+</TransactionField>
+
+<TransactionField label="Exchange Rate" error={errors.exchangeRate}>
+  <input
+    id="<prefix>-exchange-rate"
+    type="text"
+    inputMode="decimal"
+    value={values.exchangeRate}
+    readOnly={isReadonly}
+    disabled={isReadonly || isExchangeRateLoading}
+    onChange={(event) => onUpdateField("exchangeRate", formatExchangeRateInput(event.target.value))}
+    className={`${TransactionFieldClassName} text-right tabular-nums${isReadonly || isExchangeRateLoading ? " transaction-readonly-placeholder" : ""}`}
+    placeholder="0.00"
+  />
+</TransactionField>
 ```
 
-When the shared row renders the Currency label, pass `currencyControlId` and
-give the Currency control the same `id` so the label is associated with the
-select. The labeled row uses the same label width and gap as standard
-transaction fields; do not override its alignment in a feature module.
+Give the `AppAdvancedDropdown` menu an extended minimum width with `menuMinWidth={320}`. The options menu may be wider than the closed control and must use the shared portal positioning, which clamps it to the available viewport. This width leaves enough room to show the currency code first and the currency name or description second without premature truncation.
 
-When Currency is rendered in the same row as Exchange Rate, keep the Currency
-control within its assigned grid track but give its `AppAdvancedDropdown` menu
-an extended minimum width with `menuMinWidth={320}`. The options menu may be
-wider than the closed control and must use the shared portal positioning, which
-clamps it to the available viewport. This width must leave enough room to show
-the currency code first and the currency name or description second without the
-premature truncation caused by the narrow row control. Do not widen the Exchange
-Rate field or the complete `CurrencyExchangeRateRow` merely to widen the menu.
+Build transaction Currency options from the shared currency references and configured multi-currency rates. Use the active company's base currency as the default; do not hardcode feature-local lists or assume a particular base currency. Map the catalog records to readable dropdown options and identify the configured default currency in the option details.
 
-```tsx
-<AppAdvancedDropdown
-  menuMinWidth={320}
-  options={currencyOptions}
-  searchPlaceholder="Search Currency"
-  // ...currency field props
-/>
-```
-
-Build transaction Currency options from the shared currency references and
-configured multi-currency rates. Use the active company's base currency as the
-default; do not hardcode feature-local lists or assume a particular base
-currency. Map the catalog records to readable dropdown options and identify the
-configured default currency in the option details.
-
-Selecting a Currency should resolve its configured Exchange Rate against the
-active company's base currency. Display and initialize the base currency rate
-as `1.00`, disable the rate control while a selected rate is loading, and show
-a field error plus a toast when the rate cannot be loaded. Ignore stale
-responses when users change the selection quickly. Keep Exchange Rate editable
-in add and edit modes and make it readonly only in view mode. Use
-`formatExchangeRateInput` from `app/src/utils/number.util.ts` to normalize
-manual decimal input consistently across transaction forms.
+Selecting a Currency should resolve its configured Exchange Rate against the active company's base currency. Display and initialize the base currency rate as `1.00`, disable the rate control while a selected rate is loading, and show a field error plus a toast when the rate cannot be loaded. Ignore stale responses when users change the selection quickly. Keep Exchange Rate editable in add and edit modes and make it readonly only in view mode. Use `formatExchangeRateInput` from `app/src/utils/number.util.ts` to normalize manual decimal input consistently across transaction forms.
 
 ## Entries Folder
 
@@ -898,29 +1230,58 @@ manual decimal input consistently across transaction forms.
   Post, and equivalent completion actions must not proceed while the entries
   are out of balance. The documented Save As Draft validation exception still
   applies to incomplete work in progress.
+- If a transaction detail/expense/item Data Entry grid includes VAT or EWT, the
+  grid must include the complete calculated tax companions for that tax. VAT
+  requires `VAT Type`, `VAT Rate`, `VAT Amount`, and `Net Amount`. EWT requires
+  `EWT Code`, `EWT Rate`, `EWT Amount`, and `Net Amount` or `Total Amount Due`
+  when the transaction distinguishes payable amount after withholding. Keep
+  rates and calculated amounts readonly with `ModuleDataEntryReadonlyCell`;
+  editing `Amount`, `VAT Type`, or `EWT Code` must recalculate the dependent
+  fields immediately through typed hook/data-layer handlers.
+- For transaction modules that have header amounts (e.g. Gross Amount, VAT, EWT/CWT) and NO Data Entry grid, use `TransactionSummaryCards` from `app/src/ui/shared/transaction-setup/TransactionSummaryCards.tsx`. For modules with Data Entry tables, derived tax totals are displayed directly in the Data Entry table summary and footer.
+- Keep Data Entry tax column labels consistent across transactions:
+  `VAT Type`, `VAT Rate`, `VAT Amount`, `EWT Code`, `EWT Rate`, `EWT Amount`,
+  `Net Amount`, and, when applicable, `Total Amount Due`. Do not mix `%` and
+  `Rate` labels inside a newly created transaction module; prefer `Rate` for
+  new work and only keep existing `%` labels during small local fixes where a
+  rename would be outside scope.
 
-`<ModuleName>EntryTabs.tsx`
+`<ModuleName>EntrySection.tsx`
 
-- Tab control for multiple entry sets such as Items, Accounts, Taxes,
-  Attachments, or Allocations.
-- Keep tab ids and labels in constants when reused by hooks or validation.
+- Transaction entries orchestrator.
+- **For modules with dual Detail and Accounting grids** (e.g. Cash Voucher, Disbursement Voucher, Delivery Receipt, Billing Invoice): renders tab headers using the shared `ModuleEntryTabs` component (`app/src/ui/shared/module/module-data-entry/ModuleEntryTabs.tsx`) embedded in the `title` prop of `<ModuleName>DetailEntryTable` and `<ModuleName>AccountingEntryTable`.
+- **For modules without Accounting Entries**: renders `<ModuleName>DetailEntryTable` directly using `ModuleDataEntry`.
 
-`<ModuleName>LineColumns.tsx`
+`<ModuleName>DetailEntryTable.tsx` & `<ModuleName>AccountingEntryTable.tsx`
 
-- Column definitions for transaction entry rows.
-- Uses `EntryCellControls` for editable cells.
-- Move reusable visible-column options and add-column options to constants.
+- Dedicated entry table components built on `ModuleDataEntry` (`app/src/ui/shared/module/module-data-entry/ModuleDataEntry.tsx`):
+  - `<ModuleName>DetailEntryTable.tsx`: Line items, expense details, and inventory service rows with tax computations and totals.
+  - `<ModuleName>AccountingEntryTable.tsx`: Accounting debit/credit distribution grid featuring:
+    - **`ChartAccountDropdown`**: Searchable two-column account picker (Code + Title) that synchronizes both fields.
+    - **`AppAdvancedDropdown`**: Party, Responsibility Center, VAT Type, and EWT Code with `addAction` inline drawer creation.
+    - **`ModuleDataEntryMoneyCell` & `ModuleDataEntryRemarksCell`**: Modal dialog remarks and right-aligned debit/credit amounts with live variance tracking.
+- Keeps row state, column reordering, column visibility, and fit-width auto calculation (`entryTableState.util.ts`) isolated per table.
 
-`<ModuleName>EntryCellControls.tsx`
+### Shared Data Entry Cell Controls
 
-- Small editable and readonly cell renderers.
-- Examples: item selector, account selector, quantity input, unit price input,
-  tax selector, debit/credit input, and row note input.
+- Use standard cell renderers directly from `app/src/ui/shared/module/module-data-entry/` instead of creating per-module `EntryCellControls.tsx` duplicate files:
+  - `ModuleDataEntryInputCell`: accessible text, date, and number inputs.
+  - `ModuleDataEntryMoneyCell`: formatted tabular money inputs.
+  - `ModuleDataEntryDropdownCell`: accessible advanced dropdown select cells.
+  - `ModuleDataEntryRemarksCell`: multiline expand/dialog remarks cells.
+  - `ModuleDataEntryCheckboxCell`: toggle/checkbox cells.
+  - `ModuleDataEntryReadonlyCell`: formatted display cells.
+
+`<ModuleName>EntryColumns.tsx`
+
+- Declarative column definitions and builders for transaction entry rows.
+- Standardize on `ewtCode` (labeled `EWT Code`) across all detail and accounting grids (remove separate `atcCode` fields).
+- Uses shared Data Entry cell primitives directly from `app/src/ui/shared/module/module-data-entry/` (`ModuleDataEntryInputCell`, `ModuleDataEntryMoneyCell`, `ModuleDataEntryDropdownCell`, `ModuleDataEntryRemarksCell`, `ModuleDataEntryCheckboxCell`, `ModuleDataEntryReadonlyCell`).
 - Lookup cells must follow the same advanced-dropdown and permission behavior
   as lookup fields in the transaction header. Use `AppAdvancedDropdown` from
   `app/src/ui/shared/advanced-dropdown/` for Party Name, Responsibility Center,
   Project Name, Terms, and the other maintenance-backed lookups listed under
-  Shared transaction field controls. VAT Type and EWT must also use
+  Shared transaction field controls. VAT Type and EWT Code must also use
   `AppAdvancedDropdown`; do not render these fields as plain text inputs or
   native selects.
 - When a Data Entry lookup is backed by a maintenance module, expose the
@@ -939,11 +1300,7 @@ manual decimal input consistently across transaction forms.
 - Use the shared `ModuleDataEntryCheckboxCell` in
   `app/src/ui/shared/module/module-data-entry/ModuleDataEntryCheckboxCell.tsx`
   for boolean Data Entry cells. Use it for the `VATable` and `VATInc` columns
-  instead of creating feature-local checkbox markup. It must
-  provide an accessible label from the column and row context, use the standard
-  Data Entry control sizing and focus treatment, center the checkbox in its
-  cell, call a typed boolean change handler, and render a clearly readonly,
-  non-interactive state in View mode.
+  instead of creating feature-local checkbox markup.
 - Every Data Entry column whose canonical label is `Remarks` must use the
   shared `ModuleDataEntryRemarksCell`. Keep the value visible as a truncated,
   single-line cell input with a fixed ellipsis button. The ellipsis button opens
@@ -952,15 +1309,39 @@ manual decimal input consistently across transaction forms.
   readonly mode, keep the ellipsis available for reading the complete value and
   show only the dialog Close action. Do not render a plain text input or allow
   the Remarks cell to grow the Data Entry row height.
-- Use `Remarks` as the canonical user-facing label for transaction-entry notes.
-  Legacy models, APIs, imports, or stored records may retain an internal field
-  key such as `particulars`, but the Data Entry header, placeholder, modal,
-  preview, PDF, and export/import template must display `Remarks`. A legacy
-  Particulars field must use `ModuleDataEntryRemarksCell`; do not maintain a
-  feature-specific particulars editor or view dialog.
+- Use `Remarks` as the canonical label and `remarks` as the canonical internal
+  field/column key for transaction-entry notes. Headers, placeholders, dialogs,
+  previews, PDFs, import/export templates, row models, types, constants, data,
+  hooks, validations, and services must use the Remarks naming.
+- All Cash Disbursement modules must use `remarks` throughout their Data Entry
+  and accounting-entry implementation. Do not introduce a `particular` or
+  `particulars` field, column ID, label, or feature-specific editor. Import
+  parsers may accept `Particular` and `Particulars` only as legacy inbound
+  header aliases and must map them immediately to `remarks`.
+- Treat the transaction header `Remarks` value as the inherited default for
+  Data Entry Remarks, following the Accounts Payable Voucher particulars
+  behavior. Initialize every new, inserted, or replacement detail/expense row
+  with the current header Remarks instead of leaving the row empty.
+- When header Remarks changes, update a detail/expense row only when its Remarks
+  is empty or still equals the previous header Remarks after trimming. This
+  keeps inherited rows synchronized while preserving any row Remarks that the
+  user has independently overwritten. Do not use an unconditional effect that
+  replaces every row value, and do not implement inheritance only as a visual
+  input fallback; persist inherited Remarks in the transaction row state.
+- Generated accounting rows such as Input VAT, EWT, payable, bank, cash, or
+  settlement entries must inherit Remarks from their source detail/expense row.
+  If the source row is empty, fall back to the current header Remarks; use a
+  generated system description only when both values are empty. When a source
+  row Remarks override changes, regenerate the dependent accounting-row Remarks
+  using the same source relationship.
+- Remarks-only synchronization must not recalculate Gross Amount, VAT, EWT,
+  Debit, Credit, Amount Due, or other financial values. Preserve the source
+  row's existing tax details and amounts while refreshing inherited or generated
+  Remarks. Keep this orchestration in the feature hook/data layer rather than
+  inside the Remarks cell component.
 - Does not mutate row state directly; call typed handlers from props.
 
-`utils/<ModuleName>EntryRowUtils.ts`
+`<ModuleName>EntryRowUtils.ts`
 
 - Feature-specific entry row helpers needed only by this transaction entry grid.
 - Good for focus movement, local display helpers, row-level UI calculations, and
@@ -968,6 +1349,20 @@ manual decimal input consistently across transaction forms.
 - Defaults, record mapping, total calculation, and validation belong in `data`,
   `hooks`, or `validations`.
 - Shared helpers used by unrelated modules belong in `app/src/utils/`.
+
+### Shared Transaction Tax Architecture (`TaxData.ts`)
+
+- Universal VAT and EWT calculations and lookup option builders live in `app/src/data/shared/tax/TaxData.ts`.
+- Functions include: `calculateTaxAmounts`, `getVatRateFromCode`, `getVatPercentFromRate`, `getEwtPercentFromCode`, `normalizeVatDropdownValue`, `createVatOptions`, and `createEwtOptions`.
+- Modules re-export or delegate to `TaxData.ts` instead of duplicating tax calculation formulas.
+
+### Bulk Import Workspace (`import/`) & `AccountingGridSpreadsheetService`
+
+For transaction modules that support spreadsheet import (e.g. Cash Voucher, Disbursement Voucher):
+- `<ModuleName>EntryImportPage.tsx`: Fullscreen spreadsheet staging editor and exporter (Excel/PDF).
+- `<ModuleName>EntryImportUploadDialog.tsx`: Modal for drag-and-drop file upload (`.xlsx`, `.csv`, `.tsv`, `.txt`) or pasting copied table cells.
+- `<ModuleName>EntryImportReviewDialog.tsx`: Pre-save review modal verifying debit/credit balances before committing imported entries back to the voucher form.
+- **Shared Spreadsheet Service**: `app/src/services/shared/accounting/AccountingGridSpreadsheetService.ts` handles CSV parsing, TSV formatting, XLSX XML unzipping, canvas text measurement, and binary file downloads. Feature-specific import services stay thin (~200 lines) and focus on voucher row-to-model mapping.
 
 ## Overview Folder
 
@@ -1056,10 +1451,10 @@ hover, focus, and active outlines should follow the metric tone color, not the
 current module/theme accent.
 
 ```txt
-Total Entries   # tone="violet", receipt/list icon
-Draft           # tone="blue", getModuleStatusMetricIcon -> Clock
-For Approval    # tone="amber", getModuleStatusMetricIcon -> Clock
+Total Transaction / Total Entries   # tone="violet", receipt/list icon
 Posted          # tone="emerald", getModuleStatusMetricIcon -> CheckCircle2
+For Approval    # tone="amber", getModuleStatusMetricIcon -> Clock
+Draft           # tone="blue", getModuleStatusMetricIcon -> Clock
 Disapproved     # tone="red", getModuleStatusMetricIcon -> XCircle
 Cancelled       # tone="slate", getModuleStatusMetricIcon -> Ban
 ```
@@ -1085,9 +1480,9 @@ For the Total Entries card, pass `tone="violet"` instead of a custom
 Use this standard status-to-tone mapping for transaction metric cards:
 
 ```txt
-Draft           # blue
-For Approval    # amber
 Posted          # emerald
+For Approval    # amber
+Draft           # blue
 Disapproved     # red
 Cancelled       # slate
 ```
@@ -1109,7 +1504,7 @@ Status
 
 Render the Search filter with the shared `ModuleTableSearch`. Use a concise
 module-specific placeholder based on canonical table labels, following
-`Search by [ModuleName] No., Party Name, Account Title, or Remarks` when those
+`Search by [TransactionType] No., Party Name, Account Title, or Remarks` when those
 fields apply. Search matching must be case-insensitive and whitespace-tolerant:
 normalize both the entered query and the combined searchable record text with
 `normalizeLowercaseWhitespace` from `app/src/utils/string.util.ts` before
@@ -1127,6 +1522,40 @@ Refresh must provide immediate visual feedback. Use the shared
 mock/local data and also honors its `isRefreshing` prop when a real query or
 API refresh state is available. Do not create a static feature-local Refresh
 button.
+
+#### Refresh Wiring Pattern
+
+The refresh action flows through three layers:
+
+1. **Hook** — `use<ModuleName>OverviewPage` (or `use<ModuleName>Store`)
+   exposes a `refreshRecords` function that re-reads data and updates the sync
+   timestamp:
+
+   ```ts
+   function refreshRecords() {
+     setRecords(get<ModuleName>Records());
+     setLastSyncedAt(Date.now());
+   }
+   ```
+
+2. **Overview page** — `<ModuleName>OverviewPage` passes `refreshRecords` to
+   the toolbar via an explicit `onRefresh` prop:
+
+   ```tsx
+   <ModuleNameTableToolbar onRefresh={page.refreshRecords} /* ...other props */ />
+   ```
+
+3. **Toolbar** — `<ModuleName>TableToolbar` declares `onRefresh: () => void`
+   in its props and forwards it to the shared button:
+
+   ```tsx
+   <ModuleTableResetButton className="px-2" onClick={onRefresh} />
+   ```
+
+Keep `onRefresh` as an explicit callback prop on every `TableToolbar`. Do not
+read refresh behavior from a page object or store inside the toolbar; the
+toolbar receives the callback and passes it directly to
+`ModuleTableResetButton`'s `onClick`.
 
 Column Visibility and Refresh should sit in predictable toolbar tracks so their
 icon-only buttons align consistently with other modules. Use proportional
@@ -1171,8 +1600,8 @@ Start New <ModuleName>
 The full transaction column visibility list is:
 
 ```txt
-[ModuleName] No.
-Document Date
+[TransactionType] No.
+[ModulePrefix] Date
 Party Code
 Party Name
 Account Code or Default Account Code
@@ -1213,14 +1642,13 @@ Allocate width by content priority rather than dividing the table equally:
 `Party Name`, account-title, and Remarks columns receive the most room; amount,
 transaction-number, and date columns receive practical reading widths; Status
 stays compact around its badge; and Actions stays sized to its controls. The
-standard menu-only Actions width is 112px so the complete `Actions` header
-remains visible beside its drag handle; do not reduce it until the label becomes
-an ellipsis. When an overview includes centered View, Edit, and lifecycle-menu
-controls, define a feature-level 160px Actions width in
-`<ModuleName>Constants.ts` to accommodate the complete control group.
+shared Actions width is 160px so the complete `Actions` header remains visible
+beside its drag handle and centered View, Edit, and lifecycle-menu controls.
+Use `TransactionOverviewColumnWidths.actions` directly; do not derive or
+declare a domain- or feature-level action-column width.
 Keep the standard transaction-number width based on typical transaction values,
 not the longest module name. Before truncating an unusually long
-`[ModuleName] No.` header, reclaim visibly unused width from Status and other
+`[TransactionType] No.` header, reclaim visibly unused width from Status and other
 short-value columns while preserving enough room for the complete status badge.
 Use a narrow feature-specific width override only when that reallocation is
 needed; do not widen the shared transaction-number default for every module.
@@ -1228,6 +1656,10 @@ Do not allow Status or Actions to consume the same default width as Party Name
 or other primary business data. Optional columns must use the same semantic
 width scale when they become visible, with horizontal scrolling when their
 combined configured width exceeds the table container.
+
+Initialize date-range and amount-range filter state with their direct default
+values (`{ from: "", to: "" }`). Do not declare a domain-level shared empty
+range constant for these independent filter values.
 
 Status alignment is mandatory for every transaction overview: add
 `text-center` to the Status column's TanStack `meta.className`, and wrap the
@@ -1239,7 +1671,7 @@ Use TanStack column `meta.className` for header alignment, and apply the same
 alignment in the row renderer. Do not right-align `Total Amount` unless a
 specific module has an approved business exception.
 
-Render the `[ModuleName] No.` value in every transaction overview row using
+Render the `[TransactionType] No.` value in every transaction overview row using
 the active theme accent color (`text-[var(--skyblue)]`). Prefer the shared
 `moduleAccentClassNames.iconText` token so the transaction number follows theme
 changes instead of using a fixed brand color or neutral text color. When the
@@ -1278,8 +1710,8 @@ Cancelled       # gray/neutral
 The default visible columns are:
 
 ```txt
-[ModuleName] No.
-Document Date
+[TransactionType] No.
+[ModulePrefix] Date
 Party Name
 Total Amount
 Status
@@ -1307,6 +1739,11 @@ The Column Visibility menu's `Default` button calls TanStack
 `table.resetColumnVisibility()`. Without `initialState.columnVisibility`, it
 will reset to all columns visible instead of the documented default visible
 columns.
+### Table Pagination And Frame Sizing
+
+- **Default rows per module / page size**: The initial row count across transaction overview modules is **10** (`pageSize: 10`). Initialize pagination state in hooks with `{ pageIndex: 0, pageSize: 10 }`.
+- **Page size options**: `ModuleTable` defaults to `pageSizeOptions={[5, 10, 15, 20, 25, 50]}` internally. Do not pass `pageSizeOptions={[5, 10, 15, 20, 25, 50]}` explicitly in overview pages unless a non-standard set is required.
+- **Outer table frame & wrapper**: Standardize list tables by wrapping `ModuleTable` with `<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm" data-spotlight-id="maintenance-table">` and using `variant="embedded"`.
 
 ## Reports Folder
 
@@ -1389,14 +1826,16 @@ columns.
   `advanced-dropdown`, `tag-input`, `media`, and shared money/date controls.
 - Transaction file attachments:
   `app/src/ui/shared/transaction-setup/TransactionFileAttachmentFields.tsx`.
-- Currency/exchange rate row:
-  `app/src/ui/shared/app/CurrencyExchangeRateRow.tsx`.
+- Currency/exchange rate fields: separate `TransactionField` controls per module
+  (`app/src/ui/shared/app/CurrencyExchangeRateRow.tsx` is deprecated).
 - Utilities: strictly use `app/src/utils/` for shared pure utilities.
-- Use `formatDate` from `app/src/utils/date.util.ts` for transaction dates and
-  `formatPartOfTotalPercentage` from `app/src/utils/percentage.util.ts` for
-  status-count summaries. Do not create feature-prefixed wrappers that only
-  repeat these shared formatters.
-- Entry row utilities: use `entries/utils/` only for helpers specific to the
+- Use `formatDate` from `app/src/utils/date.util.ts` for transaction dates,
+  document dates, and audit dates (`createdAt`, `updatedAt`, `dateCreated`, `dateModified`),
+  and `formatPartOfTotalPercentage` from `app/src/utils/percentage.util.ts` for
+  status-count summaries. Do not create feature-local or component-level date
+  wrappers (such as `formatAuditDate`, `formatDateLabel`, or custom `Intl` functions)
+  that only repeat or wrap `formatDate`.
+- Entry row utilities: use `entries/<ModuleName>EntryRowUtils.ts` only for helpers specific to the
   current transaction module.
 - Utility inventory: read [FRONTEND_UTILITY.md](FRONTEND_UTILITY.md) before
   creating a helper with a purpose that may already exist.
@@ -1429,8 +1868,10 @@ adding or refactoring transactional modules with user-triggered actions:
   `useOptimisticModuleMutation` for local state). Do not use optimistic updates
   for accounting postings, inventory stock movements, disbursements, or
   backend-generated sequence numbers.
-- **Draft Autosave**: Form autosaving via `useModuleDraft`, clearing the draft
-  only after a successful save.
+- **Unsaved Changes Autosave**: Browser form autosaving via `useModuleDraft`.
+  Keep it distinct from a persisted transaction with `Draft` status, preserve
+  changes on Back, expose the shared disabled-when-clean Discard action in
+  Add/Edit, and clear the browser cache only after Discard or a successful save.
 - **Testing Checklist**: Run verification checks for rapid click prevention,
   lock release on validation/save failure, single navigation, network fetch
   deduplication, and optimistic delete rollback.
@@ -1473,13 +1914,12 @@ Do not rename an old module opportunistically during an unrelated fix.
 - Add action-page history: create
   `action/<ModuleName>ActionHistory.tsx` and compose it from the module's
   `ActionHeader` while reusing `ModuleHistoryDialog`.
-- Add multiple form tabs: create one separate
-  `action/<ModuleName><TabName>Tab.tsx` file for each tab and compose those
-  files in `ActionPage`.
-- Add currency and exchange rate fields: always use
-  `CurrencyExchangeRateRow` from
-  `@/app/src/ui/shared/app/CurrencyExchangeRateRow`, and display the base
-  currency's default rate as `1.00`.
+- Add multiple form tabs: create `<ModuleName>[TabName]Fields.tsx` components
+  (e.g., `<ModuleName>DetailsFields.tsx`, `<ModuleName>FileAttachmentFields.tsx`)
+  and call them out in `<ModuleName>ActionPage.tsx`. Do not create `<ModuleName><TabName>Tab.tsx` files.
+- Add currency and exchange rate fields: render separate `TransactionField`
+  controls for Currency (`AppAdvancedDropdown`) and Exchange Rate (`<input ... />`)
+  instead of `CurrencyExchangeRateRow`, and display the base currency's default rate as `1.00`.
 - Add entry rows: use `ModuleDataEntry`; keep row state in hooks, defaults in
   data, columns in UI/constants, and validation in validations.
 - Add API access: use `ApiClient`; keep query keys and API wrappers in the

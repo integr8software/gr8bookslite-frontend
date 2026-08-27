@@ -16,6 +16,7 @@ import { formatDate } from "@/app/src/utils/date.util";
 export function CashAdvanceMultipleEntryReportPreview({
   isOpen,
   onClose,
+  onGeneratePdf,
   responsibilityCenterOptions,
   values,
 }: CashAdvanceMultipleEntryReportPreviewProps) {
@@ -26,6 +27,7 @@ export function CashAdvanceMultipleEntryReportPreview({
       title="Cash Advance Multiple Entry Preview"
       description="Review the cash advance request and cash advance entries."
       onClose={onClose}
+      onGeneratePdf={onGeneratePdf}
     >
       <CashAdvanceMultipleEntryReportDocument responsibilityCenterOptions={responsibilityCenterOptions} values={values} />
     </ReportPreviewDrawer>
@@ -59,12 +61,12 @@ function CashAdvanceMultipleEntryReportDocument({
         <div className="grid grid-cols-[1fr_18rem] items-end border-y-2 border-black px-3 py-1">
           <h2 className="text-2xl font-black uppercase tracking-tight">Cash Advance Multiple Entry</h2>
           <p className="font-bold">
-            Date: <span className="font-normal">{formatCompactDate(values.documentDate)}</span>
+            Document Date: <span className="font-normal">{formatCompactDate(values.documentDate)}</span>
           </p>
         </div>
 
         <div className="grid grid-cols-4 border-b-2 border-black">
-          <PreviewField label="Entry No." value={values.transNo} />
+          <PreviewField label="CAME No." value={values.transNo} />
           <PreviewField label="Party Name" value={values.partyName} />
           <PreviewField label="Project" value={values.projectRef || values.projectCode} />
           <PreviewField label="Total Amount" value={formatCashAdvanceMultipleEntryAmount(totalAmount)} />
@@ -85,7 +87,7 @@ function CashAdvanceMultipleEntryReportDocument({
               <TableHeader className="w-10 text-center">#</TableHeader>
               <TableHeader>Party Name</TableHeader>
               <TableHeader>Responsibility Center</TableHeader>
-              <TableHeader>Particulars</TableHeader>
+              <TableHeader>Remarks</TableHeader>
               <TableHeader className="w-32 text-right">Amount</TableHeader>
             </tr>
           </thead>
@@ -145,7 +147,7 @@ function ItemRow({
       <td className="border-r border-black/45 px-2 py-2">
         {getResponsibilityCenterName(row.responsibilityCenter, responsibilityCenterOptions) || "\u00a0"}
       </td>
-      <td className="border-r border-black/45 px-2 py-2">{row.particulars || "\u00a0"}</td>
+      <td className="border-r border-black/45 px-2 py-2">{row.remarks || "\u00a0"}</td>
       <td className="px-2 py-2 text-right">{formatCashAdvanceMultipleEntryAmount(row.amount)}</td>
     </tr>
   );

@@ -85,11 +85,11 @@ export function createDiscountRecord(discount: Discount): Discount {
 }
 
 export function getDiscountAccountTitle(type: DiscountTransactionType, name: string) {
-  return `${type === "Purchase" ? "Purchase Discount" : "Sales Discount"} - ${name.trim()}`;
+  return `${type === "Purchases" ? "Purchase Discount" : "Sales Discount"} - ${name.trim()}`;
 }
 
 export function getDiscountAccountGroupPath(type: DiscountTransactionType) {
-  return type === "Purchase" ? "Cost of Sales > Purchase Discount" : "Sales > Sales Discount";
+  return type === "Purchases" ? "Cost of Sales > Purchase Discount" : "Sales > Sales Discount";
 }
 
 export function getDiscountAccountCode(type: DiscountTransactionType, name: string) {
@@ -100,7 +100,7 @@ export function getDiscountAccountCode(type: DiscountTransactionType, name: stri
     .replace(/^-|-$/g, "")
     .slice(0, 16);
 
-  return `${type === "Purchase" ? "PD" : "SD"}-${slug || "DISCOUNT"}`;
+  return `${type === "Purchases" ? "PD" : "SD"}-${slug || "DISCOUNT"}`;
 }
 
 export function createDiscountStatistics(discounts: Discount[]) {
@@ -108,7 +108,7 @@ export function createDiscountStatistics(discounts: Discount[]) {
     totalDiscounts: discounts.length,
     activeDiscounts: discounts.filter((discount) => discount.status === "Active").length,
     inactiveDiscounts: discounts.filter((discount) => discount.status === "Inactive").length,
-    purchaseDiscounts: discounts.filter((discount) => discount.type === "Purchase").length,
+    purchaseDiscounts: discounts.filter((discount) => discount.type === "Purchases").length,
     salesDiscounts: discounts.filter((discount) => discount.type === "Sales").length,
     percentageDiscounts: discounts.filter((discount) => discount.discountType === "Percentage").length,
   };
@@ -349,7 +349,7 @@ export function validateDiscountImportRows(rows: DiscountImportPreviewRow[], exi
     if (!row.discount.type.trim()) {
       cellErrors.type = ["Type is required. Choose a value from the list."];
     } else if (!isModuleImportOptionValue(row.discount.type, DiscountMaintenanceTypeOptions)) {
-      cellErrors.type = ["Choose Purchase or Sales from the list."];
+      cellErrors.type = ["Choose Purchases or Sales from the list."];
     }
 
     if (!row.discount.description.trim()) {
@@ -415,7 +415,7 @@ export function parseDiscountImportTabularRows(text: string) {
 export function normalizeImportedDiscountType(value: string): DiscountTransactionType {
   const normalized = value.trim().toLowerCase();
 
-  if (normalized === "purchase" || normalized === "purchases") return "Purchase";
+  if (normalized === "purchase" || normalized === "purchases") return "Purchases";
   if (normalized === "sale" || normalized === "sales") return "Sales";
   return value as DiscountTransactionType;
 }
@@ -439,7 +439,7 @@ export function waitForNextImportBatch() {
 }
 
 function inferLegacyDiscountType(discount: Discount & { moduleNames?: string[] }): DiscountTransactionType {
-  return discount.moduleNames?.some((name) => name.toLowerCase().includes("purchase")) ? "Purchase" : "Sales";
+  return discount.moduleNames?.some((name) => name.toLowerCase().includes("purchase")) ? "Purchases" : "Sales";
 }
 
 function formatFixedDiscount(amount: number) {

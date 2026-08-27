@@ -4,7 +4,7 @@ import {
   RevolvingFundProjectOptions,
   RevolvingFundResponsibilityCenterLookupOptions,
 } from "@/app/src/constants/modules/cash-disbursement/revolving-fund/RevolvingFundConstants";
-import type { RevolvingFundActionPageState } from "@/app/src/hooks/modules/cash-disbursement/revolving-fund/useRevolvingFundActionPage";
+import type { RevolvingFundActionPageState } from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
@@ -19,10 +19,12 @@ import { formatExchangeRateInput } from "@/app/src/utils/number.util";
 export function RevolvingFundDetailsFields({
   onOpenPartyDrawer,
   onOpenProjectDrawer,
+  onOpenResponsibilityCenterDrawer,
   page,
 }: {
   onOpenPartyDrawer: () => void;
   onOpenProjectDrawer: () => void;
+  onOpenResponsibilityCenterDrawer: () => void;
   page: RevolvingFundActionPageState;
 }) {
   return (
@@ -50,6 +52,7 @@ export function RevolvingFundDetailsFields({
               readOnly={page.isReadonly}
               placeholder="Select Responsibility Center"
               searchPlaceholder="Search Responsibility Center"
+              addAction={!page.isReadonly ? { label: "Add Responsibility Center", onClick: onOpenResponsibilityCenterDrawer } : undefined}
               onChange={(code, name) => {
                 page.updateField("responsibilityCenterCode", code);
                 page.updateField("responsibilityCenter", name);
@@ -128,11 +131,15 @@ export function RevolvingFundDetailsFields({
             placeholder="Account Code"
           />
           <CurrencyExchangeRateRow
-            currencyControlId="rf-currency"
             currencyLabel="Currency"
+            currencyControlId="rf-currency"
+            currencyError={page.errors.currency}
+            exchangeRateControlId="rf-exchange-rate"
+            exchangeRateError={page.errors.exchangeRate}
             currencyControl={
               <AppAdvancedDropdown
                 id="rf-currency"
+                className="w-full min-w-0"
                 value={page.values.currency}
                 readOnly={page.isReadonly}
                 isClearable={false}
@@ -143,7 +150,6 @@ export function RevolvingFundDetailsFields({
                 onChange={(value) => page.updateCurrency(String(value))}
               />
             }
-            exchangeRateControlId="rf-exchange-rate"
             exchangeRateControl={
               <input
                 id="rf-exchange-rate"
@@ -153,7 +159,8 @@ export function RevolvingFundDetailsFields({
                 readOnly={page.isReadonly}
                 disabled={page.isReadonly || page.isExchangeRateLoading}
                 onChange={(event) => page.updateField("exchangeRate", formatExchangeRateInput(event.target.value))}
-                className={`${TransactionFieldClassName} text-right tabular-nums`}
+                className={`${TransactionFieldClassName} text-right tabular-nums${page.isReadonly || page.isExchangeRateLoading ? " transaction-readonly-placeholder" : ""}`}
+                placeholder="0.00"
               />
             }
           />
@@ -163,15 +170,16 @@ export function RevolvingFundDetailsFields({
             value={page.values.transactionNo}
             isReadonly
             isRequired
-            label="Revolving Fund No."
+            label="RF No."
             error={page.errors.transactionNo}
             onValueChange={(value) => page.updateField("transactionNo", value)}
-            placeholder="Auto Generated Revolving Fund Transaction Number"
+            placeholder="Auto Generated RF Transaction Number"
           />
           <TransactionTextField
             value={page.values.documentDate}
             isReadonly={page.isReadonly}
-            label="Revolving Fund Date"
+            isRequired
+            label="RF Date"
             error={page.errors.documentDate}
             type="date"
             onValueChange={(value) => page.updateField("documentDate", value)}

@@ -4,6 +4,7 @@ import { Suspense, useMemo } from "react";
 import type { ReactNode } from "react";
 import {
   DisbursementVoucherActionTabs,
+  DisbursementVoucherPaymentInformationErrorFields,
   DisbursementVoucherStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import {
@@ -75,21 +76,39 @@ function DisbursementVoucherActionShell({
 
 function DisbursementVoucherActionContent({ voucherAction }: { voucherAction: DisbursementVoucherActionPageState }) {
   const paymentTypeDetailKind = getPaymentTypeDetailKind(voucherAction.values.paymentMethod, voucherAction.selectedPaymentTypeRecord);
-  const actionTabs = DisbursementVoucherActionTabs.filter(
-    (tab) => tab.id !== "bank-information" || (paymentTypeDetailKind !== "" && paymentTypeDetailKind !== "cash"),
+  const shouldShowPaymentInformation = paymentTypeDetailKind !== "" && paymentTypeDetailKind !== "cash";
+  const hasPaymentInformationError = DisbursementVoucherPaymentInformationErrorFields.some(
+    (field) => Boolean(voucherAction.errors[field]),
   );
+  const hasDetailsError = Object.entries(voucherAction.errors).some(
+    ([field, error]) =>
+      Boolean(error) &&
+      !DisbursementVoucherPaymentInformationErrorFields.includes(
+        field as (typeof DisbursementVoucherPaymentInformationErrorFields)[number],
+      ),
+  );
+  const actionTabs = DisbursementVoucherActionTabs.filter(
+    (tab) => tab.id !== "payment-information" || shouldShowPaymentInformation,
+  ).map((tab) => ({
+    ...tab,
+    hasError:
+      tab.id === "details" ? hasDetailsError : tab.id === "payment-information" ? hasPaymentInformationError : false,
+  }));
 
   return (
     <>
       <DisbursementVoucherActionHeader
         copyFromRecords={DisbursementVoucherCopyFromRecords.filter((record) => record.templateValues.paymentMethod !== "Cash")}
         copyFromSources={DisbursementVoucherCopySources}
+        hasDiscardableChanges={voucherAction.hasDiscardableChanges}
         mode={voucherAction.isReadonly ? "view" : voucherAction.mode}
         isSubmitting={voucherAction.isSubmitting}
         pendingSubmitStatus={voucherAction.pendingSubmitStatus}
         returnLink={voucherAction.returnLink}
         transaction={voucherAction.selectedTransaction}
         voucher={voucherAction.existingVoucher}
+        onBack={voucherAction.saveDraft}
+        onDiscard={voucherAction.discardDraft}
         onCancelSubmit={voucherAction.cancelDisbursementVoucherSubmit}
         onConfirmSubmit={voucherAction.confirmDisbursementVoucherSubmit}
         onCopyFrom={voucherAction.handleCopyFrom}
@@ -106,15 +125,16 @@ function DisbursementVoucherActionContent({ voucherAction }: { voucherAction: Di
       />
       {voucherAction.activeTab === "details" ? (
         <DisbursementVoucherDetailsSection voucherAction={voucherAction} />
-      ) : voucherAction.activeTab === "bank-information" ? (
+      ) : voucherAction.activeTab === "payment-information" ? (
         <DisbursementVoucherBankInformationFields
           bankAccounts={voucherAction.bankAccounts}
           canAddBankAccount={voucherAction.bankMasterfileStore.permissions.canCreate}
+          errors={voucherAction.errors}
           isMultiCheckNumber={Boolean(voucherAction.values.paymentDetails.isMultiCheckNumber)}
           isReadonly={voucherAction.isReadonly}
           paymentType={voucherAction.values.paymentMethod}
           paymentTypeRecord={voucherAction.selectedPaymentTypeRecord}
-          paymentTypeRecords={voucherAction.paymentTypeStore.paymentTypes}
+          paymentTypeRecords={voucherAction.paymentTypeRecords}
           values={voucherAction.values}
           onOpenBankAccountDrawer={() => voucherAction.setIsBankMasterfileDrawerOpen(true)}
           onUpdateBankAccount={voucherAction.handleBankAccountChange}
@@ -144,7 +164,7 @@ function DisbursementVoucherDetailsSection({ voucherAction }: { voucherAction: D
         errors={voucherAction.errors}
         isExchangeRateLoading={voucherAction.isExchangeRateLoading}
         isReadonly={voucherAction.isReadonly}
-        paymentTypeRecords={voucherAction.paymentTypeStore.paymentTypes}
+        paymentTypeRecords={voucherAction.paymentTypeRecords}
         values={values}
         onOpenPartyNameDrawer={() => voucherAction.setIsPartyNameDrawerOpen(true)}
         onOpenPaymentTypeDrawer={() => voucherAction.setIsPaymentTypeDrawerOpen(true)}

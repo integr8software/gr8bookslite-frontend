@@ -71,6 +71,7 @@ export type ModuleDataEntrySelection =
   | { type: "row"; rowId: string };
 
 export type ModuleDataEntryProps<TRow extends { id: string }> = {
+  addButtonLabel?: string;
   addMenuActions?: ModuleDataEntryAddMenuAction[];
   columnResetLabel?: string;
   columns: ModuleDataEntryColumn<TRow>[];
@@ -83,6 +84,7 @@ export type ModuleDataEntryProps<TRow extends { id: string }> = {
   summaryRowHeader?: ReactNode;
   toolbarActions?: ModuleDataEntryToolbarAction[];
   canConfigureColumnsWhenReadonly?: boolean;
+  canManageRowsWhenReadonly?: boolean;
   isDraggable?: boolean;
   isReadonly: boolean;
   isRowNumberColumnFixed?: boolean;

@@ -822,8 +822,18 @@ select.app-select-control:not(:disabled) {
   color: #38bdf8;
 }
 
+.app-dialog-status-icon--neutral {
+  color: #94a3b8;
+}
+
 .app-dialog-status-icon--question {
   color: #87adbd;
+}
+
+.app-dialog-status-icon--save,
+.app-dialog-status-icon--undo,
+.app-dialog-status-icon--update {
+	color: rgb(var(--skyblue-rgb));
 }
 
 .app-dialog-status-icon--success .app-dialog-status-icon-mark {

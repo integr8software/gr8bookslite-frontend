@@ -6,7 +6,7 @@ import { formatAmount } from "@/app/src/utils/currency.util";
 const CashAdvanceMultipleEntrySchema = z.object({
   accountCode: z.string().trim().min(1, "Default Account is required."),
   currency: z.string().trim().min(1, "Currency is required."),
-  documentDate: z.string().trim().min(1, "Document Date is required."),
+  documentDate: z.string().trim().min(1, "CAME Date is required."),
   exchangeRate: z
     .string()
     .trim()

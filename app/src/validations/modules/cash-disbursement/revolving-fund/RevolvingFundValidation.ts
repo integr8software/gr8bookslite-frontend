@@ -6,8 +6,8 @@ import type {
 import { parseAmount } from "@/app/src/utils/number.util";
 
 const schema = z.object({
-  transactionNo: z.string().regex(/^RF-\d{6}$/, "A valid revolving fund number is required."),
-  documentDate: z.string().min(1, "Select a document date."),
+  transactionNo: z.string().regex(/^RF-\d{6}$/, "A valid RF No. is required."),
+  documentDate: z.string().min(1, "Select an RF Date."),
   partyCode: z.string().trim().min(1, "Select a custodian."),
   partyName: z.string().trim().min(1, "Select a custodian."),
   accountCode: z.string().trim().min(1, "Select a default account."),
@@ -18,9 +18,9 @@ export function validateRevolvingFundForm(values: RevolvingFundFormValues): Revo
   const errors: RevolvingFundFormErrors = {};
   const result = schema.safeParse(values);
   if (!result.success) for (const issue of result.error.issues) errors[issue.path[0] as keyof RevolvingFundFormValues] ??= issue.message;
-  if (values.items.length === 0 || values.items.every((item) => !item.payeeName.trim() && (parseAmount(item.amount) ?? 0) <= 0))
+  if (values.items.length === 0 || values.items.every((item) => !item.supplierName.trim() && (parseAmount(item.amount) ?? 0) <= 0))
     errors.items = "Add at least one revolving fund item.";
-  else if (values.items.some((item) => !item.payeeName.trim() || (parseAmount(item.amount) ?? 0) <= 0))
-    errors.items = "Each item needs a payee and an amount greater than zero.";
+  else if (values.items.some((item) => !item.supplierName.trim() || (parseAmount(item.amount) ?? 0) <= 0))
+    errors.items = "Each item needs a supplier name and an amount greater than zero.";
   return errors;
 }

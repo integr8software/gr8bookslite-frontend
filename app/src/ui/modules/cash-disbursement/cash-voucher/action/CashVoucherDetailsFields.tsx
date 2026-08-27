@@ -1,8 +1,5 @@
 import { useMemo } from "react";
-import {
-  CashVoucherPartyOptions,
-  CashVoucherProjectOptions,
-} from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherData";
+import { CashVoucherPartyOptions, CashVoucherProjectOptions } from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherData";
 import type { CashVoucherDetailsFormProps } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
@@ -132,11 +129,15 @@ export function CashVoucherDetailsFields({
           />
 
           <CurrencyExchangeRateRow
-            currencyControlId="cash-voucher-currency"
             currencyLabel="Currency"
+            currencyControlId="cash-voucher-currency"
+            currencyError={errors.currency}
+            exchangeRateControlId="cash-voucher-fx-rate"
+            exchangeRateError={errors.fxRate}
             currencyControl={
               <AppAdvancedDropdown
                 id="cash-voucher-currency"
+                className="w-full min-w-0"
                 value={values.currency}
                 readOnly={isReadonly}
                 isClearable={false}
@@ -147,7 +148,6 @@ export function CashVoucherDetailsFields({
                 onChange={(value) => onCurrencyChange(String(value))}
               />
             }
-            exchangeRateControlId="cash-voucher-fx-rate"
             exchangeRateControl={
               <input
                 id="cash-voucher-fx-rate"
@@ -157,7 +157,8 @@ export function CashVoucherDetailsFields({
                 readOnly={isReadonly}
                 disabled={isReadonly || isExchangeRateLoading}
                 onChange={(event) => onUpdateField("fxRate", formatExchangeRateInput(event.target.value))}
-                className={`${TransactionFieldClassName} text-right tabular-nums`}
+                className={`${TransactionFieldClassName} text-right tabular-nums${isReadonly || isExchangeRateLoading ? " transaction-readonly-placeholder" : ""}`}
+                placeholder="0.00"
               />
             }
           />
@@ -169,29 +170,23 @@ export function CashVoucherDetailsFields({
             value={values.voucherNo}
             isReadonly
             isRequired
-            label="Cash Voucher No."
+            label="CV No."
             error={errors.voucherNo}
             onValueChange={(value) => onUpdateField("voucherNo", value)}
-            placeholder="Auto Generated Cash Voucher Transaction Number"
+            placeholder="Auto Generated CV Transaction Number"
           />
 
           <TransactionTextField
             value={values.voucherDate}
             isReadonly={isReadonly}
             isRequired
-            label="Cash Voucher Date"
+            label="CV Date"
             error={errors.voucherDate}
             type="date"
             onValueChange={(value) => onUpdateField("voucherDate", value)}
           />
 
-          <TransactionTextField
-            value={values.status}
-            isReadonly
-            label="Status"
-            error={errors.status}
-            onValueChange={() => undefined}
-          />
+          <TransactionTextField value={values.status} isReadonly label="Status" error={errors.status} onValueChange={() => undefined} />
         </div>
       </div>
     </section>

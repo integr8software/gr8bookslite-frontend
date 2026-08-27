@@ -46,7 +46,7 @@ function CashAdvanceReportDocument({ values }: { values: CashAdvanceFormValues }
         <div className="grid grid-cols-[1fr_21rem] items-end border-b-2 border-black px-3 pb-1">
           <h2 className="text-3xl font-black uppercase tracking-tight">Cash Advance Request Form</h2>
           <p className="pb-0.5 font-bold">
-            Cash Advance Date: <span className="font-normal">{formatCompactDate(values.documentDate)}</span>
+            Document Date: <span className="font-normal">{formatCompactDate(values.documentDate)}</span>
           </p>
         </div>
 

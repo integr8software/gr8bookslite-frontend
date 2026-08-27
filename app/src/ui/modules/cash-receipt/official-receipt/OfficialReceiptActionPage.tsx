@@ -127,6 +127,7 @@ export function OfficialReceiptActionPage({
           copyFromRecords={copyFromRecords}
           copyFromSources={copyFromSources}
           mode={mode}
+          recordId={recordId}
           receiptLabel={receiptLabel}
           values={receiptForm.values}
           onCopyFrom={receiptForm.applyCopyFrom}

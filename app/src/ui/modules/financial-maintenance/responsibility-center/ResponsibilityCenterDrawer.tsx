@@ -37,6 +37,7 @@ function ResponsibilityCenterDrawerPanel({ center, initialValues, isOpen, mode, 
   const page = useResponsibilityCenterFormPage({
     center,
     initialValues,
+    isOpen,
     mode,
     onSaved: (savedCenter) => {
       onSaved?.(savedCenter);
@@ -44,6 +45,16 @@ function ResponsibilityCenterDrawerPanel({ center, initialValues, isOpen, mode, 
     },
   });
   const copy = ResponsibilityCenterActionCopy[mode];
+
+  function handleClose() {
+    page.saveDraft();
+    onClose();
+  }
+
+  function handleCancel() {
+    page.discardDraft();
+    onClose();
+  }
 
   return (
     <ModuleDrawer
@@ -54,7 +65,8 @@ function ResponsibilityCenterDrawerPanel({ center, initialValues, isOpen, mode, 
       isReadonly={page.isReadonly}
       isSaving={page.isSubmitting}
       onBeforeSaveConfirm={page.validateBeforeSubmit}
-      onClose={onClose}
+      onCancel={handleCancel}
+      onClose={handleClose}
       savingLabel={getModuleSavePendingLabel(mode)}
       submitLabel={mode === "edit" ? "Update Responsibility Center" : "Save Responsibility Center"}
       title={copy.title}

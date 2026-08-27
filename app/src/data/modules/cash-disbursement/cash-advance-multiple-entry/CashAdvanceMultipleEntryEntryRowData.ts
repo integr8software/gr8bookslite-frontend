@@ -1,5 +1,5 @@
 import { CashAdvanceMultipleEntryResponsibilityCenterOptions } from "@/app/src/data/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryData";
-import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import type { ModuleDataEntryColumn } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 
 export function getCashAdvanceMultipleEntryResponsibilityCenterCode(responsibilityCenter: string) {
   return (

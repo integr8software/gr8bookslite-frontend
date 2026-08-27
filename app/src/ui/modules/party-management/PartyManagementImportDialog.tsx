@@ -2,7 +2,12 @@
 
 import { AlertCircle } from "lucide-react";
 import { AppMaxFileUploadSizeLabel } from "@/app/src/constants/shared/app/AppConstants";
-import { getModuleImportDataColumnWidth, ModuleImportRowNumberColumnWidth, ModuleImportSelectionColumnWidth } from "@/app/src/constants/shared/module/ModuleImportConstants";
+import {
+  getModuleImportDataColumnWidth,
+  ModuleImportFixedColumnsWidth,
+  ModuleImportRowNumberColumnWidth,
+  ModuleImportSelectionColumnWidth,
+} from "@/app/src/constants/shared/module/ModuleImportConstants";
 import {
   PartyImportAcceptedFileExtensions,
   PartyImportAcceptedFileLabel,
@@ -40,7 +45,7 @@ export function PartyManagementImportDialog({ existingParties, isOpen, onClose, 
       isBusy={Boolean(importDialog.progress)}
       title="Import Parties"
       titleId="party-management-import-title"
-      description="Upload, validate, edit, and import party records in queued batches."
+      description="Upload a template or paste spreadsheet rows, review validation, then import the ready party records."
       onClose={onClose}
       actions={
         <ModuleImportHeaderActions
@@ -101,7 +106,7 @@ export function PartyManagementImportDialog({ existingParties, isOpen, onClose, 
               importDialog.pasteIntoPreviewGrid(text);
             }
           }}
-          className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-purple-200 shadow-[0_0_0_2px_rgba(168,85,247,0.08)] outline-none focus:ring-2 focus:ring-purple-500/15"
+          className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-darknavy/10 bg-white shadow-sm outline-none transition focus:border-skyblue/45 focus:ring-4 focus:ring-skyblue/10"
           aria-label={PartyImportPreviewGridLabel}
         >
           <div className="min-h-36 flex-1 overflow-auto">
@@ -140,6 +145,7 @@ export function PartyManagementImportDialog({ existingParties, isOpen, onClose, 
                     <ModuleImportResizableColumnHeader
                       key={column.id}
                       className={column.className}
+                      left={column.id === PartyImportFieldOrder[0] ? ModuleImportFixedColumnsWidth : undefined}
                       width={importDialog.columnWidths[column.id]}
                       onResize={(width) => importDialog.updateColumnWidth(column.id, width)}
                     >

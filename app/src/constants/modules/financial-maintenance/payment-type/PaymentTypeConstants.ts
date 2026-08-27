@@ -32,7 +32,7 @@ export const PaymentTypeTablePaginationStorageKey = "maintenance:financial-manag
 export const PaymentTypeTableColumns = [
   { key: "paymentType", label: "Payment Type Name", className: "w-[22%]" },
   { key: "description", label: "Description", className: "w-[28%]" },
-  { key: "type", label: "Category", className: "w-[16%] text-center" },
+  { key: "type", label: "Category", className: "w-[16%]" },
   { key: "createdBy", label: "Created By", className: "w-[14%]" },
   { key: "createdAt", label: "Date Created", className: "w-[16%]" },
   { key: "updatedBy", label: "Updated By", className: "w-[14%]" },
@@ -60,6 +60,7 @@ export const PaymentTypeExportColumns: ModuleTableExportColumn<PaymentTypeRecord
 export const PaymentTypeClassificationOptions = [
   "Bank Transfer",
   "Check",
+  "Debit Memo",
   "Digital Wallet",
 ] as const satisfies readonly PaymentTypeClassification[];
 

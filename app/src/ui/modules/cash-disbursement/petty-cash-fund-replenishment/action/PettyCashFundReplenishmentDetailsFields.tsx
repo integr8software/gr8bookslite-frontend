@@ -4,7 +4,7 @@ import {
   PettyCashFundReplenishmentProjectOptions,
   PettyCashFundReplenishmentResponsibilityCenterOptions,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentConstants";
-import type { PettyCashFundReplenishmentActionPageState } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-fund-replenishment/usePettyCashFundReplenishmentActionPage";
+import type { PettyCashFundReplenishmentActionPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLookupDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppLookupDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
@@ -131,11 +131,15 @@ export function PettyCashFundReplenishmentDetailsFields({
             placeholder="Default Account Code"
           />
           <CurrencyExchangeRateRow
-            currencyControlId="pcfr-currency"
             currencyLabel="Currency"
+            currencyControlId="pcfr-currency"
+            currencyError={page.errors.currency}
+            exchangeRateControlId="pcfr-exchange-rate"
+            exchangeRateError={page.errors.exchangeRate}
             currencyControl={
               <AppAdvancedDropdown
                 id="pcfr-currency"
+                className="w-full min-w-0"
                 value={page.values.currency}
                 readOnly={page.isReadonly}
                 isClearable={false}
@@ -146,7 +150,6 @@ export function PettyCashFundReplenishmentDetailsFields({
                 onChange={(value) => page.updateCurrency(String(value))}
               />
             }
-            exchangeRateControlId="pcfr-exchange-rate"
             exchangeRateControl={
               <input
                 id="pcfr-exchange-rate"
@@ -156,7 +159,8 @@ export function PettyCashFundReplenishmentDetailsFields({
                 readOnly={page.isReadonly}
                 disabled={page.isReadonly || page.isExchangeRateLoading}
                 onChange={(event) => page.updateField("exchangeRate", formatExchangeRateInput(event.target.value))}
-                className={`${TransactionFieldClassName} text-right tabular-nums`}
+                className={`${TransactionFieldClassName} text-right tabular-nums${page.isReadonly || page.isExchangeRateLoading ? " transaction-readonly-placeholder" : ""}`}
+                placeholder="0.00"
               />
             }
           />
@@ -166,16 +170,16 @@ export function PettyCashFundReplenishmentDetailsFields({
             value={page.values.transactionNo}
             isReadonly
             isRequired
-            label="Petty Cash Fund Replenishment No."
+            label="PCFR No."
             error={page.errors.transactionNo}
             onValueChange={(value) => page.updateField("transactionNo", value)}
-            placeholder="Auto Generated Petty Cash Fund Replenishment Transaction Number"
+            placeholder="Auto Generated PCFR Transaction Number"
           />
           <TransactionTextField
             value={page.values.documentDate}
             isReadonly={page.isReadonly}
             isRequired
-            label="Petty Cash Fund Replenishment Date"
+            label="PCFR Date"
             error={page.errors.documentDate}
             type="date"
             onValueChange={(value) => page.updateField("documentDate", value)}

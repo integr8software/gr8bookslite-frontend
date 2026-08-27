@@ -4,7 +4,6 @@ import {
   CashAdvanceCostCenterOptions,
 } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
 import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
-import { CashDisbursementOverviewActionColumnWidth } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import type { ColumnOrderState, VisibilityState } from "@tanstack/react-table";
 import type {
   CashAdvanceMultipleEntryDetailsTab,
@@ -25,10 +24,9 @@ export const CashAdvanceMultipleEntryTablePaginationStorageKey = "cash-disbursem
 
 export const CashAdvanceMultipleEntryOverviewColumnWidths = {
   ...TransactionOverviewColumnWidths,
-  transactionNumber: 280,
-  amount: 210,
-  status: 120,
-  actions: CashDisbursementOverviewActionColumnWidth,
+  partyName: 300,
+  accountTitle: 230,
+  actions: TransactionOverviewColumnWidths.actions,
 } as const;
 
 export const CashAdvanceMultipleEntryStatuses = {
@@ -45,7 +43,7 @@ export const CashAdvanceMultipleEntrySubmitConfirmationDialogTitles: Record<
   string
 > = {
   save: "Save Cash Advance Multiple Entry?",
-  draft: "Save as Draft?",
+  draft: "Save Cash Advance Multiple Entry as Draft?",
 };
 
 export const CashAdvanceMultipleEntrySubmitConfirmationDialogConfirmLabels: Record<
@@ -65,7 +63,7 @@ export function getCashAdvanceMultipleEntryStatusDialogCopy(
     return {
       confirmLabel: "Undo Approved",
       description: `This will undo the approval of ${recordLabel} and return it to For Approval.`,
-      iconTone: "question" as const,
+      iconTone: "undo" as const,
       pendingLabel: "Undoing Approval...",
       title: "Undo Approved Cash Advance Multiple Entry?",
       tone: "question" as const,
@@ -79,7 +77,7 @@ export function getCashAdvanceMultipleEntryStatusDialogCopy(
     return {
       confirmLabel: "Undo Disapproved",
       description: `This will undo the disapproval of ${recordLabel} and return it to For Approval.`,
-      iconTone: "question" as const,
+      iconTone: "undo" as const,
       pendingLabel: "Undoing Disapproval...",
       title: "Undo Disapproved Cash Advance Multiple Entry?",
       tone: "question" as const,
@@ -90,7 +88,7 @@ export function getCashAdvanceMultipleEntryStatusDialogCopy(
     return {
       confirmLabel: "Undo Cancelled",
       description: `This will undo the cancellation of ${recordLabel}.`,
-      iconTone: "question" as const,
+      iconTone: "undo" as const,
       pendingLabel: "Undoing Cancellation...",
       title: "Undo Cancelled Cash Advance Multiple Entry?",
       tone: "question" as const,
@@ -125,7 +123,7 @@ export function getCashAdvanceMultipleEntryStatusDialogCopy(
     iconTone: "cancel" as const,
     pendingLabel: "Cancelling...",
     title: "Make Cash Advance Multiple Entry as Cancelled",
-    tone: "danger" as const,
+    tone: "warning" as const,
   };
 }
 
@@ -160,15 +158,15 @@ export const CashAdvanceMultipleEntryDefaultColumnOrder: ColumnOrderState = [
 
 export const CashAdvanceMultipleEntryStatusFilterOptions = [
   { label: "All statuses", value: CashAdvanceMultipleEntryAllStatusFilter },
-  {
-    label: CashAdvanceMultipleEntryStatuses.draft,
-    value: CashAdvanceMultipleEntryStatuses.draft,
-  },
+  { label: CashAdvanceMultipleEntryStatuses.posted, value: CashAdvanceMultipleEntryStatuses.posted },
   {
     label: CashAdvanceMultipleEntryStatuses.forApproval,
     value: CashAdvanceMultipleEntryStatuses.forApproval,
   },
-  { label: CashAdvanceMultipleEntryStatuses.posted, value: CashAdvanceMultipleEntryStatuses.posted },
+  {
+    label: CashAdvanceMultipleEntryStatuses.draft,
+    value: CashAdvanceMultipleEntryStatuses.draft,
+  },
   {
     label: CashAdvanceMultipleEntryStatuses.disapproved,
     value: CashAdvanceMultipleEntryStatuses.disapproved,
@@ -181,9 +179,9 @@ export const CashAdvanceMultipleEntryStatusFilterOptions = [
 
 export const CashAdvanceMultipleEntryStatusFilters = [
   CashAdvanceMultipleEntryAllStatusFilter,
-  CashAdvanceMultipleEntryStatuses.draft,
-  CashAdvanceMultipleEntryStatuses.forApproval,
   CashAdvanceMultipleEntryStatuses.posted,
+  CashAdvanceMultipleEntryStatuses.forApproval,
+  CashAdvanceMultipleEntryStatuses.draft,
   CashAdvanceMultipleEntryStatuses.disapproved,
   CashAdvanceMultipleEntryStatuses.cancelled,
 ] as const;
@@ -204,13 +202,27 @@ export const CashAdvanceMultipleEntryEntryTabs: {
   { id: "accounting", label: "Accounting Entries" },
 ];
 
+export const CashAdvanceMultipleEntryItemColumnOrder = [
+  "partyCode",
+  "partyName",
+  "amount",
+  "cashAdvanceLimit",
+  "cashAdvanceBalance",
+  "totalCashAdvanced",
+  "responsibilityCenterCode",
+  "responsibilityCenter",
+  "remarks",
+];
+
 export const CashAdvanceMultipleEntryDefaultItemColumnIds = [
   "partyName",
   "amount",
   "cashAdvanceBalance",
   "responsibilityCenter",
-  "particulars",
+  "remarks",
 ];
+
+export const CashAdvanceMultipleEntryProtectedItemColumnIds = new Set(["partyName", "amount"]);
 
 export const CashAdvanceMultipleEntryDefaultAccountingColumnIds = ["accountTitle", "credit", "debit", "partyName"];
 
@@ -225,6 +237,12 @@ export const CashAdvanceMultipleEntryEntryInputClassName =
 
 export const CashAdvanceMultipleEntryEntryDropdownClassName =
   "[&_.app-advanced-dropdown-control]:h-10 [&_.app-advanced-dropdown-control]:rounded-none [&_.app-advanced-dropdown-control]:border-0 [&_.app-advanced-dropdown-control]:bg-transparent [&_.app-advanced-dropdown-control]:px-3 [&_.app-advanced-dropdown-control]:shadow-none [&_.app-advanced-dropdown-control]:focus:ring-2 [&_.app-advanced-dropdown-control]:focus:ring-inset [&_.app-advanced-dropdown-control]:focus:ring-skyblue/35";
+
+export function getCashAdvanceMultipleEntryTableMinWidthClassName(visibleColumnCount: number) {
+  if (visibleColumnCount >= 13) return "min-w-[158rem]";
+  if (visibleColumnCount >= 10) return "min-w-[126rem]";
+  return "min-w-[82rem]";
+}
 
 export {
   CashAdvanceAccountOptions as CashAdvanceMultipleEntryAccountOptions,

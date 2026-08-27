@@ -53,6 +53,8 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
   const isDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
   const draft = useModuleDraft({
     enabled: !isReadonly,
+    initialValues,
+    isDirty,
     key: createModuleDraftKey({ mode, moduleId: "cash-disbursement:revolving-fund-replenishment", recordId: params.recordId }),
     setValues,
     values,
@@ -96,6 +98,8 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
   function removeEntry(rowId: string) {
     if (values.entries.length > 1) {
       updateEntries(values.entries.filter((entry) => entry.id !== rowId));
+    } else {
+      updateEntries([createBlankRevolvingFundReplenishmentEntry()]);
     }
   }
 
@@ -152,7 +156,7 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
     const nextErrors = status === RevolvingFundReplenishmentStatuses.draft ? {} : validateRevolvingFundReplenishmentForm(values);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) {
-      toast.error("Please fix the highlighted revolving fund replenishment fields.");
+      toast.error("Please fix the highlighted Revolving Fund Replenishment fields.");
       isSubmittingRef.current = false;
       setIsSubmitting(false);
       releaseSubmitLock();
@@ -166,13 +170,13 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
       draft.clearDraft();
       toast.success(
         status === RevolvingFundReplenishmentStatuses.draft
-          ? "Revolving fund replenishment saved as draft."
-          : "Revolving fund replenishment submitted for approval.",
+          ? "Revolving Fund Replenishment Saved as Draft."
+          : "Revolving Fund Replenishment Submitted for Approval.",
       );
       options.onSaved?.();
       return true;
     } catch {
-      toast.error("Could not save the revolving fund replenishment. Please try again.");
+      toast.error("Could not save the Revolving Fund Replenishment. Please try again.");
       isSubmittingRef.current = false;
       setIsSubmitting(false);
       releaseSubmitLock();
@@ -189,16 +193,34 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
       saveRevolvingFundReplenishmentRecords(upsertRevolvingFundReplenishmentRecord(nextRecord));
       setRecord(nextRecord);
       setValues(createRevolvingFundReplenishmentFormValues(nextRecord));
-      toast.success(`Revolving fund replenishment marked as ${status}.`);
+      toast.success(`Revolving Fund Replenishment Marked as ${status}.`);
       return true;
     } catch {
-      toast.error("Could not update the revolving fund replenishment. Please try again.");
+      toast.error("Could not update the Revolving Fund Replenishment. Please try again.");
       releaseActionLock();
       return false;
     }
   }
 
+  function validate(status: RevolvingFundReplenishmentStatus = RevolvingFundReplenishmentStatuses.forApproval): boolean {
+    if (isReadonly || isSubmittingRef.current) return false;
+    if (mode === "edit" && !isDirty) {
+      toast.error("No changes to save.");
+      return false;
+    }
+    const nextErrors = status === RevolvingFundReplenishmentStatuses.draft ? {} : validateRevolvingFundReplenishmentForm(values);
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) {
+      toast.error("Please fix the highlighted Revolving Fund Replenishment fields.");
+      return false;
+    }
+    return true;
+  }
+
   return {
+    discardDraft: draft.discardDraft,
+    hasDiscardableChanges: isDirty,
+    saveDraft: draft.saveDraft,
     activeTab,
     addEntries,
     currencyOptions: transactionCurrency.currencyOptions,
@@ -223,8 +245,8 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
     updateEntry,
     updateField,
     updateStatus,
+    validate,
     values,
   };
 }
 
-export type { RevolvingFundReplenishmentActionPageState } from "@/app/src/types/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentTypes";

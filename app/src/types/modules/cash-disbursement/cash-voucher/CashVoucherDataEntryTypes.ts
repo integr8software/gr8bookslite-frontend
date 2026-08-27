@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { DefaultAccount } from "@/app/src/types/modules/financial-maintenance/default-account/DefaultAccountTypes";
 import type { ModuleDataEntryClearAction, ModuleDataEntryColumn } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
@@ -11,16 +12,17 @@ import type {
 
 export type CashVoucherEntryColumnId =
   | "accountCode"
-  | "atcCode"
+  | "ewtCode"
   | "accountName"
   | "checkDate"
   | "checkNo"
   | "checkStatus"
   | "partyCode"
   | "partyName"
-  | "particulars"
+  | "remarks"
   | "refId"
   | "responsibilityCenter"
+  | "responsibilityCenterCode"
   | "vatType"
   | "debit"
   | "credit";
@@ -28,6 +30,7 @@ export type CashVoucherEntryColumnId =
 export type CashVoucherEntryView = "accounting" | "expense";
 
 export type ExpenseEntryColumnId =
+  | "disbursementCode"
   | "expenseType"
   | "amount"
   | "checkDate"
@@ -40,11 +43,11 @@ export type ExpenseEntryColumnId =
   | "ewtCode"
   | "ewtPercent"
   | "ewtAmount"
-  | "totalAmountDue"
   | "partyCode"
   | "partyName"
-  | "particulars"
+  | "remarks"
   | "responsibilityCenter"
+  | "responsibilityCenterCode"
   | "refId";
 
 export type VoucherDataEntryProps = {
@@ -79,30 +82,72 @@ export type CashVoucherEntryFieldsUpdater = (entryId: string, updates: Partial<C
 
 export type CashVoucherAccountingEntryColumnsParams = {
   canAddPartyName: boolean;
-  canAddResponsibilityCenter: boolean;
   chartAccounts: ModuleChartAccount[];
   columnLabels: Record<CashVoucherEntryColumnId, string>;
   columnWidths: Record<CashVoucherEntryColumnId, number>;
-  ewtOptions: AppAdvancedDropdownOption[];
   isReadonly: boolean;
   onAddPartyName: () => void;
-  onAddResponsibilityCenter: (entryId: string) => void;
   onUpdateEntry: CashVoucherEntryUpdater;
   onUpdateEntryFields: CashVoucherEntryFieldsUpdater;
   partyOptions: AppAdvancedDropdownOption[];
-  responsibilityCenterOptions: AppAdvancedDropdownOption[];
-  vatOptions: AppAdvancedDropdownOption[];
+  vatOptions?: AppAdvancedDropdownOption[];
 };
 
 export type CashVoucherExpenseEntryColumnsParams = {
   accountingColumns: Record<CashVoucherEntryColumnId, ModuleDataEntryColumn<CashVoucherLineEntry>>;
   canAddExpenseType: boolean;
+  canAddResponsibilityCenter: boolean;
   ewtOptions: AppAdvancedDropdownOption[];
   expenseAccounts: ModuleChartAccount[];
   expenseColumnLabels: Record<ExpenseEntryColumnId, string>;
   expenseColumnWidths: Record<ExpenseEntryColumnId, number>;
   isReadonly: boolean;
+  lineErrors?: Record<string, Partial<Record<string, string>>>;
   onAddExpenseType: () => void;
+  onAddResponsibilityCenter: (entryId: string) => void;
+  responsibilityCenterOptions: AppAdvancedDropdownOption[];
+  taxCodes: AlphanumericTaxCode[];
+  updateExpenseEntryFields: CashVoucherEntryFieldsUpdater;
+  vatOptions: AppAdvancedDropdownOption[];
+};
+
+export type CashVoucherAccountingEntryTableProps = {
+  accountingColumns?: Record<CashVoucherEntryColumnId, ModuleDataEntryColumn<CashVoucherLineEntry>>;
+  accountingRows: CashVoucherLineEntry[];
+  errors: CashVoucherFormErrors;
+  isReadonly: boolean;
+  title?: ReactNode;
+  onAddEntries?: (count: number) => void;
+  onClearEntries?: VoucherDataEntryProps["onClearEntries"];
+  onDuplicateEntry?: (entryId: string) => void;
+  onInsertEntry?: (targetEntryId: string, position: "above" | "below") => void;
+  onMoveEntry?: (sourceEntryId: string, targetEntryId: string) => void;
+  onRemoveEntry?: (entryId: string) => void;
+  totalCredit?: number;
+  totalDebit?: number;
+  variance?: number;
+};
+
+export type CashVoucherDetailEntryTableProps = {
+  accountingColumns: Record<CashVoucherEntryColumnId, ModuleDataEntryColumn<CashVoucherLineEntry>>;
+  canAddExpenseType: boolean;
+  canAddResponsibilityCenter: boolean;
+  errors: CashVoucherFormErrors;
+  ewtOptions: AppAdvancedDropdownOption[];
+  expenseAccounts: ModuleChartAccount[];
+  expenseRows: CashVoucherLineEntry[];
+  isReadonly: boolean;
+  lineErrors?: Record<string, Partial<Record<string, string>>>;
+  title?: ReactNode;
+  onAddEntries: (count: number) => void;
+  onAddExpenseType: () => void;
+  onAddResponsibilityCenter: (entryId: string) => void;
+  onClearEntries: VoucherDataEntryProps["onClearEntries"];
+  onDuplicateEntry: (entryId: string) => void;
+  onInsertEntry: (targetEntryId: string, position: "above" | "below") => void;
+  onMoveEntry: (sourceEntryId: string, targetEntryId: string) => void;
+  onRemoveEntry: (entryId: string) => void;
+  responsibilityCenterOptions: AppAdvancedDropdownOption[];
   taxCodes: AlphanumericTaxCode[];
   updateExpenseEntryFields: CashVoucherEntryFieldsUpdater;
   vatOptions: AppAdvancedDropdownOption[];
@@ -114,12 +159,12 @@ export type EditableCashVoucherAccountingGridRow = {
   credit: string;
   debit: string;
   id: string;
-  particulars: string;
+  remarks: string;
   taxDetails: CashVoucherTaxDetails;
   taxRate: string;
 };
 
-export type CashVoucherAccountingGridColumnId = "accountCode" | "accountName" | "particulars" | "taxRate" | "debit" | "credit";
+export type CashVoucherAccountingGridColumnId = "accountCode" | "accountName" | "remarks" | "taxRate" | "debit" | "credit";
 
 export type CashVoucherAccountingExportTheme = {
   accentColor: string;

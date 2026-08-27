@@ -1,3 +1,4 @@
+import { z } from "zod";
 import type {
   CashVoucherEntryDraft,
   CashVoucherFormErrors,
@@ -5,8 +6,15 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 
+const CashVoucherDateValidationSchema = z.string().trim().min(1, "Select a CV Date.");
+
 export function validateCashVoucherDetails(values: CashVoucherFormValues) {
   const errors: CashVoucherFormErrors = {};
+  const voucherDateResult = CashVoucherDateValidationSchema.safeParse(values.voucherDate);
+
+  if (!voucherDateResult.success) {
+    errors.voucherDate = voucherDateResult.error.issues[0]?.message;
+  }
 
   if (!values.partyCode.trim()) {
     errors.partyCode = "Party code is required.";

@@ -27,6 +27,8 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
 import type { DefaultAccount } from "@/app/src/types/modules/financial-maintenance/default-account/DefaultAccountTypes";
 import type { ModuleDataEntryClearAction } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
+import { calculateFitColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/entryTableState.util";
+import { formatAmount } from "@/app/src/utils/currency.util";
 
 export function createAccountingChartAccountOptions(entries: CashVoucherLineEntry[]): ModuleChartAccount[] {
   const chartAccounts = getModuleChartAccounts();
@@ -85,7 +87,7 @@ export function normalizeCashVoucherLineEntryFields(entry: CashVoucherLineEntry)
 
   return {
     ...entry,
-    atcCode: entry.atcCode ?? taxDetails.atcCode ?? "",
+    ewtCode: entry.ewtCode ?? taxDetails.ewtCode ?? "",
     partyCode: entry.partyCode ?? "",
     partyName: entry.partyName ?? "",
     refId: entry.refId ?? taxDetails.refId ?? "",
@@ -100,7 +102,7 @@ export function syncCashVoucherLineEntryTaxDetails(entry: CashVoucherLineEntry):
   const taxDetails = syncTaxDetailsAmount(
     {
       ...entry.taxDetails,
-      atcCode: entry.atcCode ?? entry.taxDetails.atcCode,
+      ewtCode: entry.ewtCode ?? entry.taxDetails.ewtCode,
       refId: entry.refId ?? entry.taxDetails.refId,
       responsibilityCenter: entry.responsibilityCenter ?? entry.taxDetails.responsibilityCenter,
       vatType: entry.vatType ?? entry.taxDetails.vatType,
@@ -111,7 +113,7 @@ export function syncCashVoucherLineEntryTaxDetails(entry: CashVoucherLineEntry):
 
   return {
     ...entry,
-    atcCode: taxDetails.atcCode,
+    ewtCode: taxDetails.ewtCode,
     refId: taxDetails.refId,
     responsibilityCenter: taxDetails.responsibilityCenter,
     taxDetails,
@@ -189,10 +191,13 @@ export function createAutomaticAccountingEntries(
   entries: CashVoucherLineEntry[],
   options: {
     bankAccount?: CashVoucherBankAccount | null;
+    blankRemarksEntryIds?: string[];
+    generatedRemarksOverrides?: Record<string, string>;
     isCashPayment: boolean;
     paymentMethod: string;
   },
 ) {
+  const blankRemarksEntryIds = new Set(options.blankRemarksEntryIds ?? []);
   const editableExpenseEntries = entries
     .filter((entry) => !isGeneratedAccountingEntry(entry))
     .map((entry) => {
@@ -201,11 +206,13 @@ export function createAutomaticAccountingEntries(
         credit: 0,
       });
       const netEntryAmounts = getSignedAccountingEntryAmounts(normalizedEntry.taxDetails.netAmount, "debit");
+      const hasIntentionalBlankRemarks = blankRemarksEntryIds.has(entry.id) && normalizedEntry.remarks === "";
 
       return {
         ...normalizedEntry,
         debit: netEntryAmounts.debit,
         credit: netEntryAmounts.credit,
+        remarks: hasIntentionalBlankRemarks ? "" : normalizedEntry.remarks || normalizedEntry.accountName,
         status: "Balanced" as const,
       };
     });
@@ -224,6 +231,7 @@ export function createAutomaticAccountingEntries(
   const totalVatAmount = expenseEntriesWithAmount.reduce((sum, entry) => sum + Number(entry.taxDetails.vatAmount || 0), 0);
   const totalEwtAmount = expenseEntriesWithAmount.reduce((sum, entry) => sum + Number(entry.taxDetails.ewtAmount || 0), 0);
   const totalCashVoucherAmount = expenseEntriesWithAmount.reduce((sum, entry) => sum + Number(entry.taxDetails.amount || 0), 0);
+  const generatedRemarks = createGeneratedAccountingRemarks(expenseEntriesWithAmount, options.paymentMethod, blankRemarksEntryIds);
   const commonFields = {
     partyCode: referenceEntry?.partyCode ?? "",
     partyName: referenceEntry?.partyName ?? "",
@@ -243,7 +251,7 @@ export function createAutomaticAccountingEntries(
       debit: vatEntryAmounts.debit,
       credit: vatEntryAmounts.credit,
       id: "auto-input-vat-current",
-      remarks: referenceEntry?.remarks.trim() || "Input VAT",
+      remarks: options.generatedRemarksOverrides?.["auto-input-vat-current"] ?? generatedRemarks.inputVat,
       taxDetails: {
         ...createTaxDetails(totalVatAmount, "0%"),
         ...commonFields,
@@ -262,15 +270,15 @@ export function createAutomaticAccountingEntries(
       ...commonFields,
       accountCode: ExpandedWithholdingTaxAccountCode,
       accountName: ExpandedWithholdingTaxAccountName,
-      atcCode: referenceEntry?.taxDetails.ewtCode ?? "",
+      ewtCode: referenceEntry?.taxDetails.ewtCode ?? "",
       debit: ewtEntryAmounts.debit,
       credit: ewtEntryAmounts.credit,
       id: "auto-ewt-current",
-      remarks: referenceEntry?.remarks.trim() || "Expanded Withholding Tax",
+      remarks: options.generatedRemarksOverrides?.["auto-ewt-current"] ?? generatedRemarks.ewt,
       taxDetails: {
         ...createTaxDetails(totalEwtAmount, "0%"),
         ...commonFields,
-        atcCode: referenceEntry?.taxDetails.ewtCode ?? "",
+        ewtCode: referenceEntry?.taxDetails.ewtCode ?? "",
       },
       taxRate: "0%",
       vatType: "EWT",
@@ -298,7 +306,7 @@ export function createAutomaticAccountingEntries(
       debit: paymentEntryAmounts.debit,
       credit: paymentEntryAmounts.credit,
       id: "auto-credit-current",
-      remarks: referenceEntry?.remarks.trim() || `Settlement via ${options.paymentMethod || "payment"}`,
+      remarks: options.generatedRemarksOverrides?.["auto-credit-current"] ?? generatedRemarks.settlement,
       taxDetails: {
         ...createTaxDetails(totalCashVoucherAmount, "0%"),
         ...commonFields,
@@ -310,6 +318,42 @@ export function createAutomaticAccountingEntries(
   }
 
   return [...editableExpenseEntries, ...generatedEntries];
+}
+
+function createGeneratedAccountingRemarks(entries: CashVoucherLineEntry[], paymentMethod: string, blankRemarksEntryIds: Set<string>) {
+  const userRemarksSummary = createUniqueRemarksSummary(
+    entries.map((entry) => {
+      if (blankRemarksEntryIds.has(entry.id)) {
+        return "";
+      }
+
+      const remarks = entry.remarks.trim();
+      const createdRemarks = entry.accountName.trim();
+
+      return remarks && remarks !== createdRemarks ? remarks : "";
+    }),
+  );
+
+  if (userRemarksSummary) {
+    return {
+      ewt: userRemarksSummary,
+      inputVat: userRemarksSummary,
+      settlement: userRemarksSummary,
+    };
+  }
+
+  const expenseSummary = createUniqueRemarksSummary(entries.map((entry) => entry.accountName.trim()));
+  const settlementMethod = paymentMethod.trim() || "payment";
+
+  return {
+    ewt: expenseSummary ? `EWT - ${expenseSummary}` : "EWT",
+    inputVat: expenseSummary ? `Input VAT - ${expenseSummary}` : "Input VAT",
+    settlement: expenseSummary ? `Settlement via ${settlementMethod} - ${expenseSummary}` : `Settlement via ${settlementMethod}`,
+  };
+}
+
+function createUniqueRemarksSummary(remarks: string[]) {
+  return remarks.map((remark) => remark.trim()).filter((remark, index, list) => remark && list.indexOf(remark) === index).join(", ");
 }
 
 export function getSignedAccountingEntryAmounts(value: number, positiveSide: "credit" | "debit") {
@@ -337,7 +381,7 @@ export function roundAccountingAmount(value: number) {
 
 export function getExpenseEntryColumnTotal(
   entries: CashVoucherLineEntry[],
-  columnId: "amount" | "ewtAmount" | "netAmount" | "totalAmountDue" | "vatAmount",
+  columnId: "amount" | "ewtAmount" | "netAmount" | "vatAmount",
 ) {
   return entries.reduce((sum, entry) => {
     switch (columnId) {
@@ -347,8 +391,6 @@ export function getExpenseEntryColumnTotal(
         return sum + Number(entry.taxDetails.ewtAmount || 0);
       case "netAmount":
         return sum + Number(entry.taxDetails.netAmount || 0);
-      case "totalAmountDue":
-        return sum + Number(entry.taxDetails.amount || 0);
       case "vatAmount":
         return sum + Number(entry.taxDetails.vatAmount || 0);
       default:
@@ -357,14 +399,33 @@ export function getExpenseEntryColumnTotal(
   }, 0);
 }
 
-export function getCashVoucherEntryExportCell(entry: CashVoucherLineEntry, columnId: CashVoucherEntryColumnId) {
+export function getCashVoucherEntryExportCell(
+  entry: CashVoucherLineEntry,
+  columnId: CashVoucherEntryColumnId | ExpenseEntryColumnId | string,
+) {
   switch (columnId) {
     case "accountCode":
+    case "disbursementCode":
       return entry.accountCode ?? "";
     case "accountName":
+    case "expenseType":
       return entry.accountName ?? "";
-    case "atcCode":
-      return entry.atcCode ?? "";
+    case "amount":
+      return formatAmount(entry.taxDetails?.grossAmount ?? 0);
+    case "netAmount":
+      return formatAmount(entry.taxDetails?.netAmount ?? 0);
+    case "vatCode":
+      return entry.taxDetails?.vatCode ?? entry.vatType ?? "";
+    case "vatPercent":
+      return `${formatAmount(entry.taxDetails?.vatPercent ?? 0)}%`;
+    case "vatAmount":
+      return formatAmount(entry.taxDetails?.vatAmount ?? 0);
+    case "ewtCode":
+      return entry.ewtCode ?? entry.taxDetails?.ewtCode ?? "";
+    case "ewtPercent":
+      return `${formatAmount(entry.taxDetails?.ewtPercent ?? 0)}%`;
+    case "ewtAmount":
+      return formatAmount(entry.taxDetails?.ewtAmount ?? 0);
     case "checkNo":
       return entry.checkNo ?? "";
     case "checkStatus":
@@ -380,6 +441,7 @@ export function getCashVoucherEntryExportCell(entry: CashVoucherLineEntry, colum
     case "refId":
       return entry.refId ?? "";
     case "responsibilityCenter":
+    case "responsibilityCenterCode":
       return entry.responsibilityCenter ?? "";
     case "vatType":
       return entry.vatType ?? "";
@@ -450,7 +512,7 @@ export function disbursementEntryHasData(entry: CashVoucherLineEntry) {
     (entry.responsibilityCenter ?? "").trim() !== "" ||
     (entry.refId ?? "").trim() !== "" ||
     (entry.vatType ?? "").trim() !== "" ||
-    (entry.atcCode ?? "").trim() !== "" ||
+    (entry.ewtCode ?? "").trim() !== "" ||
     entry.remarks.trim() !== "" ||
     parseMoneyNumberInput(entry.debit) > 0 ||
     parseMoneyNumberInput(entry.credit) > 0 ||
@@ -480,13 +542,11 @@ export function calculateCashVoucherEntryColumnFitWidth({
   columnLabels: Record<CashVoucherEntryColumnId, string>;
   entries: CashVoucherLineEntry[];
 }) {
-  const headerWidth = estimateCashVoucherEntryTextWidth(columnLabels[columnId], 76);
-  const contentWidth = entries.reduce(
-    (currentWidth, entry) =>
-      Math.max(currentWidth, estimateCashVoucherEntryTextWidth(String(getCashVoucherEntryExportCell(entry, columnId) ?? ""), 24)),
-    50,
+  return calculateFitColumnWidth(
+    columnLabels[columnId],
+    entries,
+    columnId,
+    (entry, id) => getCashVoucherEntryExportCell(entry, id as CashVoucherEntryColumnId),
   );
-
-  return Math.max(headerWidth, contentWidth);
 }
 

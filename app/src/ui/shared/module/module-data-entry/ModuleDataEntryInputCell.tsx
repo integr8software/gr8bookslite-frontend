@@ -7,6 +7,7 @@ export function ModuleDataEntryInputCell({
   align = "left",
   className,
   id,
+  isInvalid = false,
   name,
   onChange,
   placeholder,
@@ -17,6 +18,7 @@ export function ModuleDataEntryInputCell({
   align?: "left" | "right" | "center";
   className?: string;
   id: string;
+  isInvalid?: boolean;
   name: string;
   onChange?: (value: string) => void;
   placeholder?: string;
@@ -30,6 +32,10 @@ export function ModuleDataEntryInputCell({
       : align === "center"
         ? "text-center"
         : "text-left";
+
+  const invalidClass = isInvalid
+    ? "bg-coralpink/10 text-coralpink ring-2 ring-inset ring-coralpink/50 focus:bg-coralpink/10 focus:ring-coralpink/60"
+    : "";
 
   const displayValue =
     placeholder === "0.00" && (value === 0 || value === "0" || value === "0.00")
@@ -50,7 +56,7 @@ export function ModuleDataEntryInputCell({
         placeholder={placeholder}
         title={placeholder}
         onChange={(event: ChangeEvent<HTMLInputElement>) => onChange?.(event.target.value)}
-        className={`${moduleDataEntryInputClassName} ${alignClass} ${className ?? ""}`}
+        className={`${moduleDataEntryInputClassName} ${alignClass} ${invalidClass} ${className ?? ""}`}
       />
     </>
   );

@@ -9,12 +9,15 @@ export type PettyCashFundActionTab = "details" | "attachments";
 export type PettyCashFundConfirmationAction = "save" | "draft" | "approve" | "disapprove" | "cancel";
 export type PettyCashFundActionPageState = ReturnType<typeof usePettyCashFundActionPage>;
 
-export type PettyCashFundEntrySectionProps = { page: PettyCashFundActionPageState };
-export type PettyCashFundDetailEntryTableProps = { page: PettyCashFundActionPageState };
+export type PettyCashFundOpenResponsibilityCenterDrawerHandler = (rowId: string) => void;
+export type PettyCashFundEntrySectionProps = {
+  page: PettyCashFundActionPageState;
+  onOpenResponsibilityCenterDrawer?: PettyCashFundOpenResponsibilityCenterDrawerHandler;
+};
+export type PettyCashFundDetailEntryTableProps = PettyCashFundEntrySectionProps;
 export type PettyCashFundAccountingEntryTableProps = { page: PettyCashFundActionPageState };
 export type PettyCashFundOverviewPageState = ReturnType<typeof usePettyCashFundOverviewPage>;
 export type PettyCashFundEntryTab = "items" | "accounting";
-export type PettyCashFundBoolean = "False" | "True";
 
 export type PettyCashFundItem = {
   id: string;
@@ -26,13 +29,17 @@ export type PettyCashFundItem = {
   remarks: string;
   amount: string;
   netAmount: string;
+  vatPercent: string;
   vatAmount: string;
+  ewtCode: string;
+  ewtPercent: string;
+  ewtAmount: string;
+  totalAmountDue: string;
   type: string;
   vatType: string;
-  vatable: PettyCashFundBoolean;
-  vatInclusive: PettyCashFundBoolean;
   grossAmount: string;
-  responsibilityCenter: string;
+  responsibilityCenterCode: string;
+  responsibilityCenterName: string;
 };
 
 export type PettyCashFundItemColumnId = Exclude<keyof PettyCashFundItem, "id">;

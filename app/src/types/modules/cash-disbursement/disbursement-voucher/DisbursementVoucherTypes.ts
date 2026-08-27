@@ -143,7 +143,7 @@ export type DisbursementLineEntry = {
   responsibilityCenter?: string;
   refId?: string;
   vatType?: string;
-  atcCode?: string;
+  ewtCode?: string;
   remarks: string;
   debit: number;
   credit: number;
@@ -158,7 +158,6 @@ export type DisbursementTaxDetails = {
   responsibilityCenter: string;
   refId: string;
   vatType: string;
-  atcCode: string;
   grossAmount: number;
   netAmount: number;
   vatCode: string;
@@ -268,7 +267,7 @@ export type DisbursementVoucherEntryDraft = {
   responsibilityCenter?: string;
   refId?: string;
   vatType?: string;
-  atcCode?: string;
+  ewtCode?: string;
   remarks: string;
   debit: string;
   credit: string;

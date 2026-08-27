@@ -1,5 +1,3 @@
-import { PettyCashVoucherVATableOptions } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
-import type { PettyCashVoucherFormValues } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import {
   createPettyCashVoucherAccountOptions,
   createPettyCashVoucherPartyOptions,
@@ -187,39 +185,33 @@ export function PettyCashVoucherDetailsFields({
             }
           />
 
-          <TransactionField controlId="petty-cash-voucher-vatable" label="VATable" error={page.errors.vatable}>
-            <select
-              id="petty-cash-voucher-vatable"
-              value={page.values.vatable}
-              disabled={page.isReadonly}
-              onChange={(event) => page.updateVATable(event.target.value as PettyCashVoucherFormValues["vatable"])}
-              className={`${TransactionFieldClassName} app-select-control`}
-            >
-              {PettyCashVoucherVATableOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </TransactionField>
-
-          <TransactionField label="VAT Amount" error={page.errors.vatAmount}>
-            <MoneyNumberField
-              value={page.values.vatAmount}
-              readOnly
-              onValueChange={(value) => page.updateField("vatAmount", value)}
-              className={`${TransactionFieldClassName} text-right tabular-nums`}
-              placeholder="0.00"
+          <TransactionField controlId="petty-cash-voucher-vat-type" label="VAT Type" error={page.errors.vatType ?? page.errors.vatable}>
+            <AppAdvancedDropdown
+              id="petty-cash-voucher-vat-type"
+              className="w-full min-w-0"
+              value={page.values.vatType}
+              readOnly={page.isReadonly}
+              isClearable
+              menuMinWidth={320}
+              options={page.vatOptions}
+              placeholder="Select VAT Type"
+              searchPlaceholder="Search VAT Type"
+              onChange={(value) => page.updateVatType(String(value ?? ""))}
             />
           </TransactionField>
 
-          <TransactionField label="Net Amount" error={page.errors.netAmount}>
-            <MoneyNumberField
-              value={page.values.netAmount}
-              readOnly
-              onValueChange={(value) => page.updateField("netAmount", value)}
-              className={`${TransactionFieldClassName} text-right tabular-nums`}
-              placeholder="0.00"
+          <TransactionField controlId="petty-cash-voucher-ewt-code" label="EWT Code" error={page.errors.ewtCode}>
+            <AppAdvancedDropdown
+              id="petty-cash-voucher-ewt-code"
+              className="w-full min-w-0"
+              value={page.values.ewtCode}
+              readOnly={page.isReadonly}
+              isClearable
+              menuMinWidth={360}
+              options={page.ewtOptions}
+              placeholder="Select EWT Code"
+              searchPlaceholder="Search EWT Code"
+              onChange={(value) => page.updateEwtCode(String(value ?? ""))}
             />
           </TransactionField>
         </div>

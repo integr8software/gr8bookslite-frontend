@@ -111,36 +111,54 @@ export const RevolvingFundReplenishmentEntryInputClassName =
 export const RevolvingFundReplenishmentEntryColumnOrder: RevolvingFundReplenishmentEntryColumnId[] = [
   "revolvingFundDate",
   "revolvingFundNo",
-  "accountCode",
-  "accountTitle",
-  "totalAmount",
+  "supplierCode",
+  "supplierName",
+  "amount",
   "netAmount",
+  "vatType",
+  "vatPercent",
   "vatAmount",
+  "ewtCode",
+  "ewtPercent",
+  "ewtAmount",
   "remarks",
 ];
 export const RevolvingFundReplenishmentEntryColumnLabels: Record<RevolvingFundReplenishmentEntryColumnId, string> = {
-  revolvingFundDate: "RF Date",
-  revolvingFundNo: "RF No.",
-  accountCode: "Account Code",
-  accountTitle: "Account Title",
-  totalAmount: "Total Amount",
+  revolvingFundDate: "Revolving Fund Date",
+  revolvingFundNo: "Revolving Fund No.",
+  supplierCode: "Supplier Code",
+  supplierName: "Supplier Name",
+  amount: "Amount",
   netAmount: "Net Amount",
+  vatType: "VAT Type",
+  vatPercent: "VAT Rate",
   vatAmount: "VAT Amount",
+  ewtCode: "EWT Code",
+  ewtPercent: "EWT Rate",
+  ewtAmount: "EWT Amount",
+  totalAmountDue: "Net Amount",
   remarks: "Remarks",
 };
 export const RevolvingFundReplenishmentEntryColumnWidths: Record<RevolvingFundReplenishmentEntryColumnId, number> = {
-  revolvingFundDate: 135,
+  revolvingFundDate: 150,
   revolvingFundNo: 155,
-  accountCode: 140,
-  accountTitle: 220,
-  totalAmount: 140,
+  supplierCode: 145,
+  supplierName: 220,
+  amount: 140,
   netAmount: 140,
+  vatType: 155,
+  vatPercent: 115,
   vatAmount: 140,
+  ewtCode: 155,
+  ewtPercent: 115,
+  ewtAmount: 140,
+  totalAmountDue: 155,
   remarks: 260,
 };
 export const RevolvingFundReplenishmentProtectedEntryColumnIds = new Set<RevolvingFundReplenishmentEntryColumnId>([
   "revolvingFundDate",
   "revolvingFundNo",
+  "amount",
 ]);
 export const RevolvingFundReplenishmentAccountingColumnOrder: RevolvingFundReplenishmentAccountingColumnId[] = [
   "accountCode",
@@ -156,7 +174,7 @@ export const RevolvingFundReplenishmentAccountingColumnLabels: Record<RevolvingF
   accountTitle: "Account Title",
   debit: "Debit",
   credit: "Credit",
-  partyCode: "Party Code",
+  partyCode: "Supplier Code",
   partyName: "Supplier Name",
   remarks: "Remarks",
 };
@@ -180,7 +198,7 @@ export const RevolvingFundReplenishmentPartyOptions: AppAdvancedDropdownOption[]
   { label: "E000145", name: "Jose P. Santos", value: "E000145" },
 ];
 export const RevolvingFundReplenishmentAccountOptions: AppAdvancedDropdownOption[] = [
-  { label: "101-200", name: "Revolving Fund Fund", value: "101-200" },
+  { label: "101-200", name: "Revolving Fund", value: "101-200" },
   { label: "101-210", name: "Cash on Hand", value: "101-210" },
 ];
 export const RevolvingFundReplenishmentProjectOptions: AppAdvancedDropdownOption[] = [
@@ -191,6 +209,17 @@ export const RevolvingFundReplenishmentResponsibilityCenterOptions: AppAdvancedD
   { label: "RC-ADM", name: "Administration", value: "RC-ADM" },
   { label: "RC-OPS", name: "Operations", value: "RC-OPS" },
   { label: "RC-SAL", name: "Sales", value: "RC-SAL" },
+];
+export const RevolvingFundReplenishmentEntryVatTypeOptions: AppAdvancedDropdownOption[] = [
+  { label: "12%", name: "VAT", value: "VAT 12%" },
+  { label: "0%", name: "Zero Rated", value: "Zero Rated" },
+  { label: "0%", name: "Exempt", value: "Exempt" },
+];
+export const RevolvingFundReplenishmentEntryEwtCodeOptions: AppAdvancedDropdownOption[] = [
+  { label: "W10", name: "Professional Fees - 10%", value: "W10" },
+  { label: "W05", name: "Professional Fees - 5%", value: "W05" },
+  { label: "WV01", name: "Goods - 1%", value: "WV01" },
+  { label: "WV02", name: "Services - 2%", value: "WV02" },
 ];
 
 export function canEditRevolvingFundReplenishment(status: RevolvingFundReplenishmentStatus) {

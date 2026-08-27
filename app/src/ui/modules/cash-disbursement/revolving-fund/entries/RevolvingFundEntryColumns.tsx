@@ -1,26 +1,30 @@
 import {
   RevolvingFundEntryTypeOptions,
+  RevolvingFundEntryEwtCodeOptions,
   RevolvingFundEntryVatTypeOptions,
   RevolvingFundResponsibilityCenterOptions,
 } from "@/app/src/constants/modules/cash-disbursement/revolving-fund/RevolvingFundConstants";
+import { calculateRevolvingFundItemTaxFields } from "@/app/src/data/modules/cash-disbursement/revolving-fund/RevolvingFundData";
 import type {
   RevolvingFundActionPageState,
   RevolvingFundAccountingColumnId,
   RevolvingFundAccountingEntry,
   RevolvingFundItem,
   RevolvingFundItemColumnId,
+  RevolvingFundOpenResponsibilityCenterDrawerHandler,
 } from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
-import { ModuleDataEntryCheckboxCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryCheckboxCell";
 import { ModuleDataEntryDropdownCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryDropdownCell";
 import { ModuleDataEntryInputCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryInputCell";
 import { ModuleDataEntryMoneyCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryMoneyCell";
+import { ModuleDataEntryReadonlyCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryReadonlyCell";
 
 export function createRevolvingFundItemColumns(
   page: RevolvingFundActionPageState,
   labels: Record<RevolvingFundItemColumnId, string>,
   widths: Record<RevolvingFundItemColumnId, number>,
+  onOpenResponsibilityCenterDrawer?: RevolvingFundOpenResponsibilityCenterDrawerHandler,
 ): Record<RevolvingFundItemColumnId, ModuleDataEntryColumn<RevolvingFundItem>> {
   const text = (id: RevolvingFundItemColumnId, type: "text" | "date" = "text"): ModuleDataEntryColumn<RevolvingFundItem> => ({
     header: labels[id],
@@ -41,7 +45,10 @@ export function createRevolvingFundItemColumns(
     ),
   });
 
-  const money = (id: RevolvingFundItemColumnId): ModuleDataEntryColumn<RevolvingFundItem> => ({
+  const money = (
+    id: RevolvingFundItemColumnId,
+    onChange?: (row: RevolvingFundItem, value: string) => void,
+  ): ModuleDataEntryColumn<RevolvingFundItem> => ({
     header: labels[id],
     id,
     width: widths[id],
@@ -54,7 +61,7 @@ export function createRevolvingFundItemColumns(
         value={row[id]}
         readOnly={page.isReadonly}
         placeholder="0.00"
-        onChange={(value) => page.updateItem(row.id, { [id]: value })}
+        onChange={(value) => (onChange ? onChange(row, value) : page.updateItem(row.id, { [id]: value }))}
       />
     ),
   });
@@ -82,22 +89,13 @@ export function createRevolvingFundItemColumns(
     ),
   });
 
-  const checkbox = (id: "vatable" | "vatInclusive"): ModuleDataEntryColumn<RevolvingFundItem> => ({
+  const calculatedMoney = (id: RevolvingFundItemColumnId): ModuleDataEntryColumn<RevolvingFundItem> => ({
     header: labels[id],
     id,
     width: widths[id],
     widthMode: "fixed",
     widthClassName: "w-auto",
-    renderCell: (row, index, context) => (
-      <ModuleDataEntryCheckboxCell
-        checked={row[id] === "True"}
-        inputId={context.fieldId}
-        inputName={context.fieldName}
-        isReadonly={page.isReadonly}
-        label={`${labels[id]} for row ${index + 1}`}
-        onChange={(checked) => page.updateItem(row.id, { [id]: checked ? "True" : "False" })}
-      />
-    ),
+    renderCell: (row) => <ModuleDataEntryReadonlyCell align="right" value={String(row[id] ?? "")} />,
   });
 
   return {
@@ -107,15 +105,98 @@ export function createRevolvingFundItemColumns(
     orNo: text("orNo"),
     tinNo: text("tinNo"),
     remarks: text("remarks"),
-    amount: money("amount"),
-    netAmount: money("netAmount"),
-    vatAmount: money("vatAmount"),
+    amount: money("amount", (row, value) =>
+      page.updateItem(row.id, {
+        amount: value,
+        ...calculateRevolvingFundItemTaxFields(value, row.vatType, row.ewtCode),
+      }),
+    ),
     type: dropdown("type", RevolvingFundEntryTypeOptions),
-    vatType: dropdown("vatType", RevolvingFundEntryVatTypeOptions),
-    vatable: checkbox("vatable"),
-    vatInclusive: checkbox("vatInclusive"),
+    vatType: {
+      ...dropdown("vatType", RevolvingFundEntryVatTypeOptions),
+      renderCell: (row, _index, context) => (
+        <ModuleDataEntryDropdownCell
+          id={context.fieldId}
+          name={context.fieldName}
+          value={row.vatType}
+          readOnly={page.isReadonly}
+          options={RevolvingFundEntryVatTypeOptions}
+          placeholder="Select VAT Type"
+          searchPlaceholder="Search VAT Type"
+          onChange={(value) =>
+            page.updateItem(row.id, {
+              vatType: value,
+              ...calculateRevolvingFundItemTaxFields(row.amount, value, row.ewtCode),
+            })
+          }
+        />
+      ),
+    },
+    vatPercent: calculatedMoney("vatPercent"),
+    vatAmount: calculatedMoney("vatAmount"),
+    ewtCode: {
+      ...dropdown("ewtCode", RevolvingFundEntryEwtCodeOptions),
+      renderCell: (row, _index, context) => (
+        <ModuleDataEntryDropdownCell
+          id={context.fieldId}
+          name={context.fieldName}
+          value={row.ewtCode}
+          readOnly={page.isReadonly}
+          options={RevolvingFundEntryEwtCodeOptions}
+          placeholder="Select EWT Code"
+          searchPlaceholder="Search EWT Code"
+          onChange={(value) =>
+            page.updateItem(row.id, {
+              ewtCode: value,
+              ...calculateRevolvingFundItemTaxFields(row.amount, row.vatType, value),
+            })
+          }
+        />
+      ),
+    },
+    ewtPercent: calculatedMoney("ewtPercent"),
+    ewtAmount: calculatedMoney("ewtAmount"),
+    netAmount: calculatedMoney("netAmount"),
+    totalAmountDue: calculatedMoney("totalAmountDue"),
     grossAmount: money("grossAmount"),
-    responsibilityCenter: dropdown("responsibilityCenter", RevolvingFundResponsibilityCenterOptions),
+    responsibilityCenterCode: {
+      header: labels.responsibilityCenterCode,
+      id: "responsibilityCenterCode",
+      width: widths.responsibilityCenterCode,
+      widthMode: "fixed",
+      widthClassName: "w-auto",
+      renderCell: (row) => <ModuleDataEntryReadonlyCell value={row.responsibilityCenterCode} />,
+    },
+    responsibilityCenterName: {
+      header: labels.responsibilityCenterName,
+      id: "responsibilityCenterName",
+      width: widths.responsibilityCenterName,
+      widthMode: "fixed",
+      widthClassName: "w-auto",
+      renderCell: (row, _index, context) => (
+        <ModuleDataEntryDropdownCell
+          id={context.fieldId}
+          name={context.fieldName}
+          value={row.responsibilityCenterCode}
+          readOnly={page.isReadonly}
+          options={RevolvingFundResponsibilityCenterOptions}
+          placeholder="Select Responsibility Center"
+          searchPlaceholder="Search Responsibility Center"
+          addAction={
+            !page.isReadonly && onOpenResponsibilityCenterDrawer
+              ? { label: "Add Responsibility Center", onClick: () => onOpenResponsibilityCenterDrawer(row.id) }
+              : undefined
+          }
+          onChange={(value) => {
+            const selectedCenter = RevolvingFundResponsibilityCenterOptions.find((option) => option.value === value);
+            page.updateItem(row.id, {
+              responsibilityCenterCode: String(selectedCenter?.value ?? ""),
+              responsibilityCenterName: selectedCenter?.name ?? "",
+            });
+          }}
+        />
+      ),
+    },
   };
 }
 

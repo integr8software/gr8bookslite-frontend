@@ -23,15 +23,15 @@ import {
 } from "@/app/src/ui/shared/module/module-data-entry/entryTableState.util";
 import { clampColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/utils";
 
-export function PettyCashFundDetailEntryTable({ page }: PettyCashFundDetailEntryTableProps) {
+export function PettyCashFundDetailEntryTable({ onOpenResponsibilityCenterDrawer, page }: PettyCashFundDetailEntryTableProps) {
   const [columnOrder, setColumnOrder] = useState<PettyCashFundItemColumnId[]>([...PettyCashFundDefaultItemColumnIds]);
   const [visibleColumnIds, setVisibleColumnIds] = useState<PettyCashFundItemColumnId[]>([...PettyCashFundDefaultItemColumnIds]);
   const [columnWidths, setColumnWidths] = useState({ ...PettyCashFundItemColumnWidths });
   const [columnLabels, setColumnLabels] = useState({ ...PettyCashFundItemColumnLabels });
 
   const allColumns = useMemo(
-    () => createPettyCashFundItemColumns(page, columnLabels, columnWidths),
-    [columnLabels, columnWidths, page],
+    () => createPettyCashFundItemColumns(page, columnLabels, columnWidths, onOpenResponsibilityCenterDrawer),
+    [columnLabels, columnWidths, onOpenResponsibilityCenterDrawer, page],
   );
 
   const columns = useMemo(
@@ -95,7 +95,7 @@ export function PettyCashFundDetailEntryTable({ page }: PettyCashFundDetailEntry
   return (
     <ModuleDataEntry
       addButtonLabel="Add Entry"
-      title=""
+      title="Petty Cash Fund Entries"
       emptyRowLabel="entry"
       error={page.errors.items}
       footerDetails={
@@ -131,7 +131,7 @@ export function PettyCashFundDetailEntryTable({ page }: PettyCashFundDetailEntry
         amount: formatPettyCashFundAmount(page.totals.amount),
         netAmount: formatPettyCashFundAmount(page.totals.netAmount),
         vatAmount: formatPettyCashFundAmount(page.totals.vatAmount),
-        grossAmount: formatPettyCashFundAmount(page.totals.grossAmount),
+        ewtAmount: formatPettyCashFundAmount(page.totals.ewtAmount),
       }}
     />
   );

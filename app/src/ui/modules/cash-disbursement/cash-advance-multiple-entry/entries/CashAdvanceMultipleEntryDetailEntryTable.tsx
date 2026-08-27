@@ -83,7 +83,7 @@ export function CashAdvanceMultipleEntryDetailEntryTable({
       rows={rows}
       summaryCells={{ amount: formatCashAdvanceMultipleEntryAmount(totalAmount) }}
       summaryRowHeader="Totals"
-      title=""
+      title="Cash Advance Entries"
       onAddRows={onAddRows}
       onClearRow={(rowId) =>
         onRowsChange(

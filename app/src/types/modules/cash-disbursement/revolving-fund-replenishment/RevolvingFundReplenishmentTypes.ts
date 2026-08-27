@@ -21,11 +21,17 @@ export type RevolvingFundReplenishmentEntry = {
   id: string;
   revolvingFundDate: string;
   revolvingFundNo: string;
-  accountCode: string;
-  accountTitle: string;
-  totalAmount: string;
+  supplierCode: string;
+  supplierName: string;
+  amount: string;
   netAmount: string;
+  vatType: string;
+  vatPercent: string;
   vatAmount: string;
+  ewtCode: string;
+  ewtPercent: string;
+  ewtAmount: string;
+  totalAmountDue: string;
   remarks: string;
 };
 

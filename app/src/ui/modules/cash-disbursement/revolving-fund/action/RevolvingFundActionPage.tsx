@@ -10,6 +10,7 @@ import { getPartyDisplayName } from "@/app/src/data/modules/party-management/Par
 import { useRevolvingFundActionPage } from "@/app/src/hooks/modules/cash-disbursement/revolving-fund/useRevolvingFundActionPage";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
 import type { RevolvingFundActionMode } from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";
+import type { ResponsibilityCenter } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
 import type { PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
 import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
@@ -26,6 +27,9 @@ export function RevolvingFundActionPage({ mode }: { mode: RevolvingFundActionMod
   const router = useRouter();
   const [isPartyDrawerOpen, setIsPartyDrawerOpen] = useState(false);
   const [isProjectDrawerOpen, setIsProjectDrawerOpen] = useState(false);
+  const [isResponsibilityCenterDrawerOpen, setIsResponsibilityCenterDrawerOpen] = useState(false);
+  const [isEntryResponsibilityCenterDrawerOpen, setIsEntryResponsibilityCenterDrawerOpen] = useState(false);
+  const [pendingResponsibilityCenterItemId, setPendingResponsibilityCenterItemId] = useState<string | null>(null);
   const partyStore = usePartyManagementStore();
   const page = useRevolvingFundActionPage({ mode, onSaved: () => router.push(RevolvingFundLink) });
   if (page.isRecordMissing) return <RevolvingFundNotFound />;
@@ -34,6 +38,22 @@ export function RevolvingFundActionPage({ mode }: { mode: RevolvingFundActionMod
     page.updateField("partyName", getPartyDisplayName(record));
     setIsPartyDrawerOpen(false);
   }
+  function handleOpenEntryResponsibilityCenterDrawer(rowId: string) {
+    setPendingResponsibilityCenterItemId(rowId);
+    setIsEntryResponsibilityCenterDrawerOpen(true);
+  }
+
+  function handleCreateEntryResponsibilityCenter(center: ResponsibilityCenter) {
+    if (pendingResponsibilityCenterItemId) {
+      page.updateItem(pendingResponsibilityCenterItemId, {
+        responsibilityCenterCode: center.code,
+        responsibilityCenterName: center.name,
+      });
+    }
+    setPendingResponsibilityCenterItemId(null);
+    setIsEntryResponsibilityCenterDrawerOpen(false);
+  }
+
   return (
     <>
       <section className="grid gap-5">
@@ -50,8 +70,12 @@ export function RevolvingFundActionPage({ mode }: { mode: RevolvingFundActionMod
               page={page}
               onOpenPartyDrawer={() => setIsPartyDrawerOpen(true)}
               onOpenProjectDrawer={() => setIsProjectDrawerOpen(true)}
+              onOpenResponsibilityCenterDrawer={() => setIsResponsibilityCenterDrawerOpen(true)}
             />
-            <RevolvingFundEntrySection page={page} />
+            <RevolvingFundEntrySection
+              page={page}
+              onOpenResponsibilityCenterDrawer={handleOpenEntryResponsibilityCenterDrawer}
+            />
           </>
         ) : (
           <RevolvingFundFileAttachmentFields page={page} />
@@ -75,6 +99,25 @@ export function RevolvingFundActionPage({ mode }: { mode: RevolvingFundActionMod
           page.updateField("projectName", center.name);
           setIsProjectDrawerOpen(false);
         }}
+      />
+      <ResponsibilityCenterDrawer
+        isOpen={!page.isReadonly && isResponsibilityCenterDrawerOpen}
+        mode="add"
+        onClose={() => setIsResponsibilityCenterDrawerOpen(false)}
+        onSaved={(center) => {
+          page.updateField("responsibilityCenterCode", center.code);
+          page.updateField("responsibilityCenter", center.name);
+          setIsResponsibilityCenterDrawerOpen(false);
+        }}
+      />
+      <ResponsibilityCenterDrawer
+        isOpen={!page.isReadonly && isEntryResponsibilityCenterDrawerOpen}
+        mode="add"
+        onClose={() => {
+          setPendingResponsibilityCenterItemId(null);
+          setIsEntryResponsibilityCenterDrawerOpen(false);
+        }}
+        onSaved={handleCreateEntryResponsibilityCenter}
       />
       <RevolvingFundReportPreview
         isOpen={page.isPreviewOpen}

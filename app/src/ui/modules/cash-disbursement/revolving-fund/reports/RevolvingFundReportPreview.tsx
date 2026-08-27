@@ -23,7 +23,7 @@ export function RevolvingFundReportPreview({
       onClose={onClose}
       onGeneratePdf={onGeneratePdf}
     >
-      <article className="mx-auto min-w-[64rem] max-w-5xl bg-white p-12 text-darknavy shadow-sm">
+      <article className="mx-auto min-w-[82rem] max-w-7xl bg-white p-12 text-darknavy shadow-sm">
         <div className="text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-darknavy/55">Gr8Books</p>
           <h1 className="mt-2 text-2xl font-bold">Revolving Fund</h1>
@@ -49,8 +49,15 @@ export function RevolvingFundReportPreview({
               <tr>
                 <th className="px-3 py-2 text-left">Date</th>
                 <th className="px-3 py-2 text-left">Payee</th>
-                <th className="px-3 py-2 text-left">Remarks</th>
                 <th className="px-3 py-2 text-right">Gross Amount</th>
+                <th className="px-3 py-2 text-left">VAT Type</th>
+                <th className="px-3 py-2 text-right">VAT Rate</th>
+                <th className="px-3 py-2 text-right">VAT Amount</th>
+                <th className="px-3 py-2 text-left">EWT Code</th>
+                <th className="px-3 py-2 text-right">EWT Rate</th>
+                <th className="px-3 py-2 text-right">EWT Amount</th>
+                <th className="px-3 py-2 text-right">Net Amount</th>
+                <th className="px-3 py-2 text-left">Remarks</th>
               </tr>
             </thead>
             <tbody>
@@ -58,8 +65,15 @@ export function RevolvingFundReportPreview({
                 <tr key={item.id} className="border-t border-darknavy/10">
                   <td className="px-3 py-2">{formatDate(item.date)}</td>
                   <td className="px-3 py-2">{item.payeeName}</td>
-                  <td className="px-3 py-2">{item.remarks}</td>
                   <td className="px-3 py-2 text-right tabular-nums">{formatCurrency(Number(item.grossAmount.replace(/,/g, "")) || 0)}</td>
+                  <td className="px-3 py-2">{item.vatType}</td>
+                  <td className="px-3 py-2 text-right tabular-nums">{item.vatPercent}</td>
+                  <td className="px-3 py-2 text-right tabular-nums">{formatCurrency(Number(item.vatAmount.replace(/,/g, "")) || 0)}</td>
+                  <td className="px-3 py-2">{item.ewtCode}</td>
+                  <td className="px-3 py-2 text-right tabular-nums">{item.ewtPercent}</td>
+                  <td className="px-3 py-2 text-right tabular-nums">{formatCurrency(Number(item.ewtAmount.replace(/,/g, "")) || 0)}</td>
+                  <td className="px-3 py-2 text-right tabular-nums">{formatCurrency(Number(item.netAmount.replace(/,/g, "")) || 0)}</td>
+                  <td className="px-3 py-2">{item.remarks}</td>
                 </tr>
               ))}
             </tbody>

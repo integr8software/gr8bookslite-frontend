@@ -7,17 +7,15 @@ import {
 import {
   applyVoucherPartyToEntryUpdates,
   createAccountingChartAccountOptions,
-  createAutomaticAccountingEntries,
   createDefaultAccountExpenseOptions,
   getAccountingPartyFallbackValue,
   isGeneratedAccountingEntry,
-  normalizeCashVoucherLineEntryFields,
 } from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherAccountingEntryData";
 import {
   CashVoucherPartyOptions,
   CashVoucherResponsibilityCenterOptions,
 } from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherData";
-import { createEwtOptions, createVatOptions } from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherTaxData";
+import { createEwtOptions, createVatOptions } from "@/app/src/data/shared/tax/TaxData";
 import { useAlphanumericTaxCodes } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
 import type {
   CashVoucherEntryView,
@@ -28,13 +26,10 @@ import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-
 import { CashVoucherAccountingEntryTable } from "@/app/src/ui/modules/cash-disbursement/cash-voucher/entries/CashVoucherAccountingEntryTable";
 import { createCashVoucherAccountingEntryColumns } from "@/app/src/ui/modules/cash-disbursement/cash-voucher/entries/CashVoucherEntryColumns";
 import { CashVoucherDetailEntryTable } from "@/app/src/ui/modules/cash-disbursement/cash-voucher/entries/CashVoucherDetailEntryTable";
-import { ModuleDataEntryTabs } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryTabs";
-
-const CashVoucherAccountingEntryView: CashVoucherEntryView = "accounting";
-const CashVoucherEntryTabs: { id: CashVoucherEntryView; label: string }[] = [
-  { id: CashVoucherExpenseEntryView, label: "Disbursement Details" },
-  { id: CashVoucherAccountingEntryView, label: "Accounting Entries" },
-];
+import {
+  CashVoucherEntryTabs,
+  CashVoucherAccountingEntryView,
+} from "@/app/src/ui/modules/cash-disbursement/cash-voucher/entries/CashVoucherEntryTabs";
 
 export function CashVoucherEntrySection(props: VoucherDataEntryProps) {
   const {
@@ -54,7 +49,6 @@ export function CashVoucherEntrySection(props: VoucherDataEntryProps) {
     onInsertEntry,
     onMoveEntry,
     onRemoveEntry,
-    onReplaceEntries,
     onUpdateEntry,
     onUpdateEntryFields,
     partyCode,
@@ -128,24 +122,10 @@ export function CashVoucherEntrySection(props: VoucherDataEntryProps) {
     (entryId: string, updates: Partial<CashVoucherLineEntry>) => {
       const currentEntry = entries.find((entry) => entry.id === entryId);
       const nextUpdates = applyVoucherPartyToEntryUpdates(currentEntry, updates, partyCode, partyName);
-      const updatedEntries = entries.map((entry) =>
-        entry.id === entryId
-          ? normalizeCashVoucherLineEntryFields({
-              ...entry,
-              ...nextUpdates,
-            })
-          : entry,
-      );
 
-      onReplaceEntries(
-        createAutomaticAccountingEntries(updatedEntries, {
-          bankAccount: null,
-          isCashPayment: true,
-          paymentMethod: "Cash",
-        }),
-      );
+      onUpdateEntryFields(entryId, nextUpdates);
     },
-    [entries, onReplaceEntries, partyCode, partyName],
+    [entries, onUpdateEntryFields, partyCode, partyName],
   );
 
   const accountingColumns = useMemo(
@@ -172,49 +152,50 @@ export function CashVoucherEntrySection(props: VoucherDataEntryProps) {
     ],
   );
 
+  if (entryView === CashVoucherAccountingEntryView) {
+    return (
+      <CashVoucherAccountingEntryTable
+        accountingColumns={accountingColumns}
+        accountingRows={entries}
+        errors={errors}
+        isReadonly={isReadonly}
+        title={<CashVoucherEntryTabs activeTab={entryView} onTabChange={setEntryView} />}
+        totalCredit={totalCredit}
+        totalDebit={totalDebit}
+        variance={variance}
+        onAddEntries={onAddEntries}
+        onClearEntries={onClearEntries}
+        onDuplicateEntry={onDuplicateEntry}
+        onInsertEntry={onInsertEntry}
+        onMoveEntry={onMoveEntry}
+        onRemoveEntry={onRemoveEntry}
+      />
+    );
+  }
+
   return (
-    <ModuleDataEntryTabs
-      activeTab={entryView}
-      ariaLabel="Cash voucher lines"
-      onTabChange={setEntryView}
-      tabs={CashVoucherEntryTabs}
-    >
-      {entryView === CashVoucherAccountingEntryView ? (
-        <CashVoucherAccountingEntryTable
-          accountingColumns={accountingColumns}
-          accountingRows={entries}
-          errors={errors}
-          isReadonly={isReadonly}
-          onAddEntries={onAddEntries}
-          onClearEntries={onClearEntries}
-          totalCredit={totalCredit}
-          totalDebit={totalDebit}
-          variance={variance}
-        />
-      ) : (
-        <CashVoucherDetailEntryTable
-          accountingColumns={accountingColumns}
-          canAddExpenseType={canAddExpenseType}
-          canAddResponsibilityCenter={canAddResponsibilityCenter}
-          errors={errors}
-          ewtOptions={ewtOptions}
-          expenseAccounts={expenseAccounts}
-          expenseRows={expenseRows}
-          isReadonly={isReadonly}
-          onAddEntries={onAddEntries}
-          onAddExpenseType={onAddExpenseType}
-          onAddResponsibilityCenter={onAddResponsibilityCenter}
-          onClearEntries={onClearEntries}
-          onDuplicateEntry={onDuplicateEntry}
-          onInsertEntry={onInsertEntry}
-          onMoveEntry={onMoveEntry}
-          onRemoveEntry={onRemoveEntry}
-          responsibilityCenterOptions={responsibilityCenterOptions}
-          taxCodes={taxCodes}
-          updateExpenseEntryFields={updateExpenseEntryFields}
-          vatOptions={vatOptions}
-        />
-      )}
-    </ModuleDataEntryTabs>
+    <CashVoucherDetailEntryTable
+      accountingColumns={accountingColumns}
+      canAddExpenseType={canAddExpenseType}
+      canAddResponsibilityCenter={canAddResponsibilityCenter}
+      errors={errors}
+      ewtOptions={ewtOptions}
+      expenseAccounts={expenseAccounts}
+      expenseRows={expenseRows}
+      isReadonly={isReadonly}
+      title={<CashVoucherEntryTabs activeTab={entryView} onTabChange={setEntryView} />}
+      onAddEntries={onAddEntries}
+      onAddExpenseType={onAddExpenseType}
+      onAddResponsibilityCenter={onAddResponsibilityCenter}
+      onClearEntries={onClearEntries}
+      onDuplicateEntry={onDuplicateEntry}
+      onInsertEntry={onInsertEntry}
+      onMoveEntry={onMoveEntry}
+      onRemoveEntry={onRemoveEntry}
+      responsibilityCenterOptions={responsibilityCenterOptions}
+      taxCodes={taxCodes}
+      updateExpenseEntryFields={updateExpenseEntryFields}
+      vatOptions={vatOptions}
+    />
   );
 }

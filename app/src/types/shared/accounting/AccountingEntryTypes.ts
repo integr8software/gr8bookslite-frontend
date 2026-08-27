@@ -4,30 +4,44 @@ export type AccountingEntry = {
   id: string;
   accountId?: number | string;
   accountCode: string;
-  accountTitle: string;
+  accountTitle?: string;
+  accountName?: string;
   debit: AccountingEntryAmount;
   credit: AccountingEntryAmount;
-  partyCode: string;
-  partyName: string;
-  particulars: string;
-  vatType: string;
-  atcCode: string;
-  responsibilityCenter: string;
-  refNo: string;
+  partyCode?: string;
+  partyName?: string;
+  particulars?: string;
+  remarks?: string;
+  vatType?: string;
+  atcCode?: string;
+  responsibilityCenter?: string;
+  refNo?: string;
+  refId?: string;
+  responsibilityCenterCode?: string;
+  checkNo?: string;
+  checkStatus?: string;
+  checkDate?: string;
 };
 
 export type AccountingEntryColumnId =
   | "accountCode"
   | "accountTitle"
+  | "accountName"
   | "atcCode"
   | "credit"
   | "debit"
   | "partyCode"
   | "partyName"
   | "particulars"
+  | "remarks"
   | "refNo"
+  | "refId"
   | "responsibilityCenter"
-  | "vatType";
+  | "responsibilityCenterCode"
+  | "vatType"
+  | "checkNo"
+  | "checkStatus"
+  | "checkDate";
 
 export type AccountingEntryUpdate<TRow extends AccountingEntry> = (rowId: string, updates: Partial<Omit<TRow, "id">>) => void;
 

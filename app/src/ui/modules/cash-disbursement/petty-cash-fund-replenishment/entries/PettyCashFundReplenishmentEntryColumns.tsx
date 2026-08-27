@@ -6,9 +6,16 @@ import type {
   PettyCashFundReplenishmentEntry,
   PettyCashFundReplenishmentEntryColumnId,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentTypes";
+import {
+  PettyCashFundReplenishmentEntryEwtCodeOptions,
+  PettyCashFundReplenishmentEntryVatTypeOptions,
+} from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentConstants";
+import { calculatePettyCashFundReplenishmentEntryTaxFields } from "@/app/src/data/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentData";
 import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import { ModuleDataEntryDropdownCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryDropdownCell";
 import { ModuleDataEntryInputCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryInputCell";
 import { ModuleDataEntryMoneyCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryMoneyCell";
+import { ModuleDataEntryReadonlyCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryReadonlyCell";
 import { ModuleDataEntryRemarksCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryRemarksCell";
 
 export function createPettyCashFundReplenishmentLineColumns({
@@ -41,7 +48,10 @@ export function createPettyCashFundReplenishmentLineColumns({
     ),
   });
 
-  const money = (id: "totalAmount" | "netAmount" | "vatAmount"): ModuleDataEntryColumn<PettyCashFundReplenishmentEntry> => ({
+  const money = (
+    id: "amount",
+    onChange?: (row: PettyCashFundReplenishmentEntry, value: string) => void,
+  ): ModuleDataEntryColumn<PettyCashFundReplenishmentEntry> => ({
     header: columnLabels[id],
     id,
     width: columnWidths[id],
@@ -53,19 +63,71 @@ export function createPettyCashFundReplenishmentLineColumns({
         name={context.fieldName}
         value={row[id]}
         readOnly={page.isReadonly}
-        onChange={(value) => page.updateEntry(row.id, { [id]: value })}
+        onChange={(value) => (onChange ? onChange(row, value) : page.updateEntry(row.id, { [id]: value }))}
       />
     ),
+  });
+
+  const dropdown = (
+    id: "vatType" | "ewtCode",
+    options: Parameters<typeof ModuleDataEntryDropdownCell>[0]["options"],
+  ): ModuleDataEntryColumn<PettyCashFundReplenishmentEntry> => ({
+    header: columnLabels[id],
+    id,
+    width: columnWidths[id],
+    widthClassName: "w-auto",
+    widthMode: "fixed",
+    renderCell: (row, _index, context) => (
+      <ModuleDataEntryDropdownCell
+        id={context.fieldId}
+        name={context.fieldName}
+        value={row[id]}
+        readOnly={page.isReadonly}
+        options={options}
+        placeholder={`Select ${columnLabels[id]}`}
+        searchPlaceholder={`Search ${columnLabels[id]}`}
+        onChange={(value) => {
+          const vatType = id === "vatType" ? value : row.vatType;
+          const ewtCode = id === "ewtCode" ? value : row.ewtCode;
+          page.updateEntry(row.id, {
+            [id]: value,
+            ...calculatePettyCashFundReplenishmentEntryTaxFields(row.amount, vatType, ewtCode),
+          });
+        }}
+      />
+    ),
+  });
+
+  const calculatedMoney = (
+    id: "netAmount" | "vatPercent" | "vatAmount" | "ewtPercent" | "ewtAmount" | "totalAmountDue",
+  ): ModuleDataEntryColumn<PettyCashFundReplenishmentEntry> => ({
+    header: columnLabels[id],
+    id,
+    width: columnWidths[id],
+    widthClassName: "w-auto",
+    widthMode: "fixed",
+    renderCell: (row) => <ModuleDataEntryReadonlyCell align="right" value={row[id]} />,
   });
 
   return {
     pettyCashDate: text("pettyCashDate", "date"),
     pettyCashNo: text("pettyCashNo"),
-    accountCode: text("accountCode"),
-    accountTitle: text("accountTitle"),
-    totalAmount: money("totalAmount"),
-    netAmount: money("netAmount"),
-    vatAmount: money("vatAmount"),
+    supplierCode: text("supplierCode"),
+    supplierName: text("supplierName"),
+    amount: money("amount", (row, value) =>
+      page.updateEntry(row.id, {
+        amount: value,
+        ...calculatePettyCashFundReplenishmentEntryTaxFields(value, row.vatType, row.ewtCode),
+      }),
+    ),
+    netAmount: calculatedMoney("netAmount"),
+    vatType: dropdown("vatType", PettyCashFundReplenishmentEntryVatTypeOptions),
+    vatPercent: calculatedMoney("vatPercent"),
+    vatAmount: calculatedMoney("vatAmount"),
+    ewtCode: dropdown("ewtCode", PettyCashFundReplenishmentEntryEwtCodeOptions),
+    ewtPercent: calculatedMoney("ewtPercent"),
+    ewtAmount: calculatedMoney("ewtAmount"),
+    totalAmountDue: calculatedMoney("totalAmountDue"),
     remarks: {
       header: columnLabels.remarks,
       id: "remarks",

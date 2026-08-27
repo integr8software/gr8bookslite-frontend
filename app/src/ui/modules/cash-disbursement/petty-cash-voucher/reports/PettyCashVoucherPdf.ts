@@ -13,8 +13,9 @@ export function openPettyCashVoucherPdf(values: PettyCashVoucherFormValues) {
 
 function createPettyCashVoucherPdfDefinition(values: PettyCashVoucherFormValues): TDocumentDefinitions {
   const amount = Number(values.amount.replace(/,/g, "")) || 0;
-  const netAmount = Number(values.netAmount.replace(/,/g, "")) || 0;
   const vatAmount = Number(values.vatAmount.replace(/,/g, "")) || 0;
+  const ewtAmount = Number(values.ewtAmount.replace(/,/g, "")) || 0;
+  const netAmount = Number(values.netAmount.replace(/,/g, "")) || 0;
 
   return {
     pageSize: "A4",
@@ -45,21 +46,28 @@ function createPettyCashVoucherPdfDefinition(values: PettyCashVoucherFormValues)
       {
         columns: [
           { text: [{ text: "Default Account: ", bold: true }, `${values.accountTitle || "-"} (${values.accountCode || "-"})`] },
-          { text: [{ text: "VATable: ", bold: true }, values.vatable === "True" ? "Yes" : "No"] },
+          { text: [{ text: "VAT Type: ", bold: true }, values.vatType || "-"] },
         ],
         margin: [0, 0, 0, 10],
       },
       {
         columns: [
           { text: [{ text: "Gross Amount: ", bold: true }, formatCurrency(amount)] },
-          { text: [{ text: "VAT Amount: ", bold: true }, formatCurrency(vatAmount)] },
+          { text: [{ text: "VAT Amount: ", bold: true }, `${formatCurrency(vatAmount)} (${values.vatRate || "0.00%"})`] },
         ],
         margin: [0, 0, 0, 10],
       },
       {
         columns: [
+          { text: [{ text: "EWT Amount: ", bold: true }, `${formatCurrency(ewtAmount)} (${values.ewtCode ? `${values.ewtCode} - ${values.ewtRate || "0.00%"}` : values.ewtRate || "0.00%"})`] },
           { text: [{ text: "Net Amount: ", bold: true }, formatCurrency(netAmount)] },
+        ],
+        margin: [0, 0, 0, 10],
+      },
+      {
+        columns: [
           { text: [{ text: "Currency: ", bold: true }, values.currency || "PHP"] },
+          { text: [{ text: "Exchange Rate: ", bold: true }, values.exchangeRate || "1.00"] },
         ],
         margin: [0, 0, 0, 10],
       },

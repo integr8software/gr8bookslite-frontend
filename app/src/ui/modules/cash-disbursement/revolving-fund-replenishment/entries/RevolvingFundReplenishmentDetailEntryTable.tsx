@@ -106,7 +106,7 @@ export function RevolvingFundReplenishmentDetailEntryTable({
   return (
     <ModuleDataEntry
       addButtonLabel="Add Entry"
-      title=""
+      title="Revolving Fund Entries"
       emptyRowLabel="entry"
       error={page.errors.entries}
       footerDetails={
@@ -141,9 +141,10 @@ export function RevolvingFundReplenishmentDetailEntryTable({
       onUpdateColumnWidth={handleUpdateColumnWidth}
       summaryRowHeader="Totals"
       summaryCells={{
-        totalAmount: formatRevolvingFundReplenishmentAmount(page.totals.totalAmount),
+        amount: formatRevolvingFundReplenishmentAmount(page.totals.totalAmount),
         netAmount: formatRevolvingFundReplenishmentAmount(page.totals.netAmount),
         vatAmount: formatRevolvingFundReplenishmentAmount(page.totals.vatAmount),
+        ewtAmount: formatRevolvingFundReplenishmentAmount(page.totals.ewtAmount),
       }}
     />
   );

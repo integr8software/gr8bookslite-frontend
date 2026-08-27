@@ -14,6 +14,7 @@ import type { PartyInformationRecord } from "@/app/src/types/modules/party-manag
 import { RevolvingFundReplenishmentActionHeader } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/action/RevolvingFundReplenishmentActionHeader";
 import { RevolvingFundReplenishmentFileAttachmentFields } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/action/RevolvingFundReplenishmentFileAttachmentFields";
 import { RevolvingFundReplenishmentDetailsFields } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/action/RevolvingFundReplenishmentDetailsFields";
+import { RevolvingFundReplenishmentEntrySection } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/entries/RevolvingFundReplenishmentEntrySection";
 import { RevolvingFundReplenishmentNotFound } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/action/RevolvingFundReplenishmentNotFound";
 import { RevolvingFundReplenishmentReportPreview } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/reports/RevolvingFundReplenishmentReportPreview";
 import { openRevolvingFundReplenishmentPdf } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/reports/RevolvingFundReplenishmentPdf";
@@ -48,12 +49,15 @@ export function RevolvingFundReplenishmentActionPage({ mode }: { mode: Revolving
           onTabChange={page.setActiveTab}
         />
         {page.activeTab === "details" ? (
-          <RevolvingFundReplenishmentDetailsFields
-            page={page}
-            onOpenPartyDrawer={() => setIsPartyDrawerOpen(true)}
-            onOpenProjectDrawer={() => setIsProjectDrawerOpen(true)}
-            onOpenResponsibilityCenterDrawer={() => setIsResponsibilityCenterDrawerOpen(true)}
-          />
+          <>
+            <RevolvingFundReplenishmentDetailsFields
+              page={page}
+              onOpenPartyDrawer={() => setIsPartyDrawerOpen(true)}
+              onOpenProjectDrawer={() => setIsProjectDrawerOpen(true)}
+              onOpenResponsibilityCenterDrawer={() => setIsResponsibilityCenterDrawerOpen(true)}
+            />
+            <RevolvingFundReplenishmentEntrySection page={page} />
+          </>
         ) : (
           <RevolvingFundReplenishmentFileAttachmentFields page={page} />
         )}

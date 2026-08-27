@@ -7,6 +7,7 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";
 import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 import { formatMoneyNumberDisplayValue, parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
+import { calculateTaxAmounts } from "@/app/src/data/shared/tax/TaxData";
 import { todayDateValue } from "@/app/src/utils/date.util";
 
 export const PettyCashFundSeedRecords: PettyCashFundRecord[] = [
@@ -94,13 +95,17 @@ export function createBlankPettyCashFundItem(): PettyCashFundItem {
     remarks: "",
     amount: "",
     netAmount: "",
+    vatPercent: "",
     vatAmount: "",
+    ewtCode: "",
+    ewtPercent: "",
+    ewtAmount: "",
+    totalAmountDue: "",
     type: "",
     vatType: "",
-    vatable: "False",
-    vatInclusive: "False",
     grossAmount: "",
-    responsibilityCenter: "",
+    responsibilityCenterCode: "",
+    responsibilityCenterName: "",
   };
 }
 
@@ -112,7 +117,7 @@ export function createPettyCashFundFormValues(
   if (record?.formValues) {
     return {
       ...record.formValues,
-      items: record.formValues.items.map((item) => ({ ...item })),
+      items: record.formValues.items.map(normalizePettyCashFundItem),
       attachments: record.formValues.attachments.map((item) => ({ ...item })),
     };
   }
@@ -139,9 +144,8 @@ export function createPettyCashFundFormValues(
           date: record.documentDate,
           payeeCode: "V100006",
           payeeName: "All4U Restaurant",
-          tinNo: "488-860-327-000",
           amount,
-          netAmount: amount,
+          ...calculatePettyCashFundItemTaxFields(amount),
           grossAmount: amount,
         },
       ],
@@ -174,10 +178,37 @@ export function calculatePettyCashFundTotals(items: PettyCashFundItem[]) {
       amount: totals.amount + parseMoneyNumberInput(item.amount),
       netAmount: totals.netAmount + parseMoneyNumberInput(item.netAmount),
       vatAmount: totals.vatAmount + parseMoneyNumberInput(item.vatAmount),
+      ewtAmount: totals.ewtAmount + parseMoneyNumberInput(item.ewtAmount),
+      totalAmountDue: totals.totalAmountDue + parseMoneyNumberInput(item.totalAmountDue),
       grossAmount: totals.grossAmount + parseMoneyNumberInput(item.grossAmount),
     }),
-    { amount: 0, netAmount: 0, vatAmount: 0, grossAmount: 0 },
+    { amount: 0, netAmount: 0, vatAmount: 0, ewtAmount: 0, totalAmountDue: 0, grossAmount: 0 },
   );
+}
+
+export function calculatePettyCashFundItemTaxFields(
+  amountValue: string | number,
+  vatType = "",
+  ewtCode = "",
+): Pick<PettyCashFundItem, "netAmount" | "vatPercent" | "vatAmount" | "ewtPercent" | "ewtAmount" | "totalAmountDue" | "grossAmount"> {
+  const amount = roundPettyCashTaxAmount(parseMoneyNumberInput(amountValue));
+  const vatPercent = getPettyCashFundVatPercent(vatType);
+  const ewtPercent = getPettyCashFundEwtPercent(ewtCode);
+  const taxAmounts = calculateTaxAmounts({
+    grossAmount: amount,
+    taxRate: vatPercent,
+    ewtRate: ewtPercent,
+  });
+
+  return {
+    netAmount: formatPettyCashFundAmount(taxAmounts.netAmount),
+    vatPercent: vatPercent ? `${formatPettyCashFundAmount(vatPercent)}%` : "",
+    vatAmount: formatPettyCashFundAmount(taxAmounts.vatAmount),
+    ewtPercent: ewtPercent ? `${formatPettyCashFundAmount(ewtPercent)}%` : "",
+    ewtAmount: formatPettyCashFundAmount(taxAmounts.ewtAmount),
+    totalAmountDue: formatPettyCashFundAmount(taxAmounts.totalAmountDue),
+    grossAmount: formatPettyCashFundAmount(amount),
+  };
 }
 
 export function createPettyCashFundRecord(
@@ -213,6 +244,38 @@ export function createPettyCashFundRecord(
 
 export function formatPettyCashFundAmount(value: number) {
   return formatMoneyNumberDisplayValue(value.toFixed(2));
+}
+
+function getPettyCashFundVatPercent(vatType: string) {
+  const normalized = vatType.toLowerCase();
+  const match = normalized.match(/(\d+(?:\.\d+)?)/);
+  if (match) return Number.parseFloat(match[1]);
+  return 0;
+}
+
+function getPettyCashFundEwtPercent(ewtCode: string) {
+  const rates: Record<string, number> = {
+    W05: 5,
+    W10: 10,
+    WV01: 1,
+    WV02: 2,
+  };
+  return rates[ewtCode] ?? 0;
+}
+
+function roundPettyCashTaxAmount(value: number) {
+  return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+
+function normalizePettyCashFundItem(item: Partial<PettyCashFundItem>): PettyCashFundItem {
+  const amount = item.amount ?? item.grossAmount ?? "";
+
+  return {
+    ...createBlankPettyCashFundItem(),
+    ...item,
+    amount,
+    ...calculatePettyCashFundItemTaxFields(amount, item.vatType ?? "", item.ewtCode ?? ""),
+  };
 }
 
 function createSeed(

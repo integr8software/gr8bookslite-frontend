@@ -23,7 +23,7 @@ export function RevolvingFundReplenishmentReportPreview({
       onClose={onClose}
       onGeneratePdf={onGeneratePdf}
     >
-      <article className="mx-auto min-w-[64rem] max-w-5xl bg-white p-12 text-darknavy shadow-sm">
+      <article className="mx-auto min-w-[82rem] max-w-7xl bg-white p-12 text-darknavy shadow-sm">
         <div className="text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-darknavy/55">Gr8Books</p>
           <h1 className="mt-2 text-2xl font-bold">Revolving Fund Replenishment</h1>
@@ -47,10 +47,19 @@ export function RevolvingFundReplenishmentReportPreview({
           <table className="w-full text-sm">
             <thead className="bg-offwhite">
               <tr>
-                <th className="px-3 py-2 text-left">RF Date</th>
-                <th className="px-3 py-2 text-left">RF No.</th>
-                <th className="px-3 py-2 text-left">Account Title</th>
-                <th className="px-3 py-2 text-right">Total Amount</th>
+                <th className="px-3 py-2 text-left">Revolving Fund Date</th>
+                <th className="px-3 py-2 text-left">Revolving Fund No.</th>
+                <th className="px-3 py-2 text-left">Supplier Code</th>
+                <th className="px-3 py-2 text-left">Supplier Name</th>
+                <th className="px-3 py-2 text-right">Amount</th>
+                <th className="px-3 py-2 text-right">Net Amount</th>
+                <th className="px-3 py-2 text-left">VAT Type</th>
+                <th className="px-3 py-2 text-right">VAT Rate</th>
+                <th className="px-3 py-2 text-right">VAT Amount</th>
+                <th className="px-3 py-2 text-left">EWT Code</th>
+                <th className="px-3 py-2 text-right">EWT Rate</th>
+                <th className="px-3 py-2 text-right">EWT Amount</th>
+                <th className="px-3 py-2 text-left">Remarks</th>
               </tr>
             </thead>
             <tbody>
@@ -58,8 +67,17 @@ export function RevolvingFundReplenishmentReportPreview({
                 <tr key={entry.id} className="border-t border-darknavy/10">
                   <td className="px-3 py-2">{formatDate(entry.revolvingFundDate)}</td>
                   <td className="px-3 py-2">{entry.revolvingFundNo}</td>
-                  <td className="px-3 py-2">{entry.accountTitle}</td>
-                  <td className="px-3 py-2 text-right tabular-nums">{formatCurrency(Number(entry.totalAmount.replace(/,/g, "")) || 0)}</td>
+                  <td className="px-3 py-2">{entry.supplierCode}</td>
+                  <td className="px-3 py-2">{entry.supplierName}</td>
+                  <td className="px-3 py-2 text-right tabular-nums">{formatCurrency(Number(entry.amount.replace(/,/g, "")) || 0)}</td>
+                  <td className="px-3 py-2 text-right tabular-nums">{formatCurrency(Number(entry.netAmount.replace(/,/g, "")) || 0)}</td>
+                  <td className="px-3 py-2">{entry.vatType}</td>
+                  <td className="px-3 py-2 text-right tabular-nums">{entry.vatPercent}</td>
+                  <td className="px-3 py-2 text-right tabular-nums">{formatCurrency(Number(entry.vatAmount.replace(/,/g, "")) || 0)}</td>
+                  <td className="px-3 py-2">{entry.ewtCode}</td>
+                  <td className="px-3 py-2 text-right tabular-nums">{entry.ewtPercent}</td>
+                  <td className="px-3 py-2 text-right tabular-nums">{formatCurrency(Number(entry.ewtAmount.replace(/,/g, "")) || 0)}</td>
+                  <td className="px-3 py-2">{entry.remarks}</td>
                 </tr>
               ))}
             </tbody>

@@ -23,15 +23,15 @@ import {
 } from "@/app/src/ui/shared/module/module-data-entry/entryTableState.util";
 import { clampColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/utils";
 
-export function RevolvingFundDetailEntryTable({ page }: RevolvingFundDetailEntryTableProps) {
+export function RevolvingFundDetailEntryTable({ onOpenResponsibilityCenterDrawer, page }: RevolvingFundDetailEntryTableProps) {
   const [columnOrder, setColumnOrder] = useState<RevolvingFundItemColumnId[]>([...RevolvingFundDefaultItemColumnIds]);
   const [visibleColumnIds, setVisibleColumnIds] = useState<RevolvingFundItemColumnId[]>([...RevolvingFundDefaultItemColumnIds]);
   const [columnWidths, setColumnWidths] = useState({ ...RevolvingFundItemColumnWidths });
   const [columnLabels, setColumnLabels] = useState({ ...RevolvingFundItemColumnLabels });
 
   const allColumns = useMemo(
-    () => createRevolvingFundItemColumns(page, columnLabels, columnWidths),
-    [columnLabels, columnWidths, page],
+    () => createRevolvingFundItemColumns(page, columnLabels, columnWidths, onOpenResponsibilityCenterDrawer),
+    [columnLabels, columnWidths, onOpenResponsibilityCenterDrawer, page],
   );
 
   const columns = useMemo(
@@ -95,7 +95,7 @@ export function RevolvingFundDetailEntryTable({ page }: RevolvingFundDetailEntry
   return (
     <ModuleDataEntry
       addButtonLabel="Add Entry"
-      title=""
+      title="Revolving Fund Entries"
       emptyRowLabel="entry"
       error={page.errors.items}
       footerDetails={
@@ -131,7 +131,7 @@ export function RevolvingFundDetailEntryTable({ page }: RevolvingFundDetailEntry
         amount: formatRevolvingFundAmount(page.totals.amount),
         netAmount: formatRevolvingFundAmount(page.totals.netAmount),
         vatAmount: formatRevolvingFundAmount(page.totals.vatAmount),
-        grossAmount: formatRevolvingFundAmount(page.totals.grossAmount),
+        ewtAmount: formatRevolvingFundAmount(page.totals.ewtAmount),
       }}
     />
   );

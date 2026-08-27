@@ -119,7 +119,7 @@ export function writeStoredCashVouchers(vouchers: CashVoucherRecord[]) {
 export const CashVoucherInitialEntryDraft: CashVoucherEntryDraft = {
   accountCode: "",
   accountName: "",
-  atcCode: "",
+  ewtCode: "",
   remarks: "",
   partyCode: "",
   partyName: "",
@@ -139,7 +139,7 @@ export function createBlankCashVoucherLineEntry(overrides: Partial<CashVoucherLi
   return {
     accountCode: "",
     accountName: "",
-    atcCode: "",
+    ewtCode: "",
     checkDate: "",
     checkNo: "",
     checkStatus: "",
@@ -483,6 +483,7 @@ export function removeLegacyMockAttachments(attachments: CashVoucherAttachment[]
 export function sanitizeCashVoucherRecord(voucher: CashVoucherRecord): CashVoucherRecord {
   const createdAt = voucher.createdAt ?? voucher.history?.[0]?.createdAt ?? "";
   const updatedAt = voucher.updatedAt ?? voucher.history?.[voucher.history.length - 1]?.createdAt ?? createdAt;
+  const lineEntries = normalizeGeneratedCashVoucherRemarks(voucher.lineEntries ?? []);
 
   return {
     ...voucher,
@@ -496,9 +497,74 @@ export function sanitizeCashVoucherRecord(voucher: CashVoucherRecord): CashVouch
         : createInitialCashVoucherHistory(voucher),
     createdBy: voucher.createdBy ?? voucher.preparedBy ?? "",
     createdAt,
+    lineEntries,
     updatedBy: voucher.updatedBy ?? voucher.preparedBy ?? "",
     updatedAt,
   };
+}
+
+function normalizeGeneratedCashVoucherRemarks(entries: CashVoucherLineEntry[]) {
+  const sourceEntry = entries.find((entry) => !isGeneratedCashVoucherLineEntry(entry));
+  const sourceRemarks = sourceEntry?.remarks.trim() ?? "";
+  const sourceCreatedRemarks = sourceEntry?.accountName.trim() ?? "";
+  const hasUserRemarks = sourceRemarks !== "" && sourceRemarks !== sourceCreatedRemarks;
+
+  if (!hasUserRemarks) {
+    return entries;
+  }
+
+  return entries.map((entry) => {
+    if (!isGeneratedCashVoucherLineEntry(entry) || !hasGeneratedCashVoucherRemarkPrefix(entry.remarks)) {
+      return entry;
+    }
+
+    return {
+      ...entry,
+      remarks: stripGeneratedCashVoucherRemarkPrefix(entry.remarks, sourceRemarks),
+    };
+  });
+}
+
+function isGeneratedCashVoucherLineEntry(entry: CashVoucherLineEntry) {
+  const accountName = entry.accountName.trim().toLowerCase();
+
+  return (
+    entry.id.startsWith("auto-input-vat-") ||
+    entry.id.startsWith("auto-ewt-") ||
+    entry.id.startsWith("auto-credit-") ||
+    accountName === "input vat" ||
+    accountName === "expanded withholding tax" ||
+    accountName === "cash on hand" ||
+    accountName.startsWith("cash in bank")
+  );
+}
+
+function hasGeneratedCashVoucherRemarkPrefix(remarks: string) {
+  const trimmedRemarks = remarks.trim();
+
+  return getGeneratedCashVoucherRemarkPrefixPatterns().some((pattern) => pattern.test(trimmedRemarks));
+}
+
+function stripGeneratedCashVoucherRemarkPrefix(remarks: string, fallbackRemarks: string) {
+  const trimmedRemarks = remarks.trim();
+
+  for (const pattern of getGeneratedCashVoucherRemarkPrefixPatterns()) {
+    if (pattern.test(trimmedRemarks)) {
+      return trimmedRemarks.replace(pattern, "").trim() || fallbackRemarks;
+    }
+  }
+
+  return trimmedRemarks || fallbackRemarks;
+}
+
+function getGeneratedCashVoucherRemarkPrefixPatterns() {
+  return [
+    /^Input VAT\s*-\s*/i,
+    /^EWT\s*-\s*/i,
+    /^Expanded Withholding Tax\s*-\s*/i,
+    /^Settlement via .*?\s*-\s*/i,
+    /^Settlement(?:\s+for.*?)?(?:\s+via.*?)?$/i,
+  ];
 }
 
 export const CashVoucherCopySources: CashVoucherCopySource[] = [
@@ -838,7 +904,7 @@ export function createCashVoucherLineEntry(draft: CashVoucherEntryDraft): CashVo
   const taxDetails = syncTaxDetailsAmount(
     {
       ...draft.taxDetails,
-      atcCode: draft.atcCode?.trim() ?? draft.taxDetails.atcCode,
+      ewtCode: draft.ewtCode?.trim() ?? draft.taxDetails.ewtCode,
       refId: draft.refId?.trim() ?? draft.taxDetails.refId,
       responsibilityCenter: draft.responsibilityCenter?.trim() ?? draft.taxDetails.responsibilityCenter,
       vatType: draft.vatType?.trim() ?? draft.taxDetails.vatType,
@@ -851,7 +917,7 @@ export function createCashVoucherLineEntry(draft: CashVoucherEntryDraft): CashVo
     id: `line-${Date.now()}`,
     accountCode: draft.accountCode.trim(),
     accountName: draft.accountName.trim(),
-    atcCode: taxDetails.atcCode,
+    ewtCode: taxDetails.ewtCode,
     remarks: draft.remarks.trim(),
     partyCode: draft.partyCode?.trim() ?? "",
     partyName: draft.partyName?.trim() ?? "",
@@ -880,8 +946,12 @@ export function createAutoCashVoucherLineEntries(
     amount,
     ...taxProfile,
   });
-  const creditRemarks = createCreditRemarks(transaction, bankPaymentAccount, paymentAccount);
   const refId = transaction.transactionNo || transaction.id;
+  const generatedRemarks = createAutoCashVoucherGeneratedRemarks(
+    transaction.purpose,
+    debitAccount.accountName,
+    transaction.paymentMethod,
+  );
   const commonFields = {
     partyCode: getCashVoucherPartyCode(transaction.payee),
     partyName: transaction.payee,
@@ -893,8 +963,8 @@ export function createAutoCashVoucherLineEntries(
       id: `auto-expense-${transaction.id}`,
       accountCode: debitAccount.accountCode,
       accountName: debitAccount.accountName,
-      atcCode: "",
-      remarks: transaction.purpose,
+      ewtCode: "",
+      remarks: transaction.purpose || debitAccount.accountName,
       ...commonFields,
       debit: taxDetails.netAmount,
       credit: 0,
@@ -913,8 +983,8 @@ export function createAutoCashVoucherLineEntries(
       id: `auto-input-vat-${transaction.id}`,
       accountCode: InputVatAccount.accountCode,
       accountName: InputVatAccount.accountName,
-      atcCode: "",
-      remarks: `Input VAT - ${transaction.purpose}`,
+      ewtCode: "",
+      remarks: generatedRemarks.inputVat,
       ...commonFields,
       debit: taxDetails.vatAmount,
       credit: 0,
@@ -933,8 +1003,8 @@ export function createAutoCashVoucherLineEntries(
       id: `auto-ewt-${transaction.id}`,
       accountCode: ExpandedWithholdingTaxAccount.accountCode,
       accountName: ExpandedWithholdingTaxAccount.accountName,
-      atcCode: taxDetails.ewtCode,
-      remarks: `EWT - ${transaction.purpose}`,
+      ewtCode: taxDetails.ewtCode,
+      remarks: generatedRemarks.ewt,
       ...commonFields,
       debit: 0,
       credit: taxDetails.ewtAmount,
@@ -952,8 +1022,8 @@ export function createAutoCashVoucherLineEntries(
     id: `auto-credit-${transaction.id}`,
     accountCode: creditAccount.accountCode,
     accountName: creditAccount.accountName,
-    atcCode: "",
-    remarks: creditRemarks,
+    ewtCode: "",
+    remarks: generatedRemarks.settlement,
     ...commonFields,
     debit: 0,
     credit: taxDetails.amount,
@@ -967,6 +1037,27 @@ export function createAutoCashVoucherLineEntries(
   });
 
   return entries;
+}
+
+function createAutoCashVoucherGeneratedRemarks(headerRemarks: string, expenseName: string, paymentMethod: string) {
+  const remarks = headerRemarks.trim();
+
+  if (remarks) {
+    return {
+      ewt: remarks,
+      inputVat: remarks,
+      settlement: remarks,
+    };
+  }
+
+  const expenseSummary = expenseName.trim();
+  const settlementMethod = paymentMethod.trim() || "Cash";
+
+  return {
+    ewt: expenseSummary ? `EWT - ${expenseSummary}` : "EWT",
+    inputVat: expenseSummary ? `Input VAT - ${expenseSummary}` : "Input VAT",
+    settlement: expenseSummary ? `Settlement via ${settlementMethod} - ${expenseSummary}` : `Settlement via ${settlementMethod}`,
+  };
 }
 
 export function applyBankAccountToPaymentDetails(
@@ -1040,7 +1131,6 @@ export function createTaxDetails(amount: number, taxRate: string): CashVoucherTa
     responsibilityCenter: "",
     refId: "",
     vatType: "",
-    atcCode: "",
     grossAmount: roundedAmount,
     netAmount,
     vatCode: taxRate !== "0%" ? `VAT-${taxRate.replace("%", "")}` : "",
@@ -1100,7 +1190,6 @@ function createCashVoucherTaxDetails({
     responsibilityCenter: "",
     refId: "",
     vatType: vatCode,
-    atcCode: ewtCode,
     grossAmount: roundedAmount,
     netAmount: roundCurrency(sign * Math.max(absoluteAmount - Math.abs(vatAmount), 0)),
     vatCode,

@@ -9,12 +9,15 @@ export type RevolvingFundActionTab = "details" | "attachments";
 export type RevolvingFundConfirmationAction = "save" | "draft" | "approve" | "disapprove" | "cancel";
 export type RevolvingFundActionPageState = ReturnType<typeof useRevolvingFundActionPage>;
 
-export type RevolvingFundEntrySectionProps = { page: RevolvingFundActionPageState };
-export type RevolvingFundDetailEntryTableProps = { page: RevolvingFundActionPageState };
+export type RevolvingFundOpenResponsibilityCenterDrawerHandler = (rowId: string) => void;
+export type RevolvingFundEntrySectionProps = {
+  page: RevolvingFundActionPageState;
+  onOpenResponsibilityCenterDrawer?: RevolvingFundOpenResponsibilityCenterDrawerHandler;
+};
+export type RevolvingFundDetailEntryTableProps = RevolvingFundEntrySectionProps;
 export type RevolvingFundAccountingEntryTableProps = { page: RevolvingFundActionPageState };
 export type RevolvingFundOverviewPageState = ReturnType<typeof useRevolvingFundOverviewPage>;
 export type RevolvingFundEntryTab = "items" | "accounting";
-export type RevolvingFundBoolean = "False" | "True";
 
 export type RevolvingFundItem = {
   id: string;
@@ -26,13 +29,17 @@ export type RevolvingFundItem = {
   remarks: string;
   amount: string;
   netAmount: string;
+  vatPercent: string;
   vatAmount: string;
+  ewtCode: string;
+  ewtPercent: string;
+  ewtAmount: string;
+  totalAmountDue: string;
   type: string;
   vatType: string;
-  vatable: RevolvingFundBoolean;
-  vatInclusive: RevolvingFundBoolean;
   grossAmount: string;
-  responsibilityCenter: string;
+  responsibilityCenterCode: string;
+  responsibilityCenterName: string;
 };
 
 export type RevolvingFundItemColumnId = Exclude<keyof RevolvingFundItem, "id">;

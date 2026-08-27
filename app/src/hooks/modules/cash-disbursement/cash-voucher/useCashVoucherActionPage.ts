@@ -98,6 +98,8 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
   const [isResponsibilityCenterDrawerOpen, setIsResponsibilityCenterDrawerOpen] = useState(false);
   const [pendingResponsibilityCenterEntryId, setPendingResponsibilityCenterEntryId] = useState<string | null>(null);
+  const blankRemarksEntryIdsRef = useRef(new Set<string>());
+  const generatedRemarksOverridesRef = useRef<Record<string, string>>({});
   const hasEditedCurrencyRef = useRef(false);
   const isSubmittingRef = useRef(false);
   const submitLockReleaseRef = useRef<null | (() => void)>(null);
@@ -156,7 +158,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
       const editableEntries = current.lineEntries
         .filter((entry) => !isGeneratedAccountingEntry(entry))
         .map((entry) =>
-          shouldEntryRemarksFollowHeader(entry.remarks, current.remarks)
+          !blankRemarksEntryIdsRef.current.has(entry.id) && shouldEntryRemarksFollowHeader(entry, current.remarks)
             ? { ...entry, remarks: nextRemarks }
             : entry,
         );
@@ -165,6 +167,8 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
         ...nextValues,
         lineEntries: createAutomaticAccountingEntries(editableEntries, {
           bankAccount: null,
+          blankRemarksEntryIds: Array.from(blankRemarksEntryIdsRef.current),
+          generatedRemarksOverrides: generatedRemarksOverridesRef.current,
           isCashPayment: true,
           paymentMethod: "Cash",
         }),
@@ -204,6 +208,8 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   function createAutomaticEntriesForPayment(entries: CashVoucherLineEntry[]) {
     return createAutomaticAccountingEntries(entries, {
       bankAccount: null,
+      blankRemarksEntryIds: Array.from(blankRemarksEntryIdsRef.current),
+      generatedRemarksOverrides: generatedRemarksOverridesRef.current,
       isCashPayment: true,
       paymentMethod: "Cash",
     });
@@ -279,6 +285,8 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   }
 
   function handleRemoveEntry(entryId: string) {
+    blankRemarksEntryIdsRef.current.delete(entryId);
+    delete generatedRemarksOverridesRef.current[entryId];
     replaceEntriesWithAutomaticRows(removeCashVoucherEntryRow(values.lineEntries, entryId));
   }
 
@@ -288,10 +296,21 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
 
   function handleUpdateEntryFields(entryId: string, updates: Partial<CashVoucherLineEntry>) {
     const sourceEntry = values.lineEntries.find((entry) => entry.id === entryId);
-    const shouldRefreshGeneratedRemarks =
-      sourceEntry !== undefined &&
-      !isGeneratedAccountingEntry(sourceEntry) &&
-      Object.prototype.hasOwnProperty.call(updates, "remarks");
+    const isEditableExpenseEntry = sourceEntry !== undefined && !isGeneratedAccountingEntry(sourceEntry);
+    const hasRemarksUpdate = Object.prototype.hasOwnProperty.call(updates, "remarks");
+
+    if (isEditableExpenseEntry && hasRemarksUpdate) {
+      if (String(updates.remarks ?? "") === "") {
+        blankRemarksEntryIdsRef.current.add(entryId);
+      } else {
+        blankRemarksEntryIdsRef.current.delete(entryId);
+      }
+    }
+
+    if (sourceEntry && isGeneratedAccountingEntry(sourceEntry) && hasRemarksUpdate) {
+      generatedRemarksOverridesRef.current[entryId] = String(updates.remarks ?? "");
+    }
+
     const nextEntries = values.lineEntries.map((entry) => {
       if (entry.id !== entryId) {
         return entry;
@@ -310,15 +329,14 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
         nextEntry.debit = 0;
       }
 
-      return shouldRefreshGeneratedRemarks ? nextEntry : syncCashVoucherLineEntryTaxDetails(nextEntry);
+      return hasRemarksUpdate ? nextEntry : syncCashVoucherLineEntryTaxDetails(nextEntry);
     });
 
-    updateField(
-      CashVoucherLineEntriesField,
-      shouldRefreshGeneratedRemarks
-        ? createAutomaticEntriesForPayment(nextEntries.filter((entry) => !isGeneratedAccountingEntry(entry)))
-        : nextEntries,
-    );
+    if (isEditableExpenseEntry) {
+      handleReplaceLineEntries(createAutomaticEntriesForPayment(nextEntries));
+    } else {
+      updateField(CashVoucherLineEntriesField, nextEntries);
+    }
     setErrors((current) => ({
       ...current,
       entryDraft: undefined,
@@ -576,11 +594,16 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   };
 }
 
-function shouldEntryRemarksFollowHeader(entryRemarks: string, previousHeaderRemarks: string) {
-  const normalizedEntryRemarks = entryRemarks.trim();
+function shouldEntryRemarksFollowHeader(entry: CashVoucherLineEntry, previousHeaderRemarks: string) {
+  const normalizedEntryRemarks = entry.remarks.trim();
   const normalizedHeaderRemarks = previousHeaderRemarks.trim();
+  const normalizedCreatedRemarks = entry.accountName.trim();
 
-  return normalizedEntryRemarks === "" || (normalizedHeaderRemarks !== "" && normalizedEntryRemarks === normalizedHeaderRemarks);
+  return (
+    normalizedEntryRemarks === "" ||
+    normalizedEntryRemarks === normalizedCreatedRemarks ||
+    (normalizedHeaderRemarks !== "" && normalizedEntryRemarks === normalizedHeaderRemarks)
+  );
 }
 
 

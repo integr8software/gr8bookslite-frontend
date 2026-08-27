@@ -66,11 +66,17 @@ export function createBlankRevolvingFundReplenishmentEntry(): RevolvingFundReple
     id: `rfr-entry-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     revolvingFundDate: todayDateValue(),
     revolvingFundNo: "",
-    accountCode: "",
-    accountTitle: "",
-    totalAmount: "",
+    supplierCode: "",
+    supplierName: "",
+    amount: "",
     netAmount: "",
-    vatAmount: "0.00",
+    vatType: "",
+    vatPercent: "",
+    vatAmount: "",
+    ewtCode: "",
+    ewtPercent: "",
+    ewtAmount: "",
+    totalAmountDue: "",
     remarks: "",
   };
 }
@@ -83,7 +89,7 @@ export function createRevolvingFundReplenishmentFormValues(
   if (record?.formValues) {
     return {
       ...record.formValues,
-      entries: record.formValues.entries.map((entry) => ({ ...entry })),
+      entries: record.formValues.entries.map(normalizeRevolvingFundReplenishmentEntry),
       attachments: record.formValues.attachments.map((attachment) => ({ ...attachment })),
     };
   }
@@ -109,10 +115,10 @@ export function createRevolvingFundReplenishmentFormValues(
           ...createBlankRevolvingFundReplenishmentEntry(),
           revolvingFundDate: record.documentDate,
           revolvingFundNo: "RFV-000084",
-          accountCode: "610-100",
-          accountTitle: "Office Supplies Expense",
-          totalAmount: amount,
-          netAmount: amount,
+          supplierCode: record.partyCode,
+          supplierName: record.partyName,
+          amount,
+          ...calculateRevolvingFundReplenishmentEntryTaxFields(amount),
           remarks: record.remarks,
         },
       ],
@@ -142,11 +148,13 @@ export function createRevolvingFundReplenishmentFormValues(
 export function calculateRevolvingFundReplenishmentTotals(entries: RevolvingFundReplenishmentEntry[]) {
   return entries.reduce(
     (totals, entry) => ({
-      totalAmount: totals.totalAmount + parseMoneyNumberInput(entry.totalAmount),
+      totalAmount: totals.totalAmount + parseMoneyNumberInput(entry.amount),
       netAmount: totals.netAmount + parseMoneyNumberInput(entry.netAmount),
       vatAmount: totals.vatAmount + parseMoneyNumberInput(entry.vatAmount),
+      ewtAmount: totals.ewtAmount + parseMoneyNumberInput(entry.ewtAmount),
+      totalAmountDue: totals.totalAmountDue + parseMoneyNumberInput(entry.totalAmountDue),
     }),
-    { totalAmount: 0, netAmount: 0, vatAmount: 0 },
+    { totalAmount: 0, netAmount: 0, vatAmount: 0, ewtAmount: 0, totalAmountDue: 0 },
   );
 }
 
@@ -185,6 +193,73 @@ export function formatRevolvingFundReplenishmentAmount(value: number) {
   return formatMoneyNumberDisplayValue(value.toFixed(2));
 }
 
+export function calculateRevolvingFundReplenishmentEntryTaxFields(
+  amountValue: string | number,
+  vatType = "",
+  ewtCode = "",
+): Pick<
+  RevolvingFundReplenishmentEntry,
+  "netAmount" | "vatPercent" | "vatAmount" | "ewtPercent" | "ewtAmount" | "totalAmountDue"
+> {
+  const amount = roundRevolvingFundReplenishmentTaxAmount(parseMoneyNumberInput(amountValue));
+  const vatPercent = getRevolvingFundReplenishmentVatPercent(vatType);
+  const ewtPercent = getRevolvingFundReplenishmentEwtPercent(ewtCode);
+  const vatAmount = roundRevolvingFundReplenishmentTaxAmount((amount * vatPercent) / 100);
+  const ewtAmount = roundRevolvingFundReplenishmentTaxAmount((amount * ewtPercent) / 100);
+
+  return {
+    netAmount: formatRevolvingFundReplenishmentAmount(Math.max(amount - vatAmount, 0)),
+    vatPercent: vatPercent ? `${formatRevolvingFundReplenishmentAmount(vatPercent)}%` : "",
+    vatAmount: formatRevolvingFundReplenishmentAmount(vatAmount),
+    ewtPercent: ewtPercent ? `${formatRevolvingFundReplenishmentAmount(ewtPercent)}%` : "",
+    ewtAmount: formatRevolvingFundReplenishmentAmount(ewtAmount),
+    totalAmountDue: formatRevolvingFundReplenishmentAmount(Math.max(amount - ewtAmount, 0)),
+  };
+}
+
+function normalizeRevolvingFundReplenishmentEntry(
+  entry: Partial<RevolvingFundReplenishmentEntry> & {
+    accountCode?: string;
+    accountTitle?: string;
+    totalAmount?: string;
+  },
+): RevolvingFundReplenishmentEntry {
+  return {
+    ...createBlankRevolvingFundReplenishmentEntry(),
+    ...entry,
+    amount: entry.amount ?? entry.totalAmount ?? "",
+    supplierCode: entry.supplierCode ?? entry.accountCode ?? "",
+    supplierName: entry.supplierName ?? entry.accountTitle ?? "",
+    vatType: entry.vatType ?? "",
+    ewtCode: entry.ewtCode ?? "",
+    ...calculateRevolvingFundReplenishmentEntryTaxFields(
+      entry.amount ?? entry.totalAmount ?? "",
+      entry.vatType ?? "",
+      entry.ewtCode ?? "",
+    ),
+  };
+}
+
+function getRevolvingFundReplenishmentVatPercent(vatType: string) {
+  const match = vatType.match(/(\d+(?:\.\d+)?)/);
+  if (match) return Number.parseFloat(match[1]);
+  return 0;
+}
+
+function getRevolvingFundReplenishmentEwtPercent(ewtCode: string) {
+  const rates: Record<string, number> = {
+    W05: 5,
+    W10: 10,
+    WV01: 1,
+    WV02: 2,
+  };
+  return rates[ewtCode] ?? 0;
+}
+
+function roundRevolvingFundReplenishmentTaxAmount(value: number) {
+  return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+
 function createSeed(
   id: string,
   transactionNo: string,
@@ -202,7 +277,7 @@ function createSeed(
     partyCode,
     partyName,
     accountCode: "101-200",
-    accountTitle: "Revolving Fund Fund",
+    accountTitle: "Revolving Fund",
     amount,
     remarks,
     status,

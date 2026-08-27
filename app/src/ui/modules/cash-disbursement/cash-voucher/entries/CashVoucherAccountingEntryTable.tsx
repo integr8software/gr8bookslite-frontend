@@ -8,88 +8,103 @@ import {
   ProtectedCashVoucherEntryColumnIds,
 } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherDataEntryConstants";
 import {
-  calculateCashVoucherEntryColumnFitWidth,
+  getCashVoucherEntryExportCell,
   isCashVoucherEntryColumnId,
-  moveEntryColumn,
-  updateVisibleEntryColumns,
 } from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherAccountingEntryData";
 import type {
   CashVoucherAccountingEntryTableProps,
   CashVoucherEntryColumnId,
 } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherDataEntryTypes";
-import { TabbedModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryTabs";
-import type { ModuleDataEntryColumnOption } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import type { CashVoucherLineEntry } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
+import { ModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import type {
+  ModuleDataEntryColumn,
+  ModuleDataEntryColumnOption,
+} from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import {
+  calculateFitColumnWidth,
+  reorderColumnIds,
+  toggleVisibleColumnId,
+} from "@/app/src/ui/shared/module/module-data-entry/entryTableState.util";
 import { clampColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/utils";
 import { formatAmount } from "@/app/src/utils/currency.util";
+import { joinClasses } from "@/app/src/utils/string.util";
 
 export function CashVoucherAccountingEntryTable({
   accountingColumns,
   accountingRows,
   errors,
   isReadonly,
+  title,
   onAddEntries,
   onClearEntries,
-  totalCredit,
-  totalDebit,
-  variance,
+  onDuplicateEntry,
+  onInsertEntry,
+  onMoveEntry,
+  onRemoveEntry,
+  totalCredit = 0,
+  totalDebit = 0,
+  variance = 0,
 }: CashVoucherAccountingEntryTableProps) {
-  const [columnOrder, setColumnOrder] = useState<CashVoucherEntryColumnId[]>(DefaultCashVoucherEntryColumnOrder);
-  const [visibleColumnIds, setVisibleColumnIds] = useState<CashVoucherEntryColumnId[]>(
+  const [accountingColumnOrder, setAccountingColumnOrder] = useState<CashVoucherEntryColumnId[]>(
+    DefaultCashVoucherEntryColumnOrder,
+  );
+  const [visibleAccountingColumnIds, setVisibleAccountingColumnIds] = useState<CashVoucherEntryColumnId[]>(
     DefaultVisibleCashVoucherEntryColumnOrder,
   );
-  const [columnWidths, setColumnWidths] = useState(DefaultCashVoucherEntryColumnWidths);
-  const [columnLabels, setColumnLabels] = useState(CashVoucherEntryColumnLabels);
+  const [accountingColumnWidths, setAccountingColumnWidths] = useState(DefaultCashVoucherEntryColumnWidths);
+  const [accountingColumnLabels, setAccountingColumnLabels] = useState(CashVoucherEntryColumnLabels);
 
   const hasMultiCheckNumberColumn = false;
-  const visibleColumnOrder = columnOrder.filter((columnId) =>
-    MultiCheckColumnIds.has(columnId) ? hasMultiCheckNumberColumn : visibleColumnIds.includes(columnId),
+  const visibleAccountingColumnOrder = accountingColumnOrder.filter((columnId) =>
+    MultiCheckColumnIds.has(columnId) ? hasMultiCheckNumberColumn : visibleAccountingColumnIds.includes(columnId),
   );
 
   const columns = useMemo(
     () =>
-      visibleColumnOrder.map((columnId) => ({
-        ...accountingColumns[columnId],
-        header: columnLabels[columnId],
-        width: columnWidths[columnId],
-      })),
-    [accountingColumns, columnLabels, columnWidths, visibleColumnOrder],
+      visibleAccountingColumnOrder
+        .map((columnId) => accountingColumns?.[columnId])
+        .filter((col): col is ModuleDataEntryColumn<CashVoucherLineEntry> => Boolean(col)),
+    [accountingColumns, visibleAccountingColumnOrder],
   );
 
   const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
     () =>
-      columnOrder
+      accountingColumnOrder
         .filter((columnId) => (MultiCheckColumnIds.has(columnId) ? hasMultiCheckNumberColumn : true))
         .map((columnId) => ({
           id: columnId,
           isProtected: ProtectedCashVoucherEntryColumnIds.has(columnId),
-          isVisible: visibleColumnIds.includes(columnId),
-          label: columnLabels[columnId],
-          width: columnWidths[columnId],
+          isVisible: visibleAccountingColumnIds.includes(columnId),
+          label: accountingColumnLabels[columnId],
+          width: accountingColumnWidths[columnId],
         })),
-    [columnLabels, columnOrder, columnWidths, hasMultiCheckNumberColumn, visibleColumnIds],
+    [accountingColumnLabels, accountingColumnOrder, accountingColumnWidths, hasMultiCheckNumberColumn, visibleAccountingColumnIds],
   );
 
   function handleMoveColumn(fromId: string, toId: string) {
     if (isCashVoucherEntryColumnId(fromId) && isCashVoucherEntryColumnId(toId)) {
-      setColumnOrder((currentOrder) => moveEntryColumn(currentOrder, fromId, toId));
+      setAccountingColumnOrder((currentOrder) => reorderColumnIds(currentOrder, fromId, toId));
     }
   }
 
   function handleToggleColumnVisibility(columnId: string, isVisible: boolean) {
     if (isCashVoucherEntryColumnId(columnId)) {
-      setVisibleColumnIds((currentIds) => updateVisibleEntryColumns(currentIds, columnOrder, columnId, isVisible));
+      setVisibleAccountingColumnIds((currentIds) =>
+        toggleVisibleColumnId(currentIds, accountingColumnOrder, columnId, isVisible),
+      );
     }
   }
 
   function handleUpdateColumnHeader(columnId: string, header: string) {
     if (isCashVoucherEntryColumnId(columnId)) {
-      setColumnLabels((currentLabels) => ({ ...currentLabels, [columnId]: header }));
+      setAccountingColumnLabels((currentLabels) => ({ ...currentLabels, [columnId]: header }));
     }
   }
 
   function handleUpdateColumnWidth(columnId: string, width: number) {
     if (isCashVoucherEntryColumnId(columnId)) {
-      setColumnWidths((currentWidths) => ({
+      setAccountingColumnWidths((currentWidths) => ({
         ...currentWidths,
         [columnId]: clampColumnWidth(width),
       }));
@@ -98,47 +113,54 @@ export function CashVoucherAccountingEntryTable({
 
   function handleFitColumnWidth(columnId: string) {
     if (isCashVoucherEntryColumnId(columnId)) {
-      const fitWidth = calculateCashVoucherEntryColumnFitWidth({
+      const fitWidth = calculateFitColumnWidth(
+        accountingColumnLabels[columnId],
+        accountingRows,
         columnId,
-        columnLabels,
-        entries: accountingRows,
-      });
-
+        (entry) => getCashVoucherEntryExportCell(entry, columnId),
+      );
       handleUpdateColumnWidth(columnId, fitWidth);
     }
   }
 
   function handleResetColumns() {
-    setColumnOrder(DefaultCashVoucherEntryColumnOrder);
-    setVisibleColumnIds(DefaultVisibleCashVoucherEntryColumnOrder);
-    setColumnWidths(DefaultCashVoucherEntryColumnWidths);
-    setColumnLabels(CashVoucherEntryColumnLabels);
+    setAccountingColumnOrder(DefaultCashVoucherEntryColumnOrder);
+    setVisibleAccountingColumnIds(DefaultVisibleCashVoucherEntryColumnOrder);
+    setAccountingColumnWidths(DefaultCashVoucherEntryColumnWidths);
+    setAccountingColumnLabels(CashVoucherEntryColumnLabels);
   }
 
+  const computedDebit = totalDebit || accountingRows.reduce((sum, r) => sum + Number(r.debit || 0), 0);
+  const computedCredit = totalCredit || accountingRows.reduce((sum, r) => sum + Number(r.credit || 0), 0);
+  const computedVariance = variance !== undefined ? variance : Math.abs(computedDebit - computedCredit);
+
   return (
-    <TabbedModuleDataEntry
+    <ModuleDataEntry
       addButtonLabel="Add Entry"
-      title=""
-      emptyRowLabel="entry"
+      title={title}
+      emptyRowLabel="accounting entry"
       error={errors.lineEntries}
       footerDetails={
-        <span className={`text-sm font-semibold ${variance < 0.001 ? "text-emerald-700" : "text-coralpink"}`}>
-          Variance: {formatAmount(variance)}
+        <span
+          className={joinClasses(
+            "text-sm font-semibold",
+            computedVariance > 0.005 ? "text-coralpink" : "text-emerald-600",
+          )}
+        >
+          Variance: {formatAmount(computedVariance)}
         </span>
       }
       columns={columns}
       columnOptions={columnOptions}
-      canConfigureColumnsWhenReadonly
-      canManageRowsWhenReadonly={!isReadonly}
       rows={accountingRows}
-      isDraggable={false}
-      isReadonly
-      onAddRows={onAddEntries}
+      isDraggable={!isReadonly}
+      isReadonly={isReadonly}
+      onAddRows={onAddEntries ?? (() => undefined)}
       onClearRows={onClearEntries}
-      onDuplicateRow={() => {}}
-      onInsertRow={() => {}}
-      onMoveRow={() => {}}
-      onRemoveRow={() => {}}
+      onDuplicateRow={onDuplicateEntry ?? (() => undefined)}
+      onInsertRow={onInsertEntry ?? (() => undefined)}
+      onMoveRow={onMoveEntry ?? (() => undefined)}
+      onRemoveRow={onRemoveEntry ?? (() => undefined)}
       onAutoColumnWidth={handleFitColumnWidth}
       onFitColumnWidth={handleFitColumnWidth}
       onMoveColumn={handleMoveColumn}
@@ -148,9 +170,11 @@ export function CashVoucherAccountingEntryTable({
       onUpdateColumnWidth={handleUpdateColumnWidth}
       summaryRowHeader="Totals"
       summaryCells={{
-        credit: formatAmount(totalCredit),
-        debit: formatAmount(totalDebit),
+        debit: formatAmount(computedDebit),
+        credit: formatAmount(computedCredit),
       }}
     />
   );
 }
+
+

@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
   PettyCashVoucherRecords,
+  calculatePettyCashVoucherTaxFields,
   calculatePettyCashVoucherVatFields,
   createPettyCashVoucherFormValues,
   createPettyCashVoucherInitialFormValues,
@@ -25,13 +26,19 @@ import type {
   PettyCashVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import { validatePettyCashVoucherForm } from "@/app/src/validations/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherValidation";
+import { useAlphanumericTaxCodes } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
+import { createEwtOptions, createVatOptions } from "@/app/src/data/shared/tax/TaxData";
 import {
+  PettyCashVoucherDefaultVatTypeOptions,
+  PettyCashVoucherEwtCodeOptions,
+  PettyCashVoucherVATableDropdownOptions,
   PettyCashVoucherQueryKeys,
   PettyCashVoucherStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
 import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
 import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 
 export function usePettyCashVoucherActionPage(options: PettyCashVoucherActionPageOptions) {
   const transactionCurrency = useTransactionCurrency();
@@ -40,9 +47,21 @@ export function usePettyCashVoucherActionPage(options: PettyCashVoucherActionPag
   const { mode } = options;
   const existingVoucher = options.existingVoucher ?? PettyCashVoucherRecords.find((record) => record.id === params.recordId);
   const isReadonly = mode === "view";
+  const taxCodesQuery = useAlphanumericTaxCodes();
+  const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
+  const vatOptions = useMemo(() => createVatOptions(taxCodes), [taxCodes]);
+
+  const dynamicEwtOptions = useMemo(() => createEwtOptions(taxCodes, "Purchases"), [taxCodes]);
+  const ewtOptions = useMemo<AppAdvancedDropdownOption[]>(() => {
+    if (dynamicEwtOptions.length > 0) {
+      return dynamicEwtOptions;
+    }
+    return PettyCashVoucherEwtCodeOptions;
+  }, [dynamicEwtOptions]);
+
   const [values, setValues] = useState<PettyCashVoucherFormValues>(() =>
     existingVoucher
-      ? createPettyCashVoucherFormValues(existingVoucher)
+      ? createPettyCashVoucherFormValues(existingVoucher, taxCodes)
       : createPettyCashVoucherInitialFormValues(transactionCurrency.baseCurrencyCode),
   );
   const [errors, setErrors] = useState<PettyCashVoucherFormErrors>({});
@@ -82,6 +101,36 @@ export function usePettyCashVoucherActionPage(options: PettyCashVoucherActionPag
     }));
   }, [mode, transactionCurrency.baseCurrencyCode, transactionCurrency.isBaseCurrencyResolved]);
 
+  useEffect(() => {
+    if (!values.ewtCode && !values.vatType) {
+      return;
+    }
+
+    const taxes = calculatePettyCashVoucherTaxFields(values.amount, values.vatType, values.ewtCode, taxCodes);
+    if (
+      taxes.ewtRate !== values.ewtRate ||
+      taxes.ewtAmount !== values.ewtAmount ||
+      taxes.vatRate !== values.vatRate ||
+      taxes.vatAmount !== values.vatAmount ||
+      taxes.netAmount !== values.netAmount
+    ) {
+      setValues((current) => ({
+        ...current,
+        ...taxes,
+      }));
+    }
+  }, [
+    taxCodes,
+    values.amount,
+    values.ewtAmount,
+    values.ewtCode,
+    values.ewtRate,
+    values.netAmount,
+    values.vatAmount,
+    values.vatRate,
+    values.vatType,
+  ]);
+
   function updateField<TKey extends keyof PettyCashVoucherFormValues>(field: TKey, value: PettyCashVoucherFormValues[TKey]) {
     if (isReadonly) {
       return;
@@ -96,16 +145,18 @@ export function usePettyCashVoucherActionPage(options: PettyCashVoucherActionPag
       return;
     }
 
+    const taxes = calculatePettyCashVoucherTaxFields(value, values.vatType, values.ewtCode, taxCodes);
     setValues((current) => ({
       ...current,
       amount: value,
-      ...calculatePettyCashVoucherVatFields(value, current.vatable),
+      ...taxes,
     }));
     setErrors((current) => ({
       ...current,
       amount: undefined,
       netAmount: undefined,
       vatAmount: undefined,
+      ewtAmount: undefined,
     }));
   }
 
@@ -126,21 +177,44 @@ export function usePettyCashVoucherActionPage(options: PettyCashVoucherActionPag
     }
   }
 
-  function updateVATable(value: PettyCashVoucherFormValues["vatable"]) {
+  function updateVatType(value: string) {
     if (isReadonly) {
       return;
     }
 
+    const taxes = calculatePettyCashVoucherTaxFields(values.amount, value, values.ewtCode, taxCodes);
     setValues((current) => ({
       ...current,
-      vatable: value,
-      ...calculatePettyCashVoucherVatFields(current.amount, value),
+      vatType: value,
+      vatable: value ? "True" : "False",
+      ...taxes,
     }));
     setErrors((current) => ({
       ...current,
       netAmount: undefined,
+      vatType: undefined,
       vatable: undefined,
       vatAmount: undefined,
+      ewtAmount: undefined,
+    }));
+  }
+
+  function updateEwtCode(value: string) {
+    if (isReadonly) {
+      return;
+    }
+
+    const taxes = calculatePettyCashVoucherTaxFields(values.amount, values.vatType, value, taxCodes);
+    setValues((current) => ({
+      ...current,
+      ewtCode: value,
+      ...taxes,
+    }));
+    setErrors((current) => ({
+      ...current,
+      ewtCode: undefined,
+      ewtAmount: undefined,
+      netAmount: undefined,
     }));
   }
 
@@ -329,6 +403,7 @@ export function usePettyCashVoucherActionPage(options: PettyCashVoucherActionPag
     handleSubmit,
     handleUpdateStatus,
     isPartyDrawerOpen,
+    ewtOptions,
     isExchangeRateLoading: transactionCurrency.isExchangeRateLoading,
     isReportPreviewOpen,
     isSubmitting,
@@ -345,10 +420,14 @@ export function usePettyCashVoucherActionPage(options: PettyCashVoucherActionPag
     setActiveTab,
     updateAmount,
     updateCurrency,
+    updateEwtCode,
     updateField,
-    updateVATable,
+    updateVatType,
+    updateVATable: updateVatType,
     validate,
     values,
+    vatOptions,
+    vatableOptions: vatOptions,
   };
 }
 

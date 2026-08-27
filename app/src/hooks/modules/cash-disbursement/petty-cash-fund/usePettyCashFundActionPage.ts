@@ -8,6 +8,7 @@ import {
   PettyCashFundStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund/PettyCashFundConstants";
 import {
+  calculatePettyCashFundItemTaxFields,
   calculatePettyCashFundTotals,
   createBlankPettyCashFundItem,
   createPettyCashFundFormValues,
@@ -24,14 +25,12 @@ import {
 import type {
   PettyCashFundActionMode,
   PettyCashFundActionTab,
-  PettyCashFundBoolean,
   PettyCashFundFormErrors,
   PettyCashFundFormValues,
   PettyCashFundItem,
   PettyCashFundStatus,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";
 import { validatePettyCashFundForm } from "@/app/src/validations/modules/cash-disbursement/petty-cash-fund/PettyCashFundValidation";
-import { parseAmount } from "@/app/src/utils/number.util";
 import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
 import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
@@ -285,17 +284,9 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
 }
 
 function calculateItem(item: PettyCashFundItem): PettyCashFundItem {
-  const amount = parseAmount(item.amount) ?? 0;
-  const rate = item.vatable === "True" ? 0.12 : 0;
-  const vat = rate ? (item.vatInclusive === "True" ? amount - amount / (1 + rate) : amount * rate) : 0;
-  const net = item.vatInclusive === "True" ? amount - vat : amount;
-  const gross = item.vatInclusive === "True" ? amount : amount + vat;
   return {
     ...item,
-    netAmount: formatPettyCashFundAmount(net),
-    vatAmount: formatPettyCashFundAmount(vat),
-    grossAmount: formatPettyCashFundAmount(gross),
-    vatable: item.vatable as PettyCashFundBoolean,
+    ...calculatePettyCashFundItemTaxFields(item.amount, item.vatType, item.ewtCode),
   };
 }
 

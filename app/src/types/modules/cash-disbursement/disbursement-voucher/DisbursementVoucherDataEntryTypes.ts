@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { DefaultAccount } from "@/app/src/types/modules/financial-maintenance/default-account/DefaultAccountTypes";
 import type { PaymentTypeRecord as AppPaymentTypeRecord } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
 import type { ModuleDataEntryClearAction, ModuleDataEntryColumn } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
@@ -13,7 +14,7 @@ import type {
 
 export type DisbursementEntryColumnId =
   | "accountCode"
-  | "atcCode"
+  | "ewtCode"
   | "accountName"
   | "checkDate"
   | "checkNo"
@@ -44,7 +45,6 @@ export type ExpenseEntryColumnId =
   | "ewtCode"
   | "ewtPercent"
   | "ewtAmount"
-  | "totalAmountDue"
   | "partyCode"
   | "partyName"
   | "remarks"
@@ -96,6 +96,7 @@ export type DisbursementAccountingEntryColumnsParams = {
   onUpdateEntry: DisbursementEntryUpdater;
   onUpdateEntryFields: DisbursementEntryFieldsUpdater;
   partyOptions: AppAdvancedDropdownOption[];
+  vatOptions?: AppAdvancedDropdownOption[];
 };
 
 export type DisbursementExpenseEntryColumnsParams = {
@@ -107,6 +108,7 @@ export type DisbursementExpenseEntryColumnsParams = {
   expenseColumnLabels: Record<ExpenseEntryColumnId, string>;
   expenseColumnWidths: Record<ExpenseEntryColumnId, number>;
   isReadonly: boolean;
+  lineErrors?: Record<string, Partial<Record<string, string>>>;
   onAddExpenseType: () => void;
   onAddResponsibilityCenter: (entryId: string) => void;
   responsibilityCenterOptions: AppAdvancedDropdownOption[];
@@ -116,15 +118,20 @@ export type DisbursementExpenseEntryColumnsParams = {
 };
 
 export type DisbursementVoucherAccountingEntryTableProps = {
-  accountingColumns: Record<DisbursementEntryColumnId, ModuleDataEntryColumn<DisbursementLineEntry>>;
+  accountingColumns?: Record<DisbursementEntryColumnId, ModuleDataEntryColumn<DisbursementLineEntry>>;
   accountingRows: DisbursementLineEntry[];
   errors: DisbursementVoucherFormErrors;
   isReadonly: boolean;
-  onAddEntries: (count: number) => void;
-  onClearEntries: VoucherDataEntryProps["onClearEntries"];
-  totalCredit: number;
-  totalDebit: number;
-  variance: number;
+  title?: ReactNode;
+  onAddEntries?: (count: number) => void;
+  onClearEntries?: VoucherDataEntryProps["onClearEntries"];
+  onDuplicateEntry?: (entryId: string) => void;
+  onInsertEntry?: (targetEntryId: string, position: "above" | "below") => void;
+  onMoveEntry?: (sourceEntryId: string, targetEntryId: string) => void;
+  onRemoveEntry?: (entryId: string) => void;
+  totalCredit?: number;
+  totalDebit?: number;
+  variance?: number;
 };
 
 export type DisbursementVoucherDetailEntryTableProps = {
@@ -136,6 +143,8 @@ export type DisbursementVoucherDetailEntryTableProps = {
   expenseAccounts: ModuleChartAccount[];
   expenseRows: DisbursementLineEntry[];
   isReadonly: boolean;
+  lineErrors?: Record<string, Partial<Record<string, string>>>;
+  title?: ReactNode;
   onAddEntries: (count: number) => void;
   onAddExpenseType: () => void;
   onAddResponsibilityCenter: (entryId: string) => void;

@@ -8,11 +8,9 @@ import {
   ProtectedExpenseEntryColumnIds,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryConstants";
 import {
-  estimateDisbursementEntryTextWidth,
+  getDisbursementEntryExportCell,
   getExpenseEntryColumnTotal,
   isExpenseEntryColumnId,
-  moveEntryColumn,
-  updateVisibleEntryColumns,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingEntryData";
 import { createBlankDisbursementLineEntry } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import type {
@@ -20,8 +18,13 @@ import type {
   ExpenseEntryColumnId,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryTypes";
 import { createDisbursementExpenseEntryColumns } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/DisbursementVoucherEntryColumns";
-import { TabbedModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryTabs";
+import { ModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import type { ModuleDataEntryColumnOption } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import {
+  calculateFitColumnWidth,
+  reorderColumnIds,
+  toggleVisibleColumnId,
+} from "@/app/src/ui/shared/module/module-data-entry/entryTableState.util";
 import { clampColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/utils";
 import { formatAmount } from "@/app/src/utils/currency.util";
 
@@ -34,6 +37,8 @@ export function DisbursementVoucherDetailEntryTable({
   expenseAccounts,
   expenseRows,
   isReadonly,
+  lineErrors,
+  title = "",
   onAddEntries,
   onAddExpenseType,
   onAddResponsibilityCenter,
@@ -70,6 +75,7 @@ export function DisbursementVoucherDetailEntryTable({
         expenseColumnLabels,
         expenseColumnWidths,
         isReadonly,
+        lineErrors,
         onAddExpenseType,
         onAddResponsibilityCenter,
         responsibilityCenterOptions,
@@ -86,6 +92,7 @@ export function DisbursementVoucherDetailEntryTable({
       expenseColumnLabels,
       expenseColumnWidths,
       isReadonly,
+      lineErrors,
       onAddExpenseType,
       onAddResponsibilityCenter,
       responsibilityCenterOptions,
@@ -116,14 +123,14 @@ export function DisbursementVoucherDetailEntryTable({
 
   function handleMoveColumn(fromId: string, toId: string) {
     if (isExpenseEntryColumnId(fromId) && isExpenseEntryColumnId(toId)) {
-      setExpenseColumnOrder((currentOrder) => moveEntryColumn(currentOrder, fromId, toId));
+      setExpenseColumnOrder((currentOrder) => reorderColumnIds(currentOrder, fromId, toId));
     }
   }
 
   function handleToggleColumnVisibility(columnId: string, isVisible: boolean) {
     if (isExpenseEntryColumnId(columnId)) {
       setVisibleExpenseColumnIds((currentIds) =>
-        updateVisibleEntryColumns(currentIds, expenseColumnOrder, columnId, isVisible),
+        toggleVisibleColumnId(currentIds, expenseColumnOrder, columnId, isVisible),
       );
     }
   }
@@ -145,53 +152,13 @@ export function DisbursementVoucherDetailEntryTable({
 
   function handleFitColumnWidth(columnId: string) {
     if (isExpenseEntryColumnId(columnId)) {
-      const headerWidth = estimateDisbursementEntryTextWidth(expenseColumnLabels[columnId], 76);
-      const contentWidth = expenseRows.reduce((currentWidth, entry) => {
-        switch (columnId) {
-          case "partyCode":
-            return Math.max(currentWidth, estimateDisbursementEntryTextWidth(entry.partyCode ?? "", 24));
-          case "partyName":
-            return Math.max(currentWidth, estimateDisbursementEntryTextWidth(entry.partyName ?? "", 24));
-          case "disbursementCode":
-            return Math.max(currentWidth, estimateDisbursementEntryTextWidth(entry.accountCode, 24));
-          case "expenseType":
-            return Math.max(currentWidth, estimateDisbursementEntryTextWidth(entry.accountName, 24));
-          case "amount":
-            return Math.max(currentWidth, estimateDisbursementEntryTextWidth(formatAmount(entry.taxDetails.grossAmount), 24));
-          case "checkNo":
-            return Math.max(currentWidth, estimateDisbursementEntryTextWidth(entry.checkNo ?? "", 24));
-          case "checkStatus":
-            return Math.max(currentWidth, estimateDisbursementEntryTextWidth(entry.checkStatus ?? "", 24));
-          case "checkDate":
-            return Math.max(currentWidth, estimateDisbursementEntryTextWidth(entry.checkDate ?? "", 24));
-          case "netAmount":
-            return Math.max(currentWidth, estimateDisbursementEntryTextWidth(formatAmount(entry.taxDetails.netAmount), 24));
-          case "vatCode":
-            return Math.max(currentWidth, estimateDisbursementEntryTextWidth(entry.taxDetails.vatCode ?? "", 24));
-          case "vatPercent":
-            return Math.max(currentWidth, estimateDisbursementEntryTextWidth(`${formatAmount(entry.taxDetails.vatPercent)}%`, 24));
-          case "vatAmount":
-            return Math.max(currentWidth, estimateDisbursementEntryTextWidth(formatAmount(entry.taxDetails.vatAmount), 24));
-          case "ewtCode":
-            return Math.max(currentWidth, estimateDisbursementEntryTextWidth(entry.taxDetails.ewtCode ?? "", 24));
-          case "ewtPercent":
-            return Math.max(currentWidth, estimateDisbursementEntryTextWidth(`${formatAmount(entry.taxDetails.ewtPercent)}%`, 24));
-          case "ewtAmount":
-            return Math.max(currentWidth, estimateDisbursementEntryTextWidth(formatAmount(entry.taxDetails.ewtAmount), 24));
-          case "totalAmountDue":
-            return Math.max(currentWidth, estimateDisbursementEntryTextWidth(formatAmount(entry.taxDetails.amount), 24));
-          case "remarks":
-            return Math.max(currentWidth, estimateDisbursementEntryTextWidth(entry.remarks, 24));
-          case "responsibilityCenter":
-            return Math.max(currentWidth, estimateDisbursementEntryTextWidth(entry.responsibilityCenter ?? "", 24));
-          case "refId":
-            return Math.max(currentWidth, estimateDisbursementEntryTextWidth(entry.refId ?? "", 24));
-          default:
-            return currentWidth;
-        }
-      }, 50);
-
-      handleUpdateColumnWidth(columnId, Math.max(headerWidth, contentWidth));
+      const fitWidth = calculateFitColumnWidth(
+        expenseColumnLabels[columnId],
+        expenseRows,
+        columnId,
+        (entry) => getDisbursementEntryExportCell(entry, columnId),
+      );
+      handleUpdateColumnWidth(columnId, fitWidth);
     }
   }
 
@@ -203,14 +170,14 @@ export function DisbursementVoucherDetailEntryTable({
   }
 
   return (
-    <TabbedModuleDataEntry
+    <ModuleDataEntry
       addButtonLabel="Add Entry"
-      title=""
+      title={title}
       emptyRowLabel="entry"
       error={errors.lineEntries}
       footerDetails={
-        <span className="text-sm font-semibold text-darknavy">
-          Total Amount: {formatAmount(getExpenseEntryColumnTotal(expenseRows, "totalAmountDue"))}
+        <span className="text-sm font-semibold text-emerald-600">
+          Total Amount: {formatAmount(getExpenseEntryColumnTotal(expenseRows, "amount"))}
         </span>
       }
       columns={expenseColumns}
@@ -237,7 +204,6 @@ export function DisbursementVoucherDetailEntryTable({
         amount: formatAmount(getExpenseEntryColumnTotal(expenseRows, "amount")),
         ewtAmount: formatAmount(getExpenseEntryColumnTotal(expenseRows, "ewtAmount")),
         netAmount: formatAmount(getExpenseEntryColumnTotal(expenseRows, "netAmount")),
-        totalAmountDue: formatAmount(getExpenseEntryColumnTotal(expenseRows, "totalAmountDue")),
         vatAmount: formatAmount(getExpenseEntryColumnTotal(expenseRows, "vatAmount")),
       }}
     />

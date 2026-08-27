@@ -19,10 +19,12 @@ import { formatExchangeRateInput } from "@/app/src/utils/number.util";
 export function RevolvingFundDetailsFields({
   onOpenPartyDrawer,
   onOpenProjectDrawer,
+  onOpenResponsibilityCenterDrawer,
   page,
 }: {
   onOpenPartyDrawer: () => void;
   onOpenProjectDrawer: () => void;
+  onOpenResponsibilityCenterDrawer: () => void;
   page: RevolvingFundActionPageState;
 }) {
   return (
@@ -50,6 +52,7 @@ export function RevolvingFundDetailsFields({
               readOnly={page.isReadonly}
               placeholder="Select Responsibility Center"
               searchPlaceholder="Search Responsibility Center"
+              addAction={!page.isReadonly ? { label: "Add Responsibility Center", onClick: onOpenResponsibilityCenterDrawer } : undefined}
               onChange={(code, name) => {
                 page.updateField("responsibilityCenterCode", code);
                 page.updateField("responsibilityCenter", name);

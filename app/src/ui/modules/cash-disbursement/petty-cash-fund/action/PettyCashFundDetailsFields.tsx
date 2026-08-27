@@ -19,10 +19,12 @@ import { formatExchangeRateInput } from "@/app/src/utils/number.util";
 export function PettyCashFundDetailsFields({
   onOpenPartyDrawer,
   onOpenProjectDrawer,
+  onOpenResponsibilityCenterDrawer,
   page,
 }: {
   onOpenPartyDrawer: () => void;
   onOpenProjectDrawer: () => void;
+  onOpenResponsibilityCenterDrawer: () => void;
   page: PettyCashFundActionPageState;
 }) {
   return (
@@ -52,6 +54,7 @@ export function PettyCashFundDetailsFields({
               readOnly={page.isReadonly}
               placeholder="Select Responsibility Center"
               searchPlaceholder="Search Responsibility Center"
+              addAction={!page.isReadonly ? { label: "Add Responsibility Center", onClick: onOpenResponsibilityCenterDrawer } : undefined}
               onChange={(code, name) => {
                 page.updateField("responsibilityCenterCode", code);
                 page.updateField("responsibilityCenter", name);

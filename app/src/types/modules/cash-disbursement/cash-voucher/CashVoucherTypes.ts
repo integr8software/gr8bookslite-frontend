@@ -141,7 +141,7 @@ export type CashVoucherLineEntry = {
   responsibilityCenter?: string;
   refId?: string;
   vatType?: string;
-  atcCode?: string;
+  ewtCode?: string;
   remarks: string;
   debit: number;
   credit: number;
@@ -156,7 +156,6 @@ export type CashVoucherTaxDetails = {
   responsibilityCenter: string;
   refId: string;
   vatType: string;
-  atcCode: string;
   grossAmount: number;
   netAmount: number;
   vatCode: string;
@@ -266,7 +265,7 @@ export type CashVoucherEntryDraft = {
   responsibilityCenter?: string;
   refId?: string;
   vatType?: string;
-  atcCode?: string;
+  ewtCode?: string;
   remarks: string;
   debit: string;
   credit: string;

@@ -7,6 +7,8 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
+
 export const PettyCashVoucherLink = getModuleRoute("PCV");
 export const PettyCashVoucherAddLink = `${PettyCashVoucherLink}/add`;
 export const getPettyCashVoucherEditLink = (recordId: string) => `${PettyCashVoucherLink}/edit/${recordId}`;
@@ -25,8 +27,55 @@ export const PettyCashVoucherTransactionNumberPadding = 6;
 export const PettyCashVoucherDefaultFormStatus: PettyCashVoucherFormStatus = "Open";
 
 export const PettyCashVoucherDefaultVATable: PettyCashVoucherVATable = "False";
+export const PettyCashVoucherDefaultVatType = "";
 
 export const PettyCashVoucherVatRate = 0.12;
+
+export const PettyCashVoucherDefaultVatTypeOptions: AppAdvancedDropdownOption[] = [
+  { description: "Value Added Tax", label: "12%", name: "VAT", value: "VAT-12" },
+  { description: "Zero Rated", label: "0%", name: "Zero Rated", value: "VAT-0" },
+  { description: "VAT Exempt", label: "0%", name: "VAT Exempt", value: "VAT-EXEMPT" },
+  { description: "Non-VAT", label: "0%", name: "Non-VAT", value: "NON-VAT" },
+];
+
+export const PettyCashVoucherVATableDropdownOptions: AppAdvancedDropdownOption[] = [
+  { name: "False", value: "False" },
+  { name: "True", value: "True" },
+];
+
+export const PettyCashVoucherEwtCodeOptions: AppAdvancedDropdownOption[] = [
+  { description: "Expanded Withholding Tax 10%", label: "10%", name: "W10", value: "W10" },
+  { description: "Expanded Withholding Tax 5%", label: "5%", name: "W05", value: "W05" },
+  { description: "Expanded Withholding Tax 2%", label: "2%", name: "WV02", value: "WV02" },
+  { description: "Expanded Withholding Tax 1%", label: "1%", name: "WV01", value: "WV01" },
+];
+
+export const PettyCashVoucherEwtRateMap: Record<string, number> = {
+  W05: 5,
+  W10: 10,
+  WV01: 1,
+  WV02: 2,
+};
+
+export function getPettyCashVoucherEwtPercent(code: string): number {
+  if (!code) return 0;
+  const trimmed = code.trim();
+  if (PettyCashVoucherEwtRateMap[trimmed] !== undefined) {
+    return PettyCashVoucherEwtRateMap[trimmed];
+  }
+  // Only parse numeric rate if the code is explicitly a percentage string like "1%", "2%", etc.
+  if (/^\d+(\.\d+)?%?$/.test(trimmed)) {
+    const match = trimmed.match(/^(\d+(?:\.\d+)?)/);
+    const parsed = match ? Number.parseFloat(match[1]) : 0;
+    return parsed <= 100 ? parsed : 0;
+  }
+  return 0;
+}
+
+export function getPettyCashVoucherEwtRate(code: string): string {
+  const percent = getPettyCashVoucherEwtPercent(code);
+  return percent > 0 ? `${percent.toFixed(2)}%` : "0.00%";
+}
 
 export const PettyCashVoucherStatuses = {
   cancelled: "Cancelled",

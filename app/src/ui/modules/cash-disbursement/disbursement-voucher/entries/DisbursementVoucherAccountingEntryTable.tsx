@@ -8,88 +8,103 @@ import {
   ProtectedDisbursementEntryColumnIds,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryConstants";
 import {
-  calculateDisbursementEntryColumnFitWidth,
+  getDisbursementEntryExportCell,
   isDisbursementEntryColumnId,
-  moveEntryColumn,
-  updateVisibleEntryColumns,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingEntryData";
 import type {
   DisbursementEntryColumnId,
   DisbursementVoucherAccountingEntryTableProps,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryTypes";
-import { TabbedModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryTabs";
-import type { ModuleDataEntryColumnOption } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import type { DisbursementLineEntry } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+import { ModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import type {
+  ModuleDataEntryColumn,
+  ModuleDataEntryColumnOption,
+} from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import {
+  calculateFitColumnWidth,
+  reorderColumnIds,
+  toggleVisibleColumnId,
+} from "@/app/src/ui/shared/module/module-data-entry/entryTableState.util";
 import { clampColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/utils";
 import { formatAmount } from "@/app/src/utils/currency.util";
+import { joinClasses } from "@/app/src/utils/string.util";
 
 export function DisbursementVoucherAccountingEntryTable({
   accountingColumns,
   accountingRows,
   errors,
   isReadonly,
+  title,
   onAddEntries,
   onClearEntries,
-  totalCredit,
-  totalDebit,
-  variance,
+  onDuplicateEntry,
+  onInsertEntry,
+  onMoveEntry,
+  onRemoveEntry,
+  totalCredit = 0,
+  totalDebit = 0,
+  variance = 0,
 }: DisbursementVoucherAccountingEntryTableProps) {
-  const [columnOrder, setColumnOrder] = useState<DisbursementEntryColumnId[]>(DefaultDisbursementEntryColumnOrder);
-  const [visibleColumnIds, setVisibleColumnIds] = useState<DisbursementEntryColumnId[]>(
+  const [accountingColumnOrder, setAccountingColumnOrder] = useState<DisbursementEntryColumnId[]>(
+    DefaultDisbursementEntryColumnOrder,
+  );
+  const [visibleAccountingColumnIds, setVisibleAccountingColumnIds] = useState<DisbursementEntryColumnId[]>(
     DefaultVisibleDisbursementEntryColumnOrder,
   );
-  const [columnWidths, setColumnWidths] = useState(DefaultDisbursementEntryColumnWidths);
-  const [columnLabels, setColumnLabels] = useState(DisbursementEntryColumnLabels);
+  const [accountingColumnWidths, setAccountingColumnWidths] = useState(DefaultDisbursementEntryColumnWidths);
+  const [accountingColumnLabels, setAccountingColumnLabels] = useState(DisbursementEntryColumnLabels);
 
   const hasMultiCheckNumberColumn = false;
-  const visibleColumnOrder = columnOrder.filter((columnId) =>
-    MultiCheckColumnIds.has(columnId) ? hasMultiCheckNumberColumn : visibleColumnIds.includes(columnId),
+  const visibleAccountingColumnOrder = accountingColumnOrder.filter((columnId) =>
+    MultiCheckColumnIds.has(columnId) ? hasMultiCheckNumberColumn : visibleAccountingColumnIds.includes(columnId),
   );
 
   const columns = useMemo(
     () =>
-      visibleColumnOrder.map((columnId) => ({
-        ...accountingColumns[columnId],
-        header: columnLabels[columnId],
-        width: columnWidths[columnId],
-      })),
-    [accountingColumns, columnLabels, columnWidths, visibleColumnOrder],
+      visibleAccountingColumnOrder
+        .map((columnId) => accountingColumns?.[columnId])
+        .filter((col): col is ModuleDataEntryColumn<DisbursementLineEntry> => Boolean(col)),
+    [accountingColumns, visibleAccountingColumnOrder],
   );
 
   const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
     () =>
-      columnOrder
+      accountingColumnOrder
         .filter((columnId) => (MultiCheckColumnIds.has(columnId) ? hasMultiCheckNumberColumn : true))
         .map((columnId) => ({
           id: columnId,
           isProtected: ProtectedDisbursementEntryColumnIds.has(columnId),
-          isVisible: visibleColumnIds.includes(columnId),
-          label: columnLabels[columnId],
-          width: columnWidths[columnId],
+          isVisible: visibleAccountingColumnIds.includes(columnId),
+          label: accountingColumnLabels[columnId],
+          width: accountingColumnWidths[columnId],
         })),
-    [columnLabels, columnOrder, columnWidths, hasMultiCheckNumberColumn, visibleColumnIds],
+    [accountingColumnLabels, accountingColumnOrder, accountingColumnWidths, hasMultiCheckNumberColumn, visibleAccountingColumnIds],
   );
 
   function handleMoveColumn(fromId: string, toId: string) {
     if (isDisbursementEntryColumnId(fromId) && isDisbursementEntryColumnId(toId)) {
-      setColumnOrder((currentOrder) => moveEntryColumn(currentOrder, fromId, toId));
+      setAccountingColumnOrder((currentOrder) => reorderColumnIds(currentOrder, fromId, toId));
     }
   }
 
   function handleToggleColumnVisibility(columnId: string, isVisible: boolean) {
     if (isDisbursementEntryColumnId(columnId)) {
-      setVisibleColumnIds((currentIds) => updateVisibleEntryColumns(currentIds, columnOrder, columnId, isVisible));
+      setVisibleAccountingColumnIds((currentIds) =>
+        toggleVisibleColumnId(currentIds, accountingColumnOrder, columnId, isVisible),
+      );
     }
   }
 
   function handleUpdateColumnHeader(columnId: string, header: string) {
     if (isDisbursementEntryColumnId(columnId)) {
-      setColumnLabels((currentLabels) => ({ ...currentLabels, [columnId]: header }));
+      setAccountingColumnLabels((currentLabels) => ({ ...currentLabels, [columnId]: header }));
     }
   }
 
   function handleUpdateColumnWidth(columnId: string, width: number) {
     if (isDisbursementEntryColumnId(columnId)) {
-      setColumnWidths((currentWidths) => ({
+      setAccountingColumnWidths((currentWidths) => ({
         ...currentWidths,
         [columnId]: clampColumnWidth(width),
       }));
@@ -98,47 +113,54 @@ export function DisbursementVoucherAccountingEntryTable({
 
   function handleFitColumnWidth(columnId: string) {
     if (isDisbursementEntryColumnId(columnId)) {
-      const fitWidth = calculateDisbursementEntryColumnFitWidth({
+      const fitWidth = calculateFitColumnWidth(
+        accountingColumnLabels[columnId],
+        accountingRows,
         columnId,
-        columnLabels,
-        entries: accountingRows,
-      });
-
+        (entry) => getDisbursementEntryExportCell(entry, columnId),
+      );
       handleUpdateColumnWidth(columnId, fitWidth);
     }
   }
 
   function handleResetColumns() {
-    setColumnOrder(DefaultDisbursementEntryColumnOrder);
-    setVisibleColumnIds(DefaultVisibleDisbursementEntryColumnOrder);
-    setColumnWidths(DefaultDisbursementEntryColumnWidths);
-    setColumnLabels(DisbursementEntryColumnLabels);
+    setAccountingColumnOrder(DefaultDisbursementEntryColumnOrder);
+    setVisibleAccountingColumnIds(DefaultVisibleDisbursementEntryColumnOrder);
+    setAccountingColumnWidths(DefaultDisbursementEntryColumnWidths);
+    setAccountingColumnLabels(DisbursementEntryColumnLabels);
   }
 
+  const computedDebit = totalDebit || accountingRows.reduce((sum, r) => sum + Number(r.debit || 0), 0);
+  const computedCredit = totalCredit || accountingRows.reduce((sum, r) => sum + Number(r.credit || 0), 0);
+  const computedVariance = variance !== undefined ? variance : Math.abs(computedDebit - computedCredit);
+
   return (
-    <TabbedModuleDataEntry
+    <ModuleDataEntry
       addButtonLabel="Add Entry"
-      title=""
+      title={title}
       emptyRowLabel="entry"
       error={errors.lineEntries}
       footerDetails={
-        <span className={`text-sm font-semibold ${variance < 0.001 ? "text-emerald-700" : "text-coralpink"}`}>
-          Variance: {formatAmount(variance)}
+        <span
+          className={joinClasses(
+            "text-sm font-semibold",
+            computedVariance > 0.005 ? "text-coralpink" : "text-emerald-600",
+          )}
+        >
+          Variance: {formatAmount(computedVariance)}
         </span>
       }
       columns={columns}
       columnOptions={columnOptions}
-      canConfigureColumnsWhenReadonly
-      canManageRowsWhenReadonly={!isReadonly}
       rows={accountingRows}
-      isDraggable={false}
-      isReadonly
-      onAddRows={onAddEntries}
+      isDraggable={!isReadonly}
+      isReadonly={isReadonly}
+      onAddRows={onAddEntries ?? (() => undefined)}
       onClearRows={onClearEntries}
-      onDuplicateRow={() => {}}
-      onInsertRow={() => {}}
-      onMoveRow={() => {}}
-      onRemoveRow={() => {}}
+      onDuplicateRow={onDuplicateEntry ?? (() => undefined)}
+      onInsertRow={onInsertEntry ?? (() => undefined)}
+      onMoveRow={onMoveEntry ?? (() => undefined)}
+      onRemoveRow={onRemoveEntry ?? (() => undefined)}
       onAutoColumnWidth={handleFitColumnWidth}
       onFitColumnWidth={handleFitColumnWidth}
       onMoveColumn={handleMoveColumn}
@@ -148,9 +170,11 @@ export function DisbursementVoucherAccountingEntryTable({
       onUpdateColumnWidth={handleUpdateColumnWidth}
       summaryRowHeader="Totals"
       summaryCells={{
-        credit: formatAmount(totalCredit),
-        debit: formatAmount(totalDebit),
+        debit: formatAmount(computedDebit),
+        credit: formatAmount(computedCredit),
       }}
     />
   );
 }
+
+

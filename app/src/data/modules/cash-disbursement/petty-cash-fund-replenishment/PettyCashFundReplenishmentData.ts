@@ -69,11 +69,17 @@ export function createBlankPettyCashFundReplenishmentEntry(): PettyCashFundReple
     id: `pcfr-entry-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     pettyCashDate: todayDateValue(),
     pettyCashNo: "",
-    accountCode: "",
-    accountTitle: "",
-    totalAmount: "",
+    supplierCode: "",
+    supplierName: "",
+    amount: "",
     netAmount: "",
-    vatAmount: "0.00",
+    vatType: "",
+    vatPercent: "",
+    vatAmount: "",
+    ewtCode: "",
+    ewtPercent: "",
+    ewtAmount: "",
+    totalAmountDue: "",
     remarks: "",
   };
 }
@@ -86,7 +92,7 @@ export function createPettyCashFundReplenishmentFormValues(
   if (record?.formValues) {
     return {
       ...record.formValues,
-      entries: record.formValues.entries.map((entry) => ({ ...entry })),
+      entries: record.formValues.entries.map(normalizePettyCashFundReplenishmentEntry),
       attachments: record.formValues.attachments.map((attachment) => ({ ...attachment })),
     };
   }
@@ -112,10 +118,10 @@ export function createPettyCashFundReplenishmentFormValues(
           ...createBlankPettyCashFundReplenishmentEntry(),
           pettyCashDate: record.documentDate,
           pettyCashNo: "PCV-000084",
-          accountCode: "610-100",
-          accountTitle: "Office Supplies Expense",
-          totalAmount: amount,
-          netAmount: amount,
+          supplierCode: record.partyCode,
+          supplierName: record.partyName,
+          amount,
+          ...calculatePettyCashFundReplenishmentEntryTaxFields(amount),
           remarks: record.remarks,
         },
       ],
@@ -145,11 +151,13 @@ export function createPettyCashFundReplenishmentFormValues(
 export function calculatePettyCashFundReplenishmentTotals(entries: PettyCashFundReplenishmentEntry[]) {
   return entries.reduce(
     (totals, entry) => ({
-      totalAmount: totals.totalAmount + parseMoneyNumberInput(entry.totalAmount),
+      totalAmount: totals.totalAmount + parseMoneyNumberInput(entry.amount),
       netAmount: totals.netAmount + parseMoneyNumberInput(entry.netAmount),
       vatAmount: totals.vatAmount + parseMoneyNumberInput(entry.vatAmount),
+      ewtAmount: totals.ewtAmount + parseMoneyNumberInput(entry.ewtAmount),
+      totalAmountDue: totals.totalAmountDue + parseMoneyNumberInput(entry.totalAmountDue),
     }),
-    { totalAmount: 0, netAmount: 0, vatAmount: 0 },
+    { totalAmount: 0, netAmount: 0, vatAmount: 0, ewtAmount: 0, totalAmountDue: 0 },
   );
 }
 
@@ -172,6 +180,36 @@ export function applyPettyCashFundToReplenishmentForm(
   const totals = getPettyCashFundReplenishmentSourceTotals(source);
   const sourceValues = source.formValues;
 
+  const entries = sourceValues?.items.length
+    ? sourceValues.items.map((item) => ({
+        ...createBlankPettyCashFundReplenishmentEntry(),
+        amount: item.grossAmount || item.amount,
+        ...calculatePettyCashFundReplenishmentEntryTaxFields(
+          item.grossAmount || item.amount,
+          item.vatType,
+          item.ewtCode,
+        ),
+        ewtCode: item.ewtCode,
+        pettyCashDate: item.date || source.documentDate,
+        pettyCashNo: source.transactionNo,
+        remarks: item.remarks || source.remarks,
+        supplierCode: item.payeeCode,
+        supplierName: item.payeeName,
+        vatType: item.vatType,
+      }))
+    : [
+        {
+          ...createBlankPettyCashFundReplenishmentEntry(),
+          amount: formatPettyCashFundReplenishmentAmount(totals.totalAmount),
+          ...calculatePettyCashFundReplenishmentEntryTaxFields(totals.totalAmount),
+          pettyCashDate: source.documentDate,
+          pettyCashNo: source.transactionNo,
+          remarks: source.remarks,
+          supplierCode: source.partyCode,
+          supplierName: source.partyName,
+        },
+      ];
+
   return {
     ...values,
     accountCode: source.accountCode,
@@ -185,19 +223,7 @@ export function applyPettyCashFundToReplenishmentForm(
     remarks: source.remarks,
     responsibilityCenter: sourceValues?.responsibilityCenter ?? "",
     responsibilityCenterCode: sourceValues?.responsibilityCenterCode ?? "",
-    entries: [
-      {
-        ...createBlankPettyCashFundReplenishmentEntry(),
-        accountCode: source.accountCode,
-        accountTitle: source.accountTitle,
-        netAmount: formatPettyCashFundReplenishmentAmount(totals.netAmount),
-        pettyCashDate: source.documentDate,
-        pettyCashNo: source.transactionNo,
-        remarks: source.remarks,
-        totalAmount: formatPettyCashFundReplenishmentAmount(totals.totalAmount),
-        vatAmount: formatPettyCashFundReplenishmentAmount(totals.vatAmount),
-      },
-    ],
+    entries,
   };
 }
 
@@ -236,6 +262,30 @@ export function formatPettyCashFundReplenishmentAmount(value: number) {
   return formatMoneyNumberDisplayValue(value.toFixed(2));
 }
 
+export function calculatePettyCashFundReplenishmentEntryTaxFields(
+  amountValue: string | number,
+  vatType = "",
+  ewtCode = "",
+): Pick<
+  PettyCashFundReplenishmentEntry,
+  "netAmount" | "vatPercent" | "vatAmount" | "ewtPercent" | "ewtAmount" | "totalAmountDue"
+> {
+  const amount = roundPettyCashFundReplenishmentTaxAmount(parseMoneyNumberInput(amountValue));
+  const vatPercent = getPettyCashFundReplenishmentVatPercent(vatType);
+  const ewtPercent = getPettyCashFundReplenishmentEwtPercent(ewtCode);
+  const vatAmount = roundPettyCashFundReplenishmentTaxAmount((amount * vatPercent) / 100);
+  const ewtAmount = roundPettyCashFundReplenishmentTaxAmount((amount * ewtPercent) / 100);
+
+  return {
+    netAmount: formatPettyCashFundReplenishmentAmount(Math.max(amount - vatAmount, 0)),
+    vatPercent: vatPercent ? `${formatPettyCashFundReplenishmentAmount(vatPercent)}%` : "",
+    vatAmount: formatPettyCashFundReplenishmentAmount(vatAmount),
+    ewtPercent: ewtPercent ? `${formatPettyCashFundReplenishmentAmount(ewtPercent)}%` : "",
+    ewtAmount: formatPettyCashFundReplenishmentAmount(ewtAmount),
+    totalAmountDue: formatPettyCashFundReplenishmentAmount(Math.max(amount - ewtAmount, 0)),
+  };
+}
+
 function getPettyCashFundReplenishmentSourceTotals(record: PettyCashFundRecord) {
   if (!record.formValues) {
     return {
@@ -252,6 +302,49 @@ function getPettyCashFundReplenishmentSourceTotals(record: PettyCashFundRecord) 
     totalAmount: totals.grossAmount,
     vatAmount: totals.vatAmount,
   };
+}
+
+function normalizePettyCashFundReplenishmentEntry(
+  entry: Partial<PettyCashFundReplenishmentEntry> & {
+    accountCode?: string;
+    accountTitle?: string;
+    totalAmount?: string;
+  },
+): PettyCashFundReplenishmentEntry {
+  return {
+    ...createBlankPettyCashFundReplenishmentEntry(),
+    ...entry,
+    amount: entry.amount ?? entry.totalAmount ?? "",
+    supplierCode: entry.supplierCode ?? entry.accountCode ?? "",
+    supplierName: entry.supplierName ?? entry.accountTitle ?? "",
+    vatType: entry.vatType ?? "",
+    ewtCode: entry.ewtCode ?? "",
+    ...calculatePettyCashFundReplenishmentEntryTaxFields(
+      entry.amount ?? entry.totalAmount ?? "",
+      entry.vatType ?? "",
+      entry.ewtCode ?? "",
+    ),
+  };
+}
+
+function getPettyCashFundReplenishmentVatPercent(vatType: string) {
+  const match = vatType.match(/(\d+(?:\.\d+)?)/);
+  if (match) return Number.parseFloat(match[1]);
+  return 0;
+}
+
+function getPettyCashFundReplenishmentEwtPercent(ewtCode: string) {
+  const rates: Record<string, number> = {
+    W05: 5,
+    W10: 10,
+    WV01: 1,
+    WV02: 2,
+  };
+  return rates[ewtCode] ?? 0;
+}
+
+function roundPettyCashFundReplenishmentTaxAmount(value: number) {
+  return Math.round((value + Number.EPSILON) * 100) / 100;
 }
 
 function createSeed(

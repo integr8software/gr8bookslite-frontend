@@ -8,6 +8,7 @@ import {
   RevolvingFundStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/revolving-fund/RevolvingFundConstants";
 import {
+  calculateRevolvingFundItemTaxFields,
   calculateRevolvingFundTotals,
   createBlankRevolvingFundItem,
   createRevolvingFundFormValues,
@@ -24,14 +25,12 @@ import {
 import type {
   RevolvingFundActionMode,
   RevolvingFundActionTab,
-  RevolvingFundBoolean,
   RevolvingFundFormErrors,
   RevolvingFundFormValues,
   RevolvingFundItem,
   RevolvingFundStatus,
 } from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";
 import { validateRevolvingFundForm } from "@/app/src/validations/modules/cash-disbursement/revolving-fund/RevolvingFundValidation";
-import { parseAmount } from "@/app/src/utils/number.util";
 import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
 import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
@@ -285,17 +284,9 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
 }
 
 function calculateItem(item: RevolvingFundItem): RevolvingFundItem {
-  const amount = parseAmount(item.amount) ?? 0;
-  const rate = item.vatable === "True" ? 0.12 : 0;
-  const vat = rate ? (item.vatInclusive === "True" ? amount - amount / (1 + rate) : amount * rate) : 0;
-  const net = item.vatInclusive === "True" ? amount - vat : amount;
-  const gross = item.vatInclusive === "True" ? amount : amount + vat;
   return {
     ...item,
-    netAmount: formatRevolvingFundAmount(net),
-    vatAmount: formatRevolvingFundAmount(vat),
-    grossAmount: formatRevolvingFundAmount(gross),
-    vatable: item.vatable as RevolvingFundBoolean,
+    ...calculateRevolvingFundItemTaxFields(item.amount, item.vatType, item.ewtCode),
   };
 }
 

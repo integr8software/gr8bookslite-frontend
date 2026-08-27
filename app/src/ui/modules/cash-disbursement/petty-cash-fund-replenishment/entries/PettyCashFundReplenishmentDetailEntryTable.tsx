@@ -105,7 +105,7 @@ export function PettyCashFundReplenishmentDetailEntryTable({
   return (
     <ModuleDataEntry
       addButtonLabel="Add Entry"
-      title=""
+      title="Petty Cash Voucher Entries"
       emptyRowLabel="entry"
       error={page.errors.entries}
       footerDetails={
@@ -140,9 +140,10 @@ export function PettyCashFundReplenishmentDetailEntryTable({
       onUpdateColumnWidth={handleUpdateColumnWidth}
       summaryRowHeader="Totals"
       summaryCells={{
-        totalAmount: formatPettyCashFundReplenishmentAmount(page.totals.totalAmount),
+        amount: formatPettyCashFundReplenishmentAmount(page.totals.totalAmount),
         netAmount: formatPettyCashFundReplenishmentAmount(page.totals.netAmount),
         vatAmount: formatPettyCashFundReplenishmentAmount(page.totals.vatAmount),
+        ewtAmount: formatPettyCashFundReplenishmentAmount(page.totals.ewtAmount),
       }}
     />
   );

@@ -15,8 +15,9 @@ export function PettyCashVoucherReportPreview({
   page: PettyCashVoucherActionPageState;
 }) {
   const amount = Number(page.values.amount.replace(/,/g, "")) || 0;
-  const netAmount = Number(page.values.netAmount.replace(/,/g, "")) || 0;
   const vatAmount = Number(page.values.vatAmount.replace(/,/g, "")) || 0;
+  const ewtAmount = Number(page.values.ewtAmount.replace(/,/g, "")) || 0;
+  const netAmount = Number(page.values.netAmount.replace(/,/g, "")) || 0;
 
   return (
     <ReportPreviewDrawer
@@ -41,11 +42,16 @@ export function PettyCashVoucherReportPreview({
             value={`${page.values.responsibilityCenter || "-"} (${page.values.responsibilityCenterCode || "-"})`}
           />
           <ReportValue label="Default Account" value={`${page.values.accountTitle || "-"} (${page.values.accountCode || "-"})`} />
-          <ReportValue label="VATable" value={page.values.vatable === "True" ? "Yes" : "No"} />
+          <ReportValue label="VAT Type" value={page.values.vatType || "-"} />
           <ReportValue label="Gross Amount" value={formatCurrency(amount)} />
-          <ReportValue label="VAT Amount" value={formatCurrency(vatAmount)} />
+          <ReportValue label="VAT Amount" value={`${formatCurrency(vatAmount)} (${page.values.vatRate || "0.00%"})`} />
+          <ReportValue
+            label="EWT Amount"
+            value={`${formatCurrency(ewtAmount)} (${page.values.ewtCode ? `${page.values.ewtCode} - ${page.values.ewtRate || "0.00%"}` : page.values.ewtRate || "0.00%"})`}
+          />
           <ReportValue label="Net Amount" value={formatCurrency(netAmount)} />
           <ReportValue label="Currency" value={page.values.currency || "PHP"} />
+          <ReportValue label="Exchange Rate" value={page.values.exchangeRate || "1.00"} />
           <ReportValue label="Status" value={page.values.status} />
         </dl>
         <p className="mt-8 text-sm text-darknavy/60">Remarks: {page.values.remarks || "-"}</p>

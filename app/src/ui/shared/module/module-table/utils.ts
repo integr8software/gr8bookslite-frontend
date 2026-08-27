@@ -41,9 +41,7 @@ export function getVisiblePaginationPages(
 	return Array.from({ length: pageCount }, (_, index) => firstPage + index);
 }
 
-export function joinClasses(...classes: Array<string | undefined | false>) {
-	return classes.filter(Boolean).join(" ");
-}
+export { joinClasses } from "@/app/src/utils/string.util";
 
 export const moduleAccentClassNames = {
 	button:

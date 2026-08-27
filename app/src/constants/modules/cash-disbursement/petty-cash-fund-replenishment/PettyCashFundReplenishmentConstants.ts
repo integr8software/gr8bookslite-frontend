@@ -111,36 +111,54 @@ export const PettyCashFundReplenishmentEntryInputClassName =
 export const PettyCashFundReplenishmentEntryColumnOrder: PettyCashFundReplenishmentEntryColumnId[] = [
   "pettyCashDate",
   "pettyCashNo",
-  "accountCode",
-  "accountTitle",
-  "totalAmount",
+  "supplierCode",
+  "supplierName",
+  "amount",
   "netAmount",
+  "vatType",
+  "vatPercent",
   "vatAmount",
+  "ewtCode",
+  "ewtPercent",
+  "ewtAmount",
   "remarks",
 ];
 export const PettyCashFundReplenishmentEntryColumnLabels: Record<PettyCashFundReplenishmentEntryColumnId, string> = {
-  pettyCashDate: "PCF Date",
-  pettyCashNo: "PCF No.",
-  accountCode: "Account Code",
-  accountTitle: "Account Title",
-  totalAmount: "Total Amount",
+  pettyCashDate: "Petty Cash Date",
+  pettyCashNo: "Petty Cash No.",
+  supplierCode: "Supplier Code",
+  supplierName: "Supplier Name",
+  amount: "Amount",
   netAmount: "Net Amount",
+  vatType: "VAT Type",
+  vatPercent: "VAT Rate",
   vatAmount: "VAT Amount",
+  ewtCode: "EWT Code",
+  ewtPercent: "EWT Rate",
+  ewtAmount: "EWT Amount",
+  totalAmountDue: "Net Amount",
   remarks: "Remarks",
 };
 export const PettyCashFundReplenishmentEntryColumnWidths: Record<PettyCashFundReplenishmentEntryColumnId, number> = {
-  pettyCashDate: 135,
+  pettyCashDate: 150,
   pettyCashNo: 155,
-  accountCode: 140,
-  accountTitle: 220,
-  totalAmount: 140,
+  supplierCode: 145,
+  supplierName: 220,
+  amount: 140,
   netAmount: 140,
+  vatType: 155,
+  vatPercent: 115,
   vatAmount: 140,
+  ewtCode: 155,
+  ewtPercent: 115,
+  ewtAmount: 140,
+  totalAmountDue: 155,
   remarks: 260,
 };
 export const PettyCashFundReplenishmentProtectedEntryColumnIds = new Set<PettyCashFundReplenishmentEntryColumnId>([
   "pettyCashDate",
   "pettyCashNo",
+  "amount",
 ]);
 export const PettyCashFundReplenishmentAccountingColumnOrder: PettyCashFundReplenishmentAccountingColumnId[] = [
   "accountCode",
@@ -156,7 +174,7 @@ export const PettyCashFundReplenishmentAccountingColumnLabels: Record<PettyCashF
   accountTitle: "Account Title",
   debit: "Debit",
   credit: "Credit",
-  partyCode: "Party Code",
+  partyCode: "Supplier Code",
   partyName: "Supplier Name",
   remarks: "Remarks",
 };
@@ -191,6 +209,17 @@ export const PettyCashFundReplenishmentResponsibilityCenterOptions: AppAdvancedD
   { label: "RC-ADM", name: "Administration", value: "RC-ADM" },
   { label: "RC-OPS", name: "Operations", value: "RC-OPS" },
   { label: "RC-SAL", name: "Sales", value: "RC-SAL" },
+];
+export const PettyCashFundReplenishmentEntryVatTypeOptions: AppAdvancedDropdownOption[] = [
+  { label: "12%", name: "VAT", value: "VAT 12%" },
+  { label: "0%", name: "Zero Rated", value: "Zero Rated" },
+  { label: "0%", name: "Exempt", value: "Exempt" },
+];
+export const PettyCashFundReplenishmentEntryEwtCodeOptions: AppAdvancedDropdownOption[] = [
+  { label: "W10", name: "Professional Fees - 10%", value: "W10" },
+  { label: "W05", name: "Professional Fees - 5%", value: "W05" },
+  { label: "WV01", name: "Goods - 1%", value: "WV01" },
+  { label: "WV02", name: "Services - 2%", value: "WV02" },
 ];
 
 export function canEditPettyCashFundReplenishment(status: PettyCashFundReplenishmentStatus) {

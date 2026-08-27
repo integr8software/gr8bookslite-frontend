@@ -312,8 +312,8 @@ function toApiBillingStatementPayload(
     journalEntries: values.accountingEntries
       .filter((entry) => toNumber(entry.debit) > 0 || toNumber(entry.credit) > 0)
       .map((entry, index) => ({
-        accountCode: entry.accountCode.trim(),
-        accountTitle: entry.accountTitle.trim(),
+        accountCode: (entry.accountCode ?? "").trim(),
+        accountTitle: (entry.accountTitle ?? entry.accountName ?? "").trim(),
         atcCode: cleanOptional(entry.atcCode),
         credit: toNumber(entry.credit),
         currencyCode: currency,
@@ -332,9 +332,10 @@ function toApiBillingStatementPayload(
     projectName: cleanOptional(values.projectName),
     projectRef: cleanOptional(values.projectRef),
     receivableAccountCode:
-      values.accountingEntries[0]?.accountCode.trim() || "AR-TRADE",
+      values.accountingEntries[0]?.accountCode?.trim() || "AR-TRADE",
     receivableAccountTitle:
-      values.accountingEntries[0]?.accountTitle.trim() ||
+      values.accountingEntries[0]?.accountTitle?.trim() ||
+      values.accountingEntries[0]?.accountName?.trim() ||
       values.defaultAccount.trim() ||
       "Accounts Receivable - Trade",
     referenceNo: cleanOptional(values.refNo || values.poNo || values.sqNo),

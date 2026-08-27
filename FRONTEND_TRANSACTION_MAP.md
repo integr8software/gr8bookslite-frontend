@@ -639,6 +639,16 @@ to its hook. Do not call `usePathname`, inspect route strings, or define a
   `app/src/ui/shared/money/MoneyNumberField.tsx`. Amount fields are
   right-aligned with tabular numbers, use money formatting, and display two
   decimal places by default, such as `.00`, after blur and for loaded values.
+- Transaction action pages that have header amounts (with VAT and EWT/CWT) and **NO Data Entry table** must use `TransactionSummaryCards` from `app/src/ui/shared/transaction-setup/TransactionSummaryCards.tsx`.
+  - `TransactionSummaryCards` provides 6 predetermined built-in cards:
+    1. **Gross Amount**: Blue (`Calculator` icon)
+    2. **VAT Rate**: Cyan (`Percent` icon)
+    3. **VAT Amount**: Purple (`Receipt` icon)
+    4. **EWT / CWT Rate**: Orange (`TrendingDown` icon)
+    5. **EWT / CWT Amount**: Orange (`HandCoins` icon)
+    6. **Net Amount**: Green (`Wallet` icon, highlighted as final net settlement)
+  - `ModuleSummaryCards` (from `app/src/ui/shared/module/ModuleSummaryCards.tsx`) is the underlying generic component adaptable to all modules for custom or non-tax summary cards.
+  - Modules that have a Data Entry table (e.g. Cash Voucher, Disbursement Voucher, Billing Invoice, Service Invoice) compute and display their derived tax totals directly in the Data Entry table footer and summary bar instead of rendering separate header summary cards.
 
 Shared transaction field controls
 
@@ -1220,47 +1230,58 @@ Selecting a Currency should resolve its configured Exchange Rate against the act
   Post, and equivalent completion actions must not proceed while the entries
   are out of balance. The documented Save As Draft validation exception still
   applies to incomplete work in progress.
+- If a transaction detail/expense/item Data Entry grid includes VAT or EWT, the
+  grid must include the complete calculated tax companions for that tax. VAT
+  requires `VAT Type`, `VAT Rate`, `VAT Amount`, and `Net Amount`. EWT requires
+  `EWT Code`, `EWT Rate`, `EWT Amount`, and `Net Amount` or `Total Amount Due`
+  when the transaction distinguishes payable amount after withholding. Keep
+  rates and calculated amounts readonly with `ModuleDataEntryReadonlyCell`;
+  editing `Amount`, `VAT Type`, or `EWT Code` must recalculate the dependent
+  fields immediately through typed hook/data-layer handlers.
+- For transaction modules that have header amounts (e.g. Gross Amount, VAT, EWT/CWT) and NO Data Entry grid, use `TransactionSummaryCards` from `app/src/ui/shared/transaction-setup/TransactionSummaryCards.tsx`. For modules with Data Entry tables, derived tax totals are displayed directly in the Data Entry table summary and footer.
+- Keep Data Entry tax column labels consistent across transactions:
+  `VAT Type`, `VAT Rate`, `VAT Amount`, `EWT Code`, `EWT Rate`, `EWT Amount`,
+  `Net Amount`, and, when applicable, `Total Amount Due`. Do not mix `%` and
+  `Rate` labels inside a newly created transaction module; prefer `Rate` for
+  new work and only keep existing `%` labels during small local fixes where a
+  rename would be outside scope.
 
 `<ModuleName>EntrySection.tsx`
 
 - Transaction entries orchestrator.
-- **For modules with Accounting Entries** (e.g. Cash Voucher, Disbursement Voucher): uses `ModuleDataEntryTabs` to manage the active tab state between Line/Item/Expense Details and Accounting Entries, rendering `<ModuleName>DetailEntryTable` or `<ModuleName>AccountingEntryTable`.
-- **For modules without Accounting Entries**: renders `<ModuleName>DetailEntryTable` directly without tabs or tab switching state.
+- **For modules with dual Detail and Accounting grids** (e.g. Cash Voucher, Disbursement Voucher, Delivery Receipt, Billing Invoice): renders tab headers using the shared `ModuleEntryTabs` component (`app/src/ui/shared/module/module-data-entry/ModuleEntryTabs.tsx`) embedded in the `title` prop of `<ModuleName>DetailEntryTable` and `<ModuleName>AccountingEntryTable`.
+- **For modules without Accounting Entries**: renders `<ModuleName>DetailEntryTable` directly using `ModuleDataEntry`.
 
-`<ModuleName>DetailEntryTable.tsx` / `<ModuleName>AccountingEntryTable.tsx`
+`<ModuleName>DetailEntryTable.tsx` & `<ModuleName>AccountingEntryTable.tsx`
 
-- Dedicated entry table components for Line/Expense Details and Accounting Debit/Credit Entries.
-- `<ModuleName>AccountingEntryTable.tsx` must ONLY be created if the transaction module actually requires Accounting Entries. If the module does not have Accounting Entries, do not create this file.
-- Keeps row state, column reordering/visibility, and summary calculations isolated per table.
-- Use `app/src/ui/shared/module/module-data-entry/entryTableState.util.ts` for column reordering, visibility toggling, and width auto-fitting.
-
-`<ModuleName>EntryColumns.tsx`
-
-- Declarative column definitions and builders for transaction entry rows.
-- Uses shared Data Entry cell primitives directly from `app/src/ui/shared/module/module-data-entry/` (`ModuleDataEntryInputCell`, `ModuleDataEntryMoneyCell`, `ModuleDataEntryDropdownCell`, `ModuleDataEntryRemarksCell`, `ModuleDataEntryCheckboxCell`, `ModuleDataEntryReadonlyCell`).
-- Move reusable visible-column options and add-column options to constants.
-
-### Bulk Import Workspace (`import/`)
-
-For transaction modules that support spreadsheet import (e.g. Cash Voucher, Disbursement Voucher):
-- `<ModuleName>EntryImportPage.tsx`: Fullscreen spreadsheet staging editor and exporter (Excel/PDF).
-- `<ModuleName>EntryImportUploadDialog.tsx`: Modal for drag-and-drop file upload (`.xlsx`, `.csv`, `.tsv`, `.txt`) or pasting copied table cells.
-- `<ModuleName>EntryImportReviewDialog.tsx`: Pre-save review modal verifying debit/credit balances before committing imported entries back to the voucher form.
+- Dedicated entry table components built on `ModuleDataEntry` (`app/src/ui/shared/module/module-data-entry/ModuleDataEntry.tsx`):
+  - `<ModuleName>DetailEntryTable.tsx`: Line items, expense details, and inventory service rows with tax computations and totals.
+  - `<ModuleName>AccountingEntryTable.tsx`: Accounting debit/credit distribution grid featuring:
+    - **`ChartAccountDropdown`**: Searchable two-column account picker (Code + Title) that synchronizes both fields.
+    - **`AppAdvancedDropdown`**: Party, Responsibility Center, VAT Type, and EWT Code with `addAction` inline drawer creation.
+    - **`ModuleDataEntryMoneyCell` & `ModuleDataEntryRemarksCell`**: Modal dialog remarks and right-aligned debit/credit amounts with live variance tracking.
+- Keeps row state, column reordering, column visibility, and fit-width auto calculation (`entryTableState.util.ts`) isolated per table.
 
 ### Shared Data Entry Cell Controls
 
-- Use standard cell renderers from `app/src/ui/shared/module/module-data-entry/` instead of creating per-module `EntryCellControls.tsx` duplicate files:
+- Use standard cell renderers directly from `app/src/ui/shared/module/module-data-entry/` instead of creating per-module `EntryCellControls.tsx` duplicate files:
   - `ModuleDataEntryInputCell`: accessible text, date, and number inputs.
   - `ModuleDataEntryMoneyCell`: formatted tabular money inputs.
   - `ModuleDataEntryDropdownCell`: accessible advanced dropdown select cells.
   - `ModuleDataEntryRemarksCell`: multiline expand/dialog remarks cells.
   - `ModuleDataEntryCheckboxCell`: toggle/checkbox cells.
   - `ModuleDataEntryReadonlyCell`: formatted display cells.
+
+`<ModuleName>EntryColumns.tsx`
+
+- Declarative column definitions and builders for transaction entry rows.
+- Standardize on `ewtCode` (labeled `EWT Code`) across all detail and accounting grids (remove separate `atcCode` fields).
+- Uses shared Data Entry cell primitives directly from `app/src/ui/shared/module/module-data-entry/` (`ModuleDataEntryInputCell`, `ModuleDataEntryMoneyCell`, `ModuleDataEntryDropdownCell`, `ModuleDataEntryRemarksCell`, `ModuleDataEntryCheckboxCell`, `ModuleDataEntryReadonlyCell`).
 - Lookup cells must follow the same advanced-dropdown and permission behavior
   as lookup fields in the transaction header. Use `AppAdvancedDropdown` from
   `app/src/ui/shared/advanced-dropdown/` for Party Name, Responsibility Center,
   Project Name, Terms, and the other maintenance-backed lookups listed under
-  Shared transaction field controls. VAT Type and EWT must also use
+  Shared transaction field controls. VAT Type and EWT Code must also use
   `AppAdvancedDropdown`; do not render these fields as plain text inputs or
   native selects.
 - When a Data Entry lookup is backed by a maintenance module, expose the
@@ -1279,11 +1300,7 @@ For transaction modules that support spreadsheet import (e.g. Cash Voucher, Disb
 - Use the shared `ModuleDataEntryCheckboxCell` in
   `app/src/ui/shared/module/module-data-entry/ModuleDataEntryCheckboxCell.tsx`
   for boolean Data Entry cells. Use it for the `VATable` and `VATInc` columns
-  instead of creating feature-local checkbox markup. It must
-  provide an accessible label from the column and row context, use the standard
-  Data Entry control sizing and focus treatment, center the checkbox in its
-  cell, call a typed boolean change handler, and render a clearly readonly,
-  non-interactive state in View mode.
+  instead of creating feature-local checkbox markup.
 - Every Data Entry column whose canonical label is `Remarks` must use the
   shared `ModuleDataEntryRemarksCell`. Keep the value visible as a truncated,
   single-line cell input with a fixed ellipsis button. The ellipsis button opens
@@ -1332,6 +1349,20 @@ For transaction modules that support spreadsheet import (e.g. Cash Voucher, Disb
 - Defaults, record mapping, total calculation, and validation belong in `data`,
   `hooks`, or `validations`.
 - Shared helpers used by unrelated modules belong in `app/src/utils/`.
+
+### Shared Transaction Tax Architecture (`TaxData.ts`)
+
+- Universal VAT and EWT calculations and lookup option builders live in `app/src/data/shared/tax/TaxData.ts`.
+- Functions include: `calculateTaxAmounts`, `getVatRateFromCode`, `getVatPercentFromRate`, `getEwtPercentFromCode`, `normalizeVatDropdownValue`, `createVatOptions`, and `createEwtOptions`.
+- Modules re-export or delegate to `TaxData.ts` instead of duplicating tax calculation formulas.
+
+### Bulk Import Workspace (`import/`) & `AccountingGridSpreadsheetService`
+
+For transaction modules that support spreadsheet import (e.g. Cash Voucher, Disbursement Voucher):
+- `<ModuleName>EntryImportPage.tsx`: Fullscreen spreadsheet staging editor and exporter (Excel/PDF).
+- `<ModuleName>EntryImportUploadDialog.tsx`: Modal for drag-and-drop file upload (`.xlsx`, `.csv`, `.tsv`, `.txt`) or pasting copied table cells.
+- `<ModuleName>EntryImportReviewDialog.tsx`: Pre-save review modal verifying debit/credit balances before committing imported entries back to the voucher form.
+- **Shared Spreadsheet Service**: `app/src/services/shared/accounting/AccountingGridSpreadsheetService.ts` handles CSV parsing, TSV formatting, XLSX XML unzipping, canvas text measurement, and binary file downloads. Feature-specific import services stay thin (~200 lines) and focus on voucher row-to-model mapping.
 
 ## Overview Folder
 

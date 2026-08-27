@@ -36,16 +36,22 @@ export function toggleVisibleColumnId<TColumnId extends string>(
 /**
  * Calculate column fit width based on header label and longest row cell string length.
  */
-export function calculateFitColumnWidth<TRow, TColumnId extends keyof TRow & string>(
+export function calculateFitColumnWidth<TRow, TColumnId extends string = string>(
   label: string,
   rows: TRow[],
   columnId: TColumnId,
+  getValue?: (row: TRow, columnId: TColumnId) => unknown,
   minWidth = 112,
 ): number {
-  const longestLength = rows.reduce(
-    (length, row) => Math.max(length, String(row[columnId] ?? "").length),
-    label.length,
-  );
+  const headerLength = label.length;
+  const longestLength = rows.reduce((maxLen, row) => {
+    const rawVal = getValue
+      ? getValue(row, columnId)
+      : (row as Record<string, unknown>)[columnId];
+    const text = rawVal === null || rawVal === undefined ? "" : String(rawVal);
+    return Math.max(maxLen, text.length);
+  }, headerLength);
+
   return clampColumnWidth(Math.max(minWidth, longestLength * 8 + 76));
 }
 

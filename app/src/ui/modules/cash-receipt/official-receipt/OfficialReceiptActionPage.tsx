@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   InitialAppDisbursementTypeRecords,
   type AppDisbursementTypeRecord,
@@ -26,6 +26,9 @@ import type {
   DisbursementPaymentMethod,
   DisbursementType,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+import type { PaymentTypeRecord } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
+import type { PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { OfficialReceiptActionHeader } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptActionHeader";
 import { OfficialReceiptDetailsForm } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptDetailsForm";
 import { OfficialReceiptEntries } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptEntries";
@@ -92,6 +95,11 @@ export function OfficialReceiptActionPage({
   const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
   const [isCollectionTypeDialogOpen, setIsCollectionTypeDialogOpen] = useState(false);
   const [collectionTypeRecords, setCollectionTypeRecords] = useState(InitialAppDisbursementTypeRecords);
+  const partyOptions = useMemo(() => createPartyOptions(partyStore.records), [partyStore.records]);
+  const paymentTypeOptions = useMemo(
+    () => createPaymentTypeOptions(paymentTypeStore.paymentTypes),
+    [paymentTypeStore.paymentTypes],
+  );
 
   if (receiptForm.isNotFound) {
     return notFoundFallback ?? <OfficialReceiptNotFound />;
@@ -109,12 +117,6 @@ export function OfficialReceiptActionPage({
     );
 
     return record;
-  }
-
-  function updatePartyFromName(partyName: string) {
-    const selectedParty = partyStore.records.find((record) => getPartyDisplayName(record) === partyName);
-
-    receiptForm.updateField("partyCode", selectedParty?.partyCodeNo ?? "");
   }
 
   return (
@@ -141,17 +143,17 @@ export function OfficialReceiptActionPage({
           <>
             <OfficialReceiptDetailsForm
               isReadonly={isReadonly}
+              partyOptions={partyOptions}
+              paymentTypeOptions={paymentTypeOptions}
               receiptCodeLabel={receiptCodeLabel}
               values={receiptForm.values}
               onOpenPartyDrawer={() => setIsPartyDrawerOpen(true)}
               onOpenPaymentTypeDialog={() => setIsPaymentTypeDialogOpen(true)}
-              onPartyNameChange={updatePartyFromName}
               onUpdateField={receiptForm.updateField}
             />
             <OfficialReceiptEntries
               entryView={receiptForm.entryView}
               isReadonly={isReadonly}
-              paymentType={receiptForm.values.paymentType}
               rows={receiptForm.values.lineEntries}
               onEntryViewChange={receiptForm.setEntryView}
               onOpenCollectionTypeDialog={() => setIsCollectionTypeDialogOpen(true)}
@@ -235,4 +237,32 @@ function getModeFromPathname(pathname: string): OfficialReceiptActionMode {
   }
 
   return "add";
+}
+
+function createPartyOptions(records: PartyInformationRecord[]): AppAdvancedDropdownOption[] {
+  return records
+    .filter((record) => record.status === "Active" && record.partyCodeNo.trim())
+    .map((record) => ({
+      description: record.partyTypes.join(", "),
+      label: record.partyCodeNo,
+      name: getPartyDisplayName(record),
+      selectedDetails: record.partyCodeNo,
+      value: record.partyCodeNo,
+    }));
+}
+
+function createPaymentTypeOptions(records: PaymentTypeRecord[]): AppAdvancedDropdownOption[] {
+  return records
+    .filter((record) => record.status === "Active" && record.paymentType.trim())
+    .sort((leftRecord, rightRecord) =>
+      leftRecord.sortOrder === rightRecord.sortOrder
+        ? leftRecord.paymentType.localeCompare(rightRecord.paymentType)
+        : leftRecord.sortOrder - rightRecord.sortOrder,
+    )
+    .map((record) => ({
+      description: record.description || record.type,
+      label: record.type,
+      name: record.paymentType,
+      value: record.paymentType,
+    }));
 }

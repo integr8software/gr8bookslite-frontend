@@ -187,6 +187,9 @@ export function applyCopyFromRecordToOfficialReceiptForm(
 
   return {
     ...currentValues,
+    bankName: record.bankName || lineEntries[0]?.bankName || currentValues.bankName,
+    checkDate: record.checkDate || lineEntries[0]?.checkDate || currentValues.checkDate,
+    checkNo: record.checkNo || lineEntries[0]?.checkNo || currentValues.checkNo,
     customerName: partyName,
     partyCode,
     paymentType: record.paymentType || currentValues.paymentType,
@@ -260,6 +263,9 @@ export function applyCopyFromRecordsToOfficialReceiptForm(
 
   return {
     ...currentValues,
+    bankName: firstRecord.bankName || lineEntries[0]?.bankName || currentValues.bankName,
+    checkDate: firstRecord.checkDate || lineEntries[0]?.checkDate || currentValues.checkDate,
+    checkNo: firstRecord.checkNo || lineEntries[0]?.checkNo || currentValues.checkNo,
     customerName: partyName,
     partyCode,
     paymentType: firstRecord.paymentType || currentValues.paymentType,
@@ -301,6 +307,9 @@ export function createOfficialReceiptFormValues(): OfficialReceiptFormValues {
     customerName: "",
     partyCode: "",
     paymentType: "",
+    bankName: "",
+    checkNo: "",
+    checkDate: "",
     currency: "PHP",
     exchangeRate: "1.0000",
     status: "Draft",
@@ -317,8 +326,13 @@ export function createOfficialReceiptFormValues(): OfficialReceiptFormValues {
 
 export function createOfficialReceiptFormValuesFromRecord(record: OfficialReceiptRecord): OfficialReceiptFormValues {
   if (record.formValues) {
+    const firstEntry = record.formValues.lineEntries[0];
+
     return {
       ...record.formValues,
+      bankName: record.formValues.bankName ?? firstEntry?.bankName ?? "",
+      checkNo: record.formValues.checkNo ?? firstEntry?.checkNo ?? "",
+      checkDate: record.formValues.checkDate ?? firstEntry?.checkDate ?? "",
       attachments: record.formValues.attachments ? [...record.formValues.attachments] : [],
       lineEntries: record.formValues.lineEntries.map((entry) => ({
         ...entry,
@@ -336,6 +350,9 @@ export function createOfficialReceiptFormValuesFromRecord(record: OfficialReceip
     referenceNo: record.referenceNo,
     customerName: record.customerName,
     partyCode: record.partyCode ?? "",
+    bankName: "",
+    checkNo: "",
+    checkDate: "",
     status: record.status,
     attachments: [],
     lineEntries: [
@@ -358,24 +375,39 @@ export function createOfficialReceiptRecordFromForm(
   values: OfficialReceiptFormValues,
   existingRecord?: OfficialReceiptRecord,
 ): OfficialReceiptRecord {
-  const totals = calculateOfficialReceiptTotals(values.lineEntries);
-  const firstEntry = values.lineEntries[0];
+  const syncedValues = syncOfficialReceiptCheckDetails(values);
+  const totals = calculateOfficialReceiptTotals(syncedValues.lineEntries);
+  const firstEntry = syncedValues.lineEntries[0];
   const amount = Math.max(totals.grossReceipt, totals.debit, totals.credit);
 
   return {
     id: existingRecord?.id ?? `or-${Date.now()}`,
     amount,
     collectionType: firstEntry?.collectionType || "Customer payment",
-    customerName: values.customerName || firstEntry?.customerName || "",
-    partyCode: values.partyCode || firstEntry?.partyCode || "",
+    customerName: syncedValues.customerName || firstEntry?.customerName || "",
+    partyCode: syncedValues.partyCode || firstEntry?.partyCode || "",
     formValues: {
-      ...values,
-      lineEntries: values.lineEntries.map((entry) => ({ ...entry })),
+      ...syncedValues,
+      lineEntries: syncedValues.lineEntries.map((entry) => ({ ...entry })),
     },
-    receiptDate: values.receiptDate,
-    receiptNo: values.receiptNo,
-    referenceNo: values.referenceNo || firstEntry?.referenceNo || "",
-    status: normalizeOfficialReceiptStatus(values.status),
+    receiptDate: syncedValues.receiptDate,
+    receiptNo: syncedValues.receiptNo,
+    referenceNo: syncedValues.referenceNo || firstEntry?.referenceNo || "",
+    status: normalizeOfficialReceiptStatus(syncedValues.status),
+  };
+}
+
+export function syncOfficialReceiptCheckDetails(
+  values: OfficialReceiptFormValues,
+): OfficialReceiptFormValues {
+  return {
+    ...values,
+    lineEntries: values.lineEntries.map((entry) => ({
+      ...entry,
+      bankName: values.bankName,
+      checkDate: values.checkDate,
+      checkNo: values.checkNo,
+    })),
   };
 }
 

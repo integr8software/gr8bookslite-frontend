@@ -17,6 +17,7 @@ import {
   createOfficialReceiptFormValuesFromRecord,
   createOfficialReceiptFormValues,
   OfficialReceiptCopyFromRecords,
+  syncOfficialReceiptCheckDetails,
 } from "@/app/src/data/modules/cash-receipt/official-receipt/OfficialReceiptData";
 import { OfficialReceiptStatusFilters } from "@/app/src/constants/modules/cash-receipt/official-receipt/OfficialReceiptConstants";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
@@ -181,7 +182,13 @@ export function useOfficialReceiptActionForm(
   }, [mode, receiptLabel, recordId]);
 
   function updateField<Key extends keyof OfficialReceiptFormValues>(key: Key, value: OfficialReceiptFormValues[Key]) {
-    setValues((current) => ({ ...current, [key]: value }));
+    setValues((current) => {
+      const nextValues = { ...current, [key]: value };
+
+      return isCheckDetailField(key)
+        ? syncOfficialReceiptCheckDetails(nextValues)
+        : nextValues;
+    });
   }
 
   function updateLineEntries(lineEntries: OfficialReceiptLineEntry[]) {
@@ -227,7 +234,8 @@ export function useOfficialReceiptActionForm(
   }
 
   function submitReceipt() {
-    const validation = validateOfficialReceiptForm(values);
+    const syncedValues = syncOfficialReceiptCheckDetails(values);
+    const validation = validateOfficialReceiptForm(syncedValues);
 
     if (!validation.isValid) {
       toast.error(validation.message ?? "Review the official receipt details.");
@@ -238,9 +246,9 @@ export function useOfficialReceiptActionForm(
       mode === "edit" && loadedRecord
         ? api.updateReceipt({
             ...loadedRecord,
-            formValues: values,
+            formValues: syncedValues,
           })
-        : api.createReceipt(values);
+        : api.createReceipt(syncedValues);
 
     saveRequest
       .then((nextRecord) => {
@@ -264,6 +272,10 @@ export function useOfficialReceiptActionForm(
     updateLineEntries,
     values,
   };
+}
+
+function isCheckDetailField(key: keyof OfficialReceiptFormValues) {
+  return key === "bankName" || key === "checkDate" || key === "checkNo";
 }
 
 export function useOfficialReceiptTable(receipts: OfficialReceiptRecord[]) {

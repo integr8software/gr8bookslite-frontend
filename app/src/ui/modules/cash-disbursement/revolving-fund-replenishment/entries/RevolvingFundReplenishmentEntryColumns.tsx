@@ -9,6 +9,7 @@ import type {
 import {
   RevolvingFundReplenishmentEntryEwtCodeOptions,
   RevolvingFundReplenishmentEntryVatTypeOptions,
+  RevolvingFundReplenishmentResponsibilityCenterOptions,
 } from "@/app/src/constants/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentConstants";
 import { calculateRevolvingFundReplenishmentEntryTaxFields } from "@/app/src/data/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentData";
 import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
@@ -18,10 +19,14 @@ import { ModuleDataEntryMoneyCell } from "@/app/src/ui/shared/module/module-data
 import { ModuleDataEntryReadonlyCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryReadonlyCell";
 import { ModuleDataEntryRemarksCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryRemarksCell";
 
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
+
 export function createRevolvingFundReplenishmentLineColumns({
   columnLabels,
   columnWidths,
+  onOpenSupplierDrawer,
   page,
+  supplierOptions = [],
 }: RevolvingFundReplenishmentDetailEntryColumnsParams): Record<
   RevolvingFundReplenishmentEntryColumnId,
   ModuleDataEntryColumn<RevolvingFundReplenishmentEntry>
@@ -49,7 +54,7 @@ export function createRevolvingFundReplenishmentLineColumns({
   });
 
   const money = (
-    id: "amount",
+    id: RevolvingFundReplenishmentEntryColumnId,
     onChange?: (row: RevolvingFundReplenishmentEntry, value: string) => void,
   ): ModuleDataEntryColumn<RevolvingFundReplenishmentEntry> => ({
     header: columnLabels[id],
@@ -63,6 +68,7 @@ export function createRevolvingFundReplenishmentLineColumns({
         name={context.fieldName}
         value={row[id]}
         readOnly={page.isReadonly}
+        placeholder="0.00"
         onChange={(value) => (onChange ? onChange(row, value) : page.updateEntry(row.id, { [id]: value }))}
       />
     ),
@@ -70,7 +76,7 @@ export function createRevolvingFundReplenishmentLineColumns({
 
   const dropdown = (
     id: "vatType" | "ewtCode",
-    options: Parameters<typeof ModuleDataEntryDropdownCell>[0]["options"],
+    options: AppAdvancedDropdownOption[],
   ): ModuleDataEntryColumn<RevolvingFundReplenishmentEntry> => ({
     header: columnLabels[id],
     id,
@@ -84,8 +90,9 @@ export function createRevolvingFundReplenishmentLineColumns({
         value={row[id]}
         readOnly={page.isReadonly}
         options={options}
+        optionViewToggle={id === "ewtCode"}
         placeholder={`Select ${columnLabels[id]}`}
-        searchPlaceholder={`Search ${columnLabels[id]}`}
+        searchPlaceholder={id === "ewtCode" ? "Search tax name, code, rate, or description" : `Search ${columnLabels[id]}`}
         onChange={(value) => {
           const vatType = id === "vatType" ? value : row.vatType;
           const ewtCode = id === "ewtCode" ? value : row.ewtCode;
@@ -99,7 +106,7 @@ export function createRevolvingFundReplenishmentLineColumns({
   });
 
   const calculatedMoney = (
-    id: "netAmount" | "vatPercent" | "vatAmount" | "ewtPercent" | "ewtAmount" | "totalAmountDue",
+    id: "netAmount" | "vatPercent" | "vatAmount" | "ewtPercent" | "ewtAmount",
   ): ModuleDataEntryColumn<RevolvingFundReplenishmentEntry> => ({
     header: columnLabels[id],
     id,
@@ -112,8 +119,46 @@ export function createRevolvingFundReplenishmentLineColumns({
   return {
     revolvingFundDate: text("revolvingFundDate", "date"),
     revolvingFundNo: text("revolvingFundNo"),
-    supplierCode: text("supplierCode"),
-    supplierName: text("supplierName"),
+    supplierCode: {
+      header: columnLabels.supplierCode,
+      id: "supplierCode",
+      width: columnWidths.supplierCode,
+      widthClassName: "w-auto",
+      widthMode: "fixed",
+      renderCell: (row) => <ModuleDataEntryReadonlyCell value={row.supplierCode} />,
+    },
+    supplierName: {
+      header: columnLabels.supplierName,
+      id: "supplierName",
+      width: columnWidths.supplierName,
+      widthClassName: "w-auto",
+      widthMode: "fixed",
+      renderCell: (row, _index, context) => (
+        <ModuleDataEntryDropdownCell
+          id={context.fieldId}
+          name={context.fieldName}
+          value={row.supplierCode || row.supplierName}
+          readOnly={page.isReadonly}
+          options={supplierOptions}
+          placeholder="Select Supplier Name"
+          searchPlaceholder="Search Supplier Name"
+          addAction={
+            !page.isReadonly && onOpenSupplierDrawer
+              ? { label: "Add Vendor", onClick: () => onOpenSupplierDrawer(row.id) }
+              : undefined
+          }
+          onChange={(value) => {
+            const selectedSupplier = supplierOptions.find(
+              (option) => option.value === value || option.name === value || option.label === value,
+            );
+            page.updateEntry(row.id, {
+              supplierCode: String(selectedSupplier?.label ?? selectedSupplier?.value ?? ""),
+              supplierName: selectedSupplier?.name ?? String(value),
+            });
+          }}
+        />
+      ),
+    },
     amount: money("amount", (row, value) =>
       page.updateEntry(row.id, {
         amount: value,
@@ -127,7 +172,41 @@ export function createRevolvingFundReplenishmentLineColumns({
     ewtCode: dropdown("ewtCode", RevolvingFundReplenishmentEntryEwtCodeOptions),
     ewtPercent: calculatedMoney("ewtPercent"),
     ewtAmount: calculatedMoney("ewtAmount"),
-    totalAmountDue: calculatedMoney("totalAmountDue"),
+    responsibilityCenterCode: {
+      header: columnLabels.responsibilityCenterCode,
+      id: "responsibilityCenterCode",
+      width: columnWidths.responsibilityCenterCode,
+      widthClassName: "w-auto",
+      widthMode: "fixed",
+      renderCell: (row) => <ModuleDataEntryReadonlyCell value={row.responsibilityCenterCode} />,
+    },
+    responsibilityCenterName: {
+      header: columnLabels.responsibilityCenterName,
+      id: "responsibilityCenterName",
+      width: columnWidths.responsibilityCenterName,
+      widthClassName: "w-auto",
+      widthMode: "fixed",
+      renderCell: (row, _index, context) => (
+        <ModuleDataEntryDropdownCell
+          id={context.fieldId}
+          name={context.fieldName}
+          value={row.responsibilityCenterCode}
+          readOnly={page.isReadonly}
+          options={RevolvingFundReplenishmentResponsibilityCenterOptions}
+          placeholder="Select Responsibility Center"
+          searchPlaceholder="Search Responsibility Center"
+          onChange={(value) => {
+            const selectedCenter = RevolvingFundReplenishmentResponsibilityCenterOptions.find(
+              (option) => option.value === value,
+            );
+            page.updateEntry(row.id, {
+              responsibilityCenterCode: String(selectedCenter?.value ?? ""),
+              responsibilityCenterName: selectedCenter?.name ?? "",
+            });
+          }}
+        />
+      ),
+    },
     remarks: {
       header: columnLabels.remarks,
       id: "remarks",

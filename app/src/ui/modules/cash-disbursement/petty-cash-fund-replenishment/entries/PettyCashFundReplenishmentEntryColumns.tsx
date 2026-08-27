@@ -9,6 +9,7 @@ import type {
 import {
   PettyCashFundReplenishmentEntryEwtCodeOptions,
   PettyCashFundReplenishmentEntryVatTypeOptions,
+  PettyCashFundReplenishmentResponsibilityCenterOptions,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentConstants";
 import { calculatePettyCashFundReplenishmentEntryTaxFields } from "@/app/src/data/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentData";
 import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
@@ -17,11 +18,14 @@ import { ModuleDataEntryInputCell } from "@/app/src/ui/shared/module/module-data
 import { ModuleDataEntryMoneyCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryMoneyCell";
 import { ModuleDataEntryReadonlyCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryReadonlyCell";
 import { ModuleDataEntryRemarksCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryRemarksCell";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 
 export function createPettyCashFundReplenishmentLineColumns({
   columnLabels,
   columnWidths,
+  onOpenSupplierDrawer,
   page,
+  supplierOptions = [],
 }: PettyCashFundReplenishmentDetailEntryColumnsParams): Record<
   PettyCashFundReplenishmentEntryColumnId,
   ModuleDataEntryColumn<PettyCashFundReplenishmentEntry>
@@ -49,7 +53,7 @@ export function createPettyCashFundReplenishmentLineColumns({
   });
 
   const money = (
-    id: "amount",
+    id: PettyCashFundReplenishmentEntryColumnId,
     onChange?: (row: PettyCashFundReplenishmentEntry, value: string) => void,
   ): ModuleDataEntryColumn<PettyCashFundReplenishmentEntry> => ({
     header: columnLabels[id],
@@ -63,6 +67,7 @@ export function createPettyCashFundReplenishmentLineColumns({
         name={context.fieldName}
         value={row[id]}
         readOnly={page.isReadonly}
+        placeholder="0.00"
         onChange={(value) => (onChange ? onChange(row, value) : page.updateEntry(row.id, { [id]: value }))}
       />
     ),
@@ -70,7 +75,7 @@ export function createPettyCashFundReplenishmentLineColumns({
 
   const dropdown = (
     id: "vatType" | "ewtCode",
-    options: Parameters<typeof ModuleDataEntryDropdownCell>[0]["options"],
+    options: AppAdvancedDropdownOption[],
   ): ModuleDataEntryColumn<PettyCashFundReplenishmentEntry> => ({
     header: columnLabels[id],
     id,
@@ -84,8 +89,9 @@ export function createPettyCashFundReplenishmentLineColumns({
         value={row[id]}
         readOnly={page.isReadonly}
         options={options}
+        optionViewToggle={id === "ewtCode"}
         placeholder={`Select ${columnLabels[id]}`}
-        searchPlaceholder={`Search ${columnLabels[id]}`}
+        searchPlaceholder={id === "ewtCode" ? "Search tax name, code, rate, or description" : `Search ${columnLabels[id]}`}
         onChange={(value) => {
           const vatType = id === "vatType" ? value : row.vatType;
           const ewtCode = id === "ewtCode" ? value : row.ewtCode;
@@ -99,7 +105,7 @@ export function createPettyCashFundReplenishmentLineColumns({
   });
 
   const calculatedMoney = (
-    id: "netAmount" | "vatPercent" | "vatAmount" | "ewtPercent" | "ewtAmount" | "totalAmountDue",
+    id: "netAmount" | "vatPercent" | "vatAmount" | "ewtPercent" | "ewtAmount",
   ): ModuleDataEntryColumn<PettyCashFundReplenishmentEntry> => ({
     header: columnLabels[id],
     id,
@@ -112,8 +118,46 @@ export function createPettyCashFundReplenishmentLineColumns({
   return {
     pettyCashDate: text("pettyCashDate", "date"),
     pettyCashNo: text("pettyCashNo"),
-    supplierCode: text("supplierCode"),
-    supplierName: text("supplierName"),
+    supplierCode: {
+      header: columnLabels.supplierCode,
+      id: "supplierCode",
+      width: columnWidths.supplierCode,
+      widthClassName: "w-auto",
+      widthMode: "fixed",
+      renderCell: (row) => <ModuleDataEntryReadonlyCell value={row.supplierCode} />,
+    },
+    supplierName: {
+      header: columnLabels.supplierName,
+      id: "supplierName",
+      width: columnWidths.supplierName,
+      widthClassName: "w-auto",
+      widthMode: "fixed",
+      renderCell: (row, _index, context) => (
+        <ModuleDataEntryDropdownCell
+          id={context.fieldId}
+          name={context.fieldName}
+          value={row.supplierCode || row.supplierName}
+          readOnly={page.isReadonly}
+          options={supplierOptions}
+          placeholder="Select Supplier Name"
+          searchPlaceholder="Search Supplier Name"
+          addAction={
+            !page.isReadonly && onOpenSupplierDrawer
+              ? { label: "Add Vendor", onClick: () => onOpenSupplierDrawer(row.id) }
+              : undefined
+          }
+          onChange={(value) => {
+            const selectedSupplier = supplierOptions.find(
+              (option) => option.value === value || option.name === value || option.label === value,
+            );
+            page.updateEntry(row.id, {
+              supplierCode: String(selectedSupplier?.label ?? selectedSupplier?.value ?? ""),
+              supplierName: selectedSupplier?.name ?? String(value),
+            });
+          }}
+        />
+      ),
+    },
     amount: money("amount", (row, value) =>
       page.updateEntry(row.id, {
         amount: value,
@@ -127,7 +171,41 @@ export function createPettyCashFundReplenishmentLineColumns({
     ewtCode: dropdown("ewtCode", PettyCashFundReplenishmentEntryEwtCodeOptions),
     ewtPercent: calculatedMoney("ewtPercent"),
     ewtAmount: calculatedMoney("ewtAmount"),
-    totalAmountDue: calculatedMoney("totalAmountDue"),
+    responsibilityCenterCode: {
+      header: columnLabels.responsibilityCenterCode,
+      id: "responsibilityCenterCode",
+      width: columnWidths.responsibilityCenterCode,
+      widthClassName: "w-auto",
+      widthMode: "fixed",
+      renderCell: (row) => <ModuleDataEntryReadonlyCell value={row.responsibilityCenterCode} />,
+    },
+    responsibilityCenterName: {
+      header: columnLabels.responsibilityCenterName,
+      id: "responsibilityCenterName",
+      width: columnWidths.responsibilityCenterName,
+      widthClassName: "w-auto",
+      widthMode: "fixed",
+      renderCell: (row, _index, context) => (
+        <ModuleDataEntryDropdownCell
+          id={context.fieldId}
+          name={context.fieldName}
+          value={row.responsibilityCenterCode}
+          readOnly={page.isReadonly}
+          options={PettyCashFundReplenishmentResponsibilityCenterOptions}
+          placeholder="Select Responsibility Center"
+          searchPlaceholder="Search Responsibility Center"
+          onChange={(value) => {
+            const selectedCenter = PettyCashFundReplenishmentResponsibilityCenterOptions.find(
+              (option) => option.value === value,
+            );
+            page.updateEntry(row.id, {
+              responsibilityCenterCode: String(selectedCenter?.value ?? ""),
+              responsibilityCenterName: selectedCenter?.name ?? "",
+            });
+          }}
+        />
+      ),
+    },
     remarks: {
       header: columnLabels.remarks,
       id: "remarks",

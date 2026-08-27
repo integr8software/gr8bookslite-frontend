@@ -11,6 +11,7 @@ export const DisbursementVoucherDetailsValidationSchema = z.object({
   paymentMethod: z.string().trim().min(1, "Payment method is required."),
   partyCode: z.string().trim().min(1, "Party code is required."),
   partyName: z.string().trim().min(1, "Party name is required."),
+  voucherDate: z.string().trim().min(1, "Select a DV Date."),
 });
 
 const DisbursementVoucherLineEntryValidationSchema = z.object({
@@ -108,7 +109,7 @@ export function validateDisbursementVoucherDetails(
 
   if (!result.success) {
     for (const issue of result.error.issues) {
-      const field = issue.path[0] as "paymentMethod" | "partyCode" | "partyName" | undefined;
+      const field = issue.path[0] as "paymentMethod" | "partyCode" | "partyName" | "voucherDate" | undefined;
 
       if (field && !errors[field]) {
         errors[field] = issue.message;

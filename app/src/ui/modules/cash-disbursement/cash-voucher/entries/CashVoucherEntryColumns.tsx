@@ -422,6 +422,7 @@ export function createCashVoucherExpenseEntryColumns({
             readOnly={isReadonly}
             isClearable
             options={vatOptions}
+            menuMinWidth={320}
             placeholder="Select VAT Code"
             searchPlaceholder="Search VAT Code"
             className={CashVoucherAccountingDropdownClassName}
@@ -480,8 +481,9 @@ export function createCashVoucherExpenseEntryColumns({
             readOnly={isReadonly}
             isClearable
             options={ewtOptions}
+            optionViewToggle
             placeholder="Select EWT Code"
-            searchPlaceholder="Search EWT Code"
+            searchPlaceholder="Search tax name, code, rate, or description"
             className={CashVoucherAccountingDropdownClassName}
             onChange={(value) => {
               const nextEwtCode = String(value ?? "");

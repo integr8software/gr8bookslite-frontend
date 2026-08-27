@@ -26,6 +26,8 @@ import { openPettyCashFundPdf } from "@/app/src/ui/modules/cash-disbursement/pet
 export function PettyCashFundActionPage({ mode }: { mode: PettyCashFundActionMode }) {
   const router = useRouter();
   const [isPartyDrawerOpen, setIsPartyDrawerOpen] = useState(false);
+  const [isSupplierDrawerOpen, setIsSupplierDrawerOpen] = useState(false);
+  const [pendingSupplierItemId, setPendingSupplierItemId] = useState<string | null>(null);
   const [isProjectDrawerOpen, setIsProjectDrawerOpen] = useState(false);
   const [isResponsibilityCenterDrawerOpen, setIsResponsibilityCenterDrawerOpen] = useState(false);
   const [isEntryResponsibilityCenterDrawerOpen, setIsEntryResponsibilityCenterDrawerOpen] = useState(false);
@@ -37,6 +39,20 @@ export function PettyCashFundActionPage({ mode }: { mode: PettyCashFundActionMod
     page.updateField("partyCode", record.partyCodeNo);
     page.updateField("partyName", getPartyDisplayName(record));
     setIsPartyDrawerOpen(false);
+  }
+  function handleOpenSupplierDrawer(rowId: string) {
+    setPendingSupplierItemId(rowId);
+    setIsSupplierDrawerOpen(true);
+  }
+  function handleCreateSupplier(record: PartyInformationRecord) {
+    if (pendingSupplierItemId) {
+      page.updateItem(pendingSupplierItemId, {
+        supplierCode: record.partyCodeNo,
+        supplierName: getPartyDisplayName(record),
+      });
+    }
+    setPendingSupplierItemId(null);
+    setIsSupplierDrawerOpen(false);
   }
   function handleOpenEntryResponsibilityCenterDrawer(rowId: string) {
     setPendingResponsibilityCenterItemId(rowId);
@@ -75,6 +91,7 @@ export function PettyCashFundActionPage({ mode }: { mode: PettyCashFundActionMod
             <PettyCashFundEntrySection
               page={page}
               onOpenResponsibilityCenterDrawer={handleOpenEntryResponsibilityCenterDrawer}
+              onOpenSupplierDrawer={handleOpenSupplierDrawer}
             />
           </>
         ) : (
@@ -89,6 +106,19 @@ export function PettyCashFundActionPage({ mode }: { mode: PettyCashFundActionMod
         onAddRecord={partyStore.addRecord}
         onClose={() => setIsPartyDrawerOpen(false)}
         onCreateParty={handleCreateParty}
+      />
+      <PartyManagementDrawer
+        isOpen={!page.isReadonly && isSupplierDrawerOpen}
+        isPending={partyStore.isMutating}
+        records={partyStore.records}
+        suggestedPartyType="Vendor"
+        title="Add Vendor"
+        onAddRecord={partyStore.addRecord}
+        onClose={() => {
+          setPendingSupplierItemId(null);
+          setIsSupplierDrawerOpen(false);
+        }}
+        onCreateParty={handleCreateSupplier}
       />
       <ResponsibilityCenterDrawer
         isOpen={!page.isReadonly && isProjectDrawerOpen}

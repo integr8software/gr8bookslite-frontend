@@ -8,8 +8,10 @@ export function ModuleDataEntryDropdownCell({
   addAction,
   className,
   id,
+  menuMinWidth,
   name,
   onChange,
+  optionViewToggle = false,
   options,
   placeholder = "",
   readOnly,
@@ -19,8 +21,10 @@ export function ModuleDataEntryDropdownCell({
   addAction?: { label: string; onClick: () => void };
   className?: string;
   id: string;
+  menuMinWidth?: number;
   name: string;
   onChange?: (value: string) => void;
+  optionViewToggle?: boolean;
   options: AppAdvancedDropdownOption[];
   placeholder?: string;
   readOnly?: boolean;
@@ -34,9 +38,11 @@ export function ModuleDataEntryDropdownCell({
       value={String(value ?? "")}
       readOnly={readOnly}
       options={options}
+      optionViewToggle={optionViewToggle}
       placeholder={placeholder}
       searchPlaceholder={searchPlaceholder}
       addAction={addAction}
+      menuMinWidth={menuMinWidth}
       className={`${moduleDataEntryDropdownClassName} ${className ?? ""}`}
       onChange={(nextValue) => onChange?.(String(nextValue ?? ""))}
     />

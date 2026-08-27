@@ -71,7 +71,7 @@ export const RevolvingFundRecordStatuses = [
 ] as const satisfies readonly RevolvingFundStatus[];
 export const RevolvingFundStatusOptions = ["All", ...RevolvingFundRecordStatuses] as const;
 export const RevolvingFundActionTabs: { id: RevolvingFundActionTab; label: string }[] = [
-  { id: "details", label: "Revolving Fund Details" },
+  { id: "details", label: "Fund Details" },
   { id: "attachments", label: "File Attachments" },
 ];
 export const RevolvingFundEntryTabs: { id: RevolvingFundEntryTab; label: string }[] = [
@@ -81,11 +81,9 @@ export const RevolvingFundEntryTabs: { id: RevolvingFundEntryTab; label: string 
 export const RevolvingFundAccountingEntryTab: RevolvingFundEntryTab = "accounting";
 export const RevolvingFundDefaultItemColumnIds: RevolvingFundItemColumnId[] = [
   "date",
-  "payeeCode",
-  "payeeName",
-  "remarks",
+  "supplierCode",
+  "supplierName",
   "amount",
-  "type",
   "vatType",
   "vatPercent",
   "vatAmount",
@@ -95,16 +93,24 @@ export const RevolvingFundDefaultItemColumnIds: RevolvingFundItemColumnId[] = [
   "netAmount",
   "responsibilityCenterCode",
   "responsibilityCenterName",
+  "remarks",
   "orNo",
+];
+export const RevolvingFundDefaultVisibleItemColumnIds: RevolvingFundItemColumnId[] = [
+  "date",
+  "supplierName",
+  "amount",
+  "vatType",
+  "ewtCode",
 ];
 export const RevolvingFundItemColumnLabels: Record<RevolvingFundItemColumnId, string> = {
   date: "Date",
-  payeeCode: "Supplier Code",
-  payeeName: "Supplier Name",
+  supplierCode: "Supplier Code",
+  supplierName: "Supplier Name",
   orNo: "Reference No.",
   tinNo: "TIN No.",
   remarks: "Remarks",
-  amount: "Amount",
+  amount: "Gross Amount",
   type: "Type",
   vatType: "VAT Type",
   vatPercent: "VAT Rate",
@@ -112,34 +118,32 @@ export const RevolvingFundItemColumnLabels: Record<RevolvingFundItemColumnId, st
   ewtCode: "EWT Code",
   ewtPercent: "EWT Rate",
   ewtAmount: "EWT Amount",
-  netAmount: "Net Amount",
-  totalAmountDue: "Net Amount",
+  netAmount: "NET Amount",
   grossAmount: "Gross Amount",
   responsibilityCenterCode: "Responsibility Center Code",
   responsibilityCenterName: "Responsibility Center",
 };
 export const RevolvingFundItemColumnWidths: Record<RevolvingFundItemColumnId, number> = {
   date: 130,
-  payeeCode: 125,
-  payeeName: 190,
+  supplierCode: 150,
+  supplierName: 200,
   orNo: 150,
   tinNo: 140,
   remarks: 220,
-  amount: 125,
+  amount: 150,
   type: 130,
-  vatType: 130,
-  vatPercent: 115,
-  vatAmount: 135,
-  ewtCode: 150,
-  ewtPercent: 115,
-  ewtAmount: 135,
-  netAmount: 135,
-  totalAmountDue: 155,
-  grossAmount: 130,
-  responsibilityCenterCode: 180,
-  responsibilityCenterName: 220,
+  vatType: 140,
+  vatPercent: 125,
+  vatAmount: 140,
+  ewtCode: 140,
+  ewtPercent: 125,
+  ewtAmount: 140,
+  netAmount: 140,
+  grossAmount: 150,
+  responsibilityCenterCode: 230,
+  responsibilityCenterName: 200,
 };
-export const RevolvingFundProtectedItemColumnIds = new Set<RevolvingFundItemColumnId>(["date", "amount"]);
+export const RevolvingFundProtectedItemColumnIds = new Set<RevolvingFundItemColumnId>(["supplierName", "amount"]);
 export const RevolvingFundDefaultAccountingColumnIds: RevolvingFundAccountingColumnId[] = [
   "accountCode",
   "accountTitle",
@@ -175,6 +179,12 @@ export const RevolvingFundPartyOptions: AppAdvancedDropdownOption[] = [
   { label: "E000117", name: "Maria L. Dela Cruz", value: "E000117" },
   { label: "E000145", name: "Jose P. Santos", value: "E000145" },
 ];
+export const RevolvingFundSupplierOptions: AppAdvancedDropdownOption[] = [
+  { label: "V100006", name: "All4U Restaurant", value: "V100006" },
+  { label: "S000041", name: "Pacific Office Solutions, Inc.", value: "S000041" },
+  { label: "S000058", name: "Metro Industrial Trading", value: "S000058" },
+  { label: "S000073", name: "Northstar Equipment Supply", value: "S000073" },
+];
 export const RevolvingFundAccountOptions: AppAdvancedDropdownOption[] = [
   { label: "101-200", name: "Revolving Fund", value: "101-200" },
   { label: "101-210", name: "Cash on Hand", value: "101-210" },
@@ -194,15 +204,15 @@ export const RevolvingFundEntryTypeOptions: AppAdvancedDropdownOption[] = [
   { name: "Other", value: "Other" },
 ];
 export const RevolvingFundEntryVatTypeOptions: AppAdvancedDropdownOption[] = [
-  { label: "12%", name: "VAT", value: "VAT 12%" },
-  { label: "0%", name: "Zero Rated", value: "Zero Rated" },
-  { label: "0%", name: "Exempt", value: "Exempt" },
+  { label: "", name: "VAT (12%)", selectedDetails: "VAT (12%)", value: "VAT 12%" },
+  { label: "", name: "Zero Rated (0%)", selectedDetails: "Zero Rated (0%)", value: "Zero Rated" },
+  { label: "", name: "Exempt (0%)", selectedDetails: "Exempt (0%)", value: "Exempt" },
 ];
 export const RevolvingFundEntryEwtCodeOptions: AppAdvancedDropdownOption[] = [
-  { label: "10%", name: "W10", value: "W10" },
-  { label: "5%", name: "W05", value: "W05" },
-  { label: "1%", name: "WV01", value: "WV01" },
-  { label: "2%", name: "WV02", value: "WV02" },
+  { description: "Professional Fees - 10%", label: "", name: "W10 (10%)", selectedDetails: "W10 (10%)", value: "W10" },
+  { description: "Professional Fees - 5%", label: "", name: "W05 (5%)", selectedDetails: "W05 (5%)", value: "W05" },
+  { description: "Goods - 1%", label: "", name: "WV01 (1%)", selectedDetails: "WV01 (1%)", value: "WV01" },
+  { description: "Services - 2%", label: "", name: "WV02 (2%)", selectedDetails: "WV02 (2%)", value: "WV02" },
 ];
 export const RevolvingFundResponsibilityCenterOptions: AppAdvancedDropdownOption[] = [
   { label: "RC-ADM", name: "Administration", value: "RC-ADM" },

@@ -83,6 +83,10 @@ export function usePettyCashVoucherActionPage(options: PettyCashVoucherActionPag
       moduleId: "cash-disbursement:petty-cash-voucher",
       recordId: params.recordId,
     }),
+    restoreValues: (draftValues, currentValues) => ({
+      ...currentValues,
+      ...draftValues,
+    }),
     setValues,
     values,
   });

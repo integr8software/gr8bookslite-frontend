@@ -28,14 +28,14 @@ export function validateAdvancesToSuppliersForm(values: AdvancesToSuppliersFormV
   const advanceAmount = parseMoneyNumberInput(values.advancePaymentAmount);
 
   if (totalPoAmount <= 0) {
-    errors.totalPoAmount = "Total PO Amount must be greater than zero.";
+    errors.totalPoAmount = "Amount must be greater than zero.";
   }
 
   if (values.advancePaymentType === "Fixed Amount") {
     if (advanceAmount <= 0) {
       errors.advancePaymentAmount = "Amount of Advance Payment must be greater than zero.";
     } else if (totalPoAmount > 0 && advanceAmount > totalPoAmount) {
-      errors.advancePaymentAmount = "Amount of Advance Payment cannot exceed Total PO Amount.";
+      errors.advancePaymentAmount = "Amount of Advance Payment cannot exceed Amount.";
     }
   } else {
     if (percentage <= 0 || percentage > 100) {

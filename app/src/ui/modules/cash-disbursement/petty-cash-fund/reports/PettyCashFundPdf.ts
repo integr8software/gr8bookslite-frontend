@@ -16,7 +16,7 @@ function createPettyCashFundPdfDefinition(values: PettyCashFundFormValues): TDoc
   const totals = calculatePettyCashFundTotals(values.items);
   const itemRows: TableCell[][] = values.items.map((item) => [
     formatDate(item.date),
-    item.payeeName,
+    item.supplierName,
     { text: formatCurrency(Number(item.grossAmount.replace(/,/g, "")) || 0), alignment: "right" },
     item.vatType,
     { text: item.vatPercent, alignment: "right" },
@@ -50,7 +50,7 @@ function createPettyCashFundPdfDefinition(values: PettyCashFundFormValues): TDoc
           body: [
             [
               "Date",
-              "Payee",
+              "Supplier Name",
               "Gross Amount",
               "VAT Type",
               "VAT Rate",

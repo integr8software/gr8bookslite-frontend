@@ -48,7 +48,7 @@ export function RevolvingFundReportPreview({
             <thead className="bg-offwhite">
               <tr>
                 <th className="px-3 py-2 text-left">Date</th>
-                <th className="px-3 py-2 text-left">Payee</th>
+                <th className="px-3 py-2 text-left">Supplier Name</th>
                 <th className="px-3 py-2 text-right">Gross Amount</th>
                 <th className="px-3 py-2 text-left">VAT Type</th>
                 <th className="px-3 py-2 text-right">VAT Rate</th>
@@ -64,7 +64,7 @@ export function RevolvingFundReportPreview({
               {page.values.items.map((item) => (
                 <tr key={item.id} className="border-t border-darknavy/10">
                   <td className="px-3 py-2">{formatDate(item.date)}</td>
-                  <td className="px-3 py-2">{item.payeeName}</td>
+                  <td className="px-3 py-2">{item.supplierName}</td>
                   <td className="px-3 py-2 text-right tabular-nums">{formatCurrency(Number(item.grossAmount.replace(/,/g, "")) || 0)}</td>
                   <td className="px-3 py-2">{item.vatType}</td>
                   <td className="px-3 py-2 text-right tabular-nums">{item.vatPercent}</td>

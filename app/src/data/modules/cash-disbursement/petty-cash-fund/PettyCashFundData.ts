@@ -88,8 +88,8 @@ export function createBlankPettyCashFundItem(): PettyCashFundItem {
   return {
     id: `pcf-item-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     date: todayDateValue(),
-    payeeCode: "",
-    payeeName: "",
+    supplierCode: "",
+    supplierName: "",
     orNo: "",
     tinNo: "",
     remarks: "",
@@ -100,7 +100,6 @@ export function createBlankPettyCashFundItem(): PettyCashFundItem {
     ewtCode: "",
     ewtPercent: "",
     ewtAmount: "",
-    totalAmountDue: "",
     type: "",
     vatType: "",
     grossAmount: "",
@@ -142,8 +141,8 @@ export function createPettyCashFundFormValues(
         {
           ...createBlankPettyCashFundItem(),
           date: record.documentDate,
-          payeeCode: "V100006",
-          payeeName: "All4U Restaurant",
+          supplierCode: "V100006",
+          supplierName: "All4U Restaurant",
           amount,
           ...calculatePettyCashFundItemTaxFields(amount),
           grossAmount: amount,
@@ -179,10 +178,9 @@ export function calculatePettyCashFundTotals(items: PettyCashFundItem[]) {
       netAmount: totals.netAmount + parseMoneyNumberInput(item.netAmount),
       vatAmount: totals.vatAmount + parseMoneyNumberInput(item.vatAmount),
       ewtAmount: totals.ewtAmount + parseMoneyNumberInput(item.ewtAmount),
-      totalAmountDue: totals.totalAmountDue + parseMoneyNumberInput(item.totalAmountDue),
       grossAmount: totals.grossAmount + parseMoneyNumberInput(item.grossAmount),
     }),
-    { amount: 0, netAmount: 0, vatAmount: 0, ewtAmount: 0, totalAmountDue: 0, grossAmount: 0 },
+    { amount: 0, netAmount: 0, vatAmount: 0, ewtAmount: 0, grossAmount: 0 },
   );
 }
 
@@ -190,7 +188,7 @@ export function calculatePettyCashFundItemTaxFields(
   amountValue: string | number,
   vatType = "",
   ewtCode = "",
-): Pick<PettyCashFundItem, "netAmount" | "vatPercent" | "vatAmount" | "ewtPercent" | "ewtAmount" | "totalAmountDue" | "grossAmount"> {
+): Pick<PettyCashFundItem, "netAmount" | "vatPercent" | "vatAmount" | "ewtPercent" | "ewtAmount" | "grossAmount"> {
   const amount = roundPettyCashTaxAmount(parseMoneyNumberInput(amountValue));
   const vatPercent = getPettyCashFundVatPercent(vatType);
   const ewtPercent = getPettyCashFundEwtPercent(ewtCode);
@@ -206,7 +204,6 @@ export function calculatePettyCashFundItemTaxFields(
     vatAmount: formatPettyCashFundAmount(taxAmounts.vatAmount),
     ewtPercent: ewtPercent ? `${formatPettyCashFundAmount(ewtPercent)}%` : "",
     ewtAmount: formatPettyCashFundAmount(taxAmounts.ewtAmount),
-    totalAmountDue: formatPettyCashFundAmount(taxAmounts.totalAmountDue),
     grossAmount: formatPettyCashFundAmount(amount),
   };
 }

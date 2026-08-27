@@ -180,7 +180,7 @@ export function CashVoucherDetailsFields({
             value={values.voucherDate}
             isReadonly={isReadonly}
             isRequired
-            label="Document Date"
+            label="CV Date"
             error={errors.voucherDate}
             type="date"
             onValueChange={(value) => onUpdateField("voucherDate", value)}

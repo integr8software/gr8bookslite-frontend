@@ -25,6 +25,8 @@ import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 export function RevolvingFundReplenishmentActionPage({ mode }: { mode: RevolvingFundReplenishmentActionMode }) {
   const router = useRouter();
   const [isPartyDrawerOpen, setIsPartyDrawerOpen] = useState(false);
+  const [isSupplierDrawerOpen, setIsSupplierDrawerOpen] = useState(false);
+  const [pendingSupplierEntryId, setPendingSupplierEntryId] = useState<string | null>(null);
   const [isResponsibilityCenterDrawerOpen, setIsResponsibilityCenterDrawerOpen] = useState(false);
   const [isProjectDrawerOpen, setIsProjectDrawerOpen] = useState(false);
   const partyStore = usePartyManagementStore();
@@ -37,6 +39,20 @@ export function RevolvingFundReplenishmentActionPage({ mode }: { mode: Revolving
     page.updateField("partyCode", record.partyCodeNo);
     page.updateField("partyName", getPartyDisplayName(record));
     setIsPartyDrawerOpen(false);
+  }
+  function handleOpenSupplierDrawer(rowId: string) {
+    setPendingSupplierEntryId(rowId);
+    setIsSupplierDrawerOpen(true);
+  }
+  function handleCreateSupplier(record: PartyInformationRecord) {
+    if (pendingSupplierEntryId) {
+      page.updateEntry(pendingSupplierEntryId, {
+        supplierCode: record.partyCodeNo,
+        supplierName: getPartyDisplayName(record),
+      });
+    }
+    setPendingSupplierEntryId(null);
+    setIsSupplierDrawerOpen(false);
   }
   return (
     <>
@@ -56,7 +72,10 @@ export function RevolvingFundReplenishmentActionPage({ mode }: { mode: Revolving
               onOpenProjectDrawer={() => setIsProjectDrawerOpen(true)}
               onOpenResponsibilityCenterDrawer={() => setIsResponsibilityCenterDrawerOpen(true)}
             />
-            <RevolvingFundReplenishmentEntrySection page={page} />
+            <RevolvingFundReplenishmentEntrySection
+              page={page}
+              onOpenSupplierDrawer={handleOpenSupplierDrawer}
+            />
           </>
         ) : (
           <RevolvingFundReplenishmentFileAttachmentFields page={page} />
@@ -70,6 +89,19 @@ export function RevolvingFundReplenishmentActionPage({ mode }: { mode: Revolving
         onAddRecord={partyStore.addRecord}
         onClose={() => setIsPartyDrawerOpen(false)}
         onCreateParty={handleCreateParty}
+      />
+      <PartyManagementDrawer
+        isOpen={!page.isReadonly && isSupplierDrawerOpen}
+        isPending={partyStore.isMutating}
+        records={partyStore.records}
+        suggestedPartyType="Vendor"
+        title="Add Vendor"
+        onAddRecord={partyStore.addRecord}
+        onClose={() => {
+          setPendingSupplierEntryId(null);
+          setIsSupplierDrawerOpen(false);
+        }}
+        onCreateParty={handleCreateSupplier}
       />
       <ResponsibilityCenterDrawer
         isOpen={!page.isReadonly && isResponsibilityCenterDrawerOpen}

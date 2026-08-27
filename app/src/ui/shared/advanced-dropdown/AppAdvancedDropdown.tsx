@@ -30,6 +30,7 @@ import {
 	ViewToggle,
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdownParts";
 import {
+	deduplicateOptions,
 	filterOptions,
 	flattenOptions,
 	getInitialActiveOptionValue,
@@ -94,15 +95,19 @@ export function AppAdvancedDropdown({
 	const controlRef = useRef<HTMLDivElement>(null);
 	const rootRef = useRef<HTMLDivElement>(null);
 	const selectedValues = useMemo(
-		() => (Array.isArray(value) ? value : value ? [value] : []),
+		() => Array.from(new Set(Array.isArray(value) ? value : value ? [value] : [])),
 		[value],
 	);
 	const selectedValueSet = useMemo(() => new Set(selectedValues), [selectedValues]);
-	const flatOptions = useMemo(() => flattenOptions(options), [options]);
+	const uniqueOptions = useMemo(() => deduplicateOptions(options), [options]);
+	const flatOptions = useMemo(() => flattenOptions(uniqueOptions), [uniqueOptions]);
 	const selectedOptions = selectedValues
 		.map((selectedValue) => flatOptions.find((option) => option.value === selectedValue))
 		.filter((option): option is AppAdvancedDropdownOption => Boolean(option));
-	const filteredOptions = useMemo(() => filterOptions(options, query), [options, query]);
+	const filteredOptions = useMemo(
+		() => filterOptions(uniqueOptions, query),
+		[query, uniqueOptions],
+	);
 	const visibleOptions = useMemo(() => flattenOptions(filteredOptions), [filteredOptions]);
 	const selectableOptions = useMemo(
 		() => visibleOptions.filter((option) => !option.disabled),
@@ -222,13 +227,15 @@ export function AppAdvancedDropdown({
 		};
 	}, [controlId, isInteractionLocked]);
 
+	const effectiveMenuMinWidth = menuMinWidth ?? (optionViewToggle ? 480 : undefined);
+
 	useEffect(() => {
 		if (!isOpen || !menuPortal) {
 			return;
 		}
 
 		function updatePortalStyle() {
-			const nextStyle = getPortalStyle(rootRef.current, menuMinWidth);
+			const nextStyle = getPortalStyle(rootRef.current, effectiveMenuMinWidth);
 
 			if (nextStyle) {
 				setPortalStyle(nextStyle);
@@ -253,7 +260,7 @@ export function AppAdvancedDropdown({
 			window.removeEventListener("resize", updatePortalStyle);
 			window.removeEventListener("scroll", handleScroll, true);
 		};
-	}, [isOpen, menuMinWidth, menuPortal]);
+	}, [isOpen, effectiveMenuMinWidth, menuPortal]);
 
 	useEffect(() => {
 		if (!isOpen || !activeOptionId) {
@@ -305,7 +312,7 @@ export function AppAdvancedDropdown({
 		}
 
 		if (menuPortal) {
-			const nextStyle = getPortalStyle(rootRef.current, menuMinWidth);
+			const nextStyle = getPortalStyle(rootRef.current, effectiveMenuMinWidth);
 
 			if (nextStyle) {
 				setPortalStyle(nextStyle);
@@ -531,7 +538,7 @@ export function AppAdvancedDropdown({
 				className={joinClasses(
 					"min-h-0 overflow-y-auto overscroll-contain p-2",
 					optionViewToggle && optionView === AppAdvancedDropdownOptionViewGrid
-						? "grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-4"
+						? "grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-1.5"
 						: "grid gap-1",
 				)}
 			>

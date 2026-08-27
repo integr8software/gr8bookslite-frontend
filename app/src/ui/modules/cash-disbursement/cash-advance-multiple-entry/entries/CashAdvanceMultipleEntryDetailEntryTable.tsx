@@ -1,5 +1,9 @@
 import { useMemo, useState } from "react";
-import { CashAdvanceMultipleEntryDefaultItemColumnIds } from "@/app/src/constants/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryConstants";
+import {
+  CashAdvanceMultipleEntryDefaultItemColumnIds,
+  CashAdvanceMultipleEntryItemColumnOrder,
+  CashAdvanceMultipleEntryProtectedItemColumnIds,
+} from "@/app/src/constants/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryConstants";
 import {
   calculateCashAdvanceMultipleEntryTotal,
   createBlankCashAdvanceMultipleEntryItem,
@@ -30,6 +34,7 @@ export function CashAdvanceMultipleEntryDetailEntryTable({
   onRowsChange,
   rows,
 }: CashAdvanceMultipleEntryDetailEntryTableProps) {
+  const [columnOrder, setColumnOrder] = useState<string[]>(CashAdvanceMultipleEntryItemColumnOrder);
   const [visibleColumnIds, setVisibleColumnIds] = useState<string[]>(CashAdvanceMultipleEntryDefaultItemColumnIds);
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>({});
   const allColumns = useMemo(
@@ -45,20 +50,20 @@ export function CashAdvanceMultipleEntryDetailEntryTable({
       }),
     [employeeOptions, isReadonly, onOpenPartyDrawer, onOpenResponsibilityCenterDrawer, onRowsChange, rows],
   );
-  const columnOrder = Object.keys(allColumns);
   const columns = useMemo(
     () =>
-      visibleColumnIds
+      columnOrder
+        .filter((columnId) => visibleColumnIds.includes(columnId))
         .map((columnId) => allColumns[columnId])
         .filter((column): column is ModuleDataEntryColumn<CashAdvanceMultipleEntryItem> => Boolean(column))
         .map((column) => (columnWidths[column.id] ? { ...column, width: columnWidths[column.id] } : column)),
-    [allColumns, columnWidths, visibleColumnIds],
+    [allColumns, columnOrder, columnWidths, visibleColumnIds],
   );
   const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
     () =>
       columnOrder.map((columnId) => ({
         id: columnId,
-        isHideable: !CashAdvanceMultipleEntryDefaultItemColumnIds.includes(columnId),
+        isHideable: !CashAdvanceMultipleEntryProtectedItemColumnIds.has(columnId),
         isVisible: visibleColumnIds.includes(columnId),
         label: allColumns[columnId].header,
         width: columnWidths[columnId] ?? allColumns[columnId].width,
@@ -105,15 +110,20 @@ export function CashAdvanceMultipleEntryDetailEntryTable({
         )
       }
       onResetColumns={() => {
+        setColumnOrder(CashAdvanceMultipleEntryItemColumnOrder);
         setVisibleColumnIds(CashAdvanceMultipleEntryDefaultItemColumnIds);
         setColumnWidths({});
       }}
       onMoveColumn={(fromColumnId, toColumnId) =>
-        setVisibleColumnIds((current) => reorderColumnIds(current, fromColumnId, toColumnId))
+        setColumnOrder((current) => reorderColumnIds(current, fromColumnId, toColumnId))
       }
-      onToggleColumnVisibility={(columnId, isVisible) =>
-        setVisibleColumnIds((current) => toggleVisibleColumnId(current, columnOrder, columnId, isVisible))
-      }
+      onToggleColumnVisibility={(columnId, isVisible) => {
+        if (!isVisible && CashAdvanceMultipleEntryProtectedItemColumnIds.has(columnId)) {
+          return;
+        }
+
+        setVisibleColumnIds((current) => toggleVisibleColumnId(current, columnOrder, columnId, isVisible));
+      }}
       onUpdateColumnHeader={() => undefined}
       onUpdateColumnWidth={(columnId, width) =>
         setColumnWidths((current) => ({ ...current, [columnId]: width }))

@@ -79,8 +79,8 @@ export function createBlankRevolvingFundItem(): RevolvingFundItem {
   return {
     id: `rf-item-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     date: todayDateValue(),
-    payeeCode: "",
-    payeeName: "",
+    supplierCode: "",
+    supplierName: "",
     orNo: "",
     tinNo: "",
     remarks: "",
@@ -91,7 +91,6 @@ export function createBlankRevolvingFundItem(): RevolvingFundItem {
     ewtCode: "",
     ewtPercent: "",
     ewtAmount: "",
-    totalAmountDue: "",
     type: "",
     vatType: "",
     grossAmount: "",
@@ -133,8 +132,8 @@ export function createRevolvingFundFormValues(
         {
           ...createBlankRevolvingFundItem(),
           date: record.documentDate,
-          payeeCode: "V100006",
-          payeeName: "All4U Restaurant",
+          supplierCode: "V100006",
+          supplierName: "All4U Restaurant",
           amount,
           ...calculateRevolvingFundItemTaxFields(amount),
           grossAmount: amount,
@@ -170,10 +169,9 @@ export function calculateRevolvingFundTotals(items: RevolvingFundItem[]) {
       netAmount: totals.netAmount + parseMoneyNumberInput(item.netAmount),
       vatAmount: totals.vatAmount + parseMoneyNumberInput(item.vatAmount),
       ewtAmount: totals.ewtAmount + parseMoneyNumberInput(item.ewtAmount),
-      totalAmountDue: totals.totalAmountDue + parseMoneyNumberInput(item.totalAmountDue),
       grossAmount: totals.grossAmount + parseMoneyNumberInput(item.grossAmount),
     }),
-    { amount: 0, netAmount: 0, vatAmount: 0, ewtAmount: 0, totalAmountDue: 0, grossAmount: 0 },
+    { amount: 0, netAmount: 0, vatAmount: 0, ewtAmount: 0, grossAmount: 0 },
   );
 }
 
@@ -181,7 +179,7 @@ export function calculateRevolvingFundItemTaxFields(
   amountValue: string | number,
   vatType = "",
   ewtCode = "",
-): Pick<RevolvingFundItem, "netAmount" | "vatPercent" | "vatAmount" | "ewtPercent" | "ewtAmount" | "totalAmountDue" | "grossAmount"> {
+): Pick<RevolvingFundItem, "netAmount" | "vatPercent" | "vatAmount" | "ewtPercent" | "ewtAmount" | "grossAmount"> {
   const amount = roundRevolvingFundTaxAmount(parseMoneyNumberInput(amountValue));
   const vatPercent = getRevolvingFundVatPercent(vatType);
   const ewtPercent = getRevolvingFundEwtPercent(ewtCode);
@@ -197,7 +195,6 @@ export function calculateRevolvingFundItemTaxFields(
     vatAmount: formatRevolvingFundAmount(taxAmounts.vatAmount),
     ewtPercent: ewtPercent ? `${formatRevolvingFundAmount(ewtPercent)}%` : "",
     ewtAmount: formatRevolvingFundAmount(taxAmounts.ewtAmount),
-    totalAmountDue: formatRevolvingFundAmount(taxAmounts.totalAmountDue),
     grossAmount: formatRevolvingFundAmount(amount),
   };
 }

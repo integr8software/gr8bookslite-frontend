@@ -1,18 +1,23 @@
 import { useMemo, useState } from "react";
 import {
   RevolvingFundDefaultItemColumnIds,
+  RevolvingFundDefaultVisibleItemColumnIds,
   RevolvingFundItemColumnLabels,
   RevolvingFundItemColumnWidths,
   RevolvingFundProtectedItemColumnIds,
+  RevolvingFundSupplierOptions,
 } from "@/app/src/constants/modules/cash-disbursement/revolving-fund/RevolvingFundConstants";
 import {
   createBlankRevolvingFundItem,
   formatRevolvingFundAmount,
 } from "@/app/src/data/modules/cash-disbursement/revolving-fund/RevolvingFundData";
+import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
+import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
 import type {
   RevolvingFundDetailEntryTableProps,
   RevolvingFundItemColumnId,
 } from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { createRevolvingFundItemColumns } from "@/app/src/ui/modules/cash-disbursement/revolving-fund/entries/RevolvingFundEntryColumns";
 import { ModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import {
@@ -23,15 +28,61 @@ import {
 } from "@/app/src/ui/shared/module/module-data-entry/entryTableState.util";
 import { clampColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/utils";
 
-export function RevolvingFundDetailEntryTable({ onOpenResponsibilityCenterDrawer, page }: RevolvingFundDetailEntryTableProps) {
+export function RevolvingFundDetailEntryTable({
+  onOpenResponsibilityCenterDrawer,
+  onOpenSupplierDrawer,
+  page,
+}: RevolvingFundDetailEntryTableProps) {
   const [columnOrder, setColumnOrder] = useState<RevolvingFundItemColumnId[]>([...RevolvingFundDefaultItemColumnIds]);
-  const [visibleColumnIds, setVisibleColumnIds] = useState<RevolvingFundItemColumnId[]>([...RevolvingFundDefaultItemColumnIds]);
+  const [visibleColumnIds, setVisibleColumnIds] = useState<RevolvingFundItemColumnId[]>([...RevolvingFundDefaultVisibleItemColumnIds]);
   const [columnWidths, setColumnWidths] = useState({ ...RevolvingFundItemColumnWidths });
   const [columnLabels, setColumnLabels] = useState({ ...RevolvingFundItemColumnLabels });
+  const partyRecords = usePartyManagementStore((state) => state.records);
+
+  const supplierOptions = useMemo<AppAdvancedDropdownOption[]>(() => {
+    const vendorRecords = partyRecords.filter((r) => r.partyTypes.includes("Vendor"));
+    const options: AppAdvancedDropdownOption[] =
+      vendorRecords.length > 0
+        ? vendorRecords.map((r) => ({
+            label: r.partyCodeNo,
+            name: getPartyDisplayName(r),
+            value: r.partyCodeNo,
+          }))
+        : RevolvingFundSupplierOptions;
+
+    const existingCodes = new Set(options.map((opt) => opt.value));
+    const existingNames = new Set(options.map((opt) => opt.name.toLowerCase()));
+    const extraOptions: AppAdvancedDropdownOption[] = [];
+
+    page.values.items.forEach((item) => {
+      if (item.supplierName && !existingNames.has(item.supplierName.toLowerCase())) {
+        const code = item.supplierCode || item.supplierName;
+        if (!existingCodes.has(code)) {
+          existingCodes.add(code);
+          existingNames.add(item.supplierName.toLowerCase());
+          extraOptions.push({
+            label: item.supplierCode || code,
+            name: item.supplierName,
+            value: code,
+          });
+        }
+      }
+    });
+
+    return [...options, ...extraOptions];
+  }, [partyRecords, page.values.items]);
 
   const allColumns = useMemo(
-    () => createRevolvingFundItemColumns(page, columnLabels, columnWidths, onOpenResponsibilityCenterDrawer),
-    [columnLabels, columnWidths, onOpenResponsibilityCenterDrawer, page],
+    () =>
+      createRevolvingFundItemColumns(
+        page,
+        columnLabels,
+        columnWidths,
+        supplierOptions,
+        onOpenResponsibilityCenterDrawer,
+        onOpenSupplierDrawer,
+      ),
+    [columnLabels, columnWidths, onOpenResponsibilityCenterDrawer, onOpenSupplierDrawer, page, supplierOptions],
   );
 
   const columns = useMemo(
@@ -87,7 +138,7 @@ export function RevolvingFundDetailEntryTable({ onOpenResponsibilityCenterDrawer
 
   function handleResetColumns() {
     setColumnOrder([...RevolvingFundDefaultItemColumnIds]);
-    setVisibleColumnIds([...RevolvingFundDefaultItemColumnIds]);
+    setVisibleColumnIds([...RevolvingFundDefaultVisibleItemColumnIds]);
     setColumnWidths({ ...RevolvingFundItemColumnWidths });
     setColumnLabels({ ...RevolvingFundItemColumnLabels });
   }

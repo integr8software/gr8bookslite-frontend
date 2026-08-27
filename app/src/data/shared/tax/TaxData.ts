@@ -99,6 +99,11 @@ export function getEwtPercentFromCode(value: string, taxCodes: AlphanumericTaxCo
   }
 
   const knownAtcRates: Record<string, number> = {
+    MC021: 0,
+    WB030: 3,
+    WB040: 2,
+    WB050: 3,
+    WB070: 5,
     WI650: 1,
     WC650: 1,
     WI158: 2,
@@ -174,10 +179,19 @@ export function createVatOptions(
     })
     .forEach((row) => {
       if (!options.has(row.taxCode)) {
+        const rawName = row.taxDescription || row.taxCode;
+        const rate =
+          row.taxRate != null && row.taxRate !== ""
+            ? `${row.taxRate}%`.replace(/%%+/, "%")
+            : "";
+        const cleanName = rawName.replace(/\s*\(?\d+(?:\.\d+)?%\)?\s*$/u, "").trim();
+        const name = rate ? `${cleanName} (${rate})` : cleanName;
+
         options.set(row.taxCode, {
-          description: row.taxDescription,
-          label: `${row.taxRate}%`,
-          name: row.taxDescription || row.taxCode,
+          description: "",
+          label: "",
+          name,
+          selectedDetails: name,
           value: row.taxCode,
         });
       }
@@ -185,17 +199,18 @@ export function createVatOptions(
 
   if (options.size === 0) {
     const defaultVatRows = [
-      { code: "VAT-12", rate: "12%", desc: "Value Added Tax 12%" },
-      { code: "VAT-0", rate: "0%", desc: "Zero Rated 0%" },
-      { code: "VAT-EXEMPT", rate: "0%", desc: "VAT Exempt 0%" },
-      { code: "NON-VAT", rate: "0%", desc: "Non-VAT 0%" },
-      { code: "VAT-5", rate: "5%", desc: "Withholding VAT 5%" },
+      { code: "VAT-12", rate: "12%", desc: "Value Added Tax (12%)" },
+      { code: "VAT-0", rate: "0%", desc: "Zero Rated (0%)" },
+      { code: "VAT-EXEMPT", rate: "0%", desc: "VAT Exempt (0%)" },
+      { code: "NON-VAT", rate: "0%", desc: "Non-VAT (0%)" },
+      { code: "VAT-5", rate: "5%", desc: "Withholding VAT (5%)" },
     ];
     defaultVatRows.forEach((row) => {
       options.set(row.code, {
-        description: row.desc,
-        label: row.rate,
+        description: "",
+        label: "",
         name: row.desc,
+        selectedDetails: row.desc,
         value: row.code,
       });
     });
@@ -208,12 +223,82 @@ export function createEwtOptions(
   taxCodes: AlphanumericTaxCode[],
   transactionType = "Purchases",
 ): AppAdvancedDropdownOption[] {
-  return taxCodes
-    .filter((row) => row.transactionType === transactionType && row.taxType === "EWT")
-    .map((row) => ({
-      description: row.taxDescription,
-      label: `${row.taxRate}%`,
-      name: row.taxCode,
+  const filtered = taxCodes.filter((row) => {
+    const transType = (row.transactionType || "").toLowerCase();
+    const targetTrans = transactionType.toLowerCase();
+    const matchesTrans =
+      !row.transactionType ||
+      transType === targetTrans ||
+      transType.includes("purchase") ||
+      transType.includes("disbursement");
+    const taxType = (row.taxType || "").toUpperCase();
+    const isEwt =
+      taxType === "EWT" ||
+      taxType === "CWT" ||
+      taxType.includes("WITHHOLDING") ||
+      taxType.includes("WT");
+    return matchesTrans && isEwt;
+  });
+
+  const options = new Map<string, AppAdvancedDropdownOption>();
+
+  filtered.forEach((row) => {
+    if (options.has(row.taxCode)) return;
+
+    const displayCode = row.officialAtcCode || row.taxCode;
+    const rate =
+      row.taxRate != null && row.taxRate !== ""
+        ? `${row.taxRate}%`.replace(/%%+/, "%")
+        : "";
+    const codeRateName = [displayCode, rate ? `(${rate})` : ""].filter(Boolean).join(" ");
+    const rawDescription =
+      row.natureOfIncome?.trim() ||
+      row.taxDescription.replace(/^[A-Z]{1,3}\s?\d{0,3}(?:\.\d+)?\s*\|\s*/, "").trim() ||
+      row.taxDescription;
+    const description = rawDescription.replace(/\s*\(?\d+(?:\.\d+)?%\)?\s*$/u, "").trim();
+
+    options.set(row.taxCode, {
+      description,
+      label: "",
+      name: codeRateName,
+      selectedDetails: codeRateName,
       value: row.taxCode,
+    });
+  });
+
+  if (options.size === 0) {
+    const defaultEwtRows = [
+      { code: "MC021", rate: "0%", desc: "VAT Exempt Zero Rated" },
+      { code: "WB 030", rate: "3%", desc: "Tax on carriers and keepers of garages" },
+      { code: "WB 040", rate: "2%", desc: "Franchise Tax on Gas and Water Utilities" },
+      {
+        code: "WB 050",
+        rate: "3%",
+        desc: "Franchise Tax on radio & TV broadcasting companies whose annual gross receipts does not exceed P10M and who are not Value-Added Tax registered taxpayers",
+      },
+      { code: "WB 070", rate: "5%", desc: "Tax on life insurance premiums" },
+      {
+        code: "WI158",
+        rate: "2%",
+        desc: "Income payments made by top withholding agents to suppliers of services",
+      },
+      {
+        code: "WC158",
+        rate: "2%",
+        desc: "Income payments made by top withholding agents to corporate suppliers of services",
+      },
+      { code: "WI160", rate: "2%", desc: "Income distribution to beneficiaries" },
+      { code: "WI010", rate: "5%", desc: "Professional fees paid to medical practitioners" },
+      { code: "WC010", rate: "5%", desc: "Professional fees paid to corporate medical practitioners" },
+    ];
+    return defaultEwtRows.map((row) => ({
+      description: row.desc,
+      label: "",
+      name: `${row.code} (${row.rate})`,
+      selectedDetails: `${row.code} (${row.rate})`,
+      value: row.code,
     }));
+  }
+
+  return Array.from(options.values());
 }

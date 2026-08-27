@@ -113,7 +113,7 @@ export function DisbursementVoucherDetailEntryTable({
         .filter((columnId) => (MultiCheckColumnIds.has(columnId) ? hasMultiCheckNumberColumn : true))
         .map((columnId) => ({
           id: columnId,
-          isProtected: ProtectedExpenseEntryColumnIds.has(columnId),
+          isHideable: !ProtectedExpenseEntryColumnIds.has(columnId),
           isVisible: visibleExpenseColumnIds.includes(columnId),
           label: expenseColumnLabels[columnId],
           width: expenseColumnWidths[columnId],
@@ -128,11 +128,17 @@ export function DisbursementVoucherDetailEntryTable({
   }
 
   function handleToggleColumnVisibility(columnId: string, isVisible: boolean) {
-    if (isExpenseEntryColumnId(columnId)) {
-      setVisibleExpenseColumnIds((currentIds) =>
-        toggleVisibleColumnId(currentIds, expenseColumnOrder, columnId, isVisible),
-      );
+    if (!isExpenseEntryColumnId(columnId)) {
+      return;
     }
+
+    if (!isVisible && ProtectedExpenseEntryColumnIds.has(columnId)) {
+      return;
+    }
+
+    setVisibleExpenseColumnIds((currentIds) =>
+      toggleVisibleColumnId(currentIds, expenseColumnOrder, columnId, isVisible),
+    );
   }
 
   function handleUpdateColumnHeader(columnId: string, header: string) {

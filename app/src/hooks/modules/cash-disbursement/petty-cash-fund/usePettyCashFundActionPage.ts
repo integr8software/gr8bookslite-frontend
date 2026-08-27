@@ -168,8 +168,8 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
           grossAmount: amount,
           netAmount: amount,
           remarks: source.remarks ?? "",
-          payeeCode: String(party?.value ?? ""),
-          payeeName: source.partyName ?? "",
+          supplierCode: String(party?.value ?? ""),
+          supplierName: source.partyName ?? "",
         },
       ],
     }));

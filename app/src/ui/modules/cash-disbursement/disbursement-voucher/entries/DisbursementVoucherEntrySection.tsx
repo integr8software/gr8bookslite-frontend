@@ -29,7 +29,7 @@ import {
   DisbursementVoucherEntryTabs,
   DisbursementVoucherAccountingEntryView,
 } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/DisbursementVoucherEntryTabs";
-import { createEwtOptions, createVatOptions } from "@/app/src/ui/shared/transaction-setup/AppTaxRateDialog";
+import { createEwtOptions, createVatOptions } from "@/app/src/data/shared/tax/TaxData";
 
 export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
   const {

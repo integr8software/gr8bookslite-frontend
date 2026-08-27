@@ -10,9 +10,11 @@ export type PettyCashFundConfirmationAction = "save" | "draft" | "approve" | "di
 export type PettyCashFundActionPageState = ReturnType<typeof usePettyCashFundActionPage>;
 
 export type PettyCashFundOpenResponsibilityCenterDrawerHandler = (rowId: string) => void;
+export type PettyCashFundOpenSupplierDrawerHandler = (rowId: string) => void;
 export type PettyCashFundEntrySectionProps = {
   page: PettyCashFundActionPageState;
   onOpenResponsibilityCenterDrawer?: PettyCashFundOpenResponsibilityCenterDrawerHandler;
+  onOpenSupplierDrawer?: PettyCashFundOpenSupplierDrawerHandler;
 };
 export type PettyCashFundDetailEntryTableProps = PettyCashFundEntrySectionProps;
 export type PettyCashFundAccountingEntryTableProps = { page: PettyCashFundActionPageState };
@@ -22,8 +24,8 @@ export type PettyCashFundEntryTab = "items" | "accounting";
 export type PettyCashFundItem = {
   id: string;
   date: string;
-  payeeCode: string;
-  payeeName: string;
+  supplierCode: string;
+  supplierName: string;
   orNo: string;
   tinNo: string;
   remarks: string;
@@ -34,7 +36,6 @@ export type PettyCashFundItem = {
   ewtCode: string;
   ewtPercent: string;
   ewtAmount: string;
-  totalAmountDue: string;
   type: string;
   vatType: string;
   grossAmount: string;

@@ -74,7 +74,7 @@ export function DisbursementVoucherAccountingEntryTable({
         .filter((columnId) => (MultiCheckColumnIds.has(columnId) ? hasMultiCheckNumberColumn : true))
         .map((columnId) => ({
           id: columnId,
-          isProtected: ProtectedDisbursementEntryColumnIds.has(columnId),
+          isHideable: !ProtectedDisbursementEntryColumnIds.has(columnId),
           isVisible: visibleAccountingColumnIds.includes(columnId),
           label: accountingColumnLabels[columnId],
           width: accountingColumnWidths[columnId],
@@ -89,11 +89,17 @@ export function DisbursementVoucherAccountingEntryTable({
   }
 
   function handleToggleColumnVisibility(columnId: string, isVisible: boolean) {
-    if (isDisbursementEntryColumnId(columnId)) {
-      setVisibleAccountingColumnIds((currentIds) =>
-        toggleVisibleColumnId(currentIds, accountingColumnOrder, columnId, isVisible),
-      );
+    if (!isDisbursementEntryColumnId(columnId)) {
+      return;
     }
+
+    if (!isVisible && ProtectedDisbursementEntryColumnIds.has(columnId)) {
+      return;
+    }
+
+    setVisibleAccountingColumnIds((currentIds) =>
+      toggleVisibleColumnId(currentIds, accountingColumnOrder, columnId, isVisible),
+    );
   }
 
   function handleUpdateColumnHeader(columnId: string, header: string) {

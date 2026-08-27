@@ -12,6 +12,7 @@ import type {
   RevolvingFundItem,
   RevolvingFundItemColumnId,
   RevolvingFundOpenResponsibilityCenterDrawerHandler,
+  RevolvingFundOpenSupplierDrawerHandler,
 } from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
@@ -24,7 +25,9 @@ export function createRevolvingFundItemColumns(
   page: RevolvingFundActionPageState,
   labels: Record<RevolvingFundItemColumnId, string>,
   widths: Record<RevolvingFundItemColumnId, number>,
+  supplierOptions: AppAdvancedDropdownOption[],
   onOpenResponsibilityCenterDrawer?: RevolvingFundOpenResponsibilityCenterDrawerHandler,
+  onOpenSupplierDrawer?: RevolvingFundOpenSupplierDrawerHandler,
 ): Record<RevolvingFundItemColumnId, ModuleDataEntryColumn<RevolvingFundItem>> {
   const text = (id: RevolvingFundItemColumnId, type: "text" | "date" = "text"): ModuleDataEntryColumn<RevolvingFundItem> => ({
     header: labels[id],
@@ -100,8 +103,46 @@ export function createRevolvingFundItemColumns(
 
   return {
     date: text("date", "date"),
-    payeeCode: text("payeeCode"),
-    payeeName: text("payeeName"),
+    supplierCode: {
+      header: labels.supplierCode,
+      id: "supplierCode",
+      width: widths.supplierCode,
+      widthMode: "fixed",
+      widthClassName: "w-auto",
+      renderCell: (row) => <ModuleDataEntryReadonlyCell value={row.supplierCode} />,
+    },
+    supplierName: {
+      header: labels.supplierName,
+      id: "supplierName",
+      width: widths.supplierName,
+      widthMode: "fixed",
+      widthClassName: "w-auto",
+      renderCell: (row, _index, context) => (
+        <ModuleDataEntryDropdownCell
+          id={context.fieldId}
+          name={context.fieldName}
+          value={row.supplierCode || row.supplierName}
+          readOnly={page.isReadonly}
+          options={supplierOptions}
+          placeholder="Select Supplier Name"
+          searchPlaceholder="Search Supplier Name"
+          addAction={
+            !page.isReadonly && onOpenSupplierDrawer
+              ? { label: "Add Vendor", onClick: () => onOpenSupplierDrawer(row.id) }
+              : undefined
+          }
+          onChange={(value) => {
+            const selectedSupplier = supplierOptions.find(
+              (option) => option.value === value || option.name === value || option.label === value,
+            );
+            page.updateItem(row.id, {
+              supplierCode: String(selectedSupplier?.label ?? selectedSupplier?.value ?? ""),
+              supplierName: selectedSupplier?.name ?? String(value),
+            });
+          }}
+        />
+      ),
+    },
     orNo: text("orNo"),
     tinNo: text("tinNo"),
     remarks: text("remarks"),
@@ -143,8 +184,9 @@ export function createRevolvingFundItemColumns(
           value={row.ewtCode}
           readOnly={page.isReadonly}
           options={RevolvingFundEntryEwtCodeOptions}
+          optionViewToggle
           placeholder="Select EWT Code"
-          searchPlaceholder="Search EWT Code"
+          searchPlaceholder="Search tax name, code, rate, or description"
           onChange={(value) =>
             page.updateItem(row.id, {
               ewtCode: value,
@@ -157,7 +199,6 @@ export function createRevolvingFundItemColumns(
     ewtPercent: calculatedMoney("ewtPercent"),
     ewtAmount: calculatedMoney("ewtAmount"),
     netAmount: calculatedMoney("netAmount"),
-    totalAmountDue: calculatedMoney("totalAmountDue"),
     grossAmount: money("grossAmount"),
     responsibilityCenterCode: {
       header: labels.responsibilityCenterCode,

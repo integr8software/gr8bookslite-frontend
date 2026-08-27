@@ -1,6 +1,7 @@
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import type { TDocumentDefinitions } from "pdfmake/interfaces";
+import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import type { PettyCashVoucherFormValues } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import { formatCurrency } from "@/app/src/utils/currency.util";
 import { formatDate } from "@/app/src/utils/date.util";
@@ -12,10 +13,10 @@ export function openPettyCashVoucherPdf(values: PettyCashVoucherFormValues) {
 }
 
 function createPettyCashVoucherPdfDefinition(values: PettyCashVoucherFormValues): TDocumentDefinitions {
-  const amount = Number(values.amount.replace(/,/g, "")) || 0;
-  const vatAmount = Number(values.vatAmount.replace(/,/g, "")) || 0;
-  const ewtAmount = Number(values.ewtAmount.replace(/,/g, "")) || 0;
-  const netAmount = Number(values.netAmount.replace(/,/g, "")) || 0;
+  const amount = parseMoneyNumberInput(values.amount);
+  const vatAmount = parseMoneyNumberInput(values.vatAmount);
+  const ewtAmount = parseMoneyNumberInput(values.ewtAmount);
+  const netAmount = parseMoneyNumberInput(values.netAmount);
 
   return {
     pageSize: "A4",

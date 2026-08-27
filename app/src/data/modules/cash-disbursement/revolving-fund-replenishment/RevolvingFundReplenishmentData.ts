@@ -76,7 +76,8 @@ export function createBlankRevolvingFundReplenishmentEntry(): RevolvingFundReple
     ewtCode: "",
     ewtPercent: "",
     ewtAmount: "",
-    totalAmountDue: "",
+    responsibilityCenterCode: "",
+    responsibilityCenterName: "",
     remarks: "",
   };
 }
@@ -152,9 +153,8 @@ export function calculateRevolvingFundReplenishmentTotals(entries: RevolvingFund
       netAmount: totals.netAmount + parseMoneyNumberInput(entry.netAmount),
       vatAmount: totals.vatAmount + parseMoneyNumberInput(entry.vatAmount),
       ewtAmount: totals.ewtAmount + parseMoneyNumberInput(entry.ewtAmount),
-      totalAmountDue: totals.totalAmountDue + parseMoneyNumberInput(entry.totalAmountDue),
     }),
-    { totalAmount: 0, netAmount: 0, vatAmount: 0, ewtAmount: 0, totalAmountDue: 0 },
+    { totalAmount: 0, netAmount: 0, vatAmount: 0, ewtAmount: 0 },
   );
 }
 
@@ -199,7 +199,7 @@ export function calculateRevolvingFundReplenishmentEntryTaxFields(
   ewtCode = "",
 ): Pick<
   RevolvingFundReplenishmentEntry,
-  "netAmount" | "vatPercent" | "vatAmount" | "ewtPercent" | "ewtAmount" | "totalAmountDue"
+  "netAmount" | "vatPercent" | "vatAmount" | "ewtPercent" | "ewtAmount"
 > {
   const amount = roundRevolvingFundReplenishmentTaxAmount(parseMoneyNumberInput(amountValue));
   const vatPercent = getRevolvingFundReplenishmentVatPercent(vatType);
@@ -213,7 +213,6 @@ export function calculateRevolvingFundReplenishmentEntryTaxFields(
     vatAmount: formatRevolvingFundReplenishmentAmount(vatAmount),
     ewtPercent: ewtPercent ? `${formatRevolvingFundReplenishmentAmount(ewtPercent)}%` : "",
     ewtAmount: formatRevolvingFundReplenishmentAmount(ewtAmount),
-    totalAmountDue: formatRevolvingFundReplenishmentAmount(Math.max(amount - ewtAmount, 0)),
   };
 }
 

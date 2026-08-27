@@ -186,7 +186,7 @@ export function CashAdvanceMultipleEntryDetailsFields({
             value={values.documentDate}
             isReadonly={isReadonly}
             isRequired
-            label="Document Date"
+            label="CAME Date"
             type="date"
             onValueChange={(value) => onUpdateField("documentDate", value)}
           />

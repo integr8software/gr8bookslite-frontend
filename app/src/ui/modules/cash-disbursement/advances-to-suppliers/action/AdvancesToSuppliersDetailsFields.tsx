@@ -167,7 +167,7 @@ export function AdvancesToSuppliersDetailsFields({
               />
             }
           />
-          <TransactionField label="Total Amount" error={page.errors.totalPoAmount} isRequired>
+          <TransactionField label="Amount" error={page.errors.totalPoAmount} isRequired>
             <MoneyNumberField
               value={page.values.totalPoAmount}
               min="0"
@@ -193,7 +193,7 @@ export function AdvancesToSuppliersDetailsFields({
             value={page.values.documentDate}
             isReadonly={page.isReadonly}
             isRequired
-            label="Document Date"
+            label="ATS Date"
             error={page.errors.documentDate}
             type="date"
             onValueChange={(value) => page.updateField("documentDate", value)}

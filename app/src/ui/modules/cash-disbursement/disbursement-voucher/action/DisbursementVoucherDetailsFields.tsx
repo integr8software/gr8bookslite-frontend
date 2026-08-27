@@ -215,7 +215,7 @@ export function DisbursementVoucherDetailsFields({
             value={values.voucherDate}
             isReadonly={isReadonly}
             isRequired
-            label="Document Date"
+            label="DV Date"
             error={errors.voucherDate}
             type="date"
             onValueChange={(value) => onUpdateField("voucherDate", value)}

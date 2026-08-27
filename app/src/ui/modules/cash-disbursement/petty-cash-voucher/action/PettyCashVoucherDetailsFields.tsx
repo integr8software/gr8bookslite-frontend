@@ -209,8 +209,9 @@ export function PettyCashVoucherDetailsFields({
               isClearable
               menuMinWidth={360}
               options={page.ewtOptions}
+              optionViewToggle
               placeholder="Select EWT Code"
-              searchPlaceholder="Search EWT Code"
+              searchPlaceholder="Search tax name, code, rate, or description"
               onChange={(value) => page.updateEwtCode(String(value ?? ""))}
             />
           </TransactionField>
@@ -233,7 +234,7 @@ export function PettyCashVoucherDetailsFields({
             error={page.errors.documentDate}
             isReadonly={page.isReadonly}
             isRequired
-            label="Document Date"
+            label="PCV Date"
             onValueChange={(value) => page.updateField("documentDate", value)}
             type="date"
           />

@@ -10,6 +10,10 @@ import { useAlphanumericTaxCodes } from "@/app/src/hooks/shared/tax/useAlphanume
 import type { AlphanumericTaxCode } from "@/app/src/types/shared/tax/AlphanumericTaxCodeTypes";
 import type { DisbursementTaxDetails } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import {
+  createEwtOptions as createSharedEwtOptions,
+  createVatOptions as createSharedVatOptions,
+} from "@/app/src/data/shared/tax/TaxData";
+import {
   AppAdvancedDropdown,
   type AppAdvancedDropdownOption,
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
@@ -340,33 +344,9 @@ export function normalizeVatDropdownValue(
 }
 
 export function createVatOptions(taxCodes: AlphanumericTaxCode[]): AppAdvancedDropdownOption[] {
-  const uniqueOptions = new Map<string, AppAdvancedDropdownOption>();
-
-  taxCodes.filter(
-    (row) =>
-      row.transactionType === "Purchases" && row.taxType === "INPUT VAT",
-  ).forEach((row) => {
-    if (uniqueOptions.has(row.taxCode)) {
-      return;
-    }
-
-    uniqueOptions.set(row.taxCode, {
-      label: `${row.taxRate}%`,
-      name: row.taxDescription,
-      value: row.taxCode,
-    });
-  });
-
-  return Array.from(uniqueOptions.values());
+  return createSharedVatOptions(taxCodes, "Purchases");
 }
 
 export function createEwtOptions(taxCodes: AlphanumericTaxCode[]): AppAdvancedDropdownOption[] {
-  return taxCodes.filter(
-    (row) => row.transactionType === "Purchases" && row.taxType === "EWT",
-  ).map((row) => ({
-    description: row.taxDescription,
-    label: `${row.taxRate}%`,
-    name: row.taxCode,
-    value: row.taxCode,
-  }));
+  return createSharedEwtOptions(taxCodes, "Purchases");
 }

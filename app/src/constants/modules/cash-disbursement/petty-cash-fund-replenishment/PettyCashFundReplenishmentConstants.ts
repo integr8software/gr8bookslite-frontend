@@ -99,7 +99,7 @@ export const PettyCashFundReplenishmentActionTabs: {
   id: PettyCashFundReplenishmentActionTab;
   label: string;
 }[] = [
-  { id: "details", label: "Petty Cash Fund Replenishment Details" },
+  { id: "details", label: "Replenishment Details" },
   { id: "attachments", label: "File Attachments" },
 ];
 export const PettyCashFundReplenishmentEntryTabs: { id: PettyCashFundReplenishmentEntryTab; label: string }[] = [
@@ -114,50 +114,61 @@ export const PettyCashFundReplenishmentEntryColumnOrder: PettyCashFundReplenishm
   "supplierCode",
   "supplierName",
   "amount",
-  "netAmount",
   "vatType",
   "vatPercent",
   "vatAmount",
   "ewtCode",
   "ewtPercent",
   "ewtAmount",
+  "netAmount",
+  "responsibilityCenterCode",
+  "responsibilityCenterName",
   "remarks",
+];
+export const PettyCashFundReplenishmentDefaultVisibleEntryColumnIds: PettyCashFundReplenishmentEntryColumnId[] = [
+  "pettyCashDate",
+  "pettyCashNo",
+  "supplierName",
+  "amount",
+  "vatType",
+  "ewtCode",
 ];
 export const PettyCashFundReplenishmentEntryColumnLabels: Record<PettyCashFundReplenishmentEntryColumnId, string> = {
   pettyCashDate: "Petty Cash Date",
   pettyCashNo: "Petty Cash No.",
   supplierCode: "Supplier Code",
   supplierName: "Supplier Name",
-  amount: "Amount",
-  netAmount: "Net Amount",
+  amount: "Gross Amount",
+  netAmount: "NET Amount",
   vatType: "VAT Type",
   vatPercent: "VAT Rate",
   vatAmount: "VAT Amount",
   ewtCode: "EWT Code",
   ewtPercent: "EWT Rate",
   ewtAmount: "EWT Amount",
-  totalAmountDue: "Net Amount",
+  responsibilityCenterCode: "Responsibility Center Code",
+  responsibilityCenterName: "Responsibility Center",
   remarks: "Remarks",
 };
 export const PettyCashFundReplenishmentEntryColumnWidths: Record<PettyCashFundReplenishmentEntryColumnId, number> = {
-  pettyCashDate: 150,
-  pettyCashNo: 155,
-  supplierCode: 145,
-  supplierName: 220,
-  amount: 140,
+  pettyCashDate: 160,
+  pettyCashNo: 160,
+  supplierCode: 150,
+  supplierName: 200,
+  amount: 150,
   netAmount: 140,
-  vatType: 155,
-  vatPercent: 115,
+  vatType: 140,
+  vatPercent: 125,
   vatAmount: 140,
-  ewtCode: 155,
-  ewtPercent: 115,
+  ewtCode: 140,
+  ewtPercent: 125,
   ewtAmount: 140,
-  totalAmountDue: 155,
-  remarks: 260,
+  responsibilityCenterCode: 230,
+  responsibilityCenterName: 200,
+  remarks: 220,
 };
 export const PettyCashFundReplenishmentProtectedEntryColumnIds = new Set<PettyCashFundReplenishmentEntryColumnId>([
-  "pettyCashDate",
-  "pettyCashNo",
+  "supplierName",
   "amount",
 ]);
 export const PettyCashFundReplenishmentAccountingColumnOrder: PettyCashFundReplenishmentAccountingColumnId[] = [
@@ -197,6 +208,12 @@ export const PettyCashFundReplenishmentPartyOptions: AppAdvancedDropdownOption[]
   { label: "E000117", name: "Maria L. Dela Cruz", value: "E000117" },
   { label: "E000145", name: "Jose P. Santos", value: "E000145" },
 ];
+export const PettyCashFundReplenishmentSupplierOptions: AppAdvancedDropdownOption[] = [
+  { label: "V100006", name: "All4U Restaurant", value: "V100006" },
+  { label: "S000041", name: "Pacific Office Solutions, Inc.", value: "S000041" },
+  { label: "S000058", name: "Metro Industrial Trading", value: "S000058" },
+  { label: "S000073", name: "Northstar Equipment Supply", value: "S000073" },
+];
 export const PettyCashFundReplenishmentAccountOptions: AppAdvancedDropdownOption[] = [
   { label: "101-200", name: "Petty Cash Fund", value: "101-200" },
   { label: "101-210", name: "Cash on Hand", value: "101-210" },
@@ -211,15 +228,15 @@ export const PettyCashFundReplenishmentResponsibilityCenterOptions: AppAdvancedD
   { label: "RC-SAL", name: "Sales", value: "RC-SAL" },
 ];
 export const PettyCashFundReplenishmentEntryVatTypeOptions: AppAdvancedDropdownOption[] = [
-  { label: "12%", name: "VAT", value: "VAT 12%" },
-  { label: "0%", name: "Zero Rated", value: "Zero Rated" },
-  { label: "0%", name: "Exempt", value: "Exempt" },
+  { label: "", name: "VAT (12%)", selectedDetails: "VAT (12%)", value: "VAT 12%" },
+  { label: "", name: "Zero Rated (0%)", selectedDetails: "Zero Rated (0%)", value: "Zero Rated" },
+  { label: "", name: "Exempt (0%)", selectedDetails: "Exempt (0%)", value: "Exempt" },
 ];
 export const PettyCashFundReplenishmentEntryEwtCodeOptions: AppAdvancedDropdownOption[] = [
-  { label: "W10", name: "Professional Fees - 10%", value: "W10" },
-  { label: "W05", name: "Professional Fees - 5%", value: "W05" },
-  { label: "WV01", name: "Goods - 1%", value: "WV01" },
-  { label: "WV02", name: "Services - 2%", value: "WV02" },
+  { description: "Professional Fees - 10%", label: "", name: "W10 (10%)", selectedDetails: "W10 (10%)", value: "W10" },
+  { description: "Professional Fees - 5%", label: "", name: "W05 (5%)", selectedDetails: "W05 (5%)", value: "W05" },
+  { description: "Goods - 1%", label: "", name: "WV01 (1%)", selectedDetails: "WV01 (1%)", value: "WV01" },
+  { description: "Services - 2%", label: "", name: "WV02 (2%)", selectedDetails: "WV02 (2%)", value: "WV02" },
 ];
 
 export function canEditPettyCashFundReplenishment(status: PettyCashFundReplenishmentStatus) {

@@ -74,7 +74,7 @@ export function CashVoucherAccountingEntryTable({
         .filter((columnId) => (MultiCheckColumnIds.has(columnId) ? hasMultiCheckNumberColumn : true))
         .map((columnId) => ({
           id: columnId,
-          isProtected: ProtectedCashVoucherEntryColumnIds.has(columnId),
+          isHideable: !ProtectedCashVoucherEntryColumnIds.has(columnId),
           isVisible: visibleAccountingColumnIds.includes(columnId),
           label: accountingColumnLabels[columnId],
           width: accountingColumnWidths[columnId],
@@ -89,11 +89,17 @@ export function CashVoucherAccountingEntryTable({
   }
 
   function handleToggleColumnVisibility(columnId: string, isVisible: boolean) {
-    if (isCashVoucherEntryColumnId(columnId)) {
-      setVisibleAccountingColumnIds((currentIds) =>
-        toggleVisibleColumnId(currentIds, accountingColumnOrder, columnId, isVisible),
-      );
+    if (!isCashVoucherEntryColumnId(columnId)) {
+      return;
     }
+
+    if (!isVisible && ProtectedCashVoucherEntryColumnIds.has(columnId)) {
+      return;
+    }
+
+    setVisibleAccountingColumnIds((currentIds) =>
+      toggleVisibleColumnId(currentIds, accountingColumnOrder, columnId, isVisible),
+    );
   }
 
   function handleUpdateColumnHeader(columnId: string, header: string) {
@@ -138,7 +144,7 @@ export function CashVoucherAccountingEntryTable({
     <ModuleDataEntry
       addButtonLabel="Add Entry"
       title={title}
-      emptyRowLabel="accounting entry"
+      emptyRowLabel="entry"
       error={errors.lineEntries}
       footerDetails={
         <span

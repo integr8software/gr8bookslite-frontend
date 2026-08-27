@@ -18,9 +18,9 @@ export function validatePettyCashFundForm(values: PettyCashFundFormValues): Pett
   const errors: PettyCashFundFormErrors = {};
   const result = schema.safeParse(values);
   if (!result.success) for (const issue of result.error.issues) errors[issue.path[0] as keyof PettyCashFundFormValues] ??= issue.message;
-  if (values.items.length === 0 || values.items.every((item) => !item.payeeName.trim() && (parseAmount(item.amount) ?? 0) <= 0))
+  if (values.items.length === 0 || values.items.every((item) => !item.supplierName.trim() && (parseAmount(item.amount) ?? 0) <= 0))
     errors.items = "Add at least one petty cash item.";
-  else if (values.items.some((item) => !item.payeeName.trim() || (parseAmount(item.amount) ?? 0) <= 0))
-    errors.items = "Each item needs a payee and an amount greater than zero.";
+  else if (values.items.some((item) => !item.supplierName.trim() || (parseAmount(item.amount) ?? 0) <= 0))
+    errors.items = "Each item needs a supplier name and an amount greater than zero.";
   return errors;
 }

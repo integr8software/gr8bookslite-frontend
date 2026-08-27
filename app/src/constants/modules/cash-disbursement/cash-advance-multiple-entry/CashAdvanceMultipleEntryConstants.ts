@@ -202,14 +202,27 @@ export const CashAdvanceMultipleEntryEntryTabs: {
   { id: "accounting", label: "Accounting Entries" },
 ];
 
-export const CashAdvanceMultipleEntryDefaultItemColumnIds = [
+export const CashAdvanceMultipleEntryItemColumnOrder = [
+  "partyCode",
   "partyName",
+  "amount",
   "cashAdvanceLimit",
   "cashAdvanceBalance",
   "totalCashAdvanced",
-  "amount",
+  "responsibilityCenterCode",
+  "responsibilityCenter",
   "remarks",
 ];
+
+export const CashAdvanceMultipleEntryDefaultItemColumnIds = [
+  "partyName",
+  "amount",
+  "cashAdvanceBalance",
+  "responsibilityCenter",
+  "remarks",
+];
+
+export const CashAdvanceMultipleEntryProtectedItemColumnIds = new Set(["partyName", "amount"]);
 
 export const CashAdvanceMultipleEntryDefaultAccountingColumnIds = ["accountTitle", "credit", "debit", "partyName"];
 

@@ -1,18 +1,23 @@
 import { useMemo, useState } from "react";
 import {
   PettyCashFundDefaultItemColumnIds,
+  PettyCashFundDefaultVisibleItemColumnIds,
   PettyCashFundItemColumnLabels,
   PettyCashFundItemColumnWidths,
   PettyCashFundProtectedItemColumnIds,
+  PettyCashFundSupplierOptions,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund/PettyCashFundConstants";
 import {
   createBlankPettyCashFundItem,
   formatPettyCashFundAmount,
 } from "@/app/src/data/modules/cash-disbursement/petty-cash-fund/PettyCashFundData";
+import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
+import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
 import type {
   PettyCashFundDetailEntryTableProps,
   PettyCashFundItemColumnId,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { createPettyCashFundItemColumns } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund/entries/PettyCashFundEntryColumns";
 import { ModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import {
@@ -23,15 +28,61 @@ import {
 } from "@/app/src/ui/shared/module/module-data-entry/entryTableState.util";
 import { clampColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/utils";
 
-export function PettyCashFundDetailEntryTable({ onOpenResponsibilityCenterDrawer, page }: PettyCashFundDetailEntryTableProps) {
+export function PettyCashFundDetailEntryTable({
+  onOpenResponsibilityCenterDrawer,
+  onOpenSupplierDrawer,
+  page,
+}: PettyCashFundDetailEntryTableProps) {
   const [columnOrder, setColumnOrder] = useState<PettyCashFundItemColumnId[]>([...PettyCashFundDefaultItemColumnIds]);
-  const [visibleColumnIds, setVisibleColumnIds] = useState<PettyCashFundItemColumnId[]>([...PettyCashFundDefaultItemColumnIds]);
+  const [visibleColumnIds, setVisibleColumnIds] = useState<PettyCashFundItemColumnId[]>([...PettyCashFundDefaultVisibleItemColumnIds]);
   const [columnWidths, setColumnWidths] = useState({ ...PettyCashFundItemColumnWidths });
   const [columnLabels, setColumnLabels] = useState({ ...PettyCashFundItemColumnLabels });
+  const partyRecords = usePartyManagementStore((state) => state.records);
+
+  const supplierOptions = useMemo<AppAdvancedDropdownOption[]>(() => {
+    const vendorRecords = partyRecords.filter((r) => r.partyTypes.includes("Vendor"));
+    const options: AppAdvancedDropdownOption[] =
+      vendorRecords.length > 0
+        ? vendorRecords.map((r) => ({
+            label: r.partyCodeNo,
+            name: getPartyDisplayName(r),
+            value: r.partyCodeNo,
+          }))
+        : PettyCashFundSupplierOptions;
+
+    const existingCodes = new Set(options.map((opt) => opt.value));
+    const existingNames = new Set(options.map((opt) => opt.name.toLowerCase()));
+    const extraOptions: AppAdvancedDropdownOption[] = [];
+
+    page.values.items.forEach((item) => {
+      if (item.supplierName && !existingNames.has(item.supplierName.toLowerCase())) {
+        const code = item.supplierCode || item.supplierName;
+        if (!existingCodes.has(code)) {
+          existingCodes.add(code);
+          existingNames.add(item.supplierName.toLowerCase());
+          extraOptions.push({
+            label: item.supplierCode || code,
+            name: item.supplierName,
+            value: code,
+          });
+        }
+      }
+    });
+
+    return [...options, ...extraOptions];
+  }, [partyRecords, page.values.items]);
 
   const allColumns = useMemo(
-    () => createPettyCashFundItemColumns(page, columnLabels, columnWidths, onOpenResponsibilityCenterDrawer),
-    [columnLabels, columnWidths, onOpenResponsibilityCenterDrawer, page],
+    () =>
+      createPettyCashFundItemColumns(
+        page,
+        columnLabels,
+        columnWidths,
+        supplierOptions,
+        onOpenResponsibilityCenterDrawer,
+        onOpenSupplierDrawer,
+      ),
+    [columnLabels, columnWidths, onOpenResponsibilityCenterDrawer, onOpenSupplierDrawer, page, supplierOptions],
   );
 
   const columns = useMemo(
@@ -87,7 +138,7 @@ export function PettyCashFundDetailEntryTable({ onOpenResponsibilityCenterDrawer
 
   function handleResetColumns() {
     setColumnOrder([...PettyCashFundDefaultItemColumnIds]);
-    setVisibleColumnIds([...PettyCashFundDefaultItemColumnIds]);
+    setVisibleColumnIds([...PettyCashFundDefaultVisibleItemColumnIds]);
     setColumnWidths({ ...PettyCashFundItemColumnWidths });
     setColumnLabels({ ...PettyCashFundItemColumnLabels });
   }

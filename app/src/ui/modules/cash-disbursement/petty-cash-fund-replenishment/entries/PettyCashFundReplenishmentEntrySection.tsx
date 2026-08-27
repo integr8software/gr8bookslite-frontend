@@ -2,7 +2,13 @@ import type { PettyCashFundReplenishmentEntrySectionProps } from "@/app/src/type
 import { PettyCashFundReplenishmentDetailEntryTable } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund-replenishment/entries/PettyCashFundReplenishmentDetailEntryTable";
 
 export function PettyCashFundReplenishmentEntrySection({
+  onOpenSupplierDrawer,
   page,
 }: PettyCashFundReplenishmentEntrySectionProps) {
-  return <PettyCashFundReplenishmentDetailEntryTable page={page} />;
+  return (
+    <PettyCashFundReplenishmentDetailEntryTable
+      onOpenSupplierDrawer={onOpenSupplierDrawer}
+      page={page}
+    />
+  );
 }

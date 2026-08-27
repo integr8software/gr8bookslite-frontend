@@ -10,9 +10,11 @@ export type RevolvingFundConfirmationAction = "save" | "draft" | "approve" | "di
 export type RevolvingFundActionPageState = ReturnType<typeof useRevolvingFundActionPage>;
 
 export type RevolvingFundOpenResponsibilityCenterDrawerHandler = (rowId: string) => void;
+export type RevolvingFundOpenSupplierDrawerHandler = (rowId: string) => void;
 export type RevolvingFundEntrySectionProps = {
   page: RevolvingFundActionPageState;
   onOpenResponsibilityCenterDrawer?: RevolvingFundOpenResponsibilityCenterDrawerHandler;
+  onOpenSupplierDrawer?: RevolvingFundOpenSupplierDrawerHandler;
 };
 export type RevolvingFundDetailEntryTableProps = RevolvingFundEntrySectionProps;
 export type RevolvingFundAccountingEntryTableProps = { page: RevolvingFundActionPageState };
@@ -22,8 +24,8 @@ export type RevolvingFundEntryTab = "items" | "accounting";
 export type RevolvingFundItem = {
   id: string;
   date: string;
-  payeeCode: string;
-  payeeName: string;
+  supplierCode: string;
+  supplierName: string;
   orNo: string;
   tinNo: string;
   remarks: string;
@@ -34,7 +36,6 @@ export type RevolvingFundItem = {
   ewtCode: string;
   ewtPercent: string;
   ewtAmount: string;
-  totalAmountDue: string;
   type: string;
   vatType: string;
   grossAmount: string;

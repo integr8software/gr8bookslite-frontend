@@ -79,7 +79,8 @@ export function createBlankPettyCashFundReplenishmentEntry(): PettyCashFundReple
     ewtCode: "",
     ewtPercent: "",
     ewtAmount: "",
-    totalAmountDue: "",
+    responsibilityCenterCode: "",
+    responsibilityCenterName: "",
     remarks: "",
   };
 }
@@ -155,9 +156,8 @@ export function calculatePettyCashFundReplenishmentTotals(entries: PettyCashFund
       netAmount: totals.netAmount + parseMoneyNumberInput(entry.netAmount),
       vatAmount: totals.vatAmount + parseMoneyNumberInput(entry.vatAmount),
       ewtAmount: totals.ewtAmount + parseMoneyNumberInput(entry.ewtAmount),
-      totalAmountDue: totals.totalAmountDue + parseMoneyNumberInput(entry.totalAmountDue),
     }),
-    { totalAmount: 0, netAmount: 0, vatAmount: 0, ewtAmount: 0, totalAmountDue: 0 },
+    { totalAmount: 0, netAmount: 0, vatAmount: 0, ewtAmount: 0 },
   );
 }
 
@@ -193,8 +193,8 @@ export function applyPettyCashFundToReplenishmentForm(
         pettyCashDate: item.date || source.documentDate,
         pettyCashNo: source.transactionNo,
         remarks: item.remarks || source.remarks,
-        supplierCode: item.payeeCode,
-        supplierName: item.payeeName,
+        supplierCode: item.supplierCode,
+        supplierName: item.supplierName,
         vatType: item.vatType,
       }))
     : [
@@ -268,7 +268,7 @@ export function calculatePettyCashFundReplenishmentEntryTaxFields(
   ewtCode = "",
 ): Pick<
   PettyCashFundReplenishmentEntry,
-  "netAmount" | "vatPercent" | "vatAmount" | "ewtPercent" | "ewtAmount" | "totalAmountDue"
+  "netAmount" | "vatPercent" | "vatAmount" | "ewtPercent" | "ewtAmount"
 > {
   const amount = roundPettyCashFundReplenishmentTaxAmount(parseMoneyNumberInput(amountValue));
   const vatPercent = getPettyCashFundReplenishmentVatPercent(vatType);
@@ -282,7 +282,6 @@ export function calculatePettyCashFundReplenishmentEntryTaxFields(
     vatAmount: formatPettyCashFundReplenishmentAmount(vatAmount),
     ewtPercent: ewtPercent ? `${formatPettyCashFundReplenishmentAmount(ewtPercent)}%` : "",
     ewtAmount: formatPettyCashFundReplenishmentAmount(ewtAmount),
-    totalAmountDue: formatPettyCashFundReplenishmentAmount(Math.max(amount - ewtAmount, 0)),
   };
 }
 

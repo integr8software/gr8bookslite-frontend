@@ -1,19 +1,23 @@
 import { useMemo, useState } from "react";
 import {
   RevolvingFundReplenishmentEntryColumnOrder,
+  RevolvingFundReplenishmentDefaultVisibleEntryColumnIds,
   RevolvingFundReplenishmentEntryColumnLabels,
   RevolvingFundReplenishmentEntryColumnWidths,
   RevolvingFundReplenishmentProtectedEntryColumnIds,
+  RevolvingFundReplenishmentSupplierOptions,
 } from "@/app/src/constants/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentConstants";
 import {
   createBlankRevolvingFundReplenishmentEntry,
   formatRevolvingFundReplenishmentAmount,
 } from "@/app/src/data/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentData";
-
+import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
+import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
 import type {
   RevolvingFundReplenishmentDetailEntryTableProps,
   RevolvingFundReplenishmentEntryColumnId,
 } from "@/app/src/types/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentTypes";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { createRevolvingFundReplenishmentLineColumns } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/entries/RevolvingFundReplenishmentEntryColumns";
 import { ModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import {
@@ -25,13 +29,14 @@ import {
 import { clampColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/utils";
 
 export function RevolvingFundReplenishmentDetailEntryTable({
+  onOpenSupplierDrawer,
   page,
 }: RevolvingFundReplenishmentDetailEntryTableProps) {
   const [columnOrder, setColumnOrder] = useState<RevolvingFundReplenishmentEntryColumnId[]>([
     ...RevolvingFundReplenishmentEntryColumnOrder,
   ]);
   const [visibleColumnIds, setVisibleColumnIds] = useState<RevolvingFundReplenishmentEntryColumnId[]>([
-    ...RevolvingFundReplenishmentEntryColumnOrder,
+    ...RevolvingFundReplenishmentDefaultVisibleEntryColumnIds,
   ]);
   const [columnWidths, setColumnWidths] = useState<Record<RevolvingFundReplenishmentEntryColumnId, number>>({
     ...RevolvingFundReplenishmentEntryColumnWidths,
@@ -39,10 +44,51 @@ export function RevolvingFundReplenishmentDetailEntryTable({
   const [columnLabels, setColumnLabels] = useState<Record<RevolvingFundReplenishmentEntryColumnId, string>>({
     ...RevolvingFundReplenishmentEntryColumnLabels,
   });
+  const partyRecords = usePartyManagementStore((state) => state.records);
+
+  const supplierOptions = useMemo<AppAdvancedDropdownOption[]>(() => {
+    const vendorRecords = partyRecords.filter((r) => r.partyTypes.includes("Vendor"));
+    const options: AppAdvancedDropdownOption[] =
+      vendorRecords.length > 0
+        ? vendorRecords.map((r) => ({
+            label: r.partyCodeNo,
+            name: getPartyDisplayName(r),
+            value: r.partyCodeNo,
+          }))
+        : RevolvingFundReplenishmentSupplierOptions;
+
+    const existingCodes = new Set(options.map((opt) => opt.value));
+    const existingNames = new Set(options.map((opt) => opt.name.toLowerCase()));
+    const extraOptions: AppAdvancedDropdownOption[] = [];
+
+    page.values.entries.forEach((entry) => {
+      if (entry.supplierName && !existingNames.has(entry.supplierName.toLowerCase())) {
+        const code = entry.supplierCode || entry.supplierName;
+        if (!existingCodes.has(code)) {
+          existingCodes.add(code);
+          existingNames.add(entry.supplierName.toLowerCase());
+          extraOptions.push({
+            label: entry.supplierCode || code,
+            name: entry.supplierName,
+            value: code,
+          });
+        }
+      }
+    });
+
+    return [...options, ...extraOptions];
+  }, [partyRecords, page.values.entries]);
 
   const allColumns = useMemo(
-    () => createRevolvingFundReplenishmentLineColumns({ columnLabels, columnWidths, page }),
-    [columnLabels, columnWidths, page],
+    () =>
+      createRevolvingFundReplenishmentLineColumns({
+        columnLabels,
+        columnWidths,
+        onOpenSupplierDrawer,
+        page,
+        supplierOptions,
+      }),
+    [columnLabels, columnWidths, onOpenSupplierDrawer, page, supplierOptions],
   );
 
   const columns = useMemo(
@@ -98,7 +144,7 @@ export function RevolvingFundReplenishmentDetailEntryTable({
 
   function handleResetColumns() {
     setColumnOrder([...RevolvingFundReplenishmentEntryColumnOrder]);
-    setVisibleColumnIds([...RevolvingFundReplenishmentEntryColumnOrder]);
+    setVisibleColumnIds([...RevolvingFundReplenishmentDefaultVisibleEntryColumnIds]);
     setColumnWidths({ ...RevolvingFundReplenishmentEntryColumnWidths });
     setColumnLabels({ ...RevolvingFundReplenishmentEntryColumnLabels });
   }

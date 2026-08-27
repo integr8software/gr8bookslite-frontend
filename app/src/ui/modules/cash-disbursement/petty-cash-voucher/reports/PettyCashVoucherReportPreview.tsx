@@ -1,4 +1,5 @@
 import type { PettyCashVoucherActionPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
+import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import { ReportPreviewDrawer } from "@/app/src/ui/shared/reports/Reports";
 import { formatCurrency } from "@/app/src/utils/currency.util";
 import { formatDate } from "@/app/src/utils/date.util";
@@ -14,10 +15,10 @@ export function PettyCashVoucherReportPreview({
   onGeneratePdf: () => void;
   page: PettyCashVoucherActionPageState;
 }) {
-  const amount = Number(page.values.amount.replace(/,/g, "")) || 0;
-  const vatAmount = Number(page.values.vatAmount.replace(/,/g, "")) || 0;
-  const ewtAmount = Number(page.values.ewtAmount.replace(/,/g, "")) || 0;
-  const netAmount = Number(page.values.netAmount.replace(/,/g, "")) || 0;
+  const amount = parseMoneyNumberInput(page.values.amount);
+  const vatAmount = parseMoneyNumberInput(page.values.vatAmount);
+  const ewtAmount = parseMoneyNumberInput(page.values.ewtAmount);
+  const netAmount = parseMoneyNumberInput(page.values.netAmount);
 
   return (
     <ReportPreviewDrawer

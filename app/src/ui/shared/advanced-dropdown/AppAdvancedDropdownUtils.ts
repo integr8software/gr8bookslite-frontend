@@ -82,6 +82,34 @@ export function flattenOptions(options: AppAdvancedDropdownOption[]): AppAdvance
 	]);
 }
 
+export function deduplicateOptions(
+	options: AppAdvancedDropdownOption[],
+): AppAdvancedDropdownOption[] {
+	const seenValues = new Set<string>();
+
+	function visit(currentOptions: AppAdvancedDropdownOption[]): AppAdvancedDropdownOption[] {
+		return currentOptions.reduce<AppAdvancedDropdownOption[]>((uniqueOptions, option) => {
+			if (seenValues.has(option.value)) {
+				return uniqueOptions;
+			}
+
+			seenValues.add(option.value);
+			uniqueOptions.push(
+				option.children
+					? {
+							...option,
+							children: visit(option.children),
+						}
+					: option,
+			);
+
+			return uniqueOptions;
+		}, []);
+	}
+
+	return visit(options);
+}
+
 export function filterOptions(
 	options: AppAdvancedDropdownOption[],
 	query: string,

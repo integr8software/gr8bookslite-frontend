@@ -2,7 +2,13 @@ import type { RevolvingFundReplenishmentEntrySectionProps } from "@/app/src/type
 import { RevolvingFundReplenishmentDetailEntryTable } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/entries/RevolvingFundReplenishmentDetailEntryTable";
 
 export function RevolvingFundReplenishmentEntrySection({
+  onOpenSupplierDrawer,
   page,
 }: RevolvingFundReplenishmentEntrySectionProps) {
-  return <RevolvingFundReplenishmentDetailEntryTable page={page} />;
+  return (
+    <RevolvingFundReplenishmentDetailEntryTable
+      onOpenSupplierDrawer={onOpenSupplierDrawer}
+      page={page}
+    />
+  );
 }

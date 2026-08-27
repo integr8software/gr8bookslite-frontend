@@ -8,9 +8,13 @@ export type RevolvingFundReplenishmentActionMode = "add" | "edit" | "view";
 export type RevolvingFundReplenishmentActionTab = "details" | "attachments";
 export type RevolvingFundReplenishmentConfirmationAction = "save" | "draft" | "approve" | "disapprove" | "cancel";
 export type RevolvingFundReplenishmentActionPageState = ReturnType<typeof useRevolvingFundReplenishmentActionPage>;
+export type RevolvingFundReplenishmentOpenSupplierDrawerHandler = (rowId: string) => void;
 
-export type RevolvingFundReplenishmentEntrySectionProps = { page: RevolvingFundReplenishmentActionPageState };
-export type RevolvingFundReplenishmentDetailEntryTableProps = { page: RevolvingFundReplenishmentActionPageState };
+export type RevolvingFundReplenishmentEntrySectionProps = {
+  page: RevolvingFundReplenishmentActionPageState;
+  onOpenSupplierDrawer?: RevolvingFundReplenishmentOpenSupplierDrawerHandler;
+};
+export type RevolvingFundReplenishmentDetailEntryTableProps = RevolvingFundReplenishmentEntrySectionProps;
 export type RevolvingFundReplenishmentAccountingEntryTableProps = {
   page: RevolvingFundReplenishmentActionPageState;
 };
@@ -31,7 +35,8 @@ export type RevolvingFundReplenishmentEntry = {
   ewtCode: string;
   ewtPercent: string;
   ewtAmount: string;
-  totalAmountDue: string;
+  responsibilityCenterCode: string;
+  responsibilityCenterName: string;
   remarks: string;
 };
 
@@ -54,6 +59,8 @@ export type RevolvingFundReplenishmentDetailEntryColumnsParams = {
   columnLabels: Record<RevolvingFundReplenishmentEntryColumnId, string>;
   columnWidths: Record<RevolvingFundReplenishmentEntryColumnId, number>;
   page: RevolvingFundReplenishmentActionPageState;
+  supplierOptions?: import("@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes").AppAdvancedDropdownOption[];
+  onOpenSupplierDrawer?: RevolvingFundReplenishmentOpenSupplierDrawerHandler;
 };
 
 export type RevolvingFundReplenishmentAccountingEntryColumnsParams = {

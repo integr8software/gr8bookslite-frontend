@@ -35,6 +35,7 @@ const MasterPlanAndPackageFormSchema = z
 			.min(0, "Included branches cannot be negative.")
 			.optional(),
 		branchReductionTiers: z.array(ReductionTierSchema).optional(),
+		hasTrial: z.boolean().optional(),
 		monthlyBasePrice: z
 			.number()
 			.min(0, "Monthly base price cannot be negative."),
@@ -53,6 +54,9 @@ const MasterPlanAndPackageFormSchema = z
 			.int()
 			.min(0, "Trial days cannot be negative.")
 			.max(365, "Trial days cannot exceed 365."),
+		trialPrice: z
+			.number()
+			.min(0, "Trial price cannot be negative."),
 		userAddOnPrice: z
 			.number()
 			.min(0, "User add-on price cannot be negative.")
@@ -72,18 +76,28 @@ const MasterPlanAndPackageFormSchema = z
 			.max(100, "Yearly percent off cannot exceed 100."),
 	})
 	.superRefine((values, context) => {
-		if (values.trialDays === 0 && values.monthlyBasePrice <= 0) {
+		const isTrial = Boolean(values.hasTrial || values.trialDays > 0);
+
+		if (isTrial && values.trialDays <= 0) {
 			context.addIssue({
 				code: CustomIssueCode,
-				message: "Monthly base price must be greater than 0.",
+				message: "Trial duration must be at least 1 day.",
+				path: ["trialDays"],
+			});
+		}
+
+		if (values.monthlyBasePrice <= 0) {
+			context.addIssue({
+				code: CustomIssueCode,
+				message: "Monthly price must be greater than 0.",
 				path: ["monthlyBasePrice"],
 			});
 		}
 
-		if (values.trialDays === 0 && values.yearlyBasePrice <= 0) {
+		if (values.yearlyBasePrice <= 0) {
 			context.addIssue({
 				code: CustomIssueCode,
-				message: "Yearly base price must be greater than 0.",
+				message: "Yearly price must be greater than 0.",
 				path: ["yearlyBasePrice"],
 			});
 		}

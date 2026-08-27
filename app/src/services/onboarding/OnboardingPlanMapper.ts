@@ -92,5 +92,6 @@ export function MapOnboardingPlanToPricingPlan(
       plan.name.toLowerCase().includes("inventory") ||
       index === 1,
     trialDays: plan.trialDays,
+    trialPrice: plan.trialPriceDisplay ?? (plan.trialPriceInCents ? `₱${(plan.trialPriceInCents / 100).toFixed(2)}` : "₱0.00"),
   };
 }

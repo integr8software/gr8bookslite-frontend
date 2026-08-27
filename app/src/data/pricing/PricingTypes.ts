@@ -21,6 +21,7 @@ export type PricingPlan = {
   features: PricingFeature[];
   highlighted?: boolean;
   trialDays?: number;
+  trialPrice?: string;
 };
 
 export const PricingHeader = {

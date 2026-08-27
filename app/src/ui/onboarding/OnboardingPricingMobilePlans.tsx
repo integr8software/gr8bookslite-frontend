@@ -12,6 +12,7 @@ export function OnboardingPricingMobilePlans({
 	onReviewPlans,
 	onSelectPlan,
 }: OnboardingPricingMobilePlansProps) {
+	const isMonthlyBillingCycle = billingCycle === "monthly";
 	const visiblePlans = plans.filter(
 		(plan) => plan.name !== "Additional Company",
 	);
@@ -41,11 +42,11 @@ export function OnboardingPricingMobilePlans({
 				{visiblePlans.map((plan, planIndex) => {
 					const isHighlighted = plan.highlighted;
 					const price =
-						billingCycle === "monthly"
+						isMonthlyBillingCycle
 							? plan.monthlyPrice
 							: plan.yearlyPrice;
 					const compareAtPrice =
-						billingCycle === "monthly"
+						isMonthlyBillingCycle
 							? plan.monthlyCompareAtPrice
 							: plan.yearlyCompareAtPrice;
 					const billingLabel = plan.billingLabel[billingCycle];
@@ -86,24 +87,52 @@ export function OnboardingPricingMobilePlans({
 									</p>
 								) : null}
 								<div className="mt-4">
-									{compareAtPrice ? (
-										<p className="text-sm text-darknavy/35 line-through">
-											{compareAtPrice}
-										</p>
-									) : null}
-									<div className="mt-1 flex items-end justify-center gap-1 whitespace-nowrap">
-										<p className="text-4xl font-semibold tracking-tight text-darknavy">
-											{price}
-										</p>
-										<span className="pb-1 text-sm font-medium text-darknavy/65">
-											{billingCycle === "monthly"
-												? "/month"
-												: "/year"}
-										</span>
-									</div>
-									<p className="mt-1 text-sm text-darknavy/60">
-										{billingLabel}
-									</p>
+									{plan.trialDays && plan.trialDays > 0 ? (
+										<>
+											<p className="text-sm font-medium text-emerald-600">
+												{plan.trialPrice && plan.trialPrice !== "₱0.00"
+													? `${plan.trialPrice} for ${plan.trialDays} days`
+													: `Free for ${plan.trialDays} days`}
+											</p>
+											<div className="mt-1 flex items-end justify-center gap-1 whitespace-nowrap">
+												<p className="text-4xl font-semibold tracking-tight text-darknavy">
+													{plan.trialPrice ?? "₱0.00"}
+												</p>
+												<span className="pb-1 text-sm font-medium text-darknavy/65">
+													{isMonthlyBillingCycle
+														? "/month"
+														: "/year"}
+												</span>
+											</div>
+											<p className="mt-1 text-sm text-darknavy/60">
+												then {price}
+												{isMonthlyBillingCycle
+													? "/month"
+													: "/year"}
+											</p>
+										</>
+									) : (
+										<>
+											{compareAtPrice ? (
+												<p className="text-sm text-darknavy/35 line-through">
+													{compareAtPrice}
+												</p>
+											) : null}
+											<div className="mt-1 flex items-end justify-center gap-1 whitespace-nowrap">
+												<p className="text-4xl font-semibold tracking-tight text-darknavy">
+													{price}
+												</p>
+												<span className="pb-1 text-sm font-medium text-darknavy/65">
+													{isMonthlyBillingCycle
+														? "/month"
+														: "/year"}
+												</span>
+											</div>
+											<p className="mt-1 text-sm text-darknavy/60">
+												{billingLabel}
+											</p>
+										</>
+									)}
 								</div>
 							</div>
 

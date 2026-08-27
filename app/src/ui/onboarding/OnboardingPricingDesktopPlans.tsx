@@ -12,6 +12,7 @@ export function OnboardingPricingDesktopPlans({
 	onReviewPlans,
 	onSelectPlan,
 }: OnboardingPricingDesktopPlansProps) {
+	const isMonthlyBillingCycle = billingCycle === "monthly";
 	const visiblePlans = plans.filter(
 		(plan) => plan.name !== "Additional Company",
 	);
@@ -51,11 +52,11 @@ export function OnboardingPricingDesktopPlans({
 					{visiblePlans.map((plan) => {
 						const isHighlighted = plan.highlighted;
 						const price =
-							billingCycle === "monthly"
+							isMonthlyBillingCycle
 								? plan.monthlyPrice
 								: plan.yearlyPrice;
 						const compareAtPrice =
-							billingCycle === "monthly"
+							isMonthlyBillingCycle
 								? plan.monthlyCompareAtPrice
 								: plan.yearlyCompareAtPrice;
 						const billingLabel = plan.billingLabel[billingCycle];
@@ -102,28 +103,62 @@ export function OnboardingPricingDesktopPlans({
 
 								{/* 3. Price Section - Level & aligned */}
 								<div className="mt-3 flex flex-col justify-end">
-									<div className="flex h-4 items-center justify-center">
-										{compareAtPrice ? (
-											<p className="text-xs text-darknavy/35 line-through">
-												{compareAtPrice}
-											</p>
-										) : null}
-									</div>
-									<div className="flex h-9 items-baseline justify-center gap-1 whitespace-nowrap">
-										<p className="text-2xl font-semibold tracking-tight text-darknavy">
-											{price}
-										</p>
-										<span className="pb-0.5 text-xs font-medium text-darknavy/55">
-											{billingCycle === "monthly"
-												? "/month"
-												: "/year"}
-										</span>
-									</div>
-									<div className="flex h-5 items-center justify-center">
-										<p className="text-xs text-darknavy/50">
-											{billingLabel}
-										</p>
-									</div>
+									{plan.trialDays && plan.trialDays > 0 ? (
+										<>
+											{/* Trial: show trial price with after-trial notice */}
+											<div className="flex h-4 items-center justify-center">
+												<p className="text-xs font-medium text-emerald-600">
+													{plan.trialPrice && plan.trialPrice !== "₱0.00"
+														? `${plan.trialPrice} for ${plan.trialDays} days`
+														: `Free for ${plan.trialDays} days`}
+												</p>
+											</div>
+											<div className="flex h-9 items-baseline justify-center gap-1 whitespace-nowrap">
+												<p className="text-2xl font-semibold tracking-tight text-darknavy">
+													{plan.trialPrice ?? "₱0.00"}
+												</p>
+												<span className="pb-0.5 text-xs font-medium text-darknavy/55">
+													{isMonthlyBillingCycle
+														? "/month"
+														: "/year"}
+												</span>
+											</div>
+											<div className="flex h-5 items-center justify-center">
+												<p className="text-xs text-darknavy/50">
+													then {price}
+													{isMonthlyBillingCycle
+														? "/month"
+														: "/year"}
+												</p>
+											</div>
+										</>
+									) : (
+										<>
+											{/* Regular: show compareAt strikethrough + real price */}
+											<div className="flex h-4 items-center justify-center">
+												{compareAtPrice ? (
+													<p className="text-xs text-darknavy/35 line-through">
+														{compareAtPrice}
+													</p>
+												) : null}
+											</div>
+											<div className="flex h-9 items-baseline justify-center gap-1 whitespace-nowrap">
+												<p className="text-2xl font-semibold tracking-tight text-darknavy">
+													{price}
+												</p>
+												<span className="pb-0.5 text-xs font-medium text-darknavy/55">
+													{isMonthlyBillingCycle
+														? "/month"
+														: "/year"}
+												</span>
+											</div>
+											<div className="flex h-5 items-center justify-center">
+												<p className="text-xs text-darknavy/50">
+													{billingLabel}
+												</p>
+											</div>
+										</>
+									)}
 								</div>
 
 								{/* 4. Badge Section - Fixed height container */}

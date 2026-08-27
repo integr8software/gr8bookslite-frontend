@@ -49,6 +49,7 @@ export type MasterPlanAndPackageRecord = {
 	scope: MasterPlanAndPackageScope;
 	status: MasterPlanAndPackageStatus;
 	trialDays: number;
+	trialPrice: number;
 };
 
 export type MasterPlanAndPackageFormValues = {
@@ -59,6 +60,7 @@ export type MasterPlanAndPackageFormValues = {
 	branchAddOnPrice?: number;
 	branchIncludedFree?: number;
 	branchReductionTiers?: MasterPlanAndPackageReductionTier[];
+	hasTrial?: boolean;
 	monthlyBasePrice: number;
 	monthlyPercentOff: number;
 	name: string;
@@ -66,6 +68,7 @@ export type MasterPlanAndPackageFormValues = {
 	scopes: MasterPlanAndPackageScope[];
 	status: MasterPlanAndPackageStatus;
 	trialDays: number;
+	trialPrice: number;
 	userAddOnPrice?: number;
 	userIncludedFree?: number;
 	userReductionTiers?: MasterPlanAndPackageReductionTier[];
@@ -190,6 +193,7 @@ export type MasterPlanAndPackageApiRecord = {
 	scope: MasterPlanAndPackageApiScope;
 	status: MasterPlanAndPackageApiStatus;
 	trialDays: number;
+	trialPriceInCents?: number;
 	updatedAt: string;
 	usageRules: MasterPlanAndPackageApiUsageRule[];
 };

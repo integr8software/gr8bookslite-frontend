@@ -54,13 +54,9 @@ export function mapMasterPlanAndPackageRecord(
 		id: String(plan.id),
 		name: plan.name,
 		pricing: {
-			monthlyBasePrice: centsToAmount(
-				monthlyPrice?.compareAtInCents ?? monthlyPrice?.priceInCents ?? 0,
-			),
+			monthlyBasePrice: centsToAmount(monthlyPrice?.priceInCents ?? 0),
 			monthlyPercentOff: calculatePercentOff(monthlyPrice),
-			yearlyBasePrice: centsToAmount(
-				yearlyPrice?.compareAtInCents ?? yearlyPrice?.priceInCents ?? 0,
-			),
+			yearlyBasePrice: centsToAmount(yearlyPrice?.priceInCents ?? 0),
 			yearlyPercentOff: calculatePercentOff(yearlyPrice),
 		},
 		scalePricing: {
@@ -70,6 +66,7 @@ export function mapMasterPlanAndPackageRecord(
 		scope: plan.scope,
 		status: StatusByApiStatus[plan.status],
 		trialDays: plan.trialDays,
+		trialPrice: centsToAmount(plan.trialPriceInCents ?? 0),
 	};
 }
 
@@ -92,6 +89,10 @@ export function mapCreateMasterPlanAndPackageDto(
 			: values.scope === MasterPlanAndPackageScopes.ALL
 			? MasterPlanAndPackageScopes.ONBOARDING
 			: values.scope ?? MasterPlanAndPackageScopes.ONBOARDING;
+
+	const isTrial = Boolean(values.hasTrial || values.trialDays > 0);
+	const trialDays = isTrial ? values.trialDays : 0;
+	const trialPriceInCents = isTrial ? amountToCents(values.trialPrice ?? 0) : 0;
 
 	return {
 		code,
@@ -126,7 +127,8 @@ export function mapCreateMasterPlanAndPackageDto(
 		],
 		scope: scope as CreateMasterPlanAndPackageDto["scope"],
 		status: ApiStatusByStatus[values.status] as CreateMasterPlanAndPackageDto["status"],
-		trialDays: values.trialDays,
+		trialDays,
+		trialPriceInCents,
 		usageRules: [
 			...(values.branchIncludedFree !== undefined || values.branchAddOnPrice !== undefined
 				? [
@@ -180,12 +182,16 @@ function createPrice({
 	intervalUnit: "MONTH" | "YEAR";
 	percentOff: number;
 }): MasterPlanAndPackageApiPrice {
-	const compareAtInCents = amountToCents(basePrice);
-	const priceInCents = amountToCents(basePrice * (1 - percentOff / 100));
+	const compareAtInCents =
+		percentOff > 0 ? amountToCents(basePrice) : null;
+	const priceInCents =
+		percentOff > 0
+			? amountToCents(basePrice * (1 - percentOff / 100))
+			: amountToCents(basePrice);
 
 	return {
 		billingCycle,
-		compareAtInCents: percentOff > 0 ? compareAtInCents : null,
+		compareAtInCents,
 		intervalCount: 1,
 		intervalUnit,
 		priceInCents,

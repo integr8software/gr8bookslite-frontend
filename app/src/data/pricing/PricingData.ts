@@ -1,27 +1,7 @@
-export type BillingCycle = "monthly" | "yearly";
-
-export type PricingFeature = {
-	label: string;
-};
-
-export type PricingPlan = {
-	code: string;
-	name: string;
-	description?: string;
-	monthlyPrice: string;
-	yearlyPrice: string;
-	monthlyCompareAtPrice?: string;
-	yearlyCompareAtPrice?: string;
-	billingLabel: {
-		monthly: string;
-		yearly: string;
-		numberOfUsers?: string;
-	};
-	ctaLabel: string;
-	ctaHref: string;
-	features: PricingFeature[];
-	highlighted?: boolean;
-};
+import type {
+	BillingCycle,
+	PricingPlan,
+} from "@/app/src/types/pricing/PricingTypes";
 
 export const PricingPlans: PricingPlan[] = [
 	{
@@ -29,7 +9,7 @@ export const PricingPlans: PricingPlan[] = [
 		name: "Accounting",
 		description: "Essential bookkeeping and financial tools for growing teams.",
 		monthlyPrice: "PHP 399.00",
-		yearlyPrice: "PHP 3,990.00",
+		yearlyPrice: "PHP 3,999.00",
 		monthlyCompareAtPrice: "PHP 499.00",
 		yearlyCompareAtPrice: "PHP 4,788.00",
 		billingLabel: {
@@ -51,7 +31,7 @@ export const PricingPlans: PricingPlan[] = [
 		name: "Accounting & Inventory",
 		description: "Keep your books and stock movement in one connected workspace.",
 		monthlyPrice: "PHP 499.00",
-		yearlyPrice: "PHP 4,990.00",
+		yearlyPrice: "PHP 4,999.00",
 		monthlyCompareAtPrice: "PHP 599.00",
 		yearlyCompareAtPrice: "PHP 5,988.00",
 		billingLabel: {
@@ -109,4 +89,3 @@ export const BillingOptions: { label: string; value: BillingCycle }[] = [
     value: "yearly",
   },
 ];
-

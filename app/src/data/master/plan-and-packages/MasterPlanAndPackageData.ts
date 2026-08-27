@@ -52,6 +52,7 @@ export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 		scope: "ONBOARDING",
 		status: "Active",
 		trialDays: 14,
+		trialPrice: 0,
 	},
 	{
 		code: "INV-OPS",
@@ -89,6 +90,7 @@ export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 		scope: "ONBOARDING",
 		status: "Active",
 		trialDays: 14,
+		trialPrice: 0,
 	},
 	{
 		code: "FULL-SUITE",
@@ -127,6 +129,7 @@ export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 		scope: "ONBOARDING",
 		status: "Draft",
 		trialDays: 30,
+		trialPrice: 0,
 	},
 	{
 		code: "TRANS-LITE",
@@ -160,7 +163,8 @@ export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 		},
 		scope: "ADDITIONAL_COMPANY",
 		status: "Inactive",
-		trialDays: 7,
+		trialDays: 0,
+		trialPrice: 0,
 	},
 	{
 		code: "LAUNCH-UPGRADE",
@@ -200,7 +204,8 @@ export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 		},
 		scope: "ADDITIONAL_COMPANY",
 		status: "Active",
-		trialDays: 30,
+		trialDays: 0,
+		trialPrice: 0,
 	},
 ];
 
@@ -212,6 +217,7 @@ export const InitialMasterPlanAndPackageFormValues: MasterPlanAndPackageFormValu
 		branchAddOnPrice: 0,
 		branchIncludedFree: 1,
 		branchReductionTiers: createEmptyReductionTiers(),
+		hasTrial: false,
 		monthlyBasePrice: 0,
 		monthlyPercentOff: 0,
 		name: "",
@@ -219,6 +225,7 @@ export const InitialMasterPlanAndPackageFormValues: MasterPlanAndPackageFormValu
 		scopes: ["ALL"],
 		status: "Active",
 		trialDays: 0,
+		trialPrice: 0,
 		userAddOnPrice: 0,
 		userIncludedFree: 1,
 		userReductionTiers: createEmptyReductionTiers(),
@@ -242,11 +249,14 @@ export function createMasterPlanAndPackageFormValues(
 		...scaleValues,
 		description: record.description,
 		featureIds: [...record.featureIds],
+		hasTrial: record.trialDays > 0,
 		id: record.id,
 		name: record.name,
 		scope: record.scope,
 		scopes: record.scope === "ALL" ? ["ALL"] : [record.scope],
 		status: record.status,
+		trialDays: record.trialDays,
+		trialPrice: record.trialPrice ?? 0,
 	};
 }
 
@@ -268,7 +278,8 @@ export function createMasterPlanAndPackageRecord(
 		scalePricing: createScalePricingFromFormValues(values),
 		scope: values.scope,
 		status: values.status,
-		trialDays: values.trialDays,
+		trialDays: values.hasTrial || values.trialDays > 0 ? values.trialDays : 0,
+		trialPrice: values.hasTrial || values.trialDays > 0 ? values.trialPrice : 0,
 	};
 }
 

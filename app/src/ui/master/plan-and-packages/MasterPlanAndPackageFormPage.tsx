@@ -126,7 +126,7 @@ function MasterPlanAndPackageForm({
     <div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
       <div className="grid gap-5 p-5">
         <div className="grid content-start gap-4">
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1.3fr)_minmax(14rem,1fr)_minmax(8rem,0.55fr)_minmax(10rem,0.55fr)]">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1.8fr)_minmax(14rem,1.2fr)_minmax(10rem,0.8fr)]">
             <TextField
               error={errors.name}
               label="Plan name"
@@ -145,12 +145,6 @@ function MasterPlanAndPackageForm({
               onChange={(scopes, primaryScope) =>
                 onUpdate({ scopes, scope: primaryScope })
               }
-            />
-            <NumberField
-              error={errors.trialDays}
-              label="Trial days"
-              value={values.trialDays}
-              onChange={(trialDays) => onUpdate({ trialDays })}
             />
             <SelectField
               label="Status"
@@ -183,11 +177,10 @@ function MasterPlanAndPackageForm({
               </span>
               <div>
                 <h2 className="text-base font-semibold text-darknavy">
-                  Prices
+                  Pricing & Subscription Model
                 </h2>
                 <p className="mt-1 text-sm font-medium text-darknavy/55">
-                  Billing intervals are stored separately from shared usage
-                  rules.
+                  Configure trial availability, billing intervals, and subscription rates.
                 </p>
               </div>
             </div>
@@ -198,6 +191,70 @@ function MasterPlanAndPackageForm({
               <span className="px-3 py-2">Yearly</span>
             </div>
           </div>
+
+          {/* Trial Configuration Card */}
+          <div className="rounded-xl border border-darknavy/10 bg-white p-4.5 shadow-sm">
+            <label className="flex cursor-pointer items-start gap-3 select-none">
+              <input
+                type="checkbox"
+                checked={Boolean(values.hasTrial || values.trialDays > 0)}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    onUpdate({
+                      hasTrial: true,
+                      trialDays: values.trialDays > 0 ? values.trialDays : 15,
+                      trialPrice: values.trialPrice ?? 0,
+                    });
+                  } else {
+                    onUpdate({
+                      hasTrial: false,
+                      trialDays: 0,
+                      trialPrice: 0,
+                    });
+                  }
+                }}
+                className="mt-0.5 h-4.5 w-4.5 rounded border-darknavy/20 text-skyblue focus:ring-skyblue/25"
+              />
+              <div className="grid gap-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-darknavy">
+                    Allow trial for this package
+                  </span>
+                  {values.hasTrial || values.trialDays > 0 ? (
+                    <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700">
+                      Trial Enabled
+                    </span>
+                  ) : null}
+                </div>
+                <p className="text-xs text-darknavy/55">
+                  Set how many days the trial lasts and the price charged during the trial period.
+                </p>
+              </div>
+            </label>
+
+            {values.hasTrial || values.trialDays > 0 ? (
+              <div className="mt-4 border-t border-darknavy/10 pt-4">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <NumberField
+                    error={errors.trialDays}
+                    hint="Duration of the trial period"
+                    label="Trial days"
+                    value={values.trialDays}
+                    onChange={(trialDays) => onUpdate({ trialDays })}
+                  />
+                  <NumberField
+                    error={errors.trialPrice}
+                    hint="Price during trial (₱0.00 for free trial)"
+                    label="Trial price (PHP)"
+                    value={values.trialPrice ?? 0}
+                    onChange={(trialPrice) => onUpdate({ trialPrice })}
+                  />
+                </div>
+              </div>
+            ) : null}
+          </div>
+
+          {/* Actual Prices Section */}
           <div className="grid gap-4 xl:grid-cols-2">
             <BillingPeriodColumn
               basePrice={{
@@ -278,21 +335,31 @@ function BillingPeriodColumn({
       )}
     >
       <div className="flex items-center justify-between gap-3">
-        <h3 className="text-base font-bold text-darknavy">{periodLabel}</h3>
+        <div>
+          <h3 className="text-base font-bold text-darknavy">
+            {periodLabel}
+          </h3>
+          <p className="mt-0.5 text-xs text-darknavy/45">
+            Set the actual price and discount percent for {periodLabel.toLowerCase()} billing.
+          </p>
+        </div>
         <span className="rounded-md bg-offwhite px-2.5 py-1 text-xs font-bold uppercase text-darknavy/52">
           {intervalBadge}
         </span>
       </div>
+
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
         <NumberField
           error={basePrice.error}
-          label={`Base price ${intervalBadge.toLowerCase()}`}
+          hint="Regular subscription charge"
+          label={`Actual price ${intervalBadge.toLowerCase()}`}
           value={basePrice.value}
           onChange={basePrice.onChange}
         />
         <NumberField
           error={percentOff.error}
-          label="Percent off"
+          hint="Optional discount percentage"
+          label="Percent off (%)"
           value={percentOff.value}
           onChange={percentOff.onChange}
         />
@@ -591,12 +658,16 @@ function TextField({
 }
 
 function NumberField({
+  disabled,
   error,
+  hint,
   label,
   value,
   onChange,
 }: {
+  disabled?: boolean;
   error?: string;
+  hint?: string;
   label: string;
   value: number;
   onChange: (value: number) => void;
@@ -605,6 +676,7 @@ function NumberField({
   const [isFocused, setIsFocused] = useState(false);
 
   function handleChange(nextValue: string) {
+    if (disabled) return;
     setDraftValue(nextValue);
 
     if (nextValue.trim() === "") {
@@ -626,17 +698,24 @@ function NumberField({
   return (
     <label className={FieldLabelClassName}>
       {label}
+      {hint ? <span className="block text-xs font-normal text-darknavy/45">{hint}</span> : null}
       <input
         type="number"
         min={0}
-        value={isFocused ? draftValue : String(value)}
+        disabled={disabled}
+        value={disabled ? String(value) : isFocused ? draftValue : String(value)}
         onBlur={handleBlur}
         onChange={(event) => handleChange(event.target.value)}
         onFocus={() => {
-          setIsFocused(true);
-          setDraftValue(String(value));
+          if (!disabled) {
+            setIsFocused(true);
+            setDraftValue(String(value));
+          }
         }}
-        className={ControlClassName}
+        className={joinClasses(
+          ControlClassName,
+          disabled ? "cursor-not-allowed bg-offwhite/80 opacity-70" : "",
+        )}
       />
       <FieldError message={error} />
     </label>

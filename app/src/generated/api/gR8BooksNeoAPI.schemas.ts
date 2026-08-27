@@ -677,6 +677,10 @@ export interface CreateMasterPlanAndPackageDto {
    * @maximum 365
    */
   trialDays: number;
+  /**
+   * @minimum 0
+   */
+  trialPriceInCents?: number;
   /** @minItems 1 */
   prices: MasterPlanPriceDto[];
   usageRules: MasterPlanUsageRuleDto[];

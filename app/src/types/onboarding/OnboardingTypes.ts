@@ -2,7 +2,7 @@ import {
   GetCalendarYearReportDates,
   OnboardingReportYearBasisOptions,
 } from "@/app/src/data/onboarding/OnboardingData";
-import type { BillingCycle, PricingPlan } from "@/app/src/data/pricing/PricingData";
+import type { BillingCycle, PricingPlan } from "@/app/src/types/pricing/PricingTypes";
 import type { BillingMode } from "@/app/src/data/billing/BillingTypes";
 
 export type OnboardingTaxpayerType = "individual" | "non-individual";

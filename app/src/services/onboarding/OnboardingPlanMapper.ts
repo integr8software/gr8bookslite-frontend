@@ -75,6 +75,7 @@ export function MapOnboardingPlanToPricingPlan(
   return {
     code: plan.code,
     name: plan.name,
+    description: plan.description ?? undefined,
     monthlyPrice: plan.pricing.monthly.display,
     yearlyPrice: plan.pricing.yearly.display,
     monthlyCompareAtPrice: plan.pricing.monthlyCompareAt?.display,

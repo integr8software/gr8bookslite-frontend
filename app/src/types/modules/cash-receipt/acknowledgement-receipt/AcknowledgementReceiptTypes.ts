@@ -29,6 +29,9 @@ export type AcknowledgementReceiptLineEntry = {
   collectionType: string;
   customerName: string;
   partyCode: string;
+  bankName: string;
+  checkNo: string;
+  checkDate: string;
   grossReceipt: string;
   vatExempt: string;
   vat: string;
@@ -45,6 +48,9 @@ export type AcknowledgementReceiptFormValues = {
   customerName: string;
   partyCode: string;
   paymentType: string;
+  bankName: string;
+  checkNo: string;
+  checkDate: string;
   currency: string;
   exchangeRate: string;
   status: string;
@@ -66,6 +72,9 @@ export type AcknowledgementReceiptCopyFromRecord = AppCopyFromRecord & {
   customerName?: string;
   partyCode?: string;
   paymentType?: string;
+  bankName?: string;
+  checkNo?: string;
+  checkDate?: string;
   currency?: string;
   exchangeRate?: string;
   collectionType?: string;

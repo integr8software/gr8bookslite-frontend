@@ -8,7 +8,10 @@ import {
 	type ColumnDef,
 	type PaginationState,
 } from "@tanstack/react-table";
-import { MasterInvoiceTableColumns } from "@/app/src/constants/master/invoices/MasterInvoiceConstants";
+import {
+	MasterInvoiceAllFilterValue,
+	MasterInvoiceTableColumns,
+} from "@/app/src/constants/master/invoices/MasterInvoiceConstants";
 import {
 	getMasterSubscriptionCompanyById,
 	getMasterSubscriptionPlanById,
@@ -20,14 +23,11 @@ import {
 	getMasterInvoicesBySubscriberId,
 } from "@/app/src/data/master/invoices/MasterInvoiceData";
 import type {
-	MasterInvoicePaymentMethod,
 	MasterInvoicePaymentMethodFilter,
 	MasterInvoiceRecord,
-	MasterInvoiceStatus,
 	MasterInvoiceStatusFilter,
 	MasterInvoiceSubscriberTab,
 	MasterInvoiceTableColumnKey,
-	MasterInvoiceTransactionType,
 	MasterInvoiceTransactionTypeFilter,
 } from "@/app/src/types/master/invoices/MasterInvoiceTypes";
 
@@ -61,11 +61,11 @@ export function useMasterInvoiceSubscriberPage(subscriberId: string) {
 	const [activeTab, setActiveTab] = useState<MasterInvoiceSubscriberTab>("overview");
 	const [query, setQuery] = useState("");
 	const [statusFilter, setStatusFilter] =
-		useState<MasterInvoiceStatusFilter>("All");
+		useState<MasterInvoiceStatusFilter>(MasterInvoiceAllFilterValue);
 	const [paymentMethodFilter, setPaymentMethodFilter] =
-		useState<MasterInvoicePaymentMethodFilter>("All");
+		useState<MasterInvoicePaymentMethodFilter>(MasterInvoiceAllFilterValue);
 	const [transactionTypeFilter, setTransactionTypeFilter] =
-		useState<MasterInvoiceTransactionTypeFilter>("All");
+		useState<MasterInvoiceTransactionTypeFilter>(MasterInvoiceAllFilterValue);
 	const [pagination, setPagination] =
 		useState<PaginationState>(InitialPagination);
 
@@ -74,12 +74,12 @@ export function useMasterInvoiceSubscriberPage(subscriberId: string) {
 
 		return rawInvoices.filter((record) => {
 			const matchesStatus =
-				statusFilter === "All" || record.status === statusFilter;
+				statusFilter === MasterInvoiceAllFilterValue || record.status === statusFilter;
 			const matchesPaymentMethod =
-				paymentMethodFilter === "All" ||
+				paymentMethodFilter === MasterInvoiceAllFilterValue ||
 				record.paymentMethod === paymentMethodFilter;
 			const matchesTransactionType =
-				transactionTypeFilter === "All" ||
+				transactionTypeFilter === MasterInvoiceAllFilterValue ||
 				record.transactionType === transactionTypeFilter;
 			const matchesQuery =
 				!normalizedQuery ||
@@ -132,9 +132,9 @@ export function useMasterInvoiceSubscriberPage(subscriberId: string) {
 
 	function resetFilters() {
 		setQuery("");
-		setStatusFilter("All");
-		setPaymentMethodFilter("All");
-		setTransactionTypeFilter("All");
+		setStatusFilter(MasterInvoiceAllFilterValue);
+		setPaymentMethodFilter(MasterInvoiceAllFilterValue);
+		setTransactionTypeFilter(MasterInvoiceAllFilterValue);
 		setPagination((current) => ({ ...current, pageIndex: 0 }));
 	}
 

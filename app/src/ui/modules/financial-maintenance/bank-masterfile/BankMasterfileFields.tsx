@@ -15,6 +15,7 @@ import type {
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
 import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/utils/status.util";
+import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
 
 export function BankMasterfileFields({
   accountCode,
@@ -186,7 +187,7 @@ function FormField({ children, className, error, helper, label, required }: Bank
     <div className={className}>
       <label htmlFor={fieldId} className="mb-2 block text-sm font-semibold text-darknavy">
         {label}
-        {required ? <span className="text-coralpink"> *</span> : null}
+        <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired={required} label={label} leadingSpace />
       </label>
       {children}
       {error ? (

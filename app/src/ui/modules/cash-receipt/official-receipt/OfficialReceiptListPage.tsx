@@ -46,16 +46,16 @@ type OfficialReceiptListPageProps = OfficialReceiptModuleConfig & {
 };
 
 export function OfficialReceiptListPage({
+  api,
   baseHref = OfficialReceiptHref,
   description = "Search collection sources, preview linked official receipts, and create or update receipt entries.",
-  fallbackReceipts,
   receiptLabel = "Official Receipt",
   startNewLabel,
   storageKey,
   tableTitle = "Receipt entries",
 }: OfficialReceiptListPageProps = {}) {
   const { lastSyncedAt, receipts, updateReceiptStatus } = useOfficialReceiptStore(undefined, {
-    fallbackReceipts,
+    api,
     receiptLabel: receiptLabel.toLowerCase(),
     storageKey,
   });
@@ -153,10 +153,9 @@ export function OfficialReceiptListPage({
 
 function OfficialReceiptMetrics({ records }: { records: OfficialReceiptRecord[] }) {
   const activeCount = records.filter((record) => isOfficialReceiptActiveStatus(record.status)).length;
-  const approvedCount = countOfficialReceiptsByStatus(records, "Approved");
+  const forApprovalCount = countOfficialReceiptsByStatus(records, "For Approval");
   const disapprovedCount = countOfficialReceiptsByStatus(records, "Disapproved");
-  const pendingCount = countOfficialReceiptsByStatus(records, "Pending");
-  const closedCount = countOfficialReceiptsByStatus(records, "Closed");
+  const postedCount = countOfficialReceiptsByStatus(records, "Posted");
 
   return (
     <ModuleStatisticCards
@@ -170,23 +169,23 @@ function OfficialReceiptMetrics({ records }: { records: OfficialReceiptRecord[] 
           iconClassName: "bg-skyblue/20 text-skyblue",
         },
         {
-          label: "Active",
+          label: "In Process",
           value: activeCount,
           summary: formatOfficialReceiptPercentage(activeCount, records.length),
           icon: CheckCircle2,
           iconClassName: "bg-emerald-50 text-emerald-700",
         },
         {
-          label: "Pending",
-          value: pendingCount,
-          summary: formatOfficialReceiptPercentage(pendingCount, records.length),
+          label: "For Approval",
+          value: forApprovalCount,
+          summary: formatOfficialReceiptPercentage(forApprovalCount, records.length),
           icon: Clock3,
           iconClassName: "bg-offwhite text-darknavy",
         },
         {
-          label: "Approved",
-          value: approvedCount,
-          summary: formatOfficialReceiptPercentage(approvedCount, records.length),
+          label: "Posted",
+          value: postedCount,
+          summary: formatOfficialReceiptPercentage(postedCount, records.length),
           icon: CheckCircle2,
           iconClassName: "bg-citron/25 text-darknavy",
         },
@@ -198,9 +197,9 @@ function OfficialReceiptMetrics({ records }: { records: OfficialReceiptRecord[] 
           iconClassName: "bg-coralpink/15 text-coralpink",
         },
         {
-          label: "Closed",
-          value: closedCount,
-          summary: formatOfficialReceiptPercentage(closedCount, records.length),
+          label: "Cancelled",
+          value: countOfficialReceiptsByStatus(records, "Cancelled"),
+          summary: formatOfficialReceiptPercentage(countOfficialReceiptsByStatus(records, "Cancelled"), records.length),
           icon: PackageCheck,
           iconClassName: "bg-skyblue/15 text-skyblue",
         },
@@ -226,21 +225,17 @@ function OfficialReceiptStatusBadge({ status }: { status: OfficialReceiptStatus 
 }
 
 const statusIconByStatus = {
-  Active: CheckCircle2,
-  Approved: CheckCircle2,
   Cancelled: Ban,
-  Closed: PackageCheck,
   Disapproved: XCircle,
   Draft: Clock3,
-  Pending: Clock3,
+  "For Approval": Clock3,
+  Posted: PackageCheck,
 } satisfies Record<OfficialReceiptStatus, typeof CheckCircle2>;
 
 const statusClassNameByStatus = {
-  Active: "bg-citron/25 text-darknavy",
-  Approved: "bg-citron/25 text-darknavy",
   Cancelled: "bg-darknavy/10 text-darknavy/70",
-  Closed: "bg-skyblue/20 text-darknavy",
   Disapproved: "bg-coralpink/15 text-coralpink",
   Draft: "bg-offwhite text-darknavy/70",
-  Pending: "bg-offwhite text-darknavy",
+  "For Approval": "bg-offwhite text-darknavy",
+  Posted: "bg-citron/25 text-darknavy",
 } satisfies Record<OfficialReceiptStatus, string>;

@@ -9,11 +9,12 @@ export type PaymentTypeClassification = DisbursementPaymentClassification;
 export type PaymentTypeStatusFilter = "" | PaymentTypeStatus;
 export type PaymentTypeClassificationFilter = "" | PaymentTypeClassification;
 export type PaymentTypeSortKey = "paymentType" | "sortOrder" | "type" | "status";
+export type PaymentTypeSortDirection = "asc" | "desc";
 
 export type PaymentTypeListParams = {
   search?: string;
   sortBy?: PaymentTypeSortKey;
-  sortDirection?: "asc" | "desc";
+  sortDirection?: PaymentTypeSortDirection;
   status?: "" | PaymentTypeStatus;
   type?: "" | PaymentTypeClassification;
 };

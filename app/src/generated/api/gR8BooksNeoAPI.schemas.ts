@@ -5854,3 +5854,590 @@ export const BillingStatementControllerFindOneV1SortDirection = {
   asc: 'asc',
   desc: 'desc',
 } as const;
+
+export interface OfficialReceiptDetailResponseDto {
+  id: string;
+  lineNumber: number;
+  description: string;
+  particulars: string | null;
+  quantity: number;
+  amount: number;
+  netAmount: number;
+  vatAmount: number;
+  wvatAmount: number;
+  ewtAmount: number;
+  discountPercent: number;
+  discountAmount: number;
+  grossAmount: number;
+  vatType: string | null;
+  vatable: boolean;
+  vatInclusive: boolean;
+  withWvat: boolean;
+  wvatType: string | null;
+  withEwt: boolean;
+  ewtType: string | null;
+  responsibilityCenterId: string | null;
+  responsibilityCenter: string | null;
+}
+
+export interface OfficialReceiptJournalEntryResponseDto {
+  id: string;
+  referenceType: string;
+  referenceId: string;
+  lineNumber: number;
+  accountId: string;
+  accountCode: string;
+  accountTitle: string;
+  currencyCode: string;
+  exchangeRate: number;
+  particulars: string | null;
+  debit: number;
+  credit: number;
+  vatType: string | null;
+  atcCode: string | null;
+  partyCode: string | null;
+  partyName: string | null;
+  responsibilityCenterId: string | null;
+  responsibilityCenter: string | null;
+  refNo: string | null;
+}
+
+export const OfficialReceiptResponseDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
+} as const;
+export type OfficialReceiptResponseDtoStatus = typeof OfficialReceiptResponseDtoStatus[keyof typeof OfficialReceiptResponseDtoStatus];
+
+export interface OfficialReceiptResponseDto {
+  id: string;
+  transactionNo: string;
+  documentDate: string;
+  dueDate: string;
+  receiptNo: string | null;
+  referenceNo: string | null;
+  partyId: string | null;
+  customerCode: string;
+  customerName: string;
+  billToName: string | null;
+  address: string | null;
+  contactPerson: string | null;
+  contactNo: string | null;
+  businessStyle: string | null;
+  projectCode: string | null;
+  projectName: string | null;
+  projectRef: string | null;
+  salesAssociate: string | null;
+  teamAssigned: string | null;
+  currency: string;
+  exchangeRate: number;
+  netAmount: number;
+  vatAmount: number;
+  wvatAmount: number;
+  ewtAmount: number;
+  discountAmount: number;
+  grossAmount: number;
+  termId: string | null;
+  terms: string | null;
+  receivableAccountId: string;
+  receivableAccountCode: string;
+  receivableAccountTitle: string;
+  remarks: string | null;
+  status: OfficialReceiptResponseDtoStatus;
+  details: OfficialReceiptDetailResponseDto[];
+  journalEntries: OfficialReceiptJournalEntryResponseDto[];
+  createdBy: string | null;
+  createdAt: string;
+  updatedBy: string | null;
+  updatedAt: string;
+}
+
+export interface OfficialReceiptStatisticsResponseDto {
+  cancelledReceipts: number;
+  disapprovedReceipts: number;
+  draftReceipts: number;
+  forApprovalReceipts: number;
+  postedReceipts: number;
+  totalReceipts: number;
+}
+
+export interface OfficialReceiptPaginationResponseDto {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface OfficialReceiptPermissionsResponseDto {
+  canApprove: boolean;
+  canCancel: boolean;
+  canCreate: boolean;
+  canDisapprove: boolean;
+  canExport: boolean;
+  canPost: boolean;
+  canUpdate: boolean;
+  canView: boolean;
+}
+
+export interface OfficialReceiptListResponseDto {
+  receipts: OfficialReceiptResponseDto[];
+  statistics: OfficialReceiptStatisticsResponseDto;
+  pagination: OfficialReceiptPaginationResponseDto;
+  permissions: OfficialReceiptPermissionsResponseDto;
+}
+
+export interface OfficialReceiptNumberSuggestionResponseDto {
+  branchUnitId: number;
+  inputMode: string;
+  transactionNo: string;
+}
+
+export interface OfficialReceiptContainerResponseDto {
+  receipt: OfficialReceiptResponseDto;
+  permissions: OfficialReceiptPermissionsResponseDto;
+}
+
+export interface OfficialReceiptDetailDto {
+  lineNumber: number;
+  description: string;
+  particulars?: string | null;
+  quantity: number;
+  amount: number;
+  netAmount: number;
+  vatAmount: number;
+  wvatAmount: number;
+  ewtAmount: number;
+  discountPercent: number;
+  discountAmount: number;
+  grossAmount: number;
+  vatType?: string | null;
+  vatable: boolean;
+  vatInclusive: boolean;
+  withWvat: boolean;
+  wvatType?: string | null;
+  withEwt: boolean;
+  ewtType?: string | null;
+  responsibilityCenterId?: string | null;
+  responsibilityCenter?: string | null;
+}
+
+export const OfficialReceiptJournalEntryDtoReferenceType = {
+  OR: 'OR',
+} as const;
+export type OfficialReceiptJournalEntryDtoReferenceType = typeof OfficialReceiptJournalEntryDtoReferenceType[keyof typeof OfficialReceiptJournalEntryDtoReferenceType];
+
+export interface OfficialReceiptJournalEntryDto {
+  referenceType?: OfficialReceiptJournalEntryDtoReferenceType;
+  lineNumber: number;
+  accountId?: string | null;
+  accountCode: string;
+  accountTitle: string;
+  currencyCode: string;
+  exchangeRate: number;
+  particulars?: string | null;
+  debit: number;
+  credit: number;
+  vatType?: string | null;
+  atcCode?: string | null;
+  partyCode?: string | null;
+  partyName?: string | null;
+  responsibilityCenterId?: string | null;
+  responsibilityCenter?: string | null;
+  refNo?: string | null;
+}
+
+export interface CreateOfficialReceiptDto {
+  branchUnitId?: number;
+  transactionNo?: string | null;
+  documentDate: string;
+  dueDate: string;
+  receiptNo?: string | null;
+  referenceNo?: string | null;
+  partyId?: string | null;
+  customerCode: string;
+  customerName: string;
+  billToName?: string | null;
+  address?: string | null;
+  contactPerson?: string | null;
+  contactNo?: string | null;
+  businessStyle?: string | null;
+  projectCode?: string | null;
+  projectName?: string | null;
+  projectRef?: string | null;
+  salesAssociate?: string | null;
+  teamAssigned?: string | null;
+  currency: string;
+  exchangeRate: number;
+  netAmount: number;
+  vatAmount: number;
+  wvatAmount: number;
+  ewtAmount: number;
+  discountAmount: number;
+  grossAmount: number;
+  termId?: string | null;
+  terms?: string | null;
+  receivableAccountId?: string | null;
+  receivableAccountCode: string;
+  receivableAccountTitle: string;
+  remarks?: string | null;
+  details: OfficialReceiptDetailDto[];
+  journalEntries: OfficialReceiptJournalEntryDto[];
+}
+
+export interface SaveOfficialReceiptResponseDto {
+  receipt: OfficialReceiptResponseDto;
+  permissions: OfficialReceiptPermissionsResponseDto;
+  message: string;
+}
+
+export type UpdateOfficialReceiptDto = Partial<CreateOfficialReceiptDto>;
+
+export const UpdateOfficialReceiptStatusDtoStatus = OfficialReceiptResponseDtoStatus;
+export type UpdateOfficialReceiptStatusDtoStatus = OfficialReceiptResponseDtoStatus;
+
+export interface UpdateOfficialReceiptStatusDto {
+  status: UpdateOfficialReceiptStatusDtoStatus;
+}
+
+export const OfficialReceiptControllerFindAllV1Status = OfficialReceiptResponseDtoStatus;
+export type OfficialReceiptControllerFindAllV1Status = OfficialReceiptResponseDtoStatus;
+export const OfficialReceiptControllerFindAllV1SortBy = {
+  transactionNo: 'transactionNo',
+  documentDate: 'documentDate',
+  customerName: 'customerName',
+  receiptNo: 'receiptNo',
+  referenceNo: 'referenceNo',
+  grossAmount: 'grossAmount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+export type OfficialReceiptControllerFindAllV1SortBy = typeof OfficialReceiptControllerFindAllV1SortBy[keyof typeof OfficialReceiptControllerFindAllV1SortBy];
+export const OfficialReceiptControllerFindAllV1SortDirection = { asc: 'asc', desc: 'desc' } as const;
+export type OfficialReceiptControllerFindAllV1SortDirection = typeof OfficialReceiptControllerFindAllV1SortDirection[keyof typeof OfficialReceiptControllerFindAllV1SortDirection];
+
+export type OfficialReceiptControllerFindAllV1Params = {
+  branchUnitId?: number;
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: OfficialReceiptControllerFindAllV1Status;
+  documentDateFrom?: string;
+  documentDateTo?: string;
+  amountFrom?: number;
+  amountTo?: number;
+  sortBy?: OfficialReceiptControllerFindAllV1SortBy;
+  sortDirection?: OfficialReceiptControllerFindAllV1SortDirection;
+};
+
+export const OfficialReceiptControllerSuggestTransactionNumberV1Status = OfficialReceiptControllerFindAllV1Status;
+export type OfficialReceiptControllerSuggestTransactionNumberV1Status = OfficialReceiptControllerFindAllV1Status;
+export const OfficialReceiptControllerSuggestTransactionNumberV1SortBy = OfficialReceiptControllerFindAllV1SortBy;
+export type OfficialReceiptControllerSuggestTransactionNumberV1SortBy = OfficialReceiptControllerFindAllV1SortBy;
+export const OfficialReceiptControllerSuggestTransactionNumberV1SortDirection = OfficialReceiptControllerFindAllV1SortDirection;
+export type OfficialReceiptControllerSuggestTransactionNumberV1SortDirection = OfficialReceiptControllerFindAllV1SortDirection;
+export type OfficialReceiptControllerSuggestTransactionNumberV1Params = OfficialReceiptControllerFindAllV1Params;
+
+export const OfficialReceiptControllerFindOneV1Status = OfficialReceiptControllerFindAllV1Status;
+export type OfficialReceiptControllerFindOneV1Status = OfficialReceiptControllerFindAllV1Status;
+export const OfficialReceiptControllerFindOneV1SortBy = OfficialReceiptControllerFindAllV1SortBy;
+export type OfficialReceiptControllerFindOneV1SortBy = OfficialReceiptControllerFindAllV1SortBy;
+export const OfficialReceiptControllerFindOneV1SortDirection = OfficialReceiptControllerFindAllV1SortDirection;
+export type OfficialReceiptControllerFindOneV1SortDirection = OfficialReceiptControllerFindAllV1SortDirection;
+export type OfficialReceiptControllerFindOneV1Params = OfficialReceiptControllerFindAllV1Params;
+
+export interface CollectionReceiptDetailResponseDto {
+  id: string;
+  lineNumber: number;
+  description: string;
+  particulars: string | null;
+  quantity: number;
+  amount: number;
+  netAmount: number;
+  vatAmount: number;
+  wvatAmount: number;
+  ewtAmount: number;
+  discountPercent: number;
+  discountAmount: number;
+  grossAmount: number;
+  vatType: string | null;
+  vatable: boolean;
+  vatInclusive: boolean;
+  withWvat: boolean;
+  wvatType: string | null;
+  withEwt: boolean;
+  ewtType: string | null;
+  responsibilityCenterId: string | null;
+  responsibilityCenter: string | null;
+}
+
+export interface CollectionReceiptJournalEntryResponseDto {
+  id: string;
+  referenceType: string;
+  referenceId: string;
+  lineNumber: number;
+  accountId: string;
+  accountCode: string;
+  accountTitle: string;
+  currencyCode: string;
+  exchangeRate: number;
+  particulars: string | null;
+  debit: number;
+  credit: number;
+  vatType: string | null;
+  atcCode: string | null;
+  partyCode: string | null;
+  partyName: string | null;
+  responsibilityCenterId: string | null;
+  responsibilityCenter: string | null;
+  refNo: string | null;
+}
+
+export const CollectionReceiptResponseDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
+} as const;
+export type CollectionReceiptResponseDtoStatus = typeof CollectionReceiptResponseDtoStatus[keyof typeof CollectionReceiptResponseDtoStatus];
+
+export interface CollectionReceiptResponseDto {
+  id: string;
+  transactionNo: string;
+  documentDate: string;
+  dueDate: string;
+  receiptNo: string | null;
+  referenceNo: string | null;
+  partyId: string | null;
+  customerCode: string;
+  customerName: string;
+  billToName: string | null;
+  address: string | null;
+  contactPerson: string | null;
+  contactNo: string | null;
+  businessStyle: string | null;
+  projectCode: string | null;
+  projectName: string | null;
+  projectRef: string | null;
+  salesAssociate: string | null;
+  teamAssigned: string | null;
+  currency: string;
+  exchangeRate: number;
+  netAmount: number;
+  vatAmount: number;
+  wvatAmount: number;
+  ewtAmount: number;
+  discountAmount: number;
+  grossAmount: number;
+  termId: string | null;
+  terms: string | null;
+  receivableAccountId: string;
+  receivableAccountCode: string;
+  receivableAccountTitle: string;
+  remarks: string | null;
+  status: CollectionReceiptResponseDtoStatus;
+  details: CollectionReceiptDetailResponseDto[];
+  journalEntries: CollectionReceiptJournalEntryResponseDto[];
+  createdBy: string | null;
+  createdAt: string;
+  updatedBy: string | null;
+  updatedAt: string;
+}
+
+export interface CollectionReceiptStatisticsResponseDto {
+  cancelledReceipts: number;
+  disapprovedReceipts: number;
+  draftReceipts: number;
+  forApprovalReceipts: number;
+  postedReceipts: number;
+  totalReceipts: number;
+}
+
+export interface CollectionReceiptPaginationResponseDto {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface CollectionReceiptPermissionsResponseDto {
+  canApprove: boolean;
+  canCancel: boolean;
+  canCreate: boolean;
+  canDisapprove: boolean;
+  canExport: boolean;
+  canPost: boolean;
+  canUpdate: boolean;
+  canView: boolean;
+}
+
+export interface CollectionReceiptListResponseDto {
+  receipts: CollectionReceiptResponseDto[];
+  statistics: CollectionReceiptStatisticsResponseDto;
+  pagination: CollectionReceiptPaginationResponseDto;
+  permissions: CollectionReceiptPermissionsResponseDto;
+}
+
+export interface CollectionReceiptNumberSuggestionResponseDto {
+  branchUnitId: number;
+  inputMode: string;
+  transactionNo: string;
+}
+
+export interface CollectionReceiptContainerResponseDto {
+  receipt: CollectionReceiptResponseDto;
+  permissions: CollectionReceiptPermissionsResponseDto;
+}
+
+export interface CollectionReceiptDetailDto {
+  lineNumber: number;
+  description: string;
+  particulars?: string | null;
+  quantity: number;
+  amount: number;
+  netAmount: number;
+  vatAmount: number;
+  wvatAmount: number;
+  ewtAmount: number;
+  discountPercent: number;
+  discountAmount: number;
+  grossAmount: number;
+  vatType?: string | null;
+  vatable: boolean;
+  vatInclusive: boolean;
+  withWvat: boolean;
+  wvatType?: string | null;
+  withEwt: boolean;
+  ewtType?: string | null;
+  responsibilityCenterId?: string | null;
+  responsibilityCenter?: string | null;
+}
+
+export const CollectionReceiptJournalEntryDtoReferenceType = {
+  CR: 'CR',
+} as const;
+export type CollectionReceiptJournalEntryDtoReferenceType = typeof CollectionReceiptJournalEntryDtoReferenceType[keyof typeof CollectionReceiptJournalEntryDtoReferenceType];
+
+export interface CollectionReceiptJournalEntryDto {
+  referenceType?: CollectionReceiptJournalEntryDtoReferenceType;
+  lineNumber: number;
+  accountId?: string | null;
+  accountCode: string;
+  accountTitle: string;
+  currencyCode: string;
+  exchangeRate: number;
+  particulars?: string | null;
+  debit: number;
+  credit: number;
+  vatType?: string | null;
+  atcCode?: string | null;
+  partyCode?: string | null;
+  partyName?: string | null;
+  responsibilityCenterId?: string | null;
+  responsibilityCenter?: string | null;
+  refNo?: string | null;
+}
+
+export interface CreateCollectionReceiptDto {
+  branchUnitId?: number;
+  transactionNo?: string | null;
+  documentDate: string;
+  dueDate: string;
+  receiptNo?: string | null;
+  referenceNo?: string | null;
+  partyId?: string | null;
+  customerCode: string;
+  customerName: string;
+  billToName?: string | null;
+  address?: string | null;
+  contactPerson?: string | null;
+  contactNo?: string | null;
+  businessStyle?: string | null;
+  projectCode?: string | null;
+  projectName?: string | null;
+  projectRef?: string | null;
+  salesAssociate?: string | null;
+  teamAssigned?: string | null;
+  currency: string;
+  exchangeRate: number;
+  netAmount: number;
+  vatAmount: number;
+  wvatAmount: number;
+  ewtAmount: number;
+  discountAmount: number;
+  grossAmount: number;
+  termId?: string | null;
+  terms?: string | null;
+  receivableAccountId?: string | null;
+  receivableAccountCode: string;
+  receivableAccountTitle: string;
+  remarks?: string | null;
+  details: CollectionReceiptDetailDto[];
+  journalEntries: CollectionReceiptJournalEntryDto[];
+}
+
+export interface SaveCollectionReceiptResponseDto {
+  receipt: CollectionReceiptResponseDto;
+  permissions: CollectionReceiptPermissionsResponseDto;
+  message: string;
+}
+
+export type UpdateCollectionReceiptDto = Partial<CreateCollectionReceiptDto>;
+
+export const UpdateCollectionReceiptStatusDtoStatus = CollectionReceiptResponseDtoStatus;
+export type UpdateCollectionReceiptStatusDtoStatus = CollectionReceiptResponseDtoStatus;
+
+export interface UpdateCollectionReceiptStatusDto {
+  status: UpdateCollectionReceiptStatusDtoStatus;
+}
+
+export const CollectionReceiptControllerFindAllV1Status = CollectionReceiptResponseDtoStatus;
+export type CollectionReceiptControllerFindAllV1Status = CollectionReceiptResponseDtoStatus;
+export const CollectionReceiptControllerFindAllV1SortBy = {
+  transactionNo: 'transactionNo',
+  documentDate: 'documentDate',
+  customerName: 'customerName',
+  receiptNo: 'receiptNo',
+  referenceNo: 'referenceNo',
+  grossAmount: 'grossAmount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+export type CollectionReceiptControllerFindAllV1SortBy = typeof CollectionReceiptControllerFindAllV1SortBy[keyof typeof CollectionReceiptControllerFindAllV1SortBy];
+export const CollectionReceiptControllerFindAllV1SortDirection = { asc: 'asc', desc: 'desc' } as const;
+export type CollectionReceiptControllerFindAllV1SortDirection = typeof CollectionReceiptControllerFindAllV1SortDirection[keyof typeof CollectionReceiptControllerFindAllV1SortDirection];
+
+export type CollectionReceiptControllerFindAllV1Params = {
+  branchUnitId?: number;
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: CollectionReceiptControllerFindAllV1Status;
+  documentDateFrom?: string;
+  documentDateTo?: string;
+  amountFrom?: number;
+  amountTo?: number;
+  sortBy?: CollectionReceiptControllerFindAllV1SortBy;
+  sortDirection?: CollectionReceiptControllerFindAllV1SortDirection;
+};
+
+export const CollectionReceiptControllerSuggestTransactionNumberV1Status = CollectionReceiptControllerFindAllV1Status;
+export type CollectionReceiptControllerSuggestTransactionNumberV1Status = CollectionReceiptControllerFindAllV1Status;
+export const CollectionReceiptControllerSuggestTransactionNumberV1SortBy = CollectionReceiptControllerFindAllV1SortBy;
+export type CollectionReceiptControllerSuggestTransactionNumberV1SortBy = CollectionReceiptControllerFindAllV1SortBy;
+export const CollectionReceiptControllerSuggestTransactionNumberV1SortDirection = CollectionReceiptControllerFindAllV1SortDirection;
+export type CollectionReceiptControllerSuggestTransactionNumberV1SortDirection = CollectionReceiptControllerFindAllV1SortDirection;
+export type CollectionReceiptControllerSuggestTransactionNumberV1Params = CollectionReceiptControllerFindAllV1Params;
+
+export const CollectionReceiptControllerFindOneV1Status = CollectionReceiptControllerFindAllV1Status;
+export type CollectionReceiptControllerFindOneV1Status = CollectionReceiptControllerFindAllV1Status;
+export const CollectionReceiptControllerFindOneV1SortBy = CollectionReceiptControllerFindAllV1SortBy;
+export type CollectionReceiptControllerFindOneV1SortBy = CollectionReceiptControllerFindAllV1SortBy;
+export const CollectionReceiptControllerFindOneV1SortDirection = CollectionReceiptControllerFindAllV1SortDirection;
+export type CollectionReceiptControllerFindOneV1SortDirection = CollectionReceiptControllerFindAllV1SortDirection;
+export type CollectionReceiptControllerFindOneV1Params = CollectionReceiptControllerFindAllV1Params;
+

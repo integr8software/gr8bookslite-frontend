@@ -30,6 +30,7 @@ export const LandingPageFooterGroups = [
       { label: "Contact Us", href: "/contact-us" },
       { label: "Terms of Service", href: "/terms-of-service" },
       { label: "Privacy Policy", href: "/privacy-policy" },
+      { label: "Return & Refund Policy", href: "/return-and-refund-policy" },
     ],
   },
 ] as const satisfies readonly LandingPageFooterGroup[];

@@ -75,7 +75,13 @@ export function isEventInsideDropdown(
 	);
 }
 
-export function flattenOptions(options: AppAdvancedDropdownOption[]): AppAdvancedDropdownOption[] {
+export function flattenOptions(
+	options: AppAdvancedDropdownOption[] | null | undefined,
+): AppAdvancedDropdownOption[] {
+	if (!Array.isArray(options)) {
+		return [];
+	}
+
 	return options.flatMap((option) => [
 		option,
 		...(option.children ? flattenOptions(option.children) : []),
@@ -111,9 +117,13 @@ export function deduplicateOptions(
 }
 
 export function filterOptions(
-	options: AppAdvancedDropdownOption[],
+	options: AppAdvancedDropdownOption[] | null | undefined,
 	query: string,
 ): AppAdvancedDropdownOption[] {
+	if (!Array.isArray(options)) {
+		return [];
+	}
+
 	const normalizedQuery = query.trim().toLowerCase();
 
 	if (!normalizedQuery) {

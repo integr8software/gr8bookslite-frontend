@@ -176,10 +176,14 @@ export function SignUpForm() {
               I agree to the{" "}
               <Link href="/terms-of-service" target="_blank" className="font-semibold text-darknavy hover:text-sky-700">
                 Terms of Service
-              </Link>{" "}
-              and{" "}
+              </Link>
+              ,{" "}
               <Link href="/privacy-policy" target="_blank" className="font-semibold text-darknavy hover:text-sky-700">
                 Privacy Policy
+              </Link>
+              , and{" "}
+              <Link href="/return-and-refund-policy" target="_blank" className="font-semibold text-darknavy hover:text-sky-700">
+                Return & Refund Policy
               </Link>
               .
             </span>

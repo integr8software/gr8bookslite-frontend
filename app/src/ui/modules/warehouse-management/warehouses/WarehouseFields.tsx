@@ -7,6 +7,7 @@ import type { WarehouseFormErrors, WarehouseFormValues } from "@/app/src/types/m
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
 import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/utils/status.util";
+import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
 
 type WarehouseFieldsProps = {
   branchOptions: Array<{ code: string; id: string; name: string }>;
@@ -16,7 +17,7 @@ type WarehouseFieldsProps = {
   onAvailabilityModeChange: (mode: WarehouseFormValues["branchAvailabilityMode"]) => void;
   onInputChange: ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>;
   onSetBranchSelection: (branchUnitIds: string[]) => void;
-	 onStatusChange: (value: WarehouseFormValues["status"]) => void;
+  onStatusChange: (value: WarehouseFormValues["status"]) => void;
   onToggleBranch: (branchId: string) => void;
 };
 
@@ -31,7 +32,7 @@ export function WarehouseFields({
   onAvailabilityModeChange,
   onInputChange,
   onSetBranchSelection,
-	 onStatusChange,
+  onStatusChange,
   onToggleBranch,
   values,
 }: WarehouseFieldsProps) {
@@ -61,7 +62,14 @@ export function WarehouseFields({
         {selectedTab === "Basic Information" ? (
           <div className="grid gap-4">
             <FormField label="Warehouse Name" error={errors.name} required>
-              <input name="name" value={values.name} onChange={onInputChange} maxLength={180} className={fieldClassName} placeholder="Main Warehouse" />
+              <input
+                name="name"
+                value={values.name}
+                onChange={onInputChange}
+                maxLength={180}
+                className={fieldClassName}
+                placeholder="Main Warehouse"
+              />
             </FormField>
 
             <FormField label="Description" error={errors.description}>
@@ -122,7 +130,9 @@ export function WarehouseFields({
                   placeholder={isWarehouseCodeReadonly ? "Auto-generated on save" : "WH-MAIN"}
                 />
                 {isWarehouseCodeReadonly ? (
-                  <span className="mt-1 block text-xs font-medium text-darknavy/45">Code is managed by Maintenance Registry numbering.</span>
+                  <span className="mt-1 block text-xs font-medium text-darknavy/45">
+                    Code is managed by Maintenance Registry numbering.
+                  </span>
                 ) : null}
               </FormField>
               <FormField label="Status" error={errors.status} required>
@@ -142,7 +152,9 @@ export function WarehouseFields({
             <div className="grid gap-2 border-b border-darknavy/10 pb-3">
               <div className="min-w-0">
                 <p className="text-sm font-medium text-darknavy/55">Choose how this warehouse applies to company branches.</p>
-                {errors.branchAvailabilityMode ? <p className="mt-0.5 text-xs font-semibold text-coralpink">{errors.branchAvailabilityMode}</p> : null}
+                {errors.branchAvailabilityMode ? (
+                  <p className="mt-0.5 text-xs font-semibold text-coralpink">{errors.branchAvailabilityMode}</p>
+                ) : null}
               </div>
               <div className="grid gap-2 sm:grid-cols-3">
                 {WarehouseBranchAvailabilityOptions.map((option) => {
@@ -265,7 +277,13 @@ function WarehouseTabs({
               {option}
               {option === "Availability" ? (
                 <span
-                  aria-label={hasAvailabilityError ? "Availability requires attention" : hasSelectedBranches ? "Availability complete" : "No branches selected"}
+                  aria-label={
+                    hasAvailabilityError
+                      ? "Availability requires attention"
+                      : hasSelectedBranches
+                        ? "Availability complete"
+                        : "No branches selected"
+                  }
                   className={`grid h-3.5 w-3.5 shrink-0 place-items-center rounded-full border ${hasAvailabilityError ? "border-coralpink/60 bg-coralpink/10" : hasSelectedBranches ? "border-emerald-500/60 bg-emerald-50" : "border-darknavy/20 bg-darknavy/5"}`}
                 >
                   <span
@@ -286,7 +304,7 @@ function FormField({ children, error, label, required }: { children: ReactNode; 
     <label className="block">
       <span className="mb-2 block text-sm font-semibold text-darknavy">
         {label}
-        {required ? <span className="text-coralpink"> *</span> : null}
+        <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired={required} label={label} leadingSpace />
       </span>
       {children}
       {error ? <span className="mt-1 block text-xs font-medium text-coralpink">{error}</span> : null}

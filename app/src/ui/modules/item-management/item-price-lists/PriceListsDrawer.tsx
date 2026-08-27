@@ -7,17 +7,12 @@ import {
   PriceListsFieldClassName,
 } from "@/app/src/constants/modules/item-management/item-price-lists/PriceListsConstants";
 import { createPriceListFormValues } from "@/app/src/data/modules/item-management/item-price-lists/PriceListsData";
-import type {
-  PriceListDrawerState,
-  PriceListFormValues,
-} from "@/app/src/types/modules/item-management/item-price-lists/PriceListsTypes";
+import type { PriceListDrawerState, PriceListFormValues } from "@/app/src/types/modules/item-management/item-price-lists/PriceListsTypes";
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
-import {
-  MaintenanceActiveStatusSwitchOption,
-  MaintenanceInactiveStatusSwitchOption,
-} from "@/app/src/utils/status.util";
+import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
+import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/utils/status.util";
 
 type PriceListsDrawerProps = {
   drawer: PriceListDrawerState;
@@ -50,19 +45,11 @@ export function PriceListsDrawer({ drawer, onClose, onSave }: PriceListsDrawerPr
       onClose={onClose}
       footer={
         <div className="flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className={moduleHeaderActionClassNames.secondary}
-          >
+          <button type="button" onClick={onClose} className={moduleHeaderActionClassNames.secondary}>
             {isReadonly ? "Close" : "Cancel"}
           </button>
           {!isReadonly ? (
-            <button
-              type="submit"
-              form={PriceListsDrawerFormId}
-              className={moduleHeaderActionClassNames.primary}
-            >
+            <button type="submit" form={PriceListsDrawerFormId} className={moduleHeaderActionClassNames.primary}>
               <Save className="h-4 w-4" aria-hidden="true" />
               Save
             </button>
@@ -149,20 +136,12 @@ export function PriceListsDrawer({ drawer, onClose, onSave }: PriceListsDrawerPr
   );
 }
 
-function Field({
-  children,
-  label,
-  required,
-}: {
-  children: React.ReactNode;
-  label: string;
-  required?: boolean;
-}) {
+function Field({ children, label, required }: { children: React.ReactNode; label: string; required?: boolean }) {
   return (
     <label>
       <span className="mb-2 block text-sm font-semibold text-darknavy">
         {label}
-        {required ? <span className="text-coralpink"> *</span> : null}
+        <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired={required} label={label} leadingSpace />
       </span>
       {children}
     </label>

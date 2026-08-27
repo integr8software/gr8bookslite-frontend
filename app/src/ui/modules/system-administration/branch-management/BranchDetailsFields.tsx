@@ -1,15 +1,13 @@
 import type { ChangeEvent, ReactNode } from "react";
 import { Building2, GitBranch, type LucideIcon } from "lucide-react";
-import {
-  DefaultPhilippineContactNumber,
-  PhilippineContactNumberPlaceholder,
-} from "@/app/src/data/shared/contact/ContactData";
+import { DefaultPhilippineContactNumber, PhilippineContactNumberPlaceholder } from "@/app/src/data/shared/contact/ContactData";
 import type { MainBranch } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
 import type {
   BranchManagementClassification,
   BranchManagementFormValues,
 } from "@/app/src/data/modules/system-administration/branch-management/BranchManagementData";
 import type { BranchFormErrors } from "@/app/src/types/workspace/branch-manager/BranchActionTypes";
+import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
 
 type BranchDetailsFieldsProps = {
   errors: BranchFormErrors;
@@ -18,15 +16,8 @@ type BranchDetailsFieldsProps = {
   isReadonly: boolean;
   mainBranchOptions: MainBranch[];
   values: BranchManagementFormValues;
-  onInputChange: (
-    event: ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
-  ) => void;
-  onUpdateField: (
-    field: keyof BranchManagementFormValues,
-    value: string | boolean,
-  ) => void;
+  onInputChange: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
+  onUpdateField: (field: keyof BranchManagementFormValues, value: string | boolean) => void;
 };
 
 export function BranchDetailsFields({
@@ -63,12 +54,7 @@ export function BranchDetailsFields({
           />
         </BranchField>
 
-        <BranchContactFields
-          isReadonly={isReadonly}
-          values={values}
-          onInputChange={onInputChange}
-          onUpdateField={onUpdateField}
-        />
+        <BranchContactFields isReadonly={isReadonly} values={values} onInputChange={onInputChange} onUpdateField={onUpdateField} />
 
         <BranchTaxField
           errors={errors}
@@ -97,14 +83,10 @@ export function BranchDetailsFields({
               type="checkbox"
               checked={values.isMain}
               disabled={isSatellite || isReadonly}
-              onChange={(event) =>
-                onUpdateField("isMain", event.target.checked)
-              }
+              onChange={(event) => onUpdateField("isMain", event.target.checked)}
               className="h-4 w-4 rounded border-darknavy/20 text-skyblue"
             />
-            <span className="text-sm font-semibold text-darknavy">
-              Mark as main branch
-            </span>
+            <span className="text-sm font-semibold text-darknavy">Mark as main branch</span>
           </label>
         )}
 
@@ -164,10 +146,7 @@ function BranchContactFields({
   isReadonly: boolean;
   values: Pick<BranchManagementFormValues, "contactNo" | "email">;
   onInputChange: (event: ChangeEvent<HTMLInputElement>) => void;
-  onUpdateField: (
-    field: keyof BranchManagementFormValues,
-    value: string | boolean,
-  ) => void;
+  onUpdateField: (field: keyof BranchManagementFormValues, value: string | boolean) => void;
 }) {
   return (
     <>
@@ -220,9 +199,7 @@ function BranchTaxField({
   isSatellite: boolean;
   mainBranchOptions: MainBranch[];
   values: Pick<BranchManagementFormValues, "linkedMainBranchId" | "tin">;
-  onInputChange: (
-    event: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ) => void;
+  onInputChange: (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
 }) {
   if (isSatellite) {
     if (hideSatelliteTaxField) {
@@ -230,11 +207,7 @@ function BranchTaxField({
     }
 
     return (
-      <BranchField
-        label="Linked Main Branch"
-        error={errors.linkedMainBranchId}
-        required
-      >
+      <BranchField label="Linked Main Branch" error={errors.linkedMainBranchId} required>
         <select
           name="linkedMainBranchId"
           value={values.linkedMainBranchId}
@@ -286,14 +259,10 @@ function BranchField({
     <label className={className}>
       <span className="mb-2 block text-sm font-semibold text-darknavy">
         {label}
-        {required ? <span className="text-coralpink"> *</span> : null}
+        <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired={required} label={label} leadingSpace />
       </span>
       {children}
-      {error ? (
-        <span className="mt-1 block text-xs font-medium text-coralpink">
-          {error}
-        </span>
-      ) : null}
+      {error ? <span className="mt-1 block text-xs font-medium text-coralpink">{error}</span> : null}
     </label>
   );
 }
@@ -316,10 +285,9 @@ function ClassificationButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`flex h-11 items-center justify-center gap-2 rounded-md border text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 disabled:cursor-not-allowed disabled:opacity-70 ${active
-          ? "border-skyblue bg-skyblue/10 text-darknavy"
-          : "border-darknavy/10 text-darknavy/65 hover:border-skyblue/50"
-        }`}
+      className={`flex h-11 items-center justify-center gap-2 rounded-md border text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 disabled:cursor-not-allowed disabled:opacity-70 ${
+        active ? "border-skyblue bg-skyblue/10 text-darknavy" : "border-darknavy/10 text-darknavy/65 hover:border-skyblue/50"
+      }`}
     >
       <Icon className="h-4 w-4" aria-hidden="true" />
       {label}

@@ -1,21 +1,21 @@
 import type { ReactNode } from "react";
-import {
-  AcknowledgementReceiptCurrencyOptions,
-  AcknowledgementReceiptPartyOptions,
-  AcknowledgementReceiptPaymentTypeOptions,
-} from "@/app/src/data/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptData";
+import { AcknowledgementReceiptCurrencyOptions } from "@/app/src/data/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptData";
 import type { AcknowledgementReceiptFormValues } from "@/app/src/types/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptTypes";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { AppLookupDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppLookupDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
+import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
 
 type AcknowledgementReceiptDetailsFormProps = {
   isReadonly: boolean;
+  partyOptions: AppAdvancedDropdownOption[];
+  paymentTypeOptions: AppAdvancedDropdownOption[];
   values: AcknowledgementReceiptFormValues;
   onOpenPartyDrawer: () => void;
   onOpenPaymentTypeDialog: () => void;
-  onPartyNameChange?: (partyName: string) => void;
   onUpdateField: <Key extends keyof AcknowledgementReceiptFormValues>(key: Key, value: AcknowledgementReceiptFormValues[Key]) => void;
 };
 
@@ -23,8 +23,9 @@ export function AcknowledgementReceiptDetailsForm({
   isReadonly,
   onOpenPartyDrawer,
   onOpenPaymentTypeDialog,
-  onPartyNameChange,
   onUpdateField,
+  partyOptions,
+  paymentTypeOptions,
   values,
 }: AcknowledgementReceiptDetailsFormProps) {
   return (
@@ -32,17 +33,16 @@ export function AcknowledgementReceiptDetailsForm({
       <div className="grid min-w-0 gap-x-8 gap-y-5 xl:grid-cols-2">
         <div className="grid min-w-0 gap-4">
           <FieldShell controlId="acknowledgement-receipt-party" label="Party Name" isRequired>
-            <AppAdvancedDropdown
-              id="acknowledgement-receipt-party"
-              value={values.customerName}
+            <AppLookupDropdown
+              value={values.partyCode}
               readOnly={isReadonly}
-              options={AcknowledgementReceiptPartyOptions}
+              options={partyOptions}
               placeholder="Select Party Name"
               searchPlaceholder="Search Party Name"
               addAction={!isReadonly ? { label: "Add Party Name", onClick: onOpenPartyDrawer } : undefined}
-              onChange={(value) => {
-                onUpdateField("customerName", String(value));
-                onPartyNameChange?.(String(value));
+              onChange={(partyCode, partyName) => {
+                onUpdateField("partyCode", partyCode);
+                onUpdateField("customerName", partyName);
               }}
             />
           </FieldShell>
@@ -51,13 +51,45 @@ export function AcknowledgementReceiptDetailsForm({
               id="acknowledgement-receipt-payment-type"
               value={values.paymentType}
               readOnly={isReadonly}
-              options={AcknowledgementReceiptPaymentTypeOptions}
+              options={paymentTypeOptions}
               placeholder="Select payment type"
               searchPlaceholder="Search payment type"
               addAction={!isReadonly ? { label: "Add Payment Type", onClick: onOpenPaymentTypeDialog } : undefined}
               onChange={(value) => onUpdateField("paymentType", String(value))}
             />
           </FieldShell>
+          {isCheckPaymentType(values.paymentType) ? (
+            <>
+              <FieldShell controlId="acknowledgement-receipt-bank-name" label="Bank Name">
+                <input
+                  id="acknowledgement-receipt-bank-name"
+                  value={values.bankName}
+                  readOnly={isReadonly}
+                  onChange={(event) => onUpdateField("bankName", event.target.value)}
+                  className={FieldClassName}
+                />
+              </FieldShell>
+              <FieldShell controlId="acknowledgement-receipt-check-no" label="Check No.">
+                <input
+                  id="acknowledgement-receipt-check-no"
+                  value={values.checkNo}
+                  readOnly={isReadonly}
+                  onChange={(event) => onUpdateField("checkNo", event.target.value)}
+                  className={FieldClassName}
+                />
+              </FieldShell>
+              <FieldShell controlId="acknowledgement-receipt-check-date" label="Check Date">
+                <input
+                  id="acknowledgement-receipt-check-date"
+                  type="date"
+                  value={values.checkDate}
+                  readOnly={isReadonly}
+                  onChange={(event) => onUpdateField("checkDate", event.target.value)}
+                  className={FieldClassName}
+                />
+              </FieldShell>
+            </>
+          ) : null}
           <FieldShell controlId="acknowledgement-receipt-currency" label="Currency">
             <CurrencyExchangeRateRow
               exchangeRateControlId="acknowledgement-receipt-exchange-rate"
@@ -102,8 +134,7 @@ export function AcknowledgementReceiptDetailsForm({
             <input
               id="acknowledgement-receipt-party-code"
               value={values.partyCode}
-              readOnly={isReadonly}
-              onChange={(event) => onUpdateField("partyCode", event.target.value)}
+              readOnly
               className={FieldClassName}
             />
           </FieldShell>
@@ -164,7 +195,7 @@ function FieldShell({
     <div className="grid min-w-0 gap-2 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-start">
       <label htmlFor={controlId} className="pt-2 text-sm font-semibold text-darknavy">
         {label}
-        {isRequired ? <span className="ml-1 text-coralpink">*</span> : null}
+        <ModuleFieldRequiredMark fallbackRequired={isRequired} label={label} />
       </label>
       <div className="min-w-0">{children}</div>
     </div>
@@ -173,3 +204,7 @@ function FieldShell({
 
 const FieldClassName =
   "app-data-entry-field h-11 min-w-0 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15 read-only:bg-white read-only:text-darknavy disabled:bg-white disabled:text-darknavy";
+
+function isCheckPaymentType(paymentType: string) {
+  return paymentType.trim().toLowerCase().includes("check");
+}

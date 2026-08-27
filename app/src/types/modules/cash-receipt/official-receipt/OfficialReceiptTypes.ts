@@ -7,7 +7,7 @@ export type OfficialReceiptActionTab = "details" | "attachments";
 
 export type OfficialReceiptEntryView = "collection" | "accounting";
 
-export type OfficialReceiptStatus = "Active" | "Approved" | "Cancelled" | "Closed" | "Disapproved" | "Draft" | "Pending";
+export type OfficialReceiptStatus = "Cancelled" | "Disapproved" | "Draft" | "For Approval" | "Posted";
 
 export type OfficialReceiptRecord = {
   id: string;
@@ -29,6 +29,9 @@ export type OfficialReceiptLineEntry = {
   collectionType: string;
   customerName: string;
   partyCode: string;
+  bankName: string;
+  checkNo: string;
+  checkDate: string;
   grossReceipt: string;
   vatExempt: string;
   vat: string;
@@ -45,6 +48,9 @@ export type OfficialReceiptFormValues = {
   customerName: string;
   partyCode: string;
   paymentType: string;
+  bankName: string;
+  checkNo: string;
+  checkDate: string;
   currency: string;
   exchangeRate: string;
   status: string;
@@ -66,6 +72,9 @@ export type OfficialReceiptCopyFromRecord = AppCopyFromRecord & {
   customerName?: string;
   partyCode?: string;
   paymentType?: string;
+  bankName?: string;
+  checkNo?: string;
+  checkDate?: string;
   currency?: string;
   exchangeRate?: string;
   collectionType?: string;

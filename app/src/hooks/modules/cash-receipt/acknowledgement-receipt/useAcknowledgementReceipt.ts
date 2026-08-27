@@ -19,6 +19,7 @@ import {
   createAcknowledgementReceiptFormValues,
   createAcknowledgementReceiptRecordFromForm,
   getInitialAcknowledgementReceipts,
+  syncAcknowledgementReceiptCheckDetails,
   writeStoredAcknowledgementReceipts,
 } from "@/app/src/data/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptData";
 import { AcknowledgementReceiptStatusFilters } from "@/app/src/constants/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptConstants";
@@ -97,7 +98,13 @@ export function useAcknowledgementReceiptActionForm(
   );
 
   function updateField<Key extends keyof AcknowledgementReceiptFormValues>(key: Key, value: AcknowledgementReceiptFormValues[Key]) {
-    setValues((current) => ({ ...current, [key]: value }));
+    setValues((current) => {
+      const nextValues = { ...current, [key]: value };
+
+      return isCheckDetailField(key)
+        ? syncAcknowledgementReceiptCheckDetails(nextValues)
+        : nextValues;
+    });
   }
 
   function updateLineEntries(lineEntries: AcknowledgementReceiptLineEntry[]) {
@@ -142,14 +149,15 @@ export function useAcknowledgementReceiptActionForm(
   }
 
   function submitReceipt() {
-    const validation = validateAcknowledgementReceiptForm(values);
+    const syncedValues = syncAcknowledgementReceiptCheckDetails(values);
+    const validation = validateAcknowledgementReceiptForm(syncedValues);
 
     if (!validation.isValid) {
       toast.error(validation.message ?? "Review the Acknowledgement Receipt details.");
       return;
     }
 
-    const nextRecord = createAcknowledgementReceiptRecordFromForm(values, mode === "edit" ? (loadedRecord ?? undefined) : undefined);
+    const nextRecord = createAcknowledgementReceiptRecordFromForm(syncedValues, mode === "edit" ? (loadedRecord ?? undefined) : undefined);
     const nextReceipts = upsertAcknowledgementReceiptRecord(nextRecord);
 
     writeStoredAcknowledgementReceipts(nextReceipts);
@@ -169,6 +177,10 @@ export function useAcknowledgementReceiptActionForm(
     updateLineEntries,
     values,
   };
+}
+
+function isCheckDetailField(key: keyof AcknowledgementReceiptFormValues) {
+  return key === "bankName" || key === "checkDate" || key === "checkNo";
 }
 
 function persistAcknowledgementReceipts(receipts: AcknowledgementReceiptRecord[]) {

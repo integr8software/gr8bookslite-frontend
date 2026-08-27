@@ -13,6 +13,7 @@ import {
   createEwtOptions as createSharedEwtOptions,
   createVatOptions as createSharedVatOptions,
 } from "@/app/src/data/shared/tax/TaxData";
+import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
 import {
   AppAdvancedDropdown,
   type AppAdvancedDropdownOption,
@@ -31,26 +32,12 @@ type AppTaxRateDialogProps = {
   onSave: (value: AppTaxRateDialogValue) => void;
 };
 
-export function AppTaxRateDialog({
-  isOpen,
-  title = "Tax",
-  value,
-  onClose,
-  onSave,
-}: AppTaxRateDialogProps) {
+export function AppTaxRateDialog({ isOpen, title = "Tax", value, onClose, onSave }: AppTaxRateDialogProps) {
   if (!isOpen || !value) {
     return null;
   }
 
-  return (
-    <AppTaxRateDialogEditor
-      key={JSON.stringify(value)}
-      initialValue={value}
-      title={title}
-      onClose={onClose}
-      onSave={onSave}
-    />
-  );
+  return <AppTaxRateDialogEditor key={JSON.stringify(value)} initialValue={value} title={title} onClose={onClose} onSave={onSave} />;
 }
 
 function AppTaxRateDialogEditor({
@@ -128,10 +115,7 @@ function AppTaxRateDialogEditor({
         className="w-full max-w-2xl overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-[0_16px_48px_rgba(33,39,56,0.18)]"
       >
         <div className="flex items-center justify-between border-b border-darknavy/10 px-5 py-4">
-          <h3
-            id="app-tax-rate-dialog-title"
-            className="text-2xl font-medium text-darknavy"
-          >
+          <h3 id="app-tax-rate-dialog-title" className="text-2xl font-medium text-darknavy">
             {title}
           </h3>
           <button
@@ -260,15 +244,14 @@ function TaxDialogRow({
     <div className="grid items-center gap-2 sm:grid-cols-[7.5rem_1fr]">
       <label htmlFor={controlId} className="text-sm text-darknavy/82">
         {label}
-        {isRequired ? <span className="ml-1 text-coralpink">*</span> : null}
+        <ModuleFieldRequiredMark fallbackRequired={isRequired} label={label} />
       </label>
       {children}
     </div>
   );
 }
 
-const ReadOnlyFieldClassName =
-  "app-theme-field-readonly h-11 w-full rounded-md border px-3 text-sm outline-none";
+const ReadOnlyFieldClassName = "app-theme-field-readonly h-11 w-full rounded-md border px-3 text-sm outline-none";
 
 function formatPercentField(value: number) {
   return `${value.toFixed(2)}%`;
@@ -281,9 +264,7 @@ export function getVatPercentFromRate(taxRate: string) {
 }
 
 export function getEwtPercentFromCode(value: string, taxCodes: AlphanumericTaxCode[]) {
-  const matchedTaxRow = taxCodes.find(
-    (row) => row.taxType === "EWT" && row.taxCode === value,
-  );
+  const matchedTaxRow = taxCodes.find((row) => row.taxType === "EWT" && row.taxCode === value);
 
   if (matchedTaxRow) {
     return Number(matchedTaxRow.taxRate);
@@ -300,10 +281,7 @@ export function getVatRateFromCode(vatCode: string, taxCodes: AlphanumericTaxCod
   }
 
   const matchedTaxRow = taxCodes.find(
-    (row) =>
-      row.transactionType === "Purchases" &&
-      row.taxType === "INPUT VAT" &&
-      row.taxCode === vatCode,
+    (row) => row.transactionType === "Purchases" && row.taxType === "INPUT VAT" && row.taxCode === vatCode,
   );
 
   if (matchedTaxRow) {
@@ -321,10 +299,7 @@ export function getVatRateFromCode(vatCode: string, taxCodes: AlphanumericTaxCod
   return "0%";
 }
 
-export function normalizeVatDropdownValue(
-  taxDetails: DisbursementTaxDetails,
-  taxCodes: AlphanumericTaxCode[],
-) {
+export function normalizeVatDropdownValue(taxDetails: DisbursementTaxDetails, taxCodes: AlphanumericTaxCode[]) {
   if (!taxDetails.vatCode) {
     return "";
   }
@@ -334,10 +309,7 @@ export function normalizeVatDropdownValue(
   }
 
   const matchedTaxRow = taxCodes.find(
-    (row) =>
-      row.transactionType === "Purchases" &&
-      row.taxType === "INPUT VAT" &&
-      Number(row.taxRate) === taxDetails.vatPercent,
+    (row) => row.transactionType === "Purchases" && row.taxType === "INPUT VAT" && Number(row.taxRate) === taxDetails.vatPercent,
   );
 
   return matchedTaxRow?.taxCode ?? "";

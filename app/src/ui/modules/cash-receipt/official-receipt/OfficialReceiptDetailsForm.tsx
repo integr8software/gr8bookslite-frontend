@@ -1,11 +1,9 @@
 import type { ReactNode } from "react";
-import {
-  OfficialReceiptCurrencyOptions,
-  OfficialReceiptPartyOptions,
-  OfficialReceiptPaymentTypeOptions,
-} from "@/app/src/data/modules/cash-receipt/official-receipt/OfficialReceiptData";
+import { OfficialReceiptCurrencyOptions } from "@/app/src/data/modules/cash-receipt/official-receipt/OfficialReceiptData";
 import type { OfficialReceiptFormValues } from "@/app/src/types/modules/cash-receipt/official-receipt/OfficialReceiptTypes";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { AppLookupDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppLookupDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
@@ -13,11 +11,12 @@ import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/Mo
 
 type OfficialReceiptDetailsFormProps = {
   isReadonly: boolean;
+  partyOptions: AppAdvancedDropdownOption[];
+  paymentTypeOptions: AppAdvancedDropdownOption[];
   receiptCodeLabel?: string;
   values: OfficialReceiptFormValues;
   onOpenPartyDrawer: () => void;
   onOpenPaymentTypeDialog: () => void;
-  onPartyNameChange?: (partyName: string) => void;
   onUpdateField: <Key extends keyof OfficialReceiptFormValues>(key: Key, value: OfficialReceiptFormValues[Key]) => void;
 };
 
@@ -25,8 +24,9 @@ export function OfficialReceiptDetailsForm({
   isReadonly,
   onOpenPartyDrawer,
   onOpenPaymentTypeDialog,
-  onPartyNameChange,
   onUpdateField,
+  partyOptions,
+  paymentTypeOptions,
   receiptCodeLabel = "OR",
   values,
 }: OfficialReceiptDetailsFormProps) {
@@ -35,17 +35,16 @@ export function OfficialReceiptDetailsForm({
       <div className="grid min-w-0 gap-x-8 gap-y-5 xl:grid-cols-2">
         <div className="grid min-w-0 gap-4">
           <FieldShell controlId="official-receipt-party" label="Party Name" isRequired>
-            <AppAdvancedDropdown
-              id="official-receipt-party"
-              value={values.customerName}
+            <AppLookupDropdown
+              value={values.partyCode}
               readOnly={isReadonly}
-              options={OfficialReceiptPartyOptions}
+              options={partyOptions}
               placeholder="Select Party Name"
               searchPlaceholder="Search Party Name"
               addAction={!isReadonly ? { label: "Add Party Name", onClick: onOpenPartyDrawer } : undefined}
-              onChange={(value) => {
-                onUpdateField("customerName", String(value));
-                onPartyNameChange?.(String(value));
+              onChange={(partyCode, partyName) => {
+                onUpdateField("partyCode", partyCode);
+                onUpdateField("customerName", partyName);
               }}
             />
           </FieldShell>
@@ -54,13 +53,45 @@ export function OfficialReceiptDetailsForm({
               id="official-receipt-payment-type"
               value={values.paymentType}
               readOnly={isReadonly}
-              options={OfficialReceiptPaymentTypeOptions}
+              options={paymentTypeOptions}
               placeholder="Select payment type"
               searchPlaceholder="Search payment type"
               addAction={!isReadonly ? { label: "Add Payment Type", onClick: onOpenPaymentTypeDialog } : undefined}
               onChange={(value) => onUpdateField("paymentType", String(value))}
             />
           </FieldShell>
+          {isCheckPaymentType(values.paymentType) ? (
+            <>
+              <FieldShell controlId="official-receipt-bank-name" label="Bank Name">
+                <input
+                  id="official-receipt-bank-name"
+                  value={values.bankName}
+                  readOnly={isReadonly}
+                  onChange={(event) => onUpdateField("bankName", event.target.value)}
+                  className={FieldClassName}
+                />
+              </FieldShell>
+              <FieldShell controlId="official-receipt-check-no" label="Check No.">
+                <input
+                  id="official-receipt-check-no"
+                  value={values.checkNo}
+                  readOnly={isReadonly}
+                  onChange={(event) => onUpdateField("checkNo", event.target.value)}
+                  className={FieldClassName}
+                />
+              </FieldShell>
+              <FieldShell controlId="official-receipt-check-date" label="Check Date">
+                <input
+                  id="official-receipt-check-date"
+                  type="date"
+                  value={values.checkDate}
+                  readOnly={isReadonly}
+                  onChange={(event) => onUpdateField("checkDate", event.target.value)}
+                  className={FieldClassName}
+                />
+              </FieldShell>
+            </>
+          ) : null}
           <FieldShell controlId="official-receipt-currency" label="Currency">
             <CurrencyExchangeRateRow
               exchangeRateControlId="official-receipt-exchange-rate"
@@ -105,8 +136,7 @@ export function OfficialReceiptDetailsForm({
             <input
               id="official-receipt-party-code"
               value={values.partyCode}
-              readOnly={isReadonly}
-              onChange={(event) => onUpdateField("partyCode", event.target.value)}
+              readOnly
               className={FieldClassName}
             />
           </FieldShell>
@@ -176,3 +206,7 @@ function FieldShell({
 
 const FieldClassName =
   "app-data-entry-field h-11 min-w-0 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15 read-only:bg-white read-only:text-darknavy disabled:bg-white disabled:text-darknavy";
+
+function isCheckPaymentType(paymentType: string) {
+  return paymentType.trim().toLowerCase().includes("check");
+}

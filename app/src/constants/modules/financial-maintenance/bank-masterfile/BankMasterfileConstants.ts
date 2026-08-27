@@ -37,7 +37,7 @@ export const BankMasterfileTableColumns = [
   { key: "accountNumber", label: "Account Number", className: "w-[16%]" },
   { key: "accountCode", label: "Account Code", className: "w-[13%]" },
   { key: "accountTitle", label: "Account Title", className: "w-[26%]" },
-  { key: "currencyCode", label: "Currency", className: "w-[10%] text-center" },
+  { key: "currencyCode", label: "Currency", className: "w-[10%]" },
   { key: "isDefault", label: "Default", className: "w-[10%] text-center" },
   { key: "createdBy", label: "Created By", className: "w-[14%]" },
   { key: "createdAt", label: "Date Created", className: "w-[16%]" },
@@ -73,7 +73,7 @@ export const BankMasterfileNotDefaultBankSwitchOption = {
   value: false,
 } as const;
 
-export const BankMasterfileAccountTypeOptions = ["Checking", "Savings", "Current"] as const;
+export const BankMasterfileAccountTypeOptions = ["Checking", "Savings", "Current", "Time Deposit", "Credit Card"] as const;
 
 export const BankMasterfileExportColumns: ModuleTableExportColumn<BankMasterfile>[] = [
   ...BankMasterfileTableColumns.flatMap((column) =>

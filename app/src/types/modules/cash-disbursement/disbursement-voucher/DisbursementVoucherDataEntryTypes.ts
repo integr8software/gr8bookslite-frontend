@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { DefaultAccount } from "@/app/src/types/modules/financial-maintenance/default-account/DefaultAccountTypes";
 import type { PaymentTypeRecord as AppPaymentTypeRecord } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
 import type { ModuleDataEntryClearAction, ModuleDataEntryColumn } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
@@ -13,16 +14,17 @@ import type {
 
 export type DisbursementEntryColumnId =
   | "accountCode"
-  | "atcCode"
+  | "ewtCode"
   | "accountName"
   | "checkDate"
   | "checkNo"
   | "checkStatus"
   | "partyCode"
   | "partyName"
-  | "particulars"
+  | "remarks"
   | "refId"
   | "responsibilityCenter"
+  | "responsibilityCenterCode"
   | "vatType"
   | "debit"
   | "credit";
@@ -30,6 +32,7 @@ export type DisbursementEntryColumnId =
 export type DisbursementEntryView = "accounting" | "expense";
 
 export type ExpenseEntryColumnId =
+  | "disbursementCode"
   | "expenseType"
   | "amount"
   | "checkDate"
@@ -42,11 +45,11 @@ export type ExpenseEntryColumnId =
   | "ewtCode"
   | "ewtPercent"
   | "ewtAmount"
-  | "totalAmountDue"
   | "partyCode"
   | "partyName"
-  | "particulars"
+  | "remarks"
   | "responsibilityCenter"
+  | "responsibilityCenterCode"
   | "refId";
 
 export type VoucherDataEntryProps = {
@@ -85,30 +88,72 @@ export type DisbursementEntryFieldsUpdater = (entryId: string, updates: Partial<
 
 export type DisbursementAccountingEntryColumnsParams = {
   canAddPartyName: boolean;
-  canAddResponsibilityCenter: boolean;
   chartAccounts: ModuleChartAccount[];
   columnLabels: Record<DisbursementEntryColumnId, string>;
   columnWidths: Record<DisbursementEntryColumnId, number>;
-  ewtOptions: AppAdvancedDropdownOption[];
   isReadonly: boolean;
   onAddPartyName: () => void;
-  onAddResponsibilityCenter: (entryId: string) => void;
   onUpdateEntry: DisbursementEntryUpdater;
   onUpdateEntryFields: DisbursementEntryFieldsUpdater;
   partyOptions: AppAdvancedDropdownOption[];
-  responsibilityCenterOptions: AppAdvancedDropdownOption[];
-  vatOptions: AppAdvancedDropdownOption[];
+  vatOptions?: AppAdvancedDropdownOption[];
 };
 
 export type DisbursementExpenseEntryColumnsParams = {
   accountingColumns: Record<DisbursementEntryColumnId, ModuleDataEntryColumn<DisbursementLineEntry>>;
   canAddExpenseType: boolean;
+  canAddResponsibilityCenter: boolean;
   ewtOptions: AppAdvancedDropdownOption[];
   expenseAccounts: ModuleChartAccount[];
   expenseColumnLabels: Record<ExpenseEntryColumnId, string>;
   expenseColumnWidths: Record<ExpenseEntryColumnId, number>;
   isReadonly: boolean;
+  lineErrors?: Record<string, Partial<Record<string, string>>>;
   onAddExpenseType: () => void;
+  onAddResponsibilityCenter: (entryId: string) => void;
+  responsibilityCenterOptions: AppAdvancedDropdownOption[];
+  taxCodes: AlphanumericTaxCode[];
+  updateExpenseEntryFields: DisbursementEntryFieldsUpdater;
+  vatOptions: AppAdvancedDropdownOption[];
+};
+
+export type DisbursementVoucherAccountingEntryTableProps = {
+  accountingColumns?: Record<DisbursementEntryColumnId, ModuleDataEntryColumn<DisbursementLineEntry>>;
+  accountingRows: DisbursementLineEntry[];
+  errors: DisbursementVoucherFormErrors;
+  isReadonly: boolean;
+  title?: ReactNode;
+  onAddEntries?: (count: number) => void;
+  onClearEntries?: VoucherDataEntryProps["onClearEntries"];
+  onDuplicateEntry?: (entryId: string) => void;
+  onInsertEntry?: (targetEntryId: string, position: "above" | "below") => void;
+  onMoveEntry?: (sourceEntryId: string, targetEntryId: string) => void;
+  onRemoveEntry?: (entryId: string) => void;
+  totalCredit?: number;
+  totalDebit?: number;
+  variance?: number;
+};
+
+export type DisbursementVoucherDetailEntryTableProps = {
+  accountingColumns: Record<DisbursementEntryColumnId, ModuleDataEntryColumn<DisbursementLineEntry>>;
+  canAddExpenseType: boolean;
+  canAddResponsibilityCenter: boolean;
+  errors: DisbursementVoucherFormErrors;
+  ewtOptions: AppAdvancedDropdownOption[];
+  expenseAccounts: ModuleChartAccount[];
+  expenseRows: DisbursementLineEntry[];
+  isReadonly: boolean;
+  lineErrors?: Record<string, Partial<Record<string, string>>>;
+  title?: ReactNode;
+  onAddEntries: (count: number) => void;
+  onAddExpenseType: () => void;
+  onAddResponsibilityCenter: (entryId: string) => void;
+  onClearEntries: VoucherDataEntryProps["onClearEntries"];
+  onDuplicateEntry: (entryId: string) => void;
+  onInsertEntry: (targetEntryId: string, position: "above" | "below") => void;
+  onMoveEntry: (sourceEntryId: string, targetEntryId: string) => void;
+  onRemoveEntry: (entryId: string) => void;
+  responsibilityCenterOptions: AppAdvancedDropdownOption[];
   taxCodes: AlphanumericTaxCode[];
   updateExpenseEntryFields: DisbursementEntryFieldsUpdater;
   vatOptions: AppAdvancedDropdownOption[];
@@ -120,12 +165,12 @@ export type EditableDisbursementAccountingGridRow = {
   credit: string;
   debit: string;
   id: string;
-  particulars: string;
+  remarks: string;
   taxDetails: DisbursementTaxDetails;
   taxRate: string;
 };
 
-export type DisbursementAccountingGridColumnId = "accountCode" | "accountName" | "particulars" | "taxRate" | "debit" | "credit";
+export type DisbursementAccountingGridColumnId = "accountCode" | "accountName" | "remarks" | "taxRate" | "debit" | "credit";
 
 export type DisbursementAccountingExportTheme = {
   accentColor: string;

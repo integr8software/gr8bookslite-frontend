@@ -34,6 +34,18 @@ export type TermsMaintenanceFormErrors = Partial<Record<keyof TermsMaintenanceFo
 
 export type TermsMaintenanceActionMode = "add" | "edit" | "view";
 
+export type TermsMaintenanceFormPageOptions = {
+  existingTerm?: TermsMaintenance;
+  initialValues?: TermsMaintenanceFormValues;
+  isOpen?: boolean;
+  mode?: TermsMaintenanceActionMode;
+  onSaved?: () => void;
+};
+
+export type TermsMaintenanceStoreOptions = {
+  refetchOnMount?: boolean | "always";
+};
+
 export type TermsMaintenanceDrawerState = {
   initialValues?: TermsMaintenanceFormValues;
   mode: TermsMaintenanceActionMode;

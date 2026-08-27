@@ -7,6 +7,7 @@ import {
   DisbursementVoucherBankAccounts,
   DisbursementVoucherCopyFromRecords,
   DisbursementVoucherDefaultAccounts,
+  createDisbursementVoucherPaymentTypeRecords,
   applyCopyFromRecordsToDisbursementVoucherForm,
   createBlankDisbursementLineEntry,
   createDisbursementTransactionFromForm,
@@ -104,6 +105,8 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
   const [isResponsibilityCenterDrawerOpen, setIsResponsibilityCenterDrawerOpen] = useState(false);
   const [pendingResponsibilityCenterEntryId, setPendingResponsibilityCenterEntryId] = useState<string | null>(null);
+  const blankRemarksEntryIdsRef = useRef(new Set<string>());
+  const generatedRemarksOverridesRef = useRef<Record<string, string>>({});
   const hasEditedCurrencyRef = useRef(false);
   const isSubmittingRef = useRef(false);
   const submitLockReleaseRef = useRef<null | (() => void)>(null);
@@ -111,6 +114,10 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   const bankMasterfileStore = useBankMasterfileStore();
   const defaultAccountStore = useDefaultAccountStore();
   const paymentTypeStore = usePaymentTypeStore();
+  const paymentTypeRecords = useMemo(
+    () => createDisbursementVoucherPaymentTypeRecords(paymentTypeStore.paymentTypes),
+    [paymentTypeStore.paymentTypes],
+  );
   const partyStore = usePartyManagementStore();
   const responsibilityCenterStore = useResponsibilityCenterStore();
   const bankAccounts = DisbursementVoucherBankAccounts;
@@ -122,7 +129,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   const totalDebit = useMemo(() => values.lineEntries.reduce((sum, entry) => sum + entry.debit, 0), [values.lineEntries]);
   const totalCredit = useMemo(() => values.lineEntries.reduce((sum, entry) => sum + entry.credit, 0), [values.lineEntries]);
   const selectedBankAccount = bankAccounts.find((account) => account.accountCode === values.paymentDetails.bankAccountCode) ?? null;
-  const selectedPaymentTypeRecord = paymentTypeStore.paymentTypes.find((record) => record.paymentType === values.paymentMethod) ?? null;
+  const selectedPaymentTypeRecord = paymentTypeRecords.find((record) => record.paymentType === values.paymentMethod) ?? null;
   const routePaymentMethod = existingVoucher?.paymentMethod ?? selectedTransaction?.paymentMethod ?? "";
   const isCashVoucherRoute = (mode !== "add" || Boolean(routeTransactionId)) && routePaymentMethod === "Cash";
   const isRecordMissing = (!selectedTransaction && mode !== "add") || (mode === "edit" && !existingVoucher) || isCashVoucherRoute;
@@ -130,6 +137,8 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   const isDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
   const draft = useModuleDraft({
     enabled: !isReadonly,
+    initialValues,
+    isDirty,
     key: createModuleDraftKey({ mode, moduleId: "cash-disbursement:disbursement-voucher", recordId: params.recordId }),
     setValues,
     values,
@@ -156,7 +165,35 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
       return;
     }
 
-    setValues((current) => ({ ...current, [field]: value }));
+    setValues((current) => {
+      const nextValues = { ...current, [field]: value };
+
+      if (field !== "remarks") {
+        return nextValues;
+      }
+
+      const nextRemarks = String(value ?? "");
+      const editableEntries = current.lineEntries
+        .filter((entry) => !isGeneratedAccountingEntry(entry))
+        .map((entry) =>
+          !blankRemarksEntryIdsRef.current.has(entry.id) && shouldEntryRemarksFollowHeader(entry, current.remarks)
+            ? { ...entry, remarks: nextRemarks }
+            : entry,
+        );
+      const bankAccount = bankAccounts.find(
+        (account) => account.accountCode === current.paymentDetails.bankAccountCode,
+      ) ?? null;
+
+      return {
+        ...nextValues,
+        lineEntries: createAutomaticAccountingEntries(editableEntries, {
+          bankAccount,
+          blankRemarksEntryIds: Array.from(blankRemarksEntryIdsRef.current),
+          generatedRemarksOverrides: generatedRemarksOverridesRef.current,
+          paymentMethod: current.paymentMethod,
+        }),
+      };
+    });
     setErrors((current) => ({ ...current, [field]: undefined }));
   }
 
@@ -164,6 +201,17 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     updateField("paymentDetails", {
       ...values.paymentDetails,
       ...nextDetails,
+    });
+    setErrors((current) => {
+      const nextErrors = { ...current };
+
+      for (const field of Object.keys(nextDetails) as Array<keyof typeof nextDetails>) {
+        if (field in nextErrors) {
+          delete nextErrors[field as keyof typeof nextErrors];
+        }
+      }
+
+      return nextErrors;
     });
   }
 
@@ -200,6 +248,8 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
 
     return createAutomaticAccountingEntries(entries, {
       bankAccount,
+      blankRemarksEntryIds: Array.from(blankRemarksEntryIdsRef.current),
+      generatedRemarksOverrides: generatedRemarksOverridesRef.current,
       paymentMethod: nextPaymentMethod,
     });
   }
@@ -309,6 +359,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
       partyCode: values.partyCode,
       partyName: values.partyName,
       refId,
+      remarks: values.remarks,
       responsibilityCenter,
       taxDetails: {
         ...createTaxDetails(0, "0%"),
@@ -335,6 +386,8 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   }
 
   function handleRemoveEntry(entryId: string) {
+    blankRemarksEntryIdsRef.current.delete(entryId);
+    delete generatedRemarksOverridesRef.current[entryId];
     replaceEntriesWithAutomaticRows(removeDisbursementEntryRow(values.lineEntries, entryId));
   }
 
@@ -343,29 +396,48 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   }
 
   function handleUpdateEntryFields(entryId: string, updates: Partial<DisbursementLineEntry>) {
-    updateField(
-      DisbursementVoucherLineEntriesField,
-      values.lineEntries.map((entry) => {
-        if (entry.id !== entryId) {
-          return entry;
-        }
+    const sourceEntry = values.lineEntries.find((entry) => entry.id === entryId);
+    const isEditableExpenseEntry = sourceEntry !== undefined && !isGeneratedAccountingEntry(sourceEntry);
+    const hasRemarksUpdate = Object.prototype.hasOwnProperty.call(updates, "remarks");
 
-        const nextEntry = normalizeDisbursementLineEntryFields({
-          ...entry,
-          ...updates,
-        });
+    if (isEditableExpenseEntry && hasRemarksUpdate) {
+      if (String(updates.remarks ?? "") === "") {
+        blankRemarksEntryIdsRef.current.add(entryId);
+      } else {
+        blankRemarksEntryIdsRef.current.delete(entryId);
+      }
+    }
 
-        if (Number(nextEntry.debit || 0) > 0) {
-          nextEntry.credit = 0;
-        }
+    if (sourceEntry && isGeneratedAccountingEntry(sourceEntry) && hasRemarksUpdate) {
+      generatedRemarksOverridesRef.current[entryId] = String(updates.remarks ?? "");
+    }
 
-        if (Number(nextEntry.credit || 0) > 0) {
-          nextEntry.debit = 0;
-        }
+    const nextEntries = values.lineEntries.map((entry) => {
+      if (entry.id !== entryId) {
+        return entry;
+      }
 
-        return syncDisbursementLineEntryTaxDetails(nextEntry);
-      }),
-    );
+      const nextEntry = normalizeDisbursementLineEntryFields({
+        ...entry,
+        ...updates,
+      });
+
+      if (Number(nextEntry.debit || 0) > 0) {
+        nextEntry.credit = 0;
+      }
+
+      if (Number(nextEntry.credit || 0) > 0) {
+        nextEntry.debit = 0;
+      }
+
+      return hasRemarksUpdate ? nextEntry : syncDisbursementLineEntryTaxDetails(nextEntry);
+    });
+
+    if (isEditableExpenseEntry) {
+      handleReplaceLineEntries(createAutomaticEntriesForPayment(nextEntries));
+    } else {
+      updateField(DisbursementVoucherLineEntriesField, nextEntries);
+    }
     setErrors((current) => ({
       ...current,
       entryDraft: undefined,
@@ -416,8 +488,6 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
       `cash-disbursement:disbursement-voucher:submit:${mode}:${params.recordId ?? values.transactionId}`,
     );
     if (!releaseSubmitLock) return;
-    isSubmittingRef.current = true;
-    setIsSubmitting(true);
     submitLockReleaseRef.current = releaseSubmitLock;
 
     const valuesForSubmit = {
@@ -426,15 +496,15 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
       transactionId: values.transactionId.trim() || createManualDisbursementTransactionId(),
     };
     const shouldValidate = status !== DisbursementVoucherStatuses.draft;
-    const detailsErrors = shouldValidate ? validateDisbursementVoucherDetails(valuesForSubmit) : {};
+    const detailsErrors = shouldValidate
+      ? validateDisbursementVoucherDetails(valuesForSubmit, selectedPaymentTypeRecord)
+      : {};
     const entryErrors = shouldValidate ? validateDisbursementVoucherEntries(valuesForSubmit) : {};
     const nextErrors = { ...detailsErrors, ...entryErrors };
 
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
       toast.error("Please Fill Up the Required Fields!");
-      isSubmittingRef.current = false;
-      setIsSubmitting(false);
       submitLockReleaseRef.current = null;
       releaseSubmitLock();
       return;
@@ -446,9 +516,12 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   }
 
   function confirmDisbursementVoucherSubmit() {
-    if (!pendingSubmitValues) {
+    if (!pendingSubmitValues || isSubmittingRef.current) {
       return;
     }
+
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
 
     try {
       if (mode === "edit" && existingVoucher) {
@@ -464,7 +537,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
       submitLockReleaseRef.current = null;
       router.push(returnLink);
     } catch {
-      toast.error("Could not save the disbursement voucher. Please try again.");
+      toast.error("Could not save the Disbursement Voucher. Please try again.");
       setPendingSubmitValues(null);
       isSubmittingRef.current = false;
       setIsSubmitting(false);
@@ -510,7 +583,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
       }
       updateTransaction({ ...selectedTransaction!, status, updatedBy: "Current User", updatedAt });
     } catch {
-      toast.error("Could not update the disbursement voucher. Please try again.");
+      toast.error("Could not update the Disbursement Voucher. Please try again.");
       releaseActionLock();
     }
   }
@@ -564,6 +637,9 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   }
 
   return {
+    discardDraft: draft.discardDraft,
+    hasDiscardableChanges: isDirty,
+    saveDraft: draft.saveDraft,
     activeTab,
     bankAccounts,
     currentStatus,
@@ -586,6 +662,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     mode,
     partyStore,
     paymentTypeStore,
+    paymentTypeRecords,
     responsibilityCenterStore,
     returnLink: isRecordMissing ? DisbursementVoucherLink : returnLink,
     selectedBankAccount,
@@ -632,4 +709,15 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   };
 }
 
-export type { DisbursementVoucherActionPageState } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+function shouldEntryRemarksFollowHeader(entry: DisbursementLineEntry, previousHeaderRemarks: string) {
+  const normalizedEntryRemarks = entry.remarks.trim();
+  const normalizedHeaderRemarks = previousHeaderRemarks.trim();
+  const normalizedCreatedRemarks = entry.accountName.trim();
+
+  return (
+    normalizedEntryRemarks === "" ||
+    normalizedEntryRemarks === normalizedCreatedRemarks ||
+    (normalizedHeaderRemarks !== "" && normalizedEntryRemarks === normalizedHeaderRemarks)
+  );
+}
+

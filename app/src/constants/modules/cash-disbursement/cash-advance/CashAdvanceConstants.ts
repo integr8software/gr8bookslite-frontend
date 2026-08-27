@@ -1,4 +1,4 @@
-import type { VisibilityState } from "@tanstack/react-table";
+﻿import type { VisibilityState } from "@tanstack/react-table";
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type {
   CashAdvanceDetailsSection,
@@ -57,7 +57,7 @@ export const CashAdvanceStatuses = {
 
 export const CashAdvanceSubmitConfirmationDialogTitles: Record<CashAdvanceSubmitConfirmationAction, string> = {
   save: "Save Cash Advance?",
-  draft: "Save as Draft?",
+  draft: "Save Cash Advance as Draft?",
 };
 
 export const CashAdvanceSubmitConfirmationDialogConfirmLabels: Record<CashAdvanceSubmitConfirmationAction, string> = {
@@ -69,12 +69,12 @@ export const CashAdvanceAllStatusFilter = "all";
 
 export const CashAdvanceStatusFilterOptions = [
   { label: "All statuses", value: CashAdvanceAllStatusFilter },
-  { label: CashAdvanceStatuses.draft, value: CashAdvanceStatuses.draft },
+  { label: CashAdvanceStatuses.posted, value: CashAdvanceStatuses.posted },
   {
     label: CashAdvanceStatuses.forApproval,
     value: CashAdvanceStatuses.forApproval,
   },
-  { label: CashAdvanceStatuses.posted, value: CashAdvanceStatuses.posted },
+  { label: CashAdvanceStatuses.draft, value: CashAdvanceStatuses.draft },
   {
     label: CashAdvanceStatuses.disapproved,
     value: CashAdvanceStatuses.disapproved,
@@ -87,9 +87,9 @@ export const CashAdvanceStatusFilterOptions = [
 
 export const CashAdvanceStatusFilters = [
   CashAdvanceAllStatusFilter,
-  CashAdvanceStatuses.draft,
-  CashAdvanceStatuses.forApproval,
   CashAdvanceStatuses.posted,
+  CashAdvanceStatuses.forApproval,
+  CashAdvanceStatuses.draft,
   CashAdvanceStatuses.disapproved,
   CashAdvanceStatuses.cancelled,
 ] as const;
@@ -152,7 +152,7 @@ export function getCashAdvanceStatusDialogCopy(
     return {
       confirmLabel: "Undo Approved",
       description: `This will undo the approval of ${recordLabel} and return it to For Approval.`,
-      iconTone: "question" as const,
+      iconTone: "undo" as const,
       pendingLabel: "Undoing Approval...",
       title: "Undo Approved Cash Advance?",
       tone: "question" as const,
@@ -163,7 +163,7 @@ export function getCashAdvanceStatusDialogCopy(
     return {
       confirmLabel: "Undo Disapproved",
       description: `This will undo the disapproval of ${recordLabel} and return it to For Approval.`,
-      iconTone: "question" as const,
+      iconTone: "undo" as const,
       pendingLabel: "Undoing Disapproval...",
       title: "Undo Disapproved Cash Advance?",
       tone: "question" as const,
@@ -174,7 +174,7 @@ export function getCashAdvanceStatusDialogCopy(
     return {
       confirmLabel: "Undo Cancelled",
       description: `This will undo the cancellation of ${recordLabel}.`,
-      iconTone: "question" as const,
+      iconTone: "undo" as const,
       pendingLabel: "Undoing Cancellation...",
       title: "Undo Cancelled Cash Advance?",
       tone: "question" as const,
@@ -209,6 +209,6 @@ export function getCashAdvanceStatusDialogCopy(
     iconTone: "cancel" as const,
     pendingLabel: "Cancelling...",
     title: "Make Cash Advance as Cancelled",
-    tone: "danger" as const,
+    tone: "warning" as const,
   };
 }

@@ -1559,6 +1559,17 @@ export const CreateChartAccountDtoLinkedDetailsKind = {
   BANK: "BANK",
 } as const;
 
+export type CreateChartAccountDtoLinkedDetailsAccountType =
+  (typeof CreateChartAccountDtoLinkedDetailsAccountType)[keyof typeof CreateChartAccountDtoLinkedDetailsAccountType];
+
+export const CreateChartAccountDtoLinkedDetailsAccountType = {
+  CHECKING: "CHECKING",
+  SAVINGS: "SAVINGS",
+  CURRENT: "CURRENT",
+  TIME_DEPOSIT: "TIME_DEPOSIT",
+  CREDIT_CARD: "CREDIT_CARD",
+} as const;
+
 export interface CreateChartAccountDtoLinkedDetails {
   kind?: CreateChartAccountDtoLinkedDetailsKind;
   /** @maxLength 100 */
@@ -1567,8 +1578,7 @@ export interface CreateChartAccountDtoLinkedDetails {
   branch?: string;
   /** @maxLength 100 */
   accountNumber?: string;
-  /** @maxLength 50 */
-  accountType?: string;
+  accountType?: CreateChartAccountDtoLinkedDetailsAccountType;
   /** @maxLength 10 */
   currencyCode?: string;
   /** @minimum 0 */
@@ -1861,7 +1871,7 @@ export type DiscountResponseDtoType =
 
 export const DiscountResponseDtoType = {
   SALES: "SALES",
-  PURCHASE: "PURCHASE",
+  PURCHASES: "PURCHASES",
 } as const;
 
 export type DiscountResponseDtoValueType =
@@ -2068,11 +2078,10 @@ export type PaymentTypeResponseDtoClassification =
   (typeof PaymentTypeResponseDtoClassification)[keyof typeof PaymentTypeResponseDtoClassification];
 
 export const PaymentTypeResponseDtoClassification = {
-  CASH: "CASH",
   BANK_TRANSFER: "BANK_TRANSFER",
   CHECK: "CHECK",
   DIGITAL_WALLET: "DIGITAL_WALLET",
-  NON_CASH_SETTLEMENT: "NON_CASH_SETTLEMENT",
+  DEBIT_MEMO: "DEBIT_MEMO",
 } as const;
 
 export type PaymentTypeResponseDtoStatus =
@@ -2111,11 +2120,10 @@ export interface PaymentTypeStatisticsResponseDto {
   totalPaymentTypes: number;
   activePaymentTypes: number;
   inactivePaymentTypes: number;
-  cashPaymentTypes: number;
   bankTransferPaymentTypes: number;
   checkPaymentTypes: number;
   digitalWalletPaymentTypes: number;
-  nonCashSettlementPaymentTypes: number;
+  debitMemoPaymentTypes?: number;
 }
 
 export interface PaymentTypePermissionsResponseDto {
@@ -2473,6 +2481,17 @@ export const BankAccountResponseDtoStatus = {
   INACTIVE: "INACTIVE",
 } as const;
 
+export type BankAccountResponseDtoAccountType =
+  (typeof BankAccountResponseDtoAccountType)[keyof typeof BankAccountResponseDtoAccountType] | null;
+
+export const BankAccountResponseDtoAccountType = {
+  CHECKING: "CHECKING",
+  SAVINGS: "SAVINGS",
+  CURRENT: "CURRENT",
+  TIME_DEPOSIT: "TIME_DEPOSIT",
+  CREDIT_CARD: "CREDIT_CARD",
+} as const;
+
 export interface BankChartAccountResponseDto {
   id: string;
   accountCode: string;
@@ -2492,7 +2511,7 @@ export interface BankAccountResponseDto {
   accountNumber: string;
   accountName: string;
   /** @nullable */
-  accountType: string | null;
+  accountType: BankAccountResponseDtoAccountType;
   /** @nullable */
   seriesStart: string | null;
   /** @nullable */
@@ -2581,6 +2600,10 @@ export const CreateBankAccountDtoStatus = BankAccountResponseDtoStatus;
 export type CreateBankAccountDtoStatus =
   (typeof CreateBankAccountDtoStatus)[keyof typeof CreateBankAccountDtoStatus];
 
+export const CreateBankAccountDtoAccountType = BankAccountResponseDtoAccountType;
+export type CreateBankAccountDtoAccountType =
+  (typeof CreateBankAccountDtoAccountType)[keyof typeof CreateBankAccountDtoAccountType];
+
 export interface CreateBankAccountDto {
   /** @maxLength 100 */
   bankName: string;
@@ -2590,8 +2613,7 @@ export interface CreateBankAccountDto {
   accountNumber?: string;
   /** @maxLength 250 */
   accountName?: string;
-  /** @maxLength 50 */
-  accountType?: string;
+  accountType: CreateBankAccountDtoAccountType;
   /** @maxLength 50 */
   seriesStart: string;
   /** @maxLength 50 */
@@ -2615,8 +2637,7 @@ export interface UpdateBankAccountDto {
   accountNumber?: string;
   /** @maxLength 250 */
   accountName?: string;
-  /** @maxLength 50 */
-  accountType?: string;
+  accountType?: CreateBankAccountDtoAccountType;
   /** @maxLength 50 */
   seriesStart?: string;
   /** @maxLength 50 */

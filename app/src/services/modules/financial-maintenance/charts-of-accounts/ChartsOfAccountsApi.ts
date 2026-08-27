@@ -19,6 +19,9 @@ import type {
   ChartAccountFormValues,
   StatementGroup,
 } from "@/app/src/types/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsTypes";
+import {
+  mapBankAccountTypeToApi,
+} from "@/app/src/services/modules/financial-maintenance/bank-masterfile/BankAccountTypeMapper";
 import { cleanOptional, toOptionalNumber } from "@/app/src/utils/string.util";
 
 type ApiChartAccountLevel = "MAJOR" | "SUB1" | "SUB2" | "SUB3" | "SPECIFIC";
@@ -99,7 +102,7 @@ function CreateSaveChartAccountPayload(
       bankName: cleanOptional(values.bankDetails.bankName),
       branch: cleanOptional(values.bankDetails.branch),
       accountNumber: cleanOptional(values.bankDetails.bankAccountNumber),
-      accountType: cleanOptional(values.bankDetails.accountType),
+      accountType: mapBankAccountTypeToApi(values.bankDetails.accountType),
       currencyCode: cleanOptional(values.bankDetails.currency),
       currencyExchangeRate: toOptionalNumber(values.bankDetails.currencyExchangeRate),
     };

@@ -11,21 +11,17 @@ import { useBankMasterfileStore } from "@/app/src/hooks/modules/financial-mainte
 import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import type {
-  BankMasterfile,
-  BankMasterfileActionMode,
   BankMasterfileFormErrors,
+  BankMasterfileFormPageOptions,
   BankMasterfileFormValues,
 } from "@/app/src/types/modules/financial-maintenance/bank-masterfile/BankMasterfileTypes";
 import { validateBankMasterfileForm } from "@/app/src/validations/modules/financial-maintenance/bank-masterfile/BankMasterfileValidation";
 
-type BankMasterfileFormPageOptions = {
-  existingBank?: BankMasterfile;
-  mode?: BankMasterfileActionMode;
-  onSaved?: () => void;
-};
-
 export function useBankMasterfileFormPage(options: BankMasterfileFormPageOptions = {}) {
-  const { addBank, isNextAccountCodeLoading, nextAccountCode, refreshNextAccountCode, updateBank } = useBankMasterfileStore();
+  const { addBank, isNextAccountCodeLoading, nextAccountCode, refreshNextAccountCode, updateBank } = useBankMasterfileStore(
+    undefined,
+    { refetchOnMount: false },
+  );
   const mode = options.mode ?? "add";
   const existingBank = options.existingBank;
   const isReadonly = mode === "view";
@@ -38,7 +34,8 @@ export function useBankMasterfileFormPage(options: BankMasterfileFormPageOptions
   const [hasTouchedStatus, setHasTouchedStatus] = useState(false);
 
   const draft = useModuleDraft({
-    enabled: !isReadonly,
+    enabled: (options.isOpen ?? true) && !isReadonly,
+    initialValues,
     key: createModuleDraftKey({
       mode,
       moduleId: "financial-maintenance:bank-masterfile",
@@ -161,6 +158,9 @@ export function useBankMasterfileFormPage(options: BankMasterfileFormPageOptions
   }
 
   return {
+    clearDraft: draft.clearDraft,
+    discardDraft: draft.discardDraft,
+    saveDraft: draft.saveDraft,
     errors,
     handleFieldChange: updateField,
     existingBank,

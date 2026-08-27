@@ -13,6 +13,10 @@ import type {
   CreateBankAccountDto,
   CreateBankAccountDtoStatus,
 } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
+import {
+  mapBankAccountTypeFromApi,
+  requireBankAccountTypeToApi,
+} from "@/app/src/services/modules/financial-maintenance/bank-masterfile/BankAccountTypeMapper";
 import type {
   BankMasterfile,
   BankMasterfileFormValues,
@@ -83,7 +87,7 @@ function mapApiBank(bank: BankAccountResponseDto): BankMasterfile {
     branch: bank.branch ?? "",
     accountNumber: bank.accountNumber,
     accountName: bank.accountName,
-    accountType: bank.accountType ?? "",
+    accountType: bank.accountType ? mapBankAccountTypeFromApi(bank.accountType) : "",
     currencyCode: bank.currencyCode ?? "PHP",
     isDefault: bank.isDefault,
     seriesStart: bank.seriesStart ?? "",
@@ -103,7 +107,7 @@ function toApiBankPayload(bank: BankMasterfile | BankMasterfileFormValues): Crea
     branch: cleanOptional(bank.branch),
     accountNumber: cleanOptional(bank.accountNumber),
     accountName: "accountName" in bank ? cleanOptional(bank.accountName) : undefined,
-    accountType: cleanOptional(bank.accountType),
+    accountType: requireBankAccountTypeToApi(bank.accountType),
     currencyCode: cleanOptional(bank.currencyCode),
     accountCode: "accountCode" in bank ? cleanOptional(bank.accountCode) : undefined,
     seriesStart: bank.seriesStart.trim(),

@@ -1,8 +1,14 @@
 import type { Metadata } from "next";
-import { CashVoucherAccountingGridPage } from "@/app/src/ui/modules/cash-disbursement/cash-voucher/entries/CashVoucherAccountingGridPage";
+import { AppName } from "@/app/src/constants/shared/app/AppConstants";
+import { CashVoucherEntryImportPage } from "@/app/src/ui/modules/cash-disbursement/cash-voucher/import/CashVoucherEntryImportPage";
 
-export const metadata: Metadata = { title: "Cash Voucher Accounting Grid" };
+const PageTitle = "Cash Voucher Accounting Grid";
 
-export default function Page() {
-  return <CashVoucherAccountingGridPage />;
+export const metadata: Metadata = {
+  title: `${PageTitle} | ${AppName}`,
+  description: `${PageTitle} page for ${AppName}.`,
+};
+
+export default function CashDisbursementCashVoucherAccountingGridPage() {
+  return <CashVoucherEntryImportPage />;
 }

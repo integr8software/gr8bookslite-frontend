@@ -102,7 +102,7 @@ function FormField({
   warning?: string;
 }) {
   return (
-    <div className={className}>
+    <label className={className}>
       <span className="mb-2 block text-sm font-semibold text-darknavy">
         {label}
         <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired={required} label={label} leadingSpace />
@@ -113,7 +113,7 @@ function FormField({
       ) : warning ? (
         <span className="mt-1 block text-xs font-medium text-amber-600">{warning}</span>
       ) : null}
-    </div>
+    </label>
   );
 }
 

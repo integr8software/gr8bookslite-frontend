@@ -4,8 +4,10 @@ import {
   createCashAdvanceMultipleEntryPartyOptions,
   createCashAdvanceMultipleEntrySelectOptions,
 } from "@/app/src/data/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryData";
-import type { useCashAdvanceMultipleEntryActionForm } from "@/app/src/hooks/modules/cash-disbursement/cash-advance-multiple-entry/useCashAdvanceMultipleEntry";
-import type { CashAdvanceMultipleEntryFormValues } from "@/app/src/types/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryTypes";
+import type {
+  CashAdvanceMultipleEntryFormController,
+  CashAdvanceMultipleEntryFormValues,
+} from "@/app/src/types/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLookupDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppLookupDropdown";
@@ -37,7 +39,7 @@ export function CashAdvanceMultipleEntryDetailsFields({
   onUpdateCurrency: (currencyCode: string) => void;
   values: CashAdvanceMultipleEntryFormValues;
   projectOptions: AppAdvancedDropdownOption[];
-  onUpdateField: ReturnType<typeof useCashAdvanceMultipleEntryActionForm>["updateField"];
+  onUpdateField: CashAdvanceMultipleEntryFormController["updateField"];
 }) {
   const partyOptions = useMemo(
     () => createCashAdvanceMultipleEntryPartyOptions(values.partyCode, values.partyName),
@@ -136,11 +138,13 @@ export function CashAdvanceMultipleEntryDetailsFields({
           />
 
           <CurrencyExchangeRateRow
-            currencyControlId="came-currency"
             currencyLabel="Currency"
+            currencyControlId="came-currency"
+            exchangeRateControlId="came-exchange-rate"
             currencyControl={
               <AppAdvancedDropdown
                 id="came-currency"
+                className="w-full min-w-0"
                 value={values.currency}
                 readOnly={isReadonly}
                 isClearable={false}
@@ -151,7 +155,6 @@ export function CashAdvanceMultipleEntryDetailsFields({
                 onChange={(value) => onUpdateCurrency(String(value))}
               />
             }
-            exchangeRateControlId="came-exchange-rate"
             exchangeRateControl={
               <input
                 id="came-exchange-rate"
@@ -161,7 +164,8 @@ export function CashAdvanceMultipleEntryDetailsFields({
                 readOnly={isReadonly}
                 disabled={isReadonly || isExchangeRateLoading}
                 onChange={(event) => onUpdateField("exchangeRate", formatExchangeRateInput(event.target.value))}
-                className={`${TransactionFieldClassName} text-right tabular-nums`}
+                className={`${TransactionFieldClassName} text-right tabular-nums${isReadonly || isExchangeRateLoading ? " transaction-readonly-placeholder" : ""}`}
+                placeholder="0.00"
               />
             }
           />
@@ -173,26 +177,21 @@ export function CashAdvanceMultipleEntryDetailsFields({
             value={values.transNo}
             isReadonly
             isRequired
-            label="Cash Advance Multiple Entry No."
+            label="CAME No."
             onValueChange={(value) => onUpdateField("transNo", value)}
-            placeholder="Auto Generated Cash Advance Multiple Entry Transaction Number"
+            placeholder="Auto Generated CAME Transaction Number"
           />
 
           <TransactionTextField
             value={values.documentDate}
             isReadonly={isReadonly}
             isRequired
-            label="Cash Advance Multiple Entry Date"
+            label="CAME Date"
             type="date"
             onValueChange={(value) => onUpdateField("documentDate", value)}
           />
 
-          <TransactionTextField
-            value={values.status}
-            isReadonly
-            label="Status"
-            onValueChange={() => undefined}
-          />
+          <TransactionTextField value={values.status} isReadonly label="Status" onValueChange={() => undefined} />
         </div>
       </div>
     </section>

@@ -1,17 +1,15 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { CreditCard } from "lucide-react";
 import { usePaymentTypeListPage } from "@/app/src/hooks/modules/financial-maintenance/payment-type/usePaymentTypeListPage";
 import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/useMaintenanceAddDrawerSpotlight";
+import type { DrawerState } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
 import { PaymentTypeDrawer } from "@/app/src/ui/modules/financial-maintenance/payment-type/PaymentTypeDrawer";
+import { PaymentTypeHeader } from "@/app/src/ui/modules/financial-maintenance/payment-type/PaymentTypeHeader";
 import { PaymentTypeImportDialog } from "@/app/src/ui/modules/financial-maintenance/payment-type/PaymentTypeImportDialog";
-import { PaymentTypeHeaderActions } from "@/app/src/ui/modules/financial-maintenance/payment-type/PaymentTypeHeaderActions";
 import { PaymentTypeStatisticCards } from "@/app/src/ui/modules/financial-maintenance/payment-type/PaymentTypeStatisticCards";
 import { PaymentTypeTable } from "@/app/src/ui/modules/financial-maintenance/payment-type/PaymentTypeTable";
-import type { DrawerState } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
 
 export function PaymentTypeListPage() {
   const page = usePaymentTypeListPage();
@@ -32,19 +30,7 @@ export function PaymentTypeListPage() {
 
   return (
     <section className="grid gap-5">
-      <ModuleHeader
-        variant="panel"
-        titleAs="h1"
-        title="Payment Type"
-        description="Maintain payment type names, categories, and active status for cash disbursement workflows."
-        eyebrow={
-          <>
-            <CreditCard className="h-3.5 w-3.5" aria-hidden="true" />
-            Accounting master data
-          </>
-        }
-        actions={<PaymentTypeHeaderActions onAdd={openAddDrawer} onImport={() => setIsImportOpen(true)} permissions={page.permissions} />}
-      />
+      <PaymentTypeHeader onAdd={openAddDrawer} onImport={() => setIsImportOpen(true)} permissions={page.permissions} />
 
       <PaymentTypeStatisticCards statistics={page.statistics} isLoading={page.isLoading} />
 

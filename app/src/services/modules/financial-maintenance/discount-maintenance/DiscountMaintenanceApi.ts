@@ -88,11 +88,11 @@ function toApiDiscountPayload(discount: Discount | DiscountMaintenanceFormValues
 }
 
 function mapTypeFromApi(value: DiscountResponseDtoType): DiscountTransactionType {
-  return value === "PURCHASE" ? "Purchase" : "Sales";
+  return value === "PURCHASES" ? "Purchases" : "Sales";
 }
 
 function mapTypeToApi(value: DiscountTransactionType): CreateDiscountDtoType {
-  return value === "Purchase" ? "PURCHASE" : "SALES";
+  return value === "Purchases" ? "PURCHASES" : "SALES";
 }
 
 function mapValueTypeFromApi(value: DiscountResponseDtoValueType): DiscountType {

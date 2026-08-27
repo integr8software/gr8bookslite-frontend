@@ -27,11 +27,8 @@ import { coerceDate } from "@/app/src/utils/date.util";
 import { parseAmount } from "@/app/src/utils/number.util";
 import { formatPartOfTotalPercentage } from "@/app/src/utils/percentage.util";
 import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
-import { CashDisbursementOverviewActionColumnWidth } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 
 const columnHelper = createColumnHelper<PettyCashVoucherRecord>();
-const EmptyDateRange: DateRangeValue = { from: "", to: "" };
-const EmptyAmountRange: AmountRangeValue = { from: "", to: "" };
 
 export function usePettyCashVoucherOverviewPage() {
   const queryClient = useQueryClient();
@@ -44,8 +41,8 @@ export function usePettyCashVoucherOverviewPage() {
   const [statusFilter, setStatusFilter] = useState<typeof PettyCashVoucherAllStatusFilter | PettyCashVoucherStatus>(
     PettyCashVoucherAllStatusFilter,
   );
-  const [dateRange, setDateRange] = useState<DateRangeValue>(EmptyDateRange);
-  const [amountRange, setAmountRange] = useState<AmountRangeValue>(EmptyAmountRange);
+  const [dateRange, setDateRange] = useState<DateRangeValue>({ from: "", to: "" });
+  const [amountRange, setAmountRange] = useState<AmountRangeValue>({ from: "", to: "" });
   const [columnVisibility, setColumnVisibility] = useState(() => PettyCashVoucherDefaultColumnVisibility);
   const updateStatusMutation = useMutation({
     mutationFn: async ({ status, voucherId }: { status: PettyCashVoucherStatus; voucherId: string }) => ({ status, voucherId }),
@@ -53,10 +50,10 @@ export function usePettyCashVoucherOverviewPage() {
       queryClient.setQueryData<PettyCashVoucherRecord[]>(PettyCashVoucherQueryKeys.vouchers(), (current = PettyCashVoucherRecords) =>
         current.map((voucher) => (voucher.id === voucherId ? { ...voucher, status } : voucher)),
       );
-      toast.success(`Petty cash voucher marked as ${status}.`);
+      toast.success(`Petty Cash Voucher Marked as ${status}.`);
     },
     onError: () => {
-      toast.error("Could not update the voucher status. Please try again.");
+      toast.error("Could not update the Petty Cash Voucher status. Please try again.");
     },
   });
 
@@ -156,7 +153,7 @@ export function usePettyCashVoucherOverviewPage() {
       columnHelper.display({
         id: "actions",
         header: PettyCashVoucherColumnLabels.actions,
-        size: CashDisbursementOverviewActionColumnWidth,
+        size: TransactionOverviewColumnWidths.actions,
         meta: { className: "text-center", label: PettyCashVoucherColumnLabels.actions },
       }),
     ],
@@ -213,8 +210,12 @@ export function usePettyCashVoucherOverviewPage() {
   function resetFilters() {
     setSearchQuery("");
     setStatusFilter(PettyCashVoucherAllStatusFilter);
-    setDateRange(EmptyDateRange);
-    setAmountRange(EmptyAmountRange);
+    setDateRange({ from: "", to: "" });
+    setAmountRange({ from: "", to: "" });
+  }
+
+  function refreshRecords() {
+    void vouchersQuery.refetch();
   }
 
   function updateStatusFilter(value: string) {
@@ -237,6 +238,7 @@ export function usePettyCashVoucherOverviewPage() {
     isLoading: vouchersQuery.isLoading,
     isMutating: updateStatusMutation.isPending,
     lastSyncedAt: vouchersQuery.dataUpdatedAt,
+    refreshRecords,
     searchQuery,
     resetFilters,
     setAmountRange,
@@ -249,4 +251,3 @@ export function usePettyCashVoucherOverviewPage() {
   };
 }
 
-export type { PettyCashVoucherOverviewPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";

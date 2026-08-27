@@ -7,6 +7,7 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";
 import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 import { formatMoneyNumberDisplayValue, parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
+import { calculateTaxAmounts } from "@/app/src/data/shared/tax/TaxData";
 import { todayDateValue } from "@/app/src/utils/date.util";
 
 export const RevolvingFundSeedRecords: RevolvingFundRecord[] = [
@@ -78,20 +79,23 @@ export function createBlankRevolvingFundItem(): RevolvingFundItem {
   return {
     id: `rf-item-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     date: todayDateValue(),
-    payeeCode: "",
-    payeeName: "",
+    supplierCode: "",
+    supplierName: "",
     orNo: "",
     tinNo: "",
-    particulars: "",
+    remarks: "",
     amount: "",
     netAmount: "",
-    vatAmount: "0.00",
+    vatPercent: "",
+    vatAmount: "",
+    ewtCode: "",
+    ewtPercent: "",
+    ewtAmount: "",
     type: "",
     vatType: "",
-    vatable: "False",
-    vatInclusive: "False",
     grossAmount: "",
-    responsibilityCenter: "",
+    responsibilityCenterCode: "",
+    responsibilityCenterName: "",
   };
 }
 
@@ -103,7 +107,7 @@ export function createRevolvingFundFormValues(
   if (record?.formValues) {
     return {
       ...record.formValues,
-      items: record.formValues.items.map((item) => ({ ...item })),
+      items: record.formValues.items.map(normalizeRevolvingFundItem),
       attachments: record.formValues.attachments.map((item) => ({ ...item })),
     };
   }
@@ -128,11 +132,10 @@ export function createRevolvingFundFormValues(
         {
           ...createBlankRevolvingFundItem(),
           date: record.documentDate,
-          payeeCode: "V100006",
-          payeeName: "All4U Restaurant",
-          tinNo: "488-860-327-000",
+          supplierCode: "V100006",
+          supplierName: "All4U Restaurant",
           amount,
-          netAmount: amount,
+          ...calculateRevolvingFundItemTaxFields(amount),
           grossAmount: amount,
         },
       ],
@@ -165,10 +168,35 @@ export function calculateRevolvingFundTotals(items: RevolvingFundItem[]) {
       amount: totals.amount + parseMoneyNumberInput(item.amount),
       netAmount: totals.netAmount + parseMoneyNumberInput(item.netAmount),
       vatAmount: totals.vatAmount + parseMoneyNumberInput(item.vatAmount),
+      ewtAmount: totals.ewtAmount + parseMoneyNumberInput(item.ewtAmount),
       grossAmount: totals.grossAmount + parseMoneyNumberInput(item.grossAmount),
     }),
-    { amount: 0, netAmount: 0, vatAmount: 0, grossAmount: 0 },
+    { amount: 0, netAmount: 0, vatAmount: 0, ewtAmount: 0, grossAmount: 0 },
   );
+}
+
+export function calculateRevolvingFundItemTaxFields(
+  amountValue: string | number,
+  vatType = "",
+  ewtCode = "",
+): Pick<RevolvingFundItem, "netAmount" | "vatPercent" | "vatAmount" | "ewtPercent" | "ewtAmount" | "grossAmount"> {
+  const amount = roundRevolvingFundTaxAmount(parseMoneyNumberInput(amountValue));
+  const vatPercent = getRevolvingFundVatPercent(vatType);
+  const ewtPercent = getRevolvingFundEwtPercent(ewtCode);
+  const taxAmounts = calculateTaxAmounts({
+    grossAmount: amount,
+    taxRate: vatPercent,
+    ewtRate: ewtPercent,
+  });
+
+  return {
+    netAmount: formatRevolvingFundAmount(taxAmounts.netAmount),
+    vatPercent: vatPercent ? `${formatRevolvingFundAmount(vatPercent)}%` : "",
+    vatAmount: formatRevolvingFundAmount(taxAmounts.vatAmount),
+    ewtPercent: ewtPercent ? `${formatRevolvingFundAmount(ewtPercent)}%` : "",
+    ewtAmount: formatRevolvingFundAmount(taxAmounts.ewtAmount),
+    grossAmount: formatRevolvingFundAmount(amount),
+  };
 }
 
 export function createRevolvingFundRecord(
@@ -204,6 +232,37 @@ export function createRevolvingFundRecord(
 
 export function formatRevolvingFundAmount(value: number) {
   return formatMoneyNumberDisplayValue(value.toFixed(2));
+}
+
+function getRevolvingFundVatPercent(vatType: string) {
+  const match = vatType.toLowerCase().match(/(\d+(?:\.\d+)?)/);
+  if (match) return Number.parseFloat(match[1]);
+  return 0;
+}
+
+function getRevolvingFundEwtPercent(ewtCode: string) {
+  const rates: Record<string, number> = {
+    W05: 5,
+    W10: 10,
+    WV01: 1,
+    WV02: 2,
+  };
+  return rates[ewtCode] ?? 0;
+}
+
+function roundRevolvingFundTaxAmount(value: number) {
+  return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+
+function normalizeRevolvingFundItem(item: Partial<RevolvingFundItem>): RevolvingFundItem {
+  const amount = item.amount ?? item.grossAmount ?? "";
+
+  return {
+    ...createBlankRevolvingFundItem(),
+    ...item,
+    amount,
+    ...calculateRevolvingFundItemTaxFields(amount, item.vatType ?? "", item.ewtCode ?? ""),
+  };
 }
 
 function createSeed(

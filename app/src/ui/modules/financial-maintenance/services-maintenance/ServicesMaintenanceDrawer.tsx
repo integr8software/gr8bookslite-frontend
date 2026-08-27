@@ -49,6 +49,7 @@ function ServicesMaintenanceDrawerPanel({
   const [isAccountTitleDialogOpen, setIsAccountTitleDialogOpen] = useState(false);
   const page = useServicesMaintenanceFormPage({
     existingService: service,
+    isOpen,
     mode,
     onSaved: onClose,
   });
@@ -64,6 +65,16 @@ function ServicesMaintenanceDrawerPanel({
     setIsAccountTitleDialogOpen(true);
   }
 
+  function handleClose() {
+    page.saveDraft();
+    onClose();
+  }
+
+  function handleCancel() {
+    page.discardDraft();
+    onClose();
+  }
+
   return (
     <>
       <ModuleDrawer
@@ -74,7 +85,8 @@ function ServicesMaintenanceDrawerPanel({
         isReadonly={page.isReadonly}
         isSaving={page.isSubmitting}
         onBeforeSaveConfirm={page.validateBeforeSubmit}
-        onClose={onClose}
+        onCancel={handleCancel}
+        onClose={handleClose}
         savingLabel={getModuleSavePendingLabel(mode)}
         submitLabel={mode === "edit" ? "Update Service" : "Save Service"}
         title={copy.title}

@@ -98,6 +98,8 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
   const [isResponsibilityCenterDrawerOpen, setIsResponsibilityCenterDrawerOpen] = useState(false);
   const [pendingResponsibilityCenterEntryId, setPendingResponsibilityCenterEntryId] = useState<string | null>(null);
+  const blankRemarksEntryIdsRef = useRef(new Set<string>());
+  const generatedRemarksOverridesRef = useRef<Record<string, string>>({});
   const hasEditedCurrencyRef = useRef(false);
   const isSubmittingRef = useRef(false);
   const submitLockReleaseRef = useRef<null | (() => void)>(null);
@@ -117,6 +119,8 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   const isDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
   const draft = useModuleDraft({
     enabled: !isReadonly,
+    initialValues,
+    isDirty,
     key: createModuleDraftKey({ mode, moduleId: "cash-disbursement:cash-voucher", recordId: params.recordId }),
     setValues,
     values,
@@ -143,7 +147,33 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
       return;
     }
 
-    setValues((current) => ({ ...current, [field]: value }));
+    setValues((current) => {
+      const nextValues = { ...current, [field]: value };
+
+      if (field !== "remarks") {
+        return nextValues;
+      }
+
+      const nextRemarks = String(value ?? "");
+      const editableEntries = current.lineEntries
+        .filter((entry) => !isGeneratedAccountingEntry(entry))
+        .map((entry) =>
+          !blankRemarksEntryIdsRef.current.has(entry.id) && shouldEntryRemarksFollowHeader(entry, current.remarks)
+            ? { ...entry, remarks: nextRemarks }
+            : entry,
+        );
+
+      return {
+        ...nextValues,
+        lineEntries: createAutomaticAccountingEntries(editableEntries, {
+          bankAccount: null,
+          blankRemarksEntryIds: Array.from(blankRemarksEntryIdsRef.current),
+          generatedRemarksOverrides: generatedRemarksOverridesRef.current,
+          isCashPayment: true,
+          paymentMethod: "Cash",
+        }),
+      };
+    });
     setErrors((current) => ({ ...current, [field]: undefined }));
   }
 
@@ -178,6 +208,8 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   function createAutomaticEntriesForPayment(entries: CashVoucherLineEntry[]) {
     return createAutomaticAccountingEntries(entries, {
       bankAccount: null,
+      blankRemarksEntryIds: Array.from(blankRemarksEntryIdsRef.current),
+      generatedRemarksOverrides: generatedRemarksOverridesRef.current,
       isCashPayment: true,
       paymentMethod: "Cash",
     });
@@ -226,6 +258,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
       partyCode: values.partyCode,
       partyName: values.partyName,
       refId,
+      remarks: values.remarks,
       responsibilityCenter,
       taxDetails: {
         ...createTaxDetails(0, "0%"),
@@ -252,6 +285,8 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   }
 
   function handleRemoveEntry(entryId: string) {
+    blankRemarksEntryIdsRef.current.delete(entryId);
+    delete generatedRemarksOverridesRef.current[entryId];
     replaceEntriesWithAutomaticRows(removeCashVoucherEntryRow(values.lineEntries, entryId));
   }
 
@@ -260,29 +295,48 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   }
 
   function handleUpdateEntryFields(entryId: string, updates: Partial<CashVoucherLineEntry>) {
-    updateField(
-      CashVoucherLineEntriesField,
-      values.lineEntries.map((entry) => {
-        if (entry.id !== entryId) {
-          return entry;
-        }
+    const sourceEntry = values.lineEntries.find((entry) => entry.id === entryId);
+    const isEditableExpenseEntry = sourceEntry !== undefined && !isGeneratedAccountingEntry(sourceEntry);
+    const hasRemarksUpdate = Object.prototype.hasOwnProperty.call(updates, "remarks");
 
-        const nextEntry = normalizeCashVoucherLineEntryFields({
-          ...entry,
-          ...updates,
-        });
+    if (isEditableExpenseEntry && hasRemarksUpdate) {
+      if (String(updates.remarks ?? "") === "") {
+        blankRemarksEntryIdsRef.current.add(entryId);
+      } else {
+        blankRemarksEntryIdsRef.current.delete(entryId);
+      }
+    }
 
-        if (Number(nextEntry.debit || 0) > 0) {
-          nextEntry.credit = 0;
-        }
+    if (sourceEntry && isGeneratedAccountingEntry(sourceEntry) && hasRemarksUpdate) {
+      generatedRemarksOverridesRef.current[entryId] = String(updates.remarks ?? "");
+    }
 
-        if (Number(nextEntry.credit || 0) > 0) {
-          nextEntry.debit = 0;
-        }
+    const nextEntries = values.lineEntries.map((entry) => {
+      if (entry.id !== entryId) {
+        return entry;
+      }
 
-        return syncCashVoucherLineEntryTaxDetails(nextEntry);
-      }),
-    );
+      const nextEntry = normalizeCashVoucherLineEntryFields({
+        ...entry,
+        ...updates,
+      });
+
+      if (Number(nextEntry.debit || 0) > 0) {
+        nextEntry.credit = 0;
+      }
+
+      if (Number(nextEntry.credit || 0) > 0) {
+        nextEntry.debit = 0;
+      }
+
+      return hasRemarksUpdate ? nextEntry : syncCashVoucherLineEntryTaxDetails(nextEntry);
+    });
+
+    if (isEditableExpenseEntry) {
+      handleReplaceLineEntries(createAutomaticEntriesForPayment(nextEntries));
+    } else {
+      updateField(CashVoucherLineEntriesField, nextEntries);
+    }
     setErrors((current) => ({
       ...current,
       entryDraft: undefined,
@@ -333,8 +387,6 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
       `cash-disbursement:cash-voucher:submit:${mode}:${params.recordId ?? values.transactionId}`,
     );
     if (!releaseSubmitLock) return;
-    isSubmittingRef.current = true;
-    setIsSubmitting(true);
     submitLockReleaseRef.current = releaseSubmitLock;
 
     const valuesForSubmit = {
@@ -350,8 +402,6 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
       toast.error("Please Fill Up the Required Fields!");
-      isSubmittingRef.current = false;
-      setIsSubmitting(false);
       submitLockReleaseRef.current = null;
       releaseSubmitLock();
       return;
@@ -363,9 +413,12 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   }
 
   function confirmCashVoucherSubmit() {
-    if (!pendingSubmitValues) {
+    if (!pendingSubmitValues || isSubmittingRef.current) {
       return;
     }
+
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
 
     try {
       if (mode === "edit" && existingVoucher) {
@@ -381,7 +434,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
       submitLockReleaseRef.current = null;
       router.push(returnLink);
     } catch {
-      toast.error("Could not save the cash voucher. Please try again.");
+      toast.error("Could not save the Cash Voucher. Please try again.");
       setPendingSubmitValues(null);
       isSubmittingRef.current = false;
       setIsSubmitting(false);
@@ -427,7 +480,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
       }
       updateTransaction({ ...selectedTransaction!, status, updatedBy: "Current User", updatedAt });
     } catch {
-      toast.error("Could not update the cash voucher. Please try again.");
+      toast.error("Could not update the Cash Voucher. Please try again.");
       releaseActionLock();
     }
   }
@@ -481,6 +534,9 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   }
 
   return {
+    discardDraft: draft.discardDraft,
+    hasDiscardableChanges: isDirty,
+    saveDraft: draft.saveDraft,
     activeTab,
     currentStatus,
     currencyOptions: transactionCurrency.currencyOptions,
@@ -538,6 +594,17 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   };
 }
 
-export type { CashVoucherActionPageState } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
+function shouldEntryRemarksFollowHeader(entry: CashVoucherLineEntry, previousHeaderRemarks: string) {
+  const normalizedEntryRemarks = entry.remarks.trim();
+  const normalizedHeaderRemarks = previousHeaderRemarks.trim();
+  const normalizedCreatedRemarks = entry.accountName.trim();
+
+  return (
+    normalizedEntryRemarks === "" ||
+    normalizedEntryRemarks === normalizedCreatedRemarks ||
+    (normalizedHeaderRemarks !== "" && normalizedEntryRemarks === normalizedHeaderRemarks)
+  );
+}
+
 
 

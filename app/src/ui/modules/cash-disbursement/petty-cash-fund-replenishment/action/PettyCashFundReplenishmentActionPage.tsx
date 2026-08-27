@@ -12,8 +12,9 @@ import { usePartyManagementStore } from "@/app/src/hooks/modules/party-managemen
 import type { PettyCashFundReplenishmentActionMode } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentTypes";
 import type { PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";
 import { PettyCashFundReplenishmentActionHeader } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund-replenishment/action/PettyCashFundReplenishmentActionHeader";
-import { PettyCashFundReplenishmentAttachmentsTab } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund-replenishment/action/PettyCashFundReplenishmentAttachmentsTab";
-import { PettyCashFundReplenishmentDetailsTab } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund-replenishment/action/PettyCashFundReplenishmentDetailsTab";
+import { PettyCashFundReplenishmentFileAttachmentFields } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund-replenishment/action/PettyCashFundReplenishmentFileAttachmentFields";
+import { PettyCashFundReplenishmentDetailsFields } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund-replenishment/action/PettyCashFundReplenishmentDetailsFields";
+import { PettyCashFundReplenishmentEntrySection } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund-replenishment/entries/PettyCashFundReplenishmentEntrySection";
 import { PettyCashFundReplenishmentNotFound } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund-replenishment/action/PettyCashFundReplenishmentNotFound";
 import { PettyCashFundReplenishmentReportPreview } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund-replenishment/reports/PettyCashFundReplenishmentReportPreview";
 import { openPettyCashFundReplenishmentPdf } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund-replenishment/reports/PettyCashFundReplenishmentPdf";
@@ -24,6 +25,8 @@ import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 export function PettyCashFundReplenishmentActionPage({ mode }: { mode: PettyCashFundReplenishmentActionMode }) {
   const router = useRouter();
   const [isPartyDrawerOpen, setIsPartyDrawerOpen] = useState(false);
+  const [isSupplierDrawerOpen, setIsSupplierDrawerOpen] = useState(false);
+  const [pendingSupplierEntryId, setPendingSupplierEntryId] = useState<string | null>(null);
   const [isResponsibilityCenterDrawerOpen, setIsResponsibilityCenterDrawerOpen] = useState(false);
   const [isProjectDrawerOpen, setIsProjectDrawerOpen] = useState(false);
   const partyStore = usePartyManagementStore();
@@ -37,6 +40,20 @@ export function PettyCashFundReplenishmentActionPage({ mode }: { mode: PettyCash
     page.updateField("partyName", getPartyDisplayName(record));
     setIsPartyDrawerOpen(false);
   }
+  function handleOpenSupplierDrawer(rowId: string) {
+    setPendingSupplierEntryId(rowId);
+    setIsSupplierDrawerOpen(true);
+  }
+  function handleCreateSupplier(record: PartyInformationRecord) {
+    if (pendingSupplierEntryId) {
+      page.updateEntry(pendingSupplierEntryId, {
+        supplierCode: record.partyCodeNo,
+        supplierName: getPartyDisplayName(record),
+      });
+    }
+    setPendingSupplierEntryId(null);
+    setIsSupplierDrawerOpen(false);
+  }
   return (
     <>
       <section className="grid gap-5">
@@ -48,14 +65,20 @@ export function PettyCashFundReplenishmentActionPage({ mode }: { mode: PettyCash
           onTabChange={page.setActiveTab}
         />
         {page.activeTab === "details" ? (
-          <PettyCashFundReplenishmentDetailsTab
-            page={page}
-            onOpenPartyDrawer={() => setIsPartyDrawerOpen(true)}
-            onOpenProjectDrawer={() => setIsProjectDrawerOpen(true)}
-            onOpenResponsibilityCenterDrawer={() => setIsResponsibilityCenterDrawerOpen(true)}
-          />
+          <>
+            <PettyCashFundReplenishmentDetailsFields
+              page={page}
+              onOpenPartyDrawer={() => setIsPartyDrawerOpen(true)}
+              onOpenProjectDrawer={() => setIsProjectDrawerOpen(true)}
+              onOpenResponsibilityCenterDrawer={() => setIsResponsibilityCenterDrawerOpen(true)}
+            />
+            <PettyCashFundReplenishmentEntrySection
+              page={page}
+              onOpenSupplierDrawer={handleOpenSupplierDrawer}
+            />
+          </>
         ) : (
-          <PettyCashFundReplenishmentAttachmentsTab page={page} />
+          <PettyCashFundReplenishmentFileAttachmentFields page={page} />
         )}
       </section>
       <PartyManagementDrawer
@@ -66,6 +89,19 @@ export function PettyCashFundReplenishmentActionPage({ mode }: { mode: PettyCash
         onAddRecord={partyStore.addRecord}
         onClose={() => setIsPartyDrawerOpen(false)}
         onCreateParty={handleCreateParty}
+      />
+      <PartyManagementDrawer
+        isOpen={!page.isReadonly && isSupplierDrawerOpen}
+        isPending={partyStore.isMutating}
+        records={partyStore.records}
+        suggestedPartyType="Vendor"
+        title="Add Vendor"
+        onAddRecord={partyStore.addRecord}
+        onClose={() => {
+          setPendingSupplierEntryId(null);
+          setIsSupplierDrawerOpen(false);
+        }}
+        onCreateParty={handleCreateSupplier}
       />
       <ResponsibilityCenterDrawer
         isOpen={!page.isReadonly && isResponsibilityCenterDrawerOpen}

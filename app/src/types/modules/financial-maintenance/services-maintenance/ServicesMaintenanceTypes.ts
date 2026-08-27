@@ -33,6 +33,18 @@ export type ServicesMaintenanceFormValues = {
 export type ServicesMaintenanceFormErrors = Partial<Record<keyof ServicesMaintenanceFormValues, string>>;
 
 export type ServicesMaintenanceActionMode = "add" | "edit" | "view";
+
+export type ServicesMaintenanceFormPageOptions = {
+  existingService?: ServicesMaintenance;
+  isOpen?: boolean;
+  mode?: ServicesMaintenanceActionMode;
+  onSaved?: () => void;
+};
+
+export type ServicesMaintenanceStoreOptions = {
+  refetchOnMount?: boolean | "always";
+};
+
 export type ServicesMaintenanceStatusFilter = "" | ServicesMaintenanceStatus;
 export type ServicesMaintenanceSetupModeFilter = "" | ServicesMaintenanceAccountSetupMode;
 

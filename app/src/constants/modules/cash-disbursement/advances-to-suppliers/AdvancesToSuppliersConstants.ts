@@ -1,9 +1,9 @@
 import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
-import { CashDisbursementOverviewActionColumnWidth } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type {
   AdvancesToSuppliersActionTab,
   AdvancesToSuppliersConfirmationAction,
+  AdvancesToSuppliersPaymentType,
   AdvancesToSuppliersStatus,
 } from "@/app/src/types/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
@@ -16,7 +16,7 @@ export const AdvancesToSuppliersStorageKey = "cash-disbursement-advances-to-supp
 export const AdvancesToSuppliersPaginationStorageKey = "cash-disbursement-advances-to-suppliers-table";
 export const AdvancesToSuppliersTransactionPrefix = "ATS";
 export const AdvancesToSuppliersColumnLabels = {
-  transactionNo: "Advances to Suppliers No.",
+  transactionNo: "Advances To Suppliers No.",
   documentDate: "Document Date",
   partyCode: "Party Code",
   partyName: "Party Name",
@@ -45,7 +45,7 @@ export const AdvancesToSuppliersOverviewColumnWidths: Record<keyof typeof Advanc
   updatedBy: TransactionOverviewColumnWidths.auditUser,
   updatedAt: TransactionOverviewColumnWidths.auditDate,
   status: TransactionOverviewColumnWidths.status,
-  actions: CashDisbursementOverviewActionColumnWidth,
+  actions: TransactionOverviewColumnWidths.actions,
 };
 export const AdvancesToSuppliersDefaultVisibleColumnIds = [
   "transactionNo",
@@ -70,19 +70,27 @@ export const AdvancesToSuppliersStatuses = {
   posted: "Posted",
 } as const;
 export const AdvancesToSuppliersRecordStatuses = [
-  "Draft",
-  "For Approval",
   "Posted",
+  "For Approval",
+  "Draft",
   "Disapproved",
   "Cancelled",
 ] as const satisfies readonly AdvancesToSuppliersStatus[];
 export const AdvancesToSuppliersStatusOptions = ["All", ...AdvancesToSuppliersRecordStatuses] as const;
+export const AdvancesToSuppliersPaymentTypeOptions = [
+  "Percentage",
+  "Fixed Amount",
+] as const satisfies readonly AdvancesToSuppliersPaymentType[];
+export const AdvancesToSuppliersPaymentTypeDropdownOptions: AppAdvancedDropdownOption[] = [
+  { label: "Percentage", name: "Percentage", value: "Percentage" },
+  { label: "Fixed Amount", name: "Fixed Amount", value: "Fixed Amount" },
+];
 export const AdvancesToSuppliersConfirmationDialogTitles: Record<AdvancesToSuppliersConfirmationAction, string> = {
-  save: "Save Advances to Supplier?",
-  draft: "Save as Draft?",
-  approve: "Approve Advances to Supplier?",
-  disapprove: "Disapprove Advances to Supplier?",
-  cancel: "Cancel Advances to Supplier?",
+  save: "Save Advances to Suppliers?",
+  draft: "Save Advances to Suppliers as Draft?",
+  approve: "Approve Advances to Suppliers?",
+  disapprove: "Disapprove Advances to Suppliers?",
+  cancel: "Cancel Advances to Suppliers?",
 };
 export const AdvancesToSuppliersConfirmationDialogConfirmLabels: Record<AdvancesToSuppliersConfirmationAction, string> = {
   save: "Save and Submit",
@@ -118,5 +126,9 @@ export const AdvancesToSuppliersResponsibilityCenterOptions: AppAdvancedDropdown
 ];
 
 export function canEditAdvancesToSuppliers(status: AdvancesToSuppliersStatus) {
-  return ["Draft", "For Approval", "Disapproved"].includes(status);
+  return (
+    status === AdvancesToSuppliersStatuses.draft ||
+    status === AdvancesToSuppliersStatuses.forApproval ||
+    status === AdvancesToSuppliersStatuses.disapproved
+  );
 }

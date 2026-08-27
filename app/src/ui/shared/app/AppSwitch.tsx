@@ -7,6 +7,7 @@ export type AppSwitchProps<TValue extends string | boolean> = {
   className?: string;
   disabled?: boolean;
   falseOption: AppSwitchOption<TValue>;
+  id?: string;
   readOnly?: boolean;
   trueOption: AppSwitchOption<TValue>;
   value: TValue;
@@ -17,6 +18,7 @@ export function AppSwitch<TValue extends string | boolean>({
   className,
   disabled = false,
   falseOption,
+  id,
   onChange,
   readOnly = false,
   trueOption,
@@ -35,6 +37,7 @@ export function AppSwitch<TValue extends string | boolean>({
 
   return (
     <button
+      id={id}
       type="button"
       role="switch"
       aria-checked={isChecked}

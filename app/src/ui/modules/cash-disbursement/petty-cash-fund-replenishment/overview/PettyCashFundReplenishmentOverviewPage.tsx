@@ -59,7 +59,7 @@ export function PettyCashFundReplenishmentOverviewPage() {
           table={page.table}
           tableTitle="Petty Cash Fund Replenishment Transactions"
           toolbar={
-            <PettyCashFundReplenishmentTableToolbar page={page} />
+            <PettyCashFundReplenishmentTableToolbar onRefresh={page.refreshRecords} page={page} />
           }
           useColumnSizing
           renderRow={(row) => (

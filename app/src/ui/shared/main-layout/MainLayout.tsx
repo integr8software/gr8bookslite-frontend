@@ -270,7 +270,7 @@ function MainLayoutContent({ children }: MainLayoutProps) {
 					)}
 				>
 					<MainPageHeader breadcrumbs={breadcrumbs} />
-					<div className="w-full flex-1">
+					<div className="min-w-0 w-full flex-1">
 						{shouldShowBranchContent ? (
 							children
 						) : (

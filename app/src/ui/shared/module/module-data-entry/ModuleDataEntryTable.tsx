@@ -107,7 +107,7 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 
 		const rect = trigger.getBoundingClientRect();
 		const menuWidth = 176;
-		const menuHeight = hasClearRowAction ? 220 : 180;
+	const menuHeight = 220;
 		const viewportPadding = 8;
 		const left = Math.min(
 			Math.max(viewportPadding, rect.left),
@@ -126,7 +126,7 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 
 			return { left, top };
 		});
-	}, [hasClearRowAction]);
+	}, []);
 
 	function getCellTarget(cell: HTMLElement): ModuleDataEntryCellTarget | null {
 		return getModuleDataEntryCellTarget(cell);

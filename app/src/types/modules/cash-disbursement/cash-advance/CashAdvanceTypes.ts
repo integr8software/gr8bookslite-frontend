@@ -1,7 +1,10 @@
 import type { AppTaxRateDialogValue } from "@/app/src/ui/shared/transaction-setup/AppTaxRateDialog";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import type { DisbursementAttachment } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
-import type { useCashAdvanceActionForm } from "@/app/src/hooks/modules/cash-disbursement/cash-advance/useCashAdvance";
+import type {
+  useCashAdvanceActionForm,
+  useCashAdvanceTable,
+} from "@/app/src/hooks/modules/cash-disbursement/cash-advance/useCashAdvance";
 
 export type CashAdvanceActionMode = "add" | "edit" | "view";
 export type CashAdvanceSubmitConfirmationAction = "save" | "draft";
@@ -9,9 +12,11 @@ export type CashAdvanceSubmitConfirmationAction = "save" | "draft";
 export type CashAdvanceDetailsSection = "advance" | "attachment";
 
 export type CashAdvanceFormController = ReturnType<typeof useCashAdvanceActionForm>;
+export type CashAdvanceTableState = ReturnType<typeof useCashAdvanceTable>;
 
 export type CashAdvancePartyDropdownOption = AppAdvancedDropdownOption & {
   cashAdvanceBalance?: string;
+  cashAdvanceLimit?: string;
 };
 
 export type CashAdvanceStatus = "Cancelled" | "Disapproved" | "Draft" | "For Approval" | "Open" | "Posted";
@@ -54,6 +59,7 @@ export type CashAdvanceFormValues = {
   attachments: DisbursementAttachment[];
   costCenter: string;
   cashAdvanceBalance: string;
+  cashAdvanceLimit: string;
   currency: string;
   documentDate: string;
   fxRate: string;
@@ -70,6 +76,7 @@ export type CashAdvanceStoreState = {
   advances: CashAdvanceRecord[];
   isLoading: boolean;
   lastSyncedAt: number;
+  refreshRecords: () => void;
   updateAdvanceStatus: (record: CashAdvanceRecord, status: CashAdvanceStatus) => void;
 };
 

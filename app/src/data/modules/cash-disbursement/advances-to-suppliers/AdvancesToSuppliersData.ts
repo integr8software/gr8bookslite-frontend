@@ -74,6 +74,13 @@ export function calculateAdvancePayment(totalPoAmount: string, percentage: strin
   return (parseMoneyNumberInput(totalPoAmount) * parseMoneyNumberInput(percentage)) / 100;
 }
 
+export function calculateAdvancePaymentPercentage(totalPoAmount: string, advanceAmount: string) {
+  const total = parseMoneyNumberInput(totalPoAmount);
+  const amount = parseMoneyNumberInput(advanceAmount);
+  if (total <= 0) return 0;
+  return (amount / total) * 100;
+}
+
 export function createAdvancesToSuppliersFormValues(
   record?: AdvancesToSuppliersRecord,
   transactionNo = "ATS-000001",
@@ -82,6 +89,7 @@ export function createAdvancesToSuppliersFormValues(
   if (record?.formValues) {
     return {
       ...record.formValues,
+      advancePaymentType: record.formValues.advancePaymentType || record.advancePaymentType || "Percentage",
       attachments: record.formValues.attachments.map((attachment) => ({ ...attachment })),
     };
   }
@@ -102,6 +110,7 @@ export function createAdvancesToSuppliersFormValues(
       exchangeRate: "1.00",
       poReference: record.poReference,
       totalPoAmount: formatAdvancesToSuppliersAmount(record.totalPoAmount),
+      advancePaymentType: record.advancePaymentType || "Percentage",
       advancePaymentPercentage: formatAdvancesToSuppliersAmount(record.advancePaymentPercentage),
       advancePaymentAmount: formatAdvancesToSuppliersAmount(record.amount),
       remarks: record.remarks,
@@ -123,9 +132,10 @@ export function createAdvancesToSuppliersFormValues(
     currency: baseCurrencyCode,
     exchangeRate: "1.00",
     poReference: "",
-    totalPoAmount: "0.00",
-    advancePaymentPercentage: "0.00",
-    advancePaymentAmount: "0.00",
+    totalPoAmount: "",
+    advancePaymentType: "Percentage",
+    advancePaymentPercentage: "",
+    advancePaymentAmount: "",
     remarks: "",
     attachments: [],
   };
@@ -137,7 +147,14 @@ export function createAdvancesToSuppliersRecord(
   existing?: AdvancesToSuppliersRecord,
 ): AdvancesToSuppliersRecord {
   const now = new Date().toISOString();
-  const amount = calculateAdvancePayment(values.totalPoAmount, values.advancePaymentPercentage);
+  const isPercentage = values.advancePaymentType === "Percentage";
+  const amount = isPercentage
+    ? calculateAdvancePayment(values.totalPoAmount, values.advancePaymentPercentage)
+    : parseMoneyNumberInput(values.advancePaymentAmount);
+  const percentage = isPercentage
+    ? parseMoneyNumberInput(values.advancePaymentPercentage)
+    : calculateAdvancePaymentPercentage(values.totalPoAmount, values.advancePaymentAmount);
+
   return {
     id: existing?.id ?? `ats-${values.transactionNo.toLowerCase()}`,
     transactionNo: values.transactionNo,
@@ -148,7 +165,8 @@ export function createAdvancesToSuppliersRecord(
     accountTitle: values.accountTitle,
     poReference: values.poReference,
     totalPoAmount: parseMoneyNumberInput(values.totalPoAmount),
-    advancePaymentPercentage: parseMoneyNumberInput(values.advancePaymentPercentage),
+    advancePaymentType: values.advancePaymentType,
+    advancePaymentPercentage: percentage,
     amount,
     remarks: values.remarks,
     status,
@@ -159,6 +177,7 @@ export function createAdvancesToSuppliersRecord(
     formValues: {
       ...values,
       status,
+      advancePaymentPercentage: formatAdvancesToSuppliersAmount(percentage),
       advancePaymentAmount: formatAdvancesToSuppliersAmount(amount),
       attachments: values.attachments.map((attachment) => ({ ...attachment })),
     },
@@ -191,6 +210,7 @@ function createSeed(
     accountTitle: "Advances to Suppliers",
     poReference,
     totalPoAmount,
+    advancePaymentType: "Percentage",
     advancePaymentPercentage,
     amount: (totalPoAmount * advancePaymentPercentage) / 100,
     remarks,

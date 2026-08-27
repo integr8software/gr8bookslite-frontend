@@ -20,6 +20,7 @@ import type {
   BankMasterfileFormValues,
   BankMasterfilePermissions,
   BankMasterfileStatistics,
+  BankMasterfileStoreOptions,
 } from "@/app/src/types/modules/financial-maintenance/bank-masterfile/BankMasterfileTypes";
 
 type BankMasterfileStoreState = {
@@ -63,7 +64,10 @@ const EmptyBankStatistics: BankMasterfileStatistics = {
   defaultBanks: 0,
 };
 
-export function useBankMasterfileStore<TSelected = BankMasterfileStoreState>(selector?: (state: BankMasterfileStoreState) => TSelected) {
+export function useBankMasterfileStore<TSelected = BankMasterfileStoreState>(
+  selector?: (state: BankMasterfileStoreState) => TSelected,
+  options: BankMasterfileStoreOptions = {},
+) {
   const queryClient = useQueryClient();
   const accessToken = useAppStore((state) => state.accessToken);
   const authProfileQuery = useAuthProfileQuery({ accessToken });
@@ -72,12 +76,14 @@ export function useBankMasterfileStore<TSelected = BankMasterfileStoreState>(sel
     queryKey: BankMasterfileQueryKeys.banks(companyId),
     queryFn: fetchBanks,
     enabled: Boolean(companyId),
+    refetchOnMount: options.refetchOnMount,
     retry: false,
   });
   const nextAccountCodeQuery = useQuery({
     queryKey: BankMasterfileQueryKeys.nextAccountCode(companyId),
     queryFn: fetchNextBankAccountCode,
     enabled: Boolean(companyId),
+    refetchOnMount: options.refetchOnMount,
     retry: false,
   });
   const refreshBanks = useCallback(() => {

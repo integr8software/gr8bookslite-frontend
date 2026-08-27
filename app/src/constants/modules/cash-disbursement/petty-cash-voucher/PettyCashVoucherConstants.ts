@@ -7,6 +7,8 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
+
 export const PettyCashVoucherLink = getModuleRoute("PCV");
 export const PettyCashVoucherAddLink = `${PettyCashVoucherLink}/add`;
 export const getPettyCashVoucherEditLink = (recordId: string) => `${PettyCashVoucherLink}/edit/${recordId}`;
@@ -25,8 +27,55 @@ export const PettyCashVoucherTransactionNumberPadding = 6;
 export const PettyCashVoucherDefaultFormStatus: PettyCashVoucherFormStatus = "Open";
 
 export const PettyCashVoucherDefaultVATable: PettyCashVoucherVATable = "False";
+export const PettyCashVoucherDefaultVatType = "";
 
 export const PettyCashVoucherVatRate = 0.12;
+
+export const PettyCashVoucherDefaultVatTypeOptions: AppAdvancedDropdownOption[] = [
+  { description: "Value Added Tax", label: "12%", name: "VAT", value: "VAT-12" },
+  { description: "Zero Rated", label: "0%", name: "Zero Rated", value: "VAT-0" },
+  { description: "VAT Exempt", label: "0%", name: "VAT Exempt", value: "VAT-EXEMPT" },
+  { description: "Non-VAT", label: "0%", name: "Non-VAT", value: "NON-VAT" },
+];
+
+export const PettyCashVoucherVATableDropdownOptions: AppAdvancedDropdownOption[] = [
+  { name: "False", value: "False" },
+  { name: "True", value: "True" },
+];
+
+export const PettyCashVoucherEwtCodeOptions: AppAdvancedDropdownOption[] = [
+  { description: "Expanded Withholding Tax 10%", label: "10%", name: "W10", value: "W10" },
+  { description: "Expanded Withholding Tax 5%", label: "5%", name: "W05", value: "W05" },
+  { description: "Expanded Withholding Tax 2%", label: "2%", name: "WV02", value: "WV02" },
+  { description: "Expanded Withholding Tax 1%", label: "1%", name: "WV01", value: "WV01" },
+];
+
+export const PettyCashVoucherEwtRateMap: Record<string, number> = {
+  W05: 5,
+  W10: 10,
+  WV01: 1,
+  WV02: 2,
+};
+
+export function getPettyCashVoucherEwtPercent(code: string): number {
+  if (!code) return 0;
+  const trimmed = code.trim();
+  if (PettyCashVoucherEwtRateMap[trimmed] !== undefined) {
+    return PettyCashVoucherEwtRateMap[trimmed];
+  }
+  // Only parse numeric rate if the code is explicitly a percentage string like "1%", "2%", etc.
+  if (/^\d+(\.\d+)?%?$/.test(trimmed)) {
+    const match = trimmed.match(/^(\d+(?:\.\d+)?)/);
+    const parsed = match ? Number.parseFloat(match[1]) : 0;
+    return parsed <= 100 ? parsed : 0;
+  }
+  return 0;
+}
+
+export function getPettyCashVoucherEwtRate(code: string): string {
+  const percent = getPettyCashVoucherEwtPercent(code);
+  return percent > 0 ? `${percent.toFixed(2)}%` : "0.00%";
+}
 
 export const PettyCashVoucherStatuses = {
   cancelled: "Cancelled",
@@ -38,9 +87,9 @@ export const PettyCashVoucherStatuses = {
 } as const;
 
 export const PettyCashVoucherRecordStatuses = [
-  PettyCashVoucherStatuses.draft,
-  PettyCashVoucherStatuses.forApproval,
   PettyCashVoucherStatuses.posted,
+  PettyCashVoucherStatuses.forApproval,
+  PettyCashVoucherStatuses.draft,
   PettyCashVoucherStatuses.disapproved,
   PettyCashVoucherStatuses.cancelled,
 ] as const satisfies readonly PettyCashVoucherStatus[];
@@ -75,7 +124,7 @@ export const PettyCashVoucherActionTabs: {
 ];
 
 export const PettyCashVoucherColumnLabels = {
-  voucherNo: "Petty Cash Voucher No.",
+  voucherNo: "Voucher No.",
   documentDate: "Document Date",
   partyCode: "Party Code",
   partyName: "Party Name",
@@ -99,17 +148,6 @@ export const PettyCashVoucherDefaultColumnVisibility = Object.fromEntries(
     PettyCashVoucherDefaultVisibleColumnIds.includes(columnId as (typeof PettyCashVoucherDefaultVisibleColumnIds)[number]),
   ]),
 );
-
-export const PettyCashVoucherActionButtonClassNames = {
-  approve:
-    "inline-flex h-10 items-center justify-center gap-2 rounded-md border border-emerald-200 bg-white px-4 text-sm font-semibold text-emerald-700 shadow-sm shadow-darknavy/5 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-500/15 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-white",
-  disapprove:
-    "inline-flex h-10 items-center justify-center gap-2 rounded-md border border-red-200 bg-white px-4 text-sm font-semibold text-red-600 shadow-sm shadow-darknavy/5 transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-500/15 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-white",
-  cancel:
-    "inline-flex h-10 items-center justify-center gap-2 rounded-md border border-amber-200 bg-white px-4 text-sm font-semibold text-amber-700 shadow-sm shadow-darknavy/5 transition hover:bg-amber-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-500/15 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-white",
-  copyFrom:
-    "theme-accent-contrast-text inline-flex h-10 items-center justify-center gap-2 rounded-md bg-skyblue px-4 text-sm font-semibold transition hover:bg-skyblue/85 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20",
-} as const;
 
 export const PettyCashVoucherTableCellClassName = "px-4 py-4 align-middle text-sm text-darknavy";
 
@@ -168,14 +206,14 @@ export function getPettyCashVoucherStatusDialogCopy(status: PettyCashVoucherStat
       iconTone: "cancel" as const,
       pendingLabel: "Cancelling...",
       title: "Cancel Petty Cash Voucher?",
-      tone: "danger" as const,
+      tone: "warning" as const,
     };
   }
 
   return {
     confirmLabel: "Restore Voucher",
     description: `This will return ${recordLabel} to For Approval.`,
-    iconTone: "approve" as const,
+    iconTone: "undo" as const,
     pendingLabel: "Restoring...",
     title: "Restore Petty Cash Voucher?",
     tone: "default" as const,
@@ -190,21 +228,22 @@ export function getPettyCashVoucherSaveDialogCopy(
   if (action === "draft") {
     return {
       confirmLabel: "Save as Draft",
-      description: `This will save the current information for ${recordLabel} without submitting it for approval.`,
-      iconTone: false as const,
+      description: `This will save ${recordLabel} as draft.`,
+      iconTone: "save" as const,
       pendingLabel: "Saving...",
       title: "Save Petty Cash Voucher as Draft?",
       tone: "default" as const,
     };
   }
 
+  const isEdit = mode === "edit";
   return {
-    confirmLabel: mode === "edit" ? "Update and Submit" : "Submit Voucher",
-    description: `This will save ${recordLabel} and submit it for approval.`,
-    iconTone: "approve" as const,
-    pendingLabel: mode === "edit" ? "Updating..." : "Submitting...",
-    title: mode === "edit" ? "Update Petty Cash Voucher?" : "Submit Petty Cash Voucher?",
-    tone: "success" as const,
+    confirmLabel: isEdit ? "Update" : "Save and Submit",
+    description: isEdit ? `This will update ${recordLabel}.` : `This will save and submit ${recordLabel}.`,
+    iconTone: isEdit ? ("update" as const) : ("save" as const),
+    pendingLabel: isEdit ? "Updating..." : "Saving...",
+    title: isEdit ? "Update Petty Cash Voucher?" : "Save Petty Cash Voucher?",
+    tone: "default" as const,
   };
 }
 

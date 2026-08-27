@@ -29,11 +29,15 @@ export function CashAdvanceActionPage({ mode }: { mode: CashAdvanceActionMode })
       <section className="grid gap-5">
         <CashAdvanceActionHeader
           mode={mode}
+          hasDiscardableChanges={advanceForm.hasDiscardableChanges}
           isSubmitting={advanceForm.isSubmitting}
+          onBack={advanceForm.saveDraft}
+          onDiscard={advanceForm.discardDraft}
           onPreview={() => setIsReportPreviewOpen(true)}
           onSaveDraft={mode === "add" ? () => advanceForm.submitAdvance(CashAdvanceStatuses.draft) : undefined}
           onSubmit={() => advanceForm.submitAdvance(CashAdvanceStatuses.forApproval)}
           onUpdateStatus={advanceForm.updateAdvanceStatus}
+          onValidate={advanceForm.validateAdvance}
           record={advanceForm.record}
         />
         <CashAdvanceDetailsForm form={advanceForm} mode={mode} />

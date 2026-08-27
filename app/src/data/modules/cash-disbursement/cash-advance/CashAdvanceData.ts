@@ -116,6 +116,7 @@ export function createCashAdvanceFormValues(baseCurrencyCode = "PHP"): CashAdvan
     attachments: [],
     costCenter: "",
     cashAdvanceBalance: "",
+    cashAdvanceLimit: "",
     currency: baseCurrencyCode,
     documentDate: today,
     fxRate: "1.00",
@@ -267,6 +268,22 @@ export function writeStoredCashAdvances(records: CashAdvanceRecord[]) {
 
 export function countCashAdvancesByStatus(records: CashAdvanceRecord[], status: CashAdvanceStatus) {
   return records.filter((record) => record.status === status).length;
+}
+
+export function calculatePostedCashAdvanceTotalByParty(records: CashAdvanceRecord[], partyCode: string) {
+  const normalizedPartyCode = partyCode.trim().toLowerCase();
+
+  if (!normalizedPartyCode) {
+    return 0;
+  }
+
+  return records.reduce(
+    (total, record) =>
+      record.status === CashAdvanceStatuses.posted && record.partyCode.trim().toLowerCase() === normalizedPartyCode
+        ? total + record.amount
+        : total,
+    0,
+  );
 }
 
 export function formatCashAdvanceCurrency(value: number) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useDeferredValue, useMemo, useState } from "react";
+import { useCallback, useDeferredValue, useMemo, useState } from "react";
 import {
   getCoreRowModel,
   getPaginationRowModel,
@@ -11,17 +11,22 @@ import {
 } from "@tanstack/react-table";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import { ReceiptText } from "lucide-react";
 import {
   CashVoucherDefaultColumnOrder,
   CashVoucherDefaultColumnVisibility,
   CashVoucherDefaultSorting,
   CashVoucherAllStatusFilter,
   CashVoucherStatusFilters,
+  CashVoucherStatuses,
   CashVoucherTableColumns,
   CashVoucherTablePreferencesModuleKey,
   CashVoucherTablePreferencesStorageKey,
   CashVoucherQueryKeys,
 } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherConstants";
+import { getModuleStatusMetricIcon, getModuleStatusMetricIconClassName } from "@/app/src/ui/shared/module/ModuleStatusBadge";
+import type { ModuleStatisticCardItem } from "@/app/src/ui/shared/module/ModuleStatisticCards";
+import { formatPartOfTotalPercentage } from "@/app/src/utils/percentage.util";
 import {
   getSeedCashVoucherTransactions,
   getSeedCashVouchers,
@@ -37,6 +42,7 @@ import { normalizeLowercaseWhitespace } from "@/app/src/utils/string.util";
 import type {
   CashVoucherPreviewRow,
   CashVoucherRecord,
+  CashVoucherStatus,
   CashVoucherTransactionRecord,
   CashVoucherTableColumnKey,
   CashVoucherStoreState,
@@ -68,6 +74,12 @@ export function useCashVoucherStore<TSelected = CashVoucherStoreState>(
     queryFn: async () => getInitialVouchers(),
     initialData: getInitialVouchers,
   });
+  const refreshRecords = useCallback(() => {
+    void Promise.all([
+      queryClient.refetchQueries({ queryKey: CashVoucherQueryKeys.transactions(), exact: true }),
+      queryClient.refetchQueries({ queryKey: CashVoucherQueryKeys.vouchers(), exact: true }),
+    ]);
+  }, [queryClient]);
 
   function updateCachedVouchers(updater: (vouchers: CashVoucherRecord[]) => CashVoucherRecord[]) {
     queryClient.setQueryData<CashVoucherRecord[]>(
@@ -107,7 +119,7 @@ export function useCashVoucherStore<TSelected = CashVoucherStoreState>(
       });
     },
     onError: () => {
-      toast.error("Could not save disbursement transaction. Please try again.");
+      toast.error("Could not save Cash Voucher. Please try again.");
     },
   });
 
@@ -119,7 +131,7 @@ export function useCashVoucherStore<TSelected = CashVoucherStoreState>(
       );
     },
     onError: () => {
-      toast.error("Could not update disbursement transaction. Please try again.");
+      toast.error("Could not update Cash Voucher. Please try again.");
     },
   });
 
@@ -130,7 +142,7 @@ export function useCashVoucherStore<TSelected = CashVoucherStoreState>(
       toast.success("Cash Voucher Created.");
     },
     onError: () => {
-      toast.error("Could not create cash voucher. Please try again.");
+      toast.error("Could not create Cash Voucher. Please try again.");
     },
   });
 
@@ -138,10 +150,10 @@ export function useCashVoucherStore<TSelected = CashVoucherStoreState>(
     mutationFn: async (voucher: CashVoucherRecord) => voucher,
     onSuccess: (voucher) => {
       updateCachedVouchers((vouchers) => vouchers.map((currentVoucher) => (currentVoucher.id === voucher.id ? voucher : currentVoucher)));
-      toast.success("CashVoucher voucher updated.");
+      toast.success("Cash Voucher Updated.");
     },
     onError: () => {
-      toast.error("Could not update cash voucher. Please try again.");
+      toast.error("Could not update Cash Voucher. Please try again.");
     },
   });
 
@@ -149,10 +161,10 @@ export function useCashVoucherStore<TSelected = CashVoucherStoreState>(
     mutationFn: async (voucherId: string) => voucherId,
     onSuccess: (voucherId) => {
       updateCachedVouchers((vouchers) => vouchers.filter((voucher) => voucher.id !== voucherId));
-      toast.success("CashVoucher voucher deleted.");
+      toast.success("Cash Voucher Deleted.");
     },
     onError: () => {
-      toast.error("Could not delete cash voucher. Please try again.");
+      toast.error("Could not delete Cash Voucher. Please try again.");
     },
   });
 
@@ -173,6 +185,7 @@ export function useCashVoucherStore<TSelected = CashVoucherStoreState>(
       deleteVoucher: (voucherId) => deleteVoucherMutation.mutate(voucherId),
       isLoading: transactionsQuery.isLoading || vouchersQuery.isLoading,
       lastSyncedAt: Math.max(transactionsQuery.dataUpdatedAt, vouchersQuery.dataUpdatedAt),
+      refreshRecords,
       isMutating:
         addTransactionMutation.isPending ||
         addVoucherMutation.isPending ||
@@ -185,6 +198,7 @@ export function useCashVoucherStore<TSelected = CashVoucherStoreState>(
       addTransactionMutation,
       deleteVoucherMutation,
       previewRows,
+      refreshRecords,
       transactionsQuery.data,
       transactionsQuery.dataUpdatedAt,
       transactionsQuery.isLoading,
@@ -202,7 +216,7 @@ export function useCashVoucherStore<TSelected = CashVoucherStoreState>(
 export function useCashVoucherPreviewTable(previewRows: CashVoucherPreviewRow[]) {
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
-    pageSize: 5,
+    pageSize: 10,
   });
   const [query, setQueryState] = useState("");
   const [dateRange, setDateRangeState] = useState<DateRangeValue>({
@@ -301,10 +315,10 @@ export function useCashVoucherPreviewTable(previewRows: CashVoucherPreviewRow[])
     table.setPageIndex(0);
   }
 
-  function setStatusFilter(value: (typeof CashVoucherStatusFilters)[number]) {
+  const setStatusFilter = useCallback((value: (typeof CashVoucherStatusFilters)[number]) => {
     setStatusFilterState(value);
     table.setPageIndex(0);
-  }
+  }, [table]);
 
   function setDateRange(value: DateRangeValue) {
     setDateRangeState(value);
@@ -324,6 +338,45 @@ export function useCashVoucherPreviewTable(previewRows: CashVoucherPreviewRow[])
     table.setPageIndex(0);
   }
 
+  const statisticCards = useMemo<ModuleStatisticCardItem[]>(() => {
+    const statusCounts = Object.fromEntries(
+      Object.values(CashVoucherStatuses).map((status) => [
+        status,
+        previewRows.filter(
+          (row) => getCashVoucherDisplayStatus(row.voucher?.status ?? row.transaction.status) === status,
+        ).length,
+      ]),
+    ) as Record<CashVoucherStatus, number>;
+
+    return [
+      {
+        label: "Total Entries",
+        value: previewRows.length,
+        summary: "All time",
+        icon: ReceiptText,
+        tone: "violet",
+        isActive: statusFilter === CashVoucherAllStatusFilter,
+        onClick: () => setStatusFilter(CashVoucherAllStatusFilter),
+      },
+      ...[
+        CashVoucherStatuses.posted,
+        CashVoucherStatuses.forApproval,
+        CashVoucherStatuses.draft,
+        CashVoucherStatuses.disapproved,
+        CashVoucherStatuses.cancelled,
+      ].map((status, index) => ({
+        label: status,
+        value: statusCounts[status] ?? 0,
+        summary: formatPartOfTotalPercentage(statusCounts[status] ?? 0, previewRows.length),
+        icon: getModuleStatusMetricIcon(status),
+        iconClassName: getModuleStatusMetricIconClassName(status),
+        tone: (["emerald", "amber", "blue", "red", "slate"] as const)[index],
+        isActive: statusFilter === status,
+        onClick: () => setStatusFilter(status),
+      })),
+    ];
+  }, [previewRows, setStatusFilter, statusFilter]);
+
   return {
     amountRange,
     dateRange,
@@ -333,6 +386,7 @@ export function useCashVoucherPreviewTable(previewRows: CashVoucherPreviewRow[])
     setDateRange,
     setQuery,
     setStatusFilter,
+    statisticCards,
     statusFilter,
     statusOptions: CashVoucherStatusFilters,
     table,

@@ -8,6 +8,10 @@ import {
   BankMasterfileCashInBankAccountTitle,
 } from "@/app/src/constants/modules/financial-maintenance/bank-masterfile/BankMasterfileConstants";
 import { AppMaxFileUploadSizeLabel } from "@/app/src/constants/shared/app/AppConstants";
+import {
+  DefaultPreferredBaseCurrencyCode,
+  findCurrencyByCode,
+} from "@/app/src/data/modules/system-administration/multi-currency-setup/MultiCurrencySetupData";
 import type {
   BankImportColumnId,
   BankImportPreviewRow,
@@ -16,6 +20,33 @@ import type {
   BankMasterfileStatus,
 } from "@/app/src/types/modules/financial-maintenance/bank-masterfile/BankMasterfileTypes";
 import { downloadBlob } from "@/app/src/ui/shared/module/module-table/ModuleTableExportDownload";
+
+export function createBankCurrencyOptions(
+  records: Array<{
+    baseCurrencyCode: string;
+    status: string;
+    targetCurrencyCode: string;
+  }>,
+) {
+  const currencyCodes = new Set<string>([DefaultPreferredBaseCurrencyCode]);
+
+  records
+    .filter((record) => record.status === "Active")
+    .forEach((record) => {
+      currencyCodes.add(record.baseCurrencyCode);
+      currencyCodes.add(record.targetCurrencyCode);
+    });
+
+  return [...currencyCodes].sort().map((code) => {
+    const currency = findCurrencyByCode(code);
+
+    return {
+      code,
+      country: currency?.country ?? "",
+      name: currency?.name ?? code,
+    };
+  });
+}
 
 export const BankMasterfileInitialFormValues: BankMasterfileFormValues = {
   bankName: "",

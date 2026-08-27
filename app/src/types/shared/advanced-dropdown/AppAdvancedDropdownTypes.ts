@@ -54,6 +54,7 @@ export type AppAdvancedDropdownProps = {
 
 export type AppLookupDropdownProps = {
 	addAction?: AppAdvancedDropdownAddAction;
+	id?: string;
 	onChange: (idOrCode: string, name: string) => void;
 	options: AppAdvancedDropdownOption[];
 	placeholder: string;

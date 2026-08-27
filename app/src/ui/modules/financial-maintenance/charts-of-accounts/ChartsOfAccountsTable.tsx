@@ -167,7 +167,7 @@ export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
       tableTitle="Ledger Accounts"
       toolbar={props.toolbar}
       useColumnSizing
-      variant="embedded"
+      variant="standalone"
       renderRow={renderRow}
     />
   );

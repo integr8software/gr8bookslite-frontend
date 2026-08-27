@@ -33,19 +33,16 @@ import { getModuleStatusMetricIcon, getModuleStatusMetricIconClassName } from "@
 import type { ModuleStatisticCardItem } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { formatPartOfTotalPercentage } from "@/app/src/utils/percentage.util";
 import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
-import { CashDisbursementOverviewActionColumnWidth } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 
 const columnHelper = createColumnHelper<PettyCashFundRecord>();
-const emptyDateRange: DateRangeValue = { from: "", to: "" };
-const emptyAmountRange: AmountRangeValue = { from: "", to: "" };
 
 export function usePettyCashFundOverviewPage() {
   const [records, setRecords] = useState(getPettyCashFundRecords);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("All");
-  const [dateRange, setDateRange] = useState<DateRangeValue>(emptyDateRange);
-  const [amountRange, setAmountRange] = useState<AmountRangeValue>(emptyAmountRange);
-  const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 5 });
+  const [dateRange, setDateRange] = useState<DateRangeValue>({ from: "", to: "" });
+  const [amountRange, setAmountRange] = useState<AmountRangeValue>({ from: "", to: "" });
+  const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => PettyCashFundDefaultColumnVisibility);
   const [lastSyncedAt, setLastSyncedAt] = useState(() => Date.now());
@@ -138,7 +135,7 @@ export function usePettyCashFundOverviewPage() {
       columnHelper.display({
         id: "actions",
         header: PettyCashFundColumnLabels.actions,
-        size: CashDisbursementOverviewActionColumnWidth,
+        size: TransactionOverviewColumnWidths.actions,
         meta: { className: "text-center", label: PettyCashFundColumnLabels.actions },
       }),
     ],
@@ -192,7 +189,7 @@ export function usePettyCashFundOverviewPage() {
     setRecords(next);
     savePettyCashFundRecords(next);
     setLastSyncedAt(Date.now());
-    toast.success(`Petty cash fund marked as ${status}.`);
+    toast.success(`Petty Cash Fund Marked as ${status}.`);
   }
 
   function refreshRecords() {
@@ -226,4 +223,3 @@ function getMetricTone(status: PettyCashFundStatus) {
   return "blue" as const;
 }
 
-export type { PettyCashFundOverviewPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";

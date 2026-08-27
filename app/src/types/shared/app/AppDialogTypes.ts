@@ -1,9 +1,22 @@
 import type { ReactNode } from "react";
 
-export type AppDialogTone = "default" | "danger" | "success" | "warning" | "info" | "question" | "activate" | "deactivate";
+export type AppDialogTone = "default" | "neutral" | "danger" | "success" | "warning" | "info" | "question" | "activate" | "deactivate";
 
 export type AppDialogIconTone =
-  "approve" | "activate" | "cancel" | "deactivate" | "disapprove" | "error" | "info" | "question" | "success" | "warning";
+  | "approve"
+  | "activate"
+  | "cancel"
+  | "deactivate"
+  | "disapprove"
+  | "error"
+  | "info"
+  | "neutral"
+  | "question"
+  | "save"
+  | "success"
+  | "undo"
+  | "update"
+  | "warning";
 
 export type AppDialogProps = {
   animateIcon?: boolean;
@@ -14,12 +27,14 @@ export type AppDialogProps = {
   confirmLabel?: string;
   confirmationLabel?: string;
   confirmationPhrase?: string;
+  content?: ReactNode;
   description: string;
   iconTone?: AppDialogIconTone | false;
   isOpen: boolean;
   isPending?: boolean;
   pendingLabel?: string;
   showCancel?: boolean;
+  statusIcon?: ReactNode;
   title: string;
   tone?: AppDialogTone;
   onCancel: () => void;

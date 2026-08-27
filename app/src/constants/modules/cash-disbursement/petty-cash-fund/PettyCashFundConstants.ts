@@ -124,24 +124,24 @@ export const PettyCashFundItemColumnLabels: Record<PettyCashFundItemColumnId, st
   responsibilityCenterName: "Responsibility Center",
 };
 export const PettyCashFundItemColumnWidths: Record<PettyCashFundItemColumnId, number> = {
-  date: 130,
-  supplierCode: 150,
-  supplierName: 200,
-  orNo: 150,
-  tinNo: 140,
-  remarks: 220,
-  amount: 150,
-  type: 130,
-  vatType: 140,
-  vatPercent: 125,
-  vatAmount: 140,
-  ewtCode: 140,
-  ewtPercent: 125,
-  ewtAmount: 140,
-  netAmount: 140,
-  grossAmount: 150,
-  responsibilityCenterCode: 230,
-  responsibilityCenterName: 200,
+  date: 140,
+  supplierCode: 190,
+  supplierName: 230,
+  orNo: 190,
+  tinNo: 150,
+  remarks: 240,
+  amount: 185,
+  type: 140,
+  vatType: 175,
+  vatPercent: 160,
+  vatAmount: 175,
+  ewtCode: 175,
+  ewtPercent: 160,
+  ewtAmount: 175,
+  netAmount: 180,
+  grossAmount: 185,
+  responsibilityCenterCode: 250,
+  responsibilityCenterName: 240,
 };
 export const PettyCashFundProtectedItemColumnIds = new Set<PettyCashFundItemColumnId>(["supplierName", "amount"]);
 export const PettyCashFundDefaultAccountingColumnIds: PettyCashFundAccountingColumnId[] = [
@@ -163,13 +163,13 @@ export const PettyCashFundAccountingColumnLabels: Record<PettyCashFundAccounting
   remarks: "Remarks",
 };
 export const PettyCashFundAccountingColumnWidths: Record<PettyCashFundAccountingColumnId, number> = {
-  accountCode: 135,
-  accountTitle: 210,
-  debit: 125,
-  credit: 125,
-  partyCode: 130,
-  partyName: 190,
-  remarks: 220,
+  accountCode: 175,
+  accountTitle: 240,
+  debit: 150,
+  credit: 150,
+  partyCode: 190,
+  partyName: 230,
+  remarks: 260,
 };
 export const PettyCashFundProtectedAccountingColumnIds = new Set<PettyCashFundAccountingColumnId>(["accountCode", "debit", "credit"]);
 export const PettyCashFundEntryInputClassName =

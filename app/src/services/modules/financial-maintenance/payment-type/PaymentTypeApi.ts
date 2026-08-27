@@ -26,6 +26,15 @@ const paymentTypeCollator = new Intl.Collator(undefined, {
   numeric: true,
   sensitivity: "base",
 });
+const paymentTypeClassificationMappings = [
+  { api: "BANK_TRANSFER", classification: "Bank Transfer" },
+  { api: "CHECK", classification: "Check" },
+  { api: "DIGITAL_WALLET", classification: "Digital Wallet" },
+  { api: "DEBIT_MEMO", classification: "Debit Memo" },
+] as const satisfies readonly {
+  api: CreatePaymentTypeDtoClassification;
+  classification: PaymentTypeClassification;
+}[];
 
 export async function fetchPaymentTypes(params: PaymentTypeListParams = {}): Promise<PaymentTypeListResult> {
   const response = await paymentTypeMaintenanceControllerFindAllV1(toApiPaymentTypeListParams(params));
@@ -140,19 +149,17 @@ function mapSortKeyToApi(sortBy?: PaymentTypeSortKey) {
 }
 
 function mapClassificationFromApi(value: PaymentTypeResponseDtoClassification): PaymentTypeClassification {
-  if (value === "BANK_TRANSFER") return "Bank Transfer";
-  if (value === "CHECK") return "Check";
-  if (value === "DIGITAL_WALLET") return "Digital Wallet";
-  if (value === "DEBIT_MEMO") return "Debit Memo";
-  return "Bank Transfer";
+  return (
+    paymentTypeClassificationMappings.find((mapping) => mapping.api === value)?.classification ??
+    paymentTypeClassificationMappings[0].classification
+  );
 }
 
 function mapClassificationToApi(value: PaymentTypeClassification): CreatePaymentTypeDtoClassification {
-  if (value === "Bank Transfer") return "BANK_TRANSFER";
-  if (value === "Check") return "CHECK";
-  if (value === "Digital Wallet") return "DIGITAL_WALLET";
-  if (value === "Debit Memo") return "DEBIT_MEMO";
-  return "BANK_TRANSFER";
+  return (
+    paymentTypeClassificationMappings.find((mapping) => mapping.classification === value)?.api ??
+    paymentTypeClassificationMappings[0].api
+  );
 }
 
 function mapStatusFromApi(value: PaymentTypeResponseDtoStatus): PaymentTypeStatus {

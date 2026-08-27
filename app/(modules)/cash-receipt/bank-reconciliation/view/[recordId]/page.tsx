@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { BankReconciliationAction } from "@/app/src/ui/modules/cash-receipt/bank-reconciliation/Action";
+import { BankReconciliationFormPage } from "@/app/src/ui/modules/cash-receipt/bank-reconciliation/BankReconciliationFormPage";
 
 const PageTitle = "View Bank Reconciliation";
 
@@ -10,7 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function CashReceiptBankReconciliationViewPage() {
-  return <BankReconciliationAction />;
+  return <BankReconciliationFormPage />;
 }
-
-

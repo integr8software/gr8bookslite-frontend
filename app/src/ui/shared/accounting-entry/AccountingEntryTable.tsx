@@ -29,15 +29,9 @@ import {
   type ModuleDataEntryExportOption,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 
-import type { ModuleDataEntryColumn } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
-
 type AccountingEntryTableProps<TRow extends AccountingEntry> = {
   createBlankRow: AccountingEntryRowFactory<TRow>;
-  columnIds?: readonly AccountingEntryColumnId[];
-  columnLabels?: Partial<Record<AccountingEntryColumnId, string>>;
-  customColumns?: ModuleDataEntryColumn<TRow>[];
   description?: string;
-  emptyRowLabel?: string;
   error?: string;
   fieldOptions?: AccountingEntryColumnOptions;
   highlightedAmountRowIds?: ReadonlySet<string>;
@@ -52,11 +46,7 @@ type AccountingEntryTableProps<TRow extends AccountingEntry> = {
 
 export function AccountingEntryTable<TRow extends AccountingEntry>({
   createBlankRow,
-  columnIds,
-  columnLabels,
-  customColumns,
   description = "Record accounting distributions.",
-  emptyRowLabel = "accounting entry",
   error,
   fieldOptions,
   highlightedAmountRowIds,
@@ -68,7 +58,7 @@ export function AccountingEntryTable<TRow extends AccountingEntry>({
   title = "Accounting Entries",
   visibleColumnIds = AccountingEntryDefaultVisibleColumnIds,
 }: AccountingEntryTableProps<TRow>) {
-  const [visibleColumns, setVisibleColumns] = useState<Set<string>>(() => new Set(visibleColumnIds));
+  const [visibleColumns, setVisibleColumns] = useState<Set<AccountingEntryColumnId>>(() => new Set(visibleColumnIds));
   const updateEntry = useCallback<AccountingEntryUpdate<TRow>>(
     (rowId, updates) => {
       onRowsChange(rows.map((row) => (row.id === rowId ? { ...row, ...updates } : row)));
@@ -78,9 +68,6 @@ export function AccountingEntryTable<TRow extends AccountingEntry>({
   const columns = useMemo(
     () =>
       createAccountingEntryColumns<TRow>({
-        columnIds,
-        columnLabels,
-        customColumns,
         isReadonly,
         onUpdateEntry: updateEntry,
         onFieldChange,
@@ -88,27 +75,17 @@ export function AccountingEntryTable<TRow extends AccountingEntry>({
         options: fieldOptions,
         readOnlyFields,
       }),
-    [
-      columnIds,
-      columnLabels,
-      customColumns,
-      highlightedAmountRowIds,
-      isReadonly,
-      fieldOptions,
-      onFieldChange,
-      readOnlyFields,
-      updateEntry,
-    ],
+    [isReadonly, fieldOptions, onFieldChange, readOnlyFields, updateEntry],
   );
   const displayedColumns = useMemo(
-    () => columns.filter((column) => visibleColumns.has(column.id)),
+    () => columns.filter((column) => visibleColumns.has(column.id as AccountingEntryColumnId)),
     [columns, visibleColumns],
   );
   const totals = getAccountingEntryTotals(rows);
   const columnOptions = columns.map((column) => ({
     id: column.id,
     isHideable: !AccountingEntryProtectedColumnIds.has(column.id as AccountingEntryColumnId),
-    isVisible: visibleColumns.has(column.id),
+    isVisible: visibleColumns.has(column.id as AccountingEntryColumnId),
     label: column.header,
     width: column.width,
     widthMode: column.widthMode,
@@ -121,9 +98,9 @@ export function AccountingEntryTable<TRow extends AccountingEntry>({
       }
       const next = new Set(current);
       if (isVisible) {
-        next.add(columnId);
+        next.add(columnId as AccountingEntryColumnId);
       } else {
-        next.delete(columnId);
+        next.delete(columnId as AccountingEntryColumnId);
       }
       return next;
     });
@@ -134,7 +111,7 @@ export function AccountingEntryTable<TRow extends AccountingEntry>({
       columns={displayedColumns}
       columnOptions={columnOptions}
       description={description}
-      emptyRowLabel={emptyRowLabel}
+      emptyRowLabel="accounting entry"
       error={error}
       exportOptions={AccountingEntryExportOptions}
       isDraggable

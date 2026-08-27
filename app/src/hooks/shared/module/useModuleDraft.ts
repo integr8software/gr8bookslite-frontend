@@ -4,15 +4,9 @@ import { useCallback, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 
-export const DEFAULT_DRAFT_EXPIRATION_DAYS = 7;
-export const DEFAULT_DRAFT_EXPIRATION_MS =
-	DEFAULT_DRAFT_EXPIRATION_DAYS * 24 * 60 * 60 * 1000;
-
 export type ModuleDraftEnvelope<TValues> = {
-	branchId?: string | number | null;
-	companyId?: string | number | null;
 	createdAt?: number;
-	expiresAt?: number;
+	scopeToken?: string;
 	updatedAt: number;
 	values: TValues;
 	version: 1;
@@ -23,7 +17,6 @@ export type UseModuleDraftOptions<TValues> = {
 	companyId?: string | number | null;
 	debounceMs?: number;
 	enabled?: boolean;
-	expiresInMs?: number;
 	initialValues?: TValues;
 	isDirty?: boolean;
 	key: string;
@@ -32,46 +25,67 @@ export type UseModuleDraftOptions<TValues> = {
 	values: TValues;
 };
 
+export function createDraftScopeHash(
+	companyId: string | number | null | undefined,
+	branchId: string | number | null | undefined,
+): string {
+	const normCompany =
+		companyId !== undefined && companyId !== null && String(companyId).trim() !== ""
+			? String(companyId).trim()
+			: "none";
+
+	const normBranch =
+		branchId !== undefined && branchId !== null && String(branchId).trim() !== ""
+			? String(branchId).trim()
+			: "none";
+
+	if (normCompany === "none" && normBranch === "none") {
+		return "ctx_global";
+	}
+
+	const raw = `co:${normCompany}|br:${normBranch}`;
+
+	let hash = 0x811c9dc5;
+	for (let i = 0; i < raw.length; i += 1) {
+		hash ^= raw.charCodeAt(i);
+		hash = Math.imul(hash, 0x01000193);
+	}
+
+	const hex = (hash >>> 0).toString(16).padStart(8, "0");
+	return `ctx_${hex}`;
+}
+
 export function resolveScopedDraftKey(
 	baseKey: string,
 	companyId: string | number | null | undefined,
 	branchId: string | number | null | undefined,
-): string {
+): { scopeToken: string; storageKey: string } {
 	const trimmed = baseKey.trim();
+	const scopeToken = createDraftScopeHash(companyId, branchId);
+
 	if (!trimmed) {
-		return trimmed;
+		return { scopeToken, storageKey: trimmed };
 	}
 
-	const normCompany =
-		companyId !== undefined && companyId !== null && String(companyId).trim() !== ""
-			? `company:${String(companyId).trim()}`
-			: "company:none";
+	let cleanKey = trimmed;
+	if (cleanKey.startsWith("draft:")) {
+		cleanKey = cleanKey.slice("draft:".length);
+	}
 
-	const normBranch =
-		branchId !== undefined && branchId !== null && String(branchId).trim() !== ""
-			? `branch:${String(branchId).trim()}`
-			: "branch:none";
-
-	if (trimmed.startsWith("draft:company:")) {
-		if (trimmed.includes(":branch:")) {
-			return trimmed;
+	if (cleanKey.startsWith("company:")) {
+		const parts = cleanKey.split(":");
+		if (parts[2] === "branch") {
+			cleanKey = parts.slice(4).join(":");
+		} else {
+			cleanKey = parts.slice(2).join(":");
 		}
-
-		const parts = trimmed.split(":");
-		const companyVal = parts[2] ?? "none";
-		const rest = parts.slice(3).join(":");
-
-		return ["draft", `company:${companyVal}`, normBranch, rest]
-			.filter(Boolean)
-			.join(":");
+	} else if (cleanKey.startsWith("ctx_")) {
+		const parts = cleanKey.split(":");
+		cleanKey = parts.slice(1).join(":");
 	}
 
-	if (trimmed.startsWith("draft:")) {
-		const rest = trimmed.slice("draft:".length);
-		return ["draft", normCompany, normBranch, rest].filter(Boolean).join(":");
-	}
-
-	return ["draft", normCompany, normBranch, trimmed].filter(Boolean).join(":");
+	const storageKey = ["draft", scopeToken, cleanKey].filter(Boolean).join(":");
+	return { scopeToken, storageKey };
 }
 
 export function useModuleDraft<TValues>({
@@ -79,7 +93,6 @@ export function useModuleDraft<TValues>({
 	companyId: explicitCompanyId,
 	debounceMs = 600,
 	enabled = true,
-	expiresInMs = DEFAULT_DRAFT_EXPIRATION_MS,
 	initialValues,
 	isDirty,
 	key,
@@ -95,26 +108,11 @@ export function useModuleDraft<TValues>({
 	const resolvedBranchId =
 		explicitBranchId !== undefined ? explicitBranchId : storeBranchId;
 
-	const normalizedCompanyId =
-		resolvedCompanyId !== undefined &&
-		resolvedCompanyId !== null &&
-		String(resolvedCompanyId).trim() !== ""
-			? String(resolvedCompanyId).trim()
-			: null;
-
-	const normalizedBranchId =
-		resolvedBranchId !== undefined &&
-		resolvedBranchId !== null &&
-		String(resolvedBranchId).trim() !== ""
-			? String(resolvedBranchId).trim()
-			: null;
-
-	const storageKey = resolveScopedDraftKey(
+	const { scopeToken, storageKey } = resolveScopedDraftKey(
 		key,
-		normalizedCompanyId,
-		normalizedBranchId,
+		resolvedCompanyId,
+		resolvedBranchId,
 	);
-	const expirationDurationMs = expiresInMs ?? DEFAULT_DRAFT_EXPIRATION_MS;
 
 	const loadedKeyRef = useRef<string | null>(null);
 	const skipNextSaveRef = useRef(false);
@@ -151,10 +149,8 @@ export function useModuleDraft<TValues>({
 
 		const now = Date.now();
 		const draft: ModuleDraftEnvelope<TValues> = {
-			branchId: normalizedBranchId,
-			companyId: normalizedCompanyId,
 			createdAt: now,
-			expiresAt: now + expirationDurationMs,
+			scopeToken,
 			updatedAt: now,
 			values,
 			version: 1,
@@ -163,11 +159,9 @@ export function useModuleDraft<TValues>({
 		window.localStorage.setItem(storageKey, JSON.stringify(draft));
 		hasShownSaveErrorRef.current = false;
 	}, [
-		expirationDurationMs,
 		isFormClean,
-		normalizedBranchId,
-		normalizedCompanyId,
 		removeStoredDraft,
+		scopeToken,
 		storageKey,
 		values,
 	]);
@@ -193,41 +187,7 @@ export function useModuleDraft<TValues>({
 				return;
 			}
 
-			const now = Date.now();
-			const draftUpdatedAt =
-				typeof draft.updatedAt === "number" ? draft.updatedAt : 0;
-			const draftExpiresAt =
-				typeof draft.expiresAt === "number"
-					? draft.expiresAt
-					: draftUpdatedAt + expirationDurationMs;
-
-			if (
-				now > draftExpiresAt ||
-				(draftUpdatedAt > 0 && now - draftUpdatedAt > expirationDurationMs)
-			) {
-				window.localStorage.removeItem(storageKey);
-				return;
-			}
-
-			const storedDraftCompanyId =
-				draft.companyId !== undefined &&
-				draft.companyId !== null &&
-				String(draft.companyId).trim() !== ""
-					? String(draft.companyId).trim()
-					: null;
-
-			if (storedDraftCompanyId !== normalizedCompanyId) {
-				return;
-			}
-
-			const storedDraftBranchId =
-				draft.branchId !== undefined &&
-				draft.branchId !== null &&
-				String(draft.branchId).trim() !== ""
-					? String(draft.branchId).trim()
-					: null;
-
-			if (storedDraftBranchId !== normalizedBranchId) {
+			if (draft.scopeToken && draft.scopeToken !== scopeToken) {
 				return;
 			}
 
@@ -250,11 +210,9 @@ export function useModuleDraft<TValues>({
 	}, [
 		cancelPendingSave,
 		enabled,
-		expirationDurationMs,
 		initialValues,
-		normalizedBranchId,
-		normalizedCompanyId,
 		restoreValues,
+		scopeToken,
 		setValues,
 		storageKey,
 	]);
@@ -355,21 +313,8 @@ export function createModuleDraftKey({
 	moduleId: string;
 	recordId?: string;
 }) {
-	const companySegment =
-		companyId !== undefined &&
-		companyId !== null &&
-		String(companyId).trim() !== ""
-			? `company:${String(companyId).trim()}`
-			: undefined;
-
-	const branchSegment =
-		branchId !== undefined &&
-		branchId !== null &&
-		String(branchId).trim() !== ""
-			? `branch:${String(branchId).trim()}`
-			: undefined;
-
-	return ["draft", companySegment, branchSegment, moduleId, mode, recordId]
+	const scopeToken = createDraftScopeHash(companyId, branchId);
+	return ["draft", scopeToken, moduleId, mode, recordId]
 		.filter(Boolean)
 		.join(":");
 }

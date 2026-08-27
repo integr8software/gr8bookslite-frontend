@@ -14,7 +14,10 @@ import type {
   OfficialReceiptResponseDtoStatus,
   UpdateOfficialReceiptStatusDto,
 } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
-import { calculateOfficialReceiptTotals } from "@/app/src/data/modules/cash-receipt/official-receipt/OfficialReceiptData";
+import {
+  calculateOfficialReceiptTotals,
+  syncOfficialReceiptCheckDetails,
+} from "@/app/src/data/modules/cash-receipt/official-receipt/OfficialReceiptData";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import type {
   OfficialReceiptFormValues,
@@ -146,6 +149,9 @@ function createFormValuesFromApi(receipt: OfficialReceiptResponseDto): OfficialR
     lineEntries: createLineEntriesFromApi(receipt),
     partyCode: receipt.customerCode,
     paymentType: "",
+    bankName: "",
+    checkNo: "",
+    checkDate: "",
     receiptDate: receipt.documentDate,
     receiptNo: receipt.receiptNo ?? receipt.transactionNo,
     referenceNo: receipt.referenceNo ?? "",
@@ -221,23 +227,24 @@ function toApiOfficialReceiptPayload(
   values: OfficialReceiptFormValues,
   branchUnitId?: number | null,
 ): CreateOfficialReceiptDto {
+  const syncedValues = syncOfficialReceiptCheckDetails(values);
   const currencyCode = values.currency.trim();
   const exchangeRate = toExchangeRate(values.exchangeRate);
-  const totals = calculateOfficialReceiptTotals(values.lineEntries);
-  const referenceNo = cleanOptional(values.referenceNo);
-  const firstLine = values.lineEntries[0];
+  const totals = calculateOfficialReceiptTotals(syncedValues.lineEntries);
+  const referenceNo = cleanOptional(syncedValues.referenceNo);
+  const firstLine = syncedValues.lineEntries[0];
 
   return {
     address: null,
-    billToName: cleanOptional(values.customerName),
+    billToName: cleanOptional(syncedValues.customerName),
     branchUnitId: branchUnitId ?? undefined,
     businessStyle: null,
     contactNo: null,
     contactPerson: null,
     currency: currencyCode,
-    customerCode: values.partyCode.trim(),
-    customerName: values.customerName.trim(),
-    details: values.lineEntries.map((line, index) => {
+    customerCode: syncedValues.partyCode.trim(),
+    customerName: syncedValues.customerName.trim(),
+    details: syncedValues.lineEntries.map((line, index) => {
       const grossReceipt = toNumber(line.grossReceipt);
       const vatAmount = toNumber(line.vat);
       const ewtAmount = toNumber(line.ewt);
@@ -266,26 +273,26 @@ function toApiOfficialReceiptPayload(
       };
     }),
     discountAmount: 0,
-    documentDate: values.receiptDate,
-    dueDate: values.receiptDate,
+    documentDate: syncedValues.receiptDate,
+    dueDate: syncedValues.receiptDate,
     ewtAmount: totals.ewt,
     exchangeRate,
     grossAmount: totals.grossReceipt,
-    journalEntries: createOfficialReceiptJournalEntries(values, currencyCode, exchangeRate, referenceNo),
+    journalEntries: createOfficialReceiptJournalEntries(syncedValues, currencyCode, exchangeRate, referenceNo),
     netAmount: Math.max(totals.grossReceipt - totals.vat, 0),
     projectCode: null,
     projectName: null,
     projectRef: null,
     receivableAccountCode: firstLine?.accountCode.trim() || "1010",
     receivableAccountTitle: firstLine?.accountTitle.trim() || "Cash in Bank",
-    receiptNo: cleanOptional(values.receiptNo),
+    receiptNo: cleanOptional(syncedValues.receiptNo),
     referenceNo,
-    remarks: cleanOptional(values.remarks),
+    remarks: cleanOptional(syncedValues.remarks),
     salesAssociate: null,
     teamAssigned: null,
     termId: null,
     terms: null,
-    transactionNo: cleanOptional(values.receiptNo),
+    transactionNo: cleanOptional(syncedValues.receiptNo),
     vatAmount: totals.vat,
     wvatAmount: 0,
   };
@@ -378,6 +385,9 @@ function createFormValuesFromRecord(record: OfficialReceiptRecord): OfficialRece
     lineEntries: record.formValues?.lineEntries ?? [],
     partyCode: record.partyCode,
     paymentType: record.formValues?.paymentType ?? "",
+    bankName: record.formValues?.bankName ?? record.formValues?.lineEntries[0]?.bankName ?? "",
+    checkNo: record.formValues?.checkNo ?? record.formValues?.lineEntries[0]?.checkNo ?? "",
+    checkDate: record.formValues?.checkDate ?? record.formValues?.lineEntries[0]?.checkDate ?? "",
     receiptDate: record.receiptDate,
     receiptNo: record.receiptNo,
     referenceNo: record.referenceNo,

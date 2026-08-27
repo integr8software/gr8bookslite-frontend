@@ -48,6 +48,9 @@ export type AcknowledgementReceiptFormValues = {
   customerName: string;
   partyCode: string;
   paymentType: string;
+  bankName: string;
+  checkNo: string;
+  checkDate: string;
   currency: string;
   exchangeRate: string;
   status: string;

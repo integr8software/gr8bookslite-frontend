@@ -87,7 +87,6 @@ const AcknowledgementReceiptAccountingEntryView: AcknowledgementReceiptEntryView
 type AcknowledgementReceiptEntriesProps = {
   entryView: AcknowledgementReceiptEntryView;
   isReadonly: boolean;
-  paymentType: string;
   rows: AcknowledgementReceiptLineEntry[];
   onEntryViewChange: (view: AcknowledgementReceiptEntryView) => void;
   onOpenCollectionTypeDialog: () => void;
@@ -100,7 +99,6 @@ export function AcknowledgementReceiptEntries({
   onEntryViewChange,
   onOpenCollectionTypeDialog,
   onRowsChange,
-  paymentType,
   rows,
 }: AcknowledgementReceiptEntriesProps) {
   const [accountingColumnOrder, setAccountingColumnOrder] = useState<
@@ -128,7 +126,7 @@ export function AcknowledgementReceiptEntries({
   const columns = useMemo<ModuleDataEntryColumn<AcknowledgementReceiptLineEntry>[]>(
     () =>
       entryView === AcknowledgementReceiptCollectionEntryView
-        ? createCollectionColumns(isReadonly, updateEntry, isCheckPaymentType(paymentType))
+        ? createCollectionColumns(isReadonly, updateEntry)
         : createAccountingColumns(
             isReadonly,
             updateEntry,
@@ -143,7 +141,6 @@ export function AcknowledgementReceiptEntries({
       accountingColumnWidths,
       entryView,
       isReadonly,
-      paymentType,
       updateEntry,
       visibleAccountingColumnIds,
     ],
@@ -463,52 +460,7 @@ function createCollectionColumns(
     rowId: string,
     updates: Partial<AcknowledgementReceiptLineEntry>,
   ) => void,
-  shouldShowCheckColumns: boolean,
 ): ModuleDataEntryColumn<AcknowledgementReceiptLineEntry>[] {
-  const checkColumns: ModuleDataEntryColumn<AcknowledgementReceiptLineEntry>[] = shouldShowCheckColumns
-    ? [
-        {
-          header: "Bank Name",
-          id: "bankName",
-          width: 190,
-          widthClassName: "w-[12rem]",
-          renderCell: (row) => (
-            <EntryInput
-              value={row.bankName}
-              readOnly={isReadonly}
-              onChange={(bankName) => onUpdateEntry(row.id, { bankName })}
-            />
-          ),
-        },
-        {
-          header: "Check No.",
-          id: "checkNo",
-          width: 160,
-          widthClassName: "w-[10rem]",
-          renderCell: (row) => (
-            <EntryInput
-              value={row.checkNo}
-              readOnly={isReadonly}
-              onChange={(checkNo) => onUpdateEntry(row.id, { checkNo })}
-            />
-          ),
-        },
-        {
-          header: "Check Date",
-          id: "checkDate",
-          width: 150,
-          widthClassName: "w-[9.5rem]",
-          renderCell: (row) => (
-            <EntryDateInput
-              value={row.checkDate}
-              readOnly={isReadonly}
-              onChange={(checkDate) => onUpdateEntry(row.id, { checkDate })}
-            />
-          ),
-        },
-      ]
-    : [];
-
   return [
     {
       header: "Collection Type",
@@ -592,7 +544,6 @@ function createCollectionColumns(
         </div>
       ),
     },
-    ...checkColumns,
     {
       header: "Reference No.",
       id: "referenceNo",
@@ -760,26 +711,6 @@ function EntryAmountInput({
   );
 }
 
-function EntryDateInput({
-  onChange,
-  readOnly,
-  value,
-}: {
-  onChange: (value: string) => void;
-  readOnly: boolean;
-  value: string;
-}) {
-  return (
-    <input
-      type="date"
-      value={value}
-      readOnly={readOnly}
-      onChange={(event) => onChange(event.target.value)}
-      className={entryCellControlClassName()}
-    />
-  );
-}
-
 function entryCellControlClassName(extraClassName?: string) {
   return joinClasses(
     "h-10 w-full rounded-none border-0 bg-transparent px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:bg-skyblue/10 focus:ring-2 focus:ring-inset focus:ring-skyblue/35 disabled:cursor-not-allowed disabled:bg-offwhite/45 disabled:text-darknavy/35",
@@ -803,10 +734,6 @@ function shouldClearEntry(
   }
 
   return !acknowledgementReceiptEntryHasData(entry);
-}
-
-function isCheckPaymentType(paymentType: string) {
-  return paymentType.trim().toLowerCase().includes("check");
 }
 
 const EntryDropdownClassName =

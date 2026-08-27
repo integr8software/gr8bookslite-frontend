@@ -15,7 +15,7 @@ import {
   validateOnboardingBillingValues,
   validateOnboardingStepOneValues,
 } from "@/app/src/validations/onboarding/OnboardingValidation";
-import type { BillingCycle, PricingPlan } from "@/app/src/data/pricing/PricingData";
+import type { BillingCycle, PricingPlan } from "@/app/src/types/pricing/PricingTypes";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import {
   CompleteOnboarding,

@@ -12,6 +12,7 @@ export function OnboardingPricingDesktopPlans({
 	onReviewPlans,
 	onSelectPlan,
 }: OnboardingPricingDesktopPlansProps) {
+	const isMonthlyBillingCycle = billingCycle === "monthly";
 	const visiblePlans = plans.filter(
 		(plan) => plan.name !== "Additional Company",
 	);
@@ -51,11 +52,11 @@ export function OnboardingPricingDesktopPlans({
 					{visiblePlans.map((plan) => {
 						const isHighlighted = plan.highlighted;
 						const price =
-							billingCycle === "monthly"
+							isMonthlyBillingCycle
 								? plan.monthlyPrice
 								: plan.yearlyPrice;
 						const compareAtPrice =
-							billingCycle === "monthly"
+							isMonthlyBillingCycle
 								? plan.monthlyCompareAtPrice
 								: plan.yearlyCompareAtPrice;
 						const billingLabel = plan.billingLabel[billingCycle];
@@ -117,7 +118,7 @@ export function OnboardingPricingDesktopPlans({
 													{plan.trialPrice ?? "₱0.00"}
 												</p>
 												<span className="pb-0.5 text-xs font-medium text-darknavy/55">
-													{billingCycle === "monthly"
+													{isMonthlyBillingCycle
 														? "/month"
 														: "/year"}
 												</span>
@@ -125,7 +126,7 @@ export function OnboardingPricingDesktopPlans({
 											<div className="flex h-5 items-center justify-center">
 												<p className="text-xs text-darknavy/50">
 													then {price}
-													{billingCycle === "monthly"
+													{isMonthlyBillingCycle
 														? "/month"
 														: "/year"}
 												</p>
@@ -146,7 +147,7 @@ export function OnboardingPricingDesktopPlans({
 													{price}
 												</p>
 												<span className="pb-0.5 text-xs font-medium text-darknavy/55">
-													{billingCycle === "monthly"
+													{isMonthlyBillingCycle
 														? "/month"
 														: "/year"}
 												</span>

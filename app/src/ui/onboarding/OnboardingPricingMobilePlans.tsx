@@ -12,6 +12,7 @@ export function OnboardingPricingMobilePlans({
 	onReviewPlans,
 	onSelectPlan,
 }: OnboardingPricingMobilePlansProps) {
+	const isMonthlyBillingCycle = billingCycle === "monthly";
 	const visiblePlans = plans.filter(
 		(plan) => plan.name !== "Additional Company",
 	);
@@ -41,11 +42,11 @@ export function OnboardingPricingMobilePlans({
 				{visiblePlans.map((plan, planIndex) => {
 					const isHighlighted = plan.highlighted;
 					const price =
-						billingCycle === "monthly"
+						isMonthlyBillingCycle
 							? plan.monthlyPrice
 							: plan.yearlyPrice;
 					const compareAtPrice =
-						billingCycle === "monthly"
+						isMonthlyBillingCycle
 							? plan.monthlyCompareAtPrice
 							: plan.yearlyCompareAtPrice;
 					const billingLabel = plan.billingLabel[billingCycle];
@@ -98,14 +99,14 @@ export function OnboardingPricingMobilePlans({
 													{plan.trialPrice ?? "₱0.00"}
 												</p>
 												<span className="pb-1 text-sm font-medium text-darknavy/65">
-													{billingCycle === "monthly"
+													{isMonthlyBillingCycle
 														? "/month"
 														: "/year"}
 												</span>
 											</div>
 											<p className="mt-1 text-sm text-darknavy/60">
 												then {price}
-												{billingCycle === "monthly"
+												{isMonthlyBillingCycle
 													? "/month"
 													: "/year"}
 											</p>
@@ -122,7 +123,7 @@ export function OnboardingPricingMobilePlans({
 													{price}
 												</p>
 												<span className="pb-1 text-sm font-medium text-darknavy/65">
-													{billingCycle === "monthly"
+													{isMonthlyBillingCycle
 														? "/month"
 														: "/year"}
 												</span>

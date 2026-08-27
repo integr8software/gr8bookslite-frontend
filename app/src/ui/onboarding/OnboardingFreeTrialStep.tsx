@@ -1,11 +1,11 @@
 "use client";
 
 import { useRef, useState } from "react";
-import {
-	BillingOptions,
-	type BillingCycle,
-	type PricingPlan,
-} from "@/app/src/data/pricing/PricingTypes";
+import { BillingOptions } from "@/app/src/data/pricing/PricingData";
+import type {
+	BillingCycle,
+	PricingPlan,
+} from "@/app/src/types/pricing/PricingTypes";
 import { OnboardingPricingDesktopPlans } from "@/app/src/ui/onboarding/OnboardingPricingDesktopPlans";
 import { OnboardingPricingHero } from "@/app/src/ui/onboarding/OnboardingPricingHero";
 import { OnboardingPricingMobilePlans } from "@/app/src/ui/onboarding/OnboardingPricingMobilePlans";

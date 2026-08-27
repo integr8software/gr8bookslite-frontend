@@ -3,7 +3,7 @@
 import type {
 	BillingCycle,
 	PricingPlan,
-} from "@/app/src/data/pricing/PricingData";
+} from "@/app/src/types/pricing/PricingTypes";
 import type { BillingMode } from "@/app/src/data/billing/BillingTypes";
 
 type OnboardingBillingSummaryCardProps = {

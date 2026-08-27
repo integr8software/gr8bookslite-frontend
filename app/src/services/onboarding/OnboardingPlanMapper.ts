@@ -1,4 +1,4 @@
-import type { PricingPlan } from "@/app/src/data/pricing/PricingTypes";
+import type { PricingPlan } from "@/app/src/types/pricing/PricingTypes";
 import type { OnboardingPlan } from "@/app/src/types/onboarding/OnboardingApiModels";
 
 type OnboardingDraftPlan = OnboardingPlan;

@@ -2,16 +2,28 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 
-type ModuleDraftEnvelope<TValues> = {
+export const DEFAULT_DRAFT_EXPIRATION_DAYS = 7;
+export const DEFAULT_DRAFT_EXPIRATION_MS =
+	DEFAULT_DRAFT_EXPIRATION_DAYS * 24 * 60 * 60 * 1000;
+
+export type ModuleDraftEnvelope<TValues> = {
+	branchId?: string | number | null;
+	companyId?: string | number | null;
+	createdAt?: number;
+	expiresAt?: number;
 	updatedAt: number;
 	values: TValues;
 	version: 1;
 };
 
-type UseModuleDraftOptions<TValues> = {
+export type UseModuleDraftOptions<TValues> = {
+	branchId?: string | number | null;
+	companyId?: string | number | null;
 	debounceMs?: number;
 	enabled?: boolean;
+	expiresInMs?: number;
 	initialValues?: TValues;
 	isDirty?: boolean;
 	key: string;
@@ -20,9 +32,54 @@ type UseModuleDraftOptions<TValues> = {
 	values: TValues;
 };
 
+export function resolveScopedDraftKey(
+	baseKey: string,
+	companyId: string | number | null | undefined,
+	branchId: string | number | null | undefined,
+): string {
+	const trimmed = baseKey.trim();
+	if (!trimmed) {
+		return trimmed;
+	}
+
+	const normCompany =
+		companyId !== undefined && companyId !== null && String(companyId).trim() !== ""
+			? `company:${String(companyId).trim()}`
+			: "company:none";
+
+	const normBranch =
+		branchId !== undefined && branchId !== null && String(branchId).trim() !== ""
+			? `branch:${String(branchId).trim()}`
+			: "branch:none";
+
+	if (trimmed.startsWith("draft:company:")) {
+		if (trimmed.includes(":branch:")) {
+			return trimmed;
+		}
+
+		const parts = trimmed.split(":");
+		const companyVal = parts[2] ?? "none";
+		const rest = parts.slice(3).join(":");
+
+		return ["draft", `company:${companyVal}`, normBranch, rest]
+			.filter(Boolean)
+			.join(":");
+	}
+
+	if (trimmed.startsWith("draft:")) {
+		const rest = trimmed.slice("draft:".length);
+		return ["draft", normCompany, normBranch, rest].filter(Boolean).join(":");
+	}
+
+	return ["draft", normCompany, normBranch, trimmed].filter(Boolean).join(":");
+}
+
 export function useModuleDraft<TValues>({
+	branchId: explicitBranchId,
+	companyId: explicitCompanyId,
 	debounceMs = 600,
 	enabled = true,
+	expiresInMs = DEFAULT_DRAFT_EXPIRATION_MS,
 	initialValues,
 	isDirty,
 	key,
@@ -30,7 +87,36 @@ export function useModuleDraft<TValues>({
 	setValues,
 	values,
 }: UseModuleDraftOptions<TValues>) {
-	const hasLoadedDraftRef = useRef(false);
+	const storeCompanyId = useAppStore((state) => state.activeCompanyId);
+	const storeBranchId = useAppStore((state) => state.activeBranchId);
+
+	const resolvedCompanyId =
+		explicitCompanyId !== undefined ? explicitCompanyId : storeCompanyId;
+	const resolvedBranchId =
+		explicitBranchId !== undefined ? explicitBranchId : storeBranchId;
+
+	const normalizedCompanyId =
+		resolvedCompanyId !== undefined &&
+		resolvedCompanyId !== null &&
+		String(resolvedCompanyId).trim() !== ""
+			? String(resolvedCompanyId).trim()
+			: null;
+
+	const normalizedBranchId =
+		resolvedBranchId !== undefined &&
+		resolvedBranchId !== null &&
+		String(resolvedBranchId).trim() !== ""
+			? String(resolvedBranchId).trim()
+			: null;
+
+	const storageKey = resolveScopedDraftKey(
+		key,
+		normalizedCompanyId,
+		normalizedBranchId,
+	);
+	const expirationDurationMs = expiresInMs ?? DEFAULT_DRAFT_EXPIRATION_MS;
+
+	const loadedKeyRef = useRef<string | null>(null);
 	const skipNextSaveRef = useRef(false);
 	const hasShownSaveErrorRef = useRef(false);
 	const saveTimeoutIdRef = useRef<number | null>(null);
@@ -54,8 +140,8 @@ export function useModuleDraft<TValues>({
 	}, [initialValues, isDirty, values]);
 
 	const removeStoredDraft = useCallback(() => {
-		window.localStorage.removeItem(key);
-	}, [key]);
+		window.localStorage.removeItem(storageKey);
+	}, [storageKey]);
 
 	const persistDraft = useCallback(() => {
 		if (isFormClean()) {
@@ -63,25 +149,39 @@ export function useModuleDraft<TValues>({
 			return;
 		}
 
+		const now = Date.now();
 		const draft: ModuleDraftEnvelope<TValues> = {
-			updatedAt: Date.now(),
+			branchId: normalizedBranchId,
+			companyId: normalizedCompanyId,
+			createdAt: now,
+			expiresAt: now + expirationDurationMs,
+			updatedAt: now,
 			values,
 			version: 1,
 		};
 
-		window.localStorage.setItem(key, JSON.stringify(draft));
+		window.localStorage.setItem(storageKey, JSON.stringify(draft));
 		hasShownSaveErrorRef.current = false;
-	}, [isFormClean, key, removeStoredDraft, values]);
+	}, [
+		expirationDurationMs,
+		isFormClean,
+		normalizedBranchId,
+		normalizedCompanyId,
+		removeStoredDraft,
+		storageKey,
+		values,
+	]);
 
 	useEffect(() => {
-		if (!enabled || hasLoadedDraftRef.current) {
+		if (!enabled || loadedKeyRef.current === storageKey) {
 			return;
 		}
 
-		hasLoadedDraftRef.current = true;
+		loadedKeyRef.current = storageKey;
+		cancelPendingSave();
 
 		try {
-			const storedDraft = window.localStorage.getItem(key);
+			const storedDraft = window.localStorage.getItem(storageKey);
 
 			if (!storedDraft) {
 				return;
@@ -93,11 +193,49 @@ export function useModuleDraft<TValues>({
 				return;
 			}
 
+			const now = Date.now();
+			const draftUpdatedAt =
+				typeof draft.updatedAt === "number" ? draft.updatedAt : 0;
+			const draftExpiresAt =
+				typeof draft.expiresAt === "number"
+					? draft.expiresAt
+					: draftUpdatedAt + expirationDurationMs;
+
+			if (
+				now > draftExpiresAt ||
+				(draftUpdatedAt > 0 && now - draftUpdatedAt > expirationDurationMs)
+			) {
+				window.localStorage.removeItem(storageKey);
+				return;
+			}
+
+			const storedDraftCompanyId =
+				draft.companyId !== undefined &&
+				draft.companyId !== null &&
+				String(draft.companyId).trim() !== ""
+					? String(draft.companyId).trim()
+					: null;
+
+			if (storedDraftCompanyId !== normalizedCompanyId) {
+				return;
+			}
+
+			const storedDraftBranchId =
+				draft.branchId !== undefined &&
+				draft.branchId !== null &&
+				String(draft.branchId).trim() !== ""
+					? String(draft.branchId).trim()
+					: null;
+
+			if (storedDraftBranchId !== normalizedBranchId) {
+				return;
+			}
+
 			if (
 				initialValues !== undefined &&
 				JSON.stringify(draft.values) === JSON.stringify(initialValues)
 			) {
-				window.localStorage.removeItem(key);
+				window.localStorage.removeItem(storageKey);
 				return;
 			}
 
@@ -109,10 +247,20 @@ export function useModuleDraft<TValues>({
 		} catch {
 			toast.error("Could not recover the saved draft.");
 		}
-	}, [enabled, initialValues, key, restoreValues, setValues]);
+	}, [
+		cancelPendingSave,
+		enabled,
+		expirationDurationMs,
+		initialValues,
+		normalizedBranchId,
+		normalizedCompanyId,
+		restoreValues,
+		setValues,
+		storageKey,
+	]);
 
 	useEffect(() => {
-		if (!enabled || !hasLoadedDraftRef.current) {
+		if (!enabled || loadedKeyRef.current !== storageKey) {
 			return;
 		}
 
@@ -151,7 +299,14 @@ export function useModuleDraft<TValues>({
 				saveTimeoutIdRef.current = null;
 			}
 		};
-	}, [debounceMs, enabled, isFormClean, persistDraft, removeStoredDraft]);
+	}, [
+		debounceMs,
+		enabled,
+		isFormClean,
+		persistDraft,
+		removeStoredDraft,
+		storageKey,
+	]);
 
 	function clearDraft() {
 		try {
@@ -188,13 +343,33 @@ export function useModuleDraft<TValues>({
 }
 
 export function createModuleDraftKey({
+	branchId,
+	companyId,
 	mode,
 	moduleId,
 	recordId,
 }: {
+	branchId?: string | number | null;
+	companyId?: string | number | null;
 	mode: string;
 	moduleId: string;
 	recordId?: string;
 }) {
-	return ["draft", moduleId, mode, recordId].filter(Boolean).join(":");
+	const companySegment =
+		companyId !== undefined &&
+		companyId !== null &&
+		String(companyId).trim() !== ""
+			? `company:${String(companyId).trim()}`
+			: undefined;
+
+	const branchSegment =
+		branchId !== undefined &&
+		branchId !== null &&
+		String(branchId).trim() !== ""
+			? `branch:${String(branchId).trim()}`
+			: undefined;
+
+	return ["draft", companySegment, branchSegment, moduleId, mode, recordId]
+		.filter(Boolean)
+		.join(":");
 }

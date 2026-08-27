@@ -47,6 +47,14 @@ export const PartyManagementEditFromViewQuery = `${PartyManagementEditFromParam}
 
 export const PartyManagementDrawerFormId = "party-management-drawer-form";
 
+export const PartyImportBillingAddressRole = "billing";
+
+export const PartyImportDefaultAddressRole = "default";
+
+export const PartyImportDeliveryAddressRole = "delivery";
+
+export const PartyImportHomeAddressRole = "home";
+
 export const PartyClassificationOptions = ["Individual", "Non-Individual"] as const satisfies readonly PartyClassification[];
 
 export const PartyTypeOptions = ["Vendor", "Customer", "Employee", "Member"] as const satisfies readonly PartyType[];

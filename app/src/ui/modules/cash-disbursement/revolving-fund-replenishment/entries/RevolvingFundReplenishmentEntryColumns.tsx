@@ -39,7 +39,6 @@ export function createRevolvingFundReplenishmentLineColumns({
     id,
     width: columnWidths[id],
     widthClassName: "w-auto",
-    widthMode: "fixed",
     renderCell: (row, _index, context) => (
       <ModuleDataEntryInputCell
         id={context.fieldId}
@@ -61,7 +60,6 @@ export function createRevolvingFundReplenishmentLineColumns({
     id,
     width: columnWidths[id],
     widthClassName: "w-auto",
-    widthMode: "fixed",
     renderCell: (row, _index, context) => (
       <ModuleDataEntryMoneyCell
         id={context.fieldId}
@@ -82,7 +80,6 @@ export function createRevolvingFundReplenishmentLineColumns({
     id,
     width: columnWidths[id],
     widthClassName: "w-auto",
-    widthMode: "fixed",
     renderCell: (row, _index, context) => (
       <ModuleDataEntryDropdownCell
         id={context.fieldId}
@@ -112,7 +109,6 @@ export function createRevolvingFundReplenishmentLineColumns({
     id,
     width: columnWidths[id],
     widthClassName: "w-auto",
-    widthMode: "fixed",
     renderCell: (row) => <ModuleDataEntryReadonlyCell align="right" value={row[id]} />,
   });
 
@@ -124,7 +120,6 @@ export function createRevolvingFundReplenishmentLineColumns({
       id: "supplierCode",
       width: columnWidths.supplierCode,
       widthClassName: "w-auto",
-      widthMode: "fixed",
       renderCell: (row) => <ModuleDataEntryReadonlyCell value={row.supplierCode} />,
     },
     supplierName: {
@@ -132,7 +127,6 @@ export function createRevolvingFundReplenishmentLineColumns({
       id: "supplierName",
       width: columnWidths.supplierName,
       widthClassName: "w-auto",
-      widthMode: "fixed",
       renderCell: (row, _index, context) => (
         <ModuleDataEntryDropdownCell
           id={context.fieldId}
@@ -177,7 +171,6 @@ export function createRevolvingFundReplenishmentLineColumns({
       id: "responsibilityCenterCode",
       width: columnWidths.responsibilityCenterCode,
       widthClassName: "w-auto",
-      widthMode: "fixed",
       renderCell: (row) => <ModuleDataEntryReadonlyCell value={row.responsibilityCenterCode} />,
     },
     responsibilityCenterName: {
@@ -185,7 +178,6 @@ export function createRevolvingFundReplenishmentLineColumns({
       id: "responsibilityCenterName",
       width: columnWidths.responsibilityCenterName,
       widthClassName: "w-auto",
-      widthMode: "fixed",
       renderCell: (row, _index, context) => (
         <ModuleDataEntryDropdownCell
           id={context.fieldId}
@@ -212,7 +204,6 @@ export function createRevolvingFundReplenishmentLineColumns({
       id: "remarks",
       width: columnWidths.remarks,
       widthClassName: "w-auto",
-      widthMode: "fixed",
       renderCell: (row, _index, context) => (
         <ModuleDataEntryRemarksCell
           inputId={context.fieldId}
@@ -239,7 +230,6 @@ export function createRevolvingFundReplenishmentAccountingColumns({
     id,
     width: columnWidths[id],
     widthClassName: "w-auto",
-    widthMode: "fixed",
     renderCell: (row) => (
       <span className={`block px-3 ${id === "debit" || id === "credit" ? "text-right tabular-nums" : ""}`}>{row[id]}</span>
     ),

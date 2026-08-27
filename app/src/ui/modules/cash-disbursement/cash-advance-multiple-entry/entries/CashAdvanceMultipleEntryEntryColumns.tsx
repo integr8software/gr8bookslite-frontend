@@ -41,7 +41,6 @@ export function createCashAdvanceMultipleEntryItemColumns({
       id: "partyCode",
       width: 125,
       widthClassName: "w-[7.75rem]",
-      widthMode: "fixed",
       renderCell: (row, _index, context) => (
         <ModuleDataEntryInputCell id={context.fieldId} name={context.fieldName} readOnly value={row.partyCode} />
       ),
@@ -51,7 +50,6 @@ export function createCashAdvanceMultipleEntryItemColumns({
       id: "partyName",
       width: 220,
       widthClassName: "w-[13.75rem]",
-      widthMode: "fixed",
       renderCell: (row, _index, context) => (
         <ModuleDataEntryDropdownCell
           id={context.fieldId}
@@ -85,7 +83,6 @@ export function createCashAdvanceMultipleEntryItemColumns({
       id: "amount",
       width: 140,
       widthClassName: "w-[8.75rem]",
-      widthMode: "fixed",
       renderCell: (row, _index, context) => (
         <ModuleDataEntryMoneyCell
           id={context.fieldId}
@@ -106,7 +103,6 @@ export function createCashAdvanceMultipleEntryItemColumns({
       id: "cashAdvanceLimit",
       width: 155,
       widthClassName: "w-[9.75rem]",
-      widthMode: "fixed",
       renderCell: (row, _index, context) => (
         <ModuleDataEntryMoneyCell id={context.fieldId} name={context.fieldName} readOnly value={row.cashAdvanceLimit} />
       ),
@@ -116,7 +112,6 @@ export function createCashAdvanceMultipleEntryItemColumns({
       id: "cashAdvanceBalance",
       width: 155,
       widthClassName: "w-[9.75rem]",
-      widthMode: "fixed",
       renderCell: (row, _index, context) => (
         <ModuleDataEntryMoneyCell id={context.fieldId} name={context.fieldName} readOnly value={row.cashAdvanceBalance} />
       ),
@@ -126,7 +121,6 @@ export function createCashAdvanceMultipleEntryItemColumns({
       id: "totalCashAdvanced",
       width: 165,
       widthClassName: "w-[10.25rem]",
-      widthMode: "fixed",
       renderCell: (row, _index, context) => (
         <ModuleDataEntryMoneyCell
           id={context.fieldId}
@@ -143,7 +137,6 @@ export function createCashAdvanceMultipleEntryItemColumns({
       id: "responsibilityCenterCode",
       width: 155,
       widthClassName: "w-[9.75rem]",
-      widthMode: "fixed",
       renderCell: (row, _index, context) => (
         <ModuleDataEntryInputCell
           id={context.fieldId}
@@ -158,7 +151,6 @@ export function createCashAdvanceMultipleEntryItemColumns({
       id: "responsibilityCenter",
       width: 165,
       widthClassName: "w-[10.25rem]",
-      widthMode: "fixed",
       renderCell: (row, _index, context) => (
         <ModuleDataEntryDropdownCell
           id={context.fieldId}
@@ -178,7 +170,6 @@ export function createCashAdvanceMultipleEntryItemColumns({
       id: "remarks",
       width: 300,
       widthClassName: "w-[18.75rem]",
-      widthMode: "fixed",
       renderCell: (row, _index, context) => (
         <ModuleDataEntryInputCell
           id={context.fieldId}
@@ -213,7 +204,6 @@ export function createCashAdvanceMultipleEntryAccountingColumns({
       id: "accountCode",
       width: 140,
       widthClassName: "w-[8.75rem]",
-      widthMode: "fixed",
       renderCell: (row, _index, context) => (
         <ModuleDataEntryInputCell id={context.fieldId} name={context.fieldName} readOnly value={row.accountCode} />
       ),
@@ -223,7 +213,6 @@ export function createCashAdvanceMultipleEntryAccountingColumns({
       id: "accountTitle",
       width: 220,
       widthClassName: "w-[13.75rem]",
-      widthMode: "fixed",
       renderCell: (row, _index, context) => (
         <ModuleDataEntryDropdownCell
           id={context.fieldId}
@@ -246,7 +235,6 @@ export function createCashAdvanceMultipleEntryAccountingColumns({
       id: "credit",
       width: 140,
       widthClassName: "w-[8.75rem]",
-      widthMode: "fixed",
       renderCell: (row, _index, context) => (
         <ModuleDataEntryMoneyCell
           id={context.fieldId}
@@ -263,7 +251,6 @@ export function createCashAdvanceMultipleEntryAccountingColumns({
       id: "debit",
       width: 140,
       widthClassName: "w-[8.75rem]",
-      widthMode: "fixed",
       renderCell: (row, _index, context) => (
         <ModuleDataEntryMoneyCell
           id={context.fieldId}
@@ -280,7 +267,6 @@ export function createCashAdvanceMultipleEntryAccountingColumns({
       id: "partyCode",
       width: 130,
       widthClassName: "w-[8.125rem]",
-      widthMode: "fixed",
       renderCell: (row, _index, context) => (
         <ModuleDataEntryInputCell id={context.fieldId} name={context.fieldName} readOnly value={row.partyCode} />
       ),
@@ -290,7 +276,6 @@ export function createCashAdvanceMultipleEntryAccountingColumns({
       id: "partyName",
       width: 200,
       widthClassName: "w-[12.5rem]",
-      widthMode: "fixed",
       renderCell: (row, _index, context) => (
         <ModuleDataEntryDropdownCell
           id={context.fieldId}
@@ -315,7 +300,6 @@ export function createCashAdvanceMultipleEntryAccountingColumns({
       id: "responsibilityCenterCode",
       width: 155,
       widthClassName: "w-[9.75rem]",
-      widthMode: "fixed",
       renderCell: (row, _index, context) => (
         <ModuleDataEntryInputCell
           id={context.fieldId}
@@ -330,7 +314,6 @@ export function createCashAdvanceMultipleEntryAccountingColumns({
       id: "responsibilityCenter",
       width: 180,
       widthClassName: "w-[11.25rem]",
-      widthMode: "fixed",
       renderCell: (row, _index, context) => (
         <ModuleDataEntryDropdownCell
           id={context.fieldId}
@@ -350,7 +333,6 @@ export function createCashAdvanceMultipleEntryAccountingColumns({
       id: "remarks",
       width: 260,
       widthClassName: "w-[16.25rem]",
-      widthMode: "fixed",
       renderCell: (row, _index, context) => (
         <ModuleDataEntryInputCell
           id={context.fieldId}

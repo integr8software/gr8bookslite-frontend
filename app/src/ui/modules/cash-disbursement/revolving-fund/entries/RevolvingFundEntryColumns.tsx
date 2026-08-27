@@ -33,7 +33,6 @@ export function createRevolvingFundItemColumns(
     header: labels[id],
     id,
     width: widths[id],
-    widthMode: "fixed",
     widthClassName: "w-auto",
     renderCell: (row, _index, context) => (
       <ModuleDataEntryInputCell
@@ -55,7 +54,6 @@ export function createRevolvingFundItemColumns(
     header: labels[id],
     id,
     width: widths[id],
-    widthMode: "fixed",
     widthClassName: "w-auto",
     renderCell: (row, _index, context) => (
       <ModuleDataEntryMoneyCell
@@ -76,7 +74,6 @@ export function createRevolvingFundItemColumns(
     header: labels[id],
     id,
     width: widths[id],
-    widthMode: "fixed",
     widthClassName: "w-auto",
     renderCell: (row, _index, context) => (
       <ModuleDataEntryDropdownCell
@@ -96,7 +93,6 @@ export function createRevolvingFundItemColumns(
     header: labels[id],
     id,
     width: widths[id],
-    widthMode: "fixed",
     widthClassName: "w-auto",
     renderCell: (row) => <ModuleDataEntryReadonlyCell align="right" value={String(row[id] ?? "")} />,
   });
@@ -107,7 +103,6 @@ export function createRevolvingFundItemColumns(
       header: labels.supplierCode,
       id: "supplierCode",
       width: widths.supplierCode,
-      widthMode: "fixed",
       widthClassName: "w-auto",
       renderCell: (row) => <ModuleDataEntryReadonlyCell value={row.supplierCode} />,
     },
@@ -115,7 +110,6 @@ export function createRevolvingFundItemColumns(
       header: labels.supplierName,
       id: "supplierName",
       width: widths.supplierName,
-      widthMode: "fixed",
       widthClassName: "w-auto",
       renderCell: (row, _index, context) => (
         <ModuleDataEntryDropdownCell
@@ -204,7 +198,6 @@ export function createRevolvingFundItemColumns(
       header: labels.responsibilityCenterCode,
       id: "responsibilityCenterCode",
       width: widths.responsibilityCenterCode,
-      widthMode: "fixed",
       widthClassName: "w-auto",
       renderCell: (row) => <ModuleDataEntryReadonlyCell value={row.responsibilityCenterCode} />,
     },
@@ -212,7 +205,6 @@ export function createRevolvingFundItemColumns(
       header: labels.responsibilityCenterName,
       id: "responsibilityCenterName",
       width: widths.responsibilityCenterName,
-      widthMode: "fixed",
       widthClassName: "w-auto",
       renderCell: (row, _index, context) => (
         <ModuleDataEntryDropdownCell
@@ -249,7 +241,6 @@ export function createRevolvingFundAccountingColumns(
     header: labels[id],
     id,
     width: widths[id],
-    widthMode: "fixed",
     widthClassName: "w-auto",
     renderCell: (row) => (
       <span className={`block ${id === "debit" || id === "credit" ? "text-right tabular-nums" : ""}`}>

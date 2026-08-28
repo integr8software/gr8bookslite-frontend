@@ -12,8 +12,8 @@
   --background-rgb: 248 250 252;
   --background: var(--offwhite);
   --foreground: var(--darknavy);
-  --font-body: var(--font-manrope);
-  --font-heading: var(--font-sora);
+  --font-body: "Manrope", Arial, Helvetica, sans-serif;
+  --font-heading: "Sora", var(--font-body);
   --app-root-font-size: 90%;
   --module-text-xs: 0.75rem;
   --module-text-sm: 0.875rem;

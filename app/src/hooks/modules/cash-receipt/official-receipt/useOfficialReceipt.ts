@@ -42,11 +42,17 @@ import {
   updateOfficialReceiptStatus,
 } from "@/app/src/services/modules/cash-receipt/official-receipt/OfficialReceiptApi";
 
-type OfficialReceiptApi = {
+type OfficialReceiptListResponse<TReceipt> = {
+  receipts: TReceipt[];
+};
+
+type OfficialReceiptListQuery = Parameters<typeof fetchOfficialReceipts>[0];
+
+type OfficialReceiptApi<TReceipt = Parameters<typeof mapApiOfficialReceipt>[0]> = {
   createReceipt: typeof createOfficialReceipt;
   fetchReceipt: typeof fetchOfficialReceipt;
-  fetchReceipts: typeof fetchOfficialReceipts;
-  mapApiReceipt: typeof mapApiOfficialReceipt;
+  fetchReceipts: (query?: OfficialReceiptListQuery) => Promise<OfficialReceiptListResponse<TReceipt>>;
+  mapApiReceipt: (receipt: TReceipt) => OfficialReceiptRecord;
   updateReceipt: typeof updateOfficialReceipt;
   updateReceiptStatus: typeof updateOfficialReceiptStatus;
 };
@@ -67,19 +73,22 @@ type OfficialReceiptStoreState = {
   updateReceiptStatus: (receipt: OfficialReceiptRecord, status: OfficialReceiptStatus) => void;
 };
 
-export type OfficialReceiptModuleConfig = {
-  api?: OfficialReceiptApi;
+export type OfficialReceiptModuleConfig<TReceipt = Parameters<typeof mapApiOfficialReceipt>[0]> = {
+  api?: OfficialReceiptApi<TReceipt>;
   copyFromRecords?: OfficialReceiptCopyFromRecord[];
   receiptLabel?: string;
   storageKey?: string;
 };
 
-export function useOfficialReceiptStore<TSelected = OfficialReceiptStoreState>(
+export function useOfficialReceiptStore<
+  TSelected = OfficialReceiptStoreState,
+  TReceipt = Parameters<typeof mapApiOfficialReceipt>[0],
+>(
   selector?: (state: OfficialReceiptStoreState) => TSelected,
-  config: OfficialReceiptModuleConfig = {},
+  config: OfficialReceiptModuleConfig<TReceipt> = {},
 ) {
   const receiptLabel = config.receiptLabel ?? "Official receipt";
-  const api = config.api ?? DefaultOfficialReceiptApi;
+  const api = (config.api ?? DefaultOfficialReceiptApi) as OfficialReceiptApi<TReceipt>;
   const [receipts, setReceipts] = useState<OfficialReceiptRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [lastSyncedAt, setLastSyncedAt] = useState(() => Date.now());
@@ -141,14 +150,14 @@ export function useOfficialReceiptStore<TSelected = OfficialReceiptStoreState>(
   return selector ? selector(state) : (state as TSelected);
 }
 
-export function useOfficialReceiptActionForm(
+export function useOfficialReceiptActionForm<TReceipt = Parameters<typeof mapApiOfficialReceipt>[0]>(
   mode: OfficialReceiptActionMode,
   recordId?: string,
   onSaved?: (record: OfficialReceiptRecord) => void,
-  config: OfficialReceiptModuleConfig = {},
+  config: OfficialReceiptModuleConfig<TReceipt> = {},
 ) {
   const receiptLabel = config.receiptLabel ?? "Official receipt";
-  const api = config.api ?? DefaultOfficialReceiptApi;
+  const api = (config.api ?? DefaultOfficialReceiptApi) as OfficialReceiptApi<TReceipt>;
   const [isNotFound, setIsNotFound] = useState(mode !== "add" && !recordId);
   const [entryView, setEntryView] = useState<OfficialReceiptEntryView>("collection");
   const [loadedRecord, setLoadedRecord] = useState<OfficialReceiptRecord | null>(null);
@@ -184,6 +193,10 @@ export function useOfficialReceiptActionForm(
   function updateField<Key extends keyof OfficialReceiptFormValues>(key: Key, value: OfficialReceiptFormValues[Key]) {
     setValues((current) => {
       const nextValues = { ...current, [key]: value };
+
+      if (key === "partyCode" || key === "customerName") {
+        return syncOfficialReceiptPartyDetails(nextValues);
+      }
 
       return isCheckDetailField(key)
         ? syncOfficialReceiptCheckDetails(nextValues)
@@ -276,6 +289,20 @@ export function useOfficialReceiptActionForm(
 
 function isCheckDetailField(key: keyof OfficialReceiptFormValues) {
   return key === "bankName" || key === "checkDate" || key === "checkNo";
+}
+
+function syncOfficialReceiptPartyDetails(
+  values: OfficialReceiptFormValues,
+): OfficialReceiptFormValues {
+  return {
+    ...values,
+    lineEntries: values.lineEntries.map((entry) => ({
+      ...entry,
+      customerName: values.customerName,
+      partyCode: values.partyCode,
+      partyName: values.customerName,
+    })),
+  };
 }
 
 export function useOfficialReceiptTable(receipts: OfficialReceiptRecord[]) {

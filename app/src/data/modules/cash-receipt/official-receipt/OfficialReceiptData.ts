@@ -31,9 +31,22 @@ export const OfficialReceiptCurrencyOptions = [
 
 export const OfficialReceiptCollectionTypeOptions = [
   { name: "Customer payment", value: "Customer payment" },
+  { name: "Service Revenue", value: "Service Revenue" },
   { name: "Service income", value: "Service income" },
   { name: "Advance deposit", value: "Advance deposit" },
   { name: "Rental collection", value: "Rental collection" },
+];
+
+export const OfficialReceiptVatTypeOptions = [
+  { name: "Output VAT (12%)", value: "Output VAT (12%)" },
+  { name: "VAT Exempt", value: "VAT Exempt" },
+  { name: "Zero Rated", value: "Zero Rated" },
+];
+
+export const OfficialReceiptCwtCodeOptions = [
+  { name: "WC 160", value: "WC 160" },
+  { name: "WC 157", value: "WC 157" },
+  { name: "WC 100", value: "WC 100" },
 ];
 
 export const OfficialReceiptCopyFromRecords: OfficialReceiptCopyFromRecord[] = [
@@ -178,7 +191,14 @@ export function applyCopyFromRecordToOfficialReceiptForm(
           debit: record.debit || formattedAmount,
           grossReceipt: record.grossReceipt || formattedGross,
           partyCode,
+          partyName,
           referenceNo: record.sourceNo,
+          vatType: record.vatType || "Output VAT (12%)",
+          vatPercent: record.vatPercent || "12.00",
+          cwtCode: record.cwtCode || "WC 160",
+          cwtPercent: record.cwtPercent || "2.00",
+          particulars: record.particulars || record.remarks || "",
+          responsibilityCenter: record.responsibilityCenter || "",
           vat: record.vat || "0.0000",
           vatExempt: record.vatExempt || "0.0000",
           ewt: record.ewt || "0.0000",
@@ -193,6 +213,7 @@ export function applyCopyFromRecordToOfficialReceiptForm(
     customerName: partyName,
     partyCode,
     paymentType: record.paymentType || currentValues.paymentType,
+    paymentId: currentValues.paymentId,
     currency: record.currency || currentValues.currency,
     exchangeRate: record.exchangeRate || currentValues.exchangeRate,
     referenceNo: record.sourceNo,
@@ -253,7 +274,14 @@ export function applyCopyFromRecordsToOfficialReceiptForm(
         debit: record.debit || formattedAmount,
         grossReceipt: record.grossReceipt || formattedGross,
         partyCode: record.partyCode || partyCode,
+        partyName: record.partyName || record.customerName || partyName,
         referenceNo: record.sourceNo,
+        vatType: record.vatType || "Output VAT (12%)",
+        vatPercent: record.vatPercent || "12.00",
+        cwtCode: record.cwtCode || "WC 160",
+        cwtPercent: record.cwtPercent || "2.00",
+        particulars: record.particulars || record.remarks || "",
+        responsibilityCenter: record.responsibilityCenter || "",
         vat: record.vat || "0.0000",
         vatExempt: record.vatExempt || "0.0000",
         ewt: record.ewt || "0.0000",
@@ -269,6 +297,7 @@ export function applyCopyFromRecordsToOfficialReceiptForm(
     customerName: partyName,
     partyCode,
     paymentType: firstRecord.paymentType || currentValues.paymentType,
+    paymentId: currentValues.paymentId,
     currency: firstRecord.currency || currentValues.currency,
     exchangeRate: firstRecord.exchangeRate || currentValues.exchangeRate,
     referenceNo: combinedRefNo,
@@ -289,6 +318,13 @@ export function createBlankOfficialReceiptLineEntry(overrides: Partial<OfficialR
     checkNo: "",
     checkDate: "",
     grossReceipt: "0.0000",
+    vatType: "Output VAT (12%)",
+    vatPercent: "12.00",
+    cwtCode: "WC 160",
+    cwtPercent: "2.00",
+    partyName: "",
+    particulars: "",
+    responsibilityCenter: "",
     vatExempt: "0.0000",
     vat: "0.0000",
     ewt: "0.0000",
@@ -307,6 +343,7 @@ export function createOfficialReceiptFormValues(): OfficialReceiptFormValues {
     customerName: "",
     partyCode: "",
     paymentType: "",
+    paymentId: "",
     bankName: "",
     checkNo: "",
     checkDate: "",
@@ -317,7 +354,7 @@ export function createOfficialReceiptFormValues(): OfficialReceiptFormValues {
     attachments: [],
     lineEntries: [
       createBlankOfficialReceiptLineEntry({
-        accountCode: "1010",
+        accountCode: "1010103001",
         accountTitle: "Cash in Bank",
       }),
     ],
@@ -339,6 +376,13 @@ export function createOfficialReceiptFormValuesFromRecord(record: OfficialReceip
         bankName: entry.bankName ?? "",
         checkNo: entry.checkNo ?? "",
         checkDate: entry.checkDate ?? "",
+        partyName: entry.partyName ?? entry.customerName ?? "",
+        vatType: entry.vatType ?? "Output VAT (12%)",
+        vatPercent: entry.vatPercent ?? "12.00",
+        cwtCode: entry.cwtCode ?? "WC 160",
+        cwtPercent: entry.cwtPercent ?? "2.00",
+        particulars: entry.particulars ?? "",
+        responsibilityCenter: entry.responsibilityCenter ?? "",
       })),
     };
   }
@@ -360,6 +404,7 @@ export function createOfficialReceiptFormValuesFromRecord(record: OfficialReceip
         collectionType: record.collectionType,
         customerName: record.customerName,
         partyCode: record.partyCode ?? "",
+        partyName: record.customerName,
         bankName: "",
         checkNo: "",
         checkDate: "",
@@ -407,20 +452,30 @@ export function syncOfficialReceiptCheckDetails(
       bankName: values.bankName,
       checkDate: values.checkDate,
       checkNo: values.checkNo,
+      customerName: entry.customerName || values.customerName,
+      partyCode: entry.partyCode || values.partyCode,
+      partyName: entry.partyName || values.customerName,
     })),
   };
 }
 
 export function calculateOfficialReceiptTotals(entries: OfficialReceiptLineEntry[]): OfficialReceiptTotals {
   return entries.reduce(
-    (summary, entry) => ({
-      credit: summary.credit + parseMoneyNumberInput(entry.credit),
-      debit: summary.debit + parseMoneyNumberInput(entry.debit),
-      ewt: summary.ewt + parseMoneyNumberInput(entry.ewt),
-      grossReceipt: summary.grossReceipt + parseMoneyNumberInput(entry.grossReceipt),
-      vat: summary.vat + parseMoneyNumberInput(entry.vat),
-      vatExempt: summary.vatExempt + parseMoneyNumberInput(entry.vatExempt),
-    }),
+    (summary, entry) => {
+      const grossReceipt = parseMoneyNumberInput(entry.grossReceipt);
+      const vat = calculateOfficialReceiptVatAmount(entry);
+      const ewt = calculateOfficialReceiptCwtAmount(entry);
+      const netOfVat = calculateOfficialReceiptNetOfVat(entry);
+
+      return {
+        credit: summary.credit + vat + netOfVat,
+        debit: summary.debit + calculateOfficialReceiptTotalReceived(entry) + ewt,
+        ewt: summary.ewt + ewt,
+        grossReceipt: summary.grossReceipt + grossReceipt,
+        vat: summary.vat + vat,
+        vatExempt: summary.vatExempt + parseMoneyNumberInput(entry.vatExempt),
+      };
+    },
     {
       credit: 0,
       debit: 0,
@@ -430,6 +485,32 @@ export function calculateOfficialReceiptTotals(entries: OfficialReceiptLineEntry
       vatExempt: 0,
     },
   );
+}
+
+export function calculateOfficialReceiptVatAmount(entry: OfficialReceiptLineEntry) {
+  const grossReceipt = parseMoneyNumberInput(entry.grossReceipt);
+  const vatPercent = parseMoneyNumberInput(entry.vatPercent);
+
+  return roundOfficialReceiptAmount(grossReceipt * (vatPercent / 100));
+}
+
+export function calculateOfficialReceiptCwtAmount(entry: OfficialReceiptLineEntry) {
+  const grossReceipt = parseMoneyNumberInput(entry.grossReceipt);
+  const cwtPercent = parseMoneyNumberInput(entry.cwtPercent);
+
+  return roundOfficialReceiptAmount(grossReceipt * (cwtPercent / 100));
+}
+
+export function calculateOfficialReceiptNetOfVat(entry: OfficialReceiptLineEntry) {
+  return Math.max(parseMoneyNumberInput(entry.grossReceipt) - calculateOfficialReceiptVatAmount(entry), 0);
+}
+
+export function calculateOfficialReceiptTotalReceived(entry: OfficialReceiptLineEntry) {
+  return Math.max(parseMoneyNumberInput(entry.grossReceipt) - calculateOfficialReceiptCwtAmount(entry), 0);
+}
+
+function roundOfficialReceiptAmount(amount: number) {
+  return Math.round((amount + Number.EPSILON) * 100) / 100;
 }
 
 export function formatOfficialReceiptAmount(amount: number) {
@@ -476,14 +557,21 @@ export function officialReceiptEntryHasData(entry: OfficialReceiptLineEntry) {
     entry.accountTitle.trim() !== "" ||
     entry.collectionType.trim() !== "" ||
     entry.customerName.trim() !== "" ||
+    entry.partyName.trim() !== "" ||
     entry.bankName.trim() !== "" ||
     entry.checkNo.trim() !== "" ||
     entry.checkDate.trim() !== "" ||
+    entry.vatType.trim() !== "" ||
+    entry.cwtCode.trim() !== "" ||
+    entry.particulars.trim() !== "" ||
+    entry.responsibilityCenter.trim() !== "" ||
     entry.referenceNo.trim() !== "" ||
     parseMoneyNumberInput(entry.grossReceipt) > 0 ||
     parseMoneyNumberInput(entry.vatExempt) > 0 ||
     parseMoneyNumberInput(entry.vat) > 0 ||
     parseMoneyNumberInput(entry.ewt) > 0 ||
+    parseMoneyNumberInput(entry.vatPercent) > 0 ||
+    parseMoneyNumberInput(entry.cwtPercent) > 0 ||
     parseMoneyNumberInput(entry.debit) > 0 ||
     parseMoneyNumberInput(entry.credit) > 0
   );
@@ -492,9 +580,105 @@ export function officialReceiptEntryHasData(entry: OfficialReceiptLineEntry) {
 export function officialReceiptEntryIsComplete(entry: OfficialReceiptLineEntry) {
   return (
     entry.collectionType.trim() !== "" &&
-    entry.customerName.trim() !== "" &&
+    (entry.customerName.trim() !== "" || entry.partyName.trim() !== "") &&
     (parseMoneyNumberInput(entry.grossReceipt) > 0 || parseMoneyNumberInput(entry.debit) > 0 || parseMoneyNumberInput(entry.credit) > 0)
   );
+}
+
+export function shouldClearOfficialReceiptEntry(
+  entry: OfficialReceiptLineEntry,
+  action: "incomplete" | "no-data" | "with-data",
+) {
+  if (action === "with-data") {
+    return officialReceiptEntryHasData(entry);
+  }
+
+  if (action === "incomplete") {
+    return officialReceiptEntryHasData(entry) && !officialReceiptEntryIsComplete(entry);
+  }
+
+  return !officialReceiptEntryHasData(entry);
+}
+
+export function createOfficialReceiptAccountingRows(rows: OfficialReceiptLineEntry[]) {
+  return rows.flatMap((row) => {
+    const grossReceipt = parseMoneyNumberInput(row.grossReceipt);
+
+    if (grossReceipt <= 0) {
+      return [];
+    }
+
+    const netOfVat = calculateOfficialReceiptNetOfVat(row);
+    const vatAmount = calculateOfficialReceiptVatAmount(row);
+    const cwtAmount = calculateOfficialReceiptCwtAmount(row);
+    const totalReceived = calculateOfficialReceiptTotalReceived(row);
+    const commonFields = {
+      bankName: row.bankName,
+      checkDate: row.checkDate,
+      checkNo: row.checkNo,
+      collectionType: row.collectionType,
+      customerName: row.partyName || row.customerName,
+      cwtCode: row.cwtCode,
+      cwtPercent: row.cwtPercent,
+      grossReceipt: row.grossReceipt,
+      particulars: row.particulars || row.collectionType,
+      partyCode: row.partyCode,
+      partyName: row.partyName || row.customerName,
+      referenceNo: row.referenceNo,
+      responsibilityCenter: row.responsibilityCenter,
+      vat: formatOfficialReceiptAmount(vatAmount),
+      vatExempt: row.vatExempt,
+      vatPercent: row.vatPercent,
+      vatType: row.vatType,
+      ewt: formatOfficialReceiptAmount(cwtAmount),
+    } satisfies Omit<
+      OfficialReceiptLineEntry,
+      "accountCode" | "accountTitle" | "credit" | "debit" | "id"
+    >;
+
+    return [
+      {
+        ...commonFields,
+        id: `${row.id}-cash`,
+        accountCode: "1010103001",
+        accountTitle: "Cash in Bank",
+        debit: totalReceived.toFixed(2),
+        credit: "0.00",
+      },
+      ...(cwtAmount > 0
+        ? [
+            {
+              ...commonFields,
+              id: `${row.id}-cwt`,
+              accountCode: "1010104008",
+              accountTitle: "Creditable Withholding Tax",
+              debit: cwtAmount.toFixed(2),
+              credit: "0.00",
+            },
+          ]
+        : []),
+      ...(vatAmount > 0
+        ? [
+            {
+              ...commonFields,
+              id: `${row.id}-vat`,
+              accountCode: "2010002005",
+              accountTitle: "Output VAT",
+              debit: "0.00",
+              credit: vatAmount.toFixed(2),
+            },
+          ]
+        : []),
+      {
+        ...commonFields,
+        id: `${row.id}-revenue`,
+        accountCode: "4020000001",
+        accountTitle: row.collectionType || "Service Revenue",
+        debit: "0.00",
+        credit: netOfVat.toFixed(2),
+      },
+    ];
+  });
 }
 
 function normalizeOfficialReceiptStatus(value: string): OfficialReceiptStatus {

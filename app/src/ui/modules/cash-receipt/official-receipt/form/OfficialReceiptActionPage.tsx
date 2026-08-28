@@ -29,12 +29,12 @@ import type {
 import type { PaymentTypeRecord } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
 import type { PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
-import { OfficialReceiptActionHeader } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptActionHeader";
-import { OfficialReceiptDetailsForm } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptDetailsForm";
-import { OfficialReceiptEntries } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptEntries";
-import { OfficialReceiptNotFound } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptNotFound";
-import { openOfficialReceiptPdf } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptPdf";
-import { OfficialReceiptReportPreview } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptReportPreview";
+import { OfficialReceiptActionHeader } from "@/app/src/ui/modules/cash-receipt/official-receipt/form/OfficialReceiptActionHeader";
+import { OfficialReceiptDetailsForm } from "@/app/src/ui/modules/cash-receipt/official-receipt/form/OfficialReceiptDetailsForm";
+import { OfficialReceiptEntries } from "@/app/src/ui/modules/cash-receipt/official-receipt/entries/OfficialReceiptEntries";
+import { OfficialReceiptNotFound } from "@/app/src/ui/modules/cash-receipt/official-receipt/overview/OfficialReceiptNotFound";
+import { openOfficialReceiptPdf } from "@/app/src/ui/modules/cash-receipt/official-receipt/reports/OfficialReceiptPdf";
+import { OfficialReceiptReportPreview } from "@/app/src/ui/modules/cash-receipt/official-receipt/reports/OfficialReceiptReportPreview";
 import { ReceiptFileAttachmentFields } from "@/app/src/ui/modules/cash-receipt/shared/ReceiptFileAttachmentFields";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
 import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
@@ -49,7 +49,8 @@ const AppDisbursementTypeDialog = dynamic(
   { ssr: false },
 );
 
-type OfficialReceiptActionPageProps = OfficialReceiptModuleConfig & {
+type OfficialReceiptActionPageProps<TReceipt = Parameters<typeof useOfficialReceiptActionForm>[3] extends OfficialReceiptModuleConfig<infer TConfigReceipt> ? TConfigReceipt : never> =
+  OfficialReceiptModuleConfig<TReceipt> & {
   baseHref?: string;
   copyFromRecords?: OfficialReceiptCopyFromRecord[];
   copyFromSources?: string[];
@@ -58,7 +59,7 @@ type OfficialReceiptActionPageProps = OfficialReceiptModuleConfig & {
   receiptLabel?: string;
 };
 
-export function OfficialReceiptActionPage({
+export function OfficialReceiptActionPage<TReceipt>({
   api,
   baseHref = OfficialReceiptHref,
   copyFromRecords,
@@ -67,7 +68,7 @@ export function OfficialReceiptActionPage({
   receiptCodeLabel = "OR",
   receiptLabel = "Official Receipt",
   storageKey,
-}: OfficialReceiptActionPageProps = {}) {
+}: OfficialReceiptActionPageProps<TReceipt> = {}) {
   const params = useParams<{ recordId?: string }>();
   const pathname = usePathname();
   const router = useRouter();
@@ -127,7 +128,6 @@ export function OfficialReceiptActionPage({
           copyFromRecords={copyFromRecords}
           copyFromSources={copyFromSources}
           mode={mode}
-          recordId={recordId}
           receiptLabel={receiptLabel}
           values={receiptForm.values}
           onCopyFrom={receiptForm.applyCopyFrom}
@@ -190,6 +190,9 @@ export function OfficialReceiptActionPage({
           onCreateRecord={paymentTypeStore.addPaymentType}
           onUpdateRecord={paymentTypeStore.updatePaymentType}
           onSelect={(paymentType: DisbursementPaymentMethod) => {
+            const selectedRecord = paymentTypeStore.paymentTypes.find((record) => record.paymentType === paymentType);
+
+            receiptForm.updateField("paymentId", selectedRecord?.id ?? "");
             receiptForm.updateField("paymentType", paymentType);
             setIsPaymentTypeDialogOpen(false);
           }}
@@ -264,6 +267,6 @@ function createPaymentTypeOptions(records: PaymentTypeRecord[]): AppAdvancedDrop
       description: record.description || record.type,
       label: record.type,
       name: record.paymentType,
-      value: record.paymentType,
+      value: record.id,
     }));
 }

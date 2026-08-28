@@ -151,7 +151,7 @@ export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
     <ModuleTable
       emptyDescription="Adjust the filters or add a new ledger account."
       emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
-      emptyTitle="No accounts found"
+      emptyTitle="No Account Title Found."
       isLoading={props.isLoading}
       isSyncing={props.isRefreshing}
       lastSyncedAt={props.lastSyncedAt}

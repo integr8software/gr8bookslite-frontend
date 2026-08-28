@@ -8,7 +8,11 @@ import type {
   OfficialReceiptStatus,
 } from "@/app/src/types/modules/cash-receipt/official-receipt/OfficialReceiptTypes";
 import { ModuleActionMenu, type ModuleActionMenuItem } from "@/app/src/ui/shared/module/ModuleActionMenu";
-import { ModuleTableActions } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
+import {
+  ModuleTableActionButton,
+  ModuleTableActionLink,
+  ModuleTableActions,
+} from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
 export function OfficialReceiptRecordActions({
   baseHref,
@@ -24,36 +28,24 @@ export function OfficialReceiptRecordActions({
   const isPosted = record.status === OfficialReceiptStatuses.Posted;
   const isDisapproved = record.status === OfficialReceiptStatuses.Disapproved;
   const isCancelled = record.status === OfficialReceiptStatuses.Cancelled;
+  const canEdit = canEditOfficialReceiptStatus(record.status);
   const undoStatus: OfficialReceiptStatus = OfficialReceiptStatuses.Draft;
   const cancelStatus: OfficialReceiptStatus = isCancelled ? OfficialReceiptStatuses.Draft : OfficialReceiptStatuses.Cancelled;
-  const items: ModuleActionMenuItem[] = [
-    {
-      href: `${baseHref}/view/${record.id}`,
-      icon: Eye,
-      label: "View",
-      type: "link",
-    },
-    ...(canEditOfficialReceiptStatus(record.status)
-      ? [
-          {
-            href: `${baseHref}/edit/${record.id}`,
-            icon: Edit3,
-            label: "Edit",
-            type: "link",
-          } satisfies ModuleActionMenuItem,
-        ]
-      : []),
+  const postLabel = isPosted ? "Undo Posted" : "Post";
+  const disapproveLabel = isDisapproved ? "Undo Disapproved" : "Disapprove";
+  const cancelLabel = isCancelled ? "Uncancelled" : "Cancel";
+  const overflowItems: ModuleActionMenuItem[] = [
     {
       disabled: !canPostOfficialReceiptStatus(record.status),
       icon: isPosted ? Undo2 : CheckCircle2,
-      label: isPosted ? "Undo Posted" : "Post",
+      label: postLabel,
       onSelect: () => onUpdateStatus(record, isPosted ? undoStatus : OfficialReceiptStatuses.Posted),
       type: "button",
     },
     {
       disabled: !canDisapproveOfficialReceiptStatus(record.status),
       icon: isDisapproved ? Undo2 : ThumbsDown,
-      label: isDisapproved ? "Undo Disapproved" : "Disapprove",
+      label: disapproveLabel,
       onSelect: () => onUpdateStatus(record, isDisapproved ? undoStatus : OfficialReceiptStatuses.Disapproved),
       tone: isDisapproved ? "default" : "danger",
       type: "button",
@@ -61,7 +53,7 @@ export function OfficialReceiptRecordActions({
     {
       disabled: !canCancelOfficialReceiptStatus(record.status),
       icon: isCancelled ? Undo2 : Ban,
-      label: isCancelled ? "Uncancelled" : "Cancel",
+      label: cancelLabel,
       onSelect: () => onUpdateStatus(record, cancelStatus),
       tone: isCancelled ? "default" : "danger",
       type: "button",
@@ -69,8 +61,36 @@ export function OfficialReceiptRecordActions({
   ];
 
   return (
-    <ModuleTableActions className="!justify-center">
-      <ModuleActionMenu items={items} label={`Actions for ${receiptLabel} ${record.receiptNo}`} />
+    <ModuleTableActions className="justify-center!">
+      <ModuleTableActionLink
+        href={`${baseHref}/view/${record.id}`}
+        icon={Eye}
+        label={`View ${receiptLabel} ${record.receiptNo}`}
+        title="View"
+        variant="view"
+      />
+      {canEdit ? (
+        <ModuleTableActionLink
+          href={`${baseHref}/edit/${record.id}`}
+          icon={Edit3}
+          label={`Edit ${receiptLabel} ${record.receiptNo}`}
+          title="Edit"
+          variant="edit"
+        />
+      ) : (
+        <ModuleTableActionButton
+          disabled
+          icon={Edit3}
+          label={`Edit ${receiptLabel} ${record.receiptNo}`}
+          title="Edit"
+          variant="edit"
+        />
+      )}
+      <ModuleActionMenu
+        className="[&>button]:h-9 [&>button]:w-9"
+        items={overflowItems}
+        label={`More actions for ${receiptLabel} ${record.receiptNo}`}
+      />
     </ModuleTableActions>
   );
 }

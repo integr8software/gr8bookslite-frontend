@@ -8,7 +8,7 @@ import {
 } from "@/app/src/constants/modules/cash-receipt/collection-receipt/CollectionReceiptConstants";
 import { CollectionReceiptHookConfig } from "@/app/src/hooks/modules/cash-receipt/collection-receipt/useCollectionReceipt";
 import { CollectionReceiptNotFound } from "@/app/src/ui/modules/cash-receipt/collection-receipt/CollectionReceiptNotFound";
-import { OfficialReceiptActionPage } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptActionPage";
+import { OfficialReceiptActionPage } from "@/app/src/ui/modules/cash-receipt/official-receipt/form/OfficialReceiptActionPage";
 
 export function CollectionReceiptActionPage() {
   return (

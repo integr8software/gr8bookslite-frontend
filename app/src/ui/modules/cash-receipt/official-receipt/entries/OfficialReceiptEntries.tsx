@@ -1,40 +1,136 @@
 import { useCallback, useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import {
+  calculateOfficialReceiptCwtAmount,
+  calculateOfficialReceiptNetOfVat,
+  calculateOfficialReceiptTotalReceived,
   calculateOfficialReceiptTotals,
+  calculateOfficialReceiptVatAmount,
   createBlankOfficialReceiptLineEntry,
   formatOfficialReceiptAmount,
   officialReceiptEntryHasData,
   officialReceiptEntryIsComplete,
+  OfficialReceiptCwtCodeOptions,
   OfficialReceiptCollectionTypeOptions,
+  OfficialReceiptVatTypeOptions,
 } from "@/app/src/data/modules/cash-receipt/official-receipt/OfficialReceiptData";
 import type {
   OfficialReceiptEntryView,
   OfficialReceiptLineEntry,
 } from "@/app/src/types/modules/cash-receipt/official-receipt/OfficialReceiptTypes";
 import {
-  AppAdvancedDropdown,
-  type AppAdvancedDropdownOption,
-} from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
-import {
   ModuleDataEntry,
   type ModuleDataEntryClearAction,
   type ModuleDataEntryColumn,
   type ModuleDataEntryColumnOption,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
-import {
-  MoneyNumberField,
-  parseMoneyNumberInput,
-} from "@/app/src/ui/shared/money/MoneyNumberField";
+import { parseMoneyNumberInput } from "@/app/src/ui/shared/money/MoneyNumberField";
 import { clampColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/utils";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import {
+  OfficialReceiptEntryAmountInput,
+  OfficialReceiptEntryDropdown,
+  OfficialReceiptEntryInput,
+  OfficialReceiptEntryPercentInput,
+  OfficialReceiptEntryReadOnlyAmount,
+} from "@/app/src/ui/modules/cash-receipt/official-receipt/entries/OfficialReceiptEntryCellControls";
+
+const OfficialReceiptCollectionColumnIds = [
+  "collectionType",
+  "grossReceipt",
+  "netOfVat",
+  "vatType",
+  "vatPercent",
+  "vatAmount",
+  "cwtCode",
+  "cwtPercent",
+  "cwtAmount",
+  "totalReceived",
+  "partyCode",
+  "partyName",
+  "particulars",
+  "responsibilityCenter",
+  "referenceNo",
+] as const;
+
+type OfficialReceiptCollectionColumnId =
+  (typeof OfficialReceiptCollectionColumnIds)[number];
+
+const OfficialReceiptCollectionProtectedColumnIds =
+  new Set<OfficialReceiptCollectionColumnId>([
+    "collectionType",
+    "grossReceipt",
+    "netOfVat",
+    "vatAmount",
+    "cwtAmount",
+  ]);
+
+const OfficialReceiptCollectionDefaultVisibleColumnIds = [
+  "collectionType",
+  "grossReceipt",
+  "netOfVat",
+  "vatAmount",
+  "cwtAmount",
+  "totalReceived",
+  "partyName",
+  "particulars",
+  "responsibilityCenter",
+  "referenceNo",
+] as const satisfies readonly OfficialReceiptCollectionColumnId[];
+
+const OfficialReceiptCollectionColumnLabels: Record<
+  OfficialReceiptCollectionColumnId,
+  string
+> = {
+  collectionType: "Collection Type",
+  grossReceipt: "Gross Receipt",
+  netOfVat: "Net of VAT",
+  vatType: "VAT Type",
+  vatPercent: "VAT %",
+  vatAmount: "VAT Amount",
+  cwtCode: "CWT Code",
+  cwtPercent: "CWT %",
+  cwtAmount: "CWT Amount",
+  totalReceived: "Total Received",
+  partyCode: "Party Code",
+  partyName: "Party Name",
+  particulars: "Particulars",
+  responsibilityCenter: "Responsibility Center",
+  referenceNo: "Reference No",
+};
+
+const OfficialReceiptCollectionColumnWidths: Record<
+  OfficialReceiptCollectionColumnId,
+  number
+> = {
+  collectionType: 190,
+  grossReceipt: 150,
+  netOfVat: 150,
+  vatType: 170,
+  vatPercent: 120,
+  vatAmount: 150,
+  cwtCode: 140,
+  cwtPercent: 120,
+  cwtAmount: 150,
+  totalReceived: 160,
+  partyCode: 140,
+  partyName: 190,
+  particulars: 220,
+  responsibilityCenter: 190,
+  referenceNo: 160,
+};
 
 const OfficialReceiptAccountingColumnIds = [
   "accountCode",
   "accountTitle",
   "debit",
   "credit",
-  "collectionType",
+  "partyCode",
+  "partyName",
+  "particulars",
+  "vatType",
+  "cwtCode",
+  "responsibilityCenter",
   "referenceNo",
 ] as const;
 
@@ -43,16 +139,19 @@ type OfficialReceiptAccountingColumnId =
 
 const OfficialReceiptAccountingProtectedColumnIds =
   new Set<OfficialReceiptAccountingColumnId>([
+    "accountCode",
     "accountTitle",
     "debit",
     "credit",
+    "particulars",
   ]);
 
 const OfficialReceiptAccountingDefaultVisibleColumnIds = [
+  "accountCode",
   "accountTitle",
   "debit",
   "credit",
-  "collectionType",
+  "particulars",
 ] as const satisfies readonly OfficialReceiptAccountingColumnId[];
 
 const OfficialReceiptAccountingColumnLabels: Record<
@@ -61,7 +160,12 @@ const OfficialReceiptAccountingColumnLabels: Record<
 > = {
   accountCode: "Account Code",
   accountTitle: "Account Title",
-  collectionType: "Particulars",
+  partyCode: "Party Code",
+  partyName: "Party Name",
+  particulars: "Particulars",
+  vatType: "VAT Type",
+  cwtCode: "CWT Code",
+  responsibilityCenter: "Responsibility Center",
   referenceNo: "Reference No",
   debit: "Debit",
   credit: "Credit",
@@ -73,7 +177,12 @@ const OfficialReceiptAccountingColumnWidths: Record<
 > = {
   accountCode: 160,
   accountTitle: 260,
-  collectionType: 320,
+  partyCode: 150,
+  partyName: 190,
+  particulars: 300,
+  vatType: 170,
+  cwtCode: 140,
+  responsibilityCenter: 190,
   referenceNo: 160,
   debit: 160,
   credit: 160,
@@ -99,6 +208,18 @@ export function OfficialReceiptEntries({
   onRowsChange,
   rows,
 }: OfficialReceiptEntriesProps) {
+  const [collectionColumnOrder, setCollectionColumnOrder] = useState<
+    OfficialReceiptCollectionColumnId[]
+  >([...OfficialReceiptCollectionColumnIds]);
+  const [visibleCollectionColumnIds, setVisibleCollectionColumnIds] = useState<
+    OfficialReceiptCollectionColumnId[]
+  >([...OfficialReceiptCollectionDefaultVisibleColumnIds]);
+  const [collectionColumnLabels, setCollectionColumnLabels] = useState<
+    Record<OfficialReceiptCollectionColumnId, string>
+  >({ ...OfficialReceiptCollectionColumnLabels });
+  const [collectionColumnWidths, setCollectionColumnWidths] = useState<
+    Record<OfficialReceiptCollectionColumnId, number>
+  >({ ...OfficialReceiptCollectionColumnWidths });
   const [accountingColumnOrder, setAccountingColumnOrder] = useState<
     OfficialReceiptAccountingColumnId[]
   >([...OfficialReceiptAccountingColumnIds]);
@@ -121,12 +242,20 @@ export function OfficialReceiptEntries({
   }, [onRowsChange, rows]);
   const totals = useMemo(() => calculateOfficialReceiptTotals(rows), [rows]);
   const variance = Math.abs(totals.debit - totals.credit);
+  const accountingRows = useMemo(() => createAccountingRows(rows), [rows]);
   const columns = useMemo<ModuleDataEntryColumn<OfficialReceiptLineEntry>[]>(
     () =>
       entryView === OfficialReceiptCollectionEntryView
-        ? createCollectionColumns(isReadonly, updateEntry)
-        : createAccountingColumns(
+        ? createCollectionColumns(
             isReadonly,
+            updateEntry,
+            collectionColumnOrder,
+            visibleCollectionColumnIds,
+            collectionColumnLabels,
+            collectionColumnWidths,
+          )
+        : createAccountingColumns(
+            true,
             updateEntry,
             accountingColumnOrder,
             visibleAccountingColumnIds,
@@ -137,16 +266,27 @@ export function OfficialReceiptEntries({
       accountingColumnLabels,
       accountingColumnOrder,
       accountingColumnWidths,
+      collectionColumnLabels,
+      collectionColumnOrder,
+      collectionColumnWidths,
       entryView,
       isReadonly,
       updateEntry,
       visibleAccountingColumnIds,
+      visibleCollectionColumnIds,
     ],
   );
   const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
     () => {
-      if (entryView !== OfficialReceiptAccountingEntryView) {
-        return [];
+      if (entryView === OfficialReceiptCollectionEntryView) {
+        return collectionColumnOrder.map((columnId) => ({
+          id: columnId,
+          isHideable: !OfficialReceiptCollectionProtectedColumnIds.has(columnId),
+          isVisible: visibleCollectionColumnIds.includes(columnId),
+          label: collectionColumnLabels[columnId],
+          width: collectionColumnWidths[columnId],
+          widthMode: "fixed",
+        }));
       }
 
       return accountingColumnOrder.map((columnId) => ({
@@ -162,8 +302,12 @@ export function OfficialReceiptEntries({
       accountingColumnLabels,
       accountingColumnOrder,
       accountingColumnWidths,
+      collectionColumnLabels,
+      collectionColumnOrder,
+      collectionColumnWidths,
       entryView,
       visibleAccountingColumnIds,
+      visibleCollectionColumnIds,
     ],
   );
 
@@ -238,6 +382,84 @@ export function OfficialReceiptEntries({
   function removeRow(rowId: string) {
     const nextRows = rows.filter((row) => row.id !== rowId);
     onRowsChange(nextRows.length > 0 ? nextRows : [createBlankOfficialReceiptLineEntry()]);
+  }
+
+  function updateCollectionColumnHeader(columnId: string, header: string) {
+    if (!isOfficialReceiptCollectionColumnId(columnId)) {
+      return;
+    }
+
+    setCollectionColumnLabels((currentLabels) => ({
+      ...currentLabels,
+      [columnId]: header,
+    }));
+  }
+
+  function updateCollectionColumnWidth(columnId: string, width: number) {
+    if (!isOfficialReceiptCollectionColumnId(columnId)) {
+      return;
+    }
+
+    setCollectionColumnWidths((currentWidths) => ({
+      ...currentWidths,
+      [columnId]: clampColumnWidth(width),
+    }));
+  }
+
+  function fitCollectionColumnWidth(columnId: string) {
+    if (!isOfficialReceiptCollectionColumnId(columnId)) {
+      return;
+    }
+
+    updateCollectionColumnWidth(
+      columnId,
+      calculateCollectionColumnFitWidth({
+        columnId,
+        columnLabels: collectionColumnLabels,
+        rows,
+      }),
+    );
+  }
+
+  function moveCollectionColumn(fromColumnId: string, toColumnId: string) {
+    if (
+      !isOfficialReceiptCollectionColumnId(fromColumnId) ||
+      !isOfficialReceiptCollectionColumnId(toColumnId)
+    ) {
+      return;
+    }
+
+    setCollectionColumnOrder((currentOrder) =>
+      moveColumnId(currentOrder, fromColumnId, toColumnId),
+    );
+  }
+
+  function resetCollectionColumns() {
+    setCollectionColumnOrder([...OfficialReceiptCollectionColumnIds]);
+    setVisibleCollectionColumnIds([
+      ...OfficialReceiptCollectionDefaultVisibleColumnIds,
+    ]);
+    setCollectionColumnLabels({ ...OfficialReceiptCollectionColumnLabels });
+    setCollectionColumnWidths({ ...OfficialReceiptCollectionColumnWidths });
+  }
+
+  function toggleCollectionColumnVisibility(columnId: string, isVisible: boolean) {
+    if (!isOfficialReceiptCollectionColumnId(columnId)) {
+      return;
+    }
+
+    if (!isVisible && OfficialReceiptCollectionProtectedColumnIds.has(columnId)) {
+      return;
+    }
+
+    setVisibleCollectionColumnIds((currentVisibleIds) =>
+      updateVisibleColumnIds(
+        currentVisibleIds,
+        collectionColumnOrder,
+        columnId,
+        isVisible,
+      ),
+    );
   }
 
   function updateAccountingColumnHeader(columnId: string, header: string) {
@@ -318,9 +540,18 @@ export function OfficialReceiptEntries({
     );
   }
 
-  const accountingColumnHandlers =
-    entryView === OfficialReceiptAccountingEntryView
+  const columnHandlers =
+    entryView === OfficialReceiptCollectionEntryView
       ? {
+          onAutoColumnWidth: fitCollectionColumnWidth,
+          onFitColumnWidth: fitCollectionColumnWidth,
+          onMoveColumn: moveCollectionColumn,
+          onResetColumns: resetCollectionColumns,
+          onToggleColumnVisibility: toggleCollectionColumnVisibility,
+          onUpdateColumnHeader: updateCollectionColumnHeader,
+          onUpdateColumnWidth: updateCollectionColumnWidth,
+        }
+      : {
           onAutoColumnWidth: fitAccountingColumnWidth,
           onFitColumnWidth: fitAccountingColumnWidth,
           onMoveColumn: moveAccountingColumn,
@@ -328,8 +559,7 @@ export function OfficialReceiptEntries({
           onToggleColumnVisibility: toggleAccountingColumnVisibility,
           onUpdateColumnHeader: updateAccountingColumnHeader,
           onUpdateColumnWidth: updateAccountingColumnWidth,
-        }
-      : {};
+        };
 
   return (
     <ModuleDataEntry
@@ -358,16 +588,18 @@ export function OfficialReceiptEntries({
         </span>
       }
       isDraggable
-      isReadonly={isReadonly}
-      canConfigureColumnsWhenReadonly={
-        entryView === OfficialReceiptAccountingEntryView
-      }
-      rows={rows}
+      isReadonly={entryView === OfficialReceiptAccountingEntryView ? true : isReadonly}
+      canConfigureColumnsWhenReadonly
+      rows={entryView === OfficialReceiptAccountingEntryView ? accountingRows : rows}
       summaryCells={
         entryView === OfficialReceiptAccountingEntryView
           ? {
               credit: formatOfficialReceiptAmount(totals.credit),
               debit: formatOfficialReceiptAmount(totals.debit),
+              particulars:
+                variance < 0.001
+                  ? "Balanced"
+                  : `Difference: ${formatOfficialReceiptAmount(variance)}`,
             }
           : undefined
       }
@@ -397,7 +629,7 @@ export function OfficialReceiptEntries({
       onInsertRow={insertRow}
       onMoveRow={moveRow}
       onRemoveRow={removeRow}
-      {...accountingColumnHandlers}
+      {...columnHandlers}
     />
   );
 }
@@ -449,104 +681,137 @@ function createCollectionColumns(
     rowId: string,
     updates: Partial<OfficialReceiptLineEntry>,
   ) => void,
+  columnOrder: OfficialReceiptCollectionColumnId[],
+  visibleColumnIds: readonly OfficialReceiptCollectionColumnId[],
+  columnLabels: Record<OfficialReceiptCollectionColumnId, string>,
+  columnWidths: Record<OfficialReceiptCollectionColumnId, number>,
 ): ModuleDataEntryColumn<OfficialReceiptLineEntry>[] {
-  return [
-    {
-      header: "Collection Type",
-      id: "collectionType",
-      width: 220,
-      widthClassName: "w-[14rem]",
-      renderCell: (row) => (
-        <EntryDropdown
+  return columnOrder
+    .filter((columnId) => visibleColumnIds.includes(columnId))
+    .map((columnId) => ({
+      header: columnLabels[columnId],
+      id: columnId,
+      isRemovable: !OfficialReceiptCollectionProtectedColumnIds.has(columnId),
+      width: columnWidths[columnId],
+      widthClassName: "",
+      widthMode: "fixed",
+      renderCell: (row) => renderCollectionCell(row, columnId, isReadonly, onUpdateEntry),
+    }));
+}
+
+function renderCollectionCell(
+  row: OfficialReceiptLineEntry,
+  columnId: OfficialReceiptCollectionColumnId,
+  isReadonly: boolean,
+  onUpdateEntry: (
+    rowId: string,
+    updates: Partial<OfficialReceiptLineEntry>,
+  ) => void,
+) {
+  switch (columnId) {
+    case "collectionType":
+      return (
+        <OfficialReceiptEntryDropdown
           options={OfficialReceiptCollectionTypeOptions}
           placeholder="Enter collection type"
           readOnly={isReadonly}
           value={row.collectionType}
           onChange={(collectionType) => onUpdateEntry(row.id, { collectionType })}
         />
-      ),
-    },
-    {
-      header: "Gross Receipt",
-      id: "grossReceipt",
-      width: 150,
-      widthClassName: "w-[9.5rem]",
-      renderCell: (row) => (
-        <EntryAmountInput
+      );
+    case "grossReceipt":
+      return (
+        <OfficialReceiptEntryAmountInput
           value={row.grossReceipt}
           readOnly={isReadonly}
           onValueChange={(grossReceipt) => onUpdateEntry(row.id, { grossReceipt })}
         />
-      ),
-    },
-    {
-      header: "VAT Exempt",
-      id: "vatExempt",
-      width: 140,
-      widthClassName: "w-[9rem]",
-      renderCell: (row) => (
-        <EntryAmountInput
-          value={row.vatExempt}
+      );
+    case "netOfVat":
+      return <OfficialReceiptEntryReadOnlyAmount value={calculateOfficialReceiptNetOfVat(row)} />;
+    case "vatType":
+      return (
+        <OfficialReceiptEntryDropdown
+          options={OfficialReceiptVatTypeOptions}
+          placeholder="Select VAT type"
           readOnly={isReadonly}
-          onValueChange={(vatExempt) => onUpdateEntry(row.id, { vatExempt })}
+          value={row.vatType}
+          onChange={(vatType) => onUpdateEntry(row.id, { vatType })}
         />
-      ),
-    },
-    {
-      header: "VAT",
-      id: "vat",
-      width: 130,
-      widthClassName: "w-[8rem]",
-      renderCell: (row) => (
-        <EntryAmountInput
-          value={row.vat}
+      );
+    case "vatPercent":
+      return (
+        <OfficialReceiptEntryPercentInput
+          value={row.vatPercent}
           readOnly={isReadonly}
-          onValueChange={(vat) => onUpdateEntry(row.id, { vat })}
+          onValueChange={(vatPercent) => onUpdateEntry(row.id, { vatPercent })}
         />
-      ),
-    },
-    {
-      header: "EWT",
-      id: "ewt",
-      width: 130,
-      widthClassName: "w-[8rem]",
-      renderCell: (row) => (
-        <EntryAmountInput
-          value={row.ewt}
+      );
+    case "vatAmount":
+      return <OfficialReceiptEntryReadOnlyAmount value={calculateOfficialReceiptVatAmount(row)} />;
+    case "cwtCode":
+      return (
+        <OfficialReceiptEntryDropdown
+          options={OfficialReceiptCwtCodeOptions}
+          placeholder="Select CWT code"
           readOnly={isReadonly}
-          onValueChange={(ewt) => onUpdateEntry(row.id, { ewt })}
+          value={row.cwtCode}
+          onChange={(cwtCode) => onUpdateEntry(row.id, { cwtCode })}
         />
-      ),
-    },
-    {
-      header: "For Payment",
-      id: "forPayment",
-      width: 140,
-      widthClassName: "w-[9rem]",
-      renderCell: (row) => (
-        <div className="flex h-10 w-full items-center justify-end bg-offwhite/45 px-3 text-sm font-medium tabular-nums text-darknavy/70">
-          {formatOfficialReceiptAmount(
-            parseMoneyNumberInput(row.grossReceipt) +
-              parseMoneyNumberInput(row.vat) -
-              parseMoneyNumberInput(row.ewt),
-          )}
-        </div>
-      ),
-    },
-    {
-      header: "Reference No.",
-      id: "referenceNo",
-      width: 160,
-      widthClassName: "w-[10rem]",
-      renderCell: (row) => (
-        <EntryInput
+      );
+    case "cwtPercent":
+      return (
+        <OfficialReceiptEntryPercentInput
+          value={row.cwtPercent}
+          readOnly={isReadonly}
+          onValueChange={(cwtPercent) => onUpdateEntry(row.id, { cwtPercent })}
+        />
+      );
+    case "cwtAmount":
+      return <OfficialReceiptEntryReadOnlyAmount value={calculateOfficialReceiptCwtAmount(row)} />;
+    case "totalReceived":
+      return <OfficialReceiptEntryReadOnlyAmount value={calculateOfficialReceiptTotalReceived(row)} />;
+    case "partyCode":
+      return (
+        <OfficialReceiptEntryInput
+          value={row.partyCode}
+          readOnly={isReadonly}
+          onChange={(partyCode) => onUpdateEntry(row.id, { partyCode })}
+        />
+      );
+    case "partyName":
+      return (
+        <OfficialReceiptEntryInput
+          value={row.partyName || row.customerName}
+          readOnly={isReadonly}
+          onChange={(partyName) => onUpdateEntry(row.id, { partyName, customerName: partyName })}
+        />
+      );
+    case "particulars":
+      return (
+        <OfficialReceiptEntryInput
+          value={row.particulars}
+          readOnly={isReadonly}
+          onChange={(particulars) => onUpdateEntry(row.id, { particulars })}
+        />
+      );
+    case "responsibilityCenter":
+      return (
+        <OfficialReceiptEntryInput
+          value={row.responsibilityCenter}
+          readOnly={isReadonly}
+          onChange={(responsibilityCenter) => onUpdateEntry(row.id, { responsibilityCenter })}
+        />
+      );
+    case "referenceNo":
+      return (
+        <OfficialReceiptEntryInput
           value={row.referenceNo}
           readOnly={isReadonly}
           onChange={(referenceNo) => onUpdateEntry(row.id, { referenceNo })}
         />
-      ),
-    },
-  ];
+      );
+  }
 }
 
 function createAccountingColumns(
@@ -585,7 +850,7 @@ function renderAccountingCell(
   switch (columnId) {
     case "accountCode":
       return (
-        <EntryInput
+        <OfficialReceiptEntryInput
           value={row.accountCode}
           readOnly={isReadonly}
           onChange={(accountCode) => onUpdateEntry(row.id, { accountCode })}
@@ -593,116 +858,73 @@ function renderAccountingCell(
       );
     case "accountTitle":
       return (
-        <EntryInput
+        <OfficialReceiptEntryInput
           value={row.accountTitle}
           readOnly={isReadonly}
           onChange={(accountTitle) => onUpdateEntry(row.id, { accountTitle })}
         />
       );
-    case "collectionType":
+    case "partyCode":
       return (
-        <EntryInput
-          value={row.collectionType}
+        <OfficialReceiptEntryInput
+          value={row.partyCode}
           readOnly={isReadonly}
-          onChange={(collectionType) => onUpdateEntry(row.id, { collectionType })}
+          onChange={(partyCode) => onUpdateEntry(row.id, { partyCode })}
+        />
+      );
+    case "partyName":
+      return (
+        <OfficialReceiptEntryInput
+          value={row.partyName || row.customerName}
+          readOnly={isReadonly}
+          onChange={(partyName) => onUpdateEntry(row.id, { partyName, customerName: partyName })}
+        />
+      );
+    case "particulars":
+      return (
+        <OfficialReceiptEntryInput
+          value={row.particulars}
+          readOnly={isReadonly}
+          onChange={(particulars) => onUpdateEntry(row.id, { particulars })}
+        />
+      );
+    case "vatType":
+      return (
+        <OfficialReceiptEntryInput
+          value={row.vatType}
+          readOnly={isReadonly}
+          onChange={(vatType) => onUpdateEntry(row.id, { vatType })}
+        />
+      );
+    case "cwtCode":
+      return (
+        <OfficialReceiptEntryInput
+          value={row.cwtCode}
+          readOnly={isReadonly}
+          onChange={(cwtCode) => onUpdateEntry(row.id, { cwtCode })}
+        />
+      );
+    case "responsibilityCenter":
+      return (
+        <OfficialReceiptEntryInput
+          value={row.responsibilityCenter}
+          readOnly={isReadonly}
+          onChange={(responsibilityCenter) => onUpdateEntry(row.id, { responsibilityCenter })}
         />
       );
     case "referenceNo":
       return (
-        <EntryInput
+        <OfficialReceiptEntryInput
           value={row.referenceNo}
           readOnly={isReadonly}
           onChange={(referenceNo) => onUpdateEntry(row.id, { referenceNo })}
         />
       );
     case "debit":
-      return (
-        <EntryAmountInput
-          value={row.debit}
-          readOnly={isReadonly}
-          onValueChange={(debit) => onUpdateEntry(row.id, { debit })}
-        />
-      );
+      return <OfficialReceiptEntryReadOnlyAmount value={parseMoneyNumberInput(row.debit)} />;
     case "credit":
-      return (
-        <EntryAmountInput
-          value={row.credit}
-          readOnly={isReadonly}
-          onValueChange={(credit) => onUpdateEntry(row.id, { credit })}
-        />
-      );
+      return <OfficialReceiptEntryReadOnlyAmount value={parseMoneyNumberInput(row.credit)} />;
   }
-}
-
-function EntryDropdown({
-  onChange,
-  options,
-  placeholder,
-  readOnly,
-  value,
-}: {
-  onChange: (value: string) => void;
-  options: AppAdvancedDropdownOption[];
-  placeholder: string;
-  readOnly: boolean;
-  value: string;
-}) {
-  return (
-    <AppAdvancedDropdown
-      className={EntryDropdownClassName}
-      value={value}
-      options={options}
-      placeholder={placeholder}
-      readOnly={readOnly}
-      onChange={(nextValue) => onChange(String(nextValue))}
-    />
-  );
-}
-
-function EntryInput({
-  onChange,
-  readOnly,
-  value,
-}: {
-  onChange: (value: string) => void;
-  readOnly: boolean;
-  value: string;
-}) {
-  return (
-    <input
-      type="text"
-      value={value}
-      readOnly={readOnly}
-      onChange={(event) => onChange(event.target.value)}
-      className={entryCellControlClassName()}
-    />
-  );
-}
-
-function EntryAmountInput({
-  onValueChange,
-  readOnly,
-  value,
-}: {
-  onValueChange: (value: string) => void;
-  readOnly: boolean;
-  value: string;
-}) {
-  return (
-    <MoneyNumberField
-      value={value}
-      readOnly={readOnly}
-      onValueChange={onValueChange}
-      className={entryCellControlClassName("text-right tabular-nums")}
-    />
-  );
-}
-
-function entryCellControlClassName(extraClassName?: string) {
-  return joinClasses(
-    "h-10 w-full rounded-none border-0 bg-transparent px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:bg-skyblue/10 focus:ring-2 focus:ring-inset focus:ring-skyblue/35 disabled:cursor-not-allowed disabled:bg-offwhite/45 disabled:text-darknavy/35",
-    extraClassName,
-  );
 }
 
 function shouldClearEntry(
@@ -720,8 +942,94 @@ function shouldClearEntry(
   return !officialReceiptEntryHasData(entry);
 }
 
-const EntryDropdownClassName =
-  "[&_.app-advanced-dropdown-control]:h-10 [&_.app-advanced-dropdown-control]:rounded-none [&_.app-advanced-dropdown-control]:border-0 [&_.app-advanced-dropdown-control]:bg-transparent [&_.app-advanced-dropdown-control]:px-3 [&_.app-advanced-dropdown-control]:shadow-none [&_.app-advanced-dropdown-control]:focus:ring-2 [&_.app-advanced-dropdown-control]:focus:ring-inset [&_.app-advanced-dropdown-control]:focus:ring-skyblue/35";
+function createAccountingRows(rows: OfficialReceiptLineEntry[]) {
+  return rows.flatMap((row) => {
+    const grossReceipt = parseMoneyNumberInput(row.grossReceipt);
+
+    if (grossReceipt <= 0) {
+      return [];
+    }
+
+    const netOfVat = calculateOfficialReceiptNetOfVat(row);
+    const vatAmount = calculateOfficialReceiptVatAmount(row);
+    const cwtAmount = calculateOfficialReceiptCwtAmount(row);
+    const totalReceived = calculateOfficialReceiptTotalReceived(row);
+    const commonFields = {
+      bankName: row.bankName,
+      checkDate: row.checkDate,
+      checkNo: row.checkNo,
+      collectionType: row.collectionType,
+      customerName: row.partyName || row.customerName,
+      cwtCode: row.cwtCode,
+      cwtPercent: row.cwtPercent,
+      grossReceipt: row.grossReceipt,
+      particulars: row.particulars || row.collectionType,
+      partyCode: row.partyCode,
+      partyName: row.partyName || row.customerName,
+      referenceNo: row.referenceNo,
+      responsibilityCenter: row.responsibilityCenter,
+      vat: formatOfficialReceiptAmount(vatAmount),
+      vatExempt: row.vatExempt,
+      vatPercent: row.vatPercent,
+      vatType: row.vatType,
+      ewt: formatOfficialReceiptAmount(cwtAmount),
+    } satisfies Omit<
+      OfficialReceiptLineEntry,
+      "accountCode" | "accountTitle" | "credit" | "debit" | "id"
+    >;
+
+    return [
+      {
+        ...commonFields,
+        id: `${row.id}-cash`,
+        accountCode: "1010103001",
+        accountTitle: "Cash in Bank",
+        debit: totalReceived.toFixed(2),
+        credit: "0.00",
+      },
+      ...(cwtAmount > 0
+        ? [
+            {
+              ...commonFields,
+              id: `${row.id}-cwt`,
+              accountCode: "1010104008",
+              accountTitle: "Creditable Withholding Tax",
+              debit: cwtAmount.toFixed(2),
+              credit: "0.00",
+            },
+          ]
+        : []),
+      ...(vatAmount > 0
+        ? [
+            {
+              ...commonFields,
+              id: `${row.id}-vat`,
+              accountCode: "2010002005",
+              accountTitle: "Output VAT",
+              debit: "0.00",
+              credit: vatAmount.toFixed(2),
+            },
+          ]
+        : []),
+      {
+        ...commonFields,
+        id: `${row.id}-revenue`,
+        accountCode: "4020000001",
+        accountTitle: row.collectionType || "Service Revenue",
+        debit: "0.00",
+        credit: netOfVat.toFixed(2),
+      },
+    ];
+  });
+}
+
+function isOfficialReceiptCollectionColumnId(
+  columnId: string,
+): columnId is OfficialReceiptCollectionColumnId {
+  return OfficialReceiptCollectionColumnIds.includes(
+    columnId as OfficialReceiptCollectionColumnId,
+  );
+}
 
 function isOfficialReceiptAccountingColumnId(
   columnId: string,
@@ -731,11 +1039,51 @@ function isOfficialReceiptAccountingColumnId(
   );
 }
 
+function getCollectionExportCell(
+  entry: OfficialReceiptLineEntry,
+  columnId: OfficialReceiptCollectionColumnId,
+) {
+  switch (columnId) {
+    case "netOfVat":
+      return formatOfficialReceiptAmount(calculateOfficialReceiptNetOfVat(entry));
+    case "vatAmount":
+      return formatOfficialReceiptAmount(calculateOfficialReceiptVatAmount(entry));
+    case "cwtAmount":
+      return formatOfficialReceiptAmount(calculateOfficialReceiptCwtAmount(entry));
+    case "totalReceived":
+      return formatOfficialReceiptAmount(calculateOfficialReceiptTotalReceived(entry));
+    default:
+      return String(entry[columnId] ?? "");
+  }
+}
+
 function getAccountingExportCell(
   entry: OfficialReceiptLineEntry,
   columnId: OfficialReceiptAccountingColumnId,
 ) {
   return String(entry[columnId] ?? "");
+}
+
+function calculateCollectionColumnFitWidth({
+  columnId,
+  columnLabels,
+  rows,
+}: {
+  columnId: OfficialReceiptCollectionColumnId;
+  columnLabels: Record<OfficialReceiptCollectionColumnId, string>;
+  rows: OfficialReceiptLineEntry[];
+}) {
+  const headerWidth = estimateTextWidth(columnLabels[columnId], 76);
+  const contentWidth = rows.reduce(
+    (currentWidth, row) =>
+      Math.max(
+        currentWidth,
+        estimateTextWidth(getCollectionExportCell(row, columnId), 24),
+      ),
+    50,
+  );
+
+  return Math.max(headerWidth, contentWidth);
 }
 
 function calculateAccountingColumnFitWidth({

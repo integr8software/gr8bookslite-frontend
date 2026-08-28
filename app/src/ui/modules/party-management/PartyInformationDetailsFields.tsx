@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type MouseEvent as ReactMouseEvent, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent, type ReactNode } from "react";
 import {
   PartyClassificationOptions,
   PartyCivilStatusOptions,
@@ -35,6 +35,13 @@ import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
 import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
 import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/utils/status.util";
+
+const PartyInformationTabOrder: readonly PartyInformationTabId[] = [
+  "basic-information",
+  "contact-information",
+  "tax-information",
+  "accounting-information",
+];
 
 export function PartyInformationDetailsFields({
   accountOptions,
@@ -142,12 +149,37 @@ export function PartyInformationDetailsFields({
     "employeePayableAccount",
     "cashAdvanceLimit",
   ]);
+  const tabErrorCounts = useMemo(
+    () =>
+      ({
+        "basic-information": basicErrorCount,
+        "contact-information": contactErrorCount,
+        "tax-information": taxErrorCount,
+        "accounting-information": accountingErrorCount,
+      }) satisfies Record<PartyInformationTabId, number>,
+    [accountingErrorCount, basicErrorCount, contactErrorCount, taxErrorCount],
+  );
+  const totalErrorCount = basicErrorCount + contactErrorCount + taxErrorCount + accountingErrorCount;
+  const previousTotalErrorCountRef = useRef(totalErrorCount);
+
+  useEffect(() => {
+    if (previousTotalErrorCountRef.current === 0 && totalErrorCount > 0) {
+      const firstTabWithErrors = PartyInformationTabOrder.find((tabId) => tabErrorCounts[tabId] > 0);
+
+      if (firstTabWithErrors) {
+        setActiveTab(firstTabWithErrors);
+      }
+    }
+
+    previousTotalErrorCountRef.current = totalErrorCount;
+  }, [tabErrorCounts, totalErrorCount]);
 
   const tabs: PartyInformationTab[] = [
     {
       id: "basic-information",
       label: "Basic Information",
       badge: basicErrorCount,
+      badgeTone: basicErrorCount > 0 ? "error" : "info",
       content: (
         <div className="grid gap-5">
           <div className={showPartyEntityTypeField ? "grid gap-4 lg:grid-cols-4" : "grid gap-4 lg:grid-cols-3"}>
@@ -372,6 +404,7 @@ export function PartyInformationDetailsFields({
       id: "contact-information",
       label: "Contact Information",
       badge: contactErrorCount,
+      badgeTone: contactErrorCount > 0 ? "error" : "info",
       content: (
         <div className="grid gap-5">
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -452,6 +485,7 @@ export function PartyInformationDetailsFields({
       id: "tax-information",
       label: "Tax Information",
       badge: taxErrorCount,
+      badgeTone: taxErrorCount > 0 ? "error" : "info",
       content: (
         <div className="grid gap-5">
           <div className="grid gap-4 lg:grid-cols-2">
@@ -560,6 +594,7 @@ export function PartyInformationDetailsFields({
       id: "accounting-information",
       label: "Accounting Information",
       badge: accountingErrorCount,
+      badgeTone: accountingErrorCount > 0 ? "error" : "info",
       content: (
         <div className="grid gap-5">
           <AccountFields

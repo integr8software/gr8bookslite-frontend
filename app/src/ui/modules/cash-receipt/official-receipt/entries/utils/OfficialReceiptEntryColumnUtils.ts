@@ -142,3 +142,4 @@ function getAccountingExportCell(
 function estimateTextWidth(value: string, padding: number) {
   return clampColumnWidth(value.trim().length * 7.5 + padding);
 }
+

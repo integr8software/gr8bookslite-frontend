@@ -28,7 +28,7 @@ import {
   isOfficialReceiptCollectionColumnId,
   moveColumnId,
   updateVisibleColumnIds,
-} from "@/app/src/hooks/modules/cash-receipt/official-receipt/utils/OfficialReceiptEntryColumnUtils";
+} from "@/app/src/ui/modules/cash-receipt/official-receipt/entries/utils/OfficialReceiptEntryColumnUtils";
 
 export function useOfficialReceiptEntryColumns({
   entryView,

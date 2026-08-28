@@ -1256,7 +1256,9 @@ export interface CreateMasterPlanAndPackageDto {
   prices: MasterPlanPriceDto[];
   usageRules?: MasterPlanUsageRuleDto[];
   discountTiers?: MasterPlanDiscountTierDto[];
-  systemCodes: string[];
+  systemCodes?: string[];
+  moduleKeys?: string[];
+  trialPriceInCents?: number;
 }
 
 export interface WorkspaceCompanyCreatedByResponseDto {
@@ -3059,6 +3061,7 @@ export const CreatePaymentTypeDtoClassification = {
   CHECK: 'CHECK',
   BANK_TRANSFER: 'BANK_TRANSFER',
   DIGITAL_WALLET: 'DIGITAL_WALLET',
+  DEBIT_MEMO: 'DEBIT_MEMO',
   NON_CASH_SETTLEMENT: 'NON_CASH_SETTLEMENT',
 } as const;
 
@@ -3107,6 +3110,7 @@ export const UpdatePaymentTypeDtoClassification = {
   CHECK: 'CHECK',
   BANK_TRANSFER: 'BANK_TRANSFER',
   DIGITAL_WALLET: 'DIGITAL_WALLET',
+  DEBIT_MEMO: 'DEBIT_MEMO',
   NON_CASH_SETTLEMENT: 'NON_CASH_SETTLEMENT',
 } as const;
 
@@ -3135,6 +3139,7 @@ export type DiscountResponseDtoType = typeof DiscountResponseDtoType[keyof typeo
 export const DiscountResponseDtoType = {
   SALES: 'SALES',
   PURCHASE: 'PURCHASE',
+  PURCHASES: 'PURCHASES',
 } as const;
 
 export type DiscountResponseDtoValueType = typeof DiscountResponseDtoValueType[keyof typeof DiscountResponseDtoValueType];
@@ -3253,6 +3258,7 @@ export type CreateDiscountDtoType = typeof CreateDiscountDtoType[keyof typeof Cr
 export const CreateDiscountDtoType = {
   SALES: 'SALES',
   PURCHASE: 'PURCHASE',
+  PURCHASES: 'PURCHASES',
 } as const;
 
 export type CreateDiscountDtoValueType = typeof CreateDiscountDtoValueType[keyof typeof CreateDiscountDtoValueType];
@@ -3307,6 +3313,7 @@ export type UpdateDiscountDtoType = typeof UpdateDiscountDtoType[keyof typeof Up
 export const UpdateDiscountDtoType = {
   SALES: 'SALES',
   PURCHASE: 'PURCHASE',
+  PURCHASES: 'PURCHASES',
 } as const;
 
 export type UpdateDiscountDtoValueType = typeof UpdateDiscountDtoValueType[keyof typeof UpdateDiscountDtoValueType];
@@ -4132,7 +4139,7 @@ export interface BankAccountResponseDto {
   accountNumber: string;
   accountName: string;
   /** @nullable */
-  accountType: string | null;
+  accountType: BankAccountResponseDtoAccountType;
   /** @nullable */
   seriesStart: string | null;
   /** @nullable */
@@ -4233,7 +4240,7 @@ export interface CreateBankAccountDto {
   /** @maxLength 250 */
   accountName?: string;
   /** @maxLength 50 */
-  accountType?: string;
+  accountType?: CreateBankAccountDtoAccountType;
   /** @maxLength 50 */
   seriesStart: string;
   /** @maxLength 50 */
@@ -4284,7 +4291,7 @@ export interface UpdateBankAccountDto {
   /** @maxLength 250 */
   accountName?: string;
   /** @maxLength 50 */
-  accountType?: string;
+  accountType?: CreateBankAccountDtoAccountType;
   /** @maxLength 50 */
   seriesStart?: string;
   /** @maxLength 50 */
@@ -5769,9 +5776,49 @@ export interface CreateApproverSetupDto {
      * Existing User ids. The User model currently uses integer ids.
      * @minItems 1
      * @maxItems 5
-     */
+   */
   approverUserIds: number[];
 }
+
+export interface ApproverSetupUserResponseDto {
+  id: number;
+  name: string;
+  email: string;
+}
+
+export interface ApproverSetupResponseDto {
+  id: string;
+  approverCondition: string;
+  levelName: string;
+  type: string;
+  status: string;
+  level?: number;
+  moduleScope: string;
+  /** @nullable */
+  validUntil?: string | null;
+  updatedAt: string;
+  approvers: ApproverSetupUserResponseDto[];
+}
+
+export interface ApproverSetupsPaginatedResponseDto {
+  items: ApproverSetupResponseDto[];
+}
+
+export interface CreateApproverSetupResponseDto {
+  setup: ApproverSetupResponseDto;
+}
+
+export type BankAccountResponseDtoAccountType = "CHECKING" | "SAVINGS" | "CURRENT" | "TIME_DEPOSIT" | "CREDIT_CARD" | null;
+export type CreateBankAccountDtoAccountType = Exclude<BankAccountResponseDtoAccountType, null>;
+export type CreateItemCategoryDtoBehaviors = CreateItemCategoryDtoBehaviorsItem;
+export type CreatePartyDtoPartyTypes = CreatePartyDtoPartyTypesItem;
+export type PartyResponseDtoPartyTypes = PartyResponseDtoPartyTypesItem;
+export type CreateWarehouseAccessAssignmentDtoPermissions = CreateWarehouseAccessAssignmentDtoPermissionsItem;
+export type WarehouseAccessResponseDtoPermissions = WarehouseAccessResponseDtoPermissionsItem;
+export type BankMasterfileLookupControllerFindOptionsV1Params = BankMasterfileControllerFindOptionsV1Params;
+export type ServicesMaintenanceLookupControllerFindOptionsV1Params = ServicesMaintenanceControllerFindOptionsV1Params;
+export type ResponsibilityCenterLookupControllerFindOptionsV1Params = ResponsibilityCenterControllerFindOptionsV1Params;
+export type PartyMaintenanceControllerFindOptionsV1PartyType = string;
 
 export interface TransactionNumberBranchResponseDto {
   id: number;
@@ -11323,6 +11370,7 @@ export const PaymentTypeMaintenanceControllerFindAllV1Classification = {
   CHECK: 'CHECK',
   DIGITAL_WALLET: 'DIGITAL_WALLET',
   CASH: 'CASH',
+  DEBIT_MEMO: 'DEBIT_MEMO',
   NON_CASH_SETTLEMENT: 'NON_CASH_SETTLEMENT',
 } as const;
 
@@ -14427,4 +14475,3 @@ export const ProvisionalReceiptControllerFindOneV1SortDirection = {
   asc: 'asc',
   desc: 'desc',
 } as const;
-

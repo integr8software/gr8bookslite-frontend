@@ -585,6 +585,102 @@ export function officialReceiptEntryIsComplete(entry: OfficialReceiptLineEntry) 
   );
 }
 
+export function shouldClearOfficialReceiptEntry(
+  entry: OfficialReceiptLineEntry,
+  action: "incomplete" | "no-data" | "with-data",
+) {
+  if (action === "with-data") {
+    return officialReceiptEntryHasData(entry);
+  }
+
+  if (action === "incomplete") {
+    return officialReceiptEntryHasData(entry) && !officialReceiptEntryIsComplete(entry);
+  }
+
+  return !officialReceiptEntryHasData(entry);
+}
+
+export function createOfficialReceiptAccountingRows(rows: OfficialReceiptLineEntry[]) {
+  return rows.flatMap((row) => {
+    const grossReceipt = parseMoneyNumberInput(row.grossReceipt);
+
+    if (grossReceipt <= 0) {
+      return [];
+    }
+
+    const netOfVat = calculateOfficialReceiptNetOfVat(row);
+    const vatAmount = calculateOfficialReceiptVatAmount(row);
+    const cwtAmount = calculateOfficialReceiptCwtAmount(row);
+    const totalReceived = calculateOfficialReceiptTotalReceived(row);
+    const commonFields = {
+      bankName: row.bankName,
+      checkDate: row.checkDate,
+      checkNo: row.checkNo,
+      collectionType: row.collectionType,
+      customerName: row.partyName || row.customerName,
+      cwtCode: row.cwtCode,
+      cwtPercent: row.cwtPercent,
+      grossReceipt: row.grossReceipt,
+      particulars: row.particulars || row.collectionType,
+      partyCode: row.partyCode,
+      partyName: row.partyName || row.customerName,
+      referenceNo: row.referenceNo,
+      responsibilityCenter: row.responsibilityCenter,
+      vat: formatOfficialReceiptAmount(vatAmount),
+      vatExempt: row.vatExempt,
+      vatPercent: row.vatPercent,
+      vatType: row.vatType,
+      ewt: formatOfficialReceiptAmount(cwtAmount),
+    } satisfies Omit<
+      OfficialReceiptLineEntry,
+      "accountCode" | "accountTitle" | "credit" | "debit" | "id"
+    >;
+
+    return [
+      {
+        ...commonFields,
+        id: `${row.id}-cash`,
+        accountCode: "1010103001",
+        accountTitle: "Cash in Bank",
+        debit: totalReceived.toFixed(2),
+        credit: "0.00",
+      },
+      ...(cwtAmount > 0
+        ? [
+            {
+              ...commonFields,
+              id: `${row.id}-cwt`,
+              accountCode: "1010104008",
+              accountTitle: "Creditable Withholding Tax",
+              debit: cwtAmount.toFixed(2),
+              credit: "0.00",
+            },
+          ]
+        : []),
+      ...(vatAmount > 0
+        ? [
+            {
+              ...commonFields,
+              id: `${row.id}-vat`,
+              accountCode: "2010002005",
+              accountTitle: "Output VAT",
+              debit: "0.00",
+              credit: vatAmount.toFixed(2),
+            },
+          ]
+        : []),
+      {
+        ...commonFields,
+        id: `${row.id}-revenue`,
+        accountCode: "4020000001",
+        accountTitle: row.collectionType || "Service Revenue",
+        debit: "0.00",
+        credit: netOfVat.toFixed(2),
+      },
+    ];
+  });
+}
+
 function normalizeOfficialReceiptStatus(value: string): OfficialReceiptStatus {
   const statuses: OfficialReceiptStatus[] = ["Cancelled", "Disapproved", "Draft", "For Approval", "Posted"];
 

@@ -8,15 +8,17 @@ import {
 } from "@/app/src/generated/api/form-signatories/form-signatories";
 import { IsClientAuthSessionMarker } from "@/app/src/data/auth/AuthSessionStorage";
 import type {
-	FormSignatoryApiSetup,
+	FormSignatoryOptionsResponseDto,
+	FormSignatorySetupResponseDto,
+	SaveFormSignatoryDto,
+} from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
+import type {
 	FormSignatoryBootstrap,
 	FormSignatoryBranchOption,
 	FormSignatoryModuleOption,
 	FormSignatoryOptions,
-	FormSignatoryOptionsApiResponse,
 	FormSignatoryRow,
 	FormSignatorySetupRecord,
-	SaveFormSignatoryRequest,
 } from "@/app/src/types/modules/system-administration/form-signatory/FormSignatoryTypes";
 
 function GetAuthorizationHeaders(accessToken: string | null) {
@@ -59,7 +61,7 @@ export async function GetFormSignatoryBootstrap(
 }
 
 function MapFormSignatoryOptions(
-	options: FormSignatoryOptionsApiResponse,
+	options: FormSignatoryOptionsResponseDto,
 ): FormSignatoryOptions {
 	return {
 		branches: [
@@ -102,7 +104,7 @@ export async function ResolveFormSignatorySetup(
 
 export async function SaveFormSignatorySetup(
 	accessToken: string | null,
-	payload: SaveFormSignatoryRequest,
+	payload: SaveFormSignatoryDto,
 	setupId?: string,
 ) {
 	const response = setupId
@@ -124,7 +126,7 @@ export async function SaveFormSignatorySetup(
 }
 
 function MapFormSignatorySetup(
-	setup: FormSignatoryApiSetup,
+	setup: FormSignatorySetupResponseDto,
 ): FormSignatorySetupRecord {
 	return {
 		branch: String(setup.unit.id),
@@ -137,7 +139,7 @@ function MapFormSignatorySetup(
 }
 
 function MapFormSignatoryRow(
-	row: FormSignatoryApiSetup["rows"][number],
+	row: FormSignatorySetupResponseDto["rows"][number],
 	setupId: string,
 ): FormSignatoryRow {
 	return {

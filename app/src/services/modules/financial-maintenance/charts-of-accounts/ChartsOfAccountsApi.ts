@@ -144,8 +144,8 @@ function MapChartAccount(account: ChartAccountResponseDto | ChartAccountTreeNode
     status: MapStatusFromApi(account.status),
     createdBy: account.createdBy,
     createdAt: account.createdAt,
-    updatedBy: account.updatedBy,
-    updatedAt: account.updatedAt,
+    updatedBy: account.updatedBy ?? "",
+    updatedAt: account.updatedAt ?? "",
     bankDetails: bankAccount
       ? {
           accountType: "",

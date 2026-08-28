@@ -140,6 +140,7 @@ export function ModuleTable<TData>({
           ) : null}
           <ModuleTableHeader
             enableColumnReorder={enableColumnReorder}
+            isLoading={isLoading}
             stickyTop={stickyToolbarAndHeader ? stickyTopOffset : undefined}
             scrollContainerRef={scrollContainerRef}
             table={table}

@@ -117,7 +117,7 @@ function DisbursementVoucherReportDocument({ values }: { values: DisbursementVou
             <tr>
               <ReportTableHeader>Account</ReportTableHeader>
               <ReportTableHeader>Payee</ReportTableHeader>
-              <ReportTableHeader>Remarks</ReportTableHeader>
+              <ReportTableHeader>Particulars</ReportTableHeader>
               <ReportTableHeader>Cost Center</ReportTableHeader>
               <ReportTableHeader>Debit</ReportTableHeader>
               <ReportTableHeader>Credit</ReportTableHeader>
@@ -128,7 +128,7 @@ function DisbursementVoucherReportDocument({ values }: { values: DisbursementVou
               <tr key={entry.id} className="align-top">
                 <ReportTableCell>{formatAccountLabel(entry.accountCode, entry.accountName)}</ReportTableCell>
                 <ReportTableCell>{entry.partyName || entry.partyCode || values.partyName || "-"}</ReportTableCell>
-                <ReportTableCell>{entry.remarks || "-"}</ReportTableCell>
+                <ReportTableCell>{entry.particulars || entry.remarks || "-"}</ReportTableCell>
                 <ReportTableCell>{entry.responsibilityCenter || values.costCenter || "-"}</ReportTableCell>
                 <ReportTableCell align="right">{entry.debit ? formatCurrency(entry.debit) : ""}</ReportTableCell>
                 <ReportTableCell align="right">{entry.credit ? formatCurrency(entry.credit) : ""}</ReportTableCell>

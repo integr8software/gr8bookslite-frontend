@@ -1,20 +1,13 @@
-export type AiAssistantChatMessage = {
-  role: "user" | "assistant";
-  content: string;
-};
+import type {
+  AiAssistantChatMessageDto,
+  AiAssistantChatResponseDto,
+  AiAssistantPurchaseRequestPrefillDto,
+  AiAssistantTermsMaintenanceActionDto,
+} from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 
-export type AiAssistantPurchaseRequestPrefill = {
-  purchaseType?: string;
-  supplierName?: string;
-  department?: string;
-  remarks?: string;
-  items?: Array<{
-    description?: string;
-    quantity?: number;
-    uom?: string;
-    cost?: number;
-  }>;
-};
+export type AiAssistantChatMessage = AiAssistantChatMessageDto;
+
+export type AiAssistantPurchaseRequestPrefill = AiAssistantPurchaseRequestPrefillDto;
 
 export type AiAssistantSalesQuotationPrefill = {
   partyName?: string;
@@ -28,44 +21,11 @@ export type AiAssistantSalesQuotationPrefill = {
   }>;
 };
 
-export type AiAssistantTermsMaintenancePrefill = {
-  name?: string;
-  description?: string;
-  datemode?: "Day" | "Month" | "Year";
-  period?: string;
-  status?: "Active" | "Inactive";
-};
+export type AiAssistantTermsMaintenanceAction = AiAssistantTermsMaintenanceActionDto;
 
-export type AiAssistantTermsMaintenanceAction = {
-  type: "terms_maintenance";
-  moduleCode: "TM";
-  command: "open" | "search" | "filter_status" | "prepare_add" | "preview_edit";
-  label?: string;
-  query?: string;
-  status?: "Active" | "Inactive";
-  prefill?: AiAssistantTermsMaintenancePrefill;
-  targetTermName?: string;
-};
+export type AiAssistantAction = NonNullable<AiAssistantChatResponseDto["action"]>;
 
-export type AiAssistantAction =
-  | {
-      type: "navigate";
-      route: string;
-      label?: string;
-    }
-  | {
-      type: "open_form";
-      target: "purchase_request";
-      route: string;
-      label?: string;
-      prefill?: AiAssistantPurchaseRequestPrefill;
-    }
-  | AiAssistantTermsMaintenanceAction;
-
-export type AiAssistantChatResponse = {
-  message: string;
-  action: AiAssistantAction | null;
-};
+export type AiAssistantLauncherCorner = "top-left" | "top-right" | "bottom-left" | "bottom-right";
 
 export type AiAssistantSpeechInputProvider = "native" | "recording";
 

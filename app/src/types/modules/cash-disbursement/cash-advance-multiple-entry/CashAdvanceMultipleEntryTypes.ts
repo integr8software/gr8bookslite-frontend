@@ -32,7 +32,8 @@ export type CashAdvanceMultipleEntryItem = {
   partyName: string;
   cashAdvanceBalance: string;
   cashAdvanceLimit: string;
-  remarks: string;
+  particulars: string;
+  remarks?: string;
   amount: string;
   responsibilityCenter: string;
 };
@@ -45,7 +46,8 @@ export type CashAdvanceMultipleEntryAccountingEntry = {
   credit: string;
   partyCode: string;
   partyName: string;
-  remarks: string;
+  particulars: string;
+  remarks?: string;
   responsibilityCenter: string;
 };
 

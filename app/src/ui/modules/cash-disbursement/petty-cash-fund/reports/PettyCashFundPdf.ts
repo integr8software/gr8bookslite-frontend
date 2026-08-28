@@ -25,7 +25,7 @@ function createPettyCashFundPdfDefinition(values: PettyCashFundFormValues): TDoc
     { text: item.ewtPercent, alignment: "right" },
     { text: formatCurrency(Number(item.ewtAmount.replace(/,/g, "")) || 0), alignment: "right" },
     { text: formatCurrency(Number(item.netAmount.replace(/,/g, "")) || 0), alignment: "right" },
-    item.remarks,
+    item.particulars || item.remarks || "",
   ]);
   return {
     pageSize: "A4",
@@ -59,7 +59,7 @@ function createPettyCashFundPdfDefinition(values: PettyCashFundFormValues): TDoc
               "EWT Rate",
               "EWT Amount",
               "Net Amount",
-              "Remarks",
+              "Particulars",
             ],
             ...itemRows,
           ],

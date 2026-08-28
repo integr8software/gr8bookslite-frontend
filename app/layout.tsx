@@ -1,5 +1,4 @@
 import { cookies } from "next/headers";
-import { Manrope, Sora } from "next/font/google";
 import { AppToaster } from "@/app/src/ui/shared/app/AppToaster";
 import { AppProviders } from "@/app/src/ui/shared/app/AppProviders";
 import { InitialAppTheme } from "@/app/src/ui/shared/app/InitialAppTheme";
@@ -7,18 +6,6 @@ import { AppMetadata } from "@/app/src/constants/shared/app/AppMetadata";
 import { AccountThemeCookieName } from "@/app/src/constants/shared/account/AccountThemeRoutes";
 import type { AccountTheme } from "@/app/src/types/shared/account/AccountTypes";
 import "./globals.css";
-
-const manrope = Manrope({
-	subsets: ["latin"],
-	variable: "--font-manrope",
-	display: "swap",
-});
-
-const sora = Sora({
-	subsets: ["latin"],
-	variable: "--font-sora",
-	display: "swap",
-});
 
 export const metadata = AppMetadata;
 
@@ -39,7 +26,7 @@ export default async function RootLayout({
 	return (
 		<html
 			lang="en"
-			className={`${manrope.variable} ${sora.variable} h-full antialiased`}
+			className="h-full antialiased"
 			data-app-theme={initialTheme}
 			data-scroll-behavior="smooth"
 			suppressHydrationWarning

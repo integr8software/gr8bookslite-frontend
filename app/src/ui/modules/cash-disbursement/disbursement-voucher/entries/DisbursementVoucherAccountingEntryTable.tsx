@@ -1,9 +1,10 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   DefaultDisbursementEntryColumnOrder,
   DefaultDisbursementEntryColumnWidths,
   DefaultVisibleDisbursementEntryColumnOrder,
   DisbursementEntryColumnLabels,
+  DisbursementVoucherAccountingTablePreferencesStorageKey,
   MultiCheckColumnIds,
   ProtectedDisbursementEntryColumnIds,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryConstants";
@@ -11,6 +12,7 @@ import {
   getDisbursementEntryExportCell,
   isDisbursementEntryColumnId,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingEntryData";
+import { useDataEntryTablePreferences } from "@/app/src/hooks/shared/module/useDataEntryTablePreferences";
 import type {
   DisbursementEntryColumnId,
   DisbursementVoucherAccountingEntryTableProps,
@@ -21,12 +23,6 @@ import type {
   ModuleDataEntryColumn,
   ModuleDataEntryColumnOption,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
-import {
-  calculateFitColumnWidth,
-  reorderColumnIds,
-  toggleVisibleColumnId,
-} from "@/app/src/ui/shared/module/module-data-entry/entryTableState.util";
-import { clampColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/utils";
 import { formatAmount } from "@/app/src/utils/currency.util";
 import { joinClasses } from "@/app/src/utils/string.util";
 
@@ -46,14 +42,25 @@ export function DisbursementVoucherAccountingEntryTable({
   totalDebit = 0,
   variance = 0,
 }: DisbursementVoucherAccountingEntryTableProps) {
-  const [accountingColumnOrder, setAccountingColumnOrder] = useState<DisbursementEntryColumnId[]>(
-    DefaultDisbursementEntryColumnOrder,
-  );
-  const [visibleAccountingColumnIds, setVisibleAccountingColumnIds] = useState<DisbursementEntryColumnId[]>(
-    DefaultVisibleDisbursementEntryColumnOrder,
-  );
-  const [accountingColumnWidths, setAccountingColumnWidths] = useState(DefaultDisbursementEntryColumnWidths);
-  const [accountingColumnLabels, setAccountingColumnLabels] = useState(DisbursementEntryColumnLabels);
+  const {
+    columnOrder: accountingColumnOrder,
+    visibleColumnIds: visibleAccountingColumnIds,
+    columnWidths: accountingColumnWidths,
+    columnLabels: accountingColumnLabels,
+    handleMoveColumn: moveColumn,
+    handleToggleColumnVisibility: toggleColumnVisibility,
+    handleUpdateColumnHeader: updateColumnHeader,
+    handleUpdateColumnWidth: updateColumnWidth,
+    handleFitColumnWidth: fitColumnWidth,
+    handleResetColumns,
+  } = useDataEntryTablePreferences<DisbursementEntryColumnId>({
+    storageKey: DisbursementVoucherAccountingTablePreferencesStorageKey,
+    defaultColumnOrder: DefaultDisbursementEntryColumnOrder,
+    defaultVisibleColumnIds: DefaultVisibleDisbursementEntryColumnOrder,
+    defaultColumnWidths: DefaultDisbursementEntryColumnWidths,
+    defaultColumnLabels: DisbursementEntryColumnLabels,
+    protectedColumnIds: ProtectedDisbursementEntryColumnIds,
+  });
 
   const hasMultiCheckNumberColumn = false;
   const visibleAccountingColumnOrder = accountingColumnOrder.filter((columnId) =>
@@ -63,9 +70,17 @@ export function DisbursementVoucherAccountingEntryTable({
   const columns = useMemo(
     () =>
       visibleAccountingColumnOrder
-        .map((columnId) => accountingColumns?.[columnId])
-        .filter((col): col is ModuleDataEntryColumn<DisbursementLineEntry> => Boolean(col)),
-    [accountingColumns, visibleAccountingColumnOrder],
+        .map((columnId) => {
+          const col = accountingColumns?.[columnId];
+          if (!col) return null;
+          return {
+            ...col,
+            header: accountingColumnLabels[columnId] || col.header,
+            width: accountingColumnWidths[columnId] ?? col.width,
+          };
+        })
+        .filter((col): col is NonNullable<typeof col> => col !== null),
+    [accountingColumns, accountingColumnLabels, accountingColumnWidths, visibleAccountingColumnOrder],
   );
 
   const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
@@ -84,56 +99,32 @@ export function DisbursementVoucherAccountingEntryTable({
 
   function handleMoveColumn(fromId: string, toId: string) {
     if (isDisbursementEntryColumnId(fromId) && isDisbursementEntryColumnId(toId)) {
-      setAccountingColumnOrder((currentOrder) => reorderColumnIds(currentOrder, fromId, toId));
+      moveColumn(fromId, toId);
     }
   }
 
   function handleToggleColumnVisibility(columnId: string, isVisible: boolean) {
-    if (!isDisbursementEntryColumnId(columnId)) {
-      return;
+    if (isDisbursementEntryColumnId(columnId)) {
+      toggleColumnVisibility(columnId, isVisible);
     }
-
-    if (!isVisible && ProtectedDisbursementEntryColumnIds.has(columnId)) {
-      return;
-    }
-
-    setVisibleAccountingColumnIds((currentIds) =>
-      toggleVisibleColumnId(currentIds, accountingColumnOrder, columnId, isVisible),
-    );
   }
 
   function handleUpdateColumnHeader(columnId: string, header: string) {
     if (isDisbursementEntryColumnId(columnId)) {
-      setAccountingColumnLabels((currentLabels) => ({ ...currentLabels, [columnId]: header }));
+      updateColumnHeader(columnId, header);
     }
   }
 
   function handleUpdateColumnWidth(columnId: string, width: number) {
     if (isDisbursementEntryColumnId(columnId)) {
-      setAccountingColumnWidths((currentWidths) => ({
-        ...currentWidths,
-        [columnId]: clampColumnWidth(width),
-      }));
+      updateColumnWidth(columnId, width);
     }
   }
 
   function handleFitColumnWidth(columnId: string) {
     if (isDisbursementEntryColumnId(columnId)) {
-      const fitWidth = calculateFitColumnWidth(
-        accountingColumnLabels[columnId],
-        accountingRows,
-        columnId,
-        (entry) => getDisbursementEntryExportCell(entry, columnId),
-      );
-      handleUpdateColumnWidth(columnId, fitWidth);
+      fitColumnWidth(columnId, accountingRows, (entry) => getDisbursementEntryExportCell(entry, columnId));
     }
-  }
-
-  function handleResetColumns() {
-    setAccountingColumnOrder(DefaultDisbursementEntryColumnOrder);
-    setVisibleAccountingColumnIds(DefaultVisibleDisbursementEntryColumnOrder);
-    setAccountingColumnWidths(DefaultDisbursementEntryColumnWidths);
-    setAccountingColumnLabels(DisbursementEntryColumnLabels);
   }
 
   const computedDebit = totalDebit || accountingRows.reduce((sum, r) => sum + Number(r.debit || 0), 0);

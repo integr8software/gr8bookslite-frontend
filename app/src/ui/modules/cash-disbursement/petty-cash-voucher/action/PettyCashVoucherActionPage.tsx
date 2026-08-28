@@ -10,7 +10,6 @@ import type { PettyCashVoucherFormMode } from "@/app/src/types/modules/cash-disb
 import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
 import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
-import { TransactionSummaryCards } from "@/app/src/ui/shared/transaction-setup/TransactionSummaryCards";
 import { PettyCashVoucherActionHeader } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/action/PettyCashVoucherActionHeader";
 import { PettyCashVoucherDetailsFields } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/action/PettyCashVoucherDetailsFields";
 import { PettyCashVoucherFileAttachmentFields } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/action/PettyCashVoucherFileAttachmentFields";
@@ -40,24 +39,13 @@ export function PettyCashVoucherActionPage({ mode }: { mode: PettyCashVoucherFor
         />
 
         {page.activeTab === "details" ? (
-          <>
-            <PettyCashVoucherDetailsFields
-              canAddParty={page.partyStore.permissions.canCreate}
-              canAddResponsibilityCenter={page.responsibilityCenterStore.permissions.canCreate}
-              page={page}
-              onOpenPartyDrawer={page.openPartyDrawer}
-              onOpenResponsibilityCenterDrawer={page.openResponsibilityCenterDrawer}
-            />
-            <TransactionSummaryCards
-              grossAmount={page.values.amount}
-              vatRate={page.values.vatRate || "0.00%"}
-              vatAmount={page.values.vatAmount}
-              ewtRate={page.values.ewtRate || "0.00%"}
-              ewtAmount={page.values.ewtAmount}
-              netAmount={page.values.netAmount}
-              taxLabelType="EWT"
-            />
-          </>
+          <PettyCashVoucherDetailsFields
+            canAddParty={page.partyStore.permissions.canCreate}
+            canAddResponsibilityCenter={page.responsibilityCenterStore.permissions.canCreate}
+            page={page}
+            onOpenPartyDrawer={page.openPartyDrawer}
+            onOpenResponsibilityCenterDrawer={page.openResponsibilityCenterDrawer}
+          />
         ) : (
           <PettyCashVoucherFileAttachmentFields page={page} />
         )}

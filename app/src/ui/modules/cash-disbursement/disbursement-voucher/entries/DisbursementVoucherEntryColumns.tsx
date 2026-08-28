@@ -1,10 +1,10 @@
 import { AccountingPartyFallbackValuePrefix } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryConstants";
+import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
+import { syncTaxDetailsAmount } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import {
   isGeneratedEwtEntry,
   isGeneratedVatEntry,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingEntryData";
-import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
-import { syncTaxDetailsAmount } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import type {
   DisbursementAccountingEntryColumnsParams,
   DisbursementEntryColumnId,
@@ -20,6 +20,10 @@ import { ModuleDataEntryMoneyCell } from "@/app/src/ui/shared/module/module-data
 import { ModuleDataEntryReadonlyCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryReadonlyCell";
 import { ModuleDataEntryRemarksCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryRemarksCell";
 import {
+  DefaultAccountingEntryEwtOptions,
+  DefaultAccountingEntryVatOptions,
+} from "@/app/src/data/shared/tax/TaxData";
+import {
   getEwtPercentFromCode,
   getVatPercentFromRate,
   getVatRateFromCode,
@@ -33,11 +37,13 @@ export function createDisbursementAccountingEntryColumns({
   chartAccounts,
   columnLabels,
   columnWidths,
+  ewtOptions,
   isReadonly,
   onAddPartyName,
   onUpdateEntry,
   onUpdateEntryFields,
   partyOptions,
+  vatOptions,
 }: DisbursementAccountingEntryColumnsParams): Record<DisbursementEntryColumnId, ModuleDataEntryColumn<DisbursementLineEntry>> {
   return {
     accountCode: {
@@ -147,19 +153,20 @@ export function createDisbursementAccountingEntryColumns({
         />
       ),
     },
-    remarks: {
-      header: columnLabels.remarks,
-      id: "remarks",
-      width: columnWidths.remarks,
+    particulars: {
+      header: columnLabels.particulars,
+      id: "particulars",
+      width: columnWidths.particulars,
       widthClassName: "w-[16rem]",
       renderCell: (entry, _rowIndex, context) => (
         <ModuleDataEntryRemarksCell
           inputId={context.fieldId}
           inputName={context.fieldName}
-          value={entry.remarks}
+          value={entry.particulars ?? entry.remarks ?? ""}
           isReadonly={isReadonly}
+          dialogTitle="Particulars"
           textareaId={`${context.fieldId}-dialog`}
-          onChange={(value) => onUpdateEntry(entry.id, "remarks", value)}
+          onChange={(value) => onUpdateEntry(entry.id, "particulars", value)}
         />
       ),
     },
@@ -256,18 +263,42 @@ export function createDisbursementAccountingEntryColumns({
       id: "vatType",
       width: columnWidths.vatType,
       widthClassName: "w-[12rem]",
-      renderCell: (entry) => (
-        <ModuleDataEntryReadonlyCell value={isGeneratedVatEntry(entry) ? (entry.vatType ?? entry.taxDetails?.vatType ?? "") : ""} />
-      ),
+      renderCell: (entry) => {
+        const availableOptions = vatOptions && vatOptions.length > 0 ? vatOptions : DefaultAccountingEntryVatOptions;
+        return (
+          <AppAdvancedDropdown
+            className={DisbursementVoucherAccountingDropdownClassName}
+            isClearable
+            options={availableOptions}
+            placeholder="Select VAT Type"
+            searchPlaceholder="Search VAT Type"
+            readOnly={isReadonly}
+            value={isGeneratedVatEntry(entry) ? (entry.vatType ?? entry.taxDetails?.vatCode ?? "") : ""}
+            onChange={(value) => onUpdateEntry(entry.id, "vatType", String(value ?? ""))}
+          />
+        );
+      },
     },
     ewtCode: {
       header: columnLabels.ewtCode,
       id: "ewtCode",
       width: columnWidths.ewtCode,
       widthClassName: "w-[10rem]",
-      renderCell: (entry) => (
-        <ModuleDataEntryReadonlyCell value={isGeneratedEwtEntry(entry) ? (entry.ewtCode ?? entry.taxDetails?.ewtCode ?? "") : ""} />
-      ),
+      renderCell: (entry) => {
+        const availableOptions = ewtOptions && ewtOptions.length > 0 ? ewtOptions : DefaultAccountingEntryEwtOptions;
+        return (
+          <AppAdvancedDropdown
+            className={DisbursementVoucherAccountingDropdownClassName}
+            isClearable
+            options={availableOptions}
+            placeholder="Select EWT Code"
+            searchPlaceholder="Search EWT Code"
+            readOnly={isReadonly}
+            value={isGeneratedEwtEntry(entry) ? (entry.ewtCode ?? entry.taxDetails?.ewtCode ?? "") : ""}
+            onChange={(value) => onUpdateEntry(entry.id, "ewtCode", String(value ?? ""))}
+          />
+        );
+      },
     },
   };
 }
@@ -523,11 +554,18 @@ export function createDisbursementExpenseEntryColumns({
       widthClassName: "w-[9rem]",
       renderCell: (entry) => <ModuleDataEntryReadonlyCell align="right" value={formatAmount(entry.taxDetails.ewtAmount)} />,
     },
-    remarks: {
-      ...accountingColumns.remarks,
-      header: expenseColumnLabels.remarks,
-      id: "remarks",
-      width: expenseColumnWidths.remarks,
+    disburseAmount: {
+      header: expenseColumnLabels.disburseAmount,
+      id: "disburseAmount",
+      width: expenseColumnWidths.disburseAmount,
+      widthClassName: "w-[10rem]",
+      renderCell: (entry) => <ModuleDataEntryReadonlyCell align="right" value={formatAmount(entry.taxDetails.amount)} />,
+    },
+    particulars: {
+      ...accountingColumns.particulars,
+      header: expenseColumnLabels.particulars,
+      id: "particulars",
+      width: expenseColumnWidths.particulars,
     },
     responsibilityCenterCode: {
       ...accountingColumns.responsibilityCenterCode,

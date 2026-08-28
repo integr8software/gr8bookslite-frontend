@@ -19,7 +19,7 @@ export type CashVoucherEntryColumnId =
   | "checkStatus"
   | "partyCode"
   | "partyName"
-  | "remarks"
+  | "particulars"
   | "refId"
   | "responsibilityCenter"
   | "responsibilityCenterCode"
@@ -43,9 +43,10 @@ export type ExpenseEntryColumnId =
   | "ewtCode"
   | "ewtPercent"
   | "ewtAmount"
+  | "disburseAmount"
   | "partyCode"
   | "partyName"
-  | "remarks"
+  | "particulars"
   | "responsibilityCenter"
   | "responsibilityCenterCode"
   | "refId";
@@ -85,6 +86,7 @@ export type CashVoucherAccountingEntryColumnsParams = {
   chartAccounts: ModuleChartAccount[];
   columnLabels: Record<CashVoucherEntryColumnId, string>;
   columnWidths: Record<CashVoucherEntryColumnId, number>;
+  ewtOptions?: AppAdvancedDropdownOption[];
   isReadonly: boolean;
   onAddPartyName: () => void;
   onUpdateEntry: CashVoucherEntryUpdater;
@@ -159,12 +161,13 @@ export type EditableCashVoucherAccountingGridRow = {
   credit: string;
   debit: string;
   id: string;
-  remarks: string;
+  particulars: string;
+  remarks?: string;
   taxDetails: CashVoucherTaxDetails;
   taxRate: string;
 };
 
-export type CashVoucherAccountingGridColumnId = "accountCode" | "accountName" | "remarks" | "taxRate" | "debit" | "credit";
+export type CashVoucherAccountingGridColumnId = "accountCode" | "accountName" | "particulars" | "taxRate" | "debit" | "credit";
 
 export type CashVoucherAccountingExportTheme = {
   accentColor: string;

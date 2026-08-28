@@ -143,9 +143,9 @@ export const MaintenanceSpotlightTutorialConfigs: readonly MaintenanceSpotlightT
     label: "Petty cash fund",
   },
   {
-    href: "/cash-disbursement/petty-cash-fund-replenishment",
+    href: "/cash-disbursement/petty-cash-replenishment",
     addMode: "none",
-    label: "Petty cash fund replenishment",
+    label: "Petty cash replenishment",
   },
   {
     href: "/cash-disbursement/revolving-fund",
@@ -155,7 +155,7 @@ export const MaintenanceSpotlightTutorialConfigs: readonly MaintenanceSpotlightT
   {
     href: "/cash-disbursement/revolving-fund-replenishment",
     addMode: "none",
-    label: "Revolving fund replenishment",
+    label: "Revolving replenishment",
   },
   {
     href: "/cash-disbursement/advances-to-suppliers",

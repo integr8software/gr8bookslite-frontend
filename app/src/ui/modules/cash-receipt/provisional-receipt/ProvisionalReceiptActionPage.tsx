@@ -4,7 +4,7 @@ import {
   ProvisionalReceiptLabel,
   ProvisionalReceiptStorageKey,
 } from "@/app/src/constants/modules/cash-receipt/provisional-receipt/ProvisionalReceiptConstants";
-import { OfficialReceiptActionPage } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptActionPage";
+import { OfficialReceiptActionPage } from "@/app/src/ui/modules/cash-receipt/official-receipt/form/OfficialReceiptActionPage";
 import { ProvisionalReceiptNotFound } from "@/app/src/ui/modules/cash-receipt/provisional-receipt/ProvisionalReceiptNotFound";
 
 export function ProvisionalReceiptActionPage() {

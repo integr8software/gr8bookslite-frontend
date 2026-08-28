@@ -184,7 +184,7 @@ function createEntriesTable(values: CashVoucherFormValues): TableCell {
     [
       headerCell("Account"),
       headerCell("Payee"),
-      headerCell("Remarks"),
+      headerCell("Particulars"),
       headerCell("Cost Center"),
       headerCell("Debit", "right"),
       headerCell("Credit", "right"),
@@ -230,7 +230,7 @@ function createEntryRow(entry: CashVoucherLineEntry, values: CashVoucherFormValu
   return [
     bodyCell(formatAccountLabel(entry.accountCode, entry.accountName)),
     bodyCell(entry.partyName || entry.partyCode || values.partyName || "-"),
-    bodyCell(entry.remarks || "-"),
+    bodyCell(entry.particulars || entry.remarks || "-"),
     bodyCell(entry.responsibilityCenter || values.costCenter || "-"),
     bodyCell(entry.debit ? formatCurrency(entry.debit) : "", "right"),
     bodyCell(entry.credit ? formatCurrency(entry.credit) : "", "right"),

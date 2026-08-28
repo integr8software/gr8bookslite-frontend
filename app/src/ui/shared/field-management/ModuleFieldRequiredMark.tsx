@@ -44,7 +44,7 @@ const ModuleFieldRouteCodes = [
   { route: "/cash-disbursement/cash-advance", moduleCode: "CA" },
   { route: "/cash-disbursement/cash-voucher", moduleCode: "CV" },
   { route: "/cash-disbursement/disbursement-voucher", moduleCode: "DV" },
-  { route: "/cash-disbursement/petty-cash-fund-replenishment", moduleCode: "PCFR" },
+  { route: "/cash-disbursement/petty-cash-replenishment", moduleCode: "PCR" },
   { route: "/cash-disbursement/petty-cash-fund", moduleCode: "PCF" },
   { route: "/cash-disbursement/petty-cash-voucher", moduleCode: "PCV" },
   { route: "/cash-disbursement/recurring-transactions", moduleCode: "RT" },

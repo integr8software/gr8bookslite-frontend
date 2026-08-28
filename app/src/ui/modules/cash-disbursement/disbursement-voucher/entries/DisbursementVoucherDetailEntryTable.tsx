@@ -1,8 +1,9 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   DefaultExpenseEntryColumnOrder,
   DefaultExpenseEntryColumnWidths,
   DefaultVisibleExpenseEntryColumnOrder,
+  DisbursementVoucherDetailTablePreferencesStorageKey,
   ExpenseEntryColumnLabels,
   MultiCheckColumnIds,
   ProtectedExpenseEntryColumnIds,
@@ -13,6 +14,7 @@ import {
   isExpenseEntryColumnId,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingEntryData";
 import { createBlankDisbursementLineEntry } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
+import { useDataEntryTablePreferences } from "@/app/src/hooks/shared/module/useDataEntryTablePreferences";
 import type {
   DisbursementVoucherDetailEntryTableProps,
   ExpenseEntryColumnId,
@@ -20,12 +22,6 @@ import type {
 import { createDisbursementExpenseEntryColumns } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/entries/DisbursementVoucherEntryColumns";
 import { ModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import type { ModuleDataEntryColumnOption } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
-import {
-  calculateFitColumnWidth,
-  reorderColumnIds,
-  toggleVisibleColumnId,
-} from "@/app/src/ui/shared/module/module-data-entry/entryTableState.util";
-import { clampColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/utils";
 import { formatAmount } from "@/app/src/utils/currency.util";
 
 export function DisbursementVoucherDetailEntryTable({
@@ -52,12 +48,25 @@ export function DisbursementVoucherDetailEntryTable({
   updateExpenseEntryFields,
   vatOptions,
 }: DisbursementVoucherDetailEntryTableProps) {
-  const [expenseColumnOrder, setExpenseColumnOrder] = useState<ExpenseEntryColumnId[]>(DefaultExpenseEntryColumnOrder);
-  const [visibleExpenseColumnIds, setVisibleExpenseColumnIds] = useState<ExpenseEntryColumnId[]>(
-    DefaultVisibleExpenseEntryColumnOrder,
-  );
-  const [expenseColumnWidths, setExpenseColumnWidths] = useState(DefaultExpenseEntryColumnWidths);
-  const [expenseColumnLabels, setExpenseColumnLabels] = useState(ExpenseEntryColumnLabels);
+  const {
+    columnOrder: expenseColumnOrder,
+    visibleColumnIds: visibleExpenseColumnIds,
+    columnWidths: expenseColumnWidths,
+    columnLabels: expenseColumnLabels,
+    handleMoveColumn: moveColumn,
+    handleToggleColumnVisibility: toggleColumnVisibility,
+    handleUpdateColumnHeader: updateColumnHeader,
+    handleUpdateColumnWidth: updateColumnWidth,
+    handleFitColumnWidth: fitColumnWidth,
+    handleResetColumns,
+  } = useDataEntryTablePreferences<ExpenseEntryColumnId>({
+    storageKey: DisbursementVoucherDetailTablePreferencesStorageKey,
+    defaultColumnOrder: DefaultExpenseEntryColumnOrder,
+    defaultVisibleColumnIds: DefaultVisibleExpenseEntryColumnOrder,
+    defaultColumnWidths: DefaultExpenseEntryColumnWidths,
+    defaultColumnLabels: ExpenseEntryColumnLabels,
+    protectedColumnIds: ProtectedExpenseEntryColumnIds,
+  });
 
   const hasMultiCheckNumberColumn = false;
   const visibleExpenseColumnOrder = expenseColumnOrder.filter((columnId) =>
@@ -103,8 +112,19 @@ export function DisbursementVoucherDetailEntryTable({
   );
 
   const expenseColumns = useMemo(
-    () => visibleExpenseColumnOrder.map((columnId) => allExpenseColumns[columnId]),
-    [allExpenseColumns, visibleExpenseColumnOrder],
+    () =>
+      visibleExpenseColumnOrder
+        .map((columnId) => {
+          const col = allExpenseColumns[columnId];
+          if (!col) return null;
+          return {
+            ...col,
+            header: expenseColumnLabels[columnId] || col.header,
+            width: expenseColumnWidths[columnId] ?? col.width,
+          };
+        })
+        .filter((col): col is NonNullable<typeof col> => col !== null),
+    [allExpenseColumns, expenseColumnLabels, expenseColumnWidths, visibleExpenseColumnOrder],
   );
 
   const expenseColumnOptions = useMemo<ModuleDataEntryColumnOption[]>(
@@ -123,56 +143,32 @@ export function DisbursementVoucherDetailEntryTable({
 
   function handleMoveColumn(fromId: string, toId: string) {
     if (isExpenseEntryColumnId(fromId) && isExpenseEntryColumnId(toId)) {
-      setExpenseColumnOrder((currentOrder) => reorderColumnIds(currentOrder, fromId, toId));
+      moveColumn(fromId, toId);
     }
   }
 
   function handleToggleColumnVisibility(columnId: string, isVisible: boolean) {
-    if (!isExpenseEntryColumnId(columnId)) {
-      return;
+    if (isExpenseEntryColumnId(columnId)) {
+      toggleColumnVisibility(columnId, isVisible);
     }
-
-    if (!isVisible && ProtectedExpenseEntryColumnIds.has(columnId)) {
-      return;
-    }
-
-    setVisibleExpenseColumnIds((currentIds) =>
-      toggleVisibleColumnId(currentIds, expenseColumnOrder, columnId, isVisible),
-    );
   }
 
   function handleUpdateColumnHeader(columnId: string, header: string) {
     if (isExpenseEntryColumnId(columnId)) {
-      setExpenseColumnLabels((currentLabels) => ({ ...currentLabels, [columnId]: header }));
+      updateColumnHeader(columnId, header);
     }
   }
 
   function handleUpdateColumnWidth(columnId: string, width: number) {
     if (isExpenseEntryColumnId(columnId)) {
-      setExpenseColumnWidths((currentWidths) => ({
-        ...currentWidths,
-        [columnId]: clampColumnWidth(width),
-      }));
+      updateColumnWidth(columnId, width);
     }
   }
 
   function handleFitColumnWidth(columnId: string) {
     if (isExpenseEntryColumnId(columnId)) {
-      const fitWidth = calculateFitColumnWidth(
-        expenseColumnLabels[columnId],
-        expenseRows,
-        columnId,
-        (entry) => getDisbursementEntryExportCell(entry, columnId),
-      );
-      handleUpdateColumnWidth(columnId, fitWidth);
+      fitColumnWidth(columnId, expenseRows, (entry) => getDisbursementEntryExportCell(entry, columnId));
     }
-  }
-
-  function handleResetColumns() {
-    setExpenseColumnOrder(DefaultExpenseEntryColumnOrder);
-    setVisibleExpenseColumnIds(DefaultVisibleExpenseEntryColumnOrder);
-    setExpenseColumnWidths(DefaultExpenseEntryColumnWidths);
-    setExpenseColumnLabels(ExpenseEntryColumnLabels);
   }
 
   return (
@@ -181,11 +177,6 @@ export function DisbursementVoucherDetailEntryTable({
       title={title}
       emptyRowLabel="entry"
       error={errors.lineEntries}
-      footerDetails={
-        <span className="text-sm font-semibold text-emerald-600">
-          Total Amount: {formatAmount(getExpenseEntryColumnTotal(expenseRows, "amount"))}
-        </span>
-      }
       columns={expenseColumns}
       columnOptions={expenseColumnOptions}
       rows={expenseRows}
@@ -210,6 +201,7 @@ export function DisbursementVoucherDetailEntryTable({
         amount: formatAmount(getExpenseEntryColumnTotal(expenseRows, "amount")),
         ewtAmount: formatAmount(getExpenseEntryColumnTotal(expenseRows, "ewtAmount")),
         netAmount: formatAmount(getExpenseEntryColumnTotal(expenseRows, "netAmount")),
+        disburseAmount: formatAmount(getExpenseEntryColumnTotal(expenseRows, "disburseAmount")),
         vatAmount: formatAmount(getExpenseEntryColumnTotal(expenseRows, "vatAmount")),
       }}
     />

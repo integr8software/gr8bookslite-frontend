@@ -21,7 +21,7 @@ export function PartyInformationTable({
 				variant="embedded"
 				emptyDescription="Try adjusting the search or filters, or add a new party record."
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
-				emptyTitle="No party records found"
+				emptyTitle="No Party Records Found."
 				isLoading={isLoading}
 				isSyncing={isRefreshing}
 				lastSyncedAt={lastSyncedAt}

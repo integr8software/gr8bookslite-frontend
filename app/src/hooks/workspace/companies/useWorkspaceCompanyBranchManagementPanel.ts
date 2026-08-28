@@ -96,6 +96,7 @@ export function useWorkspaceCompanyBranchManagementPanel({
 			});
 			setBranchValues(branchInitialValues);
 			setBranchErrors({});
+			setIsSaveBranchConfirmOpen(false);
 			setIsAddBranchOpen(false);
 			toast.success("Branch created.");
 		},
@@ -108,9 +109,13 @@ export function useWorkspaceCompanyBranchManagementPanel({
 		},
 	});
 
+	const [isSaveBranchConfirmOpen, setIsSaveBranchConfirmOpen] =
+		useState(false);
+
 	function openAddBranchDrawer() {
 		setBranchValues(branchInitialValues);
 		setBranchErrors({});
+		setIsSaveBranchConfirmOpen(false);
 		setIsAddBranchOpen(true);
 	}
 
@@ -119,6 +124,7 @@ export function useWorkspaceCompanyBranchManagementPanel({
 			return;
 		}
 
+		setIsSaveBranchConfirmOpen(false);
 		setIsAddBranchOpen(false);
 		setBranchValues(branchInitialValues);
 		setBranchErrors({});
@@ -176,6 +182,10 @@ export function useWorkspaceCompanyBranchManagementPanel({
 			return;
 		}
 
+		setIsSaveBranchConfirmOpen(true);
+	}
+
+	function handleConfirmCreateBranch() {
 		createBranchMutation.mutate(
 			createWorkspaceCompanyUnitPayload(branchValues, headOfficeBranch),
 		);
@@ -188,12 +198,16 @@ export function useWorkspaceCompanyBranchManagementPanel({
 		branchValues,
 		closeAddBranchDrawer,
 		handleBranchInputChange,
+		handleConfirmCreateBranch,
 		handleCreateBranch,
 		isAddBranchOpen,
 		isCreatingBranch: createBranchMutation.isPending,
 		isLoadingBranches: companyBranchesQuery.isLoading,
+		isSaveBranchConfirmOpen,
 		mainBranchOptions,
 		openAddBranchDrawer,
+		setIsSaveBranchConfirmOpen,
 		updateBranchField,
 	};
 }
+

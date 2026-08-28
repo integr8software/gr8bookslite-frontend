@@ -10,7 +10,9 @@ import {
 } from "@/app/src/hooks/workspace/users-management/useWorkspaceUserActionForm";
 import type { WorkspaceCompanyUserRecord } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
+import { BillingNoticeDialog } from "@/app/src/ui/shared/app/BillingNoticeDialog";
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
+
 import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { WorkspaceUserAssignmentsSection } from "@/app/src/ui/workspace/users-management/WorkspaceUserAssignmentsSection";
 import { WorkspaceUserDrawerSpotlightTutorial } from "@/app/src/ui/workspace/users-management/WorkspaceUserDrawerSpotlightTutorial";
@@ -172,30 +174,21 @@ function WorkspaceUserDrawerPanel({
 					mode={form.mode}
 				/>
 			) : null}
-			<AppDialog
+			<BillingNoticeDialog
 				isOpen={Boolean(form.pendingCompanyId)}
-				isPending={false}
-				title="Add company access?"
-				description="Adding this user to another company may affect billing, including user access costs, payments, or deductions. Confirm before adding the company assignment."
-				confirmLabel="Confirm Add"
-				cancelLabel="Cancel"
-				tone="default"
+				targetType="company_access"
 				onCancel={form.closeCompanyAssignmentConfirm}
 				onConfirm={form.confirmCompanyAssignment}
 			/>
-			<AppDialog
+			<BillingNoticeDialog
 				isOpen={isSaveUserConfirmOpen}
 				isPending={form.isSaving}
-				title="Create user?"
-				description={`Adding ${form.values.name || "this user"} may affect workspace billing, payments, or deductions. Type confirm add user before saving.`}
-				confirmationPhrase="confirm add user"
-				confirmLabel="Save User"
-				pendingLabel="Saving..."
-				cancelLabel="Cancel"
-				tone="default"
+				targetType="user"
+				targetName={form.values.name}
 				onCancel={() => setIsSaveUserConfirmOpen(false)}
 				onConfirm={handleConfirmSaveUser}
 			/>
 		</>
 	);
+
 }

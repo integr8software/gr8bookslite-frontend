@@ -30,6 +30,11 @@ export function OfficialReceiptDetailsForm({
   receiptCodeLabel = "OR",
   values,
 }: OfficialReceiptDetailsFormProps) {
+  const selectedPaymentTypeId =
+    values.paymentId ||
+    paymentTypeOptions.find((option) => option.name === values.paymentType)?.value ||
+    "";
+
   return (
     <section className="min-w-0 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
       <div className="grid min-w-0 gap-x-8 gap-y-5 xl:grid-cols-2">
@@ -51,13 +56,19 @@ export function OfficialReceiptDetailsForm({
           <FieldShell controlId="official-receipt-payment-type" label="Payment Type" isRequired>
             <AppAdvancedDropdown
               id="official-receipt-payment-type"
-              value={values.paymentType}
+              value={selectedPaymentTypeId}
               readOnly={isReadonly}
               options={paymentTypeOptions}
               placeholder="Select payment type"
               searchPlaceholder="Search payment type"
               addAction={!isReadonly ? { label: "Add Payment Type", onClick: onOpenPaymentTypeDialog } : undefined}
-              onChange={(value) => onUpdateField("paymentType", String(value))}
+              onChange={(value) => {
+                const paymentId = String(value);
+                const selectedOption = paymentTypeOptions.find((option) => option.value === paymentId);
+
+                onUpdateField("paymentId", paymentId);
+                onUpdateField("paymentType", selectedOption?.name ?? paymentId);
+              }}
             />
           </FieldShell>
           {isCheckPaymentType(values.paymentType) ? (

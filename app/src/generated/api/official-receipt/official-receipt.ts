@@ -59,6 +59,9 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
+/**
+ * @summary List official receipts
+ */
 export const officialReceiptControllerFindAllV1 = (
     params?: OfficialReceiptControllerFindAllV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -128,6 +131,9 @@ export function useOfficialReceiptControllerFindAllV1<TData = Awaited<ReturnType
  params?: OfficialReceiptControllerFindAllV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof officialReceiptControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List official receipts
+ */
 
 export function useOfficialReceiptControllerFindAllV1<TData = Awaited<ReturnType<typeof officialReceiptControllerFindAllV1>>, TError = unknown>(
  params?: OfficialReceiptControllerFindAllV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof officialReceiptControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -146,6 +152,9 @@ export function useOfficialReceiptControllerFindAllV1<TData = Awaited<ReturnType
 
 
 
+/**
+ * @summary Create an official receipt
+ */
 export const officialReceiptControllerCreateV1 = (
     createOfficialReceiptDto: CreateOfficialReceiptDto,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -193,7 +202,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type OfficialReceiptControllerCreateV1MutationBody = CreateOfficialReceiptDto
     export type OfficialReceiptControllerCreateV1MutationError = unknown
 
-    export const useOfficialReceiptControllerCreateV1 = <TError = unknown,
+    /**
+ * @summary Create an official receipt
+ */
+export const useOfficialReceiptControllerCreateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof officialReceiptControllerCreateV1>>, TError,{data: CreateOfficialReceiptDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof officialReceiptControllerCreateV1>>,
@@ -203,7 +215,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getOfficialReceiptControllerCreateV1MutationOptions(options), queryClient);
     }
-    export const officialReceiptControllerSuggestTransactionNumberV1 = (
+    /**
+ * @summary Suggest an official receipt transaction number
+ */
+export const officialReceiptControllerSuggestTransactionNumberV1 = (
     params?: OfficialReceiptControllerSuggestTransactionNumberV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
@@ -272,6 +287,9 @@ export function useOfficialReceiptControllerSuggestTransactionNumberV1<TData = A
  params?: OfficialReceiptControllerSuggestTransactionNumberV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof officialReceiptControllerSuggestTransactionNumberV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Suggest an official receipt transaction number
+ */
 
 export function useOfficialReceiptControllerSuggestTransactionNumberV1<TData = Awaited<ReturnType<typeof officialReceiptControllerSuggestTransactionNumberV1>>, TError = unknown>(
  params?: OfficialReceiptControllerSuggestTransactionNumberV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof officialReceiptControllerSuggestTransactionNumberV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -290,6 +308,9 @@ export function useOfficialReceiptControllerSuggestTransactionNumberV1<TData = A
 
 
 
+/**
+ * @summary Get an official receipt
+ */
 export const officialReceiptControllerFindOneV1 = (
     id: string,
     params?: OfficialReceiptControllerFindOneV1Params,
@@ -365,6 +386,9 @@ export function useOfficialReceiptControllerFindOneV1<TData = Awaited<ReturnType
     params?: OfficialReceiptControllerFindOneV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof officialReceiptControllerFindOneV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get an official receipt
+ */
 
 export function useOfficialReceiptControllerFindOneV1<TData = Awaited<ReturnType<typeof officialReceiptControllerFindOneV1>>, TError = unknown>(
  id: string,
@@ -384,6 +408,9 @@ export function useOfficialReceiptControllerFindOneV1<TData = Awaited<ReturnType
 
 
 
+/**
+ * @summary Update an official receipt
+ */
 export const officialReceiptControllerUpdateV1 = (
     id: string,
     updateOfficialReceiptDto: UpdateOfficialReceiptDto,
@@ -432,7 +459,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type OfficialReceiptControllerUpdateV1MutationBody = UpdateOfficialReceiptDto
     export type OfficialReceiptControllerUpdateV1MutationError = unknown
 
-    export const useOfficialReceiptControllerUpdateV1 = <TError = unknown,
+    /**
+ * @summary Update an official receipt
+ */
+export const useOfficialReceiptControllerUpdateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof officialReceiptControllerUpdateV1>>, TError,{id: string;data: UpdateOfficialReceiptDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof officialReceiptControllerUpdateV1>>,
@@ -442,7 +472,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getOfficialReceiptControllerUpdateV1MutationOptions(options), queryClient);
     }
-    export const officialReceiptControllerUpdateStatusV1 = (
+    /**
+ * @summary Update an official receipt status
+ */
+export const officialReceiptControllerUpdateStatusV1 = (
     id: string,
     updateOfficialReceiptStatusDto: UpdateOfficialReceiptStatusDto,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -490,7 +523,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type OfficialReceiptControllerUpdateStatusV1MutationBody = UpdateOfficialReceiptStatusDto
     export type OfficialReceiptControllerUpdateStatusV1MutationError = unknown
 
-    export const useOfficialReceiptControllerUpdateStatusV1 = <TError = unknown,
+    /**
+ * @summary Update an official receipt status
+ */
+export const useOfficialReceiptControllerUpdateStatusV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof officialReceiptControllerUpdateStatusV1>>, TError,{id: string;data: UpdateOfficialReceiptStatusDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof officialReceiptControllerUpdateStatusV1>>,

@@ -28,7 +28,7 @@ import { DateRangePicker } from "@/app/src/ui/shared/date-range-picker/DateRange
 import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
-import { OfficialReceiptRecordActions } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptRecordActions";
+import { OfficialReceiptRecordActions } from "@/app/src/ui/modules/cash-receipt/official-receipt/overview/OfficialReceiptRecordActions";
 import {
   ModuleTableFilterSelect,
   ModuleTableResetButton,
@@ -37,7 +37,7 @@ import {
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
-type OfficialReceiptListPageProps = OfficialReceiptModuleConfig & {
+type OfficialReceiptListPageProps<TReceipt> = OfficialReceiptModuleConfig<TReceipt> & {
   baseHref?: string;
   description?: string;
   receiptLabel?: string;
@@ -45,7 +45,7 @@ type OfficialReceiptListPageProps = OfficialReceiptModuleConfig & {
   tableTitle?: string;
 };
 
-export function OfficialReceiptListPage({
+export function OfficialReceiptListPage<TReceipt>({
   api,
   baseHref = OfficialReceiptHref,
   description = "Search collection sources, preview linked official receipts, and create or update receipt entries.",
@@ -53,7 +53,7 @@ export function OfficialReceiptListPage({
   startNewLabel,
   storageKey,
   tableTitle = "Receipt entries",
-}: OfficialReceiptListPageProps = {}) {
+}: OfficialReceiptListPageProps<TReceipt> = {}) {
   const { lastSyncedAt, receipts, updateReceiptStatus } = useOfficialReceiptStore(undefined, {
     api,
     receiptLabel: receiptLabel.toLowerCase(),

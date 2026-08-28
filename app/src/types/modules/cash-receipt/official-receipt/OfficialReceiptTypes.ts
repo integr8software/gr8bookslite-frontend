@@ -29,10 +29,17 @@ export type OfficialReceiptLineEntry = {
   collectionType: string;
   customerName: string;
   partyCode: string;
+  partyName: string;
   bankName: string;
   checkNo: string;
   checkDate: string;
   grossReceipt: string;
+  vatType: string;
+  vatPercent: string;
+  cwtCode: string;
+  cwtPercent: string;
+  particulars: string;
+  responsibilityCenter: string;
   vatExempt: string;
   vat: string;
   ewt: string;
@@ -48,6 +55,7 @@ export type OfficialReceiptFormValues = {
   customerName: string;
   partyCode: string;
   paymentType: string;
+  paymentId: string;
   bankName: string;
   checkNo: string;
   checkDate: string;
@@ -82,6 +90,12 @@ export type OfficialReceiptCopyFromRecord = AppCopyFromRecord & {
   vatExempt?: string;
   vat?: string;
   ewt?: string;
+  vatType?: string;
+  vatPercent?: string;
+  cwtCode?: string;
+  cwtPercent?: string;
+  particulars?: string;
+  responsibilityCenter?: string;
   debit?: string;
   credit?: string;
   accountCode?: string;

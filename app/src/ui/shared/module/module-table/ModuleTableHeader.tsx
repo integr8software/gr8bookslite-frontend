@@ -17,6 +17,7 @@ type HeaderDropIndicator = {
 
 type ModuleTableHeaderProps<TData> = {
 	enableColumnReorder?: boolean;
+	isLoading?: boolean;
 	stickyTop?: number;
 	scrollContainerRef?: RefObject<HTMLDivElement | null>;
 	table: Table<TData>;
@@ -24,6 +25,7 @@ type ModuleTableHeaderProps<TData> = {
 
 export function ModuleTableHeader<TData>({
 	enableColumnReorder = true,
+	isLoading = false,
 	stickyTop,
 	scrollContainerRef,
 	table,
@@ -123,7 +125,11 @@ export function ModuleTableHeader<TData>({
 	}
 
 	return (
-		<thead className="module-table-header sticky top-0 z-50 bg-slate-50 text-xs font-bold text-darknavy/80" style={stickyTop === undefined ? undefined : { top: stickyTop }}>
+		<thead
+			aria-busy={isLoading}
+			className="module-table-header sticky top-0 z-50 bg-slate-50 text-xs font-bold text-darknavy/80"
+			style={stickyTop === undefined ? undefined : { top: stickyTop }}
+		>
 			{table.getHeaderGroups().map((headerGroup) => (
 				<tr key={headerGroup.id} className="border-b border-darknavy/10">
 					{headerGroup.headers.map((header) => (
@@ -182,7 +188,17 @@ export function ModuleTableHeader<TData>({
 									)}
 								/>
 							) : null}
-							{header.isPlaceholder ? null : (
+							{header.isPlaceholder ? null : isLoading ? (
+								<div
+									className={joinClasses(
+										"flex h-6 min-w-0 animate-pulse items-center",
+										isCenteredHeader(header) ? "justify-center" : "justify-start",
+									)}
+								>
+									<span className="sr-only">Loading column</span>
+									<span aria-hidden="true" className="h-4 w-full rounded-full bg-darknavy/10" />
+								</div>
+							) : (
 								<div
 									className={joinClasses(
 										"flex min-w-0 items-center gap-1.5",

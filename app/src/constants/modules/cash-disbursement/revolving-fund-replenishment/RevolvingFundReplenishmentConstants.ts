@@ -117,21 +117,21 @@ export const RevolvingFundReplenishmentEntryColumnOrder: RevolvingFundReplenishm
   "vatType",
   "vatPercent",
   "vatAmount",
+  "netAmount",
   "ewtCode",
   "ewtPercent",
   "ewtAmount",
-  "netAmount",
+  "disburseAmount",
   "responsibilityCenterCode",
   "responsibilityCenterName",
-  "remarks",
+  "particulars",
 ];
 export const RevolvingFundReplenishmentDefaultVisibleEntryColumnIds: RevolvingFundReplenishmentEntryColumnId[] = [
   "revolvingFundDate",
   "revolvingFundNo",
   "supplierName",
   "amount",
-  "vatType",
-  "ewtCode",
+  "disburseAmount",
 ];
 export const RevolvingFundReplenishmentEntryColumnLabels: Record<RevolvingFundReplenishmentEntryColumnId, string> = {
   revolvingFundDate: "Revolving Fund Date",
@@ -146,9 +146,10 @@ export const RevolvingFundReplenishmentEntryColumnLabels: Record<RevolvingFundRe
   ewtCode: "EWT Code",
   ewtPercent: "EWT Rate",
   ewtAmount: "EWT Amount",
+  disburseAmount: "Disburse Amount",
   responsibilityCenterCode: "Responsibility Center Code",
   responsibilityCenterName: "Responsibility Center",
-  remarks: "Remarks",
+  particulars: "Particulars",
 };
 export const RevolvingFundReplenishmentEntryColumnWidths: Record<RevolvingFundReplenishmentEntryColumnId, number> = {
   revolvingFundDate: 230,
@@ -163,9 +164,10 @@ export const RevolvingFundReplenishmentEntryColumnWidths: Record<RevolvingFundRe
   ewtCode: 175,
   ewtPercent: 160,
   ewtAmount: 175,
+  disburseAmount: 165,
   responsibilityCenterCode: 250,
   responsibilityCenterName: 240,
-  remarks: 240,
+  particulars: 240,
 };
 export const RevolvingFundReplenishmentProtectedEntryColumnIds = new Set<RevolvingFundReplenishmentEntryColumnId>([
   "supplierName",
@@ -178,7 +180,7 @@ export const RevolvingFundReplenishmentAccountingColumnOrder: RevolvingFundReple
   "credit",
   "partyCode",
   "partyName",
-  "remarks",
+  "particulars",
 ];
 export const RevolvingFundReplenishmentAccountingColumnLabels: Record<RevolvingFundReplenishmentAccountingColumnId, string> = {
   accountCode: "Account Code",
@@ -187,7 +189,7 @@ export const RevolvingFundReplenishmentAccountingColumnLabels: Record<RevolvingF
   credit: "Credit",
   partyCode: "Supplier Code",
   partyName: "Supplier Name",
-  remarks: "Remarks",
+  particulars: "Particulars",
 };
 export const RevolvingFundReplenishmentAccountingColumnWidths: Record<RevolvingFundReplenishmentAccountingColumnId, number> = {
   accountCode: 175,
@@ -196,7 +198,7 @@ export const RevolvingFundReplenishmentAccountingColumnWidths: Record<RevolvingF
   credit: 150,
   partyCode: 190,
   partyName: 230,
-  remarks: 260,
+  particulars: 260,
 };
 export const RevolvingFundReplenishmentProtectedAccountingColumnIds = new Set<RevolvingFundReplenishmentAccountingColumnId>([
   "accountCode",

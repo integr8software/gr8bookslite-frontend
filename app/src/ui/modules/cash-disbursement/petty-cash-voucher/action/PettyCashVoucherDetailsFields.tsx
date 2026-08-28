@@ -96,17 +96,6 @@ export function PettyCashVoucherDetailsFields({
             />
           </TransactionField>
 
-          <TransactionField label="Amount" error={page.errors.amount} isRequired>
-            <MoneyNumberField
-              value={page.values.amount}
-              min="0"
-              readOnly={page.isReadonly}
-              onValueChange={page.updateAmount}
-              className={`${TransactionFieldClassName} text-right tabular-nums`}
-              placeholder="0.00"
-            />
-          </TransactionField>
-
           <TransactionField label="Remarks" error={page.errors.remarks}>
             <AppLimitedTextarea
               value={page.values.remarks}
@@ -185,34 +174,14 @@ export function PettyCashVoucherDetailsFields({
             }
           />
 
-          <TransactionField controlId="petty-cash-voucher-vat-type" label="VAT Type" error={page.errors.vatType ?? page.errors.vatable}>
-            <AppAdvancedDropdown
-              id="petty-cash-voucher-vat-type"
-              className="w-full min-w-0"
-              value={page.values.vatType}
+          <TransactionField label="Amount" error={page.errors.amount} isRequired>
+            <MoneyNumberField
+              value={page.values.amount}
+              min="0"
               readOnly={page.isReadonly}
-              isClearable
-              menuMinWidth={320}
-              options={page.vatOptions}
-              placeholder="Select VAT Type"
-              searchPlaceholder="Search VAT Type"
-              onChange={(value) => page.updateVatType(String(value ?? ""))}
-            />
-          </TransactionField>
-
-          <TransactionField controlId="petty-cash-voucher-ewt-code" label="EWT Code" error={page.errors.ewtCode}>
-            <AppAdvancedDropdown
-              id="petty-cash-voucher-ewt-code"
-              className="w-full min-w-0"
-              value={page.values.ewtCode}
-              readOnly={page.isReadonly}
-              isClearable
-              menuMinWidth={360}
-              options={page.ewtOptions}
-              optionViewToggle
-              placeholder="Select EWT Code"
-              searchPlaceholder="Search tax name, code, rate, or description"
-              onChange={(value) => page.updateEwtCode(String(value ?? ""))}
+              onValueChange={page.updateAmount}
+              className={`${TransactionFieldClassName} text-right tabular-nums`}
+              placeholder="0.00"
             />
           </TransactionField>
         </div>

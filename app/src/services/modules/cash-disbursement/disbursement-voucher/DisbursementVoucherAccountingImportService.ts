@@ -63,6 +63,7 @@ function mapEntryToEditableRow(entry: DisbursementLineEntry): EditableGridRow {
     credit: entry.credit > 0 ? formatAmount(entry.credit) : "",
     debit: entry.debit > 0 ? formatAmount(entry.debit) : "",
     id: entry.id,
+    particulars: entry.particulars || entry.remarks || "",
     remarks: entry.remarks,
     taxDetails: entry.taxDetails,
     taxRate: entry.taxRate || "0%",
@@ -76,6 +77,7 @@ export function createBlankEditableRow(): EditableGridRow {
     credit: "",
     debit: "",
     id: createGridRowId(),
+    particulars: "",
     remarks: "",
     taxDetails: createTaxDetails(0, "0%"),
     taxRate: "0%",
@@ -205,7 +207,7 @@ function mapImportedRows(rawRows: string[][]) {
   const indexes = headerIndexes ?? {
     accountCode: 0,
     accountName: 1,
-    remarks: 2,
+    particulars: 2,
     taxRate: 3,
     debit: 4,
     credit: 5,
@@ -245,7 +247,7 @@ function normalizeImportHeader(value: string): GridColumnId | null {
   }
 
   if (["remarks", "particulars", "particular", "description", "memo"].includes(normalized)) {
-    return "remarks";
+    return "particulars";
   }
 
   if (["taxrate", "tax", "vat", "vatrate"].includes(normalized)) {
@@ -268,6 +270,7 @@ function createImportedGridRow(row: string[], indexes: Partial<Record<GridColumn
   const debit = normalizeImportedAmount(getImportedValue(row, indexes.debit));
   const credit = normalizeImportedAmount(getImportedValue(row, indexes.credit));
   const amount = normalizeAmount(debit) || normalizeAmount(credit);
+  const particulars = getImportedValue(row, indexes.particulars);
 
   return {
     accountCode: getImportedValue(row, indexes.accountCode),
@@ -275,7 +278,8 @@ function createImportedGridRow(row: string[], indexes: Partial<Record<GridColumn
     credit,
     debit,
     id: createGridRowId(),
-    remarks: getImportedValue(row, indexes.remarks),
+    particulars,
+    remarks: particulars,
     taxDetails: createTaxDetails(amount, taxRate),
     taxRate,
   };
@@ -289,7 +293,7 @@ export function hasRowValue(row: EditableGridRow) {
   return Boolean(
     row.accountCode.trim() ||
       row.accountName.trim() ||
-      row.remarks.trim() ||
+      row.particulars.trim() ||
       normalizeAmount(row.debit) > 0 ||
       normalizeAmount(row.credit) > 0,
   );
@@ -311,7 +315,7 @@ export function hasRowData(row: EditableGridRow) {
   return (
     row.accountCode.trim() !== "" ||
     row.accountName.trim() !== "" ||
-    row.remarks.trim() !== "" ||
+    row.particulars.trim() !== "" ||
     normalizeAmount(row.debit) > 0 ||
     normalizeAmount(row.credit) > 0 ||
     row.taxRate !== "0%"
@@ -322,7 +326,7 @@ export function isCompleteRow(row: EditableGridRow) {
   return (
     row.accountCode.trim() !== "" &&
     row.accountName.trim() !== "" &&
-    row.remarks.trim() !== "" &&
+    row.particulars.trim() !== "" &&
     (normalizeAmount(row.debit) > 0 || normalizeAmount(row.credit) > 0)
   );
 }
@@ -365,7 +369,8 @@ export function buildLineEntries(rows: EditableGridRow[]): DisbursementLineEntry
       credit,
       debit,
       id: row.id,
-      remarks: row.remarks.trim(),
+      particulars: row.particulars.trim(),
+      remarks: row.particulars.trim(),
       status: "Pending",
       taxDetails: syncTaxDetailsAmount(row.taxDetails, amount, row.taxRate),
       taxRate: row.taxRate || "0%",

@@ -6,6 +6,7 @@ import { AppLimitedTextareaMaxLength } from "@/app/src/ui/shared/app/AppLimitedT
 import { ModuleTextareaDialog } from "@/app/src/ui/shared/module/ModuleTextareaDialog";
 
 export function ModuleDataEntryRemarksCell({
+  dialogTitle = "Remarks",
   inputId,
   inputName,
   isReadonly,
@@ -15,6 +16,7 @@ export function ModuleDataEntryRemarksCell({
   textareaId,
   value,
 }: {
+  dialogTitle?: string;
   inputId: string;
   inputName: string;
   isReadonly: boolean;
@@ -45,8 +47,8 @@ export function ModuleDataEntryRemarksCell({
           type="button"
           onClick={() => setIsEditorOpen(true)}
           className="inline-flex h-10 items-center justify-center border-l border-darknavy/10 bg-white text-darknavy/65 transition hover:bg-skyblue/10 hover:text-darknavy focus:outline-none focus:ring-2 focus:ring-inset focus:ring-skyblue/35"
-          aria-label="Open remarks"
-          title="Open Remarks"
+          aria-label={`Open ${dialogTitle.toLowerCase()}`}
+          title={`Open ${dialogTitle}`}
         >
           <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
         </button>
@@ -56,7 +58,7 @@ export function ModuleDataEntryRemarksCell({
           detailLabel={null}
           isOpen
           isReadonly={isReadonly}
-          title="Remarks"
+          title={dialogTitle}
           subtitle={subtitle}
           textareaId={textareaId}
           value={value}

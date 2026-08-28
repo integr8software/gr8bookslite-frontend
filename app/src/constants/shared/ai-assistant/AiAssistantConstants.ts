@@ -21,7 +21,7 @@ export const AiAssistantLauncherPositionStorageKey =
 export const AiAssistantChatStorageVersionKey =
   "gr8books.aiAssistant.chatStorageVersion";
 
-export const AiAssistantChatStorageVersion = "neo-ai-open-modules-v4";
+export const AiAssistantChatStorageVersion = "neo-ai-organized-modules-v5";
 
 export const AiAssistantMaxStoredMessages = 20;
 

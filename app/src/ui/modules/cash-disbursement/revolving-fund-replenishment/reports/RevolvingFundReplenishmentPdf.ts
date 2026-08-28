@@ -27,7 +27,7 @@ function createPdfDefinition(values: RevolvingFundReplenishmentFormValues): TDoc
     entry.ewtCode,
     { text: entry.ewtPercent, alignment: "right" },
     { text: formatCurrency(Number(entry.ewtAmount.replace(/,/g, "")) || 0), alignment: "right" },
-    entry.remarks,
+    entry.particulars || entry.remarks || "",
   ]);
   return {
     pageSize: "A4",
@@ -63,7 +63,7 @@ function createPdfDefinition(values: RevolvingFundReplenishmentFormValues): TDoc
               "EWT Code",
               "EWT Rate",
               "EWT Amount",
-              "Remarks",
+              "Particulars",
             ],
             ...rows,
           ],

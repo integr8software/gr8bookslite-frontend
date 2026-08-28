@@ -76,8 +76,10 @@ export function createBlankRevolvingFundReplenishmentEntry(): RevolvingFundReple
     ewtCode: "",
     ewtPercent: "",
     ewtAmount: "",
+    disburseAmount: "",
     responsibilityCenterCode: "",
     responsibilityCenterName: "",
+    particulars: "",
     remarks: "",
   };
 }
@@ -120,6 +122,7 @@ export function createRevolvingFundReplenishmentFormValues(
           supplierName: record.partyName,
           amount,
           ...calculateRevolvingFundReplenishmentEntryTaxFields(amount),
+          particulars: record.remarks,
           remarks: record.remarks,
         },
       ],
@@ -153,8 +156,9 @@ export function calculateRevolvingFundReplenishmentTotals(entries: RevolvingFund
       netAmount: totals.netAmount + parseMoneyNumberInput(entry.netAmount),
       vatAmount: totals.vatAmount + parseMoneyNumberInput(entry.vatAmount),
       ewtAmount: totals.ewtAmount + parseMoneyNumberInput(entry.ewtAmount),
+      disburseAmount: totals.disburseAmount + parseMoneyNumberInput(entry.disburseAmount),
     }),
-    { totalAmount: 0, netAmount: 0, vatAmount: 0, ewtAmount: 0 },
+    { totalAmount: 0, netAmount: 0, vatAmount: 0, ewtAmount: 0, disburseAmount: 0 },
   );
 }
 
@@ -199,7 +203,7 @@ export function calculateRevolvingFundReplenishmentEntryTaxFields(
   ewtCode = "",
 ): Pick<
   RevolvingFundReplenishmentEntry,
-  "netAmount" | "vatPercent" | "vatAmount" | "ewtPercent" | "ewtAmount"
+  "netAmount" | "vatPercent" | "vatAmount" | "ewtPercent" | "ewtAmount" | "disburseAmount"
 > {
   const amount = roundRevolvingFundReplenishmentTaxAmount(parseMoneyNumberInput(amountValue));
   const vatPercent = getRevolvingFundReplenishmentVatPercent(vatType);
@@ -213,6 +217,7 @@ export function calculateRevolvingFundReplenishmentEntryTaxFields(
     vatAmount: formatRevolvingFundReplenishmentAmount(vatAmount),
     ewtPercent: ewtPercent ? `${formatRevolvingFundReplenishmentAmount(ewtPercent)}%` : "",
     ewtAmount: formatRevolvingFundReplenishmentAmount(ewtAmount),
+    disburseAmount: formatRevolvingFundReplenishmentAmount(Math.max(amount - ewtAmount, 0)),
   };
 }
 

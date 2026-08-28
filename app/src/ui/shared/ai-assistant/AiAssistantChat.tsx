@@ -167,8 +167,8 @@ export function AiAssistantChat() {
                 <p
                   className={
                     message.role === "user"
-                      ? "theme-accent-contrast-text max-w-[85%] rounded-lg bg-skyblue px-3 py-2 text-sm leading-5"
-                      : "max-w-[85%] rounded-lg border border-[color-mix(in_srgb,var(--skyblue)_24%,transparent)] bg-[color-mix(in_srgb,var(--skyblue)_10%,var(--background))] px-3 py-2 text-sm leading-5 text-[var(--foreground)]"
+                      ? "theme-accent-contrast-text max-w-[85%] whitespace-pre-wrap rounded-lg bg-skyblue px-3 py-2 text-sm leading-5"
+                      : "max-w-[85%] whitespace-pre-wrap rounded-lg border border-[color-mix(in_srgb,var(--skyblue)_24%,transparent)] bg-[color-mix(in_srgb,var(--skyblue)_10%,var(--background))] px-3 py-2 text-sm leading-5 text-[var(--foreground)]"
                   }
                 >
                   {message.content}

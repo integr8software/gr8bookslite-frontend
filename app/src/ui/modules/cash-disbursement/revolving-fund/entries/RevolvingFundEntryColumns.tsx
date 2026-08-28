@@ -19,6 +19,7 @@ import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-da
 import { ModuleDataEntryDropdownCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryDropdownCell";
 import { ModuleDataEntryInputCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryInputCell";
 import { ModuleDataEntryMoneyCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryMoneyCell";
+import { ModuleDataEntryRemarksCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryRemarksCell";
 import { ModuleDataEntryReadonlyCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryReadonlyCell";
 
 export function createRevolvingFundItemColumns(
@@ -139,7 +140,23 @@ export function createRevolvingFundItemColumns(
     },
     orNo: text("orNo"),
     tinNo: text("tinNo"),
-    remarks: text("remarks"),
+    particulars: {
+      header: labels.particulars,
+      id: "particulars",
+      width: widths.particulars,
+      widthClassName: "w-auto",
+      renderCell: (row, _index, context) => (
+        <ModuleDataEntryRemarksCell
+          inputId={context.fieldId}
+          inputName={context.fieldName}
+          isReadonly={page.isReadonly}
+          dialogTitle="Particulars"
+          value={row.particulars ?? row.remarks ?? ""}
+          textareaId={`${context.fieldId}-dialog`}
+          onChange={(value) => page.updateItem(row.id, { particulars: value, remarks: value })}
+        />
+      ),
+    },
     amount: money("amount", (row, value) =>
       page.updateItem(row.id, {
         amount: value,
@@ -193,6 +210,7 @@ export function createRevolvingFundItemColumns(
     ewtPercent: calculatedMoney("ewtPercent"),
     ewtAmount: calculatedMoney("ewtAmount"),
     netAmount: calculatedMoney("netAmount"),
+    disburseAmount: calculatedMoney("disburseAmount"),
     grossAmount: money("grossAmount"),
     responsibilityCenterCode: {
       header: labels.responsibilityCenterCode,
@@ -256,6 +274,6 @@ export function createRevolvingFundAccountingColumns(
     credit: column("credit"),
     partyCode: column("partyCode"),
     partyName: column("partyName"),
-    remarks: column("remarks"),
+    particulars: column("particulars"),
   };
 }

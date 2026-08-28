@@ -135,6 +135,7 @@ export const CashVoucherInitialEntryDraft: CashVoucherEntryDraft = {
 export function createBlankCashVoucherLineEntry(overrides: Partial<CashVoucherLineEntry> = {}): CashVoucherLineEntry {
   const refId = overrides.refId ?? "";
   const responsibilityCenter = overrides.responsibilityCenter ?? "";
+  const particulars = overrides.particulars ?? overrides.remarks ?? "";
 
   return {
     accountCode: "",
@@ -146,7 +147,8 @@ export function createBlankCashVoucherLineEntry(overrides: Partial<CashVoucherLi
     credit: 0,
     debit: 0,
     id: `line-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    remarks: "",
+    particulars,
+    remarks: particulars,
     partyCode: "",
     partyName: "",
     refId,
@@ -436,6 +438,7 @@ export const MockCashVouchers: CashVoucherRecord[] = [
         id: "entry-1005",
         accountCode: "6150-017",
         accountName: "Travel and Transportation",
+        particulars: "Field travel reimbursement",
         remarks: "Field travel reimbursement",
         debit: 3200,
         credit: 0,
@@ -447,6 +450,7 @@ export const MockCashVouchers: CashVoucherRecord[] = [
         id: "entry-1006",
         accountCode: "1001111",
         accountName: "Cash on Hand",
+        particulars: "Cash reimbursement release",
         remarks: "Cash reimbursement release",
         debit: 0,
         credit: 3200,
@@ -505,7 +509,7 @@ export function sanitizeCashVoucherRecord(voucher: CashVoucherRecord): CashVouch
 
 function normalizeGeneratedCashVoucherRemarks(entries: CashVoucherLineEntry[]) {
   const sourceEntry = entries.find((entry) => !isGeneratedCashVoucherLineEntry(entry));
-  const sourceRemarks = sourceEntry?.remarks.trim() ?? "";
+  const sourceRemarks = (sourceEntry?.particulars || sourceEntry?.remarks || "").trim();
   const sourceCreatedRemarks = sourceEntry?.accountName.trim() ?? "";
   const hasUserRemarks = sourceRemarks !== "" && sourceRemarks !== sourceCreatedRemarks;
 
@@ -514,13 +518,16 @@ function normalizeGeneratedCashVoucherRemarks(entries: CashVoucherLineEntry[]) {
   }
 
   return entries.map((entry) => {
-    if (!isGeneratedCashVoucherLineEntry(entry) || !hasGeneratedCashVoucherRemarkPrefix(entry.remarks)) {
+    const entryRemarks = entry.particulars || entry.remarks || "";
+    if (!isGeneratedCashVoucherLineEntry(entry) || !hasGeneratedCashVoucherRemarkPrefix(entryRemarks)) {
       return entry;
     }
 
+    const nextRemarks = stripGeneratedCashVoucherRemarkPrefix(entryRemarks, sourceRemarks);
     return {
       ...entry,
-      remarks: stripGeneratedCashVoucherRemarkPrefix(entry.remarks, sourceRemarks),
+      particulars: nextRemarks,
+      remarks: nextRemarks,
     };
   });
 }
@@ -575,7 +582,7 @@ export const CashVoucherCopySources: CashVoucherCopySource[] = [
   "Cash Advance Multiple Entry",
   "Cash Advance Multiple Entry Liquidation",
   "Petty Cash Fund",
-  "Petty Cash Fund Replenishment",
+  "Petty Cash Replenishment",
   "Revolving Fund",
   "Revolving Fund Replenishment",
   "Revolving Fund Return",
@@ -599,7 +606,7 @@ const CashVoucherCopySourceMockDefinitions: Array<{
   { source: "Cash Advance Multiple Entry", prefix: "CAME", partyCode: "EMP-102", payee: "Jose Ramirez", amount: 8800, purpose: "Department cash advances" },
   { source: "Cash Advance Multiple Entry Liquidation", prefix: "MEL", partyCode: "EMP-117", payee: "Angela Cruz", amount: 7650, purpose: "Multiple advance liquidation" },
   { source: "Petty Cash Fund", prefix: "PCF", partyCode: "EMP-128", payee: "Arjay Capili", amount: 5000, purpose: "Petty cash fund establishment" },
-  { source: "Petty Cash Fund Replenishment", prefix: "PCFR", partyCode: "EMP-136", payee: "Finance Cashier", amount: 9450, purpose: "Petty cash replenishment" },
+  { source: "Petty Cash Replenishment", prefix: "PCR", partyCode: "EMP-136", payee: "Finance Cashier", amount: 9450, purpose: "Petty cash replenishment" },
   { source: "Revolving Fund", prefix: "RF", partyCode: "EMP-145", payee: "Operations Custodian", amount: 15000, purpose: "Revolving fund release" },
   { source: "Revolving Fund Replenishment", prefix: "RFR", partyCode: "EMP-152", payee: "Branch Cashier", amount: 11250, purpose: "Revolving fund replenishment" },
   { source: "Revolving Fund Return", prefix: "RFRET", partyCode: "EMP-166", payee: "Regional Custodian", amount: 6250, purpose: "Unused revolving fund return" },
@@ -918,7 +925,8 @@ export function createCashVoucherLineEntry(draft: CashVoucherEntryDraft): CashVo
     accountCode: draft.accountCode.trim(),
     accountName: draft.accountName.trim(),
     ewtCode: taxDetails.ewtCode,
-    remarks: draft.remarks.trim(),
+    particulars: (draft.particulars ?? draft.remarks ?? "").trim(),
+    remarks: draft.remarks?.trim() ?? "",
     partyCode: draft.partyCode?.trim() ?? "",
     partyName: draft.partyName?.trim() ?? "",
     refId: taxDetails.refId,
@@ -964,6 +972,7 @@ export function createAutoCashVoucherLineEntries(
       accountCode: debitAccount.accountCode,
       accountName: debitAccount.accountName,
       ewtCode: "",
+      particulars: transaction.purpose || debitAccount.accountName,
       remarks: transaction.purpose || debitAccount.accountName,
       ...commonFields,
       debit: taxDetails.netAmount,
@@ -984,6 +993,7 @@ export function createAutoCashVoucherLineEntries(
       accountCode: InputVatAccount.accountCode,
       accountName: InputVatAccount.accountName,
       ewtCode: "",
+      particulars: generatedRemarks.inputVat,
       remarks: generatedRemarks.inputVat,
       ...commonFields,
       debit: taxDetails.vatAmount,
@@ -1004,6 +1014,7 @@ export function createAutoCashVoucherLineEntries(
       accountCode: ExpandedWithholdingTaxAccount.accountCode,
       accountName: ExpandedWithholdingTaxAccount.accountName,
       ewtCode: taxDetails.ewtCode,
+      particulars: generatedRemarks.ewt,
       remarks: generatedRemarks.ewt,
       ...commonFields,
       debit: 0,
@@ -1023,6 +1034,7 @@ export function createAutoCashVoucherLineEntries(
     accountCode: creditAccount.accountCode,
     accountName: creditAccount.accountName,
     ewtCode: "",
+    particulars: generatedRemarks.settlement,
     remarks: generatedRemarks.settlement,
     ...commonFields,
     debit: 0,

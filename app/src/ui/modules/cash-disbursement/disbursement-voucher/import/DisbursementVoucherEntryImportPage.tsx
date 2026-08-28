@@ -446,15 +446,19 @@ export function DisbursementVoucherEntryImportPage() {
                   className={gridCellControlClassName("text-right tabular-nums")}
                 />
               );
-            case "remarks":
+            case "particulars":
               return (
                 <ModuleDataEntryRemarksCell
                   inputId={fieldId}
                   inputName={fieldId}
                   isReadonly={false}
-                  value={row.remarks}
+                  dialogTitle="Particulars"
+                  value={row.particulars ?? row.remarks ?? ""}
                   textareaId={`${fieldId}-dialog`}
-                  onChange={(value) => updateRowField(row.id, "remarks", value)}
+                  onChange={(value) => {
+                    updateRowField(row.id, "particulars", value);
+                    updateRowField(row.id, "remarks", value);
+                  }}
                 />
               );
           }

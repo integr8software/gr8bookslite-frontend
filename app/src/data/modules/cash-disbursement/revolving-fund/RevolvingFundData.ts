@@ -83,6 +83,7 @@ export function createBlankRevolvingFundItem(): RevolvingFundItem {
     supplierName: "",
     orNo: "",
     tinNo: "",
+    particulars: "",
     remarks: "",
     amount: "",
     netAmount: "",
@@ -91,6 +92,7 @@ export function createBlankRevolvingFundItem(): RevolvingFundItem {
     ewtCode: "",
     ewtPercent: "",
     ewtAmount: "",
+    disburseAmount: "",
     type: "",
     vatType: "",
     grossAmount: "",
@@ -169,9 +171,10 @@ export function calculateRevolvingFundTotals(items: RevolvingFundItem[]) {
       netAmount: totals.netAmount + parseMoneyNumberInput(item.netAmount),
       vatAmount: totals.vatAmount + parseMoneyNumberInput(item.vatAmount),
       ewtAmount: totals.ewtAmount + parseMoneyNumberInput(item.ewtAmount),
+      disburseAmount: totals.disburseAmount + parseMoneyNumberInput(item.disburseAmount),
       grossAmount: totals.grossAmount + parseMoneyNumberInput(item.grossAmount),
     }),
-    { amount: 0, netAmount: 0, vatAmount: 0, ewtAmount: 0, grossAmount: 0 },
+    { amount: 0, netAmount: 0, vatAmount: 0, ewtAmount: 0, disburseAmount: 0, grossAmount: 0 },
   );
 }
 
@@ -179,7 +182,7 @@ export function calculateRevolvingFundItemTaxFields(
   amountValue: string | number,
   vatType = "",
   ewtCode = "",
-): Pick<RevolvingFundItem, "netAmount" | "vatPercent" | "vatAmount" | "ewtPercent" | "ewtAmount" | "grossAmount"> {
+): Pick<RevolvingFundItem, "netAmount" | "vatPercent" | "vatAmount" | "ewtPercent" | "ewtAmount" | "disburseAmount" | "grossAmount"> {
   const amount = roundRevolvingFundTaxAmount(parseMoneyNumberInput(amountValue));
   const vatPercent = getRevolvingFundVatPercent(vatType);
   const ewtPercent = getRevolvingFundEwtPercent(ewtCode);
@@ -195,6 +198,7 @@ export function calculateRevolvingFundItemTaxFields(
     vatAmount: formatRevolvingFundAmount(taxAmounts.vatAmount),
     ewtPercent: ewtPercent ? `${formatRevolvingFundAmount(ewtPercent)}%` : "",
     ewtAmount: formatRevolvingFundAmount(taxAmounts.ewtAmount),
+    disburseAmount: formatRevolvingFundAmount(taxAmounts.totalAmountDue),
     grossAmount: formatRevolvingFundAmount(amount),
   };
 }

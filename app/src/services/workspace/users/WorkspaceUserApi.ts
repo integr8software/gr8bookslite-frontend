@@ -83,6 +83,8 @@ function MapWorkspaceUserFormToRequest(
     companyAssignments: values.companyAssignments.map((assignment) => ({
       companyId: Number(assignment.companyId),
       unitIds: assignment.branchIds.map(Number),
+      role: assignment.role ?? "USER",
+      companyRoleId: assignment.companyRoleId ? Number(assignment.companyRoleId) : null,
     })),
     contactNumber:
       contactNumber && contactNumber !== "+63" ? contactNumber : undefined,
@@ -101,8 +103,14 @@ export function MapWorkspaceUserApiRecord(
       branchIds: assignment.unitIds.map(String),
       branches: assignment.units?.map(MapWorkspaceUserAssignedUnitApiRecord),
       companyId: String(assignment.companyId),
+      role: (assignment as any).role ?? "USER",
+      companyRoleId: (assignment as any).companyRoleId
+        ? String((assignment as any).companyRoleId)
+        : null,
     })),
     companyId: primaryCompanyId ? String(primaryCompanyId) : "",
+
+
     contactNumber: user.contactNumber ?? "",
     email: user.email,
     id: String(user.id),

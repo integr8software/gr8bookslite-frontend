@@ -63,6 +63,14 @@ export type WorkspaceCompanyRecord = {
   billingPaymentMethodId?: string;
   billingPaymentMethodLabel?: string;
   branches?: WorkspaceCompanyBranchRecord[];
+  roles?: WorkspaceCompanyRoleRecord[];
+};
+
+export type WorkspaceCompanyRoleRecord = {
+  id: string;
+  name: string;
+  code: string;
+  unitId?: string | null;
 };
 
 export type WorkspaceCompanyFormValues = {
@@ -105,6 +113,8 @@ export type WorkspaceCompanyFormErrors = Partial<Record<keyof WorkspaceCompanyFo
 export type WorkspaceUserCompanyAssignment = {
   companyId: string;
   branchIds: string[];
+  role?: "ADMIN" | "USER";
+  companyRoleId?: string | null;
   branches?: WorkspaceCompanyBranchRecord[];
 };
 
@@ -133,6 +143,8 @@ export type WorkspaceCompanyUserFormErrors = Partial<Record<keyof WorkspaceCompa
 export type WorkspaceCompanyUserApiAssignment = {
   companyId: number;
   unitIds: number[];
+  role?: "ADMIN" | "USER";
+  companyRoleId?: number | null;
   units?: WorkspaceCompanyUserAssignedUnitApiRecord[];
 };
 

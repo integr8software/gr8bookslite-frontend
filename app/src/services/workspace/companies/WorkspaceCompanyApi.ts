@@ -193,8 +193,15 @@ function MapWorkspaceCompanyApiRecord(company: WorkspaceCompanyApiLike): Workspa
     totalBranches: company.totalUnits ?? 0,
     totalUsers: company.totalUsers ?? 0,
     website: company.website ?? undefined,
+    roles: (company as any).roles?.map((role: any) => ({
+      id: String(role.id),
+      name: role.name,
+      code: role.code,
+      unitId: role.unitId ? String(role.unitId) : null,
+    })) ?? [],
   };
 }
+
 
 
 function MapWorkspaceCompanyUnitApiRecord(unit: WorkspaceCompanyUnitApiLike): WorkspaceCompanyBranchRecord {

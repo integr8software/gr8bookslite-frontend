@@ -109,11 +109,24 @@ export function useWorkspaceUserActionForm(
 			return;
 		}
 
+		const targetCompany = companies.find(
+			(item) => item.id === pendingCompanyId,
+		);
+		const defaultRoleId =
+			targetCompany?.roles?.length === 1
+				? targetCompany.roles[0].id
+				: null;
+
 		setDraftValues((current) => ({
 			...(current ?? values),
 			companyAssignments: [
 				...(current ?? values).companyAssignments,
-				{ companyId: pendingCompanyId, branchIds: [] },
+				{
+					companyId: pendingCompanyId,
+					branchIds: [],
+					role: "USER",
+					companyRoleId: defaultRoleId,
+				},
 			],
 		}));
 		setErrors((current) => ({ ...current, companyAssignments: undefined }));
@@ -124,7 +137,34 @@ export function useWorkspaceUserActionForm(
 		setPendingCompanyId(null);
 	}
 
+
+	function updateCompanyRole(
+		companyId: string,
+		role: "ADMIN" | "USER",
+		companyRoleId?: string | null,
+	) {
+		if (isReadonly) {
+			return;
+		}
+
+		setDraftValues((current) => ({
+			...(current ?? values),
+			companyAssignments: (current ?? values).companyAssignments.map(
+				(assignment) =>
+					assignment.companyId === companyId
+						? {
+								...assignment,
+								role,
+								companyRoleId:
+									role === "ADMIN" ? null : (companyRoleId ?? null),
+							}
+						: assignment,
+			),
+		}));
+	}
+
 	function removeCompanyAssignment(companyId: string) {
+
 		if (isReadonly) {
 			return;
 		}
@@ -269,11 +309,13 @@ export function useWorkspaceUserActionForm(
 		submit,
 		validate,
 		toggleBranchAssignment,
+		updateCompanyRole,
 		updateField,
 		values,
 		confirmCompanyAssignment: addCompanyAssignment,
 	};
 }
+
 
 function isWorkspaceUserEmailTakenError(error: unknown) {
 	return (

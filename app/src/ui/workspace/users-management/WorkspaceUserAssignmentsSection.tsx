@@ -3,7 +3,7 @@
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useState, type MouseEvent } from "react";
-import { Building2, ExternalLink } from "lucide-react";
+import { Building2, ExternalLink, Shield } from "lucide-react";
 import type {
 	WorkspaceCompanyBranchRecord,
 	WorkspaceCompanyRecord,
@@ -37,6 +37,7 @@ export function WorkspaceUserAssignmentsSection({
 	onRemoveCompany,
 	onSelectedCompanyChange,
 	onToggleBranch,
+	onUpdateCompanyRole,
 }: {
 	availableCompanies: WorkspaceCompanyRecord[];
 	branches: WorkspaceCompanyBranchRecord[];
@@ -49,6 +50,11 @@ export function WorkspaceUserAssignmentsSection({
 	onRemoveCompany: (companyId: string) => void;
 	onSelectedCompanyChange: (companyId: string) => void;
 	onToggleBranch: (companyId: string, branchId: string) => void;
+	onUpdateCompanyRole?: (
+		companyId: string,
+		role: "ADMIN" | "USER",
+		companyRoleId?: string | null,
+	) => void;
 }) {
 	const [isOpeningBranchUsers, setIsOpeningBranchUsers] = useState(false);
 
@@ -70,33 +76,50 @@ export function WorkspaceUserAssignmentsSection({
 	return (
 		<WorkspaceManagementSection
 			title="Company & Branch Access"
-			description="Select a company first, then choose the head office, branches, or satellites where this user should appear."
+			description="Manage which companies, head office, branches, and satellites this user can access."
 		>
 			{isOpeningBranchUsers ? (
 				<div className="fixed inset-0 z-[9999]">
 					<MainLoadingScreen message="Opening branch user management..." />
 				</div>
 			) : null}
-			<div className="flex flex-col gap-3 sm:flex-row">
-				<select
-					value={selectedCompanyId}
-					onChange={(event) =>
-						onSelectedCompanyChange(event.target.value)
-					}
-					disabled={isReadonly || availableCompanies.length === 0}
-					className={WorkspaceManagementFieldClassName}
-				>
-					<option value="">Select company</option>
-					{availableCompanies.map((company) => (
-						<option key={company.id} value={company.id}>
-							{company.name}
-						</option>
-					))}
-				</select>
+			<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+				<div className="min-w-0 flex-1">
+					<label
+						htmlFor="workspace-user-company-select"
+						className="sr-only"
+					>
+						Select company
+					</label>
+					<select
+						id="workspace-user-company-select"
+						value={selectedCompanyId}
+						onChange={(event) =>
+							onSelectedCompanyChange(event.target.value)
+						}
+						disabled={
+							isReadonly || availableCompanies.length === 0
+						}
+						className="h-11 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-semibold text-darknavy shadow-sm transition focus:border-skyblue focus:outline-none focus:ring-4 focus:ring-skyblue/15 disabled:cursor-not-allowed disabled:bg-darknavy/5 disabled:text-darknavy/40"
+					>
+						{availableCompanies.length === 0 ? (
+							<option value="">
+								All active companies have been added
+							</option>
+						) : null}
+						{availableCompanies.map((company) => (
+							<option key={company.id} value={company.id}>
+								{company.name}
+							</option>
+						))}
+					</select>
+				</div>
 				<button
 					type="button"
 					onClick={onAddCompany}
-					disabled={isReadonly || !selectedCompanyId}
+					disabled={
+						isReadonly || availableCompanies.length === 0
+					}
 					className="theme-accent-contrast-text inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-lg bg-skyblue px-4 text-sm font-semibold transition hover:bg-skyblue/85 disabled:cursor-not-allowed disabled:bg-skyblue/35 disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
 				>
 					<Building2 className="h-4 w-4" aria-hidden="true" />
@@ -143,6 +166,87 @@ export function WorkspaceUserAssignmentsSection({
 									Remove
 								</button>
 							</div>
+
+							<div className="mt-3 flex flex-wrap items-center gap-3 rounded-lg border border-darknavy/10 bg-offwhite/50 p-3">
+								<div className="flex items-center gap-2">
+									<Shield
+										className="h-4 w-4 text-darknavy/50"
+										aria-hidden="true"
+									/>
+									<label
+										htmlFor={`workspace-user-role-${assignment.companyId}`}
+										className="text-xs font-semibold text-darknavy/70"
+									>
+										Role <span className="text-coralpink">*</span>:
+									</label>
+								</div>
+								{isReadonly ? (
+									<span className="inline-flex rounded-md bg-skyblue/10 px-2.5 py-1 text-xs font-semibold text-darknavy">
+										{assignment.companyRoleId
+											? company?.roles?.find(
+													(r) =>
+														r.id ===
+														assignment.companyRoleId,
+												)?.name ?? "Assigned Role"
+											: "No Role Assigned"}
+									</span>
+								) : (
+									<select
+										id={`workspace-user-role-${assignment.companyId}`}
+										required
+										value={
+											assignment.companyRoleId
+												? `custom:${assignment.companyRoleId}`
+												: ""
+										}
+										onChange={(event) => {
+											const selectedVal =
+												event.target.value;
+											if (
+												selectedVal.startsWith("custom:")
+											) {
+												onUpdateCompanyRole?.(
+													assignment.companyId,
+													"USER",
+													selectedVal.replace(
+														"custom:",
+														"",
+													),
+												);
+											} else {
+												onUpdateCompanyRole?.(
+													assignment.companyId,
+													"USER",
+													null,
+												);
+											}
+										}}
+										className="h-9 rounded-md border border-darknavy/15 bg-white px-3 text-xs font-medium text-darknavy shadow-sm focus:border-skyblue focus:outline-none focus:ring-2 focus:ring-skyblue/20"
+									>
+										<option value="" disabled>
+											{company?.roles &&
+											company.roles.length > 0
+												? "Select Role"
+												: "No roles available (Create in User Roles first)"}
+										</option>
+										{company?.roles &&
+										company.roles.length > 0
+											? company.roles.map((r) => (
+													<option
+														key={r.id}
+														value={`custom:${r.id}`}
+													>
+														{r.name}
+													</option>
+												))
+											: null}
+									</select>
+								)}
+							</div>
+
+
+
+
 							<div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
 								{companyBranches.length === 0 ? (
 									<div className="workspace-user-branch-card rounded-md border px-3 py-2 text-sm font-medium text-darknavy/50">

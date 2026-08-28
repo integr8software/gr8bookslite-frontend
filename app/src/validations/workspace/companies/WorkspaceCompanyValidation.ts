@@ -364,8 +364,18 @@ const WorkspaceCompanyUserSchema = z.object({
 			z.object({
 				branchIds: z
 					.array(z.string())
-					.min(1, "Select at least one head office, branch, or satellite for each company."),
+					.min(
+						1,
+						"Select at least one head office, branch, or satellite for each company.",
+					),
 				companyId: z.string().trim().min(1),
+				companyRoleId: z
+					.string({
+						message: "Select a role for each assigned company.",
+					})
+					.trim()
+					.min(1, "Select a role for each assigned company."),
+
 			}),
 		)
 		.min(1, "Add at least one company."),
@@ -373,6 +383,7 @@ const WorkspaceCompanyUserSchema = z.object({
 	email: EmailSchema,
 	name: z.string().trim().min(1, "Name is required."),
 });
+
 
 export function validateWorkspaceCompanyForm(
 	values: WorkspaceCompanyFormValues,
@@ -418,11 +429,14 @@ export function validateWorkspaceCompanyUserForm(
 		const field = issue.path[issue.path.length - 1];
 
 		if (
-			(field === "companyAssignments" || field === "branchIds") &&
+			(field === "companyAssignments" ||
+				field === "branchIds" ||
+				field === "companyRoleId") &&
 			!errors.companyAssignments
 		) {
 			errors.companyAssignments = issue.message;
 		} else if (field === "email" && !errors.email) {
+
 			errors.email = issue.message;
 		} else if (field === "name" && !errors.name) {
 			errors.name = issue.message;

@@ -133,12 +133,14 @@ export const MockCashAdvanceMultipleEntryRecords: CashAdvanceMultipleEntryRecord
 ];
 
 export function createBlankCashAdvanceMultipleEntryItem(values: Partial<CashAdvanceMultipleEntryItem> = {}): CashAdvanceMultipleEntryItem {
+  const particulars = values.particulars ?? values.remarks ?? "";
   return {
     amount: "",
     cashAdvanceBalance: "",
     cashAdvanceLimit: "",
     id: `came-item-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    remarks: "",
+    particulars,
+    remarks: particulars,
     partyCode: "",
     partyName: "",
     responsibilityCenter: "",
@@ -149,13 +151,15 @@ export function createBlankCashAdvanceMultipleEntryItem(values: Partial<CashAdva
 export function createBlankCashAdvanceMultipleEntryAccountingEntry(
   values: Partial<CashAdvanceMultipleEntryAccountingEntry> = {},
 ): CashAdvanceMultipleEntryAccountingEntry {
+  const particulars = values.particulars ?? values.remarks ?? "";
   return {
     accountCode: "",
     accountTitle: "",
     credit: "",
     debit: "",
     id: `came-accounting-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    remarks: "",
+    particulars,
+    remarks: particulars,
     partyCode: "",
     partyName: "",
     responsibilityCenter: "",

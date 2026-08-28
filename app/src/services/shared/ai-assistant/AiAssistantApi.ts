@@ -1,106 +1,63 @@
-import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import { AppMaxFileUploadSizeBytes, AppMaxFileUploadSizeLabel } from "@/app/src/constants/shared/app/AppConstants";
 import {
-	AppMaxFileUploadSizeBytes,
-	AppMaxFileUploadSizeLabel,
-} from "@/app/src/constants/shared/app/AppConstants";
-import type {
-	AiAssistantChatMessage,
-	AiAssistantChatResponse,
-} from "@/app/src/types/shared/ai-assistant/AiAssistantTypes";
+  aiAssistantControllerChatV1,
+  aiAssistantControllerGetTranscriptionJobV1,
+  aiAssistantControllerTranscribeV1,
+} from "@/app/src/generated/api/ai-assistant/ai-assistant";
+import type { AiAssistantChatDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 
 const AiAssistantTranscriptionRequestTimeoutMs = 30000;
 const AiAssistantTranscriptionPollIntervalMs = 1500;
 const AiAssistantTranscriptionPollTimeoutMs = 120000;
 
-type AiAssistantTranscriptionStatus =
-	| { jobId: string; status: "queued" | "processing" }
-	| { jobId?: string; status: "completed"; transcript: string }
-	| { error: string; jobId: string; status: "failed" };
+export type SendAiAssistantMessageParams = AiAssistantChatDto;
 
-export type SendAiAssistantMessageParams = {
-	message: string;
-	currentPath: string;
-	history: AiAssistantChatMessage[];
-};
-
-export async function SendAiAssistantMessage({
-	currentPath,
-	history,
-	message,
-}: SendAiAssistantMessageParams) {
-	const response = await ApiClient.post<AiAssistantChatResponse>(
-		"/ai-assistant/chat",
-		{
-			currentPath,
-			history,
-			message,
-		},
-	);
-
-	return response.data;
+export async function SendAiAssistantMessage({ currentPath, history, message }: SendAiAssistantMessageParams) {
+  return aiAssistantControllerChatV1({
+    currentPath,
+    history,
+    message,
+  });
 }
 
 export async function TranscribeAiAssistantAudio(audio: Blob) {
-	if (audio.size > AppMaxFileUploadSizeBytes) {
-		throw new Error(
-			`Audio recording must be ${AppMaxFileUploadSizeLabel} or smaller.`,
-		);
-	}
+  if (audio.size > AppMaxFileUploadSizeBytes) {
+    throw new Error(`Audio recording must be ${AppMaxFileUploadSizeLabel} or smaller.`);
+  }
 
-	const formData = new FormData();
-	const extension = audio.type.includes("ogg")
-		? "ogg"
-		: audio.type.includes("wav")
-			? "wav"
-			: "webm";
+  const response = await aiAssistantControllerTranscribeV1({ audio }, {
+    timeout: AiAssistantTranscriptionRequestTimeoutMs,
+  });
 
-	formData.append("audio", audio, `neo-ai-recording.${extension}`);
+  if (response.status === "completed") {
+    return { transcript: response.transcript };
+  }
 
-	const response = await ApiClient.post<AiAssistantTranscriptionStatus>(
-		"/ai-assistant/transcribe",
-		formData,
-		{
-			headers: {
-				"Content-Type": "multipart/form-data",
-			},
-			timeout: AiAssistantTranscriptionRequestTimeoutMs,
-		},
-	);
-
-	if (response.data.status === "completed") {
-		return { transcript: response.data.transcript };
-	}
-
-	if (response.data.status === "failed") {
-		throw new Error(response.data.error);
-	}
-
-	return PollAiAssistantTranscription(response.data.jobId);
+  return PollAiAssistantTranscription(response.jobId);
 }
 
 async function PollAiAssistantTranscription(jobId: string) {
-	const deadline = Date.now() + AiAssistantTranscriptionPollTimeoutMs;
+  const deadline = Date.now() + AiAssistantTranscriptionPollTimeoutMs;
 
-	while (Date.now() < deadline) {
-		await Wait(AiAssistantTranscriptionPollIntervalMs);
+  while (Date.now() < deadline) {
+    await Wait(AiAssistantTranscriptionPollIntervalMs);
 
-		const response = await ApiClient.get<AiAssistantTranscriptionStatus>(
-			`/ai-assistant/transcribe/${encodeURIComponent(jobId)}`,
-			{ timeout: AiAssistantTranscriptionRequestTimeoutMs },
-		);
+    const response = await aiAssistantControllerGetTranscriptionJobV1(jobId, {
+      timeout: AiAssistantTranscriptionRequestTimeoutMs,
+    });
 
-		if (response.data.status === "completed") {
-			return { transcript: response.data.transcript };
-		}
+    if (response.status === "completed") {
+      return { transcript: response.transcript };
+    }
 
-		if (response.data.status === "failed") {
-			throw new Error(response.data.error);
-		}
-	}
+    if (response.status === "failed") {
+      throw new Error(response.error);
+    }
+  }
 
-	throw new Error("Neo AI transcription took too long. Please try again.");
+  throw new Error("Neo AI transcription took too long. Please try again.");
 }
 
 function Wait(durationMs: number) {
-	return new Promise<void>((resolve) => window.setTimeout(resolve, durationMs));
+  return new Promise<void>((resolve) => window.setTimeout(resolve, durationMs));
 }

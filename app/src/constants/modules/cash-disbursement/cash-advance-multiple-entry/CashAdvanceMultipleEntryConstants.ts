@@ -207,19 +207,46 @@ export const CashAdvanceMultipleEntryItemColumnOrder = [
   "partyName",
   "amount",
   "cashAdvanceLimit",
-  "cashAdvanceBalance",
   "totalCashAdvanced",
+  "cashAdvanceBalance",
   "responsibilityCenterCode",
   "responsibilityCenter",
-  "remarks",
+  "particulars",
 ];
+
+export const CashAdvanceMultipleEntryItemColumnLabels: Record<string, string> = {
+  partyCode: "Party Code",
+  partyName: "Party Name",
+  amount: "Cash Advance Amount",
+  cashAdvanceLimit: "Cash Advance Limit",
+  totalCashAdvanced: "Total Cash Advances",
+  cashAdvanceBalance: "Available Cash Advance",
+  responsibilityCenterCode: "Responsibility Center Code",
+  responsibilityCenter: "Responsibility Center",
+  particulars: "Particulars",
+};
+
+export const CashAdvanceMultipleEntryItemColumnWidths: Record<string, number> = {
+  partyCode: 125,
+  partyName: 220,
+  amount: 140,
+  cashAdvanceLimit: 155,
+  totalCashAdvanced: 165,
+  cashAdvanceBalance: 155,
+  responsibilityCenterCode: 155,
+  responsibilityCenter: 165,
+  particulars: 300,
+};
+
+export const CashAdvanceMultipleEntryDetailTablePreferencesStorageKey =
+  "gr8books:cash-advance-multiple-entry:detail-table-preferences";
 
 export const CashAdvanceMultipleEntryDefaultItemColumnIds = [
   "partyName",
   "amount",
+  "cashAdvanceLimit",
+  "totalCashAdvanced",
   "cashAdvanceBalance",
-  "responsibilityCenter",
-  "remarks",
 ];
 
 export const CashAdvanceMultipleEntryProtectedItemColumnIds = new Set(["partyName", "amount"]);

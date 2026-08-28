@@ -45,9 +45,10 @@ export const DefaultExpenseEntryColumnOrder: ExpenseEntryColumnId[] = [
   "ewtCode",
   "ewtPercent",
   "ewtAmount",
+  "disburseAmount",
   "responsibilityCenterCode",
   "responsibilityCenter",
-  "remarks",
+  "particulars",
   "refId",
 ];
 
@@ -55,8 +56,7 @@ export const DefaultVisibleExpenseEntryColumnOrder: ExpenseEntryColumnId[] = [
   "partyName",
   "expenseType",
   "amount",
-  "vatCode",
-  "ewtCode",
+  "disburseAmount",
 ];
 
 export const ProtectedExpenseEntryColumnIds = new Set<ExpenseEntryColumnId>(["expenseType", "amount"]);
@@ -66,7 +66,7 @@ export const DisbursementAccountingGridTaxRateOptions = ["0%", "1%", "2%", "5%",
 export const DefaultDisbursementAccountingGridColumnOrder: DisbursementAccountingGridColumnId[] = [
   "accountCode",
   "accountName",
-  "remarks",
+  "particulars",
   "taxRate",
   "debit",
   "credit",
@@ -84,7 +84,7 @@ export const DefaultDisbursementAccountingGridColumnLabels: Record<DisbursementA
   accountName: "Account Name",
   credit: "Credit",
   debit: "Debit",
-  remarks: "Remarks",
+  particulars: "Particulars",
   taxRate: "Tax Rate",
 };
 
@@ -93,11 +93,11 @@ export const DefaultDisbursementAccountingGridColumnWidths: Record<DisbursementA
   accountName: 210,
   credit: 140,
   debit: 140,
-  remarks: 260,
+  particulars: 260,
   taxRate: 125,
 };
 
-export const DisbursementAccountingImportTemplateHeaders = ["Account Code", "Account Name", "Remarks", "Tax Rate", "Debit", "Credit"];
+export const DisbursementAccountingImportTemplateHeaders = ["Account Code", "Account Name", "Particulars", "Tax Rate", "Debit", "Credit"];
 
 export const DisbursementAccountingImportTemplateRows = [
   ["2010-003", "Accounts Payable", "Settlement of approved office depot payable", "0%", "", "18450.00"],
@@ -111,7 +111,7 @@ export const DisbursementAccountingExportColumnWidths: Record<DisbursementAccoun
   accountName: 30,
   credit: 18,
   debit: 18,
-  remarks: 44,
+  particulars: 44,
   taxRate: 14,
 };
 
@@ -139,9 +139,10 @@ export const ExpenseEntryColumnLabels: Record<ExpenseEntryColumnId, string> = {
   ewtCode: "EWT Code",
   ewtPercent: "EWT Rate",
   ewtAmount: "EWT Amount",
+  disburseAmount: "Disburse Amount",
   partyCode: "Party Code",
   partyName: "Party Name",
-  remarks: "Remarks",
+  particulars: "Particulars",
   refId: "Reference No",
   responsibilityCenter: "Responsibility Center",
   responsibilityCenterCode: "Responsibility Center Code",
@@ -163,9 +164,10 @@ export const DefaultExpenseEntryColumnWidths: Record<ExpenseEntryColumnId, numbe
   ewtCode: 175,
   ewtPercent: 115,
   ewtAmount: 155,
+  disburseAmount: 165,
   responsibilityCenterCode: 240,
   responsibilityCenter: 235,
-  remarks: 260,
+  particulars: 260,
   refId: 170,
 };
 
@@ -180,7 +182,7 @@ export const DefaultDisbursementEntryColumnOrder: DisbursementEntryColumnId[] = 
   "ewtCode",
   "responsibilityCenterCode",
   "responsibilityCenter",
-  "remarks",
+  "particulars",
   "refId",
 ];
 
@@ -202,7 +204,7 @@ export const DisbursementEntryColumnLabels: Record<DisbursementEntryColumnId, st
   checkDate: "Check Date",
   checkNo: "Check No.",
   checkStatus: "Check Status",
-  remarks: "Remarks",
+  particulars: "Particulars",
   partyCode: "Party Code",
   partyName: "Party Name",
   refId: "Reference No",
@@ -224,7 +226,7 @@ export const DefaultDisbursementEntryColumnWidths: Record<DisbursementEntryColum
   ewtCode: 175,
   responsibilityCenterCode: 240,
   responsibilityCenter: 235,
-  remarks: 260,
+  particulars: 260,
   refId: 170,
   checkDate: 155,
   checkNo: 150,
@@ -237,3 +239,6 @@ export const InputVatAccountName = "Input VAT";
 export const ExpandedWithholdingTaxAccountCode = "2010002002";
 export const ExpandedWithholdingTaxAccountName = "Expanded Withholding Tax";
 export const MultiCheckColumnIds = new Set<string>(["checkNo", "checkStatus", "checkDate"]);
+
+export const DisbursementVoucherDetailTablePreferencesStorageKey = "gr8books:disbursement-voucher:detail-table-preferences";
+export const DisbursementVoucherAccountingTablePreferencesStorageKey = "gr8books:disbursement-voucher:accounting-table-preferences";

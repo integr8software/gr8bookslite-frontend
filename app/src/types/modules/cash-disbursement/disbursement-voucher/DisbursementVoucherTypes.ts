@@ -61,7 +61,7 @@ export type DisbursementVoucherCopySource =
   | "Cash Advance Multiple Entry"
   | "Cash Advance Multiple Entry Liquidation"
   | "Petty Cash Fund"
-  | "Petty Cash Fund Replenishment"
+  | "Petty Cash Replenishment"
   | "Revolving Fund"
   | "Revolving Fund Replenishment"
   | "Revolving Fund Return"
@@ -144,7 +144,8 @@ export type DisbursementLineEntry = {
   refId?: string;
   vatType?: string;
   ewtCode?: string;
-  remarks: string;
+  particulars: string;
+  remarks?: string;
   debit: number;
   credit: number;
   taxRate: string;
@@ -268,7 +269,8 @@ export type DisbursementVoucherEntryDraft = {
   refId?: string;
   vatType?: string;
   ewtCode?: string;
-  remarks: string;
+  particulars?: string;
+  remarks?: string;
   debit: string;
   credit: string;
   taxRate: string;

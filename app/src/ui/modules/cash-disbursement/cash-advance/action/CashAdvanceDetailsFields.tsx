@@ -226,8 +226,8 @@ function CashAdvancePrimaryFields({
 }) {
   const cashAdvanceLimit = form.values.cashAdvanceLimit?.trim();
   const cashAdvanceBalance = form.values.cashAdvanceBalance?.trim();
-  const cashAdvanceLimitDisplay = cashAdvanceLimit ? formatMoneyNumberDisplayValue(cashAdvanceLimit) : "No limit";
-  const cashAdvanceBalanceDisplay = cashAdvanceBalance ? formatMoneyNumberDisplayValue(cashAdvanceBalance) : "No limit";
+  const cashAdvanceLimitDisplay = cashAdvanceLimit ? formatMoneyNumberDisplayValue(cashAdvanceLimit) : "Unlimited";
+  const cashAdvanceBalanceDisplay = cashAdvanceBalance ? formatMoneyNumberDisplayValue(cashAdvanceBalance) : "Unlimited";
   const totalCashAdvancedDisplay = formatMoneyNumberDisplayValue(String(totalAdvanced));
 
   return (
@@ -383,7 +383,7 @@ function CashAdvancePrimaryFields({
           }
         />
 
-        <TransactionField label="Amount" isRequired>
+        <TransactionField label="Cash Advance Amount" isRequired>
           <MoneyNumberField
             min="0"
             value={form.values.amount}
@@ -423,18 +423,18 @@ function CashAdvancePrimaryFields({
           />
         </TransactionField>
 
-        <TransactionField label="Cash Advance Balance">
+        <TransactionField label="Total Cash Advances">
           <input
             className={`${TransactionFieldClassName} transaction-readonly-placeholder text-right tabular-nums`}
-            value={cashAdvanceBalanceDisplay}
+            value={totalCashAdvancedDisplay}
             readOnly
           />
         </TransactionField>
 
-        <TransactionField label="Total Cash Advanced">
+        <TransactionField label="Available Cash Advance">
           <input
             className={`${TransactionFieldClassName} transaction-readonly-placeholder text-right tabular-nums`}
-            value={totalCashAdvancedDisplay}
+            value={cashAdvanceBalanceDisplay}
             readOnly
           />
         </TransactionField>

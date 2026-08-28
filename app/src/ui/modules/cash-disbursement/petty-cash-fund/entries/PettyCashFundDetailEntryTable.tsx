@@ -183,6 +183,7 @@ export function PettyCashFundDetailEntryTable({
         netAmount: formatPettyCashFundAmount(page.totals.netAmount),
         vatAmount: formatPettyCashFundAmount(page.totals.vatAmount),
         ewtAmount: formatPettyCashFundAmount(page.totals.ewtAmount),
+        disburseAmount: formatPettyCashFundAmount(page.totals.disburseAmount),
       }}
     />
   );

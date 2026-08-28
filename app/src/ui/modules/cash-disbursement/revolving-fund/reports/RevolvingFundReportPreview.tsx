@@ -57,7 +57,7 @@ export function RevolvingFundReportPreview({
                 <th className="px-3 py-2 text-right">EWT Rate</th>
                 <th className="px-3 py-2 text-right">EWT Amount</th>
                 <th className="px-3 py-2 text-right">Net Amount</th>
-                <th className="px-3 py-2 text-left">Remarks</th>
+                <th className="px-3 py-2 text-left">Particulars</th>
               </tr>
             </thead>
             <tbody>
@@ -73,7 +73,7 @@ export function RevolvingFundReportPreview({
                   <td className="px-3 py-2 text-right tabular-nums">{item.ewtPercent}</td>
                   <td className="px-3 py-2 text-right tabular-nums">{formatCurrency(Number(item.ewtAmount.replace(/,/g, "")) || 0)}</td>
                   <td className="px-3 py-2 text-right tabular-nums">{formatCurrency(Number(item.netAmount.replace(/,/g, "")) || 0)}</td>
-                  <td className="px-3 py-2">{item.remarks}</td>
+                  <td className="px-3 py-2">{item.particulars || item.remarks || ""}</td>
                 </tr>
               ))}
             </tbody>

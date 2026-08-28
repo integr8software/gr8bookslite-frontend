@@ -183,6 +183,7 @@ export function RevolvingFundDetailEntryTable({
         netAmount: formatRevolvingFundAmount(page.totals.netAmount),
         vatAmount: formatRevolvingFundAmount(page.totals.vatAmount),
         ewtAmount: formatRevolvingFundAmount(page.totals.ewtAmount),
+        disburseAmount: formatRevolvingFundAmount(page.totals.disburseAmount),
       }}
     />
   );

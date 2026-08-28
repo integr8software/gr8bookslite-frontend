@@ -302,3 +302,6 @@ export function createEwtOptions(
 
   return Array.from(options.values());
 }
+
+export const DefaultAccountingEntryVatOptions: AppAdvancedDropdownOption[] = createVatOptions([]);
+export const DefaultAccountingEntryEwtOptions: AppAdvancedDropdownOption[] = createEwtOptions([]);

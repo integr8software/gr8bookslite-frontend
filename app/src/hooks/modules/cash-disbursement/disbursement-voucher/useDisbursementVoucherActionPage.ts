@@ -177,7 +177,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
         .filter((entry) => !isGeneratedAccountingEntry(entry))
         .map((entry) =>
           !blankRemarksEntryIdsRef.current.has(entry.id) && shouldEntryRemarksFollowHeader(entry, current.remarks)
-            ? { ...entry, remarks: nextRemarks }
+            ? { ...entry, particulars: nextRemarks, remarks: nextRemarks }
             : entry,
         );
       const bankAccount = bankAccounts.find(
@@ -398,10 +398,13 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   function handleUpdateEntryFields(entryId: string, updates: Partial<DisbursementLineEntry>) {
     const sourceEntry = values.lineEntries.find((entry) => entry.id === entryId);
     const isEditableExpenseEntry = sourceEntry !== undefined && !isGeneratedAccountingEntry(sourceEntry);
-    const hasRemarksUpdate = Object.prototype.hasOwnProperty.call(updates, "remarks");
+    const hasRemarksUpdate =
+      Object.prototype.hasOwnProperty.call(updates, "particulars") ||
+      Object.prototype.hasOwnProperty.call(updates, "remarks");
+    const updatedRemarksValue = updates.particulars !== undefined ? updates.particulars : updates.remarks;
 
     if (isEditableExpenseEntry && hasRemarksUpdate) {
-      if (String(updates.remarks ?? "") === "") {
+      if (String(updatedRemarksValue ?? "") === "") {
         blankRemarksEntryIdsRef.current.add(entryId);
       } else {
         blankRemarksEntryIdsRef.current.delete(entryId);
@@ -409,7 +412,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     }
 
     if (sourceEntry && isGeneratedAccountingEntry(sourceEntry) && hasRemarksUpdate) {
-      generatedRemarksOverridesRef.current[entryId] = String(updates.remarks ?? "");
+      generatedRemarksOverridesRef.current[entryId] = String(updatedRemarksValue ?? "");
     }
 
     const nextEntries = values.lineEntries.map((entry) => {
@@ -710,7 +713,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
 }
 
 function shouldEntryRemarksFollowHeader(entry: DisbursementLineEntry, previousHeaderRemarks: string) {
-  const normalizedEntryRemarks = entry.remarks.trim();
+  const normalizedEntryRemarks = (entry.particulars || entry.remarks || "").trim();
   const normalizedHeaderRemarks = previousHeaderRemarks.trim();
   const normalizedCreatedRemarks = entry.accountName.trim();
 

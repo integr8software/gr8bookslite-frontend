@@ -21,7 +21,7 @@ export type DisbursementEntryColumnId =
   | "checkStatus"
   | "partyCode"
   | "partyName"
-  | "remarks"
+  | "particulars"
   | "refId"
   | "responsibilityCenter"
   | "responsibilityCenterCode"
@@ -45,9 +45,10 @@ export type ExpenseEntryColumnId =
   | "ewtCode"
   | "ewtPercent"
   | "ewtAmount"
+  | "disburseAmount"
   | "partyCode"
   | "partyName"
-  | "remarks"
+  | "particulars"
   | "responsibilityCenter"
   | "responsibilityCenterCode"
   | "refId";
@@ -91,6 +92,7 @@ export type DisbursementAccountingEntryColumnsParams = {
   chartAccounts: ModuleChartAccount[];
   columnLabels: Record<DisbursementEntryColumnId, string>;
   columnWidths: Record<DisbursementEntryColumnId, number>;
+  ewtOptions?: AppAdvancedDropdownOption[];
   isReadonly: boolean;
   onAddPartyName: () => void;
   onUpdateEntry: DisbursementEntryUpdater;
@@ -165,12 +167,13 @@ export type EditableDisbursementAccountingGridRow = {
   credit: string;
   debit: string;
   id: string;
-  remarks: string;
+  particulars: string;
+  remarks?: string;
   taxDetails: DisbursementTaxDetails;
   taxRate: string;
 };
 
-export type DisbursementAccountingGridColumnId = "accountCode" | "accountName" | "remarks" | "taxRate" | "debit" | "credit";
+export type DisbursementAccountingGridColumnId = "accountCode" | "accountName" | "particulars" | "taxRate" | "debit" | "credit";
 
 export type DisbursementAccountingExportTheme = {
   accentColor: string;

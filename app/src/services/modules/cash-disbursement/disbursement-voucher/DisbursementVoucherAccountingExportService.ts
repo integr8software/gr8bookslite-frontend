@@ -243,7 +243,7 @@ function getPdfColumnTotal(bodyRows: string[][], visibleColumnIds: GridColumnId[
 }
 
 function getPdfColumnWidth(columnId: GridColumnId) {
-  if (columnId === "remarks") {
+  if (columnId === "particulars") {
     return "*";
   }
 

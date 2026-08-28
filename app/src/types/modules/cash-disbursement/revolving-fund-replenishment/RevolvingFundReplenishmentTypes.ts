@@ -35,12 +35,14 @@ export type RevolvingFundReplenishmentEntry = {
   ewtCode: string;
   ewtPercent: string;
   ewtAmount: string;
+  disburseAmount: string;
   responsibilityCenterCode: string;
   responsibilityCenterName: string;
-  remarks: string;
+  particulars: string;
+  remarks?: string;
 };
 
-export type RevolvingFundReplenishmentEntryColumnId = Exclude<keyof RevolvingFundReplenishmentEntry, "id">;
+export type RevolvingFundReplenishmentEntryColumnId = Exclude<keyof RevolvingFundReplenishmentEntry, "id" | "remarks">;
 
 export type RevolvingFundReplenishmentAccountingEntry = {
   id: string;
@@ -50,10 +52,11 @@ export type RevolvingFundReplenishmentAccountingEntry = {
   credit: string;
   partyCode: string;
   partyName: string;
-  remarks: string;
+  particulars: string;
+  remarks?: string;
 };
 
-export type RevolvingFundReplenishmentAccountingColumnId = Exclude<keyof RevolvingFundReplenishmentAccountingEntry, "id">;
+export type RevolvingFundReplenishmentAccountingColumnId = Exclude<keyof RevolvingFundReplenishmentAccountingEntry, "id" | "remarks">;
 
 export type RevolvingFundReplenishmentDetailEntryColumnsParams = {
   columnLabels: Record<RevolvingFundReplenishmentEntryColumnId, string>;

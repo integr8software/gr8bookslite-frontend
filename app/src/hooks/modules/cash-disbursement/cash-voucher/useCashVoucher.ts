@@ -28,15 +28,9 @@ import { getModuleStatusMetricIcon, getModuleStatusMetricIconClassName } from "@
 import type { ModuleStatisticCardItem } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { formatPartOfTotalPercentage } from "@/app/src/utils/percentage.util";
 import {
-  getSeedCashVoucherTransactions,
-  getSeedCashVouchers,
-  readStoredCashVoucherTransactions,
-  readStoredCashVouchers,
   getCashVoucherDisplayStatus,
   buildCashVoucherPreviewRows,
   sanitizeCashVoucherRecord,
-  writeStoredCashVoucherTransactions,
-  writeStoredCashVouchers,
 } from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherData";
 import { normalizeLowercaseWhitespace } from "@/app/src/utils/string.util";
 import type {
@@ -51,116 +45,60 @@ import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateR
 import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import { useTablePreferences } from "@/app/src/hooks/shared/table-preferences/useTablePreferences";
-
-function getInitialTransactions() {
-  return readStoredCashVoucherTransactions() ?? getSeedCashVoucherTransactions();
-}
-
-function getInitialVouchers() {
-  return readStoredCashVouchers() ?? getSeedCashVouchers();
-}
+import {
+  deleteCashVoucherApi,
+  fetchCashVoucherList,
+  updateCashVoucherStatusApi,
+} from "@/app/src/services/modules/cash-disbursement/cash-voucher/CashVoucherApi";
 
 export function useCashVoucherStore<TSelected = CashVoucherStoreState>(
   selector?: (state: CashVoucherStoreState) => TSelected,
 ) {
   const queryClient = useQueryClient();
-  const transactionsQuery = useQuery({
-    queryKey: CashVoucherQueryKeys.transactions(),
-    queryFn: async () => getInitialTransactions(),
-    initialData: getInitialTransactions,
-  });
+
   const vouchersQuery = useQuery({
     queryKey: CashVoucherQueryKeys.vouchers(),
-    queryFn: async () => getInitialVouchers(),
-    initialData: getInitialVouchers,
+    queryFn: async () => {
+      try {
+        const response = await fetchCashVoucherList({ limit: 500 });
+        return response.data;
+      } catch {
+        return [];
+      }
+    },
+    initialData: [],
   });
+
   const refreshRecords = useCallback(() => {
-    void Promise.all([
-      queryClient.refetchQueries({ queryKey: CashVoucherQueryKeys.transactions(), exact: true }),
-      queryClient.refetchQueries({ queryKey: CashVoucherQueryKeys.vouchers(), exact: true }),
-    ]);
+    void queryClient.refetchQueries({ queryKey: CashVoucherQueryKeys.vouchers() });
   }, [queryClient]);
 
-  function updateCachedVouchers(updater: (vouchers: CashVoucherRecord[]) => CashVoucherRecord[]) {
-    queryClient.setQueryData<CashVoucherRecord[]>(
-      CashVoucherQueryKeys.vouchers(),
-      (currentVouchers = getInitialVouchers()) => {
-        const nextVouchers = updater(currentVouchers.map(sanitizeCashVoucherRecord)).map(sanitizeCashVoucherRecord);
-
-        writeStoredCashVouchers(nextVouchers);
-
-        return nextVouchers;
-      },
-    );
-  }
-
-  function updateCachedTransactions(updater: (transactions: CashVoucherTransactionRecord[]) => CashVoucherTransactionRecord[]) {
-    queryClient.setQueryData<CashVoucherTransactionRecord[]>(
-      CashVoucherQueryKeys.transactions(),
-      (currentTransactions = getInitialTransactions()) => {
-        const nextTransactions = updater(currentTransactions);
-
-        writeStoredCashVoucherTransactions(nextTransactions);
-
-        return nextTransactions;
-      },
-    );
-  }
-
-  const addTransactionMutation = useMutation({
-    mutationFn: async (transaction: CashVoucherTransactionRecord) => transaction,
-    onSuccess: (transaction) => {
-      updateCachedTransactions((transactions) => {
-        if (transactions.some((currentTransaction) => currentTransaction.id === transaction.id)) {
-          return transactions.map((currentTransaction) => (currentTransaction.id === transaction.id ? transaction : currentTransaction));
-        }
-
-        return [transaction, ...transactions];
-      });
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: CashVoucherStatus }) => {
+      return await updateCashVoucherStatusApi(id, status);
     },
-    onError: () => {
-      toast.error("Could not save Cash Voucher. Please try again.");
-    },
-  });
-
-  const updateTransactionMutation = useMutation({
-    mutationFn: async (transaction: CashVoucherTransactionRecord) => transaction,
-    onSuccess: (transaction) => {
-      updateCachedTransactions((transactions) =>
-        transactions.map((currentTransaction) => (currentTransaction.id === transaction.id ? transaction : currentTransaction)),
+    onSuccess: (updated) => {
+      queryClient.setQueryData<CashVoucherRecord[]>(CashVoucherQueryKeys.vouchers(), (current = []) =>
+        current.map((v) => (v.id === updated.id ? updated : v)),
       );
+      void queryClient.invalidateQueries({ queryKey: CashVoucherQueryKeys.vouchers() });
+      toast.success("Cash Voucher status updated.");
     },
     onError: () => {
-      toast.error("Could not update Cash Voucher. Please try again.");
-    },
-  });
-
-  const addVoucherMutation = useMutation({
-    mutationFn: async (voucher: CashVoucherRecord) => voucher,
-    onSuccess: (voucher) => {
-      updateCachedVouchers((vouchers) => [...vouchers, voucher]);
-      toast.success("Cash Voucher Created.");
-    },
-    onError: () => {
-      toast.error("Could not create Cash Voucher. Please try again.");
-    },
-  });
-
-  const updateVoucherMutation = useMutation({
-    mutationFn: async (voucher: CashVoucherRecord) => voucher,
-    onSuccess: (voucher) => {
-      updateCachedVouchers((vouchers) => vouchers.map((currentVoucher) => (currentVoucher.id === voucher.id ? voucher : currentVoucher)));
-      toast.success("Cash Voucher Updated.");
-    },
-    onError: () => {
-      toast.error("Could not update Cash Voucher. Please try again.");
+      toast.error("Could not update Cash Voucher status. Please try again.");
     },
   });
 
   const deleteVoucherMutation = useMutation({
-    mutationFn: async (voucherId: string) => voucherId,
+    mutationFn: async (voucherId: string) => {
+      await deleteCashVoucherApi(voucherId);
+      return voucherId;
+    },
     onSuccess: (voucherId) => {
-      updateCachedVouchers((vouchers) => vouchers.filter((voucher) => voucher.id !== voucherId));
+      queryClient.setQueryData<CashVoucherRecord[]>(CashVoucherQueryKeys.vouchers(), (current = []) =>
+        current.filter((v) => v.id !== voucherId),
+      );
+      void queryClient.invalidateQueries({ queryKey: CashVoucherQueryKeys.vouchers() });
       toast.success("Cash Voucher Deleted.");
     },
     onError: () => {
@@ -168,43 +106,68 @@ export function useCashVoucherStore<TSelected = CashVoucherStoreState>(
     },
   });
 
-  const previewRows = useMemo(
-    () => buildCashVoucherPreviewRows(transactionsQuery.data, vouchersQuery.data.map(sanitizeCashVoucherRecord)),
-    [transactionsQuery.data, vouchersQuery.data],
-  );
+  const rawVouchers = vouchersQuery.data || [];
+  const vouchers = useMemo(() => rawVouchers.map(sanitizeCashVoucherRecord), [rawVouchers]);
+
+  const previewRows = useMemo<CashVoucherPreviewRow[]>(() => {
+    return vouchers.map((voucher) => ({
+      transaction: {
+        id: voucher.id,
+        transactionNo: voucher.voucherNo,
+        payee: voucher.partyName,
+        purpose: voucher.remarks || "",
+        department: voucher.costCenter || "",
+        projectName: voucher.projectName,
+        requestedBy: voucher.preparedBy || "",
+        transactionDate: voucher.voucherDate,
+        paymentDueDate: voucher.paymentDueDate || voucher.voucherDate,
+        amount: voucher.amount,
+        currency: voucher.currency,
+        paymentMethod: "Cash",
+        disbursementType: voucher.disbursementType || "Vendor Payment",
+        status: voucher.status,
+        costCenter: voucher.costCenter || "",
+        createdBy: voucher.createdBy,
+        createdAt: voucher.createdAt,
+        updatedBy: voucher.updatedBy,
+        updatedAt: voucher.updatedAt,
+      },
+      voucher,
+    }));
+  }, [vouchers]);
 
   const state = useMemo<CashVoucherStoreState>(
     () => ({
       previewRows,
-      transactions: transactionsQuery.data,
-      vouchers: vouchersQuery.data.map(sanitizeCashVoucherRecord),
-      addTransaction: (transaction) => addTransactionMutation.mutate(transaction),
-      updateTransaction: (transaction) => updateTransactionMutation.mutate(transaction),
-      addVoucher: (voucher) => addVoucherMutation.mutate(voucher),
-      updateVoucher: (voucher) => updateVoucherMutation.mutate(voucher),
+      transactions: previewRows.map((r) => r.transaction),
+      vouchers,
+      addTransaction: () => undefined,
+      updateTransaction: (transaction) => {
+        if (transaction.id) {
+          updateStatusMutation.mutate({ id: transaction.id, status: transaction.status });
+        }
+      },
+      addVoucher: () => {
+        void queryClient.invalidateQueries({ queryKey: CashVoucherQueryKeys.vouchers() });
+      },
+      updateVoucher: (voucher) => {
+        if (voucher.id) {
+          updateStatusMutation.mutate({ id: voucher.id, status: voucher.status });
+        }
+      },
       deleteVoucher: (voucherId) => deleteVoucherMutation.mutate(voucherId),
-      isLoading: transactionsQuery.isLoading || vouchersQuery.isLoading,
-      lastSyncedAt: Math.max(transactionsQuery.dataUpdatedAt, vouchersQuery.dataUpdatedAt),
+      isLoading: vouchersQuery.isLoading,
+      lastSyncedAt: vouchersQuery.dataUpdatedAt,
       refreshRecords,
-      isMutating:
-        addTransactionMutation.isPending ||
-        addVoucherMutation.isPending ||
-        updateTransactionMutation.isPending ||
-        updateVoucherMutation.isPending ||
-        deleteVoucherMutation.isPending,
+      isMutating: updateStatusMutation.isPending || deleteVoucherMutation.isPending,
     }),
     [
-      addVoucherMutation,
-      addTransactionMutation,
       deleteVoucherMutation,
       previewRows,
+      queryClient,
       refreshRecords,
-      transactionsQuery.data,
-      transactionsQuery.dataUpdatedAt,
-      transactionsQuery.isLoading,
-      updateTransactionMutation,
-      updateVoucherMutation,
-      vouchersQuery.data,
+      updateStatusMutation,
+      vouchers,
       vouchersQuery.dataUpdatedAt,
       vouchersQuery.isLoading,
     ],
@@ -471,5 +434,3 @@ function getCashVoucherColumnValue(row: CashVoucherPreviewRow, key: CashVoucherT
       return "";
   }
 }
-
-

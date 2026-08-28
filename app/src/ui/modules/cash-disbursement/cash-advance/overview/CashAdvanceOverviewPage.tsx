@@ -18,7 +18,7 @@ import { getColumnMetaClassName, joinClasses } from "@/app/src/ui/shared/module/
 import { CashAdvanceRecordActions } from "@/app/src/ui/modules/cash-disbursement/cash-advance/overview/CashAdvanceRecordActions";
 
 export function CashAdvanceOverviewPage() {
-  const { advances, lastSyncedAt, refreshRecords, updateAdvanceStatus } = useCashAdvanceStore();
+  const { advances, isLoading, lastSyncedAt, refreshRecords, updateAdvanceStatus } = useCashAdvanceStore();
   const tableState = useCashAdvanceTable(advances);
 
   return (
@@ -46,7 +46,7 @@ export function CashAdvanceOverviewPage() {
         }
       />
 
-      <ModuleStatisticCards className="2xl:grid-cols-6" items={tableState.statisticCards} />
+      <ModuleStatisticCards className="2xl:grid-cols-6" isLoading={isLoading} items={tableState.statisticCards} />
 
       <div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm" data-spotlight-id="maintenance-table">
         <ModuleTable
@@ -58,6 +58,7 @@ export function CashAdvanceOverviewPage() {
           paginationLabel="entries"
           paginationStorageKey={CashAdvanceTablePaginationStorageKey}
           lastSyncedAt={lastSyncedAt}
+          isLoading={isLoading}
           table={tableState.table}
           tableTitle="Cash Advances"
           useColumnSizing

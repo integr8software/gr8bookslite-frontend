@@ -1,0 +1,281 @@
+import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import type {
+  CashVoucherFormValues,
+  CashVoucherLineEntry,
+  CashVoucherRecord,
+  CashVoucherStatus,
+} from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
+
+export type FetchCashVoucherListParams = {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: string;
+  partyCode?: string;
+  startDate?: string;
+  endDate?: string;
+  amountFrom?: number;
+  amountTo?: number;
+  branchUnitId?: number;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+};
+
+export type FetchCashVoucherListResponse = {
+  data: CashVoucherRecord[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+  statistics?: {
+    totalVouchers: number;
+    draftVouchers: number;
+    forApprovalVouchers: number;
+    postedVouchers: number;
+    disapprovedVouchers: number;
+    cancelledVouchers: number;
+  };
+};
+
+export async function fetchCashVoucherList(params?: FetchCashVoucherListParams): Promise<FetchCashVoucherListResponse> {
+  const response = await ApiClient.get<FetchCashVoucherListResponse>("/cash-disbursement/cash-voucher", { params });
+  return response.data;
+}
+
+export async function fetchCashVoucherById(id: string): Promise<CashVoucherRecord> {
+  const response = await ApiClient.get<{ data: CashVoucherRecord }>(`/cash-disbursement/cash-voucher/${id}`);
+  return response.data.data;
+}
+
+export async function fetchNextCashVoucherTransactionNo(): Promise<string> {
+  const response = await ApiClient.get<{ nextTransNo: string }>("/cash-disbursement/cash-voucher/next-transaction-no");
+  return response.data.nextTransNo;
+}
+
+export async function fetchCashVoucherPartyOptions(): Promise<AppAdvancedDropdownOption[]> {
+  try {
+    const response = await ApiClient.get<{
+      parties: Array<{
+        id: string;
+        partyCode: string;
+        partyName: string;
+        name: string;
+        label: string;
+        value: string;
+      }>;
+    }>("/cash-disbursement/cash-voucher/lookups/parties");
+
+    const parties = response.data?.parties ?? [];
+    return parties.map((p) => ({
+      name: p.partyName || p.name,
+      label: p.partyCode || p.label,
+      value: p.partyCode || p.value,
+      description: p.partyName,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+export async function fetchCashVoucherAccountOptions(): Promise<AppAdvancedDropdownOption[]> {
+  try {
+    const response = await ApiClient.get<{
+      accounts: Array<{
+        id: string;
+        accountCode: string;
+        accountTitle: string;
+        name: string;
+        label: string;
+        value: string;
+      }>;
+    }>("/cash-disbursement/cash-voucher/lookups/accounts");
+
+    const accounts = response.data?.accounts ?? [];
+    return accounts.map((a) => ({
+      name: a.accountTitle || a.name,
+      label: a.accountCode || a.label,
+      value: a.accountCode || a.value,
+      description: a.accountTitle,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+export async function fetchCashVoucherResponsibilityCenters(): Promise<{
+  costCenters: AppAdvancedDropdownOption[];
+  projects: AppAdvancedDropdownOption[];
+}> {
+  try {
+    const response = await ApiClient.get<{
+      responsibilityCenters: Array<{
+        id: string;
+        code: string;
+        name: string;
+        category?: string;
+        label: string;
+        value: string;
+      }>;
+    }>("/cash-disbursement/cash-voucher/lookups/responsibility-centers");
+
+    const centers = response.data?.responsibilityCenters ?? [];
+    const isProject = (rc: { category?: string; name?: string }) =>
+      rc.category?.toLowerCase() === "project" || rc.name?.toLowerCase().includes("project");
+
+    const costCenters = centers
+      .filter((rc) => !isProject(rc))
+      .map((rc) => ({
+        name: rc.name,
+        label: rc.code,
+        value: rc.name,
+        description: rc.code,
+      }));
+
+    const projects = centers
+      .filter((rc) => isProject(rc))
+      .map((rc) => ({
+        name: rc.name,
+        label: rc.code,
+        value: rc.name,
+        description: rc.code,
+      }));
+
+    return { costCenters, projects };
+  } catch {
+    return { costCenters: [], projects: [] };
+  }
+}
+
+export async function createCashVoucherApi(payload: {
+  partyId?: string;
+  partyCode: string;
+  partyName: string;
+  creditAccountId?: string;
+  voucherNo?: string;
+  voucherDate: string;
+  paymentDueDate?: string;
+  referenceNo?: string;
+  referenceModule?: string;
+  voucherReferenceNo?: string;
+  invoiceReferenceNo?: string;
+  paymentMethod?: string;
+  disbursementType?: string;
+  costCenter?: string;
+  projectName?: string;
+  preparedBy?: string;
+  currency?: string;
+  fxRate?: string | number;
+  amount?: string | number;
+  remarks?: string;
+  status?: CashVoucherStatus;
+  details: CashVoucherLineEntry[];
+}): Promise<CashVoucherRecord> {
+  const transformedPayload = {
+    ...payload,
+    details: payload.details.map((detail, index) => ({
+      lineNumber: index + 1,
+      accountCode: detail.accountCode,
+      accountTitle: detail.accountName,
+      particulars: detail.particulars || detail.remarks || "",
+      remarks: detail.remarks || detail.particulars || "",
+      debit: detail.debit,
+      credit: detail.credit,
+      grossAmount: detail.taxDetails?.grossAmount ?? detail.debit,
+      netAmount: detail.taxDetails?.netAmount ?? detail.debit,
+      vatType: detail.taxDetails?.vatType ?? detail.vatType ?? "",
+      vatCode: detail.taxDetails?.vatCode ?? "",
+      vatPercent: detail.taxDetails?.vatPercent ?? 0,
+      vatAmount: detail.taxDetails?.vatAmount ?? 0,
+      ewtCode: detail.taxDetails?.ewtCode ?? detail.ewtCode ?? "",
+      ewtPercent: detail.taxDetails?.ewtPercent ?? 0,
+      ewtAmount: detail.taxDetails?.ewtAmount ?? 0,
+      disburseAmount: detail.taxDetails?.amount ?? detail.debit,
+      partyCode: detail.partyCode || payload.partyCode,
+      partyName: detail.partyName || payload.partyName,
+      responsibilityCenter: detail.responsibilityCenter || payload.costCenter || "",
+      refId: detail.refId || payload.voucherReferenceNo || payload.voucherNo || "",
+      checkDate: detail.checkDate,
+      checkNo: detail.checkNo,
+      checkStatus: detail.checkStatus,
+    })),
+  };
+
+  const response = await ApiClient.post<{ data: CashVoucherRecord }>("/cash-disbursement/cash-voucher", transformedPayload);
+  return response.data.data;
+}
+
+export async function updateCashVoucherApi(
+  id: string,
+  payload: Partial<{
+    partyId?: string;
+    partyCode: string;
+    partyName: string;
+    creditAccountId?: string;
+    voucherDate: string;
+    paymentDueDate?: string;
+    referenceNo?: string;
+    referenceModule?: string;
+    voucherReferenceNo?: string;
+    invoiceReferenceNo?: string;
+    paymentMethod?: string;
+    disbursementType?: string;
+    costCenter?: string;
+    projectName?: string;
+    preparedBy?: string;
+    currency?: string;
+    fxRate?: string | number;
+    amount?: string | number;
+    remarks?: string;
+    status?: CashVoucherStatus;
+    details?: CashVoucherLineEntry[];
+  }>,
+): Promise<CashVoucherRecord> {
+  const transformedPayload = {
+    ...payload,
+    ...(payload.details
+      ? {
+          details: payload.details.map((detail, index) => ({
+            lineNumber: index + 1,
+            accountCode: detail.accountCode,
+            accountTitle: detail.accountName,
+            particulars: detail.particulars || detail.remarks || "",
+            remarks: detail.remarks || detail.particulars || "",
+            debit: detail.debit,
+            credit: detail.credit,
+            grossAmount: detail.taxDetails?.grossAmount ?? detail.debit,
+            netAmount: detail.taxDetails?.netAmount ?? detail.debit,
+            vatType: detail.taxDetails?.vatType ?? detail.vatType ?? "",
+            vatCode: detail.taxDetails?.vatCode ?? "",
+            vatPercent: detail.taxDetails?.vatPercent ?? 0,
+            vatAmount: detail.taxDetails?.vatAmount ?? 0,
+            ewtCode: detail.taxDetails?.ewtCode ?? detail.ewtCode ?? "",
+            ewtPercent: detail.taxDetails?.ewtPercent ?? 0,
+            ewtAmount: detail.taxDetails?.ewtAmount ?? 0,
+            disburseAmount: detail.taxDetails?.amount ?? detail.debit,
+            partyCode: detail.partyCode || payload.partyCode,
+            partyName: detail.partyName || payload.partyName,
+            responsibilityCenter: detail.responsibilityCenter || payload.costCenter || "",
+            refId: detail.refId || payload.voucherReferenceNo || "",
+            checkDate: detail.checkDate,
+            checkNo: detail.checkNo,
+            checkStatus: detail.checkStatus,
+          })),
+        }
+      : {}),
+  };
+
+  const response = await ApiClient.put<{ data: CashVoucherRecord }>(`/cash-disbursement/cash-voucher/${id}`, transformedPayload);
+  return response.data.data;
+}
+
+export async function updateCashVoucherStatusApi(id: string, status: CashVoucherStatus): Promise<CashVoucherRecord> {
+  const response = await ApiClient.patch<{ data: CashVoucherRecord }>(`/cash-disbursement/cash-voucher/${id}/status`, { status });
+  return response.data.data;
+}
+
+export async function deleteCashVoucherApi(id: string): Promise<void> {
+  await ApiClient.delete(`/cash-disbursement/cash-voucher/${id}`);
+}

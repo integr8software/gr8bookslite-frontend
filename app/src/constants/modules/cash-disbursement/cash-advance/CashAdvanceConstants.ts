@@ -1,4 +1,4 @@
-﻿import type { VisibilityState } from "@tanstack/react-table";
+import type { ColumnOrderState, SortingState, VisibilityState } from "@tanstack/react-table";
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type {
   CashAdvanceDetailsSection,
@@ -95,6 +95,26 @@ export const CashAdvanceStatusFilters = [
 ] as const;
 
 export const CashAdvanceTablePaginationStorageKey = "cash-disbursement-cash-advance";
+export const CashAdvanceTablePreferencesModuleKey = "cash-disbursement:cash-advance";
+export const CashAdvanceTablePreferencesStorageKey = "cash-disbursement:cash-advance:table-preferences";
+
+export const CashAdvanceDefaultColumnOrder: ColumnOrderState = [
+  "transNo",
+  "documentDate",
+  "partyCode",
+  "partyName",
+  "accountCode",
+  "accountTitle",
+  "currency",
+  "amount",
+  "remarks",
+  "createdBy",
+  "createdAt",
+  "updatedBy",
+  "updatedAt",
+  "status",
+  "actions",
+];
 
 export const CashAdvanceDefaultColumnVisibility: VisibilityState = {
   accountCode: false,
@@ -106,6 +126,8 @@ export const CashAdvanceDefaultColumnVisibility: VisibilityState = {
   updatedAt: false,
   updatedBy: false,
 };
+
+export const CashAdvanceDefaultSorting: SortingState = [{ id: "createdAt", desc: true }];
 
 export function getCashAdvanceTableMinWidthClassName(visibleColumnCount: number) {
   if (visibleColumnCount >= 13) return "min-w-[150rem]";

@@ -15,25 +15,50 @@ export type CashAdvanceFormController = ReturnType<typeof useCashAdvanceActionFo
 export type CashAdvanceTableState = ReturnType<typeof useCashAdvanceTable>;
 
 export type CashAdvancePartyDropdownOption = AppAdvancedDropdownOption & {
-  cashAdvanceBalance?: string;
+  availableCashAdvance?: string;
+  partyId?: string;
+  partyCode?: string;
+  partyName?: string;
   cashAdvanceLimit?: string;
+  totalCashAdvance?: string;
+};
+
+export type CashAdvanceAccountDropdownOption = AppAdvancedDropdownOption & {
+  accountId?: string;
+  accountCode?: string;
+  accountTitle?: string;
+};
+
+export type CashAdvanceResponsibilityCenterDropdownOption = AppAdvancedDropdownOption & {
+  id?: string;
+  code?: string;
+  name?: string;
+  category?: string;
+  financialType?: string;
+  typeName?: string;
 };
 
 export type CashAdvanceStatus = "Cancelled" | "Disapproved" | "Draft" | "For Approval" | "Open" | "Posted";
 
 export type CashAdvanceRecord = {
   accountCode: string;
+  accountTitle?: string;
   amount: number;
   costCenter: string;
+  costCenterCode?: string;
   createdAt?: string;
   createdBy?: string;
   documentDate: string;
+  dueDate?: string | null;
   formValues?: CashAdvanceFormValues;
   id: string;
-  remarks: string;
-  status: CashAdvanceStatus;
+  partyId?: string | null;
   partyCode: string;
   partyName: string;
+  projectCode?: string | null;
+  projectRef?: string | null;
+  remarks: string;
+  status: CashAdvanceStatus;
   transNo: string;
   updatedAt?: string;
   updatedBy?: string;
@@ -54,23 +79,32 @@ export type CashAdvanceReferenceFields = {
 export type CashAdvanceVisibleReferenceFields = Record<CashAdvanceReferenceField, boolean>;
 
 export type CashAdvanceFormValues = {
+  accountId?: string;
   accountCode: string;
+  accountTitle?: string;
   amount: string;
   attachments: DisbursementAttachment[];
+  costCenterId?: string;
   costCenter: string;
-  cashAdvanceBalance: string;
+  availableCashAdvance: string;
   cashAdvanceLimit: string;
   currency: string;
   documentDate: string;
   fxRate: string;
+  partyId?: string;
   partyCode: string;
   partyName: string;
+  projectId?: string;
   referenceFields: CashAdvanceReferenceFields;
   remarks: string;
   status: CashAdvanceStatus;
   taxValue: AppTaxRateDialogValue;
   transNo: string;
 };
+
+export type CashAdvanceFormErrors = Partial<
+  Record<"accountCode" | "accountTitle" | "amount" | "documentDate" | "partyCode" | "partyName" | "transNo", string>
+>;
 
 export type CashAdvanceStoreState = {
   advances: CashAdvanceRecord[];

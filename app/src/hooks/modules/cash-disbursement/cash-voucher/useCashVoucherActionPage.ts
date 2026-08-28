@@ -2,18 +2,15 @@
 
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
   CashVoucherCopyFromRecords,
   CashVoucherDefaultAccounts,
   applyCopyFromRecordsToCashVoucherForm,
   createBlankCashVoucherLineEntry,
-  createCashVoucherTransactionFromForm,
-  createCashVoucherFromForm,
-  createCashVoucherStatusHistoryEntry,
   createTaxDetails,
   syncTaxDetailsAmount,
-  updateCashVoucherFromForm,
 } from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherData";
 import { clearAccountingGridSession } from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherAccountingGridSessionData";
 import {
@@ -33,6 +30,7 @@ import {
 import {
   CashVoucherLink,
   CashVoucherStatuses,
+  CashVoucherQueryKeys,
   canEditCashVoucherStatus,
 } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherConstants";
 import { CashVoucherLineEntriesField } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherDataEntryConstants";
@@ -51,10 +49,10 @@ import type {
   CashVoucherFormErrors,
   CashVoucherFormValues,
   CashVoucherStatus,
+  CashVoucherRecord,
 } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
 import type { ResponsibilityCenter } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
 import type { ModuleDataEntryClearAction } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
-import { useCashVoucherStore } from "@/app/src/hooks/modules/cash-disbursement/cash-voucher/useCashVoucher";
 import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
 import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
@@ -66,27 +64,26 @@ import {
   moveCashVoucherEntryRow,
   removeCashVoucherEntryRow,
 } from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherEntryRowData";
+import {
+  createCashVoucherApi,
+  fetchCashVoucherById,
+  fetchNextCashVoucherTransactionNo,
+  updateCashVoucherApi,
+  updateCashVoucherStatusApi,
+} from "@/app/src/services/modules/cash-disbursement/cash-voucher/CashVoucherApi";
 
 export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   const router = useRouter();
   const params = useParams<{ recordId?: string }>();
   const searchParams = useSearchParams();
-  const transactions = useCashVoucherStore((state) => state.transactions);
-  const vouchers = useCashVoucherStore((state) => state.vouchers);
-  const addTransaction = useCashVoucherStore((state) => state.addTransaction);
-  const updateTransaction = useCashVoucherStore((state) => state.updateTransaction);
-  const addVoucher = useCashVoucherStore((state) => state.addVoucher);
-  const updateVoucher = useCashVoucherStore((state) => state.updateVoucher);
-  const routeTransactionId = mode === "add" ? (searchParams.get("transactionId") ?? "") : (params.recordId ?? "");
-  const routeTransaction = transactions.find((transaction) => transaction.id === routeTransactionId);
-  const routeVoucher = vouchers.find((voucher) => voucher.transactionId === routeTransactionId);
-  const returnLink = createVoucherActionReturnLink(searchParams.get("from"), routeTransactionId);
+  const queryClient = useQueryClient();
+  const recordId = params.recordId ?? "";
+  const returnLink = createVoucherActionReturnLink(searchParams.get("from"), recordId);
   const transactionCurrency = useTransactionCurrency();
+
   const [values, setValues] = useState<CashVoucherFormValues>(() =>
     createInitialCashVoucherFormValues({
       mode,
-      transaction: routeTransaction,
-      voucher: routeVoucher,
     }),
   );
   const [errors, setErrors] = useState<CashVoucherFormErrors>({});
@@ -108,13 +105,122 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   const partyStore = usePartyManagementStore();
   const responsibilityCenterStore = useResponsibilityCenterStore();
   const defaultAccounts = CashVoucherDefaultAccounts;
-  const selectedTransaction = transactions.find((transaction) => transaction.id === values.transactionId);
-  const existingVoucher = vouchers.find((voucher) => voucher.transactionId === values.transactionId);
-  const currentStatus = existingVoucher?.status ?? selectedTransaction?.status ?? values.status;
+
+  // Query single record if edit or view mode
+  const recordQuery = useQuery({
+    queryKey: ["cash-voucher", recordId],
+    queryFn: () => fetchCashVoucherById(recordId),
+    enabled: Boolean(recordId && mode !== "add"),
+  });
+
+  const existingVoucher: CashVoucherRecord | undefined = recordQuery.data;
+
+  // Auto-populate values when existing record is loaded
+  useEffect(() => {
+    if (!existingVoucher || mode === "add") return;
+
+    const mappedEntries: CashVoucherLineEntry[] = (existingVoucher.lineEntries && existingVoucher.lineEntries.length > 0
+      ? existingVoucher.lineEntries
+      : (existingVoucher as unknown as { details?: Array<Record<string, unknown>> }).details || []
+    ).map((d, index) => ({
+      id: d.id ? String(d.id) : `entry-${index + 1}`,
+      accountCode: (d.accountCode as string) || "",
+      accountName: (d.accountTitle as string) || (d.accountName as string) || "",
+      particulars: (d.particulars as string) || (d.remarks as string) || "",
+      remarks: (d.remarks as string) || "",
+      debit: Number(d.debit || 0),
+      credit: Number(d.credit || 0),
+      taxRate: "0%",
+      taxDetails: {
+        ...createTaxDetails(Number(d.debit || d.grossAmount || 0), "0%"),
+        grossAmount: Number(d.grossAmount || d.debit || 0),
+        netAmount: Number(d.netAmount || d.debit || 0),
+        vatType: (d.vatType as string) || "",
+        vatCode: (d.vatCode as string) || "",
+        vatPercent: Number(d.vatPercent || 0),
+        vatAmount: Number(d.vatAmount || 0),
+        ewtCode: (d.ewtCode as string) || "",
+        ewtPercent: Number(d.ewtPercent || 0),
+        ewtAmount: Number(d.ewtAmount || 0),
+        amount: Number(d.disburseAmount || d.debit || 0),
+        refId: (d.refId as string) || existingVoucher.voucherNo,
+        responsibilityCenter: (d.responsibilityCenter as string) || existingVoucher.costCenter || "",
+      },
+      partyCode: (d.partyCode as string) || existingVoucher.partyCode,
+      partyName: (d.partyName as string) || existingVoucher.partyName,
+      responsibilityCenter: (d.responsibilityCenter as string) || existingVoucher.costCenter || "",
+      refId: (d.refId as string) || existingVoucher.voucherNo,
+      checkDate: (d.checkDate as string) || "",
+      checkNo: (d.checkNo as string) || "",
+      checkStatus: (d.checkStatus as string) || "",
+      status: "Balanced",
+    }));
+
+    setValues({
+      transactionId: existingVoucher.id,
+      voucherNo: existingVoucher.voucherNo,
+      voucherDate: existingVoucher.voucherDate,
+      paymentDueDate: existingVoucher.paymentDueDate || existingVoucher.voucherDate,
+      paymentMethod: (existingVoucher.paymentMethod as "Cash") || "Cash",
+      disbursementType: existingVoucher.disbursementType || "Vendor Payment",
+      currency: existingVoucher.currency || "PHP",
+      fxRate: typeof existingVoucher.fxRate === "number" ? existingVoucher.fxRate.toFixed(2) : String(existingVoucher.fxRate || "1.00"),
+      costCenter: existingVoucher.costCenter || "",
+      projectName: existingVoucher.projectName || "",
+      partyCode: existingVoucher.partyCode || "",
+      partyName: existingVoucher.partyName || "",
+      amount: String(existingVoucher.amount || 0),
+      taxRate: "0%",
+      taxDetails: createTaxDetails(existingVoucher.amount || 0, "0%"),
+      remarks: existingVoucher.remarks || "",
+      referenceModule: existingVoucher.referenceModule || "",
+      voucherReferenceNo: existingVoucher.voucherReferenceNo || "",
+      invoiceReferenceNo: existingVoucher.invoiceReferenceNo || "",
+      paymentDetails: {
+        bankAccountCode: "",
+        bankAccountName: "",
+        bankAccountNo: "",
+        bankAccountTitle: "",
+        bankBranch: "",
+        bankName: "",
+        checkDate: "",
+        checkNo: "",
+        paymentReferenceNo: "",
+      },
+      preparedBy: existingVoucher.preparedBy || "",
+      status: existingVoucher.status || "Draft",
+      lineEntries: mappedEntries.length > 0 ? mappedEntries : createInitialCashVoucherFormValues({ mode }).lineEntries,
+      attachments: existingVoucher.attachments || [],
+    });
+  }, [existingVoucher, mode]);
+
+  // Load next transaction number on create mode
+  useEffect(() => {
+    if (mode !== "add") return;
+
+    let isMounted = true;
+    void fetchNextCashVoucherTransactionNo()
+      .then((nextTransNo) => {
+        if (isMounted && nextTransNo) {
+          setValues((current) => ({
+            ...current,
+            voucherNo: nextTransNo,
+            transactionId: nextTransNo,
+          }));
+        }
+      })
+      .catch(() => undefined);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [mode]);
+
+  const currentStatus = existingVoucher?.status ?? values.status;
   const isReadonly = mode === "view" || (mode === "edit" && !canEditCashVoucherStatus(currentStatus));
   const totalDebit = useMemo(() => values.lineEntries.reduce((sum, entry) => sum + entry.debit, 0), [values.lineEntries]);
   const totalCredit = useMemo(() => values.lineEntries.reduce((sum, entry) => sum + entry.credit, 0), [values.lineEntries]);
-  const isRecordMissing = (!selectedTransaction && mode !== "add") || (mode === "edit" && !existingVoucher);
+  const isRecordMissing = mode !== "add" && !recordQuery.isLoading && !existingVoucher;
   const [initialValues] = useState(values);
   const isDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
   const draft = useModuleDraft({
@@ -251,8 +357,8 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   }
 
   function createBlankEntry(): CashVoucherLineEntry {
-    const refId = values.voucherReferenceNo || selectedTransaction?.transactionNo || values.transactionId;
-    const responsibilityCenter = values.costCenter || selectedTransaction?.costCenter || "";
+    const refId = values.voucherReferenceNo || values.voucherNo || values.transactionId;
+    const responsibilityCenter = values.costCenter || "";
 
     return createBlankCashVoucherLineEntry({
       partyCode: values.partyCode,
@@ -415,7 +521,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
     setPendingSubmitValues(valuesForSubmit);
   }
 
-  function confirmCashVoucherSubmit() {
+  async function confirmCashVoucherSubmit() {
     if (!pendingSubmitValues || isSubmittingRef.current) {
       return;
     }
@@ -424,18 +530,46 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
     setIsSubmitting(true);
 
     try {
-      if (mode === "edit" && existingVoucher) {
-        updateVoucher(updateCashVoucherFromForm(existingVoucher, pendingSubmitValues));
+      if (mode === "edit" && recordId) {
+        await updateCashVoucherApi(recordId, {
+          voucherDate: pendingSubmitValues.voucherDate,
+          partyCode: pendingSubmitValues.partyCode,
+          partyName: pendingSubmitValues.partyName,
+          costCenter: pendingSubmitValues.costCenter,
+          projectName: pendingSubmitValues.projectName,
+          preparedBy: pendingSubmitValues.preparedBy,
+          currency: pendingSubmitValues.currency,
+          fxRate: pendingSubmitValues.fxRate,
+          amount: pendingSubmitValues.amount,
+          remarks: pendingSubmitValues.remarks,
+          status: pendingSubmitValues.status,
+          details: pendingSubmitValues.lineEntries,
+        });
+        toast.success("Cash Voucher updated successfully.");
       } else {
-        if (!selectedTransaction) {
-          addTransaction(createCashVoucherTransactionFromForm(pendingSubmitValues));
-        }
-        addVoucher(createCashVoucherFromForm(pendingSubmitValues));
+        await createCashVoucherApi({
+          voucherNo: pendingSubmitValues.voucherNo,
+          voucherDate: pendingSubmitValues.voucherDate,
+          partyCode: pendingSubmitValues.partyCode,
+          partyName: pendingSubmitValues.partyName,
+          costCenter: pendingSubmitValues.costCenter,
+          projectName: pendingSubmitValues.projectName,
+          preparedBy: pendingSubmitValues.preparedBy,
+          currency: pendingSubmitValues.currency,
+          fxRate: pendingSubmitValues.fxRate,
+          amount: pendingSubmitValues.amount,
+          remarks: pendingSubmitValues.remarks,
+          status: pendingSubmitValues.status,
+          details: pendingSubmitValues.lineEntries,
+        });
+        toast.success("Cash Voucher created successfully.");
       }
+
+      void queryClient.invalidateQueries({ queryKey: CashVoucherQueryKeys.vouchers() });
       draft.clearDraft();
       setPendingSubmitValues(null);
       submitLockReleaseRef.current = null;
-      router.push(returnLink);
+      router.push(CashVoucherLink);
     } catch {
       toast.error("Could not save the Cash Voucher. Please try again.");
       setPendingSubmitValues(null);
@@ -459,38 +593,31 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
     requestCashVoucherSubmit(CashVoucherStatuses.forApproval);
   }
 
-  function handleUpdateStatus(status: CashVoucherStatus) {
+  async function handleUpdateStatus(status: CashVoucherStatus) {
     if (!canUpdateCashVoucherStatus(currentStatus, status)) {
       return;
     }
-    const actionRecordId = existingVoucher?.id ?? selectedTransaction?.id;
+    const actionRecordId = recordId || values.transactionId;
     if (!actionRecordId) return;
     const releaseActionLock = acquireModuleActionLock(`cash-disbursement:cash-voucher:status:${actionRecordId}:${status}`);
     if (!releaseActionLock) return;
 
     try {
-      const updatedAt = new Date().toISOString();
+      await updateCashVoucherStatusApi(actionRecordId, status);
       setValues((currentValues) => ({ ...currentValues, status }));
-      if (existingVoucher) {
-        updateVoucher({
-          ...existingVoucher,
-          status,
-          updatedBy: "Current User",
-          updatedAt,
-          history: [...(existingVoucher.history ?? []), createCashVoucherStatusHistoryEntry(status, existingVoucher.voucherNo)],
-        });
-        return;
-      }
-      updateTransaction({ ...selectedTransaction!, status, updatedBy: "Current User", updatedAt });
+      void queryClient.invalidateQueries({ queryKey: CashVoucherQueryKeys.vouchers() });
+      void queryClient.invalidateQueries({ queryKey: ["cash-voucher", actionRecordId] });
+      toast.success(`Cash Voucher status updated to ${status}.`);
+      releaseActionLock();
     } catch {
-      toast.error("Could not update the Cash Voucher. Please try again.");
+      toast.error("Could not update the Cash Voucher status. Please try again.");
       releaseActionLock();
     }
   }
 
   function handleCopyFrom(recordIds: string[]) {
     const selectedRecords = recordIds
-      .map((recordId) => CashVoucherCopyFromRecords.find((candidate) => candidate.id === recordId))
+      .map((id) => CashVoucherCopyFromRecords.find((candidate) => candidate.id === id))
       .filter((record): record is (typeof CashVoucherCopyFromRecords)[number] => Boolean(record));
 
     if (selectedRecords.length === 0) {
@@ -560,7 +687,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
     partyStore,
     responsibilityCenterStore,
     returnLink: isRecordMissing ? CashVoucherLink : returnLink,
-    selectedTransaction,
+    selectedTransaction: undefined,
     totalCredit,
     totalDebit,
     values,
@@ -608,6 +735,3 @@ function shouldEntryRemarksFollowHeader(entry: CashVoucherLineEntry, previousHea
     (normalizedHeaderRemarks !== "" && normalizedEntryRemarks === normalizedHeaderRemarks)
   );
 }
-
-
-

@@ -1,10 +1,14 @@
 import { z } from "zod";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
-import type { CashAdvanceFormValues } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
+import type {
+  CashAdvanceFormErrors,
+  CashAdvanceFormValues,
+} from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 import { formatAmount } from "@/app/src/utils/currency.util";
 
 const CashAdvanceFormSchema = z.object({
-  accountCode: z.string().trim().min(1, "Select an account."),
+  accountCode: z.string().trim().min(1, "Default account code is required."),
+  accountTitle: z.preprocess((value) => String(value ?? ""), z.string().trim().min(1, "Default account title is required.")),
   amount: z.preprocess(
     (value) => String(value ?? "").trim(),
     z
@@ -14,40 +18,54 @@ const CashAdvanceFormSchema = z.object({
         const amount = Number(value.replace(/,/g, ""));
 
         return Number.isFinite(amount) && amount > 0;
-      }, "Enter an amount greater than zero.")
-      .transform((value) => Number(value.replace(/,/g, ""))),
+      }, "Enter an amount greater than zero."),
   ),
   documentDate: z.string().trim().min(1, "Select a CA Date."),
-  partyName: z.string().trim().min(1, "Select a party."),
+  partyCode: z.string().trim().min(1, "Party code is required."),
+  partyName: z.string().trim().min(1, "Party name is required."),
+  transNo: z.string().trim().min(1, "CA No. is required."),
 });
 
-export function validateCashAdvanceForm(values: CashAdvanceFormValues) {
+export function validateCashAdvanceForm(values: CashAdvanceFormValues): CashAdvanceFormErrors {
   const validation = CashAdvanceFormSchema.safeParse(values);
 
-  if (!validation.success) {
-    return {
-      isValid: false,
-      message: validation.error.issues[0]?.message ?? "Review the cash advance details.",
-    };
+  if (validation.success) {
+    return {};
   }
 
-  return validateCashAdvanceAmountWithinBalance(values);
+  const errors: CashAdvanceFormErrors = {};
+
+  for (const issue of validation.error.issues) {
+    const field = issue.path[0];
+
+    if (typeof field === "string" && field in values && !errors[field as keyof CashAdvanceFormErrors]) {
+      errors[field as keyof CashAdvanceFormErrors] = issue.message;
+    }
+  }
+
+  return errors;
 }
 
-export function validateCashAdvanceAmountWithinBalance(values: CashAdvanceFormValues) {
-  if (!values.cashAdvanceBalance?.trim()) {
-    return { isValid: true, message: null };
-  }
-
+export function getCashAdvanceAvailabilityWarning(values: CashAdvanceFormValues): string | null {
   const amount = parseMoneyNumberInput(values.amount);
-  const balance = parseMoneyNumberInput(values.cashAdvanceBalance);
+  const hasLimit = Boolean(values.cashAdvanceLimit.trim());
+  const hasAvailableAmount = Boolean(values.availableCashAdvance.trim());
+  const limit = parseMoneyNumberInput(values.cashAdvanceLimit);
+  const availableAmount = parseMoneyNumberInput(values.availableCashAdvance);
+  const exceedsLimit = hasLimit && amount > limit;
+  const exceedsAvailableAmount = hasAvailableAmount && amount > availableAmount;
 
-  if (amount <= balance) {
-    return { isValid: true, message: null };
+  if (!exceedsLimit && !exceedsAvailableAmount) {
+    return null;
   }
 
-  return {
-    isValid: false,
-    message: `Amount cannot exceed the Cash Advance Balance of ${formatAmount(balance)}.`,
-  };
+  if (exceedsLimit && exceedsAvailableAmount) {
+    return `The Cash Advance Amount of ${formatAmount(amount)} exceeds the Cash Advance Limit of ${formatAmount(limit)} and the Available Cash Advance of ${formatAmount(availableAmount)}.`;
+  }
+
+  if (exceedsLimit) {
+    return `The Cash Advance Amount of ${formatAmount(amount)} exceeds the Cash Advance Limit of ${formatAmount(limit)}.`;
+  }
+
+  return `The Cash Advance Amount of ${formatAmount(amount)} exceeds the Available Cash Advance of ${formatAmount(availableAmount)}.`;
 }

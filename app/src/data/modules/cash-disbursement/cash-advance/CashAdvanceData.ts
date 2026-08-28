@@ -6,8 +6,6 @@ import { formatMoneyNumberDisplayValue, parseMoneyNumberInput } from "@/app/src/
 import {
   CashAdvanceStatuses,
   CashAdvanceStorageKey,
-  CashAdvanceTransactionNumberPadding,
-  CashAdvanceTransactionNumberPrefix,
 } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
 import type {
   CashAdvanceFormValues,
@@ -16,112 +14,24 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 import { formatCurrency } from "@/app/src/utils/currency.util";
 
-const LegacyMockCashAdvanceTransNoById: Record<string, string> = {
-  "ca-001": "CA-000005",
-  "ca-002": "CA-000004",
-  "ca-003": "CA-000003",
-  "ca-004": "CA-000002",
-  "ca-005": "CA-000001",
-};
-
-export const MockCashAdvanceRecords: CashAdvanceRecord[] = [
-  {
-    accountCode: "1130-CA",
-    amount: 12500,
-    costCenter: "Operations",
-    createdAt: "2026-06-11T08:15:00.000Z",
-    createdBy: "Maria Santos",
-    documentDate: "2026-06-11",
-    id: "ca-001",
-    remarks: "Project site travel and meal allowance.",
-    status: CashAdvanceStatuses.cancelled,
-    partyCode: "EMP-0017",
-    partyName: "Maria Santos",
-    transNo: "CA-000005",
-    updatedAt: "2026-06-11T08:15:00.000Z",
-    updatedBy: "Maria Santos",
-  },
-  {
-    accountCode: "1130-CA",
-    amount: 8200,
-    costCenter: "Admin",
-    createdAt: "2026-06-10T10:05:00.000Z",
-    createdBy: "Jose Ramirez",
-    documentDate: "2026-06-10",
-    id: "ca-002",
-    remarks: "Office supplies purchase advance.",
-    status: CashAdvanceStatuses.draft,
-    partyCode: "EMP-0042",
-    partyName: "Jose Ramirez",
-    transNo: "CA-000004",
-    updatedAt: "2026-06-10T10:05:00.000Z",
-    updatedBy: "Jose Ramirez",
-  },
-  {
-    accountCode: "1135-OA",
-    amount: 30000,
-    costCenter: "Sales",
-    createdAt: "2026-06-08T09:30:00.000Z",
-    createdBy: "Angela Cruz",
-    documentDate: "2026-06-08",
-    id: "ca-003",
-    remarks: "Client visit representation budget.",
-    status: CashAdvanceStatuses.forApproval,
-    partyCode: "EMP-0025",
-    partyName: "Angela Cruz",
-    transNo: "CA-000003",
-    updatedAt: "2026-06-09T11:20:00.000Z",
-    updatedBy: "Finance Reviewer",
-  },
-  {
-    accountCode: "1130-CA",
-    amount: 25000,
-    costCenter: "Corporate Affairs",
-    createdAt: "2026-06-03T13:20:00.000Z",
-    createdBy: "Santos and Velasco Legal",
-    documentDate: "2026-06-03",
-    id: "ca-004",
-    remarks: "Retainer and filing advance for corporate documents.",
-    status: CashAdvanceStatuses.posted,
-    partyCode: "EMP-0031",
-    partyName: "Santos and Velasco Legal",
-    transNo: "CA-000002",
-    updatedAt: "2026-06-04T15:45:00.000Z",
-    updatedBy: "Finance Reviewer",
-  },
-  {
-    accountCode: "1135-OA",
-    amount: 4875,
-    costCenter: "Supply Chain",
-    createdAt: "2026-04-28T11:45:00.000Z",
-    createdBy: "Global Freight Movers",
-    documentDate: "2026-04-28",
-    id: "ca-005",
-    remarks: "Freight coordination and local transport advance.",
-    status: CashAdvanceStatuses.disapproved,
-    partyCode: "EMP-0058",
-    partyName: "Global Freight Movers",
-    transNo: "CA-000001",
-    updatedAt: "2026-04-29T16:10:00.000Z",
-    updatedBy: "Finance Reviewer",
-  },
-];
-
-export function createCashAdvanceFormValues(baseCurrencyCode = "PHP"): CashAdvanceFormValues {
-  const today = new Date().toISOString().slice(0, 10);
-
+export function createCashAdvanceFormValues(baseCurrency = "PHP"): CashAdvanceFormValues {
   return {
+    accountId: "",
     accountCode: "",
+    accountTitle: "",
     amount: "",
     attachments: [],
+    costCenterId: "",
     costCenter: "",
-    cashAdvanceBalance: "",
+    availableCashAdvance: "",
     cashAdvanceLimit: "",
-    currency: baseCurrencyCode,
-    documentDate: today,
+    currency: baseCurrency,
+    documentDate: new Date().toISOString().slice(0, 10),
     fxRate: "1.00",
+    partyId: "",
     partyCode: "",
     partyName: "",
+    projectId: "",
     referenceFields: {
       accountCode: "",
       costCenterCode: "",
@@ -132,20 +42,40 @@ export function createCashAdvanceFormValues(baseCurrencyCode = "PHP"): CashAdvan
       importationRefNo: "",
     },
     remarks: "",
-    status: CashAdvanceStatuses.open,
+    status: CashAdvanceStatuses.draft,
     taxValue: {
       taxDetails: createTaxDetails(0, "0%"),
       taxRate: "0%",
     },
-    transNo: createNextCashAdvanceTransNo(),
+    transNo: "",
   };
 }
 
 export function createCashAdvanceFormValuesFromRecord(record: CashAdvanceRecord): CashAdvanceFormValues {
   if (record.formValues) {
+    const legacyFormValues = record.formValues as CashAdvanceFormValues & { cashAdvanceBalance?: string };
+
     return {
       ...createCashAdvanceFormValues(),
       ...record.formValues,
+      accountId: record.formValues.accountId,
+      accountCode: record.accountCode || record.formValues.accountCode,
+      accountTitle: record.accountTitle || record.formValues.accountTitle,
+      availableCashAdvance: record.formValues.availableCashAdvance ?? legacyFormValues.cashAdvanceBalance ?? "",
+      costCenterId: record.formValues.costCenterId,
+      costCenter: record.costCenter || record.formValues.costCenter,
+      partyId: record.partyId ?? record.formValues.partyId,
+      partyCode: record.partyCode || record.formValues.partyCode,
+      partyName: record.partyName || record.formValues.partyName,
+      projectId: record.formValues.projectId,
+      referenceFields: {
+        ...record.formValues.referenceFields,
+        accountCode: record.accountCode || record.formValues.referenceFields?.accountCode || "",
+        costCenterCode: record.costCenterCode || record.formValues.referenceFields?.costCenterCode || "",
+        partyCode: record.partyCode || record.formValues.referenceFields?.partyCode || "",
+        projectCode: record.projectCode || record.formValues.referenceFields?.projectCode || "",
+        projectRef: record.projectRef || record.formValues.referenceFields?.projectRef || "",
+      },
       status: normalizeCashAdvanceStatus(record.formValues.status),
       transNo: record.formValues.transNo || record.transNo,
     };
@@ -153,14 +83,28 @@ export function createCashAdvanceFormValuesFromRecord(record: CashAdvanceRecord)
 
   return {
     ...createCashAdvanceFormValues(),
+    accountId: "",
     accountCode: record.accountCode,
+    accountTitle: record.accountTitle || "",
     amount: formatMoneyNumberDisplayValue(record.amount || ""),
+    costCenterId: "",
     costCenter: record.costCenter,
     currency: "PHP",
     documentDate: record.documentDate,
     fxRate: "1.00",
+    partyId: record.partyId ?? "",
     partyCode: record.partyCode,
     partyName: record.partyName,
+    projectId: "",
+    referenceFields: {
+      accountCode: record.accountCode,
+      costCenterCode: record.costCenterCode || "",
+      partyCode: record.partyCode,
+      projectCode: record.projectCode || "",
+      refNo: "",
+      projectRef: record.projectRef || "",
+      importationRefNo: "",
+    },
     remarks: record.remarks,
     status: normalizeCashAdvanceStatus(record.status),
     taxValue: {
@@ -175,12 +119,14 @@ export function createCashAdvanceRecordFromForm(values: CashAdvanceFormValues, e
   const amount = parseMoneyNumberInput(values.amount);
   const now = new Date().toISOString();
   const actor = "Current User";
-  const transNo = createCashAdvanceTransNo(values.transNo, existingRecord);
+  const transNo = values.transNo?.trim() || `CA-${new Date().getFullYear()}-000001`;
 
   return {
     accountCode: values.accountCode,
+    accountTitle: values.accountTitle,
     amount,
     costCenter: values.costCenter,
+    costCenterCode: values.referenceFields.costCenterCode,
     createdAt: existingRecord?.createdAt ?? now,
     createdBy: existingRecord?.createdBy ?? actor,
     documentDate: values.documentDate,
@@ -194,51 +140,24 @@ export function createCashAdvanceRecordFromForm(values: CashAdvanceFormValues, e
       transNo,
     },
     id: existingRecord?.id ?? `ca-${Date.now()}`,
-    remarks: values.remarks,
-    status: normalizeCashAdvanceStatus(values.status),
+    partyId: values.partyId,
     partyCode: values.partyCode,
     partyName: values.partyName,
+    projectCode: values.referenceFields.projectCode,
+    projectRef: values.referenceFields.projectRef,
+    remarks: values.remarks,
+    status: normalizeCashAdvanceStatus(values.status),
     transNo,
     updatedAt: now,
     updatedBy: actor,
   };
 }
 
-export function getInitialCashAdvances() {
-  return readStoredCashAdvances() ?? MockCashAdvanceRecords;
+export function getInitialCashAdvances(): CashAdvanceRecord[] {
+  return readStoredCashAdvances() ?? [];
 }
 
-function createCashAdvanceTransNo(value: string, existingRecord?: CashAdvanceRecord) {
-  const normalizedValue = value.trim();
-
-  if (normalizedValue && normalizedValue !== "Auto-generated on save") {
-    return normalizedValue;
-  }
-
-  return createNextCashAdvanceTransNo(existingRecord?.id);
-}
-
-function createNextCashAdvanceTransNo(excludedRecordId?: string) {
-  const existingNumbers = getInitialCashAdvances()
-    .filter((record) => record.id !== excludedRecordId)
-    .map((record) => parseCashAdvanceTransNoSequence(record.transNo))
-    .filter((sequence): sequence is number => sequence !== null);
-  const nextSequence = Math.max(0, ...existingNumbers) + 1;
-
-  return formatCashAdvanceTransNo(nextSequence);
-}
-
-function parseCashAdvanceTransNoSequence(value: string) {
-  const match = value.trim().match(/^CA-(\d+)$/);
-
-  return match ? Number(match[1]) : null;
-}
-
-function formatCashAdvanceTransNo(sequence: number) {
-  return `${CashAdvanceTransactionNumberPrefix}${String(sequence).padStart(CashAdvanceTransactionNumberPadding, "0")}`;
-}
-
-export function readStoredCashAdvances() {
+export function readStoredCashAdvances(): CashAdvanceRecord[] | null {
   if (typeof window === "undefined") {
     return null;
   }
@@ -251,8 +170,7 @@ export function readStoredCashAdvances() {
 
   try {
     const parsedRecords = JSON.parse(storedRecords) as CashAdvanceRecord[];
-
-    return Array.isArray(parsedRecords) ? parsedRecords.map(normalizeStoredCashAdvanceRecord) : null;
+    return Array.isArray(parsedRecords) ? parsedRecords : null;
   } catch {
     return null;
   }
@@ -320,37 +238,4 @@ function normalizeCashAdvanceStatus(value: string): CashAdvanceStatus {
   ];
 
   return statuses.includes(value as CashAdvanceStatus) ? (value as CashAdvanceStatus) : CashAdvanceStatuses.draft;
-}
-
-function normalizeStoredCashAdvanceRecord(record: CashAdvanceRecord): CashAdvanceRecord {
-  const status = normalizeCashAdvanceStatus(record.status);
-  const transNo = getNormalizedStoredCashAdvanceTransNo(record);
-
-  return {
-    ...record,
-    createdAt: record.createdAt ?? record.documentDate,
-    createdBy: record.createdBy ?? record.partyName,
-    formValues: record.formValues
-      ? {
-          ...record.formValues,
-          attachments: record.formValues.attachments ?? [],
-          status: normalizeCashAdvanceStatus(record.formValues.status),
-          transNo,
-        }
-      : record.formValues,
-    status,
-    transNo,
-    updatedAt: record.updatedAt ?? record.createdAt ?? record.documentDate,
-    updatedBy: record.updatedBy ?? record.createdBy ?? record.partyName,
-  };
-}
-
-function getNormalizedStoredCashAdvanceTransNo(record: CashAdvanceRecord) {
-  const mockTransNo = LegacyMockCashAdvanceTransNoById[record.id];
-
-  if (mockTransNo && /^CA-\d{4}-\d{4}$/.test(record.transNo)) {
-    return mockTransNo;
-  }
-
-  return record.transNo;
 }

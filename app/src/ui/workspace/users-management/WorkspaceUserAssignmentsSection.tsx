@@ -16,8 +16,10 @@ import {
 } from "@/app/src/ui/workspace/WorkspaceManagementForm";
 import {
 	getBranchDisplayName,
+	getBranchScopedRolesHref,
 	getBranchScopedUsersHref,
 } from "@/app/src/ui/workspace/users-management/utils";
+
 
 const MainLoadingScreen = dynamic(() =>
 	import("@/app/src/ui/shared/app/MainLoadingScreen").then(
@@ -37,7 +39,7 @@ export function WorkspaceUserAssignmentsSection({
 	onRemoveCompany,
 	onSelectedCompanyChange,
 	onToggleBranch,
-	onUpdateCompanyRole,
+	onUpdateBranchRole,
 }: {
 	availableCompanies: WorkspaceCompanyRecord[];
 	branches: WorkspaceCompanyBranchRecord[];
@@ -50,6 +52,11 @@ export function WorkspaceUserAssignmentsSection({
 	onRemoveCompany: (companyId: string) => void;
 	onSelectedCompanyChange: (companyId: string) => void;
 	onToggleBranch: (companyId: string, branchId: string) => void;
+	onUpdateBranchRole?: (
+		companyId: string,
+		branchId: string,
+		companyRoleId: string | null,
+	) => void;
 	onUpdateCompanyRole?: (
 		companyId: string,
 		role: "ADMIN" | "USER",
@@ -76,7 +83,7 @@ export function WorkspaceUserAssignmentsSection({
 	return (
 		<WorkspaceManagementSection
 			title="Company & Branch Access"
-			description="Manage which companies, head office, branches, and satellites this user can access."
+			description="Manage which companies, head office, branches, and satellites this user can access with specific roles."
 		>
 			{isOpeningBranchUsers ? (
 				<div className="fixed inset-0 z-[9999]">
@@ -100,7 +107,7 @@ export function WorkspaceUserAssignmentsSection({
 						disabled={
 							isReadonly || availableCompanies.length === 0
 						}
-						className="h-11 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-semibold text-darknavy shadow-sm transition focus:border-skyblue focus:outline-none focus:ring-4 focus:ring-skyblue/15 disabled:cursor-not-allowed disabled:bg-darknavy/5 disabled:text-darknavy/40"
+						className="h-11 w-full rounded-lg border border-darknavy/10 bg-white px-3.5 text-sm font-semibold text-darknavy shadow-sm transition focus:border-skyblue focus:outline-none focus:ring-4 focus:ring-skyblue/15 disabled:cursor-not-allowed disabled:bg-darknavy/5 disabled:text-darknavy/40"
 					>
 						{availableCompanies.length === 0 ? (
 							<option value="">
@@ -127,11 +134,12 @@ export function WorkspaceUserAssignmentsSection({
 				</button>
 			</div>
 			{errors.companyAssignments ? (
-				<p className="mt-2 text-xs font-medium text-coralpink">
+				<p className="mt-2 text-sm font-medium text-coralpink">
 					{errors.companyAssignments}
 				</p>
 			) : null}
-			<div className="mt-4 grid gap-3">
+
+			<div className="mt-5 grid gap-4">
 				{values.companyAssignments.map((assignment) => {
 					const company = companies.find(
 						(record) => record.id === assignment.companyId,
@@ -143,164 +151,225 @@ export function WorkspaceUserAssignmentsSection({
 					return (
 						<article
 							key={assignment.companyId}
-							className="workspace-user-assignment-card rounded-lg border p-4"
+							className="workspace-user-assignment-card rounded-xl border border-darknavy/15 bg-white p-5 shadow-sm"
 						>
-							<div className="flex flex-wrap items-center justify-between gap-3">
+							<div className="flex flex-wrap items-center justify-between gap-3 border-b border-darknavy/10 pb-4">
 								<div>
-									<h3 className="text-sm font-semibold text-darknavy">
+									<h3 className="text-base font-bold text-darknavy">
 										{company?.name ?? "Company"}
 									</h3>
-									<p className="mt-1 text-xs text-darknavy/50">
-										{assignment.branchIds.length} selected
-										branch access
+									<p className="mt-1 text-xs font-medium text-darknavy/60">
+										{assignment.branchIds.length} branch{assignment.branchIds.length === 1 ? "" : "es"} selected
 									</p>
 								</div>
-								<button
-									type="button"
-									onClick={() =>
-										onRemoveCompany(assignment.companyId)
-									}
-									disabled={isReadonly}
-									className="rounded-md px-3 py-2 text-xs font-semibold text-coralpink transition hover:bg-coralpink/10 disabled:cursor-not-allowed disabled:opacity-50"
-								>
-									Remove
-								</button>
-							</div>
-
-							<div className="mt-3 flex flex-wrap items-center gap-3 rounded-lg border border-darknavy/10 bg-offwhite/50 p-3">
-								<div className="flex items-center gap-2">
-									<Shield
-										className="h-4 w-4 text-darknavy/50"
-										aria-hidden="true"
-									/>
-									<label
-										htmlFor={`workspace-user-role-${assignment.companyId}`}
-										className="text-xs font-semibold text-darknavy/70"
-									>
-										Role <span className="text-coralpink">*</span>:
-									</label>
-								</div>
-								{isReadonly ? (
-									<span className="inline-flex rounded-md bg-skyblue/10 px-2.5 py-1 text-xs font-semibold text-darknavy">
-										{assignment.companyRoleId
-											? company?.roles?.find(
-													(r) =>
-														r.id ===
-														assignment.companyRoleId,
-												)?.name ?? "Assigned Role"
-											: "No Role Assigned"}
-									</span>
-								) : (
-									<select
-										id={`workspace-user-role-${assignment.companyId}`}
-										required
-										value={
-											assignment.companyRoleId
-												? `custom:${assignment.companyRoleId}`
-												: ""
+								{!isReadonly ? (
+									<button
+										type="button"
+										onClick={() =>
+											onRemoveCompany(assignment.companyId)
 										}
-										onChange={(event) => {
-											const selectedVal =
-												event.target.value;
-											if (
-												selectedVal.startsWith("custom:")
-											) {
-												onUpdateCompanyRole?.(
-													assignment.companyId,
-													"USER",
-													selectedVal.replace(
-														"custom:",
-														"",
-													),
-												);
-											} else {
-												onUpdateCompanyRole?.(
-													assignment.companyId,
-													"USER",
-													null,
-												);
-											}
-										}}
-										className="h-9 rounded-md border border-darknavy/15 bg-white px-3 text-xs font-medium text-darknavy shadow-sm focus:border-skyblue focus:outline-none focus:ring-2 focus:ring-skyblue/20"
+										className="rounded-lg border border-coralpink/20 px-3.5 py-1.5 text-xs font-semibold text-coralpink transition hover:bg-coralpink/10"
 									>
-										<option value="" disabled>
-											{company?.roles &&
-											company.roles.length > 0
-												? "Select Role"
-												: "No roles available (Create in User Roles first)"}
-										</option>
-										{company?.roles &&
-										company.roles.length > 0
-											? company.roles.map((r) => (
-													<option
-														key={r.id}
-														value={`custom:${r.id}`}
-													>
-														{r.name}
-													</option>
-												))
-											: null}
-									</select>
-								)}
+										Remove Company
+									</button>
+								) : null}
 							</div>
 
-
-
-
-							<div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+							<div className="mt-4 space-y-3">
 								{companyBranches.length === 0 ? (
-									<div className="workspace-user-branch-card rounded-md border px-3 py-2 text-sm font-medium text-darknavy/50">
-										No active company units available.
+									<div className="rounded-lg border border-dashed border-darknavy/20 p-4 text-center text-sm font-medium text-darknavy/50">
+										No active branches or satellites available for this company.
 									</div>
 								) : null}
+
 								{companyBranches.map((branch) => {
 									const branchCheckboxId = `workspace-user-${assignment.companyId}-${branch.id}`;
 									const branchDisplayName =
 										getBranchDisplayName(branch);
+									const isBranchSelected =
+										assignment.branchIds.includes(branch.id);
+
+									const branchRoles =
+										company?.roles?.filter(
+											(r) =>
+												String(r.unitId) ===
+													String(branch.id) ||
+												!r.unitId,
+										) ?? [];
+
+									const selectedRoleId =
+										assignment.branchRoles?.[branch.id] ??
+										assignment.branches?.find(
+											(b) => b.id === branch.id,
+										)?.companyRoleId ??
+										"";
+
+									const selectedRoleName =
+										branchRoles.find(
+											(r) => r.id === selectedRoleId,
+										)?.name ??
+										assignment.branches?.find(
+											(b) => b.id === branch.id,
+										)?.companyRoleName;
 
 									return (
 										<div
 											key={branch.id}
-											className="workspace-user-branch-card flex items-center gap-3 rounded-md border px-3 py-2 text-sm font-medium text-darknavy"
+											className={`rounded-xl border transition-all ${
+												isBranchSelected
+													? "border-skyblue/50 bg-skyblue/[0.02] shadow-sm"
+													: "border-darknavy/10 bg-white hover:border-darknavy/20"
+											} p-4`}
 										>
-											<input
-												id={branchCheckboxId}
-												type="checkbox"
-												checked={assignment.branchIds.includes(
-													branch.id,
-												)}
-												onChange={() =>
-													onToggleBranch(
-														assignment.companyId,
-														branch.id,
-													)
-												}
-												disabled={isReadonly}
-												className="h-4 w-4 rounded border-darknavy/20 text-skyblue"
-											/>
-											<label
-												htmlFor={branchCheckboxId}
-												className="min-w-0 flex-1 cursor-pointer truncate"
-											>
-												{branchDisplayName}
-											</label>
-											<Link
-												href={getBranchScopedUsersHref({
-													branch,
-													company,
-													companyId:
-														assignment.companyId,
-												})}
-												onClick={handleBranchUsersClick}
-												aria-label={`Open user management for ${branchDisplayName}`}
-												className="inline-flex h-8 shrink-0 items-center justify-center gap-1 rounded-md px-2 text-xs font-semibold text-darknavy/55 transition hover:bg-skyblue/10 hover:text-skyblue focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/15"
-											>
-												<ExternalLink
-													className="h-3.5 w-3.5"
-													aria-hidden="true"
-												/>
-												Users
-											</Link>
+											<div className="flex flex-wrap items-center justify-between gap-3">
+												<div className="flex items-center gap-3">
+													<input
+														id={branchCheckboxId}
+														type="checkbox"
+														checked={isBranchSelected}
+														onChange={() =>
+															onToggleBranch(
+																assignment.companyId,
+																branch.id,
+															)
+														}
+														disabled={isReadonly}
+														className="h-5 w-5 rounded border-darknavy/25 text-skyblue focus:ring-skyblue/25 disabled:cursor-not-allowed"
+													/>
+													<label
+														htmlFor={branchCheckboxId}
+														className="cursor-pointer text-sm font-bold text-darknavy"
+													>
+														{branchDisplayName}
+													</label>
+													<span
+														className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+															branch.branchType === "Head Office"
+																? "bg-citron/30 text-darknavy"
+																: branch.branchType === "Branch"
+																	? "bg-skyblue/12 text-darknavy"
+																	: "bg-coralpink/12 text-coralpink"
+														}`}
+													>
+														{branch.branchType}
+													</span>
+												</div>
+
+												<div className="flex shrink-0 items-center gap-2">
+													<Link
+														href={getBranchScopedUsersHref({
+															branch,
+															company,
+															companyId:
+																assignment.companyId,
+														})}
+														onClick={handleBranchUsersClick}
+														aria-label={`Open user management for ${branchDisplayName}`}
+														className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-darknavy/10 bg-white px-3 text-xs font-semibold text-darknavy/70 transition hover:border-skyblue/30 hover:bg-skyblue/10 hover:text-skyblue focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/15"
+													>
+														<ExternalLink
+															className="h-3.5 w-3.5"
+															aria-hidden="true"
+														/>
+														Users
+													</Link>
+													<Link
+														href={getBranchScopedRolesHref({
+															branch,
+															company,
+															companyId:
+																assignment.companyId,
+														})}
+														onClick={handleBranchUsersClick}
+														aria-label={`Open user role management for ${branchDisplayName}`}
+														className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-darknavy/10 bg-white px-3 text-xs font-semibold text-darknavy/70 transition hover:border-skyblue/30 hover:bg-skyblue/10 hover:text-skyblue focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/15"
+													>
+														<ExternalLink
+															className="h-3.5 w-3.5"
+															aria-hidden="true"
+														/>
+														Roles
+													</Link>
+												</div>
+											</div>
+
+											{isBranchSelected ? (
+												<div className="mt-3.5 border-t border-darknavy/8 pt-3.5">
+													{isReadonly ? (
+														<div className="flex items-center gap-2">
+															<Shield
+																className="h-4 w-4 text-darknavy/50"
+																aria-hidden="true"
+															/>
+															<span className="text-xs font-semibold text-darknavy/70">
+																Assigned Role:
+															</span>
+															<span className="inline-flex rounded-md bg-skyblue/15 px-3 py-1 text-xs font-bold text-darknavy">
+																{selectedRoleName ?? "No Role Assigned"}
+															</span>
+														</div>
+													) : (
+														<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+															<div className="flex flex-wrap items-center gap-3">
+																<div className="flex items-center gap-2">
+																	<Shield
+																		className="h-4 w-4 text-darknavy/60"
+																		aria-hidden="true"
+																	/>
+																	<label
+																		htmlFor={`branch-role-${branch.id}`}
+																		className="text-xs font-bold text-darknavy/80"
+																	>
+																		Branch Role <span className="text-coralpink">*</span>:
+																	</label>
+																</div>
+
+																<select
+																	id={`branch-role-${branch.id}`}
+																	required
+																	value={selectedRoleId}
+																	onChange={(e) =>
+																		onUpdateBranchRole?.(
+																			assignment.companyId,
+																			branch.id,
+																			e.target.value || null,
+																		)
+																	}
+																	className="h-10 w-full rounded-lg border border-darknavy/15 bg-white px-3.5 text-sm font-medium text-darknavy shadow-sm transition focus:border-skyblue focus:outline-none focus:ring-2 focus:ring-skyblue/20 sm:w-64"
+																>
+																	<option value="" disabled>
+																		{branchRoles.length > 0
+																			? "Select Role for this branch"
+																			: "No roles available"}
+																	</option>
+																	{branchRoles.map((role) => (
+																		<option key={role.id} value={role.id}>
+																			{role.name}
+																		</option>
+																	))}
+																</select>
+															</div>
+
+															{branchRoles.length === 0 ? (
+																<p className="text-xs font-medium text-darknavy/60">
+																	No roles in this branch.{" "}
+																	<Link
+																		href={getBranchScopedRolesHref({
+																			branch,
+																			company,
+																			companyId: assignment.companyId,
+																		})}
+																		onClick={handleBranchUsersClick}
+																		className="font-semibold text-skyblue underline transition hover:text-skyblue/80"
+																	>
+																		Create role in System Administration
+																	</Link>
+																</p>
+															) : null}
+														</div>
+													)}
+												</div>
+											) : null}
 										</div>
 									);
 								})}

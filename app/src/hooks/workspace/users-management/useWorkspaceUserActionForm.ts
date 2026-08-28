@@ -182,6 +182,16 @@ export function useWorkspaceUserActionForm(
 			return;
 		}
 
+		const targetCompany = companies.find((c) => c.id === companyId);
+		const branchApplicableRoles =
+			targetCompany?.roles?.filter(
+				(r) => String(r.unitId) === String(branchId) || !r.unitId,
+			) ?? [];
+		const defaultRoleId =
+			branchApplicableRoles.length === 1
+				? branchApplicableRoles[0].id
+				: "";
+
 		setDraftValues((current) => ({
 			...(current ?? values),
 			companyAssignments: (current ?? values).companyAssignments.map((assignment) => {
@@ -190,15 +200,56 @@ export function useWorkspaceUserActionForm(
 				}
 
 				const hasBranch = assignment.branchIds.includes(branchId);
+				const nextBranchRoles = { ...(assignment.branchRoles ?? {}) };
+
+				if (hasBranch) {
+					delete nextBranchRoles[branchId];
+				} else if (defaultRoleId) {
+					nextBranchRoles[branchId] = defaultRoleId;
+				}
+
 				return {
 					...assignment,
 					branchIds: hasBranch
 						? assignment.branchIds.filter((id) => id !== branchId)
 						: [...assignment.branchIds, branchId],
+					branchRoles: nextBranchRoles,
 				};
 			}),
 		}));
 	}
+
+	function updateBranchRole(
+		companyId: string,
+		branchId: string,
+		companyRoleId: string | null,
+	) {
+		if (isReadonly) {
+			return;
+		}
+
+		setDraftValues((current) => ({
+			...(current ?? values),
+			companyAssignments: (current ?? values).companyAssignments.map((assignment) => {
+				if (assignment.companyId !== companyId) {
+					return assignment;
+				}
+
+				const nextBranchRoles = { ...(assignment.branchRoles ?? {}) };
+				if (companyRoleId) {
+					nextBranchRoles[branchId] = companyRoleId;
+				} else {
+					delete nextBranchRoles[branchId];
+				}
+
+				return {
+					...assignment,
+					branchRoles: nextBranchRoles,
+				};
+			}),
+		}));
+	}
+
 
 	function openCompanyAssignmentConfirm() {
 		if (!effectiveSelectedCompanyId) {
@@ -309,12 +360,14 @@ export function useWorkspaceUserActionForm(
 		submit,
 		validate,
 		toggleBranchAssignment,
+		updateBranchRole,
 		updateCompanyRole,
 		updateField,
 		values,
 		confirmCompanyAssignment: addCompanyAssignment,
 	};
 }
+
 
 
 function isWorkspaceUserEmailTakenError(error: unknown) {

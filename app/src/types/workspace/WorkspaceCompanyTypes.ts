@@ -113,6 +113,7 @@ export type WorkspaceCompanyFormErrors = Partial<Record<keyof WorkspaceCompanyFo
 export type WorkspaceUserCompanyAssignment = {
   companyId: string;
   branchIds: string[];
+  branchRoles?: Record<string, string>;
   role?: "ADMIN" | "USER";
   companyRoleId?: string | null;
   branches?: WorkspaceCompanyBranchRecord[];
@@ -143,6 +144,10 @@ export type WorkspaceCompanyUserFormErrors = Partial<Record<keyof WorkspaceCompa
 export type WorkspaceCompanyUserApiAssignment = {
   companyId: number;
   unitIds: number[];
+  unitAssignments?: Array<{
+    unitId: number;
+    companyRoleId?: number | null;
+  }>;
   role?: "ADMIN" | "USER";
   companyRoleId?: number | null;
   units?: WorkspaceCompanyUserAssignedUnitApiRecord[];
@@ -155,7 +160,14 @@ export type WorkspaceCompanyUserAssignedUnitApiRecord = {
   name: string;
   displayName: string | null;
   isActive: boolean;
+  companyRoleId?: number | null;
+  companyRole?: {
+    id: number;
+    name: string;
+    code: string;
+  } | null;
 };
+
 
 export type WorkspaceCompanyUserApiStatus = "ACTIVE" | "PENDING_VERIFICATION" | "SUSPENDED";
 
@@ -187,7 +199,10 @@ export type WorkspaceCompanyBranchRecord = {
   address: string;
   isMain: boolean;
   linkedMainBranchId?: string;
+  companyRoleId?: string | null;
+  companyRoleName?: string | null;
 };
+
 
 export type WorkspaceCompanyUnitApiType = "HEAD_OFFICE" | "BRANCH" | "SATELLITE";
 

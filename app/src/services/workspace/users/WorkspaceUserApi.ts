@@ -83,8 +83,18 @@ function MapWorkspaceUserFormToRequest(
     companyAssignments: values.companyAssignments.map((assignment) => ({
       companyId: Number(assignment.companyId),
       unitIds: assignment.branchIds.map(Number),
+      unitAssignments: assignment.branchIds.map((branchId) => ({
+        unitId: Number(branchId),
+        companyRoleId: assignment.branchRoles?.[branchId]
+          ? Number(assignment.branchRoles[branchId])
+          : assignment.companyRoleId
+            ? Number(assignment.companyRoleId)
+            : null,
+      })),
       role: assignment.role ?? "USER",
-      companyRoleId: assignment.companyRoleId ? Number(assignment.companyRoleId) : null,
+      companyRoleId: assignment.companyRoleId
+        ? Number(assignment.companyRoleId)
+        : null,
     })),
     contactNumber:
       contactNumber && contactNumber !== "+63" ? contactNumber : undefined,
@@ -99,17 +109,27 @@ export function MapWorkspaceUserApiRecord(
   const primaryCompanyId = user.companyAssignments[0]?.companyId;
 
   return {
-    companyAssignments: user.companyAssignments.map((assignment) => ({
-      branchIds: assignment.unitIds.map(String),
-      branches: assignment.units?.map(MapWorkspaceUserAssignedUnitApiRecord),
-      companyId: String(assignment.companyId),
-      role: (assignment as any).role ?? "USER",
-      companyRoleId: (assignment as any).companyRoleId
-        ? String((assignment as any).companyRoleId)
-        : null,
-    })),
+    companyAssignments: user.companyAssignments.map((assignment) => {
+      const branchRoles: Record<string, string> = {};
+      assignment.units?.forEach((u: any) => {
+        if (u.companyRoleId) {
+          branchRoles[String(u.id)] = String(u.companyRoleId);
+        }
+      });
+      return {
+        branchIds: assignment.unitIds.map(String),
+        branchRoles,
+        branches: assignment.units?.map((u) =>
+          MapWorkspaceUserAssignedUnitApiRecord(u as any),
+        ),
+        companyId: String(assignment.companyId),
+        role: (assignment as any).role ?? "USER",
+        companyRoleId: (assignment as any).companyRoleId
+          ? String((assignment as any).companyRoleId)
+          : null,
+      };
+    }),
     companyId: primaryCompanyId ? String(primaryCompanyId) : "",
-
 
     contactNumber: user.contactNumber ?? "",
     email: user.email,
@@ -125,7 +145,7 @@ export function MapWorkspaceUserApiRecord(
 }
 
 function MapWorkspaceUserAssignedUnitApiRecord(
-  unit: WorkspaceCompanyUserAssignedUnitApiRecord,
+  unit: any,
 ): WorkspaceCompanyBranchRecord {
   return {
     address: "",
@@ -139,8 +159,12 @@ function MapWorkspaceUserAssignedUnitApiRecord(
     name: unit.displayName ?? unit.name,
     status: GetWorkspaceCompanyUnitStatus(unit.isActive),
     tin: "",
+    companyRoleId: unit.companyRoleId ? String(unit.companyRoleId) : undefined,
+    companyRoleName: unit.companyRole?.name ?? undefined,
   };
 }
+
+
 
 function GetWorkspaceCompanyBranchType(
   type: WorkspaceCompanyUnitApiType,

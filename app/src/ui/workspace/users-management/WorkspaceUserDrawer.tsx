@@ -164,9 +164,11 @@ function WorkspaceUserDrawerPanel({
 							onRemoveCompany={form.removeCompanyAssignment}
 							onSelectedCompanyChange={form.setSelectedCompanyId}
 							onToggleBranch={form.toggleBranchAssignment}
+							onUpdateBranchRole={form.updateBranchRole}
 							onUpdateCompanyRole={form.updateCompanyRole}
 						/>
 					</div>
+
 				</form>
 
 			</ModuleDrawer>

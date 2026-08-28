@@ -7,10 +7,12 @@ import { InitialWorkspaceCompanyUserFormValues } from "@/app/src/data/workspace/
 import { useWorkspaceCompanyManagementStore } from "@/app/src/hooks/workspace/companies/useWorkspaceCompanyManagementStore";
 import { ApiClientError } from "@/app/src/services/shared/api/ApiClient";
 import type {
+	WorkspaceCompanyRecord,
 	WorkspaceCompanyUserFormErrors,
 	WorkspaceCompanyUserFormValues,
 	WorkspaceCompanyUserRecord,
 } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
+
 import { validateWorkspaceCompanyUserForm } from "@/app/src/validations/workspace/companies/WorkspaceCompanyValidation";
 
 export type WorkspaceUserActionMode = "add" | "edit" | "view";
@@ -75,10 +77,12 @@ export function useWorkspaceUserActionForm(
 		draftValues ?? existingUserValues ?? InitialWorkspaceCompanyUserFormValues;
 	const [errors, setErrors] = useState<WorkspaceCompanyUserFormErrors>({});
 	const [pendingCompanyId, setPendingCompanyId] = useState<string | null>(null);
+
 	const availableCompanies = useMemo(
 		() =>
 			companies.filter(
 				(company) =>
+					isCompanyActiveForAssignment(company) &&
 					!values.companyAssignments.some(
 						(assignment) => assignment.companyId === company.id,
 					),
@@ -88,6 +92,8 @@ export function useWorkspaceUserActionForm(
 	const [selectedCompanyId, setSelectedCompanyId] = useState("");
 	const effectiveSelectedCompanyId =
 		selectedCompanyId || availableCompanies[0]?.id || "";
+
+
 
 	function updateField(field: keyof WorkspaceCompanyUserFormValues, value: string) {
 		if (isReadonly) {
@@ -279,3 +285,10 @@ function isWorkspaceUserEmailTakenError(error: unknown) {
 function normalizeEmail(value: string) {
 	return value.trim().toLowerCase();
 }
+
+function isCompanyActiveForAssignment(company: WorkspaceCompanyRecord) {
+	const status = company.status;
+
+	return status === "Active" || status === "Trialing" || status === "Trial";
+}
+

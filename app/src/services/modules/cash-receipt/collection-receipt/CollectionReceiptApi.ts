@@ -15,9 +15,14 @@ import type {
   UpdateCollectionReceiptStatusDto,
 } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import {
-  calculateOfficialReceiptTotals,
-  syncOfficialReceiptCheckDetails,
-} from "@/app/src/data/modules/cash-receipt/official-receipt/OfficialReceiptData";
+  createCollectionReceiptAccountingRows,
+  calculateCollectionReceiptCwtAmount,
+  calculateCollectionReceiptNetOfVat,
+  calculateCollectionReceiptTotalReceived,
+  calculateCollectionReceiptTotals,
+  calculateCollectionReceiptVatAmount,
+  syncCollectionReceiptCheckDetails,
+} from "@/app/src/data/modules/cash-receipt/collection-receipt/CollectionReceiptData";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import type {
   CollectionReceiptFormValues,
@@ -85,9 +90,7 @@ export async function fetchCollectionReceipt(
   return mapApiCollectionReceipt(response.receipt);
 }
 
-export async function fetchCollectionReceiptNumberSuggestion(
-  branchUnitId?: number | null,
-): Promise<CollectionReceiptNumberSuggestion> {
+export async function fetchCollectionReceiptNumberSuggestion(branchUnitId?: number | null): Promise<CollectionReceiptNumberSuggestion> {
   return collectionReceiptControllerSuggestTransactionNumberV1(cleanQueryParams({ branchUnitId }));
 }
 
@@ -148,8 +151,8 @@ function createFormValuesFromApi(receipt: CollectionReceiptResponseDto): Collect
     exchangeRate: receipt.exchangeRate.toFixed(4),
     lineEntries: createLineEntriesFromApi(receipt),
     partyCode: receipt.customerCode,
-    paymentId: "",
-    paymentType: "",
+    paymentType: receipt.paymentType ?? "",
+    paymentId: receipt.paymentId ?? "",
     bankName: "",
     checkNo: "",
     checkDate: "",
@@ -162,39 +165,10 @@ function createFormValuesFromApi(receipt: CollectionReceiptResponseDto): Collect
 }
 
 function createLineEntriesFromApi(receipt: CollectionReceiptResponseDto): CollectionReceiptFormValues["lineEntries"] {
-  if (receipt.details.length === 0) {
-    return receipt.journalEntries.map((entry) => ({
-      accountCode: entry.accountCode,
-      accountTitle: entry.accountTitle,
-      bankName: "",
-      checkDate: "",
-      checkNo: "",
-      collectionType: entry.particulars ?? "",
-      credit: entry.credit.toFixed(2),
-      customerName: entry.partyName ?? receipt.customerName,
-      cwtCode: entry.atcCode ?? "WC 160",
-      cwtPercent: "2.00",
-      debit: entry.debit.toFixed(2),
-      ewt: "0.0000",
-      grossReceipt: Math.max(entry.debit, entry.credit).toFixed(4),
-      id: entry.id,
-      particulars: entry.particulars ?? "",
-      partyCode: entry.partyCode ?? receipt.customerCode,
-      partyName: entry.partyName ?? receipt.customerName,
-      referenceNo: entry.refNo ?? receipt.referenceNo ?? "",
-      responsibilityCenter: entry.responsibilityCenter ?? "",
-      vat: "0.0000",
-      vatExempt: "0.0000",
-      vatPercent: "12.00",
-      vatType: entry.vatType ?? "Output VAT (12%)",
-    }));
-  }
-
-  return receipt.details.map((detail, index) => {
-    const pairedJournalEntries = getJournalEntriesForDetail(receipt, index, detail.lineNumber);
-    const accountEntry = pairedJournalEntries.find((entry) => entry.accountCode.trim() !== "") ?? receipt.journalEntries[0];
-    const debit = pairedJournalEntries.reduce((sum, entry) => sum + entry.debit, 0);
-    const credit = pairedJournalEntries.reduce((sum, entry) => sum + entry.credit, 0);
+  return receipt.details.map((detail) => {
+    const accountEntry = receipt.journalEntries[0];
+    const debit = detail.grossAmount;
+    const credit = detail.grossAmount;
 
     return {
       accountCode: accountEntry?.accountCode ?? "",
@@ -204,87 +178,62 @@ function createLineEntriesFromApi(receipt: CollectionReceiptResponseDto): Collec
       checkNo: "",
       collectionType: detail.description,
       credit: credit.toFixed(2),
-      customerName: accountEntry?.partyName ?? receipt.customerName,
-      cwtCode: detail.ewtType ?? accountEntry?.atcCode ?? "WC 160",
-      cwtPercent: detail.grossAmount > 0 ? ((detail.ewtAmount / detail.grossAmount) * 100).toFixed(2) : "0.00",
+      customerName: detail.partyName ?? receipt.customerName,
+      cwtCode: detail.cwtCode ?? "",
+      cwtPercent: detail.cwtPercent.toFixed(2),
       debit: debit.toFixed(2),
       ewt: detail.ewtAmount.toFixed(4),
       grossReceipt: detail.grossAmount.toFixed(4),
       id: detail.id,
-      particulars: detail.particulars ?? accountEntry?.particulars ?? "",
-      partyCode: accountEntry?.partyCode ?? receipt.customerCode,
-      partyName: accountEntry?.partyName ?? receipt.customerName,
-      referenceNo: accountEntry?.refNo ?? receipt.referenceNo ?? "",
-      responsibilityCenter: detail.responsibilityCenter ?? accountEntry?.responsibilityCenter ?? "",
+      particulars: detail.particulars ?? "",
+      partyCode: detail.partyCode ?? receipt.customerCode,
+      partyName: detail.partyName ?? receipt.customerName,
+      referenceNo: detail.referenceNo ?? receipt.referenceNo ?? "",
+      responsibilityCenter: detail.responsibilityCenter ?? "",
       vat: detail.vatAmount.toFixed(4),
       vatExempt: "0.0000",
-      vatPercent: detail.grossAmount > 0 ? ((detail.vatAmount / detail.grossAmount) * 100).toFixed(2) : "0.00",
-      vatType: detail.vatType ?? accountEntry?.vatType ?? "Output VAT (12%)",
+      vatPercent: detail.vatPercent.toFixed(2),
+      vatType: detail.vatType ?? "",
     };
   });
 }
 
-function getJournalEntriesForDetail(
-  receipt: CollectionReceiptResponseDto,
-  detailIndex: number,
-  detailLineNumber: number,
-) {
-  const pairedEntries = receipt.journalEntries.slice(detailIndex * 2, detailIndex * 2 + 2);
-
-  if (pairedEntries.length > 0) {
-    return pairedEntries;
-  }
-
-  return receipt.journalEntries.filter((entry) => entry.lineNumber === detailLineNumber);
-}
-
-function toApiCollectionReceiptPayload(
-  values: CollectionReceiptFormValues,
-  branchUnitId?: number | null,
-): CreateCollectionReceiptDto {
-  const syncedValues = syncOfficialReceiptCheckDetails(values);
-  const currencyCode = syncedValues.currency.trim();
-  const exchangeRate = toExchangeRate(syncedValues.exchangeRate);
-  const totals = calculateOfficialReceiptTotals(syncedValues.lineEntries);
+function toApiCollectionReceiptPayload(values: CollectionReceiptFormValues, branchUnitId?: number | null): CreateCollectionReceiptDto {
+  const syncedValues = syncCollectionReceiptCheckDetails(values);
+  const currencyCode = values.currency.trim();
+  const exchangeRate = toExchangeRate(values.exchangeRate);
+  const totals = calculateCollectionReceiptTotals(syncedValues.lineEntries);
   const referenceNo = cleanOptional(syncedValues.referenceNo);
   const firstLine = syncedValues.lineEntries[0];
 
   return {
-    address: null,
     billToName: cleanOptional(syncedValues.customerName),
     branchUnitId: branchUnitId ?? undefined,
-    businessStyle: null,
-    contactNo: null,
-    contactPerson: null,
     currency: currencyCode,
     customerCode: syncedValues.partyCode.trim(),
     customerName: syncedValues.customerName.trim(),
     details: syncedValues.lineEntries.map((line, index) => {
       const grossReceipt = toNumber(line.grossReceipt);
-      const vatAmount = toNumber(line.vat);
-      const ewtAmount = toNumber(line.ewt);
+      const vatAmount = calculateCollectionReceiptVatAmount(line);
+      const ewtAmount = calculateCollectionReceiptCwtAmount(line);
 
       return {
-        amount: grossReceipt,
+        cwtCode: cleanOptional(line.cwtCode),
+        cwtPercent: toNumber(line.cwtPercent),
         description: line.collectionType.trim() || "Collection",
-        discountAmount: 0,
-        discountPercent: 0,
         ewtAmount,
-        ewtType: null,
         grossAmount: grossReceipt,
         lineNumber: index + 1,
-        netAmount: Math.max(grossReceipt - vatAmount, 0),
-        particulars: cleanOptional(line.collectionType),
-        quantity: 1,
-        responsibilityCenter: null,
+        netAmount: calculateCollectionReceiptNetOfVat(line),
+        particulars: cleanOptional(line.particulars) ?? cleanOptional(line.collectionType),
+        partyCode: cleanOptional(line.partyCode),
+        partyName: cleanOptional(line.partyName) ?? cleanOptional(line.customerName),
+        referenceNo: cleanOptional(line.referenceNo),
+        responsibilityCenter: cleanOptional(line.responsibilityCenter),
+        totalReceived: calculateCollectionReceiptTotalReceived(line),
         vatAmount,
-        vatInclusive: false,
-        vatType: null,
-        vatable: vatAmount > 0,
-        withEwt: ewtAmount > 0,
-        withWvat: false,
-        wvatAmount: 0,
-        wvatType: null,
+        vatPercent: toNumber(line.vatPercent),
+        vatType: cleanOptional(line.vatType),
       };
     }),
     discountAmount: 0,
@@ -295,18 +244,12 @@ function toApiCollectionReceiptPayload(
     grossAmount: totals.grossReceipt,
     journalEntries: createCollectionReceiptJournalEntries(syncedValues, currencyCode, exchangeRate, referenceNo),
     netAmount: Math.max(totals.grossReceipt - totals.vat, 0),
-    projectCode: null,
-    projectName: null,
-    projectRef: null,
-    receivableAccountCode: firstLine?.accountCode.trim() || "1010",
+    paymentId: cleanOptional(syncedValues.paymentId),
+    receivableAccountCode: firstLine?.accountCode.trim() || "1010103001",
     receivableAccountTitle: firstLine?.accountTitle.trim() || "Cash in Bank",
     receiptNo: cleanOptional(syncedValues.receiptNo),
     referenceNo,
     remarks: cleanOptional(syncedValues.remarks),
-    salesAssociate: null,
-    teamAssigned: null,
-    termId: null,
-    terms: null,
     transactionNo: cleanOptional(syncedValues.receiptNo),
     vatAmount: totals.vat,
     wvatAmount: 0,
@@ -319,77 +262,23 @@ function createCollectionReceiptJournalEntries(
   exchangeRate: number,
   fallbackReferenceNo: string | null,
 ): CollectionReceiptJournalEntryDto[] {
-  const journalEntries: CollectionReceiptJournalEntryDto[] = [];
-
-  for (const entry of values.lineEntries) {
-    const debit = toNumber(entry.debit);
-    const credit = toNumber(entry.credit);
-    const fallbackAmount = Math.max(toNumber(entry.grossReceipt), 0);
-
-    if (debit > 0) {
-      journalEntries.push(createJournalEntry(entry, journalEntries.length + 1, currencyCode, exchangeRate, fallbackReferenceNo, debit, 0));
-    }
-
-    if (credit > 0) {
-      journalEntries.push(createJournalEntry(entry, journalEntries.length + 1, currencyCode, exchangeRate, fallbackReferenceNo, 0, credit));
-    }
-
-    if (debit <= 0 && credit <= 0 && fallbackAmount > 0) {
-      journalEntries.push(createJournalEntry(entry, journalEntries.length + 1, currencyCode, exchangeRate, fallbackReferenceNo, fallbackAmount, 0));
-      journalEntries.push(createJournalEntry(entry, journalEntries.length + 1, currencyCode, exchangeRate, fallbackReferenceNo, 0, fallbackAmount));
-    }
-  }
-
-  const totals = journalEntries.reduce(
-    (summary, entry) => ({
-      credit: summary.credit + entry.credit,
-      debit: summary.debit + entry.debit,
-    }),
-    { credit: 0, debit: 0 },
-  );
-  const balancingSource = values.lineEntries[0];
-
-  if (balancingSource && totals.debit > totals.credit) {
-    journalEntries.push(
-      createJournalEntry(balancingSource, journalEntries.length + 1, currencyCode, exchangeRate, fallbackReferenceNo, 0, totals.debit - totals.credit),
-    );
-  }
-
-  if (balancingSource && totals.credit > totals.debit) {
-    journalEntries.push(
-      createJournalEntry(balancingSource, journalEntries.length + 1, currencyCode, exchangeRate, fallbackReferenceNo, totals.credit - totals.debit, 0),
-    );
-  }
-
-  return journalEntries;
-}
-
-function createJournalEntry(
-  entry: CollectionReceiptFormValues["lineEntries"][number],
-  lineNumber: number,
-  currencyCode: string,
-  exchangeRate: number,
-  fallbackReferenceNo: string | null,
-  debit: number,
-  credit: number,
-): CollectionReceiptJournalEntryDto {
-  return {
-    accountCode: entry.accountCode.trim(),
-    accountTitle: entry.accountTitle.trim(),
-    atcCode: null,
-    credit,
+  return createCollectionReceiptAccountingRows(values.lineEntries).map((entry, index) => ({
+    accountCode: entry.accountCode,
+    accountTitle: entry.accountTitle,
+    atcCode: cleanOptional(entry.cwtCode),
+    credit: toNumber(entry.credit),
     currencyCode,
-    debit,
+    debit: toNumber(entry.debit),
     exchangeRate,
-    lineNumber,
-    particulars: cleanOptional(entry.collectionType),
+    lineNumber: index + 1,
+    particulars: cleanOptional(entry.particulars),
     partyCode: cleanOptional(entry.partyCode),
-    partyName: cleanOptional(entry.customerName),
+    partyName: cleanOptional(entry.partyName),
     referenceType: "CR",
     refNo: cleanOptional(entry.referenceNo) ?? fallbackReferenceNo,
-    responsibilityCenter: null,
-    vatType: null,
-  };
+    responsibilityCenter: cleanOptional(entry.responsibilityCenter),
+    vatType: cleanOptional(entry.vatType),
+  }));
 }
 
 function createFormValuesFromRecord(record: CollectionReceiptRecord): CollectionReceiptFormValues {
@@ -399,8 +288,8 @@ function createFormValuesFromRecord(record: CollectionReceiptRecord): Collection
     exchangeRate: "1.0000",
     lineEntries: record.formValues?.lineEntries ?? [],
     partyCode: record.partyCode,
-    paymentId: record.formValues?.paymentId ?? "",
     paymentType: record.formValues?.paymentType ?? "",
+    paymentId: record.formValues?.paymentId ?? "",
     bankName: record.formValues?.bankName ?? record.formValues?.lineEntries[0]?.bankName ?? "",
     checkNo: record.formValues?.checkNo ?? record.formValues?.lineEntries[0]?.checkNo ?? "",
     checkDate: record.formValues?.checkDate ?? record.formValues?.lineEntries[0]?.checkDate ?? "",

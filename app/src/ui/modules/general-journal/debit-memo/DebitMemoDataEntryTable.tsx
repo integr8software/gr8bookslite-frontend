@@ -121,7 +121,6 @@ export function DebitMemoDataEntryTable({ page }: DebitMemoDataEntryTableProps) 
       isVisible: visibleColumnIds.includes(columnId),
       label: columnLabels[columnId],
       width: columnWidths[columnId],
-      widthMode: "fixed",
     }));
   const columnById: Record<
     DebitMemoAccountingColumnId,
@@ -140,7 +139,6 @@ export function DebitMemoDataEntryTable({ page }: DebitMemoDataEntryTableProps) 
       ),
       width: columnWidths.accountCode,
       widthClassName: "",
-      widthMode: "fixed",
     },
     accountTitle: {
       header: columnLabels.accountTitle,
@@ -167,7 +165,6 @@ export function DebitMemoDataEntryTable({ page }: DebitMemoDataEntryTableProps) 
       ),
       width: columnWidths.accountTitle,
       widthClassName: "",
-      widthMode: "fixed",
     },
     particulars: {
       header: columnLabels.particulars,
@@ -182,7 +179,6 @@ export function DebitMemoDataEntryTable({ page }: DebitMemoDataEntryTableProps) 
       ),
       width: columnWidths.particulars,
       widthClassName: "",
-      widthMode: "fixed",
     },
     debit: {
       header: columnLabels.debit,
@@ -198,7 +194,6 @@ export function DebitMemoDataEntryTable({ page }: DebitMemoDataEntryTableProps) 
       ),
       width: columnWidths.debit,
       widthClassName: "",
-      widthMode: "fixed",
     },
     credit: {
       header: columnLabels.credit,
@@ -214,7 +209,6 @@ export function DebitMemoDataEntryTable({ page }: DebitMemoDataEntryTableProps) 
       ),
       width: columnWidths.credit,
       widthClassName: "",
-      widthMode: "fixed",
     },
     vatType: {
       header: columnLabels.vatType,
@@ -233,7 +227,6 @@ export function DebitMemoDataEntryTable({ page }: DebitMemoDataEntryTableProps) 
       ),
       width: columnWidths.vatType,
       widthClassName: "",
-      widthMode: "fixed",
     },
     atcCode: {
       header: columnLabels.atcCode,
@@ -255,7 +248,6 @@ export function DebitMemoDataEntryTable({ page }: DebitMemoDataEntryTableProps) 
       ),
       width: columnWidths.atcCode,
       widthClassName: "",
-      widthMode: "fixed",
     },
     partyCode: {
       header: columnLabels.partyCode,
@@ -263,7 +255,6 @@ export function DebitMemoDataEntryTable({ page }: DebitMemoDataEntryTableProps) 
       renderCell: (entry) => <LineInput value={entry.partyCode} onChange={() => undefined} readOnly />,
       width: columnWidths.partyCode,
       widthClassName: "",
-      widthMode: "fixed",
     },
     partyName: {
       header: columnLabels.partyName,
@@ -282,7 +273,6 @@ export function DebitMemoDataEntryTable({ page }: DebitMemoDataEntryTableProps) 
       ),
       width: columnWidths.partyName,
       widthClassName: "",
-      widthMode: "fixed",
     },
     responsibilityCenter: {
       header: columnLabels.responsibilityCenter,
@@ -297,7 +287,6 @@ export function DebitMemoDataEntryTable({ page }: DebitMemoDataEntryTableProps) 
       ),
       width: columnWidths.responsibilityCenter,
       widthClassName: "",
-      widthMode: "fixed",
     },
     refNo: {
       header: columnLabels.refNo,
@@ -311,7 +300,6 @@ export function DebitMemoDataEntryTable({ page }: DebitMemoDataEntryTableProps) 
       ),
       width: columnWidths.refNo,
       widthClassName: "",
-      widthMode: "fixed",
     },
   };
   const columns = visibleColumnOrder.map((columnId) => columnById[columnId]);

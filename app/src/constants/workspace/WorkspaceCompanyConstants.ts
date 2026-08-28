@@ -21,9 +21,16 @@ export const WorkspaceCompanyEditFromViewQuery = `${WorkspaceCompanyEditFromPara
 
 export const WorkspaceCompanyStatusOptions = [
 	"Active",
-	"Pending",
-	"Inactive",
+	"Trialing",
+	"Past Due",
+	"Incomplete",
+	"Unpaid",
+	"Incomplete Canceled",
+	"Expired",
+	"Canceled",
 ] as const satisfies readonly WorkspaceCompanyStatus[];
+
+
 
 export const WorkspaceUserStatusOptions = [
 	"Active",

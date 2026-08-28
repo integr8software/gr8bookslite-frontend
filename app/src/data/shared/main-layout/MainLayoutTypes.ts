@@ -149,7 +149,8 @@ export type MainCompany = {
   id: string;
   name: string;
   logoUrl?: string;
-  status: "Active" | "Inactive";
+  status: string;
+  isSwitchable?: boolean;
   businessKind?: string;
   subscriptionPackage?: MainSubscriptionOption;
   branches?: MainBranch[];
@@ -158,6 +159,7 @@ export type MainCompany = {
   branchName?: string;
   helperText?: string;
 };
+
 
 export type MainSubscriptionOption = {
   id: ModuleSubscriptionPlanId;

@@ -184,6 +184,10 @@ function MapWorkspaceCompanyApiRecord(company: WorkspaceCompanyApiLike): Workspa
     reportEndDate: GetDateInputValue(company.reportEndDate),
     reportStartDate: GetDateInputValue(company.reportStartDate),
     status: GetWorkspaceCompanyStatus(company),
+    subscriptionStatus:
+      (company as any).subscriptionStatus ??
+      (company as any).subscriptionPlan?.status ??
+      undefined,
     taxpayerType: company.taxpayerType === "INDIVIDUAL" ? "individual" : "non-individual",
     tin: company.tin ?? undefined,
     totalBranches: company.totalUnits ?? 0,
@@ -191,6 +195,7 @@ function MapWorkspaceCompanyApiRecord(company: WorkspaceCompanyApiLike): Workspa
     website: company.website ?? undefined,
   };
 }
+
 
 function MapWorkspaceCompanyUnitApiRecord(unit: WorkspaceCompanyUnitApiLike): WorkspaceCompanyBranchRecord {
   return {
@@ -367,16 +372,35 @@ function GetWorkspaceCompanyPlan(company: WorkspaceCompanyApiLike) {
 }
 
 function GetWorkspaceCompanyStatus(company: WorkspaceCompanyApiLike): WorkspaceCompanyStatus {
+  const rawSubStatus =
+    (company as any).subscriptionStatus ??
+    (company as any).subscriptionPlan?.status ??
+    (company as any).subscription?.status;
+
+  if (rawSubStatus) {
+    const normalized = String(rawSubStatus).toUpperCase().replace(/[^A-Z_]/g, "");
+    if (normalized === "ACTIVE") return "Active";
+    if (normalized === "TRIALING" || normalized === "TRIAL") return "Trialing";
+    if (normalized === "PAST_DUE" || normalized === "PASTDUE") return "Past Due";
+    if (normalized === "INCOMPLETE") return "Incomplete";
+    if (normalized === "UNPAID") return "Unpaid";
+    if (normalized === "INCOMPLETE_CANCEL" || normalized === "INCOMPLETE_CANCELED") return "Incomplete Canceled";
+    if (normalized === "EXPIRED") return "Expired";
+    if (normalized === "CANCELED" || normalized === "CANCELLED") return "Canceled";
+  }
+
   if (!company.isActive || company.status === "SUSPENDED") {
-    return "Inactive";
+    return "Expired";
   }
 
   if (company.status === "ACTIVE") {
     return "Active";
   }
 
-  return "Pending";
+  return "Incomplete";
 }
+
+
 
 function GetWorkspaceCompanyType(company: WorkspaceCompanyApiLike): WorkspaceCompanyType {
   if (company.taxpayerType === "INDIVIDUAL") {

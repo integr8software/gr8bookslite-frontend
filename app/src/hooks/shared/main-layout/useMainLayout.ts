@@ -825,7 +825,12 @@ export function useMainLayout() {
 
     const selectedCompany = availableCompanies.find((company) => company.id === companyId);
 
+    if (selectedCompany?.isSwitchable === false) {
+      return;
+    }
+
     const requestId = latestCompanySwitchRequestRef.current + 1;
+
 
     latestCompanySwitchRequestRef.current = requestId;
     beginShellContextSwitchWithFallback(selectedCompany ? `Switching to ${selectedCompany.name}...` : "Switching company...");
@@ -1135,18 +1140,38 @@ function MapProfileCompaniesToMainCompanies(profile: AuthProfile) {
   return (profile.companies ?? [])
     .filter(
       (company) =>
-        isOptionalActiveStatus(company.membershipStatus) &&
-        company.isCompanyActive !== false &&
-        isOptionalActiveStatus(company.companyStatus),
+        isOptionalActiveStatus(company.membershipStatus),
     )
     .map((company) => {
       const branches = mapProfileCompanyUnitsToMainBranches({ company });
+      const rawSubStatus =
+        (company as any).subscriptionStatus ??
+        (company.isCompanyActive !== false && isOptionalActiveStatus(company.companyStatus)
+          ? "ACTIVE"
+          : "INCOMPLETE");
+
+      const normalized = String(rawSubStatus).toUpperCase().replace(/[^A-Z_]/g, "");
+      let status = "Incomplete";
+      if (normalized === "ACTIVE") status = "Active";
+      else if (normalized === "TRIALING" || normalized === "TRIAL") status = "Trialing";
+      else if (normalized === "PAST_DUE" || normalized === "PASTDUE") status = "Past Due";
+      else if (normalized === "INCOMPLETE") status = "Incomplete";
+      else if (normalized === "UNPAID") status = "Unpaid";
+      else if (normalized === "INCOMPLETE_CANCEL" || normalized === "INCOMPLETE_CANCELED") status = "Incomplete Canceled";
+      else if (normalized === "EXPIRED") status = "Expired";
+      else if (normalized === "CANCELED" || normalized === "CANCELLED") status = "Canceled";
+
+      const isSwitchable =
+        company.isCompanyActive !== false &&
+        isOptionalActiveStatus(company.companyStatus) &&
+        (status === "Active" || status === "Trialing");
 
       return {
         id: String(company.companyId),
         name: company.companyName,
         logoUrl: company.logoPublicUrl ?? undefined,
-        status: "Active" as const,
+        status,
+        isSwitchable,
         businessKind: undefined,
         subscriptionPackage: undefined,
         branches,
@@ -1157,6 +1182,7 @@ function MapProfileCompaniesToMainCompanies(profile: AuthProfile) {
       };
     });
 }
+
 
 function parsePositiveInteger(value: string | number | null | undefined) {
   const numberValue = Number(value);

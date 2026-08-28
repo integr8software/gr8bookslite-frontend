@@ -1,6 +1,20 @@
-export type WorkspaceCompanyStatus = "Active" | "Inactive" | "Pending";
+export type WorkspaceCompanyStatus =
+  | "Active"
+  | "Trialing"
+  | "Past Due"
+  | "Incomplete"
+  | "Unpaid"
+  | "Incomplete Canceled"
+  | "Expired"
+  | "Canceled"
+  | "Trial"
+  | "Scheduled"
+  | "Inactive"
+  | "Pending"
+  | "Suspended";
 
-export type WorkspaceUserStatus = WorkspaceCompanyStatus | "Suspended";
+
+export type WorkspaceUserStatus = "Active" | "Inactive" | "Pending" | "Suspended";
 
 export type WorkspaceCompanyPlan = string;
 
@@ -17,12 +31,14 @@ export type WorkspaceCompanyRecord = {
   companyType: WorkspaceCompanyType;
   plan: WorkspaceCompanyPlan;
   status: WorkspaceCompanyStatus;
+  subscriptionStatus?: string;
   countryCode: string;
   baseCurrencyCode: string;
   email: string;
   contactNumber: string;
   address: string;
   primaryContact: string;
+
   createdByUser?: {
     id: string;
     name: string;

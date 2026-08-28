@@ -166,26 +166,35 @@ export function CompanySwitcher({
 							</>
 						) : null}
 
-						{availableCompanies.map((company) => (
-							<SwitcherButton
-								key={company.id}
-								description={getCompanySwitcherDescription(
-									company,
-								)}
-								icon={Building2}
-								imageUrl={company.logoUrl}
-								isActive={
-									!isAdministrationActive &&
-									company.id === currentCompany.id
-								}
-								label={company.name}
-								status={company.status}
-								onClick={() => {
-									onSelectCompany(company.id);
-									onClose();
-								}}
-							/>
-						))}
+						{availableCompanies.map((company) => {
+							const isUnswitchable = company.isSwitchable === false;
+
+							return (
+								<SwitcherButton
+									key={company.id}
+									description={getCompanySwitcherDescription(
+										company,
+									)}
+									disabled={isUnswitchable}
+									icon={Building2}
+									imageUrl={company.logoUrl}
+									isActive={
+										!isAdministrationActive &&
+										company.id === currentCompany.id
+									}
+									label={company.name}
+									status={company.status}
+									onClick={() => {
+										if (isUnswitchable) {
+											return;
+										}
+										onSelectCompany(company.id);
+										onClose();
+									}}
+								/>
+							);
+						})}
+
 					</div>
 				</div>
 			) : null}

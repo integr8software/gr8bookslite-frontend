@@ -6,12 +6,12 @@ import type {
   CashAdvanceSubmitConfirmationAction,
 } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 import type { ModuleTabItem } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
+import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
 
 export const CashAdvanceLink = getModuleRoute("CA");
 export const CashAdvanceAddLink = `${CashAdvanceLink}/add`;
 export const getCashAdvanceEditLink = (recordId: string) => `${CashAdvanceLink}/edit/${recordId}`;
 export const getCashAdvanceViewLink = (recordId: string) => `${CashAdvanceLink}/view/${recordId}`;
-export const CashAdvanceStorageKey = "gr8books.cash-advance.records";
 export const CashAdvanceTransactionNumberPrefix = "CA-";
 export const CashAdvanceTransactionNumberPadding = 6;
 
@@ -98,6 +98,11 @@ export const CashAdvanceTablePaginationStorageKey = "cash-disbursement-cash-adva
 export const CashAdvanceTablePreferencesModuleKey = "cash-disbursement:cash-advance";
 export const CashAdvanceTablePreferencesStorageKey = "cash-disbursement:cash-advance:table-preferences";
 
+export const CashAdvanceOverviewColumnWidths = {
+  ...TransactionOverviewColumnWidths,
+  partyName: 220,
+} as const;
+
 export const CashAdvanceDefaultColumnOrder: ColumnOrderState = [
   "transNo",
   "documentDate",
@@ -106,6 +111,7 @@ export const CashAdvanceDefaultColumnOrder: ColumnOrderState = [
   "accountCode",
   "accountTitle",
   "currency",
+  "fxRate",
   "amount",
   "remarks",
   "createdBy",
@@ -121,6 +127,7 @@ export const CashAdvanceDefaultColumnVisibility: VisibilityState = {
   createdAt: false,
   createdBy: false,
   currency: false,
+  fxRate: false,
   partyCode: false,
   remarks: false,
   updatedAt: false,
@@ -132,22 +139,8 @@ export const CashAdvanceDefaultSorting: SortingState = [{ id: "createdAt", desc:
 export function getCashAdvanceTableMinWidthClassName(visibleColumnCount: number) {
   if (visibleColumnCount >= 13) return "min-w-[150rem]";
   if (visibleColumnCount >= 10) return "min-w-[122rem]";
-  return "min-w-[86rem]";
+  return "min-w-[76rem]";
 }
-
-export const CashAdvanceAccountOptions = [
-  { label: "Select Account", value: "" },
-  { label: "Cash Advance", value: "1130-CA" },
-  { label: "Employee Advance", value: "1130-EA" },
-  { label: "Officer Advance", value: "1135-OA" },
-] as const;
-
-export const CashAdvanceCostCenterOptions = [
-  { label: "Select Cost Center", value: "" },
-  { label: "Operations", value: "Operations" },
-  { label: "Admin", value: "Admin" },
-  { label: "Sales", value: "Sales" },
-] as const;
 
 export function canEditCashAdvanceStatus(status: CashAdvanceStatus) {
   return status === CashAdvanceStatuses.draft || status === CashAdvanceStatuses.forApproval;
@@ -165,11 +158,7 @@ export function canCancelCashAdvanceStatus(status: CashAdvanceStatus) {
   return status === CashAdvanceStatuses.draft || status === CashAdvanceStatuses.forApproval || status === CashAdvanceStatuses.cancelled;
 }
 
-export function getCashAdvanceStatusDialogCopy(
-  status: CashAdvanceStatus,
-  recordLabel: string,
-  currentStatus?: CashAdvanceStatus,
-) {
+export function getCashAdvanceStatusDialogCopy(status: CashAdvanceStatus, recordLabel: string, currentStatus?: CashAdvanceStatus) {
   if (status === CashAdvanceStatuses.forApproval && currentStatus === CashAdvanceStatuses.posted) {
     return {
       confirmLabel: "Undo Approved",

@@ -10,13 +10,11 @@ import {
   type PaginationState,
 } from "@tanstack/react-table";
 import toast from "react-hot-toast";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ReceiptText } from "lucide-react";
 import {
   createCashAdvanceFormValues,
   createCashAdvanceFormValuesFromRecord,
-  createCashAdvanceRecordFromForm,
-  getInitialCashAdvances,
-  writeStoredCashAdvances,
 } from "@/app/src/data/modules/cash-disbursement/cash-advance/CashAdvanceData";
 import { formatMoneyNumberDisplayValue, parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import { syncTaxDetailsAmount } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
@@ -32,6 +30,7 @@ import {
   CashAdvanceStatuses,
   CashAdvanceTablePreferencesModuleKey,
   CashAdvanceTablePreferencesStorageKey,
+  CashAdvanceOverviewColumnWidths,
 } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
 import type {
   CashAdvanceActionMode,
@@ -53,87 +52,71 @@ import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hook
 import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import { normalizeLowercaseWhitespace } from "@/app/src/utils/string.util";
-import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
 import {
   createCashAdvanceApi,
-  deleteCashAdvanceApi,
+  fetchCashAdvanceById,
   fetchCashAdvanceList,
   fetchNextCashAdvanceTransactionNo,
   submitCashAdvanceApprovalApi,
   updateCashAdvanceApi,
+  updateCashAdvanceStatusApi,
 } from "@/app/src/services/modules/cash-disbursement/cash-advance/CashAdvanceApi";
 import { useTablePreferences } from "@/app/src/hooks/shared/table-preferences/useTablePreferences";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 
 export function useCashAdvanceStore<TSelected = CashAdvanceStoreState>(selector?: (state: CashAdvanceStoreState) => TSelected) {
-  const [advances, setAdvances] = useState<CashAdvanceRecord[]>(getInitialCashAdvances);
-  const [isLoading, setIsLoading] = useState(true);
-  const [lastSyncedAt, setLastSyncedAt] = useState(() => Date.now());
+  const queryClient = useQueryClient();
+  const activeCompanyId = useAppStore((state) => state.activeCompanyId);
+  const queryKey = ["cash-disbursement", "cash-advance", "records", activeCompanyId] as const;
+  const advancesQuery = useQuery({
+    queryKey,
+    queryFn: async () => {
+      try {
+        const response = await fetchCashAdvanceList();
+        return response.data ?? [];
+      } catch {
+        toast.error("Could not load Cash Advance records.");
+        return [];
+      }
+    },
+    enabled: activeCompanyId !== null,
+    initialData: [],
+  });
+  const advances = advancesQuery.data;
 
   const refreshRecords = useCallback(() => {
-    setIsLoading(true);
-    fetchCashAdvanceList()
-      .then((res) => {
-        if (res?.data && res.data.length > 0) {
-          setAdvances(res.data);
-          writeStoredCashAdvances(res.data);
-        } else {
-          setAdvances(getInitialCashAdvances());
-        }
-      })
-      .catch(() => {
-        setAdvances(getInitialCashAdvances());
-      })
-      .finally(() => {
-        setIsLoading(false);
-        setLastSyncedAt(Date.now());
-      });
-  }, []);
+    void queryClient.invalidateQueries({ queryKey: ["cash-disbursement", "cash-advance"] });
+  }, [queryClient]);
 
-  useEffect(() => {
-    queueMicrotask(refreshRecords);
-  }, [refreshRecords]);
-
-  const updateAdvanceStatus = useCallback(
-    (record: CashAdvanceRecord, status: CashAdvanceStatus) => {
-      const updatedAt = new Date().toISOString();
-      setAdvances((currentAdvances) => {
-        const nextAdvances = currentAdvances.map((currentRecord) =>
-          currentRecord.id === record.id
-            ? {
-                ...currentRecord,
-                formValues: currentRecord.formValues ? { ...currentRecord.formValues, status } : currentRecord.formValues,
-                status,
-                updatedAt,
-                updatedBy: "Current User",
-              }
-            : currentRecord,
-        );
-
-        writeStoredCashAdvances(nextAdvances);
-        return nextAdvances;
-      });
-
-      if (status === CashAdvanceStatuses.forApproval) {
-        submitCashAdvanceApprovalApi(record.id).catch(() => undefined);
-      } else if (status === CashAdvanceStatuses.cancelled) {
-        deleteCashAdvanceApi(record.id).catch(() => undefined);
-      }
-
-      setLastSyncedAt(Date.now());
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ record, status }: { record: CashAdvanceRecord; status: CashAdvanceStatus }) =>
+      status === CashAdvanceStatuses.forApproval
+        ? submitCashAdvanceApprovalApi(record.id)
+        : updateCashAdvanceStatusApi(record.id, status),
+    onSuccess: (updatedRecord, { status }) => {
+      queryClient.setQueryData<CashAdvanceRecord[]>(queryKey, (current = []) =>
+        current.map((record) => (record.id === updatedRecord.id ? updatedRecord : record)),
+      );
+      refreshRecords();
       toast.success(`Cash Advance Marked as ${status}.`);
     },
-    [],
+    onError: () => toast.error("Could not update the Cash Advance status."),
+  });
+
+  const updateAdvanceStatus = useCallback(
+    (record: CashAdvanceRecord, status: CashAdvanceStatus) => updateStatusMutation.mutate({ record, status }),
+    [updateStatusMutation],
   );
 
   const state = useMemo<CashAdvanceStoreState>(
     () => ({
       advances,
-      isLoading,
-      lastSyncedAt,
+      isLoading: advancesQuery.isLoading,
+      lastSyncedAt: advancesQuery.dataUpdatedAt,
       refreshRecords,
       updateAdvanceStatus,
     }),
-    [advances, isLoading, lastSyncedAt, refreshRecords, updateAdvanceStatus],
+    [advances, advancesQuery.dataUpdatedAt, advancesQuery.isLoading, refreshRecords, updateAdvanceStatus],
   );
 
   return selector ? selector(state) : (state as TSelected);
@@ -141,18 +124,14 @@ export function useCashAdvanceStore<TSelected = CashAdvanceStoreState>(selector?
 
 export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?: string, onSaved?: (record: CashAdvanceRecord) => void) {
   const transactionCurrency = useTransactionCurrency();
-  const initialRecord = mode === "add" ? null : (getInitialCashAdvances().find((advance) => advance.id === recordId) ?? null);
-  const [loadedRecord, setLoadedRecord] = useState<CashAdvanceRecord | null>(initialRecord);
-  const [values, setValues] = useState<CashAdvanceFormValues>(() =>
-    initialRecord
-      ? createCashAdvanceFormValuesFromRecord(initialRecord)
-      : createCashAdvanceFormValues(transactionCurrency.baseCurrencyCode),
-  );
+  const [loadedRecord, setLoadedRecord] = useState<CashAdvanceRecord | null>(null);
+  const [values, setValues] = useState<CashAdvanceFormValues>(() => createCashAdvanceFormValues(transactionCurrency.baseCurrencyCode));
   const hasEditedCurrencyRef = useRef(false);
   const isSubmittingRef = useRef(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(mode !== "add" && Boolean(recordId));
   const [errors, setErrors] = useState<CashAdvanceFormErrors>({});
-  const [initialValues] = useState(values);
+  const [initialValues, setInitialValues] = useState(values);
   const isDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
   const availabilityWarning = useMemo(() => getCashAdvanceAvailabilityWarning(values), [values]);
   const draft = useModuleDraft({
@@ -179,6 +158,38 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
         .catch(() => undefined);
     }
   }, [mode]);
+
+  useEffect(() => {
+    if (mode === "add" || !recordId) {
+      return;
+    }
+
+    let isMounted = true;
+    queueMicrotask(() => {
+      if (!isMounted) return;
+
+      setIsLoading(true);
+      fetchCashAdvanceById(recordId)
+        .then((record) => {
+          if (!isMounted) return;
+
+          const nextValues = createCashAdvanceFormValuesFromRecord(record);
+          setLoadedRecord(record);
+          setValues(nextValues);
+          setInitialValues(nextValues);
+        })
+        .catch(() => {
+          if (isMounted) setLoadedRecord(null);
+        })
+        .finally(() => {
+          if (isMounted) setIsLoading(false);
+        });
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [mode, recordId]);
 
   useEffect(() => {
     if (mode !== "add" || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) {
@@ -284,7 +295,7 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
         costCenter: nextValues.costCenter,
         costCenterCode: nextValues.referenceFields.costCenterCode,
         projectId: nextValues.projectId,
-        projectRef: nextValues.referenceFields.projectRef,
+        projectName: nextValues.referenceFields.projectName,
         projectCode: nextValues.referenceFields.projectCode,
         currency: nextValues.currency,
         fxRate: nextValues.fxRate,
@@ -294,40 +305,28 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
         remarks: nextValues.remarks,
       };
 
-      let apiRecord: CashAdvanceRecord | null = null;
-      try {
-        if (mode === "edit" && recordId) {
-          apiRecord = await updateCashAdvanceApi(recordId, payload);
-        } else {
-          apiRecord = await createCashAdvanceApi(payload);
-        }
-
-        if (status === CashAdvanceStatuses.forApproval && apiRecord?.id) {
-          await submitCashAdvanceApprovalApi(apiRecord.id).catch(() => undefined);
-        }
-      } catch {
-        // fallback to local creation
-      }
-
-      const nextRecord = apiRecord || createCashAdvanceRecordFromForm(nextValues, mode === "edit" ? (loadedRecord ?? undefined) : undefined);
-      const nextAdvances = upsertCashAdvanceRecord(nextRecord);
-      writeStoredCashAdvances(nextAdvances);
+      const savedRecord = mode === "edit" && recordId ? await updateCashAdvanceApi(recordId, payload) : await createCashAdvanceApi(payload);
+      const nextRecord =
+        status === CashAdvanceStatuses.forApproval && savedRecord?.id ? await submitCashAdvanceApprovalApi(savedRecord.id) : savedRecord;
+      const refreshedValues = createCashAdvanceFormValuesFromRecord(nextRecord);
       setLoadedRecord(nextRecord);
-      setValues(nextValues);
+      setValues(refreshedValues);
+      setInitialValues(refreshedValues);
       draft.clearDraft();
       toast.success(mode === "edit" ? "Cash Advance Updated." : "Cash Advance Saved.");
       onSaved?.(nextRecord);
       return true;
     } catch {
       toast.error("Could not save the Cash Advance. Please try again.");
+      return false;
+    } finally {
       isSubmittingRef.current = false;
       setIsSubmitting(false);
       releaseSubmitLock();
-      return false;
     }
   }
 
-  function updateAdvanceStatus(status: CashAdvanceStatus) {
+  async function updateAdvanceStatus(status: CashAdvanceStatus) {
     if (!loadedRecord) {
       return;
     }
@@ -335,34 +334,19 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
     if (!releaseActionLock) return;
 
     try {
-      const updatedAt = new Date().toISOString();
-      const nextValues = { ...values, status };
-      const nextRecord: CashAdvanceRecord = {
-        ...loadedRecord,
-        formValues: {
-          ...nextValues,
-          attachments: nextValues.attachments.map((attachment) => ({ ...attachment })),
-          taxValue: {
-            ...nextValues.taxValue,
-            taxDetails: { ...nextValues.taxValue.taxDetails },
-          },
-        },
-        status,
-        updatedAt,
-        updatedBy: "Current User",
-      };
-      const nextAdvances = upsertCashAdvanceRecord(nextRecord);
-      writeStoredCashAdvances(nextAdvances);
+      const nextRecord =
+        status === CashAdvanceStatuses.forApproval
+          ? await submitCashAdvanceApprovalApi(loadedRecord.id)
+          : await updateCashAdvanceStatusApi(loadedRecord.id, status);
+      const nextValues = createCashAdvanceFormValuesFromRecord(nextRecord);
       setLoadedRecord(nextRecord);
       setValues(nextValues);
-
-      if (status === CashAdvanceStatuses.forApproval) {
-        submitCashAdvanceApprovalApi(loadedRecord.id).catch(() => undefined);
-      }
+      setInitialValues(nextValues);
 
       toast.success(`Cash Advance Marked as ${status}.`);
     } catch {
       toast.error("Could not update the Cash Advance. Please try again.");
+    } finally {
       releaseActionLock();
     }
   }
@@ -395,8 +379,9 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
     saveDraft: draft.saveDraft,
     currencyOptions: transactionCurrency.currencyOptions,
     isExchangeRateLoading: transactionCurrency.isExchangeRateLoading,
+    isLoading,
     isSubmitting,
-    isRecordMissing: mode !== "add" && !initialRecord,
+    isRecordMissing: mode !== "add" && !isLoading && !loadedRecord,
     record: loadedRecord,
     submitAdvance,
     updateAdvanceStatus,
@@ -460,7 +445,10 @@ export function useCashAdvanceTable(advances: CashAdvanceRecord[]) {
             record.partyName,
             record.accountCode,
             record.costCenter,
+            record.currency,
+            record.fxRate,
             record.formValues?.currency,
+            record.formValues?.fxRate,
             record.remarks,
             record.createdBy,
             record.updatedBy,
@@ -477,70 +465,77 @@ export function useCashAdvanceTable(advances: CashAdvanceRecord[]) {
         accessorKey: "transNo",
         id: "transNo",
         header: "Cash Advance No.",
-        size: TransactionOverviewColumnWidths.transactionNumber,
+        size: CashAdvanceOverviewColumnWidths.transactionNumber,
         meta: { label: "Cash Advance No." },
       },
       {
         accessorKey: "documentDate",
         id: "documentDate",
         header: "Document Date",
-        size: TransactionOverviewColumnWidths.documentDate,
+        size: CashAdvanceOverviewColumnWidths.documentDate,
         meta: { label: "Document Date" },
       },
       {
         accessorKey: "partyCode",
         id: "partyCode",
         header: "Party Code",
-        size: TransactionOverviewColumnWidths.partyCode,
+        size: CashAdvanceOverviewColumnWidths.partyCode,
         meta: { label: "Party Code" },
       },
       {
         accessorKey: "partyName",
         id: "partyName",
         header: "Party Name",
-        size: TransactionOverviewColumnWidths.partyName,
+        size: CashAdvanceOverviewColumnWidths.partyName,
         meta: { label: "Party Name" },
       },
       {
         accessorKey: "accountCode",
         id: "accountCode",
         header: "Account Code",
-        size: TransactionOverviewColumnWidths.accountCode,
+        size: CashAdvanceOverviewColumnWidths.accountCode,
         meta: { label: "Account Code" },
       },
       {
         accessorFn: (record) => record.accountCode,
         id: "accountTitle",
-        header: "Account Title",
-        size: TransactionOverviewColumnWidths.accountTitle,
-        meta: { label: "Account Title" },
+        header: "Default Account Title",
+        size: CashAdvanceOverviewColumnWidths.accountTitle,
+        meta: { label: "Default Account Title" },
       },
       {
-        accessorFn: (record) => record.formValues?.currency ?? "PHP",
+        accessorFn: (record) => record.currency ?? record.formValues?.currency ?? "PHP",
         id: "currency",
         header: "Currency",
-        size: TransactionOverviewColumnWidths.currency,
+        size: CashAdvanceOverviewColumnWidths.currency,
         meta: { label: "Currency" },
+      },
+      {
+        accessorFn: (record) => record.fxRate ?? record.formValues?.fxRate ?? "1.00",
+        id: "fxRate",
+        header: "Exchange Rate",
+        size: CashAdvanceOverviewColumnWidths.exchangeRate,
+        meta: { label: "Exchange Rate" },
       },
       {
         accessorKey: "amount",
         id: "amount",
         header: "Total Amount",
-        size: TransactionOverviewColumnWidths.amount,
+        size: CashAdvanceOverviewColumnWidths.amount,
         meta: { label: "Total Amount" },
       },
       {
         accessorKey: "remarks",
         id: "remarks",
         header: "Remarks",
-        size: TransactionOverviewColumnWidths.remarks,
+        size: CashAdvanceOverviewColumnWidths.remarks,
         meta: { label: "Remarks" },
       },
       {
         accessorKey: "createdBy",
         id: "createdBy",
         header: "Created By",
-        size: TransactionOverviewColumnWidths.auditUser,
+        size: CashAdvanceOverviewColumnWidths.auditUser,
         meta: { label: "Created By" },
       },
       {
@@ -548,14 +543,14 @@ export function useCashAdvanceTable(advances: CashAdvanceRecord[]) {
         id: "createdAt",
         header: "Date Created",
         sortingFn: "datetime",
-        size: TransactionOverviewColumnWidths.auditDate,
+        size: CashAdvanceOverviewColumnWidths.auditDate,
         meta: { label: "Date Created" },
       },
       {
         accessorKey: "updatedBy",
         id: "updatedBy",
         header: "Updated By",
-        size: TransactionOverviewColumnWidths.auditUser,
+        size: CashAdvanceOverviewColumnWidths.auditUser,
         meta: { label: "Updated By" },
       },
       {
@@ -563,14 +558,14 @@ export function useCashAdvanceTable(advances: CashAdvanceRecord[]) {
         id: "updatedAt",
         header: "Date Modified",
         sortingFn: "datetime",
-        size: TransactionOverviewColumnWidths.auditDate,
+        size: CashAdvanceOverviewColumnWidths.auditDate,
         meta: { label: "Date Modified" },
       },
       {
         accessorKey: "status",
         id: "status",
         header: "Status",
-        size: TransactionOverviewColumnWidths.status,
+        size: CashAdvanceOverviewColumnWidths.status,
         meta: {
           className: "text-center",
           label: "Status",
@@ -581,7 +576,7 @@ export function useCashAdvanceTable(advances: CashAdvanceRecord[]) {
         enableSorting: false,
         enableHiding: false,
         header: "Actions",
-        size: TransactionOverviewColumnWidths.actions,
+        size: CashAdvanceOverviewColumnWidths.actions,
         meta: {
           className: "px-3 text-center last:pr-3",
           label: "Actions",
@@ -729,15 +724,4 @@ export function useCashAdvanceTable(advances: CashAdvanceRecord[]) {
     statusFilter,
     table,
   };
-}
-
-function upsertCashAdvanceRecord(record: CashAdvanceRecord) {
-  const currentAdvances = getInitialCashAdvances();
-  const existingIndex = currentAdvances.findIndex((advance) => advance.id === record.id);
-
-  if (existingIndex === -1) {
-    return [record, ...currentAdvances];
-  }
-
-  return currentAdvances.map((advance) => (advance.id === record.id ? record : advance));
 }

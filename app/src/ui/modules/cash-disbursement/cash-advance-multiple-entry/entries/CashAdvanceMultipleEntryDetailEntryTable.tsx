@@ -35,6 +35,7 @@ export function CashAdvanceMultipleEntryDetailEntryTable({
   onOpenPartyDrawer,
   onOpenResponsibilityCenterDrawer,
   onRowsChange,
+  responsibilityCenterOptions,
   rows,
 }: CashAdvanceMultipleEntryDetailEntryTableProps) {
   const {
@@ -64,9 +65,10 @@ export function CashAdvanceMultipleEntryDetailEntryTable({
         onOpenItemResponsibilityCenterDrawer: onOpenResponsibilityCenterDrawer,
         onUpdateEntry: (rowId, updates) =>
           onRowsChange(replaceCashAdvanceMultipleEntryRow(rows, rowId, updates)),
+        responsibilityCenterOptions,
         rows,
       }),
-    [employeeOptions, isReadonly, onOpenPartyDrawer, onOpenResponsibilityCenterDrawer, onRowsChange, rows],
+    [employeeOptions, isReadonly, onOpenPartyDrawer, onOpenResponsibilityCenterDrawer, onRowsChange, responsibilityCenterOptions, rows],
   );
   const columns = useMemo<ModuleDataEntryColumn<CashAdvanceMultipleEntryItem>[]>(
     () =>

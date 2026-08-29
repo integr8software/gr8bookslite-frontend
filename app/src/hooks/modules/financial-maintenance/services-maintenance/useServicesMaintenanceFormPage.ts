@@ -132,6 +132,9 @@ export function useServicesMaintenanceFormPage(options: ServicesMaintenanceFormP
       }
 
       draft.clearDraft();
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+      releaseSubmitLock();
       options.onSaved?.();
     } catch {
       isSubmittingRef.current = false;

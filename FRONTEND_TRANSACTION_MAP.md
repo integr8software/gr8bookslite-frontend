@@ -1,6 +1,6 @@
 # Gr8Books Neo Frontend Transaction Map
 
-Last updated: 2026-08-26
+Last updated: 2026-08-29
 
 Use this file as the first stop before changing transactional frontend modules.
 It repeats the useful structure from `FRONTEND_MAP.md`, but narrows the guidance
@@ -733,6 +733,24 @@ must not be used to create maintenance records.
 - Keep the `AppAdvancedDropdown` remove/clear button enabled by default. When a
   name lookup clears, also clear its aligned readonly code field so placeholders
   appear muted and do not look like entered values.
+
+#### Maintenance Dropdown Synchronization
+
+- Maintenance-backed dropdowns must use real API-backed query data. Do not add
+  mock, hardcoded, or page-local records to make a lookup appear populated.
+- Newly created, updated, imported, or status-changed maintenance records must
+  become available to every mounted consumer without a full browser refresh.
+  Use the shared React Query cache and invalidate the relevant option query when
+  the source mutation succeeds. Chart of Accounts changes must also refresh
+  dependent account lookups used by Default Account, Services Maintenance,
+  Party Management, and Tax Definition forms.
+- All `AppAdvancedDropdown` options are sorted by display `name`, using `label`
+  and then the stable `value` only as deterministic tie-breakers. Nested option
+  groups follow the same ordering recursively.
+- Keep `AppAdvancedDropdownOption.value` as the stable backend ID or business
+  code. The dropdown display should be `Name` followed by `Code` when a code is
+  shown; do not duplicate the code in both the name and secondary display
+  fields.
 
 `<ModuleName>FileAttachmentFields.tsx`
 

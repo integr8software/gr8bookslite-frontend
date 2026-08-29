@@ -25,13 +25,7 @@ import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/
 import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 
-export function AdvancesToSuppliersActionHeader({
-  onPreview,
-  page,
-}: {
-  onPreview: () => void;
-  page: AdvancesToSuppliersActionPageState;
-}) {
+export function AdvancesToSuppliersActionHeader({ onPreview, page }: { onPreview: () => void; page: AdvancesToSuppliersActionPageState }) {
   const [confirmation, setConfirmation] = useState<AdvancesToSuppliersConfirmationAction | null>(null);
   const transactionNo = page.record?.transactionNo ?? page.values.transactionNo;
   const title =
@@ -53,9 +47,7 @@ export function AdvancesToSuppliersActionHeader({
         titleAs="h1"
         title={title}
         description={
-          page.mode === "view"
-            ? "Review supplier advance details and supporting files."
-            : "Record a purchase-order advance for a supplier."
+          page.mode === "view" ? "Review supplier advance details and supporting files." : "Record a purchase-order advance for a supplier."
         }
         actionsClassName="items-center justify-end gap-2"
         actions={
@@ -81,7 +73,7 @@ export function AdvancesToSuppliersActionHeader({
                 onApply={page.copyFromPurchaseOrder}
               />
             ) : null}
-            {page.mode !== "add" ? <AdvancesToSuppliersActionHistory record={page.record} /> : null}
+            {page.mode !== "add" ? <AdvancesToSuppliersActionHistory record={page.record ?? undefined} /> : null}
             {page.mode === "view" && page.record ? (
               <>
                 <AdvancesToSuppliersStatusActions record={page.record} onRequestConfirmation={setConfirmation} />
@@ -143,9 +135,7 @@ export function AdvancesToSuppliersActionHeader({
                     : `This will mark ${transactionNo} as cancelled.`
           }
           confirmLabel={
-            confirmation === "save" && page.mode === "edit"
-              ? "Update"
-              : AdvancesToSuppliersConfirmationDialogConfirmLabels[confirmation]
+            confirmation === "save" && page.mode === "edit" ? "Update" : AdvancesToSuppliersConfirmationDialogConfirmLabels[confirmation]
           }
           cancelLabel="Cancel"
           iconTone={confirmation === "save" ? (page.mode === "edit" ? "update" : "save") : confirmation === "draft" ? "save" : undefined}
@@ -161,21 +151,21 @@ export function AdvancesToSuppliersActionHeader({
                   : "default"
           }
           onCancel={() => setConfirmation(null)}
-          onConfirm={() => {
+          onConfirm={async () => {
             if (confirmation === "save") {
-              const ok = page.save(AdvancesToSuppliersStatuses.forApproval);
+              const ok = await page.save(AdvancesToSuppliersStatuses.forApproval);
               if (ok) setConfirmation(null);
             } else if (confirmation === "draft") {
-              const ok = page.save(AdvancesToSuppliersStatuses.draft);
+              const ok = await page.save(AdvancesToSuppliersStatuses.draft);
               if (ok) setConfirmation(null);
             } else if (confirmation === "approve") {
-              const ok = page.updateStatus(AdvancesToSuppliersStatuses.posted);
+              const ok = await page.updateStatus(AdvancesToSuppliersStatuses.posted);
               if (ok) setConfirmation(null);
             } else if (confirmation === "disapprove") {
-              const ok = page.updateStatus(AdvancesToSuppliersStatuses.disapproved);
+              const ok = await page.updateStatus(AdvancesToSuppliersStatuses.disapproved);
               if (ok) setConfirmation(null);
             } else {
-              const ok = page.updateStatus(AdvancesToSuppliersStatuses.cancelled);
+              const ok = await page.updateStatus(AdvancesToSuppliersStatuses.cancelled);
               if (ok) setConfirmation(null);
             }
           }}

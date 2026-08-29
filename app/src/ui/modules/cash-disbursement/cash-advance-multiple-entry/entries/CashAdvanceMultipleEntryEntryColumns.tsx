@@ -1,15 +1,4 @@
-import {
-  CashAdvanceMultipleEntryPartyOptions,
-  CashAdvanceMultipleEntryResponsibilityCenterOptions,
-  createCashAdvanceMultipleEntrySelectOptions,
-  formatCashAdvanceMultipleEntryAmount,
-} from "@/app/src/data/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryData";
-import {
-  calculatePostedCashAdvanceTotalByParty,
-  getInitialCashAdvances,
-} from "@/app/src/data/modules/cash-disbursement/cash-advance/CashAdvanceData";
-import { CashAdvanceMultipleEntryAccountOptions } from "@/app/src/constants/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryConstants";
-import { getCashAdvanceMultipleEntryResponsibilityCenterCode } from "@/app/src/data/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryEntryRowData";
+import { formatCashAdvanceMultipleEntryAmount } from "@/app/src/data/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryData";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import type {
   CashAdvanceMultipleEntryAccountingColumnsParams,
@@ -31,10 +20,10 @@ export function createCashAdvanceMultipleEntryItemColumns({
   onOpenItemPartyDrawer,
   onOpenItemResponsibilityCenterDrawer,
   onUpdateEntry,
+  responsibilityCenterOptions,
   rows,
 }: CashAdvanceMultipleEntryItemColumnsParams): Record<string, ModuleDataEntryColumn<CashAdvanceMultipleEntryItem>> {
   const partySelectOptions = createPartyOptions("name", employeeOptions);
-  const cashAdvanceRecords = getInitialCashAdvances();
 
   return {
     partyCode: {
@@ -64,8 +53,7 @@ export function createCashAdvanceMultipleEntryItemColumns({
           onChange={(nextValue) => {
             const partyCode = String(nextValue);
             const employee = employeeOptions?.find((opt) => opt.partyCode === partyCode);
-            const party = CashAdvanceMultipleEntryPartyOptions.find((opt) => opt.value === partyCode);
-            const partyName = employee?.partyName ?? party?.name ?? "";
+            const partyName = employee?.partyName ?? "";
             const cashAdvanceBalance = employee?.cashAdvanceBalance ?? "";
             const cashAdvanceLimit = employee?.cashAdvanceLimit ?? "";
             const amount = limitCashAdvanceAmount(rows, row.id, row.amount, {
@@ -125,7 +113,7 @@ export function createCashAdvanceMultipleEntryItemColumns({
           name={context.fieldName}
           readOnly
           value={formatCashAdvanceMultipleEntryAmount(
-            calculatePostedCashAdvanceTotalByParty(cashAdvanceRecords, row.partyCode),
+            calculateTotalCashAdvanced(row),
           )}
         />
       ),
@@ -155,7 +143,7 @@ export function createCashAdvanceMultipleEntryItemColumns({
           id={context.fieldId}
           name={context.fieldName}
           readOnly
-          value={getCashAdvanceMultipleEntryResponsibilityCenterCode(row.responsibilityCenter)}
+          value={getResponsibilityCenterCode(row.responsibilityCenter, responsibilityCenterOptions)}
         />
       ),
     },
@@ -169,7 +157,7 @@ export function createCashAdvanceMultipleEntryItemColumns({
           id={context.fieldId}
           name={context.fieldName}
           addAction={!isReadonly ? { label: "Add Responsibility Center", onClick: () => onOpenItemResponsibilityCenterDrawer(row.id) } : undefined}
-          options={CashAdvanceMultipleEntryResponsibilityCenterOptions}
+          options={responsibilityCenterOptions}
           placeholder="Select Responsibility Center"
           searchPlaceholder="Search Responsibility Center"
           readOnly={isReadonly}
@@ -211,7 +199,7 @@ export function createCashAdvanceMultipleEntryAccountingColumns({
   ModuleDataEntryColumn<CashAdvanceMultipleEntryAccountingEntry>
 > {
   const partySelectOptions = createPartyOptions("name", employeeOptions);
-  const accountSelectOptions = createCashAdvanceMultipleEntrySelectOptions(CashAdvanceMultipleEntryAccountOptions);
+  const accountSelectOptions: AppAdvancedDropdownOption[] = [];
 
   return {
     accountCode: {
@@ -239,8 +227,8 @@ export function createCashAdvanceMultipleEntryAccountingColumns({
           value={row.accountCode}
           onChange={(nextValue) => {
             const accountCode = String(nextValue);
-            const account = CashAdvanceMultipleEntryAccountOptions.find((opt: { value: string; label: string }) => opt.value === accountCode);
-            onUpdateEntry(row.id, { accountCode, accountTitle: account?.label ?? "" });
+            const account = accountSelectOptions.find((option) => option.value === accountCode);
+            onUpdateEntry(row.id, { accountCode, accountTitle: account?.name ?? "" });
           }}
         />
       ),
@@ -304,8 +292,7 @@ export function createCashAdvanceMultipleEntryAccountingColumns({
           onChange={(nextValue) => {
             const partyCode = String(nextValue);
             const employee = employeeOptions?.find((opt) => opt.partyCode === partyCode);
-            const party = CashAdvanceMultipleEntryPartyOptions.find((opt) => opt.value === partyCode);
-            onUpdateEntry(row.id, { partyCode, partyName: employee?.partyName ?? party?.name ?? "" });
+            onUpdateEntry(row.id, { partyCode, partyName: employee?.partyName ?? "" });
           }}
         />
       ),
@@ -320,7 +307,7 @@ export function createCashAdvanceMultipleEntryAccountingColumns({
           id={context.fieldId}
           name={context.fieldName}
           readOnly
-          value={getCashAdvanceMultipleEntryResponsibilityCenterCode(row.responsibilityCenter)}
+          value={getResponsibilityCenterCode(row.responsibilityCenter, responsibilityCenterOptions)}
         />
       ),
     },
@@ -374,7 +361,7 @@ function createPartyOptions(
         name: employee.partyName,
         value: employee.partyCode,
       }))
-    : CashAdvanceMultipleEntryPartyOptions;
+    : [];
 
   return options.map((option) => ({
     description: optionDisplay === "code" ? option.name : undefined,
@@ -404,4 +391,19 @@ function limitCashAdvanceAmount(
   const availableBalance = Math.max(0, parseMoneyNumberInput(row.cashAdvanceBalance) - usedBalance);
 
   return parseMoneyNumberInput(amount) > availableBalance ? formatCashAdvanceMultipleEntryAmount(availableBalance) : amount;
+}
+
+function calculateTotalCashAdvanced(row: CashAdvanceMultipleEntryItem) {
+  const limit = parseMoneyNumberInput(row.cashAdvanceLimit);
+  const balance = parseMoneyNumberInput(row.cashAdvanceBalance);
+
+  if (!row.cashAdvanceLimit.trim() || !row.cashAdvanceBalance.trim()) {
+    return "";
+  }
+
+  return Math.max(0, limit - balance);
+}
+
+function getResponsibilityCenterCode(responsibilityCenter: string, options: AppAdvancedDropdownOption[]) {
+  return options.find((option) => option.name === responsibilityCenter || option.value === responsibilityCenter)?.label ?? responsibilityCenter;
 }

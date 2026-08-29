@@ -68,7 +68,7 @@ function CashAdvanceMultipleEntryReportDocument({
         <div className="grid grid-cols-4 border-b-2 border-black">
           <PreviewField label="CAME No." value={values.transNo} />
           <PreviewField label="Party Name" value={values.partyName} />
-          <PreviewField label="Project" value={values.projectRef || values.projectCode} />
+          <PreviewField label="Project" value={values.projectName || values.projectCode} />
           <PreviewField label="Total Amount" value={formatCashAdvanceMultipleEntryAmount(totalAmount)} />
         </div>
         <div className="grid grid-cols-2 border-b-2 border-black">

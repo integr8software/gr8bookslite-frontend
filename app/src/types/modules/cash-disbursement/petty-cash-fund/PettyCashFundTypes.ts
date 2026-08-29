@@ -88,6 +88,8 @@ export type PettyCashFundRecord = {
   partyName: string;
   accountCode: string;
   accountTitle: string;
+  currency?: string;
+  exchangeRate?: string;
   amount: number;
   remarks: string;
   status: PettyCashFundStatus;

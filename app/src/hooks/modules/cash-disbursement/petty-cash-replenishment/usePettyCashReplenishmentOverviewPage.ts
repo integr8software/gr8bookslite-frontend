@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -20,10 +21,6 @@ import {
   PettyCashReplenishmentRecordStatuses,
   PettyCashReplenishmentStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentConstants";
-import {
-  getPettyCashReplenishmentRecords,
-  savePettyCashReplenishmentRecords,
-} from "@/app/src/services/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentService";
 import type {
   PettyCashReplenishmentRecord,
   PettyCashReplenishmentStatus,
@@ -33,12 +30,17 @@ import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateR
 import { getModuleStatusMetricIcon, getModuleStatusMetricIconClassName } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import type { ModuleStatisticCardItem } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { formatPartOfTotalPercentage } from "@/app/src/utils/percentage.util";
-import { normalizeLowercaseWhitespace } from "@/app/src/utils/string.util";
+import { parseAmount } from "@/app/src/utils/number.util";
+import {
+  deletePettyCashReplenishmentApi,
+  fetchPettyCashReplenishmentList,
+  updatePettyCashReplenishmentStatusApi,
+} from "@/app/src/services/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentApi";
 
 const columnHelper = createColumnHelper<PettyCashReplenishmentRecord>();
 
 export function usePettyCashReplenishmentOverviewPage() {
-  const [records, setRecords] = useState(getPettyCashReplenishmentRecords);
+  const queryClient = useQueryClient();
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("All");
   const [dateRange, setDateRange] = useState<DateRangeValue>({ from: "", to: "" });
@@ -47,22 +49,66 @@ export function usePettyCashReplenishmentOverviewPage() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => PettyCashReplenishmentDefaultColumnVisibility);
   const [lastSyncedAt, setLastSyncedAt] = useState(() => Date.now());
-  const filteredRecords = useMemo(() => {
-    const needle = normalizeLowercaseWhitespace(query);
-    return records.filter((record) => {
-      const searchableText = normalizeLowercaseWhitespace(
-        [record.transactionNo, record.partyCode, record.partyName, record.accountCode, record.accountTitle, record.remarks].join(" "),
-      );
-      return (
-        (!needle || searchableText.includes(needle)) &&
-        (statusFilter === "All" || record.status === statusFilter) &&
-        (!dateRange.from || record.documentDate >= dateRange.from) &&
-        (!dateRange.to || record.documentDate <= dateRange.to) &&
-        (!amountRange.from || record.amount >= Number(amountRange.from)) &&
-        (!amountRange.to || record.amount <= Number(amountRange.to))
-      );
-    });
-  }, [amountRange, dateRange, query, records, statusFilter]);
+
+  const amountFrom = parseAmount(amountRange.from);
+  const amountTo = parseAmount(amountRange.to);
+
+  const listQuery = useQuery({
+    queryKey: [
+      "cash-disbursement",
+      "petty-cash-replenishment",
+      "list",
+      {
+        query,
+        statusFilter,
+        startDate: dateRange.from || undefined,
+        endDate: dateRange.to || undefined,
+        amountFrom: amountFrom !== null ? amountFrom : undefined,
+        amountTo: amountTo !== null ? amountTo : undefined,
+      },
+    ],
+    queryFn: async () => {
+      const res = await fetchPettyCashReplenishmentList({
+        search: query || undefined,
+        status: statusFilter !== "All" ? statusFilter : undefined,
+        startDate: dateRange.from || undefined,
+        endDate: dateRange.to || undefined,
+        amountFrom: amountFrom !== null ? amountFrom : undefined,
+        amountTo: amountTo !== null ? amountTo : undefined,
+      });
+      setLastSyncedAt(Date.now());
+      return res;
+    },
+  });
+
+  const records = useMemo(() => listQuery.data?.data ?? [], [listQuery.data?.data]);
+
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: PettyCashReplenishmentStatus }) => {
+      return await updatePettyCashReplenishmentStatusApi(id, status);
+    },
+    onSuccess: (_, { status }) => {
+      queryClient.invalidateQueries({ queryKey: ["cash-disbursement", "petty-cash-replenishment"] });
+      toast.success(`Petty Cash Replenishment marked as ${status}.`);
+    },
+    onError: () => {
+      toast.error("Could not update the Petty Cash Replenishment status.");
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return await deletePettyCashReplenishmentApi(id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cash-disbursement", "petty-cash-replenishment"] });
+      toast.success("Petty Cash Replenishment deleted successfully.");
+    },
+    onError: () => {
+      toast.error("Could not delete Petty Cash Replenishment.");
+    },
+  });
+
   const columns = useMemo(
     () => [
       columnHelper.accessor("transactionNo", {
@@ -100,106 +146,88 @@ export function usePettyCashReplenishmentOverviewPage() {
         size: PettyCashReplenishmentOverviewColumnWidths.amount,
         meta: { label: PettyCashReplenishmentColumnLabels.amount },
       }),
-      columnHelper.accessor("remarks", {
-        header: PettyCashReplenishmentColumnLabels.remarks,
-        size: PettyCashReplenishmentOverviewColumnWidths.remarks,
-        meta: { label: PettyCashReplenishmentColumnLabels.remarks },
-      }),
-      columnHelper.accessor("createdBy", {
-        header: PettyCashReplenishmentColumnLabels.createdBy,
-        size: PettyCashReplenishmentOverviewColumnWidths.createdBy,
-        meta: { label: PettyCashReplenishmentColumnLabels.createdBy },
-      }),
-      columnHelper.accessor("createdAt", {
-        header: PettyCashReplenishmentColumnLabels.createdAt,
-        size: PettyCashReplenishmentOverviewColumnWidths.createdAt,
-        meta: { label: PettyCashReplenishmentColumnLabels.createdAt },
-      }),
-      columnHelper.accessor("updatedBy", {
-        header: PettyCashReplenishmentColumnLabels.updatedBy,
-        size: PettyCashReplenishmentOverviewColumnWidths.updatedBy,
-        meta: { label: PettyCashReplenishmentColumnLabels.updatedBy },
-      }),
-      columnHelper.accessor("updatedAt", {
-        header: PettyCashReplenishmentColumnLabels.updatedAt,
-        size: PettyCashReplenishmentOverviewColumnWidths.updatedAt,
-        meta: { label: PettyCashReplenishmentColumnLabels.updatedAt },
-      }),
       columnHelper.accessor("status", {
         header: PettyCashReplenishmentColumnLabels.status,
         size: PettyCashReplenishmentOverviewColumnWidths.status,
-        meta: { className: "text-center", label: PettyCashReplenishmentColumnLabels.status },
-      }),
-      columnHelper.display({
-        id: "actions",
-        header: PettyCashReplenishmentColumnLabels.actions,
-        size: PettyCashReplenishmentOverviewColumnWidths.actions,
-        meta: { className: "text-center", label: PettyCashReplenishmentColumnLabels.actions },
+        meta: { label: PettyCashReplenishmentColumnLabels.status },
       }),
     ],
     [],
   );
-  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table owns its state handlers.
+
   const table = useReactTable({
+    data: records,
     columns,
-    data: filteredRecords,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    initialState: { columnVisibility: PettyCashReplenishmentDefaultColumnVisibility },
+    state: { columnVisibility, pagination, sorting },
     onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
-    state: { columnVisibility, pagination, sorting },
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
   });
-  const statisticCards = useMemo<ModuleStatisticCardItem[]>(
-    () => [
+
+  const statisticCards = useMemo<ModuleStatisticCardItem[]>(() => {
+    const total = records.length;
+    return [
       {
-        icon: ReceiptText,
         label: "Total Entries",
-        value: records.length,
-        summary: "All time",
+        value: total,
+        icon: ReceiptText,
         tone: "violet",
-        onClick: () => setStatusFilter("All"),
+        summary: "All time",
         isActive: statusFilter === "All",
+        onClick: () => setStatusFilter("All"),
       },
       ...PettyCashReplenishmentRecordStatuses.map((status) => {
-        const count = records.filter((record) => record.status === status).length;
+        const count = records.filter((item) => item.status === status).length;
+        const tone =
+          status === PettyCashReplenishmentStatuses.posted
+            ? ("emerald" as const)
+            : status === PettyCashReplenishmentStatuses.forApproval
+              ? ("amber" as const)
+              : status === PettyCashReplenishmentStatuses.draft
+                ? ("blue" as const)
+                : status === PettyCashReplenishmentStatuses.disapproved
+                  ? ("red" as const)
+                  : ("slate" as const);
+
         return {
-          icon: getModuleStatusMetricIcon(status),
-          iconClassName: getModuleStatusMetricIconClassName(status),
           label: status,
           value: count,
-          summary: formatPartOfTotalPercentage(count, records.length),
-          tone: getMetricTone(status),
-          onClick: () => setStatusFilter(status),
+          icon: getModuleStatusMetricIcon(status),
+          iconClassName: getModuleStatusMetricIconClassName(status),
+          tone,
+          summary: formatPartOfTotalPercentage(count, total),
           isActive: statusFilter === status,
+          onClick: () => setStatusFilter(status),
         };
       }),
-    ],
-    [records, statusFilter],
-  );
+    ];
+  }, [records, statusFilter]);
 
-  function updateStatus(record: PettyCashReplenishmentRecord, status: PettyCashReplenishmentStatus) {
-    const next = records.map((item) =>
-      item.id === record.id ? { ...item, status, updatedAt: new Date().toISOString(), updatedBy: "Current User" } : item,
-    );
-    setRecords(next);
-    savePettyCashReplenishmentRecords(next);
-    setLastSyncedAt(Date.now());
-    toast.success(`Petty Cash Replenishment Marked as ${status}.`);
-  }
+  const onUpdateStatus = (record: PettyCashReplenishmentRecord, status: PettyCashReplenishmentStatus) => {
+    updateStatusMutation.mutate({ id: record.id, status });
+  };
 
-  function refreshRecords() {
-    setRecords(getPettyCashReplenishmentRecords());
-    setLastSyncedAt(Date.now());
-  }
+  const onDeleteRecord = (record: PettyCashReplenishmentRecord) => {
+    deleteMutation.mutate(record.id);
+  };
+
+  const refreshRecords = () => {
+    listQuery.refetch();
+  };
 
   return {
     amountRange,
     dateRange,
-    isLoading: false,
+    filteredRecords: records,
+    isLoading: listQuery.isLoading,
+    isUpdatingStatus: updateStatusMutation.isPending || deleteMutation.isPending,
     lastSyncedAt,
+    onDeleteRecord,
+    onUpdateStatus,
+    updateStatus: onUpdateStatus,
     query,
     refreshRecords,
     setAmountRange,
@@ -207,16 +235,8 @@ export function usePettyCashReplenishmentOverviewPage() {
     setQuery,
     setStatusFilter,
     statisticCards,
+    statistics: statisticCards,
     statusFilter,
     table,
-    updateStatus,
   };
-}
-
-function getMetricTone(status: PettyCashReplenishmentStatus) {
-  if (status === PettyCashReplenishmentStatuses.posted) return "emerald" as const;
-  if (status === PettyCashReplenishmentStatuses.forApproval) return "amber" as const;
-  if (status === PettyCashReplenishmentStatuses.disapproved) return "red" as const;
-  if (status === PettyCashReplenishmentStatuses.cancelled) return "slate" as const;
-  return "blue" as const;
 }

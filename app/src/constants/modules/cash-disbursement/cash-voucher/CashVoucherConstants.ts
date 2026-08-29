@@ -41,17 +41,12 @@ export const getCashVoucherEditLink = (recordId: string) => `${CashVoucherLink}/
 
 export const getCashVoucherViewLink = (recordId: string) => `${CashVoucherLink}/view/${recordId}`;
 
-export const CashVoucherQueryKeys = {
-  transactions: () => ["cash-disbursement", "cash-voucher", "transactions"] as const,
-  vouchers: () => ["cash-disbursement", "cash-voucher", "vouchers"] as const,
-};
+export { CashVoucherQueryKeys } from "@/app/src/services/modules/cash-disbursement/cash-voucher/CashVoucherQueryKeys";
 
 export const CashVoucherTablePaginationStorageKey = "cash-disbursement-cash-voucher";
 
 export const CashVoucherTablePreferencesStorageKey = "gr8booksneo:cash-voucher:table-preferences";
 export const CashVoucherTablePreferencesModuleKey = "cash-disbursement:cash-voucher";
-export const CashVoucherTransactionStorageKey = "gr8books.cash-voucher.transactions";
-export const CashVoucherRecordStorageKey = "gr8books.cash-voucher.vouchers";
 export const CashVoucherAccountingGridSessionStorageKey = "gr8books.cashVoucher.accountingGrid";
 
 export const CashVoucherBankSelectPlaceholder = "--Select Bank--";
@@ -195,6 +190,12 @@ export const CashVoucherTableColumns = [
     size: TransactionOverviewColumnWidths.currency,
   },
   {
+    key: "exchangeRate",
+    label: "Exchange Rate",
+    className: "",
+    size: TransactionOverviewColumnWidths.exchangeRate,
+  },
+  {
     key: "amount",
     label: "Amount",
     className: "",
@@ -249,6 +250,7 @@ export const CashVoucherDefaultColumnOrder = CashVoucherTableColumns.map((column
 
 export const CashVoucherDefaultColumnVisibility: VisibilityState = {
   currency: false,
+  exchangeRate: false,
   createdBy: false,
   createdAt: false,
   partyCode: false,

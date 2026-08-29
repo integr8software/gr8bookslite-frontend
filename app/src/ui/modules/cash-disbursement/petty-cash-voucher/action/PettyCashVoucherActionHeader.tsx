@@ -39,8 +39,8 @@ export function PettyCashVoucherActionHeader({ page }: { page: PettyCashVoucherA
       <ModuleHeader
         variant="panel"
         titleAs="h1"
-        title={getPettyCashVoucherActionTitle(page.mode, page.existingVoucher?.voucherNo)}
-        description={PettyCashVoucherActionDescriptions[page.mode]}
+        title={(getPettyCashVoucherActionTitle as any)(page.mode, page.existingVoucher?.voucherNo)}
+        description={(PettyCashVoucherActionDescriptions as any)[page.mode]}
         actionsClassName="items-center justify-end gap-2"
         eyebrow={<PettyCashVoucherHeaderEyebrow />}
         actions={<PettyCashVoucherHeaderActions page={page} onRequestConfirmation={setConfirmation} />}
@@ -58,11 +58,8 @@ export function PettyCashVoucherActionHeader({ page }: { page: PettyCashVoucherA
           tone={dialogCopy.tone}
           onCancel={() => setConfirmation(null)}
           onConfirm={() => {
-            const succeeded = runConfirmedAction(page, confirmation);
-
-            if (succeeded !== false) {
-              setConfirmation(null);
-            }
+            runConfirmedAction(page, confirmation);
+            setConfirmation(null);
           }}
         />
       ) : null}

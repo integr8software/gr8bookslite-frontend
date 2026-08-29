@@ -27,7 +27,9 @@ export function renderCashAdvanceTableCell(
     case "amount":
       return <span className="font-semibold text-darknavy">{formatCashAdvanceCurrency(record.amount)}</span>;
     case "currency":
-      return record.formValues?.currency ?? "PHP";
+      return record.currency ?? record.formValues?.currency ?? "PHP";
+    case "fxRate":
+      return record.fxRate ?? record.formValues?.fxRate ?? "1.00";
     case "status":
       return <div className="flex w-full justify-center"><ModuleStatusBadge status={record.status} /></div>;
     case "createdBy":

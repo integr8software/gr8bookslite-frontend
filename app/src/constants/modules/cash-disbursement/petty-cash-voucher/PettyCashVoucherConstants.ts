@@ -130,6 +130,8 @@ export const PettyCashVoucherColumnLabels = {
   partyName: "Party Name",
   accountCode: "Default Account Code",
   accountTitle: "Default Account Title",
+  currency: "Currency",
+  exchangeRate: "Exchange Rate",
   amount: "Total Amount",
   remarks: "Remarks",
   createdBy: "Created By",

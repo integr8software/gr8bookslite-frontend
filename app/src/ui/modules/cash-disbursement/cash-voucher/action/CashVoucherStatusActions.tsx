@@ -99,7 +99,7 @@ function createCashVoucherStatusActionItems({
       icon: isCancelled ? Undo2 : Ban,
       label: isCancelled ? "Undo Cancelled" : "Cancel",
       onSelect: () => onRequestStatusConfirmation(cancelStatus),
-      tone: isCancelled ? "default" : "danger",
+      tone: isCancelled ? "default" : "warning",
       type: "button",
     },
   ];

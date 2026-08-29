@@ -98,6 +98,8 @@ export type PettyCashReplenishmentRecord = {
   partyName: string;
   accountCode: string;
   accountTitle: string;
+  currency?: string;
+  exchangeRate?: string;
   amount: number;
   remarks: string;
   status: PettyCashReplenishmentStatus;

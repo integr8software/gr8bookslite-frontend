@@ -54,7 +54,7 @@ function CashAdvanceReportDocument({ values }: { values: CashAdvanceFormValues }
         <RequestLine label="Responsibility Center" value={values.costCenter} />
         <RequestLine label="Amount of Cash Advance" value={formatCashAdvanceCurrency(amount)} />
         <RequestLine label="Amount in Words" value={amountToWords(amount)} />
-        <RequestLine label="Project Name" value={values.referenceFields.projectRef} minHeightClassName="min-h-16" />
+        <RequestLine label="Project Name" value={values.referenceFields.projectName} minHeightClassName="min-h-16" />
         <RequestLine label="Purpose of Cash Advance" value={purpose} minHeightClassName="min-h-14" />
 
         <div className="grid min-h-16 grid-cols-[1fr_1fr_10.75rem] border-t-2 border-black">

@@ -12,6 +12,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { ReceiptText } from "lucide-react";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import {
   CashVoucherDefaultColumnOrder,
   CashVoucherDefaultColumnVisibility,
@@ -22,14 +23,13 @@ import {
   CashVoucherTableColumns,
   CashVoucherTablePreferencesModuleKey,
   CashVoucherTablePreferencesStorageKey,
-  CashVoucherQueryKeys,
 } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherConstants";
+import { CashVoucherQueryKeys } from "@/app/src/services/modules/cash-disbursement/cash-voucher/CashVoucherQueryKeys";
 import { getModuleStatusMetricIcon, getModuleStatusMetricIconClassName } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import type { ModuleStatisticCardItem } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { formatPartOfTotalPercentage } from "@/app/src/utils/percentage.util";
 import {
   getCashVoucherDisplayStatus,
-  buildCashVoucherPreviewRows,
   sanitizeCashVoucherRecord,
 } from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherData";
 import { normalizeLowercaseWhitespace } from "@/app/src/utils/string.util";
@@ -55,33 +55,42 @@ export function useCashVoucherStore<TSelected = CashVoucherStoreState>(
   selector?: (state: CashVoucherStoreState) => TSelected,
 ) {
   const queryClient = useQueryClient();
+  const activeBranchId = useAppStore((state) => state.activeBranchId);
+  const activeCompanyId = useAppStore((state) => state.activeCompanyId);
 
   const vouchersQuery = useQuery({
-    queryKey: CashVoucherQueryKeys.vouchers(),
+    queryKey: CashVoucherQueryKeys.records(activeCompanyId, activeBranchId),
     queryFn: async () => {
       try {
-        const response = await fetchCashVoucherList({ limit: 500 });
+        const response = await fetchCashVoucherList({
+          branchUnitId: activeBranchId ?? undefined,
+          limit: 500,
+        });
         return response.data;
       } catch {
         return [];
       }
     },
+    enabled: activeCompanyId !== null,
     initialData: [],
   });
 
   const refreshRecords = useCallback(() => {
-    void queryClient.refetchQueries({ queryKey: CashVoucherQueryKeys.vouchers() });
-  }, [queryClient]);
+    void queryClient.invalidateQueries({
+      queryKey: CashVoucherQueryKeys.all(activeCompanyId, activeBranchId),
+    });
+  }, [activeBranchId, activeCompanyId, queryClient]);
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: CashVoucherStatus }) => {
       return await updateCashVoucherStatusApi(id, status);
     },
     onSuccess: (updated) => {
-      queryClient.setQueryData<CashVoucherRecord[]>(CashVoucherQueryKeys.vouchers(), (current = []) =>
-        current.map((v) => (v.id === updated.id ? updated : v)),
+      queryClient.setQueryData<CashVoucherRecord[]>(
+        CashVoucherQueryKeys.records(activeCompanyId, activeBranchId),
+        (current = []) => current.map((v) => (v.id === updated.id ? updated : v)),
       );
-      void queryClient.invalidateQueries({ queryKey: CashVoucherQueryKeys.vouchers() });
+      refreshRecords();
       toast.success("Cash Voucher status updated.");
     },
     onError: () => {
@@ -95,10 +104,11 @@ export function useCashVoucherStore<TSelected = CashVoucherStoreState>(
       return voucherId;
     },
     onSuccess: (voucherId) => {
-      queryClient.setQueryData<CashVoucherRecord[]>(CashVoucherQueryKeys.vouchers(), (current = []) =>
-        current.filter((v) => v.id !== voucherId),
+      queryClient.setQueryData<CashVoucherRecord[]>(
+        CashVoucherQueryKeys.records(activeCompanyId, activeBranchId),
+        (current = []) => current.filter((v) => v.id !== voucherId),
       );
-      void queryClient.invalidateQueries({ queryKey: CashVoucherQueryKeys.vouchers() });
+      refreshRecords();
       toast.success("Cash Voucher Deleted.");
     },
     onError: () => {
@@ -123,6 +133,7 @@ export function useCashVoucherStore<TSelected = CashVoucherStoreState>(
         paymentDueDate: voucher.paymentDueDate || voucher.voucherDate,
         amount: voucher.amount,
         currency: voucher.currency,
+        fxRate: voucher.fxRate,
         paymentMethod: "Cash",
         disbursementType: voucher.disbursementType || "Vendor Payment",
         status: voucher.status,
@@ -148,7 +159,7 @@ export function useCashVoucherStore<TSelected = CashVoucherStoreState>(
         }
       },
       addVoucher: () => {
-        void queryClient.invalidateQueries({ queryKey: CashVoucherQueryKeys.vouchers() });
+        refreshRecords();
       },
       updateVoucher: (voucher) => {
         if (voucher.id) {
@@ -164,7 +175,6 @@ export function useCashVoucherStore<TSelected = CashVoucherStoreState>(
     [
       deleteVoucherMutation,
       previewRows,
-      queryClient,
       refreshRecords,
       updateStatusMutation,
       vouchers,
@@ -214,6 +224,7 @@ export function useCashVoucherPreviewTable(previewRows: CashVoucherPreviewRow[])
           row.transaction.purpose,
           row.voucher?.remarks,
           row.voucher?.currency ?? row.transaction.currency,
+          row.voucher?.fxRate ?? row.transaction.fxRate,
         ]
           .filter(Boolean)
           .join(" ");
@@ -418,6 +429,8 @@ function getCashVoucherColumnValue(row: CashVoucherPreviewRow, key: CashVoucherT
       return row.voucher?.remarks ?? row.transaction.purpose;
     case "currency":
       return row.voucher?.currency ?? row.transaction.currency;
+    case "exchangeRate":
+      return row.voucher?.fxRate ?? row.transaction.fxRate ?? "";
     case "amount":
       return row.voucher?.amount ?? row.transaction.amount;
     case "status":

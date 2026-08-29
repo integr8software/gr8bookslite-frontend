@@ -88,6 +88,8 @@ export type RevolvingFundRecord = {
   partyName: string;
   accountCode: string;
   accountTitle: string;
+  currency?: string;
+  exchangeRate?: string;
   amount: number;
   remarks: string;
   status: RevolvingFundStatus;

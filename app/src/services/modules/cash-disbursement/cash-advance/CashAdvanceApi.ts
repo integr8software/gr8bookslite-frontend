@@ -4,7 +4,10 @@ import type {
   CashAdvancePartyDropdownOption,
   CashAdvanceRecord,
   CashAdvanceResponsibilityCenterDropdownOption,
+  CashAdvanceStatus,
 } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
+
+type ApiCashAdvanceStatus = "DRAFT" | "FOR_APPROVAL" | "APPROVED" | "POSTED" | "DISAPPROVED" | "CANCELLED";
 
 export type CashAdvancePartyOption = {
   availableCashAdvance: string;
@@ -42,8 +45,17 @@ export type FetchCashAdvanceListResponse = {
 };
 
 export async function fetchCashAdvanceList(params?: FetchCashAdvanceListParams): Promise<FetchCashAdvanceListResponse> {
-  const response = await ApiClient.get<FetchCashAdvanceListResponse>("/cash-disbursement/cash-advance", { params });
-  return response.data;
+  const response = await ApiClient.get<FetchCashAdvanceListResponse>("/cash-disbursement/cash-advance", {
+    params: {
+      ...params,
+      status: params?.status && params.status !== "all" ? mapCashAdvanceStatusToApi(params.status) : params?.status,
+    },
+  });
+
+  return {
+    ...response.data,
+    data: response.data.data.map(mapCashAdvanceRecordFromApi),
+  };
 }
 
 export async function fetchCashAdvancePartyOptions(): Promise<CashAdvancePartyDropdownOption[]> {
@@ -154,7 +166,7 @@ export async function fetchNextCashAdvanceTransactionNo(): Promise<string> {
 
 export async function fetchCashAdvanceById(id: string): Promise<CashAdvanceRecord> {
   const response = await ApiClient.get<{ data: CashAdvanceRecord }>(`/cash-disbursement/cash-advance/${id}`);
-  return response.data.data;
+  return mapCashAdvanceRecordFromApi(response.data.data);
 }
 
 export async function createCashAdvanceApi(payload: {
@@ -168,6 +180,7 @@ export async function createCashAdvanceApi(payload: {
   costCenter?: string;
   costCenterCode?: string;
   projectId?: string;
+  projectName?: string;
   projectRef?: string;
   projectCode?: string;
   currency: string;
@@ -178,7 +191,7 @@ export async function createCashAdvanceApi(payload: {
   remarks?: string;
 }): Promise<CashAdvanceRecord> {
   const response = await ApiClient.post<{ data: CashAdvanceRecord }>("/cash-disbursement/cash-advance", payload);
-  return response.data.data;
+  return mapCashAdvanceRecordFromApi(response.data.data);
 }
 
 export async function updateCashAdvanceApi(
@@ -194,6 +207,7 @@ export async function updateCashAdvanceApi(
     costCenter: string;
     costCenterCode: string;
     projectId?: string;
+    projectName: string;
     projectRef: string;
     projectCode: string;
     currency: string;
@@ -204,7 +218,7 @@ export async function updateCashAdvanceApi(
   }>,
 ): Promise<CashAdvanceRecord> {
   const response = await ApiClient.put<{ data: CashAdvanceRecord }>(`/cash-disbursement/cash-advance/${id}`, payload);
-  return response.data.data;
+  return mapCashAdvanceRecordFromApi(response.data.data);
 }
 
 export async function deleteCashAdvanceApi(id: string): Promise<void> {
@@ -213,5 +227,59 @@ export async function deleteCashAdvanceApi(id: string): Promise<void> {
 
 export async function submitCashAdvanceApprovalApi(id: string): Promise<CashAdvanceRecord> {
   const response = await ApiClient.post<{ data: CashAdvanceRecord }>(`/cash-disbursement/cash-advance/${id}/submit-approval`);
-  return response.data.data;
+  return mapCashAdvanceRecordFromApi(response.data.data);
+}
+
+export async function updateCashAdvanceStatusApi(id: string, status: CashAdvanceStatus): Promise<CashAdvanceRecord> {
+  const response = await ApiClient.patch<{ data: CashAdvanceRecord }>(`/cash-disbursement/cash-advance/${id}/status`, {
+    status: mapCashAdvanceStatusToApi(status),
+  });
+  return mapCashAdvanceRecordFromApi(response.data.data);
+}
+
+function mapCashAdvanceRecordFromApi(record: CashAdvanceRecord): CashAdvanceRecord {
+  return {
+    ...record,
+    currency: record.currency ?? record.formValues?.currency ?? "PHP",
+    fxRate: record.fxRate ?? record.formValues?.fxRate ?? "1.00",
+    projectName: record.projectName ?? record.projectRef ?? "",
+    formValues: record.formValues
+      ? {
+          ...record.formValues,
+          referenceFields: {
+            ...record.formValues.referenceFields,
+            projectName: record.formValues.referenceFields.projectName ?? record.formValues.referenceFields.projectRef ?? "",
+            projectRef: record.formValues.referenceFields.projectName ?? record.formValues.referenceFields.projectRef ?? "",
+          },
+          status: mapCashAdvanceStatusFromApi(record.formValues.status),
+        }
+      : record.formValues,
+    status: mapCashAdvanceStatusFromApi(record.status),
+  };
+}
+
+function mapCashAdvanceStatusFromApi(status: string): CashAdvanceStatus {
+  const statusMap: Record<string, CashAdvanceStatus> = {
+    APPROVED: "Posted",
+    CANCELLED: "Cancelled",
+    DISAPPROVED: "Disapproved",
+    DRAFT: "Draft",
+    FOR_APPROVAL: "For Approval",
+    POSTED: "Posted",
+  };
+
+  return statusMap[status] ?? (status as CashAdvanceStatus);
+}
+
+function mapCashAdvanceStatusToApi(status: string): ApiCashAdvanceStatus {
+  const statusMap: Record<string, ApiCashAdvanceStatus> = {
+    Cancelled: "CANCELLED",
+    Disapproved: "DISAPPROVED",
+    Draft: "DRAFT",
+    "For Approval": "FOR_APPROVAL",
+    Open: "DRAFT",
+    Posted: "POSTED",
+  };
+
+  return statusMap[status] ?? (status as ApiCashAdvanceStatus);
 }

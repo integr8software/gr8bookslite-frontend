@@ -2,10 +2,6 @@
 
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  CashVoucherPartyOptions,
-  CashVoucherProjectOptions,
-} from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherData";
 import type { CashVoucherDetailsFormProps } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
@@ -22,6 +18,7 @@ import {
   fetchCashVoucherPartyOptions,
   fetchCashVoucherResponsibilityCenters,
 } from "@/app/src/services/modules/cash-disbursement/cash-voucher/CashVoucherApi";
+import { PartyManagementQueryKeys } from "@/app/src/services/modules/party-management/PartyManagementQueryKeys";
 
 export function CashVoucherDetailsFields({
   canAddPartyName,
@@ -38,7 +35,7 @@ export function CashVoucherDetailsFields({
   values,
 }: CashVoucherDetailsFormProps) {
   const partyOptionsQuery = useQuery({
-    queryKey: ["cash-voucher", "party-options"],
+    queryKey: PartyManagementQueryKeys.cashVoucherPartyOptions(),
     queryFn: fetchCashVoucherPartyOptions,
     staleTime: 60_000,
   });
@@ -50,26 +47,20 @@ export function CashVoucherDetailsFields({
   });
 
   const partyOptions = useMemo<AppAdvancedDropdownOption[]>(() => {
-    const baseOptions: readonly AppAdvancedDropdownOption[] =
-      partyOptionsQuery.data && partyOptionsQuery.data.length > 0 ? partyOptionsQuery.data : CashVoucherPartyOptions;
     return createVoucherPartyOptions({
-      baseOptions,
+      baseOptions: partyOptionsQuery.data ?? [],
       currentPartyCode: values.partyCode,
       currentPartyName: values.partyName,
     });
   }, [partyOptionsQuery.data, values.partyCode, values.partyName]);
 
   const projectOptions = useMemo<AppAdvancedDropdownOption[]>(() => {
-    const baseOptions: readonly AppAdvancedDropdownOption[] =
-      responsibilityCentersQuery.data?.projects && responsibilityCentersQuery.data.projects.length > 0
-        ? responsibilityCentersQuery.data.projects
-        : CashVoucherProjectOptions;
     return createVoucherProjectOptions({
-      baseOptions,
-      currentProjectCode: values.costCenter,
+      baseOptions: responsibilityCentersQuery.data?.projects ?? [],
+      currentProjectCode: values.projectCode || values.costCenter,
       currentProjectName: values.projectName,
     });
-  }, [responsibilityCentersQuery.data, values.costCenter, values.projectName]);
+  }, [responsibilityCentersQuery.data, values.costCenter, values.projectCode, values.projectName]);
 
   return (
     <section className="min-w-0 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
@@ -119,6 +110,7 @@ export function CashVoucherDetailsFields({
                 const project = projectOptions.find((option) => option.value === projectName || option.name === projectName);
                 onUpdateField("projectName", projectName);
                 onUpdateField("costCenter", project?.label === projectName ? "" : (project?.label ?? ""));
+                onUpdateField("projectCode", project?.label === projectName ? "" : (project?.label ?? ""));
               }}
             />
           </TransactionField>
@@ -148,10 +140,13 @@ export function CashVoucherDetailsFields({
           />
 
           <TransactionTextField
-            value={values.costCenter}
+            value={values.projectCode || values.costCenter}
             isReadonly
             label="Project Code"
-            onValueChange={(value) => onUpdateField("costCenter", value)}
+            onValueChange={(value) => {
+              onUpdateField("projectCode", value);
+              onUpdateField("costCenter", value);
+            }}
             placeholder="Project Code"
           />
 

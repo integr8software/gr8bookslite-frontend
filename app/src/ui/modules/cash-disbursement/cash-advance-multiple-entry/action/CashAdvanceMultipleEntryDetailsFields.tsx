@@ -1,9 +1,10 @@
 import { useMemo } from "react";
-import { CashAdvanceMultipleEntryAccountOptions } from "@/app/src/constants/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryConstants";
+import { useQuery } from "@tanstack/react-query";
 import {
-  createCashAdvanceMultipleEntryPartyOptions,
-  createCashAdvanceMultipleEntrySelectOptions,
-} from "@/app/src/data/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryData";
+  fetchCashAdvanceAccountOptions,
+  fetchCashAdvancePartyOptions,
+} from "@/app/src/services/modules/cash-disbursement/cash-advance/CashAdvanceApi";
+import { PartyManagementQueryKeys } from "@/app/src/services/modules/party-management/PartyManagementQueryKeys";
 import type {
   CashAdvanceMultipleEntryFormController,
   CashAdvanceMultipleEntryFormValues,
@@ -41,11 +42,52 @@ export function CashAdvanceMultipleEntryDetailsFields({
   projectOptions: AppAdvancedDropdownOption[];
   onUpdateField: CashAdvanceMultipleEntryFormController["updateField"];
 }) {
-  const partyOptions = useMemo(
-    () => createCashAdvanceMultipleEntryPartyOptions(values.partyCode, values.partyName),
-    [values.partyCode, values.partyName],
-  );
-  const accountOptions = useMemo(() => createCashAdvanceMultipleEntrySelectOptions(CashAdvanceMultipleEntryAccountOptions), []);
+  const partyQuery = useQuery({
+    queryKey: PartyManagementQueryKeys.cashAdvancePartyOptions(),
+    queryFn: fetchCashAdvancePartyOptions,
+  });
+  const accountQuery = useQuery({
+    queryKey: ["cash-disbursement", "cash-advance-multiple-entry", "account-options"],
+    queryFn: fetchCashAdvanceAccountOptions,
+  });
+  const partyOptions = useMemo(() => {
+    const options = (partyQuery.data ?? []).map((party) => ({
+      ...party,
+      label: party.partyCode || party.label || party.name,
+      value: party.partyCode || party.label || party.name,
+    }));
+
+    if (values.partyCode && !options.some((option) => option.value === values.partyCode)) {
+      options.unshift({
+        name: values.partyName || values.partyCode,
+        label: values.partyCode,
+        value: values.partyCode,
+        partyCode: values.partyCode,
+        partyName: values.partyName,
+      });
+    }
+
+    return options;
+  }, [partyQuery.data, values.partyCode, values.partyName]);
+  const accountOptions = useMemo(() => {
+    const options = (accountQuery.data ?? []).map((account) => ({
+      ...account,
+      label: account.accountCode || account.label || account.name,
+      value: account.accountCode || account.label || account.name,
+    }));
+
+    if (values.accountCode && !options.some((option) => option.value === values.accountCode)) {
+      options.unshift({
+        name: values.accountTitle || values.accountCode,
+        label: values.accountCode,
+        value: values.accountCode,
+        accountCode: values.accountCode,
+        accountTitle: values.accountTitle,
+      });
+    }
+
+    return options;
+  }, [accountQuery.data, values.accountCode, values.accountTitle]);
 
   return (
     <section className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
@@ -61,15 +103,16 @@ export function CashAdvanceMultipleEntryDetailsFields({
               searchPlaceholder="Search Party Name"
               addAction={!isReadonly ? { label: "Add Party Name", onClick: onOpenPartyDrawer } : undefined}
               onChange={(code, name) => {
-                onUpdateField("partyCode", code);
-                onUpdateField("partyName", name);
+                const selectedParty = partyOptions.find((option) => option.value === code);
+                onUpdateField("partyCode", selectedParty?.partyCode ?? code);
+                onUpdateField("partyName", selectedParty?.partyName ?? name);
               }}
             />
           </TransactionField>
 
           <TransactionField label="Project Name">
             <AppLookupDropdown
-              value={values.projectRef}
+              value={values.projectName}
               options={projectOptions}
               readOnly={isReadonly}
               placeholder="Select Project Name"
@@ -77,7 +120,7 @@ export function CashAdvanceMultipleEntryDetailsFields({
               addAction={!isReadonly ? { label: "Add Project Name", onClick: onOpenProjectDrawer } : undefined}
               onChange={(projectName) => {
                 const project = projectOptions.find((option) => option.value === projectName);
-                onUpdateField("projectRef", projectName);
+                onUpdateField("projectName", projectName);
                 onUpdateField("projectCode", project?.label === projectName ? "" : (project?.label ?? ""));
               }}
             />
@@ -91,8 +134,9 @@ export function CashAdvanceMultipleEntryDetailsFields({
               placeholder="Select Default Account Title"
               searchPlaceholder="Search Default Account"
               onChange={(code, name) => {
-                onUpdateField("accountCode", code);
-                onUpdateField("accountTitle", name);
+                const selectedAccount = accountOptions.find((option) => option.value === code);
+                onUpdateField("accountCode", selectedAccount?.accountCode ?? code);
+                onUpdateField("accountTitle", selectedAccount?.accountTitle ?? name);
               }}
             />
           </TransactionField>

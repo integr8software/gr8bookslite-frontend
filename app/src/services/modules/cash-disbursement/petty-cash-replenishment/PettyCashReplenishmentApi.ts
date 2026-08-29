@@ -1,0 +1,283 @@
+"use client";
+
+import {
+  pettyCashReplenishmentControllerCreate,
+  pettyCashReplenishmentControllerFindAll,
+  pettyCashReplenishmentControllerFindOne,
+  pettyCashReplenishmentControllerFindParties,
+  pettyCashReplenishmentControllerFindPostingAccounts,
+  pettyCashReplenishmentControllerFindResponsibilityCenters,
+  pettyCashReplenishmentControllerRemove,
+  pettyCashReplenishmentControllerSuggestTransactionNo,
+  pettyCashReplenishmentControllerUpdate,
+  pettyCashReplenishmentControllerUpdateStatus,
+} from "@/app/src/generated/api/cash-disbursement-petty-cash-replenishment/cash-disbursement-petty-cash-replenishment";
+import type {
+  CreatePettyCashReplenishmentDto,
+  PettyCashReplenishmentResponseDto,
+  UpdatePettyCashReplenishmentDto,
+  UpdatePettyCashReplenishmentStatusDtoStatus,
+} from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
+import type {
+  PettyCashReplenishmentEntry,
+  PettyCashReplenishmentFormValues,
+  PettyCashReplenishmentRecord,
+  PettyCashReplenishmentStatus,
+} from "@/app/src/types/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentTypes";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
+import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
+
+export type FetchPettyCashReplenishmentListParams = {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: string;
+  partyCode?: string;
+  startDate?: string;
+  endDate?: string;
+  amountFrom?: number;
+  amountTo?: number;
+  branchUnitId?: number;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+};
+
+export type FetchPettyCashReplenishmentListResponse = {
+  data: PettyCashReplenishmentRecord[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+};
+
+export const StatusFromApi: Record<string, PettyCashReplenishmentStatus> = {
+  DRAFT: "Draft",
+  FOR_APPROVAL: "For Approval",
+  APPROVED: "For Approval",
+  POSTED: "Posted",
+  DISAPPROVED: "Disapproved",
+  CANCELLED: "Cancelled",
+};
+
+export const StatusToApi: Record<PettyCashReplenishmentStatus, UpdatePettyCashReplenishmentStatusDtoStatus> = {
+  Draft: "DRAFT",
+  "For Approval": "FOR_APPROVAL",
+  Posted: "POSTED",
+  Disapproved: "DISAPPROVED",
+  Cancelled: "CANCELLED",
+};
+
+export function mapPettyCashReplenishmentRecordFromDto(dto: PettyCashReplenishmentResponseDto): PettyCashReplenishmentRecord {
+  const entries: PettyCashReplenishmentEntry[] = (dto.details ?? []).map((d, index) => ({
+    id: d.id ? String(d.id) : `entry-${index + 1}`,
+    pettyCashDate: d.pettyCashDate ? d.pettyCashDate.split("T")[0] : "",
+    pettyCashNo: d.pettyCashNo ?? "",
+    supplierCode: d.supplierCodeSnapshot ?? "",
+    supplierName: d.supplierNameSnapshot ?? "",
+    particulars: d.particulars ?? "",
+    remarks: d.remarks ?? "",
+    amount: String(d.amount ?? 0),
+    netAmount: String(d.netAmount ?? 0),
+    vatType: d.vatType ?? "",
+    vatPercent: String(d.vatPercent ?? 0),
+    vatAmount: String(d.vatAmount ?? 0),
+    ewtCode: d.ewtCode ?? "",
+    ewtPercent: String(d.ewtPercent ?? 0),
+    ewtAmount: String(d.ewtAmount ?? 0),
+    disburseAmount: String(d.disburseAmount ?? d.amount ?? 0),
+    responsibilityCenterName: d.responsibilityCenterSnapshot ?? "",
+    responsibilityCenterCode: d.responsibilityCenterCodeSnapshot ?? "",
+  }));
+
+  const formValues: PettyCashReplenishmentFormValues = {
+    transactionNo: dto.transactionNo,
+    documentDate: dto.documentDate,
+    status: (StatusFromApi[dto.status] ?? "Draft") as any,
+    partyCode: dto.partyCodeSnapshot ?? "",
+    partyName: dto.partyNameSnapshot ?? "",
+    responsibilityCenter: dto.responsibilityCenterSnapshot ?? "",
+    responsibilityCenterCode: dto.responsibilityCenterCodeSnapshot ?? "",
+    projectCode: dto.projectCode ?? "",
+    projectName: dto.projectName ?? "",
+    accountCode: dto.accountCodeSnapshot ?? "",
+    accountTitle: dto.accountTitleSnapshot ?? "",
+    currency: dto.currencyCode,
+    exchangeRate: dto.exchangeRate !== undefined && dto.exchangeRate !== null ? String(dto.exchangeRate) : "1.00",
+    remarks: dto.remarks ?? "",
+    entries,
+    attachments: [],
+  };
+
+  const createdUser = (dto as any).createdByUser;
+  const updatedUser = (dto as any).updatedByUser;
+
+  return {
+    id: dto.id,
+    transactionNo: dto.transactionNo,
+    documentDate: dto.documentDate,
+    partyCode: dto.partyCodeSnapshot ?? "",
+    partyName: dto.partyNameSnapshot ?? "",
+    accountCode: dto.accountCodeSnapshot ?? "",
+    accountTitle: dto.accountTitleSnapshot ?? "",
+    currency: dto.currencyCode,
+    exchangeRate: dto.exchangeRate !== undefined && dto.exchangeRate !== null ? String(dto.exchangeRate) : "1.00",
+    amount: typeof dto.amount === "number" ? dto.amount : Number(dto.amount ?? 0),
+    remarks: dto.remarks ?? "",
+    status: StatusFromApi[dto.status] ?? "Draft",
+    createdBy: createdUser ? `${createdUser.firstName ?? ""} ${createdUser.lastName ?? ""}`.trim() : "",
+    createdAt: dto.createdAt,
+    updatedBy: updatedUser ? `${updatedUser.firstName ?? ""} ${updatedUser.lastName ?? ""}`.trim() : "",
+    updatedAt: dto.updatedAt,
+    formValues,
+  };
+}
+
+export function mapPettyCashReplenishmentFormValuesToCreateDto(values: PettyCashReplenishmentFormValues): CreatePettyCashReplenishmentDto {
+  const details = (values.entries ?? []).map((item, index) => ({
+    lineNumber: index + 1,
+    pettyCashDate: item.pettyCashDate || undefined,
+    pettyCashNo: item.pettyCashNo,
+    supplierCode: item.supplierCode,
+    supplierName: item.supplierName,
+    particulars: item.particulars,
+    remarks: item.remarks,
+    amount: parseMoneyNumberInput(item.amount),
+    netAmount: parseMoneyNumberInput(item.netAmount),
+    vatType: item.vatType,
+    vatPercent: parseMoneyNumberInput(item.vatPercent),
+    vatAmount: parseMoneyNumberInput(item.vatAmount),
+    ewtCode: item.ewtCode,
+    ewtPercent: parseMoneyNumberInput(item.ewtPercent),
+    ewtAmount: parseMoneyNumberInput(item.ewtAmount),
+    disburseAmount: parseMoneyNumberInput(item.disburseAmount),
+    responsibilityCenterCode: item.responsibilityCenterCode,
+    responsibilityCenter: item.responsibilityCenterName,
+  }));
+
+  const totalAmount = details.reduce((sum, d) => sum + (d.disburseAmount || d.amount || 0), 0);
+
+  return {
+    transactionNo: values.transactionNo,
+    documentDate: values.documentDate,
+    partyCode: values.partyCode,
+    partyName: values.partyName,
+    accountCode: values.accountCode,
+    accountTitle: values.accountTitle,
+    responsibilityCenterCode: values.responsibilityCenterCode,
+    responsibilityCenter: values.responsibilityCenter,
+    projectCode: values.projectCode,
+    projectName: values.projectName,
+    currencyCode: values.currency || "PHP",
+    exchangeRate: parseMoneyNumberInput(values.exchangeRate) || 1.0,
+    amount: totalAmount,
+    remarks: values.remarks,
+    status: values.status && values.status !== "Open" ? StatusToApi[values.status as PettyCashReplenishmentStatus] : "DRAFT",
+    details,
+  };
+}
+
+export function mapPettyCashReplenishmentFormValuesToUpdateDto(values: PettyCashReplenishmentFormValues): UpdatePettyCashReplenishmentDto {
+  return mapPettyCashReplenishmentFormValuesToCreateDto(values) as UpdatePettyCashReplenishmentDto;
+}
+
+export async function fetchPettyCashReplenishmentList(params?: FetchPettyCashReplenishmentListParams): Promise<FetchPettyCashReplenishmentListResponse> {
+  const queryParams: any = {
+    page: params?.page,
+    limit: params?.limit,
+    search: params?.search,
+    partyCode: params?.partyCode,
+    startDate: params?.startDate,
+    endDate: params?.endDate,
+    amountFrom: params?.amountFrom,
+    amountTo: params?.amountTo,
+    branchUnitId: params?.branchUnitId,
+    sortBy: params?.sortBy,
+    sortOrder: params?.sortOrder,
+  };
+
+  if (params?.status && params.status !== "all") {
+    queryParams.status = StatusToApi[params.status as PettyCashReplenishmentStatus] ?? params.status;
+  }
+
+  const response: any = await pettyCashReplenishmentControllerFindAll(queryParams);
+  return {
+    data: (response?.items ?? []).map(mapPettyCashReplenishmentRecordFromDto),
+    meta: response?.meta ?? { page: 1, limit: 50, total: 0, totalPages: 1 },
+  };
+}
+
+export async function fetchPettyCashReplenishmentById(id: string): Promise<PettyCashReplenishmentRecord> {
+  const response: any = await pettyCashReplenishmentControllerFindOne(id);
+  return mapPettyCashReplenishmentRecordFromDto(response);
+}
+
+export async function fetchNextPettyCashReplenishmentNo(branchUnitId?: number): Promise<string> {
+  const response: any = await pettyCashReplenishmentControllerSuggestTransactionNo({ branchUnitId });
+  return response?.nextTransNo ?? response?.transactionNo ?? "";
+}
+
+export async function createPettyCashReplenishmentApi(values: PettyCashReplenishmentFormValues): Promise<PettyCashReplenishmentRecord> {
+  const payload = mapPettyCashReplenishmentFormValuesToCreateDto(values);
+  const response: any = await pettyCashReplenishmentControllerCreate(payload);
+  return mapPettyCashReplenishmentRecordFromDto(response);
+}
+
+export async function updatePettyCashReplenishmentApi(id: string, values: PettyCashReplenishmentFormValues): Promise<PettyCashReplenishmentRecord> {
+  const payload = mapPettyCashReplenishmentFormValuesToUpdateDto(values);
+  const response: any = await pettyCashReplenishmentControllerUpdate(id, payload);
+  return mapPettyCashReplenishmentRecordFromDto(response);
+}
+
+export async function updatePettyCashReplenishmentStatusApi(id: string, status: PettyCashReplenishmentStatus): Promise<PettyCashReplenishmentRecord> {
+  const apiStatus = StatusToApi[status];
+  const response: any = await pettyCashReplenishmentControllerUpdateStatus(id, { status: apiStatus });
+  return mapPettyCashReplenishmentRecordFromDto(response);
+}
+
+export async function deletePettyCashReplenishmentApi(id: string): Promise<{ success: boolean; message: string }> {
+  await pettyCashReplenishmentControllerRemove(id);
+  return { success: true, message: "Deleted successfully" };
+}
+
+export async function fetchPettyCashReplenishmentPartyOptions(): Promise<AppAdvancedDropdownOption[]> {
+  const response: any = await pettyCashReplenishmentControllerFindParties();
+  const parties = response?.parties ?? response?.options ?? response?.items ?? [];
+  return parties.map((p: any) => ({
+    name: p.partyName || p.name,
+    label: p.partyCode || p.label,
+    value: p.partyCode || p.value,
+    description: p.partyName,
+    partyId: p.partyId || p.id,
+    partyCode: p.partyCode,
+    partyName: p.partyName,
+  }));
+}
+
+export async function fetchPettyCashReplenishmentAccountOptions(): Promise<AppAdvancedDropdownOption[]> {
+  const response: any = await pettyCashReplenishmentControllerFindPostingAccounts();
+  const accounts = response?.accounts ?? response?.options ?? response?.items ?? [];
+  return accounts.map((a: any) => ({
+    name: a.accountTitle || a.name,
+    label: a.accountCode || a.label,
+    value: a.accountCode || a.value,
+    description: a.accountTitle,
+    accountId: a.accountId || a.id,
+    accountCode: a.accountCode,
+    accountTitle: a.accountTitle,
+  }));
+}
+
+export async function fetchPettyCashReplenishmentResponsibilityCenters(): Promise<AppAdvancedDropdownOption[]> {
+  const response: any = await pettyCashReplenishmentControllerFindResponsibilityCenters();
+  const centers = response?.centers ?? response?.responsibilityCenters ?? response?.options ?? response?.items ?? [];
+  return centers.map((rc: any) => ({
+    name: rc.name,
+    label: rc.code || rc.label,
+    value: rc.code || rc.value,
+    description: rc.name,
+    centerId: rc.centerId || rc.id,
+    code: rc.code,
+  }));
+}

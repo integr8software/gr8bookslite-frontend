@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   CashVoucherEntryColumnLabels,
   CashVoucherExpenseEntryView,
@@ -11,16 +12,19 @@ import {
   getAccountingPartyFallbackValue,
   isGeneratedAccountingEntry,
 } from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherAccountingEntryData";
-import {
-  CashVoucherPartyOptions,
-  CashVoucherResponsibilityCenterOptions,
-} from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherData";
 import { createEwtOptions, createVatOptions } from "@/app/src/data/shared/tax/TaxData";
+import { FetchChartAccountsTree } from "@/app/src/services/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsApi";
+import { ChartsOfAccountsQueryKeys } from "@/app/src/services/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsQueryKeys";
 import { useAlphanumericTaxCodes } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
+import type { AlphanumericTaxCode } from "@/app/src/types/shared/tax/AlphanumericTaxCodeTypes";
 import type {
   CashVoucherEntryView,
   VoucherDataEntryProps,
 } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherDataEntryTypes";
+import type { CashVoucherPartyDropdownOption } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
+import type { ChartAccount } from "@/app/src/types/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 import type { CashVoucherLineEntry } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { CashVoucherAccountingEntryTable } from "@/app/src/ui/modules/cash-disbursement/cash-voucher/entries/CashVoucherAccountingEntryTable";
@@ -51,25 +55,45 @@ export function CashVoucherEntrySection(props: VoucherDataEntryProps) {
     onRemoveEntry,
     onUpdateEntry,
     onUpdateEntryFields,
+    partyOptions: livePartyOptions,
     partyCode,
     partyName,
+    responsibilityCenterOptions: liveResponsibilityCenterOptions,
     totalCredit,
     totalDebit,
   } = props;
   const variance = Math.abs(totalDebit - totalCredit);
+  const activeCompanyId = useAppStore((state) => state.activeCompanyId);
 
   const [entryView, setEntryView] = useState<CashVoucherEntryView>(CashVoucherExpenseEntryView);
+  const chartAccountsQuery = useQuery({
+    queryKey: ChartsOfAccountsQueryKeys.tree(activeCompanyId),
+    queryFn: FetchChartAccountsTree,
+    staleTime: 60_000,
+  });
   const taxCodesQuery = useAlphanumericTaxCodes();
   const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
   const vatOptions = useMemo(() => createVatOptions(taxCodes), [taxCodes]);
   const ewtOptions = useMemo(() => createEwtOptions(taxCodes), [taxCodes]);
 
-  const chartAccounts = useMemo(() => createAccountingChartAccountOptions(entries), [entries]);
+  const liveChartAccounts = useMemo(
+    () => createSpecificChartAccountOptions(chartAccountsQuery.data ?? []),
+    [chartAccountsQuery.data],
+  );
+  const chartAccounts = useMemo(
+    () => createAccountingChartAccountOptions(entries, liveChartAccounts),
+    [entries, liveChartAccounts],
+  );
   const expenseAccounts = useMemo(() => createDefaultAccountExpenseOptions(defaultAccounts), [defaultAccounts]);
   const expenseRows = useMemo(() => entries.filter((entry) => !isGeneratedAccountingEntry(entry)), [entries]);
 
-  const partyOptions = useMemo<AppAdvancedDropdownOption[]>(() => {
-    const options: AppAdvancedDropdownOption[] = [...CashVoucherPartyOptions];
+  const partyOptions = useMemo<CashVoucherPartyDropdownOption[]>(() => {
+    const options: CashVoucherPartyDropdownOption[] = livePartyOptions.map((option) => {
+      const vatCode = findPartyTaxCode(taxCodes, option.defaultPurchaseInputVatTaxSourceKey, "VAT");
+      const ewtCode = findPartyTaxCode(taxCodes, option.defaultPurchaseEwtTaxSourceKey, "EWT");
+
+      return { ...option, vatCode, ewtCode };
+    });
     const optionNames = new Set(options.map((option) => option.name.toLowerCase()));
     const customValues = new Set(options.map((option) => option.value));
     const customOptions: AppAdvancedDropdownOption[] = [];
@@ -92,10 +116,10 @@ export function CashVoucherEntrySection(props: VoucherDataEntryProps) {
     });
 
     return [...options, ...customOptions];
-  }, [entries]);
+  }, [entries, livePartyOptions, taxCodes]);
 
   const responsibilityCenterOptions = useMemo<AppAdvancedDropdownOption[]>(() => {
-    const options: AppAdvancedDropdownOption[] = [...CashVoucherResponsibilityCenterOptions];
+    const options: AppAdvancedDropdownOption[] = [...liveResponsibilityCenterOptions];
     const optionValues = new Set(options.map((option) => option.value));
     const customOptions: AppAdvancedDropdownOption[] = [];
 
@@ -116,7 +140,7 @@ export function CashVoucherEntrySection(props: VoucherDataEntryProps) {
     });
 
     return [...options, ...customOptions];
-  }, [entries]);
+  }, [entries, liveResponsibilityCenterOptions]);
 
   const updateExpenseEntryFields = useCallback(
     (entryId: string, updates: Partial<CashVoucherLineEntry>) => {
@@ -141,6 +165,7 @@ export function CashVoucherEntrySection(props: VoucherDataEntryProps) {
         onUpdateEntry,
         onUpdateEntryFields,
         partyOptions,
+        taxCodes,
         vatOptions,
       }),
     [
@@ -152,6 +177,7 @@ export function CashVoucherEntrySection(props: VoucherDataEntryProps) {
       onUpdateEntry,
       onUpdateEntryFields,
       partyOptions,
+      taxCodes,
       vatOptions,
     ],
   );
@@ -202,4 +228,50 @@ export function CashVoucherEntrySection(props: VoucherDataEntryProps) {
       vatOptions={vatOptions}
     />
   );
+}
+
+function findPartyTaxCode(
+  taxCodes: AlphanumericTaxCode[],
+  sourceKey: string | undefined,
+  taxType: "EWT" | "VAT",
+) {
+  if (!sourceKey) {
+    return "";
+  }
+
+  const taxCode = taxCodes.find(
+    (tax) =>
+      tax.sourceKey === sourceKey &&
+      (taxType === "VAT"
+        ? tax.taxType === "INPUT VAT" || tax.taxType === "VAT"
+        : tax.taxType === "EWT" || tax.taxType === "CWT"),
+  );
+
+  return taxCode ? (taxType === "EWT" ? taxCode.officialAtcCode || taxCode.taxCode : taxCode.taxCode) : "";
+}
+
+function createSpecificChartAccountOptions(accounts: ChartAccount[]): ModuleChartAccount[] {
+  return accounts.flatMap((account) => {
+    const childOptions = createSpecificChartAccountOptions(account.children ?? []);
+
+    if (account.status !== "Active" || account.accountLevel !== "SPECIFIC" || !account.isPostingAccount) {
+      return childOptions;
+    }
+
+    return [
+      {
+        accountCategory: account.accountLevel,
+        accountName: account.accountName,
+        accountNumber: account.accountNumber,
+        accountType: account.accountType,
+        description: account.description || account.statementSection,
+        id: account.id,
+        normalBalance: account.normalBalance === "CREDIT" ? "Credit" : "Debit",
+        statementGroup: account.statementGroup,
+        statementSection: account.statementSection,
+        status: account.status,
+      },
+      ...childOptions,
+    ];
+  });
 }

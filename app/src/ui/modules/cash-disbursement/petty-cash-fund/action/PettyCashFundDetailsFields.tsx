@@ -1,9 +1,7 @@
-import {
-  PettyCashFundAccountOptions,
-  PettyCashFundPartyOptions,
-  PettyCashFundProjectOptions,
-  PettyCashFundResponsibilityCenterLookupOptions,
-} from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund/PettyCashFundConstants";
+"use client";
+
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import type { PettyCashFundActionPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
@@ -15,6 +13,11 @@ import {
   TransactionTextField,
 } from "@/app/src/ui/shared/transaction-setup/TransactionFormFields";
 import { formatExchangeRateInput } from "@/app/src/utils/number.util";
+import {
+  fetchPettyCashFundAccountOptions,
+  fetchPettyCashFundPartyOptions,
+  fetchPettyCashFundResponsibilityCenters,
+} from "@/app/src/services/modules/cash-disbursement/petty-cash-fund/PettyCashFundApi";
 
 export function PettyCashFundDetailsFields({
   onOpenPartyDrawer,
@@ -27,6 +30,84 @@ export function PettyCashFundDetailsFields({
   onOpenResponsibilityCenterDrawer: () => void;
   page: PettyCashFundActionPageState;
 }) {
+  const partyQuery = useQuery({
+    queryKey: ["cash-disbursement", "petty-cash-fund", "parties"],
+    queryFn: fetchPettyCashFundPartyOptions,
+  });
+
+  const accountQuery = useQuery({
+    queryKey: ["cash-disbursement", "petty-cash-fund", "accounts"],
+    queryFn: fetchPettyCashFundAccountOptions,
+  });
+
+  const rcQuery = useQuery({
+    queryKey: ["cash-disbursement", "petty-cash-fund", "rcs"],
+    queryFn: fetchPettyCashFundResponsibilityCenters,
+  });
+
+  const partyOptions = useMemo(() => {
+    const raw = partyQuery.data ?? [];
+    const options = [...raw];
+    if (page.values.partyCode && !options.some((o) => o.value === page.values.partyCode || o.label === page.values.partyCode)) {
+      options.unshift({
+        name: page.values.partyName || page.values.partyCode,
+        label: page.values.partyCode,
+        value: page.values.partyCode,
+        description: page.values.partyName,
+      });
+    }
+    return options;
+  }, [partyQuery.data, page.values.partyCode, page.values.partyName]);
+
+  const accountOptions = useMemo(() => {
+    const raw = accountQuery.data ?? [];
+    const options = [...raw];
+    if (page.values.accountCode && !options.some((o) => o.value === page.values.accountCode || o.label === page.values.accountCode)) {
+      options.unshift({
+        name: page.values.accountTitle || page.values.accountCode,
+        label: page.values.accountCode,
+        value: page.values.accountCode,
+        description: page.values.accountTitle,
+      });
+    }
+    return options;
+  }, [accountQuery.data, page.values.accountCode, page.values.accountTitle]);
+
+  const responsibilityCenterOptions = useMemo(() => {
+    const raw = (rcQuery.data ?? []).filter((r: any) => !r.name?.toLowerCase().includes("project"));
+    const options = [...raw];
+    if (
+      page.values.responsibilityCenterCode &&
+      !options.some((o) => o.value === page.values.responsibilityCenterCode || o.label === page.values.responsibilityCenterCode)
+    ) {
+      options.unshift({
+        name: page.values.responsibilityCenter || page.values.responsibilityCenterCode,
+        label: page.values.responsibilityCenterCode,
+        value: page.values.responsibilityCenterCode,
+        description: page.values.responsibilityCenter,
+      });
+    }
+    return options;
+  }, [rcQuery.data, page.values.responsibilityCenterCode, page.values.responsibilityCenter]);
+
+  const projectOptions = useMemo(() => {
+    const raw = (rcQuery.data ?? []).filter((r: any) => r.name?.toLowerCase().includes("project") || r.isProject);
+    const options = raw.length > 0 ? raw : (rcQuery.data ?? []);
+    const fullOptions = [...options];
+    if (
+      page.values.projectCode &&
+      !fullOptions.some((o) => o.value === page.values.projectCode || o.label === page.values.projectCode)
+    ) {
+      fullOptions.unshift({
+        name: page.values.projectName || page.values.projectCode,
+        label: page.values.projectCode,
+        value: page.values.projectCode,
+        description: page.values.projectName,
+      });
+    }
+    return fullOptions;
+  }, [rcQuery.data, page.values.projectCode, page.values.projectName]);
+
   return (
     <section className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
       <div className="grid gap-5 xl:grid-cols-3">
@@ -35,7 +116,7 @@ export function PettyCashFundDetailsFields({
           <TransactionField label="Party Name" error={page.errors.partyName} isRequired>
             <AppLookupDropdown
               value={page.values.partyCode}
-              options={PettyCashFundPartyOptions}
+              options={partyOptions}
               readOnly={page.isReadonly}
               placeholder="Select Party Name"
               searchPlaceholder="Search Party Name"
@@ -50,7 +131,7 @@ export function PettyCashFundDetailsFields({
           <TransactionField label="Responsibility Center">
             <AppLookupDropdown
               value={page.values.responsibilityCenterCode}
-              options={PettyCashFundResponsibilityCenterLookupOptions}
+              options={responsibilityCenterOptions}
               readOnly={page.isReadonly}
               placeholder="Select Responsibility Center"
               searchPlaceholder="Search Responsibility Center"
@@ -65,7 +146,7 @@ export function PettyCashFundDetailsFields({
           <TransactionField label="Project Name">
             <AppLookupDropdown
               value={page.values.projectCode}
-              options={PettyCashFundProjectOptions}
+              options={projectOptions}
               readOnly={page.isReadonly}
               placeholder="Select Project Name"
               searchPlaceholder="Search Project"
@@ -80,7 +161,7 @@ export function PettyCashFundDetailsFields({
           <TransactionField label="Default Account Title" error={page.errors.accountTitle} isRequired>
             <AppLookupDropdown
               value={page.values.accountCode}
-              options={PettyCashFundAccountOptions}
+              options={accountOptions}
               readOnly={page.isReadonly}
               placeholder="Select Default Account"
               searchPlaceholder="Search Account"
@@ -94,112 +175,77 @@ export function PettyCashFundDetailsFields({
           <TransactionField label="Remarks">
             <AppLimitedTextarea
               value={page.values.remarks}
-              readOnly={page.isReadonly}
-              onChange={(event) => page.updateField("remarks", event.target.value)}
+              disabled={page.isReadonly}
+              onChange={(e) => page.updateField("remarks", e.target.value)}
               className={`${TransactionFieldClassName} min-h-28 max-w-full resize py-3`}
               counterMode="used"
-              placeholder="Optional Remarks"
+              maxLength={250}
+              placeholder="Remarks"
+              rows={4}
             />
           </TransactionField>
         </div>
 
-        {/* Column 2: Aligned Code & Financial Fields */}
+        {/* Column 2: Currency, Dates, and Base Inputs */}
         <div className="grid min-w-0 content-start gap-5">
-          <TransactionTextField
-            value={page.values.partyCode}
-            isReadonly
-            isRequired
-            label="Party Code"
-            error={page.errors.partyCode}
-            onValueChange={(value) => page.updateField("partyCode", value)}
-            placeholder="Party Code"
-          />
-
-          <TransactionTextField
-            value={page.values.responsibilityCenterCode}
-            isReadonly
-            label="Responsibility Center Code"
-            onValueChange={(value) => page.updateField("responsibilityCenterCode", value)}
-            placeholder="Responsibility Center Code"
-          />
-
-          <TransactionTextField
-            value={page.values.projectCode}
-            isReadonly
-            label="Project Code"
-            onValueChange={(value) => page.updateField("projectCode", value)}
-            placeholder="Project Code"
-          />
-
-          <TransactionTextField
-            value={page.values.accountCode}
-            isReadonly
-            isRequired
-            label="Default Account Code"
-            error={page.errors.accountCode}
-            onValueChange={(value) => page.updateField("accountCode", value)}
-            placeholder="Account Code"
-          />
-
           <CurrencyExchangeRateRow
             currencyLabel="Currency"
-            currencyControlId="pcf-currency"
-            currencyError={page.errors.currency}
-            exchangeRateControlId="pcf-exchange-rate"
-            exchangeRateError={page.errors.exchangeRate}
             currencyControl={
               <AppAdvancedDropdown
-                id="pcf-currency"
-                className="w-full min-w-0"
                 value={page.values.currency}
                 readOnly={page.isReadonly}
-                isClearable={false}
-                menuMinWidth={320}
                 options={page.currencyOptions}
                 placeholder="Currency"
                 searchPlaceholder="Search Currency"
-                onChange={(value) => page.updateCurrency(String(value))}
+                onChange={(val) => page.updateCurrency(String(val))}
               />
             }
             exchangeRateControl={
               <input
-                id="pcf-exchange-rate"
                 type="text"
-                inputMode="decimal"
                 value={page.values.exchangeRate}
                 readOnly={page.isReadonly}
-                disabled={page.isReadonly || page.isExchangeRateLoading}
-                onChange={(event) => page.updateField("exchangeRate", formatExchangeRateInput(event.target.value))}
-                className={`${TransactionFieldClassName} text-right tabular-nums${page.isReadonly || page.isExchangeRateLoading ? " transaction-readonly-placeholder" : ""}`}
-                placeholder="0.00"
+                onChange={(e) => page.updateField("exchangeRate", formatExchangeRateInput(e.target.value))}
+                className={`${TransactionFieldClassName} text-right tabular-nums`}
+                placeholder="1.00"
               />
             }
           />
+
+          <TransactionField label="Document Date" error={page.errors.documentDate} isRequired>
+            <input
+              type="date"
+              value={page.values.documentDate}
+              readOnly={page.isReadonly}
+              onChange={(e) => page.updateField("documentDate", e.target.value)}
+              className={TransactionFieldClassName}
+            />
+          </TransactionField>
         </div>
 
-        {/* Column 3: Transaction Identity & Status */}
-        <div className="grid min-w-0 content-start gap-5">
-          <TransactionTextField
-            value={page.values.transactionNo}
-            isReadonly
-            isRequired
-            label="PCF No."
-            error={page.errors.transactionNo}
-            onValueChange={(value) => page.updateField("transactionNo", value)}
-            placeholder="Auto Generated PCF Transaction Number"
-          />
-
-          <TransactionTextField
-            value={page.values.documentDate}
-            isReadonly={page.isReadonly}
-            isRequired
-            label="PCF Date"
-            error={page.errors.documentDate}
-            type="date"
-            onValueChange={(value) => page.updateField("documentDate", value)}
-          />
-
-          <TransactionTextField value={page.values.status} isReadonly label="Status" onValueChange={() => undefined} />
+        {/* Column 3: Summary Display Cards */}
+        <div className="grid min-w-0 content-start gap-3 rounded-lg border border-darknavy/10 bg-slate-50 p-4">
+          <h3 className="text-sm font-semibold text-darknavy">Summary</h3>
+          <div className="flex justify-between border-b border-darknavy/10 py-1.5 text-xs text-darknavy/70">
+            <span>Total Gross Amount:</span>
+            <span className="font-semibold text-darknavy">{page.totals.formattedGrossAmount}</span>
+          </div>
+          <div className="flex justify-between border-b border-darknavy/10 py-1.5 text-xs text-darknavy/70">
+            <span>Total VAT Amount:</span>
+            <span className="font-semibold text-darknavy">{page.totals.formattedVatAmount}</span>
+          </div>
+          <div className="flex justify-between border-b border-darknavy/10 py-1.5 text-xs text-darknavy/70">
+            <span>Total Net Amount:</span>
+            <span className="font-semibold text-darknavy">{page.totals.formattedNetAmount}</span>
+          </div>
+          <div className="flex justify-between border-b border-darknavy/10 py-1.5 text-xs text-darknavy/70">
+            <span>Total EWT Amount:</span>
+            <span className="font-semibold text-darknavy">{page.totals.formattedEwtAmount}</span>
+          </div>
+          <div className="flex justify-between py-2 text-sm font-bold text-darknavy">
+            <span>Total Amount:</span>
+            <span>{page.totals.formattedAmount}</span>
+          </div>
         </div>
       </div>
     </section>

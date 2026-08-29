@@ -148,21 +148,17 @@ export function PettyCashFundActionHeader({ onPreview, page }: { onPreview: () =
           onCancel={() => setConfirmation(null)}
           onConfirm={() => {
             if (confirmation === "save") {
-              const ok = page.save(PettyCashFundStatuses.forApproval);
-              if (ok) setConfirmation(null);
+              page.save(PettyCashFundStatuses.forApproval);
             } else if (confirmation === "draft") {
-              const ok = page.save(PettyCashFundStatuses.draft);
-              if (ok) setConfirmation(null);
+              page.save(PettyCashFundStatuses.draft);
             } else if (confirmation === "approve") {
-              const ok = page.updateStatus(PettyCashFundStatuses.posted);
-              if (ok) setConfirmation(null);
+              page.updateStatus(PettyCashFundStatuses.posted);
             } else if (confirmation === "disapprove") {
-              const ok = page.updateStatus(PettyCashFundStatuses.disapproved);
-              if (ok) setConfirmation(null);
+              page.updateStatus(PettyCashFundStatuses.disapproved);
             } else {
-              const ok = page.updateStatus(PettyCashFundStatuses.cancelled);
-              if (ok) setConfirmation(null);
+              page.updateStatus(PettyCashFundStatuses.cancelled);
             }
+            setConfirmation(null);
           }}
         />
       ) : null}

@@ -6,7 +6,7 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersTypes";
 
 const AdvancesToSuppliersSchema = z.object({
-  transactionNo: z.string().regex(/^ATS-\d{6}$/, "A valid ATS No. is required."),
+  transactionNo: z.string().regex(/^ATS-(?:\d{4}-)?\d{6}$/, "A valid ATS No. is required."),
   documentDate: z.string().min(1, "ATS Date is required."),
   partyCode: z.string().min(1, "Party Code is required."),
   partyName: z.string().min(1, "Party Name is required."),

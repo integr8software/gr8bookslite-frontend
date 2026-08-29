@@ -9,11 +9,11 @@ import {
 } from "@/app/src/generated/api/warehouse-access/warehouse-access";
 import type {
   CreateWarehouseAccessAssignmentDtoAccessLevel,
-  CreateWarehouseAccessAssignmentDtoPermissions,
+  CreateWarehouseAccessAssignmentDtoPermissionsItem,
   CreateWarehouseAccessAssignmentDtoStatus,
   WarehouseAccessResponseDto,
   WarehouseAccessResponseDtoAccessLevel,
-  WarehouseAccessResponseDtoPermissions,
+  WarehouseAccessResponseDtoPermissionsItem,
   WarehouseAccessResponseDtoStatus,
 } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import type {
@@ -180,7 +180,7 @@ function mapAccessLevelToApi(
 }
 
 function mapPermissionFromApi(
-  value: WarehouseAccessResponseDtoPermissions,
+  value: WarehouseAccessResponseDtoPermissionsItem,
 ): WarehouseAccessPermission {
   if (value === "RECEIVE_STOCK") return "Receive Stock";
   if (value === "ISSUE_STOCK") return "Issue Stock";
@@ -193,7 +193,7 @@ function mapPermissionFromApi(
 
 function mapPermissionToApi(
   value: WarehouseAccessPermission,
-): CreateWarehouseAccessAssignmentDtoPermissions {
+): CreateWarehouseAccessAssignmentDtoPermissionsItem {
   if (value === "Receive Stock") return "RECEIVE_STOCK";
   if (value === "Issue Stock") return "ISSUE_STOCK";
   if (value === "Transfer Stock") return "TRANSFER_STOCK";

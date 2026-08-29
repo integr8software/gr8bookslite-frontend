@@ -8,6 +8,7 @@ import type {
   CashVoucherLineEntry,
   CashVoucherTaxDetails,
   CashVoucherFormErrors,
+  CashVoucherPartyDropdownOption,
 } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
 
 export type CashVoucherEntryColumnId =
@@ -70,8 +71,10 @@ export type VoucherDataEntryProps = {
   onReplaceEntries: (entries: CashVoucherLineEntry[]) => void;
   onUpdateEntry: (entryId: string, field: keyof CashVoucherLineEntry, value: string | number) => void;
   onUpdateEntryFields: (entryId: string, updates: Partial<CashVoucherLineEntry>) => void;
+  partyOptions: CashVoucherPartyDropdownOption[];
   partyCode: string;
   partyName: string;
+  responsibilityCenterOptions: AppAdvancedDropdownOption[];
   totalCredit: number;
   totalDebit: number;
   onRemoveEntry: (entryId: string) => void;
@@ -91,7 +94,8 @@ export type CashVoucherAccountingEntryColumnsParams = {
   onAddPartyName: () => void;
   onUpdateEntry: CashVoucherEntryUpdater;
   onUpdateEntryFields: CashVoucherEntryFieldsUpdater;
-  partyOptions: AppAdvancedDropdownOption[];
+  partyOptions: CashVoucherPartyDropdownOption[];
+  taxCodes: AlphanumericTaxCode[];
   vatOptions?: AppAdvancedDropdownOption[];
 };
 

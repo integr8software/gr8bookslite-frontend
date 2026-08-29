@@ -1,10 +1,4 @@
-import {
-  AdvancesToSuppliersAccountOptions,
-  AdvancesToSuppliersPartyOptions,
-  AdvancesToSuppliersPaymentTypeDropdownOptions,
-  AdvancesToSuppliersProjectOptions,
-  AdvancesToSuppliersResponsibilityCenterOptions,
-} from "@/app/src/constants/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersConstants";
+import { AdvancesToSuppliersPaymentTypeDropdownOptions } from "@/app/src/constants/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersConstants";
 import type { AdvancesToSuppliersActionPageState } from "@/app/src/types/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLookupDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppLookupDropdown";
@@ -38,23 +32,26 @@ export function AdvancesToSuppliersDetailsFields({
           <TransactionField label="Party Name" error={page.errors.partyName} isRequired>
             <AppLookupDropdown
               value={page.values.partyCode}
-              options={AdvancesToSuppliersPartyOptions}
+              options={page.partyOptions}
               readOnly={page.isReadonly}
-              placeholder="Select Party Name"
+              placeholder={page.isLookupLoading ? "Loading Party Names" : "Select Party Name"}
               searchPlaceholder="Search Party Name"
               addAction={!page.isReadonly ? { label: "Add Party Name", onClick: onOpenPartyDrawer } : undefined}
               onChange={(code, name) => {
+                const selectedParty = page.partyOptions.find((option) => option.value === code) as
+                  { partyId?: string; partyCode?: string; partyName?: string } | undefined;
+                page.updateField("partyId", selectedParty?.partyId ?? "");
                 page.updateField("partyCode", code);
-                page.updateField("partyName", name);
+                page.updateField("partyName", selectedParty?.partyName ?? name);
               }}
             />
           </TransactionField>
           <TransactionField label="Responsibility Center">
             <AppLookupDropdown
               value={page.values.responsibilityCenterCode}
-              options={AdvancesToSuppliersResponsibilityCenterOptions}
+              options={page.responsibilityCenterOptions}
               readOnly={page.isReadonly}
-              placeholder="Select Responsibility Center"
+              placeholder={page.isLookupLoading ? "Loading Responsibility Centers" : "Select Responsibility Center"}
               searchPlaceholder="Search Responsibility Center"
               addAction={!page.isReadonly ? { label: "Add Responsibility Center", onClick: onOpenResponsibilityCenterDrawer } : undefined}
               onChange={(code, name) => {
@@ -66,9 +63,9 @@ export function AdvancesToSuppliersDetailsFields({
           <TransactionField label="Project Name">
             <AppLookupDropdown
               value={page.values.projectCode}
-              options={AdvancesToSuppliersProjectOptions}
+              options={page.projectOptions}
               readOnly={page.isReadonly}
-              placeholder="Select Project Name"
+              placeholder={page.isLookupLoading ? "Loading Project Names" : "Select Project Name"}
               searchPlaceholder="Search Project Name"
               addAction={!page.isReadonly ? { label: "Add Project Name", onClick: onOpenProjectDrawer } : undefined}
               onChange={(code, name) => {
@@ -80,13 +77,16 @@ export function AdvancesToSuppliersDetailsFields({
           <TransactionField label="Default Account Title" error={page.errors.accountTitle} isRequired>
             <AppLookupDropdown
               value={page.values.accountCode}
-              options={AdvancesToSuppliersAccountOptions}
+              options={page.accountOptions}
               readOnly={page.isReadonly}
-              placeholder="Select Default Account Title"
+              placeholder={page.isLookupLoading ? "Loading Default Accounts" : "Select Default Account Title"}
               searchPlaceholder="Search Default Account"
               onChange={(code, name) => {
+                const selectedAccount = page.accountOptions.find((option) => option.value === code) as
+                  { accountId?: string; accountCode?: string; accountTitle?: string } | undefined;
+                page.updateField("accountId", selectedAccount?.accountId ?? "");
                 page.updateField("accountCode", code);
-                page.updateField("accountTitle", name);
+                page.updateField("accountTitle", selectedAccount?.accountTitle ?? name);
               }}
             />
           </TransactionField>

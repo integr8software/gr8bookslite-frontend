@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { CashAdvanceLink, CashAdvanceStatuses } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
 import { useCashAdvanceActionForm } from "@/app/src/hooks/modules/cash-disbursement/cash-advance/useCashAdvance";
@@ -10,8 +10,17 @@ import { CashAdvanceActionHeader } from "@/app/src/ui/modules/cash-disbursement/
 import { CashAdvanceNotFound } from "@/app/src/ui/modules/cash-disbursement/cash-advance/action/CashAdvanceNotFound";
 import { openCashAdvancePdf } from "@/app/src/ui/modules/cash-disbursement/cash-advance/reports/CashAdvancePdf";
 import { CashAdvanceReportPreview } from "@/app/src/ui/modules/cash-disbursement/cash-advance/reports/CashAdvanceReportPreview";
+import { AppSkeleton, AppSkeletonCard } from "@/app/src/ui/shared/app/AppSkeleton";
 
 export function CashAdvanceActionPage({ mode }: { mode: CashAdvanceActionMode }) {
+  return (
+    <Suspense fallback={<CashAdvanceActionSkeleton />}>
+      <CashAdvanceActionInner mode={mode} />
+    </Suspense>
+  );
+}
+
+function CashAdvanceActionInner({ mode }: { mode: CashAdvanceActionMode }) {
   const params = useParams<{ recordId?: string }>();
   const router = useRouter();
   const recordId = typeof params.recordId === "string" ? params.recordId : undefined;
@@ -19,6 +28,10 @@ export function CashAdvanceActionPage({ mode }: { mode: CashAdvanceActionMode })
   const advanceForm = useCashAdvanceActionForm(mode, recordId, () => {
     router.push(CashAdvanceLink);
   });
+
+  if (advanceForm.isLoading) {
+    return <CashAdvanceActionSkeleton />;
+  }
 
   if (advanceForm.isRecordMissing) {
     return <CashAdvanceNotFound />;
@@ -50,5 +63,28 @@ export function CashAdvanceActionPage({ mode }: { mode: CashAdvanceActionMode })
         onGeneratePdf={() => openCashAdvancePdf(advanceForm.values)}
       />
     </>
+  );
+}
+
+function CashAdvanceActionSkeleton() {
+  return (
+    <section className="grid gap-5 p-6">
+      <AppSkeletonCard className="grid gap-3 rounded-lg p-5">
+        <AppSkeleton className="h-4 w-40" />
+        <AppSkeleton className="h-7 w-72 max-w-full" />
+        <AppSkeleton className="h-4 w-full max-w-2xl" />
+      </AppSkeletonCard>
+      <AppSkeletonCard className="grid gap-4 rounded-lg p-5">
+        <div className="grid gap-5 xl:grid-cols-3">
+          {Array.from({ length: 3 }, (_, index) => (
+            <div key={index} className="grid gap-4">
+              <AppSkeleton className="h-10 w-full" />
+              <AppSkeleton className="h-10 w-full" />
+              <AppSkeleton className="h-10 w-full" />
+            </div>
+          ))}
+        </div>
+      </AppSkeletonCard>
+    </section>
   );
 }

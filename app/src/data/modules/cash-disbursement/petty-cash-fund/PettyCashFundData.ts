@@ -10,80 +10,6 @@ import { formatMoneyNumberDisplayValue, parseMoneyNumberInput } from "@/app/src/
 import { calculateTaxAmounts } from "@/app/src/data/shared/tax/TaxData";
 import { todayDateValue } from "@/app/src/utils/date.util";
 
-export const PettyCashFundSeedRecords: PettyCashFundRecord[] = [
-  createSeed(
-    "1",
-    "PCF-000063",
-    "2026-02-23",
-    "E000102",
-    "Raymark B. Arsicolo",
-    120,
-    "Initial petty cash fund",
-    PettyCashFundStatuses.forApproval,
-  ),
-  createSeed(
-    "2",
-    "PCF-000062",
-    "2026-02-18",
-    "E000117",
-    "Maria L. Dela Cruz",
-    15000,
-    "Field operations fund",
-    PettyCashFundStatuses.posted,
-  ),
-  createSeed("3", "PCF-000061", "2026-02-12", "E000145", "Jose P. Santos", 8500, "Branch petty cash", PettyCashFundStatuses.draft),
-  createSeed(
-    "4",
-    "PCF-000060",
-    "2026-02-08",
-    "E000117",
-    "Maria L. Dela Cruz",
-    4200,
-    "Disapproved office fund",
-    PettyCashFundStatuses.disapproved,
-  ),
-  createSeed(
-    "5",
-    "PCF-000059",
-    "2026-02-02",
-    "E000102",
-    "Raymark B. Arsicolo",
-    3000,
-    "Cancelled field fund",
-    PettyCashFundStatuses.cancelled,
-  ),
-];
-
-export const PettyCashFundCopyFromRecords: AppCopyFromRecord[] = [
-  {
-    amount: "3,250.00",
-    documentDate: "2026-02-24",
-    id: "pcv-copy-000084",
-    partyName: "Raymark B. Arsicolo",
-    remarks: "Office pantry and operating supplies",
-    source: "Petty Cash Voucher",
-    sourceNo: "PCV-000084",
-  },
-  {
-    amount: "1,875.50",
-    documentDate: "2026-02-20",
-    id: "pcv-copy-000083",
-    partyName: "Maria L. Dela Cruz",
-    remarks: "Local transportation and courier expenses",
-    source: "Petty Cash Voucher",
-    sourceNo: "PCV-000083",
-  },
-  {
-    amount: "4,500.00",
-    documentDate: "2026-02-16",
-    id: "pcv-copy-000082",
-    partyName: "Jose P. Santos",
-    remarks: "Branch operating expenses",
-    source: "Petty Cash Voucher",
-    sourceNo: "PCV-000082",
-  },
-];
-
 export function createBlankPettyCashFundItem(): PettyCashFundItem {
   return {
     id: `pcf-item-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -232,6 +158,8 @@ export function createPettyCashFundRecord(
     partyName: values.partyName,
     accountCode: values.accountCode,
     accountTitle: values.accountTitle,
+    currency: values.currency,
+    exchangeRate: values.exchangeRate,
     amount: calculatePettyCashFundTotals(values.items).amount,
     remarks: values.remarks,
     status,
@@ -276,33 +204,5 @@ function normalizePettyCashFundItem(item: Partial<PettyCashFundItem>): PettyCash
     ...item,
     amount,
     ...calculatePettyCashFundItemTaxFields(amount, item.vatType ?? "", item.ewtCode ?? ""),
-  };
-}
-
-function createSeed(
-  id: string,
-  transactionNo: string,
-  documentDate: string,
-  partyCode: string,
-  partyName: string,
-  amount: number,
-  remarks: string,
-  status: PettyCashFundStatus,
-): PettyCashFundRecord {
-  return {
-    id,
-    transactionNo,
-    documentDate,
-    partyCode,
-    partyName,
-    accountCode: "101-200",
-    accountTitle: "Petty Cash Fund",
-    amount,
-    remarks,
-    status,
-    createdBy: "Maria Santos",
-    createdAt: `${documentDate}T09:00:00`,
-    updatedBy: "Maria Santos",
-    updatedAt: `${documentDate}T09:00:00`,
   };
 }

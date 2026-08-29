@@ -8,7 +8,6 @@ import {
   calculateAdvancePayment,
   calculateAdvancePaymentPercentage,
   createAdvancesToSuppliersFormValues,
-  createAdvancesToSuppliersRecord,
   formatAdvancesToSuppliersAmount,
 } from "@/app/src/data/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersData";
 import {
@@ -20,18 +19,25 @@ import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hook
 import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import {
-  createNextAdvancesToSuppliersNumber,
-  getAdvancesToSuppliersRecords,
-  saveAdvancesToSuppliersRecords,
-  upsertAdvancesToSuppliersRecord,
+  createAdvancesToSuppliersApi,
+  fetchAdvancesToSuppliersAccountOptions,
+  fetchAdvancesToSuppliersById,
+  fetchAdvancesToSuppliersPartyOptions,
+  fetchAdvancesToSuppliersResponsibilityCenters,
+  fetchNextAdvancesToSuppliersNumber,
+  submitAdvancesToSuppliersApprovalApi,
+  updateAdvancesToSuppliersApi,
+  updateAdvancesToSuppliersStatusApi,
 } from "@/app/src/services/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersService";
 import type {
   AdvancesToSuppliersActionMode,
   AdvancesToSuppliersActionTab,
   AdvancesToSuppliersFormErrors,
   AdvancesToSuppliersFormValues,
+  AdvancesToSuppliersRecord,
   AdvancesToSuppliersStatus,
 } from "@/app/src/types/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersTypes";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 import { validateAdvancesToSuppliersForm } from "@/app/src/validations/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersValidation";
 
@@ -39,10 +45,10 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
   const transactionCurrency = useTransactionCurrency();
   const params = useParams<{ recordId?: string }>();
   const { mode } = options;
-  const initialRecord = mode === "add" ? undefined : getAdvancesToSuppliersRecords().find((item) => item.id === params.recordId);
-  const [record, setRecord] = useState(initialRecord);
+  const recordId = params.recordId;
+  const [record, setRecord] = useState<AdvancesToSuppliersRecord | null>(null);
   const [values, setValues] = useState<AdvancesToSuppliersFormValues>(() =>
-    createAdvancesToSuppliersFormValues(initialRecord, createNextAdvancesToSuppliersNumber(), transactionCurrency.baseCurrencyCode),
+    createAdvancesToSuppliersFormValues(undefined, "", transactionCurrency.baseCurrencyCode),
   );
   const [errors, setErrors] = useState<AdvancesToSuppliersFormErrors>({});
   const [activeTab, setActiveTab] = useState<AdvancesToSuppliersActionTab>("details");
@@ -50,8 +56,14 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
   const hasEditedCurrencyRef = useRef(false);
   const isSubmittingRef = useRef(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(mode !== "add" && Boolean(recordId));
+  const [partyOptions, setPartyOptions] = useState<AppAdvancedDropdownOption[]>([]);
+  const [accountOptions, setAccountOptions] = useState<AppAdvancedDropdownOption[]>([]);
+  const [responsibilityCenterOptions, setResponsibilityCenterOptions] = useState<AppAdvancedDropdownOption[]>([]);
+  const [projectOptions, setProjectOptions] = useState<AppAdvancedDropdownOption[]>([]);
+  const [isLookupLoading, setIsLookupLoading] = useState(true);
   const isReadonly = mode === "view";
-  const [initialValues] = useState(values);
+  const [initialValues, setInitialValues] = useState(values);
   const isDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
   const draft = useModuleDraft({
     enabled: !isReadonly,
@@ -65,6 +77,71 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
     setValues,
     values,
   });
+
+  useEffect(() => {
+    let isMounted = true;
+
+    setIsLookupLoading(true);
+    Promise.all([
+      fetchAdvancesToSuppliersPartyOptions(),
+      fetchAdvancesToSuppliersAccountOptions(),
+      fetchAdvancesToSuppliersResponsibilityCenters(),
+    ])
+      .then(([parties, accounts, centers]) => {
+        if (!isMounted) return;
+        setPartyOptions(parties);
+        setAccountOptions(accounts);
+        setResponsibilityCenterOptions(centers.responsibilityCenters);
+        setProjectOptions(centers.projects);
+      })
+      .catch(() => {
+        if (isMounted) toast.error("Could not load Advances to Suppliers dropdown data.");
+      })
+      .finally(() => {
+        if (isMounted) setIsLookupLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (mode !== "add") return;
+
+    fetchNextAdvancesToSuppliersNumber()
+      .then((transactionNo) => {
+        if (!transactionNo) return;
+        setValues((current) => ({ ...current, transactionNo }));
+        setInitialValues((current) => ({ ...current, transactionNo }));
+      })
+      .catch(() => undefined);
+  }, [mode]);
+
+  useEffect(() => {
+    if (mode === "add" || !recordId) return;
+
+    let isMounted = true;
+    setIsLoading(true);
+    fetchAdvancesToSuppliersById(recordId)
+      .then((nextRecord) => {
+        if (!isMounted) return;
+        const nextValues = createAdvancesToSuppliersFormValues(nextRecord, "", transactionCurrency.baseCurrencyCode);
+        setRecord(nextRecord);
+        setValues(nextValues);
+        setInitialValues(nextValues);
+      })
+      .catch(() => {
+        if (isMounted) setRecord(null);
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [mode, recordId, transactionCurrency.baseCurrencyCode]);
   const purchaseOrderCopyRecords = useMemo<AppCopyFromRecord[]>(
     () =>
       loadPurchaseOrders()
@@ -206,7 +283,7 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
     toast.success("Purchase Order Details Copied.");
   }
 
-  function save(status: AdvancesToSuppliersStatus) {
+  async function save(status: AdvancesToSuppliersStatus) {
     if (isReadonly || isSubmittingRef.current) return false;
     if (mode === "edit" && !isDirty) {
       toast.error("No changes to save.");
@@ -228,10 +305,18 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
       return false;
     }
     try {
-      const nextRecord = createAdvancesToSuppliersRecord(values, status, mode === "edit" ? record : undefined);
-      saveAdvancesToSuppliersRecords(upsertAdvancesToSuppliersRecord(nextRecord));
+      const savedRecord =
+        mode === "edit" && record?.id
+          ? await updateAdvancesToSuppliersApi(record.id, { ...values, status })
+          : await createAdvancesToSuppliersApi({ ...values, status });
+      const nextRecord =
+        status === AdvancesToSuppliersStatuses.forApproval && savedRecord.id
+          ? await submitAdvancesToSuppliersApprovalApi(savedRecord.id)
+          : savedRecord;
+      const nextValues = createAdvancesToSuppliersFormValues(nextRecord, "", transactionCurrency.baseCurrencyCode);
       setRecord(nextRecord);
-      setValues(createAdvancesToSuppliersFormValues(nextRecord));
+      setValues(nextValues);
+      setInitialValues(nextValues);
       draft.clearDraft();
       toast.success(
         status === AdvancesToSuppliersStatuses.draft
@@ -242,28 +327,34 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
       return true;
     } catch {
       toast.error("Could not save Advances to Suppliers. Please try again.");
+      return false;
+    } finally {
       isSubmittingRef.current = false;
       setIsSubmitting(false);
       releaseSubmitLock();
-      return false;
     }
   }
 
-  function updateStatus(status: AdvancesToSuppliersStatus) {
+  async function updateStatus(status: AdvancesToSuppliersStatus) {
     if (!record) return false;
     const releaseActionLock = acquireModuleActionLock(`cash-disbursement:advances-to-suppliers:status:${record.id}:${status}`);
     if (!releaseActionLock) return false;
     try {
-      const nextRecord = createAdvancesToSuppliersRecord(values, status, record);
-      saveAdvancesToSuppliersRecords(upsertAdvancesToSuppliersRecord(nextRecord));
+      const nextRecord =
+        status === AdvancesToSuppliersStatuses.forApproval
+          ? await submitAdvancesToSuppliersApprovalApi(record.id)
+          : await updateAdvancesToSuppliersStatusApi(record.id, status);
+      const nextValues = createAdvancesToSuppliersFormValues(nextRecord, "", transactionCurrency.baseCurrencyCode);
       setRecord(nextRecord);
-      setValues(createAdvancesToSuppliersFormValues(nextRecord));
+      setValues(nextValues);
+      setInitialValues(nextValues);
       toast.success(`Advances to Suppliers Marked as ${status}.`);
       return true;
     } catch {
       toast.error("Could not update Advances to Suppliers. Please try again.");
-      releaseActionLock();
       return false;
+    } finally {
+      releaseActionLock();
     }
   }
 
@@ -287,16 +378,22 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
     hasDiscardableChanges: isDirty,
     saveDraft: draft.saveDraft,
     activeTab,
+    accountOptions,
     currencyOptions: transactionCurrency.currencyOptions,
     errors,
     isExchangeRateLoading: transactionCurrency.isExchangeRateLoading,
+    isLoading,
+    isLookupLoading,
     isPreviewOpen,
     isSubmitting,
     isReadonly,
-    isRecordMissing: mode !== "add" && !initialRecord,
+    isRecordMissing: mode !== "add" && !isLoading && !record,
     mode,
+    partyOptions,
+    projectOptions,
     purchaseOrderCopyRecords,
     record,
+    responsibilityCenterOptions,
     save,
     setActiveTab,
     setIsPreviewOpen,
@@ -308,4 +405,3 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
     values,
   };
 }
-

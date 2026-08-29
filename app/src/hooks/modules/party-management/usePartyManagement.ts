@@ -129,6 +129,12 @@ export function usePartyManagementStore<
 		onSuccess: (record) => {
 			updateCachedRecords((records) => [...records, record]);
 			void queryClient.invalidateQueries({
+				queryKey: PartyManagementQueryKeys.cashVoucherPartyOptions(),
+			});
+			void queryClient.invalidateQueries({
+				queryKey: PartyManagementQueryKeys.cashAdvancePartyOptions(),
+			});
+			void queryClient.invalidateQueries({
 				queryKey: PartyManagementQueryKeys.all(),
 			});
 			toast.success("Party information created.");
@@ -150,6 +156,12 @@ export function usePartyManagementStore<
 					...currentRecords,
 					...records,
 				]);
+				void queryClient.invalidateQueries({
+					queryKey: PartyManagementQueryKeys.cashVoucherPartyOptions(),
+				});
+				void queryClient.invalidateQueries({
+					queryKey: PartyManagementQueryKeys.cashAdvancePartyOptions(),
+				});
 				void queryClient.invalidateQueries({
 					queryKey: PartyManagementQueryKeys.all(),
 				});

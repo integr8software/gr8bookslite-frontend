@@ -45,7 +45,7 @@ export function PettyCashVoucherTableToolbar({
             label: status,
             value: status,
           }))}
-          onChange={(value) => page.setStatusFilter(value)}
+          onChange={(value) => page.setStatusFilter(value as any)}
         />
         <ModuleTableColumnVisibilityButton table={page.table} />
         <ModuleTableResetButton className="px-2" onClick={onRefresh} />

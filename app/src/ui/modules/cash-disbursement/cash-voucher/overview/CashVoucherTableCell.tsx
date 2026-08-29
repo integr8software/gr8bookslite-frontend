@@ -22,6 +22,8 @@ export function renderCashVoucherTableCell(
       return <span className="line-clamp-2 text-sm text-darknavy/80">{row.voucher?.remarks || row.transaction.purpose || ""}</span>;
     case "currency":
       return row.voucher?.currency ?? row.transaction.currency;
+    case "exchangeRate":
+      return row.voucher?.fxRate ?? row.transaction.fxRate ?? "";
     case "amount":
       return <span className="font-semibold text-darknavy">{formatCurrency(row.voucher?.amount ?? row.transaction.amount)}</span>;
     case "status":

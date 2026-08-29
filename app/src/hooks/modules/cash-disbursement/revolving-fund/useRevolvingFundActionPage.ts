@@ -1,27 +1,16 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import {
-  RevolvingFundPartyOptions,
-  RevolvingFundStatuses,
-} from "@/app/src/constants/modules/cash-disbursement/revolving-fund/RevolvingFundConstants";
 import {
   calculateRevolvingFundItemTaxFields,
   calculateRevolvingFundTotals,
   createBlankRevolvingFundItem,
   createRevolvingFundFormValues,
-  createRevolvingFundRecord,
   formatRevolvingFundAmount,
-  RevolvingFundCopyFromRecords,
 } from "@/app/src/data/modules/cash-disbursement/revolving-fund/RevolvingFundData";
-import {
-  createNextRevolvingFundNumber,
-  getRevolvingFundRecords,
-  saveRevolvingFundRecords,
-  upsertRevolvingFundRecord,
-} from "@/app/src/services/modules/cash-disbursement/revolving-fund/RevolvingFundService";
 import type {
   RevolvingFundActionMode,
   RevolvingFundActionTab,
@@ -32,27 +21,61 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";
 import { validateRevolvingFundForm } from "@/app/src/validations/modules/cash-disbursement/revolving-fund/RevolvingFundValidation";
 import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
-import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
+import {
+  createRevolvingFundApi,
+  fetchNextRevolvingFundNo,
+  fetchRevolvingFundById,
+  updateRevolvingFundApi,
+  updateRevolvingFundStatusApi,
+} from "@/app/src/services/modules/cash-disbursement/revolving-fund/RevolvingFundApi";
 
 export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionMode; onSaved?: () => void }) {
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const transactionCurrency = useTransactionCurrency();
   const params = useParams<{ recordId?: string }>();
   const { mode } = options;
-  const initialRecord = mode === "add" ? undefined : getRevolvingFundRecords().find((record) => record.id === params.recordId);
-  const [record, setRecord] = useState(initialRecord);
+  const isReadonly = mode === "view";
+
+  const recordQuery = useQuery({
+    queryKey: ["cash-disbursement", "revolving-fund", params.recordId],
+    queryFn: () => fetchRevolvingFundById(params.recordId!),
+    enabled: Boolean(params.recordId) && mode !== "add",
+  });
+
+  const record = recordQuery.data;
+
   const [values, setValues] = useState<RevolvingFundFormValues>(() =>
-    createRevolvingFundFormValues(initialRecord, createNextRevolvingFundNumber(), transactionCurrency.baseCurrencyCode),
+    createRevolvingFundFormValues(record, "", transactionCurrency.baseCurrencyCode),
   );
   const [errors, setErrors] = useState<RevolvingFundFormErrors>({});
   const [activeTab, setActiveTab] = useState<RevolvingFundActionTab>("details");
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const hasEditedCurrencyRef = useRef(false);
-  const isSubmittingRef = useRef(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const isReadonly = mode === "view";
-  const [initialValues] = useState(values);
+  const [initialValues, setInitialValues] = useState(values);
   const isDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
+
+  useEffect(() => {
+    if (record) {
+      const formVals = createRevolvingFundFormValues(record, record.transactionNo, record.currency || "PHP");
+      setValues(formVals);
+      setInitialValues(formVals);
+    }
+  }, [record]);
+
+  useEffect(() => {
+    if (mode === "add") {
+      fetchNextRevolvingFundNo()
+        .then((nextNo) => {
+          if (nextNo) {
+            setValues((cur) => ({ ...cur, transactionNo: nextNo }));
+          }
+        })
+        .catch(() => undefined);
+    }
+  }, [mode]);
+
   const draft = useModuleDraft({
     enabled: !isReadonly,
     initialValues,
@@ -61,6 +84,7 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
     setValues,
     values,
   });
+
   const totals = useMemo(() => calculateRevolvingFundTotals(values.items), [values.items]);
 
   useEffect(() => {
@@ -81,12 +105,21 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
     setErrors((current) => ({ ...current, [field]: undefined }));
   }
 
+  function calculateItem(item: RevolvingFundItem): RevolvingFundItem {
+    const taxFields = calculateRevolvingFundItemTaxFields(item.amount, item.vatType, item.ewtCode);
+    return { ...item, ...taxFields };
+  }
+
   function updateItem(rowId: string, updates: Partial<RevolvingFundItem>) {
     if (isReadonly) return;
     updateField(
       "items",
       values.items.map((item) => (item.id === rowId ? calculateItem({ ...item, ...updates }) : item)),
     );
+  }
+
+  function updateItems(items: RevolvingFundItem[]) {
+    updateField("items", items);
   }
 
   async function updateCurrency(currencyCode: string) {
@@ -96,197 +129,175 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
 
     try {
       const exchangeRate = await transactionCurrency.loadExchangeRate(currencyCode);
-
       if (exchangeRate != null) {
         updateField("exchangeRate", formatLoadedExchangeRate(exchangeRate));
       }
     } catch {
-      setErrors((current) => ({ ...current, exchangeRate: "Could not load the exchange rate." }));
-      toast.error("Could not load the exchange rate for the selected currency.");
+      toast.error("Could not load exchange rate.");
     }
   }
 
-  function updateItems(items: RevolvingFundItem[]) {
-    updateField("items", items);
+  function addItem() {
+    if (isReadonly) return;
+    updateField("items", [...values.items, createBlankRevolvingFundItem()]);
   }
 
   function addItems(count: number) {
     updateItems([...values.items, ...Array.from({ length: count }, createBlankRevolvingFundItem)]);
   }
 
-  function removeItem(rowId: string) {
-    if (values.items.length > 1) {
-      updateItems(values.items.filter((item) => item.id !== rowId));
-    } else {
-      updateItems([createBlankRevolvingFundItem()]);
+  function duplicateItem(rowId: string) {
+    const target = values.items.find((i) => i.id === rowId);
+    if (target) {
+      updateItems([...values.items, { ...target, id: `item-${Date.now()}` }]);
     }
   }
 
-  function duplicateItem(rowId: string) {
-    const item = values.items.find((row) => row.id === rowId);
-    if (item) updateItems([...values.items, { ...item, id: createBlankRevolvingFundItem().id }]);
-  }
-
-  function insertItem(rowId: string, position: "above" | "below") {
-    const index = values.items.findIndex((item) => item.id === rowId);
-    if (index < 0) return;
+  function insertItem(rowId: string, position: "above" | "below" = "below") {
+    const index = values.items.findIndex((i) => i.id === rowId);
+    const targetIndex = index === -1 ? values.items.length : position === "above" ? index : index + 1;
     const next = [...values.items];
-    next.splice(position === "above" ? index : index + 1, 0, createBlankRevolvingFundItem());
+    next.splice(targetIndex, 0, createBlankRevolvingFundItem());
+    updateItems(next);
+  }
+  function insertItemByIndex(index: number) {
+    const next = [...values.items];
+    next.splice(index, 0, createBlankRevolvingFundItem());
     updateItems(next);
   }
 
   function moveItem(fromRowId: string, toRowId: string) {
-    if (fromRowId === toRowId) return;
-    const fromIndex = values.items.findIndex((item) => item.id === fromRowId);
-    const toIndex = values.items.findIndex((item) => item.id === toRowId);
-    if (fromIndex < 0 || toIndex < 0) return;
+    const fromIndex = values.items.findIndex((i) => i.id === fromRowId);
+    const toIndex = values.items.findIndex((i) => i.id === toRowId);
+    if (fromIndex === -1 || toIndex === -1) return;
+    const next = [...values.items];
+    const [moved] = next.splice(fromIndex, 1);
+    next.splice(toIndex, 0, moved);
+    updateItems(next);
+  }
+  function moveItemByIndex(fromIndex: number, toIndex: number) {
     const next = [...values.items];
     const [moved] = next.splice(fromIndex, 1);
     next.splice(toIndex, 0, moved);
     updateItems(next);
   }
 
-  function copyFrom(recordIds: string[]) {
+  function removeItem(rowId: string) {
     if (isReadonly) return;
-    const source = RevolvingFundCopyFromRecords.find((item) => recordIds.includes(item.id));
-    if (!source) {
-      toast.error("Select a Disbursement Voucher to copy.");
+    if (values.items.length === 1) {
+      toast.error("At least one line item is required.");
       return;
     }
-    const party = RevolvingFundPartyOptions.find((option) => option.name === source.partyName);
-    const amount = formatRevolvingFundAmount(Number(source.amount?.replace(/,/g, "")) || 0);
-    setValues((current) => ({
-      ...current,
-      partyCode: String(party?.value ?? ""),
-      partyName: source.partyName ?? "",
-      remarks: source.remarks ?? "",
-      items: [
-        {
-          ...createBlankRevolvingFundItem(),
-          amount,
-          date: source.documentDate ?? current.documentDate,
-          grossAmount: amount,
-          netAmount: amount,
-          remarks: source.remarks ?? "",
-          supplierCode: String(party?.value ?? ""),
-          supplierName: source.partyName ?? "",
-        },
-      ],
-    }));
-    setErrors({});
-    toast.success(`Copied Details from ${source.sourceNo}.`);
-  }
-
-  function save(status: RevolvingFundStatus) {
-    if (isReadonly || isSubmittingRef.current) return false;
-    if (mode === "edit" && !isDirty) {
-      toast.error("No changes to save.");
-      return false;
-    }
-    const releaseSubmitLock = acquireModuleActionLock(
-      `cash-disbursement:revolving-fund:save:${mode}:${params.recordId ?? values.transactionNo}`,
+    updateField(
+      "items",
+      values.items.filter((item) => item.id !== rowId),
     );
-    if (!releaseSubmitLock) return false;
-    isSubmittingRef.current = true;
-    setIsSubmitting(true);
-    const nextErrors = status === RevolvingFundStatuses.draft ? {} : validateRevolvingFundForm(values);
-    setErrors(nextErrors);
-    if (Object.keys(nextErrors).length) {
-      toast.error("Please fix the highlighted Revolving Fund fields.");
-      isSubmittingRef.current = false;
-      setIsSubmitting(false);
-      releaseSubmitLock();
-      return false;
-    }
-    try {
-      const nextRecord = createRevolvingFundRecord(values, status, mode === "edit" ? record : undefined);
-      saveRevolvingFundRecords(upsertRevolvingFundRecord(nextRecord));
-      setRecord(nextRecord);
-      setValues(createRevolvingFundFormValues(nextRecord));
+  }
+
+  const saveMutation = useMutation({
+    mutationFn: async (submitValues: RevolvingFundFormValues) => {
+      if (mode === "add") {
+        return await createRevolvingFundApi(submitValues);
+      }
+      return await updateRevolvingFundApi(params.recordId!, submitValues);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cash-disbursement", "revolving-fund"] });
       draft.clearDraft();
-      toast.success(status === RevolvingFundStatuses.draft ? "Revolving Fund Saved as Draft." : "Revolving Fund Submitted for Approval.");
-      options.onSaved?.();
-      return true;
-    } catch {
-      toast.error("Could not save the Revolving Fund. Please try again.");
-      isSubmittingRef.current = false;
-      setIsSubmitting(false);
-      releaseSubmitLock();
-      return false;
-    }
-  }
+      toast.success(`Revolving Fund ${mode === "add" ? "created" : "updated"} successfully.`);
+      if (options.onSaved) {
+        options.onSaved();
+      } else {
+        router.push("/cash-disbursement/revolving-fund");
+      }
+    },
+    onError: (err: any) => {
+      const msg = err?.response?.data?.message || "Failed to save Revolving Fund.";
+      toast.error(msg);
+    },
+  });
 
-  function updateStatus(status: RevolvingFundStatus) {
-    if (!record) return false;
-    const releaseActionLock = acquireModuleActionLock(`cash-disbursement:revolving-fund:status:${record.id}:${status}`);
-    if (!releaseActionLock) return false;
-    try {
-      const nextRecord = createRevolvingFundRecord(values, status, record);
-      saveRevolvingFundRecords(upsertRevolvingFundRecord(nextRecord));
-      setRecord(nextRecord);
-      setValues(createRevolvingFundFormValues(nextRecord));
-      toast.success(`Revolving Fund Marked as ${status}.`);
-      return true;
-    } catch {
-      toast.error("Could not update the Revolving Fund. Please try again.");
-      releaseActionLock();
-      return false;
-    }
-  }
+  const updateStatusMutation = useMutation({
+    mutationFn: async (status: RevolvingFundStatus) => {
+      return await updateRevolvingFundStatusApi(params.recordId!, status);
+    },
+    onSuccess: (updatedRecord, status) => {
+      queryClient.invalidateQueries({ queryKey: ["cash-disbursement", "revolving-fund"] });
+      queryClient.setQueryData(["cash-disbursement", "revolving-fund", params.recordId], updatedRecord);
+      setValues((cur) => ({ ...cur, status: status as any }));
+      toast.success(`Revolving Fund marked as ${status}.`);
+    },
+    onError: () => {
+      toast.error("Could not update status.");
+    },
+  });
 
-  function validate(status: RevolvingFundStatus = RevolvingFundStatuses.forApproval): boolean {
-    if (isReadonly || isSubmittingRef.current) return false;
-    if (mode === "edit" && !isDirty) {
-      toast.error("No changes to save.");
-      return false;
-    }
-    const nextErrors = status === RevolvingFundStatuses.draft ? {} : validateRevolvingFundForm(values);
+  function submit(status?: RevolvingFundStatus) {
+    const nextValues = status ? { ...values, status: status as any } : values;
+    const nextErrors = validateRevolvingFundForm(nextValues);
     setErrors(nextErrors);
-    if (Object.keys(nextErrors).length) {
-      toast.error("Please fix the highlighted Revolving Fund fields.");
-      return false;
+
+    if (Object.keys(nextErrors).length > 0) {
+      toast.error("Please complete required fields before saving.");
+      return;
     }
-    return true;
+
+    saveMutation.mutate(nextValues);
+  }
+
+  function handleUpdateStatus(status: RevolvingFundStatus) {
+    updateStatusMutation.mutate(status);
   }
 
   return {
-    discardDraft: draft.discardDraft,
-    hasDiscardableChanges: isDirty,
-    saveDraft: draft.saveDraft,
     activeTab,
+    addItem,
     addItems,
-    copyFrom,
+    closePreview: () => setIsPreviewOpen(false),
     currencyOptions: transactionCurrency.currencyOptions,
+    discardDraft: draft.discardDraft,
+    draft,
     duplicateItem,
     errors,
-    isReadonly,
-    isPreviewOpen,
-    isSubmitting,
-    isExchangeRateLoading: transactionCurrency.isExchangeRateLoading,
-    isRecordMissing: mode !== "add" && !initialRecord,
+    handleUpdateStatus,
+    hasDiscardableChanges: isDirty,
     insertItem,
+    isDirty,
+    isExchangeRateLoading: transactionCurrency.isExchangeRateLoading,
+    isLoading: recordQuery.isLoading,
+    isPreviewOpen,
+    isReadonly,
+    isRecordMissing: mode !== "add" && !recordQuery.isLoading && !record,
+    isSubmitting: saveMutation.isPending || updateStatusMutation.isPending,
     mode,
     moveItem,
+    openPreview: () => setIsPreviewOpen(true),
     record,
     removeItem,
-    save,
+    save: async (status?: any) => { submit(status); return true; },
+    saveDraft: draft.saveDraft,
     setActiveTab,
     setIsPreviewOpen,
-    totals,
-    updateField,
+    submit,
+    totals: {
+      ...totals,
+      formattedAmount: formatRevolvingFundAmount(totals.amount),
+      formattedDisburseAmount: formatRevolvingFundAmount(totals.disburseAmount),
+      formattedEwtAmount: formatRevolvingFundAmount(totals.ewtAmount),
+      formattedGrossAmount: formatRevolvingFundAmount(totals.grossAmount),
+      formattedNetAmount: formatRevolvingFundAmount(totals.netAmount),
+      formattedVatAmount: formatRevolvingFundAmount(totals.vatAmount),
+    },
     updateCurrency,
+    updateField,
     updateItem,
     updateItems,
-    updateStatus,
-    validate,
+    updateStatus: async (status: any) => { handleUpdateStatus(status); return true; },
+    validate: (status?: any) => {
+      const errs = validateRevolvingFundForm(values);
+      setErrors(errs);
+      return Object.keys(errs).length === 0;
+    },
     values,
   };
 }
-
-function calculateItem(item: RevolvingFundItem): RevolvingFundItem {
-  return {
-    ...item,
-    ...calculateRevolvingFundItemTaxFields(item.amount, item.vatType, item.ewtCode),
-  };
-}
-

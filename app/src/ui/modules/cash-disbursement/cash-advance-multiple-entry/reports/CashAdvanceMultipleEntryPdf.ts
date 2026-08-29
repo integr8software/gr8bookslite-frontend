@@ -28,9 +28,7 @@ function createCashAdvanceMultipleEntryPdfDefinition(
   const totalAmount = calculateCashAdvanceMultipleEntryTotal(values.items);
   const responsibilityCenterNames = Array.from(
     new Set(
-      values.items
-        .map((item) => getResponsibilityCenterName(item.responsibilityCenter, responsibilityCenterOptions))
-        .filter(Boolean),
+      values.items.map((item) => getResponsibilityCenterName(item.responsibilityCenter, responsibilityCenterOptions)).filter(Boolean),
     ),
   ).join(", ");
 
@@ -106,7 +104,7 @@ function createCashAdvanceMultipleEntryPdfDefinition(
       },
       {
         columns: [
-          { text: [{ text: "Project: ", bold: true }, values.projectRef || values.projectCode || "-"] },
+          { text: [{ text: "Project: ", bold: true }, values.projectName || values.projectCode || "-"] },
           { text: [{ text: "Total Amount: ", bold: true }, formatCashAdvanceMultipleEntryAmount(totalAmount)] },
         ],
         margin: [0, 0, 0, 8],

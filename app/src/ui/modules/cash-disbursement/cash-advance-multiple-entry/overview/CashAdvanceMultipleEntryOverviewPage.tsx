@@ -21,7 +21,7 @@ import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable
 import { getColumnMetaClassName, joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 export function CashAdvanceMultipleEntryOverviewPage() {
-  const { entries, lastSyncedAt, refreshRecords, updateEntryStatus } = useCashAdvanceMultipleEntryStore();
+  const { entries, isLoading, lastSyncedAt, refreshRecords, updateEntryStatus } = useCashAdvanceMultipleEntryStore();
   const tableState = useCashAdvanceMultipleEntryTable(entries);
 
   return (
@@ -49,17 +49,18 @@ export function CashAdvanceMultipleEntryOverviewPage() {
         }
       />
 
-      <ModuleStatisticCards className="2xl:grid-cols-6" items={tableState.statisticCards} />
+      <ModuleStatisticCards className="2xl:grid-cols-6" isLoading={isLoading} items={tableState.statisticCards} />
 
       <div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm" data-spotlight-id="maintenance-table">
         <ModuleTable
           variant="embedded"
           emptyDescription="Try another Multiple Cash Advance No., remarks, date range, amount range, or status."
           emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
-          emptyTitle="No Cash Advance Multiple Entry Transaction Found."
+          emptyTitle="No Cash Advance Multiple Entry Transaction Found"
           minWidthClassName={getCashAdvanceMultipleEntryTableMinWidthClassName(tableState.table.getVisibleLeafColumns().length)}
           paginationLabel="entries"
           paginationStorageKey={CashAdvanceMultipleEntryTablePaginationStorageKey}
+          isLoading={isLoading}
           lastSyncedAt={lastSyncedAt}
           table={tableState.table}
           tableTitle="Cash Advances Multiple Entries"

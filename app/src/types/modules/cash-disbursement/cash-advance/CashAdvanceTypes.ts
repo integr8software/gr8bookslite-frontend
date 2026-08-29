@@ -1,10 +1,7 @@
 import type { AppTaxRateDialogValue } from "@/app/src/ui/shared/transaction-setup/AppTaxRateDialog";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import type { DisbursementAttachment } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
-import type {
-  useCashAdvanceActionForm,
-  useCashAdvanceTable,
-} from "@/app/src/hooks/modules/cash-disbursement/cash-advance/useCashAdvance";
+import type { useCashAdvanceActionForm, useCashAdvanceTable } from "@/app/src/hooks/modules/cash-disbursement/cash-advance/useCashAdvance";
 
 export type CashAdvanceActionMode = "add" | "edit" | "view";
 export type CashAdvanceSubmitConfirmationAction = "save" | "draft";
@@ -48,14 +45,17 @@ export type CashAdvanceRecord = {
   costCenterCode?: string;
   createdAt?: string;
   createdBy?: string;
+  currency?: string | null;
   documentDate: string;
   dueDate?: string | null;
   formValues?: CashAdvanceFormValues;
+  fxRate?: string | number | null;
   id: string;
   partyId?: string | null;
   partyCode: string;
   partyName: string;
   projectCode?: string | null;
+  projectName?: string | null;
   projectRef?: string | null;
   remarks: string;
   status: CashAdvanceStatus;
@@ -71,8 +71,9 @@ export type CashAdvanceReferenceFields = {
   costCenterCode: string;
   partyCode: string;
   projectCode: string;
+  projectName: string;
   refNo: string;
-  projectRef: string;
+  projectRef?: string;
   importationRefNo: string;
 };
 

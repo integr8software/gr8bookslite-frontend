@@ -7,7 +7,6 @@ import {
   CashVoucherStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherConstants";
 import {
-  CashVoucherCopyFromRecords,
   CashVoucherCopySources,
 } from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherData";
 import { createProjectResponsibilityCenterInitialValues } from "@/app/src/data/modules/financial-maintenance/responsibility-center/ResponsibilityCenterData";
@@ -36,6 +35,10 @@ export function CashVoucherActionPage({ mode }: { mode: CashVoucherActionMode })
 
 function CashVoucherActionInner({ mode }: { mode: CashVoucherActionMode }) {
   const voucherAction = useCashVoucherActionPage(mode);
+
+  if (voucherAction.isLoading) {
+    return <CashVoucherActionSkeleton />;
+  }
 
   if (voucherAction.isRecordMissing) {
     return <CashVoucherNotFound />;
@@ -73,7 +76,7 @@ function CashVoucherActionContent({ voucherAction }: { voucherAction: CashVouche
   return (
     <>
       <CashVoucherActionHeader
-        copyFromRecords={CashVoucherCopyFromRecords}
+        copyFromRecords={voucherAction.copyFromRecords}
         copyFromSources={CashVoucherCopySources}
         hasDiscardableChanges={voucherAction.hasDiscardableChanges}
         mode={voucherAction.isReadonly ? "view" : voucherAction.mode}
@@ -138,8 +141,10 @@ function CashVoucherDetailsSection({ voucherAction }: { voucherAction: CashVouch
         entries={values.lineEntries}
         errors={voucherAction.errors}
         isReadonly={voucherAction.isReadonly}
+        partyOptions={voucherAction.partyOptions}
         partyCode={values.partyCode}
         partyName={values.partyName}
+        responsibilityCenterOptions={voucherAction.responsibilityCenterOptions}
         totalCredit={voucherAction.totalCredit}
         totalDebit={voucherAction.totalDebit}
         onAddEntries={voucherAction.handleAddEntries}

@@ -8,59 +8,6 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentTypes";
 import { todayDateValue } from "@/app/src/utils/date.util";
 
-export const RevolvingFundReplenishmentSeedRecords: RevolvingFundReplenishmentRecord[] = [
-  createSeed(
-    "1",
-    "RFR-000063",
-    "2026-02-23",
-    "E000102",
-    "Raymark B. Arsicolo",
-    12500,
-    "February office replenishment",
-    RevolvingFundReplenishmentStatuses.forApproval,
-  ),
-  createSeed(
-    "2",
-    "RFR-000062",
-    "2026-02-18",
-    "E000117",
-    "Maria L. Dela Cruz",
-    15000,
-    "Field operations replenishment",
-    RevolvingFundReplenishmentStatuses.posted,
-  ),
-  createSeed(
-    "3",
-    "RFR-000061",
-    "2026-02-12",
-    "E000145",
-    "Jose P. Santos",
-    8500,
-    "Branch replenishment",
-    RevolvingFundReplenishmentStatuses.draft,
-  ),
-  createSeed(
-    "4",
-    "RFR-000060",
-    "2026-02-08",
-    "E000117",
-    "Maria L. Dela Cruz",
-    4200,
-    "Office expense replenishment",
-    RevolvingFundReplenishmentStatuses.disapproved,
-  ),
-  createSeed(
-    "5",
-    "RFR-000059",
-    "2026-02-02",
-    "E000102",
-    "Raymark B. Arsicolo",
-    3000,
-    "Cancelled replenishment",
-    RevolvingFundReplenishmentStatuses.cancelled,
-  ),
-];
-
 export function createBlankRevolvingFundReplenishmentEntry(): RevolvingFundReplenishmentEntry {
   return {
     id: `rfr-entry-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -182,6 +129,8 @@ export function createRevolvingFundReplenishmentRecord(
     partyName: values.partyName,
     accountCode: values.accountCode,
     accountTitle: values.accountTitle,
+    currency: values.currency,
+    exchangeRate: values.exchangeRate,
     amount: calculateRevolvingFundReplenishmentTotals(values.entries).totalAmount,
     remarks: values.remarks,
     status,
@@ -262,32 +211,4 @@ function getRevolvingFundReplenishmentEwtPercent(ewtCode: string) {
 
 function roundRevolvingFundReplenishmentTaxAmount(value: number) {
   return Math.round((value + Number.EPSILON) * 100) / 100;
-}
-
-function createSeed(
-  id: string,
-  transactionNo: string,
-  documentDate: string,
-  partyCode: string,
-  partyName: string,
-  amount: number,
-  remarks: string,
-  status: RevolvingFundReplenishmentStatus,
-): RevolvingFundReplenishmentRecord {
-  return {
-    id,
-    transactionNo,
-    documentDate,
-    partyCode,
-    partyName,
-    accountCode: "101-200",
-    accountTitle: "Revolving Fund",
-    amount,
-    remarks,
-    status,
-    createdBy: "Maria Santos",
-    createdAt: `${documentDate}T09:00:00`,
-    updatedBy: "Maria Santos",
-    updatedAt: `${documentDate}T09:00:00`,
-  };
 }

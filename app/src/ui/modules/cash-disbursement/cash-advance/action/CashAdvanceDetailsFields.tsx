@@ -16,6 +16,7 @@ import {
   fetchCashAdvancePartyOptions,
   fetchCashAdvanceResponsibilityCenters,
 } from "@/app/src/services/modules/cash-disbursement/cash-advance/CashAdvanceApi";
+import { PartyManagementQueryKeys } from "@/app/src/services/modules/party-management/PartyManagementQueryKeys";
 import type {
   CashAdvanceAccountDropdownOption,
   CashAdvanceActionMode,
@@ -71,7 +72,7 @@ export function CashAdvanceDetailsForm({ form, mode }: { form: CashAdvanceFormCo
 
   // 1. Fetch live Party options (Party Name: title, Party Code: subtitle, Primary Key ID: value)
   const partyQuery = useQuery({
-    queryKey: ["cash-disbursement", "cash-advance", "party-options"],
+    queryKey: PartyManagementQueryKeys.cashAdvancePartyOptions(),
     queryFn: fetchCashAdvancePartyOptions,
   });
 
@@ -127,20 +128,20 @@ export function CashAdvanceDetailsForm({ form, mode }: { form: CashAdvanceFormCo
     const options = [...rawOptions];
 
     if (
-      form.values.referenceFields.projectRef &&
-      !options.some((opt) => opt.value === form.values.projectId || opt.name === form.values.referenceFields.projectRef)
+      form.values.referenceFields.projectName &&
+      !options.some((opt) => opt.value === form.values.projectId || opt.name === form.values.referenceFields.projectName)
     ) {
       options.unshift({
-        name: form.values.referenceFields.projectRef,
-        label: form.values.referenceFields.projectCode || form.values.referenceFields.projectRef,
-        value: form.values.projectId || form.values.referenceFields.projectRef,
+        name: form.values.referenceFields.projectName,
+        label: form.values.referenceFields.projectCode || form.values.referenceFields.projectName,
+        value: form.values.projectId || form.values.referenceFields.projectName,
         id: form.values.projectId,
         code: form.values.referenceFields.projectCode,
       });
     }
 
     return options;
-  }, [form.values.projectId, form.values.referenceFields.projectCode, form.values.referenceFields.projectRef, rcQuery.data?.projects]);
+  }, [form.values.projectId, form.values.referenceFields.projectCode, form.values.referenceFields.projectName, rcQuery.data?.projects]);
 
   const partyOptions = useMemo(() => {
     const rawOptions = partyQuery.data ?? [];
@@ -160,7 +161,14 @@ export function CashAdvanceDetailsForm({ form, mode }: { form: CashAdvanceFormCo
     }
 
     return options;
-  }, [form.values.availableCashAdvance, form.values.cashAdvanceLimit, form.values.partyCode, form.values.partyId, form.values.partyName, partyQuery.data]);
+  }, [
+    form.values.availableCashAdvance,
+    form.values.cashAdvanceLimit,
+    form.values.partyCode,
+    form.values.partyId,
+    form.values.partyName,
+    partyQuery.data,
+  ]);
 
   const costCenterInitialValues = useMemo(
     () => createCostCenterInitialValues(responsibilityCenterStore.classifications, responsibilityCenterStore.types),
@@ -260,7 +268,7 @@ export function CashAdvanceDetailsForm({ form, mode }: { form: CashAdvanceFormCo
         onClose={() => setIsProjectDrawerOpen(false)}
         onSaved={(center) => {
           form.updateField("projectId", center.id);
-          form.updateReferenceField("projectRef", center.name);
+          form.updateReferenceField("projectName", center.name);
           form.updateReferenceField("projectCode", center.code);
           setIsProjectDrawerOpen(false);
         }}
@@ -305,7 +313,7 @@ function CashAdvancePrimaryFields({
   const selectedPartyValue = form.values.partyId || form.values.partyCode;
   const selectedAccountValue = form.values.accountId || form.values.accountCode;
   const selectedCostCenterValue = form.values.costCenterId || form.values.costCenter;
-  const selectedProjectValue = form.values.projectId || form.values.referenceFields.projectRef;
+  const selectedProjectValue = form.values.projectId || form.values.referenceFields.projectName;
 
   return (
     <div className="grid gap-5 xl:grid-cols-3">
@@ -389,14 +397,11 @@ function CashAdvancePrimaryFields({
             onChange={(selectedId, selectedName) => {
               const project = projectOptions.find(
                 (option) =>
-                  option.value === selectedId ||
-                  option.id === selectedId ||
-                  option.name === selectedId ||
-                  option.code === selectedId,
+                  option.value === selectedId || option.id === selectedId || option.name === selectedId || option.code === selectedId,
               );
 
               form.updateField("projectId", project?.id || project?.value || selectedId);
-              form.updateReferenceField("projectRef", project?.name || selectedName);
+              form.updateReferenceField("projectName", project?.name || selectedName);
               form.updateReferenceField("projectCode", project?.label || project?.code || "");
             }}
           />

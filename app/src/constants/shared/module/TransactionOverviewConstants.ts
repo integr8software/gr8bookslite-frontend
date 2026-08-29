@@ -7,6 +7,7 @@ export const TransactionOverviewColumnWidths = {
   accountTitle: 240,
   paymentType: 160,
   currency: 100,
+  exchangeRate: 130,
   amount: 160,
   remarks: 260,
   auditUser: 160,

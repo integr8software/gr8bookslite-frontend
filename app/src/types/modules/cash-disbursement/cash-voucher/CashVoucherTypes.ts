@@ -17,6 +17,7 @@ export type CashVoucherTableColumnKey =
   | "partyName"
   | "remarks"
   | "currency"
+  | "exchangeRate"
   | "amount"
   | "status"
   | "createdBy"
@@ -41,6 +42,15 @@ export type CashVoucherActionPageState = ReturnType<typeof useCashVoucherActionP
 export type CashVoucherActionTab = "details" | "attachments";
 
 export type CashVoucherStatusFilter = "all" | Exclude<CashVoucherStatus, "Open">;
+
+export type CashVoucherPartyDropdownOption = AppAdvancedDropdownOption & {
+  defaultPurchaseInputVatTaxSourceKey?: string;
+  defaultPurchaseEwtTaxSourceKey?: string;
+  defaultSalesOutputVatTaxSourceKey?: string;
+  defaultSalesCwtTaxSourceKey?: string;
+  vatCode?: string;
+  ewtCode?: string;
+};
 
 export type CashVoucherHistoryEntry = {
   id: string;
@@ -112,12 +122,14 @@ export type CashVoucherTransactionRecord = {
   payee: string;
   purpose: string;
   department: string;
+  projectCode?: string;
   projectName?: string;
   requestedBy: string;
   transactionDate: string;
   paymentDueDate: string;
   amount: number;
   currency: VoucherCurrency;
+  fxRate?: string;
   paymentMethod: CashVoucherPaymentMethod;
   disbursementType: CashVoucherType;
   status: CashVoucherStatus;
@@ -188,6 +200,7 @@ export type CashVoucherRecord = {
   currency: VoucherCurrency;
   fxRate: string;
   costCenter: string;
+  projectCode?: string;
   projectName?: string;
   partyCode: string;
   partyName: string;
@@ -240,6 +253,7 @@ export type CashVoucherFormValues = {
   currency: VoucherCurrency;
   fxRate: string;
   costCenter: string;
+  projectCode: string;
   projectName: string;
   partyCode: string;
   partyName: string;
@@ -344,5 +358,3 @@ export type CashVoucherReportPreviewProps = {
 };
 
 export type CashVoucherPdfText = string | Array<string | { text: string; bold?: boolean }>;
-
-

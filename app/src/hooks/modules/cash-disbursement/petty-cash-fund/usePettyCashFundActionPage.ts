@@ -1,27 +1,16 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import {
-  PettyCashFundPartyOptions,
-  PettyCashFundStatuses,
-} from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund/PettyCashFundConstants";
 import {
   calculatePettyCashFundItemTaxFields,
   calculatePettyCashFundTotals,
   createBlankPettyCashFundItem,
   createPettyCashFundFormValues,
-  createPettyCashFundRecord,
   formatPettyCashFundAmount,
-  PettyCashFundCopyFromRecords,
 } from "@/app/src/data/modules/cash-disbursement/petty-cash-fund/PettyCashFundData";
-import {
-  createNextPettyCashFundNumber,
-  getPettyCashFundRecords,
-  savePettyCashFundRecords,
-  upsertPettyCashFundRecord,
-} from "@/app/src/services/modules/cash-disbursement/petty-cash-fund/PettyCashFundService";
 import type {
   PettyCashFundActionMode,
   PettyCashFundActionTab,
@@ -32,27 +21,61 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";
 import { validatePettyCashFundForm } from "@/app/src/validations/modules/cash-disbursement/petty-cash-fund/PettyCashFundValidation";
 import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
-import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
+import {
+  createPettyCashFundApi,
+  fetchNextPettyCashFundNo,
+  fetchPettyCashFundById,
+  updatePettyCashFundApi,
+  updatePettyCashFundStatusApi,
+} from "@/app/src/services/modules/cash-disbursement/petty-cash-fund/PettyCashFundApi";
 
 export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionMode; onSaved?: () => void }) {
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const transactionCurrency = useTransactionCurrency();
   const params = useParams<{ recordId?: string }>();
   const { mode } = options;
-  const initialRecord = mode === "add" ? undefined : getPettyCashFundRecords().find((record) => record.id === params.recordId);
-  const [record, setRecord] = useState(initialRecord);
+  const isReadonly = mode === "view";
+
+  const recordQuery = useQuery({
+    queryKey: ["cash-disbursement", "petty-cash-fund", params.recordId],
+    queryFn: () => fetchPettyCashFundById(params.recordId!),
+    enabled: Boolean(params.recordId) && mode !== "add",
+  });
+
+  const record = recordQuery.data;
+
   const [values, setValues] = useState<PettyCashFundFormValues>(() =>
-    createPettyCashFundFormValues(initialRecord, createNextPettyCashFundNumber(), transactionCurrency.baseCurrencyCode),
+    createPettyCashFundFormValues(record, "", transactionCurrency.baseCurrencyCode),
   );
   const [errors, setErrors] = useState<PettyCashFundFormErrors>({});
   const [activeTab, setActiveTab] = useState<PettyCashFundActionTab>("details");
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const hasEditedCurrencyRef = useRef(false);
-  const isSubmittingRef = useRef(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const isReadonly = mode === "view";
-  const [initialValues] = useState(values);
+  const [initialValues, setInitialValues] = useState(values);
   const isDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
+
+  useEffect(() => {
+    if (record) {
+      const formVals = createPettyCashFundFormValues(record, record.transactionNo, record.currency || "PHP");
+      setValues(formVals);
+      setInitialValues(formVals);
+    }
+  }, [record]);
+
+  useEffect(() => {
+    if (mode === "add") {
+      fetchNextPettyCashFundNo()
+        .then((nextNo) => {
+          if (nextNo) {
+            setValues((cur) => ({ ...cur, transactionNo: nextNo }));
+          }
+        })
+        .catch(() => undefined);
+    }
+  }, [mode]);
+
   const draft = useModuleDraft({
     enabled: !isReadonly,
     initialValues,
@@ -61,6 +84,7 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
     setValues,
     values,
   });
+
   const totals = useMemo(() => calculatePettyCashFundTotals(values.items), [values.items]);
 
   useEffect(() => {
@@ -81,12 +105,21 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
     setErrors((current) => ({ ...current, [field]: undefined }));
   }
 
+  function calculateItem(item: PettyCashFundItem): PettyCashFundItem {
+    const taxFields = calculatePettyCashFundItemTaxFields(item.amount, item.vatType, item.ewtCode);
+    return { ...item, ...taxFields };
+  }
+
   function updateItem(rowId: string, updates: Partial<PettyCashFundItem>) {
     if (isReadonly) return;
     updateField(
       "items",
       values.items.map((item) => (item.id === rowId ? calculateItem({ ...item, ...updates }) : item)),
     );
+  }
+
+  function updateItems(items: PettyCashFundItem[]) {
+    updateField("items", items);
   }
 
   async function updateCurrency(currencyCode: string) {
@@ -96,197 +129,175 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
 
     try {
       const exchangeRate = await transactionCurrency.loadExchangeRate(currencyCode);
-
       if (exchangeRate != null) {
         updateField("exchangeRate", formatLoadedExchangeRate(exchangeRate));
       }
     } catch {
-      setErrors((current) => ({ ...current, exchangeRate: "Could not load the exchange rate." }));
-      toast.error("Could not load the exchange rate for the selected currency.");
+      toast.error("Could not load exchange rate.");
     }
   }
 
-  function updateItems(items: PettyCashFundItem[]) {
-    updateField("items", items);
+  function addItem() {
+    if (isReadonly) return;
+    updateField("items", [...values.items, createBlankPettyCashFundItem()]);
   }
 
   function addItems(count: number) {
     updateItems([...values.items, ...Array.from({ length: count }, createBlankPettyCashFundItem)]);
   }
 
-  function removeItem(rowId: string) {
-    if (values.items.length > 1) {
-      updateItems(values.items.filter((item) => item.id !== rowId));
-    } else {
-      updateItems([createBlankPettyCashFundItem()]);
+  function duplicateItem(rowId: string) {
+    const target = values.items.find((i) => i.id === rowId);
+    if (target) {
+      updateItems([...values.items, { ...target, id: `item-${Date.now()}` }]);
     }
   }
 
-  function duplicateItem(rowId: string) {
-    const item = values.items.find((row) => row.id === rowId);
-    if (item) updateItems([...values.items, { ...item, id: createBlankPettyCashFundItem().id }]);
-  }
-
-  function insertItem(rowId: string, position: "above" | "below") {
-    const index = values.items.findIndex((item) => item.id === rowId);
-    if (index < 0) return;
+  function insertItem(rowId: string, position: "above" | "below" = "below") {
+    const index = values.items.findIndex((i) => i.id === rowId);
+    const targetIndex = index === -1 ? values.items.length : position === "above" ? index : index + 1;
     const next = [...values.items];
-    next.splice(position === "above" ? index : index + 1, 0, createBlankPettyCashFundItem());
+    next.splice(targetIndex, 0, createBlankPettyCashFundItem());
+    updateItems(next);
+  }
+  function insertItemByIndex(index: number) {
+    const next = [...values.items];
+    next.splice(index, 0, createBlankPettyCashFundItem());
     updateItems(next);
   }
 
   function moveItem(fromRowId: string, toRowId: string) {
-    if (fromRowId === toRowId) return;
-    const fromIndex = values.items.findIndex((item) => item.id === fromRowId);
-    const toIndex = values.items.findIndex((item) => item.id === toRowId);
-    if (fromIndex < 0 || toIndex < 0) return;
+    const fromIndex = values.items.findIndex((i) => i.id === fromRowId);
+    const toIndex = values.items.findIndex((i) => i.id === toRowId);
+    if (fromIndex === -1 || toIndex === -1) return;
+    const next = [...values.items];
+    const [moved] = next.splice(fromIndex, 1);
+    next.splice(toIndex, 0, moved);
+    updateItems(next);
+  }
+  function moveItemByIndex(fromIndex: number, toIndex: number) {
     const next = [...values.items];
     const [moved] = next.splice(fromIndex, 1);
     next.splice(toIndex, 0, moved);
     updateItems(next);
   }
 
-  function copyFrom(recordIds: string[]) {
+  function removeItem(rowId: string) {
     if (isReadonly) return;
-    const source = PettyCashFundCopyFromRecords.find((item) => recordIds.includes(item.id));
-    if (!source) {
-      toast.error("Select a Petty Cash Voucher to copy.");
+    if (values.items.length === 1) {
+      toast.error("At least one line item is required.");
       return;
     }
-    const party = PettyCashFundPartyOptions.find((option) => option.name === source.partyName);
-    const amount = formatPettyCashFundAmount(Number(source.amount?.replace(/,/g, "")) || 0);
-    setValues((current) => ({
-      ...current,
-      partyCode: String(party?.value ?? ""),
-      partyName: source.partyName ?? "",
-      remarks: source.remarks ?? "",
-      items: [
-        {
-          ...createBlankPettyCashFundItem(),
-          amount,
-          date: source.documentDate ?? current.documentDate,
-          grossAmount: amount,
-          netAmount: amount,
-          remarks: source.remarks ?? "",
-          supplierCode: String(party?.value ?? ""),
-          supplierName: source.partyName ?? "",
-        },
-      ],
-    }));
-    setErrors({});
-    toast.success(`Copied Details from ${source.sourceNo}.`);
-  }
-
-  function save(status: PettyCashFundStatus) {
-    if (isReadonly || isSubmittingRef.current) return false;
-    if (mode === "edit" && !isDirty) {
-      toast.error("No changes to save.");
-      return false;
-    }
-    const releaseSubmitLock = acquireModuleActionLock(
-      `cash-disbursement:petty-cash-fund:save:${mode}:${params.recordId ?? values.transactionNo}`,
+    updateField(
+      "items",
+      values.items.filter((item) => item.id !== rowId),
     );
-    if (!releaseSubmitLock) return false;
-    isSubmittingRef.current = true;
-    setIsSubmitting(true);
-    const nextErrors = status === PettyCashFundStatuses.draft ? {} : validatePettyCashFundForm(values);
-    setErrors(nextErrors);
-    if (Object.keys(nextErrors).length) {
-      toast.error("Please fix the highlighted Petty Cash Fund fields.");
-      isSubmittingRef.current = false;
-      setIsSubmitting(false);
-      releaseSubmitLock();
-      return false;
-    }
-    try {
-      const nextRecord = createPettyCashFundRecord(values, status, mode === "edit" ? record : undefined);
-      savePettyCashFundRecords(upsertPettyCashFundRecord(nextRecord));
-      setRecord(nextRecord);
-      setValues(createPettyCashFundFormValues(nextRecord));
+  }
+
+  const saveMutation = useMutation({
+    mutationFn: async (submitValues: PettyCashFundFormValues) => {
+      if (mode === "add") {
+        return await createPettyCashFundApi(submitValues);
+      }
+      return await updatePettyCashFundApi(params.recordId!, submitValues);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cash-disbursement", "petty-cash-fund"] });
       draft.clearDraft();
-      toast.success(status === PettyCashFundStatuses.draft ? "Petty Cash Fund Saved as Draft." : "Petty Cash Fund Submitted for Approval.");
-      options.onSaved?.();
-      return true;
-    } catch {
-      toast.error("Could not save the Petty Cash Fund. Please try again.");
-      isSubmittingRef.current = false;
-      setIsSubmitting(false);
-      releaseSubmitLock();
-      return false;
-    }
-  }
+      toast.success(`Petty Cash Fund ${mode === "add" ? "created" : "updated"} successfully.`);
+      if (options.onSaved) {
+        options.onSaved();
+      } else {
+        router.push("/cash-disbursement/petty-cash-fund");
+      }
+    },
+    onError: (err: any) => {
+      const msg = err?.response?.data?.message || "Failed to save Petty Cash Fund.";
+      toast.error(msg);
+    },
+  });
 
-  function updateStatus(status: PettyCashFundStatus) {
-    if (!record) return false;
-    const releaseActionLock = acquireModuleActionLock(`cash-disbursement:petty-cash-fund:status:${record.id}:${status}`);
-    if (!releaseActionLock) return false;
-    try {
-      const nextRecord = createPettyCashFundRecord(values, status, record);
-      savePettyCashFundRecords(upsertPettyCashFundRecord(nextRecord));
-      setRecord(nextRecord);
-      setValues(createPettyCashFundFormValues(nextRecord));
-      toast.success(`Petty Cash Fund Marked as ${status}.`);
-      return true;
-    } catch {
-      toast.error("Could not update the Petty Cash Fund. Please try again.");
-      releaseActionLock();
-      return false;
-    }
-  }
+  const updateStatusMutation = useMutation({
+    mutationFn: async (status: PettyCashFundStatus) => {
+      return await updatePettyCashFundStatusApi(params.recordId!, status);
+    },
+    onSuccess: (updatedRecord, status) => {
+      queryClient.invalidateQueries({ queryKey: ["cash-disbursement", "petty-cash-fund"] });
+      queryClient.setQueryData(["cash-disbursement", "petty-cash-fund", params.recordId], updatedRecord);
+      setValues((cur) => ({ ...cur, status: status as any }));
+      toast.success(`Petty Cash Fund marked as ${status}.`);
+    },
+    onError: () => {
+      toast.error("Could not update status.");
+    },
+  });
 
-  function validate(status: PettyCashFundStatus = PettyCashFundStatuses.forApproval): boolean {
-    if (isReadonly || isSubmittingRef.current) return false;
-    if (mode === "edit" && !isDirty) {
-      toast.error("No changes to save.");
-      return false;
-    }
-    const nextErrors = status === PettyCashFundStatuses.draft ? {} : validatePettyCashFundForm(values);
+  function submit(status?: PettyCashFundStatus) {
+    const nextValues = status ? { ...values, status: status as any } : values;
+    const nextErrors = validatePettyCashFundForm(nextValues);
     setErrors(nextErrors);
-    if (Object.keys(nextErrors).length) {
-      toast.error("Please fix the highlighted Petty Cash Fund fields.");
-      return false;
+
+    if (Object.keys(nextErrors).length > 0) {
+      toast.error("Please complete required fields before saving.");
+      return;
     }
-    return true;
+
+    saveMutation.mutate(nextValues);
+  }
+
+  function handleUpdateStatus(status: PettyCashFundStatus) {
+    updateStatusMutation.mutate(status);
   }
 
   return {
-    discardDraft: draft.discardDraft,
-    hasDiscardableChanges: isDirty,
-    saveDraft: draft.saveDraft,
     activeTab,
+    addItem,
     addItems,
-    copyFrom,
+    closePreview: () => setIsPreviewOpen(false),
     currencyOptions: transactionCurrency.currencyOptions,
+    discardDraft: draft.discardDraft,
+    draft,
     duplicateItem,
     errors,
-    isReadonly,
-    isPreviewOpen,
-    isSubmitting,
-    isExchangeRateLoading: transactionCurrency.isExchangeRateLoading,
-    isRecordMissing: mode !== "add" && !initialRecord,
+    handleUpdateStatus,
+    hasDiscardableChanges: isDirty,
     insertItem,
+    isDirty,
+    isExchangeRateLoading: transactionCurrency.isExchangeRateLoading,
+    isLoading: recordQuery.isLoading,
+    isPreviewOpen,
+    isReadonly,
+    isRecordMissing: mode !== "add" && !recordQuery.isLoading && !record,
+    isSubmitting: saveMutation.isPending || updateStatusMutation.isPending,
     mode,
     moveItem,
+    openPreview: () => setIsPreviewOpen(true),
     record,
     removeItem,
-    save,
+    save: async (status?: any) => { submit(status); return true; },
+    saveDraft: draft.saveDraft,
     setActiveTab,
     setIsPreviewOpen,
-    totals,
-    updateField,
+    submit,
+    totals: {
+      ...totals,
+      formattedAmount: formatPettyCashFundAmount(totals.amount),
+      formattedDisburseAmount: formatPettyCashFundAmount(totals.disburseAmount),
+      formattedEwtAmount: formatPettyCashFundAmount(totals.ewtAmount),
+      formattedGrossAmount: formatPettyCashFundAmount(totals.grossAmount),
+      formattedNetAmount: formatPettyCashFundAmount(totals.netAmount),
+      formattedVatAmount: formatPettyCashFundAmount(totals.vatAmount),
+    },
     updateCurrency,
+    updateField,
     updateItem,
     updateItems,
-    updateStatus,
-    validate,
+    updateStatus: async (status: any) => { handleUpdateStatus(status); return true; },
+    validate: (status?: any) => {
+      const errs = validatePettyCashFundForm(values);
+      setErrors(errs);
+      return Object.keys(errs).length === 0;
+    },
     values,
   };
 }
-
-function calculateItem(item: PettyCashFundItem): PettyCashFundItem {
-  return {
-    ...item,
-    ...calculatePettyCashFundItemTaxFields(item.amount, item.vatType, item.ewtCode),
-  };
-}
-

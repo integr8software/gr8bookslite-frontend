@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { Ban, FilePenLine, LoaderCircle, Power, PowerOff, RotateCcw, Save, ThumbsDown, ThumbsUp } from "lucide-react";
 import type { AppDialogIconTone, AppDialogProps, AppDialogTone } from "@/app/src/types/shared/app/AppDialogTypes";
 
@@ -96,7 +97,7 @@ export function AppDialog({
     return null;
   }
 
-  return (
+  const dialog = (
     <div
       role="presentation"
       className="app-dialog-backdrop fixed inset-0 z-140 flex items-center justify-center bg-slate-950/20 px-4 py-6 backdrop-blur-[1px]"
@@ -175,6 +176,10 @@ export function AppDialog({
       </section>
     </div>
   );
+
+  // Render at document level so the dialog is not trapped beneath a layout
+  // stacking context (for example, the sticky topbar or sidebar).
+  return typeof document === "undefined" ? dialog : createPortal(dialog, document.body);
 }
 
 export function AnimatedPendingLabel({ label }: { label: string }) {

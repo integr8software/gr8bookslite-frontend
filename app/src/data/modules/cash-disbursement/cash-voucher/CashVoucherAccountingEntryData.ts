@@ -1,5 +1,4 @@
 import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
-import { getModuleChartAccounts } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import {
   AccountingPartyFallbackValuePrefix,
@@ -30,35 +29,12 @@ import type { ModuleDataEntryClearAction } from "@/app/src/types/shared/module/m
 import { calculateFitColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/entryTableState.util";
 import { formatAmount } from "@/app/src/utils/currency.util";
 
-export function createAccountingChartAccountOptions(entries: CashVoucherLineEntry[]): ModuleChartAccount[] {
-  const chartAccounts = getModuleChartAccounts();
-  const accountKeys = new Set(chartAccounts.flatMap((account) => [account.accountName.toLowerCase(), account.accountNumber]));
-  const customAccounts: ModuleChartAccount[] = [];
-
-  entries.forEach((entry) => {
-    const accountName = entry.accountName.trim();
-    const accountKey = accountName.toLowerCase();
-
-    if (!accountName || accountKeys.has(accountKey)) {
-      return;
-    }
-
-    accountKeys.add(accountKey);
-    customAccounts.push({
-      accountCategory: "Other",
-      accountName,
-      accountNumber: entry.accountCode,
-      accountType: "Expenses",
-      description: entry.accountCode,
-      id: `entry-account-${entry.id}`,
-      normalBalance: parseMoneyNumberInput(entry.credit) > 0 ? "Credit" : "Debit",
-      statementGroup: "Income Statement",
-      statementSection: "Accounting Entry",
-      status: "Active",
-    });
-  });
-
-  return [...chartAccounts, ...customAccounts];
+export function createAccountingChartAccountOptions(
+  _entries: CashVoucherLineEntry[],
+  chartAccounts: ModuleChartAccount[],
+): ModuleChartAccount[] {
+  void _entries;
+  return chartAccounts;
 }
 
 export function createDefaultAccountExpenseOptions(defaultAccounts: DefaultAccount[]): ModuleChartAccount[] {
@@ -195,6 +171,7 @@ export function createAutomaticAccountingEntries(
     generatedRemarksOverrides?: Record<string, string>;
     isCashPayment: boolean;
     paymentMethod: string;
+    cashAccount?: { accountCode: string; accountName: string };
   },
 ) {
   const blankRemarksEntryIds = new Set(options.blankRemarksEntryIds ?? []);
@@ -307,8 +284,8 @@ export function createAutomaticAccountingEntries(
   if (hasNonZeroAccountingAmount(totalCashVoucherAmount) && (options.isCashPayment || options.bankAccount)) {
     const creditAccount = options.isCashPayment
       ? {
-          accountCode: CashOnHandAccountCode,
-          accountName: CashOnHandAccountName,
+          accountCode: options.cashAccount?.accountCode ?? CashOnHandAccountCode,
+          accountName: options.cashAccount?.accountName ?? CashOnHandAccountName,
         }
       : {
           accountCode: options.bankAccount?.accountCode ?? "",

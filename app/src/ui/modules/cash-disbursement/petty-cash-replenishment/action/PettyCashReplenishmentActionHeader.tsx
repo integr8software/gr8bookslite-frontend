@@ -163,21 +163,17 @@ export function PettyCashReplenishmentActionHeader({
           onCancel={() => setConfirmation(null)}
           onConfirm={() => {
             if (confirmation === "save") {
-              const ok = page.save(PettyCashReplenishmentStatuses.forApproval);
-              if (ok) setConfirmation(null);
+              page.save(PettyCashReplenishmentStatuses.forApproval);
             } else if (confirmation === "draft") {
-              const ok = page.save(PettyCashReplenishmentStatuses.draft);
-              if (ok) setConfirmation(null);
+              page.save(PettyCashReplenishmentStatuses.draft);
             } else if (confirmation === "approve") {
-              const ok = page.updateStatus(PettyCashReplenishmentStatuses.posted);
-              if (ok) setConfirmation(null);
+              page.updateStatus(PettyCashReplenishmentStatuses.posted);
             } else if (confirmation === "disapprove") {
-              const ok = page.updateStatus(PettyCashReplenishmentStatuses.disapproved);
-              if (ok) setConfirmation(null);
+              page.updateStatus(PettyCashReplenishmentStatuses.disapproved);
             } else {
-              const ok = page.updateStatus(PettyCashReplenishmentStatuses.cancelled);
-              if (ok) setConfirmation(null);
+              page.updateStatus(PettyCashReplenishmentStatuses.cancelled);
             }
+            setConfirmation(null);
           }}
         />
       ) : null}

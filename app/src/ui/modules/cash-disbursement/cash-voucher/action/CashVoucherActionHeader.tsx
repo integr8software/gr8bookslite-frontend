@@ -46,6 +46,7 @@ export function CashVoucherActionHeader({
   const [statusToConfirm, setStatusToConfirm] = useState<CashVoucherStatus | null>(null);
   const transactionLabel = transaction?.transactionNo ?? "Cash Voucher";
   const recordLabel = voucher?.voucherNo ?? transaction?.transactionNo ?? "this cash voucher";
+  const editableRecordId = voucher?.id ?? transaction?.id;
   const title =
     mode === "add" ? (
       "Add Cash Voucher"
@@ -98,8 +99,8 @@ export function CashVoucherActionHeader({
                   onUpdateStatus={onUpdateStatus}
                   onPreview={onPreview}
                 />
-                {transaction && voucher && canEditCashVoucherStatus(voucher.status) ? (
-                  <Link href={getCashVoucherEditLink(transaction.id)} className={moduleHeaderActionClassNames.primary}>
+                {voucher && editableRecordId && canEditCashVoucherStatus(voucher.status) ? (
+                  <Link href={getCashVoucherEditLink(editableRecordId)} className={moduleHeaderActionClassNames.primary}>
                     <Edit3 className="h-4 w-4" aria-hidden="true" />
                     Edit
                   </Link>

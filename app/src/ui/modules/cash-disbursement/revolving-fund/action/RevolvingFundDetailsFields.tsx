@@ -74,7 +74,7 @@ export function RevolvingFundDetailsFields({
   }, [accountQuery.data, page.values.accountCode, page.values.accountTitle]);
 
   const responsibilityCenterOptions = useMemo(() => {
-    const raw = (rcQuery.data ?? []).filter((r: any) => !r.name?.toLowerCase().includes("project"));
+    const raw = (rcQuery.data ?? []).filter((r) => !r.name?.toLowerCase().includes("project"));
     const options = [...raw];
     if (
       page.values.responsibilityCenterCode &&
@@ -91,7 +91,7 @@ export function RevolvingFundDetailsFields({
   }, [rcQuery.data, page.values.responsibilityCenterCode, page.values.responsibilityCenter]);
 
   const projectOptions = useMemo(() => {
-    const raw = (rcQuery.data ?? []).filter((r: any) => r.name?.toLowerCase().includes("project") || r.isProject);
+    const raw = (rcQuery.data ?? []).filter((r) => r.name?.toLowerCase().includes("project"));
     const options = raw.length > 0 ? raw : (rcQuery.data ?? []);
     const fullOptions = [...options];
     if (
@@ -175,8 +175,8 @@ export function RevolvingFundDetailsFields({
           <TransactionField label="Remarks">
             <AppLimitedTextarea
               value={page.values.remarks}
-              disabled={page.isReadonly}
-              onChange={(e) => page.updateField("remarks", e.target.value)}
+              readOnly={page.isReadonly}
+              onChange={(event) => page.updateField("remarks", event.target.value)}
               className={`${TransactionFieldClassName} min-h-28 max-w-full resize py-3`}
               counterMode="used"
               placeholder="Optional Remarks"
@@ -184,66 +184,97 @@ export function RevolvingFundDetailsFields({
           </TransactionField>
         </div>
 
-        {/* Column 2: Currency & Dates */}
+        {/* Column 2: Aligned Code & Financial Fields */}
         <div className="grid min-w-0 content-start gap-5">
+          <TransactionTextField
+            value={page.values.partyCode}
+            isReadonly
+            isRequired
+            label="Party Code"
+            error={page.errors.partyCode}
+            onValueChange={(value) => page.updateField("partyCode", value)}
+            placeholder="Party Code"
+          />
+          <TransactionTextField
+            value={page.values.responsibilityCenterCode}
+            isReadonly
+            label="Responsibility Center Code"
+            onValueChange={(value) => page.updateField("responsibilityCenterCode", value)}
+            placeholder="Responsibility Center Code"
+          />
+          <TransactionTextField
+            value={page.values.projectCode}
+            isReadonly
+            label="Project Code"
+            onValueChange={(value) => page.updateField("projectCode", value)}
+            placeholder="Project Code"
+          />
+          <TransactionTextField
+            value={page.values.accountCode}
+            isReadonly
+            isRequired
+            label="Default Account Code"
+            error={page.errors.accountCode}
+            onValueChange={(value) => page.updateField("accountCode", value)}
+            placeholder="Account Code"
+          />
           <CurrencyExchangeRateRow
             currencyLabel="Currency"
+            currencyControlId="rf-currency"
+            currencyError={page.errors.currency}
+            exchangeRateControlId="rf-exchange-rate"
+            exchangeRateError={page.errors.exchangeRate}
             currencyControl={
               <AppAdvancedDropdown
+                id="rf-currency"
+                className="w-full min-w-0"
                 value={page.values.currency}
                 readOnly={page.isReadonly}
+                isClearable={false}
+                menuMinWidth={320}
                 options={page.currencyOptions}
                 placeholder="Currency"
                 searchPlaceholder="Search Currency"
-                onChange={(val) => page.updateCurrency(String(val))}
+                onChange={(value) => page.updateCurrency(String(value))}
               />
             }
             exchangeRateControl={
               <input
+                id="rf-exchange-rate"
                 type="text"
+                inputMode="decimal"
                 value={page.values.exchangeRate}
                 readOnly={page.isReadonly}
-                onChange={(e) => page.updateField("exchangeRate", formatExchangeRateInput(e.target.value))}
-                className={`${TransactionFieldClassName} text-right tabular-nums`}
-                placeholder="1.00"
+                disabled={page.isReadonly || page.isExchangeRateLoading}
+                onChange={(event) => page.updateField("exchangeRate", formatExchangeRateInput(event.target.value))}
+                className={`${TransactionFieldClassName} text-right tabular-nums${page.isReadonly || page.isExchangeRateLoading ? " transaction-readonly-placeholder" : ""}`}
+                placeholder="0.00"
               />
             }
           />
-
-          <TransactionField label="Document Date" error={page.errors.documentDate} isRequired>
-            <input
-              type="date"
-              value={page.values.documentDate}
-              readOnly={page.isReadonly}
-              onChange={(e) => page.updateField("documentDate", e.target.value)}
-              className={TransactionFieldClassName}
-            />
-          </TransactionField>
         </div>
 
-        {/* Column 3: Summary Display Cards */}
-        <div className="grid min-w-0 content-start gap-3 rounded-lg border border-darknavy/10 bg-slate-50 p-4">
-          <h3 className="text-sm font-semibold text-darknavy">Summary</h3>
-          <div className="flex justify-between border-b border-darknavy/10 py-1.5 text-xs text-darknavy/70">
-            <span>Total Gross Amount:</span>
-            <span className="font-semibold text-darknavy">{page.totals.formattedGrossAmount}</span>
-          </div>
-          <div className="flex justify-between border-b border-darknavy/10 py-1.5 text-xs text-darknavy/70">
-            <span>Total VAT Amount:</span>
-            <span className="font-semibold text-darknavy">{page.totals.formattedVatAmount}</span>
-          </div>
-          <div className="flex justify-between border-b border-darknavy/10 py-1.5 text-xs text-darknavy/70">
-            <span>Total Net Amount:</span>
-            <span className="font-semibold text-darknavy">{page.totals.formattedNetAmount}</span>
-          </div>
-          <div className="flex justify-between border-b border-darknavy/10 py-1.5 text-xs text-darknavy/70">
-            <span>Total EWT Amount:</span>
-            <span className="font-semibold text-darknavy">{page.totals.formattedEwtAmount}</span>
-          </div>
-          <div className="flex justify-between py-2 text-sm font-bold text-darknavy">
-            <span>Total Amount:</span>
-            <span>{page.totals.formattedAmount}</span>
-          </div>
+        {/* Column 3: Transaction Identity & Status */}
+        <div className="grid min-w-0 content-start gap-5">
+          <TransactionTextField
+            value={page.values.transactionNo}
+            isReadonly
+            isRequired
+            label="RF No."
+            error={page.errors.transactionNo}
+            onValueChange={(value) => page.updateField("transactionNo", value)}
+            placeholder="Auto Generated RF Transaction Number"
+          />
+          <TransactionTextField
+            value={page.values.documentDate}
+            isReadonly={page.isReadonly}
+            isRequired
+            label="RF Date"
+            error={page.errors.documentDate}
+            type="date"
+            onValueChange={(value) => page.updateField("documentDate", value)}
+          />
+          <TransactionTextField value={page.values.status} isReadonly label="Status" onValueChange={() => undefined} />
         </div>
       </div>
     </section>

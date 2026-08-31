@@ -63,6 +63,7 @@ import { useDisbursementVoucherStore } from "@/app/src/hooks/modules/cash-disbur
 import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
 import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
+import { hasModuleDraftChanges } from "@/app/src/hooks/shared/module/useModuleDraftChanges";
 import {
   clearDisbursementEntryRows,
   createDisbursementEntryRows,
@@ -133,8 +134,9 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   const routePaymentMethod = existingVoucher?.paymentMethod ?? selectedTransaction?.paymentMethod ?? "";
   const isCashVoucherRoute = (mode !== "add" || Boolean(routeTransactionId)) && routePaymentMethod === "Cash";
   const isRecordMissing = (!selectedTransaction && mode !== "add") || (mode === "edit" && !existingVoucher) || isCashVoucherRoute;
-  const [initialValues] = useState(values);
-  const isDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
+  const [initialValues, setInitialValues] = useState(values);
+  const rawIsDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
+  const isDirty = mode === "add" ? hasModuleDraftChanges(values, initialValues, ["voucherNo"]) : rawIsDirty;
   const draft = useModuleDraft({
     enabled: !isReadonly,
     initialValues,
@@ -154,6 +156,11 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     }
 
     setValues((current) => ({
+      ...current,
+      currency: transactionCurrency.baseCurrencyCode,
+      fxRate: "1.00",
+    }));
+    setInitialValues((current) => ({
       ...current,
       currency: transactionCurrency.baseCurrencyCode,
       fxRate: "1.00",
@@ -180,9 +187,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
             ? { ...entry, particulars: nextRemarks, remarks: nextRemarks }
             : entry,
         );
-      const bankAccount = bankAccounts.find(
-        (account) => account.accountCode === current.paymentDetails.bankAccountCode,
-      ) ?? null;
+      const bankAccount = bankAccounts.find((account) => account.accountCode === current.paymentDetails.bankAccountCode) ?? null;
 
       return {
         ...nextValues,
@@ -399,8 +404,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     const sourceEntry = values.lineEntries.find((entry) => entry.id === entryId);
     const isEditableExpenseEntry = sourceEntry !== undefined && !isGeneratedAccountingEntry(sourceEntry);
     const hasRemarksUpdate =
-      Object.prototype.hasOwnProperty.call(updates, "particulars") ||
-      Object.prototype.hasOwnProperty.call(updates, "remarks");
+      Object.prototype.hasOwnProperty.call(updates, "particulars") || Object.prototype.hasOwnProperty.call(updates, "remarks");
     const updatedRemarksValue = updates.particulars !== undefined ? updates.particulars : updates.remarks;
 
     if (isEditableExpenseEntry && hasRemarksUpdate) {
@@ -499,9 +503,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
       transactionId: values.transactionId.trim() || createManualDisbursementTransactionId(),
     };
     const shouldValidate = status !== DisbursementVoucherStatuses.draft;
-    const detailsErrors = shouldValidate
-      ? validateDisbursementVoucherDetails(valuesForSubmit, selectedPaymentTypeRecord)
-      : {};
+    const detailsErrors = shouldValidate ? validateDisbursementVoucherDetails(valuesForSubmit, selectedPaymentTypeRecord) : {};
     const entryErrors = shouldValidate ? validateDisbursementVoucherEntries(valuesForSubmit) : {};
     const nextErrors = { ...detailsErrors, ...entryErrors };
 
@@ -604,6 +606,28 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     setErrors({});
   }
 
+  function resetAddValuesWithNextTransactionNo() {
+    const nextValues = createInitialDisbursementVoucherFormValues({
+      mode: "add",
+      transaction: routeTransaction,
+      voucher: routeVoucher,
+    });
+
+    setValues(nextValues);
+    setInitialValues(nextValues);
+  }
+
+  function discardDraft() {
+    draft.clearDraft();
+
+    if (mode === "add") {
+      resetAddValuesWithNextTransactionNo();
+      return;
+    }
+
+    draft.discardDraft();
+  }
+
   function handleCreateParty(record: Parameters<typeof getPartyDisplayName>[0]) {
     const partyName = getPartyDisplayName(record);
 
@@ -640,7 +664,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   }
 
   return {
-    discardDraft: draft.discardDraft,
+    discardDraft,
     hasDiscardableChanges: isDirty,
     saveDraft: draft.saveDraft,
     activeTab,
@@ -723,4 +747,3 @@ function shouldEntryRemarksFollowHeader(entry: DisbursementLineEntry, previousHe
     (normalizedHeaderRemarks !== "" && normalizedEntryRemarks === normalizedHeaderRemarks)
   );
 }
-

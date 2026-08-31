@@ -2,7 +2,7 @@ export const TransactionOverviewColumnWidths = {
   transactionNumber: 180,
   documentDate: 140,
   partyCode: 130,
-  partyName: 280,
+  partyName: 260,
   accountCode: 150,
   accountTitle: 240,
   paymentType: 160,

@@ -18,6 +18,7 @@ import {
 import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
 import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
+import { hasModuleDraftChanges } from "@/app/src/hooks/shared/module/useModuleDraftChanges";
 import {
   createAdvancesToSuppliersApi,
   fetchAdvancesToSuppliersAccountOptions,
@@ -64,7 +65,8 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
   const [isLookupLoading, setIsLookupLoading] = useState(true);
   const isReadonly = mode === "view";
   const [initialValues, setInitialValues] = useState(values);
-  const isDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
+  const rawIsDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
+  const isDirty = mode === "add" ? hasModuleDraftChanges(values, initialValues, ["transactionNo"]) : rawIsDirty;
   const draft = useModuleDraft({
     enabled: !isReadonly,
     initialValues,
@@ -109,13 +111,7 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
   useEffect(() => {
     if (mode !== "add") return;
 
-    fetchNextAdvancesToSuppliersNumber()
-      .then((transactionNo) => {
-        if (!transactionNo) return;
-        setValues((current) => ({ ...current, transactionNo }));
-        setInitialValues((current) => ({ ...current, transactionNo }));
-      })
-      .catch(() => undefined);
+    void refreshNextTransactionNo();
   }, [mode]);
 
   useEffect(() => {
@@ -165,6 +161,11 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
   useEffect(() => {
     if (mode !== "add" || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) return;
     setValues((current) => ({
+      ...current,
+      currency: transactionCurrency.baseCurrencyCode,
+      exchangeRate: "1.00",
+    }));
+    setInitialValues((current) => ({
       ...current,
       currency: transactionCurrency.baseCurrencyCode,
       exchangeRate: "1.00",
@@ -373,8 +374,49 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
     return true;
   }
 
+  async function resetAddValuesWithNextTransactionNo() {
+    const nextValues = createAdvancesToSuppliersFormValues(undefined, "", transactionCurrency.baseCurrencyCode);
+
+    try {
+      const transactionNo = await fetchNextAdvancesToSuppliersNumber();
+
+      if (transactionNo) {
+        nextValues.transactionNo = transactionNo;
+      }
+    } catch {
+      // Keep the blank add form if the number endpoint is temporarily unavailable.
+    }
+
+    setValues(nextValues);
+    setInitialValues(nextValues);
+  }
+
+  async function refreshNextTransactionNo() {
+    try {
+      const transactionNo = await fetchNextAdvancesToSuppliersNumber();
+
+      if (transactionNo) {
+        setValues((current) => ({ ...current, transactionNo }));
+        setInitialValues((current) => ({ ...current, transactionNo }));
+      }
+    } catch {
+      // Keep the current add form if the number endpoint is temporarily unavailable.
+    }
+  }
+
+  function discardDraft() {
+    draft.clearDraft();
+
+    if (mode === "add") {
+      void resetAddValuesWithNextTransactionNo();
+      return;
+    }
+
+    draft.discardDraft();
+  }
+
   return {
-    discardDraft: draft.discardDraft,
+    discardDraft,
     hasDiscardableChanges: isDirty,
     saveDraft: draft.saveDraft,
     activeTab,

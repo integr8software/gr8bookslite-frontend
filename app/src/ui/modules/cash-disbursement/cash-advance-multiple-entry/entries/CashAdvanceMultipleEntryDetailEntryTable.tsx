@@ -112,6 +112,7 @@ export function CashAdvanceMultipleEntryDetailEntryTable({
           Total Amount: {formatCashAdvanceMultipleEntryAmount(totalAmount)}
         </span>
       }
+      canConfigureColumnsWhenReadonly
       isReadonly={isReadonly}
       rows={rows}
       summaryCells={{ amount: formatCashAdvanceMultipleEntryAmount(totalAmount) }}

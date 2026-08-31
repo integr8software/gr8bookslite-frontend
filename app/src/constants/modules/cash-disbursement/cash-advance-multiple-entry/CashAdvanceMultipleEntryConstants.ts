@@ -33,6 +33,10 @@ export const CashAdvanceMultipleEntryStatuses = {
   posted: "Posted",
 } as const;
 
+export function canEditCashAdvanceMultipleEntryStatus(status: CashAdvanceStatus) {
+  return status === CashAdvanceMultipleEntryStatuses.draft || status === CashAdvanceMultipleEntryStatuses.forApproval;
+}
+
 export const CashAdvanceMultipleEntrySubmitConfirmationDialogTitles: Record<CashAdvanceMultipleEntrySubmitConfirmationAction, string> = {
   save: "Save Cash Advance Multiple Entry?",
   draft: "Save Cash Advance Multiple Entry as Draft?",

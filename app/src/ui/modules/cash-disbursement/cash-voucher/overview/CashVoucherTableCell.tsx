@@ -26,6 +26,8 @@ export function renderCashVoucherTableCell(
       return row.voucher?.fxRate ?? row.transaction.fxRate ?? "";
     case "amount":
       return <span className="font-semibold text-darknavy">{formatCurrency(row.voucher?.amount ?? row.transaction.amount)}</span>;
+    case "disburseAmount":
+      return <span className="font-semibold text-darknavy">{formatCurrency(row.voucher?.disburseAmount ?? row.voucher?.amount ?? row.transaction.amount)}</span>;
     case "status":
       return <div className="flex w-full justify-center"><ModuleStatusBadge status={getCashVoucherDisplayStatus(row.voucher?.status ?? row.transaction.status)} /></div>;
     case "createdBy":

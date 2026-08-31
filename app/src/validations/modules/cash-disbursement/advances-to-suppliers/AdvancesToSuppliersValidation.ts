@@ -4,6 +4,12 @@ import type {
   AdvancesToSuppliersFormErrors,
   AdvancesToSuppliersFormValues,
 } from "@/app/src/types/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersTypes";
+import { AdvancesToSuppliersStatuses } from "@/app/src/constants/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersConstants";
+
+const AdvancesToSuppliersDraftSchema = z.object({
+  transactionNo: z.string().regex(/^ATS-(?:\d{4}-)?\d{6}$/, "A valid ATS No. is required."),
+  documentDate: z.string().min(1, "ATS Date is required."),
+});
 
 const AdvancesToSuppliersSchema = z.object({
   transactionNo: z.string().regex(/^ATS-(?:\d{4}-)?\d{6}$/, "A valid ATS No. is required."),
@@ -17,12 +23,13 @@ const AdvancesToSuppliersSchema = z.object({
 
 export function validateAdvancesToSuppliersForm(values: AdvancesToSuppliersFormValues): AdvancesToSuppliersFormErrors {
   const errors: AdvancesToSuppliersFormErrors = {};
-  const result = AdvancesToSuppliersSchema.safeParse(values);
+  const result = (values.status === AdvancesToSuppliersStatuses.draft ? AdvancesToSuppliersDraftSchema : AdvancesToSuppliersSchema).safeParse(values);
   if (!result.success) {
     for (const issue of result.error.issues) {
       errors[issue.path[0] as keyof AdvancesToSuppliersFormValues] ??= issue.message;
     }
   }
+  if (values.status === AdvancesToSuppliersStatuses.draft) return errors;
   const totalPoAmount = parseMoneyNumberInput(values.totalPoAmount);
   const percentage = parseMoneyNumberInput(values.advancePaymentPercentage);
   const advanceAmount = parseMoneyNumberInput(values.advancePaymentAmount);

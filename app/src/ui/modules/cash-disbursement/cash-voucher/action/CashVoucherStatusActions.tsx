@@ -68,7 +68,7 @@ function createCashVoucherStatusActionItems({
   transaction?: CashVoucherTransactionRecord;
   voucher?: CashVoucherRecord;
 }) {
-  const status = voucher?.status ?? transaction?.status ?? CashVoucherStatuses.draft;
+  const status = voucher?.status ?? transaction?.status ?? CashVoucherStatuses.open;
   const isPosted = status === CashVoucherStatuses.posted;
   const isDisapproved = status === CashVoucherStatuses.disapproved;
   const isCancelled = status === CashVoucherStatuses.cancelled;

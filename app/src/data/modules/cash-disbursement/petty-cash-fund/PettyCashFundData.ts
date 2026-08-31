@@ -38,7 +38,7 @@ export function createBlankPettyCashFundItem(): PettyCashFundItem {
 
 export function createPettyCashFundFormValues(
   record?: PettyCashFundRecord,
-  transactionNo = "PCF-000001",
+  transactionNo = "",
   baseCurrencyCode = "PHP",
 ): PettyCashFundFormValues {
   if (record?.formValues) {
@@ -161,6 +161,7 @@ export function createPettyCashFundRecord(
     currency: values.currency,
     exchangeRate: values.exchangeRate,
     amount: calculatePettyCashFundTotals(values.items).amount,
+    disburseAmount: calculatePettyCashFundTotals(values.items).disburseAmount,
     remarks: values.remarks,
     status,
     createdBy: existing?.createdBy ?? "Current User",

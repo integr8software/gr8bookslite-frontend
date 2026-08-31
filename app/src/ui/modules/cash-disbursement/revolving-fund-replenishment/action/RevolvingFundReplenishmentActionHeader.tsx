@@ -152,19 +152,24 @@ export function RevolvingFundReplenishmentActionHeader({
                   : "default"
           }
           onCancel={() => setConfirmation(null)}
-          onConfirm={() => {
+          onConfirm={async () => {
+            let isSuccessful = false;
+
             if (confirmation === "save") {
-              page.save(RevolvingFundReplenishmentStatuses.forApproval);
+              isSuccessful = await page.save(RevolvingFundReplenishmentStatuses.forApproval);
             } else if (confirmation === "draft") {
-              page.save(RevolvingFundReplenishmentStatuses.draft);
+              isSuccessful = await page.save(RevolvingFundReplenishmentStatuses.draft);
             } else if (confirmation === "approve") {
-              page.updateStatus(RevolvingFundReplenishmentStatuses.posted);
+              isSuccessful = await page.updateStatus(RevolvingFundReplenishmentStatuses.posted);
             } else if (confirmation === "disapprove") {
-              page.updateStatus(RevolvingFundReplenishmentStatuses.disapproved);
+              isSuccessful = await page.updateStatus(RevolvingFundReplenishmentStatuses.disapproved);
             } else {
-              page.updateStatus(RevolvingFundReplenishmentStatuses.cancelled);
+              isSuccessful = await page.updateStatus(RevolvingFundReplenishmentStatuses.cancelled);
             }
-            setConfirmation(null);
+
+            if (isSuccessful) {
+              setConfirmation(null);
+            }
           }}
         />
       ) : null}

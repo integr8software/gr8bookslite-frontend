@@ -36,7 +36,7 @@ export function createBlankPettyCashReplenishmentEntry(): PettyCashReplenishment
 
 export function createPettyCashReplenishmentFormValues(
   record?: PettyCashReplenishmentRecord,
-  transactionNo = "PCR-000001",
+  transactionNo = "",
   baseCurrencyCode = "PHP",
 ): PettyCashReplenishmentFormValues {
   if (record?.formValues) {
@@ -201,6 +201,7 @@ export function createPettyCashReplenishmentRecord(
     currency: values.currency,
     exchangeRate: values.exchangeRate,
     amount: calculatePettyCashReplenishmentTotals(values.entries).totalAmount,
+    disburseAmount: calculatePettyCashReplenishmentTotals(values.entries).disburseAmount,
     remarks: values.remarks,
     status,
     createdBy: existing?.createdBy ?? "Current User",

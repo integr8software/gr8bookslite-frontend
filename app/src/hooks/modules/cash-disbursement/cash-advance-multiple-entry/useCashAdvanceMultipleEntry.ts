@@ -52,6 +52,7 @@ import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateR
 import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
 import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
+import { hasModuleDraftChanges } from "@/app/src/hooks/shared/module/useModuleDraftChanges";
 import {
   createCashAdvanceMultipleEntryApi,
   fetchCashAdvanceMultipleEntryById,
@@ -92,9 +93,8 @@ export function useCashAdvanceMultipleEntryStore<TSelected = CashAdvanceMultiple
     mutationFn: ({ record, status }: { record: CashAdvanceMultipleEntryRecord; status: CashAdvanceStatus }) =>
       updateCashAdvanceMultipleEntryStatusApi(record.id, status),
     onSuccess: (updatedRecord, { status }) => {
-      queryClient.setQueryData<CashAdvanceMultipleEntryRecord[]>(
-        queryKey,
-        (current = []) => current.map((record) => (record.id === updatedRecord.id ? updatedRecord : record)),
+      queryClient.setQueryData<CashAdvanceMultipleEntryRecord[]>(queryKey, (current = []) =>
+        current.map((record) => (record.id === updatedRecord.id ? updatedRecord : record)),
       );
       refreshRecords();
       toast.success(`Cash Advance Multiple Entry Marked as ${status}.`);
@@ -135,7 +135,8 @@ export function useCashAdvanceMultipleEntryActionForm(
   const [isLoading, setIsLoading] = useState(mode !== "add" && Boolean(recordId));
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [initialValues, setInitialValues] = useState(values);
-  const isDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
+  const rawIsDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
+  const isDirty = mode === "add" ? hasModuleDraftChanges(values, initialValues, ["transNo"]) : rawIsDirty;
   const draft = useModuleDraft({
     enabled: mode !== "view",
     initialValues,
@@ -146,19 +147,12 @@ export function useCashAdvanceMultipleEntryActionForm(
   });
 
   useEffect(() => {
-    if (mode !== "add" || values.transNo.trim()) {
+    if (mode !== "add") {
       return;
     }
 
-    fetchNextCashAdvanceMultipleEntryTransactionNo()
-      .then((nextTransNo) => {
-        if (nextTransNo) {
-          setValues((current) => ({ ...current, transNo: nextTransNo }));
-          setInitialValues((current) => ({ ...current, transNo: nextTransNo }));
-        }
-      })
-      .catch(() => undefined);
-  }, [mode, values.transNo]);
+    void refreshNextTransactionNo();
+  }, [mode]);
 
   useEffect(() => {
     if (mode === "add") {
@@ -210,6 +204,11 @@ export function useCashAdvanceMultipleEntryActionForm(
     }
 
     setValues((current) => ({
+      ...current,
+      currency: transactionCurrency.baseCurrencyCode,
+      exchangeRate: "1.00",
+    }));
+    setInitialValues((current) => ({
       ...current,
       currency: transactionCurrency.baseCurrencyCode,
       exchangeRate: "1.00",
@@ -346,8 +345,49 @@ export function useCashAdvanceMultipleEntryActionForm(
     return true;
   }
 
+  async function resetAddValuesWithNextTransactionNo() {
+    const nextValues = createCashAdvanceMultipleEntryFormValues(transactionCurrency.baseCurrencyCode);
+
+    try {
+      const nextTransNo = await fetchNextCashAdvanceMultipleEntryTransactionNo();
+
+      if (nextTransNo) {
+        nextValues.transNo = nextTransNo;
+      }
+    } catch {
+      // Keep the blank add form if the number endpoint is temporarily unavailable.
+    }
+
+    setValues(nextValues);
+    setInitialValues(nextValues);
+  }
+
+  async function refreshNextTransactionNo() {
+    try {
+      const nextTransNo = await fetchNextCashAdvanceMultipleEntryTransactionNo();
+
+      if (nextTransNo) {
+        setValues((current) => ({ ...current, transNo: nextTransNo }));
+        setInitialValues((current) => ({ ...current, transNo: nextTransNo }));
+      }
+    } catch {
+      // Keep the current add form if the number endpoint is temporarily unavailable.
+    }
+  }
+
+  function discardDraft() {
+    draft.clearDraft();
+
+    if (mode === "add") {
+      void resetAddValuesWithNextTransactionNo();
+      return;
+    }
+
+    draft.discardDraft();
+  }
+
   return {
-    discardDraft: draft.discardDraft,
+    discardDraft,
     hasDiscardableChanges: isDirty,
     saveDraft: draft.saveDraft,
     addAccountingEntries,
@@ -576,10 +616,13 @@ export function useCashAdvanceMultipleEntryTable(records: CashAdvanceMultipleEnt
     table.setPageIndex(0);
   }
 
-  const setStatusFilter = useCallback((value: (typeof CashAdvanceMultipleEntryStatusFilters)[number]) => {
-    setStatusFilterState(value);
-    table.setPageIndex(0);
-  }, [table]);
+  const setStatusFilter = useCallback(
+    (value: (typeof CashAdvanceMultipleEntryStatusFilters)[number]) => {
+      setStatusFilterState(value);
+      table.setPageIndex(0);
+    },
+    [table],
+  );
 
   function resetFilters() {
     setAmountRangeState({ from: "", to: "" });
@@ -591,13 +634,9 @@ export function useCashAdvanceMultipleEntryTable(records: CashAdvanceMultipleEnt
 
   const statisticCards = useMemo<ModuleStatisticCardItem[]>(() => {
     const postedCount = records.filter((record) => record.status === CashAdvanceMultipleEntryStatuses.posted).length;
-    const forApprovalCount = records.filter(
-      (record) => record.status === CashAdvanceMultipleEntryStatuses.forApproval,
-    ).length;
+    const forApprovalCount = records.filter((record) => record.status === CashAdvanceMultipleEntryStatuses.forApproval).length;
     const draftCount = records.filter((record) => record.status === CashAdvanceMultipleEntryStatuses.draft).length;
-    const disapprovedCount = records.filter(
-      (record) => record.status === CashAdvanceMultipleEntryStatuses.disapproved,
-    ).length;
+    const disapprovedCount = records.filter((record) => record.status === CashAdvanceMultipleEntryStatuses.disapproved).length;
     const cancelledCount = records.filter((record) => record.status === CashAdvanceMultipleEntryStatuses.cancelled).length;
 
     return [
@@ -689,4 +728,3 @@ export function removeCashAdvanceMultipleEntryRow<TRow extends { id: string }>(r
 function createRows<TRow>(count: number, createRow: () => TRow) {
   return Array.from({ length: count }, () => createRow());
 }
-

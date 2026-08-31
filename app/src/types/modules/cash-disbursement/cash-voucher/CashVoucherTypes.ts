@@ -19,6 +19,7 @@ export type CashVoucherTableColumnKey =
   | "currency"
   | "exchangeRate"
   | "amount"
+  | "disburseAmount"
   | "status"
   | "createdBy"
   | "createdAt"
@@ -128,6 +129,7 @@ export type CashVoucherTransactionRecord = {
   transactionDate: string;
   paymentDueDate: string;
   amount: number;
+  disburseAmount?: number;
   currency: VoucherCurrency;
   fxRate?: string;
   paymentMethod: CashVoucherPaymentMethod;
@@ -205,6 +207,7 @@ export type CashVoucherRecord = {
   partyCode: string;
   partyName: string;
   amount: number;
+  disburseAmount?: number;
   taxRate: string;
   taxDetails: CashVoucherTaxDetails;
   remarks: string;

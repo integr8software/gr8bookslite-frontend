@@ -101,6 +101,7 @@ export type RevolvingFundReplenishmentRecord = {
   currency?: string;
   exchangeRate?: string;
   amount: number;
+  disburseAmount: number;
   remarks: string;
   status: RevolvingFundReplenishmentStatus;
   createdBy: string;

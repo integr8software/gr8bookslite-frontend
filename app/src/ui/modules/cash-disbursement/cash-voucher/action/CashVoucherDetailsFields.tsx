@@ -208,7 +208,14 @@ export function CashVoucherDetailsFields({
             onValueChange={(value) => onUpdateField("voucherDate", value)}
           />
 
-          <TransactionTextField value={values.status} isReadonly label="Status" error={errors.status} onValueChange={() => undefined} />
+          <TransactionTextField
+            value={values.status}
+            isReadonly
+            label="Status"
+            error={errors.status}
+            placeholder="Open"
+            onValueChange={() => undefined}
+          />
         </div>
       </div>
     </section>

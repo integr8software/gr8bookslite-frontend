@@ -26,6 +26,7 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
+import { calculateRevolvingFundTotals } from "@/app/src/data/modules/cash-disbursement/revolving-fund/RevolvingFundData";
 
 export type FetchRevolvingFundListParams = {
   page?: number;
@@ -115,6 +116,7 @@ export function mapRevolvingFundRecordFromDto(dto: RevolvingFundResponseDto): Re
 
   const createdUser = (dto as any).createdByUser;
   const updatedUser = (dto as any).updatedByUser;
+  const totals = calculateRevolvingFundTotals(items);
 
   return {
     id: dto.id,
@@ -126,7 +128,8 @@ export function mapRevolvingFundRecordFromDto(dto: RevolvingFundResponseDto): Re
     accountTitle: dto.accountTitleSnapshot ?? "",
     currency: dto.currencyCode,
     exchangeRate: dto.exchangeRate !== undefined && dto.exchangeRate !== null ? String(dto.exchangeRate) : "1.00",
-    amount: typeof dto.amount === "number" ? dto.amount : Number(dto.amount ?? 0),
+    amount: totals.grossAmount || (typeof dto.amount === "number" ? dto.amount : Number(dto.amount ?? 0)),
+    disburseAmount: totals.disburseAmount || Number((dto as any).disburseAmount ?? dto.amount ?? 0),
     remarks: dto.remarks ?? "",
     status: StatusFromApi[dto.status] ?? "Draft",
     createdBy: createdUser ? `${createdUser.firstName ?? ""} ${createdUser.lastName ?? ""}`.trim() : "",
@@ -138,7 +141,8 @@ export function mapRevolvingFundRecordFromDto(dto: RevolvingFundResponseDto): Re
 }
 
 export function mapRevolvingFundFormValuesToCreateDto(values: RevolvingFundFormValues): CreateRevolvingFundDto {
-  const details = (values.items ?? []).map((item, index) => ({
+  const items = values.status === "Draft" ? (values.items ?? []).filter(isRevolvingFundItemPopulated) : (values.items ?? []);
+  const details = items.map((item, index) => ({
     lineNumber: index + 1,
     itemDate: item.date || undefined,
     supplierCode: item.supplierCode,
@@ -157,7 +161,7 @@ export function mapRevolvingFundFormValuesToCreateDto(values: RevolvingFundFormV
     disburseAmount: parseMoneyNumberInput(item.disburseAmount),
   }));
 
-  const totalAmount = details.reduce((sum, d) => sum + (d.disburseAmount || d.grossAmount || 0), 0);
+  const totalAmount = details.reduce((sum, d) => sum + (d.grossAmount || 0), 0);
 
   return {
     transactionNo: values.transactionNo,
@@ -177,6 +181,17 @@ export function mapRevolvingFundFormValuesToCreateDto(values: RevolvingFundFormV
     status: values.status && values.status !== "Open" ? StatusToApi[values.status as RevolvingFundStatus] : "DRAFT",
     details,
   };
+}
+
+function isRevolvingFundItemPopulated(item: RevolvingFundItem) {
+  return Boolean(
+    item.supplierCode.trim() ||
+      item.supplierName.trim() ||
+      item.particulars.trim() ||
+      item.amount.trim() ||
+      item.grossAmount.trim() ||
+      item.disburseAmount.trim(),
+  );
 }
 
 export function mapRevolvingFundFormValuesToUpdateDto(values: RevolvingFundFormValues): UpdateRevolvingFundDto {
@@ -253,6 +268,8 @@ export async function fetchRevolvingFundPartyOptions(): Promise<AppAdvancedDropd
     partyId: p.partyId || p.id,
     partyCode: p.partyCode,
     partyName: p.partyName,
+    defaultPurchaseInputVatTaxSourceKey: p.defaultPurchaseInputVatTaxSourceKey ?? "",
+    defaultPurchaseEwtTaxSourceKey: p.defaultPurchaseEwtTaxSourceKey ?? "",
   }));
 }
 

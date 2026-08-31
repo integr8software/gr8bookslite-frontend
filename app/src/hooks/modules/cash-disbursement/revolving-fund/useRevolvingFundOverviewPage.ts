@@ -143,10 +143,46 @@ export function useRevolvingFundOverviewPage() {
         size: TransactionOverviewColumnWidths.amount,
         meta: { label: RevolvingFundColumnLabels.amount },
       }),
+      columnHelper.accessor("disburseAmount", {
+        header: RevolvingFundColumnLabels.disburseAmount,
+        size: TransactionOverviewColumnWidths.amount,
+        meta: { label: RevolvingFundColumnLabels.disburseAmount },
+      }),
+      columnHelper.accessor("remarks", {
+        header: RevolvingFundColumnLabels.remarks,
+        size: TransactionOverviewColumnWidths.remarks,
+        meta: { label: RevolvingFundColumnLabels.remarks },
+      }),
+      columnHelper.accessor("createdBy", {
+        header: RevolvingFundColumnLabels.createdBy,
+        size: TransactionOverviewColumnWidths.auditUser,
+        meta: { label: RevolvingFundColumnLabels.createdBy },
+      }),
+      columnHelper.accessor("createdAt", {
+        header: RevolvingFundColumnLabels.createdAt,
+        size: TransactionOverviewColumnWidths.auditDate,
+        meta: { label: RevolvingFundColumnLabels.createdAt },
+      }),
+      columnHelper.accessor("updatedBy", {
+        header: RevolvingFundColumnLabels.updatedBy,
+        size: TransactionOverviewColumnWidths.auditUser,
+        meta: { label: RevolvingFundColumnLabels.updatedBy },
+      }),
+      columnHelper.accessor("updatedAt", {
+        header: RevolvingFundColumnLabels.updatedAt,
+        size: TransactionOverviewColumnWidths.auditDate,
+        meta: { label: RevolvingFundColumnLabels.updatedAt },
+      }),
       columnHelper.accessor("status", {
         header: RevolvingFundColumnLabels.status,
         size: TransactionOverviewColumnWidths.status,
-        meta: { label: RevolvingFundColumnLabels.status },
+        meta: { className: "text-center", label: RevolvingFundColumnLabels.status },
+      }),
+      columnHelper.display({
+        id: "actions",
+        header: RevolvingFundColumnLabels.actions,
+        size: TransactionOverviewColumnWidths.actions,
+        meta: { className: "text-center", label: RevolvingFundColumnLabels.actions },
       }),
     ],
     [],
@@ -155,6 +191,7 @@ export function useRevolvingFundOverviewPage() {
   const table = useReactTable({
     data: records,
     columns,
+    initialState: { columnVisibility: RevolvingFundDefaultColumnVisibility },
     state: { columnVisibility, pagination, sorting },
     onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: setPagination,

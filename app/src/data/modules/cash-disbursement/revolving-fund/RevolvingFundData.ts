@@ -37,7 +37,7 @@ export function createBlankRevolvingFundItem(): RevolvingFundItem {
 
 export function createRevolvingFundFormValues(
   record?: RevolvingFundRecord,
-  transactionNo = "RF-000001",
+  transactionNo = "",
   baseCurrencyCode = "PHP",
 ): RevolvingFundFormValues {
   if (record?.formValues) {
@@ -160,6 +160,7 @@ export function createRevolvingFundRecord(
     currency: values.currency,
     exchangeRate: values.exchangeRate,
     amount: calculateRevolvingFundTotals(values.items).amount,
+    disburseAmount: calculateRevolvingFundTotals(values.items).disburseAmount,
     remarks: values.remarks,
     status,
     createdBy: existing?.createdBy ?? "Current User",

@@ -3,7 +3,13 @@ import type {
   PettyCashReplenishmentFormErrors,
   PettyCashReplenishmentFormValues,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentTypes";
+import { PettyCashReplenishmentStatuses } from "@/app/src/constants/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentConstants";
 import { parseAmount } from "@/app/src/utils/number.util";
+
+const draftSchema = z.object({
+  transactionNo: z.string().regex(/^PCR-\d{6}$/, "A valid PCR No. is required."),
+  documentDate: z.string().min(1, "Select a PCR Date."),
+});
 
 const schema = z.object({
   transactionNo: z.string().regex(/^PCR-\d{6}$/, "A valid PCR No. is required."),
@@ -16,12 +22,13 @@ const schema = z.object({
 
 export function validatePettyCashReplenishmentForm(values: PettyCashReplenishmentFormValues): PettyCashReplenishmentFormErrors {
   const errors: PettyCashReplenishmentFormErrors = {};
-  const result = schema.safeParse(values);
+  const result = (values.status === PettyCashReplenishmentStatuses.draft ? draftSchema : schema).safeParse(values);
   if (!result.success) {
     for (const issue of result.error.issues) {
       errors[issue.path[0] as keyof PettyCashReplenishmentFormValues] ??= issue.message;
     }
   }
+  if (values.status === PettyCashReplenishmentStatuses.draft) return errors;
   if (
     values.entries.length === 0 ||
     values.entries.every((entry) => !entry.pettyCashNo.trim() && (parseAmount(entry.amount) ?? 0) <= 0)

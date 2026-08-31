@@ -158,148 +158,123 @@ export function PettyCashVoucherDetailsFields({
 
           <TransactionField label="Remarks" error={page.errors.remarks}>
             <AppLimitedTextarea
-              className={TransactionFieldClassName}
-              disabled={page.isReadonly}
-              maxLength={250}
-              placeholder="Remarks"
-              rows={4}
               value={page.values.remarks}
-              onChange={(e) => page.updateField("remarks", e.target.value)}
+              readOnly={page.isReadonly}
+              onChange={(event) => page.updateField("remarks", event.target.value)}
+              className={`${TransactionFieldClassName} min-h-28 max-w-full resize py-3`}
+              counterMode="used"
+              placeholder="Optional Remarks"
             />
           </TransactionField>
         </div>
 
-        {/* Column 2: Currency, Dates, and Base Inputs */}
+        {/* Column 2: Aligned Code & Financial Fields */}
         <div className="grid min-w-0 content-start gap-5">
+          <TransactionTextField
+            value={page.values.partyCode}
+            error={page.errors.partyCode}
+            isRequired
+            isReadonly
+            label="Party Code"
+            onValueChange={(value) => page.updateField("partyCode", value)}
+            placeholder="Party Code"
+          />
+
+          <TransactionTextField
+            value={page.values.responsibilityCenterCode}
+            error={page.errors.responsibilityCenterCode}
+            isReadonly
+            label="Responsibility Center Code"
+            onValueChange={(value) => page.updateField("responsibilityCenterCode", value)}
+            placeholder="Responsibility Center Code"
+          />
+
+          <TransactionTextField
+            value={page.values.accountCode}
+            error={page.errors.accountCode}
+            isRequired
+            isReadonly
+            label="Default Account Code"
+            onValueChange={(value) => page.updateField("accountCode", value)}
+            placeholder="Default Account Code"
+          />
+
           <CurrencyExchangeRateRow
             currencyLabel="Currency"
+            currencyControlId="petty-cash-voucher-currency"
+            currencyError={page.errors.currency}
+            exchangeRateControlId="petty-cash-voucher-exchange-rate"
+            exchangeRateError={page.errors.exchangeRate}
             currencyControl={
               <AppAdvancedDropdown
+                id="petty-cash-voucher-currency"
+                className="w-full min-w-0"
                 value={page.values.currency}
                 readOnly={page.isReadonly}
+                isClearable={false}
+                menuMinWidth={320}
                 options={page.currencyOptions}
                 placeholder="Currency"
                 searchPlaceholder="Search Currency"
-                onChange={(val) => page.updateCurrency(String(val))}
+                onChange={(value) => page.updateCurrency(String(value))}
               />
             }
             exchangeRateControl={
               <input
+                id="petty-cash-voucher-exchange-rate"
                 type="text"
+                inputMode="decimal"
                 value={page.values.exchangeRate}
                 readOnly={page.isReadonly}
-                onChange={(e) => page.updateField("exchangeRate", formatExchangeRateInput(e.target.value))}
-                className={`${TransactionFieldClassName} text-right tabular-nums`}
-                placeholder="1.00"
+                disabled={page.isReadonly || page.isExchangeRateLoading}
+                onChange={(event) => page.updateField("exchangeRate", formatExchangeRateInput(event.target.value))}
+                className={`${TransactionFieldClassName} text-right tabular-nums${page.isReadonly || page.isExchangeRateLoading ? " transaction-readonly-placeholder" : ""}`}
+                placeholder="0.00"
               />
             }
           />
 
-          <TransactionField label="Document Date" error={page.errors.documentDate} isRequired>
-            <input
-              type="date"
-              value={page.values.documentDate}
-              readOnly={page.isReadonly}
-              onChange={(e) => page.updateField("documentDate", e.target.value)}
-              className={TransactionFieldClassName}
-            />
-          </TransactionField>
-
           <TransactionField label="Amount" error={page.errors.amount} isRequired>
             <MoneyNumberField
-              className={TransactionFieldClassName}
-              disabled={page.isReadonly}
               value={page.values.amount}
-              onValueChange={(val) => page.updateField("amount", val)}
-            />
-          </TransactionField>
-
-          <TransactionField label="VAT Type" error={page.errors.vatType}>
-            <AppAdvancedDropdown
-              value={page.values.vatType}
+              min="0"
               readOnly={page.isReadonly}
-              options={page.vatTypeOptions}
-              placeholder="Select VAT Type"
-              searchPlaceholder="Search VAT Type"
-              onChange={(val) => page.updateField("vatType", String(val))}
+              onValueChange={(value) => page.updateField("amount", value)}
+              className={`${TransactionFieldClassName} text-right tabular-nums`}
+              placeholder="0.00"
             />
           </TransactionField>
         </div>
 
-        {/* Column 3: Tax and Net Computations */}
+        {/* Column 3: Transaction Identity & Status */}
         <div className="grid min-w-0 content-start gap-5">
-          <div className="grid grid-cols-2 gap-3">
-            <TransactionField label="VATable" error={page.errors.vatable}>
-              <AppAdvancedDropdown
-                value={page.values.vatable || "False"}
-                readOnly={page.isReadonly}
-                options={page.vatableOptions}
-                placeholder="Select VATable"
-                searchPlaceholder="Search VATable"
-                onChange={(val: any) => page.updateField("vatable", val)}
-              />
-            </TransactionField>
+          <TransactionTextField
+            value={page.values.transactionNo}
+            error={page.errors.transactionNo}
+            isRequired
+            isReadonly
+            label="PCV No."
+            onValueChange={(value) => page.updateField("transactionNo", value)}
+            placeholder="Auto Generated PCV Transaction Number"
+          />
 
-            <TransactionField label="VAT Rate" error={page.errors.vatRate}>
-              <AppAdvancedDropdown
-                value={page.values.vatRate}
-                readOnly={page.isReadonly}
-                options={page.vatOptions}
-                placeholder="Select VAT Rate"
-                searchPlaceholder="Search VAT Rate"
-                onChange={(val) => page.updateField("vatRate", String(val))}
-              />
-            </TransactionField>
-          </div>
+          <TransactionTextField
+            value={page.values.documentDate}
+            error={page.errors.documentDate}
+            isReadonly={page.isReadonly}
+            isRequired
+            label="PCV Date"
+            onValueChange={(value) => page.updateField("documentDate", value)}
+            type="date"
+          />
 
-          <TransactionField label="VAT Amount" error={page.errors.vatAmount}>
-            <MoneyNumberField
-              className={TransactionFieldClassName}
-              disabled
-              value={page.values.vatAmount}
-              onValueChange={(val) => page.updateField("vatAmount", val)}
-            />
-          </TransactionField>
-
-          <div className="grid grid-cols-2 gap-3">
-            <TransactionField label="EWT Code" error={page.errors.ewtCode}>
-              <AppAdvancedDropdown
-                value={page.values.ewtCode}
-                readOnly={page.isReadonly}
-                options={page.ewtOptions}
-                placeholder="Select EWT Code"
-                searchPlaceholder="Search EWT Code"
-                onChange={(val) => page.updateField("ewtCode", String(val))}
-              />
-            </TransactionField>
-
-            <TransactionField label="EWT Rate (%)" error={page.errors.ewtRate}>
-              <input
-                type="text"
-                value={page.values.ewtRate}
-                readOnly
-                className={`${TransactionFieldClassName} bg-slate-50`}
-              />
-            </TransactionField>
-          </div>
-
-          <TransactionField label="EWT Amount" error={page.errors.ewtAmount}>
-            <MoneyNumberField
-              className={TransactionFieldClassName}
-              disabled
-              value={page.values.ewtAmount}
-              onValueChange={(val) => page.updateField("ewtAmount", val)}
-            />
-          </TransactionField>
-
-          <TransactionField label="Net Amount" error={page.errors.netAmount}>
-            <MoneyNumberField
-              className={TransactionFieldClassName}
-              disabled
-              value={page.values.netAmount}
-              onValueChange={(val) => page.updateField("netAmount", val)}
-            />
-          </TransactionField>
+          <TransactionTextField
+            value={page.values.status}
+            error={page.errors.status}
+            isReadonly
+            label="Status"
+            onValueChange={() => undefined}
+          />
         </div>
       </div>
     </section>

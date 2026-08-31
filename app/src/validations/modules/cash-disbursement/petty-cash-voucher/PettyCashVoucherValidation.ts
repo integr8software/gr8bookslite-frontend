@@ -5,6 +5,7 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import {
   PettyCashVoucherFormStatusOptions,
+  PettyCashVoucherStatuses,
   PettyCashVoucherTransactionNumberPadding,
   PettyCashVoucherTransactionPrefix,
   PettyCashVoucherVATableOptions,
@@ -17,6 +18,14 @@ const amount = z.preprocess(
   (value) => (typeof value === "string" ? parseAmount(value) : value),
   z.coerce.number().finite().min(0, "Enter a valid amount."),
 );
+
+export const PettyCashVoucherDraftFormValidationSchema = z.object({
+  documentDate: requiredText("Select a PCV Date."),
+  transactionNo: requiredText("Generate a PCV No.").regex(
+    transactionNumberPattern,
+    "Use the generated PCV number format.",
+  ),
+});
 
 export const PettyCashVoucherFormValidationSchema = z.object({
   accountCode: requiredText("Enter an account code."),
@@ -46,7 +55,10 @@ export const PettyCashVoucherFormValidationSchema = z.object({
 });
 
 export function validatePettyCashVoucherForm(values: PettyCashVoucherFormValues): PettyCashVoucherFormErrors {
-  const result = PettyCashVoucherFormValidationSchema.safeParse(values);
+  const result = (values.status === PettyCashVoucherStatuses.draft
+    ? PettyCashVoucherDraftFormValidationSchema
+    : PettyCashVoucherFormValidationSchema
+  ).safeParse(values);
 
   if (result.success) {
     return {};

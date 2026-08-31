@@ -146,19 +146,24 @@ export function RevolvingFundActionHeader({ onPreview, page }: { onPreview: () =
                   : "default"
           }
           onCancel={() => setConfirmation(null)}
-          onConfirm={() => {
+          onConfirm={async () => {
+            let isSuccessful = false;
+
             if (confirmation === "save") {
-              page.save(RevolvingFundStatuses.forApproval);
+              isSuccessful = await page.save(RevolvingFundStatuses.forApproval);
             } else if (confirmation === "draft") {
-              page.save(RevolvingFundStatuses.draft);
+              isSuccessful = await page.save(RevolvingFundStatuses.draft);
             } else if (confirmation === "approve") {
-              page.updateStatus(RevolvingFundStatuses.posted);
+              isSuccessful = await page.updateStatus(RevolvingFundStatuses.posted);
             } else if (confirmation === "disapprove") {
-              page.updateStatus(RevolvingFundStatuses.disapproved);
+              isSuccessful = await page.updateStatus(RevolvingFundStatuses.disapproved);
             } else {
-              page.updateStatus(RevolvingFundStatuses.cancelled);
+              isSuccessful = await page.updateStatus(RevolvingFundStatuses.cancelled);
             }
-            setConfirmation(null);
+
+            if (isSuccessful) {
+              setConfirmation(null);
+            }
           }}
         />
       ) : null}

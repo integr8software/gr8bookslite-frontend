@@ -15,6 +15,7 @@ import type { CashVoucherLineEntry } from "@/app/src/types/modules/cash-disburse
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
 import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import type { AlphanumericTaxCode } from "@/app/src/types/shared/tax/AlphanumericTaxCodeTypes";
 import { ModuleDataEntryInputCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryInputCell";
 import { ModuleDataEntryMoneyCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryMoneyCell";
 import { ModuleDataEntryReadonlyCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryReadonlyCell";
@@ -202,8 +203,9 @@ export function createCashVoucherAccountingEntryColumns({
             value={dropdownValue}
             onChange={(value) => {
               const selectedParty = partyOptions.find((option) => option.value === value);
-              const vatCode = selectedParty?.vatCode ?? "";
-              const ewtCode = selectedParty?.ewtCode ?? "";
+              const vatCode = selectedParty?.vatCode || findPartyTaxCode(taxCodes, selectedParty?.defaultPurchaseInputVatTaxSourceKey, "VAT");
+              const ewtCode = selectedParty?.ewtCode || findPartyTaxCode(taxCodes, selectedParty?.defaultPurchaseEwtTaxSourceKey, "EWT");
+              const nextTaxRate = vatCode ? getVatRateFromCode(vatCode, taxCodes) : "0%";
               const vatPercent = vatCode ? getVatPercentFromRate(getVatRateFromCode(vatCode, taxCodes)) : 0;
               const ewtPercent = ewtCode ? getEwtPercentFromCode(ewtCode, taxCodes) : 0;
               const taxDetails = syncTaxDetailsAmount(
@@ -216,7 +218,7 @@ export function createCashVoucherAccountingEntryColumns({
                   ewtPercent,
                 },
                 parseMoneyNumberInput(entry.taxDetails?.grossAmount ?? entry.debit ?? entry.credit),
-                "0%",
+                nextTaxRate,
               );
 
               onUpdateEntryFields(entry.id, {
@@ -224,6 +226,7 @@ export function createCashVoucherAccountingEntryColumns({
                 partyName: selectedParty?.name ?? "",
                 ewtCode,
                 taxDetails,
+                taxRate: nextTaxRate,
                 vatType: vatCode,
               });
             }}
@@ -306,6 +309,20 @@ export function createCashVoucherAccountingEntryColumns({
       },
     },
   };
+}
+
+function findPartyTaxCode(taxCodes: AlphanumericTaxCode[], sourceKey: string | undefined, taxType: "EWT" | "VAT") {
+  if (!sourceKey) {
+    return "";
+  }
+
+  const taxCode = taxCodes.find(
+    (tax) =>
+      tax.sourceKey === sourceKey &&
+      (taxType === "VAT" ? tax.taxType === "INPUT VAT" || tax.taxType === "VAT" : tax.taxType === "EWT" || tax.taxType === "CWT"),
+  );
+
+  return taxCode ? (taxType === "EWT" ? taxCode.officialAtcCode || taxCode.taxCode : taxCode.taxCode) : "";
 }
 
 export function createCashVoucherExpenseEntryColumns({

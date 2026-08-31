@@ -6,6 +6,7 @@ import { ArrowLeft, Edit3 } from "lucide-react";
 import {
   CashAdvanceMultipleEntryLink,
   CashAdvanceMultipleEntryStatuses,
+  canEditCashAdvanceMultipleEntryStatus,
   getCashAdvanceMultipleEntryEditLink,
   CashAdvanceMultipleEntrySubmitConfirmationDialogConfirmLabels,
   CashAdvanceMultipleEntrySubmitConfirmationDialogTitles,
@@ -103,10 +104,7 @@ export function CashAdvanceMultipleEntryActionHeader({
                 onUpdateStatus={onUpdateStatus}
               />
             ) : null}
-            {mode === "view" &&
-            record &&
-            (approvalRecord?.status === CashAdvanceMultipleEntryStatuses.draft ||
-              approvalRecord?.status === CashAdvanceMultipleEntryStatuses.forApproval) ? (
+            {mode === "view" && record && approvalRecord && canEditCashAdvanceMultipleEntryStatus(approvalRecord.status) ? (
               <Link href={getCashAdvanceMultipleEntryEditLink(record.id)} className={moduleHeaderActionClassNames.primary}>
                 <Edit3 className="h-4 w-4" aria-hidden="true" />
                 Edit

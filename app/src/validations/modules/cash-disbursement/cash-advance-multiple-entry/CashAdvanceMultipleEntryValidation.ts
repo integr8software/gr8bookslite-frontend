@@ -1,7 +1,13 @@
 import { z } from "zod";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
+import { CashAdvanceMultipleEntryStatuses } from "@/app/src/constants/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryConstants";
 import type { CashAdvanceMultipleEntryFormValues } from "@/app/src/types/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryTypes";
 import { formatAmount } from "@/app/src/utils/currency.util";
+
+const CashAdvanceMultipleEntryDraftSchema = z.object({
+  documentDate: z.string().trim().min(1, "CAME Date is required."),
+  transNo: z.string().trim().min(1, "CAME No. is required."),
+});
 
 const CashAdvanceMultipleEntrySchema = z.object({
   accountCode: z.string().trim().min(1, "Default Account is required."),
@@ -22,13 +28,18 @@ const CashAdvanceMultipleEntrySchema = z.object({
 });
 
 export function validateCashAdvanceMultipleEntryForm(values: CashAdvanceMultipleEntryFormValues) {
-  const result = CashAdvanceMultipleEntrySchema.safeParse(values);
+  const isDraft = values.status === CashAdvanceMultipleEntryStatuses.draft;
+  const result = (isDraft ? CashAdvanceMultipleEntryDraftSchema : CashAdvanceMultipleEntrySchema).safeParse(values);
 
   if (!result.success) {
     return {
       isValid: false,
       message: result.error.issues[0]?.message ?? "Review the Cash Advance Multiple Entry details.",
     };
+  }
+
+  if (isDraft) {
+    return { isValid: true, message: null };
   }
 
   const hasAmountLine = values.items.some((item) => parseMoneyNumberInput(item.amount) > 0);

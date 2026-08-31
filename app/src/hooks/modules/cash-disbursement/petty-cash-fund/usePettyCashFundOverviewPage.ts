@@ -146,10 +146,46 @@ export function usePettyCashFundOverviewPage() {
         size: TransactionOverviewColumnWidths.amount,
         meta: { label: PettyCashFundColumnLabels.amount },
       }),
+      columnHelper.accessor("disburseAmount", {
+        header: PettyCashFundColumnLabels.disburseAmount,
+        size: TransactionOverviewColumnWidths.amount,
+        meta: { label: PettyCashFundColumnLabels.disburseAmount },
+      }),
+      columnHelper.accessor("remarks", {
+        header: PettyCashFundColumnLabels.remarks,
+        size: TransactionOverviewColumnWidths.remarks,
+        meta: { label: PettyCashFundColumnLabels.remarks },
+      }),
+      columnHelper.accessor("createdBy", {
+        header: PettyCashFundColumnLabels.createdBy,
+        size: TransactionOverviewColumnWidths.auditUser,
+        meta: { label: PettyCashFundColumnLabels.createdBy },
+      }),
+      columnHelper.accessor("createdAt", {
+        header: PettyCashFundColumnLabels.createdAt,
+        size: TransactionOverviewColumnWidths.auditDate,
+        meta: { label: PettyCashFundColumnLabels.createdAt },
+      }),
+      columnHelper.accessor("updatedBy", {
+        header: PettyCashFundColumnLabels.updatedBy,
+        size: TransactionOverviewColumnWidths.auditUser,
+        meta: { label: PettyCashFundColumnLabels.updatedBy },
+      }),
+      columnHelper.accessor("updatedAt", {
+        header: PettyCashFundColumnLabels.updatedAt,
+        size: TransactionOverviewColumnWidths.auditDate,
+        meta: { label: PettyCashFundColumnLabels.updatedAt },
+      }),
       columnHelper.accessor("status", {
         header: PettyCashFundColumnLabels.status,
         size: TransactionOverviewColumnWidths.status,
-        meta: { label: PettyCashFundColumnLabels.status },
+        meta: { className: "text-center", label: PettyCashFundColumnLabels.status },
+      }),
+      columnHelper.display({
+        id: "actions",
+        header: PettyCashFundColumnLabels.actions,
+        size: TransactionOverviewColumnWidths.actions,
+        meta: { className: "text-center", label: PettyCashFundColumnLabels.actions },
       }),
     ],
     [],
@@ -158,6 +194,7 @@ export function usePettyCashFundOverviewPage() {
   const table = useReactTable({
     data: records,
     columns,
+    initialState: { columnVisibility: PettyCashFundDefaultColumnVisibility },
     state: { columnVisibility, pagination, sorting },
     onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: setPagination,

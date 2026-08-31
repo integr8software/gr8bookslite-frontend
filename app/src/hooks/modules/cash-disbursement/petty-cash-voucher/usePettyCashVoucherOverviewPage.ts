@@ -138,10 +138,46 @@ export function usePettyCashVoucherOverviewPage() {
         size: TransactionOverviewColumnWidths.amount,
         meta: { label: PettyCashVoucherColumnLabels.amount },
       }),
+      columnHelper.accessor("disburseAmount", {
+        header: PettyCashVoucherColumnLabels.disburseAmount,
+        size: TransactionOverviewColumnWidths.amount,
+        meta: { label: PettyCashVoucherColumnLabels.disburseAmount },
+      }),
+      columnHelper.accessor("remarks", {
+        header: PettyCashVoucherColumnLabels.remarks,
+        size: TransactionOverviewColumnWidths.remarks,
+        meta: { label: PettyCashVoucherColumnLabels.remarks },
+      }),
+      columnHelper.accessor("createdBy", {
+        header: PettyCashVoucherColumnLabels.createdBy,
+        size: TransactionOverviewColumnWidths.auditUser,
+        meta: { label: PettyCashVoucherColumnLabels.createdBy },
+      }),
+      columnHelper.accessor("dateCreated", {
+        header: PettyCashVoucherColumnLabels.dateCreated,
+        size: TransactionOverviewColumnWidths.auditDate,
+        meta: { label: PettyCashVoucherColumnLabels.dateCreated },
+      }),
+      columnHelper.accessor("updatedBy", {
+        header: PettyCashVoucherColumnLabels.updatedBy,
+        size: TransactionOverviewColumnWidths.auditUser,
+        meta: { label: PettyCashVoucherColumnLabels.updatedBy },
+      }),
+      columnHelper.accessor("dateModified", {
+        header: PettyCashVoucherColumnLabels.dateModified,
+        size: TransactionOverviewColumnWidths.auditDate,
+        meta: { label: PettyCashVoucherColumnLabels.dateModified },
+      }),
       columnHelper.accessor("status", {
         header: PettyCashVoucherColumnLabels.status,
         size: TransactionOverviewColumnWidths.status,
-        meta: { label: PettyCashVoucherColumnLabels.status },
+        meta: { className: "text-center", label: PettyCashVoucherColumnLabels.status },
+      }),
+      columnHelper.display({
+        id: "actions",
+        header: PettyCashVoucherColumnLabels.actions,
+        size: TransactionOverviewColumnWidths.actions,
+        meta: { className: "text-center", label: PettyCashVoucherColumnLabels.actions },
       }),
     ],
     [],
@@ -150,6 +186,9 @@ export function usePettyCashVoucherOverviewPage() {
   const table = useReactTable({
     data: vouchers,
     columns,
+    initialState: {
+      columnVisibility: PettyCashVoucherDefaultColumnVisibility,
+    },
     state: { columnVisibility },
     onColumnVisibilityChange: setColumnVisibility,
     getCoreRowModel: getCoreRowModel(),

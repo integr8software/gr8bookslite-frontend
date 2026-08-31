@@ -146,10 +146,46 @@ export function usePettyCashReplenishmentOverviewPage() {
         size: PettyCashReplenishmentOverviewColumnWidths.amount,
         meta: { label: PettyCashReplenishmentColumnLabels.amount },
       }),
+      columnHelper.accessor("disburseAmount", {
+        header: PettyCashReplenishmentColumnLabels.disburseAmount,
+        size: PettyCashReplenishmentOverviewColumnWidths.disburseAmount,
+        meta: { label: PettyCashReplenishmentColumnLabels.disburseAmount },
+      }),
+      columnHelper.accessor("remarks", {
+        header: PettyCashReplenishmentColumnLabels.remarks,
+        size: PettyCashReplenishmentOverviewColumnWidths.remarks,
+        meta: { label: PettyCashReplenishmentColumnLabels.remarks },
+      }),
+      columnHelper.accessor("createdBy", {
+        header: PettyCashReplenishmentColumnLabels.createdBy,
+        size: PettyCashReplenishmentOverviewColumnWidths.createdBy,
+        meta: { label: PettyCashReplenishmentColumnLabels.createdBy },
+      }),
+      columnHelper.accessor("createdAt", {
+        header: PettyCashReplenishmentColumnLabels.createdAt,
+        size: PettyCashReplenishmentOverviewColumnWidths.createdAt,
+        meta: { label: PettyCashReplenishmentColumnLabels.createdAt },
+      }),
+      columnHelper.accessor("updatedBy", {
+        header: PettyCashReplenishmentColumnLabels.updatedBy,
+        size: PettyCashReplenishmentOverviewColumnWidths.updatedBy,
+        meta: { label: PettyCashReplenishmentColumnLabels.updatedBy },
+      }),
+      columnHelper.accessor("updatedAt", {
+        header: PettyCashReplenishmentColumnLabels.updatedAt,
+        size: PettyCashReplenishmentOverviewColumnWidths.updatedAt,
+        meta: { label: PettyCashReplenishmentColumnLabels.updatedAt },
+      }),
       columnHelper.accessor("status", {
         header: PettyCashReplenishmentColumnLabels.status,
         size: PettyCashReplenishmentOverviewColumnWidths.status,
-        meta: { label: PettyCashReplenishmentColumnLabels.status },
+        meta: { className: "text-center", label: PettyCashReplenishmentColumnLabels.status },
+      }),
+      columnHelper.display({
+        id: "actions",
+        header: PettyCashReplenishmentColumnLabels.actions,
+        size: PettyCashReplenishmentOverviewColumnWidths.actions,
+        meta: { className: "text-center", label: PettyCashReplenishmentColumnLabels.actions },
       }),
     ],
     [],
@@ -158,6 +194,7 @@ export function usePettyCashReplenishmentOverviewPage() {
   const table = useReactTable({
     data: records,
     columns,
+    initialState: { columnVisibility: PettyCashReplenishmentDefaultColumnVisibility },
     state: { columnVisibility, pagination, sorting },
     onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: setPagination,

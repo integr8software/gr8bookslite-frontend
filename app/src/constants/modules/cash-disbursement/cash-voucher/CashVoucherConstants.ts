@@ -202,6 +202,12 @@ export const CashVoucherTableColumns = [
     size: TransactionOverviewColumnWidths.amount,
   },
   {
+    key: "disburseAmount",
+    label: "Disburse Amount",
+    className: "",
+    size: TransactionOverviewColumnWidths.amount,
+  },
+  {
     key: "remarks",
     label: "Remarks",
     className: "",

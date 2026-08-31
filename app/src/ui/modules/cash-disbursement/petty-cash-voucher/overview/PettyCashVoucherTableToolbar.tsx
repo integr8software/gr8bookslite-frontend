@@ -1,5 +1,8 @@
 import { PettyCashVoucherStatusOptions } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
-import type { PettyCashVoucherOverviewPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
+import type {
+  PettyCashVoucherOverviewPageState,
+  PettyCashVoucherStatus,
+} from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import { AmountRangePicker } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import { DateRangePicker } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
 import {
@@ -45,7 +48,7 @@ export function PettyCashVoucherTableToolbar({
             label: status,
             value: status,
           }))}
-          onChange={(value) => page.setStatusFilter(value as any)}
+          onChange={(value) => page.setStatusFilter(value as "All" | PettyCashVoucherStatus)}
         />
         <ModuleTableColumnVisibilityButton table={page.table} />
         <ModuleTableResetButton className="px-2" onClick={onRefresh} />

@@ -250,6 +250,8 @@ export function createCashVoucherFormValues(
   voucher?: CashVoucherRecord,
 ): CashVoucherFormValues {
   if (voucher) {
+    const voucherGrossAmount = getCashVoucherSourceGrossTotal(voucher.lineEntries) || voucher.amount;
+
     return {
       transactionId: voucher.transactionId,
       voucherNo: voucher.voucherNo,
@@ -263,9 +265,9 @@ export function createCashVoucherFormValues(
       projectName: voucher.projectName ?? transaction?.projectName ?? transaction?.department ?? "",
       partyCode: voucher.partyCode,
       partyName: voucher.partyName,
-      amount: voucher.amount.toFixed(2),
+      amount: voucherGrossAmount.toFixed(2),
       taxRate: voucher.taxRate,
-      taxDetails: voucher.taxDetails,
+      taxDetails: syncTaxDetailsAmount(voucher.taxDetails, voucherGrossAmount, voucher.taxRate),
       remarks: voucher.remarks,
       referenceModule: voucher.referenceModule ?? "",
       voucherReferenceNo: voucher.voucherReferenceNo,
@@ -283,7 +285,7 @@ export function createCashVoucherFormValues(
     taxRate: transaction ? getDefaultTaxRate(transaction) : "0%",
     taxDetails: transaction ? createDefaultTransactionTaxDetails(transaction) : createTaxDetails(0, "0%"),
     transactionId: transaction?.id ?? "",
-    voucherNo: createNextVoucherNumber(),
+    voucherNo: "",
     voucherDate: todayDateValue(),
     paymentMethod: "Cash",
     disbursementType: transaction?.disbursementType ?? "",
@@ -294,7 +296,7 @@ export function createCashVoucherFormValues(
     projectName: transaction?.projectName ?? transaction?.department ?? "",
     partyCode: getCashVoucherPartyCode(transaction?.payee ?? ""),
     partyName: transaction?.payee ?? "",
-    amount: transaction ? createDefaultTransactionTaxDetails(transaction).amount.toFixed(2) : "",
+    amount: transaction ? transaction.amount.toFixed(2) : "",
     remarks: transaction?.purpose ?? "",
     referenceModule: "Cash Voucher",
     voucherReferenceNo: "",
@@ -308,6 +310,14 @@ export function createCashVoucherFormValues(
       : [createBlankCashVoucherLineEntry()],
     attachments: [],
   };
+}
+
+function getCashVoucherSourceGrossTotal(entries: CashVoucherLineEntry[]) {
+  return entries.filter((entry) => !isGeneratedCashVoucherLineEntry(entry)).reduce((sum, entry) => {
+    const grossAmount = Number(entry.taxDetails?.grossAmount || entry.debit || 0);
+
+    return sum + grossAmount;
+  }, 0);
 }
 
 export function createCashVoucherFromForm(values: CashVoucherFormValues): CashVoucherRecord {
@@ -999,11 +1009,6 @@ export function isCashVoucherForApprovalStatus(status: string) {
 
 function todayDateValue() {
   return new Date().toISOString().slice(0, 10);
-}
-
-function createNextVoucherNumber() {
-  const currentYear = new Date().getFullYear();
-  return `CV-${currentYear}-000001`;
 }
 
 function createNextTransactionNumber() {

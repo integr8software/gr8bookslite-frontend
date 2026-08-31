@@ -41,6 +41,7 @@ export const RevolvingFundReplenishmentColumnLabels = {
   currency: "Currency",
   exchangeRate: "Exchange Rate",
   amount: "Total Amount",
+  disburseAmount: "Disburse Amount",
   remarks: "Remarks",
   createdBy: "Created By",
   createdAt: "Date Created",
@@ -59,6 +60,7 @@ export const RevolvingFundReplenishmentOverviewColumnWidths: Record<keyof typeof
   currency: TransactionOverviewColumnWidths.currency,
   exchangeRate: TransactionOverviewColumnWidths.exchangeRate,
   amount: TransactionOverviewColumnWidths.amount,
+  disburseAmount: TransactionOverviewColumnWidths.amount,
   remarks: TransactionOverviewColumnWidths.remarks,
   createdBy: TransactionOverviewColumnWidths.auditUser,
   createdAt: TransactionOverviewColumnWidths.auditDate,
@@ -72,6 +74,7 @@ export const RevolvingFundReplenishmentDefaultVisibleColumnIds = [
   "documentDate",
   "partyName",
   "amount",
+  "disburseAmount",
   "status",
   "actions",
 ] as const;

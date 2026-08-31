@@ -4,7 +4,13 @@ import type {
   CashAdvanceFormErrors,
   CashAdvanceFormValues,
 } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
+import { CashAdvanceStatuses } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
 import { formatAmount } from "@/app/src/utils/currency.util";
+
+const CashAdvanceDraftFormSchema = z.object({
+  documentDate: z.string().trim().min(1, "Select a CA Date."),
+  transNo: z.string().trim().min(1, "CA No. is required."),
+});
 
 const CashAdvanceFormSchema = z.object({
   accountCode: z.string().trim().min(1, "Default account code is required."),
@@ -27,7 +33,7 @@ const CashAdvanceFormSchema = z.object({
 });
 
 export function validateCashAdvanceForm(values: CashAdvanceFormValues): CashAdvanceFormErrors {
-  const validation = CashAdvanceFormSchema.safeParse(values);
+  const validation = (values.status === CashAdvanceStatuses.draft ? CashAdvanceDraftFormSchema : CashAdvanceFormSchema).safeParse(values);
 
   if (validation.success) {
     return {};

@@ -801,11 +801,14 @@ select.app-select-control:not(:disabled) {
   color: #16a34a;
 }
 
-.app-dialog-status-icon--cancel,
 .app-dialog-status-icon--deactivate,
 .app-dialog-status-icon--disapprove,
 .app-dialog-status-icon--error {
   color: #f97068;
+}
+
+.app-dialog-status-icon--cancel {
+  color: #f59e0b;
 }
 
 .app-dialog-status-icon--error[data-animated="true"] {
@@ -1117,11 +1120,14 @@ select.app-select-control:not(:disabled) {
   color: #4ade80;
 }
 
-:root[data-app-theme="midnight-dark"] .app-dialog-status-icon--cancel,
 :root[data-app-theme="midnight-dark"] .app-dialog-status-icon--deactivate,
 :root[data-app-theme="midnight-dark"] .app-dialog-status-icon--disapprove,
 :root[data-app-theme="midnight-dark"] .app-dialog-status-icon--error {
   color: #fb7185;
+}
+
+:root[data-app-theme="midnight-dark"] .app-dialog-status-icon--cancel {
+  color: #fbbf24;
 }
 
 :root[data-app-theme="midnight-dark"] .app-dialog-primary-button {

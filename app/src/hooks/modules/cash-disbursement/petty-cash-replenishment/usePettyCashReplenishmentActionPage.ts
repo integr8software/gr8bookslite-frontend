@@ -13,6 +13,7 @@ import {
 } from "@/app/src/data/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentData";
 import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
+import { hasModuleDraftChanges } from "@/app/src/hooks/shared/module/useModuleDraftChanges";
 import type {
   PettyCashReplenishmentActionMode,
   PettyCashReplenishmentActionTab,
@@ -54,25 +55,22 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const hasEditedCurrencyRef = useRef(false);
   const [initialValues, setInitialValues] = useState(values);
-  const isDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
+  const rawIsDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
+  const isDirty = mode === "add" ? hasModuleDraftChanges(values, initialValues, ["transactionNo"]) : rawIsDirty;
 
   useEffect(() => {
     if (record) {
       const formVals = createPettyCashReplenishmentFormValues(record, record.transactionNo, record.currency || "PHP");
-      setValues(formVals);
-      setInitialValues(formVals);
+      queueMicrotask(() => {
+        setValues(formVals);
+        setInitialValues(formVals);
+      });
     }
   }, [record]);
 
   useEffect(() => {
     if (mode === "add") {
-      fetchNextPettyCashReplenishmentNo()
-        .then((nextNo) => {
-          if (nextNo) {
-            setValues((cur) => ({ ...cur, transactionNo: nextNo }));
-          }
-        })
-        .catch(() => undefined);
+      void refreshNextTransactionNo();
     }
   }, [mode]);
 
@@ -94,12 +92,14 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
       currency: transactionCurrency.baseCurrencyCode,
       exchangeRate: "1.00",
     }));
+    setInitialValues((current) => ({
+      ...current,
+      currency: transactionCurrency.baseCurrencyCode,
+      exchangeRate: "1.00",
+    }));
   }, [mode, transactionCurrency.baseCurrencyCode, transactionCurrency.isBaseCurrencyResolved]);
 
-  function updateField<TKey extends keyof PettyCashReplenishmentFormValues>(
-    field: TKey,
-    value: PettyCashReplenishmentFormValues[TKey],
-  ) {
+  function updateField<TKey extends keyof PettyCashReplenishmentFormValues>(field: TKey, value: PettyCashReplenishmentFormValues[TKey]) {
     if (isReadonly) return;
     setValues((current) => ({ ...current, [field]: value }));
     setErrors((current) => ({ ...current, [field]: undefined }));
@@ -192,8 +192,8 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
         router.push("/cash-disbursement/petty-cash-replenishment");
       }
     },
-    onError: (err: any) => {
-      const msg = err?.response?.data?.message || "Failed to save Petty Cash Replenishment.";
+    onError: (err: unknown) => {
+      const msg = err instanceof Error ? err.message : "Failed to save Petty Cash Replenishment.";
       toast.error(msg);
     },
   });
@@ -205,7 +205,7 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
     onSuccess: (updatedRecord, status) => {
       queryClient.invalidateQueries({ queryKey: ["cash-disbursement", "petty-cash-replenishment"] });
       queryClient.setQueryData(["cash-disbursement", "petty-cash-replenishment", params.recordId], updatedRecord);
-      setValues((cur) => ({ ...cur, status: status as any }));
+      setValues((cur) => ({ ...cur, status }));
       toast.success(`Petty Cash Replenishment marked as ${status}.`);
     },
     onError: () => {
@@ -213,21 +213,72 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
     },
   });
 
-  function submit(status?: PettyCashReplenishmentStatus) {
-    const nextValues = status ? { ...values, status: status as any } : values;
+  async function submit(status?: PettyCashReplenishmentStatus) {
+    const nextValues = status ? { ...values, status } : values;
     const nextErrors = validatePettyCashReplenishmentForm(nextValues);
     setErrors(nextErrors);
 
     if (Object.keys(nextErrors).length > 0) {
       toast.error("Please complete required fields before saving.");
+      return false;
+    }
+
+    try {
+      await saveMutation.mutateAsync(nextValues);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async function handleUpdateStatus(status: PettyCashReplenishmentStatus) {
+    try {
+      await updateStatusMutation.mutateAsync(status);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async function resetAddValuesWithNextTransactionNo() {
+    const nextValues = createPettyCashReplenishmentFormValues(undefined, "", transactionCurrency.baseCurrencyCode);
+
+    try {
+      const nextNo = await fetchNextPettyCashReplenishmentNo();
+
+      if (nextNo) {
+        nextValues.transactionNo = nextNo;
+      }
+    } catch {
+      // Keep the blank add form if the number endpoint is temporarily unavailable.
+    }
+
+    setValues(nextValues);
+    setInitialValues(nextValues);
+  }
+
+  async function refreshNextTransactionNo() {
+    try {
+      const nextNo = await fetchNextPettyCashReplenishmentNo();
+
+      if (nextNo) {
+        setValues((current) => ({ ...current, transactionNo: nextNo }));
+        setInitialValues((current) => ({ ...current, transactionNo: nextNo }));
+      }
+    } catch {
+      // Keep the current add form if the number endpoint is temporarily unavailable.
+    }
+  }
+
+  function discardDraft() {
+    draft.clearDraft();
+
+    if (mode === "add") {
+      void resetAddValuesWithNextTransactionNo();
       return;
     }
 
-    saveMutation.mutate(nextValues);
-  }
-
-  function handleUpdateStatus(status: PettyCashReplenishmentStatus) {
-    updateStatusMutation.mutate(status);
+    draft.discardDraft();
   }
 
   return {
@@ -237,16 +288,16 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
     moveEntry,
     addEntries,
     addEntry,
-    applyFundRecord: (fund: any) => {
+    applyFundRecord: (fund: Parameters<typeof applyPettyCashFundToReplenishmentForm>[1]) => {
       const nextValues = applyPettyCashFundToReplenishmentForm(values, fund);
       setValues(nextValues);
     },
     closePreview: () => setIsPreviewOpen(false),
     copyFromRecords: [],
     pettyCashFundCopyFromRecords: [],
-    copyFromPettyCashFund: (fund: any) => { const nextValues = applyPettyCashFundToReplenishmentForm(values, fund); setValues(nextValues); },
+    copyFromPettyCashFund: (_recordIds: string[]) => undefined,
     currencyOptions: transactionCurrency.currencyOptions,
-    discardDraft: draft.discardDraft,
+    discardDraft,
     draft,
     errors,
     handleUpdateStatus,
@@ -262,7 +313,7 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
     openPreview: () => setIsPreviewOpen(true),
     record,
     removeEntry,
-    save: async (status?: any) => { submit(status); return true; },
+    save: submit,
     saveDraft: draft.saveDraft,
     setActiveTab,
     setIsPreviewOpen,
@@ -279,9 +330,10 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
     updateEntries,
     updateEntry,
     updateField,
-    updateStatus: async (status: any) => { handleUpdateStatus(status); return true; },
-    validate: (status?: any) => {
-      const errs = validatePettyCashReplenishmentForm(values);
+    updateStatus: handleUpdateStatus,
+    validate: (status?: PettyCashReplenishmentStatus) => {
+      const nextValues = status ? { ...values, status } : values;
+      const errs = validatePettyCashReplenishmentForm(nextValues);
       setErrors(errs);
       return Object.keys(errs).length === 0;
     },

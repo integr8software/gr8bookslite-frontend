@@ -161,19 +161,24 @@ export function PettyCashReplenishmentActionHeader({
                   : "default"
           }
           onCancel={() => setConfirmation(null)}
-          onConfirm={() => {
+          onConfirm={async () => {
+            let isSuccessful = false;
+
             if (confirmation === "save") {
-              page.save(PettyCashReplenishmentStatuses.forApproval);
+              isSuccessful = await page.save(PettyCashReplenishmentStatuses.forApproval);
             } else if (confirmation === "draft") {
-              page.save(PettyCashReplenishmentStatuses.draft);
+              isSuccessful = await page.save(PettyCashReplenishmentStatuses.draft);
             } else if (confirmation === "approve") {
-              page.updateStatus(PettyCashReplenishmentStatuses.posted);
+              isSuccessful = await page.updateStatus(PettyCashReplenishmentStatuses.posted);
             } else if (confirmation === "disapprove") {
-              page.updateStatus(PettyCashReplenishmentStatuses.disapproved);
+              isSuccessful = await page.updateStatus(PettyCashReplenishmentStatuses.disapproved);
             } else {
-              page.updateStatus(PettyCashReplenishmentStatuses.cancelled);
+              isSuccessful = await page.updateStatus(PettyCashReplenishmentStatuses.cancelled);
             }
-            setConfirmation(null);
+
+            if (isSuccessful) {
+              setConfirmation(null);
+            }
           }}
         />
       ) : null}

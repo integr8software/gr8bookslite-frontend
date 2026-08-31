@@ -22,6 +22,7 @@ import type {
 import { validateRevolvingFundForm } from "@/app/src/validations/modules/cash-disbursement/revolving-fund/RevolvingFundValidation";
 import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
+import { hasModuleDraftChanges } from "@/app/src/hooks/shared/module/useModuleDraftChanges";
 import {
   createRevolvingFundApi,
   fetchNextRevolvingFundNo,
@@ -54,25 +55,22 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const hasEditedCurrencyRef = useRef(false);
   const [initialValues, setInitialValues] = useState(values);
-  const isDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
+  const rawIsDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
+  const isDirty = mode === "add" ? hasModuleDraftChanges(values, initialValues, ["transactionNo"]) : rawIsDirty;
 
   useEffect(() => {
     if (record) {
       const formVals = createRevolvingFundFormValues(record, record.transactionNo, record.currency || "PHP");
-      setValues(formVals);
-      setInitialValues(formVals);
+      queueMicrotask(() => {
+        setValues(formVals);
+        setInitialValues(formVals);
+      });
     }
   }, [record]);
 
   useEffect(() => {
     if (mode === "add") {
-      fetchNextRevolvingFundNo()
-        .then((nextNo) => {
-          if (nextNo) {
-            setValues((cur) => ({ ...cur, transactionNo: nextNo }));
-          }
-        })
-        .catch(() => undefined);
+      void refreshNextTransactionNo();
     }
   }, [mode]);
 
@@ -93,6 +91,11 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
     }
 
     setValues((current) => ({
+      ...current,
+      currency: transactionCurrency.baseCurrencyCode,
+      exchangeRate: "1.00",
+    }));
+    setInitialValues((current) => ({
       ...current,
       currency: transactionCurrency.baseCurrencyCode,
       exchangeRate: "1.00",
@@ -160,12 +163,6 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
     next.splice(targetIndex, 0, createBlankRevolvingFundItem());
     updateItems(next);
   }
-  function insertItemByIndex(index: number) {
-    const next = [...values.items];
-    next.splice(index, 0, createBlankRevolvingFundItem());
-    updateItems(next);
-  }
-
   function moveItem(fromRowId: string, toRowId: string) {
     const fromIndex = values.items.findIndex((i) => i.id === fromRowId);
     const toIndex = values.items.findIndex((i) => i.id === toRowId);
@@ -175,13 +172,6 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
     next.splice(toIndex, 0, moved);
     updateItems(next);
   }
-  function moveItemByIndex(fromIndex: number, toIndex: number) {
-    const next = [...values.items];
-    const [moved] = next.splice(fromIndex, 1);
-    next.splice(toIndex, 0, moved);
-    updateItems(next);
-  }
-
   function removeItem(rowId: string) {
     if (isReadonly) return;
     if (values.items.length === 1) {
@@ -211,8 +201,8 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
         router.push("/cash-disbursement/revolving-fund");
       }
     },
-    onError: (err: any) => {
-      const msg = err?.response?.data?.message || "Failed to save Revolving Fund.";
+    onError: (err: unknown) => {
+      const msg = err instanceof Error ? err.message : "Failed to save Revolving Fund.";
       toast.error(msg);
     },
   });
@@ -224,7 +214,7 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
     onSuccess: (updatedRecord, status) => {
       queryClient.invalidateQueries({ queryKey: ["cash-disbursement", "revolving-fund"] });
       queryClient.setQueryData(["cash-disbursement", "revolving-fund", params.recordId], updatedRecord);
-      setValues((cur) => ({ ...cur, status: status as any }));
+      setValues((cur) => ({ ...cur, status }));
       toast.success(`Revolving Fund marked as ${status}.`);
     },
     onError: () => {
@@ -232,21 +222,72 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
     },
   });
 
-  function submit(status?: RevolvingFundStatus) {
-    const nextValues = status ? { ...values, status: status as any } : values;
+  async function submit(status?: RevolvingFundStatus) {
+    const nextValues = status ? { ...values, status } : values;
     const nextErrors = validateRevolvingFundForm(nextValues);
     setErrors(nextErrors);
 
     if (Object.keys(nextErrors).length > 0) {
       toast.error("Please complete required fields before saving.");
+      return false;
+    }
+
+    try {
+      await saveMutation.mutateAsync(nextValues);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async function handleUpdateStatus(status: RevolvingFundStatus) {
+    try {
+      await updateStatusMutation.mutateAsync(status);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async function resetAddValuesWithNextTransactionNo() {
+    const nextValues = createRevolvingFundFormValues(undefined, "", transactionCurrency.baseCurrencyCode);
+
+    try {
+      const nextNo = await fetchNextRevolvingFundNo();
+
+      if (nextNo) {
+        nextValues.transactionNo = nextNo;
+      }
+    } catch {
+      // Keep the blank add form if the number endpoint is temporarily unavailable.
+    }
+
+    setValues(nextValues);
+    setInitialValues(nextValues);
+  }
+
+  async function refreshNextTransactionNo() {
+    try {
+      const nextNo = await fetchNextRevolvingFundNo();
+
+      if (nextNo) {
+        setValues((current) => ({ ...current, transactionNo: nextNo }));
+        setInitialValues((current) => ({ ...current, transactionNo: nextNo }));
+      }
+    } catch {
+      // Keep the current add form if the number endpoint is temporarily unavailable.
+    }
+  }
+
+  function discardDraft() {
+    draft.clearDraft();
+
+    if (mode === "add") {
+      void resetAddValuesWithNextTransactionNo();
       return;
     }
 
-    saveMutation.mutate(nextValues);
-  }
-
-  function handleUpdateStatus(status: RevolvingFundStatus) {
-    updateStatusMutation.mutate(status);
+    draft.discardDraft();
   }
 
   return {
@@ -255,7 +296,7 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
     addItems,
     closePreview: () => setIsPreviewOpen(false),
     currencyOptions: transactionCurrency.currencyOptions,
-    discardDraft: draft.discardDraft,
+    discardDraft,
     draft,
     duplicateItem,
     errors,
@@ -274,7 +315,7 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
     openPreview: () => setIsPreviewOpen(true),
     record,
     removeItem,
-    save: async (status?: any) => { submit(status); return true; },
+    save: submit,
     saveDraft: draft.saveDraft,
     setActiveTab,
     setIsPreviewOpen,
@@ -292,9 +333,10 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
     updateField,
     updateItem,
     updateItems,
-    updateStatus: async (status: any) => { handleUpdateStatus(status); return true; },
-    validate: (status?: any) => {
-      const errs = validateRevolvingFundForm(values);
+    updateStatus: handleUpdateStatus,
+    validate: (status?: RevolvingFundStatus) => {
+      const nextValues = status ? { ...values, status } : values;
+      const errs = validateRevolvingFundForm(nextValues);
       setErrors(errs);
       return Object.keys(errs).length === 0;
     },

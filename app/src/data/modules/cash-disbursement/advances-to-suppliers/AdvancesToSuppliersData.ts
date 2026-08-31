@@ -20,7 +20,7 @@ export function calculateAdvancePaymentPercentage(totalPoAmount: string, advance
 
 export function createAdvancesToSuppliersFormValues(
   record?: AdvancesToSuppliersRecord,
-  transactionNo = "ATS-000001",
+  transactionNo = "",
   baseCurrencyCode = "PHP",
 ): AdvancesToSuppliersFormValues {
   if (record?.formValues) {

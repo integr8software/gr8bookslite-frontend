@@ -27,6 +27,7 @@ export const PettyCashFundColumnLabels = {
   currency: "Currency",
   exchangeRate: "Exchange Rate",
   amount: "Total Amount",
+  disburseAmount: "Disburse Amount",
   remarks: "Remarks",
   createdBy: "Created By",
   createdAt: "Date Created",
@@ -35,7 +36,15 @@ export const PettyCashFundColumnLabels = {
   status: "Status",
   actions: "Actions",
 } as const;
-export const PettyCashFundDefaultVisibleColumnIds = ["transactionNo", "documentDate", "partyName", "amount", "status", "actions"] as const;
+export const PettyCashFundDefaultVisibleColumnIds = [
+  "transactionNo",
+  "documentDate",
+  "partyName",
+  "amount",
+  "disburseAmount",
+  "status",
+  "actions",
+] as const;
 export const PettyCashFundDefaultColumnVisibility = Object.fromEntries(
   Object.keys(PettyCashFundColumnLabels).map((columnId) => [
     columnId,

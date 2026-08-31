@@ -37,7 +37,6 @@ import type {
   CashVoucherPreviewRow,
   CashVoucherRecord,
   CashVoucherStatus,
-  CashVoucherTransactionRecord,
   CashVoucherTableColumnKey,
   CashVoucherStoreState,
 } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
@@ -116,8 +115,7 @@ export function useCashVoucherStore<TSelected = CashVoucherStoreState>(
     },
   });
 
-  const rawVouchers = vouchersQuery.data || [];
-  const vouchers = useMemo(() => rawVouchers.map(sanitizeCashVoucherRecord), [rawVouchers]);
+  const vouchers = useMemo(() => (vouchersQuery.data || []).map(sanitizeCashVoucherRecord), [vouchersQuery.data]);
 
   const previewRows = useMemo<CashVoucherPreviewRow[]>(() => {
     return vouchers.map((voucher) => ({
@@ -132,6 +130,7 @@ export function useCashVoucherStore<TSelected = CashVoucherStoreState>(
         transactionDate: voucher.voucherDate,
         paymentDueDate: voucher.paymentDueDate || voucher.voucherDate,
         amount: voucher.amount,
+        disburseAmount: voucher.disburseAmount,
         currency: voucher.currency,
         fxRate: voucher.fxRate,
         paymentMethod: "Cash",
@@ -410,7 +409,11 @@ function createCashVoucherColumn(
     header,
     size,
     sortingFn:
-      key === "documentDate" || key === "createdAt" || key === "updatedAt" ? "datetime" : key === "amount" ? "basic" : "alphanumeric",
+      key === "documentDate" || key === "createdAt" || key === "updatedAt"
+        ? "datetime"
+        : key === "amount" || key === "disburseAmount"
+          ? "basic"
+          : "alphanumeric",
     meta: { className, label: header },
   };
 }
@@ -433,6 +436,8 @@ function getCashVoucherColumnValue(row: CashVoucherPreviewRow, key: CashVoucherT
       return row.voucher?.fxRate ?? row.transaction.fxRate ?? "";
     case "amount":
       return row.voucher?.amount ?? row.transaction.amount;
+    case "disburseAmount":
+      return row.voucher?.disburseAmount ?? row.voucher?.amount ?? row.transaction.amount;
     case "status":
       return getCashVoucherDisplayStatus(row.voucher?.status ?? row.transaction.status);
     case "createdBy":

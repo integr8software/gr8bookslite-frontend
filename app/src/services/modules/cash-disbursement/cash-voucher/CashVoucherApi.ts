@@ -7,6 +7,13 @@ import type {
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 
 type ApiCashVoucherStatus = "DRAFT" | "FOR_APPROVAL" | "APPROVED" | "POSTED" | "DISAPPROVED" | "CANCELLED" | "CLOSED";
+type ApiCashVoucherLineAmountSource = CashVoucherLineEntry & {
+  accountTitle?: string;
+  disburseAmount?: number;
+  grossAmount?: number;
+  ewtPercent?: number;
+  vatPercent?: number;
+};
 
 export type FetchCashVoucherListParams = {
   page?: number;
@@ -172,9 +179,10 @@ export async function createCashVoucherApi(payload: {
   status?: CashVoucherStatus;
   details: CashVoucherLineEntry[];
 }): Promise<CashVoucherRecord> {
+  const details = getCashVoucherPayloadDetails(payload.details, payload.status);
   const transformedPayload = {
     ...payload,
-    details: payload.details.map((detail, index) => ({
+    details: details.map((detail, index) => ({
       id: detail.id,
       lineNumber: index + 1,
       accountCode: detail.accountCode,
@@ -236,11 +244,12 @@ export async function updateCashVoucherApi(
     details?: CashVoucherLineEntry[];
   }>,
 ): Promise<CashVoucherRecord> {
+  const details = payload.details ? getCashVoucherPayloadDetails(payload.details, payload.status) : undefined;
   const transformedPayload = {
     ...payload,
-    ...(payload.details
+    ...(details
       ? {
-          details: payload.details.map((detail, index) => ({
+          details: details.map((detail, index) => ({
             id: detail.id,
             lineNumber: index + 1,
             accountCode: detail.accountCode,
@@ -288,8 +297,13 @@ export async function deleteCashVoucherApi(id: string): Promise<void> {
 }
 
 function mapCashVoucherRecordFromApi(record: CashVoucherRecord): CashVoucherRecord {
+  const displayAmount = getCashVoucherDisplayGrossAmount(record);
+  const displayDisburseAmount = getCashVoucherDisplayDisburseAmount(record);
+
   return {
     ...record,
+    amount: displayAmount,
+    disburseAmount: displayDisburseAmount,
     costCenter: record.projectCode ?? record.costCenter,
     projectCode: record.projectCode ?? record.costCenter,
     history:
@@ -299,6 +313,71 @@ function mapCashVoucherRecordFromApi(record: CashVoucherRecord): CashVoucherReco
       })) ?? [],
     status: mapCashVoucherStatusFromApi(record.status),
   };
+}
+
+function getCashVoucherDisplayDisburseAmount(record: CashVoucherRecord) {
+  const rawRecord = record as CashVoucherRecord & { details?: ApiCashVoucherLineAmountSource[] };
+  const sourceRows = (rawRecord.lineEntries ?? rawRecord.details ?? []).filter((entry) => !isGeneratedCashVoucherApiLine(entry));
+  const disburseAmount = sourceRows.reduce((sum, entry) => sum + getCashVoucherApiLineDisburseAmount(entry), 0);
+
+  return disburseAmount > 0 ? roundCashVoucherApiAmount(disburseAmount) : record.disburseAmount ?? record.amount;
+}
+
+function getCashVoucherDisplayGrossAmount(record: CashVoucherRecord) {
+  const rawRecord = record as CashVoucherRecord & { details?: ApiCashVoucherLineAmountSource[] };
+  const sourceRows = (rawRecord.lineEntries ?? rawRecord.details ?? []).filter((entry) => !isGeneratedCashVoucherApiLine(entry));
+  const grossAmount = sourceRows.reduce((sum, entry) => sum + getCashVoucherApiLineGrossAmount(entry), 0);
+
+  return grossAmount > 0 ? roundCashVoucherApiAmount(grossAmount) : record.amount;
+}
+
+function getCashVoucherApiLineDisburseAmount(entry: ApiCashVoucherLineAmountSource) {
+  const grossAmount = getCashVoucherApiLineGrossAmount(entry);
+  const ewtPercent = Number(entry.taxDetails?.ewtPercent || entry.ewtPercent || 0);
+
+  if (grossAmount > 0 && ewtPercent > 0) {
+    return grossAmount - grossAmount * (ewtPercent / 100);
+  }
+
+  return Number(entry.taxDetails?.amount || entry.disburseAmount || 0) || grossAmount;
+}
+
+function getCashVoucherApiLineGrossAmount(entry: ApiCashVoucherLineAmountSource) {
+  const storedGrossAmount = Number(entry.taxDetails?.grossAmount || entry.grossAmount || 0);
+  const debitAmount = Number(entry.debit || 0);
+  const vatPercent = Number(entry.taxDetails?.vatPercent || entry.vatPercent || 0);
+
+  if (storedGrossAmount > 0 && debitAmount > 0 && vatPercent > 0 && Math.abs(storedGrossAmount - debitAmount) <= 0.01) {
+    const netRatio = 1 - vatPercent / 100;
+
+    if (netRatio > 0) {
+      return debitAmount / netRatio;
+    }
+  }
+
+  return storedGrossAmount || debitAmount;
+}
+
+function isGeneratedCashVoucherApiLine(entry: ApiCashVoucherLineAmountSource) {
+  const id = String(entry.id ?? "");
+  const accountName = String(entry.accountName || entry.accountTitle || "").trim().toLowerCase();
+
+  return (
+    id.startsWith("auto-input-vat-") ||
+    id.startsWith("auto-ewt-") ||
+    id.startsWith("auto-credit-") ||
+    accountName === "input vat" ||
+    accountName === "expanded withholding tax" ||
+    accountName === "cash on hand" ||
+    accountName === "cash in bank" ||
+    accountName.startsWith("cash in bank - ") ||
+    accountName === "check cashvoucher clearing" ||
+    accountName === "online payment clearing"
+  );
+}
+
+function roundCashVoucherApiAmount(value: number) {
+  return Math.round((value + Number.EPSILON) * 100) / 100;
 }
 
 function mapCashVoucherStatusFromApi(status: string): CashVoucherStatus {
@@ -327,6 +406,34 @@ function mapCashVoucherStatusToApi(status: string): ApiCashVoucherStatus {
   };
 
   return statusMap[status] ?? (status as ApiCashVoucherStatus);
+}
+
+function getCashVoucherPayloadDetails(details: CashVoucherLineEntry[], status?: CashVoucherStatus) {
+  if (status === "Draft" || status === "Open" || !status) {
+    return details.filter(cashVoucherLineEntryHasData);
+  }
+
+  return details;
+}
+
+function cashVoucherLineEntryHasData(detail: CashVoucherLineEntry) {
+  return (
+    detail.accountCode.trim() !== "" ||
+    detail.accountName.trim() !== "" ||
+    (detail.checkDate ?? "").trim() !== "" ||
+    (detail.checkNo ?? "").trim() !== "" ||
+    (detail.checkStatus ?? "").trim() !== "" ||
+    (detail.partyCode ?? "").trim() !== "" ||
+    (detail.partyName ?? "").trim() !== "" ||
+    (detail.responsibilityCenter ?? "").trim() !== "" ||
+    (detail.refId ?? "").trim() !== "" ||
+    (detail.vatType ?? "").trim() !== "" ||
+    (detail.ewtCode ?? "").trim() !== "" ||
+    (detail.particulars ?? detail.remarks ?? "").trim() !== "" ||
+    Number(detail.debit || 0) > 0 ||
+    Number(detail.credit || 0) > 0 ||
+    detail.taxRate !== "0%"
+  );
 }
 
 function cleanOptional(value?: string | null) {

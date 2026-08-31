@@ -146,10 +146,46 @@ export function useRevolvingFundReplenishmentOverviewPage() {
         size: RevolvingFundReplenishmentOverviewColumnWidths.amount,
         meta: { label: RevolvingFundReplenishmentColumnLabels.amount },
       }),
+      columnHelper.accessor("disburseAmount", {
+        header: RevolvingFundReplenishmentColumnLabels.disburseAmount,
+        size: RevolvingFundReplenishmentOverviewColumnWidths.disburseAmount,
+        meta: { label: RevolvingFundReplenishmentColumnLabels.disburseAmount },
+      }),
+      columnHelper.accessor("remarks", {
+        header: RevolvingFundReplenishmentColumnLabels.remarks,
+        size: RevolvingFundReplenishmentOverviewColumnWidths.remarks,
+        meta: { label: RevolvingFundReplenishmentColumnLabels.remarks },
+      }),
+      columnHelper.accessor("createdBy", {
+        header: RevolvingFundReplenishmentColumnLabels.createdBy,
+        size: RevolvingFundReplenishmentOverviewColumnWidths.createdBy,
+        meta: { label: RevolvingFundReplenishmentColumnLabels.createdBy },
+      }),
+      columnHelper.accessor("createdAt", {
+        header: RevolvingFundReplenishmentColumnLabels.createdAt,
+        size: RevolvingFundReplenishmentOverviewColumnWidths.createdAt,
+        meta: { label: RevolvingFundReplenishmentColumnLabels.createdAt },
+      }),
+      columnHelper.accessor("updatedBy", {
+        header: RevolvingFundReplenishmentColumnLabels.updatedBy,
+        size: RevolvingFundReplenishmentOverviewColumnWidths.updatedBy,
+        meta: { label: RevolvingFundReplenishmentColumnLabels.updatedBy },
+      }),
+      columnHelper.accessor("updatedAt", {
+        header: RevolvingFundReplenishmentColumnLabels.updatedAt,
+        size: RevolvingFundReplenishmentOverviewColumnWidths.updatedAt,
+        meta: { label: RevolvingFundReplenishmentColumnLabels.updatedAt },
+      }),
       columnHelper.accessor("status", {
         header: RevolvingFundReplenishmentColumnLabels.status,
         size: RevolvingFundReplenishmentOverviewColumnWidths.status,
-        meta: { label: RevolvingFundReplenishmentColumnLabels.status },
+        meta: { className: "text-center", label: RevolvingFundReplenishmentColumnLabels.status },
+      }),
+      columnHelper.display({
+        id: "actions",
+        header: RevolvingFundReplenishmentColumnLabels.actions,
+        size: RevolvingFundReplenishmentOverviewColumnWidths.actions,
+        meta: { className: "text-center", label: RevolvingFundReplenishmentColumnLabels.actions },
       }),
     ],
     [],
@@ -158,6 +194,7 @@ export function useRevolvingFundReplenishmentOverviewPage() {
   const table = useReactTable({
     data: records,
     columns,
+    initialState: { columnVisibility: RevolvingFundReplenishmentDefaultColumnVisibility },
     state: { columnVisibility, pagination, sorting },
     onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: setPagination,

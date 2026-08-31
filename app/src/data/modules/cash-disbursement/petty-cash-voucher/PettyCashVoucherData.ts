@@ -9,8 +9,6 @@ import {
   PettyCashVoucherDefaultFormStatus,
   PettyCashVoucherDefaultVATable,
   PettyCashVoucherDefaultVatType,
-  PettyCashVoucherTransactionNumberPadding,
-  PettyCashVoucherTransactionPrefix,
   PettyCashVoucherVatRate,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
 import {
@@ -40,7 +38,7 @@ export const PettyCashVoucherInitialFormValues: PettyCashVoucherFormValues = {
   responsibilityCenter: "",
   responsibilityCenterCode: "",
   status: PettyCashVoucherDefaultFormStatus,
-  transactionNo: createNextPettyCashVoucherNumber(),
+  transactionNo: "",
   vatType: PettyCashVoucherDefaultVatType,
   vatable: PettyCashVoucherDefaultVATable,
   vatRate: "0.00%",
@@ -53,13 +51,13 @@ export function createPettyCashVoucherInitialFormValues(baseCurrencyCode = "PHP"
   return {
     ...PettyCashVoucherInitialFormValues,
     currency: baseCurrencyCode,
-    transactionNo: createNextPettyCashVoucherNumber(),
+    transactionNo: "",
   };
 }
 
 export function createPettyCashVoucherFormValues(
   record?: PettyCashVoucherRecord,
-  transactionNo = createNextPettyCashVoucherNumber(),
+  transactionNo = "",
   baseCurrencyCode = "PHP",
   taxCodes: AlphanumericTaxCode[] = [],
 ): PettyCashVoucherFormValues {
@@ -115,6 +113,7 @@ export function createPettyCashVoucherRecord(
     accountCode: values.accountCode.trim(),
     accountTitle: values.accountTitle.trim(),
     amount,
+    disburseAmount: netAmount,
     createdBy: existingRecord?.createdBy ?? "Current User",
     dateCreated: existingRecord?.dateCreated ?? updatedAt,
     dateModified: updatedAt,
@@ -231,6 +230,3 @@ function formatPettyCashVoucherAmount(value: number) {
   return formatMoneyNumberDisplayValue(value.toFixed(2));
 }
 
-function createNextPettyCashVoucherNumber() {
-  return `${PettyCashVoucherTransactionPrefix}-${String(1).padStart(PettyCashVoucherTransactionNumberPadding, "0")}`;
-}

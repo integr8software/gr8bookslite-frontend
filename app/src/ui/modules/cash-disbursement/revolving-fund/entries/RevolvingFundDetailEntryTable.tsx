@@ -157,6 +157,7 @@ export function RevolvingFundDetailEntryTable({
       columns={columns}
       columnOptions={columnOptions}
       rows={page.values.items}
+      canConfigureColumnsWhenReadonly
       isDraggable={!page.isReadonly}
       isReadonly={page.isReadonly}
       onAddRows={page.addItems}

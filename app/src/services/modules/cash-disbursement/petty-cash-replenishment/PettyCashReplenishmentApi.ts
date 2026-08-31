@@ -26,6 +26,7 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
+import { calculatePettyCashReplenishmentTotals } from "@/app/src/data/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentData";
 
 export type FetchPettyCashReplenishmentListParams = {
   page?: number;
@@ -112,6 +113,7 @@ export function mapPettyCashReplenishmentRecordFromDto(dto: PettyCashReplenishme
 
   const createdUser = (dto as any).createdByUser;
   const updatedUser = (dto as any).updatedByUser;
+  const totals = calculatePettyCashReplenishmentTotals(entries);
 
   return {
     id: dto.id,
@@ -123,7 +125,8 @@ export function mapPettyCashReplenishmentRecordFromDto(dto: PettyCashReplenishme
     accountTitle: dto.accountTitleSnapshot ?? "",
     currency: dto.currencyCode,
     exchangeRate: dto.exchangeRate !== undefined && dto.exchangeRate !== null ? String(dto.exchangeRate) : "1.00",
-    amount: typeof dto.amount === "number" ? dto.amount : Number(dto.amount ?? 0),
+    amount: totals.totalAmount || (typeof dto.amount === "number" ? dto.amount : Number(dto.amount ?? 0)),
+    disburseAmount: totals.disburseAmount || Number((dto as any).disburseAmount ?? dto.amount ?? 0),
     remarks: dto.remarks ?? "",
     status: StatusFromApi[dto.status] ?? "Draft",
     createdBy: createdUser ? `${createdUser.firstName ?? ""} ${createdUser.lastName ?? ""}`.trim() : "",
@@ -135,7 +138,8 @@ export function mapPettyCashReplenishmentRecordFromDto(dto: PettyCashReplenishme
 }
 
 export function mapPettyCashReplenishmentFormValuesToCreateDto(values: PettyCashReplenishmentFormValues): CreatePettyCashReplenishmentDto {
-  const details = (values.entries ?? []).map((item, index) => ({
+  const entries = values.status === "Draft" ? (values.entries ?? []).filter(isPettyCashReplenishmentEntryPopulated) : (values.entries ?? []);
+  const details = entries.map((item, index) => ({
     lineNumber: index + 1,
     pettyCashDate: item.pettyCashDate || undefined,
     pettyCashNo: item.pettyCashNo,
@@ -156,7 +160,7 @@ export function mapPettyCashReplenishmentFormValuesToCreateDto(values: PettyCash
     responsibilityCenter: item.responsibilityCenterName,
   }));
 
-  const totalAmount = details.reduce((sum, d) => sum + (d.disburseAmount || d.amount || 0), 0);
+  const totalAmount = details.reduce((sum, d) => sum + (d.amount || 0), 0);
 
   return {
     transactionNo: values.transactionNo,
@@ -176,6 +180,17 @@ export function mapPettyCashReplenishmentFormValuesToCreateDto(values: PettyCash
     status: values.status && values.status !== "Open" ? StatusToApi[values.status as PettyCashReplenishmentStatus] : "DRAFT",
     details,
   };
+}
+
+function isPettyCashReplenishmentEntryPopulated(item: PettyCashReplenishmentEntry) {
+  return Boolean(
+    item.pettyCashNo.trim() ||
+      item.supplierCode.trim() ||
+      item.supplierName.trim() ||
+      item.particulars.trim() ||
+      item.amount.trim() ||
+      item.disburseAmount.trim(),
+  );
 }
 
 export function mapPettyCashReplenishmentFormValuesToUpdateDto(values: PettyCashReplenishmentFormValues): UpdatePettyCashReplenishmentDto {
@@ -252,6 +267,8 @@ export async function fetchPettyCashReplenishmentPartyOptions(): Promise<AppAdva
     partyId: p.partyId || p.id,
     partyCode: p.partyCode,
     partyName: p.partyName,
+    defaultPurchaseInputVatTaxSourceKey: p.defaultPurchaseInputVatTaxSourceKey ?? "",
+    defaultPurchaseEwtTaxSourceKey: p.defaultPurchaseEwtTaxSourceKey ?? "",
   }));
 }
 

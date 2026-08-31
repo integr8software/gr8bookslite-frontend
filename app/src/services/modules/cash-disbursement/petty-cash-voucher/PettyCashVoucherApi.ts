@@ -71,6 +71,8 @@ export const StatusToApi: Record<PettyCashVoucherStatus, UpdatePettyCashVoucherS
 export function mapPettyCashVoucherRecordFromDto(dto: PettyCashVoucherResponseDto): PettyCashVoucherRecord {
   const createdUser = (dto as any).createdByUser;
   const updatedUser = (dto as any).updatedByUser;
+  const grossAmount = Number((dto as any).grossAmount ?? dto.amount ?? 0);
+  const disburseAmount = Number(dto.netAmount ?? dto.amount ?? grossAmount);
 
   return {
     id: dto.id,
@@ -82,7 +84,8 @@ export function mapPettyCashVoucherRecordFromDto(dto: PettyCashVoucherResponseDt
     accountTitle: dto.accountTitleSnapshot ?? "",
     currency: dto.currencyCode,
     exchangeRate: dto.exchangeRate !== undefined && dto.exchangeRate !== null ? String(dto.exchangeRate) : "1.00",
-    amount: typeof dto.amount === "number" ? dto.amount : Number(dto.amount ?? 0),
+    amount: grossAmount,
+    disburseAmount,
     remarks: dto.remarks ?? "",
     status: StatusFromApi[dto.status] ?? "Draft",
     createdBy: createdUser ? `${createdUser.firstName ?? ""} ${createdUser.lastName ?? ""}`.trim() : "",
@@ -155,7 +158,7 @@ export async function fetchPettyCashVoucherById(id: string): Promise<PettyCashVo
 
 export async function fetchNextPettyCashVoucherNo(branchUnitId?: number): Promise<string> {
   const response: any = await pettyCashVoucherControllerSuggestVoucherNo({ branchUnitId });
-  return response?.nextVoucherNo ?? response?.voucherNo ?? "";
+  return response?.nextTransNo ?? response?.transactionNo ?? response?.nextVoucherNo ?? response?.voucherNo ?? "";
 }
 
 export async function createPettyCashVoucherApi(values: PettyCashVoucherFormValues): Promise<PettyCashVoucherRecord> {

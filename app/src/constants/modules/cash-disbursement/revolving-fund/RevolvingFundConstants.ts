@@ -27,6 +27,7 @@ export const RevolvingFundColumnLabels = {
   currency: "Currency",
   exchangeRate: "Exchange Rate",
   amount: "Total Amount",
+  disburseAmount: "Disburse Amount",
   remarks: "Remarks",
   createdBy: "Created By",
   createdAt: "Date Created",
@@ -35,7 +36,15 @@ export const RevolvingFundColumnLabels = {
   status: "Status",
   actions: "Actions",
 } as const;
-export const RevolvingFundDefaultVisibleColumnIds = ["transactionNo", "documentDate", "partyName", "amount", "status", "actions"] as const;
+export const RevolvingFundDefaultVisibleColumnIds = [
+  "transactionNo",
+  "documentDate",
+  "partyName",
+  "amount",
+  "disburseAmount",
+  "status",
+  "actions",
+] as const;
 export const RevolvingFundDefaultColumnVisibility = Object.fromEntries(
   Object.keys(RevolvingFundColumnLabels).map((columnId) => [
     columnId,

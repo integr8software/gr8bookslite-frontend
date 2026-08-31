@@ -91,6 +91,7 @@ export type PettyCashFundRecord = {
   currency?: string;
   exchangeRate?: string;
   amount: number;
+  disburseAmount: number;
   remarks: string;
   status: PettyCashFundStatus;
   createdBy: string;

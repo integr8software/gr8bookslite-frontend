@@ -51,6 +51,7 @@ import type { AppTaxRateDialogValue } from "@/app/src/ui/shared/transaction-setu
 import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
 import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
+import { hasModuleDraftChanges } from "@/app/src/hooks/shared/module/useModuleDraftChanges";
 import { normalizeLowercaseWhitespace } from "@/app/src/utils/string.util";
 import {
   createCashAdvanceApi,
@@ -90,9 +91,7 @@ export function useCashAdvanceStore<TSelected = CashAdvanceStoreState>(selector?
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ record, status }: { record: CashAdvanceRecord; status: CashAdvanceStatus }) =>
-      status === CashAdvanceStatuses.forApproval
-        ? submitCashAdvanceApprovalApi(record.id)
-        : updateCashAdvanceStatusApi(record.id, status),
+      status === CashAdvanceStatuses.forApproval ? submitCashAdvanceApprovalApi(record.id) : updateCashAdvanceStatusApi(record.id, status),
     onSuccess: (updatedRecord, { status }) => {
       queryClient.setQueryData<CashAdvanceRecord[]>(queryKey, (current = []) =>
         current.map((record) => (record.id === updatedRecord.id ? updatedRecord : record)),
@@ -132,7 +131,8 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
   const [isLoading, setIsLoading] = useState(mode !== "add" && Boolean(recordId));
   const [errors, setErrors] = useState<CashAdvanceFormErrors>({});
   const [initialValues, setInitialValues] = useState(values);
-  const isDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
+  const rawIsDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
+  const isDirty = mode === "add" ? hasModuleDraftChanges(values, initialValues, ["transNo"]) : rawIsDirty;
   const availabilityWarning = useMemo(() => getCashAdvanceAvailabilityWarning(values), [values]);
   const draft = useModuleDraft({
     enabled: mode !== "view",
@@ -146,16 +146,7 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
 
   useEffect(() => {
     if (mode === "add") {
-      fetchNextCashAdvanceTransactionNo()
-        .then((nextTransNo) => {
-          if (nextTransNo) {
-            setValues((current) => ({
-              ...current,
-              transNo: nextTransNo,
-            }));
-          }
-        })
-        .catch(() => undefined);
+      void refreshNextTransactionNo();
     }
   }, [mode]);
 
@@ -197,6 +188,11 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
     }
 
     setValues((current) => ({
+      ...current,
+      currency: transactionCurrency.baseCurrencyCode,
+      fxRate: "1.00",
+    }));
+    setInitialValues((current) => ({
       ...current,
       currency: transactionCurrency.baseCurrencyCode,
       fxRate: "1.00",
@@ -371,9 +367,50 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
     return true;
   }
 
+  async function resetAddValuesWithNextTransactionNo() {
+    const nextValues = createCashAdvanceFormValues(transactionCurrency.baseCurrencyCode);
+
+    try {
+      const nextTransNo = await fetchNextCashAdvanceTransactionNo();
+
+      if (nextTransNo) {
+        nextValues.transNo = nextTransNo;
+      }
+    } catch {
+      // Keep the blank add form if the number endpoint is temporarily unavailable.
+    }
+
+    setValues(nextValues);
+    setInitialValues(nextValues);
+  }
+
+  async function refreshNextTransactionNo() {
+    try {
+      const nextTransNo = await fetchNextCashAdvanceTransactionNo();
+
+      if (nextTransNo) {
+        setValues((current) => ({ ...current, transNo: nextTransNo }));
+        setInitialValues((current) => ({ ...current, transNo: nextTransNo }));
+      }
+    } catch {
+      // Keep the current add form if the number endpoint is temporarily unavailable.
+    }
+  }
+
+  function discardDraft() {
+    draft.clearDraft();
+
+    if (mode === "add") {
+      void resetAddValuesWithNextTransactionNo();
+      return;
+    }
+
+    draft.discardDraft();
+  }
+
   return {
     availabilityWarning,
-    discardDraft: draft.discardDraft,
+    discardDraft,
     errors,
     hasDiscardableChanges: isDirty,
     saveDraft: draft.saveDraft,

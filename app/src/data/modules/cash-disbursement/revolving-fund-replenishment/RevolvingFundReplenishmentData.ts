@@ -33,7 +33,7 @@ export function createBlankRevolvingFundReplenishmentEntry(): RevolvingFundReple
 
 export function createRevolvingFundReplenishmentFormValues(
   record?: RevolvingFundReplenishmentRecord,
-  transactionNo = "RFR-000001",
+  transactionNo = "",
   baseCurrencyCode = "PHP",
 ): RevolvingFundReplenishmentFormValues {
   if (record?.formValues) {
@@ -132,6 +132,7 @@ export function createRevolvingFundReplenishmentRecord(
     currency: values.currency,
     exchangeRate: values.exchangeRate,
     amount: calculateRevolvingFundReplenishmentTotals(values.entries).totalAmount,
+    disburseAmount: calculateRevolvingFundReplenishmentTotals(values.entries).disburseAmount,
     remarks: values.remarks,
     status,
     createdBy: existing?.createdBy ?? "Current User",

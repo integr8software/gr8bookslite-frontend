@@ -133,6 +133,7 @@ export const PettyCashVoucherColumnLabels = {
   currency: "Currency",
   exchangeRate: "Exchange Rate",
   amount: "Total Amount",
+  disburseAmount: "Disburse Amount",
   remarks: "Remarks",
   createdBy: "Created By",
   dateCreated: "Date Created",
@@ -142,7 +143,7 @@ export const PettyCashVoucherColumnLabels = {
   actions: "Actions",
 } as const;
 
-export const PettyCashVoucherDefaultVisibleColumnIds = ["voucherNo", "documentDate", "partyName", "amount", "status", "actions"] as const;
+export const PettyCashVoucherDefaultVisibleColumnIds = ["voucherNo", "documentDate", "partyName", "amount", "disburseAmount", "status", "actions"] as const;
 
 export const PettyCashVoucherDefaultColumnVisibility = Object.fromEntries(
   Object.keys(PettyCashVoucherColumnLabels).map((columnId) => [

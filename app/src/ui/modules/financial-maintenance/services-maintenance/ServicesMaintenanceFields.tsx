@@ -1,5 +1,5 @@
 import { isValidElement, useId } from "react";
-import { ServicesMaintenanceFieldClassName } from "@/app/src/constants/modules/financial-maintenance/services-maintenance/ServicesMaintenanceConstants";
+import { ServicesMaintenanceFieldClassName, ServicesMaintenanceServiceTypeOptions } from "@/app/src/constants/modules/financial-maintenance/services-maintenance/ServicesMaintenanceConstants";
 import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
 import type {
   ServicesMaintenanceFieldsProps,
@@ -9,7 +9,7 @@ import type {
 export function ServicesMaintenanceFields({ errors, isReadonly, values, onInputChange }: ServicesMaintenanceFieldsProps) {
   return (
     <div className="grid gap-4 lg:grid-cols-2">
-      <FormField label="Name" error={errors.serviceName} required className="lg:col-span-2">
+      <FormField label="Service Name" error={errors.serviceName} required className="lg:col-span-2">
         <input
           id="services-maintenance-service-name"
           name="serviceName"
@@ -19,6 +19,22 @@ export function ServicesMaintenanceFields({ errors, isReadonly, values, onInputC
           className={ServicesMaintenanceFieldClassName}
           placeholder="Enter name"
         />
+      </FormField>
+      <FormField label="Service Type" error={errors.serviceType} required className="lg:col-span-2">
+        <select
+          id="service-maintenance-service-type"
+          name="serviceType"
+          value={values.serviceType}
+          onChange={onInputChange}
+          disabled={isReadonly}
+          className={ServicesMaintenanceFieldClassName}
+        >
+          {ServicesMaintenanceServiceTypeOptions.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
       </FormField>
       <FormField label="Description" error={errors.description} className="lg:col-span-2">
         <textarea

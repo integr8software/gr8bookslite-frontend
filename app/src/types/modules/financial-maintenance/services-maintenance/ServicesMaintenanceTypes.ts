@@ -9,6 +9,7 @@ export type ServicesMaintenanceAccountSetupMode = "Auto" | "Existing";
 export type ServicesMaintenance = {
   id: string;
   serviceName: string;
+  serviceType: string;
   description: string;
   status: ServicesMaintenanceStatus;
   accountSetupMode: ServicesMaintenanceAccountSetupMode;
@@ -24,6 +25,7 @@ export type ServicesMaintenance = {
 
 export type ServicesMaintenanceFormValues = {
   serviceName: string;
+  serviceType: string;
   description: string;
   status: ServicesMaintenanceStatus;
   accountSetupMode: ServicesMaintenanceAccountSetupMode;
@@ -50,6 +52,7 @@ export type ServicesMaintenanceSetupModeFilter = "" | ServicesMaintenanceAccount
 
 export type ServicesMaintenanceTableColumnKey =
   | "serviceName"
+  | "serviceType"
   | "description"
   | "revenueAccountCode"
   | "revenueAccountTitle"
@@ -96,7 +99,7 @@ export type ServicesMaintenanceFieldsProps = {
   errors: ServicesMaintenanceFormErrors;
   isReadonly: boolean;
   values: ServicesMaintenanceFormValues;
-  onInputChange: ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>;
+  onInputChange: ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>;
 };
 
 export type ServicesMaintenanceAccountingSetupTabProps = {

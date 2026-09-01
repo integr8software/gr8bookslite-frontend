@@ -117,6 +117,7 @@ export const ServicesMaintenanceImportColumnHeaders: ServicesMaintenanceImportCo
   { className: "px-3", id: "revenueCoaId", label: "Revenue Account ID" },
 ];
 
+export const ServicesMaintenanceServiceTypeOptions = ["Purchases", "Sales"] as const;
 export const ServicesMaintenanceImportPreviewColumnCount = ServicesMaintenanceImportFieldOrder.length + 1;
 export const ServicesMaintenanceImportPreviewGridLabel = "Services maintenance import preview grid. Paste copied Excel rows here.";
 export const ServicesMaintenanceImportPreviewPageSize = 20;

@@ -19,7 +19,7 @@ export type MasterAddOnRecord = {
 
 export type MasterAddOnFormValues = {
 	id?: string;
-	code: string;
+	code?: string;
 	name: string;
 	description: string;
 	status: MasterAddOnStatus;
@@ -27,6 +27,7 @@ export type MasterAddOnFormValues = {
 	monthlyPrice: number;
 	yearlyPrice: number;
 };
+
 
 export type MasterAddOnFormErrors = Partial<
 	Record<keyof MasterAddOnFormValues, string>

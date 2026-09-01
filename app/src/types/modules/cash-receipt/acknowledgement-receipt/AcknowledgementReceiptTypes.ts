@@ -7,7 +7,7 @@ export type AcknowledgementReceiptActionTab = "details" | "attachments";
 
 export type AcknowledgementReceiptEntryView = "collection" | "accounting";
 
-export type AcknowledgementReceiptStatus = "Active" | "Approved" | "Cancelled" | "Closed" | "Disapproved" | "Draft" | "Pending";
+export type AcknowledgementReceiptStatus = "Cancelled" | "Disapproved" | "Draft" | "For Approval" | "Posted";
 
 export type AcknowledgementReceiptRecord = {
   id: string;
@@ -29,10 +29,17 @@ export type AcknowledgementReceiptLineEntry = {
   collectionType: string;
   customerName: string;
   partyCode: string;
+  partyName: string;
   bankName: string;
   checkNo: string;
   checkDate: string;
   grossReceipt: string;
+  vatType: string;
+  vatPercent: string;
+  cwtCode: string;
+  cwtPercent: string;
+  particulars: string;
+  responsibilityCenter: string;
   vatExempt: string;
   vat: string;
   ewt: string;
@@ -48,6 +55,7 @@ export type AcknowledgementReceiptFormValues = {
   customerName: string;
   partyCode: string;
   paymentType: string;
+  paymentId: string;
   bankName: string;
   checkNo: string;
   checkDate: string;
@@ -82,6 +90,12 @@ export type AcknowledgementReceiptCopyFromRecord = AppCopyFromRecord & {
   vatExempt?: string;
   vat?: string;
   ewt?: string;
+  vatType?: string;
+  vatPercent?: string;
+  cwtCode?: string;
+  cwtPercent?: string;
+  particulars?: string;
+  responsibilityCenter?: string;
   debit?: string;
   credit?: string;
   accountCode?: string;

@@ -9,9 +9,7 @@ export type AcknowledgementReceiptValidationResult = {
   isValid: boolean;
 };
 
-export function validateAcknowledgementReceiptForm(
-  values: AcknowledgementReceiptFormValues,
-): AcknowledgementReceiptValidationResult {
+export function validateAcknowledgementReceiptForm(values: AcknowledgementReceiptFormValues): AcknowledgementReceiptValidationResult {
   if (!values.paymentType.trim()) {
     return { isValid: false, message: "Select a payment type." };
   }
@@ -38,12 +36,6 @@ export function validateAcknowledgementReceiptForm(
   return { isValid: true };
 }
 
-function acknowledgementReceiptEntryHasPostableAmount(
-  entry: AcknowledgementReceiptLineEntry,
-) {
-  return (
-    parseMoneyNumberInput(entry.grossReceipt) > 0 ||
-    parseMoneyNumberInput(entry.debit) > 0 ||
-    parseMoneyNumberInput(entry.credit) > 0
-  );
+function acknowledgementReceiptEntryHasPostableAmount(entry: AcknowledgementReceiptLineEntry) {
+  return parseMoneyNumberInput(entry.grossReceipt) > 0 || parseMoneyNumberInput(entry.debit) > 0 || parseMoneyNumberInput(entry.credit) > 0;
 }

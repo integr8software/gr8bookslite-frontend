@@ -9879,30 +9879,28 @@ export interface AcknowledgementReceiptDetailResponseDto {
   lineNumber: number;
   description: string;
   /** @nullable */
+  partyCode?: string | null;
+  /** @nullable */
+  partyName?: string | null;
+  /** @nullable */
   particulars?: string | null;
-  quantity: number;
-  amount: number;
-  netAmount: number;
-  vatAmount: number;
-  wvatAmount: number;
-  ewtAmount: number;
-  discountPercent: number;
-  discountAmount: number;
-  grossAmount: number;
   /** @nullable */
-  vatType?: string | null;
-  vatable: boolean;
-  vatInclusive: boolean;
-  withWvat: boolean;
-  /** @nullable */
-  wvatType?: string | null;
-  withEwt: boolean;
-  /** @nullable */
-  ewtType?: string | null;
+  referenceNo?: string | null;
   /** @nullable */
   responsibilityCenterId?: string | null;
   /** @nullable */
   responsibilityCenter?: string | null;
+  /** @nullable */
+  vatType?: string | null;
+  vatPercent: number;
+  /** @nullable */
+  cwtCode?: string | null;
+  cwtPercent: number;
+  netAmount: number;
+  vatAmount: number;
+  ewtAmount: number;
+  grossAmount: number;
+  totalReceived: number;
 }
 
 export interface AcknowledgementReceiptJournalEntryResponseDto {
@@ -9962,23 +9960,9 @@ export interface AcknowledgementReceiptResponseDto {
   /** @nullable */
   billToName?: string | null;
   /** @nullable */
-  address?: string | null;
+  paymentId?: string | null;
   /** @nullable */
-  contactPerson?: string | null;
-  /** @nullable */
-  contactNo?: string | null;
-  /** @nullable */
-  businessStyle?: string | null;
-  /** @nullable */
-  projectCode?: string | null;
-  /** @nullable */
-  projectName?: string | null;
-  /** @nullable */
-  projectRef?: string | null;
-  /** @nullable */
-  salesAssociate?: string | null;
-  /** @nullable */
-  teamAssigned?: string | null;
+  paymentType?: string | null;
   currency: string;
   exchangeRate: number;
   netAmount: number;
@@ -9987,10 +9971,6 @@ export interface AcknowledgementReceiptResponseDto {
   ewtAmount: number;
   discountAmount: number;
   grossAmount: number;
-  /** @nullable */
-  termId?: string | null;
-  /** @nullable */
-  terms?: string | null;
   receivableAccountId: string;
   receivableAccountCode: string;
   receivableAccountTitle: string;
@@ -10055,43 +10035,51 @@ export interface AcknowledgementReceiptContainerResponseDto {
 export interface AcknowledgementReceiptDetailDto {
   /** @minimum 1 */
   lineNumber: number;
-  /** @maxLength 250 */
+  /**
+     * Collection Type selected in the item row.
+     * @maxLength 250
+     */
   description: string;
   /**
      * @maxLength 500
      * @nullable
      */
   particulars?: string | null;
-  /** @minimum 0 */
-  quantity: number;
-  amount: number;
-  netAmount: number;
-  vatAmount: number;
-  wvatAmount: number;
-  ewtAmount: number;
-  /** @minimum 0 */
-  discountPercent: number;
-  discountAmount: number;
-  grossAmount: number;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  partyCode?: string | null;
+  /**
+     * @maxLength 255
+     * @nullable
+     */
+  partyName?: string | null;
+  /**
+     * @maxLength 120
+     * @nullable
+     */
+  referenceNo?: string | null;
   /**
      * @maxLength 80
      * @nullable
      */
   vatType?: string | null;
-  vatable: boolean;
-  vatInclusive: boolean;
-  withWvat: boolean;
+  /** @minimum 0 */
+  vatPercent: number;
   /**
      * @maxLength 80
      * @nullable
      */
-  wvatType?: string | null;
-  withEwt: boolean;
-  /**
-     * @maxLength 80
-     * @nullable
-     */
-  ewtType?: string | null;
+  cwtCode?: string | null;
+  /** @minimum 0 */
+  cwtPercent: number;
+  netAmount: number;
+  vatAmount: number;
+  /** CWT Amount for the collection item. */
+  ewtAmount: number;
+  grossAmount: number;
+  totalReceived: number;
   /**
      * @maxLength 40
      * @nullable
@@ -10175,6 +10163,11 @@ export interface AcknowledgementReceiptJournalEntryDto {
 }
 
 export interface CreateAcknowledgementReceiptDto {
+  /**
+     * @maxLength 40
+     * @nullable
+     */
+  paymentId?: string | null;
   /** @minimum 1 */
   branchUnitId?: number;
   /**
@@ -10208,51 +10201,6 @@ export interface CreateAcknowledgementReceiptDto {
      * @nullable
      */
   billToName?: string | null;
-  /**
-     * @maxLength 500
-     * @nullable
-     */
-  address?: string | null;
-  /**
-     * @maxLength 255
-     * @nullable
-     */
-  contactPerson?: string | null;
-  /**
-     * @maxLength 40
-     * @nullable
-     */
-  contactNo?: string | null;
-  /**
-     * @maxLength 120
-     * @nullable
-     */
-  businessStyle?: string | null;
-  /**
-     * @maxLength 80
-     * @nullable
-     */
-  projectCode?: string | null;
-  /**
-     * @maxLength 255
-     * @nullable
-     */
-  projectName?: string | null;
-  /**
-     * @maxLength 120
-     * @nullable
-     */
-  projectRef?: string | null;
-  /**
-     * @maxLength 150
-     * @nullable
-     */
-  salesAssociate?: string | null;
-  /**
-     * @maxLength 150
-     * @nullable
-     */
-  teamAssigned?: string | null;
   /** @maxLength 10 */
   currency: string;
   /** @minimum 0.000001 */
@@ -10263,16 +10211,6 @@ export interface CreateAcknowledgementReceiptDto {
   ewtAmount: number;
   discountAmount: number;
   grossAmount: number;
-  /**
-     * @maxLength 40
-     * @nullable
-     */
-  termId?: string | null;
-  /**
-     * @maxLength 150
-     * @nullable
-     */
-  terms?: string | null;
   /**
      * @maxLength 40
      * @nullable
@@ -10300,6 +10238,11 @@ export interface SaveAcknowledgementReceiptResponseDto {
 }
 
 export interface UpdateAcknowledgementReceiptDto {
+  /**
+     * @maxLength 40
+     * @nullable
+     */
+  paymentId?: string | null;
   /** @minimum 1 */
   branchUnitId?: number;
   /**
@@ -10333,51 +10276,6 @@ export interface UpdateAcknowledgementReceiptDto {
      * @nullable
      */
   billToName?: string | null;
-  /**
-     * @maxLength 500
-     * @nullable
-     */
-  address?: string | null;
-  /**
-     * @maxLength 255
-     * @nullable
-     */
-  contactPerson?: string | null;
-  /**
-     * @maxLength 40
-     * @nullable
-     */
-  contactNo?: string | null;
-  /**
-     * @maxLength 120
-     * @nullable
-     */
-  businessStyle?: string | null;
-  /**
-     * @maxLength 80
-     * @nullable
-     */
-  projectCode?: string | null;
-  /**
-     * @maxLength 255
-     * @nullable
-     */
-  projectName?: string | null;
-  /**
-     * @maxLength 120
-     * @nullable
-     */
-  projectRef?: string | null;
-  /**
-     * @maxLength 150
-     * @nullable
-     */
-  salesAssociate?: string | null;
-  /**
-     * @maxLength 150
-     * @nullable
-     */
-  teamAssigned?: string | null;
   /** @maxLength 10 */
   currency?: string;
   /** @minimum 0.000001 */
@@ -10388,16 +10286,6 @@ export interface UpdateAcknowledgementReceiptDto {
   ewtAmount?: number;
   discountAmount?: number;
   grossAmount?: number;
-  /**
-     * @maxLength 40
-     * @nullable
-     */
-  termId?: string | null;
-  /**
-     * @maxLength 150
-     * @nullable
-     */
-  terms?: string | null;
   /**
      * @maxLength 40
      * @nullable

@@ -13,6 +13,7 @@ type AcknowledgementReceiptDetailsFormProps = {
   isReadonly: boolean;
   partyOptions: AppAdvancedDropdownOption[];
   paymentTypeOptions: AppAdvancedDropdownOption[];
+  receiptCodeLabel?: string;
   values: AcknowledgementReceiptFormValues;
   onOpenPartyDrawer: () => void;
   onOpenPaymentTypeDialog: () => void;
@@ -26,8 +27,11 @@ export function AcknowledgementReceiptDetailsForm({
   onUpdateField,
   partyOptions,
   paymentTypeOptions,
+  receiptCodeLabel = "AR",
   values,
 }: AcknowledgementReceiptDetailsFormProps) {
+  const selectedPaymentTypeId = values.paymentId || paymentTypeOptions.find((option) => option.name === values.paymentType)?.value || "";
+
   return (
     <section className="min-w-0 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
       <div className="grid min-w-0 gap-x-8 gap-y-5 xl:grid-cols-2">
@@ -49,13 +53,19 @@ export function AcknowledgementReceiptDetailsForm({
           <FieldShell controlId="acknowledgement-receipt-payment-type" label="Payment Type" isRequired>
             <AppAdvancedDropdown
               id="acknowledgement-receipt-payment-type"
-              value={values.paymentType}
+              value={selectedPaymentTypeId}
               readOnly={isReadonly}
               options={paymentTypeOptions}
               placeholder="Select payment type"
               searchPlaceholder="Search payment type"
               addAction={!isReadonly ? { label: "Add Payment Type", onClick: onOpenPaymentTypeDialog } : undefined}
-              onChange={(value) => onUpdateField("paymentType", String(value))}
+              onChange={(value) => {
+                const paymentId = String(value);
+                const selectedOption = paymentTypeOptions.find((option) => option.value === paymentId);
+
+                onUpdateField("paymentId", paymentId);
+                onUpdateField("paymentType", selectedOption?.name ?? paymentId);
+              }}
             />
           </FieldShell>
           {isCheckPaymentType(values.paymentType) ? (
@@ -131,14 +141,9 @@ export function AcknowledgementReceiptDetailsForm({
 
         <div className="grid min-w-0 content-start gap-4">
           <FieldShell controlId="acknowledgement-receipt-party-code" label="Party Code">
-            <input
-              id="acknowledgement-receipt-party-code"
-              value={values.partyCode}
-              readOnly
-              className={FieldClassName}
-            />
+            <input id="acknowledgement-receipt-party-code" value={values.partyCode} readOnly className={FieldClassName} />
           </FieldShell>
-          <FieldShell controlId="acknowledgement-receipt-transaction-no" label="AR No." isRequired>
+          <FieldShell controlId="acknowledgement-receipt-transaction-no" label={`${receiptCodeLabel} No.`} isRequired>
             <input
               id="acknowledgement-receipt-transaction-no"
               value={values.receiptNo}
@@ -147,7 +152,7 @@ export function AcknowledgementReceiptDetailsForm({
               className={FieldClassName}
             />
           </FieldShell>
-          <FieldShell controlId="acknowledgement-receipt-document-date" label="AR Date" isRequired>
+          <FieldShell controlId="acknowledgement-receipt-document-date" label={`${receiptCodeLabel} Date`} isRequired>
             <input
               id="acknowledgement-receipt-document-date"
               type="date"

@@ -20,9 +20,12 @@ import type {
 import type {
 	WorkspaceCompanyBranchRecord,
 } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
+import { BillingNoticeDialog } from "@/app/src/ui/shared/app/BillingNoticeDialog";
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { BranchDetailsFields } from "@/app/src/ui/modules/system-administration/branch-management/BranchDetailsFields";
+
+
 
 export function CompanyBranchManagementPanel({
 	cachedBranches,
@@ -92,9 +95,23 @@ export function CompanyBranchManagementPanel({
 					/>
 				</form>
 			</ModuleDrawer>
+			<BillingNoticeDialog
+				isOpen={branchManagement.isSaveBranchConfirmOpen}
+				isPending={branchManagement.isCreatingBranch}
+				targetType={
+					branchManagement.branchValues.classification === "satellite"
+						? "satellite"
+						: "branch"
+				}
+				targetName={branchManagement.branchValues.name}
+				onCancel={() => branchManagement.setIsSaveBranchConfirmOpen(false)}
+				onConfirm={branchManagement.handleConfirmCreateBranch}
+			/>
 		</>
 	);
 }
+
+
 
 function BranchSummaryCard({
 	branchCount,

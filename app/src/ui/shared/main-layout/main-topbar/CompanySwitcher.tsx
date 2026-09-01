@@ -3,7 +3,7 @@ import { Building2, ChevronDown, LayoutDashboard } from "lucide-react";
 import type {
 	MainCompany,
 	MainNavigationScope,
-} from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+} from "@/app/src/types/shared/main-layout/MainLayoutDomainTypes";
 import { ImageSwatch } from "./ImageSwatch";
 import { MenuSeparator } from "./MenuPrimitives";
 import { SwitcherButton } from "./SwitcherButton";
@@ -166,26 +166,35 @@ export function CompanySwitcher({
 							</>
 						) : null}
 
-						{availableCompanies.map((company) => (
-							<SwitcherButton
-								key={company.id}
-								description={getCompanySwitcherDescription(
-									company,
-								)}
-								icon={Building2}
-								imageUrl={company.logoUrl}
-								isActive={
-									!isAdministrationActive &&
-									company.id === currentCompany.id
-								}
-								label={company.name}
-								status={company.status}
-								onClick={() => {
-									onSelectCompany(company.id);
-									onClose();
-								}}
-							/>
-						))}
+						{availableCompanies.map((company) => {
+							const isUnswitchable = company.isSwitchable === false;
+
+							return (
+								<SwitcherButton
+									key={company.id}
+									description={getCompanySwitcherDescription(
+										company,
+									)}
+									disabled={isUnswitchable}
+									icon={Building2}
+									imageUrl={company.logoUrl}
+									isActive={
+										!isAdministrationActive &&
+										company.id === currentCompany.id
+									}
+									label={company.name}
+									status={company.status}
+									onClick={() => {
+										if (isUnswitchable) {
+											return;
+										}
+										onSelectCompany(company.id);
+										onClose();
+									}}
+								/>
+							);
+						})}
+
 					</div>
 				</div>
 			) : null}

@@ -361,18 +361,43 @@ const WorkspaceCompanyBillingSchema = z
 const WorkspaceCompanyUserSchema = z.object({
 	companyAssignments: z
 		.array(
-			z.object({
-				branchIds: z
-					.array(z.string())
-					.min(1, "Select at least one head office, branch, or satellite for each company."),
-				companyId: z.string().trim().min(1),
-			}),
+			z
+				.object({
+					branchIds: z
+						.array(z.string())
+						.min(
+							1,
+							"Select at least one head office, branch, or satellite for each company.",
+						),
+					branchRoles: z.record(z.string(), z.string()).optional(),
+					companyId: z.string().trim().min(1),
+					companyRoleId: z.string().trim().nullable().optional(),
+				})
+				.refine(
+					(data) => {
+						for (const branchId of data.branchIds) {
+							const role =
+								data.branchRoles?.[branchId] ||
+								data.companyRoleId;
+							if (!role || !role.trim()) {
+								return false;
+							}
+						}
+						return true;
+					},
+					{
+						message:
+							"Select a role for each selected branch.",
+						path: ["branchRoles"],
+					},
+				),
 		)
 		.min(1, "Add at least one company."),
 	contactNumber: z.string().trim(),
 	email: EmailSchema,
 	name: z.string().trim().min(1, "Name is required."),
 });
+
 
 export function validateWorkspaceCompanyForm(
 	values: WorkspaceCompanyFormValues,
@@ -418,7 +443,10 @@ export function validateWorkspaceCompanyUserForm(
 		const field = issue.path[issue.path.length - 1];
 
 		if (
-			(field === "companyAssignments" || field === "branchIds") &&
+			(field === "companyAssignments" ||
+				field === "branchIds" ||
+				field === "branchRoles" ||
+				field === "companyRoleId") &&
 			!errors.companyAssignments
 		) {
 			errors.companyAssignments = issue.message;
@@ -431,6 +459,7 @@ export function validateWorkspaceCompanyUserForm(
 
 	return errors;
 }
+
 
 function mapCompanyIssues(
 	issues: z.ZodIssue[],

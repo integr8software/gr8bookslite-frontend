@@ -7,7 +7,7 @@ import type {
   MainSearchItem,
   MainSubscriptionOption,
   MainUserAccessContext,
-} from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+} from "@/app/src/types/shared/main-layout/MainLayoutDomainTypes";
 
 export function hasAccess(
   accessContext: MainUserAccessContext,

@@ -2,7 +2,7 @@ import type {
   MainDashboardWidget,
   MainNotification,
   MainSubscriptionOption,
-} from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+} from "@/app/src/types/shared/main-layout/MainLayoutDomainTypes";
 
 export const MainLayoutSubscriptionPlans: MainSubscriptionOption[] = [
   {

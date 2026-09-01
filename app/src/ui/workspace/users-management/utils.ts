@@ -1,4 +1,7 @@
-import { UserListHref } from "@/app/src/constants/modules/user-management/UserManagementConstants";
+import {
+	UserListHref,
+	UserRoleHref,
+} from "@/app/src/constants/modules/user-management/UserManagementConstants";
 import {
 	getBranchDisplayLabel,
 } from "@/app/src/data/shared/branch/BranchDisplayData";
@@ -31,6 +34,30 @@ export function getBranchScopedUsersHref({
 	return `${UserListHref}?${params.toString()}`;
 }
 
+export function getBranchScopedRolesHref({
+	branch,
+	company,
+	companyId,
+}: {
+	branch?: WorkspaceCompanyBranchRecord;
+	company?: WorkspaceCompanyRecord;
+	companyId: string;
+}) {
+	const params = new URLSearchParams({
+		...(branch
+			? {
+					[BranchUsersContextParam]: branch.id,
+					[BranchUsersNameParam]: getBranchDisplayName(branch),
+				}
+			: {}),
+		[CompanyUsersContextParam]: company?.id ?? companyId,
+		[CompanyUsersNameParam]: company?.name ?? "Company",
+	});
+
+	return `${UserRoleHref}?${params.toString()}`;
+}
+
 export function getBranchDisplayName(branch: WorkspaceCompanyBranchRecord) {
 	return getBranchDisplayLabel(branch);
 }
+

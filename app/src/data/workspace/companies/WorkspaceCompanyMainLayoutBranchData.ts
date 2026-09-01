@@ -1,6 +1,6 @@
 import type {
 	MainBranch,
-} from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+} from "@/app/src/types/shared/main-layout/MainLayoutDomainTypes";
 import type {
 	WorkspaceCompanyBranchRecord,
 } from "@/app/src/types/workspace/WorkspaceCompanyTypes";

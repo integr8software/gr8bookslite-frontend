@@ -1,7 +1,7 @@
 import type { ChangeEvent, ReactNode } from "react";
 import { Building2, GitBranch, type LucideIcon } from "lucide-react";
 import { DefaultPhilippineContactNumber, PhilippineContactNumberPlaceholder } from "@/app/src/data/shared/contact/ContactData";
-import type { MainBranch } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+import type { MainBranch } from "@/app/src/types/shared/main-layout/MainLayoutDomainTypes";
 import type {
   BranchManagementClassification,
   BranchManagementFormValues,

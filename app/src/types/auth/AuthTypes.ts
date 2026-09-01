@@ -180,6 +180,7 @@ export type AuthProfile = {
     companyId: number;
     companyName: string;
     companyStatus?: string;
+    subscriptionStatus?: string | null;
     isCompanyActive?: boolean;
     countryCode?: string;
     baseCurrencyCode?: string;

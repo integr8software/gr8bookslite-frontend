@@ -8,64 +8,6 @@ import type {
   AcknowledgementReceiptTotals,
 } from "@/app/src/types/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptTypes";
 
-export const MockAcknowledgementReceipts: AcknowledgementReceiptRecord[] = [
-  {
-    id: "ar-001",
-    receiptNo: "AR-2026-0001",
-    receiptDate: "2026-07-03",
-    customerName: "Aster Foods Corporation",
-    partyCode: "PTY-0001",
-    collectionType: "Customer payment",
-    referenceNo: "SI-2026-0188",
-    amount: 184500,
-    status: "Approved",
-  },
-  {
-    id: "ar-002",
-    receiptNo: "AR-2026-0002",
-    receiptDate: "2026-07-04",
-    customerName: "Northline Retail Group",
-    partyCode: "PTY-0002",
-    collectionType: "Service income",
-    referenceNo: "SOA-2026-0042",
-    amount: 76250,
-    status: "Pending",
-  },
-  {
-    id: "ar-003",
-    receiptNo: "AR-2026-0003",
-    receiptDate: "2026-07-05",
-    customerName: "Bluecrest Trading",
-    partyCode: "PTY-0003",
-    collectionType: "Advance deposit",
-    referenceNo: "DEP-2026-0015",
-    amount: 52000,
-    status: "Active",
-  },
-  {
-    id: "ar-004",
-    receiptNo: "AR-2026-0004",
-    receiptDate: "2026-07-06",
-    customerName: "Mendoza and Lee Partners",
-    partyCode: "PTY-0004",
-    collectionType: "Rental collection",
-    referenceNo: "LS-2026-0091",
-    amount: 128900,
-    status: "Draft",
-  },
-  {
-    id: "ar-005",
-    receiptNo: "AR-2026-0005",
-    receiptDate: "2026-07-07",
-    customerName: "Harborview Logistics",
-    partyCode: "PTY-0005",
-    collectionType: "Customer payment",
-    referenceNo: "SI-2026-0204",
-    amount: 214300,
-    status: "Closed",
-  },
-];
-
 export const AcknowledgementReceiptStorageKey = "gr8books.acknowledgement-receipt.receipts";
 
 export const AcknowledgementReceiptPaymentTypeOptions = [
@@ -75,13 +17,6 @@ export const AcknowledgementReceiptPaymentTypeOptions = [
   { name: "Online transfer", value: "Online transfer" },
 ];
 
-export const AcknowledgementReceiptPartyOptions = [
-  { name: "Aster Foods Corporation", value: "Aster Foods Corporation" },
-  { name: "Northline Retail Group", value: "Northline Retail Group" },
-  { name: "Bluecrest Trading", value: "Bluecrest Trading" },
-  { name: "Harborview Logistics", value: "Harborview Logistics" },
-];
-
 export const AcknowledgementReceiptCurrencyOptions = [
   { name: "PHP", value: "PHP" },
   { name: "USD", value: "USD" },
@@ -89,118 +24,25 @@ export const AcknowledgementReceiptCurrencyOptions = [
 
 export const AcknowledgementReceiptCollectionTypeOptions = [
   { name: "Customer payment", value: "Customer payment" },
+  { name: "Service Revenue", value: "Service Revenue" },
   { name: "Service income", value: "Service income" },
   { name: "Advance deposit", value: "Advance deposit" },
   { name: "Rental collection", value: "Rental collection" },
 ];
 
-export const AcknowledgementReceiptCopyFromRecords: AcknowledgementReceiptCopyFromRecord[] = [
-  {
-    amount: "184,500.00",
-    collectionType: "Customer payment",
-    customerName: "Aster Foods Corporation",
-    debit: "184,500.00",
-    credit: "184,500.00",
-    documentDate: "2026-07-08",
-    grossReceipt: "184,500.0000",
-    id: "si-2026-0211",
-    partyCode: "PTY-0001",
-    partyName: "Aster Foods Corporation",
-    remarks: "Payment for Sales Invoice SI-2026-0211",
-    source: "Sales invoice",
-    sourceNo: "SI-2026-0211",
-  },
-  {
-    amount: "92,400.00",
-    collectionType: "Customer payment",
-    customerName: "Aster Foods Corporation",
-    debit: "92,400.00",
-    credit: "92,400.00",
-    documentDate: "2026-07-09",
-    grossReceipt: "92,400.0000",
-    id: "si-2026-0212",
-    partyCode: "PTY-0001",
-    partyName: "Aster Foods Corporation",
-    remarks: "Payment for Sales Invoice SI-2026-0212",
-    source: "Sales invoice",
-    sourceNo: "SI-2026-0212",
-  },
-  {
-    amount: "76,250.00",
-    collectionType: "Service income",
-    customerName: "Northline Retail Group",
-    debit: "76,250.00",
-    credit: "76,250.00",
-    documentDate: "2026-07-04",
-    grossReceipt: "76,250.0000",
-    id: "soa-2026-0042",
-    partyCode: "PTY-0002",
-    partyName: "Northline Retail Group",
-    remarks: "Settlement for Statement of Account SOA-2026-0042",
-    source: "Statement of account",
-    sourceNo: "SOA-2026-0042",
-  },
-  {
-    amount: "48,800.00",
-    collectionType: "Customer payment",
-    customerName: "Bluecrest Trading",
-    debit: "48,800.00",
-    credit: "48,800.00",
-    documentDate: "2026-07-06",
-    grossReceipt: "48,800.0000",
-    id: "soa-2026-0043",
-    partyCode: "PTY-0003",
-    partyName: "Bluecrest Trading",
-    remarks: "Settlement for Statement of Account SOA-2026-0043",
-    source: "Statement of account",
-    sourceNo: "SOA-2026-0043",
-  },
-  {
-    amount: "135,000.00",
-    collectionType: "Service income",
-    customerName: "Harborview Logistics",
-    debit: "135,000.00",
-    credit: "135,000.00",
-    documentDate: "2026-07-10",
-    grossReceipt: "135,000.0000",
-    id: "bs-2026-0010",
-    partyCode: "PTY-0005",
-    partyName: "Harborview Logistics",
-    remarks: "Collection for Billing Statement BS-2026-0010",
-    source: "Billing statement",
-    sourceNo: "BS-2026-0010",
-  },
-  {
-    amount: "64,300.00",
-    collectionType: "Customer payment",
-    customerName: "Mendoza and Lee Partners",
-    debit: "64,300.00",
-    credit: "64,300.00",
-    documentDate: "2026-07-11",
-    grossReceipt: "64,300.0000",
-    id: "bi-2026-0035",
-    partyCode: "PTY-0004",
-    partyName: "Mendoza and Lee Partners",
-    remarks: "Collection for Billing Invoice BI-2026-0035",
-    source: "Billing invoice",
-    sourceNo: "BI-2026-0035",
-  },
-  {
-    amount: "52,000.00",
-    collectionType: "Advance deposit",
-    customerName: "Bluecrest Trading",
-    debit: "52,000.00",
-    credit: "52,000.00",
-    documentDate: "2026-07-12",
-    grossReceipt: "52,000.0000",
-    id: "ord-2026-0101",
-    partyCode: "PTY-0003",
-    partyName: "Bluecrest Trading",
-    remarks: "Downpayment for Order ORD-2026-0101",
-    source: "Customer Order",
-    sourceNo: "ORD-2026-0101",
-  },
+export const AcknowledgementReceiptVatTypeOptions = [
+  { name: "Output VAT (12%)", value: "Output VAT (12%)" },
+  { name: "VAT Exempt", value: "VAT Exempt" },
+  { name: "Zero Rated", value: "Zero Rated" },
 ];
+
+export const AcknowledgementReceiptCwtCodeOptions = [
+  { name: "WC 160", value: "WC 160" },
+  { name: "WC 157", value: "WC 157" },
+  { name: "WC 100", value: "WC 100" },
+];
+
+export const AcknowledgementReceiptCopyFromRecords: AcknowledgementReceiptCopyFromRecord[] = [];
 
 export const AcknowledgementReceiptCopySources = [
   "Sales invoice",
@@ -221,27 +63,35 @@ export function applyCopyFromRecordToAcknowledgementReceiptForm(
   const formattedAmount = numAmount > 0 ? numAmount.toFixed(2) : "0.00";
   const formattedGross = numAmount > 0 ? numAmount.toFixed(4) : "0.0000";
 
-  const lineEntries: AcknowledgementReceiptLineEntry[] = record.lineEntries && record.lineEntries.length > 0
-    ? record.lineEntries.map((entry) => ({ ...entry }))
-    : [
-        createBlankAcknowledgementReceiptLineEntry({
-          accountCode: record.accountCode || "1010",
-          accountTitle: record.accountTitle || "Cash in Bank",
-          collectionType: record.collectionType || "Customer payment",
-          bankName: record.bankName || "",
-          checkNo: record.checkNo || "",
-          checkDate: record.checkDate || "",
-          credit: record.credit || formattedAmount,
-          customerName: partyName,
-          debit: record.debit || formattedAmount,
-          grossReceipt: record.grossReceipt || formattedGross,
-          partyCode,
-          referenceNo: record.sourceNo,
-          vat: record.vat || "0.0000",
-          vatExempt: record.vatExempt || "0.0000",
-          ewt: record.ewt || "0.0000",
-        }),
-      ];
+  const lineEntries: AcknowledgementReceiptLineEntry[] =
+    record.lineEntries && record.lineEntries.length > 0
+      ? record.lineEntries.map((entry) => ({ ...entry }))
+      : [
+          createBlankAcknowledgementReceiptLineEntry({
+            accountCode: record.accountCode || "1010",
+            accountTitle: record.accountTitle || "Cash in Bank",
+            collectionType: record.collectionType || "Customer payment",
+            bankName: record.bankName || "",
+            checkNo: record.checkNo || "",
+            checkDate: record.checkDate || "",
+            credit: record.credit || formattedAmount,
+            customerName: partyName,
+            debit: record.debit || formattedAmount,
+            grossReceipt: record.grossReceipt || formattedGross,
+            partyCode,
+            partyName,
+            referenceNo: record.sourceNo,
+            vatType: record.vatType || "Output VAT (12%)",
+            vatPercent: record.vatPercent || "12.00",
+            cwtCode: record.cwtCode || "WC 160",
+            cwtPercent: record.cwtPercent || "2.00",
+            particulars: record.particulars || record.remarks || "",
+            responsibilityCenter: record.responsibilityCenter || "",
+            vat: record.vat || "0.0000",
+            vatExempt: record.vatExempt || "0.0000",
+            ewt: record.ewt || "0.0000",
+          }),
+        ];
 
   return {
     ...currentValues,
@@ -251,6 +101,7 @@ export function applyCopyFromRecordToAcknowledgementReceiptForm(
     customerName: partyName,
     partyCode,
     paymentType: record.paymentType || currentValues.paymentType,
+    paymentId: currentValues.paymentId,
     currency: record.currency || currentValues.currency,
     exchangeRate: record.exchangeRate || currentValues.exchangeRate,
     referenceNo: record.sourceNo,
@@ -279,9 +130,7 @@ export function applyCopyFromRecordsToAcknowledgementReceiptForm(
   const partyName = firstRecord.partyName || firstRecord.customerName || currentValues.customerName;
   const partyCode = firstRecord.partyCode || currentValues.partyCode;
   const combinedRefNo = records.map((record) => record.sourceNo).join(", ");
-  const combinedRemarks = records
-    .map((record) => record.remarks || `Copied from ${record.source} ${record.sourceNo}`)
-    .join("\n");
+  const combinedRemarks = records.map((record) => record.remarks || `Copied from ${record.source} ${record.sourceNo}`).join("\n");
 
   const lineEntries: AcknowledgementReceiptLineEntry[] = records.flatMap((record, index) => {
     if (record.lineEntries && record.lineEntries.length > 0) {
@@ -311,7 +160,14 @@ export function applyCopyFromRecordsToAcknowledgementReceiptForm(
         debit: record.debit || formattedAmount,
         grossReceipt: record.grossReceipt || formattedGross,
         partyCode: record.partyCode || partyCode,
+        partyName: record.partyName || record.customerName || partyName,
         referenceNo: record.sourceNo,
+        vatType: record.vatType || "Output VAT (12%)",
+        vatPercent: record.vatPercent || "12.00",
+        cwtCode: record.cwtCode || "WC 160",
+        cwtPercent: record.cwtPercent || "2.00",
+        particulars: record.particulars || record.remarks || "",
+        responsibilityCenter: record.responsibilityCenter || "",
         vat: record.vat || "0.0000",
         vatExempt: record.vatExempt || "0.0000",
         ewt: record.ewt || "0.0000",
@@ -327,6 +183,7 @@ export function applyCopyFromRecordsToAcknowledgementReceiptForm(
     customerName: partyName,
     partyCode,
     paymentType: firstRecord.paymentType || currentValues.paymentType,
+    paymentId: currentValues.paymentId,
     currency: firstRecord.currency || currentValues.currency,
     exchangeRate: firstRecord.exchangeRate || currentValues.exchangeRate,
     referenceNo: combinedRefNo,
@@ -339,7 +196,7 @@ export function createBlankAcknowledgementReceiptLineEntry(
   overrides: Partial<AcknowledgementReceiptLineEntry> = {},
 ): AcknowledgementReceiptLineEntry {
   return {
-    id: `ar-line-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    id: `cr-line-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     accountCode: "",
     accountTitle: "",
     collectionType: "",
@@ -349,6 +206,13 @@ export function createBlankAcknowledgementReceiptLineEntry(
     checkNo: "",
     checkDate: "",
     grossReceipt: "0.0000",
+    vatType: "Output VAT (12%)",
+    vatPercent: "12.00",
+    cwtCode: "WC 160",
+    cwtPercent: "2.00",
+    partyName: "",
+    particulars: "",
+    responsibilityCenter: "",
     vatExempt: "0.0000",
     vat: "0.0000",
     ewt: "0.0000",
@@ -361,12 +225,13 @@ export function createBlankAcknowledgementReceiptLineEntry(
 
 export function createAcknowledgementReceiptFormValues(): AcknowledgementReceiptFormValues {
   return {
-    receiptNo: "AR-2026-0006",
-    receiptDate: "2026-07-08",
+    receiptNo: "",
+    receiptDate: new Date().toLocaleDateString("en-CA"),
     referenceNo: "",
     customerName: "",
     partyCode: "",
     paymentType: "",
+    paymentId: "",
     bankName: "",
     checkNo: "",
     checkDate: "",
@@ -377,7 +242,7 @@ export function createAcknowledgementReceiptFormValues(): AcknowledgementReceipt
     attachments: [],
     lineEntries: [
       createBlankAcknowledgementReceiptLineEntry({
-        accountCode: "1010",
+        accountCode: "1010103001",
         accountTitle: "Cash in Bank",
       }),
     ],
@@ -399,6 +264,13 @@ export function createAcknowledgementReceiptFormValuesFromRecord(record: Acknowl
         bankName: entry.bankName ?? "",
         checkNo: entry.checkNo ?? "",
         checkDate: entry.checkDate ?? "",
+        partyName: entry.partyName ?? entry.customerName ?? "",
+        vatType: entry.vatType ?? "Output VAT (12%)",
+        vatPercent: entry.vatPercent ?? "12.00",
+        cwtCode: entry.cwtCode ?? "WC 160",
+        cwtPercent: entry.cwtPercent ?? "2.00",
+        particulars: entry.particulars ?? "",
+        responsibilityCenter: entry.responsibilityCenter ?? "",
       })),
     };
   }
@@ -420,6 +292,7 @@ export function createAcknowledgementReceiptFormValuesFromRecord(record: Acknowl
         collectionType: record.collectionType,
         customerName: record.customerName,
         partyCode: record.partyCode ?? "",
+        partyName: record.customerName,
         bankName: "",
         checkNo: "",
         checkDate: "",
@@ -441,7 +314,7 @@ export function createAcknowledgementReceiptRecordFromForm(
   const amount = Math.max(totals.grossReceipt, totals.debit, totals.credit);
 
   return {
-    id: existingRecord?.id ?? `ar-${Date.now()}`,
+    id: existingRecord?.id ?? `cr-${Date.now()}`,
     amount,
     collectionType: firstEntry?.collectionType || "Customer payment",
     customerName: syncedValues.customerName || firstEntry?.customerName || "",
@@ -457,9 +330,7 @@ export function createAcknowledgementReceiptRecordFromForm(
   };
 }
 
-export function syncAcknowledgementReceiptCheckDetails(
-  values: AcknowledgementReceiptFormValues,
-): AcknowledgementReceiptFormValues {
+export function syncAcknowledgementReceiptCheckDetails(values: AcknowledgementReceiptFormValues): AcknowledgementReceiptFormValues {
   return {
     ...values,
     lineEntries: values.lineEntries.map((entry) => ({
@@ -467,52 +338,30 @@ export function syncAcknowledgementReceiptCheckDetails(
       bankName: values.bankName,
       checkDate: values.checkDate,
       checkNo: values.checkNo,
+      customerName: entry.customerName || values.customerName,
+      partyCode: entry.partyCode || values.partyCode,
+      partyName: entry.partyName || values.customerName,
     })),
   };
 }
 
-export function readStoredAcknowledgementReceipts() {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  const storedReceipts = window.localStorage.getItem(AcknowledgementReceiptStorageKey);
-
-  if (!storedReceipts) {
-    return null;
-  }
-
-  try {
-    const parsedReceipts = JSON.parse(storedReceipts) as AcknowledgementReceiptRecord[];
-
-    return Array.isArray(parsedReceipts) ? parsedReceipts : null;
-  } catch {
-    return null;
-  }
-}
-
-export function writeStoredAcknowledgementReceipts(receipts: AcknowledgementReceiptRecord[]) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  window.localStorage.setItem(AcknowledgementReceiptStorageKey, JSON.stringify(receipts));
-}
-
-export function getInitialAcknowledgementReceipts() {
-  return readStoredAcknowledgementReceipts() ?? MockAcknowledgementReceipts;
-}
-
 export function calculateAcknowledgementReceiptTotals(entries: AcknowledgementReceiptLineEntry[]): AcknowledgementReceiptTotals {
   return entries.reduce(
-    (summary, entry) => ({
-      credit: summary.credit + parseMoneyNumberInput(entry.credit),
-      debit: summary.debit + parseMoneyNumberInput(entry.debit),
-      ewt: summary.ewt + parseMoneyNumberInput(entry.ewt),
-      grossReceipt: summary.grossReceipt + parseMoneyNumberInput(entry.grossReceipt),
-      vat: summary.vat + parseMoneyNumberInput(entry.vat),
-      vatExempt: summary.vatExempt + parseMoneyNumberInput(entry.vatExempt),
-    }),
+    (summary, entry) => {
+      const grossReceipt = parseMoneyNumberInput(entry.grossReceipt);
+      const vat = calculateAcknowledgementReceiptVatAmount(entry);
+      const ewt = calculateAcknowledgementReceiptCwtAmount(entry);
+      const netOfVat = calculateAcknowledgementReceiptNetOfVat(entry);
+
+      return {
+        credit: summary.credit + vat + netOfVat,
+        debit: summary.debit + calculateAcknowledgementReceiptTotalReceived(entry) + ewt,
+        ewt: summary.ewt + ewt,
+        grossReceipt: summary.grossReceipt + grossReceipt,
+        vat: summary.vat + vat,
+        vatExempt: summary.vatExempt + parseMoneyNumberInput(entry.vatExempt),
+      };
+    },
     {
       credit: 0,
       debit: 0,
@@ -522,6 +371,32 @@ export function calculateAcknowledgementReceiptTotals(entries: AcknowledgementRe
       vatExempt: 0,
     },
   );
+}
+
+export function calculateAcknowledgementReceiptVatAmount(entry: AcknowledgementReceiptLineEntry) {
+  const grossReceipt = parseMoneyNumberInput(entry.grossReceipt);
+  const vatPercent = parseMoneyNumberInput(entry.vatPercent);
+
+  return roundAcknowledgementReceiptAmount(grossReceipt * (vatPercent / 100));
+}
+
+export function calculateAcknowledgementReceiptCwtAmount(entry: AcknowledgementReceiptLineEntry) {
+  const grossReceipt = parseMoneyNumberInput(entry.grossReceipt);
+  const cwtPercent = parseMoneyNumberInput(entry.cwtPercent);
+
+  return roundAcknowledgementReceiptAmount(grossReceipt * (cwtPercent / 100));
+}
+
+export function calculateAcknowledgementReceiptNetOfVat(entry: AcknowledgementReceiptLineEntry) {
+  return Math.max(parseMoneyNumberInput(entry.grossReceipt) - calculateAcknowledgementReceiptVatAmount(entry), 0);
+}
+
+export function calculateAcknowledgementReceiptTotalReceived(entry: AcknowledgementReceiptLineEntry) {
+  return Math.max(parseMoneyNumberInput(entry.grossReceipt) - calculateAcknowledgementReceiptCwtAmount(entry), 0);
+}
+
+function roundAcknowledgementReceiptAmount(amount: number) {
+  return Math.round((amount + Number.EPSILON) * 100) / 100;
 }
 
 export function formatAcknowledgementReceiptAmount(amount: number) {
@@ -551,7 +426,7 @@ export function countAcknowledgementReceiptsByStatus(receipts: AcknowledgementRe
 }
 
 export function isAcknowledgementReceiptActiveStatus(status: AcknowledgementReceiptStatus) {
-  return status === "Active" || status === "Approved";
+  return status === "For Approval" || status === "Posted";
 }
 
 export function formatAcknowledgementReceiptPercentage(value: number, total: number) {
@@ -568,14 +443,21 @@ export function acknowledgementReceiptEntryHasData(entry: AcknowledgementReceipt
     entry.accountTitle.trim() !== "" ||
     entry.collectionType.trim() !== "" ||
     entry.customerName.trim() !== "" ||
+    entry.partyName.trim() !== "" ||
     entry.bankName.trim() !== "" ||
     entry.checkNo.trim() !== "" ||
     entry.checkDate.trim() !== "" ||
+    entry.vatType.trim() !== "" ||
+    entry.cwtCode.trim() !== "" ||
+    entry.particulars.trim() !== "" ||
+    entry.responsibilityCenter.trim() !== "" ||
     entry.referenceNo.trim() !== "" ||
     parseMoneyNumberInput(entry.grossReceipt) > 0 ||
     parseMoneyNumberInput(entry.vatExempt) > 0 ||
     parseMoneyNumberInput(entry.vat) > 0 ||
     parseMoneyNumberInput(entry.ewt) > 0 ||
+    parseMoneyNumberInput(entry.vatPercent) > 0 ||
+    parseMoneyNumberInput(entry.cwtPercent) > 0 ||
     parseMoneyNumberInput(entry.debit) > 0 ||
     parseMoneyNumberInput(entry.credit) > 0
   );
@@ -584,13 +466,106 @@ export function acknowledgementReceiptEntryHasData(entry: AcknowledgementReceipt
 export function acknowledgementReceiptEntryIsComplete(entry: AcknowledgementReceiptLineEntry) {
   return (
     entry.collectionType.trim() !== "" &&
-    entry.customerName.trim() !== "" &&
+    (entry.customerName.trim() !== "" || entry.partyName.trim() !== "") &&
     (parseMoneyNumberInput(entry.grossReceipt) > 0 || parseMoneyNumberInput(entry.debit) > 0 || parseMoneyNumberInput(entry.credit) > 0)
   );
 }
 
+export function shouldClearAcknowledgementReceiptEntry(
+  entry: AcknowledgementReceiptLineEntry,
+  action: "incomplete" | "no-data" | "with-data",
+) {
+  if (action === "with-data") {
+    return acknowledgementReceiptEntryHasData(entry);
+  }
+
+  if (action === "incomplete") {
+    return acknowledgementReceiptEntryHasData(entry) && !acknowledgementReceiptEntryIsComplete(entry);
+  }
+
+  return !acknowledgementReceiptEntryHasData(entry);
+}
+
+export function createAcknowledgementReceiptAccountingRows(rows: AcknowledgementReceiptLineEntry[]) {
+  return rows.flatMap((row) => {
+    const grossReceipt = parseMoneyNumberInput(row.grossReceipt);
+
+    if (grossReceipt <= 0) {
+      return [];
+    }
+
+    const netOfVat = calculateAcknowledgementReceiptNetOfVat(row);
+    const vatAmount = calculateAcknowledgementReceiptVatAmount(row);
+    const cwtAmount = calculateAcknowledgementReceiptCwtAmount(row);
+    const totalReceived = calculateAcknowledgementReceiptTotalReceived(row);
+    const commonFields = {
+      bankName: row.bankName,
+      checkDate: row.checkDate,
+      checkNo: row.checkNo,
+      collectionType: row.collectionType,
+      customerName: row.partyName || row.customerName,
+      cwtCode: row.cwtCode,
+      cwtPercent: row.cwtPercent,
+      grossReceipt: row.grossReceipt,
+      particulars: row.particulars || row.collectionType,
+      partyCode: row.partyCode,
+      partyName: row.partyName || row.customerName,
+      referenceNo: row.referenceNo,
+      responsibilityCenter: row.responsibilityCenter,
+      vat: formatAcknowledgementReceiptAmount(vatAmount),
+      vatExempt: row.vatExempt,
+      vatPercent: row.vatPercent,
+      vatType: row.vatType,
+      ewt: formatAcknowledgementReceiptAmount(cwtAmount),
+    } satisfies Omit<AcknowledgementReceiptLineEntry, "accountCode" | "accountTitle" | "credit" | "debit" | "id">;
+
+    return [
+      {
+        ...commonFields,
+        id: `${row.id}-cash`,
+        accountCode: "1010103001",
+        accountTitle: "Cash in Bank",
+        debit: totalReceived.toFixed(2),
+        credit: "0.00",
+      },
+      ...(cwtAmount > 0
+        ? [
+            {
+              ...commonFields,
+              id: `${row.id}-cwt`,
+              accountCode: "1010104008",
+              accountTitle: "Creditable Withholding Tax",
+              debit: cwtAmount.toFixed(2),
+              credit: "0.00",
+            },
+          ]
+        : []),
+      ...(vatAmount > 0
+        ? [
+            {
+              ...commonFields,
+              id: `${row.id}-vat`,
+              accountCode: "2010002005",
+              accountTitle: "Output VAT",
+              debit: "0.00",
+              credit: vatAmount.toFixed(2),
+            },
+          ]
+        : []),
+      {
+        ...commonFields,
+        id: `${row.id}-revenue`,
+        accountCode: "4020000001",
+        accountTitle: row.collectionType || "Service Revenue",
+        debit: "0.00",
+        credit: netOfVat.toFixed(2),
+      },
+    ];
+  });
+}
+
 function normalizeAcknowledgementReceiptStatus(value: string): AcknowledgementReceiptStatus {
-  const statuses: AcknowledgementReceiptStatus[] = ["Active", "Approved", "Cancelled", "Closed", "Disapproved", "Draft", "Pending"];
+  const statuses: AcknowledgementReceiptStatus[] = ["Cancelled", "Disapproved", "Draft", "For Approval", "Posted"];
 
   return statuses.includes(value as AcknowledgementReceiptStatus) ? (value as AcknowledgementReceiptStatus) : "Draft";
 }

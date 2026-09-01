@@ -60,6 +60,9 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
+/**
+ * @summary Get paginated list of service records
+ */
 export const servicesMaintenanceControllerFindAllV1 = (
     params?: ServicesMaintenanceControllerFindAllV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -129,6 +132,9 @@ export function useServicesMaintenanceControllerFindAllV1<TData = Awaited<Return
  params?: ServicesMaintenanceControllerFindAllV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicesMaintenanceControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get paginated list of service records
+ */
 
 export function useServicesMaintenanceControllerFindAllV1<TData = Awaited<ReturnType<typeof servicesMaintenanceControllerFindAllV1>>, TError = unknown>(
  params?: ServicesMaintenanceControllerFindAllV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicesMaintenanceControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -147,6 +153,9 @@ export function useServicesMaintenanceControllerFindAllV1<TData = Awaited<Return
 
 
 
+/**
+ * @summary Create a service record
+ */
 export const servicesMaintenanceControllerCreateV1 = (
     createServiceMaintenanceDto: CreateServiceMaintenanceDto,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -194,7 +203,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type ServicesMaintenanceControllerCreateV1MutationBody = CreateServiceMaintenanceDto
     export type ServicesMaintenanceControllerCreateV1MutationError = unknown
 
-    export const useServicesMaintenanceControllerCreateV1 = <TError = unknown,
+    /**
+ * @summary Create a service record
+ */
+export const useServicesMaintenanceControllerCreateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof servicesMaintenanceControllerCreateV1>>, TError,{data: CreateServiceMaintenanceDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof servicesMaintenanceControllerCreateV1>>,
@@ -204,7 +216,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getServicesMaintenanceControllerCreateV1MutationOptions(options), queryClient);
     }
-    export const servicesMaintenanceControllerFindOptionsV1 = (
+    /**
+ * @summary Get service options
+ */
+export const servicesMaintenanceControllerFindOptionsV1 = (
     params?: ServicesMaintenanceControllerFindOptionsV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
@@ -273,6 +288,9 @@ export function useServicesMaintenanceControllerFindOptionsV1<TData = Awaited<Re
  params?: ServicesMaintenanceControllerFindOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicesMaintenanceControllerFindOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get service options
+ */
 
 export function useServicesMaintenanceControllerFindOptionsV1<TData = Awaited<ReturnType<typeof servicesMaintenanceControllerFindOptionsV1>>, TError = unknown>(
  params?: ServicesMaintenanceControllerFindOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicesMaintenanceControllerFindOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -291,6 +309,9 @@ export function useServicesMaintenanceControllerFindOptionsV1<TData = Awaited<Re
 
 
 
+/**
+ * @summary Get service account options
+ */
 export const servicesMaintenanceControllerGetAccountOptionsV1 = (
 
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -359,6 +380,9 @@ export function useServicesMaintenanceControllerGetAccountOptionsV1<TData = Awai
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicesMaintenanceControllerGetAccountOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get service account options
+ */
 
 export function useServicesMaintenanceControllerGetAccountOptionsV1<TData = Awaited<ReturnType<typeof servicesMaintenanceControllerGetAccountOptionsV1>>, TError = unknown>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicesMaintenanceControllerGetAccountOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -377,6 +401,9 @@ export function useServicesMaintenanceControllerGetAccountOptionsV1<TData = Awai
 
 
 
+/**
+ * @summary Get next service account code
+ */
 export const servicesMaintenanceControllerGetNextAccountCodeV1 = (
 
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -445,6 +472,9 @@ export function useServicesMaintenanceControllerGetNextAccountCodeV1<TData = Awa
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicesMaintenanceControllerGetNextAccountCodeV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get next service account code
+ */
 
 export function useServicesMaintenanceControllerGetNextAccountCodeV1<TData = Awaited<ReturnType<typeof servicesMaintenanceControllerGetNextAccountCodeV1>>, TError = unknown>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicesMaintenanceControllerGetNextAccountCodeV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -463,6 +493,9 @@ export function useServicesMaintenanceControllerGetNextAccountCodeV1<TData = Awa
 
 
 
+/**
+ * @summary Get service details by ID
+ */
 export const servicesMaintenanceControllerFindOneV1 = (
     id: string,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -531,6 +564,9 @@ export function useServicesMaintenanceControllerFindOneV1<TData = Awaited<Return
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicesMaintenanceControllerFindOneV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get service details by ID
+ */
 
 export function useServicesMaintenanceControllerFindOneV1<TData = Awaited<ReturnType<typeof servicesMaintenanceControllerFindOneV1>>, TError = unknown>(
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicesMaintenanceControllerFindOneV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -549,6 +585,9 @@ export function useServicesMaintenanceControllerFindOneV1<TData = Awaited<Return
 
 
 
+/**
+ * @summary Update a service record
+ */
 export const servicesMaintenanceControllerUpdateV1 = (
     id: string,
     updateServiceMaintenanceDto: UpdateServiceMaintenanceDto,
@@ -597,7 +636,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type ServicesMaintenanceControllerUpdateV1MutationBody = UpdateServiceMaintenanceDto
     export type ServicesMaintenanceControllerUpdateV1MutationError = unknown
 
-    export const useServicesMaintenanceControllerUpdateV1 = <TError = unknown,
+    /**
+ * @summary Update a service record
+ */
+export const useServicesMaintenanceControllerUpdateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof servicesMaintenanceControllerUpdateV1>>, TError,{id: string;data: UpdateServiceMaintenanceDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof servicesMaintenanceControllerUpdateV1>>,
@@ -607,7 +649,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getServicesMaintenanceControllerUpdateV1MutationOptions(options), queryClient);
     }
-    export const servicesMaintenanceControllerUpdateStatusV1 = (
+    /**
+ * @summary Update service status
+ */
+export const servicesMaintenanceControllerUpdateStatusV1 = (
     id: string,
     updateServiceMaintenanceStatusDto: UpdateServiceMaintenanceStatusDto,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -655,7 +700,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type ServicesMaintenanceControllerUpdateStatusV1MutationBody = UpdateServiceMaintenanceStatusDto
     export type ServicesMaintenanceControllerUpdateStatusV1MutationError = unknown
 
-    export const useServicesMaintenanceControllerUpdateStatusV1 = <TError = unknown,
+    /**
+ * @summary Update service status
+ */
+export const useServicesMaintenanceControllerUpdateStatusV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof servicesMaintenanceControllerUpdateStatusV1>>, TError,{id: string;data: UpdateServiceMaintenanceStatusDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof servicesMaintenanceControllerUpdateStatusV1>>,

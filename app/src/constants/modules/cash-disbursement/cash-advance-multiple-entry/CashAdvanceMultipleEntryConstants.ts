@@ -34,7 +34,7 @@ export const CashAdvanceMultipleEntryStatuses = {
 } as const;
 
 export function canEditCashAdvanceMultipleEntryStatus(status: CashAdvanceStatus) {
-  return status === CashAdvanceMultipleEntryStatuses.draft || status === CashAdvanceMultipleEntryStatuses.forApproval;
+  return status === CashAdvanceMultipleEntryStatuses.draft;
 }
 
 export const CashAdvanceMultipleEntrySubmitConfirmationDialogTitles: Record<CashAdvanceMultipleEntrySubmitConfirmationAction, string> = {
@@ -212,8 +212,8 @@ export const CashAdvanceMultipleEntryItemColumnOrder = [
 ];
 
 export const CashAdvanceMultipleEntryItemColumnLabels: Record<string, string> = {
-  partyCode: "Party Code",
-  partyName: "Party Name",
+  partyCode: "Employee Code",
+  partyName: "Employee Name",
   amount: "Cash Advance Amount",
   cashAdvanceLimit: "Cash Advance Limit",
   totalCashAdvanced: "Total Cash Advances",

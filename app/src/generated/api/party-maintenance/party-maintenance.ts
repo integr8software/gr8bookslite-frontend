@@ -61,6 +61,9 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
+/**
+ * @summary Get paginated list of party records
+ */
 export const partyMaintenanceControllerFindAllV1 = (
     params?: PartyMaintenanceControllerFindAllV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -130,6 +133,9 @@ export function usePartyMaintenanceControllerFindAllV1<TData = Awaited<ReturnTyp
  params?: PartyMaintenanceControllerFindAllV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof partyMaintenanceControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get paginated list of party records
+ */
 
 export function usePartyMaintenanceControllerFindAllV1<TData = Awaited<ReturnType<typeof partyMaintenanceControllerFindAllV1>>, TError = unknown>(
  params?: PartyMaintenanceControllerFindAllV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof partyMaintenanceControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -148,6 +154,9 @@ export function usePartyMaintenanceControllerFindAllV1<TData = Awaited<ReturnTyp
 
 
 
+/**
+ * @summary Create a party record
+ */
 export const partyMaintenanceControllerCreateV1 = (
     createPartyDto: CreatePartyDto,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -195,7 +204,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type PartyMaintenanceControllerCreateV1MutationBody = CreatePartyDto
     export type PartyMaintenanceControllerCreateV1MutationError = unknown
 
-    export const usePartyMaintenanceControllerCreateV1 = <TError = unknown,
+    /**
+ * @summary Create a party record
+ */
+export const usePartyMaintenanceControllerCreateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof partyMaintenanceControllerCreateV1>>, TError,{data: CreatePartyDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof partyMaintenanceControllerCreateV1>>,
@@ -205,7 +217,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getPartyMaintenanceControllerCreateV1MutationOptions(options), queryClient);
     }
-    export const partyMaintenanceControllerFindAccountingOptionsV1 = (
+    /**
+ * @summary Get party accounting options
+ */
+export const partyMaintenanceControllerFindAccountingOptionsV1 = (
 
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
@@ -273,6 +288,9 @@ export function usePartyMaintenanceControllerFindAccountingOptionsV1<TData = Awa
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof partyMaintenanceControllerFindAccountingOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get party accounting options
+ */
 
 export function usePartyMaintenanceControllerFindAccountingOptionsV1<TData = Awaited<ReturnType<typeof partyMaintenanceControllerFindAccountingOptionsV1>>, TError = unknown>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof partyMaintenanceControllerFindAccountingOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -291,6 +309,9 @@ export function usePartyMaintenanceControllerFindAccountingOptionsV1<TData = Awa
 
 
 
+/**
+ * @summary Get party options
+ */
 export const partyMaintenanceControllerFindOptionListV1 = (
     params?: PartyMaintenanceControllerFindOptionListV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -360,6 +381,9 @@ export function usePartyMaintenanceControllerFindOptionListV1<TData = Awaited<Re
  params?: PartyMaintenanceControllerFindOptionListV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof partyMaintenanceControllerFindOptionListV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get party options
+ */
 
 export function usePartyMaintenanceControllerFindOptionListV1<TData = Awaited<ReturnType<typeof partyMaintenanceControllerFindOptionListV1>>, TError = unknown>(
  params?: PartyMaintenanceControllerFindOptionListV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof partyMaintenanceControllerFindOptionListV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -378,6 +402,9 @@ export function usePartyMaintenanceControllerFindOptionListV1<TData = Awaited<Re
 
 
 
+/**
+ * @summary Get party options by party type
+ */
 export const partyMaintenanceControllerFindOptionsV1 = (
     partyType: string,
     params?: PartyMaintenanceControllerFindOptionsV1Params,
@@ -453,6 +480,9 @@ export function usePartyMaintenanceControllerFindOptionsV1<TData = Awaited<Retur
     params?: PartyMaintenanceControllerFindOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof partyMaintenanceControllerFindOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get party options by party type
+ */
 
 export function usePartyMaintenanceControllerFindOptionsV1<TData = Awaited<ReturnType<typeof partyMaintenanceControllerFindOptionsV1>>, TError = unknown>(
  partyType: string,
@@ -472,6 +502,9 @@ export function usePartyMaintenanceControllerFindOptionsV1<TData = Awaited<Retur
 
 
 
+/**
+ * @summary Get party details by ID
+ */
 export const partyMaintenanceControllerFindOneV1 = (
     id: string,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -540,6 +573,9 @@ export function usePartyMaintenanceControllerFindOneV1<TData = Awaited<ReturnTyp
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof partyMaintenanceControllerFindOneV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get party details by ID
+ */
 
 export function usePartyMaintenanceControllerFindOneV1<TData = Awaited<ReturnType<typeof partyMaintenanceControllerFindOneV1>>, TError = unknown>(
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof partyMaintenanceControllerFindOneV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -558,6 +594,9 @@ export function usePartyMaintenanceControllerFindOneV1<TData = Awaited<ReturnTyp
 
 
 
+/**
+ * @summary Update a party record
+ */
 export const partyMaintenanceControllerUpdateV1 = (
     id: string,
     updatePartyDto: UpdatePartyDto,
@@ -606,7 +645,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type PartyMaintenanceControllerUpdateV1MutationBody = UpdatePartyDto
     export type PartyMaintenanceControllerUpdateV1MutationError = unknown
 
-    export const usePartyMaintenanceControllerUpdateV1 = <TError = unknown,
+    /**
+ * @summary Update a party record
+ */
+export const usePartyMaintenanceControllerUpdateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof partyMaintenanceControllerUpdateV1>>, TError,{id: string;data: UpdatePartyDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof partyMaintenanceControllerUpdateV1>>,
@@ -616,7 +658,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getPartyMaintenanceControllerUpdateV1MutationOptions(options), queryClient);
     }
-    export const partyMaintenanceControllerImportPartiesV1 = (
+    /**
+ * @summary Import party records
+ */
+export const partyMaintenanceControllerImportPartiesV1 = (
     importPartiesDto: ImportPartiesDto,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
@@ -663,7 +708,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type PartyMaintenanceControllerImportPartiesV1MutationBody = ImportPartiesDto
     export type PartyMaintenanceControllerImportPartiesV1MutationError = unknown
 
-    export const usePartyMaintenanceControllerImportPartiesV1 = <TError = unknown,
+    /**
+ * @summary Import party records
+ */
+export const usePartyMaintenanceControllerImportPartiesV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof partyMaintenanceControllerImportPartiesV1>>, TError,{data: ImportPartiesDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof partyMaintenanceControllerImportPartiesV1>>,

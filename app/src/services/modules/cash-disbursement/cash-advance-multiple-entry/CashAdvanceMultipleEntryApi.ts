@@ -1,4 +1,6 @@
+import { cashAdvanceMultipleEntryControllerSuggestTransactionNumberV1 } from "@/app/src/generated/api/cash-advance-multiple-entry/cash-advance-multiple-entry";
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import { fetchTransactionNumber } from "@/app/src/services/shared/transaction-number/TransactionNumberApi";
 import type { CashAdvanceStatus } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 import type {
   CashAdvanceMultipleEntryFormValues,
@@ -34,8 +36,7 @@ export async function fetchCashAdvanceMultipleEntryById(id: string): Promise<Cas
 }
 
 export async function fetchNextCashAdvanceMultipleEntryTransactionNo(): Promise<string> {
-  const response = await ApiClient.get<{ nextTransNo: string }>(`${CashAdvanceMultipleEntryPath}/next-transaction-no`);
-  return response.data.nextTransNo;
+  return fetchTransactionNumber(cashAdvanceMultipleEntryControllerSuggestTransactionNumberV1);
 }
 
 export async function createCashAdvanceMultipleEntryApi(

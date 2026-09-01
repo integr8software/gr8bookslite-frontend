@@ -28,6 +28,7 @@ import { getColumnMetaClassName, joinClasses } from "@/app/src/ui/shared/module/
 
 export function DisbursementVoucherOverviewPage() {
   const previewRows = useDisbursementVoucherStore((state) => state.previewRows);
+  const isLoading = useDisbursementVoucherStore((state) => state.isLoading);
   const lastSyncedAt = useDisbursementVoucherStore((state) => state.lastSyncedAt);
   const refreshRecords = useDisbursementVoucherStore((state) => state.refreshRecords);
   const updateTransaction = useDisbursementVoucherStore((state) => state.updateTransaction);
@@ -86,7 +87,7 @@ export function DisbursementVoucherOverviewPage() {
         }
       />
 
-      <ModuleStatisticCards className="2xl:grid-cols-6" items={previewTable.statisticCards} />
+      <ModuleStatisticCards className="2xl:grid-cols-6" isLoading={isLoading} items={previewTable.statisticCards} />
 
       <div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm" data-spotlight-id="maintenance-table">
         <ModuleTable
@@ -97,6 +98,7 @@ export function DisbursementVoucherOverviewPage() {
           minWidthClassName="min-w-full"
           paginationLabel="entries"
           paginationStorageKey={DisbursementVoucherTablePaginationStorageKey}
+          isLoading={isLoading}
           lastSyncedAt={lastSyncedAt}
           table={previewTable.table}
           tableTitle="Disbursement Voucher Entries"

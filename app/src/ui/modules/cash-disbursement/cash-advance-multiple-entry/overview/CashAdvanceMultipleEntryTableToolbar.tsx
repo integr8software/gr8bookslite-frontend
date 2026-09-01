@@ -15,7 +15,7 @@ export function CashAdvanceMultipleEntryTableToolbar({
     <ModuleTableToolbar className="!grid-cols-1 !gap-2 rounded-none border-x-0 border-t-0 !p-3 shadow-none sm:!gap-2 sm:!p-3 2xl:!grid-cols-[minmax(0,1fr)_auto]" data-spotlight-id="maintenance-table-filters">
       <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 2xl:grid-cols-[minmax(18rem,2fr)_minmax(14rem,1fr)_minmax(14rem,1fr)]">
         <div className="sm:col-span-2 2xl:col-span-1">
-          <ModuleTableSearch label="Search Cash Advances Multiple Entries" placeholder="Search by Multiple Cash Advance No., Party Name, account, or remarks" value={tableState.query} onChange={tableState.setQuery} />
+          <ModuleTableSearch label="Search Cash Advances Multiple Entries" placeholder="Search by Multiple Cash Advance No., Employee Name, account, or remarks" value={tableState.query} onChange={tableState.setQuery} />
         </div>
         <DateRangePicker label="Date Range" value={tableState.dateRange} onChange={tableState.setDateRange} />
         <AmountRangePicker label="Total Amount" value={tableState.amountRange} onChange={tableState.setAmountRange} />

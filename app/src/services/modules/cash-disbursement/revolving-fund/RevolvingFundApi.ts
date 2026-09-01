@@ -1,17 +1,20 @@
 "use client";
 
 import {
-  revolvingFundControllerCreate,
-  revolvingFundControllerFindAll,
-  revolvingFundControllerFindOne,
-  revolvingFundControllerFindParties,
-  revolvingFundControllerFindPostingAccounts,
-  revolvingFundControllerFindResponsibilityCenters,
-  revolvingFundControllerRemove,
-  revolvingFundControllerSuggestTransactionNo,
-  revolvingFundControllerUpdate,
-  revolvingFundControllerUpdateStatus,
-} from "@/app/src/generated/api/cash-disbursement-revolving-fund/cash-disbursement-revolving-fund";
+  revolvingFundControllerCreateV1 as revolvingFundControllerCreate,
+  revolvingFundControllerFindAllV1 as revolvingFundControllerFindAll,
+  revolvingFundControllerFindOneV1 as revolvingFundControllerFindOne,
+  revolvingFundControllerRemoveV1 as revolvingFundControllerRemove,
+  revolvingFundControllerSuggestTransactionNumberV1,
+  revolvingFundControllerUpdateStatusV1 as revolvingFundControllerUpdateStatus,
+  revolvingFundControllerUpdateV1 as revolvingFundControllerUpdate,
+} from "@/app/src/generated/api/revolving-fund/revolving-fund";
+import { fetchTransactionNumber } from "@/app/src/services/shared/transaction-number/TransactionNumberApi";
+import {
+  fetchMaintenancePartyOptions,
+  fetchMaintenancePostingAccountOptions,
+  fetchMaintenanceResponsibilityCenterOptions,
+} from "@/app/src/services/shared/maintenance/MaintenanceLookupApi";
 import type {
   CreateRevolvingFundDto,
   RevolvingFundResponseDto,
@@ -230,8 +233,7 @@ export async function fetchRevolvingFundById(id: string): Promise<RevolvingFundR
 }
 
 export async function fetchNextRevolvingFundNo(branchUnitId?: number): Promise<string> {
-  const response: any = await revolvingFundControllerSuggestTransactionNo({ branchUnitId });
-  return response?.nextTransNo ?? response?.transactionNo ?? "";
+  return fetchTransactionNumber(revolvingFundControllerSuggestTransactionNumberV1, { branchUnitId });
 }
 
 export async function createRevolvingFundApi(values: RevolvingFundFormValues): Promise<RevolvingFundRecord> {
@@ -258,44 +260,13 @@ export async function deleteRevolvingFundApi(id: string): Promise<{ success: boo
 }
 
 export async function fetchRevolvingFundPartyOptions(): Promise<AppAdvancedDropdownOption[]> {
-  const response: any = await revolvingFundControllerFindParties();
-  const parties = response?.parties ?? response?.options ?? response?.items ?? [];
-  return parties.map((p: any) => ({
-    name: p.partyName || p.name,
-    label: p.partyCode || p.label,
-    value: p.partyCode || p.value,
-    description: p.partyName,
-    partyId: p.partyId || p.id,
-    partyCode: p.partyCode,
-    partyName: p.partyName,
-    defaultPurchaseInputVatTaxSourceKey: p.defaultPurchaseInputVatTaxSourceKey ?? "",
-    defaultPurchaseEwtTaxSourceKey: p.defaultPurchaseEwtTaxSourceKey ?? "",
-  }));
+  return fetchMaintenancePartyOptions();
 }
 
 export async function fetchRevolvingFundAccountOptions(): Promise<AppAdvancedDropdownOption[]> {
-  const response: any = await revolvingFundControllerFindPostingAccounts();
-  const accounts = response?.accounts ?? response?.options ?? response?.items ?? [];
-  return accounts.map((a: any) => ({
-    name: a.accountTitle || a.name,
-    label: a.accountCode || a.label,
-    value: a.accountCode || a.value,
-    description: a.accountTitle,
-    accountId: a.accountId || a.id,
-    accountCode: a.accountCode,
-    accountTitle: a.accountTitle,
-  }));
+  return fetchMaintenancePostingAccountOptions();
 }
 
 export async function fetchRevolvingFundResponsibilityCenters(): Promise<AppAdvancedDropdownOption[]> {
-  const response: any = await revolvingFundControllerFindResponsibilityCenters();
-  const centers = response?.centers ?? response?.responsibilityCenters ?? response?.options ?? response?.items ?? [];
-  return centers.map((rc: any) => ({
-    name: rc.name,
-    label: rc.code || rc.label,
-    value: rc.code || rc.value,
-    description: rc.name,
-    centerId: rc.centerId || rc.id,
-    code: rc.code,
-  }));
+  return fetchMaintenanceResponsibilityCenterOptions();
 }

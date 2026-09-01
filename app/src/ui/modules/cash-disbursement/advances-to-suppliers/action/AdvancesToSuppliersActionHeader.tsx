@@ -28,6 +28,8 @@ import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 export function AdvancesToSuppliersActionHeader({ onPreview, page }: { onPreview: () => void; page: AdvancesToSuppliersActionPageState }) {
   const [confirmation, setConfirmation] = useState<AdvancesToSuppliersConfirmationAction | null>(null);
   const transactionNo = page.record?.transactionNo ?? page.values.transactionNo;
+  const isDraftEdit = page.mode === "edit" && page.record?.status === AdvancesToSuppliersStatuses.draft;
+  const isSaveAction = page.mode === "add" || isDraftEdit;
   const title =
     page.mode === "add" ? (
       "Add Advances to Suppliers"
@@ -88,14 +90,14 @@ export function AdvancesToSuppliersActionHeader({ onPreview, page }: { onPreview
             {page.mode !== "view" ? (
               <ModuleActionButton
                 disabled={page.isSubmitting}
-                label={page.mode === "edit" ? "Update" : "Save"}
+                label={isSaveAction ? "Save" : "Update"}
                 onAction={() => {
                   if (page.validate(AdvancesToSuppliersStatuses.forApproval)) {
                     setConfirmation("save");
                   }
                 }}
                 menuItems={
-                  page.mode === "add"
+                  isSaveAction
                     ? [
                         {
                           label: "Save As Draft",
@@ -117,13 +119,13 @@ export function AdvancesToSuppliersActionHeader({ onPreview, page }: { onPreview
         <AppDialog
           isOpen
           title={
-            confirmation === "save" && page.mode === "edit"
+            confirmation === "save" && !isSaveAction
               ? "Update Advances to Suppliers?"
               : AdvancesToSuppliersConfirmationDialogTitles[confirmation]
           }
           description={
             confirmation === "save"
-              ? page.mode === "edit"
+              ? !isSaveAction
                 ? `This will update ${transactionNo}.`
                 : `This will save and submit ${transactionNo}.`
               : confirmation === "draft"
@@ -135,12 +137,12 @@ export function AdvancesToSuppliersActionHeader({ onPreview, page }: { onPreview
                     : `This will mark ${transactionNo} as cancelled.`
           }
           confirmLabel={
-            confirmation === "save" && page.mode === "edit" ? "Update" : AdvancesToSuppliersConfirmationDialogConfirmLabels[confirmation]
+            confirmation === "save" && !isSaveAction ? "Update" : AdvancesToSuppliersConfirmationDialogConfirmLabels[confirmation]
           }
           cancelLabel="Cancel"
-          iconTone={confirmation === "save" ? (page.mode === "edit" ? "update" : "save") : confirmation === "draft" ? "save" : undefined}
+          iconTone={confirmation === "save" ? (isSaveAction ? "save" : "update") : confirmation === "draft" ? "save" : undefined}
           isPending={page.isSubmitting}
-          pendingLabel={confirmation === "save" && page.mode === "edit" ? "Updating..." : "Saving..."}
+          pendingLabel={confirmation === "save" && !isSaveAction ? "Updating..." : "Saving..."}
           tone={
             confirmation === "approve"
               ? "success"

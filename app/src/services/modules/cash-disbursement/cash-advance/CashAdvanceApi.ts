@@ -1,4 +1,11 @@
+import { cashAdvanceControllerSuggestTransactionNumberV1 } from "@/app/src/generated/api/cash-advance/cash-advance";
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import { fetchTransactionNumber } from "@/app/src/services/shared/transaction-number/TransactionNumberApi";
+import {
+  fetchMaintenancePartyOptions,
+  fetchMaintenancePostingAccountOptions,
+  fetchMaintenanceResponsibilityCenterOptions,
+} from "@/app/src/services/shared/maintenance/MaintenanceLookupApi";
 import type {
   CashAdvanceAccountDropdownOption,
   CashAdvancePartyDropdownOption,
@@ -8,19 +15,6 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 
 type ApiCashAdvanceStatus = "DRAFT" | "FOR_APPROVAL" | "APPROVED" | "POSTED" | "DISAPPROVED" | "CANCELLED";
-
-export type CashAdvancePartyOption = {
-  availableCashAdvance: string;
-  id?: string;
-  partyId: string;
-  partyCode: string;
-  partyName: string;
-  name: string;
-  label: string;
-  value: string;
-  cashAdvanceLimit: string;
-  totalCashAdvance: string;
-};
 
 export type FetchCashAdvanceListParams = {
   page?: number;
@@ -59,35 +53,23 @@ export async function fetchCashAdvanceList(params?: FetchCashAdvanceListParams):
 }
 
 export async function fetchCashAdvancePartyOptions(): Promise<CashAdvancePartyDropdownOption[]> {
-  const response = await ApiClient.get<{ options: CashAdvancePartyOption[] }>("/cash-disbursement/cash-advance/party-options");
-  const options = response.data?.options ?? [];
+  const options = await fetchMaintenancePartyOptions();
 
   return options.map((party) => ({
     name: party.partyName,
     label: party.partyCode,
-    value: party.partyId || party.id || party.partyCode,
-    partyId: party.partyId || party.id,
+    value: party.partyId,
+    partyId: party.partyId,
     partyCode: party.partyCode,
     partyName: party.partyName,
-    cashAdvanceLimit: party.cashAdvanceLimit,
-    totalCashAdvance: party.totalCashAdvance,
-    availableCashAdvance: party.availableCashAdvance,
+    cashAdvanceLimit: String(party.cashAdvanceLimit ?? ""),
+    totalCashAdvance: String(party.totalCashAdvance ?? "0.00"),
+    availableCashAdvance: String(party.availableCashAdvance ?? ""),
   }));
 }
 
 export async function fetchCashAdvanceAccountOptions(): Promise<CashAdvanceAccountDropdownOption[]> {
-  const response = await ApiClient.get<{
-    accounts: Array<{
-      id: string;
-      accountCode: string;
-      accountTitle: string;
-      accountType?: string;
-      accountNature?: string;
-      status?: string;
-    }>;
-  }>("/maintenance/chart-of-accounts/options/posting-accounts");
-
-  const accounts = response.data?.accounts ?? [];
+  const accounts = await fetchMaintenancePostingAccountOptions();
 
   // Filter accounts under Accounts Receivables (1010103000) or code starting with 1010103
   const arAccounts = accounts.filter(
@@ -103,8 +85,8 @@ export async function fetchCashAdvanceAccountOptions(): Promise<CashAdvanceAccou
   return finalAccounts.map((account) => ({
     name: account.accountTitle,
     label: account.accountCode,
-    value: account.id,
-    accountId: account.id,
+    value: account.accountId,
+    accountId: account.accountId,
     accountCode: account.accountCode,
     accountTitle: account.accountTitle,
   }));
@@ -114,18 +96,7 @@ export async function fetchCashAdvanceResponsibilityCenters(): Promise<{
   costCenters: CashAdvanceResponsibilityCenterDropdownOption[];
   projects: CashAdvanceResponsibilityCenterDropdownOption[];
 }> {
-  const response = await ApiClient.get<{
-    responsibilityCenters: Array<{
-      id: string;
-      code: string;
-      name: string;
-      category?: string;
-      typeName?: string;
-      status?: string;
-    }>;
-  }>("/maintenance/financial-management/responsibility-centers/options");
-
-  const centers = response.data?.responsibilityCenters ?? [];
+  const centers = await fetchMaintenanceResponsibilityCenterOptions();
 
   const isProject = (center: { category?: string; typeName?: string; name?: string }) =>
     center.category?.toLowerCase() === "project" ||
@@ -137,11 +108,10 @@ export async function fetchCashAdvanceResponsibilityCenters(): Promise<{
     .map((center) => ({
       name: center.name,
       label: center.code,
-      value: center.id,
-      id: center.id,
+      value: center.centerId,
+      id: center.centerId,
       code: center.code,
       typeName: center.typeName,
-      category: center.category,
     }));
 
   const projects: CashAdvanceResponsibilityCenterDropdownOption[] = centers
@@ -149,19 +119,17 @@ export async function fetchCashAdvanceResponsibilityCenters(): Promise<{
     .map((center) => ({
       name: center.name,
       label: center.code,
-      value: center.id,
-      id: center.id,
+      value: center.centerId,
+      id: center.centerId,
       code: center.code,
       typeName: center.typeName,
-      category: center.category,
     }));
 
   return { costCenters, projects };
 }
 
 export async function fetchNextCashAdvanceTransactionNo(): Promise<string> {
-  const response = await ApiClient.get<{ nextTransNo: string }>("/cash-disbursement/cash-advance/next-transaction-no");
-  return response.data.nextTransNo;
+  return fetchTransactionNumber(cashAdvanceControllerSuggestTransactionNumberV1);
 }
 
 export async function fetchCashAdvanceById(id: string): Promise<CashAdvanceRecord> {

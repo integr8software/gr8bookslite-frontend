@@ -39,6 +39,7 @@ import { formatPartOfTotalPercentage } from "@/app/src/utils/percentage.util";
 import { normalizeLowercaseWhitespace } from "@/app/src/utils/string.util";
 
 const columnHelper = createColumnHelper<AdvancesToSuppliersRecord>();
+const EmptyAdvancesToSuppliersRecords: AdvancesToSuppliersRecord[] = [];
 
 export function useAdvancesToSuppliersOverviewPage() {
   const queryClient = useQueryClient();
@@ -64,9 +65,8 @@ export function useAdvancesToSuppliersOverviewPage() {
       }
     },
     enabled: activeCompanyId !== null,
-    initialData: [],
   });
-  const records = recordsQuery.data ?? [];
+  const records = recordsQuery.data ?? EmptyAdvancesToSuppliersRecords;
   const refreshRecords = useCallback(() => {
     void queryClient.invalidateQueries({ queryKey: allQueryKey });
   }, [allQueryKey, queryClient]);

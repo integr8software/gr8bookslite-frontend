@@ -13,8 +13,8 @@ const CashAdvanceDraftFormSchema = z.object({
 });
 
 const CashAdvanceFormSchema = z.object({
-  accountCode: z.string().trim().min(1, "Default account code is required."),
-  accountTitle: z.preprocess((value) => String(value ?? ""), z.string().trim().min(1, "Default account title is required.")),
+  accountCode: z.string().trim().min(1, "Default Account Code is required."),
+  accountTitle: z.preprocess((value) => String(value ?? ""), z.string().trim().min(1, "Default Account Title is required.")),
   amount: z.preprocess(
     (value) => String(value ?? "").trim(),
     z
@@ -24,11 +24,11 @@ const CashAdvanceFormSchema = z.object({
         const amount = Number(value.replace(/,/g, ""));
 
         return Number.isFinite(amount) && amount > 0;
-      }, "Enter an amount greater than zero."),
+      }, "Enter an Amount greater than zero."),
   ),
   documentDate: z.string().trim().min(1, "Select a CA Date."),
-  partyCode: z.string().trim().min(1, "Party code is required."),
-  partyName: z.string().trim().min(1, "Party name is required."),
+  partyCode: z.string().trim().min(1, "Party Code is required."),
+  partyName: z.string().trim().min(1, "Party Name is required."),
   transNo: z.string().trim().min(1, "CA No. is required."),
 });
 

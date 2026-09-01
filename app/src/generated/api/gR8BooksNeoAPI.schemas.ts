@@ -18,9 +18,9 @@ export interface RegisterDto {
 export interface VerifyEmailDto {
   email: string;
   /**
-   * @minLength 4
-   * @maxLength 4
-   */
+     * @minLength 4
+     * @maxLength 4
+     */
   code: string;
 }
 
@@ -40,9 +40,9 @@ export interface ForgotPasswordDto {
 export interface VerifyForgotPasswordCodeDto {
   email: string;
   /**
-   * @minLength 4
-   * @maxLength 4
-   */
+     * @minLength 4
+     * @maxLength 4
+     */
   code: string;
 }
 
@@ -74,9 +74,9 @@ export interface LoginDto {
 
 export interface ExchangeGoogleSessionDto {
   /**
-   * @minLength 64
-   * @maxLength 64
-   */
+     * @minLength 64
+     * @maxLength 64
+     */
   handoffCode: string;
 }
 
@@ -87,10 +87,10 @@ export interface SwitchCompanyContextDto {
 
 export interface VerifyPasswordChangeCodeDto {
   /**
-   * @minLength 4
-   * @maxLength 4
-   * @pattern ^\d+$
-   */
+     * @minLength 4
+     * @maxLength 4
+     * @pattern ^\d+$
+     */
   code: string;
 }
 
@@ -128,13 +128,13 @@ export interface OnboardingPlanPricingResponseDto {
   yearlyCompareAt: OnboardingPlanPriceSummaryResponseDto | null;
 }
 
-export type OnboardingPlanPriceResponseDtoBillingCycle =
-  (typeof OnboardingPlanPriceResponseDtoBillingCycle)[keyof typeof OnboardingPlanPriceResponseDtoBillingCycle];
+export type OnboardingPlanPriceResponseDtoBillingCycle = typeof OnboardingPlanPriceResponseDtoBillingCycle[keyof typeof OnboardingPlanPriceResponseDtoBillingCycle];
+
 
 export const OnboardingPlanPriceResponseDtoBillingCycle = {
-  MONTHLY: "MONTHLY",
-  QUARTERLY: "QUARTERLY",
-  YEARLY: "YEARLY",
+  MONTHLY: 'MONTHLY',
+  QUARTERLY: 'QUARTERLY',
+  YEARLY: 'YEARLY',
 } as const;
 
 export interface OnboardingPlanPriceResponseDto {
@@ -196,12 +196,12 @@ export interface OnboardingPlansResponseDto {
 /**
  * @nullable
  */
-export type OnboardingDraftCompanyDetailsResponseDtoTaxpayerType =
-  (typeof OnboardingDraftCompanyDetailsResponseDtoTaxpayerType)[keyof typeof OnboardingDraftCompanyDetailsResponseDtoTaxpayerType] | null;
+export type OnboardingDraftCompanyDetailsResponseDtoTaxpayerType = typeof OnboardingDraftCompanyDetailsResponseDtoTaxpayerType[keyof typeof OnboardingDraftCompanyDetailsResponseDtoTaxpayerType] | null;
+
 
 export const OnboardingDraftCompanyDetailsResponseDtoTaxpayerType = {
-  individual: "individual",
-  "non-individual": "non-individual",
+  individual: 'individual',
+  'non-individual': 'non-individual',
 } as const;
 
 export interface OnboardingDraftCompanyDetailsResponseDto {
@@ -250,13 +250,13 @@ export interface OnboardingDraftCompanyDetailsResponseDto {
 /**
  * @nullable
  */
-export type OnboardingDraftResponseDtoBillingCycle =
-  (typeof OnboardingDraftResponseDtoBillingCycle)[keyof typeof OnboardingDraftResponseDtoBillingCycle] | null;
+export type OnboardingDraftResponseDtoBillingCycle = typeof OnboardingDraftResponseDtoBillingCycle[keyof typeof OnboardingDraftResponseDtoBillingCycle] | null;
+
 
 export const OnboardingDraftResponseDtoBillingCycle = {
-  MONTHLY: "MONTHLY",
-  QUARTERLY: "QUARTERLY",
-  YEARLY: "YEARLY",
+  MONTHLY: 'MONTHLY',
+  QUARTERLY: 'QUARTERLY',
+  YEARLY: 'YEARLY',
 } as const;
 
 export interface OnboardingDraftResponseDto {
@@ -292,13 +292,13 @@ export interface GetOnboardingDraftResponseDto {
   draft: OnboardingDraftResponseDto | null;
 }
 
-export type SelectOnboardingPlanDtoBillingCycle =
-  (typeof SelectOnboardingPlanDtoBillingCycle)[keyof typeof SelectOnboardingPlanDtoBillingCycle];
+export type SelectOnboardingPlanDtoBillingCycle = typeof SelectOnboardingPlanDtoBillingCycle[keyof typeof SelectOnboardingPlanDtoBillingCycle];
+
 
 export const SelectOnboardingPlanDtoBillingCycle = {
-  MONTHLY: "MONTHLY",
-  QUARTERLY: "QUARTERLY",
-  YEARLY: "YEARLY",
+  MONTHLY: 'MONTHLY',
+  QUARTERLY: 'QUARTERLY',
+  YEARLY: 'YEARLY',
 } as const;
 
 export interface SelectOnboardingPlanDto {
@@ -321,14 +321,14 @@ export interface SaveOnboardingBillingDto {
   /** @minLength 2 */
   cardBrand: string;
   /**
-   * @minimum 1
-   * @maximum 12
-   */
+     * @minimum 1
+     * @maximum 12
+     */
   expiryMonth: number;
   /**
-   * @minimum 2000
-   * @maximum 9999
-   */
+     * @minimum 2000
+     * @maximum 9999
+     */
   expiryYear: number;
   /** @minLength 5 */
   billingAddress: string;
@@ -339,13 +339,13 @@ export interface SaveOnboardingBillingDto {
 /**
  * @nullable
  */
-export type OnboardingBillingResponseDtoBillingCycle =
-  (typeof OnboardingBillingResponseDtoBillingCycle)[keyof typeof OnboardingBillingResponseDtoBillingCycle] | null;
+export type OnboardingBillingResponseDtoBillingCycle = typeof OnboardingBillingResponseDtoBillingCycle[keyof typeof OnboardingBillingResponseDtoBillingCycle] | null;
+
 
 export const OnboardingBillingResponseDtoBillingCycle = {
-  MONTHLY: "MONTHLY",
-  QUARTERLY: "QUARTERLY",
-  YEARLY: "YEARLY",
+  MONTHLY: 'MONTHLY',
+  QUARTERLY: 'QUARTERLY',
+  YEARLY: 'YEARLY',
 } as const;
 
 export interface OnboardingBillingResponseDto {
@@ -381,11 +381,11 @@ export interface OnboardingPaymentIntentResponseDto {
   redirectUrl: string | null;
 }
 
-export type SaveOnboardingBillingResponseDtoPaymentSetupState =
-  (typeof SaveOnboardingBillingResponseDtoPaymentSetupState)[keyof typeof SaveOnboardingBillingResponseDtoPaymentSetupState];
+export type SaveOnboardingBillingResponseDtoPaymentSetupState = typeof SaveOnboardingBillingResponseDtoPaymentSetupState[keyof typeof SaveOnboardingBillingResponseDtoPaymentSetupState];
+
 
 export const SaveOnboardingBillingResponseDtoPaymentSetupState = {
-  ready_for_confirmation: "ready_for_confirmation",
+  ready_for_confirmation: 'ready_for_confirmation',
 } as const;
 
 export interface SaveOnboardingBillingResponseDto {
@@ -397,12 +397,12 @@ export interface SaveOnboardingBillingResponseDto {
   nextStep: string;
 }
 
-export type SaveOnboardingCompanyDetailsDtoTaxpayerType =
-  (typeof SaveOnboardingCompanyDetailsDtoTaxpayerType)[keyof typeof SaveOnboardingCompanyDetailsDtoTaxpayerType];
+export type SaveOnboardingCompanyDetailsDtoTaxpayerType = typeof SaveOnboardingCompanyDetailsDtoTaxpayerType[keyof typeof SaveOnboardingCompanyDetailsDtoTaxpayerType];
+
 
 export const SaveOnboardingCompanyDetailsDtoTaxpayerType = {
-  individual: "individual",
-  "non-individual": "non-individual",
+  individual: 'individual',
+  'non-individual': 'non-individual',
 } as const;
 
 export interface SaveOnboardingCompanyDetailsDto {
@@ -441,12 +441,12 @@ export interface SaveOnboardingCompanyDetailsDto {
   website?: string;
 }
 
-export type OnboardingCompanyDetailsResponseDtoTaxpayerType =
-  (typeof OnboardingCompanyDetailsResponseDtoTaxpayerType)[keyof typeof OnboardingCompanyDetailsResponseDtoTaxpayerType];
+export type OnboardingCompanyDetailsResponseDtoTaxpayerType = typeof OnboardingCompanyDetailsResponseDtoTaxpayerType[keyof typeof OnboardingCompanyDetailsResponseDtoTaxpayerType];
+
 
 export const OnboardingCompanyDetailsResponseDtoTaxpayerType = {
-  individual: "individual",
-  "non-individual": "non-individual",
+  individual: 'individual',
+  'non-individual': 'non-individual',
 } as const;
 
 export interface OnboardingCompanyDetailsResponseDto {
@@ -495,27 +495,27 @@ export interface OnboardingCompanyResponseDto {
   status: string;
 }
 
-export type OnboardingSubscriptionResponseDtoBillingCycle =
-  (typeof OnboardingSubscriptionResponseDtoBillingCycle)[keyof typeof OnboardingSubscriptionResponseDtoBillingCycle];
+export type OnboardingSubscriptionResponseDtoBillingCycle = typeof OnboardingSubscriptionResponseDtoBillingCycle[keyof typeof OnboardingSubscriptionResponseDtoBillingCycle];
+
 
 export const OnboardingSubscriptionResponseDtoBillingCycle = {
-  MONTHLY: "MONTHLY",
-  QUARTERLY: "QUARTERLY",
-  YEARLY: "YEARLY",
+  MONTHLY: 'MONTHLY',
+  QUARTERLY: 'QUARTERLY',
+  YEARLY: 'YEARLY',
 } as const;
 
-export type OnboardingSubscriptionResponseDtoStatus =
-  (typeof OnboardingSubscriptionResponseDtoStatus)[keyof typeof OnboardingSubscriptionResponseDtoStatus];
+export type OnboardingSubscriptionResponseDtoStatus = typeof OnboardingSubscriptionResponseDtoStatus[keyof typeof OnboardingSubscriptionResponseDtoStatus];
+
 
 export const OnboardingSubscriptionResponseDtoStatus = {
-  INCOMPLETE: "INCOMPLETE",
-  TRIALING: "TRIALING",
-  ACTIVE: "ACTIVE",
-  PAST_DUE: "PAST_DUE",
-  UNPAID: "UNPAID",
-  INCOMPLETE_CANCELED: "INCOMPLETE_CANCELED",
-  EXPIRED: "EXPIRED",
-  CANCELED: "CANCELED",
+  INCOMPLETE: 'INCOMPLETE',
+  TRIALING: 'TRIALING',
+  ACTIVE: 'ACTIVE',
+  PAST_DUE: 'PAST_DUE',
+  UNPAID: 'UNPAID',
+  INCOMPLETE_CANCELED: 'INCOMPLETE_CANCELED',
+  EXPIRED: 'EXPIRED',
+  CANCELED: 'CANCELED',
 } as const;
 
 export interface OnboardingSubscriptionResponseDto {
@@ -538,11 +538,12 @@ export interface CompleteOnboardingResponseDto {
   accessToken?: string;
 }
 
-export type CreateUserDtoSystemRole = (typeof CreateUserDtoSystemRole)[keyof typeof CreateUserDtoSystemRole];
+export type CreateUserDtoSystemRole = typeof CreateUserDtoSystemRole[keyof typeof CreateUserDtoSystemRole];
+
 
 export const CreateUserDtoSystemRole = {
-  SUPER_ADMIN: "SUPER_ADMIN",
-  STANDARD: "STANDARD",
+  SUPER_ADMIN: 'SUPER_ADMIN',
+  STANDARD: 'STANDARD',
 } as const;
 
 export interface CreateUserDto {
@@ -561,11 +562,12 @@ export interface UpdateOwnProfileDto {
   contactNumber?: string;
 }
 
-export type UpdateUserDtoSystemRole = (typeof UpdateUserDtoSystemRole)[keyof typeof UpdateUserDtoSystemRole];
+export type UpdateUserDtoSystemRole = typeof UpdateUserDtoSystemRole[keyof typeof UpdateUserDtoSystemRole];
+
 
 export const UpdateUserDtoSystemRole = {
-  SUPER_ADMIN: "SUPER_ADMIN",
-  STANDARD: "STANDARD",
+  SUPER_ADMIN: 'SUPER_ADMIN',
+  STANDARD: 'STANDARD',
 } as const;
 
 export interface UpdateUserDto {
@@ -590,13 +592,13 @@ export interface BillingPlanPricingResponseDto {
   yearly: BillingPlanPriceResponseDto;
 }
 
-export type BillingPlanDetailedPriceResponseDtoBillingCycle =
-  (typeof BillingPlanDetailedPriceResponseDtoBillingCycle)[keyof typeof BillingPlanDetailedPriceResponseDtoBillingCycle];
+export type BillingPlanDetailedPriceResponseDtoBillingCycle = typeof BillingPlanDetailedPriceResponseDtoBillingCycle[keyof typeof BillingPlanDetailedPriceResponseDtoBillingCycle];
+
 
 export const BillingPlanDetailedPriceResponseDtoBillingCycle = {
-  MONTHLY: "MONTHLY",
-  QUARTERLY: "QUARTERLY",
-  YEARLY: "YEARLY",
+  MONTHLY: 'MONTHLY',
+  QUARTERLY: 'QUARTERLY',
+  YEARLY: 'YEARLY',
 } as const;
 
 export interface BillingPlanDetailedPriceResponseDto {
@@ -707,13 +709,13 @@ export interface CompanySubscriptionProviderReferencesResponseDto {
   latestPaymentIntentId: string | null;
 }
 
-export type CompanySubscriptionSelectedPriceResponseDtoBillingCycle =
-  (typeof CompanySubscriptionSelectedPriceResponseDtoBillingCycle)[keyof typeof CompanySubscriptionSelectedPriceResponseDtoBillingCycle];
+export type CompanySubscriptionSelectedPriceResponseDtoBillingCycle = typeof CompanySubscriptionSelectedPriceResponseDtoBillingCycle[keyof typeof CompanySubscriptionSelectedPriceResponseDtoBillingCycle];
+
 
 export const CompanySubscriptionSelectedPriceResponseDtoBillingCycle = {
-  MONTHLY: "MONTHLY",
-  QUARTERLY: "QUARTERLY",
-  YEARLY: "YEARLY",
+  MONTHLY: 'MONTHLY',
+  QUARTERLY: 'QUARTERLY',
+  YEARLY: 'YEARLY',
 } as const;
 
 export interface CompanySubscriptionSelectedPriceResponseDto {
@@ -773,15 +775,16 @@ export interface BillingPaymentMethodResponseDto {
   externalPaymentMethodId: string;
 }
 
-export type BillingInvoiceResponseDtoStatus = (typeof BillingInvoiceResponseDtoStatus)[keyof typeof BillingInvoiceResponseDtoStatus];
+export type BillingInvoiceResponseDtoStatus = typeof BillingInvoiceResponseDtoStatus[keyof typeof BillingInvoiceResponseDtoStatus];
+
 
 export const BillingInvoiceResponseDtoStatus = {
-  DRAFT: "DRAFT",
-  OPEN: "OPEN",
-  PAID: "PAID",
-  VOID: "VOID",
-  EXPIRED: "EXPIRED",
-  UNCOLLECTIBLE: "UNCOLLECTIBLE",
+  DRAFT: 'DRAFT',
+  OPEN: 'OPEN',
+  PAID: 'PAID',
+  VOID: 'VOID',
+  EXPIRED: 'EXPIRED',
+  UNCOLLECTIBLE: 'UNCOLLECTIBLE',
 } as const;
 
 export interface BillingInvoiceResponseDto {
@@ -811,42 +814,42 @@ export interface BillingInvoiceResponseDto {
   periodEndAt: string | null;
 }
 
-export type CompanySubscriptionResponseDtoStatus =
-  (typeof CompanySubscriptionResponseDtoStatus)[keyof typeof CompanySubscriptionResponseDtoStatus];
+export type CompanySubscriptionResponseDtoStatus = typeof CompanySubscriptionResponseDtoStatus[keyof typeof CompanySubscriptionResponseDtoStatus];
+
 
 export const CompanySubscriptionResponseDtoStatus = {
-  INCOMPLETE: "INCOMPLETE",
-  TRIALING: "TRIALING",
-  ACTIVE: "ACTIVE",
-  PAST_DUE: "PAST_DUE",
-  UNPAID: "UNPAID",
-  INCOMPLETE_CANCELED: "INCOMPLETE_CANCELED",
-  EXPIRED: "EXPIRED",
-  CANCELED: "CANCELED",
+  INCOMPLETE: 'INCOMPLETE',
+  TRIALING: 'TRIALING',
+  ACTIVE: 'ACTIVE',
+  PAST_DUE: 'PAST_DUE',
+  UNPAID: 'UNPAID',
+  INCOMPLETE_CANCELED: 'INCOMPLETE_CANCELED',
+  EXPIRED: 'EXPIRED',
+  CANCELED: 'CANCELED',
 } as const;
 
-export type CompanySubscriptionResponseDtoBillingCycle =
-  (typeof CompanySubscriptionResponseDtoBillingCycle)[keyof typeof CompanySubscriptionResponseDtoBillingCycle];
+export type CompanySubscriptionResponseDtoBillingCycle = typeof CompanySubscriptionResponseDtoBillingCycle[keyof typeof CompanySubscriptionResponseDtoBillingCycle];
+
 
 export const CompanySubscriptionResponseDtoBillingCycle = {
-  MONTHLY: "MONTHLY",
-  QUARTERLY: "QUARTERLY",
-  YEARLY: "YEARLY",
+  MONTHLY: 'MONTHLY',
+  QUARTERLY: 'QUARTERLY',
+  YEARLY: 'YEARLY',
 } as const;
 
-export type CompanySubscriptionResponseDtoBillingProvider =
-  (typeof CompanySubscriptionResponseDtoBillingProvider)[keyof typeof CompanySubscriptionResponseDtoBillingProvider];
+export type CompanySubscriptionResponseDtoBillingProvider = typeof CompanySubscriptionResponseDtoBillingProvider[keyof typeof CompanySubscriptionResponseDtoBillingProvider];
+
 
 export const CompanySubscriptionResponseDtoBillingProvider = {
-  PAYMONGO: "PAYMONGO",
+  PAYMONGO: 'PAYMONGO',
 } as const;
 
-export type CompanySubscriptionResponseDtoBillingMode =
-  (typeof CompanySubscriptionResponseDtoBillingMode)[keyof typeof CompanySubscriptionResponseDtoBillingMode];
+export type CompanySubscriptionResponseDtoBillingMode = typeof CompanySubscriptionResponseDtoBillingMode[keyof typeof CompanySubscriptionResponseDtoBillingMode];
+
 
 export const CompanySubscriptionResponseDtoBillingMode = {
-  MANUAL: "MANUAL",
-  AUTO: "AUTO",
+  MANUAL: 'MANUAL',
+  AUTO: 'AUTO',
 } as const;
 
 export interface CompanySubscriptionResponseDto {
@@ -892,12 +895,13 @@ export interface CurrentSubscriptionResponseDto {
   subscription: CompanySubscriptionResponseDto | null;
 }
 
-export type SubscribeCompanyDtoBillingCycle = (typeof SubscribeCompanyDtoBillingCycle)[keyof typeof SubscribeCompanyDtoBillingCycle];
+export type SubscribeCompanyDtoBillingCycle = typeof SubscribeCompanyDtoBillingCycle[keyof typeof SubscribeCompanyDtoBillingCycle];
+
 
 export const SubscribeCompanyDtoBillingCycle = {
-  MONTHLY: "MONTHLY",
-  QUARTERLY: "QUARTERLY",
-  YEARLY: "YEARLY",
+  MONTHLY: 'MONTHLY',
+  QUARTERLY: 'QUARTERLY',
+  YEARLY: 'YEARLY',
 } as const;
 
 export interface SubscribeCompanyDto {
@@ -910,22 +914,22 @@ export interface SubscribeCompanyResponseDto {
   subscription: CompanySubscriptionResponseDto;
 }
 
-export type CreateManualCheckoutSessionDtoPurpose =
-  (typeof CreateManualCheckoutSessionDtoPurpose)[keyof typeof CreateManualCheckoutSessionDtoPurpose];
+export type CreateManualCheckoutSessionDtoPurpose = typeof CreateManualCheckoutSessionDtoPurpose[keyof typeof CreateManualCheckoutSessionDtoPurpose];
+
 
 export const CreateManualCheckoutSessionDtoPurpose = {
-  ONBOARDING: "ONBOARDING",
-  ADDITIONAL_COMPANY: "ADDITIONAL_COMPANY",
-  RENEWAL: "RENEWAL",
+  ONBOARDING: 'ONBOARDING',
+  ADDITIONAL_COMPANY: 'ADDITIONAL_COMPANY',
+  RENEWAL: 'RENEWAL',
 } as const;
 
-export type CreateManualCheckoutSessionDtoBillingCycle =
-  (typeof CreateManualCheckoutSessionDtoBillingCycle)[keyof typeof CreateManualCheckoutSessionDtoBillingCycle];
+export type CreateManualCheckoutSessionDtoBillingCycle = typeof CreateManualCheckoutSessionDtoBillingCycle[keyof typeof CreateManualCheckoutSessionDtoBillingCycle];
+
 
 export const CreateManualCheckoutSessionDtoBillingCycle = {
-  MONTHLY: "MONTHLY",
-  QUARTERLY: "QUARTERLY",
-  YEARLY: "YEARLY",
+  MONTHLY: 'MONTHLY',
+  QUARTERLY: 'QUARTERLY',
+  YEARLY: 'YEARLY',
 } as const;
 
 export interface CreateManualCheckoutSessionDto {
@@ -938,16 +942,16 @@ export interface CreateManualCheckoutSessionDto {
   cancelUrl: string;
 }
 
-export type ManualCheckoutSessionResponseDtoStatus =
-  (typeof ManualCheckoutSessionResponseDtoStatus)[keyof typeof ManualCheckoutSessionResponseDtoStatus];
+export type ManualCheckoutSessionResponseDtoStatus = typeof ManualCheckoutSessionResponseDtoStatus[keyof typeof ManualCheckoutSessionResponseDtoStatus];
+
 
 export const ManualCheckoutSessionResponseDtoStatus = {
-  PENDING: "PENDING",
-  AWAITING_PAYMENT: "AWAITING_PAYMENT",
-  PAID: "PAID",
-  FAILED: "FAILED",
-  CANCELED: "CANCELED",
-  EXPIRED: "EXPIRED",
+  PENDING: 'PENDING',
+  AWAITING_PAYMENT: 'AWAITING_PAYMENT',
+  PAID: 'PAID',
+  FAILED: 'FAILED',
+  CANCELED: 'CANCELED',
+  EXPIRED: 'EXPIRED',
 } as const;
 
 export interface ManualCheckoutSessionResponseDto {
@@ -958,35 +962,35 @@ export interface ManualCheckoutSessionResponseDto {
   status: ManualCheckoutSessionResponseDtoStatus;
 }
 
-export type BillingPaymentAttemptResponseDtoPurpose =
-  (typeof BillingPaymentAttemptResponseDtoPurpose)[keyof typeof BillingPaymentAttemptResponseDtoPurpose];
+export type BillingPaymentAttemptResponseDtoPurpose = typeof BillingPaymentAttemptResponseDtoPurpose[keyof typeof BillingPaymentAttemptResponseDtoPurpose];
+
 
 export const BillingPaymentAttemptResponseDtoPurpose = {
-  ONBOARDING: "ONBOARDING",
-  RENEWAL: "RENEWAL",
-  ADDITIONAL_COMPANY: "ADDITIONAL_COMPANY",
+  ONBOARDING: 'ONBOARDING',
+  RENEWAL: 'RENEWAL',
+  ADDITIONAL_COMPANY: 'ADDITIONAL_COMPANY',
 } as const;
 
-export type BillingPaymentAttemptResponseDtoStatus =
-  (typeof BillingPaymentAttemptResponseDtoStatus)[keyof typeof BillingPaymentAttemptResponseDtoStatus];
+export type BillingPaymentAttemptResponseDtoStatus = typeof BillingPaymentAttemptResponseDtoStatus[keyof typeof BillingPaymentAttemptResponseDtoStatus];
+
 
 export const BillingPaymentAttemptResponseDtoStatus = {
-  PENDING: "PENDING",
-  AWAITING_PAYMENT: "AWAITING_PAYMENT",
-  PAID: "PAID",
-  FAILED: "FAILED",
-  CANCELED: "CANCELED",
-  EXPIRED: "EXPIRED",
+  PENDING: 'PENDING',
+  AWAITING_PAYMENT: 'AWAITING_PAYMENT',
+  PAID: 'PAID',
+  FAILED: 'FAILED',
+  CANCELED: 'CANCELED',
+  EXPIRED: 'EXPIRED',
 } as const;
 
-export type BillingPaymentAttemptResponseDtoApplicationStatus =
-  (typeof BillingPaymentAttemptResponseDtoApplicationStatus)[keyof typeof BillingPaymentAttemptResponseDtoApplicationStatus];
+export type BillingPaymentAttemptResponseDtoApplicationStatus = typeof BillingPaymentAttemptResponseDtoApplicationStatus[keyof typeof BillingPaymentAttemptResponseDtoApplicationStatus];
+
 
 export const BillingPaymentAttemptResponseDtoApplicationStatus = {
-  PENDING: "PENDING",
-  PROCESSING: "PROCESSING",
-  APPLIED: "APPLIED",
-  FAILED: "FAILED",
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  APPLIED: 'APPLIED',
+  FAILED: 'FAILED',
 } as const;
 
 export interface BillingPaymentAttemptResponseDto {
@@ -1052,16 +1056,16 @@ export interface CancelSubscriptionResponseDto {
 
 export interface UpsertModuleSystemDto {
   /**
-   * @maxLength 64
-   * @nullable
-   */
+     * @maxLength 64
+     * @nullable
+     */
   code?: string | null;
   /** @maxLength 160 */
   name: string;
   /**
-   * @maxLength 1000
-   * @nullable
-   */
+     * @maxLength 1000
+     * @nullable
+     */
   description?: string | null;
   /** @minimum 0 */
   sortOrder?: number;
@@ -1076,45 +1080,45 @@ export interface SaveModuleSystemModulesDto {
   moduleCodes: string[];
 }
 
-export type ModuleSystemSidebarItemDtoItemType =
-  (typeof ModuleSystemSidebarItemDtoItemType)[keyof typeof ModuleSystemSidebarItemDtoItemType];
+export type ModuleSystemSidebarItemDtoItemType = typeof ModuleSystemSidebarItemDtoItemType[keyof typeof ModuleSystemSidebarItemDtoItemType];
+
 
 export const ModuleSystemSidebarItemDtoItemType = {
-  SECTION: "SECTION",
-  CONTAINER: "CONTAINER",
-  LINK: "LINK",
+  SECTION: 'SECTION',
+  CONTAINER: 'CONTAINER',
+  LINK: 'LINK',
 } as const;
 
 export interface ModuleSystemSidebarItemDto {
   /**
-   * @minimum 1
-   * @nullable
-   */
+     * @minimum 1
+     * @nullable
+     */
   id?: number | null;
   /** @maxLength 120 */
   key: string;
   /** @maxLength 160 */
   label: string;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   description?: string | null;
   itemType: ModuleSystemSidebarItemDtoItemType;
   /**
-   * @minimum 1
-   * @nullable
-   */
+     * @minimum 1
+     * @nullable
+     */
   moduleId?: number | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   moduleCode?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   iconName?: string | null;
   /** @minimum 0 */
   sortOrder?: number;
@@ -1126,20 +1130,22 @@ export interface SaveModuleSystemSidebarDto {
   items: ModuleSystemSidebarItemDto[];
 }
 
-export type MasterPlanPriceDtoBillingCycle = (typeof MasterPlanPriceDtoBillingCycle)[keyof typeof MasterPlanPriceDtoBillingCycle];
+export type MasterPlanPriceDtoBillingCycle = typeof MasterPlanPriceDtoBillingCycle[keyof typeof MasterPlanPriceDtoBillingCycle];
+
 
 export const MasterPlanPriceDtoBillingCycle = {
-  MONTHLY: "MONTHLY",
-  QUARTERLY: "QUARTERLY",
-  YEARLY: "YEARLY",
+  MONTHLY: 'MONTHLY',
+  QUARTERLY: 'QUARTERLY',
+  YEARLY: 'YEARLY',
 } as const;
 
-export type MasterPlanPriceDtoIntervalUnit = (typeof MasterPlanPriceDtoIntervalUnit)[keyof typeof MasterPlanPriceDtoIntervalUnit];
+export type MasterPlanPriceDtoIntervalUnit = typeof MasterPlanPriceDtoIntervalUnit[keyof typeof MasterPlanPriceDtoIntervalUnit];
+
 
 export const MasterPlanPriceDtoIntervalUnit = {
-  DAY: "DAY",
-  MONTH: "MONTH",
-  YEAR: "YEAR",
+  DAY: 'DAY',
+  MONTH: 'MONTH',
+  YEAR: 'YEAR',
 } as const;
 
 export interface MasterPlanPriceDto {
@@ -1150,19 +1156,20 @@ export interface MasterPlanPriceDto {
   /** @minimum 0 */
   priceInCents: number;
   /**
-   * @minimum 0
-   * @nullable
-   */
+     * @minimum 0
+     * @nullable
+     */
   compareAtInCents?: number | null;
 }
 
-export type MasterPlanUsageRuleDtoMetric = (typeof MasterPlanUsageRuleDtoMetric)[keyof typeof MasterPlanUsageRuleDtoMetric];
+export type MasterPlanUsageRuleDtoMetric = typeof MasterPlanUsageRuleDtoMetric[keyof typeof MasterPlanUsageRuleDtoMetric];
+
 
 export const MasterPlanUsageRuleDtoMetric = {
-  COMPANY: "COMPANY",
-  BRANCH: "BRANCH",
-  SATELLITE: "SATELLITE",
-  USER: "USER",
+  COMPANY: 'COMPANY',
+  BRANCH: 'BRANCH',
+  SATELLITE: 'SATELLITE',
+  USER: 'USER',
 } as const;
 
 export interface MasterPlanUsageRuleDto {
@@ -1173,13 +1180,14 @@ export interface MasterPlanUsageRuleDto {
   unitPriceInCents: number;
 }
 
-export type MasterPlanDiscountTierDtoMetric = (typeof MasterPlanDiscountTierDtoMetric)[keyof typeof MasterPlanDiscountTierDtoMetric];
+export type MasterPlanDiscountTierDtoMetric = typeof MasterPlanDiscountTierDtoMetric[keyof typeof MasterPlanDiscountTierDtoMetric];
+
 
 export const MasterPlanDiscountTierDtoMetric = {
-  COMPANY: "COMPANY",
-  BRANCH: "BRANCH",
-  SATELLITE: "SATELLITE",
-  USER: "USER",
+  COMPANY: 'COMPANY',
+  BRANCH: 'BRANCH',
+  SATELLITE: 'SATELLITE',
+  USER: 'USER',
 } as const;
 
 export interface MasterPlanDiscountTierDto {
@@ -1187,62 +1195,62 @@ export interface MasterPlanDiscountTierDto {
   /** @minimum 1 */
   thresholdCount: number;
   /**
-   * @minimum 0
-   * @maximum 100
-   */
+     * @minimum 0
+     * @maximum 100
+     */
   discountPercent: number;
 }
 
-export type CreateMasterPlanAndPackageDtoScope =
-  (typeof CreateMasterPlanAndPackageDtoScope)[keyof typeof CreateMasterPlanAndPackageDtoScope];
+export type CreateMasterPlanAndPackageDtoScope = typeof CreateMasterPlanAndPackageDtoScope[keyof typeof CreateMasterPlanAndPackageDtoScope];
+
 
 export const CreateMasterPlanAndPackageDtoScope = {
-  ALL: "ALL",
-  ONBOARDING: "ONBOARDING",
-  ADDITIONAL_COMPANY: "ADDITIONAL_COMPANY",
+  ALL: 'ALL',
+  ONBOARDING: 'ONBOARDING',
+  ADDITIONAL_COMPANY: 'ADDITIONAL_COMPANY',
 } as const;
 
-export type CreateMasterPlanAndPackageDtoScopesItem =
-  (typeof CreateMasterPlanAndPackageDtoScopesItem)[keyof typeof CreateMasterPlanAndPackageDtoScopesItem];
+export type CreateMasterPlanAndPackageDtoScopesItem = typeof CreateMasterPlanAndPackageDtoScopesItem[keyof typeof CreateMasterPlanAndPackageDtoScopesItem];
+
 
 export const CreateMasterPlanAndPackageDtoScopesItem = {
-  ALL: "ALL",
-  ONBOARDING: "ONBOARDING",
-  ADDITIONAL_COMPANY: "ADDITIONAL_COMPANY",
+  ALL: 'ALL',
+  ONBOARDING: 'ONBOARDING',
+  ADDITIONAL_COMPANY: 'ADDITIONAL_COMPANY',
 } as const;
 
-export type CreateMasterPlanAndPackageDtoStatus =
-  (typeof CreateMasterPlanAndPackageDtoStatus)[keyof typeof CreateMasterPlanAndPackageDtoStatus];
+export type CreateMasterPlanAndPackageDtoStatus = typeof CreateMasterPlanAndPackageDtoStatus[keyof typeof CreateMasterPlanAndPackageDtoStatus];
+
 
 export const CreateMasterPlanAndPackageDtoStatus = {
-  ACTIVE: "ACTIVE",
-  DRAFT: "DRAFT",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  DRAFT: 'DRAFT',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface CreateMasterPlanAndPackageDto {
   /**
-   * @maxLength 64
-   * @nullable
-   */
+     * @maxLength 64
+     * @nullable
+     */
   code?: string | null;
   /**
-   * @minLength 3
-   * @maxLength 160
-   */
+     * @minLength 3
+     * @maxLength 160
+     */
   name: string;
   /**
-   * @maxLength 1000
-   * @nullable
-   */
+     * @maxLength 1000
+     * @nullable
+     */
   description?: string | null;
   scope?: CreateMasterPlanAndPackageDtoScope;
   scopes?: CreateMasterPlanAndPackageDtoScopesItem[];
   status: CreateMasterPlanAndPackageDtoStatus;
   /**
-   * @minimum 0
-   * @maximum 365
-   */
+     * @minimum 0
+     * @maximum 365
+     */
   trialDays: number;
   /** @minimum 0 */
   trialPriceInCents?: number;
@@ -1250,8 +1258,7 @@ export interface CreateMasterPlanAndPackageDto {
   prices: MasterPlanPriceDto[];
   usageRules?: MasterPlanUsageRuleDto[];
   discountTiers?: MasterPlanDiscountTierDto[];
-  systemCodes?: string[];
-  moduleKeys?: string[];
+  systemCodes: string[];
 }
 
 export interface WorkspaceCompanyCreatedByResponseDto {
@@ -1260,13 +1267,13 @@ export interface WorkspaceCompanyCreatedByResponseDto {
   email: string;
 }
 
-export type WorkspaceCompanySubscriptionPlanResponseDtoBillingCycle =
-  (typeof WorkspaceCompanySubscriptionPlanResponseDtoBillingCycle)[keyof typeof WorkspaceCompanySubscriptionPlanResponseDtoBillingCycle];
+export type WorkspaceCompanySubscriptionPlanResponseDtoBillingCycle = typeof WorkspaceCompanySubscriptionPlanResponseDtoBillingCycle[keyof typeof WorkspaceCompanySubscriptionPlanResponseDtoBillingCycle];
+
 
 export const WorkspaceCompanySubscriptionPlanResponseDtoBillingCycle = {
-  MONTHLY: "MONTHLY",
-  QUARTERLY: "QUARTERLY",
-  YEARLY: "YEARLY",
+  MONTHLY: 'MONTHLY',
+  QUARTERLY: 'QUARTERLY',
+  YEARLY: 'YEARLY',
 } as const;
 
 export interface WorkspaceCompanySubscriptionPlanResponseDto {
@@ -1278,13 +1285,13 @@ export interface WorkspaceCompanySubscriptionPlanResponseDto {
   yearlyPriceInCents: number;
 }
 
-export type WorkspaceCompanyUnitResponseDtoType =
-  (typeof WorkspaceCompanyUnitResponseDtoType)[keyof typeof WorkspaceCompanyUnitResponseDtoType];
+export type WorkspaceCompanyUnitResponseDtoType = typeof WorkspaceCompanyUnitResponseDtoType[keyof typeof WorkspaceCompanyUnitResponseDtoType];
+
 
 export const WorkspaceCompanyUnitResponseDtoType = {
-  HEAD_OFFICE: "HEAD_OFFICE",
-  BRANCH: "BRANCH",
-  SATELLITE: "SATELLITE",
+  HEAD_OFFICE: 'HEAD_OFFICE',
+  BRANCH: 'BRANCH',
+  SATELLITE: 'SATELLITE',
 } as const;
 
 export interface WorkspaceCompanyUnitResponseDto {
@@ -1317,22 +1324,23 @@ export interface WorkspaceCompanyUnitResponseDto {
 /**
  * @nullable
  */
-export type WorkspaceCompanyResponseDtoTaxpayerType =
-  (typeof WorkspaceCompanyResponseDtoTaxpayerType)[keyof typeof WorkspaceCompanyResponseDtoTaxpayerType] | null;
+export type WorkspaceCompanyResponseDtoTaxpayerType = typeof WorkspaceCompanyResponseDtoTaxpayerType[keyof typeof WorkspaceCompanyResponseDtoTaxpayerType] | null;
+
 
 export const WorkspaceCompanyResponseDtoTaxpayerType = {
-  INDIVIDUAL: "INDIVIDUAL",
-  NON_INDIVIDUAL: "NON_INDIVIDUAL",
+  INDIVIDUAL: 'INDIVIDUAL',
+  NON_INDIVIDUAL: 'NON_INDIVIDUAL',
 } as const;
 
-export type WorkspaceCompanyResponseDtoStatus = (typeof WorkspaceCompanyResponseDtoStatus)[keyof typeof WorkspaceCompanyResponseDtoStatus];
+export type WorkspaceCompanyResponseDtoStatus = typeof WorkspaceCompanyResponseDtoStatus[keyof typeof WorkspaceCompanyResponseDtoStatus];
+
 
 export const WorkspaceCompanyResponseDtoStatus = {
-  PENDING: "PENDING",
-  PROVISIONING: "PROVISIONING",
-  ACTIVE: "ACTIVE",
-  FAILED: "FAILED",
-  SUSPENDED: "SUSPENDED",
+  PENDING: 'PENDING',
+  PROVISIONING: 'PROVISIONING',
+  ACTIVE: 'ACTIVE',
+  FAILED: 'FAILED',
+  SUSPENDED: 'SUSPENDED',
 } as const;
 
 export interface WorkspaceCompanyResponseDto {
@@ -1394,13 +1402,13 @@ export interface WorkspaceCompanyResponseDto {
   updatedAt: string;
 }
 
-export type WorkspaceUserAssignedUnitResponseDtoType =
-  (typeof WorkspaceUserAssignedUnitResponseDtoType)[keyof typeof WorkspaceUserAssignedUnitResponseDtoType];
+export type WorkspaceUserAssignedUnitResponseDtoType = typeof WorkspaceUserAssignedUnitResponseDtoType[keyof typeof WorkspaceUserAssignedUnitResponseDtoType];
+
 
 export const WorkspaceUserAssignedUnitResponseDtoType = {
-  HEAD_OFFICE: "HEAD_OFFICE",
-  BRANCH: "BRANCH",
-  SATELLITE: "SATELLITE",
+  HEAD_OFFICE: 'HEAD_OFFICE',
+  BRANCH: 'BRANCH',
+  SATELLITE: 'SATELLITE',
 } as const;
 
 export interface WorkspaceUserAssignedUnitResponseDto {
@@ -1441,21 +1449,21 @@ export interface WorkspaceCompanyManagementSummaryResponseDto {
   users: WorkspaceUserResponseDto[];
 }
 
-export type CreateWorkspaceCompanyBillingDtoBillingCycle =
-  (typeof CreateWorkspaceCompanyBillingDtoBillingCycle)[keyof typeof CreateWorkspaceCompanyBillingDtoBillingCycle];
+export type CreateWorkspaceCompanyBillingDtoBillingCycle = typeof CreateWorkspaceCompanyBillingDtoBillingCycle[keyof typeof CreateWorkspaceCompanyBillingDtoBillingCycle];
+
 
 export const CreateWorkspaceCompanyBillingDtoBillingCycle = {
-  MONTHLY: "MONTHLY",
-  QUARTERLY: "QUARTERLY",
-  YEARLY: "YEARLY",
+  MONTHLY: 'MONTHLY',
+  QUARTERLY: 'QUARTERLY',
+  YEARLY: 'YEARLY',
 } as const;
 
-export type CreateWorkspaceCompanyBillingDtoBillingMode =
-  (typeof CreateWorkspaceCompanyBillingDtoBillingMode)[keyof typeof CreateWorkspaceCompanyBillingDtoBillingMode];
+export type CreateWorkspaceCompanyBillingDtoBillingMode = typeof CreateWorkspaceCompanyBillingDtoBillingMode[keyof typeof CreateWorkspaceCompanyBillingDtoBillingMode];
+
 
 export const CreateWorkspaceCompanyBillingDtoBillingMode = {
-  MANUAL: "MANUAL",
-  AUTO: "AUTO",
+  MANUAL: 'MANUAL',
+  AUTO: 'AUTO',
 } as const;
 
 export interface CreateWorkspaceCompanyBillingDto {
@@ -1468,25 +1476,25 @@ export interface CreateWorkspaceCompanyBillingDto {
   /** @pattern ^\d{4}$ */
   cardLast4?: string;
   /**
-   * @minimum 1
-   * @maximum 12
-   */
+     * @minimum 1
+     * @maximum 12
+     */
   cardExpiryMonth?: number;
   /**
-   * @minimum 2000
-   * @maximum 9999
-   */
+     * @minimum 2000
+     * @maximum 9999
+     */
   cardExpiryYear?: number;
   /** @minimum 1 */
   paymentAttemptId?: number;
 }
 
-export type CreateWorkspaceCompanyDtoTaxpayerType =
-  (typeof CreateWorkspaceCompanyDtoTaxpayerType)[keyof typeof CreateWorkspaceCompanyDtoTaxpayerType];
+export type CreateWorkspaceCompanyDtoTaxpayerType = typeof CreateWorkspaceCompanyDtoTaxpayerType[keyof typeof CreateWorkspaceCompanyDtoTaxpayerType];
+
 
 export const CreateWorkspaceCompanyDtoTaxpayerType = {
-  individual: "individual",
-  "non-individual": "non-individual",
+  individual: 'individual',
+  'non-individual': 'non-individual',
 } as const;
 
 export interface CreateWorkspaceCompanyDto {
@@ -1521,12 +1529,12 @@ export interface CreateWorkspaceCompanyDto {
   billing?: CreateWorkspaceCompanyBillingDto;
 }
 
-export type UpdateWorkspaceCompanyDtoTaxpayerType =
-  (typeof UpdateWorkspaceCompanyDtoTaxpayerType)[keyof typeof UpdateWorkspaceCompanyDtoTaxpayerType];
+export type UpdateWorkspaceCompanyDtoTaxpayerType = typeof UpdateWorkspaceCompanyDtoTaxpayerType[keyof typeof UpdateWorkspaceCompanyDtoTaxpayerType];
+
 
 export const UpdateWorkspaceCompanyDtoTaxpayerType = {
-  individual: "individual",
-  "non-individual": "non-individual",
+  individual: 'individual',
+  'non-individual': 'non-individual',
 } as const;
 
 export interface UpdateWorkspaceCompanyDto {
@@ -1568,11 +1576,12 @@ export interface WorkspaceCompanyLogoUploadResponseDto {
   logo: WorkspaceCompanyLogoUploadResponseDtoLogo;
 }
 
-export type CreateCompanyUnitDtoType = (typeof CreateCompanyUnitDtoType)[keyof typeof CreateCompanyUnitDtoType];
+export type CreateCompanyUnitDtoType = typeof CreateCompanyUnitDtoType[keyof typeof CreateCompanyUnitDtoType];
+
 
 export const CreateCompanyUnitDtoType = {
-  BRANCH: "BRANCH",
-  SATELLITE: "SATELLITE",
+  BRANCH: 'BRANCH',
+  SATELLITE: 'SATELLITE',
 } as const;
 
 export interface CreateCompanyUnitDto {
@@ -1605,9 +1614,9 @@ export interface WorkspaceUserAssignmentDto {
   /** @minimum 1 */
   companyId: number;
   /**
-   * @minItems 1
-   * @items.minimum 1
-   */
+     * @minItems 1
+     * @items.minimum 1
+     */
   unitIds: number[];
 }
 
@@ -1678,38 +1687,38 @@ export interface SaveTablePreferenceDto {
   configuration: SaveTablePreferenceDtoConfiguration;
 }
 
-export type BranchRolePermissionDtoActionsItem =
-  (typeof BranchRolePermissionDtoActionsItem)[keyof typeof BranchRolePermissionDtoActionsItem];
+export type BranchRolePermissionDtoActionsItem = typeof BranchRolePermissionDtoActionsItem[keyof typeof BranchRolePermissionDtoActionsItem];
+
 
 export const BranchRolePermissionDtoActionsItem = {
-  view: "view",
-  create: "create",
-  update: "update",
-  cancel: "cancel",
-  uncancel: "uncancel",
-  export: "export",
+  view: 'view',
+  create: 'create',
+  update: 'update',
+  cancel: 'cancel',
+  uncancel: 'uncancel',
+  export: 'export',
 } as const;
 
 export interface BranchRolePermissionDto {
   /**
-   * @minLength 2
-   * @maxLength 120
-   */
+     * @minLength 2
+     * @maxLength 120
+     */
   moduleCode: string;
   /**
-   * @minLength 2
-   * @maxLength 160
-   */
+     * @minLength 2
+     * @maxLength 160
+     */
   moduleName: string;
   /**
-   * @minLength 1
-   * @maxLength 160
-   */
+     * @minLength 1
+     * @maxLength 160
+     */
   permissionCode: string;
   /**
-   * @minLength 2
-   * @maxLength 160
-   */
+     * @minLength 2
+     * @maxLength 160
+     */
   permissionName: string;
   actions?: BranchRolePermissionDtoActionsItem[];
   canView?: boolean;
@@ -1722,14 +1731,14 @@ export interface BranchRolePermissionDto {
 
 export interface CreateBranchRoleDto {
   /**
-   * @minLength 2
-   * @maxLength 120
-   */
+     * @minLength 2
+     * @maxLength 120
+     */
   name: string;
   /**
-   * @maxLength 1000
-   * @nullable
-   */
+     * @maxLength 1000
+     * @nullable
+     */
   description?: string | null;
   /** @minItems 1 */
   permissions: BranchRolePermissionDto[];
@@ -1737,14 +1746,14 @@ export interface CreateBranchRoleDto {
 
 export interface UpdateBranchRoleDto {
   /**
-   * @minLength 2
-   * @maxLength 120
-   */
+     * @minLength 2
+     * @maxLength 120
+     */
   name: string;
   /**
-   * @maxLength 1000
-   * @nullable
-   */
+     * @maxLength 1000
+     * @nullable
+     */
   description?: string | null;
   /** @minItems 1 */
   permissions: BranchRolePermissionDto[];
@@ -1756,9 +1765,9 @@ export interface UpdateBranchRoleStatusDto {
 
 export interface UpdateBranchUserRoleDto {
   /**
-   * @minimum 1
-   * @nullable
-   */
+     * @minimum 1
+     * @nullable
+     */
   companyRoleId?: number | null;
 }
 
@@ -1865,9 +1874,9 @@ export interface SaveFormSignatoryDto {
   /** @maxLength 160 */
   moduleName: string;
   /**
-   * @minItems 1
-   * @maxItems 5
-   */
+     * @minItems 1
+     * @maxItems 5
+     */
   rows: FormSignatoryRowDto[];
 }
 
@@ -1876,12 +1885,12 @@ export interface SaveFormSignatoryResponseDto {
   setup: FormSignatorySetupResponseDto;
 }
 
-export type ChartAccountBankAccountResponseDtoStatus =
-  (typeof ChartAccountBankAccountResponseDtoStatus)[keyof typeof ChartAccountBankAccountResponseDtoStatus];
+export type ChartAccountBankAccountResponseDtoStatus = typeof ChartAccountBankAccountResponseDtoStatus[keyof typeof ChartAccountBankAccountResponseDtoStatus];
+
 
 export const ChartAccountBankAccountResponseDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface ChartAccountBankAccountResponseDto {
@@ -1899,47 +1908,48 @@ export interface ChartAccountBankAccountResponseDto {
   status: ChartAccountBankAccountResponseDtoStatus;
 }
 
-export type ChartAccountResponseDtoAccountLevel =
-  (typeof ChartAccountResponseDtoAccountLevel)[keyof typeof ChartAccountResponseDtoAccountLevel];
+export type ChartAccountResponseDtoAccountLevel = typeof ChartAccountResponseDtoAccountLevel[keyof typeof ChartAccountResponseDtoAccountLevel];
+
 
 export const ChartAccountResponseDtoAccountLevel = {
-  MAJOR: "MAJOR",
-  SUB1: "SUB1",
-  SUB2: "SUB2",
-  SUB3: "SUB3",
-  SPECIFIC: "SPECIFIC",
+  MAJOR: 'MAJOR',
+  SUB1: 'SUB1',
+  SUB2: 'SUB2',
+  SUB3: 'SUB3',
+  SPECIFIC: 'SPECIFIC',
 } as const;
 
 /**
  * @nullable
  */
-export type ChartAccountResponseDtoAccountType =
-  (typeof ChartAccountResponseDtoAccountType)[keyof typeof ChartAccountResponseDtoAccountType] | null;
+export type ChartAccountResponseDtoAccountType = typeof ChartAccountResponseDtoAccountType[keyof typeof ChartAccountResponseDtoAccountType] | null;
+
 
 export const ChartAccountResponseDtoAccountType = {
-  ASSET: "ASSET",
-  LIABILITY: "LIABILITY",
-  EQUITY: "EQUITY",
-  REVENUE: "REVENUE",
-  EXPENSE: "EXPENSE",
+  ASSET: 'ASSET',
+  LIABILITY: 'LIABILITY',
+  EQUITY: 'EQUITY',
+  REVENUE: 'REVENUE',
+  EXPENSE: 'EXPENSE',
 } as const;
 
 /**
  * @nullable
  */
-export type ChartAccountResponseDtoAccountNature =
-  (typeof ChartAccountResponseDtoAccountNature)[keyof typeof ChartAccountResponseDtoAccountNature] | null;
+export type ChartAccountResponseDtoAccountNature = typeof ChartAccountResponseDtoAccountNature[keyof typeof ChartAccountResponseDtoAccountNature] | null;
+
 
 export const ChartAccountResponseDtoAccountNature = {
-  DEBIT: "DEBIT",
-  CREDIT: "CREDIT",
+  DEBIT: 'DEBIT',
+  CREDIT: 'CREDIT',
 } as const;
 
-export type ChartAccountResponseDtoStatus = (typeof ChartAccountResponseDtoStatus)[keyof typeof ChartAccountResponseDtoStatus];
+export type ChartAccountResponseDtoStatus = typeof ChartAccountResponseDtoStatus[keyof typeof ChartAccountResponseDtoStatus];
+
 
 export const ChartAccountResponseDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface ChartAccountResponseDto {
@@ -1993,34 +2003,34 @@ export interface ChartAccountListResponseDto {
 /**
  * @nullable
  */
-export type ChartAccountOptionResponseDtoAccountType =
-  (typeof ChartAccountOptionResponseDtoAccountType)[keyof typeof ChartAccountOptionResponseDtoAccountType] | null;
+export type ChartAccountOptionResponseDtoAccountType = typeof ChartAccountOptionResponseDtoAccountType[keyof typeof ChartAccountOptionResponseDtoAccountType] | null;
+
 
 export const ChartAccountOptionResponseDtoAccountType = {
-  ASSET: "ASSET",
-  LIABILITY: "LIABILITY",
-  EQUITY: "EQUITY",
-  REVENUE: "REVENUE",
-  EXPENSE: "EXPENSE",
+  ASSET: 'ASSET',
+  LIABILITY: 'LIABILITY',
+  EQUITY: 'EQUITY',
+  REVENUE: 'REVENUE',
+  EXPENSE: 'EXPENSE',
 } as const;
 
 /**
  * @nullable
  */
-export type ChartAccountOptionResponseDtoAccountNature =
-  (typeof ChartAccountOptionResponseDtoAccountNature)[keyof typeof ChartAccountOptionResponseDtoAccountNature] | null;
+export type ChartAccountOptionResponseDtoAccountNature = typeof ChartAccountOptionResponseDtoAccountNature[keyof typeof ChartAccountOptionResponseDtoAccountNature] | null;
+
 
 export const ChartAccountOptionResponseDtoAccountNature = {
-  DEBIT: "DEBIT",
-  CREDIT: "CREDIT",
+  DEBIT: 'DEBIT',
+  CREDIT: 'CREDIT',
 } as const;
 
-export type ChartAccountOptionResponseDtoStatus =
-  (typeof ChartAccountOptionResponseDtoStatus)[keyof typeof ChartAccountOptionResponseDtoStatus];
+export type ChartAccountOptionResponseDtoStatus = typeof ChartAccountOptionResponseDtoStatus[keyof typeof ChartAccountOptionResponseDtoStatus];
+
 
 export const ChartAccountOptionResponseDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface ChartAccountOptionResponseDto {
@@ -2038,48 +2048,48 @@ export interface ChartAccountOptionsResponseDto {
   accounts: ChartAccountOptionResponseDto[];
 }
 
-export type ChartAccountTreeNodeResponseDtoAccountLevel =
-  (typeof ChartAccountTreeNodeResponseDtoAccountLevel)[keyof typeof ChartAccountTreeNodeResponseDtoAccountLevel];
+export type ChartAccountTreeNodeResponseDtoAccountLevel = typeof ChartAccountTreeNodeResponseDtoAccountLevel[keyof typeof ChartAccountTreeNodeResponseDtoAccountLevel];
+
 
 export const ChartAccountTreeNodeResponseDtoAccountLevel = {
-  MAJOR: "MAJOR",
-  SUB1: "SUB1",
-  SUB2: "SUB2",
-  SUB3: "SUB3",
-  SPECIFIC: "SPECIFIC",
+  MAJOR: 'MAJOR',
+  SUB1: 'SUB1',
+  SUB2: 'SUB2',
+  SUB3: 'SUB3',
+  SPECIFIC: 'SPECIFIC',
 } as const;
 
 /**
  * @nullable
  */
-export type ChartAccountTreeNodeResponseDtoAccountType =
-  (typeof ChartAccountTreeNodeResponseDtoAccountType)[keyof typeof ChartAccountTreeNodeResponseDtoAccountType] | null;
+export type ChartAccountTreeNodeResponseDtoAccountType = typeof ChartAccountTreeNodeResponseDtoAccountType[keyof typeof ChartAccountTreeNodeResponseDtoAccountType] | null;
+
 
 export const ChartAccountTreeNodeResponseDtoAccountType = {
-  ASSET: "ASSET",
-  LIABILITY: "LIABILITY",
-  EQUITY: "EQUITY",
-  REVENUE: "REVENUE",
-  EXPENSE: "EXPENSE",
+  ASSET: 'ASSET',
+  LIABILITY: 'LIABILITY',
+  EQUITY: 'EQUITY',
+  REVENUE: 'REVENUE',
+  EXPENSE: 'EXPENSE',
 } as const;
 
 /**
  * @nullable
  */
-export type ChartAccountTreeNodeResponseDtoAccountNature =
-  (typeof ChartAccountTreeNodeResponseDtoAccountNature)[keyof typeof ChartAccountTreeNodeResponseDtoAccountNature] | null;
+export type ChartAccountTreeNodeResponseDtoAccountNature = typeof ChartAccountTreeNodeResponseDtoAccountNature[keyof typeof ChartAccountTreeNodeResponseDtoAccountNature] | null;
+
 
 export const ChartAccountTreeNodeResponseDtoAccountNature = {
-  DEBIT: "DEBIT",
-  CREDIT: "CREDIT",
+  DEBIT: 'DEBIT',
+  CREDIT: 'CREDIT',
 } as const;
 
-export type ChartAccountTreeNodeResponseDtoStatus =
-  (typeof ChartAccountTreeNodeResponseDtoStatus)[keyof typeof ChartAccountTreeNodeResponseDtoStatus];
+export type ChartAccountTreeNodeResponseDtoStatus = typeof ChartAccountTreeNodeResponseDtoStatus[keyof typeof ChartAccountTreeNodeResponseDtoStatus];
+
 
 export const ChartAccountTreeNodeResponseDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface ChartAccountTreeNodeResponseDto {
@@ -2139,21 +2149,22 @@ export interface ChartAccountContainerResponseDto {
   account: ChartAccountResponseDto;
 }
 
-export type ChartAccountBankDetailsDtoKind = (typeof ChartAccountBankDetailsDtoKind)[keyof typeof ChartAccountBankDetailsDtoKind];
+export type ChartAccountBankDetailsDtoKind = typeof ChartAccountBankDetailsDtoKind[keyof typeof ChartAccountBankDetailsDtoKind];
+
 
 export const ChartAccountBankDetailsDtoKind = {
-  BANK: "BANK",
+  BANK: 'BANK',
 } as const;
 
-export type ChartAccountBankDetailsDtoAccountType =
-  (typeof ChartAccountBankDetailsDtoAccountType)[keyof typeof ChartAccountBankDetailsDtoAccountType];
+export type ChartAccountBankDetailsDtoAccountType = typeof ChartAccountBankDetailsDtoAccountType[keyof typeof ChartAccountBankDetailsDtoAccountType];
+
 
 export const ChartAccountBankDetailsDtoAccountType = {
-  CHECKING: "CHECKING",
-  SAVINGS: "SAVINGS",
-  CURRENT: "CURRENT",
-  TIME_DEPOSIT: "TIME_DEPOSIT",
-  CREDIT_CARD: "CREDIT_CARD",
+  CHECKING: 'CHECKING',
+  SAVINGS: 'SAVINGS',
+  CURRENT: 'CURRENT',
+  TIME_DEPOSIT: 'TIME_DEPOSIT',
+  CREDIT_CARD: 'CREDIT_CARD',
 } as const;
 
 export interface ChartAccountBankDetailsDto {
@@ -2177,39 +2188,42 @@ export interface ChartAccountBankDetailsDto {
   seriesDigits?: number;
 }
 
-export type CreateChartAccountDtoAccountLevel = (typeof CreateChartAccountDtoAccountLevel)[keyof typeof CreateChartAccountDtoAccountLevel];
+export type CreateChartAccountDtoAccountLevel = typeof CreateChartAccountDtoAccountLevel[keyof typeof CreateChartAccountDtoAccountLevel];
+
 
 export const CreateChartAccountDtoAccountLevel = {
-  MAJOR: "MAJOR",
-  SUB1: "SUB1",
-  SUB2: "SUB2",
-  SUB3: "SUB3",
-  SPECIFIC: "SPECIFIC",
+  MAJOR: 'MAJOR',
+  SUB1: 'SUB1',
+  SUB2: 'SUB2',
+  SUB3: 'SUB3',
+  SPECIFIC: 'SPECIFIC',
 } as const;
 
-export type CreateChartAccountDtoAccountType = (typeof CreateChartAccountDtoAccountType)[keyof typeof CreateChartAccountDtoAccountType];
+export type CreateChartAccountDtoAccountType = typeof CreateChartAccountDtoAccountType[keyof typeof CreateChartAccountDtoAccountType];
+
 
 export const CreateChartAccountDtoAccountType = {
-  ASSET: "ASSET",
-  LIABILITY: "LIABILITY",
-  EQUITY: "EQUITY",
-  REVENUE: "REVENUE",
-  EXPENSE: "EXPENSE",
+  ASSET: 'ASSET',
+  LIABILITY: 'LIABILITY',
+  EQUITY: 'EQUITY',
+  REVENUE: 'REVENUE',
+  EXPENSE: 'EXPENSE',
 } as const;
 
-export type CreateChartAccountDtoAccountNature =
-  (typeof CreateChartAccountDtoAccountNature)[keyof typeof CreateChartAccountDtoAccountNature];
+export type CreateChartAccountDtoAccountNature = typeof CreateChartAccountDtoAccountNature[keyof typeof CreateChartAccountDtoAccountNature];
+
 
 export const CreateChartAccountDtoAccountNature = {
-  DEBIT: "DEBIT",
-  CREDIT: "CREDIT",
+  DEBIT: 'DEBIT',
+  CREDIT: 'CREDIT',
 } as const;
 
-export type CreateChartAccountDtoStatus = (typeof CreateChartAccountDtoStatus)[keyof typeof CreateChartAccountDtoStatus];
+export type CreateChartAccountDtoStatus = typeof CreateChartAccountDtoStatus[keyof typeof CreateChartAccountDtoStatus];
+
 
 export const CreateChartAccountDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface CreateChartAccountDto {
@@ -2243,39 +2257,42 @@ export interface ChartAccountSaveResponseDto {
   account: ChartAccountResponseDto;
 }
 
-export type UpdateChartAccountDtoAccountLevel = (typeof UpdateChartAccountDtoAccountLevel)[keyof typeof UpdateChartAccountDtoAccountLevel];
+export type UpdateChartAccountDtoAccountLevel = typeof UpdateChartAccountDtoAccountLevel[keyof typeof UpdateChartAccountDtoAccountLevel];
+
 
 export const UpdateChartAccountDtoAccountLevel = {
-  MAJOR: "MAJOR",
-  SUB1: "SUB1",
-  SUB2: "SUB2",
-  SUB3: "SUB3",
-  SPECIFIC: "SPECIFIC",
+  MAJOR: 'MAJOR',
+  SUB1: 'SUB1',
+  SUB2: 'SUB2',
+  SUB3: 'SUB3',
+  SPECIFIC: 'SPECIFIC',
 } as const;
 
-export type UpdateChartAccountDtoAccountType = (typeof UpdateChartAccountDtoAccountType)[keyof typeof UpdateChartAccountDtoAccountType];
+export type UpdateChartAccountDtoAccountType = typeof UpdateChartAccountDtoAccountType[keyof typeof UpdateChartAccountDtoAccountType];
+
 
 export const UpdateChartAccountDtoAccountType = {
-  ASSET: "ASSET",
-  LIABILITY: "LIABILITY",
-  EQUITY: "EQUITY",
-  REVENUE: "REVENUE",
-  EXPENSE: "EXPENSE",
+  ASSET: 'ASSET',
+  LIABILITY: 'LIABILITY',
+  EQUITY: 'EQUITY',
+  REVENUE: 'REVENUE',
+  EXPENSE: 'EXPENSE',
 } as const;
 
-export type UpdateChartAccountDtoAccountNature =
-  (typeof UpdateChartAccountDtoAccountNature)[keyof typeof UpdateChartAccountDtoAccountNature];
+export type UpdateChartAccountDtoAccountNature = typeof UpdateChartAccountDtoAccountNature[keyof typeof UpdateChartAccountDtoAccountNature];
+
 
 export const UpdateChartAccountDtoAccountNature = {
-  DEBIT: "DEBIT",
-  CREDIT: "CREDIT",
+  DEBIT: 'DEBIT',
+  CREDIT: 'CREDIT',
 } as const;
 
-export type UpdateChartAccountDtoStatus = (typeof UpdateChartAccountDtoStatus)[keyof typeof UpdateChartAccountDtoStatus];
+export type UpdateChartAccountDtoStatus = typeof UpdateChartAccountDtoStatus[keyof typeof UpdateChartAccountDtoStatus];
+
 
 export const UpdateChartAccountDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface UpdateChartAccountDto {
@@ -2304,30 +2321,33 @@ export interface UpdateChartAccountDto {
   linkedDetails?: ChartAccountBankDetailsDto;
 }
 
-export type UpdateChartAccountStatusDtoStatus = (typeof UpdateChartAccountStatusDtoStatus)[keyof typeof UpdateChartAccountStatusDtoStatus];
+export type UpdateChartAccountStatusDtoStatus = typeof UpdateChartAccountStatusDtoStatus[keyof typeof UpdateChartAccountStatusDtoStatus];
+
 
 export const UpdateChartAccountStatusDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface UpdateChartAccountStatusDto {
   status: UpdateChartAccountStatusDtoStatus;
 }
 
-export type TermResponseDtoDateMode = (typeof TermResponseDtoDateMode)[keyof typeof TermResponseDtoDateMode];
+export type TermResponseDtoDateMode = typeof TermResponseDtoDateMode[keyof typeof TermResponseDtoDateMode];
+
 
 export const TermResponseDtoDateMode = {
-  DAY: "DAY",
-  MONTH: "MONTH",
-  YEAR: "YEAR",
+  DAY: 'DAY',
+  MONTH: 'MONTH',
+  YEAR: 'YEAR',
 } as const;
 
-export type TermResponseDtoStatus = (typeof TermResponseDtoStatus)[keyof typeof TermResponseDtoStatus];
+export type TermResponseDtoStatus = typeof TermResponseDtoStatus[keyof typeof TermResponseDtoStatus];
+
 
 export const TermResponseDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface TermResponseDto {
@@ -2377,20 +2397,21 @@ export interface TermListResponseDto {
   permissions: TermsMaintenancePermissionsResponseDto;
 }
 
-export type TermLookupOptionResponseDtoDateMode =
-  (typeof TermLookupOptionResponseDtoDateMode)[keyof typeof TermLookupOptionResponseDtoDateMode];
+export type TermLookupOptionResponseDtoDateMode = typeof TermLookupOptionResponseDtoDateMode[keyof typeof TermLookupOptionResponseDtoDateMode];
+
 
 export const TermLookupOptionResponseDtoDateMode = {
-  DAY: "DAY",
-  MONTH: "MONTH",
-  YEAR: "YEAR",
+  DAY: 'DAY',
+  MONTH: 'MONTH',
+  YEAR: 'YEAR',
 } as const;
 
-export type TermLookupOptionResponseDtoStatus = (typeof TermLookupOptionResponseDtoStatus)[keyof typeof TermLookupOptionResponseDtoStatus];
+export type TermLookupOptionResponseDtoStatus = typeof TermLookupOptionResponseDtoStatus[keyof typeof TermLookupOptionResponseDtoStatus];
+
 
 export const TermLookupOptionResponseDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface TermLookupOptionResponseDto {
@@ -2410,19 +2431,21 @@ export interface TermContainerResponseDto {
   permissions: TermsMaintenancePermissionsResponseDto;
 }
 
-export type CreateTermDtoDateMode = (typeof CreateTermDtoDateMode)[keyof typeof CreateTermDtoDateMode];
+export type CreateTermDtoDateMode = typeof CreateTermDtoDateMode[keyof typeof CreateTermDtoDateMode];
+
 
 export const CreateTermDtoDateMode = {
-  DAY: "DAY",
-  MONTH: "MONTH",
-  YEAR: "YEAR",
+  DAY: 'DAY',
+  MONTH: 'MONTH',
+  YEAR: 'YEAR',
 } as const;
 
-export type CreateTermDtoStatus = (typeof CreateTermDtoStatus)[keyof typeof CreateTermDtoStatus];
+export type CreateTermDtoStatus = typeof CreateTermDtoStatus[keyof typeof CreateTermDtoStatus];
+
 
 export const CreateTermDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface CreateTermDto {
@@ -2443,9 +2466,9 @@ export interface SaveTermResponseDto {
 
 export interface ImportTermsDto {
   /**
-   * @minItems 1
-   * @maxItems 500
-   */
+     * @minItems 1
+     * @maxItems 500
+     */
   terms: CreateTermDto[];
 }
 
@@ -2454,19 +2477,21 @@ export interface ImportTermsResponseDto {
   terms: TermResponseDto[];
 }
 
-export type UpdateTermDtoDateMode = (typeof UpdateTermDtoDateMode)[keyof typeof UpdateTermDtoDateMode];
+export type UpdateTermDtoDateMode = typeof UpdateTermDtoDateMode[keyof typeof UpdateTermDtoDateMode];
+
 
 export const UpdateTermDtoDateMode = {
-  DAY: "DAY",
-  MONTH: "MONTH",
-  YEAR: "YEAR",
+  DAY: 'DAY',
+  MONTH: 'MONTH',
+  YEAR: 'YEAR',
 } as const;
 
-export type UpdateTermDtoStatus = (typeof UpdateTermDtoStatus)[keyof typeof UpdateTermDtoStatus];
+export type UpdateTermDtoStatus = typeof UpdateTermDtoStatus[keyof typeof UpdateTermDtoStatus];
+
 
 export const UpdateTermDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface UpdateTermDto {
@@ -2480,11 +2505,12 @@ export interface UpdateTermDto {
   status?: UpdateTermDtoStatus;
 }
 
-export type ItemVariationValueDtoStatus = (typeof ItemVariationValueDtoStatus)[keyof typeof ItemVariationValueDtoStatus];
+export type ItemVariationValueDtoStatus = typeof ItemVariationValueDtoStatus[keyof typeof ItemVariationValueDtoStatus];
+
 
 export const ItemVariationValueDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface ItemVariationValueDto {
@@ -2497,19 +2523,21 @@ export interface ItemVariationValueDto {
   status?: ItemVariationValueDtoStatus;
 }
 
-export type CreateItemVariationDtoUsage = (typeof CreateItemVariationDtoUsage)[keyof typeof CreateItemVariationDtoUsage];
+export type CreateItemVariationDtoUsage = typeof CreateItemVariationDtoUsage[keyof typeof CreateItemVariationDtoUsage];
+
 
 export const CreateItemVariationDtoUsage = {
-  ITEM_DETAIL: "ITEM_DETAIL",
-  STOCK_CLASSIFICATION: "STOCK_CLASSIFICATION",
-  VARIANT: "VARIANT",
+  ITEM_DETAIL: 'ITEM_DETAIL',
+  STOCK_CLASSIFICATION: 'STOCK_CLASSIFICATION',
+  VARIANT: 'VARIANT',
 } as const;
 
-export type CreateItemVariationDtoStatus = (typeof CreateItemVariationDtoStatus)[keyof typeof CreateItemVariationDtoStatus];
+export type CreateItemVariationDtoStatus = typeof CreateItemVariationDtoStatus[keyof typeof CreateItemVariationDtoStatus];
+
 
 export const CreateItemVariationDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface CreateItemVariationDto {
@@ -2517,28 +2545,30 @@ export interface CreateItemVariationDto {
   name: string;
   usage?: CreateItemVariationDtoUsage;
   /**
-   * @minItems 1
-   * @maxItems 100
-   */
+     * @minItems 1
+     * @maxItems 100
+     */
   values: ItemVariationValueDto[];
   requiredOnItem?: boolean;
   affectsStock?: boolean;
   status?: CreateItemVariationDtoStatus;
 }
 
-export type UpdateItemVariationDtoUsage = (typeof UpdateItemVariationDtoUsage)[keyof typeof UpdateItemVariationDtoUsage];
+export type UpdateItemVariationDtoUsage = typeof UpdateItemVariationDtoUsage[keyof typeof UpdateItemVariationDtoUsage];
+
 
 export const UpdateItemVariationDtoUsage = {
-  ITEM_DETAIL: "ITEM_DETAIL",
-  STOCK_CLASSIFICATION: "STOCK_CLASSIFICATION",
-  VARIANT: "VARIANT",
+  ITEM_DETAIL: 'ITEM_DETAIL',
+  STOCK_CLASSIFICATION: 'STOCK_CLASSIFICATION',
+  VARIANT: 'VARIANT',
 } as const;
 
-export type UpdateItemVariationDtoStatus = (typeof UpdateItemVariationDtoStatus)[keyof typeof UpdateItemVariationDtoStatus];
+export type UpdateItemVariationDtoStatus = typeof UpdateItemVariationDtoStatus[keyof typeof UpdateItemVariationDtoStatus];
+
 
 export const UpdateItemVariationDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface UpdateItemVariationDto {
@@ -2546,9 +2576,9 @@ export interface UpdateItemVariationDto {
   name?: string;
   usage?: UpdateItemVariationDtoUsage;
   /**
-   * @minItems 1
-   * @maxItems 100
-   */
+     * @minItems 1
+     * @maxItems 100
+     */
   values?: ItemVariationValueDto[];
   requiredOnItem?: boolean;
   affectsStock?: boolean;
@@ -2562,19 +2592,20 @@ export interface ItemCategoryAccountingSetupResponseDto {
   expenseAccount: string;
 }
 
-export type ItemCategoryResponseDtoAccountingSetupMode =
-  (typeof ItemCategoryResponseDtoAccountingSetupMode)[keyof typeof ItemCategoryResponseDtoAccountingSetupMode];
+export type ItemCategoryResponseDtoAccountingSetupMode = typeof ItemCategoryResponseDtoAccountingSetupMode[keyof typeof ItemCategoryResponseDtoAccountingSetupMode];
+
 
 export const ItemCategoryResponseDtoAccountingSetupMode = {
-  INHERIT: "INHERIT",
-  AUTO_CREATE: "AUTO_CREATE",
+  INHERIT: 'INHERIT',
+  AUTO_CREATE: 'AUTO_CREATE',
 } as const;
 
-export type ItemCategoryResponseDtoStatus = (typeof ItemCategoryResponseDtoStatus)[keyof typeof ItemCategoryResponseDtoStatus];
+export type ItemCategoryResponseDtoStatus = typeof ItemCategoryResponseDtoStatus[keyof typeof ItemCategoryResponseDtoStatus];
+
 
 export const ItemCategoryResponseDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface ItemCategoryResponseDto {
@@ -2631,12 +2662,12 @@ export interface ItemCategoryListResponseDto {
   permissions: ItemCategoryPermissionsResponseDto;
 }
 
-export type ItemCategoryOptionResponseDtoStatus =
-  (typeof ItemCategoryOptionResponseDtoStatus)[keyof typeof ItemCategoryOptionResponseDtoStatus];
+export type ItemCategoryOptionResponseDtoStatus = typeof ItemCategoryOptionResponseDtoStatus[keyof typeof ItemCategoryOptionResponseDtoStatus];
+
 
 export const ItemCategoryOptionResponseDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface ItemCategoryOptionResponseDto {
@@ -2656,35 +2687,36 @@ export interface ItemCategoryOptionsResponseDto {
   categories: ItemCategoryOptionResponseDto[];
 }
 
-export type CreateItemCategoryDtoAccountingSetupMode =
-  (typeof CreateItemCategoryDtoAccountingSetupMode)[keyof typeof CreateItemCategoryDtoAccountingSetupMode];
+export type CreateItemCategoryDtoAccountingSetupMode = typeof CreateItemCategoryDtoAccountingSetupMode[keyof typeof CreateItemCategoryDtoAccountingSetupMode];
+
 
 export const CreateItemCategoryDtoAccountingSetupMode = {
-  INHERIT: "INHERIT",
-  AUTO_CREATE: "AUTO_CREATE",
+  INHERIT: 'INHERIT',
+  AUTO_CREATE: 'AUTO_CREATE',
 } as const;
 
-export type CreateItemCategoryDtoBehaviorsItem =
-  (typeof CreateItemCategoryDtoBehaviorsItem)[keyof typeof CreateItemCategoryDtoBehaviorsItem];
+export type CreateItemCategoryDtoBehaviorsItem = typeof CreateItemCategoryDtoBehaviorsItem[keyof typeof CreateItemCategoryDtoBehaviorsItem];
+
 
 export const CreateItemCategoryDtoBehaviorsItem = {
-  Sellable_Item: "Sellable Item",
-  Purchasable_Item: "Purchasable Item",
-  Issuable_Item: "Issuable Item",
-  Returnable_Item: "Returnable Item",
-  "Non-Inventory_Item": "Non-Inventory Item",
-  Raw_Material: "Raw Material",
-  "Semi-Finished_Goods/WIP": "Semi-Finished Goods/WIP",
-  Finished_Goods: "Finished Goods",
-  Asset_Item: "Asset Item",
-  Consumable_Item: "Consumable Item",
+  Sellable_Item: 'Sellable Item',
+  Purchasable_Item: 'Purchasable Item',
+  Issuable_Item: 'Issuable Item',
+  Returnable_Item: 'Returnable Item',
+  'Non-Inventory_Item': 'Non-Inventory Item',
+  Raw_Material: 'Raw Material',
+  'Semi-Finished_Goods/WIP': 'Semi-Finished Goods/WIP',
+  Finished_Goods: 'Finished Goods',
+  Asset_Item: 'Asset Item',
+  Consumable_Item: 'Consumable Item',
 } as const;
 
-export type CreateItemCategoryDtoStatus = (typeof CreateItemCategoryDtoStatus)[keyof typeof CreateItemCategoryDtoStatus];
+export type CreateItemCategoryDtoStatus = typeof CreateItemCategoryDtoStatus[keyof typeof CreateItemCategoryDtoStatus];
+
 
 export const CreateItemCategoryDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface CreateItemCategoryDto {
@@ -2693,9 +2725,9 @@ export interface CreateItemCategoryDto {
   /** @nullable */
   parentId?: string | null;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   description?: string | null;
   accountingSetupMode: CreateItemCategoryDtoAccountingSetupMode;
   requiresInventoryAccount?: boolean;
@@ -2713,35 +2745,36 @@ export interface SaveItemCategoryResponseDto {
   category: ItemCategoryResponseDto;
 }
 
-export type UpdateItemCategoryDtoAccountingSetupMode =
-  (typeof UpdateItemCategoryDtoAccountingSetupMode)[keyof typeof UpdateItemCategoryDtoAccountingSetupMode];
+export type UpdateItemCategoryDtoAccountingSetupMode = typeof UpdateItemCategoryDtoAccountingSetupMode[keyof typeof UpdateItemCategoryDtoAccountingSetupMode];
+
 
 export const UpdateItemCategoryDtoAccountingSetupMode = {
-  INHERIT: "INHERIT",
-  AUTO_CREATE: "AUTO_CREATE",
+  INHERIT: 'INHERIT',
+  AUTO_CREATE: 'AUTO_CREATE',
 } as const;
 
-export type UpdateItemCategoryDtoBehaviorsItem =
-  (typeof UpdateItemCategoryDtoBehaviorsItem)[keyof typeof UpdateItemCategoryDtoBehaviorsItem];
+export type UpdateItemCategoryDtoBehaviorsItem = typeof UpdateItemCategoryDtoBehaviorsItem[keyof typeof UpdateItemCategoryDtoBehaviorsItem];
+
 
 export const UpdateItemCategoryDtoBehaviorsItem = {
-  Sellable_Item: "Sellable Item",
-  Purchasable_Item: "Purchasable Item",
-  Issuable_Item: "Issuable Item",
-  Returnable_Item: "Returnable Item",
-  "Non-Inventory_Item": "Non-Inventory Item",
-  Raw_Material: "Raw Material",
-  "Semi-Finished_Goods/WIP": "Semi-Finished Goods/WIP",
-  Finished_Goods: "Finished Goods",
-  Asset_Item: "Asset Item",
-  Consumable_Item: "Consumable Item",
+  Sellable_Item: 'Sellable Item',
+  Purchasable_Item: 'Purchasable Item',
+  Issuable_Item: 'Issuable Item',
+  Returnable_Item: 'Returnable Item',
+  'Non-Inventory_Item': 'Non-Inventory Item',
+  Raw_Material: 'Raw Material',
+  'Semi-Finished_Goods/WIP': 'Semi-Finished Goods/WIP',
+  Finished_Goods: 'Finished Goods',
+  Asset_Item: 'Asset Item',
+  Consumable_Item: 'Consumable Item',
 } as const;
 
-export type UpdateItemCategoryDtoStatus = (typeof UpdateItemCategoryDtoStatus)[keyof typeof UpdateItemCategoryDtoStatus];
+export type UpdateItemCategoryDtoStatus = typeof UpdateItemCategoryDtoStatus[keyof typeof UpdateItemCategoryDtoStatus];
+
 
 export const UpdateItemCategoryDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface UpdateItemCategoryDto {
@@ -2750,9 +2783,9 @@ export interface UpdateItemCategoryDto {
   /** @nullable */
   parentId?: string | null;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   description?: string | null;
   accountingSetupMode?: UpdateItemCategoryDtoAccountingSetupMode;
   requiresInventoryAccount?: boolean;
@@ -2765,20 +2798,20 @@ export interface UpdateItemCategoryDto {
   status?: UpdateItemCategoryDtoStatus;
 }
 
-export type UnitOfMeasurementResponseDtoQuantityMode =
-  (typeof UnitOfMeasurementResponseDtoQuantityMode)[keyof typeof UnitOfMeasurementResponseDtoQuantityMode];
+export type UnitOfMeasurementResponseDtoQuantityMode = typeof UnitOfMeasurementResponseDtoQuantityMode[keyof typeof UnitOfMeasurementResponseDtoQuantityMode];
+
 
 export const UnitOfMeasurementResponseDtoQuantityMode = {
-  INTEGER: "INTEGER",
-  FLOAT: "FLOAT",
+  INTEGER: 'INTEGER',
+  FLOAT: 'FLOAT',
 } as const;
 
-export type UnitOfMeasurementResponseDtoStatus =
-  (typeof UnitOfMeasurementResponseDtoStatus)[keyof typeof UnitOfMeasurementResponseDtoStatus];
+export type UnitOfMeasurementResponseDtoStatus = typeof UnitOfMeasurementResponseDtoStatus[keyof typeof UnitOfMeasurementResponseDtoStatus];
+
 
 export const UnitOfMeasurementResponseDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface UnitOfMeasurementResponseDto {
@@ -2825,20 +2858,20 @@ export interface UnitOfMeasurementListResponseDto {
   permissions: UnitOfMeasurementPermissionsResponseDto;
 }
 
-export type UnitOfMeasurementOptionResponseDtoQuantityMode =
-  (typeof UnitOfMeasurementOptionResponseDtoQuantityMode)[keyof typeof UnitOfMeasurementOptionResponseDtoQuantityMode];
+export type UnitOfMeasurementOptionResponseDtoQuantityMode = typeof UnitOfMeasurementOptionResponseDtoQuantityMode[keyof typeof UnitOfMeasurementOptionResponseDtoQuantityMode];
+
 
 export const UnitOfMeasurementOptionResponseDtoQuantityMode = {
-  INTEGER: "INTEGER",
-  FLOAT: "FLOAT",
+  INTEGER: 'INTEGER',
+  FLOAT: 'FLOAT',
 } as const;
 
-export type UnitOfMeasurementOptionResponseDtoStatus =
-  (typeof UnitOfMeasurementOptionResponseDtoStatus)[keyof typeof UnitOfMeasurementOptionResponseDtoStatus];
+export type UnitOfMeasurementOptionResponseDtoStatus = typeof UnitOfMeasurementOptionResponseDtoStatus[keyof typeof UnitOfMeasurementOptionResponseDtoStatus];
+
 
 export const UnitOfMeasurementOptionResponseDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface UnitOfMeasurementOptionResponseDto {
@@ -2858,19 +2891,20 @@ export interface UnitOfMeasurementContainerResponseDto {
   permissions: UnitOfMeasurementPermissionsResponseDto;
 }
 
-export type CreateUnitOfMeasurementDtoQuantityMode =
-  (typeof CreateUnitOfMeasurementDtoQuantityMode)[keyof typeof CreateUnitOfMeasurementDtoQuantityMode];
+export type CreateUnitOfMeasurementDtoQuantityMode = typeof CreateUnitOfMeasurementDtoQuantityMode[keyof typeof CreateUnitOfMeasurementDtoQuantityMode];
+
 
 export const CreateUnitOfMeasurementDtoQuantityMode = {
-  INTEGER: "INTEGER",
-  FLOAT: "FLOAT",
+  INTEGER: 'INTEGER',
+  FLOAT: 'FLOAT',
 } as const;
 
-export type CreateUnitOfMeasurementDtoStatus = (typeof CreateUnitOfMeasurementDtoStatus)[keyof typeof CreateUnitOfMeasurementDtoStatus];
+export type CreateUnitOfMeasurementDtoStatus = typeof CreateUnitOfMeasurementDtoStatus[keyof typeof CreateUnitOfMeasurementDtoStatus];
+
 
 export const CreateUnitOfMeasurementDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface CreateUnitOfMeasurementDto {
@@ -2889,9 +2923,9 @@ export interface SaveUnitOfMeasurementResponseDto {
 
 export interface ImportUnitOfMeasurementsDto {
   /**
-   * @minItems 1
-   * @maxItems 500
-   */
+     * @minItems 1
+     * @maxItems 500
+     */
   units: CreateUnitOfMeasurementDto[];
 }
 
@@ -2900,19 +2934,20 @@ export interface ImportUnitOfMeasurementsResponseDto {
   units: UnitOfMeasurementResponseDto[];
 }
 
-export type UpdateUnitOfMeasurementDtoQuantityMode =
-  (typeof UpdateUnitOfMeasurementDtoQuantityMode)[keyof typeof UpdateUnitOfMeasurementDtoQuantityMode];
+export type UpdateUnitOfMeasurementDtoQuantityMode = typeof UpdateUnitOfMeasurementDtoQuantityMode[keyof typeof UpdateUnitOfMeasurementDtoQuantityMode];
+
 
 export const UpdateUnitOfMeasurementDtoQuantityMode = {
-  INTEGER: "INTEGER",
-  FLOAT: "FLOAT",
+  INTEGER: 'INTEGER',
+  FLOAT: 'FLOAT',
 } as const;
 
-export type UpdateUnitOfMeasurementDtoStatus = (typeof UpdateUnitOfMeasurementDtoStatus)[keyof typeof UpdateUnitOfMeasurementDtoStatus];
+export type UpdateUnitOfMeasurementDtoStatus = typeof UpdateUnitOfMeasurementDtoStatus[keyof typeof UpdateUnitOfMeasurementDtoStatus];
+
 
 export const UpdateUnitOfMeasurementDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface UpdateUnitOfMeasurementDto {
@@ -2924,21 +2959,22 @@ export interface UpdateUnitOfMeasurementDto {
   status?: UpdateUnitOfMeasurementDtoStatus;
 }
 
-export type PaymentTypeResponseDtoClassification =
-  (typeof PaymentTypeResponseDtoClassification)[keyof typeof PaymentTypeResponseDtoClassification];
+export type PaymentTypeResponseDtoClassification = typeof PaymentTypeResponseDtoClassification[keyof typeof PaymentTypeResponseDtoClassification];
+
 
 export const PaymentTypeResponseDtoClassification = {
-  BANK_TRANSFER: "BANK_TRANSFER",
-  CHECK: "CHECK",
-  DIGITAL_WALLET: "DIGITAL_WALLET",
-  DEBIT_MEMO: "DEBIT_MEMO",
+  BANK_TRANSFER: 'BANK_TRANSFER',
+  CHECK: 'CHECK',
+  DIGITAL_WALLET: 'DIGITAL_WALLET',
+  DEBIT_MEMO: 'DEBIT_MEMO',
 } as const;
 
-export type PaymentTypeResponseDtoStatus = (typeof PaymentTypeResponseDtoStatus)[keyof typeof PaymentTypeResponseDtoStatus];
+export type PaymentTypeResponseDtoStatus = typeof PaymentTypeResponseDtoStatus[keyof typeof PaymentTypeResponseDtoStatus];
+
 
 export const PaymentTypeResponseDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface PaymentTypeResponseDto {
@@ -2989,22 +3025,22 @@ export interface PaymentTypeListResponseDto {
   permissions: PaymentTypePermissionsResponseDto;
 }
 
-export type PaymentTypeOptionResponseDtoClassification =
-  (typeof PaymentTypeOptionResponseDtoClassification)[keyof typeof PaymentTypeOptionResponseDtoClassification];
+export type PaymentTypeOptionResponseDtoClassification = typeof PaymentTypeOptionResponseDtoClassification[keyof typeof PaymentTypeOptionResponseDtoClassification];
+
 
 export const PaymentTypeOptionResponseDtoClassification = {
-  BANK_TRANSFER: "BANK_TRANSFER",
-  CHECK: "CHECK",
-  DIGITAL_WALLET: "DIGITAL_WALLET",
-  DEBIT_MEMO: "DEBIT_MEMO",
+  BANK_TRANSFER: 'BANK_TRANSFER',
+  CHECK: 'CHECK',
+  DIGITAL_WALLET: 'DIGITAL_WALLET',
+  DEBIT_MEMO: 'DEBIT_MEMO',
 } as const;
 
-export type PaymentTypeOptionResponseDtoStatus =
-  (typeof PaymentTypeOptionResponseDtoStatus)[keyof typeof PaymentTypeOptionResponseDtoStatus];
+export type PaymentTypeOptionResponseDtoStatus = typeof PaymentTypeOptionResponseDtoStatus[keyof typeof PaymentTypeOptionResponseDtoStatus];
+
 
 export const PaymentTypeOptionResponseDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface PaymentTypeOptionResponseDto {
@@ -3024,21 +3060,22 @@ export interface PaymentTypeContainerResponseDto {
   permissions: PaymentTypePermissionsResponseDto;
 }
 
-export type CreatePaymentTypeDtoClassification =
-  (typeof CreatePaymentTypeDtoClassification)[keyof typeof CreatePaymentTypeDtoClassification];
+export type CreatePaymentTypeDtoClassification = typeof CreatePaymentTypeDtoClassification[keyof typeof CreatePaymentTypeDtoClassification];
+
 
 export const CreatePaymentTypeDtoClassification = {
-  BANK_TRANSFER: "BANK_TRANSFER",
-  CHECK: "CHECK",
-  DIGITAL_WALLET: "DIGITAL_WALLET",
-  DEBIT_MEMO: "DEBIT_MEMO",
+  BANK_TRANSFER: 'BANK_TRANSFER',
+  CHECK: 'CHECK',
+  DIGITAL_WALLET: 'DIGITAL_WALLET',
+  DEBIT_MEMO: 'DEBIT_MEMO',
 } as const;
 
-export type CreatePaymentTypeDtoStatus = (typeof CreatePaymentTypeDtoStatus)[keyof typeof CreatePaymentTypeDtoStatus];
+export type CreatePaymentTypeDtoStatus = typeof CreatePaymentTypeDtoStatus[keyof typeof CreatePaymentTypeDtoStatus];
+
 
 export const CreatePaymentTypeDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface CreatePaymentTypeDto {
@@ -3059,9 +3096,9 @@ export interface SavePaymentTypeResponseDto {
 
 export interface ImportPaymentTypesDto {
   /**
-   * @minItems 1
-   * @maxItems 500
-   */
+     * @minItems 1
+     * @maxItems 500
+     */
   paymentTypes: CreatePaymentTypeDto[];
 }
 
@@ -3070,21 +3107,22 @@ export interface ImportPaymentTypesResponseDto {
   paymentTypes: PaymentTypeResponseDto[];
 }
 
-export type UpdatePaymentTypeDtoClassification =
-  (typeof UpdatePaymentTypeDtoClassification)[keyof typeof UpdatePaymentTypeDtoClassification];
+export type UpdatePaymentTypeDtoClassification = typeof UpdatePaymentTypeDtoClassification[keyof typeof UpdatePaymentTypeDtoClassification];
+
 
 export const UpdatePaymentTypeDtoClassification = {
-  BANK_TRANSFER: "BANK_TRANSFER",
-  CHECK: "CHECK",
-  DIGITAL_WALLET: "DIGITAL_WALLET",
-  DEBIT_MEMO: "DEBIT_MEMO",
+  BANK_TRANSFER: 'BANK_TRANSFER',
+  CHECK: 'CHECK',
+  DIGITAL_WALLET: 'DIGITAL_WALLET',
+  DEBIT_MEMO: 'DEBIT_MEMO',
 } as const;
 
-export type UpdatePaymentTypeDtoStatus = (typeof UpdatePaymentTypeDtoStatus)[keyof typeof UpdatePaymentTypeDtoStatus];
+export type UpdatePaymentTypeDtoStatus = typeof UpdatePaymentTypeDtoStatus[keyof typeof UpdatePaymentTypeDtoStatus];
+
 
 export const UpdatePaymentTypeDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface UpdatePaymentTypeDto {
@@ -3098,25 +3136,28 @@ export interface UpdatePaymentTypeDto {
   status?: UpdatePaymentTypeDtoStatus;
 }
 
-export type DiscountResponseDtoType = (typeof DiscountResponseDtoType)[keyof typeof DiscountResponseDtoType];
+export type DiscountResponseDtoType = typeof DiscountResponseDtoType[keyof typeof DiscountResponseDtoType];
+
 
 export const DiscountResponseDtoType = {
-  SALES: "SALES",
-  PURCHASES: "PURCHASES",
+  SALES: 'SALES',
+  PURCHASES: 'PURCHASES',
 } as const;
 
-export type DiscountResponseDtoValueType = (typeof DiscountResponseDtoValueType)[keyof typeof DiscountResponseDtoValueType];
+export type DiscountResponseDtoValueType = typeof DiscountResponseDtoValueType[keyof typeof DiscountResponseDtoValueType];
+
 
 export const DiscountResponseDtoValueType = {
-  PERCENTAGE: "PERCENTAGE",
-  FIXED: "FIXED",
+  PERCENTAGE: 'PERCENTAGE',
+  FIXED: 'FIXED',
 } as const;
 
-export type DiscountResponseDtoStatus = (typeof DiscountResponseDtoStatus)[keyof typeof DiscountResponseDtoStatus];
+export type DiscountResponseDtoStatus = typeof DiscountResponseDtoStatus[keyof typeof DiscountResponseDtoStatus];
+
 
 export const DiscountResponseDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface DiscountResponseDto {
@@ -3171,26 +3212,28 @@ export interface DiscountListResponseDto {
   permissions: DiscountMaintenancePermissionsResponseDto;
 }
 
-export type DiscountOptionResponseDtoType = (typeof DiscountOptionResponseDtoType)[keyof typeof DiscountOptionResponseDtoType];
+export type DiscountOptionResponseDtoType = typeof DiscountOptionResponseDtoType[keyof typeof DiscountOptionResponseDtoType];
+
 
 export const DiscountOptionResponseDtoType = {
-  SALES: "SALES",
-  PURCHASES: "PURCHASES",
+  SALES: 'SALES',
+  PURCHASES: 'PURCHASES',
 } as const;
 
-export type DiscountOptionResponseDtoValueType =
-  (typeof DiscountOptionResponseDtoValueType)[keyof typeof DiscountOptionResponseDtoValueType];
+export type DiscountOptionResponseDtoValueType = typeof DiscountOptionResponseDtoValueType[keyof typeof DiscountOptionResponseDtoValueType];
+
 
 export const DiscountOptionResponseDtoValueType = {
-  PERCENTAGE: "PERCENTAGE",
-  FIXED: "FIXED",
+  PERCENTAGE: 'PERCENTAGE',
+  FIXED: 'FIXED',
 } as const;
 
-export type DiscountOptionResponseDtoStatus = (typeof DiscountOptionResponseDtoStatus)[keyof typeof DiscountOptionResponseDtoStatus];
+export type DiscountOptionResponseDtoStatus = typeof DiscountOptionResponseDtoStatus[keyof typeof DiscountOptionResponseDtoStatus];
+
 
 export const DiscountOptionResponseDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface DiscountOptionResponseDto {
@@ -3211,25 +3254,28 @@ export interface DiscountContainerResponseDto {
   permissions: DiscountMaintenancePermissionsResponseDto;
 }
 
-export type CreateDiscountDtoType = (typeof CreateDiscountDtoType)[keyof typeof CreateDiscountDtoType];
+export type CreateDiscountDtoType = typeof CreateDiscountDtoType[keyof typeof CreateDiscountDtoType];
+
 
 export const CreateDiscountDtoType = {
-  SALES: "SALES",
-  PURCHASES: "PURCHASES",
+  SALES: 'SALES',
+  PURCHASES: 'PURCHASES',
 } as const;
 
-export type CreateDiscountDtoValueType = (typeof CreateDiscountDtoValueType)[keyof typeof CreateDiscountDtoValueType];
+export type CreateDiscountDtoValueType = typeof CreateDiscountDtoValueType[keyof typeof CreateDiscountDtoValueType];
+
 
 export const CreateDiscountDtoValueType = {
-  PERCENTAGE: "PERCENTAGE",
-  FIXED: "FIXED",
+  PERCENTAGE: 'PERCENTAGE',
+  FIXED: 'FIXED',
 } as const;
 
-export type CreateDiscountDtoStatus = (typeof CreateDiscountDtoStatus)[keyof typeof CreateDiscountDtoStatus];
+export type CreateDiscountDtoStatus = typeof CreateDiscountDtoStatus[keyof typeof CreateDiscountDtoStatus];
+
 
 export const CreateDiscountDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface CreateDiscountDto {
@@ -3251,9 +3297,9 @@ export interface SaveDiscountResponseDto {
 
 export interface ImportDiscountsDto {
   /**
-   * @minItems 1
-   * @maxItems 500
-   */
+     * @minItems 1
+     * @maxItems 500
+     */
   discounts: CreateDiscountDto[];
 }
 
@@ -3262,25 +3308,28 @@ export interface ImportDiscountsResponseDto {
   discounts: DiscountResponseDto[];
 }
 
-export type UpdateDiscountDtoType = (typeof UpdateDiscountDtoType)[keyof typeof UpdateDiscountDtoType];
+export type UpdateDiscountDtoType = typeof UpdateDiscountDtoType[keyof typeof UpdateDiscountDtoType];
+
 
 export const UpdateDiscountDtoType = {
-  SALES: "SALES",
-  PURCHASES: "PURCHASES",
+  SALES: 'SALES',
+  PURCHASES: 'PURCHASES',
 } as const;
 
-export type UpdateDiscountDtoValueType = (typeof UpdateDiscountDtoValueType)[keyof typeof UpdateDiscountDtoValueType];
+export type UpdateDiscountDtoValueType = typeof UpdateDiscountDtoValueType[keyof typeof UpdateDiscountDtoValueType];
+
 
 export const UpdateDiscountDtoValueType = {
-  PERCENTAGE: "PERCENTAGE",
-  FIXED: "FIXED",
+  PERCENTAGE: 'PERCENTAGE',
+  FIXED: 'FIXED',
 } as const;
 
-export type UpdateDiscountDtoStatus = (typeof UpdateDiscountDtoStatus)[keyof typeof UpdateDiscountDtoStatus];
+export type UpdateDiscountDtoStatus = typeof UpdateDiscountDtoStatus[keyof typeof UpdateDiscountDtoStatus];
+
 
 export const UpdateDiscountDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface UpdateDiscountDto {
@@ -3337,27 +3386,30 @@ export interface PartyAccountingAccountsResponseDto {
   employeePayableAccount: PartyAccountingAccountSummaryResponseDto | null;
 }
 
-export type PartyResponseDtoClassification = (typeof PartyResponseDtoClassification)[keyof typeof PartyResponseDtoClassification];
+export type PartyResponseDtoClassification = typeof PartyResponseDtoClassification[keyof typeof PartyResponseDtoClassification];
+
 
 export const PartyResponseDtoClassification = {
-  INDIVIDUAL: "INDIVIDUAL",
-  NON_INDIVIDUAL: "NON_INDIVIDUAL",
+  INDIVIDUAL: 'INDIVIDUAL',
+  NON_INDIVIDUAL: 'NON_INDIVIDUAL',
 } as const;
 
-export type PartyResponseDtoPartyTypesItem = (typeof PartyResponseDtoPartyTypesItem)[keyof typeof PartyResponseDtoPartyTypesItem];
+export type PartyResponseDtoPartyTypesItem = typeof PartyResponseDtoPartyTypesItem[keyof typeof PartyResponseDtoPartyTypesItem];
+
 
 export const PartyResponseDtoPartyTypesItem = {
-  VENDOR: "VENDOR",
-  CUSTOMER: "CUSTOMER",
-  EMPLOYEE: "EMPLOYEE",
-  MEMBER: "MEMBER",
+  VENDOR: 'VENDOR',
+  CUSTOMER: 'CUSTOMER',
+  EMPLOYEE: 'EMPLOYEE',
+  MEMBER: 'MEMBER',
 } as const;
 
-export type PartyResponseDtoStatus = (typeof PartyResponseDtoStatus)[keyof typeof PartyResponseDtoStatus];
+export type PartyResponseDtoStatus = typeof PartyResponseDtoStatus[keyof typeof PartyResponseDtoStatus];
+
 
 export const PartyResponseDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface PartyResponseDto {
@@ -3456,20 +3508,20 @@ export interface PartyAccountingAccountIdsResponseDto {
   employeePayableAccount: string;
 }
 
-export type PartyAccountingAccountOptionResponseDtoNormalBalance =
-  (typeof PartyAccountingAccountOptionResponseDtoNormalBalance)[keyof typeof PartyAccountingAccountOptionResponseDtoNormalBalance];
+export type PartyAccountingAccountOptionResponseDtoNormalBalance = typeof PartyAccountingAccountOptionResponseDtoNormalBalance[keyof typeof PartyAccountingAccountOptionResponseDtoNormalBalance];
+
 
 export const PartyAccountingAccountOptionResponseDtoNormalBalance = {
-  Debit: "Debit",
-  Credit: "Credit",
+  Debit: 'Debit',
+  Credit: 'Credit',
 } as const;
 
-export type PartyAccountingAccountOptionResponseDtoStatus =
-  (typeof PartyAccountingAccountOptionResponseDtoStatus)[keyof typeof PartyAccountingAccountOptionResponseDtoStatus];
+export type PartyAccountingAccountOptionResponseDtoStatus = typeof PartyAccountingAccountOptionResponseDtoStatus[keyof typeof PartyAccountingAccountOptionResponseDtoStatus];
+
 
 export const PartyAccountingAccountOptionResponseDtoStatus = {
-  Active: "Active",
-  Inactive: "Inactive",
+  Active: 'Active',
+  Inactive: 'Inactive',
 } as const;
 
 export interface PartyAccountingAccountOptionResponseDto {
@@ -3499,29 +3551,30 @@ export interface PartyAccountingOptionsResponseDto {
   accountOptions: PartyAccountingAccountOptionsResponseDto;
 }
 
-export type PartyOptionResponseDtoClassification =
-  (typeof PartyOptionResponseDtoClassification)[keyof typeof PartyOptionResponseDtoClassification];
+export type PartyOptionResponseDtoClassification = typeof PartyOptionResponseDtoClassification[keyof typeof PartyOptionResponseDtoClassification];
+
 
 export const PartyOptionResponseDtoClassification = {
-  INDIVIDUAL: "INDIVIDUAL",
-  NON_INDIVIDUAL: "NON_INDIVIDUAL",
+  INDIVIDUAL: 'INDIVIDUAL',
+  NON_INDIVIDUAL: 'NON_INDIVIDUAL',
 } as const;
 
-export type PartyOptionResponseDtoPartyTypesItem =
-  (typeof PartyOptionResponseDtoPartyTypesItem)[keyof typeof PartyOptionResponseDtoPartyTypesItem];
+export type PartyOptionResponseDtoPartyTypesItem = typeof PartyOptionResponseDtoPartyTypesItem[keyof typeof PartyOptionResponseDtoPartyTypesItem];
+
 
 export const PartyOptionResponseDtoPartyTypesItem = {
-  VENDOR: "VENDOR",
-  CUSTOMER: "CUSTOMER",
-  EMPLOYEE: "EMPLOYEE",
-  MEMBER: "MEMBER",
+  VENDOR: 'VENDOR',
+  CUSTOMER: 'CUSTOMER',
+  EMPLOYEE: 'EMPLOYEE',
+  MEMBER: 'MEMBER',
 } as const;
 
-export type PartyOptionResponseDtoStatus = (typeof PartyOptionResponseDtoStatus)[keyof typeof PartyOptionResponseDtoStatus];
+export type PartyOptionResponseDtoStatus = typeof PartyOptionResponseDtoStatus[keyof typeof PartyOptionResponseDtoStatus];
+
 
 export const PartyOptionResponseDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface PartyOptionResponseDto {
@@ -3537,6 +3590,10 @@ export interface PartyOptionResponseDto {
   cashAdvanceLimit?: string;
   /** Available cash advance balance for the employee. */
   cashAdvanceBalance?: string;
+  /** Total active cash advances for the party. */
+  totalCashAdvance?: string;
+  /** Cash advance limit remaining after active advances. */
+  availableCashAdvance?: string;
   /** @nullable */
   partyEntityType?: string | null;
   partyName?: string;
@@ -3591,44 +3648,44 @@ export interface CreatePartyAddressDto {
   /** @maxLength 255 */
   addressLine2: string;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   barangay?: string | null;
   /**
-   * @maxLength 30
-   * @nullable
-   */
+     * @maxLength 30
+     * @nullable
+     */
   barangayCode?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   cityMunicipality?: string | null;
   /**
-   * @maxLength 30
-   * @nullable
-   */
+     * @maxLength 30
+     * @nullable
+     */
   cityMunicipalityCode?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   province?: string | null;
   /**
-   * @maxLength 30
-   * @nullable
-   */
+     * @maxLength 30
+     * @nullable
+     */
   provinceCode?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   region?: string | null;
   /**
-   * @maxLength 30
-   * @nullable
-   */
+     * @maxLength 30
+     * @nullable
+     */
   regionCode?: string | null;
   isBilling: boolean;
   isBuilding?: boolean;
@@ -3638,27 +3695,30 @@ export interface CreatePartyAddressDto {
   isHome?: boolean;
 }
 
-export type CreatePartyDtoClassification = (typeof CreatePartyDtoClassification)[keyof typeof CreatePartyDtoClassification];
+export type CreatePartyDtoClassification = typeof CreatePartyDtoClassification[keyof typeof CreatePartyDtoClassification];
+
 
 export const CreatePartyDtoClassification = {
-  INDIVIDUAL: "INDIVIDUAL",
-  NON_INDIVIDUAL: "NON_INDIVIDUAL",
+  INDIVIDUAL: 'INDIVIDUAL',
+  NON_INDIVIDUAL: 'NON_INDIVIDUAL',
 } as const;
 
-export type CreatePartyDtoPartyTypesItem = (typeof CreatePartyDtoPartyTypesItem)[keyof typeof CreatePartyDtoPartyTypesItem];
+export type CreatePartyDtoPartyTypesItem = typeof CreatePartyDtoPartyTypesItem[keyof typeof CreatePartyDtoPartyTypesItem];
+
 
 export const CreatePartyDtoPartyTypesItem = {
-  VENDOR: "VENDOR",
-  CUSTOMER: "CUSTOMER",
-  EMPLOYEE: "EMPLOYEE",
-  MEMBER: "MEMBER",
+  VENDOR: 'VENDOR',
+  CUSTOMER: 'CUSTOMER',
+  EMPLOYEE: 'EMPLOYEE',
+  MEMBER: 'MEMBER',
 } as const;
 
-export type CreatePartyDtoStatus = (typeof CreatePartyDtoStatus)[keyof typeof CreatePartyDtoStatus];
+export type CreatePartyDtoStatus = typeof CreatePartyDtoStatus[keyof typeof CreatePartyDtoStatus];
+
 
 export const CreatePartyDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface CreatePartyDto {
@@ -3668,168 +3728,168 @@ export interface CreatePartyDto {
   partyCodeNo: string;
   classification: CreatePartyDtoClassification;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   partyEntityType?: string | null;
   /** @minItems 1 */
   partyTypes: CreatePartyDtoPartyTypesItem[];
   status?: CreatePartyDtoStatus;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   partyName?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   tradeName?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   firstName?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   middleName?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   lastName?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   suffixName?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   honorific?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   gender?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   civilStatus?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   nationality?: string | null;
   /** @nullable */
   memberRegistrationDate?: string | null;
   /** @minItems 1 */
   addresses: CreatePartyAddressDto[];
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   defaultReceivableAccount?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   customerAdvanceAccount?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   defaultPayableAccount?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   vendorAdvanceAccount?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   employeeAdvanceAccount?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   employeePayableAccount?: string | null;
   /**
-   * @minimum 0
-   * @nullable
-   */
+     * @minimum 0
+     * @nullable
+     */
   cashAdvanceLimit?: number | null;
   /** @nullable */
   termId?: string | null;
   /**
-   * @nullable
-   * @pattern ^\d{3}-\d{3}-\d{3}-\d{3}$
-   */
+     * @nullable
+     * @pattern ^\d{3}-\d{3}-\d{3}-\d{3}$
+     */
   tin?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   atcCode?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   defaultPurchaseInputVatTaxSourceKey?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   defaultPurchaseEwtTaxSourceKey?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   defaultPurchaseFwtTaxSourceKey?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   defaultPurchaseWvatTaxSourceKey?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   defaultSalesOutputVatTaxSourceKey?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   defaultSalesCwtTaxSourceKey?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   defaultSalesWvatTaxSourceKey?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   contactPerson?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   email?: string | null;
   /**
-   * @nullable
-   * @pattern ^\+63 \d{3} \d{3} \d{4}$
-   */
+     * @nullable
+     * @pattern ^\+63 \d{3} \d{3} \d{4}$
+     */
   contactNo?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   landline?: string | null;
 }
 
@@ -3850,27 +3910,30 @@ export interface ImportPartiesResponseDto {
   parties: PartyResponseDto[];
 }
 
-export type UpdatePartyDtoClassification = (typeof UpdatePartyDtoClassification)[keyof typeof UpdatePartyDtoClassification];
+export type UpdatePartyDtoClassification = typeof UpdatePartyDtoClassification[keyof typeof UpdatePartyDtoClassification];
+
 
 export const UpdatePartyDtoClassification = {
-  INDIVIDUAL: "INDIVIDUAL",
-  NON_INDIVIDUAL: "NON_INDIVIDUAL",
+  INDIVIDUAL: 'INDIVIDUAL',
+  NON_INDIVIDUAL: 'NON_INDIVIDUAL',
 } as const;
 
-export type UpdatePartyDtoPartyTypesItem = (typeof UpdatePartyDtoPartyTypesItem)[keyof typeof UpdatePartyDtoPartyTypesItem];
+export type UpdatePartyDtoPartyTypesItem = typeof UpdatePartyDtoPartyTypesItem[keyof typeof UpdatePartyDtoPartyTypesItem];
+
 
 export const UpdatePartyDtoPartyTypesItem = {
-  VENDOR: "VENDOR",
-  CUSTOMER: "CUSTOMER",
-  EMPLOYEE: "EMPLOYEE",
-  MEMBER: "MEMBER",
+  VENDOR: 'VENDOR',
+  CUSTOMER: 'CUSTOMER',
+  EMPLOYEE: 'EMPLOYEE',
+  MEMBER: 'MEMBER',
 } as const;
 
-export type UpdatePartyDtoStatus = (typeof UpdatePartyDtoStatus)[keyof typeof UpdatePartyDtoStatus];
+export type UpdatePartyDtoStatus = typeof UpdatePartyDtoStatus[keyof typeof UpdatePartyDtoStatus];
+
 
 export const UpdatePartyDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface UpdatePartyDto {
@@ -3880,176 +3943,177 @@ export interface UpdatePartyDto {
   partyCodeNo?: string;
   classification?: UpdatePartyDtoClassification;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   partyEntityType?: string | null;
   /** @minItems 1 */
   partyTypes?: UpdatePartyDtoPartyTypesItem[];
   status?: UpdatePartyDtoStatus;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   partyName?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   tradeName?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   firstName?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   middleName?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   lastName?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   suffixName?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   honorific?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   gender?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   civilStatus?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   nationality?: string | null;
   /** @nullable */
   memberRegistrationDate?: string | null;
   /** @minItems 1 */
   addresses?: CreatePartyAddressDto[];
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   defaultReceivableAccount?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   customerAdvanceAccount?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   defaultPayableAccount?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   vendorAdvanceAccount?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   employeeAdvanceAccount?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   employeePayableAccount?: string | null;
   /**
-   * @minimum 0
-   * @nullable
-   */
+     * @minimum 0
+     * @nullable
+     */
   cashAdvanceLimit?: number | null;
   /** @nullable */
   termId?: string | null;
   /**
-   * @nullable
-   * @pattern ^\d{3}-\d{3}-\d{3}-\d{3}$
-   */
+     * @nullable
+     * @pattern ^\d{3}-\d{3}-\d{3}-\d{3}$
+     */
   tin?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   atcCode?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   defaultPurchaseInputVatTaxSourceKey?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   defaultPurchaseEwtTaxSourceKey?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   defaultPurchaseFwtTaxSourceKey?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   defaultPurchaseWvatTaxSourceKey?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   defaultSalesOutputVatTaxSourceKey?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   defaultSalesCwtTaxSourceKey?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   defaultSalesWvatTaxSourceKey?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   contactPerson?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   email?: string | null;
   /**
-   * @nullable
-   * @pattern ^\+63 \d{3} \d{3} \d{4}$
-   */
+     * @nullable
+     * @pattern ^\+63 \d{3} \d{3} \d{4}$
+     */
   contactNo?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   landline?: string | null;
 }
 
-export type BankChartAccountResponseDtoStatus = (typeof BankChartAccountResponseDtoStatus)[keyof typeof BankChartAccountResponseDtoStatus];
+export type BankChartAccountResponseDtoStatus = typeof BankChartAccountResponseDtoStatus[keyof typeof BankChartAccountResponseDtoStatus];
+
 
 export const BankChartAccountResponseDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface BankChartAccountResponseDto {
@@ -4063,22 +4127,23 @@ export interface BankChartAccountResponseDto {
 /**
  * @nullable
  */
-export type BankAccountResponseDtoAccountType =
-  (typeof BankAccountResponseDtoAccountType)[keyof typeof BankAccountResponseDtoAccountType] | null;
+export type BankAccountResponseDtoAccountType = typeof BankAccountResponseDtoAccountType[keyof typeof BankAccountResponseDtoAccountType] | null;
+
 
 export const BankAccountResponseDtoAccountType = {
-  CHECKING: "CHECKING",
-  SAVINGS: "SAVINGS",
-  CURRENT: "CURRENT",
-  TIME_DEPOSIT: "TIME_DEPOSIT",
-  CREDIT_CARD: "CREDIT_CARD",
+  CHECKING: 'CHECKING',
+  SAVINGS: 'SAVINGS',
+  CURRENT: 'CURRENT',
+  TIME_DEPOSIT: 'TIME_DEPOSIT',
+  CREDIT_CARD: 'CREDIT_CARD',
 } as const;
 
-export type BankAccountResponseDtoStatus = (typeof BankAccountResponseDtoStatus)[keyof typeof BankAccountResponseDtoStatus];
+export type BankAccountResponseDtoStatus = typeof BankAccountResponseDtoStatus[keyof typeof BankAccountResponseDtoStatus];
+
 
 export const BankAccountResponseDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface BankAccountResponseDto {
@@ -4142,12 +4207,12 @@ export interface BankAccountListResponseDto {
   permissions: BankMasterfilePermissionsResponseDto;
 }
 
-export type BankAccountOptionResponseDtoStatus =
-  (typeof BankAccountOptionResponseDtoStatus)[keyof typeof BankAccountOptionResponseDtoStatus];
+export type BankAccountOptionResponseDtoStatus = typeof BankAccountOptionResponseDtoStatus[keyof typeof BankAccountOptionResponseDtoStatus];
+
 
 export const BankAccountOptionResponseDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface BankAccountOptionResponseDto {
@@ -4175,21 +4240,23 @@ export interface BankAccountContainerResponseDto {
   permissions: BankMasterfilePermissionsResponseDto;
 }
 
-export type CreateBankAccountDtoAccountType = (typeof CreateBankAccountDtoAccountType)[keyof typeof CreateBankAccountDtoAccountType];
+export type CreateBankAccountDtoAccountType = typeof CreateBankAccountDtoAccountType[keyof typeof CreateBankAccountDtoAccountType];
+
 
 export const CreateBankAccountDtoAccountType = {
-  CHECKING: "CHECKING",
-  SAVINGS: "SAVINGS",
-  CURRENT: "CURRENT",
-  TIME_DEPOSIT: "TIME_DEPOSIT",
-  CREDIT_CARD: "CREDIT_CARD",
+  CHECKING: 'CHECKING',
+  SAVINGS: 'SAVINGS',
+  CURRENT: 'CURRENT',
+  TIME_DEPOSIT: 'TIME_DEPOSIT',
+  CREDIT_CARD: 'CREDIT_CARD',
 } as const;
 
-export type CreateBankAccountDtoStatus = (typeof CreateBankAccountDtoStatus)[keyof typeof CreateBankAccountDtoStatus];
+export type CreateBankAccountDtoStatus = typeof CreateBankAccountDtoStatus[keyof typeof CreateBankAccountDtoStatus];
+
 
 export const CreateBankAccountDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface CreateBankAccountDto {
@@ -4223,9 +4290,9 @@ export interface SaveBankAccountResponseDto {
 
 export interface ImportBankAccountsDto {
   /**
-   * @minItems 1
-   * @maxItems 500
-   */
+     * @minItems 1
+     * @maxItems 500
+     */
   banks: CreateBankAccountDto[];
 }
 
@@ -4234,21 +4301,23 @@ export interface ImportBankAccountsResponseDto {
   bankAccounts: BankAccountResponseDto[];
 }
 
-export type UpdateBankAccountDtoAccountType = (typeof UpdateBankAccountDtoAccountType)[keyof typeof UpdateBankAccountDtoAccountType];
+export type UpdateBankAccountDtoAccountType = typeof UpdateBankAccountDtoAccountType[keyof typeof UpdateBankAccountDtoAccountType];
+
 
 export const UpdateBankAccountDtoAccountType = {
-  CHECKING: "CHECKING",
-  SAVINGS: "SAVINGS",
-  CURRENT: "CURRENT",
-  TIME_DEPOSIT: "TIME_DEPOSIT",
-  CREDIT_CARD: "CREDIT_CARD",
+  CHECKING: 'CHECKING',
+  SAVINGS: 'SAVINGS',
+  CURRENT: 'CURRENT',
+  TIME_DEPOSIT: 'TIME_DEPOSIT',
+  CREDIT_CARD: 'CREDIT_CARD',
 } as const;
 
-export type UpdateBankAccountDtoStatus = (typeof UpdateBankAccountDtoStatus)[keyof typeof UpdateBankAccountDtoStatus];
+export type UpdateBankAccountDtoStatus = typeof UpdateBankAccountDtoStatus[keyof typeof UpdateBankAccountDtoStatus];
+
 
 export const UpdateBankAccountDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface UpdateBankAccountDto {
@@ -4275,56 +4344,57 @@ export interface UpdateBankAccountDto {
   status?: UpdateBankAccountDtoStatus;
 }
 
-export type UpdateBankAccountStatusDtoStatus = (typeof UpdateBankAccountStatusDtoStatus)[keyof typeof UpdateBankAccountStatusDtoStatus];
+export type UpdateBankAccountStatusDtoStatus = typeof UpdateBankAccountStatusDtoStatus[keyof typeof UpdateBankAccountStatusDtoStatus];
+
 
 export const UpdateBankAccountStatusDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface UpdateBankAccountStatusDto {
   status: UpdateBankAccountStatusDtoStatus;
 }
 
-export type GeneratedDefaultAccountResponseDtoRole =
-  (typeof GeneratedDefaultAccountResponseDtoRole)[keyof typeof GeneratedDefaultAccountResponseDtoRole];
+export type GeneratedDefaultAccountResponseDtoRole = typeof GeneratedDefaultAccountResponseDtoRole[keyof typeof GeneratedDefaultAccountResponseDtoRole];
+
 
 export const GeneratedDefaultAccountResponseDtoRole = {
-  EXPENSE: "EXPENSE",
-  REVENUE: "REVENUE",
+  EXPENSE: 'EXPENSE',
+  REVENUE: 'REVENUE',
 } as const;
 
 /**
  * @nullable
  */
-export type GeneratedDefaultAccountResponseDtoAccountType =
-  (typeof GeneratedDefaultAccountResponseDtoAccountType)[keyof typeof GeneratedDefaultAccountResponseDtoAccountType] | null;
+export type GeneratedDefaultAccountResponseDtoAccountType = typeof GeneratedDefaultAccountResponseDtoAccountType[keyof typeof GeneratedDefaultAccountResponseDtoAccountType] | null;
+
 
 export const GeneratedDefaultAccountResponseDtoAccountType = {
-  ASSET: "ASSET",
-  LIABILITY: "LIABILITY",
-  EQUITY: "EQUITY",
-  REVENUE: "REVENUE",
-  EXPENSE: "EXPENSE",
+  ASSET: 'ASSET',
+  LIABILITY: 'LIABILITY',
+  EQUITY: 'EQUITY',
+  REVENUE: 'REVENUE',
+  EXPENSE: 'EXPENSE',
 } as const;
 
 /**
  * @nullable
  */
-export type GeneratedDefaultAccountResponseDtoAccountNature =
-  (typeof GeneratedDefaultAccountResponseDtoAccountNature)[keyof typeof GeneratedDefaultAccountResponseDtoAccountNature] | null;
+export type GeneratedDefaultAccountResponseDtoAccountNature = typeof GeneratedDefaultAccountResponseDtoAccountNature[keyof typeof GeneratedDefaultAccountResponseDtoAccountNature] | null;
+
 
 export const GeneratedDefaultAccountResponseDtoAccountNature = {
-  DEBIT: "DEBIT",
-  CREDIT: "CREDIT",
+  DEBIT: 'DEBIT',
+  CREDIT: 'CREDIT',
 } as const;
 
-export type GeneratedDefaultAccountResponseDtoStatus =
-  (typeof GeneratedDefaultAccountResponseDtoStatus)[keyof typeof GeneratedDefaultAccountResponseDtoStatus];
+export type GeneratedDefaultAccountResponseDtoStatus = typeof GeneratedDefaultAccountResponseDtoStatus[keyof typeof GeneratedDefaultAccountResponseDtoStatus];
+
 
 export const GeneratedDefaultAccountResponseDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface GeneratedDefaultAccountResponseDto {
@@ -4341,19 +4411,21 @@ export interface GeneratedDefaultAccountResponseDto {
   status: GeneratedDefaultAccountResponseDtoStatus;
 }
 
-export type DefaultAccountResponseDtoType = (typeof DefaultAccountResponseDtoType)[keyof typeof DefaultAccountResponseDtoType];
+export type DefaultAccountResponseDtoType = typeof DefaultAccountResponseDtoType[keyof typeof DefaultAccountResponseDtoType];
+
 
 export const DefaultAccountResponseDtoType = {
-  EXPENSE: "EXPENSE",
-  COLLECTION: "COLLECTION",
-  FIXED_ASSET: "FIXED_ASSET",
+  EXPENSE: 'EXPENSE',
+  COLLECTION: 'COLLECTION',
+  FIXED_ASSET: 'FIXED_ASSET',
 } as const;
 
-export type DefaultAccountResponseDtoStatus = (typeof DefaultAccountResponseDtoStatus)[keyof typeof DefaultAccountResponseDtoStatus];
+export type DefaultAccountResponseDtoStatus = typeof DefaultAccountResponseDtoStatus[keyof typeof DefaultAccountResponseDtoStatus];
+
 
 export const DefaultAccountResponseDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface DefaultAccountResponseDto {
@@ -4406,46 +4478,46 @@ export interface DefaultAccountListResponseDto {
   permissions: DefaultAccountPermissionsResponseDto;
 }
 
-export type DefaultAccountOptionResponseDtoType =
-  (typeof DefaultAccountOptionResponseDtoType)[keyof typeof DefaultAccountOptionResponseDtoType];
+export type DefaultAccountOptionResponseDtoType = typeof DefaultAccountOptionResponseDtoType[keyof typeof DefaultAccountOptionResponseDtoType];
+
 
 export const DefaultAccountOptionResponseDtoType = {
-  EXPENSE: "EXPENSE",
-  COLLECTION: "COLLECTION",
-  FIXED_ASSET: "FIXED_ASSET",
+  EXPENSE: 'EXPENSE',
+  COLLECTION: 'COLLECTION',
+  FIXED_ASSET: 'FIXED_ASSET',
 } as const;
 
-export type DefaultAccountOptionResponseDtoStatus =
-  (typeof DefaultAccountOptionResponseDtoStatus)[keyof typeof DefaultAccountOptionResponseDtoStatus];
+export type DefaultAccountOptionResponseDtoStatus = typeof DefaultAccountOptionResponseDtoStatus[keyof typeof DefaultAccountOptionResponseDtoStatus];
+
 
 export const DefaultAccountOptionResponseDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 /**
  * @nullable
  */
-export type DefaultAccountOptionResponseDtoAccountType =
-  (typeof DefaultAccountOptionResponseDtoAccountType)[keyof typeof DefaultAccountOptionResponseDtoAccountType] | null;
+export type DefaultAccountOptionResponseDtoAccountType = typeof DefaultAccountOptionResponseDtoAccountType[keyof typeof DefaultAccountOptionResponseDtoAccountType] | null;
+
 
 export const DefaultAccountOptionResponseDtoAccountType = {
-  ASSET: "ASSET",
-  LIABILITY: "LIABILITY",
-  EQUITY: "EQUITY",
-  REVENUE: "REVENUE",
-  EXPENSE: "EXPENSE",
+  ASSET: 'ASSET',
+  LIABILITY: 'LIABILITY',
+  EQUITY: 'EQUITY',
+  REVENUE: 'REVENUE',
+  EXPENSE: 'EXPENSE',
 } as const;
 
 /**
  * @nullable
  */
-export type DefaultAccountOptionResponseDtoAccountNature =
-  (typeof DefaultAccountOptionResponseDtoAccountNature)[keyof typeof DefaultAccountOptionResponseDtoAccountNature] | null;
+export type DefaultAccountOptionResponseDtoAccountNature = typeof DefaultAccountOptionResponseDtoAccountNature[keyof typeof DefaultAccountOptionResponseDtoAccountNature] | null;
+
 
 export const DefaultAccountOptionResponseDtoAccountNature = {
-  DEBIT: "DEBIT",
-  CREDIT: "CREDIT",
+  DEBIT: 'DEBIT',
+  CREDIT: 'CREDIT',
 } as const;
 
 export interface DefaultAccountOptionResponseDto {
@@ -4470,15 +4542,15 @@ export interface DefaultAccountOptionsResponseDto {
   options: DefaultAccountOptionResponseDto[];
 }
 
-export type DefaultAccountExpenseParentOptionResponseDtoAccountLevel =
-  (typeof DefaultAccountExpenseParentOptionResponseDtoAccountLevel)[keyof typeof DefaultAccountExpenseParentOptionResponseDtoAccountLevel];
+export type DefaultAccountExpenseParentOptionResponseDtoAccountLevel = typeof DefaultAccountExpenseParentOptionResponseDtoAccountLevel[keyof typeof DefaultAccountExpenseParentOptionResponseDtoAccountLevel];
+
 
 export const DefaultAccountExpenseParentOptionResponseDtoAccountLevel = {
-  MAJOR: "MAJOR",
-  SUB1: "SUB1",
-  SUB2: "SUB2",
-  SUB3: "SUB3",
-  SPECIFIC: "SPECIFIC",
+  MAJOR: 'MAJOR',
+  SUB1: 'SUB1',
+  SUB2: 'SUB2',
+  SUB3: 'SUB3',
+  SPECIFIC: 'SPECIFIC',
 } as const;
 
 export interface DefaultAccountExpenseParentOptionResponseDto {
@@ -4508,21 +4580,21 @@ export interface DefaultAccountContainerResponseDto {
   permissions: DefaultAccountPermissionsResponseDto;
 }
 
-export type CreateDefaultAccountTemplateDtoType =
-  (typeof CreateDefaultAccountTemplateDtoType)[keyof typeof CreateDefaultAccountTemplateDtoType];
+export type CreateDefaultAccountTemplateDtoType = typeof CreateDefaultAccountTemplateDtoType[keyof typeof CreateDefaultAccountTemplateDtoType];
+
 
 export const CreateDefaultAccountTemplateDtoType = {
-  EXPENSE: "EXPENSE",
-  COLLECTION: "COLLECTION",
-  FIXED_ASSET: "FIXED_ASSET",
+  EXPENSE: 'EXPENSE',
+  COLLECTION: 'COLLECTION',
+  FIXED_ASSET: 'FIXED_ASSET',
 } as const;
 
-export type CreateDefaultAccountTemplateDtoStatus =
-  (typeof CreateDefaultAccountTemplateDtoStatus)[keyof typeof CreateDefaultAccountTemplateDtoStatus];
+export type CreateDefaultAccountTemplateDtoStatus = typeof CreateDefaultAccountTemplateDtoStatus[keyof typeof CreateDefaultAccountTemplateDtoStatus];
+
 
 export const CreateDefaultAccountTemplateDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface CreateDefaultAccountTemplateDto {
@@ -4540,21 +4612,21 @@ export interface SaveDefaultAccountResponseDto {
   defaultAccount: DefaultAccountResponseDto;
 }
 
-export type UpdateDefaultAccountTemplateDtoType =
-  (typeof UpdateDefaultAccountTemplateDtoType)[keyof typeof UpdateDefaultAccountTemplateDtoType];
+export type UpdateDefaultAccountTemplateDtoType = typeof UpdateDefaultAccountTemplateDtoType[keyof typeof UpdateDefaultAccountTemplateDtoType];
+
 
 export const UpdateDefaultAccountTemplateDtoType = {
-  EXPENSE: "EXPENSE",
-  COLLECTION: "COLLECTION",
-  FIXED_ASSET: "FIXED_ASSET",
+  EXPENSE: 'EXPENSE',
+  COLLECTION: 'COLLECTION',
+  FIXED_ASSET: 'FIXED_ASSET',
 } as const;
 
-export type UpdateDefaultAccountTemplateDtoStatus =
-  (typeof UpdateDefaultAccountTemplateDtoStatus)[keyof typeof UpdateDefaultAccountTemplateDtoStatus];
+export type UpdateDefaultAccountTemplateDtoStatus = typeof UpdateDefaultAccountTemplateDtoStatus[keyof typeof UpdateDefaultAccountTemplateDtoStatus];
+
 
 export const UpdateDefaultAccountTemplateDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface UpdateDefaultAccountTemplateDto {
@@ -4567,32 +4639,32 @@ export interface UpdateDefaultAccountTemplateDto {
   expenseParentCoaId?: string;
 }
 
-export type UpdateDefaultAccountTemplateStatusDtoStatus =
-  (typeof UpdateDefaultAccountTemplateStatusDtoStatus)[keyof typeof UpdateDefaultAccountTemplateStatusDtoStatus];
+export type UpdateDefaultAccountTemplateStatusDtoStatus = typeof UpdateDefaultAccountTemplateStatusDtoStatus[keyof typeof UpdateDefaultAccountTemplateStatusDtoStatus];
+
 
 export const UpdateDefaultAccountTemplateStatusDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface UpdateDefaultAccountTemplateStatusDto {
   status: UpdateDefaultAccountTemplateStatusDtoStatus;
 }
 
-export type ServiceMaintenanceResponseDtoStatus =
-  (typeof ServiceMaintenanceResponseDtoStatus)[keyof typeof ServiceMaintenanceResponseDtoStatus];
+export type ServiceMaintenanceResponseDtoStatus = typeof ServiceMaintenanceResponseDtoStatus[keyof typeof ServiceMaintenanceResponseDtoStatus];
+
 
 export const ServiceMaintenanceResponseDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
-export type ServiceMaintenanceResponseDtoAccountSetupMode =
-  (typeof ServiceMaintenanceResponseDtoAccountSetupMode)[keyof typeof ServiceMaintenanceResponseDtoAccountSetupMode];
+export type ServiceMaintenanceResponseDtoAccountSetupMode = typeof ServiceMaintenanceResponseDtoAccountSetupMode[keyof typeof ServiceMaintenanceResponseDtoAccountSetupMode];
+
 
 export const ServiceMaintenanceResponseDtoAccountSetupMode = {
-  AUTO: "AUTO",
-  EXISTING: "EXISTING",
+  AUTO: 'AUTO',
+  EXISTING: 'EXISTING',
 } as const;
 
 export interface ServiceMaintenanceResponseDto {
@@ -4644,12 +4716,12 @@ export interface ServiceMaintenanceListResponseDto {
   permissions: ServiceMaintenancePermissionsResponseDto;
 }
 
-export type ServiceMaintenanceOptionResponseDtoStatus =
-  (typeof ServiceMaintenanceOptionResponseDtoStatus)[keyof typeof ServiceMaintenanceOptionResponseDtoStatus];
+export type ServiceMaintenanceOptionResponseDtoStatus = typeof ServiceMaintenanceOptionResponseDtoStatus[keyof typeof ServiceMaintenanceOptionResponseDtoStatus];
+
 
 export const ServiceMaintenanceOptionResponseDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface ServiceMaintenanceOptionResponseDto {
@@ -4666,21 +4738,20 @@ export interface ServiceMaintenanceOptionsResponseDto {
 /**
  * @nullable
  */
-export type ServiceMaintenanceAccountOptionResponseDtoNormalBalance =
-  | (typeof ServiceMaintenanceAccountOptionResponseDtoNormalBalance)[keyof typeof ServiceMaintenanceAccountOptionResponseDtoNormalBalance]
-  | null;
+export type ServiceMaintenanceAccountOptionResponseDtoNormalBalance = typeof ServiceMaintenanceAccountOptionResponseDtoNormalBalance[keyof typeof ServiceMaintenanceAccountOptionResponseDtoNormalBalance] | null;
+
 
 export const ServiceMaintenanceAccountOptionResponseDtoNormalBalance = {
-  Credit: "Credit",
-  Debit: "Debit",
+  Credit: 'Credit',
+  Debit: 'Debit',
 } as const;
 
-export type ServiceMaintenanceAccountOptionResponseDtoStatus =
-  (typeof ServiceMaintenanceAccountOptionResponseDtoStatus)[keyof typeof ServiceMaintenanceAccountOptionResponseDtoStatus];
+export type ServiceMaintenanceAccountOptionResponseDtoStatus = typeof ServiceMaintenanceAccountOptionResponseDtoStatus[keyof typeof ServiceMaintenanceAccountOptionResponseDtoStatus];
+
 
 export const ServiceMaintenanceAccountOptionResponseDtoStatus = {
-  Active: "Active",
-  Inactive: "Inactive",
+  Active: 'Active',
+  Inactive: 'Inactive',
 } as const;
 
 export interface ServiceMaintenanceAccountOptionResponseDto {
@@ -4706,15 +4777,15 @@ export interface ServiceMaintenanceAccountOptionsResponseDto {
   accounts: ServiceMaintenanceAccountOptionResponseDto[];
 }
 
-export type ServiceMaintenanceNextAccountCodeResponseDtoParentAccountLevel =
-  (typeof ServiceMaintenanceNextAccountCodeResponseDtoParentAccountLevel)[keyof typeof ServiceMaintenanceNextAccountCodeResponseDtoParentAccountLevel];
+export type ServiceMaintenanceNextAccountCodeResponseDtoParentAccountLevel = typeof ServiceMaintenanceNextAccountCodeResponseDtoParentAccountLevel[keyof typeof ServiceMaintenanceNextAccountCodeResponseDtoParentAccountLevel];
+
 
 export const ServiceMaintenanceNextAccountCodeResponseDtoParentAccountLevel = {
-  MAJOR: "MAJOR",
-  SUB1: "SUB1",
-  SUB2: "SUB2",
-  SUB3: "SUB3",
-  SPECIFIC: "SPECIFIC",
+  MAJOR: 'MAJOR',
+  SUB1: 'SUB1',
+  SUB2: 'SUB2',
+  SUB3: 'SUB3',
+  SPECIFIC: 'SPECIFIC',
 } as const;
 
 export interface ServiceMaintenanceNextAccountCodeResponseDto {
@@ -4730,28 +4801,29 @@ export interface ServiceMaintenanceContainerResponseDto {
   permissions: ServiceMaintenancePermissionsResponseDto;
 }
 
-export type CreateServiceMaintenanceDtoStatus = (typeof CreateServiceMaintenanceDtoStatus)[keyof typeof CreateServiceMaintenanceDtoStatus];
+export type CreateServiceMaintenanceDtoStatus = typeof CreateServiceMaintenanceDtoStatus[keyof typeof CreateServiceMaintenanceDtoStatus];
+
 
 export const CreateServiceMaintenanceDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
-export type CreateServiceMaintenanceDtoAccountSetupMode =
-  (typeof CreateServiceMaintenanceDtoAccountSetupMode)[keyof typeof CreateServiceMaintenanceDtoAccountSetupMode];
+export type CreateServiceMaintenanceDtoAccountSetupMode = typeof CreateServiceMaintenanceDtoAccountSetupMode[keyof typeof CreateServiceMaintenanceDtoAccountSetupMode];
+
 
 export const CreateServiceMaintenanceDtoAccountSetupMode = {
-  AUTO: "AUTO",
-  EXISTING: "EXISTING",
+  AUTO: 'AUTO',
+  EXISTING: 'EXISTING',
 } as const;
 
 export interface CreateServiceMaintenanceDto {
   /** @maxLength 150 */
   serviceName: string;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   description?: string | null;
   status?: CreateServiceMaintenanceDtoStatus;
   accountSetupMode: CreateServiceMaintenanceDtoAccountSetupMode;
@@ -4764,28 +4836,29 @@ export interface SaveServiceMaintenanceResponseDto {
   service: ServiceMaintenanceResponseDto;
 }
 
-export type UpdateServiceMaintenanceDtoStatus = (typeof UpdateServiceMaintenanceDtoStatus)[keyof typeof UpdateServiceMaintenanceDtoStatus];
+export type UpdateServiceMaintenanceDtoStatus = typeof UpdateServiceMaintenanceDtoStatus[keyof typeof UpdateServiceMaintenanceDtoStatus];
+
 
 export const UpdateServiceMaintenanceDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
-export type UpdateServiceMaintenanceDtoAccountSetupMode =
-  (typeof UpdateServiceMaintenanceDtoAccountSetupMode)[keyof typeof UpdateServiceMaintenanceDtoAccountSetupMode];
+export type UpdateServiceMaintenanceDtoAccountSetupMode = typeof UpdateServiceMaintenanceDtoAccountSetupMode[keyof typeof UpdateServiceMaintenanceDtoAccountSetupMode];
+
 
 export const UpdateServiceMaintenanceDtoAccountSetupMode = {
-  AUTO: "AUTO",
-  EXISTING: "EXISTING",
+  AUTO: 'AUTO',
+  EXISTING: 'EXISTING',
 } as const;
 
 export interface UpdateServiceMaintenanceDto {
   /** @maxLength 150 */
   serviceName?: string;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   description?: string | null;
   status?: UpdateServiceMaintenanceDtoStatus;
   accountSetupMode?: UpdateServiceMaintenanceDtoAccountSetupMode;
@@ -4793,55 +4866,55 @@ export interface UpdateServiceMaintenanceDto {
   revenueCoaId?: string | null;
 }
 
-export type UpdateServiceMaintenanceStatusDtoStatus =
-  (typeof UpdateServiceMaintenanceStatusDtoStatus)[keyof typeof UpdateServiceMaintenanceStatusDtoStatus];
+export type UpdateServiceMaintenanceStatusDtoStatus = typeof UpdateServiceMaintenanceStatusDtoStatus[keyof typeof UpdateServiceMaintenanceStatusDtoStatus];
+
 
 export const UpdateServiceMaintenanceStatusDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface UpdateServiceMaintenanceStatusDto {
   status: UpdateServiceMaintenanceStatusDtoStatus;
 }
 
-export type ResponsibilityCenterResponseDtoCategory =
-  (typeof ResponsibilityCenterResponseDtoCategory)[keyof typeof ResponsibilityCenterResponseDtoCategory];
+export type ResponsibilityCenterResponseDtoCategory = typeof ResponsibilityCenterResponseDtoCategory[keyof typeof ResponsibilityCenterResponseDtoCategory];
+
 
 export const ResponsibilityCenterResponseDtoCategory = {
-  CORPORATE: "CORPORATE",
-  DIVISION: "DIVISION",
-  DEPARTMENT: "DEPARTMENT",
-  SECTION: "SECTION",
-  TEAM: "TEAM",
-  BRANCH: "BRANCH",
-  BUILDING: "BUILDING",
-  PROJECT: "PROJECT",
-  BUSINESS_UNIT: "BUSINESS_UNIT",
-  REGION: "REGION",
-  SALESMAN: "SALESMAN",
-  WAREHOUSE: "WAREHOUSE",
-  OUTLET: "OUTLET",
-  SALES_TERRITORY: "SALES_TERRITORY",
-  FLEET: "FLEET",
+  CORPORATE: 'CORPORATE',
+  DIVISION: 'DIVISION',
+  DEPARTMENT: 'DEPARTMENT',
+  SECTION: 'SECTION',
+  TEAM: 'TEAM',
+  BRANCH: 'BRANCH',
+  BUILDING: 'BUILDING',
+  PROJECT: 'PROJECT',
+  BUSINESS_UNIT: 'BUSINESS_UNIT',
+  REGION: 'REGION',
+  SALESMAN: 'SALESMAN',
+  WAREHOUSE: 'WAREHOUSE',
+  OUTLET: 'OUTLET',
+  SALES_TERRITORY: 'SALES_TERRITORY',
+  FLEET: 'FLEET',
 } as const;
 
-export type ResponsibilityCenterResponseDtoFinancialType =
-  (typeof ResponsibilityCenterResponseDtoFinancialType)[keyof typeof ResponsibilityCenterResponseDtoFinancialType];
+export type ResponsibilityCenterResponseDtoFinancialType = typeof ResponsibilityCenterResponseDtoFinancialType[keyof typeof ResponsibilityCenterResponseDtoFinancialType];
+
 
 export const ResponsibilityCenterResponseDtoFinancialType = {
-  COST_CENTER: "COST_CENTER",
-  PROFIT_CENTER: "PROFIT_CENTER",
-  REVENUE_CENTER: "REVENUE_CENTER",
-  INVESTMENT_CENTER: "INVESTMENT_CENTER",
+  COST_CENTER: 'COST_CENTER',
+  PROFIT_CENTER: 'PROFIT_CENTER',
+  REVENUE_CENTER: 'REVENUE_CENTER',
+  INVESTMENT_CENTER: 'INVESTMENT_CENTER',
 } as const;
 
-export type ResponsibilityCenterResponseDtoStatus =
-  (typeof ResponsibilityCenterResponseDtoStatus)[keyof typeof ResponsibilityCenterResponseDtoStatus];
+export type ResponsibilityCenterResponseDtoStatus = typeof ResponsibilityCenterResponseDtoStatus[keyof typeof ResponsibilityCenterResponseDtoStatus];
+
 
 export const ResponsibilityCenterResponseDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface ResponsibilityCenterResponseDto {
@@ -4903,12 +4976,12 @@ export interface ResponsibilityCenterListResponseDto {
   permissions: ResponsibilityCenterPermissionsResponseDto;
 }
 
-export type ResponsibilityCenterOptionResponseDtoStatus =
-  (typeof ResponsibilityCenterOptionResponseDtoStatus)[keyof typeof ResponsibilityCenterOptionResponseDtoStatus];
+export type ResponsibilityCenterOptionResponseDtoStatus = typeof ResponsibilityCenterOptionResponseDtoStatus[keyof typeof ResponsibilityCenterOptionResponseDtoStatus];
+
 
 export const ResponsibilityCenterOptionResponseDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface ResponsibilityCenterOptionResponseDto {
@@ -4923,43 +4996,43 @@ export interface ResponsibilityCenterOptionsResponseDto {
   responsibilityCenters: ResponsibilityCenterOptionResponseDto[];
 }
 
-export type ResponsibilityCenterTreeNodeResponseDtoCategory =
-  (typeof ResponsibilityCenterTreeNodeResponseDtoCategory)[keyof typeof ResponsibilityCenterTreeNodeResponseDtoCategory];
+export type ResponsibilityCenterTreeNodeResponseDtoCategory = typeof ResponsibilityCenterTreeNodeResponseDtoCategory[keyof typeof ResponsibilityCenterTreeNodeResponseDtoCategory];
+
 
 export const ResponsibilityCenterTreeNodeResponseDtoCategory = {
-  CORPORATE: "CORPORATE",
-  DIVISION: "DIVISION",
-  DEPARTMENT: "DEPARTMENT",
-  SECTION: "SECTION",
-  TEAM: "TEAM",
-  BRANCH: "BRANCH",
-  BUILDING: "BUILDING",
-  PROJECT: "PROJECT",
-  BUSINESS_UNIT: "BUSINESS_UNIT",
-  REGION: "REGION",
-  SALESMAN: "SALESMAN",
-  WAREHOUSE: "WAREHOUSE",
-  OUTLET: "OUTLET",
-  SALES_TERRITORY: "SALES_TERRITORY",
-  FLEET: "FLEET",
+  CORPORATE: 'CORPORATE',
+  DIVISION: 'DIVISION',
+  DEPARTMENT: 'DEPARTMENT',
+  SECTION: 'SECTION',
+  TEAM: 'TEAM',
+  BRANCH: 'BRANCH',
+  BUILDING: 'BUILDING',
+  PROJECT: 'PROJECT',
+  BUSINESS_UNIT: 'BUSINESS_UNIT',
+  REGION: 'REGION',
+  SALESMAN: 'SALESMAN',
+  WAREHOUSE: 'WAREHOUSE',
+  OUTLET: 'OUTLET',
+  SALES_TERRITORY: 'SALES_TERRITORY',
+  FLEET: 'FLEET',
 } as const;
 
-export type ResponsibilityCenterTreeNodeResponseDtoFinancialType =
-  (typeof ResponsibilityCenterTreeNodeResponseDtoFinancialType)[keyof typeof ResponsibilityCenterTreeNodeResponseDtoFinancialType];
+export type ResponsibilityCenterTreeNodeResponseDtoFinancialType = typeof ResponsibilityCenterTreeNodeResponseDtoFinancialType[keyof typeof ResponsibilityCenterTreeNodeResponseDtoFinancialType];
+
 
 export const ResponsibilityCenterTreeNodeResponseDtoFinancialType = {
-  COST_CENTER: "COST_CENTER",
-  PROFIT_CENTER: "PROFIT_CENTER",
-  REVENUE_CENTER: "REVENUE_CENTER",
-  INVESTMENT_CENTER: "INVESTMENT_CENTER",
+  COST_CENTER: 'COST_CENTER',
+  PROFIT_CENTER: 'PROFIT_CENTER',
+  REVENUE_CENTER: 'REVENUE_CENTER',
+  INVESTMENT_CENTER: 'INVESTMENT_CENTER',
 } as const;
 
-export type ResponsibilityCenterTreeNodeResponseDtoStatus =
-  (typeof ResponsibilityCenterTreeNodeResponseDtoStatus)[keyof typeof ResponsibilityCenterTreeNodeResponseDtoStatus];
+export type ResponsibilityCenterTreeNodeResponseDtoStatus = typeof ResponsibilityCenterTreeNodeResponseDtoStatus[keyof typeof ResponsibilityCenterTreeNodeResponseDtoStatus];
+
 
 export const ResponsibilityCenterTreeNodeResponseDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface ResponsibilityCenterTreeNodeResponseDto {
@@ -4998,12 +5071,12 @@ export interface ResponsibilityCenterTreeResponseDto {
   permissions: ResponsibilityCenterPermissionsResponseDto;
 }
 
-export type ResponsibilityCenterClassificationResponseDtoStatus =
-  (typeof ResponsibilityCenterClassificationResponseDtoStatus)[keyof typeof ResponsibilityCenterClassificationResponseDtoStatus];
+export type ResponsibilityCenterClassificationResponseDtoStatus = typeof ResponsibilityCenterClassificationResponseDtoStatus[keyof typeof ResponsibilityCenterClassificationResponseDtoStatus];
+
 
 export const ResponsibilityCenterClassificationResponseDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface ResponsibilityCenterClassificationResponseDto {
@@ -5019,12 +5092,12 @@ export interface ResponsibilityCenterClassificationsResponseDto {
   classifications: ResponsibilityCenterClassificationResponseDto[];
 }
 
-export type ResponsibilityCenterTypeResponseDtoStatus =
-  (typeof ResponsibilityCenterTypeResponseDtoStatus)[keyof typeof ResponsibilityCenterTypeResponseDtoStatus];
+export type ResponsibilityCenterTypeResponseDtoStatus = typeof ResponsibilityCenterTypeResponseDtoStatus[keyof typeof ResponsibilityCenterTypeResponseDtoStatus];
+
 
 export const ResponsibilityCenterTypeResponseDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface ResponsibilityCenterTypeResponseDto {
@@ -5054,43 +5127,43 @@ export interface ResponsibilityCenterContainerResponseDto {
   permissions: ResponsibilityCenterPermissionsResponseDto;
 }
 
-export type CreateResponsibilityCenterDtoCategory =
-  (typeof CreateResponsibilityCenterDtoCategory)[keyof typeof CreateResponsibilityCenterDtoCategory];
+export type CreateResponsibilityCenterDtoCategory = typeof CreateResponsibilityCenterDtoCategory[keyof typeof CreateResponsibilityCenterDtoCategory];
+
 
 export const CreateResponsibilityCenterDtoCategory = {
-  CORPORATE: "CORPORATE",
-  DIVISION: "DIVISION",
-  DEPARTMENT: "DEPARTMENT",
-  SECTION: "SECTION",
-  TEAM: "TEAM",
-  BRANCH: "BRANCH",
-  BUILDING: "BUILDING",
-  PROJECT: "PROJECT",
-  BUSINESS_UNIT: "BUSINESS_UNIT",
-  REGION: "REGION",
-  SALESMAN: "SALESMAN",
-  WAREHOUSE: "WAREHOUSE",
-  OUTLET: "OUTLET",
-  SALES_TERRITORY: "SALES_TERRITORY",
-  FLEET: "FLEET",
+  CORPORATE: 'CORPORATE',
+  DIVISION: 'DIVISION',
+  DEPARTMENT: 'DEPARTMENT',
+  SECTION: 'SECTION',
+  TEAM: 'TEAM',
+  BRANCH: 'BRANCH',
+  BUILDING: 'BUILDING',
+  PROJECT: 'PROJECT',
+  BUSINESS_UNIT: 'BUSINESS_UNIT',
+  REGION: 'REGION',
+  SALESMAN: 'SALESMAN',
+  WAREHOUSE: 'WAREHOUSE',
+  OUTLET: 'OUTLET',
+  SALES_TERRITORY: 'SALES_TERRITORY',
+  FLEET: 'FLEET',
 } as const;
 
-export type CreateResponsibilityCenterDtoFinancialType =
-  (typeof CreateResponsibilityCenterDtoFinancialType)[keyof typeof CreateResponsibilityCenterDtoFinancialType];
+export type CreateResponsibilityCenterDtoFinancialType = typeof CreateResponsibilityCenterDtoFinancialType[keyof typeof CreateResponsibilityCenterDtoFinancialType];
+
 
 export const CreateResponsibilityCenterDtoFinancialType = {
-  COST_CENTER: "COST_CENTER",
-  PROFIT_CENTER: "PROFIT_CENTER",
-  REVENUE_CENTER: "REVENUE_CENTER",
-  INVESTMENT_CENTER: "INVESTMENT_CENTER",
+  COST_CENTER: 'COST_CENTER',
+  PROFIT_CENTER: 'PROFIT_CENTER',
+  REVENUE_CENTER: 'REVENUE_CENTER',
+  INVESTMENT_CENTER: 'INVESTMENT_CENTER',
 } as const;
 
-export type CreateResponsibilityCenterDtoStatus =
-  (typeof CreateResponsibilityCenterDtoStatus)[keyof typeof CreateResponsibilityCenterDtoStatus];
+export type CreateResponsibilityCenterDtoStatus = typeof CreateResponsibilityCenterDtoStatus[keyof typeof CreateResponsibilityCenterDtoStatus];
+
 
 export const CreateResponsibilityCenterDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface CreateResponsibilityCenterDto {
@@ -5115,43 +5188,43 @@ export interface SaveResponsibilityCenterResponseDto {
   center: ResponsibilityCenterResponseDto;
 }
 
-export type UpdateResponsibilityCenterDtoCategory =
-  (typeof UpdateResponsibilityCenterDtoCategory)[keyof typeof UpdateResponsibilityCenterDtoCategory];
+export type UpdateResponsibilityCenterDtoCategory = typeof UpdateResponsibilityCenterDtoCategory[keyof typeof UpdateResponsibilityCenterDtoCategory];
+
 
 export const UpdateResponsibilityCenterDtoCategory = {
-  CORPORATE: "CORPORATE",
-  DIVISION: "DIVISION",
-  DEPARTMENT: "DEPARTMENT",
-  SECTION: "SECTION",
-  TEAM: "TEAM",
-  BRANCH: "BRANCH",
-  BUILDING: "BUILDING",
-  PROJECT: "PROJECT",
-  BUSINESS_UNIT: "BUSINESS_UNIT",
-  REGION: "REGION",
-  SALESMAN: "SALESMAN",
-  WAREHOUSE: "WAREHOUSE",
-  OUTLET: "OUTLET",
-  SALES_TERRITORY: "SALES_TERRITORY",
-  FLEET: "FLEET",
+  CORPORATE: 'CORPORATE',
+  DIVISION: 'DIVISION',
+  DEPARTMENT: 'DEPARTMENT',
+  SECTION: 'SECTION',
+  TEAM: 'TEAM',
+  BRANCH: 'BRANCH',
+  BUILDING: 'BUILDING',
+  PROJECT: 'PROJECT',
+  BUSINESS_UNIT: 'BUSINESS_UNIT',
+  REGION: 'REGION',
+  SALESMAN: 'SALESMAN',
+  WAREHOUSE: 'WAREHOUSE',
+  OUTLET: 'OUTLET',
+  SALES_TERRITORY: 'SALES_TERRITORY',
+  FLEET: 'FLEET',
 } as const;
 
-export type UpdateResponsibilityCenterDtoFinancialType =
-  (typeof UpdateResponsibilityCenterDtoFinancialType)[keyof typeof UpdateResponsibilityCenterDtoFinancialType];
+export type UpdateResponsibilityCenterDtoFinancialType = typeof UpdateResponsibilityCenterDtoFinancialType[keyof typeof UpdateResponsibilityCenterDtoFinancialType];
+
 
 export const UpdateResponsibilityCenterDtoFinancialType = {
-  COST_CENTER: "COST_CENTER",
-  PROFIT_CENTER: "PROFIT_CENTER",
-  REVENUE_CENTER: "REVENUE_CENTER",
-  INVESTMENT_CENTER: "INVESTMENT_CENTER",
+  COST_CENTER: 'COST_CENTER',
+  PROFIT_CENTER: 'PROFIT_CENTER',
+  REVENUE_CENTER: 'REVENUE_CENTER',
+  INVESTMENT_CENTER: 'INVESTMENT_CENTER',
 } as const;
 
-export type UpdateResponsibilityCenterDtoStatus =
-  (typeof UpdateResponsibilityCenterDtoStatus)[keyof typeof UpdateResponsibilityCenterDtoStatus];
+export type UpdateResponsibilityCenterDtoStatus = typeof UpdateResponsibilityCenterDtoStatus[keyof typeof UpdateResponsibilityCenterDtoStatus];
+
 
 export const UpdateResponsibilityCenterDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface UpdateResponsibilityCenterDto {
@@ -5171,12 +5244,12 @@ export interface UpdateResponsibilityCenterDto {
   description?: string;
 }
 
-export type UpdateResponsibilityCenterStatusDtoStatus =
-  (typeof UpdateResponsibilityCenterStatusDtoStatus)[keyof typeof UpdateResponsibilityCenterStatusDtoStatus];
+export type UpdateResponsibilityCenterStatusDtoStatus = typeof UpdateResponsibilityCenterStatusDtoStatus[keyof typeof UpdateResponsibilityCenterStatusDtoStatus];
+
 
 export const UpdateResponsibilityCenterStatusDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface UpdateResponsibilityCenterStatusDto {
@@ -5189,20 +5262,21 @@ export interface WarehouseBranchResponseDto {
   name: string;
 }
 
-export type WarehouseResponseDtoBranchAvailabilityMode =
-  (typeof WarehouseResponseDtoBranchAvailabilityMode)[keyof typeof WarehouseResponseDtoBranchAvailabilityMode];
+export type WarehouseResponseDtoBranchAvailabilityMode = typeof WarehouseResponseDtoBranchAvailabilityMode[keyof typeof WarehouseResponseDtoBranchAvailabilityMode];
+
 
 export const WarehouseResponseDtoBranchAvailabilityMode = {
-  ALL: "ALL",
-  SPECIFIC: "SPECIFIC",
-  EXCEPT: "EXCEPT",
+  ALL: 'ALL',
+  SPECIFIC: 'SPECIFIC',
+  EXCEPT: 'EXCEPT',
 } as const;
 
-export type WarehouseResponseDtoStatus = (typeof WarehouseResponseDtoStatus)[keyof typeof WarehouseResponseDtoStatus];
+export type WarehouseResponseDtoStatus = typeof WarehouseResponseDtoStatus[keyof typeof WarehouseResponseDtoStatus];
+
 
 export const WarehouseResponseDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface WarehouseResponseDto {
@@ -5257,11 +5331,12 @@ export interface WarehouseListResponseDto {
   permissions: WarehousePermissionsResponseDto;
 }
 
-export type WarehouseOptionResponseDtoStatus = (typeof WarehouseOptionResponseDtoStatus)[keyof typeof WarehouseOptionResponseDtoStatus];
+export type WarehouseOptionResponseDtoStatus = typeof WarehouseOptionResponseDtoStatus[keyof typeof WarehouseOptionResponseDtoStatus];
+
 
 export const WarehouseOptionResponseDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface WarehouseOptionResponseDto {
@@ -5280,29 +5355,30 @@ export interface WarehouseContainerResponseDto {
   permissions: WarehousePermissionsResponseDto;
 }
 
-export type CreateWarehouseDtoBranchAvailabilityMode =
-  (typeof CreateWarehouseDtoBranchAvailabilityMode)[keyof typeof CreateWarehouseDtoBranchAvailabilityMode];
+export type CreateWarehouseDtoBranchAvailabilityMode = typeof CreateWarehouseDtoBranchAvailabilityMode[keyof typeof CreateWarehouseDtoBranchAvailabilityMode];
+
 
 export const CreateWarehouseDtoBranchAvailabilityMode = {
-  ALL: "ALL",
-  SPECIFIC: "SPECIFIC",
-  EXCEPT: "EXCEPT",
+  ALL: 'ALL',
+  SPECIFIC: 'SPECIFIC',
+  EXCEPT: 'EXCEPT',
 } as const;
 
-export type CreateWarehouseDtoStatus = (typeof CreateWarehouseDtoStatus)[keyof typeof CreateWarehouseDtoStatus];
+export type CreateWarehouseDtoStatus = typeof CreateWarehouseDtoStatus[keyof typeof CreateWarehouseDtoStatus];
+
 
 export const CreateWarehouseDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface CreateWarehouseDto {
   /** @maxLength 80 */
   code?: string;
   /**
-   * @maxLength 180
-   * @pattern \S
-   */
+     * @maxLength 180
+     * @pattern \S
+     */
   name: string;
   /** @items.minimum 1 */
   branchUnitIds?: number[];
@@ -5323,29 +5399,30 @@ export interface SaveWarehouseResponseDto {
   warehouse: WarehouseResponseDto;
 }
 
-export type UpdateWarehouseDtoBranchAvailabilityMode =
-  (typeof UpdateWarehouseDtoBranchAvailabilityMode)[keyof typeof UpdateWarehouseDtoBranchAvailabilityMode];
+export type UpdateWarehouseDtoBranchAvailabilityMode = typeof UpdateWarehouseDtoBranchAvailabilityMode[keyof typeof UpdateWarehouseDtoBranchAvailabilityMode];
+
 
 export const UpdateWarehouseDtoBranchAvailabilityMode = {
-  ALL: "ALL",
-  SPECIFIC: "SPECIFIC",
-  EXCEPT: "EXCEPT",
+  ALL: 'ALL',
+  SPECIFIC: 'SPECIFIC',
+  EXCEPT: 'EXCEPT',
 } as const;
 
-export type UpdateWarehouseDtoStatus = (typeof UpdateWarehouseDtoStatus)[keyof typeof UpdateWarehouseDtoStatus];
+export type UpdateWarehouseDtoStatus = typeof UpdateWarehouseDtoStatus[keyof typeof UpdateWarehouseDtoStatus];
+
 
 export const UpdateWarehouseDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface UpdateWarehouseDto {
   /** @maxLength 80 */
   code?: string;
   /**
-   * @maxLength 180
-   * @pattern \S
-   */
+     * @maxLength 180
+     * @pattern \S
+     */
   name?: string;
   /** @items.minimum 1 */
   branchUnitIds?: number[];
@@ -5361,33 +5438,34 @@ export interface UpdateWarehouseDto {
   description?: string;
 }
 
-export type WarehouseAccessResponseDtoAccessLevel =
-  (typeof WarehouseAccessResponseDtoAccessLevel)[keyof typeof WarehouseAccessResponseDtoAccessLevel];
+export type WarehouseAccessResponseDtoAccessLevel = typeof WarehouseAccessResponseDtoAccessLevel[keyof typeof WarehouseAccessResponseDtoAccessLevel];
+
 
 export const WarehouseAccessResponseDtoAccessLevel = {
-  VIEWER: "VIEWER",
-  PICKER: "PICKER",
-  MANAGER: "MANAGER",
+  VIEWER: 'VIEWER',
+  PICKER: 'PICKER',
+  MANAGER: 'MANAGER',
 } as const;
 
-export type WarehouseAccessResponseDtoPermissionsItem =
-  (typeof WarehouseAccessResponseDtoPermissionsItem)[keyof typeof WarehouseAccessResponseDtoPermissionsItem];
+export type WarehouseAccessResponseDtoPermissionsItem = typeof WarehouseAccessResponseDtoPermissionsItem[keyof typeof WarehouseAccessResponseDtoPermissionsItem];
+
 
 export const WarehouseAccessResponseDtoPermissionsItem = {
-  VIEW_STOCK: "VIEW_STOCK",
-  RECEIVE_STOCK: "RECEIVE_STOCK",
-  ISSUE_STOCK: "ISSUE_STOCK",
-  TRANSFER_STOCK: "TRANSFER_STOCK",
-  ADJUST_STOCK: "ADJUST_STOCK",
-  MANAGE_LOCATIONS: "MANAGE_LOCATIONS",
-  VIEW_HISTORY: "VIEW_HISTORY",
+  VIEW_STOCK: 'VIEW_STOCK',
+  RECEIVE_STOCK: 'RECEIVE_STOCK',
+  ISSUE_STOCK: 'ISSUE_STOCK',
+  TRANSFER_STOCK: 'TRANSFER_STOCK',
+  ADJUST_STOCK: 'ADJUST_STOCK',
+  MANAGE_LOCATIONS: 'MANAGE_LOCATIONS',
+  VIEW_HISTORY: 'VIEW_HISTORY',
 } as const;
 
-export type WarehouseAccessResponseDtoStatus = (typeof WarehouseAccessResponseDtoStatus)[keyof typeof WarehouseAccessResponseDtoStatus];
+export type WarehouseAccessResponseDtoStatus = typeof WarehouseAccessResponseDtoStatus[keyof typeof WarehouseAccessResponseDtoStatus];
+
 
 export const WarehouseAccessResponseDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface WarehouseAccessResponseDto {
@@ -5441,13 +5519,13 @@ export interface WarehouseAccessListResponseDto {
   permissions: WarehouseAccessPermissionsResponseDto;
 }
 
-export type WarehouseAccessDirectoryUserResponseDtoStatus =
-  (typeof WarehouseAccessDirectoryUserResponseDtoStatus)[keyof typeof WarehouseAccessDirectoryUserResponseDtoStatus];
+export type WarehouseAccessDirectoryUserResponseDtoStatus = typeof WarehouseAccessDirectoryUserResponseDtoStatus[keyof typeof WarehouseAccessDirectoryUserResponseDtoStatus];
+
 
 export const WarehouseAccessDirectoryUserResponseDtoStatus = {
-  PENDING_VERIFICATION: "PENDING_VERIFICATION",
-  ACTIVE: "ACTIVE",
-  SUSPENDED: "SUSPENDED",
+  PENDING_VERIFICATION: 'PENDING_VERIFICATION',
+  ACTIVE: 'ACTIVE',
+  SUSPENDED: 'SUSPENDED',
 } as const;
 
 export interface WarehouseAccessDirectoryUserResponseDto {
@@ -5480,34 +5558,34 @@ export interface WarehouseAccessContainerResponseDto {
   permissions: WarehouseAccessPermissionsResponseDto;
 }
 
-export type CreateWarehouseAccessAssignmentDtoAccessLevel =
-  (typeof CreateWarehouseAccessAssignmentDtoAccessLevel)[keyof typeof CreateWarehouseAccessAssignmentDtoAccessLevel];
+export type CreateWarehouseAccessAssignmentDtoAccessLevel = typeof CreateWarehouseAccessAssignmentDtoAccessLevel[keyof typeof CreateWarehouseAccessAssignmentDtoAccessLevel];
+
 
 export const CreateWarehouseAccessAssignmentDtoAccessLevel = {
-  VIEWER: "VIEWER",
-  PICKER: "PICKER",
-  MANAGER: "MANAGER",
+  VIEWER: 'VIEWER',
+  PICKER: 'PICKER',
+  MANAGER: 'MANAGER',
 } as const;
 
-export type CreateWarehouseAccessAssignmentDtoPermissionsItem =
-  (typeof CreateWarehouseAccessAssignmentDtoPermissionsItem)[keyof typeof CreateWarehouseAccessAssignmentDtoPermissionsItem];
+export type CreateWarehouseAccessAssignmentDtoPermissionsItem = typeof CreateWarehouseAccessAssignmentDtoPermissionsItem[keyof typeof CreateWarehouseAccessAssignmentDtoPermissionsItem];
+
 
 export const CreateWarehouseAccessAssignmentDtoPermissionsItem = {
-  VIEW_STOCK: "VIEW_STOCK",
-  RECEIVE_STOCK: "RECEIVE_STOCK",
-  ISSUE_STOCK: "ISSUE_STOCK",
-  TRANSFER_STOCK: "TRANSFER_STOCK",
-  ADJUST_STOCK: "ADJUST_STOCK",
-  MANAGE_LOCATIONS: "MANAGE_LOCATIONS",
-  VIEW_HISTORY: "VIEW_HISTORY",
+  VIEW_STOCK: 'VIEW_STOCK',
+  RECEIVE_STOCK: 'RECEIVE_STOCK',
+  ISSUE_STOCK: 'ISSUE_STOCK',
+  TRANSFER_STOCK: 'TRANSFER_STOCK',
+  ADJUST_STOCK: 'ADJUST_STOCK',
+  MANAGE_LOCATIONS: 'MANAGE_LOCATIONS',
+  VIEW_HISTORY: 'VIEW_HISTORY',
 } as const;
 
-export type CreateWarehouseAccessAssignmentDtoStatus =
-  (typeof CreateWarehouseAccessAssignmentDtoStatus)[keyof typeof CreateWarehouseAccessAssignmentDtoStatus];
+export type CreateWarehouseAccessAssignmentDtoStatus = typeof CreateWarehouseAccessAssignmentDtoStatus[keyof typeof CreateWarehouseAccessAssignmentDtoStatus];
+
 
 export const CreateWarehouseAccessAssignmentDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface CreateWarehouseAccessAssignmentDto {
@@ -5529,33 +5607,34 @@ export interface CreateWarehouseAccessResponseDto {
   warehouseAccess: WarehouseAccessResponseDto[];
 }
 
-export type UpdateWarehouseAccessDtoAccessLevel =
-  (typeof UpdateWarehouseAccessDtoAccessLevel)[keyof typeof UpdateWarehouseAccessDtoAccessLevel];
+export type UpdateWarehouseAccessDtoAccessLevel = typeof UpdateWarehouseAccessDtoAccessLevel[keyof typeof UpdateWarehouseAccessDtoAccessLevel];
+
 
 export const UpdateWarehouseAccessDtoAccessLevel = {
-  VIEWER: "VIEWER",
-  PICKER: "PICKER",
-  MANAGER: "MANAGER",
+  VIEWER: 'VIEWER',
+  PICKER: 'PICKER',
+  MANAGER: 'MANAGER',
 } as const;
 
-export type UpdateWarehouseAccessDtoPermissionsItem =
-  (typeof UpdateWarehouseAccessDtoPermissionsItem)[keyof typeof UpdateWarehouseAccessDtoPermissionsItem];
+export type UpdateWarehouseAccessDtoPermissionsItem = typeof UpdateWarehouseAccessDtoPermissionsItem[keyof typeof UpdateWarehouseAccessDtoPermissionsItem];
+
 
 export const UpdateWarehouseAccessDtoPermissionsItem = {
-  VIEW_STOCK: "VIEW_STOCK",
-  RECEIVE_STOCK: "RECEIVE_STOCK",
-  ISSUE_STOCK: "ISSUE_STOCK",
-  TRANSFER_STOCK: "TRANSFER_STOCK",
-  ADJUST_STOCK: "ADJUST_STOCK",
-  MANAGE_LOCATIONS: "MANAGE_LOCATIONS",
-  VIEW_HISTORY: "VIEW_HISTORY",
+  VIEW_STOCK: 'VIEW_STOCK',
+  RECEIVE_STOCK: 'RECEIVE_STOCK',
+  ISSUE_STOCK: 'ISSUE_STOCK',
+  TRANSFER_STOCK: 'TRANSFER_STOCK',
+  ADJUST_STOCK: 'ADJUST_STOCK',
+  MANAGE_LOCATIONS: 'MANAGE_LOCATIONS',
+  VIEW_HISTORY: 'VIEW_HISTORY',
 } as const;
 
-export type UpdateWarehouseAccessDtoStatus = (typeof UpdateWarehouseAccessDtoStatus)[keyof typeof UpdateWarehouseAccessDtoStatus];
+export type UpdateWarehouseAccessDtoStatus = typeof UpdateWarehouseAccessDtoStatus[keyof typeof UpdateWarehouseAccessDtoStatus];
+
 
 export const UpdateWarehouseAccessDtoStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export interface UpdateWarehouseAccessDto {
@@ -5614,12 +5693,12 @@ export interface ApprovalWorkflowsResponseDto {
   workflows: ApprovalWorkflowResponseDto[];
 }
 
-export type UpsertApprovalWorkflowStageDtoRequirement =
-  (typeof UpsertApprovalWorkflowStageDtoRequirement)[keyof typeof UpsertApprovalWorkflowStageDtoRequirement];
+export type UpsertApprovalWorkflowStageDtoRequirement = typeof UpsertApprovalWorkflowStageDtoRequirement[keyof typeof UpsertApprovalWorkflowStageDtoRequirement];
+
 
 export const UpsertApprovalWorkflowStageDtoRequirement = {
-  any: "any",
-  all: "all",
+  any: 'any',
+  all: 'all',
 } as const;
 
 export interface UpsertApprovalWorkflowStageDto {
@@ -5632,21 +5711,22 @@ export interface UpsertApprovalWorkflowStageDto {
   approverIds: number[];
 }
 
-export type UpsertApprovalRoutingRuleDtoBasis = (typeof UpsertApprovalRoutingRuleDtoBasis)[keyof typeof UpsertApprovalRoutingRuleDtoBasis];
+export type UpsertApprovalRoutingRuleDtoBasis = typeof UpsertApprovalRoutingRuleDtoBasis[keyof typeof UpsertApprovalRoutingRuleDtoBasis];
+
 
 export const UpsertApprovalRoutingRuleDtoBasis = {
-  default: "default",
-  amount: "amount",
+  default: 'default',
+  amount: 'amount',
 } as const;
 
-export type UpsertApprovalRoutingRuleDtoAmountOperator =
-  (typeof UpsertApprovalRoutingRuleDtoAmountOperator)[keyof typeof UpsertApprovalRoutingRuleDtoAmountOperator];
+export type UpsertApprovalRoutingRuleDtoAmountOperator = typeof UpsertApprovalRoutingRuleDtoAmountOperator[keyof typeof UpsertApprovalRoutingRuleDtoAmountOperator];
+
 
 export const UpsertApprovalRoutingRuleDtoAmountOperator = {
-  greaterThan: "greaterThan",
-  greaterThanOrEqual: "greaterThanOrEqual",
-  lessThan: "lessThan",
-  lessThanOrEqual: "lessThanOrEqual",
+  greaterThan: 'greaterThan',
+  greaterThanOrEqual: 'greaterThanOrEqual',
+  lessThan: 'lessThan',
+  lessThanOrEqual: 'lessThanOrEqual',
 } as const;
 
 export interface UpsertApprovalRoutingRuleDto {
@@ -5657,17 +5737,18 @@ export interface UpsertApprovalRoutingRuleDto {
   amountOperator: UpsertApprovalRoutingRuleDtoAmountOperator;
   amountValue?: string;
   /**
-   * Approval stage sequence numbers included in this route.
-   * @minItems 1
-   */
+     * Approval stage sequence numbers included in this route.
+     * @minItems 1
+     */
   stageSequences: number[];
 }
 
-export type UpsertApprovalWorkflowDtoStatus = (typeof UpsertApprovalWorkflowDtoStatus)[keyof typeof UpsertApprovalWorkflowDtoStatus];
+export type UpsertApprovalWorkflowDtoStatus = typeof UpsertApprovalWorkflowDtoStatus[keyof typeof UpsertApprovalWorkflowDtoStatus];
+
 
 export const UpsertApprovalWorkflowDtoStatus = {
-  Active: "Active",
-  Inactive: "Inactive",
+  Active: 'Active',
+  Inactive: 'Inactive',
 } as const;
 
 export interface UpsertApprovalWorkflowDto {
@@ -5730,45 +5811,11 @@ export interface CreateApproverSetupDto {
   /** Required when type is Temporary. */
   validUntil?: string;
   /**
-   * Existing User ids. The User model currently uses integer ids.
-   * @minItems 1
-   * @maxItems 5
-   */
+     * Existing User ids. The User model currently uses integer ids.
+     * @minItems 1
+     * @maxItems 5
+     */
   approverUserIds: number[];
-}
-
-export interface ApproverSetupUserResponseDto {
-  id: number;
-  name: string;
-  email: string;
-}
-
-export interface ApproverSetupResponseDto {
-  id: string;
-  approverCondition: string;
-  approvers: ApproverSetupUserResponseDto[];
-  createdAt: string;
-  level: number;
-  levelName?: string;
-  moduleScope: string;
-  status: string;
-  type: string;
-  updatedAt: string;
-  validUntil?: string | null;
-}
-
-export interface CreateApproverSetupResponseDto {
-  setup: ApproverSetupResponseDto;
-}
-
-export interface ApproverSetupsPaginatedResponseDto {
-  items: ApproverSetupResponseDto[];
-  meta: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
 }
 
 export interface TransactionNumberBranchResponseDto {
@@ -5778,28 +5825,28 @@ export interface TransactionNumberBranchResponseDto {
   name: string;
 }
 
-export type TransactionNumberSequenceResponseDtoInputMode =
-  (typeof TransactionNumberSequenceResponseDtoInputMode)[keyof typeof TransactionNumberSequenceResponseDtoInputMode];
+export type TransactionNumberSequenceResponseDtoInputMode = typeof TransactionNumberSequenceResponseDtoInputMode[keyof typeof TransactionNumberSequenceResponseDtoInputMode];
+
 
 export const TransactionNumberSequenceResponseDtoInputMode = {
-  Auto: "Auto",
-  Manual: "Manual",
+  Auto: 'Auto',
+  Manual: 'Manual',
 } as const;
 
-export type TransactionNumberSequenceResponseDtoScope =
-  (typeof TransactionNumberSequenceResponseDtoScope)[keyof typeof TransactionNumberSequenceResponseDtoScope];
+export type TransactionNumberSequenceResponseDtoScope = typeof TransactionNumberSequenceResponseDtoScope[keyof typeof TransactionNumberSequenceResponseDtoScope];
+
 
 export const TransactionNumberSequenceResponseDtoScope = {
-  branch: "branch",
-  all: "all",
+  branch: 'branch',
+  all: 'all',
 } as const;
 
-export type TransactionNumberSequenceResponseDtoStatus =
-  (typeof TransactionNumberSequenceResponseDtoStatus)[keyof typeof TransactionNumberSequenceResponseDtoStatus];
+export type TransactionNumberSequenceResponseDtoStatus = typeof TransactionNumberSequenceResponseDtoStatus[keyof typeof TransactionNumberSequenceResponseDtoStatus];
+
 
 export const TransactionNumberSequenceResponseDtoStatus = {
-  Active: "Active",
-  Inactive: "Inactive",
+  Active: 'Active',
+  Inactive: 'Inactive',
 } as const;
 
 export interface TransactionNumberSequenceResponseDto {
@@ -5825,28 +5872,28 @@ export interface TransactionNumberSequenceBootstrapResponseDto {
   sequences: TransactionNumberSequenceResponseDto[];
 }
 
-export type UpdateTransactionNumberSequenceDtoInputMode =
-  (typeof UpdateTransactionNumberSequenceDtoInputMode)[keyof typeof UpdateTransactionNumberSequenceDtoInputMode];
+export type UpdateTransactionNumberSequenceDtoInputMode = typeof UpdateTransactionNumberSequenceDtoInputMode[keyof typeof UpdateTransactionNumberSequenceDtoInputMode];
+
 
 export const UpdateTransactionNumberSequenceDtoInputMode = {
-  Auto: "Auto",
-  Manual: "Manual",
+  Auto: 'Auto',
+  Manual: 'Manual',
 } as const;
 
-export type UpdateTransactionNumberSequenceDtoScope =
-  (typeof UpdateTransactionNumberSequenceDtoScope)[keyof typeof UpdateTransactionNumberSequenceDtoScope];
+export type UpdateTransactionNumberSequenceDtoScope = typeof UpdateTransactionNumberSequenceDtoScope[keyof typeof UpdateTransactionNumberSequenceDtoScope];
+
 
 export const UpdateTransactionNumberSequenceDtoScope = {
-  all: "all",
-  branch: "branch",
+  all: 'all',
+  branch: 'branch',
 } as const;
 
-export type UpdateTransactionNumberSequenceDtoStatus =
-  (typeof UpdateTransactionNumberSequenceDtoStatus)[keyof typeof UpdateTransactionNumberSequenceDtoStatus];
+export type UpdateTransactionNumberSequenceDtoStatus = typeof UpdateTransactionNumberSequenceDtoStatus[keyof typeof UpdateTransactionNumberSequenceDtoStatus];
+
 
 export const UpdateTransactionNumberSequenceDtoStatus = {
-  Active: "Active",
-  Inactive: "Inactive",
+  Active: 'Active',
+  Inactive: 'Inactive',
 } as const;
 
 export interface UpdateTransactionNumberSequenceDto {
@@ -5860,9 +5907,9 @@ export interface UpdateTransactionNumberSequenceDto {
   /** @maxLength 40 */
   suffix?: string;
   /**
-   * @minimum 1
-   * @maximum 12
-   */
+     * @minimum 1
+     * @maximum 12
+     */
   padding: number;
   /** @minimum 0 */
   startingNumber: number;
@@ -5903,12 +5950,13 @@ export interface CreateModuleFieldDto {
   isRequired?: boolean;
 }
 
-export type UserSidebarTreeItemDtoItemType = (typeof UserSidebarTreeItemDtoItemType)[keyof typeof UserSidebarTreeItemDtoItemType];
+export type UserSidebarTreeItemDtoItemType = typeof UserSidebarTreeItemDtoItemType[keyof typeof UserSidebarTreeItemDtoItemType];
+
 
 export const UserSidebarTreeItemDtoItemType = {
-  SECTION: "SECTION",
-  CONTAINER: "CONTAINER",
-  LINK: "LINK",
+  SECTION: 'SECTION',
+  CONTAINER: 'CONTAINER',
+  LINK: 'LINK',
 } as const;
 
 export interface UserSidebarTreeItemDto {
@@ -5928,11 +5976,12 @@ export interface UserSidebarTreeItemDto {
   children: UserSidebarTreeItemDto[];
 }
 
-export type SaveUserSidebarDtoApplyScope = (typeof SaveUserSidebarDtoApplyScope)[keyof typeof SaveUserSidebarDtoApplyScope];
+export type SaveUserSidebarDtoApplyScope = typeof SaveUserSidebarDtoApplyScope[keyof typeof SaveUserSidebarDtoApplyScope];
+
 
 export const SaveUserSidebarDtoApplyScope = {
-  CURRENT_BRANCH: "CURRENT_BRANCH",
-  ALL_BRANCHES: "ALL_BRANCHES",
+  CURRENT_BRANCH: 'CURRENT_BRANCH',
+  ALL_BRANCHES: 'ALL_BRANCHES',
 } as const;
 
 export interface SaveUserSidebarDto {
@@ -5942,11 +5991,11 @@ export interface SaveUserSidebarDto {
   items: UserSidebarTreeItemDto[];
 }
 
-export type AiAssistantQueuedTranscriptionResponseDtoStatus =
-  (typeof AiAssistantQueuedTranscriptionResponseDtoStatus)[keyof typeof AiAssistantQueuedTranscriptionResponseDtoStatus];
+export type AiAssistantQueuedTranscriptionResponseDtoStatus = typeof AiAssistantQueuedTranscriptionResponseDtoStatus[keyof typeof AiAssistantQueuedTranscriptionResponseDtoStatus];
+
 
 export const AiAssistantQueuedTranscriptionResponseDtoStatus = {
-  queued: "queued",
+  queued: 'queued',
 } as const;
 
 export interface AiAssistantQueuedTranscriptionResponseDto {
@@ -5954,11 +6003,11 @@ export interface AiAssistantQueuedTranscriptionResponseDto {
   status: AiAssistantQueuedTranscriptionResponseDtoStatus;
 }
 
-export type AiAssistantProcessingTranscriptionResponseDtoStatus =
-  (typeof AiAssistantProcessingTranscriptionResponseDtoStatus)[keyof typeof AiAssistantProcessingTranscriptionResponseDtoStatus];
+export type AiAssistantProcessingTranscriptionResponseDtoStatus = typeof AiAssistantProcessingTranscriptionResponseDtoStatus[keyof typeof AiAssistantProcessingTranscriptionResponseDtoStatus];
+
 
 export const AiAssistantProcessingTranscriptionResponseDtoStatus = {
-  processing: "processing",
+  processing: 'processing',
 } as const;
 
 export interface AiAssistantProcessingTranscriptionResponseDto {
@@ -5966,11 +6015,11 @@ export interface AiAssistantProcessingTranscriptionResponseDto {
   status: AiAssistantProcessingTranscriptionResponseDtoStatus;
 }
 
-export type AiAssistantCompletedTranscriptionResponseDtoStatus =
-  (typeof AiAssistantCompletedTranscriptionResponseDtoStatus)[keyof typeof AiAssistantCompletedTranscriptionResponseDtoStatus];
+export type AiAssistantCompletedTranscriptionResponseDtoStatus = typeof AiAssistantCompletedTranscriptionResponseDtoStatus[keyof typeof AiAssistantCompletedTranscriptionResponseDtoStatus];
+
 
 export const AiAssistantCompletedTranscriptionResponseDtoStatus = {
-  completed: "completed",
+  completed: 'completed',
 } as const;
 
 export interface AiAssistantCompletedTranscriptionResponseDto {
@@ -5979,11 +6028,11 @@ export interface AiAssistantCompletedTranscriptionResponseDto {
   transcript: string;
 }
 
-export type AiAssistantFailedTranscriptionResponseDtoStatus =
-  (typeof AiAssistantFailedTranscriptionResponseDtoStatus)[keyof typeof AiAssistantFailedTranscriptionResponseDtoStatus];
+export type AiAssistantFailedTranscriptionResponseDtoStatus = typeof AiAssistantFailedTranscriptionResponseDtoStatus[keyof typeof AiAssistantFailedTranscriptionResponseDtoStatus];
+
 
 export const AiAssistantFailedTranscriptionResponseDtoStatus = {
-  failed: "failed",
+  failed: 'failed',
 } as const;
 
 export interface AiAssistantFailedTranscriptionResponseDto {
@@ -5992,11 +6041,12 @@ export interface AiAssistantFailedTranscriptionResponseDto {
   status: AiAssistantFailedTranscriptionResponseDtoStatus;
 }
 
-export type AiAssistantChatMessageDtoRole = (typeof AiAssistantChatMessageDtoRole)[keyof typeof AiAssistantChatMessageDtoRole];
+export type AiAssistantChatMessageDtoRole = typeof AiAssistantChatMessageDtoRole[keyof typeof AiAssistantChatMessageDtoRole];
+
 
 export const AiAssistantChatMessageDtoRole = {
-  user: "user",
-  assistant: "assistant",
+  user: 'user',
+  assistant: 'assistant',
 } as const;
 
 export interface AiAssistantChatMessageDto {
@@ -6014,18 +6064,18 @@ export interface AiAssistantChatDto {
   history?: AiAssistantChatMessageDto[];
 }
 
-export type AiAssistantModuleCommandActionDtoType =
-  (typeof AiAssistantModuleCommandActionDtoType)[keyof typeof AiAssistantModuleCommandActionDtoType];
+export type AiAssistantModuleCommandActionDtoType = typeof AiAssistantModuleCommandActionDtoType[keyof typeof AiAssistantModuleCommandActionDtoType];
+
 
 export const AiAssistantModuleCommandActionDtoType = {
-  module_command: "module_command",
+  module_command: 'module_command',
 } as const;
 
-export type AiAssistantModuleCommandActionDtoCommand =
-  (typeof AiAssistantModuleCommandActionDtoCommand)[keyof typeof AiAssistantModuleCommandActionDtoCommand];
+export type AiAssistantModuleCommandActionDtoCommand = typeof AiAssistantModuleCommandActionDtoCommand[keyof typeof AiAssistantModuleCommandActionDtoCommand];
+
 
 export const AiAssistantModuleCommandActionDtoCommand = {
-  open: "open",
+  open: 'open',
 } as const;
 
 export interface AiAssistantModuleCommandActionDto {
@@ -6035,10 +6085,11 @@ export interface AiAssistantModuleCommandActionDto {
   label?: string;
 }
 
-export type AiAssistantNavigateActionDtoType = (typeof AiAssistantNavigateActionDtoType)[keyof typeof AiAssistantNavigateActionDtoType];
+export type AiAssistantNavigateActionDtoType = typeof AiAssistantNavigateActionDtoType[keyof typeof AiAssistantNavigateActionDtoType];
+
 
 export const AiAssistantNavigateActionDtoType = {
-  navigate: "navigate",
+  navigate: 'navigate',
 } as const;
 
 export interface AiAssistantNavigateActionDto {
@@ -6062,17 +6113,18 @@ export interface AiAssistantPurchaseRequestPrefillDto {
   items?: AiAssistantPurchaseRequestItemPrefillDto[];
 }
 
-export type AiAssistantOpenFormActionDtoType = (typeof AiAssistantOpenFormActionDtoType)[keyof typeof AiAssistantOpenFormActionDtoType];
+export type AiAssistantOpenFormActionDtoType = typeof AiAssistantOpenFormActionDtoType[keyof typeof AiAssistantOpenFormActionDtoType];
+
 
 export const AiAssistantOpenFormActionDtoType = {
-  open_form: "open_form",
+  open_form: 'open_form',
 } as const;
 
-export type AiAssistantOpenFormActionDtoTarget =
-  (typeof AiAssistantOpenFormActionDtoTarget)[keyof typeof AiAssistantOpenFormActionDtoTarget];
+export type AiAssistantOpenFormActionDtoTarget = typeof AiAssistantOpenFormActionDtoTarget[keyof typeof AiAssistantOpenFormActionDtoTarget];
+
 
 export const AiAssistantOpenFormActionDtoTarget = {
-  purchase_request: "purchase_request",
+  purchase_request: 'purchase_request',
 } as const;
 
 export interface AiAssistantOpenFormActionDto {
@@ -6083,21 +6135,21 @@ export interface AiAssistantOpenFormActionDto {
   prefill?: AiAssistantPurchaseRequestPrefillDto;
 }
 
-export type AiAssistantTermsMaintenancePrefillDtoDatemode =
-  (typeof AiAssistantTermsMaintenancePrefillDtoDatemode)[keyof typeof AiAssistantTermsMaintenancePrefillDtoDatemode];
+export type AiAssistantTermsMaintenancePrefillDtoDatemode = typeof AiAssistantTermsMaintenancePrefillDtoDatemode[keyof typeof AiAssistantTermsMaintenancePrefillDtoDatemode];
+
 
 export const AiAssistantTermsMaintenancePrefillDtoDatemode = {
-  Day: "Day",
-  Month: "Month",
-  Year: "Year",
+  Day: 'Day',
+  Month: 'Month',
+  Year: 'Year',
 } as const;
 
-export type AiAssistantTermsMaintenancePrefillDtoStatus =
-  (typeof AiAssistantTermsMaintenancePrefillDtoStatus)[keyof typeof AiAssistantTermsMaintenancePrefillDtoStatus];
+export type AiAssistantTermsMaintenancePrefillDtoStatus = typeof AiAssistantTermsMaintenancePrefillDtoStatus[keyof typeof AiAssistantTermsMaintenancePrefillDtoStatus];
+
 
 export const AiAssistantTermsMaintenancePrefillDtoStatus = {
-  Active: "Active",
-  Inactive: "Inactive",
+  Active: 'Active',
+  Inactive: 'Inactive',
 } as const;
 
 export interface AiAssistantTermsMaintenancePrefillDto {
@@ -6108,37 +6160,37 @@ export interface AiAssistantTermsMaintenancePrefillDto {
   status?: AiAssistantTermsMaintenancePrefillDtoStatus;
 }
 
-export type AiAssistantTermsMaintenanceActionDtoType =
-  (typeof AiAssistantTermsMaintenanceActionDtoType)[keyof typeof AiAssistantTermsMaintenanceActionDtoType];
+export type AiAssistantTermsMaintenanceActionDtoType = typeof AiAssistantTermsMaintenanceActionDtoType[keyof typeof AiAssistantTermsMaintenanceActionDtoType];
+
 
 export const AiAssistantTermsMaintenanceActionDtoType = {
-  terms_maintenance: "terms_maintenance",
+  terms_maintenance: 'terms_maintenance',
 } as const;
 
-export type AiAssistantTermsMaintenanceActionDtoModuleCode =
-  (typeof AiAssistantTermsMaintenanceActionDtoModuleCode)[keyof typeof AiAssistantTermsMaintenanceActionDtoModuleCode];
+export type AiAssistantTermsMaintenanceActionDtoModuleCode = typeof AiAssistantTermsMaintenanceActionDtoModuleCode[keyof typeof AiAssistantTermsMaintenanceActionDtoModuleCode];
+
 
 export const AiAssistantTermsMaintenanceActionDtoModuleCode = {
-  TM: "TM",
+  TM: 'TM',
 } as const;
 
-export type AiAssistantTermsMaintenanceActionDtoCommand =
-  (typeof AiAssistantTermsMaintenanceActionDtoCommand)[keyof typeof AiAssistantTermsMaintenanceActionDtoCommand];
+export type AiAssistantTermsMaintenanceActionDtoCommand = typeof AiAssistantTermsMaintenanceActionDtoCommand[keyof typeof AiAssistantTermsMaintenanceActionDtoCommand];
+
 
 export const AiAssistantTermsMaintenanceActionDtoCommand = {
-  open: "open",
-  search: "search",
-  filter_status: "filter_status",
-  prepare_add: "prepare_add",
-  preview_edit: "preview_edit",
+  open: 'open',
+  search: 'search',
+  filter_status: 'filter_status',
+  prepare_add: 'prepare_add',
+  preview_edit: 'preview_edit',
 } as const;
 
-export type AiAssistantTermsMaintenanceActionDtoStatus =
-  (typeof AiAssistantTermsMaintenanceActionDtoStatus)[keyof typeof AiAssistantTermsMaintenanceActionDtoStatus];
+export type AiAssistantTermsMaintenanceActionDtoStatus = typeof AiAssistantTermsMaintenanceActionDtoStatus[keyof typeof AiAssistantTermsMaintenanceActionDtoStatus];
+
 
 export const AiAssistantTermsMaintenanceActionDtoStatus = {
-  Active: "Active",
-  Inactive: "Inactive",
+  Active: 'Active',
+  Inactive: 'Inactive',
 } as const;
 
 export interface AiAssistantTermsMaintenanceActionDto {
@@ -6154,12 +6206,7 @@ export interface AiAssistantTermsMaintenanceActionDto {
 
 export interface AiAssistantChatResponseDto {
   message: string;
-  action:
-    | AiAssistantModuleCommandActionDto
-    | AiAssistantNavigateActionDto
-    | AiAssistantOpenFormActionDto
-    | AiAssistantTermsMaintenanceActionDto
-    | null;
+  action: AiAssistantModuleCommandActionDto | AiAssistantNavigateActionDto | AiAssistantOpenFormActionDto | AiAssistantTermsMaintenanceActionDto | null;
 }
 
 export interface AiAssistantTranscriptionUploadDto {
@@ -6170,14 +6217,14 @@ export interface AccountsPayableVoucherDetailsDto {
   /** @minimum 1 */
   lineNumber: number;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   partyId?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   expenseAccountId?: string | null;
   /** @maxLength 20 */
   expenseAccountCode: string;
@@ -6190,58 +6237,59 @@ export interface AccountsPayableVoucherDetailsDto {
   amount: number;
   netAmount: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   vat?: string | null;
   /** @minimum 0 */
   vatPercent: number;
   vatAmount: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   ewt?: string | null;
   /** @minimum 0 */
   ewtPercent: number;
   ewtAmount: number;
   totalAmountDue: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   partyCode?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   partyName?: string | null;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   particulars?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   responsibilityCenterId?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   responsibilityCenter?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   referenceNo?: string | null;
 }
 
-export type JournalEntryDtoReferenceType = (typeof JournalEntryDtoReferenceType)[keyof typeof JournalEntryDtoReferenceType];
+export type JournalEntryDtoReferenceType = typeof JournalEntryDtoReferenceType[keyof typeof JournalEntryDtoReferenceType];
+
 
 export const JournalEntryDtoReferenceType = {
-  APV: "APV",
+  APV: 'APV',
 } as const;
 
 export interface JournalEntryDto {
@@ -6249,9 +6297,9 @@ export interface JournalEntryDto {
   /** @minimum 1 */
   lineNumber: number;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   accountId?: string | null;
   /** @maxLength 20 */
   accountCode: string;
@@ -6262,114 +6310,114 @@ export interface JournalEntryDto {
   /** @minimum 0.000001 */
   exchangeRate: number;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   particulars?: string | null;
   /** @minimum 0 */
   debit: number;
   /** @minimum 0 */
   credit: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   vatType?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   atcCode?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   partyCode?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   partyName?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   responsibilityCenterId?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   responsibilityCenter?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   refNo?: string | null;
 }
 
-export type CreateAccountsPayableVoucherDtoPayableType =
-  (typeof CreateAccountsPayableVoucherDtoPayableType)[keyof typeof CreateAccountsPayableVoucherDtoPayableType];
+export type CreateAccountsPayableVoucherDtoPayableType = typeof CreateAccountsPayableVoucherDtoPayableType[keyof typeof CreateAccountsPayableVoucherDtoPayableType];
+
 
 export const CreateAccountsPayableVoucherDtoPayableType = {
-  TRADE_PAYABLE: "TRADE_PAYABLE",
-  NON_TRADE_PAYABLE: "NON_TRADE_PAYABLE",
-  EMPLOYEE_PAYABLE: "EMPLOYEE_PAYABLE",
-  TAX_PAYABLE: "TAX_PAYABLE",
-  ACCRUED_PAYABLE: "ACCRUED_PAYABLE",
-  Trade_Payable: "Trade Payable",
-  "Non-Trade_Payable": "Non-Trade Payable",
-  Employee_Payable: "Employee Payable",
-  Tax_Payable: "Tax Payable",
-  Accrued_Payable: "Accrued Payable",
+  TRADE_PAYABLE: 'TRADE_PAYABLE',
+  NON_TRADE_PAYABLE: 'NON_TRADE_PAYABLE',
+  EMPLOYEE_PAYABLE: 'EMPLOYEE_PAYABLE',
+  TAX_PAYABLE: 'TAX_PAYABLE',
+  ACCRUED_PAYABLE: 'ACCRUED_PAYABLE',
+  Trade_Payable: 'Trade Payable',
+  'Non-Trade_Payable': 'Non-Trade Payable',
+  Employee_Payable: 'Employee Payable',
+  Tax_Payable: 'Tax Payable',
+  Accrued_Payable: 'Accrued Payable',
 } as const;
 
 export interface CreateAccountsPayableVoucherDto {
   /** @minimum 1 */
   branchUnitId?: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   transactionNo?: string | null;
   documentDate: string;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   partyId?: string | null;
   /** @maxLength 80 */
   partyCode: string;
   /** @maxLength 255 */
   partyName: string;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   address?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   contactPerson?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   contactNo?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   projectCode?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   projectName?: string | null;
   /**
-   * @maxLength 10
-   * @nullable
-   */
+     * @maxLength 10
+     * @nullable
+     */
   currency?: string | null;
   /** @minimum 0.000001 */
   exchangeRate: number;
@@ -6377,20 +6425,20 @@ export interface CreateAccountsPayableVoucherDto {
   /** @maxLength 40 */
   termId: string;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   terms?: string | null;
   dueDate: string;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   referenceNo?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   creditAccountId?: string | null;
   /** @maxLength 20 */
   creditAccountCode: string;
@@ -6398,9 +6446,9 @@ export interface CreateAccountsPayableVoucherDto {
   creditAccountTitle: string;
   payableType: CreateAccountsPayableVoucherDtoPayableType;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   remarks?: string | null;
   /** @minItems 1 */
   details: AccountsPayableVoucherDetailsDto[];
@@ -6408,69 +6456,69 @@ export interface CreateAccountsPayableVoucherDto {
   journalEntries: JournalEntryDto[];
 }
 
-export type UpdateAccountsPayableVoucherDtoPayableType =
-  (typeof UpdateAccountsPayableVoucherDtoPayableType)[keyof typeof UpdateAccountsPayableVoucherDtoPayableType];
+export type UpdateAccountsPayableVoucherDtoPayableType = typeof UpdateAccountsPayableVoucherDtoPayableType[keyof typeof UpdateAccountsPayableVoucherDtoPayableType];
+
 
 export const UpdateAccountsPayableVoucherDtoPayableType = {
-  TRADE_PAYABLE: "TRADE_PAYABLE",
-  NON_TRADE_PAYABLE: "NON_TRADE_PAYABLE",
-  EMPLOYEE_PAYABLE: "EMPLOYEE_PAYABLE",
-  TAX_PAYABLE: "TAX_PAYABLE",
-  ACCRUED_PAYABLE: "ACCRUED_PAYABLE",
-  Trade_Payable: "Trade Payable",
-  "Non-Trade_Payable": "Non-Trade Payable",
-  Employee_Payable: "Employee Payable",
-  Tax_Payable: "Tax Payable",
-  Accrued_Payable: "Accrued Payable",
+  TRADE_PAYABLE: 'TRADE_PAYABLE',
+  NON_TRADE_PAYABLE: 'NON_TRADE_PAYABLE',
+  EMPLOYEE_PAYABLE: 'EMPLOYEE_PAYABLE',
+  TAX_PAYABLE: 'TAX_PAYABLE',
+  ACCRUED_PAYABLE: 'ACCRUED_PAYABLE',
+  Trade_Payable: 'Trade Payable',
+  'Non-Trade_Payable': 'Non-Trade Payable',
+  Employee_Payable: 'Employee Payable',
+  Tax_Payable: 'Tax Payable',
+  Accrued_Payable: 'Accrued Payable',
 } as const;
 
 export interface UpdateAccountsPayableVoucherDto {
   /** @minimum 1 */
   branchUnitId?: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   transactionNo?: string | null;
   documentDate: string;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   partyId?: string | null;
   /** @maxLength 80 */
   partyCode: string;
   /** @maxLength 255 */
   partyName: string;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   address?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   contactPerson?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   contactNo?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   projectCode?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   projectName?: string | null;
   /**
-   * @maxLength 10
-   * @nullable
-   */
+     * @maxLength 10
+     * @nullable
+     */
   currency?: string | null;
   /** @minimum 0.000001 */
   exchangeRate: number;
@@ -6478,20 +6526,20 @@ export interface UpdateAccountsPayableVoucherDto {
   /** @maxLength 40 */
   termId: string;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   terms?: string | null;
   dueDate: string;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   referenceNo?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   creditAccountId?: string | null;
   /** @maxLength 20 */
   creditAccountCode: string;
@@ -6499,9 +6547,9 @@ export interface UpdateAccountsPayableVoucherDto {
   creditAccountTitle: string;
   payableType: UpdateAccountsPayableVoucherDtoPayableType;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   remarks?: string | null;
   /** @minItems 1 */
   details: AccountsPayableVoucherDetailsDto[];
@@ -6509,28 +6557,28 @@ export interface UpdateAccountsPayableVoucherDto {
   journalEntries: JournalEntryDto[];
 }
 
-export type UpdateAccountsPayableVoucherStatusDtoStatus =
-  (typeof UpdateAccountsPayableVoucherStatusDtoStatus)[keyof typeof UpdateAccountsPayableVoucherStatusDtoStatus];
+export type UpdateAccountsPayableVoucherStatusDtoStatus = typeof UpdateAccountsPayableVoucherStatusDtoStatus[keyof typeof UpdateAccountsPayableVoucherStatusDtoStatus];
+
 
 export const UpdateAccountsPayableVoucherStatusDtoStatus = {
-  DRAFT: "DRAFT",
-  APPROVED: "APPROVED",
-  DISAPPROVED: "DISAPPROVED",
-  CLOSED: "CLOSED",
-  CANCELLED: "CANCELLED",
-  Draft: "Draft",
-  Approved: "Approved",
-  Disapproved: "Disapproved",
-  Closed: "Closed",
-  Cancelled: "Cancelled",
+  DRAFT: 'DRAFT',
+  APPROVED: 'APPROVED',
+  DISAPPROVED: 'DISAPPROVED',
+  CLOSED: 'CLOSED',
+  CANCELLED: 'CANCELLED',
+  Draft: 'Draft',
+  Approved: 'Approved',
+  Disapproved: 'Disapproved',
+  Closed: 'Closed',
+  Cancelled: 'Cancelled',
 } as const;
 
 export interface UpdateAccountsPayableVoucherStatusDto {
   status: UpdateAccountsPayableVoucherStatusDtoStatus;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   reason?: string | null;
 }
 
@@ -6538,61 +6586,61 @@ export interface JournalVoucherLineDto {
   /** @minimum 1 */
   lineNumber: number;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   accountId?: string | null;
   /** @maxLength 20 */
   accountCode: string;
   /**
-   * @maxLength 250
-   * @nullable
-   */
+     * @maxLength 250
+     * @nullable
+     */
   accountTitle?: string | null;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   particulars?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   partyId?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   partyCode?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   partyName?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   responsibilityCenterId?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   responsibilityCenter?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   refNo?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   vatType?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   atcCode?: string | null;
   /** @minimum 0 */
   debit: number;
@@ -6604,9 +6652,9 @@ export interface CreateJournalVoucherDto {
   /** @minimum 1 */
   branchUnitId?: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   transactionNo?: string | null;
   documentDate: string;
   /** @maxLength 10 */
@@ -6614,9 +6662,9 @@ export interface CreateJournalVoucherDto {
   /** @minimum 0.000001 */
   exchangeRate: number;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   remarks?: string | null;
   /** @minItems 2 */
   lines: JournalVoucherLineDto[];
@@ -6626,9 +6674,9 @@ export interface UpdateJournalVoucherDto {
   /** @minimum 1 */
   branchUnitId?: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   transactionNo?: string | null;
   documentDate: string;
   /** @maxLength 10 */
@@ -6636,31 +6684,31 @@ export interface UpdateJournalVoucherDto {
   /** @minimum 0.000001 */
   exchangeRate: number;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   remarks?: string | null;
   /** @minItems 2 */
   lines: JournalVoucherLineDto[];
 }
 
-export type UpdateJournalVoucherStatusDtoStatus =
-  (typeof UpdateJournalVoucherStatusDtoStatus)[keyof typeof UpdateJournalVoucherStatusDtoStatus];
+export type UpdateJournalVoucherStatusDtoStatus = typeof UpdateJournalVoucherStatusDtoStatus[keyof typeof UpdateJournalVoucherStatusDtoStatus];
+
 
 export const UpdateJournalVoucherStatusDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  POSTED: "POSTED",
-  DISAPPROVED: "DISAPPROVED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface UpdateJournalVoucherStatusDto {
   status: UpdateJournalVoucherStatusDtoStatus;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   reason?: string | null;
 }
 
@@ -6725,14 +6773,15 @@ export interface ServiceInvoiceJournalEntryResponseDto {
   refNo?: string | null;
 }
 
-export type ServiceInvoiceResponseDtoStatus = (typeof ServiceInvoiceResponseDtoStatus)[keyof typeof ServiceInvoiceResponseDtoStatus];
+export type ServiceInvoiceResponseDtoStatus = typeof ServiceInvoiceResponseDtoStatus[keyof typeof ServiceInvoiceResponseDtoStatus];
+
 
 export const ServiceInvoiceResponseDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface ServiceInvoiceResponseDto {
@@ -6847,9 +6896,9 @@ export interface ServiceInvoiceDetailDto {
   /** @maxLength 250 */
   description: string;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   particulars?: string | null;
   /** @minimum 0 */
   quantity: number;
@@ -6863,41 +6912,41 @@ export interface ServiceInvoiceDetailDto {
   discountAmount: number;
   grossAmount: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   vatType?: string | null;
   vatable: boolean;
   vatInclusive: boolean;
   withWvat: boolean;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   wvatType?: string | null;
   withEwt: boolean;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   ewtType?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   responsibilityCenterId?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   responsibilityCenter?: string | null;
 }
 
-export type ServiceInvoiceJournalEntryDtoReferenceType =
-  (typeof ServiceInvoiceJournalEntryDtoReferenceType)[keyof typeof ServiceInvoiceJournalEntryDtoReferenceType];
+export type ServiceInvoiceJournalEntryDtoReferenceType = typeof ServiceInvoiceJournalEntryDtoReferenceType[keyof typeof ServiceInvoiceJournalEntryDtoReferenceType];
+
 
 export const ServiceInvoiceJournalEntryDtoReferenceType = {
-  SI: "SI",
+  SI: 'SI',
 } as const;
 
 export interface ServiceInvoiceJournalEntryDto {
@@ -6905,9 +6954,9 @@ export interface ServiceInvoiceJournalEntryDto {
   /** @minimum 1 */
   lineNumber: number;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   accountId?: string | null;
   /** @maxLength 20 */
   accountCode: string;
@@ -6918,48 +6967,48 @@ export interface ServiceInvoiceJournalEntryDto {
   /** @minimum 0.000001 */
   exchangeRate: number;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   particulars?: string | null;
   /** @minimum 0 */
   debit: number;
   /** @minimum 0 */
   credit: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   vatType?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   atcCode?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   partyCode?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   partyName?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   responsibilityCenterId?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   responsibilityCenter?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   refNo?: string | null;
 }
 
@@ -6967,80 +7016,80 @@ export interface CreateServiceInvoiceDto {
   /** @minimum 1 */
   branchUnitId?: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   transactionNo?: string | null;
   documentDate: string;
   dueDate: string;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   invoiceNo?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   referenceNo?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   partyId?: string | null;
   /** @maxLength 80 */
   customerCode: string;
   /** @maxLength 255 */
   customerName: string;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   billToName?: string | null;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   address?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   contactPerson?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   contactNo?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   businessStyle?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   projectCode?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   projectName?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   projectRef?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   salesAssociate?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   teamAssigned?: string | null;
   /** @maxLength 10 */
   currency: string;
@@ -7053,28 +7102,28 @@ export interface CreateServiceInvoiceDto {
   discountAmount: number;
   grossAmount: number;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   termId?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   terms?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   receivableAccountId?: string | null;
   /** @maxLength 20 */
   receivableAccountCode: string;
   /** @maxLength 250 */
   receivableAccountTitle: string;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   remarks?: string | null;
   /** @minItems 1 */
   details: ServiceInvoiceDetailDto[];
@@ -7092,80 +7141,80 @@ export interface UpdateServiceInvoiceDto {
   /** @minimum 1 */
   branchUnitId?: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   transactionNo?: string | null;
   documentDate?: string;
   dueDate?: string;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   invoiceNo?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   referenceNo?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   partyId?: string | null;
   /** @maxLength 80 */
   customerCode?: string;
   /** @maxLength 255 */
   customerName?: string;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   billToName?: string | null;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   address?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   contactPerson?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   contactNo?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   businessStyle?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   projectCode?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   projectName?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   projectRef?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   salesAssociate?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   teamAssigned?: string | null;
   /** @maxLength 10 */
   currency?: string;
@@ -7178,28 +7227,28 @@ export interface UpdateServiceInvoiceDto {
   discountAmount?: number;
   grossAmount?: number;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   termId?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   terms?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   receivableAccountId?: string | null;
   /** @maxLength 20 */
   receivableAccountCode?: string;
   /** @maxLength 250 */
   receivableAccountTitle?: string;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   remarks?: string | null;
   /** @minItems 1 */
   details?: ServiceInvoiceDetailDto[];
@@ -7207,20 +7256,20 @@ export interface UpdateServiceInvoiceDto {
   journalEntries?: ServiceInvoiceJournalEntryDto[];
 }
 
-export type UpdateServiceInvoiceStatusDtoStatus =
-  (typeof UpdateServiceInvoiceStatusDtoStatus)[keyof typeof UpdateServiceInvoiceStatusDtoStatus];
+export type UpdateServiceInvoiceStatusDtoStatus = typeof UpdateServiceInvoiceStatusDtoStatus[keyof typeof UpdateServiceInvoiceStatusDtoStatus];
+
 
 export const UpdateServiceInvoiceStatusDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
-  Draft: "Draft",
-  For_Approval: "For Approval",
-  Disapproved: "Disapproved",
-  Posted: "Posted",
-  Cancelled: "Cancelled",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
+  Draft: 'Draft',
+  For_Approval: 'For Approval',
+  Disapproved: 'Disapproved',
+  Posted: 'Posted',
+  Cancelled: 'Cancelled',
 } as const;
 
 export interface UpdateServiceInvoiceStatusDto {
@@ -7288,15 +7337,15 @@ export interface BillingInvoiceJournalEntryResponseDto {
   refNo?: string | null;
 }
 
-export type SalesBillingInvoiceResponseDtoStatus =
-  (typeof SalesBillingInvoiceResponseDtoStatus)[keyof typeof SalesBillingInvoiceResponseDtoStatus];
+export type SalesBillingInvoiceResponseDtoStatus = typeof SalesBillingInvoiceResponseDtoStatus[keyof typeof SalesBillingInvoiceResponseDtoStatus];
+
 
 export const SalesBillingInvoiceResponseDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface SalesBillingInvoiceResponseDto {
@@ -7411,9 +7460,9 @@ export interface BillingInvoiceDetailDto {
   /** @maxLength 250 */
   description: string;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   particulars?: string | null;
   /** @minimum 0 */
   quantity: number;
@@ -7427,41 +7476,41 @@ export interface BillingInvoiceDetailDto {
   discountAmount: number;
   grossAmount: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   vatType?: string | null;
   vatable: boolean;
   vatInclusive: boolean;
   withWvat: boolean;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   wvatType?: string | null;
   withEwt: boolean;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   ewtType?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   responsibilityCenterId?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   responsibilityCenter?: string | null;
 }
 
-export type BillingInvoiceJournalEntryDtoReferenceType =
-  (typeof BillingInvoiceJournalEntryDtoReferenceType)[keyof typeof BillingInvoiceJournalEntryDtoReferenceType];
+export type BillingInvoiceJournalEntryDtoReferenceType = typeof BillingInvoiceJournalEntryDtoReferenceType[keyof typeof BillingInvoiceJournalEntryDtoReferenceType];
+
 
 export const BillingInvoiceJournalEntryDtoReferenceType = {
-  BI: "BI",
+  BI: 'BI',
 } as const;
 
 export interface BillingInvoiceJournalEntryDto {
@@ -7469,9 +7518,9 @@ export interface BillingInvoiceJournalEntryDto {
   /** @minimum 1 */
   lineNumber: number;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   accountId?: string | null;
   /** @maxLength 20 */
   accountCode: string;
@@ -7482,48 +7531,48 @@ export interface BillingInvoiceJournalEntryDto {
   /** @minimum 0.000001 */
   exchangeRate: number;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   particulars?: string | null;
   /** @minimum 0 */
   debit: number;
   /** @minimum 0 */
   credit: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   vatType?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   atcCode?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   partyCode?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   partyName?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   responsibilityCenterId?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   responsibilityCenter?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   refNo?: string | null;
 }
 
@@ -7531,80 +7580,80 @@ export interface CreateBillingInvoiceDto {
   /** @minimum 1 */
   branchUnitId?: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   transactionNo?: string | null;
   documentDate: string;
   dueDate: string;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   invoiceNo?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   referenceNo?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   partyId?: string | null;
   /** @maxLength 80 */
   customerCode: string;
   /** @maxLength 255 */
   customerName: string;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   billToName?: string | null;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   address?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   contactPerson?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   contactNo?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   businessStyle?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   projectCode?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   projectName?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   projectRef?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   salesAssociate?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   teamAssigned?: string | null;
   /** @maxLength 10 */
   currency: string;
@@ -7617,28 +7666,28 @@ export interface CreateBillingInvoiceDto {
   discountAmount: number;
   grossAmount: number;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   termId?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   terms?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   receivableAccountId?: string | null;
   /** @maxLength 20 */
   receivableAccountCode: string;
   /** @maxLength 250 */
   receivableAccountTitle: string;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   remarks?: string | null;
   /** @minItems 1 */
   details: BillingInvoiceDetailDto[];
@@ -7656,80 +7705,80 @@ export interface UpdateBillingInvoiceDto {
   /** @minimum 1 */
   branchUnitId?: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   transactionNo?: string | null;
   documentDate?: string;
   dueDate?: string;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   invoiceNo?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   referenceNo?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   partyId?: string | null;
   /** @maxLength 80 */
   customerCode?: string;
   /** @maxLength 255 */
   customerName?: string;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   billToName?: string | null;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   address?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   contactPerson?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   contactNo?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   businessStyle?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   projectCode?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   projectName?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   projectRef?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   salesAssociate?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   teamAssigned?: string | null;
   /** @maxLength 10 */
   currency?: string;
@@ -7742,28 +7791,28 @@ export interface UpdateBillingInvoiceDto {
   discountAmount?: number;
   grossAmount?: number;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   termId?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   terms?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   receivableAccountId?: string | null;
   /** @maxLength 20 */
   receivableAccountCode?: string;
   /** @maxLength 250 */
   receivableAccountTitle?: string;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   remarks?: string | null;
   /** @minItems 1 */
   details?: BillingInvoiceDetailDto[];
@@ -7771,20 +7820,20 @@ export interface UpdateBillingInvoiceDto {
   journalEntries?: BillingInvoiceJournalEntryDto[];
 }
 
-export type UpdateBillingInvoiceStatusDtoStatus =
-  (typeof UpdateBillingInvoiceStatusDtoStatus)[keyof typeof UpdateBillingInvoiceStatusDtoStatus];
+export type UpdateBillingInvoiceStatusDtoStatus = typeof UpdateBillingInvoiceStatusDtoStatus[keyof typeof UpdateBillingInvoiceStatusDtoStatus];
+
 
 export const UpdateBillingInvoiceStatusDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
-  Draft: "Draft",
-  For_Approval: "For Approval",
-  Disapproved: "Disapproved",
-  Posted: "Posted",
-  Cancelled: "Cancelled",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
+  Draft: 'Draft',
+  For_Approval: 'For Approval',
+  Disapproved: 'Disapproved',
+  Posted: 'Posted',
+  Cancelled: 'Cancelled',
 } as const;
 
 export interface UpdateBillingInvoiceStatusDto {
@@ -7852,14 +7901,15 @@ export interface BillingStatementJournalEntryResponseDto {
   refNo?: string | null;
 }
 
-export type BillingStatementResponseDtoStatus = (typeof BillingStatementResponseDtoStatus)[keyof typeof BillingStatementResponseDtoStatus];
+export type BillingStatementResponseDtoStatus = typeof BillingStatementResponseDtoStatus[keyof typeof BillingStatementResponseDtoStatus];
+
 
 export const BillingStatementResponseDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface BillingStatementResponseDto {
@@ -7974,9 +8024,9 @@ export interface BillingStatementDetailDto {
   /** @maxLength 250 */
   description: string;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   particulars?: string | null;
   /** @minimum 0 */
   quantity: number;
@@ -7990,41 +8040,41 @@ export interface BillingStatementDetailDto {
   discountAmount: number;
   grossAmount: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   vatType?: string | null;
   vatable: boolean;
   vatInclusive: boolean;
   withWvat: boolean;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   wvatType?: string | null;
   withEwt: boolean;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   ewtType?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   responsibilityCenterId?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   responsibilityCenter?: string | null;
 }
 
-export type BillingStatementJournalEntryDtoReferenceType =
-  (typeof BillingStatementJournalEntryDtoReferenceType)[keyof typeof BillingStatementJournalEntryDtoReferenceType];
+export type BillingStatementJournalEntryDtoReferenceType = typeof BillingStatementJournalEntryDtoReferenceType[keyof typeof BillingStatementJournalEntryDtoReferenceType];
+
 
 export const BillingStatementJournalEntryDtoReferenceType = {
-  BS: "BS",
+  BS: 'BS',
 } as const;
 
 export interface BillingStatementJournalEntryDto {
@@ -8032,9 +8082,9 @@ export interface BillingStatementJournalEntryDto {
   /** @minimum 1 */
   lineNumber: number;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   accountId?: string | null;
   /** @maxLength 20 */
   accountCode: string;
@@ -8045,48 +8095,48 @@ export interface BillingStatementJournalEntryDto {
   /** @minimum 0.000001 */
   exchangeRate: number;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   particulars?: string | null;
   /** @minimum 0 */
   debit: number;
   /** @minimum 0 */
   credit: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   vatType?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   atcCode?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   partyCode?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   partyName?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   responsibilityCenterId?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   responsibilityCenter?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   refNo?: string | null;
 }
 
@@ -8094,80 +8144,80 @@ export interface CreateBillingStatementDto {
   /** @minimum 1 */
   branchUnitId?: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   transactionNo?: string | null;
   documentDate: string;
   dueDate: string;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   invoiceNo?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   referenceNo?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   partyId?: string | null;
   /** @maxLength 80 */
   customerCode: string;
   /** @maxLength 255 */
   customerName: string;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   billToName?: string | null;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   address?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   contactPerson?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   contactNo?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   businessStyle?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   projectCode?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   projectName?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   projectRef?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   salesAssociate?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   teamAssigned?: string | null;
   /** @maxLength 10 */
   currency: string;
@@ -8180,28 +8230,28 @@ export interface CreateBillingStatementDto {
   discountAmount: number;
   grossAmount: number;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   termId?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   terms?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   receivableAccountId?: string | null;
   /** @maxLength 20 */
   receivableAccountCode: string;
   /** @maxLength 250 */
   receivableAccountTitle: string;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   remarks?: string | null;
   /** @minItems 1 */
   details: BillingStatementDetailDto[];
@@ -8219,80 +8269,80 @@ export interface UpdateBillingStatementDto {
   /** @minimum 1 */
   branchUnitId?: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   transactionNo?: string | null;
   documentDate?: string;
   dueDate?: string;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   invoiceNo?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   referenceNo?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   partyId?: string | null;
   /** @maxLength 80 */
   customerCode?: string;
   /** @maxLength 255 */
   customerName?: string;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   billToName?: string | null;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   address?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   contactPerson?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   contactNo?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   businessStyle?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   projectCode?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   projectName?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   projectRef?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   salesAssociate?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   teamAssigned?: string | null;
   /** @maxLength 10 */
   currency?: string;
@@ -8305,28 +8355,28 @@ export interface UpdateBillingStatementDto {
   discountAmount?: number;
   grossAmount?: number;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   termId?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   terms?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   receivableAccountId?: string | null;
   /** @maxLength 20 */
   receivableAccountCode?: string;
   /** @maxLength 250 */
   receivableAccountTitle?: string;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   remarks?: string | null;
   /** @minItems 1 */
   details?: BillingStatementDetailDto[];
@@ -8334,20 +8384,20 @@ export interface UpdateBillingStatementDto {
   journalEntries?: BillingStatementJournalEntryDto[];
 }
 
-export type UpdateBillingStatementStatusDtoStatus =
-  (typeof UpdateBillingStatementStatusDtoStatus)[keyof typeof UpdateBillingStatementStatusDtoStatus];
+export type UpdateBillingStatementStatusDtoStatus = typeof UpdateBillingStatementStatusDtoStatus[keyof typeof UpdateBillingStatementStatusDtoStatus];
+
 
 export const UpdateBillingStatementStatusDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
-  Draft: "Draft",
-  For_Approval: "For Approval",
-  Disapproved: "Disapproved",
-  Posted: "Posted",
-  Cancelled: "Cancelled",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
+  Draft: 'Draft',
+  For_Approval: 'For Approval',
+  Disapproved: 'Disapproved',
+  Posted: 'Posted',
+  Cancelled: 'Cancelled',
 } as const;
 
 export interface UpdateBillingStatementStatusDto {
@@ -8415,14 +8465,15 @@ export interface BillingJournalEntryResponseDto {
   refNo?: string | null;
 }
 
-export type BillingResponseDtoStatus = (typeof BillingResponseDtoStatus)[keyof typeof BillingResponseDtoStatus];
+export type BillingResponseDtoStatus = typeof BillingResponseDtoStatus[keyof typeof BillingResponseDtoStatus];
+
 
 export const BillingResponseDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface BillingResponseDto {
@@ -8537,9 +8588,9 @@ export interface BillingDetailDto {
   /** @maxLength 250 */
   description: string;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   particulars?: string | null;
   /** @minimum 0 */
   quantity: number;
@@ -8553,41 +8604,41 @@ export interface BillingDetailDto {
   discountAmount: number;
   grossAmount: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   vatType?: string | null;
   vatable: boolean;
   vatInclusive: boolean;
   withWvat: boolean;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   wvatType?: string | null;
   withEwt: boolean;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   ewtType?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   responsibilityCenterId?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   responsibilityCenter?: string | null;
 }
 
-export type BillingJournalEntryDtoReferenceType =
-  (typeof BillingJournalEntryDtoReferenceType)[keyof typeof BillingJournalEntryDtoReferenceType];
+export type BillingJournalEntryDtoReferenceType = typeof BillingJournalEntryDtoReferenceType[keyof typeof BillingJournalEntryDtoReferenceType];
+
 
 export const BillingJournalEntryDtoReferenceType = {
-  BILL: "BILL",
+  BILL: 'BILL',
 } as const;
 
 export interface BillingJournalEntryDto {
@@ -8595,9 +8646,9 @@ export interface BillingJournalEntryDto {
   /** @minimum 1 */
   lineNumber: number;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   accountId?: string | null;
   /** @maxLength 20 */
   accountCode: string;
@@ -8608,48 +8659,48 @@ export interface BillingJournalEntryDto {
   /** @minimum 0.000001 */
   exchangeRate: number;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   particulars?: string | null;
   /** @minimum 0 */
   debit: number;
   /** @minimum 0 */
   credit: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   vatType?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   atcCode?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   partyCode?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   partyName?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   responsibilityCenterId?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   responsibilityCenter?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   refNo?: string | null;
 }
 
@@ -8657,80 +8708,80 @@ export interface CreateBillingDto {
   /** @minimum 1 */
   branchUnitId?: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   transactionNo?: string | null;
   documentDate: string;
   dueDate: string;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   invoiceNo?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   referenceNo?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   partyId?: string | null;
   /** @maxLength 80 */
   customerCode: string;
   /** @maxLength 255 */
   customerName: string;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   billToName?: string | null;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   address?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   contactPerson?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   contactNo?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   businessStyle?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   projectCode?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   projectName?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   projectRef?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   salesAssociate?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   teamAssigned?: string | null;
   /** @maxLength 10 */
   currency: string;
@@ -8743,28 +8794,28 @@ export interface CreateBillingDto {
   discountAmount: number;
   grossAmount: number;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   termId?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   terms?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   receivableAccountId?: string | null;
   /** @maxLength 20 */
   receivableAccountCode: string;
   /** @maxLength 250 */
   receivableAccountTitle: string;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   remarks?: string | null;
   /** @minItems 1 */
   details: BillingDetailDto[];
@@ -8782,80 +8833,80 @@ export interface UpdateBillingDto {
   /** @minimum 1 */
   branchUnitId?: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   transactionNo?: string | null;
   documentDate?: string;
   dueDate?: string;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   invoiceNo?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   referenceNo?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   partyId?: string | null;
   /** @maxLength 80 */
   customerCode?: string;
   /** @maxLength 255 */
   customerName?: string;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   billToName?: string | null;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   address?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   contactPerson?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   contactNo?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   businessStyle?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   projectCode?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   projectName?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   projectRef?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   salesAssociate?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   teamAssigned?: string | null;
   /** @maxLength 10 */
   currency?: string;
@@ -8868,28 +8919,28 @@ export interface UpdateBillingDto {
   discountAmount?: number;
   grossAmount?: number;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   termId?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   terms?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   receivableAccountId?: string | null;
   /** @maxLength 20 */
   receivableAccountCode?: string;
   /** @maxLength 250 */
   receivableAccountTitle?: string;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   remarks?: string | null;
   /** @minItems 1 */
   details?: BillingDetailDto[];
@@ -8897,19 +8948,20 @@ export interface UpdateBillingDto {
   journalEntries?: BillingJournalEntryDto[];
 }
 
-export type UpdateBillingStatusDtoStatus = (typeof UpdateBillingStatusDtoStatus)[keyof typeof UpdateBillingStatusDtoStatus];
+export type UpdateBillingStatusDtoStatus = typeof UpdateBillingStatusDtoStatus[keyof typeof UpdateBillingStatusDtoStatus];
+
 
 export const UpdateBillingStatusDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
-  Draft: "Draft",
-  For_Approval: "For Approval",
-  Disapproved: "Disapproved",
-  Posted: "Posted",
-  Cancelled: "Cancelled",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
+  Draft: 'Draft',
+  For_Approval: 'For Approval',
+  Disapproved: 'Disapproved',
+  Posted: 'Posted',
+  Cancelled: 'Cancelled',
 } as const;
 
 export interface UpdateBillingStatusDto {
@@ -8977,14 +9029,15 @@ export interface OfficialReceiptJournalEntryResponseDto {
   refNo?: string | null;
 }
 
-export type OfficialReceiptResponseDtoStatus = (typeof OfficialReceiptResponseDtoStatus)[keyof typeof OfficialReceiptResponseDtoStatus];
+export type OfficialReceiptResponseDtoStatus = typeof OfficialReceiptResponseDtoStatus[keyof typeof OfficialReceiptResponseDtoStatus];
+
 
 export const OfficialReceiptResponseDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface OfficialReceiptResponseDto {
@@ -9081,36 +9134,36 @@ export interface OfficialReceiptDetailDto {
   /** @maxLength 250 */
   description: string;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   particulars?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   partyCode?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   partyName?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   referenceNo?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   vatType?: string | null;
   /** @minimum 0 */
   vatPercent: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   cwtCode?: string | null;
   /** @minimum 0 */
   cwtPercent: number;
@@ -9122,22 +9175,22 @@ export interface OfficialReceiptDetailDto {
   grossAmount: number;
   totalReceived: number;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   responsibilityCenterId?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   responsibilityCenter?: string | null;
 }
 
-export type OfficialReceiptJournalEntryDtoReferenceType =
-  (typeof OfficialReceiptJournalEntryDtoReferenceType)[keyof typeof OfficialReceiptJournalEntryDtoReferenceType];
+export type OfficialReceiptJournalEntryDtoReferenceType = typeof OfficialReceiptJournalEntryDtoReferenceType[keyof typeof OfficialReceiptJournalEntryDtoReferenceType];
+
 
 export const OfficialReceiptJournalEntryDtoReferenceType = {
-  OR: "OR",
+  OR: 'OR',
 } as const;
 
 export interface OfficialReceiptJournalEntryDto {
@@ -9145,9 +9198,9 @@ export interface OfficialReceiptJournalEntryDto {
   /** @minimum 1 */
   lineNumber: number;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   accountId?: string | null;
   /** @maxLength 20 */
   accountCode: string;
@@ -9158,89 +9211,89 @@ export interface OfficialReceiptJournalEntryDto {
   /** @minimum 0.000001 */
   exchangeRate: number;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   particulars?: string | null;
   /** @minimum 0 */
   debit: number;
   /** @minimum 0 */
   credit: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   vatType?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   atcCode?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   partyCode?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   partyName?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   responsibilityCenterId?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   responsibilityCenter?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   refNo?: string | null;
 }
 
 export interface CreateOfficialReceiptDto {
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   paymentId?: string | null;
   /** @minimum 1 */
   branchUnitId?: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   transactionNo?: string | null;
   documentDate: string;
   dueDate: string;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   receiptNo?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   referenceNo?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   partyId?: string | null;
   /** @maxLength 80 */
   customerCode: string;
   /** @maxLength 255 */
   customerName: string;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   billToName?: string | null;
   /** @maxLength 10 */
   currency: string;
@@ -9253,18 +9306,18 @@ export interface CreateOfficialReceiptDto {
   discountAmount: number;
   grossAmount: number;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   receivableAccountId?: string | null;
   /** @maxLength 20 */
   receivableAccountCode: string;
   /** @maxLength 250 */
   receivableAccountTitle: string;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   remarks?: string | null;
   /** @minItems 1 */
   details: OfficialReceiptDetailDto[];
@@ -9280,42 +9333,42 @@ export interface SaveOfficialReceiptResponseDto {
 
 export interface UpdateOfficialReceiptDto {
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   paymentId?: string | null;
   /** @minimum 1 */
   branchUnitId?: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   transactionNo?: string | null;
   documentDate?: string;
   dueDate?: string;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   receiptNo?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   referenceNo?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   partyId?: string | null;
   /** @maxLength 80 */
   customerCode?: string;
   /** @maxLength 255 */
   customerName?: string;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   billToName?: string | null;
   /** @maxLength 10 */
   currency?: string;
@@ -9328,18 +9381,18 @@ export interface UpdateOfficialReceiptDto {
   discountAmount?: number;
   grossAmount?: number;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   receivableAccountId?: string | null;
   /** @maxLength 20 */
   receivableAccountCode?: string;
   /** @maxLength 250 */
   receivableAccountTitle?: string;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   remarks?: string | null;
   /** @minItems 1 */
   details?: OfficialReceiptDetailDto[];
@@ -9347,20 +9400,20 @@ export interface UpdateOfficialReceiptDto {
   journalEntries?: OfficialReceiptJournalEntryDto[];
 }
 
-export type UpdateOfficialReceiptStatusDtoStatus =
-  (typeof UpdateOfficialReceiptStatusDtoStatus)[keyof typeof UpdateOfficialReceiptStatusDtoStatus];
+export type UpdateOfficialReceiptStatusDtoStatus = typeof UpdateOfficialReceiptStatusDtoStatus[keyof typeof UpdateOfficialReceiptStatusDtoStatus];
+
 
 export const UpdateOfficialReceiptStatusDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
-  Draft: "Draft",
-  For_Approval: "For Approval",
-  Disapproved: "Disapproved",
-  Posted: "Posted",
-  Cancelled: "Cancelled",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
+  Draft: 'Draft',
+  For_Approval: 'For Approval',
+  Disapproved: 'Disapproved',
+  Posted: 'Posted',
+  Cancelled: 'Cancelled',
 } as const;
 
 export interface UpdateOfficialReceiptStatusDto {
@@ -9426,15 +9479,15 @@ export interface CollectionReceiptJournalEntryResponseDto {
   refNo?: string | null;
 }
 
-export type CollectionReceiptResponseDtoStatus =
-  (typeof CollectionReceiptResponseDtoStatus)[keyof typeof CollectionReceiptResponseDtoStatus];
+export type CollectionReceiptResponseDtoStatus = typeof CollectionReceiptResponseDtoStatus[keyof typeof CollectionReceiptResponseDtoStatus];
+
 
 export const CollectionReceiptResponseDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface CollectionReceiptResponseDto {
@@ -9529,41 +9582,41 @@ export interface CollectionReceiptDetailDto {
   /** @minimum 1 */
   lineNumber: number;
   /**
-   * Collection Type selected in the item row.
-   * @maxLength 250
-   */
+     * Collection Type selected in the item row.
+     * @maxLength 250
+     */
   description: string;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   particulars?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   partyCode?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   partyName?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   referenceNo?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   vatType?: string | null;
   /** @minimum 0 */
   vatPercent: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   cwtCode?: string | null;
   /** @minimum 0 */
   cwtPercent: number;
@@ -9574,22 +9627,22 @@ export interface CollectionReceiptDetailDto {
   grossAmount: number;
   totalReceived: number;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   responsibilityCenterId?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   responsibilityCenter?: string | null;
 }
 
-export type CollectionReceiptJournalEntryDtoReferenceType =
-  (typeof CollectionReceiptJournalEntryDtoReferenceType)[keyof typeof CollectionReceiptJournalEntryDtoReferenceType];
+export type CollectionReceiptJournalEntryDtoReferenceType = typeof CollectionReceiptJournalEntryDtoReferenceType[keyof typeof CollectionReceiptJournalEntryDtoReferenceType];
+
 
 export const CollectionReceiptJournalEntryDtoReferenceType = {
-  CR: "CR",
+  CR: 'CR',
 } as const;
 
 export interface CollectionReceiptJournalEntryDto {
@@ -9597,9 +9650,9 @@ export interface CollectionReceiptJournalEntryDto {
   /** @minimum 1 */
   lineNumber: number;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   accountId?: string | null;
   /** @maxLength 20 */
   accountCode: string;
@@ -9610,89 +9663,89 @@ export interface CollectionReceiptJournalEntryDto {
   /** @minimum 0.000001 */
   exchangeRate: number;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   particulars?: string | null;
   /** @minimum 0 */
   debit: number;
   /** @minimum 0 */
   credit: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   vatType?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   atcCode?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   partyCode?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   partyName?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   responsibilityCenterId?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   responsibilityCenter?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   refNo?: string | null;
 }
 
 export interface CreateCollectionReceiptDto {
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   paymentId?: string | null;
   /** @minimum 1 */
   branchUnitId?: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   transactionNo?: string | null;
   documentDate: string;
   dueDate: string;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   receiptNo?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   referenceNo?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   partyId?: string | null;
   /** @maxLength 80 */
   customerCode: string;
   /** @maxLength 255 */
   customerName: string;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   billToName?: string | null;
   /** @maxLength 10 */
   currency: string;
@@ -9705,18 +9758,18 @@ export interface CreateCollectionReceiptDto {
   discountAmount: number;
   grossAmount: number;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   receivableAccountId?: string | null;
   /** @maxLength 20 */
   receivableAccountCode: string;
   /** @maxLength 250 */
   receivableAccountTitle: string;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   remarks?: string | null;
   /** @minItems 1 */
   details: CollectionReceiptDetailDto[];
@@ -9732,42 +9785,42 @@ export interface SaveCollectionReceiptResponseDto {
 
 export interface UpdateCollectionReceiptDto {
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   paymentId?: string | null;
   /** @minimum 1 */
   branchUnitId?: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   transactionNo?: string | null;
   documentDate?: string;
   dueDate?: string;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   receiptNo?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   referenceNo?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   partyId?: string | null;
   /** @maxLength 80 */
   customerCode?: string;
   /** @maxLength 255 */
   customerName?: string;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   billToName?: string | null;
   /** @maxLength 10 */
   currency?: string;
@@ -9780,18 +9833,18 @@ export interface UpdateCollectionReceiptDto {
   discountAmount?: number;
   grossAmount?: number;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   receivableAccountId?: string | null;
   /** @maxLength 20 */
   receivableAccountCode?: string;
   /** @maxLength 250 */
   receivableAccountTitle?: string;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   remarks?: string | null;
   /** @minItems 1 */
   details?: CollectionReceiptDetailDto[];
@@ -9799,20 +9852,20 @@ export interface UpdateCollectionReceiptDto {
   journalEntries?: CollectionReceiptJournalEntryDto[];
 }
 
-export type UpdateCollectionReceiptStatusDtoStatus =
-  (typeof UpdateCollectionReceiptStatusDtoStatus)[keyof typeof UpdateCollectionReceiptStatusDtoStatus];
+export type UpdateCollectionReceiptStatusDtoStatus = typeof UpdateCollectionReceiptStatusDtoStatus[keyof typeof UpdateCollectionReceiptStatusDtoStatus];
+
 
 export const UpdateCollectionReceiptStatusDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
-  Draft: "Draft",
-  For_Approval: "For Approval",
-  Disapproved: "Disapproved",
-  Posted: "Posted",
-  Cancelled: "Cancelled",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
+  Draft: 'Draft',
+  For_Approval: 'For Approval',
+  Disapproved: 'Disapproved',
+  Posted: 'Posted',
+  Cancelled: 'Cancelled',
 } as const;
 
 export interface UpdateCollectionReceiptStatusDto {
@@ -9880,15 +9933,15 @@ export interface AcknowledgementReceiptJournalEntryResponseDto {
   refNo?: string | null;
 }
 
-export type AcknowledgementReceiptResponseDtoStatus =
-  (typeof AcknowledgementReceiptResponseDtoStatus)[keyof typeof AcknowledgementReceiptResponseDtoStatus];
+export type AcknowledgementReceiptResponseDtoStatus = typeof AcknowledgementReceiptResponseDtoStatus[keyof typeof AcknowledgementReceiptResponseDtoStatus];
+
 
 export const AcknowledgementReceiptResponseDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface AcknowledgementReceiptResponseDto {
@@ -10003,9 +10056,9 @@ export interface AcknowledgementReceiptDetailDto {
   /** @maxLength 250 */
   description: string;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   particulars?: string | null;
   /** @minimum 0 */
   quantity: number;
@@ -10019,41 +10072,41 @@ export interface AcknowledgementReceiptDetailDto {
   discountAmount: number;
   grossAmount: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   vatType?: string | null;
   vatable: boolean;
   vatInclusive: boolean;
   withWvat: boolean;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   wvatType?: string | null;
   withEwt: boolean;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   ewtType?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   responsibilityCenterId?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   responsibilityCenter?: string | null;
 }
 
-export type AcknowledgementReceiptJournalEntryDtoReferenceType =
-  (typeof AcknowledgementReceiptJournalEntryDtoReferenceType)[keyof typeof AcknowledgementReceiptJournalEntryDtoReferenceType];
+export type AcknowledgementReceiptJournalEntryDtoReferenceType = typeof AcknowledgementReceiptJournalEntryDtoReferenceType[keyof typeof AcknowledgementReceiptJournalEntryDtoReferenceType];
+
 
 export const AcknowledgementReceiptJournalEntryDtoReferenceType = {
-  AR: "AR",
+  AR: 'AR',
 } as const;
 
 export interface AcknowledgementReceiptJournalEntryDto {
@@ -10061,9 +10114,9 @@ export interface AcknowledgementReceiptJournalEntryDto {
   /** @minimum 1 */
   lineNumber: number;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   accountId?: string | null;
   /** @maxLength 20 */
   accountCode: string;
@@ -10074,48 +10127,48 @@ export interface AcknowledgementReceiptJournalEntryDto {
   /** @minimum 0.000001 */
   exchangeRate: number;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   particulars?: string | null;
   /** @minimum 0 */
   debit: number;
   /** @minimum 0 */
   credit: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   vatType?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   atcCode?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   partyCode?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   partyName?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   responsibilityCenterId?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   responsibilityCenter?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   refNo?: string | null;
 }
 
@@ -10123,80 +10176,80 @@ export interface CreateAcknowledgementReceiptDto {
   /** @minimum 1 */
   branchUnitId?: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   transactionNo?: string | null;
   documentDate: string;
   dueDate: string;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   receiptNo?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   referenceNo?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   partyId?: string | null;
   /** @maxLength 80 */
   customerCode: string;
   /** @maxLength 255 */
   customerName: string;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   billToName?: string | null;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   address?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   contactPerson?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   contactNo?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   businessStyle?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   projectCode?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   projectName?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   projectRef?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   salesAssociate?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   teamAssigned?: string | null;
   /** @maxLength 10 */
   currency: string;
@@ -10209,28 +10262,28 @@ export interface CreateAcknowledgementReceiptDto {
   discountAmount: number;
   grossAmount: number;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   termId?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   terms?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   receivableAccountId?: string | null;
   /** @maxLength 20 */
   receivableAccountCode: string;
   /** @maxLength 250 */
   receivableAccountTitle: string;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   remarks?: string | null;
   /** @minItems 1 */
   details: AcknowledgementReceiptDetailDto[];
@@ -10248,80 +10301,80 @@ export interface UpdateAcknowledgementReceiptDto {
   /** @minimum 1 */
   branchUnitId?: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   transactionNo?: string | null;
   documentDate?: string;
   dueDate?: string;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   receiptNo?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   referenceNo?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   partyId?: string | null;
   /** @maxLength 80 */
   customerCode?: string;
   /** @maxLength 255 */
   customerName?: string;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   billToName?: string | null;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   address?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   contactPerson?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   contactNo?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   businessStyle?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   projectCode?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   projectName?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   projectRef?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   salesAssociate?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   teamAssigned?: string | null;
   /** @maxLength 10 */
   currency?: string;
@@ -10334,28 +10387,28 @@ export interface UpdateAcknowledgementReceiptDto {
   discountAmount?: number;
   grossAmount?: number;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   termId?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   terms?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   receivableAccountId?: string | null;
   /** @maxLength 20 */
   receivableAccountCode?: string;
   /** @maxLength 250 */
   receivableAccountTitle?: string;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   remarks?: string | null;
   /** @minItems 1 */
   details?: AcknowledgementReceiptDetailDto[];
@@ -10363,20 +10416,20 @@ export interface UpdateAcknowledgementReceiptDto {
   journalEntries?: AcknowledgementReceiptJournalEntryDto[];
 }
 
-export type UpdateAcknowledgementReceiptStatusDtoStatus =
-  (typeof UpdateAcknowledgementReceiptStatusDtoStatus)[keyof typeof UpdateAcknowledgementReceiptStatusDtoStatus];
+export type UpdateAcknowledgementReceiptStatusDtoStatus = typeof UpdateAcknowledgementReceiptStatusDtoStatus[keyof typeof UpdateAcknowledgementReceiptStatusDtoStatus];
+
 
 export const UpdateAcknowledgementReceiptStatusDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
-  Draft: "Draft",
-  For_Approval: "For Approval",
-  Disapproved: "Disapproved",
-  Posted: "Posted",
-  Cancelled: "Cancelled",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
+  Draft: 'Draft',
+  For_Approval: 'For Approval',
+  Disapproved: 'Disapproved',
+  Posted: 'Posted',
+  Cancelled: 'Cancelled',
 } as const;
 
 export interface UpdateAcknowledgementReceiptStatusDto {
@@ -10444,15 +10497,15 @@ export interface ProvisionalReceiptJournalEntryResponseDto {
   refNo?: string | null;
 }
 
-export type ProvisionalReceiptResponseDtoStatus =
-  (typeof ProvisionalReceiptResponseDtoStatus)[keyof typeof ProvisionalReceiptResponseDtoStatus];
+export type ProvisionalReceiptResponseDtoStatus = typeof ProvisionalReceiptResponseDtoStatus[keyof typeof ProvisionalReceiptResponseDtoStatus];
+
 
 export const ProvisionalReceiptResponseDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface ProvisionalReceiptResponseDto {
@@ -10567,9 +10620,9 @@ export interface ProvisionalReceiptDetailDto {
   /** @maxLength 250 */
   description: string;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   particulars?: string | null;
   /** @minimum 0 */
   quantity: number;
@@ -10583,41 +10636,41 @@ export interface ProvisionalReceiptDetailDto {
   discountAmount: number;
   grossAmount: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   vatType?: string | null;
   vatable: boolean;
   vatInclusive: boolean;
   withWvat: boolean;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   wvatType?: string | null;
   withEwt: boolean;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   ewtType?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   responsibilityCenterId?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   responsibilityCenter?: string | null;
 }
 
-export type ProvisionalReceiptJournalEntryDtoReferenceType =
-  (typeof ProvisionalReceiptJournalEntryDtoReferenceType)[keyof typeof ProvisionalReceiptJournalEntryDtoReferenceType];
+export type ProvisionalReceiptJournalEntryDtoReferenceType = typeof ProvisionalReceiptJournalEntryDtoReferenceType[keyof typeof ProvisionalReceiptJournalEntryDtoReferenceType];
+
 
 export const ProvisionalReceiptJournalEntryDtoReferenceType = {
-  PVR: "PVR",
+  PVR: 'PVR',
 } as const;
 
 export interface ProvisionalReceiptJournalEntryDto {
@@ -10625,9 +10678,9 @@ export interface ProvisionalReceiptJournalEntryDto {
   /** @minimum 1 */
   lineNumber: number;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   accountId?: string | null;
   /** @maxLength 20 */
   accountCode: string;
@@ -10638,48 +10691,48 @@ export interface ProvisionalReceiptJournalEntryDto {
   /** @minimum 0.000001 */
   exchangeRate: number;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   particulars?: string | null;
   /** @minimum 0 */
   debit: number;
   /** @minimum 0 */
   credit: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   vatType?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   atcCode?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   partyCode?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   partyName?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   responsibilityCenterId?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   responsibilityCenter?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   refNo?: string | null;
 }
 
@@ -10687,80 +10740,80 @@ export interface CreateProvisionalReceiptDto {
   /** @minimum 1 */
   branchUnitId?: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   transactionNo?: string | null;
   documentDate: string;
   dueDate: string;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   receiptNo?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   referenceNo?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   partyId?: string | null;
   /** @maxLength 80 */
   customerCode: string;
   /** @maxLength 255 */
   customerName: string;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   billToName?: string | null;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   address?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   contactPerson?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   contactNo?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   businessStyle?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   projectCode?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   projectName?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   projectRef?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   salesAssociate?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   teamAssigned?: string | null;
   /** @maxLength 10 */
   currency: string;
@@ -10773,28 +10826,28 @@ export interface CreateProvisionalReceiptDto {
   discountAmount: number;
   grossAmount: number;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   termId?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   terms?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   receivableAccountId?: string | null;
   /** @maxLength 20 */
   receivableAccountCode: string;
   /** @maxLength 250 */
   receivableAccountTitle: string;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   remarks?: string | null;
   /** @minItems 1 */
   details: ProvisionalReceiptDetailDto[];
@@ -10812,80 +10865,80 @@ export interface UpdateProvisionalReceiptDto {
   /** @minimum 1 */
   branchUnitId?: number;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   transactionNo?: string | null;
   documentDate?: string;
   dueDate?: string;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   receiptNo?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   referenceNo?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   partyId?: string | null;
   /** @maxLength 80 */
   customerCode?: string;
   /** @maxLength 255 */
   customerName?: string;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   billToName?: string | null;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   address?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   contactPerson?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   contactNo?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   businessStyle?: string | null;
   /**
-   * @maxLength 80
-   * @nullable
-   */
+     * @maxLength 80
+     * @nullable
+     */
   projectCode?: string | null;
   /**
-   * @maxLength 255
-   * @nullable
-   */
+     * @maxLength 255
+     * @nullable
+     */
   projectName?: string | null;
   /**
-   * @maxLength 120
-   * @nullable
-   */
+     * @maxLength 120
+     * @nullable
+     */
   projectRef?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   salesAssociate?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   teamAssigned?: string | null;
   /** @maxLength 10 */
   currency?: string;
@@ -10898,28 +10951,28 @@ export interface UpdateProvisionalReceiptDto {
   discountAmount?: number;
   grossAmount?: number;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   termId?: string | null;
   /**
-   * @maxLength 150
-   * @nullable
-   */
+     * @maxLength 150
+     * @nullable
+     */
   terms?: string | null;
   /**
-   * @maxLength 40
-   * @nullable
-   */
+     * @maxLength 40
+     * @nullable
+     */
   receivableAccountId?: string | null;
   /** @maxLength 20 */
   receivableAccountCode?: string;
   /** @maxLength 250 */
   receivableAccountTitle?: string;
   /**
-   * @maxLength 500
-   * @nullable
-   */
+     * @maxLength 500
+     * @nullable
+     */
   remarks?: string | null;
   /** @minItems 1 */
   details?: ProvisionalReceiptDetailDto[];
@@ -10927,44 +10980,50 @@ export interface UpdateProvisionalReceiptDto {
   journalEntries?: ProvisionalReceiptJournalEntryDto[];
 }
 
-export type UpdateProvisionalReceiptStatusDtoStatus =
-  (typeof UpdateProvisionalReceiptStatusDtoStatus)[keyof typeof UpdateProvisionalReceiptStatusDtoStatus];
+export type UpdateProvisionalReceiptStatusDtoStatus = typeof UpdateProvisionalReceiptStatusDtoStatus[keyof typeof UpdateProvisionalReceiptStatusDtoStatus];
+
 
 export const UpdateProvisionalReceiptStatusDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
-  Draft: "Draft",
-  For_Approval: "For Approval",
-  Disapproved: "Disapproved",
-  Posted: "Posted",
-  Cancelled: "Cancelled",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
+  Draft: 'Draft',
+  For_Approval: 'For Approval',
+  Disapproved: 'Disapproved',
+  Posted: 'Posted',
+  Cancelled: 'Cancelled',
 } as const;
 
 export interface UpdateProvisionalReceiptStatusDto {
   status: UpdateProvisionalReceiptStatusDtoStatus;
 }
 
-export type AdvanceToSupplierResponseDtoAdvancePaymentType =
-  (typeof AdvanceToSupplierResponseDtoAdvancePaymentType)[keyof typeof AdvanceToSupplierResponseDtoAdvancePaymentType];
+export interface TransactionNumberSuggestionResponseDto {
+  branchUnitId: number;
+  inputMode: string;
+  transactionNo: string;
+}
+
+export type AdvanceToSupplierResponseDtoAdvancePaymentType = typeof AdvanceToSupplierResponseDtoAdvancePaymentType[keyof typeof AdvanceToSupplierResponseDtoAdvancePaymentType];
+
 
 export const AdvanceToSupplierResponseDtoAdvancePaymentType = {
-  PERCENTAGE: "PERCENTAGE",
-  FIXED_AMOUNT: "FIXED_AMOUNT",
+  PERCENTAGE: 'PERCENTAGE',
+  FIXED_AMOUNT: 'FIXED_AMOUNT',
 } as const;
 
-export type AdvanceToSupplierResponseDtoStatus =
-  (typeof AdvanceToSupplierResponseDtoStatus)[keyof typeof AdvanceToSupplierResponseDtoStatus];
+export type AdvanceToSupplierResponseDtoStatus = typeof AdvanceToSupplierResponseDtoStatus[keyof typeof AdvanceToSupplierResponseDtoStatus];
+
 
 export const AdvanceToSupplierResponseDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface AdvanceToSupplierResponseDto {
@@ -11019,36 +11078,42 @@ export interface AdvanceToSupplierListResponseDto {
   meta: AdvanceToSupplierListResponseDtoMeta;
 }
 
-export type CreateAdvanceToSupplierDtoAdvancePaymentType =
-  (typeof CreateAdvanceToSupplierDtoAdvancePaymentType)[keyof typeof CreateAdvanceToSupplierDtoAdvancePaymentType];
+export type CreateAdvanceToSupplierDtoAdvancePaymentType = typeof CreateAdvanceToSupplierDtoAdvancePaymentType[keyof typeof CreateAdvanceToSupplierDtoAdvancePaymentType];
+
 
 export const CreateAdvanceToSupplierDtoAdvancePaymentType = {
-  PERCENTAGE: "PERCENTAGE",
-  FIXED_AMOUNT: "FIXED_AMOUNT",
+  PERCENTAGE: 'PERCENTAGE',
+  FIXED_AMOUNT: 'FIXED_AMOUNT',
 } as const;
 
-export type CreateAdvanceToSupplierDtoStatus = (typeof CreateAdvanceToSupplierDtoStatus)[keyof typeof CreateAdvanceToSupplierDtoStatus];
+export type CreateAdvanceToSupplierDtoStatus = typeof CreateAdvanceToSupplierDtoStatus[keyof typeof CreateAdvanceToSupplierDtoStatus];
+
 
 export const CreateAdvanceToSupplierDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface CreateAdvanceToSupplierDto {
+  /**
+     * Branch Unit ID
+     * @minimum 1
+     */
+  branchUnitId?: number;
   /** Party primary key ID */
   partyId?: string;
   /** Supplier party code */
-  partyCode: string;
+  partyCode?: string;
   /** Supplier party name */
-  partyName: string;
+  partyName?: string;
   /** Chart account primary key ID */
   creditAccountId?: string;
   /** Default account code */
-  accountCode: string;
+  accountCode?: string;
   /** Default account title */
   accountTitle?: string;
   /** Responsibility center name */
@@ -11060,18 +11125,18 @@ export interface CreateAdvanceToSupplierDto {
   /** Project code */
   projectCode?: string;
   /** Currency code */
-  currency: string;
+  currency?: string;
   /** Exchange rate */
-  exchangeRate: string;
+  exchangeRate?: string;
   /** Purchase order reference */
-  poReference: string;
+  poReference?: string;
   /** Purchase order total amount */
-  totalPoAmount: string;
-  advancePaymentType: CreateAdvanceToSupplierDtoAdvancePaymentType;
+  totalPoAmount?: string;
+  advancePaymentType?: CreateAdvanceToSupplierDtoAdvancePaymentType;
   /** Advance payment percentage */
-  advancePaymentPercentage: string;
+  advancePaymentPercentage?: string;
   /** Advance payment amount */
-  advancePaymentAmount: string;
+  advancePaymentAmount?: string;
   /** Document date in YYYY-MM-DD format */
   documentDate: string;
   /** Custom ATS transaction number */
@@ -11081,26 +11146,32 @@ export interface CreateAdvanceToSupplierDto {
   status?: CreateAdvanceToSupplierDtoStatus;
 }
 
-export type UpdateAdvanceToSupplierDtoAdvancePaymentType =
-  (typeof UpdateAdvanceToSupplierDtoAdvancePaymentType)[keyof typeof UpdateAdvanceToSupplierDtoAdvancePaymentType];
+export type UpdateAdvanceToSupplierDtoAdvancePaymentType = typeof UpdateAdvanceToSupplierDtoAdvancePaymentType[keyof typeof UpdateAdvanceToSupplierDtoAdvancePaymentType];
+
 
 export const UpdateAdvanceToSupplierDtoAdvancePaymentType = {
-  PERCENTAGE: "PERCENTAGE",
-  FIXED_AMOUNT: "FIXED_AMOUNT",
+  PERCENTAGE: 'PERCENTAGE',
+  FIXED_AMOUNT: 'FIXED_AMOUNT',
 } as const;
 
-export type UpdateAdvanceToSupplierDtoStatus = (typeof UpdateAdvanceToSupplierDtoStatus)[keyof typeof UpdateAdvanceToSupplierDtoStatus];
+export type UpdateAdvanceToSupplierDtoStatus = typeof UpdateAdvanceToSupplierDtoStatus[keyof typeof UpdateAdvanceToSupplierDtoStatus];
+
 
 export const UpdateAdvanceToSupplierDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface UpdateAdvanceToSupplierDto {
+  /**
+     * Branch Unit ID
+     * @minimum 1
+     */
+  branchUnitId?: number;
   /** Party primary key ID */
   partyId?: string;
   /** Supplier party code */
@@ -11143,31 +11214,32 @@ export interface UpdateAdvanceToSupplierDto {
   status?: UpdateAdvanceToSupplierDtoStatus;
 }
 
-export type UpdateAdvanceToSupplierStatusDtoStatus =
-  (typeof UpdateAdvanceToSupplierStatusDtoStatus)[keyof typeof UpdateAdvanceToSupplierStatusDtoStatus];
+export type UpdateAdvanceToSupplierStatusDtoStatus = typeof UpdateAdvanceToSupplierStatusDtoStatus[keyof typeof UpdateAdvanceToSupplierStatusDtoStatus];
+
 
 export const UpdateAdvanceToSupplierStatusDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface UpdateAdvanceToSupplierStatusDto {
   status: UpdateAdvanceToSupplierStatusDtoStatus;
 }
 
-export type CashAdvanceDtoStatus = (typeof CashAdvanceDtoStatus)[keyof typeof CashAdvanceDtoStatus];
+export type CashAdvanceDtoStatus = typeof CashAdvanceDtoStatus[keyof typeof CashAdvanceDtoStatus];
+
 
 export const CashAdvanceDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface CashAdvanceDto {
@@ -11210,37 +11282,27 @@ export interface CashAdvanceListResponseDto {
   meta: CashAdvanceListResponseDtoMeta;
 }
 
-export interface CashAdvancePartyOptionDto {
-  partyId: string;
-  partyCode: string;
-  partyName: string;
-  label: string;
-  value: string;
-  cashAdvanceLimit: string;
-  totalCashAdvance: string;
-  availableCashAdvance: string;
-}
-
-export interface CashAdvancePartyOptionsResponseDto {
-  options: CashAdvancePartyOptionDto[];
-}
-
 export interface CashAdvanceSingleResponseDto {
   message: string;
   data: CashAdvanceDto;
 }
 
 export interface CreateCashAdvanceDto {
+  /**
+     * Branch Unit ID
+     * @minimum 1
+     */
+  branchUnitId?: number;
   /** Party Primary Key ID */
   partyId?: string;
   /** Party Code (Employee/Vendor) */
-  partyCode: string;
+  partyCode?: string;
   /** Party Name */
-  partyName: string;
+  partyName?: string;
   /** Chart Account Primary Key ID */
   creditAccountId?: string;
   /** Default Account Code */
-  accountCode: string;
+  accountCode?: string;
   /** Default Account Title */
   accountTitle?: string;
   /** Responsibility Center Primary Key ID */
@@ -11258,11 +11320,11 @@ export interface CreateCashAdvanceDto {
   /** Legacy alias for Project Name */
   projectRef?: string;
   /** Currency Code */
-  currency: string;
+  currency?: string;
   /** Exchange Rate */
-  fxRate: string;
+  fxRate?: string;
   /** Cash Advance Amount */
-  amount: string;
+  amount?: string;
   /** Document Date in YYYY-MM-DD format */
   documentDate: string;
   /** Custom Transaction Sequence No */
@@ -11272,6 +11334,11 @@ export interface CreateCashAdvanceDto {
 }
 
 export interface UpdateCashAdvanceDto {
+  /**
+     * Branch Unit ID
+     * @minimum 1
+     */
+  branchUnitId?: number;
   /** Party Primary Key ID */
   partyId?: string;
   /** Party Code (Employee/Vendor) */
@@ -11312,15 +11379,16 @@ export interface UpdateCashAdvanceDto {
   remarks?: string;
 }
 
-export type UpdateCashAdvanceStatusDtoStatus = (typeof UpdateCashAdvanceStatusDtoStatus)[keyof typeof UpdateCashAdvanceStatusDtoStatus];
+export type UpdateCashAdvanceStatusDtoStatus = typeof UpdateCashAdvanceStatusDtoStatus[keyof typeof UpdateCashAdvanceStatusDtoStatus];
+
 
 export const UpdateCashAdvanceStatusDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface UpdateCashAdvanceStatusDto {
@@ -11329,13 +11397,13 @@ export interface UpdateCashAdvanceStatusDto {
 
 export interface CashAdvanceMultipleEntryItemDto {
   id?: string;
-  partyCode: string;
-  partyName: string;
+  partyCode?: string;
+  partyName?: string;
   cashAdvanceLimit?: string;
   cashAdvanceBalance?: string;
   particulars?: string;
   responsibilityCenter?: string;
-  amount: string;
+  amount?: string;
 }
 
 export interface CashAdvanceMultipleEntryAccountingEntryDto {
@@ -11348,25 +11416,31 @@ export interface CashAdvanceMultipleEntryAccountingEntryDto {
   partyName?: string;
   particulars?: string;
   responsibilityCenter?: string;
+  remarks?: string;
 }
 
-export type CreateCashAdvanceMultipleEntryDtoStatus =
-  (typeof CreateCashAdvanceMultipleEntryDtoStatus)[keyof typeof CreateCashAdvanceMultipleEntryDtoStatus];
+export type CreateCashAdvanceMultipleEntryDtoStatus = typeof CreateCashAdvanceMultipleEntryDtoStatus[keyof typeof CreateCashAdvanceMultipleEntryDtoStatus];
+
 
 export const CreateCashAdvanceMultipleEntryDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface CreateCashAdvanceMultipleEntryDto {
-  accountCode: string;
+  /**
+     * Branch Unit ID
+     * @minimum 1
+     */
+  branchUnitId?: number;
+  accountCode?: string;
   accountTitle?: string;
-  currency: string;
-  exchangeRate: string;
+  currency?: string;
+  exchangeRate?: string;
   documentDate: string;
   transNo?: string;
   partyCode?: string;
@@ -11378,27 +11452,32 @@ export interface CreateCashAdvanceMultipleEntryDto {
   costCenter?: string;
   remarks?: string;
   status?: CreateCashAdvanceMultipleEntryDtoStatus;
-  items: CashAdvanceMultipleEntryItemDto[];
+  items?: CashAdvanceMultipleEntryItemDto[];
   accountingEntries?: CashAdvanceMultipleEntryAccountingEntryDto[];
 }
 
-export type UpdateCashAdvanceMultipleEntryDtoStatus =
-  (typeof UpdateCashAdvanceMultipleEntryDtoStatus)[keyof typeof UpdateCashAdvanceMultipleEntryDtoStatus];
+export type UpdateCashAdvanceMultipleEntryDtoStatus = typeof UpdateCashAdvanceMultipleEntryDtoStatus[keyof typeof UpdateCashAdvanceMultipleEntryDtoStatus];
+
 
 export const UpdateCashAdvanceMultipleEntryDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface UpdateCashAdvanceMultipleEntryDto {
-  accountCode: string;
+  /**
+     * Branch Unit ID
+     * @minimum 1
+     */
+  branchUnitId?: number;
+  accountCode?: string;
   accountTitle?: string;
-  currency: string;
-  exchangeRate: string;
+  currency?: string;
+  exchangeRate?: string;
   documentDate: string;
   transNo?: string;
   partyCode?: string;
@@ -11410,20 +11489,20 @@ export interface UpdateCashAdvanceMultipleEntryDto {
   costCenter?: string;
   remarks?: string;
   status?: UpdateCashAdvanceMultipleEntryDtoStatus;
-  items: CashAdvanceMultipleEntryItemDto[];
+  items?: CashAdvanceMultipleEntryItemDto[];
   accountingEntries?: CashAdvanceMultipleEntryAccountingEntryDto[];
 }
 
-export type UpdateCashAdvanceMultipleEntryStatusDtoStatus =
-  (typeof UpdateCashAdvanceMultipleEntryStatusDtoStatus)[keyof typeof UpdateCashAdvanceMultipleEntryStatusDtoStatus];
+export type UpdateCashAdvanceMultipleEntryStatusDtoStatus = typeof UpdateCashAdvanceMultipleEntryStatusDtoStatus[keyof typeof UpdateCashAdvanceMultipleEntryStatusDtoStatus];
+
 
 export const UpdateCashAdvanceMultipleEntryStatusDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface UpdateCashAdvanceMultipleEntryStatusDto {
@@ -11436,23 +11515,23 @@ export interface CashVoucherDetailResponseDto {
   /** Line Number */
   lineNumber: number;
   /**
-   * Account ID
-   * @nullable
-   */
+     * Account ID
+     * @nullable
+     */
   accountId?: string | null;
   /** Account Code */
   accountCode: string;
   /** Account Title */
   accountTitle: string;
   /**
-   * Particulars
-   * @nullable
-   */
+     * Particulars
+     * @nullable
+     */
   particulars?: string | null;
   /**
-   * Remarks
-   * @nullable
-   */
+     * Remarks
+     * @nullable
+     */
   remarks?: string | null;
   /** Debit Amount */
   debit: number;
@@ -11463,23 +11542,23 @@ export interface CashVoucherDetailResponseDto {
   /** Net Amount */
   netAmount: number;
   /**
-   * VAT Type / Label
-   * @nullable
-   */
+     * VAT Type / Label
+     * @nullable
+     */
   vatType?: string | null;
   /**
-   * VAT Code
-   * @nullable
-   */
+     * VAT Code
+     * @nullable
+     */
   vatCode?: string | null;
   /** VAT Percent */
   vatPercent: number;
   /** VAT Amount */
   vatAmount: number;
   /**
-   * EWT Code
-   * @nullable
-   */
+     * EWT Code
+     * @nullable
+     */
   ewtCode?: string | null;
   /** EWT Percent */
   ewtPercent: number;
@@ -11488,145 +11567,145 @@ export interface CashVoucherDetailResponseDto {
   /** Disburse Amount */
   disburseAmount: number;
   /**
-   * Party ID
-   * @nullable
-   */
+     * Party ID
+     * @nullable
+     */
   partyId?: string | null;
   /**
-   * Party Code
-   * @nullable
-   */
+     * Party Code
+     * @nullable
+     */
   partyCode?: string | null;
   /**
-   * Party Name
-   * @nullable
-   */
+     * Party Name
+     * @nullable
+     */
   partyName?: string | null;
   /**
-   * Responsibility Center ID
-   * @nullable
-   */
+     * Responsibility Center ID
+     * @nullable
+     */
   responsibilityCenterId?: string | null;
   /**
-   * Responsibility Center Name / Snapshot
-   * @nullable
-   */
+     * Responsibility Center Name / Snapshot
+     * @nullable
+     */
   responsibilityCenter?: string | null;
   /**
-   * Reference ID / No
-   * @nullable
-   */
+     * Reference ID / No
+     * @nullable
+     */
   refId?: string | null;
   /**
-   * Check Date (YYYY-MM-DD)
-   * @nullable
-   */
+     * Check Date (YYYY-MM-DD)
+     * @nullable
+     */
   checkDate?: string | null;
   /**
-   * Check Number
-   * @nullable
-   */
+     * Check Number
+     * @nullable
+     */
   checkNo?: string | null;
   /**
-   * Check Status
-   * @nullable
-   */
+     * Check Status
+     * @nullable
+     */
   checkStatus?: string | null;
 }
 
 /**
  * Status
  */
-export type CashVoucherRecordResponseDtoStatus =
-  (typeof CashVoucherRecordResponseDtoStatus)[keyof typeof CashVoucherRecordResponseDtoStatus];
+export type CashVoucherRecordResponseDtoStatus = typeof CashVoucherRecordResponseDtoStatus[keyof typeof CashVoucherRecordResponseDtoStatus];
+
 
 export const CashVoucherRecordResponseDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  POSTED: "POSTED",
-  DISAPPROVED: "DISAPPROVED",
-  CANCELLED: "CANCELLED",
-  CLOSED: "CLOSED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export interface CashVoucherRecordResponseDto {
   /** Cash Voucher ID */
   id: string;
   /**
-   * Branch Unit ID
-   * @nullable
-   */
+     * Branch Unit ID
+     * @nullable
+     */
   branchUnitId?: number | null;
   /** Voucher Sequence Number */
   voucherNo: string;
   /** Voucher Date (YYYY-MM-DD) */
   voucherDate: string;
   /**
-   * Payment Due Date (YYYY-MM-DD)
-   * @nullable
-   */
+     * Payment Due Date (YYYY-MM-DD)
+     * @nullable
+     */
   paymentDueDate?: string | null;
   /**
-   * Reference No
-   * @nullable
-   */
+     * Reference No
+     * @nullable
+     */
   referenceNo?: string | null;
   /**
-   * Source Reference Module
-   * @nullable
-   */
+     * Source Reference Module
+     * @nullable
+     */
   referenceModule?: string | null;
   /**
-   * Voucher Reference No
-   * @nullable
-   */
+     * Voucher Reference No
+     * @nullable
+     */
   voucherReferenceNo?: string | null;
   /**
-   * Invoice Reference No
-   * @nullable
-   */
+     * Invoice Reference No
+     * @nullable
+     */
   invoiceReferenceNo?: string | null;
   /** Payment Method */
   paymentMethod: string;
   /**
-   * Disbursement Type
-   * @nullable
-   */
+     * Disbursement Type
+     * @nullable
+     */
   disbursementType?: string | null;
   /**
-   * Party Primary Key ID
-   * @nullable
-   */
+     * Party Primary Key ID
+     * @nullable
+     */
   partyId?: string | null;
   /** Party Code */
   partyCode: string;
   /** Party Name */
   partyName: string;
   /**
-   * Credit Chart Account ID
-   * @nullable
-   */
+     * Credit Chart Account ID
+     * @nullable
+     */
   creditAccountId?: string | null;
   /**
-   * Cost Center / Project Code
-   * @nullable
-   */
+     * Cost Center / Project Code
+     * @nullable
+     */
   costCenter?: string | null;
   /**
-   * Project Code
-   * @nullable
-   */
+     * Project Code
+     * @nullable
+     */
   projectCode?: string | null;
   /**
-   * Project Name
-   * @nullable
-   */
+     * Project Name
+     * @nullable
+     */
   projectName?: string | null;
   /**
-   * Prepared By Name
-   * @nullable
-   */
+     * Prepared By Name
+     * @nullable
+     */
   preparedBy?: string | null;
   /** Currency Code */
   currency: string;
@@ -11635,30 +11714,30 @@ export interface CashVoucherRecordResponseDto {
   /** Total Voucher Amount */
   amount: number;
   /**
-   * Remarks
-   * @nullable
-   */
+     * Remarks
+     * @nullable
+     */
   remarks?: string | null;
   /** Status */
   status: CashVoucherRecordResponseDtoStatus;
   /** Details / Line items */
   details: CashVoucherDetailResponseDto[];
   /**
-   * Created By User Name
-   * @nullable
-   */
+     * Created By User Name
+     * @nullable
+     */
   createdBy?: string | null;
   /** Created Timestamp */
   createdAt: string;
   /**
-   * Updated By User Name
-   * @nullable
-   */
+     * Updated By User Name
+     * @nullable
+     */
   updatedBy?: string | null;
   /**
-   * Updated Timestamp
-   * @nullable
-   */
+     * Updated Timestamp
+     * @nullable
+     */
   updatedAt?: string | null;
 }
 
@@ -11706,36 +11785,38 @@ export interface CashVoucherDetailDto {
   /** Line Detail ID */
   id?: string;
   /**
-   * Line Number (1-indexed)
-   * @minimum 1
-   */
+     * Line Number (1-indexed)
+     * @minimum 1
+     */
   lineNumber: number;
   /**
-   * Account ID
-   * @nullable
-   */
+     * Account ID
+     * @nullable
+     */
   accountId?: string | null;
   /**
-   * Account Code
-   * @maxLength 80
-   */
-  accountCode: string;
+     * Account Code
+     * @maxLength 80
+     * @nullable
+     */
+  accountCode?: string | null;
   /**
-   * Account Title / Name
-   * @maxLength 255
-   */
-  accountTitle: string;
+     * Account Title / Name
+     * @maxLength 255
+     * @nullable
+     */
+  accountTitle?: string | null;
   /**
-   * Particulars
-   * @maxLength 500
-   * @nullable
-   */
+     * Particulars
+     * @maxLength 500
+     * @nullable
+     */
   particulars?: string | null;
   /**
-   * Remarks
-   * @maxLength 500
-   * @nullable
-   */
+     * Remarks
+     * @maxLength 500
+     * @nullable
+     */
   remarks?: string | null;
   /** Debit Amount */
   debit?: number;
@@ -11746,26 +11827,26 @@ export interface CashVoucherDetailDto {
   /** Net Amount */
   netAmount?: number;
   /**
-   * VAT Type / Label
-   * @maxLength 80
-   * @nullable
-   */
+     * VAT Type / Label
+     * @maxLength 80
+     * @nullable
+     */
   vatType?: string | null;
   /**
-   * VAT Code
-   * @maxLength 80
-   * @nullable
-   */
+     * VAT Code
+     * @maxLength 80
+     * @nullable
+     */
   vatCode?: string | null;
   /** VAT Percent */
   vatPercent?: number;
   /** VAT Amount */
   vatAmount?: number;
   /**
-   * EWT Code
-   * @maxLength 80
-   * @nullable
-   */
+     * EWT Code
+     * @maxLength 80
+     * @nullable
+     */
   ewtCode?: string | null;
   /** EWT Percent */
   ewtPercent?: number;
@@ -11774,90 +11855,91 @@ export interface CashVoucherDetailDto {
   /** Disburse Amount */
   disburseAmount?: number;
   /**
-   * Party ID
-   * @nullable
-   */
+     * Party ID
+     * @nullable
+     */
   partyId?: string | null;
   /**
-   * Party Code
-   * @maxLength 80
-   * @nullable
-   */
+     * Party Code
+     * @maxLength 80
+     * @nullable
+     */
   partyCode?: string | null;
   /**
-   * Party Name
-   * @maxLength 255
-   * @nullable
-   */
+     * Party Name
+     * @maxLength 255
+     * @nullable
+     */
   partyName?: string | null;
   /**
-   * Responsibility Center ID
-   * @nullable
-   */
+     * Responsibility Center ID
+     * @nullable
+     */
   responsibilityCenterId?: string | null;
   /**
-   * Responsibility Center Name / Snapshot
-   * @maxLength 150
-   * @nullable
-   */
+     * Responsibility Center Name / Snapshot
+     * @maxLength 150
+     * @nullable
+     */
   responsibilityCenter?: string | null;
   /**
-   * Reference ID / No
-   * @maxLength 120
-   * @nullable
-   */
+     * Reference ID / No
+     * @maxLength 120
+     * @nullable
+     */
   refId?: string | null;
   /**
-   * Check Date (YYYY-MM-DD)
-   * @nullable
-   */
+     * Check Date (YYYY-MM-DD)
+     * @nullable
+     */
   checkDate?: string | null;
   /**
-   * Check Number
-   * @maxLength 80
-   * @nullable
-   */
+     * Check Number
+     * @maxLength 80
+     * @nullable
+     */
   checkNo?: string | null;
   /**
-   * Check Status
-   * @maxLength 50
-   * @nullable
-   */
+     * Check Status
+     * @maxLength 50
+     * @nullable
+     */
   checkStatus?: string | null;
 }
 
 /**
  * Voucher Status
  */
-export type CreateCashVoucherDtoStatus = (typeof CreateCashVoucherDtoStatus)[keyof typeof CreateCashVoucherDtoStatus];
+export type CreateCashVoucherDtoStatus = typeof CreateCashVoucherDtoStatus[keyof typeof CreateCashVoucherDtoStatus];
+
 
 export const CreateCashVoucherDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  POSTED: "POSTED",
-  DISAPPROVED: "DISAPPROVED",
-  CANCELLED: "CANCELLED",
-  CLOSED: "CLOSED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export interface CreateCashVoucherDto {
   /**
-   * Branch Unit ID
-   * @minimum 1
-   */
+     * Branch Unit ID
+     * @minimum 1
+     */
   branchUnitId?: number;
   /**
-   * Transaction / Voucher Sequence No
-   * @maxLength 80
-   * @nullable
-   */
+     * Transaction / Voucher Sequence No
+     * @maxLength 80
+     * @nullable
+     */
   transactionNo?: string | null;
   /**
-   * Voucher No (alias for transactionNo)
-   * @maxLength 80
-   * @nullable
-   */
+     * Voucher No (alias for transactionNo)
+     * @maxLength 80
+     * @nullable
+     */
   voucherNo?: string | null;
   /** Document Date in YYYY-MM-DD format */
   documentDate?: string;
@@ -11868,152 +11950,151 @@ export interface CreateCashVoucherDto {
   /** Payment Due Date (alias for dueDate) */
   paymentDueDate?: string;
   /**
-   * Party Primary Key ID
-   * @maxLength 40
-   * @nullable
-   */
+     * Party Primary Key ID
+     * @maxLength 40
+     * @nullable
+     */
   partyId?: string | null;
   /**
-   * Party Code (Vendor/Employee/Customer)
-   * @maxLength 80
-   */
-  partyCode: string;
+     * Party Code (Vendor/Employee/Customer)
+     * @maxLength 80
+     * @nullable
+     */
+  partyCode?: string | null;
   /**
-   * Party Name
-   * @maxLength 255
-   */
-  partyName: string;
+     * Party Name
+     * @maxLength 255
+     * @nullable
+     */
+  partyName?: string | null;
   /**
-   * Party Address snapshot
-   * @maxLength 500
-   * @nullable
-   */
+     * Party Address snapshot
+     * @maxLength 500
+     * @nullable
+     */
   address?: string | null;
   /**
-   * Contact Person snapshot
-   * @maxLength 255
-   * @nullable
-   */
+     * Contact Person snapshot
+     * @maxLength 255
+     * @nullable
+     */
   contactPerson?: string | null;
   /**
-   * Contact Number snapshot
-   * @maxLength 40
-   * @nullable
-   */
+     * Contact Number snapshot
+     * @maxLength 40
+     * @nullable
+     */
   contactNo?: string | null;
   /**
-   * Chart Account Primary Key ID (Cash/Bank Credit Account)
-   * @maxLength 40
-   * @nullable
-   */
+     * Chart Account Primary Key ID (Cash/Bank Credit Account)
+     * @maxLength 40
+     * @nullable
+     */
   creditAccountId?: string | null;
   /**
-   * Credit Account Code
-   * @maxLength 80
-   */
+     * Credit Account Code
+     * @maxLength 80
+     */
   creditAccountCode?: string;
   /**
-   * Credit Account Title
-   * @maxLength 255
-   */
+     * Credit Account Title
+     * @maxLength 255
+     */
   creditAccountTitle?: string;
   /**
-   * Reference No
-   * @maxLength 120
-   * @nullable
-   */
+     * Reference No
+     * @maxLength 120
+     * @nullable
+     */
   referenceNo?: string | null;
   /**
-   * Source Reference Module
-   * @maxLength 80
-   * @nullable
-   */
+     * Source Reference Module
+     * @maxLength 80
+     * @nullable
+     */
   referenceModule?: string | null;
   /**
-   * Voucher Reference No
-   * @maxLength 120
-   * @nullable
-   */
+     * Voucher Reference No
+     * @maxLength 120
+     * @nullable
+     */
   voucherReferenceNo?: string | null;
   /**
-   * Invoice Reference No
-   * @maxLength 120
-   * @nullable
-   */
+     * Invoice Reference No
+     * @maxLength 120
+     * @nullable
+     */
   invoiceReferenceNo?: string | null;
   /**
-   * Payment Method
-   * @maxLength 50
-   * @nullable
-   */
+     * Payment Method
+     * @maxLength 50
+     * @nullable
+     */
   paymentMethod?: string | null;
   /**
-   * Disbursement Type
-   * @maxLength 100
-   * @nullable
-   */
+     * Disbursement Type
+     * @maxLength 100
+     * @nullable
+     */
   disbursementType?: string | null;
   /**
-   * Cost Center snapshot
-   * @maxLength 80
-   * @nullable
-   */
+     * Cost Center snapshot
+     * @maxLength 80
+     * @nullable
+     */
   costCenter?: string | null;
   /**
-   * Project Code
-   * @maxLength 80
-   * @nullable
-   */
+     * Project Code
+     * @maxLength 80
+     * @nullable
+     */
   projectCode?: string | null;
   /**
-   * Project Name
-   * @maxLength 255
-   * @nullable
-   */
+     * Project Name
+     * @maxLength 255
+     * @nullable
+     */
   projectName?: string | null;
   /**
-   * Prepared By Name
-   * @maxLength 255
-   * @nullable
-   */
+     * Prepared By Name
+     * @maxLength 255
+     * @nullable
+     */
   preparedBy?: string | null;
   /**
-   * Currency Code
-   * @maxLength 10
-   * @nullable
-   */
+     * Currency Code
+     * @maxLength 10
+     * @nullable
+     */
   currency?: string | null;
   /**
-   * Currency Code (alias)
-   * @maxLength 10
-   * @nullable
-   */
+     * Currency Code (alias)
+     * @maxLength 10
+     * @nullable
+     */
   currencyCode?: string | null;
   /**
-   * Exchange Rate
-   * @minimum 0.000001
-   */
+     * Exchange Rate
+     * @minimum 0.000001
+     */
   exchangeRate?: number;
   /**
-   * FX Rate (alias for exchangeRate)
-   * @minimum 0.000001
-   */
+     * FX Rate (alias for exchangeRate)
+     * @minimum 0.000001
+     */
   fxRate?: number;
   /** Total Voucher Amount */
   amount?: number;
   /**
-   * Remarks / Memo
-   * @maxLength 500
-   * @nullable
-   */
+     * Remarks / Memo
+     * @maxLength 500
+     * @nullable
+     */
   remarks?: string | null;
   /** Voucher Status */
   status?: CreateCashVoucherDtoStatus;
-  /**
-   * Voucher Line Entries / Details
-   * @minItems 1
-   */
-  details: CashVoucherDetailDto[];
+  /** Voucher Line Entries / Details */
+  details?: CashVoucherDetailDto[];
   /** Journal Entries */
   journalEntries?: JournalEntryDto[];
 }
@@ -12021,35 +12102,36 @@ export interface CreateCashVoucherDto {
 /**
  * Voucher Status
  */
-export type UpdateCashVoucherDtoStatus = (typeof UpdateCashVoucherDtoStatus)[keyof typeof UpdateCashVoucherDtoStatus];
+export type UpdateCashVoucherDtoStatus = typeof UpdateCashVoucherDtoStatus[keyof typeof UpdateCashVoucherDtoStatus];
+
 
 export const UpdateCashVoucherDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  POSTED: "POSTED",
-  DISAPPROVED: "DISAPPROVED",
-  CANCELLED: "CANCELLED",
-  CLOSED: "CLOSED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export interface UpdateCashVoucherDto {
   /**
-   * Branch Unit ID
-   * @minimum 1
-   */
+     * Branch Unit ID
+     * @minimum 1
+     */
   branchUnitId?: number;
   /**
-   * Transaction / Voucher Sequence No
-   * @maxLength 80
-   * @nullable
-   */
+     * Transaction / Voucher Sequence No
+     * @maxLength 80
+     * @nullable
+     */
   transactionNo?: string | null;
   /**
-   * Voucher No (alias for transactionNo)
-   * @maxLength 80
-   * @nullable
-   */
+     * Voucher No (alias for transactionNo)
+     * @maxLength 80
+     * @nullable
+     */
   voucherNo?: string | null;
   /** Document Date in YYYY-MM-DD format */
   documentDate?: string;
@@ -12060,151 +12142,150 @@ export interface UpdateCashVoucherDto {
   /** Payment Due Date (alias for dueDate) */
   paymentDueDate?: string;
   /**
-   * Party Primary Key ID
-   * @maxLength 40
-   * @nullable
-   */
+     * Party Primary Key ID
+     * @maxLength 40
+     * @nullable
+     */
   partyId?: string | null;
   /**
-   * Party Code (Vendor/Employee/Customer)
-   * @maxLength 80
-   */
-  partyCode?: string;
+     * Party Code (Vendor/Employee/Customer)
+     * @maxLength 80
+     * @nullable
+     */
+  partyCode?: string | null;
   /**
-   * Party Name
-   * @maxLength 255
-   */
-  partyName?: string;
+     * Party Name
+     * @maxLength 255
+     * @nullable
+     */
+  partyName?: string | null;
   /**
-   * Party Address snapshot
-   * @maxLength 500
-   * @nullable
-   */
+     * Party Address snapshot
+     * @maxLength 500
+     * @nullable
+     */
   address?: string | null;
   /**
-   * Contact Person snapshot
-   * @maxLength 255
-   * @nullable
-   */
+     * Contact Person snapshot
+     * @maxLength 255
+     * @nullable
+     */
   contactPerson?: string | null;
   /**
-   * Contact Number snapshot
-   * @maxLength 40
-   * @nullable
-   */
+     * Contact Number snapshot
+     * @maxLength 40
+     * @nullable
+     */
   contactNo?: string | null;
   /**
-   * Chart Account Primary Key ID (Cash/Bank Credit Account)
-   * @maxLength 40
-   * @nullable
-   */
+     * Chart Account Primary Key ID (Cash/Bank Credit Account)
+     * @maxLength 40
+     * @nullable
+     */
   creditAccountId?: string | null;
   /**
-   * Credit Account Code
-   * @maxLength 80
-   */
+     * Credit Account Code
+     * @maxLength 80
+     */
   creditAccountCode?: string;
   /**
-   * Credit Account Title
-   * @maxLength 255
-   */
+     * Credit Account Title
+     * @maxLength 255
+     */
   creditAccountTitle?: string;
   /**
-   * Reference No
-   * @maxLength 120
-   * @nullable
-   */
+     * Reference No
+     * @maxLength 120
+     * @nullable
+     */
   referenceNo?: string | null;
   /**
-   * Source Reference Module
-   * @maxLength 80
-   * @nullable
-   */
+     * Source Reference Module
+     * @maxLength 80
+     * @nullable
+     */
   referenceModule?: string | null;
   /**
-   * Voucher Reference No
-   * @maxLength 120
-   * @nullable
-   */
+     * Voucher Reference No
+     * @maxLength 120
+     * @nullable
+     */
   voucherReferenceNo?: string | null;
   /**
-   * Invoice Reference No
-   * @maxLength 120
-   * @nullable
-   */
+     * Invoice Reference No
+     * @maxLength 120
+     * @nullable
+     */
   invoiceReferenceNo?: string | null;
   /**
-   * Payment Method
-   * @maxLength 50
-   * @nullable
-   */
+     * Payment Method
+     * @maxLength 50
+     * @nullable
+     */
   paymentMethod?: string | null;
   /**
-   * Disbursement Type
-   * @maxLength 100
-   * @nullable
-   */
+     * Disbursement Type
+     * @maxLength 100
+     * @nullable
+     */
   disbursementType?: string | null;
   /**
-   * Cost Center snapshot
-   * @maxLength 80
-   * @nullable
-   */
+     * Cost Center snapshot
+     * @maxLength 80
+     * @nullable
+     */
   costCenter?: string | null;
   /**
-   * Project Code
-   * @maxLength 80
-   * @nullable
-   */
+     * Project Code
+     * @maxLength 80
+     * @nullable
+     */
   projectCode?: string | null;
   /**
-   * Project Name
-   * @maxLength 255
-   * @nullable
-   */
+     * Project Name
+     * @maxLength 255
+     * @nullable
+     */
   projectName?: string | null;
   /**
-   * Prepared By Name
-   * @maxLength 255
-   * @nullable
-   */
+     * Prepared By Name
+     * @maxLength 255
+     * @nullable
+     */
   preparedBy?: string | null;
   /**
-   * Currency Code
-   * @maxLength 10
-   * @nullable
-   */
+     * Currency Code
+     * @maxLength 10
+     * @nullable
+     */
   currency?: string | null;
   /**
-   * Currency Code (alias)
-   * @maxLength 10
-   * @nullable
-   */
+     * Currency Code (alias)
+     * @maxLength 10
+     * @nullable
+     */
   currencyCode?: string | null;
   /**
-   * Exchange Rate
-   * @minimum 0.000001
-   */
+     * Exchange Rate
+     * @minimum 0.000001
+     */
   exchangeRate?: number;
   /**
-   * FX Rate (alias for exchangeRate)
-   * @minimum 0.000001
-   */
+     * FX Rate (alias for exchangeRate)
+     * @minimum 0.000001
+     */
   fxRate?: number;
   /** Total Voucher Amount */
   amount?: number;
   /**
-   * Remarks / Memo
-   * @maxLength 500
-   * @nullable
-   */
+     * Remarks / Memo
+     * @maxLength 500
+     * @nullable
+     */
   remarks?: string | null;
   /** Voucher Status */
   status?: UpdateCashVoucherDtoStatus;
-  /**
-   * Voucher Line Entries / Details
-   * @minItems 1
-   */
+  /** Voucher Line Entries / Details */
   details?: CashVoucherDetailDto[];
   /** Journal Entries */
   journalEntries?: JournalEntryDto[];
@@ -12218,15 +12299,16 @@ export interface UpdateCashVoucherStatusDto {
 /**
  * Status
  */
-export type PettyCashVoucherResponseDtoStatus = (typeof PettyCashVoucherResponseDtoStatus)[keyof typeof PettyCashVoucherResponseDtoStatus];
+export type PettyCashVoucherResponseDtoStatus = typeof PettyCashVoucherResponseDtoStatus[keyof typeof PettyCashVoucherResponseDtoStatus];
+
 
 export const PettyCashVoucherResponseDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  POSTED: "POSTED",
-  DISAPPROVED: "DISAPPROVED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface PettyCashVoucherResponseDto {
@@ -12235,9 +12317,9 @@ export interface PettyCashVoucherResponseDto {
   /** Company ID */
   companyId: number;
   /**
-   * Branch Unit ID
-   * @nullable
-   */
+     * Branch Unit ID
+     * @nullable
+     */
   branchUnitId?: number | null;
   /** Voucher Number */
   voucherNo: string;
@@ -12246,9 +12328,9 @@ export interface PettyCashVoucherResponseDto {
   /** Document Date */
   documentDate: string;
   /**
-   * Party ID
-   * @nullable
-   */
+     * Party ID
+     * @nullable
+     */
   partyId?: string | null;
   /** Party Code Snapshot */
   partyCodeSnapshot: string;
@@ -12259,63 +12341,63 @@ export interface PettyCashVoucherResponseDto {
   /** Party Name alias */
   partyName?: string;
   /**
-   * Default Account / Credit Account ID
-   * @nullable
-   */
+     * Default Account / Credit Account ID
+     * @nullable
+     */
   creditAccountId?: string | null;
   /**
-   * Default Account ID alias
-   * @nullable
-   */
+     * Default Account ID alias
+     * @nullable
+     */
   accountId?: string | null;
   /** Account Code Snapshot */
   accountCodeSnapshot: string;
   /**
-   * Account Title Snapshot
-   * @nullable
-   */
+     * Account Title Snapshot
+     * @nullable
+     */
   accountTitleSnapshot?: string | null;
   /** Default Account Code alias */
   accountCode?: string;
   /**
-   * Default Account Title alias
-   * @nullable
-   */
+     * Default Account Title alias
+     * @nullable
+     */
   accountTitle?: string | null;
   /**
-   * Responsibility Center ID
-   * @nullable
-   */
+     * Responsibility Center ID
+     * @nullable
+     */
   responsibilityCenterId?: string | null;
   /**
-   * Responsibility Center Code Snapshot
-   * @nullable
-   */
+     * Responsibility Center Code Snapshot
+     * @nullable
+     */
   responsibilityCenterCodeSnapshot?: string | null;
   /**
-   * Responsibility Center Snapshot
-   * @nullable
-   */
+     * Responsibility Center Snapshot
+     * @nullable
+     */
   responsibilityCenterSnapshot?: string | null;
   /**
-   * Responsibility Center Code alias
-   * @nullable
-   */
+     * Responsibility Center Code alias
+     * @nullable
+     */
   responsibilityCenterCode?: string | null;
   /**
-   * Responsibility Center Name alias
-   * @nullable
-   */
+     * Responsibility Center Name alias
+     * @nullable
+     */
   responsibilityCenter?: string | null;
   /**
-   * Project Code
-   * @nullable
-   */
+     * Project Code
+     * @nullable
+     */
   projectCode?: string | null;
   /**
-   * Project Name
-   * @nullable
-   */
+     * Project Name
+     * @nullable
+     */
   projectName?: string | null;
   /** Currency Code */
   currencyCode: string;
@@ -12330,42 +12412,42 @@ export interface PettyCashVoucherResponseDto {
   /** Net Amount */
   netAmount: number;
   /**
-   * VAT Type
-   * @nullable
-   */
+     * VAT Type
+     * @nullable
+     */
   vatType?: string | null;
   /**
-   * VATable flag
-   * @nullable
-   */
+     * VATable flag
+     * @nullable
+     */
   vatable?: string | null;
   /**
-   * VAT Rate Description
-   * @nullable
-   */
+     * VAT Rate Description
+     * @nullable
+     */
   vatRate?: string | null;
   /** VAT Percent */
   vatPercent: number;
   /** VAT Amount */
   vatAmount: number;
   /**
-   * EWT Code
-   * @nullable
-   */
+     * EWT Code
+     * @nullable
+     */
   ewtCode?: string | null;
   /**
-   * EWT Rate Description
-   * @nullable
-   */
+     * EWT Rate Description
+     * @nullable
+     */
   ewtRate?: string | null;
   /** EWT Percent */
   ewtPercent: number;
   /** EWT Amount */
   ewtAmount: number;
   /**
-   * Remarks
-   * @nullable
-   */
+     * Remarks
+     * @nullable
+     */
   remarks?: string | null;
   /** Status */
   status: PettyCashVoucherResponseDtoStatus;
@@ -12398,15 +12480,16 @@ export interface PettyCashVoucherListResponseDto {
 /**
  * Initial Status
  */
-export type CreatePettyCashVoucherDtoStatus = (typeof CreatePettyCashVoucherDtoStatus)[keyof typeof CreatePettyCashVoucherDtoStatus];
+export type CreatePettyCashVoucherDtoStatus = typeof CreatePettyCashVoucherDtoStatus[keyof typeof CreatePettyCashVoucherDtoStatus];
+
 
 export const CreatePettyCashVoucherDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  POSTED: "POSTED",
-  DISAPPROVED: "DISAPPROVED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface CreatePettyCashVoucherDto {
@@ -12415,77 +12498,77 @@ export interface CreatePettyCashVoucherDto {
   /** Party ID */
   partyId?: string;
   /**
-   * Party Code
-   * @maxLength 80
-   */
+     * Party Code
+     * @maxLength 80
+     */
   partyCode?: string;
   /**
-   * Party Name
-   * @maxLength 255
-   */
-  partyName: string;
+     * Party Name
+     * @maxLength 255
+     */
+  partyName?: string;
   /** Responsibility Center ID */
   responsibilityCenterId?: string;
   /**
-   * Responsibility Center Code
-   * @maxLength 80
-   */
+     * Responsibility Center Code
+     * @maxLength 80
+     */
   responsibilityCenterCode?: string;
   /**
-   * Responsibility Center Name
-   * @maxLength 150
-   */
+     * Responsibility Center Name
+     * @maxLength 150
+     */
   responsibilityCenter?: string;
   /**
-   * Project Code
-   * @maxLength 80
-   */
+     * Project Code
+     * @maxLength 80
+     */
   projectCode?: string;
   /**
-   * Project Name
-   * @maxLength 255
-   */
+     * Project Name
+     * @maxLength 255
+     */
   projectName?: string;
   /** Default Account ID */
   accountId?: string;
   /** Credit Account ID (Default Account) */
   creditAccountId?: string;
   /**
-   * Default Account Code
-   * @maxLength 80
-   */
+     * Default Account Code
+     * @maxLength 80
+     */
   accountCode?: string;
   /**
-   * Default Account Title
-   * @maxLength 255
-   */
-  accountTitle: string;
+     * Default Account Title
+     * @maxLength 255
+     */
+  accountTitle?: string;
   /**
-   * Transaction Voucher Number
-   * @maxLength 80
-   */
+     * Transaction Voucher Number
+     * @maxLength 80
+     */
   voucherNo?: string;
   /**
-   * Transaction Number alias
-   * @maxLength 80
-   */
+     * Transaction Number alias
+     * @maxLength 80
+     */
   transactionNo?: string;
   /** Document Date */
   documentDate: string;
   /**
-   * Currency code
-   * @maxLength 10
-   */
+     * Currency code
+     * @maxLength 10
+     */
   currencyCode?: string;
   /**
-   * Currency alias
-   * @maxLength 10
-   */
+     * Currency alias
+     * @maxLength 10
+     */
   currency?: string;
   /**
-   * Exchange Rate
-   * @minimum 0
-   */
+     * Exchange Rate
+     * @minimum 0
+     */
   exchangeRate?: number;
   /** Gross Amount */
   grossAmount?: number;
@@ -12494,42 +12577,42 @@ export interface CreatePettyCashVoucherDto {
   /** Net Amount */
   netAmount?: number;
   /**
-   * VAT Type
-   * @maxLength 80
-   */
+     * VAT Type
+     * @maxLength 80
+     */
   vatType?: string;
   /**
-   * VATable flag
-   * @maxLength 20
-   */
+     * VATable flag
+     * @maxLength 20
+     */
   vatable?: string;
   /**
-   * VAT Rate Description or Code
-   * @maxLength 80
-   */
+     * VAT Rate Description or Code
+     * @maxLength 80
+     */
   vatRate?: string;
   /** VAT Percent */
   vatPercent?: number;
   /** VAT Amount */
   vatAmount?: number;
   /**
-   * EWT Code
-   * @maxLength 80
-   */
+     * EWT Code
+     * @maxLength 80
+     */
   ewtCode?: string;
   /**
-   * EWT Rate description
-   * @maxLength 80
-   */
+     * EWT Rate description
+     * @maxLength 80
+     */
   ewtRate?: string;
   /** EWT Percent */
   ewtPercent?: number;
   /** EWT Amount */
   ewtAmount?: number;
   /**
-   * Remarks
-   * @maxLength 500
-   */
+     * Remarks
+     * @maxLength 500
+     */
   remarks?: string;
   /** Initial Status */
   status?: CreatePettyCashVoucherDtoStatus;
@@ -12538,15 +12621,16 @@ export interface CreatePettyCashVoucherDto {
 /**
  * Initial Status
  */
-export type UpdatePettyCashVoucherDtoStatus = (typeof UpdatePettyCashVoucherDtoStatus)[keyof typeof UpdatePettyCashVoucherDtoStatus];
+export type UpdatePettyCashVoucherDtoStatus = typeof UpdatePettyCashVoucherDtoStatus[keyof typeof UpdatePettyCashVoucherDtoStatus];
+
 
 export const UpdatePettyCashVoucherDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  POSTED: "POSTED",
-  DISAPPROVED: "DISAPPROVED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface UpdatePettyCashVoucherDto {
@@ -12555,77 +12639,77 @@ export interface UpdatePettyCashVoucherDto {
   /** Party ID */
   partyId?: string;
   /**
-   * Party Code
-   * @maxLength 80
-   */
+     * Party Code
+     * @maxLength 80
+     */
   partyCode?: string;
   /**
-   * Party Name
-   * @maxLength 255
-   */
+     * Party Name
+     * @maxLength 255
+     */
   partyName?: string;
   /** Responsibility Center ID */
   responsibilityCenterId?: string;
   /**
-   * Responsibility Center Code
-   * @maxLength 80
-   */
+     * Responsibility Center Code
+     * @maxLength 80
+     */
   responsibilityCenterCode?: string;
   /**
-   * Responsibility Center Name
-   * @maxLength 150
-   */
+     * Responsibility Center Name
+     * @maxLength 150
+     */
   responsibilityCenter?: string;
   /**
-   * Project Code
-   * @maxLength 80
-   */
+     * Project Code
+     * @maxLength 80
+     */
   projectCode?: string;
   /**
-   * Project Name
-   * @maxLength 255
-   */
+     * Project Name
+     * @maxLength 255
+     */
   projectName?: string;
   /** Default Account ID */
   accountId?: string;
   /** Credit Account ID (Default Account) */
   creditAccountId?: string;
   /**
-   * Default Account Code
-   * @maxLength 80
-   */
+     * Default Account Code
+     * @maxLength 80
+     */
   accountCode?: string;
   /**
-   * Default Account Title
-   * @maxLength 255
-   */
+     * Default Account Title
+     * @maxLength 255
+     */
   accountTitle?: string;
   /**
-   * Transaction Voucher Number
-   * @maxLength 80
-   */
+     * Transaction Voucher Number
+     * @maxLength 80
+     */
   voucherNo?: string;
   /**
-   * Transaction Number alias
-   * @maxLength 80
-   */
+     * Transaction Number alias
+     * @maxLength 80
+     */
   transactionNo?: string;
   /** Document Date */
   documentDate?: string;
   /**
-   * Currency code
-   * @maxLength 10
-   */
+     * Currency code
+     * @maxLength 10
+     */
   currencyCode?: string;
   /**
-   * Currency alias
-   * @maxLength 10
-   */
+     * Currency alias
+     * @maxLength 10
+     */
   currency?: string;
   /**
-   * Exchange Rate
-   * @minimum 0
-   */
+     * Exchange Rate
+     * @minimum 0
+     */
   exchangeRate?: number;
   /** Gross Amount */
   grossAmount?: number;
@@ -12634,42 +12718,42 @@ export interface UpdatePettyCashVoucherDto {
   /** Net Amount */
   netAmount?: number;
   /**
-   * VAT Type
-   * @maxLength 80
-   */
+     * VAT Type
+     * @maxLength 80
+     */
   vatType?: string;
   /**
-   * VATable flag
-   * @maxLength 20
-   */
+     * VATable flag
+     * @maxLength 20
+     */
   vatable?: string;
   /**
-   * VAT Rate Description or Code
-   * @maxLength 80
-   */
+     * VAT Rate Description or Code
+     * @maxLength 80
+     */
   vatRate?: string;
   /** VAT Percent */
   vatPercent?: number;
   /** VAT Amount */
   vatAmount?: number;
   /**
-   * EWT Code
-   * @maxLength 80
-   */
+     * EWT Code
+     * @maxLength 80
+     */
   ewtCode?: string;
   /**
-   * EWT Rate description
-   * @maxLength 80
-   */
+     * EWT Rate description
+     * @maxLength 80
+     */
   ewtRate?: string;
   /** EWT Percent */
   ewtPercent?: number;
   /** EWT Amount */
   ewtAmount?: number;
   /**
-   * Remarks
-   * @maxLength 500
-   */
+     * Remarks
+     * @maxLength 500
+     */
   remarks?: string;
   /** Initial Status */
   status?: UpdatePettyCashVoucherDtoStatus;
@@ -12678,16 +12762,16 @@ export interface UpdatePettyCashVoucherDto {
 /**
  * Target Petty Cash Voucher status
  */
-export type UpdatePettyCashVoucherStatusDtoStatus =
-  (typeof UpdatePettyCashVoucherStatusDtoStatus)[keyof typeof UpdatePettyCashVoucherStatusDtoStatus];
+export type UpdatePettyCashVoucherStatusDtoStatus = typeof UpdatePettyCashVoucherStatusDtoStatus[keyof typeof UpdatePettyCashVoucherStatusDtoStatus];
+
 
 export const UpdatePettyCashVoucherStatusDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  POSTED: "POSTED",
-  DISAPPROVED: "DISAPPROVED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface UpdatePettyCashVoucherStatusDto {
@@ -12699,53 +12783,55 @@ export interface PettyCashFundDetailDto {
   /** Line ID */
   id?: string;
   /**
-   * Line Number
-   * @minimum 1
-   */
+     * Line Number
+     * @minimum 1
+     */
   lineNumber?: number;
   /** Receipt/Disbursement Date */
   date?: string;
+  /** Receipt/Disbursement Date alias */
+  itemDate?: string;
   /** Supplier / Party ID */
   partyId?: string;
   /**
-   * Supplier Code Snapshot
-   * @maxLength 80
-   */
+     * Supplier Code Snapshot
+     * @maxLength 80
+     */
   supplierCodeSnapshot?: string;
   /**
-   * Supplier Name Snapshot
-   * @maxLength 255
-   */
+     * Supplier Name Snapshot
+     * @maxLength 255
+     */
   supplierNameSnapshot?: string;
   /**
-   * Supplier Code alias
-   * @maxLength 80
-   */
+     * Supplier Code alias
+     * @maxLength 80
+     */
   supplierCode?: string;
   /**
-   * Supplier Name alias
-   * @maxLength 255
-   */
+     * Supplier Name alias
+     * @maxLength 255
+     */
   supplierName?: string;
   /**
-   * Official Receipt Number
-   * @maxLength 80
-   */
+     * Official Receipt Number
+     * @maxLength 80
+     */
   orNo?: string;
   /**
-   * TIN Number
-   * @maxLength 80
-   */
+     * TIN Number
+     * @maxLength 80
+     */
   tinNo?: string;
   /**
-   * Particulars
-   * @maxLength 500
-   */
+     * Particulars
+     * @maxLength 500
+     */
   particulars?: string;
   /**
-   * Remarks
-   * @maxLength 500
-   */
+     * Remarks
+     * @maxLength 500
+     */
   remarks?: string;
   /** Amount / Gross Amount */
   amount?: number;
@@ -12756,64 +12842,65 @@ export interface PettyCashFundDetailDto {
   /** Disburse Amount */
   disburseAmount?: number;
   /**
-   * VAT Type
-   * @maxLength 80
-   */
+     * VAT Type
+     * @maxLength 80
+     */
   vatType?: string;
   /** VAT Percent */
   vatPercent?: number;
   /** VAT Amount */
   vatAmount?: number;
   /**
-   * EWT Code
-   * @maxLength 80
-   */
+     * EWT Code
+     * @maxLength 80
+     */
   ewtCode?: string;
   /** EWT Percent */
   ewtPercent?: number;
   /** EWT Amount */
   ewtAmount?: number;
   /**
-   * Expense Type
-   * @maxLength 100
-   */
+     * Expense Type
+     * @maxLength 100
+     */
   expenseType?: string;
   /** Responsibility Center ID */
   responsibilityCenterId?: string;
   /**
-   * Responsibility Center Code
-   * @maxLength 80
-   */
+     * Responsibility Center Code
+     * @maxLength 80
+     */
   responsibilityCenterCodeSnapshot?: string;
   /**
-   * Responsibility Center Name
-   * @maxLength 150
-   */
+     * Responsibility Center Name
+     * @maxLength 150
+     */
   responsibilityCenterSnapshot?: string;
   /**
-   * Responsibility Center Code alias
-   * @maxLength 80
-   */
+     * Responsibility Center Code alias
+     * @maxLength 80
+     */
   responsibilityCenterCode?: string;
   /**
-   * Responsibility Center Name alias
-   * @maxLength 150
-   */
+     * Responsibility Center Name alias
+     * @maxLength 150
+     */
   responsibilityCenter?: string;
 }
 
 /**
  * Status
  */
-export type PettyCashFundResponseDtoStatus = (typeof PettyCashFundResponseDtoStatus)[keyof typeof PettyCashFundResponseDtoStatus];
+export type PettyCashFundResponseDtoStatus = typeof PettyCashFundResponseDtoStatus[keyof typeof PettyCashFundResponseDtoStatus];
+
 
 export const PettyCashFundResponseDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  POSTED: "POSTED",
-  DISAPPROVED: "DISAPPROVED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface PettyCashFundResponseDto {
@@ -12822,18 +12909,18 @@ export interface PettyCashFundResponseDto {
   /** Company ID */
   companyId: number;
   /**
-   * Branch Unit ID
-   * @nullable
-   */
+     * Branch Unit ID
+     * @nullable
+     */
   branchUnitId?: number | null;
   /** Transaction Number */
   transactionNo: string;
   /** Document Date */
   documentDate: string;
   /**
-   * Party ID
-   * @nullable
-   */
+     * Party ID
+     * @nullable
+     */
   partyId?: string | null;
   /** Party Code Snapshot */
   partyCodeSnapshot: string;
@@ -12844,63 +12931,63 @@ export interface PettyCashFundResponseDto {
   /** Party Name alias */
   partyName?: string;
   /**
-   * Credit Account ID / Default Account ID
-   * @nullable
-   */
+     * Credit Account ID / Default Account ID
+     * @nullable
+     */
   creditAccountId?: string | null;
   /**
-   * Default Account ID alias
-   * @nullable
-   */
+     * Default Account ID alias
+     * @nullable
+     */
   accountId?: string | null;
   /** Account Code Snapshot */
   accountCodeSnapshot: string;
   /**
-   * Account Title Snapshot
-   * @nullable
-   */
+     * Account Title Snapshot
+     * @nullable
+     */
   accountTitleSnapshot?: string | null;
   /** Default Account Code alias */
   accountCode?: string;
   /**
-   * Default Account Title alias
-   * @nullable
-   */
+     * Default Account Title alias
+     * @nullable
+     */
   accountTitle?: string | null;
   /**
-   * Responsibility Center ID
-   * @nullable
-   */
+     * Responsibility Center ID
+     * @nullable
+     */
   responsibilityCenterId?: string | null;
   /**
-   * Responsibility Center Code Snapshot
-   * @nullable
-   */
+     * Responsibility Center Code Snapshot
+     * @nullable
+     */
   responsibilityCenterCodeSnapshot?: string | null;
   /**
-   * Responsibility Center Snapshot
-   * @nullable
-   */
+     * Responsibility Center Snapshot
+     * @nullable
+     */
   responsibilityCenterSnapshot?: string | null;
   /**
-   * Responsibility Center Code alias
-   * @nullable
-   */
+     * Responsibility Center Code alias
+     * @nullable
+     */
   responsibilityCenterCode?: string | null;
   /**
-   * Responsibility Center Name alias
-   * @nullable
-   */
+     * Responsibility Center Name alias
+     * @nullable
+     */
   responsibilityCenter?: string | null;
   /**
-   * Project Code
-   * @nullable
-   */
+     * Project Code
+     * @nullable
+     */
   projectCode?: string | null;
   /**
-   * Project Name
-   * @nullable
-   */
+     * Project Name
+     * @nullable
+     */
   projectName?: string | null;
   /** Currency Code */
   currencyCode: string;
@@ -12911,9 +12998,9 @@ export interface PettyCashFundResponseDto {
   /** Amount */
   amount: number;
   /**
-   * Remarks
-   * @nullable
-   */
+     * Remarks
+     * @nullable
+     */
   remarks?: string | null;
   /** Status */
   status: PettyCashFundResponseDtoStatus;
@@ -12948,96 +13035,97 @@ export interface PettyCashFundListResponseDto {
 /**
  * Initial Status
  */
-export type CreatePettyCashFundDtoStatus = (typeof CreatePettyCashFundDtoStatus)[keyof typeof CreatePettyCashFundDtoStatus];
+export type CreatePettyCashFundDtoStatus = typeof CreatePettyCashFundDtoStatus[keyof typeof CreatePettyCashFundDtoStatus];
+
 
 export const CreatePettyCashFundDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  POSTED: "POSTED",
-  DISAPPROVED: "DISAPPROVED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface CreatePettyCashFundDto {
   /** Branch Unit ID */
   branchUnitId?: number;
   /**
-   * Transaction Number
-   * @maxLength 80
-   */
+     * Transaction Number
+     * @maxLength 80
+     */
   transactionNo?: string;
   /** Document Date */
   documentDate: string;
   /** Party ID (Custodian / Employee) */
   partyId?: string;
   /**
-   * Party Code
-   * @maxLength 80
-   */
+     * Party Code
+     * @maxLength 80
+     */
   partyCode?: string;
   /**
-   * Party Name (Custodian)
-   * @maxLength 255
-   */
-  partyName: string;
+     * Party Name (Custodian)
+     * @maxLength 255
+     */
+  partyName?: string;
   /** Responsibility Center ID */
   responsibilityCenterId?: string;
   /**
-   * Responsibility Center Code
-   * @maxLength 80
-   */
+     * Responsibility Center Code
+     * @maxLength 80
+     */
   responsibilityCenterCode?: string;
   /**
-   * Responsibility Center Name
-   * @maxLength 150
-   */
+     * Responsibility Center Name
+     * @maxLength 150
+     */
   responsibilityCenter?: string;
   /**
-   * Project Code
-   * @maxLength 80
-   */
+     * Project Code
+     * @maxLength 80
+     */
   projectCode?: string;
   /**
-   * Project Name
-   * @maxLength 255
-   */
+     * Project Name
+     * @maxLength 255
+     */
   projectName?: string;
   /** Credit Account ID / Default Account ID */
   accountId?: string;
   /** Credit Account ID */
   creditAccountId?: string;
   /**
-   * Account Code Snapshot
-   * @maxLength 80
-   */
+     * Account Code Snapshot
+     * @maxLength 80
+     */
   accountCode?: string;
   /**
-   * Account Title Snapshot
-   * @maxLength 255
-   */
-  accountTitle: string;
+     * Account Title Snapshot
+     * @maxLength 255
+     */
+  accountTitle?: string;
   /**
-   * Currency code
-   * @maxLength 10
-   */
+     * Currency code
+     * @maxLength 10
+     */
   currencyCode?: string;
   /**
-   * Currency alias
-   * @maxLength 10
-   */
+     * Currency alias
+     * @maxLength 10
+     */
   currency?: string;
   /**
-   * Exchange Rate
-   * @minimum 0
-   */
+     * Exchange Rate
+     * @minimum 0
+     */
   exchangeRate?: number;
   /** Total Amount */
   amount?: number;
   /**
-   * Remarks
-   * @maxLength 500
-   */
+     * Remarks
+     * @maxLength 500
+     */
   remarks?: string;
   /** Initial Status */
   status?: CreatePettyCashFundDtoStatus;
@@ -13048,96 +13136,97 @@ export interface CreatePettyCashFundDto {
 /**
  * Initial Status
  */
-export type UpdatePettyCashFundDtoStatus = (typeof UpdatePettyCashFundDtoStatus)[keyof typeof UpdatePettyCashFundDtoStatus];
+export type UpdatePettyCashFundDtoStatus = typeof UpdatePettyCashFundDtoStatus[keyof typeof UpdatePettyCashFundDtoStatus];
+
 
 export const UpdatePettyCashFundDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  POSTED: "POSTED",
-  DISAPPROVED: "DISAPPROVED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface UpdatePettyCashFundDto {
   /** Branch Unit ID */
   branchUnitId?: number;
   /**
-   * Transaction Number
-   * @maxLength 80
-   */
+     * Transaction Number
+     * @maxLength 80
+     */
   transactionNo?: string;
   /** Document Date */
   documentDate?: string;
   /** Party ID (Custodian / Employee) */
   partyId?: string;
   /**
-   * Party Code
-   * @maxLength 80
-   */
+     * Party Code
+     * @maxLength 80
+     */
   partyCode?: string;
   /**
-   * Party Name (Custodian)
-   * @maxLength 255
-   */
+     * Party Name (Custodian)
+     * @maxLength 255
+     */
   partyName?: string;
   /** Responsibility Center ID */
   responsibilityCenterId?: string;
   /**
-   * Responsibility Center Code
-   * @maxLength 80
-   */
+     * Responsibility Center Code
+     * @maxLength 80
+     */
   responsibilityCenterCode?: string;
   /**
-   * Responsibility Center Name
-   * @maxLength 150
-   */
+     * Responsibility Center Name
+     * @maxLength 150
+     */
   responsibilityCenter?: string;
   /**
-   * Project Code
-   * @maxLength 80
-   */
+     * Project Code
+     * @maxLength 80
+     */
   projectCode?: string;
   /**
-   * Project Name
-   * @maxLength 255
-   */
+     * Project Name
+     * @maxLength 255
+     */
   projectName?: string;
   /** Credit Account ID / Default Account ID */
   accountId?: string;
   /** Credit Account ID */
   creditAccountId?: string;
   /**
-   * Account Code Snapshot
-   * @maxLength 80
-   */
+     * Account Code Snapshot
+     * @maxLength 80
+     */
   accountCode?: string;
   /**
-   * Account Title Snapshot
-   * @maxLength 255
-   */
+     * Account Title Snapshot
+     * @maxLength 255
+     */
   accountTitle?: string;
   /**
-   * Currency code
-   * @maxLength 10
-   */
+     * Currency code
+     * @maxLength 10
+     */
   currencyCode?: string;
   /**
-   * Currency alias
-   * @maxLength 10
-   */
+     * Currency alias
+     * @maxLength 10
+     */
   currency?: string;
   /**
-   * Exchange Rate
-   * @minimum 0
-   */
+     * Exchange Rate
+     * @minimum 0
+     */
   exchangeRate?: number;
   /** Total Amount */
   amount?: number;
   /**
-   * Remarks
-   * @maxLength 500
-   */
+     * Remarks
+     * @maxLength 500
+     */
   remarks?: string;
   /** Initial Status */
   status?: UpdatePettyCashFundDtoStatus;
@@ -13148,16 +13237,16 @@ export interface UpdatePettyCashFundDto {
 /**
  * Target Petty Cash Fund status
  */
-export type UpdatePettyCashFundStatusDtoStatus =
-  (typeof UpdatePettyCashFundStatusDtoStatus)[keyof typeof UpdatePettyCashFundStatusDtoStatus];
+export type UpdatePettyCashFundStatusDtoStatus = typeof UpdatePettyCashFundStatusDtoStatus[keyof typeof UpdatePettyCashFundStatusDtoStatus];
+
 
 export const UpdatePettyCashFundStatusDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  POSTED: "POSTED",
-  DISAPPROVED: "DISAPPROVED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface UpdatePettyCashFundStatusDto {
@@ -13169,73 +13258,73 @@ export interface PettyCashReplenishmentDetailDto {
   /** Line ID */
   id?: string;
   /**
-   * Line Number
-   * @minimum 1
-   */
+     * Line Number
+     * @minimum 1
+     */
   lineNumber?: number;
   /** Petty Cash Date */
   pettyCashDate?: string;
   /** Petty Cash Date alias */
   date?: string;
   /**
-   * Petty Cash Voucher Number
-   * @maxLength 80
-   */
+     * Petty Cash Voucher Number
+     * @maxLength 80
+     */
   pettyCashNo?: string;
   /**
-   * Petty Cash Number alias
-   * @maxLength 80
-   */
+     * Petty Cash Number alias
+     * @maxLength 80
+     */
   voucherNo?: string;
   /** Supplier / Party ID */
   partyId?: string;
   /**
-   * Supplier Code Snapshot
-   * @maxLength 80
-   */
+     * Supplier Code Snapshot
+     * @maxLength 80
+     */
   supplierCodeSnapshot?: string;
   /**
-   * Supplier Name Snapshot
-   * @maxLength 255
-   */
+     * Supplier Name Snapshot
+     * @maxLength 255
+     */
   supplierNameSnapshot?: string;
   /**
-   * Supplier Code alias
-   * @maxLength 80
-   */
+     * Supplier Code alias
+     * @maxLength 80
+     */
   supplierCode?: string;
   /**
-   * Supplier Name alias
-   * @maxLength 255
-   */
+     * Supplier Name alias
+     * @maxLength 255
+     */
   supplierName?: string;
   /**
-   * Particulars
-   * @maxLength 500
-   */
+     * Particulars
+     * @maxLength 500
+     */
   particulars?: string;
   /**
-   * Remarks
-   * @maxLength 500
-   */
+     * Remarks
+     * @maxLength 500
+     */
   remarks?: string;
   /** Amount */
   amount?: number;
   /** Net Amount */
   netAmount?: number;
   /**
-   * VAT Type
-   * @maxLength 80
-   */
+     * VAT Type
+     * @maxLength 80
+     */
   vatType?: string;
   /** VAT Percent */
   vatPercent?: number;
   /** VAT Amount */
   vatAmount?: number;
   /**
-   * EWT Code
-   * @maxLength 80
-   */
+     * EWT Code
+     * @maxLength 80
+     */
   ewtCode?: string;
   /** EWT Percent */
   ewtPercent?: number;
@@ -13246,40 +13335,40 @@ export interface PettyCashReplenishmentDetailDto {
   /** Responsibility Center ID */
   responsibilityCenterId?: string;
   /**
-   * Responsibility Center Code
-   * @maxLength 80
-   */
+     * Responsibility Center Code
+     * @maxLength 80
+     */
   responsibilityCenterCodeSnapshot?: string;
   /**
-   * Responsibility Center Name
-   * @maxLength 150
-   */
+     * Responsibility Center Name
+     * @maxLength 150
+     */
   responsibilityCenterSnapshot?: string;
   /**
-   * Responsibility Center Code alias
-   * @maxLength 80
-   */
+     * Responsibility Center Code alias
+     * @maxLength 80
+     */
   responsibilityCenterCode?: string;
   /**
-   * Responsibility Center Name alias
-   * @maxLength 150
-   */
+     * Responsibility Center Name alias
+     * @maxLength 150
+     */
   responsibilityCenter?: string;
 }
 
 /**
  * Status
  */
-export type PettyCashReplenishmentResponseDtoStatus =
-  (typeof PettyCashReplenishmentResponseDtoStatus)[keyof typeof PettyCashReplenishmentResponseDtoStatus];
+export type PettyCashReplenishmentResponseDtoStatus = typeof PettyCashReplenishmentResponseDtoStatus[keyof typeof PettyCashReplenishmentResponseDtoStatus];
+
 
 export const PettyCashReplenishmentResponseDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  POSTED: "POSTED",
-  DISAPPROVED: "DISAPPROVED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface PettyCashReplenishmentResponseDto {
@@ -13288,18 +13377,18 @@ export interface PettyCashReplenishmentResponseDto {
   /** Company ID */
   companyId: number;
   /**
-   * Branch Unit ID
-   * @nullable
-   */
+     * Branch Unit ID
+     * @nullable
+     */
   branchUnitId?: number | null;
   /** Transaction Number */
   transactionNo: string;
   /** Document Date */
   documentDate: string;
   /**
-   * Party ID
-   * @nullable
-   */
+     * Party ID
+     * @nullable
+     */
   partyId?: string | null;
   /** Party Code Snapshot */
   partyCodeSnapshot: string;
@@ -13310,63 +13399,63 @@ export interface PettyCashReplenishmentResponseDto {
   /** Party Name alias */
   partyName?: string;
   /**
-   * Credit Account ID / Default Account ID
-   * @nullable
-   */
+     * Credit Account ID / Default Account ID
+     * @nullable
+     */
   creditAccountId?: string | null;
   /**
-   * Default Account ID alias
-   * @nullable
-   */
+     * Default Account ID alias
+     * @nullable
+     */
   accountId?: string | null;
   /** Account Code Snapshot */
   accountCodeSnapshot: string;
   /**
-   * Account Title Snapshot
-   * @nullable
-   */
+     * Account Title Snapshot
+     * @nullable
+     */
   accountTitleSnapshot?: string | null;
   /** Default Account Code alias */
   accountCode?: string;
   /**
-   * Default Account Title alias
-   * @nullable
-   */
+     * Default Account Title alias
+     * @nullable
+     */
   accountTitle?: string | null;
   /**
-   * Responsibility Center ID
-   * @nullable
-   */
+     * Responsibility Center ID
+     * @nullable
+     */
   responsibilityCenterId?: string | null;
   /**
-   * Responsibility Center Code Snapshot
-   * @nullable
-   */
+     * Responsibility Center Code Snapshot
+     * @nullable
+     */
   responsibilityCenterCodeSnapshot?: string | null;
   /**
-   * Responsibility Center Snapshot
-   * @nullable
-   */
+     * Responsibility Center Snapshot
+     * @nullable
+     */
   responsibilityCenterSnapshot?: string | null;
   /**
-   * Responsibility Center Code alias
-   * @nullable
-   */
+     * Responsibility Center Code alias
+     * @nullable
+     */
   responsibilityCenterCode?: string | null;
   /**
-   * Responsibility Center Name alias
-   * @nullable
-   */
+     * Responsibility Center Name alias
+     * @nullable
+     */
   responsibilityCenter?: string | null;
   /**
-   * Project Code
-   * @nullable
-   */
+     * Project Code
+     * @nullable
+     */
   projectCode?: string | null;
   /**
-   * Project Name
-   * @nullable
-   */
+     * Project Name
+     * @nullable
+     */
   projectName?: string | null;
   /** Currency Code */
   currencyCode: string;
@@ -13377,9 +13466,9 @@ export interface PettyCashReplenishmentResponseDto {
   /** Amount */
   amount: number;
   /**
-   * Remarks
-   * @nullable
-   */
+     * Remarks
+     * @nullable
+     */
   remarks?: string | null;
   /** Status */
   status: PettyCashReplenishmentResponseDtoStatus;
@@ -13414,97 +13503,97 @@ export interface PettyCashReplenishmentListResponseDto {
 /**
  * Initial Status
  */
-export type CreatePettyCashReplenishmentDtoStatus =
-  (typeof CreatePettyCashReplenishmentDtoStatus)[keyof typeof CreatePettyCashReplenishmentDtoStatus];
+export type CreatePettyCashReplenishmentDtoStatus = typeof CreatePettyCashReplenishmentDtoStatus[keyof typeof CreatePettyCashReplenishmentDtoStatus];
+
 
 export const CreatePettyCashReplenishmentDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  POSTED: "POSTED",
-  DISAPPROVED: "DISAPPROVED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface CreatePettyCashReplenishmentDto {
   /** Branch Unit ID */
   branchUnitId?: number;
   /**
-   * Transaction Number
-   * @maxLength 80
-   */
+     * Transaction Number
+     * @maxLength 80
+     */
   transactionNo?: string;
   /** Document Date */
   documentDate: string;
   /** Party ID (Custodian / Employee) */
   partyId?: string;
   /**
-   * Party Code
-   * @maxLength 80
-   */
+     * Party Code
+     * @maxLength 80
+     */
   partyCode?: string;
   /**
-   * Party Name (Custodian)
-   * @maxLength 255
-   */
-  partyName: string;
+     * Party Name (Custodian)
+     * @maxLength 255
+     */
+  partyName?: string;
   /** Responsibility Center ID */
   responsibilityCenterId?: string;
   /**
-   * Responsibility Center Code
-   * @maxLength 80
-   */
+     * Responsibility Center Code
+     * @maxLength 80
+     */
   responsibilityCenterCode?: string;
   /**
-   * Responsibility Center Name
-   * @maxLength 150
-   */
+     * Responsibility Center Name
+     * @maxLength 150
+     */
   responsibilityCenter?: string;
   /**
-   * Project Code
-   * @maxLength 80
-   */
+     * Project Code
+     * @maxLength 80
+     */
   projectCode?: string;
   /**
-   * Project Name
-   * @maxLength 255
-   */
+     * Project Name
+     * @maxLength 255
+     */
   projectName?: string;
   /** Credit Account ID / Default Account ID */
   accountId?: string;
   /** Credit Account ID */
   creditAccountId?: string;
   /**
-   * Account Code Snapshot
-   * @maxLength 80
-   */
+     * Account Code Snapshot
+     * @maxLength 80
+     */
   accountCode?: string;
   /**
-   * Account Title Snapshot
-   * @maxLength 255
-   */
-  accountTitle: string;
+     * Account Title Snapshot
+     * @maxLength 255
+     */
+  accountTitle?: string;
   /**
-   * Currency code
-   * @maxLength 10
-   */
+     * Currency code
+     * @maxLength 10
+     */
   currencyCode?: string;
   /**
-   * Currency alias
-   * @maxLength 10
-   */
+     * Currency alias
+     * @maxLength 10
+     */
   currency?: string;
   /**
-   * Exchange Rate
-   * @minimum 0
-   */
+     * Exchange Rate
+     * @minimum 0
+     */
   exchangeRate?: number;
   /** Total Amount */
   amount?: number;
   /**
-   * Remarks
-   * @maxLength 500
-   */
+     * Remarks
+     * @maxLength 500
+     */
   remarks?: string;
   /** Initial Status */
   status?: CreatePettyCashReplenishmentDtoStatus;
@@ -13515,97 +13604,97 @@ export interface CreatePettyCashReplenishmentDto {
 /**
  * Initial Status
  */
-export type UpdatePettyCashReplenishmentDtoStatus =
-  (typeof UpdatePettyCashReplenishmentDtoStatus)[keyof typeof UpdatePettyCashReplenishmentDtoStatus];
+export type UpdatePettyCashReplenishmentDtoStatus = typeof UpdatePettyCashReplenishmentDtoStatus[keyof typeof UpdatePettyCashReplenishmentDtoStatus];
+
 
 export const UpdatePettyCashReplenishmentDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  POSTED: "POSTED",
-  DISAPPROVED: "DISAPPROVED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface UpdatePettyCashReplenishmentDto {
   /** Branch Unit ID */
   branchUnitId?: number;
   /**
-   * Transaction Number
-   * @maxLength 80
-   */
+     * Transaction Number
+     * @maxLength 80
+     */
   transactionNo?: string;
   /** Document Date */
   documentDate?: string;
   /** Party ID (Custodian / Employee) */
   partyId?: string;
   /**
-   * Party Code
-   * @maxLength 80
-   */
+     * Party Code
+     * @maxLength 80
+     */
   partyCode?: string;
   /**
-   * Party Name (Custodian)
-   * @maxLength 255
-   */
+     * Party Name (Custodian)
+     * @maxLength 255
+     */
   partyName?: string;
   /** Responsibility Center ID */
   responsibilityCenterId?: string;
   /**
-   * Responsibility Center Code
-   * @maxLength 80
-   */
+     * Responsibility Center Code
+     * @maxLength 80
+     */
   responsibilityCenterCode?: string;
   /**
-   * Responsibility Center Name
-   * @maxLength 150
-   */
+     * Responsibility Center Name
+     * @maxLength 150
+     */
   responsibilityCenter?: string;
   /**
-   * Project Code
-   * @maxLength 80
-   */
+     * Project Code
+     * @maxLength 80
+     */
   projectCode?: string;
   /**
-   * Project Name
-   * @maxLength 255
-   */
+     * Project Name
+     * @maxLength 255
+     */
   projectName?: string;
   /** Credit Account ID / Default Account ID */
   accountId?: string;
   /** Credit Account ID */
   creditAccountId?: string;
   /**
-   * Account Code Snapshot
-   * @maxLength 80
-   */
+     * Account Code Snapshot
+     * @maxLength 80
+     */
   accountCode?: string;
   /**
-   * Account Title Snapshot
-   * @maxLength 255
-   */
+     * Account Title Snapshot
+     * @maxLength 255
+     */
   accountTitle?: string;
   /**
-   * Currency code
-   * @maxLength 10
-   */
+     * Currency code
+     * @maxLength 10
+     */
   currencyCode?: string;
   /**
-   * Currency alias
-   * @maxLength 10
-   */
+     * Currency alias
+     * @maxLength 10
+     */
   currency?: string;
   /**
-   * Exchange Rate
-   * @minimum 0
-   */
+     * Exchange Rate
+     * @minimum 0
+     */
   exchangeRate?: number;
   /** Total Amount */
   amount?: number;
   /**
-   * Remarks
-   * @maxLength 500
-   */
+     * Remarks
+     * @maxLength 500
+     */
   remarks?: string;
   /** Initial Status */
   status?: UpdatePettyCashReplenishmentDtoStatus;
@@ -13616,16 +13705,16 @@ export interface UpdatePettyCashReplenishmentDto {
 /**
  * Target Petty Cash Replenishment status
  */
-export type UpdatePettyCashReplenishmentStatusDtoStatus =
-  (typeof UpdatePettyCashReplenishmentStatusDtoStatus)[keyof typeof UpdatePettyCashReplenishmentStatusDtoStatus];
+export type UpdatePettyCashReplenishmentStatusDtoStatus = typeof UpdatePettyCashReplenishmentStatusDtoStatus[keyof typeof UpdatePettyCashReplenishmentStatusDtoStatus];
+
 
 export const UpdatePettyCashReplenishmentStatusDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  POSTED: "POSTED",
-  DISAPPROVED: "DISAPPROVED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface UpdatePettyCashReplenishmentStatusDto {
@@ -13637,53 +13726,55 @@ export interface RevolvingFundDetailDto {
   /** Line ID */
   id?: string;
   /**
-   * Line Number
-   * @minimum 1
-   */
+     * Line Number
+     * @minimum 1
+     */
   lineNumber?: number;
   /** Receipt/Disbursement Date */
   date?: string;
+  /** Receipt/Disbursement Date alias */
+  itemDate?: string;
   /** Supplier / Party ID */
   partyId?: string;
   /**
-   * Supplier Code Snapshot
-   * @maxLength 80
-   */
+     * Supplier Code Snapshot
+     * @maxLength 80
+     */
   supplierCodeSnapshot?: string;
   /**
-   * Supplier Name Snapshot
-   * @maxLength 255
-   */
+     * Supplier Name Snapshot
+     * @maxLength 255
+     */
   supplierNameSnapshot?: string;
   /**
-   * Supplier Code alias
-   * @maxLength 80
-   */
+     * Supplier Code alias
+     * @maxLength 80
+     */
   supplierCode?: string;
   /**
-   * Supplier Name alias
-   * @maxLength 255
-   */
+     * Supplier Name alias
+     * @maxLength 255
+     */
   supplierName?: string;
   /**
-   * Official Receipt Number
-   * @maxLength 80
-   */
+     * Official Receipt Number
+     * @maxLength 80
+     */
   orNo?: string;
   /**
-   * TIN Number
-   * @maxLength 80
-   */
+     * TIN Number
+     * @maxLength 80
+     */
   tinNo?: string;
   /**
-   * Particulars
-   * @maxLength 500
-   */
+     * Particulars
+     * @maxLength 500
+     */
   particulars?: string;
   /**
-   * Remarks
-   * @maxLength 500
-   */
+     * Remarks
+     * @maxLength 500
+     */
   remarks?: string;
   /** Amount / Gross Amount */
   amount?: number;
@@ -13694,64 +13785,65 @@ export interface RevolvingFundDetailDto {
   /** Disburse Amount */
   disburseAmount?: number;
   /**
-   * VAT Type
-   * @maxLength 80
-   */
+     * VAT Type
+     * @maxLength 80
+     */
   vatType?: string;
   /** VAT Percent */
   vatPercent?: number;
   /** VAT Amount */
   vatAmount?: number;
   /**
-   * EWT Code
-   * @maxLength 80
-   */
+     * EWT Code
+     * @maxLength 80
+     */
   ewtCode?: string;
   /** EWT Percent */
   ewtPercent?: number;
   /** EWT Amount */
   ewtAmount?: number;
   /**
-   * Expense Type
-   * @maxLength 100
-   */
+     * Expense Type
+     * @maxLength 100
+     */
   expenseType?: string;
   /** Responsibility Center ID */
   responsibilityCenterId?: string;
   /**
-   * Responsibility Center Code
-   * @maxLength 80
-   */
+     * Responsibility Center Code
+     * @maxLength 80
+     */
   responsibilityCenterCodeSnapshot?: string;
   /**
-   * Responsibility Center Name
-   * @maxLength 150
-   */
+     * Responsibility Center Name
+     * @maxLength 150
+     */
   responsibilityCenterSnapshot?: string;
   /**
-   * Responsibility Center Code alias
-   * @maxLength 80
-   */
+     * Responsibility Center Code alias
+     * @maxLength 80
+     */
   responsibilityCenterCode?: string;
   /**
-   * Responsibility Center Name alias
-   * @maxLength 150
-   */
+     * Responsibility Center Name alias
+     * @maxLength 150
+     */
   responsibilityCenter?: string;
 }
 
 /**
  * Status
  */
-export type RevolvingFundResponseDtoStatus = (typeof RevolvingFundResponseDtoStatus)[keyof typeof RevolvingFundResponseDtoStatus];
+export type RevolvingFundResponseDtoStatus = typeof RevolvingFundResponseDtoStatus[keyof typeof RevolvingFundResponseDtoStatus];
+
 
 export const RevolvingFundResponseDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  POSTED: "POSTED",
-  DISAPPROVED: "DISAPPROVED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface RevolvingFundResponseDto {
@@ -13760,18 +13852,18 @@ export interface RevolvingFundResponseDto {
   /** Company ID */
   companyId: number;
   /**
-   * Branch Unit ID
-   * @nullable
-   */
+     * Branch Unit ID
+     * @nullable
+     */
   branchUnitId?: number | null;
   /** Transaction Number */
   transactionNo: string;
   /** Document Date */
   documentDate: string;
   /**
-   * Party ID
-   * @nullable
-   */
+     * Party ID
+     * @nullable
+     */
   partyId?: string | null;
   /** Party Code Snapshot */
   partyCodeSnapshot: string;
@@ -13782,63 +13874,63 @@ export interface RevolvingFundResponseDto {
   /** Party Name alias */
   partyName?: string;
   /**
-   * Credit Account ID / Default Account ID
-   * @nullable
-   */
+     * Credit Account ID / Default Account ID
+     * @nullable
+     */
   creditAccountId?: string | null;
   /**
-   * Default Account ID alias
-   * @nullable
-   */
+     * Default Account ID alias
+     * @nullable
+     */
   accountId?: string | null;
   /** Account Code Snapshot */
   accountCodeSnapshot: string;
   /**
-   * Account Title Snapshot
-   * @nullable
-   */
+     * Account Title Snapshot
+     * @nullable
+     */
   accountTitleSnapshot?: string | null;
   /** Default Account Code alias */
   accountCode?: string;
   /**
-   * Default Account Title alias
-   * @nullable
-   */
+     * Default Account Title alias
+     * @nullable
+     */
   accountTitle?: string | null;
   /**
-   * Responsibility Center ID
-   * @nullable
-   */
+     * Responsibility Center ID
+     * @nullable
+     */
   responsibilityCenterId?: string | null;
   /**
-   * Responsibility Center Code Snapshot
-   * @nullable
-   */
+     * Responsibility Center Code Snapshot
+     * @nullable
+     */
   responsibilityCenterCodeSnapshot?: string | null;
   /**
-   * Responsibility Center Snapshot
-   * @nullable
-   */
+     * Responsibility Center Snapshot
+     * @nullable
+     */
   responsibilityCenterSnapshot?: string | null;
   /**
-   * Responsibility Center Code alias
-   * @nullable
-   */
+     * Responsibility Center Code alias
+     * @nullable
+     */
   responsibilityCenterCode?: string | null;
   /**
-   * Responsibility Center Name alias
-   * @nullable
-   */
+     * Responsibility Center Name alias
+     * @nullable
+     */
   responsibilityCenter?: string | null;
   /**
-   * Project Code
-   * @nullable
-   */
+     * Project Code
+     * @nullable
+     */
   projectCode?: string | null;
   /**
-   * Project Name
-   * @nullable
-   */
+     * Project Name
+     * @nullable
+     */
   projectName?: string | null;
   /** Currency Code */
   currencyCode: string;
@@ -13849,9 +13941,9 @@ export interface RevolvingFundResponseDto {
   /** Amount */
   amount: number;
   /**
-   * Remarks
-   * @nullable
-   */
+     * Remarks
+     * @nullable
+     */
   remarks?: string | null;
   /** Status */
   status: RevolvingFundResponseDtoStatus;
@@ -13886,96 +13978,97 @@ export interface RevolvingFundListResponseDto {
 /**
  * Initial Status
  */
-export type CreateRevolvingFundDtoStatus = (typeof CreateRevolvingFundDtoStatus)[keyof typeof CreateRevolvingFundDtoStatus];
+export type CreateRevolvingFundDtoStatus = typeof CreateRevolvingFundDtoStatus[keyof typeof CreateRevolvingFundDtoStatus];
+
 
 export const CreateRevolvingFundDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  POSTED: "POSTED",
-  DISAPPROVED: "DISAPPROVED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface CreateRevolvingFundDto {
   /** Branch Unit ID */
   branchUnitId?: number;
   /**
-   * Transaction Number
-   * @maxLength 80
-   */
+     * Transaction Number
+     * @maxLength 80
+     */
   transactionNo?: string;
   /** Document Date */
   documentDate: string;
   /** Party ID (Custodian / Employee) */
   partyId?: string;
   /**
-   * Party Code
-   * @maxLength 80
-   */
+     * Party Code
+     * @maxLength 80
+     */
   partyCode?: string;
   /**
-   * Party Name (Custodian)
-   * @maxLength 255
-   */
-  partyName: string;
+     * Party Name (Custodian)
+     * @maxLength 255
+     */
+  partyName?: string;
   /** Responsibility Center ID */
   responsibilityCenterId?: string;
   /**
-   * Responsibility Center Code
-   * @maxLength 80
-   */
+     * Responsibility Center Code
+     * @maxLength 80
+     */
   responsibilityCenterCode?: string;
   /**
-   * Responsibility Center Name
-   * @maxLength 150
-   */
+     * Responsibility Center Name
+     * @maxLength 150
+     */
   responsibilityCenter?: string;
   /**
-   * Project Code
-   * @maxLength 80
-   */
+     * Project Code
+     * @maxLength 80
+     */
   projectCode?: string;
   /**
-   * Project Name
-   * @maxLength 255
-   */
+     * Project Name
+     * @maxLength 255
+     */
   projectName?: string;
   /** Credit Account ID / Default Account ID */
   accountId?: string;
   /** Credit Account ID */
   creditAccountId?: string;
   /**
-   * Account Code Snapshot
-   * @maxLength 80
-   */
+     * Account Code Snapshot
+     * @maxLength 80
+     */
   accountCode?: string;
   /**
-   * Account Title Snapshot
-   * @maxLength 255
-   */
-  accountTitle: string;
+     * Account Title Snapshot
+     * @maxLength 255
+     */
+  accountTitle?: string;
   /**
-   * Currency code
-   * @maxLength 10
-   */
+     * Currency code
+     * @maxLength 10
+     */
   currencyCode?: string;
   /**
-   * Currency alias
-   * @maxLength 10
-   */
+     * Currency alias
+     * @maxLength 10
+     */
   currency?: string;
   /**
-   * Exchange Rate
-   * @minimum 0
-   */
+     * Exchange Rate
+     * @minimum 0
+     */
   exchangeRate?: number;
   /** Total Amount */
   amount?: number;
   /**
-   * Remarks
-   * @maxLength 500
-   */
+     * Remarks
+     * @maxLength 500
+     */
   remarks?: string;
   /** Initial Status */
   status?: CreateRevolvingFundDtoStatus;
@@ -13986,96 +14079,97 @@ export interface CreateRevolvingFundDto {
 /**
  * Initial Status
  */
-export type UpdateRevolvingFundDtoStatus = (typeof UpdateRevolvingFundDtoStatus)[keyof typeof UpdateRevolvingFundDtoStatus];
+export type UpdateRevolvingFundDtoStatus = typeof UpdateRevolvingFundDtoStatus[keyof typeof UpdateRevolvingFundDtoStatus];
+
 
 export const UpdateRevolvingFundDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  POSTED: "POSTED",
-  DISAPPROVED: "DISAPPROVED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface UpdateRevolvingFundDto {
   /** Branch Unit ID */
   branchUnitId?: number;
   /**
-   * Transaction Number
-   * @maxLength 80
-   */
+     * Transaction Number
+     * @maxLength 80
+     */
   transactionNo?: string;
   /** Document Date */
   documentDate?: string;
   /** Party ID (Custodian / Employee) */
   partyId?: string;
   /**
-   * Party Code
-   * @maxLength 80
-   */
+     * Party Code
+     * @maxLength 80
+     */
   partyCode?: string;
   /**
-   * Party Name (Custodian)
-   * @maxLength 255
-   */
+     * Party Name (Custodian)
+     * @maxLength 255
+     */
   partyName?: string;
   /** Responsibility Center ID */
   responsibilityCenterId?: string;
   /**
-   * Responsibility Center Code
-   * @maxLength 80
-   */
+     * Responsibility Center Code
+     * @maxLength 80
+     */
   responsibilityCenterCode?: string;
   /**
-   * Responsibility Center Name
-   * @maxLength 150
-   */
+     * Responsibility Center Name
+     * @maxLength 150
+     */
   responsibilityCenter?: string;
   /**
-   * Project Code
-   * @maxLength 80
-   */
+     * Project Code
+     * @maxLength 80
+     */
   projectCode?: string;
   /**
-   * Project Name
-   * @maxLength 255
-   */
+     * Project Name
+     * @maxLength 255
+     */
   projectName?: string;
   /** Credit Account ID / Default Account ID */
   accountId?: string;
   /** Credit Account ID */
   creditAccountId?: string;
   /**
-   * Account Code Snapshot
-   * @maxLength 80
-   */
+     * Account Code Snapshot
+     * @maxLength 80
+     */
   accountCode?: string;
   /**
-   * Account Title Snapshot
-   * @maxLength 255
-   */
+     * Account Title Snapshot
+     * @maxLength 255
+     */
   accountTitle?: string;
   /**
-   * Currency code
-   * @maxLength 10
-   */
+     * Currency code
+     * @maxLength 10
+     */
   currencyCode?: string;
   /**
-   * Currency alias
-   * @maxLength 10
-   */
+     * Currency alias
+     * @maxLength 10
+     */
   currency?: string;
   /**
-   * Exchange Rate
-   * @minimum 0
-   */
+     * Exchange Rate
+     * @minimum 0
+     */
   exchangeRate?: number;
   /** Total Amount */
   amount?: number;
   /**
-   * Remarks
-   * @maxLength 500
-   */
+     * Remarks
+     * @maxLength 500
+     */
   remarks?: string;
   /** Initial Status */
   status?: UpdateRevolvingFundDtoStatus;
@@ -14086,16 +14180,16 @@ export interface UpdateRevolvingFundDto {
 /**
  * Target Revolving Fund status
  */
-export type UpdateRevolvingFundStatusDtoStatus =
-  (typeof UpdateRevolvingFundStatusDtoStatus)[keyof typeof UpdateRevolvingFundStatusDtoStatus];
+export type UpdateRevolvingFundStatusDtoStatus = typeof UpdateRevolvingFundStatusDtoStatus[keyof typeof UpdateRevolvingFundStatusDtoStatus];
+
 
 export const UpdateRevolvingFundStatusDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  POSTED: "POSTED",
-  DISAPPROVED: "DISAPPROVED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface UpdateRevolvingFundStatusDto {
@@ -14107,73 +14201,73 @@ export interface RevolvingFundReplenishmentDetailDto {
   /** Line ID */
   id?: string;
   /**
-   * Line Number
-   * @minimum 1
-   */
+     * Line Number
+     * @minimum 1
+     */
   lineNumber?: number;
   /** Revolving Fund Date */
   revolvingFundDate?: string;
   /** Revolving Fund Date alias */
   date?: string;
   /**
-   * Revolving Fund Number / Voucher Number
-   * @maxLength 80
-   */
+     * Revolving Fund Number / Voucher Number
+     * @maxLength 80
+     */
   revolvingFundNo?: string;
   /**
-   * Revolving Fund Number alias
-   * @maxLength 80
-   */
+     * Revolving Fund Number alias
+     * @maxLength 80
+     */
   voucherNo?: string;
   /** Supplier / Party ID */
   partyId?: string;
   /**
-   * Supplier Code Snapshot
-   * @maxLength 80
-   */
+     * Supplier Code Snapshot
+     * @maxLength 80
+     */
   supplierCodeSnapshot?: string;
   /**
-   * Supplier Name Snapshot
-   * @maxLength 255
-   */
+     * Supplier Name Snapshot
+     * @maxLength 255
+     */
   supplierNameSnapshot?: string;
   /**
-   * Supplier Code alias
-   * @maxLength 80
-   */
+     * Supplier Code alias
+     * @maxLength 80
+     */
   supplierCode?: string;
   /**
-   * Supplier Name alias
-   * @maxLength 255
-   */
+     * Supplier Name alias
+     * @maxLength 255
+     */
   supplierName?: string;
   /**
-   * Particulars
-   * @maxLength 500
-   */
+     * Particulars
+     * @maxLength 500
+     */
   particulars?: string;
   /**
-   * Remarks
-   * @maxLength 500
-   */
+     * Remarks
+     * @maxLength 500
+     */
   remarks?: string;
   /** Amount */
   amount?: number;
   /** Net Amount */
   netAmount?: number;
   /**
-   * VAT Type
-   * @maxLength 80
-   */
+     * VAT Type
+     * @maxLength 80
+     */
   vatType?: string;
   /** VAT Percent */
   vatPercent?: number;
   /** VAT Amount */
   vatAmount?: number;
   /**
-   * EWT Code
-   * @maxLength 80
-   */
+     * EWT Code
+     * @maxLength 80
+     */
   ewtCode?: string;
   /** EWT Percent */
   ewtPercent?: number;
@@ -14184,40 +14278,40 @@ export interface RevolvingFundReplenishmentDetailDto {
   /** Responsibility Center ID */
   responsibilityCenterId?: string;
   /**
-   * Responsibility Center Code
-   * @maxLength 80
-   */
+     * Responsibility Center Code
+     * @maxLength 80
+     */
   responsibilityCenterCodeSnapshot?: string;
   /**
-   * Responsibility Center Name
-   * @maxLength 150
-   */
+     * Responsibility Center Name
+     * @maxLength 150
+     */
   responsibilityCenterSnapshot?: string;
   /**
-   * Responsibility Center Code alias
-   * @maxLength 80
-   */
+     * Responsibility Center Code alias
+     * @maxLength 80
+     */
   responsibilityCenterCode?: string;
   /**
-   * Responsibility Center Name alias
-   * @maxLength 150
-   */
+     * Responsibility Center Name alias
+     * @maxLength 150
+     */
   responsibilityCenter?: string;
 }
 
 /**
  * Status
  */
-export type RevolvingFundReplenishmentResponseDtoStatus =
-  (typeof RevolvingFundReplenishmentResponseDtoStatus)[keyof typeof RevolvingFundReplenishmentResponseDtoStatus];
+export type RevolvingFundReplenishmentResponseDtoStatus = typeof RevolvingFundReplenishmentResponseDtoStatus[keyof typeof RevolvingFundReplenishmentResponseDtoStatus];
+
 
 export const RevolvingFundReplenishmentResponseDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  POSTED: "POSTED",
-  DISAPPROVED: "DISAPPROVED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface RevolvingFundReplenishmentResponseDto {
@@ -14226,18 +14320,18 @@ export interface RevolvingFundReplenishmentResponseDto {
   /** Company ID */
   companyId: number;
   /**
-   * Branch Unit ID
-   * @nullable
-   */
+     * Branch Unit ID
+     * @nullable
+     */
   branchUnitId?: number | null;
   /** Transaction Number */
   transactionNo: string;
   /** Document Date */
   documentDate: string;
   /**
-   * Party ID
-   * @nullable
-   */
+     * Party ID
+     * @nullable
+     */
   partyId?: string | null;
   /** Party Code Snapshot */
   partyCodeSnapshot: string;
@@ -14248,63 +14342,63 @@ export interface RevolvingFundReplenishmentResponseDto {
   /** Party Name alias */
   partyName?: string;
   /**
-   * Credit Account ID / Default Account ID
-   * @nullable
-   */
+     * Credit Account ID / Default Account ID
+     * @nullable
+     */
   creditAccountId?: string | null;
   /**
-   * Default Account ID alias
-   * @nullable
-   */
+     * Default Account ID alias
+     * @nullable
+     */
   accountId?: string | null;
   /** Account Code Snapshot */
   accountCodeSnapshot: string;
   /**
-   * Account Title Snapshot
-   * @nullable
-   */
+     * Account Title Snapshot
+     * @nullable
+     */
   accountTitleSnapshot?: string | null;
   /** Default Account Code alias */
   accountCode?: string;
   /**
-   * Default Account Title alias
-   * @nullable
-   */
+     * Default Account Title alias
+     * @nullable
+     */
   accountTitle?: string | null;
   /**
-   * Responsibility Center ID
-   * @nullable
-   */
+     * Responsibility Center ID
+     * @nullable
+     */
   responsibilityCenterId?: string | null;
   /**
-   * Responsibility Center Code Snapshot
-   * @nullable
-   */
+     * Responsibility Center Code Snapshot
+     * @nullable
+     */
   responsibilityCenterCodeSnapshot?: string | null;
   /**
-   * Responsibility Center Snapshot
-   * @nullable
-   */
+     * Responsibility Center Snapshot
+     * @nullable
+     */
   responsibilityCenterSnapshot?: string | null;
   /**
-   * Responsibility Center Code alias
-   * @nullable
-   */
+     * Responsibility Center Code alias
+     * @nullable
+     */
   responsibilityCenterCode?: string | null;
   /**
-   * Responsibility Center Name alias
-   * @nullable
-   */
+     * Responsibility Center Name alias
+     * @nullable
+     */
   responsibilityCenter?: string | null;
   /**
-   * Project Code
-   * @nullable
-   */
+     * Project Code
+     * @nullable
+     */
   projectCode?: string | null;
   /**
-   * Project Name
-   * @nullable
-   */
+     * Project Name
+     * @nullable
+     */
   projectName?: string | null;
   /** Currency Code */
   currencyCode: string;
@@ -14315,9 +14409,9 @@ export interface RevolvingFundReplenishmentResponseDto {
   /** Amount */
   amount: number;
   /**
-   * Remarks
-   * @nullable
-   */
+     * Remarks
+     * @nullable
+     */
   remarks?: string | null;
   /** Status */
   status: RevolvingFundReplenishmentResponseDtoStatus;
@@ -14352,97 +14446,97 @@ export interface RevolvingFundReplenishmentListResponseDto {
 /**
  * Initial Status
  */
-export type CreateRevolvingFundReplenishmentDtoStatus =
-  (typeof CreateRevolvingFundReplenishmentDtoStatus)[keyof typeof CreateRevolvingFundReplenishmentDtoStatus];
+export type CreateRevolvingFundReplenishmentDtoStatus = typeof CreateRevolvingFundReplenishmentDtoStatus[keyof typeof CreateRevolvingFundReplenishmentDtoStatus];
+
 
 export const CreateRevolvingFundReplenishmentDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  POSTED: "POSTED",
-  DISAPPROVED: "DISAPPROVED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface CreateRevolvingFundReplenishmentDto {
   /** Branch Unit ID */
   branchUnitId?: number;
   /**
-   * Transaction Number
-   * @maxLength 80
-   */
+     * Transaction Number
+     * @maxLength 80
+     */
   transactionNo?: string;
   /** Document Date */
   documentDate: string;
   /** Party ID (Custodian / Employee) */
   partyId?: string;
   /**
-   * Party Code
-   * @maxLength 80
-   */
+     * Party Code
+     * @maxLength 80
+     */
   partyCode?: string;
   /**
-   * Party Name (Custodian)
-   * @maxLength 255
-   */
-  partyName: string;
+     * Party Name (Custodian)
+     * @maxLength 255
+     */
+  partyName?: string;
   /** Responsibility Center ID */
   responsibilityCenterId?: string;
   /**
-   * Responsibility Center Code
-   * @maxLength 80
-   */
+     * Responsibility Center Code
+     * @maxLength 80
+     */
   responsibilityCenterCode?: string;
   /**
-   * Responsibility Center Name
-   * @maxLength 150
-   */
+     * Responsibility Center Name
+     * @maxLength 150
+     */
   responsibilityCenter?: string;
   /**
-   * Project Code
-   * @maxLength 80
-   */
+     * Project Code
+     * @maxLength 80
+     */
   projectCode?: string;
   /**
-   * Project Name
-   * @maxLength 255
-   */
+     * Project Name
+     * @maxLength 255
+     */
   projectName?: string;
   /** Credit Account ID / Default Account ID */
   accountId?: string;
   /** Credit Account ID */
   creditAccountId?: string;
   /**
-   * Account Code Snapshot
-   * @maxLength 80
-   */
+     * Account Code Snapshot
+     * @maxLength 80
+     */
   accountCode?: string;
   /**
-   * Account Title Snapshot
-   * @maxLength 255
-   */
-  accountTitle: string;
+     * Account Title Snapshot
+     * @maxLength 255
+     */
+  accountTitle?: string;
   /**
-   * Currency code
-   * @maxLength 10
-   */
+     * Currency code
+     * @maxLength 10
+     */
   currencyCode?: string;
   /**
-   * Currency alias
-   * @maxLength 10
-   */
+     * Currency alias
+     * @maxLength 10
+     */
   currency?: string;
   /**
-   * Exchange Rate
-   * @minimum 0
-   */
+     * Exchange Rate
+     * @minimum 0
+     */
   exchangeRate?: number;
   /** Total Amount */
   amount?: number;
   /**
-   * Remarks
-   * @maxLength 500
-   */
+     * Remarks
+     * @maxLength 500
+     */
   remarks?: string;
   /** Initial Status */
   status?: CreateRevolvingFundReplenishmentDtoStatus;
@@ -14453,97 +14547,97 @@ export interface CreateRevolvingFundReplenishmentDto {
 /**
  * Initial Status
  */
-export type UpdateRevolvingFundReplenishmentDtoStatus =
-  (typeof UpdateRevolvingFundReplenishmentDtoStatus)[keyof typeof UpdateRevolvingFundReplenishmentDtoStatus];
+export type UpdateRevolvingFundReplenishmentDtoStatus = typeof UpdateRevolvingFundReplenishmentDtoStatus[keyof typeof UpdateRevolvingFundReplenishmentDtoStatus];
+
 
 export const UpdateRevolvingFundReplenishmentDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  POSTED: "POSTED",
-  DISAPPROVED: "DISAPPROVED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface UpdateRevolvingFundReplenishmentDto {
   /** Branch Unit ID */
   branchUnitId?: number;
   /**
-   * Transaction Number
-   * @maxLength 80
-   */
+     * Transaction Number
+     * @maxLength 80
+     */
   transactionNo?: string;
   /** Document Date */
   documentDate?: string;
   /** Party ID (Custodian / Employee) */
   partyId?: string;
   /**
-   * Party Code
-   * @maxLength 80
-   */
+     * Party Code
+     * @maxLength 80
+     */
   partyCode?: string;
   /**
-   * Party Name (Custodian)
-   * @maxLength 255
-   */
+     * Party Name (Custodian)
+     * @maxLength 255
+     */
   partyName?: string;
   /** Responsibility Center ID */
   responsibilityCenterId?: string;
   /**
-   * Responsibility Center Code
-   * @maxLength 80
-   */
+     * Responsibility Center Code
+     * @maxLength 80
+     */
   responsibilityCenterCode?: string;
   /**
-   * Responsibility Center Name
-   * @maxLength 150
-   */
+     * Responsibility Center Name
+     * @maxLength 150
+     */
   responsibilityCenter?: string;
   /**
-   * Project Code
-   * @maxLength 80
-   */
+     * Project Code
+     * @maxLength 80
+     */
   projectCode?: string;
   /**
-   * Project Name
-   * @maxLength 255
-   */
+     * Project Name
+     * @maxLength 255
+     */
   projectName?: string;
   /** Credit Account ID / Default Account ID */
   accountId?: string;
   /** Credit Account ID */
   creditAccountId?: string;
   /**
-   * Account Code Snapshot
-   * @maxLength 80
-   */
+     * Account Code Snapshot
+     * @maxLength 80
+     */
   accountCode?: string;
   /**
-   * Account Title Snapshot
-   * @maxLength 255
-   */
+     * Account Title Snapshot
+     * @maxLength 255
+     */
   accountTitle?: string;
   /**
-   * Currency code
-   * @maxLength 10
-   */
+     * Currency code
+     * @maxLength 10
+     */
   currencyCode?: string;
   /**
-   * Currency alias
-   * @maxLength 10
-   */
+     * Currency alias
+     * @maxLength 10
+     */
   currency?: string;
   /**
-   * Exchange Rate
-   * @minimum 0
-   */
+     * Exchange Rate
+     * @minimum 0
+     */
   exchangeRate?: number;
   /** Total Amount */
   amount?: number;
   /**
-   * Remarks
-   * @maxLength 500
-   */
+     * Remarks
+     * @maxLength 500
+     */
   remarks?: string;
   /** Initial Status */
   status?: UpdateRevolvingFundReplenishmentDtoStatus;
@@ -14554,16 +14648,16 @@ export interface UpdateRevolvingFundReplenishmentDto {
 /**
  * Target Revolving Fund Replenishment status
  */
-export type UpdateRevolvingFundReplenishmentStatusDtoStatus =
-  (typeof UpdateRevolvingFundReplenishmentStatusDtoStatus)[keyof typeof UpdateRevolvingFundReplenishmentStatusDtoStatus];
+export type UpdateRevolvingFundReplenishmentStatusDtoStatus = typeof UpdateRevolvingFundReplenishmentStatusDtoStatus[keyof typeof UpdateRevolvingFundReplenishmentStatusDtoStatus];
+
 
 export const UpdateRevolvingFundReplenishmentStatusDtoStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  POSTED: "POSTED",
-  DISAPPROVED: "DISAPPROVED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export interface UpdateRevolvingFundReplenishmentStatusDto {
@@ -14574,13 +14668,13 @@ export interface UpdateRevolvingFundReplenishmentStatusDto {
 export type AuthControllerLoginV1201 = { [key: string]: unknown };
 
 export type AuthControllerGoogleAuthV1Params = {
-  mode?: unknown;
+mode?: unknown;
 };
 
 export type AuthControllerGoogleAuthCallbackV1Params = {
-  error?: unknown;
-  state?: unknown;
-  code?: unknown;
+error?: unknown;
+state?: unknown;
+code?: unknown;
 };
 
 export type UsersControllerFindAllV1200Item = { [key: string]: unknown };
@@ -14598,3605 +14692,3615 @@ export type UsersControllerFindOneV1200 = { [key: string]: unknown };
 export type UsersControllerUpdateV1200 = { [key: string]: unknown };
 
 export type BillingControllerListPlansV1Params = {
-  scope?: string;
+scope?: string;
 };
 
 export type BillingControllerGetSubscriptionSetupV1Params = {
-  scope?: string;
+scope?: string;
 };
 
 export type AddressControllerListBarangaysV1Params = {
-  regionCode?: string;
-  provinceCode?: string;
-  cityMunicipalityCode?: string;
+regionCode?: string;
+provinceCode?: string;
+cityMunicipalityCode?: string;
 };
 
 export type AddressControllerListAutocompleteV1Params = {
-  query?: string;
-  regionCode?: string;
-  provinceCode?: string;
-  cityMunicipalityCode?: string;
-  /**
-   * @minimum 1
-   * @maximum 100
-   */
-  limit?: number;
+query?: string;
+regionCode?: string;
+provinceCode?: string;
+cityMunicipalityCode?: string;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+limit?: number;
 };
 
 export type WorkspaceCompaniesControllerGetManagementSummaryV1Params = {
-  includeUsers?: string;
+includeUsers?: string;
 };
 
 export type BranchUsersControllerUpdateRoleV1200 = { [key: string]: unknown };
 
 export type FormSignatoriesControllerResolveV1Params = {
-  unitId: number;
-  moduleCodes: string;
+unitId: number;
+moduleCodes: string;
 };
 
 export type ChartOfAccountsControllerFindAllV1Params = {
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  accountLevel?: ChartOfAccountsControllerFindAllV1AccountLevel;
-  status?: ChartOfAccountsControllerFindAllV1Status;
-  accountType?: ChartOfAccountsControllerFindAllV1AccountType;
-  accountNature?: ChartOfAccountsControllerFindAllV1AccountNature;
-  postingOnly?: boolean;
-  parentAccountId?: string;
+/**
+ * @maxLength 120
+ */
+search?: string;
+accountLevel?: ChartOfAccountsControllerFindAllV1AccountLevel;
+status?: ChartOfAccountsControllerFindAllV1Status;
+accountType?: ChartOfAccountsControllerFindAllV1AccountType;
+accountNature?: ChartOfAccountsControllerFindAllV1AccountNature;
+postingOnly?: boolean;
+parentAccountId?: string;
 };
 
-export type ChartOfAccountsControllerFindAllV1AccountLevel =
-  (typeof ChartOfAccountsControllerFindAllV1AccountLevel)[keyof typeof ChartOfAccountsControllerFindAllV1AccountLevel];
+export type ChartOfAccountsControllerFindAllV1AccountLevel = typeof ChartOfAccountsControllerFindAllV1AccountLevel[keyof typeof ChartOfAccountsControllerFindAllV1AccountLevel];
+
 
 export const ChartOfAccountsControllerFindAllV1AccountLevel = {
-  SUB3: "SUB3",
-  SUB1: "SUB1",
-  SUB2: "SUB2",
-  MAJOR: "MAJOR",
-  SPECIFIC: "SPECIFIC",
+  SUB3: 'SUB3',
+  SUB1: 'SUB1',
+  SUB2: 'SUB2',
+  MAJOR: 'MAJOR',
+  SPECIFIC: 'SPECIFIC',
 } as const;
 
-export type ChartOfAccountsControllerFindAllV1Status =
-  (typeof ChartOfAccountsControllerFindAllV1Status)[keyof typeof ChartOfAccountsControllerFindAllV1Status];
+export type ChartOfAccountsControllerFindAllV1Status = typeof ChartOfAccountsControllerFindAllV1Status[keyof typeof ChartOfAccountsControllerFindAllV1Status];
+
 
 export const ChartOfAccountsControllerFindAllV1Status = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
-export type ChartOfAccountsControllerFindAllV1AccountType =
-  (typeof ChartOfAccountsControllerFindAllV1AccountType)[keyof typeof ChartOfAccountsControllerFindAllV1AccountType];
+export type ChartOfAccountsControllerFindAllV1AccountType = typeof ChartOfAccountsControllerFindAllV1AccountType[keyof typeof ChartOfAccountsControllerFindAllV1AccountType];
+
 
 export const ChartOfAccountsControllerFindAllV1AccountType = {
-  ASSET: "ASSET",
-  EXPENSE: "EXPENSE",
-  REVENUE: "REVENUE",
-  LIABILITY: "LIABILITY",
-  EQUITY: "EQUITY",
+  ASSET: 'ASSET',
+  EXPENSE: 'EXPENSE',
+  REVENUE: 'REVENUE',
+  LIABILITY: 'LIABILITY',
+  EQUITY: 'EQUITY',
 } as const;
 
-export type ChartOfAccountsControllerFindAllV1AccountNature =
-  (typeof ChartOfAccountsControllerFindAllV1AccountNature)[keyof typeof ChartOfAccountsControllerFindAllV1AccountNature];
+export type ChartOfAccountsControllerFindAllV1AccountNature = typeof ChartOfAccountsControllerFindAllV1AccountNature[keyof typeof ChartOfAccountsControllerFindAllV1AccountNature];
+
 
 export const ChartOfAccountsControllerFindAllV1AccountNature = {
-  DEBIT: "DEBIT",
-  CREDIT: "CREDIT",
+  DEBIT: 'DEBIT',
+  CREDIT: 'CREDIT',
 } as const;
 
 export type ChartOfAccountsControllerFindOptionsV1Params = {
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  accountLevel?: ChartOfAccountsControllerFindOptionsV1AccountLevel;
-  status?: ChartOfAccountsControllerFindOptionsV1Status;
-  accountType?: ChartOfAccountsControllerFindOptionsV1AccountType;
-  accountNature?: ChartOfAccountsControllerFindOptionsV1AccountNature;
-  postingOnly?: boolean;
-  parentAccountId?: string;
+/**
+ * @maxLength 120
+ */
+search?: string;
+accountLevel?: ChartOfAccountsControllerFindOptionsV1AccountLevel;
+status?: ChartOfAccountsControllerFindOptionsV1Status;
+accountType?: ChartOfAccountsControllerFindOptionsV1AccountType;
+accountNature?: ChartOfAccountsControllerFindOptionsV1AccountNature;
+postingOnly?: boolean;
+parentAccountId?: string;
 };
 
-export type ChartOfAccountsControllerFindOptionsV1AccountLevel =
-  (typeof ChartOfAccountsControllerFindOptionsV1AccountLevel)[keyof typeof ChartOfAccountsControllerFindOptionsV1AccountLevel];
+export type ChartOfAccountsControllerFindOptionsV1AccountLevel = typeof ChartOfAccountsControllerFindOptionsV1AccountLevel[keyof typeof ChartOfAccountsControllerFindOptionsV1AccountLevel];
+
 
 export const ChartOfAccountsControllerFindOptionsV1AccountLevel = {
-  SUB3: "SUB3",
-  SUB1: "SUB1",
-  SUB2: "SUB2",
-  MAJOR: "MAJOR",
-  SPECIFIC: "SPECIFIC",
+  SUB3: 'SUB3',
+  SUB1: 'SUB1',
+  SUB2: 'SUB2',
+  MAJOR: 'MAJOR',
+  SPECIFIC: 'SPECIFIC',
 } as const;
 
-export type ChartOfAccountsControllerFindOptionsV1Status =
-  (typeof ChartOfAccountsControllerFindOptionsV1Status)[keyof typeof ChartOfAccountsControllerFindOptionsV1Status];
+export type ChartOfAccountsControllerFindOptionsV1Status = typeof ChartOfAccountsControllerFindOptionsV1Status[keyof typeof ChartOfAccountsControllerFindOptionsV1Status];
+
 
 export const ChartOfAccountsControllerFindOptionsV1Status = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
-export type ChartOfAccountsControllerFindOptionsV1AccountType =
-  (typeof ChartOfAccountsControllerFindOptionsV1AccountType)[keyof typeof ChartOfAccountsControllerFindOptionsV1AccountType];
+export type ChartOfAccountsControllerFindOptionsV1AccountType = typeof ChartOfAccountsControllerFindOptionsV1AccountType[keyof typeof ChartOfAccountsControllerFindOptionsV1AccountType];
+
 
 export const ChartOfAccountsControllerFindOptionsV1AccountType = {
-  ASSET: "ASSET",
-  EXPENSE: "EXPENSE",
-  REVENUE: "REVENUE",
-  LIABILITY: "LIABILITY",
-  EQUITY: "EQUITY",
+  ASSET: 'ASSET',
+  EXPENSE: 'EXPENSE',
+  REVENUE: 'REVENUE',
+  LIABILITY: 'LIABILITY',
+  EQUITY: 'EQUITY',
 } as const;
 
-export type ChartOfAccountsControllerFindOptionsV1AccountNature =
-  (typeof ChartOfAccountsControllerFindOptionsV1AccountNature)[keyof typeof ChartOfAccountsControllerFindOptionsV1AccountNature];
+export type ChartOfAccountsControllerFindOptionsV1AccountNature = typeof ChartOfAccountsControllerFindOptionsV1AccountNature[keyof typeof ChartOfAccountsControllerFindOptionsV1AccountNature];
+
 
 export const ChartOfAccountsControllerFindOptionsV1AccountNature = {
-  DEBIT: "DEBIT",
-  CREDIT: "CREDIT",
+  DEBIT: 'DEBIT',
+  CREDIT: 'CREDIT',
 } as const;
 
 export type ChartOfAccountsControllerFindPostingAccountsV1Params = {
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  accountLevel?: ChartOfAccountsControllerFindPostingAccountsV1AccountLevel;
-  status?: ChartOfAccountsControllerFindPostingAccountsV1Status;
-  accountType?: ChartOfAccountsControllerFindPostingAccountsV1AccountType;
-  accountNature?: ChartOfAccountsControllerFindPostingAccountsV1AccountNature;
-  postingOnly?: boolean;
-  parentAccountId?: string;
+/**
+ * @maxLength 120
+ */
+search?: string;
+accountLevel?: ChartOfAccountsControllerFindPostingAccountsV1AccountLevel;
+status?: ChartOfAccountsControllerFindPostingAccountsV1Status;
+accountType?: ChartOfAccountsControllerFindPostingAccountsV1AccountType;
+accountNature?: ChartOfAccountsControllerFindPostingAccountsV1AccountNature;
+postingOnly?: boolean;
+parentAccountId?: string;
 };
 
-export type ChartOfAccountsControllerFindPostingAccountsV1AccountLevel =
-  (typeof ChartOfAccountsControllerFindPostingAccountsV1AccountLevel)[keyof typeof ChartOfAccountsControllerFindPostingAccountsV1AccountLevel];
+export type ChartOfAccountsControllerFindPostingAccountsV1AccountLevel = typeof ChartOfAccountsControllerFindPostingAccountsV1AccountLevel[keyof typeof ChartOfAccountsControllerFindPostingAccountsV1AccountLevel];
+
 
 export const ChartOfAccountsControllerFindPostingAccountsV1AccountLevel = {
-  SUB3: "SUB3",
-  SUB1: "SUB1",
-  SUB2: "SUB2",
-  MAJOR: "MAJOR",
-  SPECIFIC: "SPECIFIC",
+  SUB3: 'SUB3',
+  SUB1: 'SUB1',
+  SUB2: 'SUB2',
+  MAJOR: 'MAJOR',
+  SPECIFIC: 'SPECIFIC',
 } as const;
 
-export type ChartOfAccountsControllerFindPostingAccountsV1Status =
-  (typeof ChartOfAccountsControllerFindPostingAccountsV1Status)[keyof typeof ChartOfAccountsControllerFindPostingAccountsV1Status];
+export type ChartOfAccountsControllerFindPostingAccountsV1Status = typeof ChartOfAccountsControllerFindPostingAccountsV1Status[keyof typeof ChartOfAccountsControllerFindPostingAccountsV1Status];
+
 
 export const ChartOfAccountsControllerFindPostingAccountsV1Status = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
-export type ChartOfAccountsControllerFindPostingAccountsV1AccountType =
-  (typeof ChartOfAccountsControllerFindPostingAccountsV1AccountType)[keyof typeof ChartOfAccountsControllerFindPostingAccountsV1AccountType];
+export type ChartOfAccountsControllerFindPostingAccountsV1AccountType = typeof ChartOfAccountsControllerFindPostingAccountsV1AccountType[keyof typeof ChartOfAccountsControllerFindPostingAccountsV1AccountType];
+
 
 export const ChartOfAccountsControllerFindPostingAccountsV1AccountType = {
-  ASSET: "ASSET",
-  EXPENSE: "EXPENSE",
-  REVENUE: "REVENUE",
-  LIABILITY: "LIABILITY",
-  EQUITY: "EQUITY",
+  ASSET: 'ASSET',
+  EXPENSE: 'EXPENSE',
+  REVENUE: 'REVENUE',
+  LIABILITY: 'LIABILITY',
+  EQUITY: 'EQUITY',
 } as const;
 
-export type ChartOfAccountsControllerFindPostingAccountsV1AccountNature =
-  (typeof ChartOfAccountsControllerFindPostingAccountsV1AccountNature)[keyof typeof ChartOfAccountsControllerFindPostingAccountsV1AccountNature];
+export type ChartOfAccountsControllerFindPostingAccountsV1AccountNature = typeof ChartOfAccountsControllerFindPostingAccountsV1AccountNature[keyof typeof ChartOfAccountsControllerFindPostingAccountsV1AccountNature];
+
 
 export const ChartOfAccountsControllerFindPostingAccountsV1AccountNature = {
-  DEBIT: "DEBIT",
-  CREDIT: "CREDIT",
+  DEBIT: 'DEBIT',
+  CREDIT: 'CREDIT',
 } as const;
 
 export type ChartOfAccountsControllerFindAllAccountsV1Params = {
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  accountLevel?: ChartOfAccountsControllerFindAllAccountsV1AccountLevel;
-  status?: ChartOfAccountsControllerFindAllAccountsV1Status;
-  accountType?: ChartOfAccountsControllerFindAllAccountsV1AccountType;
-  accountNature?: ChartOfAccountsControllerFindAllAccountsV1AccountNature;
-  postingOnly?: boolean;
-  parentAccountId?: string;
+/**
+ * @maxLength 120
+ */
+search?: string;
+accountLevel?: ChartOfAccountsControllerFindAllAccountsV1AccountLevel;
+status?: ChartOfAccountsControllerFindAllAccountsV1Status;
+accountType?: ChartOfAccountsControllerFindAllAccountsV1AccountType;
+accountNature?: ChartOfAccountsControllerFindAllAccountsV1AccountNature;
+postingOnly?: boolean;
+parentAccountId?: string;
 };
 
-export type ChartOfAccountsControllerFindAllAccountsV1AccountLevel =
-  (typeof ChartOfAccountsControllerFindAllAccountsV1AccountLevel)[keyof typeof ChartOfAccountsControllerFindAllAccountsV1AccountLevel];
+export type ChartOfAccountsControllerFindAllAccountsV1AccountLevel = typeof ChartOfAccountsControllerFindAllAccountsV1AccountLevel[keyof typeof ChartOfAccountsControllerFindAllAccountsV1AccountLevel];
+
 
 export const ChartOfAccountsControllerFindAllAccountsV1AccountLevel = {
-  SUB3: "SUB3",
-  SUB1: "SUB1",
-  SUB2: "SUB2",
-  MAJOR: "MAJOR",
-  SPECIFIC: "SPECIFIC",
+  SUB3: 'SUB3',
+  SUB1: 'SUB1',
+  SUB2: 'SUB2',
+  MAJOR: 'MAJOR',
+  SPECIFIC: 'SPECIFIC',
 } as const;
 
-export type ChartOfAccountsControllerFindAllAccountsV1Status =
-  (typeof ChartOfAccountsControllerFindAllAccountsV1Status)[keyof typeof ChartOfAccountsControllerFindAllAccountsV1Status];
+export type ChartOfAccountsControllerFindAllAccountsV1Status = typeof ChartOfAccountsControllerFindAllAccountsV1Status[keyof typeof ChartOfAccountsControllerFindAllAccountsV1Status];
+
 
 export const ChartOfAccountsControllerFindAllAccountsV1Status = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
-export type ChartOfAccountsControllerFindAllAccountsV1AccountType =
-  (typeof ChartOfAccountsControllerFindAllAccountsV1AccountType)[keyof typeof ChartOfAccountsControllerFindAllAccountsV1AccountType];
+export type ChartOfAccountsControllerFindAllAccountsV1AccountType = typeof ChartOfAccountsControllerFindAllAccountsV1AccountType[keyof typeof ChartOfAccountsControllerFindAllAccountsV1AccountType];
+
 
 export const ChartOfAccountsControllerFindAllAccountsV1AccountType = {
-  ASSET: "ASSET",
-  EXPENSE: "EXPENSE",
-  REVENUE: "REVENUE",
-  LIABILITY: "LIABILITY",
-  EQUITY: "EQUITY",
+  ASSET: 'ASSET',
+  EXPENSE: 'EXPENSE',
+  REVENUE: 'REVENUE',
+  LIABILITY: 'LIABILITY',
+  EQUITY: 'EQUITY',
 } as const;
 
-export type ChartOfAccountsControllerFindAllAccountsV1AccountNature =
-  (typeof ChartOfAccountsControllerFindAllAccountsV1AccountNature)[keyof typeof ChartOfAccountsControllerFindAllAccountsV1AccountNature];
+export type ChartOfAccountsControllerFindAllAccountsV1AccountNature = typeof ChartOfAccountsControllerFindAllAccountsV1AccountNature[keyof typeof ChartOfAccountsControllerFindAllAccountsV1AccountNature];
+
 
 export const ChartOfAccountsControllerFindAllAccountsV1AccountNature = {
-  DEBIT: "DEBIT",
-  CREDIT: "CREDIT",
+  DEBIT: 'DEBIT',
+  CREDIT: 'CREDIT',
 } as const;
 
 export type ChartOfAccountsControllerFindNextCodeV1Params = {
-  parentAccountId?: string;
-  accountLevel: ChartOfAccountsControllerFindNextCodeV1AccountLevel;
+parentAccountId?: string;
+accountLevel: ChartOfAccountsControllerFindNextCodeV1AccountLevel;
 };
 
-export type ChartOfAccountsControllerFindNextCodeV1AccountLevel =
-  (typeof ChartOfAccountsControllerFindNextCodeV1AccountLevel)[keyof typeof ChartOfAccountsControllerFindNextCodeV1AccountLevel];
+export type ChartOfAccountsControllerFindNextCodeV1AccountLevel = typeof ChartOfAccountsControllerFindNextCodeV1AccountLevel[keyof typeof ChartOfAccountsControllerFindNextCodeV1AccountLevel];
+
 
 export const ChartOfAccountsControllerFindNextCodeV1AccountLevel = {
-  SUB3: "SUB3",
-  SUB1: "SUB1",
-  SUB2: "SUB2",
-  MAJOR: "MAJOR",
-  SPECIFIC: "SPECIFIC",
+  SUB3: 'SUB3',
+  SUB1: 'SUB1',
+  SUB2: 'SUB2',
+  MAJOR: 'MAJOR',
+  SPECIFIC: 'SPECIFIC',
 } as const;
 
 export type TermsMaintenanceControllerFindAllV1Params = {
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  dateMode?: TermsMaintenanceControllerFindAllV1DateMode;
-  status?: TermsMaintenanceControllerFindAllV1Status;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   * @maximum 500
-   */
-  limit?: number;
-  sortBy?: TermsMaintenanceControllerFindAllV1SortBy;
-  sortDirection?: TermsMaintenanceControllerFindAllV1SortDirection;
+/**
+ * @maxLength 120
+ */
+search?: string;
+dateMode?: TermsMaintenanceControllerFindAllV1DateMode;
+status?: TermsMaintenanceControllerFindAllV1Status;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
+sortBy?: TermsMaintenanceControllerFindAllV1SortBy;
+sortDirection?: TermsMaintenanceControllerFindAllV1SortDirection;
 };
 
-export type TermsMaintenanceControllerFindAllV1DateMode =
-  (typeof TermsMaintenanceControllerFindAllV1DateMode)[keyof typeof TermsMaintenanceControllerFindAllV1DateMode];
+export type TermsMaintenanceControllerFindAllV1DateMode = typeof TermsMaintenanceControllerFindAllV1DateMode[keyof typeof TermsMaintenanceControllerFindAllV1DateMode];
+
 
 export const TermsMaintenanceControllerFindAllV1DateMode = {
-  DAY: "DAY",
-  MONTH: "MONTH",
-  YEAR: "YEAR",
+  DAY: 'DAY',
+  MONTH: 'MONTH',
+  YEAR: 'YEAR',
 } as const;
 
-export type TermsMaintenanceControllerFindAllV1Status =
-  (typeof TermsMaintenanceControllerFindAllV1Status)[keyof typeof TermsMaintenanceControllerFindAllV1Status];
+export type TermsMaintenanceControllerFindAllV1Status = typeof TermsMaintenanceControllerFindAllV1Status[keyof typeof TermsMaintenanceControllerFindAllV1Status];
+
 
 export const TermsMaintenanceControllerFindAllV1Status = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
-export type TermsMaintenanceControllerFindAllV1SortBy =
-  (typeof TermsMaintenanceControllerFindAllV1SortBy)[keyof typeof TermsMaintenanceControllerFindAllV1SortBy];
+export type TermsMaintenanceControllerFindAllV1SortBy = typeof TermsMaintenanceControllerFindAllV1SortBy[keyof typeof TermsMaintenanceControllerFindAllV1SortBy];
+
 
 export const TermsMaintenanceControllerFindAllV1SortBy = {
-  name: "name",
-  dateMode: "dateMode",
-  period: "period",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  name: 'name',
+  dateMode: 'dateMode',
+  period: 'period',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type TermsMaintenanceControllerFindAllV1SortDirection =
-  (typeof TermsMaintenanceControllerFindAllV1SortDirection)[keyof typeof TermsMaintenanceControllerFindAllV1SortDirection];
+export type TermsMaintenanceControllerFindAllV1SortDirection = typeof TermsMaintenanceControllerFindAllV1SortDirection[keyof typeof TermsMaintenanceControllerFindAllV1SortDirection];
+
 
 export const TermsMaintenanceControllerFindAllV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type TermsMaintenanceControllerFindOptionsV1Params = {
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  dateMode?: TermsMaintenanceControllerFindOptionsV1DateMode;
+/**
+ * @maxLength 120
+ */
+search?: string;
+dateMode?: TermsMaintenanceControllerFindOptionsV1DateMode;
 };
 
-export type TermsMaintenanceControllerFindOptionsV1DateMode =
-  (typeof TermsMaintenanceControllerFindOptionsV1DateMode)[keyof typeof TermsMaintenanceControllerFindOptionsV1DateMode];
+export type TermsMaintenanceControllerFindOptionsV1DateMode = typeof TermsMaintenanceControllerFindOptionsV1DateMode[keyof typeof TermsMaintenanceControllerFindOptionsV1DateMode];
+
 
 export const TermsMaintenanceControllerFindOptionsV1DateMode = {
-  DAY: "DAY",
-  MONTH: "MONTH",
-  YEAR: "YEAR",
+  DAY: 'DAY',
+  MONTH: 'MONTH',
+  YEAR: 'YEAR',
 } as const;
 
 export type UnitOfMeasurementControllerFindAllV1Params = {
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  quantityMode?: UnitOfMeasurementControllerFindAllV1QuantityMode;
-  status?: UnitOfMeasurementControllerFindAllV1Status;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   * @maximum 500
-   */
-  limit?: number;
-  sortBy?: UnitOfMeasurementControllerFindAllV1SortBy;
-  sortDirection?: UnitOfMeasurementControllerFindAllV1SortDirection;
+/**
+ * @maxLength 120
+ */
+search?: string;
+quantityMode?: UnitOfMeasurementControllerFindAllV1QuantityMode;
+status?: UnitOfMeasurementControllerFindAllV1Status;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
+sortBy?: UnitOfMeasurementControllerFindAllV1SortBy;
+sortDirection?: UnitOfMeasurementControllerFindAllV1SortDirection;
 };
 
-export type UnitOfMeasurementControllerFindAllV1QuantityMode =
-  (typeof UnitOfMeasurementControllerFindAllV1QuantityMode)[keyof typeof UnitOfMeasurementControllerFindAllV1QuantityMode];
+export type UnitOfMeasurementControllerFindAllV1QuantityMode = typeof UnitOfMeasurementControllerFindAllV1QuantityMode[keyof typeof UnitOfMeasurementControllerFindAllV1QuantityMode];
+
 
 export const UnitOfMeasurementControllerFindAllV1QuantityMode = {
-  INTEGER: "INTEGER",
-  FLOAT: "FLOAT",
+  INTEGER: 'INTEGER',
+  FLOAT: 'FLOAT',
 } as const;
 
-export type UnitOfMeasurementControllerFindAllV1Status =
-  (typeof UnitOfMeasurementControllerFindAllV1Status)[keyof typeof UnitOfMeasurementControllerFindAllV1Status];
+export type UnitOfMeasurementControllerFindAllV1Status = typeof UnitOfMeasurementControllerFindAllV1Status[keyof typeof UnitOfMeasurementControllerFindAllV1Status];
+
 
 export const UnitOfMeasurementControllerFindAllV1Status = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
-export type UnitOfMeasurementControllerFindAllV1SortBy =
-  (typeof UnitOfMeasurementControllerFindAllV1SortBy)[keyof typeof UnitOfMeasurementControllerFindAllV1SortBy];
+export type UnitOfMeasurementControllerFindAllV1SortBy = typeof UnitOfMeasurementControllerFindAllV1SortBy[keyof typeof UnitOfMeasurementControllerFindAllV1SortBy];
+
 
 export const UnitOfMeasurementControllerFindAllV1SortBy = {
-  name: "name",
-  symbol: "symbol",
-  quantityMode: "quantityMode",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  name: 'name',
+  symbol: 'symbol',
+  quantityMode: 'quantityMode',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type UnitOfMeasurementControllerFindAllV1SortDirection =
-  (typeof UnitOfMeasurementControllerFindAllV1SortDirection)[keyof typeof UnitOfMeasurementControllerFindAllV1SortDirection];
+export type UnitOfMeasurementControllerFindAllV1SortDirection = typeof UnitOfMeasurementControllerFindAllV1SortDirection[keyof typeof UnitOfMeasurementControllerFindAllV1SortDirection];
+
 
 export const UnitOfMeasurementControllerFindAllV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type UnitOfMeasurementControllerFindOptionsV1Params = {
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  quantityMode?: UnitOfMeasurementControllerFindOptionsV1QuantityMode;
+/**
+ * @maxLength 120
+ */
+search?: string;
+quantityMode?: UnitOfMeasurementControllerFindOptionsV1QuantityMode;
 };
 
-export type UnitOfMeasurementControllerFindOptionsV1QuantityMode =
-  (typeof UnitOfMeasurementControllerFindOptionsV1QuantityMode)[keyof typeof UnitOfMeasurementControllerFindOptionsV1QuantityMode];
+export type UnitOfMeasurementControllerFindOptionsV1QuantityMode = typeof UnitOfMeasurementControllerFindOptionsV1QuantityMode[keyof typeof UnitOfMeasurementControllerFindOptionsV1QuantityMode];
+
 
 export const UnitOfMeasurementControllerFindOptionsV1QuantityMode = {
-  INTEGER: "INTEGER",
-  FLOAT: "FLOAT",
+  INTEGER: 'INTEGER',
+  FLOAT: 'FLOAT',
 } as const;
 
 export type PaymentTypeMaintenanceControllerFindAllV1Params = {
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  classification?: PaymentTypeMaintenanceControllerFindAllV1Classification;
-  status?: PaymentTypeMaintenanceControllerFindAllV1Status;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   * @maximum 500
-   */
-  limit?: number;
-  sortBy?: PaymentTypeMaintenanceControllerFindAllV1SortBy;
-  sortDirection?: PaymentTypeMaintenanceControllerFindAllV1SortDirection;
+/**
+ * @maxLength 120
+ */
+search?: string;
+classification?: PaymentTypeMaintenanceControllerFindAllV1Classification;
+status?: PaymentTypeMaintenanceControllerFindAllV1Status;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
+sortBy?: PaymentTypeMaintenanceControllerFindAllV1SortBy;
+sortDirection?: PaymentTypeMaintenanceControllerFindAllV1SortDirection;
 };
 
-export type PaymentTypeMaintenanceControllerFindAllV1Classification =
-  (typeof PaymentTypeMaintenanceControllerFindAllV1Classification)[keyof typeof PaymentTypeMaintenanceControllerFindAllV1Classification];
+export type PaymentTypeMaintenanceControllerFindAllV1Classification = typeof PaymentTypeMaintenanceControllerFindAllV1Classification[keyof typeof PaymentTypeMaintenanceControllerFindAllV1Classification];
+
 
 export const PaymentTypeMaintenanceControllerFindAllV1Classification = {
-  BANK_TRANSFER: "BANK_TRANSFER",
-  CHECK: "CHECK",
-  DIGITAL_WALLET: "DIGITAL_WALLET",
-  DEBIT_MEMO: "DEBIT_MEMO",
+  BANK_TRANSFER: 'BANK_TRANSFER',
+  CHECK: 'CHECK',
+  DIGITAL_WALLET: 'DIGITAL_WALLET',
+  DEBIT_MEMO: 'DEBIT_MEMO',
 } as const;
 
-export type PaymentTypeMaintenanceControllerFindAllV1Status =
-  (typeof PaymentTypeMaintenanceControllerFindAllV1Status)[keyof typeof PaymentTypeMaintenanceControllerFindAllV1Status];
+export type PaymentTypeMaintenanceControllerFindAllV1Status = typeof PaymentTypeMaintenanceControllerFindAllV1Status[keyof typeof PaymentTypeMaintenanceControllerFindAllV1Status];
+
 
 export const PaymentTypeMaintenanceControllerFindAllV1Status = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
-export type PaymentTypeMaintenanceControllerFindAllV1SortBy =
-  (typeof PaymentTypeMaintenanceControllerFindAllV1SortBy)[keyof typeof PaymentTypeMaintenanceControllerFindAllV1SortBy];
+export type PaymentTypeMaintenanceControllerFindAllV1SortBy = typeof PaymentTypeMaintenanceControllerFindAllV1SortBy[keyof typeof PaymentTypeMaintenanceControllerFindAllV1SortBy];
+
 
 export const PaymentTypeMaintenanceControllerFindAllV1SortBy = {
-  name: "name",
-  classification: "classification",
-  sortOrder: "sortOrder",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  name: 'name',
+  classification: 'classification',
+  sortOrder: 'sortOrder',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type PaymentTypeMaintenanceControllerFindAllV1SortDirection =
-  (typeof PaymentTypeMaintenanceControllerFindAllV1SortDirection)[keyof typeof PaymentTypeMaintenanceControllerFindAllV1SortDirection];
+export type PaymentTypeMaintenanceControllerFindAllV1SortDirection = typeof PaymentTypeMaintenanceControllerFindAllV1SortDirection[keyof typeof PaymentTypeMaintenanceControllerFindAllV1SortDirection];
+
 
 export const PaymentTypeMaintenanceControllerFindAllV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type PaymentTypeMaintenanceControllerFindOptionsV1Params = {
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  classification?: PaymentTypeMaintenanceControllerFindOptionsV1Classification;
+/**
+ * @maxLength 120
+ */
+search?: string;
+classification?: PaymentTypeMaintenanceControllerFindOptionsV1Classification;
 };
 
-export type PaymentTypeMaintenanceControllerFindOptionsV1Classification =
-  (typeof PaymentTypeMaintenanceControllerFindOptionsV1Classification)[keyof typeof PaymentTypeMaintenanceControllerFindOptionsV1Classification];
+export type PaymentTypeMaintenanceControllerFindOptionsV1Classification = typeof PaymentTypeMaintenanceControllerFindOptionsV1Classification[keyof typeof PaymentTypeMaintenanceControllerFindOptionsV1Classification];
+
 
 export const PaymentTypeMaintenanceControllerFindOptionsV1Classification = {
-  BANK_TRANSFER: "BANK_TRANSFER",
-  CHECK: "CHECK",
-  DIGITAL_WALLET: "DIGITAL_WALLET",
-  DEBIT_MEMO: "DEBIT_MEMO",
+  BANK_TRANSFER: 'BANK_TRANSFER',
+  CHECK: 'CHECK',
+  DIGITAL_WALLET: 'DIGITAL_WALLET',
+  DEBIT_MEMO: 'DEBIT_MEMO',
 } as const;
 
 export type PaymentTypeMaintenanceControllerFindOptionsByTypeV1Params = {
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  classification?: PaymentTypeMaintenanceControllerFindOptionsByTypeV1Classification;
+/**
+ * @maxLength 120
+ */
+search?: string;
+classification?: PaymentTypeMaintenanceControllerFindOptionsByTypeV1Classification;
 };
 
-export type PaymentTypeMaintenanceControllerFindOptionsByTypeV1Classification =
-  (typeof PaymentTypeMaintenanceControllerFindOptionsByTypeV1Classification)[keyof typeof PaymentTypeMaintenanceControllerFindOptionsByTypeV1Classification];
+export type PaymentTypeMaintenanceControllerFindOptionsByTypeV1Classification = typeof PaymentTypeMaintenanceControllerFindOptionsByTypeV1Classification[keyof typeof PaymentTypeMaintenanceControllerFindOptionsByTypeV1Classification];
+
 
 export const PaymentTypeMaintenanceControllerFindOptionsByTypeV1Classification = {
-  BANK_TRANSFER: "BANK_TRANSFER",
-  CHECK: "CHECK",
-  DIGITAL_WALLET: "DIGITAL_WALLET",
-  DEBIT_MEMO: "DEBIT_MEMO",
+  BANK_TRANSFER: 'BANK_TRANSFER',
+  CHECK: 'CHECK',
+  DIGITAL_WALLET: 'DIGITAL_WALLET',
+  DEBIT_MEMO: 'DEBIT_MEMO',
 } as const;
 
 export type DiscountMaintenanceControllerFindAllV1Params = {
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  type?: DiscountMaintenanceControllerFindAllV1Type;
-  valueType?: DiscountMaintenanceControllerFindAllV1ValueType;
-  status?: DiscountMaintenanceControllerFindAllV1Status;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   * @maximum 500
-   */
-  limit?: number;
-  sortBy?: DiscountMaintenanceControllerFindAllV1SortBy;
-  sortDirection?: DiscountMaintenanceControllerFindAllV1SortDirection;
+/**
+ * @maxLength 120
+ */
+search?: string;
+type?: DiscountMaintenanceControllerFindAllV1Type;
+valueType?: DiscountMaintenanceControllerFindAllV1ValueType;
+status?: DiscountMaintenanceControllerFindAllV1Status;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
+sortBy?: DiscountMaintenanceControllerFindAllV1SortBy;
+sortDirection?: DiscountMaintenanceControllerFindAllV1SortDirection;
 };
 
-export type DiscountMaintenanceControllerFindAllV1Type =
-  (typeof DiscountMaintenanceControllerFindAllV1Type)[keyof typeof DiscountMaintenanceControllerFindAllV1Type];
+export type DiscountMaintenanceControllerFindAllV1Type = typeof DiscountMaintenanceControllerFindAllV1Type[keyof typeof DiscountMaintenanceControllerFindAllV1Type];
+
 
 export const DiscountMaintenanceControllerFindAllV1Type = {
-  SALES: "SALES",
-  PURCHASES: "PURCHASES",
+  SALES: 'SALES',
+  PURCHASES: 'PURCHASES',
 } as const;
 
-export type DiscountMaintenanceControllerFindAllV1ValueType =
-  (typeof DiscountMaintenanceControllerFindAllV1ValueType)[keyof typeof DiscountMaintenanceControllerFindAllV1ValueType];
+export type DiscountMaintenanceControllerFindAllV1ValueType = typeof DiscountMaintenanceControllerFindAllV1ValueType[keyof typeof DiscountMaintenanceControllerFindAllV1ValueType];
+
 
 export const DiscountMaintenanceControllerFindAllV1ValueType = {
-  PERCENTAGE: "PERCENTAGE",
-  FIXED: "FIXED",
+  PERCENTAGE: 'PERCENTAGE',
+  FIXED: 'FIXED',
 } as const;
 
-export type DiscountMaintenanceControllerFindAllV1Status =
-  (typeof DiscountMaintenanceControllerFindAllV1Status)[keyof typeof DiscountMaintenanceControllerFindAllV1Status];
+export type DiscountMaintenanceControllerFindAllV1Status = typeof DiscountMaintenanceControllerFindAllV1Status[keyof typeof DiscountMaintenanceControllerFindAllV1Status];
+
 
 export const DiscountMaintenanceControllerFindAllV1Status = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
-export type DiscountMaintenanceControllerFindAllV1SortBy =
-  (typeof DiscountMaintenanceControllerFindAllV1SortBy)[keyof typeof DiscountMaintenanceControllerFindAllV1SortBy];
+export type DiscountMaintenanceControllerFindAllV1SortBy = typeof DiscountMaintenanceControllerFindAllV1SortBy[keyof typeof DiscountMaintenanceControllerFindAllV1SortBy];
+
 
 export const DiscountMaintenanceControllerFindAllV1SortBy = {
-  name: "name",
-  type: "type",
-  valueType: "valueType",
-  value: "value",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  name: 'name',
+  type: 'type',
+  valueType: 'valueType',
+  value: 'value',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type DiscountMaintenanceControllerFindAllV1SortDirection =
-  (typeof DiscountMaintenanceControllerFindAllV1SortDirection)[keyof typeof DiscountMaintenanceControllerFindAllV1SortDirection];
+export type DiscountMaintenanceControllerFindAllV1SortDirection = typeof DiscountMaintenanceControllerFindAllV1SortDirection[keyof typeof DiscountMaintenanceControllerFindAllV1SortDirection];
+
 
 export const DiscountMaintenanceControllerFindAllV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type DiscountMaintenanceControllerFindOptionsV1Params = {
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  type?: DiscountMaintenanceControllerFindOptionsV1Type;
-  valueType?: DiscountMaintenanceControllerFindOptionsV1ValueType;
+/**
+ * @maxLength 120
+ */
+search?: string;
+type?: DiscountMaintenanceControllerFindOptionsV1Type;
+valueType?: DiscountMaintenanceControllerFindOptionsV1ValueType;
 };
 
-export type DiscountMaintenanceControllerFindOptionsV1Type =
-  (typeof DiscountMaintenanceControllerFindOptionsV1Type)[keyof typeof DiscountMaintenanceControllerFindOptionsV1Type];
+export type DiscountMaintenanceControllerFindOptionsV1Type = typeof DiscountMaintenanceControllerFindOptionsV1Type[keyof typeof DiscountMaintenanceControllerFindOptionsV1Type];
+
 
 export const DiscountMaintenanceControllerFindOptionsV1Type = {
-  SALES: "SALES",
-  PURCHASES: "PURCHASES",
+  SALES: 'SALES',
+  PURCHASES: 'PURCHASES',
 } as const;
 
-export type DiscountMaintenanceControllerFindOptionsV1ValueType =
-  (typeof DiscountMaintenanceControllerFindOptionsV1ValueType)[keyof typeof DiscountMaintenanceControllerFindOptionsV1ValueType];
+export type DiscountMaintenanceControllerFindOptionsV1ValueType = typeof DiscountMaintenanceControllerFindOptionsV1ValueType[keyof typeof DiscountMaintenanceControllerFindOptionsV1ValueType];
+
 
 export const DiscountMaintenanceControllerFindOptionsV1ValueType = {
-  PERCENTAGE: "PERCENTAGE",
-  FIXED: "FIXED",
+  PERCENTAGE: 'PERCENTAGE',
+  FIXED: 'FIXED',
 } as const;
 
 export type DiscountMaintenanceControllerFindOptionsByTypeV1Params = {
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  type?: DiscountMaintenanceControllerFindOptionsByTypeV1Type;
-  valueType?: DiscountMaintenanceControllerFindOptionsByTypeV1ValueType;
+/**
+ * @maxLength 120
+ */
+search?: string;
+type?: DiscountMaintenanceControllerFindOptionsByTypeV1Type;
+valueType?: DiscountMaintenanceControllerFindOptionsByTypeV1ValueType;
 };
 
-export type DiscountMaintenanceControllerFindOptionsByTypeV1Type =
-  (typeof DiscountMaintenanceControllerFindOptionsByTypeV1Type)[keyof typeof DiscountMaintenanceControllerFindOptionsByTypeV1Type];
+export type DiscountMaintenanceControllerFindOptionsByTypeV1Type = typeof DiscountMaintenanceControllerFindOptionsByTypeV1Type[keyof typeof DiscountMaintenanceControllerFindOptionsByTypeV1Type];
+
 
 export const DiscountMaintenanceControllerFindOptionsByTypeV1Type = {
-  SALES: "SALES",
-  PURCHASES: "PURCHASES",
+  SALES: 'SALES',
+  PURCHASES: 'PURCHASES',
 } as const;
 
-export type DiscountMaintenanceControllerFindOptionsByTypeV1ValueType =
-  (typeof DiscountMaintenanceControllerFindOptionsByTypeV1ValueType)[keyof typeof DiscountMaintenanceControllerFindOptionsByTypeV1ValueType];
+export type DiscountMaintenanceControllerFindOptionsByTypeV1ValueType = typeof DiscountMaintenanceControllerFindOptionsByTypeV1ValueType[keyof typeof DiscountMaintenanceControllerFindOptionsByTypeV1ValueType];
+
 
 export const DiscountMaintenanceControllerFindOptionsByTypeV1ValueType = {
-  PERCENTAGE: "PERCENTAGE",
-  FIXED: "FIXED",
+  PERCENTAGE: 'PERCENTAGE',
+  FIXED: 'FIXED',
 } as const;
 
 export type PartyMaintenanceControllerFindAllV1Params = {
-  /**
-   * @maxLength 120
-   */
-  query?: string;
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  classification?: PartyMaintenanceControllerFindAllV1Classification;
-  partyType?: PartyMaintenanceControllerFindAllV1PartyType;
-  status?: PartyMaintenanceControllerFindAllV1Status;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   * @maximum 500
-   */
-  pageSize?: number;
-  /**
-   * @minimum 1
-   * @maximum 500
-   */
-  limit?: number;
-  sortBy?: PartyMaintenanceControllerFindAllV1SortBy;
-  sortDirection?: PartyMaintenanceControllerFindAllV1SortDirection;
+/**
+ * @maxLength 120
+ */
+query?: string;
+/**
+ * @maxLength 120
+ */
+search?: string;
+classification?: PartyMaintenanceControllerFindAllV1Classification;
+partyType?: PartyMaintenanceControllerFindAllV1PartyType;
+status?: PartyMaintenanceControllerFindAllV1Status;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 500
+ */
+pageSize?: number;
+/**
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
+sortBy?: PartyMaintenanceControllerFindAllV1SortBy;
+sortDirection?: PartyMaintenanceControllerFindAllV1SortDirection;
 };
 
-export type PartyMaintenanceControllerFindAllV1Classification =
-  (typeof PartyMaintenanceControllerFindAllV1Classification)[keyof typeof PartyMaintenanceControllerFindAllV1Classification];
+export type PartyMaintenanceControllerFindAllV1Classification = typeof PartyMaintenanceControllerFindAllV1Classification[keyof typeof PartyMaintenanceControllerFindAllV1Classification];
+
 
 export const PartyMaintenanceControllerFindAllV1Classification = {
-  INDIVIDUAL: "INDIVIDUAL",
-  NON_INDIVIDUAL: "NON_INDIVIDUAL",
+  INDIVIDUAL: 'INDIVIDUAL',
+  NON_INDIVIDUAL: 'NON_INDIVIDUAL',
 } as const;
 
-export type PartyMaintenanceControllerFindAllV1PartyType =
-  (typeof PartyMaintenanceControllerFindAllV1PartyType)[keyof typeof PartyMaintenanceControllerFindAllV1PartyType];
+export type PartyMaintenanceControllerFindAllV1PartyType = typeof PartyMaintenanceControllerFindAllV1PartyType[keyof typeof PartyMaintenanceControllerFindAllV1PartyType];
+
 
 export const PartyMaintenanceControllerFindAllV1PartyType = {
-  VENDOR: "VENDOR",
-  CUSTOMER: "CUSTOMER",
-  EMPLOYEE: "EMPLOYEE",
-  MEMBER: "MEMBER",
+  VENDOR: 'VENDOR',
+  CUSTOMER: 'CUSTOMER',
+  EMPLOYEE: 'EMPLOYEE',
+  MEMBER: 'MEMBER',
 } as const;
 
-export type PartyMaintenanceControllerFindAllV1Status =
-  (typeof PartyMaintenanceControllerFindAllV1Status)[keyof typeof PartyMaintenanceControllerFindAllV1Status];
+export type PartyMaintenanceControllerFindAllV1Status = typeof PartyMaintenanceControllerFindAllV1Status[keyof typeof PartyMaintenanceControllerFindAllV1Status];
+
 
 export const PartyMaintenanceControllerFindAllV1Status = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
-export type PartyMaintenanceControllerFindAllV1SortBy =
-  (typeof PartyMaintenanceControllerFindAllV1SortBy)[keyof typeof PartyMaintenanceControllerFindAllV1SortBy];
+export type PartyMaintenanceControllerFindAllV1SortBy = typeof PartyMaintenanceControllerFindAllV1SortBy[keyof typeof PartyMaintenanceControllerFindAllV1SortBy];
+
 
 export const PartyMaintenanceControllerFindAllV1SortBy = {
-  partyCodeNo: "partyCodeNo",
-  name: "name",
-  classification: "classification",
-  partyTypes: "partyTypes",
-  address: "address",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  partyCodeNo: 'partyCodeNo',
+  name: 'name',
+  classification: 'classification',
+  partyTypes: 'partyTypes',
+  address: 'address',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type PartyMaintenanceControllerFindAllV1SortDirection =
-  (typeof PartyMaintenanceControllerFindAllV1SortDirection)[keyof typeof PartyMaintenanceControllerFindAllV1SortDirection];
+export type PartyMaintenanceControllerFindAllV1SortDirection = typeof PartyMaintenanceControllerFindAllV1SortDirection[keyof typeof PartyMaintenanceControllerFindAllV1SortDirection];
+
 
 export const PartyMaintenanceControllerFindAllV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type PartyMaintenanceControllerFindOptionListV1Params = {
-  /**
-   * Single party type, ALL, or a comma-separated list such as CUSTOMER,VENDOR.
-   * @maxLength 120
-   */
-  partyType?: string;
-  /**
-   * Comma-separated party types. Takes precedence over partyType when provided.
-   * @maxLength 120
-   */
-  partyTypes?: string;
-  /**
-   * any returns parties with at least one requested type; all returns parties with every requested type.
-   */
-  match?: PartyMaintenanceControllerFindOptionListV1Match;
-  /**
-   * basic returns identifying fields only; complete includes address, terms, accounting IDs, and tax defaults.
-   */
-  detail?: PartyMaintenanceControllerFindOptionListV1Detail;
-  /**
-   * Legacy-friendly alias for detail=complete.
-   */
-  includeDetails?: PartyMaintenanceControllerFindOptionListV1IncludeDetails;
-  /**
-   * @maxLength 120
-   */
-  search?: string;
+/**
+ * Single party type, ALL, or a comma-separated list such as CUSTOMER,VENDOR.
+ * @maxLength 120
+ */
+partyType?: string;
+/**
+ * Comma-separated party types. Takes precedence over partyType when provided.
+ * @maxLength 120
+ */
+partyTypes?: string;
+/**
+ * any returns parties with at least one requested type; all returns parties with every requested type.
+ */
+match?: PartyMaintenanceControllerFindOptionListV1Match;
+/**
+ * basic returns identifying fields only; complete includes address, terms, accounting IDs, and tax defaults.
+ */
+detail?: PartyMaintenanceControllerFindOptionListV1Detail;
+/**
+ * Legacy-friendly alias for detail=complete.
+ */
+includeDetails?: PartyMaintenanceControllerFindOptionListV1IncludeDetails;
+/**
+ * @maxLength 120
+ */
+search?: string;
 };
 
-export type PartyMaintenanceControllerFindOptionListV1Match =
-  (typeof PartyMaintenanceControllerFindOptionListV1Match)[keyof typeof PartyMaintenanceControllerFindOptionListV1Match];
+export type PartyMaintenanceControllerFindOptionListV1Match = typeof PartyMaintenanceControllerFindOptionListV1Match[keyof typeof PartyMaintenanceControllerFindOptionListV1Match];
+
 
 export const PartyMaintenanceControllerFindOptionListV1Match = {
-  any: "any",
-  all: "all",
+  any: 'any',
+  all: 'all',
 } as const;
 
-export type PartyMaintenanceControllerFindOptionListV1Detail =
-  (typeof PartyMaintenanceControllerFindOptionListV1Detail)[keyof typeof PartyMaintenanceControllerFindOptionListV1Detail];
+export type PartyMaintenanceControllerFindOptionListV1Detail = typeof PartyMaintenanceControllerFindOptionListV1Detail[keyof typeof PartyMaintenanceControllerFindOptionListV1Detail];
+
 
 export const PartyMaintenanceControllerFindOptionListV1Detail = {
-  basic: "basic",
-  complete: "complete",
+  basic: 'basic',
+  complete: 'complete',
 } as const;
 
-export type PartyMaintenanceControllerFindOptionListV1IncludeDetails =
-  (typeof PartyMaintenanceControllerFindOptionListV1IncludeDetails)[keyof typeof PartyMaintenanceControllerFindOptionListV1IncludeDetails];
+export type PartyMaintenanceControllerFindOptionListV1IncludeDetails = typeof PartyMaintenanceControllerFindOptionListV1IncludeDetails[keyof typeof PartyMaintenanceControllerFindOptionListV1IncludeDetails];
+
 
 export const PartyMaintenanceControllerFindOptionListV1IncludeDetails = {
-  true: "true",
-  false: "false",
+  true: 'true',
+  false: 'false',
 } as const;
 
 export type PartyMaintenanceControllerFindOptionsV1Params = {
-  /**
-   * Comma-separated party types. Takes precedence over partyType when provided.
-   * @maxLength 120
-   */
-  partyTypes?: string;
-  /**
-   * any returns parties with at least one requested type; all returns parties with every requested type.
-   */
-  match?: PartyMaintenanceControllerFindOptionsV1Match;
-  /**
-   * basic returns identifying fields only; complete includes address, terms, accounting IDs, and tax defaults.
-   */
-  detail?: PartyMaintenanceControllerFindOptionsV1Detail;
-  /**
-   * Legacy-friendly alias for detail=complete.
-   */
-  includeDetails?: PartyMaintenanceControllerFindOptionsV1IncludeDetails;
-  /**
-   * @maxLength 120
-   */
-  search?: string;
+/**
+ * Comma-separated party types. Takes precedence over partyType when provided.
+ * @maxLength 120
+ */
+partyTypes?: string;
+/**
+ * any returns parties with at least one requested type; all returns parties with every requested type.
+ */
+match?: PartyMaintenanceControllerFindOptionsV1Match;
+/**
+ * basic returns identifying fields only; complete includes address, terms, accounting IDs, and tax defaults.
+ */
+detail?: PartyMaintenanceControllerFindOptionsV1Detail;
+/**
+ * Legacy-friendly alias for detail=complete.
+ */
+includeDetails?: PartyMaintenanceControllerFindOptionsV1IncludeDetails;
+/**
+ * @maxLength 120
+ */
+search?: string;
 };
 
-export type PartyMaintenanceControllerFindOptionsV1Match =
-  (typeof PartyMaintenanceControllerFindOptionsV1Match)[keyof typeof PartyMaintenanceControllerFindOptionsV1Match];
+export type PartyMaintenanceControllerFindOptionsV1Match = typeof PartyMaintenanceControllerFindOptionsV1Match[keyof typeof PartyMaintenanceControllerFindOptionsV1Match];
+
 
 export const PartyMaintenanceControllerFindOptionsV1Match = {
-  any: "any",
-  all: "all",
+  any: 'any',
+  all: 'all',
 } as const;
 
-export type PartyMaintenanceControllerFindOptionsV1Detail =
-  (typeof PartyMaintenanceControllerFindOptionsV1Detail)[keyof typeof PartyMaintenanceControllerFindOptionsV1Detail];
+export type PartyMaintenanceControllerFindOptionsV1Detail = typeof PartyMaintenanceControllerFindOptionsV1Detail[keyof typeof PartyMaintenanceControllerFindOptionsV1Detail];
+
 
 export const PartyMaintenanceControllerFindOptionsV1Detail = {
-  basic: "basic",
-  complete: "complete",
+  basic: 'basic',
+  complete: 'complete',
 } as const;
 
-export type PartyMaintenanceControllerFindOptionsV1IncludeDetails =
-  (typeof PartyMaintenanceControllerFindOptionsV1IncludeDetails)[keyof typeof PartyMaintenanceControllerFindOptionsV1IncludeDetails];
+export type PartyMaintenanceControllerFindOptionsV1IncludeDetails = typeof PartyMaintenanceControllerFindOptionsV1IncludeDetails[keyof typeof PartyMaintenanceControllerFindOptionsV1IncludeDetails];
+
 
 export const PartyMaintenanceControllerFindOptionsV1IncludeDetails = {
-  true: "true",
-  false: "false",
+  true: 'true',
+  false: 'false',
 } as const;
 
 export type BankMasterfileControllerFindAllV1Params = {
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  status?: BankMasterfileControllerFindAllV1Status;
-  /**
-   * @maxLength 10
-   */
-  currencyCode?: string;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   * @maximum 500
-   */
-  limit?: number;
-  sortBy?: BankMasterfileControllerFindAllV1SortBy;
-  sortDirection?: BankMasterfileControllerFindAllV1SortDirection;
+/**
+ * @maxLength 120
+ */
+search?: string;
+status?: BankMasterfileControllerFindAllV1Status;
+/**
+ * @maxLength 10
+ */
+currencyCode?: string;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
+sortBy?: BankMasterfileControllerFindAllV1SortBy;
+sortDirection?: BankMasterfileControllerFindAllV1SortDirection;
 };
 
-export type BankMasterfileControllerFindAllV1Status =
-  (typeof BankMasterfileControllerFindAllV1Status)[keyof typeof BankMasterfileControllerFindAllV1Status];
+export type BankMasterfileControllerFindAllV1Status = typeof BankMasterfileControllerFindAllV1Status[keyof typeof BankMasterfileControllerFindAllV1Status];
+
 
 export const BankMasterfileControllerFindAllV1Status = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
-export type BankMasterfileControllerFindAllV1SortBy =
-  (typeof BankMasterfileControllerFindAllV1SortBy)[keyof typeof BankMasterfileControllerFindAllV1SortBy];
+export type BankMasterfileControllerFindAllV1SortBy = typeof BankMasterfileControllerFindAllV1SortBy[keyof typeof BankMasterfileControllerFindAllV1SortBy];
+
 
 export const BankMasterfileControllerFindAllV1SortBy = {
-  bankName: "bankName",
-  branch: "branch",
-  accountName: "accountName",
-  accountNumber: "accountNumber",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  bankName: 'bankName',
+  branch: 'branch',
+  accountName: 'accountName',
+  accountNumber: 'accountNumber',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type BankMasterfileControllerFindAllV1SortDirection =
-  (typeof BankMasterfileControllerFindAllV1SortDirection)[keyof typeof BankMasterfileControllerFindAllV1SortDirection];
+export type BankMasterfileControllerFindAllV1SortDirection = typeof BankMasterfileControllerFindAllV1SortDirection[keyof typeof BankMasterfileControllerFindAllV1SortDirection];
+
 
 export const BankMasterfileControllerFindAllV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type BankMasterfileControllerFindOptionsV1Params = {
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  status?: BankMasterfileControllerFindOptionsV1Status;
-  /**
-   * @maxLength 10
-   */
-  currencyCode?: string;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   * @maximum 500
-   */
-  limit?: number;
-  sortBy?: BankMasterfileControllerFindOptionsV1SortBy;
-  sortDirection?: BankMasterfileControllerFindOptionsV1SortDirection;
+/**
+ * @maxLength 120
+ */
+search?: string;
+status?: BankMasterfileControllerFindOptionsV1Status;
+/**
+ * @maxLength 10
+ */
+currencyCode?: string;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
+sortBy?: BankMasterfileControllerFindOptionsV1SortBy;
+sortDirection?: BankMasterfileControllerFindOptionsV1SortDirection;
 };
 
-export type BankMasterfileControllerFindOptionsV1Status =
-  (typeof BankMasterfileControllerFindOptionsV1Status)[keyof typeof BankMasterfileControllerFindOptionsV1Status];
+export type BankMasterfileControllerFindOptionsV1Status = typeof BankMasterfileControllerFindOptionsV1Status[keyof typeof BankMasterfileControllerFindOptionsV1Status];
+
 
 export const BankMasterfileControllerFindOptionsV1Status = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
-export type BankMasterfileControllerFindOptionsV1SortBy =
-  (typeof BankMasterfileControllerFindOptionsV1SortBy)[keyof typeof BankMasterfileControllerFindOptionsV1SortBy];
+export type BankMasterfileControllerFindOptionsV1SortBy = typeof BankMasterfileControllerFindOptionsV1SortBy[keyof typeof BankMasterfileControllerFindOptionsV1SortBy];
+
 
 export const BankMasterfileControllerFindOptionsV1SortBy = {
-  bankName: "bankName",
-  branch: "branch",
-  accountName: "accountName",
-  accountNumber: "accountNumber",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  bankName: 'bankName',
+  branch: 'branch',
+  accountName: 'accountName',
+  accountNumber: 'accountNumber',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type BankMasterfileControllerFindOptionsV1SortDirection =
-  (typeof BankMasterfileControllerFindOptionsV1SortDirection)[keyof typeof BankMasterfileControllerFindOptionsV1SortDirection];
+export type BankMasterfileControllerFindOptionsV1SortDirection = typeof BankMasterfileControllerFindOptionsV1SortDirection[keyof typeof BankMasterfileControllerFindOptionsV1SortDirection];
+
 
 export const BankMasterfileControllerFindOptionsV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type DefaultAccountControllerFindAllV1Params = {
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  type?: DefaultAccountControllerFindAllV1Type;
-  status?: DefaultAccountControllerFindAllV1Status;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   * @maximum 500
-   */
-  limit?: number;
-  sortBy?: DefaultAccountControllerFindAllV1SortBy;
-  sortDirection?: DefaultAccountControllerFindAllV1SortDirection;
+/**
+ * @maxLength 120
+ */
+search?: string;
+type?: DefaultAccountControllerFindAllV1Type;
+status?: DefaultAccountControllerFindAllV1Status;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
+sortBy?: DefaultAccountControllerFindAllV1SortBy;
+sortDirection?: DefaultAccountControllerFindAllV1SortDirection;
 };
 
-export type DefaultAccountControllerFindAllV1Type =
-  (typeof DefaultAccountControllerFindAllV1Type)[keyof typeof DefaultAccountControllerFindAllV1Type];
+export type DefaultAccountControllerFindAllV1Type = typeof DefaultAccountControllerFindAllV1Type[keyof typeof DefaultAccountControllerFindAllV1Type];
+
 
 export const DefaultAccountControllerFindAllV1Type = {
-  EXPENSE: "EXPENSE",
-  COLLECTION: "COLLECTION",
-  FIXED_ASSET: "FIXED_ASSET",
+  EXPENSE: 'EXPENSE',
+  COLLECTION: 'COLLECTION',
+  FIXED_ASSET: 'FIXED_ASSET',
 } as const;
 
-export type DefaultAccountControllerFindAllV1Status =
-  (typeof DefaultAccountControllerFindAllV1Status)[keyof typeof DefaultAccountControllerFindAllV1Status];
+export type DefaultAccountControllerFindAllV1Status = typeof DefaultAccountControllerFindAllV1Status[keyof typeof DefaultAccountControllerFindAllV1Status];
+
 
 export const DefaultAccountControllerFindAllV1Status = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
-export type DefaultAccountControllerFindAllV1SortBy =
-  (typeof DefaultAccountControllerFindAllV1SortBy)[keyof typeof DefaultAccountControllerFindAllV1SortBy];
+export type DefaultAccountControllerFindAllV1SortBy = typeof DefaultAccountControllerFindAllV1SortBy[keyof typeof DefaultAccountControllerFindAllV1SortBy];
+
 
 export const DefaultAccountControllerFindAllV1SortBy = {
-  name: "name",
-  description: "description",
-  type: "type",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  name: 'name',
+  description: 'description',
+  type: 'type',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type DefaultAccountControllerFindAllV1SortDirection =
-  (typeof DefaultAccountControllerFindAllV1SortDirection)[keyof typeof DefaultAccountControllerFindAllV1SortDirection];
+export type DefaultAccountControllerFindAllV1SortDirection = typeof DefaultAccountControllerFindAllV1SortDirection[keyof typeof DefaultAccountControllerFindAllV1SortDirection];
+
 
 export const DefaultAccountControllerFindAllV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type DefaultAccountControllerFindOptionsV1Params = {
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  status?: DefaultAccountControllerFindOptionsV1Status;
+/**
+ * @maxLength 120
+ */
+search?: string;
+status?: DefaultAccountControllerFindOptionsV1Status;
 };
 
-export type DefaultAccountControllerFindOptionsV1Status =
-  (typeof DefaultAccountControllerFindOptionsV1Status)[keyof typeof DefaultAccountControllerFindOptionsV1Status];
+export type DefaultAccountControllerFindOptionsV1Status = typeof DefaultAccountControllerFindOptionsV1Status[keyof typeof DefaultAccountControllerFindOptionsV1Status];
+
 
 export const DefaultAccountControllerFindOptionsV1Status = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export type DefaultAccountControllerFindOptionsByTypeV1Params = {
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  status?: DefaultAccountControllerFindOptionsByTypeV1Status;
+/**
+ * @maxLength 120
+ */
+search?: string;
+status?: DefaultAccountControllerFindOptionsByTypeV1Status;
 };
 
-export type DefaultAccountControllerFindOptionsByTypeV1Status =
-  (typeof DefaultAccountControllerFindOptionsByTypeV1Status)[keyof typeof DefaultAccountControllerFindOptionsByTypeV1Status];
+export type DefaultAccountControllerFindOptionsByTypeV1Status = typeof DefaultAccountControllerFindOptionsByTypeV1Status[keyof typeof DefaultAccountControllerFindOptionsByTypeV1Status];
+
 
 export const DefaultAccountControllerFindOptionsByTypeV1Status = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
 export type ServicesMaintenanceControllerFindAllV1Params = {
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  status?: ServicesMaintenanceControllerFindAllV1Status;
-  accountSetupMode?: ServicesMaintenanceControllerFindAllV1AccountSetupMode;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   * @maximum 500
-   */
-  limit?: number;
-  sortBy?: ServicesMaintenanceControllerFindAllV1SortBy;
-  sortDirection?: ServicesMaintenanceControllerFindAllV1SortDirection;
+/**
+ * @maxLength 120
+ */
+search?: string;
+status?: ServicesMaintenanceControllerFindAllV1Status;
+accountSetupMode?: ServicesMaintenanceControllerFindAllV1AccountSetupMode;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
+sortBy?: ServicesMaintenanceControllerFindAllV1SortBy;
+sortDirection?: ServicesMaintenanceControllerFindAllV1SortDirection;
 };
 
-export type ServicesMaintenanceControllerFindAllV1Status =
-  (typeof ServicesMaintenanceControllerFindAllV1Status)[keyof typeof ServicesMaintenanceControllerFindAllV1Status];
+export type ServicesMaintenanceControllerFindAllV1Status = typeof ServicesMaintenanceControllerFindAllV1Status[keyof typeof ServicesMaintenanceControllerFindAllV1Status];
+
 
 export const ServicesMaintenanceControllerFindAllV1Status = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
-export type ServicesMaintenanceControllerFindAllV1AccountSetupMode =
-  (typeof ServicesMaintenanceControllerFindAllV1AccountSetupMode)[keyof typeof ServicesMaintenanceControllerFindAllV1AccountSetupMode];
+export type ServicesMaintenanceControllerFindAllV1AccountSetupMode = typeof ServicesMaintenanceControllerFindAllV1AccountSetupMode[keyof typeof ServicesMaintenanceControllerFindAllV1AccountSetupMode];
+
 
 export const ServicesMaintenanceControllerFindAllV1AccountSetupMode = {
-  AUTO: "AUTO",
-  EXISTING: "EXISTING",
+  AUTO: 'AUTO',
+  EXISTING: 'EXISTING',
 } as const;
 
-export type ServicesMaintenanceControllerFindAllV1SortBy =
-  (typeof ServicesMaintenanceControllerFindAllV1SortBy)[keyof typeof ServicesMaintenanceControllerFindAllV1SortBy];
+export type ServicesMaintenanceControllerFindAllV1SortBy = typeof ServicesMaintenanceControllerFindAllV1SortBy[keyof typeof ServicesMaintenanceControllerFindAllV1SortBy];
+
 
 export const ServicesMaintenanceControllerFindAllV1SortBy = {
-  serviceName: "serviceName",
-  status: "status",
-  accountSetupMode: "accountSetupMode",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  serviceName: 'serviceName',
+  status: 'status',
+  accountSetupMode: 'accountSetupMode',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type ServicesMaintenanceControllerFindAllV1SortDirection =
-  (typeof ServicesMaintenanceControllerFindAllV1SortDirection)[keyof typeof ServicesMaintenanceControllerFindAllV1SortDirection];
+export type ServicesMaintenanceControllerFindAllV1SortDirection = typeof ServicesMaintenanceControllerFindAllV1SortDirection[keyof typeof ServicesMaintenanceControllerFindAllV1SortDirection];
+
 
 export const ServicesMaintenanceControllerFindAllV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type ServicesMaintenanceControllerFindOptionsV1Params = {
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  status?: ServicesMaintenanceControllerFindOptionsV1Status;
-  accountSetupMode?: ServicesMaintenanceControllerFindOptionsV1AccountSetupMode;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   * @maximum 500
-   */
-  limit?: number;
-  sortBy?: ServicesMaintenanceControllerFindOptionsV1SortBy;
-  sortDirection?: ServicesMaintenanceControllerFindOptionsV1SortDirection;
+/**
+ * @maxLength 120
+ */
+search?: string;
+status?: ServicesMaintenanceControllerFindOptionsV1Status;
+accountSetupMode?: ServicesMaintenanceControllerFindOptionsV1AccountSetupMode;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
+sortBy?: ServicesMaintenanceControllerFindOptionsV1SortBy;
+sortDirection?: ServicesMaintenanceControllerFindOptionsV1SortDirection;
 };
 
-export type ServicesMaintenanceControllerFindOptionsV1Status =
-  (typeof ServicesMaintenanceControllerFindOptionsV1Status)[keyof typeof ServicesMaintenanceControllerFindOptionsV1Status];
+export type ServicesMaintenanceControllerFindOptionsV1Status = typeof ServicesMaintenanceControllerFindOptionsV1Status[keyof typeof ServicesMaintenanceControllerFindOptionsV1Status];
+
 
 export const ServicesMaintenanceControllerFindOptionsV1Status = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
-export type ServicesMaintenanceControllerFindOptionsV1AccountSetupMode =
-  (typeof ServicesMaintenanceControllerFindOptionsV1AccountSetupMode)[keyof typeof ServicesMaintenanceControllerFindOptionsV1AccountSetupMode];
+export type ServicesMaintenanceControllerFindOptionsV1AccountSetupMode = typeof ServicesMaintenanceControllerFindOptionsV1AccountSetupMode[keyof typeof ServicesMaintenanceControllerFindOptionsV1AccountSetupMode];
+
 
 export const ServicesMaintenanceControllerFindOptionsV1AccountSetupMode = {
-  AUTO: "AUTO",
-  EXISTING: "EXISTING",
+  AUTO: 'AUTO',
+  EXISTING: 'EXISTING',
 } as const;
 
-export type ServicesMaintenanceControllerFindOptionsV1SortBy =
-  (typeof ServicesMaintenanceControllerFindOptionsV1SortBy)[keyof typeof ServicesMaintenanceControllerFindOptionsV1SortBy];
+export type ServicesMaintenanceControllerFindOptionsV1SortBy = typeof ServicesMaintenanceControllerFindOptionsV1SortBy[keyof typeof ServicesMaintenanceControllerFindOptionsV1SortBy];
+
 
 export const ServicesMaintenanceControllerFindOptionsV1SortBy = {
-  serviceName: "serviceName",
-  status: "status",
-  accountSetupMode: "accountSetupMode",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  serviceName: 'serviceName',
+  status: 'status',
+  accountSetupMode: 'accountSetupMode',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type ServicesMaintenanceControllerFindOptionsV1SortDirection =
-  (typeof ServicesMaintenanceControllerFindOptionsV1SortDirection)[keyof typeof ServicesMaintenanceControllerFindOptionsV1SortDirection];
+export type ServicesMaintenanceControllerFindOptionsV1SortDirection = typeof ServicesMaintenanceControllerFindOptionsV1SortDirection[keyof typeof ServicesMaintenanceControllerFindOptionsV1SortDirection];
+
 
 export const ServicesMaintenanceControllerFindOptionsV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type ResponsibilityCenterControllerFindAllV1Params = {
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  status?: ResponsibilityCenterControllerFindAllV1Status;
-  category?: ResponsibilityCenterControllerFindAllV1Category;
-  financialType?: ResponsibilityCenterControllerFindAllV1FinancialType;
-  classificationId?: string;
-  typeId?: string;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   * @maximum 500
-   */
-  limit?: number;
-  sortBy?: ResponsibilityCenterControllerFindAllV1SortBy;
-  sortDirection?: ResponsibilityCenterControllerFindAllV1SortDirection;
+/**
+ * @maxLength 120
+ */
+search?: string;
+status?: ResponsibilityCenterControllerFindAllV1Status;
+category?: ResponsibilityCenterControllerFindAllV1Category;
+financialType?: ResponsibilityCenterControllerFindAllV1FinancialType;
+classificationId?: string;
+typeId?: string;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
+sortBy?: ResponsibilityCenterControllerFindAllV1SortBy;
+sortDirection?: ResponsibilityCenterControllerFindAllV1SortDirection;
 };
 
-export type ResponsibilityCenterControllerFindAllV1Status =
-  (typeof ResponsibilityCenterControllerFindAllV1Status)[keyof typeof ResponsibilityCenterControllerFindAllV1Status];
+export type ResponsibilityCenterControllerFindAllV1Status = typeof ResponsibilityCenterControllerFindAllV1Status[keyof typeof ResponsibilityCenterControllerFindAllV1Status];
+
 
 export const ResponsibilityCenterControllerFindAllV1Status = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
-export type ResponsibilityCenterControllerFindAllV1Category =
-  (typeof ResponsibilityCenterControllerFindAllV1Category)[keyof typeof ResponsibilityCenterControllerFindAllV1Category];
+export type ResponsibilityCenterControllerFindAllV1Category = typeof ResponsibilityCenterControllerFindAllV1Category[keyof typeof ResponsibilityCenterControllerFindAllV1Category];
+
 
 export const ResponsibilityCenterControllerFindAllV1Category = {
-  BRANCH: "BRANCH",
-  SECTION: "SECTION",
-  CORPORATE: "CORPORATE",
-  DIVISION: "DIVISION",
-  DEPARTMENT: "DEPARTMENT",
-  TEAM: "TEAM",
-  BUILDING: "BUILDING",
-  PROJECT: "PROJECT",
-  BUSINESS_UNIT: "BUSINESS_UNIT",
-  REGION: "REGION",
-  SALESMAN: "SALESMAN",
-  WAREHOUSE: "WAREHOUSE",
-  OUTLET: "OUTLET",
-  SALES_TERRITORY: "SALES_TERRITORY",
-  FLEET: "FLEET",
+  BRANCH: 'BRANCH',
+  SECTION: 'SECTION',
+  CORPORATE: 'CORPORATE',
+  DIVISION: 'DIVISION',
+  DEPARTMENT: 'DEPARTMENT',
+  TEAM: 'TEAM',
+  BUILDING: 'BUILDING',
+  PROJECT: 'PROJECT',
+  BUSINESS_UNIT: 'BUSINESS_UNIT',
+  REGION: 'REGION',
+  SALESMAN: 'SALESMAN',
+  WAREHOUSE: 'WAREHOUSE',
+  OUTLET: 'OUTLET',
+  SALES_TERRITORY: 'SALES_TERRITORY',
+  FLEET: 'FLEET',
 } as const;
 
-export type ResponsibilityCenterControllerFindAllV1FinancialType =
-  (typeof ResponsibilityCenterControllerFindAllV1FinancialType)[keyof typeof ResponsibilityCenterControllerFindAllV1FinancialType];
+export type ResponsibilityCenterControllerFindAllV1FinancialType = typeof ResponsibilityCenterControllerFindAllV1FinancialType[keyof typeof ResponsibilityCenterControllerFindAllV1FinancialType];
+
 
 export const ResponsibilityCenterControllerFindAllV1FinancialType = {
-  COST_CENTER: "COST_CENTER",
-  REVENUE_CENTER: "REVENUE_CENTER",
-  PROFIT_CENTER: "PROFIT_CENTER",
-  INVESTMENT_CENTER: "INVESTMENT_CENTER",
+  COST_CENTER: 'COST_CENTER',
+  REVENUE_CENTER: 'REVENUE_CENTER',
+  PROFIT_CENTER: 'PROFIT_CENTER',
+  INVESTMENT_CENTER: 'INVESTMENT_CENTER',
 } as const;
 
-export type ResponsibilityCenterControllerFindAllV1SortBy =
-  (typeof ResponsibilityCenterControllerFindAllV1SortBy)[keyof typeof ResponsibilityCenterControllerFindAllV1SortBy];
+export type ResponsibilityCenterControllerFindAllV1SortBy = typeof ResponsibilityCenterControllerFindAllV1SortBy[keyof typeof ResponsibilityCenterControllerFindAllV1SortBy];
+
 
 export const ResponsibilityCenterControllerFindAllV1SortBy = {
-  code: "code",
-  name: "name",
-  category: "category",
-  financialType: "financialType",
-  manager: "manager",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  code: 'code',
+  name: 'name',
+  category: 'category',
+  financialType: 'financialType',
+  manager: 'manager',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type ResponsibilityCenterControllerFindAllV1SortDirection =
-  (typeof ResponsibilityCenterControllerFindAllV1SortDirection)[keyof typeof ResponsibilityCenterControllerFindAllV1SortDirection];
+export type ResponsibilityCenterControllerFindAllV1SortDirection = typeof ResponsibilityCenterControllerFindAllV1SortDirection[keyof typeof ResponsibilityCenterControllerFindAllV1SortDirection];
+
 
 export const ResponsibilityCenterControllerFindAllV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type ResponsibilityCenterControllerFindOptionsV1Params = {
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  status?: ResponsibilityCenterControllerFindOptionsV1Status;
-  category?: ResponsibilityCenterControllerFindOptionsV1Category;
-  financialType?: ResponsibilityCenterControllerFindOptionsV1FinancialType;
-  classificationId?: string;
-  typeId?: string;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   * @maximum 500
-   */
-  limit?: number;
-  sortBy?: ResponsibilityCenterControllerFindOptionsV1SortBy;
-  sortDirection?: ResponsibilityCenterControllerFindOptionsV1SortDirection;
+/**
+ * @maxLength 120
+ */
+search?: string;
+status?: ResponsibilityCenterControllerFindOptionsV1Status;
+category?: ResponsibilityCenterControllerFindOptionsV1Category;
+financialType?: ResponsibilityCenterControllerFindOptionsV1FinancialType;
+classificationId?: string;
+typeId?: string;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
+sortBy?: ResponsibilityCenterControllerFindOptionsV1SortBy;
+sortDirection?: ResponsibilityCenterControllerFindOptionsV1SortDirection;
 };
 
-export type ResponsibilityCenterControllerFindOptionsV1Status =
-  (typeof ResponsibilityCenterControllerFindOptionsV1Status)[keyof typeof ResponsibilityCenterControllerFindOptionsV1Status];
+export type ResponsibilityCenterControllerFindOptionsV1Status = typeof ResponsibilityCenterControllerFindOptionsV1Status[keyof typeof ResponsibilityCenterControllerFindOptionsV1Status];
+
 
 export const ResponsibilityCenterControllerFindOptionsV1Status = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
-export type ResponsibilityCenterControllerFindOptionsV1Category =
-  (typeof ResponsibilityCenterControllerFindOptionsV1Category)[keyof typeof ResponsibilityCenterControllerFindOptionsV1Category];
+export type ResponsibilityCenterControllerFindOptionsV1Category = typeof ResponsibilityCenterControllerFindOptionsV1Category[keyof typeof ResponsibilityCenterControllerFindOptionsV1Category];
+
 
 export const ResponsibilityCenterControllerFindOptionsV1Category = {
-  BRANCH: "BRANCH",
-  SECTION: "SECTION",
-  CORPORATE: "CORPORATE",
-  DIVISION: "DIVISION",
-  DEPARTMENT: "DEPARTMENT",
-  TEAM: "TEAM",
-  BUILDING: "BUILDING",
-  PROJECT: "PROJECT",
-  BUSINESS_UNIT: "BUSINESS_UNIT",
-  REGION: "REGION",
-  SALESMAN: "SALESMAN",
-  WAREHOUSE: "WAREHOUSE",
-  OUTLET: "OUTLET",
-  SALES_TERRITORY: "SALES_TERRITORY",
-  FLEET: "FLEET",
+  BRANCH: 'BRANCH',
+  SECTION: 'SECTION',
+  CORPORATE: 'CORPORATE',
+  DIVISION: 'DIVISION',
+  DEPARTMENT: 'DEPARTMENT',
+  TEAM: 'TEAM',
+  BUILDING: 'BUILDING',
+  PROJECT: 'PROJECT',
+  BUSINESS_UNIT: 'BUSINESS_UNIT',
+  REGION: 'REGION',
+  SALESMAN: 'SALESMAN',
+  WAREHOUSE: 'WAREHOUSE',
+  OUTLET: 'OUTLET',
+  SALES_TERRITORY: 'SALES_TERRITORY',
+  FLEET: 'FLEET',
 } as const;
 
-export type ResponsibilityCenterControllerFindOptionsV1FinancialType =
-  (typeof ResponsibilityCenterControllerFindOptionsV1FinancialType)[keyof typeof ResponsibilityCenterControllerFindOptionsV1FinancialType];
+export type ResponsibilityCenterControllerFindOptionsV1FinancialType = typeof ResponsibilityCenterControllerFindOptionsV1FinancialType[keyof typeof ResponsibilityCenterControllerFindOptionsV1FinancialType];
+
 
 export const ResponsibilityCenterControllerFindOptionsV1FinancialType = {
-  COST_CENTER: "COST_CENTER",
-  REVENUE_CENTER: "REVENUE_CENTER",
-  PROFIT_CENTER: "PROFIT_CENTER",
-  INVESTMENT_CENTER: "INVESTMENT_CENTER",
+  COST_CENTER: 'COST_CENTER',
+  REVENUE_CENTER: 'REVENUE_CENTER',
+  PROFIT_CENTER: 'PROFIT_CENTER',
+  INVESTMENT_CENTER: 'INVESTMENT_CENTER',
 } as const;
 
-export type ResponsibilityCenterControllerFindOptionsV1SortBy =
-  (typeof ResponsibilityCenterControllerFindOptionsV1SortBy)[keyof typeof ResponsibilityCenterControllerFindOptionsV1SortBy];
+export type ResponsibilityCenterControllerFindOptionsV1SortBy = typeof ResponsibilityCenterControllerFindOptionsV1SortBy[keyof typeof ResponsibilityCenterControllerFindOptionsV1SortBy];
+
 
 export const ResponsibilityCenterControllerFindOptionsV1SortBy = {
-  code: "code",
-  name: "name",
-  category: "category",
-  financialType: "financialType",
-  manager: "manager",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  code: 'code',
+  name: 'name',
+  category: 'category',
+  financialType: 'financialType',
+  manager: 'manager',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type ResponsibilityCenterControllerFindOptionsV1SortDirection =
-  (typeof ResponsibilityCenterControllerFindOptionsV1SortDirection)[keyof typeof ResponsibilityCenterControllerFindOptionsV1SortDirection];
+export type ResponsibilityCenterControllerFindOptionsV1SortDirection = typeof ResponsibilityCenterControllerFindOptionsV1SortDirection[keyof typeof ResponsibilityCenterControllerFindOptionsV1SortDirection];
+
 
 export const ResponsibilityCenterControllerFindOptionsV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type ResponsibilityCenterControllerFindOptionsByTypeV1Params = {
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  status?: ResponsibilityCenterControllerFindOptionsByTypeV1Status;
-  category?: ResponsibilityCenterControllerFindOptionsByTypeV1Category;
-  financialType?: ResponsibilityCenterControllerFindOptionsByTypeV1FinancialType;
-  classificationId?: string;
-  typeId?: string;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   * @maximum 500
-   */
-  limit?: number;
-  sortBy?: ResponsibilityCenterControllerFindOptionsByTypeV1SortBy;
-  sortDirection?: ResponsibilityCenterControllerFindOptionsByTypeV1SortDirection;
+/**
+ * @maxLength 120
+ */
+search?: string;
+status?: ResponsibilityCenterControllerFindOptionsByTypeV1Status;
+category?: ResponsibilityCenterControllerFindOptionsByTypeV1Category;
+financialType?: ResponsibilityCenterControllerFindOptionsByTypeV1FinancialType;
+classificationId?: string;
+typeId?: string;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
+sortBy?: ResponsibilityCenterControllerFindOptionsByTypeV1SortBy;
+sortDirection?: ResponsibilityCenterControllerFindOptionsByTypeV1SortDirection;
 };
 
-export type ResponsibilityCenterControllerFindOptionsByTypeV1Status =
-  (typeof ResponsibilityCenterControllerFindOptionsByTypeV1Status)[keyof typeof ResponsibilityCenterControllerFindOptionsByTypeV1Status];
+export type ResponsibilityCenterControllerFindOptionsByTypeV1Status = typeof ResponsibilityCenterControllerFindOptionsByTypeV1Status[keyof typeof ResponsibilityCenterControllerFindOptionsByTypeV1Status];
+
 
 export const ResponsibilityCenterControllerFindOptionsByTypeV1Status = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
-export type ResponsibilityCenterControllerFindOptionsByTypeV1Category =
-  (typeof ResponsibilityCenterControllerFindOptionsByTypeV1Category)[keyof typeof ResponsibilityCenterControllerFindOptionsByTypeV1Category];
+export type ResponsibilityCenterControllerFindOptionsByTypeV1Category = typeof ResponsibilityCenterControllerFindOptionsByTypeV1Category[keyof typeof ResponsibilityCenterControllerFindOptionsByTypeV1Category];
+
 
 export const ResponsibilityCenterControllerFindOptionsByTypeV1Category = {
-  BRANCH: "BRANCH",
-  SECTION: "SECTION",
-  CORPORATE: "CORPORATE",
-  DIVISION: "DIVISION",
-  DEPARTMENT: "DEPARTMENT",
-  TEAM: "TEAM",
-  BUILDING: "BUILDING",
-  PROJECT: "PROJECT",
-  BUSINESS_UNIT: "BUSINESS_UNIT",
-  REGION: "REGION",
-  SALESMAN: "SALESMAN",
-  WAREHOUSE: "WAREHOUSE",
-  OUTLET: "OUTLET",
-  SALES_TERRITORY: "SALES_TERRITORY",
-  FLEET: "FLEET",
+  BRANCH: 'BRANCH',
+  SECTION: 'SECTION',
+  CORPORATE: 'CORPORATE',
+  DIVISION: 'DIVISION',
+  DEPARTMENT: 'DEPARTMENT',
+  TEAM: 'TEAM',
+  BUILDING: 'BUILDING',
+  PROJECT: 'PROJECT',
+  BUSINESS_UNIT: 'BUSINESS_UNIT',
+  REGION: 'REGION',
+  SALESMAN: 'SALESMAN',
+  WAREHOUSE: 'WAREHOUSE',
+  OUTLET: 'OUTLET',
+  SALES_TERRITORY: 'SALES_TERRITORY',
+  FLEET: 'FLEET',
 } as const;
 
-export type ResponsibilityCenterControllerFindOptionsByTypeV1FinancialType =
-  (typeof ResponsibilityCenterControllerFindOptionsByTypeV1FinancialType)[keyof typeof ResponsibilityCenterControllerFindOptionsByTypeV1FinancialType];
+export type ResponsibilityCenterControllerFindOptionsByTypeV1FinancialType = typeof ResponsibilityCenterControllerFindOptionsByTypeV1FinancialType[keyof typeof ResponsibilityCenterControllerFindOptionsByTypeV1FinancialType];
+
 
 export const ResponsibilityCenterControllerFindOptionsByTypeV1FinancialType = {
-  COST_CENTER: "COST_CENTER",
-  REVENUE_CENTER: "REVENUE_CENTER",
-  PROFIT_CENTER: "PROFIT_CENTER",
-  INVESTMENT_CENTER: "INVESTMENT_CENTER",
+  COST_CENTER: 'COST_CENTER',
+  REVENUE_CENTER: 'REVENUE_CENTER',
+  PROFIT_CENTER: 'PROFIT_CENTER',
+  INVESTMENT_CENTER: 'INVESTMENT_CENTER',
 } as const;
 
-export type ResponsibilityCenterControllerFindOptionsByTypeV1SortBy =
-  (typeof ResponsibilityCenterControllerFindOptionsByTypeV1SortBy)[keyof typeof ResponsibilityCenterControllerFindOptionsByTypeV1SortBy];
+export type ResponsibilityCenterControllerFindOptionsByTypeV1SortBy = typeof ResponsibilityCenterControllerFindOptionsByTypeV1SortBy[keyof typeof ResponsibilityCenterControllerFindOptionsByTypeV1SortBy];
+
 
 export const ResponsibilityCenterControllerFindOptionsByTypeV1SortBy = {
-  code: "code",
-  name: "name",
-  category: "category",
-  financialType: "financialType",
-  manager: "manager",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  code: 'code',
+  name: 'name',
+  category: 'category',
+  financialType: 'financialType',
+  manager: 'manager',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type ResponsibilityCenterControllerFindOptionsByTypeV1SortDirection =
-  (typeof ResponsibilityCenterControllerFindOptionsByTypeV1SortDirection)[keyof typeof ResponsibilityCenterControllerFindOptionsByTypeV1SortDirection];
+export type ResponsibilityCenterControllerFindOptionsByTypeV1SortDirection = typeof ResponsibilityCenterControllerFindOptionsByTypeV1SortDirection[keyof typeof ResponsibilityCenterControllerFindOptionsByTypeV1SortDirection];
+
 
 export const ResponsibilityCenterControllerFindOptionsByTypeV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type ResponsibilityCenterControllerFindTreeV1Params = {
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  status?: ResponsibilityCenterControllerFindTreeV1Status;
-  category?: ResponsibilityCenterControllerFindTreeV1Category;
-  financialType?: ResponsibilityCenterControllerFindTreeV1FinancialType;
-  classificationId?: string;
-  typeId?: string;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   * @maximum 500
-   */
-  limit?: number;
-  sortBy?: ResponsibilityCenterControllerFindTreeV1SortBy;
-  sortDirection?: ResponsibilityCenterControllerFindTreeV1SortDirection;
+/**
+ * @maxLength 120
+ */
+search?: string;
+status?: ResponsibilityCenterControllerFindTreeV1Status;
+category?: ResponsibilityCenterControllerFindTreeV1Category;
+financialType?: ResponsibilityCenterControllerFindTreeV1FinancialType;
+classificationId?: string;
+typeId?: string;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
+sortBy?: ResponsibilityCenterControllerFindTreeV1SortBy;
+sortDirection?: ResponsibilityCenterControllerFindTreeV1SortDirection;
 };
 
-export type ResponsibilityCenterControllerFindTreeV1Status =
-  (typeof ResponsibilityCenterControllerFindTreeV1Status)[keyof typeof ResponsibilityCenterControllerFindTreeV1Status];
+export type ResponsibilityCenterControllerFindTreeV1Status = typeof ResponsibilityCenterControllerFindTreeV1Status[keyof typeof ResponsibilityCenterControllerFindTreeV1Status];
+
 
 export const ResponsibilityCenterControllerFindTreeV1Status = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
-export type ResponsibilityCenterControllerFindTreeV1Category =
-  (typeof ResponsibilityCenterControllerFindTreeV1Category)[keyof typeof ResponsibilityCenterControllerFindTreeV1Category];
+export type ResponsibilityCenterControllerFindTreeV1Category = typeof ResponsibilityCenterControllerFindTreeV1Category[keyof typeof ResponsibilityCenterControllerFindTreeV1Category];
+
 
 export const ResponsibilityCenterControllerFindTreeV1Category = {
-  BRANCH: "BRANCH",
-  SECTION: "SECTION",
-  CORPORATE: "CORPORATE",
-  DIVISION: "DIVISION",
-  DEPARTMENT: "DEPARTMENT",
-  TEAM: "TEAM",
-  BUILDING: "BUILDING",
-  PROJECT: "PROJECT",
-  BUSINESS_UNIT: "BUSINESS_UNIT",
-  REGION: "REGION",
-  SALESMAN: "SALESMAN",
-  WAREHOUSE: "WAREHOUSE",
-  OUTLET: "OUTLET",
-  SALES_TERRITORY: "SALES_TERRITORY",
-  FLEET: "FLEET",
+  BRANCH: 'BRANCH',
+  SECTION: 'SECTION',
+  CORPORATE: 'CORPORATE',
+  DIVISION: 'DIVISION',
+  DEPARTMENT: 'DEPARTMENT',
+  TEAM: 'TEAM',
+  BUILDING: 'BUILDING',
+  PROJECT: 'PROJECT',
+  BUSINESS_UNIT: 'BUSINESS_UNIT',
+  REGION: 'REGION',
+  SALESMAN: 'SALESMAN',
+  WAREHOUSE: 'WAREHOUSE',
+  OUTLET: 'OUTLET',
+  SALES_TERRITORY: 'SALES_TERRITORY',
+  FLEET: 'FLEET',
 } as const;
 
-export type ResponsibilityCenterControllerFindTreeV1FinancialType =
-  (typeof ResponsibilityCenterControllerFindTreeV1FinancialType)[keyof typeof ResponsibilityCenterControllerFindTreeV1FinancialType];
+export type ResponsibilityCenterControllerFindTreeV1FinancialType = typeof ResponsibilityCenterControllerFindTreeV1FinancialType[keyof typeof ResponsibilityCenterControllerFindTreeV1FinancialType];
+
 
 export const ResponsibilityCenterControllerFindTreeV1FinancialType = {
-  COST_CENTER: "COST_CENTER",
-  REVENUE_CENTER: "REVENUE_CENTER",
-  PROFIT_CENTER: "PROFIT_CENTER",
-  INVESTMENT_CENTER: "INVESTMENT_CENTER",
+  COST_CENTER: 'COST_CENTER',
+  REVENUE_CENTER: 'REVENUE_CENTER',
+  PROFIT_CENTER: 'PROFIT_CENTER',
+  INVESTMENT_CENTER: 'INVESTMENT_CENTER',
 } as const;
 
-export type ResponsibilityCenterControllerFindTreeV1SortBy =
-  (typeof ResponsibilityCenterControllerFindTreeV1SortBy)[keyof typeof ResponsibilityCenterControllerFindTreeV1SortBy];
+export type ResponsibilityCenterControllerFindTreeV1SortBy = typeof ResponsibilityCenterControllerFindTreeV1SortBy[keyof typeof ResponsibilityCenterControllerFindTreeV1SortBy];
+
 
 export const ResponsibilityCenterControllerFindTreeV1SortBy = {
-  code: "code",
-  name: "name",
-  category: "category",
-  financialType: "financialType",
-  manager: "manager",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  code: 'code',
+  name: 'name',
+  category: 'category',
+  financialType: 'financialType',
+  manager: 'manager',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type ResponsibilityCenterControllerFindTreeV1SortDirection =
-  (typeof ResponsibilityCenterControllerFindTreeV1SortDirection)[keyof typeof ResponsibilityCenterControllerFindTreeV1SortDirection];
+export type ResponsibilityCenterControllerFindTreeV1SortDirection = typeof ResponsibilityCenterControllerFindTreeV1SortDirection[keyof typeof ResponsibilityCenterControllerFindTreeV1SortDirection];
+
 
 export const ResponsibilityCenterControllerFindTreeV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type ResponsibilityCenterControllerFindTypesV1Params = {
-  classificationId?: string;
+classificationId?: string;
 };
 
 export type ResponsibilityCenterControllerSuggestCodeV1Params = {
-  typeId: string;
+typeId: string;
 };
 
 export type TaxControllerListTaxesV1Params = {
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  query?: string;
-  transactionType?: string;
-  taxType?: string;
-  taxCode?: string;
-  officialAtcCode?: string;
-  status?: TaxControllerListTaxesV1Status;
-  taxExempt?: boolean;
-  /**
-   * @minimum 1
-   * @maximum 1000
-   */
-  limit?: number;
-  sortBy?: TaxControllerListTaxesV1SortBy;
-  sortDirection?: TaxControllerListTaxesV1SortDirection;
+/**
+ * @minimum 1
+ */
+page?: number;
+query?: string;
+transactionType?: string;
+taxType?: string;
+taxCode?: string;
+officialAtcCode?: string;
+status?: TaxControllerListTaxesV1Status;
+taxExempt?: boolean;
+/**
+ * @minimum 1
+ * @maximum 1000
+ */
+limit?: number;
+sortBy?: TaxControllerListTaxesV1SortBy;
+sortDirection?: TaxControllerListTaxesV1SortDirection;
 };
 
-export type TaxControllerListTaxesV1Status = (typeof TaxControllerListTaxesV1Status)[keyof typeof TaxControllerListTaxesV1Status];
+export type TaxControllerListTaxesV1Status = typeof TaxControllerListTaxesV1Status[keyof typeof TaxControllerListTaxesV1Status];
+
 
 export const TaxControllerListTaxesV1Status = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
-  ALL: "ALL",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+  ALL: 'ALL',
 } as const;
 
-export type TaxControllerListTaxesV1SortBy = (typeof TaxControllerListTaxesV1SortBy)[keyof typeof TaxControllerListTaxesV1SortBy];
+export type TaxControllerListTaxesV1SortBy = typeof TaxControllerListTaxesV1SortBy[keyof typeof TaxControllerListTaxesV1SortBy];
+
 
 export const TaxControllerListTaxesV1SortBy = {
-  sourceKey: "sourceKey",
-  transactionType: "transactionType",
-  taxType: "taxType",
-  taxCode: "taxCode",
-  taxDescription: "taxDescription",
-  taxRate: "taxRate",
-  sortOrder: "sortOrder",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  sourceKey: 'sourceKey',
+  transactionType: 'transactionType',
+  taxType: 'taxType',
+  taxCode: 'taxCode',
+  taxDescription: 'taxDescription',
+  taxRate: 'taxRate',
+  sortOrder: 'sortOrder',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type TaxControllerListTaxesV1SortDirection =
-  (typeof TaxControllerListTaxesV1SortDirection)[keyof typeof TaxControllerListTaxesV1SortDirection];
+export type TaxControllerListTaxesV1SortDirection = typeof TaxControllerListTaxesV1SortDirection[keyof typeof TaxControllerListTaxesV1SortDirection];
+
 
 export const TaxControllerListTaxesV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type TaxControllerListAutocompleteV1Params = {
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  query?: string;
-  transactionType?: string;
-  taxType?: string;
-  taxCode?: string;
-  officialAtcCode?: string;
-  status?: TaxControllerListAutocompleteV1Status;
-  taxExempt?: boolean;
-  /**
-   * @minimum 1
-   * @maximum 1000
-   */
-  limit?: number;
-  sortBy?: TaxControllerListAutocompleteV1SortBy;
-  sortDirection?: TaxControllerListAutocompleteV1SortDirection;
+/**
+ * @minimum 1
+ */
+page?: number;
+query?: string;
+transactionType?: string;
+taxType?: string;
+taxCode?: string;
+officialAtcCode?: string;
+status?: TaxControllerListAutocompleteV1Status;
+taxExempt?: boolean;
+/**
+ * @minimum 1
+ * @maximum 1000
+ */
+limit?: number;
+sortBy?: TaxControllerListAutocompleteV1SortBy;
+sortDirection?: TaxControllerListAutocompleteV1SortDirection;
 };
 
-export type TaxControllerListAutocompleteV1Status =
-  (typeof TaxControllerListAutocompleteV1Status)[keyof typeof TaxControllerListAutocompleteV1Status];
+export type TaxControllerListAutocompleteV1Status = typeof TaxControllerListAutocompleteV1Status[keyof typeof TaxControllerListAutocompleteV1Status];
+
 
 export const TaxControllerListAutocompleteV1Status = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
-  ALL: "ALL",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+  ALL: 'ALL',
 } as const;
 
-export type TaxControllerListAutocompleteV1SortBy =
-  (typeof TaxControllerListAutocompleteV1SortBy)[keyof typeof TaxControllerListAutocompleteV1SortBy];
+export type TaxControllerListAutocompleteV1SortBy = typeof TaxControllerListAutocompleteV1SortBy[keyof typeof TaxControllerListAutocompleteV1SortBy];
+
 
 export const TaxControllerListAutocompleteV1SortBy = {
-  sourceKey: "sourceKey",
-  transactionType: "transactionType",
-  taxType: "taxType",
-  taxCode: "taxCode",
-  taxDescription: "taxDescription",
-  taxRate: "taxRate",
-  sortOrder: "sortOrder",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  sourceKey: 'sourceKey',
+  transactionType: 'transactionType',
+  taxType: 'taxType',
+  taxCode: 'taxCode',
+  taxDescription: 'taxDescription',
+  taxRate: 'taxRate',
+  sortOrder: 'sortOrder',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type TaxControllerListAutocompleteV1SortDirection =
-  (typeof TaxControllerListAutocompleteV1SortDirection)[keyof typeof TaxControllerListAutocompleteV1SortDirection];
+export type TaxControllerListAutocompleteV1SortDirection = typeof TaxControllerListAutocompleteV1SortDirection[keyof typeof TaxControllerListAutocompleteV1SortDirection];
+
 
 export const TaxControllerListAutocompleteV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type TaxControllerListTaxesWithDefaultAccountsV1Params = {
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  query?: string;
-  transactionType?: string;
-  taxType?: string;
-  taxCode?: string;
-  officialAtcCode?: string;
-  status?: TaxControllerListTaxesWithDefaultAccountsV1Status;
-  taxExempt?: boolean;
-  /**
-   * @minimum 1
-   * @maximum 1000
-   */
-  limit?: number;
-  sortBy?: TaxControllerListTaxesWithDefaultAccountsV1SortBy;
-  sortDirection?: TaxControllerListTaxesWithDefaultAccountsV1SortDirection;
+/**
+ * @minimum 1
+ */
+page?: number;
+query?: string;
+transactionType?: string;
+taxType?: string;
+taxCode?: string;
+officialAtcCode?: string;
+status?: TaxControllerListTaxesWithDefaultAccountsV1Status;
+taxExempt?: boolean;
+/**
+ * @minimum 1
+ * @maximum 1000
+ */
+limit?: number;
+sortBy?: TaxControllerListTaxesWithDefaultAccountsV1SortBy;
+sortDirection?: TaxControllerListTaxesWithDefaultAccountsV1SortDirection;
 };
 
-export type TaxControllerListTaxesWithDefaultAccountsV1Status =
-  (typeof TaxControllerListTaxesWithDefaultAccountsV1Status)[keyof typeof TaxControllerListTaxesWithDefaultAccountsV1Status];
+export type TaxControllerListTaxesWithDefaultAccountsV1Status = typeof TaxControllerListTaxesWithDefaultAccountsV1Status[keyof typeof TaxControllerListTaxesWithDefaultAccountsV1Status];
+
 
 export const TaxControllerListTaxesWithDefaultAccountsV1Status = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
-  ALL: "ALL",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+  ALL: 'ALL',
 } as const;
 
-export type TaxControllerListTaxesWithDefaultAccountsV1SortBy =
-  (typeof TaxControllerListTaxesWithDefaultAccountsV1SortBy)[keyof typeof TaxControllerListTaxesWithDefaultAccountsV1SortBy];
+export type TaxControllerListTaxesWithDefaultAccountsV1SortBy = typeof TaxControllerListTaxesWithDefaultAccountsV1SortBy[keyof typeof TaxControllerListTaxesWithDefaultAccountsV1SortBy];
+
 
 export const TaxControllerListTaxesWithDefaultAccountsV1SortBy = {
-  sourceKey: "sourceKey",
-  transactionType: "transactionType",
-  taxType: "taxType",
-  taxCode: "taxCode",
-  taxDescription: "taxDescription",
-  taxRate: "taxRate",
-  sortOrder: "sortOrder",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  sourceKey: 'sourceKey',
+  transactionType: 'transactionType',
+  taxType: 'taxType',
+  taxCode: 'taxCode',
+  taxDescription: 'taxDescription',
+  taxRate: 'taxRate',
+  sortOrder: 'sortOrder',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type TaxControllerListTaxesWithDefaultAccountsV1SortDirection =
-  (typeof TaxControllerListTaxesWithDefaultAccountsV1SortDirection)[keyof typeof TaxControllerListTaxesWithDefaultAccountsV1SortDirection];
+export type TaxControllerListTaxesWithDefaultAccountsV1SortDirection = typeof TaxControllerListTaxesWithDefaultAccountsV1SortDirection[keyof typeof TaxControllerListTaxesWithDefaultAccountsV1SortDirection];
+
 
 export const TaxControllerListTaxesWithDefaultAccountsV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type WarehouseMaintenanceControllerFindAllV1Params = {
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  /**
-   * @minimum 1
-   */
-  branchUnitId?: number;
-  status?: WarehouseMaintenanceControllerFindAllV1Status;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   * @maximum 500
-   */
-  limit?: number;
-  sortBy?: WarehouseMaintenanceControllerFindAllV1SortBy;
-  sortDirection?: WarehouseMaintenanceControllerFindAllV1SortDirection;
+/**
+ * @maxLength 120
+ */
+search?: string;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+status?: WarehouseMaintenanceControllerFindAllV1Status;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
+sortBy?: WarehouseMaintenanceControllerFindAllV1SortBy;
+sortDirection?: WarehouseMaintenanceControllerFindAllV1SortDirection;
 };
 
-export type WarehouseMaintenanceControllerFindAllV1Status =
-  (typeof WarehouseMaintenanceControllerFindAllV1Status)[keyof typeof WarehouseMaintenanceControllerFindAllV1Status];
+export type WarehouseMaintenanceControllerFindAllV1Status = typeof WarehouseMaintenanceControllerFindAllV1Status[keyof typeof WarehouseMaintenanceControllerFindAllV1Status];
+
 
 export const WarehouseMaintenanceControllerFindAllV1Status = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
-export type WarehouseMaintenanceControllerFindAllV1SortBy =
-  (typeof WarehouseMaintenanceControllerFindAllV1SortBy)[keyof typeof WarehouseMaintenanceControllerFindAllV1SortBy];
+export type WarehouseMaintenanceControllerFindAllV1SortBy = typeof WarehouseMaintenanceControllerFindAllV1SortBy[keyof typeof WarehouseMaintenanceControllerFindAllV1SortBy];
+
 
 export const WarehouseMaintenanceControllerFindAllV1SortBy = {
-  code: "code",
-  name: "name",
-  managerName: "managerName",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  code: 'code',
+  name: 'name',
+  managerName: 'managerName',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type WarehouseMaintenanceControllerFindAllV1SortDirection =
-  (typeof WarehouseMaintenanceControllerFindAllV1SortDirection)[keyof typeof WarehouseMaintenanceControllerFindAllV1SortDirection];
+export type WarehouseMaintenanceControllerFindAllV1SortDirection = typeof WarehouseMaintenanceControllerFindAllV1SortDirection[keyof typeof WarehouseMaintenanceControllerFindAllV1SortDirection];
+
 
 export const WarehouseMaintenanceControllerFindAllV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type WarehouseMaintenanceControllerFindOptionsV1Params = {
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  /**
-   * @minimum 1
-   */
-  branchUnitId?: number;
+/**
+ * @maxLength 120
+ */
+search?: string;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
 };
 
 export type WarehouseAccessControllerFindAllV1Params = {
-  warehouseId?: string;
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  status?: WarehouseAccessControllerFindAllV1Status;
-  permission?: WarehouseAccessControllerFindAllV1Permission;
-  /**
-   * @minimum 1
-   */
-  branchUnitId?: number;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   * @maximum 500
-   */
-  limit?: number;
-  sortBy?: WarehouseAccessControllerFindAllV1SortBy;
-  sortDirection?: WarehouseAccessControllerFindAllV1SortDirection;
+warehouseId?: string;
+/**
+ * @maxLength 120
+ */
+search?: string;
+status?: WarehouseAccessControllerFindAllV1Status;
+permission?: WarehouseAccessControllerFindAllV1Permission;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
+sortBy?: WarehouseAccessControllerFindAllV1SortBy;
+sortDirection?: WarehouseAccessControllerFindAllV1SortDirection;
 };
 
-export type WarehouseAccessControllerFindAllV1Status =
-  (typeof WarehouseAccessControllerFindAllV1Status)[keyof typeof WarehouseAccessControllerFindAllV1Status];
+export type WarehouseAccessControllerFindAllV1Status = typeof WarehouseAccessControllerFindAllV1Status[keyof typeof WarehouseAccessControllerFindAllV1Status];
+
 
 export const WarehouseAccessControllerFindAllV1Status = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
 } as const;
 
-export type WarehouseAccessControllerFindAllV1Permission =
-  (typeof WarehouseAccessControllerFindAllV1Permission)[keyof typeof WarehouseAccessControllerFindAllV1Permission];
+export type WarehouseAccessControllerFindAllV1Permission = typeof WarehouseAccessControllerFindAllV1Permission[keyof typeof WarehouseAccessControllerFindAllV1Permission];
+
 
 export const WarehouseAccessControllerFindAllV1Permission = {
-  VIEW_STOCK: "VIEW_STOCK",
-  RECEIVE_STOCK: "RECEIVE_STOCK",
-  ISSUE_STOCK: "ISSUE_STOCK",
-  TRANSFER_STOCK: "TRANSFER_STOCK",
-  ADJUST_STOCK: "ADJUST_STOCK",
-  MANAGE_LOCATIONS: "MANAGE_LOCATIONS",
-  VIEW_HISTORY: "VIEW_HISTORY",
+  VIEW_STOCK: 'VIEW_STOCK',
+  RECEIVE_STOCK: 'RECEIVE_STOCK',
+  ISSUE_STOCK: 'ISSUE_STOCK',
+  TRANSFER_STOCK: 'TRANSFER_STOCK',
+  ADJUST_STOCK: 'ADJUST_STOCK',
+  MANAGE_LOCATIONS: 'MANAGE_LOCATIONS',
+  VIEW_HISTORY: 'VIEW_HISTORY',
 } as const;
 
-export type WarehouseAccessControllerFindAllV1SortBy =
-  (typeof WarehouseAccessControllerFindAllV1SortBy)[keyof typeof WarehouseAccessControllerFindAllV1SortBy];
+export type WarehouseAccessControllerFindAllV1SortBy = typeof WarehouseAccessControllerFindAllV1SortBy[keyof typeof WarehouseAccessControllerFindAllV1SortBy];
+
 
 export const WarehouseAccessControllerFindAllV1SortBy = {
-  warehouse: "warehouse",
-  user: "user",
-  accessLevel: "accessLevel",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  warehouse: 'warehouse',
+  user: 'user',
+  accessLevel: 'accessLevel',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type WarehouseAccessControllerFindAllV1SortDirection =
-  (typeof WarehouseAccessControllerFindAllV1SortDirection)[keyof typeof WarehouseAccessControllerFindAllV1SortDirection];
+export type WarehouseAccessControllerFindAllV1SortDirection = typeof WarehouseAccessControllerFindAllV1SortDirection[keyof typeof WarehouseAccessControllerFindAllV1SortDirection];
+
 
 export const WarehouseAccessControllerFindAllV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type WarehouseAccessControllerFindDirectoryUsersV1Params = {
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  /**
-   * @minimum 1
-   */
-  branchUnitId?: number;
+/**
+ * @maxLength 120
+ */
+search?: string;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
 };
 
 export type ApproverSetupsControllerFindCompanyUsersV1Params = {
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   * @maximum 100
-   */
-  limit?: number;
-  search?: string;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+limit?: number;
+search?: string;
 };
 
 export type ApproverSetupsControllerFindAllV1Params = {
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   * @maximum 100
-   */
-  limit?: number;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+limit?: number;
 };
 
 export type UserSidebarControllerGetCustomizationV1Params = {
-  branchUnitId: number;
-  userId?: string;
+branchUnitId: number;
+userId?: string;
 };
 
 export type UserSidebarControllerSaveV1Params = {
-  branchUnitId: number;
-  userId?: unknown;
+branchUnitId: number;
+userId?: unknown;
 };
 
 export type UserSidebarControllerResetV1Params = {
-  branchUnitId: number;
-  userId?: string;
-  applyScope?: string;
+branchUnitId: number;
+userId?: string;
+applyScope?: string;
 };
 
 export type AccountsPayableVoucherControllerFindAllV1Params = {
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  /**
-   * @minimum 1
-   */
-  branchUnitId?: number;
-  status?: AccountsPayableVoucherControllerFindAllV1Status;
-  documentDateFrom?: string;
-  documentDateTo?: string;
-  amountFrom?: number;
-  amountTo?: number;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   * @maximum 500
-   */
-  limit?: number;
-  sortBy?: AccountsPayableVoucherControllerFindAllV1SortBy;
-  sortDirection?: AccountsPayableVoucherControllerFindAllV1SortDirection;
+/**
+ * @maxLength 120
+ */
+search?: string;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+status?: AccountsPayableVoucherControllerFindAllV1Status;
+documentDateFrom?: string;
+documentDateTo?: string;
+amountFrom?: number;
+amountTo?: number;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
+sortBy?: AccountsPayableVoucherControllerFindAllV1SortBy;
+sortDirection?: AccountsPayableVoucherControllerFindAllV1SortDirection;
 };
 
-export type AccountsPayableVoucherControllerFindAllV1Status =
-  (typeof AccountsPayableVoucherControllerFindAllV1Status)[keyof typeof AccountsPayableVoucherControllerFindAllV1Status];
+export type AccountsPayableVoucherControllerFindAllV1Status = typeof AccountsPayableVoucherControllerFindAllV1Status[keyof typeof AccountsPayableVoucherControllerFindAllV1Status];
+
 
 export const AccountsPayableVoucherControllerFindAllV1Status = {
-  DRAFT: "DRAFT",
-  APPROVED: "APPROVED",
-  DISAPPROVED: "DISAPPROVED",
-  CLOSED: "CLOSED",
-  CANCELLED: "CANCELLED",
-  Draft: "Draft",
-  Approved: "Approved",
-  Disapproved: "Disapproved",
-  Closed: "Closed",
-  Cancelled: "Cancelled",
+  DRAFT: 'DRAFT',
+  APPROVED: 'APPROVED',
+  DISAPPROVED: 'DISAPPROVED',
+  CLOSED: 'CLOSED',
+  CANCELLED: 'CANCELLED',
+  Draft: 'Draft',
+  Approved: 'Approved',
+  Disapproved: 'Disapproved',
+  Closed: 'Closed',
+  Cancelled: 'Cancelled',
 } as const;
 
-export type AccountsPayableVoucherControllerFindAllV1SortBy =
-  (typeof AccountsPayableVoucherControllerFindAllV1SortBy)[keyof typeof AccountsPayableVoucherControllerFindAllV1SortBy];
+export type AccountsPayableVoucherControllerFindAllV1SortBy = typeof AccountsPayableVoucherControllerFindAllV1SortBy[keyof typeof AccountsPayableVoucherControllerFindAllV1SortBy];
+
 
 export const AccountsPayableVoucherControllerFindAllV1SortBy = {
-  transactionNo: "transactionNo",
-  documentDate: "documentDate",
-  partyName: "partyName",
-  payableType: "payableType",
-  amount: "amount",
-  currency: "currency",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  transactionNo: 'transactionNo',
+  documentDate: 'documentDate',
+  partyName: 'partyName',
+  payableType: 'payableType',
+  amount: 'amount',
+  currency: 'currency',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type AccountsPayableVoucherControllerFindAllV1SortDirection =
-  (typeof AccountsPayableVoucherControllerFindAllV1SortDirection)[keyof typeof AccountsPayableVoucherControllerFindAllV1SortDirection];
+export type AccountsPayableVoucherControllerFindAllV1SortDirection = typeof AccountsPayableVoucherControllerFindAllV1SortDirection[keyof typeof AccountsPayableVoucherControllerFindAllV1SortDirection];
+
 
 export const AccountsPayableVoucherControllerFindAllV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type AccountsPayableVoucherControllerSuggestTransactionNumberV1Params = {
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  /**
-   * @minimum 1
-   */
-  branchUnitId?: number;
-  status?: AccountsPayableVoucherControllerSuggestTransactionNumberV1Status;
-  documentDateFrom?: string;
-  documentDateTo?: string;
-  amountFrom?: number;
-  amountTo?: number;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   * @maximum 500
-   */
-  limit?: number;
-  sortBy?: AccountsPayableVoucherControllerSuggestTransactionNumberV1SortBy;
-  sortDirection?: AccountsPayableVoucherControllerSuggestTransactionNumberV1SortDirection;
+/**
+ * @maxLength 120
+ */
+search?: string;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+status?: AccountsPayableVoucherControllerSuggestTransactionNumberV1Status;
+documentDateFrom?: string;
+documentDateTo?: string;
+amountFrom?: number;
+amountTo?: number;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
+sortBy?: AccountsPayableVoucherControllerSuggestTransactionNumberV1SortBy;
+sortDirection?: AccountsPayableVoucherControllerSuggestTransactionNumberV1SortDirection;
 };
 
-export type AccountsPayableVoucherControllerSuggestTransactionNumberV1Status =
-  (typeof AccountsPayableVoucherControllerSuggestTransactionNumberV1Status)[keyof typeof AccountsPayableVoucherControllerSuggestTransactionNumberV1Status];
+export type AccountsPayableVoucherControllerSuggestTransactionNumberV1Status = typeof AccountsPayableVoucherControllerSuggestTransactionNumberV1Status[keyof typeof AccountsPayableVoucherControllerSuggestTransactionNumberV1Status];
+
 
 export const AccountsPayableVoucherControllerSuggestTransactionNumberV1Status = {
-  DRAFT: "DRAFT",
-  APPROVED: "APPROVED",
-  DISAPPROVED: "DISAPPROVED",
-  CLOSED: "CLOSED",
-  CANCELLED: "CANCELLED",
-  Draft: "Draft",
-  Approved: "Approved",
-  Disapproved: "Disapproved",
-  Closed: "Closed",
-  Cancelled: "Cancelled",
+  DRAFT: 'DRAFT',
+  APPROVED: 'APPROVED',
+  DISAPPROVED: 'DISAPPROVED',
+  CLOSED: 'CLOSED',
+  CANCELLED: 'CANCELLED',
+  Draft: 'Draft',
+  Approved: 'Approved',
+  Disapproved: 'Disapproved',
+  Closed: 'Closed',
+  Cancelled: 'Cancelled',
 } as const;
 
-export type AccountsPayableVoucherControllerSuggestTransactionNumberV1SortBy =
-  (typeof AccountsPayableVoucherControllerSuggestTransactionNumberV1SortBy)[keyof typeof AccountsPayableVoucherControllerSuggestTransactionNumberV1SortBy];
+export type AccountsPayableVoucherControllerSuggestTransactionNumberV1SortBy = typeof AccountsPayableVoucherControllerSuggestTransactionNumberV1SortBy[keyof typeof AccountsPayableVoucherControllerSuggestTransactionNumberV1SortBy];
+
 
 export const AccountsPayableVoucherControllerSuggestTransactionNumberV1SortBy = {
-  transactionNo: "transactionNo",
-  documentDate: "documentDate",
-  partyName: "partyName",
-  payableType: "payableType",
-  amount: "amount",
-  currency: "currency",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  transactionNo: 'transactionNo',
+  documentDate: 'documentDate',
+  partyName: 'partyName',
+  payableType: 'payableType',
+  amount: 'amount',
+  currency: 'currency',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type AccountsPayableVoucherControllerSuggestTransactionNumberV1SortDirection =
-  (typeof AccountsPayableVoucherControllerSuggestTransactionNumberV1SortDirection)[keyof typeof AccountsPayableVoucherControllerSuggestTransactionNumberV1SortDirection];
+export type AccountsPayableVoucherControllerSuggestTransactionNumberV1SortDirection = typeof AccountsPayableVoucherControllerSuggestTransactionNumberV1SortDirection[keyof typeof AccountsPayableVoucherControllerSuggestTransactionNumberV1SortDirection];
+
 
 export const AccountsPayableVoucherControllerSuggestTransactionNumberV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type AccountsPayableVoucherControllerFindOneV1Params = {
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  /**
-   * @minimum 1
-   */
-  branchUnitId?: number;
-  status?: AccountsPayableVoucherControllerFindOneV1Status;
-  documentDateFrom?: string;
-  documentDateTo?: string;
-  amountFrom?: number;
-  amountTo?: number;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   * @maximum 500
-   */
-  limit?: number;
-  sortBy?: AccountsPayableVoucherControllerFindOneV1SortBy;
-  sortDirection?: AccountsPayableVoucherControllerFindOneV1SortDirection;
+/**
+ * @maxLength 120
+ */
+search?: string;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+status?: AccountsPayableVoucherControllerFindOneV1Status;
+documentDateFrom?: string;
+documentDateTo?: string;
+amountFrom?: number;
+amountTo?: number;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
+sortBy?: AccountsPayableVoucherControllerFindOneV1SortBy;
+sortDirection?: AccountsPayableVoucherControllerFindOneV1SortDirection;
 };
 
-export type AccountsPayableVoucherControllerFindOneV1Status =
-  (typeof AccountsPayableVoucherControllerFindOneV1Status)[keyof typeof AccountsPayableVoucherControllerFindOneV1Status];
+export type AccountsPayableVoucherControllerFindOneV1Status = typeof AccountsPayableVoucherControllerFindOneV1Status[keyof typeof AccountsPayableVoucherControllerFindOneV1Status];
+
 
 export const AccountsPayableVoucherControllerFindOneV1Status = {
-  DRAFT: "DRAFT",
-  APPROVED: "APPROVED",
-  DISAPPROVED: "DISAPPROVED",
-  CLOSED: "CLOSED",
-  CANCELLED: "CANCELLED",
-  Draft: "Draft",
-  Approved: "Approved",
-  Disapproved: "Disapproved",
-  Closed: "Closed",
-  Cancelled: "Cancelled",
+  DRAFT: 'DRAFT',
+  APPROVED: 'APPROVED',
+  DISAPPROVED: 'DISAPPROVED',
+  CLOSED: 'CLOSED',
+  CANCELLED: 'CANCELLED',
+  Draft: 'Draft',
+  Approved: 'Approved',
+  Disapproved: 'Disapproved',
+  Closed: 'Closed',
+  Cancelled: 'Cancelled',
 } as const;
 
-export type AccountsPayableVoucherControllerFindOneV1SortBy =
-  (typeof AccountsPayableVoucherControllerFindOneV1SortBy)[keyof typeof AccountsPayableVoucherControllerFindOneV1SortBy];
+export type AccountsPayableVoucherControllerFindOneV1SortBy = typeof AccountsPayableVoucherControllerFindOneV1SortBy[keyof typeof AccountsPayableVoucherControllerFindOneV1SortBy];
+
 
 export const AccountsPayableVoucherControllerFindOneV1SortBy = {
-  transactionNo: "transactionNo",
-  documentDate: "documentDate",
-  partyName: "partyName",
-  payableType: "payableType",
-  amount: "amount",
-  currency: "currency",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  transactionNo: 'transactionNo',
+  documentDate: 'documentDate',
+  partyName: 'partyName',
+  payableType: 'payableType',
+  amount: 'amount',
+  currency: 'currency',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type AccountsPayableVoucherControllerFindOneV1SortDirection =
-  (typeof AccountsPayableVoucherControllerFindOneV1SortDirection)[keyof typeof AccountsPayableVoucherControllerFindOneV1SortDirection];
+export type AccountsPayableVoucherControllerFindOneV1SortDirection = typeof AccountsPayableVoucherControllerFindOneV1SortDirection[keyof typeof AccountsPayableVoucherControllerFindOneV1SortDirection];
+
 
 export const AccountsPayableVoucherControllerFindOneV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type JournalVoucherControllerFindAllV1Params = {
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  /**
-   * @minimum 1
-   */
-  branchUnitId?: number;
-  status?: JournalVoucherControllerFindAllV1Status;
-  documentDateFrom?: string;
-  documentDateTo?: string;
-  amountFrom?: number;
-  amountTo?: number;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   * @maximum 500
-   */
-  limit?: number;
-  sortBy?: JournalVoucherControllerFindAllV1SortBy;
-  sortDirection?: JournalVoucherControllerFindAllV1SortDirection;
+/**
+ * @maxLength 120
+ */
+search?: string;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+status?: JournalVoucherControllerFindAllV1Status;
+documentDateFrom?: string;
+documentDateTo?: string;
+amountFrom?: number;
+amountTo?: number;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
+sortBy?: JournalVoucherControllerFindAllV1SortBy;
+sortDirection?: JournalVoucherControllerFindAllV1SortDirection;
 };
 
-export type JournalVoucherControllerFindAllV1Status =
-  (typeof JournalVoucherControllerFindAllV1Status)[keyof typeof JournalVoucherControllerFindAllV1Status];
+export type JournalVoucherControllerFindAllV1Status = typeof JournalVoucherControllerFindAllV1Status[keyof typeof JournalVoucherControllerFindAllV1Status];
+
 
 export const JournalVoucherControllerFindAllV1Status = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  POSTED: "POSTED",
-  DISAPPROVED: "DISAPPROVED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
-export type JournalVoucherControllerFindAllV1SortBy =
-  (typeof JournalVoucherControllerFindAllV1SortBy)[keyof typeof JournalVoucherControllerFindAllV1SortBy];
+export type JournalVoucherControllerFindAllV1SortBy = typeof JournalVoucherControllerFindAllV1SortBy[keyof typeof JournalVoucherControllerFindAllV1SortBy];
+
 
 export const JournalVoucherControllerFindAllV1SortBy = {
-  transactionNo: "transactionNo",
-  documentDate: "documentDate",
-  totalDebit: "totalDebit",
-  totalCredit: "totalCredit",
-  currencyCode: "currencyCode",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  transactionNo: 'transactionNo',
+  documentDate: 'documentDate',
+  totalDebit: 'totalDebit',
+  totalCredit: 'totalCredit',
+  currencyCode: 'currencyCode',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type JournalVoucherControllerFindAllV1SortDirection =
-  (typeof JournalVoucherControllerFindAllV1SortDirection)[keyof typeof JournalVoucherControllerFindAllV1SortDirection];
+export type JournalVoucherControllerFindAllV1SortDirection = typeof JournalVoucherControllerFindAllV1SortDirection[keyof typeof JournalVoucherControllerFindAllV1SortDirection];
+
 
 export const JournalVoucherControllerFindAllV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type JournalVoucherControllerSuggestTransactionNumberV1Params = {
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  /**
-   * @minimum 1
-   */
-  branchUnitId?: number;
-  status?: JournalVoucherControllerSuggestTransactionNumberV1Status;
-  documentDateFrom?: string;
-  documentDateTo?: string;
-  amountFrom?: number;
-  amountTo?: number;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   * @maximum 500
-   */
-  limit?: number;
-  sortBy?: JournalVoucherControllerSuggestTransactionNumberV1SortBy;
-  sortDirection?: JournalVoucherControllerSuggestTransactionNumberV1SortDirection;
+/**
+ * @maxLength 120
+ */
+search?: string;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+status?: JournalVoucherControllerSuggestTransactionNumberV1Status;
+documentDateFrom?: string;
+documentDateTo?: string;
+amountFrom?: number;
+amountTo?: number;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
+sortBy?: JournalVoucherControllerSuggestTransactionNumberV1SortBy;
+sortDirection?: JournalVoucherControllerSuggestTransactionNumberV1SortDirection;
 };
 
-export type JournalVoucherControllerSuggestTransactionNumberV1Status =
-  (typeof JournalVoucherControllerSuggestTransactionNumberV1Status)[keyof typeof JournalVoucherControllerSuggestTransactionNumberV1Status];
+export type JournalVoucherControllerSuggestTransactionNumberV1Status = typeof JournalVoucherControllerSuggestTransactionNumberV1Status[keyof typeof JournalVoucherControllerSuggestTransactionNumberV1Status];
+
 
 export const JournalVoucherControllerSuggestTransactionNumberV1Status = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  POSTED: "POSTED",
-  DISAPPROVED: "DISAPPROVED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
-export type JournalVoucherControllerSuggestTransactionNumberV1SortBy =
-  (typeof JournalVoucherControllerSuggestTransactionNumberV1SortBy)[keyof typeof JournalVoucherControllerSuggestTransactionNumberV1SortBy];
+export type JournalVoucherControllerSuggestTransactionNumberV1SortBy = typeof JournalVoucherControllerSuggestTransactionNumberV1SortBy[keyof typeof JournalVoucherControllerSuggestTransactionNumberV1SortBy];
+
 
 export const JournalVoucherControllerSuggestTransactionNumberV1SortBy = {
-  transactionNo: "transactionNo",
-  documentDate: "documentDate",
-  totalDebit: "totalDebit",
-  totalCredit: "totalCredit",
-  currencyCode: "currencyCode",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  transactionNo: 'transactionNo',
+  documentDate: 'documentDate',
+  totalDebit: 'totalDebit',
+  totalCredit: 'totalCredit',
+  currencyCode: 'currencyCode',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type JournalVoucherControllerSuggestTransactionNumberV1SortDirection =
-  (typeof JournalVoucherControllerSuggestTransactionNumberV1SortDirection)[keyof typeof JournalVoucherControllerSuggestTransactionNumberV1SortDirection];
+export type JournalVoucherControllerSuggestTransactionNumberV1SortDirection = typeof JournalVoucherControllerSuggestTransactionNumberV1SortDirection[keyof typeof JournalVoucherControllerSuggestTransactionNumberV1SortDirection];
+
 
 export const JournalVoucherControllerSuggestTransactionNumberV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type JournalVoucherControllerFindOneV1Params = {
-  /**
-   * @maxLength 120
-   */
-  search?: string;
-  /**
-   * @minimum 1
-   */
-  branchUnitId?: number;
-  status?: JournalVoucherControllerFindOneV1Status;
-  documentDateFrom?: string;
-  documentDateTo?: string;
-  amountFrom?: number;
-  amountTo?: number;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   * @maximum 500
-   */
-  limit?: number;
-  sortBy?: JournalVoucherControllerFindOneV1SortBy;
-  sortDirection?: JournalVoucherControllerFindOneV1SortDirection;
+/**
+ * @maxLength 120
+ */
+search?: string;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+status?: JournalVoucherControllerFindOneV1Status;
+documentDateFrom?: string;
+documentDateTo?: string;
+amountFrom?: number;
+amountTo?: number;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
+sortBy?: JournalVoucherControllerFindOneV1SortBy;
+sortDirection?: JournalVoucherControllerFindOneV1SortDirection;
 };
 
-export type JournalVoucherControllerFindOneV1Status =
-  (typeof JournalVoucherControllerFindOneV1Status)[keyof typeof JournalVoucherControllerFindOneV1Status];
+export type JournalVoucherControllerFindOneV1Status = typeof JournalVoucherControllerFindOneV1Status[keyof typeof JournalVoucherControllerFindOneV1Status];
+
 
 export const JournalVoucherControllerFindOneV1Status = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  POSTED: "POSTED",
-  DISAPPROVED: "DISAPPROVED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
-export type JournalVoucherControllerFindOneV1SortBy =
-  (typeof JournalVoucherControllerFindOneV1SortBy)[keyof typeof JournalVoucherControllerFindOneV1SortBy];
+export type JournalVoucherControllerFindOneV1SortBy = typeof JournalVoucherControllerFindOneV1SortBy[keyof typeof JournalVoucherControllerFindOneV1SortBy];
+
 
 export const JournalVoucherControllerFindOneV1SortBy = {
-  transactionNo: "transactionNo",
-  documentDate: "documentDate",
-  totalDebit: "totalDebit",
-  totalCredit: "totalCredit",
-  currencyCode: "currencyCode",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  transactionNo: 'transactionNo',
+  documentDate: 'documentDate',
+  totalDebit: 'totalDebit',
+  totalCredit: 'totalCredit',
+  currencyCode: 'currencyCode',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type JournalVoucherControllerFindOneV1SortDirection =
-  (typeof JournalVoucherControllerFindOneV1SortDirection)[keyof typeof JournalVoucherControllerFindOneV1SortDirection];
+export type JournalVoucherControllerFindOneV1SortDirection = typeof JournalVoucherControllerFindOneV1SortDirection[keyof typeof JournalVoucherControllerFindOneV1SortDirection];
+
 
 export const JournalVoucherControllerFindOneV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type ServiceInvoiceControllerFindAllV1Params = {
-  /**
-   * @minimum 1
-   */
-  branchUnitId?: number;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   */
-  limit?: number;
-  search?: string;
-  status?: ServiceInvoiceControllerFindAllV1Status;
-  documentDateFrom?: string;
-  documentDateTo?: string;
-  amountFrom?: number;
-  amountTo?: number;
-  sortBy?: ServiceInvoiceControllerFindAllV1SortBy;
-  sortDirection?: ServiceInvoiceControllerFindAllV1SortDirection;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ */
+limit?: number;
+search?: string;
+status?: ServiceInvoiceControllerFindAllV1Status;
+documentDateFrom?: string;
+documentDateTo?: string;
+amountFrom?: number;
+amountTo?: number;
+sortBy?: ServiceInvoiceControllerFindAllV1SortBy;
+sortDirection?: ServiceInvoiceControllerFindAllV1SortDirection;
 };
 
-export type ServiceInvoiceControllerFindAllV1Status =
-  (typeof ServiceInvoiceControllerFindAllV1Status)[keyof typeof ServiceInvoiceControllerFindAllV1Status];
+export type ServiceInvoiceControllerFindAllV1Status = typeof ServiceInvoiceControllerFindAllV1Status[keyof typeof ServiceInvoiceControllerFindAllV1Status];
+
 
 export const ServiceInvoiceControllerFindAllV1Status = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
-export type ServiceInvoiceControllerFindAllV1SortBy =
-  (typeof ServiceInvoiceControllerFindAllV1SortBy)[keyof typeof ServiceInvoiceControllerFindAllV1SortBy];
+export type ServiceInvoiceControllerFindAllV1SortBy = typeof ServiceInvoiceControllerFindAllV1SortBy[keyof typeof ServiceInvoiceControllerFindAllV1SortBy];
+
 
 export const ServiceInvoiceControllerFindAllV1SortBy = {
-  transactionNo: "transactionNo",
-  documentDate: "documentDate",
-  customerName: "customerName",
-  invoiceNo: "invoiceNo",
-  referenceNo: "referenceNo",
-  grossAmount: "grossAmount",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  transactionNo: 'transactionNo',
+  documentDate: 'documentDate',
+  customerName: 'customerName',
+  invoiceNo: 'invoiceNo',
+  referenceNo: 'referenceNo',
+  grossAmount: 'grossAmount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type ServiceInvoiceControllerFindAllV1SortDirection =
-  (typeof ServiceInvoiceControllerFindAllV1SortDirection)[keyof typeof ServiceInvoiceControllerFindAllV1SortDirection];
+export type ServiceInvoiceControllerFindAllV1SortDirection = typeof ServiceInvoiceControllerFindAllV1SortDirection[keyof typeof ServiceInvoiceControllerFindAllV1SortDirection];
+
 
 export const ServiceInvoiceControllerFindAllV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type ServiceInvoiceControllerSuggestTransactionNumberV1Params = {
-  /**
-   * @minimum 1
-   */
-  branchUnitId?: number;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   */
-  limit?: number;
-  search?: string;
-  status?: ServiceInvoiceControllerSuggestTransactionNumberV1Status;
-  documentDateFrom?: string;
-  documentDateTo?: string;
-  amountFrom?: number;
-  amountTo?: number;
-  sortBy?: ServiceInvoiceControllerSuggestTransactionNumberV1SortBy;
-  sortDirection?: ServiceInvoiceControllerSuggestTransactionNumberV1SortDirection;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ */
+limit?: number;
+search?: string;
+status?: ServiceInvoiceControllerSuggestTransactionNumberV1Status;
+documentDateFrom?: string;
+documentDateTo?: string;
+amountFrom?: number;
+amountTo?: number;
+sortBy?: ServiceInvoiceControllerSuggestTransactionNumberV1SortBy;
+sortDirection?: ServiceInvoiceControllerSuggestTransactionNumberV1SortDirection;
 };
 
-export type ServiceInvoiceControllerSuggestTransactionNumberV1Status =
-  (typeof ServiceInvoiceControllerSuggestTransactionNumberV1Status)[keyof typeof ServiceInvoiceControllerSuggestTransactionNumberV1Status];
+export type ServiceInvoiceControllerSuggestTransactionNumberV1Status = typeof ServiceInvoiceControllerSuggestTransactionNumberV1Status[keyof typeof ServiceInvoiceControllerSuggestTransactionNumberV1Status];
+
 
 export const ServiceInvoiceControllerSuggestTransactionNumberV1Status = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
-export type ServiceInvoiceControllerSuggestTransactionNumberV1SortBy =
-  (typeof ServiceInvoiceControllerSuggestTransactionNumberV1SortBy)[keyof typeof ServiceInvoiceControllerSuggestTransactionNumberV1SortBy];
+export type ServiceInvoiceControllerSuggestTransactionNumberV1SortBy = typeof ServiceInvoiceControllerSuggestTransactionNumberV1SortBy[keyof typeof ServiceInvoiceControllerSuggestTransactionNumberV1SortBy];
+
 
 export const ServiceInvoiceControllerSuggestTransactionNumberV1SortBy = {
-  transactionNo: "transactionNo",
-  documentDate: "documentDate",
-  customerName: "customerName",
-  invoiceNo: "invoiceNo",
-  referenceNo: "referenceNo",
-  grossAmount: "grossAmount",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  transactionNo: 'transactionNo',
+  documentDate: 'documentDate',
+  customerName: 'customerName',
+  invoiceNo: 'invoiceNo',
+  referenceNo: 'referenceNo',
+  grossAmount: 'grossAmount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type ServiceInvoiceControllerSuggestTransactionNumberV1SortDirection =
-  (typeof ServiceInvoiceControllerSuggestTransactionNumberV1SortDirection)[keyof typeof ServiceInvoiceControllerSuggestTransactionNumberV1SortDirection];
+export type ServiceInvoiceControllerSuggestTransactionNumberV1SortDirection = typeof ServiceInvoiceControllerSuggestTransactionNumberV1SortDirection[keyof typeof ServiceInvoiceControllerSuggestTransactionNumberV1SortDirection];
+
 
 export const ServiceInvoiceControllerSuggestTransactionNumberV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type ServiceInvoiceControllerFindOneV1Params = {
-  /**
-   * @minimum 1
-   */
-  branchUnitId?: number;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   */
-  limit?: number;
-  search?: string;
-  status?: ServiceInvoiceControllerFindOneV1Status;
-  documentDateFrom?: string;
-  documentDateTo?: string;
-  amountFrom?: number;
-  amountTo?: number;
-  sortBy?: ServiceInvoiceControllerFindOneV1SortBy;
-  sortDirection?: ServiceInvoiceControllerFindOneV1SortDirection;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ */
+limit?: number;
+search?: string;
+status?: ServiceInvoiceControllerFindOneV1Status;
+documentDateFrom?: string;
+documentDateTo?: string;
+amountFrom?: number;
+amountTo?: number;
+sortBy?: ServiceInvoiceControllerFindOneV1SortBy;
+sortDirection?: ServiceInvoiceControllerFindOneV1SortDirection;
 };
 
-export type ServiceInvoiceControllerFindOneV1Status =
-  (typeof ServiceInvoiceControllerFindOneV1Status)[keyof typeof ServiceInvoiceControllerFindOneV1Status];
+export type ServiceInvoiceControllerFindOneV1Status = typeof ServiceInvoiceControllerFindOneV1Status[keyof typeof ServiceInvoiceControllerFindOneV1Status];
+
 
 export const ServiceInvoiceControllerFindOneV1Status = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
-export type ServiceInvoiceControllerFindOneV1SortBy =
-  (typeof ServiceInvoiceControllerFindOneV1SortBy)[keyof typeof ServiceInvoiceControllerFindOneV1SortBy];
+export type ServiceInvoiceControllerFindOneV1SortBy = typeof ServiceInvoiceControllerFindOneV1SortBy[keyof typeof ServiceInvoiceControllerFindOneV1SortBy];
+
 
 export const ServiceInvoiceControllerFindOneV1SortBy = {
-  transactionNo: "transactionNo",
-  documentDate: "documentDate",
-  customerName: "customerName",
-  invoiceNo: "invoiceNo",
-  referenceNo: "referenceNo",
-  grossAmount: "grossAmount",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  transactionNo: 'transactionNo',
+  documentDate: 'documentDate',
+  customerName: 'customerName',
+  invoiceNo: 'invoiceNo',
+  referenceNo: 'referenceNo',
+  grossAmount: 'grossAmount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type ServiceInvoiceControllerFindOneV1SortDirection =
-  (typeof ServiceInvoiceControllerFindOneV1SortDirection)[keyof typeof ServiceInvoiceControllerFindOneV1SortDirection];
+export type ServiceInvoiceControllerFindOneV1SortDirection = typeof ServiceInvoiceControllerFindOneV1SortDirection[keyof typeof ServiceInvoiceControllerFindOneV1SortDirection];
+
 
 export const ServiceInvoiceControllerFindOneV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type BillingInvoiceControllerFindAllV1Params = {
-  /**
-   * @minimum 1
-   */
-  branchUnitId?: number;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   */
-  limit?: number;
-  search?: string;
-  status?: BillingInvoiceControllerFindAllV1Status;
-  documentDateFrom?: string;
-  documentDateTo?: string;
-  amountFrom?: number;
-  amountTo?: number;
-  sortBy?: BillingInvoiceControllerFindAllV1SortBy;
-  sortDirection?: BillingInvoiceControllerFindAllV1SortDirection;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ */
+limit?: number;
+search?: string;
+status?: BillingInvoiceControllerFindAllV1Status;
+documentDateFrom?: string;
+documentDateTo?: string;
+amountFrom?: number;
+amountTo?: number;
+sortBy?: BillingInvoiceControllerFindAllV1SortBy;
+sortDirection?: BillingInvoiceControllerFindAllV1SortDirection;
 };
 
-export type BillingInvoiceControllerFindAllV1Status =
-  (typeof BillingInvoiceControllerFindAllV1Status)[keyof typeof BillingInvoiceControllerFindAllV1Status];
+export type BillingInvoiceControllerFindAllV1Status = typeof BillingInvoiceControllerFindAllV1Status[keyof typeof BillingInvoiceControllerFindAllV1Status];
+
 
 export const BillingInvoiceControllerFindAllV1Status = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
-export type BillingInvoiceControllerFindAllV1SortBy =
-  (typeof BillingInvoiceControllerFindAllV1SortBy)[keyof typeof BillingInvoiceControllerFindAllV1SortBy];
+export type BillingInvoiceControllerFindAllV1SortBy = typeof BillingInvoiceControllerFindAllV1SortBy[keyof typeof BillingInvoiceControllerFindAllV1SortBy];
+
 
 export const BillingInvoiceControllerFindAllV1SortBy = {
-  transactionNo: "transactionNo",
-  documentDate: "documentDate",
-  customerName: "customerName",
-  invoiceNo: "invoiceNo",
-  referenceNo: "referenceNo",
-  grossAmount: "grossAmount",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  transactionNo: 'transactionNo',
+  documentDate: 'documentDate',
+  customerName: 'customerName',
+  invoiceNo: 'invoiceNo',
+  referenceNo: 'referenceNo',
+  grossAmount: 'grossAmount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type BillingInvoiceControllerFindAllV1SortDirection =
-  (typeof BillingInvoiceControllerFindAllV1SortDirection)[keyof typeof BillingInvoiceControllerFindAllV1SortDirection];
+export type BillingInvoiceControllerFindAllV1SortDirection = typeof BillingInvoiceControllerFindAllV1SortDirection[keyof typeof BillingInvoiceControllerFindAllV1SortDirection];
+
 
 export const BillingInvoiceControllerFindAllV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type BillingInvoiceControllerSuggestTransactionNumberV1Params = {
-  /**
-   * @minimum 1
-   */
-  branchUnitId?: number;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   */
-  limit?: number;
-  search?: string;
-  status?: BillingInvoiceControllerSuggestTransactionNumberV1Status;
-  documentDateFrom?: string;
-  documentDateTo?: string;
-  amountFrom?: number;
-  amountTo?: number;
-  sortBy?: BillingInvoiceControllerSuggestTransactionNumberV1SortBy;
-  sortDirection?: BillingInvoiceControllerSuggestTransactionNumberV1SortDirection;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ */
+limit?: number;
+search?: string;
+status?: BillingInvoiceControllerSuggestTransactionNumberV1Status;
+documentDateFrom?: string;
+documentDateTo?: string;
+amountFrom?: number;
+amountTo?: number;
+sortBy?: BillingInvoiceControllerSuggestTransactionNumberV1SortBy;
+sortDirection?: BillingInvoiceControllerSuggestTransactionNumberV1SortDirection;
 };
 
-export type BillingInvoiceControllerSuggestTransactionNumberV1Status =
-  (typeof BillingInvoiceControllerSuggestTransactionNumberV1Status)[keyof typeof BillingInvoiceControllerSuggestTransactionNumberV1Status];
+export type BillingInvoiceControllerSuggestTransactionNumberV1Status = typeof BillingInvoiceControllerSuggestTransactionNumberV1Status[keyof typeof BillingInvoiceControllerSuggestTransactionNumberV1Status];
+
 
 export const BillingInvoiceControllerSuggestTransactionNumberV1Status = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
-export type BillingInvoiceControllerSuggestTransactionNumberV1SortBy =
-  (typeof BillingInvoiceControllerSuggestTransactionNumberV1SortBy)[keyof typeof BillingInvoiceControllerSuggestTransactionNumberV1SortBy];
+export type BillingInvoiceControllerSuggestTransactionNumberV1SortBy = typeof BillingInvoiceControllerSuggestTransactionNumberV1SortBy[keyof typeof BillingInvoiceControllerSuggestTransactionNumberV1SortBy];
+
 
 export const BillingInvoiceControllerSuggestTransactionNumberV1SortBy = {
-  transactionNo: "transactionNo",
-  documentDate: "documentDate",
-  customerName: "customerName",
-  invoiceNo: "invoiceNo",
-  referenceNo: "referenceNo",
-  grossAmount: "grossAmount",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  transactionNo: 'transactionNo',
+  documentDate: 'documentDate',
+  customerName: 'customerName',
+  invoiceNo: 'invoiceNo',
+  referenceNo: 'referenceNo',
+  grossAmount: 'grossAmount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type BillingInvoiceControllerSuggestTransactionNumberV1SortDirection =
-  (typeof BillingInvoiceControllerSuggestTransactionNumberV1SortDirection)[keyof typeof BillingInvoiceControllerSuggestTransactionNumberV1SortDirection];
+export type BillingInvoiceControllerSuggestTransactionNumberV1SortDirection = typeof BillingInvoiceControllerSuggestTransactionNumberV1SortDirection[keyof typeof BillingInvoiceControllerSuggestTransactionNumberV1SortDirection];
+
 
 export const BillingInvoiceControllerSuggestTransactionNumberV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type BillingInvoiceControllerFindOneV1Params = {
-  /**
-   * @minimum 1
-   */
-  branchUnitId?: number;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   */
-  limit?: number;
-  search?: string;
-  status?: BillingInvoiceControllerFindOneV1Status;
-  documentDateFrom?: string;
-  documentDateTo?: string;
-  amountFrom?: number;
-  amountTo?: number;
-  sortBy?: BillingInvoiceControllerFindOneV1SortBy;
-  sortDirection?: BillingInvoiceControllerFindOneV1SortDirection;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ */
+limit?: number;
+search?: string;
+status?: BillingInvoiceControllerFindOneV1Status;
+documentDateFrom?: string;
+documentDateTo?: string;
+amountFrom?: number;
+amountTo?: number;
+sortBy?: BillingInvoiceControllerFindOneV1SortBy;
+sortDirection?: BillingInvoiceControllerFindOneV1SortDirection;
 };
 
-export type BillingInvoiceControllerFindOneV1Status =
-  (typeof BillingInvoiceControllerFindOneV1Status)[keyof typeof BillingInvoiceControllerFindOneV1Status];
+export type BillingInvoiceControllerFindOneV1Status = typeof BillingInvoiceControllerFindOneV1Status[keyof typeof BillingInvoiceControllerFindOneV1Status];
+
 
 export const BillingInvoiceControllerFindOneV1Status = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
-export type BillingInvoiceControllerFindOneV1SortBy =
-  (typeof BillingInvoiceControllerFindOneV1SortBy)[keyof typeof BillingInvoiceControllerFindOneV1SortBy];
+export type BillingInvoiceControllerFindOneV1SortBy = typeof BillingInvoiceControllerFindOneV1SortBy[keyof typeof BillingInvoiceControllerFindOneV1SortBy];
+
 
 export const BillingInvoiceControllerFindOneV1SortBy = {
-  transactionNo: "transactionNo",
-  documentDate: "documentDate",
-  customerName: "customerName",
-  invoiceNo: "invoiceNo",
-  referenceNo: "referenceNo",
-  grossAmount: "grossAmount",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  transactionNo: 'transactionNo',
+  documentDate: 'documentDate',
+  customerName: 'customerName',
+  invoiceNo: 'invoiceNo',
+  referenceNo: 'referenceNo',
+  grossAmount: 'grossAmount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type BillingInvoiceControllerFindOneV1SortDirection =
-  (typeof BillingInvoiceControllerFindOneV1SortDirection)[keyof typeof BillingInvoiceControllerFindOneV1SortDirection];
+export type BillingInvoiceControllerFindOneV1SortDirection = typeof BillingInvoiceControllerFindOneV1SortDirection[keyof typeof BillingInvoiceControllerFindOneV1SortDirection];
+
 
 export const BillingInvoiceControllerFindOneV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type BillingStatementControllerFindAllV1Params = {
-  /**
-   * @minimum 1
-   */
-  branchUnitId?: number;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   */
-  limit?: number;
-  search?: string;
-  status?: BillingStatementControllerFindAllV1Status;
-  documentDateFrom?: string;
-  documentDateTo?: string;
-  amountFrom?: number;
-  amountTo?: number;
-  sortBy?: BillingStatementControllerFindAllV1SortBy;
-  sortDirection?: BillingStatementControllerFindAllV1SortDirection;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ */
+limit?: number;
+search?: string;
+status?: BillingStatementControllerFindAllV1Status;
+documentDateFrom?: string;
+documentDateTo?: string;
+amountFrom?: number;
+amountTo?: number;
+sortBy?: BillingStatementControllerFindAllV1SortBy;
+sortDirection?: BillingStatementControllerFindAllV1SortDirection;
 };
 
-export type BillingStatementControllerFindAllV1Status =
-  (typeof BillingStatementControllerFindAllV1Status)[keyof typeof BillingStatementControllerFindAllV1Status];
+export type BillingStatementControllerFindAllV1Status = typeof BillingStatementControllerFindAllV1Status[keyof typeof BillingStatementControllerFindAllV1Status];
+
 
 export const BillingStatementControllerFindAllV1Status = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
-export type BillingStatementControllerFindAllV1SortBy =
-  (typeof BillingStatementControllerFindAllV1SortBy)[keyof typeof BillingStatementControllerFindAllV1SortBy];
+export type BillingStatementControllerFindAllV1SortBy = typeof BillingStatementControllerFindAllV1SortBy[keyof typeof BillingStatementControllerFindAllV1SortBy];
+
 
 export const BillingStatementControllerFindAllV1SortBy = {
-  transactionNo: "transactionNo",
-  documentDate: "documentDate",
-  customerName: "customerName",
-  invoiceNo: "invoiceNo",
-  referenceNo: "referenceNo",
-  grossAmount: "grossAmount",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  transactionNo: 'transactionNo',
+  documentDate: 'documentDate',
+  customerName: 'customerName',
+  invoiceNo: 'invoiceNo',
+  referenceNo: 'referenceNo',
+  grossAmount: 'grossAmount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type BillingStatementControllerFindAllV1SortDirection =
-  (typeof BillingStatementControllerFindAllV1SortDirection)[keyof typeof BillingStatementControllerFindAllV1SortDirection];
+export type BillingStatementControllerFindAllV1SortDirection = typeof BillingStatementControllerFindAllV1SortDirection[keyof typeof BillingStatementControllerFindAllV1SortDirection];
+
 
 export const BillingStatementControllerFindAllV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type BillingStatementControllerSuggestTransactionNumberV1Params = {
-  /**
-   * @minimum 1
-   */
-  branchUnitId?: number;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   */
-  limit?: number;
-  search?: string;
-  status?: BillingStatementControllerSuggestTransactionNumberV1Status;
-  documentDateFrom?: string;
-  documentDateTo?: string;
-  amountFrom?: number;
-  amountTo?: number;
-  sortBy?: BillingStatementControllerSuggestTransactionNumberV1SortBy;
-  sortDirection?: BillingStatementControllerSuggestTransactionNumberV1SortDirection;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ */
+limit?: number;
+search?: string;
+status?: BillingStatementControllerSuggestTransactionNumberV1Status;
+documentDateFrom?: string;
+documentDateTo?: string;
+amountFrom?: number;
+amountTo?: number;
+sortBy?: BillingStatementControllerSuggestTransactionNumberV1SortBy;
+sortDirection?: BillingStatementControllerSuggestTransactionNumberV1SortDirection;
 };
 
-export type BillingStatementControllerSuggestTransactionNumberV1Status =
-  (typeof BillingStatementControllerSuggestTransactionNumberV1Status)[keyof typeof BillingStatementControllerSuggestTransactionNumberV1Status];
+export type BillingStatementControllerSuggestTransactionNumberV1Status = typeof BillingStatementControllerSuggestTransactionNumberV1Status[keyof typeof BillingStatementControllerSuggestTransactionNumberV1Status];
+
 
 export const BillingStatementControllerSuggestTransactionNumberV1Status = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
-export type BillingStatementControllerSuggestTransactionNumberV1SortBy =
-  (typeof BillingStatementControllerSuggestTransactionNumberV1SortBy)[keyof typeof BillingStatementControllerSuggestTransactionNumberV1SortBy];
+export type BillingStatementControllerSuggestTransactionNumberV1SortBy = typeof BillingStatementControllerSuggestTransactionNumberV1SortBy[keyof typeof BillingStatementControllerSuggestTransactionNumberV1SortBy];
+
 
 export const BillingStatementControllerSuggestTransactionNumberV1SortBy = {
-  transactionNo: "transactionNo",
-  documentDate: "documentDate",
-  customerName: "customerName",
-  invoiceNo: "invoiceNo",
-  referenceNo: "referenceNo",
-  grossAmount: "grossAmount",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  transactionNo: 'transactionNo',
+  documentDate: 'documentDate',
+  customerName: 'customerName',
+  invoiceNo: 'invoiceNo',
+  referenceNo: 'referenceNo',
+  grossAmount: 'grossAmount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type BillingStatementControllerSuggestTransactionNumberV1SortDirection =
-  (typeof BillingStatementControllerSuggestTransactionNumberV1SortDirection)[keyof typeof BillingStatementControllerSuggestTransactionNumberV1SortDirection];
+export type BillingStatementControllerSuggestTransactionNumberV1SortDirection = typeof BillingStatementControllerSuggestTransactionNumberV1SortDirection[keyof typeof BillingStatementControllerSuggestTransactionNumberV1SortDirection];
+
 
 export const BillingStatementControllerSuggestTransactionNumberV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type BillingStatementControllerFindOneV1Params = {
-  /**
-   * @minimum 1
-   */
-  branchUnitId?: number;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   */
-  limit?: number;
-  search?: string;
-  status?: BillingStatementControllerFindOneV1Status;
-  documentDateFrom?: string;
-  documentDateTo?: string;
-  amountFrom?: number;
-  amountTo?: number;
-  sortBy?: BillingStatementControllerFindOneV1SortBy;
-  sortDirection?: BillingStatementControllerFindOneV1SortDirection;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ */
+limit?: number;
+search?: string;
+status?: BillingStatementControllerFindOneV1Status;
+documentDateFrom?: string;
+documentDateTo?: string;
+amountFrom?: number;
+amountTo?: number;
+sortBy?: BillingStatementControllerFindOneV1SortBy;
+sortDirection?: BillingStatementControllerFindOneV1SortDirection;
 };
 
-export type BillingStatementControllerFindOneV1Status =
-  (typeof BillingStatementControllerFindOneV1Status)[keyof typeof BillingStatementControllerFindOneV1Status];
+export type BillingStatementControllerFindOneV1Status = typeof BillingStatementControllerFindOneV1Status[keyof typeof BillingStatementControllerFindOneV1Status];
+
 
 export const BillingStatementControllerFindOneV1Status = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
-export type BillingStatementControllerFindOneV1SortBy =
-  (typeof BillingStatementControllerFindOneV1SortBy)[keyof typeof BillingStatementControllerFindOneV1SortBy];
+export type BillingStatementControllerFindOneV1SortBy = typeof BillingStatementControllerFindOneV1SortBy[keyof typeof BillingStatementControllerFindOneV1SortBy];
+
 
 export const BillingStatementControllerFindOneV1SortBy = {
-  transactionNo: "transactionNo",
-  documentDate: "documentDate",
-  customerName: "customerName",
-  invoiceNo: "invoiceNo",
-  referenceNo: "referenceNo",
-  grossAmount: "grossAmount",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  transactionNo: 'transactionNo',
+  documentDate: 'documentDate',
+  customerName: 'customerName',
+  invoiceNo: 'invoiceNo',
+  referenceNo: 'referenceNo',
+  grossAmount: 'grossAmount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type BillingStatementControllerFindOneV1SortDirection =
-  (typeof BillingStatementControllerFindOneV1SortDirection)[keyof typeof BillingStatementControllerFindOneV1SortDirection];
+export type BillingStatementControllerFindOneV1SortDirection = typeof BillingStatementControllerFindOneV1SortDirection[keyof typeof BillingStatementControllerFindOneV1SortDirection];
+
 
 export const BillingStatementControllerFindOneV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type BillingControllerFindAllV1Params = {
-  /**
-   * @minimum 1
-   */
-  branchUnitId?: number;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   */
-  limit?: number;
-  search?: string;
-  status?: BillingControllerFindAllV1Status;
-  documentDateFrom?: string;
-  documentDateTo?: string;
-  amountFrom?: number;
-  amountTo?: number;
-  sortBy?: BillingControllerFindAllV1SortBy;
-  sortDirection?: BillingControllerFindAllV1SortDirection;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ */
+limit?: number;
+search?: string;
+status?: BillingControllerFindAllV1Status;
+documentDateFrom?: string;
+documentDateTo?: string;
+amountFrom?: number;
+amountTo?: number;
+sortBy?: BillingControllerFindAllV1SortBy;
+sortDirection?: BillingControllerFindAllV1SortDirection;
 };
 
-export type BillingControllerFindAllV1Status = (typeof BillingControllerFindAllV1Status)[keyof typeof BillingControllerFindAllV1Status];
+export type BillingControllerFindAllV1Status = typeof BillingControllerFindAllV1Status[keyof typeof BillingControllerFindAllV1Status];
+
 
 export const BillingControllerFindAllV1Status = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
-export type BillingControllerFindAllV1SortBy = (typeof BillingControllerFindAllV1SortBy)[keyof typeof BillingControllerFindAllV1SortBy];
+export type BillingControllerFindAllV1SortBy = typeof BillingControllerFindAllV1SortBy[keyof typeof BillingControllerFindAllV1SortBy];
+
 
 export const BillingControllerFindAllV1SortBy = {
-  transactionNo: "transactionNo",
-  documentDate: "documentDate",
-  customerName: "customerName",
-  invoiceNo: "invoiceNo",
-  referenceNo: "referenceNo",
-  grossAmount: "grossAmount",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  transactionNo: 'transactionNo',
+  documentDate: 'documentDate',
+  customerName: 'customerName',
+  invoiceNo: 'invoiceNo',
+  referenceNo: 'referenceNo',
+  grossAmount: 'grossAmount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type BillingControllerFindAllV1SortDirection =
-  (typeof BillingControllerFindAllV1SortDirection)[keyof typeof BillingControllerFindAllV1SortDirection];
+export type BillingControllerFindAllV1SortDirection = typeof BillingControllerFindAllV1SortDirection[keyof typeof BillingControllerFindAllV1SortDirection];
+
 
 export const BillingControllerFindAllV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type BillingControllerSuggestTransactionNumberV1Params = {
-  /**
-   * @minimum 1
-   */
-  branchUnitId?: number;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   */
-  limit?: number;
-  search?: string;
-  status?: BillingControllerSuggestTransactionNumberV1Status;
-  documentDateFrom?: string;
-  documentDateTo?: string;
-  amountFrom?: number;
-  amountTo?: number;
-  sortBy?: BillingControllerSuggestTransactionNumberV1SortBy;
-  sortDirection?: BillingControllerSuggestTransactionNumberV1SortDirection;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ */
+limit?: number;
+search?: string;
+status?: BillingControllerSuggestTransactionNumberV1Status;
+documentDateFrom?: string;
+documentDateTo?: string;
+amountFrom?: number;
+amountTo?: number;
+sortBy?: BillingControllerSuggestTransactionNumberV1SortBy;
+sortDirection?: BillingControllerSuggestTransactionNumberV1SortDirection;
 };
 
-export type BillingControllerSuggestTransactionNumberV1Status =
-  (typeof BillingControllerSuggestTransactionNumberV1Status)[keyof typeof BillingControllerSuggestTransactionNumberV1Status];
+export type BillingControllerSuggestTransactionNumberV1Status = typeof BillingControllerSuggestTransactionNumberV1Status[keyof typeof BillingControllerSuggestTransactionNumberV1Status];
+
 
 export const BillingControllerSuggestTransactionNumberV1Status = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
-export type BillingControllerSuggestTransactionNumberV1SortBy =
-  (typeof BillingControllerSuggestTransactionNumberV1SortBy)[keyof typeof BillingControllerSuggestTransactionNumberV1SortBy];
+export type BillingControllerSuggestTransactionNumberV1SortBy = typeof BillingControllerSuggestTransactionNumberV1SortBy[keyof typeof BillingControllerSuggestTransactionNumberV1SortBy];
+
 
 export const BillingControllerSuggestTransactionNumberV1SortBy = {
-  transactionNo: "transactionNo",
-  documentDate: "documentDate",
-  customerName: "customerName",
-  invoiceNo: "invoiceNo",
-  referenceNo: "referenceNo",
-  grossAmount: "grossAmount",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  transactionNo: 'transactionNo',
+  documentDate: 'documentDate',
+  customerName: 'customerName',
+  invoiceNo: 'invoiceNo',
+  referenceNo: 'referenceNo',
+  grossAmount: 'grossAmount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type BillingControllerSuggestTransactionNumberV1SortDirection =
-  (typeof BillingControllerSuggestTransactionNumberV1SortDirection)[keyof typeof BillingControllerSuggestTransactionNumberV1SortDirection];
+export type BillingControllerSuggestTransactionNumberV1SortDirection = typeof BillingControllerSuggestTransactionNumberV1SortDirection[keyof typeof BillingControllerSuggestTransactionNumberV1SortDirection];
+
 
 export const BillingControllerSuggestTransactionNumberV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type BillingControllerFindOneV1Params = {
-  /**
-   * @minimum 1
-   */
-  branchUnitId?: number;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   */
-  limit?: number;
-  search?: string;
-  status?: BillingControllerFindOneV1Status;
-  documentDateFrom?: string;
-  documentDateTo?: string;
-  amountFrom?: number;
-  amountTo?: number;
-  sortBy?: BillingControllerFindOneV1SortBy;
-  sortDirection?: BillingControllerFindOneV1SortDirection;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ */
+limit?: number;
+search?: string;
+status?: BillingControllerFindOneV1Status;
+documentDateFrom?: string;
+documentDateTo?: string;
+amountFrom?: number;
+amountTo?: number;
+sortBy?: BillingControllerFindOneV1SortBy;
+sortDirection?: BillingControllerFindOneV1SortDirection;
 };
 
-export type BillingControllerFindOneV1Status = (typeof BillingControllerFindOneV1Status)[keyof typeof BillingControllerFindOneV1Status];
+export type BillingControllerFindOneV1Status = typeof BillingControllerFindOneV1Status[keyof typeof BillingControllerFindOneV1Status];
+
 
 export const BillingControllerFindOneV1Status = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
-export type BillingControllerFindOneV1SortBy = (typeof BillingControllerFindOneV1SortBy)[keyof typeof BillingControllerFindOneV1SortBy];
+export type BillingControllerFindOneV1SortBy = typeof BillingControllerFindOneV1SortBy[keyof typeof BillingControllerFindOneV1SortBy];
+
 
 export const BillingControllerFindOneV1SortBy = {
-  transactionNo: "transactionNo",
-  documentDate: "documentDate",
-  customerName: "customerName",
-  invoiceNo: "invoiceNo",
-  referenceNo: "referenceNo",
-  grossAmount: "grossAmount",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  transactionNo: 'transactionNo',
+  documentDate: 'documentDate',
+  customerName: 'customerName',
+  invoiceNo: 'invoiceNo',
+  referenceNo: 'referenceNo',
+  grossAmount: 'grossAmount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type BillingControllerFindOneV1SortDirection =
-  (typeof BillingControllerFindOneV1SortDirection)[keyof typeof BillingControllerFindOneV1SortDirection];
+export type BillingControllerFindOneV1SortDirection = typeof BillingControllerFindOneV1SortDirection[keyof typeof BillingControllerFindOneV1SortDirection];
+
 
 export const BillingControllerFindOneV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type OfficialReceiptControllerFindAllV1Params = {
-  /**
-   * @minimum 1
-   */
-  branchUnitId?: number;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   */
-  limit?: number;
-  search?: string;
-  status?: OfficialReceiptControllerFindAllV1Status;
-  documentDateFrom?: string;
-  documentDateTo?: string;
-  amountFrom?: number;
-  amountTo?: number;
-  sortBy?: OfficialReceiptControllerFindAllV1SortBy;
-  sortDirection?: OfficialReceiptControllerFindAllV1SortDirection;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ */
+limit?: number;
+search?: string;
+status?: OfficialReceiptControllerFindAllV1Status;
+documentDateFrom?: string;
+documentDateTo?: string;
+amountFrom?: number;
+amountTo?: number;
+sortBy?: OfficialReceiptControllerFindAllV1SortBy;
+sortDirection?: OfficialReceiptControllerFindAllV1SortDirection;
 };
 
-export type OfficialReceiptControllerFindAllV1Status =
-  (typeof OfficialReceiptControllerFindAllV1Status)[keyof typeof OfficialReceiptControllerFindAllV1Status];
+export type OfficialReceiptControllerFindAllV1Status = typeof OfficialReceiptControllerFindAllV1Status[keyof typeof OfficialReceiptControllerFindAllV1Status];
+
 
 export const OfficialReceiptControllerFindAllV1Status = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
-export type OfficialReceiptControllerFindAllV1SortBy =
-  (typeof OfficialReceiptControllerFindAllV1SortBy)[keyof typeof OfficialReceiptControllerFindAllV1SortBy];
+export type OfficialReceiptControllerFindAllV1SortBy = typeof OfficialReceiptControllerFindAllV1SortBy[keyof typeof OfficialReceiptControllerFindAllV1SortBy];
+
 
 export const OfficialReceiptControllerFindAllV1SortBy = {
-  transactionNo: "transactionNo",
-  documentDate: "documentDate",
-  customerName: "customerName",
-  receiptNo: "receiptNo",
-  referenceNo: "referenceNo",
-  grossAmount: "grossAmount",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  transactionNo: 'transactionNo',
+  documentDate: 'documentDate',
+  customerName: 'customerName',
+  receiptNo: 'receiptNo',
+  referenceNo: 'referenceNo',
+  grossAmount: 'grossAmount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type OfficialReceiptControllerFindAllV1SortDirection =
-  (typeof OfficialReceiptControllerFindAllV1SortDirection)[keyof typeof OfficialReceiptControllerFindAllV1SortDirection];
+export type OfficialReceiptControllerFindAllV1SortDirection = typeof OfficialReceiptControllerFindAllV1SortDirection[keyof typeof OfficialReceiptControllerFindAllV1SortDirection];
+
 
 export const OfficialReceiptControllerFindAllV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type OfficialReceiptControllerSuggestTransactionNumberV1Params = {
-  /**
-   * @minimum 1
-   */
-  branchUnitId?: number;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   */
-  limit?: number;
-  search?: string;
-  status?: OfficialReceiptControllerSuggestTransactionNumberV1Status;
-  documentDateFrom?: string;
-  documentDateTo?: string;
-  amountFrom?: number;
-  amountTo?: number;
-  sortBy?: OfficialReceiptControllerSuggestTransactionNumberV1SortBy;
-  sortDirection?: OfficialReceiptControllerSuggestTransactionNumberV1SortDirection;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ */
+limit?: number;
+search?: string;
+status?: OfficialReceiptControllerSuggestTransactionNumberV1Status;
+documentDateFrom?: string;
+documentDateTo?: string;
+amountFrom?: number;
+amountTo?: number;
+sortBy?: OfficialReceiptControllerSuggestTransactionNumberV1SortBy;
+sortDirection?: OfficialReceiptControllerSuggestTransactionNumberV1SortDirection;
 };
 
-export type OfficialReceiptControllerSuggestTransactionNumberV1Status =
-  (typeof OfficialReceiptControllerSuggestTransactionNumberV1Status)[keyof typeof OfficialReceiptControllerSuggestTransactionNumberV1Status];
+export type OfficialReceiptControllerSuggestTransactionNumberV1Status = typeof OfficialReceiptControllerSuggestTransactionNumberV1Status[keyof typeof OfficialReceiptControllerSuggestTransactionNumberV1Status];
+
 
 export const OfficialReceiptControllerSuggestTransactionNumberV1Status = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
-export type OfficialReceiptControllerSuggestTransactionNumberV1SortBy =
-  (typeof OfficialReceiptControllerSuggestTransactionNumberV1SortBy)[keyof typeof OfficialReceiptControllerSuggestTransactionNumberV1SortBy];
+export type OfficialReceiptControllerSuggestTransactionNumberV1SortBy = typeof OfficialReceiptControllerSuggestTransactionNumberV1SortBy[keyof typeof OfficialReceiptControllerSuggestTransactionNumberV1SortBy];
+
 
 export const OfficialReceiptControllerSuggestTransactionNumberV1SortBy = {
-  transactionNo: "transactionNo",
-  documentDate: "documentDate",
-  customerName: "customerName",
-  receiptNo: "receiptNo",
-  referenceNo: "referenceNo",
-  grossAmount: "grossAmount",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  transactionNo: 'transactionNo',
+  documentDate: 'documentDate',
+  customerName: 'customerName',
+  receiptNo: 'receiptNo',
+  referenceNo: 'referenceNo',
+  grossAmount: 'grossAmount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type OfficialReceiptControllerSuggestTransactionNumberV1SortDirection =
-  (typeof OfficialReceiptControllerSuggestTransactionNumberV1SortDirection)[keyof typeof OfficialReceiptControllerSuggestTransactionNumberV1SortDirection];
+export type OfficialReceiptControllerSuggestTransactionNumberV1SortDirection = typeof OfficialReceiptControllerSuggestTransactionNumberV1SortDirection[keyof typeof OfficialReceiptControllerSuggestTransactionNumberV1SortDirection];
+
 
 export const OfficialReceiptControllerSuggestTransactionNumberV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type OfficialReceiptControllerFindOneV1Params = {
-  /**
-   * @minimum 1
-   */
-  branchUnitId?: number;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   */
-  limit?: number;
-  search?: string;
-  status?: OfficialReceiptControllerFindOneV1Status;
-  documentDateFrom?: string;
-  documentDateTo?: string;
-  amountFrom?: number;
-  amountTo?: number;
-  sortBy?: OfficialReceiptControllerFindOneV1SortBy;
-  sortDirection?: OfficialReceiptControllerFindOneV1SortDirection;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ */
+limit?: number;
+search?: string;
+status?: OfficialReceiptControllerFindOneV1Status;
+documentDateFrom?: string;
+documentDateTo?: string;
+amountFrom?: number;
+amountTo?: number;
+sortBy?: OfficialReceiptControllerFindOneV1SortBy;
+sortDirection?: OfficialReceiptControllerFindOneV1SortDirection;
 };
 
-export type OfficialReceiptControllerFindOneV1Status =
-  (typeof OfficialReceiptControllerFindOneV1Status)[keyof typeof OfficialReceiptControllerFindOneV1Status];
+export type OfficialReceiptControllerFindOneV1Status = typeof OfficialReceiptControllerFindOneV1Status[keyof typeof OfficialReceiptControllerFindOneV1Status];
+
 
 export const OfficialReceiptControllerFindOneV1Status = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
-export type OfficialReceiptControllerFindOneV1SortBy =
-  (typeof OfficialReceiptControllerFindOneV1SortBy)[keyof typeof OfficialReceiptControllerFindOneV1SortBy];
+export type OfficialReceiptControllerFindOneV1SortBy = typeof OfficialReceiptControllerFindOneV1SortBy[keyof typeof OfficialReceiptControllerFindOneV1SortBy];
+
 
 export const OfficialReceiptControllerFindOneV1SortBy = {
-  transactionNo: "transactionNo",
-  documentDate: "documentDate",
-  customerName: "customerName",
-  receiptNo: "receiptNo",
-  referenceNo: "referenceNo",
-  grossAmount: "grossAmount",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  transactionNo: 'transactionNo',
+  documentDate: 'documentDate',
+  customerName: 'customerName',
+  receiptNo: 'receiptNo',
+  referenceNo: 'referenceNo',
+  grossAmount: 'grossAmount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type OfficialReceiptControllerFindOneV1SortDirection =
-  (typeof OfficialReceiptControllerFindOneV1SortDirection)[keyof typeof OfficialReceiptControllerFindOneV1SortDirection];
+export type OfficialReceiptControllerFindOneV1SortDirection = typeof OfficialReceiptControllerFindOneV1SortDirection[keyof typeof OfficialReceiptControllerFindOneV1SortDirection];
+
 
 export const OfficialReceiptControllerFindOneV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type CollectionReceiptControllerFindAllV1Params = {
-  /**
-   * @minimum 1
-   */
-  branchUnitId?: number;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   */
-  limit?: number;
-  search?: string;
-  status?: CollectionReceiptControllerFindAllV1Status;
-  documentDateFrom?: string;
-  documentDateTo?: string;
-  amountFrom?: number;
-  amountTo?: number;
-  sortBy?: CollectionReceiptControllerFindAllV1SortBy;
-  sortDirection?: CollectionReceiptControllerFindAllV1SortDirection;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ */
+limit?: number;
+search?: string;
+status?: CollectionReceiptControllerFindAllV1Status;
+documentDateFrom?: string;
+documentDateTo?: string;
+amountFrom?: number;
+amountTo?: number;
+sortBy?: CollectionReceiptControllerFindAllV1SortBy;
+sortDirection?: CollectionReceiptControllerFindAllV1SortDirection;
 };
 
-export type CollectionReceiptControllerFindAllV1Status =
-  (typeof CollectionReceiptControllerFindAllV1Status)[keyof typeof CollectionReceiptControllerFindAllV1Status];
+export type CollectionReceiptControllerFindAllV1Status = typeof CollectionReceiptControllerFindAllV1Status[keyof typeof CollectionReceiptControllerFindAllV1Status];
+
 
 export const CollectionReceiptControllerFindAllV1Status = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
-export type CollectionReceiptControllerFindAllV1SortBy =
-  (typeof CollectionReceiptControllerFindAllV1SortBy)[keyof typeof CollectionReceiptControllerFindAllV1SortBy];
+export type CollectionReceiptControllerFindAllV1SortBy = typeof CollectionReceiptControllerFindAllV1SortBy[keyof typeof CollectionReceiptControllerFindAllV1SortBy];
+
 
 export const CollectionReceiptControllerFindAllV1SortBy = {
-  transactionNo: "transactionNo",
-  documentDate: "documentDate",
-  customerName: "customerName",
-  receiptNo: "receiptNo",
-  referenceNo: "referenceNo",
-  grossAmount: "grossAmount",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  transactionNo: 'transactionNo',
+  documentDate: 'documentDate',
+  customerName: 'customerName',
+  receiptNo: 'receiptNo',
+  referenceNo: 'referenceNo',
+  grossAmount: 'grossAmount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type CollectionReceiptControllerFindAllV1SortDirection =
-  (typeof CollectionReceiptControllerFindAllV1SortDirection)[keyof typeof CollectionReceiptControllerFindAllV1SortDirection];
+export type CollectionReceiptControllerFindAllV1SortDirection = typeof CollectionReceiptControllerFindAllV1SortDirection[keyof typeof CollectionReceiptControllerFindAllV1SortDirection];
+
 
 export const CollectionReceiptControllerFindAllV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type CollectionReceiptControllerSuggestTransactionNumberV1Params = {
-  /**
-   * @minimum 1
-   */
-  branchUnitId?: number;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   */
-  limit?: number;
-  search?: string;
-  status?: CollectionReceiptControllerSuggestTransactionNumberV1Status;
-  documentDateFrom?: string;
-  documentDateTo?: string;
-  amountFrom?: number;
-  amountTo?: number;
-  sortBy?: CollectionReceiptControllerSuggestTransactionNumberV1SortBy;
-  sortDirection?: CollectionReceiptControllerSuggestTransactionNumberV1SortDirection;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ */
+limit?: number;
+search?: string;
+status?: CollectionReceiptControllerSuggestTransactionNumberV1Status;
+documentDateFrom?: string;
+documentDateTo?: string;
+amountFrom?: number;
+amountTo?: number;
+sortBy?: CollectionReceiptControllerSuggestTransactionNumberV1SortBy;
+sortDirection?: CollectionReceiptControllerSuggestTransactionNumberV1SortDirection;
 };
 
-export type CollectionReceiptControllerSuggestTransactionNumberV1Status =
-  (typeof CollectionReceiptControllerSuggestTransactionNumberV1Status)[keyof typeof CollectionReceiptControllerSuggestTransactionNumberV1Status];
+export type CollectionReceiptControllerSuggestTransactionNumberV1Status = typeof CollectionReceiptControllerSuggestTransactionNumberV1Status[keyof typeof CollectionReceiptControllerSuggestTransactionNumberV1Status];
+
 
 export const CollectionReceiptControllerSuggestTransactionNumberV1Status = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
-export type CollectionReceiptControllerSuggestTransactionNumberV1SortBy =
-  (typeof CollectionReceiptControllerSuggestTransactionNumberV1SortBy)[keyof typeof CollectionReceiptControllerSuggestTransactionNumberV1SortBy];
+export type CollectionReceiptControllerSuggestTransactionNumberV1SortBy = typeof CollectionReceiptControllerSuggestTransactionNumberV1SortBy[keyof typeof CollectionReceiptControllerSuggestTransactionNumberV1SortBy];
+
 
 export const CollectionReceiptControllerSuggestTransactionNumberV1SortBy = {
-  transactionNo: "transactionNo",
-  documentDate: "documentDate",
-  customerName: "customerName",
-  receiptNo: "receiptNo",
-  referenceNo: "referenceNo",
-  grossAmount: "grossAmount",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  transactionNo: 'transactionNo',
+  documentDate: 'documentDate',
+  customerName: 'customerName',
+  receiptNo: 'receiptNo',
+  referenceNo: 'referenceNo',
+  grossAmount: 'grossAmount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type CollectionReceiptControllerSuggestTransactionNumberV1SortDirection =
-  (typeof CollectionReceiptControllerSuggestTransactionNumberV1SortDirection)[keyof typeof CollectionReceiptControllerSuggestTransactionNumberV1SortDirection];
+export type CollectionReceiptControllerSuggestTransactionNumberV1SortDirection = typeof CollectionReceiptControllerSuggestTransactionNumberV1SortDirection[keyof typeof CollectionReceiptControllerSuggestTransactionNumberV1SortDirection];
+
 
 export const CollectionReceiptControllerSuggestTransactionNumberV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type CollectionReceiptControllerFindOneV1Params = {
-  /**
-   * @minimum 1
-   */
-  branchUnitId?: number;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   */
-  limit?: number;
-  search?: string;
-  status?: CollectionReceiptControllerFindOneV1Status;
-  documentDateFrom?: string;
-  documentDateTo?: string;
-  amountFrom?: number;
-  amountTo?: number;
-  sortBy?: CollectionReceiptControllerFindOneV1SortBy;
-  sortDirection?: CollectionReceiptControllerFindOneV1SortDirection;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ */
+limit?: number;
+search?: string;
+status?: CollectionReceiptControllerFindOneV1Status;
+documentDateFrom?: string;
+documentDateTo?: string;
+amountFrom?: number;
+amountTo?: number;
+sortBy?: CollectionReceiptControllerFindOneV1SortBy;
+sortDirection?: CollectionReceiptControllerFindOneV1SortDirection;
 };
 
-export type CollectionReceiptControllerFindOneV1Status =
-  (typeof CollectionReceiptControllerFindOneV1Status)[keyof typeof CollectionReceiptControllerFindOneV1Status];
+export type CollectionReceiptControllerFindOneV1Status = typeof CollectionReceiptControllerFindOneV1Status[keyof typeof CollectionReceiptControllerFindOneV1Status];
+
 
 export const CollectionReceiptControllerFindOneV1Status = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
-export type CollectionReceiptControllerFindOneV1SortBy =
-  (typeof CollectionReceiptControllerFindOneV1SortBy)[keyof typeof CollectionReceiptControllerFindOneV1SortBy];
+export type CollectionReceiptControllerFindOneV1SortBy = typeof CollectionReceiptControllerFindOneV1SortBy[keyof typeof CollectionReceiptControllerFindOneV1SortBy];
+
 
 export const CollectionReceiptControllerFindOneV1SortBy = {
-  transactionNo: "transactionNo",
-  documentDate: "documentDate",
-  customerName: "customerName",
-  receiptNo: "receiptNo",
-  referenceNo: "referenceNo",
-  grossAmount: "grossAmount",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  transactionNo: 'transactionNo',
+  documentDate: 'documentDate',
+  customerName: 'customerName',
+  receiptNo: 'receiptNo',
+  referenceNo: 'referenceNo',
+  grossAmount: 'grossAmount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type CollectionReceiptControllerFindOneV1SortDirection =
-  (typeof CollectionReceiptControllerFindOneV1SortDirection)[keyof typeof CollectionReceiptControllerFindOneV1SortDirection];
+export type CollectionReceiptControllerFindOneV1SortDirection = typeof CollectionReceiptControllerFindOneV1SortDirection[keyof typeof CollectionReceiptControllerFindOneV1SortDirection];
+
 
 export const CollectionReceiptControllerFindOneV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type AcknowledgementReceiptControllerFindAllV1Params = {
-  /**
-   * @minimum 1
-   */
-  branchUnitId?: number;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   */
-  limit?: number;
-  search?: string;
-  status?: AcknowledgementReceiptControllerFindAllV1Status;
-  documentDateFrom?: string;
-  documentDateTo?: string;
-  amountFrom?: number;
-  amountTo?: number;
-  sortBy?: AcknowledgementReceiptControllerFindAllV1SortBy;
-  sortDirection?: AcknowledgementReceiptControllerFindAllV1SortDirection;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ */
+limit?: number;
+search?: string;
+status?: AcknowledgementReceiptControllerFindAllV1Status;
+documentDateFrom?: string;
+documentDateTo?: string;
+amountFrom?: number;
+amountTo?: number;
+sortBy?: AcknowledgementReceiptControllerFindAllV1SortBy;
+sortDirection?: AcknowledgementReceiptControllerFindAllV1SortDirection;
 };
 
-export type AcknowledgementReceiptControllerFindAllV1Status =
-  (typeof AcknowledgementReceiptControllerFindAllV1Status)[keyof typeof AcknowledgementReceiptControllerFindAllV1Status];
+export type AcknowledgementReceiptControllerFindAllV1Status = typeof AcknowledgementReceiptControllerFindAllV1Status[keyof typeof AcknowledgementReceiptControllerFindAllV1Status];
+
 
 export const AcknowledgementReceiptControllerFindAllV1Status = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
-export type AcknowledgementReceiptControllerFindAllV1SortBy =
-  (typeof AcknowledgementReceiptControllerFindAllV1SortBy)[keyof typeof AcknowledgementReceiptControllerFindAllV1SortBy];
+export type AcknowledgementReceiptControllerFindAllV1SortBy = typeof AcknowledgementReceiptControllerFindAllV1SortBy[keyof typeof AcknowledgementReceiptControllerFindAllV1SortBy];
+
 
 export const AcknowledgementReceiptControllerFindAllV1SortBy = {
-  transactionNo: "transactionNo",
-  documentDate: "documentDate",
-  customerName: "customerName",
-  receiptNo: "receiptNo",
-  referenceNo: "referenceNo",
-  grossAmount: "grossAmount",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  transactionNo: 'transactionNo',
+  documentDate: 'documentDate',
+  customerName: 'customerName',
+  receiptNo: 'receiptNo',
+  referenceNo: 'referenceNo',
+  grossAmount: 'grossAmount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type AcknowledgementReceiptControllerFindAllV1SortDirection =
-  (typeof AcknowledgementReceiptControllerFindAllV1SortDirection)[keyof typeof AcknowledgementReceiptControllerFindAllV1SortDirection];
+export type AcknowledgementReceiptControllerFindAllV1SortDirection = typeof AcknowledgementReceiptControllerFindAllV1SortDirection[keyof typeof AcknowledgementReceiptControllerFindAllV1SortDirection];
+
 
 export const AcknowledgementReceiptControllerFindAllV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type AcknowledgementReceiptControllerSuggestTransactionNumberV1Params = {
-  /**
-   * @minimum 1
-   */
-  branchUnitId?: number;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   */
-  limit?: number;
-  search?: string;
-  status?: AcknowledgementReceiptControllerSuggestTransactionNumberV1Status;
-  documentDateFrom?: string;
-  documentDateTo?: string;
-  amountFrom?: number;
-  amountTo?: number;
-  sortBy?: AcknowledgementReceiptControllerSuggestTransactionNumberV1SortBy;
-  sortDirection?: AcknowledgementReceiptControllerSuggestTransactionNumberV1SortDirection;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ */
+limit?: number;
+search?: string;
+status?: AcknowledgementReceiptControllerSuggestTransactionNumberV1Status;
+documentDateFrom?: string;
+documentDateTo?: string;
+amountFrom?: number;
+amountTo?: number;
+sortBy?: AcknowledgementReceiptControllerSuggestTransactionNumberV1SortBy;
+sortDirection?: AcknowledgementReceiptControllerSuggestTransactionNumberV1SortDirection;
 };
 
-export type AcknowledgementReceiptControllerSuggestTransactionNumberV1Status =
-  (typeof AcknowledgementReceiptControllerSuggestTransactionNumberV1Status)[keyof typeof AcknowledgementReceiptControllerSuggestTransactionNumberV1Status];
+export type AcknowledgementReceiptControllerSuggestTransactionNumberV1Status = typeof AcknowledgementReceiptControllerSuggestTransactionNumberV1Status[keyof typeof AcknowledgementReceiptControllerSuggestTransactionNumberV1Status];
+
 
 export const AcknowledgementReceiptControllerSuggestTransactionNumberV1Status = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
-export type AcknowledgementReceiptControllerSuggestTransactionNumberV1SortBy =
-  (typeof AcknowledgementReceiptControllerSuggestTransactionNumberV1SortBy)[keyof typeof AcknowledgementReceiptControllerSuggestTransactionNumberV1SortBy];
+export type AcknowledgementReceiptControllerSuggestTransactionNumberV1SortBy = typeof AcknowledgementReceiptControllerSuggestTransactionNumberV1SortBy[keyof typeof AcknowledgementReceiptControllerSuggestTransactionNumberV1SortBy];
+
 
 export const AcknowledgementReceiptControllerSuggestTransactionNumberV1SortBy = {
-  transactionNo: "transactionNo",
-  documentDate: "documentDate",
-  customerName: "customerName",
-  receiptNo: "receiptNo",
-  referenceNo: "referenceNo",
-  grossAmount: "grossAmount",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  transactionNo: 'transactionNo',
+  documentDate: 'documentDate',
+  customerName: 'customerName',
+  receiptNo: 'receiptNo',
+  referenceNo: 'referenceNo',
+  grossAmount: 'grossAmount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type AcknowledgementReceiptControllerSuggestTransactionNumberV1SortDirection =
-  (typeof AcknowledgementReceiptControllerSuggestTransactionNumberV1SortDirection)[keyof typeof AcknowledgementReceiptControllerSuggestTransactionNumberV1SortDirection];
+export type AcknowledgementReceiptControllerSuggestTransactionNumberV1SortDirection = typeof AcknowledgementReceiptControllerSuggestTransactionNumberV1SortDirection[keyof typeof AcknowledgementReceiptControllerSuggestTransactionNumberV1SortDirection];
+
 
 export const AcknowledgementReceiptControllerSuggestTransactionNumberV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type AcknowledgementReceiptControllerFindOneV1Params = {
-  /**
-   * @minimum 1
-   */
-  branchUnitId?: number;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   */
-  limit?: number;
-  search?: string;
-  status?: AcknowledgementReceiptControllerFindOneV1Status;
-  documentDateFrom?: string;
-  documentDateTo?: string;
-  amountFrom?: number;
-  amountTo?: number;
-  sortBy?: AcknowledgementReceiptControllerFindOneV1SortBy;
-  sortDirection?: AcknowledgementReceiptControllerFindOneV1SortDirection;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ */
+limit?: number;
+search?: string;
+status?: AcknowledgementReceiptControllerFindOneV1Status;
+documentDateFrom?: string;
+documentDateTo?: string;
+amountFrom?: number;
+amountTo?: number;
+sortBy?: AcknowledgementReceiptControllerFindOneV1SortBy;
+sortDirection?: AcknowledgementReceiptControllerFindOneV1SortDirection;
 };
 
-export type AcknowledgementReceiptControllerFindOneV1Status =
-  (typeof AcknowledgementReceiptControllerFindOneV1Status)[keyof typeof AcknowledgementReceiptControllerFindOneV1Status];
+export type AcknowledgementReceiptControllerFindOneV1Status = typeof AcknowledgementReceiptControllerFindOneV1Status[keyof typeof AcknowledgementReceiptControllerFindOneV1Status];
+
 
 export const AcknowledgementReceiptControllerFindOneV1Status = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
-export type AcknowledgementReceiptControllerFindOneV1SortBy =
-  (typeof AcknowledgementReceiptControllerFindOneV1SortBy)[keyof typeof AcknowledgementReceiptControllerFindOneV1SortBy];
+export type AcknowledgementReceiptControllerFindOneV1SortBy = typeof AcknowledgementReceiptControllerFindOneV1SortBy[keyof typeof AcknowledgementReceiptControllerFindOneV1SortBy];
+
 
 export const AcknowledgementReceiptControllerFindOneV1SortBy = {
-  transactionNo: "transactionNo",
-  documentDate: "documentDate",
-  customerName: "customerName",
-  receiptNo: "receiptNo",
-  referenceNo: "referenceNo",
-  grossAmount: "grossAmount",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  transactionNo: 'transactionNo',
+  documentDate: 'documentDate',
+  customerName: 'customerName',
+  receiptNo: 'receiptNo',
+  referenceNo: 'referenceNo',
+  grossAmount: 'grossAmount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type AcknowledgementReceiptControllerFindOneV1SortDirection =
-  (typeof AcknowledgementReceiptControllerFindOneV1SortDirection)[keyof typeof AcknowledgementReceiptControllerFindOneV1SortDirection];
+export type AcknowledgementReceiptControllerFindOneV1SortDirection = typeof AcknowledgementReceiptControllerFindOneV1SortDirection[keyof typeof AcknowledgementReceiptControllerFindOneV1SortDirection];
+
 
 export const AcknowledgementReceiptControllerFindOneV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type ProvisionalReceiptControllerFindAllV1Params = {
-  /**
-   * @minimum 1
-   */
-  branchUnitId?: number;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   */
-  limit?: number;
-  search?: string;
-  status?: ProvisionalReceiptControllerFindAllV1Status;
-  documentDateFrom?: string;
-  documentDateTo?: string;
-  amountFrom?: number;
-  amountTo?: number;
-  sortBy?: ProvisionalReceiptControllerFindAllV1SortBy;
-  sortDirection?: ProvisionalReceiptControllerFindAllV1SortDirection;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ */
+limit?: number;
+search?: string;
+status?: ProvisionalReceiptControllerFindAllV1Status;
+documentDateFrom?: string;
+documentDateTo?: string;
+amountFrom?: number;
+amountTo?: number;
+sortBy?: ProvisionalReceiptControllerFindAllV1SortBy;
+sortDirection?: ProvisionalReceiptControllerFindAllV1SortDirection;
 };
 
-export type ProvisionalReceiptControllerFindAllV1Status =
-  (typeof ProvisionalReceiptControllerFindAllV1Status)[keyof typeof ProvisionalReceiptControllerFindAllV1Status];
+export type ProvisionalReceiptControllerFindAllV1Status = typeof ProvisionalReceiptControllerFindAllV1Status[keyof typeof ProvisionalReceiptControllerFindAllV1Status];
+
 
 export const ProvisionalReceiptControllerFindAllV1Status = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
-export type ProvisionalReceiptControllerFindAllV1SortBy =
-  (typeof ProvisionalReceiptControllerFindAllV1SortBy)[keyof typeof ProvisionalReceiptControllerFindAllV1SortBy];
+export type ProvisionalReceiptControllerFindAllV1SortBy = typeof ProvisionalReceiptControllerFindAllV1SortBy[keyof typeof ProvisionalReceiptControllerFindAllV1SortBy];
+
 
 export const ProvisionalReceiptControllerFindAllV1SortBy = {
-  transactionNo: "transactionNo",
-  documentDate: "documentDate",
-  customerName: "customerName",
-  receiptNo: "receiptNo",
-  referenceNo: "referenceNo",
-  grossAmount: "grossAmount",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  transactionNo: 'transactionNo',
+  documentDate: 'documentDate',
+  customerName: 'customerName',
+  receiptNo: 'receiptNo',
+  referenceNo: 'referenceNo',
+  grossAmount: 'grossAmount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type ProvisionalReceiptControllerFindAllV1SortDirection =
-  (typeof ProvisionalReceiptControllerFindAllV1SortDirection)[keyof typeof ProvisionalReceiptControllerFindAllV1SortDirection];
+export type ProvisionalReceiptControllerFindAllV1SortDirection = typeof ProvisionalReceiptControllerFindAllV1SortDirection[keyof typeof ProvisionalReceiptControllerFindAllV1SortDirection];
+
 
 export const ProvisionalReceiptControllerFindAllV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type ProvisionalReceiptControllerSuggestTransactionNumberV1Params = {
-  /**
-   * @minimum 1
-   */
-  branchUnitId?: number;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   */
-  limit?: number;
-  search?: string;
-  status?: ProvisionalReceiptControllerSuggestTransactionNumberV1Status;
-  documentDateFrom?: string;
-  documentDateTo?: string;
-  amountFrom?: number;
-  amountTo?: number;
-  sortBy?: ProvisionalReceiptControllerSuggestTransactionNumberV1SortBy;
-  sortDirection?: ProvisionalReceiptControllerSuggestTransactionNumberV1SortDirection;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ */
+limit?: number;
+search?: string;
+status?: ProvisionalReceiptControllerSuggestTransactionNumberV1Status;
+documentDateFrom?: string;
+documentDateTo?: string;
+amountFrom?: number;
+amountTo?: number;
+sortBy?: ProvisionalReceiptControllerSuggestTransactionNumberV1SortBy;
+sortDirection?: ProvisionalReceiptControllerSuggestTransactionNumberV1SortDirection;
 };
 
-export type ProvisionalReceiptControllerSuggestTransactionNumberV1Status =
-  (typeof ProvisionalReceiptControllerSuggestTransactionNumberV1Status)[keyof typeof ProvisionalReceiptControllerSuggestTransactionNumberV1Status];
+export type ProvisionalReceiptControllerSuggestTransactionNumberV1Status = typeof ProvisionalReceiptControllerSuggestTransactionNumberV1Status[keyof typeof ProvisionalReceiptControllerSuggestTransactionNumberV1Status];
+
 
 export const ProvisionalReceiptControllerSuggestTransactionNumberV1Status = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
-export type ProvisionalReceiptControllerSuggestTransactionNumberV1SortBy =
-  (typeof ProvisionalReceiptControllerSuggestTransactionNumberV1SortBy)[keyof typeof ProvisionalReceiptControllerSuggestTransactionNumberV1SortBy];
+export type ProvisionalReceiptControllerSuggestTransactionNumberV1SortBy = typeof ProvisionalReceiptControllerSuggestTransactionNumberV1SortBy[keyof typeof ProvisionalReceiptControllerSuggestTransactionNumberV1SortBy];
+
 
 export const ProvisionalReceiptControllerSuggestTransactionNumberV1SortBy = {
-  transactionNo: "transactionNo",
-  documentDate: "documentDate",
-  customerName: "customerName",
-  receiptNo: "receiptNo",
-  referenceNo: "referenceNo",
-  grossAmount: "grossAmount",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  transactionNo: 'transactionNo',
+  documentDate: 'documentDate',
+  customerName: 'customerName',
+  receiptNo: 'receiptNo',
+  referenceNo: 'referenceNo',
+  grossAmount: 'grossAmount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type ProvisionalReceiptControllerSuggestTransactionNumberV1SortDirection =
-  (typeof ProvisionalReceiptControllerSuggestTransactionNumberV1SortDirection)[keyof typeof ProvisionalReceiptControllerSuggestTransactionNumberV1SortDirection];
+export type ProvisionalReceiptControllerSuggestTransactionNumberV1SortDirection = typeof ProvisionalReceiptControllerSuggestTransactionNumberV1SortDirection[keyof typeof ProvisionalReceiptControllerSuggestTransactionNumberV1SortDirection];
+
 
 export const ProvisionalReceiptControllerSuggestTransactionNumberV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type ProvisionalReceiptControllerFindOneV1Params = {
-  /**
-   * @minimum 1
-   */
-  branchUnitId?: number;
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   */
-  limit?: number;
-  search?: string;
-  status?: ProvisionalReceiptControllerFindOneV1Status;
-  documentDateFrom?: string;
-  documentDateTo?: string;
-  amountFrom?: number;
-  amountTo?: number;
-  sortBy?: ProvisionalReceiptControllerFindOneV1SortBy;
-  sortDirection?: ProvisionalReceiptControllerFindOneV1SortDirection;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ */
+limit?: number;
+search?: string;
+status?: ProvisionalReceiptControllerFindOneV1Status;
+documentDateFrom?: string;
+documentDateTo?: string;
+amountFrom?: number;
+amountTo?: number;
+sortBy?: ProvisionalReceiptControllerFindOneV1SortBy;
+sortDirection?: ProvisionalReceiptControllerFindOneV1SortDirection;
 };
 
-export type ProvisionalReceiptControllerFindOneV1Status =
-  (typeof ProvisionalReceiptControllerFindOneV1Status)[keyof typeof ProvisionalReceiptControllerFindOneV1Status];
+export type ProvisionalReceiptControllerFindOneV1Status = typeof ProvisionalReceiptControllerFindOneV1Status[keyof typeof ProvisionalReceiptControllerFindOneV1Status];
+
 
 export const ProvisionalReceiptControllerFindOneV1Status = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  DISAPPROVED: "DISAPPROVED",
-  POSTED: "POSTED",
-  CANCELLED: "CANCELLED",
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
-export type ProvisionalReceiptControllerFindOneV1SortBy =
-  (typeof ProvisionalReceiptControllerFindOneV1SortBy)[keyof typeof ProvisionalReceiptControllerFindOneV1SortBy];
+export type ProvisionalReceiptControllerFindOneV1SortBy = typeof ProvisionalReceiptControllerFindOneV1SortBy[keyof typeof ProvisionalReceiptControllerFindOneV1SortBy];
+
 
 export const ProvisionalReceiptControllerFindOneV1SortBy = {
-  transactionNo: "transactionNo",
-  documentDate: "documentDate",
-  customerName: "customerName",
-  receiptNo: "receiptNo",
-  referenceNo: "referenceNo",
-  grossAmount: "grossAmount",
-  status: "status",
-  createdAt: "createdAt",
-  updatedAt: "updatedAt",
+  transactionNo: 'transactionNo',
+  documentDate: 'documentDate',
+  customerName: 'customerName',
+  receiptNo: 'receiptNo',
+  referenceNo: 'referenceNo',
+  grossAmount: 'grossAmount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type ProvisionalReceiptControllerFindOneV1SortDirection =
-  (typeof ProvisionalReceiptControllerFindOneV1SortDirection)[keyof typeof ProvisionalReceiptControllerFindOneV1SortDirection];
+export type ProvisionalReceiptControllerFindOneV1SortDirection = typeof ProvisionalReceiptControllerFindOneV1SortDirection[keyof typeof ProvisionalReceiptControllerFindOneV1SortDirection];
+
 
 export const ProvisionalReceiptControllerFindOneV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
-export type AdvancesToSuppliersControllerFindAllParams = {
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   * @maximum 100
-   */
-  limit?: number;
-  search?: string;
-  status?: string;
-  partyCode?: string;
-  startDate?: string;
-  endDate?: string;
-  sortBy?: string;
-  sortOrder?: AdvancesToSuppliersControllerFindAllSortOrder;
+export type AdvancesToSuppliersControllerSuggestTransactionNumberV1Params = {
+branchUnitId?: number;
 };
 
-export type AdvancesToSuppliersControllerFindAllSortOrder =
-  (typeof AdvancesToSuppliersControllerFindAllSortOrder)[keyof typeof AdvancesToSuppliersControllerFindAllSortOrder];
+export type AdvancesToSuppliersControllerFindAllV1Params = {
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+limit?: number;
+search?: string;
+status?: string;
+partyCode?: string;
+startDate?: string;
+endDate?: string;
+sortBy?: string;
+sortOrder?: AdvancesToSuppliersControllerFindAllV1SortOrder;
+};
 
-export const AdvancesToSuppliersControllerFindAllSortOrder = {
-  asc: "asc",
-  desc: "desc",
+export type AdvancesToSuppliersControllerFindAllV1SortOrder = typeof AdvancesToSuppliersControllerFindAllV1SortOrder[keyof typeof AdvancesToSuppliersControllerFindAllV1SortOrder];
+
+
+export const AdvancesToSuppliersControllerFindAllV1SortOrder = {
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type CashAdvanceControllerFindAllV1Params = {
-  /**
-   * Page number
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * Records per page
-   * @minimum 1
-   * @maximum 100
-   */
-  limit?: number;
-  /**
-   * Search term (transNo, partyName, partyCode, remarks)
-   */
-  search?: string;
-  /**
-   * Status filter (DRAFT, FOR_APPROVAL, APPROVED, DISAPPROVED, POSTED, CANCELLED)
-   */
-  status?: string;
-  /**
-   * Party Code filter
-   */
-  partyCode?: string;
-  /**
-   * Start Date in YYYY-MM-DD format
-   */
-  startDate?: string;
-  /**
-   * End Date in YYYY-MM-DD format
-   */
-  endDate?: string;
-  /**
-   * Sort field
-   */
-  sortBy?: string;
-  /**
-   * Sort direction (asc/desc)
-   */
-  sortOrder?: CashAdvanceControllerFindAllV1SortOrder;
+/**
+ * Page number
+ * @minimum 1
+ */
+page?: number;
+/**
+ * Records per page
+ * @minimum 1
+ * @maximum 100
+ */
+limit?: number;
+/**
+ * Search term (transNo, partyName, partyCode, remarks)
+ */
+search?: string;
+/**
+ * Status filter (DRAFT, FOR_APPROVAL, APPROVED, DISAPPROVED, POSTED, CANCELLED)
+ */
+status?: string;
+/**
+ * Party Code filter
+ */
+partyCode?: string;
+/**
+ * Start Date in YYYY-MM-DD format
+ */
+startDate?: string;
+/**
+ * End Date in YYYY-MM-DD format
+ */
+endDate?: string;
+/**
+ * Sort field
+ */
+sortBy?: string;
+/**
+ * Sort direction (asc/desc)
+ */
+sortOrder?: CashAdvanceControllerFindAllV1SortOrder;
 };
 
-export type CashAdvanceControllerFindAllV1SortOrder =
-  (typeof CashAdvanceControllerFindAllV1SortOrder)[keyof typeof CashAdvanceControllerFindAllV1SortOrder];
+export type CashAdvanceControllerFindAllV1SortOrder = typeof CashAdvanceControllerFindAllV1SortOrder[keyof typeof CashAdvanceControllerFindAllV1SortOrder];
+
 
 export const CashAdvanceControllerFindAllV1SortOrder = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
-export type CashAdvanceControllerGetNextTransactionNoV1200 = {
-  nextTransNo?: string;
+export type CashAdvanceControllerSuggestTransactionNumberV1Params = {
+branchUnitId?: number;
 };
 
 export type CashAdvanceControllerRemoveV1200 = {
@@ -18204,657 +18308,657 @@ export type CashAdvanceControllerRemoveV1200 = {
 };
 
 export type CashAdvanceMultipleEntryControllerFindAllV1Params = {
-  /**
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   * @maximum 100
-   */
-  limit?: number;
-  /**
-   * Search transaction no, party, account, or remarks
-   */
-  search?: string;
-  /**
-   * DRAFT, FOR_APPROVAL, APPROVED, POSTED, DISAPPROVED, or CANCELLED
-   */
-  status?: string;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+limit?: number;
+/**
+ * Search transaction no, party, account, or remarks
+ */
+search?: string;
+/**
+ * DRAFT, FOR_APPROVAL, APPROVED, POSTED, DISAPPROVED, or CANCELLED
+ */
+status?: string;
+};
+
+export type CashAdvanceMultipleEntryControllerSuggestTransactionNumberV1Params = {
+branchUnitId?: number;
 };
 
 export type CashVoucherControllerFindAllV1Params = {
-  /**
-   * Page number
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * Items per page
-   * @minimum 1
-   */
-  limit?: number;
-  /**
-   * Branch Unit ID filter
-   */
-  branchUnitId?: number;
-  /**
-   * Free-text search (voucherNo, partyName, partyCode, remarks)
-   */
-  search?: string;
-  /**
-   * Filter by Status (DRAFT, FOR_APPROVAL, APPROVED, POSTED, DISAPPROVED, CANCELLED, CLOSED)
-   */
-  status?: string;
-  /**
-   * Filter by Party Code
-   */
-  partyCode?: string;
-  /**
-   * Start Date (YYYY-MM-DD)
-   */
-  startDate?: string;
-  /**
-   * End Date (YYYY-MM-DD)
-   */
-  endDate?: string;
-  /**
-   * Document Date From (alias for startDate)
-   */
-  documentDateFrom?: string;
-  /**
-   * Document Date To (alias for endDate)
-   */
-  documentDateTo?: string;
-  /**
-   * Minimum Amount
-   */
-  amountFrom?: number;
-  /**
-   * Maximum Amount
-   */
-  amountTo?: number;
-  /**
-   * Field to sort by
-   */
-  sortBy?: string;
-  /**
-   * Sort direction
-   */
-  sortOrder?: CashVoucherControllerFindAllV1SortOrder;
-  /**
-   * Sort direction alias
-   */
-  sortDirection?: CashVoucherControllerFindAllV1SortDirection;
+/**
+ * Page number
+ * @minimum 1
+ */
+page?: number;
+/**
+ * Items per page
+ * @minimum 1
+ */
+limit?: number;
+/**
+ * Branch Unit ID filter
+ */
+branchUnitId?: number;
+/**
+ * Free-text search (voucherNo, partyName, partyCode, remarks)
+ */
+search?: string;
+/**
+ * Filter by Status (DRAFT, FOR_APPROVAL, APPROVED, POSTED, DISAPPROVED, CANCELLED, CLOSED)
+ */
+status?: string;
+/**
+ * Filter by Party Code
+ */
+partyCode?: string;
+/**
+ * Start Date (YYYY-MM-DD)
+ */
+startDate?: string;
+/**
+ * End Date (YYYY-MM-DD)
+ */
+endDate?: string;
+/**
+ * Document Date From (alias for startDate)
+ */
+documentDateFrom?: string;
+/**
+ * Document Date To (alias for endDate)
+ */
+documentDateTo?: string;
+/**
+ * Minimum Amount
+ */
+amountFrom?: number;
+/**
+ * Maximum Amount
+ */
+amountTo?: number;
+/**
+ * Field to sort by
+ */
+sortBy?: string;
+/**
+ * Sort direction
+ */
+sortOrder?: CashVoucherControllerFindAllV1SortOrder;
+/**
+ * Sort direction alias
+ */
+sortDirection?: CashVoucherControllerFindAllV1SortDirection;
 };
 
-export type CashVoucherControllerFindAllV1SortOrder =
-  (typeof CashVoucherControllerFindAllV1SortOrder)[keyof typeof CashVoucherControllerFindAllV1SortOrder];
+export type CashVoucherControllerFindAllV1SortOrder = typeof CashVoucherControllerFindAllV1SortOrder[keyof typeof CashVoucherControllerFindAllV1SortOrder];
+
 
 export const CashVoucherControllerFindAllV1SortOrder = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
-export type CashVoucherControllerFindAllV1SortDirection =
-  (typeof CashVoucherControllerFindAllV1SortDirection)[keyof typeof CashVoucherControllerFindAllV1SortDirection];
+export type CashVoucherControllerFindAllV1SortDirection = typeof CashVoucherControllerFindAllV1SortDirection[keyof typeof CashVoucherControllerFindAllV1SortDirection];
+
 
 export const CashVoucherControllerFindAllV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type CashVoucherControllerSuggestTransactionNumberV1Params = {
-  /**
-   * Page number
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * Items per page
-   * @minimum 1
-   */
-  limit?: number;
-  /**
-   * Branch Unit ID filter
-   */
-  branchUnitId?: number;
-  /**
-   * Free-text search (voucherNo, partyName, partyCode, remarks)
-   */
-  search?: string;
-  /**
-   * Filter by Status (DRAFT, FOR_APPROVAL, APPROVED, POSTED, DISAPPROVED, CANCELLED, CLOSED)
-   */
-  status?: string;
-  /**
-   * Filter by Party Code
-   */
-  partyCode?: string;
-  /**
-   * Start Date (YYYY-MM-DD)
-   */
-  startDate?: string;
-  /**
-   * End Date (YYYY-MM-DD)
-   */
-  endDate?: string;
-  /**
-   * Document Date From (alias for startDate)
-   */
-  documentDateFrom?: string;
-  /**
-   * Document Date To (alias for endDate)
-   */
-  documentDateTo?: string;
-  /**
-   * Minimum Amount
-   */
-  amountFrom?: number;
-  /**
-   * Maximum Amount
-   */
-  amountTo?: number;
-  /**
-   * Field to sort by
-   */
-  sortBy?: string;
-  /**
-   * Sort direction
-   */
-  sortOrder?: CashVoucherControllerSuggestTransactionNumberV1SortOrder;
-  /**
-   * Sort direction alias
-   */
-  sortDirection?: CashVoucherControllerSuggestTransactionNumberV1SortDirection;
+/**
+ * Page number
+ * @minimum 1
+ */
+page?: number;
+/**
+ * Items per page
+ * @minimum 1
+ */
+limit?: number;
+/**
+ * Branch Unit ID filter
+ */
+branchUnitId?: number;
+/**
+ * Free-text search (voucherNo, partyName, partyCode, remarks)
+ */
+search?: string;
+/**
+ * Filter by Status (DRAFT, FOR_APPROVAL, APPROVED, POSTED, DISAPPROVED, CANCELLED, CLOSED)
+ */
+status?: string;
+/**
+ * Filter by Party Code
+ */
+partyCode?: string;
+/**
+ * Start Date (YYYY-MM-DD)
+ */
+startDate?: string;
+/**
+ * End Date (YYYY-MM-DD)
+ */
+endDate?: string;
+/**
+ * Document Date From (alias for startDate)
+ */
+documentDateFrom?: string;
+/**
+ * Document Date To (alias for endDate)
+ */
+documentDateTo?: string;
+/**
+ * Minimum Amount
+ */
+amountFrom?: number;
+/**
+ * Maximum Amount
+ */
+amountTo?: number;
+/**
+ * Field to sort by
+ */
+sortBy?: string;
+/**
+ * Sort direction
+ */
+sortOrder?: CashVoucherControllerSuggestTransactionNumberV1SortOrder;
+/**
+ * Sort direction alias
+ */
+sortDirection?: CashVoucherControllerSuggestTransactionNumberV1SortDirection;
 };
 
-export type CashVoucherControllerSuggestTransactionNumberV1SortOrder =
-  (typeof CashVoucherControllerSuggestTransactionNumberV1SortOrder)[keyof typeof CashVoucherControllerSuggestTransactionNumberV1SortOrder];
+export type CashVoucherControllerSuggestTransactionNumberV1SortOrder = typeof CashVoucherControllerSuggestTransactionNumberV1SortOrder[keyof typeof CashVoucherControllerSuggestTransactionNumberV1SortOrder];
+
 
 export const CashVoucherControllerSuggestTransactionNumberV1SortOrder = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
-export type CashVoucherControllerSuggestTransactionNumberV1SortDirection =
-  (typeof CashVoucherControllerSuggestTransactionNumberV1SortDirection)[keyof typeof CashVoucherControllerSuggestTransactionNumberV1SortDirection];
+export type CashVoucherControllerSuggestTransactionNumberV1SortDirection = typeof CashVoucherControllerSuggestTransactionNumberV1SortDirection[keyof typeof CashVoucherControllerSuggestTransactionNumberV1SortDirection];
+
 
 export const CashVoucherControllerSuggestTransactionNumberV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
-
-export type CashVoucherControllerGetNextTransactionNoV1200 = {
-  nextTransNo?: string;
-};
 
 export type CashVoucherControllerFindOneV1Params = {
-  /**
-   * Page number
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * Items per page
-   * @minimum 1
-   */
-  limit?: number;
-  /**
-   * Branch Unit ID filter
-   */
-  branchUnitId?: number;
-  /**
-   * Free-text search (voucherNo, partyName, partyCode, remarks)
-   */
-  search?: string;
-  /**
-   * Filter by Status (DRAFT, FOR_APPROVAL, APPROVED, POSTED, DISAPPROVED, CANCELLED, CLOSED)
-   */
-  status?: string;
-  /**
-   * Filter by Party Code
-   */
-  partyCode?: string;
-  /**
-   * Start Date (YYYY-MM-DD)
-   */
-  startDate?: string;
-  /**
-   * End Date (YYYY-MM-DD)
-   */
-  endDate?: string;
-  /**
-   * Document Date From (alias for startDate)
-   */
-  documentDateFrom?: string;
-  /**
-   * Document Date To (alias for endDate)
-   */
-  documentDateTo?: string;
-  /**
-   * Minimum Amount
-   */
-  amountFrom?: number;
-  /**
-   * Maximum Amount
-   */
-  amountTo?: number;
-  /**
-   * Field to sort by
-   */
-  sortBy?: string;
-  /**
-   * Sort direction
-   */
-  sortOrder?: CashVoucherControllerFindOneV1SortOrder;
-  /**
-   * Sort direction alias
-   */
-  sortDirection?: CashVoucherControllerFindOneV1SortDirection;
+/**
+ * Page number
+ * @minimum 1
+ */
+page?: number;
+/**
+ * Items per page
+ * @minimum 1
+ */
+limit?: number;
+/**
+ * Branch Unit ID filter
+ */
+branchUnitId?: number;
+/**
+ * Free-text search (voucherNo, partyName, partyCode, remarks)
+ */
+search?: string;
+/**
+ * Filter by Status (DRAFT, FOR_APPROVAL, APPROVED, POSTED, DISAPPROVED, CANCELLED, CLOSED)
+ */
+status?: string;
+/**
+ * Filter by Party Code
+ */
+partyCode?: string;
+/**
+ * Start Date (YYYY-MM-DD)
+ */
+startDate?: string;
+/**
+ * End Date (YYYY-MM-DD)
+ */
+endDate?: string;
+/**
+ * Document Date From (alias for startDate)
+ */
+documentDateFrom?: string;
+/**
+ * Document Date To (alias for endDate)
+ */
+documentDateTo?: string;
+/**
+ * Minimum Amount
+ */
+amountFrom?: number;
+/**
+ * Maximum Amount
+ */
+amountTo?: number;
+/**
+ * Field to sort by
+ */
+sortBy?: string;
+/**
+ * Sort direction
+ */
+sortOrder?: CashVoucherControllerFindOneV1SortOrder;
+/**
+ * Sort direction alias
+ */
+sortDirection?: CashVoucherControllerFindOneV1SortDirection;
 };
 
-export type CashVoucherControllerFindOneV1SortOrder =
-  (typeof CashVoucherControllerFindOneV1SortOrder)[keyof typeof CashVoucherControllerFindOneV1SortOrder];
+export type CashVoucherControllerFindOneV1SortOrder = typeof CashVoucherControllerFindOneV1SortOrder[keyof typeof CashVoucherControllerFindOneV1SortOrder];
+
 
 export const CashVoucherControllerFindOneV1SortOrder = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
-export type CashVoucherControllerFindOneV1SortDirection =
-  (typeof CashVoucherControllerFindOneV1SortDirection)[keyof typeof CashVoucherControllerFindOneV1SortDirection];
+export type CashVoucherControllerFindOneV1SortDirection = typeof CashVoucherControllerFindOneV1SortDirection[keyof typeof CashVoucherControllerFindOneV1SortDirection];
+
 
 export const CashVoucherControllerFindOneV1SortDirection = {
-  asc: "asc",
-  desc: "desc",
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type CashVoucherControllerRemoveV1200 = {
   message?: string;
 };
 
-export type PettyCashVoucherControllerSuggestVoucherNoParams = {
-  branchUnitId?: number;
+export type PettyCashVoucherControllerSuggestTransactionNumberV1Params = {
+branchUnitId?: number;
 };
 
-export type PettyCashVoucherControllerFindAllParams = {
-  /**
-   * Page number
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * Limit per page
-   * @minimum 1
-   */
-  limit?: number;
-  /**
-   * Search term
-   */
-  search?: string;
-  /**
-   * Status filter
-   */
-  status?: PettyCashVoucherControllerFindAllStatus;
-  /**
-   * Party code filter
-   */
-  partyCode?: string;
-  /**
-   * Start date filter (YYYY-MM-DD)
-   */
-  startDate?: string;
-  /**
-   * End date filter (YYYY-MM-DD)
-   */
-  endDate?: string;
-  /**
-   * Minimum amount filter
-   */
-  amountFrom?: number;
-  /**
-   * Maximum amount filter
-   */
-  amountTo?: number;
-  /**
-   * Branch Unit ID filter
-   */
-  branchUnitId?: number;
-  /**
-   * Sort column
-   */
-  sortBy?: string;
-  /**
-   * Sort direction
-   */
-  sortOrder?: PettyCashVoucherControllerFindAllSortOrder;
+export type PettyCashVoucherControllerFindAllV1Params = {
+/**
+ * Page number
+ * @minimum 1
+ */
+page?: number;
+/**
+ * Limit per page
+ * @minimum 1
+ */
+limit?: number;
+/**
+ * Search term
+ */
+search?: string;
+/**
+ * Status filter
+ */
+status?: PettyCashVoucherControllerFindAllV1Status;
+/**
+ * Party code filter
+ */
+partyCode?: string;
+/**
+ * Start date filter (YYYY-MM-DD)
+ */
+startDate?: string;
+/**
+ * End date filter (YYYY-MM-DD)
+ */
+endDate?: string;
+/**
+ * Minimum amount filter
+ */
+amountFrom?: number;
+/**
+ * Maximum amount filter
+ */
+amountTo?: number;
+/**
+ * Branch Unit ID filter
+ */
+branchUnitId?: number;
+/**
+ * Sort column
+ */
+sortBy?: string;
+/**
+ * Sort direction
+ */
+sortOrder?: PettyCashVoucherControllerFindAllV1SortOrder;
 };
 
-export type PettyCashVoucherControllerFindAllStatus =
-  (typeof PettyCashVoucherControllerFindAllStatus)[keyof typeof PettyCashVoucherControllerFindAllStatus];
+export type PettyCashVoucherControllerFindAllV1Status = typeof PettyCashVoucherControllerFindAllV1Status[keyof typeof PettyCashVoucherControllerFindAllV1Status];
 
-export const PettyCashVoucherControllerFindAllStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  POSTED: "POSTED",
-  DISAPPROVED: "DISAPPROVED",
-  CANCELLED: "CANCELLED",
+
+export const PettyCashVoucherControllerFindAllV1Status = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
-export type PettyCashVoucherControllerFindAllSortOrder =
-  (typeof PettyCashVoucherControllerFindAllSortOrder)[keyof typeof PettyCashVoucherControllerFindAllSortOrder];
+export type PettyCashVoucherControllerFindAllV1SortOrder = typeof PettyCashVoucherControllerFindAllV1SortOrder[keyof typeof PettyCashVoucherControllerFindAllV1SortOrder];
 
-export const PettyCashVoucherControllerFindAllSortOrder = {
-  asc: "asc",
-  desc: "desc",
+
+export const PettyCashVoucherControllerFindAllV1SortOrder = {
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
-export type PettyCashFundControllerSuggestTransactionNoParams = {
-  branchUnitId?: number;
+export type PettyCashFundControllerSuggestTransactionNumberV1Params = {
+branchUnitId?: number;
 };
 
-export type PettyCashFundControllerFindAllParams = {
-  /**
-   * Page number
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * Limit per page
-   * @minimum 1
-   */
-  limit?: number;
-  /**
-   * Search term
-   */
-  search?: string;
-  /**
-   * Status filter
-   */
-  status?: PettyCashFundControllerFindAllStatus;
-  /**
-   * Party code filter
-   */
-  partyCode?: string;
-  /**
-   * Start date filter (YYYY-MM-DD)
-   */
-  startDate?: string;
-  /**
-   * End date filter (YYYY-MM-DD)
-   */
-  endDate?: string;
-  /**
-   * Minimum amount filter
-   */
-  amountFrom?: number;
-  /**
-   * Maximum amount filter
-   */
-  amountTo?: number;
-  /**
-   * Branch Unit ID filter
-   */
-  branchUnitId?: number;
-  /**
-   * Sort column
-   */
-  sortBy?: string;
-  /**
-   * Sort direction
-   */
-  sortOrder?: PettyCashFundControllerFindAllSortOrder;
+export type PettyCashFundControllerFindAllV1Params = {
+/**
+ * Page number
+ * @minimum 1
+ */
+page?: number;
+/**
+ * Limit per page
+ * @minimum 1
+ */
+limit?: number;
+/**
+ * Search term
+ */
+search?: string;
+/**
+ * Status filter
+ */
+status?: PettyCashFundControllerFindAllV1Status;
+/**
+ * Party code filter
+ */
+partyCode?: string;
+/**
+ * Start date filter (YYYY-MM-DD)
+ */
+startDate?: string;
+/**
+ * End date filter (YYYY-MM-DD)
+ */
+endDate?: string;
+/**
+ * Minimum amount filter
+ */
+amountFrom?: number;
+/**
+ * Maximum amount filter
+ */
+amountTo?: number;
+/**
+ * Branch Unit ID filter
+ */
+branchUnitId?: number;
+/**
+ * Sort column
+ */
+sortBy?: string;
+/**
+ * Sort direction
+ */
+sortOrder?: PettyCashFundControllerFindAllV1SortOrder;
 };
 
-export type PettyCashFundControllerFindAllStatus =
-  (typeof PettyCashFundControllerFindAllStatus)[keyof typeof PettyCashFundControllerFindAllStatus];
+export type PettyCashFundControllerFindAllV1Status = typeof PettyCashFundControllerFindAllV1Status[keyof typeof PettyCashFundControllerFindAllV1Status];
 
-export const PettyCashFundControllerFindAllStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  POSTED: "POSTED",
-  DISAPPROVED: "DISAPPROVED",
-  CANCELLED: "CANCELLED",
+
+export const PettyCashFundControllerFindAllV1Status = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
-export type PettyCashFundControllerFindAllSortOrder =
-  (typeof PettyCashFundControllerFindAllSortOrder)[keyof typeof PettyCashFundControllerFindAllSortOrder];
+export type PettyCashFundControllerFindAllV1SortOrder = typeof PettyCashFundControllerFindAllV1SortOrder[keyof typeof PettyCashFundControllerFindAllV1SortOrder];
 
-export const PettyCashFundControllerFindAllSortOrder = {
-  asc: "asc",
-  desc: "desc",
+
+export const PettyCashFundControllerFindAllV1SortOrder = {
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
-export type PettyCashReplenishmentControllerSuggestTransactionNoParams = {
-  branchUnitId?: number;
+export type PettyCashReplenishmentControllerSuggestTransactionNumberV1Params = {
+branchUnitId?: number;
 };
 
-export type PettyCashReplenishmentControllerFindAllParams = {
-  /**
-   * Page number
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * Limit per page
-   * @minimum 1
-   */
-  limit?: number;
-  /**
-   * Search term
-   */
-  search?: string;
-  /**
-   * Status filter
-   */
-  status?: PettyCashReplenishmentControllerFindAllStatus;
-  /**
-   * Party code filter
-   */
-  partyCode?: string;
-  /**
-   * Start date filter (YYYY-MM-DD)
-   */
-  startDate?: string;
-  /**
-   * End date filter (YYYY-MM-DD)
-   */
-  endDate?: string;
-  /**
-   * Minimum amount filter
-   */
-  amountFrom?: number;
-  /**
-   * Maximum amount filter
-   */
-  amountTo?: number;
-  /**
-   * Branch Unit ID filter
-   */
-  branchUnitId?: number;
-  /**
-   * Sort column
-   */
-  sortBy?: string;
-  /**
-   * Sort direction
-   */
-  sortOrder?: PettyCashReplenishmentControllerFindAllSortOrder;
+export type PettyCashReplenishmentControllerFindAllV1Params = {
+/**
+ * Page number
+ * @minimum 1
+ */
+page?: number;
+/**
+ * Limit per page
+ * @minimum 1
+ */
+limit?: number;
+/**
+ * Search term
+ */
+search?: string;
+/**
+ * Status filter
+ */
+status?: PettyCashReplenishmentControllerFindAllV1Status;
+/**
+ * Party code filter
+ */
+partyCode?: string;
+/**
+ * Start date filter (YYYY-MM-DD)
+ */
+startDate?: string;
+/**
+ * End date filter (YYYY-MM-DD)
+ */
+endDate?: string;
+/**
+ * Minimum amount filter
+ */
+amountFrom?: number;
+/**
+ * Maximum amount filter
+ */
+amountTo?: number;
+/**
+ * Branch Unit ID filter
+ */
+branchUnitId?: number;
+/**
+ * Sort column
+ */
+sortBy?: string;
+/**
+ * Sort direction
+ */
+sortOrder?: PettyCashReplenishmentControllerFindAllV1SortOrder;
 };
 
-export type PettyCashReplenishmentControllerFindAllStatus =
-  (typeof PettyCashReplenishmentControllerFindAllStatus)[keyof typeof PettyCashReplenishmentControllerFindAllStatus];
+export type PettyCashReplenishmentControllerFindAllV1Status = typeof PettyCashReplenishmentControllerFindAllV1Status[keyof typeof PettyCashReplenishmentControllerFindAllV1Status];
 
-export const PettyCashReplenishmentControllerFindAllStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  POSTED: "POSTED",
-  DISAPPROVED: "DISAPPROVED",
-  CANCELLED: "CANCELLED",
+
+export const PettyCashReplenishmentControllerFindAllV1Status = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
-export type PettyCashReplenishmentControllerFindAllSortOrder =
-  (typeof PettyCashReplenishmentControllerFindAllSortOrder)[keyof typeof PettyCashReplenishmentControllerFindAllSortOrder];
+export type PettyCashReplenishmentControllerFindAllV1SortOrder = typeof PettyCashReplenishmentControllerFindAllV1SortOrder[keyof typeof PettyCashReplenishmentControllerFindAllV1SortOrder];
 
-export const PettyCashReplenishmentControllerFindAllSortOrder = {
-  asc: "asc",
-  desc: "desc",
+
+export const PettyCashReplenishmentControllerFindAllV1SortOrder = {
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
-export type RevolvingFundControllerSuggestTransactionNoParams = {
-  branchUnitId?: number;
+export type RevolvingFundControllerSuggestTransactionNumberV1Params = {
+branchUnitId?: number;
 };
 
-export type RevolvingFundControllerFindAllParams = {
-  /**
-   * Page number
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * Limit per page
-   * @minimum 1
-   */
-  limit?: number;
-  /**
-   * Search term
-   */
-  search?: string;
-  /**
-   * Status filter
-   */
-  status?: RevolvingFundControllerFindAllStatus;
-  /**
-   * Party code filter
-   */
-  partyCode?: string;
-  /**
-   * Start date filter (YYYY-MM-DD)
-   */
-  startDate?: string;
-  /**
-   * End date filter (YYYY-MM-DD)
-   */
-  endDate?: string;
-  /**
-   * Minimum amount filter
-   */
-  amountFrom?: number;
-  /**
-   * Maximum amount filter
-   */
-  amountTo?: number;
-  /**
-   * Branch Unit ID filter
-   */
-  branchUnitId?: number;
-  /**
-   * Sort column
-   */
-  sortBy?: string;
-  /**
-   * Sort direction
-   */
-  sortOrder?: RevolvingFundControllerFindAllSortOrder;
+export type RevolvingFundControllerFindAllV1Params = {
+/**
+ * Page number
+ * @minimum 1
+ */
+page?: number;
+/**
+ * Limit per page
+ * @minimum 1
+ */
+limit?: number;
+/**
+ * Search term
+ */
+search?: string;
+/**
+ * Status filter
+ */
+status?: RevolvingFundControllerFindAllV1Status;
+/**
+ * Party code filter
+ */
+partyCode?: string;
+/**
+ * Start date filter (YYYY-MM-DD)
+ */
+startDate?: string;
+/**
+ * End date filter (YYYY-MM-DD)
+ */
+endDate?: string;
+/**
+ * Minimum amount filter
+ */
+amountFrom?: number;
+/**
+ * Maximum amount filter
+ */
+amountTo?: number;
+/**
+ * Branch Unit ID filter
+ */
+branchUnitId?: number;
+/**
+ * Sort column
+ */
+sortBy?: string;
+/**
+ * Sort direction
+ */
+sortOrder?: RevolvingFundControllerFindAllV1SortOrder;
 };
 
-export type RevolvingFundControllerFindAllStatus =
-  (typeof RevolvingFundControllerFindAllStatus)[keyof typeof RevolvingFundControllerFindAllStatus];
+export type RevolvingFundControllerFindAllV1Status = typeof RevolvingFundControllerFindAllV1Status[keyof typeof RevolvingFundControllerFindAllV1Status];
 
-export const RevolvingFundControllerFindAllStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  POSTED: "POSTED",
-  DISAPPROVED: "DISAPPROVED",
-  CANCELLED: "CANCELLED",
+
+export const RevolvingFundControllerFindAllV1Status = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
-export type RevolvingFundControllerFindAllSortOrder =
-  (typeof RevolvingFundControllerFindAllSortOrder)[keyof typeof RevolvingFundControllerFindAllSortOrder];
+export type RevolvingFundControllerFindAllV1SortOrder = typeof RevolvingFundControllerFindAllV1SortOrder[keyof typeof RevolvingFundControllerFindAllV1SortOrder];
 
-export const RevolvingFundControllerFindAllSortOrder = {
-  asc: "asc",
-  desc: "desc",
+
+export const RevolvingFundControllerFindAllV1SortOrder = {
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
-export type RevolvingFundReplenishmentControllerSuggestTransactionNoParams = {
-  branchUnitId?: number;
+export type RevolvingFundReplenishmentControllerSuggestTransactionNumberV1Params = {
+branchUnitId?: number;
 };
 
-export type RevolvingFundReplenishmentControllerFindAllParams = {
-  /**
-   * Page number
-   * @minimum 1
-   */
-  page?: number;
-  /**
-   * Limit per page
-   * @minimum 1
-   */
-  limit?: number;
-  /**
-   * Search term
-   */
-  search?: string;
-  /**
-   * Status filter
-   */
-  status?: RevolvingFundReplenishmentControllerFindAllStatus;
-  /**
-   * Party code filter
-   */
-  partyCode?: string;
-  /**
-   * Start date filter (YYYY-MM-DD)
-   */
-  startDate?: string;
-  /**
-   * End date filter (YYYY-MM-DD)
-   */
-  endDate?: string;
-  /**
-   * Minimum amount filter
-   */
-  amountFrom?: number;
-  /**
-   * Maximum amount filter
-   */
-  amountTo?: number;
-  /**
-   * Branch Unit ID filter
-   */
-  branchUnitId?: number;
-  /**
-   * Sort column
-   */
-  sortBy?: string;
-  /**
-   * Sort direction
-   */
-  sortOrder?: RevolvingFundReplenishmentControllerFindAllSortOrder;
+export type RevolvingFundReplenishmentControllerFindAllV1Params = {
+/**
+ * Page number
+ * @minimum 1
+ */
+page?: number;
+/**
+ * Limit per page
+ * @minimum 1
+ */
+limit?: number;
+/**
+ * Search term
+ */
+search?: string;
+/**
+ * Status filter
+ */
+status?: RevolvingFundReplenishmentControllerFindAllV1Status;
+/**
+ * Party code filter
+ */
+partyCode?: string;
+/**
+ * Start date filter (YYYY-MM-DD)
+ */
+startDate?: string;
+/**
+ * End date filter (YYYY-MM-DD)
+ */
+endDate?: string;
+/**
+ * Minimum amount filter
+ */
+amountFrom?: number;
+/**
+ * Maximum amount filter
+ */
+amountTo?: number;
+/**
+ * Branch Unit ID filter
+ */
+branchUnitId?: number;
+/**
+ * Sort column
+ */
+sortBy?: string;
+/**
+ * Sort direction
+ */
+sortOrder?: RevolvingFundReplenishmentControllerFindAllV1SortOrder;
 };
 
-export type RevolvingFundReplenishmentControllerFindAllStatus =
-  (typeof RevolvingFundReplenishmentControllerFindAllStatus)[keyof typeof RevolvingFundReplenishmentControllerFindAllStatus];
+export type RevolvingFundReplenishmentControllerFindAllV1Status = typeof RevolvingFundReplenishmentControllerFindAllV1Status[keyof typeof RevolvingFundReplenishmentControllerFindAllV1Status];
 
-export const RevolvingFundReplenishmentControllerFindAllStatus = {
-  DRAFT: "DRAFT",
-  FOR_APPROVAL: "FOR_APPROVAL",
-  APPROVED: "APPROVED",
-  POSTED: "POSTED",
-  DISAPPROVED: "DISAPPROVED",
-  CANCELLED: "CANCELLED",
+
+export const RevolvingFundReplenishmentControllerFindAllV1Status = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
-export type RevolvingFundReplenishmentControllerFindAllSortOrder =
-  (typeof RevolvingFundReplenishmentControllerFindAllSortOrder)[keyof typeof RevolvingFundReplenishmentControllerFindAllSortOrder];
+export type RevolvingFundReplenishmentControllerFindAllV1SortOrder = typeof RevolvingFundReplenishmentControllerFindAllV1SortOrder[keyof typeof RevolvingFundReplenishmentControllerFindAllV1SortOrder];
 
-export const RevolvingFundReplenishmentControllerFindAllSortOrder = {
-  asc: "asc",
-  desc: "desc",
+
+export const RevolvingFundReplenishmentControllerFindAllV1SortOrder = {
+  asc: 'asc',
+  desc: 'desc',
 } as const;

@@ -62,6 +62,9 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
+/**
+ * @summary Get paginated list of default account template records
+ */
 export const defaultAccountControllerFindAllV1 = (
     params?: DefaultAccountControllerFindAllV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -131,6 +134,9 @@ export function useDefaultAccountControllerFindAllV1<TData = Awaited<ReturnType<
  params?: DefaultAccountControllerFindAllV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof defaultAccountControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get paginated list of default account template records
+ */
 
 export function useDefaultAccountControllerFindAllV1<TData = Awaited<ReturnType<typeof defaultAccountControllerFindAllV1>>, TError = unknown>(
  params?: DefaultAccountControllerFindAllV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof defaultAccountControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -149,6 +155,9 @@ export function useDefaultAccountControllerFindAllV1<TData = Awaited<ReturnType<
 
 
 
+/**
+ * @summary Create a default account template record
+ */
 export const defaultAccountControllerCreateV1 = (
     createDefaultAccountTemplateDto: CreateDefaultAccountTemplateDto,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -196,7 +205,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type DefaultAccountControllerCreateV1MutationBody = CreateDefaultAccountTemplateDto
     export type DefaultAccountControllerCreateV1MutationError = unknown
 
-    export const useDefaultAccountControllerCreateV1 = <TError = unknown,
+    /**
+ * @summary Create a default account template record
+ */
+export const useDefaultAccountControllerCreateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof defaultAccountControllerCreateV1>>, TError,{data: CreateDefaultAccountTemplateDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof defaultAccountControllerCreateV1>>,
@@ -206,7 +218,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getDefaultAccountControllerCreateV1MutationOptions(options), queryClient);
     }
-    export const defaultAccountControllerFindOptionsV1 = (
+    /**
+ * @summary Get default account options
+ */
+export const defaultAccountControllerFindOptionsV1 = (
     params?: DefaultAccountControllerFindOptionsV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
@@ -275,6 +290,9 @@ export function useDefaultAccountControllerFindOptionsV1<TData = Awaited<ReturnT
  params?: DefaultAccountControllerFindOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof defaultAccountControllerFindOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get default account options
+ */
 
 export function useDefaultAccountControllerFindOptionsV1<TData = Awaited<ReturnType<typeof defaultAccountControllerFindOptionsV1>>, TError = unknown>(
  params?: DefaultAccountControllerFindOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof defaultAccountControllerFindOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -293,6 +311,9 @@ export function useDefaultAccountControllerFindOptionsV1<TData = Awaited<ReturnT
 
 
 
+/**
+ * @summary Get default account options by template type
+ */
 export const defaultAccountControllerFindOptionsByTypeV1 = (
     type: string,
     params?: DefaultAccountControllerFindOptionsByTypeV1Params,
@@ -368,6 +389,9 @@ export function useDefaultAccountControllerFindOptionsByTypeV1<TData = Awaited<R
     params?: DefaultAccountControllerFindOptionsByTypeV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof defaultAccountControllerFindOptionsByTypeV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get default account options by template type
+ */
 
 export function useDefaultAccountControllerFindOptionsByTypeV1<TData = Awaited<ReturnType<typeof defaultAccountControllerFindOptionsByTypeV1>>, TError = unknown>(
  type: string,
@@ -387,6 +411,9 @@ export function useDefaultAccountControllerFindOptionsByTypeV1<TData = Awaited<R
 
 
 
+/**
+ * @summary Get default expense parent account options
+ */
 export const defaultAccountControllerFindExpenseParentOptionsV1 = (
 
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -455,6 +482,9 @@ export function useDefaultAccountControllerFindExpenseParentOptionsV1<TData = Aw
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof defaultAccountControllerFindExpenseParentOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get default expense parent account options
+ */
 
 export function useDefaultAccountControllerFindExpenseParentOptionsV1<TData = Awaited<ReturnType<typeof defaultAccountControllerFindExpenseParentOptionsV1>>, TError = unknown>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof defaultAccountControllerFindExpenseParentOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -473,6 +503,9 @@ export function useDefaultAccountControllerFindExpenseParentOptionsV1<TData = Aw
 
 
 
+/**
+ * @summary Create a default expense sub-account
+ */
 export const defaultAccountControllerCreateExpenseSubAccountV1 = (
     createChartAccountDto: CreateChartAccountDto,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -520,7 +553,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type DefaultAccountControllerCreateExpenseSubAccountV1MutationBody = CreateChartAccountDto
     export type DefaultAccountControllerCreateExpenseSubAccountV1MutationError = unknown
 
-    export const useDefaultAccountControllerCreateExpenseSubAccountV1 = <TError = unknown,
+    /**
+ * @summary Create a default expense sub-account
+ */
+export const useDefaultAccountControllerCreateExpenseSubAccountV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof defaultAccountControllerCreateExpenseSubAccountV1>>, TError,{data: CreateChartAccountDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof defaultAccountControllerCreateExpenseSubAccountV1>>,
@@ -530,7 +566,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getDefaultAccountControllerCreateExpenseSubAccountV1MutationOptions(options), queryClient);
     }
-    export const defaultAccountControllerFindOneV1 = (
+    /**
+ * @summary Get default account template details by ID
+ */
+export const defaultAccountControllerFindOneV1 = (
     id: string,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
@@ -598,6 +637,9 @@ export function useDefaultAccountControllerFindOneV1<TData = Awaited<ReturnType<
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof defaultAccountControllerFindOneV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get default account template details by ID
+ */
 
 export function useDefaultAccountControllerFindOneV1<TData = Awaited<ReturnType<typeof defaultAccountControllerFindOneV1>>, TError = unknown>(
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof defaultAccountControllerFindOneV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -616,6 +658,9 @@ export function useDefaultAccountControllerFindOneV1<TData = Awaited<ReturnType<
 
 
 
+/**
+ * @summary Update a default account template record
+ */
 export const defaultAccountControllerUpdateV1 = (
     id: string,
     updateDefaultAccountTemplateDto: UpdateDefaultAccountTemplateDto,
@@ -664,7 +709,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type DefaultAccountControllerUpdateV1MutationBody = UpdateDefaultAccountTemplateDto
     export type DefaultAccountControllerUpdateV1MutationError = unknown
 
-    export const useDefaultAccountControllerUpdateV1 = <TError = unknown,
+    /**
+ * @summary Update a default account template record
+ */
+export const useDefaultAccountControllerUpdateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof defaultAccountControllerUpdateV1>>, TError,{id: string;data: UpdateDefaultAccountTemplateDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof defaultAccountControllerUpdateV1>>,
@@ -674,7 +722,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getDefaultAccountControllerUpdateV1MutationOptions(options), queryClient);
     }
-    export const defaultAccountControllerUpdateStatusV1 = (
+    /**
+ * @summary Update default account template status
+ */
+export const defaultAccountControllerUpdateStatusV1 = (
     id: string,
     updateDefaultAccountTemplateStatusDto: UpdateDefaultAccountTemplateStatusDto,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -722,7 +773,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type DefaultAccountControllerUpdateStatusV1MutationBody = UpdateDefaultAccountTemplateStatusDto
     export type DefaultAccountControllerUpdateStatusV1MutationError = unknown
 
-    export const useDefaultAccountControllerUpdateStatusV1 = <TError = unknown,
+    /**
+ * @summary Update default account template status
+ */
+export const useDefaultAccountControllerUpdateStatusV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof defaultAccountControllerUpdateStatusV1>>, TError,{id: string;data: UpdateDefaultAccountTemplateStatusDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof defaultAccountControllerUpdateStatusV1>>,

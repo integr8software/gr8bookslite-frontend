@@ -182,7 +182,7 @@ export function useApprovalManagementListPage() {
 		? derivedApprovalLevelCount
 		: null;
 	const approverNameById = useMemo(() => {
-		const approvers = (approverSetupsQuery.data ?? []).flatMap((record) =>
+		const approvers = (approverSetupsQuery.data ?? []).flatMap((record: ApproverSetupRecord) =>
 			(record.approverUsers ?? []).map((approver) => ({
 				email: approver.email,
 				id: approver.id,
@@ -286,7 +286,7 @@ export function useApprovalManagementListPage() {
 				)
 				.filter((setupId): setupId is string => Boolean(setupId)),
 		);
-		const sourceSetup = (approverSetupsQuery.data ?? []).find((record) =>
+		const sourceSetup = (approverSetupsQuery.data ?? []).find((record: ApproverSetupRecord) =>
 			sourceSetupIds.has(record.id),
 		);
 

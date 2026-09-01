@@ -157,7 +157,6 @@ export const PettyCashVoucherTableCellClassName = "px-4 py-4 align-middle text-s
 export function canEditPettyCashVoucherStatus(status: PettyCashVoucherStatus) {
   return (
     status === PettyCashVoucherStatuses.draft ||
-    status === PettyCashVoucherStatuses.forApproval ||
     status === PettyCashVoucherStatuses.disapproved
   );
 }

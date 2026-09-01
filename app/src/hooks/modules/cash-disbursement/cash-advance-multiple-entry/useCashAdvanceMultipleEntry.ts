@@ -63,6 +63,8 @@ import {
 } from "@/app/src/services/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryApi";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 
+const EmptyCashAdvanceMultipleEntries: CashAdvanceMultipleEntryRecord[] = [];
+
 export function useCashAdvanceMultipleEntryStore<TSelected = CashAdvanceMultipleEntryStoreState>(
   selector?: (state: CashAdvanceMultipleEntryStoreState) => TSelected,
 ) {
@@ -81,9 +83,8 @@ export function useCashAdvanceMultipleEntryStore<TSelected = CashAdvanceMultiple
       }
     },
     enabled: activeCompanyId !== null,
-    initialData: [],
   });
-  const entries = entriesQuery.data;
+  const entries = entriesQuery.data ?? EmptyCashAdvanceMultipleEntries;
 
   const refreshRecords = useCallback(() => {
     void queryClient.invalidateQueries({ queryKey: ["cash-disbursement", "cash-advance-multiple-entry"] });
@@ -254,7 +255,7 @@ export function useCashAdvanceMultipleEntryActionForm(
 
   async function submitEntry(status: CashAdvanceStatus = CashAdvanceMultipleEntryStatuses.forApproval) {
     if (mode === "view" || isSubmittingRef.current) return false;
-    if (mode === "edit" && !isDirty) {
+    if (mode === "edit" && !isDirty && status === loadedRecord?.status) {
       toast.error("No changes to save.");
       return false;
     }
@@ -326,7 +327,7 @@ export function useCashAdvanceMultipleEntryActionForm(
 
   function validateEntry(status: CashAdvanceStatus = CashAdvanceMultipleEntryStatuses.forApproval): boolean {
     if (mode === "view" || isSubmittingRef.current) return false;
-    if (mode === "edit" && !isDirty) {
+    if (mode === "edit" && !isDirty && status === loadedRecord?.status) {
       toast.error("No changes to save.");
       return false;
     }
@@ -481,16 +482,16 @@ export function useCashAdvanceMultipleEntryTable(records: CashAdvanceMultipleEnt
       {
         accessorKey: "partyCode",
         id: "partyCode",
-        header: "Party Code",
+        header: "Employee Code",
         size: CashAdvanceMultipleEntryOverviewColumnWidths.partyCode,
-        meta: { label: "Party Code" },
+        meta: { label: "Employee Code" },
       },
       {
         accessorKey: "partyName",
         id: "partyName",
-        header: "Party Name",
+        header: "Employee Name",
         size: CashAdvanceMultipleEntryOverviewColumnWidths.partyName,
-        meta: { label: "Party Name" },
+        meta: { label: "Employee Name" },
       },
       {
         accessorKey: "accountCode",

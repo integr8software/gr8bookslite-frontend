@@ -60,6 +60,9 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
+/**
+ * @summary Get paginated list of payment type records
+ */
 export const paymentTypeMaintenanceControllerFindAllV1 = (
     params?: PaymentTypeMaintenanceControllerFindAllV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -129,6 +132,9 @@ export function usePaymentTypeMaintenanceControllerFindAllV1<TData = Awaited<Ret
  params?: PaymentTypeMaintenanceControllerFindAllV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof paymentTypeMaintenanceControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get paginated list of payment type records
+ */
 
 export function usePaymentTypeMaintenanceControllerFindAllV1<TData = Awaited<ReturnType<typeof paymentTypeMaintenanceControllerFindAllV1>>, TError = unknown>(
  params?: PaymentTypeMaintenanceControllerFindAllV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof paymentTypeMaintenanceControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -147,6 +153,9 @@ export function usePaymentTypeMaintenanceControllerFindAllV1<TData = Awaited<Ret
 
 
 
+/**
+ * @summary Create a payment type record
+ */
 export const paymentTypeMaintenanceControllerCreateV1 = (
     createPaymentTypeDto: CreatePaymentTypeDto,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -194,7 +203,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type PaymentTypeMaintenanceControllerCreateV1MutationBody = CreatePaymentTypeDto
     export type PaymentTypeMaintenanceControllerCreateV1MutationError = unknown
 
-    export const usePaymentTypeMaintenanceControllerCreateV1 = <TError = unknown,
+    /**
+ * @summary Create a payment type record
+ */
+export const usePaymentTypeMaintenanceControllerCreateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof paymentTypeMaintenanceControllerCreateV1>>, TError,{data: CreatePaymentTypeDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof paymentTypeMaintenanceControllerCreateV1>>,
@@ -204,7 +216,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getPaymentTypeMaintenanceControllerCreateV1MutationOptions(options), queryClient);
     }
-    export const paymentTypeMaintenanceControllerFindOptionsV1 = (
+    /**
+ * @summary Get payment type options
+ */
+export const paymentTypeMaintenanceControllerFindOptionsV1 = (
     params?: PaymentTypeMaintenanceControllerFindOptionsV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
@@ -273,6 +288,9 @@ export function usePaymentTypeMaintenanceControllerFindOptionsV1<TData = Awaited
  params?: PaymentTypeMaintenanceControllerFindOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof paymentTypeMaintenanceControllerFindOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get payment type options
+ */
 
 export function usePaymentTypeMaintenanceControllerFindOptionsV1<TData = Awaited<ReturnType<typeof paymentTypeMaintenanceControllerFindOptionsV1>>, TError = unknown>(
  params?: PaymentTypeMaintenanceControllerFindOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof paymentTypeMaintenanceControllerFindOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -291,6 +309,9 @@ export function usePaymentTypeMaintenanceControllerFindOptionsV1<TData = Awaited
 
 
 
+/**
+ * @summary Get payment type options by classification
+ */
 export const paymentTypeMaintenanceControllerFindOptionsByTypeV1 = (
     type: string,
     params?: PaymentTypeMaintenanceControllerFindOptionsByTypeV1Params,
@@ -366,6 +387,9 @@ export function usePaymentTypeMaintenanceControllerFindOptionsByTypeV1<TData = A
     params?: PaymentTypeMaintenanceControllerFindOptionsByTypeV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof paymentTypeMaintenanceControllerFindOptionsByTypeV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get payment type options by classification
+ */
 
 export function usePaymentTypeMaintenanceControllerFindOptionsByTypeV1<TData = Awaited<ReturnType<typeof paymentTypeMaintenanceControllerFindOptionsByTypeV1>>, TError = unknown>(
  type: string,
@@ -385,6 +409,9 @@ export function usePaymentTypeMaintenanceControllerFindOptionsByTypeV1<TData = A
 
 
 
+/**
+ * @summary Get payment type details by ID
+ */
 export const paymentTypeMaintenanceControllerFindOneV1 = (
     id: string,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -453,6 +480,9 @@ export function usePaymentTypeMaintenanceControllerFindOneV1<TData = Awaited<Ret
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof paymentTypeMaintenanceControllerFindOneV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get payment type details by ID
+ */
 
 export function usePaymentTypeMaintenanceControllerFindOneV1<TData = Awaited<ReturnType<typeof paymentTypeMaintenanceControllerFindOneV1>>, TError = unknown>(
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof paymentTypeMaintenanceControllerFindOneV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -471,6 +501,9 @@ export function usePaymentTypeMaintenanceControllerFindOneV1<TData = Awaited<Ret
 
 
 
+/**
+ * @summary Update a payment type record
+ */
 export const paymentTypeMaintenanceControllerUpdateV1 = (
     id: string,
     updatePaymentTypeDto: UpdatePaymentTypeDto,
@@ -519,7 +552,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type PaymentTypeMaintenanceControllerUpdateV1MutationBody = UpdatePaymentTypeDto
     export type PaymentTypeMaintenanceControllerUpdateV1MutationError = unknown
 
-    export const usePaymentTypeMaintenanceControllerUpdateV1 = <TError = unknown,
+    /**
+ * @summary Update a payment type record
+ */
+export const usePaymentTypeMaintenanceControllerUpdateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof paymentTypeMaintenanceControllerUpdateV1>>, TError,{id: string;data: UpdatePaymentTypeDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof paymentTypeMaintenanceControllerUpdateV1>>,
@@ -529,7 +565,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getPaymentTypeMaintenanceControllerUpdateV1MutationOptions(options), queryClient);
     }
-    export const paymentTypeMaintenanceControllerImportPaymentTypesV1 = (
+    /**
+ * @summary Import payment type records
+ */
+export const paymentTypeMaintenanceControllerImportPaymentTypesV1 = (
     importPaymentTypesDto: ImportPaymentTypesDto,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
@@ -576,7 +615,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type PaymentTypeMaintenanceControllerImportPaymentTypesV1MutationBody = ImportPaymentTypesDto
     export type PaymentTypeMaintenanceControllerImportPaymentTypesV1MutationError = unknown
 
-    export const usePaymentTypeMaintenanceControllerImportPaymentTypesV1 = <TError = unknown,
+    /**
+ * @summary Import payment type records
+ */
+export const usePaymentTypeMaintenanceControllerImportPaymentTypesV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof paymentTypeMaintenanceControllerImportPaymentTypesV1>>, TError,{data: ImportPaymentTypesDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof paymentTypeMaintenanceControllerImportPaymentTypesV1>>,

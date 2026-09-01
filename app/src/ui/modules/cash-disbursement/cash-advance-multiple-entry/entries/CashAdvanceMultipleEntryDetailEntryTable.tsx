@@ -80,7 +80,7 @@ export function CashAdvanceMultipleEntryDetailEntryTable({
 
           return {
             ...column,
-            header: columnLabels[columnId] ?? column.header,
+            header: getCurrentColumnLabel(columnId, columnLabels[columnId] ?? column.header),
             width: columnWidths[columnId] ?? column.width,
           };
         })
@@ -93,7 +93,7 @@ export function CashAdvanceMultipleEntryDetailEntryTable({
         id: columnId,
         isHideable: !CashAdvanceMultipleEntryProtectedItemColumnIds.has(columnId),
         isVisible: visibleColumnIds.includes(columnId),
-        label: columnLabels[columnId] ?? allColumns[columnId]?.header ?? "",
+        label: getCurrentColumnLabel(columnId, columnLabels[columnId] ?? allColumns[columnId]?.header ?? ""),
         width: columnWidths[columnId] ?? allColumns[columnId]?.width,
         widthMode: allColumns[columnId]?.widthMode,
       })),
@@ -127,7 +127,20 @@ export function CashAdvanceMultipleEntryDetailEntryTable({
       onClearRows={() => onRowsChange([createBlankCashAdvanceMultipleEntryItem()])}
       onDuplicateRow={(rowId) => {
         const row = rows.find((currentRow) => currentRow.id === rowId);
-        if (row) onRowsChange([...rows, { ...row, id: `came-item-${Date.now()}` }]);
+        if (row) {
+          onRowsChange([
+            ...rows,
+            {
+              ...row,
+              amount: "",
+              cashAdvanceBalance: "",
+              cashAdvanceLimit: "",
+              id: `came-item-${Date.now()}`,
+              partyCode: "",
+              partyName: "",
+            },
+          ]);
+        }
       }}
       onInsertRow={() => undefined}
       onMoveRow={() => undefined}
@@ -145,4 +158,10 @@ export function CashAdvanceMultipleEntryDetailEntryTable({
       onUpdateColumnWidth={handleUpdateColumnWidth}
     />
   );
+}
+
+function getCurrentColumnLabel(columnId: string, label: string) {
+  if (columnId === "partyCode" && label === "Party Code") return "Employee Code";
+  if (columnId === "partyName" && label === "Party Name") return "Employee Name";
+  return label;
 }

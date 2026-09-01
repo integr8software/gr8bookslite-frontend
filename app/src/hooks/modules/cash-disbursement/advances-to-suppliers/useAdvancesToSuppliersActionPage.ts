@@ -286,7 +286,7 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
 
   async function save(status: AdvancesToSuppliersStatus) {
     if (isReadonly || isSubmittingRef.current) return false;
-    if (mode === "edit" && !isDirty) {
+    if (mode === "edit" && !isDirty && status === record?.status) {
       toast.error("No changes to save.");
       return false;
     }
@@ -361,7 +361,7 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
 
   function validate(status: AdvancesToSuppliersStatus = AdvancesToSuppliersStatuses.forApproval): boolean {
     if (isReadonly || isSubmittingRef.current) return false;
-    if (mode === "edit" && !isDirty) {
+    if (mode === "edit" && !isDirty && status === record?.status) {
       toast.error("No changes to save.");
       return false;
     }

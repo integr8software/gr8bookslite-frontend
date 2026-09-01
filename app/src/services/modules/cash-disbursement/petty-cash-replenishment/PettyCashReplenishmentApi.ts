@@ -1,17 +1,20 @@
 "use client";
 
 import {
-  pettyCashReplenishmentControllerCreate,
-  pettyCashReplenishmentControllerFindAll,
-  pettyCashReplenishmentControllerFindOne,
-  pettyCashReplenishmentControllerFindParties,
-  pettyCashReplenishmentControllerFindPostingAccounts,
-  pettyCashReplenishmentControllerFindResponsibilityCenters,
-  pettyCashReplenishmentControllerRemove,
-  pettyCashReplenishmentControllerSuggestTransactionNo,
-  pettyCashReplenishmentControllerUpdate,
-  pettyCashReplenishmentControllerUpdateStatus,
-} from "@/app/src/generated/api/cash-disbursement-petty-cash-replenishment/cash-disbursement-petty-cash-replenishment";
+  pettyCashReplenishmentControllerCreateV1 as pettyCashReplenishmentControllerCreate,
+  pettyCashReplenishmentControllerFindAllV1 as pettyCashReplenishmentControllerFindAll,
+  pettyCashReplenishmentControllerFindOneV1 as pettyCashReplenishmentControllerFindOne,
+  pettyCashReplenishmentControllerRemoveV1 as pettyCashReplenishmentControllerRemove,
+  pettyCashReplenishmentControllerSuggestTransactionNumberV1,
+  pettyCashReplenishmentControllerUpdateStatusV1 as pettyCashReplenishmentControllerUpdateStatus,
+  pettyCashReplenishmentControllerUpdateV1 as pettyCashReplenishmentControllerUpdate,
+} from "@/app/src/generated/api/petty-cash-replenishment/petty-cash-replenishment";
+import { fetchTransactionNumber } from "@/app/src/services/shared/transaction-number/TransactionNumberApi";
+import {
+  fetchMaintenancePartyOptions,
+  fetchMaintenancePostingAccountOptions,
+  fetchMaintenanceResponsibilityCenterOptions,
+} from "@/app/src/services/shared/maintenance/MaintenanceLookupApi";
 import type {
   CreatePettyCashReplenishmentDto,
   PettyCashReplenishmentResponseDto,
@@ -229,8 +232,7 @@ export async function fetchPettyCashReplenishmentById(id: string): Promise<Petty
 }
 
 export async function fetchNextPettyCashReplenishmentNo(branchUnitId?: number): Promise<string> {
-  const response: any = await pettyCashReplenishmentControllerSuggestTransactionNo({ branchUnitId });
-  return response?.nextTransNo ?? response?.transactionNo ?? "";
+  return fetchTransactionNumber(pettyCashReplenishmentControllerSuggestTransactionNumberV1, { branchUnitId });
 }
 
 export async function createPettyCashReplenishmentApi(values: PettyCashReplenishmentFormValues): Promise<PettyCashReplenishmentRecord> {
@@ -257,44 +259,13 @@ export async function deletePettyCashReplenishmentApi(id: string): Promise<{ suc
 }
 
 export async function fetchPettyCashReplenishmentPartyOptions(): Promise<AppAdvancedDropdownOption[]> {
-  const response: any = await pettyCashReplenishmentControllerFindParties();
-  const parties = response?.parties ?? response?.options ?? response?.items ?? [];
-  return parties.map((p: any) => ({
-    name: p.partyName || p.name,
-    label: p.partyCode || p.label,
-    value: p.partyCode || p.value,
-    description: p.partyName,
-    partyId: p.partyId || p.id,
-    partyCode: p.partyCode,
-    partyName: p.partyName,
-    defaultPurchaseInputVatTaxSourceKey: p.defaultPurchaseInputVatTaxSourceKey ?? "",
-    defaultPurchaseEwtTaxSourceKey: p.defaultPurchaseEwtTaxSourceKey ?? "",
-  }));
+  return fetchMaintenancePartyOptions();
 }
 
 export async function fetchPettyCashReplenishmentAccountOptions(): Promise<AppAdvancedDropdownOption[]> {
-  const response: any = await pettyCashReplenishmentControllerFindPostingAccounts();
-  const accounts = response?.accounts ?? response?.options ?? response?.items ?? [];
-  return accounts.map((a: any) => ({
-    name: a.accountTitle || a.name,
-    label: a.accountCode || a.label,
-    value: a.accountCode || a.value,
-    description: a.accountTitle,
-    accountId: a.accountId || a.id,
-    accountCode: a.accountCode,
-    accountTitle: a.accountTitle,
-  }));
+  return fetchMaintenancePostingAccountOptions();
 }
 
 export async function fetchPettyCashReplenishmentResponsibilityCenters(): Promise<AppAdvancedDropdownOption[]> {
-  const response: any = await pettyCashReplenishmentControllerFindResponsibilityCenters();
-  const centers = response?.centers ?? response?.responsibilityCenters ?? response?.options ?? response?.items ?? [];
-  return centers.map((rc: any) => ({
-    name: rc.name,
-    label: rc.code || rc.label,
-    value: rc.code || rc.value,
-    description: rc.name,
-    centerId: rc.centerId || rc.id,
-    code: rc.code,
-  }));
+  return fetchMaintenanceResponsibilityCenterOptions();
 }

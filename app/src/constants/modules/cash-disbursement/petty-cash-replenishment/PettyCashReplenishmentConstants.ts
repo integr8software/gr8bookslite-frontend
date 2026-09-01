@@ -251,7 +251,6 @@ export const PettyCashReplenishmentEntryEwtCodeOptions: AppAdvancedDropdownOptio
 export function canEditPettyCashReplenishment(status: PettyCashReplenishmentStatus) {
   return (
     status === PettyCashReplenishmentStatuses.draft ||
-    status === PettyCashReplenishmentStatuses.forApproval ||
     status === PettyCashReplenishmentStatuses.disapproved
   );
 }

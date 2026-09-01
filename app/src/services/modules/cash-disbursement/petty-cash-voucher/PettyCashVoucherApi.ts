@@ -1,17 +1,20 @@
 "use client";
 
 import {
-  pettyCashVoucherControllerCreate,
-  pettyCashVoucherControllerFindAll,
-  pettyCashVoucherControllerFindOne,
-  pettyCashVoucherControllerFindParties,
-  pettyCashVoucherControllerFindPostingAccounts,
-  pettyCashVoucherControllerFindResponsibilityCenters,
-  pettyCashVoucherControllerRemove,
-  pettyCashVoucherControllerSuggestVoucherNo,
-  pettyCashVoucherControllerUpdate,
-  pettyCashVoucherControllerUpdateStatus,
-} from "@/app/src/generated/api/cash-disbursement-petty-cash-voucher/cash-disbursement-petty-cash-voucher";
+  pettyCashVoucherControllerCreateV1 as pettyCashVoucherControllerCreate,
+  pettyCashVoucherControllerFindAllV1 as pettyCashVoucherControllerFindAll,
+  pettyCashVoucherControllerFindOneV1 as pettyCashVoucherControllerFindOne,
+  pettyCashVoucherControllerRemoveV1 as pettyCashVoucherControllerRemove,
+  pettyCashVoucherControllerSuggestTransactionNumberV1,
+  pettyCashVoucherControllerUpdateStatusV1 as pettyCashVoucherControllerUpdateStatus,
+  pettyCashVoucherControllerUpdateV1 as pettyCashVoucherControllerUpdate,
+} from "@/app/src/generated/api/petty-cash-voucher/petty-cash-voucher";
+import { fetchTransactionNumber } from "@/app/src/services/shared/transaction-number/TransactionNumberApi";
+import {
+  fetchMaintenancePartyOptions,
+  fetchMaintenancePostingAccountOptions,
+  fetchMaintenanceResponsibilityCenterOptions,
+} from "@/app/src/services/shared/maintenance/MaintenanceLookupApi";
 import type {
   CreatePettyCashVoucherDto,
   PettyCashVoucherResponseDto,
@@ -157,8 +160,7 @@ export async function fetchPettyCashVoucherById(id: string): Promise<PettyCashVo
 }
 
 export async function fetchNextPettyCashVoucherNo(branchUnitId?: number): Promise<string> {
-  const response: any = await pettyCashVoucherControllerSuggestVoucherNo({ branchUnitId });
-  return response?.nextTransNo ?? response?.transactionNo ?? response?.nextVoucherNo ?? response?.voucherNo ?? "";
+  return fetchTransactionNumber(pettyCashVoucherControllerSuggestTransactionNumberV1, { branchUnitId });
 }
 
 export async function createPettyCashVoucherApi(values: PettyCashVoucherFormValues): Promise<PettyCashVoucherRecord> {
@@ -185,42 +187,13 @@ export async function deletePettyCashVoucherApi(id: string): Promise<{ success: 
 }
 
 export async function fetchPettyCashVoucherPartyOptions(): Promise<AppAdvancedDropdownOption[]> {
-  const response: any = await pettyCashVoucherControllerFindParties();
-  const parties = response?.parties ?? response?.options ?? response?.items ?? [];
-  return parties.map((p: any) => ({
-    name: p.partyName || p.name,
-    label: p.partyCode || p.label,
-    value: p.partyCode || p.value,
-    description: p.partyName,
-    partyId: p.partyId || p.id,
-    partyCode: p.partyCode,
-    partyName: p.partyName,
-  }));
+  return fetchMaintenancePartyOptions();
 }
 
 export async function fetchPettyCashVoucherAccountOptions(): Promise<AppAdvancedDropdownOption[]> {
-  const response: any = await pettyCashVoucherControllerFindPostingAccounts();
-  const accounts = response?.accounts ?? response?.options ?? response?.items ?? [];
-  return accounts.map((a: any) => ({
-    name: a.accountTitle || a.name,
-    label: a.accountCode || a.label,
-    value: a.accountCode || a.value,
-    description: a.accountTitle,
-    accountId: a.accountId || a.id,
-    accountCode: a.accountCode,
-    accountTitle: a.accountTitle,
-  }));
+  return fetchMaintenancePostingAccountOptions();
 }
 
 export async function fetchPettyCashVoucherResponsibilityCenters(): Promise<AppAdvancedDropdownOption[]> {
-  const response: any = await pettyCashVoucherControllerFindResponsibilityCenters();
-  const centers = response?.centers ?? response?.responsibilityCenters ?? response?.options ?? response?.items ?? [];
-  return centers.map((rc: any) => ({
-    name: rc.name,
-    label: rc.code || rc.label,
-    value: rc.code || rc.value,
-    description: rc.name,
-    centerId: rc.centerId || rc.id,
-    code: rc.code,
-  }));
+  return fetchMaintenanceResponsibilityCenterOptions();
 }

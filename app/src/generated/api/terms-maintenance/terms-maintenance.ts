@@ -59,6 +59,9 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
+/**
+ * @summary Get paginated list of term records
+ */
 export const termsMaintenanceControllerFindAllV1 = (
     params?: TermsMaintenanceControllerFindAllV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -128,6 +131,9 @@ export function useTermsMaintenanceControllerFindAllV1<TData = Awaited<ReturnTyp
  params?: TermsMaintenanceControllerFindAllV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof termsMaintenanceControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get paginated list of term records
+ */
 
 export function useTermsMaintenanceControllerFindAllV1<TData = Awaited<ReturnType<typeof termsMaintenanceControllerFindAllV1>>, TError = unknown>(
  params?: TermsMaintenanceControllerFindAllV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof termsMaintenanceControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -146,6 +152,9 @@ export function useTermsMaintenanceControllerFindAllV1<TData = Awaited<ReturnTyp
 
 
 
+/**
+ * @summary Create a term record
+ */
 export const termsMaintenanceControllerCreateV1 = (
     createTermDto: CreateTermDto,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -193,7 +202,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type TermsMaintenanceControllerCreateV1MutationBody = CreateTermDto
     export type TermsMaintenanceControllerCreateV1MutationError = unknown
 
-    export const useTermsMaintenanceControllerCreateV1 = <TError = unknown,
+    /**
+ * @summary Create a term record
+ */
+export const useTermsMaintenanceControllerCreateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof termsMaintenanceControllerCreateV1>>, TError,{data: CreateTermDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof termsMaintenanceControllerCreateV1>>,
@@ -203,7 +215,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getTermsMaintenanceControllerCreateV1MutationOptions(options), queryClient);
     }
-    export const termsMaintenanceControllerFindOptionsV1 = (
+    /**
+ * @summary Get term options
+ */
+export const termsMaintenanceControllerFindOptionsV1 = (
     params?: TermsMaintenanceControllerFindOptionsV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
@@ -272,6 +287,9 @@ export function useTermsMaintenanceControllerFindOptionsV1<TData = Awaited<Retur
  params?: TermsMaintenanceControllerFindOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof termsMaintenanceControllerFindOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get term options
+ */
 
 export function useTermsMaintenanceControllerFindOptionsV1<TData = Awaited<ReturnType<typeof termsMaintenanceControllerFindOptionsV1>>, TError = unknown>(
  params?: TermsMaintenanceControllerFindOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof termsMaintenanceControllerFindOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -290,6 +308,9 @@ export function useTermsMaintenanceControllerFindOptionsV1<TData = Awaited<Retur
 
 
 
+/**
+ * @summary Get term details by ID
+ */
 export const termsMaintenanceControllerFindOneV1 = (
     id: string,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -358,6 +379,9 @@ export function useTermsMaintenanceControllerFindOneV1<TData = Awaited<ReturnTyp
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof termsMaintenanceControllerFindOneV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get term details by ID
+ */
 
 export function useTermsMaintenanceControllerFindOneV1<TData = Awaited<ReturnType<typeof termsMaintenanceControllerFindOneV1>>, TError = unknown>(
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof termsMaintenanceControllerFindOneV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -376,6 +400,9 @@ export function useTermsMaintenanceControllerFindOneV1<TData = Awaited<ReturnTyp
 
 
 
+/**
+ * @summary Update a term record
+ */
 export const termsMaintenanceControllerUpdateV1 = (
     id: string,
     updateTermDto: UpdateTermDto,
@@ -424,7 +451,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type TermsMaintenanceControllerUpdateV1MutationBody = UpdateTermDto
     export type TermsMaintenanceControllerUpdateV1MutationError = unknown
 
-    export const useTermsMaintenanceControllerUpdateV1 = <TError = unknown,
+    /**
+ * @summary Update a term record
+ */
+export const useTermsMaintenanceControllerUpdateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof termsMaintenanceControllerUpdateV1>>, TError,{id: string;data: UpdateTermDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof termsMaintenanceControllerUpdateV1>>,
@@ -434,7 +464,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getTermsMaintenanceControllerUpdateV1MutationOptions(options), queryClient);
     }
-    export const termsMaintenanceControllerImportTermsV1 = (
+    /**
+ * @summary Import term records
+ */
+export const termsMaintenanceControllerImportTermsV1 = (
     importTermsDto: ImportTermsDto,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
@@ -481,7 +514,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type TermsMaintenanceControllerImportTermsV1MutationBody = ImportTermsDto
     export type TermsMaintenanceControllerImportTermsV1MutationError = unknown
 
-    export const useTermsMaintenanceControllerImportTermsV1 = <TError = unknown,
+    /**
+ * @summary Import term records
+ */
+export const useTermsMaintenanceControllerImportTermsV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof termsMaintenanceControllerImportTermsV1>>, TError,{data: ImportTermsDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof termsMaintenanceControllerImportTermsV1>>,

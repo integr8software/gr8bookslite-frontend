@@ -65,6 +65,8 @@ import {
 import { useTablePreferences } from "@/app/src/hooks/shared/table-preferences/useTablePreferences";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 
+const EmptyCashAdvances: CashAdvanceRecord[] = [];
+
 export function useCashAdvanceStore<TSelected = CashAdvanceStoreState>(selector?: (state: CashAdvanceStoreState) => TSelected) {
   const queryClient = useQueryClient();
   const activeCompanyId = useAppStore((state) => state.activeCompanyId);
@@ -81,9 +83,8 @@ export function useCashAdvanceStore<TSelected = CashAdvanceStoreState>(selector?
       }
     },
     enabled: activeCompanyId !== null,
-    initialData: [],
   });
-  const advances = advancesQuery.data;
+  const advances = advancesQuery.data ?? EmptyCashAdvances;
 
   const refreshRecords = useCallback(() => {
     void queryClient.invalidateQueries({ queryKey: ["cash-disbursement", "cash-advance"] });
@@ -256,7 +257,7 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
 
   async function submitAdvance(status: CashAdvanceStatus = CashAdvanceStatuses.forApproval) {
     if (mode === "view" || isSubmittingRef.current) return false;
-    if (mode === "edit" && !isDirty) {
+    if (mode === "edit" && !isDirty && status === loadedRecord?.status) {
       toast.error("No changes to save.");
       return false;
     }
@@ -349,7 +350,7 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
 
   function validateAdvance(status: CashAdvanceStatus = CashAdvanceStatuses.forApproval): boolean {
     if (mode === "view" || isSubmittingRef.current) return false;
-    if (mode === "edit" && !isDirty) {
+    if (mode === "edit" && !isDirty && status === loadedRecord?.status) {
       toast.error("No changes to save.");
       return false;
     }

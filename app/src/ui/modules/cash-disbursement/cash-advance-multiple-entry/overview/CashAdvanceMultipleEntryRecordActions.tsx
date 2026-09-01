@@ -13,7 +13,6 @@ import type { CashAdvanceStatus } from "@/app/src/types/modules/cash-disbursemen
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleActionMenu, type ModuleActionMenuItem } from "@/app/src/ui/shared/module/ModuleActionMenu";
 import {
-  ModuleTableActionButton,
   ModuleTableActionLink,
   ModuleTableActions,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
@@ -83,15 +82,7 @@ export function CashAdvanceMultipleEntryRecordActions({
             title="Edit"
             variant="edit"
           />
-        ) : (
-          <ModuleTableActionButton
-            disabled
-            icon={Edit3}
-            label={`Edit Cash Advance Multiple Entry ${record.transNo}`}
-            title="Edit"
-            variant="edit"
-          />
-        )}
+        ) : null}
         <ModuleActionMenu
           className="[&>button]:h-9 [&>button]:w-9"
           items={items}

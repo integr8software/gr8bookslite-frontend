@@ -57,6 +57,9 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
+/**
+ * @summary Get paginated list of warehouse records
+ */
 export const warehouseMaintenanceControllerFindAllV1 = (
     params?: WarehouseMaintenanceControllerFindAllV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -126,6 +129,9 @@ export function useWarehouseMaintenanceControllerFindAllV1<TData = Awaited<Retur
  params?: WarehouseMaintenanceControllerFindAllV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof warehouseMaintenanceControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get paginated list of warehouse records
+ */
 
 export function useWarehouseMaintenanceControllerFindAllV1<TData = Awaited<ReturnType<typeof warehouseMaintenanceControllerFindAllV1>>, TError = unknown>(
  params?: WarehouseMaintenanceControllerFindAllV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof warehouseMaintenanceControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -144,6 +150,9 @@ export function useWarehouseMaintenanceControllerFindAllV1<TData = Awaited<Retur
 
 
 
+/**
+ * @summary Create a warehouse record
+ */
 export const warehouseMaintenanceControllerCreateV1 = (
     createWarehouseDto: CreateWarehouseDto,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -191,7 +200,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type WarehouseMaintenanceControllerCreateV1MutationBody = CreateWarehouseDto
     export type WarehouseMaintenanceControllerCreateV1MutationError = unknown
 
-    export const useWarehouseMaintenanceControllerCreateV1 = <TError = unknown,
+    /**
+ * @summary Create a warehouse record
+ */
+export const useWarehouseMaintenanceControllerCreateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof warehouseMaintenanceControllerCreateV1>>, TError,{data: CreateWarehouseDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof warehouseMaintenanceControllerCreateV1>>,
@@ -201,7 +213,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getWarehouseMaintenanceControllerCreateV1MutationOptions(options), queryClient);
     }
-    export const warehouseMaintenanceControllerFindOptionsV1 = (
+    /**
+ * @summary Get warehouse options
+ */
+export const warehouseMaintenanceControllerFindOptionsV1 = (
     params?: WarehouseMaintenanceControllerFindOptionsV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
@@ -270,6 +285,9 @@ export function useWarehouseMaintenanceControllerFindOptionsV1<TData = Awaited<R
  params?: WarehouseMaintenanceControllerFindOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof warehouseMaintenanceControllerFindOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get warehouse options
+ */
 
 export function useWarehouseMaintenanceControllerFindOptionsV1<TData = Awaited<ReturnType<typeof warehouseMaintenanceControllerFindOptionsV1>>, TError = unknown>(
  params?: WarehouseMaintenanceControllerFindOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof warehouseMaintenanceControllerFindOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -288,6 +306,9 @@ export function useWarehouseMaintenanceControllerFindOptionsV1<TData = Awaited<R
 
 
 
+/**
+ * @summary Get warehouse details by ID
+ */
 export const warehouseMaintenanceControllerFindOneV1 = (
     id: string,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -356,6 +377,9 @@ export function useWarehouseMaintenanceControllerFindOneV1<TData = Awaited<Retur
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof warehouseMaintenanceControllerFindOneV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get warehouse details by ID
+ */
 
 export function useWarehouseMaintenanceControllerFindOneV1<TData = Awaited<ReturnType<typeof warehouseMaintenanceControllerFindOneV1>>, TError = unknown>(
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof warehouseMaintenanceControllerFindOneV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -374,6 +398,9 @@ export function useWarehouseMaintenanceControllerFindOneV1<TData = Awaited<Retur
 
 
 
+/**
+ * @summary Update a warehouse record
+ */
 export const warehouseMaintenanceControllerUpdateV1 = (
     id: string,
     updateWarehouseDto: UpdateWarehouseDto,
@@ -422,7 +449,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type WarehouseMaintenanceControllerUpdateV1MutationBody = UpdateWarehouseDto
     export type WarehouseMaintenanceControllerUpdateV1MutationError = unknown
 
-    export const useWarehouseMaintenanceControllerUpdateV1 = <TError = unknown,
+    /**
+ * @summary Update a warehouse record
+ */
+export const useWarehouseMaintenanceControllerUpdateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof warehouseMaintenanceControllerUpdateV1>>, TError,{id: string;data: UpdateWarehouseDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof warehouseMaintenanceControllerUpdateV1>>,

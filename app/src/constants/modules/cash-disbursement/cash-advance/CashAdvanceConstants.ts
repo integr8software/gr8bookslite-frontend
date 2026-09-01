@@ -143,7 +143,7 @@ export function getCashAdvanceTableMinWidthClassName(visibleColumnCount: number)
 }
 
 export function canEditCashAdvanceStatus(status: CashAdvanceStatus) {
-  return status === CashAdvanceStatuses.draft || status === CashAdvanceStatuses.forApproval;
+  return status === CashAdvanceStatuses.draft;
 }
 
 export function canApproveCashAdvanceStatus(status: CashAdvanceStatus) {

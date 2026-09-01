@@ -61,6 +61,8 @@ export function CashAdvanceMultipleEntryActionHeader({
   const statusDialogCopy = statusToConfirm
     ? getCashAdvanceMultipleEntryStatusDialogCopy(statusToConfirm, recordLabel, approvalRecord?.status)
     : null;
+  const isDraftEdit = mode === "edit" && record?.status === CashAdvanceMultipleEntryStatuses.draft;
+  const isSaveAction = mode === "add" || isDraftEdit;
   const title =
     mode === "add" ? (
       "Add Cash Advance Multiple Entry"
@@ -113,14 +115,14 @@ export function CashAdvanceMultipleEntryActionHeader({
             {mode === "view" ? null : (
               <ModuleActionButton
                 disabled={isSubmitting}
-                label={mode === "edit" ? "Update" : "Save"}
+                label={isSaveAction ? "Save" : "Update"}
                 onAction={() => {
                   if (onValidate ? onValidate(CashAdvanceMultipleEntryStatuses.forApproval) : true) {
                     setSubmitConfirmation("save");
                   }
                 }}
                 menuItems={
-                  mode === "add" && onSaveDraft
+                  isSaveAction && onSaveDraft
                     ? [
                         {
                           label: "Save As Draft",
@@ -142,26 +144,26 @@ export function CashAdvanceMultipleEntryActionHeader({
         <AppDialog
           isOpen
           title={
-            submitConfirmation === "save" && mode === "edit"
+            submitConfirmation === "save" && !isSaveAction
               ? "Update Cash Advance Multiple Entry?"
               : CashAdvanceMultipleEntrySubmitConfirmationDialogTitles[submitConfirmation]
           }
           description={
             submitConfirmation === "save"
-              ? mode === "edit"
+              ? !isSaveAction
                 ? `This will update ${recordLabel}.`
                 : `This will save and submit ${recordLabel}.`
               : `This will save ${recordLabel} as draft.`
           }
           confirmLabel={
-            submitConfirmation === "save" && mode === "edit"
+            submitConfirmation === "save" && !isSaveAction
               ? "Update"
               : CashAdvanceMultipleEntrySubmitConfirmationDialogConfirmLabels[submitConfirmation]
           }
           cancelLabel="Cancel"
-          iconTone={submitConfirmation === "save" ? (mode === "edit" ? "update" : "save") : "save"}
+          iconTone={submitConfirmation === "save" ? (isSaveAction ? "save" : "update") : "save"}
           isPending={isSubmitting}
-          pendingLabel={mode === "edit" ? "Updating..." : "Saving..."}
+          pendingLabel={isSaveAction ? "Saving..." : "Updating..."}
           tone="default"
           onCancel={() => setSubmitConfirmation(null)}
           onConfirm={() => {

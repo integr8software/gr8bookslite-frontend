@@ -276,7 +276,7 @@ export const DisbursementVoucherDefaultColumnVisibility: VisibilityState = {
 export const DisbursementVoucherDefaultSorting: SortingState = [{ id: "documentDate", desc: true }];
 
 export function canEditDisbursementVoucherStatus(status: DisbursementVoucherStatus) {
-  return status === DisbursementVoucherStatuses.draft || status === DisbursementVoucherStatuses.forApproval;
+  return status === DisbursementVoucherStatuses.draft;
 }
 
 export function canApproveDisbursementVoucherStatus(status: DisbursementVoucherStatus) {

@@ -1,4 +1,11 @@
+import { cashVoucherControllerSuggestTransactionNumberV1 } from "@/app/src/generated/api/cash-voucher/cash-voucher";
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import { fetchTransactionNumber } from "@/app/src/services/shared/transaction-number/TransactionNumberApi";
+import {
+  fetchMaintenancePartyOptions,
+  fetchMaintenancePostingAccountOptions,
+  fetchMaintenanceResponsibilityCenterOptions,
+} from "@/app/src/services/shared/maintenance/MaintenanceLookupApi";
 import type {
   CashVoucherLineEntry,
   CashVoucherRecord,
@@ -68,70 +75,24 @@ export async function fetchCashVoucherById(id: string): Promise<CashVoucherRecor
 }
 
 export async function fetchNextCashVoucherTransactionNo(): Promise<string> {
-  const response = await ApiClient.get<{ nextTransNo: string }>("/cash-disbursement/cash-voucher/next-transaction-no");
-  return response.data.nextTransNo;
+  return fetchTransactionNumber(cashVoucherControllerSuggestTransactionNumberV1);
 }
 
 export async function fetchCashVoucherPartyOptions(): Promise<AppAdvancedDropdownOption[]> {
-  const response = await ApiClient.get<{
-    parties: Array<{
-      id: string;
-      partyCode: string;
-      partyName: string;
-      name: string;
-      label: string;
-      value: string;
-    }>;
-  }>("/cash-disbursement/cash-voucher/lookups/parties");
-
-  const parties = response.data?.parties ?? [];
-  return parties.map((p) => ({
-    name: p.partyName || p.name,
-    label: p.partyCode || p.label,
-    value: p.partyCode || p.value,
-    description: p.partyName,
-  }));
+  return fetchMaintenancePartyOptions();
 }
 
 export async function fetchCashVoucherAccountOptions(): Promise<AppAdvancedDropdownOption[]> {
-  const response = await ApiClient.get<{
-    accounts: Array<{
-      id: string;
-      accountCode: string;
-      accountTitle: string;
-      name: string;
-      label: string;
-      value: string;
-    }>;
-  }>("/cash-disbursement/cash-voucher/lookups/accounts");
-
-  const accounts = response.data?.accounts ?? [];
-  return accounts.map((a) => ({
-    name: a.accountTitle || a.name,
-    label: a.accountCode || a.label,
-    value: a.accountCode || a.value,
-    description: a.accountTitle,
-  }));
+  return fetchMaintenancePostingAccountOptions();
 }
 
 export async function fetchCashVoucherResponsibilityCenters(): Promise<{
   costCenters: AppAdvancedDropdownOption[];
   projects: AppAdvancedDropdownOption[];
 }> {
-  const response = await ApiClient.get<{
-    responsibilityCenters: Array<{
-      id: string;
-      code: string;
-      name: string;
-      category?: string;
-      label: string;
-      value: string;
-    }>;
-  }>("/cash-disbursement/cash-voucher/lookups/responsibility-centers");
-
-  const centers = response.data?.responsibilityCenters ?? [];
-  const isProject = (rc: { category?: string; name?: string }) =>
-    rc.category?.toLowerCase() === "project" || rc.name?.toLowerCase().includes("project");
+  const centers = await fetchMaintenanceResponsibilityCenterOptions();
+  const isProject = (rc: { typeName?: string; name?: string }) =>
+    rc.typeName?.toLowerCase().includes("project") || rc.name?.toLowerCase().includes("project");
 
   const costCenters = centers
     .filter((rc) => !isProject(rc))

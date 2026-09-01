@@ -487,7 +487,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
 
   function requestDisbursementVoucherSubmit(status: DisbursementVoucherStatus) {
     if (isReadonly || isSubmittingRef.current) return;
-    if (mode === "edit" && !isDirty) {
+    if (mode === "edit" && !isDirty && status === currentStatus) {
       toast.error("No changes to save.");
       return;
     }

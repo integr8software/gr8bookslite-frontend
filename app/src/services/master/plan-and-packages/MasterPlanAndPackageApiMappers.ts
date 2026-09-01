@@ -109,7 +109,7 @@ export function mapCreateMasterPlanAndPackageDto(
 				thresholdCount: tier.thresholdCount,
 			})),
 		],
-		moduleKeys: values.featureIds,
+		systemCodes: values.featureIds,
 		name: values.name.trim(),
 		prices: [
 			createPrice({

@@ -1,18 +1,22 @@
 "use client";
 
 import {
-  advancesToSuppliersControllerCreate,
-  advancesToSuppliersControllerFindAll,
-  advancesToSuppliersControllerFindOne,
-  advancesToSuppliersControllerFindParties,
-  advancesToSuppliersControllerFindPostingAccounts,
-  advancesToSuppliersControllerFindResponsibilityCenters,
-  advancesToSuppliersControllerRemove,
-  advancesToSuppliersControllerSubmitApproval,
-  advancesToSuppliersControllerSuggestTransactionNo,
-  advancesToSuppliersControllerUpdate,
-  advancesToSuppliersControllerUpdateStatus,
-} from "@/app/src/generated/api/cash-disbursement-advances-to-suppliers/cash-disbursement-advances-to-suppliers";
+  advancesToSuppliersControllerCreateV1 as advancesToSuppliersControllerCreate,
+  advancesToSuppliersControllerFindAllV1 as advancesToSuppliersControllerFindAll,
+  advancesToSuppliersControllerFindOneV1 as advancesToSuppliersControllerFindOne,
+  advancesToSuppliersControllerRemoveV1 as advancesToSuppliersControllerRemove,
+  advancesToSuppliersControllerSubmitApprovalV1 as advancesToSuppliersControllerSubmitApproval,
+  advancesToSuppliersControllerSuggestTransactionNumberV1,
+  advancesToSuppliersControllerUpdateStatusV1 as advancesToSuppliersControllerUpdateStatus,
+  advancesToSuppliersControllerUpdateV1 as advancesToSuppliersControllerUpdate,
+} from "@/app/src/generated/api/advances-to-suppliers/advances-to-suppliers";
+import { fetchTransactionNumber } from "@/app/src/services/shared/transaction-number/TransactionNumberApi";
+import {
+  fetchMaintenancePartyOptions,
+  fetchMaintenancePostingAccountOptions,
+  fetchMaintenanceResponsibilityCenterOptions,
+} from "@/app/src/services/shared/maintenance/MaintenanceLookupApi";
+import type { MaintenanceResponsibilityCenterOption } from "@/app/src/services/shared/maintenance/MaintenanceLookupApi";
 import type {
   AdvanceToSupplierResponseDto,
   CreateAdvanceToSupplierDto,
@@ -99,8 +103,7 @@ export async function fetchAdvancesToSuppliersById(id: string): Promise<Advances
 }
 
 export async function fetchNextAdvancesToSuppliersNumber(): Promise<string> {
-  const response: any = await advancesToSuppliersControllerSuggestTransactionNo();
-  return response?.nextTransactionNo ?? response?.transactionNo ?? "";
+  return fetchTransactionNumber(advancesToSuppliersControllerSuggestTransactionNumberV1);
 }
 
 export async function createAdvancesToSuppliersApi(values: AdvancesToSuppliersFormValues): Promise<AdvancesToSuppliersRecord> {
@@ -132,45 +135,26 @@ export async function deleteAdvancesToSuppliersApi(id: string): Promise<{ succes
 }
 
 export async function fetchAdvancesToSuppliersPartyOptions(): Promise<AppAdvancedDropdownOption[]> {
-  const response: any = await advancesToSuppliersControllerFindParties();
-  return (response?.parties ?? response?.options ?? []).map((party: any) => ({
-    name: party.partyName || party.name,
-    label: party.partyCode || party.label,
-    value: party.partyCode || party.value,
-    description: party.partyName || party.name,
-    partyId: party.partyId || party.id,
-    partyCode: party.partyCode,
-    partyName: party.partyName || party.name,
-  }));
+  return fetchMaintenancePartyOptions();
 }
 
 export async function fetchAdvancesToSuppliersAccountOptions(): Promise<AppAdvancedDropdownOption[]> {
-  const response: any = await advancesToSuppliersControllerFindPostingAccounts();
-  const accounts = response?.accounts ?? response?.options ?? [];
-  const supplierAdvanceAccounts = accounts.filter((account: any) => {
+  const accounts = await fetchMaintenancePostingAccountOptions();
+  const supplierAdvanceAccounts = accounts.filter((account) => {
     const title = String(account.accountTitle ?? account.name ?? "").toLowerCase();
     return title.includes("advance") || title.includes("supplier") || title.includes("deposit");
   });
   const finalAccounts = supplierAdvanceAccounts.length > 0 ? supplierAdvanceAccounts : accounts;
 
-  return finalAccounts.map((account: any) => ({
-    name: account.accountTitle || account.name,
-    label: account.accountCode || account.label,
-    value: account.accountCode || account.value,
-    description: account.accountTitle || account.name,
-    accountId: account.accountId || account.id,
-    accountCode: account.accountCode,
-    accountTitle: account.accountTitle || account.name,
-  }));
+  return finalAccounts;
 }
 
 export async function fetchAdvancesToSuppliersResponsibilityCenters(): Promise<{
   responsibilityCenters: AppAdvancedDropdownOption[];
   projects: AppAdvancedDropdownOption[];
 }> {
-  const response: any = await advancesToSuppliersControllerFindResponsibilityCenters();
-  const centers = response?.responsibilityCenters ?? response?.options ?? [];
-  const isProject = (center: any) =>
+  const centers = await fetchMaintenanceResponsibilityCenterOptions();
+  const isProject = (center: MaintenanceResponsibilityCenterOption) =>
     String(center.category ?? "").toLowerCase() === "project" ||
     String(center.typeName ?? "")
       .toLowerCase()
@@ -180,8 +164,8 @@ export async function fetchAdvancesToSuppliersResponsibilityCenters(): Promise<{
       .includes("project");
 
   return {
-    responsibilityCenters: centers.filter((center: any) => !isProject(center)).map(mapResponsibilityCenterOption),
-    projects: centers.filter((center: any) => isProject(center)).map(mapResponsibilityCenterOption),
+    responsibilityCenters: centers.filter((center) => !isProject(center)).map(mapResponsibilityCenterOption),
+    projects: centers.filter((center) => isProject(center)).map(mapResponsibilityCenterOption),
   };
 }
 
@@ -248,7 +232,7 @@ function mapAdvancesToSuppliersRecordFromDto(dto: AdvanceToSupplierResponseDto):
   };
 }
 
-function mapResponsibilityCenterOption(center: any): AppAdvancedDropdownOption {
+function mapResponsibilityCenterOption(center: MaintenanceResponsibilityCenterOption): AppAdvancedDropdownOption {
   return {
     name: center.name,
     label: center.code || center.label,

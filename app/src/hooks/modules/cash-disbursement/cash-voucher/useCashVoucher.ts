@@ -71,7 +71,6 @@ export function useCashVoucherStore<TSelected = CashVoucherStoreState>(
       }
     },
     enabled: activeCompanyId !== null,
-    initialData: [],
   });
 
   const refreshRecords = useCallback(() => {

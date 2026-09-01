@@ -63,6 +63,9 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
+/**
+ * @summary Get list of chart of account records
+ */
 export const chartOfAccountsControllerFindAllV1 = (
     params?: ChartOfAccountsControllerFindAllV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -132,6 +135,9 @@ export function useChartOfAccountsControllerFindAllV1<TData = Awaited<ReturnType
  params?: ChartOfAccountsControllerFindAllV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get list of chart of account records
+ */
 
 export function useChartOfAccountsControllerFindAllV1<TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindAllV1>>, TError = unknown>(
  params?: ChartOfAccountsControllerFindAllV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -150,6 +156,9 @@ export function useChartOfAccountsControllerFindAllV1<TData = Awaited<ReturnType
 
 
 
+/**
+ * @summary Create a chart of account record
+ */
 export const chartOfAccountsControllerCreateV1 = (
     createChartAccountDto: CreateChartAccountDto,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -197,7 +206,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type ChartOfAccountsControllerCreateV1MutationBody = CreateChartAccountDto
     export type ChartOfAccountsControllerCreateV1MutationError = unknown
 
-    export const useChartOfAccountsControllerCreateV1 = <TError = unknown,
+    /**
+ * @summary Create a chart of account record
+ */
+export const useChartOfAccountsControllerCreateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof chartOfAccountsControllerCreateV1>>, TError,{data: CreateChartAccountDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof chartOfAccountsControllerCreateV1>>,
@@ -207,7 +219,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getChartOfAccountsControllerCreateV1MutationOptions(options), queryClient);
     }
-    export const chartOfAccountsControllerFindOptionsV1 = (
+    /**
+ * @summary Get chart of account options
+ */
+export const chartOfAccountsControllerFindOptionsV1 = (
     params?: ChartOfAccountsControllerFindOptionsV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
@@ -276,6 +291,9 @@ export function useChartOfAccountsControllerFindOptionsV1<TData = Awaited<Return
  params?: ChartOfAccountsControllerFindOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get chart of account options
+ */
 
 export function useChartOfAccountsControllerFindOptionsV1<TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindOptionsV1>>, TError = unknown>(
  params?: ChartOfAccountsControllerFindOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -294,6 +312,9 @@ export function useChartOfAccountsControllerFindOptionsV1<TData = Awaited<Return
 
 
 
+/**
+ * @summary Get posting chart of account options
+ */
 export const chartOfAccountsControllerFindPostingAccountsV1 = (
     params?: ChartOfAccountsControllerFindPostingAccountsV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -363,6 +384,9 @@ export function useChartOfAccountsControllerFindPostingAccountsV1<TData = Awaite
  params?: ChartOfAccountsControllerFindPostingAccountsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindPostingAccountsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get posting chart of account options
+ */
 
 export function useChartOfAccountsControllerFindPostingAccountsV1<TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindPostingAccountsV1>>, TError = unknown>(
  params?: ChartOfAccountsControllerFindPostingAccountsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindPostingAccountsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -381,6 +405,9 @@ export function useChartOfAccountsControllerFindPostingAccountsV1<TData = Awaite
 
 
 
+/**
+ * @summary Get all chart of account options
+ */
 export const chartOfAccountsControllerFindAllAccountsV1 = (
     params?: ChartOfAccountsControllerFindAllAccountsV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -450,6 +477,9 @@ export function useChartOfAccountsControllerFindAllAccountsV1<TData = Awaited<Re
  params?: ChartOfAccountsControllerFindAllAccountsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindAllAccountsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get all chart of account options
+ */
 
 export function useChartOfAccountsControllerFindAllAccountsV1<TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindAllAccountsV1>>, TError = unknown>(
  params?: ChartOfAccountsControllerFindAllAccountsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindAllAccountsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -468,6 +498,9 @@ export function useChartOfAccountsControllerFindAllAccountsV1<TData = Awaited<Re
 
 
 
+/**
+ * @summary Get chart of accounts tree
+ */
 export const chartOfAccountsControllerFindTreeV1 = (
 
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -536,6 +569,9 @@ export function useChartOfAccountsControllerFindTreeV1<TData = Awaited<ReturnTyp
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindTreeV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get chart of accounts tree
+ */
 
 export function useChartOfAccountsControllerFindTreeV1<TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindTreeV1>>, TError = unknown>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindTreeV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -554,6 +590,9 @@ export function useChartOfAccountsControllerFindTreeV1<TData = Awaited<ReturnTyp
 
 
 
+/**
+ * @summary Get next chart of account code
+ */
 export const chartOfAccountsControllerFindNextCodeV1 = (
     params: ChartOfAccountsControllerFindNextCodeV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -623,6 +662,9 @@ export function useChartOfAccountsControllerFindNextCodeV1<TData = Awaited<Retur
  params: ChartOfAccountsControllerFindNextCodeV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindNextCodeV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get next chart of account code
+ */
 
 export function useChartOfAccountsControllerFindNextCodeV1<TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindNextCodeV1>>, TError = unknown>(
  params: ChartOfAccountsControllerFindNextCodeV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindNextCodeV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -641,6 +683,9 @@ export function useChartOfAccountsControllerFindNextCodeV1<TData = Awaited<Retur
 
 
 
+/**
+ * @summary Get chart of account details by ID
+ */
 export const chartOfAccountsControllerFindOneV1 = (
     id: string,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -709,6 +754,9 @@ export function useChartOfAccountsControllerFindOneV1<TData = Awaited<ReturnType
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindOneV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get chart of account details by ID
+ */
 
 export function useChartOfAccountsControllerFindOneV1<TData = Awaited<ReturnType<typeof chartOfAccountsControllerFindOneV1>>, TError = unknown>(
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof chartOfAccountsControllerFindOneV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -727,6 +775,9 @@ export function useChartOfAccountsControllerFindOneV1<TData = Awaited<ReturnType
 
 
 
+/**
+ * @summary Update a chart of account record
+ */
 export const chartOfAccountsControllerUpdateV1 = (
     id: string,
     updateChartAccountDto: UpdateChartAccountDto,
@@ -775,7 +826,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type ChartOfAccountsControllerUpdateV1MutationBody = UpdateChartAccountDto
     export type ChartOfAccountsControllerUpdateV1MutationError = unknown
 
-    export const useChartOfAccountsControllerUpdateV1 = <TError = unknown,
+    /**
+ * @summary Update a chart of account record
+ */
+export const useChartOfAccountsControllerUpdateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof chartOfAccountsControllerUpdateV1>>, TError,{id: string;data: UpdateChartAccountDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof chartOfAccountsControllerUpdateV1>>,
@@ -785,7 +839,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getChartOfAccountsControllerUpdateV1MutationOptions(options), queryClient);
     }
-    export const chartOfAccountsControllerUpdateStatusV1 = (
+    /**
+ * @summary Update chart of account status
+ */
+export const chartOfAccountsControllerUpdateStatusV1 = (
     id: string,
     updateChartAccountStatusDto: UpdateChartAccountStatusDto,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -833,7 +890,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type ChartOfAccountsControllerUpdateStatusV1MutationBody = UpdateChartAccountStatusDto
     export type ChartOfAccountsControllerUpdateStatusV1MutationError = unknown
 
-    export const useChartOfAccountsControllerUpdateStatusV1 = <TError = unknown,
+    /**
+ * @summary Update chart of account status
+ */
+export const useChartOfAccountsControllerUpdateStatusV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof chartOfAccountsControllerUpdateStatusV1>>, TError,{id: string;data: UpdateChartAccountStatusDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof chartOfAccountsControllerUpdateStatusV1>>,

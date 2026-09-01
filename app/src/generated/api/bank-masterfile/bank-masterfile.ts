@@ -61,6 +61,9 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
+/**
+ * @summary Get paginated list of bank account records
+ */
 export const bankMasterfileControllerFindAllV1 = (
     params?: BankMasterfileControllerFindAllV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -130,6 +133,9 @@ export function useBankMasterfileControllerFindAllV1<TData = Awaited<ReturnType<
  params?: BankMasterfileControllerFindAllV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof bankMasterfileControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get paginated list of bank account records
+ */
 
 export function useBankMasterfileControllerFindAllV1<TData = Awaited<ReturnType<typeof bankMasterfileControllerFindAllV1>>, TError = unknown>(
  params?: BankMasterfileControllerFindAllV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof bankMasterfileControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -148,6 +154,9 @@ export function useBankMasterfileControllerFindAllV1<TData = Awaited<ReturnType<
 
 
 
+/**
+ * @summary Create a bank account record
+ */
 export const bankMasterfileControllerCreateV1 = (
     createBankAccountDto: CreateBankAccountDto,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -195,7 +204,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type BankMasterfileControllerCreateV1MutationBody = CreateBankAccountDto
     export type BankMasterfileControllerCreateV1MutationError = unknown
 
-    export const useBankMasterfileControllerCreateV1 = <TError = unknown,
+    /**
+ * @summary Create a bank account record
+ */
+export const useBankMasterfileControllerCreateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof bankMasterfileControllerCreateV1>>, TError,{data: CreateBankAccountDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof bankMasterfileControllerCreateV1>>,
@@ -205,7 +217,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getBankMasterfileControllerCreateV1MutationOptions(options), queryClient);
     }
-    export const bankMasterfileControllerFindOptionsV1 = (
+    /**
+ * @summary Get bank account options
+ */
+export const bankMasterfileControllerFindOptionsV1 = (
     params?: BankMasterfileControllerFindOptionsV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
@@ -274,6 +289,9 @@ export function useBankMasterfileControllerFindOptionsV1<TData = Awaited<ReturnT
  params?: BankMasterfileControllerFindOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof bankMasterfileControllerFindOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get bank account options
+ */
 
 export function useBankMasterfileControllerFindOptionsV1<TData = Awaited<ReturnType<typeof bankMasterfileControllerFindOptionsV1>>, TError = unknown>(
  params?: BankMasterfileControllerFindOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof bankMasterfileControllerFindOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -292,6 +310,9 @@ export function useBankMasterfileControllerFindOptionsV1<TData = Awaited<ReturnT
 
 
 
+/**
+ * @summary Get next bank account code
+ */
 export const bankMasterfileControllerGetNextAccountCodeV1 = (
 
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -360,6 +381,9 @@ export function useBankMasterfileControllerGetNextAccountCodeV1<TData = Awaited<
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof bankMasterfileControllerGetNextAccountCodeV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get next bank account code
+ */
 
 export function useBankMasterfileControllerGetNextAccountCodeV1<TData = Awaited<ReturnType<typeof bankMasterfileControllerGetNextAccountCodeV1>>, TError = unknown>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof bankMasterfileControllerGetNextAccountCodeV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -378,6 +402,9 @@ export function useBankMasterfileControllerGetNextAccountCodeV1<TData = Awaited<
 
 
 
+/**
+ * @summary Get bank account details by ID
+ */
 export const bankMasterfileControllerFindOneV1 = (
     id: string,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -446,6 +473,9 @@ export function useBankMasterfileControllerFindOneV1<TData = Awaited<ReturnType<
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof bankMasterfileControllerFindOneV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get bank account details by ID
+ */
 
 export function useBankMasterfileControllerFindOneV1<TData = Awaited<ReturnType<typeof bankMasterfileControllerFindOneV1>>, TError = unknown>(
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof bankMasterfileControllerFindOneV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -464,6 +494,9 @@ export function useBankMasterfileControllerFindOneV1<TData = Awaited<ReturnType<
 
 
 
+/**
+ * @summary Update a bank account record
+ */
 export const bankMasterfileControllerUpdateV1 = (
     id: string,
     updateBankAccountDto: UpdateBankAccountDto,
@@ -512,7 +545,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type BankMasterfileControllerUpdateV1MutationBody = UpdateBankAccountDto
     export type BankMasterfileControllerUpdateV1MutationError = unknown
 
-    export const useBankMasterfileControllerUpdateV1 = <TError = unknown,
+    /**
+ * @summary Update a bank account record
+ */
+export const useBankMasterfileControllerUpdateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof bankMasterfileControllerUpdateV1>>, TError,{id: string;data: UpdateBankAccountDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof bankMasterfileControllerUpdateV1>>,
@@ -522,7 +558,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getBankMasterfileControllerUpdateV1MutationOptions(options), queryClient);
     }
-    export const bankMasterfileControllerImportBankAccountsV1 = (
+    /**
+ * @summary Import bank account records
+ */
+export const bankMasterfileControllerImportBankAccountsV1 = (
     importBankAccountsDto: ImportBankAccountsDto,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
@@ -569,7 +608,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type BankMasterfileControllerImportBankAccountsV1MutationBody = ImportBankAccountsDto
     export type BankMasterfileControllerImportBankAccountsV1MutationError = unknown
 
-    export const useBankMasterfileControllerImportBankAccountsV1 = <TError = unknown,
+    /**
+ * @summary Import bank account records
+ */
+export const useBankMasterfileControllerImportBankAccountsV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof bankMasterfileControllerImportBankAccountsV1>>, TError,{data: ImportBankAccountsDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof bankMasterfileControllerImportBankAccountsV1>>,
@@ -579,7 +621,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getBankMasterfileControllerImportBankAccountsV1MutationOptions(options), queryClient);
     }
-    export const bankMasterfileControllerUpdateStatusV1 = (
+    /**
+ * @summary Update bank account status
+ */
+export const bankMasterfileControllerUpdateStatusV1 = (
     id: string,
     updateBankAccountStatusDto: UpdateBankAccountStatusDto,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -627,7 +672,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type BankMasterfileControllerUpdateStatusV1MutationBody = UpdateBankAccountStatusDto
     export type BankMasterfileControllerUpdateStatusV1MutationError = unknown
 
-    export const useBankMasterfileControllerUpdateStatusV1 = <TError = unknown,
+    /**
+ * @summary Update bank account status
+ */
+export const useBankMasterfileControllerUpdateStatusV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof bankMasterfileControllerUpdateStatusV1>>, TError,{id: string;data: UpdateBankAccountStatusDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof bankMasterfileControllerUpdateStatusV1>>,

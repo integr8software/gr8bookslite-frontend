@@ -51,6 +51,9 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
+/**
+ * @summary Get list of item variation records
+ */
 export const itemVariationsControllerFindAllV1 = (
 
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -119,6 +122,9 @@ export function useItemVariationsControllerFindAllV1<TData = Awaited<ReturnType<
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof itemVariationsControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get list of item variation records
+ */
 
 export function useItemVariationsControllerFindAllV1<TData = Awaited<ReturnType<typeof itemVariationsControllerFindAllV1>>, TError = unknown>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof itemVariationsControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -137,6 +143,9 @@ export function useItemVariationsControllerFindAllV1<TData = Awaited<ReturnType<
 
 
 
+/**
+ * @summary Create an item variation record
+ */
 export const itemVariationsControllerCreateV1 = (
     createItemVariationDto: CreateItemVariationDto,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -184,7 +193,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type ItemVariationsControllerCreateV1MutationBody = CreateItemVariationDto
     export type ItemVariationsControllerCreateV1MutationError = unknown
 
-    export const useItemVariationsControllerCreateV1 = <TError = unknown,
+    /**
+ * @summary Create an item variation record
+ */
+export const useItemVariationsControllerCreateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof itemVariationsControllerCreateV1>>, TError,{data: CreateItemVariationDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof itemVariationsControllerCreateV1>>,
@@ -194,7 +206,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getItemVariationsControllerCreateV1MutationOptions(options), queryClient);
     }
-    export const itemVariationsControllerFindOptionsV1 = (
+    /**
+ * @summary Get item variation options
+ */
+export const itemVariationsControllerFindOptionsV1 = (
 
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
@@ -262,6 +277,9 @@ export function useItemVariationsControllerFindOptionsV1<TData = Awaited<ReturnT
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof itemVariationsControllerFindOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get item variation options
+ */
 
 export function useItemVariationsControllerFindOptionsV1<TData = Awaited<ReturnType<typeof itemVariationsControllerFindOptionsV1>>, TError = unknown>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof itemVariationsControllerFindOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -280,6 +298,9 @@ export function useItemVariationsControllerFindOptionsV1<TData = Awaited<ReturnT
 
 
 
+/**
+ * @summary Update an item variation record
+ */
 export const itemVariationsControllerUpdateV1 = (
     id: string,
     updateItemVariationDto: UpdateItemVariationDto,
@@ -328,7 +349,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type ItemVariationsControllerUpdateV1MutationBody = UpdateItemVariationDto
     export type ItemVariationsControllerUpdateV1MutationError = unknown
 
-    export const useItemVariationsControllerUpdateV1 = <TError = unknown,
+    /**
+ * @summary Update an item variation record
+ */
+export const useItemVariationsControllerUpdateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof itemVariationsControllerUpdateV1>>, TError,{id: string;data: UpdateItemVariationDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof itemVariationsControllerUpdateV1>>,

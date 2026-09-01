@@ -59,6 +59,9 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
+/**
+ * @summary Get paginated list of unit of measurement records
+ */
 export const unitOfMeasurementControllerFindAllV1 = (
     params?: UnitOfMeasurementControllerFindAllV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -128,6 +131,9 @@ export function useUnitOfMeasurementControllerFindAllV1<TData = Awaited<ReturnTy
  params?: UnitOfMeasurementControllerFindAllV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof unitOfMeasurementControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get paginated list of unit of measurement records
+ */
 
 export function useUnitOfMeasurementControllerFindAllV1<TData = Awaited<ReturnType<typeof unitOfMeasurementControllerFindAllV1>>, TError = unknown>(
  params?: UnitOfMeasurementControllerFindAllV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof unitOfMeasurementControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -146,6 +152,9 @@ export function useUnitOfMeasurementControllerFindAllV1<TData = Awaited<ReturnTy
 
 
 
+/**
+ * @summary Create a unit of measurement record
+ */
 export const unitOfMeasurementControllerCreateV1 = (
     createUnitOfMeasurementDto: CreateUnitOfMeasurementDto,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -193,7 +202,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type UnitOfMeasurementControllerCreateV1MutationBody = CreateUnitOfMeasurementDto
     export type UnitOfMeasurementControllerCreateV1MutationError = unknown
 
-    export const useUnitOfMeasurementControllerCreateV1 = <TError = unknown,
+    /**
+ * @summary Create a unit of measurement record
+ */
+export const useUnitOfMeasurementControllerCreateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof unitOfMeasurementControllerCreateV1>>, TError,{data: CreateUnitOfMeasurementDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof unitOfMeasurementControllerCreateV1>>,
@@ -203,7 +215,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getUnitOfMeasurementControllerCreateV1MutationOptions(options), queryClient);
     }
-    export const unitOfMeasurementControllerFindOptionsV1 = (
+    /**
+ * @summary Get unit of measurement options
+ */
+export const unitOfMeasurementControllerFindOptionsV1 = (
     params?: UnitOfMeasurementControllerFindOptionsV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
@@ -272,6 +287,9 @@ export function useUnitOfMeasurementControllerFindOptionsV1<TData = Awaited<Retu
  params?: UnitOfMeasurementControllerFindOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof unitOfMeasurementControllerFindOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get unit of measurement options
+ */
 
 export function useUnitOfMeasurementControllerFindOptionsV1<TData = Awaited<ReturnType<typeof unitOfMeasurementControllerFindOptionsV1>>, TError = unknown>(
  params?: UnitOfMeasurementControllerFindOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof unitOfMeasurementControllerFindOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -290,6 +308,9 @@ export function useUnitOfMeasurementControllerFindOptionsV1<TData = Awaited<Retu
 
 
 
+/**
+ * @summary Get unit of measurement details by ID
+ */
 export const unitOfMeasurementControllerFindOneV1 = (
     id: string,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -358,6 +379,9 @@ export function useUnitOfMeasurementControllerFindOneV1<TData = Awaited<ReturnTy
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof unitOfMeasurementControllerFindOneV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get unit of measurement details by ID
+ */
 
 export function useUnitOfMeasurementControllerFindOneV1<TData = Awaited<ReturnType<typeof unitOfMeasurementControllerFindOneV1>>, TError = unknown>(
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof unitOfMeasurementControllerFindOneV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -376,6 +400,9 @@ export function useUnitOfMeasurementControllerFindOneV1<TData = Awaited<ReturnTy
 
 
 
+/**
+ * @summary Update a unit of measurement record
+ */
 export const unitOfMeasurementControllerUpdateV1 = (
     id: string,
     updateUnitOfMeasurementDto: UpdateUnitOfMeasurementDto,
@@ -424,7 +451,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type UnitOfMeasurementControllerUpdateV1MutationBody = UpdateUnitOfMeasurementDto
     export type UnitOfMeasurementControllerUpdateV1MutationError = unknown
 
-    export const useUnitOfMeasurementControllerUpdateV1 = <TError = unknown,
+    /**
+ * @summary Update a unit of measurement record
+ */
+export const useUnitOfMeasurementControllerUpdateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof unitOfMeasurementControllerUpdateV1>>, TError,{id: string;data: UpdateUnitOfMeasurementDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof unitOfMeasurementControllerUpdateV1>>,
@@ -434,7 +464,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getUnitOfMeasurementControllerUpdateV1MutationOptions(options), queryClient);
     }
-    export const unitOfMeasurementControllerImportUnitsV1 = (
+    /**
+ * @summary Import unit of measurement records
+ */
+export const unitOfMeasurementControllerImportUnitsV1 = (
     importUnitOfMeasurementsDto: ImportUnitOfMeasurementsDto,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
@@ -481,7 +514,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type UnitOfMeasurementControllerImportUnitsV1MutationBody = ImportUnitOfMeasurementsDto
     export type UnitOfMeasurementControllerImportUnitsV1MutationError = unknown
 
-    export const useUnitOfMeasurementControllerImportUnitsV1 = <TError = unknown,
+    /**
+ * @summary Import unit of measurement records
+ */
+export const useUnitOfMeasurementControllerImportUnitsV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof unitOfMeasurementControllerImportUnitsV1>>, TError,{data: ImportUnitOfMeasurementsDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof unitOfMeasurementControllerImportUnitsV1>>,

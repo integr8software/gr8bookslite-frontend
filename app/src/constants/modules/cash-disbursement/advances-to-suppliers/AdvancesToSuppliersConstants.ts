@@ -113,7 +113,6 @@ export const AdvancesToSuppliersActionTabs: {
 export function canEditAdvancesToSuppliers(status: AdvancesToSuppliersStatus) {
   return (
     status === AdvancesToSuppliersStatuses.draft ||
-    status === AdvancesToSuppliersStatuses.forApproval ||
     status === AdvancesToSuppliersStatuses.disapproved
   );
 }

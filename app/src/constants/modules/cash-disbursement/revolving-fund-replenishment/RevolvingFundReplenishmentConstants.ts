@@ -251,7 +251,6 @@ export const RevolvingFundReplenishmentEntryEwtCodeOptions: AppAdvancedDropdownO
 export function canEditRevolvingFundReplenishment(status: RevolvingFundReplenishmentStatus) {
   return (
     status === RevolvingFundReplenishmentStatuses.draft ||
-    status === RevolvingFundReplenishmentStatuses.forApproval ||
     status === RevolvingFundReplenishmentStatuses.disapproved
   );
 }

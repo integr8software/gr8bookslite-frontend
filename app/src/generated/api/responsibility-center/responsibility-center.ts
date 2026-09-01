@@ -66,6 +66,9 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
+/**
+ * @summary Get paginated list of responsibility center records
+ */
 export const responsibilityCenterControllerFindAllV1 = (
     params?: ResponsibilityCenterControllerFindAllV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -135,6 +138,9 @@ export function useResponsibilityCenterControllerFindAllV1<TData = Awaited<Retur
  params?: ResponsibilityCenterControllerFindAllV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof responsibilityCenterControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get paginated list of responsibility center records
+ */
 
 export function useResponsibilityCenterControllerFindAllV1<TData = Awaited<ReturnType<typeof responsibilityCenterControllerFindAllV1>>, TError = unknown>(
  params?: ResponsibilityCenterControllerFindAllV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof responsibilityCenterControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -153,6 +159,9 @@ export function useResponsibilityCenterControllerFindAllV1<TData = Awaited<Retur
 
 
 
+/**
+ * @summary Create a responsibility center record
+ */
 export const responsibilityCenterControllerCreateV1 = (
     createResponsibilityCenterDto: CreateResponsibilityCenterDto,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -200,7 +209,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type ResponsibilityCenterControllerCreateV1MutationBody = CreateResponsibilityCenterDto
     export type ResponsibilityCenterControllerCreateV1MutationError = unknown
 
-    export const useResponsibilityCenterControllerCreateV1 = <TError = unknown,
+    /**
+ * @summary Create a responsibility center record
+ */
+export const useResponsibilityCenterControllerCreateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof responsibilityCenterControllerCreateV1>>, TError,{data: CreateResponsibilityCenterDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof responsibilityCenterControllerCreateV1>>,
@@ -210,7 +222,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getResponsibilityCenterControllerCreateV1MutationOptions(options), queryClient);
     }
-    export const responsibilityCenterControllerFindOptionsV1 = (
+    /**
+ * @summary Get responsibility center options
+ */
+export const responsibilityCenterControllerFindOptionsV1 = (
     params?: ResponsibilityCenterControllerFindOptionsV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
@@ -279,6 +294,9 @@ export function useResponsibilityCenterControllerFindOptionsV1<TData = Awaited<R
  params?: ResponsibilityCenterControllerFindOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof responsibilityCenterControllerFindOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get responsibility center options
+ */
 
 export function useResponsibilityCenterControllerFindOptionsV1<TData = Awaited<ReturnType<typeof responsibilityCenterControllerFindOptionsV1>>, TError = unknown>(
  params?: ResponsibilityCenterControllerFindOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof responsibilityCenterControllerFindOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -297,6 +315,9 @@ export function useResponsibilityCenterControllerFindOptionsV1<TData = Awaited<R
 
 
 
+/**
+ * @summary Get responsibility center options by type
+ */
 export const responsibilityCenterControllerFindOptionsByTypeV1 = (
     type: string,
     params?: ResponsibilityCenterControllerFindOptionsByTypeV1Params,
@@ -372,6 +393,9 @@ export function useResponsibilityCenterControllerFindOptionsByTypeV1<TData = Awa
     params?: ResponsibilityCenterControllerFindOptionsByTypeV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof responsibilityCenterControllerFindOptionsByTypeV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get responsibility center options by type
+ */
 
 export function useResponsibilityCenterControllerFindOptionsByTypeV1<TData = Awaited<ReturnType<typeof responsibilityCenterControllerFindOptionsByTypeV1>>, TError = unknown>(
  type: string,
@@ -391,6 +415,9 @@ export function useResponsibilityCenterControllerFindOptionsByTypeV1<TData = Awa
 
 
 
+/**
+ * @summary Get responsibility center tree
+ */
 export const responsibilityCenterControllerFindTreeV1 = (
     params?: ResponsibilityCenterControllerFindTreeV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -460,6 +487,9 @@ export function useResponsibilityCenterControllerFindTreeV1<TData = Awaited<Retu
  params?: ResponsibilityCenterControllerFindTreeV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof responsibilityCenterControllerFindTreeV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get responsibility center tree
+ */
 
 export function useResponsibilityCenterControllerFindTreeV1<TData = Awaited<ReturnType<typeof responsibilityCenterControllerFindTreeV1>>, TError = unknown>(
  params?: ResponsibilityCenterControllerFindTreeV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof responsibilityCenterControllerFindTreeV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -478,6 +508,9 @@ export function useResponsibilityCenterControllerFindTreeV1<TData = Awaited<Retu
 
 
 
+/**
+ * @summary Get responsibility center classifications
+ */
 export const responsibilityCenterControllerFindClassificationsV1 = (
 
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -546,6 +579,9 @@ export function useResponsibilityCenterControllerFindClassificationsV1<TData = A
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof responsibilityCenterControllerFindClassificationsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get responsibility center classifications
+ */
 
 export function useResponsibilityCenterControllerFindClassificationsV1<TData = Awaited<ReturnType<typeof responsibilityCenterControllerFindClassificationsV1>>, TError = unknown>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof responsibilityCenterControllerFindClassificationsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -564,6 +600,9 @@ export function useResponsibilityCenterControllerFindClassificationsV1<TData = A
 
 
 
+/**
+ * @summary Get responsibility center types
+ */
 export const responsibilityCenterControllerFindTypesV1 = (
     params?: ResponsibilityCenterControllerFindTypesV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -633,6 +672,9 @@ export function useResponsibilityCenterControllerFindTypesV1<TData = Awaited<Ret
  params?: ResponsibilityCenterControllerFindTypesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof responsibilityCenterControllerFindTypesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get responsibility center types
+ */
 
 export function useResponsibilityCenterControllerFindTypesV1<TData = Awaited<ReturnType<typeof responsibilityCenterControllerFindTypesV1>>, TError = unknown>(
  params?: ResponsibilityCenterControllerFindTypesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof responsibilityCenterControllerFindTypesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -651,6 +693,9 @@ export function useResponsibilityCenterControllerFindTypesV1<TData = Awaited<Ret
 
 
 
+/**
+ * @summary Get suggested responsibility center code
+ */
 export const responsibilityCenterControllerSuggestCodeV1 = (
     params: ResponsibilityCenterControllerSuggestCodeV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -720,6 +765,9 @@ export function useResponsibilityCenterControllerSuggestCodeV1<TData = Awaited<R
  params: ResponsibilityCenterControllerSuggestCodeV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof responsibilityCenterControllerSuggestCodeV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get suggested responsibility center code
+ */
 
 export function useResponsibilityCenterControllerSuggestCodeV1<TData = Awaited<ReturnType<typeof responsibilityCenterControllerSuggestCodeV1>>, TError = unknown>(
  params: ResponsibilityCenterControllerSuggestCodeV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof responsibilityCenterControllerSuggestCodeV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -738,6 +786,9 @@ export function useResponsibilityCenterControllerSuggestCodeV1<TData = Awaited<R
 
 
 
+/**
+ * @summary Get responsibility center details by ID
+ */
 export const responsibilityCenterControllerFindOneV1 = (
     id: string,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -806,6 +857,9 @@ export function useResponsibilityCenterControllerFindOneV1<TData = Awaited<Retur
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof responsibilityCenterControllerFindOneV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get responsibility center details by ID
+ */
 
 export function useResponsibilityCenterControllerFindOneV1<TData = Awaited<ReturnType<typeof responsibilityCenterControllerFindOneV1>>, TError = unknown>(
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof responsibilityCenterControllerFindOneV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -824,6 +878,9 @@ export function useResponsibilityCenterControllerFindOneV1<TData = Awaited<Retur
 
 
 
+/**
+ * @summary Update a responsibility center record
+ */
 export const responsibilityCenterControllerUpdateV1 = (
     id: string,
     updateResponsibilityCenterDto: UpdateResponsibilityCenterDto,
@@ -872,7 +929,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type ResponsibilityCenterControllerUpdateV1MutationBody = UpdateResponsibilityCenterDto
     export type ResponsibilityCenterControllerUpdateV1MutationError = unknown
 
-    export const useResponsibilityCenterControllerUpdateV1 = <TError = unknown,
+    /**
+ * @summary Update a responsibility center record
+ */
+export const useResponsibilityCenterControllerUpdateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof responsibilityCenterControllerUpdateV1>>, TError,{id: string;data: UpdateResponsibilityCenterDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof responsibilityCenterControllerUpdateV1>>,
@@ -882,7 +942,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getResponsibilityCenterControllerUpdateV1MutationOptions(options), queryClient);
     }
-    export const responsibilityCenterControllerUpdateStatusV1 = (
+    /**
+ * @summary Update responsibility center status
+ */
+export const responsibilityCenterControllerUpdateStatusV1 = (
     id: string,
     updateResponsibilityCenterStatusDto: UpdateResponsibilityCenterStatusDto,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -930,7 +993,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type ResponsibilityCenterControllerUpdateStatusV1MutationBody = UpdateResponsibilityCenterStatusDto
     export type ResponsibilityCenterControllerUpdateStatusV1MutationError = unknown
 
-    export const useResponsibilityCenterControllerUpdateStatusV1 = <TError = unknown,
+    /**
+ * @summary Update responsibility center status
+ */
+export const useResponsibilityCenterControllerUpdateStatusV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof responsibilityCenterControllerUpdateStatusV1>>, TError,{id: string;data: UpdateResponsibilityCenterStatusDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof responsibilityCenterControllerUpdateStatusV1>>,

@@ -94,14 +94,14 @@ export function CashAdvanceMultipleEntryDetailsFields({
       <div className="grid gap-5 xl:grid-cols-3">
         {/* Column 1: Name & Lookup Fields */}
         <div className="grid min-w-0 content-start gap-5">
-          <TransactionField label="Party Name" isRequired>
+          <TransactionField label="Employee Name" isRequired>
             <AppLookupDropdown
               value={values.partyCode}
               options={partyOptions}
               readOnly={isReadonly}
-              placeholder="Select Party Name"
-              searchPlaceholder="Search Party Name"
-              addAction={!isReadonly ? { label: "Add Party Name", onClick: onOpenPartyDrawer } : undefined}
+              placeholder="Select Employee Name"
+              searchPlaceholder="Search Employee Name"
+              addAction={!isReadonly ? { label: "Add Employee Name", onClick: onOpenPartyDrawer } : undefined}
               onChange={(code, name) => {
                 const selectedParty = partyOptions.find((option) => option.value === code);
                 onUpdateField("partyCode", selectedParty?.partyCode ?? code);
@@ -159,9 +159,9 @@ export function CashAdvanceMultipleEntryDetailsFields({
             value={values.partyCode}
             isReadonly
             isRequired
-            label="Party Code"
+            label="Employee Code"
             onValueChange={(value) => onUpdateField("partyCode", value)}
-            placeholder="Party Code"
+            placeholder="Employee Code"
           />
 
           <TransactionTextField

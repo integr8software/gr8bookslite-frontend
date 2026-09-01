@@ -268,7 +268,7 @@ export const CashVoucherDefaultColumnVisibility: VisibilityState = {
 export const CashVoucherDefaultSorting: SortingState = [{ id: "documentDate", desc: true }];
 
 export function canEditCashVoucherStatus(status: CashVoucherStatus) {
-  return status === CashVoucherStatuses.draft || status === CashVoucherStatuses.forApproval;
+  return status === CashVoucherStatuses.draft;
 }
 
 export function canApproveCashVoucherStatus(status: CashVoucherStatus) {

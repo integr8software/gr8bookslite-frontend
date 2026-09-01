@@ -27,7 +27,7 @@ export function createCashAdvanceMultipleEntryItemColumns({
 
   return {
     partyCode: {
-      header: "Party Code",
+      header: "Employee Code",
       id: "partyCode",
       width: 125,
       widthClassName: "w-[7.75rem]",
@@ -36,7 +36,7 @@ export function createCashAdvanceMultipleEntryItemColumns({
       ),
     },
     partyName: {
-      header: "Party Name",
+      header: "Employee Name",
       id: "partyName",
       width: 220,
       widthClassName: "w-[13.75rem]",
@@ -45,24 +45,18 @@ export function createCashAdvanceMultipleEntryItemColumns({
           id={context.fieldId}
           name={context.fieldName}
           readOnly={isReadonly}
-          options={partySelectOptions}
-          placeholder="Select Party Name"
-          searchPlaceholder="Search Party Name"
+          options={getAvailableEmployeeOptions(partySelectOptions, rows, row.id)}
+          placeholder="Select Employee Name"
+          searchPlaceholder="Search Employee Name"
           value={row.partyCode}
-          addAction={!isReadonly ? { label: "Add Party Name", onClick: () => onOpenItemPartyDrawer(row.id) } : undefined}
+          addAction={!isReadonly ? { label: "Add Employee Name", onClick: () => onOpenItemPartyDrawer(row.id) } : undefined}
           onChange={(nextValue) => {
             const partyCode = String(nextValue);
             const employee = employeeOptions?.find((opt) => opt.partyCode === partyCode);
             const partyName = employee?.partyName ?? "";
             const cashAdvanceBalance = employee?.cashAdvanceBalance ?? "";
             const cashAdvanceLimit = employee?.cashAdvanceLimit ?? "";
-            const amount = limitCashAdvanceAmount(rows, row.id, row.amount, {
-              cashAdvanceBalance,
-              partyCode,
-              partyName,
-            });
-
-            onUpdateEntry(row.id, { amount, cashAdvanceBalance, cashAdvanceLimit, partyCode, partyName });
+            onUpdateEntry(row.id, { cashAdvanceBalance, cashAdvanceLimit, partyCode, partyName });
           }}
         />
       ),
@@ -79,11 +73,7 @@ export function createCashAdvanceMultipleEntryItemColumns({
           readOnly={isReadonly}
           value={row.amount}
           placeholder="0.00"
-          onChange={(value) =>
-            onUpdateEntry(row.id, {
-              amount: limitCashAdvanceAmount(rows, row.id, value),
-            })
-          }
+          onChange={(value) => onUpdateEntry(row.id, { amount: value })}
         />
       ),
     },
@@ -266,7 +256,7 @@ export function createCashAdvanceMultipleEntryAccountingColumns({
       ),
     },
     partyCode: {
-      header: "Party Code",
+      header: "Employee Code",
       id: "partyCode",
       width: 130,
       widthClassName: "w-[8.125rem]",
@@ -275,7 +265,7 @@ export function createCashAdvanceMultipleEntryAccountingColumns({
       ),
     },
     partyName: {
-      header: "Party Name",
+      header: "Employee Name",
       id: "partyName",
       width: 200,
       widthClassName: "w-[12.5rem]",
@@ -284,11 +274,11 @@ export function createCashAdvanceMultipleEntryAccountingColumns({
           id={context.fieldId}
           name={context.fieldName}
           options={partySelectOptions}
-          placeholder="Select Party Name"
-          searchPlaceholder="Search Party Name"
+          placeholder="Select Employee Name"
+          searchPlaceholder="Search Employee Name"
           readOnly={isReadonly}
           value={row.partyCode}
-          addAction={!isReadonly ? { label: "Add Party Name", onClick: () => onOpenAccountingPartyDrawer(row.id) } : undefined}
+          addAction={!isReadonly ? { label: "Add Employee Name", onClick: () => onOpenAccountingPartyDrawer(row.id) } : undefined}
           onChange={(nextValue) => {
             const partyCode = String(nextValue);
             const employee = employeeOptions?.find((opt) => opt.partyCode === partyCode);
@@ -371,26 +361,19 @@ function createPartyOptions(
   }));
 }
 
-function limitCashAdvanceAmount(
+function getAvailableEmployeeOptions(
+  options: AppAdvancedDropdownOption[],
   rows: CashAdvanceMultipleEntryItem[],
-  rowId: string,
-  amount: string,
-  partyOverrides?: Pick<CashAdvanceMultipleEntryItem, "cashAdvanceBalance" | "partyCode" | "partyName">,
+  currentRowId: string,
 ) {
-  const currentRow = rows.find((row) => row.id === rowId);
-  if (!currentRow) return amount;
+  const selectedEmployeeCodes = new Set(
+    rows
+      .filter((row) => row.id !== currentRowId)
+      .map((row) => row.partyCode.trim())
+      .filter(Boolean),
+  );
 
-  const row = { ...currentRow, ...partyOverrides };
-  if (!row.cashAdvanceBalance.trim()) return amount;
-
-  const partyKey = row.partyCode.trim() || row.partyName.trim() || row.id;
-  const usedBalance = rows.reduce((total, otherRow) => {
-    const otherPartyKey = otherRow.partyCode.trim() || otherRow.partyName.trim() || otherRow.id;
-    return otherRow.id !== rowId && otherPartyKey === partyKey ? total + parseMoneyNumberInput(otherRow.amount) : total;
-  }, 0);
-  const availableBalance = Math.max(0, parseMoneyNumberInput(row.cashAdvanceBalance) - usedBalance);
-
-  return parseMoneyNumberInput(amount) > availableBalance ? formatCashAdvanceMultipleEntryAmount(availableBalance) : amount;
+  return options.filter((option) => !selectedEmployeeCodes.has(option.value));
 }
 
 function calculateTotalCashAdvanced(row: CashAdvanceMultipleEntryItem) {

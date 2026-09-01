@@ -1,17 +1,20 @@
 "use client";
 
 import {
-  revolvingFundReplenishmentControllerCreate,
-  revolvingFundReplenishmentControllerFindAll,
-  revolvingFundReplenishmentControllerFindOne,
-  revolvingFundReplenishmentControllerFindParties,
-  revolvingFundReplenishmentControllerFindPostingAccounts,
-  revolvingFundReplenishmentControllerFindResponsibilityCenters,
-  revolvingFundReplenishmentControllerRemove,
-  revolvingFundReplenishmentControllerSuggestTransactionNo,
-  revolvingFundReplenishmentControllerUpdate,
-  revolvingFundReplenishmentControllerUpdateStatus,
-} from "@/app/src/generated/api/cash-disbursement-revolving-fund-replenishment/cash-disbursement-revolving-fund-replenishment";
+  revolvingFundReplenishmentControllerCreateV1 as revolvingFundReplenishmentControllerCreate,
+  revolvingFundReplenishmentControllerFindAllV1 as revolvingFundReplenishmentControllerFindAll,
+  revolvingFundReplenishmentControllerFindOneV1 as revolvingFundReplenishmentControllerFindOne,
+  revolvingFundReplenishmentControllerRemoveV1 as revolvingFundReplenishmentControllerRemove,
+  revolvingFundReplenishmentControllerSuggestTransactionNumberV1,
+  revolvingFundReplenishmentControllerUpdateStatusV1 as revolvingFundReplenishmentControllerUpdateStatus,
+  revolvingFundReplenishmentControllerUpdateV1 as revolvingFundReplenishmentControllerUpdate,
+} from "@/app/src/generated/api/revolving-fund-replenishment/revolving-fund-replenishment";
+import { fetchTransactionNumber } from "@/app/src/services/shared/transaction-number/TransactionNumberApi";
+import {
+  fetchMaintenancePartyOptions,
+  fetchMaintenancePostingAccountOptions,
+  fetchMaintenanceResponsibilityCenterOptions,
+} from "@/app/src/services/shared/maintenance/MaintenanceLookupApi";
 import type {
   CreateRevolvingFundReplenishmentDto,
   RevolvingFundReplenishmentResponseDto,
@@ -229,8 +232,7 @@ export async function fetchRevolvingFundReplenishmentById(id: string): Promise<R
 }
 
 export async function fetchNextRevolvingFundReplenishmentNo(branchUnitId?: number): Promise<string> {
-  const response: any = await revolvingFundReplenishmentControllerSuggestTransactionNo({ branchUnitId });
-  return response?.nextTransNo ?? response?.transactionNo ?? "";
+  return fetchTransactionNumber(revolvingFundReplenishmentControllerSuggestTransactionNumberV1, { branchUnitId });
 }
 
 export async function createRevolvingFundReplenishmentApi(values: RevolvingFundReplenishmentFormValues): Promise<RevolvingFundReplenishmentRecord> {
@@ -257,44 +259,13 @@ export async function deleteRevolvingFundReplenishmentApi(id: string): Promise<{
 }
 
 export async function fetchRevolvingFundReplenishmentPartyOptions(): Promise<AppAdvancedDropdownOption[]> {
-  const response: any = await revolvingFundReplenishmentControllerFindParties();
-  const parties = response?.parties ?? response?.options ?? response?.items ?? [];
-  return parties.map((p: any) => ({
-    name: p.partyName || p.name,
-    label: p.partyCode || p.label,
-    value: p.partyCode || p.value,
-    description: p.partyName,
-    partyId: p.partyId || p.id,
-    partyCode: p.partyCode,
-    partyName: p.partyName,
-    defaultPurchaseInputVatTaxSourceKey: p.defaultPurchaseInputVatTaxSourceKey ?? "",
-    defaultPurchaseEwtTaxSourceKey: p.defaultPurchaseEwtTaxSourceKey ?? "",
-  }));
+  return fetchMaintenancePartyOptions();
 }
 
 export async function fetchRevolvingFundReplenishmentAccountOptions(): Promise<AppAdvancedDropdownOption[]> {
-  const response: any = await revolvingFundReplenishmentControllerFindPostingAccounts();
-  const accounts = response?.accounts ?? response?.options ?? response?.items ?? [];
-  return accounts.map((a: any) => ({
-    name: a.accountTitle || a.name,
-    label: a.accountCode || a.label,
-    value: a.accountCode || a.value,
-    description: a.accountTitle,
-    accountId: a.accountId || a.id,
-    accountCode: a.accountCode,
-    accountTitle: a.accountTitle,
-  }));
+  return fetchMaintenancePostingAccountOptions();
 }
 
 export async function fetchRevolvingFundReplenishmentResponsibilityCenters(): Promise<AppAdvancedDropdownOption[]> {
-  const response: any = await revolvingFundReplenishmentControllerFindResponsibilityCenters();
-  const centers = response?.centers ?? response?.responsibilityCenters ?? response?.options ?? response?.items ?? [];
-  return centers.map((rc: any) => ({
-    name: rc.name,
-    label: rc.code || rc.label,
-    value: rc.code || rc.value,
-    description: rc.name,
-    centerId: rc.centerId || rc.id,
-    code: rc.code,
-  }));
+  return fetchMaintenanceResponsibilityCenterOptions();
 }

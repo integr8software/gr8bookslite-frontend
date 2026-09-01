@@ -97,7 +97,7 @@ function createCashAdvanceMultipleEntryPdfDefinition(
       },
       {
         columns: [
-          { text: [{ text: "Party Name: ", bold: true }, values.partyName || "-"] },
+          { text: [{ text: "Employee Name: ", bold: true }, values.partyName || "-"] },
           { text: [{ text: "Document Date: ", bold: true }, formatDate(values.documentDate)] },
         ],
         margin: [0, 0, 0, 8],
@@ -133,7 +133,7 @@ function createCashAdvanceMultipleEntryPdfDefinition(
           body: [
             [
               { text: "#", bold: true, alignment: "center" },
-              { text: "Party Name", bold: true },
+              { text: "Employee Name", bold: true },
               { text: "Responsibility Center", bold: true },
               { text: "Remarks", bold: true },
               { text: "Amount", bold: true, alignment: "right" },

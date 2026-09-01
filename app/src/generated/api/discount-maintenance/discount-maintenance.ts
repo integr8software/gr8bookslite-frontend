@@ -60,6 +60,9 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
+/**
+ * @summary Get paginated list of discount records
+ */
 export const discountMaintenanceControllerFindAllV1 = (
     params?: DiscountMaintenanceControllerFindAllV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -129,6 +132,9 @@ export function useDiscountMaintenanceControllerFindAllV1<TData = Awaited<Return
  params?: DiscountMaintenanceControllerFindAllV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof discountMaintenanceControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get paginated list of discount records
+ */
 
 export function useDiscountMaintenanceControllerFindAllV1<TData = Awaited<ReturnType<typeof discountMaintenanceControllerFindAllV1>>, TError = unknown>(
  params?: DiscountMaintenanceControllerFindAllV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof discountMaintenanceControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -147,6 +153,9 @@ export function useDiscountMaintenanceControllerFindAllV1<TData = Awaited<Return
 
 
 
+/**
+ * @summary Create a discount record
+ */
 export const discountMaintenanceControllerCreateV1 = (
     createDiscountDto: CreateDiscountDto,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -194,7 +203,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type DiscountMaintenanceControllerCreateV1MutationBody = CreateDiscountDto
     export type DiscountMaintenanceControllerCreateV1MutationError = unknown
 
-    export const useDiscountMaintenanceControllerCreateV1 = <TError = unknown,
+    /**
+ * @summary Create a discount record
+ */
+export const useDiscountMaintenanceControllerCreateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof discountMaintenanceControllerCreateV1>>, TError,{data: CreateDiscountDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof discountMaintenanceControllerCreateV1>>,
@@ -204,7 +216,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getDiscountMaintenanceControllerCreateV1MutationOptions(options), queryClient);
     }
-    export const discountMaintenanceControllerFindOptionsV1 = (
+    /**
+ * @summary Get discount options
+ */
+export const discountMaintenanceControllerFindOptionsV1 = (
     params?: DiscountMaintenanceControllerFindOptionsV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
@@ -273,6 +288,9 @@ export function useDiscountMaintenanceControllerFindOptionsV1<TData = Awaited<Re
  params?: DiscountMaintenanceControllerFindOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof discountMaintenanceControllerFindOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get discount options
+ */
 
 export function useDiscountMaintenanceControllerFindOptionsV1<TData = Awaited<ReturnType<typeof discountMaintenanceControllerFindOptionsV1>>, TError = unknown>(
  params?: DiscountMaintenanceControllerFindOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof discountMaintenanceControllerFindOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -291,6 +309,9 @@ export function useDiscountMaintenanceControllerFindOptionsV1<TData = Awaited<Re
 
 
 
+/**
+ * @summary Get discount options by type
+ */
 export const discountMaintenanceControllerFindOptionsByTypeV1 = (
     type: string,
     params?: DiscountMaintenanceControllerFindOptionsByTypeV1Params,
@@ -366,6 +387,9 @@ export function useDiscountMaintenanceControllerFindOptionsByTypeV1<TData = Awai
     params?: DiscountMaintenanceControllerFindOptionsByTypeV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof discountMaintenanceControllerFindOptionsByTypeV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get discount options by type
+ */
 
 export function useDiscountMaintenanceControllerFindOptionsByTypeV1<TData = Awaited<ReturnType<typeof discountMaintenanceControllerFindOptionsByTypeV1>>, TError = unknown>(
  type: string,
@@ -385,6 +409,9 @@ export function useDiscountMaintenanceControllerFindOptionsByTypeV1<TData = Awai
 
 
 
+/**
+ * @summary Get discount details by ID
+ */
 export const discountMaintenanceControllerFindOneV1 = (
     id: string,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -453,6 +480,9 @@ export function useDiscountMaintenanceControllerFindOneV1<TData = Awaited<Return
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof discountMaintenanceControllerFindOneV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get discount details by ID
+ */
 
 export function useDiscountMaintenanceControllerFindOneV1<TData = Awaited<ReturnType<typeof discountMaintenanceControllerFindOneV1>>, TError = unknown>(
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof discountMaintenanceControllerFindOneV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -471,6 +501,9 @@ export function useDiscountMaintenanceControllerFindOneV1<TData = Awaited<Return
 
 
 
+/**
+ * @summary Update a discount record
+ */
 export const discountMaintenanceControllerUpdateV1 = (
     id: string,
     updateDiscountDto: UpdateDiscountDto,
@@ -519,7 +552,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type DiscountMaintenanceControllerUpdateV1MutationBody = UpdateDiscountDto
     export type DiscountMaintenanceControllerUpdateV1MutationError = unknown
 
-    export const useDiscountMaintenanceControllerUpdateV1 = <TError = unknown,
+    /**
+ * @summary Update a discount record
+ */
+export const useDiscountMaintenanceControllerUpdateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof discountMaintenanceControllerUpdateV1>>, TError,{id: string;data: UpdateDiscountDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof discountMaintenanceControllerUpdateV1>>,
@@ -529,7 +565,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getDiscountMaintenanceControllerUpdateV1MutationOptions(options), queryClient);
     }
-    export const discountMaintenanceControllerImportDiscountsV1 = (
+    /**
+ * @summary Import discount records
+ */
+export const discountMaintenanceControllerImportDiscountsV1 = (
     importDiscountsDto: ImportDiscountsDto,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
@@ -576,7 +615,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type DiscountMaintenanceControllerImportDiscountsV1MutationBody = ImportDiscountsDto
     export type DiscountMaintenanceControllerImportDiscountsV1MutationError = unknown
 
-    export const useDiscountMaintenanceControllerImportDiscountsV1 = <TError = unknown,
+    /**
+ * @summary Import discount records
+ */
+export const useDiscountMaintenanceControllerImportDiscountsV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof discountMaintenanceControllerImportDiscountsV1>>, TError,{data: ImportDiscountsDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof discountMaintenanceControllerImportDiscountsV1>>,

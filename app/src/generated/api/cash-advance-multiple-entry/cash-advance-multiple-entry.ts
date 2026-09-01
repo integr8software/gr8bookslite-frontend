@@ -26,7 +26,9 @@ import type {
 
 import type {
   CashAdvanceMultipleEntryControllerFindAllV1Params,
+  CashAdvanceMultipleEntryControllerSuggestTransactionNumberV1Params,
   CreateCashAdvanceMultipleEntryDto,
+  TransactionNumberSuggestionResponseDto,
   UpdateCashAdvanceMultipleEntryDto,
   UpdateCashAdvanceMultipleEntryStatusDto
 } from '../gR8BooksNeoAPI.schemas';
@@ -210,16 +212,17 @@ export const useCashAdvanceMultipleEntryControllerCreateV1 = <TError = unknown,
       return useMutation(getCashAdvanceMultipleEntryControllerCreateV1MutationOptions(options), queryClient);
     }
     /**
- * @summary Get the next CAME transaction number
+ * @summary Suggest a cash advance multiple-entry transaction number
  */
-export const cashAdvanceMultipleEntryControllerGetNextTransactionNoV1 = (
-
+export const cashAdvanceMultipleEntryControllerSuggestTransactionNumberV1 = (
+    params?: CashAdvanceMultipleEntryControllerSuggestTransactionNumberV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
 
 
-      return OrvalApiClient<void>(
-      {url: `/api/v1/cash-disbursement/cash-advance-multiple-entry/next-transaction-no`, method: 'GET', signal
+      return OrvalApiClient<TransactionNumberSuggestionResponseDto>(
+      {url: `/api/v1/cash-disbursement/cash-advance-multiple-entry/transaction-number`, method: 'GET',
+        params, signal
     },
       options);
     }
@@ -227,69 +230,69 @@ export const cashAdvanceMultipleEntryControllerGetNextTransactionNoV1 = (
 
 
 
-export const getCashAdvanceMultipleEntryControllerGetNextTransactionNoV1QueryKey = () => {
+export const getCashAdvanceMultipleEntryControllerSuggestTransactionNumberV1QueryKey = (params?: CashAdvanceMultipleEntryControllerSuggestTransactionNumberV1Params,) => {
     return [
-    `/api/v1/cash-disbursement/cash-advance-multiple-entry/next-transaction-no`
+    `/api/v1/cash-disbursement/cash-advance-multiple-entry/transaction-number`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getCashAdvanceMultipleEntryControllerGetNextTransactionNoV1QueryOptions = <TData = Awaited<ReturnType<typeof cashAdvanceMultipleEntryControllerGetNextTransactionNoV1>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof cashAdvanceMultipleEntryControllerGetNextTransactionNoV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+export const getCashAdvanceMultipleEntryControllerSuggestTransactionNumberV1QueryOptions = <TData = Awaited<ReturnType<typeof cashAdvanceMultipleEntryControllerSuggestTransactionNumberV1>>, TError = unknown>(params?: CashAdvanceMultipleEntryControllerSuggestTransactionNumberV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof cashAdvanceMultipleEntryControllerSuggestTransactionNumberV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getCashAdvanceMultipleEntryControllerGetNextTransactionNoV1QueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getCashAdvanceMultipleEntryControllerSuggestTransactionNumberV1QueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof cashAdvanceMultipleEntryControllerGetNextTransactionNoV1>>> = ({ signal }) => cashAdvanceMultipleEntryControllerGetNextTransactionNoV1(requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof cashAdvanceMultipleEntryControllerSuggestTransactionNumberV1>>> = ({ signal }) => cashAdvanceMultipleEntryControllerSuggestTransactionNumberV1(params, requestOptions, signal);
 
 
 
 
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof cashAdvanceMultipleEntryControllerGetNextTransactionNoV1>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof cashAdvanceMultipleEntryControllerSuggestTransactionNumberV1>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type CashAdvanceMultipleEntryControllerGetNextTransactionNoV1QueryResult = NonNullable<Awaited<ReturnType<typeof cashAdvanceMultipleEntryControllerGetNextTransactionNoV1>>>
-export type CashAdvanceMultipleEntryControllerGetNextTransactionNoV1QueryError = unknown
+export type CashAdvanceMultipleEntryControllerSuggestTransactionNumberV1QueryResult = NonNullable<Awaited<ReturnType<typeof cashAdvanceMultipleEntryControllerSuggestTransactionNumberV1>>>
+export type CashAdvanceMultipleEntryControllerSuggestTransactionNumberV1QueryError = unknown
 
 
-export function useCashAdvanceMultipleEntryControllerGetNextTransactionNoV1<TData = Awaited<ReturnType<typeof cashAdvanceMultipleEntryControllerGetNextTransactionNoV1>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof cashAdvanceMultipleEntryControllerGetNextTransactionNoV1>>, TError, TData>> & Pick<
+export function useCashAdvanceMultipleEntryControllerSuggestTransactionNumberV1<TData = Awaited<ReturnType<typeof cashAdvanceMultipleEntryControllerSuggestTransactionNumberV1>>, TError = unknown>(
+ params: undefined |  CashAdvanceMultipleEntryControllerSuggestTransactionNumberV1Params, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof cashAdvanceMultipleEntryControllerSuggestTransactionNumberV1>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof cashAdvanceMultipleEntryControllerGetNextTransactionNoV1>>,
+          Awaited<ReturnType<typeof cashAdvanceMultipleEntryControllerSuggestTransactionNumberV1>>,
           TError,
-          Awaited<ReturnType<typeof cashAdvanceMultipleEntryControllerGetNextTransactionNoV1>>
+          Awaited<ReturnType<typeof cashAdvanceMultipleEntryControllerSuggestTransactionNumberV1>>
         > , 'initialData'
       >, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCashAdvanceMultipleEntryControllerGetNextTransactionNoV1<TData = Awaited<ReturnType<typeof cashAdvanceMultipleEntryControllerGetNextTransactionNoV1>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof cashAdvanceMultipleEntryControllerGetNextTransactionNoV1>>, TError, TData>> & Pick<
+export function useCashAdvanceMultipleEntryControllerSuggestTransactionNumberV1<TData = Awaited<ReturnType<typeof cashAdvanceMultipleEntryControllerSuggestTransactionNumberV1>>, TError = unknown>(
+ params?: CashAdvanceMultipleEntryControllerSuggestTransactionNumberV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof cashAdvanceMultipleEntryControllerSuggestTransactionNumberV1>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof cashAdvanceMultipleEntryControllerGetNextTransactionNoV1>>,
+          Awaited<ReturnType<typeof cashAdvanceMultipleEntryControllerSuggestTransactionNumberV1>>,
           TError,
-          Awaited<ReturnType<typeof cashAdvanceMultipleEntryControllerGetNextTransactionNoV1>>
+          Awaited<ReturnType<typeof cashAdvanceMultipleEntryControllerSuggestTransactionNumberV1>>
         > , 'initialData'
       >, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCashAdvanceMultipleEntryControllerGetNextTransactionNoV1<TData = Awaited<ReturnType<typeof cashAdvanceMultipleEntryControllerGetNextTransactionNoV1>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof cashAdvanceMultipleEntryControllerGetNextTransactionNoV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+export function useCashAdvanceMultipleEntryControllerSuggestTransactionNumberV1<TData = Awaited<ReturnType<typeof cashAdvanceMultipleEntryControllerSuggestTransactionNumberV1>>, TError = unknown>(
+ params?: CashAdvanceMultipleEntryControllerSuggestTransactionNumberV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof cashAdvanceMultipleEntryControllerSuggestTransactionNumberV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Get the next CAME transaction number
+ * @summary Suggest a cash advance multiple-entry transaction number
  */
 
-export function useCashAdvanceMultipleEntryControllerGetNextTransactionNoV1<TData = Awaited<ReturnType<typeof cashAdvanceMultipleEntryControllerGetNextTransactionNoV1>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof cashAdvanceMultipleEntryControllerGetNextTransactionNoV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+export function useCashAdvanceMultipleEntryControllerSuggestTransactionNumberV1<TData = Awaited<ReturnType<typeof cashAdvanceMultipleEntryControllerSuggestTransactionNumberV1>>, TError = unknown>(
+ params?: CashAdvanceMultipleEntryControllerSuggestTransactionNumberV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof cashAdvanceMultipleEntryControllerSuggestTransactionNumberV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getCashAdvanceMultipleEntryControllerGetNextTransactionNoV1QueryOptions(options)
+  const queryOptions = getCashAdvanceMultipleEntryControllerSuggestTransactionNumberV1QueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

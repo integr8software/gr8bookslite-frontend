@@ -15,7 +15,6 @@ import type {
   CashVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
 import {
-  ModuleTableActionButton,
   ModuleTableActionLink,
   ModuleTableActions,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
@@ -88,15 +87,7 @@ export function CashVoucherRecordActions({
             title="Edit"
             variant="edit"
           />
-        ) : (
-          <ModuleTableActionButton
-            disabled
-            icon={Edit3}
-            label={`Edit cash voucher ${recordLabel}`}
-            title="Edit"
-            variant="edit"
-          />
-        )}
+        ) : null}
         <ModuleActionMenu
           className="[&>button]:h-9 [&>button]:w-9"
           items={items}

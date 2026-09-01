@@ -58,6 +58,9 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
+/**
+ * @summary Get paginated list of warehouse access records
+ */
 export const warehouseAccessControllerFindAllV1 = (
     params?: WarehouseAccessControllerFindAllV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -127,6 +130,9 @@ export function useWarehouseAccessControllerFindAllV1<TData = Awaited<ReturnType
  params?: WarehouseAccessControllerFindAllV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof warehouseAccessControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get paginated list of warehouse access records
+ */
 
 export function useWarehouseAccessControllerFindAllV1<TData = Awaited<ReturnType<typeof warehouseAccessControllerFindAllV1>>, TError = unknown>(
  params?: WarehouseAccessControllerFindAllV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof warehouseAccessControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -145,6 +151,9 @@ export function useWarehouseAccessControllerFindAllV1<TData = Awaited<ReturnType
 
 
 
+/**
+ * @summary Create a warehouse access record
+ */
 export const warehouseAccessControllerCreateV1 = (
     createWarehouseAccessDto: CreateWarehouseAccessDto,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -192,7 +201,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type WarehouseAccessControllerCreateV1MutationBody = CreateWarehouseAccessDto
     export type WarehouseAccessControllerCreateV1MutationError = unknown
 
-    export const useWarehouseAccessControllerCreateV1 = <TError = unknown,
+    /**
+ * @summary Create a warehouse access record
+ */
+export const useWarehouseAccessControllerCreateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof warehouseAccessControllerCreateV1>>, TError,{data: CreateWarehouseAccessDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof warehouseAccessControllerCreateV1>>,
@@ -202,7 +214,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getWarehouseAccessControllerCreateV1MutationOptions(options), queryClient);
     }
-    export const warehouseAccessControllerFindDirectoryUsersV1 = (
+    /**
+ * @summary Get warehouse access user directory
+ */
+export const warehouseAccessControllerFindDirectoryUsersV1 = (
     params?: WarehouseAccessControllerFindDirectoryUsersV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
@@ -271,6 +286,9 @@ export function useWarehouseAccessControllerFindDirectoryUsersV1<TData = Awaited
  params?: WarehouseAccessControllerFindDirectoryUsersV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof warehouseAccessControllerFindDirectoryUsersV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get warehouse access user directory
+ */
 
 export function useWarehouseAccessControllerFindDirectoryUsersV1<TData = Awaited<ReturnType<typeof warehouseAccessControllerFindDirectoryUsersV1>>, TError = unknown>(
  params?: WarehouseAccessControllerFindDirectoryUsersV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof warehouseAccessControllerFindDirectoryUsersV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -289,6 +307,9 @@ export function useWarehouseAccessControllerFindDirectoryUsersV1<TData = Awaited
 
 
 
+/**
+ * @summary Get warehouse access details by ID
+ */
 export const warehouseAccessControllerFindOneV1 = (
     id: string,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -357,6 +378,9 @@ export function useWarehouseAccessControllerFindOneV1<TData = Awaited<ReturnType
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof warehouseAccessControllerFindOneV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get warehouse access details by ID
+ */
 
 export function useWarehouseAccessControllerFindOneV1<TData = Awaited<ReturnType<typeof warehouseAccessControllerFindOneV1>>, TError = unknown>(
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof warehouseAccessControllerFindOneV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -375,6 +399,9 @@ export function useWarehouseAccessControllerFindOneV1<TData = Awaited<ReturnType
 
 
 
+/**
+ * @summary Update a warehouse access record
+ */
 export const warehouseAccessControllerUpdateV1 = (
     id: string,
     updateWarehouseAccessDto: UpdateWarehouseAccessDto,
@@ -423,7 +450,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type WarehouseAccessControllerUpdateV1MutationBody = UpdateWarehouseAccessDto
     export type WarehouseAccessControllerUpdateV1MutationError = unknown
 
-    export const useWarehouseAccessControllerUpdateV1 = <TError = unknown,
+    /**
+ * @summary Update a warehouse access record
+ */
+export const useWarehouseAccessControllerUpdateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof warehouseAccessControllerUpdateV1>>, TError,{id: string;data: UpdateWarehouseAccessDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof warehouseAccessControllerUpdateV1>>,
@@ -433,7 +463,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getWarehouseAccessControllerUpdateV1MutationOptions(options), queryClient);
     }
-    export const warehouseAccessControllerRevokeV1 = (
+    /**
+ * @summary Revoke a warehouse access record
+ */
+export const warehouseAccessControllerRevokeV1 = (
     id: string,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
@@ -478,7 +511,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type WarehouseAccessControllerRevokeV1MutationError = unknown
 
-    export const useWarehouseAccessControllerRevokeV1 = <TError = unknown,
+    /**
+ * @summary Revoke a warehouse access record
+ */
+export const useWarehouseAccessControllerRevokeV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof warehouseAccessControllerRevokeV1>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof warehouseAccessControllerRevokeV1>>,

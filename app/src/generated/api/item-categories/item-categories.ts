@@ -54,6 +54,9 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
+/**
+ * @summary Get list of item category records
+ */
 export const itemCategoryControllerFindAllV1 = (
 
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -122,6 +125,9 @@ export function useItemCategoryControllerFindAllV1<TData = Awaited<ReturnType<ty
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof itemCategoryControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get list of item category records
+ */
 
 export function useItemCategoryControllerFindAllV1<TData = Awaited<ReturnType<typeof itemCategoryControllerFindAllV1>>, TError = unknown>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof itemCategoryControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -140,6 +146,9 @@ export function useItemCategoryControllerFindAllV1<TData = Awaited<ReturnType<ty
 
 
 
+/**
+ * @summary Create an item category record
+ */
 export const itemCategoryControllerCreateV1 = (
     createItemCategoryDto: CreateItemCategoryDto,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -187,7 +196,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type ItemCategoryControllerCreateV1MutationBody = CreateItemCategoryDto
     export type ItemCategoryControllerCreateV1MutationError = unknown
 
-    export const useItemCategoryControllerCreateV1 = <TError = unknown,
+    /**
+ * @summary Create an item category record
+ */
+export const useItemCategoryControllerCreateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof itemCategoryControllerCreateV1>>, TError,{data: CreateItemCategoryDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof itemCategoryControllerCreateV1>>,
@@ -197,7 +209,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getItemCategoryControllerCreateV1MutationOptions(options), queryClient);
     }
-    export const itemCategoryControllerFindOptionsV1 = (
+    /**
+ * @summary Get item category options
+ */
+export const itemCategoryControllerFindOptionsV1 = (
 
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
@@ -265,6 +280,9 @@ export function useItemCategoryControllerFindOptionsV1<TData = Awaited<ReturnTyp
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof itemCategoryControllerFindOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get item category options
+ */
 
 export function useItemCategoryControllerFindOptionsV1<TData = Awaited<ReturnType<typeof itemCategoryControllerFindOptionsV1>>, TError = unknown>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof itemCategoryControllerFindOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -283,6 +301,9 @@ export function useItemCategoryControllerFindOptionsV1<TData = Awaited<ReturnTyp
 
 
 
+/**
+ * @summary Update an item category record
+ */
 export const itemCategoryControllerUpdateV1 = (
     id: string,
     updateItemCategoryDto: UpdateItemCategoryDto,
@@ -331,7 +352,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type ItemCategoryControllerUpdateV1MutationBody = UpdateItemCategoryDto
     export type ItemCategoryControllerUpdateV1MutationError = unknown
 
-    export const useItemCategoryControllerUpdateV1 = <TError = unknown,
+    /**
+ * @summary Update an item category record
+ */
+export const useItemCategoryControllerUpdateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof itemCategoryControllerUpdateV1>>, TError,{id: string;data: UpdateItemCategoryDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof itemCategoryControllerUpdateV1>>,

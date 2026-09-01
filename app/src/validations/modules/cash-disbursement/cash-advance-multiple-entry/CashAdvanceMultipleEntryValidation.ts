@@ -23,7 +23,8 @@ const CashAdvanceMultipleEntrySchema = z.object({
       partyName: z.string().trim(),
     }),
   ),
-  partyName: z.string().trim().min(1, "Party Name is required."),
+  partyCode: z.string().trim().min(1, "Employee Code is required."),
+  partyName: z.string().trim().min(1, "Employee Name is required."),
   transNo: z.string().trim().min(1, "CAME No. is required."),
 });
 
@@ -42,12 +43,23 @@ export function validateCashAdvanceMultipleEntryForm(values: CashAdvanceMultiple
     return { isValid: true, message: null };
   }
 
+  const selectedEmployeeKeys = values.items
+    .map((item) => (item.partyCode.trim() || item.partyName.trim()).toLowerCase())
+    .filter(Boolean);
+
+  if (new Set(selectedEmployeeKeys).size !== selectedEmployeeKeys.length) {
+    return {
+      isValid: false,
+      message: "Employee Name cannot be duplicated.",
+    };
+  }
+
   const hasAmountLine = values.items.some((item) => parseMoneyNumberInput(item.amount) > 0);
 
   if (!hasAmountLine) {
     return {
       isValid: false,
-      message: "Add at least one item with an amount.",
+      message: "Add at least one Cash Advance Amount.",
     };
   }
 
@@ -81,7 +93,7 @@ export function validateCashAdvanceMultipleEntryAmountsWithinBalances(values: Ca
     if ((totals.get(partyKey) ?? 0) > balance) {
       return {
         isValid: false,
-        message: `Total amount for ${partyName} cannot exceed the Cash Advance Balance of ${formatAmount(balance)}.`,
+        message: `Total Cash Advance Amount for ${partyName} cannot exceed the Available Cash Advance of ${formatAmount(balance)}.`,
       };
     }
   }

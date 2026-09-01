@@ -58,6 +58,8 @@ export function CashAdvanceActionHeader({
   const [isAvailabilityWarningOpen, setIsAvailabilityWarningOpen] = useState(false);
   const [statusToConfirm, setStatusToConfirm] = useState<CashAdvanceStatus | null>(null);
   const recordLabel = record?.transNo ?? "this cash advance";
+  const isDraftEdit = mode === "edit" && record?.status === CashAdvanceStatuses.draft;
+  const isSaveAction = mode === "add" || isDraftEdit;
   const statusDialogCopy = statusToConfirm ? getCashAdvanceStatusDialogCopy(statusToConfirm, recordLabel, record?.status) : null;
   const title =
     mode === "add" ? (
@@ -107,7 +109,7 @@ export function CashAdvanceActionHeader({
             {mode === "view" ? null : (
               <ModuleActionButton
                 disabled={isSubmitting}
-                label={mode === "edit" ? "Update" : "Save"}
+                label={isSaveAction ? "Save" : "Update"}
                 onAction={() => {
                   if (onValidate ? onValidate(CashAdvanceStatuses.forApproval) : true) {
                     if (availabilityWarning) {
@@ -118,7 +120,7 @@ export function CashAdvanceActionHeader({
                   }
                 }}
                 menuItems={
-                  mode === "add" && onSaveDraft
+                  isSaveAction && onSaveDraft
                     ? [
                         {
                           label: "Save As Draft",
@@ -140,26 +142,26 @@ export function CashAdvanceActionHeader({
         <AppDialog
           isOpen
           title={
-            submitConfirmation === "save" && mode === "edit"
+            submitConfirmation === "save" && !isSaveAction
               ? "Update Cash Advance?"
               : CashAdvanceSubmitConfirmationDialogTitles[submitConfirmation]
           }
           description={
             submitConfirmation === "save"
-              ? mode === "edit"
+              ? !isSaveAction
                 ? `This will update ${recordLabel}.`
                 : `This will save and submit ${recordLabel}.`
               : `This will save ${recordLabel} as draft.`
           }
           confirmLabel={
-            submitConfirmation === "save" && mode === "edit"
+            submitConfirmation === "save" && !isSaveAction
               ? "Update"
               : CashAdvanceSubmitConfirmationDialogConfirmLabels[submitConfirmation]
           }
           cancelLabel="Cancel"
-          iconTone={submitConfirmation === "save" ? (mode === "edit" ? "update" : "save") : "save"}
+          iconTone={submitConfirmation === "save" ? (isSaveAction ? "save" : "update") : "save"}
           isPending={isSubmitting}
-          pendingLabel={mode === "edit" ? "Updating..." : "Saving..."}
+          pendingLabel={isSaveAction ? "Saving..." : "Updating..."}
           tone="default"
           onCancel={() => setSubmitConfirmation(null)}
           onConfirm={() => {
@@ -179,7 +181,7 @@ export function CashAdvanceActionHeader({
         iconTone="warning"
         isOpen={isAvailabilityWarningOpen}
         isPending={isSubmitting}
-        pendingLabel={mode === "edit" ? "Updating..." : "Saving..."}
+        pendingLabel={isSaveAction ? "Saving..." : "Updating..."}
         title="Cash Advance Amount Exceeds Available Amount"
         tone="warning"
         onCancel={() => setIsAvailabilityWarningOpen(false)}

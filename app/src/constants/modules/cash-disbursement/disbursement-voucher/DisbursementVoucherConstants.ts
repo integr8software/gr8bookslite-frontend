@@ -41,11 +41,6 @@ export const DisbursementVoucherAddLink = `${DisbursementVoucherLink}/add`;
 export const getDisbursementVoucherEditLink = (recordId: string) => `${DisbursementVoucherLink}/edit/${recordId}`;
 export const getDisbursementVoucherViewLink = (recordId: string) => `${DisbursementVoucherLink}/view/${recordId}`;
 
-export const DisbursementVoucherQueryKeys = {
-  transactions: () => ["cash-disbursement", "disbursement-voucher", "transactions"] as const,
-  vouchers: () => ["cash-disbursement", "disbursement-voucher", "vouchers"] as const,
-};
-
 export const DisbursementVoucherTablePaginationStorageKey = "cash-disbursement-disbursement-voucher";
 
 export const DisbursementVoucherTablePreferencesStorageKey = "gr8booksneo:disbursement-voucher:table-preferences";

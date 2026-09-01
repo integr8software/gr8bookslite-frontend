@@ -11,10 +11,6 @@ import {
   getAccountingPartyFallbackValue,
   isGeneratedAccountingEntry,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingEntryData";
-import {
-  DisbursementVoucherPartyOptions,
-  DisbursementVoucherResponsibilityCenterOptions,
-} from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import { useAlphanumericTaxCodes } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
 import type {
   DisbursementEntryView,
@@ -36,6 +32,7 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
     canAddExpenseType,
     canAddPartyName,
     canAddResponsibilityCenter,
+    chartAccountOptions,
     defaultAccounts,
     entries,
     errors,
@@ -51,8 +48,10 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
     onRemoveEntry,
     onUpdateEntry,
     onUpdateEntryFields,
+    partyOptions: maintenancePartyOptions,
     partyCode,
     partyName,
+    responsibilityCenterOptions: maintenanceResponsibilityCenterOptions,
     totalCredit,
     totalDebit,
   } = props;
@@ -64,12 +63,15 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
   const vatOptions = useMemo(() => createVatOptions(taxCodes), [taxCodes]);
   const ewtOptions = useMemo(() => createEwtOptions(taxCodes), [taxCodes]);
 
-  const chartAccounts = useMemo(() => createAccountingChartAccountOptions(entries), [entries]);
+  const chartAccounts = useMemo(
+    () => createAccountingChartAccountOptions(entries, chartAccountOptions),
+    [chartAccountOptions, entries],
+  );
   const expenseAccounts = useMemo(() => createDefaultAccountExpenseOptions(defaultAccounts), [defaultAccounts]);
   const expenseRows = useMemo(() => entries.filter((entry: DisbursementLineEntry) => !isGeneratedAccountingEntry(entry)), [entries]);
 
   const partyOptions = useMemo<AppAdvancedDropdownOption[]>(() => {
-    const options: AppAdvancedDropdownOption[] = [...DisbursementVoucherPartyOptions];
+    const options: AppAdvancedDropdownOption[] = [...maintenancePartyOptions];
     const optionNames = new Set(options.map((option) => option.name.toLowerCase()));
     const customValues = new Set(options.map((option) => option.value));
     const customOptions: AppAdvancedDropdownOption[] = [];
@@ -92,10 +94,10 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
     });
 
     return [...options, ...customOptions];
-  }, [entries]);
+  }, [entries, maintenancePartyOptions]);
 
   const responsibilityCenterOptions = useMemo<AppAdvancedDropdownOption[]>(() => {
-    const options: AppAdvancedDropdownOption[] = [...DisbursementVoucherResponsibilityCenterOptions];
+    const options: AppAdvancedDropdownOption[] = [...maintenanceResponsibilityCenterOptions];
     const optionValues = new Set(options.map((option) => option.value));
     const customOptions: AppAdvancedDropdownOption[] = [];
 
@@ -116,7 +118,7 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
     });
 
     return [...options, ...customOptions];
-  }, [entries]);
+  }, [entries, maintenanceResponsibilityCenterOptions]);
 
   const updateExpenseEntryFields = useCallback(
     (entryId: string, updates: Partial<DisbursementLineEntry>) => {

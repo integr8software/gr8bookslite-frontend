@@ -1,8 +1,4 @@
 import { useMemo } from "react";
-import {
-  DisbursementVoucherPartyOptions,
-  DisbursementVoucherProjectOptions,
-} from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import type { DisbursementVoucherDetailsFormProps } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import type { PaymentTypeRecord as AppPaymentTypeRecord } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
@@ -32,7 +28,9 @@ export function DisbursementVoucherDetailsFields({
   onPartyChange,
   onPaymentTypeChange,
   onUpdateField,
+  partyOptions: maintenancePartyOptions,
   paymentTypeRecords,
+  projectOptions: maintenanceProjectOptions,
   values,
 }: DisbursementVoucherDetailsFormProps) {
   const partyOptions = useMemo<AppAdvancedDropdownOption[]>(
@@ -40,8 +38,9 @@ export function DisbursementVoucherDetailsFields({
       createVoucherPartyOptions({
         currentPartyCode: values.partyCode,
         currentPartyName: values.partyName,
+        options: maintenancePartyOptions,
       }),
-    [values.partyCode, values.partyName],
+    [maintenancePartyOptions, values.partyCode, values.partyName],
   );
 
   const projectOptions = useMemo<AppAdvancedDropdownOption[]>(
@@ -49,8 +48,9 @@ export function DisbursementVoucherDetailsFields({
       createVoucherProjectOptions({
         currentProjectCode: values.costCenter,
         currentProjectName: values.projectName,
+        options: maintenanceProjectOptions,
       }),
-    [values.costCenter, values.projectName],
+    [maintenanceProjectOptions, values.costCenter, values.projectName],
   );
 
   const paymentTypeOptions = useMemo<AppAdvancedDropdownOption[]>(
@@ -249,11 +249,13 @@ function createVoucherPaymentTypeOptions({
 function createVoucherPartyOptions({
   currentPartyCode,
   currentPartyName,
+  options: sourceOptions,
 }: {
   currentPartyCode: string;
   currentPartyName: string;
+  options: AppAdvancedDropdownOption[];
 }): AppAdvancedDropdownOption[] {
-  const options: AppAdvancedDropdownOption[] = [...DisbursementVoucherPartyOptions];
+  const options: AppAdvancedDropdownOption[] = [...sourceOptions];
 
   if (currentPartyCode.trim() || currentPartyName.trim()) {
     addUniqueDropdownOption(options, {
@@ -270,11 +272,13 @@ function createVoucherPartyOptions({
 function createVoucherProjectOptions({
   currentProjectCode,
   currentProjectName,
+  options: sourceOptions,
 }: {
   currentProjectCode: string;
   currentProjectName: string;
+  options: AppAdvancedDropdownOption[];
 }): AppAdvancedDropdownOption[] {
-  const options: AppAdvancedDropdownOption[] = [...DisbursementVoucherProjectOptions];
+  const options: AppAdvancedDropdownOption[] = [...sourceOptions];
 
   if (currentProjectName.trim()) {
     addUniqueDropdownOption(options, {

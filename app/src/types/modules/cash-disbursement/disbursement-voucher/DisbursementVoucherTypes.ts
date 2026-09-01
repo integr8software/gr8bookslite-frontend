@@ -345,7 +345,9 @@ export type DisbursementVoucherDetailsFormProps = {
   currencyOptions: AppAdvancedDropdownOption[];
   isExchangeRateLoading: boolean;
   isReadonly: boolean;
+  partyOptions: AppAdvancedDropdownOption[];
   paymentTypeRecords: AppPaymentTypeRecord[];
+  projectOptions: AppAdvancedDropdownOption[];
   values: DisbursementVoucherFormValues;
   onOpenPartyNameDrawer: () => void;
   onOpenPaymentTypeDrawer: () => void;

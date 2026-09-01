@@ -153,7 +153,7 @@ export function useAcknowledgementReceiptControllerFindAllV1<TData = Awaited<Ret
 
 
 /**
- * @summary Create an acknowledgement receipt
+ * @summary Create a acknowledgement receipt
  */
 export const acknowledgementReceiptControllerCreateV1 = (
     createAcknowledgementReceiptDto: CreateAcknowledgementReceiptDto,
@@ -203,7 +203,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type AcknowledgementReceiptControllerCreateV1MutationError = unknown
 
     /**
- * @summary Create an acknowledgement receipt
+ * @summary Create a acknowledgement receipt
  */
 export const useAcknowledgementReceiptControllerCreateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof acknowledgementReceiptControllerCreateV1>>, TError,{data: CreateAcknowledgementReceiptDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -216,7 +216,7 @@ export const useAcknowledgementReceiptControllerCreateV1 = <TError = unknown,
       return useMutation(getAcknowledgementReceiptControllerCreateV1MutationOptions(options), queryClient);
     }
     /**
- * @summary Suggest an acknowledgement receipt transaction number
+ * @summary Suggest a acknowledgement receipt transaction number
  */
 export const acknowledgementReceiptControllerSuggestTransactionNumberV1 = (
     params?: AcknowledgementReceiptControllerSuggestTransactionNumberV1Params,
@@ -288,7 +288,7 @@ export function useAcknowledgementReceiptControllerSuggestTransactionNumberV1<TD
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Suggest an acknowledgement receipt transaction number
+ * @summary Suggest a acknowledgement receipt transaction number
  */
 
 export function useAcknowledgementReceiptControllerSuggestTransactionNumberV1<TData = Awaited<ReturnType<typeof acknowledgementReceiptControllerSuggestTransactionNumberV1>>, TError = unknown>(
@@ -309,7 +309,7 @@ export function useAcknowledgementReceiptControllerSuggestTransactionNumberV1<TD
 
 
 /**
- * @summary Get an acknowledgement receipt
+ * @summary Get a acknowledgement receipt
  */
 export const acknowledgementReceiptControllerFindOneV1 = (
     id: string,
@@ -387,7 +387,7 @@ export function useAcknowledgementReceiptControllerFindOneV1<TData = Awaited<Ret
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Get an acknowledgement receipt
+ * @summary Get a acknowledgement receipt
  */
 
 export function useAcknowledgementReceiptControllerFindOneV1<TData = Awaited<ReturnType<typeof acknowledgementReceiptControllerFindOneV1>>, TError = unknown>(
@@ -409,7 +409,7 @@ export function useAcknowledgementReceiptControllerFindOneV1<TData = Awaited<Ret
 
 
 /**
- * @summary Update an acknowledgement receipt
+ * @summary Update a acknowledgement receipt
  */
 export const acknowledgementReceiptControllerUpdateV1 = (
     id: string,
@@ -460,7 +460,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type AcknowledgementReceiptControllerUpdateV1MutationError = unknown
 
     /**
- * @summary Update an acknowledgement receipt
+ * @summary Update a acknowledgement receipt
  */
 export const useAcknowledgementReceiptControllerUpdateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof acknowledgementReceiptControllerUpdateV1>>, TError,{id: string;data: UpdateAcknowledgementReceiptDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -473,7 +473,7 @@ export const useAcknowledgementReceiptControllerUpdateV1 = <TError = unknown,
       return useMutation(getAcknowledgementReceiptControllerUpdateV1MutationOptions(options), queryClient);
     }
     /**
- * @summary Update an acknowledgement receipt status
+ * @summary Update a acknowledgement receipt status
  */
 export const acknowledgementReceiptControllerUpdateStatusV1 = (
     id: string,
@@ -524,7 +524,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type AcknowledgementReceiptControllerUpdateStatusV1MutationError = unknown
 
     /**
- * @summary Update an acknowledgement receipt status
+ * @summary Update a acknowledgement receipt status
  */
 export const useAcknowledgementReceiptControllerUpdateStatusV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof acknowledgementReceiptControllerUpdateStatusV1>>, TError,{id: string;data: UpdateAcknowledgementReceiptStatusDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}

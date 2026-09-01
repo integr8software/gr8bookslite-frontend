@@ -1,21 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
-  DisbursementVoucherBankAccounts,
-  DisbursementVoucherCopyFromRecords,
-  DisbursementVoucherDefaultAccounts,
   createDisbursementVoucherPaymentTypeRecords,
-  applyCopyFromRecordsToDisbursementVoucherForm,
   createBlankDisbursementLineEntry,
-  createDisbursementTransactionFromForm,
-  createDisbursementVoucherFromForm,
-  createDisbursementVoucherStatusHistoryEntry,
   createTaxDetails,
   syncTaxDetailsAmount,
-  updateDisbursementVoucherFromForm,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import { clearAccountingGridSession } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingGridSessionData";
 import {
@@ -60,6 +53,19 @@ import type {
 import type { ResponsibilityCenter } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
 import type { ModuleDataEntryClearAction } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 import { useDisbursementVoucherStore } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucher";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+import { DisbursementVoucherQueryKeys } from "@/app/src/services/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherQueryKeys";
+import {
+  createDisbursementVoucherApi,
+  fetchDisbursementVoucherById,
+  fetchDisbursementVoucherAccountOptions,
+  fetchDisbursementVoucherExpenseAccountOptions,
+  fetchDisbursementVoucherPartyOptions,
+  fetchDisbursementVoucherResponsibilityCenters,
+  fetchNextDisbursementVoucherTransactionNo,
+  updateDisbursementVoucherApi,
+  updateDisbursementVoucherStatusApi,
+} from "@/app/src/services/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherApi";
 import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
 import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
@@ -75,17 +81,42 @@ import {
 
 export function useDisbursementVoucherActionPage(mode: DisbursementVoucherActionMode) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const params = useParams<{ recordId?: string }>();
   const searchParams = useSearchParams();
   const transactions = useDisbursementVoucherStore((state) => state.transactions);
   const vouchers = useDisbursementVoucherStore((state) => state.vouchers);
-  const addTransaction = useDisbursementVoucherStore((state) => state.addTransaction);
-  const updateTransaction = useDisbursementVoucherStore((state) => state.updateTransaction);
-  const addVoucher = useDisbursementVoucherStore((state) => state.addVoucher);
-  const updateVoucher = useDisbursementVoucherStore((state) => state.updateVoucher);
+  const activeBranchId = useAppStore((state) => state.activeBranchId);
+  const activeCompanyId = useAppStore((state) => state.activeCompanyId);
   const routeTransactionId = mode === "add" ? (searchParams.get("transactionId") ?? "") : (params.recordId ?? "");
   const routeTransaction = transactions.find((transaction) => transaction.id === routeTransactionId);
-  const routeVoucher = vouchers.find((voucher) => voucher.transactionId === routeTransactionId);
+  const listVoucher = vouchers.find((voucher) => voucher.id === routeTransactionId || voucher.transactionId === routeTransactionId);
+  const recordQuery = useQuery({
+    queryKey: DisbursementVoucherQueryKeys.record(routeTransactionId, activeCompanyId, activeBranchId),
+    queryFn: () => fetchDisbursementVoucherById(routeTransactionId),
+    enabled: Boolean(routeTransactionId && mode !== "add"),
+  });
+  const partyOptionsQuery = useQuery({
+    queryKey: DisbursementVoucherQueryKeys.parties(activeCompanyId),
+    queryFn: fetchDisbursementVoucherPartyOptions,
+    enabled: activeCompanyId !== null,
+  });
+  const accountOptionsQuery = useQuery({
+    queryKey: DisbursementVoucherQueryKeys.accounts(activeCompanyId),
+    queryFn: fetchDisbursementVoucherAccountOptions,
+    enabled: activeCompanyId !== null,
+  });
+  const responsibilityCenterOptionsQuery = useQuery({
+    queryKey: DisbursementVoucherQueryKeys.responsibilityCenters(activeCompanyId),
+    queryFn: fetchDisbursementVoucherResponsibilityCenters,
+    enabled: activeCompanyId !== null,
+  });
+  const expenseAccountOptionsQuery = useQuery({
+    queryKey: DisbursementVoucherQueryKeys.expenseTypes(activeCompanyId),
+    queryFn: fetchDisbursementVoucherExpenseAccountOptions,
+    enabled: activeCompanyId !== null,
+  });
+  const routeVoucher = recordQuery.data ?? listVoucher;
   const returnLink = createVoucherActionReturnLink(searchParams.get("from"), routeTransactionId);
   const transactionCurrency = useTransactionCurrency();
   const [values, setValues] = useState<DisbursementVoucherFormValues>(() =>
@@ -121,10 +152,24 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   );
   const partyStore = usePartyManagementStore();
   const responsibilityCenterStore = useResponsibilityCenterStore();
-  const bankAccounts = DisbursementVoucherBankAccounts;
-  const defaultAccounts = DisbursementVoucherDefaultAccounts;
+  const bankAccounts = useMemo(
+    () =>
+      bankMasterfileStore.banks
+        .filter((bank) => bank.status === "Active")
+        .map((bank) => ({
+          id: bank.id,
+          accountCode: bank.accountCode,
+          accountTitle: bank.accountTitle,
+          bankName: bank.bankName,
+          branch: bank.branch,
+          accountName: bank.accountName,
+          accountNo: bank.accountNumber,
+        })),
+    [bankMasterfileStore.banks],
+  );
+  const defaultAccounts = expenseAccountOptionsQuery.data ?? [];
   const selectedTransaction = transactions.find((transaction) => transaction.id === values.transactionId);
-  const existingVoucher = vouchers.find((voucher) => voucher.transactionId === values.transactionId);
+  const existingVoucher = routeVoucher ?? vouchers.find((voucher) => voucher.transactionId === values.transactionId);
   const currentStatus = existingVoucher?.status ?? selectedTransaction?.status ?? values.status;
   const isReadonly = mode === "view" || (mode === "edit" && !canEditDisbursementVoucherStatus(currentStatus));
   const totalDebit = useMemo(() => values.lineEntries.reduce((sum, entry) => sum + entry.debit, 0), [values.lineEntries]);
@@ -133,7 +178,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   const selectedPaymentTypeRecord = paymentTypeRecords.find((record) => record.paymentType === values.paymentMethod) ?? null;
   const routePaymentMethod = existingVoucher?.paymentMethod ?? selectedTransaction?.paymentMethod ?? "";
   const isCashVoucherRoute = (mode !== "add" || Boolean(routeTransactionId)) && routePaymentMethod === "Cash";
-  const isRecordMissing = (!selectedTransaction && mode !== "add") || (mode === "edit" && !existingVoucher) || isCashVoucherRoute;
+  const isRecordMissing = (mode !== "add" && !recordQuery.isLoading && !existingVoucher) || isCashVoucherRoute;
   const [initialValues, setInitialValues] = useState(values);
   const rawIsDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
   const isDirty = mode === "add" ? hasModuleDraftChanges(values, initialValues, ["voucherNo"]) : rawIsDirty;
@@ -145,6 +190,40 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     setValues,
     values,
   });
+  const refreshNextTransactionNo = useCallback(async () => {
+    try {
+      const nextTransactionNo = await fetchNextDisbursementVoucherTransactionNo(activeBranchId ?? undefined);
+      if (!nextTransactionNo) return;
+
+      setValues((current) => ({ ...current, voucherNo: nextTransactionNo, transactionId: nextTransactionNo }));
+      setInitialValues((current) => ({ ...current, voucherNo: nextTransactionNo, transactionId: nextTransactionNo }));
+    } catch {
+      // Keep the current add form while transaction-number setup is unavailable.
+    }
+  }, [activeBranchId]);
+
+  useEffect(() => {
+    if (!existingVoucher || mode === "add") return;
+
+    const nextValues = createInitialDisbursementVoucherFormValues({
+      mode,
+      transaction: routeTransaction,
+      voucher: existingVoucher,
+    });
+
+    queueMicrotask(() => {
+      setValues(nextValues);
+      setInitialValues(nextValues);
+    });
+  }, [existingVoucher, mode, routeTransaction]);
+
+  useEffect(() => {
+    if (mode !== "add") return;
+
+    queueMicrotask(() => {
+      void refreshNextTransactionNo();
+    });
+  }, [mode, refreshNextTransactionNo]);
 
   useEffect(() => {
     clearAccountingGridSession();
@@ -520,7 +599,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     setPendingSubmitValues(valuesForSubmit);
   }
 
-  function confirmDisbursementVoucherSubmit() {
+  async function confirmDisbursementVoucherSubmit() {
     if (!pendingSubmitValues || isSubmittingRef.current) {
       return;
     }
@@ -529,16 +608,43 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     setIsSubmitting(true);
 
     try {
+      const payload = {
+        branchUnitId: activeBranchId ?? undefined,
+        voucherNo: pendingSubmitValues.voucherNo,
+        voucherDate: pendingSubmitValues.voucherDate,
+        paymentDueDate: pendingSubmitValues.paymentDueDate,
+        partyCode: pendingSubmitValues.partyCode,
+        partyName: pendingSubmitValues.partyName,
+        paymentMethod: pendingSubmitValues.paymentMethod || undefined,
+        disbursementType: pendingSubmitValues.disbursementType || undefined,
+        paymentDetails: pendingSubmitValues.paymentDetails,
+        attachments: pendingSubmitValues.attachments,
+        referenceModule: pendingSubmitValues.referenceModule,
+        voucherReferenceNo: pendingSubmitValues.voucherReferenceNo,
+        invoiceReferenceNo: pendingSubmitValues.invoiceReferenceNo,
+        costCenter: pendingSubmitValues.costCenter,
+        projectCode: pendingSubmitValues.costCenter,
+        projectName: pendingSubmitValues.projectName,
+        preparedBy: pendingSubmitValues.preparedBy,
+        currency: pendingSubmitValues.currency,
+        fxRate: pendingSubmitValues.fxRate,
+        amount: pendingSubmitValues.amount,
+        remarks: pendingSubmitValues.remarks,
+        status: pendingSubmitValues.status,
+        details: pendingSubmitValues.lineEntries,
+      };
+
       if (mode === "edit" && existingVoucher) {
-        updateVoucher(updateDisbursementVoucherFromForm(existingVoucher, pendingSubmitValues));
+        await updateDisbursementVoucherApi(existingVoucher.id, payload);
+        toast.success("Disbursement Voucher updated successfully.");
       } else {
-        if (!selectedTransaction) {
-          addTransaction(createDisbursementTransactionFromForm(pendingSubmitValues));
-        }
-        addVoucher(createDisbursementVoucherFromForm(pendingSubmitValues));
+        await createDisbursementVoucherApi(payload);
+        toast.success("Disbursement Voucher created successfully.");
       }
+      void queryClient.invalidateQueries({ queryKey: DisbursementVoucherQueryKeys.all(activeCompanyId, activeBranchId) });
       draft.clearDraft();
       setPendingSubmitValues(null);
+      submitLockReleaseRef.current?.();
       submitLockReleaseRef.current = null;
       router.push(returnLink);
     } catch {
@@ -564,7 +670,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     requestDisbursementVoucherSubmit(DisbursementVoucherStatuses.forApproval);
   }
 
-  function handleUpdateStatus(status: DisbursementVoucherStatus) {
+  async function handleUpdateStatus(status: DisbursementVoucherStatus) {
     if (!canUpdateDisbursementVoucherStatus(currentStatus, status)) {
       return;
     }
@@ -574,44 +680,36 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     if (!releaseActionLock) return;
 
     try {
-      const updatedAt = new Date().toISOString();
+      await updateDisbursementVoucherStatusApi(actionRecordId, status);
       setValues((currentValues) => ({ ...currentValues, status }));
-      if (existingVoucher) {
-        updateVoucher({
-          ...existingVoucher,
-          status,
-          updatedBy: "Current User",
-          updatedAt,
-          history: [...(existingVoucher.history ?? []), createDisbursementVoucherStatusHistoryEntry(status, existingVoucher.voucherNo)],
-        });
-        return;
-      }
-      updateTransaction({ ...selectedTransaction!, status, updatedBy: "Current User", updatedAt });
+      void queryClient.invalidateQueries({ queryKey: DisbursementVoucherQueryKeys.all(activeCompanyId, activeBranchId) });
+      void queryClient.invalidateQueries({
+        queryKey: DisbursementVoucherQueryKeys.record(actionRecordId, activeCompanyId, activeBranchId),
+      });
+      toast.success(`Disbursement Voucher status updated to ${status}.`);
+      releaseActionLock();
     } catch {
       toast.error("Could not update the Disbursement Voucher. Please try again.");
       releaseActionLock();
     }
   }
 
-  function handleCopyFrom(recordIds: string[]) {
-    const selectedRecords = recordIds
-      .map((recordId) => DisbursementVoucherCopyFromRecords.find((candidate) => candidate.id === recordId))
-      .filter((record): record is (typeof DisbursementVoucherCopyFromRecords)[number] => Boolean(record));
-
-    if (selectedRecords.length === 0) {
-      return;
-    }
-
-    setValues((currentValues) => applyCopyFromRecordsToDisbursementVoucherForm(currentValues, selectedRecords));
-    setErrors({});
-  }
-
-  function resetAddValuesWithNextTransactionNo() {
+  async function resetAddValuesWithNextTransactionNo() {
     const nextValues = createInitialDisbursementVoucherFormValues({
       mode: "add",
       transaction: routeTransaction,
       voucher: routeVoucher,
     });
+
+    try {
+      const nextTransactionNo = await fetchNextDisbursementVoucherTransactionNo(activeBranchId ?? undefined);
+      if (nextTransactionNo) {
+        nextValues.voucherNo = nextTransactionNo;
+        nextValues.transactionId = nextTransactionNo;
+      }
+    } catch {
+      // Keep the add form available while transaction-number setup is unavailable.
+    }
 
     setValues(nextValues);
     setInitialValues(nextValues);
@@ -621,7 +719,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     draft.clearDraft();
 
     if (mode === "add") {
-      resetAddValuesWithNextTransactionNo();
+      void resetAddValuesWithNextTransactionNo();
       return;
     }
 
@@ -669,6 +767,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     saveDraft: draft.saveDraft,
     activeTab,
     bankAccounts,
+    chartAccountOptions: accountOptionsQuery.data ?? [],
     currentStatus,
     currencyOptions: transactionCurrency.currencyOptions,
     defaultAccounts,
@@ -687,9 +786,12 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     isSubmitting,
     isResponsibilityCenterDrawerOpen,
     mode,
+    partyOptions: partyOptionsQuery.data ?? [],
     partyStore,
     paymentTypeStore,
     paymentTypeRecords,
+    projectOptions: responsibilityCenterOptionsQuery.data?.projects ?? [],
+    responsibilityCenterOptions: responsibilityCenterOptionsQuery.data?.costCenters ?? [],
     responsibilityCenterStore,
     returnLink: isRecordMissing ? DisbursementVoucherLink : returnLink,
     selectedBankAccount,
@@ -702,7 +804,6 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     handleAddEntries,
     handleBankAccountChange,
     handleClearEntries,
-    handleCopyFrom,
     handleCreateParty,
     handleCreateProject,
     handleCreateResponsibilityCenter,

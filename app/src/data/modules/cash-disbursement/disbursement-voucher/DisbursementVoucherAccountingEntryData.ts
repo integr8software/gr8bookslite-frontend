@@ -23,13 +23,25 @@ import type {
   DisbursementLineEntry,
   DisbursementVoucherBankAccount,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
-import type { DefaultAccount } from "@/app/src/types/modules/financial-maintenance/default-account/DefaultAccountTypes";
+import type { DefaultAccountOptionResponseDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import type { ModuleDataEntryClearAction } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 import { calculateFitColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/entryTableState.util";
 import { formatAmount } from "@/app/src/utils/currency.util";
 
-export function createAccountingChartAccountOptions(entries: DisbursementLineEntry[]): ModuleChartAccount[] {
-  const chartAccounts = getModuleChartAccounts();
+type PostingAccountDropdownOption = AppAdvancedDropdownOption & {
+  accountGroupPath?: unknown;
+  accountId?: unknown;
+  accountNature?: unknown;
+  accountType?: unknown;
+  status?: unknown;
+};
+
+export function createAccountingChartAccountOptions(
+  entries: DisbursementLineEntry[],
+  accountOptions: AppAdvancedDropdownOption[] = [],
+): ModuleChartAccount[] {
+  const chartAccounts = accountOptions.length > 0 ? accountOptions.map(mapPostingAccountOptionToModuleChartAccount) : getModuleChartAccounts();
   const accountKeys = new Set(chartAccounts.flatMap((account) => [account.accountName.toLowerCase(), account.accountNumber]));
   const customAccounts: ModuleChartAccount[] = [];
 
@@ -59,25 +71,40 @@ export function createAccountingChartAccountOptions(entries: DisbursementLineEnt
   return [...chartAccounts, ...customAccounts];
 }
 
-export function createDefaultAccountExpenseOptions(defaultAccounts: DefaultAccount[]): ModuleChartAccount[] {
+function mapPostingAccountOptionToModuleChartAccount(option: AppAdvancedDropdownOption): ModuleChartAccount {
+  const postingAccount = option as PostingAccountDropdownOption;
+  const accountNature = String(postingAccount.accountNature ?? "");
+  const accountType = String(postingAccount.accountType ?? "Posting Account");
+
+  return {
+    accountCategory: accountNature || accountType,
+    accountName: option.name,
+    accountNumber: option.label ?? option.value,
+    accountType,
+    description: option.description ?? option.name,
+    id: String(postingAccount.accountId ?? option.value),
+    normalBalance: accountNature.toLowerCase().includes("credit") ? "Credit" : "Debit",
+    statementGroup: String(postingAccount.accountGroupPath ?? "Chart of Accounts"),
+    statementSection: accountType,
+    status: String(postingAccount.status ?? "Active").toUpperCase() === "INACTIVE" ? "Inactive" : "Active",
+  };
+}
+
+export function createDefaultAccountExpenseOptions(defaultAccounts: DefaultAccountOptionResponseDto[]): ModuleChartAccount[] {
   return defaultAccounts
-    .filter((account) => account.status === "Active" && account.type === "EXPENSE")
-    .flatMap((account) =>
-      account.generatedAccounts
-        .filter((generatedAccount) => generatedAccount.role === "EXPENSE" && generatedAccount.status === "ACTIVE")
-        .map<ModuleChartAccount>((generatedAccount) => ({
-          accountCategory: generatedAccount.accountNature ?? generatedAccount.role,
-          accountName: generatedAccount.accountTitle,
-          accountNumber: generatedAccount.accountCode,
-          accountType: generatedAccount.accountType ?? "Expenses",
-          description: account.defaultAccountName,
-          id: generatedAccount.chartAccountId,
-          normalBalance: "Debit",
-          statementGroup: "Income Statement",
-          statementSection: generatedAccount.accountNature ?? "Default Account Expense",
-          status: "Active",
-        })),
-    );
+    .filter((account) => account.status === "ACTIVE" && account.type === "EXPENSE" && account.chartAccountId && account.accountCode && account.accountTitle)
+    .map<ModuleChartAccount>((account) => ({
+      accountCategory: account.accountNature ?? account.type,
+      accountName: account.accountTitle ?? account.defaultAccountName,
+      accountNumber: account.accountCode ?? "",
+      accountType: account.accountType ?? "Expenses",
+      description: account.defaultAccountName,
+      id: account.chartAccountId ?? account.id,
+      normalBalance: "Debit",
+      statementGroup: "Income Statement",
+      statementSection: account.accountNature ?? "Default Account Expense",
+      status: "Active",
+    }));
 }
 
 export function normalizeDisbursementLineEntryFields(entry: DisbursementLineEntry): DisbursementLineEntry {

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { DefaultAccount } from "@/app/src/types/modules/financial-maintenance/default-account/DefaultAccountTypes";
+import type { DefaultAccountOptionResponseDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import type { PaymentTypeRecord as AppPaymentTypeRecord } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
 import type { ModuleDataEntryClearAction, ModuleDataEntryColumn } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
@@ -58,7 +58,8 @@ export type VoucherDataEntryProps = {
   canAddExpenseType: boolean;
   canAddPartyName: boolean;
   canAddResponsibilityCenter: boolean;
-  defaultAccounts: DefaultAccount[];
+  chartAccountOptions: AppAdvancedDropdownOption[];
+  defaultAccounts: DefaultAccountOptionResponseDto[];
   entries: DisbursementLineEntry[];
   errors: DisbursementVoucherFormErrors;
   isReadonly: boolean;
@@ -76,8 +77,10 @@ export type VoucherDataEntryProps = {
   onUpdateEntryFields: (entryId: string, updates: Partial<DisbursementLineEntry>) => void;
   paymentMethod: string;
   paymentTypeRecord: AppPaymentTypeRecord | null;
+  partyOptions: AppAdvancedDropdownOption[];
   partyCode: string;
   partyName: string;
+  responsibilityCenterOptions: AppAdvancedDropdownOption[];
   totalCredit: number;
   totalDebit: number;
   onRemoveEntry: (entryId: string) => void;

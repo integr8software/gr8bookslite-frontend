@@ -1,7 +1,7 @@
 "use client";
 
 import { Bell, CheckCheck, X } from "lucide-react";
-import type { MainNotification } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+import type { MainNotification } from "@/app/src/types/shared/main-layout/MainLayoutDomainTypes";
 import type { MainNotificationTab } from "@/app/src/types/shared/main-layout/MainLayoutTypes";
 import { NotificationList } from "./NotificationList";
 import { NotificationTabs } from "./NotificationTabs";

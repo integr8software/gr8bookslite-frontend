@@ -51,7 +51,7 @@ import {
 import type {
 	MainIconName,
 	MainNavigationItem,
-} from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+} from "@/app/src/types/shared/main-layout/MainLayoutDomainTypes";
 import { joinClasses } from "./utils";
 
 export const MainIcons: Record<MainIconName, LucideIcon> = {

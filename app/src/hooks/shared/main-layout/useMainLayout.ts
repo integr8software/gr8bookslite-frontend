@@ -6,7 +6,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useApprovalAlertStore } from "@/app/src/hooks/modules/approval-management/useApprovalAlertStore";
 import { GetApprovalTransactions } from "@/app/src/services/modules/approval-management/ApprovalManagementApi";
 import { ApprovalManagementQueryKeys } from "@/app/src/services/modules/approval-management/ApprovalManagementQueryKeys";
-import { getWorkspaceCompanyBranchesHref } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
+import {
+  WorkspaceCompanyActiveStatus,
+  getWorkspaceCompanyBranchesHref,
+} from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
 import {
   MasterSubscriberManagementHref,
   getMasterSubscriberManagementSectionHref,
@@ -30,7 +33,7 @@ import {
   type MainNavigationSection,
   type MainNotification,
   type MainSearchItem,
-} from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+} from "@/app/src/types/shared/main-layout/MainLayoutDomainTypes";
 import {
   filterMainNavigationSections,
   flattenSections,
@@ -111,7 +114,7 @@ const BranchUsersNameParam = "branchName";
 const EmptyCompany: MainCompany = {
   id: "",
   name: "Company",
-  status: "Active",
+  status: WorkspaceCompanyActiveStatus,
   branches: [],
   totalBranches: 0,
 };
@@ -825,7 +828,12 @@ export function useMainLayout() {
 
     const selectedCompany = availableCompanies.find((company) => company.id === companyId);
 
+    if (selectedCompany?.isSwitchable === false) {
+      return;
+    }
+
     const requestId = latestCompanySwitchRequestRef.current + 1;
+
 
     latestCompanySwitchRequestRef.current = requestId;
     beginShellContextSwitchWithFallback(selectedCompany ? `Switching to ${selectedCompany.name}...` : "Switching company...");
@@ -1135,18 +1143,38 @@ function MapProfileCompaniesToMainCompanies(profile: AuthProfile) {
   return (profile.companies ?? [])
     .filter(
       (company) =>
-        isOptionalActiveStatus(company.membershipStatus) &&
-        company.isCompanyActive !== false &&
-        isOptionalActiveStatus(company.companyStatus),
+        isOptionalActiveStatus(company.membershipStatus),
     )
     .map((company) => {
       const branches = mapProfileCompanyUnitsToMainBranches({ company });
+      const rawSubStatus =
+        company.subscriptionStatus ??
+        (company.isCompanyActive !== false && isOptionalActiveStatus(company.companyStatus)
+          ? "ACTIVE"
+          : "INCOMPLETE");
+
+      const normalized = String(rawSubStatus).toUpperCase().replace(/[^A-Z_]/g, "");
+      let status = "Incomplete";
+      if (normalized === "ACTIVE") status = WorkspaceCompanyActiveStatus;
+      else if (normalized === "TRIALING" || normalized === "TRIAL") status = "Trialing";
+      else if (normalized === "PAST_DUE" || normalized === "PASTDUE") status = "Past Due";
+      else if (normalized === "INCOMPLETE") status = "Incomplete";
+      else if (normalized === "UNPAID") status = "Unpaid";
+      else if (normalized === "INCOMPLETE_CANCEL" || normalized === "INCOMPLETE_CANCELED") status = "Incomplete Canceled";
+      else if (normalized === "EXPIRED") status = "Expired";
+      else if (normalized === "CANCELED" || normalized === "CANCELLED") status = "Canceled";
+
+      const isSwitchable =
+        company.isCompanyActive !== false &&
+        isOptionalActiveStatus(company.companyStatus) &&
+        (status === WorkspaceCompanyActiveStatus || status === "Trialing");
 
       return {
         id: String(company.companyId),
         name: company.companyName,
         logoUrl: company.logoPublicUrl ?? undefined,
-        status: "Active" as const,
+        status,
+        isSwitchable,
         businessKind: undefined,
         subscriptionPackage: undefined,
         branches,
@@ -1157,6 +1185,7 @@ function MapProfileCompaniesToMainCompanies(profile: AuthProfile) {
       };
     });
 }
+
 
 function parsePositiveInteger(value: string | number | null | undefined) {
   const numberValue = Number(value);

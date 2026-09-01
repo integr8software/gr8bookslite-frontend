@@ -11,7 +11,9 @@ import { useBillingPlansQuery } from "@/app/src/hooks/billing/useBillingPlansQue
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { useWorkspaceCompanyFormPage } from "@/app/src/hooks/workspace/companies/useWorkspaceCompanyFormPage";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
+import { BillingNoticeDialog } from "@/app/src/ui/shared/app/BillingNoticeDialog";
 import { AppSkeleton } from "@/app/src/ui/shared/app/AppSkeleton";
+
 import {
 	CompanyDetailsFields,
 	getPaymentMethodOptions,
@@ -143,17 +145,15 @@ export function CompanyManagementAction() {
 				onCancel={() => setIsEditConfirmOpen(false)}
 				onConfirm={() => void handleSaveExistingCompany()}
 			/>
-			<AppDialog
+			<BillingNoticeDialog
 				isOpen={isBillingConfirmOpen}
 				isPending={form.isMutating}
-				title="Create company?"
-				description={`Creating ${form.values.companyName || "this company"} may affect workspace billing, payments, or deductions.`}
-				confirmationPhrase="confirm company"
-				confirmLabel="Save Company"
-				pendingLabel="Saving..."
+				targetType="company"
+				targetName={form.values.companyName}
 				onCancel={() => setIsBillingConfirmOpen(false)}
 				onConfirm={handleSaveNewCompany}
 			/>
 		</section>
 	);
+
 }

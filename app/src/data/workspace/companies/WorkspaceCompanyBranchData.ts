@@ -1,5 +1,5 @@
 import { BranchManagementInitialFormValues } from "@/app/src/data/modules/system-administration/branch-management/BranchManagementData";
-import type { MainBranch } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+import type { MainBranch } from "@/app/src/types/shared/main-layout/MainLayoutDomainTypes";
 import type {
   CreateWorkspaceCompanyUnitRequest,
   UpdateWorkspaceCompanyUnitRequest,

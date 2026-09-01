@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 import {
   mapWorkspaceCompaniesToBranchManagementBranches,
 } from "@/app/src/data/modules/system-administration/branch-management/BranchManagementData";
-import type { MainBranch } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+import type { MainBranch } from "@/app/src/types/shared/main-layout/MainLayoutDomainTypes";
 import { BranchManagementQueryKeys } from "@/app/src/services/modules/system-administration/branch-management/BranchManagementQueryKeys";
 import {
   GetWorkspaceCompanies,

@@ -93,6 +93,8 @@ export function useBranchManagementActionPage() {
 		);
 	}
 
+	const [isSaveBranchConfirmOpen, setIsSaveBranchConfirmOpen] = useState(false);
+
 	function handleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
 
@@ -100,6 +102,11 @@ export function useBranchManagementActionPage() {
 
 		if (Object.keys(nextErrors).length > 0) {
 			setErrors(nextErrors);
+			return;
+		}
+
+		if (mode === "add") {
+			setIsSaveBranchConfirmOpen(true);
 			return;
 		}
 
@@ -111,10 +118,13 @@ export function useBranchManagementActionPage() {
 					selectedMainBranch,
 				),
 			);
-		} else {
-			addBranch(createBranchFromForm(values, selectedMainBranch));
+			router.push(BranchManagementHref);
 		}
+	}
 
+	function handleConfirmSave() {
+		addBranch(createBranchFromForm(values, selectedMainBranch));
+		setIsSaveBranchConfirmOpen(false);
 		router.push(BranchManagementHref);
 	}
 
@@ -133,17 +143,21 @@ export function useBranchManagementActionPage() {
 	return {
 		errors,
 		existingBranch,
+		handleConfirmSave,
 		handleDeleteBranch,
 		handleInputChange,
 		handleSubmit,
 		isReadonly,
+		isSaveBranchConfirmOpen,
 		mainBranchOptions,
 		mode,
 		needsRecord: mode === "edit" || mode === "view",
+		setIsSaveBranchConfirmOpen,
 		updateField,
 		values,
 	};
 }
+
 
 function getActionMode(pathname: string): BranchActionMode {
 	if (pathname.includes("/view/")) {

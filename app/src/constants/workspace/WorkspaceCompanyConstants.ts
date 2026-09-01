@@ -19,11 +19,21 @@ export const WorkspaceCompanyEditFromViewValue = "view";
 
 export const WorkspaceCompanyEditFromViewQuery = `${WorkspaceCompanyEditFromParam}=${WorkspaceCompanyEditFromViewValue}`;
 
+export const WorkspaceCompanyActiveStatus =
+	"Active" as const satisfies WorkspaceCompanyStatus;
+
 export const WorkspaceCompanyStatusOptions = [
-	"Active",
-	"Pending",
-	"Inactive",
+	WorkspaceCompanyActiveStatus,
+	"Trialing",
+	"Past Due",
+	"Incomplete",
+	"Unpaid",
+	"Incomplete Canceled",
+	"Expired",
+	"Canceled",
 ] as const satisfies readonly WorkspaceCompanyStatus[];
+
+
 
 export const WorkspaceUserStatusOptions = [
 	"Active",

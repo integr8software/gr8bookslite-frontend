@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { ProvisionalReceiptListPage } from "@/app/src/ui/modules/cash-receipt/provisional-receipt/ProvisionalReceiptListPage";
+import { ProvisionalReceiptListPage } from "@/app/src/ui/modules/cash-receipt/provisional-receipt/overview/ProvisionalReceiptListPage";
 
 const PageTitle = "Provisional Receipt";
 

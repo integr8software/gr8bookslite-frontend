@@ -17,6 +17,8 @@ import {
 } from "@/app/src/services/shared/maintenance/MaintenanceLookupApi";
 import type {
   CreatePettyCashFundDto,
+  PettyCashFundDetailDto,
+  PettyCashFundListResponseDto,
   PettyCashFundResponseDto,
   UpdatePettyCashFundDto,
   UpdatePettyCashFundStatusDtoStatus,
@@ -30,6 +32,23 @@ import type {
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import { calculatePettyCashFundTotals } from "@/app/src/data/modules/cash-disbursement/petty-cash-fund/PettyCashFundData";
+
+type AuditUserSnapshot = {
+  firstName?: string | null;
+  lastName?: string | null;
+};
+
+type PettyCashFundResponseExtras = {
+  createdByUser?: AuditUserSnapshot | null;
+  disburseAmount?: number | string | null;
+  updatedByUser?: AuditUserSnapshot | null;
+};
+
+type PettyCashFundDetailExtras = {
+  type?: string | null;
+};
+
+type PettyCashFundQueryParams = NonNullable<Parameters<typeof pettyCashFundControllerFindAll>[0]>;
 
 export type FetchPettyCashFundListParams = {
   page?: number;
@@ -74,7 +93,8 @@ export const StatusToApi: Record<PettyCashFundStatus, UpdatePettyCashFundStatusD
 };
 
 export function mapPettyCashFundRecordFromDto(dto: PettyCashFundResponseDto): PettyCashFundRecord {
-  const items: PettyCashFundItem[] = (dto.details ?? []).map((d: any, index: number) => ({
+  const dtoExtras = dto as PettyCashFundResponseDto & PettyCashFundResponseExtras;
+  const items: PettyCashFundItem[] = (dto.details ?? []).map((d: PettyCashFundDetailDto & PettyCashFundDetailExtras, index: number) => ({
     id: d.id ? String(d.id) : `item-${index + 1}`,
     date: (d.itemDate || d.date) ? String(d.itemDate || d.date).split("T")[0] : "",
     supplierCode: d.supplierCodeSnapshot ?? "",
@@ -101,7 +121,7 @@ export function mapPettyCashFundRecordFromDto(dto: PettyCashFundResponseDto): Pe
   const formValues: PettyCashFundFormValues = {
     transactionNo: dto.transactionNo,
     documentDate: dto.documentDate,
-    status: (StatusFromApi[dto.status] ?? "Draft") as any,
+    status: StatusFromApi[dto.status] ?? "Draft",
     partyCode: dto.partyCodeSnapshot ?? "",
     partyName: dto.partyNameSnapshot ?? "",
     responsibilityCenter: dto.responsibilityCenterSnapshot ?? "",
@@ -117,8 +137,8 @@ export function mapPettyCashFundRecordFromDto(dto: PettyCashFundResponseDto): Pe
     attachments: [],
   };
 
-  const createdUser = (dto as any).createdByUser;
-  const updatedUser = (dto as any).updatedByUser;
+  const createdUser = dtoExtras.createdByUser;
+  const updatedUser = dtoExtras.updatedByUser;
   const totals = calculatePettyCashFundTotals(items);
 
   return {
@@ -132,7 +152,7 @@ export function mapPettyCashFundRecordFromDto(dto: PettyCashFundResponseDto): Pe
     currency: dto.currencyCode,
     exchangeRate: dto.exchangeRate !== undefined && dto.exchangeRate !== null ? String(dto.exchangeRate) : "1.00",
     amount: totals.grossAmount || (typeof dto.amount === "number" ? dto.amount : Number(dto.amount ?? 0)),
-    disburseAmount: totals.disburseAmount || Number((dto as any).disburseAmount ?? dto.amount ?? 0),
+    disburseAmount: totals.disburseAmount || Number(dtoExtras.disburseAmount ?? dto.amount ?? 0),
     remarks: dto.remarks ?? "",
     status: StatusFromApi[dto.status] ?? "Draft",
     createdBy: createdUser ? `${createdUser.firstName ?? ""} ${createdUser.lastName ?? ""}`.trim() : "",
@@ -202,7 +222,7 @@ export function mapPettyCashFundFormValuesToUpdateDto(values: PettyCashFundFormV
 }
 
 export async function fetchPettyCashFundList(params?: FetchPettyCashFundListParams): Promise<FetchPettyCashFundListResponse> {
-  const queryParams: any = {
+  const queryParams: PettyCashFundQueryParams = {
     page: params?.page,
     limit: params?.limit,
     search: params?.search,
@@ -217,10 +237,10 @@ export async function fetchPettyCashFundList(params?: FetchPettyCashFundListPara
   };
 
   if (params?.status && params.status !== "all") {
-    queryParams.status = StatusToApi[params.status as PettyCashFundStatus] ?? params.status;
+    queryParams.status = (StatusToApi[params.status as PettyCashFundStatus] ?? params.status) as PettyCashFundQueryParams["status"];
   }
 
-  const response: any = await pettyCashFundControllerFindAll(queryParams);
+  const response = (await pettyCashFundControllerFindAll(queryParams)) as PettyCashFundListResponseDto;
   return {
     data: (response?.items ?? []).map(mapPettyCashFundRecordFromDto),
     meta: response?.meta ?? { page: 1, limit: 50, total: 0, totalPages: 1 },
@@ -228,7 +248,7 @@ export async function fetchPettyCashFundList(params?: FetchPettyCashFundListPara
 }
 
 export async function fetchPettyCashFundById(id: string): Promise<PettyCashFundRecord> {
-  const response: any = await pettyCashFundControllerFindOne(id);
+  const response = (await pettyCashFundControllerFindOne(id)) as PettyCashFundResponseDto;
   return mapPettyCashFundRecordFromDto(response);
 }
 
@@ -238,19 +258,19 @@ export async function fetchNextPettyCashFundNo(branchUnitId?: number): Promise<s
 
 export async function createPettyCashFundApi(values: PettyCashFundFormValues): Promise<PettyCashFundRecord> {
   const payload = mapPettyCashFundFormValuesToCreateDto(values);
-  const response: any = await pettyCashFundControllerCreate(payload);
+  const response = (await pettyCashFundControllerCreate(payload)) as PettyCashFundResponseDto;
   return mapPettyCashFundRecordFromDto(response);
 }
 
 export async function updatePettyCashFundApi(id: string, values: PettyCashFundFormValues): Promise<PettyCashFundRecord> {
   const payload = mapPettyCashFundFormValuesToUpdateDto(values);
-  const response: any = await pettyCashFundControllerUpdate(id, payload);
+  const response = (await pettyCashFundControllerUpdate(id, payload)) as PettyCashFundResponseDto;
   return mapPettyCashFundRecordFromDto(response);
 }
 
 export async function updatePettyCashFundStatusApi(id: string, status: PettyCashFundStatus): Promise<PettyCashFundRecord> {
   const apiStatus = StatusToApi[status];
-  const response: any = await pettyCashFundControllerUpdateStatus(id, { status: apiStatus });
+  const response = (await pettyCashFundControllerUpdateStatus(id, { status: apiStatus })) as PettyCashFundResponseDto;
   return mapPettyCashFundRecordFromDto(response);
 }
 

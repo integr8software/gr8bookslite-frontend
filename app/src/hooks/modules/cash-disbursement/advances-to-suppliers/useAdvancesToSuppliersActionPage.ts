@@ -80,10 +80,22 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
     values,
   });
 
+  async function refreshNextTransactionNo() {
+    try {
+      const transactionNo = await fetchNextAdvancesToSuppliersNumber();
+
+      if (transactionNo) {
+        setValues((current) => ({ ...current, transactionNo }));
+        setInitialValues((current) => ({ ...current, transactionNo }));
+      }
+    } catch {
+      // Keep the current add form if the number endpoint is temporarily unavailable.
+    }
+  }
+
   useEffect(() => {
     let isMounted = true;
 
-    setIsLookupLoading(true);
     Promise.all([
       fetchAdvancesToSuppliersPartyOptions(),
       fetchAdvancesToSuppliersAccountOptions(),
@@ -111,28 +123,32 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
   useEffect(() => {
     if (mode !== "add") return;
 
-    void refreshNextTransactionNo();
+    queueMicrotask(() => void refreshNextTransactionNo());
   }, [mode]);
 
   useEffect(() => {
     if (mode === "add" || !recordId) return;
 
     let isMounted = true;
-    setIsLoading(true);
-    fetchAdvancesToSuppliersById(recordId)
-      .then((nextRecord) => {
-        if (!isMounted) return;
-        const nextValues = createAdvancesToSuppliersFormValues(nextRecord, "", transactionCurrency.baseCurrencyCode);
-        setRecord(nextRecord);
-        setValues(nextValues);
-        setInitialValues(nextValues);
-      })
-      .catch(() => {
-        if (isMounted) setRecord(null);
-      })
-      .finally(() => {
-        if (isMounted) setIsLoading(false);
-      });
+    queueMicrotask(() => {
+      if (!isMounted) return;
+
+      setIsLoading(true);
+      fetchAdvancesToSuppliersById(recordId)
+        .then((nextRecord) => {
+          if (!isMounted) return;
+          const nextValues = createAdvancesToSuppliersFormValues(nextRecord, "", transactionCurrency.baseCurrencyCode);
+          setRecord(nextRecord);
+          setValues(nextValues);
+          setInitialValues(nextValues);
+        })
+        .catch(() => {
+          if (isMounted) setRecord(null);
+        })
+        .finally(() => {
+          if (isMounted) setIsLoading(false);
+        });
+    });
 
     return () => {
       isMounted = false;
@@ -389,19 +405,6 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
 
     setValues(nextValues);
     setInitialValues(nextValues);
-  }
-
-  async function refreshNextTransactionNo() {
-    try {
-      const transactionNo = await fetchNextAdvancesToSuppliersNumber();
-
-      if (transactionNo) {
-        setValues((current) => ({ ...current, transactionNo }));
-        setInitialValues((current) => ({ ...current, transactionNo }));
-      }
-    } catch {
-      // Keep the current add form if the number endpoint is temporarily unavailable.
-    }
   }
 
   function discardDraft() {

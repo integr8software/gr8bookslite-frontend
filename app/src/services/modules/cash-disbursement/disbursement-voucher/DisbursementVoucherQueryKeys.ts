@@ -1,6 +1,9 @@
 export const DisbursementVoucherQueryKeys = {
-  all: (_companyId?: number | null, _branchUnitId?: number | null) =>
-    ['disbursement-voucher'] as const,
+  all: (companyId?: number | null, branchUnitId?: number | null) => {
+    void companyId;
+    void branchUnitId;
+    return ['disbursement-voucher'] as const;
+  },
   records: (companyId?: number | null, branchUnitId?: number | null, query?: unknown) =>
     ['disbursement-voucher', 'records', companyId, branchUnitId, query] as const,
   record: (id: string, companyId?: number | null, branchUnitId?: number | null) =>

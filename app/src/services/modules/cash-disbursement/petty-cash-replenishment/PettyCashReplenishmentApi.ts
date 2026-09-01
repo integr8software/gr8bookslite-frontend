@@ -17,6 +17,7 @@ import {
 } from "@/app/src/services/shared/maintenance/MaintenanceLookupApi";
 import type {
   CreatePettyCashReplenishmentDto,
+  PettyCashReplenishmentListResponseDto,
   PettyCashReplenishmentResponseDto,
   UpdatePettyCashReplenishmentDto,
   UpdatePettyCashReplenishmentStatusDtoStatus,
@@ -30,6 +31,19 @@ import type {
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import { calculatePettyCashReplenishmentTotals } from "@/app/src/data/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentData";
+
+type AuditUserSnapshot = {
+  firstName?: string | null;
+  lastName?: string | null;
+};
+
+type PettyCashReplenishmentResponseExtras = {
+  createdByUser?: AuditUserSnapshot | null;
+  disburseAmount?: number | string | null;
+  updatedByUser?: AuditUserSnapshot | null;
+};
+
+type PettyCashReplenishmentQueryParams = NonNullable<Parameters<typeof pettyCashReplenishmentControllerFindAll>[0]>;
 
 export type FetchPettyCashReplenishmentListParams = {
   page?: number;
@@ -74,6 +88,7 @@ export const StatusToApi: Record<PettyCashReplenishmentStatus, UpdatePettyCashRe
 };
 
 export function mapPettyCashReplenishmentRecordFromDto(dto: PettyCashReplenishmentResponseDto): PettyCashReplenishmentRecord {
+  const dtoExtras = dto as PettyCashReplenishmentResponseDto & PettyCashReplenishmentResponseExtras;
   const entries: PettyCashReplenishmentEntry[] = (dto.details ?? []).map((d, index) => ({
     id: d.id ? String(d.id) : `entry-${index + 1}`,
     pettyCashDate: d.pettyCashDate ? d.pettyCashDate.split("T")[0] : "",
@@ -98,7 +113,7 @@ export function mapPettyCashReplenishmentRecordFromDto(dto: PettyCashReplenishme
   const formValues: PettyCashReplenishmentFormValues = {
     transactionNo: dto.transactionNo,
     documentDate: dto.documentDate,
-    status: (StatusFromApi[dto.status] ?? "Draft") as any,
+    status: StatusFromApi[dto.status] ?? "Draft",
     partyCode: dto.partyCodeSnapshot ?? "",
     partyName: dto.partyNameSnapshot ?? "",
     responsibilityCenter: dto.responsibilityCenterSnapshot ?? "",
@@ -114,8 +129,8 @@ export function mapPettyCashReplenishmentRecordFromDto(dto: PettyCashReplenishme
     attachments: [],
   };
 
-  const createdUser = (dto as any).createdByUser;
-  const updatedUser = (dto as any).updatedByUser;
+  const createdUser = dtoExtras.createdByUser;
+  const updatedUser = dtoExtras.updatedByUser;
   const totals = calculatePettyCashReplenishmentTotals(entries);
 
   return {
@@ -129,7 +144,7 @@ export function mapPettyCashReplenishmentRecordFromDto(dto: PettyCashReplenishme
     currency: dto.currencyCode,
     exchangeRate: dto.exchangeRate !== undefined && dto.exchangeRate !== null ? String(dto.exchangeRate) : "1.00",
     amount: totals.totalAmount || (typeof dto.amount === "number" ? dto.amount : Number(dto.amount ?? 0)),
-    disburseAmount: totals.disburseAmount || Number((dto as any).disburseAmount ?? dto.amount ?? 0),
+    disburseAmount: totals.disburseAmount || Number(dtoExtras.disburseAmount ?? dto.amount ?? 0),
     remarks: dto.remarks ?? "",
     status: StatusFromApi[dto.status] ?? "Draft",
     createdBy: createdUser ? `${createdUser.firstName ?? ""} ${createdUser.lastName ?? ""}`.trim() : "",
@@ -201,7 +216,7 @@ export function mapPettyCashReplenishmentFormValuesToUpdateDto(values: PettyCash
 }
 
 export async function fetchPettyCashReplenishmentList(params?: FetchPettyCashReplenishmentListParams): Promise<FetchPettyCashReplenishmentListResponse> {
-  const queryParams: any = {
+  const queryParams: PettyCashReplenishmentQueryParams = {
     page: params?.page,
     limit: params?.limit,
     search: params?.search,
@@ -216,10 +231,11 @@ export async function fetchPettyCashReplenishmentList(params?: FetchPettyCashRep
   };
 
   if (params?.status && params.status !== "all") {
-    queryParams.status = StatusToApi[params.status as PettyCashReplenishmentStatus] ?? params.status;
+    queryParams.status = (StatusToApi[params.status as PettyCashReplenishmentStatus] ??
+      params.status) as PettyCashReplenishmentQueryParams["status"];
   }
 
-  const response: any = await pettyCashReplenishmentControllerFindAll(queryParams);
+  const response = (await pettyCashReplenishmentControllerFindAll(queryParams)) as PettyCashReplenishmentListResponseDto;
   return {
     data: (response?.items ?? []).map(mapPettyCashReplenishmentRecordFromDto),
     meta: response?.meta ?? { page: 1, limit: 50, total: 0, totalPages: 1 },
@@ -227,7 +243,7 @@ export async function fetchPettyCashReplenishmentList(params?: FetchPettyCashRep
 }
 
 export async function fetchPettyCashReplenishmentById(id: string): Promise<PettyCashReplenishmentRecord> {
-  const response: any = await pettyCashReplenishmentControllerFindOne(id);
+  const response = (await pettyCashReplenishmentControllerFindOne(id)) as PettyCashReplenishmentResponseDto;
   return mapPettyCashReplenishmentRecordFromDto(response);
 }
 
@@ -237,19 +253,19 @@ export async function fetchNextPettyCashReplenishmentNo(branchUnitId?: number): 
 
 export async function createPettyCashReplenishmentApi(values: PettyCashReplenishmentFormValues): Promise<PettyCashReplenishmentRecord> {
   const payload = mapPettyCashReplenishmentFormValuesToCreateDto(values);
-  const response: any = await pettyCashReplenishmentControllerCreate(payload);
+  const response = (await pettyCashReplenishmentControllerCreate(payload)) as PettyCashReplenishmentResponseDto;
   return mapPettyCashReplenishmentRecordFromDto(response);
 }
 
 export async function updatePettyCashReplenishmentApi(id: string, values: PettyCashReplenishmentFormValues): Promise<PettyCashReplenishmentRecord> {
   const payload = mapPettyCashReplenishmentFormValuesToUpdateDto(values);
-  const response: any = await pettyCashReplenishmentControllerUpdate(id, payload);
+  const response = (await pettyCashReplenishmentControllerUpdate(id, payload)) as PettyCashReplenishmentResponseDto;
   return mapPettyCashReplenishmentRecordFromDto(response);
 }
 
 export async function updatePettyCashReplenishmentStatusApi(id: string, status: PettyCashReplenishmentStatus): Promise<PettyCashReplenishmentRecord> {
   const apiStatus = StatusToApi[status];
-  const response: any = await pettyCashReplenishmentControllerUpdateStatus(id, { status: apiStatus });
+  const response = (await pettyCashReplenishmentControllerUpdateStatus(id, { status: apiStatus })) as PettyCashReplenishmentResponseDto;
   return mapPettyCashReplenishmentRecordFromDto(response);
 }
 

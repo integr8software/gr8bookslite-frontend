@@ -17,6 +17,8 @@ import {
 } from "@/app/src/services/shared/maintenance/MaintenanceLookupApi";
 import type {
   CreateRevolvingFundDto,
+  RevolvingFundDetailDto,
+  RevolvingFundListResponseDto,
   RevolvingFundResponseDto,
   UpdateRevolvingFundDto,
   UpdateRevolvingFundStatusDtoStatus,
@@ -30,6 +32,23 @@ import type {
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import { calculateRevolvingFundTotals } from "@/app/src/data/modules/cash-disbursement/revolving-fund/RevolvingFundData";
+
+type AuditUserSnapshot = {
+  firstName?: string | null;
+  lastName?: string | null;
+};
+
+type RevolvingFundResponseExtras = {
+  createdByUser?: AuditUserSnapshot | null;
+  disburseAmount?: number | string | null;
+  updatedByUser?: AuditUserSnapshot | null;
+};
+
+type RevolvingFundDetailExtras = {
+  type?: string | null;
+};
+
+type RevolvingFundQueryParams = NonNullable<Parameters<typeof revolvingFundControllerFindAll>[0]>;
 
 export type FetchRevolvingFundListParams = {
   page?: number;
@@ -74,7 +93,8 @@ export const StatusToApi: Record<RevolvingFundStatus, UpdateRevolvingFundStatusD
 };
 
 export function mapRevolvingFundRecordFromDto(dto: RevolvingFundResponseDto): RevolvingFundRecord {
-  const items: RevolvingFundItem[] = (dto.details ?? []).map((d: any, index: number) => ({
+  const dtoExtras = dto as RevolvingFundResponseDto & RevolvingFundResponseExtras;
+  const items: RevolvingFundItem[] = (dto.details ?? []).map((d: RevolvingFundDetailDto & RevolvingFundDetailExtras, index: number) => ({
     id: d.id ? String(d.id) : `item-${index + 1}`,
     date: d.itemDate ? d.itemDate.split("T")[0] : "",
     supplierCode: d.supplierCodeSnapshot ?? "",
@@ -101,7 +121,7 @@ export function mapRevolvingFundRecordFromDto(dto: RevolvingFundResponseDto): Re
   const formValues: RevolvingFundFormValues = {
     transactionNo: dto.transactionNo,
     documentDate: dto.documentDate,
-    status: (StatusFromApi[dto.status] ?? "Draft") as any,
+    status: StatusFromApi[dto.status] ?? "Draft",
     partyCode: dto.partyCodeSnapshot ?? "",
     partyName: dto.partyNameSnapshot ?? "",
     responsibilityCenter: dto.responsibilityCenterSnapshot ?? "",
@@ -117,8 +137,8 @@ export function mapRevolvingFundRecordFromDto(dto: RevolvingFundResponseDto): Re
     attachments: [],
   };
 
-  const createdUser = (dto as any).createdByUser;
-  const updatedUser = (dto as any).updatedByUser;
+  const createdUser = dtoExtras.createdByUser;
+  const updatedUser = dtoExtras.updatedByUser;
   const totals = calculateRevolvingFundTotals(items);
 
   return {
@@ -132,7 +152,7 @@ export function mapRevolvingFundRecordFromDto(dto: RevolvingFundResponseDto): Re
     currency: dto.currencyCode,
     exchangeRate: dto.exchangeRate !== undefined && dto.exchangeRate !== null ? String(dto.exchangeRate) : "1.00",
     amount: totals.grossAmount || (typeof dto.amount === "number" ? dto.amount : Number(dto.amount ?? 0)),
-    disburseAmount: totals.disburseAmount || Number((dto as any).disburseAmount ?? dto.amount ?? 0),
+    disburseAmount: totals.disburseAmount || Number(dtoExtras.disburseAmount ?? dto.amount ?? 0),
     remarks: dto.remarks ?? "",
     status: StatusFromApi[dto.status] ?? "Draft",
     createdBy: createdUser ? `${createdUser.firstName ?? ""} ${createdUser.lastName ?? ""}`.trim() : "",
@@ -202,7 +222,7 @@ export function mapRevolvingFundFormValuesToUpdateDto(values: RevolvingFundFormV
 }
 
 export async function fetchRevolvingFundList(params?: FetchRevolvingFundListParams): Promise<FetchRevolvingFundListResponse> {
-  const queryParams: any = {
+  const queryParams: RevolvingFundQueryParams = {
     page: params?.page,
     limit: params?.limit,
     search: params?.search,
@@ -217,10 +237,10 @@ export async function fetchRevolvingFundList(params?: FetchRevolvingFundListPara
   };
 
   if (params?.status && params.status !== "all") {
-    queryParams.status = StatusToApi[params.status as RevolvingFundStatus] ?? params.status;
+    queryParams.status = (StatusToApi[params.status as RevolvingFundStatus] ?? params.status) as RevolvingFundQueryParams["status"];
   }
 
-  const response: any = await revolvingFundControllerFindAll(queryParams);
+  const response = (await revolvingFundControllerFindAll(queryParams)) as RevolvingFundListResponseDto;
   return {
     data: (response?.items ?? []).map(mapRevolvingFundRecordFromDto),
     meta: response?.meta ?? { page: 1, limit: 50, total: 0, totalPages: 1 },
@@ -228,7 +248,7 @@ export async function fetchRevolvingFundList(params?: FetchRevolvingFundListPara
 }
 
 export async function fetchRevolvingFundById(id: string): Promise<RevolvingFundRecord> {
-  const response: any = await revolvingFundControllerFindOne(id);
+  const response = (await revolvingFundControllerFindOne(id)) as RevolvingFundResponseDto;
   return mapRevolvingFundRecordFromDto(response);
 }
 
@@ -238,19 +258,19 @@ export async function fetchNextRevolvingFundNo(branchUnitId?: number): Promise<s
 
 export async function createRevolvingFundApi(values: RevolvingFundFormValues): Promise<RevolvingFundRecord> {
   const payload = mapRevolvingFundFormValuesToCreateDto(values);
-  const response: any = await revolvingFundControllerCreate(payload);
+  const response = (await revolvingFundControllerCreate(payload)) as RevolvingFundResponseDto;
   return mapRevolvingFundRecordFromDto(response);
 }
 
 export async function updateRevolvingFundApi(id: string, values: RevolvingFundFormValues): Promise<RevolvingFundRecord> {
   const payload = mapRevolvingFundFormValuesToUpdateDto(values);
-  const response: any = await revolvingFundControllerUpdate(id, payload);
+  const response = (await revolvingFundControllerUpdate(id, payload)) as RevolvingFundResponseDto;
   return mapRevolvingFundRecordFromDto(response);
 }
 
 export async function updateRevolvingFundStatusApi(id: string, status: RevolvingFundStatus): Promise<RevolvingFundRecord> {
   const apiStatus = StatusToApi[status];
-  const response: any = await revolvingFundControllerUpdateStatus(id, { status: apiStatus });
+  const response = (await revolvingFundControllerUpdateStatus(id, { status: apiStatus })) as RevolvingFundResponseDto;
   return mapRevolvingFundRecordFromDto(response);
 }
 

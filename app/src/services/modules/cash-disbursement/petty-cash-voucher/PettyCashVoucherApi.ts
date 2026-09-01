@@ -17,6 +17,7 @@ import {
 } from "@/app/src/services/shared/maintenance/MaintenanceLookupApi";
 import type {
   CreatePettyCashVoucherDto,
+  PettyCashVoucherListResponseDto,
   PettyCashVoucherResponseDto,
   UpdatePettyCashVoucherDto,
   UpdatePettyCashVoucherStatusDtoStatus,
@@ -28,6 +29,18 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
+
+type AuditUserSnapshot = {
+  firstName?: string | null;
+  lastName?: string | null;
+};
+
+type PettyCashVoucherResponseExtras = {
+  createdByUser?: AuditUserSnapshot | null;
+  updatedByUser?: AuditUserSnapshot | null;
+};
+
+type PettyCashVoucherQueryParams = NonNullable<Parameters<typeof pettyCashVoucherControllerFindAll>[0]>;
 
 export type FetchPettyCashVoucherListParams = {
   page?: number;
@@ -72,9 +85,10 @@ export const StatusToApi: Record<PettyCashVoucherStatus, UpdatePettyCashVoucherS
 };
 
 export function mapPettyCashVoucherRecordFromDto(dto: PettyCashVoucherResponseDto): PettyCashVoucherRecord {
-  const createdUser = (dto as any).createdByUser;
-  const updatedUser = (dto as any).updatedByUser;
-  const grossAmount = Number((dto as any).grossAmount ?? dto.amount ?? 0);
+  const dtoExtras = dto as PettyCashVoucherResponseDto & PettyCashVoucherResponseExtras;
+  const createdUser = dtoExtras.createdByUser;
+  const updatedUser = dtoExtras.updatedByUser;
+  const grossAmount = Number(dto.grossAmount ?? dto.amount ?? 0);
   const disburseAmount = Number(dto.netAmount ?? dto.amount ?? grossAmount);
 
   return {
@@ -112,7 +126,7 @@ export function mapPettyCashVoucherFormValuesToCreateDto(values: PettyCashVouche
     exchangeRate: parseMoneyNumberInput(values.exchangeRate) || 1.0,
     amount: parseMoneyNumberInput(values.amount),
     vatType: values.vatType,
-    vatable: (values.vatable as any),
+    vatable: values.vatable as CreatePettyCashVoucherDto["vatable"],
     vatPercent: parseMoneyNumberInput(values.vatRate),
     vatAmount: parseMoneyNumberInput(values.vatAmount),
     ewtCode: values.ewtCode,
@@ -129,7 +143,7 @@ export function mapPettyCashVoucherFormValuesToUpdateDto(values: PettyCashVouche
 }
 
 export async function fetchPettyCashVoucherList(params?: FetchPettyCashVoucherListParams): Promise<FetchPettyCashVoucherListResponse> {
-  const queryParams: any = {
+  const queryParams: PettyCashVoucherQueryParams = {
     page: params?.page,
     limit: params?.limit,
     search: params?.search,
@@ -144,10 +158,10 @@ export async function fetchPettyCashVoucherList(params?: FetchPettyCashVoucherLi
   };
 
   if (params?.status && params.status !== "all") {
-    queryParams.status = StatusToApi[params.status as PettyCashVoucherStatus] ?? params.status;
+    queryParams.status = (StatusToApi[params.status as PettyCashVoucherStatus] ?? params.status) as PettyCashVoucherQueryParams["status"];
   }
 
-  const response: any = await pettyCashVoucherControllerFindAll(queryParams);
+  const response = (await pettyCashVoucherControllerFindAll(queryParams)) as PettyCashVoucherListResponseDto;
   return {
     data: (response?.items ?? []).map(mapPettyCashVoucherRecordFromDto),
     meta: response?.meta ?? { page: 1, limit: 50, total: 0, totalPages: 1 },
@@ -155,7 +169,7 @@ export async function fetchPettyCashVoucherList(params?: FetchPettyCashVoucherLi
 }
 
 export async function fetchPettyCashVoucherById(id: string): Promise<PettyCashVoucherRecord> {
-  const response: any = await pettyCashVoucherControllerFindOne(id);
+  const response = (await pettyCashVoucherControllerFindOne(id)) as PettyCashVoucherResponseDto;
   return mapPettyCashVoucherRecordFromDto(response);
 }
 
@@ -165,19 +179,19 @@ export async function fetchNextPettyCashVoucherNo(branchUnitId?: number): Promis
 
 export async function createPettyCashVoucherApi(values: PettyCashVoucherFormValues): Promise<PettyCashVoucherRecord> {
   const payload = mapPettyCashVoucherFormValuesToCreateDto(values);
-  const response: any = await pettyCashVoucherControllerCreate(payload);
+  const response = (await pettyCashVoucherControllerCreate(payload)) as PettyCashVoucherResponseDto;
   return mapPettyCashVoucherRecordFromDto(response);
 }
 
 export async function updatePettyCashVoucherApi(id: string, values: PettyCashVoucherFormValues): Promise<PettyCashVoucherRecord> {
   const payload = mapPettyCashVoucherFormValuesToUpdateDto(values);
-  const response: any = await pettyCashVoucherControllerUpdate(id, payload);
+  const response = (await pettyCashVoucherControllerUpdate(id, payload)) as PettyCashVoucherResponseDto;
   return mapPettyCashVoucherRecordFromDto(response);
 }
 
 export async function updatePettyCashVoucherStatusApi(id: string, status: PettyCashVoucherStatus): Promise<PettyCashVoucherRecord> {
   const apiStatus = StatusToApi[status];
-  const response: any = await pettyCashVoucherControllerUpdateStatus(id, { status: apiStatus });
+  const response = (await pettyCashVoucherControllerUpdateStatus(id, { status: apiStatus })) as PettyCashVoucherResponseDto;
   return mapPettyCashVoucherRecordFromDto(response);
 }
 

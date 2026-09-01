@@ -19,6 +19,7 @@ import {
 import type { MaintenanceResponsibilityCenterOption } from "@/app/src/services/shared/maintenance/MaintenanceLookupApi";
 import type {
   AdvanceToSupplierResponseDto,
+  AdvanceToSupplierListResponseDto,
   CreateAdvanceToSupplierDto,
   CreateAdvanceToSupplierDtoAdvancePaymentType,
   CreateAdvanceToSupplierDtoStatus,
@@ -56,6 +57,16 @@ export type FetchAdvancesToSuppliersListResponse = {
   };
 };
 
+type AdvancesToSuppliersListApiResponse = {
+  data?: AdvanceToSupplierResponseDto[];
+  items?: AdvanceToSupplierResponseDto[];
+  meta?: FetchAdvancesToSuppliersListResponse["meta"];
+};
+
+type AdvancesToSuppliersApiResponse = AdvanceToSupplierResponseDto | {
+  data?: AdvanceToSupplierResponseDto;
+};
+
 const StatusFromApi: Record<string, AdvancesToSuppliersStatus> = {
   APPROVED: "Posted",
   CANCELLED: "Cancelled",
@@ -86,20 +97,20 @@ const PaymentTypeToApi: Record<AdvancesToSuppliersPaymentType, CreateAdvanceToSu
 export async function fetchAdvancesToSuppliersList(
   params?: FetchAdvancesToSuppliersListParams,
 ): Promise<FetchAdvancesToSuppliersListResponse> {
-  const response: any = await advancesToSuppliersControllerFindAll({
+  const response = (await advancesToSuppliersControllerFindAll({
     ...params,
     status: params?.status && params.status !== "All" ? StatusToApi[params.status as AdvancesToSuppliersStatus] : undefined,
-  });
+  })) as AdvanceToSupplierListResponseDto & AdvancesToSuppliersListApiResponse;
 
   return {
-    data: (response?.items ?? response?.data ?? []).map(mapAdvancesToSuppliersRecordFromDto),
+    data: (response.items ?? response.data ?? []).map(mapAdvancesToSuppliersRecordFromDto),
     meta: response?.meta ?? { page: 1, limit: 10, total: 0, totalPages: 1 },
   };
 }
 
 export async function fetchAdvancesToSuppliersById(id: string): Promise<AdvancesToSuppliersRecord> {
-  const response: any = await advancesToSuppliersControllerFindOne(id);
-  return mapAdvancesToSuppliersRecordFromDto(response?.data ?? response);
+  const response = (await advancesToSuppliersControllerFindOne(id)) as AdvancesToSuppliersApiResponse;
+  return mapAdvancesToSuppliersRecordFromDto(unwrapAdvancesToSuppliersResponse(response));
 }
 
 export async function fetchNextAdvancesToSuppliersNumber(): Promise<string> {
@@ -107,26 +118,29 @@ export async function fetchNextAdvancesToSuppliersNumber(): Promise<string> {
 }
 
 export async function createAdvancesToSuppliersApi(values: AdvancesToSuppliersFormValues): Promise<AdvancesToSuppliersRecord> {
-  const response: any = await advancesToSuppliersControllerCreate(mapFormValuesToCreateDto(values));
-  return mapAdvancesToSuppliersRecordFromDto(response?.data ?? response);
+  const response = (await advancesToSuppliersControllerCreate(mapFormValuesToCreateDto(values))) as AdvancesToSuppliersApiResponse;
+  return mapAdvancesToSuppliersRecordFromDto(unwrapAdvancesToSuppliersResponse(response));
 }
 
 export async function updateAdvancesToSuppliersApi(id: string, values: AdvancesToSuppliersFormValues): Promise<AdvancesToSuppliersRecord> {
-  const response: any = await advancesToSuppliersControllerUpdate(id, mapFormValuesToCreateDto(values) as UpdateAdvanceToSupplierDto);
-  return mapAdvancesToSuppliersRecordFromDto(response?.data ?? response);
+  const response = (await advancesToSuppliersControllerUpdate(
+    id,
+    mapFormValuesToCreateDto(values) as UpdateAdvanceToSupplierDto,
+  )) as AdvancesToSuppliersApiResponse;
+  return mapAdvancesToSuppliersRecordFromDto(unwrapAdvancesToSuppliersResponse(response));
 }
 
 export async function submitAdvancesToSuppliersApprovalApi(id: string): Promise<AdvancesToSuppliersRecord> {
-  const response: any = await advancesToSuppliersControllerSubmitApproval(id);
-  return mapAdvancesToSuppliersRecordFromDto(response?.data ?? response);
+  const response = (await advancesToSuppliersControllerSubmitApproval(id)) as AdvancesToSuppliersApiResponse;
+  return mapAdvancesToSuppliersRecordFromDto(unwrapAdvancesToSuppliersResponse(response));
 }
 
 export async function updateAdvancesToSuppliersStatusApi(
   id: string,
   status: AdvancesToSuppliersStatus,
 ): Promise<AdvancesToSuppliersRecord> {
-  const response: any = await advancesToSuppliersControllerUpdateStatus(id, { status: StatusToApi[status] });
-  return mapAdvancesToSuppliersRecordFromDto(response?.data ?? response);
+  const response = (await advancesToSuppliersControllerUpdateStatus(id, { status: StatusToApi[status] })) as AdvancesToSuppliersApiResponse;
+  return mapAdvancesToSuppliersRecordFromDto(unwrapAdvancesToSuppliersResponse(response));
 }
 
 export async function deleteAdvancesToSuppliersApi(id: string): Promise<{ success: boolean; message: string }> {
@@ -239,4 +253,8 @@ function mapResponsibilityCenterOption(center: MaintenanceResponsibilityCenterOp
     value: center.code || center.value,
     description: center.name,
   };
+}
+
+function unwrapAdvancesToSuppliersResponse(response: AdvancesToSuppliersApiResponse): AdvanceToSupplierResponseDto {
+  return "data" in response && response.data ? response.data : (response as AdvanceToSupplierResponseDto);
 }

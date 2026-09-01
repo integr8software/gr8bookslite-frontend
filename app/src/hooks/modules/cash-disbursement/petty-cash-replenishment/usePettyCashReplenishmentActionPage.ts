@@ -58,6 +58,19 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
   const rawIsDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
   const isDirty = mode === "add" ? hasModuleDraftChanges(values, initialValues, ["transactionNo"]) : rawIsDirty;
 
+  async function refreshNextTransactionNo() {
+    try {
+      const nextNo = await fetchNextPettyCashReplenishmentNo();
+
+      if (nextNo) {
+        setValues((current) => ({ ...current, transactionNo: nextNo }));
+        setInitialValues((current) => ({ ...current, transactionNo: nextNo }));
+      }
+    } catch {
+      // Keep the current add form if the number endpoint is temporarily unavailable.
+    }
+  }
+
   useEffect(() => {
     if (record) {
       const formVals = createPettyCashReplenishmentFormValues(record, record.transactionNo, record.currency || "PHP");
@@ -70,7 +83,7 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
 
   useEffect(() => {
     if (mode === "add") {
-      void refreshNextTransactionNo();
+      queueMicrotask(() => void refreshNextTransactionNo());
     }
   }, [mode]);
 
@@ -257,19 +270,6 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
     setInitialValues(nextValues);
   }
 
-  async function refreshNextTransactionNo() {
-    try {
-      const nextNo = await fetchNextPettyCashReplenishmentNo();
-
-      if (nextNo) {
-        setValues((current) => ({ ...current, transactionNo: nextNo }));
-        setInitialValues((current) => ({ ...current, transactionNo: nextNo }));
-      }
-    } catch {
-      // Keep the current add form if the number endpoint is temporarily unavailable.
-    }
-  }
-
   function discardDraft() {
     draft.clearDraft();
 
@@ -295,7 +295,7 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
     closePreview: () => setIsPreviewOpen(false),
     copyFromRecords: [],
     pettyCashFundCopyFromRecords: [],
-    copyFromPettyCashFund: (_recordIds: string[]) => undefined,
+    copyFromPettyCashFund: () => undefined,
     currencyOptions: transactionCurrency.currencyOptions,
     discardDraft,
     draft,

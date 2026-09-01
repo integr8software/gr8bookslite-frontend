@@ -9,7 +9,6 @@ import {
   PettyCashVoucherDefaultFormStatus,
   PettyCashVoucherDefaultVATable,
   PettyCashVoucherDefaultVatType,
-  PettyCashVoucherVatRate,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
 import {
   getEwtPercentFromCode,

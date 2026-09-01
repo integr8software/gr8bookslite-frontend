@@ -188,6 +188,7 @@ export function useRevolvingFundOverviewPage() {
     [],
   );
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table owns the table state lifecycle.
   const table = useReactTable({
     data: records,
     columns,

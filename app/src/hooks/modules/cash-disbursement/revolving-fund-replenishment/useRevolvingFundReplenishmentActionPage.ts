@@ -57,6 +57,19 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
   const rawIsDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
   const isDirty = mode === "add" ? hasModuleDraftChanges(values, initialValues, ["transactionNo"]) : rawIsDirty;
 
+  async function refreshNextTransactionNo() {
+    try {
+      const nextNo = await fetchNextRevolvingFundReplenishmentNo();
+
+      if (nextNo) {
+        setValues((current) => ({ ...current, transactionNo: nextNo }));
+        setInitialValues((current) => ({ ...current, transactionNo: nextNo }));
+      }
+    } catch {
+      // Keep the current add form if the number endpoint is temporarily unavailable.
+    }
+  }
+
   useEffect(() => {
     if (record) {
       const formVals = createRevolvingFundReplenishmentFormValues(record, record.transactionNo, record.currency || "PHP");
@@ -69,7 +82,7 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
 
   useEffect(() => {
     if (mode === "add") {
-      void refreshNextTransactionNo();
+      queueMicrotask(() => void refreshNextTransactionNo());
     }
   }, [mode]);
 
@@ -254,19 +267,6 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
     setInitialValues(nextValues);
   }
 
-  async function refreshNextTransactionNo() {
-    try {
-      const nextNo = await fetchNextRevolvingFundReplenishmentNo();
-
-      if (nextNo) {
-        setValues((current) => ({ ...current, transactionNo: nextNo }));
-        setInitialValues((current) => ({ ...current, transactionNo: nextNo }));
-      }
-    } catch {
-      // Keep the current add form if the number endpoint is temporarily unavailable.
-    }
-  }
-
   function discardDraft() {
     draft.clearDraft();
 
@@ -285,7 +285,7 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
     moveEntry,
     addEntries,
     addEntry,
-    applyFundRecord: (_fund: unknown) => {},
+    applyFundRecord: () => {},
     closePreview: () => setIsPreviewOpen(false),
     currencyOptions: transactionCurrency.currencyOptions,
     discardDraft,

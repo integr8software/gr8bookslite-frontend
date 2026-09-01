@@ -145,9 +145,22 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
     values,
   });
 
+  async function refreshNextTransactionNo() {
+    try {
+      const nextTransNo = await fetchNextCashAdvanceTransactionNo();
+
+      if (nextTransNo) {
+        setValues((current) => ({ ...current, transNo: nextTransNo }));
+        setInitialValues((current) => ({ ...current, transNo: nextTransNo }));
+      }
+    } catch {
+      // Keep the current add form if the number endpoint is temporarily unavailable.
+    }
+  }
+
   useEffect(() => {
     if (mode === "add") {
-      void refreshNextTransactionNo();
+      queueMicrotask(() => void refreshNextTransactionNo());
     }
   }, [mode]);
 
@@ -383,19 +396,6 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
 
     setValues(nextValues);
     setInitialValues(nextValues);
-  }
-
-  async function refreshNextTransactionNo() {
-    try {
-      const nextTransNo = await fetchNextCashAdvanceTransactionNo();
-
-      if (nextTransNo) {
-        setValues((current) => ({ ...current, transNo: nextTransNo }));
-        setInitialValues((current) => ({ ...current, transNo: nextTransNo }));
-      }
-    } catch {
-      // Keep the current add form if the number endpoint is temporarily unavailable.
-    }
   }
 
   function discardDraft() {

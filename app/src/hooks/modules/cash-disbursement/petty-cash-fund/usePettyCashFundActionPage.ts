@@ -58,6 +58,19 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
   const rawIsDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
   const isDirty = mode === "add" ? hasModuleDraftChanges(values, initialValues, ["transactionNo"]) : rawIsDirty;
 
+  async function refreshNextTransactionNo() {
+    try {
+      const nextNo = await fetchNextPettyCashFundNo();
+
+      if (nextNo) {
+        setValues((current) => ({ ...current, transactionNo: nextNo }));
+        setInitialValues((current) => ({ ...current, transactionNo: nextNo }));
+      }
+    } catch {
+      // Keep the current add form if the number endpoint is temporarily unavailable.
+    }
+  }
+
   useEffect(() => {
     if (record) {
       const formVals = createPettyCashFundFormValues(record, record.transactionNo, record.currency || "PHP");
@@ -70,7 +83,7 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
 
   useEffect(() => {
     if (mode === "add") {
-      void refreshNextTransactionNo();
+      queueMicrotask(() => void refreshNextTransactionNo());
     }
   }, [mode]);
 
@@ -264,19 +277,6 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
 
     setValues(nextValues);
     setInitialValues(nextValues);
-  }
-
-  async function refreshNextTransactionNo() {
-    try {
-      const nextNo = await fetchNextPettyCashFundNo();
-
-      if (nextNo) {
-        setValues((current) => ({ ...current, transactionNo: nextNo }));
-        setInitialValues((current) => ({ ...current, transactionNo: nextNo }));
-      }
-    } catch {
-      // Keep the current add form if the number endpoint is temporarily unavailable.
-    }
   }
 
   function discardDraft() {

@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import type { MainCompany } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+import type { MainCompany } from "@/app/src/types/shared/main-layout/MainLayoutDomainTypes";
 import { ImageSwatch } from "./ImageSwatch";
 import { joinClasses } from "./utils";
 

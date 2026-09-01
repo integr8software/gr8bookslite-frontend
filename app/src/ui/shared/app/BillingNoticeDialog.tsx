@@ -3,13 +3,17 @@
 import type { ReactNode } from "react";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 
+const BillingNoticeTargetTypes = {
+	Branch: "branch",
+	Company: "company",
+	CompanyAccess: "company_access",
+	Custom: "custom",
+	Satellite: "satellite",
+	User: "user",
+} as const;
+
 export type BillingNoticeTargetType =
-	| "company"
-	| "user"
-	| "branch"
-	| "satellite"
-	| "company_access"
-	| "custom";
+	(typeof BillingNoticeTargetTypes)[keyof typeof BillingNoticeTargetTypes];
 
 export type BillingNoticeDialogProps = {
 	cancelLabel?: string;
@@ -37,7 +41,7 @@ export function BillingNoticeDialog({
 	isPending = false,
 	pendingLabel = "Saving...",
 	targetName,
-	targetType = "custom",
+	targetType = BillingNoticeTargetTypes.Custom,
 	title,
 	onCancel,
 	onConfirm,
@@ -72,15 +76,15 @@ export function BillingNoticeDialog({
 
 function getBillingNoticeTitle(targetType: BillingNoticeTargetType): string {
 	switch (targetType) {
-		case "company":
+		case BillingNoticeTargetTypes.Company:
 			return "Create company?";
-		case "user":
+		case BillingNoticeTargetTypes.User:
 			return "Create user?";
-		case "branch":
+		case BillingNoticeTargetTypes.Branch:
 			return "Create branch?";
-		case "satellite":
+		case BillingNoticeTargetTypes.Satellite:
 			return "Create satellite?";
-		case "company_access":
+		case BillingNoticeTargetTypes.CompanyAccess:
 			return "Add company access?";
 		default:
 			return "Confirm action?";
@@ -96,15 +100,15 @@ function getBillingNoticeDescription(
 		: `this ${targetType.replace("_", " ")}`;
 
 	switch (targetType) {
-		case "company":
+		case BillingNoticeTargetTypes.Company:
 			return `Creating ${subject} may affect workspace billing, payments, or deductions. Type confirm add company before saving.`;
-		case "user":
+		case BillingNoticeTargetTypes.User:
 			return `Adding ${subject} may affect workspace billing, payments, or deductions. Type confirm add user before saving.`;
-		case "branch":
+		case BillingNoticeTargetTypes.Branch:
 			return `Adding ${subject} may affect workspace billing, payments, or deductions. Type confirm add branch before saving.`;
-		case "satellite":
+		case BillingNoticeTargetTypes.Satellite:
 			return `Adding ${subject} may affect workspace billing, payments, or deductions. Type confirm add satellite before saving.`;
-		case "company_access":
+		case BillingNoticeTargetTypes.CompanyAccess:
 			return "Adding this user to another company may affect billing, including user access costs, payments, or deductions. Confirm before adding the company assignment.";
 		default:
 			return `This action for ${subject} may affect workspace billing, payments, or deductions.`;
@@ -115,15 +119,15 @@ function getBillingNoticeConfirmationPhrase(
 	targetType: BillingNoticeTargetType,
 ): string | undefined {
 	switch (targetType) {
-		case "company":
+		case BillingNoticeTargetTypes.Company:
 			return "confirm add company";
-		case "user":
+		case BillingNoticeTargetTypes.User:
 			return "confirm add user";
-		case "branch":
+		case BillingNoticeTargetTypes.Branch:
 			return "confirm add branch";
-		case "satellite":
+		case BillingNoticeTargetTypes.Satellite:
 			return "confirm add satellite";
-		case "company_access":
+		case BillingNoticeTargetTypes.CompanyAccess:
 			return undefined;
 		default:
 			return undefined;
@@ -134,15 +138,15 @@ function getBillingNoticeConfirmLabel(
 	targetType: BillingNoticeTargetType,
 ): string {
 	switch (targetType) {
-		case "company":
+		case BillingNoticeTargetTypes.Company:
 			return "Save Company";
-		case "user":
+		case BillingNoticeTargetTypes.User:
 			return "Save User";
-		case "branch":
+		case BillingNoticeTargetTypes.Branch:
 			return "Save Branch";
-		case "satellite":
+		case BillingNoticeTargetTypes.Satellite:
 			return "Save Satellite";
-		case "company_access":
+		case BillingNoticeTargetTypes.CompanyAccess:
 			return "Confirm Add";
 		default:
 			return "Confirm";

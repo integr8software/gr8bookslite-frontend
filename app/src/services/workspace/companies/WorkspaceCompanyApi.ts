@@ -24,11 +24,25 @@ import type {
 } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
 import { MapWorkspaceUserApiRecord } from "@/app/src/services/workspace/users/WorkspaceUserApi";
 
-type WorkspaceCompanyApiLike =
-  (WorkspaceCompanyApiRecord | WorkspaceCompanyResponseDto) & {
-    countryCode?: string;
-    baseCurrencyCode?: string;
-  };
+type WorkspaceCompanyRoleApiLike = {
+  id: number;
+  name: string;
+  code: string;
+  unitId?: number | null;
+};
+
+type WorkspaceCompanyApiLike = (WorkspaceCompanyApiRecord | WorkspaceCompanyResponseDto) & {
+  countryCode?: string;
+  baseCurrencyCode?: string;
+  subscriptionStatus?: string | null;
+  subscription?: { status?: string | null } | null;
+  subscriptionPlan:
+    | (NonNullable<(WorkspaceCompanyApiRecord | WorkspaceCompanyResponseDto)["subscriptionPlan"]> & {
+        status?: string | null;
+      })
+    | null;
+  roles?: WorkspaceCompanyRoleApiLike[];
+};
 
 type WorkspaceCompanyUnitApiLike = WorkspaceCompanyUnitApiRecord | WorkspaceCompanyUnitResponseDto;
 
@@ -185,20 +199,19 @@ function MapWorkspaceCompanyApiRecord(company: WorkspaceCompanyApiLike): Workspa
     reportStartDate: GetDateInputValue(company.reportStartDate),
     status: GetWorkspaceCompanyStatus(company),
     subscriptionStatus:
-      (company as any).subscriptionStatus ??
-      (company as any).subscriptionPlan?.status ??
-      undefined,
+      company.subscriptionStatus ?? company.subscriptionPlan?.status ?? undefined,
     taxpayerType: company.taxpayerType === "INDIVIDUAL" ? "individual" : "non-individual",
     tin: company.tin ?? undefined,
     totalBranches: company.totalUnits ?? 0,
     totalUsers: company.totalUsers ?? 0,
     website: company.website ?? undefined,
-    roles: (company as any).roles?.map((role: any) => ({
-      id: String(role.id),
-      name: role.name,
-      code: role.code,
-      unitId: role.unitId ? String(role.unitId) : null,
-    })) ?? [],
+    roles:
+      company.roles?.map((role) => ({
+        id: String(role.id),
+        name: role.name,
+        code: role.code,
+        unitId: role.unitId ? String(role.unitId) : null,
+      })) ?? [],
   };
 }
 
@@ -380,9 +393,9 @@ function GetWorkspaceCompanyPlan(company: WorkspaceCompanyApiLike) {
 
 function GetWorkspaceCompanyStatus(company: WorkspaceCompanyApiLike): WorkspaceCompanyStatus {
   const rawSubStatus =
-    (company as any).subscriptionStatus ??
-    (company as any).subscriptionPlan?.status ??
-    (company as any).subscription?.status;
+    company.subscriptionStatus ??
+    company.subscriptionPlan?.status ??
+    company.subscription?.status;
 
   if (rawSubStatus) {
     const normalized = String(rawSubStatus).toUpperCase().replace(/[^A-Z_]/g, "");

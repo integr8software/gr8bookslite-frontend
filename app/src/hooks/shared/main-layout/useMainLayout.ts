@@ -6,7 +6,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useApprovalAlertStore } from "@/app/src/hooks/modules/approval-management/useApprovalAlertStore";
 import { GetApprovalTransactions } from "@/app/src/services/modules/approval-management/ApprovalManagementApi";
 import { ApprovalManagementQueryKeys } from "@/app/src/services/modules/approval-management/ApprovalManagementQueryKeys";
-import { getWorkspaceCompanyBranchesHref } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
+import {
+  WorkspaceCompanyActiveStatus,
+  getWorkspaceCompanyBranchesHref,
+} from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
 import {
   MasterSubscriberManagementHref,
   getMasterSubscriberManagementSectionHref,
@@ -30,7 +33,7 @@ import {
   type MainNavigationSection,
   type MainNotification,
   type MainSearchItem,
-} from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+} from "@/app/src/types/shared/main-layout/MainLayoutDomainTypes";
 import {
   filterMainNavigationSections,
   flattenSections,
@@ -111,7 +114,7 @@ const BranchUsersNameParam = "branchName";
 const EmptyCompany: MainCompany = {
   id: "",
   name: "Company",
-  status: "Active",
+  status: WorkspaceCompanyActiveStatus,
   branches: [],
   totalBranches: 0,
 };
@@ -1145,14 +1148,14 @@ function MapProfileCompaniesToMainCompanies(profile: AuthProfile) {
     .map((company) => {
       const branches = mapProfileCompanyUnitsToMainBranches({ company });
       const rawSubStatus =
-        (company as any).subscriptionStatus ??
+        company.subscriptionStatus ??
         (company.isCompanyActive !== false && isOptionalActiveStatus(company.companyStatus)
           ? "ACTIVE"
           : "INCOMPLETE");
 
       const normalized = String(rawSubStatus).toUpperCase().replace(/[^A-Z_]/g, "");
       let status = "Incomplete";
-      if (normalized === "ACTIVE") status = "Active";
+      if (normalized === "ACTIVE") status = WorkspaceCompanyActiveStatus;
       else if (normalized === "TRIALING" || normalized === "TRIAL") status = "Trialing";
       else if (normalized === "PAST_DUE" || normalized === "PASTDUE") status = "Past Due";
       else if (normalized === "INCOMPLETE") status = "Incomplete";
@@ -1164,7 +1167,7 @@ function MapProfileCompaniesToMainCompanies(profile: AuthProfile) {
       const isSwitchable =
         company.isCompanyActive !== false &&
         isOptionalActiveStatus(company.companyStatus) &&
-        (status === "Active" || status === "Trialing");
+        (status === WorkspaceCompanyActiveStatus || status === "Trialing");
 
       return {
         id: String(company.companyId),

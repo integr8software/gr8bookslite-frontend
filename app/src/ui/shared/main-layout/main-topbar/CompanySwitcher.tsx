@@ -3,7 +3,7 @@ import { Building2, ChevronDown, LayoutDashboard } from "lucide-react";
 import type {
 	MainCompany,
 	MainNavigationScope,
-} from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+} from "@/app/src/types/shared/main-layout/MainLayoutDomainTypes";
 import { ImageSwatch } from "./ImageSwatch";
 import { MenuSeparator } from "./MenuPrimitives";
 import { SwitcherButton } from "./SwitcherButton";

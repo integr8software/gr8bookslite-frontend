@@ -31,7 +31,7 @@ import toast from "react-hot-toast";
 import type {
 	MainNavigationItem,
 	MainNavigationSection,
-} from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+} from "@/app/src/types/shared/main-layout/MainLayoutDomainTypes";
 import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { AuthQueryKeys } from "@/app/src/services/auth/AuthQueryKeys";

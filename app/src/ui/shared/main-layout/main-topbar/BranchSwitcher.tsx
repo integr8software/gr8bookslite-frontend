@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Check, ChevronDown, GitBranch, Settings } from "lucide-react";
-import type { MainBranch } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+import type { MainBranch } from "@/app/src/types/shared/main-layout/MainLayoutDomainTypes";
 import type { MainBreadcrumbDropdownItem } from "@/app/src/types/shared/main-layout/MainLayoutTypes";
 import type { SwitcherVariant } from "@/app/src/types/shared/main-layout/MainTopbarTypes";
 import { MenuSeparator } from "./MenuPrimitives";

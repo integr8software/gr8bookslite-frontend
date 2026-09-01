@@ -7,7 +7,9 @@ import {
 } from "@/app/src/generated/api/workspace-users/workspace-users";
 import type {
   CreateWorkspaceUserDto,
+  WorkspaceUserAssignedUnitResponseDto,
   WorkspaceUserCancelInvitationResponseDto,
+  WorkspaceUserCompanyAssignmentResponseDto,
   WorkspaceUserMessageResponseDto,
   WorkspaceUserResponseDto,
 } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
@@ -22,9 +24,32 @@ import type {
   WorkspaceUserStatus,
 } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
 
-type WorkspaceCompanyUserApiLike =
-  | WorkspaceCompanyUserApiRecord
-  | WorkspaceUserResponseDto;
+type WorkspaceUserAssignedUnitApiLike =
+  | WorkspaceCompanyUserAssignedUnitApiRecord
+  | (WorkspaceUserAssignedUnitResponseDto & {
+      companyRoleId?: number | null;
+      companyRole?: {
+        id: number;
+        name: string;
+        code: string;
+      } | null;
+    });
+
+type WorkspaceUserCompanyAssignmentApiLike = Omit<
+  WorkspaceCompanyUserApiRecord["companyAssignments"][number] | WorkspaceUserCompanyAssignmentResponseDto,
+  "units"
+> & {
+  units?: WorkspaceUserAssignedUnitApiLike[];
+  role?: "ADMIN" | "USER";
+  companyRoleId?: number | null;
+};
+
+type WorkspaceCompanyUserApiLike = Omit<
+  WorkspaceCompanyUserApiRecord | WorkspaceUserResponseDto,
+  "companyAssignments"
+> & {
+  companyAssignments: WorkspaceUserCompanyAssignmentApiLike[];
+};
 
 const WorkspaceUserMutationTimeoutMs = 60000;
 
@@ -111,21 +136,19 @@ export function MapWorkspaceUserApiRecord(
   return {
     companyAssignments: user.companyAssignments.map((assignment) => {
       const branchRoles: Record<string, string> = {};
-      assignment.units?.forEach((u: any) => {
-        if (u.companyRoleId) {
-          branchRoles[String(u.id)] = String(u.companyRoleId);
+      assignment.units?.forEach((unit) => {
+        if (unit.companyRoleId) {
+          branchRoles[String(unit.id)] = String(unit.companyRoleId);
         }
       });
       return {
         branchIds: assignment.unitIds.map(String),
         branchRoles,
-        branches: assignment.units?.map((u) =>
-          MapWorkspaceUserAssignedUnitApiRecord(u as any),
-        ),
+        branches: assignment.units?.map(MapWorkspaceUserAssignedUnitApiRecord),
         companyId: String(assignment.companyId),
-        role: (assignment as any).role ?? "USER",
-        companyRoleId: (assignment as any).companyRoleId
-          ? String((assignment as any).companyRoleId)
+        role: assignment.role ?? "USER",
+        companyRoleId: assignment.companyRoleId
+          ? String(assignment.companyRoleId)
           : null,
       };
     }),
@@ -145,7 +168,7 @@ export function MapWorkspaceUserApiRecord(
 }
 
 function MapWorkspaceUserAssignedUnitApiRecord(
-  unit: any,
+  unit: WorkspaceUserAssignedUnitApiLike,
 ): WorkspaceCompanyBranchRecord {
   return {
     address: "",

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CheckCheck } from "lucide-react";
-import type { MainNotification } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+import type { MainNotification } from "@/app/src/types/shared/main-layout/MainLayoutDomainTypes";
 import type { MainNotificationTab } from "@/app/src/types/shared/main-layout/MainLayoutTypes";
 import { getEmptyNotificationText, joinClasses } from "./utils";
 

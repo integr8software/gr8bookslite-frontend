@@ -3,7 +3,7 @@ import type {
   MainAccessKey,
   MainNavigationSection,
   MainProductKey,
-} from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+} from "@/app/src/types/shared/main-layout/MainLayoutDomainTypes";
 import { flattenSections } from "@/app/src/data/shared/main-layout/sidebar/SidebarUtils";
 
 export const MainWorkspaceNavigationSections: MainNavigationSection[] = [

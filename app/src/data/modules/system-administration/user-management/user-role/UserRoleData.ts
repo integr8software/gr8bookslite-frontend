@@ -2,7 +2,7 @@ import { MainModuleCatalogSections } from "@/app/src/data/shared/modules/ModuleC
 import type {
   MainNavigationItem,
   MainNavigationSection,
-} from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+} from "@/app/src/types/shared/main-layout/MainLayoutDomainTypes";
 import type { UserStatus } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
 
 export type UserRoleRecord = {

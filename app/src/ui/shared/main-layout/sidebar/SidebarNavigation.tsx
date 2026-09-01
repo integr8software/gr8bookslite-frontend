@@ -4,7 +4,7 @@ import { useApprovalAlertStore } from "@/app/src/hooks/modules/approval-manageme
 import type {
 	MainNavigationItem,
 	MainNavigationSection,
-} from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+} from "@/app/src/types/shared/main-layout/MainLayoutDomainTypes";
 import {
 	MainIcons,
 	SidebarAllowedIcons,

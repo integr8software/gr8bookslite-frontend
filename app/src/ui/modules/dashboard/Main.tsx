@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 import { BarChart3, LayoutDashboard, PanelsTopLeft, Plus, Share2, SlidersHorizontal, Users } from "lucide-react";
 import { MainDashboardWidgets } from "@/app/src/data/shared/main-layout/MainLayoutDefaults";
-import type { MainDashboardWidget } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+import type { MainDashboardWidget } from "@/app/src/types/shared/main-layout/MainLayoutDomainTypes";
 import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { GetAuthProfileAccess, ResolveAuthProfileEffectiveRole } from "@/app/src/services/auth/AuthProfileAccess";

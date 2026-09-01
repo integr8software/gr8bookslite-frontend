@@ -27,6 +27,7 @@ import {
 } from "recharts";
 import {
 	getMasterInvoiceAnalyticsData,
+	type MasterInvoiceAnalyticsDataPoint,
 	type MasterInvoiceAnalyticsMetric,
 	type MasterInvoiceAnalyticsPeriod,
 	type MasterInvoiceAnalyticsSort,
@@ -40,6 +41,8 @@ type MasterInvoiceAnalyticsChartProps = {
 	onClose: () => void;
 	onSelectMetric: (metric: MasterInvoiceAnalyticsMetric) => void;
 };
+
+const CurrencyUnit = "PHP";
 
 const MetricMeta: Record<
 	MasterInvoiceAnalyticsMetric,
@@ -64,7 +67,7 @@ const MetricMeta: Record<
 		icon: ReceiptText,
 		label: "Total Collected",
 		tone: "emerald",
-		unit: "PHP",
+		unit: CurrencyUnit,
 	},
 	subscribers: {
 		badgeClass: "bg-sky-50 text-sky-700 border-sky-200",
@@ -86,7 +89,7 @@ const MetricMeta: Record<
 		icon: CalendarClock,
 		label: "Pending Revenue",
 		tone: "amber",
-		unit: "PHP",
+		unit: CurrencyUnit,
 	},
 	attention: {
 		badgeClass: "bg-rose-50 text-rose-700 border-rose-200",
@@ -97,9 +100,10 @@ const MetricMeta: Record<
 		icon: AlertTriangle,
 		label: "Needs Attention",
 		tone: "red",
-		unit: "PHP",
+		unit: CurrencyUnit,
 	},
 };
+
 
 export function MasterInvoiceAnalyticsChart({
 	activeMetric,
@@ -485,9 +489,10 @@ function CustomAnalyticsTooltip({
 }: {
 	active?: boolean;
 	activeMetric: MasterInvoiceAnalyticsMetric;
-	payload?: Array<{ payload: any; value: number }>;
+	payload?: Array<{ payload: MasterInvoiceAnalyticsDataPoint; value: number }>;
 	period: MasterInvoiceAnalyticsPeriod;
 }) {
+
 	if (!active || !payload || payload.length === 0) {
 		return null;
 	}

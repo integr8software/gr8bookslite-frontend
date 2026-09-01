@@ -5,9 +5,9 @@ export function AcknowledgementReceiptNotFound() {
   return (
     <ModuleNotFound
       actionHref={AcknowledgementReceiptHref}
-      actionLabel="Back to Acknowledgement Receipt"
+      actionLabel="Back to Collection Receipt"
       description="The acknowledgement receipt record may have been removed or is no longer available."
-      title="Acknowledgement Receipt Not Found"
+      title="Collection Receipt Not Found"
     />
   );
 }

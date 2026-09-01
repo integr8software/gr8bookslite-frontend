@@ -2,12 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import {
-	GripVertical,
-	Save,
-	Settings2,
-	X,
-} from "lucide-react";
+import { GripVertical, Save, Settings2, X } from "lucide-react";
 import {
 	DndContext,
 	KeyboardSensor,
@@ -26,32 +21,16 @@ import {
 	verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import toast from "react-hot-toast";
 import type {
 	MainNavigationItem,
 	MainNavigationSection,
-} from "@/app/src/data/shared/main-layout/MainLayoutTypes";
-import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
-import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
-import { AuthQueryKeys } from "@/app/src/services/auth/AuthQueryKeys";
-import {
-	GetUserSidebarCustomization,
-	SaveUserSidebarCustomization,
-	type UserSidebarApiItem,
-} from "@/app/src/services/company/user-sidebar/UserSidebarApi";
+} from "@/app/src/types/shared/main-layout/MainLayoutDomainTypes";
+import { useUserSidebarCustomization } from "@/app/src/hooks/shared/main-layout/sidebar/useUserSidebarCustomization";
+import { type UserSidebarApiItem } from "@/app/src/services/company/user-sidebar/UserSidebarApi";
 import { SidebarIdentitySkeleton, SidebarLogo } from "./SidebarIdentity";
 import { SidebarAllowedIcons } from "./SidebarIcons";
-import {
-	SidebarCategorySection,
-	SidebarItem,
-	SidebarSection,
-} from "./SidebarNavigation";
-import {
-	getActiveNavigationHref,
-	joinClasses,
-	pathMatches,
-} from "./utils";
+import { SidebarNavigationContent } from "./SidebarNavigationContent";
+import { getActiveNavigationHref, joinClasses, pathMatches } from "./utils";
 
 type TreeItem = Omit<UserSidebarApiItem, "children"> & { children: TreeItem[] };
 type GapDropData = {
@@ -64,6 +43,9 @@ type GapDropData = {
 const InlineCustomizerRootDropId = "inline-sidebar-customizer-root";
 const InlineCustomizerGapPrefix = "inline-sidebar-gap:";
 const MaxCustomizationDepth = 2;
+const SidebarItemTypes = {
+	Link: "LINK",
+} as const;
 const ApprovalManagementHref = "/system-administration/approval-management";
 const ApprovalTransactionsHref = `${ApprovalManagementHref}/approval-transactions`;
 const HiddenSidebarKeys = new Set([
@@ -153,11 +135,7 @@ export function MainSidebar({
 				onClose();
 			}
 		},
-		[
-			onClose,
-			onNavigateFromSidebar,
-			suppressAutoScrollFromSidebarInteraction,
-		],
+		[onClose, onNavigateFromSidebar, suppressAutoScrollFromSidebarInteraction],
 	);
 
 	useEffect(() => {
@@ -307,81 +285,28 @@ export function MainSidebar({
 							onSaved={() => setIsCustomizing(false)}
 						/>
 					) : (
-						<div className="space-y-2">
-							{normalizedNavigationSections.map((section) =>
-								section.key === "workspace" ||
-								section.key === "workspace-modules" ? (
-									<div key={section.key} className="space-y-3">
-										<p className="px-3 text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/38">
-											{section.title}
-										</p>
-										{section.items.map((item) => (
-											<SidebarItem
-												key={item.key}
-												activeHref={navigationActiveHref}
-												expandedKeys={expandedKeys}
-												item={item}
-												depth={-1}
-												onInteract={
-													suppressAutoScrollFromSidebarInteraction
-												}
-												onNavigateFromSidebar={
-													handleNavigateFromSidebar
-												}
-												onToggleExpandedKey={
-													onToggleExpandedKey
-												}
-											/>
-										))}
-									</div>
-								) : isDirectNavigationSection(section) ? (
-									<SidebarSection
-										key={section.key}
-										activeHref={navigationActiveHref}
-										expandedKeys={expandedKeys}
-										section={section}
-										onInteract={
-											suppressAutoScrollFromSidebarInteraction
-										}
-										onNavigateFromSidebar={
-											handleNavigateFromSidebar
-										}
-										onToggleExpandedKey={onToggleExpandedKey}
-									/>
-								) : isAdminNavigationSection(section) ? (
-									<SidebarCategorySection
-										key={section.key}
-										activeHref={navigationActiveHref}
-										expandedKeys={expandedKeys}
-										section={section}
-										onInteract={
-											suppressAutoScrollFromSidebarInteraction
-										}
-										onNavigateFromSidebar={
-											handleNavigateFromSidebar
-										}
-										onToggleExpandedKey={onToggleExpandedKey}
-									/>
-								) : (
-									<SidebarSection
-										key={section.key}
-										activeHref={navigationActiveHref}
-										expandedKeys={expandedKeys}
-										section={section}
-										onInteract={
-											suppressAutoScrollFromSidebarInteraction
-										}
-										onNavigateFromSidebar={
-											handleNavigateFromSidebar
-										}
-										onToggleExpandedKey={onToggleExpandedKey}
-									/>
-								),
-							)}
-						</div>
+						<SidebarNavigationContent
+							activeHref={navigationActiveHref}
+							expandedKeys={expandedKeys}
+							sections={normalizedNavigationSections}
+							onInteract={suppressAutoScrollFromSidebarInteraction}
+							onNavigateFromSidebar={handleNavigateFromSidebar}
+							onToggleExpandedKey={onToggleExpandedKey}
+						/>
 					)}
 				</div>
-				{canCustomizeSidebar && !isCustomizing ? <div className="border-t border-darknavy/10 p-3"><button type="button" onClick={() => setIsCustomizing(true)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-darknavy/65 hover:bg-darknavy/5 hover:text-darknavy"><Settings2 className="h-4 w-4"/>Customize sidebar</button></div> : null}
+				{canCustomizeSidebar && !isCustomizing ? (
+					<div className="border-t border-darknavy/10 p-3">
+						<button
+							type="button"
+							onClick={() => setIsCustomizing(true)}
+							className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-darknavy/65 hover:bg-darknavy/5 hover:text-darknavy"
+						>
+							<Settings2 className="h-4 w-4" />
+							Customize sidebar
+						</button>
+					</div>
+				) : null}
 			</div>
 		</aside>
 	);
@@ -396,68 +321,26 @@ function InlineSidebarCustomizer({
 	onCancel: () => void;
 	onSaved: () => void;
 }) {
-	const companyId = useAppStore((state) => state.activeCompanyId);
-	const branchUnitId = useAppStore((state) => state.activeBranchId);
-	const accessToken = useAppStore((state) => state.accessToken);
-	const authProfileQuery = useAuthProfileQuery({ accessToken });
-	const targetUserId = authProfileQuery.data?.user.id;
-	const queryClient = useQueryClient();
 	const [items, setItems] = useState<TreeItem[]>([]);
 	const [dirty, setDirty] = useState(false);
 	const [activeDragId, setActiveDragId] = useState<string | null>(null);
+	const { sourceItems, isLoading, isSaving, saveItems } =
+		useUserSidebarCustomization({
+			fallbackItems: userModuleItems,
+			onSaved,
+		});
 	const sensors = useSensors(
 		useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-		useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+		useSensor(KeyboardSensor, {
+			coordinateGetter: sortableKeyboardCoordinates,
+		}),
 	);
-	const query = useQuery({
-		queryKey: ["user-sidebar-customization", companyId, branchUnitId, targetUserId],
-		queryFn: () =>
-			GetUserSidebarCustomization(companyId!, {
-				branchUnitId: branchUnitId!,
-				userId: targetUserId,
-			}),
-		enabled: Boolean(companyId && branchUnitId && targetUserId),
-	});
-	const sourceItems = query.data?.items ?? userModuleItems;
 	const displayedItems = useMemo(
 		() => (dirty ? items : sourceItems.map(normalize)),
 		[dirty, items, sourceItems],
 	);
-	const {
-		isOver: isRootDroppableOver,
-		setNodeRef: setRootDroppableNodeRef,
-	} = useDroppable({ id: InlineCustomizerRootDropId });
-	const save = useMutation({
-		mutationFn: async () => {
-			const customization = query.data ?? (await query.refetch()).data;
-			if (!customization) {
-				throw new Error("Sidebar version is unavailable.");
-			}
-
-			return SaveUserSidebarCustomization(
-				companyId!,
-				{ branchUnitId: branchUnitId!, userId: targetUserId },
-				{
-					version: customization.version,
-					items: displayedItems.map((item) => serialize(item)),
-					applyScope: "CURRENT_BRANCH",
-				},
-			);
-		},
-		onSuccess: (data) => {
-			setItems(data.items.map(normalize));
-			setDirty(false);
-			queryClient.setQueryData(
-				["user-sidebar-customization", companyId, branchUnitId, targetUserId],
-				data,
-			);
-			queryClient.invalidateQueries({ queryKey: AuthQueryKeys.profiles() });
-			toast.success("Sidebar saved");
-			onSaved();
-		},
-		onError: () => toast.error("Could not save sidebar changes."),
-	});
-
+	const { isOver: isRootDroppableOver, setNodeRef: setRootDroppableNodeRef } =
+		useDroppable({ id: InlineCustomizerRootDropId });
 	function update(nextItems: TreeItem[]) {
 		setItems(nextItems);
 		setDirty(true);
@@ -486,23 +369,40 @@ function InlineSidebarCustomizer({
 			const siblings =
 				gap.parentId == null
 					? withoutSource
-					: locate(withoutSource, gap.parentId)?.item.children ?? [];
-			update(replaceChildren(withoutSource, gap.parentId, insertAt(siblings, gap.index, source.item)));
+					: (locate(withoutSource, gap.parentId)?.item.children ?? []);
+			update(
+				replaceChildren(
+					withoutSource,
+					gap.parentId,
+					insertAt(siblings, gap.index, source.item),
+				),
+			);
 			return;
 		}
 
 		const target = locate(displayedItems, Number(over.id));
 		if (!target) return;
 
-		if (target.item.itemType !== "LINK" && canNest(source.item, target)) {
+		if (
+			target.item.itemType !== SidebarItemTypes.Link &&
+			canNest(source.item, target)
+		) {
 			update(appendChild(withoutSource, target.item.id, source.item));
 			return;
 		}
 
 		if (source.parentId !== target.parentId) return;
 		const siblings =
-			source.parentId == null ? displayedItems : locate(displayedItems, source.parentId)!.item.children;
-		update(replaceChildren(displayedItems, source.parentId, arrayMove(siblings, source.index, target.index)));
+			source.parentId == null
+				? displayedItems
+				: locate(displayedItems, source.parentId)!.item.children;
+		update(
+			replaceChildren(
+				displayedItems,
+				source.parentId,
+				arrayMove(siblings, source.index, target.index),
+			),
+		);
 	}
 
 	return (
@@ -521,19 +421,27 @@ function InlineSidebarCustomizer({
 						isRootDroppableOver && "bg-skyblue/5",
 					)}
 				>
-					<CustomizerGap
-						depth={0}
-						index={0}
-						parentId={null}
-					/>
-					<InlineTree
-						items={displayedItems}
-						depth={0}
-						parentId={null}
-						isDragging={Boolean(activeDragId)}
-						onChange={update}
-						onMoveToRoot={moveToRoot}
-					/>
+					{isLoading ? (
+						<p className="px-3 py-6 text-center text-sm text-darknavy/55">
+							Loading sidebar customization...
+						</p>
+					) : displayedItems.length === 0 ? (
+						<p className="rounded-md border border-dashed border-darknavy/15 px-3 py-6 text-center text-sm text-darknavy/55">
+							No sidebar items are available for customization.
+						</p>
+					) : (
+						<>
+							<CustomizerGap depth={0} index={0} parentId={null} />
+							<InlineTree
+								items={displayedItems}
+								depth={0}
+								parentId={null}
+								isDragging={Boolean(activeDragId)}
+								onChange={update}
+								onMoveToRoot={moveToRoot}
+							/>
+						</>
+					)}
 				</div>
 			</DndContext>
 			<div className="fixed bottom-0 left-0 z-20 flex w-78 gap-2 border-t border-darknavy/10 bg-white px-3 py-3">
@@ -546,9 +454,11 @@ function InlineSidebarCustomizer({
 				</button>
 				<button
 					type="button"
-					disabled={!dirty || save.isPending}
+					disabled={!dirty || isSaving}
 					className="inline-flex h-9 flex-1 items-center justify-center gap-2 rounded-md bg-skyblue text-sm font-semibold text-white disabled:opacity-45"
-					onClick={() => save.mutate()}
+					onClick={() =>
+						saveItems(displayedItems.map((item) => serialize(item)))
+					}
 				>
 					<Save className="h-4 w-4" />
 					Save
@@ -587,7 +497,11 @@ function InlineTree({
 							parentId={parentId}
 							isDragging={isDragging}
 							onChildren={(children) =>
-								onChange(items.map((value) => value.id === item.id ? { ...value, children } : value))
+								onChange(
+									items.map((value) =>
+										value.id === item.id ? { ...value, children } : value,
+									),
+								)
 							}
 							onMoveToRoot={onMoveToRoot}
 						/>
@@ -626,11 +540,14 @@ function InlineEditableRow({
 		transform,
 		transition,
 	} = useSortable({ id: String(item.id) });
-	const isStructural = item.itemType !== "LINK";
-	const configuredIcon = item.iconName ? SidebarAllowedIcons[item.iconName] : undefined;
+	const isStructural = item.itemType !== SidebarItemTypes.Link;
+	const configuredIcon = item.iconName
+		? SidebarAllowedIcons[item.iconName]
+		: undefined;
 	const ConfiguredIcon = configuredIcon;
 	const shouldShowDefaultFolder = !configuredIcon && isStructural;
-	const shouldShowDefaultFile = !configuredIcon && !isStructural && parentId == null;
+	const shouldShowDefaultFile =
+		!configuredIcon && !isStructural && parentId == null;
 	const shouldShowDefaultDot =
 		!configuredIcon && !shouldShowDefaultFolder && !shouldShowDefaultFile;
 	const rowPadding =
@@ -685,11 +602,7 @@ function InlineEditableRow({
 			</div>
 			{isStructural ? (
 				<div className="ml-3 border-l border-darknavy/10 pl-0.5">
-					<CustomizerGap
-						depth={depth + 1}
-						index={0}
-						parentId={item.id}
-					/>
+					<CustomizerGap depth={depth + 1} index={0} parentId={item.id} />
 					<SortableContext
 						items={item.children.map((child) => String(child.id))}
 						strategy={verticalListSortingStrategy}
@@ -703,7 +616,13 @@ function InlineEditableRow({
 										parentId={item.id}
 										isDragging={isDragging}
 										onChildren={(children) =>
-											onChildren(item.children.map((value) => value.id === child.id ? { ...value, children } : value))
+											onChildren(
+												item.children.map((value) =>
+													value.id === child.id
+														? { ...value, children }
+														: value,
+												),
+											)
 										}
 										onMoveToRoot={onMoveToRoot}
 									/>
@@ -735,7 +654,11 @@ function CustomizerGap({
 		id: getGapId({ type: "gap", parentId, index, depth }),
 	});
 	const widthClass =
-		depth === 0 ? "w-full" : depth === 1 ? "w-[calc(100%-0.75rem)]" : "w-[calc(100%-1.5rem)]";
+		depth === 0
+			? "w-full"
+			: depth === 1
+				? "w-[calc(100%-0.75rem)]"
+				: "w-[calc(100%-1.5rem)]";
 
 	return (
 		<div
@@ -757,22 +680,6 @@ function CustomizerGap({
 	);
 }
 
-function isAdminNavigationSection(section: MainNavigationSection) {
-	return (
-		!section.href &&
-		(section.key.startsWith("workspace-") ||
-			section.key.startsWith("master-"))
-	);
-}
-
-function isDirectNavigationSection(section: MainNavigationSection) {
-	return Boolean(
-		section.href &&
-			section.items.length === 1 &&
-			section.items[0]?.href === section.href,
-	);
-}
-
 function normalize(item: UserSidebarApiItem): TreeItem {
 	return { ...item, children: item.children.map(normalize) };
 }
@@ -782,7 +689,8 @@ function serialize(item: TreeItem): UserSidebarApiItem {
 		key: item.key,
 		label: item.label,
 		itemType: item.itemType,
-		moduleId: item.itemType === "LINK" ? item.moduleId : undefined,
+		moduleId:
+			item.itemType === SidebarItemTypes.Link ? item.moduleId : undefined,
 		iconName: item.iconName || undefined,
 		children: item.children.map(serialize),
 	} as UserSidebarApiItem;
@@ -793,7 +701,12 @@ function locate(
 	id: number,
 	parentId: number | null = null,
 	depth = 0,
-): { item: TreeItem; parentId: number | null; index: number; depth: number } | null {
+): {
+	item: TreeItem;
+	parentId: number | null;
+	index: number;
+	depth: number;
+} | null {
 	for (const [index, item] of items.entries()) {
 		if (item.id === id) return { item, parentId, index, depth };
 		const child = locate(item.children, id, item.id, depth + 1);
@@ -817,7 +730,10 @@ function replaceChildren(
 	return items.map((item) =>
 		item.id === parentId
 			? { ...item, children }
-			: { ...item, children: replaceChildren(item.children, parentId, children) },
+			: {
+					...item,
+					children: replaceChildren(item.children, parentId, children),
+				},
 	);
 }
 
@@ -837,15 +753,19 @@ function appendChild(
 	);
 }
 
-function canNest(
-	source: TreeItem,
-	target: { item: TreeItem; depth: number },
-) {
-	if (target.item.itemType === "LINK") return false;
+function canNest(source: TreeItem, target: { item: TreeItem; depth: number }) {
+	if (target.item.itemType === SidebarItemTypes.Link) return false;
 	if (source.itemType === "SECTION") {
-		return target.item.itemType === "SECTION" && target.depth < MaxCustomizationDepth - 1;
+		return (
+			target.item.itemType === "SECTION" &&
+			target.depth < MaxCustomizationDepth - 1
+		);
 	}
-	if (source.itemType === "CONTAINER" && target.depth >= MaxCustomizationDepth - 1) return false;
+	if (
+		source.itemType === "CONTAINER" &&
+		target.depth >= MaxCustomizationDepth - 1
+	)
+		return false;
 	return target.depth + getTreeDepth(source) <= MaxCustomizationDepth;
 }
 
@@ -887,7 +807,9 @@ function normalizeApprovalManagementNavigation(
 		}
 
 		if (section.key === "approval-management") {
-			normalizedSections.push(createApprovalManagementSection(section.items[0]));
+			normalizedSections.push(
+				createApprovalManagementSection(section.items[0]),
+			);
 			continue;
 		}
 
@@ -935,7 +857,11 @@ function normalizeApprovalManagementItems(
 	items: MainNavigationItem[],
 ): MainNavigationItem[] {
 	return items
-		.filter((item) => !isHiddenApprovalManagementItem(item) && !isApprovalManagementItem(item))
+		.filter(
+			(item) =>
+				!isHiddenApprovalManagementItem(item) &&
+				!isApprovalManagementItem(item),
+		)
 		.map((item) => {
 			return {
 				...item,
@@ -960,7 +886,8 @@ function isApprovalManagementItem(item: MainNavigationItem) {
 	return (
 		item.key === "system-administration-approval-management" ||
 		item.key === "maintenance-approval" ||
-		(item.href === ApprovalManagementHref && item.label === "Approval Management")
+		(item.href === ApprovalManagementHref &&
+			item.label === "Approval Management")
 	);
 }
 
@@ -972,7 +899,9 @@ function findApprovalManagementItem(
 			return item;
 		}
 
-		const child = item.children ? findApprovalManagementItem(item.children) : undefined;
+		const child = item.children
+			? findApprovalManagementItem(item.children)
+			: undefined;
 
 		if (child) {
 			return child;

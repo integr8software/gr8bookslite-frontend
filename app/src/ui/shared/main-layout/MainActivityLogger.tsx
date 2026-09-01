@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { RecordWorkspaceActivity } from "@/app/src/services/workspace/audit-logs/WorkspaceAuditLogApi";
-import type { MainBranch } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+import type { MainBranch } from "@/app/src/types/shared/main-layout/MainLayoutDomainTypes";
 import type { MainBreadcrumb } from "@/app/src/types/shared/main-layout/MainLayoutTypes";
 
 type MainActivityLoggerProps = {

@@ -3,7 +3,7 @@ import type {
   MainIconName,
   MainNavigationItem,
   MainNavigationSection,
-} from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+} from "@/app/src/types/shared/main-layout/MainLayoutDomainTypes";
 import { getModuleRoute, MODULE_ROUTE_FALLBACK } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type { AuthUserModuleItem } from "@/app/src/types/auth/AuthTypes";
 

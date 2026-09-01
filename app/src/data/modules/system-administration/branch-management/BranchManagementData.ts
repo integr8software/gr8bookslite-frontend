@@ -1,4 +1,4 @@
-import type { MainBranch } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+import type { MainBranch } from "@/app/src/types/shared/main-layout/MainLayoutDomainTypes";
 import type {
   WorkspaceCompanyRecord,
 } from "@/app/src/types/workspace/WorkspaceCompanyTypes";

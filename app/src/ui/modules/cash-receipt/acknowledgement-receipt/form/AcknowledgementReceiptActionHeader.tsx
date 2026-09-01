@@ -4,24 +4,22 @@ import {
   AcknowledgementReceiptCopyFromRecords,
   AcknowledgementReceiptCopySources,
 } from "@/app/src/data/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptData";
-import { AcknowledgementReceiptHref } from "@/app/src/constants/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptConstants";
 import type {
   AcknowledgementReceiptActionMode,
   AcknowledgementReceiptCopyFromRecord,
   AcknowledgementReceiptFormValues,
 } from "@/app/src/types/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptTypes";
-import {
-  ModuleHeader,
-  moduleHeaderActionClassNames,
-} from "@/app/src/ui/shared/module/ModuleHeader";
+import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 import { AppCopyFromDropdown } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
 
 type AcknowledgementReceiptActionHeaderProps = {
+  baseHref: string;
   copyFromRecords?: AcknowledgementReceiptCopyFromRecord[];
   copyFromSources?: string[];
   mode: AcknowledgementReceiptActionMode;
   recordId?: string;
+  receiptLabel?: string;
   values: AcknowledgementReceiptFormValues;
   onCopyFrom: (recordIds: string[]) => void;
   onPreview: () => void;
@@ -29,6 +27,7 @@ type AcknowledgementReceiptActionHeaderProps = {
 };
 
 export function AcknowledgementReceiptActionHeader({
+  baseHref,
   copyFromRecords = AcknowledgementReceiptCopyFromRecords,
   copyFromSources = AcknowledgementReceiptCopySources,
   mode,
@@ -36,20 +35,21 @@ export function AcknowledgementReceiptActionHeader({
   onPreview,
   onSubmit,
   recordId,
+  receiptLabel = "Collection Receipt",
   values,
 }: AcknowledgementReceiptActionHeaderProps) {
   const title =
     mode === "view"
-      ? `View Acknowledgement Receipt | ${values.receiptNo}`
+      ? `View ${receiptLabel} | ${values.receiptNo}`
       : mode === "edit"
-        ? `Edit Acknowledgement Receipt | ${values.receiptNo}`
-        : "Add Acknowledgement Receipt";
+        ? `Edit ${receiptLabel} | ${values.receiptNo}`
+        : `Add ${receiptLabel}`;
 
   return (
     <ModuleHeader
       variant="panel"
       titleAs="h1"
-      eyebrow={values.referenceNo || "Acknowledgement Receipt"}
+      eyebrow={values.referenceNo || receiptLabel}
       title={title}
       description={
         mode === "view"
@@ -59,33 +59,25 @@ export function AcknowledgementReceiptActionHeader({
       actionsClassName="items-center gap-1"
       actions={
         <>
-          <Link href={AcknowledgementReceiptHref} className={moduleHeaderActionClassNames.secondary}>
+          <Link href={baseHref} className={moduleHeaderActionClassNames.secondary}>
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Back
           </Link>
           <ReportPreviewAction onPreview={onPreview} />
           {mode === "view" && recordId && values.status === "Draft" ? (
-            <Link href={`${AcknowledgementReceiptHref}/edit/${recordId}`} className={moduleHeaderActionClassNames.primary}>
+            <Link href={`${baseHref}/edit/${recordId}`} className={moduleHeaderActionClassNames.primary}>
               <Edit3 className="h-4 w-4" aria-hidden="true" />
               Edit
             </Link>
           ) : null}
           {mode === "view" ? null : (
             <>
-              <Link href={AcknowledgementReceiptHref} className={moduleHeaderActionClassNames.secondary}>
+              <Link href={baseHref} className={moduleHeaderActionClassNames.secondary}>
                 <X className="h-4 w-4" aria-hidden="true" />
                 Cancel
               </Link>
-              <AppCopyFromDropdown
-                records={copyFromRecords}
-                sources={copyFromSources}
-                onApply={onCopyFrom}
-              />
-              <button
-                type="button"
-                onClick={onSubmit}
-                className={moduleHeaderActionClassNames.primary}
-              >
+              <AppCopyFromDropdown records={copyFromRecords} sources={copyFromSources} onApply={onCopyFrom} />
+              <button type="button" onClick={onSubmit} className={moduleHeaderActionClassNames.primary}>
                 <Save className="h-4 w-4" aria-hidden="true" />
                 Save
               </button>

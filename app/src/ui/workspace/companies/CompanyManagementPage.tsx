@@ -45,11 +45,24 @@ export function CompanyManagementPage() {
     [plansQuery.data?.plans],
   );
   const activeCompanies = companyManagement.companies.filter(
-    (company) => company.status === "Active",
+    (company) =>
+      company.status === "Active" ||
+      company.status === "Trialing" ||
+      company.status === "Trial",
   ).length;
   const inactiveCompanies = companyManagement.companies.filter(
-    (company) => company.status === "Inactive",
+    (company) =>
+      company.status === "Expired" ||
+      company.status === "Canceled" ||
+      company.status === "Incomplete" ||
+      company.status === "Unpaid" ||
+      company.status === "Incomplete Canceled" ||
+      company.status === "Past Due" ||
+      company.status === "Inactive" ||
+      company.status === "Suspended",
   ).length;
+
+
   const totalBranches = companyManagement.companies.reduce(
     (total, company) => total + (company.totalBranches ?? 0),
     0,

@@ -7,7 +7,9 @@ import {
 } from "@/app/src/generated/api/workspace-users/workspace-users";
 import type {
   CreateWorkspaceUserDto,
+  WorkspaceUserAssignedUnitResponseDto,
   WorkspaceUserCancelInvitationResponseDto,
+  WorkspaceUserCompanyAssignmentResponseDto,
   WorkspaceUserMessageResponseDto,
   WorkspaceUserResponseDto,
 } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
@@ -22,9 +24,32 @@ import type {
   WorkspaceUserStatus,
 } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
 
-type WorkspaceCompanyUserApiLike =
-  | WorkspaceCompanyUserApiRecord
-  | WorkspaceUserResponseDto;
+type WorkspaceUserAssignedUnitApiLike =
+  | WorkspaceCompanyUserAssignedUnitApiRecord
+  | (WorkspaceUserAssignedUnitResponseDto & {
+      companyRoleId?: number | null;
+      companyRole?: {
+        id: number;
+        name: string;
+        code: string;
+      } | null;
+    });
+
+type WorkspaceUserCompanyAssignmentApiLike = Omit<
+  WorkspaceCompanyUserApiRecord["companyAssignments"][number] | WorkspaceUserCompanyAssignmentResponseDto,
+  "units"
+> & {
+  units?: WorkspaceUserAssignedUnitApiLike[];
+  role?: "ADMIN" | "USER";
+  companyRoleId?: number | null;
+};
+
+type WorkspaceCompanyUserApiLike = Omit<
+  WorkspaceCompanyUserApiRecord | WorkspaceUserResponseDto,
+  "companyAssignments"
+> & {
+  companyAssignments: WorkspaceUserCompanyAssignmentApiLike[];
+};
 
 const WorkspaceUserMutationTimeoutMs = 60000;
 
@@ -83,6 +108,18 @@ function MapWorkspaceUserFormToRequest(
     companyAssignments: values.companyAssignments.map((assignment) => ({
       companyId: Number(assignment.companyId),
       unitIds: assignment.branchIds.map(Number),
+      unitAssignments: assignment.branchIds.map((branchId) => ({
+        unitId: Number(branchId),
+        companyRoleId: assignment.branchRoles?.[branchId]
+          ? Number(assignment.branchRoles[branchId])
+          : assignment.companyRoleId
+            ? Number(assignment.companyRoleId)
+            : null,
+      })),
+      role: assignment.role ?? "USER",
+      companyRoleId: assignment.companyRoleId
+        ? Number(assignment.companyRoleId)
+        : null,
     })),
     contactNumber:
       contactNumber && contactNumber !== "+63" ? contactNumber : undefined,
@@ -97,12 +134,26 @@ export function MapWorkspaceUserApiRecord(
   const primaryCompanyId = user.companyAssignments[0]?.companyId;
 
   return {
-    companyAssignments: user.companyAssignments.map((assignment) => ({
-      branchIds: assignment.unitIds.map(String),
-      branches: assignment.units?.map(MapWorkspaceUserAssignedUnitApiRecord),
-      companyId: String(assignment.companyId),
-    })),
+    companyAssignments: user.companyAssignments.map((assignment) => {
+      const branchRoles: Record<string, string> = {};
+      assignment.units?.forEach((unit) => {
+        if (unit.companyRoleId) {
+          branchRoles[String(unit.id)] = String(unit.companyRoleId);
+        }
+      });
+      return {
+        branchIds: assignment.unitIds.map(String),
+        branchRoles,
+        branches: assignment.units?.map(MapWorkspaceUserAssignedUnitApiRecord),
+        companyId: String(assignment.companyId),
+        role: assignment.role ?? "USER",
+        companyRoleId: assignment.companyRoleId
+          ? String(assignment.companyRoleId)
+          : null,
+      };
+    }),
     companyId: primaryCompanyId ? String(primaryCompanyId) : "",
+
     contactNumber: user.contactNumber ?? "",
     email: user.email,
     id: String(user.id),
@@ -117,7 +168,7 @@ export function MapWorkspaceUserApiRecord(
 }
 
 function MapWorkspaceUserAssignedUnitApiRecord(
-  unit: WorkspaceCompanyUserAssignedUnitApiRecord,
+  unit: WorkspaceUserAssignedUnitApiLike,
 ): WorkspaceCompanyBranchRecord {
   return {
     address: "",
@@ -131,8 +182,12 @@ function MapWorkspaceUserAssignedUnitApiRecord(
     name: unit.displayName ?? unit.name,
     status: GetWorkspaceCompanyUnitStatus(unit.isActive),
     tin: "",
+    companyRoleId: unit.companyRoleId ? String(unit.companyRoleId) : undefined,
+    companyRoleName: unit.companyRole?.name ?? undefined,
   };
 }
+
+
 
 function GetWorkspaceCompanyBranchType(
   type: WorkspaceCompanyUnitApiType,

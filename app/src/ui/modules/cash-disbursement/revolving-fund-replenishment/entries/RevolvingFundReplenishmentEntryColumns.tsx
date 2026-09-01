@@ -103,7 +103,7 @@ export function createRevolvingFundReplenishmentLineColumns({
   });
 
   const calculatedMoney = (
-    id: "netAmount" | "vatPercent" | "vatAmount" | "ewtPercent" | "ewtAmount",
+    id: "netAmount" | "vatPercent" | "vatAmount" | "ewtPercent" | "ewtAmount" | "disburseAmount",
   ): ModuleDataEntryColumn<RevolvingFundReplenishmentEntry> => ({
     header: columnLabels[id],
     id,
@@ -166,6 +166,7 @@ export function createRevolvingFundReplenishmentLineColumns({
     ewtCode: dropdown("ewtCode", RevolvingFundReplenishmentEntryEwtCodeOptions),
     ewtPercent: calculatedMoney("ewtPercent"),
     ewtAmount: calculatedMoney("ewtAmount"),
+    disburseAmount: calculatedMoney("disburseAmount"),
     responsibilityCenterCode: {
       header: columnLabels.responsibilityCenterCode,
       id: "responsibilityCenterCode",
@@ -199,19 +200,20 @@ export function createRevolvingFundReplenishmentLineColumns({
         />
       ),
     },
-    remarks: {
-      header: columnLabels.remarks,
-      id: "remarks",
-      width: columnWidths.remarks,
+    particulars: {
+      header: columnLabels.particulars,
+      id: "particulars",
+      width: columnWidths.particulars,
       widthClassName: "w-auto",
       renderCell: (row, _index, context) => (
         <ModuleDataEntryRemarksCell
           inputId={context.fieldId}
           inputName={context.fieldName}
           isReadonly={page.isReadonly}
-          value={row.remarks}
+          dialogTitle="Particulars"
+          value={row.particulars ?? row.remarks ?? ""}
           textareaId={`${context.fieldId}-dialog`}
-          onChange={(value) => page.updateEntry(row.id, { remarks: value })}
+          onChange={(value) => page.updateEntry(row.id, { particulars: value, remarks: value })}
         />
       ),
     },
@@ -242,6 +244,6 @@ export function createRevolvingFundReplenishmentAccountingColumns({
     credit: column("credit"),
     partyCode: column("partyCode"),
     partyName: column("partyName"),
-    remarks: column("remarks"),
+    particulars: column("particulars"),
   };
 }

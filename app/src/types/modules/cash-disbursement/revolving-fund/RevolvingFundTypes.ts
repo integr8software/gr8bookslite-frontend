@@ -28,7 +28,8 @@ export type RevolvingFundItem = {
   supplierName: string;
   orNo: string;
   tinNo: string;
-  remarks: string;
+  particulars: string;
+  remarks?: string;
   amount: string;
   netAmount: string;
   vatPercent: string;
@@ -36,6 +37,7 @@ export type RevolvingFundItem = {
   ewtCode: string;
   ewtPercent: string;
   ewtAmount: string;
+  disburseAmount: string;
   type: string;
   vatType: string;
   grossAmount: string;
@@ -43,7 +45,7 @@ export type RevolvingFundItem = {
   responsibilityCenterName: string;
 };
 
-export type RevolvingFundItemColumnId = Exclude<keyof RevolvingFundItem, "id">;
+export type RevolvingFundItemColumnId = Exclude<keyof RevolvingFundItem, "id" | "remarks">;
 
 export type RevolvingFundFormValues = {
   transactionNo: string;
@@ -72,10 +74,11 @@ export type RevolvingFundAccountingEntry = {
   credit: string;
   partyCode: string;
   partyName: string;
-  remarks: string;
+  particulars: string;
+  remarks?: string;
 };
 
-export type RevolvingFundAccountingColumnId = Exclude<keyof RevolvingFundAccountingEntry, "id">;
+export type RevolvingFundAccountingColumnId = Exclude<keyof RevolvingFundAccountingEntry, "id" | "remarks">;
 
 export type RevolvingFundRecord = {
   id: string;

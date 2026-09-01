@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
+  CashVoucherAccountingTablePreferencesStorageKey,
   CashVoucherEntryColumnLabels,
   DefaultCashVoucherEntryColumnOrder,
   DefaultCashVoucherEntryColumnWidths,
@@ -11,6 +12,7 @@ import {
   getCashVoucherEntryExportCell,
   isCashVoucherEntryColumnId,
 } from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherAccountingEntryData";
+import { useDataEntryTablePreferences } from "@/app/src/hooks/shared/module/useDataEntryTablePreferences";
 import type {
   CashVoucherAccountingEntryTableProps,
   CashVoucherEntryColumnId,
@@ -21,12 +23,6 @@ import type {
   ModuleDataEntryColumn,
   ModuleDataEntryColumnOption,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
-import {
-  calculateFitColumnWidth,
-  reorderColumnIds,
-  toggleVisibleColumnId,
-} from "@/app/src/ui/shared/module/module-data-entry/entryTableState.util";
-import { clampColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/utils";
 import { formatAmount } from "@/app/src/utils/currency.util";
 import { joinClasses } from "@/app/src/utils/string.util";
 
@@ -46,14 +42,25 @@ export function CashVoucherAccountingEntryTable({
   totalDebit = 0,
   variance = 0,
 }: CashVoucherAccountingEntryTableProps) {
-  const [accountingColumnOrder, setAccountingColumnOrder] = useState<CashVoucherEntryColumnId[]>(
-    DefaultCashVoucherEntryColumnOrder,
-  );
-  const [visibleAccountingColumnIds, setVisibleAccountingColumnIds] = useState<CashVoucherEntryColumnId[]>(
-    DefaultVisibleCashVoucherEntryColumnOrder,
-  );
-  const [accountingColumnWidths, setAccountingColumnWidths] = useState(DefaultCashVoucherEntryColumnWidths);
-  const [accountingColumnLabels, setAccountingColumnLabels] = useState(CashVoucherEntryColumnLabels);
+  const {
+    columnOrder: accountingColumnOrder,
+    visibleColumnIds: visibleAccountingColumnIds,
+    columnWidths: accountingColumnWidths,
+    columnLabels: accountingColumnLabels,
+    handleMoveColumn: moveColumn,
+    handleToggleColumnVisibility: toggleColumnVisibility,
+    handleUpdateColumnHeader: updateColumnHeader,
+    handleUpdateColumnWidth: updateColumnWidth,
+    handleFitColumnWidth: fitColumnWidth,
+    handleResetColumns,
+  } = useDataEntryTablePreferences<CashVoucherEntryColumnId>({
+    storageKey: CashVoucherAccountingTablePreferencesStorageKey,
+    defaultColumnOrder: DefaultCashVoucherEntryColumnOrder,
+    defaultVisibleColumnIds: DefaultVisibleCashVoucherEntryColumnOrder,
+    defaultColumnWidths: DefaultCashVoucherEntryColumnWidths,
+    defaultColumnLabels: CashVoucherEntryColumnLabels,
+    protectedColumnIds: ProtectedCashVoucherEntryColumnIds,
+  });
 
   const hasMultiCheckNumberColumn = false;
   const visibleAccountingColumnOrder = accountingColumnOrder.filter((columnId) =>
@@ -63,9 +70,17 @@ export function CashVoucherAccountingEntryTable({
   const columns = useMemo(
     () =>
       visibleAccountingColumnOrder
-        .map((columnId) => accountingColumns?.[columnId])
-        .filter((col): col is ModuleDataEntryColumn<CashVoucherLineEntry> => Boolean(col)),
-    [accountingColumns, visibleAccountingColumnOrder],
+        .map((columnId) => {
+          const col = accountingColumns?.[columnId];
+          if (!col) return null;
+          return {
+            ...col,
+            header: accountingColumnLabels[columnId] || col.header,
+            width: accountingColumnWidths[columnId] ?? col.width,
+          };
+        })
+        .filter((col): col is NonNullable<typeof col> => col !== null),
+    [accountingColumns, accountingColumnLabels, accountingColumnWidths, visibleAccountingColumnOrder],
   );
 
   const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
@@ -84,56 +99,32 @@ export function CashVoucherAccountingEntryTable({
 
   function handleMoveColumn(fromId: string, toId: string) {
     if (isCashVoucherEntryColumnId(fromId) && isCashVoucherEntryColumnId(toId)) {
-      setAccountingColumnOrder((currentOrder) => reorderColumnIds(currentOrder, fromId, toId));
+      moveColumn(fromId, toId);
     }
   }
 
   function handleToggleColumnVisibility(columnId: string, isVisible: boolean) {
-    if (!isCashVoucherEntryColumnId(columnId)) {
-      return;
+    if (isCashVoucherEntryColumnId(columnId)) {
+      toggleColumnVisibility(columnId, isVisible);
     }
-
-    if (!isVisible && ProtectedCashVoucherEntryColumnIds.has(columnId)) {
-      return;
-    }
-
-    setVisibleAccountingColumnIds((currentIds) =>
-      toggleVisibleColumnId(currentIds, accountingColumnOrder, columnId, isVisible),
-    );
   }
 
   function handleUpdateColumnHeader(columnId: string, header: string) {
     if (isCashVoucherEntryColumnId(columnId)) {
-      setAccountingColumnLabels((currentLabels) => ({ ...currentLabels, [columnId]: header }));
+      updateColumnHeader(columnId, header);
     }
   }
 
   function handleUpdateColumnWidth(columnId: string, width: number) {
     if (isCashVoucherEntryColumnId(columnId)) {
-      setAccountingColumnWidths((currentWidths) => ({
-        ...currentWidths,
-        [columnId]: clampColumnWidth(width),
-      }));
+      updateColumnWidth(columnId, width);
     }
   }
 
   function handleFitColumnWidth(columnId: string) {
     if (isCashVoucherEntryColumnId(columnId)) {
-      const fitWidth = calculateFitColumnWidth(
-        accountingColumnLabels[columnId],
-        accountingRows,
-        columnId,
-        (entry) => getCashVoucherEntryExportCell(entry, columnId),
-      );
-      handleUpdateColumnWidth(columnId, fitWidth);
+      fitColumnWidth(columnId, accountingRows, (entry) => getCashVoucherEntryExportCell(entry, columnId));
     }
-  }
-
-  function handleResetColumns() {
-    setAccountingColumnOrder(DefaultCashVoucherEntryColumnOrder);
-    setVisibleAccountingColumnIds(DefaultVisibleCashVoucherEntryColumnOrder);
-    setAccountingColumnWidths(DefaultCashVoucherEntryColumnWidths);
-    setAccountingColumnLabels(CashVoucherEntryColumnLabels);
   }
 
   const computedDebit = totalDebit || accountingRows.reduce((sum, r) => sum + Number(r.debit || 0), 0);

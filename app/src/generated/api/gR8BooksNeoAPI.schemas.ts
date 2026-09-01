@@ -5993,6 +5993,56 @@ export interface SaveUserSidebarDto {
   items: UserSidebarTreeItemDto[];
 }
 
+export type AiAssistantQueuedTranscriptionResponseDtoStatus = typeof AiAssistantQueuedTranscriptionResponseDtoStatus[keyof typeof AiAssistantQueuedTranscriptionResponseDtoStatus];
+
+
+export const AiAssistantQueuedTranscriptionResponseDtoStatus = {
+  queued: 'queued',
+} as const;
+
+export interface AiAssistantQueuedTranscriptionResponseDto {
+  jobId: string;
+  status: AiAssistantQueuedTranscriptionResponseDtoStatus;
+}
+
+export type AiAssistantProcessingTranscriptionResponseDtoStatus = typeof AiAssistantProcessingTranscriptionResponseDtoStatus[keyof typeof AiAssistantProcessingTranscriptionResponseDtoStatus];
+
+
+export const AiAssistantProcessingTranscriptionResponseDtoStatus = {
+  processing: 'processing',
+} as const;
+
+export interface AiAssistantProcessingTranscriptionResponseDto {
+  jobId: string;
+  status: AiAssistantProcessingTranscriptionResponseDtoStatus;
+}
+
+export type AiAssistantCompletedTranscriptionResponseDtoStatus = typeof AiAssistantCompletedTranscriptionResponseDtoStatus[keyof typeof AiAssistantCompletedTranscriptionResponseDtoStatus];
+
+
+export const AiAssistantCompletedTranscriptionResponseDtoStatus = {
+  completed: 'completed',
+} as const;
+
+export interface AiAssistantCompletedTranscriptionResponseDto {
+  jobId?: string;
+  status: AiAssistantCompletedTranscriptionResponseDtoStatus;
+  transcript: string;
+}
+
+export type AiAssistantFailedTranscriptionResponseDtoStatus = typeof AiAssistantFailedTranscriptionResponseDtoStatus[keyof typeof AiAssistantFailedTranscriptionResponseDtoStatus];
+
+
+export const AiAssistantFailedTranscriptionResponseDtoStatus = {
+  failed: 'failed',
+} as const;
+
+export interface AiAssistantFailedTranscriptionResponseDto {
+  error: string;
+  jobId: string;
+  status: AiAssistantFailedTranscriptionResponseDtoStatus;
+}
+
 export type AiAssistantChatMessageDtoRole = typeof AiAssistantChatMessageDtoRole[keyof typeof AiAssistantChatMessageDtoRole];
 
 
@@ -6010,8 +6060,159 @@ export interface AiAssistantChatMessageDto {
 export interface AiAssistantChatDto {
   /** @maxLength 4000 */
   message: string;
+  /** @maxLength 2048 */
   currentPath?: string;
+  /** @maxItems 50 */
   history?: AiAssistantChatMessageDto[];
+}
+
+export type AiAssistantModuleCommandActionDtoType = typeof AiAssistantModuleCommandActionDtoType[keyof typeof AiAssistantModuleCommandActionDtoType];
+
+
+export const AiAssistantModuleCommandActionDtoType = {
+  module_command: 'module_command',
+} as const;
+
+export type AiAssistantModuleCommandActionDtoCommand = typeof AiAssistantModuleCommandActionDtoCommand[keyof typeof AiAssistantModuleCommandActionDtoCommand];
+
+
+export const AiAssistantModuleCommandActionDtoCommand = {
+  open: 'open',
+} as const;
+
+export interface AiAssistantModuleCommandActionDto {
+  type: AiAssistantModuleCommandActionDtoType;
+  moduleCode: string;
+  command: AiAssistantModuleCommandActionDtoCommand;
+  label?: string;
+}
+
+export type AiAssistantNavigateActionDtoType = typeof AiAssistantNavigateActionDtoType[keyof typeof AiAssistantNavigateActionDtoType];
+
+
+export const AiAssistantNavigateActionDtoType = {
+  navigate: 'navigate',
+} as const;
+
+export interface AiAssistantNavigateActionDto {
+  type: AiAssistantNavigateActionDtoType;
+  route: string;
+  label?: string;
+}
+
+export interface AiAssistantPurchaseRequestItemPrefillDto {
+  description?: string;
+  quantity?: number;
+  uom?: string;
+  cost?: number;
+}
+
+export interface AiAssistantPurchaseRequestPrefillDto {
+  purchaseType?: string;
+  supplierName?: string;
+  department?: string;
+  remarks?: string;
+  items?: AiAssistantPurchaseRequestItemPrefillDto[];
+}
+
+export type AiAssistantOpenFormActionDtoType = typeof AiAssistantOpenFormActionDtoType[keyof typeof AiAssistantOpenFormActionDtoType];
+
+
+export const AiAssistantOpenFormActionDtoType = {
+  open_form: 'open_form',
+} as const;
+
+export type AiAssistantOpenFormActionDtoTarget = typeof AiAssistantOpenFormActionDtoTarget[keyof typeof AiAssistantOpenFormActionDtoTarget];
+
+
+export const AiAssistantOpenFormActionDtoTarget = {
+  purchase_request: 'purchase_request',
+} as const;
+
+export interface AiAssistantOpenFormActionDto {
+  type: AiAssistantOpenFormActionDtoType;
+  target: AiAssistantOpenFormActionDtoTarget;
+  route: string;
+  label?: string;
+  prefill?: AiAssistantPurchaseRequestPrefillDto;
+}
+
+export type AiAssistantTermsMaintenancePrefillDtoDatemode = typeof AiAssistantTermsMaintenancePrefillDtoDatemode[keyof typeof AiAssistantTermsMaintenancePrefillDtoDatemode];
+
+
+export const AiAssistantTermsMaintenancePrefillDtoDatemode = {
+  Day: 'Day',
+  Month: 'Month',
+  Year: 'Year',
+} as const;
+
+export type AiAssistantTermsMaintenancePrefillDtoStatus = typeof AiAssistantTermsMaintenancePrefillDtoStatus[keyof typeof AiAssistantTermsMaintenancePrefillDtoStatus];
+
+
+export const AiAssistantTermsMaintenancePrefillDtoStatus = {
+  Active: 'Active',
+  Inactive: 'Inactive',
+} as const;
+
+export interface AiAssistantTermsMaintenancePrefillDto {
+  name?: string;
+  description?: string;
+  datemode?: AiAssistantTermsMaintenancePrefillDtoDatemode;
+  period?: string;
+  status?: AiAssistantTermsMaintenancePrefillDtoStatus;
+}
+
+export type AiAssistantTermsMaintenanceActionDtoType = typeof AiAssistantTermsMaintenanceActionDtoType[keyof typeof AiAssistantTermsMaintenanceActionDtoType];
+
+
+export const AiAssistantTermsMaintenanceActionDtoType = {
+  terms_maintenance: 'terms_maintenance',
+} as const;
+
+export type AiAssistantTermsMaintenanceActionDtoModuleCode = typeof AiAssistantTermsMaintenanceActionDtoModuleCode[keyof typeof AiAssistantTermsMaintenanceActionDtoModuleCode];
+
+
+export const AiAssistantTermsMaintenanceActionDtoModuleCode = {
+  TM: 'TM',
+} as const;
+
+export type AiAssistantTermsMaintenanceActionDtoCommand = typeof AiAssistantTermsMaintenanceActionDtoCommand[keyof typeof AiAssistantTermsMaintenanceActionDtoCommand];
+
+
+export const AiAssistantTermsMaintenanceActionDtoCommand = {
+  open: 'open',
+  search: 'search',
+  filter_status: 'filter_status',
+  prepare_add: 'prepare_add',
+  preview_edit: 'preview_edit',
+} as const;
+
+export type AiAssistantTermsMaintenanceActionDtoStatus = typeof AiAssistantTermsMaintenanceActionDtoStatus[keyof typeof AiAssistantTermsMaintenanceActionDtoStatus];
+
+
+export const AiAssistantTermsMaintenanceActionDtoStatus = {
+  Active: 'Active',
+  Inactive: 'Inactive',
+} as const;
+
+export interface AiAssistantTermsMaintenanceActionDto {
+  type: AiAssistantTermsMaintenanceActionDtoType;
+  moduleCode: AiAssistantTermsMaintenanceActionDtoModuleCode;
+  command: AiAssistantTermsMaintenanceActionDtoCommand;
+  label?: string;
+  query?: string;
+  status?: AiAssistantTermsMaintenanceActionDtoStatus;
+  prefill?: AiAssistantTermsMaintenancePrefillDto;
+  targetTermName?: string;
+}
+
+export interface AiAssistantChatResponseDto {
+  message: string;
+  action: AiAssistantModuleCommandActionDto | AiAssistantNavigateActionDto | AiAssistantOpenFormActionDto | AiAssistantTermsMaintenanceActionDto | null;
+}
+
+export interface AiAssistantTranscriptionUploadDto {
+  audio: Blob;
 }
 
 export interface AccountsPayableVoucherDetailsDto {
@@ -9226,30 +9427,28 @@ export interface CollectionReceiptDetailResponseDto {
   lineNumber: number;
   description: string;
   /** @nullable */
+  partyCode?: string | null;
+  /** @nullable */
+  partyName?: string | null;
+  /** @nullable */
   particulars?: string | null;
-  quantity: number;
-  amount: number;
-  netAmount: number;
-  vatAmount: number;
-  wvatAmount: number;
-  ewtAmount: number;
-  discountPercent: number;
-  discountAmount: number;
-  grossAmount: number;
   /** @nullable */
-  vatType?: string | null;
-  vatable: boolean;
-  vatInclusive: boolean;
-  withWvat: boolean;
-  /** @nullable */
-  wvatType?: string | null;
-  withEwt: boolean;
-  /** @nullable */
-  ewtType?: string | null;
+  referenceNo?: string | null;
   /** @nullable */
   responsibilityCenterId?: string | null;
   /** @nullable */
   responsibilityCenter?: string | null;
+  /** @nullable */
+  vatType?: string | null;
+  vatPercent: number;
+  /** @nullable */
+  cwtCode?: string | null;
+  cwtPercent: number;
+  netAmount: number;
+  vatAmount: number;
+  ewtAmount: number;
+  grossAmount: number;
+  totalReceived: number;
 }
 
 export interface CollectionReceiptJournalEntryResponseDto {
@@ -9309,23 +9508,9 @@ export interface CollectionReceiptResponseDto {
   /** @nullable */
   billToName?: string | null;
   /** @nullable */
-  address?: string | null;
+  paymentId?: string | null;
   /** @nullable */
-  contactPerson?: string | null;
-  /** @nullable */
-  contactNo?: string | null;
-  /** @nullable */
-  businessStyle?: string | null;
-  /** @nullable */
-  projectCode?: string | null;
-  /** @nullable */
-  projectName?: string | null;
-  /** @nullable */
-  projectRef?: string | null;
-  /** @nullable */
-  salesAssociate?: string | null;
-  /** @nullable */
-  teamAssigned?: string | null;
+  paymentType?: string | null;
   currency: string;
   exchangeRate: number;
   netAmount: number;
@@ -9334,10 +9519,6 @@ export interface CollectionReceiptResponseDto {
   ewtAmount: number;
   discountAmount: number;
   grossAmount: number;
-  /** @nullable */
-  termId?: string | null;
-  /** @nullable */
-  terms?: string | null;
   receivableAccountId: string;
   receivableAccountCode: string;
   receivableAccountTitle: string;
@@ -9402,43 +9583,51 @@ export interface CollectionReceiptContainerResponseDto {
 export interface CollectionReceiptDetailDto {
   /** @minimum 1 */
   lineNumber: number;
-  /** @maxLength 250 */
+  /**
+     * Collection Type selected in the item row.
+     * @maxLength 250
+     */
   description: string;
   /**
      * @maxLength 500
      * @nullable
      */
   particulars?: string | null;
-  /** @minimum 0 */
-  quantity: number;
-  amount: number;
-  netAmount: number;
-  vatAmount: number;
-  wvatAmount: number;
-  ewtAmount: number;
-  /** @minimum 0 */
-  discountPercent: number;
-  discountAmount: number;
-  grossAmount: number;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  partyCode?: string | null;
+  /**
+     * @maxLength 255
+     * @nullable
+     */
+  partyName?: string | null;
+  /**
+     * @maxLength 120
+     * @nullable
+     */
+  referenceNo?: string | null;
   /**
      * @maxLength 80
      * @nullable
      */
   vatType?: string | null;
-  vatable: boolean;
-  vatInclusive: boolean;
-  withWvat: boolean;
+  /** @minimum 0 */
+  vatPercent: number;
   /**
      * @maxLength 80
      * @nullable
      */
-  wvatType?: string | null;
-  withEwt: boolean;
-  /**
-     * @maxLength 80
-     * @nullable
-     */
-  ewtType?: string | null;
+  cwtCode?: string | null;
+  /** @minimum 0 */
+  cwtPercent: number;
+  netAmount: number;
+  vatAmount: number;
+  /** CWT Amount for the collection item. */
+  ewtAmount: number;
+  grossAmount: number;
+  totalReceived: number;
   /**
      * @maxLength 40
      * @nullable
@@ -9522,6 +9711,11 @@ export interface CollectionReceiptJournalEntryDto {
 }
 
 export interface CreateCollectionReceiptDto {
+  /**
+     * @maxLength 40
+     * @nullable
+     */
+  paymentId?: string | null;
   /** @minimum 1 */
   branchUnitId?: number;
   /**
@@ -9555,51 +9749,6 @@ export interface CreateCollectionReceiptDto {
      * @nullable
      */
   billToName?: string | null;
-  /**
-     * @maxLength 500
-     * @nullable
-     */
-  address?: string | null;
-  /**
-     * @maxLength 255
-     * @nullable
-     */
-  contactPerson?: string | null;
-  /**
-     * @maxLength 40
-     * @nullable
-     */
-  contactNo?: string | null;
-  /**
-     * @maxLength 120
-     * @nullable
-     */
-  businessStyle?: string | null;
-  /**
-     * @maxLength 80
-     * @nullable
-     */
-  projectCode?: string | null;
-  /**
-     * @maxLength 255
-     * @nullable
-     */
-  projectName?: string | null;
-  /**
-     * @maxLength 120
-     * @nullable
-     */
-  projectRef?: string | null;
-  /**
-     * @maxLength 150
-     * @nullable
-     */
-  salesAssociate?: string | null;
-  /**
-     * @maxLength 150
-     * @nullable
-     */
-  teamAssigned?: string | null;
   /** @maxLength 10 */
   currency: string;
   /** @minimum 0.000001 */
@@ -9610,16 +9759,6 @@ export interface CreateCollectionReceiptDto {
   ewtAmount: number;
   discountAmount: number;
   grossAmount: number;
-  /**
-     * @maxLength 40
-     * @nullable
-     */
-  termId?: string | null;
-  /**
-     * @maxLength 150
-     * @nullable
-     */
-  terms?: string | null;
   /**
      * @maxLength 40
      * @nullable
@@ -9647,6 +9786,11 @@ export interface SaveCollectionReceiptResponseDto {
 }
 
 export interface UpdateCollectionReceiptDto {
+  /**
+     * @maxLength 40
+     * @nullable
+     */
+  paymentId?: string | null;
   /** @minimum 1 */
   branchUnitId?: number;
   /**
@@ -9680,51 +9824,6 @@ export interface UpdateCollectionReceiptDto {
      * @nullable
      */
   billToName?: string | null;
-  /**
-     * @maxLength 500
-     * @nullable
-     */
-  address?: string | null;
-  /**
-     * @maxLength 255
-     * @nullable
-     */
-  contactPerson?: string | null;
-  /**
-     * @maxLength 40
-     * @nullable
-     */
-  contactNo?: string | null;
-  /**
-     * @maxLength 120
-     * @nullable
-     */
-  businessStyle?: string | null;
-  /**
-     * @maxLength 80
-     * @nullable
-     */
-  projectCode?: string | null;
-  /**
-     * @maxLength 255
-     * @nullable
-     */
-  projectName?: string | null;
-  /**
-     * @maxLength 120
-     * @nullable
-     */
-  projectRef?: string | null;
-  /**
-     * @maxLength 150
-     * @nullable
-     */
-  salesAssociate?: string | null;
-  /**
-     * @maxLength 150
-     * @nullable
-     */
-  teamAssigned?: string | null;
   /** @maxLength 10 */
   currency?: string;
   /** @minimum 0.000001 */
@@ -9735,16 +9834,6 @@ export interface UpdateCollectionReceiptDto {
   ewtAmount?: number;
   discountAmount?: number;
   grossAmount?: number;
-  /**
-     * @maxLength 40
-     * @nullable
-     */
-  termId?: string | null;
-  /**
-     * @maxLength 150
-     * @nullable
-     */
-  terms?: string | null;
   /**
      * @maxLength 40
      * @nullable

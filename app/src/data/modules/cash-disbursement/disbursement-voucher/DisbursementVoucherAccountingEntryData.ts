@@ -96,7 +96,7 @@ export function normalizeDisbursementLineEntryFields(entry: DisbursementLineEntr
 }
 
 export function syncDisbursementLineEntryTaxDetails(entry: DisbursementLineEntry): DisbursementLineEntry {
-  const amount = parseMoneyNumberInput(entry.debit) || parseMoneyNumberInput(entry.credit);
+  const amount = parseMoneyNumberInput(entry.taxDetails?.grossAmount) || parseMoneyNumberInput(entry.debit) || parseMoneyNumberInput(entry.credit);
   const taxDetails = syncTaxDetailsAmount(
     {
       ...entry.taxDetails,
@@ -134,7 +134,11 @@ export function isExpenseEntryColumnId(columnId: string): columnId is ExpenseEnt
 }
 
 export function isPaymentCreditEntry(entry: DisbursementLineEntry) {
-  return entry.id.startsWith("auto-credit-") || entry.id.startsWith("payment-credit-");
+  return (
+    entry.id.startsWith("auto-credit-") ||
+    entry.id.startsWith("auto-payment-credit-") ||
+    entry.id.startsWith("payment-credit-")
+  );
 }
 
 export function isGeneratedVatEntry(entry: DisbursementLineEntry) {
@@ -194,13 +198,15 @@ export function createAutomaticAccountingEntries(
         credit: 0,
       });
       const netEntryAmounts = getSignedAccountingEntryAmounts(normalizedEntry.taxDetails.netAmount, "debit");
-      const hasIntentionalBlankRemarks = blankRemarksEntryIds.has(entry.id) && normalizedEntry.remarks === "";
+      const hasIntentionalBlankRemarks = blankRemarksEntryIds.has(entry.id) && (normalizedEntry.particulars === "" || normalizedEntry.remarks === "");
+      const entryText = hasIntentionalBlankRemarks ? "" : normalizedEntry.particulars || normalizedEntry.remarks || normalizedEntry.accountName;
 
       return {
         ...normalizedEntry,
         debit: netEntryAmounts.debit,
         credit: netEntryAmounts.credit,
-        remarks: hasIntentionalBlankRemarks ? "" : normalizedEntry.remarks || normalizedEntry.accountName,
+        particulars: entryText,
+        remarks: entryText,
         status: "Balanced" as const,
       };
     });
@@ -219,7 +225,12 @@ export function createAutomaticAccountingEntries(
   const totalVatAmount = expenseEntriesWithAmount.reduce((sum, entry) => sum + Number(entry.taxDetails.vatAmount || 0), 0);
   const totalEwtAmount = expenseEntriesWithAmount.reduce((sum, entry) => sum + Number(entry.taxDetails.ewtAmount || 0), 0);
   const totalDisbursementAmount = expenseEntriesWithAmount.reduce((sum, entry) => sum + Number(entry.taxDetails.amount || 0), 0);
-  const generatedRemarks = createGeneratedAccountingRemarks(expenseEntriesWithAmount, options.paymentMethod, blankRemarksEntryIds);
+  const settlementAccountName = options.bankAccount?.accountTitle || options.paymentMethod.trim() || "Payment";
+  const generatedRemarks = createGeneratedAccountingRemarks(
+    expenseEntriesWithAmount,
+    settlementAccountName,
+    blankRemarksEntryIds,
+  );
   const commonFields = {
     partyCode: referenceEntry?.partyCode ?? "",
     partyName: referenceEntry?.partyName ?? "",
@@ -230,6 +241,9 @@ export function createAutomaticAccountingEntries(
 
   if (hasNonZeroAccountingAmount(totalVatAmount)) {
     const vatEntryAmounts = getSignedAccountingEntryAmounts(totalVatAmount, "debit");
+    const vatText = options.generatedRemarksOverrides?.["auto-input-vat-current"] ?? generatedRemarks.inputVat;
+    const vatReferenceEntry = expenseEntriesWithAmount.find((entry) => hasNonZeroAccountingAmount(entry.taxDetails.vatAmount));
+    const vatCode = vatReferenceEntry?.taxDetails.vatCode || vatReferenceEntry?.vatType || "";
 
     generatedEntries.push({
       ...createBlankDisbursementLineEntry(),
@@ -239,19 +253,24 @@ export function createAutomaticAccountingEntries(
       debit: vatEntryAmounts.debit,
       credit: vatEntryAmounts.credit,
       id: "auto-input-vat-current",
-      remarks: options.generatedRemarksOverrides?.["auto-input-vat-current"] ?? generatedRemarks.inputVat,
+      particulars: vatText,
+      remarks: vatText,
       taxDetails: {
         ...createTaxDetails(totalVatAmount, "0%"),
         ...commonFields,
+        vatCode,
+        vatPercent: vatReferenceEntry?.taxDetails.vatPercent ?? 0,
+        vatType: vatCode,
       },
       taxRate: "0%",
-      vatType: "Input VAT",
+      vatType: vatCode,
       status: "Balanced",
     });
   }
 
   if (hasNonZeroAccountingAmount(totalEwtAmount)) {
     const ewtEntryAmounts = getSignedAccountingEntryAmounts(totalEwtAmount, "credit");
+    const ewtText = options.generatedRemarksOverrides?.["auto-ewt-current"] ?? generatedRemarks.ewt;
 
     generatedEntries.push({
       ...createBlankDisbursementLineEntry(),
@@ -262,7 +281,8 @@ export function createAutomaticAccountingEntries(
       debit: ewtEntryAmounts.debit,
       credit: ewtEntryAmounts.credit,
       id: "auto-ewt-current",
-      remarks: options.generatedRemarksOverrides?.["auto-ewt-current"] ?? generatedRemarks.ewt,
+      particulars: ewtText,
+      remarks: ewtText,
       taxDetails: {
         ...createTaxDetails(totalEwtAmount, "0%"),
         ...commonFields,
@@ -276,6 +296,7 @@ export function createAutomaticAccountingEntries(
 
   if (hasNonZeroAccountingAmount(totalDisbursementAmount) && options.bankAccount) {
     const paymentEntryAmounts = getSignedAccountingEntryAmounts(totalDisbursementAmount, "credit");
+    const bankText = options.generatedRemarksOverrides?.["auto-payment-credit-current"] ?? generatedRemarks.settlement;
 
     generatedEntries.push({
       ...createBlankDisbursementLineEntry(),
@@ -284,8 +305,9 @@ export function createAutomaticAccountingEntries(
       accountName: options.bankAccount.accountTitle,
       debit: paymentEntryAmounts.debit,
       credit: paymentEntryAmounts.credit,
-      id: "auto-credit-current",
-      remarks: options.generatedRemarksOverrides?.["auto-credit-current"] ?? generatedRemarks.settlement,
+      id: "auto-payment-credit-current",
+      particulars: bankText,
+      remarks: bankText,
       taxDetails: {
         ...createTaxDetails(totalDisbursementAmount, "0%"),
         ...commonFields,
@@ -299,14 +321,18 @@ export function createAutomaticAccountingEntries(
   return [...editableExpenseEntries, ...generatedEntries];
 }
 
-function createGeneratedAccountingRemarks(entries: DisbursementLineEntry[], paymentMethod: string, blankRemarksEntryIds: Set<string>) {
+function createGeneratedAccountingRemarks(
+  entries: DisbursementLineEntry[],
+  settlementAccountName: string,
+  blankRemarksEntryIds: Set<string>,
+) {
   const userRemarksSummary = createUniqueRemarksSummary(
     entries.map((entry) => {
       if (blankRemarksEntryIds.has(entry.id)) {
         return "";
       }
 
-      const remarks = entry.remarks.trim();
+      const remarks = (entry.particulars || entry.remarks || "").trim();
       const createdRemarks = entry.accountName.trim();
 
       return remarks && remarks !== createdRemarks ? remarks : "";
@@ -323,19 +349,16 @@ function createGeneratedAccountingRemarks(entries: DisbursementLineEntry[], paym
 
   const expenseSummary = createUniqueRemarksSummary(entries.map((entry) => entry.accountName.trim()));
 
-  const settlementMethod = paymentMethod.trim() || "payment";
-
   return {
     ewt: expenseSummary ? `EWT - ${expenseSummary}` : "EWT",
     inputVat: expenseSummary ? `Input VAT - ${expenseSummary}` : "Input VAT",
-    settlement: expenseSummary ? `Settlement via ${settlementMethod} - ${expenseSummary}` : `Settlement via ${settlementMethod}`,
+    settlement: expenseSummary ? `${settlementAccountName} - ${expenseSummary}` : settlementAccountName,
   };
 }
 
 function createUniqueRemarksSummary(remarks: string[]) {
   return remarks.map((remark) => remark.trim()).filter((remark, index, list) => remark && list.indexOf(remark) === index).join(", ");
 }
-
 
 export function getSignedAccountingEntryAmounts(value: number, positiveSide: "credit" | "debit") {
   const roundedValue = roundAccountingAmount(value);
@@ -362,7 +385,7 @@ export function roundAccountingAmount(value: number) {
 
 export function getExpenseEntryColumnTotal(
   entries: DisbursementLineEntry[],
-  columnId: "amount" | "ewtAmount" | "netAmount" | "vatAmount",
+  columnId: "amount" | "ewtAmount" | "netAmount" | "vatAmount" | "disburseAmount",
 ) {
   return entries.reduce((sum, entry) => {
     switch (columnId) {
@@ -374,6 +397,8 @@ export function getExpenseEntryColumnTotal(
         return sum + Number(entry.taxDetails.netAmount || 0);
       case "vatAmount":
         return sum + Number(entry.taxDetails.vatAmount || 0);
+      case "disburseAmount":
+        return sum + Number(entry.taxDetails.amount || 0);
       default:
         return sum;
     }
@@ -407,14 +432,16 @@ export function getDisbursementEntryExportCell(
       return `${formatAmount(entry.taxDetails?.ewtPercent ?? 0)}%`;
     case "ewtAmount":
       return formatAmount(entry.taxDetails?.ewtAmount ?? 0);
+    case "disburseAmount":
+      return formatAmount(entry.taxDetails?.amount ?? 0);
     case "checkNo":
       return entry.checkNo ?? "";
     case "checkStatus":
       return entry.checkStatus ?? "";
     case "checkDate":
       return entry.checkDate ?? "";
-    case "remarks":
-      return entry.remarks ?? "";
+    case "particulars":
+      return entry.particulars ?? entry.remarks ?? "";
     case "partyCode":
       return entry.partyCode ?? "";
     case "partyName":
@@ -494,7 +521,7 @@ export function disbursementEntryHasData(entry: DisbursementLineEntry) {
     (entry.refId ?? "").trim() !== "" ||
     (entry.vatType ?? "").trim() !== "" ||
     (entry.ewtCode ?? "").trim() !== "" ||
-    entry.remarks.trim() !== "" ||
+    (entry.particulars ?? entry.remarks ?? "").trim() !== "" ||
     parseMoneyNumberInput(entry.debit) > 0 ||
     parseMoneyNumberInput(entry.credit) > 0 ||
     entry.taxRate !== "0%"

@@ -1,7 +1,10 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
+  CashAdvanceMultipleEntryDetailTablePreferencesStorageKey,
   CashAdvanceMultipleEntryDefaultItemColumnIds,
+  CashAdvanceMultipleEntryItemColumnLabels,
   CashAdvanceMultipleEntryItemColumnOrder,
+  CashAdvanceMultipleEntryItemColumnWidths,
   CashAdvanceMultipleEntryProtectedItemColumnIds,
 } from "@/app/src/constants/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryConstants";
 import {
@@ -13,6 +16,7 @@ import {
   removeCashAdvanceMultipleEntryRow,
   replaceCashAdvanceMultipleEntryRow,
 } from "@/app/src/hooks/modules/cash-disbursement/cash-advance-multiple-entry/useCashAdvanceMultipleEntry";
+import { useDataEntryTablePreferences } from "@/app/src/hooks/shared/module/useDataEntryTablePreferences";
 import type {
   CashAdvanceMultipleEntryDetailEntryTableProps,
   CashAdvanceMultipleEntryItem,
@@ -23,7 +27,6 @@ import {
   type ModuleDataEntryColumn,
   type ModuleDataEntryColumnOption,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
-import { reorderColumnIds, toggleVisibleColumnId } from "@/app/src/ui/shared/module/module-data-entry/entryTableState.util";
 
 export function CashAdvanceMultipleEntryDetailEntryTable({
   employeeOptions,
@@ -34,9 +37,24 @@ export function CashAdvanceMultipleEntryDetailEntryTable({
   onRowsChange,
   rows,
 }: CashAdvanceMultipleEntryDetailEntryTableProps) {
-  const [columnOrder, setColumnOrder] = useState<string[]>(CashAdvanceMultipleEntryItemColumnOrder);
-  const [visibleColumnIds, setVisibleColumnIds] = useState<string[]>(CashAdvanceMultipleEntryDefaultItemColumnIds);
-  const [columnWidths, setColumnWidths] = useState<Record<string, number>>({});
+  const {
+    columnOrder,
+    visibleColumnIds,
+    columnWidths,
+    columnLabels,
+    handleMoveColumn,
+    handleToggleColumnVisibility,
+    handleUpdateColumnHeader,
+    handleUpdateColumnWidth,
+    handleResetColumns,
+  } = useDataEntryTablePreferences<string>({
+    storageKey: CashAdvanceMultipleEntryDetailTablePreferencesStorageKey,
+    defaultColumnOrder: CashAdvanceMultipleEntryItemColumnOrder,
+    defaultVisibleColumnIds: CashAdvanceMultipleEntryDefaultItemColumnIds,
+    defaultColumnWidths: CashAdvanceMultipleEntryItemColumnWidths,
+    defaultColumnLabels: CashAdvanceMultipleEntryItemColumnLabels,
+    protectedColumnIds: CashAdvanceMultipleEntryProtectedItemColumnIds,
+  });
   const allColumns = useMemo(
     () =>
       createCashAdvanceMultipleEntryItemColumns({
@@ -50,14 +68,22 @@ export function CashAdvanceMultipleEntryDetailEntryTable({
       }),
     [employeeOptions, isReadonly, onOpenPartyDrawer, onOpenResponsibilityCenterDrawer, onRowsChange, rows],
   );
-  const columns = useMemo(
+  const columns = useMemo<ModuleDataEntryColumn<CashAdvanceMultipleEntryItem>[]>(
     () =>
       columnOrder
         .filter((columnId) => visibleColumnIds.includes(columnId))
-        .map((columnId) => allColumns[columnId])
-        .filter((column): column is ModuleDataEntryColumn<CashAdvanceMultipleEntryItem> => Boolean(column))
-        .map((column) => (columnWidths[column.id] ? { ...column, width: columnWidths[column.id] } : column)),
-    [allColumns, columnOrder, columnWidths, visibleColumnIds],
+        .map((columnId) => {
+          const column = allColumns[columnId];
+          if (!column) return null;
+
+          return {
+            ...column,
+            header: columnLabels[columnId] ?? column.header,
+            width: columnWidths[columnId] ?? column.width,
+          };
+        })
+        .filter((column): column is NonNullable<typeof column> => Boolean(column)),
+    [allColumns, columnLabels, columnOrder, columnWidths, visibleColumnIds],
   );
   const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
     () =>
@@ -65,11 +91,11 @@ export function CashAdvanceMultipleEntryDetailEntryTable({
         id: columnId,
         isHideable: !CashAdvanceMultipleEntryProtectedItemColumnIds.has(columnId),
         isVisible: visibleColumnIds.includes(columnId),
-        label: allColumns[columnId].header,
-        width: columnWidths[columnId] ?? allColumns[columnId].width,
-        widthMode: allColumns[columnId].widthMode,
+        label: columnLabels[columnId] ?? allColumns[columnId]?.header ?? "",
+        width: columnWidths[columnId] ?? allColumns[columnId]?.width,
+        widthMode: allColumns[columnId]?.widthMode,
       })),
-    [allColumns, columnOrder, columnWidths, visibleColumnIds],
+    [allColumns, columnLabels, columnOrder, columnWidths, visibleColumnIds],
   );
   const totalAmount = useMemo(() => calculateCashAdvanceMultipleEntryTotal(rows), [rows]);
 
@@ -109,25 +135,11 @@ export function CashAdvanceMultipleEntryDetailEntryTable({
             : [createBlankCashAdvanceMultipleEntryItem()],
         )
       }
-      onResetColumns={() => {
-        setColumnOrder(CashAdvanceMultipleEntryItemColumnOrder);
-        setVisibleColumnIds(CashAdvanceMultipleEntryDefaultItemColumnIds);
-        setColumnWidths({});
-      }}
-      onMoveColumn={(fromColumnId, toColumnId) =>
-        setColumnOrder((current) => reorderColumnIds(current, fromColumnId, toColumnId))
-      }
-      onToggleColumnVisibility={(columnId, isVisible) => {
-        if (!isVisible && CashAdvanceMultipleEntryProtectedItemColumnIds.has(columnId)) {
-          return;
-        }
-
-        setVisibleColumnIds((current) => toggleVisibleColumnId(current, columnOrder, columnId, isVisible));
-      }}
-      onUpdateColumnHeader={() => undefined}
-      onUpdateColumnWidth={(columnId, width) =>
-        setColumnWidths((current) => ({ ...current, [columnId]: width }))
-      }
+      onResetColumns={handleResetColumns}
+      onMoveColumn={handleMoveColumn}
+      onToggleColumnVisibility={handleToggleColumnVisibility}
+      onUpdateColumnHeader={handleUpdateColumnHeader}
+      onUpdateColumnWidth={handleUpdateColumnWidth}
     />
   );
 }

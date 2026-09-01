@@ -135,6 +135,7 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
         chartAccounts,
         columnLabels: DisbursementEntryColumnLabels,
         columnWidths: DefaultDisbursementEntryColumnWidths,
+        ewtOptions,
         isReadonly,
         onAddPartyName,
         onUpdateEntry,
@@ -145,6 +146,7 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
     [
       canAddPartyName,
       chartAccounts,
+      ewtOptions,
       isReadonly,
       onAddPartyName,
       onUpdateEntry,

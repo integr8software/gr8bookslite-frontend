@@ -139,7 +139,7 @@ export function createPettyCashFundItemColumns(
     },
     orNo: text("orNo"),
     tinNo: text("tinNo"),
-    remarks: text("remarks"),
+    particulars: text("particulars"),
     amount: money("amount", (row, value) =>
       page.updateItem(row.id, {
         amount: value,
@@ -193,6 +193,7 @@ export function createPettyCashFundItemColumns(
     ewtPercent: calculatedMoney("ewtPercent"),
     ewtAmount: calculatedMoney("ewtAmount"),
     netAmount: calculatedMoney("netAmount"),
+    disburseAmount: calculatedMoney("disburseAmount"),
     grossAmount: money("grossAmount"),
     responsibilityCenterCode: {
       header: labels.responsibilityCenterCode,
@@ -256,6 +257,6 @@ export function createPettyCashFundAccountingColumns(
     credit: column("credit"),
     partyCode: column("partyCode"),
     partyName: column("partyName"),
-    remarks: column("remarks"),
+    particulars: column("particulars"),
   };
 }

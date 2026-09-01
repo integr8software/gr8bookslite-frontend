@@ -22,6 +22,7 @@ import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-
 import { ModuleDataEntryDropdownCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryDropdownCell";
 import { ModuleDataEntryInputCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryInputCell";
 import { ModuleDataEntryMoneyCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryMoneyCell";
+import { ModuleDataEntryRemarksCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryRemarksCell";
 import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 
 export function createCashAdvanceMultipleEntryItemColumns({
@@ -79,7 +80,7 @@ export function createCashAdvanceMultipleEntryItemColumns({
       ),
     },
     amount: {
-      header: "Amount",
+      header: "Cash Advance Amount",
       id: "amount",
       width: 140,
       widthClassName: "w-[8.75rem]",
@@ -104,20 +105,17 @@ export function createCashAdvanceMultipleEntryItemColumns({
       width: 155,
       widthClassName: "w-[9.75rem]",
       renderCell: (row, _index, context) => (
-        <ModuleDataEntryMoneyCell id={context.fieldId} name={context.fieldName} readOnly value={row.cashAdvanceLimit} />
-      ),
-    },
-    cashAdvanceBalance: {
-      header: "Cash Advance Balance",
-      id: "cashAdvanceBalance",
-      width: 155,
-      widthClassName: "w-[9.75rem]",
-      renderCell: (row, _index, context) => (
-        <ModuleDataEntryMoneyCell id={context.fieldId} name={context.fieldName} readOnly value={row.cashAdvanceBalance} />
+        <ModuleDataEntryInputCell
+          align="right"
+          id={context.fieldId}
+          name={context.fieldName}
+          readOnly
+          value={row.cashAdvanceLimit ? formatCashAdvanceMultipleEntryAmount(row.cashAdvanceLimit) : "Unlimited"}
+        />
       ),
     },
     totalCashAdvanced: {
-      header: "Total Cash Advanced",
+      header: "Total Cash Advances",
       id: "totalCashAdvanced",
       width: 165,
       widthClassName: "w-[10.25rem]",
@@ -129,6 +127,21 @@ export function createCashAdvanceMultipleEntryItemColumns({
           value={formatCashAdvanceMultipleEntryAmount(
             calculatePostedCashAdvanceTotalByParty(cashAdvanceRecords, row.partyCode),
           )}
+        />
+      ),
+    },
+    cashAdvanceBalance: {
+      header: "Available Cash Advance",
+      id: "cashAdvanceBalance",
+      width: 155,
+      widthClassName: "w-[9.75rem]",
+      renderCell: (row, _index, context) => (
+        <ModuleDataEntryInputCell
+          align="right"
+          id={context.fieldId}
+          name={context.fieldName}
+          readOnly
+          value={row.cashAdvanceBalance ? formatCashAdvanceMultipleEntryAmount(row.cashAdvanceBalance) : "Unlimited"}
         />
       ),
     },
@@ -165,19 +178,21 @@ export function createCashAdvanceMultipleEntryItemColumns({
         />
       ),
     },
-    remarks: {
-      header: "Remarks",
-      id: "remarks",
+    particulars: {
+      header: "Particulars",
+      id: "particulars",
       width: 300,
       widthClassName: "w-[18.75rem]",
       renderCell: (row, _index, context) => (
-        <ModuleDataEntryInputCell
-          id={context.fieldId}
-          name={context.fieldName}
-          readOnly={isReadonly}
-          value={row.remarks}
-          placeholder="Enter Remarks"
-          onChange={(value) => onUpdateEntry(row.id, { remarks: value })}
+        <ModuleDataEntryRemarksCell
+          inputId={context.fieldId}
+          inputName={context.fieldName}
+          isReadonly={isReadonly}
+          dialogTitle="Particulars"
+          value={row.particulars ?? row.remarks ?? ""}
+          placeholder="Enter Particulars"
+          textareaId={`${context.fieldId}-dialog`}
+          onChange={(value) => onUpdateEntry(row.id, { particulars: value, remarks: value })}
         />
       ),
     },
@@ -328,19 +343,21 @@ export function createCashAdvanceMultipleEntryAccountingColumns({
         />
       ),
     },
-    remarks: {
-      header: "Remarks",
-      id: "remarks",
+    particulars: {
+      header: "Particulars",
+      id: "particulars",
       width: 260,
       widthClassName: "w-[16.25rem]",
       renderCell: (row, _index, context) => (
-        <ModuleDataEntryInputCell
-          id={context.fieldId}
-          name={context.fieldName}
-          readOnly={isReadonly}
-          value={row.remarks}
-          placeholder="Enter Remarks"
-          onChange={(value) => onUpdateEntry(row.id, { remarks: value })}
+        <ModuleDataEntryRemarksCell
+          inputId={context.fieldId}
+          inputName={context.fieldName}
+          isReadonly={isReadonly}
+          dialogTitle="Particulars"
+          value={row.particulars ?? row.remarks ?? ""}
+          placeholder="Enter Particulars"
+          textareaId={`${context.fieldId}-dialog`}
+          onChange={(value) => onUpdateEntry(row.id, { particulars: value, remarks: value })}
         />
       ),
     },

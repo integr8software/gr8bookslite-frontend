@@ -6,23 +6,16 @@ import {
   AiAssistantFallbackErrorMessage,
   AiAssistantChatInputFocusDelayMs,
   AiAssistantChatScrollBottomThresholdPx,
-  AiAssistantNavigationStartEvent,
-  AiAssistantTermsMaintenanceActionEvent,
 } from "@/app/src/constants/shared/ai-assistant/AiAssistantConstants";
 import {
   LoadAiAssistantChatMessages,
   LoadAiAssistantChatOpenState,
   SaveAiAssistantChatMessages,
   SaveAiAssistantChatOpenState,
-  SaveAiAssistantPurchaseRequestPrefill,
-  SaveAiAssistantTermsMaintenancePendingAction,
 } from "@/app/src/data/shared/ai-assistant/AiAssistantData";
-import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
+import { DispatchAiAssistantAction } from "@/app/src/services/shared/ai-assistant/AiAssistantActionDispatcher";
 import { SendAiAssistantMessage } from "@/app/src/services/shared/ai-assistant/AiAssistantApi";
-import type {
-  AiAssistantAction,
-  AiAssistantChatMessage,
-} from "@/app/src/types/shared/ai-assistant/AiAssistantTypes";
+import type { AiAssistantChatMessage } from "@/app/src/types/shared/ai-assistant/AiAssistantTypes";
 
 export function useAiAssistantChat() {
   const router = useRouter();
@@ -138,7 +131,11 @@ export function useAiAssistantChat() {
       });
 
       setMessages((current) => [...current, { role: "assistant", content: response.message }]);
-      handleAction(response.action);
+      DispatchAiAssistantAction({
+        action: response.action,
+        currentPath: pathname,
+        navigate: (route) => router.push(route),
+      });
     } catch (error) {
       setMessages((current) => [
         ...current,
@@ -149,46 +146,6 @@ export function useAiAssistantChat() {
       ]);
     } finally {
       setIsSending(false);
-    }
-  }
-
-  function handleAction(action: AiAssistantAction | null) {
-    if (!action) {
-      return;
-    }
-
-    if (action.type === "navigate") {
-      window.dispatchEvent(new Event(AiAssistantNavigationStartEvent));
-      router.push(action.route);
-      return;
-    }
-
-    if (action.type === "open_form") {
-      if (action.target === "purchase_request" && action.prefill) {
-        SaveAiAssistantPurchaseRequestPrefill(action.prefill);
-      }
-
-      window.dispatchEvent(new Event(AiAssistantNavigationStartEvent));
-      router.push(action.route);
-      return;
-    }
-
-    if (action.type === "terms_maintenance") {
-      const route = getModuleRoute(action.moduleCode);
-
-      SaveAiAssistantTermsMaintenancePendingAction(action);
-
-      if (pathname === route) {
-        window.dispatchEvent(
-          new CustomEvent(AiAssistantTermsMaintenanceActionEvent, {
-            detail: action,
-          }),
-        );
-        return;
-      }
-
-      window.dispatchEvent(new Event(AiAssistantNavigationStartEvent));
-      router.push(route);
     }
   }
 

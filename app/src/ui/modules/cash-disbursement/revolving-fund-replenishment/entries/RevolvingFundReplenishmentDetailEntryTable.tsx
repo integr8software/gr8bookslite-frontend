@@ -191,6 +191,7 @@ export function RevolvingFundReplenishmentDetailEntryTable({
         netAmount: formatRevolvingFundReplenishmentAmount(page.totals.netAmount),
         vatAmount: formatRevolvingFundReplenishmentAmount(page.totals.vatAmount),
         ewtAmount: formatRevolvingFundReplenishmentAmount(page.totals.ewtAmount),
+        disburseAmount: formatRevolvingFundReplenishmentAmount(page.totals.disburseAmount),
       }}
     />
   );

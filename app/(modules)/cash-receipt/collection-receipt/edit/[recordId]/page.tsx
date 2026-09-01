@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { CollectionReceiptActionPage } from "@/app/src/ui/modules/cash-receipt/collection-receipt/CollectionReceiptActionPage";
+import { CollectionReceiptActionPage } from "@/app/src/ui/modules/cash-receipt/collection-receipt/form/CollectionReceiptActionPage";
 
 const PageTitle = "Edit Collection Receipt";
 

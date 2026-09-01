@@ -5,9 +5,9 @@ export function ProvisionalReceiptNotFound() {
   return (
     <ModuleNotFound
       actionHref={ProvisionalReceiptHref}
-      actionLabel="Back to Provisional Receipt"
+      actionLabel="Back to Collection Receipt"
       description="The provisional receipt record may have been removed or is no longer available."
-      title="Provisional Receipt Not Found"
+      title="Collection Receipt Not Found"
     />
   );
 }

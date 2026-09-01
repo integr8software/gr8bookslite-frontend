@@ -9,6 +9,7 @@ import {
 } from "@/app/src/ui/modules/system-administration/customized-reports/constants/CustomizeReportDesignerConstants";
 import {
   CustomizeReportPaperSizes,
+  ReceiptCustomizeReportModuleIds,
   CustomizeReportStorageKey,
 } from "@/app/src/data/modules/system-administration/customized-reports/CustomizeReportData";
 import type {
@@ -336,11 +337,18 @@ export function getReportStorageKey(reportId: string) {
 
 export function getReportData(data: CustomizeReportSampleDataType, report: CustomizeReportModuleOption) {
   const isDisbursementVoucher = report.id === "cash-disbursement-disbursement-voucher";
+  const isReceiptReport = ReceiptCustomizeReportModuleIds.includes(report.id as (typeof ReceiptCustomizeReportModuleIds)[number]);
 
   return {
     ...data,
     documentNo: isDisbursementVoucher ? data.documentNo : `${report.documentPrefix}-2026-0001`,
-    reportTitle: isDisbursementVoucher ? data.reportTitle : report.reportTitle,
+    reportTitle: isDisbursementVoucher ? data.reportTitle : report.reportTitle.toUpperCase(),
+    partyName: isReceiptReport ? "Sample Customer" : data.partyName,
+    address: isReceiptReport ? "123 Sample Street, Sample City" : "",
+    tin: isReceiptReport ? "000-000-000-000" : "",
+    businessStyle: isReceiptReport ? "Retail" : "",
+    amountInWords: isReceiptReport ? "ONE THOUSAND PESOS ONLY" : data.amountInWords,
+    purpose: isReceiptReport ? "invoice payment" : data.purpose,
     totalAmount: formatCurrency(data.totalAmount),
     totalCredit: formatCurrency(data.totalCredit),
     items: data.items.map((item) => ({

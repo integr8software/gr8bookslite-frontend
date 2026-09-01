@@ -28,6 +28,7 @@ import {
   CustomizeReportPresetTemplates,
   CustomizeReportSampleData,
   CustomizeReportStorageKey,
+  getDefaultCustomizeReportLayout,
 } from "@/app/src/data/modules/system-administration/customized-reports/CustomizeReportData";
 import { useCustomizeReportPdfPreview } from "@/app/src/hooks/modules/system-administration/customized-reports/useCustomizeReportPdfPreview";
 import type {
@@ -217,16 +218,19 @@ export function useCustomizeReportDesigner() {
     const storedLayout = window.localStorage.getItem(reportStorageKey) || legacyStoredLayout;
 
     if (!storedLayout) {
+      const defaultLayout = getDefaultCustomizeReportLayout(selectedReportId);
       // eslint-disable-next-line react-hooks/set-state-in-effect -- Restore the selected report layout from localStorage when the report changes.
-      setFields(CustomizeReportFields);
-      setLines(CustomizeReportLines);
-      setPageSetup(getPageSetupWithDefaults(CustomizeReportDefaultPageSetup));
-      setTableSetup(DefaultTableSetup);
-      setMarginSetup(DefaultMarginSetup);
-      setSelectedFieldId(CustomizeReportFields[0].id);
+      setFields(defaultLayout.fields);
+      setLines(defaultLayout.lines);
+      setPageSetup(getPageSetupWithDefaults(defaultLayout.pageSetup));
+      setTableSetup(getTableSetupWithDefaults(defaultLayout.tableSetup));
+      setMarginSetup(getMarginSetupWithDefaults(defaultLayout.marginSetup));
+      setSelectedFieldId(defaultLayout.fields[0]?.id || CustomizeReportFields[0].id);
       setSelectedLineId(null);
       setSelectedElementType(CustomizeReportElementTypes.Field);
-      setSelectedElementKeys([getSelectedElementKey(CustomizeReportElementTypes.Field, CustomizeReportFields[0].id)]);
+      setSelectedElementKeys(
+        defaultLayout.fields[0] ? [getSelectedElementKey(CustomizeReportElementTypes.Field, defaultLayout.fields[0].id)] : [],
+      );
       setLayoutHistory({ past: [], future: [] });
       return;
     }
@@ -1391,13 +1395,9 @@ export function useCustomizeReportDesigner() {
     }
 
     pushUndoSnapshot();
+    const defaultLayout = getDefaultCustomizeReportLayout(selectedReport.id);
     window.localStorage.removeItem(getReportStorageKey(selectedReport.id));
-    setFields(CustomizeReportFields);
-    setLines(CustomizeReportLines);
-    setPageSetup(CustomizeReportDefaultPageSetup);
-    setTableSetup(DefaultTableSetup);
-    setMarginSetup(DefaultMarginSetup);
-    selectElement(CustomizeReportElementTypes.Field, CustomizeReportFields[0].id);
+    restoreLayoutSnapshot(defaultLayout);
     toast.success(`${selectedReport.label} layout reset.`);
   }
 

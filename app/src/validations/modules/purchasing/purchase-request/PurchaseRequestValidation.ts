@@ -11,16 +11,16 @@ import type {
 const requiredText = (message: string) => z.string().trim().min(1, message);
 
 export const PurchaseRequestItemValidationSchema = z.object({
-	barcode: requiredText("Enter a barcode."),
+	barcode: z.string().optional().default(""),
 	cost: z.coerce.number().min(0),
 	description: requiredText("Enter an item name."),
-	expiryDate: z.string(),
+	expiryDate: z.string().optional().default(""),
 	id: z.string(),
-	itemCode: requiredText("Enter an item code."),
-	lotNo: z.string(),
+	itemCode: z.string().optional().default(""),
+	lotNo: z.string().optional().default(""),
 	quantity: z.coerce.number().positive("Enter a valid quantity."),
-	responsibilityCenter: z.string(),
-	uom: requiredText("Select a UOM."),
+	responsibilityCenter: z.string().optional().default(""),
+	uom: z.string().optional().default(""),
 });
 
 const accountingEntrySchema = z.object({
@@ -75,9 +75,10 @@ export const PurchaseRequestFormValidationSchema = z
 		approvedBySignatureImageUrl: z.string(),
 	})
 	.superRefine((values, context) => {
+		const isServices = values.purchaseType?.toLowerCase() === "services";
 		const hasValidItem = values.items.some(
 			(item) =>
-				item.itemCode.trim() &&
+				(isServices || item.itemCode.trim()) &&
 				item.description.trim() &&
 				Number(item.quantity) > 0 &&
 				Number(item.cost) >= 0,
@@ -86,8 +87,9 @@ export const PurchaseRequestFormValidationSchema = z
 		if (!hasValidItem) {
 			context.addIssue({
 				code: "custom",
-				message:
-					"Add at least one item with item code, description, quantity, and cost.",
+				message: isServices
+					? "Add at least one item with description, quantity, and cost."
+					: "Add at least one item with item code, description, quantity, and cost.",
 				path: ["items"],
 			});
 		}

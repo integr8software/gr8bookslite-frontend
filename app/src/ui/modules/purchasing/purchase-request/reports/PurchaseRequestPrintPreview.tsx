@@ -24,6 +24,8 @@ export function PurchaseRequestPrintPreview({
 	const hasCost = purchaseRequestReportHasCost(record);
 	const hasSupplier = purchaseRequestReportHasSupplier(record);
 
+	const isServices = record.purchaseType?.toLowerCase() === "services";
+
 	return (
 		<div className="bg-white">
 			{showControls ? (
@@ -79,11 +81,20 @@ export function PurchaseRequestPrintPreview({
 						<table className="w-full border-collapse text-[11px]">
 							<thead>
 								<tr>
-									<PreviewTh edge="left">ItemCode</PreviewTh>
-									<PreviewTh>BarCode</PreviewTh>
-									<PreviewTh>ItemName</PreviewTh>
-									<PreviewTh>UOM</PreviewTh>
-									<PreviewTh align="right">Qty</PreviewTh>
+									{isServices ? (
+										<>
+											<PreviewTh edge="left">Description</PreviewTh>
+											<PreviewTh align="right">Qty</PreviewTh>
+										</>
+									) : (
+										<>
+											<PreviewTh edge="left">ItemCode</PreviewTh>
+											<PreviewTh>BarCode</PreviewTh>
+											<PreviewTh>ItemName</PreviewTh>
+											<PreviewTh>UOM</PreviewTh>
+											<PreviewTh align="right">Qty</PreviewTh>
+										</>
+									)}
 									{hasCost ? (
 										<>
 											<PreviewTh align="right">Cost</PreviewTh>
@@ -97,19 +108,34 @@ export function PurchaseRequestPrintPreview({
 							<tbody>
 								{record.items.map((item) => (
 									<tr key={item.id}>
-										<PreviewTd edge="left">
-											{item.itemCode}
-										</PreviewTd>
-										<PreviewTd>{item.barcode}</PreviewTd>
-										<PreviewTd>
-											{item.description}
-										</PreviewTd>
-										<PreviewTd>{item.uom}</PreviewTd>
-										<PreviewTd align="right">
-											{formatPurchaseRequestQuantity(
-												item.quantity,
-											)}
-										</PreviewTd>
+										{isServices ? (
+											<>
+												<PreviewTd edge="left">
+													{item.description}
+												</PreviewTd>
+												<PreviewTd align="right">
+													{formatPurchaseRequestQuantity(
+														item.quantity,
+													)}
+												</PreviewTd>
+											</>
+										) : (
+											<>
+												<PreviewTd edge="left">
+													{item.itemCode}
+												</PreviewTd>
+												<PreviewTd>{item.barcode}</PreviewTd>
+												<PreviewTd>
+													{item.description}
+												</PreviewTd>
+												<PreviewTd>{item.uom}</PreviewTd>
+												<PreviewTd align="right">
+													{formatPurchaseRequestQuantity(
+														item.quantity,
+													)}
+												</PreviewTd>
+											</>
+										)}
 										{hasCost ? (
 											<>
 												<PreviewTd align="right">
@@ -128,7 +154,7 @@ export function PurchaseRequestPrintPreview({
 							<tfoot>
 								<tr>
 									<td
-										colSpan={4}
+										colSpan={isServices ? 1 : 4}
 										className="border-y border-r border-black px-1 text-right font-bold"
 									>
 										Total :
